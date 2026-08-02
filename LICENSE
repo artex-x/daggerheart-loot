@@ -1,0 +1,45 @@
+MIT License
+
+Copyright (c) 2026 artex-x
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+This MIT license covers ONLY the application code: index.html, style.css and
+app.js.
+
+It does NOT cover the game content in data.js or the images in img/. Those
+remain the property of their respective rights holders and are included here
+as a play aid only:
+
+  - Daggerheart Core Rulebook content is Public Game Content used under the
+    Darrington Press Community Gaming License (https://darringtonpress.com/license/).
+    This product includes materials from the Daggerheart System Reference
+    Document 1.0, (c) Critical Role, LLC.
+
+  - Daggerheart: Hope & Fear, Wondrous Environments, Community Magic Items and
+    the Alternate Loot & Consumable Tables are NOT covered by that license.
+    They are commercial and fan-made supplements owned by their authors.
+
+Daggerheart (c) Darrington Press. This project is unofficial and is neither
+affiliated with nor endorsed by Darrington Press or Critical Role.
+
+Rights holders who want their material removed: please open an issue at
+https://github.com/artex-x/daggerheart-loot/issues
