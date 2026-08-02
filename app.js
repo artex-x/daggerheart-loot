@@ -16,14 +16,13 @@ const ALL = Object.keys(DATA).reduce((a, k) => a.concat(DATA[k]), []);
 const S = {
   lang: 'ru',
   route: '',
-  history: [],
   core: { n: 1, rarity: 'common' },
   hnf:  { n: 1, rarity: 'common' },
   all:  { n: 1, rarity: 'common' },
   alt:  { rarity: 'common', hope: 1, fear: 2, filter: 'all', showTable: false },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
-  tables: { t: 'core_item', q: '' },
+  tables: { t: 'core_item', q: '', view: 'grid' },
   search: { q: '' }
 };
 
@@ -36,20 +35,19 @@ const T = {
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
     rollResult:'Результат броска', roll:'Бросить', rollDuality:'Бросить Кости Дуальности',
     copyName:'Скопировать название', copied:'Скопировано',
-    showOrig:'Показать оригинал (EN)', showRu:'Показать перевод (RU)',
-    rarity:'Редкость', dice:'Кости',
+    rarity:'Редкость', dice:'Кости', tier:'Ранг',
+    viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
     common:'Обычная', uncommon:'Необычная', rare:'Редкая', veryRare:'Очень редкая', legendary:'Легендарная',
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'По правилам игрок может выбрать любой предмет из таблицы этой редкости — и, по желанию Мастера, подняться на ступень редкости выше.',
     showFullTable:'Показать всю таблицу', hideFullTable:'Скрыть таблицу',
     filter:'Показать', fAll:'Всё (4 варианта)', fItems:'Только предметы', fCons:'Только расходники',
     community:'Сообщество',
-    history:'Недавние броски',
     searchPh:'Поиск по названию или описанию (RU / EN)…',
     nothing:'Ничего не найдено',
-    sendAll:'Отправить', copyText:'Текст', copyImg:'Картинка',
+    sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
     imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
-    copyLink:'Ссылка', linkCopied:'Ссылка скопирована',
+    copyLink:'Скопировать ссылку', linkCopied:'Ссылка скопирована',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
@@ -78,20 +76,19 @@ const T = {
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
     rollResult:'Roll result', roll:'Roll', rollDuality:'Roll Duality Dice',
     copyName:'Copy name', copied:'Copied',
-    showOrig:'Show original (EN)', showRu:'Show translation (RU)',
-    rarity:'Rarity', dice:'Dice',
+    rarity:'Rarity', dice:'Dice', tier:'Tier',
+    viewGrid:'Grid', viewList:'List', view:'View',
     common:'Common', uncommon:'Uncommon', rare:'Rare', veryRare:'Very rare', legendary:'Legendary',
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player may instead choose any item from this rarity table — and, at the GM’s discretion, jump up a rarity.',
     showFullTable:'Show full table', hideFullTable:'Hide table',
     filter:'Show', fAll:'All (4 options)', fItems:'Items only', fCons:'Consumables only',
     community:'Community',
-    history:'Recent rolls',
     searchPh:'Search by name or description (RU / EN)…',
     nothing:'Nothing found',
-    sendAll:'Send', copyText:'Text', copyImg:'Image',
+    sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
     imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
-    copyLink:'Link', linkCopied:'Link copied',
+    copyLink:'Copy link', linkCopied:'Link copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
@@ -120,6 +117,8 @@ const RARITIES4 = ['common','uncommon','rare','legendary'];
 const RARITIES5 = ['common','uncommon','rare','very_rare','legendary'];
 const RAR_KEY = { common:'common', uncommon:'uncommon', rare:'rare', very_rare:'veryRare', legendary:'legendary' };
 const DICE = { common:[1,2], uncommon:[2,3], rare:[3,4], legendary:[4,5] };
+/* tier recommendations printed in the Alternate Loot & Consumable Tables */
+const TIERS = { common:'1-2', uncommon:'1-2', rare:'2-3', very_rare:'3-4', legendary:'3-4' };
 const COMMUNITIES = [
   ['Highborne','Благородные'], ['Loreborne','Учёные'], ['Orderborne','Упорядоченные'],
   ['Ridgeborne','Горцы'], ['Seaborne','Морские'], ['Slyborne','Хитроумные'],
@@ -145,10 +144,12 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const d = n => 1 + Math.floor(Math.random() * n);
 
 function nameOf(it){ return S.lang === 'ru' ? (it.ru || it.en) : it.en; }
+/* Outside the app a bare name loses the Item/Consumable badge, so spell it out */
+function nameForShare(it){
+  return nameOf(it) + (it.kind === 'consumable' ? ' (' + t().cons.toLowerCase() + ')' : '');
+}
+function shareText(it){ return nameForShare(it) + '\n\n' + descOf(it); }
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
-function altName(it){ return S.lang === 'ru' ? it.en : (it.ru || ''); }
-function altDesc(it){ return S.lang === 'ru' ? it.ende : (it.rud || ''); }
-function hasRu(it){ return !!it.ru; }
 
 function srcLabel(it){
   if (it.src === 'core') return t().srcCore;
@@ -179,7 +180,7 @@ function fallback(text, done){
   document.body.removeChild(ta);
 }
 
-const ICON_COPY = '<svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
+const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
@@ -198,7 +199,7 @@ function shareItem(id){
   if (!it) return;
   const url = itemUrl(id);
   if (canShare()) {
-    navigator.share({ title: nameOf(it), text: nameOf(it) + '\n\n' + descOf(it), url: url })
+    navigator.share({ title: nameForShare(it), text: shareText(it), url: url })
       .catch(() => {});
   } else {
     copyText(url);
@@ -222,11 +223,15 @@ function imageBlob(it){
   });
 }
 
+function safeFileName(it){
+  return nameOf(it).replace(/[\\/:*?"<>|]/g, '') + '.png';
+}
+
 function downloadImage(it){
   imageBlob(it).then(function (blob) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = nameOf(it).replace(/[\\/:*?"<>|]/g, '') + '.png';
+    a.download = safeFileName(it);
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
     toast(t().imgSaved);
@@ -245,72 +250,72 @@ function copyImage(it){
     .catch(function () { downloadImage(it); });
 }
 
-/* Native share sheet carrying the actual picture — on a phone this puts the
-   image and the caption into Telegram in one step. */
-function shareImage(it){
+/* One "send" button, three levels of browser support:
+   1. share sheet with the picture attached  — phones, puts image + caption into Telegram at once
+   2. share sheet with just the link         — desktop browsers that have the Share API
+   3. copy the link                          — everything else; the link still unfurls into
+                                                picture + name + description in Telegram */
+function sendItem(it){
+  if (!navigator.share) { copyText(itemUrl(it.id)); toast(t().linkCopied); return; }
+  if (!(navigator.canShare && window.File)) {
+    navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) }).catch(function () {});
+    return;
+  }
   imageBlob(it).then(function (blob) {
-    const file = new File([blob], nameOf(it).replace(/[\\/:*?"<>|]/g, '') + '.png', { type: 'image/png' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      return navigator.share({ files: [file], text: nameOf(it) + '\n\n' + descOf(it) });
+    const file = new File([blob], safeFileName(it), { type: 'image/png' });
+    if (navigator.canShare({ files: [file] })) {
+      return navigator.share({ files: [file], text: shareText(it) });
     }
-    copyImage(it);
-  }).catch(function () { copyImage(it); });
-}
-function canShareFiles(){
-  return !!(navigator.canShare && navigator.share && window.File);
+    return navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) });
+  }).catch(function () {});
 }
 const ICON_DIE  = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="flex:none"><path d="M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.3 7.1 3.5-7.1 3.6-7.1-3.6L12 4.3zM4 9.2l7 3.5v7.1l-7-3.5V9.2zm9 10.6v-7.1l7-3.5v7.1l-7 3.5z"/></svg>';
 
 /* ============================================================
    CARD
    ============================================================ */
+/* Labels collapse to icons on narrow screens, so every button keeps an aria-label */
+function actBtn(action, id, icon, label, primary){
+  return '<button type="button" class="btn sm' + (primary ? ' primary' : '') + '"' +
+    ' data-' + action + '="' + esc(id) + '"' +
+    ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' +
+    icon + '<span class="btn-lbl">' + esc(label) + '</span></button>';
+}
+
+/* opt.full  — big picture on top (item page / modal); otherwise a compact row
+   opt.col   — 'hope' | 'fear' badge for the alternate tables
+   opt.rollLabel — overrides the number shown in the meta row */
 function cardHTML(it, opt){
   opt = opt || {};
   const nm = nameOf(it), ds = descOf(it);
-  const an = altName(it), ad = altDesc(it);
-  const kindBadge = it.kind === 'consumable'
-    ? '<span class="badge cons">' + esc(t().cons) + '</span>'
-    : '<span class="badge item">' + esc(t().item) + '</span>';
-  const colBadge = opt.col
-    ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>'
-    : '';
-  const rollBadge = (opt.rollLabel !== false && it.roll)
-    ? '<span class="card-roll">' + esc(opt.rollLabel || it.roll) + '</span>' : '';
-  const missing = !hasRu(it) && S.lang === 'ru'
-    ? '<p class="card-alt"><b>' + esc('Перевода нет — показан оригинал') + '</b></p>' : '';
-  const altBlock = (an || ad) ? (
-    '<details class="card-orig"' + (opt.openOrig ? ' open' : '') + '>' +
-      '<summary>' + esc(S.lang === 'ru' ? t().showOrig : t().showRu) + '</summary>' +
-      '<div class="in">' +
-        (an ? '<h4>' + esc(an) + '</h4>' : '') +
-        (ad ? '<p>' + esc(ad) + '</p>' : '') +
-      '</div>' +
-    '</details>') : '';
+  const meta =
+    ((opt.rollLabel !== false && it.roll) ? '<span class="badge num">' + esc(opt.rollLabel || it.roll) + '</span>' : '') +
+    (opt.col ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>' : '') +
+    '<span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
+      esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+    '<span class="badge src">' + esc(srcLabel(it)) + '</span>';
+
+  const nameEl = opt.full
+    ? '<span>' + esc(nm) + '</span>'
+    : '<a href="#/i/' + esc(it.id) + '" title="' + esc(t().openPage) + '">' + esc(nm) + '</a>';
 
   return '' +
-  '<article class="card" data-id="' + esc(it.id) + '">' +
-    '<div class="card-media">' +
-      '<div class="card-badges">' + colBadge + kindBadge + '<span class="badge src">' + esc(srcLabel(it)) + '</span></div>' +
-      rollBadge +
+  '<article class="card' + (opt.full ? ' full' : ' compact') + '" data-id="' + esc(it.id) + '">' +
+    '<button type="button" class="card-media" data-open="' + esc(it.id) + '" aria-label="' + esc(t().openPage) + '">' +
       '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
-    '</div>' +
+    '</button>' +
     '<div class="card-body">' +
-      '<h3 class="card-name">' +
-        '<span>' + esc(nm) + '</span>' +
-        '<button type="button" data-copy-name="' + esc(nm) + '" title="' + esc(t().copyName) + '" aria-label="' + esc(t().copyName) + '">' + ICON_COPY + '</button>' +
+      '<div class="card-meta">' + meta + '</div>' +
+      '<h3 class="card-name">' + nameEl +
+        '<button type="button" data-copy-name="' + esc(it.id) + '" title="' + esc(t().copyName) + '" aria-label="' + esc(t().copyName) + '">' + ICON_COPY + '</button>' +
       '</h3>' +
-      missing +
       '<p class="card-desc">' + esc(ds) + '</p>' +
       '<div class="card-acts">' +
-        (canShareFiles()
-          ? '<button type="button" class="btn sm primary" data-share-img="' + esc(it.id) + '">' + ICON_SHARE + ' ' + esc(t().sendAll) + '</button>'
-          : '') +
-        '<button type="button" class="btn sm" data-copy-full="' + esc(it.id) + '">' + ICON_COPY + ' ' + esc(t().copyText) + '</button>' +
-        '<button type="button" class="btn sm" data-copy-img="' + esc(it.id) + '">' + ICON_IMG + ' ' + esc(t().copyImg) + '</button>' +
-        '<button type="button" class="btn sm" data-share="' + esc(it.id) + '">' + ICON_LINK + ' ' + esc(t().copyLink) + '</button>' +
-        (opt.noOpen ? '' : '<a class="btn sm ghost" href="#/i/' + esc(it.id) + '">' + esc(t().openPage) + '</a>') +
+        actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
+        actBtn('copy-img',  it.id, ICON_IMG,  t().copyImg) +
+        actBtn('copy-full', it.id, ICON_COPY, t().copyText) +
+        actBtn('share',     it.id, ICON_LINK, t().copyLink) +
       '</div>' +
-      altBlock +
     '</div>' +
   '</article>';
 }
@@ -345,26 +350,16 @@ function numBox(id, val, min, max, cls){
   '</div>';
 }
 
-function rarityChips(list, cur, act, showDice){
+function rarityChips(list, cur, act, mode){
   return '<div class="chips">' + list.map(r => {
-    const dice = (showDice !== false && DICE[r]) ? DICE[r].map(n => n + 'd12').join(' / ') : '';
+    const sub = mode === 'tiers'
+      ? t().tier + ' ' + TIERS[r]
+      : (DICE[r] ? DICE[r].map(n => n + 'd12').join(' / ') : '');
     return '<button type="button" class="chip' + (r === cur ? ' on' : '') + '" data-act="' + act + '" data-val="' + r + '">' +
-      esc(t()[RAR_KEY[r]]) + (dice ? '<small>' + dice + '</small>' : '') + '</button>';
+      esc(t()[RAR_KEY[r]]) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</button>';
   }).join('') + '</div>';
 }
 
-function historyHTML(){
-  if (!S.history.length) return '';
-  return '<div class="hist"><h3>' + esc(t().history) + '</h3><div class="hist-list">' +
-    S.history.map(h => '<button type="button" data-open="' + esc(h.id) + '">' + esc(h.label) + '</button>').join('') +
-  '</div></div>';
-}
-function pushHistory(items, prefix){
-  items.filter(Boolean).forEach(it => {
-    S.history.unshift({ id: it.id, label: prefix + ' ' + nameOf(it) });
-  });
-  S.history = S.history.slice(0, 12);
-}
 
 /* ============================================================
    PAGES
@@ -394,8 +389,7 @@ function renderNumbered(key){
       '</div>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + orGrid([cardHTML(it), cardHTML(co)]) + '</div>' +
-  historyHTML();
+  '<div class="results">' + orGrid([cardHTML(it), cardHTML(co)]) + '</div>';
 }
 
 /* ---- 3: everything ---- */
@@ -420,8 +414,7 @@ function renderAll(){
       '</div>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + orGrid(cards) + '</div>' +
-  historyHTML();
+  '<div class="results">' + orGrid(cards) + '</div>';
 }
 
 /* ---- 4: alternate tables ---- */
@@ -453,7 +446,7 @@ function renderAlt(){
 
   return pageHead('alt') +
   '<div class="panel">' +
-    '<div class="field"><span class="lbl">' + esc(t().rarity) + '</span>' + rarityChips(RARITIES5, st.rarity, 'rarity', false) + '</div>' +
+    '<div class="field"><span class="lbl">' + esc(t().rarity) + '</span>' + rarityChips(RARITIES5, st.rarity, 'rarity', 'tiers') + '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + '</span>' +
       '<div class="numrow">' +
         '<div><span class="dielbl h">' + esc(t().hopeDie) + '</span>' + numBox('hope', st.hope, 1, 12, 'hope') + '</div>' +
@@ -468,8 +461,7 @@ function renderAlt(){
       '</div>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + critBox + orGrid(cards) + fullTable + '</div>' +
-  historyHTML();
+  '<div class="results">' + critBox + orGrid(cards) + fullTable + '</div>';
 }
 
 function altTableHTML(rarity, filter){
@@ -506,8 +498,7 @@ function renderWond(){
         : 'The table holds ' + max + ' entries. d100 rolls 1–100, d' + max + ' covers the whole table.') + '</p>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + orGrid([cardHTML(it)]) + '</div>' +
-  historyHTML();
+  '<div class="results">' + orGrid([cardHTML(it)]) + '</div>';
 }
 
 /* ---- 6: community ---- */
@@ -532,8 +523,7 @@ function renderComm(){
         : 'Community items are listed in ascending order of rarity: 1 is the humblest, 10 the most powerful.') + '</p>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + orGrid([cardHTML(it)]) + '</div>' +
-  historyHTML();
+  '<div class="results">' + orGrid([cardHTML(it)]) + '</div>';
 }
 
 /* ---- tables browse ---- */
@@ -567,19 +557,40 @@ function renderTables(){
         const sub = list.filter(x => x.community === c[0]);
         if (!sub.length) return '';
         return '<div style="margin-top:22px"><span class="lbl">' + esc(S.lang === 'ru' ? c[1] + ' · ' + c[0] : c[0]) + '</span>' +
-          '<div class="tgrid">' + sub.map(tileHTML).join('') + '</div></div>';
+          renderList(sub) + '</div>';
       }).join('');
     } else {
-      body = list.length ? '<div class="tgrid">' + list.map(tileHTML).join('') + '</div>'
-                         : '<div class="empty">' + esc(t().nothing) + '</div>';
+      body = list.length ? renderList(list) : '<div class="empty">' + esc(t().nothing) + '</div>';
     }
   }
 
   const searchBar = st.t.indexOf('alt_') === 0 ? '' :
-    '<div class="toolbar" style="margin-top:16px"><div class="grow">' +
-      '<input type="search" id="tq" value="' + esc(st.q) + '" placeholder="' + esc(t().searchPh) + '"></div></div>';
+    '<div class="toolbar" style="margin-top:16px">' +
+      '<div class="grow"><input type="search" id="tq" value="' + esc(st.q) + '" placeholder="' + esc(t().searchPh) + '"></div>' +
+      '<div class="seg small" role="group" aria-label="' + esc(t().view) + '">' +
+        '<button type="button" data-act="view" data-val="grid"' + (st.view === 'grid' ? ' class="on"' : '') + '>' + esc(t().viewGrid) + '</button>' +
+        '<button type="button" data-act="view" data-val="list"' + (st.view === 'list' ? ' class="on"' : '') + '>' + esc(t().viewList) + '</button>' +
+      '</div>' +
+    '</div>';
 
   return pageHead('tables') + '<div class="panel">' + chips + '</div>' + searchBar + '<div style="margin-top:6px">' + body + '</div>';
+}
+
+function renderList(list){
+  return S.tables.view === 'list'
+    ? '<div class="rows">' + list.map(rowHTML).join('') + '</div>'
+    : '<div class="tgrid">' + list.map(tileHTML).join('') + '</div>';
+}
+
+function rowHTML(it){
+  return '<button type="button" class="row" data-open="' + esc(it.id) + '">' +
+      '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+      '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) + '</b>' +
+      '<span>' + esc(descOf(it)) + '</span></span>' +
+      '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
+        esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+      '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
+    '</button>';
 }
 
 function tileHTML(it){
@@ -608,14 +619,8 @@ function renderSearch(){
     body = '<div class="empty">' + esc(S.lang === 'ru' ? 'Начните вводить запрос' : 'Start typing') + '</div>';
   } else {
     const res = ALL.filter(x => matches(x, q)).slice(0, 300);
-    body = res.length ? '<div class="rows">' + res.map(it =>
-      '<button type="button" class="row" data-open="' + esc(it.id) + '">' +
-        '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
-        '<span class="rt"><b>' + esc(nameOf(it)) + '</b><span>' + esc(descOf(it)) + '</span></span>' +
-        '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' + esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
-        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
-      '</button>').join('') + '</div>'
-      : '<div class="empty">' + esc(t().nothing) + '</div>';
+    body = res.length ? '<div class="rows">' + res.map(rowHTML).join('') + '</div>'
+                      : '<div class="empty">' + esc(t().nothing) + '</div>';
   }
   return pageHead('search') +
     '<div class="toolbar"><div class="grow"><input type="search" id="sq" value="' + esc(S.search.q) + '" placeholder="' + esc(t().searchPh) + '" autofocus></div></div>' +
@@ -643,7 +648,7 @@ function renderItemPage(id){
     : tname;
   return '<h1 class="page-h">' + esc(nameOf(it)) + '</h1>' +
     '<p class="page-sub">' + esc(where) + ' · ' + esc(t().rollNo) + ' ' + esc(it.roll) + '</p>' +
-    '<div class="itempage">' + cardHTML(it, { openOrig: true, noOpen: true }) + '</div>' +
+    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
     '<div class="card-acts" style="margin-top:18px">' +
       '<a class="btn ghost" href="#/tables">' + esc(t().openTable) + '</a>' +
       '<a class="btn ghost" href="#/roll/core">' + esc(t().toStart) + '</a>' +
@@ -742,14 +747,14 @@ document.addEventListener('click', function (e) {
   if (openEl) { openModal(openEl.dataset.open); return; }
 
   const cn = e.target.closest('[data-copy-name]');
-  if (cn) { copyText(cn.dataset.copyName); return; }
+  if (cn) { copyText(nameForShare(BY_ID[cn.dataset.copyName])); return; }
 
   const cf = e.target.closest('[data-copy-full]');
   if (cf) {
     const it = BY_ID[cf.dataset.copyFull];
     // only append the URL when the app is actually hosted — a file:// path is useless to send
     const tail = /^https?:$/.test(location.protocol) ? '\n\n' + itemUrl(it.id) : '';
-    copyText(nameOf(it) + '\n\n' + descOf(it) + tail);
+    copyText(shareText(it) + tail);
     return;
   }
 
@@ -759,8 +764,8 @@ document.addEventListener('click', function (e) {
   const ci = e.target.closest('[data-copy-img]');
   if (ci) { copyImage(BY_ID[ci.dataset.copyImg]); return; }
 
-  const si = e.target.closest('[data-share-img]');
-  if (si) { shareImage(BY_ID[si.dataset.shareImg]); return; }
+  const si = e.target.closest('[data-send]');
+  if (si) { sendItem(BY_ID[si.dataset.send]); return; }
 
   const step = e.target.closest('[data-step]');
   if (step) {
@@ -782,6 +787,7 @@ document.addEventListener('click', function (e) {
   if (a === 'filter') { S.alt.filter = val; render(); return; }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   if (a === 'table')  { S.tables.t = val; S.tables.q = ''; render(); return; }
+  if (a === 'view')   { S.tables.view = val; render(); return; }
   if (a === 'toggleTable') { S.alt.showTable = !S.alt.showTable; render(); return; }
 
   if (a === 'roll' || a === 'roll2') {
@@ -791,32 +797,15 @@ document.addEventListener('click', function (e) {
       const nd = DICE[st.rarity][a === 'roll' ? 0 : 1];
       st.n = clamp(rollNd12(nd), 1, 60);
     }
-    afterRoll(); render(); return;
+    render(); return;
   }
-  if (a === 'roll100') { S.wond.n = clamp(d(100), 1, DATA.wondrous.length); afterRoll(); render(); return; }
+  if (a === 'roll100') { S.wond.n = clamp(d(100), 1, DATA.wondrous.length); render(); return; }
   if (a === 'rollDuality') {
     S.alt.hope = d(12); S.alt.fear = d(12); S.alt.showTable = false;
-    afterRoll(); render(); return;
+    render(); return;
   }
 });
 
-function afterRoll(){
-  const r = S.route;
-  if (r === 'roll/core' || r === 'roll/hnf') {
-    const src = r === 'roll/core' ? 'core' : 'hnf';
-    pushHistory([DATA[src + '_item'][S[src].n - 1]], '#' + S[src].n + ' ·');
-  } else if (r === 'roll/all') {
-    pushHistory([DATA.core_item[S.all.n - 1]], '#' + S.all.n + ' ·');
-  } else if (r === 'roll/wondrous') {
-    pushHistory([DATA.wondrous[S.wond.n - 1]], '#' + S.wond.n + ' ·');
-  } else if (r === 'roll/community') {
-    const list = DATA.community.filter(x => x.community === S.comm.c);
-    pushHistory([list[S.comm.n - 1]], '#' + S.comm.n + ' ·');
-  } else if (r === 'roll/alt') {
-    const it = altPick('item', S.alt.rarity, 'hope', S.alt.hope);
-    pushHistory([it], S.alt.hope + '/' + S.alt.fear + ' ·');
-  }
-}
 
 function applyNum(id, v){
   const st = stateForRoute();
@@ -848,7 +837,7 @@ document.addEventListener('keydown', function (e) {
 function openModal(id){
   const it = BY_ID[id];
   if (!it) return;
-  $('#modalBody').innerHTML = cardHTML(it, { openOrig: true });
+  $('#modalBody').innerHTML = cardHTML(it, { full: true });
   $('#modal').hidden = false;
 }
 
