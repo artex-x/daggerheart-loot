@@ -19,11 +19,12 @@ const S = {
   core: { n: 1, rarity: 'common' },
   hnf:  { n: 1, rarity: 'common' },
   all:  { n: 1, rarity: 'common' },
-  alt:  { rarity: 'common', hope: 1, fear: 2, filter: 'all', showTable: false },
+  alt:  { rarity: 'common', hope: 1, fear: 2 },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
   tables: { t: 'core_item', q: '', view: 'list' },
-  search: { q: '' }
+  search: { q: '' },
+  kind: 'all'   // shared item/consumable filter, applies on every page that can show both
 };
 
 /* ---------- i18n ---------- */
@@ -39,9 +40,9 @@ const T = {
     viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
     common:'Обычная', uncommon:'Необычная', rare:'Редкая', veryRare:'Очень редкая', legendary:'Легендарная',
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
-    crit:'Критический успех!', critSub:'По правилам игрок может выбрать любой предмет из таблицы этой редкости — и, по желанию Мастера, подняться на ступень редкости выше.',
-    showFullTable:'Показать всю таблицу', hideFullTable:'Скрыть таблицу',
-    filter:'Показать', fAll:'Всё (4 варианта)', fItems:'Только предметы', fCons:'Только расходники',
+    crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы ниже. Мастер может разрешить подняться на ступень редкости выше.',
+    critFrom:'Выбор из таблицы:', bumpTo:'Поднять до',
+    filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
     community:'Сообщество',
     searchPh:'Поиск по названию или описанию (RU / EN)…',
     nothing:'Ничего не найдено',
@@ -80,9 +81,9 @@ const T = {
     viewGrid:'Grid', viewList:'List', view:'View',
     common:'Common', uncommon:'Uncommon', rare:'Rare', veryRare:'Very rare', legendary:'Legendary',
     hopeDie:'Hope Die', fearDie:'Fear Die',
-    crit:'Critical success!', critSub:'The player may instead choose any item from this rarity table — and, at the GM’s discretion, jump up a rarity.',
-    showFullTable:'Show full table', hideFullTable:'Hide table',
-    filter:'Show', fAll:'All (4 options)', fItems:'Items only', fCons:'Consumables only',
+    crit:'Critical success!', critSub:'The player takes any entry from the table below. The GM may allow bumping up one rarity.',
+    critFrom:'Choose from table:', bumpTo:'Bump to',
+    filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
     community:'Community',
     searchPh:'Search by name or description (RU / EN)…',
     nothing:'Nothing found',
@@ -350,6 +351,18 @@ function numBox(id, val, min, max, cls){
   '</div>';
 }
 
+/* The same three chips everywhere, backed by one piece of state */
+function kindChips(){
+  return '<div class="field"><span class="lbl">' + esc(t().filter) + '</span><div class="chips">' +
+    ['all','items','cons'].map(f =>
+      '<button type="button" class="chip' + (f === S.kind ? ' on' : '') + '" data-act="kind" data-val="' + f + '">' +
+        esc(f === 'all' ? t().fAll : f === 'items' ? t().fItems : t().fCons) + '</button>').join('') +
+  '</div></div>';
+}
+function kindAllows(kind){
+  return S.kind === 'all' || (S.kind === 'items' ? kind === 'item' : kind === 'consumable');
+}
+
 function rarityChips(list, cur, act, mode){
   return '<div class="chips">' + list.map(r => {
     const sub = mode === 'tiers'
@@ -367,6 +380,13 @@ function rarityChips(list, cur, act, mode){
 function pageHead(key){
   const p = t().pages[key];
   return '<h1 class="page-h">' + p[0] + '</h1><p class="page-sub">' + p[1] + '</p>';
+}
+
+function pickCards(items, opts){
+  return items
+    .map((it, i) => [it, (opts && opts[i]) || {}])
+    .filter(p => p[0] && kindAllows(p[0].kind))
+    .map(p => cardHTML(p[0], p[1]));
 }
 
 /* ---- 1 & 2: Core / H&F ---- */
@@ -388,19 +408,18 @@ function renderNumbered(key){
         '<button type="button" class="btn ghost" data-act="roll2">' + DICE[st.rarity][1] + 'd12</button>' +
       '</div>' +
     '</div>' +
+    kindChips() +
   '</div>' +
-  '<div class="results">' + orGrid([cardHTML(it), cardHTML(co)]) + '</div>';
+  '<div class="results">' + orGrid(pickCards([it, co])) + '</div>';
 }
 
 /* ---- 3: everything ---- */
 function renderAll(){
   const st = S.all, n = st.n;
-  const cards = [
-    cardHTML(DATA.core_item[n-1]),
-    cardHTML(DATA.core_consumable[n-1]),
-    cardHTML(DATA.hnf_item[n-1]),
-    cardHTML(DATA.hnf_consumable[n-1])
-  ];
+  const cards = pickCards([
+    DATA.core_item[n-1], DATA.core_consumable[n-1],
+    DATA.hnf_item[n-1],  DATA.hnf_consumable[n-1]
+  ]);
   return pageHead('all') +
   '<div class="panel">' +
     '<div class="field"><span class="lbl">' + esc(t().rarity) + ' · ' + esc(t().dice) + '</span>' +
@@ -413,6 +432,7 @@ function renderAll(){
         '<button type="button" class="btn ghost" data-act="roll2">' + DICE[st.rarity][1] + 'd12</button>' +
       '</div>' +
     '</div>' +
+    kindChips() +
   '</div>' +
   '<div class="results">' + orGrid(cards) + '</div>';
 }
@@ -425,24 +445,31 @@ function altPick(kind, rarity, col, n){
 function renderAlt(){
   const st = S.alt;
   const crit = st.hope === st.fear;
-  const picks = [];
-  const wantItems = st.filter === 'all' || st.filter === 'items';
-  const wantCons  = st.filter === 'all' || st.filter === 'cons';
-  if (wantItems) {
-    picks.push([altPick('item', st.rarity, 'hope', st.hope), 'hope']);
-    picks.push([altPick('item', st.rarity, 'fear', st.fear), 'fear']);
-  }
-  if (wantCons) {
-    picks.push([altPick('consumable', st.rarity, 'hope', st.hope), 'hope']);
-    picks.push([altPick('consumable', st.rarity, 'fear', st.fear), 'fear']);
-  }
-  const cards = picks.filter(p => p[0]).map(p => cardHTML(p[0], { col: p[1], rollLabel: p[1] === 'hope' ? st.hope : st.fear }));
+  const picks = [
+    [altPick('item', st.rarity, 'hope', st.hope), 'hope'],
+    [altPick('item', st.rarity, 'fear', st.fear), 'fear'],
+    [altPick('consumable', st.rarity, 'hope', st.hope), 'hope'],
+    [altPick('consumable', st.rarity, 'fear', st.fear), 'fear']
+  ].filter(p => p[0] && kindAllows(p[0].kind));
+  const cards = picks.map(p => cardHTML(p[0], { col: p[1], rollLabel: p[1] === 'hope' ? st.hope : st.fear }));
 
-  const critBox = crit ? '<div class="crit"><b>' + esc(t().crit) + '</b><span>' + esc(t().critSub) + '</span>' +
-    '<button type="button" class="btn sm" data-act="toggleTable" style="margin-left:auto">' +
-      esc(st.showTable ? t().hideFullTable : t().showFullTable) + '</button></div>' : '';
+  const nextRar = RARITIES5[RARITIES5.indexOf(st.rarity) + 1];
+  const critBox = crit
+    ? '<div class="crit">' +
+        '<div class="crit-txt">' +
+          '<b>' + esc(t().crit) + '</b>' +
+          '<span>' + esc(t().critSub) + '</span>' +
+          '<span class="crit-tbl">' + esc(t().critFrom) + ' <em>' + esc(rarityLabel(st.rarity)) + '</em></span>' +
+        '</div>' +
+        '<div class="crit-acts">' +
+          (nextRar ? '<button type="button" class="btn sm" data-act="rarity" data-val="' + nextRar + '">' +
+            esc(t().bumpTo) + ' ' + esc(rarityLabel(nextRar)) + '</button>' : '') +
+          '<button type="button" class="btn sm ghost" data-act="gotoTable">' + esc(t().openTable) + '</button>' +
+        '</div>' +
+      '</div>'
+    : '';
 
-  const fullTable = (crit && st.showTable) ? altTableHTML(st.rarity, st.filter) : '';
+  const fullTable = crit ? altTableHTML(st.rarity) : '';
 
   return pageHead('alt') +
   '<div class="panel">' +
@@ -454,19 +481,16 @@ function renderAlt(){
         '<div style="display:flex;align-items:flex-end"><button type="button" class="btn primary" data-act="rollDuality">' + ICON_DIE + esc(t().rollDuality) + '</button></div>' +
       '</div>' +
     '</div>' +
-    '<div class="field"><span class="lbl">' + esc(t().filter) + '</span>' +
-      '<div class="chips">' +
-        ['all','items','cons'].map(f => '<button type="button" class="chip' + (f === st.filter ? ' on' : '') + '" data-act="filter" data-val="' + f + '">' +
-          esc(f === 'all' ? t().fAll : f === 'items' ? t().fItems : t().fCons) + '</button>').join('') +
-      '</div>' +
-    '</div>' +
+    kindChips() +
   '</div>' +
   '<div class="results">' + critBox + orGrid(cards) + fullTable + '</div>';
 }
 
-function altTableHTML(rarity, filter){
+function rarityLabel(r){ return t()[RAR_KEY[r]] + ' · ' + t().tier + ' ' + TIERS[r]; }
+
+function altTableHTML(rarity){
   const blocks = [];
-  const kinds = filter === 'items' ? ['item'] : filter === 'cons' ? ['consumable'] : ['item','consumable'];
+  const kinds = ['item','consumable'].filter(k => kindAllows(k));
   kinds.forEach(kind => {
     const rows = [];
     for (let i = 0; i < 12; i++) {
@@ -475,7 +499,7 @@ function altTableHTML(rarity, filter){
         '<td>' + (h ? '<button type="button" data-open="' + esc(h.id) + '">' + esc(nameOf(h)) + '</button>' : '—') + '</td>' +
         '<td>' + (f ? '<button type="button" data-open="' + esc(f.id) + '">' + esc(nameOf(f)) + '</button>' : '—') + '</td></tr>');
     }
-    blocks.push('<div style="margin-top:18px"><span class="lbl">' + esc(kind === 'item' ? t().item : t().cons) + ' · ' + esc(t()[RAR_KEY[rarity]]) + '</span>' +
+    blocks.push('<div style="margin-top:18px"><span class="lbl">' + esc(kind === 'item' ? t().item : t().cons) + ' · ' + esc(rarityLabel(rarity)) + '</span>' +
       '<div class="tblwrap"><table class="alttable"><thead><tr><th>#</th><th class="h">' + esc(t().hope) + '</th><th class="f">' + esc(t().fear) + '</th></tr></thead><tbody>' +
       rows.join('') + '</tbody></table></div></div>');
   });
@@ -618,12 +642,15 @@ function renderSearch(){
   if (!q) {
     body = '<div class="empty">' + esc(S.lang === 'ru' ? 'Начните вводить запрос' : 'Start typing') + '</div>';
   } else {
-    const res = ALL.filter(x => matches(x, q)).slice(0, 300);
+    const res = ALL.filter(x => kindAllows(x.kind) && matches(x, q)).slice(0, 300);
     body = res.length ? '<div class="rows">' + res.map(rowHTML).join('') + '</div>'
                       : '<div class="empty">' + esc(t().nothing) + '</div>';
   }
   return pageHead('search') +
-    '<div class="toolbar"><div class="grow"><input type="search" id="sq" value="' + esc(S.search.q) + '" placeholder="' + esc(t().searchPh) + '" autofocus></div></div>' +
+    '<div class="panel" style="margin-bottom:16px">' +
+      '<div class="field"><input type="search" id="sq" value="' + esc(S.search.q) + '" placeholder="' + esc(t().searchPh) + '" autofocus></div>' +
+      kindChips() +
+    '</div>' +
     body;
 }
 
@@ -780,12 +807,15 @@ document.addEventListener('click', function (e) {
   const st = stateForRoute();
   const a = act.dataset.act, val = act.dataset.val;
 
-  if (a === 'rarity') { st.rarity = val; if (S.route === 'roll/alt') S.alt.showTable = false; render(); return; }
-  if (a === 'filter') { S.alt.filter = val; render(); return; }
+  if (a === 'rarity') { st.rarity = val; render(); return; }
+  if (a === 'kind')   { S.kind = val; render(); return; }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   if (a === 'table')  { S.tables.t = val; S.tables.q = ''; render(); return; }
   if (a === 'view')   { S.tables.view = val; render(); return; }
-  if (a === 'toggleTable') { S.alt.showTable = !S.alt.showTable; render(); return; }
+  if (a === 'gotoTable') {
+    S.tables.t = S.kind === 'cons' ? 'alt_consumable' : 'alt_item';
+    S.tables.q = ''; location.hash = '#/tables'; return;
+  }
 
   if (a === 'roll' || a === 'roll2') {
     if (S.route === 'roll/wondrous') { st.n = d(DATA.wondrous.length); }
@@ -798,7 +828,7 @@ document.addEventListener('click', function (e) {
   }
   if (a === 'roll100') { S.wond.n = clamp(d(100), 1, DATA.wondrous.length); render(); return; }
   if (a === 'rollDuality') {
-    S.alt.hope = d(12); S.alt.fear = d(12); S.alt.showTable = false;
+    S.alt.hope = d(12); S.alt.fear = d(12);
     render(); return;
   }
 });
