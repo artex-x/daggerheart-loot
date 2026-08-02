@@ -16,9 +16,7 @@ const ALL = Object.keys(DATA).reduce((a, k) => a.concat(DATA[k]), []);
 const S = {
   lang: 'ru',
   route: '',
-  core: { n: 1, rarity: 'common' },
-  hnf:  { n: 1, rarity: 'common' },
-  all:  { n: 1, rarity: 'common' },
+  std:  { n: 1, rarity: 'common', src: 'all' },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
@@ -30,7 +28,7 @@ const S = {
 /* ---------- i18n ---------- */
 const T = {
   ru: {
-    tabs: { core:'Корник', hnf:'Hope & Fear', all:'Всё сразу', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', tables:'Таблицы', search:'Поиск' },
+    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', tables:'Таблицы', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
@@ -43,7 +41,7 @@ const T = {
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     critFrom:'Выбор из таблицы:', bumpTo:'Поднять до',
     filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
-    community:'Сообщество',
+    community:'Сообщество', source:'Источник', both:'Оба',
     searchPh:'Поиск по названию или описанию (RU / EN)…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
@@ -54,9 +52,7 @@ const T = {
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
     pages: {
-      core:  ['Ролл по корнику', 'Введите результат броска d12 (или суммы нескольких d12) — получите предмет ИЛИ расходник под этим номером в таблицах Core Rulebook.'],
-      hnf:   ['Ролл по Hope &amp; Fear', 'Введите результат броска — получите предмет ИЛИ расходник под этим номером в таблицах дополнения Hope &amp; Fear.'],
-      all:   ['Ролл по всему контенту', 'Один результат броска — четыре варианта на выбор: предмет и расходник из корника и из Hope &amp; Fear.'],
+      std:   ['Обычные правила', 'Бросьте нужное число d12, сложите и введите результат — получите варианты под этим номером. Источником может быть корник, дополнение Hope &amp; Fear или оба сразу.'],
       alt:   ['Альтернативные таблицы', 'Выберите редкость и введите результат Костей Дуальности игрока. Колонка Надежды и колонка Страха дают разные варианты; при крите игрок выбирает что угодно из таблицы.'],
       wondrous: ['Wondrous Loot', 'Бросьте d100 и введите результат.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
@@ -71,7 +67,7 @@ const T = {
     }
   },
   en: {
-    tabs: { core:'Core', hnf:'Hope & Fear', all:'Everything', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', tables:'Tables', search:'Search' },
+    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', tables:'Tables', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
@@ -84,7 +80,7 @@ const T = {
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     critFrom:'Choose from table:', bumpTo:'Bump to',
     filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
-    community:'Community',
+    community:'Community', source:'Source', both:'Both',
     searchPh:'Search by name or description (RU / EN)…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
@@ -95,9 +91,7 @@ const T = {
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
     pages: {
-      core:  ['Core Rulebook roll', 'Enter your d12 (or summed d12s) result to get the item OR the consumable with that number from the Core Rulebook tables.'],
-      hnf:   ['Hope &amp; Fear roll', 'Enter your roll result to get the item OR the consumable with that number from the Hope &amp; Fear expansion.'],
-      all:   ['Roll across everything', 'One roll result, four options: item and consumable from Core and from Hope &amp; Fear.'],
+      std:   ['Standard rules', 'Roll the required number of d12s, sum them and enter the result to get the options under that number. The source can be the core book, the Hope &amp; Fear expansion, or both.'],
       alt:   ['Alternate tables', 'Pick a rarity and enter the player’s Duality Dice. The Hope column and the Fear column give different options; on a crit the player picks anything from the table.'],
       wondrous: ['Wondrous Loot', 'Roll d100 and enter the result.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
@@ -184,6 +178,7 @@ function fallback(text, done){
 const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
+const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
 
 /* ---------- share links ---------- */
@@ -389,14 +384,16 @@ function pickCards(items, opts){
     .map(p => cardHTML(p[0], p[1]));
 }
 
-/* ---- 1 & 2: Core / H&F ---- */
-function renderNumbered(key){
-  const st = S[key];
-  const src = key === 'core' ? 'core' : 'hnf';
-  const items = DATA[src + '_item'], cons = DATA[src + '_consumable'];
-  const it = items[st.n - 1], co = cons[st.n - 1];
+/* ---- 1: standard rules (Core + Hope & Fear share one d12 flow) ---- */
+const SOURCES = [['all','both'], ['core','srcCore'], ['hnf','srcHnf']];
 
-  return pageHead(key) +
+function renderStd(){
+  const st = S.std, n = st.n;
+  const pool = [];
+  if (st.src !== 'hnf')  pool.push(DATA.core_item[n-1], DATA.core_consumable[n-1]);
+  if (st.src !== 'core') pool.push(DATA.hnf_item[n-1],  DATA.hnf_consumable[n-1]);
+
+  return pageHead('std') +
   '<div class="panel">' +
     '<div class="field"><span class="lbl">' + esc(t().rarity) + ' · ' + esc(t().dice) + '</span>' +
       rarityChips(RARITIES4, st.rarity, 'rarity') +
@@ -408,33 +405,13 @@ function renderNumbered(key){
         '<button type="button" class="btn ghost" data-act="roll2">' + DICE[st.rarity][1] + 'd12</button>' +
       '</div>' +
     '</div>' +
+    '<div class="field"><span class="lbl">' + esc(t().source) + '</span><div class="chips">' +
+      SOURCES.map(sr => '<button type="button" class="chip' + (sr[0] === st.src ? ' on' : '') +
+        '" data-act="src" data-val="' + sr[0] + '">' + esc(t()[sr[1]]) + '</button>').join('') +
+    '</div></div>' +
     kindChips() +
   '</div>' +
-  '<div class="results">' + orGrid(pickCards([it, co])) + '</div>';
-}
-
-/* ---- 3: everything ---- */
-function renderAll(){
-  const st = S.all, n = st.n;
-  const cards = pickCards([
-    DATA.core_item[n-1], DATA.core_consumable[n-1],
-    DATA.hnf_item[n-1],  DATA.hnf_consumable[n-1]
-  ]);
-  return pageHead('all') +
-  '<div class="panel">' +
-    '<div class="field"><span class="lbl">' + esc(t().rarity) + ' · ' + esc(t().dice) + '</span>' +
-      rarityChips(RARITIES4, st.rarity, 'rarity') +
-      '<p class="hint">' + esc(t().diceGuide[st.rarity]) + '</p>' +
-    '</div>' +
-    '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–60)</span>' +
-      '<div class="numrow">' + numBox('n', st.n, 1, 60) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(t().roll) + ' ' + DICE[st.rarity][0] + 'd12</button>' +
-        '<button type="button" class="btn ghost" data-act="roll2">' + DICE[st.rarity][1] + 'd12</button>' +
-      '</div>' +
-    '</div>' +
-    kindChips() +
-  '</div>' +
-  '<div class="results">' + orGrid(cards) + '</div>';
+  '<div class="results">' + orGrid(pickCards(pool)) + '</div>';
 }
 
 /* ---- 4: alternate tables ---- */
@@ -462,7 +439,8 @@ function renderAlt(){
           '<span class="crit-tbl">' + esc(t().critFrom) + ' <em>' + esc(rarityLabel(st.rarity)) + '</em></span>' +
         '</div>' +
         '<div class="crit-acts">' +
-          '<button type="button" class="btn sm primary" data-act="gotoTable">' + esc(t().openTable) + '</button>' +
+          '<a class="btn sm primary" target="_blank" rel="noopener" href="' + esc(tableHref(altTableId(), st.rarity)) + '">' +
+            esc(t().openTable) + ICON_EXT + '</a>' +
           (nextRar ? '<button type="button" class="btn sm" data-act="rarity" data-val="' + nextRar + '">' +
             esc(t().bumpTo) + ' ' + esc(rarityLabel(nextRar)) + '</button>' : '') +
         '</div>' +
@@ -483,6 +461,12 @@ function renderAlt(){
     kindChips() +
   '</div>' +
   '<div class="results">' + critBox + orGrid(cards) + '</div>';
+}
+
+function altTableId(){ return S.kind === 'cons' ? 'alt_consumable' : 'alt_item'; }
+/* Absolute so it survives target="_blank"; a bare "#/..." would just re-hash the opener */
+function tableHref(table, section){
+  return baseUrl() + (hosted() ? '' : 'index.html') + '#/tables/' + table + (section ? '/' + section : '');
 }
 
 function rarityLabel(r){ return t()[RAR_KEY[r]] + ' · ' + t().tier + ' ' + TIERS[r]; }
@@ -652,7 +636,7 @@ function renderItemPage(id){
   if (!it) {
     return '<h1 class="page-h">' + esc(t().notFound) + '</h1>' +
       '<p class="page-sub">' + esc(t().notFoundSub) + '</p>' +
-      '<a class="btn primary" href="#/roll/core">' + esc(t().toStart) + '</a>';
+      '<a class="btn primary" href="#/roll/std">' + esc(t().toStart) + '</a>';
   }
   const tdef = TABLE_DEFS.filter(x => x.id === tableIdOf(it))[0];
   const tname = tdef ? (S.lang === 'ru' ? tdef.ru : tdef.en) : '';
@@ -663,8 +647,10 @@ function renderItemPage(id){
     '<p class="page-sub">' + esc(where) + ' · ' + esc(t().rollNo) + ' ' + esc(it.roll) + '</p>' +
     '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
     '<div class="card-acts" style="margin-top:18px">' +
-      '<a class="btn ghost" href="#/tables">' + esc(t().openTable) + '</a>' +
-      '<a class="btn ghost" href="#/roll/core">' + esc(t().toStart) + '</a>' +
+      '<a class="btn ghost" target="_blank" rel="noopener" href="' +
+        esc(tableHref(tableIdOf(it), it.src === 'community' ? it.community : '')) + '">' +
+        esc(t().openTable) + ICON_EXT + '</a>' +
+      '<a class="btn ghost" href="#/roll/std">' + esc(t().toStart) + '</a>' +
     '</div>';
 }
 
@@ -672,9 +658,7 @@ function renderItemPage(id){
    ROUTER
    ============================================================ */
 const ROUTES = {
-  'roll/core': renderNumbered.bind(null, 'core'),
-  'roll/hnf': renderNumbered.bind(null, 'hnf'),
-  'roll/all': renderAll,
+  'roll/std': renderStd,
   'roll/alt': renderAlt,
   'roll/wondrous': renderWond,
   'roll/community': renderComm,
@@ -682,28 +666,31 @@ const ROUTES = {
   'search': renderSearch
 };
 const TAB_LIST = [
-  ['roll/core','core','1'], ['roll/hnf','hnf','2'], ['roll/all','all','3'],
-  ['roll/alt','alt','4'], ['roll/wondrous','wondrous','5'], ['roll/community','community','6'],
+  ['roll/std','std','1'], ['roll/alt','alt','2'],
+  ['roll/wondrous','wondrous','3'], ['roll/community','community','4'],
   ['tables','tables',''], ['search','search','']
 ];
+/* links handed out before the three d12 modes were merged */
+const LEGACY_ROUTES = { 'roll/core':'roll/std', 'roll/hnf':'roll/std', 'roll/all':'roll/std' };
 
 const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z_]+))?$/;
 
 function currentRoute(){
   const h = (location.hash || '').replace(/^#\/?/, '');
   if (/^i\/[\w-]+$/.test(h)) return h;
+  if (LEGACY_ROUTES[h]) { S.std.src = h === 'roll/core' ? 'core' : h === 'roll/hnf' ? 'hnf' : 'all'; return LEGACY_ROUTES[h]; }
   const m = TABLES_RE.exec(h);
   if (m) {
     if (m[1] && TABLE_DEFS.some(d => d.id === m[1])) S.tables.t = m[1];
     S.tables.anchor = m[2] || '';
     return 'tables';
   }
-  return ROUTES[h] ? h : 'roll/core';
+  return ROUTES[h] ? h : 'roll/std';
 }
 function renderTabs(){
   const cur = currentRoute();
   $('#tabs').innerHTML = TAB_LIST.map((tab, i) =>
-    '<a href="#/' + tab[0] + '" class="' + (tab[0] === cur ? 'on' : '') + (i === 6 ? ' sep' : '') + '">' +
+    '<a href="#/' + tab[0] + '" class="' + (tab[0] === cur ? 'on' : '') + (i === 4 ? ' sep' : '') + '">' +
       (tab[2] ? '<span class="n">' + tab[2] + '</span>' : '') + esc(t().tabs[tab[1]]) +
     '</a>').join('');
 }
@@ -751,9 +738,7 @@ function render(){
    ============================================================ */
 function stateForRoute(){
   const r = S.route;
-  if (r === 'roll/core') return S.core;
-  if (r === 'roll/hnf') return S.hnf;
-  if (r === 'roll/all') return S.all;
+  if (r === 'roll/std') return S.std;
   if (r === 'roll/alt') return S.alt;
   if (r === 'roll/wondrous') return S.wond;
   if (r === 'roll/community') return S.comm;
@@ -813,13 +798,9 @@ document.addEventListener('click', function (e) {
 
   if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'kind')   { S.kind = val; render(); return; }
+  if (a === 'src')    { S.std.src = val; render(); return; }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   if (a === 'view')   { S.tables.view = val; render(); return; }
-  if (a === 'gotoTable') {
-    S.tables.q = '';
-    location.hash = '#/tables/' + (S.kind === 'cons' ? 'alt_consumable' : 'alt_item') + '/' + S.alt.rarity;
-    return;
-  }
 
   if (a === 'roll' || a === 'roll2') {
     if (S.route === 'roll/wondrous') { st.n = d(DATA.wondrous.length); }
