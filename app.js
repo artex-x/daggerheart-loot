@@ -48,8 +48,9 @@ const T = {
     searchPh:'Поиск по названию или описанию (RU / EN)…',
     nothing:'Ничего не найдено',
     altNames:'Названия альтернативных колонок',
-    altVariants:'Другие варианты перевода',
-    share:'Поделиться', copyLink:'Ссылка', linkCopied:'Ссылка скопирована',
+    sendAll:'Отправить', copyText:'Текст', copyImg:'Картинка',
+    imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
+    copyLink:'Ссылка', linkCopied:'Ссылка скопирована',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
@@ -93,8 +94,9 @@ const T = {
     searchPh:'Search by name or description (RU / EN)…',
     nothing:'Nothing found',
     altNames:'Alternate column names',
-    altVariants:'Alternate Russian names',
-    share:'Share', copyLink:'Link', linkCopied:'Link copied',
+    sendAll:'Send', copyText:'Text', copyImg:'Image',
+    imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
+    copyLink:'Link', linkCopied:'Link copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
@@ -186,23 +188,84 @@ function fallback(text, done){
 }
 
 const ICON_COPY = '<svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
+const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
+const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
 
 /* ---------- share links ---------- */
-function baseUrl(){ return location.href.split('#')[0]; }
-function itemUrl(id){ return baseUrl() + '#/i/' + id; }
+function baseUrl(){ return location.href.split('#')[0].replace(/index\.html$/, ''); }
+function hosted(){ return /^https?:$/.test(location.protocol); }
+/* On a real host, link to the static stub in i/ — it carries per-item Open Graph
+   tags, so Telegram/Discord unfurl the picture, name and description by itself.
+   Opened from disk there is no stub, so fall back to the in-app hash route. */
+function itemUrl(id){ return hosted() ? baseUrl() + 'i/' + id + '.html' : baseUrl() + 'index.html#/i/' + id; }
 function canShare(){ return typeof navigator !== 'undefined' && !!navigator.share; }
+
 function shareItem(id){
   const it = BY_ID[id];
   if (!it) return;
   const url = itemUrl(id);
   if (canShare()) {
-    navigator.share({ title: nameOf(it), text: nameOf(it) + ' — ' + descOf(it), url: url })
-      .catch(() => copyText(url));
+    navigator.share({ title: nameOf(it), text: nameOf(it) + '\n\n' + descOf(it), url: url })
+      .catch(() => {});
   } else {
     copyText(url);
     toast(t().linkCopied);
   }
+}
+
+/* ---------- image ---------- */
+function imageBlob(it){
+  return new Promise(function (resolve, reject) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      c.toBlob(function (b) { b ? resolve(b) : reject(new Error('toBlob failed')); }, 'image/png');
+    };
+    img.onerror = reject;
+    img.src = 'img/' + it.img;
+  });
+}
+
+function downloadImage(it){
+  imageBlob(it).then(function (blob) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nameOf(it).replace(/[\\/:*?"<>|]/g, '') + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    toast(t().imgSaved);
+  }).catch(function () { toast(t().imgFailed); });
+}
+
+/* Copy the picture itself to the clipboard. WebP is not a clipboard format the
+   browsers accept, so it goes through a canvas and comes out as PNG. */
+function copyImage(it){
+  const supported = typeof ClipboardItem !== 'undefined' &&
+                    navigator.clipboard && navigator.clipboard.write && window.isSecureContext;
+  if (!supported) { downloadImage(it); return; }
+  // Safari drops the user gesture unless the promise is handed to ClipboardItem directly
+  navigator.clipboard.write([ new ClipboardItem({ 'image/png': imageBlob(it) }) ])
+    .then(function () { toast(t().imgCopied); })
+    .catch(function () { downloadImage(it); });
+}
+
+/* Native share sheet carrying the actual picture — on a phone this puts the
+   image and the caption into Telegram in one step. */
+function shareImage(it){
+  imageBlob(it).then(function (blob) {
+    const file = new File([blob], nameOf(it).replace(/[\\/:*?"<>|]/g, '') + '.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      return navigator.share({ files: [file], text: nameOf(it) + '\n\n' + descOf(it) });
+    }
+    copyImage(it);
+  }).catch(function () { copyImage(it); });
+}
+function canShareFiles(){
+  return !!(navigator.canShare && navigator.share && window.File);
 }
 const ICON_DIE  = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="flex:none"><path d="M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.3 7.1 3.5-7.1 3.6-7.1-3.6L12 4.3zM4 9.2l7 3.5v7.1l-7-3.5V9.2zm9 10.6v-7.1l7-3.5v7.1l-7 3.5z"/></svg>';
 
@@ -223,15 +286,12 @@ function cardHTML(it, opt){
     ? '<span class="card-roll">' + esc(opt.rollLabel || it.roll) + '</span>' : '';
   const missing = !hasRu(it) && S.lang === 'ru'
     ? '<p class="card-alt"><b>' + esc('Перевода нет — показан оригинал') + '</b></p>' : '';
-  const variants = it.ru_alt
-    ? '<p class="card-alt" style="margin-top:8px"><b>' + esc(t().altVariants) + ':</b> ' + esc(it.ru_alt) + '</p>' : '';
-  const altBlock = (an || ad || variants) ? (
+  const altBlock = (an || ad) ? (
     '<details class="card-orig"' + (opt.openOrig ? ' open' : '') + '>' +
       '<summary>' + esc(S.lang === 'ru' ? t().showOrig : t().showRu) + '</summary>' +
       '<div class="in">' +
         (an ? '<h4>' + esc(an) + '</h4>' : '') +
         (ad ? '<p>' + esc(ad) + '</p>' : '') +
-        variants +
       '</div>' +
     '</details>') : '';
 
@@ -250,8 +310,12 @@ function cardHTML(it, opt){
       missing +
       '<p class="card-desc">' + esc(ds) + '</p>' +
       '<div class="card-acts">' +
-        '<button type="button" class="btn sm" data-copy-full="' + esc(it.id) + '">' + ICON_COPY + ' ' + esc(t().copy) + '</button>' +
-        '<button type="button" class="btn sm" data-share="' + esc(it.id) + '">' + ICON_LINK + ' ' + esc(canShare() ? t().share : t().copyLink) + '</button>' +
+        (canShareFiles()
+          ? '<button type="button" class="btn sm primary" data-share-img="' + esc(it.id) + '">' + ICON_SHARE + ' ' + esc(t().sendAll) + '</button>'
+          : '') +
+        '<button type="button" class="btn sm" data-copy-full="' + esc(it.id) + '">' + ICON_COPY + ' ' + esc(t().copyText) + '</button>' +
+        '<button type="button" class="btn sm" data-copy-img="' + esc(it.id) + '">' + ICON_IMG + ' ' + esc(t().copyImg) + '</button>' +
+        '<button type="button" class="btn sm" data-share="' + esc(it.id) + '">' + ICON_LINK + ' ' + esc(t().copyLink) + '</button>' +
         (opt.noOpen ? '' : '<a class="btn sm ghost" href="#/i/' + esc(it.id) + '">' + esc(t().openPage) + '</a>') +
       '</div>' +
       altBlock +
@@ -699,6 +763,12 @@ document.addEventListener('click', function (e) {
 
   const sh = e.target.closest('[data-share]');
   if (sh) { shareItem(sh.dataset.share); return; }
+
+  const ci = e.target.closest('[data-copy-img]');
+  if (ci) { copyImage(BY_ID[ci.dataset.copyImg]); return; }
+
+  const si = e.target.closest('[data-share-img]');
+  if (si) { shareImage(BY_ID[si.dataset.shareImg]); return; }
 
   const step = e.target.closest('[data-step]');
   if (step) {
