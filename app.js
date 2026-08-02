@@ -22,7 +22,7 @@ const S = {
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
-  tables: { t: 'core_item', q: '', view: 'list' },
+  tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
   kind: 'all'   // shared item/consumable filter, applies on every page that can show both
 };
@@ -40,7 +40,7 @@ const T = {
     viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
     common:'Обычная', uncommon:'Необычная', rare:'Редкая', veryRare:'Очень редкая', legendary:'Легендарная',
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
-    crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы ниже. Мастер может разрешить подняться на ступень редкости выше.',
+    crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     critFrom:'Выбор из таблицы:', bumpTo:'Поднять до',
     filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
     community:'Сообщество',
@@ -81,7 +81,7 @@ const T = {
     viewGrid:'Grid', viewList:'List', view:'View',
     common:'Common', uncommon:'Uncommon', rare:'Rare', veryRare:'Very rare', legendary:'Legendary',
     hopeDie:'Hope Die', fearDie:'Fear Die',
-    crit:'Critical success!', critSub:'The player takes any entry from the table below. The GM may allow bumping up one rarity.',
+    crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     critFrom:'Choose from table:', bumpTo:'Bump to',
     filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
     community:'Community',
@@ -462,14 +462,13 @@ function renderAlt(){
           '<span class="crit-tbl">' + esc(t().critFrom) + ' <em>' + esc(rarityLabel(st.rarity)) + '</em></span>' +
         '</div>' +
         '<div class="crit-acts">' +
+          '<button type="button" class="btn sm primary" data-act="gotoTable">' + esc(t().openTable) + '</button>' +
           (nextRar ? '<button type="button" class="btn sm" data-act="rarity" data-val="' + nextRar + '">' +
             esc(t().bumpTo) + ' ' + esc(rarityLabel(nextRar)) + '</button>' : '') +
-          '<button type="button" class="btn sm ghost" data-act="gotoTable">' + esc(t().openTable) + '</button>' +
         '</div>' +
       '</div>'
     : '';
 
-  const fullTable = crit ? altTableHTML(st.rarity) : '';
 
   return pageHead('alt') +
   '<div class="panel">' +
@@ -483,28 +482,11 @@ function renderAlt(){
     '</div>' +
     kindChips() +
   '</div>' +
-  '<div class="results">' + critBox + orGrid(cards) + fullTable + '</div>';
+  '<div class="results">' + critBox + orGrid(cards) + '</div>';
 }
 
 function rarityLabel(r){ return t()[RAR_KEY[r]] + ' · ' + t().tier + ' ' + TIERS[r]; }
 
-function altTableHTML(rarity){
-  const blocks = [];
-  const kinds = ['item','consumable'].filter(k => kindAllows(k));
-  kinds.forEach(kind => {
-    const rows = [];
-    for (let i = 0; i < 12; i++) {
-      const h = BY_ID[ALT[kind][rarity].hope[i]], f = BY_ID[ALT[kind][rarity].fear[i]];
-      rows.push('<tr><td class="num">' + (i+1) + '</td>' +
-        '<td>' + (h ? '<button type="button" data-open="' + esc(h.id) + '">' + esc(nameOf(h)) + '</button>' : '—') + '</td>' +
-        '<td>' + (f ? '<button type="button" data-open="' + esc(f.id) + '">' + esc(nameOf(f)) + '</button>' : '—') + '</td></tr>');
-    }
-    blocks.push('<div style="margin-top:18px"><span class="lbl">' + esc(kind === 'item' ? t().item : t().cons) + ' · ' + esc(rarityLabel(rarity)) + '</span>' +
-      '<div class="tblwrap"><table class="alttable"><thead><tr><th>#</th><th class="h">' + esc(t().hope) + '</th><th class="f">' + esc(t().fear) + '</th></tr></thead><tbody>' +
-      rows.join('') + '</tbody></table></div></div>');
-  });
-  return blocks.join('');
-}
 
 /* ---- 5: wondrous ---- */
 function renderWond(){
@@ -551,11 +533,13 @@ function renderComm(){
 }
 
 /* ---- tables browse ---- */
+function sectionId(key){ return 'sec-' + key; }
+
 function renderTables(){
   const st = S.tables;
   const chips = '<div class="chips">' + TABLE_DEFS.map(d0 =>
-    '<button type="button" class="chip' + (d0.id === st.t ? ' on' : '') + '" data-act="table" data-val="' + d0.id + '">' +
-    esc(S.lang === 'ru' ? d0.ru : d0.en) + '</button>').join('') + '</div>';
+    '<a class="chip' + (d0.id === st.t ? ' on' : '') + '" href="#/tables/' + d0.id + '">' +
+    esc(S.lang === 'ru' ? d0.ru : d0.en) + '</a>').join('') + '</div>';
 
   let body;
   if (st.t.indexOf('alt_') === 0) {
@@ -568,7 +552,8 @@ function renderTables(){
           '<td><button type="button" data-open="' + esc(h.id) + '">' + esc(nameOf(h)) + '</button></td>' +
           '<td><button type="button" data-open="' + esc(f.id) + '">' + esc(nameOf(f)) + '</button></td></tr>');
       }
-      return '<div style="margin-top:20px"><span class="lbl">' + esc(t()[RAR_KEY[r]]) + '</span>' +
+      return '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
+        '<span class="lbl">' + esc(rarityLabel(r)) + '</span>' +
         '<div class="tblwrap"><table class="alttable"><thead><tr><th>#</th><th class="h">' + esc(t().hope) + '</th><th class="f">' + esc(t().fear) + '</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table></div></div>';
     }).join('');
@@ -580,7 +565,8 @@ function renderTables(){
       body = COMMUNITIES.map(c => {
         const sub = list.filter(x => x.community === c[0]);
         if (!sub.length) return '';
-        return '<div style="margin-top:22px"><span class="lbl">' + esc(S.lang === 'ru' ? c[1] + ' · ' + c[0] : c[0]) + '</span>' +
+        return '<div class="tsection" id="' + sectionId(c[0]) + '" style="margin-top:22px">' +
+          '<span class="lbl">' + esc(S.lang === 'ru' ? c[1] + ' · ' + c[0] : c[0]) + '</span>' +
           renderList(sub) + '</div>';
       }).join('');
     } else {
@@ -701,9 +687,17 @@ const TAB_LIST = [
   ['tables','tables',''], ['search','search','']
 ];
 
+const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z_]+))?$/;
+
 function currentRoute(){
   const h = (location.hash || '').replace(/^#\/?/, '');
   if (/^i\/[\w-]+$/.test(h)) return h;
+  const m = TABLES_RE.exec(h);
+  if (m) {
+    if (m[1] && TABLE_DEFS.some(d => d.id === m[1])) S.tables.t = m[1];
+    S.tables.anchor = m[2] || '';
+    return 'tables';
+  }
   return ROUTES[h] ? h : 'roll/core';
 }
 function renderTabs(){
@@ -739,6 +733,16 @@ function render(){
       }
     }
     render._focus = null;
+  }
+
+  if (S.tables.anchor && r === 'tables') {
+    const target = document.getElementById(sectionId(S.tables.anchor));
+    S.tables.anchor = '';
+    if (target) {
+      if (target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('flash');
+      setTimeout(function () { target.classList.remove('flash'); }, 1600);
+    }
   }
 }
 
@@ -810,11 +814,11 @@ document.addEventListener('click', function (e) {
   if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'kind')   { S.kind = val; render(); return; }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
-  if (a === 'table')  { S.tables.t = val; S.tables.q = ''; render(); return; }
   if (a === 'view')   { S.tables.view = val; render(); return; }
   if (a === 'gotoTable') {
-    S.tables.t = S.kind === 'cons' ? 'alt_consumable' : 'alt_item';
-    S.tables.q = ''; location.hash = '#/tables'; return;
+    S.tables.q = '';
+    location.hash = '#/tables/' + (S.kind === 'cons' ? 'alt_consumable' : 'alt_item') + '/' + S.alt.rarity;
+    return;
   }
 
   if (a === 'roll' || a === 'roll2') {
