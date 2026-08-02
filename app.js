@@ -22,7 +22,7 @@ const S = {
   alt:  { rarity: 'common', hope: 1, fear: 2, filter: 'all', showTable: false },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
-  tables: { t: 'core_item', q: '', view: 'grid' },
+  tables: { t: 'core_item', q: '', view: 'list' },
   search: { q: '' }
 };
 
@@ -568,8 +568,8 @@ function renderTables(){
     '<div class="toolbar" style="margin-top:16px">' +
       '<div class="grow"><input type="search" id="tq" value="' + esc(st.q) + '" placeholder="' + esc(t().searchPh) + '"></div>' +
       '<div class="seg small" role="group" aria-label="' + esc(t().view) + '">' +
-        '<button type="button" data-act="view" data-val="grid"' + (st.view === 'grid' ? ' class="on"' : '') + '>' + esc(t().viewGrid) + '</button>' +
         '<button type="button" data-act="view" data-val="list"' + (st.view === 'list' ? ' class="on"' : '') + '>' + esc(t().viewList) + '</button>' +
+        '<button type="button" data-act="view" data-val="grid"' + (st.view === 'grid' ? ' class="on"' : '') + '>' + esc(t().viewGrid) + '</button>' +
       '</div>' +
     '</div>';
 
@@ -751,10 +751,7 @@ document.addEventListener('click', function (e) {
 
   const cf = e.target.closest('[data-copy-full]');
   if (cf) {
-    const it = BY_ID[cf.dataset.copyFull];
-    // only append the URL when the app is actually hosted — a file:// path is useless to send
-    const tail = /^https?:$/.test(location.protocol) ? '\n\n' + itemUrl(it.id) : '';
-    copyText(shareText(it) + tail);
+    copyText(shareText(BY_ID[cf.dataset.copyFull]));
     return;
   }
 
