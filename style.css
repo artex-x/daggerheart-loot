@@ -437,10 +437,14 @@ input::placeholder{color:var(--muted2)}
 .lrow-meta input{
   width:64px;height:30px;padding:0 8px;border-radius:7px;
   background:var(--bg2);border:1px solid var(--line2);color:var(--txt);
-  font:600 13px/1 var(--mono);text-align:center;-moz-appearance:textfield;
+  font:600 13px/1 var(--mono);text-align:center;
 }
-.lrow-meta input::-webkit-outer-spin-button,
-.lrow-meta input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+/* quantity keeps the native stepper — free on desktop, absent on phones where
+   the numeric keypad is faster anyway. Gold has no sensible step, so no spinner. */
+.lrow-meta input[data-qty]{width:70px;padding-right:2px}
+.lrow-meta input[data-gold]{-moz-appearance:textfield}
+.lrow-meta input[data-gold]::-webkit-outer-spin-button,
+.lrow-meta input[data-gold]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .lrow-meta input:focus{outline:none;border-color:var(--gold)}
 .lrow-acts{flex:none;display:flex;flex-direction:column;border-left:1px solid var(--line)}
 .lrow-acts button{
