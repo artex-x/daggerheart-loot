@@ -40,7 +40,7 @@ const T = {
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
-    rollResult:'Результат броска', roll:'Бросить', rollDuality:'Бросить кости',
+    rollResult:'Результат броска', roll:'Бросить', randomIn:'Случайно', rollDuality:'Бросить кости',
     copyName:'Скопировать название', copied:'Скопировано',
     rarity:'Редкость', dice:'Кости', tier:'Ранг',
     viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
@@ -100,7 +100,7 @@ const T = {
         'Автор таблиц: <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a>. Источник: <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">пост на Reddit</a>.'
       ],
       wondrous: [
-        'В таблице 119 позиций вместо ста: столько есть иллюстраций. Кнопка d100 бросает 1–100, кнопка d119 — по всей таблице.',
+        'В таблице 119 позиций вместо ста: столько есть иллюстраций. Обычной кости на такой диапазон нет, поэтому кнопка выбирает позицию случайно; если бросаете d100 за столом — просто впишите результат.',
         'Позиции перечислены по алфавиту, а не по силе. Большинство из них слабой или средней силы.',
         'Некоторые предметы можно переработать в более сильные — это указано в описании. Мастер может потребовать для этого бросок Искусности или Знания.',
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a>.'
@@ -119,7 +119,7 @@ const T = {
     pages: {
       std:   ['Обычные правила', 'Бросок по таблицам корника и дополнения Hope &amp; Fear.'],
       alt:   ['Альтернативные таблицы', 'Бросок Костей Дуальности по объединённым таблицам обеих книг.'],
-      wondrous: ['Wondrous Loot', 'Бросьте d100 и введите результат.'],
+      wondrous: ['Wondrous Loot', 'Введите результат броска или получите случайную позицию.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком — можно листать вручную, искать и открывать карточки.'],
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
@@ -131,7 +131,7 @@ const T = {
     or:'OR',
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
-    rollResult:'Roll result', roll:'Roll', rollDuality:'Roll the dice',
+    rollResult:'Roll result', roll:'Roll', randomIn:'Random', rollDuality:'Roll the dice',
     copyName:'Copy name', copied:'Copied',
     rarity:'Rarity', dice:'Dice', tier:'Tier',
     viewGrid:'Grid', viewList:'List', view:'View',
@@ -191,7 +191,7 @@ const T = {
         'Tables by <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a>. Source: <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">the Reddit post</a>.'
       ],
       wondrous: [
-        'The table holds 119 entries rather than a hundred — that is how many illustrations exist. The d100 button rolls 1–100, the d119 button covers the whole table.',
+        'The table holds 119 entries rather than a hundred — that is how many illustrations exist. No physical die covers that range, so the button picks at random; if you roll d100 at the table, just type the result in.',
         'Entries are listed alphabetically, not by power level, and most are of low to moderate power.',
         'Some entries can be crafted into stronger ones, as noted in their description. The GM may require a Finesse or Knowledge roll to do so.',
         'Source: the <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a> supplement.'
@@ -210,7 +210,7 @@ const T = {
     pages: {
       std:   ['Standard rules', 'A roll over the core book and the Hope &amp; Fear tables.'],
       alt:   ['Alternate tables', 'Pick a rarity and enter the player’s Duality Dice. The Hope column and the Fear column give different options; on a crit the player picks anything from the table.'],
-      wondrous: ['Wondrous Loot', 'Roll d100 and enter the result.'],
+      wondrous: ['Wondrous Loot', 'Enter your roll result, or pick a random entry.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full — browse, search and open cards.'],
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
@@ -226,6 +226,13 @@ const RAR_KEY = { common:'common', uncommon:'uncommon', rare:'rare', very_rare:'
 /* Russian needs the genitive after "поднять до" */
 const RAR_GEN_RU = { common:'Обычной', uncommon:'Необычной', rare:'Редкой', very_rare:'Очень редкой', legendary:'Легендарной' };
 const DICE = { common:[1,2], uncommon:[2,3], rare:[3,4], legendary:[4,5] };
+const REAL_DICE = [4, 6, 8, 10, 12, 20, 100];
+/* d119 is not a die anyone owns, so call it what it is: a random pick */
+function rollLabel(n){
+  return REAL_DICE.indexOf(n) >= 0
+    ? t().roll + ' d' + n
+    : t().randomIn + ' 1–' + n;
+}
 /* tier recommendations printed in the Alternate Loot & Consumable Tables */
 const TIERS = { common:'1-2', uncommon:'1-2', rare:'2-3', very_rare:'3-4', legendary:'3-4' };
 const COMMUNITIES = [
@@ -797,8 +804,7 @@ function renderWond(){
   '<div class="panel">' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–' + max + ')</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, max) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(t().roll) + ' d' + max + '</button>' +
-        '<button type="button" class="btn ghost" data-act="roll100">d100</button>' +
+        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(max)) + '</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -820,7 +826,7 @@ function renderComm(){
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–10)</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, 10) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(t().roll) + ' d10</button>' +
+        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(10)) + '</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -1041,7 +1047,7 @@ function renderOneList(id){
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
     storageWarning() +
-    (items.length ? listRollPanel(l, items) : '') +
+    (items.length > 1 ? listRollPanel(l, items) : '') +
     (items.length
       ? '<div class="rows lrows" style="margin-top:16px">' +
           items.map(function (it, i) { return listRowHTML(l, it, i); }).join('') +
@@ -1058,7 +1064,7 @@ function listRollPanel(l, items){
       '<span class="lbl">' + esc(t().rollInList) + '</span>' +
       '<div class="numrow">' +
         '<button type="button" class="btn primary" data-act="rollList" data-val="' + esc(l.id) + '">' +
-          ICON_DIE + esc(t().roll) + ' d' + items.length + '</button>' +
+          ICON_DIE + esc(rollLabel(items.length)) + '</button>' +
         (hit ? '<button type="button" class="btn ghost" data-act="clearRoll">' + esc(t().clear) + '</button>' : '') +
       '</div>' +
     '</div>' +
@@ -1480,7 +1486,6 @@ document.addEventListener('click', function (e) {
     }
     render(); return;
   }
-  if (a === 'roll100') { S.wond.n = clamp(d(100), 1, DATA.wondrous.length); render(); return; }
   if (a === 'rollDuality') {
     S.alt.hope = d(12); S.alt.fear = d(12);
     render(); return;
