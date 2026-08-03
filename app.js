@@ -299,10 +299,14 @@ function shareText(it, skip){
 }
 function shareHtml(it, skip){
   return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)) +
-    extraBlocks(it, skip).map(function (b) {
-      return '<br><br><b>' + esc(b.head) + '</b><br>' + esc(b.body);
-    }).join('');
+    extraBlocks(it, skip).map(blockHtml).join('');
 }
+/* Italic, not bold: these blocks belong to the item above them. Bold made them
+   read as separate entries when several items were pasted at once. */
+function blockHtml(b){
+  return '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
+}
+const lines = s => esc(s).replace(/\n/g, '<br>');
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
 
 /* What travels with an item when it is copied or shared: the full text of the
@@ -332,10 +336,6 @@ function craftRows(it){
   if (from) rows.push({ label: t().craftFrom, name: nameOf(from), id: from.id });
   return rows;
 }
-function craftText(it){
-  return craftRows(it).map(r => r.label + ': ' + r.name).join('\n');
-}
-
 /* ---------- referenced rulebook cards ---------- */
 function refRows(it){
   return (it.refs || []).map(function (k) {
@@ -353,7 +353,7 @@ function refHTML(it){
     return '<details><summary>' + ICON_REF +
         '<span class="ref-n">' + esc(r.name) + '</span>' +
         '<i class="ref-s">' + esc(r.sub) + '</i></summary>' +
-      '<p>' + esc(r.text) + '</p>' +
+      '<p>' + lines(r.text) + '</p>' +
       '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">daggerheart.su</a>' +
     '</details>';
   }).join('') + '</div>';
@@ -583,7 +583,7 @@ function listAsHtml(l){
   return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
     return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
       extraBlocks(it, skip).map(function (b) {
-        return '<br><b>' + esc(b.head) + '</b><br>' + esc(b.body);
+        return '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
       }).join('');
   }).join('<br><br>');
 }
