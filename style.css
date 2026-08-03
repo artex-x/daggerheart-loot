@@ -400,6 +400,7 @@ input::placeholder{color:var(--muted2)}
   animation:toastIn .2s ease both;
 }
 .toast[hidden]{display:none}
+.toast.err{background:var(--danger);color:#fff}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* ============ lists ============ */

@@ -71,7 +71,11 @@ const T = {
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
     imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
-    copyLink:'Скопировать ссылку', linkCopied:'Ссылка скопирована', copySection:'Скопировать ссылку на этот раздел',
+    copyLink:'Скопировать ссылку', copySection:'Скопировать ссылку на этот раздел',
+    linkCopied:'Ссылка скопирована', nameCopied:'Название скопировано', textCopied:'Текст скопирован',
+    tableLinkCopied:'Ссылка на таблицу скопирована', sectionLinkCopied:'Ссылка на раздел скопирована',
+    listLinkCopied:'Ссылка на список скопирована',
+    listCopied:'Список скопирован', copyFailed:'Не удалось скопировать',
     sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
@@ -131,7 +135,11 @@ const T = {
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
     imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
-    copyLink:'Copy link', linkCopied:'Link copied', copySection:'Copy a link to this section',
+    copyLink:'Copy link', copySection:'Copy a link to this section',
+    linkCopied:'Link copied', nameCopied:'Name copied', textCopied:'Text copied',
+    tableLinkCopied:'Table link copied', sectionLinkCopied:'Section link copied',
+    listLinkCopied:'List link copied',
+    listCopied:'List copied', copyFailed:'Could not copy',
     sImg:'Image', sText:'Text', tableLink:'Link to this table',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
@@ -207,38 +215,44 @@ function srcLabel(it){
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
 
-function toast(msg){
+function toast(msg, isError){
   const el = $('#toast');
-  el.textContent = msg; el.hidden = false;
+  el.textContent = msg;
+  el.classList.toggle('err', !!isError);
+  el.hidden = false;
   clearTimeout(toast._tm);
-  toast._tm = setTimeout(() => { el.hidden = true; }, 1500);
+  toast._tm = setTimeout(() => { el.hidden = true; }, isError ? 2600 : 1600);
 }
 
 /* Puts both flavours on the clipboard: rich-paste targets take the HTML,
    everything else falls back to the plain string. */
-function copyRich(html, plain){
+function copyRich(html, plain, msg){
   const supported = typeof ClipboardItem !== 'undefined' &&
                     navigator.clipboard && navigator.clipboard.write && window.isSecureContext;
-  if (!supported) { copyText(plain); return; }
+  if (!supported) { copyText(plain, msg); return; }
   navigator.clipboard.write([ new ClipboardItem({
     'text/html':  new Blob([html],  { type: 'text/html' }),
     'text/plain': new Blob([plain], { type: 'text/plain' })
-  }) ]).then(function () { toast(t().copied); }).catch(function () { copyText(plain); });
+  }) ]).then(function () { toast(msg || t().copied); })
+       .catch(function () { copyText(plain, msg); });
 }
 
-function copyText(text){
-  const done = () => toast(t().copied);
+function copyText(text, msg){
+  const done = () => toast(msg || t().copied);
+  const failed = () => toast(t().copyFailed, true);
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(done).catch(() => fallback(text, done));
-  } else fallback(text, done);
+    navigator.clipboard.writeText(text).then(done).catch(() => fallback(text, done, failed));
+  } else fallback(text, done, failed);
 }
-function fallback(text, done){
+function fallback(text, done, failed){
   const ta = document.createElement('textarea');
   ta.value = text; ta.setAttribute('readonly','');
   ta.style.cssText = 'position:fixed;top:-1000px';
   document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); done(); } catch(e){}
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
   document.body.removeChild(ta);
+  ok ? done() : failed();
 }
 
 const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
@@ -262,7 +276,7 @@ function loadLists(){
 }
 function saveLists(){
   try { localStorage.setItem(LS_KEY, JSON.stringify(S.lists)); return true; }
-  catch (e) { toast(t().saveFailed); return false; }
+  catch (e) { toast(t().saveFailed, true); return false; }
 }
 function storageWorks(){
   try { localStorage.setItem('dhloot.probe','1'); localStorage.removeItem('dhloot.probe'); return true; }
@@ -339,8 +353,7 @@ function shareItem(id){
     navigator.share({ title: nameForShare(it), text: shareText(it), url: url })
       .catch(() => {});
   } else {
-    copyText(url);
-    toast(t().linkCopied);
+    copyText(url, t().linkCopied);
   }
 }
 
@@ -372,7 +385,7 @@ function downloadImage(it){
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
     toast(t().imgSaved);
-  }).catch(function () { toast(t().imgFailed); });
+  }).catch(function () { toast(t().imgFailed, true); });
 }
 
 /* Copy the picture itself to the clipboard. WebP is not a clipboard format the
@@ -393,7 +406,7 @@ function copyImage(it){
    3. copy the link                          — everything else; the link still unfurls into
                                                 picture + name + description in Telegram */
 function sendItem(it){
-  if (!navigator.share) { copyText(itemUrl(it.id)); toast(t().linkCopied); return; }
+  if (!navigator.share) { copyText(itemUrl(it.id), t().linkCopied); return; }
   if (!(navigator.canShare && window.File)) {
     navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) }).catch(function () {});
     return;
@@ -1118,18 +1131,17 @@ document.addEventListener('click', function (e) {
   const cs = e.target.closest('[data-copy-sec]');
   if (cs) {
     const parts = cs.dataset.copySec.split('/');
-    copyText(tableHref(parts[0], parts[1] || ''));
-    toast(t().linkCopied);
+    copyText(tableHref(parts[0], parts[1] || ''), parts[1] ? t().sectionLinkCopied : t().tableLinkCopied);
     return;
   }
 
   const cn = e.target.closest('[data-copy-name]');
-  if (cn) { copyText(nameForShare(BY_ID[cn.dataset.copyName])); return; }
+  if (cn) { copyText(nameForShare(BY_ID[cn.dataset.copyName]), t().nameCopied); return; }
 
   const cf = e.target.closest('[data-copy-full]');
   if (cf) {
     const it = BY_ID[cf.dataset.copyFull];
-    copyRich(shareHtml(it), shareText(it));
+    copyRich(shareHtml(it), shareText(it), t().textCopied);
     return;
   }
 
@@ -1182,12 +1194,12 @@ document.addEventListener('click', function (e) {
   if (sl) {
     const l = getList(sl.dataset.shareList);
     if (l && !l.ids.length) { toast(t().listEmpty); return; }
-    if (l) { copyText(listShareUrl(l)); toast(t().linkCopied); }
+    if (l) copyText(listShareUrl(l), t().listLinkCopied);
     return;
   }
 
   const clt = e.target.closest('[data-copy-listtext]');
-  if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyRich(listAsHtml(l), listAsText(l)); return; }
+  if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyRich(listAsHtml(l), listAsText(l), t().listCopied); return; }
 
   const dl = e.target.closest('[data-del-list]');
   if (dl) {
@@ -1244,7 +1256,7 @@ document.addEventListener('click', function (e) {
     // accept a whole URL or just the payload
     const m = /#\/l\/([A-Za-z0-9_-]+)/.exec(raw);
     const data = decodeList(m ? m[1] : raw);
-    if (!data) { toast(t().badShare); return; }
+    if (!data) { toast(t().badShare, true); return; }
     const l = createList(data.name);
     l.ids = data.ids.slice(); saveLists();
     S.importDraft = '';
