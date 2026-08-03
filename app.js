@@ -45,13 +45,14 @@ const T = {
     common:'Обычная', uncommon:'Необычная', rare:'Редкая', veryRare:'Очень редкая', legendary:'Легендарная',
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
-    critFrom:'Выбор из таблицы:', bumpTo:'Поднять до',
+    bumpTo:'Поднять до',
     filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
     community:'Сообщество', source:'Источник', both:'Оба',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Вставьте ссылку на список',
     importHint:'Ссылка содержит только названия и id позиций — из неё соберётся обычный список, который можно править.',
     toLists:'В списки', cancel:'Отмена',
+    listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад в логове дракона', create:'Создать',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
     collectHere:'Пополнять', collecting:'Пополняю', collectingInto:'Пополняю список:', stopCollecting:'Готово',
@@ -66,7 +67,7 @@ const T = {
     noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
     localOnlyTitle:'Списки живут только в этом браузере.',
     localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Поделиться» и сохраните ссылку: из неё список восстанавливается целиком.',
-    searchPh:'Поиск по названию или описанию (RU / EN)…',
+    searchPh:'Поиск по названию или описанию…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
     imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
@@ -104,13 +105,14 @@ const T = {
     common:'Common', uncommon:'Uncommon', rare:'Rare', veryRare:'Very rare', legendary:'Legendary',
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
-    critFrom:'Choose from table:', bumpTo:'Bump to',
+    bumpTo:'Bump to',
     filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
     community:'Community', source:'Source', both:'Both',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
     importHint:'The link holds only the name and item ids — it rebuilds into an ordinary list you can edit.',
     toLists:'Add to lists', cancel:'Cancel',
+    listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
     untitled:'Untitled', noLists:'No lists yet — create one above',
     collectHere:'Fill', collecting:'Filling', collectingInto:'Filling list:', stopCollecting:'Done',
@@ -125,7 +127,7 @@ const T = {
     noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
     localOnlyTitle:'Lists live in this browser only.',
     localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Hit Share and keep the link: a list rebuilds from it completely.',
-    searchPh:'Search by name or description (RU / EN)…',
+    searchPh:'Search by name or description…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
     imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
@@ -620,7 +622,6 @@ function renderAlt(){
         '<div class="crit-txt">' +
           '<b>' + esc(t().crit) + '</b>' +
           '<span>' + esc(t().critSub) + '</span>' +
-          '<span class="crit-tbl">' + esc(t().critFrom) + ' <em>' + esc(rarityLabel(st.rarity)) + '</em></span>' +
         '</div>' +
         '<div class="crit-acts">' +
           '<a class="btn sm primary" target="_blank" rel="noopener" href="' + esc(tableHref(altTableId(), st.rarity)) + '">' +
@@ -637,8 +638,8 @@ function renderAlt(){
     '<div class="field"><span class="lbl">' + esc(t().rarity) + '</span>' + rarityChips(RARITIES5, st.rarity, 'rarity', 'tiers') + '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + '</span>' +
       '<div class="numrow">' +
-        '<div><span class="dielbl h">' + esc(t().hopeDie) + '</span>' + numBox('hope', st.hope, 1, 12, 'hope') + '</div>' +
-        '<div><span class="dielbl f">' + esc(t().fearDie) + '</span>' + numBox('fear', st.fear, 1, 12, 'fear') + '</div>' +
+        '<div class="dieblock"><span class="dielbl h">' + esc(t().hopeDie) + '</span>' + numBox('hope', st.hope, 1, 12, 'hope') + '</div>' +
+        '<div class="dieblock"><span class="dielbl f">' + esc(t().fearDie) + '</span>' + numBox('fear', st.fear, 1, 12, 'fear') + '</div>' +
         '<div style="display:flex;align-items:flex-end"><button type="button" class="btn primary" data-act="rollDuality">' + ICON_DIE + esc(t().rollDuality) + '</button></div>' +
       '</div>' +
     '</div>' +
@@ -896,7 +897,8 @@ function renderLists(){
 function renderOneList(id){
   const l = getList(id);
   if (!l) {
-    return '<h1 class="page-h">' + esc(t().notFound) + '</h1>' +
+    return '<h1 class="page-h">' + esc(t().listNotFound) + '</h1>' +
+      '<p class="page-sub">' + esc(t().listNotFoundSub) + '</p>' +
       '<a class="btn primary" href="#/lists">' + esc(t().lists) + '</a>';
   }
   const items = listItems(l);

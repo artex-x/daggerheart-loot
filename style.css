@@ -111,11 +111,17 @@ main{padding:26px 0 48px;min-height:60vh}
 .chip small{display:block;font-size:10.5px;opacity:.72;font-weight:500;letter-spacing:.02em}
 
 .numrow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.numrow .grow{flex:1 1 170px;min-width:0}
 .numbox{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);overflow:hidden}
 .numbox button{
   border:0;background:transparent;color:var(--muted);width:40px;height:46px;font-size:19px;line-height:1;transition:.14s;
 }
+@media (max-width:430px){
+  .numbox input{width:56px}
+  .numbox button{width:36px}
+}
 .numbox button:hover{background:var(--surface2);color:var(--gold)}
+.dieblock{flex:0 0 auto}
 .numbox input{
   width:74px;height:46px;border:0;background:transparent;color:var(--txt);
   text-align:center;font:650 20px/1 var(--mono);
@@ -161,11 +167,6 @@ input::placeholder{color:var(--muted2)}
 .crit-txt{display:flex;flex-direction:column;gap:4px;min-width:min(100%,260px);flex:1}
 .crit b{color:var(--gold-soft);font-size:14.5px}
 .crit span{color:var(--muted);font-size:13px}
-.crit .crit-tbl{color:var(--txt);font-size:13px}
-.crit .crit-tbl em{
-  font-style:normal;font-weight:650;color:var(--gold-soft);
-  border-bottom:1px dashed rgba(216,171,94,.5);
-}
 .crit-acts{display:flex;gap:8px;flex-wrap:wrap;flex:none}
 
 .orgrid{display:grid;gap:0}
@@ -455,3 +456,20 @@ input::placeholder{color:var(--muted2)}
   color:#e0b6b1;font-size:13px;
 }
 .warn b{color:#f5c0ba;font-weight:650}
+
+/* ============ mobile ============ */
+/* Kept last on purpose: these override base rules of equal specificity. */
+@media (max-width:600px){
+  /* the badge column was squeezing names into a two-word sliver */
+  .row-main{flex-wrap:wrap}
+  .row-main .rm{flex-basis:100%;padding-left:72px;margin-top:2px}
+  .row-main .rt span{-webkit-line-clamp:3}
+
+  /* bare icon buttons were ~20px, too small to hit reliably */
+  .card-name button,
+  .tsec-link{padding:11px;margin-bottom:2px}
+  .card-name-acts{gap:0}
+  .alttable button{display:block;padding:7px 0;min-height:36px}
+  .seg button,
+  .seg.small button{padding:8px 14px}
+}
