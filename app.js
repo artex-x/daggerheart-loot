@@ -53,7 +53,7 @@ const T = {
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Вставьте ссылку на список',
     toLists:'В списки', cancel:'Отмена',
-    qty:'Кол-во', gold:'Золото', goldUnit:'зол.', total:'Итого',
+    qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
     rollInList:'Бросок по списку', clear:'Сбросить',
     moveUp:'Выше', moveDown:'Ниже',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
@@ -144,7 +144,7 @@ const T = {
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
     toLists:'Add to lists', cancel:'Cancel',
-    qty:'Qty', gold:'Gold', goldUnit:'gp', total:'Total',
+    qty:'Qty', gold:'Gold', goldUnit:'gp',
     rollInList:'Roll within the list', clear:'Clear',
     moveUp:'Move up', moveDown:'Move down',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
@@ -424,22 +424,14 @@ function listShareUrl(l){
   return baseUrl() + (hosted() ? '' : 'index.html') + '#/l/' + encodeList(l);
 }
 function listAsText(l){
-  const total = listTotal(l);
   return l.name + '\n\n' + listItems(l).map(function (it) {
     return itemLine(l, it) + '\n' + descOf(it);
-  }).join('\n\n') + (total ? '\n\n' + t().total + ': ' + total + ' ' + t().goldUnit : '');
+  }).join('\n\n');
 }
 function listAsHtml(l){
-  const total = listTotal(l);
   return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
     return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it));
-  }).join('<br><br>') + (total ? '<br><br><b>' + esc(t().total + ': ' + total + ' ' + t().goldUnit) + '</b>' : '');
-}
-function listTotal(l){
-  return listItems(l).reduce(function (sum, it) {
-    const m = itemMeta(l, it.id);
-    return sum + (m.gold || 0) * (m.qty || 1);
-  }, 0);
+  }).join('<br><br>');
 }
 
 /* ---------- share links ---------- */
@@ -1053,7 +1045,7 @@ function renderOneList(id){
     (items.length
       ? '<div class="rows lrows" style="margin-top:16px">' +
           items.map(function (it, i) { return listRowHTML(l, it, i); }).join('') +
-        '</div>' + listTotalHTML(l)
+        '</div>'
       : '<div class="empty">' + esc(t().listEmptyHint) + '</div>');
 }
 
@@ -1074,11 +1066,6 @@ function listRollPanel(l, items){
   '</div>';
 }
 
-function listTotalHTML(l){
-  const total = listTotal(l);
-  if (!total) return '';
-  return '<p class="ltotal">' + esc(t().total) + ': <b>' + total + ' ' + esc(t().goldUnit) + '</b></p>';
-}
 
 function listRowHTML(l, it, i){
   const m = itemMeta(l, it.id);
@@ -1124,7 +1111,7 @@ function renderSharedList(payload){
       if (m.qty > 1) bits.push('×' + m.qty);
       if (m.gold) bits.push(m.gold + ' ' + t().goldUnit);
       return rowHTML(it, '', bits.join(' · '));
-    }).join('') + '</div>' + listTotalHTML(fake);
+    }).join('') + '</div>';
 }
 
 function plural(n){
@@ -1528,16 +1515,7 @@ document.addEventListener('input', function (e) {
     const field = el.dataset.qty ? 'qty' : 'gold';
     const parts = (el.dataset.qty || el.dataset.gold).split(':');
     const l = getList(parts[0]);
-    if (l) {
-      setMeta(l, parts[1], field, parseInt(el.value, 10) || 0);
-      const box = el.closest('.lrows');
-      const totalEl = box && box.parentNode.querySelector('.ltotal');
-      const total = listTotal(l);
-      if (totalEl) totalEl.innerHTML = total
-        ? esc(t().total) + ': <b>' + total + ' ' + esc(t().goldUnit) + '</b>'
-        : '';
-      else if (total && box) box.insertAdjacentHTML('afterend', listTotalHTML(l));
-    }
+    if (l) setMeta(l, parts[1], field, parseInt(el.value, 10) || 0);
   }
   if (el.id === 'rename') {
     const l = getList(el.dataset.list);
