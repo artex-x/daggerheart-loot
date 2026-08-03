@@ -22,13 +22,16 @@ const S = {
   comm: { c: 'Highborne', n: 1 },
   tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
-  kind: 'all'   // shared item/consumable filter, applies on every page that can show both
+  kind: 'all',  // shared item/consumable filter, applies on every page that can show both
+  lists: [],
+  activeList: '',
+  listDraft: ''
 };
 
 /* ---------- i18n ---------- */
 const T = {
   ru: {
-    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', tables:'Таблицы', search:'Поиск' },
+    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
@@ -42,11 +45,25 @@ const T = {
     critFrom:'Выбор из таблицы:', bumpTo:'Поднять до',
     filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
     community:'Сообщество', source:'Источник', both:'Оба',
+    lists:'Списки', newList:'Новый список', listNamePh:'Например: клад в логове дракона', create:'Создать',
+    untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
+    collectHere:'Собирать сюда', collecting:'Собираю сюда', collectingInto:'Собираю в список:', stopCollecting:'Закончить',
+    addToList:'В список', inList:'В списке', removeItem:'Убрать из списка',
+    share:'Поделиться', del:'Удалить', rename:'Название списка', copyIds:'Скопировать id',
+    listEmpty:'Список пуст', listEmptyHint:'Список пуст. Нажмите «Собирать сюда», походите по таблицам и добавляйте позиции кнопкой «+».',
+    sharedList:'Список от другого игрока', saveToMine:'Сохранить себе', savedToLists:'Список сохранён',
+    badShare:'Ссылка повреждена или собрана в другой версии данных.',
+    deleteConfirm:'Удалить список «%s»? Это действие необратимо.',
+    saveFailed:'Не удалось сохранить: браузер блокирует локальное хранилище',
+    noStorageTitle:'Браузер блокирует локальное хранилище.',
+    noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
+    localOnlyTitle:'Списки живут только в этом браузере.',
+    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, поделитесь ссылкой или скопируйте id и сохраните их у себя.',
     searchPh:'Поиск по названию или описанию (RU / EN)…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
     imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
-    copyLink:'Скопировать ссылку', linkCopied:'Ссылка скопирована',
+    copyLink:'Скопировать ссылку', linkCopied:'Ссылка скопирована', copySection:'Скопировать ссылку на этот раздел',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
@@ -57,6 +74,7 @@ const T = {
       wondrous: ['Wondrous Loot', 'Бросьте d100 и введите результат.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком — можно листать вручную, искать и открывать карточки.'],
+      lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
       search: ['Поиск', 'Поиск по всем 449 предметам и расходникам сразу, на русском и на английском.']
     },
     diceGuide: {
@@ -67,7 +85,7 @@ const T = {
     }
   },
   en: {
-    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', tables:'Tables', search:'Search' },
+    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
@@ -81,11 +99,25 @@ const T = {
     critFrom:'Choose from table:', bumpTo:'Bump to',
     filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
     community:'Community', source:'Source', both:'Both',
+    lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
+    untitled:'Untitled', noLists:'No lists yet — create one above',
+    collectHere:'Collect here', collecting:'Collecting here', collectingInto:'Collecting into:', stopCollecting:'Done',
+    addToList:'Add', inList:'Added', removeItem:'Remove from the list',
+    share:'Share', del:'Delete', rename:'List name', copyIds:'Copy ids',
+    listEmpty:'The list is empty', listEmptyHint:'The list is empty. Hit "Collect here", browse the tables and add entries with "+".',
+    sharedList:'A list from another player', saveToMine:'Save to my lists', savedToLists:'List saved',
+    badShare:'The link is damaged or was built from a different data version.',
+    deleteConfirm:'Delete the list "%s"? This cannot be undone.',
+    saveFailed:'Could not save: the browser is blocking local storage',
+    noStorageTitle:'The browser is blocking local storage.',
+    noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
+    localOnlyTitle:'Lists live in this browser only.',
+    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Share a link or copy the ids and keep them somewhere safe.',
     searchPh:'Search by name or description (RU / EN)…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
     imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
-    copyLink:'Copy link', linkCopied:'Link copied',
+    copyLink:'Copy link', linkCopied:'Link copied', copySection:'Copy a link to this section',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
@@ -96,6 +128,7 @@ const T = {
       wondrous: ['Wondrous Loot', 'Roll d100 and enter the result.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full — browse, search and open cards.'],
+      lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
       search: ['Search', 'Search all 449 items and consumables at once, in Russian and English.']
     },
     diceGuide: {
@@ -180,6 +213,76 @@ const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="curren
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
+
+/* ============================================================
+   LISTS
+   Kept in localStorage only — there is no server behind this app.
+   ============================================================ */
+const LS_KEY = 'dhloot.lists.v1';
+
+function loadLists(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.filter(l => l && l.id && Array.isArray(l.ids)) : [];
+  } catch (e) { return []; }
+}
+function saveLists(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S.lists)); return true; }
+  catch (e) { toast(t().saveFailed); return false; }
+}
+function storageWorks(){
+  try { localStorage.setItem('dhloot.probe','1'); localStorage.removeItem('dhloot.probe'); return true; }
+  catch (e) { return false; }
+}
+function newId(){ return 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function getList(id){ return S.lists.filter(l => l.id === id)[0] || null; }
+function listItems(l){ return l.ids.map(id => BY_ID[id]).filter(Boolean); }
+
+function createList(name){
+  const l = { id: newId(), name: (name || '').trim() || t().untitled, ids: [], created: Date.now() };
+  S.lists.unshift(l); saveLists();
+  return l;
+}
+function deleteList(id){
+  S.lists = S.lists.filter(l => l.id !== id);
+  if (S.activeList === id) S.activeList = '';
+  saveLists();
+}
+function toggleInList(listId, itemId){
+  const l = getList(listId); if (!l) return;
+  const i = l.ids.indexOf(itemId);
+  if (i >= 0) l.ids.splice(i, 1); else l.ids.push(itemId);
+  saveLists();
+}
+
+/* Share payload: base64url of "name\nid,id,id" — short enough to paste anywhere */
+function encodeList(l){
+  const bytes = new TextEncoder().encode(l.name + '\n' + l.ids.join(','));
+  let bin = ''; bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decodeList(payload){
+  try {
+    const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const raw = new TextDecoder().decode(bytes);
+    const nl = raw.indexOf('\n');
+    const name = nl >= 0 ? raw.slice(0, nl) : '';
+    const ids = (nl >= 0 ? raw.slice(nl + 1) : '').split(',').filter(function (id) { return BY_ID[id]; });
+    return ids.length ? { name: name, ids: ids } : null;
+  } catch (e) { return null; }
+}
+function listShareUrl(l){
+  return baseUrl() + (hosted() ? '' : 'index.html') + '#/l/' + encodeList(l);
+}
+function listAsText(l){
+  return listItems(l).map(function (it) {
+    return '• ' + nameForShare(it) + ' — ' + descOf(it);
+  }).join('\n\n');
+}
 
 /* ---------- share links ---------- */
 function baseUrl(){ return location.href.split('#')[0].replace(/index\.html$/, ''); }
@@ -278,6 +381,14 @@ function actBtn(action, id, icon, label, primary){
     icon + '<span class="btn-lbl">' + esc(label) + '</span></button>';
 }
 
+function cardCollectBtn(it){
+  if (!S.activeList) return '';
+  const l = getList(S.activeList); if (!l) return '';
+  const inList = l.ids.indexOf(it.id) >= 0;
+  return '<button type="button" class="btn sm' + (inList ? ' on' : '') + '" data-toggle-list="' + esc(it.id) + '"' +
+    ' title="' + esc(l.name) + '">' + (inList ? '✓ ' : '+ ') + esc(inList ? t().inList : t().addToList) + '</button>';
+}
+
 /* opt.full  — big picture on top (item page / modal); otherwise a compact row
    opt.col   — 'hope' | 'fear' badge for the alternate tables
    opt.rollLabel — overrides the number shown in the meta row */
@@ -311,6 +422,7 @@ function cardHTML(it, opt){
         actBtn('copy-img',  it.id, ICON_IMG,  t().copyImg) +
         actBtn('copy-full', it.id, ICON_COPY, t().copyText) +
         actBtn('share',     it.id, ICON_LINK, t().copyLink) +
+        cardCollectBtn(it) +
       '</div>' +
     '</div>' +
   '</article>';
@@ -519,6 +631,15 @@ function renderComm(){
 /* ---- tables browse ---- */
 function sectionId(key){ return 'sec-' + key; }
 
+/* Heading plus a button that copies a direct link to this very section */
+function sectionHead(label, table, key){
+  return '<div class="tsec-head">' +
+    '<span class="lbl">' + esc(label) + '</span>' +
+    '<button type="button" class="tsec-link" data-copy-sec="' + esc(table + '/' + key) + '"' +
+      ' title="' + esc(t().copySection) + '" aria-label="' + esc(t().copySection) + '">' + ICON_LINK + '</button>' +
+  '</div>';
+}
+
 function renderTables(){
   const st = S.tables;
   const chips = '<div class="chips">' + TABLE_DEFS.map(d0 =>
@@ -537,7 +658,7 @@ function renderTables(){
           '<td><button type="button" data-open="' + esc(f.id) + '">' + esc(nameOf(f)) + '</button></td></tr>');
       }
       return '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
-        '<span class="lbl">' + esc(rarityLabel(r)) + '</span>' +
+        sectionHead(rarityLabel(r), st.t, r) +
         '<div class="tblwrap"><table class="alttable"><thead><tr><th>#</th><th class="h">' + esc(t().hope) + '</th><th class="f">' + esc(t().fear) + '</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table></div></div>';
     }).join('');
@@ -550,7 +671,7 @@ function renderTables(){
         const sub = list.filter(x => x.community === c[0]);
         if (!sub.length) return '';
         return '<div class="tsection" id="' + sectionId(c[0]) + '" style="margin-top:22px">' +
-          '<span class="lbl">' + esc(S.lang === 'ru' ? c[1] + ' · ' + c[0] : c[0]) + '</span>' +
+          sectionHead(S.lang === 'ru' ? c[1] + ' · ' + c[0] : c[0], st.t, c[0]) +
           renderList(sub) + '</div>';
       }).join('');
     } else {
@@ -561,6 +682,8 @@ function renderTables(){
   const searchBar = st.t.indexOf('alt_') === 0 ? '' :
     '<div class="toolbar" style="margin-top:16px">' +
       '<div class="grow"><input type="search" id="tq" value="' + esc(st.q) + '" placeholder="' + esc(t().searchPh) + '"></div>' +
+      '<button type="button" class="btn" data-copy-sec="' + esc(st.t) + '" title="' + esc(t().copySection) + '">' +
+        ICON_LINK + '<span class="btn-lbl">' + esc(t().copyLink) + '</span></button>' +
       '<div class="seg small" role="group" aria-label="' + esc(t().view) + '">' +
         '<button type="button" data-act="view" data-val="list"' + (st.view === 'list' ? ' class="on"' : '') + '>' + esc(t().viewList) + '</button>' +
         '<button type="button" data-act="view" data-val="grid"' + (st.view === 'grid' ? ' class="on"' : '') + '>' + esc(t().viewGrid) + '</button>' +
@@ -572,31 +695,50 @@ function renderTables(){
 
 function renderList(list){
   return S.tables.view === 'list'
-    ? '<div class="rows">' + list.map(rowHTML).join('') + '</div>'
+    ? '<div class="rows">' + list.map(function (it) { return rowHTML(it); }).join('') + '</div>'
     : '<div class="tgrid">' + list.map(tileHTML).join('') + '</div>';
 }
 
-function rowHTML(it){
-  return '<button type="button" class="row" data-open="' + esc(it.id) + '">' +
-      '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
-      '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) + '</b>' +
-      '<span>' + esc(descOf(it)) + '</span></span>' +
-      '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
-        esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
-      '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
-    '</button>';
+/* removeFrom: render a remove button instead of the collect toggle (list view) */
+function rowHTML(it, removeFrom){
+  if (typeof removeFrom !== 'string') removeFrom = '';
+  return '<div class="row">' +
+      '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
+        '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+        '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) + '</b>' +
+        '<span>' + esc(descOf(it)) + '</span></span>' +
+        '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
+          esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
+      '</button>' +
+      (removeFrom
+        ? '<button type="button" class="row-x" data-remove="' + esc(removeFrom + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>'
+        : collectBtn(it)) +
+    '</div>';
+}
+
+/* Shown only while a list is being collected into */
+function collectBtn(it){
+  if (!S.activeList) return '';
+  const l = getList(S.activeList); if (!l) return '';
+  const inList = l.ids.indexOf(it.id) >= 0;
+  return '<button type="button" class="row-add' + (inList ? ' on' : '') + '"' +
+    ' data-toggle-list="' + esc(it.id) + '"' +
+    ' title="' + esc(inList ? t().inList : t().addToList) + '"' +
+    ' aria-label="' + esc(inList ? t().inList : t().addToList) + '">' + (inList ? '✓' : '+') + '</button>';
 }
 
 function tileHTML(it){
   const sub = S.lang === 'ru' ? it.en : (it.ru || '');
-  return '<button type="button" class="tile" data-open="' + esc(it.id) + '">' +
+  return '<div class="tilewrap">' + collectBtn(it) +
+    '<button type="button" class="tile" data-open="' + esc(it.id) + '">' +
     '<div class="tile-img">' +
       '<span class="tile-n">' + esc(it.roll) + '</span>' +
       '<span class="tile-k ' + (it.kind === 'consumable' ? 'cons' : 'item') + '" title="' + esc(it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
       '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
     '</div>' +
     '<div class="tile-b"><b>' + esc(nameOf(it)) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + '</div>' +
-  '</button>';
+  '</button></div>';
 }
 
 /* ---- search ---- */
@@ -613,7 +755,7 @@ function renderSearch(){
     body = '<div class="empty">' + esc(S.lang === 'ru' ? 'Начните вводить запрос' : 'Start typing') + '</div>';
   } else {
     const res = ALL.filter(x => kindAllows(x.kind) && matches(x, q)).slice(0, 300);
-    body = res.length ? '<div class="rows">' + res.map(rowHTML).join('') + '</div>'
+    body = res.length ? '<div class="rows">' + res.map(function (it) { return rowHTML(it); }).join('') + '</div>'
                       : '<div class="empty">' + esc(t().nothing) + '</div>';
   }
   return pageHead('search') +
@@ -622,6 +764,104 @@ function renderSearch(){
       kindChips() +
     '</div>' +
     body;
+}
+
+/* ---- lists ---- */
+function storageWarning(){
+  if (!storageWorks()) {
+    return '<div class="warn"><b>' + esc(t().noStorageTitle) + '</b> ' + esc(t().noStorage) + '</div>';
+  }
+  return '<div class="warn"><b>' + esc(t().localOnlyTitle) + '</b> ' + esc(t().localOnly) + '</div>';
+}
+
+function listCardHTML(l){
+  const items = listItems(l);
+  const thumbs = items.slice(0, 6).map(function (it) {
+    return '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">';
+  }).join('');
+  const active = S.activeList === l.id;
+  return '<div class="listcard' + (active ? ' active' : '') + '">' +
+    '<a class="listcard-main" href="#/lists/' + esc(l.id) + '">' +
+      '<div class="listcard-top">' +
+        '<b>' + esc(l.name) + '</b>' +
+        '<span class="badge num">' + items.length + '</span>' +
+      '</div>' +
+      (thumbs ? '<div class="listcard-thumbs">' + thumbs + '</div>'
+              : '<p class="listcard-empty">' + esc(t().listEmpty) + '</p>') +
+    '</a>' +
+    '<div class="listcard-acts">' +
+      '<button type="button" class="btn sm' + (active ? ' primary' : '') + '" data-act="collect" data-val="' + esc(l.id) + '">' +
+        esc(active ? t().collecting : t().collectHere) + '</button>' +
+      '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
+      '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderLists(){
+  return pageHead('lists') +
+    storageWarning() +
+    '<div class="panel" style="margin-top:16px">' +
+      '<div class="field"><span class="lbl">' + esc(t().newList) + '</span>' +
+        '<div class="numrow">' +
+          '<div class="grow"><input type="text" id="lname" value="' + esc(S.listDraft) + '" placeholder="' + esc(t().listNamePh) + '"></div>' +
+          '<button type="button" class="btn primary" data-act="createList">' + esc(t().create) + '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    (S.lists.length
+      ? '<div class="listgrid">' + S.lists.map(listCardHTML).join('') + '</div>'
+      : '<div class="empty">' + esc(t().noLists) + '</div>');
+}
+
+function renderOneList(id){
+  const l = getList(id);
+  if (!l) {
+    return '<h1 class="page-h">' + esc(t().notFound) + '</h1>' +
+      '<a class="btn primary" href="#/lists">' + esc(t().lists) + '</a>';
+  }
+  const items = listItems(l);
+  const active = S.activeList === l.id;
+  return '<h1 class="page-h">' +
+      '<input type="text" id="rename" class="titleinput" value="' + esc(l.name) + '" data-list="' + esc(l.id) + '" aria-label="' + esc(t().rename) + '">' +
+    '</h1>' +
+    '<p class="page-sub">' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
+    '<div class="card-acts" style="margin-bottom:16px">' +
+      '<button type="button" class="btn sm' + (active ? ' primary' : '') + '" data-act="collect" data-val="' + esc(l.id) + '">' +
+        esc(active ? t().collecting : t().collectHere) + '</button>' +
+      '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
+      '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
+      '<button type="button" class="btn sm" data-copy-listids="' + esc(l.id) + '">' + esc(t().copyIds) + '</button>' +
+      '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
+    '</div>' +
+    storageWarning() +
+    (items.length
+      ? '<div class="rows" style="margin-top:16px">' + items.map(function (it) { return rowHTML(it, l.id); }).join('') + '</div>'
+      : '<div class="empty">' + esc(t().listEmptyHint) + '</div>');
+}
+
+function renderSharedList(payload){
+  const data = decodeList(payload);
+  if (!data) {
+    return '<h1 class="page-h">' + esc(t().notFound) + '</h1>' +
+      '<p class="page-sub">' + esc(t().badShare) + '</p>' +
+      '<a class="btn primary" href="#/roll/std">' + esc(t().toStart) + '</a>';
+  }
+  const items = data.ids.map(function (id) { return BY_ID[id]; });
+  return '<h1 class="page-h">' + esc(data.name || t().untitled) + '</h1>' +
+    '<p class="page-sub">' + esc(t().sharedList) + ' · ' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
+    '<div class="card-acts" style="margin-bottom:18px">' +
+      '<button type="button" class="btn primary" data-act="saveShared" data-val="' + esc(payload) + '">' + esc(t().saveToMine) + '</button>' +
+    '</div>' +
+    '<div class="rows">' + items.map(function (it) { return rowHTML(it); }).join('') + '</div>';
+}
+
+function plural(n){
+  if (S.lang !== 'ru') return n === 1 ? 'item' : 'items';
+  const a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) return 'позиция';
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return 'позиции';
+  return 'позиций';
 }
 
 /* ---- single item page (shareable link target) ---- */
@@ -659,6 +899,7 @@ function renderItemPage(id){
    ============================================================ */
 const ROUTES = {
   'roll/std': renderStd,
+  'lists': renderLists,
   'roll/alt': renderAlt,
   'roll/wondrous': renderWond,
   'roll/community': renderComm,
@@ -668,7 +909,7 @@ const ROUTES = {
 const TAB_LIST = [
   ['roll/std','std','1'], ['roll/alt','alt','2'],
   ['roll/wondrous','wondrous','3'], ['roll/community','community','4'],
-  ['tables','tables',''], ['search','search','']
+  ['tables','tables',''], ['lists','lists',''], ['search','search','']
 ];
 /* links handed out before the three d12 modes were merged */
 const LEGACY_ROUTES = { 'roll/core':'roll/std', 'roll/hnf':'roll/std', 'roll/all':'roll/std' };
@@ -678,6 +919,8 @@ const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z_]+))?$/;
 function currentRoute(){
   const h = (location.hash || '').replace(/^#\/?/, '');
   if (/^i\/[\w-]+$/.test(h)) return h;
+  if (/^lists\/[\w-]+$/.test(h)) return h;
+  if (/^l\/[A-Za-z0-9_-]+$/.test(h)) return h;
   if (LEGACY_ROUTES[h]) { S.std.src = h === 'roll/core' ? 'core' : h === 'roll/hnf' ? 'hnf' : 'all'; return LEGACY_ROUTES[h]; }
   const m = TABLES_RE.exec(h);
   if (m) {
@@ -694,15 +937,45 @@ function renderTabs(){
       (tab[2] ? '<span class="n">' + tab[2] + '</span>' : '') + esc(t().tabs[tab[1]]) +
     '</a>').join('');
 }
+function refreshToggle(el){
+  const l = getList(S.activeList); if (!l) return;
+  const inList = l.ids.indexOf(el.dataset.toggleList) >= 0;
+  el.classList.toggle('on', inList);
+  const label = inList ? t().inList : t().addToList;
+  el.title = label; el.setAttribute('aria-label', label);
+  el.textContent = el.classList.contains('row-add')
+    ? (inList ? '✓' : '+')
+    : (inList ? '✓ ' : '+ ') + label;
+}
+
+function renderCollectBar(){
+  const bar = $('#collectBar');
+  const l = S.activeList ? getList(S.activeList) : null;
+  if (!l) { bar.hidden = true; bar.innerHTML = ''; return; }
+  bar.hidden = false;
+  bar.innerHTML = '<div class="wrap collect-in">' +
+    '<span class="collect-txt">' + esc(t().collectingInto) + ' <a href="#/lists/' + esc(l.id) + '"><b>' + esc(l.name) + '</b></a>' +
+      ' <span class="badge num">' + l.ids.length + '</span></span>' +
+    '<button type="button" class="btn sm" data-act="collectOff">' + esc(t().stopCollecting) + '</button>' +
+  '</div>';
+}
+
 function render(){
   const r = currentRoute();
   S.route = r;
   renderTabs();
+  renderCollectBar();
   if (r.indexOf('i/') === 0) {
     const id = r.slice(2);
     $('#view').innerHTML = renderItemPage(id);
     const it = BY_ID[id];
     document.title = (it ? nameOf(it) + ' — ' : '') + 'Генератор лута Daggerheart';
+  } else if (r.indexOf('lists/') === 0) {
+    $('#view').innerHTML = renderOneList(r.slice(6));
+    document.title = 'Генератор лута — Daggerheart';
+  } else if (r.indexOf('l/') === 0) {
+    $('#view').innerHTML = renderSharedList(r.slice(2));
+    document.title = 'Генератор лута — Daggerheart';
   } else {
     $('#view').innerHTML = ROUTES[r]();
     document.title = 'Генератор лута — Daggerheart';
@@ -762,6 +1035,14 @@ document.addEventListener('click', function (e) {
   const openEl = e.target.closest('[data-open]');
   if (openEl) { openModal(openEl.dataset.open); return; }
 
+  const cs = e.target.closest('[data-copy-sec]');
+  if (cs) {
+    const parts = cs.dataset.copySec.split('/');
+    copyText(tableHref(parts[0], parts[1] || ''));
+    toast(t().linkCopied);
+    return;
+  }
+
   const cn = e.target.closest('[data-copy-name]');
   if (cn) { copyText(nameForShare(BY_ID[cn.dataset.copyName])); return; }
 
@@ -791,6 +1072,47 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const tg = e.target.closest('[data-toggle-list]');
+  if (tg) {
+    toggleInList(S.activeList, tg.dataset.toggleList);
+    // patch the button in place: a full re-render would drop scroll position
+    // and make adding several entries in a row impossible
+    refreshToggle(tg);
+    renderCollectBar();
+    return;
+  }
+
+  const rm = e.target.closest('[data-remove]');
+  if (rm) {
+    const parts = rm.dataset.remove.split(':');
+    toggleInList(parts[0], parts[1]); render(); return;
+  }
+
+  const sl = e.target.closest('[data-share-list]');
+  if (sl) {
+    const l = getList(sl.dataset.shareList);
+    if (l && !l.ids.length) { toast(t().listEmpty); return; }
+    if (l) { copyText(listShareUrl(l)); toast(t().linkCopied); }
+    return;
+  }
+
+  const clt = e.target.closest('[data-copy-listtext]');
+  if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyText(l.name + '\n\n' + listAsText(l)); return; }
+
+  const cli = e.target.closest('[data-copy-listids]');
+  if (cli) { const l = getList(cli.dataset.copyListids); if (l) copyText(l.ids.join(',')); return; }
+
+  const dl = e.target.closest('[data-del-list]');
+  if (dl) {
+    const l = getList(dl.dataset.delList);
+    if (l && confirm(t().deleteConfirm.replace('%s', l.name))) {
+      deleteList(l.id);
+      if (S.route.indexOf('lists/') === 0) { location.hash = '#/lists'; return; }
+      render();
+    }
+    return;
+  }
+
   const act = e.target.closest('[data-act]');
   if (!act) return;
   const st = stateForRoute();
@@ -799,6 +1121,24 @@ document.addEventListener('click', function (e) {
   if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'kind')   { S.kind = val; render(); return; }
   if (a === 'src')    { S.std.src = val; render(); return; }
+  if (a === 'collect')    { S.activeList = S.activeList === val ? '' : val; render(); return; }
+  if (a === 'collectOff') { S.activeList = ''; render(); return; }
+  if (a === 'createList') {
+    const input = document.getElementById('lname');
+    const l = createList(input ? input.value : '');
+    S.listDraft = ''; S.activeList = l.id;
+    location.hash = '#/lists/' + l.id;
+    return;
+  }
+  if (a === 'saveShared') {
+    const data = decodeList(val);
+    if (!data) return;
+    const l = createList(data.name);
+    l.ids = data.ids.slice(); saveLists();
+    toast(t().savedToLists);
+    location.hash = '#/lists/' + l.id;
+    return;
+  }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   if (a === 'view')   { S.tables.view = val; render(); return; }
 
@@ -839,6 +1179,11 @@ document.addEventListener('input', function (e) {
     applyNum(el.id, v);
   }
   if (el.id === 'sq') { S.search.q = el.value; render._focus = 'sq'; render(); }
+  if (el.id === 'lname') { S.listDraft = el.value; }
+  if (el.id === 'rename') {
+    const l = getList(el.dataset.list);
+    if (l) { l.name = el.value; saveLists(); renderCollectBar(); }
+  }
   if (el.id === 'tq') { S.tables.q = el.value; render._focus = 'tq'; render(); }
 });
 
@@ -852,6 +1197,8 @@ function openModal(id){
   $('#modalBody').innerHTML = cardHTML(it, { full: true });
   $('#modal').hidden = false;
 }
+
+S.lists = loadLists();
 
 window.addEventListener('hashchange', render);
 render();
