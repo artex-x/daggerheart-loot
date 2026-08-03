@@ -480,7 +480,44 @@ input::placeholder{color:var(--muted2)}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* ---- list page rows: number, meta fields, reorder ---- */
-.lrow{align-items:stretch}
+/* the note drops onto its own full-width line under the row */
+.lrow{align-items:stretch;flex-wrap:wrap}
+.rnote{flex:0 0 100%;border-top:1px solid var(--line);background:var(--bg2);padding:9px 11px}
+.lrow.has-note{border-color:var(--line2)}
+.lrow-acts .lrow-note{color:var(--muted2)}
+.lrow-acts .lrow-note.on{color:var(--gold);background:rgba(216,171,94,.12)}
+.lrow-acts .lrow-note svg{display:block;margin:0 auto}
+
+/* the note attached to whatever the list roll landed on */
+.hitnote{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px 12px;
+  border:1px solid var(--line2);border-left:2px solid var(--gold);border-radius:9px;
+  background:rgba(216,171,94,.06);font-size:13px;line-height:1.5;color:var(--txt)}
+.hitnote svg{fill:var(--gold);margin-top:2px}
+.hitnote b{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted2);font-weight:650;margin-bottom:2px}
+.hitnote span{min-width:0;overflow-wrap:break-word}
+
+/* GM note for the whole list: folded away until there is something in it */
+.lnote{border:1px solid var(--line2);border-radius:12px;background:var(--surface);margin-bottom:16px}
+.lnote summary{display:flex;align-items:center;gap:7px;padding:10px 13px;cursor:pointer;
+  list-style:none;flex-wrap:wrap}
+.lnote summary::-webkit-details-marker{display:none}
+.lnote summary svg{fill:var(--muted2)}
+.lnote summary span{font:650 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)}
+.lnote summary i{font-style:normal;font-size:11px;color:var(--muted2);opacity:.75}
+.lnote summary:hover span{color:var(--gold-soft)}
+.lnote[open] summary{padding-bottom:6px}
+
+.lnote textarea,.rnote textarea{
+  display:block;width:100%;box-sizing:border-box;resize:vertical;
+  background:var(--bg2);border:1px solid var(--line2);border-radius:8px;color:var(--txt);
+  font:14px/1.5 inherit;padding:9px 11px;
+}
+.lnote textarea{width:calc(100% - 26px);margin:0 13px 13px}
+.rnote textarea{font-size:13px;background:var(--surface)}
+.lnote textarea:focus,.rnote textarea:focus{
+  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,171,94,.14)}
+.lnote textarea::placeholder,.rnote textarea::placeholder{color:var(--muted2);opacity:.7}
 .lrow-n{
   flex:none;display:flex;align-items:center;justify-content:center;width:34px;
   font:650 12px/1 var(--mono);color:var(--gold-soft);

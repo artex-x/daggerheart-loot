@@ -70,6 +70,10 @@ const T = {
     importPh:'Ссылка на список',
     toLists:'В списки', cancel:'Отмена',
     qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
+    note:'Заметка', listNote:'Заметка мастера',
+    noteInLink:'видна всем, у кого есть ссылка',
+    listNotePh:'Например: позиции 9-10 лежат под прилавком',
+    notePh:'Внешний вид, хоумбрю, что знает мастер',
     rollInList:'Бросок по списку', clear:'Сбросить',
     moveUp:'Выше', moveDown:'Ниже',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
@@ -86,7 +90,7 @@ const T = {
     noStorageTitle:'Браузер блокирует локальное хранилище.',
     noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
     localOnlyTitle:'Списки живут только в этом браузере.',
-    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку на список: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком.',
+    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку на список: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком — вместе с заметками. Если заметки не для игроков, отправляйте им «Скопировать текст»: в него заметки не попадают.',
     searchPh:'Поиск по названию или описанию…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
@@ -163,6 +167,10 @@ const T = {
     importPh:'Paste a list link',
     toLists:'Add to lists', cancel:'Cancel',
     qty:'Qty', gold:'Gold', goldUnit:'gp',
+    note:'Note', listNote:'GM note',
+    noteInLink:'anyone with the link can read it',
+    listNotePh:'For example: entries 9-10 are kept under the counter',
+    notePh:'Looks, homebrew, what the GM knows',
     rollInList:'Roll within the list', clear:'Clear',
     moveUp:'Move up', moveDown:'Move down',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
@@ -179,7 +187,7 @@ const T = {
     noStorageTitle:'The browser is blocking local storage.',
     noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
     localOnlyTitle:'Lists live in this browser only.',
-    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link to a list and you keep the list: the whole thing is encoded into the address and rebuilds from it completely.',
+    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link to a list and you keep the list: the whole thing is encoded into the address and rebuilds from it completely, notes included. If the notes are not for your players, send them Copy text instead — notes stay out of it.',
     searchPh:'Search by name or description…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
@@ -426,7 +434,8 @@ const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="current
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
-const ICON_REF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
+const ICON_NOTE = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V4a1 1 0 0 1 1-1zm3 5h10V6.5H7V8zm0 3h10V9.5H7V11zm0 3h7v-1.5H7V14z"/></svg>';
+const ICON_REF ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
 const ICON_CRAFT ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
 const ICON_LINK ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
 
@@ -460,7 +469,8 @@ function itemMeta(l, id){ return (l.meta && l.meta[id]) || {}; }
 function setMeta(l, id, field, value){
   if (!l.meta) l.meta = {};
   const m = l.meta[id] || (l.meta[id] = {});
-  if (value > 0) m[field] = value; else delete m[field];
+  // truthiness, not "> 0": the same helper now carries note text as well
+  if (value) m[field] = value; else delete m[field];
   if (!Object.keys(m).length) delete l.meta[id];
   if (!Object.keys(l.meta).length) delete l.meta;
   saveLists();
@@ -496,7 +506,17 @@ function toggleInList(listId, itemId){
   saveLists();
 }
 
-/* Share payload: base64url of "name\nid,id,id" — short enough to paste anywhere */
+/* Share payload: base64url of
+     line 1  name
+     line 2  id,id*qty,id*qty*gold
+     rest    notes, and only when there are any
+   A list without notes encodes to exactly the same bytes as before, so links
+   saved earlier and links made now are the same string. Notes may themselves
+   contain newlines, hence they live in the tail and use ASCII separators that
+   a person cannot type. */
+const N_REC = '\x1e';   // starts one item's note
+const N_SEP = '\x1f';   // between the item id and its text
+
 function encodeList(l){
   // "id" or "id*qty" or "id*qty*gold" — old links carried bare ids and still parse
   const parts = l.ids.map(function (id) {
@@ -505,7 +525,14 @@ function encodeList(l){
     if (m.qty > 1) return id + '*' + m.qty;
     return id;
   });
-  const bytes = new TextEncoder().encode(l.name + '\n' + parts.join(','));
+  let raw = l.name + '\n' + parts.join(',');
+  const notes = (l.note || '') + l.ids.map(function (id) {
+    const n = itemMeta(l, id).note;
+    return n ? N_REC + id + N_SEP + n : '';
+  }).join('');
+  if (notes) raw += '\n' + notes;
+
+  const bytes = new TextEncoder().encode(raw);
   let bin = ''; bytes.forEach(function (b) { bin += String.fromCharCode(b); });
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -516,10 +543,17 @@ function decodeList(payload){
     const bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     const raw = new TextDecoder().decode(bytes);
+
     const nl = raw.indexOf('\n');
     const name = nl >= 0 ? raw.slice(0, nl) : '';
+    const body = nl >= 0 ? raw.slice(nl + 1) : '';
+    // the items line ends at the next newline; everything after it is notes
+    const nl2 = body.indexOf('\n');
+    const itemsLine = nl2 >= 0 ? body.slice(0, nl2) : body;
+    const noteBlob = nl2 >= 0 ? body.slice(nl2 + 1) : '';
+
     const ids = [], meta = {};
-    (nl >= 0 ? raw.slice(nl + 1) : '').split(',').forEach(function (part) {
+    itemsLine.split(',').forEach(function (part) {
       const bits = part.split('*');
       if (!BY_ID[bits[0]]) return;
       ids.push(bits[0]);
@@ -529,7 +563,26 @@ function decodeList(payload){
       if (gold > 0) m.gold = gold;
       if (Object.keys(m).length) meta[bits[0]] = m;
     });
-    return ids.length ? { name: name, ids: ids, meta: Object.keys(meta).length ? meta : undefined } : null;
+    if (!ids.length) return null;
+
+    let note = '';
+    if (noteBlob) {
+      const cut = noteBlob.indexOf(N_REC);
+      note = cut < 0 ? noteBlob : noteBlob.slice(0, cut);
+      if (cut >= 0) {
+        noteBlob.slice(cut + 1).split(N_REC).forEach(function (rec) {
+          const at = rec.indexOf(N_SEP);
+          if (at < 0) return;
+          const id = rec.slice(0, at), text = rec.slice(at + 1);
+          if (!BY_ID[id] || !text || ids.indexOf(id) < 0) return;
+          (meta[id] || (meta[id] = {})).note = text;
+        });
+      }
+    }
+    return {
+      name: name, ids: ids, note: note || undefined,
+      meta: Object.keys(meta).length ? meta : undefined
+    };
   } catch (e) { return null; }
 }
 function listShareUrl(l){
@@ -556,6 +609,11 @@ function findListByPayload(payload){
 }
 /* Rewrites the address to match the list as it stands now. replaceState does
    not fire hashchange, so this never re-enters render(). */
+/* Edits made without a re-render (name, quantity, gold, notes) still have to
+   move the address along, otherwise the link in the bar quietly goes stale. */
+function freshenListUrl(l){
+  if (S.openList === l.id) syncListUrl(l);
+}
 function syncListUrl(l){
   const payload = encodeList(l);
   S.urlPayload = payload;
@@ -1228,6 +1286,7 @@ function renderOneList(id){
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
+    listNoteHTML(l) +
     storageWarning() +
     (items.length > 1 ? listRollPanel(l, items) : '') +
     (items.length
@@ -1251,14 +1310,31 @@ function listRollPanel(l, items){
       '</div>' +
     '</div>' +
     (hit ? orGrid([cardHTML(hit, { rollLabel: S.listRoll.n })]) : '') +
+    /* Whatever the GM wrote about this entry is exactly what they need at the
+       moment it comes up — but only on their own screen, never in a copy. */
+    (hit ? rolledNoteHTML(l, hit) : '') +
   '</div>';
+}
+
+function rolledNoteHTML(l, it){
+  const note = itemMeta(l, it.id).note;
+  if (!note) return '';
+  return '<div class="hitnote">' + ICON_NOTE +
+    '<span><b>' + esc(t().note) + '</b>' + lines(note) + '</span></div>';
 }
 
 
 function listRowHTML(l, it, i){
   const m = itemMeta(l, it.id);
   const last = i === l.ids.length - 1;
-  return '<div class="row lrow">' +
+  const key = l.id + ':' + it.id;
+  /* The box is always in the DOM so opening it needs no re-render — typing in a
+     note must not rebuild the page under the cursor. It only shows when there
+     is something in it, or when the button is pressed. */
+  const noteBox = '<div class="rnote"' + (m.note ? '' : ' hidden') + '>' +
+      '<textarea rows="2" data-note="' + esc(key) + '" placeholder="' + esc(t().notePh) + '">' +
+      esc(m.note || '') + '</textarea></div>';
+  return '<div class="row lrow' + (m.note ? ' has-note' : '') + '">' +
       '<span class="lrow-n">' + (i + 1) + '</span>' +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
@@ -1272,11 +1348,25 @@ function listRowHTML(l, it, i){
           '<input type="number" min="0" max="99999" inputmode="numeric" data-gold="' + esc(l.id + ':' + it.id) + '" value="' + (m.gold || '') + '" placeholder="—"></label>' +
       '</div>' +
       '<div class="lrow-acts">' +
+        '<button type="button" class="lrow-note' + (m.note ? ' on' : '') + '" data-note-toggle="' + esc(key) + '"' +
+          ' title="' + esc(t().note) + '" aria-label="' + esc(t().note) + '">' + ICON_NOTE + '</button>' +
         '<button type="button" data-move="' + esc(l.id + ':' + it.id + ':-1') + '"' + (i === 0 ? ' disabled' : '') + ' title="' + esc(t().moveUp) + '" aria-label="' + esc(t().moveUp) + '">↑</button>' +
         '<button type="button" data-move="' + esc(l.id + ':' + it.id + ':1') + '"' + (last ? ' disabled' : '') + ' title="' + esc(t().moveDown) + '" aria-label="' + esc(t().moveDown) + '">↓</button>' +
         '<button type="button" class="row-x" data-remove="' + esc(l.id + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>' +
       '</div>' +
+      noteBox +
     '</div>';
+}
+
+/* The list-level note: shop rules, homebrew, whatever the GM keeps out of the
+   item text. Folded away when empty so a list without notes looks as before. */
+function listNoteHTML(l){
+  return '<details class="lnote"' + (l.note ? ' open' : '') + '>' +
+    '<summary>' + ICON_NOTE + '<span>' + esc(t().listNote) + '</span>' +
+      '<i>' + esc(t().noteInLink) + '</i></summary>' +
+    '<textarea rows="3" data-list-note="' + esc(l.id) + '" placeholder="' + esc(t().listNotePh) + '">' +
+      esc(l.note || '') + '</textarea>' +
+  '</details>';
 }
 
 function renderSharedList(payload){
@@ -1578,6 +1668,17 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const nt = e.target.closest('[data-note-toggle]');
+  if (nt) {
+    const row = nt.closest('.lrow');
+    const box = row && row.querySelector('.rnote');
+    if (box) {
+      box.hidden = !box.hidden;
+      if (!box.hidden) box.querySelector('textarea').focus();
+    }
+    return;
+  }
+
   const cr = e.target.closest('[data-copy-roll]');
   if (cr) {
     const items = cr.dataset.copyRoll.split(',').map(id => BY_ID[id]).filter(Boolean);
@@ -1680,6 +1781,7 @@ document.addEventListener('click', function (e) {
     const l = createList(data.name);
     l.ids = data.ids.slice();
     if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
+    if (data.note) l.note = data.note;
     saveLists();
     toast(t().savedToLists);
     goToList(l);
@@ -1728,11 +1830,36 @@ document.addEventListener('input', function (e) {
     const field = el.dataset.qty ? 'qty' : 'gold';
     const parts = (el.dataset.qty || el.dataset.gold).split(':');
     const l = getList(parts[0]);
-    if (l) setMeta(l, parts[1], field, parseInt(el.value, 10) || 0);
+    if (l) { setMeta(l, parts[1], field, parseInt(el.value, 10) || 0); freshenListUrl(l); }
+  }
+  /* Notes never re-render: the cursor sits inside the textarea. Only the model,
+     the storage and the address are brought up to date. */
+  if (el.dataset.note) {
+    const parts = el.dataset.note.split(':');
+    const l = getList(parts[0]);
+    if (l) {
+      setMeta(l, parts[1], 'note', el.value.trim());
+      const row = el.closest('.lrow');
+      if (row) {
+        row.classList.toggle('has-note', !!el.value.trim());
+        const btn = row.querySelector('.lrow-note');
+        if (btn) btn.classList.toggle('on', !!el.value.trim());
+      }
+      freshenListUrl(l);
+    }
+  }
+  if (el.dataset.listNote) {
+    const l = getList(el.dataset.listNote);
+    if (l) {
+      l.note = el.value.trim();
+      if (!l.note) delete l.note;
+      saveLists();
+      freshenListUrl(l);
+    }
   }
   if (el.id === 'rename') {
     const l = getList(el.dataset.list);
-    if (l) { l.name = el.value; saveLists(); renderCollectBar(); }
+    if (l) { l.name = el.value; saveLists(); renderCollectBar(); freshenListUrl(l); }
   }
   if (el.id === 'tq') { S.tables.q = el.value; render._focus = 'tq'; render(); }
 });
