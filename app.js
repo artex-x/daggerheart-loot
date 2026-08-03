@@ -22,6 +22,7 @@ const S = {
   comm: { c: 'Highborne', n: 1 },
   tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
+  help: '',
   kind: 'all',  // shared item/consumable filter, applies on every page that can show both
   lists: [],
   activeList: '',
@@ -81,9 +82,31 @@ const T = {
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
+    whatIsThis:'Как это работает',
+    help: {
+      std: [
+        'Выберите редкость, бросьте указанное на чипе количество d12 и сложите результаты. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов — игрок выбирает один.',
+        'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
+      ],
+      alt: [
+        'Предметы распределены между колонками «Надежда» и «Страх» в зависимости от их тематики и назначения. К «Надежде» отнесены предметы, предназначенные для помощи, защиты и решения практических задач, а к «Страху» — те, что служат для причинения вреда, обмана и скрытных уловок.',
+        'Выберите редкость и бросьте Кости Дуальности. Игрок выбирает между вариантом по Кости Надежды и вариантом по Кости Страха.',
+        'При критическом успехе, когда обе кости совпали, игрок берёт любую позицию из таблицы этой редкости, а Мастер может разрешить подняться на ступень выше.',
+        'Ранги у редкостей — рекомендация, а не ограничение.'
+      ],
+      wondrous: [
+        'В таблице 119 позиций вместо ста: столько есть иллюстраций. Кнопка d100 бросает 1–100, кнопка d119 — по всей таблице.',
+        'Позиции перечислены по алфавиту, а не по силе. Большинство из них слабой или средней силы.',
+        'Некоторые предметы можно переработать в более сильные — это указано в описании. Мастер может потребовать для этого бросок Искусности или Знания.'
+      ],
+      community: [
+        'Предметы каждого сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.',
+        'Такие предметы уместны как награда от сообщества, семейная реликвия или находка на его территории.'
+      ]
+    },
     pages: {
-      std:   ['Обычные правила', 'Бросьте нужное число d12, сложите и введите результат — получите варианты под этим номером. Источником может быть корник, дополнение Hope &amp; Fear или оба сразу.'],
-      alt:   ['Альтернативные таблицы', 'Выберите редкость и введите результат Костей Дуальности игрока. Колонка Надежды и колонка Страха дают разные варианты; при крите игрок выбирает что угодно из таблицы.'],
+      std:   ['Обычные правила', 'Бросок по таблицам корника и дополнения Hope &amp; Fear.'],
+      alt:   ['Альтернативные таблицы', 'Бросок Костей Дуальности по объединённым таблицам обеих книг.'],
       wondrous: ['Wondrous Loot', 'Бросьте d100 и введите результат.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком — можно листать вручную, искать и открывать карточки.'],
@@ -145,8 +168,30 @@ const T = {
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
+    whatIsThis:'How this works',
+    help: {
+      std: [
+        'Pick a rarity, roll the number of d12s shown on the chip and add them up. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.',
+        'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.'
+      ],
+      alt: [
+        'Items were sorted into the “Hope” and “Fear” column based on theme and function, with Hope leaning towards aid, protection and utility, and Fear leaning towards harm, deception and subterfuge.',
+        'Choose a rarity and roll the Duality Dice. The player picks between the entry matching the Hope Die and the one matching the Fear Die.',
+        'On a critical success, when both dice match, the player may take any entry from that rarity table, and the GM may allow jumping up a rarity.',
+        'Tiers attached to rarities are a recommendation, not a limit.'
+      ],
+      wondrous: [
+        'The table holds 119 entries rather than a hundred — that is how many illustrations exist. The d100 button rolls 1–100, the d119 button covers the whole table.',
+        'Entries are listed alphabetically, not by power level, and most are of low to moderate power.',
+        'Some entries can be crafted into stronger ones, as noted in their description. The GM may require a Finesse or Knowledge roll to do so.'
+      ],
+      community: [
+        'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.',
+        'They fit best as a reward from that community, a family heirloom, or a find on its territory.'
+      ]
+    },
     pages: {
-      std:   ['Standard rules', 'Roll the required number of d12s, sum them and enter the result to get the options under that number. The source can be the core book, the Hope &amp; Fear expansion, or both.'],
+      std:   ['Standard rules', 'A roll over the core book and the Hope &amp; Fear tables.'],
       alt:   ['Alternate tables', 'Pick a rarity and enter the player’s Duality Dice. The Hope column and the Fear column give different options; on a crit the player picks anything from the table.'],
       wondrous: ['Wondrous Loot', 'Roll d100 and enter the result.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
@@ -573,7 +618,16 @@ function rarityChips(list, cur, act, mode){
    ============================================================ */
 function pageHead(key){
   const p = t().pages[key];
-  return '<h1 class="page-h">' + p[0] + '</h1><p class="page-sub">' + p[1] + '</p>';
+  const help = t().help[key];
+  const btn = help
+    ? '<button type="button" class="helpbtn' + (S.help === key ? ' on' : '') + '" data-act="help" data-val="' + key + '"' +
+      ' title="' + esc(t().whatIsThis) + '" aria-label="' + esc(t().whatIsThis) + '"' +
+      ' aria-expanded="' + (S.help === key ? 'true' : 'false') + '">?</button>'
+    : '';
+  const box = (help && S.help === key)
+    ? '<div class="helpbox">' + help.map(function (x) { return '<p>' + x + '</p>'; }).join('') + '</div>'
+    : '';
+  return '<h1 class="page-h">' + p[0] + btn + '</h1><p class="page-sub">' + p[1] + '</p>' + box;
 }
 
 function pickCards(items, opts){
@@ -681,9 +735,6 @@ function renderWond(){
         '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(t().roll) + ' d' + max + '</button>' +
         '<button type="button" class="btn ghost" data-act="roll100">d100</button>' +
       '</div>' +
-      '<p class="hint">' + esc(S.lang === 'ru'
-        ? 'В таблице ' + max + ' позиций. Кнопка d100 бросает 1–100, кнопка d' + max + ' — по всей таблице.'
-        : 'The table holds ' + max + ' entries. d100 rolls 1–100, d' + max + ' covers the whole table.') + '</p>' +
     '</div>' +
   '</div>' +
   '<div class="results">' + orGrid([cardHTML(it)]) + '</div>';
@@ -706,9 +757,6 @@ function renderComm(){
       '<div class="numrow">' + numBox('n', st.n, 1, 10) +
         '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(t().roll) + ' d10</button>' +
       '</div>' +
-      '<p class="hint">' + esc(S.lang === 'ru'
-        ? 'Предметы сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.'
-        : 'Community items are listed in ascending order of rarity: 1 is the humblest, 10 the most powerful.') + '</p>' +
     '</div>' +
   '</div>' +
   '<div class="results">' + orGrid([cardHTML(it)]) + '</div>';
@@ -1218,6 +1266,7 @@ document.addEventListener('click', function (e) {
   const a = act.dataset.act, val = act.dataset.val;
 
   if (a === 'rarity') { st.rarity = val; render(); return; }
+  if (a === 'help')   { S.help = S.help === val ? '' : val; render(); return; }
   if (a === 'kind')   { S.kind = val; render(); return; }
   if (a === 'src')    { S.std.src = val; render(); return; }
   if (a === 'collect')    { S.activeList = S.activeList === val ? '' : val; render(); return; }
