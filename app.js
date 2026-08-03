@@ -27,6 +27,7 @@ const S = {
   lists: [],
   activeList: '',
   listDraft: '',
+  listRoll: { id: '', n: 0 },
   newListFor: '',
   newListDraft: '',
   importDraft: ''
@@ -47,11 +48,14 @@ const T = {
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
-    filter:'Показать', fItems:'Предметы', fCons:'Расходники', keepOneKind:'Нужен хотя бы один тип',
+    filter:'Тип', fItems:'Предметы', fCons:'Расходники', keepOneKind:'Нужен хотя бы один тип',
     community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Вставьте ссылку на список',
     toLists:'В списки', cancel:'Отмена',
+    qty:'Кол-во', gold:'Золото', goldUnit:'зол.', total:'Итого',
+    rollInList:'Бросок по списку', clear:'Сбросить',
+    moveUp:'Выше', moveDown:'Ниже',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад в логове дракона', create:'Создать',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
@@ -87,22 +91,24 @@ const T = {
         'Выберите редкость, бросьте указанное на чипе количество d12 и сложите результаты. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов — игрок выбирает один.',
         '<b>Обычная</b> — в заброшенном лагере или в обычной лавке.<br><b>Необычная</b> — ограниченный товар в лавке, тайник в лагере, часть награды.<br><b>Редкая</b> — под замком в лавке, единственная награда за работу, из вещей сильного НИП.<br><b>Легендарная</b> — единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.',
         'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.',
-        'Источник можно сузить до одной книги — но хотя бы одна должна остаться выбранной.'
       ],
       alt: [
         'Предметы распределены между колонками «Надежда» и «Страх» в зависимости от их тематики и назначения. К «Надежде» отнесены предметы, предназначенные для помощи, защиты и решения практических задач, а к «Страху» — те, что служат для причинения вреда, обмана и скрытных уловок.',
         'Выберите редкость и бросьте Кости Дуальности. Игрок выбирает между вариантом по Кости Надежды и вариантом по Кости Страха.',
         'При критическом успехе, когда обе кости совпали, игрок берёт любую позицию из таблицы этой редкости, а Мастер может разрешить подняться на ступень выше.',
-        'Ранги у редкостей — рекомендация, а не ограничение.'
+        'Ранги у редкостей — рекомендация, а не ограничение.',
+        'Эти таблицы собрал <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a> и выложил <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">на Reddit</a> — спасибо ему.'
       ],
       wondrous: [
         'В таблице 119 позиций вместо ста: столько есть иллюстраций. Кнопка d100 бросает 1–100, кнопка d119 — по всей таблице.',
         'Позиции перечислены по алфавиту, а не по силе. Большинство из них слабой или средней силы.',
-        'Некоторые предметы можно переработать в более сильные — это указано в описании. Мастер может потребовать для этого бросок Искусности или Знания.'
+        'Некоторые предметы можно переработать в более сильные — это указано в описании. Мастер может потребовать для этого бросок Искусности или Знания.',
+        'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a>.'
       ],
       community: [
         'Предметы каждого сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.',
-        'Такие предметы уместны как награда от сообщества, семейная реликвия или находка на его территории.'
+        'Такие предметы уместны как награда от сообщества, семейная реликвия или находка на его территории.',
+        'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a>.'
       ],
       lists: [
         'Создайте список, нажмите «Пополнять» и ходите по таблицам — на карточках и строках появится кнопка «+». Либо кликните по картинке предмета и отметьте нужные списки в блоке «В списки».',
@@ -133,11 +139,14 @@ const T = {
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
-    filter:'Show', fItems:'Items', fCons:'Consumables', keepOneKind:'At least one type has to stay on',
+    filter:'Type', fItems:'Items', fCons:'Consumables', keepOneKind:'At least one type has to stay on',
     community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
     toLists:'Add to lists', cancel:'Cancel',
+    qty:'Qty', gold:'Gold', goldUnit:'gp', total:'Total',
+    rollInList:'Roll within the list', clear:'Clear',
+    moveUp:'Move up', moveDown:'Move down',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
     untitled:'Untitled', noLists:'No lists yet — create one above',
@@ -173,22 +182,24 @@ const T = {
         'Pick a rarity, roll the number of d12s shown on the chip and add them up. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.',
         '<b>Common</b> — an abandoned camp or a local shop.<br><b>Uncommon</b> — limited stock in a shop, a protected place in a camp, part of a reward.<br><b>Rare</b> — under lock and key, the sole reward for a job, a powerful NPC’s possessions.<br><b>Legendary</b> — the only one of its kind, a reward for a deadly job, a powerful adversary’s treasure.',
         'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.',
-        'The source can be narrowed to a single book, but at least one has to stay on.'
       ],
       alt: [
         'Items were sorted into the “Hope” and “Fear” column based on theme and function, with Hope leaning towards aid, protection and utility, and Fear leaning towards harm, deception and subterfuge.',
         'Choose a rarity and roll the Duality Dice. The player picks between the entry matching the Hope Die and the one matching the Fear Die.',
         'On a critical success, when both dice match, the player may take any entry from that rarity table, and the GM may allow jumping up a rarity.',
-        'Tiers attached to rarities are a recommendation, not a limit.'
+        'Tiers attached to rarities are a recommendation, not a limit.',
+        'These tables were put together by <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a> and posted <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">on Reddit</a> — thanks to them.'
       ],
       wondrous: [
         'The table holds 119 entries rather than a hundred — that is how many illustrations exist. The d100 button rolls 1–100, the d119 button covers the whole table.',
         'Entries are listed alphabetically, not by power level, and most are of low to moderate power.',
-        'Some entries can be crafted into stronger ones, as noted in their description. The GM may require a Finesse or Knowledge roll to do so.'
+        'Some entries can be crafted into stronger ones, as noted in their description. The GM may require a Finesse or Knowledge roll to do so.',
+        'Source: the <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a> supplement.'
       ],
       community: [
         'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.',
-        'They fit best as a reward from that community, a family heirloom, or a find on its territory.'
+        'They fit best as a reward from that community, a family heirloom, or a find on its territory.',
+        'Source: the <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a> supplement.'
       ],
       lists: [
         'Create a list, hit “Fill” and browse the tables — a “+” appears on cards and rows. Or click an item’s picture and tick the lists you want in the “Add to lists” block.',
@@ -240,6 +251,7 @@ const $  = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const d = n => 1 + Math.floor(Math.random() * n);
+
 
 function nameOf(it){ return S.lang === 'ru' ? (it.ru || it.en) : it.en; }
 /* Outside the app a bare name loses the Item/Consumable badge, so spell it out */
@@ -331,6 +343,30 @@ function newId(){ return 'l' + Date.now().toString(36) + Math.random().toString(
 function getList(id){ return S.lists.filter(l => l.id === id)[0] || null; }
 function listItems(l){ return l.ids.map(id => BY_ID[id]).filter(Boolean); }
 
+/* meta is optional so lists saved before this existed keep working */
+function itemMeta(l, id){ return (l.meta && l.meta[id]) || {}; }
+function setMeta(l, id, field, value){
+  if (!l.meta) l.meta = {};
+  const m = l.meta[id] || (l.meta[id] = {});
+  if (value > 0) m[field] = value; else delete m[field];
+  if (!Object.keys(m).length) delete l.meta[id];
+  if (!Object.keys(l.meta).length) delete l.meta;
+  saveLists();
+}
+function moveInList(l, id, dir){
+  const i = l.ids.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= l.ids.length) return;
+  l.ids.splice(j, 0, l.ids.splice(i, 1)[0]);
+  saveLists();
+}
+/* name plus whatever meta the GM filled in */
+function itemLine(l, it){
+  const m = itemMeta(l, it.id);
+  return nameForShare(it) +
+    (m.qty > 1 ? ' ×' + m.qty : '') +
+    (m.gold ? ' — ' + m.gold + ' ' + t().goldUnit : '');
+}
+
 function createList(name){
   const l = { id: newId(), name: (name || '').trim() || t().untitled, ids: [], created: Date.now() };
   S.lists.unshift(l); saveLists();
@@ -350,7 +386,14 @@ function toggleInList(listId, itemId){
 
 /* Share payload: base64url of "name\nid,id,id" — short enough to paste anywhere */
 function encodeList(l){
-  const bytes = new TextEncoder().encode(l.name + '\n' + l.ids.join(','));
+  // "id" or "id*qty" or "id*qty*gold" — old links carried bare ids and still parse
+  const parts = l.ids.map(function (id) {
+    const m = itemMeta(l, id);
+    if (m.gold) return id + '*' + (m.qty || 1) + '*' + m.gold;
+    if (m.qty > 1) return id + '*' + m.qty;
+    return id;
+  });
+  const bytes = new TextEncoder().encode(l.name + '\n' + parts.join(','));
   let bin = ''; bytes.forEach(function (b) { bin += String.fromCharCode(b); });
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -363,22 +406,40 @@ function decodeList(payload){
     const raw = new TextDecoder().decode(bytes);
     const nl = raw.indexOf('\n');
     const name = nl >= 0 ? raw.slice(0, nl) : '';
-    const ids = (nl >= 0 ? raw.slice(nl + 1) : '').split(',').filter(function (id) { return BY_ID[id]; });
-    return ids.length ? { name: name, ids: ids } : null;
+    const ids = [], meta = {};
+    (nl >= 0 ? raw.slice(nl + 1) : '').split(',').forEach(function (part) {
+      const bits = part.split('*');
+      if (!BY_ID[bits[0]]) return;
+      ids.push(bits[0]);
+      const qty = parseInt(bits[1], 10), gold = parseInt(bits[2], 10);
+      const m = {};
+      if (qty > 1) m.qty = qty;
+      if (gold > 0) m.gold = gold;
+      if (Object.keys(m).length) meta[bits[0]] = m;
+    });
+    return ids.length ? { name: name, ids: ids, meta: Object.keys(meta).length ? meta : undefined } : null;
   } catch (e) { return null; }
 }
 function listShareUrl(l){
   return baseUrl() + (hosted() ? '' : 'index.html') + '#/l/' + encodeList(l);
 }
 function listAsText(l){
+  const total = listTotal(l);
   return l.name + '\n\n' + listItems(l).map(function (it) {
-    return nameForShare(it) + '\n' + descOf(it);
-  }).join('\n\n');
+    return itemLine(l, it) + '\n' + descOf(it);
+  }).join('\n\n') + (total ? '\n\n' + t().total + ': ' + total + ' ' + t().goldUnit : '');
 }
 function listAsHtml(l){
+  const total = listTotal(l);
   return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
-    return '<b>' + esc(nameForShare(it)) + '</b><br>' + esc(descOf(it));
-  }).join('<br><br>');
+    return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it));
+  }).join('<br><br>') + (total ? '<br><br><b>' + esc(t().total + ': ' + total + ' ' + t().goldUnit) + '</b>' : '');
+}
+function listTotal(l){
+  return listItems(l).reduce(function (sum, it) {
+    const m = itemMeta(l, it.id);
+    return sum + (m.gold || 0) * (m.qty || 1);
+  }, 0);
 }
 
 /* ---------- share links ---------- */
@@ -846,12 +907,13 @@ function renderList(list){
 }
 
 /* removeFrom: render a remove button instead of the collect toggle (list view) */
-function rowHTML(it, removeFrom){
+function rowHTML(it, removeFrom, tail){
   if (typeof removeFrom !== 'string') removeFrom = '';
   return '<div class="row">' +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
-        '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) + '</b>' +
+        '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) +
+          (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
         '<span>' + esc(descOf(it)) + '</span></span>' +
         '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
           esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
@@ -987,9 +1049,59 @@ function renderOneList(id){
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
     storageWarning() +
+    (items.length ? listRollPanel(l, items) : '') +
     (items.length
-      ? '<div class="rows" style="margin-top:16px">' + items.map(function (it) { return rowHTML(it, l.id); }).join('') + '</div>'
+      ? '<div class="rows lrows" style="margin-top:16px">' +
+          items.map(function (it, i) { return listRowHTML(l, it, i); }).join('') +
+        '</div>' + listTotalHTML(l)
       : '<div class="empty">' + esc(t().listEmptyHint) + '</div>');
+}
+
+/* roll a position inside the list itself */
+function listRollPanel(l, items){
+  const hit = (S.listRoll.id === l.id && S.listRoll.n >= 1 && S.listRoll.n <= items.length)
+    ? items[S.listRoll.n - 1] : null;
+  return '<div class="panel" style="margin-bottom:16px">' +
+    '<div class="field" style="margin-bottom:' + (hit ? '14px' : '0') + '">' +
+      '<span class="lbl">' + esc(t().rollInList) + '</span>' +
+      '<div class="numrow">' +
+        '<button type="button" class="btn primary" data-act="rollList" data-val="' + esc(l.id) + '">' +
+          ICON_DIE + esc(t().roll) + ' d' + items.length + '</button>' +
+        (hit ? '<button type="button" class="btn ghost" data-act="clearRoll">' + esc(t().clear) + '</button>' : '') +
+      '</div>' +
+    '</div>' +
+    (hit ? orGrid([cardHTML(hit, { rollLabel: S.listRoll.n })]) : '') +
+  '</div>';
+}
+
+function listTotalHTML(l){
+  const total = listTotal(l);
+  if (!total) return '';
+  return '<p class="ltotal">' + esc(t().total) + ': <b>' + total + ' ' + esc(t().goldUnit) + '</b></p>';
+}
+
+function listRowHTML(l, it, i){
+  const m = itemMeta(l, it.id);
+  const last = i === l.ids.length - 1;
+  return '<div class="row lrow">' +
+      '<span class="lrow-n">' + (i + 1) + '</span>' +
+      '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
+        '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+        '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
+        '<span>' + esc(descOf(it)) + '</span></span>' +
+      '</button>' +
+      '<div class="lrow-meta">' +
+        '<label><span>' + esc(t().qty) + '</span>' +
+          '<input type="number" min="1" max="99" inputmode="numeric" data-qty="' + esc(l.id + ':' + it.id) + '" value="' + (m.qty || '') + '" placeholder="1"></label>' +
+        '<label><span>' + esc(t().gold) + '</span>' +
+          '<input type="number" min="0" max="99999" inputmode="numeric" data-gold="' + esc(l.id + ':' + it.id) + '" value="' + (m.gold || '') + '" placeholder="—"></label>' +
+      '</div>' +
+      '<div class="lrow-acts">' +
+        '<button type="button" data-move="' + esc(l.id + ':' + it.id + ':-1') + '"' + (i === 0 ? ' disabled' : '') + ' title="' + esc(t().moveUp) + '" aria-label="' + esc(t().moveUp) + '">↑</button>' +
+        '<button type="button" data-move="' + esc(l.id + ':' + it.id + ':1') + '"' + (last ? ' disabled' : '') + ' title="' + esc(t().moveDown) + '" aria-label="' + esc(t().moveDown) + '">↓</button>' +
+        '<button type="button" class="row-x" data-remove="' + esc(l.id + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>' +
+      '</div>' +
+    '</div>';
 }
 
 function renderSharedList(payload){
@@ -1000,12 +1112,19 @@ function renderSharedList(payload){
       '<a class="btn primary" href="#/roll/std">' + esc(t().toStart) + '</a>';
   }
   const items = data.ids.map(function (id) { return BY_ID[id]; });
+  const fake = { id: '', name: data.name, ids: data.ids, meta: data.meta };
   return '<h1 class="page-h">' + esc(data.name || t().untitled) + '</h1>' +
     '<p class="page-sub">' + esc(t().sharedList) + ' · ' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
     '<div class="card-acts" style="margin-bottom:18px">' +
       '<button type="button" class="btn primary" data-act="saveShared" data-val="' + esc(payload) + '">' + esc(t().saveToMine) + '</button>' +
     '</div>' +
-    '<div class="rows">' + items.map(function (it) { return rowHTML(it); }).join('') + '</div>';
+    '<div class="rows">' + items.map(function (it) {
+      const m = itemMeta(fake, it.id);
+      const bits = [];
+      if (m.qty > 1) bits.push('×' + m.qty);
+      if (m.gold) bits.push(m.gold + ' ' + t().goldUnit);
+      return rowHTML(it, '', bits.join(' · '));
+    }).join('') + '</div>' + listTotalHTML(fake);
 }
 
 function plural(n){
@@ -1246,6 +1365,14 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const mv = e.target.closest('[data-move]');
+  if (mv) {
+    const p = mv.dataset.move.split(':');
+    const l = getList(p[0]);
+    if (l) { moveInList(l, p[1], parseInt(p[2], 10)); render(); }
+    return;
+  }
+
   const rm = e.target.closest('[data-remove]');
   if (rm) {
     const parts = rm.dataset.remove.split(':');
@@ -1322,6 +1449,12 @@ document.addEventListener('click', function (e) {
     renderCollectBar();
     return;
   }
+  if (a === 'rollList') {
+    const l = getList(val);
+    if (l && l.ids.length) { S.listRoll = { id: l.id, n: d(listItems(l).length) }; render(); }
+    return;
+  }
+  if (a === 'clearRoll') { S.listRoll = { id: '', n: 0 }; render(); return; }
   if (a === 'importList') {
     const field = document.getElementById('limport');
     const raw = (field ? field.value : '').trim();
@@ -1330,7 +1463,9 @@ document.addEventListener('click', function (e) {
     const data = decodeList(m ? m[1] : raw);
     if (!data) { toast(t().badShare, true); return; }
     const l = createList(data.name);
-    l.ids = data.ids.slice(); saveLists();
+    l.ids = data.ids.slice();
+    if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
+    saveLists();
     S.importDraft = '';
     location.hash = '#/lists/' + l.id;
     return;
@@ -1339,7 +1474,9 @@ document.addEventListener('click', function (e) {
     const data = decodeList(val);
     if (!data) return;
     const l = createList(data.name);
-    l.ids = data.ids.slice(); saveLists();
+    l.ids = data.ids.slice();
+    if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
+    saveLists();
     toast(t().savedToLists);
     location.hash = '#/lists/' + l.id;
     return;
@@ -1387,6 +1524,21 @@ document.addEventListener('input', function (e) {
   if (el.id === 'lname') { S.listDraft = el.value; }
   if (el.id === 'limport') { S.importDraft = el.value; }
   if (el.id === 'newlist') { S.newListDraft = el.value; }
+  if (el.dataset.qty || el.dataset.gold) {
+    const field = el.dataset.qty ? 'qty' : 'gold';
+    const parts = (el.dataset.qty || el.dataset.gold).split(':');
+    const l = getList(parts[0]);
+    if (l) {
+      setMeta(l, parts[1], field, parseInt(el.value, 10) || 0);
+      const box = el.closest('.lrows');
+      const totalEl = box && box.parentNode.querySelector('.ltotal');
+      const total = listTotal(l);
+      if (totalEl) totalEl.innerHTML = total
+        ? esc(t().total) + ': <b>' + total + ' ' + esc(t().goldUnit) + '</b>'
+        : '';
+      else if (total && box) box.insertAdjacentHTML('afterend', listTotalHTML(l));
+    }
+  }
   if (el.id === 'rename') {
     const l = getList(el.dataset.list);
     if (l) { l.name = el.value; saveLists(); renderCollectBar(); }
