@@ -21,6 +21,11 @@ ALL.forEach(function (it) {
   if (it.craft && BY_ID[it.craft]) CRAFTED_FROM[it.craft] = it.id;
 });
 
+/* Cards from the rulebook that item descriptions point at (a spell, a grimoire
+   feature, a beastform). Kept beside the items so a player who is handed the
+   item also gets the text they would otherwise have to look up. */
+const REFS = window.LOOT.refs || {};
+
 /* ---------- state ---------- */
 const S = {
   lang: 'ru',
@@ -39,6 +44,8 @@ const S = {
   listRoll: { id: '', n: 0 },
   newListFor: '',
   newListDraft: '',
+  openList: '',    // локальный список, которому принадлежит текущий адрес
+  urlPayload: '',  // код, который мы сами записали в адрес
   importDraft: ''
 };
 
@@ -90,6 +97,7 @@ const T = {
     listLinkCopied:'Ссылка на список скопирована',
     listCopied:'Список скопирован', copyFailed:'Не удалось скопировать',
     sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
+    copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     craftInto:'Улучшается до', craftFrom:'Получается из',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
@@ -122,7 +130,7 @@ const T = {
       ],
       lists: [
         'Создайте список, нажмите «Пополнить» и ходите по таблицам — на карточках и строках появится кнопка «+». Либо кликните по картинке предмета и отметьте нужные списки в блоке «В списки».',
-        'Кнопка «Поделиться» кладёт в буфер ссылку, внутри которой закодирован весь состав. Сервер не нужен: тот, кто её откроет, увидит список и сможет сохранить копию себе.',
+        'Весь состав списка закодирован прямо в адресе страницы и обновляется при каждой правке. Поэтому отправить список можно и кнопкой «Поделиться», и просто скопировав адрес из строки браузера — это одна и та же ссылка. Сервер не нужен: тот, кто её откроет, увидит список и сможет сохранить копию себе.',
         'Поле «Восстановить из ссылки» принимает такую ссылку обратно — получится обычный список, который можно править. Хранятся в нём только название и id позиций, поэтому правки в данных подхватятся сами.'
       ]
     },
@@ -182,6 +190,7 @@ const T = {
     listLinkCopied:'List link copied',
     listCopied:'List copied', copyFailed:'Could not copy',
     sImg:'Image', sText:'Text', tableLink:'Link to this table',
+    copyRoll:'Copy every option', rollCopied:'Options copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     craftInto:'Upgrades to', craftFrom:'Made from',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
@@ -214,7 +223,7 @@ const T = {
       ],
       lists: [
         'Create a list, hit "Fill" and browse the tables — a "+" appears on cards and rows. Or click an item\'s picture and tick the lists you want in the "Add to lists" block.',
-        'The Share button copies a link with the whole list encoded inside it. No server involved: whoever opens it sees the list and can save a copy.',
+        'The whole list is encoded into the page address itself and refreshed on every edit, so the Share button and the browser\'s own address bar hand out the same working link. No server involved: whoever opens it sees the list and can save a copy.',
         'The "Restore from a link" field takes such a link back and rebuilds an ordinary, editable list. Only the name and item ids are stored, so edits to the data are picked up automatically.'
       ]
     },
@@ -284,15 +293,33 @@ function nameForShare(it){
 /* Bold travels in the text/html clipboard flavour. The plain flavour stays
    clean: an app that cannot take rich text gets readable text rather than
    stray markdown characters. */
-function shareText(it){
-  return nameForShare(it) + '\n\n' + descOf(it) + tail(craftText(it), '\n\n');
+function shareText(it, skip){
+  return nameForShare(it) + '\n\n' + descOf(it) +
+    extraBlocks(it, skip).map(function (b) { return '\n\n' + b.head + '\n' + b.body; }).join('');
 }
-function shareHtml(it){
+function shareHtml(it, skip){
   return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)) +
-         tail(esc(craftText(it)).replace(/\n/g, '<br>'), '<br><br>');
+    extraBlocks(it, skip).map(function (b) {
+      return '<br><br><b>' + esc(b.head) + '</b><br>' + esc(b.body);
+    }).join('');
 }
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
-const tail = (s, sep) => s ? sep + s : '';
+
+/* What travels with an item when it is copied or shared: the full text of the
+   other end of a craft chain, and of any rulebook card the description names.
+   Otherwise the player receives a name and still has to go looking.
+   `skip` is a set of ids already present elsewhere in the same message. */
+function extraBlocks(it, skip){
+  const out = [];
+  craftRows(it).forEach(function (r) {
+    if (skip && skip[r.id]) return;
+    out.push({ head: r.label + ': ' + r.name, body: descOf(BY_ID[r.id]) });
+  });
+  refRows(it).forEach(function (r) {
+    out.push({ head: r.name + ' · ' + r.sub, body: r.text });
+  });
+  return out;
+}
 
 /* ---------- crafting ----------
    Both directions as plain rows, so the card, the clipboard and the list
@@ -307,6 +334,29 @@ function craftRows(it){
 }
 function craftText(it){
   return craftRows(it).map(r => r.label + ': ' + r.name).join('\n');
+}
+
+/* ---------- referenced rulebook cards ---------- */
+function refRows(it){
+  return (it.refs || []).map(function (k) {
+    const r = REFS[k];
+    if (!r) return null;
+    return S.lang === 'ru'
+      ? { name: r.ru, sub: r.rusub, text: r.rud, url: r.url }
+      : { name: r.en, sub: r.ensub, text: r.ende, url: r.url.replace('//ru.', '//en.') };
+  }).filter(Boolean);
+}
+function refHTML(it){
+  const rows = refRows(it);
+  if (!rows.length) return '';
+  return '<div class="refs">' + rows.map(function (r) {
+    return '<details><summary>' + ICON_REF +
+        '<span class="ref-n">' + esc(r.name) + '</span>' +
+        '<i class="ref-s">' + esc(r.sub) + '</i></summary>' +
+      '<p>' + esc(r.text) + '</p>' +
+      '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">daggerheart.su</a>' +
+    '</details>';
+  }).join('') + '</div>';
 }
 /* Dense table/list rows are one big button, so a link cannot be nested here —
    the chain shows as a compact caption and the row itself stays the target. */
@@ -376,7 +426,8 @@ const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="current
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
-const ICON_CRAFT = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
+const ICON_REF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
+const ICON_CRAFT ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
 const ICON_LINK ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
 
 /* ============================================================
@@ -482,17 +533,58 @@ function decodeList(payload){
   } catch (e) { return null; }
 }
 function listShareUrl(l){
-  return baseUrl() + (hosted() ? '' : 'index.html') + '#/l/' + encodeList(l);
+  return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l);
+}
+/* The address bar carries the whole list, not a local id, so whatever a person
+   copies out of it — the Share button or the browser's own URL box — works for
+   everyone. S.openList remembers which local list that address belongs to, so
+   an edit can refresh the address instead of orphaning the page. */
+function listHash(l){ return '#/l/' + encodeList(l); }
+/* Saving a shared list produces an identical payload, so the hash does not
+   actually change and no hashchange fires — render by hand in that case. */
+function goToList(l){
+  S.openList = l.id;
+  const want = listHash(l);
+  if (location.hash === want) { S.urlPayload = encodeList(l); render(); }
+  else location.hash = want;
+}
+function findListByPayload(payload){
+  for (let i = 0; i < S.lists.length; i++) {
+    if (encodeList(S.lists[i]) === payload) return S.lists[i];
+  }
+  return null;
+}
+/* Rewrites the address to match the list as it stands now. replaceState does
+   not fire hashchange, so this never re-enters render(). */
+function syncListUrl(l){
+  const payload = encodeList(l);
+  S.urlPayload = payload;
+  const want = '#/l/' + payload;
+  if (location.hash !== want && window.history && history.replaceState) {
+    history.replaceState(null, '', location.pathname + location.search + want);
+  }
+}
+/* Items already in the list do not get their text repeated as someone else's
+   craft partner — the reader has it a few lines up. */
+function listSkip(l){
+  const seen = {};
+  l.ids.forEach(function (id) { seen[id] = true; });
+  return seen;
 }
 function listAsText(l){
+  const skip = listSkip(l);
   return l.name + '\n\n' + listItems(l).map(function (it) {
-    return itemLine(l, it) + '\n' + descOf(it) + tail(craftText(it), '\n');
+    return itemLine(l, it) + '\n' + descOf(it) +
+      extraBlocks(it, skip).map(function (b) { return '\n' + b.head + '\n' + b.body; }).join('');
   }).join('\n\n');
 }
 function listAsHtml(l){
+  const skip = listSkip(l);
   return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
     return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
-           tail(esc(craftText(it)).replace(/\n/g, '<br>'), '<br>');
+      extraBlocks(it, skip).map(function (b) {
+        return '<br><b>' + esc(b.head) + '</b><br>' + esc(b.body);
+      }).join('');
   }).join('<br><br>');
 }
 
@@ -665,6 +757,7 @@ function cardHTML(it, opt){
       '</h3>' +
       '<p class="card-desc">' + esc(ds) + '</p>' +
       craftHTML(it) +
+      refHTML(it) +
       '<div class="card-acts">' +
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
@@ -674,6 +767,29 @@ function cardHTML(it, opt){
       (opt.full ? listPicker(it) : '') +
     '</div>' +
   '</article>';
+}
+
+/* ---------- the whole roll as one message ----------
+   A roll offers several options and the player picks one, so the GM wants to
+   paste them all at once with the OR spelled out rather than send them apart. */
+function rollSep(items){ return items.reduce(function (m, it) { m[it.id] = true; return m; }, {}); }
+function rollText(items){
+  const skip = rollSep(items);
+  return items.map(function (it) { return shareText(it, skip); })
+              .join('\n\n' + '— ' + t().or + ' —' + '\n\n');
+}
+function rollHtml(items){
+  const skip = rollSep(items);
+  return items.map(function (it) { return shareHtml(it, skip); })
+              .join('<br><br><b>— ' + esc(t().or) + ' —</b><br><br>');
+}
+/* Shown only when there is an actual choice to hand over */
+function rollBar(items){
+  if (items.length < 2) return '';
+  return '<div class="resbar">' +
+    '<button type="button" class="btn sm" data-copy-roll="' + esc(items.map(x => x.id).join(',')) + '">' +
+      ICON_COPY + esc(t().copyRoll) + '</button>' +
+    '</div>';
 }
 
 function orDiv(horizontal){
@@ -800,6 +916,7 @@ function renderStd(){
     '</div></div>' +
     kindChips() +
   '</div>' +
+  rollBar(pool.filter(it => it && kindAllows(it.kind))) +
   '<div class="results">' + orGrid(pickCards(pool)) + '</div>';
 }
 
@@ -848,6 +965,7 @@ function renderAlt(){
     '</div>' +
     kindChips() +
   '</div>' +
+  rollBar(picks.map(p => p[0])) +
   '<div class="results">' + critBox + orGrid(cards) + '</div>';
 }
 
@@ -1051,7 +1169,7 @@ function listCardHTML(l){
   }).join('');
   const active = S.activeList === l.id;
   return '<div class="listcard' + (active ? ' active' : '') + '">' +
-    '<a class="listcard-main" href="#/lists/' + esc(l.id) + '">' +
+    '<a class="listcard-main" href="' + esc(listHash(l)) + '">' +
       '<div class="listcard-top">' +
         '<b>' + esc(l.name) + '</b>' +
         '<span class="badge num">' + items.length + '</span>' +
@@ -1285,7 +1403,7 @@ function renderCollectBar(){
   if (!l) { bar.hidden = true; bar.innerHTML = ''; return; }
   bar.hidden = false;
   bar.innerHTML = '<div class="wrap collect-in">' +
-    '<span class="collect-txt">' + esc(t().collectingInto) + ' <a href="#/lists/' + esc(l.id) + '"><b>' + esc(l.name) + '</b></a>' +
+    '<span class="collect-txt">' + esc(t().collectingInto) + ' <a href="' + esc(listHash(l)) + '"><b>' + esc(l.name) + '</b></a>' +
       ' <span class="badge num">' + l.ids.length + '</span></span>' +
     '<button type="button" class="btn sm" data-act="collectOff">' + esc(t().stopCollecting) + '</button>' +
   '</div>';
@@ -1302,12 +1420,28 @@ function render(){
     const it = BY_ID[id];
     document.title = (it ? nameOf(it) + ' — ' : '') + 'Генератор лута Daggerheart';
   } else if (r.indexOf('lists/') === 0) {
+    // old short link: hand it straight over to the shareable address
+    const own = getList(r.slice(6));
+    if (own) { S.openList = own.id; syncListUrl(own); }
     $('#view').innerHTML = renderOneList(r.slice(6));
     document.title = 'Генератор лута — Daggerheart';
   } else if (r.indexOf('l/') === 0) {
-    $('#view').innerHTML = renderSharedList(r.slice(2));
+    const payload = r.slice(2);
+    /* An edit leaves the address one step behind the list, so a payload we
+       wrote ourselves still belongs to the list we were editing. A payload we
+       did not write is someone else's link and has to be matched honestly. */
+    const own = (payload === S.urlPayload && getList(S.openList)) || findListByPayload(payload);
+    if (own) {
+      S.openList = own.id;
+      syncListUrl(own);
+      $('#view').innerHTML = renderOneList(own.id);
+    } else {
+      S.openList = ''; S.urlPayload = '';
+      $('#view').innerHTML = renderSharedList(payload);
+    }
     document.title = 'Генератор лута — Daggerheart';
   } else {
+    S.openList = ''; S.urlPayload = '';
     $('#view').innerHTML = ROUTES[r]();
     document.title = 'Генератор лута — Daggerheart';
   }
@@ -1444,6 +1578,13 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const cr = e.target.closest('[data-copy-roll]');
+  if (cr) {
+    const items = cr.dataset.copyRoll.split(',').map(id => BY_ID[id]).filter(Boolean);
+    if (items.length) copyRich(rollHtml(items), rollText(items), t().rollCopied);
+    return;
+  }
+
   const clt = e.target.closest('[data-copy-listtext]');
   if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyRich(listAsHtml(l), listAsText(l), t().listCopied); return; }
 
@@ -1451,8 +1592,14 @@ document.addEventListener('click', function (e) {
   if (dl) {
     const l = getList(dl.dataset.delList);
     if (l && confirm(t().deleteConfirm.replace('%s', l.name))) {
+      const wasOpen = S.openList === l.id;
       deleteList(l.id);
-      if (S.route.indexOf('lists/') === 0) { location.hash = '#/lists'; return; }
+      // the address described the list that just went away
+      if (wasOpen || S.route.indexOf('lists/') === 0) {
+        S.openList = ''; S.urlPayload = '';
+        location.hash = '#/lists';
+        return;
+      }
       render();
     }
     return;
@@ -1482,7 +1629,7 @@ document.addEventListener('click', function (e) {
     const input = document.getElementById('lname');
     const l = createList(input ? input.value : '');
     S.listDraft = ''; S.activeList = l.id;
-    location.hash = '#/lists/' + l.id;
+    goToList(l);
     return;
   }
   if (a === 'newListFor') {
@@ -1524,7 +1671,7 @@ document.addEventListener('click', function (e) {
     if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
     saveLists();
     S.importDraft = '';
-    location.hash = '#/lists/' + l.id;
+    goToList(l);
     return;
   }
   if (a === 'saveShared') {
@@ -1535,7 +1682,7 @@ document.addEventListener('click', function (e) {
     if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
     saveLists();
     toast(t().savedToLists);
-    location.hash = '#/lists/' + l.id;
+    goToList(l);
     return;
   }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
@@ -1603,7 +1750,13 @@ function openModal(id){
 
 S.lists = loadLists();
 
-window.addEventListener('hashchange', render);
+/* A modal is tied to the route it was opened from. Links inside it (the craft
+   chain, for one) navigate the page underneath, so the modal has to go with it
+   instead of hanging over the new page. */
+window.addEventListener('hashchange', function () {
+  $('#modal').hidden = true;
+  render();
+});
 render();
 
 })();
