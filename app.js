@@ -26,6 +26,8 @@ const S = {
   lists: [],
   activeList: '',
   listDraft: '',
+  newListFor: '',
+  newListDraft: '',
   importDraft: ''
 };
 
@@ -49,6 +51,7 @@ const T = {
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Вставьте ссылку на список',
     importHint:'Ссылка содержит только названия и id позиций — из неё соберётся обычный список, который можно править.',
+    toLists:'В списки', cancel:'Отмена',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад в логове дракона', create:'Создать',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
     collectHere:'Пополнять', collecting:'Пополняю', collectingInto:'Пополняю список:', stopCollecting:'Готово',
@@ -107,6 +110,7 @@ const T = {
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
     importHint:'The link holds only the name and item ids — it rebuilds into an ordinary list you can edit.',
+    toLists:'Add to lists', cancel:'Cancel',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
     untitled:'Untitled', noLists:'No lists yet — create one above',
     collectHere:'Fill', collecting:'Filling', collectingInto:'Filling list:', stopCollecting:'Done',
@@ -414,6 +418,38 @@ function actBtn(action, id, icon, label, primary, full){
     icon + '<span class="btn-lbl">' + esc(label) + '</span></button>';
 }
 
+/* Expanded card only: toggle this item against every list at once,
+   with an inline field for making a new one. */
+function listPicker(it){
+  const chips = S.lists.map(function (l) {
+    const inList = l.ids.indexOf(it.id) >= 0;
+    return '<button type="button" class="chip' + (inList ? ' on' : '') + '"' +
+      ' data-toggle-in="' + esc(l.id + ':' + it.id) + '">' +
+      (inList ? '✓ ' : '') + esc(l.name) + '</button>';
+  }).join('');
+  const tail = S.newListFor === it.id
+    ? '<span class="picker-new">' +
+        '<input type="text" id="newlist" value="' + esc(S.newListDraft) + '" placeholder="' + esc(t().listNamePh) + '">' +
+        '<button type="button" class="btn sm primary" data-act="createFor" data-val="' + esc(it.id) + '">' + esc(t().create) + '</button>' +
+        '<button type="button" class="btn sm ghost" data-act="cancelNew">' + esc(t().cancel) + '</button>' +
+      '</span>'
+    : '<button type="button" class="chip ghost" data-act="newListFor" data-val="' + esc(it.id) + '">+ ' + esc(t().newList) + '</button>';
+  return '<div class="picker" data-picker="' + esc(it.id) + '">' +
+    '<span class="lbl">' + esc(t().toLists) + '</span>' +
+    '<div class="chips">' + chips + tail + '</div>' +
+  '</div>';
+}
+
+function refreshPicker(el){
+  const box = el.closest('.picker');
+  if (!box) return;
+  const it = BY_ID[box.dataset.picker];
+  if (!it) return;
+  box.outerHTML = listPicker(it);
+  const input = document.getElementById('newlist');
+  if (input) input.focus();
+}
+
 function cardCollectBtn(it){
   if (!S.activeList) return '';
   const l = getList(S.activeList); if (!l) return '';
@@ -457,8 +493,9 @@ function cardHTML(it, opt){
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
         actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
-        cardCollectBtn(it) +
+        (opt.full ? '' : cardCollectBtn(it)) +
       '</div>' +
+      (opt.full ? listPicker(it) : '') +
     '</div>' +
   '</article>';
 }
@@ -617,7 +654,6 @@ function tableHref(table, section){
 }
 
 function rarityLabel(r){ return t()[RAR_KEY[r]] + ' · ' + t().tier + ' ' + TIERS[r]; }
-function rarityGen(r){ return (S.lang === 'ru' ? RAR_GEN_RU[r] : t()[RAR_KEY[r]]) + ' · ' + t().tier + ' ' + TIERS[r]; }
 
 
 /* ---- 5: wondrous ---- */
@@ -1115,6 +1151,15 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const ti = e.target.closest('[data-toggle-in]');
+  if (ti) {
+    const parts = ti.dataset.toggleIn.split(':');
+    toggleInList(parts[0], parts[1]);
+    refreshPicker(ti);
+    renderCollectBar();
+    return;
+  }
+
   const tg = e.target.closest('[data-toggle-list]');
   if (tg) {
     toggleInList(S.activeList, tg.dataset.toggleList);
@@ -1168,6 +1213,27 @@ document.addEventListener('click', function (e) {
     const l = createList(input ? input.value : '');
     S.listDraft = ''; S.activeList = l.id;
     location.hash = '#/lists/' + l.id;
+    return;
+  }
+  if (a === 'newListFor') {
+    S.newListFor = val; S.newListDraft = '';
+    refreshPicker(act);
+    return;
+  }
+  if (a === 'cancelNew') {
+    S.newListFor = ''; S.newListDraft = '';
+    refreshPicker(act);
+    return;
+  }
+  if (a === 'createFor') {
+    const input = document.getElementById('newlist');
+    const l = createList(input ? input.value : '');
+    l.ids.push(val); saveLists();
+    S.newListFor = ''; S.newListDraft = '';
+    // deliberately not switching on collect mode here: the user asked to add
+    // one item, not to start filling a list
+    refreshPicker(act);
+    renderCollectBar();
     return;
   }
   if (a === 'importList') {
@@ -1234,6 +1300,7 @@ document.addEventListener('input', function (e) {
   if (el.id === 'sq') { S.search.q = el.value; render._focus = 'sq'; render(); }
   if (el.id === 'lname') { S.listDraft = el.value; }
   if (el.id === 'limport') { S.importDraft = el.value; }
+  if (el.id === 'newlist') { S.newListDraft = el.value; }
   if (el.id === 'rename') {
     const l = getList(el.dataset.list);
     if (l) { l.name = el.value; saveLists(); renderCollectBar(); }

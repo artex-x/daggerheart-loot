@@ -253,6 +253,19 @@ input::placeholder{color:var(--muted2)}
 .card-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto;padding-top:3px}
 .card-acts a.btn{text-decoration:none}
 
+/* list picker inside an expanded card */
+.picker{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.picker .lbl{margin-bottom:8px}
+.picker .chip{font-size:12.5px;padding:5px 11px}
+.picker .chip.ghost{border-style:dashed;color:var(--muted2)}
+.picker .chip.ghost:hover{border-style:solid;color:var(--gold)}
+.picker-new{display:flex;gap:6px;flex-wrap:wrap;align-items:center;width:100%}
+.picker-new input{
+  flex:1;min-width:150px;height:32px;padding:0 11px;border-radius:8px;
+  background:var(--bg2);border:1px solid var(--line2);color:var(--txt);font:inherit;font-size:13px;
+}
+.picker-new input:focus{outline:none;border-color:var(--gold)}
+
 /* single item page */
 .itempage{max-width:520px}
 
