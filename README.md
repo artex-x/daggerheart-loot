@@ -187,7 +187,7 @@ tools/build-share-pages.js  генератор i/ из data.js
 | Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
 | Альтернативные таблицы | 5 редкостей × 4 колонки × 12 | Alternate Loot & Consumable Tables | ссылается на записи выше |
 
-Альтернативные таблицы собрал [PrinceOfNowhereee](https://www.reddit.com/user/PrinceOfNowhereee/) — [пост на Reddit](https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/). Ссылки на все три источника продублированы в приложении под кнопкой **?** соответствующего раздела.
+Автор альтернативных таблиц — [PrinceOfNowhereee](https://www.reddit.com/user/PrinceOfNowhereee/), [пост на Reddit](https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/). Ссылки на все три источника продублированы в приложении под кнопкой **?** соответствующего раздела.
 
 Перевод преимущественно неофициальный. Для терминологии за основу взят [daggerheart.su](https://ru.daggerheart.su/). Если перевод где-то смущает, оригинал в одном переключении RU/EN.
 
