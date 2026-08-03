@@ -239,9 +239,10 @@ input::placeholder{color:var(--muted2)}
 .card.full .card-name{font-size:19px}
 .card-name a{color:var(--txt);text-decoration:none;border-bottom:1px solid transparent;transition:.15s}
 .card-name a:hover{color:var(--gold-soft);border-bottom-color:currentColor}
+.card-name-acts{display:inline-flex;gap:2px;flex:none;align-self:center}
 .card-name button{
-  border:0;background:transparent;padding:2px;border-radius:6px;color:var(--muted2);
-  flex:none;line-height:0;transition:.15s;align-self:center;
+  border:0;background:transparent;padding:3px;border-radius:6px;color:var(--muted2);
+  flex:none;line-height:0;transition:.15s;
 }
 .card-name button:hover{color:var(--gold);background:var(--surface2)}
 .card-name svg{width:14px;height:14px;fill:currentColor}

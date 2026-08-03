@@ -68,7 +68,7 @@ const T = {
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
     imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
     copyLink:'Скопировать ссылку', linkCopied:'Ссылка скопирована', copySection:'Скопировать ссылку на этот раздел',
-    sImg:'Картинка', sText:'Текст', sLink:'Ссылка', tableLink:'Ссылка на таблицу',
+    sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
@@ -126,7 +126,7 @@ const T = {
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
     imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
     copyLink:'Copy link', linkCopied:'Link copied', copySection:'Copy a link to this section',
-    sImg:'Image', sText:'Text', sLink:'Link', tableLink:'Link to this table',
+    sImg:'Image', sText:'Text', tableLink:'Link to this table',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
@@ -447,14 +447,16 @@ function cardHTML(it, opt){
     '<div class="card-body">' +
       '<div class="card-meta">' + meta + '</div>' +
       '<h3 class="card-name">' + nameEl +
-        '<button type="button" data-copy-name="' + esc(it.id) + '" title="' + esc(t().copyName) + '" aria-label="' + esc(t().copyName) + '">' + ICON_COPY + '</button>' +
+        '<span class="card-name-acts">' +
+          '<button type="button" data-copy-name="' + esc(it.id) + '" title="' + esc(t().copyName) + '" aria-label="' + esc(t().copyName) + '">' + ICON_COPY + '</button>' +
+          '<button type="button" data-share="' + esc(it.id) + '" title="' + esc(t().copyLink) + '" aria-label="' + esc(t().copyLink) + '">' + ICON_LINK + '</button>' +
+        '</span>' +
       '</h3>' +
       '<p class="card-desc">' + esc(ds) + '</p>' +
       '<div class="card-acts">' +
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
         actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
-        actBtn('share',     it.id, ICON_LINK, t().sLink, false, t().copyLink) +
         cardCollectBtn(it) +
       '</div>' +
     '</div>' +
