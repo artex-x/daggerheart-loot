@@ -22,9 +22,9 @@ const esc = s => String(s == null ? '' : s)
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const COMMUNITY_RU = {
-  Highborne: 'Благородные', Loreborne: 'Учёные', Orderborne: 'Упорядоченные',
-  Ridgeborne: 'Горцы', Seaborne: 'Морские', Slyborne: 'Хитроумные',
-  Underborne: 'Подземные', Wanderborne: 'Странники', Wildborne: 'Дикие'
+  Highborne: 'Великородное', Loreborne: 'Научное', Orderborne: 'Догматичное',
+  Ridgeborne: 'Горное', Seaborne: 'Морское', Slyborne: 'Криминальное',
+  Underborne: 'Подземное', Wanderborne: 'Кочевое', Wildborne: 'Лесное'
 };
 const SRC_LABEL = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot' };
 

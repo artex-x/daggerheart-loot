@@ -25,7 +25,8 @@ const S = {
   kind: 'all',  // shared item/consumable filter, applies on every page that can show both
   lists: [],
   activeList: '',
-  listDraft: ''
+  listDraft: '',
+  importDraft: ''
 };
 
 /* ---------- i18n ---------- */
@@ -35,7 +36,7 @@ const T = {
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
-    rollResult:'Результат броска', roll:'Бросить', rollDuality:'Бросить Кости Дуальности',
+    rollResult:'Результат броска', roll:'Бросить', rollDuality:'Бросить кости',
     copyName:'Скопировать название', copied:'Скопировано',
     rarity:'Редкость', dice:'Кости', tier:'Ранг',
     viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
@@ -45,11 +46,14 @@ const T = {
     critFrom:'Выбор из таблицы:', bumpTo:'Поднять до',
     filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
     community:'Сообщество', source:'Источник', both:'Оба',
+    importList:'Восстановить из ссылки', importBtn:'Восстановить',
+    importPh:'Вставьте ссылку на список',
+    importHint:'Ссылка содержит только названия и id позиций — из неё соберётся обычный список, который можно править.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад в логове дракона', create:'Создать',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
-    collectHere:'Собирать сюда', collecting:'Собираю сюда', collectingInto:'Собираю в список:', stopCollecting:'Закончить',
-    addToList:'В список', inList:'В списке', removeItem:'Убрать из списка',
-    share:'Поделиться', del:'Удалить', rename:'Название списка', copyIds:'Скопировать id',
+    collectHere:'Добавлять сюда', collecting:'Добавляю сюда', collectingInto:'Добавляю в список:', stopCollecting:'Готово',
+    addToList:'Добавить', inList:'Добавлено', removeItem:'Убрать из списка',
+    share:'Поделиться', del:'Удалить', rename:'Название списка',
     listEmpty:'Список пуст', listEmptyHint:'Список пуст. Нажмите «Собирать сюда», походите по таблицам и добавляйте позиции кнопкой «+».',
     sharedList:'Список от другого игрока', saveToMine:'Сохранить себе', savedToLists:'Список сохранён',
     badShare:'Ссылка повреждена или собрана в другой версии данных.',
@@ -58,12 +62,13 @@ const T = {
     noStorageTitle:'Браузер блокирует локальное хранилище.',
     noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
     localOnlyTitle:'Списки живут только в этом браузере.',
-    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, поделитесь ссылкой или скопируйте id и сохраните их у себя.',
+    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Поделиться» и сохраните ссылку: из неё список восстанавливается целиком.',
     searchPh:'Поиск по названию или описанию (RU / EN)…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
     imgCopied:'Картинка скопирована', imgSaved:'Картинка сохранена', imgFailed:'Не удалось получить картинку',
     copyLink:'Скопировать ссылку', linkCopied:'Ссылка скопирована', copySection:'Скопировать ссылку на этот раздел',
+    sImg:'Картинка', sText:'Текст', sLink:'Ссылка', tableLink:'Ссылка на таблицу',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
@@ -89,7 +94,7 @@ const T = {
     or:'OR',
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
-    rollResult:'Roll result', roll:'Roll', rollDuality:'Roll Duality Dice',
+    rollResult:'Roll result', roll:'Roll', rollDuality:'Roll the dice',
     copyName:'Copy name', copied:'Copied',
     rarity:'Rarity', dice:'Dice', tier:'Tier',
     viewGrid:'Grid', viewList:'List', view:'View',
@@ -99,11 +104,14 @@ const T = {
     critFrom:'Choose from table:', bumpTo:'Bump to',
     filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
     community:'Community', source:'Source', both:'Both',
+    importList:'Restore from a link', importBtn:'Restore',
+    importPh:'Paste a list link',
+    importHint:'The link holds only the name and item ids — it rebuilds into an ordinary list you can edit.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
     untitled:'Untitled', noLists:'No lists yet — create one above',
-    collectHere:'Collect here', collecting:'Collecting here', collectingInto:'Collecting into:', stopCollecting:'Done',
+    collectHere:'Add here', collecting:'Adding here', collectingInto:'Adding to list:', stopCollecting:'Done',
     addToList:'Add', inList:'Added', removeItem:'Remove from the list',
-    share:'Share', del:'Delete', rename:'List name', copyIds:'Copy ids',
+    share:'Share', del:'Delete', rename:'List name',
     listEmpty:'The list is empty', listEmptyHint:'The list is empty. Hit "Collect here", browse the tables and add entries with "+".',
     sharedList:'A list from another player', saveToMine:'Save to my lists', savedToLists:'List saved',
     badShare:'The link is damaged or was built from a different data version.',
@@ -112,12 +120,13 @@ const T = {
     noStorageTitle:'The browser is blocking local storage.',
     noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
     localOnlyTitle:'Lists live in this browser only.',
-    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Share a link or copy the ids and keep them somewhere safe.',
+    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Hit Share and keep the link: a list rebuilds from it completely.',
     searchPh:'Search by name or description (RU / EN)…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
     imgCopied:'Image copied', imgSaved:'Image saved', imgFailed:'Could not load the image',
     copyLink:'Copy link', linkCopied:'Link copied', copySection:'Copy a link to this section',
+    sImg:'Image', sText:'Text', sLink:'Link', tableLink:'Link to this table',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
@@ -144,13 +153,15 @@ const t = () => T[S.lang];
 const RARITIES4 = ['common','uncommon','rare','legendary'];
 const RARITIES5 = ['common','uncommon','rare','very_rare','legendary'];
 const RAR_KEY = { common:'common', uncommon:'uncommon', rare:'rare', very_rare:'veryRare', legendary:'legendary' };
+/* Russian needs the genitive after "поднять до" */
+const RAR_GEN_RU = { common:'Обычной', uncommon:'Необычной', rare:'Редкой', very_rare:'Очень редкой', legendary:'Легендарной' };
 const DICE = { common:[1,2], uncommon:[2,3], rare:[3,4], legendary:[4,5] };
 /* tier recommendations printed in the Alternate Loot & Consumable Tables */
 const TIERS = { common:'1-2', uncommon:'1-2', rare:'2-3', very_rare:'3-4', legendary:'3-4' };
 const COMMUNITIES = [
-  ['Highborne','Благородные'], ['Loreborne','Учёные'], ['Orderborne','Упорядоченные'],
-  ['Ridgeborne','Горцы'], ['Seaborne','Морские'], ['Slyborne','Хитроумные'],
-  ['Underborne','Подземные'], ['Wanderborne','Странники'], ['Wildborne','Дикие']
+  ['Highborne','Великородное'], ['Loreborne','Научное'], ['Orderborne','Догматичное'],
+  ['Ridgeborne','Горное'], ['Seaborne','Морское'], ['Slyborne','Криминальное'],
+  ['Underborne','Подземное'], ['Wanderborne','Кочевое'], ['Wildborne','Лесное']
 ];
 const TABLE_DEFS = [
   { id:'core_item',        ru:'Core — предметы',        en:'Core — items' },
@@ -374,10 +385,11 @@ const ICON_DIE  = '<svg viewBox="0 0 24 24" width="16" height="16" fill="current
    CARD
    ============================================================ */
 /* Labels collapse to icons on narrow screens, so every button keeps an aria-label */
-function actBtn(action, id, icon, label, primary){
+function actBtn(action, id, icon, label, primary, full){
+  const hint = full || label;
   return '<button type="button" class="btn sm' + (primary ? ' primary' : '') + '"' +
     ' data-' + action + '="' + esc(id) + '"' +
-    ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' +
+    ' title="' + esc(hint) + '" aria-label="' + esc(hint) + '">' +
     icon + '<span class="btn-lbl">' + esc(label) + '</span></button>';
 }
 
@@ -419,9 +431,9 @@ function cardHTML(it, opt){
       '<p class="card-desc">' + esc(ds) + '</p>' +
       '<div class="card-acts">' +
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
-        actBtn('copy-img',  it.id, ICON_IMG,  t().copyImg) +
-        actBtn('copy-full', it.id, ICON_COPY, t().copyText) +
-        actBtn('share',     it.id, ICON_LINK, t().copyLink) +
+        actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
+        actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
+        actBtn('share',     it.id, ICON_LINK, t().sLink, false, t().copyLink) +
         cardCollectBtn(it) +
       '</div>' +
     '</div>' +
@@ -554,7 +566,7 @@ function renderAlt(){
           '<a class="btn sm primary" target="_blank" rel="noopener" href="' + esc(tableHref(altTableId(), st.rarity)) + '">' +
             esc(t().openTable) + ICON_EXT + '</a>' +
           (nextRar ? '<button type="button" class="btn sm" data-act="rarity" data-val="' + nextRar + '">' +
-            esc(t().bumpTo) + ' ' + esc(rarityLabel(nextRar)) + '</button>' : '') +
+            esc(t().bumpTo) + ' ' + esc(S.lang === 'ru' ? RAR_GEN_RU[nextRar] : t()[RAR_KEY[nextRar]]) + '</button>' : '') +
         '</div>' +
       '</div>'
     : '';
@@ -582,6 +594,7 @@ function tableHref(table, section){
 }
 
 function rarityLabel(r){ return t()[RAR_KEY[r]] + ' · ' + t().tier + ' ' + TIERS[r]; }
+function rarityGen(r){ return (S.lang === 'ru' ? RAR_GEN_RU[r] : t()[RAR_KEY[r]]) + ' · ' + t().tier + ' ' + TIERS[r]; }
 
 
 /* ---- 5: wondrous ---- */
@@ -682,8 +695,8 @@ function renderTables(){
   const searchBar = st.t.indexOf('alt_') === 0 ? '' :
     '<div class="toolbar" style="margin-top:16px">' +
       '<div class="grow"><input type="search" id="tq" value="' + esc(st.q) + '" placeholder="' + esc(t().searchPh) + '"></div>' +
-      '<button type="button" class="btn" data-copy-sec="' + esc(st.t) + '" title="' + esc(t().copySection) + '">' +
-        ICON_LINK + '<span class="btn-lbl">' + esc(t().copyLink) + '</span></button>' +
+      '<button type="button" class="btn" data-copy-sec="' + esc(st.t) + '" title="' + esc(t().tableLink) + '" aria-label="' + esc(t().tableLink) + '">' +
+        ICON_LINK + '<span class="btn-lbl">' + esc(t().tableLink) + '</span></button>' +
       '<div class="seg small" role="group" aria-label="' + esc(t().view) + '">' +
         '<button type="button" data-act="view" data-val="list"' + (st.view === 'list' ? ' class="on"' : '') + '>' + esc(t().viewList) + '</button>' +
         '<button type="button" data-act="view" data-val="grid"' + (st.view === 'grid' ? ' class="on"' : '') + '>' + esc(t().viewGrid) + '</button>' +
@@ -808,6 +821,13 @@ function renderLists(){
           '<button type="button" class="btn primary" data-act="createList">' + esc(t().create) + '</button>' +
         '</div>' +
       '</div>' +
+      '<div class="field"><span class="lbl">' + esc(t().importList) + '</span>' +
+        '<div class="numrow">' +
+          '<div class="grow"><input type="text" id="limport" value="' + esc(S.importDraft) + '" placeholder="' + esc(t().importPh) + '"></div>' +
+          '<button type="button" class="btn" data-act="importList">' + esc(t().importBtn) + '</button>' +
+        '</div>' +
+        '<p class="hint">' + esc(t().importHint) + '</p>' +
+      '</div>' +
     '</div>' +
     (S.lists.length
       ? '<div class="listgrid">' + S.lists.map(listCardHTML).join('') + '</div>'
@@ -831,7 +851,6 @@ function renderOneList(id){
         esc(active ? t().collecting : t().collectHere) + '</button>' +
       '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
-      '<button type="button" class="btn sm" data-copy-listids="' + esc(l.id) + '">' + esc(t().copyIds) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
     storageWarning() +
@@ -1099,9 +1118,6 @@ document.addEventListener('click', function (e) {
   const clt = e.target.closest('[data-copy-listtext]');
   if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyText(l.name + '\n\n' + listAsText(l)); return; }
 
-  const cli = e.target.closest('[data-copy-listids]');
-  if (cli) { const l = getList(cli.dataset.copyListids); if (l) copyText(l.ids.join(',')); return; }
-
   const dl = e.target.closest('[data-del-list]');
   if (dl) {
     const l = getList(dl.dataset.delList);
@@ -1127,6 +1143,19 @@ document.addEventListener('click', function (e) {
     const input = document.getElementById('lname');
     const l = createList(input ? input.value : '');
     S.listDraft = ''; S.activeList = l.id;
+    location.hash = '#/lists/' + l.id;
+    return;
+  }
+  if (a === 'importList') {
+    const field = document.getElementById('limport');
+    const raw = (field ? field.value : '').trim();
+    // accept a whole URL or just the payload
+    const m = /#\/l\/([A-Za-z0-9_-]+)/.exec(raw);
+    const data = decodeList(m ? m[1] : raw);
+    if (!data) { toast(t().badShare); return; }
+    const l = createList(data.name);
+    l.ids = data.ids.slice(); saveLists();
+    S.importDraft = '';
     location.hash = '#/lists/' + l.id;
     return;
   }
@@ -1180,6 +1209,7 @@ document.addEventListener('input', function (e) {
   }
   if (el.id === 'sq') { S.search.q = el.value; render._focus = 'sq'; render(); }
   if (el.id === 'lname') { S.listDraft = el.value; }
+  if (el.id === 'limport') { S.importDraft = el.value; }
   if (el.id === 'rename') {
     const l = getList(el.dataset.list);
     if (l) { l.name = el.value; saveLists(); renderCollectBar(); }
