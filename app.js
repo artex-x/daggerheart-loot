@@ -23,7 +23,7 @@ const S = {
   tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
   help: '',
-  kind: 'all',  // shared item/consumable filter, applies on every page that can show both
+  kind: { item: true, consumable: true },  // shared filter, applies wherever both can show up
   lists: [],
   activeList: '',
   listDraft: '',
@@ -47,7 +47,7 @@ const T = {
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
-    filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
+    filter:'Показать', fItems:'Предметы', fCons:'Расходники', keepOneKind:'Нужен хотя бы один тип',
     community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Вставьте ссылку на список',
@@ -133,7 +133,7 @@ const T = {
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
-    filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
+    filter:'Show', fItems:'Items', fCons:'Consumables', keepOneKind:'At least one type has to stay on',
     community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
@@ -590,17 +590,23 @@ function numBox(id, val, min, max, cls){
   '</div>';
 }
 
-/* The same three chips everywhere, backed by one piece of state */
+/* Two independent toggles, both on by default, backed by one piece of state */
+const KINDS = [['item','fItems'], ['consumable','fCons']];
+
 function kindChips(){
   return '<div class="field"><span class="lbl">' + esc(t().filter) + '</span><div class="chips">' +
-    ['all','items','cons'].map(f =>
-      '<button type="button" class="chip' + (f === S.kind ? ' on' : '') + '" data-act="kind" data-val="' + f + '">' +
-        esc(f === 'all' ? t().fAll : f === 'items' ? t().fItems : t().fCons) + '</button>').join('') +
+    KINDS.map(function (k) {
+      const on = !!S.kind[k[0]];
+      const last = on && KINDS.filter(function (x) { return S.kind[x[0]]; }).length === 1;
+      return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
+        ' data-act="kind" data-val="' + k[0] + '"' +
+        ' aria-pressed="' + (on ? 'true' : 'false') + '"' +
+        (last ? ' data-last="1" title="' + esc(t().keepOneKind) + '"' : '') + '>' +
+        esc(t()[k[1]]) + '</button>';
+    }).join('') +
   '</div></div>';
 }
-function kindAllows(kind){
-  return S.kind === 'all' || (S.kind === 'items' ? kind === 'item' : kind === 'consumable');
-}
+function kindAllows(kind){ return !!S.kind[kind]; }
 
 function rarityChips(list, cur, act, mode){
   return '<div class="chips">' + list.map(r => {
@@ -721,7 +727,7 @@ function renderAlt(){
   '<div class="results">' + critBox + orGrid(cards) + '</div>';
 }
 
-function altTableId(){ return S.kind === 'cons' ? 'alt_consumable' : 'alt_item'; }
+function altTableId(){ return (!S.kind.item && S.kind.consumable) ? 'alt_consumable' : 'alt_item'; }
 /* Absolute so it survives target="_blank"; a bare "#/..." would just re-hash the opener */
 function tableHref(table, section){
   return baseUrl() + (hosted() ? '' : 'index.html') + '#/tables/' + table + (section ? '/' + section : '');
@@ -1275,7 +1281,11 @@ document.addEventListener('click', function (e) {
 
   if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'help')   { S.help = S.help === val ? '' : val; render(); return; }
-  if (a === 'kind')   { S.kind = val; render(); return; }
+  if (a === 'kind') {
+    if (act.dataset.last) { toast(t().keepOneKind); return; }
+    S.kind[val] = !S.kind[val];
+    render(); return;
+  }
   if (a === 'src') {
     // never leave the roll with nothing to draw from
     if (act.dataset.last) { toast(t().keepOneSource); return; }
