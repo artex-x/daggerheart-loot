@@ -36,9 +36,30 @@ function subtitle(it){
   return kind + ' · ' + src + ' · №' + it.roll;
 }
 
+/* Crafting chains, resolved the same way the app does it: the target is stored
+   forward, the "made from" direction is derived so the halves cannot drift. */
+const ALL = [].concat(...Object.values(DATA));
+const BY_ID = {};
+ALL.forEach(it => { BY_ID[it.id] = it; });
+const CRAFTED_FROM = {};
+ALL.forEach(it => {
+  if (it.craft && BY_ID[it.craft]) CRAFTED_FROM[it.craft] = it.id;
+});
+
+function craftLines(it){
+  const out = [];
+  const into = BY_ID[it.craft];
+  if (into) out.push('Улучшается до: ' + (into.ru || into.en));
+  const from = BY_ID[CRAFTED_FROM[it.id]];
+  if (from) out.push('Получается из: ' + (from.ru || from.en));
+  return out;
+}
+
 function page(it){
   const name = it.ru || it.en;
-  const desc = it.rud || it.ende;
+  const craft = craftLines(it);
+  // the unfurl preview is one flat string, so the chain joins the description
+  const desc = (it.rud || it.ende) + (craft.length ? ' ' + craft.join(' ') + '.' : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image
   const img = SITE + 'og/' + it.img.replace(/\.webp$/, '.jpg');
   const url = SITE + 'i/' + it.id + '.html';
@@ -75,6 +96,7 @@ function page(it){
   h1{font-size:22px;margin:0 0 6px}
   .s{color:#736b8c;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 14px}
   p{color:#cfc8e0;margin:0 0 20px}
+  p.c{color:#9b93b3;font-size:13px;margin:-12px 0 14px}
   a{color:#d8ab5e}
 </style>
 </head>
@@ -83,8 +105,8 @@ function page(it){
     <img src="../img/${esc(it.img)}" alt="${esc(name)}">
     <h1>${esc(name)}</h1>
     <p class="s">${esc(subtitle(it))}</p>
-    <p>${esc(desc)}</p>
-    <a href="${esc(app)}">Открыть в генераторе лута</a>
+    <p>${esc(it.rud || it.ende)}</p>
+${craft.map(c => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc(app)}">Открыть в генераторе лута</a>
   </div>
   <script>location.replace(${JSON.stringify(app)});</script>
 </body>

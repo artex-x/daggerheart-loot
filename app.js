@@ -12,11 +12,20 @@ const BY_ID = {};
 Object.keys(DATA).forEach(k => DATA[k].forEach(it => { BY_ID[it.id] = it; }));
 const ALL = Object.keys(DATA).reduce((a, k) => a.concat(DATA[k]), []);
 
+/* ---------- crafting chains ----------
+   A record carries `craft` — the id of what it turns into — when it can be
+   upgraded. The reverse direction ("made from") is derived here rather than
+   stored, so the two halves can never drift apart. */
+const CRAFTED_FROM = {};
+ALL.forEach(function (it) {
+  if (it.craft && BY_ID[it.craft]) CRAFTED_FROM[it.craft] = it.id;
+});
+
 /* ---------- state ---------- */
 const S = {
   lang: 'ru',
   route: '',
-  std:  { n: 1, rarity: 'common', src: { core: true, hnf: true } },
+  std:  { n: 1, src: { core: true, hnf: true } },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
@@ -42,7 +51,7 @@ const T = {
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
     rollResult:'Результат броска', roll:'Бросить', randomIn:'Случайно', rollDuality:'Бросить кости',
     copyName:'Скопировать название', copied:'Скопировано',
-    rarity:'Редкость', dice:'Кости', tier:'Ранг',
+    rarity:'Редкость', tier:'Ранг',
     viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
     common:'Обычная', uncommon:'Необычная', rare:'Редкая', veryRare:'Очень редкая', legendary:'Легендарная',
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
@@ -82,27 +91,28 @@ const T = {
     listCopied:'Список скопирован', copyFailed:'Не удалось скопировать',
     sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
+    craftInto:'Улучшается до', craftFrom:'Получается из',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
     whatIsThis:'Как это работает',
     help: {
       std: [
-        'Выберите редкость, бросьте указанное на чипе количество d12 и сложите результаты. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов — игрок выбирает один.',
-        '<b>Обычная</b> — в заброшенном лагере или в обычной лавке.<br><b>Необычная</b> — ограниченный товар в лавке, тайник в лагере, часть награды.<br><b>Редкая</b> — под замком в лавке, единственная награда за работу, из вещей сильного НИП.<br><b>Легендарная</b> — единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.',
+        'Бросьте d12 и сложите результаты — сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.',
+        'Сколько костей брать, решает редкость добычи — она подписана под каждой кнопкой. Где какая редкость уместна:<br><b>Обычная</b> — заброшенный лагерь, обычная лавка.<br><b>Необычная</b> — ограниченный товар в лавке, тайник в лагере, часть награды.<br><b>Редкая</b> — под замком в лавке, единственная награда за работу, вещи сильного НИП.<br><b>Легендарная</b> — единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.',
         'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.',
       ],
       alt: [
-        'Предметы распределены между колонками «Надежда» и «Страх» в зависимости от их тематики и назначения. К «Надежде» отнесены предметы, предназначенные для помощи, защиты и решения практических задач, а к «Страху» — те, что служат для причинения вреда, обмана и скрытных уловок.',
+        'Предметы разнесены по колонкам «Надежда» и «Страх» по смыслу: в «Надежде» то, что помогает, защищает и решает задачи, в «Страхе» — то, что вредит, обманывает и работает исподтишка.',
         'Выберите редкость и бросьте Кости Дуальности. Игрок выбирает между вариантом по Кости Надежды и вариантом по Кости Страха.',
         'При критическом успехе, когда обе кости совпали, игрок берёт любую позицию из таблицы этой редкости, а Мастер может разрешить подняться на ступень выше.',
         'Ранги у редкостей — рекомендация, а не ограничение.',
         'Автор таблиц: <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a>. Источник: <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">пост на Reddit</a>.'
       ],
       wondrous: [
-        'В таблице 119 позиций вместо ста: столько есть иллюстраций. Обычной кости на такой диапазон нет, поэтому кнопка выбирает позицию случайно; если бросаете d100 за столом — просто впишите результат.',
-        'Позиции перечислены по алфавиту, а не по силе. Большинство из них слабой или средней силы.',
-        'Некоторые предметы можно переработать в более сильные — это указано в описании. Мастер может потребовать для этого бросок Искусности или Знания.',
+        'В таблице 119 позиций, а не 100 — по числу нарисованных предметов. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».',
+        'Позиции идут по алфавиту, а не по силе: большинство предметов слабые или средние.',
+        'Часть предметов улучшается до более сильных. На карточке такая связь показана отдельной строкой, по ней же можно перейти ко второму предмету. Мастер может потребовать для улучшения бросок Искусности или Знания.',
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a>.'
       ],
       community: [
@@ -133,7 +143,7 @@ const T = {
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
     rollResult:'Roll result', roll:'Roll', randomIn:'Random', rollDuality:'Roll the dice',
     copyName:'Copy name', copied:'Copied',
-    rarity:'Rarity', dice:'Dice', tier:'Tier',
+    rarity:'Rarity', tier:'Tier',
     viewGrid:'Grid', viewList:'List', view:'View',
     common:'Common', uncommon:'Uncommon', rare:'Rare', veryRare:'Very rare', legendary:'Legendary',
     hopeDie:'Hope Die', fearDie:'Fear Die',
@@ -173,27 +183,28 @@ const T = {
     listCopied:'List copied', copyFailed:'Could not copy',
     sImg:'Image', sText:'Text', tableLink:'Link to this table',
     openPage:'Page', openTable:'Open table', toStart:'Home',
+    craftInto:'Upgrades to', craftFrom:'Made from',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
     whatIsThis:'How this works',
     help: {
       std: [
-        'Pick a rarity, roll the number of d12s shown on the chip and add them up. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.',
-        '<b>Common</b> — an abandoned camp or a local shop.<br><b>Uncommon</b> — limited stock in a shop, a protected place in a camp, part of a reward.<br><b>Rare</b> — under lock and key, the sole reward for a job, a powerful NPC’s possessions.<br><b>Legendary</b> — the only one of its kind, a reward for a deadly job, a powerful adversary’s treasure.',
+        'Roll d12 and add them up — the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.',
+        'How many dice you take depends on the rarity you are after — each button is captioned with the rarities it covers. Where each one fits:<br><b>Common</b> — an abandoned camp, a local shop.<br><b>Uncommon</b> — limited stock in a shop, a stash in a camp, part of a reward.<br><b>Rare</b> — under lock and key, the sole reward for a job, a powerful NPC\'s possessions.<br><b>Legendary</b> — the only one of its kind, a reward for a deadly job, a powerful adversary\'s treasure.',
         'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.',
       ],
       alt: [
-        'Items were sorted into the “Hope” and “Fear” column based on theme and function, with Hope leaning towards aid, protection and utility, and Fear leaning towards harm, deception and subterfuge.',
+        'Items are split between the Hope and Fear columns by theme: Hope holds what aids, protects and solves problems, Fear holds what harms, deceives and works by stealth.',
         'Choose a rarity and roll the Duality Dice. The player picks between the entry matching the Hope Die and the one matching the Fear Die.',
         'On a critical success, when both dice match, the player may take any entry from that rarity table, and the GM may allow jumping up a rarity.',
         'Tiers attached to rarities are a recommendation, not a limit.',
         'Tables by <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a>. Source: <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">the Reddit post</a>.'
       ],
       wondrous: [
-        'The table holds 119 entries rather than a hundred — that is how many illustrations exist. No physical die covers that range, so the button picks at random; if you roll d100 at the table, just type the result in.',
-        'Entries are listed alphabetically, not by power level, and most are of low to moderate power.',
-        'Some entries can be crafted into stronger ones, as noted in their description. The GM may require a Finesse or Knowledge roll to do so.',
+        'The table holds 119 entries rather than 100 — one for every item that has art. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.',
+        'Entries run alphabetically, not by power: most items are weak to moderate.',
+        'Some items upgrade into stronger ones. The card shows that on its own line, and the link takes you to the second item. The GM may ask for a Finesse or Knowledge roll to make the upgrade.',
         'Source: the <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a> supplement.'
       ],
       community: [
@@ -202,14 +213,14 @@ const T = {
         'Source: the <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a> supplement.'
       ],
       lists: [
-        'Create a list, hit “Fill” and browse the tables — a “+” appears on cards and rows. Or click an item’s picture and tick the lists you want in the “Add to lists” block.',
+        'Create a list, hit "Fill" and browse the tables — a "+" appears on cards and rows. Or click an item\'s picture and tick the lists you want in the "Add to lists" block.',
         'The Share button copies a link with the whole list encoded inside it. No server involved: whoever opens it sees the list and can save a copy.',
-        'The “Restore from a link” field takes such a link back and rebuilds an ordinary, editable list. Only the name and item ids are stored, so edits to the data are picked up automatically.'
+        'The "Restore from a link" field takes such a link back and rebuilds an ordinary, editable list. Only the name and item ids are stored, so edits to the data are picked up automatically.'
       ]
     },
     pages: {
       std:   ['Standard rules', 'A roll over the core book and the Hope &amp; Fear tables.'],
-      alt:   ['Alternate tables', 'Pick a rarity and enter the player’s Duality Dice. The Hope column and the Fear column give different options; on a crit the player picks anything from the table.'],
+      alt:   ['Alternate tables', 'A Duality Dice roll over both books merged into one set of tables.'],
       wondrous: ['Wondrous Loot', 'Enter your roll result, or pick a random entry.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full — browse, search and open cards.'],
@@ -220,12 +231,17 @@ const T = {
 };
 const t = () => T[S.lang];
 
-const RARITIES4 = ['common','uncommon','rare','legendary'];
+/* Dice per rarity, straight from the Core book */
+const DICE = { common:[1,2], uncommon:[2,3], rare:[3,4], legendary:[4,5] };
+/* …read the other way round: which rarities a given number of d12 covers.
+   Counts overlap (2d12 is both Common and Uncommon), hence a list per count. */
+const NDICE = [1, 2, 3, 4, 5].map(function (n) {
+  return { n: n, rar: Object.keys(DICE).filter(function (r) { return DICE[r].indexOf(n) >= 0; }) };
+});
 const RARITIES5 = ['common','uncommon','rare','very_rare','legendary'];
 const RAR_KEY = { common:'common', uncommon:'uncommon', rare:'rare', very_rare:'veryRare', legendary:'legendary' };
 /* Russian needs the genitive after "поднять до" */
 const RAR_GEN_RU = { common:'Обычной', uncommon:'Необычной', rare:'Редкой', very_rare:'Очень редкой', legendary:'Легендарной' };
-const DICE = { common:[1,2], uncommon:[2,3], rare:[3,4], legendary:[4,5] };
 const REAL_DICE = [4, 6, 8, 10, 12, 20, 100];
 /* d119 is not a die anyone owns, so call it what it is: a random pick */
 function rollLabel(n){
@@ -268,9 +284,46 @@ function nameForShare(it){
 /* Bold travels in the text/html clipboard flavour. The plain flavour stays
    clean: an app that cannot take rich text gets readable text rather than
    stray markdown characters. */
-function shareText(it){ return nameForShare(it) + '\n\n' + descOf(it); }
-function shareHtml(it){ return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)); }
+function shareText(it){
+  return nameForShare(it) + '\n\n' + descOf(it) + tail(craftText(it), '\n\n');
+}
+function shareHtml(it){
+  return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)) +
+         tail(esc(craftText(it)).replace(/\n/g, '<br>'), '<br><br>');
+}
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
+const tail = (s, sep) => s ? sep + s : '';
+
+/* ---------- crafting ----------
+   Both directions as plain rows, so the card, the clipboard and the list
+   export all read from one place. Every row points at a record that exists. */
+function craftRows(it){
+  const rows = [];
+  const into = BY_ID[it.craft];
+  if (into) rows.push({ label: t().craftInto, name: nameOf(into), id: into.id });
+  const from = BY_ID[CRAFTED_FROM[it.id]];
+  if (from) rows.push({ label: t().craftFrom, name: nameOf(from), id: from.id });
+  return rows;
+}
+function craftText(it){
+  return craftRows(it).map(r => r.label + ': ' + r.name).join('\n');
+}
+/* Dense table/list rows are one big button, so a link cannot be nested here —
+   the chain shows as a compact caption and the row itself stays the target. */
+function rowCraft(it){
+  const rows = craftRows(it);
+  if (!rows.length) return '';
+  return '<span class="rcraft">' + ICON_CRAFT +
+    rows.map(r => esc(r.label) + ': ' + esc(r.name)).join(' · ') + '</span>';
+}
+function craftHTML(it){
+  const rows = craftRows(it);
+  if (!rows.length) return '';
+  return '<div class="craft">' + rows.map(function (r) {
+    return '<p>' + ICON_CRAFT + '<span class="craft-l">' + esc(r.label) + '</span>' +
+      '<a href="#/i/' + esc(r.id) + '">' + esc(r.name) + '</a></p>';
+  }).join('') + '</div>';
+}
 
 function srcLabel(it){
   if (it.src === 'core') return t().srcCore;
@@ -323,7 +376,8 @@ const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="current
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
-const ICON_LINK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
+const ICON_CRAFT = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
+const ICON_LINK ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
 
 /* ============================================================
    LISTS
@@ -432,12 +486,13 @@ function listShareUrl(l){
 }
 function listAsText(l){
   return l.name + '\n\n' + listItems(l).map(function (it) {
-    return itemLine(l, it) + '\n' + descOf(it);
+    return itemLine(l, it) + '\n' + descOf(it) + tail(craftText(it), '\n');
   }).join('\n\n');
 }
 function listAsHtml(l){
   return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
-    return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it));
+    return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
+           tail(esc(craftText(it)).replace(/\n/g, '<br>'), '<br>');
   }).join('<br><br>');
 }
 
@@ -609,6 +664,7 @@ function cardHTML(it, opt){
         '</span>' +
       '</h3>' +
       '<p class="card-desc">' + esc(ds) + '</p>' +
+      craftHTML(it) +
       '<div class="card-acts">' +
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
@@ -668,13 +724,10 @@ function kindChips(){
 }
 function kindAllows(kind){ return !!S.kind[kind]; }
 
-function rarityChips(list, cur, act, mode){
+function rarityChips(list, cur, act){
   return '<div class="chips">' + list.map(r => {
-    const sub = mode === 'tiers'
-      ? t().tier + ' ' + TIERS[r]
-      : (DICE[r] ? DICE[r].map(n => n + 'd12').join(' / ') : '');
     return '<button type="button" class="chip' + (r === cur ? ' on' : '') + '" data-act="' + act + '" data-val="' + r + '">' +
-      esc(t()[RAR_KEY[r]]) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</button>';
+      esc(t()[RAR_KEY[r]]) + '<small>' + esc(t().tier + ' ' + TIERS[r]) + '</small></button>';
   }).join('') + '</div>';
 }
 
@@ -712,15 +765,26 @@ function renderStd(){
   if (st.src.core) pool.push(DATA.core_item[n-1], DATA.core_consumable[n-1]);
   if (st.src.hnf)  pool.push(DATA.hnf_item[n-1],  DATA.hnf_consumable[n-1]);
 
+  /* Rarity used to sit here as its own row of chips, but on this page it only
+     ever decided how many d12 to roll — the table is 1–60 whatever you pick.
+     So the dice counts are the buttons now, and the rarity each one belongs to
+     lives in the help text where the rest of the rarity guidance already was. */
   return pageHead('std') +
   '<div class="panel">' +
-    '<div class="field"><span class="lbl">' + esc(t().rarity) + ' · ' + esc(t().dice) + '</span>' +
-      rarityChips(RARITIES4, st.rarity, 'rarity') +
-    '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–60)</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, 60) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(t().roll) + ' ' + DICE[st.rarity][0] + 'd12</button>' +
-        '<button type="button" class="btn ghost" data-act="roll2">' + DICE[st.rarity][1] + 'd12</button>' +
+        '<div class="dicebar">' +
+          NDICE.map(function (x, i) {
+            /* The verb is spelled out once on the first button; the rest read as
+               "…or this many" by proximity. Each carries the rarities it covers. */
+            const rar = x.rar.map(function (r) { return t()[RAR_KEY[r]]; }).join(' / ');
+            return '<button type="button" class="btn' + (i === 0 ? ' primary' : '') + '"' +
+              ' data-act="roll" data-val="' + x.n + '"' +
+              ' title="' + esc(t().roll + ' ' + x.n + 'd12 — ' + rar) + '">' +
+              '<span class="dl">' + (i === 0 ? ICON_DIE + esc(t().roll) + ' ' : '') + x.n + 'd12</span>' +
+              '<small>' + esc(rar) + '</small></button>';
+          }).join('') +
+        '</div>' +
       '</div>' +
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().source) + '</span><div class="chips">' +
@@ -774,7 +838,7 @@ function renderAlt(){
 
   return pageHead('alt') +
   '<div class="panel">' +
-    '<div class="field"><span class="lbl">' + esc(t().rarity) + '</span>' + rarityChips(RARITIES5, st.rarity, 'rarity', 'tiers') + '</div>' +
+    '<div class="field"><span class="lbl">' + esc(t().rarity) + '</span>' + rarityChips(RARITIES5, st.rarity, 'rarity') + '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + '</span>' +
       '<div class="numrow">' +
         '<div class="dieblock"><span class="dielbl h">' + esc(t().hopeDie) + '</span>' + numBox('hope', st.hope, 1, 12, 'hope') + '</div>' +
@@ -912,7 +976,7 @@ function rowHTML(it, removeFrom, tail){
         '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
         '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) +
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
-        '<span>' + esc(descOf(it)) + '</span></span>' +
+        '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
         '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
           esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
@@ -1081,7 +1145,7 @@ function listRowHTML(l, it, i){
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
         '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
-        '<span>' + esc(descOf(it)) + '</span></span>' +
+        '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
       '</button>' +
       '<div class="lrow-meta">' +
         '<label><span>' + esc(t().qty) + '</span>' +
@@ -1477,13 +1541,10 @@ document.addEventListener('click', function (e) {
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   if (a === 'view')   { S.tables.view = val; render(); return; }
 
-  if (a === 'roll' || a === 'roll2') {
+  if (a === 'roll') {
     if (S.route === 'roll/wondrous') { st.n = d(DATA.wondrous.length); }
     else if (S.route === 'roll/community') { st.n = d(10); }
-    else {
-      const nd = DICE[st.rarity][a === 'roll' ? 0 : 1];
-      st.n = clamp(rollNd12(nd), 1, 60);
-    }
+    else { st.n = clamp(rollNd12(+val), 1, 60); }   // val carries the dice count
     render(); return;
   }
   if (a === 'rollDuality') {
