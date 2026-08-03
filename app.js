@@ -187,7 +187,11 @@ function nameOf(it){ return S.lang === 'ru' ? (it.ru || it.en) : it.en; }
 function nameForShare(it){
   return nameOf(it) + (it.kind === 'consumable' ? ' (' + t().cons.toLowerCase() + ')' : '');
 }
+/* Bold travels in the text/html clipboard flavour. The plain flavour stays
+   clean: an app that cannot take rich text gets readable text rather than
+   stray markdown characters. */
 function shareText(it){ return nameForShare(it) + '\n\n' + descOf(it); }
+function shareHtml(it){ return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)); }
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
 
 function srcLabel(it){
@@ -202,6 +206,18 @@ function toast(msg){
   el.textContent = msg; el.hidden = false;
   clearTimeout(toast._tm);
   toast._tm = setTimeout(() => { el.hidden = true; }, 1500);
+}
+
+/* Puts both flavours on the clipboard: rich-paste targets take the HTML,
+   everything else falls back to the plain string. */
+function copyRich(html, plain){
+  const supported = typeof ClipboardItem !== 'undefined' &&
+                    navigator.clipboard && navigator.clipboard.write && window.isSecureContext;
+  if (!supported) { copyText(plain); return; }
+  navigator.clipboard.write([ new ClipboardItem({
+    'text/html':  new Blob([html],  { type: 'text/html' }),
+    'text/plain': new Blob([plain], { type: 'text/plain' })
+  }) ]).then(function () { toast(t().copied); }).catch(function () { copyText(plain); });
 }
 
 function copyText(text){
@@ -290,9 +306,14 @@ function listShareUrl(l){
   return baseUrl() + (hosted() ? '' : 'index.html') + '#/l/' + encodeList(l);
 }
 function listAsText(l){
-  return listItems(l).map(function (it) {
-    return '• ' + nameForShare(it) + ' — ' + descOf(it);
+  return l.name + '\n\n' + listItems(l).map(function (it) {
+    return nameForShare(it) + '\n' + descOf(it);
   }).join('\n\n');
+}
+function listAsHtml(l){
+  return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
+    return '<b>' + esc(nameForShare(it)) + '</b><br>' + esc(descOf(it));
+  }).join('<br><br>');
 }
 
 /* ---------- share links ---------- */
@@ -1067,7 +1088,8 @@ document.addEventListener('click', function (e) {
 
   const cf = e.target.closest('[data-copy-full]');
   if (cf) {
-    copyText(shareText(BY_ID[cf.dataset.copyFull]));
+    const it = BY_ID[cf.dataset.copyFull];
+    copyRich(shareHtml(it), shareText(it));
     return;
   }
 
@@ -1116,7 +1138,7 @@ document.addEventListener('click', function (e) {
   }
 
   const clt = e.target.closest('[data-copy-listtext]');
-  if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyText(l.name + '\n\n' + listAsText(l)); return; }
+  if (clt) { const l = getList(clt.dataset.copyListtext); if (l) copyRich(listAsHtml(l), listAsText(l)); return; }
 
   const dl = e.target.closest('[data-del-list]');
   if (dl) {
