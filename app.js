@@ -16,7 +16,7 @@ const ALL = Object.keys(DATA).reduce((a, k) => a.concat(DATA[k]), []);
 const S = {
   lang: 'ru',
   route: '',
-  std:  { n: 1, rarity: 'common', src: 'all' },
+  std:  { n: 1, rarity: 'common', src: { core: true, hnf: true } },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   wond: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
@@ -48,10 +48,9 @@ const T = {
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
     filter:'Показать', fAll:'Всё', fItems:'Только предметы', fCons:'Только расходники',
-    community:'Сообщество', source:'Источник', both:'Оба',
+    community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Вставьте ссылку на список',
-    importHint:'Ссылка содержит только названия и id позиций — из неё соберётся обычный список, который можно править.',
     toLists:'В списки', cancel:'Отмена',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад в логове дракона', create:'Создать',
@@ -86,7 +85,9 @@ const T = {
     help: {
       std: [
         'Выберите редкость, бросьте указанное на чипе количество d12 и сложите результаты. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов — игрок выбирает один.',
-        'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
+        '<b>Обычная</b> — в заброшенном лагере или в обычной лавке.<br><b>Необычная</b> — ограниченный товар в лавке, тайник в лагере, часть награды.<br><b>Редкая</b> — под замком в лавке, единственная награда за работу, из вещей сильного НИП.<br><b>Легендарная</b> — единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.',
+        'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.',
+        'Источник можно сузить до одной книги — но хотя бы одна должна остаться выбранной.'
       ],
       alt: [
         'Предметы распределены между колонками «Надежда» и «Страх» в зависимости от их тематики и назначения. К «Надежде» отнесены предметы, предназначенные для помощи, защиты и решения практических задач, а к «Страху» — те, что служат для причинения вреда, обмана и скрытных уловок.',
@@ -102,6 +103,11 @@ const T = {
       community: [
         'Предметы каждого сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.',
         'Такие предметы уместны как награда от сообщества, семейная реликвия или находка на его территории.'
+      ],
+      lists: [
+        'Создайте список, нажмите «Пополнять» и ходите по таблицам — на карточках и строках появится кнопка «+». Либо кликните по картинке предмета и отметьте нужные списки в блоке «В списки».',
+        'Кнопка «Поделиться» кладёт в буфер ссылку, внутри которой закодирован весь состав. Сервер не нужен: тот, кто её откроет, увидит список и сможет сохранить копию себе.',
+        'Поле «Восстановить из ссылки» принимает такую ссылку обратно — получится обычный список, который можно править. Хранятся в нём только название и id позиций, поэтому правки в данных подхватятся сами.'
       ]
     },
     pages: {
@@ -113,12 +119,6 @@ const T = {
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
       search: ['Поиск', 'Поиск по всем 449 предметам и расходникам сразу, на русском и на английском.']
     },
-    diceGuide: {
-      common:'1d12 или 2d12 — в заброшенном лагере или в обычной лавке',
-      uncommon:'2d12 или 3d12 — ограниченный товар в лавке, тайник в лагере, часть награды',
-      rare:'3d12 или 4d12 — под замком в лавке, единственная награда за работу, из вещей сильного НИП',
-      legendary:'4d12 или 5d12 — единственный в своём роде, награда за смертельно опасное дело, сокровище могущественного противника'
-    }
   },
   en: {
     tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
@@ -134,10 +134,9 @@ const T = {
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
     filter:'Show', fAll:'All', fItems:'Items only', fCons:'Consumables only',
-    community:'Community', source:'Source', both:'Both',
+    community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
-    importHint:'The link holds only the name and item ids — it rebuilds into an ordinary list you can edit.',
     toLists:'Add to lists', cancel:'Cancel',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
@@ -172,7 +171,9 @@ const T = {
     help: {
       std: [
         'Pick a rarity, roll the number of d12s shown on the chip and add them up. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.',
-        'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.'
+        '<b>Common</b> — an abandoned camp or a local shop.<br><b>Uncommon</b> — limited stock in a shop, a protected place in a camp, part of a reward.<br><b>Rare</b> — under lock and key, the sole reward for a job, a powerful NPC’s possessions.<br><b>Legendary</b> — the only one of its kind, a reward for a deadly job, a powerful adversary’s treasure.',
+        'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.',
+        'The source can be narrowed to a single book, but at least one has to stay on.'
       ],
       alt: [
         'Items were sorted into the “Hope” and “Fear” column based on theme and function, with Hope leaning towards aid, protection and utility, and Fear leaning towards harm, deception and subterfuge.',
@@ -188,6 +189,11 @@ const T = {
       community: [
         'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.',
         'They fit best as a reward from that community, a family heirloom, or a find on its territory.'
+      ],
+      lists: [
+        'Create a list, hit “Fill” and browse the tables — a “+” appears on cards and rows. Or click an item’s picture and tick the lists you want in the “Add to lists” block.',
+        'The Share button copies a link with the whole list encoded inside it. No server involved: whoever opens it sees the list and can save a copy.',
+        'The “Restore from a link” field takes such a link back and rebuilds an ordinary, editable list. Only the name and item ids are stored, so edits to the data are picked up automatically.'
       ]
     },
     pages: {
@@ -199,12 +205,6 @@ const T = {
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
       search: ['Search', 'Search all 449 items and consumables at once, in Russian and English.']
     },
-    diceGuide: {
-      common:'1d12 or 2d12 — an abandoned camp or a local shop',
-      uncommon:'2d12 or 3d12 — limited stock in a shop, protected place in a camp, part of a reward',
-      rare:'3d12 or 4d12 — under lock and key, the sole reward for a job, a powerful NPC’s possessions',
-      legendary:'4d12 or 5d12 — the only one of its kind, reward for a deadly job, a powerful adversary’s treasure'
-    }
   }
 };
 const t = () => T[S.lang];
@@ -638,19 +638,18 @@ function pickCards(items, opts){
 }
 
 /* ---- 1: standard rules (Core + Hope & Fear share one d12 flow) ---- */
-const SOURCES = [['all','both'], ['core','srcCore'], ['hnf','srcHnf']];
+const SOURCES = [['core','srcCore'], ['hnf','srcHnf']];
 
 function renderStd(){
   const st = S.std, n = st.n;
   const pool = [];
-  if (st.src !== 'hnf')  pool.push(DATA.core_item[n-1], DATA.core_consumable[n-1]);
-  if (st.src !== 'core') pool.push(DATA.hnf_item[n-1],  DATA.hnf_consumable[n-1]);
+  if (st.src.core) pool.push(DATA.core_item[n-1], DATA.core_consumable[n-1]);
+  if (st.src.hnf)  pool.push(DATA.hnf_item[n-1],  DATA.hnf_consumable[n-1]);
 
   return pageHead('std') +
   '<div class="panel">' +
     '<div class="field"><span class="lbl">' + esc(t().rarity) + ' · ' + esc(t().dice) + '</span>' +
       rarityChips(RARITIES4, st.rarity, 'rarity') +
-      '<p class="hint">' + esc(t().diceGuide[st.rarity]) + '</p>' +
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–60)</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, 60) +
@@ -659,8 +658,15 @@ function renderStd(){
       '</div>' +
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().source) + '</span><div class="chips">' +
-      SOURCES.map(sr => '<button type="button" class="chip' + (sr[0] === st.src ? ' on' : '') +
-        '" data-act="src" data-val="' + sr[0] + '">' + esc(t()[sr[1]]) + '</button>').join('') +
+      SOURCES.map(sr => {
+        const on = !!st.src[sr[0]];
+        const last = on && SOURCES.filter(x => st.src[x[0]]).length === 1;
+        return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
+          ' data-act="src" data-val="' + sr[0] + '"' +
+          ' aria-pressed="' + (on ? 'true' : 'false') + '"' +
+          (last ? ' data-last="1" title="' + esc(t().keepOneSource) + '"' : '') + '>' +
+          esc(t()[sr[1]]) + '</button>';
+      }).join('') +
     '</div></div>' +
     kindChips() +
   '</div>' +
@@ -750,7 +756,7 @@ function renderComm(){
     '<div class="field"><span class="lbl">' + esc(t().community) + '</span>' +
       '<div class="chips">' + COMMUNITIES.map(c =>
         '<button type="button" class="chip' + (c[0] === st.c ? ' on' : '') + '" data-act="comm" data-val="' + c[0] + '">' +
-        esc(S.lang === 'ru' ? c[1] : c[0]) + (S.lang === 'ru' ? '<small>' + c[0] + '</small>' : '') + '</button>').join('') +
+        esc(S.lang === 'ru' ? c[1] : c[0]) + '</button>').join('') +
       '</div>' +
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–10)</span>' +
@@ -947,8 +953,7 @@ function renderLists(){
           '<div class="grow"><input type="text" id="limport" value="' + esc(S.importDraft) + '" placeholder="' + esc(t().importPh) + '"></div>' +
           '<button type="button" class="btn" data-act="importList">' + esc(t().importBtn) + '</button>' +
         '</div>' +
-        '<p class="hint">' + esc(t().importHint) + '</p>' +
-      '</div>' +
+        '</div>' +
     '</div>' +
     (S.lists.length
       ? '<div class="listgrid">' + S.lists.map(listCardHTML).join('') + '</div>'
@@ -1062,7 +1067,10 @@ function currentRoute(){
   if (/^i\/[\w-]+$/.test(h)) return h;
   if (/^lists\/[\w-]+$/.test(h)) return h;
   if (/^l\/[A-Za-z0-9_-]+$/.test(h)) return h;
-  if (LEGACY_ROUTES[h]) { S.std.src = h === 'roll/core' ? 'core' : h === 'roll/hnf' ? 'hnf' : 'all'; return LEGACY_ROUTES[h]; }
+  if (LEGACY_ROUTES[h]) {
+    S.std.src = { core: h !== 'roll/hnf', hnf: h !== 'roll/core' };
+    return LEGACY_ROUTES[h];
+  }
   const m = TABLES_RE.exec(h);
   if (m) {
     if (m[1] && TABLE_DEFS.some(d => d.id === m[1])) S.tables.t = m[1];
@@ -1268,7 +1276,12 @@ document.addEventListener('click', function (e) {
   if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'help')   { S.help = S.help === val ? '' : val; render(); return; }
   if (a === 'kind')   { S.kind = val; render(); return; }
-  if (a === 'src')    { S.std.src = val; render(); return; }
+  if (a === 'src') {
+    // never leave the roll with nothing to draw from
+    if (act.dataset.last) { toast(t().keepOneSource); return; }
+    S.std.src[val] = !S.std.src[val];
+    render(); return;
+  }
   if (a === 'collect')    { S.activeList = S.activeList === val ? '' : val; render(); return; }
   if (a === 'collectOff') { S.activeList = ''; render(); return; }
   if (a === 'createList') {

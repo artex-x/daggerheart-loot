@@ -98,6 +98,7 @@ main{padding:26px 0 48px;min-height:60vh}
   animation:pop .2s cubic-bezier(.2,.8,.3,1) both;
 }
 .helpbox p{margin:0 0 11px;color:#cfc8e0;font-size:13.5px;line-height:1.6;max-width:78ch}
+.helpbox b{color:var(--gold-soft);font-weight:650}
 .helpbox p:last-child{margin-bottom:0}
 .page-sub{margin:0 0 18px;color:var(--muted);font-size:14px;max-width:70ch}
 .foot{padding:22px 0 40px;color:var(--muted2);font-size:12.5px;border-top:1px solid var(--line);margin-top:20px}
