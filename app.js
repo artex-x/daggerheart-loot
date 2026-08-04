@@ -98,7 +98,7 @@ const T = {
     noStorageTitle:'Браузер блокирует локальное хранилище.',
     noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
     localOnlyTitle:'Списки живут только в этом браузере.',
-    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с заметками. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново, иначе старая вернёт вас к прежней версии. Если заметки не для игроков, отправляйте им «Скопировать текст»: в него попадают только помеченные.',
+    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с заметками. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново, иначе старая вернёт вас к прежней версии. Если заметки не для игроков, отправляйте им не ссылку, а результат кнопки «Скопировать текст»: в него попадут только те заметки, у которых вы отметили галочку «Копировать вместе с предметом». Остальные останутся у вас.',
     searchPh:'Поиск по названию или описанию…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
@@ -199,7 +199,7 @@ const T = {
     noStorageTitle:'The browser is blocking local storage.',
     noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
     localOnlyTitle:'Lists live in this browser only.',
-    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link and you keep the list: the whole thing is encoded into the address and rebuilds from it completely, notes included. Do remember that a link is a snapshot — it holds the list as it was when you copied it. Add an entry or edit a note and you need to save the link again, or the old one takes you back to the old version. If the notes are not for your players, send them Copy text instead: only the ones you ticked go in.',
+    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link and you keep the list: the whole thing is encoded into the address and rebuilds from it completely, notes included. Do remember that a link is a snapshot — it holds the list as it was when you copied it. Add an entry or edit a note and you need to save the link again, or the old one takes you back to the old version. If the notes are not for your players, send them what Copy text produces rather than the link: only the notes you ticked "Copy along with the item" go in, the rest stay with you.',
     searchPh:'Search by name or description…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
@@ -315,11 +315,27 @@ function nameForShare(it){
    stray markdown characters. */
 function shareText(it, skip){
   return nameForShare(it) + '\n\n' + descOf(it) +
-    extraBlocks(it, skip).map(function (b) { return '\n\n' + b.head + '\n' + b.body; }).join('');
+    extraBlocks(it, skip).concat(contextNote(it))
+      .map(function (b) { return '\n\n' + b.head + '\n' + b.body; }).join('');
 }
 function shareHtml(it, skip){
   return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)) +
-    extraBlocks(it, skip).map(blockHtml).join('');
+    extraBlocks(it, skip).concat(contextNote(it)).map(blockHtml).join('');
+}
+
+/* A card usually has no list to belong to, so it carries no note. The one
+   exception is the card the list roll just produced: there the list is known,
+   and a note the GM ticked should travel with it like anywhere else. */
+function contextNote(it){
+  const l = S.listRoll.id && getList(S.listRoll.id);
+  if (!l || onListPage() !== l.id) return [];
+  const m = itemMeta(l, it.id);
+  return (m.note && m.noteShow) ? [{ head: t().listNote, body: m.note }] : [];
+}
+function onListPage(){
+  if (S.route.indexOf('lists/') === 0) return S.route.slice(6);
+  if (S.route.indexOf('l/') === 0 && S.openList) return S.openList;
+  return '';
 }
 /* Italic, not bold: these blocks belong to the item above them. Bold made them
    read as separate entries when several items were pasted at once. */
@@ -666,22 +682,27 @@ function noteBlocks(l, it){
 function listNoteTail(l){
   return (l.note && l.noteShow) ? [{ head: t().listNote, body: l.note }] : [];
 }
+/* The list note sits right under the list name: it is about the whole thing,
+   so it reads as a preamble rather than a footnote after the last entry. */
 function listAsText(l){
   const skip = listSkip(l);
   const block = b => '\n' + b.head + '\n' + b.body;
-  return l.name + '\n\n' + listItems(l).map(function (it) {
-    return itemLine(l, it) + '\n' + descOf(it) +
-      extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
-  }).join('\n\n') + listNoteTail(l).map(b => '\n\n' + b.head + '\n' + b.body).join('');
+  return l.name +
+    listNoteTail(l).map(b => '\n\n' + b.head + '\n' + b.body).join('') +
+    '\n\n' + listItems(l).map(function (it) {
+      return itemLine(l, it) + '\n' + descOf(it) +
+        extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
+    }).join('\n\n');
 }
 function listAsHtml(l){
   const skip = listSkip(l);
   const block = b => '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
-  return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
-    return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
-      extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
-  }).join('<br><br>') +
-  listNoteTail(l).map(b => '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body)).join('');
+  return '<b>' + esc(l.name) + '</b>' +
+    listNoteTail(l).map(b => '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body)).join('') +
+    '<br><br>' + listItems(l).map(function (it) {
+      return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
+        extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
+    }).join('<br><br>');
 }
 
 /* ---------- share links ---------- */
@@ -693,16 +714,10 @@ function hosted(){ return /^https?:$/.test(location.protocol); }
 function itemUrl(id){ return hosted() ? baseUrl() + 'i/' + id + '.html' : baseUrl() + 'index.html#/i/' + id; }
 function canShare(){ return typeof navigator !== 'undefined' && !!navigator.share; }
 
+/* Copies, always. Sharing lives on the Send button — a control labelled
+   "copy the link" must not open a share sheet. */
 function shareItem(id){
-  const it = BY_ID[id];
-  if (!it) return;
-  const url = itemUrl(id);
-  if (canShare()) {
-    navigator.share({ title: nameForShare(it), text: shareText(it), url: url })
-      .catch(() => {});
-  } else {
-    copyText(url, t().linkCopied);
-  }
+  if (BY_ID[id]) copyText(itemUrl(id), t().linkCopied);
 }
 
 /* ---------- image ---------- */
@@ -759,13 +774,21 @@ function sendItem(it){
     navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) }).catch(function () {});
     return;
   }
+  const plain = function () {
+    return navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) });
+  };
   imageBlob(it).then(function (blob) {
     const file = new File([blob], safeFileName(it), { type: 'image/png' });
     if (navigator.canShare({ files: [file] })) {
       return navigator.share({ files: [file], text: shareText(it) });
     }
-    return navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) });
-  }).catch(function () {});
+    return plain();
+  }).catch(function (err) {
+    // The picture failed, not the intent — send the text rather than nothing.
+    // A share the user themselves dismissed must not bounce back at them.
+    if (err && err.name === 'AbortError') return;
+    plain().catch(function () {});
+  });
 }
 const ICON_DIE  = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="flex:none"><path d="M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.3 7.1 3.5-7.1 3.6-7.1-3.6L12 4.3zM4 9.2l7 3.5v7.1l-7-3.5V9.2zm9 10.6v-7.1l7-3.5v7.1l-7 3.5z"/></svg>';
 
@@ -1393,10 +1416,13 @@ function renderOneList(id){
 function listRollPanel(l, items){
   const hit = (S.listRoll.id === l.id && S.listRoll.n >= 1 && S.listRoll.n <= items.length)
     ? items[S.listRoll.n - 1] : null;
+  /* Same shape as every other roll page: a field you can type into for a roll
+     made at the table, and a button for when the app should pick. */
+  const n = (S.listRoll.id === l.id && S.listRoll.n) ? S.listRoll.n : 1;
   return '<div class="panel" style="margin-bottom:16px">' +
     '<div class="field" style="margin-bottom:' + (hit ? '14px' : '0') + '">' +
-      '<span class="lbl">' + esc(t().rollInList) + '</span>' +
-      '<div class="numrow">' +
+      '<span class="lbl">' + esc(t().rollResult) + ' (1–' + items.length + ')</span>' +
+      '<div class="numrow">' + numBox('n', n, 1, items.length) +
         '<button type="button" class="btn primary" data-act="rollList" data-val="' + esc(l.id) + '">' +
           ICON_DIE + esc(rollLabel(items.length)) + '</button>' +
         (hit ? '<button type="button" class="btn ghost" data-act="clearRoll">' + esc(t().clear) + '</button>' : '') +
@@ -1909,6 +1935,14 @@ document.addEventListener('click', function (e) {
 
 
 function applyNum(id, v){
+  // the list page has its own roll, driven by the same field
+  const openId = onListPage();
+  if (openId && id === 'n') {
+    S.listRoll = { id: openId, n: v };
+    render._focus = id;
+    render();
+    return;
+  }
   const st = stateForRoute();
   if (!st) return;
   if (id === 'n') st.n = v;
