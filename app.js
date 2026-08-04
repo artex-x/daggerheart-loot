@@ -39,7 +39,11 @@ const S = {
   help: '',
   kind: { item: true, consumable: true },  // shared filter, applies wherever both can show up
   lists: [],
-  activeList: '',
+  /* Selection replaced the old "I am filling list X" mode. Nothing is sticky:
+     it holds ids for the page you are on and clears when you leave. */
+  sel: {},
+  menuFor: '',      // which control has its list menu open ('' = none, 'sel' = the bar)
+  pickList: '',     // list to offer first, set when you arrive from a list page
   listDraft: '',
   listRoll: { id: '', n: 0 },
   newListFor: '',
@@ -68,7 +72,11 @@ const T = {
     community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Ссылка на список',
-    toLists:'В списки', cancel:'Отмена',
+    cancel:'Отмена',
+    addTo:'Добавить в', inLists:'Лежит в списках',
+    selected:'Выбрано', selectAll:'Выбрать все', clearSel:'Снять выделение',
+    copySel:'Скопировать', selCopied:'Выбранное скопировано',
+    addedTo:'Добавлено в «%s»', removedFrom:'Убрано из «%s»', addPositions:'Добавить позиции',
     qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
     note:'Заметка', listNote:'Заметка мастера',
     noteInLink:'видна всем, у кого есть ссылка',
@@ -80,8 +88,7 @@ const T = {
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад дракона', create:'Создать',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
-    collectHere:'Пополнить', collecting:'Пополняю', collectingInto:'Пополняю список:', stopCollecting:'Готово',
-    addToList:'Добавить', inList:'Добавлено', removeItem:'Убрать из списка',
+    addToList:'Добавить в список', removeItem:'Убрать из списка',
     share:'Поделиться', del:'Удалить', rename:'Название списка',
     listEmpty:'Список пуст', listEmptyHint:'Список пуст. Нажмите «Пополнить», походите по таблицам и добавляйте позиции кнопкой «+».',
     sharedList:'Список от другого игрока', saveToMine:'Сохранить себе', savedToLists:'Список сохранён',
@@ -166,7 +173,11 @@ const T = {
     community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
-    toLists:'Add to lists', cancel:'Cancel',
+    cancel:'Cancel',
+    addTo:'Add to', inLists:'Sits in lists',
+    selected:'Selected', selectAll:'Select all', clearSel:'Clear selection',
+    copySel:'Copy', selCopied:'Selection copied',
+    addedTo:'Added to "%s"', removedFrom:'Removed from "%s"', addPositions:'Add entries',
     qty:'Qty', gold:'Gold', goldUnit:'gp',
     note:'Note', listNote:'GM note',
     noteInLink:'anyone with the link can read it',
@@ -178,8 +189,7 @@ const T = {
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
     untitled:'Untitled', noLists:'No lists yet — create one above',
-    collectHere:'Fill', collecting:'Filling', collectingInto:'Filling list:', stopCollecting:'Done',
-    addToList:'Add', inList:'Added', removeItem:'Remove from the list',
+    addToList:'Add to list', removeItem:'Remove from the list',
     share:'Share', del:'Delete', rename:'List name',
     listEmpty:'The list is empty', listEmptyHint:'The list is empty. Hit "Fill", browse the tables and add entries with "+".',
     sharedList:'A list from another player', saveToMine:'Save to my lists', savedToLists:'List saved',
@@ -436,6 +446,7 @@ const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="current
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
+const ICON_PLUS = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>';
 const ICON_NOTE = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V4a1 1 0 0 1 1-1zm3 5h10V6.5H7V8zm0 3h10V9.5H7V11zm0 3h7v-1.5H7V14z"/></svg>';
 const ICON_REF ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
 const ICON_CRAFT ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
@@ -498,7 +509,6 @@ function createList(name){
 }
 function deleteList(id){
   S.lists = S.lists.filter(l => l.id !== id);
-  if (S.activeList === id) S.activeList = '';
   saveLists();
 }
 function toggleInList(listId, itemId){
@@ -773,42 +783,83 @@ function actBtn(action, id, icon, label, primary, full){
 
 /* Expanded card only: toggle this item against every list at once,
    with an inline field for making a new one. */
-function listPicker(it){
-  const chips = S.lists.map(function (l) {
-    const inList = l.ids.indexOf(it.id) >= 0;
+/* ---------- adding to a list ----------
+   One control, used from an item card and from the selection bar alike. With a
+   single item the chips double as membership: a tick means it is already there
+   and clicking takes it out. With several, every click just adds. */
+function listMenuHTML(key, ids){
+  const one = ids.length === 1 ? ids[0] : '';
+  const order = S.lists.slice().sort(function (a, b) {
+    return (b.id === S.pickList) - (a.id === S.pickList);
+  });
+  const chips = order.map(function (l) {
+    const inList = one && l.ids.indexOf(one) >= 0;
     return '<button type="button" class="chip' + (inList ? ' on' : '') + '"' +
-      ' data-toggle-in="' + esc(l.id + ':' + it.id) + '">' +
+      ' data-add-to="' + esc(l.id + '|' + key) + '">' +
       (inList ? '✓ ' : '') + esc(l.name) + '</button>';
   }).join('');
-  const tail = S.newListFor === it.id
+  const tail = S.newListFor === key
     ? '<span class="picker-new">' +
         '<input type="text" id="newlist" value="' + esc(S.newListDraft) + '" placeholder="' + esc(t().listNamePh) + '">' +
-        '<button type="button" class="btn sm primary" data-act="createFor" data-val="' + esc(it.id) + '">' + esc(t().create) + '</button>' +
+        '<button type="button" class="btn sm primary" data-act="createFor" data-val="' + esc(key) + '">' + esc(t().create) + '</button>' +
         '<button type="button" class="btn sm ghost" data-act="cancelNew">' + esc(t().cancel) + '</button>' +
       '</span>'
-    : '<button type="button" class="chip ghost" data-act="newListFor" data-val="' + esc(it.id) + '">+ ' + esc(t().newList) + '</button>';
-  return '<div class="picker" data-picker="' + esc(it.id) + '">' +
-    '<span class="lbl">' + esc(t().toLists) + '</span>' +
-    '<div class="chips">' + chips + tail + '</div>' +
+    : '<button type="button" class="chip ghost" data-act="newListFor" data-val="' + esc(key) + '">+ ' + esc(t().newList) + '</button>';
+  return '<div class="dropmenu">' +
+    '<span class="lbl">' + esc(one ? t().inLists : t().addTo) + '</span>' +
+    chips + tail +
   '</div>';
 }
 
-function refreshPicker(el){
-  const box = el.closest('.picker');
-  if (!box) return;
-  const it = BY_ID[box.dataset.picker];
-  if (!it) return;
-  box.outerHTML = listPicker(it);
+/* key identifies the opener: an item id on a card, or 'sel' for the bar */
+function addToListBtn(key, ids, primary){
+  const open = S.menuFor === key;
+  return '<div class="seldrop">' +
+    (open ? listMenuHTML(key, ids) : '') +
+    '<button type="button" class="btn sm' + (primary ? ' primary' : '') + (open ? ' on' : '') + '"' +
+      ' data-act="menu" data-val="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
+      ICON_PLUS + esc(t().addToList) + '</button>' +
+  '</div>';
+}
+function listPicker(it){
+  return '<div class="cardpick">' + addToListBtn(it.id, [it.id], true) + '</div>';
+}
+function focusNew(){
   const input = document.getElementById('newlist');
   if (input) input.focus();
 }
 
-function cardCollectBtn(it){
-  if (!S.activeList) return '';
-  const l = getList(S.activeList); if (!l) return '';
-  const inList = l.ids.indexOf(it.id) >= 0;
-  return '<button type="button" class="btn sm' + (inList ? ' on' : '') + '" data-toggle-list="' + esc(it.id) + '"' +
-    ' title="' + esc(l.name) + '">' + (inList ? '✓ ' : '+ ') + esc(inList ? t().inList : t().addToList) + '</button>';
+/* Adding from the menu. One item behaves as a toggle, so a card still shows
+   and undoes its membership; several are only ever added. */
+function applyAddTo(listId, key){
+  const l = getList(listId);
+  if (!l) return;
+  const ids = key === 'sel' ? selIds() : [key];
+  if (ids.length === 1 && l.ids.indexOf(ids[0]) >= 0) {
+    l.ids = l.ids.filter(x => x !== ids[0]);
+    saveLists();
+    toast(t().removedFrom.replace('%s', l.name));
+    render();
+    return;
+  }
+  addIdsTo(l, ids);
+}
+function addIdsTo(l, ids){
+  const fresh = ids.filter(id => BY_ID[id] && l.ids.indexOf(id) < 0);
+  fresh.forEach(id => l.ids.push(id));
+  saveLists();
+  toast(t().addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + fresh.length : ''));
+  S.menuFor = '';
+  render();
+}
+
+/* the whole selection as one message, entries apart — they are a set, not
+   alternatives, so no OR between them */
+function selAsText(items){
+  return items.map(it => shareText(it)).join('\n\n');
+}
+function selAsHtml(items){
+  return items.map(it => shareHtml(it)).join('<br><br>');
 }
 
 /* opt.full  — big picture on top (item page / modal); otherwise a compact row
@@ -848,7 +899,6 @@ function cardHTML(it, opt){
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
         actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
-        (opt.full ? '' : cardCollectBtn(it)) +
       '</div>' +
       (opt.full ? listPicker(it) : '') +
     '</div>' +
@@ -1166,16 +1216,31 @@ function renderTables(){
   return pageHead('tables') + '<div class="panel">' + chips + '</div>' + searchBar + '<div style="margin-top:6px">' + body + '</div>';
 }
 
-function renderList(list){
-  return S.tables.view === 'list'
-    ? '<div class="rows">' + list.map(function (it) { return rowHTML(it); }).join('') + '</div>'
-    : '<div class="tgrid">' + list.map(tileHTML).join('') + '</div>';
+/* Ticks everything currently on screen — which is whatever the filter or the
+   search left, so "all" always means "all of what you are looking at". */
+function selectAllHTML(list){
+  if (!list.length) return '';
+  const all = list.every(function (it) { return S.sel[it.id]; });
+  // the label wraps the caption too, so the whole line is one comfortable target
+  return '<label class="selall">' +
+      '<span class="selbox"' + (all ? ' data-on="1"' : '') + '>' +
+        '<input type="checkbox" data-sel-all="' + esc(list.map(x => x.id).join(',')) + '"' +
+        (all ? ' checked' : '') + '></span>' +
+      '<span>' + esc(t().selectAll) + ' (' + list.length + ')</span>' +
+    '</label>';
 }
 
-/* removeFrom: render a remove button instead of the collect toggle (list view) */
+function renderList(list){
+  return selectAllHTML(list) + (S.tables.view === 'list'
+    ? '<div class="rows">' + list.map(function (it) { return rowHTML(it); }).join('') + '</div>'
+    : '<div class="tgrid">' + list.map(tileHTML).join('') + '</div>');
+}
+
+/* removeFrom: a remove button instead of the selection box (inside a list) */
 function rowHTML(it, removeFrom, tail){
   if (typeof removeFrom !== 'string') removeFrom = '';
-  return '<div class="row">' +
+  return '<div class="row' + (!removeFrom && S.sel[it.id] ? ' sel' : '') + '">' +
+      (removeFrom ? '' : selBox(it.id)) +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
         '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) +
@@ -1187,24 +1252,24 @@ function rowHTML(it, removeFrom, tail){
       '</button>' +
       (removeFrom
         ? '<button type="button" class="row-x" data-remove="' + esc(removeFrom + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>'
-        : collectBtn(it)) +
+        : '') +
     '</div>';
 }
 
 /* Shown only while a list is being collected into */
-function collectBtn(it){
-  if (!S.activeList) return '';
-  const l = getList(S.activeList); if (!l) return '';
-  const inList = l.ids.indexOf(it.id) >= 0;
-  return '<button type="button" class="row-add' + (inList ? ' on' : '') + '"' +
-    ' data-toggle-list="' + esc(it.id) + '"' +
-    ' title="' + esc(inList ? t().inList : t().addToList) + '"' +
-    ' aria-label="' + esc(inList ? t().inList : t().addToList) + '">' + (inList ? '✓' : '+') + '</button>';
+/* ---------- selection ---------- */
+const selCount = () => Object.keys(S.sel).length;
+const selIds = () => Object.keys(S.sel);
+function selBox(id){
+  const on = !!S.sel[id];
+  return '<label class="selbox"' + (on ? ' data-on="1"' : '') + '>' +
+    '<input type="checkbox" data-sel="' + esc(id) + '"' + (on ? ' checked' : '') +
+    ' aria-label="' + esc(t().selected) + '"></label>';
 }
 
 function tileHTML(it){
   const sub = S.lang === 'ru' ? it.en : (it.ru || '');
-  return '<div class="tilewrap">' + collectBtn(it) +
+  return '<div class="tilewrap' + (S.sel[it.id] ? ' sel' : '') + '">' + selBox(it.id) +
     '<button type="button" class="tile" data-open="' + esc(it.id) + '">' +
     '<div class="tile-img">' +
       '<span class="tile-n">' + esc(it.roll) + '</span>' +
@@ -1229,7 +1294,9 @@ function renderSearch(){
     body = '<div class="empty">' + esc(S.lang === 'ru' ? 'Начните вводить запрос' : 'Start typing') + '</div>';
   } else {
     const res = ALL.filter(x => kindAllows(x.kind) && matches(x, q)).slice(0, 300);
-    body = res.length ? '<div class="rows">' + res.map(function (it) { return rowHTML(it); }).join('') + '</div>'
+    // same header as the tables: "all" means everything the query left
+    body = res.length ? selectAllHTML(res) +
+                        '<div class="rows">' + res.map(function (it) { return rowHTML(it); }).join('') + '</div>'
                       : '<div class="empty">' + esc(t().nothing) + '</div>';
   }
   return pageHead('search') +
@@ -1253,8 +1320,7 @@ function listCardHTML(l){
   const thumbs = items.slice(0, 6).map(function (it) {
     return '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">';
   }).join('');
-  const active = S.activeList === l.id;
-  return '<div class="listcard' + (active ? ' active' : '') + '">' +
+  return '<div class="listcard">' +
     '<a class="listcard-main" href="' + esc(listHash(l)) + '">' +
       '<div class="listcard-top">' +
         '<b>' + esc(l.name) + '</b>' +
@@ -1264,8 +1330,8 @@ function listCardHTML(l){
               : '<p class="listcard-empty">' + esc(t().listEmpty) + '</p>') +
     '</a>' +
     '<div class="listcard-acts">' +
-      '<button type="button" class="btn sm' + (active ? ' primary' : '') + '" data-act="collect" data-val="' + esc(l.id) + '">' +
-        esc(active ? t().collecting : t().collectHere) + '</button>' +
+      '<a class="btn sm" href="#/tables" data-act="pickInto" data-val="' + esc(l.id) + '">' +
+        ICON_PLUS + esc(t().addPositions) + '</a>' +
       '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
@@ -1302,14 +1368,13 @@ function renderOneList(id){
       '<a class="btn primary" href="#/lists">' + esc(t().lists) + '</a>';
   }
   const items = listItems(l);
-  const active = S.activeList === l.id;
   return '<h1 class="page-h">' +
       '<input type="text" id="rename" class="titleinput" value="' + esc(l.name) + '" data-list="' + esc(l.id) + '" aria-label="' + esc(t().rename) + '">' +
     '</h1>' +
     '<p class="page-sub">' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
     '<div class="card-acts" style="margin-bottom:16px">' +
-      '<button type="button" class="btn sm' + (active ? ' primary' : '') + '" data-act="collect" data-val="' + esc(l.id) + '">' +
-        esc(active ? t().collecting : t().collectHere) + '</button>' +
+      '<a class="btn sm" href="#/tables" data-act="pickInto" data-val="' + esc(l.id) + '">' +
+        ICON_PLUS + esc(t().addPositions) + '</a>' +
       '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
@@ -1520,26 +1585,38 @@ function renderTabs(){
       (tab[2] ? '<span class="n">' + tab[2] + '</span>' : '') + esc(t().tabs[tab[1]]) +
     '</a>').join('');
 }
-function refreshToggle(el){
-  const l = getList(S.activeList); if (!l) return;
-  const inList = l.ids.indexOf(el.dataset.toggleList) >= 0;
-  el.classList.toggle('on', inList);
-  const label = inList ? t().inList : t().addToList;
-  el.title = label; el.setAttribute('aria-label', label);
-  el.textContent = el.classList.contains('row-add')
-    ? (inList ? '✓' : '+')
-    : (inList ? '✓ ' : '+ ') + label;
+
+/* Appears only while something is ticked, and goes away with it — so the cross
+   on the counter reads as "clear this" and "close this" at once. */
+function markSelected(box, on){
+  const holder = box.closest('.row') || box.closest('.tilewrap');
+  if (holder) holder.classList.toggle('sel', on);
+  box.closest('.selbox').toggleAttribute('data-on', on);
+}
+/* keep the header box honest after individual ticks */
+function syncSelectAll(){
+  const all = $('[data-sel-all]');
+  if (!all) return;
+  const ids = all.dataset.selAll.split(',');
+  const every = ids.every(id => S.sel[id]);
+  all.checked = every;
+  all.parentElement.toggleAttribute('data-on', every);
 }
 
-function renderCollectBar(){
-  const bar = $('#collectBar');
-  const l = S.activeList ? getList(S.activeList) : null;
-  if (!l) { bar.hidden = true; bar.innerHTML = ''; return; }
+function renderSelBar(){
+  const bar = $('#selBar');
+  const n = selCount();
+  if (!n) { bar.hidden = true; bar.innerHTML = ''; return; }
   bar.hidden = false;
-  bar.innerHTML = '<div class="wrap collect-in">' +
-    '<span class="collect-txt">' + esc(t().collectingInto) + ' <a href="' + esc(listHash(l)) + '"><b>' + esc(l.name) + '</b></a>' +
-      ' <span class="badge num">' + l.ids.length + '</span></span>' +
-    '<button type="button" class="btn sm" data-act="collectOff">' + esc(t().stopCollecting) + '</button>' +
+  bar.innerHTML = '<div class="wrap selbar">' +
+    '<span class="selcount">' + esc(t().selected) + ' ' + n +
+      '<button type="button" class="selx" data-act="clearSel"' +
+        ' title="' + esc(t().clearSel) + '" aria-label="' + esc(t().clearSel) + '">&times;</button>' +
+    '</span>' +
+    '<div class="selacts">' +
+      addToListBtn('sel', selIds(), true) +
+      '<button type="button" class="btn sm" data-act="copySel">' + ICON_COPY + esc(t().copySel) + '</button>' +
+    '</div>' +
   '</div>';
 }
 
@@ -1547,7 +1624,7 @@ function render(){
   const r = currentRoute();
   S.route = r;
   renderTabs();
-  renderCollectBar();
+  renderSelBar();
   if (r.indexOf('i/') === 0) {
     const id = r.slice(2);
     $('#view').innerHTML = renderItemPage(id);
@@ -1671,22 +1748,11 @@ document.addEventListener('click', function (e) {
     return;
   }
 
-  const ti = e.target.closest('[data-toggle-in]');
-  if (ti) {
-    const parts = ti.dataset.toggleIn.split(':');
-    toggleInList(parts[0], parts[1]);
-    refreshPicker(ti);
-    renderCollectBar();
-    return;
-  }
-
-  const tg = e.target.closest('[data-toggle-list]');
-  if (tg) {
-    toggleInList(S.activeList, tg.dataset.toggleList);
-    // patch the button in place: a full re-render would drop scroll position
-    // and make adding several entries in a row impossible
-    refreshToggle(tg);
-    renderCollectBar();
+  // one control adds to a list, from a card or from the selection bar
+  const at = e.target.closest('[data-add-to]');
+  if (at) {
+    const parts = at.dataset.addTo.split('|');
+    applyAddTo(parts[0], parts[1]);
     return;
   }
 
@@ -1768,36 +1834,30 @@ document.addEventListener('click', function (e) {
     S.std.src[val] = !S.std.src[val];
     render(); return;
   }
-  if (a === 'collect')    { S.activeList = S.activeList === val ? '' : val; render(); return; }
-  if (a === 'collectOff') { S.activeList = ''; render(); return; }
   if (a === 'createList') {
     const input = document.getElementById('lname');
     const l = createList(input ? input.value : '');
-    S.listDraft = ''; S.activeList = l.id;
+    S.listDraft = '';
     goToList(l);
     return;
   }
-  if (a === 'newListFor') {
-    S.newListFor = val; S.newListDraft = '';
-    refreshPicker(act);
-    return;
-  }
-  if (a === 'cancelNew') {
-    S.newListFor = ''; S.newListDraft = '';
-    refreshPicker(act);
-    return;
-  }
+  if (a === 'newListFor') { S.newListFor = val; S.newListDraft = ''; render(); focusNew(); return; }
+  if (a === 'cancelNew')  { S.newListFor = ''; S.newListDraft = ''; render(); return; }
   if (a === 'createFor') {
     const input = document.getElementById('newlist');
     const l = createList(input ? input.value : '');
-    l.ids.push(val); saveLists();
     S.newListFor = ''; S.newListDraft = '';
-    // deliberately not switching on collect mode here: the user asked to add
-    // one item, not to start filling a list
-    refreshPicker(act);
-    renderCollectBar();
+    addIdsTo(l, val === 'sel' ? selIds() : [val]);
     return;
   }
+  if (a === 'menu')     { S.menuFor = S.menuFor === val ? '' : val; render(); return; }
+  if (a === 'clearSel') { S.sel = {}; S.menuFor = ''; render(); return; }
+  if (a === 'copySel') {
+    const items = selIds().map(id => BY_ID[id]).filter(Boolean);
+    if (items.length) copyRich(selAsHtml(items), selAsText(items), t().selCopied);
+    return;
+  }
+  if (a === 'pickInto') { S.pickList = val; return; }   // href carries the navigation
   if (a === 'rollList') {
     const l = getList(val);
     if (l && l.ids.length) { S.listRoll = { id: l.id, n: d(listItems(l).length) }; render(); }
@@ -1893,6 +1953,26 @@ document.addEventListener('input', function (e) {
       freshenListUrl(l);
     }
   }
+  /* Ticking a box repaints the row and the bar in place: a full render would
+     lose the scroll position halfway down a 119-row table. */
+  if (el.dataset.sel) {
+    const id = el.dataset.sel;
+    if (el.checked) S.sel[id] = true; else delete S.sel[id];
+    markSelected(el, el.checked);
+    renderSelBar();
+    syncSelectAll();
+  }
+  if (el.dataset.selAll) {
+    el.dataset.selAll.split(',').forEach(function (id) {
+      if (el.checked) S.sel[id] = true; else delete S.sel[id];
+    });
+    $$('[data-sel]').forEach(function (box) {
+      box.checked = !!S.sel[box.dataset.sel];
+      markSelected(box, box.checked);
+    });
+    el.parentElement.toggleAttribute('data-on', el.checked);
+    renderSelBar();
+  }
   if (el.dataset.noteShow) {
     const parts = el.dataset.noteShow.split(':');
     const l = getList(parts[0]);
@@ -1922,7 +2002,7 @@ document.addEventListener('input', function (e) {
   }
   if (el.id === 'rename') {
     const l = getList(el.dataset.list);
-    if (l) { l.name = el.value; saveLists(); renderCollectBar(); freshenListUrl(l); }
+    if (l) { l.name = el.value; saveLists(); renderSelBar(); freshenListUrl(l); }
   }
   if (el.id === 'tq') { S.tables.q = el.value; render._focus = 'tq'; render(); }
 });
@@ -1945,6 +2025,10 @@ S.lists = loadLists();
    instead of hanging over the new page. */
 window.addEventListener('hashchange', function () {
   $('#modal').hidden = true;
+  /* A selection belongs to the page it was made on. Route strings cannot tell
+     one table from another — they all read "tables" — so the hash is the honest
+     signal that the user went somewhere else. */
+  S.sel = {}; S.menuFor = ''; S.newListFor = '';
   render();
 });
 render();

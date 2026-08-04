@@ -40,13 +40,15 @@
   <nav class="tabs wrap" id="tabs" aria-label="Разделы"></nav>
 </header>
 
-<div class="collectbar" id="collectBar" hidden></div>
-
 <main class="wrap" id="view"></main>
 
 <footer class="wrap foot">
   <p id="footText"></p>
 </footer>
+
+<!-- after the content: sticky to the bottom of the window, so the add-to-list
+     menu opens upward into view rather than off the top of the page -->
+<div class="selbarwrap" id="selBar" hidden></div>
 
 <div class="modal" id="modal" hidden>
   <div class="modal-back" data-close></div>
