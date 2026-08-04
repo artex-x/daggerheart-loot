@@ -518,6 +518,16 @@ input::placeholder{color:var(--muted2)}
 .lnote textarea:focus,.rnote textarea:focus{
   outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,171,94,.14)}
 .lnote textarea::placeholder,.rnote textarea::placeholder{color:var(--muted2);opacity:.7}
+
+/* the switch that lets a note travel with the copied text */
+.noteshow{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  font-size:12px;color:var(--muted2);padding:5px 9px;border-radius:7px;
+  border:1px solid transparent;transition:.15s}
+.noteshow input{accent-color:var(--gold);width:15px;height:15px;margin:0;flex:none}
+.noteshow:hover{color:var(--muted)}
+.noteshow.on{color:var(--gold-soft);background:rgba(216,171,94,.09);border-color:rgba(216,171,94,.3)}
+.lnote .noteshow{margin:0 13px 13px}
+.rnote .noteshow{margin-top:7px}
 .lrow-n{
   flex:none;display:flex;align-items:center;justify-content:center;width:34px;
   font:650 12px/1 var(--mono);color:var(--gold-soft);

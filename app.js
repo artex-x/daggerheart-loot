@@ -74,6 +74,7 @@ const T = {
     noteInLink:'видна всем, у кого есть ссылка',
     listNotePh:'Например: позиции 9-10 лежат под прилавком',
     notePh:'Внешний вид, хоумбрю, что знает мастер',
+    noteCopyItem:'Копировать вместе с предметом', noteCopyList:'Копировать вместе со списком',
     rollInList:'Бросок по списку', clear:'Сбросить',
     moveUp:'Выше', moveDown:'Ниже',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
@@ -171,6 +172,7 @@ const T = {
     noteInLink:'anyone with the link can read it',
     listNotePh:'For example: entries 9-10 are kept under the counter',
     notePh:'Looks, homebrew, what the GM knows',
+    noteCopyItem:'Copy along with the item', noteCopyList:'Copy along with the list',
     rollInList:'Roll within the list', clear:'Clear',
     moveUp:'Move up', moveDown:'Move down',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
@@ -514,8 +516,13 @@ function toggleInList(listId, itemId){
    saved earlier and links made now are the same string. Notes may themselves
    contain newlines, hence they live in the tail and use ASCII separators that
    a person cannot type. */
-const N_REC = '\x1e';   // starts one item's note
-const N_SEP = '\x1f';   // between the item id and its text
+const N_REC = '\x1e';   // starts one note
+const N_SEP = '\x1f';   // between the id and the text
+const N_LIST = '~';     // the id standing for the list's own note
+/* A leading "+" marks a note the GM chose to copy along with the item. It rides
+   on the id, not the text: ids are letters and digits, so the plus can never be
+   confused with one, while a note is free to start with "-1 к броску". */
+const N_SHOW = '+';
 
 function encodeList(l){
   // "id" or "id*qty" or "id*qty*gold" — old links carried bare ids and still parse
@@ -526,9 +533,10 @@ function encodeList(l){
     return id;
   });
   let raw = l.name + '\n' + parts.join(',');
-  const notes = (l.note || '') + l.ids.map(function (id) {
-    const n = itemMeta(l, id).note;
-    return n ? N_REC + id + N_SEP + n : '';
+  const rec = (id, text, show) => text ? N_REC + (show ? N_SHOW : '') + id + N_SEP + text : '';
+  const notes = rec(N_LIST, l.note, l.noteShow) + l.ids.map(function (id) {
+    const m = itemMeta(l, id);
+    return rec(id, m.note, m.noteShow);
   }).join('');
   if (notes) raw += '\n' + notes;
 
@@ -565,22 +573,32 @@ function decodeList(payload){
     });
     if (!ids.length) return null;
 
-    let note = '';
+    let note = '', noteShow = false;
     if (noteBlob) {
       const cut = noteBlob.indexOf(N_REC);
+      // anything before the first record is a list note from the first cut of
+      // this format, which had no flags — treat it as "do not copy"
       note = cut < 0 ? noteBlob : noteBlob.slice(0, cut);
       if (cut >= 0) {
         noteBlob.slice(cut + 1).split(N_REC).forEach(function (rec) {
           const at = rec.indexOf(N_SEP);
           if (at < 0) return;
-          const id = rec.slice(0, at), text = rec.slice(at + 1);
-          if (!BY_ID[id] || !text || ids.indexOf(id) < 0) return;
-          (meta[id] || (meta[id] = {})).note = text;
+          let id = rec.slice(0, at);
+          const text = rec.slice(at + 1);
+          if (!text) return;
+          const show = id.charAt(0) === N_SHOW;
+          if (show) id = id.slice(1);
+          if (id === N_LIST) { note = text; noteShow = show; return; }
+          if (!BY_ID[id] || ids.indexOf(id) < 0) return;
+          const m = meta[id] || (meta[id] = {});
+          m.note = text;
+          if (show) m.noteShow = true;
         });
       }
     }
     return {
-      name: name, ids: ids, note: note || undefined,
+      name: name, ids: ids,
+      note: note || undefined, noteShow: (note && noteShow) || undefined,
       meta: Object.keys(meta).length ? meta : undefined
     };
   } catch (e) { return null; }
@@ -629,21 +647,31 @@ function listSkip(l){
   l.ids.forEach(function (id) { seen[id] = true; });
   return seen;
 }
+/* Notes the GM marked as copyable. They come last, after the description and
+   the reference blocks, so the item reads whole before the GM's aside. */
+function noteBlocks(l, it){
+  const m = itemMeta(l, it.id);
+  return (m.note && m.noteShow) ? [{ head: t().listNote, body: m.note }] : [];
+}
+function listNoteTail(l){
+  return (l.note && l.noteShow) ? [{ head: t().listNote, body: l.note }] : [];
+}
 function listAsText(l){
   const skip = listSkip(l);
+  const block = b => '\n' + b.head + '\n' + b.body;
   return l.name + '\n\n' + listItems(l).map(function (it) {
     return itemLine(l, it) + '\n' + descOf(it) +
-      extraBlocks(it, skip).map(function (b) { return '\n' + b.head + '\n' + b.body; }).join('');
-  }).join('\n\n');
+      extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
+  }).join('\n\n') + listNoteTail(l).map(b => '\n\n' + b.head + '\n' + b.body).join('');
 }
 function listAsHtml(l){
   const skip = listSkip(l);
+  const block = b => '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
   return '<b>' + esc(l.name) + '</b><br><br>' + listItems(l).map(function (it) {
     return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
-      extraBlocks(it, skip).map(function (b) {
-        return '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
-      }).join('');
-  }).join('<br><br>');
+      extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
+  }).join('<br><br>') +
+  listNoteTail(l).map(b => '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body)).join('');
 }
 
 /* ---------- share links ---------- */
@@ -1333,13 +1361,20 @@ function listRowHTML(l, it, i){
      is something in it, or when the button is pressed. */
   const noteBox = '<div class="rnote"' + (m.note ? '' : ' hidden') + '>' +
       '<textarea rows="2" data-note="' + esc(key) + '" placeholder="' + esc(t().notePh) + '">' +
-      esc(m.note || '') + '</textarea></div>';
+      esc(m.note || '') + '</textarea>' +
+      noteShowHTML('data-note-show="' + esc(key) + '"', m.noteShow, t().noteCopyItem) +
+    '</div>';
   return '<div class="row lrow' + (m.note ? ' has-note' : '') + '">' +
       '<span class="lrow-n">' + (i + 1) + '</span>' +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
         '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
         '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
+        /* the same badges every other listing shows — without them a list is the
+           one place you cannot tell an item from a consumable at a glance */
+        '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
+          esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       '<div class="lrow-meta">' +
         '<label><span>' + esc(t().qty) + '</span>' +
@@ -1366,7 +1401,16 @@ function listNoteHTML(l){
       '<i>' + esc(t().noteInLink) + '</i></summary>' +
     '<textarea rows="3" data-list-note="' + esc(l.id) + '" placeholder="' + esc(t().listNotePh) + '">' +
       esc(l.note || '') + '</textarea>' +
+    noteShowHTML('data-list-note-show="' + esc(l.id) + '"', l.noteShow, t().noteCopyList) +
   '</details>';
+}
+
+/* A note stays with the GM unless this is ticked — then it rides along at the
+   end of the copied text, after the description and the reference blocks. */
+function noteShowHTML(attr, on, label){
+  return '<label class="noteshow' + (on ? ' on' : '') + '">' +
+    '<input type="checkbox" ' + attr + (on ? ' checked' : '') + '>' +
+    '<span>' + esc(label) + '</span></label>';
 }
 
 function renderSharedList(payload){
@@ -1782,6 +1826,7 @@ document.addEventListener('click', function (e) {
     l.ids = data.ids.slice();
     if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
     if (data.note) l.note = data.note;
+    if (data.noteShow) l.noteShow = true;
     saveLists();
     toast(t().savedToLists);
     goToList(l);
@@ -1845,6 +1890,24 @@ document.addEventListener('input', function (e) {
         const btn = row.querySelector('.lrow-note');
         if (btn) btn.classList.toggle('on', !!el.value.trim());
       }
+      freshenListUrl(l);
+    }
+  }
+  if (el.dataset.noteShow) {
+    const parts = el.dataset.noteShow.split(':');
+    const l = getList(parts[0]);
+    if (l) {
+      setMeta(l, parts[1], 'noteShow', el.checked);
+      el.closest('.noteshow').classList.toggle('on', el.checked);
+      freshenListUrl(l);
+    }
+  }
+  if (el.dataset.listNoteShow) {
+    const l = getList(el.dataset.listNoteShow);
+    if (l) {
+      if (el.checked) l.noteShow = true; else delete l.noteShow;
+      el.closest('.noteshow').classList.toggle('on', el.checked);
+      saveLists();
       freshenListUrl(l);
     }
   }
