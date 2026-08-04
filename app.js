@@ -43,7 +43,6 @@ const S = {
      it holds ids for the page you are on and clears when you leave. */
   sel: {},
   menuFor: '',      // which control has its list menu open ('' = none, 'sel' = the bar)
-  pickList: '',     // list to offer first, set when you arrive from a list page
   listDraft: '',
   listRoll: { id: '', n: 0 },
   newListFor: '',
@@ -76,7 +75,7 @@ const T = {
     addTo:'Добавить в', inLists:'Лежит в списках',
     selected:'Выбрано', selectAll:'Выбрать все', clearSel:'Снять выделение',
     copySel:'Скопировать', selCopied:'Выбранное скопировано',
-    addedTo:'Добавлено в «%s»', removedFrom:'Убрано из «%s»', addPositions:'Добавить позиции',
+    addedTo:'Добавлено в «%s»', removedFrom:'Убрано из «%s»',
     qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
     note:'Заметка', listNote:'Заметка мастера',
     noteInLink:'видна всем, у кого есть ссылка',
@@ -177,7 +176,7 @@ const T = {
     addTo:'Add to', inLists:'Sits in lists',
     selected:'Selected', selectAll:'Select all', clearSel:'Clear selection',
     copySel:'Copy', selCopied:'Selection copied',
-    addedTo:'Added to "%s"', removedFrom:'Removed from "%s"', addPositions:'Add entries',
+    addedTo:'Added to "%s"', removedFrom:'Removed from "%s"',
     qty:'Qty', gold:'Gold', goldUnit:'gp',
     note:'Note', listNote:'GM note',
     noteInLink:'anyone with the link can read it',
@@ -316,7 +315,7 @@ function nameForShare(it){
 function shareText(it, skip){
   return nameForShare(it) + '\n\n' + descOf(it) +
     extraBlocks(it, skip).concat(contextNote(it))
-      .map(function (b) { return '\n\n' + b.head + '\n' + b.body; }).join('');
+      .map(function (b) { return '\n' + b.head + '\n' + b.body; }).join('');
 }
 function shareHtml(it, skip){
   return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)) +
@@ -338,9 +337,12 @@ function onListPage(){
   return '';
 }
 /* Italic, not bold: these blocks belong to the item above them. Bold made them
-   read as separate entries when several items were pasted at once. */
+   read as separate entries when several items were pasted at once. They also
+   sit flush against what they describe — one blank line means "new entry", so
+   spending it on an attachment made the same text look differently spaced
+   depending on whether it came from a card or from a list. */
 function blockHtml(b){
-  return '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
+  return '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
 }
 const lines = s => esc(s).replace(/\n/g, '<br>');
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
@@ -688,7 +690,7 @@ function listAsText(l){
   const skip = listSkip(l);
   const block = b => '\n' + b.head + '\n' + b.body;
   return l.name +
-    listNoteTail(l).map(b => '\n\n' + b.head + '\n' + b.body).join('') +
+    listNoteTail(l).map(b => '\n' + b.head + '\n' + b.body).join('') +
     '\n\n' + listItems(l).map(function (it) {
       return itemLine(l, it) + '\n' + descOf(it) +
         extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
@@ -698,7 +700,7 @@ function listAsHtml(l){
   const skip = listSkip(l);
   const block = b => '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
   return '<b>' + esc(l.name) + '</b>' +
-    listNoteTail(l).map(b => '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body)).join('') +
+    listNoteTail(l).map(b => '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body)).join('') +
     '<br><br>' + listItems(l).map(function (it) {
       return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
         extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
@@ -720,6 +722,20 @@ function shareItem(id){
   if (BY_ID[id]) copyText(itemUrl(id), t().linkCopied);
 }
 
+/* ---------- image ----------
+   Not every entry has art: new ones may arrive before a picture is drawn, and
+   a file can go missing. Both cases end up here, so the rest of the app only
+   ever asks hasImage()/imgSrc() and never touches it.img directly. */
+const NO_ART = 'img/_none.webp';
+const brokenArt = {};                       // ids whose file failed to load this session
+function hasImage(it){ return !!(it && it.img) && !brokenArt[it.id]; }
+function imgSrc(it){ return hasImage(it) ? 'img/' + it.img : NO_ART; }
+function imgTag(it, extra){
+  return '<img src="' + esc(imgSrc(it)) + '" alt="" loading="lazy" decoding="async"' +
+    (hasImage(it) ? ' data-art="' + esc(it.id) + '"' : ' class="noart"') +
+    (extra || '') + '>';
+}
+
 /* ---------- image ---------- */
 function imageBlob(it){
   return new Promise(function (resolve, reject) {
@@ -732,7 +748,7 @@ function imageBlob(it){
       c.toBlob(function (b) { b ? resolve(b) : reject(new Error('toBlob failed')); }, 'image/png');
     };
     img.onerror = reject;
-    img.src = 'img/' + it.img;
+    img.src = imgSrc(it);
   });
 }
 
@@ -754,6 +770,7 @@ function downloadImage(it){
 /* Copy the picture itself to the clipboard. WebP is not a clipboard format the
    browsers accept, so it goes through a canvas and comes out as PNG. */
 function copyImage(it){
+  if (!hasImage(it)) return;
   const supported = typeof ClipboardItem !== 'undefined' &&
                     navigator.clipboard && navigator.clipboard.write && window.isSecureContext;
   if (!supported) { downloadImage(it); return; }
@@ -777,6 +794,7 @@ function sendItem(it){
   const plain = function () {
     return navigator.share({ title: nameForShare(it), text: shareText(it), url: itemUrl(it.id) });
   };
+  if (!hasImage(it)) { plain().catch(function () {}); return; }
   imageBlob(it).then(function (blob) {
     const file = new File([blob], safeFileName(it), { type: 'image/png' });
     if (navigator.canShare({ files: [file] })) {
@@ -812,10 +830,7 @@ function actBtn(action, id, icon, label, primary, full){
    and clicking takes it out. With several, every click just adds. */
 function listMenuHTML(key, ids){
   const one = ids.length === 1 ? ids[0] : '';
-  const order = S.lists.slice().sort(function (a, b) {
-    return (b.id === S.pickList) - (a.id === S.pickList);
-  });
-  const chips = order.map(function (l) {
+  const chips = S.lists.map(function (l) {
     const inList = one && l.ids.indexOf(one) >= 0;
     return '<button type="button" class="chip' + (inList ? ' on' : '') + '"' +
       ' data-add-to="' + esc(l.id + '|' + key) + '">' +
@@ -905,7 +920,7 @@ function cardHTML(it, opt){
   return '' +
   '<article class="card' + (opt.full ? ' full' : ' compact') + '" data-id="' + esc(it.id) + '">' +
     '<button type="button" class="card-media" data-open="' + esc(it.id) + '" aria-label="' + esc(t().openPage) + '">' +
-      '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+      imgTag(it) +
     '</button>' +
     '<div class="card-body">' +
       '<div class="card-meta">' + meta + '</div>' +
@@ -920,7 +935,7 @@ function cardHTML(it, opt){
       refHTML(it) +
       '<div class="card-acts">' +
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
-        actBtn('copy-img',  it.id, ICON_IMG,  t().sImg,  false, t().copyImg) +
+        (hasImage(it) ? actBtn('copy-img', it.id, ICON_IMG, t().sImg, false, t().copyImg) : '') +
         actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
       '</div>' +
       (opt.full ? listPicker(it) : '') +
@@ -1265,7 +1280,7 @@ function rowHTML(it, removeFrom, tail){
   return '<div class="row' + (!removeFrom && S.sel[it.id] ? ' sel' : '') + '">' +
       (removeFrom ? '' : selBox(it.id)) +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
-        '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+        imgTag(it) +
         '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) +
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
         '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
@@ -1297,7 +1312,7 @@ function tileHTML(it){
     '<div class="tile-img">' +
       '<span class="tile-n">' + esc(it.roll) + '</span>' +
       '<span class="tile-k ' + (it.kind === 'consumable' ? 'cons' : 'item') + '" title="' + esc(it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
-      '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+      imgTag(it) +
     '</div>' +
     '<div class="tile-b"><b>' + esc(nameOf(it)) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + '</div>' +
   '</button></div>';
@@ -1341,7 +1356,7 @@ function storageWarning(){
 function listCardHTML(l){
   const items = listItems(l);
   const thumbs = items.slice(0, 6).map(function (it) {
-    return '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">';
+    return imgTag(it);
   }).join('');
   return '<div class="listcard">' +
     '<a class="listcard-main" href="' + esc(listHash(l)) + '">' +
@@ -1353,8 +1368,6 @@ function listCardHTML(l){
               : '<p class="listcard-empty">' + esc(t().listEmpty) + '</p>') +
     '</a>' +
     '<div class="listcard-acts">' +
-      '<a class="btn sm" href="#/tables" data-act="pickInto" data-val="' + esc(l.id) + '">' +
-        ICON_PLUS + esc(t().addPositions) + '</a>' +
       '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
@@ -1396,8 +1409,6 @@ function renderOneList(id){
     '</h1>' +
     '<p class="page-sub">' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
     '<div class="card-acts" style="margin-bottom:16px">' +
-      '<a class="btn sm" href="#/tables" data-act="pickInto" data-val="' + esc(l.id) + '">' +
-        ICON_PLUS + esc(t().addPositions) + '</a>' +
       '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
@@ -1458,7 +1469,7 @@ function listRowHTML(l, it, i){
   return '<div class="row lrow' + (m.note ? ' has-note' : '') + '">' +
       '<span class="lrow-n">' + (i + 1) + '</span>' +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
-        '<img src="img/' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+        imgTag(it) +
         '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
         '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
         /* the same badges every other listing shows — without them a list is the
@@ -1629,6 +1640,20 @@ function syncSelectAll(){
   all.parentElement.toggleAttribute('data-on', every);
 }
 
+/* The menu is absolutely positioned, so on a tall card it could open below the
+   fold and look like nothing happened. Flip it to whichever side has room and
+   pull it into view. */
+function placeMenu(){
+  const menu = $('.dropmenu');
+  if (!menu) return;
+  const drop = menu.parentElement;
+  const btn = drop.querySelector('.btn');
+  const below = window.innerHeight - btn.getBoundingClientRect().bottom;
+  const need = menu.getBoundingClientRect().height + 16;
+  menu.classList.toggle('up', below < need);
+  if (menu.scrollIntoView) menu.scrollIntoView({ block: 'nearest' });
+}
+
 function renderSelBar(){
   const bar = $('#selBar');
   const n = selCount();
@@ -1682,6 +1707,7 @@ function render(){
     $('#view').innerHTML = ROUTES[r]();
     document.title = 'Генератор лута — Daggerheart';
   }
+  placeMenu();
   $('#footText').innerHTML = t().foot;
   document.documentElement.lang = S.lang;
   const focusId = render._focus;
@@ -1883,7 +1909,6 @@ document.addEventListener('click', function (e) {
     if (items.length) copyRich(selAsHtml(items), selAsText(items), t().selCopied);
     return;
   }
-  if (a === 'pickInto') { S.pickList = val; return; }   // href carries the navigation
   if (a === 'rollList') {
     const l = getList(val);
     if (l && l.ids.length) { S.listRoll = { id: l.id, n: d(listItems(l).length) }; render(); }
@@ -2051,6 +2076,21 @@ function openModal(id){
   $('#modalBody').innerHTML = cardHTML(it, { full: true });
   $('#modal').hidden = false;
 }
+
+/* An <img> error does not bubble, so this listens in the capture phase. The
+   swap happens in place: a re-render here would throw away the scroll position
+   in the middle of a long table. */
+document.addEventListener('error', function (e) {
+  const img = e.target;
+  if (!img || img.tagName !== 'IMG' || !img.dataset.art) return;
+  brokenArt[img.dataset.art] = true;
+  img.removeAttribute('data-art');
+  img.classList.add('noart');
+  img.src = NO_ART;
+  const holder = img.closest('.card') || img.closest('.row') || img.closest('.tilewrap');
+  const btn = holder && holder.querySelector('[data-copy-img]');
+  if (btn) btn.remove();
+}, true);
 
 S.lists = loadLists();
 

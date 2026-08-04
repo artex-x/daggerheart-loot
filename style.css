@@ -348,7 +348,9 @@ input::placeholder{color:var(--muted2)}
 .dropmenu .lbl{margin-bottom:2px}
 .dropmenu .chip{width:100%;text-align:left;font-size:13px}
 .cardpick{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+/* opens downward by default and flips up when the card leaves no room below */
 .cardpick .dropmenu{bottom:auto;top:calc(100% + 8px);left:0;right:auto}
+.cardpick .dropmenu.up{top:auto;bottom:calc(100% + 8px)}
 
 /* list picker inside an expanded card */
 .picker{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}

@@ -60,8 +60,9 @@ function page(it){
   const craft = craftLines(it);
   // the unfurl preview is one flat string, so the chain joins the description
   const desc = (it.rud || it.ende) + (craft.length ? ' ' + craft.join(' ') + '.' : '');
-  // JPEG copy: some Telegram clients will not render a WebP og:image
-  const img = SITE + 'og/' + it.img.replace(/\.webp$/, '.jpg');
+  // JPEG copy: some Telegram clients will not render a WebP og:image.
+  // An entry without art still needs one, or the unfurl comes out blank.
+  const img = SITE + 'og/' + (it.img ? it.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
   const url = SITE + 'i/' + it.id + '.html';
   const app = SITE + '#/i/' + it.id;
   return `<!DOCTYPE html>
@@ -102,7 +103,7 @@ function page(it){
 </head>
 <body>
   <div class="w">
-    <img src="../img/${esc(it.img)}" alt="${esc(name)}">
+    <img src="../img/${esc(it.img || '_none.webp')}" alt="${esc(name)}">
     <h1>${esc(name)}</h1>
     <p class="s">${esc(subtitle(it))}</p>
     <p>${esc(it.rud || it.ende)}</p>
