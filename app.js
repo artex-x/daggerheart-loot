@@ -91,7 +91,7 @@ const T = {
     noStorageTitle:'Браузер блокирует локальное хранилище.',
     noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
     localOnlyTitle:'Списки живут только в этом браузере.',
-    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку на список: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком — вместе с заметками. Если заметки не для игроков, отправляйте им «Скопировать текст»: в него заметки не попадают.',
+    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с заметками. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново, иначе старая вернёт вас к прежней версии. Если заметки не для игроков, отправляйте им «Скопировать текст»: в него попадают только помеченные.',
     searchPh:'Поиск по названию или описанию…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
@@ -123,8 +123,8 @@ const T = {
         'Автор таблиц: <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a>. Источник: <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">пост на Reddit</a>.'
       ],
       wondrous: [
-        'В таблице 119 позиций, а не 100 — по числу нарисованных предметов. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».',
-        'Позиции идут по алфавиту, а не по силе: большинство предметов слабые или средние.',
+        'В таблице 119 позиций, а не 100 — столько предметов описано в самом дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».',
+        'Порядок взят из книги: там предметы отсортированы по английскому алфавиту, а не по силе. В русском переводе он поэтому выглядит произвольным. Большинство предметов слабые или средние.',
         'Часть предметов улучшается до более сильных. На карточке такая связь показана отдельной строкой, по ней же можно перейти ко второму предмету. Мастер может потребовать для улучшения бросок Искусности или Знания.',
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a>.'
       ],
@@ -189,7 +189,7 @@ const T = {
     noStorageTitle:'The browser is blocking local storage.',
     noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
     localOnlyTitle:'Lists live in this browser only.',
-    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link to a list and you keep the list: the whole thing is encoded into the address and rebuilds from it completely, notes included. If the notes are not for your players, send them Copy text instead — notes stay out of it.',
+    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link and you keep the list: the whole thing is encoded into the address and rebuilds from it completely, notes included. Do remember that a link is a snapshot — it holds the list as it was when you copied it. Add an entry or edit a note and you need to save the link again, or the old one takes you back to the old version. If the notes are not for your players, send them Copy text instead: only the ones you ticked go in.',
     searchPh:'Search by name or description…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
@@ -221,8 +221,8 @@ const T = {
         'Tables by <a href="https://www.reddit.com/user/PrinceOfNowhereee/" target="_blank" rel="noopener">PrinceOfNowhereee</a>. Source: <a href="https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/" target="_blank" rel="noopener">the Reddit post</a>.'
       ],
       wondrous: [
-        'The table holds 119 entries rather than 100 — one for every item that has art. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.',
-        'Entries run alphabetically, not by power: most items are weak to moderate.',
+        'The table holds 119 entries rather than 100 — that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.',
+        'The order is the book\'s own: alphabetical by English name, not by power. Most items are weak to moderate.',
         'Some items upgrade into stronger ones. The card shows that on its own line, and the link takes you to the second item. The GM may ask for a Finesse or Knowledge roll to make the upgrade.',
         'Source: the <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a> supplement.'
       ],
