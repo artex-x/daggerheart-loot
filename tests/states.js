@@ -30,6 +30,7 @@ const STATES = [
   ['источник выключен',   '#/roll/std',            p => tap(p, '[data-act="src"]')],
   ['тип выключен',        '#/search',              p => tap(p, '[data-act="kind"]')],
   ['таблица сеткой',      '#/tables/wondrous',     p => tap(p, '[data-act="view"][data-val="grid"]')],
+  ['снаряжение сеткой',   '#/tables/eq_weapon',    p => tap(p, '[data-act="view"][data-val="grid"]')],
   ['модалка из таблицы',  '#/tables/core_item',    p => tap(p, '[data-open]')],
   ['меню списков',        '#/i/w1',                p => tap(p, '.cardpick [data-act="menu"]')],
   ['новый список в меню', '#/i/w1',                async p => { await tap(p, '.cardpick [data-act="menu"]');
@@ -60,7 +61,7 @@ const STATES = [
       page.on('pageerror', e => errs.push(e.message));
       await page.setViewport({ width, height: 820 });
       await page.evaluateOnNewDocument(() => {
-        localStorage.setItem('dhloot.lists.v1', JSON.stringify([
+        localStorage.setItem('dhloot.lists.v2', JSON.stringify([
           { id:'a', name:'Клад дракона', ids:['ci1','cc1','w1','q1'], created:1 },
           { id:'b', name:'Лавка', ids:[], created:2 }]));
       });
@@ -93,6 +94,15 @@ const STATES = [
               out.small.push((e.className || e.tagName) + ' ' + Math.round(r.width) + '×' + Math.round(r.height));
           });
         }
+
+        /* nothing on a tile may sit on top of anything else on it */
+        document.querySelectorAll('.tilewrap').forEach(e => {
+          const box = e.querySelector('.selbox'), num = e.querySelector('.tile-n');
+          if (!box || !num) return;
+          const a = box.getBoundingClientRect(), b = num.getBoundingClientRect();
+          if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom)
+            out.covered.push('галочка налезает на подпись плитки');
+        });
 
         /* an open menu must not be buried under the sticky header */
         document.querySelectorAll('.dropmenu').forEach(e => {

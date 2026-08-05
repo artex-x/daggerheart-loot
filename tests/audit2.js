@@ -60,7 +60,7 @@ const PAGES = [
         // this also runs on about:blank, where there is no storage to seed
         try {
         localStorage.setItem('dhloot.lang.v1', l);
-        localStorage.setItem('dhloot.lists.v1', JSON.stringify([
+        localStorage.setItem('dhloot.lists.v2', JSON.stringify([
           { id:'a', name:'Клад дракона', ids:['ci1','cc1','w1','q1','q313','cm1'], created:1,
             note:'Заметка про весь список', noteShow:true,
             meta:{ ci1:{ qty:2, gold:30, note:'Под прилавком', noteShow:true } } },

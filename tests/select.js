@@ -20,7 +20,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     Object.defineProperty(navigator, 'clipboard', {
       value: { write: i => { window.__clip = i[0].map; return Promise.resolve(); } }
     });
-    localStorage.setItem('dhloot.lists.v1', JSON.stringify([
+    localStorage.setItem('dhloot.lists.v2', JSON.stringify([
       { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
       { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }]));
   });
@@ -30,7 +30,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   };
   const settle = () => new Promise(r => setTimeout(r, 250));
   const has = s => page.evaluate(x => !!document.querySelector(x), s);
-  const lists = () => page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v1')));
+  const lists = () => page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v2')));
   const clip = () => page.evaluate(async () => window.__clip ? await window.__clip['text/plain'].text() : '');
 
   /* ---------- the old collect mode is gone for good ---------- */
@@ -164,7 +164,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   // a row that earlier sections have not already put into the list, otherwise
   // the chip acts as a toggle and takes the item back out
   const fresh = await page.evaluate(() => {
-    const owned = [].concat(...JSON.parse(localStorage.getItem('dhloot.lists.v1')).map(l => l.ids));
+    const owned = [].concat(...JSON.parse(localStorage.getItem('dhloot.lists.v2')).map(l => l.ids));
     const el = [...document.querySelectorAll('[data-open]')].find(e => owned.indexOf(e.dataset.open) < 0);
     el.click();
     return el.dataset.open;

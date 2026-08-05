@@ -410,8 +410,11 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 .tile:hover{border-color:var(--gold);transform:translateY(-2px)}
 .tile-img{position:relative;aspect-ratio:1;background:#0a0810}
 .tile-img img{width:100%;height:100%;object-fit:cover;display:block}
+/* Bottom left, out of the tick box's way: the box sits top left, and on an
+   equipment tile the caption is «Ранг 2» rather than a two-digit number, so
+   nudging it sideways would only have moved the collision. */
 .tile-n{
-  position:absolute;left:7px;top:7px;font:700 11.5px/1 var(--mono);color:var(--gold-soft);
+  position:absolute;left:7px;bottom:7px;font:700 11.5px/1 var(--mono);color:var(--gold-soft);
   background:rgba(10,8,16,.8);border-radius:6px;padding:4px 6px;border:1px solid rgba(216,171,94,.4);
 }
 .tile-k{position:absolute;right:7px;top:7px;width:9px;height:9px;border-radius:50%}
@@ -529,7 +532,8 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 .hitnote{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px 12px;
   border:1px solid var(--line2);border-left:2px solid var(--gold);border-radius:9px;
   background:rgba(216,171,94,.06);font-size:13px;line-height:1.5;color:var(--txt)}
-.hitnote svg{fill:var(--gold);margin-top:2px}
+.hitnote svg{fill:var(--gold);margin-top:3px;flex:none}
+.hitnote + .hitnote{margin-top:8px}
 .hitnote b{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--muted2);font-weight:650;margin-bottom:2px}
 .hitnote span{min-width:0;overflow-wrap:break-word}
@@ -550,21 +554,26 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
   background:var(--bg2);border:1px solid var(--line2);border-radius:8px;color:var(--txt);
   font:14px/1.5 var(--ui);padding:9px 11px;
 }
-.lnote textarea{width:calc(100% - 26px);margin:0 13px 13px}
 .rnote textarea{font-size:13px;background:var(--surface)}
 .lnote textarea:focus,.rnote textarea:focus{
   outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,171,94,.14)}
+
+/* the two notes, side by side where there is room and stacked where there is not */
+.npair{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+.lnote .npair{padding:0 13px 13px}
+.rnote .npair{gap:10px}
+.nfield{min-width:0;display:flex;flex-direction:column;gap:5px}
+.nlbl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  font:650 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
+.nlbl i{font-style:normal;font-size:10.5px;letter-spacing:.02em;text-transform:none;
+  color:var(--muted2);opacity:.75;font-weight:400}
+/* The open and closed eye already say which is which, so the two boxes share a
+   colour; only the dashed edge marks the one that stays behind. */
+.n-hid textarea{border-style:dashed}
+@media (max-width:640px){ .npair{grid-template-columns:1fr} }
 input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
 
-/* the switch that lets a note travel with the copied text */
-.noteshow{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
-  font-size:12px;color:var(--muted2);padding:5px 9px;border-radius:7px;
-  border:1px solid transparent;transition:.15s}
-.noteshow input{accent-color:var(--gold);width:15px;height:15px;margin:0;flex:none}
-.noteshow:hover{color:var(--muted)}
-.noteshow.on{color:var(--gold-soft);background:rgba(216,171,94,.09);border-color:rgba(216,171,94,.3)}
-.lnote .noteshow{margin:0 13px 13px}
-.rnote .noteshow{margin-top:7px}
+
 /* grip and position sit together on the left: grab one to drag, type in the
    other to send an entry straight to a place far away */
 .lrow-grip{

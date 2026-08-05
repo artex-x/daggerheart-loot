@@ -23,7 +23,7 @@ const b64 = s => Buffer.from(s, 'utf8').toString('base64')
     Object.defineProperty(navigator, 'clipboard', {
       value: { write: i => { window.__clip = i[0].map; return Promise.resolve(); } }
     });
-    localStorage.setItem('dhloot.lists.v1', JSON.stringify(
+    localStorage.setItem('dhloot.lists.v2', JSON.stringify(
       [{ id: 'tst', name: 'Клад', ids: ['w3', 'w1'], created: 1 }]));
   });
   const go = async (h) => {

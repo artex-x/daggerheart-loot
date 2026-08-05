@@ -1,206 +1,192 @@
-/* GM notes on lists: storage, the link format, and what stays out of a copy.
-   The link format is the delicate part — links people saved earlier must open
-   exactly as they did before. */
+/* Two notes per list and per entry: one the table gets to read, one that stays
+   with the GM. Checked from both ends — what leaves in text and links, and what
+   happens to lists and links written before the split existed. */
 const puppeteer = require('puppeteer');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
-
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
-const b64 = s => Buffer.from(s, 'utf8').toString('base64')
-  .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-const REC = '\x1e', SEP = '\x1f';
 
 (async () => {
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
-  });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1000, height: 1000 });
-  await page.evaluateOnNewDocument(() => {
-    window.isSecureContext = true;
-    window.__clip = null;
-    window.ClipboardItem = class { constructor(m) { this.map = m; } };
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { write: i => { window.__clip = i[0].map; return Promise.resolve(); } }
+  const browser = await puppeteer.launch({ args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu'] });
+  const mk = async (seed) => {
+    const ctx = await browser.createBrowserContext();
+    const page = await ctx.newPage();
+    page.on('pageerror', e => { fail++; console.log('  FAIL страница упала: ' + e.message); });
+    await page.setViewport({ width: 1180, height: 1000 });
+    await page.evaluateOnNewDocument(() => {
+      window.isSecureContext = true; window.__clip = null;
+      window.ClipboardItem = class { constructor(m){ this.map = m; } };
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { write: i => { window.__clip = i[0].map; return Promise.resolve(); },
+                 writeText: s => { window.__clip = { 'text/plain': { text: async () => s } }; return Promise.resolve(); } } });
     });
-    localStorage.setItem('dhloot.lists.v1', JSON.stringify(
-      [{ id: 'a', name: 'Мой клад', ids: ['w3', 'w1'], created: 1 }]));
-  });
-  const go = async h => {
-    await page.goto(ROOT + h, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 260));
+    if (seed) await page.evaluateOnNewDocument(seed);
+    return page;
   };
-  const settle = () => new Promise(r => setTimeout(r, 260));
-  /* puppeteer scrolls a target into view before clicking, and the sticky header
-     then covers it — so these clicks are dispatched on the element itself */
-  const tap = async sel => { await page.$eval(sel, e => e.click()); await settle(); };
-  const txt = s => page.$eval(s, e => e.textContent.trim()).catch(() => null);
-  const has = s => page.evaluate(x => !!document.querySelector(x), s);
+  const settle = () => new Promise(r => setTimeout(r, 280));
+  const go = async (page, h) => { await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
+                                  await new Promise(r => setTimeout(r, 560));
+                                  await page.evaluate(() => window.scrollTo(0, 0)); };
+  const clip = (page, k) => page.evaluate(async x =>
+    window.__clip && window.__clip[x] ? await window.__clip[x].text() : '', k);
+  const type = async (page, sel, text) => {
+    await page.$eval(sel, (e, v) => { e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }, text);
+    await settle();
+  };
+  const lists = page => page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v2')));
 
-  /* ---------- links saved before notes existed ---------- */
+  const FRESH = () => localStorage.setItem('dhloot.lists.v2', JSON.stringify(
+    [{ id:'a', name:'Лавка', ids:['ci1','cc1'], created:1 }]));
+
+  /* ---------- writing both notes ---------- */
+  console.log('две заметки');
+  let page = await mk(FRESH);
+  await go(page, '#/lists/a');
+  ok((await page.$$eval('.lnote textarea', e => e.length)) === 2, 'у списка не два поля заметки');
+  ok(await page.$('.lnote .n-pub') && await page.$('.lnote .n-hid'), 'поля не помечены');
+  await type(page, '.lnote .n-pub textarea', 'Лавка закрыта до утра');
+  await type(page, '.lnote .n-hid textarea', 'Хозяин — контрабандист');
+
+  await page.evaluate(() => document.querySelector('[data-note-toggle]').click());
+  await settle();
+  ok((await page.$$eval('.lrow:first-child .rnote textarea', e => e.length)) === 2,
+     'у позиции не два поля');
+  await type(page, '.lrow:first-child .rnote .n-pub textarea', 'Пахнет мятой');
+  await type(page, '.lrow:first-child .rnote .n-hid textarea', 'Подделка');
+
+  const stored = (await lists(page))[0];
+  ok(stored.note === 'Лавка закрыта до утра' && stored.hnote === 'Хозяин — контрабандист',
+     'заметки списка сохранились не туда: ' + JSON.stringify(stored.note) + ' / ' + JSON.stringify(stored.hnote));
+  ok(stored.meta.ci1.note === 'Пахнет мятой' && stored.meta.ci1.hnote === 'Подделка',
+     'заметки позиции сохранились не туда: ' + JSON.stringify(stored.meta.ci1));
+  ok(!('noteShow' in stored) && !('noteShow' in stored.meta.ci1), 'остался старый флаг noteShow');
+  ok(await page.$eval('.lrow-note', e => e.classList.contains('on')), 'кнопка заметки не отмечена');
+
+  /* ---------- what leaves in the copied text ---------- */
+  console.log('копирование текста');
+  await page.evaluate(() => document.querySelector('[data-copy-listtext]').click());
+  await settle();
+  const txt = await clip(page, 'text/plain');
+  ok(/Лавка закрыта до утра/.test(txt), 'заметка для игроков не попала в текст');
+  ok(/Пахнет мятой/.test(txt), 'заметка позиции для игроков не попала в текст');
+  ok(!/контрабандист/.test(txt) && !/Подделка/.test(txt), 'заметка мастера уехала в текст игрокам');
+
+  /* ---------- what leaves in each link ---------- */
+  console.log('две ссылки');
+  await page.evaluate(() => document.querySelector('[data-share-list]').click());
+  await settle();
+  const playersUrl = await clip(page, 'text/plain');
+  await page.evaluate(() => document.querySelector('[data-share-gm]').click());
+  await settle();
+  const gmUrl = await clip(page, 'text/plain');
+  ok(playersUrl !== gmUrl, 'обе кнопки дают одну и ту же ссылку');
+
+  const readBack = async (url) => {
+    const p2 = await mk();
+    await go(p2, url.slice(url.indexOf('#')));
+    const seen = await p2.evaluate(() => document.body.innerText);
+    await p2.close();
+    return seen;
+  };
+  const asPlayer = await readBack(playersUrl);
+  ok(/Лавка закрыта до утра/.test(asPlayer), 'по ссылке игрокам нет заметки для игроков');
+  ok(!/контрабандист/.test(asPlayer) && !/Подделка/.test(asPlayer),
+     'по ссылке игрокам видны заметки мастера');
+  const asGm = await readBack(gmUrl);
+  ok(/контрабандист/.test(asGm) && /Подделка/.test(asGm), 'своя ссылка растеряла заметки мастера');
+
+  // the address bar is the players' link, so copying it by hand is safe
+  const inBar = await page.evaluate(() => location.hash);
+  ok(playersUrl.indexOf(inBar) >= 0, 'в адресной строке лежит не ссылка для игроков');
+  await page.close();
+
+  /* ---------- lists written before the split ---------- */
+  console.log('старые списки');
+  page = await mk(() => {
+    localStorage.setItem('dhloot.lists.v1', JSON.stringify([{
+      id:'old', name:'Старый', ids:['ci1','cc1'], created:1,
+      note:'Видно игрокам', noteShow:true,
+      meta:{ ci1:{ qty:2, note:'Тоже видно', noteShow:true },
+             cc1:{ note:'Секрет мастера' } }
+    }]));
+  });
+  await go(page, '#/lists/old');
+  const moved = (await lists(page))[0];
+  ok(!!moved, 'старый список не перенёсся в новое хранилище');
+  ok(moved.note === 'Видно игрокам' && !moved.hnote,
+     'помеченная заметка списка стала не заметкой для игроков: ' + JSON.stringify(moved));
+  ok(moved.meta.ci1.note === 'Тоже видно' && moved.meta.ci1.qty === 2,
+     'помеченная заметка позиции потерялась вместе с количеством');
+  ok(moved.meta.cc1.hnote === 'Секрет мастера' && !moved.meta.cc1.note,
+     'непомеченная заметка не стала мастерской: ' + JSON.stringify(moved.meta.cc1));
+  ok(await page.evaluate(() => localStorage.getItem('dhloot.lists.v1') !== null),
+     'старый ключ удалён, откатиться будет некуда');
+  await page.evaluate(() => document.querySelector('[data-copy-listtext]').click());
+  await settle();
+  const oldTxt = await clip(page, 'text/plain');
+  ok(/Видно игрокам/.test(oldTxt) && /Тоже видно/.test(oldTxt), 'из старого списка пропало видимое');
+  ok(!/Секрет мастера/.test(oldTxt), 'из старого списка утекло мастерское');
+  await page.close();
+
+  /* ---------- links written before the split ---------- */
   console.log('старые ссылки');
-  const OLD = [
-    ['Клад\nw3,w1',             'голые id'],
-    ['Клад\nw3*2,w1',           'с количеством'],
-    ['Клад\nw3*2*150,w1*1*40',  'с количеством и золотом']
-  ];
-  for (const [raw, what] of OLD) {
-    await go('#/l/' + b64(raw));
-    ok(await has('[data-act="saveShared"]'), what + ': не открылась как чужой список');
-    const rows = await page.$$eval('.rows .row', els => els.length);
-    ok(rows === 2, what + ': позиций ' + rows + ' вместо 2');
-    const h = await txt('.page-h');
-    ok(h === 'Клад', what + ': имя «' + h + '»');
-  }
-  // the qty/gold that rode in the old payload must still be shown
-  await go('#/l/' + b64('Клад\nw3*2*150,w1*1*40'));
-  const tail = await page.$eval('.rows .row .rtail', e => e.textContent).catch(() => '');
-  ok(/×2/.test(tail) && /150/.test(tail), 'количество и золото из старой ссылки потерялись: ' + tail);
-
-  /* ---------- a list without notes encodes byte-for-byte as before ---------- */
-  console.log('формат без заметок не изменился');
-  await go('#/lists');
-  await page.click('.listcard-main');
+  page = await mk();
+  await go(page, '#/roll/std');
+  const oldLink = await page.evaluate(() => {
+    // exactly what the old encoder produced: "+" meant "copy along with it"
+    const raw = 'Старая ссылка\nci1*2,cc1\n' +
+      '\x1e+~\x1fПреамбула для игроков' +
+      '\x1e+ci1\x1fВидно' +
+      '\x1ecc1\x1fНе видно';
+    const bytes = new TextEncoder().encode(raw);
+    let bin = ''; bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  });
+  await go(page, '#/l/' + oldLink);
+  const seen = await page.evaluate(() => document.body.innerText);
+  ok(/Старая ссылка/.test(seen), 'старая ссылка не открылась');
+  ok(/Преамбула для игроков/.test(seen) && /Видно/.test(seen), 'из старой ссылки пропало видимое');
+  await page.evaluate(() => document.querySelector('[data-act="saveShared"]').click());
   await settle();
-  const hash = await page.evaluate(() => location.hash);
-  ok(hash === '#/l/' + b64('Мой клад\nw3,w1'),
-     'список без заметок кодируется иначе, чем раньше:\n   ' + hash + '\n   ' + '#/l/' + b64('Мой клад\nw3,w1'));
+  const saved = (await lists(page))[0];
+  ok(saved.note === 'Преамбула для игроков' && !saved.hnote,
+     'помеченная заметка из ссылки легла не туда: ' + JSON.stringify(saved));
+  ok(saved.meta.ci1.note === 'Видно' && saved.meta.ci1.qty === 2, 'позиция из старой ссылки поехала');
+  ok(saved.meta.cc1.hnote === 'Не видно' && !saved.meta.cc1.note,
+     'непомеченная заметка из ссылки стала видимой: ' + JSON.stringify(saved.meta.cc1));
+  await page.close();
 
-  /* ---------- notes travel in the link ---------- */
-  console.log('заметки в ссылке');
-  await page.click('.lnote summary');          // складка закрыта, пока заметка пуста
+  /* ---------- a list with no notes still encodes as before ---------- */
+  console.log('список без заметок');
+  page = await mk(FRESH);
+  await go(page, '#/lists/a');
+  const plain = await page.evaluate(() => location.hash);
+  await page.evaluate(() => document.querySelector('[data-share-gm]').click());
   await settle();
-  await page.type('.lnote textarea', 'Позиции под прилавком');
-  await settle();
-  const h2 = await page.evaluate(() => location.hash);
-  ok(h2 !== hash, 'адрес не изменился после заметки списка');
-  ok(h2 === '#/l/' + b64('Мой клад\nw3,w1\n' + REC + '~' + SEP + 'Позиции под прилавком'),
-     'заметка списка закодирована не так, как ожидалось:\n   ' + h2);
+  const gmPlain = await clip(page, 'text/plain');
+  ok(gmPlain.indexOf(plain) >= 0, 'без заметок ссылки мастеру и игрокам разошлись');
 
-  await page.click('.lrow .lrow-note');
-  await settle();
-  await page.type('.lrow .rnote textarea', 'Пахнет мятой');
-  await settle();
-  const h3 = await page.evaluate(() => location.hash);
-  ok(h3 === '#/l/' + b64('Мой клад\nw3,w1\n' + REC + '~' + SEP + 'Позиции под прилавком' + REC + 'w3' + SEP + 'Пахнет мятой'),
-     'заметка позиции закодирована не так, как ожидалось:\n   ' + h3);
-
-  // …and come back out of it
-  await go(h3);
-  ok((await page.$eval('.lnote textarea', e => e.value)) === 'Позиции под прилавком',
-     'заметка списка не восстановилась из ссылки');
-  ok((await page.$eval('.lrow .rnote textarea', e => e.value)) === 'Пахнет мятой',
-     'заметка позиции не восстановилась из ссылки');
-  ok(await has('.lrow-note.on'), 'кнопка заметки не подсвечена, хотя заметка есть');
-  ok(await has('.lnote[open]'), 'заметка списка свёрнута, хотя не пуста');
-
-  // a note with newlines must survive: the format keeps them in the tail
-  const multi = 'Чужой\nw3,w1\nпервая строка\nвторая строка' + REC + 'w3' + SEP + 'а\nб';
-  await go('#/l/' + b64(multi));
-  ok(await has('[data-act="saveShared"]'), 'многострочная заметка сломала разбор ссылки');
-  const rows2 = await page.$$eval('.rows .row', els => els.length);
-  ok(rows2 === 2, 'многострочная заметка съела позиции: ' + rows2);
-
-  /* ---------- the roll surfaces the note for whatever came up ---------- */
+  /* ---------- the note the list roll turns up ---------- */
   console.log('заметка на выпавшем');
-  await go(h3);
-  for (let i = 0; i < 12; i++) {
-    await page.click('[data-act="rollList"]');
-    await new Promise(r => setTimeout(r, 120));
-    const rolled = await page.$eval('.panel .card .card-name', e => e.textContent.trim()).catch(() => '');
-    const shown = await page.$eval('.hitnote', e => e.textContent).catch(() => null);
-    if (/Эфироцвет/.test(rolled)) {                 // w3 — the one with a note
-      ok(shown !== null && /Пахнет мятой/.test(shown), 'у выпавшего предмета не показана его заметка');
-    } else if (rolled) {
-      ok(shown === null, 'заметка показана у предмета, у которого её нет: ' + rolled);
-    }
-  }
-  // and it must not leak into what gets copied from that card
-  await page.evaluate(() => { window.__clip = null; });
-  const cardCopy = await page.$('.panel .card [data-copy-full]');
-  if (cardCopy) {
-    await cardCopy.click();
-    await settle();
-    const c = await page.evaluate(async () => window.__clip ? await window.__clip['text/plain'].text() : '');
-    ok(!/Пахнет мятой/.test(c), 'заметка уехала в копию карточки после броска');
-  }
-
-  /* ---------- by default notes stay with the GM ---------- */
-  console.log('копирование без заметок');
-  await go(h3);
-  await page.click('[data-copy-listtext]');
+  await page.evaluate(() => document.querySelector('[data-note-toggle]').click());
   await settle();
-  const copied = await page.evaluate(async () => await window.__clip['text/plain'].text());
-  ok(!/под прилавком/.test(copied), 'заметка списка попала в скопированный текст');
-  ok(!/Пахнет мятой/.test(copied), 'заметка позиции попала в скопированный текст');
-  ok(/Эфироцвет/.test(copied), 'сам список из копии пропал');
-
-  /* ---------- ticking the switch lets one note travel ---------- */
-  console.log('галка «копировать вместе с предметом»');
-  await tap('[data-note-show]');
-  ok(await has('.rnote .noteshow.on'), 'галка не подсветилась');
-  const h4 = await page.evaluate(() => location.hash);
-  ok(h4 === '#/l/' + b64('Мой клад\nw3,w1\n' + REC + '~' + SEP + 'Позиции под прилавком' + REC + '+w3' + SEP + 'Пахнет мятой'),
-     'флаг записан в ссылку не так, как ожидалось:\n   ' + h4);
-
-  await page.click('[data-copy-listtext]');
+  await type(page, '.lrow:first-child .rnote .n-pub textarea', 'Видно всем');
+  await type(page, '.lrow:first-child .rnote .n-hid textarea', 'Только мне');
+  // typing the number picks that entry; the button would roll at random
+  await page.evaluate(() => { const n = document.getElementById('n');
+    n.value = '1'; n.dispatchEvent(new Event('input', { bubbles: true })); });
   await settle();
-  let c2 = await page.evaluate(async () => await window.__clip['text/plain'].text());
-  ok(/Пахнет мятой/.test(c2), 'помеченная заметка не попала в текст');
-  ok(!/под прилавком/.test(c2), 'непомеченная заметка списка всё равно попала в текст');
-  // it must come last, after the description and the reference blocks
-  const after = c2.slice(c2.indexOf('Эфироцвет'));
-  const iCraft = after.indexOf('Улучшается до'), iNote = after.indexOf('Пахнет мятой');
-  ok(iNote < 0 || iCraft < 0 || iNote > iCraft, 'заметка встала не в конец блока');
-
-  // the flag survives a round trip through the link
-  await go(h4);
-  ok(await has('.rnote .noteshow.on'), 'флаг не восстановился из ссылки');
-  ok((await page.$eval('.rnote textarea', e => e.value)) === 'Пахнет мятой', 'текст заметки потерялся');
-
-  // and the list note can travel too, landing after the last item
-  await tap('[data-list-note-show]');
-  await page.click('[data-copy-listtext]');
+  const hits = await page.$$eval('.hitnote', e => e.map(x => x.textContent));
+  ok(hits.length === 2, 'на выпавшей позиции показаны не обе заметки: ' + hits.length);
+  ok(hits.join(' ').indexOf('Только мне') >= 0, 'мастерская заметка не показана мастеру');
+  await page.evaluate(() => document.querySelector('.orgrid [data-copy-full], .panel .card [data-copy-full]').click());
   await settle();
-  c2 = await page.evaluate(async () => await window.__clip['text/plain'].text());
-  ok(/под прилавком/.test(c2), 'помеченная заметка списка не попала в текст');
-  // она про список целиком, поэтому идёт преамбулой сразу за названием
-  const head = c2.slice(0, c2.indexOf('Эфироцвет') >= 0 ? c2.indexOf('Эфироцвет') : 400);
-  ok(/под прилавком/.test(head), 'заметка списка встала не сразу под названием:\n' + head);
-
-  /* ---------- the rolled card carries a note the GM ticked ---------- */
-  console.log('заметка на карточке после броска');
-  for (let i = 0; i < 14; i++) {
-    await page.click('[data-act="rollList"]');
-    await new Promise(r => setTimeout(r, 110));
-    const rolled = await page.$eval('.panel .card .card-name', e => e.textContent.trim()).catch(() => '');
-    if (/Эфироцвет/.test(rolled)) break;
-  }
-  await page.evaluate(() => { window.__clip = null; });
-  const cardBtn = await page.$('.panel .card [data-copy-full]');
-  if (cardBtn) {
-    await cardBtn.click();
-    await settle();
-    const cc = await page.evaluate(async () => window.__clip ? await window.__clip['text/plain'].text() : '');
-    // the roll happened inside the list, so the list is known and a ticked
-    // note belongs with the item just like anywhere else
-    ok(/Пахнет мятой/.test(cc), 'помеченная заметка не уехала с выпавшей карточкой');
-  }
-
-  // untick and both flags leave the link again
-  await tap('[data-note-show]');
-  await tap('[data-list-note-show]');
-  ok((await page.evaluate(() => location.hash)) === h3, 'снятие галок не вернуло ссылку к прежнему виду');
-
-  /* ---------- an empty note leaves no trace ---------- */
-  console.log('пустая заметка');
-  await page.$eval('.lnote textarea', e => { e.value = ''; e.dispatchEvent(new Event('input', { bubbles: true })); });
-  await page.$eval('.lrow .rnote textarea', e => { e.value = ''; e.dispatchEvent(new Event('input', { bubbles: true })); });
-  await settle();
-  ok((await page.evaluate(() => location.hash)) === hash,
-     'после очистки заметок адрес не вернулся к прежнему виду');
+  const card = await clip(page, 'text/plain');
+  ok(/Видно всем/.test(card), 'с выпавшей карточки не уехала заметка для игроков');
+  ok(!/Только мне/.test(card), 'с выпавшей карточки уехала заметка мастера');
+  await page.close();
 
   await browser.close();
-  console.log(fail ? '\n' + fail + ' FAILED' : '\nвсе проверки заметок прошли');
+  console.log(fail ? '\n' + fail + ' FAILED' : '\nзаметки: все проверки прошли');
   process.exit(fail ? 1 : 0);
 })();

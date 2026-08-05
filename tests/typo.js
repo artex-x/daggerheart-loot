@@ -27,7 +27,7 @@ const ok = (c, m) => { if (!c && !seen.has(m)) { seen.add(m); fail++; console.lo
     await page.setViewport({ width: 1180, height: 1000 });
     await page.evaluateOnNewDocument(l => {
       localStorage.setItem('dhloot.lang.v1', l);
-      localStorage.setItem('dhloot.lists.v1', JSON.stringify(
+      localStorage.setItem('dhloot.lists.v2', JSON.stringify(
         [{ id:'a', name:'Клад дракона', ids:['ci1','cc1','q1','q313'], created:1,
            note:'Заметка', meta:{ ci1:{ note:'Под прилавком' } } }].concat(
         Array.from({ length: 11 }, (_, i) => ({ id:'x'+i, name:'Лавка №'+(i+1), ids:[], created:10+i })))));

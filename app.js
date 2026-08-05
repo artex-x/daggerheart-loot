@@ -86,7 +86,7 @@ const T = {
     bumpTo:'Поднять до',
     filter:'Тип', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
     keepOneKind:'Нужен хотя бы один тип',
-    eqTrait:'Характеристика', eqRange:'Дистанция',
+    eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
     eqClass:'Класс', anyValue:'любое', outOf:'из', dropValue:'Убрать из фильтра',
     resetAll:'Сбросить всё', filterLink:'Ссылка на фильтры',
@@ -101,11 +101,17 @@ const T = {
     copySel:'Скопировать', selCopied:'Выбранное скопировано',
     addedTo:'Добавлено в «%s»', removedFrom:'Убрано из «%s»',
     qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
-    note:'Заметка', listNote:'Заметка мастера',
-    noteInLink:'видна всем, у кого есть ссылка',
-    listNotePh:'Например: позиции 9-10 лежат под прилавком',
-    notePh:'Внешний вид, хоумбрю, что знает мастер',
-    noteCopyItem:'Копировать вместе с предметом', noteCopyList:'Копировать вместе со списком',
+    note:'Заметка', listNote:'Заметки', noteHead:'Заметка',
+    notePub:'Для игроков', noteHid:'Только для мастера',
+    notePubHint:'уедет с текстом и ссылкой для игроков',
+    noteHidHint:'останется у вас',
+    listNotePhPub:'Например: лавка закрыта до утра',
+    listNotePhHid:'Например: позиции 9-10 лежат под прилавком',
+    notePhPub:'Как предмет выглядит, что о нём знают',
+    notePhHid:'Хоумбрю, подвох, что знает только мастер',
+    sharePlayers:'Ссылка игрокам', shareGm:'Ссылка себе',
+    playersLinkCopied:'Ссылка для игроков скопирована — заметок мастера в ней нет',
+    gmLinkCopied:'Ссылка со всеми заметками скопирована — она только для вас',
     clear:'Сбросить',
     dragHint:'Перетащите, чтобы изменить порядок', position:'Позиция в списке',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
@@ -122,7 +128,7 @@ const T = {
     noStorageTitle:'Браузер блокирует локальное хранилище.',
     noStorage:'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
     localOnlyTitle:'Списки живут только в этом браузере.',
-    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, сохраните ссылку: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с заметками. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново, иначе старая вернёт вас к прежней версии. Если заметки не для игроков, отправляйте им не ссылку, а результат кнопки «Скопировать текст»: в него попадут только те заметки, у которых вы отметили галочку «Копировать вместе с предметом». Остальные останутся у вас.',
+    localOnly:'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
     searchPh:'Поиск по названию или описанию…',
     nothing:'Ничего не найдено',
     sendAll:'Отправить', copyText:'Скопировать текст', copyImg:'Скопировать изображение',
@@ -130,7 +136,6 @@ const T = {
     copyLink:'Скопировать ссылку', copySection:'Скопировать ссылку на этот раздел',
     linkCopied:'Ссылка скопирована', nameCopied:'Название скопировано', textCopied:'Текст скопирован',
     tableLinkCopied:'Ссылка на таблицу скопирована', sectionLinkCopied:'Ссылка на раздел скопирована',
-    listLinkCopied:'Ссылка на список скопирована',
     listCopied:'Список скопирован', copyFailed:'Не удалось скопировать',
     sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
     copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
@@ -175,9 +180,10 @@ const T = {
         'Источники: Daggerheart Core Set и Hope &amp; Fear. Русские названия и формулировки — перевод <a href="https://ru.daggerheart.su/" target="_blank" rel="noopener">daggerheart.su</a>, для Hope &amp; Fear — таблица сообщества. Значения даны с учётом эрраты.'
       ],
       lists: [
-        'Создайте список, нажмите «Пополнить» и ходите по таблицам — на карточках и строках появится кнопка «+». Либо кликните по картинке предмета и отметьте нужные списки в блоке «В списки».',
-        'Весь состав списка закодирован прямо в адресе страницы и обновляется при каждой правке. Поэтому отправить список можно и кнопкой «Поделиться», и просто скопировав адрес из строки браузера — это одна и та же ссылка. Сервер не нужен: тот, кто её откроет, увидит список и сможет сохранить копию себе.',
-        'Поле «Восстановить из ссылки» принимает такую ссылку обратно — получится обычный список, который можно править. Хранятся в нём только название и id позиций, поэтому правки в данных подхватятся сами.'
+        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета — меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.',
+        'У списка и у каждой позиции две заметки. <b>Для игроков</b> уезжает вместе с текстом и ссылкой для игроков. <b>Только для мастера</b> остаётся у вас: ни в текст, ни в ссылку для игроков она не попадает.',
+        'Отсюда и две кнопки. <b>Ссылка игрокам</b> — то, что можно кинуть в чат партии. <b>Ссылка себе</b> — полный снимок со всеми заметками: это и способ сохранить список, чтобы восстановить его потом или открыть на другом устройстве. В адресной строке браузера лежит ссылка для игроков, так что скопировать её оттуда тоже безопасно.',
+        'Поле «Восстановить из ссылки» принимает любую из них обратно — получится обычный список, который можно править. Хранятся в ссылке только название, id позиций, количество, цена и заметки, поэтому правки в данных подхватятся сами.'
       ]
     },
     pages: {
@@ -205,7 +211,7 @@ const T = {
     bumpTo:'Bump to',
     filter:'Type', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
     keepOneKind:'At least one type has to stay on',
-    eqTrait:'Trait', eqRange:'Range',
+    eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
     eqClass:'Class', anyValue:'any', outOf:'of', dropValue:'Remove from the filter',
     resetAll:'Reset all', filterLink:'Filter link',
@@ -220,11 +226,17 @@ const T = {
     copySel:'Copy', selCopied:'Selection copied',
     addedTo:'Added to "%s"', removedFrom:'Removed from "%s"',
     qty:'Qty', gold:'Gold', goldUnit:'gp',
-    note:'Note', listNote:'GM note',
-    noteInLink:'anyone with the link can read it',
-    listNotePh:'For example: entries 9-10 are kept under the counter',
-    notePh:'Looks, homebrew, what the GM knows',
-    noteCopyItem:'Copy along with the item', noteCopyList:'Copy along with the list',
+    note:'Note', listNote:'Notes', noteHead:'Note',
+    notePub:'For players', noteHid:'GM only',
+    notePubHint:'travels with the text and the players’ link',
+    noteHidHint:'stays with you',
+    listNotePhPub:'e.g. the shop is shut until morning',
+    listNotePhHid:'e.g. entries 9-10 are kept under the counter',
+    notePhPub:'What it looks like, what is known about it',
+    notePhHid:'Homebrew, the catch, what only the GM knows',
+    sharePlayers:'Players’ link', shareGm:'Your own link',
+    playersLinkCopied:'Players’ link copied — it carries no GM notes',
+    gmLinkCopied:'Link with every note copied — this one is for you',
     clear:'Clear',
     dragHint:'Drag to reorder', position:'Position in the list',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
@@ -241,7 +253,7 @@ const T = {
     noStorageTitle:'The browser is blocking local storage.',
     noStorage:'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
     localOnlyTitle:'Lists live in this browser only.',
-    localOnly:'There is no server behind this app. Clearing site data, private mode or another device and the lists are gone. Keep the link and you keep the list: the whole thing is encoded into the address and rebuilds from it completely, notes included. Do remember that a link is a snapshot — it holds the list as it was when you copied it. Add an entry or edit a note and you need to save the link again, or the old one takes you back to the old version. If the notes are not for your players, send them what Copy text produces rather than the link: only the notes you ticked "Copy along with the item" go in, the rest stay with you.',
+    localOnly:'The app has no server. Clearing site data, a private window or another device, and the lists are gone. To keep one, press “Your own link”: the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under “GM only”. Send players the “Players’ link” or the result of “Copy text”: only what is written under “For players” goes there. The browser’s own address bar holds the players’ link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
     searchPh:'Search by name or description…',
     nothing:'Nothing found',
     sendAll:'Share', copyText:'Copy text', copyImg:'Copy image',
@@ -249,7 +261,6 @@ const T = {
     copyLink:'Copy link', copySection:'Copy a link to this section',
     linkCopied:'Link copied', nameCopied:'Name copied', textCopied:'Text copied',
     tableLinkCopied:'Table link copied', sectionLinkCopied:'Section link copied',
-    listLinkCopied:'List link copied',
     listCopied:'List copied', copyFailed:'Could not copy',
     sImg:'Image', sText:'Text', tableLink:'Link to this table',
     copyRoll:'Copy every option', rollCopied:'Options copied',
@@ -294,9 +305,10 @@ const T = {
         'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
       ],
       lists: [
-        'Create a list, hit "Fill" and browse the tables — a "+" appears on cards and rows. Or click an item\'s picture and tick the lists you want in the "Add to lists" block.',
-        'The whole list is encoded into the page address itself and refreshed on every edit, so the Share button and the browser\'s own address bar hand out the same working link. No server involved: whoever opens it sees the list and can save a copy.',
-        'The "Restore from a link" field takes such a link back and rebuilds an ordinary, editable list. Only the name and item ids are stored, so edits to the data are picked up automatically.'
+        'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card — the menu stays open, so one item goes into several lists without reopening anything.',
+        'A list and every entry in it carry two notes. <b>For players</b> travels with the copied text and with the players’ link. <b>GM only</b> stays with you: it reaches neither.',
+        'Hence the two buttons. <b>Players’ link</b> is the one to drop into the party chat. <b>Your own link</b> is a full snapshot with every note — which is also how you keep a list to restore later or open on another device. The browser’s address bar holds the players’ link, so copying it from there is safe too.',
+        'The “Restore from a link” field takes either of them back and gives you an ordinary, editable list. A link stores only the name, the entry ids, quantity, price and the notes, so edits to the data are picked up on their own.'
       ]
     },
     pages: {
@@ -415,7 +427,7 @@ function contextNote(it){
   const l = S.listRoll.id && getList(S.listRoll.id);
   if (!l || onListPage() !== l.id) return [];
   const m = itemMeta(l, it.id);
-  return (m.note && m.noteShow) ? [{ head: t().listNote, body: m.note }] : [];
+  return m.note ? [{ head: t().noteHead, body: m.note }] : [];
 }
 function onListPage(){
   if (S.route.indexOf('lists/') === 0) return S.route.slice(6);
@@ -590,6 +602,8 @@ const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="curren
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
 const ICON_PLUS = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>';
+const ICON_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M12 5c-5 0-9 4.5-9.7 6.6a1.2 1.2 0 0 0 0 .8C3 14.5 7 19 12 19s9-4.5 9.7-6.6a1.2 1.2 0 0 0 0-.8C21 9.5 17 5 12 5zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>';
+const ICON_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M2.8 3.6 3.9 2.5l17.6 17.6-1.1 1.1-3.2-3.2A10 10 0 0 1 12 19c-5 0-9-4.5-9.7-6.6a1.2 1.2 0 0 1 0-.8A13 13 0 0 1 6 7.3L2.8 3.6zm5.3 5.3A5 5 0 0 0 12 17c1 0 1.9-.3 2.7-.8l-1.5-1.5a2.5 2.5 0 0 1-3.4-3.4L8.1 8.9zM12 5c5 0 9 4.5 9.7 6.6a1.2 1.2 0 0 1 0 .8 13 13 0 0 1-2.5 3.4l-3-3A5 5 0 0 0 9.2 6.4 9.6 9.6 0 0 1 12 5z"/></svg>';
 const ICON_NOTE = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V4a1 1 0 0 1 1-1zm3 5h10V6.5H7V8zm0 3h10V9.5H7V11zm0 3h7v-1.5H7V14z"/></svg>';
 const ICON_REF ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
 const ICON_CRAFT ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
@@ -600,7 +614,8 @@ const ICON_LINK ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentC
    LISTS
    Kept in localStorage only — there is no server behind this app.
    ============================================================ */
-const LS_KEY = 'dhloot.lists.v1';
+const LS_KEY = 'dhloot.lists.v2';
+const LS_KEY_V1 = 'dhloot.lists.v1';
 /* The language is a preference, not a per-page choice: without remembering it,
    an English reader is thrown back into Russian by every reload and every
    shared link they open. */
@@ -616,9 +631,31 @@ function saveLang(){
 function loadLists(){
   try {
     const raw = localStorage.getItem(LS_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.filter(l => l && l.id && Array.isArray(l.ids)) : [];
+    if (raw !== null) return keepLists(JSON.parse(raw));
+    // first run on the new shape: bring the old lists across and leave the old
+    // key untouched, so nothing is lost if this version is rolled back
+    const old = localStorage.getItem(LS_KEY_V1);
+    if (old === null) return [];
+    const moved = keepLists(JSON.parse(old)).map(liftNotes);
+    localStorage.setItem(LS_KEY, JSON.stringify(moved));
+    return moved;
   } catch (e) { return []; }
+}
+function keepLists(arr){
+  return Array.isArray(arr) ? arr.filter(l => l && l.id && Array.isArray(l.ids)) : [];
+}
+/* One flagged note becomes two named ones. The old `noteShow` said "copy this
+   along with the item", which is precisely the note meant for players — so the
+   split is read off the data rather than guessed. */
+function liftNotes(l){
+  const lift = o => {
+    if (o && o.note && !o.noteShow) { o.hnote = o.note; delete o.note; }
+    if (o) delete o.noteShow;
+    return o;
+  };
+  lift(l);
+  if (l.meta) Object.keys(l.meta).forEach(id => lift(l.meta[id]));
+  return l;
 }
 function saveLists(){
   try { localStorage.setItem(LS_KEY, JSON.stringify(S.lists)); return true; }
@@ -690,12 +727,16 @@ function toggleInList(listId, itemId){
 const N_REC = '\x1e';   // starts one note
 const N_SEP = '\x1f';   // between the id and the text
 const N_LIST = '~';     // the id standing for the list's own note
-/* A leading "+" marks a note the GM chose to copy along with the item. It rides
-   on the id, not the text: ids are letters and digits, so the plus can never be
-   confused with one, while a note is free to start with "-1 к броску". */
+/* A leading "+" marks the note meant for players. It rides on the id, not the
+   text: ids are letters and digits, so the plus can never be confused with one,
+   while a note is free to start with "-1 к броску".
+   This is the same marker the old format used for "copy along with the item",
+   and it meant the same thing, so old links carry over without a version. */
 const N_SHOW = '+';
 
-function encodeList(l){
+/* `forPlayers` leaves the GM's own notes out. That link is what gets pasted
+   into the party chat; the full one is the GM's backup. */
+function encodeList(l, forPlayers){
   // "id" or "id*qty" or "id*qty*gold" — old links carried bare ids and still parse
   const parts = l.ids.map(function (id) {
     const m = itemMeta(l, id);
@@ -705,9 +746,9 @@ function encodeList(l){
   });
   let raw = l.name + '\n' + parts.join(',');
   const rec = (id, text, show) => text ? N_REC + (show ? N_SHOW : '') + id + N_SEP + text : '';
-  const notes = rec(N_LIST, l.note, l.noteShow) + l.ids.map(function (id) {
-    const m = itemMeta(l, id);
-    return rec(id, m.note, m.noteShow);
+  const pair = (id, o) => rec(id, o.note, true) + (forPlayers ? '' : rec(id, o.hnote, false));
+  const notes = pair(N_LIST, l) + l.ids.map(function (id) {
+    return pair(id, itemMeta(l, id));
   }).join('');
   if (notes) raw += '\n' + notes;
 
@@ -744,12 +785,12 @@ function decodeList(payload){
     });
     if (!ids.length) return null;
 
-    let note = '', noteShow = false;
+    let note = '', hnote = '';
     if (noteBlob) {
       const cut = noteBlob.indexOf(N_REC);
       // anything before the first record is a list note from the first cut of
-      // this format, which had no flags — treat it as "do not copy"
-      note = cut < 0 ? noteBlob : noteBlob.slice(0, cut);
+      // this format, which had no marker — that meant the GM's own note
+      hnote = cut < 0 ? noteBlob : noteBlob.slice(0, cut);
       if (cut >= 0) {
         noteBlob.slice(cut + 1).split(N_REC).forEach(function (rec) {
           const at = rec.indexOf(N_SEP);
@@ -757,19 +798,18 @@ function decodeList(payload){
           let id = rec.slice(0, at);
           const text = rec.slice(at + 1);
           if (!text) return;
-          const show = id.charAt(0) === N_SHOW;
-          if (show) id = id.slice(1);
-          if (id === N_LIST) { note = text; noteShow = show; return; }
+          const forPlayers = id.charAt(0) === N_SHOW;
+          if (forPlayers) id = id.slice(1);
+          const field = forPlayers ? 'note' : 'hnote';
+          if (id === N_LIST) { if (forPlayers) note = text; else hnote = text; return; }
           if (!BY_ID[id] || ids.indexOf(id) < 0) return;
-          const m = meta[id] || (meta[id] = {});
-          m.note = text;
-          if (show) m.noteShow = true;
+          (meta[id] || (meta[id] = {}))[field] = text;
         });
       }
     }
     return {
       name: name, ids: ids,
-      note: note || undefined, noteShow: (note && noteShow) || undefined,
+      note: note || undefined, hnote: hnote || undefined,
       meta: Object.keys(meta).length ? meta : undefined
     };
   } catch (e) { return null; }
@@ -788,25 +828,25 @@ function syncEqUrl(){
   S.eqSeg = eqEncode(kind);
   if (history.replaceState) history.replaceState(null, '', eqFilterHash());
 }
-function listShareUrl(l){
-  return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l);
+function listShareUrl(l, forPlayers){
+  return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l, forPlayers);
 }
 /* The address bar carries the whole list, not a local id, so whatever a person
    copies out of it — the Share button or the browser's own URL box — works for
    everyone. S.openList remembers which local list that address belongs to, so
    an edit can refresh the address instead of orphaning the page. */
-function listHash(l){ return '#/l/' + encodeList(l); }
+function listHash(l, forPlayers){ return '#/l/' + encodeList(l, forPlayers); }
 /* Saving a shared list produces an identical payload, so the hash does not
    actually change and no hashchange fires — render by hand in that case. */
 function goToList(l){
   S.openList = l.id;
-  const want = listHash(l);
-  if (location.hash === want) { S.urlPayload = encodeList(l); render(); }
+  const want = listHash(l, true);
+  if (location.hash === want) { S.urlPayload = encodeList(l, true); render(); }
   else location.hash = want;
 }
 function findListByPayload(payload){
   for (let i = 0; i < S.lists.length; i++) {
-    if (encodeList(S.lists[i]) === payload) return S.lists[i];
+    if (encodeList(S.lists[i], true) === payload) return S.lists[i];
   }
   return null;
 }
@@ -818,7 +858,7 @@ function freshenListUrl(l){
   if (S.openList === l.id) syncListUrl(l);
 }
 function syncListUrl(l){
-  const payload = encodeList(l);
+  const payload = encodeList(l, true);
   S.urlPayload = payload;
   const want = '#/l/' + payload;
   if (location.hash !== want && window.history && history.replaceState) {
@@ -836,10 +876,10 @@ function listSkip(l){
    the reference blocks, so the item reads whole before the GM's aside. */
 function noteBlocks(l, it){
   const m = itemMeta(l, it.id);
-  return (m.note && m.noteShow) ? [{ head: t().listNote, body: m.note }] : [];
+  return m.note ? [{ head: t().noteHead, body: m.note }] : [];
 }
 function listNoteTail(l){
-  return (l.note && l.noteShow) ? [{ head: t().listNote, body: l.note }] : [];
+  return l.note ? [{ head: t().noteHead, body: l.note }] : [];
 }
 /* The list note sits right under the list name: it is about the whole thing,
    so it reads as a preamble rather than a footnote after the last entry. */
@@ -1472,12 +1512,17 @@ function eqFacets(kind){
   const f = [['tier', t().tier, ['1','2','3','4'].map(k => [k, k])],
              ['src',  t().source, [['core', t().srcCore], ['hnf', t().srcHnf]]]];
   if (kind !== 'armor') {
-    /* the book prints magic weapons in their own table and requires a Spellcast
-       trait for them, so this is the weapon's class, not the damage it deals */
-    f.push(['cls', t().eqClass, ['phy','mag'].map(k => [k, eqWord(EQ_CLS, k)])]);
+    /* For primary weapons this is the table the book prints them in, and magic
+       ones need a Spellcast trait — a class, not a damage type. Secondary
+       weapons get no such split in either book, so there the same two values
+       are only the damage they deal, and the row says so. */
+    f.push(['cls', kind === 'weapon' ? t().eqClass : t().eqDmg,
+            ['phy','mag'].map(k => [k, eqWord(EQ_CLS, k)])]);
     f.push(['trait', t().eqTrait, Object.keys(EQ_TRAIT).map(k => [k, eqWord(EQ_TRAIT, k)])]);
     f.push(['range', t().eqRange, Object.keys(EQ_RANGE).map(k => [k, eqWord(EQ_RANGE, k)])]);
-    f.push(['burden', t().eqBurden, ['1','2'].map(k => [k, eqWord(EQ_BURDEN, k)])]);
+    // every secondary weapon in both books is one-handed: nothing to sort by
+    if (kind === 'weapon')
+      f.push(['burden', t().eqBurden, ['1','2'].map(k => [k, eqWord(EQ_BURDEN, k)])]);
   }
   f.push(['line', t().eqLineF, [['line', eqWord(EQ_LINE, 'line')], ['uniq', eqWord(EQ_LINE, 'uniq')]]]);
   return f;
@@ -1496,21 +1541,13 @@ function eqChosen(kind){
   });
   return out;
 }
+/* Reads the facets this table actually offers, so a value carried in from a
+   link for a facet this kind does not have cannot empty the page. */
 function eqPasses(it, kind){
   const e = it.eq;
-  if (!eqHits('tier', String(e.tier))) return false;
-  if (!eqHits('src', it.src)) return false;
-  if (!eqHits('line', e.line ? 'line' : 'uniq')) return false;
-  if (kind !== 'armor') {
-    /* The class is the table the book prints the weapon in, so it is always one
-       or the other — the Ghostblade is a magic weapon even though its damage
-       may be physical. Damage type is shown, not filtered on. */
-    if (!eqHits('cls', e.cls)) return false;
-    if (!eqHits('trait', e.tr)) return false;
-    if (!eqHits('range', e.rg)) return false;
-    if (!eqHits('burden', String(e.bu))) return false;
-  }
-  return true;
+  const value = { tier: String(e.tier), src: it.src, line: e.line ? 'line' : 'uniq',
+                  cls: e.cls, trait: e.tr, range: e.rg, burden: String(e.bu) };
+  return eqFacets(kind).every(function (f) { return eqHits(f[0], value[f[0]]); });
 }
 
 /* Folded by default, so what is chosen has to be readable without opening it:
@@ -1768,7 +1805,10 @@ function renderOneList(id){
     '</h1>' +
     '<p class="page-sub">' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
     '<div class="card-acts" style="margin-bottom:16px">' +
-      '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' + ICON_LINK + esc(t().share) + '</button>' +
+      '<button type="button" class="btn sm" data-share-list="' + esc(l.id) + '">' +
+        ICON_LINK + esc(t().sharePlayers) + '</button>' +
+      '<button type="button" class="btn sm" data-share-gm="' + esc(l.id) + '">' +
+        ICON_LINK + esc(t().shareGm) + '</button>' +
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
@@ -1809,11 +1849,14 @@ function listRollPanel(l, items){
   '</div>';
 }
 
+/* Both notes at the moment the entry comes up — this is the GM's own screen,
+   so the private one belongs here as much as the other. */
 function rolledNoteHTML(l, it){
-  const note = itemMeta(l, it.id).note;
-  if (!note) return '';
-  return '<div class="hitnote">' + ICON_NOTE +
-    '<span><b>' + esc(t().note) + '</b>' + lines(note) + '</span></div>';
+  const m = itemMeta(l, it.id);
+  const one = (icon, label, text) => text
+    ? '<div class="hitnote">' + icon + '<span><b>' + esc(label) + '</b>' + lines(text) + '</span></div>'
+    : '';
+  return one(ICON_EYE, t().notePub, m.note) + one(ICON_EYE_OFF, t().noteHid, m.hnote);
 }
 
 
@@ -1823,12 +1866,13 @@ function listRowHTML(l, it, i){
   /* The box is always in the DOM so opening it needs no re-render — typing in a
      note must not rebuild the page under the cursor. It only shows when there
      is something in it, or when the button is pressed. */
-  const noteBox = '<div class="rnote"' + (m.note ? '' : ' hidden') + '>' +
-      '<textarea rows="2" data-note="' + esc(key) + '" placeholder="' + esc(t().notePh) + '">' +
-      esc(m.note || '') + '</textarea>' +
-      noteShowHTML('data-note-show="' + esc(key) + '"', m.noteShow, t().noteCopyItem) +
+  const hasNote = !!(m.note || m.hnote);
+  const noteBox = '<div class="rnote"' + (hasNote ? '' : ' hidden') + '>' +
+      notePairHTML(function (kind) {
+        return 'data-note="' + esc(key) + '" data-nkind="' + kind + '"';
+      }, m) +
     '</div>';
-  return '<div class="row lrow' + (m.note ? ' has-note' : '') + '">' +
+  return '<div class="row lrow' + (hasNote ? ' has-note' : '') + '">' +
       '<span class="lrow-grip" draggable="true" data-drag="' + esc(key) + '"' +
         ' title="' + esc(t().dragHint) + '" aria-hidden="true">' + ICON_GRIP + '</span>' +
       /* the position doubles as the keyboard way to reorder: type 20 and the
@@ -1853,7 +1897,7 @@ function listRowHTML(l, it, i){
           '<input type="number" min="0" max="99999" inputmode="numeric" data-gold="' + esc(l.id + ':' + it.id) + '" value="' + (m.gold || '') + '" placeholder="—"></label>' +
       '</div>' +
       '<div class="lrow-acts">' +
-        '<button type="button" class="lrow-note' + (m.note ? ' on' : '') + '" data-note-toggle="' + esc(key) + '"' +
+        '<button type="button" class="lrow-note' + (hasNote ? ' on' : '') + '" data-note-toggle="' + esc(key) + '"' +
           ' title="' + esc(t().note) + '" aria-label="' + esc(t().note) + '">' + ICON_NOTE + '</button>' +
         '<button type="button" class="row-x" data-remove="' + esc(l.id + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>' +
       '</div>' +
@@ -1864,21 +1908,33 @@ function listRowHTML(l, it, i){
 /* The list-level note: shop rules, homebrew, whatever the GM keeps out of the
    item text. Folded away when empty so a list without notes looks as before. */
 function listNoteHTML(l){
-  return '<details class="lnote"' + (l.note ? ' open' : '') + '>' +
-    '<summary>' + ICON_NOTE + '<span>' + esc(t().listNote) + '</span>' +
-      '<i>' + esc(t().noteInLink) + '</i></summary>' +
-    '<textarea rows="3" data-list-note="' + esc(l.id) + '" placeholder="' + esc(t().listNotePh) + '">' +
-      esc(l.note || '') + '</textarea>' +
-    noteShowHTML('data-list-note-show="' + esc(l.id) + '"', l.noteShow, t().noteCopyList) +
+  return '<details class="lnote"' + ((l.note || l.hnote) ? ' open' : '') + '>' +
+    '<summary>' + ICON_NOTE + '<span>' + esc(t().listNote) + '</span></summary>' +
+    notePairHTML(function (kind) {
+      return 'data-list-note="' + esc(l.id) + '" data-nkind="' + kind + '"';
+    }, l, { rows: 3, phPub: t().listNotePhPub, phHid: t().listNotePhHid }) +
   '</details>';
 }
 
-/* A note stays with the GM unless this is ticked — then it rides along at the
-   end of the copied text, after the description and the reference blocks. */
-function noteShowHTML(attr, on, label){
-  return '<label class="noteshow' + (on ? ' on' : '') + '">' +
-    '<input type="checkbox" ' + attr + (on ? ' checked' : '') + '>' +
-    '<span>' + esc(label) + '</span></label>';
+/* ---------- notes ----------
+   A GM writes two different things: what the table is told, and what only they
+   know. One box with a "show this too" tick made the second kind the default
+   and the first an afterthought, and left "is this note secret" answerable only
+   by hunting for a checkbox. Two labelled boxes say it outright, and the same
+   markup serves the list and every entry in it. */
+function notePairHTML(attr, o, opt){
+  o = o || {}; opt = opt || {};
+  const field = (kind, icon, label, hint, value, ph) =>
+    '<div class="nfield n-' + kind + '">' +
+      '<span class="nlbl">' + icon + esc(label) +
+        (hint ? '<i>' + esc(hint) + '</i>' : '') + '</span>' +
+      '<textarea rows="' + (opt.rows || 2) + '" ' + attr(kind) +
+        ' placeholder="' + esc(ph) + '">' + esc(value || '') + '</textarea>' +
+    '</div>';
+  return '<div class="npair">' +
+    field('pub', ICON_EYE, t().notePub, t().notePubHint, o.note, opt.phPub || t().notePhPub) +
+    field('hid', ICON_EYE_OFF, t().noteHid, t().noteHidHint, o.hnote, opt.phHid || t().notePhHid) +
+  '</div>';
 }
 
 function renderSharedList(payload){
@@ -1890,17 +1946,26 @@ function renderSharedList(payload){
   }
   const items = data.ids.map(function (id) { return BY_ID[id]; });
   const fake = { id: '', name: data.name, ids: data.ids, meta: data.meta };
+  /* A note written for the party is half the message — showing only the entries
+     drops it on the floor. The GM's own note is shown too when the link is the
+     GM's own backup; a players' link simply does not carry one. */
+  const shown = (icon, label, text) => text
+    ? '<div class="hitnote">' + icon + '<span><b>' + esc(label) + '</b>' + lines(text) + '</span></div>'
+    : '';
+  const head = shown(ICON_EYE, t().notePub, data.note) + shown(ICON_EYE_OFF, t().noteHid, data.hnote);
   return '<h1 class="page-h">' + esc(data.name || t().untitled) + '</h1>' +
     '<p class="page-sub">' + esc(t().sharedList) + ' · ' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
     '<div class="card-acts" style="margin-bottom:18px">' +
       '<button type="button" class="btn primary" data-act="saveShared" data-val="' + esc(payload) + '">' + esc(t().saveToMine) + '</button>' +
     '</div>' +
+    (head ? '<div style="margin-bottom:18px">' + head + '</div>' : '') +
     '<div class="rows">' + items.map(function (it) {
       const m = itemMeta(fake, it.id);
       const bits = [];
       if (m.qty > 1) bits.push('×' + m.qty);
       if (m.gold) bits.push(m.gold + ' ' + t().goldUnit);
-      return rowHTML(it, '', bits.join(' · '));
+      return rowHTML(it, '', bits.join(' · ')) +
+        shown(ICON_EYE, t().notePub, m.note) + shown(ICON_EYE_OFF, t().noteHid, m.hnote);
     }).join('') + '</div>';
 }
 
@@ -2219,7 +2284,14 @@ document.addEventListener('click', function (e) {
   if (sl) {
     const l = getList(sl.dataset.shareList);
     if (l && !l.ids.length) { toast(t().listEmpty); return; }
-    if (l) copyText(listShareUrl(l), t().listLinkCopied);
+    if (l) copyText(listShareUrl(l, true), t().playersLinkCopied);
+    return;
+  }
+  const sg = e.target.closest('[data-share-gm]');
+  if (sg) {
+    const l = getList(sg.dataset.shareGm);
+    if (l && !l.ids.length) { toast(t().listEmpty); return; }
+    if (l) copyText(listShareUrl(l, false), t().gmLinkCopied);
     return;
   }
 
@@ -2345,7 +2417,7 @@ document.addEventListener('click', function (e) {
     l.ids = data.ids.slice();
     if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
     if (data.note) l.note = data.note;
-    if (data.noteShow) l.noteShow = true;
+    if (data.hnote) l.hnote = data.hnote;
     saveLists();
     toast(t().savedToLists);
     goToList(l);
@@ -2410,12 +2482,14 @@ document.addEventListener('input', function (e) {
     const parts = el.dataset.note.split(':');
     const l = getList(parts[0]);
     if (l) {
-      setMeta(l, parts[1], 'note', el.value.trim());
+      setMeta(l, parts[1], el.dataset.nkind === 'hid' ? 'hnote' : 'note', el.value.trim());
       const row = el.closest('.lrow');
       if (row) {
-        row.classList.toggle('has-note', !!el.value.trim());
+        // either box counts: the marker says "there is something written here"
+        const any = [...row.querySelectorAll('.rnote textarea')].some(x => x.value.trim());
+        row.classList.toggle('has-note', any);
         const btn = row.querySelector('.lrow-note');
-        if (btn) btn.classList.toggle('on', !!el.value.trim());
+        if (btn) btn.classList.toggle('on', any);
       }
       freshenListUrl(l);
     }
@@ -2440,29 +2514,12 @@ document.addEventListener('input', function (e) {
     el.parentElement.toggleAttribute('data-on', el.checked);
     renderSelBar();
   }
-  if (el.dataset.noteShow) {
-    const parts = el.dataset.noteShow.split(':');
-    const l = getList(parts[0]);
-    if (l) {
-      setMeta(l, parts[1], 'noteShow', el.checked);
-      el.closest('.noteshow').classList.toggle('on', el.checked);
-      freshenListUrl(l);
-    }
-  }
-  if (el.dataset.listNoteShow) {
-    const l = getList(el.dataset.listNoteShow);
-    if (l) {
-      if (el.checked) l.noteShow = true; else delete l.noteShow;
-      el.closest('.noteshow').classList.toggle('on', el.checked);
-      saveLists();
-      freshenListUrl(l);
-    }
-  }
   if (el.dataset.listNote) {
     const l = getList(el.dataset.listNote);
     if (l) {
-      l.note = el.value.trim();
-      if (!l.note) delete l.note;
+      const f = el.dataset.nkind === 'hid' ? 'hnote' : 'note';
+      const v = el.value.trim();
+      if (v) l[f] = v; else delete l[f];
       saveLists();
       freshenListUrl(l);
     }

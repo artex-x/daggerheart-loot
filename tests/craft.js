@@ -69,7 +69,7 @@ const dom = new JSDOM(html, {
     // what a copy actually puts on the pasteboard
     w.isSecureContext = true;
     // lists are read from storage once at startup, so seed before app.js runs
-    w.localStorage.setItem('dhloot.lists.v1', JSON.stringify(
+    w.localStorage.setItem('dhloot.lists.v2', JSON.stringify(
       [{ id: 'tst', name: 'Тест', ids: ['w3', 'w1'], created: 1 }]));
     w.ClipboardItem = class { constructor(map){ this.map = map; } };
     w.__clip = null;

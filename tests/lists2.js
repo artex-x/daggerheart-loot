@@ -17,7 +17,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
       value: { write: i => { window.__clip = i[0].map; return Promise.resolve(); },
                writeText: s => { window.__clip = { 'text/plain': { text: async () => s } }; return Promise.resolve(); } } });
     const ids = ['ci1','ci2','ci3','ci4','ci5','q1','q313'];
-    localStorage.setItem('dhloot.lists.v1', JSON.stringify(
+    localStorage.setItem('dhloot.lists.v2', JSON.stringify(
       [{ id:'a', name:'Клад дракона', ids: ids, created: 1 }].concat(
         Array.from({ length: 11 }, (_, i) => ({ id:'x'+i, name:'Лавка №'+(i+1), ids:[], created: 10+i })))));
   });
@@ -28,7 +28,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
                           await page.evaluate(() => window.scrollTo(0, 0));
                           await new Promise(r => setTimeout(r, 80)); };
   const settle = () => new Promise(r => setTimeout(r, 260));
-  const lists = () => page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v1')));
+  const lists = () => page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v2')));
   const order = async () => (await lists()).find(l => l.id === 'a').ids;
   const clip = k => page.evaluate(async x => window.__clip && window.__clip[x] ? await window.__clip[x].text() : '', k);
 
