@@ -13,9 +13,15 @@
   --gold-soft:#f0d091;
   --hope:#e9b949;
   --fear:#8a72d6;
-  --item:#5fa8d3;
-  --cons:#63c294;
-  --equip:#d48e6a;
+  --item:#7a8ee0;
+  --cons:#9ec96a;
+  /* One hue per kind of gear, used by the badge only — the stat line stays
+     plain secondary text. Hues are kept apart from the loot badges above:
+     the five sit roughly evenly around the wheel, with at least 49° between any
+     two, so no badge reads as a lighter version of another. */
+  --eq-weapon:#d48e6a;
+  --eq-secondary:#cf7fa6;
+  --eq-armor:#5ec9c4;
   --danger:#e0685f;
   --r:14px;
   --r-sm:9px;
@@ -259,11 +265,14 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
   padding:3px 7px;border-radius:6px;background:rgba(10,8,16,.5);
   border:1px solid var(--line2);color:var(--muted);
 }
-.badge.item{color:var(--item);border-color:rgba(95,168,211,.45)}
-.badge.cons{color:var(--cons);border-color:rgba(99,194,148,.45)}
+.badge.item{color:var(--item);border-color:#7a8ee073}
+.badge.cons{color:var(--cons);border-color:#9ec96a73}
 .badge.hope{color:var(--hope);border-color:rgba(233,185,73,.5)}
 .badge.fear{color:var(--fear);border-color:rgba(138,114,214,.55)}
-.badge.src{color:var(--muted)}
+/* Neutral on purpose: --muted carries a violet tint that put this badge in the
+   same family as the armour one. The source tag is meant to read as quiet, not
+   as another category. */
+.badge.src{color:#9a9aa6}
 .badge.num{
   font-family:var(--mono);font-size:11px;letter-spacing:0;
   color:var(--gold-soft);border-color:rgba(216,171,94,.5);
@@ -648,7 +657,7 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
   display:flex;flex-direction:column;transition:.16s;
 }
 .listcard:hover{border-color:var(--line2)}
-.listcard.active{border-color:var(--cons);box-shadow:0 0 0 1px rgba(99,194,148,.3)}
+.listcard.active{border-color:var(--cons);box-shadow:0 0 0 1px #9ec96a4d}
 .listcard-main{display:block;padding:14px 15px 12px;text-decoration:none;color:inherit;flex:1}
 .listcard-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .listcard-top b{font-size:15.5px;font-weight:650;line-height:1.3}
@@ -704,19 +713,26 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
    Weapons and armour arrive with table columns instead of prose, so the stats
    are shown as their own strip: readable at a glance, and clearly not part of
    the description underneath. */
-.badge.equip{color:var(--equip);border-color:rgba(212,142,106,.45)}
-.tile-k.equip{background:var(--equip)}
 .eqstats{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 10px}
 .eqstats span{
-  font:600 11.5px/1 var(--mono);color:var(--equip);
-  background:rgba(212,142,106,.09);border:1px solid rgba(212,142,106,.28);
+  font:600 11.5px/1 var(--mono);color:var(--muted);
+  background:rgba(255,255,255,.035);border:1px solid var(--line2);
   border-radius:6px;padding:4px 7px;white-space:nowrap;
 }
 /* the row clamps every span in .rt to two lines; the stat strip opts out */
 .row-main .rt .rstats{
   -webkit-line-clamp:none;display:block;margin-top:3px;
-  font:600 11.5px/1.4 var(--mono);color:var(--equip);
+  font:600 11.5px/1.4 var(--mono);color:var(--muted);
 }
+/* The kind is told by the badge — one small mark per row, where the eye already
+   goes looking for what a thing is. Alpha rides in the hex so one hue drives
+   both the text and its hairline. */
+.badge.eq-weapon{color:var(--eq-weapon);border-color:#d48e6a73}
+.badge.eq-secondary{color:var(--eq-secondary);border-color:#cf7fa673}
+.badge.eq-armor{color:var(--eq-armor);border-color:#5ec9c473}
+.tile-k.eq-weapon{background:var(--eq-weapon)}
+.tile-k.eq-secondary{background:var(--eq-secondary)}
+.tile-k.eq-armor{background:var(--eq-armor)}
 /* .rt > b is the row title and is laid out as a block; the feature label
    inside the description has to say it is not */
 .card-desc b{color:#efe8ff;font-weight:650}
@@ -744,10 +760,20 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
   border-top-color:currentColor;transform:translateY(2px)}
 .caret.up{border-top-color:transparent;border-bottom-color:currentColor;transform:translateY(-2px)}
 .eqfilter{margin-top:10px}
-.eqacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;
-  padding-top:14px;border-top:1px solid var(--line)}
-.eqacts .btn[disabled]{opacity:.45;cursor:default}
-.eqacts .btn[disabled]:hover{border-color:var(--line2);background:var(--surface)}
+/* the tail of the "what is filtered" strip: drop everything, or hand the whole
+   state over as a link. Quiet on purpose — the picks are what should read. */
+.eqclear{
+  height:32px;padding:0 9px;border:0;border-radius:8px;background:transparent;
+  color:var(--muted);font-size:12.5px;font-weight:600;white-space:nowrap;transition:.15s;
+}
+.eqclear:hover{background:rgba(255,255,255,.06);color:var(--txt)}
+.eqlink{
+  width:32px;height:32px;flex:none;padding:0;border-radius:8px;
+  border:1px solid var(--line2);background:var(--surface);color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;
+}
+.eqlink:hover{border-color:var(--gold);color:var(--gold-soft)}
+.eqlink svg{width:15px;height:15px;fill:currentColor}
 .warn{position:relative;margin-bottom:16px}
 .warn-x{
   position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;

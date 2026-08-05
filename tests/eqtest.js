@@ -86,7 +86,8 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(await page.$('[data-val="src:core"]') && await page.$('[data-val="src:hnf"]'),
      'нет фильтра по источнику');
   ok(!(await page.$('[data-val^="dtype:"]')), 'фильтр физ/маг остался отдельно');
-  ok(await page.$eval('.eqacts [data-val="reset"]', e => e.disabled), 'сброс активен без фильтров');
+  ok(!(await page.$('.eqclear')) && !(await page.$('.eqlink')),
+     'сброс и ссылка показаны, хотя фильтр пуст');
 
   /* one click is all it takes to get down to a single tier */
   await page.click('.eqfilter [data-val="tier:2"]'); await settle();
@@ -96,6 +97,12 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(await page.$eval('.eqtoggle', e => /\(1\)/.test(e.textContent)), 'счётчик выбранного не положительный');
   ok(!/−/.test(await page.$eval('.eqtoggle', e => e.textContent)), 'счётчик снова показывает минус');
   ok(await page.$eval('.eqcount', e => /67 из 239/.test(e.textContent)), 'счёт найденного не обновился');
+  ok(await page.$('.eqclear') && await page.$('.eqlink'), 'сброс и ссылка не появились рядом с выбранным');
+  // both stay reachable with the panel folded — that is the point of moving them
+  await page.click('[data-act="eqOpen"]'); await settle();
+  ok(!(await page.$('.eqfilter')), 'панель не свернулась');
+  ok(await page.$('.eqclear') && await page.$('.eqlink'), 'со свёрнутой панелью сброс и ссылка пропали');
+  await page.click('[data-act="eqOpen"]'); await settle();
 
   /* values inside a row add up */
   await page.click('.eqfilter [data-val="tier:3"]'); await settle();
@@ -117,8 +124,9 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok((await page.$$eval('.eqpill', e => e.length)) === 1, 'плашка не исчезла');
 
   /* a weapon that deals either kind of damage answers to both classes */
-  await page.click('[data-act="eqf"][data-val="reset"]'); await settle();
+  await page.click('.eqclear'); await settle();
   ok((await rows()) === 239, 'сброс не вернул все строки');
+  ok(!(await page.$('.eqclear')), 'сброс остался после сброса');
   await open();
   await page.click('.eqfilter [data-val="cls:phy"]'); await settle();
   const phyNames = await page.$$eval('.rows .row b', e => e.map(x => x.textContent));
@@ -156,7 +164,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok((await rows()) !== viaLink, 'клик по чипу откатился к состоянию из ссылки');
   ok(await page.evaluate(() => location.hash.indexOf('tier-3-4') > 0),
      'адрес не поехал за фильтром: ' + await page.evaluate(() => location.hash));
-  await page.click('[data-act="eqf"][data-val="reset"]'); await settle();
+  await page.click('.eqclear'); await settle();
   ok(await page.evaluate(() => location.hash === '#/tables/eq_weapon'),
      'после сброса в адресе остался фильтр');
 
@@ -167,6 +175,31 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(await page.evaluate(() => location.hash === '#/tables/eq_weapon/t2'), 'адрес с якорем не удержался');
   const scrolled = await page.evaluate(() => window.scrollY);
   ok(scrolled > 100, 'страница не прокрутилась к разделу: ' + scrolled);
+
+  /* ---------- each kind of gear reads as its own ---------- */
+  console.log('цвета по видам');
+  const tone = async (hash) => {
+    await go(hash);
+    return page.$$eval('.rows .row .rstats', e => [...new Set(e.map(x => getComputedStyle(x).color))]);
+  };
+  const cw = await tone('#/tables/eq_weapon');
+  const cs = await tone('#/tables/eq_secondary');
+  const ca = await tone('#/tables/eq_armor');
+  // the stat line keeps one tone everywhere: three colours of numbers was noise
+  ok(new Set([].concat(cw, cs, ca)).size === 1,
+     'характеристики окрашены по-разному: ' + [cw, cs, ca].join(' | '));
+  // the kind is told by the badge instead
+  const badge = async (hash) => { await go(hash);
+    return page.$$eval('.rows .badge[class*="eq-"]',
+      e => [...new Set(e.map(x => x.className.match(/eq-\w+/)[0] + ':' + getComputedStyle(x).color))]); };
+  const bw = await badge('#/tables/eq_weapon');
+  const bs = await badge('#/tables/eq_secondary');
+  const ba = await badge('#/tables/eq_armor');
+  ok(bw.length === 1 && bs.length === 1 && ba.length === 1, 'в таблице ярлыки разных видов');
+  ok(bw[0].indexOf('eq-weapon') === 0 && bs[0].indexOf('eq-secondary') === 0 && ba[0].indexOf('eq-armor') === 0,
+     'ярлык помечен не своим классом: ' + [bw[0], bs[0], ba[0]].join(' | '));
+  ok(new Set([bw[0].split(':')[1], bs[0].split(':')[1], ba[0].split(':')[1]]).size === 3,
+     'ярлыки трёх видов одного цвета: ' + [bw[0], bs[0], ba[0]].join(' | '));
 
   /* ---------- copying ---------- */
   console.log('копирование');

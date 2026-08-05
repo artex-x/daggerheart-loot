@@ -170,7 +170,7 @@ const T = {
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие Core, потом магическое, затем то же для Hope &amp; Fear.',
         '<b>Класс</b> — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.',
         'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
-        'В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все. Адрес страницы едет за фильтром, так что ссылкой можно поделиться прямо из строки браузера.',
+        'В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.',
         'Одиннадцать предметов из Wondrous Loot на самом деле оружие. В этих таблицах их нет — они остались в своей таблице Wondrous, но выглядят и копируются как снаряжение.',
         'Источники: Daggerheart Core Set и Hope &amp; Fear. Русские названия и формулировки — перевод <a href="https://ru.daggerheart.su/" target="_blank" rel="noopener">daggerheart.su</a>, для Hope &amp; Fear — таблица сообщества. Значения даны с учётом эрраты.'
       ],
@@ -289,7 +289,7 @@ const T = {
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear.',
         '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
-        'Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot. The address follows the filter, so the link in the address bar is the one to share.',
+        'Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
         'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.',
         'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
       ],
@@ -371,6 +371,9 @@ const EQ_TABLE  = { eq_weapon:'weapon', eq_secondary:'secondary', eq_armor:'armo
 
 const eqWord = (map, key) => { const v = map[key]; return v ? v[S.lang === 'ru' ? 0 : 1] : ''; };
 const isEquip = it => !!(it && it.eq);
+/* Weapon, offhand and armour each get their own colour: in a mixed list the
+   three read as one undifferentiated block otherwise. */
+const eqClass = it => 'eq-' + (isEquip(it) ? it.eq.t : 'weapon');
 
 /* ---------- helpers ---------- */
 const esc = s => String(s == null ? '' : s)
@@ -456,7 +459,7 @@ function eqParts(it, noType){
 const eqLine = (it, noType) => eqParts(it, noType).join(' · ');
 function eqChips(it){
   const p = eqParts(it, true);
-  return p.length ? '<div class="eqstats">' +
+  return p.length ? '<div class="eqstats ' + eqClass(it) + '">' +
     p.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>' : '';
 }
 /* The feature label is stored inline ("Quick: when you…") so that every place
@@ -1092,7 +1095,7 @@ function selAsHtml(items){
 /* Loot is an item or a consumable; equipment says what kind of gear it is */
 function kindBadge(it){
   if (isEquip(it))
-    return '<span class="badge equip">' + esc(eqWord(EQ_TYPE, it.eq.t)) + '</span>';
+    return '<span class="badge ' + eqClass(it) + '">' + esc(eqWord(EQ_TYPE, it.eq.t)) + '</span>';
   return '<span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
     esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>';
 }
@@ -1511,7 +1514,10 @@ function eqPasses(it, kind){
 }
 
 /* Folded by default, so what is chosen has to be readable without opening it:
-   each pick is its own chip and takes one click to undo. */
+   each pick is its own chip and takes one click to undo. Dropping everything
+   and handing the state out as a link belong to the same strip — they are the
+   rest of "what is filtered right now", and inside the panel they could only be
+   reached by unfolding it again. Neither appears while nothing is picked. */
 function eqFilterHTML(kind, shown, total){
   const chosen = eqChosen(kind);
   return '<div class="eqbar">' +
@@ -1524,12 +1530,19 @@ function eqFilterHTML(kind, shown, total){
           ' data-val="' + esc(c[0] + ':' + c[1]) + '"' +
           ' title="' + esc(t().dropValue) + '">' + esc(c[2]) + '<i>&times;</i></button>';
       }).join('') +
+      (chosen.length
+        ? '<button type="button" class="eqclear" data-act="eqf" data-val="reset">' +
+            esc(t().resetAll) + '</button>' +
+          '<button type="button" class="eqlink" data-act="eqLink"' +
+            ' title="' + esc(t().filterLink) + '" aria-label="' + esc(t().filterLink) + '">' +
+            ICON_LINK + '</button>'
+        : '') +
       '<span class="eqcount">' +
         esc(chosen.length ? shown + ' ' + t().outOf + ' ' + total : String(total)) +
       '</span>' +
-    '</div>' + (S.eqOpen ? eqFilterBody(kind, chosen.length) : '');
+    '</div>' + (S.eqOpen ? eqFilterBody(kind) : '');
 }
-function eqFilterBody(kind, chosen){
+function eqFilterBody(kind){
   return '<div class="panel eqfilter">' + eqFacets(kind).map(function (f) {
     const any = eqAny(f[0]);
     /* an untouched row says so, so that neutral chips do not read as "nothing
@@ -1542,15 +1555,7 @@ function eqFilterBody(kind, chosen){
           ' data-act="eqf" data-val="' + esc(f[0] + ':' + o[0]) + '"' +
           ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(o[1]) + '</button>';
       }).join('') + '</div></div>';
-  }).join('') +
-  /* both buttons live inside the panel: outside it they read as page controls
-     rather than as something that belongs to the filter */
-  '<div class="eqacts">' +
-    '<button type="button" class="btn sm" data-act="eqf" data-val="reset"' +
-      (chosen ? '' : ' disabled') + '>' + esc(t().resetAll) + '</button>' +
-    '<button type="button" class="btn sm" data-act="eqLink">' + ICON_LINK +
-      esc(t().filterLink) + '</button>' +
-  '</div></div>';
+  }).join('') + '</div>';
 }
 
 /* ---- the filter state as a piece of the address ----
@@ -1621,7 +1626,7 @@ function rowHTML(it, removeFrom, tail){
         '<span class="rt"><b>' + (it.roll ? '<span class="rnum">' + esc(it.roll) + '</span>' : '') +
           esc(nameOf(it)) +
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
-        (isEquip(it) ? '<span class="rstats">' + esc(eqLine(it, true)) + '</span>' : '') +
+        (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
         '<span class="rm">' + kindBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
@@ -1650,7 +1655,7 @@ function tileHTML(it){
     '<div class="tile-img">' +
       (it.roll ? '<span class="tile-n">' + esc(it.roll) + '</span>'
                : (isEquip(it) && it.eq.tier ? '<span class="tile-n">' + esc(t().tier + ' ' + it.eq.tier) + '</span>' : '')) +
-      '<span class="tile-k ' + (isEquip(it) ? 'equip' : it.kind === 'consumable' ? 'cons' : 'item') +
+      '<span class="tile-k ' + (isEquip(it) ? eqClass(it) : it.kind === 'consumable' ? 'cons' : 'item') +
         '" title="' + esc(isEquip(it) ? eqWord(EQ_TYPE, it.eq.t) : it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
       imgTag(it) +
     '</div>' +
@@ -1834,7 +1839,7 @@ function listRowHTML(l, it, i){
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         imgTag(it) +
         '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
-        (isEquip(it) ? '<span class="rstats">' + esc(eqLine(it, true)) + '</span>' : '') +
+        (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
         /* the same badges every other listing shows — without them a list is the
            one place you cannot tell an item from a weapon at a glance */

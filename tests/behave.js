@@ -124,7 +124,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await page.click('[data-act="kind"][data-val="equip"]'); await settle();
   const after = (await page.$$eval('.rows .row', e => e.length));
   ok(after < before, 'фильтр типа не влияет на поиск');
-  ok((await page.$$eval('.rows .badge.equip', e => e.length)) === 0,
+  ok((await page.$$eval(".rows .badge[class*='eq-']", e => e.length)) === 0,
      'после выключения типа остались строки с ярлыком снаряжения');
   // including the Wondrous entries that are weapons: the badge is the promise
   ok((await find('снежный')).length === 0,
