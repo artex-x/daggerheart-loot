@@ -153,6 +153,52 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(await page.$eval('#langSeg button.on', e => e.textContent === 'EN'), 'переключатель показывает не тот язык');
   await page.close();
 
+  /* ---------- the section the app opens on ---------- */
+  console.log('стартовый раздел');
+  page = await newPage();
+  await go(page, '#/roll/std');
+  ok((await page.$$eval('#tabs a .n', e => e.length)) === 0, 'на вкладках остались номера');
+  ok(await page.$('.page-h .homebtn'), 'нет кнопки стартового раздела');
+  ok(await page.$eval('.page-h .homebtn', e => e.classList.contains('on')),
+     'по умолчанию стартовым не отмечены обычные правила');
+
+  await go(page, '#/search');
+  ok(!(await page.$eval('.page-h .homebtn', e => e.classList.contains('on'))),
+     'поиск отмечен стартовым, хотя его не выбирали');
+  await page.evaluate(() => document.querySelector('.page-h .homebtn').click());
+  await settle();
+  ok(await page.$eval('.page-h .homebtn', e => e.classList.contains('on')), 'выбор не отметился');
+  ok(await page.evaluate(() => localStorage.getItem('dhloot.home.v1') === '#/search'),
+     'выбор не сохранился');
+
+  // opened with no address at all — that is when the setting has to work
+  await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
+  await new Promise(r => setTimeout(r, 620));
+  ok(await page.$('#sq'), 'приложение открылось не на поиске');
+
+  // a table by name works too
+  await go(page, '#/tables/eq_armor');
+  await page.evaluate(() => document.querySelector('.page-h .homebtn').click());
+  await settle();
+  await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
+  await new Promise(r => setTimeout(r, 620));
+  ok(await page.$eval('.chips .chip.on', e => e.textContent === 'Броня'),
+     'приложение открылось не на выбранной таблице');
+
+  // pressing the marked one puts the default back
+  await page.evaluate(() => document.querySelector('.page-h .homebtn').click());
+  await settle();
+  ok(await page.evaluate(() => !localStorage.getItem('dhloot.home.v1')), 'повторный клик не сбросил выбор');
+  await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
+  await new Promise(r => setTimeout(r, 620));
+  ok(await page.$eval('.page-h', e => /Обычные правила/.test(e.textContent)),
+     'после сброса приложение открылось не на обычных правилах');
+
+  // a single item is not a section, so it cannot be pinned
+  await go(page, '#/i/w1');
+  ok(!(await page.$('.homebtn')), 'кнопку стартового раздела предложили на карточке предмета');
+  await page.close();
+
   /* ---------- moving back and forth ---------- */
   console.log('навигация');
   page = await newPage();

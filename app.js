@@ -145,6 +145,9 @@ const T = {
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
     whatIsThis:'Как это работает',
+    setHome:'Открывать этот раздел при запуске', isHome:'Открывается при запуске',
+    homeSet:'Приложение будет открываться на этом разделе',
+    homeReset:'Приложение снова будет открываться на обычных правилах',
     help: {
       std: [
         'Бросьте d12 и сложите результаты — сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.',
@@ -270,6 +273,9 @@ const T = {
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
     whatIsThis:'How this works',
+    setHome:'Open this section on start', isHome:'Opens on start',
+    homeSet:'The app will open on this section',
+    homeReset:'The app will open on the standard rules again',
     help: {
       std: [
         'Roll d12 and add them up — the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.',
@@ -602,6 +608,7 @@ const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="curren
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
 const ICON_EXT  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="flex:none;opacity:.7"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z"/></svg>';
 const ICON_PLUS = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>';
+const ICON_HOME = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3L12 3z"/></svg>';
 const ICON_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M12 5c-5 0-9 4.5-9.7 6.6a1.2 1.2 0 0 0 0 .8C3 14.5 7 19 12 19s9-4.5 9.7-6.6a1.2 1.2 0 0 0 0-.8C21 9.5 17 5 12 5zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>';
 const ICON_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M2.8 3.6 3.9 2.5l17.6 17.6-1.1 1.1-3.2-3.2A10 10 0 0 1 12 19c-5 0-9-4.5-9.7-6.6a1.2 1.2 0 0 1 0-.8A13 13 0 0 1 6 7.3L2.8 3.6zm5.3 5.3A5 5 0 0 0 12 17c1 0 1.9-.3 2.7-.8l-1.5-1.5a2.5 2.5 0 0 1-3.4-3.4L8.1 8.9zM12 5c5 0 9 4.5 9.7 6.6a1.2 1.2 0 0 1 0 .8 13 13 0 0 1-2.5 3.4l-3-3A5 5 0 0 0 9.2 6.4 9.6 9.6 0 0 1 12 5z"/></svg>';
 const ICON_NOTE = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V4a1 1 0 0 1 1-1zm3 5h10V6.5H7V8zm0 3h10V9.5H7V11zm0 3h7v-1.5H7V14z"/></svg>';
@@ -620,6 +627,33 @@ const LS_KEY_V1 = 'dhloot.lists.v1';
    an English reader is thrown back into Russian by every reload and every
    shared link they open. */
 const LANG_KEY = 'dhloot.lang.v1';
+/* Which section the app opens on. A GM who lives in Search should not have to
+   walk past the d12 roller every time. */
+const HOME_KEY = 'dhloot.home.v1';
+const HOME_DEFAULT = '#/roll/std';
+function loadHome(){
+  try { const v = localStorage.getItem(HOME_KEY); return homeAllows(v) ? v : ''; }
+  catch (e) { return ''; }
+}
+/* Only whole sections, and a table by name — an item page or a list payload
+   would pin the app to a snapshot that can go stale. */
+function homeAllows(hash){
+  if (!hash) return false;
+  const h = hash.replace(/^#\/?/, '');
+  if (TAB_LIST.some(function (x) { return x[0] === h; })) return true;
+  const m = /^tables\/([a-z_]+)$/.exec(h);
+  return !!(m && TABLE_DEFS.some(function (d) { return d.id === m[1]; }));
+}
+/* The address of the section being looked at, or '' where pinning makes no
+   sense (a single item, someone else's list). */
+function homeHash(){
+  if (S.route === 'tables') return '#/tables/' + S.tables.t;
+  return TAB_LIST.some(function (x) { return x[0] === S.route; }) ? '#/' + S.route : '';
+}
+function isHome(){
+  const here = homeHash();
+  return !!here && (loadHome() || HOME_DEFAULT) === here;
+}
 function loadLang(){
   try { const v = localStorage.getItem(LANG_KEY); if (v === 'ru' || v === 'en') S.lang = v; }
   catch (e) {}
@@ -844,9 +878,14 @@ function goToList(l){
   if (location.hash === want) { S.urlPayload = encodeList(l, true); render(); }
   else location.hash = want;
 }
+/* A list now has two payloads — with the GM's notes and without — and either
+   one is still that list. Comparing against the players' flavour alone meant a
+   GM opening their own backup link was told it belonged to someone else, and
+   saving it again changed nothing, because the link never matched. */
 function findListByPayload(payload){
   for (let i = 0; i < S.lists.length; i++) {
-    if (encodeList(S.lists[i], true) === payload) return S.lists[i];
+    const l = S.lists[i];
+    if (encodeList(l, true) === payload || encodeList(l, false) === payload) return l;
   }
   return null;
 }
@@ -1280,7 +1319,15 @@ function pageHead(key){
   const box = (help && S.help === key)
     ? '<div class="helpbox">' + help.map(function (x) { return '<p>' + x + '</p>'; }).join('') + '</div>'
     : '';
-  return '<h1 class="page-h">' + p[0] + btn + '</h1><p class="page-sub">' + p[1] + '</p>' + box;
+  const here = homeHash();
+  const on = here && isHome();
+  const home = here
+    ? '<button type="button" class="homebtn' + (on ? ' on' : '') + '" data-act="home"' +
+      ' title="' + esc(on ? t().isHome : t().setHome) + '"' +
+      ' aria-label="' + esc(on ? t().isHome : t().setHome) + '"' +
+      ' aria-pressed="' + (on ? 'true' : 'false') + '">' + ICON_HOME + '</button>'
+    : '';
+  return '<h1 class="page-h">' + p[0] + home + btn + '</h1><p class="page-sub">' + p[1] + '</p>' + box;
 }
 
 function pickCards(items, opts){
@@ -2023,9 +2070,9 @@ const ROUTES = {
   'search': renderSearch
 };
 const TAB_LIST = [
-  ['roll/std','std','1'], ['roll/alt','alt','2'],
-  ['roll/wondrous','wondrous','3'], ['roll/community','community','4'],
-  ['tables','tables',''], ['lists','lists',''], ['search','search','']
+  ['roll/std','std'], ['roll/alt','alt'],
+  ['roll/wondrous','wondrous'], ['roll/community','community'],
+  ['tables','tables'], ['lists','lists'], ['search','search']
 ];
 /* links handed out before the three d12 modes were merged */
 const LEGACY_ROUTES = { 'roll/core':'roll/std', 'roll/hnf':'roll/std', 'roll/all':'roll/std' };
@@ -2075,7 +2122,7 @@ function renderTabs(){
   const cur = currentRoute();
   $('#tabs').innerHTML = TAB_LIST.map((tab, i) =>
     '<a href="#/' + tab[0] + '" class="' + (tab[0] === cur ? 'on' : '') + (i === 4 ? ' sep' : '') + '">' +
-      (tab[2] ? '<span class="n">' + tab[2] + '</span>' : '') + esc(t().tabs[tab[1]]) +
+      esc(t().tabs[tab[1]]) +
     '</a>').join('');
 }
 
@@ -2343,6 +2390,16 @@ document.addEventListener('click', function (e) {
   if (a === 'kind') {
     if (act.dataset.last) { toast(t().keepOneKind); return; }
     S.kind[val] = !S.kind[val];
+    render(); return;
+  }
+  if (a === 'home') {
+    const here = homeHash();
+    if (!here) return;
+    // pressing the one that is already home puts the default back
+    const next = isHome() ? '' : here;
+    try { if (next) localStorage.setItem(HOME_KEY, next); else localStorage.removeItem(HOME_KEY); }
+    catch (e) { toast(t().saveFailed, true); return; }
+    toast(next ? t().homeSet : t().homeReset);
     render(); return;
   }
   if (a === 'hideWarn') { hideWarn(); render(); return; }
@@ -2642,6 +2699,11 @@ document.addEventListener('error', function (e) {
 S.lists = loadLists();
 loadLang();
 syncLangButtons();
+/* Opened without an address — go where this browser was told to start */
+if (!location.hash || location.hash === '#' || location.hash === '#/') {
+  const home = loadHome();
+  if (home && home !== HOME_DEFAULT) location.hash = home;
+}
 
 /* A modal is tied to the route it was opened from. Links inside it (the craft
    chain, for one) navigate the page underneath, so the modal has to go with it

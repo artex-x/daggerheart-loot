@@ -156,6 +156,33 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
      'непомеченная заметка из ссылки стала видимой: ' + JSON.stringify(saved.meta.cc1));
   await page.close();
 
+  /* ---------- saving a link and opening it again ---------- */
+  console.log('своя ссылка после сохранения');
+  page = await mk();
+  await go(page, '#/roll/std');
+  // a real link from before the split: the list note carries no marker
+  const backup = await page.evaluate(() => {
+    const raw = 'Скупщик трофеев\nq335,cc21*5*50,q337*1*150\n' +
+      '\x1e~\x1fОружие давно не знало заботливой руки' +
+      '\x1e+q337\x1fНа нагруднике необычный герб';
+    const bytes = new TextEncoder().encode(raw);
+    let bin = ''; bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  });
+  await go(page, '#/l/' + backup);
+  ok(await page.$('[data-act="saveShared"]'), 'ссылка не открылась как чужая');
+  await page.evaluate(() => document.querySelector('[data-act="saveShared"]').click());
+  await settle();
+  ok(!(await page.$('[data-act="saveShared"]')), 'после сохранения список всё ещё чужой');
+
+  // and coming back to the very same link has to land on the saved list
+  await go(page, '#/l/' + backup);
+  ok(!(await page.$('[data-act="saveShared"]')),
+     'своя же ссылка снова показана как чужая — сохранять её можно бесконечно');
+  ok(await page.$('#rename'), 'список открылся не в режиме правки');
+  ok((await lists(page)).length === 1, 'список сохранился дважды');
+  await page.close();
+
   /* ---------- a list with no notes still encodes as before ---------- */
   console.log('список без заметок');
   page = await mk(FRESH);

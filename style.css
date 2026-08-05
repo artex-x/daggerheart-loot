@@ -81,13 +81,9 @@ a{color:var(--gold-soft)}
   font-size:13.5px;font-weight:560;white-space:nowrap;transition:.15s;
   display:flex;align-items:center;gap:7px;
 }
-.tabs a .n{
-  font:600 10.5px/1 var(--mono);color:var(--muted2);
-  border:1px solid var(--line2);border-radius:5px;padding:2.5px 4.5px;
-}
+
 .tabs a:hover{color:var(--txt)}
 .tabs a.on{color:var(--gold-soft);border-bottom-color:var(--gold)}
-.tabs a.on .n{color:var(--gold);border-color:var(--gold)}
 .tabs a.sep{margin-left:auto}
 
 /* ============ layout ============ */
@@ -100,6 +96,16 @@ main{padding:26px 0 48px;min-height:60vh}
 }
 .helpbtn:hover{border-color:var(--gold);color:var(--gold)}
 .helpbtn.on{background:var(--gold);border-color:var(--gold);color:#1a1206}
+/* sits beside the help mark, same size and weight — one is "explain", the
+   other is "start here", and neither should shout */
+.homebtn{
+  width:26px;height:26px;flex:none;padding:0;border-radius:50%;
+  border:1px solid var(--line2);background:transparent;color:var(--muted2);
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;vertical-align:middle;
+}
+.homebtn:hover{border-color:var(--gold);color:var(--gold-soft)}
+.homebtn.on{background:var(--gold);border-color:var(--gold);color:#1a1206}
+.homebtn svg{width:14px;height:14px;fill:currentColor}
 .helpbox{
   margin:0 0 22px;padding:15px 17px;border-radius:var(--r);
   background:var(--surface);border:1px solid var(--line2);
