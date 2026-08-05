@@ -734,7 +734,7 @@ input::placeholder{color:var(--muted2)}
   padding-top:14px;border-top:1px solid var(--line)}
 .eqacts .btn[disabled]{opacity:.45;cursor:default}
 .eqacts .btn[disabled]:hover{border-color:var(--line2);background:var(--surface)}
-.warn{position:relative}
+.warn{position:relative;margin-bottom:16px}
 .warn-x{
   position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;
   border:0;background:transparent;color:var(--muted2);font-size:19px;line-height:1;

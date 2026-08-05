@@ -1700,14 +1700,18 @@ function renderOneList(id){
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
+    /* Same slot as on the index: under the page header, above the content.
+       Between the note and the roll panel it read as a caption for the roll,
+       and at the foot it turned up in two different places on two pages that
+       are about the same thing. */
+    storageWarning() +
     listNoteHTML(l) +
     (items.length > 1 ? listRollPanel(l, items) : '') +
     (items.length
       ? '<div class="rows lrows" style="margin-top:16px">' +
           items.map(function (it, i) { return listRowHTML(l, it, i); }).join('') +
         '</div>'
-      : '<div class="empty">' + esc(t().listEmptyHint) + '</div>') +
-    storageWarning();
+      : '<div class="empty">' + esc(t().listEmptyHint) + '</div>');
 }
 
 /* roll a position inside the list itself */
