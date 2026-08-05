@@ -20,7 +20,6 @@ const ALL = Object.keys(DATA).reduce((a, k) => a.concat(DATA[k]), []);
    record rather than being copied. */
 const EQ = window.LOOT.eq || [];
 EQ.forEach(function (it) { BY_ID[it.id] = it; });
-const EQ_ALL = EQ.concat(ALL.filter(function (it) { return it.eq; }));
 const SEARCHABLE = ALL.concat(EQ);
 
 /* ---------- crafting chains ----------
@@ -49,9 +48,10 @@ const S = {
   search: { q: '' },
   help: '',
   kind: { item: true, consumable: true, equip: true },  // shared filter, applies wherever they can show up
-  /* facets of the equipment tables; '' means "no preference" */
-  eqf: { tier:'', trait:'', range:'', dtype:'', burden:'', line:'' },
-  eqOpen: typeof matchMedia === 'function' && matchMedia('(min-width: 900px)').matches,
+  /* equipment facets: only the values switched off are kept, so an untouched
+     filter is an empty object and the shareable link stays short */
+  eqOff: {},
+  eqOpen: false,
   lists: [],
   /* Selection replaced the old "I am filling list X" mode. Nothing is sticky:
      it holds ids for the page you are on and clears when you leave. */
@@ -64,7 +64,8 @@ const S = {
   newListDraft: '',
   openList: '',    // локальный список, которому принадлежит текущий адрес
   urlPayload: '',  // код, который мы сами записали в адрес
-  importDraft: ''
+  importDraft: '',
+  pickQ: ''
 };
 
 /* ---------- i18n ---------- */
@@ -86,10 +87,14 @@ const T = {
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
+    eqClass:'Класс', keepOneValue:'Хотя бы одно значение должно остаться',
+    resetAll:'Сбросить всё', filterLink:'Ссылка на фильтры',
+    filterLinkCopied:'Ссылка на фильтры скопирована',
     community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Ссылка на список',
     cancel:'Отмена',
+    dismiss:'Скрыть',
     addTo:'Добавить в', inLists:'Лежит в списках',
     selected:'Выбрано', selectAll:'Выбрать все', clearSel:'Снять выделение',
     copySel:'Скопировать', selCopied:'Выбранное скопировано',
@@ -101,13 +106,14 @@ const T = {
     notePh:'Внешний вид, хоумбрю, что знает мастер',
     noteCopyItem:'Копировать вместе с предметом', noteCopyList:'Копировать вместе со списком',
     rollInList:'Бросок по списку', clear:'Сбросить',
-    moveUp:'Выше', moveDown:'Ниже',
+    dragHint:'Перетащите, чтобы изменить порядок', position:'Позиция в списке',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад дракона', create:'Создать',
+    findList:'Найти список', listCreated:'Список «%s» создан',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
     addToList:'Добавить в список', removeItem:'Убрать из списка',
     share:'Поделиться', del:'Удалить', rename:'Название списка',
-    listEmpty:'Список пуст', listEmptyHint:'Список пуст. Нажмите «Пополнить», походите по таблицам и добавляйте позиции кнопкой «+».',
+    listEmpty:'Список пуст', listEmptyHint:'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» — или сделайте это прямо с карточки предмета.',
     sharedList:'Список от другого игрока', saveToMine:'Сохранить себе', savedToLists:'Список сохранён',
     badShare:'Ссылка повреждена или собрана в другой версии данных.',
     deleteConfirm:'Удалить список «%s»? Это действие необратимо.',
@@ -160,8 +166,11 @@ const T = {
       tables: [
         'Здесь лежат все таблицы целиком: добыча и расходники из корника, Hope &amp; Fear, Wondrous Loot и предметов сообществ, альтернативные таблицы, а также оружие, вторичное оружие и броня.',
         'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.',
+        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие Core, потом магическое, затем то же для Hope &amp; Fear.',
+        '<b>Класс</b> — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.',
         'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
-        'Одиннадцать предметов из Wondrous Loot на самом деле оружие. Они остались на своих местах в таблице Wondrous и заодно попали сюда — в раздел без ранга.',
+        'Фильтры складываются по «или» внутри строки и по «и» между строками, а начинают с того, что включено всё. Кнопка «Ссылка на фильтры» отдаёт адрес с текущим набором — по нему таблица откроется в том же виде.',
+        'Одиннадцать предметов из Wondrous Loot на самом деле оружие. В этих таблицах их нет — они остались в своей таблице Wondrous, но выглядят и копируются как снаряжение.',
         'Источники: Daggerheart Core Set и Hope &amp; Fear. Русские названия и формулировки — перевод <a href="https://ru.daggerheart.su/" target="_blank" rel="noopener">daggerheart.su</a>, для Hope &amp; Fear — таблица сообщества. Значения даны с учётом эрраты.'
       ],
       lists: [
@@ -197,10 +206,14 @@ const T = {
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
+    eqClass:'Class', keepOneValue:'At least one value has to stay on',
+    resetAll:'Reset all', filterLink:'Filter link',
+    filterLinkCopied:'Filter link copied',
     community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
     cancel:'Cancel',
+    dismiss:'Dismiss',
     addTo:'Add to', inLists:'Sits in lists',
     selected:'Selected', selectAll:'Select all', clearSel:'Clear selection',
     copySel:'Copy', selCopied:'Selection copied',
@@ -212,13 +225,14 @@ const T = {
     notePh:'Looks, homebrew, what the GM knows',
     noteCopyItem:'Copy along with the item', noteCopyList:'Copy along with the list',
     rollInList:'Roll within the list', clear:'Clear',
-    moveUp:'Move up', moveDown:'Move down',
+    dragHint:'Drag to reorder', position:'Position in the list',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
+    findList:'Find a list', listCreated:'List “%s” created',
     untitled:'Untitled', noLists:'No lists yet — create one above',
     addToList:'Add to list', removeItem:'Remove from the list',
     share:'Share', del:'Delete', rename:'List name',
-    listEmpty:'The list is empty', listEmptyHint:'The list is empty. Hit "Fill", browse the tables and add entries with "+".',
+    listEmpty:'The list is empty', listEmptyHint:'Nothing here yet. Open Tables or Search, tick what you need and press “Add to list” — or do it straight from an item card.',
     sharedList:'A list from another player', saveToMine:'Save to my lists', savedToLists:'List saved',
     badShare:'The link is damaged or was built from a different data version.',
     deleteConfirm:'Delete the list "%s"? This cannot be undone.',
@@ -271,8 +285,11 @@ const T = {
       tables: [
         'Every table in full: loot and consumables from the core book, Hope &amp; Fear, Wondrous Loot and the community items, the alternate tables, plus weapons, secondary weapons and armor.',
         'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.',
+        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear.',
+        '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
-        'Eleven Wondrous Loot entries are really weapons. They kept their place in the Wondrous table and also show up here, in the section without a tier.',
+        'Values in one row combine with "or" and rows combine with "and", starting from everything switched on. "Filter link" hands out an address carrying the current set, so the table opens the same way for whoever follows it.',
+        'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.',
         'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
       ],
       lists: [
@@ -347,6 +364,7 @@ const EQ_RANGE  = { melee:['Вплотную','Melee'], veryclose:['Близко
                     veryfar:['Очень далеко','Very Far'] };
 const EQ_DT     = { phy:['физ','phy'], mag:['маг','mag'], any:['физ/маг','phy/mag'] };
 const EQ_BURDEN = { 1:['Одноручное','One-Handed'], 2:['Двуручное','Two-Handed'] };
+const EQ_CLS    = { phy:['Физическое','Physical'], mag:['Магическое','Magic'] };
 const EQ_LINE   = { line:['Улучшаемые','Upgradable'], uniq:['Уникальные','Unique'] };
 const EQ_TABLE  = { eq_weapon:'weapon', eq_secondary:'secondary', eq_armor:'armor' };
 
@@ -376,8 +394,7 @@ function nameForShare(it){
 function shareText(it, skip){
   const stats = eqLine(it), ds = descOf(it);
   return nameForShare(it) + (stats ? '\n' + stats : '') + (ds ? '\n\n' + ds : '') +
-    extraBlocks(it, skip).concat(contextNote(it))
-      .map(function (b) { return '\n' + b.head + '\n' + b.body; }).join('');
+    extraBlocks(it, skip).concat(contextNote(it)).map(textBlock).join('');
 }
 function shareHtml(it, skip){
   const stats = eqLine(it);
@@ -401,13 +418,15 @@ function onListPage(){
   if (S.route.indexOf('l/') === 0 && S.openList) return S.openList;
   return '';
 }
-/* Italic, not bold: these blocks belong to the item above them. Bold made them
-   read as separate entries when several items were pasted at once. They also
-   sit flush against what they describe — one blank line means "new entry", so
-   spending it on an attachment made the same text look differently spaced
-   depending on whether it came from a card or from a list. */
+/* Italic, not bold: an attached block belongs to the entry above it, and bold
+   is kept for names so a wall of pasted entries still reads as a list. Each
+   block gets a blank line of its own — flush against the description they ran
+   together and were hard to tell apart. */
 function blockHtml(b){
-  return '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
+  return '<br><br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
+}
+function textBlock(b){
+  return '\n\n' + b.head + '\n' + b.body;
 }
 const lines = s => esc(s).replace(/\n/g, '<br>');
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
@@ -424,6 +443,8 @@ function eqParts(it, noType){
     if (e.th) out.push(t().eqTh + ' ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push(t().eqScore + ' ' + e.as);
   } else {
+    // a magic weapon stays a magic weapon even when its damage can be physical
+    if (e.t === 'weapon' && e.cls) out.push(eqWord(EQ_CLS, e.cls));
     out.push(eqWord(EQ_TRAIT, e.tr));
     out.push(eqWord(EQ_RANGE, e.rg));
     out.push(e.dmg + (e.dt ? ' ' + eqWord(EQ_DT, e.dt) : ''));
@@ -444,7 +465,7 @@ function descHtml(it){
   const s = descOf(it) || '';
   if (!isEquip(it)) return esc(s);
   const i = s.indexOf(': ');
-  return i < 0 ? esc(s) : '<b>' + esc(s.slice(0, i)) + ':</b>' + esc(s.slice(i + 1));
+  return i < 0 ? esc(s) : '<i>' + esc(s.slice(0, i)) + ':</i>' + esc(s.slice(i + 1));
 }
 
 /* What travels with an item when it is copied or shared: the full text of the
@@ -568,6 +589,7 @@ const ICON_PLUS = '<svg viewBox="0 0 24 24" width="15" height="15" fill="current
 const ICON_NOTE = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V4a1 1 0 0 1 1-1zm3 5h10V6.5H7V8zm0 3h10V9.5H7V11zm0 3h7v-1.5H7V14z"/></svg>';
 const ICON_REF ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
 const ICON_CRAFT ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
+const ICON_GRIP ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="flex:none"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
 const ICON_LINK ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M3.9 12a5.1 5.1 0 0 1 5.1-5.1h4V5H9a7 7 0 0 0 0 14h4v-1.9H9A5.1 5.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm7-8v1.9h4a5.1 5.1 0 0 1 0 10.2h-4V19h4a7 7 0 0 0 0-14h-4z"/></svg>';
 
 /* ============================================================
@@ -606,11 +628,17 @@ function setMeta(l, id, field, value){
   if (!Object.keys(l.meta).length) delete l.meta;
   saveLists();
 }
-function moveInList(l, id, dir){
-  const i = l.ids.indexOf(id), j = i + dir;
-  if (i < 0 || j < 0 || j >= l.ids.length) return;
+/* Takes the entry out and puts it back at `to` (0-based, clamped). Stepping one
+   place at a time meant twenty clicks to move an entry twenty places, so order
+   is now set by dragging, or by typing the position you want. */
+function moveToInList(l, id, to){
+  const i = l.ids.indexOf(id);
+  if (i < 0) return false;
+  const j = clamp(to, 0, l.ids.length - 1);
+  if (i === j) return false;
   l.ids.splice(j, 0, l.ids.splice(i, 1)[0]);
   saveLists();
+  return true;
 }
 /* name plus whatever meta the GM filled in */
 function itemLine(l, it){
@@ -731,6 +759,11 @@ function decodeList(payload){
     };
   } catch (e) { return null; }
 }
+/* Whoever opens it lands on this table with the same values switched off */
+function eqFilterUrl(){
+  const kind = EQ_TABLE[S.tables.t], f = kind ? eqEncode(kind) : '';
+  return baseUrl() + 'index.html#/tables/' + S.tables.t + (f ? '/' + f : '');
+}
 function listShareUrl(l){
   return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l);
 }
@@ -788,22 +821,24 @@ function listNoteTail(l){
    so it reads as a preamble rather than a footnote after the last entry. */
 function listAsText(l){
   const skip = listSkip(l);
-  const block = b => '\n' + b.head + '\n' + b.body;
   return l.name +
-    listNoteTail(l).map(b => '\n' + b.head + '\n' + b.body).join('') +
+    listNoteTail(l).map(textBlock).join('') +
     '\n\n' + listItems(l).map(function (it) {
-      return itemLine(l, it) + '\n' + descOf(it) +
-        extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
+      const stats = eqLine(it), ds = descOf(it);
+      return itemLine(l, it) + (stats ? '\n' + stats : '') + (ds ? '\n\n' + ds : '') +
+        extraBlocks(it, skip).concat(noteBlocks(l, it)).map(textBlock).join('');
     }).join('\n\n');
 }
 function listAsHtml(l){
   const skip = listSkip(l);
-  const block = b => '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body);
   return '<b>' + esc(l.name) + '</b>' +
-    listNoteTail(l).map(b => '<br><i>' + esc(b.head) + '</i><br>' + lines(b.body)).join('') +
+    listNoteTail(l).map(blockHtml).join('') +
     '<br><br>' + listItems(l).map(function (it) {
-      return '<b>' + esc(itemLine(l, it)) + '</b><br>' + esc(descOf(it)) +
-        extraBlocks(it, skip).concat(noteBlocks(l, it)).map(block).join('');
+      const stats = eqLine(it);
+      return '<b>' + esc(itemLine(l, it)) + '</b>' +
+        (stats ? '<br>' + esc(stats) : '') +
+        (descOf(it) ? '<br><br>' + descHtml(it) : '') +
+        extraBlocks(it, skip).concat(noteBlocks(l, it)).map(blockHtml).join('');
     }).join('<br><br>');
 }
 
@@ -928,14 +963,24 @@ function actBtn(action, id, icon, label, primary, full){
    One control, used from an item card and from the selection bar alike. With a
    single item the chips double as membership: a tick means it is already there
    and clicking takes it out. With several, every click just adds. */
+const PICKER_SEARCH_AT = 8;
 function listMenuHTML(key, ids){
   const one = ids.length === 1 ? ids[0] : '';
-  const chips = S.lists.map(function (l) {
-    const inList = one && l.ids.indexOf(one) >= 0;
-    return '<button type="button" class="chip' + (inList ? ' on' : '') + '"' +
-      ' data-add-to="' + esc(l.id + '|' + key) + '">' +
-      (inList ? '✓ ' : '') + esc(l.name) + '</button>';
-  }).join('');
+  const q = S.pickQ.trim().toLowerCase();
+  const all = S.lists.slice().sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+  const shown = q ? all.filter(function (l) { return l.name.toLowerCase().indexOf(q) >= 0; }) : all;
+  const find = all.length >= PICKER_SEARCH_AT
+    ? '<input type="search" class="pickq" id="pickq" value="' + esc(S.pickQ) + '"' +
+      ' placeholder="' + esc(t().findList) + '" aria-label="' + esc(t().findList) + '">'
+    : '';
+  const chips = shown.length
+    ? shown.map(function (l) {
+        const inList = one && l.ids.indexOf(one) >= 0;
+        return '<button type="button" class="chip' + (inList ? ' on' : '') + '"' +
+          ' data-add-to="' + esc(l.id + '|' + key) + '">' +
+          (inList ? '✓ ' : '') + esc(l.name) + '</button>';
+      }).join('')
+    : '<span class="picker-none">' + esc(t().nothing) + '</span>';
   const tail = S.newListFor === key
     ? '<span class="picker-new">' +
         '<input type="text" id="newlist" value="' + esc(S.newListDraft) + '" placeholder="' + esc(t().listNamePh) + '">' +
@@ -943,9 +988,9 @@ function listMenuHTML(key, ids){
         '<button type="button" class="btn sm ghost" data-act="cancelNew">' + esc(t().cancel) + '</button>' +
       '</span>'
     : '<button type="button" class="chip ghost" data-act="newListFor" data-val="' + esc(key) + '">+ ' + esc(t().newList) + '</button>';
-  return '<div class="dropmenu">' +
+  return '<div class="dropmenu' + (find ? ' long' : '') + '">' +
     '<span class="lbl">' + esc(one ? t().inLists : t().addTo) + '</span>' +
-    chips + tail +
+    find + '<div class="pickchips">' + chips + '</div>' + tail +
   '</div>';
 }
 
@@ -956,7 +1001,8 @@ function addToListBtn(key, ids, primary){
     (open ? listMenuHTML(key, ids) : '') +
     '<button type="button" class="btn sm' + (primary ? ' primary' : '') + (open ? ' on' : '') + '"' +
       ' data-act="menu" data-val="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
-      ICON_PLUS + esc(t().addToList) + '</button>' +
+      ICON_PLUS + esc(t().addToList) +
+      '<i class="caret' + (open ? ' up' : '') + '"></i></button>' +
   '</div>';
 }
 function listPicker(it){
@@ -1106,12 +1152,15 @@ function numBox(id, val, min, max, cls){
 
 /* Two independent toggles, both on by default, backed by one piece of state */
 const KINDS = [['item','fItems'], ['consumable','fCons'], ['equip','fEquip']];
+/* Nothing rolls equipment, so the roll pages offer only what a roll can return */
+const LOOT_KINDS = KINDS.slice(0, 2);
 
-function kindChips(){
+function kindChips(list){
+  list = list || KINDS;
   return '<div class="field"><span class="lbl">' + esc(t().filter) + '</span><div class="chips">' +
-    KINDS.map(function (k) {
+    list.map(function (k) {
       const on = !!S.kind[k[0]];
-      const last = on && KINDS.filter(function (x) { return S.kind[x[0]]; }).length === 1;
+      const last = on && list.filter(function (x) { return S.kind[x[0]]; }).length === 1;
       return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
         ' data-act="kind" data-val="' + k[0] + '"' +
         ' aria-pressed="' + (on ? 'true' : 'false') + '"' +
@@ -1196,7 +1245,7 @@ function renderStd(){
           esc(t()[sr[1]]) + '</button>';
       }).join('') +
     '</div></div>' +
-    kindChips() +
+    kindChips(LOOT_KINDS) +
   '</div>' +
   rollBar(pool.filter(it => it && kindAllows(it.kind))) +
   '<div class="results">' + orGrid(pickCards(pool)) + '</div>';
@@ -1245,7 +1294,7 @@ function renderAlt(){
         '<div style="display:flex;align-items:flex-end"><button type="button" class="btn primary" data-act="rollDuality">' + ICON_DIE + esc(t().rollDuality) + '</button></div>' +
       '</div>' +
     '</div>' +
-    kindChips() +
+    kindChips(LOOT_KINDS) +
   '</div>' +
   rollBar(picks.map(p => p[0])) +
   '<div class="results">' + critBox + orGrid(cards) + '</div>';
@@ -1365,71 +1414,112 @@ function renderTables(){
 }
 
 /* ---------- equipment tables ----------
-   One table per kind of gear, split into the books' tiers. The facets below sit
-   above it: pick one value in a row to narrow, click it again to let it go. */
+   One table per kind of gear, split into the books' tiers. Every facet is a
+   multiple choice with everything on: a filter narrows by switching values off,
+   which keeps "no preference" as the state you start from. */
 function eqFacets(kind){
-  const f = [];
-  f.push(['tier', t().tier, [['1','1'],['2','2'],['3','3'],['4','4'],['0', t().srcWond]]]);
+  const f = [['tier', t().tier, ['1','2','3','4'].map(k => [k, k])],
+             ['src',  t().source, [['core', t().srcCore], ['hnf', t().srcHnf]]]];
   if (kind !== 'armor') {
+    /* the book prints magic weapons in their own table and requires a Spellcast
+       trait for them, so this is the weapon's class, not the damage it deals */
+    f.push(['cls', t().eqClass, ['phy','mag'].map(k => [k, eqWord(EQ_CLS, k)])]);
     f.push(['trait', t().eqTrait, Object.keys(EQ_TRAIT).map(k => [k, eqWord(EQ_TRAIT, k)])]);
     f.push(['range', t().eqRange, Object.keys(EQ_RANGE).map(k => [k, eqWord(EQ_RANGE, k)])]);
-    f.push(['dtype', t().eqDmg,   Object.keys(EQ_DT).map(k => [k, eqWord(EQ_DT, k)])]);
     f.push(['burden', t().eqBurden, ['1','2'].map(k => [k, eqWord(EQ_BURDEN, k)])]);
   }
   f.push(['line', t().eqLineF, [['line', eqWord(EQ_LINE, 'line')], ['uniq', eqWord(EQ_LINE, 'uniq')]]]);
   return f;
 }
-/* Six rows of chips fill a phone screen on their own and push the table below
-   the fold, so on a narrow window the panel starts folded and says how many
-   facets are set. On a wide one there is room, and it starts open. */
-function eqFilterHTML(kind){
-  const on = Object.keys(S.eqf).filter(function (k) { return S.eqf[k]; }).length;
-  const head = '<button type="button" class="btn sm eqtoggle' + (on ? ' has' : '') + '"' +
-    ' data-act="eqOpen" aria-expanded="' + (S.eqOpen ? 'true' : 'false') + '">' +
-    esc(t().filters) + (on ? ' (' + on + ')' : '') +
-    '<i class="caret' + (S.eqOpen ? ' up' : '') + '"></i></button>';
-  return '<div class="eqbar">' + head +
-    (on ? '<button type="button" class="btn sm ghost" data-act="eqf" data-val="reset">' +
-          esc(t().clear) + '</button>' : '') + '</div>' +
-    (S.eqOpen ? eqFilterBody(kind) : '');
+/* Only the switched-off values are kept: an untouched filter is an empty
+   object, which is also what makes the shareable link short. */
+const eqOff = (facet, value) => !!(S.eqOff[facet] && S.eqOff[facet][value]);
+function eqOffCount(kind){
+  return eqFacets(kind).reduce(function (n, f) {
+    return n + f[2].filter(function (o) { return eqOff(f[0], o[0]); }).length;
+  }, 0);
 }
-function eqFilterBody(kind){
+function eqPasses(it, kind){
+  const e = it.eq;
+  if (eqOff('tier', String(e.tier))) return false;
+  if (eqOff('src', it.src)) return false;
+  if (eqOff('line', e.line ? 'line' : 'uniq')) return false;
+  if (kind !== 'armor') {
+    // a weapon that can deal either kind of damage belongs to both filters
+    if (e.cls === 'any' ? (eqOff('cls','phy') && eqOff('cls','mag')) : eqOff('cls', e.cls)) return false;
+    if (eqOff('trait', e.tr)) return false;
+    if (eqOff('range', e.rg)) return false;
+    if (eqOff('burden', String(e.bu))) return false;
+  }
+  return true;
+}
+
+/* Seven rows of chips fill a phone screen on their own, so the panel opens
+   folded everywhere and says how many values are switched off. */
+function eqFilterHTML(kind){
+  const off = eqOffCount(kind);
+  return '<div class="eqbar">' +
+      '<button type="button" class="btn sm eqtoggle' + (off ? ' has' : '') + '"' +
+        ' data-act="eqOpen" aria-expanded="' + (S.eqOpen ? 'true' : 'false') + '">' +
+        esc(t().filters) + (off ? ' (−' + off + ')' : '') +
+        '<i class="caret' + (S.eqOpen ? ' up' : '') + '"></i></button>' +
+    '</div>' + (S.eqOpen ? eqFilterBody(kind, off) : '');
+}
+function eqFilterBody(kind, off){
   return '<div class="panel eqfilter">' + eqFacets(kind).map(function (f) {
     return '<div class="field"><span class="lbl">' + esc(f[1]) + '</span><div class="chips">' +
       f[2].map(function (o) {
-        const on = S.eqf[f[0]] === o[0];
+        const on = !eqOff(f[0], o[0]);
+        const last = on && f[2].filter(function (x) { return !eqOff(f[0], x[0]); }).length === 1;
         return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
           ' data-act="eqf" data-val="' + esc(f[0] + ':' + o[0]) + '"' +
-          ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(o[1]) + '</button>';
+          ' aria-pressed="' + (on ? 'true' : 'false') + '"' +
+          (last ? ' data-last="1" title="' + esc(t().keepOneValue) + '"' : '') + '>' +
+          esc(o[1]) + '</button>';
       }).join('') + '</div></div>';
-  }).join('') + '</div>';
+  }).join('') +
+  /* both buttons live inside the panel: outside it they read as page controls
+     rather than as something that belongs to the filter */
+  '<div class="eqacts">' +
+    '<button type="button" class="btn sm" data-act="eqf" data-val="reset"' +
+      (off ? '' : ' disabled') + '>' + esc(t().resetAll) + '</button>' +
+    '<button type="button" class="btn sm" data-act="eqLink">' + ICON_LINK +
+      esc(t().filterLink) + '</button>' +
+  '</div></div>';
 }
-/* Armour has no trait, range, damage or burden, so those facets simply do not
-   apply there — otherwise switching tables with one of them set would empty
-   the page and look broken. */
-function eqPasses(it){
-  const e = it.eq, f = S.eqf, gear = e.t !== 'armor';
-  if (f.tier && String(e.tier) !== f.tier) return false;
-  if (gear && f.trait && e.tr !== f.trait) return false;
-  if (gear && f.range && e.rg !== f.range) return false;
-  if (gear && f.dtype && e.dt !== f.dtype) return false;
-  if (gear && f.burden && String(e.bu) !== f.burden) return false;
-  if (f.line === 'line' && !e.line) return false;
-  if (f.line === 'uniq' && e.line) return false;
-  return true;
+
+/* ---- the filter state as a piece of the address ----
+   "f_" then one group per facet, listing the values that are switched off.
+   Nothing is switched off in a fresh table, so a plain table link stays plain. */
+function eqEncode(kind){
+  const parts = eqFacets(kind).map(function (f) {
+    const off = f[2].filter(function (o) { return eqOff(f[0], o[0]); }).map(o => o[0]);
+    return off.length ? f[0] + '-' + off.join('-') : '';
+  }).filter(Boolean);
+  return parts.length ? 'f_' + parts.join('_') : '';
 }
+function eqDecode(seg){
+  S.eqOff = {};
+  if (!seg || seg.indexOf('f_') !== 0) return;
+  seg.slice(2).split('_').forEach(function (g) {
+    const p = g.split('-'), facet = p.shift();
+    if (!facet || !p.length) return;
+    S.eqOff[facet] = {};
+    p.forEach(function (v) { S.eqOff[facet][v] = true; });
+  });
+}
+
 function renderEquipTable(kind, st){
   const q = st.q.trim().toLowerCase();
-  const list = EQ_ALL.filter(function (it) {
-    return it.eq.t === kind && eqPasses(it) && (!q || matches(it, q));
+  const list = EQ.filter(function (it) {
+    return it.eq.t === kind && eqPasses(it, kind) && (!q || matches(it, q));
   });
   if (!list.length) return eqFilterHTML(kind) + '<div class="empty">' + esc(t().nothing) + '</div>';
-  const tiers = [1, 2, 3, 4, 0];
-  return eqFilterHTML(kind) + tiers.map(function (n) {
+  return eqFilterHTML(kind) + [1, 2, 3, 4].map(function (n) {
     const sub = list.filter(function (it) { return it.eq.tier === n; });
     if (!sub.length) return '';
     return '<div class="tsection" id="' + sectionId('t' + n) + '" style="margin-top:22px">' +
-      sectionHead(n ? t().tier + ' ' + n : t().srcWond, st.t, 't' + n) +
+      sectionHead(t().tier + ' ' + n, st.t, 't' + n) +
       renderList(sub) + '</div>';
   }).join('');
 }
@@ -1530,11 +1620,24 @@ function renderSearch(){
 }
 
 /* ---- lists ---- */
+/* The "no server here" notice is long and only needs reading once, so it can be
+   dismissed for good. The "storage is blocked" one cannot: nothing would
+   remember the dismissal, and the warning is the reason lists vanish. */
+const WARN_KEY = 'dhloot.warn.v1';
+function warnHidden(){
+  try { return localStorage.getItem(WARN_KEY) === '1'; } catch (e) { return false; }
+}
+function hideWarn(){
+  try { localStorage.setItem(WARN_KEY, '1'); } catch (e) {}
+}
 function storageWarning(){
   if (!storageWorks()) {
     return '<div class="warn"><b>' + esc(t().noStorageTitle) + '</b> ' + esc(t().noStorage) + '</div>';
   }
-  return '<div class="warn"><b>' + esc(t().localOnlyTitle) + '</b> ' + esc(t().localOnly) + '</div>';
+  if (warnHidden()) return '';
+  return '<div class="warn"><b>' + esc(t().localOnlyTitle) + '</b> ' + esc(t().localOnly) +
+    '<button type="button" class="warn-x" data-act="hideWarn"' +
+      ' title="' + esc(t().dismiss) + '" aria-label="' + esc(t().dismiss) + '">&times;</button></div>';
 }
 
 function listCardHTML(l){
@@ -1598,13 +1701,13 @@ function renderOneList(id){
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
     listNoteHTML(l) +
-    storageWarning() +
     (items.length > 1 ? listRollPanel(l, items) : '') +
     (items.length
       ? '<div class="rows lrows" style="margin-top:16px">' +
           items.map(function (it, i) { return listRowHTML(l, it, i); }).join('') +
         '</div>'
-      : '<div class="empty">' + esc(t().listEmptyHint) + '</div>');
+      : '<div class="empty">' + esc(t().listEmptyHint) + '</div>') +
+    storageWarning();
 }
 
 /* roll a position inside the list itself */
@@ -1640,7 +1743,6 @@ function rolledNoteHTML(l, it){
 
 function listRowHTML(l, it, i){
   const m = itemMeta(l, it.id);
-  const last = i === l.ids.length - 1;
   const key = l.id + ':' + it.id;
   /* The box is always in the DOM so opening it needs no re-render — typing in a
      note must not rebuild the page under the cursor. It only shows when there
@@ -1651,15 +1753,21 @@ function listRowHTML(l, it, i){
       noteShowHTML('data-note-show="' + esc(key) + '"', m.noteShow, t().noteCopyItem) +
     '</div>';
   return '<div class="row lrow' + (m.note ? ' has-note' : '') + '">' +
-      '<span class="lrow-n">' + (i + 1) + '</span>' +
+      '<span class="lrow-grip" draggable="true" data-drag="' + esc(key) + '"' +
+        ' title="' + esc(t().dragHint) + '" aria-hidden="true">' + ICON_GRIP + '</span>' +
+      /* the position doubles as the keyboard way to reorder: type 20 and the
+         entry lands at 20, no matter how far away it started */
+      '<input type="number" class="lrow-n" min="1" max="' + l.ids.length + '"' +
+        ' inputmode="numeric" value="' + (i + 1) + '" data-pos="' + esc(key) + '"' +
+        ' aria-label="' + esc(t().position) + '">' +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         imgTag(it) +
         '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
-        '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
+        (isEquip(it) ? '<span class="rstats">' + esc(eqLine(it, true)) + '</span>' : '') +
+        (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
         /* the same badges every other listing shows — without them a list is the
-           one place you cannot tell an item from a consumable at a glance */
-        '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
-          esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+           one place you cannot tell an item from a weapon at a glance */
+        '<span class="rm">' + kindBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       '<div class="lrow-meta">' +
@@ -1671,8 +1779,6 @@ function listRowHTML(l, it, i){
       '<div class="lrow-acts">' +
         '<button type="button" class="lrow-note' + (m.note ? ' on' : '') + '" data-note-toggle="' + esc(key) + '"' +
           ' title="' + esc(t().note) + '" aria-label="' + esc(t().note) + '">' + ICON_NOTE + '</button>' +
-        '<button type="button" data-move="' + esc(l.id + ':' + it.id + ':-1') + '"' + (i === 0 ? ' disabled' : '') + ' title="' + esc(t().moveUp) + '" aria-label="' + esc(t().moveUp) + '">↑</button>' +
-        '<button type="button" data-move="' + esc(l.id + ':' + it.id + ':1') + '"' + (last ? ' disabled' : '') + ' title="' + esc(t().moveDown) + '" aria-label="' + esc(t().moveDown) + '">↓</button>' +
         '<button type="button" class="row-x" data-remove="' + esc(l.id + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>' +
       '</div>' +
       noteBox +
@@ -1783,7 +1889,7 @@ const TAB_LIST = [
 /* links handed out before the three d12 modes were merged */
 const LEGACY_ROUTES = { 'roll/core':'roll/std', 'roll/hnf':'roll/std', 'roll/all':'roll/std' };
 
-const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z_]+))?$/;
+const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_-]+))?$/;
 
 function currentRoute(){
   const h = (location.hash || '').replace(/^#\/?/, '');
@@ -1796,8 +1902,13 @@ function currentRoute(){
   }
   const m = TABLES_RE.exec(h);
   if (m) {
-    if (m[1] && TABLE_DEFS.some(d => d.id === m[1])) S.tables.t = m[1];
-    S.tables.anchor = m[2] || '';
+    const table = m[1] && TABLE_DEFS.some(d => d.id === m[1]) ? m[1] : '';
+    // filters belong to the table you are looking at, so they fold and reset
+    // whenever the address points somewhere else
+    if (table && table !== S.tables.t) { S.tables.t = table; S.eqOpen = false; S.eqOff = {}; }
+    const tail = m[2] || '';
+    if (tail.indexOf('f_') === 0) { eqDecode(tail); S.tables.anchor = ''; S.eqOpen = true; }
+    else S.tables.anchor = tail;
     return 'tables';
   }
   return ROUTES[h] ? h : 'roll/std';
@@ -1996,13 +2107,7 @@ document.addEventListener('click', function (e) {
     return;
   }
 
-  const mv = e.target.closest('[data-move]');
-  if (mv) {
-    const p = mv.dataset.move.split(':');
-    const l = getList(p[0]);
-    if (l) { moveInList(l, p[1], parseInt(p[2], 10)); render(); }
-    return;
-  }
+
 
   const rm = e.target.closest('[data-remove]');
   if (rm) {
@@ -2068,12 +2173,17 @@ document.addEventListener('click', function (e) {
     S.kind[val] = !S.kind[val];
     render(); return;
   }
+  if (a === 'hideWarn') { hideWarn(); render(); return; }
   if (a === 'eqOpen') { S.eqOpen = !S.eqOpen; render(); return; }
+  if (a === 'eqLink') { copyText(eqFilterUrl(), t().filterLinkCopied); return; }
   if (a === 'eqf') {
-    if (val === 'reset') { Object.keys(S.eqf).forEach(function (k) { S.eqf[k] = ''; }); }
+    if (val === 'reset') S.eqOff = {};
     else {
-      const p = val.split(':');
-      S.eqf[p[0]] = S.eqf[p[0]] === p[1] ? '' : p[1];   // second click lets it go
+      // a facet with everything switched off would show nothing at all
+      if (act.dataset.last) { toast(t().keepOneValue); return; }
+      const p = val.split(':'), f = p[0], v = p[1];
+      S.eqOff[f] = S.eqOff[f] || {};
+      if (S.eqOff[f][v]) delete S.eqOff[f][v]; else S.eqOff[f][v] = true;
     }
     render(); return;
   }
@@ -2087,7 +2197,8 @@ document.addEventListener('click', function (e) {
     const input = document.getElementById('lname');
     const l = createList(input ? input.value : '');
     S.listDraft = '';
-    goToList(l);
+    toast(t().listCreated.replace('%s', l.name));
+    render();
     return;
   }
   if (a === 'newListFor') { S.newListFor = val; S.newListDraft = ''; render(); focusNew(); return; }
@@ -2261,6 +2372,76 @@ document.addEventListener('input', function (e) {
     if (l) { l.name = el.value; saveLists(); renderSelBar(); freshenListUrl(l); }
   }
   if (el.id === 'tq') { S.tables.q = el.value; render._focus = 'tq'; render(); }
+  if (el.id === 'pickq') { S.pickQ = el.value; render._focus = 'pickq'; render(); }
+});
+
+/* ---------- reordering a list by dragging ----------
+   The grip is what you grab, but the whole row is what moves: dragging by a
+   small handle and dropping on a big target is easier than the other way
+   round. A line marks where the entry would land. */
+let dragKey = '';
+function rowOf(el){ return el && el.closest ? el.closest('.lrow') : null; }
+function clearDropMarks(){
+  $$('.lrow.drop-before, .lrow.drop-after').forEach(function (r) {
+    r.classList.remove('drop-before', 'drop-after');
+  });
+}
+document.addEventListener('dragstart', function (e) {
+  const grip = e.target.closest && e.target.closest('[data-drag]');
+  if (!grip) return;
+  dragKey = grip.dataset.drag;
+  const row = rowOf(grip);
+  if (row) row.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  // Firefox refuses to start a drag without payload
+  try { e.dataTransfer.setData('text/plain', dragKey); } catch (err) {}
+  if (row && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(row, 24, 24);
+});
+document.addEventListener('dragover', function (e) {
+  if (!dragKey) return;
+  const row = rowOf(e.target);
+  if (!row || !row.querySelector('[data-drag]')) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  clearDropMarks();
+  if (row.querySelector('[data-drag]').dataset.drag === dragKey) return;
+  const box = row.getBoundingClientRect();
+  row.classList.add(e.clientY < box.top + box.height / 2 ? 'drop-before' : 'drop-after');
+});
+document.addEventListener('dragend', function () {
+  dragKey = '';
+  clearDropMarks();
+  $$('.lrow.dragging').forEach(function (r) { r.classList.remove('dragging'); });
+});
+document.addEventListener('drop', function (e) {
+  if (!dragKey) return;
+  const row = rowOf(e.target);
+  if (!row) return;
+  e.preventDefault();
+  const target = row.querySelector('[data-drag]');
+  const after = row.classList.contains('drop-after');
+  clearDropMarks();
+  const p = dragKey.split(':'), l = getList(p[0]);
+  dragKey = '';
+  if (!l || !target) return;
+  const from = l.ids.indexOf(p[1]);
+  let to = l.ids.indexOf(target.dataset.drag.split(':')[1]);
+  if (from < 0 || to < 0) return;
+  if (after && to < from) to += 1;
+  if (!after && to > from) to -= 1;
+  if (moveToInList(l, p[1], to)) { freshenListUrl(l); render(); }
+});
+
+/* Reordering by typing waits for the field to be committed: acting on every
+   keystroke would move the entry to 2 on the way to 20. */
+document.addEventListener('change', function (e) {
+  const el = e.target;
+  if (!el.dataset || !el.dataset.pos) return;
+  const p = el.dataset.pos.split(':'), l = getList(p[0]);
+  const n = parseInt(el.value, 10);
+  if (!l || !(n >= 1) || n > l.ids.length) { render(); return; }
+  if (moveToInList(l, p[1], n - 1)) freshenListUrl(l);
+  render();
 });
 
 document.addEventListener('keydown', function (e) {

@@ -36,6 +36,7 @@ const EQ_TRAIT  = { agility:'Проворность', strength:'Сила', fines
 const EQ_RANGE  = { melee:'Вплотную', veryclose:'Близко', close:'Средне',
                     far:'Далеко', veryfar:'Очень далеко' };
 const EQ_DT     = { phy:'физ', mag:'маг', any:'физ/маг' };
+const EQ_CLS    = { phy:'Физическое', mag:'Магическое' };
 const EQ_BURDEN = { 1:'Одноручное', 2:'Двуручное' };
 
 function eqLine(it){
@@ -44,6 +45,7 @@ function eqLine(it){
     if (e.th) out.push('Пороги ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push('Броня ' + e.as);
   } else {
+    if (e.t === 'weapon' && e.cls) out.push(EQ_CLS[e.cls]);
     out.push(EQ_TRAIT[e.tr], EQ_RANGE[e.rg],
              e.dmg + (e.dt ? ' ' + EQ_DT[e.dt] : ''), EQ_BURDEN[e.bu]);
   }

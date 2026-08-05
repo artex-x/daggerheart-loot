@@ -556,11 +556,26 @@ input::placeholder{color:var(--muted2)}
 .noteshow.on{color:var(--gold-soft);background:rgba(216,171,94,.09);border-color:rgba(216,171,94,.3)}
 .lnote .noteshow{margin:0 13px 13px}
 .rnote .noteshow{margin-top:7px}
-.lrow-n{
-  flex:none;display:flex;align-items:center;justify-content:center;width:34px;
-  font:650 12px/1 var(--mono);color:var(--gold-soft);
-  background:rgba(216,171,94,.07);border-right:1px solid var(--line);
+/* grip and position sit together on the left: grab one to drag, type in the
+   other to send an entry straight to a place far away */
+.lrow-grip{
+  flex:none;display:flex;align-items:center;justify-content:center;width:26px;
+  color:var(--muted2);cursor:grab;background:rgba(216,171,94,.05);
+  border-right:1px solid var(--line);touch-action:none;
 }
+.lrow-grip:hover{color:var(--gold-soft)}
+.lrow-grip:active{cursor:grabbing}
+.lrow-n{
+  flex:none;align-self:stretch;width:40px;box-sizing:border-box;
+  padding:0 2px;border:0;border-right:1px solid var(--line);
+  font:650 12px/1 var(--mono);color:var(--gold-soft);text-align:center;
+  background:rgba(216,171,94,.07);-moz-appearance:textfield;
+}
+.lrow-n::-webkit-outer-spin-button,.lrow-n::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.lrow-n:focus{outline:none;background:rgba(216,171,94,.16);box-shadow:inset 0 0 0 1px var(--gold)}
+.lrow.dragging{opacity:.45}
+.lrow.drop-before{box-shadow:inset 0 3px 0 0 var(--gold)}
+.lrow.drop-after{box-shadow:inset 0 -3px 0 0 var(--gold)}
 .lrow-meta{flex:none;display:flex;gap:6px;align-items:center;padding:8px 10px;border-left:1px solid var(--line)}
 .lrow-meta label{display:flex;flex-direction:column;gap:3px}
 .lrow-meta span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
@@ -589,7 +604,11 @@ input::placeholder{color:var(--muted2)}
 /* ============ lists ============ */
 .tilewrap{position:relative}
 
-.btn.on{border-color:var(--cons);color:var(--cons)}
+/* pressed: gold outline on a plain button, and a pushed-in look on a gold one —
+   teal on gold was neither readable nor used anywhere else */
+.btn.on{border-color:var(--gold);color:var(--gold-soft);background:var(--surface2)}
+.btn.primary.on{background:linear-gradient(180deg,#c99b52,#b8873f);border-color:#c99b52;
+  color:#1a1206;box-shadow:inset 0 2px 5px rgba(0,0,0,.35)}
 .btn.danger{border-color:rgba(224,104,95,.4);color:#f0a49d}
 .btn.danger:hover{border-color:var(--danger);background:rgba(224,104,95,.12)}
 
@@ -711,3 +730,26 @@ input::placeholder{color:var(--muted2)}
   border-top-color:currentColor;transform:translateY(2px)}
 .caret.up{border-top-color:transparent;border-bottom-color:currentColor;transform:translateY(-2px)}
 .eqfilter{margin-top:10px}
+.eqacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;
+  padding-top:14px;border-top:1px solid var(--line)}
+.eqacts .btn[disabled]{opacity:.45;cursor:default}
+.eqacts .btn[disabled]:hover{border-color:var(--line2);background:var(--surface)}
+.warn{position:relative}
+.warn-x{
+  position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;
+  border:0;background:transparent;color:var(--muted2);font-size:19px;line-height:1;
+  border-radius:7px;transition:.15s;
+}
+.warn-x:hover{background:rgba(255,255,255,.07);color:var(--txt)}
+.warn{padding-right:38px}
+
+/* the list picker grows a search box once there are more lists than fit */
+.dropmenu.long{max-height:min(60vh,340px);overflow:auto}
+.pickq{
+  width:100%;height:32px;padding:0 10px;margin-bottom:8px;box-sizing:border-box;
+  background:var(--bg2);border:1px solid var(--line2);border-radius:8px;
+  color:var(--txt);font:inherit;font-size:13px;
+}
+.pickq:focus{outline:none;border-color:var(--gold)}
+.pickchips{display:contents}
+.picker-none{font-size:12.5px;color:var(--muted2);padding:2px 0}
