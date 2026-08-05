@@ -153,6 +153,72 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(await page.$eval('#langSeg button.on', e => e.textContent === 'EN'), 'переключатель показывает не тот язык');
   await page.close();
 
+  /* ---------- choices that outlive a reload ---------- */
+  console.log('запомненные настройки');
+  page = await newPage();
+  const reload = async () => { await page.reload({ waitUntil: 'domcontentloaded' });
+                               await new Promise(r => setTimeout(r, 560)); };
+
+  await go(page, '#/tables/wondrous');
+  ok(await page.$('.rows'), 'таблица открылась не списком');
+  await page.click('[data-act="view"][data-val="grid"]'); await settle();
+  ok(await page.$('.tgrid'), 'вид не переключился на сетку');
+  await reload();
+  ok(await page.$('.tgrid'), 'вид сетки не пережил перезагрузку');
+  // and it is the same choice everywhere, not one per table
+  await go(page, '#/tables/eq_weapon');
+  ok(await page.$('.tgrid'), 'на другой таблице вид снова списком');
+
+  await go(page, '#/search');
+  await page.click('[data-act="kind"][data-val="equip"]'); await settle();
+  await reload();
+  ok(await page.$eval('[data-act="kind"][data-val="equip"]', e => !e.classList.contains('on')),
+     'выключенный тип вернулся после перезагрузки');
+
+  await go(page, '#/roll/std');
+  await page.click('[data-act="src"][data-val="hnf"]'); await settle();
+  await reload();
+  ok(await page.$eval('[data-act="src"][data-val="hnf"]', e => !e.classList.contains('on')),
+     'выключенный источник вернулся после перезагрузки');
+  // the number in the box is this minute's question, not a setting
+  await page.$eval('#n', e => { e.value = '42'; e.dispatchEvent(new Event('input', { bubbles: true })); });
+  await settle();
+  await reload();
+  ok(await page.$eval('#n', e => e.value !== '42'), 'номер броска запомнился, хотя не должен');
+
+  await go(page, '#/roll/alt');
+  await page.click('[data-act="rarity"][data-val="rare"]'); await settle();
+  await reload();
+  ok(await page.$eval('[data-act="rarity"][data-val="rare"]', e => e.classList.contains('on')),
+     'выбранная редкость не запомнилась');
+
+  await go(page, '#/roll/community');
+  await page.click('[data-act="comm"][data-val="Seaborne"]'); await settle();
+  await reload();
+  ok(await page.$eval('[data-act="comm"][data-val="Seaborne"]', e => e.classList.contains('on')),
+     'выбранное сообщество не запомнилось');
+  await page.close();
+
+  /* ---------- storage that lies ---------- */
+  console.log('испорченные настройки');
+  page = await newPage(() => {
+    // every switch off, wrong types, unknown values: none of it may take the app down
+    localStorage.setItem('dhloot.prefs.v1', JSON.stringify({
+      view: 'зигзагом', kind: { item: false, consumable: false, equip: false },
+      src: 'нет', rarity: 42, comm: ['Seaborne']
+    }));
+  });
+  await go(page, '#/tables/wondrous');
+  ok(await page.$('.rows'), 'при испорченных настройках вид не вернулся к списку');
+  ok((await page.$$eval('.rows .row', e => e.length)) === 119, 'таблица пуста при испорченных настройках');
+  await go(page, '#/roll/std');
+  ok((await page.$$eval('.results .card', e => e.length)) === 4,
+     'бросок ничего не выдаёт при испорченных настройках');
+  page = await newPage(() => localStorage.setItem('dhloot.prefs.v1', '{'));
+  await go(page, '#/tables/wondrous');
+  ok(await page.$('.rows'), 'сломанный json настроек уронил страницу');
+  await page.close();
+
   /* ---------- the section the app opens on ---------- */
   console.log('стартовый раздел');
   page = await newPage();
