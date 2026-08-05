@@ -631,46 +631,28 @@ const LANG_KEY = 'dhloot.lang.v1';
    walk past the d12 roller every time. */
 const HOME_KEY = 'dhloot.home.v1';
 /* ---------- remembered choices ----------
-   What is kept is what the GM decided about how the app should behave: the
-   shape of a table, which books to draw from, which kinds to show. What is not
-   kept is the question being asked right now — the number in the roll box, the
-   search text, the rarity of this particular roll's dice. Those are answers to
-   "what am I doing this minute", and restoring them a day later would be noise
-   dressed up as memory. */
+   Only how a page is laid out. Everything about what is shown or asked starts
+   fresh, because a reload is a new sitting: a filter restored from yesterday is
+   invisible state — nobody remembers switching it off, and the app just looks
+   broken. Which books to roll from, which kinds to show, the rarity and the
+   community are all answers to "what am I doing this minute", so they are
+   answered again rather than remembered. */
 const PREFS_KEY = 'dhloot.prefs.v1';
 function savePrefs(){
-  try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({
-      view: S.tables.view,
-      kind: S.kind,
-      src: S.std.src,
-      rarity: S.alt.rarity,
-      comm: S.comm.c
-    }));
-  } catch (e) {}
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ view: S.tables.view })); }
+  catch (e) {}
 }
-/* Storage is a stranger: every field is checked, and a field that fails simply
-   keeps its default instead of taking the app down with it. */
+/* Storage is a stranger: a value that fails the check keeps its default rather
+   than taking the app down with it. */
 function loadPrefs(){
   let p;
   try { p = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null'); } catch (e) { return; }
   if (!p || typeof p !== 'object') return;
-
   if (p.view === 'list' || p.view === 'grid') S.tables.view = p.view;
-  if (RARITIES5.indexOf(p.rarity) >= 0) S.alt.rarity = p.rarity;
-  if (COMMUNITIES.some(function (c) { return c[0] === p.comm; })) S.comm.c = p.comm;
-
-  // a set of switches with none left on would show an empty page for ever
-  const flags = (saved, into) => {
-    if (!saved || typeof saved !== 'object') return;
-    const keys = Object.keys(into);
-    const next = {};
-    keys.forEach(function (k) { next[k] = saved[k] === true; });
-    if (keys.some(function (k) { return next[k]; })) keys.forEach(function (k) { into[k] = next[k]; });
-  };
-  flags(p.kind, S.kind);
-  flags(p.src, S.std.src);
 }
+
+/* Which section the app opens on. A GM who lives in Search should not have to
+   walk past the d12 roller every time. */
 const HOME_DEFAULT = '#/roll/std';
 function loadHome(){
   try { const v = localStorage.getItem(HOME_KEY); return homeAllows(v) ? v : ''; }
@@ -2426,12 +2408,11 @@ document.addEventListener('click', function (e) {
   const st = stateForRoute();
   const a = act.dataset.act, val = act.dataset.val;
 
-  if (a === 'rarity') { st.rarity = val; savePrefs(); render(); return; }
+  if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'help')   { S.help = S.help === val ? '' : val; render(); return; }
   if (a === 'kind') {
     if (act.dataset.last) { toast(t().keepOneKind); return; }
     S.kind[val] = !S.kind[val];
-    savePrefs();
     render(); return;
   }
   if (a === 'home') {
@@ -2462,7 +2443,6 @@ document.addEventListener('click', function (e) {
     // never leave the roll with nothing to draw from
     if (act.dataset.last) { toast(t().keepOneSource); return; }
     S.std.src[val] = !S.std.src[val];
-    savePrefs();
     render(); return;
   }
   if (a === 'createList') {
@@ -2523,7 +2503,7 @@ document.addEventListener('click', function (e) {
     goToList(l);
     return;
   }
-  if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; savePrefs(); render(); return; }
+  if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   if (a === 'view')   { S.tables.view = val; savePrefs(); render(); return; }
 
   if (a === 'roll') {
