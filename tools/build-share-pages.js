@@ -109,7 +109,8 @@ function page(it){
 <meta property="og:image:width" content="640">
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="${esc(name)}">
-<meta name="twitter:card" content="summary_large_image">
+<!-- the artwork is square, and a large-summary card would letterbox it -->
+<meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${esc(name)}">
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${esc(img)}">

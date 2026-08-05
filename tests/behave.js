@@ -224,16 +224,16 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   page = await newPage();
   await go(page, '#/roll/std');
   ok((await page.$$eval('#tabs a .n', e => e.length)) === 0, 'на вкладках остались номера');
-  ok(await page.$('.page-h .homebtn'), 'нет кнопки стартового раздела');
-  ok(await page.$eval('.page-h .homebtn', e => e.classList.contains('on')),
+  ok(await page.$('.page-head .homebtn'), 'нет кнопки стартового раздела');
+  ok(await page.$eval('.page-head .homebtn', e => e.classList.contains('on')),
      'по умолчанию стартовым не отмечены обычные правила');
 
   await go(page, '#/search');
-  ok(!(await page.$eval('.page-h .homebtn', e => e.classList.contains('on'))),
+  ok(!(await page.$eval('.page-head .homebtn', e => e.classList.contains('on'))),
      'поиск отмечен стартовым, хотя его не выбирали');
-  await page.evaluate(() => document.querySelector('.page-h .homebtn').click());
+  await page.evaluate(() => document.querySelector('.page-head .homebtn').click());
   await settle();
-  ok(await page.$eval('.page-h .homebtn', e => e.classList.contains('on')), 'выбор не отметился');
+  ok(await page.$eval('.page-head .homebtn', e => e.classList.contains('on')), 'выбор не отметился');
   ok(await page.evaluate(() => localStorage.getItem('dhloot.home.v1') === '#/search'),
      'выбор не сохранился');
 
@@ -244,7 +244,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
 
   // a table by name works too
   await go(page, '#/tables/eq_armor');
-  await page.evaluate(() => document.querySelector('.page-h .homebtn').click());
+  await page.evaluate(() => document.querySelector('.page-head .homebtn').click());
   await settle();
   await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
   await new Promise(r => setTimeout(r, 620));
@@ -252,7 +252,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
      'приложение открылось не на выбранной таблице');
 
   // pressing the marked one puts the default back
-  await page.evaluate(() => document.querySelector('.page-h .homebtn').click());
+  await page.evaluate(() => document.querySelector('.page-head .homebtn').click());
   await settle();
   ok(await page.evaluate(() => !localStorage.getItem('dhloot.home.v1')), 'повторный клик не сбросил выбор');
   await page.goto(ROOT, { waitUntil: 'domcontentloaded' });

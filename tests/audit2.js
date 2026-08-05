@@ -127,6 +127,13 @@ const PAGES = [
           return out;
         });
 
+        /* An address must render the page it names. Without this the sweep was
+           happy to let every route quietly resolve to the roll page. */
+        const landed = await page.evaluate(() => location.hash);
+        const asked = hash.replace('%%SHARED%%', shared);
+        if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(asked))
+          ok(landed === asked, where + ': адрес поменялся сам — просили ' + asked + ', оказались на ' + landed);
+
         ok(!errs.length, where + ': ошибка в консоли — ' + errs.slice(0, 2).join(' | '));
         errs.length = 0;
         ok(rep.overflow <= 0, where + ': горизонтальная прокрутка на ' + rep.overflow + 'px');

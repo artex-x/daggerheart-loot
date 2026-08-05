@@ -12,13 +12,20 @@
 <meta property="og:title" content="Генератор лута — Daggerheart">
 <meta property="og:description" content="449 предметов и расходников с картинками: Core, Hope &amp; Fear, Wondrous Loot, предметы сообществ и альтернативные таблицы. Русский и английский.">
 <meta property="og:url" content="https://artex-x.github.io/daggerheart-loot/">
-<meta property="og:image" content="https://artex-x.github.io/daggerheart-loot/og/ci17.jpg">
-<meta property="og:image:width" content="640">
-<meta property="og:image:height" content="640">
+<!-- The site's own card, not an item's artwork. og/ci17.jpg used to sit here,
+     so every link to a table or a filter unfurled in Telegram with a picture of
+     one particular artefact, which read as "here is this item". 1200x630 is
+     what summary_large_image expects; the square item images were letterboxed. -->
+<meta property="og:image" content="https://artex-x.github.io/daggerheart-loot/og/_share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Генератор лута — Daggerheart">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Генератор лута — Daggerheart">
 <meta name="twitter:description" content="449 предметов и расходников с картинками. Русский и английский.">
-<meta name="twitter:image" content="https://artex-x.github.io/daggerheart-loot/og/ci17.jpg">
+<meta name="twitter:image" content="https://artex-x.github.io/daggerheart-loot/og/_share.jpg">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
 </head>
@@ -31,13 +38,13 @@
       <span class="brand-txt"><b>Лут</b><i>Daggerheart</i></span>
     </a>
     <div class="topbar-right">
-      <div class="seg" id="langSeg" role="group" aria-label="Язык">
+      <div class="seg" id="langSeg" role="group">
         <button data-lang="ru" class="on">RU</button>
         <button data-lang="en">EN</button>
       </div>
     </div>
   </div>
-  <nav class="tabs wrap" id="tabs" aria-label="Разделы"></nav>
+  <nav class="tabs wrap" id="tabs"></nav>
 </header>
 
 <main class="wrap" id="view"></main>
@@ -53,14 +60,15 @@
 <div class="modal" id="modal" hidden>
   <div class="modal-back" data-close></div>
   <div class="modal-card" role="dialog" aria-modal="true">
-    <button class="modal-x" data-close aria-label="Закрыть">&times;</button>
+    <button class="modal-x" data-close>&times;</button>
     <div id="modalBody"></div>
   </div>
 </div>
 
-<div class="toast" id="toast" hidden></div>
+<!-- announced to assistive tech: every refusal and confirmation lands here -->
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script defer src="data.js"></script>
+<script defer src="app.js"></script>
 </body>
 </html>

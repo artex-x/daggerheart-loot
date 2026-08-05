@@ -66,7 +66,8 @@ const S = {
   openList: '',    // локальный список, которому принадлежит текущий адрес
   urlPayload: '',  // код, который мы сами записали в адрес
   importDraft: '',
-  pickQ: ''
+  pickQ: '',
+  deleted: {}   // ids this tab removed, so a merge does not bring them back
 };
 
 /* ---------- i18n ---------- */
@@ -77,6 +78,7 @@ const T = {
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
     rollResult:'Результат броска', roll:'Бросить', randomIn:'Случайно', rollDuality:'Бросить кости',
+    stepDown:'На единицу меньше', stepUp:'На единицу больше',
     copyName:'Скопировать название', copied:'Скопировано',
     rarity:'Редкость', tier:'Ранг',
     viewGrid:'Сеткой', viewList:'Списком', view:'Вид',
@@ -96,6 +98,7 @@ const T = {
     importPh:'Ссылка на список',
     cancel:'Отмена',
     dismiss:'Скрыть',
+    readMore:'подробнее',
     addTo:'Добавить в', inLists:'Лежит в списках',
     selected:'Выбрано', selectAll:'Выбрать все', clearSel:'Снять выделение',
     copySel:'Скопировать', selCopied:'Выбранное скопировано',
@@ -117,6 +120,7 @@ const T = {
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад дракона', create:'Создать',
     findList:'Найти список', listCreated:'Список «%s» создан',
+    nameFirst:'Сначала назовите список',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
     addToList:'Добавить в список', removeItem:'Убрать из списка',
     share:'Поделиться', del:'Удалить', rename:'Название списка',
@@ -145,6 +149,8 @@ const T = {
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
     whatIsThis:'Как это работает',
+    langLabel:'Язык', sectionsLabel:'Разделы', close:'Закрыть',
+    docTitle:'Генератор лута — Daggerheart',
     setHome:'Открывать этот раздел при запуске', isHome:'Открывается при запуске',
     homeSet:'Приложение будет открываться на этом разделе',
     homeReset:'Приложение снова будет открываться на обычных правилах',
@@ -205,6 +211,7 @@ const T = {
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
     rollResult:'Roll result', roll:'Roll', randomIn:'Random', rollDuality:'Roll the dice',
+    stepDown:'One lower', stepUp:'One higher',
     copyName:'Copy name', copied:'Copied',
     rarity:'Rarity', tier:'Tier',
     viewGrid:'Grid', viewList:'List', view:'View',
@@ -224,6 +231,7 @@ const T = {
     importPh:'Paste a list link',
     cancel:'Cancel',
     dismiss:'Dismiss',
+    readMore:'more',
     addTo:'Add to', inLists:'Sits in lists',
     selected:'Selected', selectAll:'Select all', clearSel:'Clear selection',
     copySel:'Copy', selCopied:'Selection copied',
@@ -245,6 +253,7 @@ const T = {
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
     findList:'Find a list', listCreated:'List “%s” created',
+    nameFirst:'Give the list a name first',
     untitled:'Untitled', noLists:'No lists yet — create one above',
     addToList:'Add to list', removeItem:'Remove from the list',
     share:'Share', del:'Delete', rename:'List name',
@@ -273,6 +282,8 @@ const T = {
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
     whatIsThis:'How this works',
+    langLabel:'Language', sectionsLabel:'Sections', close:'Close',
+    docTitle:'Daggerheart Loot Generator',
     setHome:'Open this section on start', isHome:'Opens on start',
     homeSet:'The app will open on this section',
     homeReset:'The app will open on the standard rules again',
@@ -349,7 +360,7 @@ function rollLabel(n){
     : t().randomIn + ' 1–' + n;
 }
 /* tier recommendations printed in the Alternate Loot & Consumable Tables */
-const TIERS = { common:'1-2', uncommon:'1-2', rare:'2-3', very_rare:'3-4', legendary:'3-4' };
+const TIERS = { common:'1–2', uncommon:'1–2', rare:'2–3', very_rare:'3–4', legendary:'3–4' };
 const COMMUNITIES = [
   ['Highborne','Великородное'], ['Loreborne','Научное'], ['Orderborne','Догматичное'],
   ['Ridgeborne','Горное'], ['Seaborne','Морское'], ['Slyborne','Криминальное'],
@@ -565,6 +576,8 @@ function srcLabel(it){
 
 function toast(msg, isError){
   const el = $('#toast');
+  el.setAttribute('role', isError ? 'alert' : 'status');
+  el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
   el.textContent = msg;
   el.classList.toggle('err', !!isError);
   el.hidden = false;
@@ -714,9 +727,28 @@ function liftNotes(l){
   if (l.meta) Object.keys(l.meta).forEach(id => lift(l.meta[id]));
   return l;
 }
+/* Every write used to stamp this tab's whole array over the key, so two tabs
+   open at once destroyed each other's lists: the one that saved last won
+   outright, silently, with no server and no export to recover from. Storage is
+   re-read and merged by id instead, and a list this tab never knew about is
+   left where it is. */
 function saveLists(){
-  try { localStorage.setItem(LS_KEY, JSON.stringify(S.lists)); return true; }
-  catch (e) { toast(t().saveFailed, true); return false; }
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(mergeLists(S.lists)));
+    return true;
+  } catch (e) { toast(t().saveFailed, true); return false; }
+}
+function mergeLists(mine){
+  let stored;
+  try { stored = keepLists(JSON.parse(localStorage.getItem(LS_KEY) || '[]')); }
+  catch (e) { return mine; }
+  const seen = {};
+  mine.forEach(function (l) { seen[l.id] = true; });
+  /* Anything only the other tab has is kept, after ours so the order this tab
+     shows stays the order this tab meant. A list deleted here is gone from
+     `mine` and from `deleted`, which is what tells the two cases apart. */
+  const theirs = stored.filter(function (l) { return !seen[l.id] && !S.deleted[l.id]; });
+  return mine.concat(theirs);
 }
 function storageWorks(){
   try { localStorage.setItem('dhloot.probe','1'); localStorage.removeItem('dhloot.probe'); return true; }
@@ -759,10 +791,18 @@ function itemLine(l, it){
 
 function createList(name){
   const l = { id: newId(), name: (name || '').trim() || t().untitled, ids: [], created: Date.now() };
-  S.lists.unshift(l); saveLists();
+  S.lists.unshift(l);
+  /* The list is kept for this session even when the write fails — the app still
+     works, the banner already explains that nothing will survive a reload. What
+     must not happen is a cheerful "created" on top of the failure notice, so
+     the caller checks this before congratulating anyone. */
+  createList.saved = saveLists();
   return l;
 }
+/* Remembered for this tab's lifetime so a merge cannot resurrect it from the
+   copy another tab still holds. */
 function deleteList(id){
+  S.deleted[id] = true;
   S.lists = S.lists.filter(l => l.id !== id);
   saveLists();
 }
@@ -801,7 +841,10 @@ function encodeList(l, forPlayers){
     if (m.qty > 1) return id + '*' + m.qty;
     return id;
   });
-  let raw = l.name + '\n' + parts.join(',');
+  /* A chat client that wraps or clips a long URL leaves a payload that still
+     decodes — into a shorter list that looks complete. The count and a short
+     hash of the ids give the decoder something to disagree with. */
+  let raw = l.name + '\n' + stamp(parts) + parts.join(',');
   const rec = (id, text, show) => text ? N_REC + (show ? N_SHOW : '') + id + N_SEP + text : '';
   const pair = (id, o) => rec(id, o.note, true) + (forPlayers ? '' : rec(id, o.hnote, false));
   const notes = pair(N_LIST, l) + l.ids.map(function (id) {
@@ -812,6 +855,17 @@ function encodeList(l, forPlayers){
   const bytes = new TextEncoder().encode(raw);
   let bin = ''; bytes.forEach(function (b) { bin += String.fromCharCode(b); });
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+/* Four base36 characters: enough that a truncation lands on the right value
+   about once in two million, cheap enough to spend on every link. */
+function stamp(parts){
+  const body = parts.join(',');
+  let h = 2166136261;
+  for (let i = 0; i < body.length; i++) {
+    h ^= body.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
 }
 function decodeList(payload){
   try {
@@ -829,8 +883,20 @@ function decodeList(payload){
     const itemsLine = nl2 >= 0 ? body.slice(0, nl2) : body;
     const noteBlob = nl2 >= 0 ? body.slice(nl2 + 1) : '';
 
+    /* Links from before the stamp existed have no "~" on the items line and are
+       read as they always were — there is simply nothing to check them against. */
+    const cut = itemsLine.indexOf('~');
+    let want = null;
+    let itemsBody = itemsLine;
+    if (cut > 0 && /^[0-9a-z]+\.[0-9a-z]{1,4}$/.test(itemsLine.slice(0, cut))) {
+      want = itemsLine.slice(0, cut);
+      itemsBody = itemsLine.slice(cut + 1);
+    }
+
     const ids = [], meta = {};
-    itemsLine.split(',').forEach(function (part) {
+    const parts = itemsBody.split(',');
+    if (want !== null && stamp(parts) !== want + '~') return null;   // truncated or edited
+    parts.forEach(function (part) {
       const bits = part.split('*');
       if (!BY_ID[bits[0]]) return;
       ids.push(bits[0]);
@@ -901,17 +967,72 @@ function goToList(l){
   if (location.hash === want) { S.urlPayload = encodeList(l, true); render(); }
   else location.hash = want;
 }
+/* Which of my lists is this address showing?
+   Comparing encoded payloads was brittle: a list has two flavours (with the
+   GM's notes and without), links made before the checksum look different again,
+   and every future change to the encoding would break recognition once more —
+   the symptom being "Список от другого игрока" over your own list, with saving
+   it changing nothing. So the payload is decoded and the contents compared:
+   same name, same entries in the same order, and nothing the link carries
+   contradicting what is stored. */
+function findListByPayload(payload){
+  const want = decodeList(payload);
+  if (!want) return null;
+  const fields = ['qty', 'gold', 'note', 'hnote'];
+  for (let i = 0; i < S.lists.length; i++) {
+    const l = S.lists[i];
+    if (l.name !== want.name || l.ids.length !== want.ids.length) continue;
+    if (l.ids.some(function (id, k) { return id !== want.ids[k]; })) continue;
+    // a players' link simply has no GM notes; that is not a disagreement
+    const meta = want.meta || {};
+    const clash = Object.keys(meta).some(function (id) {
+      const mine = itemMeta(l, id);
+      return fields.some(function (f) {
+        return meta[id][f] !== undefined && meta[id][f] !== mine[f];
+      });
+    });
+    if (clash) continue;
+    if (want.note !== undefined && want.note !== l.note) continue;
+    if (want.hnote !== undefined && want.hnote !== l.hnote) continue;
+    return l;
+  }
+  return null;
+}
+
+/* Whoever opens it lands on this table with the same values picked */
+function eqFilterHash(){
+  const kind = EQ_TABLE[S.tables.t], f = kind ? eqEncode(kind) : '';
+  return '#/tables/' + S.tables.t + (f ? '/' + f : '');
+}
+function eqFilterUrl(){ return baseUrl() + 'index.html' + eqFilterHash(); }
+/* Written straight into the address bar, so copying it from there and using the
+   button give the same link — and a stale filter never lingers in the URL. */
+function syncEqUrl(){
+  const kind = EQ_TABLE[S.tables.t];
+  if (!kind) return;
+  S.eqSeg = eqEncode(kind);
+  if (history.replaceState) history.replaceState(null, '', eqFilterHash());
+}
+function listShareUrl(l, forPlayers){
+  return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l, forPlayers);
+}
+/* The address bar carries the whole list, not a local id, so whatever a person
+   copies out of it — the Share button or the browser's own URL box — works for
+   everyone. S.openList remembers which local list that address belongs to, so
+   an edit can refresh the address instead of orphaning the page. */
+function listHash(l, forPlayers){ return '#/l/' + encodeList(l, forPlayers); }
+/* Saving a shared list produces an identical payload, so the hash does not
+   actually change and no hashchange fires — render by hand in that case. */
+function goToList(l){
+  S.openList = l.id;
+  const want = listHash(l, true);
+  if (location.hash === want) { S.urlPayload = encodeList(l, true); render(); }
+  else location.hash = want;
+}
 /* A list now has two payloads — with the GM's notes and without — and either
    one is still that list. Comparing against the players' flavour alone meant a
    GM opening their own backup link was told it belonged to someone else, and
    saving it again changed nothing, because the link never matched. */
-function findListByPayload(payload){
-  for (let i = 0; i < S.lists.length; i++) {
-    const l = S.lists[i];
-    if (encodeList(l, true) === payload || encodeList(l, false) === payload) return l;
-  }
-  return null;
-}
 /* Rewrites the address to match the list as it stands now. replaceState does
    not fire hashchange, so this never re-enters render(). */
 /* Edits made without a re-render (name, quantity, gold, notes) still have to
@@ -1222,12 +1343,12 @@ function cardHTML(it, opt){
     '</button>' +
     '<div class="card-body">' +
       '<div class="card-meta">' + meta + '</div>' +
-      '<h3 class="card-name">' + nameEl +
+      '<h2 class="card-name">' + nameEl +
         '<span class="card-name-acts">' +
           '<button type="button" data-copy-name="' + esc(it.id) + '" title="' + esc(t().copyName) + '" aria-label="' + esc(t().copyName) + '">' + ICON_COPY + '</button>' +
           '<button type="button" data-share="' + esc(it.id) + '" title="' + esc(t().copyLink) + '" aria-label="' + esc(t().copyLink) + '">' + ICON_LINK + '</button>' +
         '</span>' +
-      '</h3>' +
+      '</h2>' +
       eqChips(it) +
       (ds ? '<p class="card-desc">' + descHtml(it) + '</p>' : '') +
       craftHTML(it) +
@@ -1287,11 +1408,18 @@ function orGrid(cards){
 /* ============================================================
    SHARED CONTROLS
    ============================================================ */
+/* Deliberately type=text. A number input refuses setSelectionRange, so after
+   the re-render that every keystroke triggers there was no way to put the caret
+   back: the second digit of a two-digit roll landed in front of the first and
+   47 came out as 74, then clamped to 60. The stepper buttons are ours anyway,
+   so nothing is lost by dropping the native one. */
 function numBox(id, val, min, max, cls){
   return '<div class="numbox ' + (cls || '') + '">' +
-    '<button type="button" data-step="-1" data-for="' + id + '" aria-label="-">−</button>' +
-    '<input type="number" id="' + id + '" value="' + val + '" min="' + min + '" max="' + max + '" inputmode="numeric">' +
-    '<button type="button" data-step="1" data-for="' + id + '" aria-label="+">+</button>' +
+    '<button type="button" data-step="-1" data-for="' + id + '" aria-label="' + esc(t().stepDown) + '">−</button>' +
+    '<input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"' +
+      ' id="' + id + '" value="' + val + '" data-min="' + min + '" data-max="' + max + '"' +
+      ' aria-label="' + esc(t().rollResult) + '">' +
+    '<button type="button" data-step="1" data-for="' + id + '" aria-label="' + esc(t().stepUp) + '">+</button>' +
   '</div>';
 }
 
@@ -1350,7 +1478,11 @@ function pageHead(key){
       ' aria-label="' + esc(on ? t().isHome : t().setHome) + '"' +
       ' aria-pressed="' + (on ? 'true' : 'false') + '">' + ICON_HOME + '</button>'
     : '';
-  return '<h1 class="page-h">' + p[0] + home + btn + '</h1><p class="page-sub">' + p[1] + '</p>' + box;
+  /* The buttons used to live inside the H1, so its accessible name came out as
+     "Обычные правила?" — the help mark read as part of the heading. */
+  return '<div class="page-head">' +
+      '<h1 class="page-h">' + p[0] + '</h1>' + home + btn +
+    '</div><p class="page-sub">' + p[1] + '</p>' + box;
 }
 
 function pickCards(items, opts){
@@ -1405,7 +1537,7 @@ function renderStd(){
     kindChips(LOOT_KINDS) +
   '</div>' +
   rollBar(pool.filter(it => it && kindAllows(kindOf(it)))) +
-  '<div class="results">' + orGrid(pickCards(pool)) + '</div>';
+  '<div class="results" role="status" aria-live="polite">' + orGrid(pickCards(pool)) + '</div>';
 }
 
 /* ---- 4: alternate tables ---- */
@@ -1454,7 +1586,7 @@ function renderAlt(){
     kindChips(LOOT_KINDS) +
   '</div>' +
   rollBar(picks.map(p => p[0])) +
-  '<div class="results">' + critBox + orGrid(cards) + '</div>';
+  '<div class="results" role="status" aria-live="polite">' + critBox + orGrid(cards) + '</div>';
 }
 
 function altTableId(){ return (!S.kind.item && S.kind.consumable) ? 'alt_consumable' : 'alt_item'; }
@@ -1478,7 +1610,7 @@ function renderWond(){
       '</div>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + orGrid([cardHTML(it)]) + '</div>';
+  '<div class="results" role="status" aria-live="polite">' + orGrid([cardHTML(it)]) + '</div>';
 }
 
 /* ---- 6: community ---- */
@@ -1500,7 +1632,7 @@ function renderComm(){
       '</div>' +
     '</div>' +
   '</div>' +
-  '<div class="results">' + orGrid([cardHTML(it)]) + '</div>';
+  '<div class="results" role="status" aria-live="polite">' + orGrid([cardHTML(it)]) + '</div>';
 }
 
 /* ---- tables browse ---- */
@@ -1693,7 +1825,14 @@ function renderEquipTable(kind, st){
     return eqPasses(it, kind) && (!q || matches(it, q));
   });
   const head = eqFilterHTML(kind, list.length, pool.length);
-  if (!list.length) return head + '<div class="empty">' + esc(t().nothing) + '</div>';
+  if (!list.length)
+    /* The reset lives at the top of a panel that is folded and scrolled away by
+       now, so from here the page reads as empty with no visible cause. */
+    return head + '<div class="empty">' + esc(t().nothing) +
+      (eqChosen(kind).length
+        ? '<button type="button" class="btn sm" data-act="eqf" data-val="reset" style="margin-top:14px">' +
+          esc(t().resetAll) + '</button>'
+        : '') + '</div>';
   return head + [1, 2, 3, 4].map(function (n) {
     const sub = list.filter(function (it) { return it.eq.tier === n; });
     if (!sub.length) return '';
@@ -1814,9 +1953,15 @@ function storageWarning(){
     return '<div class="warn"><b>' + esc(t().noStorageTitle) + '</b> ' + esc(t().noStorage) + '</div>';
   }
   if (warnHidden()) return '';
-  return '<div class="warn"><b>' + esc(t().localOnlyTitle) + '</b> ' + esc(t().localOnly) +
-    '<button type="button" class="warn-x" data-act="hideWarn"' +
-      ' title="' + esc(t().dismiss) + '" aria-label="' + esc(t().dismiss) + '">&times;</button></div>';
+  /* The headline is the part that has to be read; the rest is there when it is
+     wanted. Unfolded it ran to 551px on a 320px phone, above the list itself. */
+  /* The cross lives inside the summary: a closed <details> hides everything
+     else, which would leave nothing to dismiss it with. */
+  return '<details class="warn"><summary>' +
+      '<b>' + esc(t().localOnlyTitle) + '</b><i>' + esc(t().readMore) + '</i>' +
+      '<button type="button" class="warn-x" data-act="hideWarn"' +
+        ' title="' + esc(t().dismiss) + '" aria-label="' + esc(t().dismiss) + '">&times;</button>' +
+    '</summary><p>' + esc(t().localOnly) + '</p></details>';
 }
 
 function listCardHTML(l){
@@ -2132,7 +2277,25 @@ function currentRoute(){
     }
     return 'tables';
   }
-  return ROUTES[h] ? h : 'roll/std';
+  if (ROUTES[h]) return h;
+  /* Only what we could not read at all. An address that resolved to something
+     else stays in the bar otherwise, and every refresh and every step back
+     replays it. */
+  if (h && history.replaceState) {
+    const home = loadHome() || HOME_DEFAULT;
+    history.replaceState(null, '', location.pathname + location.search + home);
+    return home.replace(/^#\/?/, '');
+  }
+  return 'roll/std';
+}
+/* index.html cannot know the language, so the chrome that has no text of its
+   own is named here — these were the last three strings stuck in Russian. */
+function syncChrome(){
+  const set = (sel, label) => { const el = $(sel); if (el) el.setAttribute('aria-label', label); };
+  set('#langSeg', t().langLabel);
+  set('#tabs', t().sectionsLabel);
+  set('.modal-x', t().close);
+  document.title = t().docTitle;
 }
 function syncLangButtons(){
   $$('#langSeg button').forEach(function (b) {
@@ -2197,7 +2360,47 @@ function renderSelBar(){
   '</div>';
 }
 
+/* ---------- keeping the keyboard where it was ----------
+   A render throws the whole view away and builds it again, so whatever had
+   focus is a different node afterwards. Without this, pressing Enter on a roll
+   button dropped focus to <body> and every keystroke in a field sent the caret
+   back to position 0. Both are found again by the attributes the markup is
+   built from, which is the one thing that survives the rebuild. */
+const FOCUS_BY = ['id','data-act','data-val','data-for','data-step','data-open','data-sel',
+                  'data-add-to','data-note','data-nkind','data-pos','data-qty','data-gold',
+                  'data-note-toggle','data-remove','data-drag','data-list-note','data-copy-sec',
+                  'data-copy-name','data-share','data-copy-full','data-send','data-copy-img',
+                  'data-copy-roll','data-copy-listtext','data-share-list','data-share-gm',
+                  'data-del-list','data-list','data-lang','data-close','data-sel-all'];
+function rememberFocus(){
+  const el = document.activeElement;
+  if (!el || !el.tagName || el === document.body) return null;
+  const bits = [];
+  FOCUS_BY.forEach(function (a) {
+    const v = el.getAttribute && el.getAttribute(a);
+    if (v == null || v.indexOf('"') >= 0) return;
+    bits.push(a === 'id' ? '#' + v : '[' + a + '="' + v + '"]');
+  });
+  if (!bits.length) return null;
+  const keep = { sel: bits[0].charAt(0) === '#' ? bits[0] : el.tagName.toLowerCase() + bits.join('') };
+  if (typeof el.selectionStart === 'number') {
+    keep.start = el.selectionStart; keep.end = el.selectionEnd;
+  }
+  return keep;
+}
+function restoreFocus(keep){
+  if (!keep) return;
+  let el;
+  try { el = document.querySelector(keep.sel); } catch (e) { return; }
+  if (!el) return;
+  try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+  if (keep.start != null) {
+    try { el.setSelectionRange(keep.start, keep.end); } catch (e) {}
+  }
+}
+
 function render(){
+  const keep = rememberFocus();
   const r = currentRoute();
   S.route = r;
   renderTabs();
@@ -2206,13 +2409,13 @@ function render(){
     const id = r.slice(2);
     $('#view').innerHTML = renderItemPage(id);
     const it = BY_ID[id];
-    document.title = (it ? nameOf(it) + ' — ' : '') + 'Генератор лута Daggerheart';
+    document.title = (it ? nameOf(it) + ' — ' : '') + t().docTitle;
   } else if (r.indexOf('lists/') === 0) {
     // old short link: hand it straight over to the shareable address
     const own = getList(r.slice(6));
     if (own) { S.openList = own.id; syncListUrl(own); }
     $('#view').innerHTML = renderOneList(r.slice(6));
-    document.title = 'Генератор лута — Daggerheart';
+    document.title = t().docTitle;
   } else if (r.indexOf('l/') === 0) {
     const payload = r.slice(2);
     /* An edit leaves the address one step behind the list, so a payload we
@@ -2227,28 +2430,18 @@ function render(){
       S.openList = ''; S.urlPayload = '';
       $('#view').innerHTML = renderSharedList(payload);
     }
-    document.title = 'Генератор лута — Daggerheart';
+    document.title = t().docTitle;
   } else {
     S.openList = ''; S.urlPayload = '';
     $('#view').innerHTML = ROUTES[r]();
-    document.title = 'Генератор лута — Daggerheart';
+    document.title = t().docTitle;
   }
+  syncChrome();
   refreshModal();
   placeMenu();
   $('#footText').innerHTML = t().foot;
   document.documentElement.lang = S.lang;
-  const focusId = render._focus;
-  if (focusId) {
-    const el = document.getElementById(focusId);
-    if (el) {
-      el.focus();
-      // setSelectionRange throws on <input type="number">; only text-ish inputs support it
-      if (el.type === 'text' || el.type === 'search') {
-        try { const v = el.value; el.setSelectionRange(v.length, v.length); } catch (err) {}
-      }
-    }
-    render._focus = null;
-  }
+  restoreFocus(keep);
 
   if (S.tables.anchor && r === 'tables') {
     const target = document.getElementById(sectionId(S.tables.anchor));
@@ -2328,7 +2521,7 @@ document.addEventListener('click', function (e) {
     const inp = document.getElementById(step.dataset.for);
     if (!inp) return;
     const v = clamp((parseInt(inp.value, 10) || 0) + parseInt(step.dataset.step, 10),
-                    parseInt(inp.min, 10), parseInt(inp.max, 10));
+                    parseInt(inp.dataset.min, 10), parseInt(inp.dataset.max, 10));
     inp.value = v;
     applyNum(inp.id, v);
     return;
@@ -2411,7 +2604,7 @@ document.addEventListener('click', function (e) {
   if (a === 'rarity') { st.rarity = val; render(); return; }
   if (a === 'help')   { S.help = S.help === val ? '' : val; render(); return; }
   if (a === 'kind') {
-    if (act.dataset.last) { toast(t().keepOneKind); return; }
+    if (act.dataset.last) { toast(t().keepOneKind, true); return; }
     S.kind[val] = !S.kind[val];
     render(); return;
   }
@@ -2425,7 +2618,7 @@ document.addEventListener('click', function (e) {
     toast(next ? t().homeSet : t().homeReset);
     render(); return;
   }
-  if (a === 'hideWarn') { hideWarn(); render(); return; }
+  if (a === 'hideWarn') { e.preventDefault(); hideWarn(); render(); return; }
   if (a === 'eqOpen') { S.eqOpen = !S.eqOpen; render(); return; }
   if (a === 'eqLink') { copyText(eqFilterUrl(), t().filterLinkCopied); return; }
   if (a === 'eqf') {
@@ -2441,15 +2634,17 @@ document.addEventListener('click', function (e) {
   }
   if (a === 'src') {
     // never leave the roll with nothing to draw from
-    if (act.dataset.last) { toast(t().keepOneSource); return; }
+    if (act.dataset.last) { toast(t().keepOneSource, true); return; }
     S.std.src[val] = !S.std.src[val];
     render(); return;
   }
   if (a === 'createList') {
     const input = document.getElementById('lname');
+    // an unnamed empty list is almost never what was meant; ask for a name
+    if (input && !input.value.trim()) { toast(t().nameFirst, true); input.focus(); return; }
     const l = createList(input ? input.value : '');
     S.listDraft = '';
-    toast(t().listCreated.replace('%s', l.name));
+    if (createList.saved) toast(t().listCreated.replace('%s', l.name));
     render();
     return;
   }
@@ -2457,6 +2652,7 @@ document.addEventListener('click', function (e) {
   if (a === 'cancelNew')  { S.newListFor = ''; S.newListDraft = ''; render(); return; }
   if (a === 'createFor') {
     const input = document.getElementById('newlist');
+    if (input && !input.value.trim()) { toast(t().nameFirst, true); input.focus(); return; }
     const l = createList(input ? input.value : '');
     S.newListFor = ''; S.newListDraft = '';
     addIdsTo(l, val === 'sel' ? selIds() : [val]);
@@ -2524,7 +2720,6 @@ function applyNum(id, v){
   const openId = onListPage();
   if (openId && id === 'n') {
     S.listRoll = { id: openId, n: v };
-    render._focus = id;
     render();
     return;
   }
@@ -2533,20 +2728,26 @@ function applyNum(id, v){
   if (id === 'n') st.n = v;
   if (id === 'hope') st.hope = v;
   if (id === 'fear') st.fear = v;
-  render._focus = id;
   render();
 }
 
 document.addEventListener('input', function (e) {
   const el = e.target;
   if (el.id === 'n' || el.id === 'hope' || el.id === 'fear') {
-    const raw = parseInt(el.value, 10);
-    if (isNaN(raw)) return;
-    const v = clamp(raw, parseInt(el.min, 10), parseInt(el.max, 10));
+    // a text field can hold anything, so keep it to digits without moving the caret
+    const digits = el.value.replace(/\D/g, '');
+    if (digits !== el.value) {
+      const at = el.selectionStart - (el.value.length - digits.length);
+      el.value = digits;
+      try { el.setSelectionRange(at, at); } catch (err) {}
+    }
+    const raw = parseInt(digits, 10);
+    if (isNaN(raw)) return;   // mid-edit: leave the field alone, `change` will settle it
+    const v = clamp(raw, parseInt(el.dataset.min, 10), parseInt(el.dataset.max, 10));
     if (v !== raw) el.value = v;
     applyNum(el.id, v);
   }
-  if (el.id === 'sq') { S.search.q = el.value; render._focus = 'sq'; render(); }
+  if (el.id === 'sq') { S.search.q = el.value; render(); }
   if (el.id === 'lname') { S.listDraft = el.value; }
   if (el.id === 'limport') { S.importDraft = el.value; }
   if (el.id === 'newlist') { S.newListDraft = el.value; }
@@ -2608,8 +2809,8 @@ document.addEventListener('input', function (e) {
     const l = getList(el.dataset.list);
     if (l) { l.name = el.value; saveLists(); renderSelBar(); freshenListUrl(l); }
   }
-  if (el.id === 'tq') { S.tables.q = el.value; render._focus = 'tq'; render(); }
-  if (el.id === 'pickq') { S.pickQ = el.value; render._focus = 'pickq'; render(); }
+  if (el.id === 'tq') { S.tables.q = el.value; render(); }
+  if (el.id === 'pickq') { S.pickQ = el.value; render(); }
 });
 
 /* ---------- reordering a list by dragging ----------
@@ -2673,6 +2874,15 @@ document.addEventListener('drop', function (e) {
    keystroke would move the entry to 2 on the way to 20. */
 document.addEventListener('change', function (e) {
   const el = e.target;
+  /* Half-typed input is left alone so the caret is not yanked around; once the
+     field is done being edited it has to hold a number again. */
+  if (el.id === 'n' || el.id === 'hope' || el.id === 'fear') {
+    const raw = parseInt(el.value, 10);
+    const v = isNaN(raw) ? parseInt(el.dataset.min, 10)
+                         : clamp(raw, parseInt(el.dataset.min, 10), parseInt(el.dataset.max, 10));
+    if (String(v) !== el.value) { el.value = v; applyNum(el.id, v); }
+    return;
+  }
   if (!el.dataset || !el.dataset.pos) return;
   const p = el.dataset.pos.split(':'), l = getList(p[0]);
   const n = parseInt(el.value, 10);
@@ -2732,6 +2942,14 @@ if (!location.hash || location.hash === '#' || location.hash === '#/') {
 /* A modal is tied to the route it was opened from. Links inside it (the craft
    chain, for one) navigate the page underneath, so the modal has to go with it
    instead of hanging over the new page. */
+/* Another tab wrote the lists: take theirs, keeping anything we have that they
+   have not seen yet, and redraw. */
+window.addEventListener('storage', function (e) {
+  if (e.key !== LS_KEY) return;
+  S.lists = mergeLists(loadLists());
+  render();
+});
+
 window.addEventListener('hashchange', function () {
   closeModal();
   /* A selection belongs to the page it was made on. Route strings cannot tell
