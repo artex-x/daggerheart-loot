@@ -1,0 +1,66 @@
+/* Real-browser check: the craft block must not overflow on narrow phones. */
+const puppeteer = require('puppeteer');
+const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
+const WIDTHS = [320, 360, 390, 430, 768];
+// longest RU names in the set, plus the plain-text target and a core recipe
+const ROUTES = ['#/roll/community', '#/roll/std', '#/roll/alt', '#/i/w65', '#/i/w3', '#/i/ci19', '#/i/w2', '#/tables/wondrous'];
+
+(async () => {
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+  });
+  let fail = 0;
+  const page = await browser.newPage();
+
+  for (const width of WIDTHS) {
+    await page.setViewport({ width, height: 800, deviceScaleFactor: 1 });
+    for (const route of ROUTES) {
+      await page.goto(ROOT + route, { waitUntil: 'domcontentloaded' });
+      await new Promise(r => setTimeout(r, 120));
+
+      const bad = await page.evaluate(function (w) {
+        const out = [];
+        // horizontal scroll anywhere on the page
+        if (document.documentElement.scrollWidth > w + 1) {
+          out.push('page scrolls horizontally: ' + document.documentElement.scrollWidth + ' > ' + w);
+        }
+        document.querySelectorAll('.craft, .rcraft, .dicebar, .numrow').forEach(function (el) {
+          const r = el.getBoundingClientRect();
+          if (r.right > w + 1) out.push(el.className + ' spills past the right edge (' + Math.round(r.right) + ')');
+          if (r.left < -1)     out.push(el.className + ' spills past the left edge');
+          if (el.scrollWidth > el.clientWidth + 1) out.push(el.className + ' has clipped content');
+          // the caption must stay legible, not collapse to a sliver
+          if (r.height > 0 && r.width < 60) out.push(el.className + ' squeezed to ' + Math.round(r.width) + 'px');
+        });
+        // the link has to stay tappable
+        document.querySelectorAll('.craft a').forEach(function (a) {
+          const r = a.getBoundingClientRect();
+          if (r.height < 12) out.push('craft link only ' + Math.round(r.height) + 'px tall');
+        });
+        return out;
+      }, width);
+
+      if (bad.length) {
+        fail += bad.length;
+        console.log('  FAIL ' + width + 'px ' + route);
+        bad.forEach(b => console.log('        ' + b));
+      }
+    }
+    console.log(width + 'px checked');
+  }
+
+  // and the standalone share stub, which has its own stylesheet
+  for (const width of [320, 390]) {
+    await page.setViewport({ width, height: 800 });
+    await page.goto('file://' + require('path').join(__dirname, '..', 'i', 'w3.html'),
+                    { waitUntil: 'domcontentloaded' });
+    await new Promise(r => setTimeout(r, 80));
+    const over = await page.evaluate(w => document.documentElement.scrollWidth > w + 1, width);
+    if (over) { fail++; console.log('  FAIL stub i/w3.html scrolls horizontally at ' + width + 'px'); }
+  }
+  console.log('share stub checked');
+
+  await browser.close();
+  console.log(fail ? '\n' + fail + ' FAILED' : '\nno overflow at any width');
+  process.exit(fail ? 1 : 0);
+})();

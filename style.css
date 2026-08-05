@@ -20,6 +20,7 @@
   --r:14px;
   --r-sm:9px;
   --shadow:0 10px 34px -14px rgba(0,0,0,.85);
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 
@@ -33,7 +34,7 @@ body{
     var(--bg);
   background-attachment:fixed;
   color:var(--txt);
-  font:15.5px/1.6 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font:15.5px/1.6 var(--ui);
   min-height:100vh;
 }
 .wrap{width:min(1180px,100% - 32px);margin-inline:auto}
@@ -181,7 +182,6 @@ input[type=search],input[type=text]{
   background:var(--bg2);border:1px solid var(--line2);color:var(--txt);font:inherit;
 }
 input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,171,94,.14)}
-input::placeholder{color:var(--muted2)}
 
 /* ============ results ============ */
 .results{margin-top:26px}
@@ -539,13 +539,13 @@ input::placeholder{color:var(--muted2)}
 .lnote textarea,.rnote textarea{
   display:block;width:100%;box-sizing:border-box;resize:vertical;
   background:var(--bg2);border:1px solid var(--line2);border-radius:8px;color:var(--txt);
-  font:14px/1.5 inherit;padding:9px 11px;
+  font:14px/1.5 var(--ui);padding:9px 11px;
 }
 .lnote textarea{width:calc(100% - 26px);margin:0 13px 13px}
 .rnote textarea{font-size:13px;background:var(--surface)}
 .lnote textarea:focus,.rnote textarea:focus{
   outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,171,94,.14)}
-.lnote textarea::placeholder,.rnote textarea::placeholder{color:var(--muted2);opacity:.7}
+input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
 
 /* the switch that lets a note travel with the copied text */
 .noteshow{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
@@ -759,11 +759,11 @@ input::placeholder{color:var(--muted2)}
 
 /* the list picker grows a search box once there are more lists than fit */
 .dropmenu.long{max-height:min(60vh,340px);overflow:auto}
-.pickq{
+input.pickq{
   width:100%;height:32px;padding:0 10px;margin-bottom:8px;box-sizing:border-box;
   background:var(--bg2);border:1px solid var(--line2);border-radius:8px;
   color:var(--txt);font:inherit;font-size:13px;
 }
-.pickq:focus{outline:none;border-color:var(--gold)}
+input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,171,94,.14)}
 .pickchips{display:contents}
 .picker-none{font-size:12.5px;color:var(--muted2);padding:2px 0}

@@ -86,7 +86,7 @@ const T = {
     bumpTo:'Поднять до',
     filter:'Тип', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
     keepOneKind:'Нужен хотя бы один тип',
-    eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
+    eqTrait:'Характеристика', eqRange:'Дистанция',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
     eqClass:'Класс', anyValue:'любое', outOf:'из', dropValue:'Убрать из фильтра',
     resetAll:'Сбросить всё', filterLink:'Ссылка на фильтры',
@@ -106,7 +106,7 @@ const T = {
     listNotePh:'Например: позиции 9-10 лежат под прилавком',
     notePh:'Внешний вид, хоумбрю, что знает мастер',
     noteCopyItem:'Копировать вместе с предметом', noteCopyList:'Копировать вместе со списком',
-    rollInList:'Бросок по списку', clear:'Сбросить',
+    clear:'Сбросить',
     dragHint:'Перетащите, чтобы изменить порядок', position:'Позиция в списке',
     listNotFound:'Список не найден', listNotFoundSub:'Возможно, он удалён или открыт в другом браузере.',
     lists:'Списки', newList:'Новый список', listNamePh:'Например: клад дракона', create:'Создать',
@@ -205,7 +205,7 @@ const T = {
     bumpTo:'Bump to',
     filter:'Type', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
     keepOneKind:'At least one type has to stay on',
-    eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
+    eqTrait:'Trait', eqRange:'Range',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
     eqClass:'Class', anyValue:'any', outOf:'of', dropValue:'Remove from the filter',
     resetAll:'Reset all', filterLink:'Filter link',
@@ -225,7 +225,7 @@ const T = {
     listNotePh:'For example: entries 9-10 are kept under the counter',
     notePh:'Looks, homebrew, what the GM knows',
     noteCopyItem:'Copy along with the item', noteCopyList:'Copy along with the list',
-    rollInList:'Roll within the list', clear:'Clear',
+    clear:'Clear',
     dragHint:'Drag to reorder', position:'Position in the list',
     listNotFound:'List not found', listNotFoundSub:'It may have been deleted, or it lives in another browser.',
     lists:'Lists', newList:'New list', listNamePh:'For example: dragon hoard', create:'Create',
@@ -598,6 +598,17 @@ const ICON_LINK ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentC
    Kept in localStorage only — there is no server behind this app.
    ============================================================ */
 const LS_KEY = 'dhloot.lists.v1';
+/* The language is a preference, not a per-page choice: without remembering it,
+   an English reader is thrown back into Russian by every reload and every
+   shared link they open. */
+const LANG_KEY = 'dhloot.lang.v1';
+function loadLang(){
+  try { const v = localStorage.getItem(LANG_KEY); if (v === 'ru' || v === 'en') S.lang = v; }
+  catch (e) {}
+}
+function saveLang(){
+  try { localStorage.setItem(LANG_KEY, S.lang); } catch (e) {}
+}
 
 function loadLists(){
   try {
@@ -1025,6 +1036,9 @@ function focusNew(){
 
 /* Adding from the menu. One item behaves as a toggle, so a card still shows
    and undoes its membership; several are only ever added. */
+/* Putting one thing into four lists is a normal errand, so the menu stays open
+   and the chip you pressed just changes state. Redrawing the page instead made
+   the whole card blink and shut the menu after every single pick. */
 function applyAddTo(listId, key){
   const l = getList(listId);
   if (!l) return;
@@ -1033,7 +1047,7 @@ function applyAddTo(listId, key){
     l.ids = l.ids.filter(x => x !== ids[0]);
     saveLists();
     toast(t().removedFrom.replace('%s', l.name));
-    render();
+    afterListChange(l, ids[0]);
     return;
   }
   addIdsTo(l, ids);
@@ -1043,8 +1057,24 @@ function addIdsTo(l, ids){
   fresh.forEach(id => l.ids.push(id));
   saveLists();
   toast(t().addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + fresh.length : ''));
-  S.menuFor = '';
-  render();
+  afterListChange(l, ids.length === 1 ? ids[0] : '');
+}
+/* The page has to be rebuilt only when it is showing the list that changed.
+   Anywhere else the sole visible difference is the tick on one chip. */
+function afterListChange(l, itemId){
+  if (onListPage() === l.id) { render(); return; }
+  freshenListUrl(l);
+  if (itemId) markMembership(l, itemId);
+  renderSelBar();
+}
+function markMembership(l, itemId){
+  const inList = l.ids.indexOf(itemId) >= 0;
+  $$('[data-add-to]').forEach(function (chip) {
+    const p = chip.dataset.addTo.split('|');
+    if (p[0] !== l.id || p[1] !== itemId) return;
+    chip.classList.toggle('on', inList);
+    chip.textContent = (inList ? '✓ ' : '') + l.name;
+  });
 }
 
 /* the whole selection as one message, entries apart — they are a set, not
@@ -1179,6 +1209,10 @@ function kindChips(list){
     }).join('') +
   '</div></div>';
 }
+/* What the badge says is what the filter has to obey. The eleven Wondrous
+   entries that are weapons are stored as items, so asking for `it.kind` left
+   them on screen after "Equipment" was switched off — badged as weapons. */
+function kindOf(it){ return isEquip(it) ? 'equip' : it.kind; }
 function kindAllows(kind){ return !!S.kind[kind]; }
 
 function rarityChips(list, cur, act){
@@ -1209,7 +1243,7 @@ function pageHead(key){
 function pickCards(items, opts){
   return items
     .map((it, i) => [it, (opts && opts[i]) || {}])
-    .filter(p => p[0] && kindAllows(p[0].kind))
+    .filter(p => p[0] && kindAllows(kindOf(p[0])))
     .map(p => cardHTML(p[0], p[1]));
 }
 
@@ -1257,7 +1291,7 @@ function renderStd(){
     '</div></div>' +
     kindChips(LOOT_KINDS) +
   '</div>' +
-  rollBar(pool.filter(it => it && kindAllows(it.kind))) +
+  rollBar(pool.filter(it => it && kindAllows(kindOf(it)))) +
   '<div class="results">' + orGrid(pickCards(pool)) + '</div>';
 }
 
@@ -1274,7 +1308,7 @@ function renderAlt(){
     [altPick('item', st.rarity, 'fear', st.fear), 'fear'],
     [altPick('consumable', st.rarity, 'hope', st.hope), 'hope'],
     [altPick('consumable', st.rarity, 'fear', st.fear), 'fear']
-  ].filter(p => p[0] && kindAllows(p[0].kind));
+  ].filter(p => p[0] && kindAllows(kindOf(p[0])));
   const cards = picks.map(p => cardHTML(p[0], { col: p[1], rollLabel: p[1] === 'hope' ? st.hope : st.fear }));
 
   const nextRar = RARITIES5[RARITIES5.indexOf(st.rarity) + 1];
@@ -1638,7 +1672,7 @@ function renderSearch(){
   if (!q) {
     body = '<div class="empty">' + esc(S.lang === 'ru' ? 'Начните вводить запрос' : 'Start typing') + '</div>';
   } else {
-    const res = SEARCHABLE.filter(x => kindAllows(x.kind) && matches(x, q)).slice(0, 300);
+    const res = SEARCHABLE.filter(x => kindAllows(kindOf(x)) && matches(x, q)).slice(0, 300);
     // same header as the tables: "all" means everything the query left
     body = res.length ? selectAllHTML(res) +
                         '<div class="rows">' + res.map(function (it) { return rowHTML(it); }).join('') + '</div>'
@@ -1960,6 +1994,13 @@ function currentRoute(){
   }
   return ROUTES[h] ? h : 'roll/std';
 }
+function syncLangButtons(){
+  $$('#langSeg button').forEach(function (b) {
+    const on = b.dataset.lang === S.lang;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
 function renderTabs(){
   const cur = currentRoute();
   $('#tabs').innerHTML = TAB_LIST.map((tab, i) =>
@@ -2095,10 +2136,17 @@ function stateForRoute(){
 function rollNd12(n){ let s = 0; for (let i = 0; i < n; i++) s += d(12); return s; }
 
 document.addEventListener('click', function (e) {
+  /* The menu used to close itself on every pick; now that it stays open, a
+     click anywhere else is what dismisses it. */
+  if (S.menuFor && !e.target.closest('.seldrop') && !e.target.closest('.dropmenu')) {
+    S.menuFor = ''; S.newListFor = ''; render();
+  }
+
   const langBtn = e.target.closest('#langSeg button');
   if (langBtn) {
     S.lang = langBtn.dataset.lang;
-    $$('#langSeg button').forEach(b => b.classList.toggle('on', b === langBtn));
+    saveLang();
+    syncLangButtons();
     render();
     return;
   }
@@ -2530,6 +2578,8 @@ document.addEventListener('error', function (e) {
 }, true);
 
 S.lists = loadLists();
+loadLang();
+syncLangButtons();
 
 /* A modal is tied to the route it was opened from. Links inside it (the craft
    chain, for one) navigate the page underneath, so the modal has to go with it
