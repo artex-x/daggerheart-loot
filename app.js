@@ -42,6 +42,7 @@ const S = {
   /* Selection replaced the old "I am filling list X" mode. Nothing is sticky:
      it holds ids for the page you are on and clears when you leave. */
   sel: {},
+  modal: '',        // item shown in the modal, so it can be redrawn with the page
   menuFor: '',      // which control has its list menu open ('' = none, 'sel' = the bar)
   listDraft: '',
   listRoll: { id: '', n: 0 },
@@ -1707,6 +1708,7 @@ function render(){
     $('#view').innerHTML = ROUTES[r]();
     document.title = 'Генератор лута — Daggerheart';
   }
+  refreshModal();
   placeMenu();
   $('#footText').innerHTML = t().foot;
   document.documentElement.lang = S.lang;
@@ -1758,7 +1760,7 @@ document.addEventListener('click', function (e) {
   }
 
   const closeEl = e.target.closest('[data-close]');
-  if (closeEl) { $('#modal').hidden = true; return; }
+  if (closeEl) { closeModal(); return; }
 
   const openEl = e.target.closest('[data-open]');
   if (openEl) { openModal(openEl.dataset.open); return; }
@@ -2067,14 +2069,26 @@ document.addEventListener('input', function (e) {
 });
 
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') $('#modal').hidden = true;
+  if (e.key === 'Escape') closeModal();
 });
 
 function openModal(id){
   const it = BY_ID[id];
   if (!it) return;
+  S.modal = id;
   $('#modalBody').innerHTML = cardHTML(it, { full: true });
   $('#modal').hidden = false;
+}
+function closeModal(){
+  S.modal = '';
+  $('#modal').hidden = true;
+}
+/* The modal lives outside #view, so a plain render() would leave it stale —
+   which is why the list menu opened inside it never appeared. */
+function refreshModal(){
+  if (!S.modal || $('#modal').hidden) return;
+  const it = BY_ID[S.modal];
+  if (it) $('#modalBody').innerHTML = cardHTML(it, { full: true });
 }
 
 /* An <img> error does not bubble, so this listens in the capture phase. The
@@ -2098,7 +2112,7 @@ S.lists = loadLists();
    chain, for one) navigate the page underneath, so the modal has to go with it
    instead of hanging over the new page. */
 window.addEventListener('hashchange', function () {
-  $('#modal').hidden = true;
+  closeModal();
   /* A selection belongs to the page it was made on. Route strings cannot tell
      one table from another — they all read "tables" — so the hash is the honest
      signal that the user went somewhere else. */
