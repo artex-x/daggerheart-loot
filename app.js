@@ -12,6 +12,17 @@ const BY_ID = {};
 Object.keys(DATA).forEach(k => DATA[k].forEach(it => { BY_ID[it.id] = it; }));
 const ALL = Object.keys(DATA).reduce((a, k) => a.concat(DATA[k]), []);
 
+/* ---------- equipment ----------
+   Weapons and armour are not loot rolled off a table: they have stats, so they
+   are stored apart and carry an `eq` block instead of a roll number. Eleven
+   Wondrous entries are equipment too — those keep their place in the roll table
+   and simply gained the same block, so they show up in both places from one
+   record rather than being copied. */
+const EQ = window.LOOT.eq || [];
+EQ.forEach(function (it) { BY_ID[it.id] = it; });
+const EQ_ALL = EQ.concat(ALL.filter(function (it) { return it.eq; }));
+const SEARCHABLE = ALL.concat(EQ);
+
 /* ---------- crafting chains ----------
    A record carries `craft` — the id of what it turns into — when it can be
    upgraded. The reverse direction ("made from") is derived here rather than
@@ -37,7 +48,10 @@ const S = {
   tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
   help: '',
-  kind: { item: true, consumable: true },  // shared filter, applies wherever both can show up
+  kind: { item: true, consumable: true, equip: true },  // shared filter, applies wherever they can show up
+  /* facets of the equipment tables; '' means "no preference" */
+  eqf: { tier:'', trait:'', range:'', dtype:'', burden:'', line:'' },
+  eqOpen: typeof matchMedia === 'function' && matchMedia('(min-width: 900px)').matches,
   lists: [],
   /* Selection replaced the old "I am filling list X" mode. Nothing is sticky:
      it holds ids for the page you are on and clears when you leave. */
@@ -68,7 +82,10 @@ const T = {
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
-    filter:'Тип', fItems:'Предметы', fCons:'Расходники', keepOneKind:'Нужен хотя бы один тип',
+    filter:'Тип', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
+    keepOneKind:'Нужен хотя бы один тип',
+    eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
+    eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
     community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
     importList:'Восстановить из ссылки', importBtn:'Восстановить',
     importPh:'Ссылка на список',
@@ -140,6 +157,13 @@ const T = {
         'Такие предметы уместны как награда от сообщества, семейная реликвия или находка на его территории.',
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a>.'
       ],
+      tables: [
+        'Здесь лежат все таблицы целиком: добыча и расходники из корника, Hope &amp; Fear, Wondrous Loot и предметов сообществ, альтернативные таблицы, а также оружие, вторичное оружие и броня.',
+        'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.',
+        'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
+        'Одиннадцать предметов из Wondrous Loot на самом деле оружие. Они остались на своих местах в таблице Wondrous и заодно попали сюда — в раздел без ранга.',
+        'Источники: Daggerheart Core Set и Hope &amp; Fear. Русские названия и формулировки — перевод <a href="https://ru.daggerheart.su/" target="_blank" rel="noopener">daggerheart.su</a>, для Hope &amp; Fear — таблица сообщества. Значения даны с учётом эрраты.'
+      ],
       lists: [
         'Создайте список, нажмите «Пополнить» и ходите по таблицам — на карточках и строках появится кнопка «+». Либо кликните по картинке предмета и отметьте нужные списки в блоке «В списки».',
         'Весь состав списка закодирован прямо в адресе страницы и обновляется при каждой правке. Поэтому отправить список можно и кнопкой «Поделиться», и просто скопировав адрес из строки браузера — это одна и та же ссылка. Сервер не нужен: тот, кто её откроет, увидит список и сможет сохранить копию себе.',
@@ -151,9 +175,9 @@ const T = {
       alt:   ['Альтернативные таблицы', 'Бросок Костей Дуальности по объединённым таблицам обеих книг.'],
       wondrous: ['Wondrous Loot', 'Введите результат броска или получите случайную позицию.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
-      tables: ['Таблицы', 'Все таблицы целиком — можно листать вручную, искать и открывать карточки.'],
+      tables: ['Таблицы', 'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.'],
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
-      search: ['Поиск', 'Поиск по всем 449 предметам и расходникам сразу, на русском и на английском.']
+      search: ['Поиск', 'Поиск по всем 828 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
     },
   },
   en: {
@@ -169,7 +193,10 @@ const T = {
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
-    filter:'Type', fItems:'Items', fCons:'Consumables', keepOneKind:'At least one type has to stay on',
+    filter:'Type', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
+    keepOneKind:'At least one type has to stay on',
+    eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
+    eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
     community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
     importList:'Restore from a link', importBtn:'Restore',
     importPh:'Paste a list link',
@@ -241,6 +268,13 @@ const T = {
         'They fit best as a reward from that community, a family heirloom, or a find on its territory.',
         'Source: the <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a> supplement.'
       ],
+      tables: [
+        'Every table in full: loot and consumables from the core book, Hope &amp; Fear, Wondrous Loot and the community items, the alternate tables, plus weapons, secondary weapons and armor.',
+        'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.',
+        'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
+        'Eleven Wondrous Loot entries are really weapons. They kept their place in the Wondrous table and also show up here, in the section without a tier.',
+        'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
+      ],
       lists: [
         'Create a list, hit "Fill" and browse the tables — a "+" appears on cards and rows. Or click an item\'s picture and tick the lists you want in the "Add to lists" block.',
         'The whole list is encoded into the page address itself and refreshed on every edit, so the Share button and the browser\'s own address bar hand out the same working link. No server involved: whoever opens it sees the list and can save a copy.',
@@ -252,9 +286,9 @@ const T = {
       alt:   ['Alternate tables', 'A Duality Dice roll over both books merged into one set of tables.'],
       wondrous: ['Wondrous Loot', 'Enter your roll result, or pick a random entry.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
-      tables: ['Tables', 'Every table in full — browse, search and open cards.'],
+      tables: ['Tables', 'Every table in full, weapons and armor included — browse, filter and open cards.'],
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
-      search: ['Search', 'Search all 449 items and consumables at once, in Russian and English.']
+      search: ['Search', 'Search all 828 entries at once — loot, consumables and equipment, in Russian and English.']
     },
   }
 };
@@ -293,8 +327,31 @@ const TABLE_DEFS = [
   { id:'wondrous',         ru:'Wondrous Loot',          en:'Wondrous Loot' },
   { id:'community',        ru:'Предметы сообществ',     en:'Community items' },
   { id:'alt_item',         ru:'Альт. — предметы',       en:'Alt. — items' },
-  { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' }
+  { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' },
+  { id:'eq_weapon',        ru:'Оружие',                 en:'Weapons' },
+  { id:'eq_secondary',     ru:'Вторичное оружие',       en:'Secondary weapons' },
+  { id:'eq_armor',         ru:'Броня',                  en:'Armor' }
 ];
+
+/* ---------- equipment vocabulary ----------
+   Terms follow daggerheart.su, which is the translation the rest of the app
+   quotes, so a weapon reads the same here and there. */
+const EQ_TYPE   = { weapon:['Основное оружие','Primary weapon'],
+                    secondary:['Вторичное оружие','Secondary weapon'],
+                    armor:['Броня','Armor'] };
+const EQ_TRAIT  = { agility:['Проворность','Agility'], strength:['Сила','Strength'],
+                    finesse:['Искусность','Finesse'], instinct:['Инстинкт','Instinct'],
+                    presence:['Влияние','Presence'], knowledge:['Знание','Knowledge'] };
+const EQ_RANGE  = { melee:['Вплотную','Melee'], veryclose:['Близко','Very Close'],
+                    close:['Средне','Close'], far:['Далеко','Far'],
+                    veryfar:['Очень далеко','Very Far'] };
+const EQ_DT     = { phy:['физ','phy'], mag:['маг','mag'], any:['физ/маг','phy/mag'] };
+const EQ_BURDEN = { 1:['Одноручное','One-Handed'], 2:['Двуручное','Two-Handed'] };
+const EQ_LINE   = { line:['Улучшаемые','Upgradable'], uniq:['Уникальные','Unique'] };
+const EQ_TABLE  = { eq_weapon:'weapon', eq_secondary:'secondary', eq_armor:'armor' };
+
+const eqWord = (map, key) => { const v = map[key]; return v ? v[S.lang === 'ru' ? 0 : 1] : ''; };
+const isEquip = it => !!(it && it.eq);
 
 /* ---------- helpers ---------- */
 const esc = s => String(s == null ? '' : s)
@@ -313,13 +370,20 @@ function nameForShare(it){
 /* Bold travels in the text/html clipboard flavour. The plain flavour stays
    clean: an app that cannot take rich text gets readable text rather than
    stray markdown characters. */
+/* Equipment leads with its stat line, tight under the name: it belongs to the
+   heading, not to the prose, and a player scanning a pasted message reads the
+   numbers before the feature. */
 function shareText(it, skip){
-  return nameForShare(it) + '\n\n' + descOf(it) +
+  const stats = eqLine(it), ds = descOf(it);
+  return nameForShare(it) + (stats ? '\n' + stats : '') + (ds ? '\n\n' + ds : '') +
     extraBlocks(it, skip).concat(contextNote(it))
       .map(function (b) { return '\n' + b.head + '\n' + b.body; }).join('');
 }
 function shareHtml(it, skip){
-  return '<b>' + esc(nameForShare(it)) + '</b><br><br>' + esc(descOf(it)) +
+  const stats = eqLine(it);
+  return '<b>' + esc(nameForShare(it)) + '</b>' +
+    (stats ? '<br>' + esc(stats) : '') +
+    (descOf(it) ? '<br><br>' + descHtml(it) : '') +
     extraBlocks(it, skip).concat(contextNote(it)).map(blockHtml).join('');
 }
 
@@ -347,6 +411,41 @@ function blockHtml(b){
 }
 const lines = s => esc(s).replace(/\n/g, '<br>');
 function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
+
+/* ---------- equipment stats ----------
+   The book prints these as table columns. Out of the table they have to carry
+   their own labels, so each value is rendered as a self-explanatory chunk and
+   the pieces are joined with a middle dot wherever one line is enough. */
+function eqParts(it, noType){
+  if (!isEquip(it)) return [];
+  const e = it.eq, out = noType ? [] : [eqWord(EQ_TYPE, e.t)];
+  out.push(e.tier ? t().tier + ' ' + e.tier : t().srcWond);
+  if (e.t === 'armor') {
+    if (e.th) out.push(t().eqTh + ' ' + e.th[0] + '/' + e.th[1]);
+    if (e.as != null) out.push(t().eqScore + ' ' + e.as);
+  } else {
+    out.push(eqWord(EQ_TRAIT, e.tr));
+    out.push(eqWord(EQ_RANGE, e.rg));
+    out.push(e.dmg + (e.dt ? ' ' + eqWord(EQ_DT, e.dt) : ''));
+    out.push(eqWord(EQ_BURDEN, e.bu));
+  }
+  return out.filter(Boolean);
+}
+const eqLine = (it, noType) => eqParts(it, noType).join(' · ');
+function eqChips(it){
+  const p = eqParts(it, true);
+  return p.length ? '<div class="eqstats">' +
+    p.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>' : '';
+}
+/* The feature label is stored inline ("Quick: when you…") so that every place
+   that already prints a description keeps working; only the emphasis is added
+   back here, at the first colon — the label itself never contains one. */
+function descHtml(it){
+  const s = descOf(it) || '';
+  if (!isEquip(it)) return esc(s);
+  const i = s.indexOf(': ');
+  return i < 0 ? esc(s) : '<b>' + esc(s.slice(0, i)) + ':</b>' + esc(s.slice(i + 1));
+}
 
 /* What travels with an item when it is copied or shared: the full text of the
    other end of a craft chain, and of any rulebook card the description names.
@@ -904,14 +1003,21 @@ function selAsHtml(items){
 /* opt.full  — big picture on top (item page / modal); otherwise a compact row
    opt.col   — 'hope' | 'fear' badge for the alternate tables
    opt.rollLabel — overrides the number shown in the meta row */
+/* Loot is an item or a consumable; equipment says what kind of gear it is */
+function kindBadge(it){
+  if (isEquip(it))
+    return '<span class="badge equip">' + esc(eqWord(EQ_TYPE, it.eq.t)) + '</span>';
+  return '<span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
+    esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>';
+}
+
 function cardHTML(it, opt){
   opt = opt || {};
   const nm = nameOf(it), ds = descOf(it);
   const meta =
     ((opt.rollLabel !== false && it.roll) ? '<span class="badge num">' + esc(opt.rollLabel || it.roll) + '</span>' : '') +
     (opt.col ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>' : '') +
-    '<span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
-      esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+    kindBadge(it) +
     '<span class="badge src">' + esc(srcLabel(it)) + '</span>';
 
   const nameEl = opt.full
@@ -931,7 +1037,8 @@ function cardHTML(it, opt){
           '<button type="button" data-share="' + esc(it.id) + '" title="' + esc(t().copyLink) + '" aria-label="' + esc(t().copyLink) + '">' + ICON_LINK + '</button>' +
         '</span>' +
       '</h3>' +
-      '<p class="card-desc">' + esc(ds) + '</p>' +
+      eqChips(it) +
+      (ds ? '<p class="card-desc">' + descHtml(it) + '</p>' : '') +
       craftHTML(it) +
       refHTML(it) +
       '<div class="card-acts">' +
@@ -998,7 +1105,7 @@ function numBox(id, val, min, max, cls){
 }
 
 /* Two independent toggles, both on by default, backed by one piece of state */
-const KINDS = [['item','fItems'], ['consumable','fCons']];
+const KINDS = [['item','fItems'], ['consumable','fCons'], ['equip','fEquip']];
 
 function kindChips(){
   return '<div class="field"><span class="lbl">' + esc(t().filter) + '</span><div class="chips">' +
@@ -1209,7 +1316,9 @@ function renderTables(){
     esc(S.lang === 'ru' ? d0.ru : d0.en) + '</a>').join('') + '</div>';
 
   let body;
-  if (st.t.indexOf('alt_') === 0) {
+  if (EQ_TABLE[st.t]) {
+    body = renderEquipTable(EQ_TABLE[st.t], st);
+  } else if (st.t.indexOf('alt_') === 0) {
     const kind = st.t === 'alt_item' ? 'item' : 'consumable';
     body = RARITIES5.map(r => {
       const rows = [];
@@ -1255,6 +1364,76 @@ function renderTables(){
   return pageHead('tables') + '<div class="panel">' + chips + '</div>' + searchBar + '<div style="margin-top:6px">' + body + '</div>';
 }
 
+/* ---------- equipment tables ----------
+   One table per kind of gear, split into the books' tiers. The facets below sit
+   above it: pick one value in a row to narrow, click it again to let it go. */
+function eqFacets(kind){
+  const f = [];
+  f.push(['tier', t().tier, [['1','1'],['2','2'],['3','3'],['4','4'],['0', t().srcWond]]]);
+  if (kind !== 'armor') {
+    f.push(['trait', t().eqTrait, Object.keys(EQ_TRAIT).map(k => [k, eqWord(EQ_TRAIT, k)])]);
+    f.push(['range', t().eqRange, Object.keys(EQ_RANGE).map(k => [k, eqWord(EQ_RANGE, k)])]);
+    f.push(['dtype', t().eqDmg,   Object.keys(EQ_DT).map(k => [k, eqWord(EQ_DT, k)])]);
+    f.push(['burden', t().eqBurden, ['1','2'].map(k => [k, eqWord(EQ_BURDEN, k)])]);
+  }
+  f.push(['line', t().eqLineF, [['line', eqWord(EQ_LINE, 'line')], ['uniq', eqWord(EQ_LINE, 'uniq')]]]);
+  return f;
+}
+/* Six rows of chips fill a phone screen on their own and push the table below
+   the fold, so on a narrow window the panel starts folded and says how many
+   facets are set. On a wide one there is room, and it starts open. */
+function eqFilterHTML(kind){
+  const on = Object.keys(S.eqf).filter(function (k) { return S.eqf[k]; }).length;
+  const head = '<button type="button" class="btn sm eqtoggle' + (on ? ' has' : '') + '"' +
+    ' data-act="eqOpen" aria-expanded="' + (S.eqOpen ? 'true' : 'false') + '">' +
+    esc(t().filters) + (on ? ' (' + on + ')' : '') +
+    '<i class="caret' + (S.eqOpen ? ' up' : '') + '"></i></button>';
+  return '<div class="eqbar">' + head +
+    (on ? '<button type="button" class="btn sm ghost" data-act="eqf" data-val="reset">' +
+          esc(t().clear) + '</button>' : '') + '</div>' +
+    (S.eqOpen ? eqFilterBody(kind) : '');
+}
+function eqFilterBody(kind){
+  return '<div class="panel eqfilter">' + eqFacets(kind).map(function (f) {
+    return '<div class="field"><span class="lbl">' + esc(f[1]) + '</span><div class="chips">' +
+      f[2].map(function (o) {
+        const on = S.eqf[f[0]] === o[0];
+        return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
+          ' data-act="eqf" data-val="' + esc(f[0] + ':' + o[0]) + '"' +
+          ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(o[1]) + '</button>';
+      }).join('') + '</div></div>';
+  }).join('') + '</div>';
+}
+/* Armour has no trait, range, damage or burden, so those facets simply do not
+   apply there — otherwise switching tables with one of them set would empty
+   the page and look broken. */
+function eqPasses(it){
+  const e = it.eq, f = S.eqf, gear = e.t !== 'armor';
+  if (f.tier && String(e.tier) !== f.tier) return false;
+  if (gear && f.trait && e.tr !== f.trait) return false;
+  if (gear && f.range && e.rg !== f.range) return false;
+  if (gear && f.dtype && e.dt !== f.dtype) return false;
+  if (gear && f.burden && String(e.bu) !== f.burden) return false;
+  if (f.line === 'line' && !e.line) return false;
+  if (f.line === 'uniq' && e.line) return false;
+  return true;
+}
+function renderEquipTable(kind, st){
+  const q = st.q.trim().toLowerCase();
+  const list = EQ_ALL.filter(function (it) {
+    return it.eq.t === kind && eqPasses(it) && (!q || matches(it, q));
+  });
+  if (!list.length) return eqFilterHTML(kind) + '<div class="empty">' + esc(t().nothing) + '</div>';
+  const tiers = [1, 2, 3, 4, 0];
+  return eqFilterHTML(kind) + tiers.map(function (n) {
+    const sub = list.filter(function (it) { return it.eq.tier === n; });
+    if (!sub.length) return '';
+    return '<div class="tsection" id="' + sectionId('t' + n) + '" style="margin-top:22px">' +
+      sectionHead(n ? t().tier + ' ' + n : t().srcWond, st.t, 't' + n) +
+      renderList(sub) + '</div>';
+  }).join('');
+}
+
 /* Ticks everything currently on screen — which is whatever the filter or the
    search left, so "all" always means "all of what you are looking at". */
 function selectAllHTML(list){
@@ -1282,11 +1461,12 @@ function rowHTML(it, removeFrom, tail){
       (removeFrom ? '' : selBox(it.id)) +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         imgTag(it) +
-        '<span class="rt"><b><span class="rnum">' + esc(it.roll) + '</span>' + esc(nameOf(it)) +
+        '<span class="rt"><b>' + (it.roll ? '<span class="rnum">' + esc(it.roll) + '</span>' : '') +
+          esc(nameOf(it)) +
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
-        '<span>' + esc(descOf(it)) + '</span>' + rowCraft(it) + '</span>' +
-        '<span class="rm"><span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
-          esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>' +
+        (isEquip(it) ? '<span class="rstats">' + esc(eqLine(it, true)) + '</span>' : '') +
+        (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
+        '<span class="rm">' + kindBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       (removeFrom
@@ -1311,8 +1491,10 @@ function tileHTML(it){
   return '<div class="tilewrap' + (S.sel[it.id] ? ' sel' : '') + '">' + selBox(it.id) +
     '<button type="button" class="tile" data-open="' + esc(it.id) + '">' +
     '<div class="tile-img">' +
-      '<span class="tile-n">' + esc(it.roll) + '</span>' +
-      '<span class="tile-k ' + (it.kind === 'consumable' ? 'cons' : 'item') + '" title="' + esc(it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
+      (it.roll ? '<span class="tile-n">' + esc(it.roll) + '</span>'
+               : (isEquip(it) && it.eq.tier ? '<span class="tile-n">' + esc(t().tier + ' ' + it.eq.tier) + '</span>' : '')) +
+      '<span class="tile-k ' + (isEquip(it) ? 'equip' : it.kind === 'consumable' ? 'cons' : 'item') +
+        '" title="' + esc(isEquip(it) ? eqWord(EQ_TYPE, it.eq.t) : it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
       imgTag(it) +
     '</div>' +
     '<div class="tile-b"><b>' + esc(nameOf(it)) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + '</div>' +
@@ -1324,7 +1506,8 @@ function matches(it, q){
   return (it.ru && it.ru.toLowerCase().indexOf(q) >= 0) ||
          (it.en && it.en.toLowerCase().indexOf(q) >= 0) ||
          (it.rud && it.rud.toLowerCase().indexOf(q) >= 0) ||
-         (it.ende && it.ende.toLowerCase().indexOf(q) >= 0);
+         (it.ende && it.ende.toLowerCase().indexOf(q) >= 0) ||
+         (isEquip(it) && eqLine(it).toLowerCase().indexOf(q) >= 0);
 }
 function renderSearch(){
   const q = S.search.q.trim().toLowerCase();
@@ -1332,7 +1515,7 @@ function renderSearch(){
   if (!q) {
     body = '<div class="empty">' + esc(S.lang === 'ru' ? 'Начните вводить запрос' : 'Start typing') + '</div>';
   } else {
-    const res = ALL.filter(x => kindAllows(x.kind) && matches(x, q)).slice(0, 300);
+    const res = SEARCHABLE.filter(x => kindAllows(x.kind) && matches(x, q)).slice(0, 300);
     // same header as the tables: "all" means everything the query left
     body = res.length ? selectAllHTML(res) +
                         '<div class="rows">' + res.map(function (it) { return rowHTML(it); }).join('') + '</div>'
@@ -1550,6 +1733,8 @@ function plural(n){
 /* ---- single item page (shareable link target) ---- */
 const TABLE_OF = { core:{item:'core_item',consumable:'core_consumable'}, hnf:{item:'hnf_item',consumable:'hnf_consumable'} };
 function tableIdOf(it){
+  if (isEquip(it) && !it.roll)
+    return { weapon:'eq_weapon', secondary:'eq_secondary', armor:'eq_armor' }[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'community') return 'community';
   return TABLE_OF[it.src][it.kind];
@@ -1567,7 +1752,8 @@ function renderItemPage(id){
     ? (S.lang === 'ru' ? it.community_ru + ' · ' + it.community : it.community)
     : tname;
   return '<h1 class="page-h">' + esc(nameOf(it)) + '</h1>' +
-    '<p class="page-sub">' + esc(where) + ' · ' + esc(t().rollNo) + ' ' + esc(it.roll) + '</p>' +
+    '<p class="page-sub">' + esc(where + (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
+        : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) + '</p>' +
     '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
     '<div class="card-acts" style="margin-top:18px">' +
       '<a class="btn ghost" target="_blank" rel="noopener" href="' +
@@ -1880,6 +2066,15 @@ document.addEventListener('click', function (e) {
   if (a === 'kind') {
     if (act.dataset.last) { toast(t().keepOneKind); return; }
     S.kind[val] = !S.kind[val];
+    render(); return;
+  }
+  if (a === 'eqOpen') { S.eqOpen = !S.eqOpen; render(); return; }
+  if (a === 'eqf') {
+    if (val === 'reset') { Object.keys(S.eqf).forEach(function (k) { S.eqf[k] = ''; }); }
+    else {
+      const p = val.split(':');
+      S.eqf[p[0]] = S.eqf[p[0]] === p[1] ? '' : p[1];   // second click lets it go
+    }
     render(); return;
   }
   if (a === 'src') {

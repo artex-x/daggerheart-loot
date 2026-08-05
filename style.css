@@ -15,6 +15,7 @@
   --fear:#8a72d6;
   --item:#5fa8d3;
   --cons:#63c294;
+  --equip:#d48e6a;
   --danger:#e0685f;
   --r:14px;
   --r-sm:9px;
@@ -679,3 +680,34 @@ input::placeholder{color:var(--muted2)}
   .lrow-acts button{width:44px;min-height:38px}
   .lrow-acts .row-x{border-top:0;border-left:1px solid var(--line)}
 }
+
+/* ---------- equipment ----------
+   Weapons and armour arrive with table columns instead of prose, so the stats
+   are shown as their own strip: readable at a glance, and clearly not part of
+   the description underneath. */
+.badge.equip{color:var(--equip);border-color:rgba(212,142,106,.45)}
+.tile-k.equip{background:var(--equip)}
+.eqstats{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 10px}
+.eqstats span{
+  font:600 11.5px/1 var(--mono);color:var(--equip);
+  background:rgba(212,142,106,.09);border:1px solid rgba(212,142,106,.28);
+  border-radius:6px;padding:4px 7px;white-space:nowrap;
+}
+/* the row clamps every span in .rt to two lines; the stat strip opts out */
+.row-main .rt .rstats{
+  -webkit-line-clamp:none;display:block;margin-top:3px;
+  font:600 11.5px/1.4 var(--mono);color:var(--equip);
+}
+/* .rt > b is the row title and is laid out as a block; the feature label
+   inside the description has to say it is not */
+.card-desc b{color:#efe8ff;font-weight:650}
+.row-main .rt span b{display:inline;color:var(--muted);font-weight:650}
+.eqfilter{margin-top:16px}
+.eqfilter .field{margin-bottom:12px}
+.eqfilter .lbl{display:block;margin-bottom:6px}
+.eqbar{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.eqtoggle.has{color:var(--gold-soft);border-color:rgba(216,171,94,.45)}
+.caret{width:0;height:0;margin-left:2px;border:4px solid transparent;
+  border-top-color:currentColor;transform:translateY(2px)}
+.caret.up{border-top-color:transparent;border-bottom-color:currentColor;transform:translateY(-2px)}
+.eqfilter{margin-top:10px}

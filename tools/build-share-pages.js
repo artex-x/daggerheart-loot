@@ -16,6 +16,7 @@ const OUT = path.join(ROOT, 'i');
 global.window = {};
 require(path.join(ROOT, 'data.js'));
 const DATA = global.window.LOOT.items;
+const EQ = global.window.LOOT.eq || [];
 
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -28,7 +29,29 @@ const COMMUNITY_RU = {
 };
 const SRC_LABEL = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot' };
 
+/* Kept in step with the app's own vocabulary (app.js, EQ_* tables) */
+const EQ_TYPE   = { weapon:'Основное оружие', secondary:'Вторичное оружие', armor:'Броня' };
+const EQ_TRAIT  = { agility:'Проворность', strength:'Сила', finesse:'Искусность',
+                    instinct:'Инстинкт', presence:'Влияние', knowledge:'Знание' };
+const EQ_RANGE  = { melee:'Вплотную', veryclose:'Близко', close:'Средне',
+                    far:'Далеко', veryfar:'Очень далеко' };
+const EQ_DT     = { phy:'физ', mag:'маг', any:'физ/маг' };
+const EQ_BURDEN = { 1:'Одноручное', 2:'Двуручное' };
+
+function eqLine(it){
+  const e = it.eq, out = [EQ_TYPE[e.t], e.tier ? 'Ранг ' + e.tier : 'Wondrous'];
+  if (e.t === 'armor') {
+    if (e.th) out.push('Пороги ' + e.th[0] + '/' + e.th[1]);
+    if (e.as != null) out.push('Броня ' + e.as);
+  } else {
+    out.push(EQ_TRAIT[e.tr], EQ_RANGE[e.rg],
+             e.dmg + (e.dt ? ' ' + EQ_DT[e.dt] : ''), EQ_BURDEN[e.bu]);
+  }
+  return out.filter(Boolean).join(' · ');
+}
+
 function subtitle(it){
+  if (it.eq) return eqLine(it);
   const kind = it.kind === 'consumable' ? 'Расходник' : 'Предмет';
   const src = it.src === 'community'
     ? (COMMUNITY_RU[it.community] || 'Сообщества')
@@ -59,7 +82,8 @@ function page(it){
   const name = it.ru || it.en;
   const craft = craftLines(it);
   // the unfurl preview is one flat string, so the chain joins the description
-  const desc = (it.rud || it.ende) + (craft.length ? ' ' + craft.join(' ') + '.' : '');
+  const desc = (it.eq ? eqLine(it) + '. ' : '') + (it.rud || it.ende) +
+    (craft.length ? ' ' + craft.join(' ') + '.' : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.
   const img = SITE + 'og/' + (it.img ? it.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
@@ -121,7 +145,7 @@ for (const f of fs.readdirSync(OUT)) {
 }
 
 let n = 0;
-for (const arr of Object.values(DATA)) {
+for (const arr of Object.values(DATA).concat([EQ])) {
   for (const it of arr) {
     fs.writeFileSync(path.join(OUT, it.id + '.html'), page(it), 'utf8');
     n++;
