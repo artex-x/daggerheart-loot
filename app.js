@@ -48,10 +48,11 @@ const S = {
   search: { q: '' },
   help: '',
   kind: { item: true, consumable: true, equip: true },  // shared filter, applies wherever they can show up
-  /* equipment facets: only the values switched off are kept, so an untouched
-     filter is an empty object and the shareable link stays short */
-  eqOff: {},
+  /* equipment facets: what is picked in each row. An empty row means "any", so
+     an untouched filter is an empty object and its link stays short */
+  eqOn: {},
   eqOpen: false,
+  eqSeg: '',   // the filter piece of the address we have already read back
   lists: [],
   /* Selection replaced the old "I am filling list X" mode. Nothing is sticky:
      it holds ids for the page you are on and clears when you leave. */
@@ -87,7 +88,7 @@ const T = {
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
-    eqClass:'Класс', keepOneValue:'Хотя бы одно значение должно остаться',
+    eqClass:'Класс', anyValue:'любое', outOf:'из', dropValue:'Убрать из фильтра',
     resetAll:'Сбросить всё', filterLink:'Ссылка на фильтры',
     filterLinkCopied:'Ссылка на фильтры скопирована',
     community:'Сообщество', source:'Источник', keepOneSource:'Нужен хотя бы один источник',
@@ -169,7 +170,7 @@ const T = {
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие Core, потом магическое, затем то же для Hope &amp; Fear.',
         '<b>Класс</b> — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.',
         'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
-        'Фильтры складываются по «или» внутри строки и по «и» между строками, а начинают с того, что включено всё. Кнопка «Ссылка на фильтры» отдаёт адрес с текущим набором — по нему таблица откроется в том же виде.',
+        'В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все. Адрес страницы едет за фильтром, так что ссылкой можно поделиться прямо из строки браузера.',
         'Одиннадцать предметов из Wondrous Loot на самом деле оружие. В этих таблицах их нет — они остались в своей таблице Wondrous, но выглядят и копируются как снаряжение.',
         'Источники: Daggerheart Core Set и Hope &amp; Fear. Русские названия и формулировки — перевод <a href="https://ru.daggerheart.su/" target="_blank" rel="noopener">daggerheart.su</a>, для Hope &amp; Fear — таблица сообщества. Значения даны с учётом эрраты.'
       ],
@@ -206,7 +207,7 @@ const T = {
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
-    eqClass:'Class', keepOneValue:'At least one value has to stay on',
+    eqClass:'Class', anyValue:'any', outOf:'of', dropValue:'Remove from the filter',
     resetAll:'Reset all', filterLink:'Filter link',
     filterLinkCopied:'Filter link copied',
     community:'Community', source:'Source', keepOneSource:'At least one source has to stay on',
@@ -288,7 +289,7 @@ const T = {
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear.',
         '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
-        'Values in one row combine with "or" and rows combine with "and", starting from everything switched on. "Filter link" hands out an address carrying the current set, so the table opens the same way for whoever follows it.',
+        'Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot. The address follows the filter, so the link in the address bar is the one to share.',
         'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.',
         'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
       ],
@@ -759,10 +760,19 @@ function decodeList(payload){
     };
   } catch (e) { return null; }
 }
-/* Whoever opens it lands on this table with the same values switched off */
-function eqFilterUrl(){
+/* Whoever opens it lands on this table with the same values picked */
+function eqFilterHash(){
   const kind = EQ_TABLE[S.tables.t], f = kind ? eqEncode(kind) : '';
-  return baseUrl() + 'index.html#/tables/' + S.tables.t + (f ? '/' + f : '');
+  return '#/tables/' + S.tables.t + (f ? '/' + f : '');
+}
+function eqFilterUrl(){ return baseUrl() + 'index.html' + eqFilterHash(); }
+/* Written straight into the address bar, so copying it from there and using the
+   button give the same link — and a stale filter never lingers in the URL. */
+function syncEqUrl(){
+  const kind = EQ_TABLE[S.tables.t];
+  if (!kind) return;
+  S.eqSeg = eqEncode(kind);
+  if (history.replaceState) history.replaceState(null, '', eqFilterHash());
 }
 function listShareUrl(l){
   return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l);
@@ -1414,9 +1424,13 @@ function renderTables(){
 }
 
 /* ---------- equipment tables ----------
-   One table per kind of gear, split into the books' tiers. Every facet is a
-   multiple choice with everything on: a filter narrows by switching values off,
-   which keeps "no preference" as the state you start from. */
+   One table per kind of gear, split into the books' tiers.
+
+   A facet holds the values you picked, and an empty facet means "any" — so
+   narrowing to one value is one click rather than switching the other five off.
+   Values inside a row are an OR, rows are an AND. Nothing is chosen to begin
+   with, which is why the chips start neutral instead of all lit: an all-gold
+   panel claims seven decisions have been made when none have. */
 function eqFacets(kind){
   const f = [['tier', t().tier, ['1','2','3','4'].map(k => [k, k])],
              ['src',  t().source, [['core', t().srcCore], ['hnf', t().srcHnf]]]];
@@ -1431,91 +1445,110 @@ function eqFacets(kind){
   f.push(['line', t().eqLineF, [['line', eqWord(EQ_LINE, 'line')], ['uniq', eqWord(EQ_LINE, 'uniq')]]]);
   return f;
 }
-/* Only the switched-off values are kept: an untouched filter is an empty
-   object, which is also what makes the shareable link short. */
-const eqOff = (facet, value) => !!(S.eqOff[facet] && S.eqOff[facet][value]);
-function eqOffCount(kind){
-  return eqFacets(kind).reduce(function (n, f) {
-    return n + f[2].filter(function (o) { return eqOff(f[0], o[0]); }).length;
-  }, 0);
+const eqPicked = (facet, value) => !!(S.eqOn[facet] && S.eqOn[facet][value]);
+const eqAny = facet => !S.eqOn[facet] || !Object.keys(S.eqOn[facet]).length;
+function eqHits(facet, value){ return eqAny(facet) || eqPicked(facet, value); }
+/* Everything currently picked, in the order the rows are shown */
+function eqChosen(kind){
+  const out = [];
+  eqFacets(kind).forEach(function (f) {
+    f[2].forEach(function (o) {
+      // a bare number says nothing on its own, so those carry their row's name
+      if (eqPicked(f[0], o[0])) out.push([f[0], o[0], /^\d+$/.test(o[1]) ? f[1] + ' ' + o[1] : o[1]]);
+    });
+  });
+  return out;
 }
 function eqPasses(it, kind){
   const e = it.eq;
-  if (eqOff('tier', String(e.tier))) return false;
-  if (eqOff('src', it.src)) return false;
-  if (eqOff('line', e.line ? 'line' : 'uniq')) return false;
+  if (!eqHits('tier', String(e.tier))) return false;
+  if (!eqHits('src', it.src)) return false;
+  if (!eqHits('line', e.line ? 'line' : 'uniq')) return false;
   if (kind !== 'armor') {
-    // a weapon that can deal either kind of damage belongs to both filters
-    if (e.cls === 'any' ? (eqOff('cls','phy') && eqOff('cls','mag')) : eqOff('cls', e.cls)) return false;
-    if (eqOff('trait', e.tr)) return false;
-    if (eqOff('range', e.rg)) return false;
-    if (eqOff('burden', String(e.bu))) return false;
+    /* The class is the table the book prints the weapon in, so it is always one
+       or the other — the Ghostblade is a magic weapon even though its damage
+       may be physical. Damage type is shown, not filtered on. */
+    if (!eqHits('cls', e.cls)) return false;
+    if (!eqHits('trait', e.tr)) return false;
+    if (!eqHits('range', e.rg)) return false;
+    if (!eqHits('burden', String(e.bu))) return false;
   }
   return true;
 }
 
-/* Seven rows of chips fill a phone screen on their own, so the panel opens
-   folded everywhere and says how many values are switched off. */
-function eqFilterHTML(kind){
-  const off = eqOffCount(kind);
+/* Folded by default, so what is chosen has to be readable without opening it:
+   each pick is its own chip and takes one click to undo. */
+function eqFilterHTML(kind, shown, total){
+  const chosen = eqChosen(kind);
   return '<div class="eqbar">' +
-      '<button type="button" class="btn sm eqtoggle' + (off ? ' has' : '') + '"' +
+      '<button type="button" class="btn sm eqtoggle' + (chosen.length ? ' has' : '') + '"' +
         ' data-act="eqOpen" aria-expanded="' + (S.eqOpen ? 'true' : 'false') + '">' +
-        esc(t().filters) + (off ? ' (−' + off + ')' : '') +
+        esc(t().filters) + (chosen.length ? ' (' + chosen.length + ')' : '') +
         '<i class="caret' + (S.eqOpen ? ' up' : '') + '"></i></button>' +
-    '</div>' + (S.eqOpen ? eqFilterBody(kind, off) : '');
+      chosen.map(function (c) {
+        return '<button type="button" class="eqpill" data-act="eqf"' +
+          ' data-val="' + esc(c[0] + ':' + c[1]) + '"' +
+          ' title="' + esc(t().dropValue) + '">' + esc(c[2]) + '<i>&times;</i></button>';
+      }).join('') +
+      '<span class="eqcount">' +
+        esc(chosen.length ? shown + ' ' + t().outOf + ' ' + total : String(total)) +
+      '</span>' +
+    '</div>' + (S.eqOpen ? eqFilterBody(kind, chosen.length) : '');
 }
-function eqFilterBody(kind, off){
+function eqFilterBody(kind, chosen){
   return '<div class="panel eqfilter">' + eqFacets(kind).map(function (f) {
-    return '<div class="field"><span class="lbl">' + esc(f[1]) + '</span><div class="chips">' +
+    const any = eqAny(f[0]);
+    /* an untouched row says so, so that neutral chips do not read as "nothing
+       matches" — they mean the row is not narrowing anything yet */
+    return '<div class="field"><span class="lbl">' + esc(f[1]) +
+      (any ? ' <i>' + esc(t().anyValue) + '</i>' : '') + '</span><div class="chips">' +
       f[2].map(function (o) {
-        const on = !eqOff(f[0], o[0]);
-        const last = on && f[2].filter(function (x) { return !eqOff(f[0], x[0]); }).length === 1;
+        const on = eqPicked(f[0], o[0]);
         return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
           ' data-act="eqf" data-val="' + esc(f[0] + ':' + o[0]) + '"' +
-          ' aria-pressed="' + (on ? 'true' : 'false') + '"' +
-          (last ? ' data-last="1" title="' + esc(t().keepOneValue) + '"' : '') + '>' +
-          esc(o[1]) + '</button>';
+          ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(o[1]) + '</button>';
       }).join('') + '</div></div>';
   }).join('') +
   /* both buttons live inside the panel: outside it they read as page controls
      rather than as something that belongs to the filter */
   '<div class="eqacts">' +
     '<button type="button" class="btn sm" data-act="eqf" data-val="reset"' +
-      (off ? '' : ' disabled') + '>' + esc(t().resetAll) + '</button>' +
+      (chosen ? '' : ' disabled') + '>' + esc(t().resetAll) + '</button>' +
     '<button type="button" class="btn sm" data-act="eqLink">' + ICON_LINK +
       esc(t().filterLink) + '</button>' +
   '</div></div>';
 }
 
 /* ---- the filter state as a piece of the address ----
-   "f_" then one group per facet, listing the values that are switched off.
-   Nothing is switched off in a fresh table, so a plain table link stays plain. */
+   "f_" then one group per facet listing what is picked there. Nothing is picked
+   in a fresh table, so a plain table link stays plain. */
 function eqEncode(kind){
   const parts = eqFacets(kind).map(function (f) {
-    const off = f[2].filter(function (o) { return eqOff(f[0], o[0]); }).map(o => o[0]);
-    return off.length ? f[0] + '-' + off.join('-') : '';
+    const on = f[2].filter(function (o) { return eqPicked(f[0], o[0]); }).map(o => o[0]);
+    return on.length ? f[0] + '-' + on.join('-') : '';
   }).filter(Boolean);
   return parts.length ? 'f_' + parts.join('_') : '';
 }
 function eqDecode(seg){
-  S.eqOff = {};
+  S.eqOn = {};
   if (!seg || seg.indexOf('f_') !== 0) return;
   seg.slice(2).split('_').forEach(function (g) {
     const p = g.split('-'), facet = p.shift();
     if (!facet || !p.length) return;
-    S.eqOff[facet] = {};
-    p.forEach(function (v) { S.eqOff[facet][v] = true; });
+    S.eqOn[facet] = {};
+    p.forEach(function (v) { S.eqOn[facet][v] = true; });
   });
 }
 
 function renderEquipTable(kind, st){
   const q = st.q.trim().toLowerCase();
-  const list = EQ.filter(function (it) {
-    return it.eq.t === kind && eqPasses(it, kind) && (!q || matches(it, q));
+  const pool = EQ.filter(function (it) { return it.eq.t === kind; });
+  const list = pool.filter(function (it) {
+    return eqPasses(it, kind) && (!q || matches(it, q));
   });
-  if (!list.length) return eqFilterHTML(kind) + '<div class="empty">' + esc(t().nothing) + '</div>';
-  return eqFilterHTML(kind) + [1, 2, 3, 4].map(function (n) {
+  const head = eqFilterHTML(kind, list.length, pool.length);
+  if (!list.length) return head + '<div class="empty">' + esc(t().nothing) + '</div>';
+  return head + [1, 2, 3, 4].map(function (n) {
     const sub = list.filter(function (it) { return it.eq.tier === n; });
     if (!sub.length) return '';
     return '<div class="tsection" id="' + sectionId('t' + n) + '" style="margin-top:22px">' +
@@ -1909,10 +1942,20 @@ function currentRoute(){
     const table = m[1] && TABLE_DEFS.some(d => d.id === m[1]) ? m[1] : '';
     // filters belong to the table you are looking at, so they fold and reset
     // whenever the address points somewhere else
-    if (table && table !== S.tables.t) { S.tables.t = table; S.eqOpen = false; S.eqOff = {}; }
+    if (table && table !== S.tables.t) {
+      S.tables.t = table; S.eqOpen = false; S.eqOn = {}; S.eqSeg = '';
+    }
     const tail = m[2] || '';
-    if (tail.indexOf('f_') === 0) { eqDecode(tail); S.tables.anchor = ''; S.eqOpen = true; }
-    else S.tables.anchor = tail;
+    /* This runs on every render, so the address may only be read back when it
+       has actually changed. Reading it every time froze the filter at whatever
+       the link said: the panel could not be folded and a chip clicked itself
+       straight back to the state in the URL. */
+    if (tail.indexOf('f_') === 0) {
+      if (tail !== S.eqSeg) { eqDecode(tail); S.eqSeg = tail; S.eqOpen = true; }
+      S.tables.anchor = '';
+    } else {
+      S.tables.anchor = tail;
+    }
     return 'tables';
   }
   return ROUTES[h] ? h : 'roll/std';
@@ -2181,14 +2224,14 @@ document.addEventListener('click', function (e) {
   if (a === 'eqOpen') { S.eqOpen = !S.eqOpen; render(); return; }
   if (a === 'eqLink') { copyText(eqFilterUrl(), t().filterLinkCopied); return; }
   if (a === 'eqf') {
-    if (val === 'reset') S.eqOff = {};
+    if (val === 'reset') S.eqOn = {};
     else {
-      // a facet with everything switched off would show nothing at all
-      if (act.dataset.last) { toast(t().keepOneValue); return; }
       const p = val.split(':'), f = p[0], v = p[1];
-      S.eqOff[f] = S.eqOff[f] || {};
-      if (S.eqOff[f][v]) delete S.eqOff[f][v]; else S.eqOff[f][v] = true;
+      S.eqOn[f] = S.eqOn[f] || {};
+      // letting go of the last pick in a row puts that row back to "any"
+      if (S.eqOn[f][v]) delete S.eqOn[f][v]; else S.eqOn[f][v] = true;
     }
+    syncEqUrl();
     render(); return;
   }
   if (a === 'src') {

@@ -726,6 +726,20 @@ input::placeholder{color:var(--muted2)}
 .eqfilter .lbl{display:block;margin-bottom:6px}
 .eqbar{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap}
 .eqtoggle.has{color:var(--gold-soft);border-color:rgba(216,171,94,.45)}
+/* what is picked, spelled out beside the folded panel: one click drops a value */
+.eqpill{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 8px 0 11px;
+  border:1px solid rgba(216,171,94,.45);border-radius:8px;
+  background:rgba(216,171,94,.12);color:var(--gold-soft);
+  font-size:12.5px;font-weight:600;white-space:nowrap;transition:.15s;
+}
+.eqpill i{font-style:normal;font-size:15px;line-height:1;color:var(--muted);
+  width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:5px}
+.eqpill:hover{border-color:var(--gold)}
+.eqpill:hover i{background:rgba(255,255,255,.1);color:var(--txt)}
+.eqcount{margin-left:auto;font:600 12px/1 var(--mono);color:var(--muted2);white-space:nowrap}
+.eqfilter .lbl i{font-style:normal;text-transform:none;letter-spacing:0;
+  font-size:11px;color:var(--muted2);opacity:.8}
 .caret{width:0;height:0;margin-left:2px;border:4px solid transparent;
   border-top-color:currentColor;transform:translateY(2px)}
 .caret.up{border-top-color:transparent;border-bottom-color:currentColor;transform:translateY(-2px)}
