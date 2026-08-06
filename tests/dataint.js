@@ -132,6 +132,8 @@ ALL.forEach(x => {
   ok(fs.existsSync(path.join(ROOT, 'og', x.img.replace(/\.webp$/, '.jpg'))),
      x.id + ': нет файла og/' + x.img.replace(/\.webp$/, '.jpg'));
 });
+/* Several records may point at one file: the book gives an upgraded weapon the
+   same picture as its base, and four copies of the same bytes helped nobody. */
 const used = new Set(ALL.filter(x => x.img).map(x => x.img));
 fs.readdirSync(path.join(ROOT, 'img')).forEach(f => {
   if (f === '_none.webp') return;
@@ -141,6 +143,25 @@ ALL.forEach(x => ok(fs.existsSync(path.join(ROOT, 'i', x.id + '.html')),
                     x.id + ': нет страницы-заглушки'));
 ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === ALL.length,
    'заглушек в i/ не столько же, сколько записей');
+
+console.log('общие картинки');
+const shared = {};
+ALL.filter(x => x.img).forEach(x => { (shared[x.img] = shared[x.img] || []).push(x); });
+Object.keys(shared).forEach(img => {
+  const rows = shared[img];
+  if (rows.length < 2) return;
+  // sharing is only legitimate inside one upgrade line
+  const lines = new Set(rows.map(r => (r.eq && r.eq.line) || r.id));
+  ok(lines.size === 1, 'картинку ' + img + ' делят несвязанные записи: ' + rows.map(r => r.en).join(', '));
+});
+/* no two files may hold the same bytes */
+const crypto = require('crypto');
+const seen = {};
+fs.readdirSync(path.join(ROOT, 'img')).forEach(f => {
+  const sum = crypto.createHash('md5').update(fs.readFileSync(path.join(ROOT, 'img', f))).digest('hex');
+  ok(!seen[sum], 'img/' + f + ' — байт-в-байт копия ' + seen[sum]);
+  seen[sum] = f;
+});
 
 console.log(fail ? '\n' + fail + ' FAILED' : '\nданные: все инварианты соблюдены');
 process.exit(fail ? 1 : 0);

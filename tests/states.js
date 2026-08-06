@@ -68,6 +68,21 @@ const STATES = [
       await page.goto(ROOT + hash, { waitUntil: 'domcontentloaded' });
       await new Promise(r => setTimeout(r, 480));
       const reached = await act(page);
+      /* Measure only once the page has stopped moving: a grid of 239 tiles is
+         still laying out a few hundred milliseconds in, and reading boxes then
+         reports overlaps that do not exist. */
+      await page.evaluate(() => new Promise(done => {
+        let last = -1, still = 0;
+        const tick = () => {
+          const h = document.documentElement.scrollHeight;
+          still = h === last ? still + 1 : 0;
+          last = h;
+          if (still >= 3) return done();
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }));
+      await new Promise(r => setTimeout(r, 120));
       const where = label + ' @' + width;
       ok(reached !== false, where + ': не удалось попасть в состояние');
 

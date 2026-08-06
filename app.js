@@ -937,22 +937,8 @@ function decodeList(payload){
     };
   } catch (e) { return null; }
 }
-/* Whoever opens it lands on this table with the same values picked */
-function eqFilterHash(){
-  const kind = EQ_TABLE[S.tables.t], f = kind ? eqEncode(kind) : '';
-  return '#/tables/' + S.tables.t + (f ? '/' + f : '');
-}
-function eqFilterUrl(){ return baseUrl() + 'index.html' + eqFilterHash(); }
-/* Written straight into the address bar, so copying it from there and using the
-   button give the same link — and a stale filter never lingers in the URL. */
-function syncEqUrl(){
-  const kind = EQ_TABLE[S.tables.t];
-  if (!kind) return;
-  S.eqSeg = eqEncode(kind);
-  if (history.replaceState) history.replaceState(null, '', eqFilterHash());
-}
 function listShareUrl(l, forPlayers){
-  return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l, forPlayers);
+  return appUrl(listHash(l, forPlayers));
 }
 /* The address bar carries the whole list, not a local id, so whatever a person
    copies out of it — the Share button or the browser's own URL box — works for
@@ -1004,7 +990,7 @@ function eqFilterHash(){
   const kind = EQ_TABLE[S.tables.t], f = kind ? eqEncode(kind) : '';
   return '#/tables/' + S.tables.t + (f ? '/' + f : '');
 }
-function eqFilterUrl(){ return baseUrl() + 'index.html' + eqFilterHash(); }
+function eqFilterUrl(){ return appUrl(eqFilterHash()); }
 /* Written straight into the address bar, so copying it from there and using the
    button give the same link — and a stale filter never lingers in the URL. */
 function syncEqUrl(){
@@ -1014,7 +1000,7 @@ function syncEqUrl(){
   if (history.replaceState) history.replaceState(null, '', eqFilterHash());
 }
 function listShareUrl(l, forPlayers){
-  return baseUrl() + (hosted() ? '' : 'index.html') + listHash(l, forPlayers);
+  return appUrl(listHash(l, forPlayers));
 }
 /* The address bar carries the whole list, not a local id, so whatever a person
    copies out of it — the Share button or the browser's own URL box — works for
@@ -1092,10 +1078,16 @@ function listAsHtml(l){
 /* ---------- share links ---------- */
 function baseUrl(){ return location.href.split('#')[0].replace(/index\.html$/, ''); }
 function hosted(){ return /^https?:$/.test(location.protocol); }
+/* Every in-app link is built here, so they cannot disagree with each other.
+   A web server serves index.html for the bare directory, so naming the file
+   only adds noise; opened from disk there is nothing to serve and the file has
+   to be named. The filter link used to spell it out either way, which is how
+   two links copied from the same page came out looking different. */
+function appUrl(hash){ return baseUrl() + (hosted() ? '' : 'index.html') + hash; }
 /* On a real host, link to the static stub in i/ — it carries per-item Open Graph
    tags, so Telegram/Discord unfurl the picture, name and description by itself.
    Opened from disk there is no stub, so fall back to the in-app hash route. */
-function itemUrl(id){ return hosted() ? baseUrl() + 'i/' + id + '.html' : baseUrl() + 'index.html#/i/' + id; }
+function itemUrl(id){ return hosted() ? baseUrl() + 'i/' + id + '.html' : appUrl('#/i/' + id); }
 function canShare(){ return typeof navigator !== 'undefined' && !!navigator.share; }
 
 /* Copies, always. Sharing lives on the Send button — a control labelled
@@ -1592,7 +1584,7 @@ function renderAlt(){
 function altTableId(){ return (!S.kind.item && S.kind.consumable) ? 'alt_consumable' : 'alt_item'; }
 /* Absolute so it survives target="_blank"; a bare "#/..." would just re-hash the opener */
 function tableHref(table, section){
-  return baseUrl() + (hosted() ? '' : 'index.html') + '#/tables/' + table + (section ? '/' + section : '');
+  return appUrl('#/tables/' + table + (section ? '/' + section : ''));
 }
 
 function rarityLabel(r){ return t()[RAR_KEY[r]] + ' · ' + t().tier + ' ' + TIERS[r]; }

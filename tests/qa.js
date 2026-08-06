@@ -55,6 +55,11 @@ const contrast = (a, b) => {
   ok(/content="summary"/.test(stub), 'карточка предмета всё ещё summary_large_image при квадратной картинке');
   ok(/og\/ci1\.jpg/.test(stub), 'страница предмета потеряла свою картинку');
 
+  /* ---------- ссылки из одного места ---------- */
+  console.log('ссылки выглядят одинаково');
+  ok(!/baseUrl\(\) \+ 'index\.html'/.test(fs.readFileSync(path.join(ROOT_DIR, 'app.js'), 'utf8')),
+     'какая-то ссылка снова дописывает index.html в обход appUrl');
+
   /* ---------- 8.2 scripts ---------- */
   console.log('8.2 скрипты не блокируют отрисовку');
   ok(/<script defer src="data\.js">/.test(html) && /<script defer src="app\.js">/.test(html),
@@ -238,6 +243,8 @@ const contrast = (a, b) => {
   await settle();
   ok((await page.evaluate(() => (localStorage.getItem('dhloot.lists.v2') || '[]'))) === '[]',
      'пустое имя создало список');
+  // checked here and not below: the toast hides itself after a second and a half
+  ok(await page.$eval('#toast', e => !e.hidden), 'пустое имя не объяснено');
   // 5.3: with storage refused the list still works for the session, but nothing
   // may report success on top of the failure notice
   const p2 = await mk(() => {
@@ -253,7 +260,53 @@ const contrast = (a, b) => {
   ok(!/создан/.test(await p2.$eval('#toast', e => e.textContent)),
      'при неудачной записи всё равно отрапортовали об успехе');
   await p2.close();
-  ok(await page.$eval('#toast', e => !e.hidden), 'пустое имя не объяснено');
+  await page.close();
+
+  /* ---------- a tile before its picture arrives ---------- */
+  console.log('плитка без загруженной картинки');
+  page = await mk(null, 360);
+  await page.setRequestInterception(true);
+  page.on('request', r => { if (/\/img\/.*\.webp$/.test(r.url())) return; r.continue(); });
+  await go(page, '#/tables/eq_weapon');
+  await page.evaluate(() => document.querySelector('[data-act="view"][data-val="grid"]').click());
+  await new Promise(r => setTimeout(r, 700));
+  const widths = await page.$$eval('.tilewrap .tile', e => [...new Set(e.map(x => Math.round(x.getBoundingClientRect().width)))]);
+  ok(widths.length === 1 && widths[0] > 100,
+     'без картинок плитки схлопнулись: ширины ' + widths.join(', '));
+  const clash = await page.$$eval('.tilewrap', e => e.filter(w => {
+    const n = w.querySelector('.tile-n'); if (!n) return false;
+    const a = w.querySelector('.selbox').getBoundingClientRect(), b = n.getBoundingClientRect();
+    return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+  }).length);
+  ok(clash === 0, 'галочка налезла на подпись у ' + clash + ' плиток');
+  await page.close();
+
+  /* ---------- every copied link shares one shape ---------- */
+  console.log('ссылки на таблицу, фильтр и список');
+  page = await mk(() => {
+    window.isSecureContext = true; window.__clip = null;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: s => { window.__clip = s; return Promise.resolve(); },
+               write: () => Promise.resolve() } });
+    localStorage.setItem('dhloot.lists.v2', JSON.stringify(
+      [{ id:'a', name:'Клад', ids:['ci1'], created:1 }]));
+  });
+  const copied = async (sel) => {
+    await page.evaluate(s => document.querySelector(s).click(), sel);
+    await settle();
+    return page.evaluate(() => window.__clip || '');
+  };
+  await go(page, '#/tables/eq_secondary');
+  const tableLink = await copied('.toolbar [data-copy-sec]');
+  await page.evaluate(() => document.querySelector('[data-act="eqOpen"]').click()); await settle();
+  await page.evaluate(() => document.querySelector('.eqfilter [data-val="tier:3"]').click()); await settle();
+  const filterLink = await copied('.eqlink');
+  await go(page, '#/lists/a');
+  const listLink = await copied('[data-share-list]');
+  const shape = u => u.slice(0, u.indexOf('#'));
+  ok(shape(tableLink) === shape(filterLink) && shape(filterLink) === shape(listLink),
+     'ссылки собраны по-разному: ' + [shape(tableLink), shape(filterLink), shape(listLink)].join(' | '));
+  ok(/f_tier-3/.test(filterLink), 'в ссылке на фильтры нет самого фильтра');
   await page.close();
 
   /* ---------- 6.1 the notice on a phone ---------- */
