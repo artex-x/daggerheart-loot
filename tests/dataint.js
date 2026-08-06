@@ -38,6 +38,15 @@ ALL.forEach(x => {
     ok(v === v.trim(), x.id + '.' + k + ': пробелы по краям');
     ok(!/\s\s/.test(v), x.id + '.' + k + ': двойной пробел');
     ok(!/<[a-z/]/i.test(v), x.id + '.' + k + ': разметка в тексте');
+    /* daggerheart.su ships markdown: emphasis and rule links. The links were
+       stripped, the asterisks were not, and one description shipped *Restrain*
+       to the reader. */
+    ok(!/[*`]/.test(v), x.id + '.' + k + ': markdown-разметка в тексте');
+    ok(!/\[[^\]]*\]\(|\/rule\/|#\{|\}#/.test(v), x.id + '.' + k + ': остаток markdown-ссылки');
+    /* Those same links lost the space that followed them, gluing a rule term to
+       the next word: "within Meleerange", "bonus to your Proficiencyon". */
+    ok(!/(Melee|Close|Far|Proficiency|Evasion|Spellcast|advantage|disadvantage)(range|on|of|to|with)\b/.test(v),
+       x.id + '.' + k + ': слипшиеся слова после ссылки');
     ok(!/�/.test(v), x.id + '.' + k + ': битый символ');
   });
   ok(!/^[a-z]/.test(x.en), x.id + ': английское название со строчной — ' + x.en);
