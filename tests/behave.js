@@ -200,9 +200,11 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(await page.$eval('[data-act="comm"][data-val="Seaborne"]', e => !e.classList.contains('on')),
      'выбранное сообщество запомнилось');
 
-  // nothing but the layout is kept, so the stored blob stays that small
+  /* Nothing but the layout is kept, so the stored blob stays that small: how a
+     table is laid out and how tall the note boxes stand. Anything answering
+     "what am I doing this minute" is asked again. */
   const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.prefs.v1') || '{}'));
-  ok(Object.keys(kept).join() === 'view', 'в настройках хранится лишнее: ' + Object.keys(kept));
+  ok(Object.keys(kept).sort().join() === 'noteH,view', 'в настройках хранится лишнее: ' + Object.keys(kept));
   await page.close();
 
   /* ---------- storage that lies ---------- */

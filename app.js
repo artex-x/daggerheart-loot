@@ -682,8 +682,9 @@ const HOME_KEY = 'dhloot.home.v1';
    answered again rather than remembered. */
 const PREFS_KEY = 'dhloot.prefs.v1';
 function savePrefs(){
-  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ view: S.tables.view })); }
-  catch (e) {}
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ view: S.tables.view, noteH: NOTE_H }));
+  } catch (e) {}
 }
 /* Storage is a stranger: a value that fails the check keeps its default rather
    than taking the app down with it. */
@@ -692,6 +693,31 @@ function loadPrefs(){
   try { p = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null'); } catch (e) { return; }
   if (!p || typeof p !== 'object') return;
   if (p.view === 'list' || p.view === 'grid') S.tables.view = p.view;
+  if (p.noteH && typeof p.noteH === 'object')
+    Object.keys(NOTE_H).forEach(function (k) { NOTE_H[k] = noteHeight(p.noteH[k]); });
+}
+
+/* ---------- how tall a note box stands ----------
+   A GM who drags a note taller means it, and the box has to stay that way —
+   both when the page renders again and when they come back tomorrow. The
+   dragged size lives in the element's own style attribute, which the next
+   innerHTML throws away, so it is read back off the element and re-applied by
+   hand. One height per kind rather than per box: the two notes of a pair stand
+   side by side, and a pair of unequal boxes reads as a mistake rather than as
+   a choice. */
+const NOTE_H = { lnote: 0, rnote: 0 };
+const NOTE_SEL = '.lnote textarea, .rnote textarea';
+function noteHeight(v){
+  const n = parseFloat(v);
+  return n >= 32 && n <= 2000 ? Math.round(n) : 0;
+}
+function noteKind(ta){ return ta.closest('.lnote') ? 'lnote' : 'rnote'; }
+/* Zero means "never dragged" — the box keeps the height its rows give it. */
+function applyNoteHeights(){
+  [...document.querySelectorAll(NOTE_SEL)].forEach(function (ta) {
+    const h = NOTE_H[noteKind(ta)];
+    ta.style.height = h ? h + 'px' : '';
+  });
 }
 
 /* Which section the app opens on. A GM who lives in Search should not have to
@@ -2154,7 +2180,7 @@ function listNoteHTML(l){
     '<summary>' + ICON_NOTE + '<span>' + esc(t().listNote) + '</span></summary>' +
     notePairHTML(function (kind) {
       return 'data-list-note="' + esc(l.id) + '" data-nkind="' + kind + '"';
-    }, l, { rows: 3, phPub: t().listNotePhPub, phHid: t().listNotePhHid }) +
+    }, l, { phPub: t().listNotePhPub, phHid: t().listNotePhHid }) +
   '</details>';
 }
 
@@ -2170,7 +2196,7 @@ function notePairHTML(attr, o, opt){
     '<div class="nfield n-' + kind + '">' +
       '<span class="nlbl">' + icon + esc(label) +
         (hint ? '<i>' + esc(hint) + '</i>' : '') + '</span>' +
-      '<textarea rows="' + (opt.rows || 2) + '" ' + attr(kind) +
+      '<textarea rows="' + (opt.rows || 3) + '" ' + attr(kind) +
         ' placeholder="' + esc(ph) + '">' + esc(value || '') + '</textarea>' +
     '</div>';
   return '<div class="npair">' +
@@ -2470,6 +2496,7 @@ function render(){
   placeMenu();
   $('#footText').innerHTML = t().foot;
   document.documentElement.lang = S.lang;
+  applyNoteHeights();
   restoreFocus(keep);
 
   if (S.tables.anchor && r === 'tables') {
@@ -2950,6 +2977,25 @@ document.addEventListener('change', function (e) {
 
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') closeModal();
+});
+
+/* The grip is part of the textarea, so a drag starts and ends on it. Measuring
+   once the pointer is up rather than while it moves means the pair's other box
+   is not jumping about under the hand mid-drag, and there is no chance of the
+   height we set feeding back in as a resize of our own. */
+let noteDrag = null;
+document.addEventListener('pointerdown', function (e) {
+  const ta = e.target.closest && e.target.closest(NOTE_SEL);
+  noteDrag = ta ? { ta: ta, h: ta.offsetHeight } : null;
+});
+document.addEventListener('pointerup', function () {
+  const d = noteDrag; noteDrag = null;
+  if (!d || !d.ta.isConnected) return;
+  const h = noteHeight(d.ta.offsetHeight);
+  if (!h || h === d.h) return;
+  NOTE_H[noteKind(d.ta)] = h;
+  applyNoteHeights();
+  savePrefs();
 });
 
 function openModal(id){

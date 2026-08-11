@@ -213,6 +213,61 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(!/Только мне/.test(card), 'с выпавшей карточки уехала заметка мастера');
   await page.close();
 
+  /* ---------- how tall the boxes stand (issue #6) ---------- */
+  console.log('высота полей заметок');
+  {
+    const page = await mk(FRESH);
+    await go(page, '#/lists/a');
+    const box = sel => page.$$eval(sel, e => e.map(t => {
+      const cs = getComputedStyle(t), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      return { h: t.offsetHeight, lines: (t.clientHeight - pad) / parseFloat(cs.lineHeight) };
+    }));
+    const drag = (sel, h) => page.$eval(sel, (t, v) => {
+      t.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      t.style.height = v + 'px';
+      document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    }, h);
+
+    // three whole lines to start with, in both kinds of box
+    let ln = await box('.lnote textarea');
+    ok(ln.length === 2 && ln.every(x => Math.abs(x.lines - 3) < 0.1),
+       'заметка списка открывается не на три строки: ' + JSON.stringify(ln));
+    await page.click('.lrow:first-child .lrow-note');
+    await settle();
+    let rn = await box('.lrow:first-child .rnote textarea');
+    ok(rn.length === 2 && rn.every(x => Math.abs(x.lines - 3) < 0.1),
+       'заметка позиции открывается не на три строки: ' + JSON.stringify(rn));
+
+    // dragging one box takes its neighbour with it, and nothing else
+    await drag('.lnote textarea', 190); await settle();
+    ln = await box('.lnote textarea');
+    ok(ln.every(x => x.h === 190), 'пара заметок списка разъехалась: ' + JSON.stringify(ln));
+    rn = await box('.lrow:first-child .rnote textarea');
+    ok(rn.every(x => Math.abs(x.lines - 3) < 0.1), 'растянулась и заметка позиции заодно');
+
+    await drag('.lrow:first-child .rnote textarea', 150); await settle();
+    ok((await box('.lrow:first-child .rnote textarea')).every(x => x.h === 150),
+       'пара заметок позиции разъехалась');
+    ok((await box('.lnote textarea')).every(x => x.h === 190), 'заметка списка потеряла высоту');
+
+    // a render throws the markup away; the height has to come back with it
+    await page.evaluate(() => { location.hash = '#/search'; });
+    await settle();
+    await page.evaluate(() => { history.back(); });
+    await settle(); await settle();
+    ok((await box('.lnote textarea')).every(x => x.h === 190), 'после перерисовки высота сбросилась');
+    // a row opened afterwards is already the right size
+    await page.click('.lrow:nth-child(2) .lrow-note');
+    await settle();
+    ok((await box('.lrow:nth-child(2) .rnote textarea')).every(x => x.h === 150),
+       'следующая строка открылась с исходной высотой');
+
+    // and it is still there in the next sitting
+    await go(page, '#/lists/a');
+    ok((await box('.lnote textarea')).every(x => x.h === 190), 'высота не пережила перезагрузку');
+    await page.close();
+  }
+
   await browser.close();
   console.log(fail ? '\n' + fail + ' FAILED' : '\nзаметки: все проверки прошли');
   process.exit(fail ? 1 : 0);
