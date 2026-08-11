@@ -203,7 +203,7 @@ const T = {
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.'],
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
-      search: ['Поиск', 'Поиск по всем 828 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
+      search: ['Поиск', 'Поиск по всем 830 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
     },
   },
   en: {
@@ -337,7 +337,7 @@ const T = {
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full, weapons and armor included — browse, filter and open cards.'],
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
-      search: ['Search', 'Search all 828 entries at once — loot, consumables and equipment, in Russian and English.']
+      search: ['Search', 'Search all 830 entries at once — loot, consumables and equipment, in Russian and English.']
     },
   }
 };

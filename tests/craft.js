@@ -212,8 +212,8 @@ console.log('share stubs');
 const stub = fs.readFileSync(path.join(ROOT, 'i', 'w3.html'), 'utf8');
 ok(/Улучшается до: Чай Эфироцвета/.test(stub), 'i/w3.html: og description missing the craft line');
 /* loot + consumables + the equipment tables */
-ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === 828,
-   'i/: expected 828 stubs');
+ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === 830,
+   'i/: expected 830 stubs');
 const stale = ALL.filter(x => {
   const p = path.join(ROOT, 'i', x.id + '.html');
   return !fs.existsSync(p) || fs.readFileSync(p, 'utf8').indexOf(x.rud.slice(0, 40)) < 0;

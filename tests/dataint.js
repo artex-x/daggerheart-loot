@@ -15,7 +15,7 @@ const ALL = [].concat(...Object.values(DATA), EQ);
 console.log('идентификаторы');
 const byId = {};
 ALL.forEach(x => { ok(!byId[x.id], 'повторяющийся id: ' + x.id); byId[x.id] = x; });
-ok(ALL.length === 828, 'записей не 828, а ' + ALL.length);
+ok(ALL.length === 830, 'записей не 830, а ' + ALL.length);
 ALL.forEach(x => ok(/^[a-z]+\d+$/.test(x.id), 'странный id: ' + x.id));
 
 console.log('обязательные поля');
@@ -145,7 +145,7 @@ ALL.forEach(x => {
    same picture as its base, and four copies of the same bytes helped nobody. */
 const used = new Set(ALL.filter(x => x.img).map(x => x.img));
 fs.readdirSync(path.join(ROOT, 'img')).forEach(f => {
-  if (f === '_none.webp') return;
+  if (f === '_none.webp' || !f.endsWith('.webp')) return;
   ok(used.has(f), 'картинка img/' + f + ' никому не принадлежит');
 });
 ALL.forEach(x => ok(fs.existsSync(path.join(ROOT, 'i', x.id + '.html')),
@@ -163,10 +163,42 @@ Object.keys(shared).forEach(img => {
   const lines = new Set(rows.map(r => (r.eq && r.eq.line) || r.id));
   ok(lines.size === 1, 'картинку ' + img + ' делят несвязанные записи: ' + rows.map(r => r.en).join(', '));
 });
+/* Extraction used to swallow the row that followed the last one in a table:
+   the next item's name in caps, or the header of the next table, ended up glued
+   to a description — and the last row itself came out truncated (issues #1, #3). */
+console.log('описания без чужого текста');
+const HEADERS = ['Название Характеристика', 'Name Trait Range', 'Базовые Пороги',
+                 'Base Thresholds', 'Хват Свойство', 'Burden Feature',
+                 'Название Пороги', 'Показатель Брони Свойство'];
+const ENDS = /[.!?»)”"’\]]\s*$/;
+ALL.forEach(x => {
+  [['ende', x.ende, /(?:^|[.\s])((?:[A-ZÄÖÜÉ][A-ZÄÖÜÉ’'-]{2,}\s+){0,4}[A-ZÄÖÜÉ][A-ZÄÖÜÉ’'-]{2,})\s*$/],
+   ['rud',  x.rud,  /(?:^|[.\s])((?:[А-ЯЁ][А-ЯЁ-]{2,}\s+){0,4}[А-ЯЁ][А-ЯЁ-]{2,})\s*$/]
+  ].forEach(([f, t, caps]) => {
+    t = (t || '').trim();
+    if (!t) return;
+    HEADERS.forEach(h => ok(t.indexOf(h) < 0, x.id + '.' + f + ': шапка таблицы «' + h + '»'));
+    const m = caps.exec(t);
+    ok(!m || m[1].length <= 5, x.id + '.' + f + ': капсом в хвосте «' + (m && m[1]) + '»');
+  });
+  /* one language finishing a sentence where the other does not means one of
+     them lost its tail */
+  const e = (x.ende || '').trim(), r = (x.rud || '').trim();
+  if (e && r) ok(ENDS.test(e) === ENDS.test(r),
+    x.id + ': предложение кончается по-разному — EN «…' + e.slice(-30) + '» / RU «…' + r.slice(-30) + '»');
+});
+
+/* the tier 4 armour that was missing from Hope & Fear entirely */
+['Hallowed Heroplate', 'Resonant Harness'].forEach(n =>
+  ok(EQ.some(x => x.en === n), 'нет брони ' + n));
+const t4 = EQ.filter(x => x.src === 'hnf' && x.eq.t === 'armor' && x.eq.tier === 4);
+ok(t4.length === 10, 'брони 4 ранга из H&F не 10, а ' + t4.length);
+
 /* no two files may hold the same bytes */
 const crypto = require('crypto');
 const seen = {};
 fs.readdirSync(path.join(ROOT, 'img')).forEach(f => {
+  if (!f.endsWith('.webp')) return;
   const sum = crypto.createHash('md5').update(fs.readFileSync(path.join(ROOT, 'img', f))).digest('hex');
   ok(!seen[sum], 'img/' + f + ' — байт-в-байт копия ' + seen[sum]);
   seen[sum] = f;

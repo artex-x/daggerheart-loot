@@ -40,9 +40,9 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
              .map(x => x.src + ':' + x.eq.cls).filter((v, i, a) => v !== a[i-1])
     };
   });
-  ok(d.n === 379, 'снаряжения не 379: ' + d.n);
-  ok(d.w === 239 && d.s === 73 && d.a === 67, 'разбивка по типам сбилась: ' + [d.w,d.s,d.a]);
-  ok(d.names === 379, 'английские названия не уникальны: ' + d.names);
+  ok(d.n === 381, 'снаряжения не 381: ' + d.n);
+  ok(d.w === 239 && d.s === 73 && d.a === 69, 'разбивка по типам сбилась: ' + [d.w,d.s,d.a]);
+  ok(d.names === 381, 'английские названия не уникальны: ' + d.names);
   ok(!d.noCls, 'у ' + d.noCls + ' единиц оружия нет класса');
   ok(d.wond === 11, 'в Wondrous размечено не 11 предметов');
   ok(d.seq.join(' ') === 'core:phy core:mag hnf:phy hnf:mag',

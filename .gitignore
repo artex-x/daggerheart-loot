@@ -13,3 +13,7 @@ Desktop.ini
 # Junk
 node_modules/
 *.log
+
+# Исходники и черновики
+Vol*.pdf
+tools/__pycache__/
