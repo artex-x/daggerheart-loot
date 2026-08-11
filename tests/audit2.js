@@ -51,12 +51,11 @@ const PAGES = [
 
   for (const width of WIDTHS) {
     for (const lang of ['ru', 'en']) {
-      const page = await browser.newPage();
       const errs = [];
-      page.on('pageerror', e => errs.push(e.message));
-      page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
-      await page.setViewport({ width, height: 900 });
-      await page.evaluateOnNewDocument(l => {
+      /* Thirty addresses' worth of artwork in one renderer is enough to have it
+         killed for memory, so the page is recycled as we go. */
+      let page = null, since = 0;
+      const seed = l => {
         // this also runs on about:blank, where there is no storage to seed
         try {
         localStorage.setItem('dhloot.lang.v1', l);
@@ -66,9 +65,21 @@ const PAGES = [
             meta:{ ci1:{ qty:2, gold:30, note:'Под прилавком', noteShow:true } } },
           { id:'empty', name:'Пусто', ids:[], created:2 }]));
         } catch (e) {}
-      }, lang);
+      };
+      const freshPage = async () => {
+        if (page) await page.close();
+        page = await browser.newPage();
+        page.on('pageerror', e => errs.push(e.message));
+        page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
+        await page.setViewport({ width, height: 900 });
+        await page.evaluateOnNewDocument(seed, lang);
+        since = 0;
+      };
+      await freshPage();
 
       for (const [hash, label] of PAGES) {
+        if (since >= 8) await freshPage();
+        since++;
         const url = ROOT + hash.replace('%%SHARED%%', shared);
         /* A hash-only move is a same-document navigation and puppeteer can see
            the frame swap under it, so wait for the app to have drawn something

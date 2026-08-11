@@ -123,6 +123,7 @@ const T = {
     nameFirst:'Сначала назовите список',
     untitled:'Без названия', noLists:'Списков пока нет — создайте первый выше',
     addToList:'Добавить в список', removeItem:'Убрать из списка',
+    removedItem:'«%s» убран', undo:'Вернуть',
     share:'Поделиться', del:'Удалить', rename:'Название списка',
     listEmpty:'Список пуст', listEmptyHint:'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» — или сделайте это прямо с карточки предмета.',
     sharedList:'Список от другого игрока', saveToMine:'Сохранить себе', savedToLists:'Список сохранён',
@@ -149,7 +150,7 @@ const T = {
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
     whatIsThis:'Как это работает',
-    langLabel:'Язык', sectionsLabel:'Разделы', close:'Закрыть',
+    langLabel:'Язык', sectionsLabel:'Разделы', close:'Закрыть', skipToContent:'К содержимому',
     docTitle:'Генератор лута — Daggerheart',
     setHome:'Открывать этот раздел при запуске', isHome:'Открывается при запуске',
     homeSet:'Приложение будет открываться на этом разделе',
@@ -256,6 +257,7 @@ const T = {
     nameFirst:'Give the list a name first',
     untitled:'Untitled', noLists:'No lists yet — create one above',
     addToList:'Add to list', removeItem:'Remove from the list',
+    removedItem:'“%s” removed', undo:'Undo',
     share:'Share', del:'Delete', rename:'List name',
     listEmpty:'The list is empty', listEmptyHint:'Nothing here yet. Open Tables or Search, tick what you need and press “Add to list” — or do it straight from an item card.',
     sharedList:'A list from another player', saveToMine:'Save to my lists', savedToLists:'List saved',
@@ -282,7 +284,7 @@ const T = {
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
     whatIsThis:'How this works',
-    langLabel:'Language', sectionsLabel:'Sections', close:'Close',
+    langLabel:'Language', sectionsLabel:'Sections', close:'Close', skipToContent:'Skip to content',
     docTitle:'Daggerheart Loot Generator',
     setHome:'Open this section on start', isHome:'Opens on start',
     homeSet:'The app will open on this section',
@@ -575,14 +577,42 @@ function srcLabel(it){
 }
 
 function toast(msg, isError){
+  showToast(msg, isError ? 'err' : '', isError ? 2600 : 1600, null);
+}
+/* A toast that can be acted on: removing an entry from a list is one click,
+   irreversible and easy to do by accident, so the way back has to be right
+   where the eye already is. It lingers longer than a plain notice, because it
+   is asking a question rather than reporting a fact. */
+function toastAction(msg, label, fn){
+  showToast(msg, 'act', 7000, { label: label, fn: fn });
+}
+function hideToast(){
   const el = $('#toast');
-  el.setAttribute('role', isError ? 'alert' : 'status');
-  el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
-  el.textContent = msg;
-  el.classList.toggle('err', !!isError);
+  el.hidden = true; el.textContent = ''; toast._act = null;
+}
+function showToast(msg, mode, ms, action){
+  const el = $('#toast');
+  const err = mode === 'err';
+  el.setAttribute('role', err ? 'alert' : 'status');
+  el.setAttribute('aria-live', err ? 'assertive' : 'polite');
+  el.className = 'toast' + (mode ? ' ' + mode : '');
+  el.textContent = '';
+  el.appendChild(document.createTextNode(msg));
+  toast._act = null;
+  if (action) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'toast-act';
+    b.textContent = action.label;
+    b.setAttribute('data-toast-act', '1');
+    el.appendChild(b);
+    toast._act = action.fn;
+  }
   el.hidden = false;
   clearTimeout(toast._tm);
-  toast._tm = setTimeout(() => { el.hidden = true; }, isError ? 2600 : 1600);
+  // the button goes with it: a hidden node that still answers to a selector is
+  // a lie to anything reading the page, tests included
+  toast._tm = setTimeout(function () { hideToast(); }, ms);
 }
 
 /* Puts both flavours on the clipboard: rich-paste targets take the HTML,
@@ -1104,7 +1134,12 @@ const NO_ART = 'img/_none.webp';
 const brokenArt = {};                       // ids whose file failed to load this session
 function hasImage(it){ return !!(it && it.img) && !brokenArt[it.id]; }
 function imgSrc(it){ return hasImage(it) ? 'img/' + it.img : NO_ART; }
-function imgTag(it, extra){
+/* The art is drawn at 640, and nothing on screen is wider than about 320 —
+   a table of sixty rows was pulling two megabytes to fill hundred-pixel
+   thumbnails. `sizes` describes the widest box a picture can land in, which is
+   the tile in grid view; rows and compact cards are far smaller and the browser
+   picks accordingly. */
+function imgTag(it, where, extra){
   return '<img src="' + esc(imgSrc(it)) + '" alt="" loading="lazy" decoding="async"' +
     (hasImage(it) ? ' data-art="' + esc(it.id) + '"' : ' class="noart"') +
     (extra || '') + '>';
@@ -1331,7 +1366,7 @@ function cardHTML(it, opt){
   return '' +
   '<article class="card' + (opt.full ? ' full' : ' compact') + '" data-id="' + esc(it.id) + '">' +
     '<button type="button" class="card-media" data-open="' + esc(it.id) + '" aria-label="' + esc(t().openPage) + '">' +
-      imgTag(it) +
+      imgTag(it, opt.full ? 'full' : 'card') +
     '</button>' +
     '<div class="card-body">' +
       '<div class="card-meta">' + meta + '</div>' +
@@ -1860,7 +1895,7 @@ function rowHTML(it, removeFrom, tail){
   return '<div class="row' + (!removeFrom && S.sel[it.id] ? ' sel' : '') + '">' +
       (removeFrom ? '' : selBox(it.id)) +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
-        imgTag(it) +
+        imgTag(it, 'row') +
         '<span class="rt"><b>' + (it.roll ? '<span class="rnum">' + esc(it.roll) + '</span>' : '') +
           esc(nameOf(it)) +
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
@@ -1895,7 +1930,7 @@ function tileHTML(it){
                : (isEquip(it) && it.eq.tier ? '<span class="tile-n">' + esc(t().tier + ' ' + it.eq.tier) + '</span>' : '')) +
       '<span class="tile-k ' + (isEquip(it) ? eqClass(it) : it.kind === 'consumable' ? 'cons' : 'item') +
         '" title="' + esc(isEquip(it) ? eqWord(EQ_TYPE, it.eq.t) : it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
-      imgTag(it) +
+      imgTag(it, 'tile') +
     '</div>' +
     '<div class="tile-b"><b>' + esc(nameOf(it)) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + '</div>' +
   '</button></div>';
@@ -1959,7 +1994,7 @@ function storageWarning(){
 function listCardHTML(l){
   const items = listItems(l);
   const thumbs = items.slice(0, 6).map(function (it) {
-    return imgTag(it);
+    return imgTag(it, 'thumb');
   }).join('');
   return '<div class="listcard">' +
     '<a class="listcard-main" href="' + esc(listHash(l)) + '">' +
@@ -2088,7 +2123,7 @@ function listRowHTML(l, it, i){
         ' inputmode="numeric" value="' + (i + 1) + '" data-pos="' + esc(key) + '"' +
         ' aria-label="' + esc(t().position) + '">' +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
-        imgTag(it) +
+        imgTag(it, 'row') +
         '<span class="rt"><b>' + esc(nameOf(it)) + '</b>' +
         (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
@@ -2287,6 +2322,8 @@ function syncChrome(){
   set('#langSeg', t().langLabel);
   set('#tabs', t().sectionsLabel);
   set('.modal-x', t().close);
+  const skip = $('#skip');
+  if (skip) skip.textContent = t().skipToContent;
   document.title = t().docTitle;
 }
 function syncLangButtons(){
@@ -2529,10 +2566,38 @@ document.addEventListener('click', function (e) {
 
 
 
+  if (e.target.closest('[data-toast-act]')) {
+    const fn = toast._act;
+    hideToast();
+    if (fn) fn();
+    return;
+  }
+
   const rm = e.target.closest('[data-remove]');
   if (rm) {
     const parts = rm.dataset.remove.split(':');
-    toggleInList(parts[0], parts[1]); render(); return;
+    const l = getList(parts[0]);
+    if (!l) return;
+    // everything needed to put it back exactly where it was
+    const at = l.ids.indexOf(parts[1]);
+    const meta = JSON.parse(JSON.stringify(itemMeta(l, parts[1])));
+    const it = BY_ID[parts[1]];
+    toggleInList(parts[0], parts[1]);
+    freshenListUrl(l);
+    render();
+    if (at >= 0) toastAction(t().removedItem.replace('%s', it ? nameOf(it) : ''), t().undo, function () {
+      const back = getList(parts[0]);
+      if (!back || back.ids.indexOf(parts[1]) >= 0) return;
+      back.ids.splice(Math.min(at, back.ids.length), 0, parts[1]);
+      if (Object.keys(meta).length) {
+        back.meta = back.meta || {};
+        back.meta[parts[1]] = meta;
+      }
+      saveLists();
+      freshenListUrl(back);
+      render();
+    });
+    return;
   }
 
   const sl = e.target.closest('[data-share-list]');

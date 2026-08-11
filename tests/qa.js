@@ -281,6 +281,52 @@ const contrast = (a, b) => {
   ok(clash === 0, 'галочка налезла на подпись у ' + clash + ' плиток');
   await page.close();
 
+  /* ---------- undo for a removed entry ---------- */
+  console.log('возврат убранной позиции');
+  page = await mk(() => localStorage.setItem('dhloot.lists.v2', JSON.stringify(
+    [{ id:'a', name:'Клад', ids:['ci1','cc1','w1'], created:1,
+       meta:{ cc1:{ qty:3, gold:70, note:'Для игроков', hnote:'Только мне' } } }])));
+  await go(page, '#/lists/a');
+  await page.evaluate(() => {
+    const row = [...document.querySelectorAll('.lrow')][1];
+    row.querySelector('[data-remove]').click();
+  });
+  await settle();
+  ok((await page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v2'))[0].ids)).join() === 'ci1,w1',
+     'позиция не убралась');
+  ok(await page.$('.toast-act'), 'нет кнопки возврата');
+  await page.click('.toast-act'); await settle();
+  const back = await page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.lists.v2'))[0]);
+  ok(back.ids.join() === 'ci1,cc1,w1', 'позиция вернулась не на своё место: ' + back.ids.join());
+  ok(back.meta.cc1 && back.meta.cc1.qty === 3 && back.meta.cc1.gold === 70 &&
+     back.meta.cc1.note === 'Для игроков' && back.meta.cc1.hnote === 'Только мне',
+     'вернулась без количества, цены или заметок: ' + JSON.stringify(back.meta.cc1));
+  ok(!(await page.$('.toast-act')), 'кнопка возврата осталась после нажатия');
+  await page.close();
+
+  /* ---------- keyboard ---------- */
+  console.log('клавиатура');
+  page = await mk();
+  await go(page, '#/roll/std');
+  const skip = await page.evaluate(() => {
+    const a = document.querySelector('.skip');
+    if (!a) return null;
+    a.focus();
+    const r = a.getBoundingClientRect();
+    return { text: a.textContent.trim(), left: Math.round(r.left), href: a.getAttribute('href') };
+  });
+  ok(skip && skip.text && skip.left >= 0 && skip.href === '#view',
+     'ссылки к содержимому нет или она не показывается по фокусу: ' + JSON.stringify(skip));
+  const ring = await page.evaluate(() => {
+    const b = document.querySelector('[data-act="roll"]');
+    b.focus();
+    const c = getComputedStyle(b);
+    return { w: c.outlineWidth, style: c.outlineStyle };
+  });
+  ok(ring.style !== 'none' && parseFloat(ring.w) >= 2,
+     'у кнопки нет своего кольца фокуса: ' + JSON.stringify(ring));
+  await page.close();
+
   /* ---------- every copied link shares one shape ---------- */
   console.log('ссылки на таблицу, фильтр и список');
   page = await mk(() => {
