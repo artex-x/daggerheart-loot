@@ -13,8 +13,10 @@ const ROOT = path.join(__dirname, '..');
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 const OUT = path.join(ROOT, 'i');
 
-global.window = {};
-require(path.join(ROOT, 'data.js'));
+/* data.js кладётся в window один раз: повторный require вернёт кэш и ничего не
+   выполнит, поэтому затирать window нельзя — тест грузит данные до нас. */
+if (!global.window) global.window = {};
+if (!global.window.LOOT) require(path.join(ROOT, 'data.js'));
 const DATA = global.window.LOOT.items;
 const EQ = global.window.LOOT.eq || [];
 
@@ -144,16 +146,23 @@ ${craft.map(c => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc
 `;
 }
 
-fs.mkdirSync(OUT, { recursive: true });
-for (const f of fs.readdirSync(OUT)) {
-  if (f.endsWith('.html')) fs.unlinkSync(path.join(OUT, f));
-}
+/* Exported so the test can render all 830 into memory and compare with what is
+   on disk: that catches a change to this generator that was never rebuilt, not
+   just data that moved on. */
+module.exports = { page };
 
-let n = 0;
-for (const arr of Object.values(DATA).concat([EQ])) {
-  for (const it of arr) {
-    fs.writeFileSync(path.join(OUT, it.id + '.html'), page(it), 'utf8');
-    n++;
+if (require.main === module) {
+  fs.mkdirSync(OUT, { recursive: true });
+  for (const f of fs.readdirSync(OUT)) {
+    if (f.endsWith('.html')) fs.unlinkSync(path.join(OUT, f));
   }
+
+  let n = 0;
+  for (const arr of Object.values(DATA).concat([EQ])) {
+    for (const it of arr) {
+      fs.writeFileSync(path.join(OUT, it.id + '.html'), page(it), 'utf8');
+      n++;
+    }
+  }
+  console.log('wrote ' + n + ' share pages into i/');
 }
-console.log('wrote ' + n + ' share pages into i/');

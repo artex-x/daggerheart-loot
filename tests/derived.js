@@ -56,6 +56,19 @@ ok(smith.length > 40, 'по каталогу не отобрать товар к
 ok(parsed.every(r => !r[idx.id] || /^https:\/\/artex-x\.github\.io\//.test(r[idx.url])),
    'в каталоге битая ссылка на страницу записи');
 
+console.log('заглушки совпадают с генератором');
+/* craft.js сверяет заглушки по началу описания — этого хватает, пока меняются
+   данные. Но правка самого генератора (скажем, добавленный мета-тег) так не
+   видна: описание на месте, а устарели страницы все разом. Поэтому здесь все
+   830 рисуются заново и сравниваются целиком. */
+const { page } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+const drift = ALL.filter(function (x) {
+  const p = path.join(ROOT, 'i', x.id + '.html');
+  return !fs.existsSync(p) || fs.readFileSync(p, 'utf8') !== page(x);
+});
+ok(drift.length === 0, 'заглушек устарело ' + drift.length + ', например ' +
+   drift.slice(0, 5).map(x => x.id).join(', ') + ' — запусти node tools/build.js');
+
 console.log('не индексируется');
 /* Личный инструмент: страницы не должны попадать в выдачу. Работает это только
    в паре — обход разрешён, чтобы noindex вообще прочитали, а закрытая роботсом
@@ -63,9 +76,7 @@ console.log('не индексируется');
 const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
 ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')),
    'на index.html нет noindex');
-ALL.slice(0, 3).concat(ALL.slice(-3)).forEach(x =>
-  ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'i', x.id + '.html'), 'utf8')),
-     'на i/' + x.id + '.html нет noindex'));
+ok(NOINDEX.test(page(ALL[0])), 'генератор заглушек перестал ставить noindex');
 const rob = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
 ok(/^User-agent: \*\s*\nAllow: \//m.test(rob),
    'robots.txt закрывает обход — тогда noindex никто не прочитает');
@@ -96,6 +107,46 @@ if (ex) {
   const byId = {}; ALL.forEach(x => { byId[x.id] = x; });
   parts.forEach(p => ok(!!byId[p.split('*')[0]], 'в примере несуществующий id: ' + p));
 }
+
+console.log('счётчики в текстах');
+/* Число записей выписано словами в мета-описаниях, в README и в подсказке
+   поиска. Данные меняются редко, но каждый раз эти числа приходится править
+   руками в четырёх файлах — и промах ничем не виден: страница выглядит
+   исправной и врёт. Поэтому каждое трёхзначное число рядом со «своим» словом
+   сверяется с тем, что на самом деле лежит в data.js. */
+const N = {
+  loot: [].concat(...Object.values(L.items)).length,
+  eq: L.eq.length,
+  all: ALL.length,
+  wondrous: L.items.wondrous.length,
+  // в README описана папка, а в ней лежит ещё и заглушка _none.webp
+  art: fs.readdirSync(path.join(ROOT, 'img')).filter(f => f.endsWith('.webp')).length
+};
+/* Слово «позиции» честно занято двумя счётчиками сразу — всего по сайту и
+   таблицей Wondrous, — поэтому для него проверяется принадлежность, а не
+   равенство. Остальные слова однозначны. */
+const COUNTERS = [
+  [/(\d{3})\s+предмет/g,    [N.loot],            'предметов и расходников'],
+  [/(\d{3})\s+единиц/g,     [N.eq],              'единиц снаряжения'],
+  [/(\d{3})\s+запис/g,      [N.all],             'записей'],
+  [/(\d{3})\s+страниц/g,    [N.all],             'страниц-заглушек'],
+  [/(\d{3})\s+картин/g,     [N.art],             'картинок'],
+  [/(\d{3})\s+records/g,    [N.all],             'records'],
+  [/(\d{3})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
+  [/(\d{3})\s+entries/g,    [N.all, N.wondrous], 'entries']
+];
+['index.html', 'README.md', 'app.js', 'llms.txt'].forEach(function (file) {
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  COUNTERS.forEach(function ([re, want, what]) {
+    let m;
+    re.lastIndex = 0;
+    while ((m = re.exec(text))) {
+      ok(want.indexOf(+m[1]) >= 0,
+         file + ': «' + m[1] + ' ' + what + '» — на деле ' + want.join(' или '));
+    }
+  });
+  ok(text.indexOf(String(N.all)) >= 0, file + ': пропало упоминание общего числа записей');
+});
 
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
 process.exit(fail ? 1 : 0);
