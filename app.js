@@ -43,6 +43,7 @@ const S = {
   std:  { n: 1, src: { core: true, hnf: true } },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   wond: { n: 1 },
+  dread: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
   tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
@@ -73,10 +74,10 @@ const S = {
 /* ---------- i18n ---------- */
 const T = {
   ru: {
-    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
+    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', dread:'Dread', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
-    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Сообщества',
+    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Сообщества',
     rollResult:'Результат броска', roll:'Бросить', randomIn:'Случайно', rollDuality:'Бросить кости',
     stepDown:'На единицу меньше', stepUp:'На единицу больше',
     copyName:'Скопировать название', copied:'Скопировано',
@@ -172,7 +173,15 @@ const T = {
         'В таблице 119 позиций, а не 100 — столько предметов описано в самом дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».',
         'Порядок взят из книги: там предметы отсортированы по английскому алфавиту, а не по силе. В русском переводе он поэтому выглядит произвольным. Большинство предметов слабые или средние.',
         'Часть предметов улучшается до более сильных. На карточке такая связь показана отдельной строкой, по ней же можно перейти ко второму предмету. Мастер может потребовать для улучшения бросок Искусности или Знания.',
+        'Часть предметов рассчитана на окружения и сюжеты своей книги: вне их вещь может оказаться бесполезной или странной. Случайную выдачу отсюда стоит просматривать глазами, а не отдавать игрокам вслепую.',
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a>.'
+      ],
+      dread: [
+        'В таблице 29 позиций — столько предметов описано в дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.',
+        'Порядок взят из книги: сначала семь единиц снаряжения с характеристиками (их ранг книга указывает сама), затем предметы по английскому алфавиту.',
+        'Книга не делит вещи на постоянные и расходуемые. Здесь это проставлено по смыслу описания: масла, гранаты и сыворотка помечены расходниками, остальное — предметами.',
+        'Часть предметов рассчитана на окружения и сюжеты своей книги: вне их вещь может оказаться бесполезной или странной. Случайную выдачу отсюда стоит просматривать глазами, а не отдавать игрокам вслепую.',
+        'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart" target="_blank" rel="noopener">Dread GM Toolbox for Daggerheart</a>.'
       ],
       community: [
         'Предметы каждого сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.',
@@ -200,17 +209,18 @@ const T = {
       std:   ['Обычные правила', 'Бросок по таблицам корника и дополнения Hope &amp; Fear.'],
       alt:   ['Альтернативные таблицы', 'Бросок Костей Дуальности по объединённым таблицам обеих книг.'],
       wondrous: ['Wondrous Loot', 'Введите результат броска или получите случайную позицию.'],
+      dread: ['Dread GM Toolbox', 'Введите результат броска или получите случайную позицию.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.'],
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
-      search: ['Поиск', 'Поиск по всем 830 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
+      search: ['Поиск', 'Поиск по всем 859 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
     },
   },
   en: {
-    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
+    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', dread:'Dread', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
-    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcComm:'Communities',
+    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Communities',
     rollResult:'Roll result', roll:'Roll', randomIn:'Random', rollDuality:'Roll the dice',
     stepDown:'One lower', stepUp:'One higher',
     copyName:'Copy name', copied:'Copied',
@@ -306,7 +316,15 @@ const T = {
         'The table holds 119 entries rather than 100 — that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.',
         'The order is the book\'s own: alphabetical by English name, not by power. Most items are weak to moderate.',
         'Some items upgrade into stronger ones. The card shows that on its own line, and the link takes you to the second item. The GM may ask for a Finesse or Knowledge roll to make the upgrade.',
+        'Some entries are written for the environments and plots of their own book: elsewhere they can be useless or simply odd. Look over what comes up here rather than handing it to the players unseen.',
         'Source: the <a href="https://www.drivethrurpg.com/en/product/552648/wondrous-environments" target="_blank" rel="noopener">Wondrous Environments</a> supplement.'
+      ],
+      dread: [
+        'The table has 29 entries, which is how many the supplement describes. No die covers that range, so the button picks an entry at random.',
+        'The order follows the book: seven pieces of equipment with statistics first (the book states their tier), then the items in English alphabetical order.',
+        'The book does not sort these into permanent and single-use. That split is made here from what each entry describes: oils, grenades and the serum are marked as consumables, the rest as items.',
+        'Some entries are written for the environments and plots of their own book: elsewhere they can be useless or simply odd. Look over what comes up here rather than handing it to the players unseen.',
+        'Source: the <a href="https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart" target="_blank" rel="noopener">Dread GM Toolbox for Daggerheart</a> supplement.'
       ],
       community: [
         'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.',
@@ -334,10 +352,11 @@ const T = {
       std:   ['Standard rules', 'A roll over the core book and the Hope &amp; Fear tables.'],
       alt:   ['Alternate tables', 'A Duality Dice roll over both books merged into one set of tables.'],
       wondrous: ['Wondrous Loot', 'Enter your roll result, or pick a random entry.'],
+      dread: ['Dread GM Toolbox', 'Enter your roll result, or pick a random entry.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full, weapons and armor included — browse, filter and open cards.'],
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
-      search: ['Search', 'Search all 830 entries at once — loot, consumables and equipment, in Russian and English.']
+      search: ['Search', 'Search all 859 entries at once — loot, consumables and equipment, in Russian and English.']
     },
   }
 };
@@ -374,6 +393,7 @@ const TABLE_DEFS = [
   { id:'hnf_item',         ru:'H&F — предметы',         en:'H&F — items' },
   { id:'hnf_consumable',   ru:'H&F — расходники',       en:'H&F — consumables' },
   { id:'wondrous',         ru:'Wondrous Loot',          en:'Wondrous Loot' },
+  { id:'dread',            ru:'Dread GM Toolbox',       en:'Dread GM Toolbox' },
   { id:'community',        ru:'Предметы сообществ',     en:'Community items' },
   { id:'alt_item',         ru:'Альт. — предметы',       en:'Alt. — items' },
   { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' },
@@ -473,7 +493,14 @@ function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
 function eqParts(it, noType){
   if (!isEquip(it)) return [];
   const e = it.eq, out = noType ? [] : [eqWord(EQ_TYPE, e.t)];
-  out.push(e.tier ? t().tier + ' ' + e.tier : t().srcWond);
+  /* Ранга может не быть: Wondrous своих вещей по рангам не раскладывает. Раньше
+     в этом месте стояло слово «Wondrous» — рядом с «Ранг 3» у соседей оно
+     читалось как ещё один ранг, хотя это источник, и он показан своим ярлыком.
+     Вывести ранг из характеристик не получается: полосы урона у соседних рангов
+     перекрываются, и даже на своих же данных такая догадка ошибается в каждом
+     седьмом случае, а на чужой книге — в четырёх случаях из семи. Лучше молчать,
+     чем называть число, которому поверят. */
+  if (e.tier) out.push(t().tier + ' ' + e.tier);
   if (e.t === 'armor') {
     if (e.th) out.push(t().eqTh + ' ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push(t().eqScore + ' ' + e.as);
@@ -573,6 +600,7 @@ function srcLabel(it){
   if (it.src === 'core') return t().srcCore;
   if (it.src === 'hnf') return t().srcHnf;
   if (it.src === 'wondrous') return t().srcWond;
+  if (it.src === 'dread') return t().srcDread;
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
 
@@ -1666,6 +1694,22 @@ function renderWond(){
   '<div class="results" role="status" aria-live="polite">' + orGrid([cardHTML(it)]) + '</div>';
 }
 
+/* ---- 5b: dread ----
+   Устроен как Wondrous: своя книга, свой список, бросок по длине списка. */
+function renderDread(){
+  const st = S.dread, max = DATA.dread.length;
+  const it = DATA.dread[st.n - 1];
+  return pageHead('dread') +
+  '<div class="panel">' +
+    '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1\u2013' + max + ')</span>' +
+      '<div class="numrow">' + numBox('n', st.n, 1, max) +
+        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(max)) + '</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="results" role="status" aria-live="polite">' + orGrid([cardHTML(it)]) + '</div>';
+}
+
 /* ---- 6: community ---- */
 function renderComm(){
   const st = S.comm;
@@ -2251,6 +2295,7 @@ function tableIdOf(it){
   if (isEquip(it) && !it.roll)
     return { weapon:'eq_weapon', secondary:'eq_secondary', armor:'eq_armor' }[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
+  if (it.src === 'dread') return 'dread';
   if (it.src === 'community') return 'community';
   return TABLE_OF[it.src][it.kind];
 }
@@ -2286,13 +2331,14 @@ const ROUTES = {
   'lists': renderLists,
   'roll/alt': renderAlt,
   'roll/wondrous': renderWond,
+  'roll/dread': renderDread,
   'roll/community': renderComm,
   'tables': renderTables,
   'search': renderSearch
 };
 const TAB_LIST = [
   ['roll/std','std'], ['roll/alt','alt'],
-  ['roll/wondrous','wondrous'], ['roll/community','community'],
+  ['roll/wondrous','wondrous'], ['roll/dread','dread'], ['roll/community','community'],
   ['tables','tables'], ['lists','lists'], ['search','search']
 ];
 /* links handed out before the three d12 modes were merged */
@@ -2518,6 +2564,7 @@ function stateForRoute(){
   if (r === 'roll/std') return S.std;
   if (r === 'roll/alt') return S.alt;
   if (r === 'roll/wondrous') return S.wond;
+  if (r === 'roll/dread') return S.dread;
   if (r === 'roll/community') return S.comm;
   return null;
 }
@@ -2788,6 +2835,7 @@ document.addEventListener('click', function (e) {
 
   if (a === 'roll') {
     if (S.route === 'roll/wondrous') { st.n = d(DATA.wondrous.length); }
+    if (S.route === 'roll/dread')    { st.n = d(DATA.dread.length); }
     else if (S.route === 'roll/community') { st.n = d(10); }
     else { st.n = clamp(rollNd12(+val), 1, 60); }   // val carries the dice count
     render(); return;

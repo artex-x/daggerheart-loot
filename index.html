@@ -8,13 +8,13 @@
      this tag is actually read - a blocked page never is, and can still be
      listed as a bare URL. Messenger previews need the fetch too. -->
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Генератор добычи для Daggerheart: 449 предметов и расходников, 381 единица оружия и брони. Core, Hope &amp; Fear, Wondrous Loot, предметы сообществ и альтернативные таблицы. Русский и английский.">
+<meta name="description" content="Генератор добычи для Daggerheart: 478 предметов и расходников, 381 единица оружия и брони. Core, Hope &amp; Fear, Wondrous Loot, предметы сообществ и альтернативные таблицы. Русский и английский.">
 <meta name="color-scheme" content="dark">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Генератор лута Daggerheart">
 <meta property="og:title" content="Генератор лута — Daggerheart">
-<meta property="og:description" content="830 позиций с картинками: добыча, расходники, оружие и броня из Core, Hope &amp; Fear, Wondrous Loot и предметов сообществ. Русский и английский.">
+<meta property="og:description" content="859 позиций с картинками: добыча, расходники, оружие и броня из Core, Hope &amp; Fear, Wondrous Loot и предметов сообществ. Русский и английский.">
 <meta property="og:url" content="https://artex-x.github.io/daggerheart-loot/">
 <!-- The site's own card, not an item's artwork. og/ci17.jpg used to sit here,
      so every link to a table or a filter unfurled in Telegram with a picture of
@@ -28,7 +28,7 @@
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Генератор лута — Daggerheart">
-<meta name="twitter:description" content="830 позиций с картинками: добыча, расходники, оружие и броня. Русский и английский.">
+<meta name="twitter:description" content="859 позиций с картинками: добыча, расходники, оружие и броня. Русский и английский.">
 <meta name="twitter:image" content="https://artex-x.github.io/daggerheart-loot/og/_share.jpg">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
@@ -53,6 +53,24 @@
 </header>
 
 <main class="wrap" id="view" tabindex="-1"></main>
+<!-- Загрузчик без JS видел здесь пустую страницу и уходил ни с чем: так модель,
+     которой дали ссылку на список, решала, что сайт нечитаем. Теперь на этом же
+     месте лежит то, ради чего она пришла. -->
+<noscript>
+  <div class="wrap" style="padding:24px 0">
+    <h1>Лут Daggerheart</h1>
+    <p>Приложению нужен JavaScript. Данные лежат отдельными файлами и читаются без него:</p>
+    <ul>
+      <li><a href="catalog.csv">catalog.csv</a> — 859 записей, по строке на каждую</li>
+      <li><a href="data.json">data.json</a> — то же целиком</li>
+      <li><a href="llms.txt">llms.txt</a> — что это за сайт, грамматика адресов, формат ссылки на список</li>
+    </ul>
+    <p>The app needs JavaScript. Machine-readable data:
+      <a href="catalog.csv">catalog.csv</a>, <a href="data.json">data.json</a>,
+      <a href="llms.txt">llms.txt</a>. Note that a list link keeps its contents
+      after the <code>#</code>, so it never reaches any server — see llms.txt.</p>
+  </div>
+</noscript>
 
 <footer class="wrap foot">
   <p id="footText"></p>

@@ -50,7 +50,7 @@ const leftover = ALL.filter(x => /Переработать в|Craft\s*into/i.tes
 ok(leftover.length === 0, 'stale craft sentence in: ' + leftover.map(x => x.id).join(', '));
 
 // nothing else got damaged while rewriting data.js
-ok(ALL.length === 449, 'expected 449 records, got ' + ALL.length);
+ok(ALL.length === 478, 'expected 478 records, got ' + ALL.length);
 ALL.forEach(x => {
   ok(!!(x.id && x.en && x.ende && x.ru && x.rud && x.img), x.id + ': empty field');
   ok(x.img === x.id + '.webp', x.id + ': img/id mismatch');
@@ -212,8 +212,8 @@ console.log('share stubs');
 const stub = fs.readFileSync(path.join(ROOT, 'i', 'w3.html'), 'utf8');
 ok(/Улучшается до: Чай Эфироцвета/.test(stub), 'i/w3.html: og description missing the craft line');
 /* loot + consumables + the equipment tables */
-ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === 830,
-   'i/: expected 830 stubs');
+ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === 859,
+   'i/: expected 859 stubs');
 const stale = ALL.filter(x => {
   const p = path.join(ROOT, 'i', x.id + '.html');
   return !fs.existsSync(p) || fs.readFileSync(p, 'utf8').indexOf(x.rud.slice(0, 40)) < 0;

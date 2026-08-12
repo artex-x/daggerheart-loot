@@ -1,9 +1,9 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 830
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 859
 > records covering items, consumables, weapons and armour from the Core Set,
-> Hope & Fear, Wondrous Loot and community sets. Static site, no server, no API,
-> no accounts.
+> Hope & Fear, Wondrous Loot, the Dread GM Toolbox and community sets. Static
+> site, no server, no API, no accounts.
 
 Site: https://artex-x.github.io/daggerheart-loot/
 Source: https://github.com/artex-x/daggerheart-loot
@@ -14,19 +14,27 @@ a training set.
 
 ## Read this first
 
-The app renders on the client, and **everything after `#` in the address is a
-fragment that never leaves the browser**. Fetching `index.html` gives you an
-empty page, and a link to a shop looks like meaningless base64. This is not a
-rendering problem you can wait out — the data is not in what you fetched. Use
-the files below instead.
+Three things trip agents up here, in order of how often:
+
+1. **The app renders on the client.** Fetching `index.html` gives you an empty
+   page. That is not a slow load you can wait out.
+2. **Everything after `#` is a fragment and never leaves the browser.** A link
+   to a shop looks like meaningless base64 because the shop *is* the base64.
+   No server ever saw it, so nothing you fetch can tell you what is inside —
+   you have to decode it yourself, and the format is below.
+3. **Never name an item from memory.** Every name and id must come out of
+   `catalog.csv`. Names that sound right — "Tome of Ancient Knowledge",
+   "Superior Alconite Crystal" — are usually not in any of these books, and a
+   link built on an invented id silently drops that entry.
+
+Read `catalog.csv` first. Everything else here is about what to do with it.
 
 ## Data
 
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 830
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 859
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
-  crafts_into, community, url, text_ru, text_en`. Start here — it is enough to
-  pick items by any condition.
+  crafts_into, community, url, text_ru, text_en`.
 - [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
   records in full, plus the rarity tables (`alt`) and the text of domain cards
   that some loot refers to (`refs`).
@@ -34,23 +42,54 @@ the files below instead.
   [i/q26.html](https://artex-x.github.io/daggerheart-loot/i/q26.html).
 
 `kind` is one of `item`, `consumable`, `weapon`, `secondary`, `armor`.
-`source` is `Core`, `Hope & Fear`, `Wondrous Loot`, `Community`.
-`tier` (1–4) exists only for equipment; `rarity` (`common`, `uncommon`, `rare`,
-`very_rare`, `legendary`) only for loot and consumables.
+`source` is `Core`, `Hope & Fear`, `Wondrous Loot`, `Dread GM Toolbox`,
+`Community`.
 
-Example — a blacksmith's stock, tier 1–2, physical only:
+## Picking things: what the columns actually mean
 
-```
-kind in (weapon, armor) and class = physical and tier in (1, 2)
-```
+**`tier` (1–4) belongs to equipment, not to loot.** Weapons and armour are
+tiered because a tier 3 sword is numerically stronger than a tier 1 one. Items
+and consumables have no tier at all — they are not balanced on that axis. So
+"a tier 2 party" is a constraint on *equipment* and only a hint for everything
+else. Do not filter loot by `tier`: the column is empty there and you will get
+nothing back.
+
+For a party at tier N, equipment of tier N is a fair reward and tier N+1 is a
+generous one. Two tiers up is not a reward but a problem — the numbers on
+Daggerheart equipment climb steeply.
+
+**`rarity` is loot's axis** — `common`, `uncommon`, `rare`, `very_rare`,
+`legendary`. It comes from the alternate tables, so not every record has one.
+Roughly: common and uncommon are useful, rare and above change how a character
+plays.
+
+**`kind` decides how long a reward lasts.** A consumable is spent; an item is
+kept. A handful of consumables reads as generosity and costs the campaign
+nothing. Three permanent items to one character is a real shift in power.
+
+A few things that make a selection read badly:
+
+- Handing one character three near-identical objects. Three different stones
+  that all attach to a weapon are one reward printed three times.
+- Reaching for `weapon` and `armor` for everybody. Most of what makes a good
+  gift here is loot: something that changes a scene, not a damage die.
+- Ignoring who will hold it. On equipment, `trait` and `range` say who can
+  actually use the thing — a Very Far weapon is wasted on a melee fighter, and
+  one keyed to Strength is close to useless for a Finesse character.
+- Wondrous Loot and the Dread GM Toolbox are written for the environments and
+  plots of their own books: Cthulhu-mythos entries, Mi-go equipment, items that
+  only matter in one location. Read what you picked before handing it over.
+
+If someone asks for "a reward for each player", offering each of them a choice
+of two or three usually plays better than assigning one each.
 
 ## URL grammar
 
 - `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
-  `#/roll/wondrous`; `#/roll/community`
+  `#/roll/wondrous`; `#/roll/dread`; `#/roll/community`
 - `#/tables/<table>` — `core_item`, `core_consumable`, `hnf_item`,
-  `hnf_consumable`, `wondrous`, `community`, `eq_weapon`, `eq_secondary`,
-  `eq_armor`
+  `hnf_consumable`, `wondrous`, `dread`, `community`, `eq_weapon`,
+  `eq_secondary`, `eq_armor`
 - `#/tables/eq_weapon/f_tier-1-2_cls-phy_src-core` — filters. After `f_`, parts
   are separated by `_` and values inside a part by `-`. Keys: `tier`, `cls`
   (`phy`/`mag`), `src` (`core`/`hnf`), `trait`, `rg`, `bu`, `line`
@@ -61,8 +100,20 @@ kind in (weapon, armor) and class = physical and tier in (1, 2)
 ## List links
 
 A list lives entirely inside its link — there is no storage on the server. That
-means **you can build a working link yourself** without calling anything. This
-is how you answer "make me a blacksmith's shop and give me the link".
+means **you can build a working link yourself** without calling anything.
+
+A payload carries all of this, and you can set every part of it:
+
+- the list's name
+- which entries are in it, and in what order
+- a quantity and a price per entry
+- **a note on the whole list, and a note on any single entry**
+- **and each of those notes twice: one the players read, one only the GM sees**
+
+Notes are not an extra the site might or might not support — they are half of
+what a list is for.
+
+### The format
 
 The payload is base64url (`+`→`-`, `/`→`_`, no `=` padding) of UTF-8 text:
 
@@ -73,8 +124,10 @@ line 3+   notes, only when there are any
 ```
 
 The checksum is FNV-1a over the item string (everything after `~`), base36, last
-four characters. It exists so a link truncated by a chat client fails to open
-rather than opening as a shorter list that looks complete.
+four characters. It exists so that a link truncated by a chat client fails to
+open rather than opening as a shorter list that looks complete. **Compute it; do
+not approximate it.** A payload whose checksum does not match shows "link
+damaged" instead of the list.
 
 ```js
 function stamp(parts){
@@ -91,25 +144,35 @@ leading `+` marks a note meant for players.
 
 The final address is `https://artex-x.github.io/daggerheart-loot/#/l/<payload>`.
 
-### Worked example
+### Check your implementation against this
+
+If your code does not reproduce this string exactly, it is wrong, and the link
+you are about to hand over will not open. This is a list named `Blacksmith of
+Redmarch` holding `q26*1*30,q313*2,ci1`, with a player note and a GM note on the
+list itself:
 
 ```
-Blacksmith of Redmarch
-3.xjgp~q26*1*30,q313*2,ci1
-\x1e+~\x1fOld Ferrin sells what the militia leaves behind. Prices are firm.
-\x1e~\x1fFerrin fences stolen goods. Ask about the katana and he changes the subject.
-\x1e+q26\x1fThere is a notch near the guard, filed down but still visible.
-\x1e q26\x1fTaken off a dead courier. Someone is looking for it.
+name      Blacksmith of Redmarch
+items     q26*1*30,q313*2,ci1
+stamp     3.xjgp~
+notes     \x1e+~\x1fOld Ferrin sells what the militia leaves behind.
+          \x1e~\x1fFerrin fences stolen goods.
+
+payload   QmxhY2tzbWl0aCBvZiBSZWRtYXJjaAozLnhqZ3B-cTI2KjEqMzAscTMxMyoyLGNpMQoe
+          K34fT2xkIEZlcnJpbiBzZWxscyB3aGF0IHRoZSBtaWxpdGlhIGxlYXZlcyBiZWhpbmQuH
+          n4fRmVycmluIGZlbmNlcyBzdG9sZW4gZ29vZHMu
 ```
 
-That is: a shop named *Blacksmith of Redmarch* holding one Katana priced at 30
-coins, two Gambeson Armor, and one Premium Bedroll, with two notes on the shop
-and two on the katana.
+The payload is one unbroken string; it is wrapped here only to fit the page.
+
+Before handing a link over, decode your own payload and read it back. If any id
+is missing from `catalog.csv`, or the checksum differs from what `stamp`
+returns, fix it rather than shipping it.
 
 ### The two notes
 
-Every list, and every entry in it, carries two separate notes. This is the one
-thing worth getting right, because the difference is what the players see.
+Every list, and every entry in it, carries two separate notes. The difference is
+what the players see.
 
 - **Player note** (`+` prefix) — what the party reads when they open the link.
   The shop's pitch, a visible detail, a price they are quoted. Write it as

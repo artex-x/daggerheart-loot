@@ -1,51 +1,57 @@
-# Заметки для агента
+# Notes for the agent
 
-Статический сайт без сборки: `index.html`, `style.css`, `app.js`, `data.js`.
-Ничего не транспилируется, ничего не минифицируется, зависимостей во время
-выполнения нет. Открывается и с `file://`, и с GitHub Pages.
+A static site with no build step: `index.html`, `style.css`, `app.js`, `data.js`.
+Nothing is transpiled, nothing is minified, there are no runtime dependencies.
+It opens both from `file://` and from GitHub Pages.
 
-## После правки data.js
+## After editing data.js
 
 ```
 node tools/build.js
 ```
 
-Пересобирает `data.json`, `catalog.csv` и 830 заглушек `i/*.html`.
-`tests/derived.js` собирает их заново в память и сравнивает с диском побайтово —
-пропущенную пересборку ловит тест, а не пользователь. Правка самого генератора
-заглушек без пересборки ловится там же.
+This regenerates `data.json`, `catalog.csv` and the 859 stubs in `i/*.html`.
+`tests/derived.js` rebuilds them into memory and compares byte for byte, so a
+skipped rebuild is caught by a test rather than by a user. Editing the stub
+generator itself without rebuilding is caught in the same place.
 
-Картинки в `img/` и превью в `og/` под скрипт не подпадают: они делаются из
-исходных PNG (WebP 640×640, качество 82, method 6; JPEG 640×640, качество 90).
-Одинаковые байты не дублируются — запись просто указывает на чужой файл, и
-`tests/dataint.js` за этим следит.
+Art in `img/` and previews in `og/` are outside the script: they are made from
+the source PNGs (WebP 640x640, quality 82, method 6; JPEG 640x640, quality 90).
+Identical bytes are never stored twice - a record simply points at another
+record's file, and `tests/dataint.js` watches for that.
 
-Счётчик записей назван словами в `index.html` (мета-описания), `README.md`,
-`app.js` (тексты поиска) и `llms.txt`. `tests/derived.js` вылавливает в этих
-файлах каждое трёхзначное число рядом со «своим» словом и сверяет с data.js, так
-что править вручную всё равно надо, но забыть место — нельзя.
+The record count is spelled out in `index.html` (meta descriptions), `README.md`,
+`app.js` (the search blurb) and `llms.txt`. `tests/derived.js` finds every
+three-digit number next to its own word in those files and checks it against
+data.js, so the numbers still have to be edited by hand - but a forgotten place
+cannot slip through.
 
-## Тесты
+## Tests
 
 ```
 node tests/run-all.js
 ```
 
-Шестнадцать с лишним наборов, часть на puppeteer. Каждый чинёный дефект
-закрывается тестом — это здесь правило, а не пожелание.
+Seventeen-odd suites, some on puppeteer. Every defect that gets fixed gets a
+test - that is a rule here, not a wish.
 
-## Договорённости
+## Conventions
 
-- Комментарии в коде объясняют, **почему** так, а не что делает строка.
-- Тексты интерфейса и сообщения тестов — по-русски, английский только в
-  комментариях кода.
-- Не использовать не-ASCII символы вне русского текста; тире вместо длинного.
-- `git push` делает владелец репозитория, не агент. Коммиты от
-  `artex-x <artex-x@users.noreply.github.com>`.
-- Списки живут в ссылке, а не на сервере. Формат ссылки описан в `llms.txt` и
-  проверяется отдельной реализацией в `tests/lists2.js` — если формат меняется,
-  править надо оба места.
-- `llms.txt` и `robots.txt` — по-английски: их читают модели, так дешевле.
-- Сайт исключён из поисковой выдачи через `noindex` на каждой странице. Обход в
-  `robots.txt` не закрывать: закрытую страницу краулер покажет голой ссылкой, не
-  прочитав тега, и превью в мессенджерах сломаются.
+- Comments explain **why**, not what the line does.
+- Interface text and test messages are in Russian; English only in code
+  comments.
+- No non-ASCII characters outside Russian text; a hyphen rather than an em dash.
+- `git push` is the repository owner's job, not the agent's. Commits are
+  authored by `artex-x <artex-x@users.noreply.github.com>`.
+- Lists live in the link, not on a server. The link format is documented in
+  `llms.txt` and verified by a separate implementation in `tests/lists2.js` - if
+  the format changes, both places need editing.
+- `llms.txt` and `robots.txt` are in English: models read them, and it is
+  cheaper that way.
+- The site is kept out of search results by a `noindex` tag on every page. Do
+  not close crawling in `robots.txt`: a blocked page gets listed as a bare URL
+  without the tag ever being read, and messenger previews break.
+- Do not invent a tier for equipment that has none. Damage bands for adjacent
+  tiers overlap; a guess trained on the Core tables misses one row in seven of
+  its own, and four out of seven on a third-party book. The card leaves the tier
+  out instead, and the source chip says where the entry came from.

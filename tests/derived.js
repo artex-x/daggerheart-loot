@@ -60,7 +60,7 @@ console.log('заглушки совпадают с генератором');
 /* craft.js сверяет заглушки по началу описания — этого хватает, пока меняются
    данные. Но правка самого генератора (скажем, добавленный мета-тег) так не
    видна: описание на месте, а устарели страницы все разом. Поэтому здесь все
-   830 рисуются заново и сравниваются целиком. */
+   859 рисуются заново и сравниваются целиком. */
 const { page } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
 const drift = ALL.filter(function (x) {
   const p = path.join(ROOT, 'i', x.id + '.html');
@@ -88,7 +88,7 @@ ok(!fs.existsSync(path.join(ROOT, 'sitemap.xml')),
 console.log('llms.txt');
 const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
 ['catalog.csv', 'data.json', '#/l/', 'stamp', '10 handfuls = 1 bag',
- 'Player note', 'GM note', 'Not indexed'].forEach(s =>
+ 'Player note', 'GM note', 'Not indexed', 'Read `catalog.csv` first', 'Dread GM Toolbox', 'Never name an item from memory'].forEach(s =>
   ok(llms.indexOf(s) > 0, 'llms.txt не упоминает ' + s));
 /* Число записей названо и в описании сайта, и здесь — пусть расходится громко */
 ok(llms.indexOf(String(ALL.length)) > 0, 'в llms.txt не то число записей');
@@ -96,17 +96,54 @@ ok(llms.indexOf(String(ALL.length)) > 0, 'в llms.txt не то число за�
 /* Разобранный пример в llms.txt — это то, что агент скопирует и повторит.
    Контрольная сумма в нём должна сходиться с тем, что даёт описанный тут же
    алгоритм, а идентификаторы — существовать. */
-const ex = /\n([0-9a-z]+\.[0-9a-z]{1,4})~([a-z0-9*,]+)\n/.exec(llms);
-ok(!!ex, 'в llms.txt не нашёлся разобранный пример списка');
-if (ex) {
-  const parts = ex[2].split(',');
+const items = /\nitems\s+([a-z0-9*,]+)\n/.exec(llms);
+const st = /\nstamp\s+([0-9a-z]+\.[0-9a-z]{1,4})~/.exec(llms);
+const pay = /\npayload\s+([\s\S]*?)\n\s*```/.exec(llms);
+ok(!!items && !!st && !!pay, 'в llms.txt не нашёлся разобранный пример списка');
+if (items && st && pay) {
+  const body = items[1], parts = body.split(',');
   let h = 2166136261;
-  for (let i = 0; i < ex[2].length; i++) { h ^= ex[2].charCodeAt(i); h = Math.imul(h, 16777619); }
+  for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
   const want = parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4);
-  ok(want === ex[1], 'контрольная сумма в примере не сходится: в тексте ' + ex[1] + ', а надо ' + want);
+  ok(want === st[1], 'контрольная сумма в примере не сходится: в тексте ' + st[1] + ', а надо ' + want);
   const byId = {}; ALL.forEach(x => { byId[x.id] = x; });
   parts.forEach(p => ok(!!byId[p.split('*')[0]], 'в примере несуществующий id: ' + p));
+
+  /* Эталонная строка обещает агенту: «получилось не то — значит, ошибся».
+     Обещание держится только пока она и правда собирается по описанию. */
+  const name = /\nname\s+(.+)/.exec(llms)[1].trim();
+  const notes = (llms.match(/\\x1e\+?[~a-z0-9]*\\x1f[^\n]+/g) || [])
+    .map(s => s.replace(/\\x1e/g, '\x1e').replace(/\\x1f/g, '\x1f')).join('');
+  const raw = name + '\n' + want + '~' + body + '\n' + notes;
+  const mine = Buffer.from(raw, 'utf8').toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const shown = pay[1].replace(/\s+/g, '');
+  ok(mine === shown, 'эталонный payload в llms.txt не собирается по описанию оттуда же');
 }
+
+console.log('Dread GM Toolbox');
+/* Раздел устроен как Wondrous: свой список, свой бросок, свои картинки. Ранги
+   у семи единиц снаряжения книга называет сама - выдумывать их нельзя. */
+const DR = L.items.dread;
+ok(DR.length === 29, 'в Dread не 29 позиций, а ' + DR.length);
+ok(DR.every((x, i) => x.roll === i + 1), 'номера Dread не идут подряд с единицы');
+ok(DR.every(x => x.src === 'dread' && x.img), 'у Dread не проставлен источник или картинка');
+const dreadEq = DR.filter(x => x.eq);
+ok(dreadEq.length === 7, 'снаряжения в Dread не 7, а ' + dreadEq.length);
+ok(dreadEq.every(x => x.eq.tier === 3 || x.eq.tier === 4), 'ранг снаряжения Dread не из книги');
+ok(DR.filter(x => x.kind === 'consumable').length === 7,
+   'расходников в Dread не 7, а ' + DR.filter(x => x.kind === 'consumable').length);
+/* Строка таблицы из книги уехала в eq и не должна остаться в описании */
+ok(dreadEq.every(x => !/^Tier \d|^Магическое Оружие/.test(x.ende + x.rud)),
+   'в описании снаряжения Dread осталась строка таблицы');
+
+/* Ранга может не быть - и тогда его не показывают, а не подставляют источник */
+const noTier = [].concat(...Object.values(L.items)).filter(x => x.eq && !x.eq.tier);
+ok(noTier.length > 0 && noTier.every(x => x.src === 'wondrous'),
+   'без ранга оказалось не только снаряжение Wondrous');
+const app = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
+ok(app.indexOf("out.push(e.tier ? t().tier + ' ' + e.tier : t().srcWond)") < 0,
+   'в чипе ранга снова подставляется источник');
 
 console.log('счётчики в текстах');
 /* Число записей выписано словами в мета-описаниях, в README и в подсказке
