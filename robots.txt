@@ -1,0 +1,29 @@
+# This is a personal tool and is meant to stay out of search results.
+#
+# Crawling is allowed on purpose. Blocking it here would be worse: a crawler
+# that is not allowed to fetch a page never reads the "noindex" on it, and can
+# still list the bare URL it found elsewhere. Letting it fetch and then telling
+# it "noindex" is what actually keeps the page out. Every page carries that tag.
+#
+# Link previews in messengers (Telegram, Discord, Slack) need to fetch too, so a
+# blanket Disallow would break those as well.
+#
+# Readable data, for an agent someone has handed the link to:
+#   /catalog.csv   830 records, one per row
+#   /data.json     the same records in full
+#   /llms.txt      what this is, the URL grammar, the list link format
+
+User-agent: *
+Allow: /
+
+# Bulk collection for training is a different thing from reading a page someone
+# asked about. The item text is not mine to hand over.
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: CCBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: meta-externalagent
+Disallow: /

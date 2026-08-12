@@ -1,0 +1,179 @@
+# Daggerheart Loot Generator
+
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 830
+> records covering items, consumables, weapons and armour from the Core Set,
+> Hope & Fear, Wondrous Loot and community sets. Static site, no server, no API,
+> no accounts.
+
+Site: https://artex-x.github.io/daggerheart-loot/
+Source: https://github.com/artex-x/daggerheart-loot
+
+Not indexed by search engines on purpose — this is a personal tool. It is fine
+to read it when someone hands you the link; please do not add it to a crawl or
+a training set.
+
+## Read this first
+
+The app renders on the client, and **everything after `#` in the address is a
+fragment that never leaves the browser**. Fetching `index.html` gives you an
+empty page, and a link to a shop looks like meaningless base64. This is not a
+rendering problem you can wait out — the data is not in what you fetched. Use
+the files below instead.
+
+## Data
+
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 830
+  rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
+  rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
+  crafts_into, community, url, text_ru, text_en`. Start here — it is enough to
+  pick items by any condition.
+- [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
+  records in full, plus the rarity tables (`alt`) and the text of domain cards
+  that some loot refers to (`refs`).
+- `i/<id>.html` — one record as a readable page, e.g.
+  [i/q26.html](https://artex-x.github.io/daggerheart-loot/i/q26.html).
+
+`kind` is one of `item`, `consumable`, `weapon`, `secondary`, `armor`.
+`source` is `Core`, `Hope & Fear`, `Wondrous Loot`, `Community`.
+`tier` (1–4) exists only for equipment; `rarity` (`common`, `uncommon`, `rare`,
+`very_rare`, `legendary`) only for loot and consumables.
+
+Example — a blacksmith's stock, tier 1–2, physical only:
+
+```
+kind in (weapon, armor) and class = physical and tier in (1, 2)
+```
+
+## URL grammar
+
+- `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
+  `#/roll/wondrous`; `#/roll/community`
+- `#/tables/<table>` — `core_item`, `core_consumable`, `hnf_item`,
+  `hnf_consumable`, `wondrous`, `community`, `eq_weapon`, `eq_secondary`,
+  `eq_armor`
+- `#/tables/eq_weapon/f_tier-1-2_cls-phy_src-core` — filters. After `f_`, parts
+  are separated by `_` and values inside a part by `-`. Keys: `tier`, `cls`
+  (`phy`/`mag`), `src` (`core`/`hnf`), `trait`, `rg`, `bu`, `line`
+- `#/i/<id>` — one record
+- `#/search` — search
+- `#/l/<payload>` — a list (see below)
+
+## List links
+
+A list lives entirely inside its link — there is no storage on the server. That
+means **you can build a working link yourself** without calling anything. This
+is how you answer "make me a blacksmith's shop and give me the link".
+
+The payload is base64url (`+`→`-`, `/`→`_`, no `=` padding) of UTF-8 text:
+
+```
+line 1    list name
+line 2    <count in base36>.<4 checksum chars>~id,id*qty,id*qty*price
+line 3+   notes, only when there are any
+```
+
+The checksum is FNV-1a over the item string (everything after `~`), base36, last
+four characters. It exists so a link truncated by a chat client fails to open
+rather than opening as a shorter list that looks complete.
+
+```js
+function stamp(parts){
+  const body = parts.join(',');
+  let h = 2166136261;
+  for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
+}
+```
+
+Notes follow the second newline. Each starts with `\x1e`, and `\x1f` separates
+the id from the text. The id `~` means the note belongs to the whole list. A
+leading `+` marks a note meant for players.
+
+The final address is `https://artex-x.github.io/daggerheart-loot/#/l/<payload>`.
+
+### Worked example
+
+```
+Blacksmith of Redmarch
+3.xjgp~q26*1*30,q313*2,ci1
+\x1e+~\x1fOld Ferrin sells what the militia leaves behind. Prices are firm.
+\x1e~\x1fFerrin fences stolen goods. Ask about the katana and he changes the subject.
+\x1e+q26\x1fThere is a notch near the guard, filed down but still visible.
+\x1e q26\x1fTaken off a dead courier. Someone is looking for it.
+```
+
+That is: a shop named *Blacksmith of Redmarch* holding one Katana priced at 30
+coins, two Gambeson Armor, and one Premium Bedroll, with two notes on the shop
+and two on the katana.
+
+### The two notes
+
+Every list, and every entry in it, carries two separate notes. This is the one
+thing worth getting right, because the difference is what the players see.
+
+- **Player note** (`+` prefix) — what the party reads when they open the link.
+  The shop's pitch, a visible detail, a price they are quoted. Write it as
+  something a character could observe.
+- **GM note** (no prefix) — what the GM keeps. The hook, the catch, the curse,
+  the real reason the price is low. Write it as something the GM acts on.
+
+There are two links out of any list. The players' link carries only the player
+notes; the GM's link carries both and is the GM's own backup. **When you build a
+link to hand to players, leave the GM notes out** — they travel with it
+otherwise.
+
+Good pairs:
+
+| Player note | GM note |
+|---|---|
+| The blade has a notch near the guard. | Taken off a courier the party is about to be asked to find. |
+| Ferrin will not haggle, but he throws in a bedroll. | He is short on coin this week; he folds at a second offer. |
+| The armour smells faintly of smoke. | Salvaged from the fire in Act 1. Recognising it costs a Knowledge roll. |
+
+Avoid putting mechanics the players should discover in a player note, and avoid
+putting flavour they need right now in a GM note.
+
+## Money
+
+The Core Set says outright (p. 105) that **there are no prices in the book** for
+weapons, armour and loot — the GM sets them based on how much gold they hand
+out. Gold is counted in handfuls, bags and chests: **10 handfuls = 1 bag, 10
+bags = 1 chest**. Under the optional rule this project uses, **1 handful = 10
+coins**, so 1 bag = 100 coins and 1 chest = 1000 coins.
+
+The price field in a list is **coins**, as a whole number.
+
+The magnitudes below are summarised from the community spreadsheet
+[Daggerheart — Loot Tables](https://docs.google.com/spreadsheets/d/1rGbS6PCuJegUo7Wo-UzTDplcc3evTJm88UGu2H3jPgk/),
+where the column is priced in bags. **This is not canon** — it is a starting
+point:
+
+| | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+|---|---|---|---|---|
+| Weapons (primary and secondary) | 20–30 coins | 100–150 | 500–700 | 1000–1500 |
+| Armour | 20–40 | 150–200 | 600–800 | 1500–2000 |
+
+Consumables scale by potency rather than tier: about 20 coins for a minor
+potion, 40 for a standard one, 60 for a major one, 80 for a rare one. Loot —
+the magical oddities that have no tier — runs about 100 coins for a simple
+trinket, 500 for something notable, 1000 for a relic or anything granting a
+permanent bonus to a trait.
+
+Within a tier, the more distinctive item costs more: armour prices track Armor
+Score, and a named weapon costs more than the plain one of the same tier.
+
+If the GM has given you prices, use theirs. If not, offer these, say they are a
+starting point, and say where they come from. Do not present them as a rule
+from the book.
+
+## What this site cannot do
+
+- No API, no server-side storage, no accounts. Lists live in the GM's browser
+  and in links.
+- You cannot edit someone else's list — you can only build a new address.
+- Art is at `img/<id>.webp`, link previews at `og/<id>.jpg`.
+
+## Licence
+
+Item text belongs to Darrington Press and is used under the Daggerheart
+Community Gaming License. The project code is MIT.

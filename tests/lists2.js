@@ -163,6 +163,44 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const kinds2 = await page.$$eval('[data-act="kind"]', e => e.map(x => x.textContent));
   ok(kinds2.indexOf('Снаряжение') >= 0, 'в поиске пропал тип «Снаряжение»');
 
+  /* ---------- ссылка, собранная по описанию из llms.txt ----------
+     Формат списка описан в llms.txt для того, чтобы агент мог собрать адрес
+     сам, ничего не вызывая. Смысл есть только если описание верно, поэтому
+     здесь ссылка строится ровно по нему — своей реализацией, не функциями
+     приложения — и проверяется, что приложение её открывает. */
+  console.log('ссылка, собранная по описанию из llms.txt');
+  {
+    const stamp = parts => {
+      const body = parts.join(',');
+      let h = 2166136261;
+      for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
+    };
+    const parts = ['q26*1*30', 'q313*2', 'ci1'];
+    const raw = 'Лавка кузнеца\n' + stamp(parts) + parts.join(',') +
+      '\n\x1e+~\x1fТовар лежит навалом.' +
+      '\x1e~\x1fКузнец сбывает краденое.' +
+      '\x1e+q26\x1fНа клинке зазубрина.';
+    const payload = Buffer.from(raw, 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await go('#/l/' + payload);
+    const text = await page.$eval('#view', e => e.innerText);
+    ok(/Лавка кузнеца/.test(text), 'собранная ссылка не открылась как список');
+    ok(/Катана/.test(text) && /Стеганый Доспех/.test(text) && /Спальный Мешок/.test(text),
+       'в собранном списке не все позиции: ' + text.slice(0, 120));
+    ok(/30/.test(text), 'цена из собранной ссылки не показана');
+    ok(/×2|x2/.test(text), 'количество из собранной ссылки не показано');
+    ok(/Товар лежит навалом/.test(text) && /Кузнец сбывает краденое/.test(text),
+       'заметки из собранной ссылки не показаны');
+    ok(/На клинке зазубрина/.test(text), 'заметка о позиции не показана');
+    // подпорченная контрольная сумма должна списком не открыться
+    const broken = Buffer.from(raw.replace(stamp(parts), stamp(parts.slice(0, 2))), 'utf8')
+      .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await go('#/l/' + broken);
+    ok(!/Катана/.test(await page.$eval('#view', e => e.innerText)),
+       'ссылка с неверной контрольной суммой всё равно открылась');
+  }
+
   await browser.close();
   console.log(fail ? '\n' + fail + ' FAILED' : '\nсписки: все проверки прошли');
   process.exit(fail ? 1 : 0);

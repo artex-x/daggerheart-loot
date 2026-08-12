@@ -1,0 +1,101 @@
+/* data.json и catalog.csv собираются из data.js и лежат рядом с
+   ним. Стоит поправить данные и забыть пересобрать — они разойдутся молча, и
+   ничего в них не будет выглядеть неправильным. Поэтому здесь они собираются
+   заново в память и сравниваются с тем, что закоммичено. */
+const fs = require('fs');
+const path = require('path');
+const ROOT = path.join(__dirname, '..');
+const D = require(path.join(ROOT, 'tools', 'derived.js'));
+let fail = 0;
+const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
+
+global.window = {};
+require(path.join(ROOT, 'data.js'));
+const L = global.window.LOOT;
+
+console.log('производные файлы совпадают с data.js');
+[['data.json', D.dataJson], ['catalog.csv', D.catalogCsv]]
+  .forEach(function ([name, make]) {
+    const disk = fs.existsSync(path.join(ROOT, name))
+      ? fs.readFileSync(path.join(ROOT, name), 'utf8') : null;
+    ok(disk !== null, name + ': файла нет — запусти node tools/build.js');
+    if (disk !== null) ok(disk === make(L), name + ': устарел — запусти node tools/build.js');
+  });
+
+console.log('каталог читается');
+const rows = fs.readFileSync(path.join(ROOT, 'catalog.csv'), 'utf8').trim().split('\n');
+const ALL = D.everything(L);
+/* Описания содержат и запятые, и кавычки, и переводов строк в них быть не
+   должно — иначе строк в файле окажется больше, чем записей. */
+ok(rows.length === ALL.length + 1, 'строк в catalog.csv не ' + (ALL.length + 1) + ', а ' + rows.length);
+const head = rows[0].split(',');
+ok(head[0] === 'id' && head.indexOf('tier') > 0 && head.indexOf('name_ru') > 0,
+   'шапка каталога не та: ' + rows[0].slice(0, 60));
+
+/* Достаточно ли каталога, чтобы собрать лавку кузнеца: броня 1-2 ранга,
+   физическое основное оружие тех же рангов. Если да — агенту хватит его одного. */
+const idx = {};
+head.forEach((h, i) => { idx[h] = i; });
+const parsed = rows.slice(1).map(function (line) {
+  const out = []; let cur = '', q = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (q) { if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+             else if (c === '"') q = false; else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { out.push(cur); cur = ''; }
+    else cur += c;
+  }
+  out.push(cur);
+  return out;
+});
+ok(parsed.every(r => r.length === head.length), 'в каталоге есть строка не той ширины');
+const smith = parsed.filter(r => (r[idx.kind] === 'armor' || (r[idx.kind] === 'weapon' && r[idx.class] === 'physical'))
+                                 && ['1', '2'].indexOf(r[idx.tier]) >= 0);
+ok(smith.length > 40, 'по каталогу не отобрать товар кузнеца: нашлось ' + smith.length);
+ok(parsed.every(r => !r[idx.id] || /^https:\/\/artex-x\.github\.io\//.test(r[idx.url])),
+   'в каталоге битая ссылка на страницу записи');
+
+console.log('не индексируется');
+/* Личный инструмент: страницы не должны попадать в выдачу. Работает это только
+   в паре — обход разрешён, чтобы noindex вообще прочитали, а закрытая роботсом
+   страница может попасть в выдачу голой ссылкой, так и не прочитав тег. */
+const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
+ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')),
+   'на index.html нет noindex');
+ALL.slice(0, 3).concat(ALL.slice(-3)).forEach(x =>
+  ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'i', x.id + '.html'), 'utf8')),
+     'на i/' + x.id + '.html нет noindex'));
+const rob = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
+ok(/^User-agent: \*\s*\nAllow: \//m.test(rob),
+   'robots.txt закрывает обход — тогда noindex никто не прочитает');
+ok(/GPTBot|CCBot/.test(rob) && /Disallow: \//.test(rob),
+   'robots.txt не отсекает сборщиков для обучения');
+ok(!fs.existsSync(path.join(ROOT, 'sitemap.xml')),
+   'карта сайта вернулась, а она нужна ровно для индексации');
+
+console.log('llms.txt');
+const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
+['catalog.csv', 'data.json', '#/l/', 'stamp', '10 handfuls = 1 bag',
+ 'Player note', 'GM note', 'Not indexed'].forEach(s =>
+  ok(llms.indexOf(s) > 0, 'llms.txt не упоминает ' + s));
+/* Число записей названо и в описании сайта, и здесь — пусть расходится громко */
+ok(llms.indexOf(String(ALL.length)) > 0, 'в llms.txt не то число записей');
+
+/* Разобранный пример в llms.txt — это то, что агент скопирует и повторит.
+   Контрольная сумма в нём должна сходиться с тем, что даёт описанный тут же
+   алгоритм, а идентификаторы — существовать. */
+const ex = /\n([0-9a-z]+\.[0-9a-z]{1,4})~([a-z0-9*,]+)\n/.exec(llms);
+ok(!!ex, 'в llms.txt не нашёлся разобранный пример списка');
+if (ex) {
+  const parts = ex[2].split(',');
+  let h = 2166136261;
+  for (let i = 0; i < ex[2].length; i++) { h ^= ex[2].charCodeAt(i); h = Math.imul(h, 16777619); }
+  const want = parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4);
+  ok(want === ex[1], 'контрольная сумма в примере не сходится: в тексте ' + ex[1] + ', а надо ' + want);
+  const byId = {}; ALL.forEach(x => { byId[x.id] = x; });
+  parts.forEach(p => ok(!!byId[p.split('*')[0]], 'в примере несуществующий id: ' + p));
+}
+
+console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
+process.exit(fail ? 1 : 0);

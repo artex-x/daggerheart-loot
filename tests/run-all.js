@@ -7,6 +7,7 @@ const HERE = __dirname;
 const ONLY=(process.argv[2]||'').split(',').filter(Boolean);
 const SUITES = [
   ['dataint',  'инварианты data.js'],
+  ['derived',  'производные файлы и каталог'],
   ['i18n',     'паритет переводов'],
   ['typo',     'шрифты и шкала размеров'],
   ['hues',     'цвета ярлыков различимы'],

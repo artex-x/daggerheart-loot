@@ -17,3 +17,4 @@ node_modules/
 # Исходники и черновики
 Vol*.pdf
 tools/__pycache__/
+tools/vault_extract.py

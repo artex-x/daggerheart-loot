@@ -96,6 +96,8 @@ function page(it){
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- kept out of search results; see robots.txt for why crawling is allowed -->
+<meta name="robots" content="noindex, nofollow">
 <title>${esc(name)} — Генератор лута Daggerheart</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${esc(url)}">
