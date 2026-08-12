@@ -41,9 +41,12 @@ const CSV_HEAD = ['id', 'kind', 'source', 'name_ru', 'name_en', 'tier', 'rarity'
                   'class', 'trait', 'range', 'damage', 'burden', 'armor_score',
                   'thresholds', 'crafts_into', 'community', 'url', 'text_ru', 'text_en'];
 
+/* Описание вещи с двумя свойствами хранится в двух строках. В таблице строка
+   файла обязана оставаться одной строкой на запись, иначе каталог перестанет
+   читаться построчно - переводы строк схлопываются в пробел. */
 function cell(v){
-  const s = v == null ? '' : String(v);
-  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  const s = (v == null ? '' : String(v)).replace(/\s*\n\s*/g, ' ');
+  return /[",]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
 /* One row per record, every column an agent needs to answer "give me tier 1-2

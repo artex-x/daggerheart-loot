@@ -113,7 +113,11 @@ if (items && st && pay) {
   /* Эталонная строка обещает агенту: «получилось не то — значит, ошибся».
      Обещание держится только пока она и правда собирается по описанию. */
   const name = /\nname\s+(.+)/.exec(llms)[1].trim();
-  const notes = (llms.match(/\\x1e\+?[~a-z0-9]*\\x1f[^\n]+/g) || [])
+  /* Заметки берём только из самого эталонного блока: примеры заметок есть и в
+     других местах файла, и они не имеют к нему отношения. */
+  const block = /\nnotes\s+([\s\S]*?)\n\s*\npayload/.exec(llms);
+  ok(!!block, 'в эталонном блоке не нашлись заметки');
+  const notes = ((block ? block[1] : '').match(/\\x1e\+?[~a-z0-9]*\\x1f[^\n]+/g) || [])
     .map(s => s.replace(/\\x1e/g, '\x1e').replace(/\\x1f/g, '\x1f')).join('');
   const raw = name + '\n' + want + '~' + body + '\n' + notes;
   const mine = Buffer.from(raw, 'utf8').toString('base64')

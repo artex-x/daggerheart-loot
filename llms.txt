@@ -71,6 +71,19 @@ Daggerheart equipment climb steeply.
 Roughly: common and uncommon are useful, rare and above change how a character
 plays.
 
+The alternate tables suggest which tiers each rarity suits. This is a
+recommendation, not a restriction — nothing stops a tier 1 party finding a
+legendary trinket, it just lands harder:
+
+| Rarity | Suits tiers |
+|---|---|
+| common, uncommon | 1–2 |
+| rare | 2–3 |
+| very rare, legendary | 3–4 |
+
+So "something for a tier 2 party" means equipment of tier 2 and loot of common
+through rare.
+
 **`kind` decides how long a reward lasts.** A consumable is spent; an item is
 kept. A handful of consumables reads as generosity and costs the campaign
 nothing. Three permanent items to one character is a real shift in power.
@@ -149,6 +162,22 @@ function stamp(parts){
 Notes follow the second newline. Each starts with `\x1e`, and `\x1f` separates
 the id from the text. The id `~` means the note belongs to the whole list. A
 leading `+` marks a note meant for players.
+
+**A note may contain real newlines, and long ones should.** Only `\x1e` ends a
+note, so a `\n` inside the text is just a line break and the app renders it as
+one. Write a shop's terms as separate lines rather than running them together
+with `|` or `//`:
+
+```
+\x1e+~\x1fHaggling: one discount per visit, and only one way to get it.
+A Presence roll (15) if you have bought here before: success takes 20% off.
+Ingredients count for about half their value.
+Invisibility Potion is never discounted.
+```
+
+Do not put a newline in the list name or in the item line — the first two lines
+of the payload are found by splitting on `\n`, so a stray break there truncates
+the list.
 
 The final address is `https://artex-x.github.io/daggerheart-loot/#/l/<payload>`.
 

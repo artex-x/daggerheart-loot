@@ -74,7 +74,7 @@ const S = {
 /* ---------- i18n ---------- */
 const T = {
   ru: {
-    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', dread:'Dread', tables:'Таблицы', lists:'Списки', search:'Поиск' },
+    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', dread:'Dread', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Сообщества',
@@ -217,7 +217,7 @@ const T = {
     },
   },
   en: {
-    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', dread:'Dread', tables:'Tables', lists:'Lists', search:'Search' },
+    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', dread:'Dread', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Communities',
@@ -526,8 +526,13 @@ function eqChips(it){
 function descHtml(it){
   const s = descOf(it) || '';
   if (!isEquip(it)) return esc(s);
-  const i = s.indexOf(': ');
-  return i < 0 ? esc(s) : '<i>' + esc(s.slice(0, i)) + ':</i>' + esc(s.slice(i + 1));
+  /* У вещи бывает два свойства сразу, и в одну строку они читаются как одно
+     длинное. Каждое стоит на своей строке в данных, и ярлык выделяется у
+     каждой, а не только у первой. */
+  return s.split('\n').map(function (line) {
+    const i = line.indexOf(': ');
+    return i < 0 ? esc(line) : '<i>' + esc(line.slice(0, i)) + ':</i>' + esc(line.slice(i + 1));
+  }).join('<br>');
 }
 
 /* What travels with an item when it is copied or shared: the full text of the
@@ -2338,7 +2343,7 @@ const ROUTES = {
 };
 const TAB_LIST = [
   ['roll/std','std'], ['roll/alt','alt'],
-  ['roll/wondrous','wondrous'], ['roll/community','community'], ['roll/dread','dread'],
+  ['roll/wondrous','wondrous'], ['roll/dread','dread'], ['roll/community','community'],
   ['tables','tables'], ['lists','lists'], ['search','search']
 ];
 /* links handed out before the three d12 modes were merged */

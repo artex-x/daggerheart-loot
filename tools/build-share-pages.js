@@ -86,7 +86,8 @@ function page(it){
   const name = it.ru || it.en;
   const craft = craftLines(it);
   // the unfurl preview is one flat string, so the chain joins the description
-  const desc = (it.eq ? eqLine(it) + '. ' : '') + (it.rud || it.ende) +
+  // предпросмотр в мессенджере - одна плоская строка, переносы в ней ни к чему
+  const desc = (it.eq ? eqLine(it) + '. ' : '') + (it.rud || it.ende).replace(/\s*\n\s*/g, ' ') +
     (craft.length ? ' ' + craft.join(' ') + '.' : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.

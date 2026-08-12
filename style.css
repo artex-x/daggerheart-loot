@@ -81,7 +81,11 @@ a{color:var(--gold-soft)}
 .seg.small button{padding:4px 12px;font-size:12px}
 
 /* tabs */
-.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;scrollbar-width:none;padding-bottom:2px}
+/* Восемь вкладок в одну строку на среднем экране уже не помещались, и лишние
+   уезжали за правый край: разделы просто пропадали из виду. На узком экране
+   привычнее прокрутка, на широком - перенос. */
+@media (max-width:640px){.tabs{flex-wrap:nowrap;overflow-x:auto}}
 .tabs::-webkit-scrollbar{display:none}
 .tabs a{
   flex:none;text-decoration:none;color:var(--muted);
