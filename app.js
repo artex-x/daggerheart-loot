@@ -42,6 +42,7 @@ const S = {
   route: '',
   std:  { n: 1, src: { core: true, hnf: true } },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
+  rp: -20,          // проценты в панели пересчёта цен
   wond: { n: 1 },
   dread: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
@@ -146,7 +147,10 @@ const T = {
     sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
     copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
-    craftInto:'Улучшается до', craftFrom:'Получается из',
+    craftInto:'Улучшается до', craftFrom:'Получается из', tierLadder:'Ранг',
+    reprice:'Пересчитать цены', repriceOf:'с ценой', repricePct:'Процентов',
+    repriceGo:'Применить', repriceHint:'Минус — скидка, плюс — наценка. Позиции без цены не трогаются.',
+    repriceDone:'Цены пересчитаны', repriceUndo:'Вернуть',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
@@ -289,7 +293,10 @@ const T = {
     sImg:'Image', sText:'Text', tableLink:'Link to this table',
     copyRoll:'Copy every option', rollCopied:'Options copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
-    craftInto:'Upgrades to', craftFrom:'Made from',
+    craftInto:'Upgrades to', craftFrom:'Made from', tierLadder:'Tier',
+    reprice:'Reprice', repriceOf:'priced', repricePct:'Per cent',
+    repriceGo:'Apply', repriceHint:'Minus discounts, plus marks up. Entries without a price are left alone.',
+    repriceDone:'Prices recalculated', repriceUndo:'Undo',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
@@ -562,9 +569,64 @@ function extraBlocks(it, skip){
   return out;
 }
 
+/* ---------- пересчёт цен ----------
+   Скидка у торговца - это не «поправь десять полей руками», а одно решение:
+   успех с Надеждой даёт минус двадцать процентов на всю покупку. Панель берёт
+   проценты и применяет их ко всем позициям, у которых цена вообще проставлена;
+   без цены позиция не трогается - нулю скидка не нужна.
+
+   Отменить можно кнопкой в уведомлении: прежние цены запоминаются целиком, а
+   не пересчитываются обратно, иначе округление увело бы их в сторону. */
+function repriceHTML(l){
+  /* Панель показывается у любого непустого списка, а не только у списка с
+     ценами: цена проставляется без перерисовки, и панель, зависящая от неё,
+     появлялась бы только при следующем заходе на страницу. Свёрнутая строка
+     стоит дёшево, внезапно исчезающий и появляющийся блок - дорого. */
+  if (!l.ids.length) return '';
+  const priced = l.ids.filter(function (id) { return itemMeta(l, id).gold > 0; }).length;
+  return '<details class="reprice"><summary>' + ICON_COIN + '<span>' + esc(t().reprice) +
+    '</span><i>' + esc(priced + ' ' + t().repriceOf) + '</i></summary>' +
+    '<div class="reprice-in">' +
+      '<label class="rp-f"><span class="lbl">' + esc(t().repricePct) + '</span>' +
+        numBox('rp', S.rp, -90, 500) + '</label>' +
+      '<button type="button" class="btn primary sm" data-reprice="' + esc(l.id) + '"' +
+        (priced ? '' : ' disabled') + '>' + esc(t().repriceGo) + '</button>' +
+      '<span class="rp-hint">' + esc(t().repriceHint) + '</span>' +
+    '</div></details>';
+}
+
 /* ---------- crafting ----------
    Both directions as plain rows, so the card, the clipboard and the list
    export all read from one place. Every row points at a record that exists. */
+/* ---------- ступени линии улучшения ----------
+   У снаряжения улучшения не пара «до/из», а лестница из четырёх рангов, и
+   ходить по ней через поиск неудобно. Ряд номеров под характеристиками -
+   это та же лестница: текущая ступень подсвечена, остальные кликабельны. */
+const BY_LINE = {};
+EQ.concat(...Object.values(DATA)).forEach(function (x) {
+  if (x.eq && x.eq.line) (BY_LINE[x.eq.line] = BY_LINE[x.eq.line] || []).push(x);
+});
+Object.keys(BY_LINE).forEach(function (k) {
+  BY_LINE[k].sort(function (a, b) { return a.eq.tier - b.eq.tier; });
+});
+function lineSteps(it){
+  if (!isEquip(it) || !it.eq.line) return [];
+  const all = BY_LINE[it.eq.line] || [];
+  return all.length > 1 ? all : [];
+}
+function lineStepsHTML(it){
+  const all = lineSteps(it);
+  if (!all.length) return '';
+  return '<div class="steps"><span class="steps-l">' + esc(t().tierLadder) + '</span>' +
+    all.map(function (x) {
+      const on = x.id === it.id;
+      return on
+        ? '<span class="step on" aria-current="true">' + x.eq.tier + '</span>'
+        : '<button type="button" class="step" data-open="' + esc(x.id) + '"' +
+          ' title="' + esc(nameOf(x)) + '">' + x.eq.tier + '</button>';
+    }).join('') + '</div>';
+}
+
 function craftRows(it){
   const rows = [];
   const into = BY_ID[it.craft];
@@ -700,6 +762,7 @@ const ICON_HOME = '<svg viewBox="0 0 24 24" width="15" height="15" fill="current
 const ICON_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M12 5c-5 0-9 4.5-9.7 6.6a1.2 1.2 0 0 0 0 .8C3 14.5 7 19 12 19s9-4.5 9.7-6.6a1.2 1.2 0 0 0 0-.8C21 9.5 17 5 12 5zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>';
 const ICON_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M2.8 3.6 3.9 2.5l17.6 17.6-1.1 1.1-3.2-3.2A10 10 0 0 1 12 19c-5 0-9-4.5-9.7-6.6a1.2 1.2 0 0 1 0-.8A13 13 0 0 1 6 7.3L2.8 3.6zm5.3 5.3A5 5 0 0 0 12 17c1 0 1.9-.3 2.7-.8l-1.5-1.5a2.5 2.5 0 0 1-3.4-3.4L8.1 8.9zM12 5c5 0 9 4.5 9.7 6.6a1.2 1.2 0 0 1 0 .8 13 13 0 0 1-2.5 3.4l-3-3A5 5 0 0 0 9.2 6.4 9.6 9.6 0 0 1 12 5z"/></svg>';
 const ICON_NOTE = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V4a1 1 0 0 1 1-1zm3 5h10V6.5H7V8zm0 3h10V9.5H7V11zm0 3h7v-1.5H7V14z"/></svg>';
+const ICON_COIN = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v8M9.6 10.2h4.8M9.6 13.8h4.8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
 const ICON_REF ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z"/></svg>';
 const ICON_CRAFT ='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z"/></svg>';
 const ICON_GRIP ='<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="flex:none"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
@@ -1484,6 +1547,7 @@ function cardHTML(it, opt){
       '</h2>' +
       eqChips(it) +
       (ds ? '<p class="card-desc">' + descHtml(it) + '</p>' : '') +
+      lineStepsHTML(it) +
       craftHTML(it) +
       refHTML(it) +
       '<div class="card-acts">' +
@@ -2185,6 +2249,7 @@ function renderOneList(id){
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
+    repriceHTML(l) +
     /* Same slot as on the index: under the page header, above the content.
        Between the note and the roll panel it read as a caption for the roll,
        and at the foot it turned up in two different places on two pages that
@@ -2769,6 +2834,35 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const rp = e.target.closest('[data-reprice]');
+  if (rp) {
+    const l = getList(rp.dataset.reprice);
+    if (!l) return;
+    const pct = S.rp;
+    if (!pct) return;
+    const before = {};
+    let n = 0;
+    l.ids.forEach(function (id) {
+      const g = itemMeta(l, id).gold;
+      if (!(g > 0)) return;
+      before[id] = g;
+      /* Округляем до целого: цена в списке - монеты, дробных монет не бывает.
+         Не даём цене уйти в ноль, иначе позиция потеряет цену насовсем. */
+      setMeta(l, id, 'gold', Math.max(1, Math.round(g * (100 + pct) / 100)));
+      n++;
+    });
+    if (!n) return;
+    freshenListUrl(l); render();
+    toastAction(t().repriceDone + ' (' + (pct > 0 ? '+' : '') + pct + '%, ' + n + ')',
+      t().repriceUndo, function () {
+        const back = getList(l.id);
+        if (!back) return;
+        Object.keys(before).forEach(function (id) { setMeta(back, id, 'gold', before[id]); });
+        freshenListUrl(back); render();
+      });
+    return;
+  }
+
   const nt = e.target.closest('[data-note-toggle]');
   if (nt) {
     const row = nt.closest('.lrow');
@@ -2962,12 +3056,25 @@ document.addEventListener('input', function (e) {
   if (el.id === 'sq') { S.search.q = el.value; render(); }
   if (el.id === 'lname') { S.listDraft = el.value; }
   if (el.id === 'limport') { S.importDraft = el.value; }
+  if (el.id === 'rp') { S.rp = parseInt(el.value, 10) || 0; return; }
   if (el.id === 'newlist') { S.newListDraft = el.value; }
   if (el.dataset.qty || el.dataset.gold) {
     const field = el.dataset.qty ? 'qty' : 'gold';
     const parts = (el.dataset.qty || el.dataset.gold).split(':');
     const l = getList(parts[0]);
-    if (l) { setMeta(l, parts[1], field, parseInt(el.value, 10) || 0); freshenListUrl(l); }
+    if (l) {
+      /* Панель пересчёта живёт от того, есть ли в списке хоть одна цена. Поля
+         правятся без перерисовки - иначе каретка прыгала бы на каждой цифре, -
+         поэтому перерисовываем только в тот момент, когда первая цена
+         появилась или последняя исчезла. Фокус render() возвращает сам. */
+      const had = l.ids.some(function (id) { return itemMeta(l, id).gold > 0; });
+      setMeta(l, parts[1], field, parseInt(el.value, 10) || 0);
+      freshenListUrl(l);
+      if (field === 'gold') {
+        const has = l.ids.some(function (id) { return itemMeta(l, id).gold > 0; });
+        if (had !== has) render();
+      }
+    }
   }
   /* Notes never re-render: the cursor sits inside the textarea. Only the model,
      the storage and the address are brought up to date. */

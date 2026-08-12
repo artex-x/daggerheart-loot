@@ -163,6 +163,54 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const kinds2 = await page.$$eval('[data-act="kind"]', e => e.map(x => x.textContent));
   ok(kinds2.indexOf('Снаряжение') >= 0, 'в поиске пропал тип «Снаряжение»');
 
+  /* ---------- прототип: пересчёт цен ---------- */
+  console.log('пересчёт цен');
+  {
+    /* Хранилище пересевается при каждой навигации, поэтому цены ставим через
+       те же поля, что и человек. */
+    await go('#/lists/a');
+    await page.evaluate(() => {
+      [60, 150, 3].forEach(function (v, i) {
+        const inp = document.querySelectorAll('[data-gold]')[i];
+        inp.value = String(v);
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+    await settle();
+    const prices = () => page.$$eval('[data-gold]', e => e.slice(0, 3).map(x => x.value));
+    ok((await prices()).join() === '60,150,3', 'цены не проставились: ' + (await prices()).join());
+    await page.evaluate(() => document.querySelector('.reprice summary').click());
+    await settle();
+    await page.click('[data-reprice]');
+    await settle();
+    /* Минус двадцать процентов с округлением до монеты; цена не падает в ноль,
+       иначе позиция потеряла бы её насовсем. */
+    ok((await prices()).join() === '48,120,2', 'пересчёт дал ' + (await prices()).join());
+    ok(/-20%/.test(await page.$eval('#toast', e => e.textContent)), 'в уведомлении нет процента');
+    await page.click('#toast button');
+    await settle();
+    ok((await prices()).join() === '60,150,3', 'отмена не вернула цены: ' + (await prices()).join());
+  }
+
+  /* ---------- прототип: ступени линии улучшения ---------- */
+  console.log('ступени линии улучшения');
+  {
+    await go('#/i/q26');
+    const steps = await page.$$eval('#view .steps .step', e => e.map(x => x.textContent.trim()));
+    ok(steps.join() === '1,2,3,4', 'ступеней не четыре: ' + steps.join());
+    ok((await page.$$('#view .steps span.step.on')).length === 1, 'текущая ступень не одна');
+    ok((await page.$$('#view .steps button.step')).length === 3, 'кликабельных ступеней не три');
+    await page.evaluate(() => document.querySelectorAll('#view .steps button.step')[2].click());
+    await settle();
+    const seen = await page.$eval('#modalBody', e => e.innerText);
+    ok(/Легендарн/.test(seen), 'по последней ступени открылось не легендарное: ' + seen.slice(0, 60));
+    // у вещи без линии улучшения лестницы нет вовсе
+    /* Ищем в самой странице: разметка закрытой модалки остаётся в DOM, и
+       поиск по всему документу нашёл бы лестницу из предыдущего шага. */
+    await go('#/i/q239');
+    ok(!(await page.$('#view .steps')), 'у снаряжения без линии появились ступени');
+  }
+
   /* ---------- ссылка, собранная по описанию из llms.txt ----------
      Формат списка описан в llms.txt для того, чтобы агент мог собрать адрес
      сам, ничего не вызывая. Смысл есть только если описание верно, поэтому
