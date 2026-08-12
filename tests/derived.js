@@ -60,7 +60,7 @@ console.log('заглушки совпадают с генератором');
 /* craft.js сверяет заглушки по началу описания — этого хватает, пока меняются
    данные. Но правка самого генератора (скажем, добавленный мета-тег) так не
    видна: описание на месте, а устарели страницы все разом. Поэтому здесь все
-   859 рисуются заново и сравниваются целиком. */
+   953 рисуются заново и сравниваются целиком. */
 const { page } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
 const drift = ALL.filter(function (x) {
   const p = path.join(ROOT, 'i', x.id + '.html');
@@ -149,6 +149,35 @@ ok(noTier.length > 0 && noTier.every(x => x.src === 'wondrous'),
 const app = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
 ok(app.indexOf("out.push(e.tier ? t().tier + ' ' + e.tier : t().srcWond)") < 0,
    'в чипе ранга снова подставляется источник');
+
+console.log('снаряжение фреймов');
+/* Кампейн-фреймы дают своё снаряжение вместо стартового. Ранги здесь не
+   выдуманы: Beast Feast книга прямо называет набором первого ранга, у
+   остальных наборов расписаны все четыре. */
+const FR = L.items.frames;
+ok(FR.length === 94, 'снаряжения фреймов не 94, а ' + FR.length);
+ok(FR.every((x, i) => x.roll === i + 1), 'номера фреймов не идут подряд');
+ok(FR.every(x => x.src === 'frame' && x.frame), 'у записи фрейма нет источника или названия кампании');
+const byFrame = {};
+FR.forEach(x => { byFrame[x.frame] = (byFrame[x.frame] || 0) + 1; });
+ok(byFrame.beast_feast === 36 && byFrame.dark_heart === 36 &&
+   byFrame.colossus === 21 && byFrame.motherboard === 1,
+   'состав фреймов сбился: ' + JSON.stringify(byFrame));
+/* Beast Feast заменяет стартовый набор целиком - только первый ранг */
+ok(FR.filter(x => x.frame === 'beast_feast').every(x => x.eq && x.eq.tier === 1),
+   'в Beast Feast появился не первый ранг');
+/* Линии улучшения: у многоранговых наборов все четыре ступени и общая линия */
+const lines = {};
+FR.forEach(x => { if (x.eq && x.eq.line) (lines[x.eq.line] = lines[x.eq.line] || []).push(x.eq.tier); });
+ok(Object.keys(lines).length === 14, 'линий улучшения не 14, а ' + Object.keys(lines).length);
+Object.keys(lines).forEach(k => ok(lines[k].sort().join() === '1,2,3,4',
+  'в линии ' + k + ' не все ранги: ' + lines[k].join()));
+/* Слова ступеней те же, что в корнике, - иначе одна и та же вещь называется
+   по-разному в двух местах сайта */
+['Improved', 'Advanced', 'Legendary'].forEach(w =>
+  ok(FR.some(x => x.en.indexOf(w + ' ') === 0), 'нет ступени ' + w));
+['Улучшенн', 'Продвинут', 'Легендарн'].forEach(w =>
+  ok(FR.some(x => x.ru.indexOf(w) === 0), 'нет русской ступени ' + w));
 
 console.log('счётчики в текстах');
 /* Число записей выписано словами в мета-описаниях, в README и в подсказке

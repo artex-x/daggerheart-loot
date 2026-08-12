@@ -1,6 +1,6 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 859
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 953
 > records covering items, consumables, weapons and armour from the Core Set,
 > Hope & Fear, Wondrous Loot, the Dread GM Toolbox and community sets. Static
 > site, no server, no API, no accounts.
@@ -39,7 +39,7 @@ text, not the rules those items refer to.
 
 ## Data
 
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 859
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 953
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
   crafts_into, community, url, text_ru, text_en`.

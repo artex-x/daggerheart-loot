@@ -77,7 +77,7 @@ const T = {
     tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', dread:'Dread', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
-    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Сообщества',
+    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcFrame:'Фрейм', srcComm:'Сообщества',
     rollResult:'Результат броска', roll:'Бросить', randomIn:'Случайно', rollDuality:'Бросить кости',
     stepDown:'На единицу меньше', stepUp:'На единицу больше',
     copyName:'Скопировать название', copied:'Скопировано',
@@ -213,14 +213,14 @@ const T = {
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.'],
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
-      search: ['Поиск', 'Поиск по всем 859 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
+      search: ['Поиск', 'Поиск по всем 953 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
     },
   },
   en: {
     tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', dread:'Dread', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
-    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Communities',
+    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcFrame:'Frame', srcComm:'Communities',
     rollResult:'Roll result', roll:'Roll', randomIn:'Random', rollDuality:'Roll the dice',
     stepDown:'One lower', stepUp:'One higher',
     copyName:'Copy name', copied:'Copied',
@@ -356,7 +356,7 @@ const T = {
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full, weapons and armor included — browse, filter and open cards.'],
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
-      search: ['Search', 'Search all 859 entries at once — loot, consumables and equipment, in Russian and English.']
+      search: ['Search', 'Search all 953 entries at once — loot, consumables and equipment, in Russian and English.']
     },
   }
 };
@@ -381,6 +381,11 @@ function rollLabel(n){
     : t().randomIn + ' 1–' + n;
 }
 /* tier recommendations printed in the Alternate Loot & Consumable Tables */
+/* Кампейн-фреймы: снаряжение из них подписано названием своего фрейма, а не
+   общим словом - иначе непонятно, из какой оно кампании. */
+const FRAME_LABEL = { beast_feast:'Beast Feast', colossus:'Colossus', 
+                      dark_heart:'Dark Heart', motherboard:'Motherboard' };
+const FRAME_ORDER = ['beast_feast', 'colossus', 'dark_heart', 'motherboard'];
 const TIERS = { common:'1–2', uncommon:'1–2', rare:'2–3', very_rare:'3–4', legendary:'3–4' };
 const COMMUNITIES = [
   ['Highborne','Великородное'], ['Loreborne','Научное'], ['Orderborne','Догматичное'],
@@ -395,6 +400,7 @@ const TABLE_DEFS = [
   { id:'wondrous',         ru:'Wondrous Loot',          en:'Wondrous Loot' },
   { id:'community',        ru:'Предметы сообществ',     en:'Community items' },
   { id:'dread',            ru:'Dread GM Toolbox',       en:'Dread GM Toolbox' },
+  { id:'frames',           ru:'Снаряжение фреймов',     en:'Frame equipment' },
   { id:'alt_item',         ru:'Альт. — предметы',       en:'Alt. — items' },
   { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' },
   { id:'eq_weapon',        ru:'Оружие',                 en:'Weapons' },
@@ -606,6 +612,7 @@ function srcLabel(it){
   if (it.src === 'hnf') return t().srcHnf;
   if (it.src === 'wondrous') return t().srcWond;
   if (it.src === 'dread') return t().srcDread;
+  if (it.src === 'frame') return FRAME_LABEL[it.frame] || t().srcFrame;
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
 
@@ -1812,7 +1819,16 @@ function renderTables(){
     let list = DATA[st.t];
     const q = st.q.trim().toLowerCase();
     if (q) list = list.filter(x => matches(x, q));
-    if (st.t === 'community') {
+    if (st.t === 'frames') {
+      /* Разбито по фреймам, как таблица сообществ: снаряжение из кампании имеет
+         смысл только рядом со своей, вперемешку оно читается как ошибка. */
+      body = FRAME_ORDER.map(f => {
+        const sub = list.filter(x => x.frame === f);
+        if (!sub.length) return '';
+        return '<div class="tsection" id="' + sectionId(f) + '" style="margin-top:22px">' +
+          sectionHead(FRAME_LABEL[f], st.t, f) + renderList(sub) + '</div>';
+      }).join('');
+    } else if (st.t === 'community') {
       body = COMMUNITIES.map(c => {
         const sub = list.filter(x => x.community === c[0]);
         if (!sub.length) return '';
@@ -2336,6 +2352,7 @@ function tableIdOf(it){
     return { weapon:'eq_weapon', secondary:'eq_secondary', armor:'eq_armor' }[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
+  if (it.src === 'frame') return 'frames';
   if (it.src === 'community') return 'community';
   return TABLE_OF[it.src][it.kind];
 }
@@ -2357,7 +2374,7 @@ function renderItemPage(id){
     '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
     '<div class="card-acts" style="margin-top:18px">' +
       '<a class="btn ghost" target="_blank" rel="noopener" href="' +
-        esc(tableHref(tableIdOf(it), it.src === 'community' ? it.community : '')) + '">' +
+        esc(tableHref(tableIdOf(it), it.src === 'community' ? it.community : (it.src === 'frame' ? it.frame : ''))) + '">' +
         esc(t().openTable) + ICON_EXT + '</a>' +
       '<a class="btn ghost" href="#/roll/std">' + esc(t().toStart) + '</a>' +
     '</div>';

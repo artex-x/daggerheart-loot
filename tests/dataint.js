@@ -15,7 +15,7 @@ const ALL = [].concat(...Object.values(DATA), EQ);
 console.log('идентификаторы');
 const byId = {};
 ALL.forEach(x => { ok(!byId[x.id], 'повторяющийся id: ' + x.id); byId[x.id] = x; });
-ok(ALL.length === 859, 'записей не 859, а ' + ALL.length);
+ok(ALL.length === 953, 'записей не 953, а ' + ALL.length);
 ALL.forEach(x => ok(/^[a-z]+\d+$/.test(x.id), 'странный id: ' + x.id));
 
 console.log('обязательные поля');
@@ -28,7 +28,7 @@ ALL.forEach(x => {
     ok(typeof v === 'string' && v.length > 0, x.id + ': пустое поле ' + k);
   });
   ok(['item', 'consumable', 'equip'].indexOf(x.kind) >= 0, x.id + ': неизвестный kind ' + x.kind);
-  ok(['core', 'hnf', 'wondrous', 'dread', 'community'].indexOf(x.src) >= 0, x.id + ': неизвестный src ' + x.src);
+  ok(['core', 'hnf', 'wondrous', 'dread', 'frame', 'community'].indexOf(x.src) >= 0, x.id + ': неизвестный src ' + x.src);
 });
 
 console.log('текстовая гигиена');
