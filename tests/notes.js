@@ -95,9 +95,15 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const asGm = await readBack(gmUrl);
   ok(/контрабандист/.test(asGm) && /Подделка/.test(asGm), 'своя ссылка растеряла заметки мастера');
 
-  // the address bar is the players' link, so copying it by hand is safe
+  /* Адресную строку можно скопировать руками, и это должна быть ссылка для
+     игроков. Совпадения символ в символ с кнопкой больше нет: кнопка отдаёт
+     сжатый вариант, а адрес остаётся обычным. Проверяем по смыслу - что
+     лежащее в адресе открывается без мастерских заметок. */
   const inBar = await page.evaluate(() => location.hash);
-  ok(playersUrl.indexOf(inBar) >= 0, 'в адресной строке лежит не ссылка для игроков');
+  const fromBar = await readBack('x' + inBar);
+  ok(/Лавка закрыта до утра/.test(fromBar), 'в адресной строке нет заметки для игроков');
+  ok(!/контрабандист/.test(fromBar) && !/Подделка/.test(fromBar),
+     'в адресной строке лежат заметки мастера');
   await page.close();
 
   /* ---------- lists written before the split ---------- */

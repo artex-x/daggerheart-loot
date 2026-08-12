@@ -181,6 +181,32 @@ the list.
 
 The final address is `https://artex-x.github.io/daggerheart-loot/#/l/<payload>`.
 
+### Shorter links
+
+A payload may instead be **`~` followed by base64url of the same text compressed
+with raw deflate**. The app accepts both and expands a compressed one on
+arrival. Base64url has no `~` in its alphabet, so the first character tells the
+two apart.
+
+Notes are most of a list's length, and Russian text costs two bytes a character
+before base64 adds a third — compressing typically takes 40-50% off. For a list
+with real notes, prefer the short form:
+
+```js
+async function pack(raw){
+  const zipped = await new Response(
+    new Blob([new TextEncoder().encode(raw)]).stream()
+      .pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+  let bin = ''; new Uint8Array(zipped).forEach(b => { bin += String.fromCharCode(b); });
+  return '~' + btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+```
+
+Compress the payload text itself — name, item line and notes — not its base64.
+Compressing base64 wastes most of the gain. And check the result: on a short
+list without notes the compressed form comes out longer, and then the plain one
+is the better link.
+
 ### Check your implementation against this
 
 If your code does not reproduce this string exactly, it is wrong, and the link

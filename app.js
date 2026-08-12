@@ -922,7 +922,7 @@ const N_SHOW = '+';
 
 /* `forPlayers` leaves the GM's own notes out. That link is what gets pasted
    into the party chat; the full one is the GM's backup. */
-function encodeList(l, forPlayers){
+function encodeListRaw(l, forPlayers){
   // "id" or "id*qty" or "id*qty*gold" — old links carried bare ids and still parse
   const parts = l.ids.map(function (id) {
     const m = itemMeta(l, id);
@@ -941,9 +941,10 @@ function encodeList(l, forPlayers){
   }).join('');
   if (notes) raw += '\n' + notes;
 
-  const bytes = new TextEncoder().encode(raw);
-  let bin = ''; bytes.forEach(function (b) { bin += String.fromCharCode(b); });
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return raw;
+}
+function encodeList(l, forPlayers){
+  return b64url(new TextEncoder().encode(encodeListRaw(l, forPlayers)));
 }
 /* Four base36 characters: enough that a truncation lands on the right value
    about once in two million, cheap enough to spend on every link. */
@@ -1026,8 +1027,58 @@ function decodeList(payload){
     };
   } catch (e) { return null; }
 }
+/* ---------- короткая ссылка ----------
+   Заметки — самая длинная часть списка, и по-русски каждый символ занимает в
+   base64 вчетверо больше места, чем стоило бы. Deflate ужимает такую ссылку
+   почти вдвое.
+
+   Сжатый payload помечен «~» в начале. Обычный — это base64url, в его алфавите
+   тильды нет и быть не может, так что старые ссылки читаются как читались, а
+   различать их можно по первому символу.
+
+   Сжатие асинхронное (CompressionStream), поэтому оно живёт только на кнопках
+   «Поделиться»: адресная строка обновляется на каждую правку и ждать там
+   нечего. Пришедшую короткую ссылку приложение разворачивает обратно в обычную
+   при открытии — дальше всё работает прежним синхронным кодом. */
+const PACK_MARK = '~';
+function canPack(){ return typeof CompressionStream === 'function'; }
+function b64url(bytes){
+  let bin = ''; bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function unb64url(s){
+  const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function pipe(bytes, stream){
+  const r = new Response(new Blob([bytes]).stream().pipeThrough(stream));
+  return new Uint8Array(await r.arrayBuffer());
+}
+/* Короче не всегда: у списка из трёх позиций без заметок сжатие только мешает,
+   поэтому берём тот вариант, который на самом деле вышел меньше. */
+async function packPayload(raw){
+  const plain = b64url(new TextEncoder().encode(raw));
+  if (!canPack()) return plain;
+  try {
+    const packed = PACK_MARK + b64url(
+      await pipe(new TextEncoder().encode(raw), new CompressionStream('deflate-raw')));
+    return packed.length < plain.length ? packed : plain;
+  } catch (e) { return plain; }
+}
+async function unpackPayload(pay){
+  if (pay.charAt(0) !== PACK_MARK) return pay;
+  const raw = await pipe(unb64url(pay.slice(1)), new DecompressionStream('deflate-raw'));
+  return b64url(raw);
+}
+
 function listShareUrl(l, forPlayers){
   return appUrl(listHash(l, forPlayers));
+}
+/* Ссылка для человека: та же, но по возможности короткая. */
+async function listShareUrlShort(l, forPlayers){
+  return appUrl('#/l/' + await packPayload(encodeListRaw(l, forPlayers)));
 }
 /* The address bar carries the whole list, not a local id, so whatever a person
    copies out of it — the Share button or the browser's own URL box — works for
@@ -1087,22 +1138,6 @@ function syncEqUrl(){
   if (!kind) return;
   S.eqSeg = eqEncode(kind);
   if (history.replaceState) history.replaceState(null, '', eqFilterHash());
-}
-function listShareUrl(l, forPlayers){
-  return appUrl(listHash(l, forPlayers));
-}
-/* The address bar carries the whole list, not a local id, so whatever a person
-   copies out of it — the Share button or the browser's own URL box — works for
-   everyone. S.openList remembers which local list that address belongs to, so
-   an edit can refresh the address instead of orphaning the page. */
-function listHash(l, forPlayers){ return '#/l/' + encodeList(l, forPlayers); }
-/* Saving a shared list produces an identical payload, so the hash does not
-   actually change and no hashchange fires — render by hand in that case. */
-function goToList(l){
-  S.openList = l.id;
-  const want = listHash(l, true);
-  if (location.hash === want) { S.urlPayload = encodeList(l, true); render(); }
-  else location.hash = want;
 }
 /* A list now has two payloads — with the GM's notes and without — and either
    one is still that list. Comparing against the players' flavour alone meant a
@@ -2351,8 +2386,26 @@ const LEGACY_ROUTES = { 'roll/core':'roll/std', 'roll/hnf':'roll/std', 'roll/all
 
 const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_-]+))?$/;
 
+/* Пришла короткая ссылка: разворачиваем её в обычную и переписываем адрес.
+   Дальше всё идёт прежним синхронным путём и ничего про сжатие не знает. */
+function expandHash(){
+  const h = (location.hash || '').replace(/^#\/?/, '');
+  if (h.indexOf('l/' + PACK_MARK) !== 0) return false;
+  unpackPayload(h.slice(2)).then(function (plain) {
+    if (history.replaceState) history.replaceState(null, '', appUrl('#/l/' + plain));
+    else location.hash = '#/l/' + plain;
+    render();
+  }).catch(function () {
+    /* Не развернулось — пусть страница честно скажет «ссылка повреждена» */
+    if (history.replaceState) history.replaceState(null, '', appUrl('#/l/zzzz'));
+    render();
+  });
+  return true;
+}
+
 function currentRoute(){
   const h = (location.hash || '').replace(/^#\/?/, '');
+  if (h.indexOf('l/' + PACK_MARK) === 0) return 'l/zzzz';   // пока разворачивается
   if (/^i\/[\w-]+$/.test(h)) return h;
   if (/^lists\/[\w-]+$/.test(h)) return h;
   if (/^l\/[A-Za-z0-9_-]+$/.test(h)) return h;
@@ -2413,7 +2466,7 @@ function syncLangButtons(){
 function renderTabs(){
   const cur = currentRoute();
   $('#tabs').innerHTML = TAB_LIST.map((tab, i) =>
-    '<a href="#/' + tab[0] + '" class="' + (tab[0] === cur ? 'on' : '') + (i === 4 ? ' sep' : '') + '">' +
+    '<a href="#/' + tab[0] + '" class="' + (tab[0] === cur ? 'on' : '') + (tab[0] === 'tables' ? ' sep' : '') + '">' +
       esc(t().tabs[tab[1]]) +
     '</a>').join('');
 }
@@ -2683,14 +2736,14 @@ document.addEventListener('click', function (e) {
   if (sl) {
     const l = getList(sl.dataset.shareList);
     if (l && !l.ids.length) { toast(t().listEmpty); return; }
-    if (l) copyText(listShareUrl(l, true), t().playersLinkCopied);
+    if (l) listShareUrlShort(l, true).then(u => copyText(u, t().playersLinkCopied));
     return;
   }
   const sg = e.target.closest('[data-share-gm]');
   if (sg) {
     const l = getList(sg.dataset.shareGm);
     if (l && !l.ids.length) { toast(t().listEmpty); return; }
-    if (l) copyText(listShareUrl(l, false), t().gmLinkCopied);
+    if (l) listShareUrlShort(l, false).then(u => copyText(u, t().gmLinkCopied));
     return;
   }
 
@@ -3112,8 +3165,9 @@ window.addEventListener('hashchange', function () {
      one table from another — they all read "tables" — so the hash is the honest
      signal that the user went somewhere else. */
   S.sel = {}; S.menuFor = ''; S.newListFor = '';
+  if (expandHash()) return;
   render();
 });
-render();
+if (!expandHash()) render();
 
 })();
