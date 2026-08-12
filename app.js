@@ -383,8 +383,13 @@ function rollLabel(n){
 /* tier recommendations printed in the Alternate Loot & Consumable Tables */
 /* Кампейн-фреймы: снаряжение из них подписано названием своего фрейма, а не
    общим словом - иначе непонятно, из какой оно кампании. */
-const FRAME_LABEL = { beast_feast:'Beast Feast', colossus:'Colossus', 
-                      dark_heart:'Dark Heart', motherboard:'Motherboard' };
+const FRAME_LABEL = {
+  ru: { beast_feast:'Пир зверей', colossus:'Колоссы Сухоземья',
+        dark_heart:'Тёмное сердце Андалурии', motherboard:'Материнская Плата' },
+  en: { beast_feast:'Beast Feast', colossus:'Colossus of the Drylands',
+        dark_heart:'Dark Heart of Andaluria', motherboard:'Motherboard' }
+};
+function frameName(f){ return (FRAME_LABEL[S.lang] || FRAME_LABEL.en)[f] || f; }
 const FRAME_ORDER = ['beast_feast', 'colossus', 'dark_heart', 'motherboard'];
 const TIERS = { common:'1–2', uncommon:'1–2', rare:'2–3', very_rare:'3–4', legendary:'3–4' };
 const COMMUNITIES = [
@@ -612,7 +617,7 @@ function srcLabel(it){
   if (it.src === 'hnf') return t().srcHnf;
   if (it.src === 'wondrous') return t().srcWond;
   if (it.src === 'dread') return t().srcDread;
-  if (it.src === 'frame') return FRAME_LABEL[it.frame] || t().srcFrame;
+  if (it.src === 'frame') return frameName(it.frame);
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
 
@@ -1826,7 +1831,7 @@ function renderTables(){
         const sub = list.filter(x => x.frame === f);
         if (!sub.length) return '';
         return '<div class="tsection" id="' + sectionId(f) + '" style="margin-top:22px">' +
-          sectionHead(FRAME_LABEL[f], st.t, f) + renderList(sub) + '</div>';
+          sectionHead(frameName(f), st.t, f) + renderList(sub) + '</div>';
       }).join('');
     } else if (st.t === 'community') {
       body = COMMUNITIES.map(c => {
