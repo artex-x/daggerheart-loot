@@ -74,7 +74,7 @@ const S = {
 /* ---------- i18n ---------- */
 const T = {
   ru: {
-    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', dread:'Dread', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
+    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', community:'Сообщества', dread:'Dread', tables:'Таблицы', lists:'Списки', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Сообщества',
@@ -217,7 +217,7 @@ const T = {
     },
   },
   en: {
-    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', dread:'Dread', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
+    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', community:'Communities', dread:'Dread', tables:'Tables', lists:'Lists', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
     srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcComm:'Communities',
@@ -393,8 +393,8 @@ const TABLE_DEFS = [
   { id:'hnf_item',         ru:'H&F — предметы',         en:'H&F — items' },
   { id:'hnf_consumable',   ru:'H&F — расходники',       en:'H&F — consumables' },
   { id:'wondrous',         ru:'Wondrous Loot',          en:'Wondrous Loot' },
-  { id:'dread',            ru:'Dread GM Toolbox',       en:'Dread GM Toolbox' },
   { id:'community',        ru:'Предметы сообществ',     en:'Community items' },
+  { id:'dread',            ru:'Dread GM Toolbox',       en:'Dread GM Toolbox' },
   { id:'alt_item',         ru:'Альт. — предметы',       en:'Alt. — items' },
   { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' },
   { id:'eq_weapon',        ru:'Оружие',                 en:'Weapons' },
@@ -2338,7 +2338,7 @@ const ROUTES = {
 };
 const TAB_LIST = [
   ['roll/std','std'], ['roll/alt','alt'],
-  ['roll/wondrous','wondrous'], ['roll/dread','dread'], ['roll/community','community'],
+  ['roll/wondrous','wondrous'], ['roll/community','community'], ['roll/dread','dread'],
   ['tables','tables'], ['lists','lists'], ['search','search']
 ];
 /* links handed out before the three d12 modes were merged */

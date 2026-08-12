@@ -88,7 +88,8 @@ ok(!fs.existsSync(path.join(ROOT, 'sitemap.xml')),
 console.log('llms.txt');
 const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
 ['catalog.csv', 'data.json', '#/l/', 'stamp', '10 handfuls = 1 bag',
- 'Player note', 'GM note', 'Not indexed', 'Read `catalog.csv` first', 'Dread GM Toolbox', 'Never name an item from memory'].forEach(s =>
+ 'Player note', 'GM note', 'Not indexed', 'Read `catalog.csv` first', 'Dread GM Toolbox', 'Never name an item from memory',
+ 'daggerheart.com/srd'].forEach(s =>
   ok(llms.indexOf(s) > 0, 'llms.txt не упоминает ' + s));
 /* Число записей названо и в описании сайта, и здесь — пусть расходится громко */
 ok(llms.indexOf(String(ALL.length)) > 0, 'в llms.txt не то число записей');
