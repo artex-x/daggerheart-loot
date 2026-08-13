@@ -149,6 +149,7 @@ const T = {
     copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     craftInto:'Улучшается до', craftFrom:'Получается из', tierLadder:'Ранг',
+    noteClear:'Очистить заметку', noteCleared:'Заметка очищена',
     pickRow:'Выбрать позицию', pickAll:'Выбрать все', pickedN:'Выбрано',
     batchNoPrice:'Убрать цену', repricePct:'Цены, %',
     repriceGo:'Применить',
@@ -296,6 +297,7 @@ const T = {
     copyRoll:'Copy every option', rollCopied:'Options copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     craftInto:'Upgrades to', craftFrom:'Made from', tierLadder:'Tier',
+    noteClear:'Clear the note', noteCleared:'Note cleared',
     pickRow:'Select entry', pickAll:'Select all', pickedN:'Selected',
     batchNoPrice:'Clear price', repricePct:'Prices, %',
     repriceGo:'Apply',
@@ -2367,7 +2369,13 @@ function notePairHTML(attr, o, opt){
   const field = (kind, icon, label, hint, value, ph) =>
     '<div class="nfield n-' + kind + '">' +
       '<span class="nlbl">' + icon + esc(label) +
-        (hint ? '<i>' + esc(hint) + '</i>' : '') + '</span>' +
+        (hint ? '<i>' + esc(hint) + '</i>' : '') +
+        /* Очистить поле мышью было нечем: только выделить всё и стереть.
+           Виден крестик, только когда в поле что-то есть - :placeholder-shown
+           у пустого поля прячет его без перерисовки. */
+        '<button type="button" class="note-x" data-note-clear' +
+          ' title="' + esc(t().noteClear) + '" aria-label="' + esc(t().noteClear) + '">&times;</button>' +
+      '</span>' +
       '<textarea rows="' + (opt.rows || 3) + '" ' + attr(kind) +
         ' placeholder="' + esc(ph) + '">' + esc(value || '') + '</textarea>' +
     '</div>';
@@ -2906,6 +2914,23 @@ document.addEventListener('click', function (e) {
       });
       saveLists(); freshenListUrl(back); render();
     });
+    return;
+  }
+
+  const nx = e.target.closest('[data-note-clear]');
+  if (nx) {
+    const field = nx.closest('.nfield');
+    const ta = field && field.querySelector('textarea');
+    const was = ta ? ta.value : '';
+    if (!was) return;
+    /* Через то же событие, что и набор с клавиатуры: модель, адрес и отметка
+       на строке обновляются существующим обработчиком, а не второй копией. */
+    const put = function (v) {
+      ta.value = v;
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    put('');
+    toastAction(t().noteCleared, t().undo, function () { put(was); });
     return;
   }
 

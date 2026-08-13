@@ -920,3 +920,15 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .lrows{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}
 .lrow-pick{display:flex;align-items:center;padding:0 2px 0 10px;flex:none}
 @media (max-width:640px){ .batch-acts{margin-left:0;width:100%} }
+
+/* крестик очистки заметки: живёт в строке ярлыка, а не поверх поля - иначе он
+   лез бы на полосу прокрутки и на уголок изменения размера */
+.nlbl{position:relative}
+.note-x{
+  margin-left:auto;width:20px;height:20px;flex:none;border:0;border-radius:6px;
+  background:none;color:var(--muted2);font:400 17px/1 var(--ui);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;
+}
+.note-x:hover{background:var(--surface);color:var(--txt)}
+/* пустое поле показывает подсказку - чистить нечего */
+.nfield:has(textarea:placeholder-shown) .note-x{display:none}

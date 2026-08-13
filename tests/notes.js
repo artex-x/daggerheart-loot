@@ -219,6 +219,32 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(!/Только мне/.test(card), 'с выпавшей карточки уехала заметка мастера');
   await page.close();
 
+  /* ---------- очистка заметки крестиком ---------- */
+  console.log('очистка заметки');
+  {
+    const page = await mk(FRESH);
+    await go(page, '#/lists/a');
+    const shown = () => page.$$eval('.lnote .note-x', e => e.map(x => getComputedStyle(x).display));
+    /* У пустого поля чистить нечего, и крестика там нет */
+    ok((await shown()).every(d => d === 'none'), 'у пустых заметок висит крестик');
+    await type(page, '.lnote .n-pub textarea', 'Лавка закрыта до утра');
+    const vis = await shown();
+    ok(vis[0] !== 'none' && vis[1] === 'none', 'крестик появился не у того поля: ' + vis.join());
+
+    await page.evaluate(() => document.querySelector('.lnote .n-pub .note-x').click());
+    await settle();
+    ok(await page.$eval('.lnote .n-pub textarea', e => e.value) === '', 'крестик не очистил поле');
+    ok(!(await lists(page))[0].note, 'очистка не дошла до хранилища');
+    ok(/Заметка очищена/.test(await page.$eval('#toast', e => e.textContent)), 'нет уведомления об очистке');
+
+    await page.click('#toast button');
+    await settle();
+    ok(await page.$eval('.lnote .n-pub textarea', e => e.value) === 'Лавка закрыта до утра',
+       'отмена не вернула текст в поле');
+    ok((await lists(page))[0].note === 'Лавка закрыта до утра', 'отмена не вернула текст в хранилище');
+    await page.close();
+  }
+
   /* ---------- how tall the boxes stand (issue #6) ---------- */
   console.log('высота полей заметок');
   {
