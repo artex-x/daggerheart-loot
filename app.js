@@ -42,7 +42,8 @@ const S = {
   route: '',
   std:  { n: 1, src: { core: true, hnf: true } },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
-  rp: -20,          // проценты в панели пересчёта цен
+  rp: -20,          // проценты для пакетного пересчёта цен
+  lsel: {},         // выделенные строки открытого списка
   wond: { n: 1 },
   dread: { n: 1 },
   comm: { c: 'Highborne', n: 1 },
@@ -148,9 +149,10 @@ const T = {
     copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     craftInto:'Улучшается до', craftFrom:'Получается из', tierLadder:'Ранг',
-    reprice:'Пересчитать цены', repriceOf:'с ценой', repricePct:'Процентов',
-    repriceGo:'Применить', repriceHint:'Минус — скидка, плюс — наценка. Позиции без цены не трогаются.',
-    repriceDone:'Цены пересчитаны', repriceUndo:'Вернуть',
+    pickRow:'Выбрать позицию', pickAll:'Выбрать все', pickedN:'Выбрано',
+    batchNoPrice:'Убрать цену', repricePct:'Цены, %',
+    repriceGo:'Применить',
+    repriceDone:'Цены пересчитаны', repriceUndo:'Вернуть', batchDeleted:'Убрано из списка',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
     foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
@@ -294,9 +296,10 @@ const T = {
     copyRoll:'Copy every option', rollCopied:'Options copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     craftInto:'Upgrades to', craftFrom:'Made from', tierLadder:'Tier',
-    reprice:'Reprice', repriceOf:'priced', repricePct:'Per cent',
-    repriceGo:'Apply', repriceHint:'Minus discounts, plus marks up. Entries without a price are left alone.',
-    repriceDone:'Prices recalculated', repriceUndo:'Undo',
+    pickRow:'Select entry', pickAll:'Select all', pickedN:'Selected',
+    batchNoPrice:'Clear price', repricePct:'Prices, %',
+    repriceGo:'Apply',
+    repriceDone:'Prices recalculated', repriceUndo:'Undo', batchDeleted:'Removed from the list',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
     foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
@@ -577,27 +580,30 @@ function extraBlocks(it, skip){
 
    Отменить можно кнопкой в уведомлении: прежние цены запоминаются целиком, а
    не пересчитываются обратно, иначе округление увело бы их в сторону. */
-function repriceHTML(l){
-  /* Панель показывается у любого непустого списка, а не только у списка с
-     ценами: цена проставляется без перерисовки, и панель, зависящая от неё,
-     появлялась бы только при следующем заходе на страницу. Свёрнутая строка
-     стоит дёшево, внезапно исчезающий и появляющийся блок - дорого. */
-  if (!l.ids.length) return '';
-  const priced = l.ids.filter(function (id) { return itemMeta(l, id).gold > 0; }).length;
-  return '<details class="reprice"><summary>' + ICON_COIN + '<span>' + esc(t().reprice) +
-    '</span><i>' + esc(priced + ' ' + t().repriceOf) + '</i></summary>' +
-    '<div class="reprice-in">' +
-      '<label class="rp-f"><span class="lbl">' + esc(t().repricePct) + '</span>' +
-        numBox('rp', S.rp, -90, 500) + '</label>' +
-      '<button type="button" class="btn primary sm" data-reprice="' + esc(l.id) + '"' +
-        (priced ? '' : ' disabled') + '>' + esc(t().repriceGo) + '</button>' +
-      '<span class="rp-hint">' + esc(t().repriceHint) + '</span>' +
-    '</div></details>';
+/* ---------- пакетные действия над позициями ----------
+   Раньше пересчёт цен жил отдельной панелью над предупреждением о хранении -
+   далеко от строк, которых он касается, и всегда по всему списку разом. Теперь
+   это выделение галочками, как в таблицах, и полоса действий прямо над
+   строками: что выделено, то и меняется. */
+function batchBarHTML(l){
+  const ids = l.ids.filter(function (id) { return S.lsel[id]; });
+  const n = ids.length;
+  const all = n && n === l.ids.length;
+  return '<div class="batch' + (n ? ' on' : '') + '">' +
+    '<label class="batch-all"><input type="checkbox" data-lsel-all="' + esc(l.id) + '"' +
+      (all ? ' checked' : '') + '>' + esc(n ? t().pickedN + ' ' + n : t().pickAll) + '</label>' +
+    (n ? '<span class="batch-acts">' +
+      '<span class="batch-price">' + esc(t().repricePct) + numBox('rp', S.rp, -90, 500) +
+        '<button type="button" class="btn sm" data-reprice="' + esc(l.id) + '">' +
+          esc(t().repriceGo) + '</button></span>' +
+      '<button type="button" class="btn sm" data-batch-clearprice="' + esc(l.id) + '">' +
+        esc(t().batchNoPrice) + '</button>' +
+      '<button type="button" class="btn sm danger" data-batch-del="' + esc(l.id) + '">' +
+        esc(t().del) + '</button>' +
+    '</span>' : '') +
+  '</div>';
 }
 
-/* ---------- crafting ----------
-   Both directions as plain rows, so the card, the clipboard and the list
-   export all read from one place. Every row points at a record that exists. */
 /* ---------- ступени линии улучшения ----------
    У снаряжения улучшения не пара «до/из», а лестница из четырёх рангов, и
    ходить по ней через поиск неудобно. Ряд номеров под характеристиками -
@@ -609,18 +615,13 @@ EQ.concat(...Object.values(DATA)).forEach(function (x) {
 Object.keys(BY_LINE).forEach(function (k) {
   BY_LINE[k].sort(function (a, b) { return a.eq.tier - b.eq.tier; });
 });
-function lineSteps(it){
-  if (!isEquip(it) || !it.eq.line) return [];
-  const all = BY_LINE[it.eq.line] || [];
-  return all.length > 1 ? all : [];
-}
 function lineStepsHTML(it){
-  const all = lineSteps(it);
-  if (!all.length) return '';
+  if (!isEquip(it) || !it.eq.line) return '';
+  const all = BY_LINE[it.eq.line] || [];
+  if (all.length < 2) return '';
   return '<div class="steps"><span class="steps-l">' + esc(t().tierLadder) + '</span>' +
     all.map(function (x) {
-      const on = x.id === it.id;
-      return on
+      return x.id === it.id
         ? '<span class="step on" aria-current="true">' + x.eq.tier + '</span>'
         : '<button type="button" class="step" data-open="' + esc(x.id) + '"' +
           ' title="' + esc(nameOf(x)) + '">' + x.eq.tier + '</button>';
@@ -2249,7 +2250,6 @@ function renderOneList(id){
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
-    repriceHTML(l) +
     /* Same slot as on the index: under the page header, above the content.
        Between the note and the roll panel it read as a caption for the roll,
        and at the foot it turned up in two different places on two pages that
@@ -2258,7 +2258,7 @@ function renderOneList(id){
     listNoteHTML(l) +
     (items.length > 1 ? listRollPanel(l, items) : '') +
     (items.length
-      ? '<div class="rows lrows" style="margin-top:16px">' +
+      ? batchBarHTML(l) + '<div class="rows lrows">' +
           items.map(function (it, i) { return listRowHTML(l, it, i); }).join('') +
         '</div>'
       : '<div class="empty">' + esc(t().listEmptyHint) + '</div>');
@@ -2315,6 +2315,8 @@ function listRowHTML(l, it, i){
         ' title="' + esc(t().dragHint) + '" aria-hidden="true">' + ICON_GRIP + '</span>' +
       /* the position doubles as the keyboard way to reorder: type 20 and the
          entry lands at 20, no matter how far away it started */
+      '<label class="lrow-pick"><input type="checkbox" data-lsel="' + esc(it.id) + '"' +
+        (S.lsel[it.id] ? ' checked' : '') + ' aria-label="' + esc(t().pickRow) + '"></label>' +
       '<input type="number" class="lrow-n" min="1" max="' + l.ids.length + '"' +
         ' inputmode="numeric" value="' + (i + 1) + '" data-pos="' + esc(key) + '"' +
         ' aria-label="' + esc(t().position) + '">' +
@@ -2842,7 +2844,7 @@ document.addEventListener('click', function (e) {
     if (!pct) return;
     const before = {};
     let n = 0;
-    l.ids.forEach(function (id) {
+    l.ids.filter(function (id) { return S.lsel[id]; }).forEach(function (id) {
       const g = itemMeta(l, id).gold;
       if (!(g > 0)) return;
       before[id] = g;
@@ -2860,6 +2862,50 @@ document.addEventListener('click', function (e) {
         Object.keys(before).forEach(function (id) { setMeta(back, id, 'gold', before[id]); });
         freshenListUrl(back); render();
       });
+    return;
+  }
+
+  const bc = e.target.closest('[data-batch-clearprice]');
+  if (bc) {
+    const l = getList(bc.dataset.batchClearprice);
+    if (!l) return;
+    const before = {};
+    l.ids.filter(function (id) { return S.lsel[id]; }).forEach(function (id) {
+      const g = itemMeta(l, id).gold;
+      if (g > 0) { before[id] = g; setMeta(l, id, 'gold', 0); }
+    });
+    if (!Object.keys(before).length) return;
+    freshenListUrl(l); render();
+    toastAction(t().batchNoPrice, t().repriceUndo, function () {
+      const back = getList(l.id); if (!back) return;
+      Object.keys(before).forEach(function (id) { setMeta(back, id, 'gold', before[id]); });
+      freshenListUrl(back); render();
+    });
+    return;
+  }
+
+  const bd = e.target.closest('[data-batch-del]');
+  if (bd) {
+    const l = getList(bd.dataset.batchDel);
+    if (!l) return;
+    /* Помним и позиции, и место каждой: вернуть надо туда же, откуда убрали. */
+    const gone = [];
+    l.ids.forEach(function (id, i) { if (S.lsel[id]) gone.push({ id: id, at: i, meta: itemMeta(l, id) }); });
+    if (!gone.length) return;
+    gone.slice().reverse().forEach(function (g) { l.ids.splice(g.at, 1); });
+    S.lsel = {};
+    saveLists(); freshenListUrl(l); render();
+    toastAction(t().batchDeleted + ' (' + gone.length + ')', t().undo, function () {
+      const back = getList(l.id); if (!back) return;
+      gone.forEach(function (g) {
+        back.ids.splice(Math.min(g.at, back.ids.length), 0, g.id);
+        if (g.meta && Object.keys(g.meta).length) {
+          if (!back.meta) back.meta = {};
+          back.meta[g.id] = g.meta;
+        }
+      });
+      saveLists(); freshenListUrl(back); render();
+    });
     return;
   }
 
@@ -3096,6 +3142,20 @@ document.addEventListener('input', function (e) {
   }
   /* Ticking a box repaints the row and the bar in place: a full render would
      lose the scroll position halfway down a 119-row table. */
+  if (el.dataset.lsel) {
+    if (el.checked) S.lsel[el.dataset.lsel] = true; else delete S.lsel[el.dataset.lsel];
+    render();
+    return;
+  }
+  if (el.dataset.lselAll) {
+    const l = getList(el.dataset.lselAll);
+    if (l) {
+      S.lsel = {};
+      if (el.checked) l.ids.forEach(function (id) { S.lsel[id] = true; });
+      render();
+    }
+    return;
+  }
   if (el.dataset.sel) {
     const id = el.dataset.sel;
     if (el.checked) S.sel[id] = true; else delete S.sel[id];
@@ -3293,7 +3353,7 @@ window.addEventListener('hashchange', function () {
   /* A selection belongs to the page it was made on. Route strings cannot tell
      one table from another — they all read "tables" — so the hash is the honest
      signal that the user went somewhere else. */
-  S.sel = {}; S.menuFor = ''; S.newListFor = '';
+  S.sel = {}; S.lsel = {}; S.menuFor = ''; S.newListFor = '';
   if (expandHash()) return;
   render();
 });

@@ -894,3 +894,22 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .reprice-in{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:0 12px 12px}
 .rp-f{display:flex;flex-direction:column;gap:5px}
 .rp-hint{font-size:12px;color:var(--muted2);flex:1 1 240px;min-width:0}
+
+/* пакетные действия над позициями списка: полоса стоит вплотную к строкам,
+   которых касается, а не отдельной панелью где-то выше */
+.batch{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:16px 0 0;padding:8px 12px;border-radius:10px 10px 0 0;
+  border:1px solid var(--line2);border-bottom:none;background:var(--surface);
+}
+.batch.on{border-color:var(--gold);background:rgba(216,171,94,.07)}
+.batch-all{display:flex;align-items:center;gap:8px;cursor:pointer;
+  font:650 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
+.batch.on .batch-all{color:var(--gold-soft)}
+.batch-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+.batch-price{display:flex;align-items:center;gap:6px;
+  font:650 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
+.batch-price .numbox{margin:0}
+.lrows{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}
+.lrow-pick{display:flex;align-items:center;padding:0 2px 0 10px;flex:none}
+@media (max-width:640px){ .batch-acts{margin-left:0;width:100%} }

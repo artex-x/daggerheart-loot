@@ -163,14 +163,12 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const kinds2 = await page.$$eval('[data-act="kind"]', e => e.map(x => x.textContent));
   ok(kinds2.indexOf('Снаряжение') >= 0, 'в поиске пропал тип «Снаряжение»');
 
-  /* ---------- прототип: пересчёт цен ---------- */
-  console.log('пересчёт цен');
+  /* ---------- пакетные действия над позициями ---------- */
+  console.log('пакетные действия');
   {
-    /* Хранилище пересевается при каждой навигации, поэтому цены ставим через
-       те же поля, что и человек. */
     await go('#/lists/a');
     await page.evaluate(() => {
-      [60, 150, 3].forEach(function (v, i) {
+      [60, 150, 900].forEach(function (v, i) {
         const inp = document.querySelectorAll('[data-gold]')[i];
         inp.value = String(v);
         inp.dispatchEvent(new Event('input', { bubbles: true }));
@@ -178,18 +176,34 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     });
     await settle();
     const prices = () => page.$$eval('[data-gold]', e => e.slice(0, 3).map(x => x.value));
-    ok((await prices()).join() === '60,150,3', 'цены не проставились: ' + (await prices()).join());
-    await page.evaluate(() => document.querySelector('.reprice summary').click());
+    const rows = () => page.$$eval('.lrow', e => e.length);
+    ok((await page.$$('[data-lsel]')).length === await rows(), 'галочка есть не у каждой строки');
+    ok(!(await page.$('.batch.on')), 'полоса действий подсвечена без выделения');
+
+    await page.evaluate(() => document.querySelectorAll('[data-lsel]')[0].click());
     await settle();
+    await page.evaluate(() => document.querySelectorAll('[data-lsel]')[2].click());
+    await settle();
+    ok(await page.$('.batch.on'), 'полоса действий не отметилась');
+    ok(/2/.test(await page.$eval('.batch-all', e => e.textContent)), 'не показано, сколько выбрано');
+
+    /* Скидка ложится только на выбранные: вторая цена остаётся прежней. */
     await page.click('[data-reprice]');
     await settle();
-    /* Минус двадцать процентов с округлением до монеты; цена не падает в ноль,
-       иначе позиция потеряла бы её насовсем. */
-    ok((await prices()).join() === '48,120,2', 'пересчёт дал ' + (await prices()).join());
-    ok(/-20%/.test(await page.$eval('#toast', e => e.textContent)), 'в уведомлении нет процента');
-    await page.click('#toast button');
+    ok((await prices()).join() === '48,150,720', 'пересчёт задел не те строки: ' + (await prices()).join());
+    await page.click('#toast button'); await settle();
+    ok((await prices()).join() === '60,150,900', 'отмена не вернула цены: ' + (await prices()).join());
+
+    /* Удаление выбранных и возврат на прежние места. Выделение после отмены
+       никуда не делось - повторный клик по галочкам снял бы его. */
+    const was = await rows();
+    ok(await page.$('.batch.on'), 'выделение слетело после отмены пересчёта');
+    await page.click('[data-batch-del]');
     await settle();
-    ok((await prices()).join() === '60,150,3', 'отмена не вернула цены: ' + (await prices()).join());
+    ok(await rows() === was - 2, 'удалилось не две строки: ' + (await rows()));
+    await page.click('#toast button'); await settle();
+    ok(await rows() === was, 'отмена не вернула строки: ' + (await rows()));
+    ok((await prices()).join() === '60,150,900', 'после возврата потерялись цены: ' + (await prices()).join());
   }
 
   /* ---------- прототип: ступени линии улучшения ---------- */
