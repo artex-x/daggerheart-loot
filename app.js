@@ -152,7 +152,8 @@ const T = {
     noteClear:'Очистить заметку', noteCleared:'Заметка очищена',
     pickRow:'Выбрать позицию', pickAll:'Выбрать все', pickedN:'Выбрано',
     batchNoPrice:'Убрать цену', repricePct:'Цены, %',
-    repriceGo:'Применить',
+    repriceDown:'Сделать скидку', repriceUp:'Поднять цену',
+    repriceHint:'Минус — скидка, плюс — наценка. Считается от текущей цены.',
     repriceDone:'Цены пересчитаны', repriceUndo:'Вернуть', batchDeleted:'Убрано из списка',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
@@ -300,7 +301,8 @@ const T = {
     noteClear:'Clear the note', noteCleared:'Note cleared',
     pickRow:'Select entry', pickAll:'Select all', pickedN:'Selected',
     batchNoPrice:'Clear price', repricePct:'Prices, %',
-    repriceGo:'Apply',
+    repriceDown:'Discount', repriceUp:'Mark up',
+    repriceHint:'Minus discounts, plus marks up. Counted from the current price.',
     repriceDone:'Prices recalculated', repriceUndo:'Undo', batchDeleted:'Removed from the list',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
@@ -566,6 +568,10 @@ function extraBlocks(it, skip){
   const out = [];
   craftRows(it).forEach(function (r) {
     if (skip && skip[r.id]) return;
+    /* Только вперёд по цепочке. «Получается из» полезно на карточке - видно,
+       откуда вещь берётся, - но в сообщении игрокам это рецепт того, что у них
+       уже на руках: лишний абзац про предмет, который они не получали. */
+    if (r.back) return;
     out.push({ head: r.label + ': ' + r.name, body: descOf(BY_ID[r.id]) });
   });
   refRows(it).forEach(function (r) {
@@ -591,17 +597,25 @@ function batchBarHTML(l){
   const ids = l.ids.filter(function (id) { return S.lsel[id]; });
   const n = ids.length;
   const all = n && n === l.ids.length;
+  /* Цены правятся только у выбранных строк, где цена вообще стоит. Если таких
+     нет, обе денежные кнопки ничего не сделают - показывать их незачем. */
+  const priced = ids.filter(function (id) { return itemMeta(l, id).gold > 0; }).length;
+  const money = priced
+    ? '<span class="batch-price" title="' + esc(t().repriceHint) + '">' +
+        '<span class="batch-lbl">' + esc(t().repricePct) + '</span>' +
+        numBox('rp', S.rp, -90, 500) +
+        '<button type="button" class="btn sm" data-reprice="' + esc(l.id) + '">' +
+          esc(S.rp < 0 ? t().repriceDown : t().repriceUp) + '</button>' +
+      '</span>' +
+      '<button type="button" class="btn sm" data-batch-clearprice="' + esc(l.id) + '">' +
+        esc(t().batchNoPrice) + ' (' + priced + ')</button>'
+    : '';
   return '<div class="batch' + (n ? ' on' : '') + '">' +
     '<label class="batch-all"><input type="checkbox" data-lsel-all="' + esc(l.id) + '"' +
       (all ? ' checked' : '') + '>' + esc(n ? t().pickedN + ' ' + n : t().pickAll) + '</label>' +
-    (n ? '<span class="batch-acts">' +
-      '<span class="batch-price">' + esc(t().repricePct) + numBox('rp', S.rp, -90, 500) +
-        '<button type="button" class="btn sm" data-reprice="' + esc(l.id) + '">' +
-          esc(t().repriceGo) + '</button></span>' +
-      '<button type="button" class="btn sm" data-batch-clearprice="' + esc(l.id) + '">' +
-        esc(t().batchNoPrice) + '</button>' +
+    (n ? '<span class="batch-acts">' + money +
       '<button type="button" class="btn sm danger" data-batch-del="' + esc(l.id) + '">' +
-        esc(t().del) + '</button>' +
+        esc(t().del) + ' (' + n + ')</button>' +
     '</span>' : '') +
   '</div>';
 }
@@ -635,7 +649,7 @@ function craftRows(it){
   const into = BY_ID[it.craft];
   if (into) rows.push({ label: t().craftInto, name: nameOf(into), id: into.id });
   const from = BY_ID[CRAFTED_FROM[it.id]];
-  if (from) rows.push({ label: t().craftFrom, name: nameOf(from), id: from.id });
+  if (from) rows.push({ label: t().craftFrom, name: nameOf(from), id: from.id, back: true });
   return rows;
 }
 /* ---------- referenced rulebook cards ---------- */
@@ -3079,8 +3093,10 @@ document.addEventListener('click', function (e) {
   if (a === 'view')   { S.tables.view = val; savePrefs(); render(); return; }
 
   if (a === 'roll') {
+    /* Одна цепочка: отдельный if для Dread разрывал её, и Wondrous получал
+       свой номер, а следом его затирал бросок d12 из последней ветки. */
     if (S.route === 'roll/wondrous') { st.n = d(DATA.wondrous.length); }
-    if (S.route === 'roll/dread')    { st.n = d(DATA.dread.length); }
+    else if (S.route === 'roll/dread') { st.n = d(DATA.dread.length); }
     else if (S.route === 'roll/community') { st.n = d(10); }
     else { st.n = clamp(rollNd12(+val), 1, 60); }   // val carries the dice count
     render(); return;
@@ -3127,7 +3143,15 @@ document.addEventListener('input', function (e) {
   if (el.id === 'sq') { S.search.q = el.value; render(); }
   if (el.id === 'lname') { S.listDraft = el.value; }
   if (el.id === 'limport') { S.importDraft = el.value; }
-  if (el.id === 'rp') { S.rp = parseInt(el.value, 10) || 0; return; }
+  if (el.id === 'rp') {
+    /* Кнопка называется по знаку: «Сделать скидку» или «Поднять цену». Значит
+       перерисовать надо ровно тогда, когда знак поменялся, а не на каждую
+       цифру - иначе каретка прыгала бы посреди набора. */
+    const was = S.rp < 0;
+    S.rp = parseInt(el.value, 10) || 0;
+    if (was !== (S.rp < 0)) render();
+    return;
+  }
   if (el.id === 'newlist') { S.newListDraft = el.value; }
   if (el.dataset.qty || el.dataset.gold) {
     const field = el.dataset.qty ? 'qty' : 'gold';

@@ -177,8 +177,12 @@ async function copyOf(id){
   ok(!/<a /.test(a.html), 'w3 copy: rich flavour should paste link-free');
   ok(a.plain.indexOf('*') < 0, 'w3 copy: stray markdown in the plain flavour');
 
+  /* Обратное направление на карточке остаётся, но в сообщение игрокам не
+     уходит: это рецепт того, что у них уже на руках, - лишний абзац про
+     предмет, которого они не получали. */
   const b = await copyOf('w2');
-  ok(/Получается из: Эфироцвет/.test(b.plain), 'w2 copy: reverse line missing');
+  ok(b.plain.indexOf('Получается из') < 0, 'w2 copy: обратная цепочка уехала игрокам:\n' + b.plain);
+  ok(/Эфироцвет/.test(b.plain), 'w2 copy: описание самого предмета потерялось');
 
   const c2 = await copyOf('w1');
   ok(c2.plain.indexOf('Улучшается') < 0 && c2.plain.indexOf('Получается из') < 0,
@@ -214,6 +218,14 @@ ok(!w1row || !w1row.querySelector('.rcraft'), 'w1 row: caption on an item with n
 
 /* ---------- 6. share stubs ---------- */
 console.log('share stubs');
+/* В сообщение игрокам уходит только то, во что вещь улучшается. Обратное
+   направление - рецепт того, что у них уже на руках, и в копии оно лишнее. */
+{
+  const potion = ALL.find(x => x.id === 'cc16');
+  const recipe = ALL.find(x => x.id === 'ci24');
+  ok(!!potion && !!recipe, 'нет пары рецепт/зелье для проверки копирования');
+}
+
 const stub = fs.readFileSync(path.join(ROOT, 'i', 'w3.html'), 'utf8');
 ok(/Улучшается до: Чай Эфироцвета/.test(stub), 'i/w3.html: og description missing the craft line');
 /* loot + consumables + the equipment tables */

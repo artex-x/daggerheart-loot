@@ -194,6 +194,20 @@ ALL.forEach(x => {
 const t4 = EQ.filter(x => x.src === 'hnf' && x.eq.t === 'armor' && x.eq.tier === 4);
 ok(t4.length === 10, 'брони 4 ранга из H&F не 10, а ' + t4.length);
 
+/* Из таблиц книги в название однажды затесалось слово из шапки: «Брони
+   Ускользающее Лезвие». Служебному слову в начале названия взяться неоткуда. */
+console.log('названия без служебных слов');
+const HEADWORDS = ['Брони', 'Броня', 'Оружие', 'Оружия', 'Предмет', 'Расходник',
+                   'Название', 'Ранг', 'Свойство', 'Хват', 'Урон', 'Дистанция',
+                   'Характеристика', 'Пороги', 'Показатель'];
+ALL.forEach(x => {
+  const first = x.ru.split(' ')[0];
+  ok(!(HEADWORDS.indexOf(first) >= 0 && x.ru.split(' ').length > 1),
+     x.id + ': название начинается со служебного слова — ' + x.ru);
+  ok(!/^(Name|Trait|Range|Damage|Burden|Feature|Base)\b/.test(x.en),
+     x.id + ': английское название из шапки таблицы — ' + x.en);
+});
+
 /* no two files may hold the same bytes */
 const crypto = require('crypto');
 const seen = {};
