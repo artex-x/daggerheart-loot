@@ -907,9 +907,16 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
   font:650 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
 .batch.on .batch-all{color:var(--gold-soft)}
 .batch-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
-.batch-price{display:flex;align-items:center;gap:6px;
+/* Поле процентов из панели броска здесь смотрелось чужим: оно вдвое выше
+   кнопок и рассчитано на трёхзначные числа. В полосе действий оно ужато до
+   высоты кнопок, а подпись прижата к нему, чтобы «Цены, %» читалось как часть
+   поля, а не как отдельная надпись посреди строки. */
+.batch-price{display:flex;align-items:center;gap:8px;
   font:650 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
-.batch-price .numbox{margin:0}
+.batch-price .numbox{margin:0;height:32px}
+.batch-price .numbox button{width:28px;height:30px;font-size:15px}
+.batch-price .numbox input[type=text]{width:52px;height:30px;font-size:13.5px;padding:0}
+.batch .btn.sm{height:32px;padding:0 12px;display:inline-flex;align-items:center}
 .lrows{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}
 .lrow-pick{display:flex;align-items:center;padding:0 2px 0 10px;flex:none}
 @media (max-width:640px){ .batch-acts{margin-left:0;width:100%} }
