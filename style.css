@@ -717,7 +717,15 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
 .lrow.drop-after{box-shadow:inset 0 -3px 0 0 var(--gold)}
 .lrow-meta{flex:none;display:flex;gap:6px;align-items:center;padding:8px 10px;border-left:1px solid var(--line)}
 .lrow-meta label{display:flex;flex-direction:column;gap:3px}
-.lrow-meta span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
+.lrow-meta span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);
+  display:flex;align-items:center;gap:4px}
+/* Знак вопроса стоит в подписи, а не отдельной строкой: строка съедала бы
+   высоту у каждой позиции списка ради числа, которое смотрят изредка. */
+.goldhint{width:13px;height:13px;flex:none;padding:0;border-radius:50%;cursor:help;
+  border:1px solid var(--line2);background:transparent;color:var(--muted2);
+  font:700 9px/1 var(--sans);display:inline-flex;align-items:center;justify-content:center;
+  transition:.15s}
+.goldhint:hover,.goldhint:focus-visible{border-color:var(--gold);color:var(--gold-soft)}
 .lrow-meta input{
   width:64px;height:30px;padding:0 8px;border-radius:7px;
   background:var(--bg2);border:1px solid var(--line2);color:var(--txt);

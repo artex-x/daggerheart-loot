@@ -1238,6 +1238,18 @@ function goldTitle(l, coins){
   const s = goldText(l, coins);
   return s ? ' title="' + esc(s) + '"' : '';
 }
+/* Пересчёт в мешки висел только всплывающей подсказкой на поле - о ней нельзя
+   догадаться, не наведя мышь, а на телефоне наводить нечем. Вопросительный
+   знак в подписи занимает те же нисколько места, но виден: наведение
+   показывает ту же подсказку, нажатие - уведомление, которое работает и без
+   мыши. В режиме монет пересчитывать нечего, и знака нет. */
+function goldHintHTML(l, coins){
+  const s = goldText(l, coins);
+  return s
+    ? '<button type="button" class="goldhint" data-goldhint="' + esc(s) + '"' +
+      ' title="' + esc(s) + '" aria-label="' + esc(t().whatIsThis + ': ' + s) + '">?</button>'
+    : '';
+}
 /* name plus whatever meta the GM filled in */
 function itemLine(l, it){
   const m = itemMeta(l, it.id);
@@ -2940,7 +2952,7 @@ function listRowHTML(l, it, i){
            прочитают игроки, показывает подсказка на самом поле: отдельная
            строка рядом занимала место в каждой строке списка, а нужна она
            ровно в тот момент, когда на цену смотрят (#15). */
-        '<label><span>' + esc(t().gold) + '</span>' +
+        '<label><span>' + esc(t().gold) + goldHintHTML(l, m.gold) + '</span>' +
           '<input type="number" min="0" max="99999" inputmode="numeric" data-gold="' + esc(l.id + ':' + it.id) + '"' +
           ' value="' + (m.gold || '') + '" placeholder="—"' + goldTitle(l, m.gold) + '></label>' +
       '</div>' +
@@ -3664,6 +3676,11 @@ document.addEventListener('click', function (e) {
     }
     return;
   }
+
+  /* Тот же пересчёт, что во всплывающей подсказке: наведение работает мышью,
+     нажатие - пальцем. */
+  const gh = e.target.closest('[data-goldhint]');
+  if (gh) { e.preventDefault(); toast(gh.dataset.goldhint); return; }
 
   const act = e.target.closest('[data-act]');
   if (!act) return;
