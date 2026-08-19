@@ -86,9 +86,13 @@ the table.
 ## Picking things: what the columns actually mean
 
 **`tier` (1–4) belongs to equipment, and to Vault of Ages.** Weapons and armour
-are tiered because a tier 3 sword is numerically stronger than a tier 1 one.
-Loot from Core, Hope & Fear, Wondrous, Dread and the community sets has no tier
-at all — it is not balanced on that axis, and the column is empty there.
+are tiered because a tier 3 sword is numerically stronger than a tier 1 one, and
+every piece of equipment here carries one, whichever book it came from. Wondrous
+Loot is the awkward case: it prints no tier beside the item, but its "Loot items
+by environment" table binds each piece to a location, and the location has a
+tier — so the tier is read off the book rather than guessed from the damage.
+Plain loot from Core, Hope & Fear, Wondrous, Dread and the community sets has no
+tier at all — it is not balanced on that axis, and the column is empty there.
 
 The exception is `Vault of Ages`, which sorts its whole catalogue by tier
 including its loot, and adds two values beyond the numbers:

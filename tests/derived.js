@@ -157,44 +157,25 @@ ok(Object.keys(BY_T).sort().join() === 'armor,secondary,weapon',
    'у снаряжения завёлся новый вид: ' + Object.keys(BY_T).join());
 ok(EVERY_EQ.length === L.eq.length + 134,
    'снаряжения вне двух базовых книг не 134, а ' + (EVERY_EQ.length - L.eq.length));
-/* Ранга может не быть: Wondrous своё снаряжение по рангам не раскладывает.
-   Такие вещи нужны разделу «Без ранга» - иначе они исчезают из таблицы. */
+/* Ранг обязателен у всего снаряжения. У Wondrous он выведен из книги: таблица
+   «Loot items by environment» привязывает вещь к локации, а у локации ранг
+   напечатан. Пока это правило держится, таблица снаряжения раскладывается по
+   четырём рангам без остатка и незачем возвращать раздел «без ранга». */
 const noTierEq = EVERY_EQ.filter(x => !x.eq.tier);
-ok(noTierEq.length > 0 && noTierEq.every(x => x.src === 'wondrous'),
-   'без ранга оказалось снаряжение не из Wondrous: ' +
-   [...new Set(noTierEq.map(x => x.src))].join());
-
-console.log('ранг по сходству');
-/* Wondrous не раскладывает снаряжение по рангам. Вместо догадки показывается
-   набор рангов, которые в книгах носят вещи ровно с такой же костью, бонусом и
-   хватом. Проверка с исключением самой записи: набор обязан содержать верный
-   ранг заметно чаще, чем одно число - иначе показывать нечего. */
-const WEAPONS = EVERY_EQ.filter(x => x.eq.t !== 'armor');
-const skey = e => {
-  const m = /^d(\d+)([+-]\d+)?$/.exec(e.dmg || '');
-  return (m && e.bu) ? m[1] + '|' + (+(m[2] || 0)) + '|' + e.bu : null;
-};
-const bag = {};
-WEAPONS.forEach(x => { const k = skey(x.eq); if (k && x.eq.tier) (bag[k] = bag[k] || []).push(x.eq.tier); });
-let inBand = 0, onePick = 0, checked = 0;
-WEAPONS.filter(x => x.eq.tier).forEach(function (x) {
-  const k = skey(x.eq); if (!k) return;
-  const rest = bag[k].slice();
-  rest.splice(rest.indexOf(x.eq.tier), 1);
-  if (!rest.length) return;
-  checked++;
-  if (rest.indexOf(x.eq.tier) >= 0) inBand++;
-  const c = {}; rest.forEach(t => { c[t] = (c[t] || 0) + 1; });
-  if (+Object.keys(c).sort((a, b) => c[b] - c[a])[0] === x.eq.tier) onePick++;
-});
-ok(checked > 300, 'сравнивать не с чем: пар нашлось ' + checked);
-ok(inBand / checked > 0.9, 'набор рангов содержит верный лишь в ' +
-   (100 * inBand / checked).toFixed(0) + '% случаев');
-ok(inBand > onePick, 'набор рангов не точнее одного числа - тогда он не нужен');
-/* Показывается он ровно там, где ранга нет, и нигде больше */
-const banded = WEAPONS.filter(x => !x.eq.tier && bag[skey(x.eq)]);
-ok(banded.length > 0 && banded.every(x => x.src === 'wondrous'),
-   'ранг по сходству показался бы не только у Wondrous');
+ok(noTierEq.length === 0, 'снаряжение без ранга: ' +
+   noTierEq.map(x => x.id).join());
+ok(EVERY_EQ.every(x => [1, 2, 3, 4].indexOf(x.eq.tier) >= 0),
+   'ранг снаряжения вне диапазона с первого по четвёртый');
+/* Ранги Wondrous выведены вручную по таблице локаций - если запись поедет,
+   молча съедет и ранг, поэтому они прибиты здесь поимённо. */
+const WOND_TIER = { w7: 3, w22: 2, w25: 4, w31: 3, w51: 2, w54: 3,
+                    w57: 2, w79: 2, w82: 2, w85: 2, w88: 2 };
+const wondEq = EVERY_EQ.filter(x => x.src === 'wondrous');
+ok(wondEq.length === Object.keys(WOND_TIER).length,
+   'снаряжения в Wondrous стало ' + wondEq.length + ', а рангов прописано ' +
+   Object.keys(WOND_TIER).length);
+wondEq.forEach(x => ok(x.eq.tier === WOND_TIER[x.id],
+   'ранг ' + x.id + ' разошёлся с локацией из книги: ' + x.eq.tier));
 
 console.log('Vault of Ages');
 /* Единственный набор, где ранг стоит и на добыче: книга разложена по рангам
@@ -258,11 +239,10 @@ ok(named.length >= 29, 'именованных свойств разнесено
 ok(VOA.every(x => x.ende.split('\n').length === x.rud.split('\n').length),
    'число строк описания разошлось между языками');
 
-/* Ранга может не быть - и тогда его не показывают, а не подставляют источник */
-const noTier = [].concat(...Object.values(L.items)).filter(x => x.eq && !x.eq.tier);
-ok(noTier.length > 0 && noTier.every(x => x.src === 'wondrous'),
-   'без ранга оказалось не только снаряжение Wondrous');
+/* Ранг когда-то подставляли источником, а потом догадкой по характеристикам.
+   Теперь он взят из книги, и в чипе не должно остаться ни того, ни другого. */
 const app = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
+ok(app.indexOf('tierBand') < 0, 'догадка о ранге по характеристикам вернулась в app.js');
 ok(app.indexOf("out.push(e.tier ? t().tier + ' ' + e.tier : t().srcWond)") < 0,
    'в чипе ранга снова подставляется источник');
 

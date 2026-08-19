@@ -106,11 +106,11 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   /* one click is all it takes to get down to a single tier */
   await page.click('.eqfilter [data-val="tier:2"]'); await settle();
   const t2 = await rows();
-  ok(t2 === 75, 'один клик по рангу 2 дал не 75 строк: ' + t2);
+  ok(t2 === 80, 'один клик по рангу 2 дал не 80 строк: ' + t2);
   ok((await page.$$eval('.tsection', e => e.length)) === 1, 'остался не один раздел');
   ok(await page.$eval('.eqtoggle', e => /\(1\)/.test(e.textContent)), 'счётчик выбранного не положительный');
   ok(!/−/.test(await page.$eval('.eqtoggle', e => e.textContent)), 'счётчик снова показывает минус');
-  ok(await page.$eval('.eqcount', e => /75 из 317/.test(e.textContent)), 'счёт найденного не обновился');
+  ok(await page.$eval('.eqcount', e => /80 из 317/.test(e.textContent)), 'счёт найденного не обновился');
   ok(await page.$('.eqclear') && await page.$('.eqlink'), 'сброс и ссылка не появились рядом с выбранным');
   // both stay reachable with the panel folded — that is the point of moving them
   await page.click('[data-act="eqOpen"]'); await settle();

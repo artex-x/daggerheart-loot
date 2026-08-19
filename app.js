@@ -97,7 +97,7 @@ const T = {
     filter:'Тип', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
-    eqBurden:'Хват', eqLineF:'Линейка', eqNoTier:'Без ранга', tierAbout:'≈ ранг', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
+    eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
     eqClass:'Класс', anyValue:'любое', outOf:'из', dropValue:'Убрать из фильтра',
     resetAll:'Сбросить всё', filterLink:'Ссылка на фильтры',
     filterLinkCopied:'Ссылка на фильтры скопирована',
@@ -222,8 +222,8 @@ const T = {
         'Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу.',
         '<b>Снаряжение</b> собрано из всех источников, а не только из корника и Hope &amp; Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages и фреймах. Отобрать нужную книгу можно фильтром «Источник».',
         'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.',
-        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope &amp; Fear. Последним идёт раздел «Без ранга» — Wondrous Loot своё снаряжение по рангам не раскладывает.',
-        '<b>«≈ ранг 2–3»</b> у такого снаряжения — не наш домысел, а факт о книгах: столько рангов носят вещи ровно с такой же костью, бонусом и хватом. Проверка на 414 образцах с известным рангом: одно число попало бы в 82% случаев, а такой набор рангов содержит верный в 96%, и он в среднем полтора ранга шириной. Официальная лестница бонусов из Homebrew Kit угадывает хуже — 72%: там же и сказано, что свойство оружия балансируют костью и бонусом, поэтому число — это ранг за вычетом свойства. Считайте это подсказкой, а не рангом: последнее слово за мастером.',
+        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope &amp; Fear.',
+        'Ранг есть у всего снаряжения, включая Wondrous Loot. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 — значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.',
         '<b>Класс</b> — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.',
         'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
         'В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.',
@@ -266,7 +266,7 @@ const T = {
     filter:'Type', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
-    eqBurden:'Burden', eqLineF:'Line', eqNoTier:'No tier', tierAbout:'≈ tier', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
+    eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
     eqClass:'Class', anyValue:'any', outOf:'of', dropValue:'Remove from the filter',
     resetAll:'Reset all', filterLink:'Filter link',
     filterLinkCopied:'Filter link copied',
@@ -391,8 +391,8 @@ const T = {
         'Every table in full. The top row picks a book — the core set, Hope &amp; Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, frames, communities — and the row under it picks a section of that book, when there is more than one. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.',
         '<b>Equipment</b> is gathered from every source, not only the core set and Hope &amp; Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages and the campaign frames too. Narrow it to one book with the "Source" filter.',
         'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.',
-        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear. A "No tier" section comes last — Wondrous Loot does not sort its equipment by tier.',
-        '<b>"≈ tier 2–3"</b> on that equipment is not our guess but a fact about the books: those are the tiers carried by weapons with exactly this die, bonus and burden. Checked against the 414 pieces whose tier is stated, a single number would be right 82% of the time, while a set like this contains the right tier 96% of the time and runs about one and a half tiers wide. The official bonus ladder from the Homebrew Kit does worse at 72% — the kit itself says a weapon\'s feature is balanced by its die and bonus, so the number is the tier minus the feature. Treat it as a hint, not a tier: the GM has the last word.',
+        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear.',
+        'Every piece of equipment has a tier, Wondrous Loot included. The book does not print it next to the item, but it binds each piece of loot to a location in the "Loot items by environment" table, and every location has a tier: the Staff of the Whispering Archive comes from The Watcher\'s Grave, which is tier 2, so the staff is tier 2. This is not an estimate from the stats - it is the same book, one page earlier.',
         '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
         'Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
@@ -562,43 +562,6 @@ function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
    The book prints these as table columns. Out of the table they have to carry
    their own labels, so each value is rendered as a self-explanatory chunk and
    the pieces are joined with a middle dot wherever one line is enough. */
-/* ---------- ранг по сходству, а не по догадке ----------
-   Wondrous Loot не раскладывает своё снаряжение по рангам, и мастеру негде
-   узнать, кому эту вещь давать. Официальный Homebrew Kit даёт лестницу бонусов
-   по рангам - но на 414 образцах из самих книг она угадывает ранг только в 72%
-   случаев: свойства оружия там же и сказано балансировать костью и бонусом, так
-   что число - это ранг минус свойство, а свойство написано прозой.
-
-   Поэтому здесь не догадка, а факт о корпусе: какие ранги в книгах носят вещи
-   ровно с такой костью, бонусом и хватом. Проверка с исключением самой записи:
-   одно число попадает в 82% случаев, а набор рангов - в 96%, и он в среднем
-   полтора ранга шириной. Полтора ранга честной ширины полезнее одного точного
-   числа, которое врёт каждый пятый раз. */
-/* Считается при первом обращении: ALL_EQ объявлен ниже по файлу, а на верхнем
-   уровне это была бы ссылка на ещё не созданную константу. */
-let TIER_BY_STATS = null;
-function tierIndex(){
-  if (TIER_BY_STATS) return TIER_BY_STATS;
-  TIER_BY_STATS = {};
-  ALL_EQ.forEach(function (x) {
-    if (!x.eq.tier || x.eq.t === 'armor') return;
-    const k = statKey(x.eq);
-    if (k) (TIER_BY_STATS[k] = TIER_BY_STATS[k] || {})[x.eq.tier] = true;
-  });
-  return TIER_BY_STATS;
-}
-function statKey(e){
-  const m = /^d(\d+)([+-]\d+)?$/.exec(e.dmg || '');
-  return (m && e.bu) ? m[1] + '|' + (+(m[2] || 0)) + '|' + e.bu : null;
-}
-function tierBand(it){
-  if (!isEquip(it) || it.eq.tier || it.eq.t === 'armor') return '';
-  const hit = tierIndex()[statKey(it.eq) || ''];
-  if (!hit) return '';
-  const tiers = Object.keys(hit).map(Number).sort();
-  return tiers.length === 1 ? String(tiers[0]) : tiers[0] + '–' + tiers[tiers.length - 1];
-}
-
 function eqParts(it, noType){
   if (!isEquip(it)) return [];
   const e = it.eq;
@@ -607,15 +570,12 @@ function eqParts(it, noType){
      косы в блоке характеристик, и терять его при переносе не за что. */
   const type = eqWord(EQ_TYPE, e.t) + (e.sub ? ' — ' + e.sub[S.lang === 'ru' ? 0 : 1] : '');
   const out = noType ? [] : [type];
-  /* Ранга может не быть: Wondrous своих вещей по рангам не раскладывает. Раньше
-     в этом месте стояло слово «Wondrous» — рядом с «Ранг 3» у соседей оно
-     читалось как ещё один ранг, хотя это источник, и он показан своим ярлыком.
-     Вывести ранг из характеристик не получается: полосы урона у соседних рангов
-     перекрываются, и даже на своих же данных такая догадка ошибается в каждом
-     седьмом случае, а на чужой книге — в четырёх случаях из семи. Лучше молчать,
-     чем называть число, которому поверят. */
+  /* Ранг есть у всего снаряжения. У Wondrous он не напечатан рядом с вещью, но
+     выводится однозначно: книга привязывает добычу к локации таблицей «Loot
+     items by environment», а у локации ранг указан. Догадка по характеристикам,
+     что стояла здесь раньше, больше не нужна - и хорошо, потому что полосы
+     урона у соседних рангов перекрываются и такая догадка врала. */
   if (e.tier) out.push(t().tier + ' ' + e.tier);
-  else if (tierBand(it)) out.push(t().tierAbout + ' ' + tierBand(it));
   if (e.t === 'armor') {
     if (e.th) out.push(t().eqTh + ' ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push(t().eqScore + ' ' + e.as);
@@ -2591,13 +2551,9 @@ function renderEquipTable(kind, st){
         ? '<button type="button" class="btn sm" data-act="eqf" data-val="reset" style="margin-top:14px">' +
           esc(t().resetAll) + '</button>'
         : '') + '</div>';
-  /* Ранга может не быть: Wondrous своё снаряжение по рангам не раскладывает, и
-     раздел «без ранга» - единственное место, где такие вещи вообще видны.
-     Раньше их отбрасывала группировка строго по рангам с первого по четвёртый. */
   const groups = [1, 2, 3, 4].map(function (n) {
     return ['t' + n, t().tier + ' ' + n, list.filter(function (it) { return it.eq.tier === n; })];
   });
-  groups.push(['t0', t().eqNoTier, list.filter(function (it) { return !it.eq.tier; })]);
   return head + groups.map(function (g) {
     if (!g[2].length) return '';
     return '<div class="tsection" id="' + sectionId(g[0]) + '" style="margin-top:22px">' +

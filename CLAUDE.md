@@ -51,7 +51,10 @@ test - that is a rule here, not a wish.
 - The site is kept out of search results by a `noindex` tag on every page. Do
   not close crawling in `robots.txt`: a blocked page gets listed as a bare URL
   without the tag ever being read, and messenger previews break.
-- Do not invent a tier for equipment that has none. Damage bands for adjacent
-  tiers overlap; a guess trained on the Core tables misses one row in seven of
-  its own, and four out of seven on a third-party book. The card leaves the tier
-  out instead, and the source chip says where the entry came from.
+- Never infer a tier from the stats. Damage bands for adjacent tiers overlap; a
+  guess trained on the Core tables misses one row in seven of its own, and four
+  out of seven on a third-party book. Every piece of equipment now carries a
+  tier taken from a book: Wondrous does not print one beside the item, but its
+  "Loot items by environment" table binds each piece to a location, and the
+  location has a tier. `tests/derived.js` pins those eleven tiers by name, so a
+  silent drift is caught.
