@@ -164,6 +164,38 @@ ok(noTierEq.length > 0 && noTierEq.every(x => x.src === 'wondrous'),
    'без ранга оказалось снаряжение не из Wondrous: ' +
    [...new Set(noTierEq.map(x => x.src))].join());
 
+console.log('ранг по сходству');
+/* Wondrous не раскладывает снаряжение по рангам. Вместо догадки показывается
+   набор рангов, которые в книгах носят вещи ровно с такой же костью, бонусом и
+   хватом. Проверка с исключением самой записи: набор обязан содержать верный
+   ранг заметно чаще, чем одно число - иначе показывать нечего. */
+const WEAPONS = EVERY_EQ.filter(x => x.eq.t !== 'armor');
+const skey = e => {
+  const m = /^d(\d+)([+-]\d+)?$/.exec(e.dmg || '');
+  return (m && e.bu) ? m[1] + '|' + (+(m[2] || 0)) + '|' + e.bu : null;
+};
+const bag = {};
+WEAPONS.forEach(x => { const k = skey(x.eq); if (k && x.eq.tier) (bag[k] = bag[k] || []).push(x.eq.tier); });
+let inBand = 0, onePick = 0, checked = 0;
+WEAPONS.filter(x => x.eq.tier).forEach(function (x) {
+  const k = skey(x.eq); if (!k) return;
+  const rest = bag[k].slice();
+  rest.splice(rest.indexOf(x.eq.tier), 1);
+  if (!rest.length) return;
+  checked++;
+  if (rest.indexOf(x.eq.tier) >= 0) inBand++;
+  const c = {}; rest.forEach(t => { c[t] = (c[t] || 0) + 1; });
+  if (+Object.keys(c).sort((a, b) => c[b] - c[a])[0] === x.eq.tier) onePick++;
+});
+ok(checked > 300, 'сравнивать не с чем: пар нашлось ' + checked);
+ok(inBand / checked > 0.9, 'набор рангов содержит верный лишь в ' +
+   (100 * inBand / checked).toFixed(0) + '% случаев');
+ok(inBand > onePick, 'набор рангов не точнее одного числа - тогда он не нужен');
+/* Показывается он ровно там, где ранга нет, и нигде больше */
+const banded = WEAPONS.filter(x => !x.eq.tier && bag[skey(x.eq)]);
+ok(banded.length > 0 && banded.every(x => x.src === 'wondrous'),
+   'ранг по сходству показался бы не только у Wondrous');
+
 console.log('Vault of Ages');
 /* Единственный набор, где ранг стоит и на добыче: книга разложена по рангам
    целиком, а сверх четырёх идут артефакты и проклятые предметы. Ранг не

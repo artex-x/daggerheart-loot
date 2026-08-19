@@ -169,6 +169,11 @@ main{padding:26px 0 48px;min-height:60vh}
 .itemtable:hover{border-bottom-color:currentColor}
 .itemtable svg{width:12px;height:12px;fill:currentColor;margin-left:4px;vertical-align:-1px}
 .row.flash,.tilewrap.flash{outline:2px solid var(--gold);outline-offset:2px;border-radius:var(--r-sm)}
+/* Шапка липкая и высотой около сотни пикселей, а scrollIntoView ставит цель
+   ровно к верху окна - то есть прямо под шапку. Отступ прокрутки поднимает
+   якорь настолько, чтобы строка или заголовок раздела остались видны. */
+.tsection,[data-row]{scroll-margin-top:118px}
+@media (max-width:600px){ .tsection,[data-row]{scroll-margin-top:132px} }
 
 .subchips{margin-top:8px;padding-top:9px;border-top:1px solid var(--line)}
 .chip.sm{padding:5px 11px;font-size:12.5px}
