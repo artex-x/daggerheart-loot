@@ -43,6 +43,8 @@ const S = {
   std:  { n: 1, src: { core: true, hnf: true } },
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   rp: -20,          // проценты для пакетного пересчёта цен
+  guess: false,     // раскрыта ли панель с ориентиром по цене
+  shared: { ids: [], meta: {} },   // позиции открытого по ссылке чужого списка
   lsel: {},         // выделенные строки открытого списка
   wond: { n: 1 },
   dread: { n: 1 },
@@ -107,6 +109,11 @@ const T = {
     copySel:'Скопировать', selCopied:'Выбранное скопировано',
     addedTo:'Добавлено в «%s»', removedFrom:'Убрано из «%s»',
     qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
+    rollHint:'Бросьте кубик и введите результат - или нажмите кнопку',
+    guessPrice:'Оценить цены', guessApply:'Проставить эти цены',
+    guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
+    guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
+    moneyAs:'Цены', money_coin:'Монетами', money_bag:'Как в книге',
     note:'Заметка', listNote:'Заметки', noteHead:'Заметка',
     notePub:'Для игроков', noteHid:'Только для мастера',
     notePubHint:'уедет с текстом и ссылкой для игроков',
@@ -257,6 +264,11 @@ const T = {
     copySel:'Copy', selCopied:'Selection copied',
     addedTo:'Added to "%s"', removedFrom:'Removed from "%s"',
     qty:'Qty', gold:'Gold', goldUnit:'gp',
+    rollHint:'Roll a die and type the result - or press the button',
+    guessPrice:'Estimate prices', guessApply:'Set these prices',
+    guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
+    guessNoTier:'nothing to go on', guessNoRarity:'no rarity given', guessDone:'Prices set',
+    moneyAs:'Prices', money_coin:'In coins', money_bag:'As in the book',
     note:'Note', listNote:'Notes', noteHead:'Note',
     notePub:'For players', noteHid:'GM only',
     notePubHint:'travels with the text and the players’ link',
@@ -634,10 +646,83 @@ function batchBarHTML(l){
   return '<div class="batch' + (n ? ' on' : '') + '">' +
     '<label class="batch-all"><input type="checkbox" data-lsel-all="' + esc(l.id) + '"' +
       (all ? ' checked' : '') + '>' + esc(n ? t().pickedN + ' ' + n : t().pickAll) + '</label>' +
-    (n ? '<span class="batch-acts">' + money +
+    (n ? '<span class="batch-acts">' +
+      '<button type="button" class="btn sm" data-guess="' + esc(l.id) + '"' +
+        ' aria-expanded="' + (S.guess ? 'true' : 'false') + '">' + esc(t().guessPrice) + '</button>' +
+      money +
       '<button type="button" class="btn sm danger" data-batch-del="' + esc(l.id) + '">' +
         esc(t().del) + ' (' + n + ')</button>' +
     '</span>' : '') +
+    (n && S.guess ? guessPanelHTML(l, ids) : '') +
+  '</div>';
+}
+
+/* ---------- ориентир по цене (#7) ----------
+   В книге цен нет: Core на с. 105 прямо говорит, что их назначает мастер. Так
+   что кнопка не может называться «правильная цена» - она показывает, откуда
+   взяты числа, и только потом предлагает их проставить. Порядок величин тот
+   же, что в llms.txt: общая таблица сообщества, не канон.
+
+   Оружие и броня идут по рангу, расходники - по силе, а добыча ранга не имеет
+   вовсе, поэтому у неё своя мерка. Ставим середину вилки: любая точка внутри
+   неё одинаково правдива, а середина меньше всего похожа на точное число. */
+const GUESS_EQ = {
+  weapon:    [[20, 30], [100, 150], [500, 700], [1000, 1500]],
+  secondary: [[20, 30], [100, 150], [500, 700], [1000, 1500]],
+  armor:     [[20, 40], [150, 200], [600, 800], [1500, 2000]]
+};
+/* Добыча ранга не имеет, её ось - редкость, и она уже размечена: сами
+   альтернативные таблицы и есть эта разметка, 24 записи на каждую из пяти
+   редкостей. Так что угадывать нечего - можно спросить у данных. */
+const GUESS_RAR = {
+  item:       { common: [80, 120], uncommon: [150, 250], rare: [400, 600], very_rare: [800, 1200], legendary: [1500, 2500] },
+  consumable: { common: [15, 25],  uncommon: [30, 50],   rare: [50, 70],   very_rare: [70, 90],    legendary: [100, 150] }
+};
+/* Записи из Wondrous, Dread и сообществ в альтернативные таблицы не входят -
+   там редкости нет и взяться ей неоткуда. Для них остаётся середина шкалы:
+   честнее сказать «обычная добыча», чем выдумать редкость по названию. */
+const RARITY_OF = {};
+Object.keys(ALT).forEach(function (kind) {
+  Object.keys(ALT[kind]).forEach(function (r) {
+    ['hope', 'fear'].forEach(function (c) {
+      ALT[kind][r][c].forEach(function (id) { RARITY_OF[id] = r; });
+    });
+  });
+});
+function guessBand(it){
+  if (isEquip(it))
+    return (it.eq.tier && GUESS_EQ[it.eq.t] && GUESS_EQ[it.eq.t][it.eq.tier - 1]) || null;
+  const kind = it.kind === 'consumable' ? 'consumable' : 'item';
+  const r = RARITY_OF[it.id];
+  return r ? GUESS_RAR[kind][r] : GUESS_RAR[kind].uncommon;
+}
+function guessPrice(it){
+  const band = it && guessBand(it);
+  return band ? Math.round((band[0] + band[1]) / 2) : 0;
+}
+/* Подпись говорит, по какому признаку взята вилка: у снаряжения это ранг, у
+   добычи - редкость, а если редкости нет, так и сказано. */
+function guessWhy(it){
+  const band = guessBand(it);
+  if (!band) return t().guessNoTier;
+  const src = isEquip(it) ? t().tier + ' ' + it.eq.tier
+            : RARITY_OF[it.id] ? t()[RAR_KEY[RARITY_OF[it.id]]]
+            : t().guessNoRarity;
+  return src + ' · ' + band[0] + '–' + band[1];
+}
+function guessPanelHTML(l, ids){
+  return '<div class="guess">' +
+    '<p class="guess-note">' + esc(t().guessWhy) + '</p>' +
+    '<div class="guess-rows">' + ids.map(function (id) {
+      const it = BY_ID[id];
+      if (!it) return '';
+      const v = guessPrice(it);
+      return '<div class="guess-row"><span>' + esc(nameOf(it)) + '</span>' +
+        '<span class="guess-band">' + esc(guessWhy(it)) + '</span>' +
+        '<b>' + (v ? esc(priceText(v, moneyMode(l))) : '—') + '</b></div>';
+    }).join('') + '</div>' +
+    '<button type="button" class="btn sm primary" data-guess-apply="' + esc(l.id) + '">' +
+      esc(t().guessApply) + '</button>' +
   '</div>';
 }
 
@@ -982,12 +1067,51 @@ function moveToInList(l, id, to){
   saveLists();
   return true;
 }
+/* ---------- how much a thing costs, in words ----------
+   Цена всегда хранится монетами, целым числом: пересчёт живёт только в этой
+   функции, и режим отображения ничего не портит в данных. Ядро говорит про
+   горсти, мешки и сундуки, а не про сотни монет, и список, где всё стоит
+   «750 зол.», читается хуже, чем список из мешков (#15). */
+const MONEY_STEP = [
+  { n: 1000, ru: ['сундук', 'сундука', 'сундуков'], en: ['chest', 'chests'] },
+  { n: 100,  ru: ['мешок', 'мешка', 'мешков'],      en: ['bag', 'bags'] },
+  { n: 10,   ru: ['горсть', 'горсти', 'горстей'],   en: ['handful', 'handfuls'] },
+  { n: 1,    ru: ['монета', 'монеты', 'монет'],     en: ['coin', 'coins'] }
+];
+const MONEY_MODES = ['coin', 'bag'];
+function moneyWord(step, n){
+  if (S.lang !== 'ru') return step.en[n === 1 ? 0 : 1];
+  const a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) return step.ru[0];
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return step.ru[1];
+  return step.ru[2];
+}
+/* Две старшие единицы, а не все четыре: «1 сундук 2 мешка» - это цена, а
+   «1 сундук 2 мешка 3 горсти 4 монеты» - это опись. */
+function priceText(coins, mode){
+  const n = Math.max(0, Math.round(coins) || 0);
+  if (!n) return '';
+  if (mode !== 'bag') return n + ' ' + t().goldUnit;
+  const out = [];
+  let left = n;
+  MONEY_STEP.forEach(function (s) {
+    if (out.length >= 2) return;
+    const v = Math.floor(left / s.n);
+    if (!v) return;
+    out.push(v + ' ' + moneyWord(s, v));
+    left -= v * s.n;
+  });
+  return out.join(' ');
+}
+function moneyMode(l){
+  return l && MONEY_MODES.indexOf(l.money) > 0 ? l.money : 'coin';
+}
 /* name plus whatever meta the GM filled in */
 function itemLine(l, it){
   const m = itemMeta(l, it.id);
   return nameForShare(it) +
     (m.qty > 1 ? ' ×' + m.qty : '') +
-    (m.gold ? ' — ' + m.gold + ' ' + t().goldUnit : '');
+    (m.gold ? ' — ' + priceText(m.gold, moneyMode(l)) : '');
 }
 
 function createList(name){
@@ -1025,6 +1149,8 @@ function toggleInList(listId, itemId){
 const N_REC = '\x1e';   // starts one note
 const N_SEP = '\x1f';   // between the id and the text
 const N_LIST = '~';     // the id standing for the list's own note
+const N_MONEY = '$';    // not an id: carries the price display mode, ignored by old builds
+const N_SHARED = '@';   // not an id either: the menu key for "take from a shared list"
 /* A leading "+" marks the note meant for players. It rides on the id, not the
    text: ids are letters and digits, so the plus can never be confused with one,
    while a note is free to start with "-1 к броску".
@@ -1048,7 +1174,12 @@ function encodeListRaw(l, forPlayers){
   let raw = l.name + '\n' + stamp(parts) + parts.join(',');
   const rec = (id, text, show) => text ? N_REC + (show ? N_SHOW : '') + id + N_SEP + text : '';
   const pair = (id, o) => rec(id, o.note, true) + (forPlayers ? '' : rec(id, o.hnote, false));
-  const notes = pair(N_LIST, l) + l.ids.map(function (id) {
+  /* Режим показа цены едет в хвосте заметок под id, которого нет и не может
+     быть ни у одной записи. Старый разборщик на таком id делает `return` -
+     ссылка у него открывается как открывалась, просто монетами (#15). Знак
+     считается только по строке позиций, так что лишняя запись его не трогает. */
+  const money = moneyMode(l) !== 'coin' ? N_REC + N_MONEY + N_SEP + moneyMode(l) : '';
+  const notes = money + pair(N_LIST, l) + l.ids.map(function (id) {
     return pair(id, itemMeta(l, id));
   }).join('');
   if (notes) raw += '\n' + notes;
@@ -1110,7 +1241,7 @@ function decodeList(payload){
     });
     if (!ids.length) return null;
 
-    let note = '', hnote = '';
+    let note = '', hnote = '', money = '';
     if (noteBlob) {
       const cut = noteBlob.indexOf(N_REC);
       // anything before the first record is a list note from the first cut of
@@ -1126,6 +1257,7 @@ function decodeList(payload){
           const forPlayers = id.charAt(0) === N_SHOW;
           if (forPlayers) id = id.slice(1);
           const field = forPlayers ? 'note' : 'hnote';
+          if (id === N_MONEY) { if (MONEY_MODES.indexOf(text) > 0) money = text; return; }
           if (id === N_LIST) { if (forPlayers) note = text; else hnote = text; return; }
           if (!BY_ID[id] || ids.indexOf(id) < 0) return;
           (meta[id] || (meta[id] = {}))[field] = text;
@@ -1133,7 +1265,7 @@ function decodeList(payload){
       }
     }
     return {
-      name: name, ids: ids,
+      name: name, ids: ids, money: money || undefined,
       note: note || undefined, hnote: hnote || undefined,
       meta: Object.keys(meta).length ? meta : undefined
     };
@@ -1501,7 +1633,12 @@ function focusNew(){
 function applyAddTo(listId, key){
   const l = getList(listId);
   if (!l) return;
-  const ids = key === 'sel' ? selIds() : [key];
+  /* #14: «shared» - это позиции чужого списка, открытого по ссылке. Ключ свой,
+     потому что это не выделение на странице и не одна карточка. */
+  const ids = key === 'sel' ? selIds()
+            : key === N_SHARED ? S.shared.ids.slice()
+            : [key];
+  if (key === N_SHARED) { addIdsTo(l, ids, S.shared.meta); return; }
   if (ids.length === 1 && l.ids.indexOf(ids[0]) >= 0) {
     l.ids = l.ids.filter(x => x !== ids[0]);
     saveLists();
@@ -1511,9 +1648,18 @@ function applyAddTo(listId, key){
   }
   addIdsTo(l, ids);
 }
-function addIdsTo(l, ids){
+/* Количество и цена едут вместе с позицией, если их есть откуда взять: лавка,
+   которой поделился мастер, без цен - это просто перечень названий (#14).
+   Заметки не едут: в них мастерское, и в чужом инвентаре им не место. */
+function addIdsTo(l, ids, meta){
   const fresh = ids.filter(id => BY_ID[id] && l.ids.indexOf(id) < 0);
   fresh.forEach(id => l.ids.push(id));
+  if (meta) fresh.forEach(function (id) {
+    const m = meta[id];
+    if (!m) return;
+    if (m.qty > 1) setMeta(l, id, 'qty', m.qty);
+    if (m.gold > 0) setMeta(l, id, 'gold', m.gold);
+  });
   saveLists();
   toast(t().addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + fresh.length : ''));
   afterListChange(l, ids.length === 1 ? ids[0] : '');
@@ -1661,7 +1807,10 @@ function numBox(id, val, min, max, cls){
   return '<div class="numbox ' + (cls || '') + '">' +
     '<button type="button" data-step="-1" data-for="' + id + '" aria-label="' + esc(t().stepDown) + '">−</button>' +
     '<input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off"' +
-      ' id="' + id + '" value="' + val + '" data-min="' + min + '" data-max="' + max + '"' +
+      /* Значение ниже минимума набрать нельзя, поэтому оно и означает «ещё не
+         введено»: поле стоит пустым (#16). У поля процентов минимум
+         отрицательный, так что его ноль - обычное число и виден он как ноль. */
+      ' id="' + id + '" value="' + (val < min ? '' : val) + '" data-min="' + min + '" data-max="' + max + '"' +
       ' aria-label="' + esc(t().rollResult) + '">' +
     '<button type="button" data-step="1" data-for="' + id + '" aria-label="' + esc(t().stepUp) + '">+</button>' +
   '</div>';
@@ -1917,20 +2066,25 @@ function renderTables(){
   if (EQ_TABLE[st.t]) {
     body = renderEquipTable(EQ_TABLE[st.t], st);
   } else if (st.t.indexOf('alt_') === 0) {
+    /* #8: раньше здесь стояла голая таблица из трёх колонок - номер и два
+       названия. Единственное место на сайте, где у записи не было ни описания,
+       ни ярлыков, ни галочки. А именно сюда мастер даёт ссылку со словами
+       «возьми любое из этой редкости»: чтобы понять, из чего выбираешь,
+       приходилось открывать все двадцать четыре по очереди. Теперь строки те же,
+       что во всех остальных таблицах, а пара «надежда/страх» разведена по двум
+       подзаголовкам - иначе она теряется. */
     const kind = st.t === 'alt_item' ? 'item' : 'consumable';
-    body = RARITIES5.map(r => {
-      const rows = [];
-      for (let i = 0; i < 12; i++) {
-        const h = BY_ID[ALT[kind][r].hope[i]], f = BY_ID[ALT[kind][r].fear[i]];
-        rows.push('<tr><td class="num">' + (i+1) + '</td>' +
-          '<td><button type="button" data-open="' + esc(h.id) + '">' + esc(nameOf(h)) + '</button></td>' +
-          '<td><button type="button" data-open="' + esc(f.id) + '">' + esc(nameOf(f)) + '</button></td></tr>');
-      }
-      return '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
+    body = RARITIES5.map(r =>
+      '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
         sectionHead(rarityLabel(r), st.t, r) +
-        '<div class="tblwrap"><table class="alttable"><thead><tr><th>#</th><th class="h">' + esc(t().hope) + '</th><th class="f">' + esc(t().fear) + '</th></tr></thead><tbody>' +
-        rows.join('') + '</tbody></table></div></div>';
-    }).join('');
+        [['hope', t().hope], ['fear', t().fear]].map(function (c) {
+          const ids = ALT[kind][r][c[0]];
+          return '<h4 class="altcol ' + c[0] + '">' + esc(c[1]) + '</h4>' +
+            '<div class="rows">' + ids.map(function (id, i) {
+              return rowHTML(BY_ID[id], '', '', i + 1);
+            }).join('') + '</div>';
+        }).join('') +
+      '</div>').join('');
   } else {
     let list = DATA[st.t];
     const q = st.q.trim().toLowerCase();
@@ -2131,14 +2285,18 @@ function renderList(list){
     : '<div class="tgrid">' + list.map(tileHTML).join('') + '</div>');
 }
 
+
 /* removeFrom: a remove button instead of the selection box (inside a list) */
-function rowHTML(it, removeFrom, tail){
+/* num переопределяет номер в строке: в альтернативных таблицах он свой, 1-12 по
+   кости, а не тот, под которым запись стоит в собственной таблице книги. */
+function rowHTML(it, removeFrom, tail, num){
   if (typeof removeFrom !== 'string') removeFrom = '';
+  const n = num || it.roll;
   return '<div class="row' + (!removeFrom && S.sel[it.id] ? ' sel' : '') + '">' +
       (removeFrom ? '' : selBox(it.id)) +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         imgTag(it, 'row') +
-        '<span class="rt"><b>' + (it.roll ? '<span class="rnum">' + esc(it.roll) + '</span>' : '') +
+        '<span class="rt"><b>' + (n ? '<span class="rnum">' + esc(n) + '</span>' : '') +
           esc(nameOf(it)) +
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
         (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
@@ -2276,6 +2434,21 @@ function renderLists(){
       : '<div class="empty">' + esc(t().noLists) + '</div>');
 }
 
+/* #15: показывается, только когда в списке есть хоть одна цена - пустой список
+   ни о каких мешках не спрашивает. Выбранный режим едет вместе со ссылкой. */
+function moneyPickerHTML(l){
+  if (!l.ids.some(function (id) { return itemMeta(l, id).gold > 0; })) return '';
+  const cur = moneyMode(l);
+  return '<div class="money"><span class="money-l">' + esc(t().moneyAs) + '</span>' +
+    MONEY_MODES.map(function (m) {
+      return '<button type="button" class="chip' + (m === cur ? ' on' : '') + '"' +
+        ' data-money="' + esc(l.id) + '" data-val="' + m + '"' +
+        (m === cur ? ' aria-current="true"' : '') + '>' +
+        esc(t()['money_' + m]) + '</button>';
+    }).join('') +
+    '<span class="money-e">' + esc(priceText(750, cur)) + '</span></div>';
+}
+
 function renderOneList(id){
   const l = getList(id);
   if (!l) {
@@ -2301,6 +2474,7 @@ function renderOneList(id){
        and at the foot it turned up in two different places on two pages that
        are about the same thing. */
     storageWarning() +
+    moneyPickerHTML(l) +
     listNoteHTML(l) +
     (items.length > 1 ? listRollPanel(l, items) : '') +
     (items.length
@@ -2316,7 +2490,11 @@ function listRollPanel(l, items){
     ? items[S.listRoll.n - 1] : null;
   /* Same shape as every other roll page: a field you can type into for a roll
      made at the table, and a button for when the app should pick. */
-  const n = (S.listRoll.id === l.id && S.listRoll.n) ? S.listRoll.n : 1;
+  /* #16: поле пустое, пока в него не ввели число. Со значением 1 по умолчанию
+     выпавшая на кубике единица была единственным результатом, который некуда
+     набрать: поле уже показывает 1, событие не приходит, позиция не выбирается.
+     Пустое поле - это ещё и честный ответ на вопрос «бросали уже или нет». */
+  const n = (S.listRoll.id === l.id && S.listRoll.n) ? S.listRoll.n : 0;
   return '<div class="panel" style="margin-bottom:16px">' +
     '<div class="field" style="margin-bottom:' + (hit ? '14px' : '0') + '">' +
       '<span class="lbl">' + esc(t().rollResult) + ' (1–' + items.length + ')</span>' +
@@ -2325,6 +2503,7 @@ function listRollPanel(l, items){
           ICON_DIE + esc(rollLabel(items.length)) + '</button>' +
         (hit ? '<button type="button" class="btn ghost" data-act="clearRoll">' + esc(t().clear) + '</button>' : '') +
       '</div>' +
+      (hit ? '' : '<p class="rollhint">' + esc(t().rollHint) + '</p>') +
     '</div>' +
     (hit ? orGrid([cardHTML(hit, { rollLabel: S.listRoll.n })]) : '') +
     /* Whatever the GM wrote about this entry is exactly what they need at the
@@ -2381,6 +2560,10 @@ function listRowHTML(l, it, i){
           '<input type="number" min="1" max="99" inputmode="numeric" data-qty="' + esc(l.id + ':' + it.id) + '" value="' + (m.qty || '') + '" placeholder="1"></label>' +
         '<label><span>' + esc(t().gold) + '</span>' +
           '<input type="number" min="0" max="99999" inputmode="numeric" data-gold="' + esc(l.id + ':' + it.id) + '" value="' + (m.gold || '') + '" placeholder="—"></label>' +
+        /* Поле остаётся монетами - править мешки цифрами нельзя. Рядом стоит
+           то, что в этом режиме прочитают игроки (#15). */
+        (m.gold && moneyMode(l) !== 'coin'
+          ? '<span class="lrow-money">' + esc(priceText(m.gold, moneyMode(l))) + '</span>' : '') +
       '</div>' +
       '<div class="lrow-acts">' +
         '<button type="button" class="lrow-note' + (hasNote ? ' on' : '') + '" data-note-toggle="' + esc(key) + '"' +
@@ -2437,7 +2620,9 @@ function renderSharedList(payload){
       '<a class="btn primary" href="#/roll/std">' + esc(t().toStart) + '</a>';
   }
   const items = data.ids.map(function (id) { return BY_ID[id]; });
-  const fake = { id: '', name: data.name, ids: data.ids, meta: data.meta };
+  const fake = { id: '', name: data.name, ids: data.ids, meta: data.meta, money: data.money };
+  // читается обработчиком «забрать в свой список»: разбирать payload заново незачем
+  S.shared = { ids: data.ids, meta: data.meta || {} };
   /* A note written for the party is half the message — showing only the entries
      drops it on the floor. The GM's own note is shown too when the link is the
      GM's own backup; a players' link simply does not carry one. */
@@ -2447,15 +2632,18 @@ function renderSharedList(payload){
   const head = shown(ICON_EYE, t().notePub, data.note) + shown(ICON_EYE_OFF, t().noteHid, data.hnote);
   return '<h1 class="page-h">' + esc(data.name || t().untitled) + '</h1>' +
     '<p class="page-sub">' + esc(t().sharedList) + ' · ' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
+    /* Две разные вещи рядом: забрать список целиком отдельной записью или
+       подмешать его позиции в тот список, который уже ведёшь (#14). */
     '<div class="card-acts" style="margin-bottom:18px">' +
       '<button type="button" class="btn primary" data-act="saveShared" data-val="' + esc(payload) + '">' + esc(t().saveToMine) + '</button>' +
+      addToListBtn(N_SHARED, data.ids) +
     '</div>' +
     (head ? '<div style="margin-bottom:18px">' + head + '</div>' : '') +
     '<div class="rows">' + items.map(function (it) {
       const m = itemMeta(fake, it.id);
       const bits = [];
       if (m.qty > 1) bits.push('×' + m.qty);
-      if (m.gold) bits.push(m.gold + ' ' + t().goldUnit);
+      if (m.gold) bits.push(priceText(m.gold, moneyMode(fake)));
       return rowHTML(it, '', bits.join(' · ')) +
         shown(ICON_EYE, t().notePub, m.note) + shown(ICON_EYE_OFF, t().noteHid, m.hnote);
     }).join('') + '</div>';
@@ -2671,7 +2859,8 @@ const FOCUS_BY = ['id','data-act','data-val','data-for','data-step','data-open',
                   'data-note-toggle','data-remove','data-drag','data-list-note','data-copy-sec',
                   'data-copy-name','data-share','data-copy-full','data-send','data-copy-img',
                   'data-copy-roll','data-copy-listtext','data-share-list','data-share-gm',
-                  'data-del-list','data-list','data-lang','data-close','data-sel-all'];
+                  'data-del-list','data-list','data-lang','data-close','data-sel-all',
+                  'data-money','data-guess','data-guess-apply'];
 function rememberFocus(){
   const el = document.activeElement;
   if (!el || !el.tagName || el === document.body) return null;
@@ -2892,6 +3081,33 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  const gt = e.target.closest('[data-guess]');
+  if (gt) { S.guess = !S.guess; render(); return; }
+
+  const ga = e.target.closest('[data-guess-apply]');
+  if (ga) {
+    const l = getList(ga.dataset.guessApply);
+    if (!l) return;
+    const before = {};
+    let n = 0;
+    l.ids.filter(function (id) { return S.lsel[id]; }).forEach(function (id) {
+      const v = guessPrice(BY_ID[id]);
+      if (!v) return;                       // без ранга угадывать нечего
+      before[id] = itemMeta(l, id).gold || 0;
+      setMeta(l, id, 'gold', v);
+      n++;
+    });
+    if (!n) return;
+    S.guess = false;
+    freshenListUrl(l); render();
+    toastAction(t().guessDone + ' (' + n + ')', t().repriceUndo, function () {
+      const back = getList(l.id); if (!back) return;
+      Object.keys(before).forEach(function (id) { setMeta(back, id, 'gold', before[id]); });
+      freshenListUrl(back); render();
+    });
+    return;
+  }
+
   const rp = e.target.closest('[data-reprice]');
   if (rp) {
     const l = getList(rp.dataset.reprice);
@@ -2962,6 +3178,16 @@ document.addEventListener('click', function (e) {
       });
       saveLists(); freshenListUrl(back); render();
     });
+    return;
+  }
+
+  const mm = e.target.closest('[data-money]');
+  if (mm) {
+    const l = getList(mm.dataset.money);
+    if (l) {
+      if (mm.dataset.val === 'coin') delete l.money; else l.money = mm.dataset.val;
+      saveLists(); freshenListUrl(l); render();
+    }
     return;
   }
 
@@ -3172,7 +3398,11 @@ document.addEventListener('input', function (e) {
       try { el.setSelectionRange(at, at); } catch (err) {}
     }
     const raw = parseInt(digits, 10);
-    if (isNaN(raw)) return;   // mid-edit: leave the field alone, `change` will settle it
+    /* На странице списка пустое поле - это состояние «бросок не сделан», а не
+       полуготовый ввод: результат убирается, и следующая цифра приходит как
+       изменение, даже если это единица (#16). На страницах бросков показывать
+       нечего было бы вовсе, поэтому там пустое поле по-прежнему ждёт `change`. */
+    if (isNaN(raw)) { if (onListPage()) applyNum(el.id, 0); return; }
     const v = clamp(raw, parseInt(el.dataset.min, 10), parseInt(el.dataset.max, 10));
     if (v !== raw) el.value = v;
     applyNum(el.id, v);
@@ -3377,6 +3607,8 @@ document.addEventListener('change', function (e) {
      field is done being edited it has to hold a number again. */
   if (el.id === 'n' || el.id === 'hope' || el.id === 'fear') {
     const raw = parseInt(el.value, 10);
+    // пустое поле списка - это осмысленное состояние, а не недобор (#16)
+    if (isNaN(raw) && el.id === 'n' && onListPage()) return;
     const v = isNaN(raw) ? parseInt(el.dataset.min, 10)
                          : clamp(raw, parseInt(el.dataset.min, 10), parseInt(el.dataset.max, 10));
     if (String(v) !== el.value) { el.value = v; applyNum(el.id, v); }

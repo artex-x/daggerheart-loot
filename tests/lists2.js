@@ -287,6 +287,165 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
        'ссылка с неверной контрольной суммой всё равно открылась');
   }
 
+  /* ---------- цены словами (#15) ---------- */
+  console.log('режимы показа цены');
+  {
+    /* Пустой список ни о каких мешках не спрашивает */
+    await go('#/lists/x1');
+    ok(!(await page.$('[data-money]')), 'выбор режима показан у списка без цен');
+    await go('#/lists/a');
+    await page.evaluate(() => {
+      const inp = document.querySelector('[data-gold="a:ci1"]');
+      inp.value = '750';
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await go('#/lists/a');
+    ok(await page.$('[data-money]'), 'выбор режима не появился, когда цена есть');
+
+    await page.click('[data-money][data-val="bag"]'); await settle();
+    ok(/7 мешков 5 горстей/.test(await page.$eval('#view', e => e.innerText)),
+       'цена не переведена в мешки: ' + (await page.$eval('.lrow', e => e.innerText)).slice(0, 90));
+    ok((await lists()).find(l => l.id === 'a').money === 'bag', 'режим не сохранился в списке');
+    /* Число в поле остаётся монетами: править мешки цифрами нечем */
+    ok(await page.$eval('[data-gold="a:ci1"]', e => e.value) === '750', 'поле цены перестало быть монетами');
+
+
+    /* Режим едет в ссылке под id «$», которого нет и не может быть ни у одной
+       записи: прежний разборщик на таком id делал return, так что старая сборка
+       эту ссылку откроет как открывала, просто монетами. Payload собран руками
+       под чужим именем - свой список по #/l/ открывается как свой и ничего бы
+       не доказал. */
+    const mstamp = parts => {
+      const body = parts.join(',');
+      let h = 2166136261;
+      for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
+    };
+    const mparts = ['ci2*1*750'];
+    const mraw = 'Казна гильдии\n' + mstamp(mparts) + mparts.join(',') + '\n\x1e$\x1fbag';
+    const mpay = Buffer.from(mraw, 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await go('#/l/' + mpay);
+    const shared = await page.$eval('#view', e => e.innerText);
+    ok(!(await page.$('[data-share-list]')), 'чужая ссылка открылась как свой список');
+    ok(/7 мешков 5 горстей/.test(shared), 'режим не доехал по ссылке: ' + shared.slice(0, 160));
+    /* Ссылка без пометки читается монетами, как читалась всегда */
+    const plain = Buffer.from('Казна гильдии\n' + mstamp(mparts) + mparts.join(','), 'utf8')
+      .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await go('#/l/' + plain);
+    ok(/750 зол\./.test(await page.$eval('#view', e => e.innerText)),
+       'ссылка без пометки перестала читаться монетами');
+
+    await go('#/lists/a');
+    await page.click('[data-money][data-val="coin"]'); await settle();
+    ok((await lists()).find(l => l.id === 'a').money === undefined, 'монеты по умолчанию хранятся зря');
+  }
+
+  /* ---------- ориентир по цене (#7) ---------- */
+  console.log('ориентир по цене');
+  {
+    await go('#/lists/a');
+    await page.click('[data-lsel="q1"]');   // Палаш: оружие ранга 1, вилка 20-30
+    await settle();
+    ok(!(await page.$('.guess')), 'панель ориентира раскрыта до нажатия');
+    await page.click('[data-guess]'); await settle();
+    const panel = await page.$eval('.guess', e => e.innerText);
+    ok(/105/.test(panel), 'не сказано, откуда взяты числа: ' + panel.slice(0, 90));
+    ok(/20–30/.test(panel), 'не показана вилка для оружия ранга 1: ' + panel.slice(0, 90));
+    await page.click('[data-guess-apply]'); await settle();
+    ok((await lists()).find(l => l.id === 'a').meta.q1.gold === 25,
+       'проставлена не середина вилки: ' + JSON.stringify((await lists()).find(l => l.id === 'a').meta.q1));
+    await page.click('#toast button'); await settle();
+    ok(!((await lists()).find(l => l.id === 'a').meta.q1 || {}).gold, 'отмена не убрала проставленную цену');
+  }
+
+  /* ---------- бросок по списку начинается пустым (#16) ---------- */
+  console.log('пустое поле броска');
+  {
+    await go('#/lists/a');
+    ok(await page.$eval('#n', e => e.value) === '', 'поле броска снова показывает единицу');
+    ok(await page.$('.rollhint'), 'нет подсказки вместо результата');
+    /* Ровно тот случай, ради которого всё затевалось: на кубике выпала 1 */
+    await page.evaluate(() => {
+      const inp = document.getElementById('n');
+      inp.value = '1';
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    ok(!(await page.$('.rollhint')), 'единица не показала позицию');
+    ok(/Кожаный Спальник|Спальный Мешок|ci1/i.test(await page.$eval('.panel', e => e.innerText)) ||
+       !!(await page.$('.panel .card')), 'по единице не выпала первая позиция');
+  }
+
+  /* ---------- забрать из чужого списка (#14) ---------- */
+  console.log('забрать из чужого списка');
+  {
+    /* Ссылка именно чужая: у своего списка адрес #/l/ открывается как свой,
+       со всеми правами на правку, и ничего бы не доказал. Поэтому payload
+       собран руками под именем, которого в хранилище нет. */
+    const stamp = parts => {
+      const body = parts.join(',');
+      let h = 2166136261;
+      for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
+    };
+    const parts = ['ci1*1*750', 'q1*2', 'q313'];
+    const raw = 'Лавка Феррина\n' + stamp(parts) + parts.join(',') +
+      '\n\x1e+~\x1fТовар лежит навалом.' +
+      '\n\x1e~\x1fФеррин сбывает краденое.' +
+      '\n\x1e~ci1\x1fЭто мастерская заметка.';
+    const pay = Buffer.from(raw, 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    await go('#/l/' + pay);
+    ok(!(await page.$('[data-share-list]')), 'чужая ссылка открылась как свой список');
+    ok(await page.$('[data-act="menu"][data-val="@"]'), 'нет кнопки «забрать в свой список»');
+    /* Кнопка называется как везде: «Добавить в список», а не своим словом */
+    ok(/Добавить в список/.test(await page.$eval('[data-act="menu"][data-val="@"]', e => e.textContent)),
+       'у кнопки своя формулировка вместо общей');
+
+    await page.click('[data-act="menu"][data-val="@"]'); await settle();
+    /* Переход по хэшу документ не перезагружает, так что в поиске по спискам
+       ещё лежит запрос из проверки выше - иначе виден один список из тринадцати */
+    await page.evaluate(() => {
+      const q = document.getElementById('pickq');
+      if (q) { q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); }
+    });
+    await settle();
+    await page.click('[data-add-to^="x0|"]');
+    await settle();
+    const mine = (await lists()).find(l => l.id === 'x0');
+    ok(mine.ids.join() === 'ci1,q1,q313', 'позиции чужого списка не доехали: ' + JSON.stringify(mine.ids));
+    ok(mine.meta && mine.meta.ci1 && mine.meta.ci1.gold === 750, 'цена не приехала вместе с позицией');
+    ok(mine.meta.q1 && mine.meta.q1.qty === 2, 'количество не приехало вместе с позицией');
+    /* Заметки мастера в чужой инвентарь не едут: они про его игру, не про мою */
+    ok(!(mine.meta.ci1 || {}).hnote && !mine.hnote, 'мастерская заметка уехала в чужой список');
+  }
+
+  /* ---------- альтернативные таблицы как все остальные (#8) ---------- */
+  console.log('альтернативные таблицы');
+  {
+    await go('#/tables/alt_item');
+    ok(!(await page.$('.alttable')), 'осталась старая таблица из трёх колонок');
+    const rows = await page.$$eval('.tsection .row', e => e.length);
+    ok(rows === 120, 'строк не 24 на каждую из пяти редкостей: ' + rows);
+    /* Ровно то, из-за чего всё затевалось: описание видно, не открывая запись */
+    ok((await page.$$eval('.tsection .row .rt span', e => e.length)) >= 100,
+       'у строк альтернативной таблицы нет описаний');
+    ok((await page.$$eval('.tsection [data-sel]', e => e.length)) === 120,
+       'в альтернативной таблице нельзя отметить запись');
+    /* Пара «надежда/страх» - это две колонки книги, и она должна читаться */
+    const cols = await page.$$eval('.tsection:first-of-type .altcol', e => e.map(x => x.className));
+    ok(cols.length === 2 && /hope/.test(cols[0]) && /fear/.test(cols[1]),
+       'подзаголовки надежды и страха потерялись: ' + cols.join('|'));
+    /* Номер свой, 1-12 по кости, а не тот, под которым запись стоит в книге */
+    const nums = await page.evaluate(() => {
+      const sec = document.querySelector('.tsection');
+      return [...sec.querySelectorAll('.rows')[0].querySelectorAll('.rnum')].map(x => x.textContent);
+    });
+    ok(nums.join() === '1,2,3,4,5,6,7,8,9,10,11,12', 'нумерация по кости сбилась: ' + nums.join());
+  }
+
   await browser.close();
   console.log(fail ? '\n' + fail + ' FAILED' : '\nсписки: все проверки прошли');
   process.exit(fail ? 1 : 0);
