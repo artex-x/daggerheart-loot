@@ -49,9 +49,12 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
      'порядок в ранге 1 не как в книге: ' + d.seq.join(' '));
   ok(d.firstT1[0] === 'Broadsword', 'ранг 1 начинается не с Палаша: ' + d.firstT1);
 
-  /* ---------- Wondrous stays in its own table ---------- */
-  console.log('Wondrous только в своей таблице');
-  ok((await rows()) === 239, 'в оружии не 239 строк: ' + (await rows()));
+  /* ---------- каждая единица снаряжения доходит до таблицы ---------- */
+  console.log('снаряжение из всех источников');
+  /* Таблица собирает оружие отовсюду, а не только из двух базовых книг:
+     раньше четверть снаряжения не попадала сюда вовсе - ни найти, ни
+     отфильтровать. Своя таблица книги при этом никуда не делась. */
+  ok((await rows()) === 317, 'в оружии не 317 строк: ' + (await rows()));
   ok(!(await page.$('[data-val="tier:0"]')), 'в фильтре остался ранг Wondrous');
   await go('#/tables/wondrous');
   ok((await rows()) === 119, 'таблица Wondrous потеряла позиции: ' + (await rows()));
@@ -77,7 +80,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   console.log('фильтры');
   await go('#/tables/eq_weapon');
   ok(!(await page.$('.eqfilter')), 'фильтры открыты при заходе на страницу');
-  ok(await page.$eval('.eqcount', e => e.textContent.trim() === '239'), 'нет счёта позиций');
+  ok(await page.$eval('.eqcount', e => e.textContent.trim() === '317'), 'нет счёта позиций');
   await open();
   ok((await page.$$eval('.eqfilter .chip.on', e => e.length)) === 0,
      'при чистом фильтре значения выглядят выбранными');
@@ -92,11 +95,11 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   /* one click is all it takes to get down to a single tier */
   await page.click('.eqfilter [data-val="tier:2"]'); await settle();
   const t2 = await rows();
-  ok(t2 === 67, 'один клик по рангу 2 дал не 67 строк: ' + t2);
+  ok(t2 === 75, 'один клик по рангу 2 дал не 75 строк: ' + t2);
   ok((await page.$$eval('.tsection', e => e.length)) === 1, 'остался не один раздел');
   ok(await page.$eval('.eqtoggle', e => /\(1\)/.test(e.textContent)), 'счётчик выбранного не положительный');
   ok(!/−/.test(await page.$eval('.eqtoggle', e => e.textContent)), 'счётчик снова показывает минус');
-  ok(await page.$eval('.eqcount', e => /67 из 239/.test(e.textContent)), 'счёт найденного не обновился');
+  ok(await page.$eval('.eqcount', e => /75 из 317/.test(e.textContent)), 'счёт найденного не обновился');
   ok(await page.$('.eqclear') && await page.$('.eqlink'), 'сброс и ссылка не появились рядом с выбранным');
   // both stay reachable with the panel folded — that is the point of moving them
   await page.click('[data-act="eqOpen"]'); await settle();
@@ -125,7 +128,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
 
   /* a weapon that deals either kind of damage answers to both classes */
   await page.click('.eqclear'); await settle();
-  ok((await rows()) === 239, 'сброс не вернул все строки');
+  ok((await rows()) === 317, 'сброс не вернул все строки');
   ok(!(await page.$('.eqclear')), 'сброс остался после сброса');
   await open();
   await page.click('.eqfilter [data-val="cls:phy"]'); await settle();

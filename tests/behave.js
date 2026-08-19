@@ -250,7 +250,10 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await settle();
   await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
   await new Promise(r => setTimeout(r, 620));
-  ok(await page.$eval('.chips .chip.on', e => e.textContent === 'Броня'),
+  /* Навигация двухуровневая: сверху книга или срез, под ней раздел. Броня -
+     это раздел «Снаряжения», и отмечены должны быть оба. */
+  ok(await page.$eval('.subchips .chip.on', e => e.textContent === 'Броня') &&
+     await page.$eval('.chips .chip.on', e => e.textContent === 'Снаряжение'),
      'приложение открылось не на выбранной таблице');
 
   // pressing the marked one puts the default back
@@ -274,7 +277,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await page.evaluate(() => { location.hash = '#/tables/eq_armor'; }); await settle();
   await page.evaluate(() => { location.hash = '#/search'; }); await settle();
   await page.goBack(); await new Promise(r => setTimeout(r, 520));
-  ok(await page.$eval('.chips .chip.on', e => e.textContent === 'Броня'), 'назад вернуло не ту таблицу');
+  ok(await page.$eval('.subchips .chip.on', e => e.textContent === 'Броня'), 'назад вернуло не ту таблицу');
   await page.goForward(); await new Promise(r => setTimeout(r, 520));
   ok(await page.$('#sq'), 'вперёд не вернуло поиск');
   // a modal belongs to the page it was opened from

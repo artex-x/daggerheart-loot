@@ -97,7 +97,7 @@ const T = {
     filter:'Тип', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
-    eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
+    eqBurden:'Хват', eqLineF:'Линейка', eqNoTier:'Без ранга', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
     eqClass:'Класс', anyValue:'любое', outOf:'из', dropValue:'Убрать из фильтра',
     resetAll:'Сбросить всё', filterLink:'Ссылка на фильтры',
     filterLinkCopied:'Ссылка на фильтры скопирована',
@@ -119,7 +119,7 @@ const T = {
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
     guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
     moneyAs:'Отображение цен', money_coin:'Монетами', money_bag:'Как в книге',
-    moneyHelp:'Ядро считает золото <b>горстями, мешками и сундуками</b>: 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Например, 750 — это <b>7 мешков 5 горстей</b>, а 12&nbsp;300 — <b>1 сундук 2 мешка</b>.',
+    moneyHelp:'Корник считает золото <b>горстями, мешками и сундуками</b>: 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Например, 750 — это <b>7 мешков 5 горстей</b>, а 12&nbsp;300 — <b>1 сундук 2 мешка</b>.',
     note:'Заметка', listNote:'Заметки', noteHead:'Заметка',
     notePub:'Для игроков', noteHid:'Только для мастера',
     notePubHint:'уедет с текстом и ссылкой для игроков',
@@ -218,9 +218,10 @@ const T = {
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a>.'
       ],
       tables: [
-        'Здесь лежат все таблицы целиком: добыча и расходники из корника, Hope &amp; Fear, Wondrous Loot и предметов сообществ, альтернативные таблицы, а также оружие, вторичное оружие и броня.',
+        'Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу.',
+        '<b>Снаряжение</b> собрано из всех источников, а не только из корника и Hope &amp; Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages и фреймах. Отобрать нужную книгу можно фильтром «Источник».',
         'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.',
-        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие Core, потом магическое, затем то же для Hope &amp; Fear.',
+        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope &amp; Fear. Последним идёт раздел «Без ранга» — Wondrous Loot своё снаряжение по рангам не раскладывает.',
         '<b>Класс</b> — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.',
         'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
         'В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.',
@@ -263,7 +264,7 @@ const T = {
     filter:'Type', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
-    eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
+    eqBurden:'Burden', eqLineF:'Line', eqNoTier:'No tier', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
     eqClass:'Class', anyValue:'any', outOf:'of', dropValue:'Remove from the filter',
     resetAll:'Reset all', filterLink:'Filter link',
     filterLinkCopied:'Filter link copied',
@@ -384,9 +385,10 @@ const T = {
         'Source: the <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a> supplement.'
       ],
       tables: [
-        'Every table in full: loot and consumables from the core book, Hope &amp; Fear, Wondrous Loot and the community items, the alternate tables, plus weapons, secondary weapons and armor.',
+        'Every table in full. The top row picks a book — the core set, Hope &amp; Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, frames, communities — and the row under it picks a section of that book, when there is more than one. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.',
+        '<b>Equipment</b> is gathered from every source, not only the core set and Hope &amp; Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages and the campaign frames too. Narrow it to one book with the "Source" filter.',
         'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.',
-        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear.',
+        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear. A "No tier" section comes last — Wondrous Loot does not sort its equipment by tier.',
         '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
         'Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
@@ -886,6 +888,16 @@ function voaTierName(k){
 function tileTier(k){ return k === 'A' || k === 'C' ? k : t().tier + ' ' + k; }
 function voaGroup(k){ return (DATA.voa || []).filter(x => String(x.tier) === String(k)); }
 
+/* Всё снаряжение, откуда бы оно ни пришло. `LOOT.eq` - это только две базовые
+   книги; ещё сто с лишним единиц лежат в Wondrous, Dread, Vault of Ages и во
+   фреймах, и таблицы оружия и брони их не видели вовсе. */
+const ALL_EQ = EQ.concat(...Object.values(DATA)).filter(function (x) { return x.eq; });
+const EQ_SRC = ['core', 'hnf', 'wondrous', 'dread', 'voa', 'frame'];
+function srcName(k){
+  return { core: t().srcCore, hnf: t().srcHnf, wondrous: t().srcWond,
+           dread: t().srcDread, voa: t().srcVoa, frame: t().srcFrame }[k] || k;
+}
+
 function srcLabel(it){
   if (it.src === 'core') return t().srcCore;
   if (it.src === 'hnf') return t().srcHnf;
@@ -1159,7 +1171,7 @@ function moveToInList(l, id, to){
 }
 /* ---------- how much a thing costs, in words ----------
    Цена всегда хранится монетами, целым числом: пересчёт живёт только в этой
-   функции, и режим отображения ничего не портит в данных. Ядро говорит про
+   функции, и режим отображения ничего не портит в данных. Корник говорит про
    горсти, мешки и сундуки, а не про сотни монет, и список, где всё стоит
    «750 зол.», читается хуже, чем список из мешков (#15). */
 const MONEY_STEP = [
@@ -1718,6 +1730,14 @@ function idsForKey(key){
   if (key === N_SHARED) return S.shared.ids.slice();
   return [key];
 }
+/* Пока открыт чужой список, всё, что с него забирают, забирают вместе с тем,
+   что на нём написано: количеством, ценой и заметкой для игроков. Раньше это
+   работало только у кнопки «весь список», а галочки на строках и «плюс» на
+   карточке приносили голые названия. */
+function metaForKey(key){
+  if (key === N_SHARED) return S.shared.meta;
+  return (S.route.indexOf('l/') === 0 && !S.openList) ? S.shared.meta : null;
+}
 /* key identifies the opener: an item id on a card, or 'sel' for the bar */
 function addToListBtn(key, ids, primary){
   const open = S.menuFor === key;
@@ -1754,7 +1774,7 @@ function applyAddTo(listId, key){
     afterListChange(l, ids[0]);
     return;
   }
-  addIdsTo(l, ids);
+  addIdsTo(l, ids, metaForKey(key));
 }
 /* Количество и цена едут вместе с позицией, если их есть откуда взять: лавка,
    которой поделился мастер, без цен - это просто перечень названий (#14).
@@ -2207,11 +2227,55 @@ function sectionHead(label, table, key){
   '</div>';
 }
 
+/* ---------- два уровня вместо четырнадцати чипов ----------
+   Полоса разделов росла с каждой книгой: четырнадцать чипов занимали на
+   телефоне пол-экрана, и первая запись оказывалась ниже сгиба.
+   При этом чипы отвечали сразу на два вопроса - из какой книги и что именно, -
+   и перемешивали их в одну строку. Теперь сверху книга, под ней её разделы, и
+   вторая строка появляется, только когда внутри книги есть из чего выбирать.
+
+   Адреса таблиц не меняются: `#/tables/core_item` - по-прежнему таблица, а не
+   пара «книга + раздел». Это чистая перестановка навигации, и ссылки, выданные
+   раньше, продолжают открывать то же самое. */
+const TABLE_GROUPS = [
+  { id:'core',   ru:'Core',            en:'Core',            subs:['core_item','core_consumable'] },
+  { id:'hnf',    ru:'Hope & Fear',     en:'Hope & Fear',     subs:['hnf_item','hnf_consumable'] },
+  { id:'wond',   ru:'Wondrous Loot',   en:'Wondrous Loot',   subs:['wondrous'] },
+  { id:'dread',  ru:'Dread GM Toolbox',en:'Dread GM Toolbox',subs:['dread'] },
+  { id:'voa',    ru:'Vault of Ages',   en:'Vault of Ages',   subs:['voa'] },
+  { id:'frames', ru:'Фреймы',          en:'Frames',          subs:['frames'] },
+  { id:'comm',   ru:'Сообщества',      en:'Communities',     subs:['community'] },
+  { id:'eq',     ru:'Снаряжение',      en:'Equipment',       subs:['eq_weapon','eq_secondary','eq_armor'] },
+  { id:'alt',    ru:'Альт. таблицы',   en:'Alt. tables',     subs:['alt_item','alt_consumable'] }
+];
+/* Подпись раздела внутри книги короче названия таблицы: «Core — предметы» под
+   заголовком «Core» повторяет книгу дважды. */
+const SUB_LABEL = {
+  core_item:['Предметы','Items'], core_consumable:['Расходники','Consumables'],
+  hnf_item:['Предметы','Items'], hnf_consumable:['Расходники','Consumables'],
+  alt_item:['Предметы','Items'], alt_consumable:['Расходники','Consumables'],
+  eq_weapon:['Оружие','Weapons'], eq_secondary:['Вторичное','Secondary'], eq_armor:['Броня','Armor']
+};
+function groupOf(tableId){
+  return TABLE_GROUPS.filter(function (g) { return g.subs.indexOf(tableId) >= 0; })[0] || TABLE_GROUPS[0];
+}
+function tableChipsHTML(cur){
+  const g = groupOf(cur);
+  const top = '<div class="chips">' + TABLE_GROUPS.map(function (x) {
+    return '<a class="chip' + (x.id === g.id ? ' on' : '') + '" href="#/tables/' + x.subs[0] + '">' +
+      esc(S.lang === 'ru' ? x.ru : x.en) + '</a>';
+  }).join('') + '</div>';
+  if (g.subs.length < 2) return top;
+  return top + '<div class="chips subchips">' + g.subs.map(function (id) {
+    const w = SUB_LABEL[id] || ['', ''];
+    return '<a class="chip sm' + (id === cur ? ' on' : '') + '" href="#/tables/' + id + '">' +
+      esc(S.lang === 'ru' ? w[0] : w[1]) + '</a>';
+  }).join('') + '</div>';
+}
+
 function renderTables(){
   const st = S.tables;
-  const chips = '<div class="chips">' + TABLE_DEFS.map(d0 =>
-    '<a class="chip' + (d0.id === st.t ? ' on' : '') + '" href="#/tables/' + d0.id + '">' +
-    esc(S.lang === 'ru' ? d0.ru : d0.en) + '</a>').join('') + '</div>';
+  const chips = tableChipsHTML(st.t);
 
   let body;
   if (EQ_TABLE[st.t]) {
@@ -2225,17 +2289,28 @@ function renderTables(){
        что во всех остальных таблицах, а пара «надежда/страх» разведена по двум
        подзаголовкам - иначе она теряется. */
     const kind = st.t === 'alt_item' ? 'item' : 'consumable';
-    body = RARITIES5.map(r =>
-      '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
+    const aq = st.q.trim().toLowerCase();
+    /* Номер - это результат кости, а не место в отфильтрованном списке: он
+       снимается до поиска и едет со строкой. */
+    const col = function (r, c) {
+      return ALT[kind][r][c].map(function (id, i) { return { it: BY_ID[id], n: i + 1 }; })
+                            .filter(function (x) { return !aq || matches(x.it, aq); });
+    };
+    body = RARITIES5.map(function (r) {
+      const cols = [['hope', t().hope], ['fear', t().fear]]
+        .map(function (c) { return [c[1], c[0], col(r, c[0])]; })
+        .filter(function (c) { return c[2].length; });
+      if (!cols.length) return '';
+      return '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
         sectionHead(rarityLabel(r), st.t, r) +
-        [['hope', t().hope], ['fear', t().fear]].map(function (c) {
-          const ids = ALT[kind][r][c[0]];
-          return '<h4 class="altcol ' + c[0] + '">' + esc(c[1]) + '</h4>' +
-            '<div class="rows">' + ids.map(function (id, i) {
-              return rowHTML(BY_ID[id], '', '', i + 1);
+        cols.map(function (c) {
+          return '<h4 class="altcol ' + c[1] + '">' + esc(c[0]) + '</h4>' +
+            '<div class="rows">' + c[2].map(function (x) {
+              return rowHTML(x.it, '', '', x.n);
             }).join('') + '</div>';
         }).join('') +
-      '</div>').join('');
+      '</div>';
+    }).join('') || '<div class="empty">' + esc(t().nothing) + '</div>';
   } else {
     let list = DATA[st.t];
     const q = st.q.trim().toLowerCase();
@@ -2272,7 +2347,10 @@ function renderTables(){
     }
   }
 
-  const searchBar = st.t.indexOf('alt_') === 0 ? '' :
+  /* Альтернативные таблицы были единственным местом без поиска и без выбора
+     вида - ровно те две вещи, за которыми на страницу такого размера и
+     приходят. Панель теперь общая для всех. */
+  const searchBar =
     '<div class="toolbar" style="margin-top:16px">' +
       '<div class="grow"><input type="search" id="tq" value="' + esc(st.q) + '" placeholder="' + esc(t().searchPh) + '"></div>' +
       '<button type="button" class="btn" data-copy-sec="' + esc(st.t) + '" title="' + esc(t().tableLink) + '" aria-label="' + esc(t().tableLink) + '">' +
@@ -2295,8 +2373,13 @@ function renderTables(){
    with, which is why the chips start neutral instead of all lit: an all-gold
    panel claims seven decisions have been made when none have. */
 function eqFacets(kind){
+  /* Источников стало семь: снаряжение есть не только в корнике и H&F, и
+     пока в фильтре стояли только они, четверть снаряжения нельзя было ни найти,
+     ни отсеять - таблица о них просто не знала. */
   const f = [['tier', t().tier, ['1','2','3','4'].map(k => [k, k])],
-             ['src',  t().source, [['core', t().srcCore], ['hnf', t().srcHnf]]]];
+             ['src',  t().source, EQ_SRC.filter(function (k) {
+               return ALL_EQ.some(function (x) { return x.src === k && x.eq.t === kind; });
+             }).map(function (k) { return [k, srcName(k)]; })]];
   if (kind !== 'armor') {
     /* For primary weapons this is the table the book prints them in, and magic
        ones need a Spellcast trait — a class, not a damage type. Secondary
@@ -2404,7 +2487,7 @@ function eqDecode(seg){
 
 function renderEquipTable(kind, st){
   const q = st.q.trim().toLowerCase();
-  const pool = EQ.filter(function (it) { return it.eq.t === kind; });
+  const pool = ALL_EQ.filter(function (it) { return it.eq.t === kind; });
   const list = pool.filter(function (it) {
     return eqPasses(it, kind) && (!q || matches(it, q));
   });
@@ -2417,12 +2500,18 @@ function renderEquipTable(kind, st){
         ? '<button type="button" class="btn sm" data-act="eqf" data-val="reset" style="margin-top:14px">' +
           esc(t().resetAll) + '</button>'
         : '') + '</div>';
-  return head + [1, 2, 3, 4].map(function (n) {
-    const sub = list.filter(function (it) { return it.eq.tier === n; });
-    if (!sub.length) return '';
-    return '<div class="tsection" id="' + sectionId('t' + n) + '" style="margin-top:22px">' +
-      sectionHead(t().tier + ' ' + n, st.t, 't' + n) +
-      renderList(sub) + '</div>';
+  /* Ранга может не быть: Wondrous своё снаряжение по рангам не раскладывает, и
+     раздел «без ранга» - единственное место, где такие вещи вообще видны.
+     Раньше их отбрасывала группировка строго по рангам с первого по четвёртый. */
+  const groups = [1, 2, 3, 4].map(function (n) {
+    return ['t' + n, t().tier + ' ' + n, list.filter(function (it) { return it.eq.tier === n; })];
+  });
+  groups.push(['t0', t().eqNoTier, list.filter(function (it) { return !it.eq.tier; })]);
+  return head + groups.map(function (g) {
+    if (!g[2].length) return '';
+    return '<div class="tsection" id="' + sectionId(g[0]) + '" style="margin-top:22px">' +
+      sectionHead(g[1], st.t, g[0]) +
+      renderList(g[2]) + '</div>';
   }).join('');
 }
 
@@ -3536,7 +3625,7 @@ document.addEventListener('click', function (e) {
       goToList(l);
       return;
     }
-    addIdsTo(l, idsForKey(val));
+    addIdsTo(l, idsForKey(val), metaForKey(val));
     return;
   }
   if (a === 'menu')     { S.menuFor = S.menuFor === val ? '' : val; render(); return; }

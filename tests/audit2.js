@@ -163,6 +163,16 @@ const PAGES = [
         ok(!rep.noName.length, where + ': элемент без имени — ' + rep.noName.slice(0, 3).join(', '));
         ok(!rep.clipped.length, where + ': текст обрезан — ' + rep.clipped.slice(0, 3).join(' | '));
         ok(!rep.badLinks.length, where + ': ссылка в никуда — ' + rep.badLinks.slice(0, 3).join(', '));
+        /* Полоса разделов росла с каждой книгой и на телефоне занимала пол-экрана.
+           Два уровня держат её в узде: следующая книга не удлиняет верхний ряд. */
+        if (/^таблица/.test(label)) {
+          const strip = await page.evaluate(() => {
+            const c = document.querySelectorAll('.panel .chips');
+            return c.length ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0)) : 0;
+          });
+          const cap = width < 500 ? 260 : width < 1000 ? 150 : 130;
+          ok(strip <= cap, where + ': полоса разделов ' + strip + 'px, потолок ' + cap);
+        }
 
         const broken = await page.evaluate(() => [...document.images]
           .filter(i => i.complete && !i.naturalWidth).map(i => i.getAttribute('src')));

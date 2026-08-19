@@ -145,6 +145,25 @@ ok(DR.filter(x => x.kind === 'consumable').length === 7,
 ok(dreadEq.every(x => !/^Tier \d|^Магическое Оружие/.test(x.ende + x.rud)),
    'в описании снаряжения Dread осталась строка таблицы');
 
+console.log('снаряжение целиком');
+/* Таблицы оружия и брони брали только `LOOT.eq` - две базовые книги, - и
+   четверть снаряжения в них не попадала вовсе: ни найти, ни отфильтровать.
+   Здесь проверяется само правило: сколько снаряжения в данных, столько и
+   должно раскладываться по трём таблицам. */
+const EVERY_EQ = ALL.filter(x => x.eq);
+const BY_T = {};
+EVERY_EQ.forEach(x => { BY_T[x.eq.t] = (BY_T[x.eq.t] || 0) + 1; });
+ok(Object.keys(BY_T).sort().join() === 'armor,secondary,weapon',
+   'у снаряжения завёлся новый вид: ' + Object.keys(BY_T).join());
+ok(EVERY_EQ.length === L.eq.length + 134,
+   'снаряжения вне двух базовых книг не 134, а ' + (EVERY_EQ.length - L.eq.length));
+/* Ранга может не быть: Wondrous своё снаряжение по рангам не раскладывает.
+   Такие вещи нужны разделу «Без ранга» - иначе они исчезают из таблицы. */
+const noTierEq = EVERY_EQ.filter(x => !x.eq.tier);
+ok(noTierEq.length > 0 && noTierEq.every(x => x.src === 'wondrous'),
+   'без ранга оказалось снаряжение не из Wondrous: ' +
+   [...new Set(noTierEq.map(x => x.src))].join());
+
 console.log('Vault of Ages');
 /* Единственный набор, где ранг стоит и на добыче: книга разложена по рангам
    целиком, а сверх четырёх идут артефакты и проклятые предметы. Ранг не
