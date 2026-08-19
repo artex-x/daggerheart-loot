@@ -672,9 +672,16 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 
 /* #7: ориентир по цене раскрывается под полосой действий - число без объяснения,
    откуда оно, читалось бы как цена из книги, а её там нет */
-.guess{flex:0 0 100%;margin-top:10px;padding-top:11px;border-top:1px solid var(--line)}
+/* Нижний отступ свой: у полосы он 8px, и кнопка «проставить цены» упиралась
+   в её край, а сразу под краем начинались строки списка. */
+.guess{flex:0 0 100%;margin-top:10px;padding:11px 0 8px;border-top:1px solid var(--line)}
 .guess-note{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--muted)}
-.guess-rows{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+/* Список подсказок растёт вместе с выделением: на тридцати позициях он
+   уносил кнопки за нижний край экрана, и «проставить эти цены» приходилось
+   искать прокруткой. Высота ограничена примерно восемью строками - дальше
+   прокручивается сам список, а кнопки остаются на месте. */
+.guess-rows{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;
+  max-height:210px;overflow:auto}
 .guess-row{display:flex;align-items:baseline;gap:9px;font-size:12.5px;color:var(--txt)}
 .guess-row>span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .guess-band{color:var(--muted2);font-size:11.5px;white-space:nowrap}
@@ -1005,6 +1012,9 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .money-act .numbox button{width:28px;height:30px;font-size:15px}
 .money-act .numbox input[type=text]{width:52px;height:30px;font-size:13.5px;padding:0}
 .money-hint{font-size:11.5px;line-height:1.45;color:var(--muted2);flex:1 1 200px;min-width:0}
+/* Кнопки в панели читаются парой, и отличать их должна заливка, а не шрифт:
+   при 700 поверх золота главная выглядела кнопкой другого размера. */
+.money-act .btn{font-weight:650}
 .batch-lbl{font:650 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
 .batch-price .numbox{margin:0;height:32px}
 .batch-price .numbox button{width:28px;height:30px;font-size:15px}

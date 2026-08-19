@@ -2,6 +2,7 @@
    finds, the language switch, navigation back and forth, the copy buttons,
    the keyboard, and what happens when the browser refuses to store anything. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
@@ -35,7 +36,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   };
   const settle = () => new Promise(r => setTimeout(r, 260));
   const go = async (page, h) => { await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
-                                  await new Promise(r => setTimeout(r, 520));
+                                  await ready(page);
                                   await page.evaluate(() => window.scrollTo(0, 0)); };
   const clip = (page, k) => page.evaluate(async x =>
     window.__clip && window.__clip[x] ? await window.__clip[x].text() : '', k);
@@ -255,7 +256,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
 
   // opened with no address at all — that is when the setting has to work
   await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 620));
+  await ready(page);
   ok(await page.$('#sq'), 'приложение открылось не на поиске');
 
   // a table by name works too
@@ -263,7 +264,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await page.evaluate(() => document.querySelector('.page-head .homebtn').click());
   await settle();
   await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 620));
+  await ready(page);
   /* Навигация двухуровневая: сверху книга или срез, под ней раздел. Броня -
      это раздел «Снаряжения», и отмечены должны быть оба. */
   ok(await page.$eval('.subchips .chip.on', e => e.textContent === 'Броня') &&
@@ -275,7 +276,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await settle();
   ok(await page.evaluate(() => !localStorage.getItem('dhloot.home.v1')), 'повторный клик не сбросил выбор');
   await page.goto(ROOT, { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 620));
+  await ready(page);
   ok(await page.$eval('.page-h', e => /Обычные правила/.test(e.textContent)),
      'после сброса приложение открылось не на обычных правилах');
 

@@ -29,11 +29,23 @@ cannot slip through.
 ## Tests
 
 ```
-node tests/run-all.js
+node tests/run-all.js              # all of them, in parallel
+node tests/run-all.js eqtest,qa    # just these
+node tests/run-all.js --jobs 1     # one at a time, for debugging
 ```
 
-Seventeen-odd suites, some on puppeteer. Every defect that gets fixed gets a
-test - that is a rule here, not a wish.
+Seventeen-odd suites, most on puppeteer. They run in a pool as wide as the
+machine, slowest first, and the summary keeps the order of the list in
+`run-all.js` rather than the order they finished - so two runs read the same.
+The page walk is registered four times, one per screen width, because on its
+own it took as long as everything else together.
+
+Browser suites wait on `ready(page)` from `tests/lib.js`, not on a fixed pause:
+the page is ready once the app has drawn something into `#view`. Do not put a
+`setTimeout` back after a `goto` - that is what used to make the set slow on a
+fast machine and flaky on a slow one.
+
+Every defect that gets fixed gets a test - that is a rule here, not a wish.
 
 ## Conventions
 

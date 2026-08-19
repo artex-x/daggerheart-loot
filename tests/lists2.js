@@ -1,6 +1,7 @@
 /* The list page after the reordering rework: drag, type a position, the picker
    with many lists, the dismissable storage notice, equipment labels. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
@@ -24,7 +25,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   /* A hash-only move keeps the scroll position, and puppeteer then clicks a
      point that the sticky header covers — so every page starts at the top. */
   const go = async h => { await page.goto(ROOT + h, { waitUntil:'domcontentloaded' });
-                          await new Promise(r => setTimeout(r, 550));
+                          await ready(page);
                           await page.evaluate(() => window.scrollTo(0, 0));
                           await new Promise(r => setTimeout(r, 80)); };
   const settle = () => new Promise(r => setTimeout(r, 260));

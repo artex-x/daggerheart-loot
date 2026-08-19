@@ -3,6 +3,7 @@
    was far enough from azure "предмет" by ΔE and still read as a paler version
    of the same thing. Hue is what the eye sorts by, so hue is what is checked. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 
 /* everything that can appear in one listing: loot, gear and the source tag */
@@ -35,7 +36,7 @@ const gap = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - 
   const page = await browser.newPage();
   page.on('pageerror', e => { fail++; console.log('  FAIL страница упала: ' + e.message); });
   await page.goto(ROOT + '#/roll/std', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 520));
+  await ready(page);
 
   const colours = await page.evaluate((names) => {
     const probe = document.createElement('div');
@@ -80,7 +81,7 @@ const gap = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - 
   console.log('кнопки броска одинаковы');
   const rollLook = async h => {
     await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
-    await new Promise(r => setTimeout(r, 450));
+    await ready(page);
     return page.$$eval('[data-act="roll"],[data-act="rollDuality"]', e => e.map(x => {
       const s = getComputedStyle(x);
       return { look: s.backgroundImage + '|' + s.color, die: !!x.querySelector('svg') };

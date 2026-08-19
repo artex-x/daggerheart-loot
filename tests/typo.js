@@ -4,6 +4,7 @@
    failure this exists to catch: `font: 14px/1.5 inherit` is not valid CSS, so
    the note boxes had quietly been monospace. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 
 const UI = 'Inter', MONO = 'ui-monospace';
@@ -35,7 +36,7 @@ const ok = (c, m) => { if (!c && !seen.has(m)) { seen.add(m); fail++; console.lo
 
     for (const hash of PAGES) {
       await page.goto(ROOT + hash, { waitUntil: 'domcontentloaded' });
-      await new Promise(r => setTimeout(r, 460));
+      await ready(page);
       // the parts that only exist after a click get their turn too
       await page.evaluate(() => {
         const hit = s => { const e = document.querySelector(s); if (e) e.click(); };

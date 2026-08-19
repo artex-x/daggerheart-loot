@@ -2,6 +2,7 @@
    with the GM. Checked from both ends — what leaves in text and links, and what
    happens to lists and links written before the split existed. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
@@ -25,7 +26,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   };
   const settle = () => new Promise(r => setTimeout(r, 280));
   const go = async (page, h) => { await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
-                                  await new Promise(r => setTimeout(r, 560));
+                                  await ready(page);
                                   await page.evaluate(() => window.scrollTo(0, 0)); };
   const clip = (page, k) => page.evaluate(async x =>
     window.__clip && window.__clip[x] ? await window.__clip[x].text() : '', k);

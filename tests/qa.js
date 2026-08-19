@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT_DIR = path.join(__dirname, '..');
 const ROOT = 'file://' + path.join(ROOT_DIR, 'index.html');
 
@@ -81,7 +82,7 @@ const contrast = (a, b) => {
     return page;
   };
   const go = async (page, h) => { await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
-                                  await new Promise(r => setTimeout(r, 560)); };
+                                  await ready(page); };
   const settle = () => new Promise(r => setTimeout(r, 280));
 
   /* ---------- 1.1 the blocker ---------- */

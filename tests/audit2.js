@@ -3,6 +3,7 @@
    scroll, text clipped by its own box, controls without a name, dead links,
    pictures that never arrived, repeated ids, and stray "undefined" in the copy. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 /* Обход разросся вместе с числом таблиц и на одну машину уже не влезает по
    времени. Ширину можно задать аргументом и прогнать в два захода; без
@@ -56,7 +57,7 @@ const PAGES = [
   /* a payload for the "someone else's list" page */
   const boot = await browser.newPage();
   await boot.goto(ROOT + '#/roll/std', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 500));
+  await ready(boot);
   const shared = await boot.evaluate(() => {
     const b = btoa(unescape(encodeURIComponent('Чужой клад\nci1*2*30,w1,q1')));
     return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');

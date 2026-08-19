@@ -1,6 +1,7 @@
 /* Entries without art. Two ways to get there: the record never had a picture
    (new items arriving before one is drawn), or the file failed to load. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 
 let fail = 0;
@@ -23,13 +24,13 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     navigator.canShare = () => true;
   });
   await page.goto(ROOT + '#/roll/std', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 600));
+  await ready(page);
   // strip the art the way a freshly added entry would arrive
   await page.evaluate(() => {
     window.LOOT.items.wondrous.find(x => x.id === 'w3').img = '';
   });
   await page.goto(ROOT + '#/i/w3', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 500));
+  await ready(page);
 
   const src = await page.$eval('.card-media img', e => e.getAttribute('src'));
   ok(/_none\.webp$/.test(src), 'вместо заглушки подставлено: ' + src);
@@ -49,7 +50,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
 
   // and the entry still behaves normally everywhere else
   await page.goto(ROOT + '#/tables/wondrous', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 600));
+  await ready(page);
   const rowSrc = await page.evaluate(() => {
     const row = [...document.querySelectorAll('.row')].find(r => r.querySelector('[data-open="w3"]'));
     return row ? row.querySelector('img').getAttribute('src') : null;
@@ -68,7 +69,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     else req.continue();
   });
   await p2.goto(ROOT + '#/i/w3', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 900));
+  await ready(p2);
 
   const src2 = await p2.$eval('.card-media img', e => e.getAttribute('src'));
   ok(/_none\.webp$/.test(src2), 'сломанная картинка не подменилась заглушкой: ' + src2);
@@ -77,9 +78,9 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
 
   // the app remembers, so the button does not come back on the next render
   await p2.goto(ROOT + '#/tables/wondrous', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 700));
+  await ready(p2);
   await p2.goto(ROOT + '#/i/w3', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 700));
+  await ready(p2);
   ok(!(await p2.$('.card [data-copy-img]')),
      'после перерисовки кнопка «Картинка» вернулась');
   await p2.close();
@@ -89,7 +90,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const p3 = await browser.newPage();
   await p3.setViewport({ width: 1000, height: 900 });
   await p3.goto(ROOT + '#/i/w1', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 600));
+  await ready(p3);
   ok(/w1\.webp$/.test(await p3.$eval('.card-media img', e => e.getAttribute('src'))),
      'у обычного предмета подменилась картинка');
   ok(!!(await p3.$('.card [data-copy-img]')), 'у обычного предмета пропала кнопка «Картинка»');

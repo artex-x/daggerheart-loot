@@ -1,6 +1,7 @@
 /* Selection replaced three different ways of adding to a list, so the point of
    these checks is that the one remaining way behaves the same everywhere. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 
 let fail = 0;
@@ -26,7 +27,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   });
   const go = async h => {
     await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
-    await new Promise(r => setTimeout(r, 500));
+    await ready(page);
   };
   const settle = () => new Promise(r => setTimeout(r, 250));
   const has = s => page.evaluate(x => !!document.querySelector(x), s);

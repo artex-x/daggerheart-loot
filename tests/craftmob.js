@@ -1,5 +1,6 @@
 /* Real-browser check: the craft block must not overflow on narrow phones. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 const WIDTHS = [320, 360, 390, 430, 768];
 // longest RU names in the set, plus the plain-text target and a core recipe
@@ -16,7 +17,7 @@ const ROUTES = ['#/roll/community', '#/roll/std', '#/roll/alt', '#/i/w65', '#/i/
     await page.setViewport({ width, height: 800, deviceScaleFactor: 1 });
     for (const route of ROUTES) {
       await page.goto(ROOT + route, { waitUntil: 'domcontentloaded' });
-      await new Promise(r => setTimeout(r, 120));
+      await ready(page);
 
       const bad = await page.evaluate(function (w) {
         const out = [];

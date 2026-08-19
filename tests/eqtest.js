@@ -1,5 +1,6 @@
 /* Equipment tables, their facets, and the shapes the entries take when copied. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
@@ -17,7 +18,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
                writeText: s => { window.__clip = { 'text/plain': { text: async () => s } }; return Promise.resolve(); } } });
   });
   const go = async h => { await page.goto(ROOT + h, { waitUntil:'domcontentloaded' });
-                          await new Promise(r => setTimeout(r, 550)); };
+                          await ready(page); };
   const settle = () => new Promise(r => setTimeout(r, 250));
   const rows = () => page.$$eval('.rows .row', e => e.length);
   const clip = k => page.evaluate(async x => window.__clip && window.__clip[x] ? await window.__clip[x].text() : '', k);

@@ -3,6 +3,7 @@
    once something is open — a menu that leaves the screen, a control too small
    to hit on a phone, a panel that covers what it belongs to. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 const WIDTHS = [360, 1180];
 
@@ -66,7 +67,7 @@ const STATES = [
           { id:'b', name:'Лавка', ids:[], created:2 }]));
       });
       await page.goto(ROOT + hash, { waitUntil: 'domcontentloaded' });
-      await new Promise(r => setTimeout(r, 480));
+      await ready(page);
       const reached = await act(page);
       /* Measure only once the page has stopped moving: a grid of 239 tiles is
          still laying out a few hundred milliseconds in, and reading boxes then

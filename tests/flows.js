@@ -2,6 +2,7 @@
    the modal following navigation, the address bar tracking a list,
    and what actually lands on the clipboard. */
 const puppeteer = require('puppeteer');
+const { ready } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 
 let fail = 0;
@@ -28,7 +29,7 @@ const b64 = s => Buffer.from(s, 'utf8').toString('base64')
   });
   const go = async (h) => {
     await page.goto(ROOT + h, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 250));
+    await ready(page);
   };
   const settle = () => new Promise(r => setTimeout(r, 300));
   const clip = k => page.evaluate(async (kk) => window.__clip ? await window.__clip[kk].text() : null, k);
