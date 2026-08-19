@@ -303,6 +303,9 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
    same family as the armour one. The source tag is meant to read as quiet, not
    as another category. */
 .badge.src{color:#9a9aa6}
+/* #21: вещь без лестницы рангов. Тон приглушённый - это уточнение к типу
+   снаряжения, а не второй ярлык той же силы */
+.badge.uniq{color:var(--gold-soft);border-color:rgba(216,171,94,.45);border-style:dashed}
 .badge.num{
   font-family:var(--mono);font-size:11px;letter-spacing:0;
   color:var(--gold-soft);border-color:rgba(216,171,94,.5);
@@ -553,7 +556,11 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
   padding:10px 18px;border-radius:999px;box-shadow:0 12px 30px -10px rgba(0,0,0,.7);
   animation:toastIn .2s ease both;
 }
-.toast[hidden]{display:none}
+/* [hidden] обязано побеждать любой режим тоста: .toast.act ниже по файлу и с
+   такой же специфичностью перебивало display:none, и погашенный тост оставался
+   висеть пустой золотой плашкой (#10). Правило общее, чтобы та же ловушка не
+   сработала на следующем скрытом блоке. */
+[hidden]{display:none !important}
 .toast.err{background:var(--danger);color:#fff}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -591,6 +598,9 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
   display:block;width:100%;box-sizing:border-box;resize:vertical;
   background:var(--bg2);border:1px solid var(--line2);border-radius:8px;color:var(--txt);
   font:14px/1.5 var(--ui);padding:9px 11px;
+  /* потолок для авторазмера (#12): дальше заметка прокручивается, а не съедает
+     страницу. Та же цифра стоит в NOTE_MAX */
+  max-height:320px;overflow-y:auto;
 }
 .rnote textarea{font-size:13px;background:var(--surface)}
 .lnote textarea:focus,.rnote textarea:focus{
@@ -609,6 +619,11 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
    colour; only the dashed edge marks the one that stays behind. */
 .n-hid textarea{border-style:dashed}
 @media (max-width:640px){ .npair{grid-template-columns:1fr} }
+/* #18: список внутри описания. Маркер прижат к тексту, отступ ровно такой,
+   чтобы пункты читались столбиком и не выглядели отдельным блоком */
+.dlist{margin:4px 0 0;padding-left:18px}
+.dlist li{margin:1px 0}
+
 input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
 
 

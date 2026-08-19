@@ -18,3 +18,8 @@ node_modules/
 Vol*.pdf
 tools/__pycache__/
 tools/vault_extract.py
+
+# Черновики и разовые выгрузки: нужны в работе, не нужны на сайте
+export/
+*-PLAN.md
+*-DESIGN.md

@@ -201,10 +201,10 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
      'выбранное сообщество запомнилось');
 
   /* Nothing but the layout is kept, so the stored blob stays that small: how a
-     table is laid out and how tall the note boxes stand. Anything answering
-     "what am I doing this minute" is asked again. */
+     table is laid out. Anything answering "what am I doing this minute" is
+     asked again, and note heights answer themselves from the text (#12). */
   const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.prefs.v1') || '{}'));
-  ok(Object.keys(kept).sort().join() === 'noteH,view', 'в настройках хранится лишнее: ' + Object.keys(kept));
+  ok(Object.keys(kept).sort().join() === 'view', 'в настройках хранится лишнее: ' + Object.keys(kept));
   await page.close();
 
   /* ---------- storage that lies ---------- */

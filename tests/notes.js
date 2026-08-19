@@ -242,61 +242,68 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     ok(await page.$eval('.lnote .n-pub textarea', e => e.value) === 'Лавка закрыта до утра',
        'отмена не вернула текст в поле');
     ok((await lists(page))[0].note === 'Лавка закрыта до утра', 'отмена не вернула текст в хранилище');
+    /* #10: `.toast.act` стоит в файле ниже `.toast[hidden]` и с той же
+       специфичностью, так что погашенный тост оставался висеть пустой плашкой.
+       Проверяем то, что видит глаз, а не атрибут. */
+    ok(await page.$eval('#toast', e => getComputedStyle(e).display) === 'none',
+       'после отмены осталась пустая плашка тоста');
     await page.close();
   }
 
-  /* ---------- how tall the boxes stand (issue #6) ---------- */
+  /* ---------- how tall the boxes stand (issues #6 and #12) ----------
+     The height is no longer remembered anywhere: it follows the text, up to a
+     ceiling, and a box the GM drags is left alone until the next render. */
   console.log('высота полей заметок');
   {
     const page = await mk(FRESH);
     await go(page, '#/lists/a');
     const box = sel => page.$$eval(sel, e => e.map(t => {
       const cs = getComputedStyle(t), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-      return { h: t.offsetHeight, lines: (t.clientHeight - pad) / parseFloat(cs.lineHeight) };
+      return { h: t.offsetHeight, lines: Math.round((t.clientHeight - pad) / parseFloat(cs.lineHeight)) };
     }));
-    const drag = (sel, h) => page.$eval(sel, (t, v) => {
-      t.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-      t.style.height = v + 'px';
-      document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
-    }, h);
+    const type = (sel, v) => page.$eval(sel, (t, val) => {
+      t.value = val;
+      t.dispatchEvent(new Event('input', { bubbles: true }));
+    }, v);
 
-    // three whole lines to start with, in both kinds of box
+    // an empty box is the three lines its rows attribute asks for
     let ln = await box('.lnote textarea');
-    ok(ln.length === 2 && ln.every(x => Math.abs(x.lines - 3) < 0.1),
-       'заметка списка открывается не на три строки: ' + JSON.stringify(ln));
+    ok(ln.length === 2 && ln.every(x => x.lines === 3),
+       'пустая заметка списка открывается не на три строки: ' + JSON.stringify(ln));
+
+    // and it grows under the text without anyone dragging it
+    await type('.lnote .n-pub textarea', Array.from({ length: 8 }, (_, i) => 'строка ' + i).join('\n'));
+    await settle();
+    ln = await box('.lnote textarea');
+    ok(ln[0].lines >= 8, 'поле не выросло под текст: ' + JSON.stringify(ln));
+    // the neighbour is a different note and keeps its own size
+    ok(ln[1].lines === 3, 'соседнее поле выросло заодно: ' + JSON.stringify(ln));
+
+    // ...to a ceiling, past which it scrolls rather than swallowing the page
+    await type('.lnote .n-pub textarea', Array.from({ length: 80 }, (_, i) => 'строка ' + i).join('\n'));
+    await settle();
+    const tall = (await box('.lnote textarea'))[0];
+    ok(tall.h <= 320, 'поле переросло потолок: ' + tall.h);
+    ok(await page.$eval('.lnote .n-pub textarea', t => t.scrollHeight > t.clientHeight),
+       'выше потолка текст должен прокручиваться');
+
+    /* Сжимается тем же правилом, но не ниже трёх строк: пол задан атрибутом
+       rows, и это правильный пол - поле, схлопнувшееся в одну строку, читается
+       как сломанное, а печатать в него всё равно сейчас будут. */
+    await type('.lnote .n-pub textarea', 'одна строка');
+    await settle();
+    ok((await box('.lnote textarea'))[0].lines === 3, 'поле не вернулось к трём строкам');
+
+    // a row's box is hidden until it is opened, and измеряется уже открытым
     await page.click('.lrow:first-child .lrow-note');
     await settle();
-    let rn = await box('.lrow:first-child .rnote textarea');
-    ok(rn.length === 2 && rn.every(x => Math.abs(x.lines - 3) < 0.1),
-       'заметка позиции открывается не на три строки: ' + JSON.stringify(rn));
+    const rn = await box('.lrow:first-child .rnote textarea');
+    ok(rn.length === 2 && rn.every(x => x.lines === 3 && x.h > 0),
+       'заметка позиции открылась схлопнутой: ' + JSON.stringify(rn));
 
-    // dragging one box takes its neighbour with it, and nothing else
-    await drag('.lnote textarea', 190); await settle();
-    ln = await box('.lnote textarea');
-    ok(ln.every(x => x.h === 190), 'пара заметок списка разъехалась: ' + JSON.stringify(ln));
-    rn = await box('.lrow:first-child .rnote textarea');
-    ok(rn.every(x => Math.abs(x.lines - 3) < 0.1), 'растянулась и заметка позиции заодно');
-
-    await drag('.lrow:first-child .rnote textarea', 150); await settle();
-    ok((await box('.lrow:first-child .rnote textarea')).every(x => x.h === 150),
-       'пара заметок позиции разъехалась');
-    ok((await box('.lnote textarea')).every(x => x.h === 190), 'заметка списка потеряла высоту');
-
-    // a render throws the markup away; the height has to come back with it
-    await page.evaluate(() => { location.hash = '#/search'; });
-    await settle();
-    await page.evaluate(() => { history.back(); });
-    await settle(); await settle();
-    ok((await box('.lnote textarea')).every(x => x.h === 190), 'после перерисовки высота сбросилась');
-    // a row opened afterwards is already the right size
-    await page.click('.lrow:nth-child(2) .lrow-note');
-    await settle();
-    ok((await box('.lrow:nth-child(2) .rnote textarea')).every(x => x.h === 150),
-       'следующая строка открылась с исходной высотой');
-
-    // and it is still there in the next sitting
-    await go(page, '#/lists/a');
-    ok((await box('.lnote textarea')).every(x => x.h === 190), 'высота не пережила перезагрузку');
+    // nothing about heights is kept in the settings any more
+    const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('dhloot.prefs.v1') || '{}'));
+    ok(!('noteH' in kept), 'высота заметок снова осела в настройках');
     await page.close();
   }
 

@@ -187,6 +187,30 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     ok(await page.$('.batch.on'), 'полоса действий не отметилась');
     ok(/2/.test(await page.$eval('.batch-all', e => e.textContent)), 'не показано, сколько выбрано');
 
+    /* #19: кнопки шага у поля процента шли мимо обработчика input - цифра
+       менялась, а модель и подпись кнопки оставались на прежнем знаке. */
+    const label = () => page.$eval('[data-reprice]', e => e.textContent.trim());
+    ok(/скидк/i.test(await label()), 'по умолчанию поле стоит на скидке: ' + (await label()));
+    await page.evaluate(() => {
+      const inp = document.getElementById('rp');
+      inp.value = '-1';
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    await page.click('[data-step="1"][data-for="rp"]');
+    await settle();
+    ok(await page.$eval('#rp', e => e.value) === '0', 'шаг не изменил поле');
+    await page.click('[data-step="1"][data-for="rp"]');
+    await settle();
+    ok(/подня|цену/i.test(await label()), 'подпись не переехала на наценку: ' + (await label()));
+    await page.evaluate(() => {
+      const inp = document.getElementById('rp');
+      inp.value = '-20';
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    ok(/скидк/i.test(await label()), 'подпись не вернулась на скидку: ' + (await label()));
+
     /* Скидка ложится только на выбранные: вторая цена остаётся прежней. */
     await page.click('[data-reprice]');
     await settle();

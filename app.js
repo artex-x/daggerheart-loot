@@ -149,6 +149,7 @@ const T = {
     copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
     craftInto:'Улучшается до', craftFrom:'Получается из', tierLadder:'Ранг',
+    unique:'Уникальное', uniqueHint:'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
     noteClear:'Очистить заметку', noteCleared:'Заметка очищена',
     pickRow:'Выбрать позицию', pickAll:'Выбрать все', pickedN:'Выбрано',
     batchNoPrice:'Убрать цену', repricePct:'Цены, %',
@@ -298,6 +299,7 @@ const T = {
     copyRoll:'Copy every option', rollCopied:'Options copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
     craftInto:'Upgrades to', craftFrom:'Made from', tierLadder:'Tier',
+    unique:'Unique', uniqueHint:'Printed at a single tier - this one has no upgrade ladder',
     noteClear:'Clear the note', noteCleared:'Note cleared',
     pickRow:'Select entry', pickAll:'Select all', pickedN:'Selected',
     batchNoPrice:'Clear price', repricePct:'Prices, %',
@@ -548,16 +550,35 @@ function eqChips(it){
 /* The feature label is stored inline ("Quick: when you…") so that every place
    that already prints a description keeps working; only the emphasis is added
    back here, at the first colon — the label itself never contains one. */
+/* Ярлык свойства хранится прямо в тексте («Быстрое: когда вы…»), чтобы всякое
+   место, которое уже печатает описание, продолжало работать; курсив добавляется
+   здесь, по первому двоеточию - в самом ярлыке двоеточия не бывает. */
+function labelHtml(line){
+  const i = line.indexOf(': ');
+  return i < 0 ? esc(line) : '<i>' + esc(line.slice(0, i)) + ':</i>' + esc(line.slice(i + 1));
+}
+/* #18: строка, начинающаяся с «- », - пункт списка. Перечисление вариантов
+   («1-2 - …; 3-4 - …») в одну строку читается как сплошная стена, а списком
+   разбирается взглядом. Разметка минимальная нарочно: жирным только название
+   вещи, курсивом ярлык свойства, всё остальное - обычный текст. */
 function descHtml(it){
   const s = descOf(it) || '';
-  if (!isEquip(it)) return esc(s);
-  /* У вещи бывает два свойства сразу, и в одну строку они читаются как одно
-     длинное. Каждое стоит на своей строке в данных, и ярлык выделяется у
-     каждой, а не только у первой. */
-  return s.split('\n').map(function (line) {
-    const i = line.indexOf(': ');
-    return i < 0 ? esc(line) : '<i>' + esc(line.slice(0, i)) + ':</i>' + esc(line.slice(i + 1));
-  }).join('<br>');
+  if (!isEquip(it) && s.indexOf('\n- ') < 0) return esc(s);
+  const out = [];
+  let ul = null;
+  s.split('\n').forEach(function (line) {
+    if (line.slice(0, 2) === '- ') {
+      if (!ul) { ul = []; out.push(ul); }
+      ul.push('<li>' + labelHtml(line.slice(2)) + '</li>');
+      return;
+    }
+    ul = null;
+    out.push(labelHtml(line));
+  });
+  return out.map(function (x, i) {
+    if (Array.isArray(x)) return '<ul class="dlist">' + x.join('') + '</ul>';
+    return (i && !Array.isArray(out[i - 1]) ? '<br>' : '') + x;
+  }).join('');
 }
 
 /* What travels with an item when it is copied or shared: the full text of the
@@ -808,7 +829,7 @@ const HOME_KEY = 'dhloot.home.v1';
 const PREFS_KEY = 'dhloot.prefs.v1';
 function savePrefs(){
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({ view: S.tables.view, noteH: NOTE_H }));
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ view: S.tables.view }));
   } catch (e) {}
 }
 /* Storage is a stranger: a value that fails the check keeps its default rather
@@ -818,31 +839,30 @@ function loadPrefs(){
   try { p = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null'); } catch (e) { return; }
   if (!p || typeof p !== 'object') return;
   if (p.view === 'list' || p.view === 'grid') S.tables.view = p.view;
-  if (p.noteH && typeof p.noteH === 'object')
-    Object.keys(NOTE_H).forEach(function (k) { NOTE_H[k] = noteHeight(p.noteH[k]); });
 }
 
 /* ---------- how tall a note box stands ----------
-   A GM who drags a note taller means it, and the box has to stay that way —
-   both when the page renders again and when they come back tomorrow. The
-   dragged size lives in the element's own style attribute, which the next
-   innerHTML throws away, so it is read back off the element and re-applied by
-   hand. One height per kind rather than per box: the two notes of a pair stand
-   side by side, and a pair of unequal boxes reads as a mistake rather than as
-   a choice. */
-const NOTE_H = { lnote: 0, rnote: 0 };
+   The height used to be dragged by hand and kept in the settings, one figure
+   per kind of box. It travelled: a height set for a long shop note came back on
+   a one-line note about a dagger, in another list, tomorrow (#12). There is
+   nothing to remember here — the right height is the one the text needs, so the
+   box grows under its own content up to a ceiling and scrolls past it.
+
+   A box the GM has resized by hand is left alone until the next render: while
+   the pointer is theirs, ours has no business moving it. */
 const NOTE_SEL = '.lnote textarea, .rnote textarea';
-function noteHeight(v){
-  const n = parseFloat(v);
-  return n >= 32 && n <= 2000 ? Math.round(n) : 0;
+const NOTE_MAX = 320;
+function autoSize(ta){
+  if (!ta || ta.dataset.manual) return;
+  /* Hidden boxes measure as zero; the row attribute holds them until they open. */
+  if (!ta.offsetParent) return;
+  ta.style.height = 'auto';
+  // scrollHeight is the content box, height is the border box on these
+  const frame = ta.offsetHeight - ta.clientHeight;
+  ta.style.height = Math.min(ta.scrollHeight + frame, NOTE_MAX) + 'px';
 }
-function noteKind(ta){ return ta.closest('.lnote') ? 'lnote' : 'rnote'; }
-/* Zero means "never dragged" — the box keeps the height its rows give it. */
-function applyNoteHeights(){
-  [...document.querySelectorAll(NOTE_SEL)].forEach(function (ta) {
-    const h = NOTE_H[noteKind(ta)];
-    ta.style.height = h ? h + 'px' : '';
-  });
+function autoSizeNotes(root){
+  [...(root || document).querySelectorAll(NOTE_SEL)].forEach(autoSize);
 }
 
 /* Which section the app opens on. A GM who lives in Search should not have to
@@ -1535,6 +1555,16 @@ function kindBadge(it){
   return '<span class="badge ' + (it.kind === 'consumable' ? 'cons' : 'item') + '">' +
     esc(it.kind === 'consumable' ? t().cons : t().item) + '</span>';
 }
+/* #21: часть снаряжения стоит без лестницы рангов. Это не пробел в данных, а
+   именованные вещи, которые в книге существуют в одном ранге - и выбирать их
+   надо иначе, чем «взять тот же меч на ранг выше». Слово то же, что в фильтре
+   «Линия»: два названия одного и того же читаются как два разных признака. */
+function isUnique(it){ return isEquip(it) && !it.eq.line; }
+function uniqBadge(it){
+  return isUnique(it)
+    ? '<span class="badge uniq" title="' + esc(t().uniqueHint) + '">' + esc(t().unique) + '</span>'
+    : '';
+}
 
 function cardHTML(it, opt){
   opt = opt || {};
@@ -1542,7 +1572,7 @@ function cardHTML(it, opt){
   const meta =
     ((opt.rollLabel !== false && it.roll) ? '<span class="badge num">' + esc(opt.rollLabel || it.roll) + '</span>' : '') +
     (opt.col ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>' : '') +
-    kindBadge(it) +
+    kindBadge(it) + uniqBadge(it) +
     '<span class="badge src">' + esc(srcLabel(it)) + '</span>';
 
   const nameEl = opt.full
@@ -2113,7 +2143,7 @@ function rowHTML(it, removeFrom, tail){
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
         (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
-        '<span class="rm">' + kindBadge(it) +
+        '<span class="rm">' + kindBadge(it) + uniqBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       (removeFrom
@@ -2343,7 +2373,7 @@ function listRowHTML(l, it, i){
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
         /* the same badges every other listing shows — without them a list is the
            one place you cannot tell an item from a weapon at a glance */
-        '<span class="rm">' + kindBadge(it) +
+        '<span class="rm">' + kindBadge(it) + uniqBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       '<div class="lrow-meta">' +
@@ -2711,7 +2741,7 @@ function render(){
   placeMenu();
   $('#footText').innerHTML = t().foot;
   document.documentElement.lang = S.lang;
-  applyNoteHeights();
+  autoSizeNotes();
   restoreFocus(keep);
 
   if (S.tables.anchor && r === 'tables') {
@@ -2795,7 +2825,11 @@ document.addEventListener('click', function (e) {
     const v = clamp((parseInt(inp.value, 10) || 0) + parseInt(step.dataset.step, 10),
                     parseInt(inp.dataset.min, 10), parseInt(inp.dataset.max, 10));
     inp.value = v;
-    applyNum(inp.id, v);
+    /* Through the same event as typing. Each field has its own `input` handler,
+       and a second copy of that logic behind the steppers eventually falls
+       behind it: the reprice field changed its digits but neither the model nor
+       the button's label (#19), because only `applyNum` was called. */
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
     return;
   }
 
@@ -2954,7 +2988,8 @@ document.addEventListener('click', function (e) {
     const box = row && row.querySelector('.rnote');
     if (box) {
       box.hidden = !box.hidden;
-      if (!box.hidden) box.querySelector('textarea').focus();
+      // a hidden box measures as zero, so its size is settled on the way out
+      if (!box.hidden) { autoSizeNotes(box); box.querySelector('textarea').focus(); }
     }
     return;
   }
@@ -3126,6 +3161,8 @@ function applyNum(id, v){
 
 document.addEventListener('input', function (e) {
   const el = e.target;
+  // the box follows the text as it is typed, not only when the page renders
+  if (el.matches && el.matches(NOTE_SEL)) autoSize(el);
   if (el.id === 'n' || el.id === 'hope' || el.id === 'fear') {
     // a text field can hold anything, so keep it to digits without moving the caret
     const digits = el.value.replace(/\D/g, '');
@@ -3263,6 +3300,38 @@ document.addEventListener('dragstart', function (e) {
   try { e.dataTransfer.setData('text/plain', dragKey); } catch (err) {}
   if (row && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(row, 24, 24);
 });
+/* ---------- scrolling while dragging ----------
+   A native drag swallows the wheel, and the browser's own edge scrolling starts
+   in a strip a few pixels tall — aiming at it is a game in itself, and moving an
+   entry past the fold was effectively impossible (#22). So the page scrolls
+   itself: a generous band at either edge, speed growing as the pointer goes
+   deeper into it, running off the frame rather than off the mouse so it keeps
+   going while the hand is still. */
+const EDGE = 120, EDGE_MAX = 22;
+let edgeSpeed = 0, edgeTimer = 0;
+function edgeStep(){
+  edgeTimer = 0;
+  if (!dragKey || !edgeSpeed) return;
+  scrollBy(0, edgeSpeed);
+  edgeTimer = requestAnimationFrame(edgeStep);
+}
+function edgeScroll(y){
+  const h = innerHeight;
+  const depth = y < EDGE ? y - EDGE : (y > h - EDGE ? y - (h - EDGE) : 0);
+  edgeSpeed = depth ? Math.round(EDGE_MAX * Math.max(-1, Math.min(1, depth / EDGE))) : 0;
+  if (edgeSpeed && !edgeTimer) edgeTimer = requestAnimationFrame(edgeStep);
+}
+function edgeStop(){
+  edgeSpeed = 0;
+  if (edgeTimer) { cancelAnimationFrame(edgeTimer); edgeTimer = 0; }
+}
+/* The pointer spends most of a drag over the gap between rows, where the row
+   handler below returns early — the scrolling has to be driven from every
+   dragover, not only the ones that land on a row. */
+document.addEventListener('dragover', function (e) {
+  if (dragKey) edgeScroll(e.clientY);
+}, true);
+
 document.addEventListener('dragover', function (e) {
   if (!dragKey) return;
   const row = rowOf(e.target);
@@ -3276,10 +3345,12 @@ document.addEventListener('dragover', function (e) {
 });
 document.addEventListener('dragend', function () {
   dragKey = '';
+  edgeStop();
   clearDropMarks();
   $$('.lrow.dragging').forEach(function (r) { r.classList.remove('dragging'); });
 });
 document.addEventListener('drop', function (e) {
+  edgeStop();
   if (!dragKey) return;
   const row = rowOf(e.target);
   if (!row) return;
@@ -3323,10 +3394,10 @@ document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') closeModal();
 });
 
-/* The grip is part of the textarea, so a drag starts and ends on it. Measuring
-   once the pointer is up rather than while it moves means the pair's other box
-   is not jumping about under the hand mid-drag, and there is no chance of the
-   height we set feeding back in as a resize of our own. */
+/* The resize grip is part of the textarea, so a drag starts and ends on it.
+   Measuring once the pointer is up rather than while it moves keeps us out of
+   the way of the hand; all we take from it is "this box is theirs now", which
+   stops the auto-sizing from undoing the drag on the next keystroke. */
 let noteDrag = null;
 document.addEventListener('pointerdown', function (e) {
   const ta = e.target.closest && e.target.closest(NOTE_SEL);
@@ -3334,12 +3405,8 @@ document.addEventListener('pointerdown', function (e) {
 });
 document.addEventListener('pointerup', function () {
   const d = noteDrag; noteDrag = null;
-  if (!d || !d.ta.isConnected) return;
-  const h = noteHeight(d.ta.offsetHeight);
-  if (!h || h === d.h) return;
-  NOTE_H[noteKind(d.ta)] = h;
-  applyNoteHeights();
-  savePrefs();
+  if (!d || !d.ta.isConnected || d.ta.offsetHeight === d.h) return;
+  d.ta.dataset.manual = '1';
 });
 
 function openModal(id){

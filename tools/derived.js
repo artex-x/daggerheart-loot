@@ -9,7 +9,12 @@
 */
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 
-const SRC = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot', community: 'Community' };
+/* Раскладка на человеческие имена: в csv и json источник читают вслух, а не
+   сверяют с кодом. Забытый ключ раньше утекал наружу как `dread`/`frame`. */
+const SRC = {
+  core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot',
+  community: 'Community', dread: 'Dread GM Toolbox', frame: 'Campaign Frames'
+};
 const RANGE = { melee: 'Melee', veryclose: 'Very Close', close: 'Close',
                 far: 'Far', veryfar: 'Very Far' };
 const TRAIT = { agility: 'Agility', strength: 'Strength', finesse: 'Finesse',

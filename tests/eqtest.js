@@ -208,7 +208,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await go('#/i/' + q1);
   await page.click('[data-copy-full]'); await settle();
   const txt = await clip('text/plain');
-  ok(/^Палаш\nОсновное оружие · Ранг 1 · Физическое · Проворность · Вплотную · d8 физ · Одноручное\n\nНадёжное: \+1 к броскам атаки$/.test(txt),
+  ok(/^Палаш\nОсновное оружие · Ранг 1 · Физическое · Проворность · Вплотную · d8 физ · Одноручное\n\nНадёжное: \+1 к Броскам Атаки$/.test(txt),
      'текст собран иначе:\n' + JSON.stringify(txt));
   const html = await clip('text/html');
   ok(/<i>Надёжное:<\/i>/.test(html), 'свойство не курсивом: ' + html.slice(0, 200));
