@@ -319,15 +319,15 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
        'цена не переведена в мешки: ' + (await page.$eval('[data-gold="a:ci1"]', e => e.title)));
     ok((await lists()).find(l => l.id === 'a').money === undefined,
        'книжный счёт по умолчанию хранится зря');
-    /* Про всплывающую подсказку нельзя догадаться, не наведя мышь, а пальцем
-       наводить нечем. Знак вопроса в подписи виден и работает нажатием. */
+    /* Про всплывающую подсказку нельзя догадаться, не наведя мышь. Знак вопроса
+       в подписи виден и говорит, что подсказка есть; сам он не кнопка. */
     const hint = () => page.$('.lrow [data-goldhint]');
     ok(await hint(), 'у цены нет видимого знака подсказки');
-    const want = await page.$eval('.lrow [data-goldhint]', e => e.dataset.goldhint);
-    ok(/мешк|горст|сундук/.test(want), 'в знаке не пересчёт, а что-то другое: ' + want);
-    await page.click('.lrow [data-goldhint]'); await new Promise(r => setTimeout(r, 150));
-    ok((await page.$eval('#toast', e => e.textContent)) === want,
-       'нажатие на знак не показало пересчёт');
+    const mark = await page.$eval('.lrow [data-goldhint]',
+                                  e => [e.tagName, e.dataset.goldhint, e.title]);
+    ok(mark[0] === 'SPAN', 'знак подсказки снова кнопка, хотя нажимать не на что');
+    ok(/мешк|горст|сундук/.test(mark[1]) && mark[2] === mark[1],
+       'в знаке не пересчёт, а что-то другое: ' + mark.join(' | '));
     await page.click('[data-money][data-val="coin"]'); await settle();
     ok(!(await hint()), 'в режиме монет остался знак пересчёта, хотя пересчитывать нечего');
     ok((await lists()).find(l => l.id === 'a').money === 'coin', 'отход от умолчания не сохранился');

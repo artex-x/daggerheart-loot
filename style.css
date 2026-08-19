@@ -721,11 +721,11 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
   display:flex;align-items:center;gap:4px}
 /* Знак вопроса стоит в подписи, а не отдельной строкой: строка съедала бы
    высоту у каждой позиции списка ради числа, которое смотрят изредка. */
-.goldhint{width:13px;height:13px;flex:none;padding:0;border-radius:50%;cursor:help;
-  border:1px solid var(--line2);background:transparent;color:var(--muted2);
+.goldhint{width:13px;height:13px;flex:none;border-radius:50%;cursor:help;
+  border:1px solid var(--line2);color:var(--muted2);
   font:700 9px/1 var(--sans);display:inline-flex;align-items:center;justify-content:center;
   transition:.15s}
-.goldhint:hover,.goldhint:focus-visible{border-color:var(--gold);color:var(--gold-soft)}
+.goldhint:hover{border-color:var(--gold);color:var(--gold-soft)}
 .lrow-meta input{
   width:64px;height:30px;padding:0 8px;border-radius:7px;
   background:var(--bg2);border:1px solid var(--line2);color:var(--txt);

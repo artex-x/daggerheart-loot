@@ -1238,16 +1238,15 @@ function goldTitle(l, coins){
   const s = goldText(l, coins);
   return s ? ' title="' + esc(s) + '"' : '';
 }
-/* Пересчёт в мешки висел только всплывающей подсказкой на поле - о ней нельзя
-   догадаться, не наведя мышь, а на телефоне наводить нечем. Вопросительный
-   знак в подписи занимает те же нисколько места, но виден: наведение
-   показывает ту же подсказку, нажатие - уведомление, которое работает и без
-   мыши. В режиме монет пересчитывать нечего, и знака нет. */
+/* Пересчёт в мешки висел только всплывающей подсказкой на поле, и о ней нельзя
+   было догадаться, не наведя мышь. Вопросительный знак в подписи занимает те же
+   нисколько места, но виден - дальше работает та же подсказка. Знак не кнопка:
+   нажимать тут не на что, он только говорит, что подсказка есть. В режиме
+   монет пересчитывать нечего, и знака нет. */
 function goldHintHTML(l, coins){
   const s = goldText(l, coins);
   return s
-    ? '<button type="button" class="goldhint" data-goldhint="' + esc(s) + '"' +
-      ' title="' + esc(s) + '" aria-label="' + esc(t().whatIsThis + ': ' + s) + '">?</button>'
+    ? '<span class="goldhint" data-goldhint="' + esc(s) + '" title="' + esc(s) + '">?</span>'
     : '';
 }
 /* name plus whatever meta the GM filled in */
@@ -3676,11 +3675,6 @@ document.addEventListener('click', function (e) {
     }
     return;
   }
-
-  /* Тот же пересчёт, что во всплывающей подсказке: наведение работает мышью,
-     нажатие - пальцем. */
-  const gh = e.target.closest('[data-goldhint]');
-  if (gh) { e.preventDefault(); toast(gh.dataset.goldhint); return; }
 
   const act = e.target.closest('[data-act]');
   if (!act) return;
