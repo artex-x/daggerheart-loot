@@ -44,6 +44,8 @@ const S = {
   alt:  { rarity: 'common', hope: 1, fear: 2 },
   rp: -20,          // проценты для пакетного пересчёта цен
   guess: false,     // раскрыта ли панель с ориентиром по цене
+  moneyHelp: false, // раскрыта ли справка о пересчёте золота
+  keepOpen: {},     // что человек свернул или раскрыл сам - переживает перерисовку
   shared: { ids: [], meta: {} },   // позиции открытого по ссылке чужого списка
   lsel: {},         // выделенные строки открытого списка
   wond: { n: 1 },
@@ -117,6 +119,7 @@ const T = {
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
     guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
     moneyAs:'Отображение цен', money_coin:'Монетами', money_bag:'Как в книге',
+    moneyHelp:'Ядро считает золото <b>горстями, мешками и сундуками</b>: 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Например, 750 — это <b>7 мешков 5 горстей</b>, а 12&nbsp;300 — <b>1 сундук 2 мешка</b>.',
     note:'Заметка', listNote:'Заметки', noteHead:'Заметка',
     notePub:'Для игроков', noteHid:'Только для мастера',
     notePubHint:'уедет с текстом и ссылкой для игроков',
@@ -139,7 +142,7 @@ const T = {
     removedItem:'«%s» убран', undo:'Вернуть',
     share:'Поделиться', del:'Удалить', rename:'Название списка',
     listEmpty:'Список пуст', listEmptyHint:'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» — или сделайте это прямо с карточки предмета.',
-    sharedList:'Список от другого игрока', saveToMine:'Сохранить как новый список', savedToLists:'Список сохранён',
+    sharedList:'Список от другого игрока',
     badShare:'Ссылка повреждена или собрана в другой версии данных.',
     deleteConfirm:'Удалить список «%s»? Это действие необратимо.',
     saveFailed:'Не удалось сохранить: браузер блокирует локальное хранилище',
@@ -203,12 +206,11 @@ const T = {
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart" target="_blank" rel="noopener">Dread GM Toolbox for Daggerheart</a>.'
       ],
       voa: [
-        'Три тома одного автора: 108 карточек, разложенных по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть — четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт — подарки разного веса, и на одной кости им не место.',
+        'Три тома одного автора: 108 карточек, разложенных по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть — четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт — награды разного веса, и на одной кости им не место.',
         '<b>Стоимость Призыва.</b> Вещи из этой книги сильнее того, что лежит в корнике, поэтому у большинства есть Стоимость Призыва. Если баланс важен, пусть игрок платит её Стрессом и меняет предмет на одну из карт домена в Руке — только тогда предмет считается снаряжённым. Если баланс не важен, правило можно не применять.',
         '<b>Артефакты.</b> Предметы из легенд: последствия применения некоторых способны изменить мир и вытянуть на себе целую кампанию. Их не раздают всем — они должны появляться редко и работать на историю.',
         '<b>Проклятые предметы.</b> Дают сильное преимущество, но не бесплатно. Когда персонаж запускает проклятие, карта немедленно занимает место одной из карт в его Руке, и предмет привязывается навсегда. Снять его можно только трудным заданием, мощной магией или особыми обстоятельствами — условие придумывает Мастер или стол. Носить несколько проклятых предметов можно, но неразумно.',
-        'Цвет ранга на карточках книги: обычная — 1, необычная — 2, редкая — 3, очень редкая — 4, плюс отдельные обозначения А (артефакт) и П (проклятый). В первых двух томах последняя строка называлась Legendary и ранга не имела; том 3 перестроил шкалу, и здесь взята его версия.',
-        'Источник: <a href="https://www.drivethrurpg.com/en/browse?keyword=Vault%20of%20Ages" target="_blank" rel="noopener">Vault of Ages</a> Криса ДеШамплейна, три тома, версия 1.5.'
+        'Источник: три тома Криса ДеШамплейна, версия 1.5 — <a href="https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1" target="_blank" rel="noopener">Vault of Ages Volume 1</a>, <a href="https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2" target="_blank" rel="noopener">Volume 2</a>, <a href="https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3" target="_blank" rel="noopener">Volume 3</a>.'
       ],
       community: [
         'Предметы каждого сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.',
@@ -283,6 +285,7 @@ const T = {
     guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
     guessNoTier:'nothing to go on', guessNoRarity:'no rarity given', guessDone:'Prices set',
     moneyAs:'Price display', money_coin:'In coins', money_bag:'As in the book',
+    moneyHelp:'The core book counts gold in <b>handfuls, bags and chests</b>: 10 handfuls = 1 bag, 10 bags = 1 chest. Coins are an optional rule where 1 handful = 10 coins, so a bag is 100 and a chest 1000. A price is always typed in coins: the mode only changes how it reads. So 750 is <b>7 bags 5 handfuls</b>, and 12,300 is <b>1 chest 2 bags</b>.',
     note:'Note', listNote:'Notes', noteHead:'Note',
     notePub:'For players', noteHid:'GM only',
     notePubHint:'travels with the text and the players’ link',
@@ -305,7 +308,7 @@ const T = {
     removedItem:'“%s” removed', undo:'Undo',
     share:'Share', del:'Delete', rename:'List name',
     listEmpty:'The list is empty', listEmptyHint:'Nothing here yet. Open Tables or Search, tick what you need and press “Add to list” — or do it straight from an item card.',
-    sharedList:'A list from another player', saveToMine:'Save as a new list', savedToLists:'List saved',
+    sharedList:'A list from another player',
     badShare:'The link is damaged or was built from a different data version.',
     deleteConfirm:'Delete the list "%s"? This cannot be undone.',
     saveFailed:'Could not save: the browser is blocking local storage',
@@ -369,12 +372,11 @@ const T = {
         'Source: the <a href="https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart" target="_blank" rel="noopener">Dread GM Toolbox for Daggerheart</a> supplement.'
       ],
       voa: [
-        'Three volumes by one author: 108 cards sorted by tier. The book has no roll table of its own, so there are six sections here — four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of different weight and do not belong on one die.',
+        'Three volumes by one author: 108 cards sorted by tier. The book has no roll table of its own, so there are six sections here — four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.',
         '<b>Recall Cost.</b> Items in this book are often stronger than those in the core book, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout — only then does it count as equipped. If balance does not matter, skip the rule.',
         '<b>Artifacts.</b> Objects out of legend: the consequences of using some of them can reshape a world and carry a whole campaign. Do not hand them to everyone — they should be rare and serve the story.',
         '<b>Cursed objects.</b> A strong benefit that is not free. The moment a character triggers the curse, the card takes the place of one of the cards in their loadout, and the item is bound to them permanently. Removing it takes a hard task, powerful magic or special circumstances — the GM or the table invents the condition. Carrying several cursed objects is possible but unwise.',
-        'The tier colours on the book\'s own cards: common is 1, uncommon 2, rare 3, very rare 4, plus separate marks A (artifact) and C (cursed). In the first two volumes the last row was called Legendary and had no tier; volume 3 rebuilt the scale, and that is the version used here.',
-        'Source: <a href="https://www.drivethrurpg.com/en/browse?keyword=Vault%20of%20Ages" target="_blank" rel="noopener">Vault of Ages</a> by Chris DeChamplain, three volumes, v1.5.'
+        'Source: three volumes by Chris DeChamplain, v1.5 — <a href="https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1" target="_blank" rel="noopener">Vault of Ages Volume 1</a>, <a href="https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2" target="_blank" rel="noopener">Volume 2</a>, <a href="https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3" target="_blank" rel="noopener">Volume 3</a>.'
       ],
       community: [
         'Each community lists its items in ascending order of rarity: 1 is the humblest, 10 the most powerful.',
@@ -770,7 +772,9 @@ function guessWhy(it){
             : RARITY_OF[it.id] ? t()[RAR_KEY[RARITY_OF[it.id]]]
             : it.tier ? voaTierName(it.tier)
             : t().guessNoRarity;
-  return src + ' · ' + band[0] + '–' + band[1];
+  /* Вилка всегда в монетах, а результат рядом может стоять мешками - без
+     единицы это читалось как «30-50» и «4 горсти» про одно и то же число. */
+  return src + ' · ' + band[0] + '–' + band[1] + ' ' + t().goldUnit;
 }
 function guessPanelHTML(l, ids){
   return '<div class="guess">' +
@@ -1164,7 +1168,12 @@ const MONEY_STEP = [
   { n: 10,   ru: ['горсть', 'горсти', 'горстей'],   en: ['handful', 'handfuls'] },
   { n: 1,    ru: ['монета', 'монеты', 'монет'],     en: ['coin', 'coins'] }
 ];
-const MONEY_MODES = ['coin', 'bag'];
+/* Первым стоит то, как деньги считает сама книга: горсти, мешки и сундуки.
+   Монеты - опциональное правило, и по умолчанию их нет, поэтому и режим по
+   умолчанию книжный. В ссылке помечается «coin»: отсутствие пометки значит
+   книжный вид, и старые ссылки без неё читаются так же, как новые. */
+const MONEY_MODES = ['bag', 'coin'];
+const MONEY_DEFAULT = 'bag';
 function moneyWord(step, n){
   if (S.lang !== 'ru') return step.en[n === 1 ? 0 : 1];
   const a = n % 10, b = n % 100;
@@ -1190,7 +1199,7 @@ function priceText(coins, mode){
   return out.join(' ');
 }
 function moneyMode(l){
-  return l && MONEY_MODES.indexOf(l.money) > 0 ? l.money : 'coin';
+  return l && MONEY_MODES.indexOf(l.money) >= 0 ? l.money : MONEY_DEFAULT;
 }
 /* Подсказка на поле цены: в режиме монет говорить нечего, поле и так о них */
 function goldText(l, coins){
@@ -1272,7 +1281,7 @@ function encodeListRaw(l, forPlayers){
      быть ни у одной записи. Старый разборщик на таком id делает `return` -
      ссылка у него открывается как открывалась, просто монетами (#15). Знак
      считается только по строке позиций, так что лишняя запись его не трогает. */
-  const money = moneyMode(l) !== 'coin' ? N_REC + N_MONEY + N_SEP + moneyMode(l) : '';
+  const money = moneyMode(l) !== MONEY_DEFAULT ? N_REC + N_MONEY + N_SEP + moneyMode(l) : '';
   const notes = money + pair(N_LIST, l) + l.ids.map(function (id) {
     return pair(id, itemMeta(l, id));
   }).join('');
@@ -1351,7 +1360,7 @@ function decodeList(payload){
           const forPlayers = id.charAt(0) === N_SHOW;
           if (forPlayers) id = id.slice(1);
           const field = forPlayers ? 'note' : 'hnote';
-          if (id === N_MONEY) { if (MONEY_MODES.indexOf(text) > 0) money = text; return; }
+          if (id === N_MONEY) { if (MONEY_MODES.indexOf(text) >= 0) money = text; return; }
           if (id === N_LIST) { if (forPlayers) note = text; else hnote = text; return; }
           if (!BY_ID[id] || ids.indexOf(id) < 0) return;
           (meta[id] || (meta[id] = {}))[field] = text;
@@ -1753,11 +1762,15 @@ function applyAddTo(listId, key){
 function addIdsTo(l, ids, meta){
   const fresh = ids.filter(id => BY_ID[id] && l.ids.indexOf(id) < 0);
   fresh.forEach(id => l.ids.push(id));
+  /* Переносим всё, что видно на чужой странице: количество, цену и заметку для
+     игроков. Мастерская заметка не видна и не едет. Поправить у себя проще, чем
+     восстанавливать по памяти то, что не приехало. */
   if (meta) fresh.forEach(function (id) {
     const m = meta[id];
     if (!m) return;
     if (m.qty > 1) setMeta(l, id, 'qty', m.qty);
     if (m.gold > 0) setMeta(l, id, 'gold', m.gold);
+    if (m.note) setMeta(l, id, 'note', m.note);
   });
   saveLists();
   toast(t().addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + fresh.length : ''));
@@ -2587,6 +2600,10 @@ function renderLists(){
 function moneyPickerHTML(l){
   if (!l.ids.some(function (id) { return itemMeta(l, id).gold > 0; })) return '';
   const cur = moneyMode(l);
+  /* Пример «750 → 7 мешков 5 горстей» объяснял только половину: откуда взялись
+     мешки, из чего они складываются и почему в поле всё равно вводят монеты -
+     не сказано нигде, а монеты тут вообще опциональное правило. Поэтому вместо
+     примера вопросительный знак, а за ним весь пересчёт. */
   return '<div class="money"><span class="money-l">' + esc(t().moneyAs) + '</span>' +
     MONEY_MODES.map(function (m) {
       return '<button type="button" class="chip' + (m === cur ? ' on' : '') + '"' +
@@ -2594,7 +2611,11 @@ function moneyPickerHTML(l){
         (m === cur ? ' aria-current="true"' : '') + '>' +
         esc(t()['money_' + m]) + '</button>';
     }).join('') +
-    '<span class="money-e">' + esc(priceText(750, cur)) + '</span></div>';
+    '<button type="button" class="helpbtn sm' + (S.moneyHelp ? ' on' : '') + '"' +
+      ' data-act="moneyHelp" aria-expanded="' + (S.moneyHelp ? 'true' : 'false') + '"' +
+      ' title="' + esc(t().whatIsThis) + '" aria-label="' + esc(t().whatIsThis) + '">?</button>' +
+    (S.moneyHelp ? '<span class="money-br"></span><p class="money-help">' + t().moneyHelp + '</p>' : '') +
+  '</div>';
 }
 
 function renderOneList(id){
@@ -2647,7 +2668,7 @@ function listRollPanel(l, items){
      по нему изредка. Развёрнутая панель занимала первый экран у всех и всегда
      ради того, что делают раз в сессию. Разворачивается сам, когда бросок уже
      сделан - иначе результат оказался бы спрятан за собственной кнопкой. */
-  return '<details class="panel lroll"' + (hit ? ' open' : '') + '>' +
+  return '<details class="panel lroll" data-keep="roll:' + esc(l.id) + '"' + (hit ? ' open' : '') + '>' +
     '<summary>' + ICON_DIE + '<span>' + esc(t().rollBy) + '</span></summary>' +
     '<div class="field" style="margin-bottom:' + (hit ? '14px' : '0') + '">' +
       '<span class="lbl">' + esc(t().rollResult) + ' (1–' + items.length + ')</span>' +
@@ -2683,7 +2704,7 @@ function listRowHTML(l, it, i){
      note must not rebuild the page under the cursor. It only shows when there
      is something in it, or when the button is pressed. */
   const hasNote = !!(m.note || m.hnote);
-  const noteBox = '<div class="rnote"' + (hasNote ? '' : ' hidden') + '>' +
+  const noteBox = '<div class="rnote" data-keep="rnote:' + esc(key) + '"' + (hasNote ? '' : ' hidden') + '>' +
       notePairHTML(function (kind) {
         return 'data-note="' + esc(key) + '" data-nkind="' + kind + '"';
       }, m) +
@@ -2731,7 +2752,7 @@ function listRowHTML(l, it, i){
 /* The list-level note: shop rules, homebrew, whatever the GM keeps out of the
    item text. Folded away when empty so a list without notes looks as before. */
 function listNoteHTML(l){
-  return '<details class="lnote"' + ((l.note || l.hnote) ? ' open' : '') + '>' +
+  return '<details class="lnote" data-keep="note:' + esc(l.id) + '"' + ((l.note || l.hnote) ? ' open' : '') + '>' +
     '<summary>' + ICON_NOTE + '<span>' + esc(t().listNote) + '</span></summary>' +
     notePairHTML(function (kind) {
       return 'data-list-note="' + esc(l.id) + '" data-nkind="' + kind + '"';
@@ -2776,7 +2797,8 @@ function renderSharedList(payload){
   const items = data.ids.map(function (id) { return BY_ID[id]; });
   const fake = { id: '', name: data.name, ids: data.ids, meta: data.meta, money: data.money };
   // читается обработчиком «забрать в свой список»: разбирать payload заново незачем
-  S.shared = { ids: data.ids, meta: data.meta || {} };
+  S.shared = { ids: data.ids, meta: data.meta || {}, name: data.name,
+               note: data.note, hnote: data.hnote };
   /* A note written for the party is half the message — showing only the entries
      drops it on the floor. The GM's own note is shown too when the link is the
      GM's own backup; a players' link simply does not carry one. */
@@ -2786,11 +2808,11 @@ function renderSharedList(payload){
   const head = shown(ICON_EYE, t().notePub, data.note) + shown(ICON_EYE_OFF, t().noteHid, data.hnote);
   return '<h1 class="page-h">' + esc(data.name || t().untitled) + '</h1>' +
     '<p class="page-sub">' + esc(t().sharedList) + ' · ' + esc(items.length + ' ' + plural(items.length)) + '</p>' +
-    /* Две разные вещи рядом: забрать список целиком отдельной записью или
-       подмешать его позиции в тот список, который уже ведёшь (#14). */
+    /* Один вход вместо двух. «Сохранить себе» и «Добавить в список → новый»
+       делали одно и то же разными словами; здесь выбор списка, а «+ Новый
+       список» и есть прежнее «сохранить себе»: он забирает и имя, и заметки. */
     '<div class="card-acts" style="margin-bottom:18px">' +
-      '<button type="button" class="btn primary" data-act="saveShared" data-val="' + esc(payload) + '">' + esc(t().saveToMine) + '</button>' +
-      addToListBtn(N_SHARED, data.ids) +
+      addToListBtn(N_SHARED, data.ids, true) +
     '</div>' +
     (head ? '<div style="margin-bottom:18px">' + head + '</div>' : '') +
     '<div class="rows">' + items.map(function (it) {
@@ -3053,6 +3075,27 @@ function restoreFocus(keep){
   }
 }
 
+/* ---------- что было свёрнуто, тем и остаётся ----------
+   Разметку страницы перерисовывают целиком, и раскрытость <details> живёт в
+   ней, а не в модели. Поэтому любая мелочь, вызывающая render, - смена режима
+   цен, галочка «выбрать все» - разворачивала обратно всё, что человек свернул.
+   Ключ на элементе, снимок до перерисовки, восстановление после. */
+function restoreOpen(){
+  $$('[data-keep]').forEach(function (el) {
+    const was = S.keepOpen[el.dataset.keep];
+    if (was === undefined) return;
+    if (el.tagName === 'DETAILS') el.open = was; else el.hidden = !was;
+  });
+}
+/* Запоминаем только то, что человек свернул или раскрыл сам. Снимок всей
+   разметки был бы проще, но тогда панель броска не смогла бы раскрыться на
+   свежий результат: снимок, сделанный до перерисовки, закрыл бы её обратно.
+   `toggle` не всплывает, поэтому слушаем на перехвате. */
+document.addEventListener('toggle', function (e) {
+  const el = e.target;
+  if (el.dataset && el.dataset.keep) S.keepOpen[el.dataset.keep] = el.open;
+}, true);
+
 function render(){
   const keep = rememberFocus();
   const r = currentRoute();
@@ -3095,6 +3138,7 @@ function render(){
   placeMenu();
   $('#footText').innerHTML = t().foot;
   document.documentElement.lang = S.lang;
+  restoreOpen();
   autoSizeNotes();
   restoreFocus(keep);
 
@@ -3351,7 +3395,7 @@ document.addEventListener('click', function (e) {
   if (mm) {
     const l = getList(mm.dataset.money);
     if (l) {
-      if (mm.dataset.val === 'coin') delete l.money; else l.money = mm.dataset.val;
+      if (mm.dataset.val === MONEY_DEFAULT) delete l.money; else l.money = mm.dataset.val;
       saveLists(); freshenListUrl(l); render();
     }
     return;
@@ -3380,6 +3424,7 @@ document.addEventListener('click', function (e) {
     const box = row && row.querySelector('.rnote');
     if (box) {
       box.hidden = !box.hidden;
+      S.keepOpen[box.dataset.keep] = !box.hidden;
       // a hidden box measures as zero, so its size is settled on the way out
       if (!box.hidden) { autoSizeNotes(box); box.querySelector('textarea').focus(); }
     }
@@ -3465,15 +3510,33 @@ document.addEventListener('click', function (e) {
     render();
     return;
   }
-  if (a === 'newListFor') { S.newListFor = val; S.newListDraft = ''; render(); focusNew(); return; }
+  if (a === 'newListFor') {
+    S.newListFor = val;
+    // из чужой ссылки новый список наследует её имя: переименовать проще, чем набрать
+    S.newListDraft = val === N_SHARED ? (S.shared.name || '') : '';
+    render(); focusNew(); return;
+  }
   if (a === 'cancelNew')  { S.newListFor = ''; S.newListDraft = ''; render(); return; }
   if (a === 'createFor') {
     const input = document.getElementById('newlist');
     if (input && !input.value.trim()) { toast(t().nameFirst, true); input.focus(); return; }
     const l = createList(input ? input.value : '');
     S.newListFor = ''; S.newListDraft = '';
-    // количество и цена едут с позициями, если ключ их принёс (чужая ссылка)
-    addIdsTo(l, idsForKey(val), val === N_SHARED ? S.shared.meta : null);
+    /* Новый список из чужой ссылки - это её копия целиком, а не горстка
+       позиций: имя, заметки списка и всё, что пришло по каждой позиции, включая
+       мастерские заметки, если ссылка их несла. В готовый список мастерское не
+       льют - там уже есть своё, и чужое его бы вытеснило. */
+    if (val === N_SHARED) {
+      l.ids = S.shared.ids.slice();
+      if (S.shared.meta) l.meta = JSON.parse(JSON.stringify(S.shared.meta));
+      if (S.shared.note) l.note = S.shared.note;
+      if (S.shared.hnote) l.hnote = S.shared.hnote;
+      saveLists();
+      toast(t().addedTo.replace('%s', l.name));
+      goToList(l);
+      return;
+    }
+    addIdsTo(l, idsForKey(val));
     return;
   }
   if (a === 'menu')     { S.menuFor = S.menuFor === val ? '' : val; render(); return; }
@@ -3504,21 +3567,9 @@ document.addEventListener('click', function (e) {
     goToList(l);
     return;
   }
-  if (a === 'saveShared') {
-    const data = decodeList(val);
-    if (!data) return;
-    const l = createList(data.name);
-    l.ids = data.ids.slice();
-    if (data.meta) l.meta = JSON.parse(JSON.stringify(data.meta));
-    if (data.note) l.note = data.note;
-    if (data.hnote) l.hnote = data.hnote;
-    saveLists();
-    toast(t().savedToLists);
-    goToList(l);
-    return;
-  }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
   /* Разделы разной длины: бросок, сделанный в одном, в другом указывал бы мимо */
+  if (a === 'moneyHelp') { S.moneyHelp = !S.moneyHelp; render(); return; }
   if (a === 'voa')    { S.voa.k = val === 'A' || val === 'C' ? val : +val; S.voa.n = 1; render(); return; }
   if (a === 'view')   { S.tables.view = val; savePrefs(); render(); return; }
 

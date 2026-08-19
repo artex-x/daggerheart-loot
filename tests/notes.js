@@ -152,8 +152,9 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const seen = await page.evaluate(() => document.body.innerText);
   ok(/Старая ссылка/.test(seen), 'старая ссылка не открылась');
   ok(/Преамбула для игроков/.test(seen) && /Видно/.test(seen), 'из старой ссылки пропало видимое');
-  await page.evaluate(() => document.querySelector('[data-act="saveShared"]').click());
-  await settle();
+  await page.click('[data-act="menu"][data-val="@"]'); await settle();
+  await page.click('[data-act="newListFor"][data-val="@"]'); await settle();
+  await page.click('[data-act="createFor"][data-val="@"]'); await settle();
   const saved = (await lists(page))[0];
   ok(saved.note === 'Преамбула для игроков' && !saved.hnote,
      'помеченная заметка из ссылки легла не туда: ' + JSON.stringify(saved));
@@ -176,14 +177,15 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   });
   await go(page, '#/l/' + backup);
-  ok(await page.$('[data-act="saveShared"]'), 'ссылка не открылась как чужая');
-  await page.evaluate(() => document.querySelector('[data-act="saveShared"]').click());
-  await settle();
-  ok(!(await page.$('[data-act="saveShared"]')), 'после сохранения список всё ещё чужой');
+  ok(await page.$('[data-act="menu"][data-val="@"]'), 'ссылка не открылась как чужая');
+  await page.click('[data-act="menu"][data-val="@"]'); await settle();
+  await page.click('[data-act="newListFor"][data-val="@"]'); await settle();
+  await page.click('[data-act="createFor"][data-val="@"]'); await settle();
+  ok(!(await page.$('[data-act="menu"][data-val="@"]')), 'после сохранения список всё ещё чужой');
 
   // and coming back to the very same link has to land on the saved list
   await go(page, '#/l/' + backup);
-  ok(!(await page.$('[data-act="saveShared"]')),
+  ok(!(await page.$('[data-act="menu"][data-val="@"]')),
      'своя же ссылка снова показана как чужая — сохранять её можно бесконечно');
   ok(await page.$('#rename'), 'список открылся не в режиме правки');
   ok((await lists(page)).length === 1, 'список сохранился дважды');

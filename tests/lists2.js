@@ -274,7 +274,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     ok(/Лавка кузнеца/.test(text), 'собранная ссылка не открылась как список');
     ok(/Катана/.test(text) && /Стеганый Доспех/.test(text) && /Спальный Мешок/.test(text),
        'в собранном списке не все позиции: ' + text.slice(0, 120));
-    ok(/30/.test(text), 'цена из собранной ссылки не показана');
+    ok(/3 горсти/.test(text), 'цена из собранной ссылки не показана: ' + text.slice(0, 160));
     ok(/×2|x2/.test(text), 'количество из собранной ссылки не показано');
     ok(/Товар лежит навалом/.test(text) && /Кузнец сбывает краденое/.test(text),
        'заметки из собранной ссылки не показаны');
@@ -302,12 +302,26 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await go('#/lists/a');
     ok(await page.$('[data-money]'), 'выбор режима не появился, когда цена есть');
 
+    /* Книжный счёт стоит первым и по умолчанию: монеты - опциональное правило,
+       и включать его молча за мастера не за что. */
+    ok(await page.$eval('[data-money][data-val="bag"]', e => e.classList.contains('on')),
+       'по умолчанию выбран не книжный счёт');
+    ok(await page.$eval('[data-gold="a:ci1"]', e => e.title) === '7 мешков 5 горстей',
+       'цена не переведена в мешки: ' + (await page.$eval('[data-gold="a:ci1"]', e => e.title)));
+    ok((await lists()).find(l => l.id === 'a').money === undefined,
+       'книжный счёт по умолчанию хранится зря');
+    await page.click('[data-money][data-val="coin"]'); await settle();
+    ok((await lists()).find(l => l.id === 'a').money === 'coin', 'отход от умолчания не сохранился');
     await page.click('[data-money][data-val="bag"]'); await settle();
-    ok(/7 мешков 5 горстей/.test(await page.$eval('#view', e => e.innerText)),
-       'цена не переведена в мешки: ' + (await page.$eval('.lrow', e => e.innerText)).slice(0, 90));
-    ok((await lists()).find(l => l.id === 'a').money === 'bag', 'режим не сохранился в списке');
     /* Число в поле остаётся монетами: править мешки цифрами нечем */
     ok(await page.$eval('[data-gold="a:ci1"]', e => e.value) === '750', 'поле цены перестало быть монетами');
+
+    /* Пересчёт объясняется по вопросительному знаку, а не примером без слов */
+    ok(!(await page.$('.money-help')), 'справка о золоте раскрыта без спроса');
+    await page.click('.money .helpbtn'); await settle();
+    const mh = await page.$eval('.money-help', e => e.innerText);
+    ok(/сундук/i.test(mh) && /10 горстей/.test(mh), 'в справке нет пересчёта: ' + mh.slice(0, 90));
+    await page.click('.money .helpbtn'); await settle();
 
 
     /* Режим едет в ссылке под id «$», которого нет и не может быть ни у одной
@@ -322,23 +336,23 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
       return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
     };
     const mparts = ['ci2*1*750'];
-    const mraw = 'Казна гильдии\n' + mstamp(mparts) + mparts.join(',') + '\n\x1e$\x1fbag';
+    const mraw = 'Казна гильдии\n' + mstamp(mparts) + mparts.join(',') + '\n\x1e$\x1fcoin';
     const mpay = Buffer.from(mraw, 'utf8').toString('base64')
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     await go('#/l/' + mpay);
     const shared = await page.$eval('#view', e => e.innerText);
     ok(!(await page.$('[data-share-list]')), 'чужая ссылка открылась как свой список');
-    ok(/7 мешков 5 горстей/.test(shared), 'режим не доехал по ссылке: ' + shared.slice(0, 160));
-    /* Ссылка без пометки читается монетами, как читалась всегда */
+    ok(/750 зол\./.test(shared), 'режим не доехал по ссылке: ' + shared.slice(0, 160));
+    /* Пометки нет - значит книжный счёт: он и есть умолчание */
     const plain = Buffer.from('Казна гильдии\n' + mstamp(mparts) + mparts.join(','), 'utf8')
       .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     await go('#/l/' + plain);
-    ok(/750 зол\./.test(await page.$eval('#view', e => e.innerText)),
-       'ссылка без пометки перестала читаться монетами');
+    ok(/7 мешков 5 горстей/.test(await page.$eval('#view', e => e.innerText)),
+       'ссылка без пометки читается не по книге');
 
     await go('#/lists/a');
-    await page.click('[data-money][data-val="coin"]'); await settle();
-    ok((await lists()).find(l => l.id === 'a').money === undefined, 'монеты по умолчанию хранятся зря');
+    await page.click('[data-money][data-val="bag"]'); await settle();
+    ok((await lists()).find(l => l.id === 'a').money === undefined, 'книжный счёт хранится зря');
   }
 
   /* ---------- ориентир по цене (#7) ---------- */
@@ -440,12 +454,16 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await go('#/l/' + pay);
     await page.click('[data-act="menu"][data-val="@"]'); await settle();
     await page.click('[data-act="newListFor"][data-val="@"]'); await settle();
-    await page.type('#newlist', 'Из ссылки');
+    /* Имя чужого списка подставляется само: переименовать проще, чем набрать */
+    ok(await page.$eval('#newlist', e => e.value) === 'Лавка Феррина',
+       'имя из ссылки не подставилось: ' + (await page.$eval('#newlist', e => e.value)));
     await page.click('[data-act="createFor"][data-val="@"]'); await settle();
-    const mine = (await lists()).find(l => l.name === 'Из ссылки');
+    const mine = (await lists()).find(l => l.name === 'Лавка Феррина');
     ok(!!mine, 'список из чужой ссылки не создался');
     ok(mine && mine.ids.join() === 'ci1,q1', 'новый список пустой: ' + JSON.stringify(mine && mine.ids));
     ok(mine && mine.meta && mine.meta.ci1 && mine.meta.ci1.gold === 750, 'цена не доехала в новый список');
+    /* Новый список из ссылки - её копия, и он сразу открывается своим */
+    ok(await page.$('#rename'), 'после создания остались на чужой странице');
   }
 
   /* ---------- цена: подсказка вместо строки, и она не отстаёт ---------- */
@@ -477,11 +495,12 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   /* ---------- бросок по списку свёрнут ---------- */
   console.log('бросок по списку');
   {
+    /* Переход по хэшу документ не перезагружает, а проверки выше уже и бросали
+       по этому списку, и раскрывали панель руками - и то и другое приложение
+       теперь честно помнит. Смотрим на чистую загрузку. */
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await new Promise(r => setTimeout(r, 600));
     await go('#/lists/a');
-    /* Переход по хэшу состояние не сбрасывает, а проверка выше уже бросала по
-       этому списку - панель законно осталась раскрытой вместе с результатом */
-    const cl = await page.$('[data-act="clearRoll"]');
-    if (cl) { await cl.click(); await settle(); }
     ok(await page.$('.lroll'), 'панели броска нет');
     ok(!(await page.$eval('.lroll', e => e.open)), 'панель броска занимает экран без спроса');
     await page.click('.lroll summary'); await settle();
@@ -492,6 +511,26 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await settle();
     ok(await page.$eval('.lroll', e => e.open), 'после броска панель схлопнулась вместе с результатом');
     ok(await page.$('.lroll .card'), 'результат броска не показан');
+
+    /* Свёрнутое остаётся свёрнутым: перерисовка от смены режима цен или от
+       «выбрать все» разворачивала обратно всё, что человек убрал с глаз.
+       Выбор режима показан только там, где есть хоть одна цена. */
+    await page.evaluate(() => {
+      const inp = document.querySelector('[data-gold]');
+      inp.value = '750'; inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    await page.$eval('.lnote', e => { e.open = false; });
+    await page.$eval('.lroll', e => { e.open = false; });
+    await settle();
+    await page.click('[data-lsel-all]'); await settle();
+    ok(!(await page.$eval('.lnote', e => e.open)) && !(await page.$eval('.lroll', e => e.open)),
+       '«выбрать все» развернуло свёрнутое');
+    await page.click('[data-money][data-val="coin"]'); await settle();
+    ok(!(await page.$eval('.lnote', e => e.open)) && !(await page.$eval('.lroll', e => e.open)),
+       'смена режима цен развернула свёрнутое');
+    await page.click('[data-money][data-val="bag"]'); await settle();
+    await page.click('[data-lsel-all]'); await settle();
   }
 
   /* ---------- заметка едет с копией позиции ---------- */

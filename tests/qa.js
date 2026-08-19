@@ -178,11 +178,11 @@ const contrast = (a, b) => {
   await go(page, '#/lists/a');
   const full = await page.evaluate(() => location.hash.replace('#/l/', ''));
   await go(page, '#/l/' + full);
-  ok(!(await page.$('[data-act="saveShared"]')), 'целая ссылка не опознана как своя');
+  ok(!(await page.$('[data-act="menu"][data-val="@"]')), 'целая ссылка не опознана как своя');
   const cutUrl = full.slice(0, Math.floor(full.length * 0.75));
   await go(page, '#/l/' + cutUrl);
   const shownAsList = await page.evaluate(() =>
-    !!document.querySelector('[data-act="saveShared"]') || !!document.querySelector('#rename'));
+    !!document.querySelector('[data-act="menu"][data-val="@"]') || !!document.querySelector('#rename'));
   ok(!shownAsList, 'обрезанная ссылка открылась как список меньшего размера');
   ok(await page.$eval('.page-sub', e => /повреждена|damaged|out of date|устарела/i.test(e.textContent)),
      'обрезанная ссылка не объяснила, что она битая');

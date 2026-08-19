@@ -636,8 +636,12 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
    свойство всего списка, а не отдельной строки */
 .money{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 14px}
 .money-l{font:650 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)}
-.money-e{font-size:12px;color:var(--muted2)}
-.money-e::before{content:"750 → "}
+.helpbtn.sm{width:22px;height:22px;font-size:12px}
+/* Перенос строки в flex-ряду: у самой справки ширина ограничена по читаемости,
+   а ограничение перебивает flex-basis:100% и она встаёт рядом с чипами */
+.money-br{flex:0 0 100%;height:0}
+.money-help{margin:2px 0 0;font-size:12.5px;line-height:1.6;color:var(--muted);max-width:78ch}
+.money-help b{color:var(--gold-soft);font-weight:650}
 .lrow-money{align-self:flex-end;padding-bottom:7px;font-size:11.5px;color:var(--gold-soft);white-space:nowrap}
 
 /* #7: ориентир по цене раскрывается под полосой действий - число без объяснения,
@@ -779,16 +783,25 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
 @media (max-width:600px){
   /* the badge column was squeezing names into a two-word sliver */
   .row-main{flex-wrap:wrap}
-  .row-main .rm{flex-basis:100%;padding-left:72px;margin-top:2px}
+  /* Три ярлыка в строку («Вторичное оружие» + «Уникальное» + источник) на
+     360px не помещались и уезжали за правый край - перенос обязателен. */
+  .row-main .rm{flex-basis:100%;padding-left:72px;margin-top:2px;flex-wrap:wrap}
+  @media (max-width:400px){ .row-main .rm{padding-left:0} }
   .row-main .rt span{-webkit-line-clamp:3}
 
   /* bare icon buttons were ~20px, too small to hit reliably */
   .card-name button,
   .tsec-link{padding:11px;margin-bottom:2px}
   .card-name-acts{gap:0}
+  /* Кнопки стали высокими, а имя выравнивалось по базовой линии: в однострочном
+     названии текст и значки расходились по вертикали. */
+  .card-name{align-items:center}
   .seg button,
   .seg.small button{padding:8px 14px}
-  .helpbtn{width:34px;height:34px;font-size:16px}
+  /* Обе кнопки в шапке - одного размера: рядом они читаются как пара */
+  .helpbtn,
+  .homebtn{width:34px;height:34px;font-size:16px}
+  .homebtn svg{width:17px;height:17px}
   .crit-acts{flex-basis:100%}
   .crit-acts .btn{flex:1 1 auto;justify-content:center}
 

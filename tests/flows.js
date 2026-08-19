@@ -68,13 +68,17 @@ const b64 = s => Buffer.from(s, 'utf8').toString('base64')
 
   await go(h2);                                // reload straight from the address
   ok(await has('[data-copy-listtext]'), 'reloading the address did not reopen the editor');
-  ok(!(await has('[data-act="saveShared"]')), 'own list offered as someone else\'s');
+  ok(!(await has('[data-act="menu"][data-val="@"]')), 'own list offered as someone else\'s');
 
   // a list we do not have must read as shared, not as ours
   await go('#/l/' + b64('Чужой список\nw5,w6'));
-  ok(await has('[data-act="saveShared"]'), 'a foreign list did not offer saving');
+  ok(await has('[data-act="menu"][data-val="@"]'), 'a foreign list did not offer saving');
   ok(!(await has('[data-copy-listtext]')), 'a foreign list opened in the editor');
-  await page.click('[data-act="saveShared"]');
+  /* Один вход: выбор списка, в нём «+ Новый список» - это и есть прежнее
+     «сохранить себе», только имя подставляется из самой ссылки. */
+  await page.click('[data-act="menu"][data-val="@"]'); await settle();
+  await page.click('[data-act="newListFor"][data-val="@"]'); await settle();
+  await page.click('[data-act="createFor"][data-val="@"]');
   await settle();
   ok(await has('[data-copy-listtext]'), 'saving a shared list did not open it');
 
