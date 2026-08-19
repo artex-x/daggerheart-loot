@@ -74,6 +74,22 @@ const gap = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - 
     }
   }
 
+  /* Золото на сайте значит две вещи: «выбрано» и «главное действие». Ни та ни
+     другая не подходит одной кости из пяти - бросают по редкости, а не по
+     порядку кнопок, и заливка на первой читалась как «жми сюда». Строка теперь
+     золотая целиком и одинаково. */
+  console.log('золото у равных кнопок');
+  await page.goto(ROOT + '#/roll/std', { waitUntil: 'domcontentloaded' });
+  await new Promise(r => setTimeout(r, 450));
+  const dice = await page.$$eval('.dicebar .btn', e => e.map(x => x.className));
+  ok(dice.length >= 4, 'кнопок броска меньше четырёх: ' + dice.length);
+  ok(dice.every(c => c.indexOf('primary') < 0),
+     'одна из костей снова выделена как главная: ' + dice.join(' | '));
+  const look = await page.$$eval('.dicebar .btn', e => e.map(x => {
+    const s = getComputedStyle(x); return s.backgroundColor + '|' + s.color + '|' + s.borderColor;
+  }));
+  ok(new Set(look).size === 1, 'кости броска выглядят по-разному: ' + [...new Set(look)].join(' / '));
+
   await browser.close();
   console.log(fail ? '\n' + fail + ' FAILED' : '\nцвета ярлыков: все различимы по тону');
   process.exit(fail ? 1 : 0);

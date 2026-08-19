@@ -190,6 +190,15 @@ main{padding:26px 0 48px;min-height:60vh}
 .dicebar .dl{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .dicebar .btn small{font-size:9.5px;letter-spacing:.04em;
   text-transform:uppercase;opacity:.62;font-weight:600;white-space:nowrap}
+/* Пять кнопок здесь - одно и то же действие с разным числом костей, а не
+   главная и четыре запасные. Золотая заливка на первой читалась как «жми
+   сюда», хотя выбирают по редкости, а не по порядку. Поэтому золото тут
+   общее и приглушённое: строка видна как действие, но ни одна кость в ней
+   не важнее остальных. Заливка приходит на наведение и на нажатие. */
+.dicebar .btn{border-color:rgba(216,171,94,.42);color:var(--gold-soft)}
+.dicebar .btn:hover,.dicebar .btn:focus-visible{
+  border-color:var(--gold);background:rgba(216,171,94,.12);color:var(--gold)}
+.dicebar .btn:active{background:rgba(216,171,94,.2)}
 .numbox{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);overflow:hidden}
 .numbox button{
   border:0;background:transparent;color:var(--muted);width:40px;height:46px;font-size:19px;line-height:1;transition:.14s;

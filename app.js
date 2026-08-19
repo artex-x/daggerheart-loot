@@ -2060,7 +2060,7 @@ function renderStd(){
             /* The verb is spelled out once on the first button; the rest read as
                "…or this many" by proximity. Each carries the rarities it covers. */
             const rar = x.rar.map(function (r) { return t()[RAR_KEY[r]]; }).join(' / ');
-            return '<button type="button" class="btn' + (i === 0 ? ' primary' : '') + '"' +
+            return '<button type="button" class="btn"' +
               ' data-act="roll" data-val="' + x.n + '"' +
               ' title="' + esc(t().roll + ' ' + x.n + 'd12 — ' + rar) + '">' +
               '<span class="dl">' + (i === 0 ? ICON_DIE + esc(t().roll) + ' ' : '') + x.n + 'd12</span>' +
