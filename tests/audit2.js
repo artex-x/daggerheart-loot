@@ -4,7 +4,11 @@
    pictures that never arrived, repeated ids, and stray "undefined" in the copy. */
 const puppeteer = require('puppeteer');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
-const WIDTHS = [360, 390, 768, 1180];
+/* Обход разросся вместе с числом таблиц и на одну машину уже не влезает по
+   времени. Ширину можно задать аргументом и прогнать в два захода; без
+   аргумента проверяются все, как и раньше. */
+const ONLY = process.argv.slice(2).map(Number).filter(Boolean);
+const WIDTHS = (ONLY.length ? ONLY : [360, 390, 768, 1180]);
 
 let fail = 0;
 const seen = new Set();
@@ -166,8 +170,10 @@ const PAGES = [
         /* Полоса разделов росла с каждой книгой и на телефоне занимала пол-экрана.
            Два уровня держат её в узде: следующая книга не удлиняет верхний ряд. */
         if (/^таблица/.test(label)) {
+          /* Меряется только навигация. Фильтр по виду стоит отдельной панелью и
+             к длине полосы разделов отношения не имеет. */
           const strip = await page.evaluate(() => {
-            const c = document.querySelectorAll('.panel .chips');
+            const c = document.querySelectorAll('.tablenav .chips');
             return c.length ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0)) : 0;
           });
           const cap = width < 500 ? 260 : width < 1000 ? 150 : 130;

@@ -101,6 +101,20 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   });
   await settle();
   ok(await page.$('.crit-acts'), 'при совпадении костей нет блока критического успеха');
+  /* На критическом успехе берут любую позицию этой редкости - и предмет, и
+     расходник. Одна ссылка вела только в предметы, и половина выбора не была
+     видна вовсе. Виды общие на всё приложение, а проверка выше их трогала. */
+  if (!(await page.$('[data-act="kind"][data-val="consumable"].on'))) {
+    await page.click('[data-act="kind"][data-val="consumable"]'); await settle();
+  }
+  const critLinks = await page.$$eval('.crit-acts a', e => e.map(x => x.href.slice(x.href.indexOf('#'))));
+  ok(critLinks.length === 2 && /alt_item\/common/.test(critLinks[0]) &&
+     /alt_consumable\/common/.test(critLinks[1]),
+     'крит ведёт не в обе таблицы редкости: ' + critLinks.join(' '));
+  await page.click('[data-act="kind"][data-val="consumable"]'); await settle();
+  ok((await page.$$eval('.crit-acts a', e => e.length)) === 1,
+     'при одном включённом виде осталось две ссылки');
+  await page.click('[data-act="kind"][data-val="consumable"]'); await settle();
   await page.close();
 
   /* ---------- search ---------- */

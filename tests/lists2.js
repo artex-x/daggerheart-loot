@@ -561,6 +561,42 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     ok(!/750|×1/.test(txt), 'в копию позиции попали цена или количество');
   }
 
+  /* ---------- фильтр по виду в таблицах ---------- */
+  console.log('фильтр по виду');
+  {
+    /* Только там, где видов и правда больше одного: у Core вид и есть таблица,
+       у сообществ он один - строка чипов там ничего бы не отбирала. */
+    await go('#/tables/core_item');
+    ok(!(await page.$('[data-act="kind"]')), 'у односоставной таблицы завёлся фильтр вида');
+    await go('#/tables/community');
+    ok(!(await page.$('[data-act="kind"]')), 'у таблицы сообществ завёлся фильтр вида');
+
+    await go('#/tables/wondrous');
+    ok((await page.$$eval('[data-act="kind"]', e => e.length)) === 3, 'в Wondrous не три вида');
+    const all = await page.$$eval('.rows .row', e => e.length);
+    ok(all === 119, 'Wondrous открылся не целиком: ' + all);
+    await page.click('[data-act="kind"][data-val="item"]'); await settle();
+    await page.click('[data-act="kind"][data-val="equip"]'); await settle();
+    ok((await page.$$eval('.rows .row', e => e.length)) === 59,
+       'расходников в Wondrous отобралось не 59: ' + (await page.$$eval('.rows .row', e => e.length)));
+    /* Таблица нумерована как одна кость: фильтр прячет строки, но не
+       перенумеровывает их - иначе номер на карточке перестанет быть броском. */
+    const nums = await page.$$eval('.rows .rnum', e => e.slice(0, 3).map(x => +x.textContent));
+    ok(nums.join() !== '1,2,3' && nums[0] >= 1, 'номера пересчитались под фильтр: ' + nums.join());
+    await page.click('[data-act="kind"][data-val="item"]'); await settle();
+    await page.click('[data-act="kind"][data-val="equip"]'); await settle();
+
+    /* Сетка работает и в альтернативных таблицах: переключатель там появился,
+       а колонки его не слушались. */
+    await go('#/tables/alt_item');
+    await page.click('[data-act="view"][data-val="grid"]'); await settle();
+    ok((await page.$$eval('.tgrid .tilewrap', e => e.length)) === 120,
+       'альтернативная таблица не показалась сеткой');
+    ok(await page.$eval('.tgrid .tile-n', e => e.textContent === '1'),
+       'на плитке не номер по кости');
+    await page.click('[data-act="view"][data-val="list"]'); await settle();
+  }
+
   /* ---------- альтернативные таблицы как все остальные (#8) ---------- */
   console.log('альтернативные таблицы');
   {

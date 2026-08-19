@@ -161,6 +161,7 @@ const T = {
     sImg:'Картинка', sText:'Текст', tableLink:'Ссылка на таблицу',
     copyRoll:'Скопировать все варианты', rollCopied:'Варианты скопированы',
     openPage:'Страница', openTable:'Открыть таблицу', toStart:'На главную',
+    openItems:'Таблица предметов', openCons:'Таблица расходников', showInTable:'показать в таблице',
     craftInto:'Улучшается до', craftFrom:'Получается из', tierLadder:'Ранг',
     unique:'Уникальное', uniqueHint:'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
     noteClear:'Очистить заметку', noteCleared:'Заметка очищена',
@@ -328,6 +329,7 @@ const T = {
     sImg:'Image', sText:'Text', tableLink:'Link to this table',
     copyRoll:'Copy every option', rollCopied:'Options copied',
     openPage:'Page', openTable:'Open table', toStart:'Home',
+    openItems:'Items table', openCons:'Consumables table', showInTable:'show in the table',
     craftInto:'Upgrades to', craftFrom:'Made from', tierLadder:'Tier',
     unique:'Unique', uniqueHint:'Printed at a single tier - this one has no upgrade ladder',
     noteClear:'Clear the note', noteCleared:'Note cleared',
@@ -872,30 +874,34 @@ function craftHTML(it){
    рарности. Значит и бросков шесть, по одному на раздел, а не один общий:
    ранг 1 и артефакт - это не соседние результаты одной кости. */
 const VOA_TIERS = [1, 2, 3, 4, 'A', 'C'];
-/* Ранг у Vault of Ages стоит и на добыче, а не только на снаряжении: книга
-   разложена по рангам целиком. Читаем его одинаково, откуда бы он ни пришёл. */
-function tierOf(it){
-  if (!it) return '';
-  if (it.tier) return it.tier;
-  return isEquip(it) && it.eq.tier ? it.eq.tier : '';
-}
 function voaTierName(k){
   if (k === 'A') return t().voaArtifact;
   if (k === 'C') return t().voaCursed;
   return t().tier + ' ' + k;
 }
-/* На плитке места мало: буква вместо слова, как её печатает сама книга */
-function tileTier(k){ return k === 'A' || k === 'C' ? k : t().tier + ' ' + k; }
+/* На плитке места мало: буква вместо слова, как её печатает сама книга.
+   У добычи показываются только буквы; ранг снаряжения - как был. */
+function tileTier(it){
+  if (it.tier) return (it.tier === 'A' || it.tier === 'C') ? it.tier : '';
+  return isEquip(it) && it.eq.tier ? t().tier + ' ' + it.eq.tier : '';
+}
 function voaGroup(k){ return (DATA.voa || []).filter(x => String(x.tier) === String(k)); }
 
 /* Всё снаряжение, откуда бы оно ни пришло. `LOOT.eq` - это только две базовые
    книги; ещё сто с лишним единиц лежат в Wondrous, Dread, Vault of Ages и во
    фреймах, и таблицы оружия и брони их не видели вовсе. */
 const ALL_EQ = EQ.concat(...Object.values(DATA)).filter(function (x) { return x.eq; });
-const EQ_SRC = ['core', 'hnf', 'wondrous', 'dread', 'voa', 'frame'];
+/* Фреймы стоят в фильтре поимённо, а не одним «Фреймом»: это не одна книга, а
+   три разные кампании, и снаряжение каждой держится на её собственной завязке.
+   За столом, где идёт «Пир зверей», остальные два фрейма - шум, а одним
+   значением этого не сказать: либо все девяносто с лишним, либо ни одного.
+   К тому же на самих строках уже стоит имя фрейма, а не слово «Фрейм». */
+const EQ_SRC = ['core', 'hnf', 'wondrous', 'dread', 'voa'].concat(FRAME_ORDER);
+function eqSrcOf(it){ return it.src === 'frame' ? it.frame : it.src; }
 function srcName(k){
-  return { core: t().srcCore, hnf: t().srcHnf, wondrous: t().srcWond,
-           dread: t().srcDread, voa: t().srcVoa, frame: t().srcFrame }[k] || k;
+  const named = { core: t().srcCore, hnf: t().srcHnf, wondrous: t().srcWond,
+                  dread: t().srcDread, voa: t().srcVoa }[k];
+  return named || frameName(k) || k;
 }
 
 function srcLabel(it){
@@ -1846,8 +1852,13 @@ function voaTierOne(k){
        : k === 'C' ? t().voaCursed1
        : t().tier + ' ' + k;
 }
+/* Ярлык только там, где иначе не сказать. Артефакт и проклятый предмет - это
+   отдельные категории, их нет больше нигде. Числовой ранг у добычи Vault of
+   Ages ярлыком не выносится: у остальной добычи ранга нет вовсе, а в самой
+   таблице он и так стоит заголовком раздела. */
 function tierBadge(it){
-  return it.tier ? '<span class="badge tier">' + esc(voaTierOne(it.tier)) + '</span>' : '';
+  return (it.tier === 'A' || it.tier === 'C')
+    ? '<span class="badge tier">' + esc(voaTierOne(it.tier)) + '</span>' : '';
 }
 function uniqBadge(it){
   return isUnique(it)
@@ -2100,8 +2111,14 @@ function renderAlt(){
           '<span>' + esc(t().critSub) + '</span>' +
         '</div>' +
         '<div class="crit-acts">' +
-          '<a class="btn sm primary" target="_blank" rel="noopener" href="' + esc(tableHref(altTableId(), st.rarity)) + '">' +
-            esc(t().openTable) + ICON_EXT + '</a>' +
+          /* На критическом успехе игрок берёт любую позицию этой редкости - и
+             из предметов, и из расходников. Одна ссылка вела только в предметы,
+             и половина выбора оставалась за кадром. Кнопок столько, сколько
+             видов включено: при одном включённом подпись остаётся общей. */
+          altTables().map(function (a, i) {
+            return '<a class="btn sm' + (i ? '' : ' primary') + '" target="_blank" rel="noopener"' +
+              ' href="' + esc(tableHref(a[0], st.rarity)) + '">' + esc(a[1]) + ICON_EXT + '</a>';
+          }).join('') +
           (nextRar ? '<button type="button" class="btn sm" data-act="rarity" data-val="' + nextRar + '">' +
             esc(t().bumpTo) + ' ' + esc(S.lang === 'ru' ? RAR_GEN_RU[nextRar] : t()[RAR_KEY[nextRar]]) + '</button>' : '') +
         '</div>' +
@@ -2126,6 +2143,15 @@ function renderAlt(){
 }
 
 function altTableId(){ return (!S.kind.item && S.kind.consumable) ? 'alt_consumable' : 'alt_item'; }
+/* Таблицы, куда ведёт критический успех: по одной на включённый вид. Пока вид
+   один, подпись общая - уточнять нечего. */
+function altTables(){
+  const both = S.kind.item && S.kind.consumable;
+  const out = [];
+  if (S.kind.item) out.push(['alt_item', both ? t().openItems : t().openTable]);
+  if (S.kind.consumable) out.push(['alt_consumable', both ? t().openCons : t().openTable]);
+  return out.length ? out : [['alt_item', t().openTable]];
+}
 /* Absolute so it survives target="_blank"; a bare "#/..." would just re-hash the opener */
 function tableHref(table, section){
   return appUrl('#/tables/' + table + (section ? '/' + section : ''));
@@ -2234,19 +2260,23 @@ function sectionHead(label, table, key){
    и перемешивали их в одну строку. Теперь сверху книга, под ней её разделы, и
    вторая строка появляется, только когда внутри книги есть из чего выбирать.
 
+   Порядок тот же, что у вкладок наверху: обычные правила, альтернативные
+   таблицы, Wondrous, Dread, Vault of Ages, сообщества. Две группы вкладок не
+   имеют - снаряжение и фреймы, - и они идут в конце.
+
    Адреса таблиц не меняются: `#/tables/core_item` - по-прежнему таблица, а не
    пара «книга + раздел». Это чистая перестановка навигации, и ссылки, выданные
    раньше, продолжают открывать то же самое. */
 const TABLE_GROUPS = [
   { id:'core',   ru:'Core',            en:'Core',            subs:['core_item','core_consumable'] },
   { id:'hnf',    ru:'Hope & Fear',     en:'Hope & Fear',     subs:['hnf_item','hnf_consumable'] },
+  { id:'alt',    ru:'Альт. таблицы',   en:'Alt. tables',     subs:['alt_item','alt_consumable'] },
   { id:'wond',   ru:'Wondrous Loot',   en:'Wondrous Loot',   subs:['wondrous'] },
   { id:'dread',  ru:'Dread GM Toolbox',en:'Dread GM Toolbox',subs:['dread'] },
   { id:'voa',    ru:'Vault of Ages',   en:'Vault of Ages',   subs:['voa'] },
-  { id:'frames', ru:'Фреймы',          en:'Frames',          subs:['frames'] },
   { id:'comm',   ru:'Сообщества',      en:'Communities',     subs:['community'] },
   { id:'eq',     ru:'Снаряжение',      en:'Equipment',       subs:['eq_weapon','eq_secondary','eq_armor'] },
-  { id:'alt',    ru:'Альт. таблицы',   en:'Alt. tables',     subs:['alt_item','alt_consumable'] }
+  { id:'frames', ru:'Фреймы',          en:'Frames',          subs:['frames'] }
 ];
 /* Подпись раздела внутри книги короче названия таблицы: «Core — предметы» под
    заголовком «Core» повторяет книгу дважды. */
@@ -2271,6 +2301,16 @@ function tableChipsHTML(cur){
     return '<a class="chip sm' + (id === cur ? ' on' : '') + '" href="#/tables/' + id + '">' +
       esc(S.lang === 'ru' ? w[0] : w[1]) + '</a>';
   }).join('') + '</div>';
+}
+
+/* Какие виды записей вообще есть в таблице - в том порядке, в каком они
+   перечислены в KINDS. */
+function tableKinds(id){
+  const a = DATA[id];
+  if (!a) return [];
+  const seen = {};
+  a.forEach(function (x) { seen[kindOf(x)] = true; });
+  return KINDS.filter(function (k) { return seen[k[0]]; });
 }
 
 function renderTables(){
@@ -2304,15 +2344,15 @@ function renderTables(){
       return '<div class="tsection" id="' + sectionId(r) + '" style="margin-top:20px">' +
         sectionHead(rarityLabel(r), st.t, r) +
         cols.map(function (c) {
-          return '<h4 class="altcol ' + c[1] + '">' + esc(c[0]) + '</h4>' +
-            '<div class="rows">' + c[2].map(function (x) {
-              return rowHTML(x.it, '', '', x.n);
-            }).join('') + '</div>';
+          const body = S.tables.view === 'grid'
+            ? '<div class="tgrid">' + c[2].map(function (x) { return tileHTML(x.it, x.n); }).join('') + '</div>'
+            : '<div class="rows">' + c[2].map(function (x) { return rowHTML(x.it, '', '', x.n); }).join('') + '</div>';
+          return '<h4 class="altcol ' + c[1] + '">' + esc(c[0]) + '</h4>' + body;
         }).join('') +
       '</div>';
     }).join('') || '<div class="empty">' + esc(t().nothing) + '</div>';
   } else {
-    let list = DATA[st.t];
+    let list = DATA[st.t].filter(function (x) { return kindAllows(kindOf(x)); });
     const q = st.q.trim().toLowerCase();
     if (q) list = list.filter(x => matches(x, q));
     if (st.t === 'voa') {
@@ -2361,7 +2401,16 @@ function renderTables(){
       '</div>' +
     '</div>';
 
-  return pageHead('tables') + '<div class="panel">' + chips + '</div>' + searchBar + '<div style="margin-top:6px">' + body + '</div>';
+  /* Фильтр по виду - только там, где внутри таблицы видов больше одного.
+     У Core и H&F вид и есть таблица, у сообществ он один: строка чипов там
+     ничего бы не отбирала, зато занимала бы место. Строки эти таблицы нумеруют
+     подряд как одну кость, поэтому вид именно отсеивает, а не пересобирает
+     разделы: номер 47 остаётся сорок седьмым. */
+  const kinds = tableKinds(st.t);
+  const kindBar = kinds.length > 1
+    ? '<div class="panel" style="margin-top:12px">' + kindChips(kinds) + '</div>' : '';
+  return pageHead('tables') + '<div class="panel tablenav">' + chips + '</div>' + kindBar +
+    searchBar + '<div style="margin-top:6px">' + body + '</div>';
 }
 
 /* ---------- equipment tables ----------
@@ -2378,7 +2427,7 @@ function eqFacets(kind){
      ни отсеять - таблица о них просто не знала. */
   const f = [['tier', t().tier, ['1','2','3','4'].map(k => [k, k])],
              ['src',  t().source, EQ_SRC.filter(function (k) {
-               return ALL_EQ.some(function (x) { return x.src === k && x.eq.t === kind; });
+               return ALL_EQ.some(function (x) { return eqSrcOf(x) === k && x.eq.t === kind; });
              }).map(function (k) { return [k, srcName(k)]; })]];
   if (kind !== 'armor') {
     /* For primary weapons this is the table the book prints them in, and magic
@@ -2414,7 +2463,7 @@ function eqChosen(kind){
    link for a facet this kind does not have cannot empty the page. */
 function eqPasses(it, kind){
   const e = it.eq;
-  const value = { tier: String(e.tier), src: it.src, line: e.line ? 'line' : 'uniq',
+  const value = { tier: String(e.tier), src: eqSrcOf(it), line: e.line ? 'line' : 'uniq',
                   cls: e.cls, trait: e.tr, range: e.rg, burden: String(e.bu) };
   return eqFacets(kind).every(function (f) { return eqHits(f[0], value[f[0]]); });
 }
@@ -2542,7 +2591,7 @@ function renderList(list){
 function rowHTML(it, removeFrom, tail, num){
   if (typeof removeFrom !== 'string') removeFrom = '';
   const n = num || it.roll;
-  return '<div class="row' + (!removeFrom && S.sel[it.id] ? ' sel' : '') + '">' +
+  return '<div class="row' + (!removeFrom && S.sel[it.id] ? ' sel' : '') + '" data-row="' + esc(it.id) + '">' +
       (removeFrom ? '' : selBox(it.id)) +
       '<button type="button" class="row-main" data-open="' + esc(it.id) + '">' +
         imgTag(it, 'row') +
@@ -2571,13 +2620,14 @@ function selBox(id){
     ' aria-label="' + esc(t().selected) + '"></label>';
 }
 
-function tileHTML(it){
+function tileHTML(it, num){
   const sub = S.lang === 'ru' ? it.en : (it.ru || '');
-  return '<div class="tilewrap' + (S.sel[it.id] ? ' sel' : '') + '">' + selBox(it.id) +
+  const n = num || it.roll;
+  return '<div class="tilewrap' + (S.sel[it.id] ? ' sel' : '') + '" data-row="' + esc(it.id) + '">' + selBox(it.id) +
     '<button type="button" class="tile" data-open="' + esc(it.id) + '">' +
     '<div class="tile-img">' +
-      (it.roll ? '<span class="tile-n">' + esc(it.roll) + '</span>'
-               : (tierOf(it) ? '<span class="tile-n">' + esc(tileTier(tierOf(it))) + '</span>' : '')) +
+      (n ? '<span class="tile-n">' + esc(n) + '</span>'
+         : (tileTier(it) ? '<span class="tile-n">' + esc(tileTier(it)) + '</span>' : '')) +
       '<span class="tile-k ' + (isEquip(it) ? eqClass(it) : it.kind === 'consumable' ? 'cons' : 'item') +
         '" title="' + esc(isEquip(it) ? eqWord(EQ_TYPE, it.eq.t) : it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
       imgTag(it, 'tile') +
@@ -2944,27 +2994,25 @@ function renderItemPage(id){
       '<p class="page-sub">' + esc(t().notFoundSub) + '</p>' +
       '<a class="btn primary" href="#/roll/std">' + esc(t().toStart) + '</a>';
   }
-  const tdef = TABLE_DEFS.filter(x => x.id === tableIdOf(it))[0];
-  const tname = tdef ? (S.lang === 'ru' ? tdef.ru : tdef.en) : '';
+  /* Подзаголовок читается как путь по навигации: книга, потом её раздел. Плоское
+     имя таблицы («H&F — предметы») повторяло книгу внутри себя и расходилось с
+     тем, что написано на чипах. */
+  const tid = tableIdOf(it);
+  const grp = groupOf(tid);
+  const sub = SUB_LABEL[tid];
   const where = it.src === 'community'
     ? (S.lang === 'ru' ? it.community_ru + ' · ' + it.community : it.community)
-    : tname;
+    : (S.lang === 'ru' ? grp.ru : grp.en) + (sub ? ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) : '');
+  /* Ссылка ведёт прямо на строку этой вещи, а не на раздел: «открыть таблицу» и
+     потом искать её глазами среди сотни - это не ответ на вопрос «где она». */
+  const back = tableHref(tid, it.id);
   return '<h1 class="page-h">' + esc(nameOf(it)) + '</h1>' +
     '<p class="page-sub">' + esc(where +
-        (it.tier ? ' · ' + voaTierOne(it.tier) : '') +
+        (it.tier === 'A' || it.tier === 'C' ? ' · ' + voaTierOne(it.tier) : '') +
         (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
-         : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) + '</p>' +
-    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
-    '<div class="card-acts" style="margin-top:18px">' +
-      '<a class="btn ghost" target="_blank" rel="noopener" href="' +
-        esc(tableHref(tableIdOf(it),
-          it.src === 'community' ? it.community
-          : it.src === 'frame' ? it.frame
-          // у Vault of Ages разделы - это ранги, и якорь ведёт в свой
-          : it.src === 'voa' ? 't' + it.tier : '')) + '">' +
-        esc(t().openTable) + ICON_EXT + '</a>' +
-      '<a class="btn ghost" href="#/roll/std">' + esc(t().toStart) + '</a>' +
-    '</div>';
+         : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) +
+      ' <a class="itemtable" href="' + esc(back) + '">' + esc(t().showInTable) + ICON_EXT + '</a></p>' +
+    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>';
 }
 
 /* ============================================================
@@ -3232,7 +3280,12 @@ function render(){
   restoreFocus(keep);
 
   if (S.tables.anchor && r === 'tables') {
-    const target = document.getElementById(sectionId(S.tables.anchor));
+    /* Якорем может быть раздел или отдельная запись: с карточки ведут прямо на
+       её строку, и подсветить весь ранг вместо одной вещи - значит не ответить
+       на вопрос «где она здесь». */
+    const key = S.tables.anchor;
+    const target = document.getElementById(sectionId(key)) ||
+                   document.querySelector('[data-row="' + key.replace(/"/g, '') + '"]');
     S.tables.anchor = '';
     if (target) {
       if (target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });

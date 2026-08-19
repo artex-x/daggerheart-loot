@@ -88,6 +88,17 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
      'нетронутые строки не подписаны «любое»');
   ok(await page.$('[data-val="src:core"]') && await page.$('[data-val="src:hnf"]'),
      'нет фильтра по источнику');
+  /* Фрейм - это не один источник, а три разные кампании: снаряжение каждой
+     держится на её завязке, и «все фреймы разом» - не тот выбор, который
+     кому-то нужен. На строках имя фрейма стояло и раньше. */
+  ok(!(await page.$('[data-val="src:frame"]')), 'фреймы снова свалены в один источник');
+  ok(await page.$('[data-val="src:beast_feast"]') && await page.$('[data-val="src:dark_heart"]'),
+     'фреймы не разведены в фильтре по одному');
+  await page.click('.eqfilter [data-val="src:beast_feast"]'); await settle();
+  ok((await rows()) === 25, 'по одному фрейму отобралось не 25 единиц оружия: ' + (await rows()));
+  ok((await page.$$eval('.rows .badge.src', e => [...new Set(e.map(x => x.textContent))])).length === 1,
+     'в выборке по одному фрейму оказались чужие');
+  await page.click('.eqpill[data-val="src:beast_feast"]'); await settle();
   ok(!(await page.$('[data-val^="dtype:"]')), 'фильтр физ/маг остался отдельно');
   ok(!(await page.$('.eqclear')) && !(await page.$('.eqlink')),
      'сброс и ссылка показаны, хотя фильтр пуст');
