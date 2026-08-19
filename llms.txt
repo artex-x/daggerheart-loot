@@ -1,9 +1,9 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 953
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1061
 > records covering items, consumables, weapons and armour from the Core Set,
-> Hope & Fear, Wondrous Loot, the Dread GM Toolbox and community sets. Static
-> site, no server, no API, no accounts.
+> Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages and community
+> sets. Static site, no server, no API, no accounts.
 
 Site: https://artex-x.github.io/daggerheart-loot/
 Source: https://github.com/artex-x/daggerheart-loot
@@ -39,7 +39,7 @@ text, not the rules those items refer to.
 
 ## Data
 
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 953
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1061
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
   crafts_into, community, url, text_ru, text_en`.
@@ -51,10 +51,10 @@ text, not the rules those items refer to.
 
 `kind` is one of `item`, `consumable`, `weapon`, `secondary`, `armor`.
 
-## The six sources, and when to reach for each
+## The seven sources, and when to reach for each
 
 `source` is not decoration on the record — it is the best single predictor of
-whether a thing will fit the table you are furnishing. The six sets are not
+whether a thing will fit the table you are furnishing. The seven sets are not
 interchangeable, and mixing them without saying so is how a selection goes
 wrong.
 
@@ -65,6 +65,7 @@ wrong.
 | `Campaign Frames` | 94 | Equipment written for one campaign frame each (Witherwild, Motherboard, and so on). Tied to that frame's premise and often to its special mechanics. | The table is running that frame. Outside it, the item is usually inert or unbalanced — the text assumes rules the party does not have. |
 | `Wondrous Loot` | 119 | A third-party book of magical oddities. Items and consumables only. | You want a memorable object. Several entries rewrite a scene rather than colour it, so read the text before handing it over. |
 | `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavoured. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
+| `Vault of Ages` | 108 | Three third-party volumes by one author, sorted by tier: 24-25 per tier plus 6 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
 | `Community` | 90 | A fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
@@ -84,12 +85,22 @@ the table.
 
 ## Picking things: what the columns actually mean
 
-**`tier` (1–4) belongs to equipment, not to loot.** Weapons and armour are
-tiered because a tier 3 sword is numerically stronger than a tier 1 one. Items
-and consumables have no tier at all — they are not balanced on that axis. So
-"a tier 2 party" is a constraint on *equipment* and only a hint for everything
-else. Do not filter loot by `tier`: the column is empty there and you will get
-nothing back.
+**`tier` (1–4) belongs to equipment, and to Vault of Ages.** Weapons and armour
+are tiered because a tier 3 sword is numerically stronger than a tier 1 one.
+Loot from Core, Hope & Fear, Wondrous, Dread and the community sets has no tier
+at all — it is not balanced on that axis, and the column is empty there.
+
+The exception is `Vault of Ages`, which sorts its whole catalogue by tier
+including its loot, and adds two values beyond the numbers:
+
+| `tier` | Means |
+|---|---|
+| `1`–`4` | The tier the entry was written for |
+| `A` | Artifact — above tier 4, campaign-defining, hand out once |
+| `C` | Cursed object — a strong benefit with a permanent cost attached |
+
+So "a tier 2 party" is a hard constraint on *equipment*, a real filter on
+Vault of Ages, and only a hint for everything else.
 
 For a party at tier N, equipment of tier N is a fair reward and tier N+1 is a
 generous one. Two tiers up is not a reward but a problem — the numbers on
@@ -136,10 +147,10 @@ of two or three usually plays better than assigning one each.
 ## URL grammar
 
 - `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
-  `#/roll/wondrous`; `#/roll/dread`; `#/roll/community`
+  `#/roll/wondrous`; `#/roll/dread`; `#/roll/voa`; `#/roll/community`
 - `#/tables/<table>` — `core_item`, `core_consumable`, `hnf_item`,
-  `hnf_consumable`, `wondrous`, `dread`, `community`, `frames`, `eq_weapon`,
-  `eq_secondary`, `eq_armor`
+  `hnf_consumable`, `wondrous`, `dread`, `voa`, `community`, `frames`,
+  `eq_weapon`, `eq_secondary`, `eq_armor`
 - `#/tables/eq_weapon/f_tier-1-2_cls-phy_src-core` — filters. After `f_`, parts
   are separated by `_` and values inside a part by `-`. Keys: `tier`, `cls`
   (`phy`/`mag`), `src` (`core`/`hnf`), `trait`, `rg`, `bu`, `line`

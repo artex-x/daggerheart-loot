@@ -13,12 +13,14 @@ const ok = (c, m) => { if (!c && !seen.has(m)) { seen.add(m); fail++; console.lo
 /* Every address the app can be at, plus the states that only exist after a
    click and would otherwise never be looked at. */
 const TABLES = ['core_item','core_consumable','hnf_item','hnf_consumable','wondrous',
-                'community','alt_item','alt_consumable','eq_weapon','eq_secondary','eq_armor'];
+                'dread','voa','frames','community','alt_item','alt_consumable',
+                'eq_weapon','eq_secondary','eq_armor'];
 const PAGES = [
   ['#/roll/std', 'бросок d12'],
   ['#/roll/alt', 'альт. таблицы'],
   ['#/roll/wondrous', 'wondrous'],
   ['#/roll/dread', 'dread'],
+  ['#/roll/voa', 'vault of ages'],
   ['#/roll/community', 'сообщества'],
   ['#/lists', 'списки'],
   ['#/lists/a', 'список'],
@@ -29,6 +31,12 @@ const PAGES = [
   ['#/i/w1', 'карточка'],
   ['#/i/di1', 'карточка Dread'],
   ['#/i/q1', 'карточка снаряжения'],
+  /* По одной карточке на источник: tableIdOf разбирает src, и забытая ветка
+     роняет весь класс страниц, ничего при этом не ломая на других. */
+  ['#/i/voa2_a6', 'карточка Vault of Ages'],
+  ['#/i/voa1_t1a', 'карточка снаряжения Vault of Ages'],
+  ['#/i/cc1', 'карточка сообщества'],
+  ['#/i/f1', 'карточка фрейма'],
   ['#/i/nope', 'предмета нет'],
   ['#/search', 'поиск'],
   ['#/roll/core', 'старая ссылка'],
@@ -134,7 +142,7 @@ const PAGES = [
 
           document.querySelectorAll('a[href^="#/"]').forEach(a => {
             const h = a.getAttribute('href').slice(2);
-            const known = /^(roll\/(std|alt|wondrous|dread|community)|tables|lists|search|i\/|l\/|lists\/)/.test(h);
+            const known = /^(roll\/(std|alt|wondrous|dread|voa|community)|tables|lists|search|i\/|l\/|lists\/)/.test(h);
             if (!known) out.badLinks.push(h);
           });
           return out;

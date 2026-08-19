@@ -50,7 +50,7 @@ const leftover = ALL.filter(x => /Переработать в|Craft\s*into/i.tes
 ok(leftover.length === 0, 'stale craft sentence in: ' + leftover.map(x => x.id).join(', '));
 
 // nothing else got damaged while rewriting data.js
-ok(ALL.length === 572, 'expected 572 records, got ' + ALL.length);
+ok(ALL.length === 680, 'expected 680 records, got ' + ALL.length);
 ALL.forEach(x => {
   ok(!!(x.id && x.en && x.ru), x.id + ': empty field');
   /* Снаряжению из кампейн-фрейма книга свойства не даёт вовсе - у части записей
@@ -58,7 +58,7 @@ ALL.forEach(x => {
   ok(!!(x.ende && x.rud) || !!x.eq, x.id + ': empty description');
   /* Картинку можно делить с другой записью: ступени линии улучшения рисуют
      один и тот же предмет, и держать четыре копии одного файла незачем. */
-  ok(!x.img || /^[a-z]+\d+\.webp$/.test(x.img), x.id + ': странное имя картинки ' + x.img);
+  ok(!x.img || /^[a-z0-9_]+\.webp$/.test(x.img), x.id + ': странное имя картинки ' + x.img);
 });
 
 /* ---------- 2. rendering, in a real DOM ---------- */
@@ -229,8 +229,8 @@ console.log('share stubs');
 const stub = fs.readFileSync(path.join(ROOT, 'i', 'w3.html'), 'utf8');
 ok(/Улучшается до: Чай Эфироцвета/.test(stub), 'i/w3.html: og description missing the craft line');
 /* loot + consumables + the equipment tables */
-ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === 953,
-   'i/: expected 953 stubs');
+ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === 1061,
+   'i/: expected 1061 stubs');
 const stale = ALL.filter(x => {
   const p = path.join(ROOT, 'i', x.id + '.html');
   return !fs.existsSync(p) || fs.readFileSync(p, 'utf8').indexOf(x.rud.slice(0, 40)) < 0;

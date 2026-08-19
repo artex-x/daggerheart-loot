@@ -145,6 +145,68 @@ ok(DR.filter(x => x.kind === 'consumable').length === 7,
 ok(dreadEq.every(x => !/^Tier \d|^Магическое Оружие/.test(x.ende + x.rud)),
    'в описании снаряжения Dread осталась строка таблицы');
 
+console.log('Vault of Ages');
+/* Единственный набор, где ранг стоит и на добыче: книга разложена по рангам
+   целиком, а сверх четырёх идут артефакты и проклятые предметы. Ранг не
+   выведен из урона и не угадан - он напечатан заголовком раздела в книге и
+   продублирован в id, так что эти два источника обязаны сходиться. */
+const VOA = L.items.voa;
+ok(VOA.length === 108, 'в Vault of Ages не 108 позиций, а ' + VOA.length);
+ok(VOA.every(x => x.src === 'voa' && x.img), 'у Vault of Ages не проставлен источник или картинка');
+const VOA_SIZE = { 1: 24, 2: 24, 3: 24, 4: 25, A: 6, C: 5 };
+Object.keys(VOA_SIZE).forEach(function (k) {
+  const g = VOA.filter(x => String(x.tier) === k);
+  ok(g.length === VOA_SIZE[k], 'в разделе ' + k + ' не ' + VOA_SIZE[k] + ' позиций, а ' + g.length);
+  /* Бросок идёт внутри раздела, а не по всей книге: номера обязаны быть
+     сплошными от единицы, иначе кость будет указывать в пустоту */
+  ok(g.every((x, i) => x.roll === i + 1), 'номера раздела ' + k + ' не идут подряд с единицы');
+});
+ok(VOA.every(function (x) {
+  const mid = x.id.split('_')[1];
+  const want = mid[0] === 'a' ? 'A' : mid[0] === 'c' ? 'C' : +mid[1];
+  return String(x.tier) === String(want);
+}), 'ранг Vault of Ages разошёлся с тем, что закодировано в id');
+/* Снаряжение книга подписывает сама, и вторичное оружие - это отдельный вид,
+   а не основное с пометкой */
+const voaEq = VOA.filter(x => x.eq);
+ok(voaEq.length === 24, 'снаряжения в Vault of Ages не 24, а ' + voaEq.length);
+ok(voaEq.filter(x => x.eq.t === 'secondary').length === 4,
+   'вторичного оружия не 4: ' + voaEq.filter(x => x.eq.t === 'secondary').length);
+ok(voaEq.every(x => x.eq.tier === x.tier), 'ранг снаряжения разошёлся с рангом записи');
+ok(voaEq.every(x => !x.eq.line), 'у Vault of Ages завелась лестница улучшений, которой в книге нет');
+/* Шапка карточки уехала в eq и в ярлыки - в описании ей делать нечего */
+ok(VOA.every(x => !/^(Loot|Consumable|Cursed Object|Primary Weapon|Secondary Weapon|Armor)\.|^(Предмет|Расходник|Проклятый Объект|Основное оружие|Вспомогательное оружие|Броня)\./.test(x.ende + '|' + x.rud)),
+   'в описании Vault of Ages осталась строка категории');
+ok(VOA.every(x => !/Tier \d\.|Ранг \d\./.test(x.ende + x.rud)),
+   'в описании Vault of Ages остался ранг, который уже стоит ярлыком');
+/* Стоимость Призыва - правило этой книги, и она осталась в тексте ярлыком */
+const rc = VOA.filter(x => x.recall != null);
+ok(rc.length === 83, 'Стоимость Призыва стоит не у 83 записей, а у ' + rc.length);
+ok(rc.every(x => x.rud.indexOf('Стоимость Призыва: ' + x.recall + '\n') === 0 &&
+                 x.ende.indexOf('Recall Cost: ' + x.recall + '\n') === 0),
+   'Стоимость Призыва не открывает описание отдельной строкой');
+
+/* Книга печатает именованные свойства отдельным абзацем, а варианты выбора -
+   маркированным списком. В одну строку они читаются как сплошная стена, и
+   «Кровавый Шип» посреди предложения перестаёт быть названием свойства. */
+const voaLists = VOA.filter(x => x.rud.indexOf('\n- ') > 0);
+ok(voaLists.length === 4, 'списков в Vault of Ages не 4, а ' + voaLists.length);
+ok(voaLists.every(x => x.ende.split('\n- ').length === x.rud.split('\n- ').length),
+   'список разошёлся по числу пунктов между языками');
+/* Пункт списка идёт после вводной строки, а не первой строкой описания */
+ok(VOA.every(x => x.rud.indexOf('- ') !== 0 && x.ende.indexOf('- ') !== 0),
+   'описание начинается с пункта списка, без вводной строки');
+const named = VOA.filter(function (x) {
+  return x.rud.replace(/^Стоимость Призыва: \d+\n/, '').split('\n').some(function (line) {
+    const i = line.replace(/^- /, '').indexOf(': ');
+    return i > 0 && i < 46;
+  });
+});
+ok(named.length >= 29, 'именованных свойств разнесено по строкам всего ' + named.length);
+/* Число строк в обоих языках одно: расхождение значит, что абзац потерялся */
+ok(VOA.every(x => x.ende.split('\n').length === x.rud.split('\n').length),
+   'число строк описания разошлось между языками');
+
 /* Ранга может не быть - и тогда его не показывают, а не подставляют источник */
 const noTier = [].concat(...Object.values(L.items)).filter(x => x.eq && !x.eq.tier);
 ok(noTier.length > 0 && noTier.every(x => x.src === 'wondrous'),
@@ -186,8 +248,9 @@ console.log('счётчики в текстах');
 /* Число записей выписано словами в мета-описаниях, в README и в подсказке
    поиска. Данные меняются редко, но каждый раз эти числа приходится править
    руками в четырёх файлах — и промах ничем не виден: страница выглядит
-   исправной и врёт. Поэтому каждое трёхзначное число рядом со «своим» словом
-   сверяется с тем, что на самом деле лежит в data.js. */
+   исправной и врёт. Поэтому каждое число из трёх и более цифр рядом со «своим»
+   словом сверяется с тем, что на самом деле лежит в data.js. Три цифры было
+   мало: на 1061 записи проверка читала «061» и ругалась на верное число. */
 const N = {
   loot: [].concat(...Object.values(L.items)).length,
   eq: L.eq.length,
@@ -200,14 +263,14 @@ const N = {
    таблицей Wondrous, — поэтому для него проверяется принадлежность, а не
    равенство. Остальные слова однозначны. */
 const COUNTERS = [
-  [/(\d{3})\s+предмет/g,    [N.loot],            'предметов и расходников'],
-  [/(\d{3})\s+единиц/g,     [N.eq],              'единиц снаряжения'],
-  [/(\d{3})\s+запис/g,      [N.all],             'записей'],
-  [/(\d{3})\s+страниц/g,    [N.all],             'страниц-заглушек'],
-  [/(\d{3})\s+картин/g,     [N.art],             'картинок'],
-  [/(\d{3})\s+records/g,    [N.all],             'records'],
-  [/(\d{3})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
-  [/(\d{3})\s+entries/g,    [N.all, N.wondrous], 'entries']
+  [/(\d{3,})\s+предмет/g,    [N.loot],            'предметов и расходников'],
+  [/(\d{3,})\s+единиц/g,     [N.eq],              'единиц снаряжения'],
+  [/(\d{3,})\s+запис/g,      [N.all],             'записей'],
+  [/(\d{3,})\s+страниц/g,    [N.all],             'страниц-заглушек'],
+  [/(\d{3,})\s+картин/g,     [N.art],             'картинок'],
+  [/(\d{3,})\s+records/g,    [N.all],             'records'],
+  [/(\d{3,})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
+  [/(\d{3,})\s+entries/g,    [N.all, N.wondrous], 'entries']
 ];
 ['index.html', 'README.md', 'app.js', 'llms.txt'].forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');

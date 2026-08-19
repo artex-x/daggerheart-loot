@@ -13,7 +13,8 @@ const SITE = 'https://artex-x.github.io/daggerheart-loot/';
    сверяют с кодом. Забытый ключ раньше утекал наружу как `dread`/`frame`. */
 const SRC = {
   core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot',
-  community: 'Community', dread: 'Dread GM Toolbox', frame: 'Campaign Frames'
+  community: 'Community', dread: 'Dread GM Toolbox', frame: 'Campaign Frames',
+  voa: 'Vault of Ages'
 };
 const RANGE = { melee: 'Melee', veryclose: 'Very Close', close: 'Close',
                 far: 'Far', veryfar: 'Very Far' };
@@ -65,7 +66,10 @@ function catalogCsv(L){
       e ? e.t : x.kind,
       SRC[x.src] || x.src,
       x.ru, x.en,
-      e ? e.tier : '',
+      /* У Vault of Ages ранг стоит и на добыче, а не только на снаряжении:
+         книга разложена по рангам, а сверх четырёх идут A (артефакт) и
+         C (проклятый предмет). */
+      x.tier != null ? x.tier : (e ? e.tier : ''),
       rarity[x.id] || '',
       x.roll == null ? '' : x.roll,
       e && e.cls ? CLS[e.cls] : '',

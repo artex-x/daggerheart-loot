@@ -306,6 +306,8 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 /* #21: вещь без лестницы рангов. Тон приглушённый - это уточнение к типу
    снаряжения, а не второй ярлык той же силы */
 .badge.uniq{color:var(--gold-soft);border-color:rgba(216,171,94,.45);border-style:dashed}
+/* Ранг добычи: только у Vault of Ages, где книга разложена по рангам */
+.badge.tier{color:var(--muted);border-color:var(--line2)}
 .badge.num{
   font-family:var(--mono);font-size:11px;letter-spacing:0;
   color:var(--gold-soft);border-color:rgba(216,171,94,.5);

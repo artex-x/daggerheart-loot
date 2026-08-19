@@ -15,8 +15,12 @@ const ALL = [].concat(...Object.values(DATA), EQ);
 console.log('идентификаторы');
 const byId = {};
 ALL.forEach(x => { ok(!byId[x.id], 'повторяющийся id: ' + x.id); byId[x.id] = x; });
-ok(ALL.length === 953, 'записей не 953, а ' + ALL.length);
-ALL.forEach(x => ok(/^[a-z]+\d+$/.test(x.id), 'странный id: ' + x.id));
+ok(ALL.length === 1061, 'записей не 1061, а ' + ALL.length);
+/* Vault of Ages нумерует карточки по тому и разделу книги, а не сплошняком:
+   voa2_a1 - второй том, первый артефакт. Ссылки, имена файлов и коды списков
+   держатся на id, так что схема у книги своя, но она тоже строгая. */
+ALL.forEach(x => ok(/^[a-z]+\d+$/.test(x.id) || /^voa[123]_(t[1-4]|a|c)[a-z0-9]+$/.test(x.id),
+  'странный id: ' + x.id));
 
 console.log('обязательные поля');
 ALL.forEach(x => {
@@ -28,7 +32,7 @@ ALL.forEach(x => {
     ok(typeof v === 'string' && v.length > 0, x.id + ': пустое поле ' + k);
   });
   ok(['item', 'consumable', 'equip'].indexOf(x.kind) >= 0, x.id + ': неизвестный kind ' + x.kind);
-  ok(['core', 'hnf', 'wondrous', 'dread', 'frame', 'community'].indexOf(x.src) >= 0, x.id + ': неизвестный src ' + x.src);
+  ok(['core', 'hnf', 'wondrous', 'dread', 'voa', 'frame', 'community'].indexOf(x.src) >= 0, x.id + ': неизвестный src ' + x.src);
 });
 
 console.log('текстовая гигиена');
@@ -62,6 +66,15 @@ Object.keys(DATA).forEach(table => {
     Object.keys(byC).forEach(c => ok(byC[c].join() === [...Array(10).keys()].map(i => i + 1).join(),
       table + '/' + c + ': номера не 1–10'));
     ok(Object.keys(byC).length === 9, 'сообществ не 9');
+  } else if (table === 'voa') {
+    /* Своей таблицы броска у книги нет: она разложена по рангам, и артефакты с
+       проклятыми предметами стоят отдельно. Бросок идёт внутри раздела, так что
+       и номера свои в каждом - шесть последовательностей, а не одна. */
+    const byT = {};
+    DATA[table].forEach(x => { (byT[x.tier] = byT[x.tier] || []).push(x.roll); });
+    ok(Object.keys(byT).length === 6, 'разделов Vault of Ages не 6, а ' + Object.keys(byT).length);
+    Object.keys(byT).forEach(k => ok(byT[k].join() === byT[k].map((_, i) => i + 1).join(),
+      table + '/' + k + ': номера идут не подряд с 1'));
   } else {
     ok(rolls.join() === rolls.map((_, i) => i + 1).join(),
       table + ': номера идут не подряд с 1 (' + rolls.length + ' позиций)');

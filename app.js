@@ -48,6 +48,7 @@ const S = {
   lsel: {},         // выделенные строки открытого списка
   wond: { n: 1 },
   dread: { n: 1 },
+  voa:  { k: 1, n: 1 },   // раздел книги и бросок внутри него
   comm: { c: 'Highborne', n: 1 },
   tables: { t: 'core_item', q: '', view: 'list', anchor: '' },
   search: { q: '' },
@@ -78,10 +79,10 @@ const S = {
 /* ---------- i18n ---------- */
 const T = {
   ru: {
-    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', dread:'Dread', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
+    tabs: { std:'Обычные правила', alt:'Альт. таблицы', wondrous:'Wondrous', dread:'Dread', voa:'Vault of Ages', community:'Сообщества', tables:'Таблицы', lists:'Списки', search:'Поиск' },
     or:'ИЛИ',
     item:'Предмет', cons:'Расходник',
-    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcFrame:'Фрейм', srcComm:'Сообщества',
+    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcVoa:'Vault of Ages', srcFrame:'Фрейм', srcComm:'Сообщества',
     rollResult:'Результат броска', roll:'Бросить', randomIn:'Случайно', rollDuality:'Бросить кости',
     stepDown:'На единицу меньше', stepUp:'На единицу больше',
     copyName:'Скопировать название', copied:'Скопировано',
@@ -110,6 +111,8 @@ const T = {
     addedTo:'Добавлено в «%s»', removedFrom:'Убрано из «%s»',
     qty:'Кол-во', gold:'Золото', goldUnit:'зол.',
     rollHint:'Бросьте кубик и введите результат - или нажмите кнопку',
+    voaSection:'Раздел книги', voaArtifact:'Артефакты', voaCursed:'Проклятые предметы',
+    voaArtifact1:'Артефакт', voaCursed1:'Проклятый предмет', voaRecall:'Стоимость Призыва',
     guessPrice:'Оценить цены', guessApply:'Проставить эти цены',
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
     guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
@@ -165,7 +168,7 @@ const T = {
     repriceDone:'Цены пересчитаны', repriceUndo:'Вернуть', batchDeleted:'Убрано из списка',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
-    foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
+    foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
     whatIsThis:'Как это работает',
     langLabel:'Язык', sectionsLabel:'Разделы', close:'Закрыть', skipToContent:'К содержимому',
     docTitle:'Генератор лута — Daggerheart',
@@ -226,17 +229,18 @@ const T = {
       alt:   ['Альтернативные таблицы', 'Бросок Костей Дуальности по объединённым таблицам обеих книг.'],
       wondrous: ['Wondrous Loot', 'Введите результат броска или получите случайную позицию.'],
       dread: ['Dread GM Toolbox', 'Введите результат броска или получите случайную позицию.'],
+      voa:   ['Vault of Ages', 'Выберите раздел книги и бросьте кость по нему.'],
       community: ['Предметы сообществ', 'Выберите происхождение и бросьте d10.'],
       tables: ['Таблицы', 'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.'],
       lists: ['Списки', 'Соберите добычу в список и отправьте игрокам одной ссылкой.'],
-      search: ['Поиск', 'Поиск по всем 953 позициям сразу — добыча, расходники и снаряжение, на русском и на английском.']
+      search: ['Поиск', 'Поиск по всем 1061 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.']
     },
   },
   en: {
-    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', dread:'Dread', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
+    tabs: { std:'Standard rules', alt:'Alt. tables', wondrous:'Wondrous', dread:'Dread', voa:'Vault of Ages', community:'Communities', tables:'Tables', lists:'Lists', search:'Search' },
     or:'OR',
     item:'Item', cons:'Consumable',
-    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcFrame:'Frame', srcComm:'Communities',
+    srcCore:'Core', srcHnf:'Hope & Fear', srcWond:'Wondrous', srcDread:'Dread', srcVoa:'Vault of Ages', srcFrame:'Frame', srcComm:'Communities',
     rollResult:'Roll result', roll:'Roll', randomIn:'Random', rollDuality:'Roll the dice',
     stepDown:'One lower', stepUp:'One higher',
     copyName:'Copy name', copied:'Copied',
@@ -265,6 +269,8 @@ const T = {
     addedTo:'Added to "%s"', removedFrom:'Removed from "%s"',
     qty:'Qty', gold:'Gold', goldUnit:'gp',
     rollHint:'Roll a die and type the result - or press the button',
+    voaSection:'Section', voaArtifact:'Artifacts', voaCursed:'Cursed objects',
+    voaArtifact1:'Artifact', voaCursed1:'Cursed object', voaRecall:'Recall Cost',
     guessPrice:'Estimate prices', guessApply:'Set these prices',
     guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
     guessNoTier:'nothing to go on', guessNoRarity:'no rarity given', guessDone:'Prices set',
@@ -320,7 +326,7 @@ const T = {
     repriceDone:'Prices recalculated', repriceUndo:'Undo', batchDeleted:'Removed from the list',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
-    foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
+    foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
     whatIsThis:'How this works',
     langLabel:'Language', sectionsLabel:'Sections', close:'Close', skipToContent:'Skip to content',
     docTitle:'Daggerheart Loot Generator',
@@ -381,10 +387,11 @@ const T = {
       alt:   ['Alternate tables', 'A Duality Dice roll over both books merged into one set of tables.'],
       wondrous: ['Wondrous Loot', 'Enter your roll result, or pick a random entry.'],
       dread: ['Dread GM Toolbox', 'Enter your roll result, or pick a random entry.'],
+      voa:   ['Vault of Ages', 'Pick a section of the book and roll within it.'],
       community: ['Community items', 'Pick an origin and roll d10.'],
       tables: ['Tables', 'Every table in full, weapons and armor included — browse, filter and open cards.'],
       lists: ['Lists', 'Collect loot into a list and send it to your players as a single link.'],
-      search: ['Search', 'Search all 953 entries at once — loot, consumables and equipment, in Russian and English.']
+      search: ['Search', 'Search all 1061 entries at once — loot, consumables and equipment, in Russian and English.']
     },
   }
 };
@@ -433,6 +440,7 @@ const TABLE_DEFS = [
   { id:'wondrous',         ru:'Wondrous Loot',          en:'Wondrous Loot' },
   { id:'community',        ru:'Предметы сообществ',     en:'Community items' },
   { id:'dread',            ru:'Dread GM Toolbox',       en:'Dread GM Toolbox' },
+  { id:'voa',              ru:'Vault of Ages',          en:'Vault of Ages' },
   { id:'frames',           ru:'Снаряжение фреймов',     en:'Frame equipment' },
   { id:'alt_item',         ru:'Альт. — предметы',       en:'Alt. — items' },
   { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' },
@@ -531,7 +539,12 @@ function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
    the pieces are joined with a middle dot wherever one line is enough. */
 function eqParts(it, noType){
   if (!isEquip(it)) return [];
-  const e = it.eq, out = noType ? [] : [eqWord(EQ_TYPE, e.t)];
+  const e = it.eq;
+  /* Vault of Ages подписывает форму вещи: «Основное оружие — Кинжал». Правила
+     за этим никакого не стоит, но это единственное, что отличает кинжал от
+     косы в блоке характеристик, и терять его при переносе не за что. */
+  const type = eqWord(EQ_TYPE, e.t) + (e.sub ? ' — ' + e.sub[S.lang === 'ru' ? 0 : 1] : '');
+  const out = noType ? [] : [type];
   /* Ранга может не быть: Wondrous своих вещей по рангам не раскладывает. Раньше
      в этом месте стояло слово «Wondrous» — рядом с «Ранг 3» у соседей оно
      читалось как ещё один ранг, хотя это источник, и он показан своим ярлыком.
@@ -575,17 +588,23 @@ function labelHtml(line){
    вещи, курсивом ярлык свойства, всё остальное - обычный текст. */
 function descHtml(it){
   const s = descOf(it) || '';
-  if (!isEquip(it) && s.indexOf('\n- ') < 0) return esc(s);
+  /* Курсивом выделяется ярлык свойства, а не всякое двоеточие: у добычи в тексте
+     сплошь «Мастер решает: …», и italic там был бы шумом. Ярлыки бывают у
+     снаряжения и у Стоимости Призыва - её строку книга и печатает отдельно. */
+  /* Vault of Ages печатает именованные свойства и варианты выбора полужирным
+     подзаголовком - тем же приёмом, что Core у свойств снаряжения. */
+  const named = isEquip(it) || it.src === 'voa';
+  const lab = line => named ? labelHtml(line) : esc(line);
   const out = [];
   let ul = null;
   s.split('\n').forEach(function (line) {
     if (line.slice(0, 2) === '- ') {
       if (!ul) { ul = []; out.push(ul); }
-      ul.push('<li>' + labelHtml(line.slice(2)) + '</li>');
+      ul.push('<li>' + lab(line.slice(2)) + '</li>');
       return;
     }
     ul = null;
-    out.push(labelHtml(line));
+    out.push(lab(line));
   });
   return out.map(function (x, i) {
     if (Array.isArray(x)) return '<ul class="dlist">' + x.join('') + '</ul>';
@@ -674,6 +693,10 @@ const GUESS_EQ = {
 /* Добыча ранга не имеет, её ось - редкость, и она уже размечена: сами
    альтернативные таблицы и есть эта разметка, 24 записи на каждую из пяти
    редкостей. Так что угадывать нечего - можно спросить у данных. */
+/* У Vault of Ages ранг стоит и на добыче: книга разложена по рангам целиком.
+   Переводим его в ту же шкалу редкости, по которой оценивается вся остальная
+   добыча, - иначе весь Vault of Ages молча уехал бы в «необычное». */
+const TIER_RAR = { 1:'common', 2:'uncommon', 3:'rare', 4:'very_rare', A:'legendary', C:'legendary' };
 const GUESS_RAR = {
   item:       { common: [80, 120], uncommon: [150, 250], rare: [400, 600], very_rare: [800, 1200], legendary: [1500, 2500] },
   consumable: { common: [15, 25],  uncommon: [30, 50],   rare: [50, 70],   very_rare: [70, 90],    legendary: [100, 150] }
@@ -693,7 +716,7 @@ function guessBand(it){
   if (isEquip(it))
     return (it.eq.tier && GUESS_EQ[it.eq.t] && GUESS_EQ[it.eq.t][it.eq.tier - 1]) || null;
   const kind = it.kind === 'consumable' ? 'consumable' : 'item';
-  const r = RARITY_OF[it.id];
+  const r = RARITY_OF[it.id] || TIER_RAR[it.tier];
   return r ? GUESS_RAR[kind][r] : GUESS_RAR[kind].uncommon;
 }
 function guessPrice(it){
@@ -707,6 +730,7 @@ function guessWhy(it){
   if (!band) return t().guessNoTier;
   const src = isEquip(it) ? t().tier + ' ' + it.eq.tier
             : RARITY_OF[it.id] ? t()[RAR_KEY[RARITY_OF[it.id]]]
+            : it.tier ? voaTierName(it.tier)
             : t().guessNoRarity;
   return src + ' · ' + band[0] + '–' + band[1];
 }
@@ -797,11 +821,35 @@ function craftHTML(it){
   }).join('') + '</div>';
 }
 
+/* ---------- Vault of Ages ----------
+   Три тома одного автора, 108 карточек. Своей таблицы броска у книги нет: она
+   разложена по рангам, а сверх четырёх рангов идут артефакты и проклятые
+   предметы - в книге это отдельные разделы и отдельные строки в её же таблице
+   рарности. Значит и бросков шесть, по одному на раздел, а не один общий:
+   ранг 1 и артефакт - это не соседние результаты одной кости. */
+const VOA_TIERS = [1, 2, 3, 4, 'A', 'C'];
+/* Ранг у Vault of Ages стоит и на добыче, а не только на снаряжении: книга
+   разложена по рангам целиком. Читаем его одинаково, откуда бы он ни пришёл. */
+function tierOf(it){
+  if (!it) return '';
+  if (it.tier) return it.tier;
+  return isEquip(it) && it.eq.tier ? it.eq.tier : '';
+}
+function voaTierName(k){
+  if (k === 'A') return t().voaArtifact;
+  if (k === 'C') return t().voaCursed;
+  return t().tier + ' ' + k;
+}
+/* На плитке места мало: буква вместо слова, как её печатает сама книга */
+function tileTier(k){ return k === 'A' || k === 'C' ? k : t().tier + ' ' + k; }
+function voaGroup(k){ return (DATA.voa || []).filter(x => String(x.tier) === String(k)); }
+
 function srcLabel(it){
   if (it.src === 'core') return t().srcCore;
   if (it.src === 'hnf') return t().srcHnf;
   if (it.src === 'wondrous') return t().srcWond;
   if (it.src === 'dread') return t().srcDread;
+  if (it.src === 'voa') return t().srcVoa;
   if (it.src === 'frame') return frameName(it.frame);
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
@@ -1706,6 +1754,17 @@ function kindBadge(it){
    надо иначе, чем «взять тот же меч на ранг выше». Слово то же, что в фильтре
    «Линия»: два названия одного и того же читаются как два разных признака. */
 function isUnique(it){ return isEquip(it) && !it.eq.line; }
+/* Ранг добычи - случай Vault of Ages: у снаряжения он и так стоит в строке
+   характеристик, и второй раз его повторять незачем. */
+/* Речь об одной вещи, а не о разделе книги: «Артефакт», не «Артефакты» */
+function voaTierOne(k){
+  return k === 'A' ? t().voaArtifact1
+       : k === 'C' ? t().voaCursed1
+       : t().tier + ' ' + k;
+}
+function tierBadge(it){
+  return it.tier ? '<span class="badge tier">' + esc(voaTierOne(it.tier)) + '</span>' : '';
+}
 function uniqBadge(it){
   return isUnique(it)
     ? '<span class="badge uniq" title="' + esc(t().uniqueHint) + '">' + esc(t().unique) + '</span>'
@@ -1718,7 +1777,7 @@ function cardHTML(it, opt){
   const meta =
     ((opt.rollLabel !== false && it.roll) ? '<span class="badge num">' + esc(opt.rollLabel || it.roll) + '</span>' : '') +
     (opt.col ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>' : '') +
-    kindBadge(it) + uniqBadge(it) +
+    kindBadge(it) + uniqBadge(it) + tierBadge(it) +
     '<span class="badge src">' + esc(srcLabel(it)) + '</span>';
 
   const nameEl = opt.full
@@ -2022,6 +2081,34 @@ function renderDread(){
   '<div class="results" role="status" aria-live="polite">' + orGrid([cardHTML(it)]) + '</div>';
 }
 
+/* ---- 5c: Vault of Ages ----
+   Устроен как «Сообщества»: сначала выбирается раздел, потом бросок внутри
+   него. Шесть разделов - четыре ранга плюс артефакты и проклятые предметы,
+   ровно как в самой книге. Один общий бросок по всем 108 смешал бы ранг 1 с
+   артефактом, а это подарки разного веса. */
+function renderVoa(){
+  const st = S.voa;
+  const list = voaGroup(st.k);
+  const max = list.length;
+  const it = list[st.n - 1];
+  return pageHead('voa') +
+  '<div class="panel">' +
+    '<div class="field"><span class="lbl">' + esc(t().voaSection) + '</span>' +
+      '<div class="chips">' + VOA_TIERS.map(k =>
+        '<button type="button" class="chip' + (String(k) === String(st.k) ? ' on' : '') + '"' +
+        ' data-act="voa" data-val="' + k + '">' + esc(voaTierName(k)) + '</button>').join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–' + max + ')</span>' +
+      '<div class="numrow">' + numBox('n', st.n, 1, max) +
+        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(max)) + '</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="results" role="status" aria-live="polite">' +
+    (it ? orGrid([cardHTML(it)]) : '') + '</div>';
+}
+
 /* ---- 6: community ---- */
 function renderComm(){
   const st = S.comm;
@@ -2089,7 +2176,17 @@ function renderTables(){
     let list = DATA[st.t];
     const q = st.q.trim().toLowerCase();
     if (q) list = list.filter(x => matches(x, q));
-    if (st.t === 'frames') {
+    if (st.t === 'voa') {
+      /* Книга разложена по рангам, а не по таблице броска, и артефакты с
+         проклятыми предметами стоят отдельными разделами - так же, как в самих
+         томах. Разделов шесть, и по ним же идёт бросок. */
+      body = VOA_TIERS.map(k => {
+        const sub = list.filter(x => String(x.tier) === String(k));
+        if (!sub.length) return '';
+        return '<div class="tsection" id="' + sectionId('t' + k) + '" style="margin-top:22px">' +
+          sectionHead(voaTierName(k), st.t, 't' + k) + renderList(sub) + '</div>';
+      }).join('');
+    } else if (st.t === 'frames') {
       /* Разбито по фреймам, как таблица сообществ: снаряжение из кампании имеет
          смысл только рядом со своей, вперемешку оно читается как ошибка. */
       body = FRAME_ORDER.map(f => {
@@ -2301,7 +2398,7 @@ function rowHTML(it, removeFrom, tail, num){
           (tail ? '<i class="rtail">' + esc(tail) + '</i>' : '') + '</b>' +
         (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
-        '<span class="rm">' + kindBadge(it) + uniqBadge(it) +
+        '<span class="rm">' + kindBadge(it) + uniqBadge(it) + tierBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       (removeFrom
@@ -2327,7 +2424,7 @@ function tileHTML(it){
     '<button type="button" class="tile" data-open="' + esc(it.id) + '">' +
     '<div class="tile-img">' +
       (it.roll ? '<span class="tile-n">' + esc(it.roll) + '</span>'
-               : (isEquip(it) && it.eq.tier ? '<span class="tile-n">' + esc(t().tier + ' ' + it.eq.tier) + '</span>' : '')) +
+               : (tierOf(it) ? '<span class="tile-n">' + esc(tileTier(tierOf(it))) + '</span>' : '')) +
       '<span class="tile-k ' + (isEquip(it) ? eqClass(it) : it.kind === 'consumable' ? 'cons' : 'item') +
         '" title="' + esc(isEquip(it) ? eqWord(EQ_TYPE, it.eq.t) : it.kind === 'consumable' ? t().cons : t().item) + '"></span>' +
       imgTag(it, 'tile') +
@@ -2552,7 +2649,7 @@ function listRowHTML(l, it, i){
         (descOf(it) ? '<span>' + descHtml(it) + '</span>' : '') + rowCraft(it) + '</span>' +
         /* the same badges every other listing shows — without them a list is the
            one place you cannot tell an item from a weapon at a glance */
-        '<span class="rm">' + kindBadge(it) + uniqBadge(it) +
+        '<span class="rm">' + kindBadge(it) + uniqBadge(it) + tierBadge(it) +
         '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       '<div class="lrow-meta">' +
@@ -2660,6 +2757,10 @@ function plural(n){
 /* ---- single item page (shareable link target) ---- */
 const TABLE_OF = { core:{item:'core_item',consumable:'core_consumable'}, hnf:{item:'hnf_item',consumable:'hnf_consumable'} };
 function tableIdOf(it){
+  /* Vault of Ages стоит перед проверкой на снаряжение: 24 его единицы живут в
+     своей таблице, а не в общей по видам оружия - иначе ссылка «наверх, к
+     таблице» с карточки уводила бы в чужой раздел. */
+  if (it.src === 'voa') return 'voa';
   if (isEquip(it) && !it.roll)
     return { weapon:'eq_weapon', secondary:'eq_secondary', armor:'eq_armor' }[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
@@ -2681,12 +2782,18 @@ function renderItemPage(id){
     ? (S.lang === 'ru' ? it.community_ru + ' · ' + it.community : it.community)
     : tname;
   return '<h1 class="page-h">' + esc(nameOf(it)) + '</h1>' +
-    '<p class="page-sub">' + esc(where + (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
-        : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) + '</p>' +
+    '<p class="page-sub">' + esc(where +
+        (it.tier ? ' · ' + voaTierOne(it.tier) : '') +
+        (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
+         : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) + '</p>' +
     '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
     '<div class="card-acts" style="margin-top:18px">' +
       '<a class="btn ghost" target="_blank" rel="noopener" href="' +
-        esc(tableHref(tableIdOf(it), it.src === 'community' ? it.community : (it.src === 'frame' ? it.frame : ''))) + '">' +
+        esc(tableHref(tableIdOf(it),
+          it.src === 'community' ? it.community
+          : it.src === 'frame' ? it.frame
+          // у Vault of Ages разделы - это ранги, и якорь ведёт в свой
+          : it.src === 'voa' ? 't' + it.tier : '')) + '">' +
         esc(t().openTable) + ICON_EXT + '</a>' +
       '<a class="btn ghost" href="#/roll/std">' + esc(t().toStart) + '</a>' +
     '</div>';
@@ -2701,13 +2808,14 @@ const ROUTES = {
   'roll/alt': renderAlt,
   'roll/wondrous': renderWond,
   'roll/dread': renderDread,
+  'roll/voa': renderVoa,
   'roll/community': renderComm,
   'tables': renderTables,
   'search': renderSearch
 };
 const TAB_LIST = [
   ['roll/std','std'], ['roll/alt','alt'],
-  ['roll/wondrous','wondrous'], ['roll/dread','dread'], ['roll/community','community'],
+  ['roll/wondrous','wondrous'], ['roll/dread','dread'], ['roll/voa','voa'], ['roll/community','community'],
   ['tables','tables'], ['lists','lists'], ['search','search']
 ];
 /* links handed out before the three d12 modes were merged */
@@ -2953,6 +3061,7 @@ function stateForRoute(){
   if (r === 'roll/alt') return S.alt;
   if (r === 'roll/wondrous') return S.wond;
   if (r === 'roll/dread') return S.dread;
+  if (r === 'roll/voa') return S.voa;
   if (r === 'roll/community') return S.comm;
   return null;
 }
@@ -3351,6 +3460,8 @@ document.addEventListener('click', function (e) {
     return;
   }
   if (a === 'comm')   { S.comm.c = val; S.comm.n = 1; render(); return; }
+  /* Разделы разной длины: бросок, сделанный в одном, в другом указывал бы мимо */
+  if (a === 'voa')    { S.voa.k = val === 'A' || val === 'C' ? val : +val; S.voa.n = 1; render(); return; }
   if (a === 'view')   { S.tables.view = val; savePrefs(); render(); return; }
 
   if (a === 'roll') {
@@ -3358,6 +3469,7 @@ document.addEventListener('click', function (e) {
        свой номер, а следом его затирал бросок d12 из последней ветки. */
     if (S.route === 'roll/wondrous') { st.n = d(DATA.wondrous.length); }
     else if (S.route === 'roll/dread') { st.n = d(DATA.dread.length); }
+    else if (S.route === 'roll/voa') { st.n = d(voaGroup(S.voa.k).length); }
     else if (S.route === 'roll/community') { st.n = d(10); }
     else { st.n = clamp(rollNd12(+val), 1, 60); }   // val carries the dice count
     render(); return;
