@@ -115,7 +115,7 @@ const T = {
     rollHint:'Бросьте кубик и введите результат - или нажмите кнопку', rollBy:'Бросок по списку',
     voaSection:'Раздел книги', voaArtifact:'Артефакты', voaCursed:'Проклятые предметы',
     voaArtifact1:'Артефакт', voaCursed1:'Проклятый предмет', voaRecall:'Стоимость Призыва',
-    guessPrice:'Подсказать цены', guessApply:'Проставить эти цены',
+    guessPrice:'Подсказать цены', batchMoney:'Цены', guessApply:'Проставить эти цены',
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
     guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
     moneyAs:'Отображение цен', money_coin:'Монетами', money_bag:'Как в книге',
@@ -284,7 +284,7 @@ const T = {
     rollHint:'Roll a die and type the result - or press the button', rollBy:'Roll on this list',
     voaSection:'Section', voaArtifact:'Artifacts', voaCursed:'Cursed objects',
     voaArtifact1:'Artifact', voaCursed1:'Cursed object', voaRecall:'Recall Cost',
-    guessPrice:'Suggest prices', guessApply:'Set these prices',
+    guessPrice:'Suggest prices', batchMoney:'Prices', guessApply:'Set these prices',
     guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
     guessNoTier:'nothing to go on', guessNoRarity:'no rarity given', guessDone:'Prices set',
     moneyAs:'Price display', money_coin:'In coins', money_bag:'As in the book',
@@ -693,30 +693,57 @@ function batchBarHTML(l){
   const ids = l.ids.filter(function (id) { return S.lsel[id]; });
   const n = ids.length;
   const all = n && n === l.ids.length;
-  /* Цены правятся только у выбранных строк, где цена вообще стоит. Если таких
-     нет, обе денежные кнопки ничего не сделают - показывать их незачем. */
-  const priced = ids.filter(function (id) { return itemMeta(l, id).gold > 0; }).length;
-  const money = priced
-    ? '<span class="batch-price" title="' + esc(t().repriceHint) + '">' +
-        '<span class="batch-lbl">' + esc(t().repricePct) + '</span>' +
-        numBox('rp', S.rp, -90, 500) +
-        '<button type="button" class="btn sm" data-reprice="' + esc(l.id) + '">' +
-          esc(S.rp < 0 ? t().repriceDown : t().repriceUp) + '</button>' +
-      '</span>' +
-      '<button type="button" class="btn sm" data-batch-clearprice="' + esc(l.id) + '">' +
-        esc(t().batchNoPrice) + ' (' + priced + ')</button>'
-    : '';
+  /* Денежных кнопок было четыре, и все четыре стояли в одной строке с
+     удалением: «подсказать цены», подпись «цены, %», поле процентов, кнопка
+     скидки и «убрать цену». Пять виджетов ради трёх решений, из которых за
+     раз принимают одно. Теперь в полосе две кнопки - «Цены» и «Удалить», а
+     всё денежное разложено под ней, где на него есть место и подписи. */
   return '<div class="batch' + (n ? ' on' : '') + '">' +
     '<label class="batch-all"><input type="checkbox" data-lsel-all="' + esc(l.id) + '"' +
       (all ? ' checked' : '') + '>' + esc(n ? t().pickedN + ' ' + n : t().pickAll) + '</label>' +
     (n ? '<span class="batch-acts">' +
-      '<button type="button" class="btn sm" data-guess="' + esc(l.id) + '"' +
-        ' aria-expanded="' + (S.guess ? 'true' : 'false') + '">' + esc(t().guessPrice) + '</button>' +
-      money +
+      '<button type="button" class="btn sm' + (S.guess ? ' on' : '') + '" data-guess="' + esc(l.id) + '"' +
+        ' aria-expanded="' + (S.guess ? 'true' : 'false') + '">' + esc(t().batchMoney) +
+        '<i class="caret' + (S.guess ? ' up' : '') + '"></i></button>' +
       '<button type="button" class="btn sm danger" data-batch-del="' + esc(l.id) + '">' +
         esc(t().del) + ' (' + n + ')</button>' +
     '</span>' : '') +
-    (n && S.guess ? guessPanelHTML(l, ids) : '') +
+    (n && S.guess ? moneyPanelHTML(l, ids) : '') +
+  '</div>';
+}
+
+/* Всё, что можно сделать с ценами выбранных строк, в одном месте и по порядку:
+   пересчитать проценты, взять подсказку, стереть. Проценты и «стереть» есть
+   только там, где цена вообще проставлена - нулю скидка не нужна. */
+function moneyPanelHTML(l, ids){
+  const priced = ids.filter(function (id) { return itemMeta(l, id).gold > 0; }).length;
+  return '<div class="guess">' +
+    (priced
+      ? '<div class="money-act">' +
+          '<span class="batch-lbl">' + esc(t().repricePct) + '</span>' +
+          numBox('rp', S.rp, -90, 500) +
+          '<button type="button" class="btn sm" data-reprice="' + esc(l.id) + '">' +
+            esc(S.rp < 0 ? t().repriceDown : t().repriceUp) + '</button>' +
+          '<span class="money-hint">' + esc(t().repriceHint) + '</span>' +
+        '</div>'
+      : '') +
+    '<p class="guess-note">' + esc(t().guessWhy) + '</p>' +
+    '<div class="guess-rows">' + ids.map(function (id) {
+      const it = BY_ID[id];
+      if (!it) return '';
+      const v = guessPrice(it);
+      return '<div class="guess-row"><span>' + esc(nameOf(it)) + '</span>' +
+        '<span class="guess-band">' + esc(guessWhy(it)) + '</span>' +
+        '<b>' + (v ? esc(priceText(v, moneyMode(l))) : '—') + '</b></div>';
+    }).join('') + '</div>' +
+    '<div class="money-act">' +
+      '<button type="button" class="btn sm primary" data-guess-apply="' + esc(l.id) + '">' +
+        esc(t().guessApply) + '</button>' +
+      (priced
+        ? '<button type="button" class="btn sm" data-batch-clearprice="' + esc(l.id) + '">' +
+            esc(t().batchNoPrice) + ' (' + priced + ')</button>'
+        : '') +
+    '</div>' +
   '</div>';
 }
 
@@ -780,22 +807,6 @@ function guessWhy(it){
      единицы это читалось как «30-50» и «4 горсти» про одно и то же число. */
   return src + ' · ' + band[0] + '–' + band[1] + ' ' + t().goldUnit;
 }
-function guessPanelHTML(l, ids){
-  return '<div class="guess">' +
-    '<p class="guess-note">' + esc(t().guessWhy) + '</p>' +
-    '<div class="guess-rows">' + ids.map(function (id) {
-      const it = BY_ID[id];
-      if (!it) return '';
-      const v = guessPrice(it);
-      return '<div class="guess-row"><span>' + esc(nameOf(it)) + '</span>' +
-        '<span class="guess-band">' + esc(guessWhy(it)) + '</span>' +
-        '<b>' + (v ? esc(priceText(v, moneyMode(l))) : '—') + '</b></div>';
-    }).join('') + '</div>' +
-    '<button type="button" class="btn sm primary" data-guess-apply="' + esc(l.id) + '">' +
-      esc(t().guessApply) + '</button>' +
-  '</div>';
-}
-
 /* ---------- ступени линии улучшения ----------
    У снаряжения улучшения не пара «до/из», а лестница из четырёх рангов, и
    ходить по ней через поиск неудобно. Ряд номеров под характеристиками -
@@ -2057,13 +2068,16 @@ function renderStd(){
       '<div class="numrow">' + numBox('n', st.n, 1, 60) +
         '<div class="dicebar">' +
           NDICE.map(function (x, i) {
-            /* The verb is spelled out once on the first button; the rest read as
-               "…or this many" by proximity. Each carries the rarities it covers. */
+            /* Кнопка броска на сайте выглядит одинаково везде: золотая, с
+               костью. Здесь их пять, и все пять - одна и та же кнопка с разным
+               числом костей, поэтому выделять первую нечем и незачем: выбирают
+               по редкости, а не по порядку. Слово написано один раз, на первой -
+               дальше оно понятно по соседству. */
             const rar = x.rar.map(function (r) { return t()[RAR_KEY[r]]; }).join(' / ');
-            return '<button type="button" class="btn"' +
+            return '<button type="button" class="btn primary"' +
               ' data-act="roll" data-val="' + x.n + '"' +
               ' title="' + esc(t().roll + ' ' + x.n + 'd12 — ' + rar) + '">' +
-              '<span class="dl">' + (i === 0 ? ICON_DIE + esc(t().roll) + ' ' : '') + x.n + 'd12</span>' +
+              '<span class="dl">' + ICON_DIE + (i === 0 ? esc(t().roll) + ' ' : '') + x.n + 'd12</span>' +
               '<small>' + esc(rar) + '</small></button>';
           }).join('') +
         '</div>' +
@@ -2393,7 +2407,7 @@ function renderTables(){
          прямо здесь страница читается как пустая без всякой причины. */
       body = '<div class="empty">' + esc(t().nothing) +
         (fChosen(st.t).length
-          ? '<button type="button" class="btn sm" data-act="flt" data-val="reset" style="margin-top:14px">' +
+          ? '<button type="button" class="btn sm" data-act="flt" data-val="reset">' +
             esc(t().resetAll) + '</button>'
           : '') + '</div>';
     body = fbar + body;
@@ -2601,7 +2615,7 @@ function renderEquipTable(kind, st){
        now, so from here the page reads as empty with no visible cause. */
     return head + '<div class="empty">' + esc(t().nothing) +
       (fChosen(st.t).length
-        ? '<button type="button" class="btn sm" data-act="flt" data-val="reset" style="margin-top:14px">' +
+        ? '<button type="button" class="btn sm" data-act="flt" data-val="reset">' +
           esc(t().resetAll) + '</button>'
         : '') + '</div>';
   const groups = [1, 2, 3, 4].map(function (n) {

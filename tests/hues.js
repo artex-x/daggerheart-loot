@@ -74,21 +74,30 @@ const gap = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - 
     }
   }
 
-  /* Золото на сайте значит две вещи: «выбрано» и «главное действие». Ни та ни
-     другая не подходит одной кости из пяти - бросают по редкости, а не по
-     порядку кнопок, и заливка на первой читалась как «жми сюда». Строка теперь
-     золотая целиком и одинаково. */
-  console.log('золото у равных кнопок');
-  await page.goto(ROOT + '#/roll/std', { waitUntil: 'domcontentloaded' });
-  await new Promise(r => setTimeout(r, 450));
-  const dice = await page.$$eval('.dicebar .btn', e => e.map(x => x.className));
-  ok(dice.length >= 4, 'кнопок броска меньше четырёх: ' + dice.length);
-  ok(dice.every(c => c.indexOf('primary') < 0),
-     'одна из костей снова выделена как главная: ' + dice.join(' | '));
-  const look = await page.$$eval('.dicebar .btn', e => e.map(x => {
-    const s = getComputedStyle(x); return s.backgroundColor + '|' + s.color + '|' + s.borderColor;
-  }));
-  ok(new Set(look).size === 1, 'кости броска выглядят по-разному: ' + [...new Set(look)].join(' / '));
+  /* Кнопка броска на сайте одна и та же везде: золотая, с костью. На обычных
+     таблицах их пять, и все пять - одно действие с разным числом костей, так
+     что выделять первую нечем: бросают по редкости, а не по порядку кнопок. */
+  console.log('кнопки броска одинаковы');
+  const rollLook = async h => {
+    await page.goto(ROOT + h, { waitUntil: 'domcontentloaded' });
+    await new Promise(r => setTimeout(r, 450));
+    return page.$$eval('[data-act="roll"],[data-act="rollDuality"]', e => e.map(x => {
+      const s = getComputedStyle(x);
+      return { look: s.backgroundImage + '|' + s.color, die: !!x.querySelector('svg') };
+    }));
+  };
+  const std = await rollLook('#/roll/std');
+  ok(std.length >= 4, 'кнопок броска меньше четырёх: ' + std.length);
+  ok(std.every(x => x.die), 'не на каждой кнопке броска есть кость');
+  ok(new Set(std.map(x => x.look)).size === 1,
+     'кости броска выглядят по-разному: ' + [...new Set(std.map(x => x.look))].join(' / '));
+  for (const h of ['#/roll/alt', '#/roll/wondrous', '#/roll/voa']) {
+    const one = await rollLook(h);
+    ok(one.length === 1, h + ': кнопок броска не одна');
+    ok(one[0].die, h + ': на кнопке броска нет кости');
+    ok(one[0].look === std[0].look,
+       h + ': кнопка броска выглядит иначе, чем на обычных таблицах');
+  }
 
   await browser.close();
   console.log(fail ? '\n' + fail + ' FAILED' : '\nцвета ярлыков: все различимы по тону');

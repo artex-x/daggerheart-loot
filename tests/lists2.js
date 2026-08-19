@@ -187,6 +187,14 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     ok(await page.$('.batch.on'), 'полоса действий не отметилась');
     ok(/2/.test(await page.$eval('.batch-all', e => e.textContent)), 'не показано, сколько выбрано');
 
+    /* В самой полосе теперь две кнопки: «Цены» и «Удалить». Всё денежное - в
+       панели под ней, иначе в строке набиралось пять виджетов сразу. */
+    const actLabels = await page.$$eval('.batch-acts .btn', e => e.map(x => x.textContent.trim()));
+    ok(actLabels.length === 2, 'в полосе действий не две кнопки: ' + actLabels.join(' | '));
+    ok(!(await page.$('.batch-acts [data-reprice]')) && !(await page.$('.batch-acts #rp')),
+       'проценты снова стоят в самой полосе');
+    await page.click('[data-guess]'); await settle();
+
     /* #19: кнопки шага у поля процента шли мимо обработчика input - цифра
        менялась, а модель и подпись кнопки оставались на прежнем знаке. */
     const label = () => page.$eval('[data-reprice]', e => e.textContent.trim());
@@ -361,7 +369,11 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await go('#/lists/a');
     await page.click('[data-lsel="q1"]');   // Палаш: оружие ранга 1, вилка 20-30
     await settle();
-    ok(!(await page.$('.guess')), 'панель ориентира раскрыта до нажатия');
+    /* Панель могла остаться открытой с прошлого блока: смена адреса тут не
+       перезагружает страницу, а состояние живёт в памяти. Проверяем правило -
+       она открывается и закрывается кнопкой, - а не то, какой она застали. */
+    if (await page.$('.guess')) { await page.click('[data-guess]'); await settle(); }
+    ok(!(await page.$('.guess')), 'панель цен не закрылась по кнопке');
     await page.click('[data-guess]'); await settle();
     const panel = await page.$eval('.guess', e => e.innerText);
     ok(/105/.test(panel), 'не сказано, откуда взяты числа: ' + panel.slice(0, 90));
