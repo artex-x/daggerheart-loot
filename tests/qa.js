@@ -344,9 +344,9 @@ const contrast = (a, b) => {
   };
   await go(page, '#/tables/eq_secondary');
   const tableLink = await copied('.toolbar [data-copy-sec]');
-  await page.evaluate(() => document.querySelector('[data-act="eqOpen"]').click()); await settle();
-  await page.evaluate(() => document.querySelector('.eqfilter [data-val="tier:3"]').click()); await settle();
-  const filterLink = await copied('.eqlink');
+  await page.evaluate(() => document.querySelector('[data-act="fOpen"]').click()); await settle();
+  await page.evaluate(() => document.querySelector('.ffilter [data-val="tier:3"]').click()); await settle();
+  const filterLink = await copied('.flink');
   await go(page, '#/lists/a');
   const listLink = await copied('[data-share-list]');
   const shape = u => u.slice(0, u.indexOf('#'));

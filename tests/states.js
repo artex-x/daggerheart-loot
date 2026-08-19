@@ -38,9 +38,9 @@ const STATES = [
   ['панель выделения',    '#/tables/core_item',    p => tap(p, '[data-sel]')],
   ['меню выделения',      '#/tables/core_item',    async p => { await tap(p, '[data-sel]');
                                                                 return tap(p, '#selBar [data-act="menu"]'); }],
-  ['фильтры снаряжения',  '#/tables/eq_weapon',    p => tap(p, '[data-act="eqOpen"]')],
-  ['фильтр с выбором',    '#/tables/eq_weapon',    async p => { await tap(p, '[data-act="eqOpen"]');
-                                                                return tap(p, '.eqfilter [data-val="trait:strength"]'); }],
+  ['фильтры снаряжения',  '#/tables/eq_weapon',    p => tap(p, '[data-act="fOpen"]')],
+  ['фильтр с выбором',    '#/tables/eq_weapon',    async p => { await tap(p, '[data-act="fOpen"]');
+                                                                return tap(p, '.ffilter [data-val="trait:strength"]'); }],
   ['заметка в списке',    '#/lists/a',             p => tap(p, '[data-note-toggle]')],
   ['бросок по списку',    '#/lists/a',             p => tap(p, '[data-act="rollList"]')],
   ['поиск с находками',   '#/search',              async p => {
@@ -92,7 +92,7 @@ const STATES = [
         out.undef = /\bundefined\b/.test(document.body.innerText);
 
         /* anything that floats over the page has to stay inside it */
-        document.querySelectorAll('.dropmenu, .modal-box, #modal:not([hidden]) .card, .helpbox, .eqfilter, #selBar:not([hidden])')
+        document.querySelectorAll('.dropmenu, .modal-box, #modal:not([hidden]) .card, .helpbox, .ffilter, #selBar:not([hidden])')
           .forEach(e => {
             const r = e.getBoundingClientRect();
             if (!r.width) return;

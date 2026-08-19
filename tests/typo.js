@@ -39,7 +39,7 @@ const ok = (c, m) => { if (!c && !seen.has(m)) { seen.add(m); fail++; console.lo
       // the parts that only exist after a click get their turn too
       await page.evaluate(() => {
         const hit = s => { const e = document.querySelector(s); if (e) e.click(); };
-        hit('[data-act="eqOpen"]'); hit('.cardpick [data-act="menu"]');
+        hit('[data-act="fOpen"]'); hit('.cardpick [data-act="menu"]');
         hit('.helpbtn'); hit('[data-note-toggle]'); hit('.lnote summary');
       });
       await new Promise(r => setTimeout(r, 300));

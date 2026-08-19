@@ -138,7 +138,7 @@ const PAGES = [
           });
 
           /* text wider than the box it sits in: a name or a chip that got cut */
-          document.querySelectorAll('.card-name a, .card-name span, .badge, .chip, .eqpill, .btn, .lbl, .rnum')
+          document.querySelectorAll('.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum')
             .forEach(e => {
               if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflow !== 'visible')
                 out.clipped.push((e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 28));

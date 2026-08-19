@@ -58,9 +58,9 @@ const S = {
   kind: { item: true, consumable: true, equip: true },  // shared filter, applies wherever they can show up
   /* equipment facets: what is picked in each row. An empty row means "any", so
      an untouched filter is an empty object and its link stays short */
-  eqOn: {},
-  eqOpen: false,
-  eqSeg: '',   // the filter piece of the address we have already read back
+  fOn: {},
+  fOpen: false,
+  fSeg: '',   // the filter piece of the address we have already read back
   lists: [],
   /* Selection replaced the old "I am filling list X" mode. Nothing is sticky:
      it holds ids for the page you are on and clears when you leave. */
@@ -94,7 +94,7 @@ const T = {
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
-    filter:'Тип', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
+    filter:'Тип', kindF:'Тип', frameF:'Фрейм', commF:'Сообщество', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
@@ -226,7 +226,7 @@ const T = {
         'Ранг есть у всего снаряжения, включая Wondrous Loot. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 — значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.',
         '<b>Класс</b> — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.',
         'Фильтр «Линейка» делит снаряжение надвое. <b>Улучшаемые</b> — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. <b>Уникальные</b> — то, что существует в единственном виде и не улучшается.',
-        'В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.',
+        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.',
         'Одиннадцать предметов из Wondrous Loot на самом деле оружие. В этих таблицах их нет — они остались в своей таблице Wondrous, но выглядят и копируются как снаряжение.',
         'Источники: Daggerheart Core Set и Hope &amp; Fear. Русские названия и формулировки — перевод <a href="https://ru.daggerheart.su/" target="_blank" rel="noopener">daggerheart.su</a>, для Hope &amp; Fear — таблица сообщества. Значения даны с учётом эрраты.'
       ],
@@ -263,7 +263,7 @@ const T = {
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
-    filter:'Type', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
+    filter:'Type', kindF:'Type', frameF:'Frame', commF:'Community', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
@@ -395,7 +395,7 @@ const T = {
         'Every piece of equipment has a tier, Wondrous Loot included. The book does not print it next to the item, but it binds each piece of loot to a location in the "Loot items by environment" table, and every location has a tier: the Staff of the Whispering Archive comes from The Watcher\'s Grave, which is tier 2, so the staff is tier 2. This is not an estimate from the stats - it is the same book, one page earlier.',
         '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
-        'Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
+        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for the campaign frames, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
         'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.',
         'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
       ],
@@ -1491,18 +1491,17 @@ function findListByPayload(payload){
 }
 
 /* Whoever opens it lands on this table with the same values picked */
-function eqFilterHash(){
-  const kind = EQ_TABLE[S.tables.t], f = kind ? eqEncode(kind) : '';
+function fltHash(){
+  const f = fEncode(S.tables.t);
   return '#/tables/' + S.tables.t + (f ? '/' + f : '');
 }
-function eqFilterUrl(){ return appUrl(eqFilterHash()); }
+function fltUrl(){ return appUrl(fltHash()); }
 /* Written straight into the address bar, so copying it from there and using the
    button give the same link — and a stale filter never lingers in the URL. */
-function syncEqUrl(){
-  const kind = EQ_TABLE[S.tables.t];
-  if (!kind) return;
-  S.eqSeg = eqEncode(kind);
-  if (history.replaceState) history.replaceState(null, '', eqFilterHash());
+function syncFltUrl(){
+  if (!tblFacets(S.tables.t).length) return;
+  S.fSeg = fEncode(S.tables.t);
+  if (history.replaceState) history.replaceState(null, '', fltHash());
 }
 /* A list now has two payloads — with the GM's notes and without — and either
    one is still that list. Comparing against the players' flavour alone meant a
@@ -2354,9 +2353,11 @@ function renderTables(){
       '</div>';
     }).join('') || '<div class="empty">' + esc(t().nothing) + '</div>';
   } else {
-    let list = DATA[st.t].filter(function (x) { return kindAllows(kindOf(x)); });
+    const pool = DATA[st.t];
     const q = st.q.trim().toLowerCase();
+    let list = pool.filter(function (x) { return tblPasses(x, st.t); });
     if (q) list = list.filter(x => matches(x, q));
+    const fbar = fBarHTML(st.t, list.length, pool.length);
     if (st.t === 'voa') {
       /* Книга разложена по рангам, а не по таблице броска, и артефакты с
          проклятыми предметами стоят отдельными разделами - так же, как в самих
@@ -2385,8 +2386,17 @@ function renderTables(){
           renderList(sub) + '</div>';
       }).join('');
     } else {
-      body = list.length ? renderList(list) : '<div class="empty">' + esc(t().nothing) + '</div>';
+      body = renderList(list);
     }
+    if (!list.length)
+      /* Сброс лежит в панели, которая свёрнута и уехала вверх, - без кнопки
+         прямо здесь страница читается как пустая без всякой причины. */
+      body = '<div class="empty">' + esc(t().nothing) +
+        (fChosen(st.t).length
+          ? '<button type="button" class="btn sm" data-act="flt" data-val="reset" style="margin-top:14px">' +
+            esc(t().resetAll) + '</button>'
+          : '') + '</div>';
+    body = fbar + body;
   }
 
   /* Альтернативные таблицы были единственным местом без поиска и без выбора
@@ -2403,15 +2413,7 @@ function renderTables(){
       '</div>' +
     '</div>';
 
-  /* Фильтр по виду - только там, где внутри таблицы видов больше одного.
-     У Core и H&F вид и есть таблица, у сообществ он один: строка чипов там
-     ничего бы не отбирала, зато занимала бы место. Строки эти таблицы нумеруют
-     подряд как одну кость, поэтому вид именно отсеивает, а не пересобирает
-     разделы: номер 47 остаётся сорок седьмым. */
-  const kinds = tableKinds(st.t);
-  const kindBar = kinds.length > 1
-    ? '<div class="panel" style="margin-top:12px">' + kindChips(kinds) + '</div>' : '';
-  return pageHead('tables') + '<div class="panel tablenav">' + chips + '</div>' + kindBar +
+  return pageHead('tables') + '<div class="panel tablenav">' + chips + '</div>' +
     searchBar + '<div style="margin-top:6px">' + body + '</div>';
 }
 
@@ -2447,16 +2449,16 @@ function eqFacets(kind){
   f.push(['line', t().eqLineF, [['line', eqWord(EQ_LINE, 'line')], ['uniq', eqWord(EQ_LINE, 'uniq')]]]);
   return f;
 }
-const eqPicked = (facet, value) => !!(S.eqOn[facet] && S.eqOn[facet][value]);
-const eqAny = facet => !S.eqOn[facet] || !Object.keys(S.eqOn[facet]).length;
-function eqHits(facet, value){ return eqAny(facet) || eqPicked(facet, value); }
+const fPicked = (facet, value) => !!(S.fOn[facet] && S.fOn[facet][value]);
+const fAny = facet => !S.fOn[facet] || !Object.keys(S.fOn[facet]).length;
+function fHits(facet, value){ return fAny(facet) || fPicked(facet, value); }
 /* Everything currently picked, in the order the rows are shown */
-function eqChosen(kind){
+function fChosen(tid){
   const out = [];
-  eqFacets(kind).forEach(function (f) {
+  tblFacets(tid).forEach(function (f) {
     f[2].forEach(function (o) {
       // a bare number says nothing on its own, so those carry their row's name
-      if (eqPicked(f[0], o[0])) out.push([f[0], o[0], /^\d+$/.test(o[1]) ? f[1] + ' ' + o[1] : o[1]]);
+      if (fPicked(f[0], o[0])) out.push([f[0], o[0], /^\d+$/.test(o[1]) ? f[1] + ' ' + o[1] : o[1]]);
     });
   });
   return out;
@@ -2467,7 +2469,45 @@ function eqPasses(it, kind){
   const e = it.eq;
   const value = { tier: String(e.tier), src: eqSrcOf(it), line: e.line ? 'line' : 'uniq',
                   cls: e.cls, trait: e.tr, range: e.rg, burden: String(e.bu) };
-  return eqFacets(kind).every(function (f) { return eqHits(f[0], value[f[0]]); });
+  return eqFacets(kind).every(function (f) { return fHits(f[0], value[f[0]]); });
+}
+
+/* ---------- фасеты обычных таблиц ----------
+   Панель снаряжения оказалась единственным местом на сайте, где фильтр умеет
+   всё сразу: он свёрнут, показывает выбранное плашками, сбрасывается одной
+   кнопкой и отдаётся ссылкой. У остальных таблиц вместо неё стояла голая
+   строка чипов над поиском - другой вид, другое место, ничего из перечисленного.
+   Теперь строка чипов - это просто фасет с одним значением, а панель одна на
+   все таблицы: где фасетов больше, там их больше строк, и только. */
+function tblFacets(tid){
+  const kind = EQ_TABLE[tid];
+  if (kind) return eqFacets(kind);
+  const f = [];
+  /* Вид отбирают только там, где видов правда несколько: у корника и Hope &
+     Fear вид и есть таблица, у сообществ он один. */
+  const kinds = tableKinds(tid);
+  if (kinds.length > 1)
+    f.push(['kind', t().kindF, kinds.map(function (k) { return [k[0], t()[k[1]]]; })]);
+  if (tid === 'voa')
+    f.push(['tier', t().tier, VOA_TIERS.map(function (k) { return [String(k), voaTierName(k)]; })]);
+  if (tid === 'frames')
+    f.push(['frame', t().frameF, FRAME_ORDER.map(function (k) { return [k, frameName(k)]; })]);
+  if (tid === 'community')
+    f.push(['comm', t().commF, COMMUNITIES.map(function (c) {
+      return [c[0], S.lang === 'ru' ? c[1] : c[0]];
+    })]);
+  return f;
+}
+/* Значение записи в этом фасете - то, с чем сравнивается выбранное */
+function facetValue(it, key){
+  if (key === 'kind')  return kindOf(it);
+  if (key === 'tier')  return String(it.tier);
+  if (key === 'frame') return it.frame;
+  if (key === 'comm')  return it.community;
+  return '';
+}
+function tblPasses(it, tid){
+  return tblFacets(tid).every(function (f) { return fHits(f[0], facetValue(it, f[0])); });
 }
 
 /* Folded by default, so what is chosen has to be readable without opening it:
@@ -2475,41 +2515,42 @@ function eqPasses(it, kind){
    and handing the state out as a link belong to the same strip — they are the
    rest of "what is filtered right now", and inside the panel they could only be
    reached by unfolding it again. Neither appears while nothing is picked. */
-function eqFilterHTML(kind, shown, total){
-  const chosen = eqChosen(kind);
-  return '<div class="eqbar">' +
-      '<button type="button" class="btn sm eqtoggle' + (chosen.length ? ' has' : '') + '"' +
-        ' data-act="eqOpen" aria-expanded="' + (S.eqOpen ? 'true' : 'false') + '">' +
+function fBarHTML(tid, shown, total){
+  const chosen = fChosen(tid);
+  if (!tblFacets(tid).length) return '';
+  return '<div class="fbar">' +
+      '<button type="button" class="btn sm ftoggle' + (chosen.length ? ' has' : '') + '"' +
+        ' data-act="fOpen" aria-expanded="' + (S.fOpen ? 'true' : 'false') + '">' +
         esc(t().filters) + (chosen.length ? ' (' + chosen.length + ')' : '') +
-        '<i class="caret' + (S.eqOpen ? ' up' : '') + '"></i></button>' +
+        '<i class="caret' + (S.fOpen ? ' up' : '') + '"></i></button>' +
       chosen.map(function (c) {
-        return '<button type="button" class="eqpill" data-act="eqf"' +
+        return '<button type="button" class="fpill" data-act="flt"' +
           ' data-val="' + esc(c[0] + ':' + c[1]) + '"' +
           ' title="' + esc(t().dropValue) + '">' + esc(c[2]) + '<i>&times;</i></button>';
       }).join('') +
       (chosen.length
-        ? '<button type="button" class="eqclear" data-act="eqf" data-val="reset">' +
+        ? '<button type="button" class="fclear" data-act="flt" data-val="reset">' +
             esc(t().resetAll) + '</button>' +
-          '<button type="button" class="eqlink" data-act="eqLink"' +
+          '<button type="button" class="flink" data-act="fLink"' +
             ' title="' + esc(t().filterLink) + '" aria-label="' + esc(t().filterLink) + '">' +
             ICON_LINK + '</button>'
         : '') +
-      '<span class="eqcount">' +
+      '<span class="fcount">' +
         esc(chosen.length ? shown + ' ' + t().outOf + ' ' + total : String(total)) +
       '</span>' +
-    '</div>' + (S.eqOpen ? eqFilterBody(kind) : '');
+    '</div>' + (S.fOpen ? fPanelHTML(tid) : '');
 }
-function eqFilterBody(kind){
-  return '<div class="panel eqfilter">' + eqFacets(kind).map(function (f) {
-    const any = eqAny(f[0]);
+function fPanelHTML(tid){
+  return '<div class="panel ffilter">' + tblFacets(tid).map(function (f) {
+    const any = fAny(f[0]);
     /* an untouched row says so, so that neutral chips do not read as "nothing
        matches" — they mean the row is not narrowing anything yet */
     return '<div class="field"><span class="lbl">' + esc(f[1]) +
       (any ? ' <i>' + esc(t().anyValue) + '</i>' : '') + '</span><div class="chips">' +
       f[2].map(function (o) {
-        const on = eqPicked(f[0], o[0]);
+        const on = fPicked(f[0], o[0]);
         return '<button type="button" class="chip' + (on ? ' on' : '') + '"' +
-          ' data-act="eqf" data-val="' + esc(f[0] + ':' + o[0]) + '"' +
+          ' data-act="flt" data-val="' + esc(f[0] + ':' + o[0]) + '"' +
           ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(o[1]) + '</button>';
       }).join('') + '</div></div>';
   }).join('') + '</div>';
@@ -2517,22 +2558,34 @@ function eqFilterBody(kind){
 
 /* ---- the filter state as a piece of the address ----
    "f_" then one group per facet listing what is picked there. Nothing is picked
-   in a fresh table, so a plain table link stays plain. */
-function eqEncode(kind){
-  const parts = eqFacets(kind).map(function (f) {
-    const on = f[2].filter(function (o) { return eqPicked(f[0], o[0]); }).map(o => o[0]);
+   in a fresh table, so a plain table link stays plain.
+
+   Groups are divided by a dot rather than the underscore this started with:
+   `beast_feast` is a value, and the old separator cut it in half, so a link to
+   one campaign frame arrived as a filter on a frame named "beast". Links made
+   before that are still read - a segment without a dot goes through the old
+   splitter, which was right for every value that has no underscore in it. */
+function fEncode(tid){
+  const parts = tblFacets(tid).map(function (f) {
+    const on = f[2].filter(function (o) { return fPicked(f[0], o[0]); }).map(o => o[0]);
     return on.length ? f[0] + '-' + on.join('-') : '';
   }).filter(Boolean);
-  return parts.length ? 'f_' + parts.join('_') : '';
+  return parts.length ? 'f_' + parts.join('.') : '';
 }
-function eqDecode(seg){
-  S.eqOn = {};
+function fDecode(seg){
+  S.fOn = {};
   if (!seg || seg.indexOf('f_') !== 0) return;
-  seg.slice(2).split('_').forEach(function (g) {
+  const body = seg.slice(2);
+  /* Старый разделитель читается только там, где он ещё может быть верным: без
+     точки и когда каждый кусок сам похож на группу. `frame-beast_feast` этой
+     проверки не проходит - и хорошо, это новая ссылка. */
+  const legacy = body.indexOf('.') < 0 &&
+                 body.split('_').every(function (g) { return g.indexOf('-') > 0; });
+  (legacy ? body.split('_') : body.split('.')).forEach(function (g) {
     const p = g.split('-'), facet = p.shift();
     if (!facet || !p.length) return;
-    S.eqOn[facet] = {};
-    p.forEach(function (v) { S.eqOn[facet][v] = true; });
+    S.fOn[facet] = {};
+    p.forEach(function (v) { S.fOn[facet][v] = true; });
   });
 }
 
@@ -2542,13 +2595,13 @@ function renderEquipTable(kind, st){
   const list = pool.filter(function (it) {
     return eqPasses(it, kind) && (!q || matches(it, q));
   });
-  const head = eqFilterHTML(kind, list.length, pool.length);
+  const head = fBarHTML(st.t, list.length, pool.length);
   if (!list.length)
     /* The reset lives at the top of a panel that is folded and scrolled away by
        now, so from here the page reads as empty with no visible cause. */
     return head + '<div class="empty">' + esc(t().nothing) +
-      (eqChosen(kind).length
-        ? '<button type="button" class="btn sm" data-act="eqf" data-val="reset" style="margin-top:14px">' +
+      (fChosen(st.t).length
+        ? '<button type="button" class="btn sm" data-act="flt" data-val="reset" style="margin-top:14px">' +
           esc(t().resetAll) + '</button>'
         : '') + '</div>';
   const groups = [1, 2, 3, 4].map(function (n) {
@@ -3035,7 +3088,7 @@ const TAB_LIST = [
 /* links handed out before the three d12 modes were merged */
 const LEGACY_ROUTES = { 'roll/core':'roll/std', 'roll/hnf':'roll/std', 'roll/all':'roll/std' };
 
-const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_-]+))?$/;
+const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/;
 
 /* Пришла короткая ссылка: разворачиваем её в обычную и переписываем адрес.
    Дальше всё идёт прежним синхронным путём и ничего про сжатие не знает. */
@@ -3070,7 +3123,7 @@ function currentRoute(){
     // filters belong to the table you are looking at, so they fold and reset
     // whenever the address points somewhere else
     if (table && table !== S.tables.t) {
-      S.tables.t = table; S.eqOpen = false; S.eqOn = {}; S.eqSeg = '';
+      S.tables.t = table; S.fOpen = false; S.fOn = {}; S.fSeg = '';
     }
     const tail = m[2] || '';
     /* This runs on every render, so the address may only be read back when it
@@ -3078,7 +3131,7 @@ function currentRoute(){
        the link said: the panel could not be folded and a chip clicked itself
        straight back to the state in the URL. */
     if (tail.indexOf('f_') === 0) {
-      if (tail !== S.eqSeg) { eqDecode(tail); S.eqSeg = tail; S.eqOpen = true; }
+      if (tail !== S.fSeg) { fDecode(tail); S.fSeg = tail; S.fOpen = true; }
       S.tables.anchor = '';
     } else {
       S.tables.anchor = tail;
@@ -3621,17 +3674,17 @@ document.addEventListener('click', function (e) {
     render(); return;
   }
   if (a === 'hideWarn') { e.preventDefault(); hideWarn(); render(); return; }
-  if (a === 'eqOpen') { S.eqOpen = !S.eqOpen; render(); return; }
-  if (a === 'eqLink') { copyText(eqFilterUrl(), t().filterLinkCopied); return; }
-  if (a === 'eqf') {
-    if (val === 'reset') S.eqOn = {};
+  if (a === 'fOpen') { S.fOpen = !S.fOpen; render(); return; }
+  if (a === 'fLink') { copyText(fltUrl(), t().filterLinkCopied); return; }
+  if (a === 'flt') {
+    if (val === 'reset') S.fOn = {};
     else {
       const p = val.split(':'), f = p[0], v = p[1];
-      S.eqOn[f] = S.eqOn[f] || {};
+      S.fOn[f] = S.fOn[f] || {};
       // letting go of the last pick in a row puts that row back to "any"
-      if (S.eqOn[f][v]) delete S.eqOn[f][v]; else S.eqOn[f][v] = true;
+      if (S.fOn[f][v]) delete S.fOn[f][v]; else S.fOn[f][v] = true;
     }
-    syncEqUrl();
+    syncFltUrl();
     render(); return;
   }
   if (a === 'src') {

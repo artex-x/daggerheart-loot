@@ -21,7 +21,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   const settle = () => new Promise(r => setTimeout(r, 250));
   const rows = () => page.$$eval('.rows .row', e => e.length);
   const clip = k => page.evaluate(async x => window.__clip && window.__clip[x] ? await window.__clip[x].text() : '', k);
-  const open = async () => { if (!(await page.$('.eqfilter'))) { await page.click('[data-act="eqOpen"]'); await settle(); } };
+  const open = async () => { if (!(await page.$('.ffilter'))) { await page.click('[data-act="fOpen"]'); await settle(); } };
 
   /* ---------- the data behind the tables ---------- */
   console.log('данные');
@@ -79,12 +79,12 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   /* ---------- facets: pick to narrow, empty row means any ---------- */
   console.log('фильтры');
   await go('#/tables/eq_weapon');
-  ok(!(await page.$('.eqfilter')), 'фильтры открыты при заходе на страницу');
-  ok(await page.$eval('.eqcount', e => e.textContent.trim() === '317'), 'нет счёта позиций');
+  ok(!(await page.$('.ffilter')), 'фильтры открыты при заходе на страницу');
+  ok(await page.$eval('.fcount', e => e.textContent.trim() === '317'), 'нет счёта позиций');
   await open();
-  ok((await page.$$eval('.eqfilter .chip.on', e => e.length)) === 0,
+  ok((await page.$$eval('.ffilter .chip.on', e => e.length)) === 0,
      'при чистом фильтре значения выглядят выбранными');
-  ok((await page.$$eval('.eqfilter .lbl i', e => e.map(x => x.textContent))).every(x => x === 'любое'),
+  ok((await page.$$eval('.ffilter .lbl i', e => e.map(x => x.textContent))).every(x => x === 'любое'),
      'нетронутые строки не подписаны «любое»');
   ok(await page.$('[data-val="src:core"]') && await page.$('[data-val="src:hnf"]'),
      'нет фильтра по источнику');
@@ -94,73 +94,73 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   ok(!(await page.$('[data-val="src:frame"]')), 'фреймы снова свалены в один источник');
   ok(await page.$('[data-val="src:beast_feast"]') && await page.$('[data-val="src:dark_heart"]'),
      'фреймы не разведены в фильтре по одному');
-  await page.click('.eqfilter [data-val="src:beast_feast"]'); await settle();
+  await page.click('.ffilter [data-val="src:beast_feast"]'); await settle();
   ok((await rows()) === 25, 'по одному фрейму отобралось не 25 единиц оружия: ' + (await rows()));
   ok((await page.$$eval('.rows .badge.src', e => [...new Set(e.map(x => x.textContent))])).length === 1,
      'в выборке по одному фрейму оказались чужие');
-  await page.click('.eqpill[data-val="src:beast_feast"]'); await settle();
+  await page.click('.fpill[data-val="src:beast_feast"]'); await settle();
   ok(!(await page.$('[data-val^="dtype:"]')), 'фильтр физ/маг остался отдельно');
-  ok(!(await page.$('.eqclear')) && !(await page.$('.eqlink')),
+  ok(!(await page.$('.fclear')) && !(await page.$('.flink')),
      'сброс и ссылка показаны, хотя фильтр пуст');
 
   /* one click is all it takes to get down to a single tier */
-  await page.click('.eqfilter [data-val="tier:2"]'); await settle();
+  await page.click('.ffilter [data-val="tier:2"]'); await settle();
   const t2 = await rows();
   ok(t2 === 80, 'один клик по рангу 2 дал не 80 строк: ' + t2);
   ok((await page.$$eval('.tsection', e => e.length)) === 1, 'остался не один раздел');
-  ok(await page.$eval('.eqtoggle', e => /\(1\)/.test(e.textContent)), 'счётчик выбранного не положительный');
-  ok(!/−/.test(await page.$eval('.eqtoggle', e => e.textContent)), 'счётчик снова показывает минус');
-  ok(await page.$eval('.eqcount', e => /80 из 317/.test(e.textContent)), 'счёт найденного не обновился');
-  ok(await page.$('.eqclear') && await page.$('.eqlink'), 'сброс и ссылка не появились рядом с выбранным');
+  ok(await page.$eval('.ftoggle', e => /\(1\)/.test(e.textContent)), 'счётчик выбранного не положительный');
+  ok(!/−/.test(await page.$eval('.ftoggle', e => e.textContent)), 'счётчик снова показывает минус');
+  ok(await page.$eval('.fcount', e => /80 из 317/.test(e.textContent)), 'счёт найденного не обновился');
+  ok(await page.$('.fclear') && await page.$('.flink'), 'сброс и ссылка не появились рядом с выбранным');
   // both stay reachable with the panel folded — that is the point of moving them
-  await page.click('[data-act="eqOpen"]'); await settle();
-  ok(!(await page.$('.eqfilter')), 'панель не свернулась');
-  ok(await page.$('.eqclear') && await page.$('.eqlink'), 'со свёрнутой панелью сброс и ссылка пропали');
-  await page.click('[data-act="eqOpen"]'); await settle();
+  await page.click('[data-act="fOpen"]'); await settle();
+  ok(!(await page.$('.ffilter')), 'панель не свернулась');
+  ok(await page.$('.fclear') && await page.$('.flink'), 'со свёрнутой панелью сброс и ссылка пропали');
+  await page.click('[data-act="fOpen"]'); await settle();
 
   /* values inside a row add up */
-  await page.click('.eqfilter [data-val="tier:3"]'); await settle();
+  await page.click('.ffilter [data-val="tier:3"]'); await settle();
   ok((await rows()) > t2, 'второе значение в строке не расширило выборку');
-  await page.click('.eqfilter [data-val="tier:3"]'); await settle();
+  await page.click('.ffilter [data-val="tier:3"]'); await settle();
   ok((await rows()) === t2, 'повторный клик не убрал значение');
 
   /* rows narrow each other */
-  await page.click('.eqfilter [data-val="src:hnf"]'); await settle();
+  await page.click('.ffilter [data-val="src:hnf"]'); await settle();
   const both = await rows();
   ok(both > 0 && both < t2, 'вторая строка фильтра не сузила выборку: ' + both);
 
   /* a pick can be dropped from the folded bar in one click */
-  const pills = await page.$$eval('.eqpill', e => e.map(x => x.textContent.replace('×','')));
+  const pills = await page.$$eval('.fpill', e => e.map(x => x.textContent.replace('×','')));
   ok(pills.length === 2 && pills.indexOf('Ранг 2') >= 0,
      'выбранное не показано плашками или номер ранга остался без подписи: ' + pills);
-  await page.click('.eqpill[data-val="src:hnf"]'); await settle();
+  await page.click('.fpill[data-val="src:hnf"]'); await settle();
   ok((await rows()) === t2, 'крестик на плашке не снял значение');
-  ok((await page.$$eval('.eqpill', e => e.length)) === 1, 'плашка не исчезла');
+  ok((await page.$$eval('.fpill', e => e.length)) === 1, 'плашка не исчезла');
 
   /* a weapon that deals either kind of damage answers to both classes */
-  await page.click('.eqclear'); await settle();
+  await page.click('.fclear'); await settle();
   ok((await rows()) === 317, 'сброс не вернул все строки');
-  ok(!(await page.$('.eqclear')), 'сброс остался после сброса');
+  ok(!(await page.$('.fclear')), 'сброс остался после сброса');
   await open();
-  await page.click('.eqfilter [data-val="cls:phy"]'); await settle();
+  await page.click('.ffilter [data-val="cls:phy"]'); await settle();
   const phyNames = await page.$$eval('.rows .row b', e => e.map(x => x.textContent));
   ok(phyNames.indexOf('Призрачный Клинок') < 0,
      'магическое оружие с физическим уроном попало в физический фильтр');
   ok(phyNames.indexOf('Палаш') >= 0, 'Палаш выпал из физического фильтра');
-  await page.click('.eqfilter [data-val="cls:phy"]'); await settle();
-  await page.click('.eqfilter [data-val="cls:mag"]'); await settle();
+  await page.click('.ffilter [data-val="cls:phy"]'); await settle();
+  await page.click('.ffilter [data-val="cls:mag"]'); await settle();
   const magNames = await page.$$eval('.rows .row b', e => e.map(x => x.textContent));
   ok(magNames.indexOf('Призрачный Клинок') >= 0, 'магическое оружие выпало из магического фильтра');
   ok(magNames.indexOf('Палаш') < 0, 'в магическое оружие попал Палаш');
 
   /* ---------- the filter as a link ---------- */
   console.log('ссылка на фильтры');
-  await page.click('[data-act="eqLink"]'); await settle();
+  await page.click('[data-act="fLink"]'); await settle();
   const url = await clip('text/plain');
   ok(/#\/tables\/eq_weapon\/f_/.test(url), 'ссылка не несёт состояние фильтров: ' + url);
   await go(url.slice(url.indexOf('#')));
-  ok(await page.$('.eqfilter'), 'по ссылке фильтры не раскрылись');
-  ok(await page.$eval('.eqfilter [data-val="cls:mag"]', e => e.classList.contains('on')),
+  ok(await page.$('.ffilter'), 'по ссылке фильтры не раскрылись');
+  ok(await page.$eval('.ffilter [data-val="cls:mag"]', e => e.classList.contains('on')),
      'ссылка не восстановила выбранные значения');
 
   /* ---------- arriving by a filter link ---------- */
@@ -168,17 +168,17 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await go('#/tables/eq_weapon/f_tier-2-3-4_trait-strength_burden-2');
   const viaLink = await rows();
   ok(viaLink > 0, 'по ссылке ничего не нашлось');
-  ok(await page.$('.eqfilter'), 'по ссылке фильтры не раскрылись');
+  ok(await page.$('.ffilter'), 'по ссылке фильтры не раскрылись');
   // the panel used to reopen on every render because the address was read back
-  await page.click('[data-act="eqOpen"]'); await settle();
-  ok(!(await page.$('.eqfilter')), 'фильтры не закрываются после перехода по ссылке');
-  await page.click('[data-act="eqOpen"]'); await settle();
+  await page.click('[data-act="fOpen"]'); await settle();
+  ok(!(await page.$('.ffilter')), 'фильтры не закрываются после перехода по ссылке');
+  await page.click('[data-act="fOpen"]'); await settle();
   // and a chip clicked itself back to whatever the link said
-  await page.click('.eqfilter [data-val="tier:2"]'); await settle();
+  await page.click('.ffilter [data-val="tier:2"]'); await settle();
   ok((await rows()) !== viaLink, 'клик по чипу откатился к состоянию из ссылки');
   ok(await page.evaluate(() => location.hash.indexOf('tier-3-4') > 0),
      'адрес не поехал за фильтром: ' + await page.evaluate(() => location.hash));
-  await page.click('.eqclear'); await settle();
+  await page.click('.fclear'); await settle();
   ok(await page.evaluate(() => location.hash === '#/tables/eq_weapon'),
      'после сброса в адресе остался фильтр');
 
@@ -214,6 +214,42 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
      'ярлык помечен не своим классом: ' + [bw[0], bs[0], ba[0]].join(' | '));
   ok(new Set([bw[0].split(':')[1], bs[0].split(':')[1], ba[0].split(':')[1]]).size === 3,
      'ярлыки трёх видов одного цвета: ' + [bw[0], bs[0], ba[0]].join(' | '));
+
+  /* ---------- та же панель на обычных таблицах ----------
+     Раньше здесь стояла голая строка чипов над поиском: другой вид, другое
+     место, без сброса, без ссылки и без счёта. Теперь панель одна на все
+     таблицы, и проверяется именно это - что она есть и что она работает. */
+  console.log('фильтры обычных таблиц');
+  await go('#/tables/voa');
+  ok(await page.$('.fbar'), 'на Vault of Ages нет панели фильтров');
+  const voaAll = await rows();
+  await open();
+  await page.click('.ffilter [data-val="tier:A"]'); await settle();
+  const arte = await rows();
+  ok(arte > 0 && arte < voaAll, 'фильтр по рангу на Vault of Ages не сузил выборку: ' + arte);
+  ok((await page.$$eval('.tsection', e => e.length)) === 1, 'остался не один раздел');
+  ok(await page.$('.fclear') && await page.$('.flink'), 'сброс и ссылка не появились');
+  const cnt = await page.$eval('.fcount', e => e.textContent);
+  ok(cnt.indexOf(String(voaAll)) > 0, 'счёт найденного не показан: ' + cnt);
+  /* Ранг и вид сужают друг друга так же, как строки у снаряжения */
+  await page.click('.ffilter [data-val="kind:equip"]'); await settle();
+  ok((await rows()) < arte, 'вид и ранг не сложились');
+  await page.click('.fclear'); await settle();
+  ok((await rows()) === voaAll, 'сброс не вернул все строки');
+
+  /* Значение с подчёркиванием переживает ссылку: старый разделитель групп резал
+     `beast_feast` пополам, и ссылка на фрейм приезжала фильтром по «beast». */
+  await go('#/tables/frames/f_frame-beast_feast');
+  ok((await page.$$eval('.tsection', e => e.length)) === 1,
+     'ссылка на фрейм с подчёркиванием в имени не восстановила фильтр');
+  const pill = await page.$eval('.fpill', e => e.textContent.replace('\u00d7', '').trim());
+  ok(pill === 'Пир зверей', 'плашка фрейма подписана иначе: ' + pill);
+
+  /* Строки чипов над поиском больше нет ни на одной таблице */
+  await go('#/tables/wondrous');
+  const beforeSearch = await page.$$eval('.panel', e => e.length);
+  ok(beforeSearch >= 1 && !(await page.$('.tablenav ~ .panel:not(.ffilter) .chips [data-act="kind"]')),
+     'над поиском осталась старая строка видов');
 
   /* ---------- copying ---------- */
   console.log('копирование');
