@@ -422,6 +422,106 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     ok(!(mine.meta.ci1 || {}).hnote && !mine.hnote, 'мастерская заметка уехала в чужой список');
   }
 
+  /* ---------- новый список из чужой ссылки ---------- */
+  console.log('новый список из чужой ссылки');
+  {
+    /* Разбор ключа меню жил в двух копиях, и та, что стоит за «+ Новый список»,
+       клала в него сам ключ «@» вместо позиций - получался пустой список. */
+    const stamp = parts => {
+      const body = parts.join(',');
+      let h = 2166136261;
+      for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
+    };
+    const parts = ['ci1*1*750', 'q1*2'];
+    const raw = 'Лавка Феррина\n' + stamp(parts) + parts.join(',');
+    const pay = Buffer.from(raw, 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await go('#/l/' + pay);
+    await page.click('[data-act="menu"][data-val="@"]'); await settle();
+    await page.click('[data-act="newListFor"][data-val="@"]'); await settle();
+    await page.type('#newlist', 'Из ссылки');
+    await page.click('[data-act="createFor"][data-val="@"]'); await settle();
+    const mine = (await lists()).find(l => l.name === 'Из ссылки');
+    ok(!!mine, 'список из чужой ссылки не создался');
+    ok(mine && mine.ids.join() === 'ci1,q1', 'новый список пустой: ' + JSON.stringify(mine && mine.ids));
+    ok(mine && mine.meta && mine.meta.ci1 && mine.meta.ci1.gold === 750, 'цена не доехала в новый список');
+  }
+
+  /* ---------- цена: подсказка вместо строки, и она не отстаёт ---------- */
+  console.log('подсказка о цене');
+  {
+    await go('#/lists/a');
+    await page.evaluate(() => {
+      const inp = document.querySelector('[data-gold="a:ci1"]');
+      inp.value = '750'; inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await go('#/lists/a');
+    await page.click('[data-money][data-val="bag"]'); await settle();
+    ok(!(await page.$('.lrow-money')), 'мешки снова занимают строку вместо подсказки');
+    ok(await page.$eval('[data-gold="a:ci1"]', e => e.title) === '7 мешков 5 горстей',
+       'на поле цены нет подсказки: ' + (await page.$eval('[data-gold="a:ci1"]', e => e.title)));
+    /* Строку не перерисовывают на каждую цифру, так что подсказку надо
+       обновлять на месте - иначе после правки она обещает старую цену */
+    await page.evaluate(() => {
+      const inp = document.querySelector('[data-gold="a:ci1"]');
+      inp.value = '231'; inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    ok(await page.$eval('[data-gold="a:ci1"]', e => e.title) === '2 мешка 3 горсти',
+       'подсказка отстала от цены: ' + (await page.$eval('[data-gold="a:ci1"]', e => e.title)));
+    await page.click('[data-money][data-val="coin"]'); await settle();
+    ok(!(await page.$eval('[data-gold="a:ci1"]', e => e.title)), 'в режиме монет подсказка лишняя');
+  }
+
+  /* ---------- бросок по списку свёрнут ---------- */
+  console.log('бросок по списку');
+  {
+    await go('#/lists/a');
+    /* Переход по хэшу состояние не сбрасывает, а проверка выше уже бросала по
+       этому списку - панель законно осталась раскрытой вместе с результатом */
+    const cl = await page.$('[data-act="clearRoll"]');
+    if (cl) { await cl.click(); await settle(); }
+    ok(await page.$('.lroll'), 'панели броска нет');
+    ok(!(await page.$eval('.lroll', e => e.open)), 'панель броска занимает экран без спроса');
+    await page.click('.lroll summary'); await settle();
+    await page.evaluate(() => {
+      const inp = document.getElementById('n');
+      inp.value = '1'; inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    ok(await page.$eval('.lroll', e => e.open), 'после броска панель схлопнулась вместе с результатом');
+    ok(await page.$('.lroll .card'), 'результат броска не показан');
+  }
+
+  /* ---------- заметка едет с копией позиции ---------- */
+  console.log('заметка в копии позиции');
+  {
+    await go('#/lists/a');
+    await page.evaluate(() => {
+      const box = document.querySelector('.lrow [data-note-toggle]');
+      box.click();
+    });
+    await settle();
+    await page.evaluate(() => {
+      const pub = document.querySelector('.lrow .rnote .n-pub textarea');
+      pub.value = 'Куплено у Феррина';
+      pub.dispatchEvent(new Event('input', { bubbles: true }));
+      const hid = document.querySelector('.lrow .rnote .n-hid textarea');
+      hid.value = 'Краденое';
+      hid.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await settle();
+    await page.evaluate(() => document.querySelector('.lrow .row-main').click());
+    await settle();
+    await page.click('#modal [data-copy-full]'); await settle();
+    const txt = await clip('text/plain');
+    ok(/Куплено у Феррина/.test(txt), 'заметка для игроков не поехала с копией: ' + txt.slice(0, 160));
+    ok(!/Краденое/.test(txt), 'мастерская заметка уехала в копию');
+    /* Цена и количество остаются в списке: в тексте одной вещи им нечего делать */
+    ok(!/750|×1/.test(txt), 'в копию позиции попали цена или количество');
+  }
+
   /* ---------- альтернативные таблицы как все остальные (#8) ---------- */
   console.log('альтернативные таблицы');
   {

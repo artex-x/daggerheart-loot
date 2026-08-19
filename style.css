@@ -617,6 +617,18 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 .altcol.hope{color:var(--hope)}
 .altcol.fear{color:var(--fear)}
 
+/* Бросок по списку свёрнут: место на первом экране дороже, чем кнопка,
+   которой пользуются раз за сессию. Заголовок повторяет вид заметок списка */
+.lroll{padding:0}
+.lroll>summary{display:flex;align-items:center;gap:8px;padding:13px;cursor:pointer;list-style:none}
+.lroll>summary::-webkit-details-marker{display:none}
+.lroll>summary svg{fill:var(--muted2);width:15px;height:15px;flex:none}
+.lroll>summary span{font:650 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)}
+.lroll>summary:hover span{color:var(--gold-soft)}
+.lroll[open]>summary{padding-bottom:4px}
+.lroll>:not(summary){margin-left:13px;margin-right:13px}
+.lroll>:last-child{margin-bottom:13px}
+
 /* #16: подсказка на месте карточки, пока бросок не сделан */
 .rollhint{margin:10px 0 0;font-size:12.5px;color:var(--muted2)}
 
