@@ -1,0 +1,16 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="44" height="74" viewBox="0 0 44 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Fabric">
+<path id="Banner" d="M0 61.0396V0H44V61.0396C44 61.0396 33.5238 60.6215 22 74C10.4762 60.6215 0 61.0396 0 61.0396Z" fill="url(#paint0_linear_0_300)"/>
+<path id="Border" d="M2 2.99439e-05V59C2 59 11.3143 59.0848 22 71C32.6857 59.0848 42 59 42 59V0" stroke="url(#paint1_linear_0_300)" stroke-width="1.25"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_300" x1="22.1134" y1="0" x2="22.1134" y2="74" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FAEE88"/>
+<stop offset="1" stop-color="#EDD050"/>
+</linearGradient>
+<linearGradient id="paint1_linear_0_300" x1="22" y1="0" x2="22" y2="71" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FBEB23"/>
+<stop offset="1" stop-color="#D09101"/>
+</linearGradient>
+</defs>
+</svg>

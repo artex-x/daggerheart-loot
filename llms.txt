@@ -163,6 +163,8 @@ of two or three usually plays better than assigning one each.
   `frame` on `frames`, `comm` on `community`. An empty key means "any", so a
   plain table link carries no `f_` part at all. Links written with the old `_`
   separator are still read
+- `#/print/<id>-<id>-...` — a print sheet of those records as cards, nine to an
+  A4 page at 63x88 mm. Reachable from an item page, a list, or a table selection
 - `#/i/<id>` — one record
 - `#/search` — search
 - `#/l/<payload>` — a list (see below)

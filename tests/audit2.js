@@ -147,7 +147,7 @@ const PAGES = [
 
           document.querySelectorAll('a[href^="#/"]').forEach(a => {
             const h = a.getAttribute('href').slice(2);
-            const known = /^(roll\/(std|alt|wondrous|dread|voa|community)|tables|lists|search|i\/|l\/|lists\/)/.test(h);
+            const known = /^(roll\/(std|alt|wondrous|dread|voa|community)|tables|lists|search|print\/|i\/|l\/|lists\/)/.test(h);
             if (!known) out.badLinks.push(h);
           });
           return out;

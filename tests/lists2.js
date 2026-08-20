@@ -343,6 +343,27 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await page.click('.money .helpbtn'); await settle();
 
 
+    /* Книжный счёт округляет к ближайшему и монет не показывает вовсе: за
+       столом 899 монет - это «девять мешков», а не «восемь мешков девять
+       горстей девять монет», и 804 - просто восемь мешков. Округление второй
+       единицы может её переполнить, и тогда она переносится в старшую. */
+    await go('#/lists/a');
+    const ROUND = [['ci1', 899, '9 мешков'], ['ci2', 894, '8 мешков 9 горстей'],
+                   ['ci3', 804, '8 мешков'], ['ci4', 45, '5 горстей'],
+                   ['ci5', 4, '1 горсть']];
+    for (const [id, gold] of ROUND) {
+      await page.evaluate(function (sel, v) {
+        const inp = document.querySelector(sel);
+        inp.value = String(v);
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+      }, '[data-gold="a:' + id + '"]', gold);
+      await settle();
+    }
+    const said = await Promise.all(ROUND.map(r =>
+      page.$eval('[data-gold="a:' + r[0] + '"]', e => e.title)));
+    ok(said.join(' | ') === ROUND.map(r => r[2]).join(' | '),
+       'книжный счёт округляет иначе: ' + said.join(' | '));
+
     /* Режим едет в ссылке под id «$», которого нет и не может быть ни у одной
        записи: прежний разборщик на таком id делал return, так что старая сборка
        эту ссылку откроет как открывала, просто монетами. Payload собран руками

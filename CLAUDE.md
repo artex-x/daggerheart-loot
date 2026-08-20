@@ -47,6 +47,31 @@ fast machine and flaky on a slow one.
 
 Every defect that gets fixed gets a test - that is a rule here, not a wish.
 
+## Printing (`#/print/<ids>`)
+
+Nine cards to an A4 sheet, 63x88 mm each - the size of a playing card. The card
+follows the printable equipment card from the project's Figma file, and the
+pieces that cannot be redrawn by eye - the tier banner, the burden hands, the
+armour shield, the dice, the ribbon around the stat strip - are the exported
+vectors themselves, in `card/`. Every one has a `-bw` twin with a white fill and
+a dark outline for the black-and-white sheet, and the dice come in a physical
+(gold) and a magic (blue) colour, as they do in the design.
+
+Two modes, and they are two different cards rather than one with a switch: the
+colour sheet keeps the photo and hangs the banner and the hands over it, the
+black-and-white one drops the photo entirely and collects the banner, the type
+chip and the mark into a row above the name.
+
+`fitPrintCards()` runs after render because only the browser knows what fits:
+the rules text steps its font down, then the top padding, and the stat values
+step down separately. Widths there are measured with a `Range` - a value cut by
+`text-overflow` reports the same `scrollWidth` as its box, so overflow is
+invisible to the usual check.
+
+Versatile weapons carry a second stat line in `eq.alt`, parsed once out of the
+property text and pinned by name in `tests/derived.js`. It prints as a second
+strip rather than a sentence.
+
 ## Conventions
 
 - Comments explain **why**, not what the line does.

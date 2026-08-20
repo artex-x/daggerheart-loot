@@ -45,6 +45,8 @@ const S = {
   rp: -20,          // проценты для пакетного пересчёта цен
   guess: false,     // раскрыта ли панель с ориентиром по цене
   moneyHelp: false, // раскрыта ли справка о пересчёте золота
+  printIds: '',     // что печатаем - читается из адреса
+  printBW: false,   // чёрно-белый лист: без картинок и без золота
   keepOpen: {},     // что человек свернул или раскрыл сам - переживает перерисовку
   shared: { ids: [], meta: {} },   // позиции открытого по ссылке чужого списка
   lsel: {},         // выделенные строки открытого списка
@@ -115,11 +117,23 @@ const T = {
     rollHint:'Бросьте кубик и введите результат - или нажмите кнопку', rollBy:'Бросок по списку',
     voaSection:'Раздел книги', voaArtifact:'Артефакты', voaCursed:'Проклятые предметы',
     voaArtifact1:'Артефакт', voaCursed1:'Проклятый предмет', voaRecall:'Стоимость Призыва',
-    guessPrice:'Подсказать цены', batchMoney:'Цены', guessApply:'Проставить эти цены',
+    guessPrice:'Подсказать цены', batchMoney:'Цены',
+    /* Подписи в полосе характеристик короче, чем в интерфейсе: на 63 мм
+       «Характеристика» не помещается, а в макете печатной карты стоит «Черта». */
+    pcDmg:'Урон', pcTrait:'Черта', pcRange:'Дистанция', pcTh:'Пороги', pcArmor:'Броня',
+    thLight:'Лёгкий урон', thMajor:'Ощутимый урон', thSevere:'Тяжёлый урон',
+    printColor:'Цветная', printBW:'Чёрно-белая',
+    print:'Печать', printNow:'Отправить на печать',
+    printLink:'Ссылка на набор', printTitle:'Печать карточек',
+    printHint:'Собрать карточки для печати: девять на лист A4',
+    printSub:'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
+    printNote:'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
+    printEmpty:'Печатать нечего: в адресе не нашлось ни одной вещи.',
+    printFoot:'Лут Daggerheart', guessApply:'Проставить эти цены',
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
     guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
     moneyAs:'Отображение цен', money_coin:'Монетами', money_bag:'Как в книге',
-    moneyHelp:'Корник считает золото <b>горстями, мешками и сундуками</b>: 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Например, 750 — это <b>7 мешков 5 горстей</b>, а 12&nbsp;300 — <b>1 сундук 2 мешка</b>.',
+    moneyHelp:'Корник считает золото <b>горстями, мешками и сундуками</b>: 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Читается она так, как о деньгах говорят за столом — двумя старшими единицами и с округлением до ближайшей: 750 — это <b>7 мешков 5 горстей</b>, 894 — <b>8 мешков 9 горстей</b>, а 899 — уже <b>9 мешков</b>. Монет в этом виде нет вовсе: 804 — просто <b>8 мешков</b>.',
     note:'Заметка', listNote:'Заметки', noteHead:'Заметка',
     notePub:'Для игроков', noteHid:'Только для мастера',
     notePubHint:'уедет с текстом и ссылкой для игроков',
@@ -284,11 +298,21 @@ const T = {
     rollHint:'Roll a die and type the result - or press the button', rollBy:'Roll on this list',
     voaSection:'Section', voaArtifact:'Artifacts', voaCursed:'Cursed objects',
     voaArtifact1:'Artifact', voaCursed1:'Cursed object', voaRecall:'Recall Cost',
-    guessPrice:'Suggest prices', batchMoney:'Prices', guessApply:'Set these prices',
+    guessPrice:'Suggest prices', batchMoney:'Prices',
+    pcDmg:'Damage', pcTrait:'Trait', pcRange:'Range', pcTh:'Thresholds', pcArmor:'Armor',
+    thLight:'Minor damage', thMajor:'Major damage', thSevere:'Severe damage',
+    printColor:'Colour', printBW:'Black and white',
+    print:'Print', printNow:'Send to printer',
+    printLink:'Link to this set', printTitle:'Printing cards',
+    printHint:'Lay these out for printing: nine to an A4 sheet',
+    printSub:'Cards: %n. A4 sheets: %p. Card size 63×88 mm - the size of a playing card.',
+    printNote:'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
+    printEmpty:'Nothing to print: the address holds no items.',
+    printFoot:'Daggerheart Loot', guessApply:'Set these prices',
     guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
     guessNoTier:'nothing to go on', guessNoRarity:'no rarity given', guessDone:'Prices set',
     moneyAs:'Price display', money_coin:'In coins', money_bag:'As in the book',
-    moneyHelp:'The core book counts gold in <b>handfuls, bags and chests</b>: 10 handfuls = 1 bag, 10 bags = 1 chest. Coins are an optional rule where 1 handful = 10 coins, so a bag is 100 and a chest 1000. A price is always typed in coins: the mode only changes how it reads. So 750 is <b>7 bags 5 handfuls</b>, and 12,300 is <b>1 chest 2 bags</b>.',
+    moneyHelp:'The core book counts gold in <b>handfuls, bags and chests</b>: 10 handfuls = 1 bag, 10 bags = 1 chest. Coins are an optional rule where 1 handful = 10 coins, so a bag is 100 and a chest 1000. A price is always typed in coins: the mode only changes how it reads. It reads the way money is spoken of at the table - two units at most, rounded to the nearest: 750 is <b>7 bags 5 handfuls</b>, 894 is <b>8 bags 9 handfuls</b>, and 899 is already <b>9 bags</b>. There are no coins in this reading at all: 804 is simply <b>8 bags</b>.',
     note:'Note', listNote:'Notes', noteHead:'Note',
     notePub:'For players', noteHid:'GM only',
     notePubHint:'travels with the text and the players’ link',
@@ -995,6 +1019,7 @@ function fallback(text, done, failed){
   ok ? done() : failed();
 }
 
+const ICON_PRINT = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M19 8H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3zm-3 11H8v-5h8v5zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z"/></svg>';
 const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
 const ICON_SHARE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.1c.5.5 1.2.8 2 .8a3 3 0 1 0-3-3c0 .3 0 .5.1.7L8 9.9a3 3 0 1 0 0 4.2l7.1 4.2c-.1.2-.1.4-.1.6a2.9 2.9 0 1 0 3-2.8z"/></svg>';
@@ -1211,19 +1236,36 @@ function moneyWord(step, n){
   return step.ru[2];
 }
 /* Две старшие единицы, а не все четыре: «1 сундук 2 мешка» - это цена, а
-   «1 сундук 2 мешка 3 горсти 4 монеты» - это опись. */
+   «1 сундук 2 мешка 3 горсти 4 монеты» - это опись.
+
+   И округление к ближайшему, а не отбрасывание остатка. Книжный счёт - это то,
+   как о деньгах говорят за столом, а за столом 899 монет - это «девять мешков»,
+   а не «восемь мешков девять горстей девять монет». Монет в этом виде нет
+   вовсе: 804 - это восемь мешков, и четыре монеты сверху ничего не добавляют,
+   кроме точности, за которой сюда не приходят. Меньше горсти округляется вверх
+   до горсти - иначе цена в четыре монеты показалась бы пустой строкой.
+
+   Округление второй единицы может её переполнить (8 мешков 10 горстей), и тогда
+   она переносится в старшую: девять мешков. */
 function priceText(coins, mode){
   const n = Math.max(0, Math.round(coins) || 0);
   if (!n) return '';
   if (mode !== 'bag') return n + ' ' + t().goldUnit;
+  const STEPS = MONEY_STEP.filter(function (s) { return s.n >= 10; });
+  /* Сначала округляем сумму до той единицы, на которой строка кончится, и
+     только потом раскладываем: так перенос («10 горстей») получается сам собой
+     и не приходится ловить его отдельно. Шаг округления - вторая единица
+     сверху, а у самой мелкой суммы - она сама. */
+  const top = STEPS.filter(function (s) { return n >= s.n; })[0] || STEPS[STEPS.length - 1];
+  const res = (STEPS[STEPS.indexOf(top) + 1] || top).n;
+  const round = Math.max(res, Math.round(n / res) * res);
   const out = [];
-  let left = n;
-  MONEY_STEP.forEach(function (s) {
-    if (out.length >= 2) return;
-    const v = Math.floor(left / s.n);
-    if (!v) return;
-    out.push(v + ' ' + moneyWord(s, v));
-    left -= v * s.n;
+  let left = round;
+  STEPS.forEach(function (st) {
+    if (out.length >= 2 || left < st.n) return;
+    const v = Math.floor(left / st.n);
+    out.push(v + ' ' + moneyWord(st, v));
+    left -= v * st.n;
   });
   return out.join(' ');
 }
@@ -2851,6 +2893,7 @@ function renderOneList(id){
       '<button type="button" class="btn sm" data-share-gm="' + esc(l.id) + '">' +
         ICON_LINK + esc(t().shareGm) + '</button>' +
       '<button type="button" class="btn sm" data-copy-listtext="' + esc(l.id) + '">' + ICON_COPY + esc(t().copyText) + '</button>' +
+      printBtn(items.map(function (x) { return x.id; }), 'sm') +
       '<button type="button" class="btn sm danger" data-del-list="' + esc(l.id) + '">' + esc(t().del) + '</button>' +
     '</div>' +
     /* Same slot as on the index: under the page header, above the content.
@@ -3088,7 +3131,294 @@ function renderItemPage(id){
         (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
          : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) +
       ' <a class="itemtable" href="' + esc(back) + '">' + esc(t().showInTable) + ICON_EXT + '</a></p>' +
-    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>';
+    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
+    '<div class="card-acts" style="margin-top:16px">' + printBtn([it.id], 'sm') + '</div>';
+}
+
+/* ============================================================
+   PRINT (#20)
+   ============================================================
+   Карточки для стола: девять штук на A4, 63x88 мм - размер игральной карты, под
+   который продаются протекторы и режется картон. Печать одинаково нужна и с
+   карточки одной вещи, и со списка, и из выделения в таблице, поэтому это не
+   кнопка на странице, а свой адрес: `#/print/<id>-<id>-...`. Такой адрес можно
+   отдать другому мастеру, а страница печати не зависит от того, откуда пришли.
+
+   Карта светлая, а не как сайт. Тёмный фон с золотом хорошо смотрится на экране
+   и плохо на бумаге: он съедает картридж и на чёрно-белом принтере превращается
+   в серую кашу, из которой не читается текст. Поэтому лист белый, рамка тонкая,
+   а всё, что на экране различается цветом, на карте различается ещё и словом. */
+const PRINT_MAX = 54;   // шесть листов - дальше браузер начинает думать минутами
+
+function printIds(seg){
+  return (seg || '').split('-').filter(Boolean)
+    .filter(function (id, i, a) { return BY_ID[id] && a.indexOf(id) === i; })
+    .slice(0, PRINT_MAX);
+}
+function printHref(ids){ return '#/print/' + ids.join('-'); }
+
+/* Кнопка печати выглядит одинаково везде, откуда печатают */
+function printBtn(ids, cls){
+  if (!ids.length) return '';
+  return '<a class="btn' + (cls ? ' ' + cls : '') + '" href="' + esc(printHref(ids)) + '"' +
+    ' title="' + esc(t().printHint) + '">' + ICON_PRINT + esc(t().print) + '</a>';
+}
+
+/* ---------- детали карты ----------
+   Лента ранга, ладони хвата, кость и рамка вокруг полосы характеристик - это
+   выгруженные из макета векторы, а не нарисованные заново: у них свои градиенты
+   и своя штриховка, повторить которые на глаз нельзя. Лежат отдельными файлами
+   в `card/`, потому что рамка одна весит два килобайта, и держать её строкой в
+   коде было бы неудобно читать. Открываются и с file://, как всё остальное. */
+const CARD_ART = 'card/';
+/* Знак вида вещи: карта без картинки не должна выглядеть пустой сверху */
+const PRINT_GLYPH = {
+  weapon:    '<path d="M24 1 L29 12 V30 H19 V12 Z M9 32 H39 V36 H9 Z M21 36 H27 V44 H21 Z' +
+             ' M24 41 A4 4 0 1 0 24 49 A4 4 0 1 0 24 41 Z"/>',
+  secondary: '<path d="M24 3 L28 14 V25 H20 V14 Z M13 27 H35 V30 H13 Z M21 30 H27 V45 H21 Z"/>',
+  armor:     '<path d="M24 3 L42 10 V26 C42 36 34 43 24 47 C14 43 6 36 6 26 V10 Z"/>',
+  item:      '<path d="M24 2 L41 18 L24 48 L7 18 Z"/>',
+  cons:      '<path d="M18 4 H30 V14 L38 30 V42 A4 4 0 0 1 34 46 H14 A4 4 0 0 1 10 42 V30 L18 14 Z"/>'
+};
+function printGlyph(kindKey){
+  return '<svg class="pc-glyph" viewBox="0 0 48 50" aria-hidden="true">' +
+    (PRINT_GLYPH[kindKey] || PRINT_GLYPH.item) + '</svg>';
+}
+/* У каждой кости в макете своя форма - шестиугольники разной ширины. Выгружены
+   те три, что стоят на печатных листах и покрывают почти всё снаряжение; для
+   d4, d12 и d20 в макете до нас не дошло ни одной карты, и они рисуются общим
+   шестиугольником обрезкой, пока не появятся свои. */
+const DIE_ART = { d6: 1, d8: 1, d10: 1 };
+
+/* Клетка полосы характеристик: подпись сверху, значение снизу */
+function statBox(label, value){
+  return '<span class="pc-box"><small>' + esc(label) + '</small><b>' + esc(value) + '</b></span>';
+}
+/* Файл детали. Чёрно-белый режим берёт те же формы, но с белой заливкой и
+   тёмным контуром вместо золота: на монохромном принтере градиент - серое
+   пятно, а контур остаётся контуром. */
+function cardArt(name){
+  /* В чёрно-белом у костей нет деления на физический и магический: цвет и был
+     единственным, чем они отличались. */
+  if (S.printBW) name = name.replace(/-(phy|mag)$/, '');
+  return CARD_ART + name + (S.printBW ? '-bw' : '') + '.svg';
+}
+
+/* Полоса урона у оружия: кость, бонус и три клетки. У «Универсального» таких
+   полос две - книга даёт второй набор характеристик прямо в свойстве, и на
+   карте он должен стоять полосой, а не строчкой прозы, как в книге. */
+function dmgStripHTML(e){
+  const m = /^(d\d+)(.*)$/.exec(e.dmg || '');
+  return '<div class="pc-strip"><img class="pc-ribbon" src="' + cardArt('ribbon') + '" alt="">' +
+    '<div class="pc-cells">' +
+      dieHTML(m ? m[1] : (e.dmg || ''), e.dt) +
+      (m && m[2] ? '<span class="pc-bonus">' + esc(m[2]) + '</span>' : '') +
+      statBox(t().pcDmg, eqWord(EQ_DT, e.dt) || '—') +
+      statBox(t().pcTrait, eqWord(EQ_TRAIT, e.tr)) +
+      statBox(t().pcRange, eqWord(EQ_RANGE, e.rg)) +
+    '</div></div>';
+}
+/* Кость урона. Форма своя у каждой кости, а цвет - у типа урона: физический
+   золотой, магический сине-фиолетовый, как в макете. Где формы нет, рисуется
+   общий шестиугольник обрезкой, и цвет тогда тоже общий. */
+function dieHTML(die, dt){
+  const own = DIE_ART[die];
+  const mag = dt === 'mag';
+  return '<span class="pc-die' + (own ? ' own' : '') + (mag ? ' mag' : '') + '">' +
+    (own ? '<img src="' + cardArt('die-' + die + '-' + (mag ? 'mag' : 'phy')) + '" alt="">' : '') +
+    '<b>' + esc(die) + '</b></span>';
+}
+
+/* Полоса брони: три подписи и два порога в тёмных клетках между ними - шкала
+   читается слева направо, от лёгкого урона к тяжёлому. */
+function thStripHTML(e){
+  const th = e.th || ['—', '—'];
+  const lab = function (word, dots) {
+    return '<span class="pc-th-lab"><img src="' + CARD_ART + 'dots' + dots + '.svg" alt="">' +
+      '<small>' + esc(word) + '</small></span>';
+  };
+  const box = function (v) {
+    return '<span class="pc-th-box"><img src="' + cardArt('thbox') + '" alt="">' +
+      '<b>' + esc(String(v)) + '</b></span>' +
+      '<img class="pc-th-arrow" src="' + CARD_ART + 'arrow.svg" alt="">';
+  };
+  return '<div class="pc-thstrip">' +
+    '<img class="pc-ribbon" src="' + CARD_ART + 'thframe.svg" alt="">' +
+    '<div class="pc-cells">' +
+      lab(t().thLight, 1) + box(th[0]) + lab(t().thMajor, 2) + box(th[1]) + lab(t().thSevere, 3) +
+    '</div></div>';
+}
+
+/* Одна карта - по макету печатной карты снаряжения.
+
+   Разметка идёт сверху вниз ровно как там: квадрат картинки во всю ширину,
+   лента ранга слева от него, справа хват у оружия или щит с Показателем Брони
+   у брони, а ниже белый блок с мягким переходом поверх картинки. В блоке - пара
+   плашек, имя прописными, полоса характеристик в рамке, текст правила и подпись
+   с книгой.
+
+   Цепочка улучшений и ссылки на другие карты сюда не едут: карта уезжает на
+   стол к игроку, а «крафтится из» и «см. такую-то карту» - это разговор с
+   мастером за экраном, и на 63 мм ширины он вытесняет само правило. */
+function printCardHTML(it){
+  const eq = isEquip(it) ? it.eq : null;
+  const kindKey = eq ? eq.t : (it.kind === 'consumable' ? 'cons' : 'item');
+  const kind = eq ? eqWord(EQ_TYPE, eq.t)
+                  : (it.kind === 'consumable' ? t().cons : t().item);
+  const artifact = (it.tier === 'A' || it.tier === 'C') && !eq;
+  const tag1 = artifact ? voaTierOne(it.tier) : kind;
+  const tag2 = eq && eq.sub ? eq.sub[S.lang === 'ru' ? 0 : 1]
+             : eq && eq.t === 'weapon' && eq.cls ? eqWord(EQ_CLS, eq.cls)
+             : '';
+  const tier = eq && eq.tier ? String(eq.tier)
+             : (typeof it.tier === 'number' ? String(it.tier) : '');
+  const armor = !!(eq && eq.t === 'armor');
+  const burden = eq && !armor && eq.bu ? eq.bu : 0;
+  const strip = armor ? thStripHTML(eq)
+              : eq ? dmgStripHTML(eq) + (eq.alt ? dmgStripHTML(eq.alt) : '')
+              : '';
+  /* Лента ранга и правый знак - ладони хвата у оружия, щит с Показателем
+     Брони у брони. В цветном режиме они лежат поверх картинки по углам, в
+     чёрно-белом картинки нет, и в макете они собраны в строку над именем
+     вместе с плашкой вида. Поэтому разметка тут ветвится: это две разные
+     карты, а не одна с выключенной картинкой. */
+  const banner = tier
+    ? '<span class="pc-tier"><img src="' + cardArt('banner') + '" alt="">' +
+      '<b>' + esc(tier) + '</b><i>' + esc(t().tier) + '</i></span>'
+    : '';
+  const mark = armor && eq.as != null
+    ? '<span class="pc-shield"><img src="' + cardArt('shield') + '" alt="">' +
+      '<b>' + esc(String(eq.as)) + '</b><i>' + esc(t().pcArmor) + '</i></span>'
+    : burden
+    ? '<span class="pc-burden"><small>' + esc(t().eqBurden) + '</small>' +
+      '<img src="' + cardArt(burden > 1 ? 'hand-used' : 'hand-free') + '" alt="">' +
+      '<img src="' + cardArt('hand-used') + '" alt=""></span>'
+    : '';
+  const tags = '<div class="pc-tags"><span class="pc-tag on">' + esc(tag1) + '</span>' +
+    (tag2 ? '<span class="pc-tag out">' + esc(tag2) + '</span>' : '') + '</div>';
+  return '<article class="pcard ' + eqClassFor(it) + (S.printBW ? ' bw' : '') +
+      '" data-pid="' + esc(it.id) + '">' +
+    (S.printBW ? '' :
+      '<div class="pc-art">' +
+        (hasImage(it) ? '<img class="pc-img" src="' + esc(imgSrc(it)) + '" alt="">'
+                      : printGlyph(kindKey)) +
+      '</div>' + banner + mark) +
+    '<div class="pc-content">' +
+      (S.printBW ? '<div class="pc-head">' + banner + tags + mark + '</div>' : tags) +
+      '<h3 class="pc-name">' + esc(nameOf(it)) + '</h3>' +
+      strip +
+      '<div class="pc-text">' + (descOf(it) ? descHtml(it) : '') + '</div>' +
+      '<div class="pc-bottom"><span>Daggerheart</span><span>' + esc(srcLabel(it)) + '</span></div>' +
+    '</div>' +
+  '</article>';
+}
+/* Вид вещи цветом: у снаряжения он свой на каждый из трёх видов, у добычи -
+   предмет или расходник. На чёрно-белом принтере все они печатаются серым
+   разной плотности, поэтому цвет тут украшение, а вид назван словом на плашке. */
+function eqClassFor(it){
+  return isEquip(it) ? 'pk-' + it.eq.t : 'pk-' + (it.kind === 'consumable' ? 'cons' : 'item');
+}
+
+/* Описания разной длины: у одних три строки, у других двенадцать, а место на
+   карте одно. Шрифт уменьшается шагами, пока текст не влезет; ниже 5.6 пункта
+   читать на бумаге уже неприятно, и там лучше обрезать, чем печатать то, что
+   всё равно не прочтут. Считать это можно только после отрисовки - высоту знает
+   браузер, а не мы. */
+function fitPrintCards(){
+  const list = document.querySelectorAll('.pcard');
+  for (let i = 0; i < list.length; i++) {
+    const card = list[i], el = card.querySelector('.pc-text'),
+          art = card.querySelector('.pc-art'), box = card.querySelector('.pc-content');
+    /* Полоса характеристик - самое тесное место карты: кость, бонус и три
+       значения на 88% ширины. «Очень далеко» рядом с «+7» уже не помещается,
+       и значение молча обрезалось многоточием. Шрифт полосы садится, пока всё
+       не встанет целиком - подписи над значениями при этом не трогаются. */
+    const cells = card.querySelectorAll('.pc-strip .pc-cells');
+    for (let c = 0; c < cells.length; c++) {
+      const vals = cells[c].querySelectorAll('.pc-box b');
+      /* Ширина меряется диапазоном, а не scrollWidth: при `text-overflow`
+         обрезанный текст рапортует ту же ширину, что и коробка, и переполнение
+         так не увидеть. */
+      const rng = document.createRange();
+      const over = function () {
+        for (let v = 0; v < vals.length; v++) {
+          rng.selectNodeContents(vals[v]);
+          /* Запас в два пикселя: на бумаге шрифт растрируется иначе, чем на
+             экране, и подогнанное «впритык» значение всё равно уезжало в
+             многоточие. */
+          if (rng.getBoundingClientRect().width > vals[v].clientWidth - 2) return true;
+        }
+        return false;
+      };
+      let sz = 3;
+      vals.forEach(function (v) { v.style.fontSize = ''; });
+      while (over() && sz > 2.2) {
+        sz -= 0.1;
+        vals.forEach(function (v) { v.style.fontSize = sz.toFixed(1) + 'cqw'; });
+      }
+    }
+    if (!el) continue;
+    el.style.fontSize = '';
+    if (box) box.style.paddingTop = '';
+    const tight = function () { return el.scrollHeight > el.clientHeight + 1; };
+    /* Сначала шрифт до предела читаемости, потом - отступ сверху: у карты с
+       длинным правилом картинка и должна быть меньше, но исчезать совсем ей
+       нельзя, иначе от карты остаётся лист бумаги с текстом. */
+    let pct = 3.5;
+    while (tight() && pct > 3) { pct -= 0.1; el.style.fontSize = pct.toFixed(1) + 'cqw'; }
+    let pad = S.printBW ? 5.8 : 23;
+    while (tight() && pad > (S.printBW ? 3 : 8)) {
+      pad -= 1.5;
+      if (box) box.style.paddingTop = pad + 'cqw';
+      /* Картинка садится вместе с отступом: иначе она остаётся на прежней
+         высоте и оказывается фоном под именем. */
+      if (art) art.style.height = (pad + 74) + 'cqw';
+    }
+    while (tight() && pct > 2.6) { pct -= 0.1; el.style.fontSize = pct.toFixed(1) + 'cqw'; }
+    /* Обрезок картинки под лентой читается как брак печати - лучше без неё */
+    if (art) art.style.display = pad < 16 ? 'none' : '';
+  }
+}
+
+function renderPrint(){
+  const ids = printIds(S.printIds);
+  if (!ids.length)
+    return '<h1 class="page-h">' + esc(t().printTitle) + '</h1>' +
+      '<p class="page-sub">' + esc(t().printEmpty) + '</p>' +
+      '<a class="btn primary" href="#/lists">' + esc(t().lists) + '</a>';
+  const items = ids.map(function (id) { return BY_ID[id]; });
+  /* Пустые места до девяти: без них последняя карта на листе съезжает к краю, а
+     резать проще по полной сетке. */
+  const pad = (9 - items.length % 9) % 9;
+  const pages = [];
+  for (let i = 0; i < items.length; i += 9) pages.push(items.slice(i, i + 9));
+  return '<div class="printbar noprint">' +
+      '<h1 class="page-h">' + esc(t().printTitle) + '</h1>' +
+      '<p class="page-sub">' + esc(t().printSub.replace('%n', String(items.length))
+                                    .replace('%p', String(Math.ceil(items.length / 9)))) + '</p>' +
+      '<div class="card-acts">' +
+        '<button type="button" class="btn primary" data-act="doPrint">' + ICON_PRINT + esc(t().printNow) + '</button>' +
+        '<div class="seg small" role="group" aria-label="' + esc(t().printTitle) + '">' +
+          '<button type="button" data-act="printArt" data-val="color"' +
+            (S.printBW ? '' : ' class="on"') + '>' + esc(t().printColor) + '</button>' +
+          '<button type="button" data-act="printArt" data-val="bw"' +
+            (S.printBW ? ' class="on"' : '') + '>' + esc(t().printBW) + '</button>' +
+        '</div>' +
+        '<button type="button" class="btn" data-act="printLink">' + ICON_LINK + esc(t().printLink) + '</button>' +
+      '</div>' +
+      '<p class="printnote">' + esc(t().printNote) + '</p>' +
+    '</div>' +
+    /* Листы нарезаны заранее, а не отданы на откуп разрыву страниц: браузеры
+       по-разному ломают сетку, и ряд карт то и дело оказывался разрезан краем
+       бумаги пополам. Девять на лист, пустые места добиты - по полной сетке
+       резать ровнее. */
+    pages.map(function (page, i) {
+      return '<div class="psheet' + (S.printBW ? ' bw' : '') + '"' + (i ? ' data-next="1"' : '') + '>' +
+        page.map(printCardHTML).join('') +
+        (i === pages.length - 1
+          ? Array(pad).fill('<div class="pcard blank"></div>').join('') : '') +
+      '</div>';
+    }).join('');
 }
 
 /* ============================================================
@@ -3103,7 +3433,8 @@ const ROUTES = {
   'roll/voa': renderVoa,
   'roll/community': renderComm,
   'tables': renderTables,
-  'search': renderSearch
+  'search': renderSearch,
+  'print': renderPrint
 };
 const TAB_LIST = [
   ['roll/std','std'], ['roll/alt','alt'],
@@ -3136,6 +3467,9 @@ function currentRoute(){
   const h = (location.hash || '').replace(/^#\/?/, '');
   if (h.indexOf('l/' + PACK_MARK) === 0) return 'l/zzzz';   // пока разворачивается
   if (/^i\/[\w-]+$/.test(h)) return h;
+  /* Что печатаем, живёт в адресе, а не в памяти: печать вызывают из трёх мест,
+     и набор должен пережить и перезагрузку, и пересылку другому мастеру. */
+  if (/^print\/[\w-]+$/.test(h)) { S.printIds = h.slice(6); return 'print'; }
   if (/^lists\/[\w-]+$/.test(h)) return h;
   if (/^l\/[A-Za-z0-9_-]+$/.test(h)) return h;
   if (LEGACY_ROUTES[h]) {
@@ -3244,6 +3578,7 @@ function renderSelBar(){
     '<div class="selacts">' +
       addToListBtn('sel', selIds(), true) +
       '<button type="button" class="btn sm" data-act="copySel">' + ICON_COPY + esc(t().copySel) + '</button>' +
+      printBtn(selIds(), 'sm') +
     '</div>' +
   '</div>';
 }
@@ -3353,6 +3688,7 @@ function render(){
   document.documentElement.lang = S.lang;
   restoreOpen();
   autoSizeNotes();
+  if (r === 'print') fitPrintCards();
   restoreFocus(keep);
 
   if (S.tables.anchor && r === 'tables') {
@@ -3759,6 +4095,11 @@ document.addEventListener('click', function (e) {
   }
   if (a === 'menu')     { S.menuFor = S.menuFor === val ? '' : val; render(); return; }
   if (a === 'clearSel') { S.sel = {}; S.menuFor = ''; render(); return; }
+  if (a === 'doPrint')  { window.print(); return; }
+  /* Картинки - выбор человека, а не наш: на цветном принтере они делают карту
+     карточкой, на чёрно-белом превращаются в серое пятно поверх текста. */
+  if (a === 'printArt') { S.printBW = val === 'bw'; render(); return; }
+  if (a === 'printLink'){ copyText(appUrl(printHref(printIds(S.printIds))), t().linkCopied); return; }
   if (a === 'copySel') {
     const items = selIds().map(id => BY_ID[id]).filter(Boolean);
     if (items.length) copyRich(selAsHtml(items), selAsText(items), t().selCopied);
