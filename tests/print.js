@@ -131,8 +131,15 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   console.log('броня');
   await go('#/print/q313');
   ok(!(await page.$('.pc-burden')), 'у брони завелись ладони хвата');
-  ok(/^3/.test(await page.$eval('.pc-shield', e => e.textContent.trim())),
-     'на щите не Показатель Брони');
+  const shield = await page.$eval('.pc-shield', e => e.textContent.trim());
+  ok(/^3/.test(shield), 'на щите не Показатель Брони: ' + shield);
+  /* Слово стоит на самом щите, на тёмной ленте поперёк него, а не подписью
+     под ним: рядом с полосой порогов подпись читалась как отдельная деталь. */
+  ok(/БРОНЯ/i.test(shield), 'на щите нет слова: ' + shield);
+  ok(/shield2(-bw)?\.svg$/.test(await page.$eval('.pc-shield img', e => e.getAttribute('src'))),
+     'щит взят не из макета');
+  const shLab = await page.$eval('.pc-shield i', e => getComputedStyle(e).color);
+  ok(/255, 255, 255/.test(shLab), 'слово на ленте щита не белое: ' + shLab);
   const th = await page.$eval('.pc-thstrip', e => e.textContent);
   ok(/5/.test(th) && /11/.test(th), 'на шкале нет порогов: ' + th);
   ok((await page.$$eval('.pc-th-box', e => e.length)) === 2, 'порогов на шкале не два');

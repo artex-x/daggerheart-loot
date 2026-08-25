@@ -1151,16 +1151,18 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .bw .pc-th-box b{color:#18171C}
 .pc-th-arrow{flex:none;width:1.5cqw;height:auto;margin:0 .2cqw 0 .1cqw}
 
-/* Щит с Показателем Брони - там же, где у оружия ладони хвата */
-.pc-shield{position:absolute;right:6.9cqw;top:5.8cqw;z-index:4;
-  display:block;width:9.4cqw;text-align:center}
+/* Щит с Показателем Брони - там же, где у оружия ладони хвата. Форма взята
+   из компонента макета целиком: двойной кант и тёмная лента поперёк нижней
+   трети, на которой стоит слово. Раньше слово висело подписью под щитом, и
+   рядом с полосой порогов это выглядело как две разные детали. */
+.pc-shield{position:absolute;right:5.4cqw;top:4.4cqw;z-index:4;
+  display:block;width:14cqw}
 .pc-shield img{display:block;width:100%;height:auto}
-/* В выгруженном щите залит только контур, поэтому число тёмное: белым по
-   белому его бы не было видно. */
-.pc-shield b{position:absolute;left:0;top:2.2cqw;width:100%;
-  font:900 4cqw/1 var(--ui);color:#18171C}
-.pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:11cqw;
-  font:800 2.2cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
+.pc-shield b{position:absolute;left:0;top:24%;width:100%;text-align:center;
+  font:900 5.4cqw/1 var(--ui);color:#18171C}
+.pc-shield i{position:absolute;left:0;top:61%;width:100%;text-align:center;
+  font:800 2.4cqw/1 var(--ui);font-style:normal;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff}
 
 /* ---- чёрно-белый лист ----
    Картинок нет, золота нет: те же формы с белой заливкой и тёмным контуром.
