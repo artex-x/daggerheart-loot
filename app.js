@@ -593,10 +593,11 @@ function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
 function eqParts(it, noType){
   if (!isEquip(it)) return [];
   const e = it.eq;
-  /* Vault of Ages подписывает форму вещи: «Основное оружие — Кинжал». Правила
-     за этим никакого не стоит, но это единственное, что отличает кинжал от
-     косы в блоке характеристик, и терять его при переносе не за что. */
-  const type = eqWord(EQ_TYPE, e.t) + (e.sub ? ' — ' + e.sub[S.lang === 'ru' ? 0 : 1] : '');
+  /* Форму вещи - «кинжал», «коса», «лёгкая» - Vault of Ages подписывает для
+     антуража, правила за ней никакого нет. В приложении она только мешала: по
+     ней вещь не отфильтровать, а место класса оружия она занимала, и физическое
+     с магическим у этих девятнадцати вещей не работало вовсе. */
+  const type = eqWord(EQ_TYPE, e.t);
   const out = noType ? [] : [type];
   /* Ранг есть у всего снаряжения. У Wondrous он не напечатан рядом с вещью, но
      выводится однозначно: книга привязывает добычу к локации таблицей «Loot
@@ -3291,9 +3292,7 @@ function printCardHTML(it){
                   : (it.kind === 'consumable' ? t().cons : t().item);
   const artifact = (it.tier === 'A' || it.tier === 'C') && !eq;
   const tag1 = artifact ? voaTierOne(it.tier) : kind;
-  const tag2 = eq && eq.sub ? eq.sub[S.lang === 'ru' ? 0 : 1]
-             : eq && eq.t === 'weapon' && eq.cls ? eqWord(EQ_CLS, eq.cls)
-             : '';
+  const tag2 = eq && eq.t !== 'armor' && eq.cls ? eqWord(EQ_CLS, eq.cls) : '';
   const tier = eq && eq.tier ? String(eq.tier)
              : (typeof it.tier === 'number' ? String(it.tier) : '');
   const armor = !!(eq && eq.t === 'armor');
