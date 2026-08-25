@@ -3288,7 +3288,7 @@ function printCardHTML(it){
       '<b>' + esc(tier) + '</b><i>' + esc(t().tier) + '</i></span>'
     : '';
   const mark = armor && eq.as != null
-    ? '<span class="pc-shield"><img src="' + cardArt('shield2') + '" alt="">' +
+    ? '<span class="pc-shield"><img src="' + cardArt('shield') + '" alt="">' +
       '<b>' + esc(String(eq.as)) + '</b><i>' + esc(t().pcArmor) + '</i></span>'
     : burden
     ? '<span class="pc-burden"><small>' + esc(t().eqBurden) + '</small>' +
