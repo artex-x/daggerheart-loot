@@ -167,6 +167,20 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   }));
   ok(new Set(dots.map(d => d.split('@')[1])).size === 1,
      'ромбы над подписями разной высоты: ' + dots.join(', '));
+  /* Рамка шкалы рисуется рамкой css, а не картинкой: картинка тянулась по
+     высоте (файл вдвое ниже места под неё) и скругления выходили овалами.
+     Признак того, что она вернулась: непустой background-image. */
+  const frame = await page.$eval('.pc-thstrip', function (e) {
+    const c = getComputedStyle(e), r = e.getBoundingClientRect();
+    return { img: c.backgroundImage, rad: parseFloat(c.borderTopLeftRadius),
+             h: r.height, w: r.width };
+  });
+  ok(frame.img === 'none', 'рамка шкалы порогов снова картинка: ' + frame.img);
+  ok(frame.rad <= frame.h / 2 + 0.5,
+     'скругление рамки больше половины высоты: ' + frame.rad + ' при ' + frame.h);
+  /* Клетки свисают за рамку сверху и снизу - так в макете */
+  const thH = await page.$eval('.pc-th-box', e => e.getBoundingClientRect().height);
+  ok(thH > frame.h, 'клетки порогов не выходят за рамку: ' + thH + ' и ' + frame.h);
   ok(!(await page.$('.pc-die')), 'у брони завелась кость урона');
 
   /* У добычи ни того, ни другого */

@@ -3267,8 +3267,10 @@ function thStripHTML(e){
       '<b>' + esc(String(v)) + '</b></span>' +
       '<img class="pc-th-arrow" src="' + CARD_ART + 'arrow.svg" alt="">';
   };
+  /* Рамка тут - обычный прямоугольник со скруглением, и рисуется она рамкой
+     css. Картинкой она тянулась по высоте: файл 297x27, а место под неё вдвое
+     выше, и скругления выходили овалами. */
   return '<div class="pc-thstrip">' +
-    '<img class="pc-ribbon" src="' + CARD_ART + 'thframe.svg" alt="">' +
     '<div class="pc-cells">' +
       lab(t().thLight, 1) + box(th[0]) + lab(t().thMajor, 2) + box(th[1]) + lab(t().thSevere, 3) +
     '</div></div>';

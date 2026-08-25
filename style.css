@@ -1135,28 +1135,25 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 
 /* Полоса характеристик: рамка - выгруженный вектор, ячейки поверх неё */
 .pc-strip{position:relative;height:14cqw;margin:1.2cqw 0 .6cqw}
-/* Полоса брони: подписи и пороги в одной рамке, шкала слева направо */
-.pc-thstrip{position:relative;height:13cqw;margin:1.2cqw 0 .6cqw}
-.pc-thstrip .pc-ribbon{left:0;width:100%}
-.pc-thstrip .pc-cells{gap:.4cqw;padding:0 1.6cqw;justify-content:space-between}
-/* Подписи одинаковой ширины и в две строки: на 63 мм три подписи и два порога
-   в одну строку не встают, и «тяжёлый урон» налезал на стрелку. */
+/* Полоса брони: одна рамка со скруглением, в ней три подписи и два порога.
+   Пропорции с карты из макета: широкая и низкая, клетки порогов чуть выше
+   рамки и наезжают на неё сверху и снизу. */
+.pc-thstrip{position:relative;height:9cqw;margin:1.6cqw 0 .8cqw;
+  border:.28cqw solid #75788A;border-radius:2.4cqw}
+.pc-thstrip .pc-cells{gap:0;padding:0 1.6cqw;justify-content:space-between}
+/* Подпись в две строки, как в макете: в одну она растягивает клетку, и ромбы
+   над ней съезжают вбок от её середины. */
 .pc-th-lab{flex:1 1 0;min-width:0;max-width:13cqw;text-align:center;line-height:1}
-/* Ромбов над подписью один, два или три, и файлы у них разной ширины. Задавать
-   всем одну ширину значило растянуть одиночный ромб и сплющить тройку - они
-   выходили разного размера. Высота у всех трёх одна, поэтому размер задаётся
-   ею, а ширина идёт следом. */
-.pc-th-lab img{display:block;width:auto;height:1.3cqw;margin:0 auto .5cqw}
-/* Подпись в две строки, как в макете: «ЛЁГКИЙ / УРОН» - иначе на 63 мм три
-   подписи и два порога не встают в одну строку и налезают друг на друга. */
+/* Ромбов один, два или три, и высота у них общая - по ней и задаётся размер */
+.pc-th-lab img{display:block;width:auto;height:1.2cqw;margin:0 auto .4cqw}
 .pc-th-lab small{display:block;font:800 1.9cqw/1.15 var(--ui);letter-spacing:.03em;
   text-transform:uppercase;color:#18171C;white-space:normal}
-.pc-th-box{position:relative;flex:none;width:7.6cqw;height:7.6cqw;
+.pc-th-box{position:relative;flex:none;width:9.6cqw;height:9.6cqw;
   display:flex;align-items:center;justify-content:center}
 .pc-th-box img{position:absolute;inset:0;width:100%;height:100%}
-.pc-th-box b{position:relative;z-index:2;font:900 3cqw/1 var(--ui);color:#fff}
+.pc-th-box b{position:relative;z-index:2;font:900 3.4cqw/1 var(--ui);color:#fff}
 .bw .pc-th-box b{color:#18171C}
-.pc-th-arrow{flex:none;width:1.5cqw;height:auto;margin:0 .2cqw 0 .1cqw}
+.pc-th-arrow{flex:none;width:1.5cqw;height:auto;margin:0 .4cqw 0 .2cqw}
 
 /* Щит с Показателем Брони - там же, где у оружия ладони хвата. Форма взята с
    карты брони из макета; собрать её как в мокапе к задаче #40 - с лентой
