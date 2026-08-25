@@ -1,16 +1,1 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="36.25" height="34.75" viewBox="0 0 36.25 34.75" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Vector">
-<path d="M18.125 0.875L35.375 14.2534V19.6047L18.125 33.875L0.875 19.6047V14.2534L18.125 0.875Z" fill="#fff"/>
-<path d="M18.125 33.875L35.375 19.6047V14.2534L18.125 0.875L0.875 14.2534V19.6047L18.125 33.875ZM18.125 0.875L27.2039 16.0372M18.125 0.875L9.04605 16.0372M35.375 19.6047L27.2039 16.0372M18.125 33.875V21.3885M0.875 19.6047L9.04605 16.0372M27.2039 16.0372L18.125 21.3885M18.125 21.3885L9.04605 16.0372" stroke="#18171C" stroke-width="1.75" stroke-linejoin="round"/>
-</g>
-<defs>
-<linearGradient id="paint0_linear_0_474" x1="18.2139" y1="0.875" x2="18.2139" y2="33.875" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FEFBD5"/>
-<stop offset="1" stop-color="#F7EF83"/>
-</linearGradient>
-<linearGradient id="paint1_linear_0_474" x1="18.125" y1="0.875" x2="18.125" y2="33.875" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FBEB23"/>
-<stop offset="1" stop-color="#D09101"/>
-</linearGradient>
-</defs>
-</svg>
+<svg width="36.25" height="34.75" viewBox="0 0 36.25 34.75" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.125 0.875L35.375 14.2534V19.6047L18.125 33.875L0.875 19.6047V14.2534L18.125 0.875Z" fill="#fff" stroke="#18171C" stroke-width="1.75" stroke-linejoin="round"/></svg>

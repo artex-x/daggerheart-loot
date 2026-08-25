@@ -1193,11 +1193,14 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Ряду нужен низ под подписи «ХВАТ» и «БРОНЯ», иначе они лезут на имя */
 .pc-head{padding-bottom:3cqw}
 .pc-tag.on{background:linear-gradient(180deg,#fcec9c 10%,#edc659 100%)}
-.bw .pc-tag.on{background:#18171C;color:#fff}
+/* В макете плашка вида в чёрно-белом серо-синяя, а не чёрная: рядом с чёрным
+   именем и чёрной рамкой сплошной чёрный делал шапку тяжелее самой карточки. */
+.bw .pc-tag.on{background:#75788A;color:#fff}
 .pc-ribbon{position:absolute;left:-1cqw;top:0;width:88cqw;height:100%;display:block}
+/* Слева отступ под рамку: кость крупная, и без него она вылезала за неё */
 .pc-cells{
   position:absolute;inset:0;z-index:2;
-  display:flex;align-items:center;gap:.9cqw;padding-left:.4cqw;
+  display:flex;align-items:center;gap:.9cqw;padding-left:1.2cqw;
 }
 /* Шестиугольник с костью: тёмный кант и светлая заливка внутри. Рисуется
    обрезкой, а не картинкой - у выгруженной детали внутри своя штриховка, из-за
@@ -1212,17 +1215,23 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .bw .pc-die{background:#18171C}
 .bw .pc-die::before{background:#fff}
 .pc-die b{position:relative;z-index:2;font:900 3.2cqw/1 var(--ui);color:#18171C}
-/* Треугольник d4 весом смещён влево, и число, поставленное по центру коробки,
-   висело у самого острия. Двигаем его к середине самой фигуры. */
-.pc-die.own[data-die="d4"] b{margin-left:-1.6cqw}
+/* У d4 треугольник смотрит остриём вправо, и его тяжёлая часть - слева.
+   Число, поставленное по центру клетки, оказывалось на самом острие. */
+.pc-die.own[data-die="d4"] b{margin-left:-1.8cqw;font-size:2.5cqw}
 /* На синей кости число белое, на золотой - тёмное. В чёрно-белом синей кости
    нет: там та же форма с белой заливкой, и белое число на ней исчезало. */
 .pcard:not(.bw) .pc-die.mag.own b{color:#fff}
 /* Где форма кости выгружена, она и рисуется - обрезка тогда не нужна */
-.pc-die.own{clip-path:none;background:none;width:11cqw;padding:0}
+/* Клетка кости квадратная, а фигура вписывается в неё целиком. Раньше фигура
+   тянулась по высоте, а ширина шла следом: у почти квадратных d4 и d12 она
+   выходила узкой, и трёхзначная подпись вылезала за грани. */
+.pc-die.own{clip-path:none;background:none;width:9.8cqw;height:9.8cqw;padding:0}
 .pc-die.own::before{display:none}
-.pc-die.own img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:auto;height:100%;max-width:none}
+.pc-die.own img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+/* «d10», «d12», «d20» - на символ длиннее, и внутри фигуры им нужен свой размер */
+.pc-die.own[data-die="d10"] b,
+.pc-die.own[data-die="d12"] b,
+.pc-die.own[data-die="d20"] b{font-size:2.7cqw}
 /* Бонус урона стоит рядом с костью, а не поверх неё: «d6 +2» читается, а
    цифра в углу шестиугольника - нет. Отрицательного отступа тут больше нет:
    с ним бонус налезал на подпись «УРОН» соседней клетки. */
