@@ -93,6 +93,19 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(/Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
      'в полосе характеристик нет черты или дистанции: ' + parts.cells);
   ok(parts.hands === 2, 'ладоней хвата не две: ' + parts.hands);
+
+  /* Ладони - пара, левая и правая: правая стояла дважды, и хват в две руки
+     выглядел как две правые ладони. Занятость - это заливка, а не форма. */
+  const hands = () => page.$$eval('.pc-burden img',
+    e => e.map(x => x.getAttribute('src').replace(/^.*\//, '')));
+  await go('#/print/w51');                              // хват в две руки
+  let hh = await hands();
+  ok(/-l-/.test(hh[0]) && /-r-/.test(hh[1]), 'ладони не пара: ' + hh.join(' и '));
+  ok(hh.every(h => /-used/.test(h)), 'при хвате в две руки ладонь свободна: ' + hh.join(' и '));
+  await go('#/print/w7');                               // хват в одну
+  hh = await hands();
+  ok(/-l-free/.test(hh[0]) && /-r-used/.test(hh[1]),
+     'при хвате в одну руку не одна свободная ладонь: ' + hh.join(' и '));
   ok(/Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
      'в подписи нет книги: ' + parts.bottom);
   /* У вещи сообщества подпись называет книгу, а не только само сообщество:

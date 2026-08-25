@@ -3315,9 +3315,12 @@ function printCardHTML(it){
     ? '<span class="pc-shield"><img src="' + cardArt('shield') + '" alt="">' +
       '<b>' + esc(String(eq.as)) + '</b><i>' + esc(t().pcArmor) + '</i></span>'
     : burden
+    /* Пара ладоней, левая и правая: раньше правая стояла дважды, и хват в две
+       руки выглядел как две правые ладони. Занятая ладонь тёмная, свободная -
+       золотая, но форма у каждой своя. */
     ? '<span class="pc-burden"><small>' + esc(t().eqBurden) + '</small>' +
-      '<img src="' + cardArt(burden > 1 ? 'hand-used' : 'hand-free') + '" alt="">' +
-      '<img src="' + cardArt('hand-used') + '" alt=""></span>'
+      '<img src="' + cardArt(burden > 1 ? 'hand-l-used' : 'hand-l-free') + '" alt="">' +
+      '<img src="' + cardArt('hand-r-used') + '" alt=""></span>'
     : '';
   const tags = '<div class="pc-tags"><span class="pc-tag on">' + esc(tag1) + '</span>' +
     (tag2 ? '<span class="pc-tag out">' + esc(tag2) + '</span>' : '') + '</div>';
