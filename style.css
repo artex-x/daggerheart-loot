@@ -1139,7 +1139,11 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Подписи одинаковой ширины и в две строки: на 63 мм три подписи и два порога
    в одну строку не встают, и «тяжёлый урон» налезал на стрелку. */
 .pc-th-lab{flex:1 1 0;min-width:0;max-width:13cqw;text-align:center;line-height:1}
-.pc-th-lab img{display:block;width:5.5cqw;height:auto;margin:0 auto .4cqw}
+/* Ромбов над подписью один, два или три, и файлы у них разной ширины. Задавать
+   всем одну ширину значило растянуть одиночный ромб и сплющить тройку - они
+   выходили разного размера. Высота у всех трёх одна, поэтому размер задаётся
+   ею, а ширина идёт следом. */
+.pc-th-lab img{display:block;width:auto;height:1.3cqw;margin:0 auto .5cqw}
 /* Подпись в две строки, как в макете: «ЛЁГКИЙ / УРОН» - иначе на 63 мм три
    подписи и два порога не встают в одну строку и налезают друг на друга. */
 .pc-th-lab small{display:block;font:800 1.9cqw/1.15 var(--ui);letter-spacing:.03em;

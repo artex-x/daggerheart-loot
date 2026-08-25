@@ -143,6 +143,15 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   const th = await page.$eval('.pc-thstrip', e => e.textContent);
   ok(/5/.test(th) && /11/.test(th), 'на шкале нет порогов: ' + th);
   ok((await page.$$eval('.pc-th-box', e => e.length)) === 2, 'порогов на шкале не два');
+  /* Обе клетки порога одного размера, сколько бы цифр в них ни стояло */
+  const thBox = await page.$$eval('.pc-th-box', e => e.map(x => Math.round(x.getBoundingClientRect().width)));
+  ok(thBox[0] === thBox[1], 'клетки порогов разной ширины: ' + thBox.join(' и '));
+  /* И ромбы над подписями: их один, два или три, но сам ромб один и тот же */
+  const dots = await page.$$eval('.pc-th-lab img', e => e.map(x => {
+    const r = x.getBoundingClientRect(); return +(r.width / r.height).toFixed(2) + '@' + Math.round(r.height);
+  }));
+  ok(new Set(dots.map(d => d.split('@')[1])).size === 1,
+     'ромбы над подписями разной высоты: ' + dots.join(', '));
   ok(!(await page.$('.pc-die')), 'у брони завелась кость урона');
 
   /* У добычи ни того, ни другого */
