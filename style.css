@@ -1087,8 +1087,11 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 
 /* Квадрат картинки во всю ширину сверху - белый, а не цветной: в макете вещь
    лежит на бумаге, а не в тёмном окне. */
+/* Начинается ниже ленты ранга и подписи хвата: у наших вещей снимок, а не
+   вырезка по белому, как в макете, и высокая картинка заезжала под них -
+   «ХВАТ» читался поверх фотографии. */
 .pc-art{
-  position:absolute;left:0;right:0;top:0;height:100cqw;z-index:1;
+  position:absolute;left:0;right:0;top:22cqw;height:78cqw;z-index:1;
   display:flex;align-items:center;justify-content:center;overflow:hidden;
 }
 .pc-img{width:62%;height:auto;max-height:88%;object-fit:contain;display:block}

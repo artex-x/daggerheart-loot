@@ -3373,7 +3373,7 @@ function fitPrintCards(){
       if (box) box.style.paddingTop = pad + 'cqw';
       /* Картинка садится вместе с отступом: иначе она остаётся на прежней
          высоте и оказывается фоном под именем. */
-      if (art) art.style.height = (pad + 74) + 'cqw';
+      if (art) art.style.height = Math.max(0, pad + 52) + 'cqw';
     }
     while (tight() && pct > 2.6) { pct -= 0.1; el.style.fontSize = pct.toFixed(1) + 'cqw'; }
     /* Обрезок картинки под лентой читается как брак печати - лучше без неё */
