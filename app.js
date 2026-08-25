@@ -129,6 +129,7 @@ const T = {
     printSub:'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
     printNote:'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
     printEmpty:'Печатать нечего: в адресе не нашлось ни одной вещи.',
+    back:'Назад',
     printTooMany:'За один раз печатается %n карточек, остальные %d в лист не попали. Разделите набор на части.',
     printFoot:'Лут Daggerheart', guessApply:'Проставить эти цены',
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
@@ -309,6 +310,7 @@ const T = {
     printSub:'Cards: %n. A4 sheets: %p. Card size 63×88 mm - the size of a playing card.',
     printNote:'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
     printEmpty:'Nothing to print: the address holds no items.',
+    back:'Back',
     printTooMany:'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
     printFoot:'Daggerheart Loot', guessApply:'Set these prices',
     guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
@@ -1021,6 +1023,7 @@ function fallback(text, done, failed){
   ok ? done() : failed();
 }
 
+const ICON_BACK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>';
 const ICON_PRINT = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M19 8H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3zm-3 11H8v-5h8v5zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z"/></svg>';
 const ICON_COPY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
 const ICON_IMG   = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="flex:none"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>';
@@ -3405,6 +3408,10 @@ function renderPrint(){
       '<p class="page-sub">' + esc(t().printSub.replace('%n', String(items.length))
                                     .replace('%p', String(Math.ceil(items.length / 9)))) + '</p>' +
       '<div class="card-acts">' +
+        /* Печать заменяет собой страницу, с которой пришли, и вернуться было
+           некуда: адрес печати - свой, и «назад» в браузере тоже свой. Кнопка
+           делает ровно шаг назад по истории, то есть туда, откуда пришли. */
+        '<button type="button" class="btn" data-act="printBack">' + ICON_BACK + esc(t().back) + '</button>' +
         '<button type="button" class="btn primary" data-act="doPrint">' + ICON_PRINT + esc(t().printNow) + '</button>' +
         '<div class="seg small" role="group" aria-label="' + esc(t().printTitle) + '">' +
           '<button type="button" data-act="printArt" data-val="color"' +
@@ -4109,6 +4116,11 @@ document.addEventListener('click', function (e) {
   if (a === 'menu')     { S.menuFor = S.menuFor === val ? '' : val; render(); return; }
   if (a === 'clearSel') { S.sel = {}; S.menuFor = ''; render(); return; }
   if (a === 'doPrint')  { window.print(); return; }
+  /* Если печать открыли по ссылке и истории нет, шагать некуда - тогда к спискам */
+  if (a === 'printBack') {
+    if (history.length > 1) history.back(); else location.hash = '#/lists';
+    return;
+  }
   /* Картинки - выбор человека, а не наш: на цветном принтере они делают карту
      карточкой, на чёрно-белом превращаются в серое пятно поверх текста. */
   if (a === 'printArt') { S.printBW = val === 'bw'; render(); return; }

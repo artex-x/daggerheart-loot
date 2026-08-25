@@ -229,6 +229,17 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   }).length);
   ok(shrunk > 0, 'ни одна длинная карта не ужалась - правило не сработало');
 
+  /* Печать заменяет собой страницу, с которой пришли: без кнопки «назад»
+     возвращаться было некуда, кроме как через историю браузера. */
+  console.log('дорога назад');
+  await go('#/tables/core_item');
+  await page.click('.rows .row .selbox input'); await settle();
+  await page.click('#selBar a[href^="#/print/"]'); await settle();
+  ok(await page.$('[data-act="printBack"]'), 'с печати нет дороги назад');
+  await page.click('[data-act="printBack"]'); await settle();
+  ok(/#\/tables\/core_item/.test(await page.evaluate(() => location.hash)),
+     'кнопка «назад» увела не туда, откуда пришли: ' + (await page.evaluate(() => location.hash)));
+
   /* ---------- откуда печатают ----------
      Три места: карточка вещи, список и полоса выделения в таблице. */
   console.log('точки входа');
