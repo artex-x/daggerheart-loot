@@ -1969,6 +1969,10 @@ function cardHTML(it, opt){
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         (hasImage(it) ? actBtn('copy-img', it.id, ICON_IMG, t().sImg, false, t().copyImg) : '') +
         actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
+        /* Печать - такое же действие над этой вещью, как отправить или
+           скопировать, и стоять она должна там же. Отдельной строкой под
+           карточкой она читалась как чужая кнопка, приклеенная снизу. */
+        (opt.full ? printBtn([it.id], 'sm') : '') +
       '</div>' +
       (opt.full ? listPicker(it) : '') +
     '</div>' +
@@ -3136,8 +3140,7 @@ function renderItemPage(id){
         (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
          : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) +
       ' <a class="itemtable" href="' + esc(back) + '">' + esc(t().showInTable) + ICON_EXT + '</a></p>' +
-    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>' +
-    '<div class="card-acts" style="margin-top:16px">' + printBtn([it.id], 'sm') + '</div>';
+    '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>';
 }
 
 /* ============================================================

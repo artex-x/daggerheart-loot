@@ -246,6 +246,10 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await go('#/i/q1');
   ok((await page.$eval('a[href^="#/print/"]', e => e.getAttribute('href'))) === '#/print/q1',
      'со страницы вещи печатается не она');
+  /* И стоит она в одном ряду с «отправить» и «текст», а не отдельной строкой
+     под карточкой: это действие над той же вещью. */
+  ok(await page.$('.card.full .card-acts a[href^="#/print/"]'),
+     'кнопка печати оторвана от карточки');
 
   await go('#/tables/core_item');
   await page.click('.rows .row .selbox input'); await settle();
