@@ -2458,7 +2458,10 @@ function renderTables(){
         const sub = list.filter(x => x.community === c[0]);
         if (!sub.length) return '';
         return '<div class="tsection" id="' + sectionId(c[0]) + '" style="margin-top:22px">' +
-          sectionHead(S.lang === 'ru' ? c[1] + ' · ' + c[0] : c[0], st.t, c[0]) +
+          /* Имя сообщества - имя собственное, и в заголовке стоит одно: то,
+             которое подходит выбранному языку. Пара «Великородное · Highborne»
+             дублировала одно и то же для тех, кто и так выбрал язык. */
+          sectionHead(S.lang === 'ru' ? c[1] : c[0], st.t, c[0]) +
           renderList(sub) + '</div>';
       }).join('');
     } else {
@@ -3129,7 +3132,7 @@ function renderItemPage(id){
   const grp = groupOf(tid);
   const sub = SUB_LABEL[tid];
   const where = it.src === 'community'
-    ? (S.lang === 'ru' ? it.community_ru + ' · ' + it.community : it.community)
+    ? (S.lang === 'ru' ? (it.community_ru || it.community) : it.community)
     : (S.lang === 'ru' ? grp.ru : grp.en) + (sub ? ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) : '');
   /* Ссылка ведёт прямо на строку этой вещи, а не на раздел: «открыть таблицу» и
      потом искать её глазами среди сотни - это не ответ на вопрос «где она». */

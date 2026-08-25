@@ -619,6 +619,12 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await openF();
     ok(!(await page.$('[data-val^="kind:"]')), 'у таблицы сообществ завёлся фильтр вида');
     ok(await page.$('[data-val^="comm:"]'), 'у таблицы сообществ нет фильтра по сообществу');
+    /* Имя сообщества - имя собственное, и в заголовке оно одно: то, которое
+       подходит выбранному языку. Пара «Великородное · Highborne» повторяла одно
+       и то же тому, кто язык уже выбрал. */
+    const commHeads = await page.$$eval('.tsec-head .lbl', e => e.map(x => x.textContent.trim()));
+    ok(commHeads.length > 5 && !commHeads.some(h => /·/.test(h)),
+       'в заголовке сообщества всё ещё два имени: ' + commHeads.slice(0, 3).join(' | '));
 
     await go('#/tables/wondrous');
     await openF();
