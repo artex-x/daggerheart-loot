@@ -1064,6 +1064,9 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
    системе, с тем же начертанием и той же насыщенностью. */
 .printbar{margin-bottom:18px}
 .printnote{margin:12px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted2);max-width:62ch}
+/* Сказать, что часть набора не поместилась, надо заметно: молчаливая обрезка -
+   это как раз то, из-за чего половина списка пропадала незамеченной. */
+.printnote.warnnote{color:var(--danger);font-weight:600}
 
 .psheet{
   box-sizing:border-box;width:210mm;height:297mm;padding:14.5mm 8.5mm;

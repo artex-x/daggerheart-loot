@@ -56,6 +56,21 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(heights.length === 3, 'двадцать карт легли не на три листа: ' + heights.length);
   ok(heights.every(h => Math.abs(h / (96 / 25.4) - 297) < 0.6), 'какой-то лист не A4: ' + heights);
 
+  /* Весь Wondrous разом - 119 карточек - помещается: прежний предел в 54
+     обрезал ровно этот случай, и обрезал молча. */
+  console.log('большой набор');
+  const many = await page.evaluate(() => window.LOOT.items.wondrous.map(x => x.id));
+  await go('#/print/' + many.join('-'));
+  ok((await page.$$eval('.pcard:not(.blank)', e => e.length)) === many.length,
+     'весь Wondrous не поместился: ' + (await page.$$eval('.pcard:not(.blank)', e => e.length)) +
+     ' из ' + many.length);
+  ok(!(await page.$('.warnnote')), 'предупреждение об обрезке на наборе, который поместился');
+  /* А если всё-таки не влезло - об этом говорят, а не отбрасывают втихую */
+  const tooMany = many.concat(await page.evaluate(() => window.LOOT.items.voa.map(x => x.id)))
+                      .concat(await page.evaluate(() => window.LOOT.items.community.map(x => x.id)));
+  await go('#/print/' + tooMany.join('-'));
+  ok(await page.$('.warnnote'), 'набор обрезан молча, без предупреждения');
+
   /* ---------- вёрстка карты ----------
      По макету печатной карты: лента ранга, ладони хвата, пара плашек, имя
      прописными, полоса характеристик в рамке, текст, подпись с книгой. */

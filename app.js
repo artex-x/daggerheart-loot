@@ -129,6 +129,7 @@ const T = {
     printSub:'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
     printNote:'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
     printEmpty:'Печатать нечего: в адресе не нашлось ни одной вещи.',
+    printTooMany:'За один раз печатается %n карточек, остальные %d в лист не попали. Разделите набор на части.',
     printFoot:'Лут Daggerheart', guessApply:'Проставить эти цены',
     guessWhy:'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
     guessNoTier:'нечем оценить', guessNoRarity:'редкость не указана', guessDone:'Цены проставлены',
@@ -308,6 +309,7 @@ const T = {
     printSub:'Cards: %n. A4 sheets: %p. Card size 63×88 mm - the size of a playing card.',
     printNote:'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
     printEmpty:'Nothing to print: the address holds no items.',
+    printTooMany:'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
     printFoot:'Daggerheart Loot', guessApply:'Set these prices',
     guessWhy:'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
     guessNoTier:'nothing to go on', guessNoRarity:'no rarity given', guessDone:'Prices set',
@@ -3148,13 +3150,16 @@ function renderItemPage(id){
    и плохо на бумаге: он съедает картридж и на чёрно-белом принтере превращается
    в серую кашу, из которой не читается текст. Поэтому лист белый, рамка тонкая,
    а всё, что на экране различается цветом, на карте различается ещё и словом. */
-const PRINT_MAX = 54;   // шесть листов - дальше браузер начинает думать минутами
+/* Двадцать листов. Предел нужен - на паре сотен карт браузер задумывается
+   надолго, - но прежние шесть листов резали обычный случай: в Wondrous 119
+   вещей, «выбрать все» давало ровно его, и лишние отваливались молча. */
+const PRINT_MAX = 180;
 
-function printIds(seg){
+function printAsked(seg){
   return (seg || '').split('-').filter(Boolean)
-    .filter(function (id, i, a) { return BY_ID[id] && a.indexOf(id) === i; })
-    .slice(0, PRINT_MAX);
+    .filter(function (id, i, a) { return BY_ID[id] && a.indexOf(id) === i; });
 }
+function printIds(seg){ return printAsked(seg).slice(0, PRINT_MAX); }
 function printHref(ids){ return '#/print/' + ids.join('-'); }
 
 /* Кнопка печати выглядит одинаково везде, откуда печатают */
@@ -3382,7 +3387,9 @@ function fitPrintCards(){
 }
 
 function renderPrint(){
-  const ids = printIds(S.printIds);
+  const asked = printAsked(S.printIds);
+  const ids = asked.slice(0, PRINT_MAX);
+  const dropped = asked.length - ids.length;
   if (!ids.length)
     return '<h1 class="page-h">' + esc(t().printTitle) + '</h1>' +
       '<p class="page-sub">' + esc(t().printEmpty) + '</p>' +
@@ -3407,6 +3414,11 @@ function renderPrint(){
         '</div>' +
         '<button type="button" class="btn" data-act="printLink">' + ICON_LINK + esc(t().printLink) + '</button>' +
       '</div>' +
+      (dropped
+        ? '<p class="printnote warnnote">' +
+          esc(t().printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(dropped))) +
+          '</p>'
+        : '') +
       '<p class="printnote">' + esc(t().printNote) + '</p>' +
     '</div>' +
     /* Листы нарезаны заранее, а не отданы на откуп разрыву страниц: браузеры
