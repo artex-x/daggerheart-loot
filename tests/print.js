@@ -107,6 +107,17 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   const md = await page.$$eval('.pc-die img', e => e.map(x => x.getAttribute('src')));
   ok(/die-d6-mag\.svg$/.test(md[0]), 'у магического d6 не магическая кость: ' + md[0]);
   ok(await page.$('.pc-die.mag'), 'магическая кость не помечена классом');
+  /* У каждой кости своя форма, и ни одна не рисуется общим шестиугольником:
+     d4 и d12 когда-то попадали именно в него и выглядели чужими. */
+  const DICE = [['q241','d4'],['q13','d6'],['q1','d8'],['q2','d10'],['q6','d12'],['q143','d20']];
+  for (const [id, die] of DICE) {
+    await go('#/print/' + id);
+    const src = await page.$eval('.pc-die img', e => e.getAttribute('src'));
+    ok(new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src),
+       die + ' взял чужую форму: ' + src);
+    ok(await page.$('.pc-die.own'), die + ' нарисован общим шестиугольником');
+  }
+
   /* Значения в полосе не обрезаются многоточием: они ужимаются шрифтом */
   await go('#/print/q129');
   const cut = await page.$$eval('.pc-box b', e => e.filter(function (x) {

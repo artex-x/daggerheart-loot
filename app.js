@@ -3184,11 +3184,11 @@ function printGlyph(kindKey){
   return '<svg class="pc-glyph" viewBox="0 0 48 50" aria-hidden="true">' +
     (PRINT_GLYPH[kindKey] || PRINT_GLYPH.item) + '</svg>';
 }
-/* У каждой кости в макете своя форма - шестиугольники разной ширины. Выгружены
-   те три, что стоят на печатных листах и покрывают почти всё снаряжение; для
-   d4, d12 и d20 в макете до нас не дошло ни одной карты, и они рисуются общим
-   шестиугольником обрезкой, пока не появятся свои. */
-const DIE_ART = { d6: 1, d8: 1, d10: 1 };
+/* У каждой кости в макете своя форма: d4 - треугольник, дальше многоугольники
+   со своими гранями. Формы взяты из компонентов макета, цвет - из типа урона.
+   Кость, которой в наборе нет, рисуется общим шестиугольником обрезкой: это
+   заметно хуже, чем своя форма, но лучше пустого места. */
+const DIE_ART = { d4: 1, d6: 1, d8: 1, d10: 1, d12: 1, d20: 1 };
 
 /* Клетка полосы характеристик: подпись сверху, значение снизу */
 function statBox(label, value){
@@ -3224,7 +3224,8 @@ function dmgStripHTML(e){
 function dieHTML(die, dt){
   const own = DIE_ART[die];
   const mag = dt === 'mag';
-  return '<span class="pc-die' + (own ? ' own' : '') + (mag ? ' mag' : '') + '">' +
+  return '<span class="pc-die' + (own ? ' own' : '') + (mag ? ' mag' : '') +
+    '" data-die="' + esc(die) + '">' +
     (own ? '<img src="' + cardArt('die-' + die + '-' + (mag ? 'mag' : 'phy')) + '" alt="">' : '') +
     '<b>' + esc(die) + '</b></span>';
 }
