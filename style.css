@@ -1205,8 +1205,9 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Треугольник d4 весом смещён влево, и число, поставленное по центру коробки,
    висело у самого острия. Двигаем его к середине самой фигуры. */
 .pc-die.own[data-die="d4"] b{margin-left:-1.6cqw}
-/* На синей кости число белое, на золотой - тёмное */
-.pc-die.mag.own b{color:#fff}
+/* На синей кости число белое, на золотой - тёмное. В чёрно-белом синей кости
+   нет: там та же форма с белой заливкой, и белое число на ней исчезало. */
+.pcard:not(.bw) .pc-die.mag.own b{color:#fff}
 /* Где форма кости выгружена, она и рисуется - обрезка тогда не нужна */
 .pc-die.own{clip-path:none;background:none;width:11cqw;padding:0}
 .pc-die.own::before{display:none}

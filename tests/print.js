@@ -181,6 +181,14 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
      'в чёрно-белом лента и плашка не собрались в строку');
   ok(/-bw\.svg$/.test(await page.$eval('.pc-tier img', e => e.getAttribute('src'))),
      'в чёрно-белом взята цветная деталь');
+  /* У магического оружия число на кости белое - на синей заливке. В чёрно-белом
+     заливка белая, и число обязано потемнеть, иначе его просто нет. */
+  await go('#/print/q35');
+  await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
+  const dieInk = await page.$eval('.pc-die b', e => getComputedStyle(e).color);
+  const dl = (dieInk.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
+  ok(dl < 90, 'в чёрно-белом число на кости белое по белому: ' + dieInk);
+  await go('#/print/q1');
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
   ok(await page.$('.pc-img'), 'кнопка не вернула цветной лист');
 
