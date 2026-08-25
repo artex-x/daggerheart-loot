@@ -943,6 +943,15 @@ function srcName(k){
   return named || frameName(k) || k;
 }
 
+/* Подпись источника на печатной карте. В строке таблицы ярлык называет
+   сообщество - там рядом стоят другие сообщества, и книга очевидна. Карта же
+   уезжает на стол одна, и «Великородное» на ней не отвечает на вопрос, откуда
+   вещь: сообщество - это раздел книги, а не книга. */
+function printSrc(it){
+  return it.src === 'community'
+    ? t().srcComm + ' · ' + srcLabel(it)
+    : srcLabel(it);
+}
 function srcLabel(it){
   if (it.src === 'core') return t().srcCore;
   if (it.src === 'hnf') return t().srcHnf;
@@ -3323,7 +3332,7 @@ function printCardHTML(it){
       '<h3 class="pc-name">' + esc(nameOf(it)) + '</h3>' +
       strip +
       '<div class="pc-text">' + (descOf(it) ? descHtml(it) : '') + '</div>' +
-      '<div class="pc-bottom"><span>Daggerheart</span><span>' + esc(srcLabel(it)) + '</span></div>' +
+      '<div class="pc-bottom"><span>Daggerheart</span><span>' + esc(printSrc(it)) + '</span></div>' +
     '</div>' +
   '</article>';
 }

@@ -95,6 +95,12 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(parts.hands === 2, 'ладоней хвата не две: ' + parts.hands);
   ok(/Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
      'в подписи нет книги: ' + parts.bottom);
+  /* У вещи сообщества подпись называет книгу, а не только само сообщество:
+     карта уезжает на стол одна, и «Великородное» не говорит, откуда она. */
+  await go('#/print/cm1');
+  const commBottom = await page.$eval('.pc-bottom', e => e.textContent);
+  ok(/Сообществ/i.test(commBottom) && /Великородное/.test(commBottom),
+     'на карте сообщества нет книги: ' + commBottom);
 
   /* Урон с бонусом: «d6 +2» рядом с костью, а не цифрой поверх неё */
   await go('#/print/w7');
