@@ -188,7 +188,20 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   await go('#/tables/eq_weapon/t2');
   ok(await page.evaluate(() => !!document.getElementById('sec-t2')), 'раздел ранга 2 не найден');
   ok(await page.evaluate(() => location.hash === '#/tables/eq_weapon/t2'), 'адрес с якорем не удержался');
-  const scrolled = await page.evaluate(() => window.scrollY);
+  /* Прокрутка к разделу плавная и занимает под секунду. Ждём, пока она встанет,
+     а не фиксированную паузу: пауза «на глаз» когда-то совпадала со временем
+     анимации и перестала совпадать, как только страница начала открываться
+     быстрее. */
+  const scrolled = await page.evaluate(() => new Promise(function (done) {
+    let last = -1, still = 0;
+    (function tick(){
+      const y = window.scrollY;
+      still = y === last ? still + 1 : 0;
+      last = y;
+      if (still > 3) return done(y);
+      requestAnimationFrame(tick);
+    })();
+  }));
   ok(scrolled > 100, 'страница не прокрутилась к разделу: ' + scrolled);
 
   /* ---------- each kind of gear reads as its own ---------- */
