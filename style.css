@@ -235,12 +235,15 @@ main{padding:26px 0 48px;min-height:60vh}
 /* Кость на кнопке - тот же силуэт, что печатается на карточке, но контуром в
    цвет кнопки: своя заливка пропадала бы то на золотом, то на тёмном. Ширина у
    каждой кости своя, поэтому задана только высота. */
-/* Кость на кнопке - тот же вектор, что печатается на карточке: светлое тело с
-   гранями читается и на золотой кнопке, и на тёмной панели. Ширина у каждой
-   кости своя, поэтому задана только высота. Колесо рисуется контуром в цвет
-   кнопки, и общее правило заливки значков ему мешает. */
-.dieicon,.btn .dieicon,.dl .dieicon{flex:none;height:18px;width:auto;display:block}
-.dieicon.wheel{height:18px;fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke}
+/* Кость на кнопке - одни линии, без заливки: кнопка просвечивает сквозь неё,
+   как сквозь остальные значки в ряду, и общее правило заливки значков тут
+   мешает. Кант не тянется вместе с фигурой - иначе d4 выходит жирнее d20.
+   Ширина у каждой кости своя, поэтому задана только высота. */
+.dieicon,.btn .dieicon,.dl .dieicon{
+  flex:none;height:18px;width:auto;display:block;fill:none;
+  stroke-width:1.3;vector-effect:non-scaling-stroke;
+}
+.dieicon.wheel{stroke-width:1.6}
 .btn:hover{border-color:var(--gold);background:var(--surface2)}
 .btn.primary{background:linear-gradient(180deg,#e2b76c,var(--gold));border-color:#e8c27c;color:#1a1206;font-weight:700}
 .btn.primary:hover{filter:brightness(1.07)}
