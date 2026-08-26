@@ -331,6 +331,20 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
     return Math.round(t.top - c.getBoundingClientRect().top);
   });
   ok(tierTop <= 1, 'лента ранга оторвалась от верха карты на ' + tierTop + ' px');
+  /* Отступ под ленту держат только там, где лента есть. У добычи ранга нет, и
+     плашка вида вставала под пустое место вместо левого края текста. */
+  await go('#/print/ci1');
+  await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
+  const noTier = await page.$eval('.pcard', function (c) {
+    const cr = c.getBoundingClientRect();
+    return { tier: !!c.querySelector('.pc-tier'),
+             tag: c.querySelector('.pc-tag').getBoundingClientRect().left - cr.left,
+             name: c.querySelector('.pc-name').getBoundingClientRect().left - cr.left };
+  });
+  ok(!noTier.tier, 'у добычи откуда-то взялась лента ранга');
+  ok(Math.abs(noTier.tag - noTier.name) < 2,
+     'без ленты плашка вида не по левому краю текста: ' +
+     noTier.tag.toFixed(0) + ' и ' + noTier.name.toFixed(0));
   /* У магического оружия число на кости белое - на синей заливке. В чёрно-белом
      заливка белая, и число обязано потемнеть, иначе его просто нет. */
   await go('#/print/q35');

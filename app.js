@@ -3404,7 +3404,10 @@ function printCardHTML(it){
                       : printGlyph(kindKey)) +
       '</div>' + banner + mark) +
     '<div class="pc-content">' +
-      (S.printBW ? '<div class="pc-head">' + banner + tags + mark + '</div>' : tags) +
+      /* Отступ под ленту ранга - только если лента есть. У добычи ранга нет, и
+         плашка вида вставала под пустое место, а не по левому краю текста. */
+      (S.printBW ? '<div class="pc-head' + (banner ? ' withtier' : '') + '">' +
+        banner + tags + mark + '</div>' : tags) +
       '<h3 class="pc-name">' + esc(nameOf(it)) + '</h3>' +
       strip +
       '<div class="pc-text">' + (descOf(it) ? descHtml(it) : '') + '</div>' +

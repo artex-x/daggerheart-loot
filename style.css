@@ -1278,7 +1278,7 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
    ровно на границе (Banner Y=0, X=24), а стоя в ряду она уезжала вниз на
    отступ блока и висела в воздухе. Строка над именем начинается за ней. */
 .bw .pc-tier{width:9.4cqw;left:6.9cqw;top:0}
-.bw .pc-head{padding-left:11.8cqw}
+.bw .pc-head.withtier{padding-left:11.8cqw}
 .bw .pc-tier b{top:1.4cqw;font-size:4.6cqw}
 .bw .pc-tier i{top:6.6cqw;font-size:2cqw}
 /* В чёрно-белом щит белый в светло-серой обводке, и число на нём тёмное.
