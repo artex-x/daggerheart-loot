@@ -3291,24 +3291,24 @@ function cardArt(name){
    карте он должен стоять полосой, а не строчкой прозы, как в книге. */
 function dmgStripHTML(e){
   const m = /^(d\d+)(.*)$/.exec(e.dmg || '');
-  /* Кость с бонусом стоит перед рамкой, а не внутри неё: в макете рамка
-     начинается за костью и делится на три отсека - по отсеку на значение. Пока
-     кость лежала в том же ряду, что и значения, она забирала место у первого
-     отсека и все три уезжали вправо от своих перегородок. */
+  /* В макете рамка не стоит рядом с костью - она из неё растёт: её усы сходятся
+     к правому краю кости, и зазора между ними нет. Поэтому кость лежит поверх
+     левого конца рамки, а не перед ним. Бонус урона при этом попадает внутрь
+     первого отсека, рядом с типом урона - в макете он там же. */
   return '<div class="pc-strip">' +
-    '<span class="pc-lead">' +
-      dieHTML(m ? m[1] : (e.dmg || ''), e.dt) +
-      (m && m[2] ? '<span class="pc-bonus">' + esc(m[2]) + '</span>' : '') +
-    '</span>' +
+    '<span class="pc-lead">' + dieHTML(m ? m[1] : (e.dmg || ''), e.dt) + '</span>' +
     /* У магического оружия рамка своя - и рисунком, и цветом. В книге это
        разные вещи, и на карточке их видно порознь ещё до того, как прочитан
        «УРОН МАГ». На чёрно-белом листе краски нет, и остаётся один рисунок. */
     '<span class="pc-frame"><img class="pc-ribbon" src="' +
       cardArt(e.dt === 'mag' ? 'ribbon-mag' : 'ribbon') + '" alt="">' +
       '<span class="pc-cells">' +
-        statBox(t().pcDmg, eqWord(EQ_DT, e.dt) || '—') +
-        statBox(t().pcTrait, eqWord(EQ_TRAIT, e.tr)) +
-        statBox(t().pcRange, eqWord(EQ_RANGE, e.rg)) +
+        '<span class="pc-c1' + (m && m[2] ? ' wbonus' : '') + '">' +
+          (m && m[2] ? '<span class="pc-bonus">' + esc(m[2]) + '</span>' : '') +
+          statBox(t().pcDmg, eqWord(EQ_DT, e.dt) || '—') +
+        '</span>' +
+        '<span class="pc-c2">' + statBox(t().pcTrait, eqWord(EQ_TRAIT, e.tr)) + '</span>' +
+        '<span class="pc-c3">' + statBox(t().pcRange, eqWord(EQ_RANGE, e.rg)) + '</span>' +
       '</span>' +
     '</span></div>';
 }

@@ -1178,10 +1178,13 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-name{margin:0;font:900 5.8cqw/1.1 var(--ui);text-transform:uppercase;letter-spacing:-.01em}
 
 /* Полоса характеристик: рамка - выгруженный вектор, ячейки поверх неё */
-.pc-strip{position:relative;height:14cqw;margin:1.2cqw 0 .6cqw;
-  display:flex;align-items:center;gap:1.2cqw}
-.pc-lead{flex:none;display:flex;align-items:center;gap:1cqw}
-.pc-frame{position:relative;flex:1 1 auto;min-width:0;height:100%}
+/* Рамка растёт из кости: в макете её усы сходятся к правому краю кости, и
+   зазора между ними нет. Числа - из группы Damage макета, 299 единиц в ширину:
+   кость занимает -2..38, рамка начинается на 24, то есть заходит под кость. */
+.pc-strip{position:relative;height:14cqw;margin:1.2cqw 0 .6cqw}
+.pc-lead{position:absolute;left:-0.7%;top:50%;transform:translateY(-50%);z-index:2;
+  display:flex;align-items:center}
+.pc-frame{position:absolute;left:8%;right:0;top:0;bottom:0}
 /* Полоса брони: одна рамка со скруглением, в ней три подписи и два порога.
    Пропорции с карты из макета: широкая и низкая, клетки порогов чуть выше
    рамки и наезжают на неё сверху и снизу. */
@@ -1262,14 +1265,23 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
   position:absolute;inset:0;z-index:2;
   display:flex;align-items:center;gap:.9cqw;
 }
-/* Перегородки рамки стоят на 30.4% и 64.1% её ширины, наконечники съедают 5%
-   слева и 3% справа. Доли роста повторяют эти отсеки, поэтому значение всегда
-   стоит в своём - при любой ширине карты, хоть на экране, хоть на бумаге. */
-.pc-strip .pc-cells{padding:0 3% 0 5%;gap:0}
-.pc-strip .pc-box{padding:0 .8cqw}
-.pc-strip .pc-box:nth-child(1){flex-grow:25.4}
-.pc-strip .pc-box:nth-child(2){flex-grow:33.7}
-.pc-strip .pc-box:nth-child(3){flex-grow:32.9}
+/* Перегородки рамки стоят на 30.8% и 63.7% её ширины, справа наконечник съедает
+   3%, слева под первым отсеком лежит кость. Доли роста повторяют эти отсеки,
+   поэтому значение всегда стоит в своём - при любой ширине карты, хоть на
+   экране, хоть на бумаге. */
+.pc-strip .pc-cells{padding:0 3% 0 7%;gap:0}
+/* `flex-basis:0`, а не `auto`: иначе доли делят только остаток, а не всю
+   ширину, и перегородки перестают совпадать с рамкой. */
+.pc-strip .pc-c1,.pc-strip .pc-c2,.pc-strip .pc-c3{
+  display:flex;align-items:center;justify-content:center;gap:.9cqw;min-width:0;flex-basis:0;
+}
+.pc-strip .pc-c1{flex-grow:23.8}
+.pc-strip .pc-c2{flex-grow:32.9}
+.pc-strip .pc-c3{flex-grow:33.3}
+/* Бонус прижат к кости, тип урона - к перегородке: вместе по центру они
+   отходили от кости и читались как одна пара, хотя это разные вещи. */
+.pc-strip .pc-c1.wbonus{justify-content:space-between}
+.pc-strip .pc-box{flex:0 1 auto;min-width:0;padding:0 .6cqw}
 /* Шестиугольник с костью: тёмный кант и светлая заливка внутри. Рисуется
    обрезкой, а не картинкой - у выгруженной детали внутри своя штриховка, из-за
    которой на 63 мм она читалась как стрелка, а не как кость. */
@@ -1311,7 +1323,7 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Бонус урона стоит рядом с костью, а не поверх неё: «d6 +2» читается, а
    цифра в углу шестиугольника - нет. Отрицательного отступа тут больше нет:
    с ним бонус налезал на подпись «УРОН» соседней клетки. */
-.pc-bonus{flex:none;font:900 3.2cqw/1 var(--ui);color:#18171C;margin:0 .7cqw 0 0}
+.pc-bonus{flex:none;font:900 3.2cqw/1 var(--ui);color:#18171C}
 /* Три клетки делят остаток поровну (`1 1 0`, не `1 1 auto`): иначе длинное
    значение вроде «очень далеко» забирало всю ширину, а бонус урона слева
    упирался в подпись соседней клетки. */

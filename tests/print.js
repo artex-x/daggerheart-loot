@@ -102,13 +102,13 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(!(await page.$('.pc-cells .pc-die')), 'кость урона стоит внутри рамки');
   const cells = await page.evaluate(() => {
     const f = document.querySelector('.pc-frame').getBoundingClientRect();
-    return [...document.querySelectorAll('.pc-strip .pc-box')]
+    return [...document.querySelectorAll('.pc-cells > *')]
       .map(b => { const r = b.getBoundingClientRect();
                   return { l: (r.left - f.left) / f.width * 100,
                            r: (r.right - f.left) / f.width * 100 }; });
   });
   ok(cells.length === 3, 'в полосе характеристик не три клетки: ' + cells.length);
-  ok(Math.abs(cells[0].r - 30.4) < 1 && Math.abs(cells[1].r - 64.1) < 1,
+  ok(Math.abs(cells[0].r - 30.8) < 1 && Math.abs(cells[1].r - 63.7) < 1,
      'клетки не совпали с перегородками рамки: ' +
      cells.map(c => c.r.toFixed(1)).join(', '));
   ok(/Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
@@ -176,6 +176,26 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
     return r.getBoundingClientRect().width > x.clientWidth + 1;
   }).map(x => x.textContent));
   ok(!cut.length, 'значение в полосе обрезано: ' + cut.join(', '));
+
+  /* Рамка растёт из кости, а не стоит рядом: в макете её усы сходятся к правому
+     краю кости. Между ними был зазор, и полоса выглядела разорванной. */
+  await go('#/print/w7');
+  const seam = await page.evaluate(() => {
+    const die = document.querySelector('.pc-die').getBoundingClientRect();
+    const fr = document.querySelector('.pc-frame').getBoundingClientRect();
+    return (fr.left - die.right) / document.querySelector('.pcard').clientWidth * 344;
+  });
+  ok(seam < 0, 'рамка не заходит за кость: зазор ' + seam.toFixed(1));
+  /* И бонус урона стоит внутри первого отсека, прижатый к кости, а тип урона -
+     к перегородке. Без бонуса тип встаёт по середине отсека: прижимать его
+     тогда не к чему. */
+  ok(await page.$('.pc-c1.wbonus .pc-bonus'), 'бонус урона снова снаружи рамки');
+  const spread = await page.$eval('.pc-c1', e => getComputedStyle(e).justifyContent);
+  ok(spread === 'space-between', 'бонус не прижат к кости: ' + spread);
+  await go('#/print/q1');                                // урон без бонуса
+  ok(!(await page.$('.pc-c1.wbonus')), 'у кости без бонуса включён разнос');
+  ok((await page.$eval('.pc-c1', e => getComputedStyle(e).justifyContent)) === 'center',
+     'без бонуса тип урона не по середине отсека');
 
   /* Броня считается иначе: вместо хвата - щит с Показателем Брони, вместо
      урона - шкала порогов. */
