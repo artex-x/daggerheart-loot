@@ -1239,8 +1239,10 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .bw .pc-shield{width:9.6cqw}
 .bw .pc-shield b{top:2.4cqw;font-size:3.6cqw;color:#18171C}
 .bw .pc-shield i{top:9.6cqw;left:-2cqw;right:-2cqw;font-size:1.9cqw}
+/* Знак хвата в чёрно-белом того же размера, что и в цвете: в макете это одна и
+   та же группа 62x48, и уменьшать её без краски незачем. */
 .bw .pc-burden{align-self:flex-start}
-.bw .pc-burden img{width:13.6cqw}
+.bw .pc-burden img{width:18cqw}
 .bw .pc-burden small{bottom:-2.6cqw;font-size:1.9cqw}
 /* Ряду нужен низ под подписи «ХВАТ» и «БРОНЯ», иначе они лезут на имя */
 .pc-head{padding-bottom:3cqw}

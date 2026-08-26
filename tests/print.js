@@ -340,6 +340,53 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await go('#/print/q1');
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
 
+  /* ---------- размеры по макету ----------
+     Карта в макете 344x482, и всё на ней стоит по своим числам. Проверяются они
+     в единицах макета, а не в пикселях: на экране карта одна, на бумаге другая,
+     а доли те же. Допуск в полтора пункта - на рамку реза, которой в макете
+     нет, и на округления. */
+  console.log('размеры по макету');
+  const SPEC = {
+    'лента ранга слева':   ['.pc-tier',   'left',   24],
+    'лента ранга сверху':  ['.pc-tier',   'top',     0],
+    'знак брони справа':   ['.pc-shield', 'right',  24],
+    'знак брони сверху':   ['.pc-shield', 'top',    20],
+    'знак брони шириной':  ['.pc-shield', 'width',  32],
+    'знак хвата справа':   ['.pc-burden', 'right',  24],
+    'знак хвата сверху':   ['.pc-burden', 'top',    20],
+    'знак хвата шириной':  ['.pc-burden', 'width',  62],
+    'полоса урона слева':  ['.pc-strip',  'left',   24],
+    'полоса урона высотой':['.pc-strip',  'height', 48],
+    'кость шириной':       ['.pc-die',    'width',  40],
+    'текст слева':         ['.pc-text',   'left',   24],
+    'подпись слева':       ['.pc-bottom', 'left',   24]
+  };
+  for (const bw of [false, true]) {
+    for (const id of ['q1', 'q313']) {
+      await go('#/print/' + id);
+      if (bw) { await page.click('[data-act="printArt"][data-val="bw"]'); await settle(); }
+      const off = await page.evaluate(function (spec) {
+        const c = document.querySelector('.pcard'), cr = c.getBoundingClientRect();
+        const k = 344 / cr.width, out = [];
+        for (const name in spec) {
+          const [sel, what, ideal] = spec[name];
+          const e = c.querySelector(sel);
+          if (!e) continue;
+          const r = e.getBoundingClientRect();
+          const v = what === 'left' ? (r.left - cr.left) * k
+                  : what === 'right' ? (cr.right - r.right) * k
+                  : what === 'top' ? (r.top - cr.top) * k
+                  : what === 'width' ? r.width * k : r.height * k;
+          if (Math.abs(v - ideal) > 1.5) out.push(name + ': ' + v.toFixed(1) + ' вместо ' + ideal);
+        }
+        return out;
+      }, SPEC);
+      ok(!off.length, (bw ? 'ч/б ' : 'цвет ') + id + ' разошлась с макетом: ' + off.join('; '));
+    }
+  }
+  await go('#/print/q1');
+  await page.click('[data-act="printArt"][data-val="color"]'); await settle();
+
   /* ---------- длинный текст ----------
      У артефактов описание в разы длиннее, чем у зелья, а место одно. */
   console.log('длинный текст ужимается');
