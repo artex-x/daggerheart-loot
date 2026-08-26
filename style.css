@@ -1213,11 +1213,13 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-shield img{display:block;width:100%;height:auto}
 /* Число стоит по центру щита, а не на глазок сверху: у щита 33 к 36, так что
    его коробка на 9% выше своей ширины, и середина этой коробки - середина щита.
-   Прежний отступ сверху был подобран на глаз, и число стояло выше середины. */
+   Подпись - под щитом, на том же расстоянии, что и в макете: там между низом
+   щита и её верхом 4 единицы из 33, то есть 12% ширины. Прежние отступы были
+   подобраны под другую ширину знака и с ней разъехались - подпись легла на щит. */
 .pc-shield b{position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
   font:900 4cqw/1 var(--ui);color:#fff}
-.pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:11.2cqw;
+.pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:109%;
   font:800 2.2cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
 
 /* ---- чёрно-белый лист ----

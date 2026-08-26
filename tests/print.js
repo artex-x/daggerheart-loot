@@ -192,7 +192,8 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(/fill="#18171C"/.test(shieldFile), 'щит в цвете снова один контур, без тёмного поля');
   const asInk = await page.$eval('.pc-shield b', e => getComputedStyle(e).color);
   ok(/255, 255, 255/.test(asInk), 'число на тёмном щите не белое: ' + asInk);
-  /* Число стоит по центру щита, а не выше середины */
+  /* Число по центру щита, подпись под ним и не вплотную: оба отступа считались
+     от ширины знака, а ширину потом поменяли - и они разъехались. */
   const mark = () => page.$eval('.pc-shield', function (e) {
     const img = e.querySelector('img').getBoundingClientRect();
     const num = e.querySelector('b').getBoundingClientRect();
@@ -207,6 +208,8 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
     const m = await mark();
     ok(Math.abs(m.off) < 1.5, (bw ? 'ч/б: ' : 'цвет: ') +
        'число сдвинуто от середины щита на ' + m.off.toFixed(1));
+    ok(m.gap > 1.5, (bw ? 'ч/б: ' : 'цвет: ') +
+       'подпись прижата к щиту: зазор ' + m.gap.toFixed(1));
   }
   await go('#/print/q313');
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
