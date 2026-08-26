@@ -309,6 +309,13 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
   ok(await page.$('.pc-img'), 'кнопка не вернула цветной лист');
 
+  /* У магического оружия рамка своя - и рисунком, и цветом */
+  await go('#/print/q23');
+  ok(/ribbon-mag\.svg$/.test(await page.$eval('.pc-ribbon', e => e.getAttribute('src'))),
+     'у магического оружия рамка физического');
+  await go('#/print/q1');
+  ok(/ribbon\.svg$/.test(await page.$eval('.pc-ribbon', e => e.getAttribute('src'))),
+     'у физического оружия рамка магического');
 
   /* ---------- длинный текст ----------
      У артефактов описание в разы длиннее, чем у зелья, а место одно. */

@@ -3274,7 +3274,11 @@ function dmgStripHTML(e){
       dieHTML(m ? m[1] : (e.dmg || ''), e.dt) +
       (m && m[2] ? '<span class="pc-bonus">' + esc(m[2]) + '</span>' : '') +
     '</span>' +
-    '<span class="pc-frame"><img class="pc-ribbon" src="' + cardArt('ribbon') + '" alt="">' +
+    /* У магического оружия рамка своя - и рисунком, и цветом. В книге это
+       разные вещи, и на карточке их видно порознь ещё до того, как прочитан
+       «УРОН МАГ». На чёрно-белом листе краски нет, и остаётся один рисунок. */
+    '<span class="pc-frame"><img class="pc-ribbon" src="' +
+      cardArt(e.dt === 'mag' ? 'ribbon-mag' : 'ribbon') + '" alt="">' +
       '<span class="pc-cells">' +
         statBox(t().pcDmg, eqWord(EQ_DT, e.dt) || '—') +
         statBox(t().pcTrait, eqWord(EQ_TRAIT, e.tr)) +
