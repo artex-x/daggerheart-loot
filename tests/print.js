@@ -185,6 +185,13 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   const shield = await page.$eval('.pc-shield', e => e.textContent.trim());
   ok(/^3/.test(shield), 'на щите не Показатель Брони: ' + shield);
   ok(/БРОНЯ/i.test(shield), 'на щите нет слова: ' + shield);
+  /* Знак берётся из макета: в цвете это тёмный щит в золотом ореоле с белым
+     числом, а не контур с тёмным числом - то есть совсем другой знак. */
+  const shieldFile = require('fs').readFileSync(require('path').join(__dirname, '..',
+    await page.$eval('.pc-shield img', e => e.getAttribute('src'))), 'utf8');
+  ok(/fill="#18171C"/.test(shieldFile), 'щит в цвете снова один контур, без тёмного поля');
+  const asInk = await page.$eval('.pc-shield b', e => getComputedStyle(e).color);
+  ok(/255, 255, 255/.test(asInk), 'число на тёмном щите не белое: ' + asInk);
   const th = await page.$eval('.pc-thstrip', e => e.textContent);
   ok(/5/.test(th) && /11/.test(th), 'на шкале нет порогов: ' + th);
   ok((await page.$$eval('.pc-th-box', e => e.length)) === 2, 'порогов на шкале не два');

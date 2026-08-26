@@ -1190,12 +1190,15 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Щит с Показателем Брони - там же, где у оружия ладони хвата. Форма взята с
    карты брони из макета; собрать её как в мокапе к задаче #40 - с лентой
    поперёк щита - пока нечем: нужного файла макета у нас нет доступа. */
+/* Знак брони по макету: 33 px щита на 344 px карты, правый край на том же
+   отступе, что и всё остальное. Щит тёмный в золотом ореоле, и число на нём
+   белое - раньше это был контур с тёмным числом, то есть другой знак. */
 .pc-shield{position:absolute;right:6.9cqw;top:5.8cqw;z-index:4;
-  display:block;width:9.4cqw;text-align:center}
+  display:block;width:9.6cqw;text-align:center}
 .pc-shield img{display:block;width:100%;height:auto}
-.pc-shield b{position:absolute;left:0;top:2.2cqw;width:100%;
-  font:900 4cqw/1 var(--ui);color:#18171C}
-.pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:11cqw;
+.pc-shield b{position:absolute;left:0;top:2.4cqw;width:100%;
+  font:900 4cqw/1 var(--ui);color:#fff}
+.pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:11.2cqw;
   font:800 2.2cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
 
 /* ---- чёрно-белый лист ----
@@ -1217,8 +1220,9 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .bw .pc-head{padding-left:11.8cqw}
 .bw .pc-tier b{top:1.4cqw;font-size:4.6cqw}
 .bw .pc-tier i{top:6.6cqw;font-size:2cqw}
-.bw .pc-shield{width:8.4cqw}
-.bw .pc-shield b{top:1.8cqw;font-size:3.6cqw}
+/* В чёрно-белом щит белый в светло-серой обводке, и число на нём тёмное */
+.bw .pc-shield{width:9.6cqw}
+.bw .pc-shield b{top:2.4cqw;font-size:3.6cqw;color:#18171C}
 .bw .pc-shield i{top:9.6cqw;left:-2cqw;right:-2cqw;font-size:1.9cqw}
 .bw .pc-burden{align-self:flex-start}
 .bw .pc-burden img{width:13.6cqw}
