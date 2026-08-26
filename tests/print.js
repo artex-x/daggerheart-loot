@@ -49,6 +49,12 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok((await page.$$eval('.psheet', e => e.length)) === 2, 'десятая карта не завела второй лист');
   ok((await page.$$eval('.pcard', e => e.length)) === 18, 'второй лист не добит до девяти мест');
   ok((await page.$$eval('.pcard.blank', e => e.length)) === 8, 'пустых мест не восемь');
+  /* Место держат, а линию реза по нему не рисуют: резать там нечего, а лишняя
+     линия - лишний повод отрезать не то. */
+  ok((await page.$eval('.pcard.blank', e => parseFloat(getComputedStyle(e).borderTopWidth))) === 0,
+     'по пустому месту нарисована линия реза');
+  ok((await page.$eval('.pcard:not(.blank)', e => parseFloat(getComputedStyle(e).borderTopWidth))) > 0,
+     'у карты пропала линия реза');
   ok(await page.$('.psheet[data-next]'), 'второй лист не помечен как начало страницы');
   /* На третий лист - двадцатая карта, и каждый лист остаётся ровно A4 */
   await go('#/print/' + Array.from({ length: 20 }, (_, i) => 'ci' + (i + 1)).join('-'));

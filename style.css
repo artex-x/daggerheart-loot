@@ -1089,7 +1089,10 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
   display:flex;flex-direction:column;justify-content:flex-end;
   font-family:var(--ui);
 }
-.pcard.blank{border-color:#e4e1e9}
+/* Пустое место держит сетку, но резать по нему нечего: линия там - лишняя
+   краска и лишний повод отрезать не то. Само место остаётся: без него
+   последняя карта на неполном листе съезжает к краю. */
+.pcard.blank{border:0}
 
 /* Квадрат картинки во всю ширину сверху - белый, а не цветной: в макете вещь
    лежит на бумаге, а не в тёмном окне. */
