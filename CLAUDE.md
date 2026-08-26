@@ -72,6 +72,28 @@ Versatile weapons carry a second stat line in `eq.alt`, parsed once out of the
 property text and pinned by name in `tests/derived.js`. It prints as a second
 strip rather than a sentence.
 
+## Working from an issue or from the design
+
+Open the issue and **look at its screenshots** before touching anything. The
+title names a symptom, and the same words fit several components: "fix price
+display tooltip" was read as the hint beside a price field and was in fact the
+help panel above the whole list. One glance at the picture settles it; an hour
+was spent fixing the wrong element for want of that glance.
+
+The same goes for the design. The file is
+`88Hhc89oY9Orcbvd2ok1Hx` - node `714-42387` for the colour cards, `3773-90792`
+for the black-and-white ones. Compare against it rather than reasoning about it,
+and take the geometry and the palette from there rather than from memory:
+guessing produced a shield from the wrong control once already.
+
+Assets come out of the design file itself. The Figma MCP runs out of calls
+quickly, so the working route is the browser: open the file, select the node,
+right-click, Copy/Paste as, Copy as SVG, and read the clipboard. One trap - a
+copied path is a filled outline, so internal edges of a vector network (the
+finger slots in the burden hands) are silently dropped and the shape arrives as
+a mitten. When that happens, the node has to be exported from Figma properly
+rather than redrawn by eye.
+
 ## Conventions
 
 - Comments explain **why**, not what the line does.
