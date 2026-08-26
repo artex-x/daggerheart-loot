@@ -3325,7 +3325,11 @@ function printCardHTML(it){
     : '';
   const tags = '<div class="pc-tags"><span class="pc-tag on">' + esc(tag1) + '</span>' +
     (tag2 ? '<span class="pc-tag out">' + esc(tag2) + '</span>' : '') + '</div>';
-  return '<article class="pcard ' + eqClassFor(it) + (S.printBW ? ' bw' : '') +
+  /* Верхние 22% ширины карты отданы ленте ранга и знаку справа. У артефакта и
+     проклятого предмета нет ни того, ни другого, и эта полоса оставалась просто
+     белой - на карте с длинным правилом это четверть места впустую. */
+  const bare = !banner && !mark ? ' bare' : '';
+  return '<article class="pcard ' + eqClassFor(it) + bare + (S.printBW ? ' bw' : '') +
       '" data-pid="' + esc(it.id) + '">' +
     (S.printBW ? '' :
       '<div class="pc-art">' +
@@ -3388,24 +3392,34 @@ function fitPrintCards(){
     }
     if (!el) continue;
     el.style.fontSize = '';
-    if (box) box.style.paddingTop = '';
+    /* Через переменную, а не через padding-top: от неё же зависит, где белый
+       блок становится непрозрачным, и одно без другого разъезжается. */
+    if (box) box.style.removeProperty('--pcpad');
     const tight = function () { return el.scrollHeight > el.clientHeight + 1; };
     /* Сначала шрифт до предела читаемости, потом - отступ сверху: у карты с
        длинным правилом картинка и должна быть меньше, но исчезать совсем ей
        нельзя, иначе от карты остаётся лист бумаги с текстом. */
     let pct = 3.5;
     while (tight() && pct > 3) { pct -= 0.1; el.style.fontSize = pct.toFixed(1) + 'cqw'; }
-    let pad = S.printBW ? 5.8 : 23;
+    let pad = S.printBW ? 5.8 : (card.classList.contains('bare') ? 12 : 23);
     while (tight() && pad > (S.printBW ? 3 : 8)) {
       pad -= 1.5;
-      if (box) box.style.paddingTop = pad + 'cqw';
-      /* Картинка садится вместе с отступом: иначе она остаётся на прежней
-         высоте и оказывается фоном под именем. */
-      if (art) art.style.height = Math.max(0, pad + 52) + 'cqw';
+      if (box) box.style.setProperty('--pcpad', pad + 'cqw');
     }
     while (tight() && pct > 2.6) { pct -= 0.1; el.style.fontSize = pct.toFixed(1) + 'cqw'; }
-    /* Обрезок картинки под лентой читается как брак печати - лучше без неё */
-    if (art) art.style.display = pad < 16 ? 'none' : '';
+
+    /* Картинка кончается там, где белый блок становится непрозрачным. Место это
+       заранее неизвестно: блок прижат к низу карты, и чем длиннее правило, тем
+       он выше. Раньше низ картинки был прибит к постоянной высоте, и у длинного
+       правила от неё оставалась серая полоска над именем - на бумаге она
+       читается как грязь. */
+    if (art && box) {
+      const cq = function (px) { return px / card.clientWidth * 100; };
+      const line = cq(box.offsetTop) + pad, top = cq(art.offsetTop);
+      art.style.height = Math.max(0, line - top + 6) + 'cqw';
+      /* Обрезок картинки под лентой читается как брак печати - лучше без неё */
+      art.style.display = line - top < 24 ? 'none' : '';
+    }
   }
 }
 

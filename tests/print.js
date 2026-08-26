@@ -274,11 +274,23 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await go('#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11');
   const over = await page.$$eval('.pc-text', e => e.map(x => x.scrollHeight - x.clientHeight));
   ok(over.every(v => v <= 1), 'длинный текст вылез за карту: ' + over.join(','));
-  const shrunk = await page.$$eval('.pcard', e => e.filter(function (c) {
-    const t = c.querySelector('.pc-text'), b = c.querySelector('.pc-content');
-    return (t && t.style.fontSize) || (b && b.style.paddingTop);
-  }).length);
-  ok(shrunk > 0, 'ни одна длинная карта не ужалась - правило не сработало');
+  /* Подгонка отдаёт место правилу по очереди: шрифт, потом отступ, потом сама
+     картинка. На самых длинных карточках очередь доходит до картинки - если
+     не дошла ни на одной, подгонка не работала вовсе. */
+  const noArt = await page.$$eval('.pc-art', e => e.filter(a => a.style.display === 'none').length);
+  ok(noArt > 0, 'ни одна длинная карта не отдала место под правило');
+
+  /* Картинка либо занимает заметную полосу, либо её нет вовсе. Середины быть не
+     должно: белый блок прижат к низу карты, и у длинного правила от картинки
+     оставалась серая полоска над именем - на бумаге это выглядит как грязь. */
+  const slivers = await page.$$eval('.pcard', e => e.map(function (c) {
+    const art = c.querySelector('.pc-art'), box = c.querySelector('.pc-content');
+    if (!art || !box || art.style.display === 'none') return 0;
+    const pad = parseFloat(getComputedStyle(box).paddingTop);
+    return (box.offsetTop + pad - art.offsetTop) / c.clientWidth * 100;
+  }).filter(v => v > 0 && v < 20));
+  ok(!slivers.length,
+     'над именем осталась полоска картинки: ' + slivers.map(v => v.toFixed(1)).join(', '));
 
   /* Печать заменяет собой страницу, с которой пришли: без кнопки «назад»
      возвращаться было некуда, кроме как через историю браузера. */

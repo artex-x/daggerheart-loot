@@ -1097,6 +1097,10 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
   position:absolute;left:0;right:0;top:22cqw;height:78cqw;z-index:1;
   display:flex;align-items:center;justify-content:center;overflow:hidden;
 }
+/* Артефакту и проклятому предмету ни ленты, ни знака не полагается, и держать
+   под них полосу незачем: картинка занимает её, а правилу достаётся место. */
+.pcard.bare .pc-art{top:4cqw}
+.pcard.bare .pc-content{--pcpad:12cqw}
 .pc-img{width:62%;height:auto;max-height:88%;object-fit:contain;display:block}
 .pc-glyph{width:34cqw;height:36cqw;fill:#e6e3ec}
 
@@ -1118,10 +1122,16 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Белый блок поверх картинки, с мягким переходом - как в макете */
 /* Ограничен высотой карты: без этого текст просто выталкивал блок за нижний
    край, а подгонка шрифта не срабатывала - ей не с чем было сравнивать. */
+/* Переход привязан к отступу, а не к доле высоты карты: доля не знает, где
+   начинается текст, и над именем оставалась полоска картинки в палец шириной -
+   на бумаге она читается как грязь. Теперь белое приходит ровно к первой
+   строке, сколько бы отступ ни ужимала подгонка. */
 .pc-content{
+  --pcpad:23cqw;
   position:relative;z-index:3;max-height:100%;overflow:hidden;
-  padding:23cqw 6.9cqw 5.8cqw;
-  background:linear-gradient(180deg,rgba(255,255,255,0) 0%,#fff 24%,#fff 100%);
+  padding:var(--pcpad) 6.9cqw 5.8cqw;
+  background:linear-gradient(180deg,rgba(255,255,255,0) 0,
+    rgba(255,255,255,0) max(0cqw,calc(var(--pcpad) - 12cqw)),#fff var(--pcpad),#fff 100%);
   display:flex;flex-direction:column;gap:1.2cqw;
 }
 .pc-tags{display:flex;gap:1.2cqw;flex-wrap:wrap;padding-bottom:1.2cqw}
