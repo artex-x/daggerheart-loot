@@ -256,6 +256,13 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
      'в чёрно-белом лента и плашка не собрались в строку');
   ok(/-bw\.svg$/.test(await page.$eval('.pc-tier img', e => e.getAttribute('src'))),
      'в чёрно-белом взята цветная деталь');
+  /* Лента ранга свисает с верхнего края карты - в макете её начало ровно на
+     границе. Стоя в общем ряду, она уезжала вниз на отступ блока. */
+  const tierTop = await page.$eval('.pcard:not(.blank)', function (c) {
+    const t = c.querySelector('.pc-tier').getBoundingClientRect();
+    return Math.round(t.top - c.getBoundingClientRect().top);
+  });
+  ok(tierTop <= 1, 'лента ранга оторвалась от верха карты на ' + tierTop + ' px');
   /* У магического оружия число на кости белое - на синей заливке. В чёрно-белом
      заливка белая, и число обязано потемнеть, иначе его просто нет. */
   await go('#/print/q35');

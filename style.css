@@ -1208,9 +1208,13 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-head .pc-tags{padding:0;flex:1 1 auto;align-items:flex-start}
 /* `relative`, а не `static`: подписи внутри позиционируются от самой ленты, и
    при `static` они уезжали к краю карты - «БРОНЯ» оказывалась под рангом. */
-.bw .pc-tier,.bw .pc-shield,.bw .pc-burden{position:relative;flex:none;
+.bw .pc-shield,.bw .pc-burden{position:relative;flex:none;
   top:auto;left:auto;right:auto}
-.bw .pc-tier{width:9.4cqw}
+/* Лента ранга свисает с верхнего края карты и в чёрно-белом: в макете её начало
+   ровно на границе (Banner Y=0, X=24), а стоя в ряду она уезжала вниз на
+   отступ блока и висела в воздухе. Строка над именем начинается за ней. */
+.bw .pc-tier{width:9.4cqw;left:6.9cqw;top:0}
+.bw .pc-head{padding-left:11.8cqw}
 .bw .pc-tier b{top:1.4cqw;font-size:4.6cqw}
 .bw .pc-tier i{top:6.6cqw;font-size:2cqw}
 .bw .pc-shield{width:8.4cqw}
