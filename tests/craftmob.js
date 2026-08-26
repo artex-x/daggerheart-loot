@@ -50,6 +50,28 @@ const ROUTES = ['#/roll/community', '#/roll/std', '#/roll/alt', '#/i/w65', '#/i/
     console.log(width + 'px checked');
   }
 
+  /* Подсветка от указателя закрыта `@media (hover:hover)`. На телефоне состояние
+     `:hover` остаётся на карточке до следующего касания, и она выглядит
+     выбранной - рамка у наведённой и у выбранной была одна и та же. Проверка
+     статическая: безголовый браузер сам сообщает `hover: none`, и подтвердить
+     обратную ветку в нём нечем. */
+  {
+    const css = require('fs').readFileSync(
+      require('path').join(__dirname, '..', 'style.css'), 'utf8');
+    ['.tile:hover', '.row:hover'].forEach(function (sel) {
+      const at = css.indexOf(sel);
+      const open = css.lastIndexOf('@media (hover:hover){', at);
+      const close = css.indexOf('}', open + 21);
+      const guarded = at > 0 && open > 0 && at < close;
+      if (!guarded) { fail++; console.log('  FAIL ' + sel + ' не закрыт @media (hover:hover)'); }
+    });
+    /* И выбранная плитка отличается от наведённой не только рамкой */
+    if (!/\.tilewrap\.sel \.tile\{[^}]*background:/.test(css)) {
+      fail++; console.log('  FAIL у выбранной плитки нет своей заливки');
+    }
+    console.log('подсветка касанием проверена');
+  }
+
   /* Полоса выделения: три кнопки в ряд на телефон не помещаются, и подпись
      самой длинной вылезала за свою кнопку - слева от неё оставался обрезок.
      Проверяются те же ширины, что и у всего остального. */
