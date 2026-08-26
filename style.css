@@ -410,6 +410,10 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 .selbox input{accent-color:var(--gold);width:17px;height:17px;margin:0;cursor:pointer}
 .selbox[data-on]{background:rgba(216,171,94,.1)}
 .row.sel{border-color:rgba(216,171,94,.55);background:rgba(216,171,94,.05)}
+/* У выбранной строки подсветку несёт она сама. Столбец с галочкой подкрашивался
+   ещё раз, поверх, и выходил заметно светлее остальной строки - вместе с
+   разделителем справа он читался как отдельная рамка вокруг галочки. */
+.row.sel .selbox[data-on]{background:none}
 .selall{display:inline-flex;align-items:center;margin-bottom:8px;color:var(--muted2);
   font-size:12.5px;cursor:pointer;border-radius:9px;padding-right:12px;min-height:38px;transition:.15s}
 .selall:hover{color:var(--muted);background:rgba(255,255,255,.03)}
@@ -993,11 +997,22 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
    browser's own, which looks like a different app. */
 .btn:focus-visible,.chip:focus-visible,.tabs a:focus-visible,.helpbtn:focus-visible,
 .homebtn:focus-visible,.fpill:focus-visible,.fclear:focus-visible,.flink:focus-visible,
-.row-main:focus-visible,.tile:focus-visible,.selbox:focus-within,.lrow-acts button:focus-visible,
+.row-main:focus-visible,.tile:focus-visible,.lrow-acts button:focus-visible,
 .row-x:focus-visible,.warn-x:focus-visible,.toast-act:focus-visible,.seg button:focus-visible,
 .tsec-link:focus-visible,.card-name-acts button:focus-visible,.lrow-grip:focus-visible{
   outline:2px solid var(--gold);outline-offset:2px;border-radius:8px;
 }
+/* Столбец с галочкой - отдельным правилом, и вот почему. Строка обрезает всё,
+   что выходит за её края, поэтому кольцо со сдвигом наружу оставалось на виду
+   одной своей стороной - золотой полосой вдоль селектора. И появлялось оно от
+   мыши тоже: `:focus-within` про способ ввода ничего не знает. Теперь кольцо
+   внутри и только с клавиатуры. Правило отдельное потому, что `:has` знают не
+   все браузеры, а негодный селектор в общем списке погасил бы все кольца разом;
+   поле ввода и без нас получит своё от браузера. */
+.selbox:has(:focus-visible){
+  outline:2px solid var(--gold);outline-offset:-3px;border-radius:8px;
+}
+
 /* the page starts with a nav strip; let the keyboard skip past it */
 .skip{
   position:absolute;left:-9999px;top:0;z-index:300;
