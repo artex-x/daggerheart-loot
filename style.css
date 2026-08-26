@@ -1295,7 +1295,7 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-strip .pc-c3{flex-grow:33.3}
 /* Бонус прижат к кости, тип урона - к перегородке: вместе по центру они
    отходили от кости и читались как одна пара, хотя это разные вещи. */
-.pc-strip .pc-c1.wbonus{justify-content:space-between}
+.pc-strip .pc-c1.wbonus{justify-content:space-between;padding-right:1.6cqw}
 .pc-strip .pc-box{flex:0 1 auto;min-width:0;padding:0 .6cqw}
 /* Шестиугольник с костью: тёмный кант и светлая заливка внутри. Рисуется
    обрезкой, а не картинкой - у выгруженной детали внутри своя штриховка, из-за
