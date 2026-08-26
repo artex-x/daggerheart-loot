@@ -223,10 +223,14 @@ main{padding:26px 0 48px;min-height:60vh}
 .dielbl.h{color:var(--hope)}
 .dielbl.f{color:var(--fear)}
 
+/* Часть кнопок - ссылки: печать ведёт на свой адрес, и её видно в истории.
+   Подчёркивание тут снимается для всех, а не для одного места: правило стояло
+   только на действиях карточки, и та же кнопка в панели выделения и на странице
+   списка приходила подчёркнутой. */
 .btn{
   border:1px solid var(--line2);background:var(--surface);color:var(--txt);
   padding:0 18px;height:46px;border-radius:var(--r-sm);font-size:14px;font-weight:600;transition:.15s;
-  display:inline-flex;align-items:center;gap:8px;
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;
 }
 .btn:hover{border-color:var(--gold);background:var(--surface2)}
 .btn.primary{background:linear-gradient(180deg,#e2b76c,var(--gold));border-color:#e8c27c;color:#1a1206;font-weight:700}
@@ -387,7 +391,6 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 .refs details>a{display:inline-block;padding:0 9px 8px;font-size:11px;color:var(--gold-soft)}
 
 .card-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto;padding-top:3px}
-.card-acts a.btn{text-decoration:none}
 
 /* Selection: a box in every row and tile, the same everywhere it appears */
 .selbox{display:flex;align-items:center;justify-content:center;flex:none;width:42px;

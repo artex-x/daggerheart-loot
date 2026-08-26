@@ -318,6 +318,11 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await page.click('.rows .row .selbox input'); await settle();
   const sel = await page.$eval('#selBar a[href^="#/print/"]', e => e.getAttribute('href'));
   ok(/^#\/print\/\w+$/.test(sel), 'из полосы выделения не печатается: ' + sel);
+  /* Печать - ссылка, и рядом с ней стоят обычные кнопки. Правило, снимающее
+     подчёркивание, лежало только на действиях карточки, и тут она приходила
+     подчёркнутой - одна кнопка в ряду не как все. */
+  ok((await page.$eval('#selBar a.btn', e => getComputedStyle(e).textDecorationLine)) === 'none',
+     'кнопка печати подчёркнута, а соседние - нет');
 
   await page.evaluate(() => localStorage.setItem('dhloot.lists.v2', JSON.stringify(
     [{ id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }])));
