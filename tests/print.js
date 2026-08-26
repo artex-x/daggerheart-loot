@@ -92,20 +92,16 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(parts.ribbon, 'полоса характеристик без рамки');
   ok(/Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
      'в полосе характеристик нет черты или дистанции: ' + parts.cells);
-  ok(parts.hands === 2, 'ладоней хвата не две: ' + parts.hands);
+  ok(parts.hands === 1, 'знак хвата не один: ' + parts.hands);
 
-  /* Ладони - пара, левая и правая: правая стояла дважды, и хват в две руки
-     выглядел как две правые ладони. Занятость - это заливка, а не форма. */
-  const hands = () => page.$$eval('.pc-burden img',
-    e => e.map(x => x.getAttribute('src').replace(/^.*\//, '')));
+  /* Знак хвата берётся из макета целиком. Собранный из двух картинок, он ставил
+     правую ладонь дважды - хват в две руки выглядел как две правые ладони. */
+  const burden = () => page.$eval('.pc-burden img',
+    e => e.getAttribute('src').replace(/^.*\//, ''));
   await go('#/print/w51');                              // хват в две руки
-  let hh = await hands();
-  ok(/-l-/.test(hh[0]) && /-r-/.test(hh[1]), 'ладони не пара: ' + hh.join(' и '));
-  ok(hh.every(h => /-used/.test(h)), 'при хвате в две руки ладонь свободна: ' + hh.join(' и '));
+  ok((await burden()) === 'burden-2.svg', 'у хвата в две руки не тот знак: ' + (await burden()));
   await go('#/print/w7');                               // хват в одну
-  hh = await hands();
-  ok(/-l-free/.test(hh[0]) && /-r-used/.test(hh[1]),
-     'при хвате в одну руку не одна свободная ладонь: ' + hh.join(' и '));
+  ok((await burden()) === 'burden-1.svg', 'у хвата в одну руку не тот знак: ' + (await burden()));
   ok(/Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
      'в подписи нет книги: ' + parts.bottom);
   /* У вещи сообщества подпись называет книгу, а не только само сообщество:
@@ -254,6 +250,20 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   const dieInk = await page.$eval('.pc-die b', e => getComputedStyle(e).color);
   const dl = (dieInk.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
   ok(dl < 90, 'в чёрно-белом число на кости белое по белому: ' + dieInk);
+  /* Занятая ладонь в чёрно-белом красилась почти в чёрное, а обводка вокруг
+     неё была тёмной - пальцы на знаке пропадали. В макете заливка средне-серая,
+     обводка светлая, и разрезы между пальцами читаются. */
+  await go('#/print/w51');
+  await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
+  const bwBurden = await page.$eval('.pc-burden img', e => e.getAttribute('src'));
+  ok(/-bw\.svg$/.test(bwBurden), 'в чёрно-белом взят цветной знак хвата: ' + bwBurden);
+  const bwHand = require('fs').readFileSync(
+    require('path').join(__dirname, '..', bwBurden), 'utf8');
+  const ink = h => parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
+  const fills = (bwHand.match(/fill="#[0-9a-fA-F]{6}"/g) || []).map(s => s.slice(7, 14));
+  ok(fills.length && fills.every(f => ink(f) > 180),
+     'в чёрно-белом ладонь залита почти чёрным: ' + fills.join(', '));
+
   await go('#/print/q1');
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
   ok(await page.$('.pc-img'), 'кнопка не вернула цветной лист');

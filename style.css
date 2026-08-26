@@ -1108,10 +1108,10 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-tier i{position:absolute;left:0;top:9.6cqw;width:100%;
   font:700 2.6cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
 
-/* Ладони хвата справа сверху: занятая рука чёрная, свободная золотая */
-.pc-burden{position:absolute;right:6.9cqw;top:5.8cqw;z-index:4;
-  display:flex;align-items:flex-end;gap:.6cqw}
-.pc-burden img{width:8.7cqw;height:auto;display:block}
+/* Ладони хвата справа сверху: занятая рука тёмная, свободная светлая.
+   Ширина 18cqw - это 62 px знака на 344 px карты, как в макете. */
+.pc-burden{position:absolute;right:6.9cqw;top:5.8cqw;z-index:4;display:block}
+.pc-burden img{width:18cqw;height:auto;display:block}
 .pc-burden small{position:absolute;left:0;right:0;bottom:-3.2cqw;text-align:center;
   font:700 2.4cqw/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:#000}
 
@@ -1184,8 +1184,8 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .bw .pc-shield{width:8.4cqw}
 .bw .pc-shield b{top:1.8cqw;font-size:3.6cqw}
 .bw .pc-shield i{top:9.6cqw;left:-2cqw;right:-2cqw;font-size:1.9cqw}
-.bw .pc-burden{gap:.4cqw;align-self:flex-start}
-.bw .pc-burden img{width:6.6cqw}
+.bw .pc-burden{align-self:flex-start}
+.bw .pc-burden img{width:13.6cqw}
 .bw .pc-burden small{bottom:-2.6cqw;font-size:1.9cqw}
 /* Ряду нужен низ под подписи «ХВАТ» и «БРОНЯ», иначе они лезут на имя */
 .pc-head{padding-bottom:3cqw}
