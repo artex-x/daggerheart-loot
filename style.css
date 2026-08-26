@@ -1187,7 +1187,7 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
    Содержимое поднимается вверх - без картинки держать под неё место незачем. */
 /* В чёрно-белом лента, плашка и знак стоят строкой над именем - как в макете */
 .pcard.bw{justify-content:flex-start}
-.pcard.bw .pc-content{padding-top:5.8cqw;background:none}
+.pcard.bw .pc-content{padding-top:5.8cqw;background:none;flex:1 1 auto}
 .pc-head{display:flex;align-items:flex-start;gap:2.4cqw;margin-bottom:1.6cqw}
 .pc-head .pc-tags{padding:0;flex:1 1 auto;align-items:flex-start}
 /* `relative`, а не `static`: подписи внутри позиционируются от самой ленты, и
@@ -1263,7 +1263,11 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-text ul,.pc-text ol{margin:0 0 1.4cqw;padding-left:4cqw}
 .pc-text i,.pc-text em{color:#000}
 
+/* Подпись стоит у нижнего края, а не под текстом: в чёрно-белом блок прижат к
+   верху карты, и подпись висела там, где кончилось правило - у каждой карты на
+   своей высоте. */
 .pc-bottom{
+  margin-top:auto;
   display:flex;justify-content:space-between;gap:2cqw;padding-top:1.4cqw;
   font:600 italic 2.9cqw/1.4 var(--ui);color:#2f2f37;white-space:nowrap;
 }

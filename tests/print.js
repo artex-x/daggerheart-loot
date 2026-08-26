@@ -256,6 +256,15 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   const dieInk = await page.$eval('.pc-die b', e => getComputedStyle(e).color);
   const dl = (dieInk.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
   ok(dl < 90, 'в чёрно-белом число на кости белое по белому: ' + dieInk);
+  /* Подпись стоит у нижнего края карты. В чёрно-белом блок прижат к верху, и
+     она висела там, где кончилось правило - у каждой карты на своей высоте. */
+  await go('#/print/q1-q313-voa2_a3');
+  await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
+  const feet = await page.$$eval('.pcard:not(.blank)', e => e.map(function (c) {
+    return c.getBoundingClientRect().bottom - c.querySelector('.pc-bottom').getBoundingClientRect().bottom;
+  }));
+  ok(feet.every(v => v < 24), 'подпись не у нижнего края: ' + feet.map(v => v.toFixed(0)).join(', '));
+
   /* Занятая ладонь в чёрно-белом красилась почти в чёрное, а обводка вокруг
      неё была тёмной - пальцы на знаке пропадали. В макете заливка средне-серая,
      обводка светлая, и разрезы между пальцами читаются. */
