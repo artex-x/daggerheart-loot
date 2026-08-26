@@ -2933,7 +2933,13 @@ function moneyPickerHTML(l){
     '<button type="button" class="helpbtn sm' + (S.moneyHelp ? ' on' : '') + '"' +
       ' data-act="moneyHelp" aria-expanded="' + (S.moneyHelp ? 'true' : 'false') + '"' +
       ' title="' + esc(t().whatIsThis) + '" aria-label="' + esc(t().whatIsThis) + '">?</button>' +
-    (S.moneyHelp ? '<span class="money-br"></span><p class="money-help">' + t().moneyHelp + '</p>' : '') +
+    /* Справка тут та же, что за «?» на страницах бросков, и выглядит так же:
+       рамка во всю ширину контейнера. Просто абзацем она висела в ряду с
+       чипами, обрывалась по своей ширине и не читалась как отдельный блок. */
+    (S.moneyHelp
+      ? '<span class="money-br"></span>' +
+        '<div class="helpbox money-help"><p>' + t().moneyHelp + '</p></div>'
+      : '') +
   '</div>';
 }
 

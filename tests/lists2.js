@@ -340,6 +340,18 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
     await page.click('.money .helpbtn'); await settle();
     const mh = await page.$eval('.money-help', e => e.innerText);
     ok(/сундук/i.test(mh) && /10 горстей/.test(mh), 'в справке нет пересчёта: ' + mh.slice(0, 90));
+    /* Выглядит она так же, как справка за «?» на страницах бросков: рамка во всю
+       ширину контейнера. Просто абзацем она висела в ряду с чипами и
+       обрывалась по ширине текста. */
+    const helpBox = await page.evaluate(() => {
+      const h = document.querySelector('.money-help'), c = document.querySelector('.wrap');
+      return { box: h.classList.contains('helpbox'),
+               w: Math.round(h.getBoundingClientRect().width),
+               cw: Math.round(c.getBoundingClientRect().width) };
+    });
+    ok(helpBox.box, 'справка о золоте - не та рамка, что на страницах бросков');
+    ok(Math.abs(helpBox.w - helpBox.cw) < 2,
+       'справка о золоте уже контейнера: ' + helpBox.w + ' из ' + helpBox.cw);
     await page.click('.money .helpbtn'); await settle();
 
 
