@@ -448,10 +448,10 @@ node tools/build.js
 
 **Игровые тексты** принадлежат правообладателям и включены как справочник для игры за столом:
 
-- Материалы Core Rulebook входят в Public Game Content и используются в соответствии с [Darrington Press Community Gaming License](https://darringtonpress.com/license/).
-- **Hope & Fear**, **Wondrous Environments**, **Community Magic Items** и **Alternate Loot & Consumable Tables** под эту лицензию не подпадают: это платные и фанатские дополнения, права на тексты которых принадлежат их авторам.
+- **Core Rulebook** и **Hope & Fear** используются в соответствии с [Darrington Press Community Gaming License](https://darringtonpress.com/license/). 25 августа 2026 года вышла версия 2.0: она признаёт Public Game Content [Daggerheart SRD 2.0](https://daggerheart.com/srd) и добавляет Hope & Fear в число игр, на которые лицензия распространяется. SRD 1.0 остаётся в силе для материалов, выпущенных до этого.
+- **Wondrous Environments**, **Community Magic Items** и **Alternate Loot & Consumable Tables** под эту лицензию не подпадают: это платные и фанатские дополнения, права на тексты которых принадлежат их авторам.
 
-> This product includes materials from the Daggerheart System Reference Document 1.0, © Critical Role, LLC.
+> This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at https://www.daggerheart.com. There are no previous modifications by others.
 
 Daggerheart © Darrington Press. Проект не связан с Darrington Press и Critical Role и не одобрен ими.
 

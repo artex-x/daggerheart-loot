@@ -368,5 +368,44 @@ console.log('кости на кнопках');
   ok(got[2] === want[0] && got[3] === want[1], 'd' + d + ': пути разошлись с файлом');
 });
 
+/* Ссылка на источник - не украшение, а условие лицензии (DPCGL 2.0, п. 4.1):
+   без неё право пользоваться текстами не возникает. Формула задана дословно, и
+   стоять она должна везде, где сайт «делится» материалом: в подвале обоих
+   языков, в README и в llms.txt. Раз уж номер SRD теперь входит в саму формулу,
+   версия проверяется вместе с ней - на 1.0 её оставили в трёх местах из
+   четырёх, и заметить это было нечем.
+
+   Заодно проверяется, что Hope & Fear больше не числится вне лицензии: 25
+   августа 2026 года DPCGL 2.0 добавила его в список игр, и старая оговорка
+   стала неверной. */
+console.log('ссылка на источник');
+const CITE = 'Daggerheart System Reference Document 2.0, © Critical Role, LLC.' +
+             ' under the terms of the Darrington Press Community Gaming (DPCGL)' +
+             ' License.';
+['README.md', 'llms.txt'].forEach(function (file) {
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\s+/g, ' ');
+  ok(text.indexOf(CITE) >= 0, file + ': нет дословной ссылки на источник');
+  ok(text.indexOf('Reference Document 1.0') < 0, file + ': ссылка всё ещё на SRD 1.0');
+});
+/* В подвале - на обоих языках: он и есть то, чем делятся */
+const feet = app.match(/\n\s*foot:'([^']*)'/g) || [];
+ok(feet.length === 2, 'подвалов не два, а ' + feet.length);
+feet.forEach(function (f, i) {
+  ok(f.replace(/<[^>]+>/g, '').indexOf(CITE) >= 0,
+     'в подвале ' + (i ? 'по-английски' : 'по-русски') + ' нет ссылки на источник');
+});
+/* Старая оговорка перечисляла Hope & Fear среди того, что под лицензию не
+   подпадает. Дополнения, которые там остались, проверяются заодно: их из списка
+   выкинуть тоже нельзя. */
+const clause = (/^.*под эту лицензию не подпадают.*$/m.exec(
+  fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8')) || [''])[0];
+ok(clause, 'README: пропала оговорка о том, что под лицензию не подпадает');
+ok(clause.indexOf('Hope & Fear') < 0,
+   'README: Hope & Fear всё ещё числится вне лицензии, хотя DPCGL 2.0 его включила');
+['Wondrous Environments', 'Community Magic Items',
+ 'Alternate Loot & Consumable Tables'].forEach(function (name) {
+  ok(clause.indexOf(name) >= 0, 'README: ' + name + ' пропал из списка вне лицензии');
+});
+
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
 process.exit(fail ? 1 : 0);

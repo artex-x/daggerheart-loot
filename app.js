@@ -188,7 +188,10 @@ const T = {
     repriceDone:'Цены пересчитаны', repriceUndo:'Вернуть', batchDeleted:'Убрано из списка',
     rollNo:'номер', notFound:'Предмет не найден', notFoundSub:'Возможно, ссылка устарела или данные были изменены.',
     hope:'Надежда', fear:'Страх',
-    foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press.',
+    /* Формула ссылки на источник задана самой лицензией (DPCGL 2.0, п. 4) и
+       приводится по-английски дословно в обоих языках - это цитата, а не текст
+       интерфейса. */
+    foot:'Данные: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot &amp; Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at <a href="https://www.daggerheart.com" target="_blank" rel="noopener">daggerheart.com</a>. There are no previous modifications by others.',
     whatIsThis:'Как это работает',
     langLabel:'Язык', sectionsLabel:'Разделы', close:'Закрыть', skipToContent:'К содержимому',
     docTitle:'Генератор лута — Daggerheart',
@@ -369,7 +372,7 @@ const T = {
     repriceDone:'Prices recalculated', repriceUndo:'Undo', batchDeleted:'Removed from the list',
     rollNo:'roll', notFound:'Item not found', notFoundSub:'The link may be out of date, or the data has changed.',
     hope:'Hope', fear:'Fear',
-    foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press.',
+    foot:'Data: Daggerheart Core Set, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot &amp; Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at <a href="https://www.daggerheart.com" target="_blank" rel="noopener">daggerheart.com</a>. There are no previous modifications by others.',
     whatIsThis:'How this works',
     langLabel:'Language', sectionsLabel:'Sections', close:'Close', skipToContent:'Skip to content',
     docTitle:'Daggerheart Loot Generator',

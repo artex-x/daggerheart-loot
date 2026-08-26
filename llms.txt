@@ -31,9 +31,10 @@ Read `catalog.csv` first. Everything else here is about what to do with it.
 
 For rules questions this site does not answer — how a condition works, what a
 Reaction Roll is, how tiers map to levels — use the
-[Daggerheart SRD](https://www.daggerheart.com/srd/)
-([PDF](https://www.daggerheart.com/wp-content/uploads/2025/09/Daggerheart-SRD-9-09-25.pdf)),
+[Daggerheart SRD 2.0](https://daggerheart.com/srd)
+([PDF](https://www.daggerheart.com/wp-content/uploads/2026/08/DH_SRD_2_2026_08_25.pdf)),
 which is the free, official text released under the Community Gaming License.
+It supersedes SRD 1.0 and covers Hope & Fear as well as the core rules.
 Quote it rather than reconstructing a rule from memory: this site carries item
 text, not the rules those items refer to.
 
@@ -355,5 +356,12 @@ from the book.
 
 ## Licence
 
-Item text belongs to Darrington Press and is used under the Daggerheart
-Community Gaming License. The project code is MIT.
+This product includes materials from the Daggerheart System Reference Document
+2.0, © Critical Role, LLC. under the terms of the Darrington Press Community
+Gaming (DPCGL) License. More information can be found at
+https://www.daggerheart.com. There are no previous modifications by others.
+
+Core and Hope & Fear are covered by that licence; Wondrous Loot, Dread GM
+Toolbox, Vault of Ages, Community Magic Items and the Alternate Loot &
+Consumable Tables are not - they belong to their own authors. The project code
+is MIT.
