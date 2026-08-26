@@ -1211,7 +1211,11 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-shield{position:absolute;right:6.9cqw;top:5.8cqw;z-index:4;
   display:block;width:9.6cqw;text-align:center}
 .pc-shield img{display:block;width:100%;height:auto}
-.pc-shield b{position:absolute;left:0;top:2.4cqw;width:100%;
+/* Число стоит по центру щита, а не на глазок сверху: у щита 33 к 36, так что
+   его коробка на 9% выше своей ширины, и середина этой коробки - середина щита.
+   Прежний отступ сверху был подобран на глаз, и число стояло выше середины. */
+.pc-shield b{position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
   font:900 4cqw/1 var(--ui);color:#fff}
 .pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:11.2cqw;
   font:800 2.2cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
@@ -1235,10 +1239,11 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .bw .pc-head{padding-left:11.8cqw}
 .bw .pc-tier b{top:1.4cqw;font-size:4.6cqw}
 .bw .pc-tier i{top:6.6cqw;font-size:2cqw}
-/* В чёрно-белом щит белый в светло-серой обводке, и число на нём тёмное */
+/* В чёрно-белом щит белый в светло-серой обводке, и число на нём тёмное.
+   Размеры и отступы те же: они считаются от ширины знака. */
 .bw .pc-shield{width:9.6cqw}
-.bw .pc-shield b{top:2.4cqw;font-size:3.6cqw;color:#18171C}
-.bw .pc-shield i{top:9.6cqw;left:-2cqw;right:-2cqw;font-size:1.9cqw}
+.bw .pc-shield b{font-size:3.6cqw;color:#18171C}
+.bw .pc-shield i{font-size:1.9cqw}
 /* Знак хвата в чёрно-белом того же размера, что и в цвете: в макете это одна и
    та же группа 62x48, и уменьшать её без краски незачем. */
 .bw .pc-burden{align-self:flex-start}

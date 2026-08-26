@@ -192,6 +192,24 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(/fill="#18171C"/.test(shieldFile), 'щит в цвете снова один контур, без тёмного поля');
   const asInk = await page.$eval('.pc-shield b', e => getComputedStyle(e).color);
   ok(/255, 255, 255/.test(asInk), 'число на тёмном щите не белое: ' + asInk);
+  /* Число стоит по центру щита, а не выше середины */
+  const mark = () => page.$eval('.pc-shield', function (e) {
+    const img = e.querySelector('img').getBoundingClientRect();
+    const num = e.querySelector('b').getBoundingClientRect();
+    const cap = e.querySelector('i').getBoundingClientRect();
+    const k = 33 / img.width;                       // в единицы макета
+    return { off: ((num.top + num.bottom) / 2 - (img.top + img.bottom) / 2) * k,
+             gap: (cap.top - img.bottom) * k };
+  });
+  for (const bw of [false, true]) {
+    await go('#/print/q313');
+    if (bw) { await page.click('[data-act="printArt"][data-val="bw"]'); await settle(); }
+    const m = await mark();
+    ok(Math.abs(m.off) < 1.5, (bw ? 'ч/б: ' : 'цвет: ') +
+       'число сдвинуто от середины щита на ' + m.off.toFixed(1));
+  }
+  await go('#/print/q313');
+  await page.click('[data-act="printArt"][data-val="color"]'); await settle();
   const th = await page.$eval('.pc-thstrip', e => e.textContent);
   ok(/5/.test(th) && /11/.test(th), 'на шкале нет порогов: ' + th);
   ok((await page.$$eval('.pc-th-box', e => e.length)) === 2, 'порогов на шкале не два');
