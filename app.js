@@ -3396,11 +3396,7 @@ function printCardHTML(it){
     : '';
   const tags = '<div class="pc-tags"><span class="pc-tag on">' + esc(tag1) + '</span>' +
     (tag2 ? '<span class="pc-tag out">' + esc(tag2) + '</span>' : '') + '</div>';
-  /* Верхние 22% ширины карты отданы ленте ранга и знаку справа. У артефакта и
-     проклятого предмета нет ни того, ни другого, и эта полоса оставалась просто
-     белой - на карте с длинным правилом это четверть места впустую. */
-  const bare = !banner && !mark ? ' bare' : '';
-  return '<article class="pcard ' + eqClassFor(it) + bare + (S.printBW ? ' bw' : '') +
+  return '<article class="pcard ' + eqClassFor(it) + (S.printBW ? ' bw' : '') +
       '" data-pid="' + esc(it.id) + '">' +
     (S.printBW ? '' :
       '<div class="pc-art">' +
@@ -3472,7 +3468,7 @@ function fitPrintCards(){
        нельзя, иначе от карты остаётся лист бумаги с текстом. */
     let pct = 3.5;
     while (tight() && pct > 3) { pct -= 0.1; el.style.fontSize = pct.toFixed(1) + 'cqw'; }
-    let pad = S.printBW ? 5.8 : (card.classList.contains('bare') ? 12 : 23);
+    let pad = S.printBW ? 5.8 : 23;
     while (tight() && pad > (S.printBW ? 3 : 8)) {
       pad -= 1.5;
       if (box) box.style.setProperty('--pcpad', pad + 'cqw');
@@ -3488,6 +3484,12 @@ function fitPrintCards(){
       const cq = function (px) { return px / card.clientWidth * 100; };
       const line = cq(box.offsetTop) + pad, top = cq(art.offsetTop);
       art.style.height = Math.max(0, line - top + 6) + 'cqw';
+      /* Снимок ровно такой, какая полоса осталась над текстом: он квадратный, и
+         его высота равна ширине. У карты с двумя строками правила полоса
+         большая - и снимок большой; у карты с длинным правилом он тот же, что
+         и был. Обрезать низ нельзя: там сам предмет. */
+      const band = Math.min(100, line - top - 1);
+      art.style.setProperty('--artw', band + 'cqw');
       /* Обрезок картинки под лентой читается как брак печати - лучше без неё */
       art.style.display = line - top < 24 ? 'none' : '';
     }

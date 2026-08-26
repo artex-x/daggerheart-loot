@@ -401,6 +401,39 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await go('#/print/q1');
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
 
+  /* Картинка занимает верх карты целиком: полосу под ленту и знак никто не
+     держит. Во всех снимках оба верхних угла - пустой чёрный фон, поэтому знаки
+     ложатся на него и ничего не закрывают, а подписи под ними - светлые. */
+  await go('#/print/q1-q313-w7-ci1');
+  const art = await page.$$eval('.pcard:not(.blank)', function (cards) {
+    return cards.map(function (c) {
+      const cr = c.getBoundingClientRect();
+      const a = c.querySelector('.pc-art');
+      if (!a || a.style.display === 'none') return null;
+      const ar = a.getBoundingClientRect(), i = c.querySelector('.pc-img').getBoundingClientRect();
+      const box = c.querySelector('.pc-content');
+      const line = box.getBoundingClientRect().top - cr.top +
+                   parseFloat(getComputedStyle(box).paddingTop);
+      return { id: c.dataset.pid, top: ar.top - cr.top, wide: ar.width / cr.width,
+               over: i.bottom - cr.top - line };
+    }).filter(Boolean);
+  });
+  ok(art.length > 2, 'не на чем проверить верх карты');
+  art.forEach(function (a) {
+    ok(Math.abs(a.top) < 2, a.id + ': поле снимка не от верхнего края: ' + a.top.toFixed(1));
+    ok(a.wide > 0.98, a.id + ': поле снимка не во всю ширину: ' + (a.wide * 100).toFixed(0) + '%');
+    /* Снимок не залезает под текст: там сам предмет, и низ ему резать нельзя */
+    ok(a.over < 2, a.id + ': снимок уходит под текст на ' + a.over.toFixed(0) + ' px');
+  });
+  const capInk = await page.$eval('.pc-shield i', e => getComputedStyle(e).color);
+  ok(/255, 255, 255/.test(capInk), 'подпись знака на снимке не светлая: ' + capInk);
+  /* А в чёрно-белом снимка нет, и там она снова тёмная - по белому */
+  await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
+  const bwCap = await page.$eval('.pc-shield i', e => getComputedStyle(e).color);
+  ok(!/255, 255, 255/.test(bwCap), 'в чёрно-белом подпись знака белая по белому: ' + bwCap);
+  await go('#/print/q1');
+  await page.click('[data-act="printArt"][data-val="color"]'); await settle();
+
   /* ---------- размеры по макету ----------
      Карта в макете 344x482, и всё на ней стоит по своим числам. Проверяются они
      в единицах макета, а не в пикселях: на экране карта одна, на бумаге другая,

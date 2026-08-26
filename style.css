@@ -1143,16 +1143,33 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* Начинается ниже ленты ранга и подписи хвата: у наших вещей снимок, а не
    вырезка по белому, как в макете, и высокая картинка заезжала под них -
    «ХВАТ» читался поверх фотографии. */
+/* Картинка занимает верх карты целиком, от края до края. Полосу под ленту и
+   знак больше никто не держит: во всех 850 снимках оба угла - пустой чёрный
+   фон, медиана яркости 13 и 16 из 255, так что знаки ложатся на него и ничего
+   собой не закрывают. Раньше под них было отведено 22% высоты белого поля, а
+   сама картинка занимала 62% ширины - четверть карты уходила в никуда. */
 .pc-art{
-  position:absolute;left:0;right:0;top:22cqw;height:78cqw;z-index:1;
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  position:absolute;left:0;right:0;top:0;height:100cqw;z-index:1;
+  /* Снимок прижат к верху поля, а не по центру: по центру он свисал ниже
+     полосы и заходил под текст - как раз низом, где сам предмет. */
+  display:flex;align-items:flex-start;justify-content:center;overflow:hidden;
+  /* Тёмное поле во всю ширину, а снимок стоит на нём по центру. Так у верха
+     карты нет белых полей ни сверху, ни с боков, и при этом снимок не режется:
+     он квадратный, и шире оставшейся над текстом полосы ему быть нельзя. Цвет
+     тот же, что и фон самих снимков - у них он почти чёрный во всех 850. */
+  background:#0a0810;
 }
-/* Артефакту и проклятому предмету ни ленты, ни знака не полагается, и держать
-   под них полосу незачем: картинка занимает её, а правилу достаётся место. */
-.pcard.bare .pc-art{top:4cqw}
-.pcard.bare .pc-content{--pcpad:12cqw}
-.pc-img{width:62%;height:auto;max-height:88%;object-fit:contain;display:block}
-.pc-glyph{width:34cqw;height:36cqw;fill:#e6e3ec}
+/* Ширину задаёт подгонка: снимок квадратный, значит его высота равна ширине, и
+   чтобы он поместился целиком, шире полосы, которая осталась над текстом, ему
+   быть нельзя. Предмет на снимке занимает по высоте 81% кадра - обрезав низ,
+   обрежешь сам предмет. */
+/* Края снимка растворяются в поле под ним: фон у них один и тот же, но не
+   совпадает до точки, и без растушёвки видно прямые борта. */
+.pc-img{width:var(--artw,62%);height:auto;object-fit:contain;display:block;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+}
+.pc-glyph{width:34cqw;height:36cqw;fill:#e6e3ec;margin:auto}
 
 /* Лента ранга: свисает из-под верхнего края, число и подпись на ней */
 .pc-tier{position:absolute;left:6.9cqw;top:0;width:12.8cqw;z-index:4;
@@ -1166,8 +1183,11 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
    Ширина 18cqw - это 62 px знака на 344 px карты, как в макете. */
 .pc-burden{position:absolute;right:6.9cqw;top:5.8cqw;z-index:4;display:block}
 .pc-burden img{width:18cqw;height:auto;display:block}
+/* Подписи знаков лежат на снимке, а он тёмный: белым по нему их видно, а чёрным
+   не было видно вовсе. Тёмный ореол - на случай светлого угла. */
 .pc-burden small{position:absolute;left:0;right:0;bottom:-3.2cqw;text-align:center;
-  font:700 2.4cqw/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:#000}
+  font:700 2.4cqw/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;
+  color:#fff;text-shadow:0 0 .6cqw #000,0 0 1.2cqw #000}
 
 /* Белый блок поверх картинки, с мягким переходом - как в макете */
 /* Ограничен высотой карты: без этого текст просто выталкивал блок за нижний
@@ -1181,7 +1201,7 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
   position:relative;z-index:3;max-height:100%;overflow:hidden;
   padding:var(--pcpad) 6.9cqw 5.8cqw;
   background:linear-gradient(180deg,rgba(255,255,255,0) 0,
-    rgba(255,255,255,0) max(0cqw,calc(var(--pcpad) - 12cqw)),#fff var(--pcpad),#fff 100%);
+    rgba(255,255,255,0) max(0cqw,calc(var(--pcpad) - 18cqw)),#fff var(--pcpad),#fff 100%);
   display:flex;flex-direction:column;gap:1.2cqw;
 }
 .pc-tags{display:flex;gap:1.2cqw;flex-wrap:wrap;padding-bottom:1.2cqw}
@@ -1239,7 +1259,8 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
   display:flex;align-items:center;justify-content:center;
   font:900 4cqw/1 var(--ui);color:#fff}
 .pc-shield i{position:absolute;left:-2cqw;right:-2cqw;top:109%;
-  font:800 2.2cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
+  font:800 2.2cqw/1 var(--ui);font-style:normal;letter-spacing:.04em;text-transform:uppercase;
+  color:#fff;text-shadow:0 0 .6cqw #000,0 0 1.2cqw #000}
 
 /* ---- чёрно-белый лист ----
    Картинок нет, золота нет: те же формы с белой заливкой и тёмным контуром.
@@ -1264,6 +1285,8 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
    Размеры и отступы те же: они считаются от ширины знака. */
 .bw .pc-shield{width:9.6cqw}
 .bw .pc-shield b{font-size:3.6cqw;color:#18171C}
+/* В чёрно-белом снимка нет, и подписи стоят на белом - им нужен тёмный цвет */
+.bw .pc-shield i,.bw .pc-burden small{color:#18171C;text-shadow:none}
 .bw .pc-shield i{font-size:1.9cqw}
 /* Знак хвата в чёрно-белом того же размера, что и в цвете: в макете это одна и
    та же группа 62x48, и уменьшать её без краски незачем. */
