@@ -260,14 +260,17 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
      заливка белая, и число обязано потемнеть, иначе его просто нет. */
   await go('#/print/q35');
   await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
-  /* Внутри кости в чёрно-белом чистое поле: грани там перечёркивали цифру, и
-     «d12» на них не читалось. */
+  /* Кость с гранями, как в макете, а цифру от них спасает светлый ореол. Грани
+     когда-то просто убрали - и кость переставала быть похожа на кость. */
   const bwDie = await page.$eval('.pc-die img', e => e.getAttribute('src'));
   ok(/-bw\.svg$/.test(bwDie), 'в чёрно-белом взята цветная кость: ' + bwDie);
   const bwFile = require('fs').readFileSync(
     require('path').join(__dirname, '..', bwDie), 'utf8');
-  ok((bwFile.match(/<path/g) || []).length === 1,
-     'в чёрно-белой кости остались грани поверх цифры');
+  ok((bwFile.match(/<path/g) || []).length === 2,
+     'у чёрно-белой кости пропали грани');
+  ok(/0 0 [\d.]+ [\d.]+/.test(bwFile), 'у чёрно-белой кости нет рамки');
+  const halo = await page.$eval('.pc-die b', e => getComputedStyle(e).textShadow);
+  ok(halo && halo !== 'none', 'у цифры на кости нет ореола: ' + halo);
   const dieInk = await page.$eval('.pc-die b', e => getComputedStyle(e).color);
   const dl = (dieInk.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
   ok(dl < 90, 'в чёрно-белом число на кости белое по белому: ' + dieInk);
@@ -294,9 +297,18 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(fills.length && fills.every(f => ink(f) > 180),
      'в чёрно-белом ладонь залита почти чёрным: ' + fills.join(', '));
 
+  /* Размер кости один и тот же в двух видах: одна и та же карта не должна
+     отличаться размером кости оттого, что её печатают без краски. */
   await go('#/print/q1');
+  const dieColour = await page.$eval('.pc-die', e => Math.round(e.getBoundingClientRect().width));
+  await page.click('[data-act="printArt"][data-val="bw"]'); await settle();
+  const dieBw = await page.$eval('.pc-die', e => Math.round(e.getBoundingClientRect().width));
+  ok(dieColour === dieBw, 'кость в цвете и в чёрно-белом разного размера: ' +
+     dieColour + ' и ' + dieBw);
+
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
   ok(await page.$('.pc-img'), 'кнопка не вернула цветной лист');
+
 
   /* ---------- длинный текст ----------
      У артефактов описание в разы длиннее, чем у зелья, а место одно. */

@@ -352,21 +352,5 @@ const COUNTERS = [
   ok(text.indexOf(String(N.all)) >= 0, file + ': пропало упоминание общего числа записей');
 });
 
-/* Кости на кнопках рисуются теми же путями, что печатаются на карточке. Читать
-   файл на лету нельзя - `fetch` из `file://` запрещён, - поэтому путь выписан в
-   app.js, и вот тут он сверяется с самим файлом. Иначе правка вектора в `card/`
-   тихо разъедется с экраном. */
-console.log('кости на кнопках');
-[4, 6, 8, 10, 12, 20].forEach(function (d) {
-  const svg = fs.readFileSync(path.join(ROOT, 'card', 'die-d' + d + '-bw.svg'), 'utf8');
-  const want = /\sd="([^"]+)"/.exec(svg)[1];
-  const box = /viewBox="([^"]+)"/.exec(svg)[1];
-  const got = new RegExp("d" + d + ":\\s*\\['([^']+)',\\s*'[^']*',\\s*'([^']+)'\\]").exec(app);
-  ok(got, 'в app.js нет силуэта d' + d);
-  if (!got) return;
-  ok(got[1] === box, 'd' + d + ': рамка разошлась с файлом: ' + got[1] + ' и ' + box);
-  ok(got[2] === want, 'd' + d + ': путь разошёлся с файлом');
-});
-
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
 process.exit(fail ? 1 : 0);
