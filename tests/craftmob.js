@@ -50,6 +50,32 @@ const ROUTES = ['#/roll/community', '#/roll/std', '#/roll/alt', '#/i/w65', '#/i/
     console.log(width + 'px checked');
   }
 
+  /* Полоса выделения: три кнопки в ряд на телефон не помещаются, и подпись
+     самой длинной вылезала за свою кнопку - слева от неё оставался обрезок.
+     Проверяются те же ширины, что и у всего остального. */
+  for (const width of [320, 360, 390]) {
+    await page.setViewport({ width, height: 840 });
+    await page.goto(ROOT + '#/tables/core_item', { waitUntil: 'domcontentloaded' });
+    await ready(page);
+    await page.click('.rows .row .selbox input');
+    await new Promise(r => setTimeout(r, 300));
+    const spill = await page.evaluate(function (w) {
+      const out = [];
+      document.querySelectorAll('#selBar .btn').forEach(function (b) {
+        const r = b.getBoundingClientRect();
+        if (b.scrollWidth > b.clientWidth + 1) out.push(b.textContent.trim() + ': подпись обрезана');
+        if (r.left < -1 || r.right > w + 1) out.push(b.textContent.trim() + ': кнопка за краем экрана');
+      });
+      return out;
+    }, width);
+    if (spill.length) {
+      fail += spill.length;
+      console.log('  FAIL ' + width + 'px полоса выделения');
+      spill.forEach(b => console.log('        ' + b));
+    }
+  }
+  console.log('полоса выделения проверена');
+
   // and the standalone share stub, which has its own stylesheet
   for (const width of [320, 390]) {
     await page.setViewport({ width, height: 800 });

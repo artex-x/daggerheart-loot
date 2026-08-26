@@ -803,8 +803,12 @@ input::placeholder,textarea::placeholder{color:var(--muted2);opacity:.7}
   .selx{width:32px;height:32px}
   .selbox{width:38px}
   .selacts{width:100%;margin-left:0}
-  .selacts .seldrop,.selacts .btn{flex:1 1 0;min-width:0}
-  .selacts .btn{width:100%;justify-content:center}
+  /* Втроём в ряд они на телефон не помещаются: «Добавить в список» вдвое длиннее
+     соседей, и при равных долях её подпись вылезала за кнопку - слева оставался
+     обрезок. Основное действие занимает первую строку целиком, два коротких
+     делят вторую. */
+  .selacts .seldrop{flex:1 1 100%}
+  .selacts .btn{flex:1 1 0;min-width:0;width:100%;justify-content:center;overflow:hidden}
   .dropmenu{left:0;right:0;max-width:none}
 }
 
