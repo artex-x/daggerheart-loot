@@ -1755,6 +1755,46 @@ function sendItem(it){
   });
 }
 const ICON_DIE  = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="flex:none"><path d="M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.3 7.1 3.5-7.1 3.6-7.1-3.6L12 4.3zM4 9.2l7 3.5v7.1l-7-3.5V9.2zm9 10.6v-7.1l7-3.5v7.1l-7 3.5z"/></svg>';
+/* Колесо вместо кости: у ста девятнадцати граней кости не бывает, и рисовать
+   там кубик - врать про то, что бросают. Из тикета. */
+const ICON_WHEEL = '<svg viewBox="0 0 32 32" class="dieicon wheel" fill="none" stroke="currentColor"' +
+  ' stroke-linecap="round" stroke-linejoin="round">' +
+  '<circle cx="16" cy="16" r="9"/><circle cx="16" cy="16" r="14"/>' +
+  [[16,2,16,7],[10.6,3.1,12.6,7.7],[6.1,6.1,9.6,9.6],[3.1,10.6,7.7,12.6],
+   [2,16,7,16],[3.1,21.4,7.7,19.4],[6.1,25.9,9.6,22.4],[10.6,28.9,12.6,24.3],
+   [16,30,16,25],[21.4,28.9,19.4,24.3],[25.9,25.9,22.4,22.4],[28.9,21.4,24.3,19.4],
+   [30,16,25,16],[28.9,10.6,24.3,12.6],[25.9,6.1,22.4,9.6],[21.4,3.1,19.4,7.7]]
+    .map(function (l) {
+      return '<line x1="' + l[0] + '" y1="' + l[1] + '" x2="' + l[2] + '" y2="' + l[3] + '"/>';
+    }).join('') +
+  '<line x1="11" y1="16" x2="21" y2="16"/><line x1="16" y1="21" x2="16" y2="11"/>' +
+  '<circle cx="16" cy="11" r="1"/><circle cx="16" cy="16" r="1"/>' +
+  '<circle cx="21" cy="16" r="1"/><circle cx="11" cy="16" r="1"/>' +
+  '<circle cx="16" cy="21" r="1"/></svg>';
+/* Силуэты костей - те же, что печатаются на карточке. Путь и рамка взяты из
+   `card/die-dN-bw.svg` слово в слово, а `tests/derived.js` сверяет их с
+   файлами: прочитать файл на лету нельзя, `fetch` из `file://` запрещён. */
+const DIE_PATH = {
+  d4:  ['0 0 21.5 23.5', '1.5', 'M0.75 22.75V0.75L20.75 11.75L0.75 22.75Z'],
+  d6:  ['0 0 30.25 34.75', '1.75', 'M15.125 0.875L29.375 9.55921V26.0592L15.125 33.875L0.875 26.0592V9.55921L15.125 0.875Z'],
+  d8:  ['0 0 31.75 34.75', '1.75', 'M30.875 26.356L15.875 33.875L0.875 26.356V9.64715L15.875 0.875L30.875 9.64715V26.356Z'],
+  d10: ['0 0 36.25 34.75', '1.75', 'M18.125 0.875L35.375 14.2534V19.6047L18.125 33.875L0.875 19.6047V14.2534L18.125 0.875Z'],
+  d12: ['0 0 23.25 24.25', '1.25', 'M18.3472 21.2039L22.625 15.7566V8.49342L18.3472 3.04605L11.625 0.625L4.90278 3.04605L0.625 8.49342V15.7566L4.90278 21.2039L11.625 23.625L18.3472 21.2039Z'],
+  d20: ['0 0 23.15 25.15', '1.15', 'M22.575 18.8908V6.25921L11.575 0.575L0.575 6.25921V18.8908L11.575 24.575L22.575 18.8908Z'],
+};
+/* Кость на кнопке - та же, что печатается на карточке: форма у каждой своя, и
+   узнать по ней, что бросают, проще, чем прочитать «d12». Сотка катается парой
+   десятков, так что и знак у неё десятки. Цвет берётся у кнопки: знак стоит и
+   на золотом, и на тёмном, и своя заливка пропала бы на одном из двух. */
+function dieIcon(n){
+  const p = DIE_PATH['d' + (n === 100 ? 10 : n)];
+  if (!p) return ICON_WHEEL;
+  /* Толщина канта задаётся в css и не тянется вместе с фигурой: у костей она
+     своя, и на 17 пикселях d4 выходила заметно жирнее d20. */
+  return '<svg viewBox="' + p[0] + '" fill="none" stroke="currentColor"' +
+    ' stroke-linejoin="round" class="dieicon">' +
+    '<path d="' + p[2] + '"/></svg>';
+}
 
 /* ============================================================
    CARD
@@ -2149,7 +2189,7 @@ function renderStd(){
             return '<button type="button" class="btn primary"' +
               ' data-act="roll" data-val="' + x.n + '"' +
               ' title="' + esc(t().roll + ' ' + x.n + 'd12 — ' + rar) + '">' +
-              '<span class="dl">' + ICON_DIE + (i === 0 ? esc(t().roll) + ' ' : '') + x.n + 'd12</span>' +
+              '<span class="dl">' + dieIcon(12) + (i === 0 ? esc(t().roll) + ' ' : '') + x.n + 'd12</span>' +
               '<small>' + esc(rar) + '</small></button>';
           }).join('') +
         '</div>' +
@@ -2220,7 +2260,7 @@ function renderAlt(){
       '<div class="numrow">' +
         '<div class="dieblock"><span class="dielbl h">' + esc(t().hopeDie) + '</span>' + numBox('hope', st.hope, 1, 12, 'hope') + '</div>' +
         '<div class="dieblock"><span class="dielbl f">' + esc(t().fearDie) + '</span>' + numBox('fear', st.fear, 1, 12, 'fear') + '</div>' +
-        '<div style="display:flex;align-items:flex-end"><button type="button" class="btn primary" data-act="rollDuality">' + ICON_DIE + esc(t().rollDuality) + '</button></div>' +
+        '<div style="display:flex;align-items:flex-end"><button type="button" class="btn primary" data-act="rollDuality">' + dieIcon(12) + esc(t().rollDuality) + '</button></div>' +
       '</div>' +
     '</div>' +
     kindChips(LOOT_KINDS) +
@@ -2255,7 +2295,7 @@ function renderWond(){
   '<div class="panel">' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–' + max + ')</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, max) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(max)) + '</button>' +
+        '<button type="button" class="btn primary" data-act="roll">' + dieIcon(max) + esc(rollLabel(max)) + '</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -2271,7 +2311,7 @@ function renderDread(){
   '<div class="panel">' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1\u2013' + max + ')</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, max) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(max)) + '</button>' +
+        '<button type="button" class="btn primary" data-act="roll">' + dieIcon(max) + esc(rollLabel(max)) + '</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -2298,7 +2338,7 @@ function renderVoa(){
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–' + max + ')</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, max) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(max)) + '</button>' +
+        '<button type="button" class="btn primary" data-act="roll">' + dieIcon(max) + esc(rollLabel(max)) + '</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -2321,7 +2361,7 @@ function renderComm(){
     '</div>' +
     '<div class="field"><span class="lbl">' + esc(t().rollResult) + ' (1–10)</span>' +
       '<div class="numrow">' + numBox('n', st.n, 1, 10) +
-        '<button type="button" class="btn primary" data-act="roll">' + ICON_DIE + esc(rollLabel(10)) + '</button>' +
+        '<button type="button" class="btn primary" data-act="roll">' + dieIcon(10) + esc(rollLabel(10)) + '</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -2954,7 +2994,7 @@ function listRollPanel(l, items){
       '<span class="lbl">' + esc(t().rollResult) + ' (1–' + items.length + ')</span>' +
       '<div class="numrow">' + numBox('n', n, 1, items.length) +
         '<button type="button" class="btn primary" data-act="rollList" data-val="' + esc(l.id) + '">' +
-          ICON_DIE + esc(rollLabel(items.length)) + '</button>' +
+          dieIcon(items.length) + esc(rollLabel(items.length)) + '</button>' +
         (hit ? '<button type="button" class="btn ghost" data-act="clearRoll">' + esc(t().clear) + '</button>' : '') +
       '</div>' +
       (hit ? '' : '<p class="rollhint">' + esc(t().rollHint) + '</p>') +

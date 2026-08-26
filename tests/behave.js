@@ -46,6 +46,20 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
   let page = await newPage();
   await go(page, '#/roll/std');
 
+  /* На кнопке броска - силуэт той кости, которую бросают, а не общий кубик.
+     Там, где кости не бывает, - колесо: рисовать кубик рядом с «1-119» значит
+     врать про то, что бросают. */
+  const d12 = await page.$eval('[data-act="roll"] .dieicon', e => e.getAttribute('viewBox'));
+  ok(d12 === '0 0 23.25 24.25', 'на кнопке d12 не силуэт d12: ' + d12);
+  ok(!(await page.$('[data-act="roll"] .dieicon.wheel')), 'у d12 на кнопке колесо');
+  await go(page, '#/roll/wondrous');
+  ok(await page.$('[data-act="roll"] .dieicon.wheel'), 'у 1-119 на кнопке кость');
+  /* Кант рисуется, заливки нет: с заливкой кость превращалась в чёрное пятно */
+  const ink = await page.$eval('[data-act="roll"] .dieicon',
+    e => getComputedStyle(e).fill);
+  ok(/none/.test(ink), 'силуэт кости залит: ' + ink);
+  await go(page, '#/roll/std');
+
   // every number in the table has something behind it, in every source mix
   const std = await page.evaluate(() => {
     const out = { holes: [], counts: {} };

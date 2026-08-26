@@ -232,6 +232,17 @@ main{padding:26px 0 48px;min-height:60vh}
   padding:0 18px;height:46px;border-radius:var(--r-sm);font-size:14px;font-weight:600;transition:.15s;
   display:inline-flex;align-items:center;gap:8px;text-decoration:none;
 }
+/* Кость на кнопке - тот же силуэт, что печатается на карточке, но контуром в
+   цвет кнопки: своя заливка пропадала бы то на золотом, то на тёмном. Ширина у
+   каждой кости своя, поэтому задана только высота. */
+/* `fill` тут перебивает общее правило для значков в кнопке: кость рисуется
+   контуром, а с заливкой она превращалась в чёрное пятно. Кант не тянется
+   вместе с фигурой - иначе d4 на кнопке выходит жирнее d20. */
+.dieicon,.btn .dieicon,.dl .dieicon{
+  flex:none;height:17px;width:auto;display:block;fill:none;
+  stroke-width:1.4;vector-effect:non-scaling-stroke;
+}
+.dieicon.wheel{height:18px;stroke-width:1.6}
 .btn:hover{border-color:var(--gold);background:var(--surface2)}
 .btn.primary{background:linear-gradient(180deg,#e2b76c,var(--gold));border-color:#e8c27c;color:#1a1206;font-weight:700}
 .btn.primary:hover{filter:brightness(1.07)}
