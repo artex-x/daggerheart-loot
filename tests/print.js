@@ -316,13 +316,22 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
   ok(await page.$('.pc-img'), 'кнопка не вернула цветной лист');
 
-  /* У магического оружия рамка своя - и рисунком, и цветом */
-  await go('#/print/q23');
-  ok(/ribbon-mag\.svg$/.test(await page.$eval('.pc-ribbon', e => e.getAttribute('src'))),
-     'у магического оружия рамка физического');
+  /* У магического оружия рамка своя - и рисунком, и цветом. В чёрно-белом
+     остаётся рисунок: там она тоже своя, и общее правило «в чёрно-белом убрать
+     -mag» - оно про кости - подменяло её рамкой физического. */
+  const ribbonOf = () => page.$eval('.pc-ribbon', e => e.getAttribute('src').replace(/^.*\//, ''));
+  for (const bw of [false, true]) {
+    await go('#/print/q23');
+    if (bw) { await page.click('[data-act="printArt"][data-val="bw"]'); await settle(); }
+    ok((await ribbonOf()) === (bw ? 'ribbon-mag-bw.svg' : 'ribbon-mag.svg'),
+       'у магического оружия не своя рамка: ' + (await ribbonOf()));
+    await go('#/print/q1');
+    if (bw) { await page.click('[data-act="printArt"][data-val="bw"]'); await settle(); }
+    ok((await ribbonOf()) === (bw ? 'ribbon-bw.svg' : 'ribbon.svg'),
+       'у физического оружия не своя рамка: ' + (await ribbonOf()));
+  }
   await go('#/print/q1');
-  ok(/ribbon\.svg$/.test(await page.$eval('.pc-ribbon', e => e.getAttribute('src'))),
-     'у физического оружия рамка магического');
+  await page.click('[data-act="printArt"][data-val="color"]'); await settle();
 
   /* ---------- длинный текст ----------
      У артефактов описание в разы длиннее, чем у зелья, а место одно. */
