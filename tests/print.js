@@ -177,6 +177,26 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   }).map(x => x.textContent));
   ok(!cut.length, 'значение в полосе обрезано: ' + cut.join(', '));
 
+  /* Самые длинные сочетания черты, дистанции и бонуса из всего корпуса: если
+     где-то значение и обрежется, то на них. Проверяются оба вида листа - в
+     чёрно-белом кегль свой. «Не влезло» тут значит «часть данных с карты
+     потеряна», а не «некрасиво». */
+  for (const bw of [false, true]) {
+    await go('#/print/f44-f64-voa1_t2f-di7-w82-f77-di3-f7-q23');
+    if (bw) { await page.click('[data-act="printArt"][data-val="bw"]'); await settle(); }
+    const lost = await page.$$eval('.pc-strip .pc-box b,.pc-strip .pc-box small', function (all) {
+      const rng = document.createRange();
+      return all.filter(function (v) {
+        rng.selectNodeContents(v);
+        return rng.getBoundingClientRect().width > v.clientWidth + 1;
+      }).map(v => v.textContent);
+    });
+    ok(!lost.length, (bw ? 'ч/б: ' : 'цвет: ') +
+       'на самых длинных значениях потерян текст: ' + lost.join(', '));
+  }
+  await go('#/print/q1');
+  await page.click('[data-act="printArt"][data-val="color"]'); await settle();
+
   /* Рамка растёт из кости, а не стоит рядом: в макете её усы сходятся к правому
      краю кости. Между ними был зазор, и полоса выглядела разорванной. */
   await go('#/print/w7');
