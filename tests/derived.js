@@ -222,7 +222,9 @@ ok(rc.every(x => x.rud.indexOf('Стоимость Призыва: ' + x.recall 
    маркированным списком. В одну строку они читаются как сплошная стена, и
    «Кровавый Шип» посреди предложения перестаёт быть названием свойства. */
 const voaLists = VOA.filter(x => x.rud.indexOf('\n- ') > 0);
-ok(voaLists.length === 4, 'списков в Vault of Ages не 4, а ' + voaLists.length);
+ok(voaLists.length === 5, 'списков в Vault of Ages не 5, а ' + voaLists.length);
+/* «Узы Души» печатают три свойства камня списком, и в один абзац они слипались */
+ok(voaLists.some(x => x.id === 'voa2_a1'), 'у «Уз Души» свойства камня не списком');
 ok(voaLists.every(x => x.ende.split('\n- ').length === x.rud.split('\n- ').length),
    'список разошёлся по числу пунктов между языками');
 /* Пункт списка идёт после вводной строки, а не первой строкой описания */
