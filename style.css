@@ -1150,7 +1150,10 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 .pc-name{margin:0;font:900 5.8cqw/1.1 var(--ui);text-transform:uppercase;letter-spacing:-.01em}
 
 /* Полоса характеристик: рамка - выгруженный вектор, ячейки поверх неё */
-.pc-strip{position:relative;height:14cqw;margin:1.2cqw 0 .6cqw}
+.pc-strip{position:relative;height:14cqw;margin:1.2cqw 0 .6cqw;
+  display:flex;align-items:center;gap:1.2cqw}
+.pc-lead{flex:none;display:flex;align-items:center;gap:1cqw}
+.pc-frame{position:relative;flex:1 1 auto;min-width:0;height:100%}
 /* Полоса брони: одна рамка со скруглением, в ней три подписи и два порога.
    Пропорции с карты из макета: широкая и низкая, клетки порогов чуть выше
    рамки и наезжают на неё сверху и снизу. */
@@ -1209,12 +1212,19 @@ input.pickq:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgb
 /* В макете плашка вида в чёрно-белом серо-синяя, а не чёрная: рядом с чёрным
    именем и чёрной рамкой сплошной чёрный делал шапку тяжелее самой карточки. */
 .bw .pc-tag.on{background:#75788A;color:#fff}
-.pc-ribbon{position:absolute;left:-1cqw;top:0;width:88cqw;height:100%;display:block}
-/* Слева отступ под рамку: кость крупная, и без него она вылезала за неё */
+.pc-ribbon{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pc-cells{
   position:absolute;inset:0;z-index:2;
-  display:flex;align-items:center;gap:.9cqw;padding-left:1.2cqw;
+  display:flex;align-items:center;gap:.9cqw;
 }
+/* Перегородки рамки стоят на 30.4% и 64.1% её ширины, наконечники съедают 5%
+   слева и 3% справа. Доли роста повторяют эти отсеки, поэтому значение всегда
+   стоит в своём - при любой ширине карты, хоть на экране, хоть на бумаге. */
+.pc-strip .pc-cells{padding:0 3% 0 5%;gap:0}
+.pc-strip .pc-box{padding:0 .8cqw}
+.pc-strip .pc-box:nth-child(1){flex-grow:25.4}
+.pc-strip .pc-box:nth-child(2){flex-grow:33.7}
+.pc-strip .pc-box:nth-child(3){flex-grow:32.9}
 /* Шестиугольник с костью: тёмный кант и светлая заливка внутри. Рисуется
    обрезкой, а не картинкой - у выгруженной детали внутри своя штриховка, из-за
    которой на 63 мм она читалась как стрелка, а не как кость. */

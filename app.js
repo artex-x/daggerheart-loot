@@ -3233,14 +3233,22 @@ function cardArt(name){
    карте он должен стоять полосой, а не строчкой прозы, как в книге. */
 function dmgStripHTML(e){
   const m = /^(d\d+)(.*)$/.exec(e.dmg || '');
-  return '<div class="pc-strip"><img class="pc-ribbon" src="' + cardArt('ribbon') + '" alt="">' +
-    '<div class="pc-cells">' +
+  /* Кость с бонусом стоит перед рамкой, а не внутри неё: в макете рамка
+     начинается за костью и делится на три отсека - по отсеку на значение. Пока
+     кость лежала в том же ряду, что и значения, она забирала место у первого
+     отсека и все три уезжали вправо от своих перегородок. */
+  return '<div class="pc-strip">' +
+    '<span class="pc-lead">' +
       dieHTML(m ? m[1] : (e.dmg || ''), e.dt) +
       (m && m[2] ? '<span class="pc-bonus">' + esc(m[2]) + '</span>' : '') +
-      statBox(t().pcDmg, eqWord(EQ_DT, e.dt) || '—') +
-      statBox(t().pcTrait, eqWord(EQ_TRAIT, e.tr)) +
-      statBox(t().pcRange, eqWord(EQ_RANGE, e.rg)) +
-    '</div></div>';
+    '</span>' +
+    '<span class="pc-frame"><img class="pc-ribbon" src="' + cardArt('ribbon') + '" alt="">' +
+      '<span class="pc-cells">' +
+        statBox(t().pcDmg, eqWord(EQ_DT, e.dt) || '—') +
+        statBox(t().pcTrait, eqWord(EQ_TRAIT, e.tr)) +
+        statBox(t().pcRange, eqWord(EQ_RANGE, e.rg)) +
+      '</span>' +
+    '</span></div>';
 }
 /* Кость урона. Форма своя у каждой кости, а цвет - у типа урона: физический
    золотой, магический сине-фиолетовый, как в макете. Где формы нет, рисуется

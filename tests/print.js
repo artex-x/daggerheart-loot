@@ -96,6 +96,21 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(/Надёжное/.test(parts.text), 'нет текста свойства');
   ok(parts.die === 'd8', 'на кости не тот урон: ' + parts.die);
   ok(parts.ribbon, 'полоса характеристик без рамки');
+  /* Значения стоят по отсекам рамки, а не как придётся: перегородки на 30.4% и
+     64.1% её ширины, и доли клеток повторяют их. Кость с бонусом при этом
+     снаружи - внутри она забирала место у первого отсека. */
+  ok(!(await page.$('.pc-cells .pc-die')), 'кость урона стоит внутри рамки');
+  const cells = await page.evaluate(() => {
+    const f = document.querySelector('.pc-frame').getBoundingClientRect();
+    return [...document.querySelectorAll('.pc-strip .pc-box')]
+      .map(b => { const r = b.getBoundingClientRect();
+                  return { l: (r.left - f.left) / f.width * 100,
+                           r: (r.right - f.left) / f.width * 100 }; });
+  });
+  ok(cells.length === 3, 'в полосе характеристик не три клетки: ' + cells.length);
+  ok(Math.abs(cells[0].r - 30.4) < 1 && Math.abs(cells[1].r - 64.1) < 1,
+     'клетки не совпали с перегородками рамки: ' +
+     cells.map(c => c.r.toFixed(1)).join(', '));
   ok(/Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
      'в полосе характеристик нет черты или дистанции: ' + parts.cells);
   ok(parts.hands === 1, 'знак хвата не один: ' + parts.hands);
