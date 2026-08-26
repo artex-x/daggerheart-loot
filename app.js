@@ -3400,7 +3400,12 @@ function printCardHTML(it){
       '" data-pid="' + esc(it.id) + '">' +
     (S.printBW ? '' :
       '<div class="pc-art">' +
-        (hasImage(it) ? '<img class="pc-img" src="' + esc(imgSrc(it)) + '" alt="">'
+        /* Подложка - тот же снимок, растянутый на всё поле и размытый. Плоский
+           цвет под ним годился только для снимков с чёрным фоном; у снимка со
+           светлым фоном растушёвка краёв упиралась в почти чёрное поле, и вдоль
+           линии реза шла тёмная полоса. */
+        (hasImage(it) ? '<img class="pc-back" src="' + esc(imgSrc(it)) + '" alt="" aria-hidden="true">' +
+                        '<img class="pc-img" src="' + esc(imgSrc(it)) + '" alt="">'
                       : printGlyph(kindKey)) +
       '</div>' + banner + mark) +
     '<div class="pc-content">' +

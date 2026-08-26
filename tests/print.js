@@ -1,6 +1,6 @@
 /* Печать карточек (#20): сетка, размеры, вёрстка карты, точки входа. */
 const puppeteer = require('puppeteer');
-const { ready } = require('./lib.js');
+const { ready, readPNG } = require('./lib.js');
 const ROOT = 'file://' + require('path').join(__dirname, '..', 'index.html');
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
@@ -447,6 +447,68 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   ok(!/255, 255, 255/.test(bwCap), 'в чёрно-белом подпись знака белая по белому: ' + bwCap);
   await go('#/print/q1');
   await page.click('[data-act="printArt"][data-val="color"]'); await settle();
+
+  /* ---------- край снимка у линии реза ----------
+     Снимок квадратный и уже карты, поэтому по бокам от него остаётся поле, а
+     края самого снимка растушёваны в это поле. Пока поле было одним плоским
+     почти чёрным цветом, всё сходилось по геометрии, но у снимков со светлым
+     фоном - нож, скипетр, лук - растушёвка упиралась в черноту, и вдоль реза
+     вставала тёмная полоса. Ни разметка, ни размеры её не видят: она есть
+     только в цвете. Поэтому лист снимается и разбирается по пикселям.
+
+     Само условие - не «полосы нет» (её ширину не измерить), а «цвет у реза взят
+     из снимка»: у девяти разных карт он должен быть разным. С плоской заливкой
+     он у всех был один и тот же с точностью до половины пункта. */
+  {
+    console.log('край снимка у реза');
+    const dpr = 2;                               // на одном пикселе шум съедает разницу
+    await page.setViewport({ width: 1180, height: 950, deviceScaleFactor: dpr });
+    /* Девять карт с разным фоном снимка: от совсем чёрного (ci19) до светлого
+       студийного (ci1, q23) */
+    await go('#/print/ci1-q23-w2-w3-ci19-f7-w1-di3-w65');
+    await settle();
+    const spots = await page.$$eval('.pcard:not(.blank)', function (cards) {
+      return cards.map(function (c) {
+        const a = c.querySelector('.pc-art'), i = c.querySelector('.pc-img');
+        if (!a || !i) return null;
+        const ar = a.getBoundingClientRect(), ir = i.getBoundingClientRect();
+        /* Верхняя половина снимка: ниже начинается размывка в белое поле */
+        return { id: c.dataset.pid, left: ar.left, right: ar.right,
+                 top: ir.top + ir.height * 0.10, bot: ir.top + ir.height * 0.60 };
+      }).filter(Boolean);
+    });
+    ok(spots.length === 9, 'не на чем проверить край снимка: ' + spots.length);
+    const shot = readPNG(await page.screenshot({ fullPage: true }));
+    const edges = [];
+    spots.forEach(function (s) {
+      const y0 = Math.round(s.top * dpr), y1 = Math.round(s.bot * dpr);
+      const x0 = Math.round(s.left * dpr), x1 = Math.round(s.right * dpr);
+      const band = function (at) {
+        let sum = 0, n = 0;
+        for (let y = y0; y < y1; y++) for (let k = 0; k < 3; k++) { sum += shot.lum(at(k), y); n++; }
+        return sum / n;
+      };
+      edges.push(band(function (k) { return x0 + 1 + k; }),
+                 band(function (k) { return x1 - 2 - k; }));
+    });
+    const lo = Math.min.apply(null, edges), hi = Math.max.apply(null, edges);
+    ok(hi - lo > 8, 'цвет у линии реза одинаков на всех картах (' + lo.toFixed(1) +
+       '..' + hi.toFixed(1) + ') - значит, взят из заливки, а не из снимка');
+    /* И у светлых снимков он заметно светлее почти чёрного поля, которым его
+       подменяли: полосы там больше нет, снимок доходит до самого реза. */
+    ok(edges.filter(function (v) { return v > 14; }).length >= 3,
+       'ни у одной светлой карты снимок не доходит до реза');
+    /* Подложка - тот же файл, что и сам снимок: иначе у неё свой цвет и стык
+       вернётся, только в другом месте. */
+    const same = await page.$$eval('.pcard:not(.blank)', function (cards) {
+      return cards.every(function (c) {
+        const b = c.querySelector('.pc-back'), i = c.querySelector('.pc-img');
+        return !i || (b && b.getAttribute('src') === i.getAttribute('src'));
+      });
+    });
+    ok(same, 'подложка под снимком - не тот же файл, что снимок');
+    await page.setViewport({ width: 1180, height: 950 });
+  }
 
   /* ---------- размеры по макету ----------
      Карта в макете 344x482, и всё на ней стоит по своим числам. Проверяются они
