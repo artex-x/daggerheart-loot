@@ -436,7 +436,8 @@ input[type=search]:focus,input[type=text]:focus{outline:none;border-color:var(--
 }
 .dropmenu .lbl{margin-bottom:2px}
 .dropmenu .chip{width:100%;text-align:left;font-size:13px}
-.cardpick{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.cardpick{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;
+  display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 /* opens downward by default and flips up when the card leaves no room below */
 .cardpick .dropmenu{bottom:auto;top:calc(100% + 8px);left:0;right:auto}
 .cardpick .dropmenu.up{top:auto;bottom:calc(100% + 8px)}

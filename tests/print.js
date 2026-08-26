@@ -489,13 +489,20 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   await go('#/i/q1');
   ok((await page.$eval('a[href^="#/print/"]', e => e.getAttribute('href'))) === '#/print/q1',
      'со страницы вещи печатается не она');
-  /* И стоит она в одном ряду с «отправить» и «текст», а не отдельной строкой
-     под карточкой: это действие над той же вещью. */
-  ok(await page.$('.card.full .card-acts a[href^="#/print/"]'),
-     'кнопка печати оторвана от карточки');
+  /* И стоит она рядом с «в список»: и то и другое уносит вещь со страницы - в
+     список или на бумагу, - а копирование оставляет её в буфере. */
+  ok(await page.$('.card.full .cardpick a[href^="#/print/"]'),
+     'кнопка печати не рядом с «в список»');
+  ok(!(await page.$('.card.full .card-acts a[href^="#/print/"]')),
+     'кнопка печати осталась среди кнопок копирования');
+
 
   await go('#/tables/core_item');
   await page.click('.rows .row .selbox input'); await settle();
+  const acts = await page.$$eval('#selBar .selacts > *',
+    e => e.map(x => (x.className || '') + '|' + x.tagName));
+  ok(/seldrop/.test(acts[0] || '') && /A$/.test(acts[1] || ''),
+     'в полосе выделения печать не сразу за «в список»: ' + acts.join(' '));
   const sel = await page.$eval('#selBar a[href^="#/print/"]', e => e.getAttribute('href'));
   ok(/^#\/print\/\w+$/.test(sel), 'из полосы выделения не печатается: ' + sel);
   /* Печать - ссылка, и рядом с ней стоят обычные кнопки. Правило, снимающее

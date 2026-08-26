@@ -1883,8 +1883,13 @@ function addToListBtn(key, ids, primary){
       '<i class="caret' + (open ? ' up' : '') + '"></i></button>' +
   '</div>';
 }
+/* Печать стоит рядом с «в список», а не среди кнопок копирования: и то и другое
+   уносит вещь со страницы - в список или на бумагу, - а копирование оставляет
+   её в буфере. Одна на строке она читалась как приклеенная снизу, вдвоём это
+   ряд из двух действий. */
 function listPicker(it){
-  return '<div class="cardpick">' + addToListBtn(it.id, [it.id], true) + '</div>';
+  return '<div class="cardpick">' + addToListBtn(it.id, [it.id], true) +
+    printBtn([it.id], 'sm') + '</div>';
 }
 function focusNew(){
   const input = document.getElementById('newlist');
@@ -2029,10 +2034,6 @@ function cardHTML(it, opt){
         actBtn('send', it.id, ICON_SHARE, t().sendAll, true) +
         (hasImage(it) ? actBtn('copy-img', it.id, ICON_IMG, t().sImg, false, t().copyImg) : '') +
         actBtn('copy-full', it.id, ICON_COPY, t().sText, false, t().copyText) +
-        /* Печать - такое же действие над этой вещью, как отправить или
-           скопировать, и стоять она должна там же. Отдельной строкой под
-           карточкой она читалась как чужая кнопка, приклеенная снизу. */
-        (opt.full ? printBtn([it.id], 'sm') : '') +
       '</div>' +
       (opt.full ? listPicker(it) : '') +
     '</div>' +
@@ -3701,8 +3702,8 @@ function renderSelBar(){
     '</span>' +
     '<div class="selacts">' +
       addToListBtn('sel', selIds(), true) +
-      '<button type="button" class="btn sm" data-act="copySel">' + ICON_COPY + esc(t().copySel) + '</button>' +
       printBtn(selIds(), 'sm') +
+      '<button type="button" class="btn sm" data-act="copySel">' + ICON_COPY + esc(t().copySel) + '</button>' +
     '</div>' +
   '</div>';
 }
