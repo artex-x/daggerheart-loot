@@ -1,9 +1,5 @@
 name: check
 
-# While the move is under way (issue #47) there is no deploy here: the live site
-# is the repository root, and that is still what GitHub Pages serves. A deploy
-# job arrives in phase 6, when the built app becomes what people are shown.
-
 on:
   push:
     branches: [main]
@@ -12,6 +8,11 @@ on:
 
 permissions:
   contents: read
+
+# Only one publish at a time, and never cancel one half-done.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   check:
@@ -43,15 +44,20 @@ jobs:
       - name: The legacy suites against the live app
         run: npm run test:legacy
 
-      - name: Artifacts from a failed run
+      # A CI run is gone by the time anyone looks at it, and the summary prints
+      # a dozen grepped lines. run-all.js writes every suite's whole output to
+      # test-output/, which is what makes a red build reproducible.
+      - name: Everything a failed run left behind
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: failure-output
           path: |
+            test-output/
             dist/
             coverage/
-          retention-days: 7
+          retention-days: 14
+          if-no-files-found: ignore
 
   audit:
     runs-on: ubuntu-latest
@@ -74,3 +80,51 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # Publishing, gated on the checks above.
+  #
+  # This job does nothing until Pages is switched from "Deploy from a branch" to
+  # "GitHub Actions" in the repository settings. Until then GitHub's own
+  # pages-build-deployment publishes the branch on every push, whether the
+  # checks passed or not - which is how a red run still went live.
+  #
+  # What is published is the repository root, exactly what Pages serves today.
+  # The new app in dist/ takes over at the cut-over (docs/REFACTOR_PLAN.md,
+  # phase 6); until then it is built and tested but not shown to anyone.
+  # ---------------------------------------------------------------------------
+  deploy:
+    needs: [check, audit, secrets]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # An explicit list rather than "everything": the repository also holds the
+      # sources, the specs and the new app, and none of that belongs on a public
+      # site. A new top-level asset has to be added here on purpose.
+      - name: Collect what the site is made of
+        run: |
+          mkdir -p _site
+          cp -r index.html style.css app.js data.js data.json catalog.csv \
+                llms.txt robots.txt .nojekyll LICENSE \
+                img og i card _site/
+
+      - name: Nothing private slipped in
+        run: |
+          for f in package.json node_modules app tests tools docs .git; do
+            if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
+          done
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - id: pages
+        uses: actions/deploy-pages@v4

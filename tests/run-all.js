@@ -17,6 +17,7 @@
    Slowest first: with the long ones started early, the tail of the run is
    short jobs filling the gaps instead of one straggler holding the pool. */
 const { spawn } = require('child_process');
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const HERE = __dirname;
@@ -67,6 +68,14 @@ if (!queue.length) {
   process.exit(1);
 }
 
+/* Every suite's whole output goes to a file, not just the dozen lines the
+   summary shows. On a machine you are sitting at the difference hardly matters;
+   in CI it is everything, because the run is gone by the time anyone looks and
+   twelve grepped lines rarely say why. The directory is what CI uploads. */
+const OUT_DIR = path.join(HERE, '..', 'test-output');
+fs.rmSync(OUT_DIR, { recursive: true, force: true });
+fs.mkdirSync(OUT_DIR, { recursive: true });
+
 const done = {};           // name -> { ok, secs, out }
 let next = 0, running = 0, bad = 0;
 const t0 = Date.now();
@@ -79,8 +88,11 @@ function flush(){
     const [name, what] = queue[printed];
     const r = done[keyOf(queue[printed])];
     console.log((r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(10) + what.padEnd(34) + r.secs + 's');
-    if (!r.ok) r.out.split('\n').filter(l => /FAIL|Error/.test(l)).slice(0, 12)
-                    .forEach(l => console.log('        ' + l.trim()));
+    if (!r.ok) {
+      r.out.split('\n').filter(l => /FAIL|Error/.test(l)).slice(0, 12)
+           .forEach(l => console.log('        ' + l.trim()));
+      console.log('        full output: test-output/' + keyOf(queue[printed]) + '.log');
+    }
     printed++;
   }
 }
@@ -97,6 +109,7 @@ function start(){
     p.stderr.on('data', d => { out += d; });
     p.on('close', function (code) {
       if (code) bad++;
+      fs.writeFileSync(path.join(OUT_DIR, key + '.log'), out);
       done[key] = { ok: !code, secs: ((Date.now() - started) / 1000).toFixed(1), out: out };
       running--;
       flush();

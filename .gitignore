@@ -30,3 +30,6 @@ export/
 dist/
 coverage/
 .svelte-kit/
+
+# Per-suite logs from tests/run-all.js: the CI artifact, not source.
+test-output/

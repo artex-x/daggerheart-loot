@@ -4,7 +4,9 @@ What the 19 suites in `tests/` actually assert, mapped onto the features in
 `FEATURES.md`. Update this file whenever the shape of the coverage changes -
 adding a suite, moving what a suite is responsible for, or filling a gap.
 
-Run: `node tests/run-all.js`, or one suite by name.
+Run: `node tests/run-all.js`, or one suite by name. Every suite's full output is
+written to `test-output/<name>.log` whatever the result; the summary only prints
+the first dozen failing lines. CI uploads that directory when a job fails.
 
 ## Suites
 

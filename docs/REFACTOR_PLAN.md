@@ -68,9 +68,8 @@ equipment from every source.
   every script path is relative.
 - `tools/bundle-budget.mjs`, gzip, code only, budget 120 kB; currently 9 kB.
 - `.github/workflows/ci.yml`: the same gate, plus the build, the `file://`
-  smoke, the budget, the 19 legacy suites, `npm audit` and gitleaks. **No
-  deploy job yet** - Pages still serves the repository root, and adding one now
-  would replace the live site with an empty shell.
+  smoke, the budget, the 19 legacy suites, `npm audit` and gitleaks, and a
+  deploy job gated on all three (see "Publishing is not gated by CI" below).
 - Husky and lint-staged on staged files. The hook does not replace
   `npm run check`.
 
@@ -110,6 +109,34 @@ Consequences for Phase 1:
   JSON is blocked under `file://`. TypeScript reads it through one typed
   adapter rather than importing it
 - a build smoke check should open the built `index.html` from `file://`
+
+### Publishing is not gated by CI until Pages is switched over
+
+The first red build still went live. Nothing in the workflow deployed it:
+GitHub's own `pages-build-deployment` publishes the configured branch on every
+push, and it does not know or care whether Actions passed.
+
+Nothing in a workflow can prevent that. The only fix is in the repository
+settings: **Settings -> Pages -> Source: GitHub Actions**. After that the
+built-in job stops running and the `deploy` job in `ci.yml` becomes the only way
+anything is published - and it `needs: [check, audit, secrets]`.
+
+Until that switch is flipped the `deploy` job is inert, so the change is safe to
+land either way.
+
+What it publishes is the repository root, exactly what Pages serves today, from
+an explicit file list rather than "everything" - the repository also holds the
+sources, the specs and the new app, and none of that belongs on a public site. A
+guard step fails the job if any of them reach `_site`. At the cut-over (phase 6)
+that list becomes `dist/`.
+
+### A red run has to leave something to read
+
+`tests/run-all.js` buffers each suite's output and prints a dozen grepped lines
+on failure. Sitting at the machine that is enough; in CI the run is gone by the
+time anyone looks. Every suite's whole output now goes to `test-output/<name>.log`,
+and the workflow uploads that directory - with `dist/` and `coverage/` - whenever
+the job fails.
 
 ### Phase 0 kept the puppeteer suites
 
