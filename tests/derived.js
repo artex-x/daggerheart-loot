@@ -341,7 +341,7 @@ const COUNTERS = [
   [/(\d{3,})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g,    [N.all, N.wondrous], 'entries']
 ];
-['index.html', 'README.md', 'app.js', 'llms.txt'].forEach(function (file) {
+['index.html', 'README.md', 'README.ru.md', 'app.js', 'llms.txt'].forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   COUNTERS.forEach(function ([re, want, what]) {
     let m;
@@ -384,7 +384,7 @@ console.log('ссылка на источник');
 const CITE = 'Daggerheart System Reference Document 2.0, © Critical Role, LLC.' +
              ' under the terms of the Darrington Press Community Gaming (DPCGL)' +
              ' License.';
-['README.md', 'llms.txt'].forEach(function (file) {
+['README.md', 'README.ru.md', 'llms.txt'].forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\s+/g, ' ');
   ok(text.indexOf(CITE) >= 0, file + ': нет дословной ссылки на источник');
   ok(text.indexOf('Reference Document 1.0') < 0, file + ': ссылка всё ещё на SRD 1.0');
@@ -399,14 +399,19 @@ feet.forEach(function (f, i) {
 /* Старая оговорка перечисляла Hope & Fear среди того, что под лицензию не
    подпадает. Дополнения, которые там остались, проверяются заодно: их из списка
    выкинуть тоже нельзя. */
-const clause = (/^.*под эту лицензию не подпадают.*$/m.exec(
-  fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8')) || [''])[0];
-ok(clause, 'README: пропала оговорка о том, что под лицензию не подпадает');
-ok(clause.indexOf('Hope & Fear') < 0,
-   'README: Hope & Fear всё ещё числится вне лицензии, хотя DPCGL 2.0 его включила');
-['Wondrous Environments', 'Community Magic Items',
- 'Alternate Loot & Consumable Tables'].forEach(function (name) {
-  ok(clause.indexOf(name) >= 0, 'README: ' + name + ' пропал из списка вне лицензии');
+const OUTSIDE = ['Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages',
+                 'Community Magic Items', 'Alternate Loot & Consumable Tables'];
+[['README.md', /^.*fall\s+outside that licence[\s\S]*?\n\n/m],
+ ['README.ru.md', /^.*под эту лицензию не подпадают[\s\S]*?\n\n/m]].forEach(function (pair) {
+  const file = pair[0];
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\n  /g, ' ');
+  const clause = (pair[1].exec(text) || [''])[0];
+  ok(clause, file + ': пропала оговорка о том, что под лицензию не подпадает');
+  ok(clause.indexOf('Hope & Fear') < 0,
+     file + ': Hope & Fear всё ещё числится вне лицензии, хотя DPCGL 2.0 его включила');
+  OUTSIDE.forEach(function (name) {
+    ok(clause.indexOf(name) >= 0, file + ': ' + name + ' пропал из списка вне лицензии');
+  });
 });
 
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');

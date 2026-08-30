@@ -1,458 +1,482 @@
-# Генератор лута для Daggerheart
+# Daggerheart Loot Generator
 
-Двуязычный (RU/EN) генератор добычи для настольной ролевой игры Daggerheart. Статический сайт без сборки: 680 предметов и расходников плюс 381 единицу снаряжения, у каждого — название, описание и картинка.
+*[Эта страница по-русски](README.ru.md)*
 
-**Открыть: https://artex-x.github.io/daggerheart-loot/**
+A loot generator for the Daggerheart tabletop RPG, in English and Russian. Roll
+on any of the published loot tables, browse them in full, collect what you rolled
+into a list, hand that list to your players as a single link, or print it as
+cards.
 
-> **Для ИИ-агентов.** Приложение рисуется на клиенте, а список хранится во
-> фрагменте адреса, который до сервера не доходит: загрузка `index.html` даст
-> пустую страницу. Читаемые данные лежат отдельно —
-> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv),
-> [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json), а
-> [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) описывает
-> грамматику адресов, формат ссылки на список и как отбирать предметы.
+**Open it: https://artex-x.github.io/daggerheart-loot/**
 
-## Возможности
+1061 records in all - 680 items and consumables plus 381 pieces of equipment -
+each with a name, a description, a stat line where it has one, and an
+illustration. No build step, no server, no account, no tracking.
 
-Пять режимов броска:
+> **For AI agents.** The app renders on the client, and a list lives in the URL
+> fragment, which never reaches the server: fetching `index.html` gives you an
+> empty page. The readable data is separate -
+> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv) for
+> selection, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
+> for full text, and
+> [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) for the URL
+> grammar, the list-link format, and guidance on which set to draw from.
 
-| Раздел | Ввод | Результат |
+## Rolling
+
+| Mode | Input | Result |
 |---|---|---|
-| Обычные правила | число 1–60 или бросок 1d12…5d12 | до 4 вариантов: предмет и расходник из корника и из Hope & Fear |
-| Альт. таблицы | редкость + Кость Надежды + Кость Страха | 4 варианта; при крите — ссылка на таблицу нужной редкости |
-| Wondrous | число 1–119 | 1 предмет |
-| Dread | число 1–29 | 1 предмет |
-| Сообщества | сообщество + число 1–10 | 1 предмет |
+| Core rules | 1-60, or a roll of 1d12 to 5d12 | up to 4 results: an item and a consumable, from Core and from Hope & Fear |
+| Alternate tables | rarity + Hope Die + Fear Die | 4 results; on a critical success, a link to the table one rarity up |
+| Wondrous | 1-119 | 1 item |
+| Dread | 1-29 | 1 item |
+| Vault of Ages | 1-108 | 1 item |
+| Communities | community + 1-10 | 1 item |
 
-Корник и Hope & Fear — это один и тот же бросок Nd12 по таблице 1–60, поэтому они собраны в один режим с переключателем источника. Редкость здесь влияет только на количество костей, поэтому отдельного выбора редкости нет: кнопки сразу подписаны и числом костей, и редкостями, которые это число покрывает.
+Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
+share one mode with a source switch. Rarity there only sets how many dice you
+roll, so each button is labelled with both the dice count and the rarities that
+count covers. Where a range is not a real die - 119 in Wondrous, 29 in Dread -
+the button reads "Random 1-N" instead of naming a die that does not exist.
 
-Плюс:
+The **?** button beside a heading explains the mode: how the Hope and Fear
+columns are laid out, which rarity turns up where, and why the tiers printed
+next to rarities are a recommendation rather than a limit.
 
-- **Таблицы** — все таблицы целиком, включая альтернативные и три таблицы снаряжения (оружие, вторичное оружие, броня), с поиском внутри и переключением списком / сеткой
-- **Поиск** — по всем 1061 записям сразу, по названиям, описаниям и характеристикам, на обоих языках
-- **Переключение RU/EN** — в любой момент, переключается весь интерфейс и все тексты предметов
-- **Фильтры «Источник» и «Тип»** — переключатели с множественным выбором: **Core / Hope & Fear** и **Предметы / Расходники**, по умолчанию отмечено всё. Общие для всех режимов, где может выпасть и то и другое: выбор запоминается при переходе между разделами. Снять последний оставшийся переключатель нельзя
-- **Списки** — собрать добычу и отправить игрокам одной ссылкой
-- Встроенный бросок костей для каждого режима. Там, где диапазон не совпадает с реальной костью (119 позиций Wondrous, 29 у Dread, список произвольной длины), кнопка называется «Случайно 1–N» вместо несуществующей «d119»
+## Tables, search and filters
 
-При критическом успехе в альтернативных таблицах приложение кнопкой уводит прямо к нужному блоку в «Таблицах» и предлагает поднять редкость на ступень.
+**Tables** holds every table in full, including the alternate ones and the three
+equipment tables (weapons, secondary weapons, armour), each with its own search
+box and a list/grid switch. **Search** covers all 1061 records at once - names,
+descriptions and stat lines, in both languages.
 
-Кнопка **?** рядом с заголовком раскрывает пояснения к режиму: как распределены колонки «Надежда» и «Страх», где какая редкость встречается, что ранги у редкостей — рекомендация, а не ограничение, почему в Wondrous 119 позиций и как устроены списки. По умолчанию свёрнуто, чтобы панели оставались короткими.
-
-Ссылки внутри приложения ведут в текущей вкладке, потому что кнопка «Назад» возвращает и раздел, и введённое число. В новой вкладке открываются только ссылки на таблицы — они нужны как справка, пока результат броска остаётся перед глазами.
-
-Разделы «Таблиц» адресуются напрямую:
+Sections are addressable, and every heading has a copy-link button:
 
 ```
-#/tables/alt_item            альтернативная таблица предметов
-#/tables/alt_item/rare       она же, сразу к блоку «Редкая · Ранг 2-3»
-#/tables/community/Seaborne  предметы Морских
-#/tables/frames/dark_heart   снаряжение охотников на монстров
+#/tables/alt_item            the alternate item table
+#/tables/alt_item/rare       the same, at the "Rare - Tier 2-3" block
+#/tables/community/Seaborne  Seaborne items
+#/tables/frames/dark_heart   equipment for the Dark Heart campaign frame
 ```
 
-Рядом с заголовком каждого раздела есть кнопка копирования такой ссылки, а для таблиц без разделов — кнопка «Ссылка на таблицу» рядом с переключателем вида.
+Every table has a filter panel; where there is nothing to filter by, there is no
+panel. Equipment filters by tier, class, source, trait, range, burden and upgrade
+line; Vault of Ages by kind and tier; campaign frames by kind and frame;
+communities by community. Nothing is selected by default and an empty row means
+"any", so "tier 2 only" is one click. Values within a row are OR'd, rows narrow
+each other.
 
-### Порядок позиций
+The selection lives in the address rather than in storage, so a filtered view can
+be copied straight out of the browser bar:
 
-Позиции переставляются перетаскиванием за ручку слева; полоска показывает, куда встанет запись. Номер рядом — поле ввода: чтобы отправить позицию с 40-й на 20-ю, достаточно набрать 20, а не нажимать «выше» двадцать раз. Клавиатурой работает то же поле.
+```
+#/tables/eq_weapon/f_tier-2.cls-mag
+```
 
-### Выбор списка
+## Lists
 
-Меню «Добавить в список» показывает списки от новых к старым, а начиная с восьмого добавляет строку поиска — при полусотне списков иначе не найти нужный. Кнопка «Создать» на странице списков создаёт список и оставляет вас на месте: почти всегда следующий шаг — пойти по таблицам и наполнить его, а не смотреть на пустую страницу.
+**Lists** collects several records and hands them over as one link.
 
-## Списки в двух вкладках
+1. Create a list. The page you are on does not change.
+2. In Tables or Search, tick what you want and press **Add to list**.
+3. Open the list to rename it, reorder it, drop entries, copy it as text, share
+   it, or print it.
 
-Запись перечитывает хранилище и сливает по `id`, а не затирает его целиком: раньше две открытые вкладки уничтожали списки друг друга — та, что сохранила последней, побеждала молча, и восстановить было неоткуда. Список, удалённый в этой вкладке, помечен на время сессии, чтобы слияние не воскресило его из чужой копии. Событие `storage` подхватывает чужую запись и перерисовывает страницу.
+The **Add to list** button on an item card opens the same menu; it stays open
+after a click, so one item goes into several lists at once. Entries are reordered
+by dragging the handle, or by typing a new position into the number beside the
+row. A list has its own roll button, which picks one of its own entries.
 
-## Что приложение запоминает
+### Quantity and price
 
-Всё лежит в `localStorage` этого браузера, сервера нет.
+Each entry takes an optional **quantity** and **price in gold**, and both travel
+into the copied text: `Stone of Valour ×2 - 50 gold`. Batch actions on a list can
+set or clear prices, shift them all by a percentage, or **Suggest prices**, which
+fills in the middle of a band read off the tier for equipment and the rarity for
+loot.
 
-| Ключ | Что |
+Prices display two ways:
+
+| Mode | Reads |
 |---|---|
-| `dhloot.lists.v2` | списки со всем содержимым и заметками |
-| `dhloot.lang.v1` | язык интерфейса |
-| `dhloot.home.v1` | стартовый раздел |
-| `dhloot.prefs.v1` | вид таблиц (списком или сеткой) и высота полей заметок |
-| `dhloot.warn.v1` | что предупреждение о хранении закрыто |
+| As in the book (default) | handfuls, bags and chests: 10 handfuls = 1 bag, 10 bags = 1 chest |
+| In coins | the optional rule where 1 handful = 10 coins |
 
-Граница проходит там же, где и в интерфейсе: помнится, **как** страница выглядит, а не **что** на ней спрошено. Вид таблицы, язык и стартовый раздел — это про поведение приложения. Всё остальное начинается заново: фильтр типов, источники броска, редкость, сообщество, число в поле броска, текст в поиске, выделенные позиции, открытая справка.
+A price is always typed in coins; the mode only changes how it reads - at most
+two units, rounded to the nearest, the way money is spoken of at the table. 750
+is 7 bags 5 handfuls, and 899 is 9 bags.
 
-Перезагрузка — это новый заход, и фильтр, поднятый из вчерашнего дня, оказывается состоянием, которого никто не помнит: страница просто выглядит сломанной. Поэтому такие вещи спрашиваются заново, а не восстанавливаются.
+### Two notes
 
-Фильтры снаряжения — исключение с другой стороны: они живут в адресе, а не в хранилище. Их состоянием делятся ссылкой, а не носят между сессиями.
+A list, and every entry in it, carries two notes:
 
-Настройки читаются как чужие данные: негодное значение молча заменяется умолчанием, а сломанный `json` игнорируется целиком.
+| | Goes into |
+|---|---|
+| **For players** | the copied text, the player link, the GM link |
+| **GM only** | the GM link |
 
-## Стартовый раздел
+Hence two share buttons. **Player link** is what you drop in the party chat.
+**GM link** is a full snapshot including the GM notes, and doubles as a backup
+from which the list can be restored on another device. The address in the browser
+bar is always the player link.
 
-Приложение открывается на «Обычных правилах». Кнопка с домиком рядом с заголовком раздела назначает стартовым тот, что открыт сейчас; повторное нажатие возвращает умолчание. Выбор лежит в `localStorage` под ключом `dhloot.home.v1` и применяется, только когда адрес пустой, — по ссылке на конкретный предмет или список он не вмешивается.
+### The link format
 
-Назначить можно любой из восьми разделов и любую таблицу по имени (`#/tables/eq_weapon`). Карточку предмета или список — нельзя: это снимок, который со временем разойдётся с данными, поэтому кнопка там не появляется.
-
-## Списки
-
-Раздел **Списки** позволяет собрать несколько позиций и отдать их игрокам целиком.
-
-1. Создайте список с названием — страница при этом никуда не уходит.
-2. В «Таблицах» или «Поиске» отметьте нужное галочками и нажмите **Добавить в список**.
-3. Откройте список: там можно переименовать его, перетащить позиции в нужном порядке, убрать лишнее крестиком, скопировать текстом или отправить ссылкой.
-
-У каждой позиции есть необязательные **количество** и **цена в золоте**. Если они заданы, то попадают и в интерфейс, и в скопированный текст: `Камень Доблести ×2 — 50 зол.`
-
-Кнопка броска выбирает позицию из самого списка — удобно, когда нужно выдать случайное из заранее собранной подборки. Номера у строк соответствуют этому броску и меняются вместе с порядком. У списка из одной позиции кнопки нет.
-
-Есть и второй путь: кнопка **Добавить в список** на карточке предмета открывает тот же выбор. Меню не закрывается после клика, поэтому один предмет легко положить сразу в несколько списков; отмеченные галочкой уже содержат его, повторный клик убирает. Начиная с восьмого списка в меню появляется строка поиска.
-
-Адрес в строке браузера переписывается после каждой правки и всегда содержит **ссылку для игроков**, так что скопировать его оттуда безопасно.
-
-Ссылка на список выглядит так и не требует сервера — весь состав закодирован прямо в адресе:
+A list needs no server - the whole thing is encoded in the address:
 
 ```
 https://artex-x.github.io/daggerheart-loot/#/l/0JrQu9Cw0LQg...
 ```
 
-В списке хранятся только название, `id` позиций, заданные вручную количество с ценой и обе заметки — тексты и картинки подтягиваются из `data.js` при отрисовке. Если данные поправить, все списки и ссылки подхватят изменения сами.
+Only the name, the entry ids, any hand-typed quantity and price, and the two
+notes are stored; text and images come from `data.js` at render time, so fixing
+the data fixes every list and link that points at it. The payload starts with the
+entry count and four characters of hash (`3.k7f2~q1,cc21*5*50,q337`), which turns
+a link truncated by a messenger into a "broken link" page rather than a shorter
+list that looks complete. The format is documented in `llms.txt` and is backward
+compatible.
 
-Строка позиций начинается с числа записей и четырёх символов хеша: `3.k7f2~q1,cc21*5*50,q337`. Мессенджеры переносят и обрезают длинные адреса, а обрезанный payload раньше просто раскодировался в список поменьше — и выглядел целым. Теперь несовпадение отправляет на страницу «ссылка повреждена».
+### Where lists live
 
-Формат обратно совместим: списки и ссылки, созданные до появления количества, цены, заметок и этой метки, читаются как были. Список без заметок кодируется ровно теми же байтами, что и раньше, — старая и новая ссылка на него совпадают символ в символ.
+**In this browser's `localStorage`, and nowhere else.** There is no server and no
+sync. Clearing site data, a private window or a different browser means no lists.
+To keep one, press **GM link** and save the address: it restores the list whole,
+both notes included.
 
-### Две заметки
+Two open tabs do not overwrite each other: a save re-reads storage and merges by
+`id`, a list deleted in one tab is tombstoned for the session, and the `storage`
+event redraws the other tab.
 
-У списка и у каждой позиции две заметки, и разница между ними — кому они достанутся.
+## Printing
 
-| | Куда попадает |
+`#/print/<id>-<id>-...` lays the given records out as cards, nine to an A4 page,
+63x88 mm each - the size of a playing card, so sleeves and card boxes fit. Up to
+180 cards, twenty sheets, at a time. The button appears wherever a set of records
+exists: an item page, a list, a table selection. The address itself is shareable.
+
+Two sheet styles. The colour sheet keeps the artwork, the tier banner, the burden
+hands and the gold stat strip. The black-and-white sheet drops the artwork and
+the gold and collects the banner, the type chip and the armour mark into a row
+above the name - dark backgrounds and gold eat toner and turn to grey mush on a
+mono printer. Anything the colour card tells apart by colour, the
+black-and-white card also tells apart by a word.
+
+## Sending an item to a chat
+
+Beside an item's name are two icons - copy the name, copy a link to the card -
+and below it three buttons:
+
+| Button | What you get |
 |---|---|
-| **Для игроков** | текст кнопки «Скопировать текст», ссылка игрокам, ссылка себе |
-| **Только для мастера** | только ссылка себе |
+| **Share** | on a phone, the system share sheet with the image and a caption; on a desktop with the Share API, a menu with the link; without it, the link is copied |
+| **Image** | the picture on the clipboard. Browsers will not put WebP there, so it is converted to PNG through a canvas; if that fails too, the file downloads |
+| **Text** | name and description, no link |
 
-Поэтому и две кнопки ссылки. «Ссылка игрокам» — то, что можно кинуть в чат партии. «Ссылка себе» — полный снимок со всеми заметками; она же служит резервной копией, из которой список восстанавливается на другом устройстве.
+Copied text goes to the clipboard twice over: `text/html` with the name in `<b>`,
+and plain `text/plain`. Telegram Desktop, Word, Notion and Google Docs take the
+HTML and show the name in bold; everything else takes the plain text and gets no
+stray markup. Consumables get "(consumable)" appended outside the app, where the
+badge is not visible.
 
-В адресной строке браузера лежит ссылка **для игроков**: адрес обновляется при каждой правке, и его легко скопировать не глядя, поэтому мастерским заметкам там не место.
+## Item links
 
-Раньше заметка была одна, с галочкой «Копировать вместе с предметом». Это ровно то же деление, только выраженное флагом, поэтому старые данные переносятся без догадок: помеченная заметка становится заметкой для игроков, непомеченная — мастерской. Списки читаются из `dhloot.lists.v1` один раз и пишутся в `dhloot.lists.v2`; старый ключ остаётся нетронутым, чтобы откат ничего не стоил. В ссылках менять не пришлось ничего: маркер `+` перед id и раньше значил «эта заметка уходит игрокам», так что старые ссылки открываются как есть.
-
-### Где это хранится
-
-**Списки лежат только в `localStorage` браузера.** Сервера у приложения нет, синхронизации между устройствами нет. Очистка данных сайта, режим инкогнито или другой браузер — и списков не будет. Приложение говорит об этом прямо в разделе, а если браузер вовсе запрещает хранилище, показывает отдельное предупреждение.
-
-Чтобы не потерять список, нажмите **Ссылка себе** и сохраните ссылку: из неё список восстанавливается целиком, вместе с обеими заметками.
-
-## Как отправить предмет в мессенджер
-
-Рядом с названием — две иконки: скопировать само название и скопировать ссылку на карточку.
-
-Ниже три кнопки:
-
-| Кнопка | Что делает |
-|---|---|
-| **Отправить** | подстраивается под браузер: на телефоне открывает системное меню «Поделиться» с картинкой и подписью, на десктопе с Share API — меню со ссылкой, без него просто копирует ссылку |
-| **Картинка** | кладёт картинку в буфер обмена, дальше `Ctrl+V` в чат. WebP браузеры в буфер не отдают, поэтому конвертация в PNG идёт через canvas; если браузер не умеет и этого — картинка скачается |
-| **Текст** | название + описание, без ссылки. Название уходит в буфер жирным |
-
-Кнопки копирования названы тем, что попадёт в буфер. Полные формулировки («Скопировать изображение» и так далее) остались в подсказках при наведении и для скринридеров, а на узких экранах подписи скрываются совсем и остаются иконки.
-
-### Жирное название при копировании
-
-Кнопки **Текст** на карточке и **Скопировать текст** в списке кладут в буфер сразу два формата: `text/html` с `<b>` вокруг названия и обычный `text/plain`. Приложения с богатой вставкой — Telegram Desktop, Word, Notion, Google Docs — берут HTML и показывают название жирным. Остальные берут plain и получают чистый читаемый текст без служебных символов.
-
-Markdown-звёздочки намеренно не используются: там, где их не разбирают, они остаются мусором в сообщении.
-
-Отправка через системное меню «Поделиться» форматирование не поддерживает в принципе — туда уходит обычный текст.
-
-У расходников к названию в скопированном и отправленном тексте добавляется «(расходник)» — за пределами приложения плашки не видно.
-
-Ссылка сама по себе даёт всё нужное: каждому предмету соответствует статичная страничка `i/<id>.html` с Open Graph разметкой, поэтому Telegram, Discord и прочие разворачивают её в карточку с картинкой, названием и описанием.
-
-Странички генерируются скриптом, после правок в `data.js` его надо перезапустить:
-
-```
-node tools/build-share-pages.js
-```
-
-В `og/` лежат JPEG-копии картинок специально для превью: часть клиентов Telegram не показывает WebP в `og:image`.
-
-## Ссылки на предметы
-
-Иконка ссылки рядом с названием даёт адрес вида:
+The link icon beside a name gives a static page with Open Graph markup that
+redirects into the app, so Telegram, Discord and the rest unfold it into a card:
 
 ```
 https://artex-x.github.io/daggerheart-loot/i/ci15.html
 ```
 
-Ссылка ведёт на статичную страницу с Open Graph разметкой, которая переадресует в приложение. Идентификаторы стабильные и совпадают с `id` в `data.js`:
+`og/` holds JPEG copies of the artwork for exactly this - some Telegram clients
+will not show WebP in `og:image`. Ids are stable and match `id` in `data.js`:
 
-| Префикс | Что | Пример |
+| Prefix | Set | Example |
 |---|---|---|
-| `ci` | Core, предмет | `ci15` — предмет №15 |
-| `cc` | Core, расходник | `cc56` |
-| `hi` | Hope & Fear, предмет | `hi45` |
-| `hc` | Hope & Fear, расходник | `hc60` |
+| `ci` / `cc` | Core, item / consumable | `ci15`, `cc56` |
+| `hi` / `hc` | Hope & Fear, item / consumable | `hi45`, `hc60` |
 | `w` | Wondrous Loot | `w119` |
-| `cm` | Предмет сообщества | `cm81` — первый предмет Wildborne |
+| `di` | Dread GM Toolbox | `di3` |
+| `voa` | Vault of Ages | `voa2_a1` |
+| `cm` | Community items | `cm81` |
+| `f` | Campaign frame equipment | `f7` |
+| `q` | Core and Hope & Fear equipment | `q26` |
 
-Сообщества идут по 10 подряд в алфавитном порядке: Highborne `cm1`–`cm10`, Loreborne `cm11`–`cm20` и так далее.
+Communities run ten at a time in alphabetical order: Highborne `cm1`-`cm10`,
+Loreborne `cm11`-`cm20`, and so on.
 
-## Цвета категорий
+## What the app remembers
 
-Ярлык у каждой категории свой, и различаются они тоном, а не светлотой: стальная броня читалась как бледный «предмет», хотя по расстоянию в Lab была далеко. Пять тонов разнесены по кругу минимум на 49°.
+Everything is in this browser's `localStorage`.
 
-| Категория | Цвет | Тон |
-|---|---|---|
-| Предмет | `#7a8ee0` | индиго 228° |
-| Расходник | `#9ec96a` | жёлто-зелёный 87° |
-| Основное оружие | `#d48e6a` | терракота 20° |
-| Вторичное оружие | `#cf7fa6` | роза 331° |
-| Броня | `#5ec9c4` | бирюза 177° |
-
-Ярлык источника (`Core`, `Hope & Fear`) намеренно нейтрально-серый: он не категория, а подпись. Раньше он был серым с фиолетовым подтоном и попадал в одно семейство с броней.
-
-Строка характеристик снаряжения цвета не несёт — это обычный вторичный текст. Три цвета цифр в одном списке только шумели.
-
-## Проверки
-
-Все наборы лежат рядом с проектом и запускаются одним файлом:
-
-```
-node tests/run-all.js            # всё
-node tests/run-all.js eqtest     # только один набор
-```
-
-Нужен `puppeteer` и `jsdom`: `npm i puppeteer jsdom`.
-
-| Набор | Что проверяет |
+| Key | Holds |
 |---|---|
-| `dataint` | инварианты `data.js`: id, нумерация, ссылки, поля снаряжения, файлы картинок и заглушек |
-| `i18n` | паритет переводов и отсутствие строк, которых код просит, а их нет |
-| `typo` | два шрифта и одна шкала размеров на всех страницах и обоих языках |
-| `hues` | ярлыки, которые могут оказаться в одном списке, различимы по тону |
-| `qa` | регрессии по внешнему отчёту: каретка, фокус, живые области, контраст, обрезанная ссылка, две вкладки, превью |
-| `craft` | цепочки улучшений: данные, отрисовка, копирование, заглушки |
-| `flows` | модалка, адрес списка, буфер обмена, копирование всего броска |
-| `select` | выделение, пакетное добавление и копирование, меню списков |
-| `notes` | заметки мастера: хранение в ссылке, галка «копировать вместе с предметом» |
-| `noart` | записи без картинки и картинки, которые не загрузились |
-| `eqtest` | снаряжение: класс, порядок, фильтры, ссылка на фильтры, якоря, копирование |
-| `lists2` | страница списка: перетаскивание, ввод позиции, поиск по спискам, предупреждение |
-| `behave` | броски, поиск, язык, навигация назад-вперёд, копирование, отключённое хранилище |
-| `craftmob` | вёрстка на узких экранах |
-| `audit2` | обход всех адресов на четырёх ширинах и двух языках |
-| `states` | обход состояний, до которых можно добраться только кликом |
+| `dhloot.lists.v2` | lists with their contents and notes |
+| `dhloot.lang.v1` | interface language |
+| `dhloot.home.v1` | starting section |
+| `dhloot.prefs.v1` | table view (list or grid) and the height of note fields |
+| `dhloot.warn.v1` | that the storage warning has been dismissed |
 
-Наборы на браузере используют puppeteer. Каждый работает на своём контексте: страницы одного браузера делят `localStorage`, и без этого выбранный язык протекал из одного набора в другой.
+The line is drawn where the interface draws it: **how** a page looks is
+remembered, **what** was asked on it is not. Filters, rarity, community, the
+number in the roll box, search text, ticked entries and open help all start over
+on reload. Equipment filters are the exception in the other direction - they live
+in the address, to be shared rather than carried between sessions. Settings are
+read as untrusted data: an unusable value falls back to the default, broken JSON
+is ignored whole.
 
-## Запуск и разработка
+The app opens on Core rules. The house icon beside a heading pins the current
+section as the starting one; pressing it again restores the default. Any of the
+nine sections works, as does any table by name. An item card or a list cannot be
+pinned - it is a snapshot that drifts away from the data.
 
-Сборки нет, зависимостей нет. Достаточно открыть `index.html` в браузере — работает и с `file://`.
+## Running and developing
 
-```
-index.html                  разметка
-style.css                   стили
-app.js                      роутинг, режимы бросков, поиск, таблицы
-data.js                     данные: window.LOOT
-img/*.webp                  850 картинок, 640×640, ~31 МБ
-og/*.jpg                    те же картинки в JPEG для превью ссылок, ~47 МБ
-i/*.html                    1061 страницы-заглушки с Open Graph
-data.json                   те же данные простым JSON, для чтения извне
-catalog.csv                 1061 строки, по одной на запись, с характеристиками
-llms.txt                    что это за сайт, грамматика адресов, формат ссылки
-robots.txt                  обход разрешён, сборщики для обучения отсечены
-tools/derived.js            как собираются производные файлы
-tools/build.js              пересобирает их все
-tools/build-share-pages.js  генератор i/ из data.js
-.nojekyll                   чтобы GitHub Pages не обрабатывал папку через Jekyll
-```
-
-### Производные файлы
-
-`data.json`, `catalog.csv` и `i/*.html` собираются из `data.js`.
-После любой правки данных:
+No build, no runtime dependencies. Open `index.html` in a browser; `file://`
+works.
 
 ```
-node tools/build.js
+index.html                  markup
+style.css                   styles
+app.js                      routing, roll modes, search, tables, lists, print
+data.js                     the data: window.LOOT
+card/*.svg                  36 vectors for the print cards, exported from Figma
+img/*.webp                  850 pictures, 640x640, ~31 MB
+og/*.jpg                    the same pictures as JPEG for link previews, ~47 MB
+i/*.html                    1061 stub pages with Open Graph markup
+data.json                   the same data as plain JSON, for outside readers
+catalog.csv                 one row per record, with stat lines
+llms.txt                    what the site is, URL grammar, list-link format
+robots.txt                  crawling allowed, training scrapers excluded
+tools/build.js              rebuilds every derived file
+tools/build-share-pages.js  generates i/ from data.js
+tools/derived.js            how the derived files are assembled
+tests/                      18 suites plus the runner
 ```
 
-Забыть не страшно: `tests/derived.js` собирает их заново в память и сравнивает с
-тем, что лежит в репозитории, так что расхождение падает тестом, а не всплывает
-через месяц. Картинки и превью (`img/`, `og/`) под это не подпадают — они
-делаются из исходных файлов вручную, а `tests/dataint.js` следит, чтобы для
-каждой записи с картинкой нашлись оба файла.
+### Derived files
 
-### Читаемость для ИИ
+`data.json`, `catalog.csv` and `i/*.html` are built from `data.js`. After any
+change to the data, run `node tools/build.js`. Forgetting is not fatal:
+`tests/derived.js` rebuilds them into memory and compares against what is
+committed, so a mismatch fails a test. Artwork and previews are outside that
+script - they are made from the source files by hand, and `tests/dataint.js`
+checks that both files exist for every record that has a picture.
 
-Приложение рисуется на клиенте, и адрес после `#` до сервера не доходит вовсе —
-загрузчик видит пустую страницу, а ссылка на список выглядит бессмысленной.
-Поэтому данные лежат отдельно: `catalog.csv` для отбора, `data.json` для полного
-разбора, `llms.txt` с грамматикой адресов, форматом ссылки на список, разбором
-двух заметок и ориентирами по ценам. Эти файлы по-английски — их читают модели,
-и так они обходятся дешевле.
+### Tests
 
-Формат ссылки описан так, чтобы по нему можно было собрать рабочий адрес не
-обращаясь к сайту. `tests/lists2.js` проверяет это своей реализацией, отдельной
-от кода приложения, а `tests/derived.js` пересчитывает контрольную сумму в
-примере из `llms.txt`.
+```
+node tests/run-all.js            # everything, in parallel
+node tests/run-all.js eqtest     # one suite
+node tests/run-all.js --jobs 1   # one at a time, for debugging
+```
 
-### Поисковая выдача
+Needs `puppeteer` and `jsdom`: `npm i puppeteer jsdom`.
 
-Сайт из выдачи исключён: на каждой странице `noindex`. Обход при этом **не**
-закрыт, и это намеренно — краулер, которого не пустили, тега не прочитает и
-может показать голую ссылку, найденную где-то ещё; а превью в мессенджерах без
-обхода вовсе перестанут работать. Сборщики для обучения (`GPTBot`, `CCBot`,
-`ClaudeBot` и прочие) в `robots.txt` отсечены отдельно.
+| Suite | Checks |
+|---|---|
+| `dataint` | `data.js` invariants: ids, numbering, references, equipment fields, image and stub files |
+| `derived` | derived files match the generator, and the counts written into the docs match the data |
+| `i18n` | translation parity, and no string the code asks for that is missing |
+| `typo` | two fonts and one size scale across every page and both languages |
+| `hues` | badges that can appear in one list are told apart by hue |
+| `qa` | regressions from an external report: caret, focus, live regions, contrast, truncated links, two tabs, previews |
+| `craft` | upgrade chains: data, rendering, copying, stubs |
+| `flows` | modal, list address, clipboard, copying a whole roll |
+| `select` | selection, batch add and copy, the list menu |
+| `notes` | the two notes: copying, both links, migrating older lists, field height |
+| `noart` | records without a picture, and pictures that fail to load |
+| `eqtest` | equipment: class, order, filters, filter links, anchors, copying |
+| `lists2` | the list page: dragging, position entry, list search, warning |
+| `print` | print sheet: grid, card size against the design, black and white, art edges |
+| `behave` | rolls, search, language, back and forward, copying, storage disabled |
+| `craftmob` | layout on narrow screens |
+| `audit2` | a walk over every address, at four widths and in both languages |
+| `states` | states reachable only by clicking |
 
-## Структура данных
+Browser suites use puppeteer, each on its own context: pages of one browser share
+`localStorage`, and without that the chosen language leaks between suites.
 
-`data.js` — одна строка `window.LOOT = {...}`:
+### Machine readability and search
+
+A fetcher sees an empty page and a list link looks like nonsense, so the data
+lives separately: `catalog.csv` for selection, `data.json` for full parsing,
+`llms.txt` for the URL grammar, the list-link format, the two kinds of note and
+price guidance. Those files are in English - models read them, and it is cheaper
+that way. The list-link format is documented well enough to build a working
+address from without touching the site, and `tests/lists2.js` verifies it with an
+implementation of its own.
+
+The site is kept out of search results by a `noindex` tag on every page. Crawling
+itself is **not** blocked, deliberately: a crawler that is turned away never
+reads the tag and may list a bare URL found elsewhere, and messenger previews
+stop working entirely. Training scrapers are excluded separately in `robots.txt`.
+
+## Data structure
+
+`data.js` is a single `window.LOOT = {...}`:
 
 ```js
 {
   items: {
-    core_item: [ { id, src, kind, roll, en, ende, ru, rud, img, craft? }, … ],
-    core_consumable: [ … ], hnf_item: [ … ], hnf_consumable: [ … ],
-    wondrous: [ … ],
-    community: [ { …, community, community_ru }, … ]
+    core_item: [ { id, src, kind, roll, en, ende, ru, rud, img, craft? }, ... ],
+    core_consumable: [ ... ], hnf_item: [ ... ], hnf_consumable: [ ... ],
+    wondrous: [ ... ], dread: [ ... ],
+    voa:       [ { ..., tier, recall }, ... ],
+    frames:    [ { ..., frame, eq:{...} }, ... ],
+    community: [ { ..., community, community_ru }, ... ]
   },
-  eq: [ { id, src, kind:'equip', en, ende, ru, rud, img, eq:{…} }, … ],
+  eq:   [ { id, src, kind:'equip', en, ende, ru, rud, img, eq:{...} }, ... ],
+  refs: { 'vicious-entangle': { ... } },
   alt: {
-    item:       { common: { hope: [12 id], fear: [12 id] }, uncommon: {…}, rare: {…}, very_rare: {…}, legendary: {…} },
-    consumable: { … }
+    item:       { common: { hope: [12 ids], fear: [12 ids] }, uncommon: {...},
+                  rare: {...}, very_rare: {...}, legendary: {...} },
+    consumable: { ... }
   }
 }
 ```
 
-| Поле | Значение |
+| Field | Meaning |
 |---|---|
-| `en` / `ende` | английские название и описание |
-| `ru` / `rud` | русские название и описание |
-| `roll` | номер в своей таблице |
-| `kind` | `item` или `consumable` |
-| `img` | имя файла в `img/`, совпадает с `id`; можно оставить пустым |
-| `craft` | необязательное: `id` того, во что предмет улучшается |
+| `en` / `ende` | English name and description |
+| `ru` / `rud` | Russian name and description |
+| `roll` | number in its own table |
+| `kind` | `item`, `consumable` or `equip` |
+| `img` | file name in `img/`, same as `id`; may be empty |
+| `craft` | optional: `id` of what this upgrades into |
+| `refs` | optional: keys into `window.LOOT.refs` |
+| `tier` | Vault of Ages only: `1`-`4`, `A` for artifacts, `C` for cursed |
+| `recall` | Vault of Ages only: Recall Cost |
 
-Чтобы поправить перевод — меняются `ru` / `rud`. Чтобы убрать предмет — удаляется объект из массива, у остальных пересчитывается `roll`.
+To fix a translation, edit `ru` / `rud`. To remove a record, delete the object
+and renumber `roll` on the rest. Where `img` is empty the app falls back to
+`img/_none.webp` and hides the **Image** button, so a record can be added before
+its illustration exists; the same happens when a listed file fails to load.
 
-### Предметы без картинки
+Fifteen records carry `craft`, the `id` of what they turn into - ingredients that
+become potions, and the Core recipes. Only one direction is stored; the reverse
+("Made from") is built at load, so the two halves cannot drift apart. Five
+descriptions point at Core cards through `refs`; that text travels with the item
+into copies and shares, so a player gets everything in one message.
 
-Новую позицию можно добавлять, не дожидаясь иллюстрации: если `img` пустой, подставляется заглушка `img/_none.webp`, а в превью ссылки — `og/_none.jpg`. Кнопка «Картинка» у такого предмета не показывается, отправка уходит текстом со ссылкой, всё остальное работает как обычно.
+### Equipment
 
-Так же приложение ведёт себя, если файл в `img/` есть в данных, но не загрузился: картинка подменяется заглушкой на месте, без перерисовки страницы, и кнопка «Картинка» в этой карточке убирается. Приложение это запоминает до перезагрузки, чтобы кнопка не возвращалась при следующей отрисовке.
-
-### Цепочки улучшений
-
-У 15 записей есть поле `craft` — id того, во что предмет превращается. Это ингредиенты, становящиеся зельями, и рецепты из корника:
-
-```js
-{ id: 'w3', ru: 'Эфироцвет', …, craft: 'w2' }   // → Чай Эфироцвета
-```
-
-Хранится только одно направление. Обратная связь («Получается из») строится приложением при загрузке, поэтому две половины цепочки не могут разъехаться. Цель всегда существует: связь на отсутствующую запись не заводится.
-
-### Фильтры снаряжения
-
-В каждой строке фильтра ничего не выбрано по умолчанию, и строка без выбора значит «любое». Поэтому «только ранг 2» — это один клик, а не выключение трёх остальных значений. Внутри строки значения складываются по «или», строки сужают друг друга.
-
-Выбранное собрано в строку над таблицей: плашка на каждое значение с крестиком, рядом «Сбросить всё» и кнопка ссылки. Они появляются только когда что-то выбрано и остаются доступны со свёрнутой панелью — иначе за сбросом пришлось бы каждый раз её открывать.
-
-Панель одна на все таблицы: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество. Где отбирать нечего, панели нет вовсе.
-
-Состояние живёт в адресе: `#/tables/eq_weapon/f_tier-2.cls-mag`. Группы разделены точкой, а не подчёркиванием, с которого это начиналось: `beast_feast` — это значение, и старый разделитель резал его пополам. Оно записывается через `history.replaceState` при каждом изменении, поэтому ссылку можно скопировать прямо из строки браузера. Адрес читается обратно только когда он действительно поменялся — иначе панель не удавалось бы закрыть, а клик по значению откатывался бы к тому, что записано в ссылке.
-
-Кнопка броска выглядит одинаково везде: золотая, с костью. На обычных таблицах их пять — одно действие с разным числом костей, — и заливка на одной первой читалась как «жми сюда», хотя выбирают по редкости, а не по порядку. Обводка вместо заливки оказалась не лучше: ряд стал похож на переключатель. Теперь все пять — обычная кнопка броска, разница только в числе.
-
-### Снаряжение
-
-Оружие и броня — не добыча с номером в таблице, а вещи с характеристиками, поэтому они лежат отдельным массивом `window.LOOT.eq` и несут блок `eq`:
+Weapons and armour are not loot with a table number but things with stats, so
+they sit in `window.LOOT.eq` and carry an `eq` block:
 
 ```js
 {
   id:'q26', src:'hnf', kind:'equip',
-  en:'Katana',  ende:'Quick: When you make an attack…',
-  ru:'Катана',  rud:'Быстрое: Когда вы совершаете атаку…',
+  en:'Katana',  ende:'Quick: When you make an attack...',
+  ru:'Катана',  rud:'Быстрое: Когда вы совершаете атаку...',
   img:'',
   eq:{ t:'weapon', tier:1, cls:'phy', tr:'agility', rg:'melee',
        dmg:'d10+3', dt:'phy', bu:2, as:null, th:null, line:'q26' }
 }
 ```
 
-Записи идут в порядке книг: внутри каждого ранга сначала физическое оружие Core, затем магическое, потом то же для Hope & Fear. `id` выдаются по этому порядку, поэтому таблица на экране совпадает с разворотом книги.
-
-| Поле `eq` | Значение |
+| `eq` field | Meaning |
 |---|---|
-| `t` | `weapon`, `secondary` или `armor` |
-| `tier` | ранг 1–4 |
-| `cls` | раздел книги: `phy` или `mag`. У вторичного оружия равен типу урона |
-| `tr` | характеристика: `agility`, `strength`, `finesse`, `instinct`, `presence`, `knowledge` |
-| `rg` | дистанция: `melee`, `veryclose`, `close`, `far`, `veryfar` |
-| `dmg` / `dt` | урон и его тип: `phy`, `mag`, `any` |
-| `bu` | хват: 1 — одноручное, 2 — двуручное |
-| `as` / `th` | Показатель Брони и стандартные пороги — только у брони |
-| `line` | `id` первой вещи в линейке улучшений; пусто у уникальных |
+| `t` | `weapon`, `secondary` or `armor` |
+| `tier` | 1-4, always taken from a book, never inferred from the stats |
+| `cls` | section of the book: `phy` or `mag`. On secondary weapons it equals the damage type |
+| `tr` | trait: `agility`, `strength`, `finesse`, `instinct`, `presence`, `knowledge` |
+| `rg` | range: `melee`, `veryclose`, `close`, `far`, `veryfar` |
+| `dmg` / `dt` | damage and its type: `phy`, `mag`, `any` |
+| `bu` | burden: 1 one-handed, 2 two-handed |
+| `as` / `th` | Armour Score and base thresholds, armour only |
+| `line` | `id` of the first item in the upgrade line; empty on one-offs |
 
-Описание (`ende` / `rud`) хранит только свойство в виде `Название: текст`. Характеристики собираются в строку при отрисовке, поэтому вид у них одинаковый в строке таблицы, на карточке, в копировании, в отправке и в Open Graph разметке.
+Records follow the order of the books, and ids are handed out in that order, so
+the table on screen matches the spread in the book. `ende` / `rud` hold only the
+property, as `Name: text`; the stat line is assembled at render time, so it looks
+the same in a table row, on a card, in copied text, in a share and in the Open
+Graph markup.
 
-`line` связывает Катану, Улучшенную, Продвинутую и Легендарную Катану в одну линейку: у всех четырёх `line` указывает на `id` обычной Катаны. У вещей, которые существуют в единственном виде, поле пустое — на этом и построен фильтр «Улучшаемые / Уникальные».
+`cls` and `dt` are different things. `cls` says which section of the book the
+weapon is printed in - a magic weapon needs a Spellcast trait; `dt` is the damage
+it deals. They usually agree, but the Shadowblade and the Ghostblade are
+`cls:'mag'` with `dt:'any'`. The filter works on `cls`, and `any` lands in both.
 
-`cls` и `dt` — разные вещи. `cls` говорит, в каком разделе книги напечатано оружие: магическому нужна Характеристика Заклинателя. `dt` — тип урона, который оно наносит. Обычно они совпадают, но у Призрачного Клинка и Меча Тьмы `cls:'mag'` при `dt:'any'`: это магическое оружие, а урон выбирается при атаке. Фильтр работает по `cls`, и `any` попадает и в физическое, и в магическое.
+Eleven Wondrous Loot records are weapons too. They stay in `items.wondrous` with
+their roll number and carry the same `eq` block, so they look and copy like
+equipment, but they are not in the equipment tables, which reproduce the two
+books.
 
-Одиннадцать записей из Wondrous Loot — тоже оружие. Они остались в `items.wondrous` со своим номером броска и получили такой же блок `eq`, поэтому выглядят и копируются как снаряжение, но в таблицы снаряжения не попадают: те повторяют две книги.
+## Category colours
 
-Значения приведены по эррате: урон Длинного Меча и Копья, Сияющие Кольца, свойство Баклера и хват Когтей-Кастетов 4 ранга.
+Badges are told apart by hue rather than lightness, with at least 49 degrees
+between any two. The source badge (`Core`, `Hope & Fear`) is a neutral grey - it
+is a caption, not a category - and the stat line carries no colour of its own.
 
-### Упомянутые карты
+| Item | Consumable | Primary weapon | Secondary weapon | Armour |
+|---|---|---|---|---|
+| `#7a8ee0` | `#9ec96a` | `#d48e6a` | `#cf7fa6` | `#5ec9c4` |
+| indigo 228 | yellow-green 87 | terracotta 20 | rose 331 | turquoise 177 |
 
-Пять описаний ссылаются на карты из корника — заклинание, свойство гримуара, звериную форму. Их тексты лежат в `window.LOOT.refs`, а запись указывает на них полем `refs`:
+## Sources
 
-```js
-{ id:'w1', …, refs:['vicious-entangle'] }
-```
-
-На карточке это свёрнутый блок, который раскрывается по клику. При копировании и отправке текст упомянутой карты уезжает вместе с предметом — как и описание второго конца цепочки улучшений. Игрок получает всё нужное одним сообщением и не идёт искать в книге.
-
-Русский взят с daggerheart.su, английский из корника. Характеристики Крупного зверя приведены по эррате от 9 сентября 2025 года: в самой книге Сила и Уклонение перепутаны местами.
-
-Строка про улучшение попадает в копирование, отправку, выгрузку списка и Open Graph разметку `i/`, так что она доезжает до мессенджера вместе с названием и описанием.
-
-## Источники
-
-| Раздел | Записей | Английский текст | Русский текст |
+| Set | Records | English text | Russian text |
 |---|---|---|---|
-| Core — предметы | 60 | Daggerheart Core Rulebook (SRD) | [daggerheart.su](https://ru.daggerheart.su/) |
-| Core — расходники | 60 | Daggerheart Core Rulebook (SRD) | [daggerheart.su](https://ru.daggerheart.su/) |
-| Hope & Fear — предметы | 60 | Daggerheart: Hope & Fear | любительский перевод |
-| Hope & Fear — расходники | 60 | Daggerheart: Hope & Fear | любительский перевод |
-| Wondrous Loot | 119 | [Wondrous Environments](https://www.drivethrurpg.com/en/product/552648/wondrous-environments) | любительский перевод |
-| Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
-| Альтернативные таблицы | 5 редкостей × 4 колонки × 12 | Alternate Loot & Consumable Tables | ссылается на записи выше |
-| Оружие | 239 | Core Rulebook (SRD), Hope & Fear | Core — [daggerheart.su](https://ru.daggerheart.su/), H&F — таблица сообщества |
-| Вторичное оружие | 73 | Core Rulebook (SRD), Hope & Fear | там же |
-| Броня | 67 | Core Rulebook (SRD), Hope & Fear | там же |
+| Core - items | 60 | Daggerheart SRD | [daggerheart.su](https://ru.daggerheart.su/) |
+| Core - consumables | 60 | Daggerheart SRD | [daggerheart.su](https://ru.daggerheart.su/) |
+| Hope & Fear - items | 60 | Daggerheart: Hope & Fear | fan translation |
+| Hope & Fear - consumables | 60 | Daggerheart: Hope & Fear | fan translation |
+| Wondrous Loot | 119 | [Wondrous Environments](https://www.drivethrurpg.com/en/product/552648/wondrous-environments) | fan translation |
+| Dread GM Toolbox | 29 | [Dread GM Toolbox](https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart) | fan translation |
+| Vault of Ages | 108 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3) | fan translation |
+| Community items | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | fan translation, community names per [daggerheart.su](https://ru.daggerheart.su/community) |
+| Campaign frames | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | fan translation |
+| Weapons | 239 | Daggerheart SRD, Hope & Fear | Core from [daggerheart.su](https://ru.daggerheart.su/), H&F from a community sheet |
+| Secondary weapons | 73 | Daggerheart SRD, Hope & Fear | as above |
+| Armour | 69 | Daggerheart SRD, Hope & Fear | as above |
+| Alternate tables | 5 rarities x 4 columns x 12 | Alternate Loot & Consumable Tables | points at the records above |
 
-Автор альтернативных таблиц — [PrinceOfNowhereee](https://www.reddit.com/user/PrinceOfNowhereee/), [пост на Reddit](https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/). Ссылки на все три источника продублированы в приложении под кнопкой **?** соответствующего раздела.
+The alternate tables are by
+[PrinceOfNowhereee](https://www.reddit.com/user/PrinceOfNowhereee/)
+([the Reddit post](https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/)).
+Links to every third-party source are repeated in the app under the **?** button
+of the section that uses it.
 
-Перевод преимущественно неофициальный. Для терминологии за основу взят [daggerheart.su](https://ru.daggerheart.su/). Если перевод где-то смущает, оригинал в одном переключении RU/EN.
+The Russian text is mostly unofficial;
+[daggerheart.su](https://ru.daggerheart.su/) is the reference for terminology,
+and the original is one RU/EN switch away. Core text follows the official errata,
+and item names are spelled as the books spell them.
 
-Тексты Core приведены с учётом официальной эрраты. Названия предметов везде сведены к написанию из книг.
+## Randomness
 
-## Про случайность
+Rolls use `Math.random()`, tested for uniformity: chi-square for d10, d12 and
+d119 matches the degrees of freedom, and per-face skew stays within 1.5% over
+20 000 rolls per face. The feeling that multi-die modes repeat themselves comes
+from the rules: the sum of Nd12 is triangular, so on `2d12` a 13 comes up 8.4% of
+the time and the extremes about 0.7% each.
 
-Броски используют `Math.random()`. Проверял на равномерность: χ² для d10, d12 и d119 совпадает со степенями свободы, перекос по граням не выходит за ±1.5% на выборке в 20 000 бросков на грань — смещения нет.
+## Rights
 
-Ощущение «часто выпадает одно и то же» в режимах с несколькими костями объясняется правилами, а не генератором: сумма Nd12 распределена треугольником. На `2d12` число 13 выпадает в 8.4% случаев, а крайние 2 и 24 — примерно в 0.7%. То есть кучность в середине диапазона заложена в самих таблицах.
+The code (`index.html`, `style.css`, `app.js`, `tools/`, `tests/`) is MIT - see
+[LICENSE](LICENSE).
 
-## Права
+**The artwork** in `img/` and `og/` was generated by the project's author and is
+fan content. It has nothing to do with the original books.
 
-Код (`index.html`, `style.css`, `app.js`, `tools/`) распространяется по лицензии MIT — см. [LICENSE](LICENSE).
+**Game text** belongs to its rights holders and is included as a reference for
+play at the table:
 
-**Изображения** в `img/` и `og/` сгенерированы автором проекта и являются фанатским контентом. К оригинальным книгам они отношения не имеют.
-
-**Игровые тексты** принадлежат правообладателям и включены как справочник для игры за столом:
-
-- **Core Rulebook** и **Hope & Fear** используются в соответствии с [Darrington Press Community Gaming License](https://darringtonpress.com/license/). 25 августа 2026 года вышла версия 2.0: она признаёт Public Game Content [Daggerheart SRD 2.0](https://daggerheart.com/srd) и добавляет Hope & Fear в число игр, на которые лицензия распространяется. SRD 1.0 остаётся в силе для материалов, выпущенных до этого.
-- **Wondrous Environments**, **Community Magic Items** и **Alternate Loot & Consumable Tables** под эту лицензию не подпадают: это платные и фанатские дополнения, права на тексты которых принадлежат их авторам.
+- **Core Rulebook** and **Hope & Fear** are used under the
+  [Darrington Press Community Gaming License](https://darringtonpress.com/license/).
+  Version 2.0, issued 25 August 2026, recognises the
+  [Daggerheart SRD 2.0](https://daggerheart.com/srd) as Public Game Content and
+  adds Hope & Fear to the games the licence covers. SRD 1.0 remains in force for
+  material published before that.
+- **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
+  **Community Magic Items** and the **Alternate Loot & Consumable Tables** fall
+  outside that licence: they are paid and fan supplements whose text belongs to
+  their own authors.
 
 > This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at https://www.daggerheart.com. There are no previous modifications by others.
 
-Daggerheart © Darrington Press. Проект не связан с Darrington Press и Critical Role и не одобрен ими.
+Daggerheart © Darrington Press. This project is not affiliated with, or endorsed
+by, Darrington Press or Critical Role.
 
-Если вы правообладатель и хотите, чтобы ваши материалы отсюда убрали — [заведите issue](https://github.com/artex-x/daggerheart-loot/issues), уберу.
+If you hold rights to something here and want it removed,
+[open an issue](https://github.com/artex-x/daggerheart-loot/issues) and it will
+be removed.

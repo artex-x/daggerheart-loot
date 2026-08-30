@@ -10,7 +10,7 @@ It opens both from `file://` and from GitHub Pages.
 node tools/build.js
 ```
 
-This regenerates `data.json`, `catalog.csv` and the 859 stubs in `i/*.html`.
+This regenerates `data.json`, `catalog.csv` and the 1061 stubs in `i/*.html`.
 `tests/derived.js` rebuilds them into memory and compares byte for byte, so a
 skipped rebuild is caught by a test rather than by a user. Editing the stub
 generator itself without rebuilding is caught in the same place.
@@ -21,10 +21,14 @@ Identical bytes are never stored twice - a record simply points at another
 record's file, and `tests/dataint.js` watches for that.
 
 The record count is spelled out in `index.html` (meta descriptions), `README.md`,
-`app.js` (the search blurb) and `llms.txt`. `tests/derived.js` finds every
-three-digit number next to its own word in those files and checks it against
-data.js, so the numbers still have to be edited by hand - but a forgotten place
-cannot slip through.
+`README.ru.md`, `app.js` (the search blurb) and `llms.txt`. `tests/derived.js`
+finds every three-digit number next to its own word in those files and checks it
+against data.js, so the numbers still have to be edited by hand - but a
+forgotten place cannot slip through. The same suite pins the licence notice,
+which has to appear verbatim in both READMEs, in `llms.txt` and in both footers.
+
+`README.md` is English and is what GitHub shows; `README.ru.md` is the Russian
+twin. They carry the same sections, so an edit to one belongs in the other.
 
 ## Tests
 
