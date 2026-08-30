@@ -119,6 +119,22 @@ fast machine and flaky on a slow one.
 
 Every defect that gets fixed gets a test - that is a rule here, not a wish.
 
+If puppeteer reports `Failed to launch the browser process` with
+`libXdamage.so.1: cannot open shared object file`, the machine is missing one
+7 kB library and nothing else - `ldd` on the bundled Chrome names it. Where
+there is no root to install it, no root is needed:
+
+```
+mkdir -p /tmp/sysroot/dl && cd /tmp/sysroot/dl
+apt-get download libxdamage1 && dpkg -x libxdamage1_*.deb /tmp/sysroot/root
+export LD_LIBRARY_PATH=/tmp/sysroot/root/usr/lib/x86_64-linux-gnu
+```
+
+All sixteen browser suites and `tools/smoke-file-url.mjs` then run. Do not
+conclude the browser suites are unrunnable without checking `ldd` first: the
+whole set was skipped once on the strength of a launch error that turned out to
+be a single missing file.
+
 ## Printing (`#/print/<ids>`)
 
 Nine cards to an A4 sheet, 63x88 mm each - the size of a playing card. The card
