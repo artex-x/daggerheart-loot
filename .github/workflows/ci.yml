@@ -1,0 +1,76 @@
+name: check
+
+# Пока идёт переезд (issue #47) здесь нет выкладки: живой сайт - это корень
+# репозитория, и GitHub Pages по-прежнему берёт его. Deploy добавляется в фазе
+# 6, когда собранное приложение станет тем, что показывают людям.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # gitleaks смотрит историю, а не только срез
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Ворота, которые обязан пройти и человек локально
+        run: npm run check
+
+      - name: Сборка
+        run: npm run build
+
+      - name: Собранная страница открывается из папки
+        run: node tools/smoke-file-url.mjs
+
+      - name: Бюджет на размер бандла
+        run: npm run budget
+
+      - name: Старые наборы против живого приложения
+        run: npm run test:legacy
+
+      - name: Артефакты упавших прогонов
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-output
+          path: |
+            dist/
+            coverage/
+          retention-days: 7
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Уязвимости, на которые нельзя закрыть глаза
+        run: npm audit --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Личный инструмент: из выдачи он исключён нарочно, docs/specs/META.md -->
+<meta name="robots" content="noindex, nofollow">
+<title>Генератор лута для Daggerheart</title>
+<!-- Данные приходят классическим скриптом, а не fetch: из папки (file://)
+     запрос к локальному json запрещён. docs/specs/CONTRACTS.md, раздел 4. -->
+<script defer src="./data.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>

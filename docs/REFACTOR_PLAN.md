@@ -19,8 +19,8 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | Phase | What | State |
 |---|---|---|
 | 0 | Baseline, inventory, durable specs, golden fixtures, coverage matrix | **done** |
-| 1 | Vite + Svelte + TypeScript scaffold, quality gates, CI, contracts frozen | not started |
-| 2 | Extract pure logic to TypeScript modules with unit tests | not started |
+| 1 | Vite + Svelte + TypeScript scaffold, quality gates, CI, contracts frozen | **done** |
+| 2 | Extract pure logic to TypeScript modules with unit tests | started: the list codec |
 | 3 | Ports for replaceable concerns (drag and drop, search, modal) | not started |
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | not started |
 | 5 | Testing pyramid: unit, component, a11y, e2e | not started |
@@ -49,6 +49,43 @@ and `burden`, so a link built from the documentation silently returned an
 unfiltered table; `robots.txt` still advertised 830 records; and both READMEs
 claimed the equipment tables reproduce only the two books, when they hold
 equipment from every source.
+
+## Phase 1 - what was produced
+
+- `package.json` with `npm run check` as the local gate: format, lint,
+  typecheck, data generation, `tests/derived.js`, `tests/i18n.js`, unit tests
+  with coverage thresholds. `package-lock.json` and `.nvmrc` (Node 22) are
+  committed.
+- Vite + Svelte 5 (runes) + strict TypeScript. The new app has its own root,
+  `app/`, and builds to `dist/`; the live site stays in the repository root
+  until the cut-over, so nothing has to work in two places at once.
+- ESLint with type-aware rules, Prettier, `svelte-check`. `any` is an error.
+  A boundary rule forbids `window`, `document`, `location`, `localStorage`,
+  `navigator`, `fetch` and any Svelte import inside `app/src/lib` - that is
+  where the pure logic lives, and it has to run without a browser.
+- `tools/smoke-file-url.mjs` opens the built page from `file://` and checks it
+  renders, that the data arrived, that no `type="module"` survived and that
+  every script path is relative.
+- `tools/bundle-budget.mjs`, gzip, code only, budget 120 kB; currently 9 kB.
+- `.github/workflows/ci.yml`: the same gate, plus the build, the `file://`
+  smoke, the budget, the 19 legacy suites, `npm audit` and gitleaks. **No
+  deploy job yet** - Pages still serves the repository root, and adding one now
+  would replace the live site with an empty shell.
+- Husky and lint-staged on staged files. The hook does not replace
+  `npm run check`.
+
+Two things had to differ from the plan as written.
+
+`"type": "module"` in `package.json` cannot be used: it would turn every `.js`
+in `tests/` and `tools/` into an ES module and break all 19 suites and the data
+generator at once. The package stays CommonJS by default and the new config
+files are `.mjs`; the application itself is TypeScript and unaffected.
+
+Vite emits `<script type="module">` for the entry even when the output format is
+`iife`. A page built that way loads on Pages and silently does not load from a
+folder, which is exactly the failure `file://` support exists to prevent. A
+build plugin rewrites the tag to a classic `defer` script, and the smoke check
+fails if it ever comes back. It caught this on its first run.
 
 ## Decisions taken while working
 

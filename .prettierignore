@@ -1,0 +1,22 @@
+# Живой сайт: его формат сложился до Prettier, и переформатировать его сейчас
+# значит получить нечитаемый diff в единственном файле, который работает.
+app.js
+data.js
+data.json
+catalog.csv
+style.css
+index.html
+i/
+img/
+og/
+card/
+tests/
+tools/
+dist/
+coverage/
+node_modules/
+docs/fixtures/
+
+# Markdown переносится руками: в README и спеках перенос строки несёт смысл, а
+# формула лицензии обязана остаться одной строкой (её сверяет tests/derived.js).
+*.md

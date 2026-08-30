@@ -239,8 +239,21 @@ Loreborne `cm11`-`cm20` и так далее.
 
 ## Запуск и разработка
 
-Сборки нет, зависимостей во время работы нет. Достаточно открыть `index.html` в
-браузере - работает и с `file://`.
+Сайту в его нынешнем виде не нужны ни сборка, ни зависимости: достаточно
+открыть `index.html` в браузере, в том числе по `file://`.
+
+В `app/` идёт переписывание на Svelte и TypeScript
+([issue #47](https://github.com/artex-x/daggerheart-loot/issues/47),
+[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)); сайт оно пока не обслуживает.
+Для работы над ним нужен Node 22 (`.nvmrc`):
+
+```
+npm ci
+npm run dev      # новое приложение
+npm run check    # формат, линт, типы, данные, юнит-тесты - перед каждым коммитом
+npm run build    # -> dist/, открывается и из папки, и с Pages
+npm run test:legacy   # 19 наборов puppeteer против живого сайта
+```
 
 ```
 index.html                  разметка

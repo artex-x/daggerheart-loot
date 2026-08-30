@@ -23,3 +23,10 @@ tools/vault_extract.py
 export/
 *-PLAN.md
 *-DESIGN.md
+# ...кроме тех, что лежат в docs/: это спеки, они и есть источник правды
+!docs/**
+
+# Сборка нового приложения (issue #47). Живой сайт пока в корне.
+dist/
+coverage/
+.svelte-kit/

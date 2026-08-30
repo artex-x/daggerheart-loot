@@ -231,8 +231,21 @@ pinned - it is a snapshot that drifts away from the data.
 
 ## Running and developing
 
-No build, no runtime dependencies. Open `index.html` in a browser; `file://`
-works.
+The site as it runs today needs no build and no runtime dependencies: open
+`index.html` in a browser, `file://` included.
+
+A rewrite to Svelte and TypeScript is under way in `app/`
+([issue #47](https://github.com/artex-x/daggerheart-loot/issues/47),
+[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)). It does not serve the site yet.
+To work on it you need Node 22 (`.nvmrc`):
+
+```
+npm ci
+npm run dev      # the new app
+npm run check    # format, lint, types, data, unit tests - before every commit
+npm run build    # -> dist/, opens from file:// as well as from Pages
+npm run test:legacy   # the 19 puppeteer suites against the live site
+```
 
 ```
 index.html                  markup

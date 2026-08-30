@@ -29,6 +29,29 @@ updates `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md` and
 **When behaviour changes, the spec changes in the same commit.** A spec that
 lags the code is worse than no spec: the next session trusts it.
 
+## Before every commit
+
+```
+npm run check
+```
+
+Format, lint, typecheck, data generation, `derived`, `i18n`, unit tests with
+coverage thresholds. The Husky hook only tidies staged files; it does not
+replace this. CI adds the build, the `file://` smoke check, the bundle budget,
+the 19 puppeteer suites, `npm audit` and gitleaks.
+
+Definition of done: `npm run check` passes, the new behaviour has a test, and
+`docs/specs/*` matches what the code now does.
+
+Two things live side by side while the migration runs (`docs/REFACTOR_PLAN.md`):
+the live site is `index.html` + `app.js` + `style.css` in the repository root,
+and the new application is `app/`, built to `dist/`. Pages still serves the
+root. Do not delete the old one before the cut-over, and do not point Pages at
+`dist/` until Phase 6.
+
+`app/src/lib` is pure logic: no DOM, no storage, no Svelte, no network. ESLint
+enforces that, and it is what makes the modules testable without a browser.
+
 ## After editing data.js
 
 ```
