@@ -40,6 +40,11 @@ export default defineConfig({
      is opened from a folder - see docs/specs/META.md section 4. */
   base: './',
   plugins: [svelte(), fileUrlBuild()],
+  /* Under vitest the modules are loaded the way a server would, and Svelte then
+     hands back its server build - where `mount` does not exist. Asking for the
+     browser condition during tests is what makes a component test a component
+     test rather than a render-to-string. */
+  resolve: process.env['VITEST'] ? { conditions: ['browser'] } : {},
   build: {
     outDir: '../dist',
     emptyOutDir: true,
@@ -54,7 +59,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.ts'],
-    setupFiles: [],
+    setupFiles: ['./vitest-setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/lib/**/*.ts', 'src/ports/**/*.ts'],

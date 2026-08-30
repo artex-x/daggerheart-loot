@@ -22,5 +22,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["app/src/**/*.ts", "app/src/**/*.svelte", "vite.config.mts"]
+  "include": [
+    "app/src/**/*.ts",
+    "app/src/**/*.svelte",
+    "app/vitest-setup.ts",
+    "vite.config.mts"
+  ]
 }

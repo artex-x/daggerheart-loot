@@ -22,7 +22,7 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 1 | Vite + Svelte + TypeScript scaffold, quality gates, CI, contracts frozen | **done** |
 | 2 | Extract pure logic to TypeScript modules with unit tests | **done** |
 | 3 | Ports for replaceable concerns (drag and drop, search, modal) | **done** |
-| 4 | Svelte component architecture, styling, i18n, the rewrite itself | not started |
+| 4 | Svelte component architecture, styling, i18n, the rewrite itself | started: shell, primitives, tokens, dictionary |
 | 5 | Testing pyramid: unit, component, a11y, e2e | not started |
 | 6 | Build, artefacts, deployment | not started |
 | 7 | Cut-over, cleanup, README, standing agent guidance | not started |
@@ -160,6 +160,45 @@ function of records and a query, so swapping a library in later means changing
 one call site - a port around it would be indirection with nothing behind it. A
 modal port was likewise deferred: there is nothing to abstract until Phase 4 has
 a component to put behind it.
+
+## Phase 4 - the shell, and the rules the rest follows
+
+The first vertical slice: `styles/tokens.css`, `lib/dict.ts`, `state/app.svelte.ts`,
+and the components `Shell`, `TabBar`, `LangSwitch`, `Button`. Every route below
+the shell still says only what its address is - that is deliberate, so the frame
+can be finished and tested before anything is poured into it.
+
+What it settles for everything after it:
+
+- **One global stylesheet, and it is only tokens.** A value two components need
+  has to be named there first, which makes "these are the same colour on
+  purpose" visible and makes changing it one edit. The palette is the live
+  site's, carried across unchanged, including the two values whose contrast
+  ratios were measured rather than guessed.
+- **The focus ring is set once, globally, on `:focus-visible`.** Per component
+  is how one control ends up without one. `prefers-reduced-motion` is honoured
+  in the same file.
+- **Parity is a compile error.** `Dict` is derived from the Russian side, so an
+  English side missing a key does not typecheck, and neither does a key only
+  English has. The old build could only learn that by parsing its own source at
+  test time. The dictionary grows a key when a component needs one, not in
+  advance - the old one accumulated five nobody used.
+- **A component is handed an `Env`, never a browser global.** The 16 component
+  tests here cover the language switch, which tab is lit, an old section name,
+  a pinned starting section, an address that beats a preference, and a browser
+  that refuses storage. Every one of those would need a real browser without
+  the ports.
+
+Two things the runtime had to be told explicitly. Under vitest the modules load
+the way a server would and Svelte hands back its server build, where `mount`
+does not exist - so the browser condition is asked for during tests, which is
+what makes a component test a component test. And `untrack` marks the two places
+that read a prop once on purpose: the outside world does not change under a
+running app, and rebuilding the state if it did would throw away everything the
+person had done.
+
+Bundle: 19 kB gzip of the 120 kB budget, and the built page still opens from a
+folder.
 
 ## Decisions taken while working
 

@@ -62,11 +62,10 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 
 ## The unit suite
 
-`npm run test` runs the ported modules in `app/src/lib` and `app/src/ports`
-under vitest, with
-coverage thresholds. It is a separate pyramid from the nineteen browser suites
-and does not replace them: the browser suites test the app people use, these
-test the logic that will replace it.
+`npm run test` runs the ported modules in `app/src/lib` and `app/src/ports`, and
+the components, under vitest with coverage thresholds. It is a separate pyramid
+from the nineteen browser suites and does not replace them: those test the app
+people use, these test the one that will replace it.
 
 | File | Held to |
 |---|---|
@@ -77,6 +76,7 @@ test the logic that will replace it.
 | `money.test.ts` | the worked examples in the app's own help panel |
 | `search.test.ts`, `lists.test.ts`, `roll.test.ts` | stated behaviour |
 | `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share |
+| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, a browser that refuses storage |
 
 The browser adapters' happy paths are the one thing these cannot reach - a real
 clipboard write, a real share sheet - because jsdom has neither. That is what
