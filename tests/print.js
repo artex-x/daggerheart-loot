@@ -245,6 +245,14 @@ const MM = 96 / 25.4;   // css-пиксель на миллиметр
   for (const bw of [false, true]) {
     await go('#/print/q313');
     if (bw) { await page.click('[data-act="printArt"][data-val="bw"]'); await settle(); }
+    /* Both numbers are read off the shield vector, so it has to have a size
+       first. A fixed pause was enough on an idle machine and not enough on a
+       busy one: the caption then measured flush against a zero-height image,
+       and the suite failed on a card nobody had touched. */
+    await page.waitForFunction(function () {
+      const img = document.querySelector('.pc-shield img');
+      return !!img && img.getBoundingClientRect().width > 0;
+    }, { timeout: 8000, polling: 'raf' });
     const m = await mark();
     ok(Math.abs(m.off) < 1.5, (bw ? 'ч/б: ' : 'цвет: ') +
        'число сдвинуто от середины щита на ' + m.off.toFixed(1));
