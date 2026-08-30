@@ -88,3 +88,39 @@ describe('the order it returns', () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
   });
 });
+
+describe('without a stat line', () => {
+  /* Most callers have no stat line to offer - the search page passes one only
+     because equipment exists. Omitting it must not change what loot matches. */
+  const loot = index.searchable.find((r) => !r.eq);
+  const gear = index.searchable.find((r) => r.eq);
+
+  it('has both kinds of record to test with', () => {
+    expect(loot).toBeDefined();
+    expect(gear).toBeDefined();
+  });
+
+  it('still finds a record by its own name', () => {
+    if (!loot) return;
+    expect(matches(loot, loot.ru.toLowerCase())).toBe(true);
+    expect(matches(loot, 'заведомо отсутствующее слово')).toBe(false);
+  });
+
+  it('still filters a list', () => {
+    if (!loot) return;
+    expect(search([loot], loot.ru.toLowerCase()).map((r) => r.id)).toEqual([loot.id]);
+    expect(search([loot], '')).toEqual([]);
+  });
+
+  it('gives equipment an empty stat line rather than crashing on the missing one', () => {
+    /* Equipment is the only thing that consults the stat line, so a caller that
+       omits it should find gear by name and never by its stats. */
+    if (!gear) return;
+    expect(matches(gear, gear.ru.toLowerCase())).toBe(true);
+    expect(matches(gear, 'ранг')).toBe(false);
+    expect(search([gear], gear.ru.toLowerCase()).map((r) => r.id)).toEqual([gear.id]);
+    /* A query that reaches the stat line rather than short-circuiting on the
+       name: with no stat line to consult there is nothing to match. */
+    expect(search([gear], 'заведомо отсутствующее слово')).toEqual([]);
+  });
+});

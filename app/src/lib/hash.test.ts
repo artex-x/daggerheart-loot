@@ -9,14 +9,19 @@ import { describe, expect, it } from 'vitest';
 import {
   legacySource,
   parseHash,
+  printHash,
   printIds,
   PRINT_MAX,
+  recordHash,
   sectionHash,
+  sharedListHash,
+  storedListHash,
+  stripHash,
   tablesHash,
   type Route
 } from './hash.js';
 import { decodeFilter, encodeFilter, groupsFor, passes } from './filters.js';
-import { isTableId, type TableId } from './types.js';
+import { isTableId, SECTIONS, type TableId } from './types.js';
 
 interface RouteFixture {
   hash: string;
@@ -247,5 +252,99 @@ describe('building back', () => {
       );
       expect(again).toEqual({ kind: 'tables', table, anchor: r.anchor, filter: kept });
     }
+  });
+});
+
+describe('writing an address', () => {
+  /* The writers had no test of their own: the fixtures pin what an address
+     means when it arrives, and these are what the app puts in a link. A link
+     the app writes and cannot read afterwards is the failure they guard. */
+
+  it('strips the hash and the slash, and leaves a bare path alone', () => {
+    expect(stripHash('#/roll/std')).toBe('roll/std');
+    expect(stripHash('#roll/std')).toBe('roll/std');
+    expect(stripHash('roll/std')).toBe('roll/std');
+    expect(stripHash('#')).toBe('');
+    expect(stripHash('')).toBe('');
+  });
+
+  it('writes an address every section can be read back from', () => {
+    /* The tab bar builds its links out of this, so a section the writer and the
+       parser disagree about is a tab that highlights nothing when clicked. */
+    /* Only `tables` gets a kind of its own: it carries a table, an anchor and a
+       filter, and the parser has to hand those back. `lists` is a plain
+       section - a single stored list is what becomes `storedList`. */
+    const expected: Record<string, string> = { tables: 'tables' };
+    for (const s of SECTIONS) {
+      const h = sectionHash(s);
+      expect(parseHash(h).kind, h).toBe(expected[s] ?? 'section');
+    }
+  });
+
+  it('lands every section on itself, not on a neighbour', () => {
+    for (const s of SECTIONS) {
+      const r = parseHash(sectionHash(s));
+      if (r.kind === 'section') expect(r.section, s).toBe(s);
+    }
+  });
+
+  it('round-trips a record, a stored list and a shared list', () => {
+    expect(parseHash(recordHash('w12'))).toEqual({ kind: 'record', id: 'w12' });
+    expect(parseHash(storedListHash('abc'))).toEqual({ kind: 'storedList', listId: 'abc' });
+    /* The writer only ever produces the plain form; `packed` is set by the `~`
+       prefix, which the compressor adds. */
+    expect(parseHash(sharedListHash('eyJhIjoxfQ'))).toEqual({
+      kind: 'sharedList',
+      payload: 'eyJhIjoxfQ',
+      packed: false
+    });
+    expect(parseHash(sharedListHash('~abc'))).toEqual({
+      kind: 'sharedList',
+      payload: '~abc',
+      packed: true
+    });
+  });
+
+  it('round-trips a print sheet, separator and all', () => {
+    const ids = ['w1', 'w2', 'a3'];
+    const h = printHash(ids);
+    expect(h).toBe('#/print/w1-w2-a3');
+    const r = parseHash(h);
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') expect(r.ids).toEqual(ids);
+  });
+
+  it('writes a table with a filter that reads back as the same filter', () => {
+    const filter = { tier: ['1', '3'], cls: ['mag'] };
+    const h = tablesHash('eq_weapon', { filter });
+    const r = parseHash(h);
+    expect(r.kind).toBe('tables');
+    if (r.kind === 'tables') {
+      expect(r.table).toBe('eq_weapon');
+      expect(r.filter).toEqual(filter);
+      expect(r.anchor).toBe('');
+    }
+  });
+
+  it('writes a table with an anchor that reads back as the same anchor', () => {
+    const r = parseHash(tablesHash('eq_armor', { anchor: 'gambeson' }));
+    expect(r.kind).toBe('tables');
+    if (r.kind === 'tables') {
+      expect(r.anchor).toBe('gambeson');
+      expect(r.filter).toEqual({});
+    }
+  });
+
+  it('drops the anchor when a filter is picked, as the app does', () => {
+    /* One slot, and the filter wins - otherwise the link would scroll to a row
+       the filter has just removed. */
+    expect(tablesHash('eq_weapon', { anchor: 'dagger', filter: { tier: ['1'] } })).toBe(
+      '#/tables/eq_weapon/f_tier-1'
+    );
+  });
+
+  it('writes a bare table when the filter is empty', () => {
+    expect(tablesHash('eq_weapon', { filter: {} })).toBe('#/tables/eq_weapon');
+    expect(tablesHash('eq_weapon')).toBe('#/tables/eq_weapon');
   });
 });

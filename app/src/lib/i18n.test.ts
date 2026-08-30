@@ -139,3 +139,66 @@ describe('record text', () => {
     }
   });
 });
+
+describe('a stat block with gaps in it', () => {
+  /* Every piece in both books fills these in, so the fallbacks never ran. They
+     are there so a gap prints as nothing rather than as "undefined" or as a
+     stray slash, which is what a reader would see on a card. */
+  const gear = (eq: NonNullable<Record_['eq']>): Record_ => ({
+    id: 'x1',
+    src: 'core',
+    kind: 'equip',
+    en: 'Thing',
+    ende: '',
+    ru: 'Вещь',
+    rud: '',
+    eq
+  });
+
+  it('omits thresholds and armour score when the armour has neither', () => {
+    /* `noType` because the word for armour and the word for its score are the
+       same in Russian, and the type is not what is being asserted here. */
+    const parts = eqParts(gear({ t: 'armor', tier: 1 }), 'ru', LABELS.ru, { noType: true });
+    expect(parts.join(' ')).not.toContain(LABELS.ru.thresholds);
+    expect(parts.join(' ')).not.toContain(LABELS.ru.armorScore);
+    expect(parts.join(' ')).not.toContain('undefined');
+  });
+
+  it('prints a half-filled threshold pair without inventing the other half', () => {
+    const parts = eqParts(gear({ t: 'armor', tier: 1, th: '5' }), 'ru', LABELS.ru, {
+      noType: true
+    });
+    expect(parts.join(' ')).toContain(`${LABELS.ru.thresholds} 5/`);
+    expect(parts.join(' ')).not.toContain('undefined');
+  });
+
+  it('keeps an armour score of zero', () => {
+    const parts = eqParts(gear({ t: 'armor', tier: 1, as: 0 }), 'ru', LABELS.ru, {
+      noType: true
+    });
+    expect(parts.join(' ')).toContain(`${LABELS.ru.armorScore} 0`);
+  });
+
+  it('drops the damage entirely when there is none', () => {
+    const parts = eqParts(gear({ t: 'weapon', tier: 1 }), 'ru', LABELS.ru);
+    expect(parts.join(' ')).not.toContain('undefined');
+    expect(parts.every((p) => p.trim() !== '')).toBe(true);
+  });
+
+  it('prints damage without a type, and a type without inventing damage', () => {
+    expect(eqParts(gear({ t: 'weapon', tier: 1, dmg: 'd6' }), 'ru', LABELS.ru)).toContain('d6');
+    const typed = eqParts(gear({ t: 'weapon', tier: 1, dt: 'phy' }), 'ru', LABELS.ru);
+    expect(typed.join(' ')).not.toContain('undefined');
+  });
+
+  it('says nothing about burden when the weapon does not carry one', () => {
+    const parts = eqParts(gear({ t: 'weapon', tier: 1 }), 'ru', LABELS.ru);
+    expect(parts.join(' ')).not.toContain('undefined');
+  });
+
+  it('has nothing to say about a record with no stat block', () => {
+    const { eq, ...loot } = gear({ t: 'weapon', tier: 1 });
+    void eq;
+    expect(eqParts(loot, 'ru', LABELS.ru)).toEqual([]);
+  });
+});

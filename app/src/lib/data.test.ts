@@ -158,3 +158,57 @@ describe('referenced cards', () => {
     }
   });
 });
+
+describe('records with fields missing', () => {
+  /* The real data is complete, which is why these branches went unrun. They
+     exist for the case it is not - a hand-edited data.js, a source added
+     without a facet - and their job is to yield an empty string rather than
+     the word "undefined" on a chip. */
+  const bare = (over: Partial<Record_> = {}): Record_ => ({
+    id: 'x1',
+    src: 'core',
+    kind: 'item',
+    en: 'Thing',
+    ende: '',
+    ru: 'Вещь',
+    rud: '',
+    ...over
+  });
+
+  it('falls back to the source when a frame record has no frame', () => {
+    expect(srcOf(bare({ src: 'frame', frame: 'beast_feast' }))).toBe('beast_feast');
+    expect(srcOf(bare({ src: 'frame' }))).toBe('frame');
+    expect(srcOf(bare({ src: 'wondrous' }))).toBe('wondrous');
+  });
+
+  it('gives empty facets rather than undefined ones', () => {
+    const f = plainFacets(bare());
+    expect(f['tier']).toBe('');
+    expect(f['frame']).toBe('');
+    expect(f['comm']).toBe('');
+    expect(Object.values(f)).not.toContain(undefined);
+  });
+
+  it('writes a tier of zero as a value, not as absent', () => {
+    /* `== null` and not falsiness: tier 0 is not a tier this game has, but the
+       distinction is what keeps a legitimate 0 from vanishing. */
+    expect(plainFacets(bare({ tier: 1 }))['tier']).toBe('1');
+  });
+
+  it('puts an upgrade line in tier order whatever order it was stored in', () => {
+    const hi = bare({ id: 'e2', eq: { t: 'weapon', tier: 2, line: 'l1' } });
+    const lo = bare({ id: 'e1', eq: { t: 'weapon', tier: 1, line: 'l1' } });
+    const index = buildIndex({ ...LOOT, eq: [hi, lo] });
+    expect(upgradeLine(index, hi).map((r) => r.id)).toEqual(['e1', 'e2']);
+  });
+
+  it('has no upgrade line for something outside one', () => {
+    expect(upgradeLine(buildIndex(LOOT), bare())).toEqual([]);
+  });
+
+  it('survives a dataset with no references at all', () => {
+    const { refs, ...noRefs } = LOOT;
+    void refs;
+    expect(buildIndex(noRefs as Loot).refs).toEqual({});
+  });
+});

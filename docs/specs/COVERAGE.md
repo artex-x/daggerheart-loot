@@ -60,6 +60,51 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 | Data generation | `derived`, `dataint` |
 | `file://` | every browser suite loads the app from `file://` |
 
+## What is enforced, and by what
+
+Coverage here is a build failure, not a report somebody reads. Five things
+enforce it, and they catch different mistakes:
+
+| Layer | Catches | Where |
+|---|---|---|
+| Coverage `include` covers everything that ships | a whole directory left out of the measurement | `vite.config.mts` |
+| Per-file thresholds (`perFile: true`) | a file with no test, hidden behind a well covered neighbour | `vite.config.mts` |
+| Thresholds set per directory | lib's numbers paying for a component's | `vite.config.mts` |
+| `expectNoA11yViolations` in every component test | markup a screen reader cannot follow | `app/src/test/a11y.ts` |
+| Layer rules in ESLint | logic that reaches for the DOM and stops being testable | `eslint.config.mjs` |
+
+The bars differ because the obligations do. `src/lib` is pure and has no
+excuse: 90 lines, 90 functions, 85 branches. `src/ports` wraps browser APIs
+whose success paths jsdom cannot run at all, so it sits at 70/70/55 and the
+difference is covered by the browser suites and, from Phase 5, by e2e.
+Components and state are at 85 and 90.
+
+**A per-file rule is not a per-file *test* rule.** Nothing requires a
+`Foo.test.ts` beside every `Foo.svelte`, and a rule that did would be answered
+with tests asserting that a button renders a button. What is required is that
+every file is *reached* by some test - `perFile` fails at 0% whether the file
+has a test of its own or is exercised through a parent. `TabBar` and
+`LangSwitch` have no test files and are at 100% because `shell.test.ts` drives
+them through `App`. That is the intended shape.
+
+What this found the day it was turned on, all of it invisible to the previous
+global number:
+
+- Components, state and `App.svelte` were **outside the measurement entirely**.
+  The reported 88% described `src/lib` and `src/ports` and nothing else.
+- `filters.ts` had **no test file**, only incidental coverage through
+  `hash.test.ts`. Decoding was covered; `groupIsAny`, `groupHits` and
+  `chosenCount` - which are what the filter panel is built out of - were not.
+- Five of the ten writers in `hash.ts` had **no test at all**. The parser was
+  held to fixtures; the functions that produce the links were not.
+- `hashRouter` was written to take an injectable window so it could be tested
+  without a browser, and then was not tested.
+- Three things existed with **no caller**: a `Button.svelte`, a `statLabels`
+  helper, and the pin-the-start-section API on `AppState`. The first two were
+  deleted - markup is written when a screen needs it. The third was kept and
+  given `app.test.ts`, because it encodes rules read off the live app that
+  would otherwise be re-derived, differently, by whoever writes that screen.
+
 ## The unit suite
 
 `npm run test` runs the ported modules in `app/src/lib` and `app/src/ports`, and
@@ -75,8 +120,10 @@ people use, these test the one that will replace it.
 | `data.test.ts` | the real `data.json`, and the counts the README publishes |
 | `money.test.ts` | the worked examples in the app's own help panel |
 | `search.test.ts`, `lists.test.ts`, `roll.test.ts` | stated behaviour |
-| `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share |
-| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, a browser that refuses storage |
+| `filters.test.ts` | the facet grammar both ways, and the predicate and counters the panel is built from |
+| `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share; and the hash router against a fake window |
+| `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets |
+| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, a browser that refuses storage, and axe on three states |
 
 The browser adapters' happy paths are the one thing these cannot reach - a real
 clipboard write, a real share sheet - because jsdom has neither. That is what
@@ -123,3 +170,12 @@ Not blocking, recorded so they are not mistaken for coverage:
 - Touch-only behaviour is checked statically in `craftmob`: headless Chrome
   reports `hover: none` and will not emulate the `hover` media feature, so the
   `@media (hover:hover)` branch cannot be rendered in a test.
+- The success paths of `clipboard`, `share` and `compress` cannot run in jsdom:
+  there is no real clipboard, no share sheet and no `CompressionStream`. Their
+  fallbacks - where the logic is - are covered; the happy paths are why the
+  `src/ports/**` bar is lower than the others, and they wait for Phase 5.
+- Colour contrast is switched off in the axe pass, because jsdom lays nothing
+  out and resolves no cascade. Contrast stays a real measurement in `qa` and
+  `typo`, on a real page.
+- No e2e layer yet, so no test drives the built bundle the way a visitor does.
+  Phase 5.

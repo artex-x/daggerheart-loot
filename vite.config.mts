@@ -62,9 +62,34 @@ export default defineConfig({
     setupFiles: ['./vitest-setup.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/lib/**/*.ts', 'src/ports/**/*.ts'],
-      reporter: ['text-summary'],
-      thresholds: { lines: 80, functions: 80, branches: 75, statements: 80 }
+      /* Everything that ships, not only the parts that are easy to measure.
+         Leaving components out was how a number in the eighties described two
+         directories out of four. */
+      include: ['src/**/*.ts', 'src/**/*.svelte'],
+      exclude: [
+        'src/**/*.test.ts',
+        /* Test-only helpers, the entry point, and the one file that is types
+           and nothing else - it emits no code, so a percentage of it is noise. */
+        'src/test/**',
+        'src/ports/types.ts',
+        'src/vite-env.d.ts',
+        'src/main.ts'
+      ],
+      reporter: ['text', 'text-summary'],
+      /* Per directory, because one global number lets a well covered library
+         pay for a component nobody tested. The bars differ because the
+         obligations differ: lib is pure and has no excuse, ports wrap browser
+         APIs whose happy paths jsdom cannot reach, everything else is drawn on
+         screen and is checked through behaviour. `perFile` is the part that
+         matters - it is what makes a file with no test at all fail, without
+         demanding a test file per source file. */
+      thresholds: {
+        perFile: true,
+        'src/lib/**': { lines: 90, functions: 90, branches: 85, statements: 90 },
+        'src/ports/**': { lines: 70, functions: 70, branches: 55, statements: 70 },
+        'src/**/*.svelte': { lines: 85, functions: 80, branches: 75, statements: 85 },
+        'src/state/**': { lines: 90, functions: 90, branches: 80, statements: 90 }
+      }
     }
   }
 });

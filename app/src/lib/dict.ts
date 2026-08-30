@@ -88,13 +88,3 @@ const DICTS: Record<Lang, Dict> = { ru, en };
 export function dict(lang: Lang): Dict {
   return DICTS[lang];
 }
-
-/** The stat line's three labels, in one place so callers do not assemble them. */
-export function statLabels(lang: Lang): {
-  tier: string;
-  thresholds: string;
-  armorScore: string;
-} {
-  const t = dict(lang);
-  return { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
-}

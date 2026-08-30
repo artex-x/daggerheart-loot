@@ -7,6 +7,7 @@ import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
+import { expectNoA11yViolations } from '../test/a11y.js';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 
@@ -155,5 +156,27 @@ describe('storage that does not work', () => {
   it('says nothing when it does', () => {
     render(App, { env: at('#/lists') });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe('accessibility', () => {
+  /* Not a separate concern from the tests above: those check that the frame
+     says the right things, this checks that the markup saying them is markup a
+     screen reader can follow. Every slice added below the shell adds a case
+     here - see docs/specs/COVERAGE.md. */
+  it('has no axe violations on a section', async () => {
+    const { container } = render(App, { env: at('#/roll/std') });
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations in English', async () => {
+    const { container } = render(App, { env: at('#/tables/weapons') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations while warning that storage is off', async () => {
+    const { container } = render(App, { env: at('#/lists', { storage: brokenStorage() }) });
+    await expectNoA11yViolations(container);
   });
 });

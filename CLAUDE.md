@@ -43,6 +43,25 @@ the 19 puppeteer suites, `npm audit` and gitleaks.
 Definition of done: `npm run check` passes, the new behaviour has a test, and
 `docs/specs/*` matches what the code now does.
 
+Coverage in `app/` is enforced per file, per directory, and it measures
+everything that ships - see `docs/specs/COVERAGE.md`, "What is enforced". Two
+consequences worth knowing before writing a component:
+
+- A new file with no test fails the build, whether or not it has a test file of
+  its own. Being driven through a parent counts; nothing is required to have a
+  matching `*.test.ts`, and a test asserting that a button renders a button is
+  worse than none.
+- A component test ends with `expectNoA11yViolations` from `app/src/test/a11y.ts`.
+  Accessibility is not a later pass here: the last one arrived as an external
+  bug report with eight items in it.
+
+Do not write a module, an export or a component before something calls it. The
+bar exists because three unused things - a component, a helper, a slice of API -
+were written ahead of need in one sitting, and unused code cannot be tested
+honestly. The exception is logic read off the live app during the migration:
+that is knowledge which would otherwise be re-derived wrongly, and it earns a
+direct test instead.
+
 Two things live side by side while the migration runs (`docs/REFACTOR_PLAN.md`):
 the live site is `index.html` + `app.js` + `style.css` in the repository root,
 and the new application is `app/`, built to `dist/`. Pages still serves the

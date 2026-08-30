@@ -9,7 +9,7 @@ import { nativeDrag } from './drag.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
-import { fakeEnv } from './index.js';
+import { browserEnv, fakeEnv } from './index.js';
 
 describe('storage that works', () => {
   it('round-trips a value', () => {
@@ -340,6 +340,129 @@ describe('the whole outside world', () => {
   it('lets one port be swapped without the rest', () => {
     const env = fakeEnv({ storage: brokenStorage() });
     expect(env.storage.works()).toBe(false);
+    expect(env.router.hash()).toBe('#/roll/std');
+  });
+});
+
+describe('the address bar', () => {
+  /* `hashRouter` takes its window rather than reaching for the global, which is
+     the whole reason it can be checked here. It went untested anyway until the
+     per-file coverage bar pointed at it. */
+  interface FakeHistory {
+    length: number;
+    replaceState?: (s: unknown, t: string, u: string) => void;
+    back?: () => void;
+  }
+
+  /** A window with only the parts hashRouter touches, and either of the two
+      optional pieces removable - which is the file:// case. */
+  function fakeWin(missing: { replaceState?: true; back?: true } = {}) {
+    const calls: string[] = [];
+    const listeners = new Map<string, Set<() => void>>();
+    const history: FakeHistory = { length: 1 };
+    const win = {
+      location: { hash: '#/roll/std', pathname: '/index.html', search: '' },
+      history,
+      addEventListener: (t: string, fn: () => void) => {
+        const set = listeners.get(t) ?? new Set<() => void>();
+        set.add(fn);
+        listeners.set(t, set);
+      },
+      removeEventListener: (t: string, fn: () => void) => {
+        listeners.get(t)?.delete(fn);
+      }
+    };
+    if (!missing.replaceState) {
+      history.replaceState = (_s, _t, u) => {
+        calls.push(u);
+        win.location.hash = u.slice(u.indexOf('#'));
+      };
+    }
+    if (!missing.back) {
+      history.back = () => {
+        calls.push('back');
+      };
+    }
+    const fire = (t: string): void => {
+      for (const fn of listeners.get(t) ?? []) fn();
+    };
+    return { win, history, calls, fire, listeners };
+  }
+
+  it('reads and writes the hash', () => {
+    const { win } = fakeWin();
+    const r = hashRouter(win);
+    expect(r.hash()).toBe('#/roll/std');
+    r.navigate('#/lists');
+    expect(win.location.hash).toBe('#/lists');
+  });
+
+  it('replaces in place, keeping the path and the query', () => {
+    /* The filter segment is rewritten on every click; pushing each one would
+       bury the page the visitor arrived from. */
+    const { win, calls } = fakeWin();
+    win.location.search = '?x=1';
+    hashRouter(win).replace('#/tables/eq_weapon/f_tier-1');
+    expect(calls).toEqual(['/index.html?x=1#/tables/eq_weapon/f_tier-1']);
+  });
+
+  it('falls back to assigning the hash where replaceState is missing', () => {
+    /* That is the file:// case, which is a supported way to open this app. */
+    const { win, calls } = fakeWin({ replaceState: true });
+    hashRouter(win).replace('#/lists');
+    expect(win.location.hash).toBe('#/lists');
+    expect(calls).toEqual([]);
+  });
+
+  it('reports the new address on a hashchange, and stops when told', () => {
+    const { win, fire, listeners } = fakeWin();
+    const seen: string[] = [];
+    const off = hashRouter(win).onChange((h) => seen.push(h));
+
+    win.location.hash = '#/lists';
+    fire('hashchange');
+    expect(seen).toEqual(['#/lists']);
+
+    off();
+    win.location.hash = '#/search';
+    fire('hashchange');
+    expect(seen, 'a removed listener must not keep reporting').toEqual(['#/lists']);
+    expect(listeners.get('hashchange')?.size).toBe(0);
+  });
+
+  it('knows whether there is anywhere to go back to', () => {
+    const { win, history } = fakeWin();
+    expect(hashRouter(win).canGoBack()).toBe(false);
+    history.length = 3;
+    expect(hashRouter(win).canGoBack()).toBe(true);
+  });
+
+  it('goes back, and does not throw where it cannot', () => {
+    const { win, calls } = fakeWin();
+    hashRouter(win).back();
+    expect(calls).toEqual(['back']);
+
+    const bare = fakeWin({ back: true });
+    expect(() => {
+      hashRouter(bare.win).back();
+    }).not.toThrow();
+  });
+});
+
+describe('the environment', () => {
+  it('assembles a real one with every port present', () => {
+    /* Six ports, and a missing one is a crash on a page rather than here. */
+    const env = browserEnv();
+    for (const k of ['storage', 'clipboard', 'share', 'router', 'compress', 'drag'] as const) {
+      expect(env[k], k).toBeDefined();
+    }
+    expect(env.storage.set('dhloot.probe', '1')).toBe(true);
+    env.storage.remove('dhloot.probe');
+  });
+
+  it('lets a fake replace one port and keep the rest', () => {
+    const env = fakeEnv({ storage: brokenStorage() });
+    expect(env.storage.set('k', 'v')).toBe(false);
     expect(env.router.hash()).toBe('#/roll/std');
   });
 });
