@@ -57,7 +57,7 @@ export default defineConfig({
     setupFiles: [],
     coverage: {
       provider: 'v8',
-      include: ['src/lib/**/*.ts'],
+      include: ['src/lib/**/*.ts', 'src/ports/**/*.ts'],
       reporter: ['text-summary'],
       thresholds: { lines: 80, functions: 80, branches: 75, statements: 80 }
     }

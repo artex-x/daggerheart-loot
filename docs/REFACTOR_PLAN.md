@@ -21,7 +21,7 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 0 | Baseline, inventory, durable specs, golden fixtures, coverage matrix | **done** |
 | 1 | Vite + Svelte + TypeScript scaffold, quality gates, CI, contracts frozen | **done** |
 | 2 | Extract pure logic to TypeScript modules with unit tests | **done** |
-| 3 | Ports for replaceable concerns (drag and drop, search, modal) | not started |
+| 3 | Ports for replaceable concerns (drag and drop, search, modal) | **done** |
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | not started |
 | 5 | Testing pyramid: unit, component, a11y, e2e | not started |
 | 6 | Build, artefacts, deployment | not started |
@@ -119,6 +119,47 @@ it were trusted.
 What is deliberately *not* here: anything that touches the DOM, storage or the
 network. That is Phase 3's ports and Phase 4's components. The ESLint boundary
 rule on `app/src/lib` is what keeps it that way.
+
+## Phase 3 - the ports
+
+`app/src/ports` names every seam where the app meets the browser, as an
+interface with at least two implementations - the real one and something that
+runs in a test.
+
+| Port | What it hides |
+|---|---|
+| `StoragePort` | localStorage, including the fact that it throws in a private window |
+| `ClipboardPort` | three levels of clipboard support, falling back one step at a time |
+| `SharePort` | the share sheet, and telling a dismissal apart from a failure |
+| `RouterPort` | reading the hash, and the difference between a step and a rewrite |
+| `CompressPort` | `CompressionStream` for short links, absent on older browsers |
+| `DragPort` | native HTML5 drag, thin, as the plan asks |
+
+Two reasons, both practical rather than architectural taste. Every one of these
+fails in a way that is not a bug - storage throws, the clipboard is refused
+outside a secure context, a person dismisses their own share - and the port
+puts that in the type so a caller cannot forget it. And none of them can be
+exercised as a global in a unit test, while as an argument they can, which is
+the difference between testing the behaviour and testing that a browser exists.
+
+**The boundary is lint-enforced, not documented.** `app/src/lib` may not touch
+`window`, `document`, `location`, `history`, `localStorage`, `navigator` or
+`fetch`, nor import a port. Everywhere else in `app/src` except `ports/` may
+measure the DOM - print fitting cannot be done any other way - but may not reach
+for storage, the network, the address bar or the clipboard directly. Without
+that rule "app code depends on ports only" is a sentence in a document; with it
+it is a build failure.
+
+Writing the tests found a defect in the storage adapter on the first run:
+where `localStorage` was unavailable entirely, `set` returned `true` and the
+caller would have told the person their lists were saved. That branch is only
+reachable with a fake, which is the argument for the port in one line.
+
+A search port was considered and not built. `search.ts` is already a pure
+function of records and a query, so swapping a library in later means changing
+one call site - a port around it would be indirection with nothing behind it. A
+modal port was likewise deferred: there is nothing to abstract until Phase 4 has
+a component to put behind it.
 
 ## Decisions taken while working
 

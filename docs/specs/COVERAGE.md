@@ -62,7 +62,8 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 
 ## The unit suite
 
-`npm run test` runs the ported modules in `app/src/lib` under vitest, with
+`npm run test` runs the ported modules in `app/src/lib` and `app/src/ports`
+under vitest, with
 coverage thresholds. It is a separate pyramid from the nineteen browser suites
 and does not replace them: the browser suites test the app people use, these
 test the logic that will replace it.
@@ -75,6 +76,12 @@ test the logic that will replace it.
 | `data.test.ts` | the real `data.json`, and the counts the README publishes |
 | `money.test.ts` | the worked examples in the app's own help panel |
 | `search.test.ts`, `lists.test.ts`, `roll.test.ts` | stated behaviour |
+| `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share |
+
+The browser adapters' happy paths are the one thing these cannot reach - a real
+clipboard write, a real share sheet - because jsdom has neither. That is what
+the e2e layer in Phase 5 is for; the fallbacks, which is where the logic
+actually lives, are covered here.
 
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code
