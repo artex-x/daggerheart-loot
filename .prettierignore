@@ -1,5 +1,5 @@
-# Живой сайт: его формат сложился до Prettier, и переформатировать его сейчас
-# значит получить нечитаемый diff в единственном файле, который работает.
+# The live site: its formatting predates Prettier, and reformatting it now would
+# mean an unreadable diff across the one file that actually works.
 app.js
 data.js
 data.json
@@ -17,6 +17,6 @@ coverage/
 node_modules/
 docs/fixtures/
 
-# Markdown переносится руками: в README и спеках перенос строки несёт смысл, а
-# формула лицензии обязана остаться одной строкой (её сверяет tests/derived.js).
+# Markdown is wrapped by hand: in the READMEs and specs a line break carries
+# meaning, and the licence notice has to stay on one line (tests/derived.js pins it).
 *.md

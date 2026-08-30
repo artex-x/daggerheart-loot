@@ -1,19 +1,20 @@
-/* Кодирование списка в адрес.
+/* Encoding a list into the address.
  *
- * Формат заморожен: docs/specs/CONTRACTS.md, раздел 3. Ссылку, которую кто-то
- * вставил в чат полгода назад, обязано открывать и это. Золотые образцы -
- * docs/fixtures/lists, их проигрывают listLink.test.ts и tests/contracts.js.
+ * The format is frozen: docs/specs/CONTRACTS.md section 3. A link someone pasted
+ * into a chat six months ago has to open with this too. Golden fixtures live in
+ * docs/fixtures/lists and are replayed by listLink.test.ts and
+ * tests/contracts.js.
  *
- * Модуль чистый: ни DOM, ни хранилища, ни данных. Какие идентификаторы
- * существуют, решает вызывающий - декодер спрашивает предикатом. */
+ * Pure module: no DOM, no storage, no data. Which ids exist is the caller's
+ * business - the decoder asks through a predicate. */
 
-/** Одна позиция списка: всё необязательно, старые списки этих полей не знали. */
+/** One entry: everything optional, older lists knew none of these fields. */
 export interface ListEntryMeta {
   qty?: number;
   gold?: number;
-  /** Заметка, которая уходит игрокам. */
+  /** The note that goes to the players. */
   note?: string;
-  /** Заметка, которая остаётся мастеру. */
+  /** The note that stays with the GM. */
   hnote?: string;
 }
 
@@ -28,15 +29,15 @@ export interface ListShape {
   meta?: Record<string, ListEntryMeta>;
 }
 
-/* Заметки не влезают в строку позиций: в них бывают переводы строки. Поэтому
-   они едут хвостом и разделены знаками, которые человек не наберёт. */
+/* Notes do not fit on the items line: they may contain newlines. So they ride in
+   a tail, separated by characters a person cannot type. */
 const N_REC = '\x1e';
 const N_SEP = '\x1f';
-/** Идентификатор, под которым едет заметка самого списка. */
+/** The id standing for the list's own note. */
 const N_LIST = '~';
-/** Не идентификатор: режим показа цены. Старый разборщик такую запись пропустит. */
+/** Not an id: the price display mode. An older reader skips the record. */
 const N_MONEY = '$';
-/** «+» перед идентификатором - заметка предназначена игрокам. */
+/** A leading "+" on the id marks the note as meant for players. */
 const N_SHOW = '+';
 
 const MONEY_MODES: readonly MoneyMode[] = ['bag', 'coin'];
@@ -58,10 +59,10 @@ export function fromBase64Url(payload: string): string {
   return new TextDecoder().decode(bytes);
 }
 
-/* ---------- контрольная метка ----------
-   Четыре знака base36: обрезанная ссылка попадёт в верное значение примерно
-   раз на два миллиона, а стоит это ничего. Без метки обрезанный адрес
-   раскодировался бы в список поменьше, который выглядит целым. */
+/* ---------- the checksum ----------
+   Four base36 characters: a truncated link lands on the right value about once
+   in two million, and it costs nothing. Without it a clipped address would
+   decode into a shorter list that looks complete. */
 
 export function stamp(parts: readonly string[]): string {
   const body = parts.join(',');
@@ -73,7 +74,7 @@ export function stamp(parts: readonly string[]): string {
   return `${parts.length.toString(36)}.${(h >>> 0).toString(36).slice(-4)}~`;
 }
 
-/* ---------- кодирование ---------- */
+/* ---------- encoding ---------- */
 
 function metaOf(list: ListShape, id: string): ListEntryMeta {
   return list.meta?.[id] ?? {};
@@ -92,8 +93,8 @@ function noteRec(id: string, text: string | undefined, forPlayers: boolean): str
 }
 
 /**
- * `forPlayers` оставляет за бортом мастерские заметки: эту ссылку кидают в чат
- * партии, а полная - резервная копия мастера.
+ * `forPlayers` leaves the GM's own notes out: that link goes into the party
+ * chat, while the full one is the GM's backup.
  */
 export function encodeListRaw(list: ListShape, forPlayers: boolean): string {
   const parts = list.ids.map((id) => itemPart(list, id));
@@ -114,7 +115,7 @@ export function encodeList(list: ListShape, forPlayers: boolean): string {
   return toBase64Url(encodeListRaw(list, forPlayers));
 }
 
-/* ---------- декодирование ---------- */
+/* ---------- decoding ---------- */
 
 export interface DecodedList {
   name: string;
@@ -125,22 +126,22 @@ export interface DecodedList {
   meta?: Record<string, ListEntryMeta>;
 }
 
-/** Существует ли такой идентификатор в данных. Незнакомые позиции отбрасываются. */
+/** Whether the data knows this id. Unknown entries are dropped. */
 export type KnowsId = (id: string) => boolean;
 
 function parseItems(
   itemsLine: string,
   knows: KnowsId
 ): { ids: string[]; meta: Record<string, ListEntryMeta> } | null {
-  /* Ссылки, написанные до появления метки, метки не несут - сверять их не с
-     чем, и читаются они как читались. */
+  /* Links written before the checksum existed carry none - there is nothing to
+     check them against, and they are read as they always were. */
   const cut = itemsLine.indexOf('~');
   const head = cut > 0 ? itemsLine.slice(0, cut) : '';
   const hasStamp = cut > 0 && /^[0-9a-z]+\.[0-9a-z]{1,4}$/.test(head);
   const body = hasStamp ? itemsLine.slice(cut + 1) : itemsLine;
 
   const parts = body.split(',');
-  if (hasStamp && stamp(parts) !== head + '~') return null; // обрезали или правили
+  if (hasStamp && stamp(parts) !== head + '~') return null; // truncated or edited
 
   const ids: string[] = [];
   const meta: Record<string, ListEntryMeta> = {};
@@ -184,8 +185,8 @@ export function decodeList(payload: string, knows: KnowsId): DecodedList | null 
 
   if (noteBlob) {
     const first = noteBlob.indexOf(N_REC);
-    /* Всё до первой записи - заметка списка из первой редакции формата, где
-       разметки не было вовсе; она означала мастерскую. */
+    /* Anything before the first record is a list note from the first cut of this
+       format, which had no marker at all; it meant the GM's own note. */
     hnote = first < 0 ? noteBlob : noteBlob.slice(0, first);
     if (first >= 0) {
       for (const rec of noteBlob.slice(first + 1).split(N_REC)) {

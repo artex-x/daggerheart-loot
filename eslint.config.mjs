@@ -11,8 +11,8 @@ export default ts.config(
       'dist/**',
       'coverage/**',
       'node_modules/**',
-      /* Живой сайт и его инструменты: старый стиль, свои правила, отдельная
-         жизнь до переезда (issue #47). Их держат тесты в tests/. */
+      /* The live site and its tooling: an older style, its own rules, a life of
+         its own until the cut-over (issue #47). tests/ is what holds them. */
       'app.js',
       'data.js',
       'tests/**',
@@ -31,7 +31,7 @@ export default ts.config(
       parserOptions: { projectService: true, extraFileExtensions: ['.svelte'] }
     },
     rules: {
-      /* `any` - ошибка, а не предупреждение: план это прямо требует */
+      /* `any` is an error, not a warning: the plan asks for exactly that */
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-module-boundary-types': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
@@ -40,9 +40,9 @@ export default ts.config(
     }
   },
   {
-    /* У .svelte свой парсер, и типовые правила работают только если он передаёт
-       разбор дальше в @typescript-eslint. Без `parser` здесь весь набор
-       strictTypeChecked падает на первом же компоненте. */
+    /* .svelte has a parser of its own, and the type-aware rules only work if it
+       forwards the parse on to @typescript-eslint. Without `parser` here the
+       whole strictTypeChecked set falls over on the first component. */
     files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
     languageOptions: {
       parserOptions: {
@@ -54,30 +54,30 @@ export default ts.config(
     }
   },
   {
-    /* ---------- граница слоёв ----------
-       `src/lib` - чистая логика. Она обязана работать без браузера: её гоняют
-       юнит-тесты, и её же однажды придётся звать из скрипта сборки. Один
-       `document.querySelector`, просочившийся сюда, превращает модуль в кусок
-       представления, и заметить это можно будет только когда тест упадёт в
-       среде без DOM. Дешевле запретить. */
+    /* ---------- the layer boundary ----------
+       `src/lib` is pure logic. It has to work without a browser: unit tests run
+       it, and one day a build script will call it too. A single
+       `document.querySelector` slipping in turns the module into a piece of the
+       view, and the only sign of it would be a test failing in an environment
+       with no DOM. Cheaper to forbid. */
     files: ['app/src/lib/**/*.ts'],
     languageOptions: { globals: {} },
     rules: {
       'no-restricted-globals': [
         'error',
-        { name: 'window', message: 'src/lib - чистая логика, без DOM' },
-        { name: 'document', message: 'src/lib - чистая логика, без DOM' },
-        { name: 'location', message: 'адрес приходит параметром, а не из location' },
-        { name: 'localStorage', message: 'хранилище - через порт, не напрямую' },
-        { name: 'navigator', message: 'src/lib - чистая логика, без DOM' },
-        { name: 'fetch', message: 'сети нет: данные приходят параметром' }
+        { name: 'window', message: 'src/lib is pure logic: no DOM' },
+        { name: 'document', message: 'src/lib is pure logic: no DOM' },
+        { name: 'location', message: 'the address arrives as an argument' },
+        { name: 'localStorage', message: 'storage goes through a port' },
+        { name: 'navigator', message: 'src/lib is pure logic: no DOM' },
+        { name: 'fetch', message: 'there is no network: data arrives as an argument' }
       ],
       'no-restricted-imports': ['error', { patterns: ['svelte', 'svelte/*', '*.svelte'] }]
     }
   },
   {
-    /* Конфиги в корне лежат вне tsconfig, и типовые правила к ним неприменимы:
-       сервис проектов их просто не видит. */
+    /* Root config files sit outside tsconfig, so type-aware rules cannot apply:
+       the project service simply does not see them. */
     files: ['*.config.mjs', 'app/*.config.mjs'],
     extends: [ts.configs.disableTypeChecked],
     languageOptions: { globals: { ...globals.node } }

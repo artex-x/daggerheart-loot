@@ -1,12 +1,12 @@
-/* Собранная страница обязана открываться из папки.
+/* The built page has to open from a folder.
  *
- * Это не украшение: `file://` записан в docs/specs/META.md, раздел 4, и ровно
- * он диктует относительный `base` и один классический бандл вместо модулей.
- * Проверка дешёвая, а ломается тихо - Chrome просто откажется грузить модуль,
- * и на Pages при этом всё будет выглядеть исправным.
+ * Not decoration: `file://` is written down in docs/specs/META.md section 4, and
+ * it is what dictates the relative `base` and one classic bundle instead of
+ * modules. The check is cheap and the failure is silent - Chrome simply refuses
+ * to load the module, while on Pages everything still looks fine.
  *
- * Заодно смотрит, что данные доехали: `fetch` к локальному json запрещён, и
- * набор приходит скриптом, который кладёт себя в window.LOOT.
+ * It also confirms the data arrived: a `fetch` for a local json is blocked, so
+ * the dataset comes as a script that puts itself into window.LOOT.
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -25,7 +25,7 @@ const ok = (c, m) => {
 };
 
 if (!existsSync(INDEX)) {
-  console.log('  FAIL dist/index.html нет - сначала `npm run build`');
+  console.log('  FAIL no dist/index.html - run `npm run build` first');
   process.exit(1);
 }
 
@@ -35,29 +35,29 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e.message)));
-page.on('requestfailed', (r) => errors.push('не загрузилось: ' + r.url()));
+page.on('requestfailed', (r) => errors.push('failed to load: ' + r.url()));
 
 await page.goto(pathToFileURL(INDEX).href, { waitUntil: 'load' });
 await new Promise((r) => setTimeout(r, 400));
 
-ok(!errors.length, 'страница из папки ругается: ' + errors.join('; '));
+ok(!errors.length, 'the page complains when opened from a folder: ' + errors.join('; '));
 
 const seen = await page.evaluate(() => ({
   mounted: !!document.querySelector('#app')?.childElementCount,
   data: typeof window.LOOT === 'object' && window.LOOT !== null,
-  /* Абсолютный base сломал бы ровно это: адрес поехал бы от корня диска */
+  /* An absolute base would break exactly this: paths would start at the drive root */
   scripts: [...document.querySelectorAll('script[src]')].map((s) => s.getAttribute('src')),
   modules: [...document.querySelectorAll('script[type="module"]')].length
 }));
 
-ok(seen.mounted, 'приложение не отрисовалось из папки');
-ok(seen.data, 'данные не доехали: window.LOOT пуст');
-ok(seen.modules === 0, 'в собранной странице остался script type="module" - из папки он не грузится');
+ok(seen.mounted, 'the app did not render from a folder');
+ok(seen.data, 'the data did not arrive: window.LOOT is empty');
+ok(seen.modules === 0, 'a script type="module" survived into the build - it will not load from a folder');
 ok(
   seen.scripts.every((s) => s.startsWith('./') || s.startsWith('../')),
-  'адрес скрипта не относительный: ' + seen.scripts.join(', ')
+  'a script path is not relative: ' + seen.scripts.join(', ')
 );
 
 await browser.close();
-console.log(fail ? '\n' + fail + ' FAILED' : 'собранная страница открывается из папки');
+console.log(fail ? '\n' + fail + ' FAILED' : 'the built page opens from a folder');
 process.exit(fail ? 1 : 0);

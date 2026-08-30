@@ -1,7 +1,7 @@
 <script lang="ts">
-  /* Каркас. Переезд идёт слоями (docs/REFACTOR_PLAN.md): сначала чистая логика
-     с тестами, потом представление. Пока живой сайт - в корне репозитория. */
-  const phase = 'фаза 1: каркас';
+  /* The shell. The move goes in layers (docs/REFACTOR_PLAN.md): pure logic with
+     tests first, the view after. The live site is still in the repo root. */
+  const phase = 'phase 1: the shell';
 </script>
 
 <main>

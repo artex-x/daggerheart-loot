@@ -1,23 +1,23 @@
-/* Бюджет на размер бандла.
+/* The bundle size budget.
  *
- * Считается gzip кода, без данных: `data.js` - это 1061 запись, он большой по
- * определению и от того, как написано приложение, не зависит. А вот код растёт
- * незаметно, по одной удобной зависимости за раз, и заметить это можно только
- * числом.
+ * Gzip of the code, data excluded: `data.js` is 1061 records, big by definition
+ * and unaffected by how the app is written. The code, on the other hand, grows
+ * invisibly - one convenient dependency at a time - and a number is the only way
+ * to notice.
  *
- * Порог не «сколько сейчас», а «сколько не жалко»: он должен ловить прыжок от
- * новой библиотеки, а не падать от каждой добавленной кнопки. Поднимать его
- * можно, но осознанно и в том же коммите, что и причина.
+ * The threshold is not "what it is today" but "what would not be a shame": it
+ * should catch the jump a new library causes, not fail on every added button.
+ * Raising it is allowed, deliberately, in the same commit as the reason.
  */
 import { gzipSync } from 'node:zlib';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = join(import.meta.dirname, '..', 'dist');
-const BUDGET_KB = 120; // gzip, только код
+const BUDGET_KB = 120; // gzip, code only
 
 if (!existsSync(DIST)) {
-  console.log('  FAIL dist нет - сначала `npm run build`');
+  console.log('  FAIL no dist - run `npm run build` first');
   process.exit(1);
 }
 
@@ -39,10 +39,10 @@ for (const f of code) {
 
 const kb = total / 1024;
 console.log('  ' + '-'.repeat(30));
-console.log('  ' + kb.toFixed(1).padStart(7) + ' kB  всего (gzip, без данных)');
+console.log('  ' + kb.toFixed(1).padStart(7) + ' kB  total (gzip, code only)');
 
 if (kb > BUDGET_KB) {
-  console.log(`\n  FAIL бюджет ${String(BUDGET_KB)} kB превышен на ${(kb - BUDGET_KB).toFixed(1)} kB`);
+  console.log(`\n  FAIL budget of ${String(BUDGET_KB)} kB exceeded by ${(kb - BUDGET_KB).toFixed(1)} kB`);
   process.exit(1);
 }
-console.log(`\nв бюджет ${String(BUDGET_KB)} kB укладываемся`);
+console.log(`\nwithin the ${String(BUDGET_KB)} kB budget`);

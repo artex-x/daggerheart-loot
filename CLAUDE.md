@@ -150,9 +150,13 @@ rather than redrawn by eye.
 ## Conventions
 
 - Comments explain **why**, not what the line does.
-- Interface text and test messages are in Russian; English only in code
-  comments.
-- No non-ASCII characters outside Russian text; a hyphen rather than an em dash.
+- **Source code is English.** Comments, identifiers, test names and test failure
+  messages - all of it, in every file, new or old. Do not add a Russian comment
+  to a file that already has them; write the new one in English.
+- The one exception is the product's own text, because it has to be Russian to
+  work: the `T` dictionary and the record text in `data.js`. That is content,
+  not source prose.
+- No non-ASCII characters outside that content; a hyphen rather than an em dash.
 - `git push` is the repository owner's job, not the agent's. Commits are
   authored by `artex-x <artex-x@users.noreply.github.com>`.
 - Lists live in the link, not on a server. The link format is documented in

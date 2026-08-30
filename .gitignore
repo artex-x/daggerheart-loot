@@ -14,19 +14,19 @@ Desktop.ini
 node_modules/
 *.log
 
-# Исходники и черновики
+# Sources and drafts
 Vol*.pdf
 tools/__pycache__/
 tools/vault_extract.py
 
-# Черновики и разовые выгрузки: нужны в работе, не нужны на сайте
+# Drafts and one-off exports: needed while working, not on the site
 export/
 *-PLAN.md
 *-DESIGN.md
-# ...кроме тех, что лежат в docs/: это спеки, они и есть источник правды
+# ...except those under docs/: those are the specs, and they are the source of truth
 !docs/**
 
-# Сборка нового приложения (issue #47). Живой сайт пока в корне.
+# Build output of the new app (issue #47). The live site is still in the root.
 dist/
 coverage/
 .svelte-kit/

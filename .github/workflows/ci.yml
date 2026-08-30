@@ -1,8 +1,8 @@
 name: check
 
-# Пока идёт переезд (issue #47) здесь нет выкладки: живой сайт - это корень
-# репозитория, и GitHub Pages по-прежнему берёт его. Deploy добавляется в фазе
-# 6, когда собранное приложение станет тем, что показывают людям.
+# While the move is under way (issue #47) there is no deploy here: the live site
+# is the repository root, and that is still what GitHub Pages serves. A deploy
+# job arrives in phase 6, when the built app becomes what people are shown.
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # gitleaks смотрит историю, а не только срез
+          fetch-depth: 0 # gitleaks reads history, not just a snapshot
 
       - uses: actions/setup-node@v5
         with:
@@ -28,22 +28,22 @@ jobs:
 
       - run: npm ci
 
-      - name: Ворота, которые обязан пройти и человек локально
+      - name: The same gate a person has to pass locally
         run: npm run check
 
-      - name: Сборка
+      - name: Build
         run: npm run build
 
-      - name: Собранная страница открывается из папки
+      - name: The built page opens from a folder
         run: node tools/smoke-file-url.mjs
 
-      - name: Бюджет на размер бандла
+      - name: Bundle size budget
         run: npm run budget
 
-      - name: Старые наборы против живого приложения
+      - name: The legacy suites against the live app
         run: npm run test:legacy
 
-      - name: Артефакты упавших прогонов
+      - name: Artifacts from a failed run
         if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -62,7 +62,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Уязвимости, на которые нельзя закрыть глаза
+      - name: Vulnerabilities we will not wave through
         run: npm audit --audit-level=high
 
   secrets:

@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
-/* Всё, что нужно, чтобы собранная страница открывалась из папки: данные едут
-   отдельным классическим скриптом (из file:// `fetch` к локальному файлу
-   запрещён), а точка входа перестаёт быть модулем.
-   docs/specs/META.md, раздел 4, и docs/specs/CONTRACTS.md, раздел 4. */
+/* Everything the built page needs in order to open from a folder: the data
+   arrives as a separate classic script (under file:// a `fetch` for a local file
+   is blocked), and the entry point stops being a module.
+   docs/specs/META.md section 4, and docs/specs/CONTRACTS.md section 4. */
 function fileUrlBuild(): Plugin {
   return {
     name: 'dhloot-file-url',
@@ -17,10 +17,10 @@ function fileUrlBuild(): Plugin {
         source: readFileSync(new URL('./data.js', import.meta.url), 'utf8')
       });
     },
-    /* Vite вешает на точку входа `type="module"` даже когда формат iife.
-       Из папки такой скрипт не грузится вовсе - Chrome запрещает модули по
-       file://, - и заметить это на Pages нельзя: там он работает. Поэтому тег
-       переписывается на классический, а проверяет это tools/smoke-file-url.mjs. */
+    /* Vite puts `type="module"` on the entry even when the format is iife. Such
+       a script does not load from a folder at all - Chrome forbids modules over
+       file:// - and Pages cannot reveal it, because there it works. So the tag is
+       rewritten to a classic one, and tools/smoke-file-url.mjs checks it. */
     transformIndexHtml(html) {
       return html
         .replace(/<script type="module" crossorigin /g, '<script defer ')
@@ -29,24 +29,24 @@ function fileUrlBuild(): Plugin {
   };
 }
 
-/* Живой сайт пока лежит в корне репозитория, поэтому у нового приложения свой
-   корень: собирается `app/`, кладётся в `dist/`, и до переезда (issue #47,
-   фаза 7) одно другому не мешает. */
+/* The live site still sits in the repository root, so the new app has a root of
+   its own: `app/` is built into `dist/`, and until the cut-over (issue #47,
+   phase 7) neither gets in the other's way. */
 export default defineConfig({
   root: 'app',
   publicDir: false,
-  /* Относительный base, а не '/daggerheart-loot/'. На GitHub Pages он работает
-     ровно так же, а абсолютный ломает все адреса ресурсов при открытии из
-     папки - см. docs/specs/META.md, раздел 4. */
+  /* A relative base, not '/daggerheart-loot/'. On GitHub Pages it behaves
+     exactly the same, while an absolute one breaks every asset URL when the page
+     is opened from a folder - see docs/specs/META.md section 4. */
   base: './',
   plugins: [svelte(), fileUrlBuild()],
   build: {
     outDir: '../dist',
     emptyOutDir: true,
     sourcemap: false,
-    /* Один классический бандл вместо модулей: Chrome не грузит ES-модули по
-       file://, а страница должна открываться из папки. Отсюда же отказ от
-       разделения на чанки - грузить второй файл всё равно нечем. */
+    /* One classic bundle instead of modules: Chrome will not load ES modules
+       over file://, and the page has to open from a folder. Hence no code
+       splitting either - there would be nothing to fetch the second file with. */
     rollupOptions: {
       output: { format: 'iife', entryFileNames: 'assets/app.js' }
     }
