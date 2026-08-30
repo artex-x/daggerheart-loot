@@ -14,7 +14,7 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 |---|---|---|
 | `dataint` | data | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
 | `derived` | data | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in six files; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment) |
-| `contracts` | contract | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 26 route shapes, filter group key names against the docs |
+| `contracts` | contract | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 26 route shapes, the equipment stat line in both languages, filter group key names against the docs |
 | `i18n` | source | dictionary parity in both directions, and no key the code asks for that is missing |
 | `craft` | feature | upgrade chains: data, rendering, copying, stubs |
 | `notes` | feature | two notes: writing, copying, both links, migrating a v1 list, a v1 link, note field height |
@@ -59,6 +59,26 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 | `noindex`, robots | `derived` |
 | Data generation | `derived`, `dataint` |
 | `file://` | every browser suite loads the app from `file://` |
+
+## The unit suite
+
+`npm run test` runs the ported modules in `app/src/lib` under vitest, with
+coverage thresholds. It is a separate pyramid from the nineteen browser suites
+and does not replace them: the browser suites test the app people use, these
+test the logic that will replace it.
+
+| File | Held to |
+|---|---|
+| `listLink.test.ts` | `docs/fixtures/lists/*.json` |
+| `hash.test.ts` | `docs/fixtures/urls/routes.json` |
+| `i18n.test.ts` | `docs/fixtures/statlines/equipment.json` |
+| `data.test.ts` | the real `data.json`, and the counts the README publishes |
+| `money.test.ts` | the worked examples in the app's own help panel |
+| `search.test.ts`, `lists.test.ts`, `roll.test.ts` | stated behaviour |
+
+Three of those fixtures are replayed by `contracts` as well, against the live
+app. That is what makes them evidence rather than a record of what the new code
+happens to do.
 
 ## Gaps closed in Phase 0
 

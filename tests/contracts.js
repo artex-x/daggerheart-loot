@@ -176,6 +176,36 @@ const N_REC = '\x1e', N_SEP = '\x1f';
     await ctx.close();
   }
 
+  /* ---------- the stat line ---------- */
+  /* The same fixture app/src/lib/i18n.test.ts replays through the ported
+     module. Holding both to one file is what makes it evidence: if only the new
+     side checked it, the fixture would just be a record of what the new code
+     does. */
+  console.log('the stat line');
+  const lines = JSON.parse(
+    fs.readFileSync(path.join(FIX, 'statlines', 'equipment.json'), 'utf8'));
+  const ids = Object.keys(lines);
+  ok(ids.length >= 10, 'fewer than ten stat-line fixtures: ' + ids.length);
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page } = await fresh(function (l) {
+      localStorage.setItem('dhloot.lang.v1', l);
+    });
+    await page.evaluateOnNewDocument(function (l) {
+      localStorage.setItem('dhloot.lang.v1', l);
+    }, lang);
+    for (const id of ids) {
+      await open(page, '#/i/' + id);
+      const parts = await page.evaluate(() => {
+        const box = document.querySelector('.eqstats');
+        return box ? [].slice.call(box.querySelectorAll('span')).map(s => s.textContent) : null;
+      });
+      ok(JSON.stringify(parts) === JSON.stringify(lines[id][lang]),
+         id + '/' + lang + ': stat line is ' + JSON.stringify(parts) +
+         ', the fixture says ' + JSON.stringify(lines[id][lang]));
+    }
+    await ctx.close();
+  }
+
   /* ---------- filter group names ---------- */
   /* Every group named in llms.txt and in CONTRACTS.md has to select something.
      An unknown group is not an error - it simply does nothing, and a typo in

@@ -20,7 +20,7 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 |---|---|---|
 | 0 | Baseline, inventory, durable specs, golden fixtures, coverage matrix | **done** |
 | 1 | Vite + Svelte + TypeScript scaffold, quality gates, CI, contracts frozen | **done** |
-| 2 | Extract pure logic to TypeScript modules with unit tests | mostly: search, the data index and the i18n helpers remain |
+| 2 | Extract pure logic to TypeScript modules with unit tests | **done** |
 | 3 | Ports for replaceable concerns (drag and drop, search, modal) | not started |
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | not started |
 | 5 | Testing pyramid: unit, component, a11y, e2e | not started |
@@ -98,16 +98,27 @@ fails if it ever comes back. It caught this on its first run.
 | `money.ts` | prices in book units or coins, Russian plurals, suggestion bands |
 | `lists.ts` | reading storage defensively, the v1 note split, the two-tab merge |
 | `roll.ts` | the six roll engines, with randomness as an argument |
+| `data.ts` | the index: by id, the craft reverse-links, rarity, everything with stats |
+| `i18n.ts` | record text by language, the equipment vocabulary, the stat line |
+| `search.ts` | one substring predicate over both languages and the stat line |
 | `types.ts` | the domain types the rest of them share |
 
-139 tests, 94% statements. Still to come: search and kind predicates, the data
-index with the craft reverse-links, and the i18n content-field helpers.
+203 tests, 94% statements, 84% branches.
 
-Two of these are checked against something other than themselves. `listLink.ts`
-and `hash.ts` replay the golden fixtures, which `tests/contracts.js` also runs
-through the live app. `money.ts` was compared directly: twelve sums rendered by
-the old app, character for character against what the module produces, before
-the tests around it were trusted.
+None of it is checked only against itself, which is the point. `listLink.ts` and
+`hash.ts` replay the golden fixtures that `tests/contracts.js` also runs through
+the live app. `i18n.ts` is held to `docs/fixtures/statlines/equipment.json`,
+captured from the old app across every equipment kind, four sources and both
+languages - and `contracts.js` replays that too, so one file keeps both
+implementations honest. `data.ts` runs over the real `data.json` and asserts the
+counts the README and `llms.txt` publish, so a silent change to the dataset
+fails in three places rather than none. `money.ts` was compared directly: twelve
+sums rendered by the old app, character for character, before the tests around
+it were trusted.
+
+What is deliberately *not* here: anything that touches the DOM, storage or the
+network. That is Phase 3's ports and Phase 4's components. The ESLint boundary
+rule on `app/src/lib` is what keeps it that way.
 
 ## Decisions taken while working
 
