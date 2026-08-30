@@ -159,7 +159,7 @@ of two or three usually plays better than assigning one each.
 - `#/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
   rather than only on equipment. After `f_`, parts are separated by `.` and
   values inside a part by `-`. Equipment keys: `tier`, `cls` (`phy`/`mag`),
-  `src`, `trait`, `rg`, `bu`, `line`. Other tables: `kind`
+  `src`, `trait`, `range`, `burden`, `line`. Other tables: `kind`
   (`item`/`consumable`/`equip`), plus `tier` on `voa` (`1`–`4`, `A`, `C`),
   `frame` on `frames`, `comm` on `community`. An empty key means "any", so a
   plain table link carries no `f_` part at all. Links written with the old `_`

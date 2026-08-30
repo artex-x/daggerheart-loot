@@ -1,0 +1,21 @@
+{
+  "id": "equipment-entry",
+  "why": "Equipment ids come from window.LOOT.eq rather than items, and must encode exactly like loot.",
+  "list": {
+    "id": "f5",
+    "name": "Оружейная",
+    "ids": [
+      "q26",
+      "q33"
+    ],
+    "created": 1
+  },
+  "player": {
+    "raw": "Оружейная\n2.tuoh~q26,q33",
+    "payload": "0J7RgNGD0LbQtdC50L3QsNGPCjIudHVvaH5xMjYscTMz"
+  },
+  "gm": {
+    "raw": "Оружейная\n2.tuoh~q26,q33",
+    "payload": "0J7RgNGD0LbQtdC50L3QsNGPCjIudHVvaH5xMjYscTMz"
+  }
+}

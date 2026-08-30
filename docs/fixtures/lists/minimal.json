@@ -1,0 +1,20 @@
+{
+  "id": "minimal",
+  "why": "One entry, no meta, no notes. The shortest payload the format can produce.",
+  "list": {
+    "id": "f1",
+    "name": "Минимум",
+    "ids": [
+      "ci1"
+    ],
+    "created": 1
+  },
+  "player": {
+    "raw": "Минимум\n1.rcs0~ci1",
+    "payload": "0JzQuNC90LjQvNGD0LwKMS5yY3MwfmNpMQ"
+  },
+  "gm": {
+    "raw": "Минимум\n1.rcs0~ci1",
+    "payload": "0JzQuNC90LjQvNGD0LwKMS5yY3MwfmNpMQ"
+  }
+}

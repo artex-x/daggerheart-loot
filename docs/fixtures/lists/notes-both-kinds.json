@@ -1,0 +1,29 @@
+{
+  "id": "notes-both-kinds",
+  "why": "Both notes on the list and both on one entry. The player payload must carry only the \"+\" ones; the GM payload carries all four.",
+  "list": {
+    "id": "f3",
+    "name": "Тайник",
+    "ids": [
+      "ci1",
+      "cc1"
+    ],
+    "created": 1,
+    "note": "Лавка закрыта до утра",
+    "hnote": "Хозяин - контрабандист",
+    "meta": {
+      "ci1": {
+        "note": "Видно игрокам",
+        "hnote": "Подделка"
+      }
+    }
+  },
+  "player": {
+    "raw": "Тайник\n2.7ouh~ci1,cc1\n\u001e+~\u001fЛавка закрыта до утра\u001e+ci1\u001fВидно игрокам",
+    "payload": "0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAeK2NpMR_QktC40LTQvdC-INC40LPRgNC-0LrQsNC8"
+  },
+  "gm": {
+    "raw": "Тайник\n2.7ouh~ci1,cc1\n\u001e+~\u001fЛавка закрыта до утра\u001e~\u001fХозяин - контрабандист\u001e+ci1\u001fВидно игрокам\u001eci1\u001fПодделка",
+    "payload": "0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA"
+  }
+}

@@ -4,6 +4,31 @@ A static site with no build step: `index.html`, `style.css`, `app.js`, `data.js`
 Nothing is transpiled, nothing is minified, there are no runtime dependencies.
 It opens both from `file://` and from GitHub Pages.
 
+## Read the specs first
+
+`docs/specs/` is the source of truth for behaviour, and it is written down so a
+session does not have to reconstruct it. Read what the task touches before
+touching it:
+
+| File | What it settles |
+|---|---|
+| `docs/specs/CONTRACTS.md` | the frozen public surface: hash grammar, record ids, list link encoding, generated artefacts, asset paths |
+| `docs/specs/ROUTES.md` | every route, and the filter segment grammar |
+| `docs/specs/STATE.md` | URL vs localStorage, the storage keys, the two-tab merge |
+| `docs/specs/FEATURES.md` | what the app does, and the state each feature needs |
+| `docs/specs/COVERAGE.md` | what each suite is responsible for, and where coverage is thin |
+| `docs/specs/I18N.md` | how two languages work here |
+| `docs/specs/META.md` | policies that look like bugs and are not: `noindex`, robots, hash-only lists, `file://`, never inferring a tier |
+| `docs/REFACTOR_PLAN.md` | the Svelte migration (issue #47) and the decisions taken during it |
+
+**Public contracts default to no change.** If one has to change, the same commit
+updates `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md` and
+`llms.txt`. `tests/contracts.js` replays the golden fixtures in
+`docs/fixtures/` and will not let a format drift quietly.
+
+**When behaviour changes, the spec changes in the same commit.** A spec that
+lags the code is worse than no spec: the next session trusts it.
+
 ## After editing data.js
 
 ```
@@ -21,7 +46,8 @@ Identical bytes are never stored twice - a record simply points at another
 record's file, and `tests/dataint.js` watches for that.
 
 The record count is spelled out in `index.html` (meta descriptions), `README.md`,
-`README.ru.md`, `app.js` (the search blurb) and `llms.txt`. `tests/derived.js`
+`README.ru.md`, `app.js` (the search blurb), `llms.txt` and `robots.txt`.
+`tests/derived.js`
 finds every three-digit number next to its own word in those files and checks it
 against data.js, so the numbers still have to be edited by hand - but a
 forgotten place cannot slip through. The same suite pins the licence notice,
@@ -38,7 +64,7 @@ node tests/run-all.js eqtest,qa    # just these
 node tests/run-all.js --jobs 1     # one at a time, for debugging
 ```
 
-Seventeen-odd suites, most on puppeteer. They run in a pool as wide as the
+Nineteen suites, most on puppeteer. They run in a pool as wide as the
 machine, slowest first, and the summary keeps the order of the list in
 `run-all.js` rather than the order they finished - so two runs read the same.
 The page walk is registered four times, one per screen width, because on its

@@ -1,0 +1,29 @@
+{
+  "id": "unicode-heavy",
+  "why": "Cyrillic in the name and in both notes: every character is multi-byte before base64url, which is what the short-link compression exists for.",
+  "list": {
+    "id": "f6",
+    "name": "Сундук Морского Ярла",
+    "ids": [
+      "voa2_a1"
+    ],
+    "created": 1,
+    "note": "Отдать после боя",
+    "hnote": "Проклят, но игроки не знают",
+    "meta": {
+      "voa2_a1": {
+        "qty": 1,
+        "gold": 1000,
+        "note": "Тёплый на ощупь"
+      }
+    }
+  },
+  "player": {
+    "raw": "Сундук Морского Ярла\n1.d1us~voa2_a1*1*1000\n\u001e+~\u001fОтдать после боя\u001e+voa2_a1\u001fТёплый на ощупь",
+    "payload": "0KHRg9C90LTRg9C6INCc0L7RgNGB0LrQvtCz0L4g0K_RgNC70LAKMS5kMXVzfnZvYTJfYTEqMSoxMDAwCh4rfh_QntGC0LTQsNGC0Ywg0L_QvtGB0LvQtSDQsdC-0Y8eK3ZvYTJfYTEf0KLRkdC_0LvRi9C5INC90LAg0L7RidGD0L_RjA"
+  },
+  "gm": {
+    "raw": "Сундук Морского Ярла\n1.d1us~voa2_a1*1*1000\n\u001e+~\u001fОтдать после боя\u001e~\u001fПроклят, но игроки не знают\u001e+voa2_a1\u001fТёплый на ощупь",
+    "payload": "0KHRg9C90LTRg9C6INCc0L7RgNGB0LrQvtCz0L4g0K_RgNC70LAKMS5kMXVzfnZvYTJfYTEqMSoxMDAwCh4rfh_QntGC0LTQsNGC0Ywg0L_QvtGB0LvQtSDQsdC-0Y8efh_Qn9GA0L7QutC70Y_Rgiwg0L3QviDQuNCz0YDQvtC60Lgg0L3QtSDQt9C90LDRjtGCHit2b2EyX2ExH9Ci0ZHQv9C70YvQuSDQvdCwINC-0YnRg9C_0Yw"
+  }
+}

@@ -250,8 +250,15 @@ robots.txt                  crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/ from data.js
 tools/derived.js            how the derived files are assembled
-tests/                      18 suites plus the runner
+tests/                      19 suites plus the runner
+docs/specs/                 behaviour and frozen contracts, for maintainers
+docs/fixtures/              golden fixtures the contract suite replays
 ```
+
+`docs/specs/CONTRACTS.md` is the one to read before changing anything public -
+the hash grammar, the list link format, record ids and the generated artefacts
+are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
+`CLAUDE.md` is the entry point for AI-assisted maintenance.
 
 ### Derived files
 
@@ -397,10 +404,11 @@ weapon is printed in - a magic weapon needs a Spellcast trait; `dt` is the damag
 it deals. They usually agree, but the Shadowblade and the Ghostblade are
 `cls:'mag'` with `dt:'any'`. The filter works on `cls`, and `any` lands in both.
 
-Eleven Wondrous Loot records are weapons too. They stay in `items.wondrous` with
-their roll number and carry the same `eq` block, so they look and copy like
-equipment, but they are not in the equipment tables, which reproduce the two
-books.
+Equipment is not only in `eq`. Eleven Wondrous Loot records, and every campaign
+frame entry, plus some of Vault of Ages and Dread, carry the same `eq` block
+while staying in `items` with their roll number. The three equipment tables
+gather all of them: 317 weapons, 108 secondary weapons, 90 armour. The source
+filter is what narrows those to the two books (239 / 73 / 69).
 
 ## Category colours
 

@@ -1,0 +1,26 @@
+{
+  "id": "money-coin-mode",
+  "why": "A non-default price display mode travels in the note tail under \"$\", an id no record can have, so a reader that predates the mode skips the record and opens the list unchanged.",
+  "list": {
+    "id": "f4",
+    "name": "Монеты",
+    "ids": [
+      "ci1"
+    ],
+    "created": 1,
+    "money": "coin",
+    "meta": {
+      "ci1": {
+        "gold": 750
+      }
+    }
+  },
+  "player": {
+    "raw": "Монеты\n1.8ssr~ci1*1*750\n\u001e$\u001fcoin",
+    "payload": "0JzQvtC90LXRgtGLCjEuOHNzcn5jaTEqMSo3NTAKHiQfY29pbg"
+  },
+  "gm": {
+    "raw": "Монеты\n1.8ssr~ci1*1*750\n\u001e$\u001fcoin",
+    "payload": "0JzQvtC90LXRgtGLCjEuOHNzcn5jaTEqMSo3NTAKHiQfY29pbg"
+  }
+}

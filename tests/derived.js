@@ -341,7 +341,8 @@ const COUNTERS = [
   [/(\d{3,})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g,    [N.all, N.wondrous], 'entries']
 ];
-['index.html', 'README.md', 'README.ru.md', 'app.js', 'llms.txt'].forEach(function (file) {
+['index.html', 'README.md', 'README.ru.md', 'app.js', 'llms.txt', 'robots.txt']
+  .forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   COUNTERS.forEach(function ([re, want, what]) {
     let m;

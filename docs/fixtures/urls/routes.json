@@ -1,0 +1,336 @@
+[
+  {
+    "hash": "#/",
+    "why": "empty address opens the default section",
+    "resolves": {
+      "hash": "#/",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  },
+  {
+    "hash": "#/roll/std",
+    "why": "core rules",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  },
+  {
+    "hash": "#/roll/alt",
+    "why": "alternate tables",
+    "resolves": {
+      "hash": "#/roll/alt",
+      "tab": "#/roll/alt",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/wondrous",
+    "why": "Wondrous",
+    "resolves": {
+      "hash": "#/roll/wondrous",
+      "tab": "#/roll/wondrous",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/dread",
+    "why": "Dread",
+    "resolves": {
+      "hash": "#/roll/dread",
+      "tab": "#/roll/dread",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/voa",
+    "why": "Vault of Ages",
+    "resolves": {
+      "hash": "#/roll/voa",
+      "tab": "#/roll/voa",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/community",
+    "why": "communities",
+    "resolves": {
+      "hash": "#/roll/community",
+      "tab": "#/roll/community",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/core",
+    "why": "legacy: folds into roll/std with only Core picked",
+    "resolves": {
+      "hash": "#/roll/core",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:off"
+      ]
+    }
+  },
+  {
+    "hash": "#/roll/hnf",
+    "why": "legacy: folds into roll/std with only Hope & Fear picked",
+    "resolves": {
+      "hash": "#/roll/hnf",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:off",
+        "hnf:on"
+      ]
+    }
+  },
+  {
+    "hash": "#/roll/all",
+    "why": "legacy: folds into roll/std with both picked",
+    "resolves": {
+      "hash": "#/roll/all",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  },
+  {
+    "hash": "#/tables",
+    "why": "tables index, default table",
+    "resolves": {
+      "hash": "#/tables",
+      "tab": "#/tables",
+      "rows": 60,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon",
+    "why": "one table by name",
+    "resolves": {
+      "hash": "#/tables/eq_weapon",
+      "tab": "#/tables",
+      "rows": 317,
+      "printCards": 0,
+      "picked": [],
+      "count": "317"
+    }
+  },
+  {
+    "hash": "#/tables/alt_item/rare",
+    "why": "table plus an anchor",
+    "resolves": {
+      "hash": "#/tables/alt_item/rare",
+      "tab": "#/tables",
+      "rows": 120,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/tables/community/Seaborne",
+    "why": "table plus a community anchor",
+    "resolves": {
+      "hash": "#/tables/community/Seaborne",
+      "tab": "#/tables",
+      "rows": 90,
+      "printCards": 0,
+      "picked": [],
+      "count": "90"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
+    "why": "two filter groups, dot separated",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
+      "tab": "#/tables",
+      "rows": 36,
+      "printCards": 0,
+      "picked": [
+        "tier:2",
+        "cls:mag"
+      ],
+      "count": "36 из 317"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_range-melee",
+    "why": "the range facet: the key is \"range\", not \"rg\"",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_range-melee",
+      "tab": "#/tables",
+      "rows": 140,
+      "printCards": 0,
+      "picked": [
+        "range:melee"
+      ],
+      "count": "140 из 317"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_burden-2",
+    "why": "the burden facet: the key is \"burden\", not \"bu\"",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_burden-2",
+      "tab": "#/tables",
+      "rows": 166,
+      "printCards": 0,
+      "picked": [
+        "burden:2"
+      ],
+      "count": "166 из 317"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_tier-1-2",
+    "why": "two values in one group, dash separated",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_tier-1-2",
+      "tab": "#/tables",
+      "rows": 150,
+      "printCards": 0,
+      "picked": [
+        "tier:1",
+        "tier:2"
+      ],
+      "count": "150 из 317"
+    }
+  },
+  {
+    "hash": "#/tables/frames/f_frame-beast_feast",
+    "why": "a value containing an underscore, which is why groups are separated by a dot",
+    "resolves": {
+      "hash": "#/tables/frames/f_frame-beast_feast",
+      "tab": "#/tables",
+      "rows": 36,
+      "printCards": 0,
+      "picked": [
+        "frame:beast_feast"
+      ],
+      "count": "36 из 94"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
+    "why": "legacy underscore separator, still read",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
+      "tab": "#/tables",
+      "rows": 41,
+      "printCards": 0,
+      "picked": [
+        "tier:1",
+        "cls:phy"
+      ],
+      "count": "41 из 317"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_nosuch-1",
+    "why": "a facet this table does not offer is ignored, and the table stays whole",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_nosuch-1",
+      "tab": "#/tables",
+      "rows": 317,
+      "printCards": 0,
+      "picked": [],
+      "count": "317"
+    }
+  },
+  {
+    "hash": "#/search",
+    "why": "search",
+    "resolves": {
+      "hash": "#/search",
+      "tab": "#/search",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/lists",
+    "why": "lists index",
+    "resolves": {
+      "hash": "#/lists",
+      "tab": "#/lists",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/i/ci15",
+    "why": "one record",
+    "resolves": {
+      "hash": "#/i/ci15",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/print/ci1-cc1-q26",
+    "why": "print sheet",
+    "resolves": {
+      "hash": "#/print/ci1-cc1-q26",
+      "tab": null,
+      "rows": 0,
+      "printCards": 3,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/nonsense",
+    "why": "an unreadable address is replaced by the home section",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  }
+]

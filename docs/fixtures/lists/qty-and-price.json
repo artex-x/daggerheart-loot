@@ -1,0 +1,34 @@
+{
+  "id": "qty-and-price",
+  "why": "Quantity and price ride on the id as id*qty*gold. A price forces the quantity to be spelled out even when it is 1; a bare quantity of 1 is omitted entirely.",
+  "list": {
+    "id": "f2",
+    "name": "Лавка",
+    "ids": [
+      "ci1",
+      "cc21",
+      "q337"
+    ],
+    "created": 1,
+    "meta": {
+      "ci1": {
+        "qty": 2
+      },
+      "cc21": {
+        "qty": 5,
+        "gold": 50
+      },
+      "q337": {
+        "gold": 12
+      }
+    }
+  },
+  "player": {
+    "raw": "Лавка\n3.vocx~ci1*2,cc21*5*50,q337*1*12",
+    "payload": "0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg"
+  },
+  "gm": {
+    "raw": "Лавка\n3.vocx~ci1*2,cc21*5*50,q337*1*12",
+    "payload": "0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg"
+  }
+}

@@ -38,6 +38,7 @@ const SUITES = [
   ['lists2',   'страница списка',                  40],
   ['eqtest',   'снаряжение и фильтры',             30],
   ['print',    'печать карточек',                  20],
+  ['contracts','контракты и золотые образцы',       30],
   ['qa',       'регрессии по отчёту QA',           26],
   ['typo',     'шрифты и шкала размеров',          23],
   ['notes',    'заметки мастера',                  22],
@@ -77,7 +78,7 @@ function flush(){
   while (printed < queue.length && done[keyOf(queue[printed])]) {
     const [name, what] = queue[printed];
     const r = done[keyOf(queue[printed])];
-    console.log((r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(9) + what.padEnd(34) + r.secs + 's');
+    console.log((r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(10) + what.padEnd(34) + r.secs + 's');
     if (!r.ok) r.out.split('\n').filter(l => /FAIL|Error/.test(l)).slice(0, 12)
                     .forEach(l => console.log('        ' + l.trim()));
     printed++;
