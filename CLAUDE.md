@@ -38,7 +38,7 @@ npm run check
 Format, lint, typecheck, data generation, `derived`, `i18n`, unit tests with
 coverage thresholds. The Husky hook only tidies staged files; it does not
 replace this. CI adds the build, the `file://` smoke check, the bundle budget,
-the 19 puppeteer suites, `npm audit` and gitleaks.
+the 20 puppeteer suites, `npm audit` and gitleaks.
 
 Definition of done: `npm run check` passes, the new behaviour has a test, and
 `docs/specs/*` matches what the code now does.
@@ -137,7 +137,13 @@ node tests/run-all.js eqtest,qa    # just these
 node tests/run-all.js --jobs 1     # one at a time, for debugging
 ```
 
-Nineteen suites, most on puppeteer. They run in a pool as wide as the
+Twenty suites, most on puppeteer. `parity` needs `dist/` built first
+(`npm run build`): it drives the rewrite and the live app through the same
+script and reports every difference - see `docs/specs/COVERAGE.md`, "The
+rewrite against the app it replaces". That suite, not a component test, is what
+catches a control the port forgot.
+
+The rest run in a pool as wide as the
 machine, slowest first, and the summary keeps the order of the list in
 `run-all.js` rather than the order they finished - so two runs read the same.
 The page walk is registered four times, one per screen width, because on its

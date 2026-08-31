@@ -104,3 +104,16 @@ export function descHtml(it: Record_, lang: Lang): string {
     .map((l) => (l.startsWith('- ') ? '• ' + lab(l.slice(2), true) : lab(l)))
     .join('<br>');
 }
+
+/** The placeholder a record with no art, or with art that failed, falls back to. */
+export const NO_ART = 'img/_none.webp';
+
+/**
+ * Where a record's picture lives.
+ *
+ * A record with no art and one whose file is missing get the same placeholder,
+ * so the layout does not shift when one turns into the other.
+ */
+export function artSrc(img: string | undefined, broken = false): string {
+  return img && !broken ? `img/${img}` : NO_ART;
+}

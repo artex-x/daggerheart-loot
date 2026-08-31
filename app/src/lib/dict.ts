@@ -48,12 +48,21 @@ const ru = {
   /* The record card's actions, and what each one says when it is done */
   copyName: 'Скопировать название',
   copyText: 'Скопировать текст',
+  copyImg: 'Скопировать изображение',
   copyLink: 'Скопировать ссылку',
   sendAll: 'Отправить',
   nameCopied: 'Название скопировано',
+  imgCopied: 'Изображение скопировано',
   textCopied: 'Текст скопирован',
   linkCopied: 'Ссылка скопирована',
   copyFailed: 'Не удалось скопировать',
+
+  /* Rolling */
+  roll: 'Бросить',
+  randomIn: 'Случайно',
+  rollResult: 'Результат броска',
+  stepDown: 'На единицу меньше',
+  stepUp: 'На единицу больше',
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
@@ -100,12 +109,20 @@ const en: Dict = {
 
   copyName: 'Copy name',
   copyText: 'Copy text',
+  copyImg: 'Copy image',
   copyLink: 'Copy link',
   sendAll: 'Share',
   nameCopied: 'Name copied',
+  imgCopied: 'Image copied',
   textCopied: 'Text copied',
   linkCopied: 'Link copied',
   copyFailed: 'Could not copy',
+
+  roll: 'Roll',
+  randomIn: 'Random',
+  rollResult: 'Roll result',
+  stepDown: 'One lower',
+  stepUp: 'One higher',
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',

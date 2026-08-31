@@ -149,6 +149,15 @@ describe('a record on its own page', () => {
     expect(card.closest('details')?.open).toBe(false);
   });
 
+  it('gives a referenced card in the language on screen', async () => {
+    render(App, { env: at('ci2') });
+    expect(screen.getByText('Мудрость · Уровень 1 · Заклинание')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByText('Sage · Level 1 · Spell')).toBeInTheDocument();
+    expect(screen.getByText('Roots reach out.')).toBeInTheDocument();
+  });
+
   it('shows the placeholder for a record with no art', () => {
     render(App, { env: at('ci2') });
     expect(screen.getByRole('presentation')).toHaveAttribute('src', 'img/_none.webp');
@@ -226,13 +235,24 @@ describe('taking a record somewhere else', () => {
     expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
   });
 
-  it('offers the share sheet only where there is one', () => {
-    render(App, { env: at('cc1', { share: fakeShare({ available: false }) }) });
-    expect(screen.queryByRole('button', { name: 'Отправить' })).not.toBeInTheDocument();
+  it('offers the share sheet whether or not the browser has one', async () => {
+    /* As the live app does - tests/parity.js compares the two. Where there is
+       no share sheet the link goes to the clipboard, which is what the person
+       was reaching for; hiding the control would just lose the action. */
+    const clip = fakeClipboard();
+    render(App, {
+      env: at('cc1', { share: fakeShare({ available: false }), clipboard: clip })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+  });
 
-    cleanup();
-    render(App, { env: at('cc1', { share: fakeShare() }) });
-    expect(screen.getByRole('button', { name: 'Отправить' })).toBeInTheDocument();
+  it('copies the picture, which the clipboard will only take as a PNG', async () => {
+    const clip = fakeClipboard();
+    render(App, { env: at('ci1', { clipboard: clip }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    expect(clip.last.image).toBe(true);
+    expect(screen.getByText('Изображение скопировано')).toBeInTheDocument();
   });
 
   it('says nothing when somebody dismisses their own share sheet', async () => {

@@ -1,6 +1,6 @@
 # Coverage matrix
 
-What the 19 suites in `tests/` actually assert, mapped onto the features in
+What the 20 suites in `tests/` actually assert, mapped onto the features in
 `FEATURES.md`. Update this file whenever the shape of the coverage changes -
 adding a suite, moving what a suite is responsible for, or filling a gap.
 
@@ -14,6 +14,7 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 |---|---|---|
 | `dataint` | data | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
 | `derived` | data | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in six files; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment) |
+| `parity` | migration | the rewrite against the live app: the same script on both, differences reported |
 | `contracts` | contract | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 26 route shapes, the equipment stat line in both languages, filter group key names against the docs |
 | `i18n` | source | dictionary parity in both directions, and no key the code asks for that is missing |
 | `craft` | feature | upgrade chains: data, rendering, copying, stubs |
@@ -59,6 +60,42 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 | `noindex`, robots | `derived` |
 | Data generation | `derived`, `dataint` |
 | `file://` | every browser suite loads the app from `file://` |
+
+## The rewrite against the app it replaces
+
+`tests/parity.js` is the answer to "is anything missing from the port?", and it
+answers it without anybody having to remember what the old screen did.
+
+Every spec in `tests/parity/specs.js` observes a route - the controls on it,
+what a button puts on the clipboard, the label on the roll button - and returns
+what it saw. The harness runs each spec twice, against `index.html` at the root
+and against the built `dist/`, and compares. **Nothing is written down as the
+expected value: the live app is the expectation**, re-read on every run, so it
+cannot go stale.
+
+The two targets are separate files and never clash. `dist/` has to be built
+first; without it the suite says so and stops.
+
+Three kinds of finding:
+
+- **a difference** fails the run, and names the route, the spec and the field
+- **outstanding** is a route the rewrite has not reached, or a difference listed
+  in `ACCEPTED` with a reason - printed on every run so the list stays visible
+- **stale** is an `ACCEPTED` entry that is no longer a difference. It fails, so
+  an excuse has to be deleted by the slice that makes it untrue
+
+It found four things on its first run, all of which a component test had missed
+because a component test only checks what somebody remembered to write:
+
+- the record page had no **copy image** button at all
+- **send** was hidden when the browser had no share sheet; the live app shows it
+  and falls back to copying the link
+- the roll label used a hyphen where the live app prints an en dash
+- the card's metadata line and the page footer were missing, which is now
+  written down as outstanding rather than unnoticed
+
+This is also where the canvas conversion behind `ImagePort` is exercised: it
+cannot run in jsdom, and here it runs in a real Chrome on both apps.
 
 ## What is enforced, and by what
 
@@ -177,5 +214,10 @@ Not blocking, recorded so they are not mistaken for coverage:
 - Colour contrast is switched off in the axe pass, because jsdom lays nothing
   out and resolves no cascade. Contrast stays a real measurement in `qa` and
   `typo`, on a real page.
-- No e2e layer yet, so no test drives the built bundle the way a visitor does.
-  Phase 5.
+- `tests/parity.js` drives the built bundle, but only on the routes the rewrite
+  has reached, and it compares behaviour rather than appearance. Nothing
+  compares the two apps pixel for pixel yet.
+- A native `<dialog>` cannot be opened in jsdom - there is no `showModal` - so
+  `app/vitest-setup.ts` shims presence and open/closed. The focus trap, Escape
+  and the page behind going inert are the browser's, and are checked in one:
+  `flows` today, `parity` and the Phase 5 e2e layer as they grow.

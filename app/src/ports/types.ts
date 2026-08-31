@@ -29,6 +29,7 @@
  * and keeps running; it does not pretend the lists are saved.
  */
 import type { Loot } from '../lib/data.js';
+import type { Random } from '../lib/roll.js';
 
 export interface StoragePort {
   get(key: string): string | null;
@@ -180,8 +181,29 @@ export interface DataPort {
   load(): Loot | null;
 }
 
+/**
+ * Redrawing a picture as something the clipboard will accept.
+ *
+ * The art is WebP and no browser will put WebP on a clipboard, so it goes
+ * through a canvas first. Canvas, Image and toBlob do not exist in jsdom, which
+ * is why this is a port rather than a helper.
+ */
+export interface ImagePort {
+  /** A PNG of whatever is at `src`. Rejects if it cannot be drawn. */
+  pngOf(src: string): Promise<Blob>;
+}
+
 export interface Env {
   data: DataPort;
+  image: ImagePort;
+  /**
+   * Where a roll comes from.
+   *
+   * `Math.random` in a browser, a fixed sequence in a test. Without this a test
+   * of a roll can only assert that something came up, which is the assertion
+   * that lets a wrong table through.
+   */
+  random: Random;
   storage: StoragePort;
   clipboard: ClipboardPort;
   share: SharePort;

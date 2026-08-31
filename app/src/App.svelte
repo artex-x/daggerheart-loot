@@ -17,6 +17,14 @@
   function sectionKey(s: Section): keyof Dict {
     return KEYS[s];
   }
+
+  /* The sections that roll a single number on one table. The others - Core
+     rules, the alternate tables, Vault of Ages and Communities - roll
+     differently and are not here yet. */
+  const ROLL_TABLE: Partial<Record<Section, string>> = {
+    'roll/wondrous': 'wondrous',
+    'roll/dread': 'dread'
+  };
 </script>
 
 <script lang="ts">
@@ -24,6 +32,7 @@
      below will become its own component as the phases go on. */
   import { untrack } from 'svelte';
   import RecordPage from './components/RecordPage.svelte';
+  import RollPanel from './components/RollPanel.svelte';
   import Shell from './components/Shell.svelte';
   import { AppState } from './state/app.svelte.js';
   import type { Env } from './ports/index.js';
@@ -42,7 +51,13 @@
 </script>
 
 <Shell {app}>
-  {#if app.route.kind === 'section'}
+  {#if app.route.kind === 'section' && ROLL_TABLE[app.route.section]}
+    <RollPanel
+      {app}
+      table={ROLL_TABLE[app.route.section] ?? ''}
+      title={app.t[sectionKey(app.route.section)]}
+    />
+  {:else if app.route.kind === 'section'}
     <h1>{app.t[sectionKey(app.route.section)]}</h1>
     <p class="todo">{app.hash}</p>
   {:else if app.route.kind === 'record'}

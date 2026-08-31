@@ -4,7 +4,7 @@
      Nothing here injects HTML. The description arrives parsed - see
      lib/desc.ts - so a label is an <i> element and a list is a real <ul>,
      which is both safer and what a screen reader needs to hear. */
-  import { descParts } from '../lib/desc.js';
+  import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
   import { eqLine, nameOf } from '../lib/i18n.js';
@@ -32,11 +32,7 @@
   );
   const parts = $derived(descParts(it, lang));
 
-  /* A record with no art, and one whose file is missing, are the same picture -
-     the placeholder - so the layout does not shift when one turns into the
-     other. */
-  const hasArt = $derived(!!it.img && !artBroken);
-  const art = $derived(hasArt && it.img ? `img/${it.img}` : 'img/_none.webp');
+  const art = $derived(artSrc(it.img, artBroken));
 
   const upgrade = $derived(it.craft ? index.byId.get(it.craft) : undefined);
   const madeFrom = $derived.by(() => {

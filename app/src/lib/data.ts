@@ -31,6 +31,13 @@ export interface Index {
   byId: ReadonlyMap<string, Record_>;
   /** Loot, in the order the tables print it. */
   all: readonly Record_[];
+  /**
+   * The roll tables, each in its own order.
+   *
+   * `all` flattens them, which is right for search and wrong for a roll: a roll
+   * is a number within one table, and the number is the record's place in it.
+   */
+  rows: ReadonlyMap<string, readonly Record_[]>;
   /** Loot and equipment - what search covers. */
   searchable: readonly Record_[];
   /** Everything with a stat block, wherever it lives. */
@@ -47,8 +54,11 @@ export function buildIndex(loot: Loot): Index {
   const byId = new Map<string, Record_>();
 
   const all: Record_[] = [];
+  const rows = new Map<string, readonly Record_[]>();
   for (const key of Object.keys(loot.items)) {
-    for (const it of loot.items[key] ?? []) {
+    const table = loot.items[key] ?? [];
+    rows.set(key, table);
+    for (const it of table) {
       all.push(it);
       byId.set(it.id, it);
     }
@@ -90,6 +100,7 @@ export function buildIndex(loot: Loot): Index {
   return {
     byId,
     all,
+    rows,
     searchable: [...all, ...eq],
     allEquip,
     craftedFrom,

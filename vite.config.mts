@@ -72,6 +72,11 @@ export default defineConfig({
            and nothing else - it emits no code, so a percentage of it is noise. */
         'src/test/**',
         'src/ports/types.ts',
+        /* The canvas conversion cannot run in jsdom at all - no Image, no
+           canvas, no toBlob - so a percentage of this file would measure the
+           two test doubles and nothing else. It is exercised for real by
+           tests/parity.js, which drives the built app in Chrome. */
+        'src/ports/image.ts',
         'src/vite-env.d.ts',
         'src/main.ts'
       ],

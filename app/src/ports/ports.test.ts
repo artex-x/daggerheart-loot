@@ -473,6 +473,13 @@ describe('the environment', () => {
     env.storage.remove('dhloot.probe');
   });
 
+  it('rolls the same way every time unless a test says otherwise', () => {
+    /* A roll that is a surprise in a test is a test that cannot assert what
+       came up, so the default lands on the first row. */
+    const env = fakeEnv();
+    expect(env.random()).toBe(0);
+  });
+
   it('lets a fake replace one port and keep the rest', () => {
     const env = fakeEnv({ storage: brokenStorage() });
     expect(env.storage.set('k', 'v')).toBe(false);
