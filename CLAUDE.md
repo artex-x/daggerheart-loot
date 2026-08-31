@@ -69,11 +69,13 @@ reproduction of the one in `index.html` + `style.css`, down to widths, control
 sizes, spacing and placement - not an interpretation of it that happens to use
 the same palette.
 
-That is a rule with a measurement behind it: `tests/parity.js` screenshots both
-apps on the same route and fails if more than a small percentage of pixels
-differ. The budget per route only ever comes down, and a diff image is written
-to `test-output/parity/` so the difference can be looked at rather than argued
-about.
+That is a rule with a measurement behind it. `tests/parity.js` screenshots both
+apps on the same route and compares them with pixelmatch. **The expected
+difference is zero**: a route with no entry in `VISUAL_DEBT` fails on any
+difference at all. An entry there is a debt, not a tolerance - it names what has
+not been reproduced yet and why, and it fails in both directions, so a screen
+that regresses is caught and a screen that improves forces the number down. A
+diff image is written to `test-output/parity/` on every run.
 
 Practically, when building a screen:
 

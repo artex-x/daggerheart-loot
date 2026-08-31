@@ -19,7 +19,14 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./parity/driver.js');
-const { SPECS, ROUTES, ACCEPTED, PIXEL_BUDGET } = require('./parity/specs.js');
+const {
+  SPECS,
+  ROUTES,
+  ACCEPTED,
+  VISUAL_DEBT,
+  DEBT_SLACK,
+  JITTER
+} = require('./parity/specs.js');
 /* v7 ships as an ES module with a default export; this file is CommonJS. */
 const pixelmatch = require('pixelmatch').default ?? require('pixelmatch');
 const { PNG } = require('pngjs');
@@ -115,6 +122,13 @@ function pixelDiff(aBuf, bBuf, outPath) {
     if (!fs.existsSync(at)) fs.symlinkSync(path.join(ROOT, dir), at, 'dir');
   }
 
+  for (const [route, debt] of Object.entries(VISUAL_DEBT)) {
+    if (!debt.why || debt.why.length < 10) {
+      console.log(`  FAIL VISUAL_DEBT[${route}] без причины`);
+      fail++;
+    }
+  }
+
   fs.rmSync(SHOTS, { recursive: true, force: true });
   fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -155,9 +169,9 @@ function pixelDiff(aBuf, bBuf, outPath) {
       diff(route, spec.name, seen.legacy, seen.next);
     }
 
-    /* The look, as a number and as two pictures to compare by eye. */
-    const budget = PIXEL_BUDGET[route];
-    if (budget !== undefined) {
+    /* The look. Zero unless a debt is recorded against this route, and a debt
+       that is no longer owed has to be paid off in the file. */
+    {
       const slug = route.replace(/\W+/g, '_');
       const shots = {};
       for (const target of ['legacy', 'next']) {
@@ -167,12 +181,26 @@ function pixelDiff(aBuf, bBuf, outPath) {
         shots[target] = png;
       }
       const pct = pixelDiff(shots.legacy, shots.next, path.join(SHOTS, `${slug}-diff.png`));
-      if (pct > budget) {
+      const debt = VISUAL_DEBT[route];
+
+      if (!debt) {
+        if (pct > JITTER) {
+          fail++;
+          console.log(`  FAIL ${route} :: вид :: ${pct.toFixed(2)}% отличий, ожидался ноль`);
+          console.log(`       ${slug}-diff.png; если это осознанно - запиши в VISUAL_DEBT`);
+        } else {
+          console.log('       вид: совпадает');
+        }
+      } else if (pct > debt.pct + JITTER) {
         fail++;
-        console.log(`  FAIL ${route} :: the look :: ${pct.toFixed(1)}% differs, budget ${String(budget)}%`);
-        console.log('       снимки в test-output/parity/');
+        console.log(`  FAIL ${route} :: вид :: ${pct.toFixed(2)}% против долга ${String(debt.pct)}%`);
+        console.log(`       стало хуже; ${slug}-diff.png`);
+      } else if (pct < debt.pct - DEBT_SLACK) {
+        fail++;
+        console.log(`  FAIL ${route} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`);
+        console.log('       стало лучше - опусти число в VISUAL_DEBT');
       } else {
-        console.log(`       вид: ${pct.toFixed(1)}% из ${String(budget)}%`);
+        console.log(`       вид: ${pct.toFixed(2)}% из ${String(debt.pct)}% долга`);
       }
     }
   }

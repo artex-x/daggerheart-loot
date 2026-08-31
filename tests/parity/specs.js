@@ -146,24 +146,55 @@ const SPECS = [
 ];
 
 /**
- * How much of the screen may differ, per route, while the port is in progress.
+ * How much of the screen is still allowed to differ, per route.
  *
- * The site is not supposed to change: see CLAUDE.md, "This is a refactor, not a
- * redesign". These numbers are what is left to close, and they only ever come
- * down - a route that drifts back above its budget fails. Both screenshots and
- * a diff image land in test-output/parity/ on every run, so what is left can be
- * looked at rather than argued about.
+ * **The expectation is zero.** The site is not supposed to change - see
+ * CLAUDE.md, "This is a refactor, not a redesign" - so a route with no entry
+ * here must match the original exactly, and any difference at all fails.
  *
- * What is still outstanding at these numbers: the card's internals, the header
- * spacing and the footer. The palette, the font, the page heading and the
- * container geometry already match.
+ * An entry is a debt, not a tolerance. It records what has not been reproduced
+ * yet, with the reason, and it is enforced from both sides:
+ *
+ * - the screen drifts worse than the number -> fail, it regressed
+ * - the screen gets better than the number -> fail, lower the number
+ *
+ * So the figure can only ratchet down, and the last slice to close a screen
+ * deletes its entry. Both screenshots and a diff image land in
+ * test-output/parity/ on every run, so what is left is a picture rather than an
+ * argument.
  */
-const PIXEL_BUDGET = {
-  '#/i/ci1': 9,
-  '#/i/q1': 8,
-  '#/roll/wondrous': 6,
-  '#/roll/dread': 6
+const VISUAL_DEBT = {
+  '#/i/ci1': {
+    pct: 8.72,
+    why: 'the card internals: the metadata line, the badges over the art, and the action row are not reproduced yet'
+  },
+  '#/i/q1': {
+    pct: 7.09,
+    why: 'the card internals, as above, plus the stat block the equipment card prints'
+  },
+  '#/roll/wondrous': {
+    pct: 5.24,
+    why: 'the panel intro text, the help panel and the footer are not drawn yet'
+  },
+  '#/roll/dread': {
+    pct: 4.92,
+    why: 'the panel intro text, the help panel and the footer are not drawn yet'
+  }
 };
+
+/** How far under its debt a route may sit before the number has to come down. */
+const DEBT_SLACK = 0.5;
+
+/**
+ * Rendering noise, in percent.
+ *
+ * Zero means zero, but two machines do not hint text identically and a build
+ * agent is not this laptop. pixelmatch already discards antialiasing pixels,
+ * which removes most of it; this covers what is left. It is deliberately tiny -
+ * a real difference is a control or a box, and those are worth whole percents,
+ * not hundredths.
+ */
+const JITTER = 0.1;
 
 /**
  * Differences that are expected and are not defects.
@@ -202,4 +233,4 @@ const ACCEPTED = {
   '#/roll/dread :: the first line of the page :: starts': 'the panel intro text is not ported yet'
 };
 
-module.exports = { SPECS, ROUTES, ACCEPTED, PIXEL_BUDGET };
+module.exports = { SPECS, ROUTES, ACCEPTED, VISUAL_DEBT, DEBT_SLACK, JITTER };

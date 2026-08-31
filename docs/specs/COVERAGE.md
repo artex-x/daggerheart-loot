@@ -108,15 +108,27 @@ Position and size are deliberately *not* measured: two layouts mid-port disagree
 about them by definition, and a metric that always differs teaches everyone to
 ignore the report.
 
-**A pixel budget** - how much of the screen may differ, per route, as a number
-that only ever comes down. Screenshots of both apps land in
-`test-output/parity/` on every run, so the number can be looked at rather than
-argued about. A route that drifts back above its budget fails.
+**A pixel diff, against zero.** `pixelmatch` compares the two screenshots and
+writes a diff image next to them in `test-output/parity/`. The expectation is
+that a route matches exactly: a route with no entry in `VISUAL_DEBT` fails on
+any difference at all.
 
-The budgets start high because **the rewrite is currently a redesign, not a
-reproduction**: the palette and the font came across through `tokens.css` and
-match exactly, but the record card is laid out differently from the original.
-Every slice that brings a screen closer lowers its budget.
+An entry in `VISUAL_DEBT` is a debt rather than a tolerance. It records what has
+not been reproduced yet, with the reason, and it is enforced from both sides:
+
+- the screen drifts worse than the number - it regressed, and the run fails
+- the screen gets better than the number - the run fails too, asking for the
+  number to come down
+
+So it can only ratchet towards zero, and the slice that finishes a screen
+deletes its entry. `JITTER` is a tenth of a percent for machine-to-machine text
+rendering; pixelmatch already discards antialiasing, so a real difference is
+worth whole percents rather than hundredths.
+
+What is owed today: the record card's internals - the metadata line, the badges
+over the art, the action row - and, on the roll pages, the intro text, the help
+panel and the footer. The palette, the font, the page heading and the container
+geometry already match exactly.
 
 ## What is enforced, and by what
 
