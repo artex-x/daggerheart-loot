@@ -19,10 +19,12 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./parity/driver.js');
-const { SPECS, ROUTES, ACCEPTED } = require('./parity/specs.js');
+const { SPECS, ROUTES, ACCEPTED, PIXEL_BUDGET } = require('./parity/specs.js');
+const { readPNG } = require('./lib.js');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist', 'index.html');
+const SHOTS = path.join(ROOT, 'test-output', 'parity');
 
 let fail = 0;
 const outstanding = [];
@@ -58,11 +60,47 @@ function diff(route, spec, was, now) {
   }
 }
 
+/**
+ * How much of the screen differs, as a percentage of sampled pixels.
+ *
+ * Every second pixel, by brightness rather than by channel: antialiasing and
+ * subpixel text move colour around by a little everywhere, and a strict
+ * comparison would report that as a difference on every run.
+ */
+function pixelDiff(a, b) {
+  const w = Math.min(a.w, b.w);
+  const h = Math.min(a.h, b.h);
+  let differ = 0;
+  let seen = 0;
+  for (let y = 0; y < h; y += 2) {
+    for (let x = 0; x < w; x += 2) {
+      if (Math.abs(a.lum(x, y) - b.lum(x, y)) > 12) differ++;
+      seen++;
+    }
+  }
+  /* Pages of different heights differ below the shorter one by definition. */
+  const missed = Math.abs(a.h - b.h) / Math.max(a.h, b.h);
+  return seen ? (100 * differ) / seen + 100 * missed : 100;
+}
+
 (async () => {
   if (!fs.existsSync(DIST)) {
     console.log('dist/index.html не собран - сначала vite build');
     process.exit(1);
   }
+
+  /* The build emits the application, not the artwork: img/, og/, card/ and i/
+     are served from the repository root today and have to be laid alongside
+     dist/ at the cut-over (Phase 6). Until that is wired up, link them here -
+     otherwise every screenshot is dominated by a picture that failed to load
+     and the number measures the harness rather than the port. */
+  for (const dir of ['img', 'og', 'card']) {
+    const at = path.join(ROOT, 'dist', dir);
+    if (!fs.existsSync(at)) fs.symlinkSync(path.join(ROOT, dir), at, 'dir');
+  }
+
+  fs.rmSync(SHOTS, { recursive: true, force: true });
+  fs.mkdirSync(SHOTS, { recursive: true });
 
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
@@ -99,6 +137,26 @@ function diff(route, spec, was, now) {
         }
       }
       diff(route, spec.name, seen.legacy, seen.next);
+    }
+
+    /* The look, as a number and as two pictures to compare by eye. */
+    const budget = PIXEL_BUDGET[route];
+    if (budget !== undefined) {
+      const shots = {};
+      for (const target of ['legacy', 'next']) {
+        await pages[target].open(route);
+        const png = await pages[target].shot();
+        fs.writeFileSync(path.join(SHOTS, `${route.replace(/\W+/g, '_')}-${target}.png`), png);
+        shots[target] = readPNG(png);
+      }
+      const pct = pixelDiff(shots.legacy, shots.next);
+      if (pct > budget) {
+        fail++;
+        console.log(`  FAIL ${route} :: the look :: ${pct.toFixed(1)}% differs, budget ${String(budget)}%`);
+        console.log('       снимки в test-output/parity/');
+      } else {
+        console.log(`       вид: ${pct.toFixed(1)}% из ${String(budget)}%`);
+      }
     }
   }
 

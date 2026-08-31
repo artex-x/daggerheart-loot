@@ -103,7 +103,8 @@
 <style>
   h1 {
     margin: 0 0 var(--gap);
-    font: 800 var(--step-2) / 1.2 var(--ui);
+    font: var(--h-page-weight) var(--h-page-size) / 1.6 var(--ui);
+    letter-spacing: var(--h-page-spacing);
   }
 
   .controls {

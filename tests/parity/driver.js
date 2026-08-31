@@ -141,6 +141,46 @@ function makeDriver(page, target) {
       return page.evaluate(() => location.hash);
     },
 
+    /**
+     * The look, as numbers rather than as pixels.
+     *
+     * A pixel diff says "40% differs" and sends nobody anywhere. These say
+     * "the heading is 24px and was 23px", which is a thing to go and fix - and
+     * they are what drives most of the pixels anyway. Landmarks are found by
+     * role, because that is the only thing the two apps have in common.
+     */
+    metrics() {
+      return page.evaluate(() => {
+        /* Typography and colour only. Position and size are deliberately not
+           here: two layouts mid-port disagree about them by definition, and a
+           metric that always differs teaches everyone to ignore the report.
+           Geometry is what the pixel budget measures, and that number comes
+           down slice by slice. */
+        const type = (el) => {
+          if (!el) return null;
+          const c = getComputedStyle(el);
+          return {
+            font: `${c.fontWeight} ${c.fontSize}/${c.lineHeight}`,
+            spacing: c.letterSpacing,
+            color: c.color
+          };
+        };
+        const body = getComputedStyle(document.body);
+        return {
+          page: {
+            background: body.backgroundColor,
+            color: body.color,
+            family: body.fontFamily.split(',')[0].replace(/["']/g, '')
+          },
+          /* The page heading is the one element both apps certainly have and
+             certainly means the same thing. "The first paragraph" does not:
+             in one app it is a muted caption and in the other the description,
+             and comparing them reports a difference that is not one. */
+          heading: type(document.querySelector('h1, .page-h'))
+        };
+      });
+    },
+
     /** A screenshot of the page, for the look comparison. */
     shot() {
       return page.screenshot({ type: 'png', fullPage: false });

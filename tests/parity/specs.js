@@ -99,6 +99,20 @@ const rollControls = {
 };
 
 /**
+ * How the page looks, in numbers.
+ *
+ * Not a screenshot: a pixel count says "40% differs" and sends nobody anywhere.
+ * These are the values that drive the pixels, and each one names something to
+ * go and change.
+ */
+const visuals = {
+  name: 'the look, measured',
+  async run(d) {
+    return await d.metrics();
+  }
+};
+
+/**
  * The routes both apps are asked about, and whether the rewrite draws them yet.
  *
  * A route marked pending is still visited on the live app - the expectation is
@@ -127,8 +141,26 @@ const SPECS = [
   copiedName,
   copiedText,
   copiedImage,
-  rollControls
+  rollControls,
+  visuals
 ];
+
+/**
+ * How much of the screen may differ, per route, while the port is in progress.
+ *
+ * A budget rather than a pass/fail, because at forty per cent a pixel diff is
+ * not a signal - it is the whole page. The number only ever comes down: every
+ * slice that brings a screen closer to the original lowers it, and the run
+ * fails if a route drifts back above its budget. Screenshots of both apps are
+ * written to test-output/parity/ on every run, so the number can be looked at
+ * rather than argued about.
+ */
+const PIXEL_BUDGET = {
+  '#/i/ci1': 28,
+  '#/i/q1': 28,
+  '#/roll/wondrous': 33,
+  '#/roll/dread': 34
+};
 
 /**
  * Differences that are expected and are not defects.
@@ -167,4 +199,4 @@ const ACCEPTED = {
   '#/roll/dread :: the first line of the page :: starts': 'the panel intro text is not ported yet'
 };
 
-module.exports = { SPECS, ROUTES, ACCEPTED };
+module.exports = { SPECS, ROUTES, ACCEPTED, PIXEL_BUDGET };

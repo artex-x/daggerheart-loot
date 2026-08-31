@@ -97,6 +97,27 @@ because a component test only checks what somebody remembered to write:
 This is also where the canvas conversion behind `ImagePort` is exercised: it
 cannot run in jsdom, and here it runs in a real Chrome on both apps.
 
+### The look
+
+Two instruments, because they answer different questions.
+
+**Measured** - typography and colour of the landmarks both apps certainly share,
+compared strictly. These name something to go and change: "the heading is 800 at
+24px and was 680 at 23px" is a fix, where "40% of pixels differ" is not.
+Position and size are deliberately *not* measured: two layouts mid-port disagree
+about them by definition, and a metric that always differs teaches everyone to
+ignore the report.
+
+**A pixel budget** - how much of the screen may differ, per route, as a number
+that only ever comes down. Screenshots of both apps land in
+`test-output/parity/` on every run, so the number can be looked at rather than
+argued about. A route that drifts back above its budget fails.
+
+The budgets start high because **the rewrite is currently a redesign, not a
+reproduction**: the palette and the font came across through `tokens.css` and
+match exactly, but the record card is laid out differently from the original.
+Every slice that brings a screen closer lowers its budget.
+
 ## What is enforced, and by what
 
 Coverage here is a build failure, not a report somebody reads. Five things
