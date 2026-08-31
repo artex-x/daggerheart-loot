@@ -10,8 +10,17 @@
  * Everything outside arrives as an `Env`. That is what makes this testable and
  * what stops a component reaching past it. */
 
+import { SvelteSet } from 'svelte/reactivity';
+import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict } from '../lib/dict.js';
-import { legacySource, parseHash, type Route } from '../lib/hash.js';
+import {
+  appUrl,
+  legacySource,
+  parseHash,
+  recordUrl,
+  type Route,
+  type Site
+} from '../lib/hash.js';
 import type { Lang, Section } from '../lib/types.js';
 import type { Env } from '../ports/index.js';
 
@@ -38,6 +47,15 @@ function readHome(env: Env): string {
 export class AppState {
   readonly env: Env;
 
+  /**
+   * The catalogue, or null if `data.js` did not load.
+   *
+   * Built once: it is a few thousand records and nothing about it changes while
+   * the page is open. Null is a state the interface has to render, not a crash -
+   * see docs/specs/FEATURES.md, "Records".
+   */
+  readonly index: Index | null;
+
   lang = $state<Lang>('ru');
   hash = $state('');
   /** Which sources the Core roll draws from. An old section name sets it. */
@@ -48,6 +66,8 @@ export class AppState {
 
   constructor(env: Env) {
     this.env = env;
+    const loot = env.data.load();
+    this.index = loot ? buildIndex(loot) : null;
     this.lang = readLang(env);
     this.#home = readHome(env);
 
@@ -78,6 +98,34 @@ export class AppState {
   #applySource(): void {
     const legacy = legacySource(this.hash);
     if (legacy) this.source = legacy;
+  }
+
+  /** Where this page is, as the link builders in lib/hash.ts want it. */
+  get site(): Site {
+    return { base: this.env.router.base(), hosted: this.env.router.hosted() };
+  }
+
+  /** The app's own address, for a link to a section or a filtered table. */
+  linkTo(hash: string): string {
+    return appUrl(this.site, hash);
+  }
+
+  /** A record's address, which on a host is its stub page rather than the app. */
+  linkToRecord(id: string): string {
+    return recordUrl(this.site, id);
+  }
+
+  /* Art that failed to load, remembered for the session only: a missing file
+     stays missing while the page is open, and is worth retrying on the next
+     visit in case it was a bad connection rather than a bad deploy. */
+  readonly #brokenArt = new SvelteSet<string>();
+
+  artBroken(id: string): boolean {
+    return this.#brokenArt.has(id);
+  }
+
+  markArtBroken(id: string): void {
+    this.#brokenArt.add(id);
   }
 
   get t(): Dict {

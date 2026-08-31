@@ -8,7 +8,7 @@
 import type { RouterPort } from './types.js';
 
 interface RouterWin {
-  location: { hash: string; pathname: string; search: string };
+  location: { hash: string; pathname: string; search: string; href: string; protocol: string };
   /* `replaceState` is optional on purpose: the guard below is what keeps the
      page working where it is missing, and typing it as always present would
      make that guard look like dead code. */
@@ -53,6 +53,9 @@ export function hashRouter(win: RouterWin = window): RouterPort {
       };
     },
 
+    base: () => (win.location.href.split('#')[0] ?? '').replace(/index\.html$/, ''),
+    hosted: () => /^https?:$/.test(win.location.protocol),
+
     canGoBack: () => win.history.length > 1,
     back() {
       win.history.back?.();
@@ -61,6 +64,9 @@ export function hashRouter(win: RouterWin = window): RouterPort {
 }
 
 /** A router in a variable, with a history a test can inspect. */
+/** Somewhere for a link to point in a test, so an assertion can name it. */
+const BASE = 'https://example.test/';
+
 export function memoryRouter(start = '#/roll/std'): RouterPort & { readonly stack: string[] } {
   const stack = [start];
   const listeners = new Set<(hash: string) => void>();
@@ -84,6 +90,9 @@ export function memoryRouter(start = '#/roll/std'): RouterPort & { readonly stac
         listeners.delete(fn);
       };
     },
+    base: () => BASE,
+    hosted: () => true,
+
     canGoBack: () => stack.length > 1,
     back() {
       if (stack.length > 1) stack.pop();

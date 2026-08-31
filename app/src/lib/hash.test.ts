@@ -16,6 +16,8 @@ import {
   sectionHash,
   sharedListHash,
   storedListHash,
+  recordUrl,
+  appUrl,
   stripHash,
   tablesHash,
   type Route
@@ -346,5 +348,30 @@ describe('writing an address', () => {
   it('writes a bare table when the filter is empty', () => {
     expect(tablesHash('eq_weapon', { filter: {} })).toBe('#/tables/eq_weapon');
     expect(tablesHash('eq_weapon')).toBe('#/tables/eq_weapon');
+  });
+});
+
+describe('a link to hand somebody else', () => {
+  const host = { base: 'https://e.test/loot/', hosted: true };
+  const disk = { base: 'file:///tmp/loot/', hosted: false };
+
+  it('names index.html only where nothing will serve it', () => {
+    expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
+    expect(appUrl(disk, '#/lists')).toBe('file:///tmp/loot/index.html#/lists');
+  });
+
+  it('sends a record to its stub page on a host', () => {
+    /* The stub carries the record's Open Graph tags, which is what makes a
+       pasted link unfurl in Telegram or Discord with the picture and the name. */
+    expect(recordUrl(host, 'w1')).toBe('https://e.test/loot/i/w1.html');
+  });
+
+  it('sends a record to the app itself from a folder, where no stub exists', () => {
+    expect(recordUrl(disk, 'w1')).toBe('file:///tmp/loot/index.html#/i/w1');
+  });
+
+  it('lands on an address the app can read back', () => {
+    const r = parseHash(recordUrl(disk, 'w1').split('index.html')[1] ?? '');
+    expect(r).toEqual({ kind: 'record', id: 'w1' });
   });
 });

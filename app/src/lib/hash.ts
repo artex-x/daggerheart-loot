@@ -134,3 +134,34 @@ export function tablesHash(
   const tail = seg || opts.anchor || '';
   return '#/tables/' + table + (tail ? '/' + tail : '');
 }
+
+/* ---------- links to hand somebody else ---------- */
+
+/** Where the page itself is, and whether a server is serving it. */
+export interface Site {
+  base: string;
+  hosted: boolean;
+}
+
+/**
+ * The address of the app itself.
+ *
+ * A web server serves `index.html` for the bare directory, so naming the file
+ * only adds noise. Opened from a folder there is nothing to serve and the file
+ * has to be named, or the link opens the directory listing.
+ */
+export function appUrl(site: Site, hash: string): string {
+  return site.base + (site.hosted ? '' : 'index.html') + hash;
+}
+
+/**
+ * The address of one record.
+ *
+ * On a real host this is the static stub in `i/`, not the app: the stub carries
+ * per-record Open Graph tags, so Telegram and Discord unfurl the picture, the
+ * name and the description without anyone opening anything. From a folder there
+ * is no stub, so the in-app route is the only thing that can be linked.
+ */
+export function recordUrl(site: Site, id: string): string {
+  return site.hosted ? `${site.base}i/${id}.html` : appUrl(site, recordHash(id));
+}

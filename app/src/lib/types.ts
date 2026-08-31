@@ -82,6 +82,21 @@ export interface Equip {
   line?: string;
 }
 
+/**
+ * A rulebook card a description points at, carried in the data so the text
+ * travels with the record rather than sending the reader to a website.
+ * `url` is the Russian page; the English one differs by subdomain.
+ */
+export interface RefCard {
+  en: string;
+  ensub: string;
+  ende: string;
+  ru: string;
+  rusub: string;
+  rud: string;
+  url: string;
+}
+
 export interface Record_ {
   id: string;
   src: string;

@@ -28,6 +28,8 @@
  * answer `null`, writes answer whether they succeeded. The app shows a warning
  * and keeps running; it does not pretend the lists are saved.
  */
+import type { Loot } from '../lib/data.js';
+
 export interface StoragePort {
   get(key: string): string | null;
   set(key: string, value: string): boolean;
@@ -103,6 +105,19 @@ export interface RouterPort {
   navigate(hash: string): void;
   replace(hash: string): void;
   onChange(fn: (hash: string) => void): () => void;
+  /**
+   * Where the page itself lives, with any hash stripped and `index.html` off
+   * the end - a web server serves the directory, so naming the file is noise.
+   */
+  base(): string;
+  /**
+   * Whether a server is serving this, rather than a folder on disk.
+   *
+   * It changes what a shared link may point at: on a host there are stub pages
+   * with Open Graph tags for messengers to unfurl, and from disk there are not.
+   * `lib/hash.ts` holds that rule; this only reports the fact.
+   */
+  hosted(): boolean;
   /** How many entries back there are, so a print page knows whether to offer one. */
   canGoBack(): boolean;
   back(): void;
@@ -152,7 +167,21 @@ export interface DragPort {
  * One object rather than six imports, so a test can swap the whole outside
  * world in a line and a component never has to know which of these is real.
  */
+/**
+ * The dataset.
+ *
+ * `data.js` is a classic script that assigns `window.LOOT`, because a page
+ * opened from a folder cannot fetch a local JSON - CONTRACTS.md section 4. That
+ * makes reading it a browser fact rather than an import, and `null` a real
+ * answer: if the script failed to load the app has to say so rather than render
+ * an empty catalogue as though it were the truth.
+ */
+export interface DataPort {
+  load(): Loot | null;
+}
+
 export interface Env {
+  data: DataPort;
   storage: StoragePort;
   clipboard: ClipboardPort;
   share: SharePort;

@@ -39,6 +39,26 @@ const ru = {
   lists: 'Списки',
   search: 'Поиск',
 
+  /* Outside the app a bare name loses the badge, so a consumable says so */
+  item: 'Предмет',
+  cons: 'Расходник',
+  craftInto: 'Улучшается до',
+  craftFrom: 'Получается из',
+
+  /* The record card's actions, and what each one says when it is done */
+  copyName: 'Скопировать название',
+  copyText: 'Скопировать текст',
+  copyLink: 'Скопировать ссылку',
+  sendAll: 'Отправить',
+  nameCopied: 'Название скопировано',
+  textCopied: 'Текст скопирован',
+  linkCopied: 'Ссылка скопирована',
+  copyFailed: 'Не удалось скопировать',
+
+  notFound: 'Предмет не найден',
+  notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
+  noData: 'Данные не загрузились. Обновите страницу.',
+
   /* The stat line needs three words the vocabulary maps do not carry */
   tier: 'Ранг',
   eqTh: 'Пороги',
@@ -72,6 +92,24 @@ const en: Dict = {
   tables: 'Tables',
   lists: 'Lists',
   search: 'Search',
+
+  item: 'Item',
+  cons: 'Consumable',
+  craftInto: 'Upgrades to',
+  craftFrom: 'Made from',
+
+  copyName: 'Copy name',
+  copyText: 'Copy text',
+  copyLink: 'Copy link',
+  sendAll: 'Share',
+  nameCopied: 'Name copied',
+  textCopied: 'Text copied',
+  linkCopied: 'Link copied',
+  copyFailed: 'Could not copy',
+
+  notFound: 'Item not found',
+  notFoundSub: 'The link may be out of date, or the data has changed.',
+  noData: 'The data did not load. Reload the page.',
 
   tier: 'Tier',
   eqTh: 'Thresholds',

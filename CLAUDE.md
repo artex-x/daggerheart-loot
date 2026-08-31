@@ -62,6 +62,37 @@ honestly. The exception is logic read off the live app during the migration:
 that is knowledge which would otherwise be re-derived wrongly, and it earns a
 direct test instead.
 
+## Components
+
+Shared components are **extracted on the second use, not designed in advance**,
+and the two halves of that rule are equally load-bearing. A `Button` written
+before any screen had one arrived with four variants and two sizes that nothing
+rendered; it was deleted, and then the record page immediately wrote four raw
+`<button>` elements with their own styles - which is the same mistake from the
+other end. The rule that avoids both: write the markup inline the first time,
+and the moment a second place wants it, extract it and delete both copies.
+
+What *is* designed in advance is the vocabulary, not the components:
+`styles/tokens.css` is the only global stylesheet and holds every colour,
+spacing step, radius and type step. A component may compose tokens; it may not
+invent a value. That is what keeps two independently written screens looking
+like one app before anything has been extracted, and it makes the eventual
+extraction mechanical rather than a redesign.
+
+A variant is added to a shared component the first time a screen needs it - not
+because the old app had one. Growing `Button` from one variant to four as the
+screens arrive costs a few minutes each time; shipping four unused ones costs a
+test suite that cannot honestly cover them.
+
+Practically, when a slice adds a control that already exists elsewhere:
+
+- put it in `app/src/components/`, name it for what it is rather than where it
+  first appeared, and give it props for what actually differs
+- move the styles with it and take them out of the caller, so there is one
+  place the padding is decided
+- the parent's test keeps covering it (see `COVERAGE.md`); a new test file is
+  only worth writing when the component has behaviour of its own
+
 Two things live side by side while the migration runs (`docs/REFACTOR_PLAN.md`):
 the live site is `index.html` + `app.js` + `style.css` in the repository root,
 and the new application is `app/`, built to `dist/`. Pages still serves the

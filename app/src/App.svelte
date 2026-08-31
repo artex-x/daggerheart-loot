@@ -23,6 +23,7 @@
   /* The application. Routes are matched here and nowhere else; every branch
      below will become its own component as the phases go on. */
   import { untrack } from 'svelte';
+  import RecordPage from './components/RecordPage.svelte';
   import Shell from './components/Shell.svelte';
   import { AppState } from './state/app.svelte.js';
   import type { Env } from './ports/index.js';
@@ -44,6 +45,8 @@
   {#if app.route.kind === 'section'}
     <h1>{app.t[sectionKey(app.route.section)]}</h1>
     <p class="todo">{app.hash}</p>
+  {:else if app.route.kind === 'record'}
+    <RecordPage {app} id={app.route.id} />
   {:else if app.route.kind === 'tables'}
     <h1>{app.t.tables}</h1>
     <p class="todo">{app.hash}</p>

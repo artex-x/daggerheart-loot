@@ -9,6 +9,7 @@ import { nativeDrag } from './drag.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
+import { browserData, fakeData, noData } from './data.js';
 import { browserEnv, fakeEnv } from './index.js';
 
 describe('storage that works', () => {
@@ -132,7 +133,13 @@ describe('the address', () => {
   it('falls back to assigning the hash where replaceState is missing', () => {
     /* Which is the case when the page is opened from a folder */
     const win = {
-      location: { hash: '#/a', pathname: '/x.html', search: '' },
+      location: {
+        hash: '#/a',
+        pathname: '/x.html',
+        search: '',
+        href: 'file:///tmp/x.html#/a',
+        protocol: 'file:'
+      },
       history: { length: 1 },
       addEventListener: () => undefined,
       removeEventListener: () => undefined
@@ -361,7 +368,13 @@ describe('the address bar', () => {
     const listeners = new Map<string, Set<() => void>>();
     const history: FakeHistory = { length: 1 };
     const win = {
-      location: { hash: '#/roll/std', pathname: '/index.html', search: '' },
+      location: {
+        hash: '#/roll/std',
+        pathname: '/index.html',
+        search: '',
+        href: 'https://example.test/index.html#/roll/std',
+        protocol: 'https:'
+      },
       history,
       addEventListener: (t: string, fn: () => void) => {
         const set = listeners.get(t) ?? new Set<() => void>();
@@ -464,5 +477,78 @@ describe('the environment', () => {
     const env = fakeEnv({ storage: brokenStorage() });
     expect(env.storage.set('k', 'v')).toBe(false);
     expect(env.router.hash()).toBe('#/roll/std');
+  });
+});
+
+describe('the dataset', () => {
+  const loot = { items: { core_item: [] } };
+
+  it('takes what data.js assigned', () => {
+    expect(browserData(() => loot).load()).toBe(loot);
+  });
+
+  it('reports nothing rather than a broken catalogue', () => {
+    /* A deploy that serves data.js as HTML, or a folder missing the file: the
+       app has to be able to say so, and a half-parsed object would instead show
+       an empty catalogue as though that were the truth. */
+    const junk: unknown[] = [
+      undefined,
+      null,
+      '',
+      0,
+      [],
+      {},
+      { items: null },
+      '<!doctype html>'
+    ];
+    for (const [i, v] of junk.entries()) {
+      expect(browserData(() => v).load(), `case ${String(i)}`).toBe(null);
+    }
+  });
+
+  it('refuses a container whose tables are not tables', () => {
+    expect(browserData(() => ({ items: { core_item: 'nope' } })).load()).toBe(null);
+  });
+
+  it('hands a test its own catalogue', () => {
+    expect(fakeData(loot).load()).toBe(loot);
+  });
+
+  it('tells an empty catalogue apart from one that did not load', () => {
+    /* An empty book is a book. A missing data.js is a page that has to say so. */
+    expect(fakeData({ items: {} }).load()).toEqual({ items: {} });
+    expect(noData().load()).toBe(null);
+  });
+
+  it('defaults to reading the real global, and finds nothing in a bare page', () => {
+    /* jsdom has no data.js, so this is the missing case rather than a stub. */
+    expect(browserData().load()).toBe(null);
+  });
+});
+
+describe('where the page is', () => {
+  const win = (href: string, protocol: string) => ({
+    location: { hash: '', pathname: '/', search: '', href, protocol },
+    history: { length: 1 },
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined
+  });
+
+  it('drops the hash and the file name from the base', () => {
+    /* A server serves the directory, so naming index.html is noise - and the
+       hash of the page somebody happened to be on has no business in a link. */
+    const r = hashRouter(win('https://e.test/loot/index.html#/i/w1', 'https:'));
+    expect(r.base()).toBe('https://e.test/loot/');
+  });
+
+  it('keeps a file name that is not index.html', () => {
+    const r = hashRouter(win('https://e.test/loot/other.html#/x', 'https:'));
+    expect(r.base()).toBe('https://e.test/loot/other.html');
+  });
+
+  it('knows a server from a folder', () => {
+    expect(hashRouter(win('https://e.test/', 'https:')).hosted()).toBe(true);
+    expect(hashRouter(win('http://e.test/', 'http:')).hosted()).toBe(true);
+    expect(hashRouter(win('file:///tmp/index.html', 'file:')).hosted()).toBe(false);
   });
 });

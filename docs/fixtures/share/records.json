@@ -1,0 +1,186 @@
+{
+  "ci1": {
+    "why": "item, src core",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Первоклассный Спальный Мешок"
+      },
+      "full": {
+        "html": "<b>Первоклассный Спальный Мешок</b><br><br>Во время отдыха вы автоматически очищаете Стресс.",
+        "text": "Первоклассный Спальный Мешок\n\nВо время отдыха вы автоматически очищаете Стресс."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Premium Bedroll"
+      },
+      "full": {
+        "html": "<b>Premium Bedroll</b><br><br>During downtime, you automatically clear a Stress.",
+        "text": "Premium Bedroll\n\nDuring downtime, you automatically clear a Stress."
+      }
+    }
+  },
+  "cc1": {
+    "why": "consumable, src core",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Зелье Быстрого Шага (расходник)"
+      },
+      "full": {
+        "html": "<b>Зелье Быстрого Шага (расходник)</b><br><br>Вы получаете бонус +1 к следующему Броску Проворности.",
+        "text": "Зелье Быстрого Шага (расходник)\n\nВы получаете бонус +1 к следующему Броску Проворности."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Stride Potion (consumable)"
+      },
+      "full": {
+        "html": "<b>Stride Potion (consumable)</b><br><br>You gain a +1 bonus to your next Agility Roll.",
+        "text": "Stride Potion (consumable)\n\nYou gain a +1 bonus to your next Agility Roll."
+      }
+    }
+  },
+  "w25": {
+    "why": "item, equipment/weapon, src wondrous",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Когти Ифанга"
+      },
+      "full": {
+        "html": "<b>Когти Ифанга</b><br>Основное оружие · Ранг 4 · Магическое · Влияние · Далеко · d8+4 маг · Одноручное<br><br><i>Накопление:</i> когда вы получаете магический урон, вы можете отметить Стресс, чтобы вдвое уменьшить урон и сохранить остаток в Когтях. Накопленный урон прибавляется к следующему Броску Урона Когтями.",
+        "text": "Когти Ифанга\nОсновное оружие · Ранг 4 · Магическое · Влияние · Далеко · d8+4 маг · Одноручное\n\nНакопление: когда вы получаете магический урон, вы можете отметить Стресс, чтобы вдвое уменьшить урон и сохранить остаток в Когтях. Накопленный урон прибавляется к следующему Броску Урона Когтями."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Claws of Yifang"
+      },
+      "full": {
+        "html": "<b>Claws of Yifang</b><br>Primary weapon · Tier 4 · Magic · Presence · Far · d8+4 mag · One-Handed<br><br><i>Channeling:</i> When you take magic damage, you can mark a Stress to halve the damage and store the rest in the Claws. The stored damage is added to your next damage roll with the Claws.",
+        "text": "Claws of Yifang\nPrimary weapon · Tier 4 · Magic · Presence · Far · d8+4 mag · One-Handed\n\nChanneling: When you take magic damage, you can mark a Stress to halve the damage and store the rest in the Claws. The stored damage is added to your next damage roll with the Claws."
+      }
+    }
+  },
+  "f33": {
+    "why": "equip, equipment/armor, src frame",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Стеганая Одежда"
+      },
+      "full": {
+        "html": "<b>Стеганая Одежда</b><br>Броня · Ранг 1 · Пороги 5/11 · Броня 3<br><br><i>Гибкое:</i> +1 к Уклонению",
+        "text": "Стеганая Одежда\nБроня · Ранг 1 · Пороги 5/11 · Броня 3\n\nГибкое: +1 к Уклонению"
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Quilted Clothing"
+      },
+      "full": {
+        "html": "<b>Quilted Clothing</b><br>Armor · Tier 1 · Thresholds 5/11 · Armor 3<br><br><i>Flexible:</i> +1 to Evasion",
+        "text": "Quilted Clothing\nArmor · Tier 1 · Thresholds 5/11 · Armor 3\n\nFlexible: +1 to Evasion"
+      }
+    }
+  },
+  "ci18": {
+    "why": "item, upgrades into cc8, src core",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Рецепт Малого Зелья Выносливости"
+      },
+      "full": {
+        "html": "<b>Рецепт Малого Зелья Выносливости</b><br><br>В качестве Хода Отдыха вы можете использовать кость существа для создания Малого Зелья Выносливости.<br><br><i>Улучшается до: Малое Зелье Выносливости</i><br>Очистите 1d4 Стресса.",
+        "text": "Рецепт Малого Зелья Выносливости\n\nВ качестве Хода Отдыха вы можете использовать кость существа для создания Малого Зелья Выносливости.\n\nУлучшается до: Малое Зелье Выносливости\nОчистите 1d4 Стресса."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Minor Stamina Potion Recipe"
+      },
+      "full": {
+        "html": "<b>Minor Stamina Potion Recipe</b><br><br>As a downtime move, you can use the bone of a creature to craft a Minor Stamina Potion.<br><br><i>Upgrades to: Minor Stamina Potion</i><br>Clear 1d4 Stress.",
+        "text": "Minor Stamina Potion Recipe\n\nAs a downtime move, you can use the bone of a creature to craft a Minor Stamina Potion.\n\nUpgrades to: Minor Stamina Potion\nClear 1d4 Stress."
+      }
+    }
+  },
+  "w1": {
+    "why": "consumable, references 1 card(s), src wondrous",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Смола Бездны (расходник)"
+      },
+      "full": {
+        "html": "<b>Смола Бездны (расходник)</b><br><br>Вы можете бросить флакон этой смолы в цель в пределах Далекой дистанции, воспроизводя эффект заклинания «Неистовое опутывание».<br><br><i>Неистовое опутывание · Мудрость · Уровень 1 · Заклинание</i><br>Совершите Бросок Заклинания против цели в пределах Далекой дистанции. При успехе корни и лозы вырываются из-под земли, нанося 1d8+1 физического урона и временно Обездвиживая цель.<br>Также при успехе вы можете потратить Надежду, чтобы временно Обездвижить ещё одного противника в пределах Близкой дистанции от вашей цели.",
+        "text": "Смола Бездны (расходник)\n\nВы можете бросить флакон этой смолы в цель в пределах Далекой дистанции, воспроизводя эффект заклинания «Неистовое опутывание».\n\nНеистовое опутывание · Мудрость · Уровень 1 · Заклинание\nСовершите Бросок Заклинания против цели в пределах Далекой дистанции. При успехе корни и лозы вырываются из-под земли, нанося 1d8+1 физического урона и временно Обездвиживая цель.\nТакже при успехе вы можете потратить Надежду, чтобы временно Обездвижить ещё одного противника в пределах Близкой дистанции от вашей цели."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Abyssal Sap (consumable)"
+      },
+      "full": {
+        "html": "<b>Abyssal Sap (consumable)</b><br><br>You can throw a vial of this sap at a target within Far range to have the effect of the Vicious Entangle spell.<br><br><i>Vicious Entangle · Sage · Level 1 · Spell</i><br>Make a Spellcast Roll against a target within Far range. On a success, roots and vines reach out from the ground, dealing 1d8+1 physical damage and temporarily Restraining the target.<br>Additionally on a success, you can spend a Hope to temporarily Restrain another adversary within Very Close range of your target.",
+        "text": "Abyssal Sap (consumable)\n\nYou can throw a vial of this sap at a target within Far range to have the effect of the Vicious Entangle spell.\n\nVicious Entangle · Sage · Level 1 · Spell\nMake a Spellcast Roll against a target within Far range. On a success, roots and vines reach out from the ground, dealing 1d8+1 physical damage and temporarily Restraining the target.\nAdditionally on a success, you can spend a Hope to temporarily Restrain another adversary within Very Close range of your target."
+      }
+    }
+  },
+  "voa1_t1a": {
+    "why": "equip, equipment/weapon, src voa",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Благословенный Нож Шеф-Повара"
+      },
+      "full": {
+        "html": "<b>Благословенный Нож Шеф-Повара</b><br>Основное оружие · Ранг 1 · Физическое · Искусность · Вплотную · d8+1 физ · Одноручное<br><br><i>Стоимость Призыва:</i> 0<br>Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое быстрее. Один раз за продолжительный отдых существо, съевшее блюдо, приготовленное с его помощью, очищает Стресс или Рану.",
+        "text": "Благословенный Нож Шеф-Повара\nОсновное оружие · Ранг 1 · Физическое · Искусность · Вплотную · d8+1 физ · Одноручное\n\nСтоимость Призыва: 0\nЕда, приготовленная этим ножом, всегда вкусна и готовится вдвое быстрее. Один раз за продолжительный отдых существо, съевшее блюдо, приготовленное с его помощью, очищает Стресс или Рану."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Blessed Chef's Knife"
+      },
+      "full": {
+        "html": "<b>Blessed Chef's Knife</b><br>Primary weapon · Tier 1 · Physical · Finesse · Melee · d8+1 phy · One-Handed<br><br><i>Recall Cost:</i> 0<br>Food prepared by this knife is always delicious and prepared at twice the usual speed. Once per long rest, a creature eating a meal prepared with it clears a Stress or Hit Point.",
+        "text": "Blessed Chef's Knife\nPrimary weapon · Tier 1 · Physical · Finesse · Melee · d8+1 phy · One-Handed\n\nRecall Cost: 0\nFood prepared by this knife is always delicious and prepared at twice the usual speed. Once per long rest, a creature eating a meal prepared with it clears a Stress or Hit Point."
+      }
+    }
+  },
+  "di1": {
+    "why": "item, equipment/weapon, src dread",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Эфирная Винтовка"
+      },
+      "full": {
+        "html": "<b>Эфирная Винтовка</b><br>Основное оружие · Ранг 3 · Магическое · Инстинкт · Очень далеко · d8+8 маг · Двуручное<br><br><i>Неестественное:</i> Биологически живые стрелки должны отмечать Стресс каждый раз, когда стреляют из этого оружия. Конструкты, например Кланки, и нежить, например Вампиры, эту цену не платят.",
+        "text": "Эфирная Винтовка\nОсновное оружие · Ранг 3 · Магическое · Инстинкт · Очень далеко · d8+8 маг · Двуручное\n\nНеестественное: Биологически живые стрелки должны отмечать Стресс каждый раз, когда стреляют из этого оружия. Конструкты, например Кланки, и нежить, например Вампиры, эту цену не платят."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Aether Rifle"
+      },
+      "full": {
+        "html": "<b>Aether Rifle</b><br>Primary weapon · Tier 3 · Magic · Instinct · Very Far · d8+8 mag · Two-Handed<br><br><i>Uncanny:</i> Shooters who are biologically alive must mark a Stress each time they fire the weapon. Constructs, like Clanks, and undead, like Vampires, are immune to this cost.",
+        "text": "Aether Rifle\nPrimary weapon · Tier 3 · Magic · Instinct · Very Far · d8+8 mag · Two-Handed\n\nUncanny: Shooters who are biologically alive must mark a Stress each time they fire the weapon. Constructs, like Clanks, and undead, like Vampires, are immune to this cost."
+      }
+    }
+  }
+}

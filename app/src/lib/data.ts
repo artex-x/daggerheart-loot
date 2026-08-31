@@ -11,13 +11,13 @@
  * (docs/specs/CONTRACTS.md, section 4). */
 
 import type { Rarity } from './money.js';
-import type { EquipKind, Record_ } from './types.js';
+import type { EquipKind, Record_, RefCard } from './types.js';
 
 /** The shape of `window.LOOT`. */
 export interface Loot {
   items: Record<string, Record_[]>;
   eq?: Record_[];
-  refs?: Record<string, unknown>;
+  refs?: Record<string, RefCard>;
   alt?: Partial<Record<'item' | 'consumable', Partial<Record<Rarity, AltColumns>>>>;
 }
 
@@ -39,7 +39,8 @@ export interface Index {
   craftedFrom: ReadonlyMap<string, string>;
   /** A loot record's rarity, where the alternate tables give it one. */
   rarityOf: (id: string) => Rarity | undefined;
-  refs: Record<string, unknown>;
+  /** Referenced rulebook cards, by the key a record names in `refs`. */
+  refs: Record<string, RefCard>;
 }
 
 export function buildIndex(loot: Loot): Index {
