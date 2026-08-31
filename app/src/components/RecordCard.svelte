@@ -127,7 +127,8 @@
   .card {
     display: flex;
     flex-direction: column;
-    max-width: 46rem;
+    /* `.itempage` in style.css */
+    max-width: 520px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r);

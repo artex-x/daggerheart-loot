@@ -148,18 +148,21 @@ const SPECS = [
 /**
  * How much of the screen may differ, per route, while the port is in progress.
  *
- * A budget rather than a pass/fail, because at forty per cent a pixel diff is
- * not a signal - it is the whole page. The number only ever comes down: every
- * slice that brings a screen closer to the original lowers it, and the run
- * fails if a route drifts back above its budget. Screenshots of both apps are
- * written to test-output/parity/ on every run, so the number can be looked at
- * rather than argued about.
+ * The site is not supposed to change: see CLAUDE.md, "This is a refactor, not a
+ * redesign". These numbers are what is left to close, and they only ever come
+ * down - a route that drifts back above its budget fails. Both screenshots and
+ * a diff image land in test-output/parity/ on every run, so what is left can be
+ * looked at rather than argued about.
+ *
+ * What is still outstanding at these numbers: the card's internals, the header
+ * spacing and the footer. The palette, the font, the page heading and the
+ * container geometry already match.
  */
 const PIXEL_BUDGET = {
-  '#/i/ci1': 28,
-  '#/i/q1': 28,
-  '#/roll/wondrous': 33,
-  '#/roll/dread': 34
+  '#/i/ci1': 9,
+  '#/i/q1': 8,
+  '#/roll/wondrous': 6,
+  '#/roll/dread': 6
 };
 
 /**

@@ -62,6 +62,34 @@ honestly. The exception is logic read off the live app during the migration:
 that is knowledge which would otherwise be re-derived wrongly, and it earns a
 direct test instead.
 
+## This is a refactor, not a redesign
+
+**The site must not change how it looks.** Every screen in `app/` is a
+reproduction of the one in `index.html` + `style.css`, down to widths, control
+sizes, spacing and placement - not an interpretation of it that happens to use
+the same palette.
+
+That is a rule with a measurement behind it: `tests/parity.js` screenshots both
+apps on the same route and fails if more than a small percentage of pixels
+differ. The budget per route only ever comes down, and a diff image is written
+to `test-output/parity/` so the difference can be looked at rather than argued
+about.
+
+Practically, when building a screen:
+
+- open `style.css` and take the numbers from it. The container width, the size
+  of a control, the gap between two things - all of it is already decided.
+- if a value is worth naming, put it in `styles/tokens.css` **with the value the
+  live app uses**, not a rounder one. The page heading is 680 at 23px because
+  `.page-h` is, not because 700 at 24px looks similar.
+- do not improve anything on the way past. A refactor that also tidies the
+  spacing is a refactor nobody can review, and the pixel budget will reject it.
+
+The one exception is an accessibility defect in the original - a contrast
+failure, a control that cannot be reached by keyboard, a missing name. Fix it,
+and record the deviation in `ACCEPTED` in `tests/parity/specs.js` with the
+reason, so it is a decision on the record rather than a drift.
+
 ## Components
 
 Shared components are **extracted on the second use, not designed in advance**,

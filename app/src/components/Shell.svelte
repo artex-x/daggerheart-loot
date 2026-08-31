@@ -75,8 +75,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--gap);
-    padding: var(--gap) var(--gap-lg);
-    border-bottom: 1px solid var(--line);
+    width: var(--wrap);
+    margin-inline: auto;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   .bar {
@@ -103,13 +105,19 @@
   .warn {
     margin: 0;
     padding: var(--gap-sm) var(--gap-lg);
+    width: var(--wrap);
+    margin-inline: auto;
     background: rgb(224 104 95 / 12%);
     color: var(--txt);
     font-size: var(--step--1);
   }
 
   main {
-    padding: var(--gap-lg);
+    /* off `main` in style.css */
+    width: var(--wrap);
+    margin-inline: auto;
+    padding: 26px 0 48px;
+    min-height: 60vh;
   }
 
   /* The skip link lands here, and a focused region with no ring of its own

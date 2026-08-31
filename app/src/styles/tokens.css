@@ -63,6 +63,10 @@
   /* The page heading, taken off the live app's `.page-h` rather than invented:
      23px at weight 680 with a hair of negative tracking. tests/parity.js
      compares this against the original on every run. */
+  /* The page container, off `.wrap`: one width for the header and the content,
+     centred, keeping clear of a display cutout. */
+  --wrap: min(1180px, 100% - 32px);
+
   --h-page-size: 23px;
   --h-page-weight: 680;
   --h-page-spacing: -0.01em;

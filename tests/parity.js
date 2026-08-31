@@ -20,7 +20,9 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./parity/driver.js');
 const { SPECS, ROUTES, ACCEPTED, PIXEL_BUDGET } = require('./parity/specs.js');
-const { readPNG } = require('./lib.js');
+/* v7 ships as an ES module with a default export; this file is CommonJS. */
+const pixelmatch = require('pixelmatch').default ?? require('pixelmatch');
+const { PNG } = require('pngjs');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist', 'index.html');
@@ -61,26 +63,40 @@ function diff(route, spec, was, now) {
 }
 
 /**
- * How much of the screen differs, as a percentage of sampled pixels.
+ * How much of the screen differs, and a picture of where.
  *
- * Every second pixel, by brightness rather than by channel: antialiasing and
- * subpixel text move colour around by a little everywhere, and a strict
- * comparison would report that as a difference on every run.
+ * pixelmatch rather than a hand-rolled comparison: it does the perceptual
+ * colour distance and the antialiasing detection properly, which is the
+ * difference between a number that tracks real change and one that drifts with
+ * font rendering. The diff image is the point - a percentage says how bad, the
+ * picture says what.
+ *
+ * Pages of different heights are compared over the taller of the two, so a
+ * screen that grew does not score well by having less to disagree about.
  */
-function pixelDiff(a, b) {
-  const w = Math.min(a.w, b.w);
-  const h = Math.min(a.h, b.h);
-  let differ = 0;
-  let seen = 0;
-  for (let y = 0; y < h; y += 2) {
-    for (let x = 0; x < w; x += 2) {
-      if (Math.abs(a.lum(x, y) - b.lum(x, y)) > 12) differ++;
-      seen++;
-    }
-  }
-  /* Pages of different heights differ below the shorter one by definition. */
-  const missed = Math.abs(a.h - b.h) / Math.max(a.h, b.h);
-  return seen ? (100 * differ) / seen + 100 * missed : 100;
+function pixelDiff(aBuf, bBuf, outPath) {
+  const a = PNG.sync.read(aBuf);
+  const b = PNG.sync.read(bBuf);
+  const width = Math.max(a.width, b.width);
+  const height = Math.max(a.height, b.height);
+
+  /* On to a common canvas, so mismatched sizes are a difference rather than a
+     crash. Anything outside a picture stays transparent and reads as changed. */
+  const pad = (src) => {
+    const out = new PNG({ width, height });
+    PNG.bitblt(src, out, 0, 0, Math.min(src.width, width), Math.min(src.height, height), 0, 0);
+    return out;
+  };
+  const A = pad(a);
+  const B = pad(b);
+  const diff = new PNG({ width, height });
+
+  const changed = pixelmatch(A.data, B.data, diff.data, width, height, {
+    threshold: 0.1,
+    includeAA: false
+  });
+  fs.writeFileSync(outPath, PNG.sync.write(diff));
+  return (100 * changed) / (width * height);
 }
 
 (async () => {
@@ -142,14 +158,15 @@ function pixelDiff(a, b) {
     /* The look, as a number and as two pictures to compare by eye. */
     const budget = PIXEL_BUDGET[route];
     if (budget !== undefined) {
+      const slug = route.replace(/\W+/g, '_');
       const shots = {};
       for (const target of ['legacy', 'next']) {
         await pages[target].open(route);
         const png = await pages[target].shot();
-        fs.writeFileSync(path.join(SHOTS, `${route.replace(/\W+/g, '_')}-${target}.png`), png);
-        shots[target] = readPNG(png);
+        fs.writeFileSync(path.join(SHOTS, `${slug}-${target}.png`), png);
+        shots[target] = png;
       }
-      const pct = pixelDiff(shots.legacy, shots.next);
+      const pct = pixelDiff(shots.legacy, shots.next, path.join(SHOTS, `${slug}-diff.png`));
       if (pct > budget) {
         fail++;
         console.log(`  FAIL ${route} :: the look :: ${pct.toFixed(1)}% differs, budget ${String(budget)}%`);
