@@ -64,6 +64,11 @@ const only = args.filter((a, i) => a[0] !== '-' && !(jobsArg >= 0 && i === jobsA
 const queue = SUITES.filter(s => !only.length || only.indexOf(s[0]) >= 0);
 /* Ключ для отчёта: у обхода страниц наборов четыре под одним именем */
 const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
+/* The key tells two runs of one suite apart with a colon, which is fine on
+   screen and not fine in a file name: GitHub's artifact upload refuses a colon
+   outright, because NTFS does, and one bad name fails the whole upload - which
+   is exactly the log somebody needed to read. */
+const fileOf = s => keyOf(s).replace(/[^\w.-]+/g, '-');
 if (!queue.length) {
   console.log('таких наборов нет: ' + only.join(', '));
   process.exit(1);
@@ -92,7 +97,7 @@ function flush(){
     if (!r.ok) {
       r.out.split('\n').filter(l => /FAIL|Error/.test(l)).slice(0, 12)
            .forEach(l => console.log('        ' + l.trim()));
-      console.log('        full output: test-output/' + keyOf(queue[printed]) + '.log');
+      console.log('        full output: test-output/' + fileOf(queue[printed]) + '.log');
     }
     printed++;
   }
@@ -110,7 +115,7 @@ function start(){
     p.stderr.on('data', d => { out += d; });
     p.on('close', function (code) {
       if (code) bad++;
-      fs.writeFileSync(path.join(OUT_DIR, key + '.log'), out);
+      fs.writeFileSync(path.join(OUT_DIR, fileOf(suite) + '.log'), out);
       done[key] = { ok: !code, secs: ((Date.now() - started) / 1000).toFixed(1), out: out };
       running--;
       flush();

@@ -29,18 +29,23 @@
 
 <a class="skip" href="#main">{app.t.skipToContent}</a>
 
-<header>
-  <div class="bar">
+<header class="topbar">
+  <div class="topbar-in">
     <a class="brand" href="#/roll/std">
-      {app.t.brand}<span>{app.t.brandSub}</span>
+      <svg class="brand-ico" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z" />
+      </svg>
+      <span class="brand-txt"><b>{app.t.brand}</b><i>{app.t.brandSub}</i></span>
     </a>
-    <LangSwitch
-      lang={app.lang}
-      label={app.t.langLabel}
-      onchange={(l: Lang) => {
-        app.setLang(l);
-      }}
-    />
+    <div class="topbar-right">
+      <LangSwitch
+        lang={app.lang}
+        label={app.t.langLabel}
+        onchange={(l: Lang) => {
+          app.setLang(l);
+        }}
+      />
+    </div>
   </div>
   <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} />
 </header>
@@ -81,35 +86,60 @@
     border-radius: var(--r-sm);
   }
 
-  header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
-    width: var(--wrap);
-    margin-inline: auto;
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+  /* off `.topbar` in style.css. Sticky and translucent: the tabs stay reachable
+     while a long table scrolls under them. */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgb(14 12 21 / 86%);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
   }
 
-  .bar {
+  .topbar-in {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--gap);
+    gap: 16px;
+    padding: 11px 0;
+    width: var(--wrap);
+    margin-inline: auto;
   }
 
   .brand {
-    color: var(--gold);
-    font: 800 var(--step-1) / 1.1 var(--ui);
+    display: flex;
+    align-items: center;
+    gap: 10px;
     text-decoration: none;
+    color: var(--txt);
   }
 
-  .brand span {
-    display: block;
-    color: var(--muted2);
-    font: 600 var(--step--2) / 1.2 var(--ui);
-    letter-spacing: 0.08em;
+  .brand-ico {
+    width: 26px;
+    height: 26px;
+    fill: var(--gold);
+    flex: none;
+    filter: drop-shadow(0 0 10px rgb(216 171 94 / 35%));
+  }
+
+  .brand-txt {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+
+  .brand-txt b {
+    font-size: 16px;
+    letter-spacing: 0.2px;
+  }
+
+  .brand-txt i {
+    font-style: normal;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
+    color: var(--muted2);
   }
 
   .warn {

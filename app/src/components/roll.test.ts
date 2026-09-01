@@ -181,6 +181,39 @@ describe('pinning the section', () => {
   });
 });
 
+describe('the help panel', () => {
+  const help = (): HTMLElement => screen.getByRole('button', { name: 'Как это работает' });
+
+  it('is folded until it is asked for', () => {
+    render(App, { env: at('#/roll/wondrous') });
+    expect(help()).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText(/В таблице 119 позиций/)).not.toBeInTheDocument();
+  });
+
+  it('explains why the button says random rather than naming a die', async () => {
+    /* That is the question the panel exists to answer: no die has 119 faces. */
+    render(App, { env: at('#/roll/wondrous') });
+    await userEvent.click(help());
+    expect(help()).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/Кости на такой диапазон не бывает/)).toBeInTheDocument();
+  });
+
+  it('credits the book it came from, as a link', async () => {
+    render(App, { env: at('#/roll/dread') });
+    await userEvent.click(help());
+    expect(
+      screen.getByRole('link', { name: 'Dread GM Toolbox for Daggerheart' })
+    ).toHaveAttribute('href', expect.stringContaining('drivethrurpg.com'));
+  });
+
+  it('folds again', async () => {
+    render(App, { env: at('#/roll/wondrous') });
+    await userEvent.click(help());
+    await userEvent.click(help());
+    expect(screen.queryByText(/В таблице 119 позиций/)).not.toBeInTheDocument();
+  });
+});
+
 describe('a table with nothing in it', () => {
   it('says so rather than drawing an empty panel', () => {
     render(App, {

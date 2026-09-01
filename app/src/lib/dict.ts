@@ -91,6 +91,8 @@ const ru = {
   pageDread: 'Dread GM Toolbox',
   subWondrous: 'Введите результат броска или получите случайную позицию.',
   homeHint: 'Открывать этот раздел при запуске',
+  helpHint: 'Как это работает',
+  source: 'Источник: дополнение ',
   rollLabelFor: 'Результат броска',
 
   notFound: 'Предмет не найден',
@@ -175,6 +177,8 @@ const en: Dict = {
   pageDread: 'Dread GM Toolbox',
   subWondrous: 'Type the roll result or get a random entry.',
   homeHint: 'Open this section on start',
+  helpHint: 'How this works',
+  source: 'Source: the ',
   rollLabelFor: 'Roll result',
 
   notFound: 'Item not found',

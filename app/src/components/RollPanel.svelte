@@ -7,11 +7,13 @@
      panels; what they will share with this one is the number field and the
      result, which is why both are already components. */
   import Button from './Button.svelte';
+  import Die from './Die.svelte';
   import Icon from './Icon.svelte';
   import NumberField from './NumberField.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
+  import { helpFor } from '../lib/help.js';
   import { hasRealDie, pick } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -52,6 +54,9 @@
 
   /* A real die where the range has one, and "Random 1-N" where it does not -
      119 and 29 are not dice anybody owns. */
+  const help = $derived(helpFor(table, app.lang));
+  let helpOpen = $state(false);
+
   const rollLabel = $derived(
     /* An en dash in the range, as the live app prints it - tests/parity.js
        compares this string character for character, and it is read aloud. */
@@ -84,8 +89,33 @@
   >
     <Icon name="home" />
   </button>
+  {#if help}
+    <button
+      type="button"
+      class="helpbtn"
+      class:on={helpOpen}
+      title={t.helpHint}
+      aria-label={t.helpHint}
+      aria-expanded={helpOpen}
+      onclick={() => {
+        helpOpen = !helpOpen;
+      }}>?</button
+    >
+  {/if}
 </div>
 <p class="page-sub">{t.subWondrous}</p>
+
+{#if help && helpOpen}
+  <div class="helpbox">
+    {#each help.paragraphs as para, i (i)}
+      <p>{para}</p>
+    {/each}
+    <p>
+      {t.source}<a href={help.source.href} target="_blank" rel="noopener">{help.source.label}</a
+      >.
+    </p>
+  </div>
+{/if}
 
 {#if max === 0}
   <p class="miss">{t.noData}</p>
@@ -103,7 +133,9 @@
           stepUpLabel={t.stepUp}
           onchange={setN}
         />
-        <Button variant="primary" onclick={roll}>{rollLabel}</Button>
+        <Button variant="primary" onclick={roll}>
+          <Die faces={max} />{rollLabel}
+        </Button>
       </div>
     </div>
   </div>
@@ -216,6 +248,67 @@
     width: 44px;
     height: 44px;
     transform: translate(-50%, -50%);
+  }
+
+  /* off `.helpbtn` in style.css */
+  .helpbtn {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--line2);
+    background: var(--surface);
+    color: var(--muted);
+    font: 700 14px/1 var(--mono);
+    transition: 0.15s;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .helpbtn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .helpbtn.on {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #1a1206;
+  }
+
+  .helpbtn::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* off `.helpbox` */
+  .helpbox {
+    margin: 0 0 22px;
+    padding: 15px 17px;
+    border-radius: var(--r);
+    background: var(--surface);
+    border: 1px solid var(--line2);
+  }
+
+  .helpbox p {
+    margin: 0 0 11px;
+    color: #cfc8e0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    max-width: 78ch;
+  }
+
+  .helpbox p:last-child {
+    margin-bottom: 0;
+  }
+
+  .helpbox a {
+    color: var(--gold-soft);
   }
 
   .page-sub {

@@ -17,6 +17,11 @@ export interface IconDef {
 }
 
 export const ICONS = {
+  /* The brand star. Bigger than the rest and gold, so it carries its own size. */
+  star: {
+    d: 'M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z',
+    size: 26
+  },
   copy: {
     d: 'M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z',
     size: 15

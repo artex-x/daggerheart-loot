@@ -27,24 +27,34 @@
 </div>
 
 <style>
+  /* off `.seg` in style.css */
   .seg {
-    display: inline-flex;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    overflow: hidden;
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
   }
 
   button {
-    padding: 5px 10px;
     border: 0;
-    background: none;
+    background: transparent;
     color: var(--muted);
-    font: 700 var(--step--2) / 1.2 var(--ui);
+    padding: 5px 13px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+    transition: 0.16s;
     cursor: pointer;
   }
 
   button.on {
-    background: var(--surface2);
-    color: var(--gold-soft);
+    background: var(--gold);
+    color: #1a1206;
+  }
+
+  button:not(.on):hover {
+    color: var(--txt);
   }
 </style>

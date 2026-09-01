@@ -170,19 +170,19 @@ const SPECS = [
  */
 const VISUAL_DEBT = {
   '#/i/ci1': {
-    pct: 8.27,
+    pct: 5.31,
     why: 'the add-to-list and print row under the card is not drawn yet, and the footer - added because the licence asks for it on every page - therefore sits higher than the original'
   },
   '#/i/q1': {
-    pct: 6.4,
+    pct: 4.61,
     why: 'the add-to-list and print row, as above, plus the equipment stat chips which are one line here and a row of chips there'
   },
   '#/roll/wondrous': {
-    pct: 10.26,
+    pct: 9.63,
     why: 'the result is now the record card the live app draws rather than the row invented for it - correct, and further from the original until the panel above it carries the die art and the help block that set its height'
   },
   '#/roll/dread': {
-    pct: 7.99,
+    pct: 7.41,
     why: 'the result card, as above; the panel above it is still missing the die art and the help block'
   }
 };
@@ -216,12 +216,8 @@ const ACCEPTED = {
      section anchor and the add-to-list control all live outside the slices
      built so far, so every route differs by the same handful of names. Each
      will be deleted from here by the slice that draws it. */
-  '#/i/ci1 :: the controls on the page :: controls': 'footer and add-to-list are later slices',
-  '#/i/q1 :: the controls on the page :: controls': 'footer and add-to-list are later slices',
-  '#/roll/wondrous :: the controls on the page :: controls':
-    'footer, help panel and section anchor are later slices',
-  '#/roll/dread :: the controls on the page :: controls':
-    'footer, help panel and section anchor are later slices',
+  '#/i/ci1 :: the controls on the page :: controls': 'add-to-list and print are later slices',
+  '#/i/q1 :: the controls on the page :: controls': 'add-to-list and print are later slices',
 
   /* The record card carries a metadata line the rewrite does not draw yet -
      source, kind, roll number, and a link into the table - and the roll pages
@@ -231,9 +227,6 @@ const ACCEPTED = {
      of chips and the rewrite prints one line, so the text after the heading
      still reads differently. */
   '#/i/q1 :: the first line of the page :: starts': 'the equipment stat chips are one line here and a row there',
-  '#/roll/wondrous :: the first line of the page :: starts':
-    'the panel intro text is not ported yet',
-  '#/roll/dread :: the first line of the page :: starts': 'the panel intro text is not ported yet'
 };
 
 module.exports = { SPECS, ROUTES, ACCEPTED, VISUAL_DEBT, DEBT_SLACK, JITTER };

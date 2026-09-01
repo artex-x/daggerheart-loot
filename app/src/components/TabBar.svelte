@@ -41,41 +41,58 @@
 </nav>
 
 <style>
+  /* off `.tabs` in style.css. The nav is the page container too, so it carries
+     the same width as the bar above it. */
   .tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--gap-sm);
-    align-items: center;
+    gap: 4px;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    width: var(--wrap);
+    margin-inline: auto;
+  }
+
+  /* Eight tabs stopped fitting on one line on a middle-sized screen and the
+     rest went off the right edge - sections simply vanished. Narrow scrolls,
+     wide wraps. */
+  @media (max-width: 640px) {
+    .tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
   }
 
   a {
-    padding: 6px 11px;
-    border-radius: var(--r-sm);
-    color: var(--muted);
-    font: 600 var(--step--1) / 1.2 var(--ui);
+    flex: none;
     text-decoration: none;
+    color: var(--muted);
+    padding: 9px 13px 10px;
+    border-bottom: 2px solid transparent;
+    font-size: 13.5px;
+    font-weight: 560;
     white-space: nowrap;
+    transition: 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  a:hover {
+    color: var(--txt);
   }
 
   a.on {
-    background: var(--surface2);
-    color: var(--txt);
+    color: var(--gold-soft);
+    border-bottom-color: var(--gold);
   }
 
   /* Rolling on one side, browsing on the other */
   a.sep {
     margin-left: auto;
-  }
-
-  @media (hover: hover) {
-    a:hover {
-      color: var(--txt);
-    }
-  }
-
-  @media (max-width: 700px) {
-    a.sep {
-      margin-left: 0;
-    }
   }
 </style>
