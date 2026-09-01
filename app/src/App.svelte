@@ -21,9 +21,9 @@
   /* The sections that roll a single number on one table. The others - Core
      rules, the alternate tables, Vault of Ages and Communities - roll
      differently and are not here yet. */
-  const ROLL_TABLE: Partial<Record<Section, string>> = {
-    'roll/wondrous': 'wondrous',
-    'roll/dread': 'dread'
+  const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
+    'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
+    'roll/dread': { table: 'dread', title: 'pageDread' }
   };
 </script>
 
@@ -54,8 +54,8 @@
   {#if app.route.kind === 'section' && ROLL_TABLE[app.route.section]}
     <RollPanel
       {app}
-      table={ROLL_TABLE[app.route.section] ?? ''}
-      title={app.t[sectionKey(app.route.section)]}
+      table={ROLL_TABLE[app.route.section]?.table ?? ''}
+      title={app.t[ROLL_TABLE[app.route.section]?.title ?? 'wondrous']}
     />
   {:else if app.route.kind === 'section'}
     <h1>{app.t[sectionKey(app.route.section)]}</h1>

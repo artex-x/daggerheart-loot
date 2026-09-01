@@ -92,6 +92,44 @@ failure, a control that cannot be reached by keyboard, a missing name. Fix it,
 and record the deviation in `ACCEPTED` in `tests/parity/specs.js` with the
 reason, so it is a decision on the record rather than a drift.
 
+### Paying a visual debt
+
+The loop, for one screen at a time:
+
+1. run `node tests/run-all.js parity` and open the diff image it leaves in
+   `test-output/parity/`. The number says how much; only the picture says what.
+2. find the element in `app.js`, and its rule in `style.css`. Copy the values.
+   Do not measure them off the screenshot and do not round them.
+3. re-run. Lower the number in `VISUAL_DEBT`, or delete the entry if it is gone.
+
+Two things that will happen and are not failures:
+
+- **the number goes up when you add something correct.** Required content can
+  land before the content that positions it - the footer did, and every route
+  got worse for a while. Raising a debt is allowed, and the reason has to say
+  which missing thing is holding it at the wrong height.
+- **a made-up element can score better than the real one.** The roll result was
+  a row somebody invented and it beat the actual card by two points, because
+  less wrong content differs less. Reproduce the original anyway. The metric is
+  a servant.
+
+### Coverage exceptions
+
+A file that cannot reach a bar gets **its own entry**, named, with the reason in
+the config - never a lower bar for the whole class of files. `Button.svelte` is
+the only one: Svelte compiles each attribute into an update path, and a
+component that small cannot reach them all even from a test that changes its
+props. Everything else keeps 75% branches. Lowering the rule to suit one file
+would have hidden a component nobody rendered.
+
+### What is left, in order
+
+Debts first, then screens - a screen built on an unfinished pattern copies it.
+The roll panels still owe the die art on the button and the help block; both
+record routes owe the add-to-list and print row, which belongs to those slices.
+After that: the four remaining roll modes, tables, search, lists, print, then
+Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
+
 ## Components
 
 Shared components are **extracted on the second use, not designed in advance**,

@@ -1,56 +1,75 @@
 <script lang="ts">
-  /* One button, so "which grey is this one" stops being a question anybody has
-     to answer twice.
+  /* The app's button, reproduced from `.btn` in style.css.
 
-     Deliberately smaller than the version that was deleted from this file: that
-     one shipped four variants and two sizes before a single screen used any of
-     them, and unused variants cannot be tested honestly - nothing renders them,
-     so nothing tells you when one breaks. This has exactly what the record page
-     needs. A variant is added the first time a second screen wants a different
-     one, not in anticipation of it. See CLAUDE.md, "Components". */
+     It exists because two places now want it - the roll panel and the record's
+     action row - which is the rule: extract on the second use, never before.
+     The two variants are the two the live app has in these places, and a third
+     arrives when a screen needs one, not in anticipation. */
   import type { Snippet } from 'svelte';
 
   interface Props {
-    disabled?: boolean;
-    /** For an icon-only button, where the visible text is not the name. */
-    label?: string;
+    /** `primary` is the gold fill the live app keeps for the main action. */
+    variant?: 'plain' | 'primary';
+    /** `sm` is the 32px row on a card; the default 46px is the panel's. */
+    size?: 'md' | 'sm';
     title?: string;
-    onclick?: (e: MouseEvent) => void;
+    /** For a button whose visible text is not its name. */
+    label?: string;
+    /* Required: a button that does nothing is not one. */
+    onclick: () => void;
     children: Snippet;
   }
 
-  const { disabled = false, label, title, onclick, children }: Props = $props();
+  const { variant = 'plain', size = 'md', title, label, onclick, children }: Props = $props();
 </script>
 
-<button type="button" {disabled} {title} aria-label={label} {onclick}>
+<button type="button" class="btn {variant} {size}" {title} aria-label={label} {onclick}>
   {@render children()}
 </button>
 
 <style>
-  button {
+  /* off `.btn` */
+  .btn {
+    border: 1px solid var(--line2);
+    background: var(--surface);
+    color: var(--txt);
+    padding: 0 18px;
+    height: 46px;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.15s;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--gap-sm);
-    padding: 8px 14px;
-    border: 1px solid var(--line2);
-    border-radius: var(--r-sm);
-    background: var(--surface2);
-    color: var(--txt);
-    font: 600 var(--step--1) / 1.2 var(--ui);
+    gap: 8px;
+    text-decoration: none;
     cursor: pointer;
   }
 
-  button:disabled {
-    opacity: 0.5;
-    cursor: default;
+  /* off `.btn.sm` */
+  .btn.sm {
+    height: 32px;
+    padding: 0 11px;
+    font-size: 12.5px;
+    border-radius: 8px;
+    gap: 6px;
+    white-space: nowrap;
   }
 
-  /* Only where there is a pointer. On a phone :hover sticks after a tap and the
-     control goes on looking chosen until something else is touched. */
-  @media (hover: hover) {
-    button:not(:disabled):hover {
-      border-color: var(--gold);
-    }
+  .btn:hover {
+    border-color: var(--gold);
+    background: var(--surface2);
+  }
+
+  .btn.primary {
+    background: linear-gradient(180deg, #e2b76c, var(--gold));
+    border-color: #e8c27c;
+    color: #1a1206;
+    font-weight: 700;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.07);
+    background: linear-gradient(180deg, #e2b76c, var(--gold));
   }
 </style>

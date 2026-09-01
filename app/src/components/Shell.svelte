@@ -55,6 +55,16 @@
   {@render children()}
 </main>
 
+<!-- The licence notice is on every page on purpose: the terms ask for it, and
+     a page that can be linked to directly has to carry it. -->
+<footer class="foot">
+  <p>
+    {app.t.footBefore}<a href="https://www.daggerheart.com" target="_blank" rel="noopener"
+      >{app.t.footLink}</a
+    >{app.t.footAfter}
+  </p>
+</footer>
+
 <style>
   .skip {
     position: absolute;
@@ -110,6 +120,21 @@
     background: rgb(224 104 95 / 12%);
     color: var(--txt);
     font-size: var(--step--1);
+  }
+
+  /* off `.foot` in style.css */
+  .foot {
+    width: var(--wrap);
+    margin-inline: auto;
+    margin-top: 20px;
+    padding: 22px 0 40px;
+    color: var(--muted2);
+    font-size: 12.5px;
+    border-top: 1px solid var(--line);
+  }
+
+  .foot p {
+    margin: 0;
   }
 
   main {

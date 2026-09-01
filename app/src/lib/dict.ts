@@ -78,6 +78,21 @@ const ru = {
   stepDown: 'На единицу меньше',
   stepUp: 'На единицу больше',
 
+  /* The licence notice, in three parts so the link is an element rather than
+     markup in a string. The verbatim citation lives entirely in the first
+     part - tests/derived.js pins it in app.js, and it must read the same here. */
+  footBefore:
+    'Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ',
+  footLink: 'daggerheart.com',
+  footAfter: '. There are no previous modifications by others.',
+
+  /* The line under each section heading */
+  pageWondrous: 'Wondrous Loot',
+  pageDread: 'Dread GM Toolbox',
+  subWondrous: 'Введите результат броска или получите случайную позицию.',
+  homeHint: 'Открывать этот раздел при запуске',
+  rollLabelFor: 'Результат броска',
+
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
   noData: 'Данные не загрузились. Обновите страницу.',
@@ -150,6 +165,17 @@ const en: Dict = {
   rollResult: 'Roll result',
   stepDown: 'One lower',
   stepUp: 'One higher',
+
+  footBefore:
+    'Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ',
+  footLink: 'daggerheart.com',
+  footAfter: '. There are no previous modifications by others.',
+
+  pageWondrous: 'Wondrous Loot',
+  pageDread: 'Dread GM Toolbox',
+  subWondrous: 'Type the roll result or get a random entry.',
+  homeHint: 'Open this section on start',
+  rollLabelFor: 'Roll result',
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',

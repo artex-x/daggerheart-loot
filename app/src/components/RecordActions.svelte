@@ -15,6 +15,7 @@
      every handler is reached with both in hand. The version that lived on the
      page had a `if (!it) return` at the top of each one - four branches nothing
      could take, guarding against a state in which the buttons are not drawn. */
+  import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { artSrc } from '../lib/desc.js';
   import { share, shareName } from '../lib/share.js';
@@ -86,42 +87,30 @@
     <Icon name="link" />
   </button>
 {:else}
-  <button
-    type="button"
-    class="btn sm primary"
+  <Button
+    variant="primary"
+    size="sm"
     title={t.sendAll}
-    aria-label={t.sendAll}
+    label={t.sendAll}
     onclick={() => void send()}
   >
     <Icon name="share" /><span class="btn-lbl">{t.sendAll}</span>
-  </button>
+  </Button>
   {#if it.img}
     <!-- A record with no art has nothing to copy, so the live app leaves the
          button out rather than offering a placeholder. -->
-    <button
-      type="button"
-      class="btn sm"
-      title={t.copyImg}
-      aria-label={t.copyImg}
-      onclick={() => void copyImage()}
-    >
+    <Button size="sm" title={t.copyImg} label={t.copyImg} onclick={() => void copyImage()}>
       <Icon name="image" /><span class="btn-lbl">{t.sImg}</span>
-    </button>
+    </Button>
   {/if}
-  <button
-    type="button"
-    class="btn sm"
-    title={t.copyText}
-    aria-label={t.copyText}
-    onclick={() => void copyText()}
-  >
+  <Button size="sm" title={t.copyText} label={t.copyText} onclick={() => void copyText()}>
     <Icon name="copy" /><span class="btn-lbl">{t.sText}</span>
-  </button>
+  </Button>
 {/if}
 
 <style>
   /* The icon pair beside the name, off `.card-name button` in style.css. */
-  button:not(.btn) {
+  button {
     border: 0;
     background: transparent;
     padding: 3px;
@@ -133,43 +122,8 @@
     cursor: pointer;
   }
 
-  button:not(.btn):hover {
+  button:hover {
     color: var(--gold);
     background: var(--surface2);
-  }
-
-  /* The labelled row, off `.btn` and `.btn.sm`. */
-  .btn {
-    border: 1px solid var(--line2);
-    background: var(--surface);
-    color: var(--txt);
-    padding: 0 11px;
-    height: 32px;
-    border-radius: 8px;
-    font-size: 12.5px;
-    font-weight: 600;
-    transition: 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .btn:hover {
-    border-color: var(--gold);
-    background: var(--surface2);
-  }
-
-  .btn.primary {
-    background: linear-gradient(180deg, #e2b76c, var(--gold));
-    border-color: #e8c27c;
-    color: #1a1206;
-    font-weight: 700;
-  }
-
-  .btn.primary:hover {
-    filter: brightness(1.07);
   }
 </style>

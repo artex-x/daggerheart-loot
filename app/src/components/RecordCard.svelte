@@ -25,13 +25,16 @@
     /** Whether the picture failed to load earlier in this session. */
     artBroken: boolean;
     onartfail: (id: string) => void;
+    /** Opens the record: a modal from a result, the page from a table row. */
+    onopen?: () => void;
     /** The two icon buttons beside the name: copy the name, copy the link. */
     nameActions?: Snippet;
     /** The labelled row under the description: send, picture, text. */
     actions?: Snippet;
   }
 
-  const { it, index, lang, artBroken, onartfail, nameActions, actions }: Props = $props();
+  const { it, index, lang, artBroken, onartfail, onopen, nameActions, actions }: Props =
+    $props();
 
   const t = $derived(dict(lang));
   const name = $derived(nameOf(it, lang));
@@ -55,7 +58,7 @@
 <article class="card full" data-id={it.id}>
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
-  <button type="button" class="card-media" aria-label={t.openPage}>
+  <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.()}>
     <img
       src={art}
       alt=""

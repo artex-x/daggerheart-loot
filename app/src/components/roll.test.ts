@@ -4,11 +4,11 @@
  * shrug - a roll test that can only check that something appeared is the test
  * that lets a wrong table through. */
 
-import { cleanup, render, screen } from '@testing-library/svelte';
+import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
-import { fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
+import { brokenStorage, fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
@@ -46,10 +46,12 @@ const lands =
     (n - 1) / of;
 
 describe('rolling on a table', () => {
-  it('shows nothing until somebody asks', () => {
-    /* The page opens as an invitation, not as a record chosen for them. */
+  it('opens on the first row rather than on an empty panel', () => {
+    /* What the live app does. A page that shows nothing until it is pressed
+       reads as one that failed to load - and tests/parity.js caught the
+       invitation-first version as a difference from the original. */
     render(App, { env: at('#/roll/wondrous') });
-    expect(screen.queryByText(/вещь/)).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'w вещь 1' })).toBeInTheDocument();
   });
 
   it('names a real die where the range has one', () => {
@@ -68,14 +70,14 @@ describe('rolling on a table', () => {
   it('lands on the row the dice chose', async () => {
     render(App, { env: at('#/roll/wondrous', { random: lands(7, 20) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Бросить d20' }));
-    expect(screen.getByText('w вещь 7')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'w вещь 7' })).toBeInTheDocument();
   });
 
   it('rolls on its own table and not on a neighbour', async () => {
     render(App, { env: at('#/roll/dread', { random: lands(3, 29) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Случайно 1–29' }));
-    expect(screen.getByText('d вещь 3')).toBeInTheDocument();
-    expect(screen.queryByText('w вещь 3')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'd вещь 3' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'w вещь 3' })).not.toBeInTheDocument();
   });
 
   it('never rolls past either end of the table', async () => {
@@ -88,7 +90,7 @@ describe('rolling on a table', () => {
       cleanup();
       render(App, { env: at('#/roll/wondrous', { random: lands(n, 20) }) });
       await userEvent.click(screen.getByRole('button', { name: 'Бросить d20' }));
-      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 2, name: label })).toBeInTheDocument();
     }
   });
 
@@ -107,7 +109,7 @@ describe('choosing the number by hand', () => {
     await userEvent.clear(field());
     await userEvent.type(field(), '12');
     await userEvent.tab();
-    expect(screen.getByText('w вещь 12')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'w вещь 12' })).toBeInTheDocument();
   });
 
   it('keeps two digits in the order they were typed', async () => {
@@ -149,7 +151,7 @@ describe('choosing the number by hand', () => {
     expect(down).toBeDisabled();
     await userEvent.click(up);
     expect(field().value).toBe('2');
-    expect(screen.getByText('w вещь 2')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'w вещь 2' })).toBeInTheDocument();
 
     await userEvent.click(down);
     expect(field().value).toBe('1');
@@ -157,19 +159,54 @@ describe('choosing the number by hand', () => {
   });
 });
 
+describe('pinning the section', () => {
+  const pin = (): HTMLElement =>
+    screen.getByRole('button', { name: 'Открывать этот раздел при запуске' });
+
+  it('remembers the choice, and says so on the control', async () => {
+    render(App, { env: at('#/roll/wondrous') });
+    expect(pin()).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(pin());
+    expect(pin()).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('says nothing was saved when the browser refuses', async () => {
+    /* A control that looks pressed but did not stick is a control that lies. */
+    render(App, { env: at('#/roll/wondrous', { storage: brokenStorage() }) });
+    await userEvent.click(pin());
+    expect(pin()).toHaveAttribute('aria-pressed', 'false');
+    /* The shell also warns that storage is off, so both live regions are on
+       the page; this asks for the panel's. */
+    expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
+  });
+});
+
+describe('a table with nothing in it', () => {
+  it('says so rather than drawing an empty panel', () => {
+    render(App, {
+      env: at('#/roll/wondrous', { data: fakeData({ items: { wondrous: [] } }) })
+    });
+    expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+  });
+});
+
 describe('the record over the page', () => {
   const openFirst = async (): Promise<void> => {
     render(App, { env: at('#/roll/wondrous', { random: lands(5, 20) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Бросить d20' }));
-    await userEvent.click(screen.getByRole('button', { name: /w вещь 5/ }));
+    /* The picture is the way in, as it is in the live app. */
+    await userEvent.click(screen.getAllByRole('button', { name: 'Страница' })[0]!);
   };
 
   it('opens the record without leaving the page behind it', async () => {
     await openFirst();
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    /* The card names itself with an h2 - the page heading above it is the h1,
-       as in the live app. */
-    expect(screen.getByRole('heading', { level: 2, name: 'w вещь 5' })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    /* Two cards now carry the name - the one in the panel and the one in the
+       dialog over it - so this asks the dialog rather than the page. */
+    expect(
+      within(dialog).getByRole('heading', { level: 2, name: 'w вещь 5' })
+    ).toBeInTheDocument();
     /* The roll is still there underneath, so closing returns to it. */
     expect(screen.getByRole('button', { name: 'Бросить d20' })).toBeInTheDocument();
   });
