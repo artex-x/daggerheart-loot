@@ -88,31 +88,55 @@
 </div>
 
 <style>
+  /* off `.numbox` in style.css */
   .numbox {
-    display: inline-flex;
-    align-items: stretch;
+    display: flex;
+    align-items: center;
+    background: var(--bg2);
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     overflow: hidden;
   }
 
-  input {
-    width: 4ch;
-    padding: 6px 4px;
+  /* The type selector is load-bearing: the field is a text input, and a generic
+     input rule would otherwise stretch it to the full width. */
+  input[type='text'] {
+    width: 74px;
+    height: 46px;
+    padding: 0;
     border: 0;
-    background: var(--surface2);
+    border-radius: 0;
+    background: transparent;
     color: var(--txt);
-    font: 700 var(--step-0) / 1.2 var(--mono);
     text-align: center;
+    font: 650 20px/1 var(--mono);
+  }
+
+  input[type='text']:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  .numbox:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
   button {
-    padding: 0 10px;
     border: 0;
-    background: var(--surface2);
+    background: transparent;
     color: var(--muted);
-    font: 700 var(--step-0) / 1 var(--ui);
-    cursor: pointer;
+    width: 40px;
+    height: 46px;
+    font-size: 19px;
+    line-height: 1;
+    transition: 0.14s;
+  }
+
+  button:hover {
+    background: var(--surface2);
+    color: var(--gold);
   }
 
   button:disabled {
@@ -120,9 +144,13 @@
     cursor: default;
   }
 
-  @media (hover: hover) {
-    button:not(:disabled):hover {
-      color: var(--gold);
+  @media (max-width: 430px) {
+    input[type='text'] {
+      width: 56px;
+    }
+
+    button {
+      width: 36px;
     }
   }
 </style>

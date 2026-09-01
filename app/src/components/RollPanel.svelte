@@ -146,6 +146,7 @@
          page to find out what they got. -->
     <div class="results">
       <RecordCard
+        variant="compact"
         it={shown.it}
         index={shown.index}
         lang={app.lang}
@@ -362,8 +363,8 @@
     white-space: nowrap;
   }
 
+  /* off `.results` in style.css */
   .results {
-    margin-top: 18px;
-    max-width: 520px;
+    margin-top: 26px;
   }
 </style>

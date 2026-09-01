@@ -13,12 +13,18 @@
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
   import { badgeKind, srcLabel } from '../lib/label.js';
-  import { eqLine, nameOf } from '../lib/i18n.js';
+  import { eqParts, nameOf } from '../lib/i18n.js';
   import type { Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
   import type { Snippet } from 'svelte';
 
   interface Props {
+    /**
+     * `full` is the record's own page: the picture on top, at full width.
+     * `compact` is a result or a table row: the picture beside the text at
+     * 132px, and the name is a link to the page rather than a heading of it.
+     */
+    variant?: 'full' | 'compact';
     it: Record_;
     index: Index;
     lang: Lang;
@@ -33,13 +39,29 @@
     actions?: Snippet;
   }
 
-  const { it, index, lang, artBroken, onartfail, onopen, nameActions, actions }: Props =
-    $props();
+  const {
+    variant = 'full',
+    it,
+    index,
+    lang,
+    artBroken,
+    onartfail,
+    onopen,
+    nameActions,
+    actions
+  }: Props = $props();
 
   const t = $derived(dict(lang));
   const name = $derived(nameOf(it, lang));
+  /* Chips rather than a sentence, as the live app draws them, and without the
+     type word: the badge row above already says what kind of thing this is. */
   const stats = $derived(
-    eqLine(it, lang, { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore })
+    eqParts(
+      it,
+      lang,
+      { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
+      { noType: true }
+    )
   );
   const parts = $derived(descParts(it, lang));
   const art = $derived(artSrc(it.img, artBroken));
@@ -55,7 +77,7 @@
   );
 </script>
 
-<article class="card full" data-id={it.id}>
+<article class="card {variant}" data-id={it.id}>
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
   <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.()}>
@@ -80,14 +102,23 @@
     </div>
 
     <h2 class="card-name">
-      <span>{name}</span>
+      {#if variant === 'compact'}
+        <!-- A link, because from a result the name is the way to the page. -->
+        <a href={recordHash(it.id)} title={t.openPage}>{name}</a>
+      {:else}
+        <span>{name}</span>
+      {/if}
       {#if nameActions}
         <span class="card-name-acts">{@render nameActions()}</span>
       {/if}
     </h2>
 
-    {#if stats}
-      <p class="eqchips">{stats}</p>
+    {#if stats.length}
+      <div class="eqstats">
+        {#each stats as chip, i (i)}
+          <span>{chip}</span>
+        {/each}
+      </div>
     {/if}
 
     <div class="card-desc">
@@ -185,6 +216,11 @@
     flex-direction: column;
   }
 
+  .card.compact {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
   .card-media {
     position: relative;
     background: #0a0810;
@@ -193,10 +229,25 @@
     border: 0;
     padding: 0;
     display: block;
+    cursor: zoom-in;
+  }
+
+  .card.full .card-media {
     width: 100%;
     aspect-ratio: 1;
     max-height: 420px;
     cursor: default;
+  }
+
+  .card.compact .card-media {
+    width: 132px;
+    aspect-ratio: 1;
+  }
+
+  @media (hover: hover) {
+    .card.compact .card-media:hover img {
+      transform: scale(1.05);
+    }
   }
 
   .card-media img {
@@ -266,7 +317,7 @@
 
   .card-name {
     margin: 0;
-    font-size: 19px;
+    font-size: 17px;
     font-weight: 680;
     letter-spacing: -0.01em;
     line-height: 1.28;
@@ -277,9 +328,26 @@
 
   /* Without this the card cannot shrink below its longest word, which pushed
      the results grid past a 320px screen. */
-  .card-name > span {
+  .card.full .card-name {
+    font-size: 19px;
+  }
+
+  .card-name > span,
+  .card-name a {
     min-width: 0;
     overflow-wrap: break-word;
+  }
+
+  .card-name a {
+    color: var(--txt);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: 0.15s;
+  }
+
+  .card-name a:hover {
+    color: var(--gold-soft);
+    border-bottom-color: currentcolor;
   }
 
   .card-name-acts {
@@ -289,15 +357,32 @@
     align-self: center;
   }
 
-  .eqchips {
-    margin: 0;
+  /* off `.eqstats` in style.css */
+  .eqstats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 2px 0 10px;
+  }
+
+  .eqstats span {
+    font: 600 11.5px/1 var(--mono);
     color: var(--muted);
-    font-size: 12.5px;
+    background: rgb(255 255 255 / 3.5%);
+    border: 1px solid var(--line2);
+    border-radius: 6px;
+    padding: 4px 7px;
+    white-space: nowrap;
   }
 
   .card-desc {
     margin: 0;
     color: #cfc8e0;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+
+  .card.full .card-desc {
     font-size: 14px;
     line-height: 1.62;
   }

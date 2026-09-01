@@ -82,6 +82,17 @@
   box-sizing: border-box;
 }
 
+/* Off style.css. `scrollbar-gutter: stable` reserves the bar whether or not the
+   page needs one, so the content does not jump fifteen pixels sideways when a
+   short page follows a long one. Without it every measurement on a short route
+   was fifteen pixels wider than the original's. */
+html {
+  margin: 0;
+  padding: 0;
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   background:
@@ -91,6 +102,22 @@ body {
   color: var(--txt);
   font: var(--step-0) / 1.6 var(--ui);
   min-height: 100vh;
+}
+
+/* Off style.css, and load-bearing: without it a button falls back to
+   `line-height: normal` and comes out six pixels shorter than the same button
+   in the live app. That is the language pill in the header, so every route was
+   six pixels out - tabs, main and heading all shifted up. `font: inherit`
+   carries the unitless 1.6 down, so each control computes its own leading from
+   its own size. */
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--gold-soft);
 }
 
 /* A focus ring that only appears for people who need it, on everything, once.

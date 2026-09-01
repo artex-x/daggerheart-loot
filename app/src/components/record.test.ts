@@ -119,17 +119,19 @@ describe('a record on its own page', () => {
     ).toBeInTheDocument();
   });
 
-  it('puts the stat line under the name of a piece of equipment', () => {
-    /* The tier also appears in the line under the page heading - the live app
-       prints it in both places - so this asks for the card's copy, which
-       carries the whole stat line rather than just the tier. */
+  it('puts the stats under the name as chips, one value each', () => {
+    /* Chips rather than a sentence, as the live app draws them, and without
+       the type word - the badge row above already says what kind it is. */
     render(App, { env: at('q1') });
-    expect(screen.getByText(/Основное оружие · Ранг 1/)).toBeInTheDocument();
+    for (const chip of ['Ранг 1', 'Физическое', 'Проворность', 'Вплотную', 'd8+3']) {
+      expect(screen.getByText(chip), chip).toBeInTheDocument();
+    }
+    expect(screen.queryByText('Основное оружие')).not.toBeInTheDocument();
   });
 
-  it('gives loot no stat line to read', () => {
+  it('gives loot no stat chips at all', () => {
     render(App, { env: at('ci1') });
-    expect(screen.queryByText(/Основное оружие/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Ранг/)).not.toBeInTheDocument();
   });
 
   it('says whether it is an item or a consumable', () => {

@@ -170,20 +170,16 @@ const SPECS = [
  */
 const VISUAL_DEBT = {
   '#/i/ci1': {
-    pct: 5.31,
+    pct: 1.42,
     why: 'the add-to-list and print row under the card is not drawn yet, and the footer - added because the licence asks for it on every page - therefore sits higher than the original'
   },
   '#/i/q1': {
-    pct: 4.61,
-    why: 'the add-to-list and print row, as above, plus the equipment stat chips which are one line here and a row of chips there'
-  },
-  '#/roll/wondrous': {
-    pct: 9.63,
-    why: 'the result is now the record card the live app draws rather than the row invented for it - correct, and further from the original until the panel above it carries the die art and the help block that set its height'
+    pct: 1.52,
+    why: 'the add-to-list and print row, as above'
   },
   '#/roll/dread': {
-    pct: 7.41,
-    why: 'the result card, as above; the panel above it is still missing the die art and the help block'
+    pct: 0.17,
+    why: 'a hair on the first row, which is equipment: its stat chips wrap one pixel differently from the original at this width'
   }
 };
 
