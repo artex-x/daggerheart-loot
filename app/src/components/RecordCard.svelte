@@ -1,12 +1,18 @@
 <script lang="ts">
-  /* One record, in full: the picture, the stat line, the description, where it
-     sits in an upgrade chain, and the rulebook cards its text names.
+  /* One record in full, reproduced from the live app.
+     The markup mirrors `cardHTML(it, {full:true})` in app.js and the styles are
+     copied out of style.css - `.card`, `.card-media`, `.card-body`,
+     `.card-meta`, `.badge`, `.card-name`, `.card-desc`, `.craft`, `.refs`,
+     `.card-acts`. This is a refactor: tests/parity.js compares the two apps
+     pixel for pixel, so a value that is nearly right is a value that fails.
+
      Nothing here injects HTML. The description arrives parsed - see
-     lib/desc.ts - so a label is an <i> element and a list is a real <ul>,
-     which is both safer and what a screen reader needs to hear. */
+     lib/desc.ts - so a label is an <i> element and a list is a real <ul>. */
+  import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
+  import { badgeKind, srcLabel } from '../lib/label.js';
   import { eqLine, nameOf } from '../lib/i18n.js';
   import type { Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
@@ -19,11 +25,13 @@
     /** Whether the picture failed to load earlier in this session. */
     artBroken: boolean;
     onartfail: (id: string) => void;
-    /** Rendered under the card: copy, share, print. Supplied by the route. */
+    /** The two icon buttons beside the name: copy the name, copy the link. */
+    nameActions?: Snippet;
+    /** The labelled row under the description: send, picture, text. */
     actions?: Snippet;
   }
 
-  const { it, index, lang, artBroken, onartfail, actions }: Props = $props();
+  const { it, index, lang, artBroken, onartfail, nameActions, actions }: Props = $props();
 
   const t = $derived(dict(lang));
   const name = $derived(nameOf(it, lang));
@@ -31,8 +39,8 @@
     eqLine(it, lang, { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore })
   );
   const parts = $derived(descParts(it, lang));
-
   const art = $derived(artSrc(it.img, artBroken));
+  const kind = $derived(badgeKind(it));
 
   const upgrade = $derived(it.craft ? index.byId.get(it.craft) : undefined);
   const madeFrom = $derived.by(() => {
@@ -44,29 +52,42 @@
   );
 </script>
 
-<article class="card">
-  <img
-    class="art"
-    src={art}
-    alt=""
-    width="640"
-    height="640"
-    onerror={() => {
-      onartfail(it.id);
-    }}
-  />
+<article class="card full" data-id={it.id}>
+  <!-- A button rather than a figure: on a table row it opens the record, and
+       the full card keeps the element so the two stay one component. -->
+  <button type="button" class="card-media" aria-label={t.openPage}>
+    <img
+      src={art}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      onerror={() => {
+        onartfail(it.id);
+      }}
+    />
+  </button>
 
-  <div class="body">
-    <h1>{name}</h1>
-
-    <p class="kind">
-      <span class="badge">{it.kind === 'consumable' ? t.cons : t.item}</span>
-      {#if stats}
-        <span class="stats">{stats}</span>
+  <div class="card-body">
+    <div class="card-meta">
+      {#if it.roll}
+        <span class="badge num">{it.roll}</span>
       {/if}
-    </p>
+      <span class="badge {kind}">{kind === 'cons' ? t.cons : t.item}</span>
+      <span class="badge src">{srcLabel(it, lang)}</span>
+    </div>
 
-    <div class="desc">
+    <h2 class="card-name">
+      <span>{name}</span>
+      {#if nameActions}
+        <span class="card-name-acts">{@render nameActions()}</span>
+      {/if}
+    </h2>
+
+    {#if stats}
+      <p class="eqchips">{stats}</p>
+    {/if}
+
+    <div class="card-desc">
       {#each parts as part, i (i)}
         {#if part.kind === 'list'}
           <ul>
@@ -87,27 +108,32 @@
     {#if upgrade || madeFrom}
       <!-- Both directions on the card: where a thing goes, and where it came
            from. Only the forward one travels into a copied message. -->
-      <ul class="craft">
+      <div class="craft">
         {#if upgrade}
-          <li>
-            {t.craftInto}: <a href={recordHash(upgrade.id)}>{nameOf(upgrade, lang)}</a>
-          </li>
+          <p>
+            <Icon name="craft" />
+            <span class="craft-l">{t.craftInto}</span>
+            <a href={recordHash(upgrade.id)}>{nameOf(upgrade, lang)}</a>
+          </p>
         {/if}
         {#if madeFrom}
-          <li>
-            {t.craftFrom}: <a href={recordHash(madeFrom.id)}>{nameOf(madeFrom, lang)}</a>
-          </li>
+          <p>
+            <Icon name="craft" />
+            <span class="craft-l">{t.craftFrom}</span>
+            <a href={recordHash(madeFrom.id)}>{nameOf(madeFrom, lang)}</a>
+          </p>
         {/if}
-      </ul>
+      </div>
     {/if}
 
     {#if refs.length}
-      <!-- Collapsed: the card the text names is worth having to hand, and worth
-           not burying the record's own description under. -->
+      <!-- Folded by default, so a card that quotes a spell is no taller than
+           one that does not. -->
       <div class="refs">
         {#each refs as r, i (i)}
           <details>
             <summary>
+              <Icon name="ref" />
               <span class="ref-n">{lang === 'ru' ? r.ru : r.en}</span>
               <span class="ref-s">{lang === 'ru' ? r.rusub : r.ensub}</span>
             </summary>
@@ -118,105 +144,287 @@
     {/if}
 
     {#if actions}
-      <div class="actions">{@render actions()}</div>
+      <div class="card-acts">{@render actions()}</div>
     {/if}
   </div>
 </article>
 
 <style>
+  /* ---------- card, off style.css ---------- */
   .card {
-    display: flex;
-    flex-direction: column;
-    /* `.itempage` in style.css */
-    max-width: 520px;
-    background: var(--surface);
+    background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
     border-radius: var(--r);
     overflow: hidden;
+    display: flex;
+    box-shadow: var(--shadow);
+    animation: pop 0.28s cubic-bezier(0.2, 0.8, 0.3, 1) both;
   }
 
-  .art {
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card {
+      animation: none;
+    }
+  }
+
+  .card.full {
+    flex-direction: column;
+  }
+
+  .card-media {
+    position: relative;
+    background: #0a0810;
+    overflow: hidden;
+    flex: none;
+    border: 0;
+    padding: 0;
+    display: block;
     width: 100%;
-    height: auto;
     aspect-ratio: 1;
-    object-fit: cover;
-    background: var(--surface2);
+    max-height: 420px;
+    cursor: default;
   }
 
-  .body {
+  .card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s;
+  }
+
+  .card-media:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
+  }
+
+  .card-body {
+    padding: 13px 15px 14px;
     display: flex;
     flex-direction: column;
-    gap: var(--gap);
-    padding: var(--gap-lg);
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
   }
 
-  h1 {
-    margin: 0;
-    font: var(--h-page-weight) var(--h-page-size) / 1.6 var(--ui);
-    letter-spacing: var(--h-page-spacing);
-  }
-
-  .kind {
+  .card-meta {
     display: flex;
+    gap: 5px;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--gap-sm);
-    margin: 0;
+    align-items: center;
   }
 
   .badge {
-    padding: 2px 8px;
-    background: var(--surface2);
-    border-radius: var(--r-sm);
-    font-size: var(--step--1);
-  }
-
-  .stats {
+    font-size: 10.5px;
+    font-weight: 650;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: rgb(10 8 16 / 50%);
+    border: 1px solid var(--line2);
     color: var(--muted);
-    font-size: var(--step--1);
   }
 
-  .desc {
+  .badge.item {
+    color: var(--item);
+    border-color: #7a8ee073;
+  }
+
+  .badge.cons {
+    color: var(--cons);
+    border-color: #9ec96a73;
+  }
+
+  /* Neutral on purpose: --muted carries a violet tint that put this badge in
+     the same family as the armour one. */
+  .badge.src {
+    color: #9a9aa6;
+  }
+
+  .badge.num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0;
+    color: var(--gold-soft);
+    border-color: rgb(216 171 94 / 50%);
+  }
+
+  .card-name {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 680;
+    letter-spacing: -0.01em;
+    line-height: 1.28;
     display: flex;
-    flex-direction: column;
-    gap: var(--gap-sm);
+    align-items: baseline;
+    gap: 7px;
   }
 
-  .desc :global(p),
-  .craft,
-  .refs p {
+  /* Without this the card cannot shrink below its longest word, which pushed
+     the results grid past a 320px screen. */
+  .card-name > span {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .card-name-acts {
+    display: inline-flex;
+    gap: 2px;
+    flex: none;
+    align-self: center;
+  }
+
+  .eqchips {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .card-desc {
+    margin: 0;
+    color: #cfc8e0;
+    font-size: 14px;
+    line-height: 1.62;
+  }
+
+  .card-desc :global(p) {
     margin: 0;
   }
 
-  .desc ul,
-  .craft {
+  .card-desc ul {
     margin: 0;
     padding-left: 1.2em;
   }
 
+  /* ---------- the upgrade chain ---------- */
   .craft {
-    color: var(--muted);
-    font-size: var(--step--1);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: -1px 0 1px;
   }
 
+  .craft p {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 5px;
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    min-width: 0;
+  }
+
+  .craft p > :global(*) {
+    min-width: 0;
+  }
+
+  .craft :global(svg) {
+    align-self: center;
+    fill: var(--muted2);
+  }
+
+  .craft-l {
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .craft a {
+    color: var(--gold-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted rgb(240 208 145 / 45%);
+  }
+
+  .craft a:hover {
+    border-bottom-style: solid;
+  }
+
+  .card-acts {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 3px;
+  }
+
+  /* ---------- referenced rulebook cards ---------- */
   .refs {
     display: flex;
     flex-direction: column;
-    gap: var(--gap-sm);
+    gap: 4px;
+    margin: 1px 0 2px;
   }
 
-  summary {
+  .refs details {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 2%);
+  }
+
+  .refs summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
     cursor: pointer;
+    list-style: none;
+    font-size: 12px;
+    line-height: 1.35;
+    flex-wrap: wrap;
+  }
+
+  .refs summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .refs summary :global(svg) {
+    fill: var(--muted2);
+  }
+
+  .refs summary:hover .ref-n {
+    color: var(--gold-soft);
+  }
+
+  .ref-n {
+    font-weight: 650;
+    color: var(--txt);
+    min-width: 0;
+    overflow-wrap: break-word;
   }
 
   .ref-s {
+    font-style: normal;
     color: var(--muted2);
-    font-size: var(--step--1);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--gap-sm);
+  .refs details[open] summary {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .refs p {
+    margin: 0;
+    padding: 7px 9px 5px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.5;
   }
 </style>

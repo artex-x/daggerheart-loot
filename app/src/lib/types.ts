@@ -117,4 +117,5 @@ export interface Record_ {
   recall?: number;
   frame?: string;
   community?: string;
+  community_ru?: string;
 }

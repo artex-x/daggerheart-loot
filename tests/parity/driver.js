@@ -193,6 +193,12 @@ function makeDriver(page, target) {
    difference in what comes back is a difference in the app rather than in the
    conditions it was run under. */
 async function prepare(page) {
+  /* Both apps fade a card in over 0.28s, and both stop doing it when the
+     visitor has asked for less motion. Asking for it here takes timing out of
+     the pixel comparison entirely: without it the screenshot lands mid-fade and
+     the number moves by half a percent depending on how busy the machine is. */
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+
   await page.evaluateOnNewDocument(() => {
     window.isSecureContext = true;
     window.__clip = null;

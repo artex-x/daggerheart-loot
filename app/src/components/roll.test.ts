@@ -167,7 +167,9 @@ describe('the record over the page', () => {
   it('opens the record without leaving the page behind it', async () => {
     await openFirst();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'w вещь 5' })).toBeInTheDocument();
+    /* The card names itself with an h2 - the page heading above it is the h1,
+       as in the live app. */
+    expect(screen.getByRole('heading', { level: 2, name: 'w вещь 5' })).toBeInTheDocument();
     /* The roll is still there underneath, so closing returns to it. */
     expect(screen.getByRole('button', { name: 'Бросить d20' })).toBeInTheDocument();
   });

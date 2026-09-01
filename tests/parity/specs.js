@@ -165,19 +165,19 @@ const SPECS = [
  */
 const VISUAL_DEBT = {
   '#/i/ci1': {
-    pct: 8.72,
-    why: 'the card internals: the metadata line, the badges over the art, and the action row are not reproduced yet'
+    pct: 7.96,
+    why: 'the add-to-list and print row under the card - the lists and print slices - is not drawn yet, and it shifts everything below it'
   },
   '#/i/q1': {
-    pct: 7.09,
-    why: 'the card internals, as above, plus the stat block the equipment card prints'
+    pct: 6.4,
+    why: 'the add-to-list and print row, as above, plus the equipment stat chips which are one line here and a row of chips there'
   },
   '#/roll/wondrous': {
-    pct: 5.24,
+    pct: 5.27,
     why: 'the panel intro text, the help panel and the footer are not drawn yet'
   },
   '#/roll/dread': {
-    pct: 4.92,
+    pct: 4.9,
     why: 'the panel intro text, the help panel and the footer are not drawn yet'
   }
 };
@@ -226,8 +226,10 @@ const ACCEPTED = {
      source, kind, roll number, and a link into the table - and the roll pages
      carry an explanation above the control. Both are content, not chrome, and
      both are outstanding rather than deliberate. */
-  '#/i/ci1 :: the first line of the page :: starts': 'card metadata line is not ported yet',
-  '#/i/q1 :: the first line of the page :: starts': 'card metadata line is not ported yet',
+  /* ci1 matches now. q1 does not: the equipment card prints its stats as a row
+     of chips and the rewrite prints one line, so the text after the heading
+     still reads differently. */
+  '#/i/q1 :: the first line of the page :: starts': 'the equipment stat chips are one line here and a row there',
   '#/roll/wondrous :: the first line of the page :: starts':
     'the panel intro text is not ported yet',
   '#/roll/dread :: the first line of the page :: starts': 'the panel intro text is not ported yet'

@@ -42,6 +42,15 @@ const LOOT: Loot = {
         craft: 'cc1'
       },
       {
+        id: 'odd',
+        src: 'somethingnew',
+        kind: 'item',
+        en: 'Orphan',
+        ende: 'From nowhere.',
+        ru: 'Сирота',
+        rud: 'Ниоткуда.'
+      },
+      {
         id: 'ci2',
         src: 'core',
         kind: 'item',
@@ -111,13 +120,16 @@ describe('a record on its own page', () => {
   });
 
   it('puts the stat line under the name of a piece of equipment', () => {
+    /* The tier also appears in the line under the page heading - the live app
+       prints it in both places - so this asks for the card's copy, which
+       carries the whole stat line rather than just the tier. */
     render(App, { env: at('q1') });
-    expect(screen.getByText(/Ранг 1/)).toBeInTheDocument();
+    expect(screen.getByText(/Основное оружие · Ранг 1/)).toBeInTheDocument();
   });
 
   it('gives loot no stat line to read', () => {
     render(App, { env: at('ci1') });
-    expect(screen.queryByText(/Ранг/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Основное оружие/)).not.toBeInTheDocument();
   });
 
   it('says whether it is an item or a consumable', () => {
@@ -156,6 +168,22 @@ describe('a record on its own page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByText('Sage · Level 1 · Spell')).toBeInTheDocument();
     expect(screen.getByText('Roots reach out.')).toBeInTheDocument();
+  });
+
+  it('offers no way into a table for a record that is in none', () => {
+    /* A source the app does not know has no table to point at, and a link to
+       nowhere is worse than no link. */
+    render(App, { env: at('odd') });
+    expect(screen.queryByRole('link', { name: /показать в таблице/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Сирота' })).toBeInTheDocument();
+  });
+
+  it('links into the table a record is printed in', () => {
+    render(App, { env: at('ci1') });
+    expect(screen.getByRole('link', { name: /показать в таблице/ })).toHaveAttribute(
+      'href',
+      '#/tables/core_item/ci1'
+    );
   });
 
   it('shows the placeholder for a record with no art', () => {
