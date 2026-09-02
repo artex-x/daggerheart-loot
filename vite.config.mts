@@ -1,6 +1,36 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, symlinkSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+
+const ROOT = fileURLToPath(new URL('.', import.meta.url));
+
+/*
+ * The artwork, beside the page that asks for it.
+ *
+ * The build emits the application; the pictures are made outside it and live in
+ * the repository root. Without this the built page opens and immediately fails
+ * five requests for `img/*.webp` - which nothing noticed while the opening
+ * screen happened to be one the rewrite had not reached, and which CI caught
+ * the moment Core rules started drawing four cards on it.
+ *
+ * Linked rather than copied: 80 MB on every build is not a cost worth paying
+ * for a folder that has not changed. `junction` is what makes that work on
+ * Windows without elevation, and is ignored on everything else.
+ */
+function artwork(): Plugin {
+  return {
+    name: 'dhloot-artwork',
+    apply: 'build',
+    closeBundle() {
+      for (const dir of ['img', 'og', 'card']) {
+        const at = join(ROOT, 'dist', dir);
+        if (!existsSync(at)) symlinkSync(join(ROOT, dir), at, 'junction');
+      }
+    }
+  };
+}
 
 /* Everything the built page needs in order to open from a folder: the data
    arrives as a separate classic script (under file:// a `fetch` for a local file
@@ -39,7 +69,7 @@ export default defineConfig({
      exactly the same, while an absolute one breaks every asset URL when the page
      is opened from a folder - see docs/specs/META.md section 4. */
   base: './',
-  plugins: [svelte(), fileUrlBuild()],
+  plugins: [svelte(), fileUrlBuild(), artwork()],
   /* Under vitest the modules are loaded the way a server would, and Svelte then
      hands back its server build - where `mount` does not exist. Asking for the
      browser condition during tests is what makes a component test a component

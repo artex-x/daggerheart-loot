@@ -126,16 +126,6 @@ function pixelDiff(aBuf, bBuf, outPath) {
     process.exit(1);
   }
 
-  /* The build emits the application, not the artwork: img/, og/, card/ and i/
-     are served from the repository root today and have to be laid alongside
-     dist/ at the cut-over (Phase 6). Until that is wired up, link them here -
-     otherwise every screenshot is dominated by a picture that failed to load
-     and the number measures the harness rather than the port. */
-  for (const dir of ['img', 'og', 'card']) {
-    const at = path.join(ROOT, 'dist', dir);
-    if (!fs.existsSync(at)) fs.symlinkSync(path.join(ROOT, dir), at, 'dir');
-  }
-
   for (const [id, debt] of Object.entries(VISUAL_DEBT)) {
     if (!debt.why || debt.why.length < 10) {
       console.log(`  FAIL VISUAL_DEBT[${id}] без причины`);

@@ -21,6 +21,7 @@
     "budget": "node tools/bundle-budget.mjs",
     "check:fast": "npm run lint && npm run typecheck && npm run test",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run data && node tests/derived.js && node tests/i18n.js && npm run test",
+    "check:built": "npm run build && npm run smoke && npm run budget",
     "smoke": "node tools/smoke-file-url.mjs"
   },
   "devDependencies": {

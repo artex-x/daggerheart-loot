@@ -36,8 +36,20 @@ npm run check
 ```
 
 Format, lint, typecheck, data generation, `derived`, `i18n`, unit tests with
-coverage thresholds. CI adds the build, the `file://` smoke check, the bundle
-budget, the 20 puppeteer suites, `npm audit` and gitleaks.
+coverage thresholds. CI adds the 20 puppeteer suites, `npm audit` and gitleaks.
+
+**A change that alters what a screen draws needs the second gate too:**
+
+```
+npm run check:built
+```
+
+The build, the `file://` smoke check and the bundle budget - all three need a
+`dist/`, which is why they are not in `check`. Skipping them is how a slice
+shipped that made the opening screen draw four cards with artwork, in a `dist/`
+that had no artwork in it: every local check passed and CI failed on the smoke
+run. The build lays the pictures beside the page now, so that particular hole
+is closed, but the habit of running only the fast gate is what let it through.
 
 **Nothing enforces this locally.** There was a pre-commit hook and it was
 removed - it ran `eslint --fix` over the staged files, which cost over 150
