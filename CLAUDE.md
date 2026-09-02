@@ -92,13 +92,30 @@ paint, in the default language, at one width, above the fold - so the modal
 shipped four times too wide, with none of the card's buttons, and every check
 was green. No route draws it.
 
-Add a state to `STATES` in `tests/parity/specs.js` whenever a screen can be
-reached by pressing something. Each carries `id` (`"<route> ~ <what>"`, and the
-key `VISUAL_DEBT` uses), `route`, and any of `enter` (what to press, by the name
-a person reads), `width`/`height`, `whole` (the page end to end rather than the
-fold), `pending`. The ones that exist now cover the modal, the help panel, the
-other language, a phone and a full-height page; the toast after a copy is
-recorded as `pending`, because the rewrite has not got one.
+**A slice is not finished until its states are in `STATES`.** Building a screen,
+or adding a way to get to one, means adding the states it introduces to
+`tests/parity/specs.js` in the same change - not afterwards, and not "once it
+settles down". This is the rule the modal was shipped against and broke: it was
+a screen nobody could reach from a URL, so nothing compared it, and it sat four
+times too wide with none of the card's buttons while every check stayed green.
+A slice that adds a panel, a dialog, a picker, a filter bar, an empty state or a
+new breakpoint owes a state for each. If the state cannot pass yet, it still
+goes in - `pending` for a screen the rewrite has not reached, an entry in
+`VISUAL_DEBT` with the reason for one that is drawn but not yet right. Both are
+visible on every run; a state that is absent is invisible forever.
+
+Each carries `id` (`"<route> ~ <what>"`, and the key `VISUAL_DEBT` uses),
+`route`, and any of `enter` (what to press, by the name a person reads),
+`width`/`height`, `whole` (the page end to end rather than the fold), `pending`.
+The ones that exist now cover the modal, the help panel, the other language, a
+phone and a full-height page; the toast after a copy is recorded as `pending`,
+because the rewrite has not got one.
+
+The same applies to the specs beside the pixels. A spec is what catches a
+difference the screenshot cannot see - the document title drifted in Russian
+for weeks because nothing looked at it, and it took a four-line spec to find.
+When a slice adds something off-screen that a person still depends on - a title,
+a URL, what lands on the clipboard, what a control is called - add the spec too.
 
 Three things the harness learned the hard way, all of them now in the driver:
 
@@ -323,6 +340,33 @@ of small files out of it, and that is where the time goes. Copy edited sources
 in with the same `tar` pipe before each run, and copy anything prettier
 reformatted back out. Measure before assuming: `dd` to `/tmp` and to the mount
 told the whole story in two seconds.
+
+### When something is slow, say why, and fix what is yours
+
+A command that runs long or times out is a finding, not a nuisance to be worked
+around quietly. Two obligations follow, and neither of them is optional:
+
+**Measure and report.** Do not just retry with a longer timeout. Find out what
+the time is going on and say so in the response, with the number. `eslint --fix`
+on three files taking 150 seconds against prettier's 3.5 is a fact that led
+straight to deleting a pre-commit hook; "the commit timed out" would have led
+nowhere. `dd` against `/tmp` and against the mount, `git count-objects -v`, the
+`user` column of `time` (near zero means I/O, not computing) - these cost
+seconds and they name the cause.
+
+**Fix what is on this side without asking.** A test with an excessive timeout, a
+suite re-loading a page once per spec when one arrival would do, a sleep where a
+readiness check belongs, work repeated per iteration that could be hoisted -
+those are defects in the code and they get fixed as part of the task, the same
+as any other. No permission needed, and no need to raise it as a question first;
+say what was changed afterwards. It was worth 8 arrivals per state down to 4 in
+the parity harness, which is the difference between a run that finishes and one
+that does not.
+
+What does need raising is anything outside the repository - a slow disk,
+antivirus, a machine setting, a tool's own limits. Those come with concrete
+steps rather than a shrug, and with an honest ranking: the fix that the
+measurement actually points at goes first, not the most interesting one.
 
 ## Printing (`#/print/<ids>`)
 
