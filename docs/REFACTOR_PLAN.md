@@ -70,8 +70,14 @@ equipment from every source.
 - `.github/workflows/ci.yml`: the same gate, plus the build, the `file://`
   smoke, the budget, the 19 legacy suites, `npm audit` and gitleaks, and a
   deploy job gated on all three (see "Publishing is not gated by CI" below).
-- Husky and lint-staged on staged files. The hook does not replace
-  `npm run check`.
+- No pre-commit hook. There was one - husky running lint-staged - and it was
+  removed: it ran `eslint --fix` over the staged files, which on an agent's
+  mounted working copy took over 150 seconds for three files against 3.5 for
+  prettier, because eslint's cost there is reading `node_modules` and not
+  computing. It was also a strict subset of `npm run check`, which CI runs on
+  every push, so the only thing it added was a reason to pass `--no-verify` -
+  and a guard that gets waved through is worse than none. The gate is
+  `npm run check` before the commit and CI after it.
 
 Two things had to differ from the plan as written.
 

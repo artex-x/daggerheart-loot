@@ -36,9 +36,16 @@ npm run check
 ```
 
 Format, lint, typecheck, data generation, `derived`, `i18n`, unit tests with
-coverage thresholds. The Husky hook only tidies staged files; it does not
-replace this. CI adds the build, the `file://` smoke check, the bundle budget,
-the 20 puppeteer suites, `npm audit` and gitleaks.
+coverage thresholds. CI adds the build, the `file://` smoke check, the bundle
+budget, the 20 puppeteer suites, `npm audit` and gitleaks.
+
+**Nothing enforces this locally.** There was a pre-commit hook and it was
+removed - it ran `eslint --fix` over the staged files, which cost over 150
+seconds for three of them on a mounted working copy, so it was bypassed with
+`--no-verify` the first time it got in the way. It also only ever ran a subset
+of `npm run check`. Running the full gate before the commit is now a rule
+rather than a mechanism, and CI is the backstop; if the run cannot be finished
+for some reason, say so in the response rather than committing quietly.
 
 Definition of done: `npm run check` passes, the new behaviour has a test, and
 `docs/specs/*` matches what the code now does.

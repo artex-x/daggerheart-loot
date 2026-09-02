@@ -1,3 +1,0 @@
-# A quick pass over what is staged. It does not replace `npm run check` - the
-# full run is still required before a commit (CLAUDE.md).
-npx lint-staged
