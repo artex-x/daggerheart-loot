@@ -20,6 +20,41 @@
  * now that a state costs as much as a route used to.
  */
 
+/**
+ * The names a spec grips, in each language.
+ *
+ * A spec is handed the language it is running in and looks its buttons up
+ * here. Before this the names were Russian literals, so in English the
+ * clipboard specs threw and - worse - `recordActions` used `has`, which
+ * returns false rather than throwing: it reported every button missing on
+ * both apps and passed. A spec that cannot find anything must not agree with
+ * itself.
+ */
+const NAME = {
+  ru: {
+    copyName: 'Скопировать название',
+    copyText: 'Скопировать текст',
+    copyImage: 'Скопировать изображение',
+    copyLink: 'Скопировать ссылку',
+    send: 'Отправить',
+    addToList: 'Добавить в список',
+    stepDown: 'На единицу меньше',
+    stepUp: 'На единицу больше',
+    pinSection: 'Открывать этот раздел при запуске'
+  },
+  en: {
+    copyName: 'Copy name',
+    copyText: 'Copy text',
+    copyImage: 'Copy image',
+    copyLink: 'Copy link',
+    send: 'Share',
+    addToList: 'Add to list',
+    stepDown: 'One lower',
+    stepUp: 'One higher',
+    pinSection: 'Open this section on start'
+  }
+};
+
 /** Controls are compared as a set of names: order on screen is not the point. */
 const inventory = {
   name: 'the controls on the page',
@@ -60,14 +95,15 @@ const title = {
 const recordActions = {
   name: 'what a record offers',
   only: ['#/i/ci1', '#/i/q1', '#/roll/wondrous ~ modal'],
-  async run(d) {
+  async run(d, lang) {
+    const n = NAME[lang];
     return {
-      copyName: await d.has('Скопировать название'),
-      copyText: await d.has('Скопировать текст'),
-      copyImage: await d.has('Скопировать изображение'),
-      copyLink: await d.has('Скопировать ссылку'),
-      send: await d.has('Отправить'),
-      addToList: await d.has('Добавить в список')
+      copyName: await d.has(n.copyName),
+      copyText: await d.has(n.copyText),
+      copyImage: await d.has(n.copyImage),
+      copyLink: await d.has(n.copyLink),
+      send: await d.has(n.send),
+      addToList: await d.has(n.addToList)
     };
   }
 };
@@ -76,9 +112,9 @@ const copiedName = {
   presses: true,
   name: 'the name that lands on the clipboard',
   only: ['#/i/ci1', '#/i/q1'],
-  async run(d) {
+  async run(d, lang) {
     await d.resetClipboard();
-    await d.click('Скопировать название');
+    await d.click(NAME[lang].copyName);
     return { clip: await d.clipboard() };
   }
 };
@@ -87,9 +123,9 @@ const copiedText = {
   presses: true,
   name: 'the text that lands on the clipboard',
   only: ['#/i/ci1', '#/i/q1'],
-  async run(d) {
+  async run(d, lang) {
     await d.resetClipboard();
-    await d.click('Скопировать текст');
+    await d.click(NAME[lang].copyText);
     return { clip: await d.clipboard() };
   }
 };
@@ -106,9 +142,9 @@ const copiedImage = {
   presses: true,
   name: 'the picture that lands on the clipboard',
   only: ['#/i/ci1'],
-  async run(d) {
+  async run(d, lang) {
     await d.resetClipboard();
-    await d.click('Скопировать изображение');
+    await d.click(NAME[lang].copyImage);
     return { image: await d.clipboardImage() };
   }
 };
@@ -124,14 +160,16 @@ const rollControls = {
     '#/roll/community',
     '#/roll/community ~ second'
   ],
-  async run(d) {
+  async run(d, lang) {
+    const n = NAME[lang];
     const controls = await d.controls();
+    const starts = lang === 'ru' ? ['Бросить', 'Случайно'] : ['Roll', 'Random'];
     return {
       /* The label carries the range, so it is the one string worth comparing
          character for character - "Случайно 1-29" is a promise about the table. */
-      rollLabel: controls.find((c) => c.startsWith('Бросить') || c.startsWith('Случайно')) ?? null,
-      stepper: (await d.has('На единицу меньше')) && (await d.has('На единицу больше')),
-      pinSection: await d.has('Открывать этот раздел при запуске')
+      rollLabel: controls.find((c) => starts.some((p) => c.startsWith(p))) ?? null,
+      stepper: (await d.has(n.stepDown)) && (await d.has(n.stepUp)),
+      pinSection: await d.has(n.pinSection)
     };
   }
 };
@@ -170,6 +208,26 @@ const visuals = {
  * A state marked pending is still visited on the live app - the expectation is
  * collected from the first run - and reported as outstanding rather than failed.
  */
+/**
+ * Every state is compared in both languages and at three widths.
+ *
+ * Not because somebody remembered to ask for it: the harness multiplies the
+ * list below by this matrix, so a state added for one reason is checked for
+ * five more. Written out by hand, the English and the phone states were the
+ * two nobody got round to - and English is where "Core rules" sat wrong for
+ * weeks.
+ *
+ * The widths are style.css's breakpoints rather than three round numbers: 1100
+ * is above all of them, 768 sits between the 900 and 640 rules, and 375 is
+ * under 430 where the number field and the card change again.
+ */
+const LANGS = ['ru', 'en'];
+const WIDTHS = [
+  { w: 1100, h: 900 },
+  { w: 768, h: 900 },
+  { w: 375, h: 812 }
+];
+
 const STATES = [
   { id: '#/i/ci1', route: '#/i/ci1', why: 'a loot record' },
   { id: '#/i/q1', route: '#/i/q1', why: 'an equipment record' },
@@ -198,34 +256,30 @@ const STATES = [
     }
   },
 
-  /* The other language. Every string on the screen changes and so does the
-     wrapping, and one press is all it takes to get here. */
+  /* The stepper, which is the other way to choose a row and the one a person
+     uses when they rolled a real die and want the next entry. Deterministic,
+     unlike the roll button - which cannot be compared by its result, because
+     the live app's randomness cannot be seeded from here. */
   {
-    id: '#/i/ci1 ~ en',
-    route: '#/i/ci1',
-    why: 'a record in the other language',
-    enter: async (d) => {
-      await d.click('EN');
-    }
-  },
-  {
-    id: '#/roll/wondrous ~ en',
+    id: '#/roll/wondrous ~ stepped',
     route: '#/roll/wondrous',
-    why: 'a roll page in the other language',
+    why: 'the roll stepped up twice',
     enter: async (d) => {
-      await d.click('EN');
+      await d.click('На единицу больше');
+      await d.click('На единицу больше');
     }
   },
 
-  /* A phone. style.css has four breakpoints and the harness was only ever
-     asking about the widest of them. */
-  { id: '#/i/ci1 ~ 375', route: '#/i/ci1', why: 'a record on a phone', width: 375, height: 812 },
+  /* The starting-section toggle: 26px of paint, 44px of target, and a mis-tap
+     silently changes where the app opens. Pressed, it is a filled gold circle
+     and its own name changes. */
   {
-    id: '#/roll/wondrous ~ 375',
+    id: '#/roll/wondrous ~ pinned',
     route: '#/roll/wondrous',
-    why: 'a roll page on a phone',
-    width: 375,
-    height: 812
+    why: 'the section pinned as the one to open on',
+    enter: async (d) => {
+      await d.click('Открывать этот раздел при запуске');
+    }
   },
 
   /* Below the fold. A record card is taller than the window, so the picture,
@@ -320,45 +374,74 @@ const SPECS = [
  * test-output/parity/ on every run, so what is left is a picture rather than an
  * argument.
  */
+/* The add-to-list and print row is missing from every record card, so it is
+   owed once per cell rather than once. The number is bigger on a phone, where
+   the row would wrap to two lines, and bigger again end to end, where it moves
+   a whole footer. */
+const listRow = (pct, where) => ({ pct, why: `the add-to-list and print row, ${where}` });
+
+/* Two lines of the help text rasterise a pixel lower. Measured, not guessed:
+   the box, every paragraph, every line box and the colour were identical to
+   three decimals and the text matches character for character, so there is no
+   value here to copy - do not go looking for one. */
+const helpNoise = (pct) => ({
+  pct,
+  why: 'a line or two of the help text rasterises a pixel lower; geometry, colour and text were measured identical, so there is nothing to copy'
+});
+
 const VISUAL_DEBT = {
-  '#/i/ci1': {
-    pct: 0.7,
-    why: 'the add-to-list and print row under the card is not drawn yet, and the footer - added because the licence asks for it on every page - therefore sits higher than the original'
-  },
-  '#/i/q1': {
-    pct: 0.86,
-    why: 'the add-to-list and print row, as above'
-  },
+  '#/i/ci1 @ ru 1100': listRow(0.7, 'under a loot card'),
+  '#/i/ci1 @ ru 768': listRow(0.78, 'under a loot card, mid width'),
+  '#/i/ci1 @ ru 375': listRow(0.44, 'under a loot card, on a phone'),
+  '#/i/ci1 @ en 1100': listRow(0.56, 'in English'),
+  '#/i/ci1 @ en 768': listRow(0.57, 'in English, mid width'),
+  '#/i/ci1 @ en 375': listRow(1.32, 'in English on a phone, where the two buttons wrap'),
 
-  '#/roll/wondrous ~ modal': {
-    pct: 6.03,
-    why: 'the same add-to-list and print row the record page owes - the modal draws the full card, so it is short by that row and everything above it is centred higher. The close button also carries a focus ring the original has not got, because showModal() moves the keyboard into the dialog and the live app leaves it on the page behind'
-  },
+  '#/i/q1 @ ru 1100': listRow(0.86, 'under an equipment card'),
+  '#/i/q1 @ ru 768': listRow(0.9, 'under an equipment card, mid width'),
+  '#/i/q1 @ ru 375': listRow(0.73, 'under an equipment card, on a phone'),
+  '#/i/q1 @ en 1100': listRow(0.67, 'in English'),
+  '#/i/q1 @ en 768': listRow(0.67, 'in English, mid width'),
+  '#/i/q1 @ en 375': listRow(1.03, 'in English on a phone'),
 
-  '#/roll/wondrous ~ help': {
-    pct: 0.3,
-    why: 'two lines of the help text rasterise a pixel lower. Measured rather than guessed: the box, every paragraph, all thirteen line boxes and the colour are identical to three decimal places and the text matches character for character, so there is no value here to copy - do not go looking for one'
-  },
+  '#/i/ci1 ~ whole @ ru 1100': listRow(5.29, 'over the whole page, which it shifts the footer down'),
+  '#/i/ci1 ~ whole @ ru 768': listRow(5.39, 'over the whole page, mid width'),
+  '#/i/ci1 ~ whole @ ru 375': listRow(7.28, 'over the whole page, on a phone'),
+  '#/i/ci1 ~ whole @ en 1100': listRow(5.17, 'over the whole page, in English'),
+  '#/i/ci1 ~ whole @ en 768': listRow(5.22, 'over the whole page, in English, mid width'),
+  '#/i/ci1 ~ whole @ en 375': listRow(7.01, 'over the whole page, in English, on a phone'),
 
-  '#/i/ci1 ~ en': {
-    pct: 0.56,
-    why: 'the add-to-list and print row, as in Russian. It scores lower than the Russian page only because English is shorter and there is less of it to disagree about'
-  },
+  /* The same row, plus a focus ring the original has not got: showModal() moves
+     the keyboard into the dialog and the live app leaves it on the page behind,
+     which is the accessibility fix recorded in ACCEPTED. Larger the narrower
+     the window, because the card is a fixed 440px and the page around it is
+     not. */
+  '#/roll/wondrous ~ modal @ ru 1100': listRow(6.03, 'inside the modal, with the close button focused'),
+  '#/roll/wondrous ~ modal @ ru 768': listRow(8.57, 'inside the modal, mid width'),
+  '#/roll/wondrous ~ modal @ ru 375': listRow(13.55, 'inside the modal, on a phone'),
+  '#/roll/wondrous ~ modal @ en 1100': listRow(5.37, 'inside the modal, in English'),
+  '#/roll/wondrous ~ modal @ en 768': listRow(7.73, 'inside the modal, in English, mid width'),
+  '#/roll/wondrous ~ modal @ en 375': listRow(12.01, 'inside the modal, in English, on a phone'),
 
-  /* The phone. These two arrived at 9.24% and 15.04% - the largest numbers in
-     the file - because none of the breakpoints below the widest had been
-     copied. The roll page now matches exactly and has no entry; what is left
-     on the record page is the row it is still missing, as at every width. */
-  '#/i/ci1 ~ 375': {
-    pct: 0.44,
-    why: 'the add-to-list and print row, on a phone'
-  },
+  /* The live app raises a toast to say where the app will open now, and the
+     rewrite has no toast yet - the same gap #/i/ci1 ~ toast is pending for.
+     It grows as the window narrows because the toast is a fixed size and the
+     screen around it is not. */
+  '#/roll/wondrous ~ pinned @ ru 1100': { pct: 1.36, why: 'the toast that says where the app will open, which is a later slice' },
+  '#/roll/wondrous ~ pinned @ ru 768': { pct: 1.95, why: 'the same toast, mid width' },
+  '#/roll/wondrous ~ pinned @ ru 375': { pct: 3.64, why: 'the same toast, on a phone' },
+  '#/roll/wondrous ~ pinned @ en 1100': { pct: 1.36, why: 'the same toast, in English' },
+  '#/roll/wondrous ~ pinned @ en 768': { pct: 1.95, why: 'the same toast, in English, mid width' },
+  '#/roll/wondrous ~ pinned @ en 375': { pct: 3.82, why: 'the same toast, in English, on a phone' },
 
-  '#/i/ci1 ~ whole': {
-    pct: 5.29,
-    why: 'the same missing add-to-list and print row as the fold-height state, over a page four times as tall: the whole card, the craft chain and the footer are all shifted up by the row that is not drawn'
-  }
+  '#/roll/wondrous ~ help @ ru 1100': helpNoise(0.29),
+  '#/roll/wondrous ~ help @ ru 768': helpNoise(0.73),
+  '#/roll/wondrous ~ help @ ru 375': helpNoise(0.52),
+  '#/roll/wondrous ~ help @ en 1100': helpNoise(0.44),
+  '#/roll/wondrous ~ help @ en 768': helpNoise(0.29),
+  '#/roll/wondrous ~ help @ en 375': helpNoise(0.79)
 };
+
 
 /** How far under its debt a state may sit before the number has to come down. */
 const DEBT_SLACK = 0.5;
@@ -382,22 +465,28 @@ const JITTER = 0.1;
  * longer true is worse than none.
  */
 const ACCEPTED = {
-  '#/i/ci1 :: what a record offers :: addToList': 'lists are a later slice',
-  '#/i/q1 :: what a record offers :: addToList': 'lists are a later slice',
-  '#/roll/wondrous ~ modal :: what a record offers :: addToList': 'lists are a later slice',
+  /* The add-to-list control and the print link belong to slices that do not
+     exist yet, so every card is short by them and every route that draws a
+     card says so. Keyed without the language and width because the specs run
+     once per language, not once per cell. */
+  '#/i/ci1 @ ru :: what a record offers :: addToList': 'lists are a later slice',
+  '#/i/ci1 @ en :: what a record offers :: addToList': 'lists are a later slice',
+  '#/i/q1 @ ru :: what a record offers :: addToList': 'lists are a later slice',
+  '#/i/q1 @ en :: what a record offers :: addToList': 'lists are a later slice',
+  '#/roll/wondrous ~ modal @ ru :: what a record offers :: addToList': 'lists are a later slice',
+  '#/roll/wondrous ~ modal @ en :: what a record offers :: addToList': 'lists are a later slice',
 
-  /* The frame is not finished. The footer and its links, the help panel, the
-     section anchor and the add-to-list control all live outside the slices
-     built so far, so every route differs by the same handful of names. Each
-     will be deleted from here by the slice that draws it. */
-  '#/i/ci1 :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/q1 :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/ci1 ~ en :: the controls on the page :: controls': 'add-to-list and print, in English',
-  '#/i/ci1 ~ 375 :: the controls on the page :: controls': 'add-to-list and print, on a phone',
-  '#/i/ci1 ~ whole :: the controls on the page :: controls': 'add-to-list and print, whole page',
-  '#/roll/wondrous ~ modal :: the controls on the page :: controls':
+  '#/i/ci1 @ ru :: the controls on the page :: controls': 'add-to-list and print are later slices',
+  '#/i/ci1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
+  '#/i/q1 @ ru :: the controls on the page :: controls': 'add-to-list and print are later slices',
+  '#/i/q1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
+  '#/i/ci1 ~ whole @ ru :: the controls on the page :: controls': 'add-to-list and print, whole page',
+  '#/i/ci1 ~ whole @ en :: the controls on the page :: controls': 'add-to-list and print, whole page',
+  '#/roll/wondrous ~ modal @ ru :: the controls on the page :: controls':
     'add-to-list, which the card in a modal offers too',
-
+  '#/roll/wondrous ~ modal @ en :: the controls on the page :: controls':
+    'add-to-list, which the card in a modal offers too'
 };
 
-module.exports = { SPECS, STATES, ACCEPTED, VISUAL_DEBT, DEBT_SLACK, JITTER };
+
+module.exports = { SPECS, STATES, LANGS, WIDTHS, ACCEPTED, VISUAL_DEBT, DEBT_SLACK, JITTER };

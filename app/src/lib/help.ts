@@ -63,16 +63,16 @@ const WONDROUS: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'The table holds 119 entries rather than 100 - that is how many the supplement describes. No die has that many faces, so the button picks one at random. If you are rolling a d100 at the table, type the number you rolled into the roll field.'
+        'The table holds 119 entries rather than 100 — that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.'
       ),
       p(
-        'The order is the book’s: entries are sorted by their English names rather than by power, which is why the Russian translation looks arbitrary. Most of them are weak or middling.'
+        "The order is the book's own: alphabetical by English name, not by power. Most items are weak to moderate."
       ),
       p(
-        'Some entries upgrade into stronger ones. The card shows that on a line of its own, and the line is a link to the other end. A GM may ask for a Finesse or Knowledge roll to make the upgrade.'
+        'Some items upgrade into stronger ones. The card shows that on its own line, and the link takes you to the second item. The GM may ask for a Finesse or Knowledge roll to make the upgrade.'
       ),
       p(
-        'Some entries are written for the environments and stories of their own book, and outside them a thing can be useless or strange. Random results from here are worth reading before they are handed over.'
+        'Some entries are written for the environments and plots of their own book: elsewhere they can be useless or simply odd. Look over what comes up here rather than handing it to the players unseen.'
       ),
       {
         parts: [
@@ -118,16 +118,16 @@ const DREAD: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'The table holds 29 entries - that is how many the supplement describes. No die has that many faces, so the button picks one at random.'
+        'The table has 29 entries, which is how many the supplement describes. No die covers that range, so the button picks an entry at random.'
       ),
       p(
-        'The order is the book’s: seven pieces of equipment with stats first, whose tier the book states itself, and then the items by their English names.'
+        'The order follows the book: seven pieces of equipment with statistics first (the book states their tier), then the items in English alphabetical order.'
       ),
       p(
-        'The book does not split things into permanent and consumable. That is set here from what each description says: oils, grenades and the serum are consumables, the rest are items.'
+        'The book does not sort these into permanent and single-use. That split is made here from what each entry describes: oils, grenades and the serum are marked as consumables, the rest as items.'
       ),
       p(
-        'Some entries are written for the environments and stories of their own book, and outside them a thing can be useless or strange. Random results from here are worth reading before they are handed over.'
+        'Some entries are written for the environments and plots of their own book: elsewhere they can be useless or simply odd. Look over what comes up here rather than handing it to the players unseen.'
       ),
       {
         parts: [

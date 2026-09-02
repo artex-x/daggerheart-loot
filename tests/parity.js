@@ -27,6 +27,8 @@ const { makeDriver, prepare } = require('./parity/driver.js');
 const {
   SPECS,
   STATES,
+  LANGS,
+  WIDTHS,
   ACCEPTED,
   VISUAL_DEBT,
   DEBT_SLACK,
@@ -47,6 +49,9 @@ const stale = [];
 /* Substrings of the states to run, for paying one debt at a time:
    `node tests/parity.js modal 375`. Empty means all of them. */
 const WANTED = process.argv.slice(2);
+
+/** The file name a state's screenshots and diff are written under. */
+const slugOf = (id, lang, width) => `${id} @ ${lang} ${String(width)}`.replace(/\W+/g, '_');
 
 const show = (v) => {
   const s = JSON.stringify(v);
@@ -139,8 +144,13 @@ function pixelDiff(aBuf, bBuf, outPath) {
   }
 
   /* A debt against a state nobody visits is an excuse that can never come due. */
+  const everyState = new Set(
+    STATES.filter((s) => !s.pending).flatMap((s) =>
+      LANGS.flatMap((lang) => WIDTHS.map((size) => `${s.id} @ ${lang} ${String(size.w)}`))
+    )
+  );
   for (const id of Object.keys(VISUAL_DEBT)) {
-    if (!STATES.some((s) => s.id === id)) {
+    if (!everyState.has(id)) {
       console.log(`  FAIL VISUAL_DEBT[${id}] - такого состояния нет в STATES`);
       fail++;
     }
@@ -153,122 +163,175 @@ function pixelDiff(aBuf, bBuf, outPath) {
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
   });
 
-  const pages = {};
-  for (const target of ['legacy', 'next']) {
+  /* One page at a time, not two kept open.
+   *
+   * Both apps loaded at once, each holding a record page's artwork, was enough
+   * to have Chrome killed part-way through a screenshot on a two-core machine -
+   * and a browser that dies mid-run reports every state after it as a failure
+   * of the port. It also makes the isolation total: a state cannot inherit
+   * anything, because the page it ran in no longer exists. */
+  const pressed = new Set();
+  const seen = new Map();
+
+  const withPage = async (target, fn) => {
     const p = await browser.newPage();
     await prepare(p);
-    pages[target] = makeDriver(p, target);
-  }
+    const d = makeDriver(p, target);
+    try {
+      return await fn(d);
+    } finally {
+      for (const n of d.pressed) pressed.add(n);
+      for (const [route, names] of d.seen) {
+        const at = seen.get(route) ?? new Set();
+        for (const n of names) at.add(n);
+        seen.set(route, at);
+      }
+      await p.close();
+    }
+  };
 
   for (const state of STATES) {
-    const { id, route, why, pending, enter, width, height, whole } = state;
-    if (WANTED.length && !WANTED.some((w) => id.includes(w))) continue;
-    console.log(`${id}  (${why})`);
+    const { id, route, why, pending, enter, whole } = state;
     if (pending) {
-      outstanding.push(`${id} - ${pending}`);
+      if (!WANTED.length || WANTED.some((w) => id.includes(w))) {
+        console.log(`${id}  (${why})`);
+        outstanding.push(`${id} - ${pending}`);
+      }
       continue;
     }
 
-    /* The size is part of the state, so it is set before the page is opened -
-       a breakpoint that only runs on load would otherwise be missed. */
-    for (const target of ['legacy', 'next']) {
-      await pages[target].viewport(width ?? 1100, height ?? 900);
-    }
+    for (const lang of LANGS) {
+      /* One arrival per language, and the widths swept inside it. The
+         breakpoints are CSS and need no reload; the language is a press, and
+         pressing it after `enter` rather than before keeps every `enter` step
+         written in one language - the names it grips are Russian. */
+      const arrive = async (d) => {
+        await d.open(route);
+        if (enter) await enter(d);
+        if (lang !== 'ru') await d.click(lang.toUpperCase());
+      };
 
-    /** Opens the route and presses whatever this state is reached by. */
-    const arrive = async (d) => {
-      await d.open(route);
-      if (enter) await enter(d);
-    };
+      const wanted = WIDTHS.map((s) => `${id} @ ${lang} ${String(s.w)}`).some(
+        (full) => !WANTED.length || WANTED.some((w) => full.includes(w))
+      );
+      if (!wanted) continue;
 
-    const mine = SPECS.filter((s) => !s.only || s.only.includes(id));
-    const looks = mine.filter((s) => !s.presses);
-    const presses = mine.filter((s) => s.presses);
+      const mine = SPECS.filter((s) => !s.only || s.only.includes(id));
+      const looks = mine.filter((s) => !s.presses);
+      const presses = mine.filter((s) => s.presses);
 
-    /* One arrival for the screenshot and every spec that only looks. Loading a
-       page is what this suite spends its time on, and re-loading it between two
-       specs that read the same paint buys nothing. A spec that presses gets a
-       page of its own, because the one after it would inherit the press. */
-    const slug = id.replace(/\W+/g, '_');
-    const shots = {};
-    const seenLooks = { legacy: {}, next: {} };
-    let broke = null;
+      /* The specs read the widest layout: they are about content and controls,
+         which the breakpoints do not change, and running them six times would
+         triple the run for six identical answers. The pixels are what varies
+         with width, so that is what the widths are for. */
+      const shots = {};
+      const seenLooks = { legacy: {}, next: {} };
+      let broke = null;
 
-    for (const target of ['legacy', 'next']) {
-      const d = pages[target];
-      try {
-        await arrive(d);
-      } catch (e) {
-        broke = `${target}: ${String(e.message || e)}`;
-        break;
-      }
-      const png = await d.shot(whole);
-      fs.writeFileSync(path.join(SHOTS, `${slug}-${target}.png`), png);
-      shots[target] = png;
-
-      for (const spec of looks) {
-        try {
-          seenLooks[target][spec.name] = await spec.run(d);
-        } catch (e) {
-          /* A control the rewrite does not have yet makes the spec throw on one
-             side only. That is a difference, and it is reported as one. */
-          seenLooks[target][spec.name] = { error: String(e.message || e) };
-        }
-      }
-    }
-
-    if (!broke) {
-      for (const spec of looks) {
-        diff(id, spec.name, seenLooks.legacy[spec.name], seenLooks.next[spec.name]);
-      }
-
-      for (const spec of presses) {
-        const seen = {};
-        for (const target of ['legacy', 'next']) {
-          const d = pages[target];
+      for (const target of ['legacy', 'next']) {
+        shots[target] = {};
+        // eslint-disable-next-line no-await-in-loop
+        await withPage(target, async (d) => {
           try {
+            await d.viewport(WIDTHS[0].w, WIDTHS[0].h);
             await arrive(d);
-            seen[target] = await spec.run(d);
           } catch (e) {
-            seen[target] = { error: String(e.message || e) };
+            broke = `${target}: ${String(e.message || e)}`;
+            return;
           }
+
+          for (const spec of looks) {
+            try {
+              seenLooks[target][spec.name] = await spec.run(d, lang);
+            } catch (e) {
+              /* A control the rewrite does not have yet makes the spec throw
+                 on one side only. That is a difference, reported as one. */
+              seenLooks[target][spec.name] = { error: String(e.message || e) };
+            }
+          }
+
+          /* What this route offers, for the coverage report. Off the live app
+             only: it is the one that has everything. */
+          if (target === 'legacy') d.note(route, await d.controls());
+
+          /* Written as they are taken rather than collected: the diff reads
+             them off disk anyway, and nothing is held while the next is made. */
+          for (const size of WIDTHS) {
+            await d.viewport(size.w, size.h);
+            await d.settle();
+            const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
+            fs.writeFileSync(at, await d.shot(whole));
+            shots[target][size.w] = at;
+          }
+        });
+        if (broke) break;
+      }
+
+      if (!broke) {
+        for (const spec of looks) {
+          diff(`${id} @ ${lang}`, spec.name, seenLooks.legacy[spec.name], seenLooks.next[spec.name]);
         }
-        diff(id, spec.name, seen.legacy, seen.next);
+
+        for (const spec of presses) {
+          const got = {};
+          for (const target of ['legacy', 'next']) {
+            // eslint-disable-next-line no-await-in-loop
+            await withPage(target, async (d) => {
+              try {
+                await d.viewport(WIDTHS[0].w, WIDTHS[0].h);
+                await arrive(d);
+                got[target] = await spec.run(d, lang);
+              } catch (e) {
+                got[target] = { error: String(e.message || e) };
+              }
+            });
+          }
+          diff(`${id} @ ${lang}`, spec.name, got.legacy, got.next);
+        }
       }
-    }
 
-    /* The look. Zero unless a debt is recorded against this state, and a debt
-       that is no longer owed has to be paid off in the file. */
-    {
-      if (broke) {
-        /* Not reaching the state at all is the loudest kind of difference, and
-           silently scoring 100% would read as a styling problem. */
-        fail++;
-        console.log(`  FAIL ${id} :: вид :: состояние недостижимо - ${broke}`);
-        continue;
-      }
+      for (const size of WIDTHS) {
+        const full = `${id} @ ${lang} ${String(size.w)}`;
+        if (WANTED.length && !WANTED.some((w) => full.includes(w))) continue;
+        console.log(`${full}  (${why})`);
 
-      const pct = pixelDiff(shots.legacy, shots.next, path.join(SHOTS, `${slug}-diff.png`));
-      const debt = VISUAL_DEBT[id];
-
-      if (!debt) {
-        if (pct > JITTER) {
+        if (broke) {
+          /* Not reaching the state at all is the loudest kind of difference,
+             and silently scoring 100% would read as a styling problem. */
           fail++;
-          console.log(`  FAIL ${id} :: вид :: ${pct.toFixed(2)}% отличий, ожидался ноль`);
-          console.log(`       ${slug}-diff.png; если это осознанно - запиши в VISUAL_DEBT`);
-        } else {
-          console.log('       вид: совпадает');
+          console.log(`  FAIL ${full} :: вид :: состояние недостижимо - ${broke}`);
+          continue;
         }
-      } else if (pct > debt.pct + JITTER) {
-        fail++;
-        console.log(`  FAIL ${id} :: вид :: ${pct.toFixed(2)}% против долга ${String(debt.pct)}%`);
-        console.log(`       стало хуже; ${slug}-diff.png`);
-      } else if (pct < debt.pct - DEBT_SLACK) {
-        fail++;
-        console.log(`  FAIL ${id} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`);
-        console.log('       стало лучше - опусти число в VISUAL_DEBT');
-      } else {
-        console.log(`       вид: ${pct.toFixed(2)}% из ${String(debt.pct)}% долга`);
+
+        const slug = slugOf(id, lang, size.w);
+        const pct = pixelDiff(
+          fs.readFileSync(shots.legacy[size.w]),
+          fs.readFileSync(shots.next[size.w]),
+          path.join(SHOTS, `${slug}-diff.png`)
+        );
+        const debt = VISUAL_DEBT[full];
+
+        if (!debt) {
+          if (pct > JITTER) {
+            fail++;
+            console.log(`  FAIL ${full} :: вид :: ${pct.toFixed(2)}% отличий, ожидался ноль`);
+            console.log(`       ${slug}-diff.png; если это осознанно - запиши в VISUAL_DEBT`);
+          } else {
+            console.log('       вид: совпадает');
+          }
+        } else if (pct > debt.pct + JITTER) {
+          fail++;
+          console.log(`  FAIL ${full} :: вид :: ${pct.toFixed(2)}% против долга ${String(debt.pct)}%`);
+          console.log(`       стало хуже; ${slug}-diff.png`);
+        } else if (pct < debt.pct - DEBT_SLACK) {
+          fail++;
+          console.log(
+            `  FAIL ${full} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`
+          );
+          console.log('       стало лучше - опусти число в VISUAL_DEBT');
+        } else {
+          console.log(`       вид: ${pct.toFixed(2)}% из ${String(debt.pct)}% долга`);
+        }
       }
     }
   }
@@ -283,6 +346,55 @@ function pixelDiff(aBuf, bBuf, outPath) {
     fail += stale.length;
     console.log('\nразличий больше нет, убери из ACCEPTED:');
     for (const s of stale) console.log('  - ' + s);
+  }
+
+  /* How much of the app the states actually exercise.
+   *
+   * A control that is only ever seen is compared as a name in a list, and in
+   * no other way - whatever it does is unported until something presses it. So
+   * this is the number to drive down, and it is measured rather than felt.
+   * Chrome that repeats on every route is counted once and named separately:
+   * pressing the same tab from twelve routes proves nothing twelve times. */
+  {
+    const chrome = new Set([
+      'RU',
+      'EN',
+      'ЛутDaggerheart',
+      'daggerheart.com',
+      'Wondrous',
+      'Dread',
+      'Vault of Ages',
+      /* Russian */
+      'К содержимому',
+      'Обычные правила',
+      'Альт. таблицы',
+      'Сообщества',
+      'Таблицы',
+      'Списки',
+      'Поиск',
+      /* and the same frame in English, which is a separate set of names */
+      'Skip to content',
+      'Standard rules',
+      'Alt. tables',
+      'Communities',
+      'Tables',
+      'Lists',
+      'Search'
+    ]);
+    const missed = new Map();
+    let total = 0;
+    for (const [route, names] of seen) {
+      const left = [...names].filter((n) => !chrome.has(n) && !pressed.has(n));
+      total += names.size;
+      if (left.length) missed.set(route, left);
+    }
+    if (total) {
+      const untouched = [...missed.values()].reduce((n, l) => n + l.length, 0);
+      console.log(
+        `\nнажато ${String(pressed.size)} из ${String(total)} названий; не нажато ${String(untouched)} (не считая общей рамки):`
+      );
+      for (const [route, left] of missed) console.log(`  ${route}: ${left.join(', ')}`);
+    }
   }
 
   if (WANTED.length) console.log(`\nтолько состояния: ${WANTED.join(', ')} - это не полный прогон`);

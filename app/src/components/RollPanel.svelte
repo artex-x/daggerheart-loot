@@ -108,8 +108,8 @@
     type="button"
     class="homebtn"
     class:on={app.isHome}
-    title={t.homeHint}
-    aria-label={t.homeHint}
+    title={app.isHome ? t.homeOn : t.homeHint}
+    aria-label={app.isHome ? t.homeOn : t.homeHint}
     aria-pressed={app.isHome}
     onclick={() => {
       if (!app.toggleHome()) said = t.copyFailed;

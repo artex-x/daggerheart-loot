@@ -98,18 +98,52 @@ or adding a way to get to one, means adding the states it introduces to
 settles down". This is the rule the modal was shipped against and broke: it was
 a screen nobody could reach from a URL, so nothing compared it, and it sat four
 times too wide with none of the card's buttons while every check stayed green.
-A slice that adds a panel, a dialog, a picker, a filter bar, an empty state or a
-new breakpoint owes a state for each. If the state cannot pass yet, it still
-goes in - `pending` for a screen the rewrite has not reached, an entry in
-`VISUAL_DEBT` with the reason for one that is drawn but not yet right. Both are
-visible on every run; a state that is absent is invisible forever.
+A slice that adds a panel, a dialog, a picker, a filter bar or an empty state
+owes a state for each. If the state cannot pass yet, it still goes in -
+`pending` for a screen the rewrite has not reached, an entry in `VISUAL_DEBT`
+with the reason for one that is drawn but not yet right. Both are visible on
+every run; a state that is absent is invisible forever.
 
-Each carries `id` (`"<route> ~ <what>"`, and the key `VISUAL_DEBT` uses),
-`route`, and any of `enter` (what to press, by the name a person reads),
-`width`/`height`, `whole` (the page end to end rather than the fold), `pending`.
-The ones that exist now cover the modal, the help panel, the other language, a
-phone and a full-height page; the toast after a copy is recorded as `pending`,
-because the rewrite has not got one.
+Each carries `id` (`"<route> ~ <what>"`), `route`, and any of `enter` (what to
+press, by the name a person reads), `whole` (the page end to end rather than
+the fold), `pending`.
+
+### The matrix, and what it is for
+
+**Every state is compared in both languages at three widths.** The harness
+multiplies `STATES` by `LANGS` and `WIDTHS`, so a state written for one reason
+is checked for five more and the key in `VISUAL_DEBT` is the full
+`"<id> @ <lang> <width>"`. Nobody has to remember the English case or the phone
+case, which is exactly the pair nobody used to get round to: the English tab
+read "Core rules" for weeks, and every English help paragraph turned out to
+have been rewritten rather than copied.
+
+That costs a full run several minutes, so use the filter while working - the
+argument is a substring of the expanded id, and `node tests/parity.js "voa @ en"`
+or `"@ ru 375"` both select what they look like they select.
+
+The widths are style.css's breakpoints rather than three round numbers: 1100 is
+above all of them, 768 sits between the 900 and 640 rules, 375 is under 430.
+Adding a fourth is one line and 33% more run time; adding a language is one
+line and a set of names in `NAME`, which is where a spec looks up the button it
+grips. A spec that grips a Russian literal passes vacuously in English -
+`recordActions` used `has`, reported every button missing on *both* apps, and
+agreed with itself.
+
+### What the run measures about itself
+
+The last thing a run prints is how many control names it pressed and how many
+it only saw. **A control nobody presses is compared as a name in a list and in
+no other way**, so whatever it does is unported until something presses it -
+that number is the honest measure of coverage, and it is meant to come down as
+slices land. Pressing the pin toggle for the first time immediately found that
+the live app renames the button when it is on and the port did not; pressing
+the stepper found focus being moved into a field whose outline is suppressed.
+
+Not every control can become a state. The roll button is random and the live
+app's randomness cannot be seeded from here, so what it produces cannot be
+compared - only that the shape around it is the same. Say so rather than
+faking determinism.
 
 The same applies to the specs beside the pixels. A spec is what catches a
 difference the screenshot cannot see - the document title drifted in Russian

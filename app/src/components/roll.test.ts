@@ -160,14 +160,20 @@ describe('choosing the number by hand', () => {
 });
 
 describe('pinning the section', () => {
-  const pin = (): HTMLElement =>
-    screen.getByRole('button', { name: 'Открывать этот раздел при запуске' });
+  const OFF = 'Открывать этот раздел при запуске';
+  const ON = 'Открывается при запуске';
+  const pin = (name = OFF): HTMLElement => screen.getByRole('button', { name });
 
   it('remembers the choice, and says so on the control', async () => {
+    /* The live app renames the button rather than only filling it in, so a
+       screen reader hears the state and not just the offer. The test used to
+       look it up by the "off" name both times, which is why the rename went
+       missing from the port until a parity state pressed it. */
     render(App, { env: at('#/roll/wondrous') });
     expect(pin()).toHaveAttribute('aria-pressed', 'false');
     await userEvent.click(pin());
-    expect(pin()).toHaveAttribute('aria-pressed', 'true');
+    expect(pin(ON)).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('button', { name: OFF })).not.toBeInTheDocument();
   });
 
   it('says nothing was saved when the browser refuses', async () => {

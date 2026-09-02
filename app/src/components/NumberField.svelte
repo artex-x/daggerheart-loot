@@ -22,7 +22,6 @@
   /* What the field shows while it is being edited, which is not always a
      number: an empty field and a half-typed one both have to be allowed. */
   let text = $state(untrack(() => String(value)));
-  let input = $state<HTMLInputElement | null>(null);
 
   /* A roll, or a step, changes the number from outside; typing changes it from
      inside and must not be overwritten mid-word. Comparing what the field
@@ -56,11 +55,15 @@
     onchange(n);
   }
 
+  /* Focus is left where the browser put it - on the button that was pressed.
+     Moving it into the input looked helpful and was not the live behaviour:
+     the ring ends up on a field whose outline is suppressed instead of on the
+     stepper, so a keyboard user loses sight of where they are, and the parity
+     diff charged the whole box for the glow. */
   function step(by: number): void {
     const n = committed(String(committed(text, min, max) + by), min, max);
     text = String(n);
     onchange(n);
-    input?.focus();
   }
 </script>
 
@@ -74,7 +77,6 @@
     }}>&minus;</button
   >
   <input
-    bind:this={input}
     type="text"
     inputmode="numeric"
     pattern="[0-9]*"

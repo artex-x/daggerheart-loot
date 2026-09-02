@@ -102,6 +102,9 @@ const ru = {
   unique: 'Уникальное',
   uniqueHint: 'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
   homeHint: 'Открывать этот раздел при запуске',
+  /* The same button once it is on: the live app renames it rather than only
+     filling it in, so a screen reader hears the state and not just the offer. */
+  homeOn: 'Открывается при запуске',
   helpHint: 'Как это работает',
   rollLabelFor: 'Результат броска',
   /* Singular, and not the tab's word: the tab says "Сообщества" because it
@@ -185,8 +188,8 @@ const en: Dict = {
   pageVoa: 'Vault of Ages',
   pageCommunity: 'Community items',
   subWondrous: 'Enter your roll result, or pick a random entry.',
-  subVoa: 'Choose a section of the book and roll within it.',
-  subCommunity: 'Choose an origin and roll a d10.',
+  subVoa: 'Pick a section of the book and roll within it.',
+  subCommunity: 'Pick an origin and roll d10.',
   voaSection: 'Section',
   voaArtifact: 'Artifacts',
   voaCursed: 'Cursed objects',
@@ -195,6 +198,7 @@ const en: Dict = {
   unique: 'Unique',
   uniqueHint: 'Printed at a single tier - this one has no upgrade ladder',
   homeHint: 'Open this section on start',
+  homeOn: 'Opens on start',
   helpHint: 'How this works',
   rollLabelFor: 'Roll result',
   communityLabel: 'Community',

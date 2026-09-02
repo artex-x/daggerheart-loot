@@ -98,6 +98,17 @@ function makeDriver(page, target) {
     target,
 
     /**
+     * Every control this run has pressed, and every one it has seen.
+     *
+     * The difference is the honest measure of how much of the app the states
+     * actually exercise: a control nobody presses is compared as a name in a
+     * list and in no other way, so whatever it does is unported until proven
+     * otherwise. Reported at the end of every run rather than guessed at.
+     */
+    pressed: new Set(),
+    seen: new Map(),
+
+    /**
      * A route, from a document that has just been made.
      *
      * The trip through about:blank is load-bearing. Two states on the same
@@ -116,6 +127,13 @@ function makeDriver(page, target) {
     /** The window a state is looked at through; the breakpoints depend on it. */
     viewport(width, height) {
       return page.setViewport({ width, height });
+    },
+
+    /** Records what is on this route, for the coverage report at the end. */
+    note(route, names) {
+      const at = d.seen.get(route) ?? new Set();
+      for (const n of names) at.add(n);
+      d.seen.set(route, at);
     },
 
     /** Every control on screen, by name - the inventory a spec compares. */
@@ -147,8 +165,14 @@ function makeDriver(page, target) {
         NAME_FN
       );
       if (!ok) throw new Error(`${target}: no control named "${name}"`);
+      d.pressed.add(name);
       await settle(page);
       return true;
+    },
+
+    /** Waits for whatever is in flight - a resize, or a press. */
+    settle() {
+      return settle(page);
     },
 
     /** Whether a control is on screen at all. */

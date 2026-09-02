@@ -74,14 +74,26 @@ against `index.html` at the root and against the built `dist/`, and compares.
 expectation**, re-read on every run, so it cannot go stale.
 
 A state is a route plus what was pressed to reach it (`STATES` in the same
-file). Routes alone were not enough: they only ever reach the first paint, in
-the default language, at one width, above the fold. Adding states for the modal,
-the help panel, English, a phone and the whole page found, in one sitting, a
-modal four times too wide with none of the card's buttons, an English tab
-reading "Core rules" where the live app says "Standard rules", an English
-subtitle nobody had translated from the rewrite's own wording, a Russian
-document title that had drifted, and a wordmark being translated to "Loot" when
-the live app never translates it.
+file), and every state is compared **in both languages at three widths** -
+`LANGS` × `WIDTHS`, so the id a debt is keyed by is `"<id> @ <lang> <width>"`.
+Routes alone were not enough: they only ever reach the first paint, in the
+default language, at one width, above the fold.
+
+What that has found so far: a modal four times too wide with none of the card's
+buttons; an English tab reading "Core rules" where the live app says "Standard
+rules"; two English subtitles and *every* English help paragraph rewritten
+rather than copied; a Russian document title that had drifted; a wordmark being
+translated to "Loot" when the live app never translates it; the pin toggle not
+renaming itself when it is on; and focus moved into a field whose outline is
+suppressed instead of left on the stepper.
+
+Two of those came from pressing something for the first time, which is what the
+coverage line at the end of a run is for: it counts the control names the run
+pressed against the names it merely saw. A control nobody presses is compared
+as a name in a list and in no other way. Not all of them can be states - the
+roll button is random, and the live app's randomness cannot be seeded from the
+harness - but the number is the honest measure of how much of the app the
+states actually exercise.
 
 The two targets are separate files and never clash. `dist/` has to be built
 first; without it the suite says so and stops.
