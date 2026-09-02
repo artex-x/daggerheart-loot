@@ -18,8 +18,16 @@ import {
 import type { Loot } from './data.js';
 import type { Record_ } from './types.js';
 
-const rec = (over: Partial<Record_>): Record_ =>
-  ({ id: 'x', src: 'voa', kind: 'item', en: 'X', ende: '', ru: 'Икс', rud: '', ...over });
+const rec = (over: Partial<Record_>): Record_ => ({
+  id: 'x',
+  src: 'voa',
+  kind: 'item',
+  en: 'X',
+  ende: '',
+  ru: 'Икс',
+  rud: '',
+  ...over
+});
 
 const LOOT: Loot = {
   items: {
@@ -70,7 +78,11 @@ describe('the divisions of Vault of Ages', () => {
 
 describe('the communities', () => {
   it('comes from the records, in first-appearance order', () => {
-    expect(communities(index).map((c) => c.id)).toEqual(['Loreborne', 'Highborne', 'Wildborne']);
+    expect(communities(index).map((c) => c.id)).toEqual([
+      'Loreborne',
+      'Highborne',
+      'Wildborne'
+    ]);
   });
 
   it('falls back to the English name where there is no Russian one', () => {

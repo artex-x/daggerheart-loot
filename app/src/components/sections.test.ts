@@ -16,8 +16,16 @@ import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
 
-const rec = (over: Partial<Record_>): Record_ =>
-  ({ id: 'x', src: 'voa', kind: 'item', en: 'X', ende: 'x', ru: 'Икс', rud: 'икс', ...over });
+const rec = (over: Partial<Record_>): Record_ => ({
+  id: 'x',
+  src: 'voa',
+  kind: 'item',
+  en: 'X',
+  ende: 'x',
+  ru: 'Икс',
+  rud: 'икс',
+  ...over
+});
 
 const LOOT: Loot = {
   items: {
@@ -28,9 +36,27 @@ const LOOT: Loot = {
       rec({ id: 'vc', tier: 'C', ru: 'Проклятый венец', rud: 'Дорого стоит.' })
     ],
     community: [
-      rec({ id: 'c1', src: 'community', community: 'Loreborne', community_ru: 'Научное', ru: 'Первое научное' }),
-      rec({ id: 'c2', src: 'community', community: 'Loreborne', community_ru: 'Научное', ru: 'Второе научное' }),
-      rec({ id: 'c3', src: 'community', community: 'Ridgeborne', community_ru: 'Горное', ru: 'Первое горное' })
+      rec({
+        id: 'c1',
+        src: 'community',
+        community: 'Loreborne',
+        community_ru: 'Научное',
+        ru: 'Первое научное'
+      }),
+      rec({
+        id: 'c2',
+        src: 'community',
+        community: 'Loreborne',
+        community_ru: 'Научное',
+        ru: 'Второе научное'
+      }),
+      rec({
+        id: 'c3',
+        src: 'community',
+        community: 'Ridgeborne',
+        community_ru: 'Горное',
+        ru: 'Первое горное'
+      })
     ]
   },
   eq: [],
@@ -46,7 +72,9 @@ const field = (): HTMLInputElement =>
 describe('Vault of Ages', () => {
   it('opens on the first tier and shows what is in it', () => {
     render(App, { env: at('#/roll/voa') });
-    expect(screen.getByRole('heading', { level: 1, name: 'Vault of Ages' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Vault of Ages' })
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ранг 1' })).toHaveAttribute(
       'aria-pressed',
       'true'
@@ -117,7 +145,9 @@ describe('community items', () => {
     render(App, { env: at('#/roll/community') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('button', { name: 'Loreborne' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Community items' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Community items' })
+    ).toBeInTheDocument();
   });
 
   it('labels the picker with the singular, not the tab’s word', () => {

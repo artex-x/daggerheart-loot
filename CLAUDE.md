@@ -61,6 +61,15 @@ consequences worth knowing before writing a component:
 - A component test ends with `expectNoA11yViolations` from `app/src/test/a11y.ts`.
   Accessibility is not a later pass here: the last one arrived as an external
   bug report with eight items in it.
+- **axe runs on states, not just on first paints.** Every one of those
+  assertions used to run on a screen nobody had pressed anything on - the same
+  blind spot the parity harness had, and it meant the modal's focus trap and
+  `aria-modal` had never been looked at, because opening it takes two presses.
+  `components/a11y.test.ts` holds the pressed states, and its `COVERED` map is
+  compared against the files on disk: **a new component fails the suite until
+  somebody writes down which state renders it under axe.** Coverage forces a
+  component to be rendered by some test; that map is what forces it to be
+  rendered while axe is watching, which is a different question.
 
 Do not write a module, an export or a component before something calls it. The
 bar exists because three unused things - a component, a helper, a slice of API -
@@ -386,9 +395,15 @@ cd /tmp/work && npm ci          # faster than copying node_modules back
 
 `node_modules` has to be installed rather than linked - a build reads thousands
 of small files out of it, and that is where the time goes. Copy edited sources
-in with the same `tar` pipe before each run, and copy anything prettier
-reformatted back out. Measure before assuming: `dd` to `/tmp` and to the mount
-told the whole story in two seconds.
+in with the same `tar` pipe before each run. Measure before assuming: `dd` to
+`/tmp` and to the mount told the whole story in two seconds.
+
+**Run `prettier --write` on the mount, not in the mirror.** It is 3.2 seconds
+over the bridge because it loads almost nothing out of `node_modules` - unlike
+eslint, which is 150. Formatting in the mirror means the reformatted files have
+to be copied back one by one, and the copy is what gets forgotten: four files
+went in unformatted that way and CI caught them. Only the slow tools - eslint,
+vitest, `vite build`, parity - are worth the round trip.
 
 Moving the repository to a faster volume does not help this. It was tried - a
 Windows Dev Drive, ReFS, Defender in performance mode - and the numbers over the

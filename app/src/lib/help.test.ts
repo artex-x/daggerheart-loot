@@ -11,9 +11,7 @@ const SECTIONS = ['wondrous', 'dread', 'voa', 'community'];
 /** Everything a paragraph says, with the link labels in place. */
 const textOf = (help: Help | null, i: number): string =>
   (help?.paragraphs[i]?.lead ?? '') +
-  (help?.paragraphs[i]?.parts ?? [])
-    .map((part) => (isLink(part) ? part.label : part))
-    .join('');
+  (help?.paragraphs[i]?.parts ?? []).map((part) => (isLink(part) ? part.label : part)).join('');
 
 const linksOf = (help: Help | null): HelpLink[] =>
   (help?.paragraphs ?? []).flatMap((para) => para.parts.filter(isLink));

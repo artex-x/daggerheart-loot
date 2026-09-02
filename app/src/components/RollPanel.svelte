@@ -137,7 +137,8 @@
   <div class="helpbox">
     {#each help.paragraphs as para, i (i)}
       <p>
-        {#if para.lead}<b>{para.lead}</b>{/if}{#each para.parts as part, j (j)}{#if isLink(part)}<a
+        {#if para.lead}<b>{para.lead}</b
+          >{/if}{#each para.parts as part, j (j)}{#if isLink(part)}<a
               href={part.href}
               target="_blank"
               rel="noopener">{part.label}</a
