@@ -246,7 +246,37 @@ const COMMUNITY: Record<Lang, Help> = {
   }
 };
 
+const STD: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'Бросьте d12 и сложите результаты — сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.'
+      ),
+      p(
+        'Сколько костей брать, решает редкость добычи — она подписана под каждой кнопкой. Где какая редкость уместна:<br><b>Обычная</b> — заброшенный лагерь, обычная лавка.<br><b>Необычная</b> — ограниченный товар в лавке, тайник в лагере, часть награды.<br><b>Редкая</b> — под замком в лавке, единственная награда за работу, вещи сильного НИП.<br><b>Легендарная</b> — единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
+      ),
+      p(
+        'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
+      )
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        'Roll d12 and add them up — the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.'
+      ),
+      p(
+        "How many dice you take depends on the rarity you are after — each button is captioned with the rarities it covers. Where each one fits:<br><b>Common</b> — an abandoned camp, a local shop.<br><b>Uncommon</b> — limited stock in a shop, a stash in a camp, part of a reward.<br><b>Rare</b> — under lock and key, the sole reward for a job, a powerful NPC's possessions.<br><b>Legendary</b> — the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
+      ),
+      p(
+        'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.'
+      )
+    ]
+  }
+};
+
 const HELP: Record<string, Record<Lang, Help>> = {
+  std: STD,
   wondrous: WONDROUS,
   dread: DREAD,
   voa: VOA,

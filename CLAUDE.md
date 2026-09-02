@@ -228,18 +228,19 @@ would have hidden a component nobody rendered.
 
 Debts first, then screens - a screen built on an unfinished pattern copies it.
 
-Eight states match the original exactly: Wondrous in both languages and on a
-phone, Dread, and both sections that pick a part of their book first - Vault of
-Ages and Communities - each with the state that presses the picker. Every
+Five of the six roll modes match the original exactly, in both languages at all
+three widths: Wondrous, Dread, Vault of Ages and Communities - each with the
+state that presses its picker - and Core rules with both of the states that
+narrow it. Every
 remaining debt on a screen that has been built is **the add-to-list and print
 row**, on both record routes, in both languages, at both widths, and in the
 modal. That is not deferred polish - it is code that does not exist yet - and it
 lands with the lists and print slices rather than before them.
 
-Left, in order: **Core rules and the alternate tables** - the two modes that
-deal several cards at once, so they need the OR grid, the source and kind
-filters, the five dice buttons and the crit box - then tables, search, lists,
-print, and Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
+Left, in order: **the alternate tables** - the last roll mode, and the only one
+that rolls two dice at once, so it needs the duality pair and the critical-
+success box on top of the OR grid Core rules already built - then tables,
+search, lists, print, and Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
 
 One debt is not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
 lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes

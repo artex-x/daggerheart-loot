@@ -35,6 +35,14 @@ const row = (over: Partial<Record_>): Record_ => ({
 const LOOT: Loot = {
   items: {
     wondrous: [row({ id: 'w1', roll: 1, ru: 'Первая вещь' })],
+    core_item: [row({ id: 'ci1', src: 'core', roll: 1, ru: 'Предмет корника' })],
+    core_consumable: [
+      row({ id: 'cc1', src: 'core', kind: 'consumable', roll: 1, ru: 'Расходник корника' })
+    ],
+    hnf_item: [row({ id: 'hi1', src: 'hnf', roll: 1, ru: 'Предмет H&F' })],
+    hnf_consumable: [
+      row({ id: 'hc1', src: 'hnf', kind: 'consumable', roll: 1, ru: 'Расходник H&F' })
+    ],
     voa: [row({ id: 'v1', src: 'voa', tier: 1, ru: 'Реликвия' })],
     community: [
       row({ id: 'c1', src: 'community', community: 'Loreborne', community_ru: 'Научное' })
@@ -79,6 +87,16 @@ const STATES: { what: string; route: string; enter?: () => Promise<void> }[] = [
     enter: () => press('EN')
   },
   {
+    what: 'Core rules with one source switched off, which halves the grid',
+    route: '#/roll/std',
+    enter: () => press('Hope & Fear')
+  },
+  {
+    what: 'Core rules with the help panel unfolded',
+    route: '#/roll/std',
+    enter: () => press('Как это работает')
+  },
+  {
     what: 'a division of Vault of Ages that is not a tier',
     route: '#/roll/voa',
     enter: () => press('Артефакты')
@@ -113,6 +131,9 @@ describe('states reached by pressing something', () => {
  * question and the one that was going unasked.
  */
 const COVERED: Record<string, string> = {
+  'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
+  'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
+  'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte': 'the roll button and the card actions, on every roll page',
   'Chip.svelte': 'the Vault of Ages and community pickers - sections.test.ts and above',
   'ChipRow.svelte': 'the same two pickers',

@@ -6,7 +6,7 @@ import type { Help, HelpLink } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['wondrous', 'dread', 'voa', 'community'];
+const SECTIONS = ['std', 'wondrous', 'dread', 'voa', 'community'];
 
 /** Everything a paragraph says, with the link labels in place. */
 const textOf = (help: Help | null, i: number): string =>
@@ -28,8 +28,10 @@ describe('the help for a section', () => {
   });
 
   it('names every book as a link rather than as prose', () => {
-    /* A source somebody cannot follow is a citation, not a source. */
-    for (const section of SECTIONS) {
+    /* A source somebody cannot follow is a citation, not a source. Core rules
+       is not in this list: it explains the core book's own tables and cites no
+       supplement, so it has no link to check. */
+    for (const section of SECTIONS.filter((s) => s !== 'std')) {
       for (const lang of LANGS) {
         const links = linksOf(helpFor(section, lang));
         expect(links.length, `${section}/${lang}`).toBeGreaterThan(0);
@@ -62,7 +64,9 @@ describe('the help for a section', () => {
   });
 
   it('has nothing to say about a section nobody wrote one for', () => {
-    expect(helpFor('std', 'ru')).toBe(null);
+    /* `alt` is the last roll mode still to be ported; its help arrives with
+       it, and until then nothing must claim to have written one. */
+    expect(helpFor('alt', 'ru')).toBe(null);
     expect(helpFor('nonsense', 'ru')).toBe(null);
   });
 });

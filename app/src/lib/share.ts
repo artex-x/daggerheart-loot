@@ -126,3 +126,26 @@ export function share(
 
   return { text, html };
 }
+
+/**
+ * A whole roll as one message.
+ *
+ * A roll offers several options and the player picks one, so the GM wants to
+ * paste them together with the OR spelled out rather than send them one at a
+ * time. Every record in the roll is in the skip set, so a craft chain or a
+ * rulebook card that two of them share is written once rather than repeated
+ * under each.
+ */
+export function shareRoll(
+  items: readonly Record_[],
+  index: Index,
+  lang: Lang,
+  or: string
+): { text: string; html: string } {
+  const skip = new Set(items.map((it) => it.id));
+  const parts = items.map((it) => share(it, index, lang, { skip }));
+  return {
+    text: parts.map((p) => p.text).join(`\n\n— ${or} —\n\n`),
+    html: parts.map((p) => p.html).join(`<br><br><b>— ${or} —</b><br><br>`)
+  };
+}

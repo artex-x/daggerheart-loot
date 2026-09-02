@@ -37,6 +37,7 @@
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
   import Shell from './components/Shell.svelte';
+  import StdPanel from './components/StdPanel.svelte';
   import VoaPanel from './components/VoaPanel.svelte';
   import { AppState } from './state/app.svelte.js';
   import type { Env } from './ports/index.js';
@@ -63,6 +64,8 @@
       sub={app.t.subWondrous}
       rows={app.index?.rows.get(ROLL_TABLE[app.route.section]?.table ?? '') ?? []}
     />
+  {:else if app.route.kind === 'section' && app.route.section === 'roll/std'}
+    <StdPanel {app} />
   {:else if app.route.kind === 'section' && app.route.section === 'roll/voa'}
     <VoaPanel {app} />
   {:else if app.route.kind === 'section' && app.route.section === 'roll/community'}

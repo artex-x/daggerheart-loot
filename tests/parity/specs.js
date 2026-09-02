@@ -301,7 +301,30 @@ const STATES = [
     pending: 'the toast is a later slice'
   },
 
-  { id: '#/roll/std', route: '#/roll/std', why: 'Core rules', pending: 'roll panel for two sources' },
+  { id: '#/roll/std', route: '#/roll/std', why: 'Core rules' },
+
+  /* One source off, which halves the roll from four cards to two - so the OR
+     grid changes layout as well as content, and the chip has to refuse to
+     turn the last one off. */
+  {
+    id: '#/roll/std ~ one source',
+    route: '#/roll/std',
+    why: 'Core rules with Hope & Fear switched off',
+    enter: async (d) => {
+      await d.click('Hope & Fear');
+    }
+  },
+
+  /* And one kind off, which is the other way to get to two cards - down the
+     other axis, so the pair that is left is a different pair. */
+  {
+    id: '#/roll/std ~ items only',
+    route: '#/roll/std',
+    why: 'Core rules with consumables switched off',
+    enter: async (d) => {
+      await d.click('Расходники');
+    }
+  },
   { id: '#/roll/alt', route: '#/roll/alt', why: 'the alternate tables', pending: 'duality dice' },
   { id: '#/roll/voa', route: '#/roll/voa', why: 'Vault of Ages' },
   { id: '#/roll/community', route: '#/roll/community', why: 'communities' },

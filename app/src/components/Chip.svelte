@@ -9,13 +9,15 @@
     label: string;
     /** Whether this is the one currently chosen. */
     on: boolean;
+    /** Why pressing it will be refused, where it will be. */
+    title?: string | undefined;
     onclick: () => void;
   }
 
-  const { label, on, onclick }: Props = $props();
+  const { label, on, title, onclick }: Props = $props();
 </script>
 
-<button type="button" class="chip" class:on aria-pressed={on} {onclick}>{label}</button>
+<button type="button" class="chip" class:on aria-pressed={on} {title} {onclick}>{label}</button>
 
 <style>
   /* off `.chip` in style.css. `inline-block` and the missing underline are
