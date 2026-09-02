@@ -1,38 +1,66 @@
 <script lang="ts">
-  /* A roll on one table: pick a number, or let the dice pick it, and read what
-     came up.
+  /* A roll on one list of records: pick a number, or let the dice pick it, and
+     read what came up.
 
-     This is the shape the single-number sections share - Wondrous and Dread.
-     Core rules and the alternate tables roll differently and get their own
-     panels; what they will share with this one is the number field and the
-     result, which is why both are already components. */
+     This is the shape four sections share. Wondrous and Dread roll over a whole
+     table; Vault of Ages and Communities roll inside a part of one, and pass a
+     `picker` row that chooses which part. Core rules and the alternate tables
+     roll several cards at once and get their own panels; what they share with
+     this one is the number field and the result card.
+
+     The rows are a prop rather than a table name, because two of the four
+     callers do not have a table name to give - their rows are a slice. */
+  import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Die from './Die.svelte';
+  import Field from './Field.svelte';
   import Icon from './Icon.svelte';
   import NumberField from './NumberField.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
-  import { helpFor } from '../lib/help.js';
+  import { helpFor, isLink } from '../lib/help.js';
   import { hasRealDie, pick } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     app: AppState;
-    /** The key in `index.rows` this section rolls on. */
-    table: string;
+    /** The section, which is what the help panel is written against. */
+    section: string;
     title: string;
+    /** The line under the heading. */
+    sub: string;
+    /** What this roll picks from, already narrowed by any picker above. */
+    rows: readonly Record_[];
+    /** A row of choices above the number field, where the section has one. */
+    picker?: Snippet;
+    /**
+     * What the picker chose. Changing it puts the roll back to one, because
+     * the sections are different lengths and a number kept from the last one
+     * would point somewhere nobody asked for.
+     */
+    pickerValue?: unknown;
   }
 
-  const { app, table, title }: Props = $props();
+  const { app, section, title, sub, rows, picker, pickerValue }: Props = $props();
 
   const t = $derived(app.t);
   const index = $derived(app.index);
-  const rows = $derived(index?.rows.get(table) ?? []);
   const max = $derived(rows.length);
 
   let n = $state(1);
+
+  /* Reading the prop is what subscribes this to it; the reset itself must not
+     depend on `n`, or choosing the same section twice would fight the field. */
+  $effect(() => {
+    void pickerValue;
+    untrack(() => {
+      n = 1;
+    });
+  });
+
   let open = $state<Record_ | null>(null);
   /* What the last action said - a refused setting, or a copy that did not go
      through. Announced rather than drawn; see the region at the end. */
@@ -54,7 +82,7 @@
 
   /* A real die where the range has one, and "Random 1-N" where it does not -
      119 and 29 are not dice anybody owns. */
-  const help = $derived(helpFor(table, app.lang));
+  const help = $derived(helpFor(section, app.lang));
   let helpOpen = $state(false);
 
   const rollLabel = $derived(
@@ -103,17 +131,19 @@
     >
   {/if}
 </div>
-<p class="page-sub">{t.subWondrous}</p>
+<p class="page-sub">{sub}</p>
 
 {#if help && helpOpen}
   <div class="helpbox">
     {#each help.paragraphs as para, i (i)}
-      <p>{para}</p>
+      <p>
+        {#if para.lead}<b>{para.lead}</b>{/if}{#each para.parts as part, j (j)}{#if isLink(part)}<a
+              href={part.href}
+              target="_blank"
+              rel="noopener">{part.label}</a
+            >{:else}{part}{/if}{/each}
+      </p>
     {/each}
-    <p>
-      {t.source}<a href={help.source.href} target="_blank" rel="noopener">{help.source.label}</a
-      >.
-    </p>
   </div>
 {/if}
 
@@ -121,8 +151,10 @@
   <p class="miss">{t.noData}</p>
 {:else}
   <div class="panel">
-    <div class="field">
-      <span class="lbl">{t.rollLabelFor} (1&ndash;{max})</span>
+    <!-- The picker comes first, because it decides what the number means: on
+         Vault of Ages the range is the chosen section's length, not the book's. -->
+    {@render picker?.()}
+    <Field label="{t.rollLabelFor} (1–{max})">
       <div class="numrow">
         <NumberField
           value={n}
@@ -137,7 +169,7 @@
           <Die faces={max} />{rollLabel}
         </Button>
       </div>
-    </div>
+    </Field>
   </div>
 
   {#if shown}
@@ -312,6 +344,12 @@
     color: var(--gold-soft);
   }
 
+  /* The bold lead-in of a Vault of Ages paragraph, off `.helpbox b`. */
+  .helpbox b {
+    color: var(--gold-soft);
+    font-weight: 650;
+  }
+
   .page-sub {
     margin: 0 0 18px;
     color: var(--muted);
@@ -325,20 +363,6 @@
     border-radius: var(--r);
     padding: 18px;
     box-shadow: var(--shadow);
-  }
-
-  .field {
-    margin-bottom: 0;
-  }
-
-  .lbl {
-    display: block;
-    font-size: 11.5px;
-    font-weight: 650;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted2);
-    margin-bottom: 8px;
   }
 
   .numrow {

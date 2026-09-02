@@ -116,7 +116,14 @@ const copiedImage = {
 /** The roll pages: the label on the button says which die, or that there is none. */
 const rollControls = {
   name: 'the roll controls',
-  only: ['#/roll/wondrous', '#/roll/dread'],
+  only: [
+    '#/roll/wondrous',
+    '#/roll/dread',
+    '#/roll/voa',
+    '#/roll/voa ~ artifacts',
+    '#/roll/community',
+    '#/roll/community ~ second'
+  ],
   async run(d) {
     const controls = await d.controls();
     return {
@@ -242,12 +249,29 @@ const STATES = [
 
   { id: '#/roll/std', route: '#/roll/std', why: 'Core rules', pending: 'roll panel for two sources' },
   { id: '#/roll/alt', route: '#/roll/alt', why: 'the alternate tables', pending: 'duality dice' },
-  { id: '#/roll/voa', route: '#/roll/voa', why: 'Vault of Ages', pending: 'section picker' },
+  { id: '#/roll/voa', route: '#/roll/voa', why: 'Vault of Ages' },
+  { id: '#/roll/community', route: '#/roll/community', why: 'communities' },
+
+  /* The picker is the whole point of these two, and it is a state: the length
+     of the roll, the die on the button and the card underneath all change with
+     it, and the opening section shows none of that. Artifacts because it is the
+     division that is not a tier, and the second community because picking one
+     at all has to put the roll back to 1. */
   {
-    id: '#/roll/community',
+    id: '#/roll/voa ~ artifacts',
+    route: '#/roll/voa',
+    why: 'a division of the book that is not a tier',
+    enter: async (d) => {
+      await d.click('Артефакты');
+    }
+  },
+  {
+    id: '#/roll/community ~ second',
     route: '#/roll/community',
-    why: 'communities',
-    pending: 'community picker'
+    why: 'a community other than the one it opens on',
+    enter: async (d) => {
+      await d.click('Научное');
+    }
   },
   { id: '#/tables', route: '#/tables', why: 'the table index', pending: 'tables slice' },
   {
@@ -302,12 +326,8 @@ const VISUAL_DEBT = {
     why: 'the add-to-list and print row under the card is not drawn yet, and the footer - added because the licence asks for it on every page - therefore sits higher than the original'
   },
   '#/i/q1': {
-    pct: 0.96,
+    pct: 0.86,
     why: 'the add-to-list and print row, as above'
-  },
-  '#/roll/dread': {
-    pct: 0.16,
-    why: 'a hair on the first row, which is equipment: its stat chips wrap one pixel differently from the original at this width'
   },
 
   '#/roll/wondrous ~ modal': {
@@ -378,14 +398,6 @@ const ACCEPTED = {
   '#/roll/wondrous ~ modal :: the controls on the page :: controls':
     'add-to-list, which the card in a modal offers too',
 
-  /* The record card carries a metadata line the rewrite does not draw yet -
-     source, kind, roll number, and a link into the table - and the roll pages
-     carry an explanation above the control. Both are content, not chrome, and
-     both are outstanding rather than deliberate. */
-  /* ci1 matches now. q1 does not: the equipment card prints its stats as a row
-     of chips and the rewrite prints one line, so the text after the heading
-     still reads differently. */
-  '#/i/q1 :: the first line of the page :: starts': 'the equipment stat chips are one line here and a row there',
 };
 
 module.exports = { SPECS, STATES, ACCEPTED, VISUAL_DEBT, DEBT_SLACK, JITTER };

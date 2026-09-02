@@ -31,7 +31,14 @@
   $effect(() => {
     const v = value;
     untrack(() => {
-      if (committed(text, min, max) !== v) text = String(v);
+      /* The second half is for a range that shrank under the field. Switching
+         Vault of Ages from a tier with two entries to one with a single entry
+         left "2" on screen: it *means* 1 once clamped, so the first test was
+         satisfied, and the live app - which redraws the input every time -
+         showed 1. What the field shows has to be the number, not something
+         that rounds to it. */
+      const shown = text === '' ? null : Number(text);
+      if (committed(text, min, max) !== v || (shown !== null && shown !== v)) text = String(v);
     });
   });
 

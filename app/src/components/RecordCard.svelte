@@ -12,7 +12,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
-  import { badgeKind, srcLabel } from '../lib/label.js';
+  import { cardBadges, srcLabel } from '../lib/label.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
@@ -65,7 +65,7 @@
   );
   const parts = $derived(descParts(it, lang));
   const art = $derived(artSrc(it.img, artBroken));
-  const kind = $derived(badgeKind(it));
+  const badges = $derived(cardBadges(it, lang, t));
 
   const upgrade = $derived(it.craft ? index.byId.get(it.craft) : undefined);
   const madeFrom = $derived.by(() => {
@@ -97,7 +97,9 @@
       {#if it.roll}
         <span class="badge num">{it.roll}</span>
       {/if}
-      <span class="badge {kind}">{kind === 'cons' ? t.cons : t.item}</span>
+      {#each badges as b, i (i)}
+        <span class="badge {b.cls}" title={b.title}>{b.text}</span>
+      {/each}
       <span class="badge src">{srcLabel(it, lang)}</span>
     </div>
 
@@ -301,6 +303,35 @@
     border-color: #9ec96a73;
   }
 
+  /* Gear names the kind of gear rather than "item"; the three colours are the
+     ones the equipment tables and tiles already use. */
+  .badge.eq-weapon {
+    color: var(--eq-weapon);
+    border-color: #d48e6a73;
+  }
+
+  .badge.eq-secondary {
+    color: var(--eq-secondary);
+    border-color: #cf7fa673;
+  }
+
+  .badge.eq-armor {
+    color: var(--eq-armor);
+    border-color: #5ec9c473;
+  }
+
+  /* Dashed, because it is a property of the thing rather than a category. */
+  .badge.uniq {
+    color: var(--gold-soft);
+    border-color: rgb(216 171 94 / 45%);
+    border-style: dashed;
+  }
+
+  .badge.tier {
+    color: var(--muted);
+    border-color: var(--line2);
+  }
+
   /* Neutral on purpose: --muted carries a violet tint that put this badge in
      the same family as the armour one. */
   .badge.src {
@@ -400,9 +431,16 @@
     margin: 0;
   }
 
+  /* off `.dlist` in style.css. The values are the live ones, not a tidier
+     equivalent: 1.2em of padding read the same and cost four pixels a row on
+     the Vault of Ages cards, which are the ones with long lists. */
   .card-desc ul {
-    margin: 0;
-    padding-left: 1.2em;
+    margin: 4px 0 0;
+    padding-left: 18px;
+  }
+
+  .card-desc li {
+    margin: 1px 0;
   }
 
   /* ---------- the upgrade chain ---------- */

@@ -185,19 +185,23 @@ would have hidden a component nobody rendered.
 
 Debts first, then screens - a screen built on an unfinished pattern copies it.
 
-Three states match the original exactly: the Wondrous roll page in both
-languages and on a phone. Every remaining debt on a screen that has been built
-is **the add-to-list and print row**, on both record routes, in both languages,
-at both widths, and in the modal. That is not deferred polish - it is code that
-does not exist yet - and it lands with the lists and print slices rather than
-before them. Then the four remaining roll modes, tables, search, lists, print,
-and Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
+Eight states match the original exactly: Wondrous in both languages and on a
+phone, Dread, and both sections that pick a part of their book first - Vault of
+Ages and Communities - each with the state that presses the picker. Every
+remaining debt on a screen that has been built is **the add-to-list and print
+row**, on both record routes, in both languages, at both widths, and in the
+modal. That is not deferred polish - it is code that does not exist yet - and it
+lands with the lists and print slices rather than before them.
 
-Two debts are not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
+Left, in order: **Core rules and the alternate tables** - the two modes that
+deal several cards at once, so they need the OR grid, the source and kind
+filters, the five dice buttons and the crit box - then tables, search, lists,
+print, and Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
+
+One debt is not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
 lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes
 and the colour were measured identical to three decimals and the text matches
-character for character, so there is no value to copy. `#/roll/dread` is 0.16%
-for the same kind of reason.
+character for character, so there is no value to copy.
 
 ### Copy the behaviour, not the intent
 

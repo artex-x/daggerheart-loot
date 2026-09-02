@@ -83,14 +83,30 @@ const ru = {
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
 
-  /* The line under each section heading */
+  /* The heading of each section, and the line under it. The heading is not
+     always the tab's word: the tab says "Сообщества" and the page says
+     "Предметы сообществ", because on the page it is the things that matter. */
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',
+  pageVoa: 'Vault of Ages',
+  pageCommunity: 'Предметы сообществ',
   subWondrous: 'Введите результат броска или получите случайную позицию.',
+  subVoa: 'Выберите раздел книги и бросьте кость по нему.',
+  subCommunity: 'Выберите происхождение и бросьте d10.',
+  voaSection: 'Раздел книги',
+  voaArtifact: 'Артефакты',
+  voaCursed: 'Проклятые предметы',
+  /* Singular, for the badge on one card: it is a thing, not a shelf. */
+  voaArtifact1: 'Артефакт',
+  voaCursed1: 'Проклятый предмет',
+  unique: 'Уникальное',
+  uniqueHint: 'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
   homeHint: 'Открывать этот раздел при запуске',
   helpHint: 'Как это работает',
-  source: 'Источник: дополнение ',
   rollLabelFor: 'Результат броска',
+  /* Singular, and not the tab's word: the tab says "Сообщества" because it
+     names a section, the label above the picker asks for one community. */
+  communityLabel: 'Сообщество',
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
@@ -166,11 +182,22 @@ const en: Dict = {
 
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',
+  pageVoa: 'Vault of Ages',
+  pageCommunity: 'Community items',
   subWondrous: 'Enter your roll result, or pick a random entry.',
+  subVoa: 'Choose a section of the book and roll within it.',
+  subCommunity: 'Choose an origin and roll a d10.',
+  voaSection: 'Section',
+  voaArtifact: 'Artifacts',
+  voaCursed: 'Cursed objects',
+  voaArtifact1: 'Artifact',
+  voaCursed1: 'Cursed object',
+  unique: 'Unique',
+  uniqueHint: 'Printed at a single tier - this one has no upgrade ladder',
   homeHint: 'Open this section on start',
   helpHint: 'How this works',
-  source: 'Source: the ',
   rollLabelFor: 'Roll result',
+  communityLabel: 'Community',
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',

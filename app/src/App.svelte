@@ -18,9 +18,11 @@
     return KEYS[s];
   }
 
-  /* The sections that roll a single number on one table. The others - Core
-     rules, the alternate tables, Vault of Ages and Communities - roll
-     differently and are not here yet. */
+  /* The sections that roll a single number over a whole table. Vault of Ages
+     and Communities roll one number too, but inside a part of their book, so
+     they have panels of their own that choose the part and hand the rows over.
+     Core rules and the alternate tables roll several cards at once and are not
+     here yet. */
   const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
     'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
     'roll/dread': { table: 'dread', title: 'pageDread' }
@@ -31,9 +33,11 @@
   /* The application. Routes are matched here and nowhere else; every branch
      below will become its own component as the phases go on. */
   import { untrack } from 'svelte';
+  import CommunityPanel from './components/CommunityPanel.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
   import Shell from './components/Shell.svelte';
+  import VoaPanel from './components/VoaPanel.svelte';
   import { AppState } from './state/app.svelte.js';
   import type { Env } from './ports/index.js';
 
@@ -54,9 +58,15 @@
   {#if app.route.kind === 'section' && ROLL_TABLE[app.route.section]}
     <RollPanel
       {app}
-      table={ROLL_TABLE[app.route.section]?.table ?? ''}
-      title={app.t[ROLL_TABLE[app.route.section]?.title ?? 'wondrous']}
+      section={ROLL_TABLE[app.route.section]?.table ?? ''}
+      title={app.t[ROLL_TABLE[app.route.section]?.title ?? 'pageWondrous']}
+      sub={app.t.subWondrous}
+      rows={app.index?.rows.get(ROLL_TABLE[app.route.section]?.table ?? '') ?? []}
     />
+  {:else if app.route.kind === 'section' && app.route.section === 'roll/voa'}
+    <VoaPanel {app} />
+  {:else if app.route.kind === 'section' && app.route.section === 'roll/community'}
+    <CommunityPanel {app} />
   {:else if app.route.kind === 'section'}
     <h1>{app.t[sectionKey(app.route.section)]}</h1>
     <p class="todo">{app.hash}</p>

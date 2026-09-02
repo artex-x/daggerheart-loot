@@ -10,10 +10,48 @@
  * carries an item badge, because on a card it is a thing you have. */
 
 import { dict } from './dict.js';
+import { EQ_TYPE, eqWord } from './i18n.js';
+import type { Dict } from './dict.js';
 import type { Lang, Record_, TableId } from './types.js';
 
 export function badgeKind(it: Record_): 'item' | 'cons' {
   return it.kind === 'consumable' ? 'cons' : 'item';
+}
+
+export interface Badge {
+  /** The modifier on `.badge` in style.css, which is what colours it. */
+  cls: string;
+  text: string;
+  /** A hover explanation, where the live app gives one. */
+  title?: string;
+}
+
+/**
+ * The badges on a card, in the order the live app prints them.
+ *
+ * Three of them are conditional and each says something no other line does.
+ * Equipment names the kind of gear rather than "item", because on a card that
+ * is what you have. "Уникальное" marks a piece the book prints at one tier -
+ * not a gap in the data, but a thing you cannot take one tier higher, and the
+ * word is the one the "Линия" filter uses. The tier badge appears only for
+ * artifacts and cursed objects: those are categories that exist nowhere else,
+ * while a numeric tier is already in the stat row or in the table heading.
+ */
+export function cardBadges(it: Record_, lang: Lang, t: Dict): Badge[] {
+  const out: Badge[] = [];
+
+  if (it.eq) {
+    out.push({ cls: `eq-${it.eq.t}`, text: eqWord(EQ_TYPE, it.eq.t, lang) });
+    /* A named thing rather than a rung on a ladder. */
+    if (!it.eq.line) out.push({ cls: 'uniq', text: t.unique, title: t.uniqueHint });
+  } else {
+    out.push({ cls: badgeKind(it), text: it.kind === 'consumable' ? t.cons : t.item });
+  }
+
+  if (it.tier === 'A') out.push({ cls: 'tier', text: t.voaArtifact1 });
+  else if (it.tier === 'C') out.push({ cls: 'tier', text: t.voaCursed1 });
+
+  return out;
 }
 
 export function srcLabel(it: Record_, lang: Lang): string {

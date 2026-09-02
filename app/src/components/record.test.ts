@@ -126,7 +126,10 @@ describe('a record on its own page', () => {
     for (const chip of ['Ранг 1', 'Физическое', 'Проворность', 'Вплотную', 'd8+3']) {
       expect(screen.getByText(chip), chip).toBeInTheDocument();
     }
-    expect(screen.queryByText('Основное оружие')).not.toBeInTheDocument();
+    /* The type word is a badge above the name, not a chip in the stat row -
+       the row is values, and saying "primary weapon" twice on one card is one
+       time too many. */
+    expect(screen.getByText('Основное оружие')).toHaveClass('badge');
   });
 
   it('gives loot no stat chips at all', () => {
