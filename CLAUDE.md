@@ -319,13 +319,24 @@ conclude the browser suites are unrunnable without checking `ldd` first: the
 whole set was skipped once on the strength of a launch error that turned out to
 be a single missing file.
 
-### When the working copy is on a slow mount
+### The working copy is on a mount; mirror it before running anything
 
-An agent sandbox reaches the repository over a mount, and that mount can drop to
-a few hundred kB/s of write - at which point `vite build` takes minutes instead
-of seconds and the screenshots the parity suite writes take longer still. Reads
-stay fast, so the shape of the fix is: read from the mount, write somewhere
-local.
+An agent sandbox reaches the repository over a host mount, and the cost there is
+per file rather than per byte: about 10ms each, whatever the disk underneath.
+Bulk throughput is a few MB/s and can collapse to a few hundred kB/s when the
+host is busy. What that does to this repository, measured:
+
+| | over the mount | mirrored to `/tmp` |
+|---|---|---|
+| `eslint` on three files | 2m27s | under a second |
+| `vite build` | minutes, or a timeout | 5s |
+| `npm ci` | timeout | 5s |
+
+The `user` column of `time` on that eslint run was 4 seconds against 147 of wall
+clock: it is not linting, it is reading `node_modules` a file at a time. So the
+mirror is not a workaround for a bad day - it is how a session works here, and
+the first slow command is not the moment to discover that. Read from the mount,
+write somewhere local:
 
 ```
 tar -cf - --exclude=node_modules --exclude=.git --exclude=img --exclude=og \
@@ -340,6 +351,14 @@ of small files out of it, and that is where the time goes. Copy edited sources
 in with the same `tar` pipe before each run, and copy anything prettier
 reformatted back out. Measure before assuming: `dd` to `/tmp` and to the mount
 told the whole story in two seconds.
+
+Moving the repository to a faster volume does not help this. It was tried - a
+Windows Dev Drive, ReFS, Defender in performance mode - and the numbers over the
+mount did not move: 200 small writes 2.0s against 2.1s, eslint on three files
+150s against 147s. The bridge is the cost, not the disk. What did help, and
+travels with the repository, was `git gc`: `.git` had 7698 loose objects and no
+packfile, so every git command walked all of them, and packing took
+`git status` from 9.6s to 6s.
 
 ### When something is slow, say why, and fix what is yours
 
