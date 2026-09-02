@@ -4,6 +4,61 @@ A static site with no build step: `index.html`, `style.css`, `app.js`, `data.js`
 Nothing is transpiled, nothing is minified, there are no runtime dependencies.
 It opens both from `file://` and from GitHub Pages.
 
+## Tasks
+
+Active work lives under `issues/<id>/`:
+
+- `issues/<id>/plan.md` - the plan and its status
+- `issues/<id>/handoff.md` - recovery state for the next session
+
+The id is the GitHub issue number. The Svelte migration is `47`.
+
+## Session boundaries
+
+The human controls session boundaries, usually on usage rather than on progress.
+Do not rely on an automatic handoff at a context or usage limit: the explicit
+stop is the source of truth, and a session that ends without one leaves the next
+session reading commit messages.
+
+### "stop", "handoff", "this session is ending" (optionally "for task N")
+
+1. Stop new implementation. Finish nothing new; leave what is committed.
+2. Update `issues/<id>/plan.md`: accurate status, and any decision or deviation
+   this session took.
+3. Update `issues/<id>/handoff.md` with enough to recover without chat history -
+   status, what was completed, remaining work in batches, ordered next steps,
+   what not to start, the quality gates, session gotchas, open questions, and
+   the files worth opening first.
+4. Update `CLAUDE.md` only if a standing rule or a recurring gotcha changed.
+5. Do not touch `docs/specs/` or `docs/fixtures/` unless a public contract or a
+   specified behaviour actually changed.
+6. If the task or phase is finished, say so plainly, tidy the plan so the top is
+   still actionable, and leave a handoff that states completion and what comes
+   next - or that nothing is queued.
+7. Do not start new implementation after the signal, even something small.
+
+With no id given, use the task in focus; if that is ambiguous, ask which.
+
+### "continue task N", "continue the work"
+
+Before proposing or writing any code, read in this order:
+
+1. `CLAUDE.md`
+2. `issues/<id>/plan.md`
+3. `issues/<id>/handoff.md`
+4. the parts of `docs/specs/` the slice about to be touched depends on
+
+Then say where the work stands and which batch is recommended next, and wait for
+confirmation before writing code. The handoff names the batches; picking a
+different one is a decision for the person, not for the agent.
+
+### Gotchas
+
+A gotcha that will still be true next month is a standing rule and belongs in
+`CLAUDE.md`. One that is true of this task, this branch or this environment
+belongs in `issues/<id>/handoff.md`. Writing an environment quirk into
+`CLAUDE.md` is how that file stops being read.
+
 ## Read the specs first
 
 `docs/specs/` is the source of truth for behaviour, and it is written down so a
@@ -19,7 +74,8 @@ touching it:
 | `docs/specs/COVERAGE.md` | what each suite is responsible for, and where coverage is thin |
 | `docs/specs/I18N.md` | how two languages work here |
 | `docs/specs/META.md` | policies that look like bugs and are not: `noindex`, robots, hash-only lists, `file://`, never inferring a tier |
-| `docs/REFACTOR_PLAN.md` | the Svelte migration (issue #47) and the decisions taken during it |
+| `issues/47/plan.md` | the Svelte migration and the decisions taken during it |
+| `issues/47/handoff.md` | where that work stands, and what to do next |
 
 **Public contracts default to no change.** If one has to change, the same commit
 updates `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md` and
@@ -252,7 +308,7 @@ lands with the lists and print slices rather than before them.
 Left, in order: **the alternate tables** - the last roll mode, and the only one
 that rolls two dice at once, so it needs the duality pair and the critical-
 success box on top of the OR grid Core rules already built - then tables,
-search, lists, print, and Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
+search, lists, print, and Phase 5 onwards in `issues/47/plan.md`.
 
 One debt is not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
 lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes
@@ -300,7 +356,7 @@ Practically, when a slice adds a control that already exists elsewhere:
 - the parent's test keeps covering it (see `COVERAGE.md`); a new test file is
   only worth writing when the component has behaviour of its own
 
-Two things live side by side while the migration runs (`docs/REFACTOR_PLAN.md`):
+Two things live side by side while the migration runs (`issues/47/plan.md`):
 the live site is `index.html` + `app.js` + `style.css` in the repository root,
 and the new application is `app/`, built to `dist/`. Pages still serves the
 root. Do not delete the old one before the cut-over, and do not point Pages at
