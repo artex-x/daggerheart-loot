@@ -298,15 +298,15 @@ const SPECS = [
  */
 const VISUAL_DEBT = {
   '#/i/ci1': {
-    pct: 0.71,
+    pct: 0.7,
     why: 'the add-to-list and print row under the card is not drawn yet, and the footer - added because the licence asks for it on every page - therefore sits higher than the original'
   },
   '#/i/q1': {
-    pct: 0.98,
+    pct: 0.96,
     why: 'the add-to-list and print row, as above'
   },
   '#/roll/dread': {
-    pct: 0.17,
+    pct: 0.16,
     why: 'a hair on the first row, which is equipment: its stat chips wrap one pixel differently from the original at this width'
   },
 
@@ -321,24 +321,21 @@ const VISUAL_DEBT = {
   },
 
   '#/i/ci1 ~ en': {
-    pct: 0.57,
+    pct: 0.56,
     why: 'the add-to-list and print row, as in Russian. It scores lower than the Russian page only because English is shorter and there is less of it to disagree about'
   },
 
-  /* The phone. style.css has four breakpoints; the rewrite has copied the
-     values at the widest one and nothing below it, which is why these two are
-     the largest numbers in the file. */
+  /* The phone. These two arrived at 9.24% and 15.04% - the largest numbers in
+     the file - because none of the breakpoints below the widest had been
+     copied. The roll page now matches exactly and has no entry; what is left
+     on the record page is the row it is still missing, as at every width. */
   '#/i/ci1 ~ 375': {
-    pct: 9.24,
-    why: 'the mobile breakpoints are not ported: the picture column, the badge row, the name row and the topbar all keep their desktop sizes, so the card body is wider and everything inside it wraps differently'
-  },
-  '#/roll/wondrous ~ 375': {
-    pct: 15.04,
-    why: 'the mobile breakpoints, as above, over a result card - the widest gap in the port and the next thing to close'
+    pct: 0.44,
+    why: 'the add-to-list and print row, on a phone'
   },
 
   '#/i/ci1 ~ whole': {
-    pct: 5.31,
+    pct: 5.29,
     why: 'the same missing add-to-list and print row as the fold-height state, over a page four times as tall: the whole card, the craft chain and the footer are all shifted up by the row that is not drawn'
   }
 };

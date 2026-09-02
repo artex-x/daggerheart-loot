@@ -357,6 +357,15 @@
     align-self: center;
   }
 
+  /* `.card-name svg` in style.css, and it is not the icon's own size: this row
+     pins its icons to 14px whatever they arrive as. One pixel each way, which
+     made the name row a pixel taller and moved everything under it. */
+  .card-name :global(svg) {
+    width: 14px;
+    height: 14px;
+    fill: currentcolor;
+  }
+
   /* off `.eqstats` in style.css */
   .eqstats {
     display: flex;
@@ -514,5 +523,51 @@
     color: var(--muted);
     font-size: 12.5px;
     line-height: 1.5;
+  }
+
+  /* ---------- the phone, off the two 600px blocks in style.css ----------
+     Kept last, as they are there: these override base rules of equal
+     specificity. */
+  @media (max-width: 600px) {
+    .card.compact .card-media {
+      width: 96px;
+    }
+
+    .card-body {
+      padding: 11px 12px 12px;
+    }
+
+    .card-name {
+      font-size: 15.5px;
+      /* The icon buttons grow to a hittable size here and the name was
+         aligned on its baseline, so on a one-line name the text and the
+         icons drifted apart vertically. */
+      align-items: center;
+    }
+
+    .card-desc {
+      font-size: 13px;
+    }
+
+    .card-name-acts {
+      gap: 0;
+    }
+
+    /* Room is tight, so the wording goes and the icons stay - the button
+       keeps its name through aria-label. `:has` rather than a blanket rule
+       because the list toolbar sits in the same row and keeps its words. */
+    .card-acts :global(.btn-lbl) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .card-acts :global(.btn.sm:has(.btn-lbl)) {
+      padding: 0 10px;
+      gap: 0;
+    }
   }
 </style>

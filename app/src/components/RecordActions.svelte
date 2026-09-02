@@ -126,4 +126,13 @@
     color: var(--gold);
     background: var(--surface2);
   }
+
+  /* Bare icon buttons came out at about 20px, too small to hit reliably on a
+     phone - off the mobile block in style.css. */
+  @media (max-width: 600px) {
+    button {
+      padding: 11px;
+      margin-bottom: 2px;
+    }
+  }
 </style>

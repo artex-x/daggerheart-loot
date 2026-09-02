@@ -144,11 +144,13 @@
     cursor: default;
   }
 
+  /* style.css has `.numbox input[type=text]{width:56px}` here too, and it is
+     dead: the base rule that sets 74px is written *after* the media block at
+     the same specificity, so it wins at every width. The live field is 74px on
+     a phone, this one has to be, and copying the intent instead of the
+     behaviour cost eighteen pixels on the parity diff. The button rule does
+     apply, because its base rule comes before the block. */
   @media (max-width: 430px) {
-    input[type='text'] {
-      width: 56px;
-    }
-
     button {
       width: 36px;
     }

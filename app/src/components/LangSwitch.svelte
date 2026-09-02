@@ -57,4 +57,11 @@
   button:not(.on):hover {
     color: var(--txt);
   }
+
+  /* A bigger target on a phone, off the mobile block in style.css. */
+  @media (max-width: 600px) {
+    button {
+      padding: 8px 14px;
+    }
+  }
 </style>

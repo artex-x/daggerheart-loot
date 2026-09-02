@@ -161,23 +161,29 @@ would have hidden a component nobody rendered.
 
 Debts first, then screens - a screen built on an unfinished pattern copies it.
 
-**The mobile breakpoints are the biggest gap and the next thing to close.**
-`style.css` has four of them and the rewrite has copied the values at the widest
-only, which is why `#/roll/wondrous ~ 375` is 15% and `#/i/ci1 ~ 375` is 9% -
-the two largest numbers in `VISUAL_DEBT` by a wide margin. The picture column,
-the badge row, the name row and the topbar all keep their desktop sizes on a
-phone.
+Three states match the original exactly: the Wondrous roll page in both
+languages and on a phone. Every remaining debt on a screen that has been built
+is **the add-to-list and print row**, on both record routes, in both languages,
+at both widths, and in the modal. That is not deferred polish - it is code that
+does not exist yet - and it lands with the lists and print slices rather than
+before them. Then the four remaining roll modes, tables, search, lists, print,
+and Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
 
-After that both record routes and the modal owe the add-to-list and print row,
-which belongs to the lists and print slices rather than to polish. Then the four
-remaining roll modes, tables, search, lists, print, and Phase 5 onwards in
-`docs/REFACTOR_PLAN.md`.
-
-Two debts are not worth hunting. `#/roll/wondrous ~ help` is 0.30% because two
+Two debts are not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
 lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes
 and the colour were measured identical to three decimals and the text matches
-character for character, so there is no value to copy. `#/roll/dread` is 0.17%
+character for character, so there is no value to copy. `#/roll/dread` is 0.16%
 for the same kind of reason.
+
+### Copy the behaviour, not the intent
+
+A rule in `style.css` is only worth copying if it is a rule that *applies*.
+`.numbox input[type=text]{width:56px}` sits inside the 430px block, and the base
+rule that sets 74px is written after it at the same specificity - so the live
+field is 74px on a phone and the media rule is dead. The port implemented the
+intent, and the parity diff charged eighteen pixels for it. When a value looks
+deliberate but the screenshots disagree, the screenshots are right; measure the
+element in both apps before changing anything.
 
 ## Components
 

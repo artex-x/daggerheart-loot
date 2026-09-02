@@ -367,4 +367,20 @@
   .results {
     margin-top: 26px;
   }
+
+  /* Both buttons in the heading row are one size on a phone: side by side they
+     read as a pair. Off the mobile block in style.css. */
+  @media (max-width: 600px) {
+    .helpbtn,
+    .homebtn {
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
+    }
+
+    .homebtn :global(svg) {
+      width: 17px;
+      height: 17px;
+    }
+  }
 </style>
