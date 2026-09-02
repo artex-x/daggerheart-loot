@@ -7,13 +7,18 @@
  * rely on somebody having remembered what the old screen did, and remembering
  * is exactly what failed when the record page shipped without "copy image".
  *
+ * What is compared is a *state*, not a route: a URL plus whatever was pressed
+ * to get somewhere. A route on its own only ever reaches the first paint, in
+ * the default language, at one width, above the fold - which is how a modal
+ * four times too wide sat there unreported. No route draws it.
+ *
  * Three kinds of finding:
  *   FAIL        - the two apps disagree and nothing says they should
- *   outstanding - a route the rewrite has not reached, or an accepted difference
+ *   outstanding - a state the rewrite has not reached, or an accepted difference
  *   stale       - an accepted difference that is no longer a difference
  *
  * Needs a build: node tools/build.js && vite build. Without dist/ it says so
- * and stops rather than reporting every route as broken.
+ * and stops rather than reporting every state as broken.
  */
 const fs = require('fs');
 const path = require('path');
@@ -21,7 +26,7 @@ const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./parity/driver.js');
 const {
   SPECS,
-  ROUTES,
+  STATES,
   ACCEPTED,
   VISUAL_DEBT,
   DEBT_SLACK,
@@ -38,6 +43,10 @@ const SHOTS = path.join(ROOT, 'test-output', 'parity');
 let fail = 0;
 const outstanding = [];
 const stale = [];
+
+/* Substrings of the states to run, for paying one debt at a time:
+   `node tests/parity.js modal 375`. Empty means all of them. */
+const WANTED = process.argv.slice(2);
 
 const show = (v) => {
   const s = JSON.stringify(v);
@@ -122,9 +131,17 @@ function pixelDiff(aBuf, bBuf, outPath) {
     if (!fs.existsSync(at)) fs.symlinkSync(path.join(ROOT, dir), at, 'dir');
   }
 
-  for (const [route, debt] of Object.entries(VISUAL_DEBT)) {
+  for (const [id, debt] of Object.entries(VISUAL_DEBT)) {
     if (!debt.why || debt.why.length < 10) {
-      console.log(`  FAIL VISUAL_DEBT[${route}] без причины`);
+      console.log(`  FAIL VISUAL_DEBT[${id}] без причины`);
+      fail++;
+    }
+  }
+
+  /* A debt against a state nobody visits is an excuse that can never come due. */
+  for (const id of Object.keys(VISUAL_DEBT)) {
+    if (!STATES.some((s) => s.id === id)) {
+      console.log(`  FAIL VISUAL_DEBT[${id}] - такого состояния нет в STATES`);
       fail++;
     }
   }
@@ -139,65 +156,116 @@ function pixelDiff(aBuf, bBuf, outPath) {
   const pages = {};
   for (const target of ['legacy', 'next']) {
     const p = await browser.newPage();
-    await p.setViewport({ width: 1100, height: 900 });
     await prepare(p);
     pages[target] = makeDriver(p, target);
   }
 
-  for (const { route, why, pending } of ROUTES) {
-    console.log(`${route}  (${why})`);
+  for (const state of STATES) {
+    const { id, route, why, pending, enter, width, height, whole } = state;
+    if (WANTED.length && !WANTED.some((w) => id.includes(w))) continue;
+    console.log(`${id}  (${why})`);
     if (pending) {
-      outstanding.push(`${route} - ${pending}`);
+      outstanding.push(`${id} - ${pending}`);
       continue;
     }
 
-    for (const spec of SPECS) {
-      if (spec.only && !spec.only.includes(route)) continue;
+    /* The size is part of the state, so it is set before the page is opened -
+       a breakpoint that only runs on load would otherwise be missed. */
+    for (const target of ['legacy', 'next']) {
+      await pages[target].viewport(width ?? 1100, height ?? 900);
+    }
 
-      const seen = {};
-      for (const target of ['legacy', 'next']) {
-        const d = pages[target];
-        await d.open(route);
+    /** Opens the route and presses whatever this state is reached by. */
+    const arrive = async (d) => {
+      await d.open(route);
+      if (enter) await enter(d);
+    };
+
+    const mine = SPECS.filter((s) => !s.only || s.only.includes(id));
+    const looks = mine.filter((s) => !s.presses);
+    const presses = mine.filter((s) => s.presses);
+
+    /* One arrival for the screenshot and every spec that only looks. Loading a
+       page is what this suite spends its time on, and re-loading it between two
+       specs that read the same paint buys nothing. A spec that presses gets a
+       page of its own, because the one after it would inherit the press. */
+    const slug = id.replace(/\W+/g, '_');
+    const shots = {};
+    const seenLooks = { legacy: {}, next: {} };
+    let broke = null;
+
+    for (const target of ['legacy', 'next']) {
+      const d = pages[target];
+      try {
+        await arrive(d);
+      } catch (e) {
+        broke = `${target}: ${String(e.message || e)}`;
+        break;
+      }
+      const png = await d.shot(whole);
+      fs.writeFileSync(path.join(SHOTS, `${slug}-${target}.png`), png);
+      shots[target] = png;
+
+      for (const spec of looks) {
         try {
-          seen[target] = await spec.run(d);
+          seenLooks[target][spec.name] = await spec.run(d);
         } catch (e) {
           /* A control the rewrite does not have yet makes the spec throw on one
              side only. That is a difference, and it is reported as one. */
-          seen[target] = { error: String(e.message || e) };
+          seenLooks[target][spec.name] = { error: String(e.message || e) };
         }
       }
-      diff(route, spec.name, seen.legacy, seen.next);
     }
 
-    /* The look. Zero unless a debt is recorded against this route, and a debt
+    if (!broke) {
+      for (const spec of looks) {
+        diff(id, spec.name, seenLooks.legacy[spec.name], seenLooks.next[spec.name]);
+      }
+
+      for (const spec of presses) {
+        const seen = {};
+        for (const target of ['legacy', 'next']) {
+          const d = pages[target];
+          try {
+            await arrive(d);
+            seen[target] = await spec.run(d);
+          } catch (e) {
+            seen[target] = { error: String(e.message || e) };
+          }
+        }
+        diff(id, spec.name, seen.legacy, seen.next);
+      }
+    }
+
+    /* The look. Zero unless a debt is recorded against this state, and a debt
        that is no longer owed has to be paid off in the file. */
     {
-      const slug = route.replace(/\W+/g, '_');
-      const shots = {};
-      for (const target of ['legacy', 'next']) {
-        await pages[target].open(route);
-        const png = await pages[target].shot();
-        fs.writeFileSync(path.join(SHOTS, `${slug}-${target}.png`), png);
-        shots[target] = png;
+      if (broke) {
+        /* Not reaching the state at all is the loudest kind of difference, and
+           silently scoring 100% would read as a styling problem. */
+        fail++;
+        console.log(`  FAIL ${id} :: вид :: состояние недостижимо - ${broke}`);
+        continue;
       }
+
       const pct = pixelDiff(shots.legacy, shots.next, path.join(SHOTS, `${slug}-diff.png`));
-      const debt = VISUAL_DEBT[route];
+      const debt = VISUAL_DEBT[id];
 
       if (!debt) {
         if (pct > JITTER) {
           fail++;
-          console.log(`  FAIL ${route} :: вид :: ${pct.toFixed(2)}% отличий, ожидался ноль`);
+          console.log(`  FAIL ${id} :: вид :: ${pct.toFixed(2)}% отличий, ожидался ноль`);
           console.log(`       ${slug}-diff.png; если это осознанно - запиши в VISUAL_DEBT`);
         } else {
           console.log('       вид: совпадает');
         }
       } else if (pct > debt.pct + JITTER) {
         fail++;
-        console.log(`  FAIL ${route} :: вид :: ${pct.toFixed(2)}% против долга ${String(debt.pct)}%`);
+        console.log(`  FAIL ${id} :: вид :: ${pct.toFixed(2)}% против долга ${String(debt.pct)}%`);
         console.log(`       стало хуже; ${slug}-diff.png`);
       } else if (pct < debt.pct - DEBT_SLACK) {
         fail++;
-        console.log(`  FAIL ${route} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`);
+        console.log(`  FAIL ${id} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`);
         console.log('       стало лучше - опусти число в VISUAL_DEBT');
       } else {
         console.log(`       вид: ${pct.toFixed(2)}% из ${String(debt.pct)}% долга`);
@@ -217,6 +285,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
     for (const s of stale) console.log('  - ' + s);
   }
 
+  if (WANTED.length) console.log(`\nтолько состояния: ${WANTED.join(', ')} - это не полный прогон`);
   console.log(fail ? `\n${fail} расхождений` : '\nрасхождений нет');
   process.exit(fail ? 1 : 0);
 })();

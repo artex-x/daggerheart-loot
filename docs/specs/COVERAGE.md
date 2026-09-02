@@ -66,20 +66,30 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 `tests/parity.js` is the answer to "is anything missing from the port?", and it
 answers it without anybody having to remember what the old screen did.
 
-Every spec in `tests/parity/specs.js` observes a route - the controls on it,
-what a button puts on the clipboard, the label on the roll button - and returns
-what it saw. The harness runs each spec twice, against `index.html` at the root
-and against the built `dist/`, and compares. **Nothing is written down as the
-expected value: the live app is the expectation**, re-read on every run, so it
-cannot go stale.
+Every spec in `tests/parity/specs.js` observes a **state** - the controls on it,
+what a button puts on the clipboard, the label on the roll button, the title of
+the document - and returns what it saw. The harness runs each spec twice,
+against `index.html` at the root and against the built `dist/`, and compares.
+**Nothing is written down as the expected value: the live app is the
+expectation**, re-read on every run, so it cannot go stale.
+
+A state is a route plus what was pressed to reach it (`STATES` in the same
+file). Routes alone were not enough: they only ever reach the first paint, in
+the default language, at one width, above the fold. Adding states for the modal,
+the help panel, English, a phone and the whole page found, in one sitting, a
+modal four times too wide with none of the card's buttons, an English tab
+reading "Core rules" where the live app says "Standard rules", an English
+subtitle nobody had translated from the rewrite's own wording, a Russian
+document title that had drifted, and a wordmark being translated to "Loot" when
+the live app never translates it.
 
 The two targets are separate files and never clash. `dist/` has to be built
 first; without it the suite says so and stops.
 
 Three kinds of finding:
 
-- **a difference** fails the run, and names the route, the spec and the field
-- **outstanding** is a route the rewrite has not reached, or a difference listed
+- **a difference** fails the run, and names the state, the spec and the field
+- **outstanding** is a state the rewrite has not reached, or a difference listed
   in `ACCEPTED` with a reason - printed on every run so the list stays visible
 - **stale** is an `ACCEPTED` entry that is no longer a difference. It fails, so
   an excuse has to be deleted by the slice that makes it untrue
@@ -97,6 +107,17 @@ because a component test only checks what somebody remembered to write:
 This is also where the canvas conversion behind `ImagePort` is exercised: it
 cannot run in jsdom, and here it runs in a real Chrome on both apps.
 
+Three conditions the harness controls, each of which had produced a false
+reading before it did: every state is opened from a fresh document, because a
+hash-only navigation keeps the previous state's variables; the screenshot waits
+for the artwork, because `loading="lazy"` keeps images out of `networkidle0` and
+a blank card scores five percent; and a press waits on `document.getAnimations()`
+rather than a timer, because the modal animates in one app and not the other.
+The screenshot is also taken before the clipboard specs press anything - the
+live app raises a toast after a copy, and taking the picture afterwards was
+quietly inflating the debt on both record routes by about seven tenths of a
+percent.
+
 ### The look
 
 Two instruments, because they answer different questions.
@@ -110,7 +131,7 @@ ignore the report.
 
 **A pixel diff, against zero.** `pixelmatch` compares the two screenshots and
 writes a diff image next to them in `test-output/parity/`. The expectation is
-that a route matches exactly: a route with no entry in `VISUAL_DEBT` fails on
+that a state matches exactly: a state with no entry in `VISUAL_DEBT` fails on
 any difference at all.
 
 An entry in `VISUAL_DEBT` is a debt rather than a tolerance. It records what has

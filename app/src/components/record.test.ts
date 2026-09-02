@@ -282,7 +282,7 @@ describe('taking a record somewhere else', () => {
     render(App, { env: at('ci1', { clipboard: clip }) });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
     expect(clip.last.image).toBe(true);
-    expect(screen.getByText('Изображение скопировано')).toBeInTheDocument();
+    expect(screen.getByText('Картинка скопирована')).toBeInTheDocument();
   });
 
   it('says nothing when somebody dismisses their own share sheet', async () => {

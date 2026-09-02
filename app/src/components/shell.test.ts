@@ -47,7 +47,20 @@ describe('the language', () => {
     render(App, { env: at('#/roll/std') });
     expect(screen.getByRole('link', { name: 'Обычные правила' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(screen.getByRole('link', { name: 'Core rules' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Standard rules' })).toBeInTheDocument();
+  });
+
+  it('leaves the wordmark alone', async () => {
+    /* It is a logo, not a string: the live app writes "Лут Daggerheart" into
+       index.html once and never translates it. The rewrite had it in the
+       dictionary and was turning it into "Loot Daggerheart" on every English
+       page, which no test and no route-level screenshot could see. */
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('link', { name: 'ЛутDaggerheart' })).toHaveAttribute(
+      'href',
+      '#/roll/std'
+    );
   });
 
   it('is remembered', async () => {
@@ -61,7 +74,7 @@ describe('the language', () => {
     render(App, {
       env: at('#/roll/std', { storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
     });
-    expect(screen.getByRole('link', { name: 'Core rules' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Standard rules' })).toBeInTheDocument();
   });
 
   it('ignores a stored value that is not a language', () => {

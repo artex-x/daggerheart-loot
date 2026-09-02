@@ -70,12 +70,47 @@ sizes, spacing and placement - not an interpretation of it that happens to use
 the same palette.
 
 That is a rule with a measurement behind it. `tests/parity.js` screenshots both
-apps on the same route and compares them with pixelmatch. **The expected
-difference is zero**: a route with no entry in `VISUAL_DEBT` fails on any
+apps in the same **state** and compares them with pixelmatch. **The expected
+difference is zero**: a state with no entry in `VISUAL_DEBT` fails on any
 difference at all. An entry there is a debt, not a tolerance - it names what has
 not been reproduced yet and why, and it fails in both directions, so a screen
 that regresses is caught and a screen that improves forces the number down. A
 diff image is written to `test-output/parity/` on every run.
+
+### A state, not a route
+
+A state is a URL plus whatever was pressed to get somewhere, and that
+distinction is the whole point. Comparing routes only ever reaches the first
+paint, in the default language, at one width, above the fold - so the modal
+shipped four times too wide, with none of the card's buttons, and every check
+was green. No route draws it.
+
+Add a state to `STATES` in `tests/parity/specs.js` whenever a screen can be
+reached by pressing something. Each carries `id` (`"<route> ~ <what>"`, and the
+key `VISUAL_DEBT` uses), `route`, and any of `enter` (what to press, by the name
+a person reads), `width`/`height`, `whole` (the page end to end rather than the
+fold), `pending`. The ones that exist now cover the modal, the help panel, the
+other language, a phone and a full-height page; the toast after a copy is
+recorded as `pending`, because the rewrite has not got one.
+
+Three things the harness learned the hard way, all of them now in the driver:
+
+- **every state gets a new document.** Two states on one route differ only by
+  the hash, and a hash-only navigation does not reload - the page keeps its
+  variables and `prepare` never runs again. The help panel one state opened was
+  still open in the next, and the harness spent an hour reporting its own leak.
+- **wait for the artwork.** A card is mostly its picture, and `loading="lazy"`
+  keeps images out of `networkidle0`. A screenshot that races one reports a
+  blank square as five percent.
+- **wait for animations, not for a timer.** The modal opens over 0.22s in the
+  live app and instantly in the rewrite; `document.getAnimations()` answers the
+  actual question, where `setTimeout` moves the number with how busy the machine
+  is.
+
+Specs that press something are marked `presses: true` and get a page of their
+own; everything else shares one arrival, which is what keeps a run to a couple
+of minutes. `node tests/parity.js modal 375` runs only the states whose id
+contains one of those words.
 
 Practically, when building a screen:
 
@@ -125,10 +160,24 @@ would have hidden a component nobody rendered.
 ### What is left, in order
 
 Debts first, then screens - a screen built on an unfinished pattern copies it.
-The roll panels still owe the die art on the button and the help block; both
-record routes owe the add-to-list and print row, which belongs to those slices.
-After that: the four remaining roll modes, tables, search, lists, print, then
-Phase 5 onwards in `docs/REFACTOR_PLAN.md`.
+
+**The mobile breakpoints are the biggest gap and the next thing to close.**
+`style.css` has four of them and the rewrite has copied the values at the widest
+only, which is why `#/roll/wondrous ~ 375` is 15% and `#/i/ci1 ~ 375` is 9% -
+the two largest numbers in `VISUAL_DEBT` by a wide margin. The picture column,
+the badge row, the name row and the topbar all keep their desktop sizes on a
+phone.
+
+After that both record routes and the modal owe the add-to-list and print row,
+which belongs to the lists and print slices rather than to polish. Then the four
+remaining roll modes, tables, search, lists, print, and Phase 5 onwards in
+`docs/REFACTOR_PLAN.md`.
+
+Two debts are not worth hunting. `#/roll/wondrous ~ help` is 0.30% because two
+lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes
+and the colour were measured identical to three decimals and the text matches
+character for character, so there is no value to copy. `#/roll/dread` is 0.17%
+for the same kind of reason.
 
 ## Components
 
@@ -239,6 +288,28 @@ All sixteen browser suites and `tools/smoke-file-url.mjs` then run. Do not
 conclude the browser suites are unrunnable without checking `ldd` first: the
 whole set was skipped once on the strength of a launch error that turned out to
 be a single missing file.
+
+### When the working copy is on a slow mount
+
+An agent sandbox reaches the repository over a mount, and that mount can drop to
+a few hundred kB/s of write - at which point `vite build` takes minutes instead
+of seconds and the screenshots the parity suite writes take longer still. Reads
+stay fast, so the shape of the fix is: read from the mount, write somewhere
+local.
+
+```
+tar -cf - --exclude=node_modules --exclude=.git --exclude=img --exclude=og \
+    --exclude=card --exclude=i --exclude=dist --exclude=test-output . \
+  | (mkdir -p /tmp/work && cd /tmp/work && tar -xf -)
+for d in img og card i; do ln -sfn "$PWD/$d" /tmp/work/$d; done
+cd /tmp/work && npm ci          # faster than copying node_modules back
+```
+
+`node_modules` has to be installed rather than linked - a build reads thousands
+of small files out of it, and that is where the time goes. Copy edited sources
+in with the same `tar` pipe before each run, and copy anything prettier
+reformatted back out. Measure before assuming: `dd` to `/tmp` and to the mount
+told the whole story in two seconds.
 
 ## Printing (`#/print/<ids>`)
 

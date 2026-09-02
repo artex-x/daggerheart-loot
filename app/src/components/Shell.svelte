@@ -35,7 +35,12 @@
       <svg class="brand-ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z" />
       </svg>
-      <span class="brand-txt"><b>{app.t.brand}</b><i>{app.t.brandSub}</i></span>
+      <!-- The wordmark, not a translated string. It is written into
+           index.html once in the live app and stays "Лут Daggerheart" in
+           English too, the way a logo does; the rewrite had it in the
+           dictionary and was quietly turning it into "Loot Daggerheart" on
+           every English page. -->
+      <span class="brand-txt"><b>Лут</b><i>Daggerheart</i></span>
     </a>
     <div class="topbar-right">
       <LangSwitch

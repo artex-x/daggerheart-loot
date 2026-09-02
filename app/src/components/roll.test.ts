@@ -249,6 +249,38 @@ describe('the record over the page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('closes on the backdrop, as pressing beside the card does in the live app', async () => {
+    /* The backdrop is not an element of its own, so the press lands on the
+       dialog itself - which is how "outside the card" is told from "inside
+       it" without a second transparent layer to keep in step. */
+    await openFirst();
+    await userEvent.click(screen.getByRole('dialog'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('stays open when the press lands on the card', async () => {
+    await openFirst();
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('heading', { level: 2, name: 'w вещь 5' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('offers the same actions on the card as the record page does', async () => {
+    /* The rewrite drew this card with no actions at all for a while. No
+       route-level parity spec could see it, because a modal is a state and not
+       a URL - tests/parity/specs.js now visits it too. */
+    await openFirst();
+    const dialog = screen.getByRole('dialog');
+    for (const name of [
+      'Скопировать название',
+      'Скопировать ссылку',
+      'Отправить',
+      'Скопировать текст'
+    ]) {
+      expect(within(dialog).getByRole('button', { name }), name).toBeInTheDocument();
+    }
+  });
 });
 
 describe('accessibility', () => {

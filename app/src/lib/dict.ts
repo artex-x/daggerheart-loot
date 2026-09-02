@@ -19,14 +19,11 @@ const ru = {
   /* The chrome that has no text of its own, and so has no other place to be
      named. Without these the tab bar and the language group are unlabelled to
      a screen reader. */
-  docTitle: 'Генератор лута для Daggerheart',
+  docTitle: 'Генератор лута — Daggerheart',
   skipToContent: 'К содержимому',
   sectionsLabel: 'Разделы',
   langLabel: 'Язык',
   close: 'Закрыть',
-
-  brand: 'Лут',
-  brandSub: 'Daggerheart',
 
   /* The nine sections, in tab order */
   std: 'Обычные правила',
@@ -66,7 +63,7 @@ const ru = {
   copyLink: 'Скопировать ссылку',
   sendAll: 'Отправить',
   nameCopied: 'Название скопировано',
-  imgCopied: 'Изображение скопировано',
+  imgCopied: 'Картинка скопирована',
   textCopied: 'Текст скопирован',
   linkCopied: 'Ссылка скопирована',
   copyFailed: 'Не удалось скопировать',
@@ -104,9 +101,6 @@ const ru = {
   eqTh: 'Пороги',
   eqScore: 'Броня',
 
-  homeSet: 'Раздел стал стартовым',
-  homeReset: 'Стартовый раздел сброшен',
-  setHome: 'Сделать стартовым',
   storageOff: 'Браузер не даёт сохранять: списки не переживут перезагрузку.'
 } as const;
 
@@ -120,10 +114,7 @@ const en: Dict = {
   langLabel: 'Language',
   close: 'Close',
 
-  brand: 'Loot',
-  brandSub: 'Daggerheart',
-
-  std: 'Core rules',
+  std: 'Standard rules',
   alt: 'Alt. tables',
   wondrous: 'Wondrous',
   dread: 'Dread',
@@ -175,7 +166,7 @@ const en: Dict = {
 
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',
-  subWondrous: 'Type the roll result or get a random entry.',
+  subWondrous: 'Enter your roll result, or pick a random entry.',
   homeHint: 'Open this section on start',
   helpHint: 'How this works',
   source: 'Source: the ',
@@ -189,9 +180,6 @@ const en: Dict = {
   eqTh: 'Thresholds',
   eqScore: 'Armor',
 
-  homeSet: 'Starting section set',
-  homeReset: 'Starting section cleared',
-  setHome: 'Make this the start',
   storageOff: 'This browser will not save: lists are lost on reload.'
 };
 

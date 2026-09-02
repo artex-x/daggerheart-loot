@@ -26,8 +26,56 @@ async function ready(page) {
     const root = document.querySelector('#view') || document.querySelector('#app');
     return !!root && root.children.length > 0;
   });
+
+  /* And until the artwork has arrived. A card is mostly its picture, so a
+     screenshot that races it reports a blank square as a five percent
+     difference and sends the next session hunting for a layout bug that is not
+     there. `loading="lazy"` keeps these out of networkidle0, so waiting on the
+     images themselves is the only honest signal. */
+  await page.evaluate(
+    () =>
+      new Promise((done) => {
+        const pending = [...document.images].filter((i) => !i.complete);
+        if (!pending.length) return done(undefined);
+        let left = pending.length;
+        const tick = () => {
+          if (--left === 0) done(undefined);
+        };
+        for (const img of pending) {
+          img.addEventListener('load', tick, { once: true });
+          img.addEventListener('error', tick, { once: true });
+        }
+        /* A picture that never arrives is a difference the screenshot should
+           show, not a run that hangs. */
+        setTimeout(() => {
+          done(undefined);
+        }, 5000);
+      })
+  );
+
   /* One frame for the effects that run after the first paint. */
   await new Promise((r) => setTimeout(r, 120));
+}
+
+/**
+ * Waits for whatever a press started to finish moving.
+ *
+ * A fixed pause is the wrong instrument here: the modal opens with a 0.22s
+ * animation in the live app and none at all in the rewrite, so a screenshot
+ * taken on a timer catches one of them mid-flight and the number moves with how
+ * busy the machine is. Asking the browser which animations are running answers
+ * exactly the question. The cap is for anything that loops forever.
+ */
+async function settle(page) {
+  await page.evaluate(async () => {
+    const running = document.getAnimations().map((a) => a.finished.catch(() => undefined));
+    await Promise.race([
+      Promise.all(running),
+      new Promise((done) => setTimeout(done, 600))
+    ]);
+  });
+  /* One frame for the paint that follows the last effect. */
+  await new Promise((r) => setTimeout(r, 80));
 }
 
 /**
@@ -49,9 +97,25 @@ function makeDriver(page, target) {
   const d = {
     target,
 
+    /**
+     * A route, from a document that has just been made.
+     *
+     * The trip through about:blank is load-bearing. Two states on the same
+     * route differ only by the hash, and a hash-only navigation does not
+     * reload: the page keeps its variables, and `prepare` - which is what
+     * clears storage and stubs the clipboard - never runs again. The help panel
+     * one state opened was still open in the next one, and it took an hour to
+     * see that the harness was reporting its own leak.
+     */
     async open(route) {
+      await page.goto('about:blank');
       await page.goto(url + route, { waitUntil: 'networkidle0' });
       await ready(page);
+    },
+
+    /** The window a state is looked at through; the breakpoints depend on it. */
+    viewport(width, height) {
+      return page.setViewport({ width, height });
     },
 
     /** Every control on screen, by name - the inventory a spec compares. */
@@ -83,7 +147,7 @@ function makeDriver(page, target) {
         NAME_FN
       );
       if (!ok) throw new Error(`${target}: no control named "${name}"`);
-      await new Promise((r) => setTimeout(r, 150));
+      await settle(page);
       return true;
     },
 
@@ -141,6 +205,11 @@ function makeDriver(page, target) {
       return page.evaluate(() => location.hash);
     },
 
+    /** What the tab says. Off screen, so no screenshot can catch it drifting. */
+    title() {
+      return page.title();
+    },
+
     /**
      * The look, as numbers rather than as pixels.
      *
@@ -181,9 +250,16 @@ function makeDriver(page, target) {
       });
     },
 
-    /** A screenshot of the page, for the look comparison. */
-    shot() {
-      return page.screenshot({ type: 'png', fullPage: false });
+    /**
+     * A screenshot, for the look comparison.
+     *
+     * The fold by default. `whole` takes the page end to end, which is the only
+     * way to compare a record card - it is taller than the window, so the
+     * description, the craft chain and the footer are all below the default
+     * shot and were never being looked at.
+     */
+    shot(whole) {
+      return page.screenshot({ type: 'png', fullPage: !!whole });
     }
   };
   return d;
