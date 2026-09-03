@@ -34,7 +34,10 @@ const row = (over: Partial<Record_>): Record_ => ({
 
 const LOOT: Loot = {
   items: {
-    wondrous: [row({ id: 'w1', roll: 1, ru: 'Первая вещь' })],
+    wondrous: [
+      row({ id: 'w1', roll: 1, ru: 'Первая вещь' }),
+      row({ id: 'w2', kind: 'consumable', roll: 2, ru: 'Вторая вещь' })
+    ],
     core_item: [row({ id: 'ci1', src: 'core', roll: 1, ru: 'Предмет корника' })],
     core_consumable: [
       row({ id: 'cc1', src: 'core', kind: 'consumable', roll: 1, ru: 'Расходник корника' })
@@ -140,6 +143,14 @@ const STATES: { what: string; route: string; enter?: (() => Promise<void>) | und
     what: 'the grid view of a table',
     route: '#/tables',
     enter: () => press('Сеткой')
+  },
+  {
+    what: 'the table filter panel, open with a value picked',
+    route: '#/tables/wondrous',
+    enter: async () => {
+      await press('Фильтры');
+      await press('Предметы');
+    }
   }
 ];
 
@@ -162,6 +173,7 @@ describe('states reached by pressing something', () => {
  */
 const COVERED: Record<string, string> = {
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
+  'FilterBar.svelte': 'tables.test.ts, and the filter panel state below',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte': 'the roll button and the card actions, on every roll page',
@@ -182,7 +194,7 @@ const COVERED: Record<string, string> = {
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'Shell.svelte': 'shell.test.ts, including the storage warning',
   'TabBar.svelte': 'the frame, on every state',
-  'TablesPage.svelte': 'tables.test.ts, and both pressed states below',
+  'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
   'VoaPanel.svelte': 'sections.test.ts, and in English above'
 };
 

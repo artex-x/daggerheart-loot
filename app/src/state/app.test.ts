@@ -198,3 +198,33 @@ describe('navigation', () => {
     expect(app.source).toEqual({ core: true, hnf: false });
   });
 });
+
+describe('replace vs navigate', () => {
+  it('rewrites the address and counts as a navigation when go() does it', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router }));
+    expect(app.navigations).toBe(0);
+    app.go('#/lists');
+    expect(app.hash).toBe('#/lists');
+    expect(router.stack).toEqual(['#/tables', '#/lists']);
+    expect(app.navigations).toBe(1);
+  });
+
+  it('rewrites the address in place and does not count as a navigation', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router }));
+    app.replace('#/tables/f_kind-item');
+    expect(app.hash).toBe('#/tables/f_kind-item');
+    expect(router.hash()).toBe('#/tables/f_kind-item');
+    expect(router.stack).toHaveLength(1);
+    expect(app.navigations).toBe(0);
+  });
+
+  it('counts an address that changed underneath it, from start()', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    router.navigate('#/lists');
+    expect(app.navigations).toBe(1);
+  });
+});

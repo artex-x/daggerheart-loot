@@ -9,21 +9,31 @@
      five separate page components for one route would also fight the second
      use this component is heading for - search reuses the row wholesale.
 
-     Only four tables have no facet to filter by (`docs/specs/ROUTES.md`,
-     "Filter grammar"), which is why this slice can draw them whole: nothing
-     deferred is on screen for `core_item`, `core_consumable`, `hnf_item` and
-     `hnf_consumable`. Every other table still shows the nav and falls through
-     to the placeholder until the filter (B2), the sectioned bodies (B3) and
-     the equipment facets (B4) land. */
+     Four tables have no facet to filter by at all (`docs/specs/ROUTES.md`,
+     "Filter grammar"): `core_item`, `core_consumable`, `hnf_item` and
+     `hnf_consumable`. Two more offer exactly one - `kind` - and nothing else:
+     `wondrous` and `dread`. Both groups draw in full; every other table still
+     shows the nav and falls through to the placeholder until the sectioned
+     bodies (B3) and the equipment facets (B4) land. */
   import { untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
+  import FilterBar from './FilterBar.svelte';
   import Icon from './Icon.svelte';
   import PageHead from './PageHead.svelte';
   import RecordModal from './RecordModal.svelte';
+  import { plainFacets } from '../lib/data.js';
   import { artSrc, descParts } from '../lib/desc.js';
+  import { facetRows } from '../lib/facets.js';
+  import {
+    chosenCount,
+    encodeFilter,
+    groupsFor,
+    passes,
+    type FilterState
+  } from '../lib/filters.js';
   import { tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { descOf, eqLine, nameOf } from '../lib/i18n.js';
@@ -42,14 +52,16 @@
   const t = $derived(app.t);
   const index = $derived(app.index);
 
-  /* The four tables with no facet to narrow by - checked against data.js in
+  /* The tables this slice draws in full - checked against data.js in
      tables.test.ts rather than assumed. Every other table id still resolves
      through the nav, and falls through to the placeholder below. */
   const KNOWN: readonly TableId[] = [
     'core_item',
     'core_consumable',
     'hnf_item',
-    'hnf_consumable'
+    'hnf_consumable',
+    'wondrous',
+    'dread'
   ];
 
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
@@ -73,21 +85,22 @@
   let q = $state('');
   let view = $state<'list' | 'grid'>('list');
 
-  /* A selection belongs to the page it was made on. Route strings cannot tell
-     one table from another - they all read "tables" - so the hash, which
-     changes on every table, anchor and filter move, is the honest signal that
-     the visitor went somewhere else. A hash-only move keeps this component
-     alive, which is why the reset lives in an effect rather than on
-     destroy. */
+  /* A selection belongs to the page it was made on, and so does an open
+     modal. `app.navigations` counts a real move - `go()`, or the address
+     changing under the app - and not a filter pick, which rewrites the
+     address with `replace()` and must keep both. Route strings cannot tell
+     one table from another on their own - they all read "tables" - which is
+     why a hash-only move needs this signal rather than `app.hash` itself. */
   const sel = new SvelteSet<string>();
+  let open = $state<Record_ | null>(null);
   $effect(() => {
-    void app.hash;
+    void app.navigations;
     untrack(() => {
       sel.clear();
+      open = null;
     });
   });
 
-  let open = $state<Record_ | null>(null);
   let said = $state('');
   const say = (msg: string): void => {
     said = msg;
@@ -95,12 +108,77 @@
 
   const help = $derived(helpFor('tables', app.lang));
 
+  /* The filter is read from the address rather than mirrored - `app.route`
+     already is the picked state. `seenSeg` is the one mirror this needs: the
+     exact segment this component last wrote, so an effect can tell "the
+     address changed under us" (open the panel, the way a filter link does)
+     apart from "we just wrote it" (round-tripping is stable, so folding the
+     panel and then dropping a pill does not spring it open again). */
+  const facetGroups = $derived(groupsFor(table));
+  const filterState = $derived<FilterState>(
+    app.route.kind === 'tables' ? app.route.filter : {}
+  );
+  const facRows = $derived(index ? facetRows(index, table, t) : []);
+
+  let filterOpen = $state(false);
+  let seenSeg = $state('');
+  let seenTable = $state<TableId | null>(null);
+  $effect(() => {
+    const route = app.route;
+    const tbl = table;
+    const groups = groupsFor(tbl);
+    untrack(() => {
+      if (seenTable !== tbl) {
+        seenTable = tbl;
+        seenSeg = '';
+        filterOpen = false;
+      }
+      const seg = route.kind === 'tables' ? encodeFilter(route.filter, groups) : '';
+      if (seg !== seenSeg) filterOpen = true;
+      seenSeg = seg;
+    });
+  });
+
+  /** Writes a filter through `replace()`, and marks it as our own edit so the
+   *  effect above does not treat it as a link arriving from elsewhere. */
+  function applyFilter(next: FilterState): void {
+    seenSeg = encodeFilter(next, facetGroups);
+    app.replace(tablesHash(table, { filter: next }));
+  }
+
+  function pickFacet(group: string, value: string): void {
+    const row = facRows.find((r) => r.group === group);
+    const order = row?.values.map((v) => v.value) ?? [];
+    const current = filterState[group] ?? [];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : order.filter((v) => current.includes(v) || v === value);
+    applyFilter({ ...filterState, [group]: next });
+  }
+
+  function resetFacets(): void {
+    applyFilter({});
+  }
+
+  async function copyFilterLink(): Promise<void> {
+    const ok = await app.env.clipboard.writeText(
+      app.linkTo(tablesHash(table, { filter: filterState }))
+    );
+    say(ok ? t.filterLinkCopied : t.copyFailed);
+  }
+
   const rows = $derived(index?.rows.get(table) ?? []);
+  const facPassed = $derived.by(() => {
+    if (!facetGroups.length) return rows;
+    return rows.filter((it) =>
+      passes(filterState, facetGroups, (g) => plainFacets(it)[g] ?? '')
+    );
+  });
   const filtered = $derived.by(() => {
     const query = q.trim().toLowerCase();
-    if (!query) return rows;
+    if (!query) return facPassed;
     const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
-    return rows.filter((it) =>
+    return facPassed.filter((it) =>
       matches(it, query, (r) => eqLine(r, app.lang, labels, { noType: true }))
     );
   });
@@ -202,8 +280,28 @@
     </div>
   </div>
 
+  <FilterBar
+    rows={facRows}
+    picked={filterState}
+    shown={filtered.length}
+    total={rows.length}
+    open={filterOpen}
+    {t}
+    ontoggle={() => {
+      filterOpen = !filterOpen;
+    }}
+    onpick={pickFacet}
+    onreset={resetFacets}
+    oncopylink={() => void copyFilterLink()}
+  />
+
   {#if filtered.length === 0}
-    <div class="empty">{t.nothing}</div>
+    <div class="empty">
+      {t.nothing}
+      {#if chosenCount(filterState, facetGroups) > 0}
+        <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
+      {/if}
+    </div>
   {:else}
     <label class="selall">
       <span class="selbox" data-on={allSelected ? '1' : undefined}>

@@ -5,78 +5,218 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 
 ## Status
 
-Phase 4 is **in progress**. All six roll modes, the record page, and now
-**Batch B1 of the tables slice** (the four filterless tables: `core_item`,
-`core_consumable`, `hnf_item`, `hnf_consumable`) are built and match the live
-app exactly, apart from the debts named below. `npm run check` and
-`npm run check:built` both pass. A full `node tests/parity.js` reports ten
-failures, none of them in the Tables work - nine are known Windows-rendering
-drift carried forward from earlier sessions, and one is a new instance of the
-same drift on a record-page state this session never touched. See "Ten parity
-failures that are not yours" further down.
+Phase 4 is **in progress**. Built and matching the live app apart from the
+debts named in `plan.md`: all six roll modes, the record page, Batch B1 of the
+tables slice (the four filterless tables), and now **Batch B2 - the filter**
+(`wondrous` and `dread`).
 
-## Completed this session
+**This session built B2 end to end**: `plan.md`, "B2 built: the filter" has
+the design as written plus what was found only while building, and this file
+reflects the result. `npm run check` and `npm run check:built` both pass, and
+a full parity run of every B2 state matches the live app exactly except the
+placeholder-antialiasing and one text-reflow debt named below - the same
+category of noise B1 already carried for the other four tables.
 
-Batch B1, in one slice:
+## What B2 built
 
-- **`app/src/lib/tables.ts`** (+ `tables.test.ts`) - `TABLE_GROUPS`,
-  `SUB_LABEL`/`subLabelOf`, `groupOf`. Tested for exhaustiveness against
-  `TABLE_IDS` so a table can never fall through the nav ungrouped.
-- **`app/src/components/TablesPage.svelte`** (+ `tables.test.ts`) - the chip
-  nav (book row, sub row), the toolbar (search, copy-table-link, list/grid
-  switch), rows and tiles, the selection checkbox and select-all, the empty
-  state, and a row opening the record modal. Every table id resolves through
-  the nav; the ten tables B1 does not draw fall through to a `.todo`
-  placeholder rather than crashing.
-- **`Chip.svelte`** grew an `href` form (a real `<a>`, matching the tab bar)
-  and a `size="sm"` variant for the sub-row. **`ChipRow.svelte`** grew a `sub`
-  flag for the same row's spacing. Both were second uses, not designed ahead.
-- **`Chip.test.ts`** - new, both render forms directly, since `Chip` now has
-  behaviour of its own the parent tests do not each exercise.
-- **`tests/parity/driver.js`** - added `type(placeholder, text)` (a table's
-  query lives in memory and never reaches the address, so a spec has to type
-  into it directly), and widened `click()`'s selector to include `input` (it
-  already found checkboxes via `has()`; `click()` had not, and the selection
-  checkbox has no other way to be pressed by name).
-- Eight parity states: `#/tables`, `#/tables/hnf_consumable`, `~ grid`,
-  `~ searched`, `~ nothing found`, `~ a row opened`, `~ a row ticked`,
-  `~ help`. All exact except the debts below.
-- `docs/specs/FEATURES.md` needed no change - it already described the finished
-  feature, not the build order.
+- `app/src/lib/facets.ts` + `facets.test.ts` - `facetRows(index, table, t)`,
+  the `kind` row for a table that mixes more than one kind, in `item`,
+  `consumable`, `equip` order; nothing for a single-kind table or one with no
+  `kind` group at all.
+- `app/src/lib/dict.ts` - `filters`, `kindF`, `fEquip`, `anyValue`, `outOf`,
+  `dropValue`, `resetAll`, `filterLink`, `filterLinkCopied`, copied verbatim
+  from `T.ru` / `T.en` in `app.js`.
+- `app/src/state/app.svelte.ts` - `replace(hash)` (writes through
+  `env.router.replace`, keeps `hash` in step, adds no history entry) and
+  `navigations` (a counter that `go()` and a router-driven address change both
+  increment, and `replace()` does not).
+- `app/src/ports/router.ts` - `memoryRouter.replace` no longer announces to
+  its listeners, matching `hashRouter.replace`'s real `replaceState` behaviour.
+- `app/src/components/Button.svelte` - `expanded` (`aria-expanded`) and a
+  `toggle` variant for `.ftoggle.has` (gold text, gold-tinted border, no fill).
+- `app/src/components/FilterBar.svelte` (new) - the strip (`.fbar`: the
+  toggle, one pill per pick, reset, the filter-link button, the count) and the
+  panel it folds open (`.panel.ffilter`: one `.field` per facet row, a `.lbl`
+  with the row's name and an "any" hint, a `ChipRow` of `Chip`s). Pure props
+  in, callbacks out - it owns none of the routing.
+- `app/src/components/TablesPage.svelte` - `KNOWN` grows by `wondrous` and
+  `dread`; the filter is read from `app.route.filter` rather than mirrored,
+  with `seenSeg` as the one mirror (the exact segment this component last
+  wrote) deciding whether an address change opens the panel; the selection and
+  the open modal now reset on `app.navigations` rather than `app.hash`, so a
+  filter pick keeps both and a real navigation clears both; the empty state
+  grows its own reset button once something is picked.
+- `tests/parity/specs.js` - six new states (`#/tables/wondrous`,
+  `~ panel open`, `~ filtered`, `~ filter link`, `~ nothing found`,
+  `#/tables/dread`), two new specs (`filteredAddress` reads `d.hash()`,
+  `copiedFilterLink` reads the clipboard's hash), `NAME` entries for the
+  toggle, the items chip, reset and the filter link, and `pending` entries for
+  the seven tables B3/B4 have not reached (`voa`, `frames`, `community`,
+  `alt_item`, `alt_consumable`, `eq_secondary`, `eq_armor` - `eq_weapon`
+  already had one).
 
-**Three things found while building it**, all written up in `plan.md` under
-"B1 built: the plain table" with full detail - short version:
+Three things found only while building, all written up in `plan.md` under "B2
+built: the filter" with the reasoning:
 
-- **A legacy numbering bug in the grid view, not reproduced.**
-  `list.map(tileHTML)` in `app.js` passes the array index as the tile's roll
-  number, so every tile past the first shows its position instead of its own
-  roll. Confirmed against `data.js`. The rewrite draws the real number and
-  records the divergence in `ACCEPTED` rather than copying the bug forward
-  into the version that survives the cut-over. Worth mentioning to the
-  repository owner.
-- **Two invented-not-copied spacing values**, worth 12px of vertical drift that
-  got worse every row down the table (one constant offset reading as "growing"
-  the further into a long list you look, not an actual per-row difference).
-  `.toolbar`'s real `margin-bottom` in style.css is 18px; the port had guessed
-  6px and also missed that a wrapping div's own 6px top margin collapses into
-  the larger figure rather than adding to it.
-- **Whitespace the Svelte compiler inserts between block siblings changes
-  `textContent`, invisibly.** Three boundaries needed the tight `>`/`<`
-  placement pattern (name/stat-line, row/badges, tile-number/tile-name), and
-  Prettier undoes that placement for a short tag like `<div class="tile-b">`
-  on every format unless the `<!-- prettier-ignore -->` sits before the whole
-  `<button>`, not before each inner `<div>`. See "Session gotchas" below for
-  how to recognise this class of bug again.
+1. `.field:last-child`'s reset never actually applies inside `.ffilter` - a
+   cascade tie that `.ffilter .field`'s later declaration wins, which made the
+   port's panel 12px short until it was measured against the live app rather
+   than assumed from the source.
+2. A space written on its own line inside an `{#if}` is trimmed away entirely
+   rather than collapsed to one, unlike whitespace *between* two elements -
+   fixed with `<!-- prettier-ignore -->` on the whole `<span>`, the space
+   written inline.
+3. `FilterBar`'s `.ffilter` needed `.panel`'s base rules (background, border,
+   padding) copied in, the way `TablesPage.svelte`'s `.tablenav` already does
+   for the nav strip - `.ffilter` is `.panel`'s second use in this codebase.
+
+## Files changed
+
+```
+app/src/lib/facets.ts                  new
+app/src/lib/facets.test.ts             new
+app/src/lib/dict.ts                    modified - nine keys, both languages
+app/src/state/app.svelte.ts            modified - replace(), navigations
+app/src/state/app.test.ts              modified - three new tests
+app/src/ports/router.ts                modified - memoryRouter.replace
+app/src/ports/ports.test.ts            modified - one new test
+app/src/components/Button.svelte       modified - expanded, toggle variant
+app/src/components/button.test.ts      modified - three new tests
+app/src/components/FilterBar.svelte    new
+app/src/components/TablesPage.svelte   modified - the wiring, see above
+app/src/components/tables.test.ts      modified - "the filter" describe block
+app/src/components/a11y.test.ts        modified - FilterBar in COVERED, one
+                                        pressed state, a second wondrous kind
+                                        added to the fixture
+tests/parity/specs.js                  modified - see above
+issues/47/plan.md                      modified - B2 marked built
+issues/47/handoff.md                   this file
+```
+
+## Tests and checks run, with results
+
+```
+npm run check           PASS - 508 files, 0 svelte-check errors/warnings,
+                                637 tests passed, coverage thresholds met
+npm run check:built     PASS - build, file:// smoke, bundle budget (55.1 kB
+                                of 120 kB)
+node tests/parity.js "tables/wondrous" "tables/dread"   PASS - зеро
+                                unexpected discrepancies; every debt recorded
+                                matches what a fresh run measures
+```
+
+The full unfiltered parity run was **not** re-run this session - it takes
+about nine minutes and the filtered run above covers everything B2 touched.
+The ten pre-existing Windows-vs-Linux drift failures from the B1 session (see
+"Ten parity failures that are not yours" below) were seen again in an
+intermediate run while filtering broadly on `"wondrous ~"` and are unrelated
+to this batch - confirmed by name against that list, not re-verified with
+stash-and-rebuild this session. A full run before the next slice's commit
+would settle whether they have moved.
+
+## Deviations from the plan, and why
+
+None. The design in `plan.md` under "B2 planned: the filter" (now "B2
+built") was followed as written; the three findings above are additions to
+it, not departures from it - none of them changed what the strip, the panel,
+`replace()` or `navigations` do, only how a couple of CSS rules and one
+whitespace character had to be written to match the live app exactly.
+
+## New `VISUAL_DEBT` entries, and why they are not defects
+
+All measured against a fresh build this session, not guessed:
+
+- **Search-box placeholder antialiasing**, 0.11-0.44% across `wondrous`'s five
+  new states at 768 and 375 (one entry, `#/tables/wondrous ~ panel open @ ru
+  1100`, also needed one at full width and `en 768` - the space fix for
+  finding 3 below moved a rasterisation boundary by a fraction of a pixel).
+  Same cause 5 already named in `plan.md` for the four B1 tables.
+- **A description line wrapping one word earlier on a phone**, 1.41-1.56% on
+  `#/tables/wondrous @ ru/en 375` and `#/tables/dread @ ru/en 375`. Neither of
+  B1's four tables nor Core rules had a description long enough at 375px to
+  show this; the picture, name, stat line and badges are pixel-identical, only
+  the line-break point differs by sub-pixel kerning. First seen because B2 is
+  the first slice to put a long Wondrous or Dread description on screen at
+  375px, not something the filter changed. Written up as cause 6 in
+  `plan.md`.
+
+## Remaining work, in batches
+
+- **B3 - sectioned bodies and section anchors**: `voa`, `frames`, `community`,
+  `alt_item`, `alt_consumable`. Brings the `tier`, `frame` and `comm` facet
+  rows with it (`facets.ts` only has `kind` today - untested rows would be
+  worse than missing ones), and the numeric-pill rule already recorded in
+  `plan.md` ("a bare number takes its row's name"). The anchors `#/roll/alt`'s
+  crit box links to (`#/tables/alt_item/<rarity>`) land here. `voa`, `frames`,
+  `community`, `alt_item`, `alt_consumable` are already `pending` in
+  `tests/parity/specs.js`.
+- **B4 - the equipment tables**, their seven facets and tier sections.
+  `#/tables/eq_weapon`, `#/tables/eq_secondary`, `#/tables/eq_armor` stay
+  `pending` until then.
+- **B2a (loose, unscheduled) - extract `Panel.svelte`.** `.panel`'s base rules
+  are now copied into six components (`AltPanel`, `RecordCard`, `RollPanel`,
+  `StdPanel`, `TablesPage`'s `.tablenav`, and now `FilterBar`'s `.ffilter`).
+  Its own commit, verified by the existing parity states not moving.
+  Deliberately not folded into B2, same as it was not folded into B1.
+- **C - search** (`#/search`). `lib/search.ts` exists. This is the second
+  caller of the table row, so the row markup moves into its own component
+  here - not before. It is also where the shared `S.kind` decision comes due
+  (see "Open questions" below).
+- **D - lists** (`#/lists`). Pays off the add-to-list debts on both record
+  routes, both roll modals and the table row's modal, and adds the selection
+  bar.
+- **E - print** (`#/print/<ids>`).
+- **F - the toast.** Small; closes `~ pinned` and `#/i/ci1 ~ toast`.
+
+Then Phase 6 (deployment) and Phase 7 (cut-over).
+
+## The exact next implementation batch
+
+**B3 - sectioned bodies and section anchors.** Before writing code:
+
+1. Read `app.js`'s `renderTables()` branches for `voa`, `frames`, `community`
+   (the `tsection` divisions, ~2501-2530) and the alternate-tables branch
+   (~2464-2494), plus `tblFacets`'s `tier`, `frame`, `comm` rows (2634-2641).
+2. Read the numeric-pill rule already recorded in `plan.md` under "B2
+   planned: the filter" > "Four details that are not visible from the
+   markup": `fChosen` reads a bare number as its row's name plus the number -
+   `facets.ts`'s `kindLabel`-style mapping needs the same rule for `tier`.
+3. Confirm against `data.json` which kinds/tiers/frames/communities each of
+   the five tables actually holds, the way B2's handoff did for `wondrous` and
+   `dread` - do not assume from `plan.md`'s tables, which were themselves
+   checked against `data.json` once and could be stale.
+4. Decide whether `facets.ts` grows three more branches or the module is
+   restructured - it was written for exactly one row on purpose ("an untested
+   row is worse than a missing one"), so this is a real design question, not
+   a formality.
+
+## What not to start yet
+
+- **Do not touch Phase 7.** `index.html`, `app.js` and `style.css` are the
+  parity harness's expectation. Deleting them ends the ability to verify
+  anything.
+- **Do not point Pages at `dist/`.** Phase 6, and it needs the owner to switch
+  Settings -> Pages -> Source first.
+- **Do not start Playwright.** Ask first whether it earns its place - the
+  parity harness already drives both apps in a real browser.
+- **Do not extract `Panel.svelte` inside B3.** It touches every screen the
+  harness has already agreed on; it wants its own commit.
+- **Do not extract the row into its own component yet.** It has one caller.
+  Search is the second.
+- **Do not implement the equipment facets in B3.** They are B4's; the seven
+  groups (`tier`, `src`, `cls`, `trait`, `range`, `burden`, `line`) are a
+  different shape from the plain-table rows B3 adds.
+- **Do not chase the help-panel, search-placeholder or description-reflow
+  debts.** All three were measured identical apart from rasterisation or a
+  line-wrap boundary; there is nothing to copy.
+- **Do not re-record the ten failing debts below without the stash check.**
+- **Do not translate the legacy Russian comments** in `app.js`, `style.css`
+  and the older suites. Those files are deleted at the cut-over.
 
 ## Ten parity failures that are not yours
 
-A full unfiltered `node tests/parity.js` run at the end of this session reports
-**10 расхождений on this machine**. Nine are unchanged from before this
-session and were not re-verified again this time, but nothing this session
-touched could have affected them - Wondrous and the record page share no code
-with `TablesPage.svelte` or anything it imports. Verified in an earlier
-session via `git stash push -u`, rebuild, run the failing states - the numbers
-came back identical:
+Carried forward from the B1 handoff, unverified again this session but seen
+once more in passing while filtering broadly on `"wondrous ~"`:
 
 ```
 #/roll/wondrous ~ modal @ ru 768 8.73 vs 8.57
@@ -88,111 +228,13 @@ came back identical:
 #/i/ci1 ~ whole @ ru 375         7.64 vs 7.28
 #/i/ci1 ~ whole @ en 768         5.40 vs 5.22
 #/i/ci1 ~ whole @ en 375         7.69 vs 7.01
+#/i/ci1 ~ whole @ ru 1100        5.92 vs 5.29  (not yet stash-verified)
 ```
 
-**The tenth is new this session and worth a second look, not a shrug:**
-
-```
-#/i/ci1 ~ whole @ ru 1100        5.92 vs 5.29
-```
-
-Same state family as the eight `~ whole` entries above, but at 1100px, which
-had been exact on this machine until now. This session touched no file that
-record-page rendering depends on - not `RecordCard.svelte`, `RecordPage.svelte`,
-`RecordModal.svelte`, `label.ts`, `desc.ts`, `i18n.ts`, `hash.ts`, `data.ts`, nor
-`styles/tokens.css` - so there is no code path connecting this session's actual
-changes to that failure. It reads as the same Windows-vs-Linux rendering drift
-as the other nine, just crossing the threshold at a width that happened to sit
-just under it before. It was **not** re-verified with the stash-and-rebuild
-check this session, because there was no clean baseline to stash back to that
-would isolate it (every uncommitted change this session is Tables-only and
-shares no path with the record page) - so treat it as suspected same-cause
-drift, not confirmed, and give it the stash check first if it is still failing
-next session.
-
-**All ten were left alone on purpose.** The nine recorded numbers were set on
-the Linux agent, CI runs there, and re-recording them to this machine's
-rendering would only move the failure to CI. Do not re-record them; do not
-chase them further.
-
-## Remaining work, in batches
-
-**Batch B2 - the filter**, next. The bar, the chosen pills, the folded panel,
-reset, the filter link, the `f_` segment - `plan.md`, "The tables surface, and
-how it splits", has the full reasoning. Unlocks `wondrous`, `dread`,
-`community` (any table with a `kind`/`comm` facet but no sectioned body).
-`lib/filters.ts` already holds the parsing and the predicate logic
-(`groupsFor`, `decodeFilter`, `encodeFilter`, `passes`, `chosenCount`) -
-tested, and unused until B2 wires a panel to it. Nothing in B1 needs
-revisiting to build B2 on top of it; the toolbar and row/tile markup are
-already shaped to take a filter bar between the toolbar and the body, the way
-the live app's `fBarHTML` sits between `searchBar` and `body` in `app.js`.
-
-**Batch B3 - sectioned bodies and section anchors**: `voa`, `frames`,
-`community`, and the two alternate tables. The anchors `#/roll/alt`'s crit box
-already links to (`#/tables/alt_item/<rarity>`) land here.
-
-**Batch B4 - the equipment tables**, their facets and tier sections. The last
-body shape; `#/tables/eq_weapon` stays `pending` until then.
-
-**Batch C - search** (`#/search`). `lib/search.ts` exists. The row is now
-built in `TablesPage.svelte` and is the second use search reuses - per
-CLAUDE.md's extraction rule, this is the point at which the row markup should
-move into its own component (`Row.svelte` or similar), since a second caller
-now genuinely exists. Do not extract it before search actually needs it.
-
-**Batch D - lists** (`#/lists`). Pays off the outstanding add-to-list debts on
-both record routes, both roll modals, and now the table row's modal, plus adds
-the selection bar B1 left honestly missing (`#/tables ~ a row ticked`).
-
-**Batch E - print** (`#/print/<ids>`). Pays the print half of the same row.
-
-**Batch F - the toast.** Small, and it closes `~ pinned` and `#/i/ci1 ~ toast`.
-Could be folded into any batch above.
-
-Then Phase 6 (deployment, the `_site` file list becomes `dist/`) and Phase 7
-(cut-over: delete `index.html`, `app.js` and `style.css` and the legacy
-suites).
-
-## Ordered next steps
-
-1. Read `CLAUDE.md`, this file, `issues/47/plan.md`, then `docs/specs/ROUTES.md`
-   ("Filter grammar") and `docs/specs/FEATURES.md` ("Tables and search",
-   the filter-panel bullet).
-2. Confirm the environment - see "Environment" below.
-3. Build B2: a `FilterBar.svelte` (or similar) reading `lib/filters.ts`,
-   wired for `wondrous`, `dread` and `community` first (their facets are
-   `kind`/`comm` only - no sectioned body yet, so B2 can prove the filter in
-   isolation before B3's section splitting complicates the picture).
-4. Measure, record any debt with a reason that names **everything** the state
-   is short of - see CLAUDE.md, "the debt's reason" - run both gates and a
-   full parity run, commit.
-5. Update `docs/specs/FEATURES.md`, `plan.md` and this file in the same commit
-   as the behaviour.
-
-## What not to start yet
-
-- **Do not touch Phase 7.** `index.html`, `app.js` and `style.css` are the
-  parity harness's expectation. Deleting them ends the ability to verify
-  anything.
-- **Do not point Pages at `dist/`.** Phase 6, and it needs the owner to switch
-  Settings -> Pages -> Source first.
-- **Do not start Playwright.** Ask first whether it earns its place - the
-  parity harness already drives both apps in a real browser.
-- **Do not chase the help-panel debts** (Wondrous, Core rules, or the new
-  Tables one). All three are measured identical character-for-character;
-  there is nothing to copy.
-- **Do not chase the search-box placeholder debts either**, for the same
-  reason - measured pixel-identical box and text, the remainder reads as
-  antialiasing on thin glyphs.
-- **Do not re-record the ten failing debts** - nine from earlier sessions, one
-  new this session. Give the new one the stash-and-rebuild check first if it
-  is still failing, since it was not verified that way this time.
-- **Do not translate the legacy Russian comments** in `app.js`, `style.css`
-  and the older suites. Those files are deleted at the cut-over.
-- **Do not extract the row into its own component yet.** It has one caller
-  (`TablesPage.svelte`). Search is the second, and CLAUDE.md's rule is second
-  use, not anticipated use.
+All ten were left alone on purpose - see the B1 handoff's reasoning, still
+valid: Windows-vs-Linux rendering drift against numbers recorded on the Linux
+CI agent. Give the last one its stash-and-rebuild check before touching it -
+two minutes, and it settles the question rather than guessing.
 
 ## Quality gates for a slice
 
@@ -202,112 +244,112 @@ npm run check:built    # build, file:// smoke, bundle budget
 node tests/parity.js   # the rewrite against the live app
 ```
 
-`check:built` is required for anything that alters what a screen draws. A full
-parity run takes about nine minutes here; filter while working, the argument
-is a substring of the expanded id: `node tests/parity.js "tables ~ grid"`.
+`check:built` is required for anything that alters what a screen draws - B3
+will. A full parity run takes about nine minutes here; filter while working,
+the argument is a substring of the expanded id:
+`node tests/parity.js "tables/voa"`.
 
-Must pass: 613+ tests, per-file coverage thresholds, 0 svelte-check errors,
-prettier clean, and no `VISUAL_DEBT` entry that is stale in either direction -
-apart from the ten machine-drift entries above.
-
-## Environment
-
-**This session ran natively on Windows** at `E:\dev\daggerheart-loot`, not in a
-Linux sandbox reaching the repository over a host mount. The `/tmp` mirror
-described in `CLAUDE.md` has nothing to mirror here, and none of the mount
-costs apply. Measured this session, from the repository root:
-
-| | this machine |
-|---|---|
-| `vitest run --coverage`, 30 files | ~40 s |
-| `svelte-check` | a few seconds |
-| `eslint .` | a few seconds |
-| `vite build` | ~1 s |
-| `npm run check` end to end | ~2 min |
-| one filtered `node tests/parity.js "tables"` run | ~2-3 min |
-| full `node tests/parity.js` | ~9 min |
-
-So: **check which kind of session you are in before paying for a mirror.** If
-`node -v` and `npx eslint` on a couple of files answer in seconds, work in
-place.
-
-**`npm run check`'s `format:check` step may report `.claude/settings.local.json`
-as unformatted.** That file is gitignored and belongs to the local session,
-not the repository - it is not something to fix, and not evidence that
-anything you touched is misformatted. Run `npx prettier --check .` yourself
-and read past that one line, or check the specific files you edited.
+Must pass: the whole unit suite, per-file coverage thresholds, 0 svelte-check
+errors, prettier clean, the `a11y.test.ts` guard, and no `VISUAL_DEBT` entry
+stale in either direction apart from the ten drift entries above.
 
 ## Session gotchas
 
+Carried forward, all still true:
+
 - **A whitespace text node between two `display:block` siblings is invisible
-  on screen and present in `textContent`.** The layout does not show it, so a
-  parity screenshot cannot catch it - only the "controls on the page" spec
-  can, because it reads accessible names, and a row's accessible name here is
-  deliberately its whole content (no `aria-label`; confirmed against the live
-  markup). When a button's name has to match character-for-character and the
-  markup crosses a block-element boundary, check whether the two apps'
-  concatenated text agree before assuming the render is fine because the
-  screenshot is.
-- **Prettier does not reliably preserve the `>`/`<` whitespace-suppression
-  trick on a tag that fits on one line**, even when the source already has it
-  split. It keeps the trick on a tag it is forced to wrap anyway (long
-  attributes), but reformats a short one like `<div class="tile-b">` back onto
-  its own line, silently reintroducing the collapsed-whitespace bug on the
-  next format. If a fix like this has to survive formatting, put
-  `<!-- prettier-ignore -->` before the outermost element whose whole subtree
-  needs protecting, not before each inner element - ignoring a node protects
-  everything inside it, and ignoring only the inner elements leaves the gaps
-  between them exposed again.
+  on screen and present in `textContent`.** Only the controls spec catches it,
+  because a row's accessible name is deliberately its whole content.
+- **A space written on its own line inside an `{#if}` block is trimmed away
+  entirely, not collapsed to one** - a different rule from whitespace
+  *between* two elements, which does collapse to a single space. Both need
+  `<!-- prettier-ignore -->` on the whole element the same way, with the
+  content written on one line rather than split across several.
+- **Two CSS rules of equal specificity: the one written later in the file
+  wins, not the one that reads as "the override."** `.field:last-child`
+  (line 151) loses to `.ffilter .field` (line 927) because it comes first,
+  even though a `:last-child` reset reads like it should win. Measure the
+  computed value in both apps; do not reason from which rule looks like an
+  override.
 - **A pixel diff that "grows" down a long list is usually one constant offset
-  higher up, not a per-row difference.** `#/tables`'s rows were each a correct
-  78-80px tall on both apps; the apparent growth in the diff image was a
-  single 12px gap between the toolbar and the first row, repeating unchanged
-  at every row below it. Measure `getBoundingClientRect()` on a `[data-row]`
-  or two before assuming the row itself is wrong.
-- **Parity output is buffered when redirected.** Use a real file
-  (`node tests/parity.js "x" > /tmp/out.txt 2>&1; grep ...`) in one shell
-  command rather than piping through `tail` first - `tail` discards
-  everything before the cutoff, including `FAIL` lines you need to grep for
-  afterward.
+  higher up.** Measure `getBoundingClientRect()` - or, without a live DOM,
+  scan the screenshot's own pixels column by column - on two elements before
+  assuming a row itself is wrong. This is what found both the B1 toolbar
+  margin and B2's panel height.
+- **Parity output is buffered when redirected.** Write to a real file and grep
+  it afterwards rather than piping through `tail` - and prefer running the
+  node process itself in the background over piping through `tail` in the
+  same command, since a `| tail -N` truncates before the file write finishes
+  and can hide the summary line.
 - **A parity run wipes `test-output/parity/`.** Analyse a diff image before
-  starting another run, or it is gone. `pngjs` (already a dependency) is
-  useful for cropping a diff image to a specific region when eyeballing the
-  whole screenshot is not precise enough - see the crops used to find the
-  toolbar-margin bug this session, none of which were committed.
-- **The tool call cap is about 178 seconds.** A full parity run exceeds it;
-  run it in the background and wait on it, or filter to the states you need.
+  starting another run. `pngjs` is already a dependency and is useful for
+  cropping one, or for scanning a single pixel column to find exactly where
+  two screenshots diverge vertically - faster than eyeballing crops back and
+  forth.
+- **The tool call cap is about 178 seconds.** A full parity run - or even a
+  broad filtered one - exceeds it; run it in the background and wait for the
+  notification rather than polling with short foreground commands.
+- **Stray puppeteer `chrome.exe` processes accumulate across backgrounded
+  parity runs on this machine and slow down everything else, including
+  unrelated `vitest` runs (the a11y suite's axe checks are CPU-heavy and hit
+  the default 5s test timeout under load).** If a test that doesn't touch
+  anything you changed times out, check `tasklist` for a pile of `chrome.exe`
+  before assuming the test itself is flaky; killing them and re-running is
+  the fix, not raising the timeout.
+- **The equipment nav chip and the `equip` kind chip are the same word** in
+  both languages. A parity `enter` that clicks it on `#/tables/wondrous` finds
+  the navigation link, not the panel chip. Grip the "items" chip instead.
+- **`.ffilter` is declared twice in `style.css`** (926 and 948) and the second
+  wins: the panel's top margin is 10px, not 16 - and see the `:last-child`
+  gotcha above for the same file's second trap in the same block.
+- **A `.fpill`'s accessible name, in the real DOM, is its text content, not
+  its `title`.** The parity harness's own `NAME_FN` prefers `title` over
+  content (unlike the real accessible-name algorithm), which is why the plan
+  said to grip it by title - that instruction is for `tests/parity/driver.js`
+  only. A component test using `@testing-library/svelte`'s real accessible-name
+  computation has to grip the pill some other way - `container.querySelector`
+  by class is what `tables.test.ts` does.
+- **`enter` steps run before the language switch**, so they grip Russian
+  names; only specs need `NAME` entries in both languages.
 
 ## Open questions
 
 - **Pages source.** Settings -> Pages -> Source is still not "GitHub Actions",
-  so a red build can still publish. Owner-side; nothing in a workflow can fix
-  it.
-- **Playwright.** Phase 5 asks for it. The parity harness may already cover
+  so a red build can still publish. Owner-side.
+- **Playwright.** Phase 5 asks for it; the parity harness may already cover
   what it would. Worth a decision before building anything.
-- **`noData` and `storageOff`.** Two dictionary strings in the rewrite have no
-  twin in the live app's dictionary. Neither is reachable by any parity state
-  today; `#/tables` with `noData()` now exercises `noData` in a unit test, but
-  no parity state does. Worth aligning when the lists slice touches storage.
-- **The kind filter's scope.** The live app shares one `S.kind` across Core
-  rules, the alternate tables and Tables; the rewrite gives each panel its
-  own. Nothing compares it. B2 is where a person might notice, and `plan.md`
-  records the decision.
-- **The legacy grid-numbering bug** (see above) - worth reporting to the
-  repository owner as a live-site defect, independent of this migration.
+- **`Panel.svelte`.** Five copies of `.panel` before B2, six after (`.ffilter`
+  is the sixth). Its own batch, unscheduled - the owner's call whether it goes
+  before C or later.
+- **`noData` and `storageOff`.** Two dictionary strings with no twin in the
+  live app's dictionary and no parity state reaching them. Worth aligning when
+  the lists slice touches storage.
+- **The legacy grid-numbering bug.** `list.map(tileHTML)` in `app.js` passes
+  the array index as the tile's roll number, so every tile past the first
+  shows its position rather than its own roll. The rewrite draws the real
+  number and records the divergence in `ACCEPTED`. Still worth reporting to
+  the repository owner as a live-site defect.
+- **The shared `S.kind`.** Core rules, the alternate tables and search share
+  one; the rewrite gives each its own. Batch C is where that comes due - it
+  has nothing to do with the tables filter, which B2 confirmed narrows by its
+  own `S.fOn.kind` and always has.
 
 ## Critical files
 
 | Path | What it settles |
 |---|---|
-| `tests/parity/specs.js` | `STATES`, `LANGS`, `WIDTHS`, `NAME`, `ACCEPTED`, `VISUAL_DEBT` |
-| `tests/parity.js` | the runner: matrix expansion, one page per target, coverage report |
-| `tests/parity/driver.js` | gripping by accessible name, `type`, `click`, `settle`, waiting for artwork |
+| `issues/47/plan.md` | "B2 built: the filter" - the design, and what was found building it |
+| `app.js` 1576-1587, 2595-2733, 3617-3637, 4176-4188 | the whole filter, in the app being copied |
+| `style.css` 145-156, 230-256, 926-962 | every value the strip and the panel need |
+| `app/src/lib/filters.ts` | the frozen `f_` grammar and the predicate |
+| `app/src/lib/facets.ts` | which values a row offers and what they are called - `kind` only so far |
+| `app/src/lib/hash.ts` | `parseHash`, `tablesHash` - the filter round-trips |
+| `app/src/state/app.svelte.ts` | `replace`, `navigations` |
+| `app/src/ports/router.ts` | `hashRouter.replace` vs `memoryRouter.replace` |
+| `app/src/components/FilterBar.svelte` | the strip and the panel |
+| `app/src/components/TablesPage.svelte` | the screen B3 grows next |
+| `app/src/components/Button.svelte` | the toggle's base, and the one coverage exception |
 | `app/src/components/a11y.test.ts` | axe on pressed states, and the `COVERED` guard |
-| `app/src/components/TablesPage.svelte` | the plain table: nav, toolbar, rows, tiles, selection |
-| `app/src/lib/tables.ts` | `TABLE_GROUPS`, `SUB_LABEL`/`subLabelOf`, `groupOf` |
-| `app/src/lib/filters.ts` | the facet grammar B2 wires up next |
-| `app/src/components/PageHead.svelte` | the heading, the two round buttons, the help panel |
-| `app/src/lib/help.ts` | the help shape: text, links, bold words, breaks - `tables` is in `HELP` now |
-| `app/src/lib/dict.ts` | `Dict` derives from the Russian side; parity is a compile error |
-| `vite.config.mts` | the artwork links, the `file://` build, coverage thresholds |
-| `app.js`, `style.css`, `index.html` | the expectation. Read values from here, never guess |
+| `tests/parity/specs.js` | `STATES`, `LANGS`, `WIDTHS`, `NAME`, `ACCEPTED`, `VISUAL_DEBT` |
+| `tests/parity/driver.js` | gripping by accessible name, `type`, `click`, `settle` |
+| `app/vite.config.mts` | coverage thresholds, including Button's named exception |

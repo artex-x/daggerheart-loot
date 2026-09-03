@@ -41,19 +41,23 @@ Built, and matching the live app exactly in both languages at all three widths:
 | Core rules | `#/roll/std` | page, one source off, one kind off |
 | Alternate tables | `#/roll/alt` | page, a critical success, the same at the top rarity, the same with one kind on |
 | Tables (B1, the four filterless tables) | `#/tables`, `#/tables/hnf_consumable` | index, a second table, grid, searched, empty, a row opened, a row ticked, the help panel |
+| Tables (B2, the filter) | `#/tables/wondrous`, `#/tables/dread` | folded, panel open, a value picked, a filter link arrived at, a filter plus a query leaving nothing |
 
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/tables/eq_weapon` and the other ten tables with a filter or a sectioned
-  body - batches B2 through B4
+- `#/tables/voa`, `#/tables/frames`, `#/tables/community`, `#/tables/alt_item`,
+  `#/tables/alt_consumable` - sectioned bodies, batch B3
+- `#/tables/eq_weapon`, `#/tables/eq_secondary`, `#/tables/eq_armor` - the
+  equipment tables, batch B4
 - `#/lists` - the lists slice
 - `#/search` - the search slice
 - `#/print/ci1-q1` - the print slice
 
 ### What every remaining `VISUAL_DEBT` entry is
 
-Nothing outstanding is a styling defect. The 77 entries are five causes:
+Nothing outstanding is a styling defect. The 77 entries were five causes
+before B2; B2 adds a sixth, all of it measured rather than guessed:
 
 1. **The add-to-list and print row** under every record card - both record
    routes, the whole-page state, both roll modals, and now the table row's
@@ -78,6 +82,13 @@ Nothing outstanding is a styling defect. The 77 entries are five causes:
    rest of each screen matched exactly on its own. What is left reads as
    antialiasing on the placeholder's thin, muted glyphs - the same class of
    noise cause 4 names, just on a control rather than a paragraph.
+6. **A description line wrapping one word earlier on a phone**, 1.41-1.56% on
+   `wondrous` and `dread` at 375px. Neither B1's four tables nor Core rules had
+   a row with a long enough description to show it: the picture, the name, the
+   stat line and every badge measured pixel-identical, and only the line-break
+   point in the description differs by a few sub-pixels of kerning. First seen
+   because B2 is the first slice to put a long Wondrous or Dread description on
+   screen at 375px - not something the filter itself changed.
 
 ### The tables surface, and how it splits
 
@@ -91,7 +102,7 @@ nothing has to be faked:
 | | what | why it is a boundary |
 |---|---|---|
 | **B1** | the plain table: two-level chip nav, the toolbar, rows and tiles, selection, the empty state, a row opening the modal | the four tables with no filter |
-| **B2** | the filter: the bar, the chosen pills, the folded panel, reset, the filter link, the `f_` segment | unlocks `wondrous`, `dread`, `community` |
+| **B2** | the filter: the bar, the chosen pills, the folded panel, reset, the filter link, the `f_` segment | unlocks `wondrous` and `dread` - `community` is sectioned too, so it waits for B3 |
 | **B3** | sectioned bodies and section anchors: `voa`, `frames`, `community`, and the two alternate tables | the anchors `#/roll/alt`'s crit box already links to |
 | **B4** | the equipment tables, their facets and tier sections | the last body shape |
 
@@ -193,6 +204,265 @@ grew a `sub` flag for the same row's spacing. Seven parity states plus a
   what let the two bugs above surface at all - the parity harness's control
   inventory diffs exact strings, and a hand-written `aria-label` would have
   quietly hidden both.
+
+### B2 built: the filter
+
+The section below is the design as it was written, kept for the reasoning;
+what was actually built matched it, with three things found only while
+building - listed after it rather than folded in, the way B1 did.
+
+**Objective.** Draw the filter the live app draws over a table: the strip
+(`fBarHTML`), the panel it folds open (`fPanelHTML`), and the `f_` segment of
+the address (`fEncode`/`fDecode`/`syncFltUrl`). Two more tables become real -
+`wondrous` and `dread` - and nothing else changes.
+
+**Scope, and what B2 unlocks - corrected.** The handoff written after B1 said
+B2 unlocks `wondrous`, `dread` and `community`. It unlocks **two tables, not
+three**: `community` has a `comm` facet *and* a sectioned body
+(`renderTables()` splits it by community, app.js ~2520), so it needs B3 as
+well. Checked against `data.json` rather than assumed:
+
+| table | rows | kinds present | body |
+|---|---|---|---|
+| `wondrous` | 119 | item 49, consumable 59, equip 11 | plain |
+| `dread` | 29 | item 15, consumable 7, equip 7 | plain |
+| `community` | 90 | item only (`comm` facet) | sectioned - B3 |
+| `voa` | 108 | item 71, consumable 13, equip 24 | sectioned - B3 |
+| `frames` | 94 | consumable 2, equip 92 | sectioned - B3 |
+| `alt_item`, `alt_consumable` | - | no facets at all | sectioned - B3 |
+
+So B2 implements exactly one facet row: **`kind`**, with the values that table
+actually holds, in `KINDS` order (item, consumable, equip). `tier`, `frame` and
+`comm` are B3's; the seven equipment groups are B4's. `KNOWN` in
+`TablesPage.svelte` grows by `wondrous` and `dread`; the other eight tables keep
+the `.todo` placeholder.
+
+**Non-goals.** No sectioned bodies, no equipment facets, no selection bar, no
+add-to-list row, no search page, no `Panel.svelte` extraction (see below). No
+change to the hash grammar, the fixtures, `CONTRACTS.md` or `llms.txt`: the
+`f_` segment is already frozen, already implemented in `lib/filters.ts` and
+`lib/hash.ts`, and already replayed by `docs/fixtures/urls/routes.json`.
+
+#### What the live app does, read off app.js
+
+- `tblFacets(tid)` (2625) builds the rows. For a plain table it is the `kind`
+  row where `tableKinds(tid).length > 1`, plus `tier` on `voa`, `frame` on
+  `frames`, `comm` on `community`.
+- `fBarHTML(tid, shown, total)` (2661) draws, in order: the `.btn.sm.ftoggle`
+  carrying `aria-expanded`, the word "Filters" and a count of picks; one
+  `.fpill` per picked value; then, only while something is picked, `.fclear`
+  and `.flink`; then `.fcount`,
+  which reads `total` alone when nothing is picked and `shown of total` when
+  something is. The panel follows the strip when `S.fOpen`.
+- `fPanelHTML` (2686) is `.panel.ffilter` holding one `.field` per row: a
+  `.lbl` with the row's name, plus an italic "any" while that row is untouched,
+  and a `.chips` row of `.chip` buttons carrying `aria-pressed`.
+- `flt` (4178) toggles one value or resets everything, then `syncFltUrl()`
+  (1583) and `render()`. `syncFltUrl` returns early on a table with no facets.
+- `currentRoute()` (3617): a different table clears `S.fOn`, `S.fSeg` and folds
+  the panel; a tail starting `f_` is decoded **only when it differs from
+  `S.fSeg`**, and doing so **opens the panel**.
+- Both empty states (2534 and 2742) add a reset button of their own, because
+  the panel's reset has scrolled away.
+
+Four details that are not visible from the markup and are what a port gets
+wrong:
+
+- **`.ffilter` is declared twice.** `margin-top:16px` at style.css:926 and
+  `margin-top:10px` at 948, same specificity, so **10px wins**. This is the
+  `.numbox` trap again: the rule that looks deliberate is not the rule that
+  applies. Measure the element in both apps before copying either number.
+- **`.fbar`'s `margin-top:16px` never shows.** It sits after a `.toolbar` whose
+  `margin-bottom` is 18px, and adjacent margins collapse to the larger. The
+  rewrite's `.toolbar` already carries `margin: 16px 0 18px`, so the strip
+  needs its own 16px written down and no gap added anywhere else.
+- **A pill's accessible name is its `title`, not its text.** `.fpill` carries
+  a `title` reading "remove from the filter", and the harness's name function
+  prefers `aria-label`, then `title`, then text - so every pill reports the
+  same name and the inventory dedupes them to one. Copy the `title`; a pill
+  named after its value would be a divergence the inventory reports forever.
+- **A bare number in a pill takes its row's name** (`fChosen`, 2604:
+  `/^\d+$/.test(...) ? f[1] + ' ' + o[1] : o[1]`), so `2` reads "Tier 2". No
+  B2 value is numeric, so this is **B3's**, written down here so it is copied
+  rather than re-derived.
+
+#### How it is built
+
+**`app/src/lib/facets.ts`** (new, pure). `facetRows(index, table, t)` returns
+`{ group, label, values: { value, label }[] }[]` - B2 returns the `kind` row or
+nothing. The group names come from `groupsFor()` in `lib/filters.ts`, which is
+where the frozen part lives; this module only decides which values a row offers
+and what each is called. `lib/filters.ts` already says the values are the
+caller's business, and `lib/data.ts` already exports `plainFacets()` and
+`kindOf()` from Phase 2 - both are still uncalled, and B2 is what calls them.
+
+**`app/src/components/FilterBar.svelte`** (new). The strip and the panel, one
+component because they are one feature and the live app draws them from one
+function. Props: the rows, the picked `FilterState`, `shown`, `total`, whether
+the panel is open, and callbacks for toggle / pick / reset / copy-link. It owns
+none of the routing.
+
+**`TablesPage.svelte`** grows the wiring and stays the owner of the address:
+
+- `filter` is **read from `app.route.filter`** rather than mirrored. The live
+  app needed `S.fSeg` because `currentRoute()` re-read the address on every
+  render and fought the panel; here the write and the read are the same source,
+  so the mirror is only needed for the one thing it decides - whether the panel
+  should spring open.
+- `seenSeg` is that mirror, and it holds **the exact string this component last
+  wrote**. An effect compares it with `encodeFilter(route.filter, groups)`: when
+  they differ the address came from somewhere else, so the panel opens - which
+  is `S.fSeg`'s whole job in app.js. Round-tripping is stable for anything we
+  wrote ourselves, so folding the panel and then dropping a pill does not
+  spring it open again.
+- The same effect resets `seenSeg` and folds the panel when the table changes,
+  which is what `currentRoute()` does at 3622. It is one effect rather than two
+  because the two would depend on each other's order.
+- Picking normalises: a group's values are stored **in the row's declared
+  order**, not in click order, because `fEncode` iterates the facet's values and
+  filters. Otherwise the address reads differently for the same picks.
+
+#### Three changes outside the tables screen, each with a reason
+
+1. **`AppState.replace(hash)`** - writes the address through
+   `env.router.replace` *and* updates `this.hash`, the way `go()` does minus the
+   history entry. Without it `app.hash` goes stale after a filter pick and the
+   pin button, `isHome` and `route` all disagree with the address bar; the live
+   app's `replaceState` updates `location.hash`, so the rewrite has to as well.
+2. **`AppState.navigations`** - a counter incremented when the router announces
+   a change and when `go()` is called, and **not** by `replace()`. The live app
+   clears the selection on `hashchange` (4627), and `replaceState` does not
+   fire one - so a filter pick keeps the ticks and a link does not. Keying
+   `TablesPage`'s selection reset on `app.hash`, which is what B1 does, would
+   clear the selection on every chip press. The counter is the honest signal:
+   "somebody navigated", not "the address string changed".
+3. **`memoryRouter.replace` must stop announcing.** `hashRouter.replace` uses
+   `replaceState` and fires nothing; the fake announces to its subscribers, so
+   a test would see a navigation the browser never has. That is a defect in the
+   fake, and it is what would make the counter above pass in tests and fail in
+   the browser. `ports.test.ts` gains the case.
+
+`Button.svelte` gains two things the toggle needs and nothing else does yet: an
+`expanded` prop for `aria-expanded`, and a third `variant` for `.ftoggle.has`
+(gold text, gold-tinted border) - the live app's toggle is a `.btn.sm`, so
+copying its padding into a second place would put the decision in two files.
+Watch the coverage floor: `Button.svelte` is the one named exception at 50%
+branches, and two more props push it down.
+
+#### Found in passing, not B2's to fix
+
+- **`.panel` is copied into five components** - `AltPanel`, `RecordCard`,
+  `RollPanel`, `StdPanel`, `TablesPage` - and `.ffilter` would be a sixth. The
+  rule in `CLAUDE.md` is extract on the second use, so this is already four
+  uses past due. It is not folded into B2: a cross-cutting extraction inside a
+  filter slice is a change nobody can review, and it touches every screen the
+  parity harness has already agreed on. It wants its own commit, verified by
+  the existing states not moving. B2 writes the sixth copy.
+- **The record modal does not close when the address changes.** `hashchange`
+  in the live app calls `closeModal()` (4628); `TablesPage`'s effect clears the
+  selection and leaves `open` alone. B2 is rewriting that effect and the fix is
+  one line beside the selection reset, so it lands here with a component test
+  rather than being filed and forgotten.
+- **Eight tables have no parity state at all**, not even `pending`. Only
+  `#/tables/eq_weapon` was written down. A state that is absent is invisible
+  forever, so B2 adds `pending` entries for `voa`, `frames`, `community`,
+  `alt_item` and the two remaining equipment tables. Pending states cost
+  nothing - the runner prints them and moves on.
+- **A name collision to avoid when writing states.** `fEquip` and
+  `grpEquipment` are the same word in both languages, so clicking it on
+  `#/tables/wondrous` finds the equipment chip in the navigation - which is a
+  link - before the kind chip in the panel. Grip the "items" chip instead:
+  with one sub-table, Wondrous draws no sub-row, so that name is unique on the
+  page.
+
+#### Corrections to two things this plan already said
+
+- The decision "the kind filter is per panel, not per app" named the wrong
+  third screen. The live app's shared `S.kind` covers Core rules, the alternate
+  tables and **search** (2847, 2856). Tables never shared it: its kind facet is
+  `S.fOn.kind`, which already resets when the table changes. So there is
+  nothing for B2 to reconcile, and the open question belongs to batch C.
+- The handoff's "B2 unlocks wondrous, dread, community" is wrong about
+  `community` - see the table above.
+
+#### What B2 has to leave behind
+
+Tests, in the same commit as the behaviour:
+
+- `lib/facets.test.ts` - the `kind` row for `wondrous` and `dread`, the empty
+  answer for `core_item`, and the value order.
+- `components/tables.test.ts` - the toggle folds and unfolds; a chip picks and
+  a pill drops the same value; reset clears; the count reads `total` alone
+  until something is picked; arriving at `#/tables/wondrous/f_kind-item` opens
+  the panel; changing table clears the filter and folds it; the empty state
+  grows its own reset button; a filter pick **keeps** the selection and a
+  navigation clears it; the modal closes on a navigation.
+- `components/a11y.test.ts` - `FilterBar.svelte` in `COVERED`, and a pressed
+  state that opens the panel with a value picked. The fixture there has one
+  `wondrous` row and no `dread`; it needs rows of two kinds for a panel to
+  exist at all.
+- `state/app.test.ts` - `replace()` updates the hash, adds no history entry and
+  does not count as a navigation; `go()` does.
+- `ports/ports.test.ts` - `memoryRouter.replace` announces nothing.
+- `tests/parity/specs.js` - six new states and two new specs, below.
+
+Parity states, each compared in both languages at three widths:
+
+| id | how it is reached |
+|---|---|
+| `#/tables/wondrous` | a route: the strip folded, nothing picked |
+| `#/tables/wondrous ~ panel open` | press the filters toggle |
+| `#/tables/wondrous ~ filtered` | press the toggle, then the items chip |
+| `#/tables/wondrous ~ filter link` | route `#/tables/wondrous/f_kind-item` - arrives with the panel open |
+| `#/tables/wondrous ~ nothing found` | filter, then type a query nothing matches: the empty state with its own reset |
+| `#/tables/dread` | the second table with a kind row, and the smallest |
+
+Two specs beside the pixels, because both are off screen:
+
+- **the address after a filter pick** - `presses: true`, reads `d.hash()` on
+  the filtered state. The `f_` segment is a frozen contract and no screenshot
+  can see it.
+- **the filter link on the clipboard** - `presses: true`, presses the link
+  button and reads `d.clipboard()`.
+
+`NAME` gains the filters toggle, the items chip, the reset and the filter-link
+button in both languages. `enter` steps run before the language is switched, so
+they keep gripping Russian.
+
+Expect new `VISUAL_DEBT` entries only for the search-box placeholder noise
+already named as cause 5, at 768 and 375. Any other number gets its diff image
+opened before a reason is written: a reason that explains less than the whole
+difference is how the tier ladder stayed missing for weeks.
+
+**Found while building it, not before:**
+
+- **`.field:last-child` never actually zeroes the margin inside `.ffilter`.**
+  Both rules are two classes deep - `.field:last-child` (line 151) and
+  `.ffilter .field` (line 927) tie in specificity, a pseudo-class counting the
+  same as a class - so at equal specificity the one written later in the file
+  wins, and `.ffilter .field`'s 12px comes after the reset. The port had
+  copied the reset as if it applied, which made the panel 12px shorter than
+  the live app's real one and shifted everything below it up by that much -
+  the same "one constant offset reads as growing drift the deeper you look"
+  pattern the toolbar margin hit in B1, just a cascade tie instead of a
+  duplicate declaration. Confirmed by measuring `.ffilter`'s bottom border in
+  both apps rather than reasoning from the source, which is what actually
+  found it: the `.numbox` trap again, and worth watching for in B3, where a
+  second field makes `:last-child` matter for real.
+- **A leading space inside an `{#if}` is not the same as a leading space in
+  the markup.** `t().anyValue` reads "ТИП <i>любое</i>" with a literal space
+  before the italic, and the first attempt wrote the space as its own line
+  inside the `{#if}` block; Svelte's whitespace trimming at a block boundary
+  removes it rather than collapsing it to one, which is a different rule from
+  the "collapses to one space" behaviour the B1 handoff already knew about for
+  whitespace *between* elements. The fix is the same tool B1 used for a
+  different reason: `<!-- prettier-ignore -->` on the whole `<span>`, with the
+  space written inline on one line rather than on its own.
+- **`FilterBar`'s `.ffilter` needed `.panel`'s base rules copied in, not just
+  its own override.** `TablesPage.svelte`'s `.tablenav` already does this for
+  the nav strip; `.ffilter` is `.panel`'s second use in this file and needed
+  the same background, border and padding written into its own scoped rule -
+  missing it left the panel with no box at all around the label and chips.
 
 ## Phase 5 - what already exists
 
@@ -310,13 +580,19 @@ mid-sentence.
 ### The kind filter is per panel, not per app
 
 The live app keeps one `S.kind` for Core rules, the alternate tables and
-Tables, so switching consumables off on one screen switches them off on the
+**search**, so switching consumables off on one screen switches them off on the
 others. The rewrite gives each panel its own, which is what
 `docs/specs/STATE.md` argues for everywhere else: what was *asked* on a page
 belongs to the page. Nothing compares it - no parity state navigates between
-two roll modes - so it is written down here rather than caught. If the tables
-slice finds that a person expects the filter to follow them, this is the
-decision to revisit, and `AppState` is where it would move to.
+two roll modes - so it is written down here rather than caught. Search is where
+a person would notice, so batch C is where this decision comes due, and
+`AppState` is where it would move to.
+
+**This has nothing to do with the tables filter**, which is what the first
+version of this entry said and what the B1 handoff then repeated as an open
+question. Tables narrows by `S.fOn.kind` - its own object, cleared whenever the
+table changes (app.js:3622) - and has never shared `S.kind` with anything.
+B2 has nothing to reconcile here.
 
 ### Every icon in a button is 15px, whatever its attribute says
 

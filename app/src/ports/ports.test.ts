@@ -130,6 +130,18 @@ describe('the address', () => {
     expect(seen).toEqual(['#/lists']);
   });
 
+  it('announces nothing on a replace, matching the real router', () => {
+    /* hashRouter's replace uses replaceState, which fires no hashchange. A fake
+       that disagreed would make AppState.navigations pass here and fail in a
+       browser. */
+    const r = memoryRouter('#/tables');
+    const seen: string[] = [];
+    r.onChange((h) => seen.push(h));
+    r.replace('#/tables/f_kind-item');
+    expect(seen).toEqual([]);
+    expect(r.hash()).toBe('#/tables/f_kind-item');
+  });
+
   it('falls back to assigning the hash where replaceState is missing', () => {
     /* Which is the case when the page is opened from a folder */
     const win = {

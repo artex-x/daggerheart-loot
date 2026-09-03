@@ -103,6 +103,7 @@ const ru = {
   filter: 'Тип',
   fItems: 'Предметы',
   fCons: 'Расходники',
+  fEquip: 'Снаряжение',
   keepOneKind: 'Нужен хотя бы один тип',
   or: 'ИЛИ',
   copyRoll: 'Скопировать все варианты',
@@ -186,7 +187,18 @@ const ru = {
   viewGrid: 'Сеткой',
   nothing: 'Ничего не найдено',
   selectAll: 'Выбрать все',
-  selected: 'Выбрано'
+  selected: 'Выбрано',
+
+  /* The table filter: the strip, the panel it folds open, and the link that
+     hands the picked state to somebody else. */
+  filters: 'Фильтры',
+  kindF: 'Тип',
+  anyValue: 'любое',
+  outOf: 'из',
+  dropValue: 'Убрать из фильтра',
+  resetAll: 'Сбросить всё',
+  filterLink: 'Ссылка на фильтры',
+  filterLinkCopied: 'Ссылка на фильтры скопирована'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -265,6 +277,7 @@ const en: Dict = {
   filter: 'Type',
   fItems: 'Items',
   fCons: 'Consumables',
+  fEquip: 'Equipment',
   keepOneKind: 'At least one type has to stay on',
   or: 'OR',
   copyRoll: 'Copy every option',
@@ -330,7 +343,16 @@ const en: Dict = {
   viewGrid: 'Grid',
   nothing: 'Nothing found',
   selectAll: 'Select all',
-  selected: 'Selected'
+  selected: 'Selected',
+
+  filters: 'Filters',
+  kindF: 'Type',
+  anyValue: 'any',
+  outOf: 'of',
+  dropValue: 'Remove from the filter',
+  resetAll: 'Reset all',
+  filterLink: 'Filter link',
+  filterLinkCopied: 'Filter link copied'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

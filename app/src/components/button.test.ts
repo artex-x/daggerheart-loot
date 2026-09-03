@@ -53,6 +53,29 @@ describe('the shared button', () => {
     expect(screen.getByRole('button', { name: 'Press' })).not.toHaveAttribute('aria-label');
   });
 
+  it('carries the toggle variant, for the filter strip once something is picked', () => {
+    render(Button, {
+      variant: 'toggle',
+      size: 'sm',
+      onclick: () => undefined,
+      children: label
+    });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'toggle', 'sm');
+  });
+
+  it('carries aria-expanded for a button that folds a panel open', () => {
+    render(Button, { expanded: false, onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
+  it('leaves aria-expanded off a button that does not fold anything', () => {
+    render(Button, { onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).not.toHaveAttribute('aria-expanded');
+  });
+
   it('calls back when pressed', async () => {
     const spy = vi.fn();
     render(Button, { onclick: spy, children: label });

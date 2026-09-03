@@ -61,6 +61,18 @@ export class AppState {
   /** Which sources the Core roll draws from. An old section name sets it. */
   source = $state<{ core: boolean; hnf: boolean }>({ core: true, hnf: true });
 
+  /**
+   * How many times somebody has actually gone somewhere, as opposed to the
+   * address being rewritten under them.
+   *
+   * `go()` counts; `replace()` does not, the same way the live app's
+   * `hashchange` listener does not fire on a `replaceState`. A component that
+   * has to forget something on navigation - the tables selection, an open
+   * modal - watches this rather than `hash`, because a filter pick rewrites
+   * the hash without being a navigation.
+   */
+  navigations = $state(0);
+
   #home = $state(DEFAULT_HOME);
   #stopRouter: (() => void) | null = null;
 
@@ -83,6 +95,7 @@ export class AppState {
   start(): () => void {
     this.#stopRouter = this.env.router.onChange((h) => {
       this.hash = h;
+      this.navigations++;
       this.#applySource();
     });
     return () => {
@@ -152,6 +165,19 @@ export class AppState {
 
   go(hash: string): void {
     this.env.router.navigate(hash);
+    this.hash = hash;
+    this.navigations++;
+    this.#applySource();
+  }
+
+  /**
+   * Rewrites the address in place - a filter pick, not a step. Keeps `hash` in
+   * step with what `replaceState` just wrote, the way `go()` does for
+   * `navigate`, but adds no history entry and does not count as a navigation:
+   * see `navigations` above.
+   */
+  replace(hash: string): void {
+    this.env.router.replace(hash);
     this.hash = hash;
     this.#applySource();
   }

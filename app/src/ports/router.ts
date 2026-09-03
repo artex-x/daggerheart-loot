@@ -81,8 +81,11 @@ export function memoryRouter(start = '#/roll/std'): RouterPort & { readonly stac
       announce();
     },
     replace(hash) {
+      /* The real router's replaceState fires no hashchange - see hashRouter
+         above - so the fake must not announce either. A test that saw one here
+         would pass while a browser, watching the counter this drives, would
+         not: exactly the gap AppState.navigations exists to catch. */
       stack[stack.length - 1] = hash;
-      announce();
     },
     onChange(fn) {
       listeners.add(fn);

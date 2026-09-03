@@ -8,13 +8,18 @@
   import type { Snippet } from 'svelte';
 
   interface Base {
-    /** `primary` is the gold fill the live app keeps for the main action. */
-    variant?: 'plain' | 'primary';
+    /** `primary` is the gold fill the live app keeps for the main action.
+     *  `toggle` is `.ftoggle.has` - the filter strip's own button, gold text
+     *  on a gold-tinted border rather than a fill, and only once it has
+     *  something picked. */
+    variant?: 'plain' | 'primary' | 'toggle';
     /** `sm` is the 32px row on a card; the default 46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
     /** For a button whose visible text is not its name. */
     label?: string;
+    /** `aria-expanded`, for a button that folds a panel open. */
+    expanded?: boolean;
     /**
      * Where it goes, for the ones that are links.
      *
@@ -39,6 +44,7 @@
     size = 'md',
     title,
     label,
+    expanded,
     href,
     onclick,
     children
@@ -57,7 +63,14 @@
     {@render children()}
   </a>
 {:else}
-  <button type="button" class="btn {variant} {size}" {title} aria-label={label} {onclick}>
+  <button
+    type="button"
+    class="btn {variant} {size}"
+    {title}
+    aria-label={label}
+    aria-expanded={expanded}
+    {onclick}
+  >
     {@render children()}
   </button>
 {/if}
@@ -126,5 +139,13 @@
   .btn.primary:hover {
     filter: brightness(1.07);
     background: linear-gradient(180deg, #e2b76c, var(--gold));
+  }
+
+  /* off `.ftoggle.has` in style.css - the filter toggle once something is
+     picked. Always paired with size="sm" in the markup; the class carries only
+     what `.has` adds on top of `.btn.sm`. */
+  .btn.toggle {
+    color: var(--gold-soft);
+    border-color: rgb(216 171 94 / 45%);
   }
 </style>

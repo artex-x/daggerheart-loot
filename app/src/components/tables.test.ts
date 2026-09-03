@@ -33,6 +33,14 @@ const row = (over: Partial<Record_>): Record_ => ({
 
 const LOOT: Loot = {
   items: {
+    wondrous: [
+      row({ id: 'w1', src: 'wondrous', roll: 1, ru: 'Плащ Ветра' }),
+      row({ id: 'w2', src: 'wondrous', kind: 'consumable', roll: 2, ru: 'Зелье Ветра' })
+    ],
+    dread: [
+      row({ id: 'd1', src: 'dread', roll: 1, ru: 'Клык Ужаса' }),
+      row({ id: 'd2', src: 'dread', kind: 'consumable', roll: 2, ru: 'Яд Ужаса' })
+    ],
     core_item: [
       row({ id: 'ci1', roll: 1, ru: 'Кольцо Тишины', rud: '- Тихо. \n- Очень тихо.' }),
       row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', craft: 'ci3' }),
@@ -252,6 +260,152 @@ describe('the table link', () => {
     render(App, { env: at({ clipboard: fakeClipboard({ fail: true }) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на таблицу' }));
     expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
+  });
+});
+
+describe('the filter', () => {
+  const wond = (): Env =>
+    fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT) });
+
+  it('draws the strip folded, with nothing picked and the plain total', () => {
+    const { container } = render(App, { env: wond() });
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(container.querySelector('.fcount')).toHaveTextContent('2');
+    expect(screen.queryByRole('button', { name: 'Предметы' })).not.toBeInTheDocument();
+  });
+
+  it('unfolds on the toggle, and folds again on a second press', async () => {
+    render(App, { env: wond() });
+    const toggle = screen.getByRole('button', { name: 'Фильтры' });
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Предметы' })).toBeInTheDocument();
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('narrows the table on a chip, names the pick and the shown/of count', async () => {
+    render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    expect(screen.getByText('Плащ Ветра')).toBeInTheDocument();
+    expect(screen.queryByText('Зелье Ветра')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Фильтры (1)' })).toBeInTheDocument();
+    expect(screen.getByText('1 из 2')).toBeInTheDocument();
+  });
+
+  it('drops the same value from its pill', async () => {
+    const { container } = render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    const pill = container.querySelector('.fpill');
+    expect(pill).toHaveAttribute('title', 'Убрать из фильтра');
+    await userEvent.click(pill as HTMLElement);
+    expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toBeInTheDocument();
+  });
+
+  it('resets from the strip once something is picked', async () => {
+    render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
+    expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
+  });
+
+  it('grows its own reset button in the empty state', async () => {
+    render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.type(
+      screen.getByPlaceholderText('Поиск по названию или описанию…'),
+      'нет такого'
+    );
+    const empty = screen.getByText('Ничего не найдено').closest('.empty');
+    expect(
+      within(empty as HTMLElement).getByRole('button', { name: 'Сбросить всё' })
+    ).toBeInTheDocument();
+  });
+
+  it('arriving at a filter link opens the panel with that value picked', () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/wondrous/f_kind-item'),
+        data: fakeData(LOOT)
+      })
+    });
+    expect(screen.getByRole('button', { name: 'Фильтры (1)' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: 'Предметы' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  it('changing table clears the filter and folds the panel', async () => {
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/wondrous/f_kind-item'),
+      data: fakeData(LOOT)
+    });
+    render(App, { env });
+    env.router.navigate('#/tables/dread');
+    await tick();
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
+  it('keeps the selection on a filter pick, and drops it on a navigation', async () => {
+    const env = wond();
+    render(App, { env });
+    const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    await userEvent.click(box);
+    expect(box).toBeChecked();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })[0]).toBeChecked();
+
+    env.router.navigate('#/tables/wondrous');
+    await tick();
+    expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })[0]).not.toBeChecked();
+  });
+
+  it('closes the modal on a navigation, but a filter pick leaves it alone', async () => {
+    const env = wond();
+    render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: /Плащ Ветра/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    env.router.navigate('#/tables/wondrous');
+    await tick();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('copies the filter link, with the picked value in the address', async () => {
+    const clip = fakeClipboard();
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/wondrous'),
+        data: fakeData(LOOT),
+        clipboard: clip
+      })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
+    expect(clip.last.text).toBe('https://example.test/#/tables/wondrous/f_kind-item');
+    expect(screen.getByText('Ссылка на фильтры скопирована')).toBeInTheDocument();
   });
 });
 

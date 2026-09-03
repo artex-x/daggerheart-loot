@@ -40,7 +40,11 @@ const NAME = {
     addToList: 'Добавить в список',
     stepDown: 'На единицу меньше',
     stepUp: 'На единицу больше',
-    pinSection: 'Открывать этот раздел при запуске'
+    pinSection: 'Открывать этот раздел при запуске',
+    filters: 'Фильтры',
+    itemsChip: 'Предметы',
+    resetFilter: 'Сбросить всё',
+    filterLink: 'Ссылка на фильтры'
   },
   en: {
     copyName: 'Copy name',
@@ -51,7 +55,11 @@ const NAME = {
     addToList: 'Add to list',
     stepDown: 'One lower',
     stepUp: 'One higher',
-    pinSection: 'Open this section on start'
+    pinSection: 'Open this section on start',
+    filters: 'Filters',
+    itemsChip: 'Items',
+    resetFilter: 'Reset all',
+    filterLink: 'Filter link'
   }
 };
 
@@ -146,6 +154,43 @@ const copiedImage = {
     await d.resetClipboard();
     await d.click(NAME[lang].copyImage);
     return { image: await d.clipboardImage() };
+  }
+};
+
+/**
+ * The address after a filter pick.
+ *
+ * Off screen, so no screenshot can see it: `f_kind-item` is a frozen contract
+ * (docs/specs/CONTRACTS.md) and this is what actually holds the two apps to
+ * writing the same segment.
+ */
+const filteredAddress = {
+  presses: true,
+  name: 'the address after a filter pick',
+  only: ['#/tables/wondrous ~ filtered'],
+  async run(d) {
+    return { hash: await d.hash() };
+  }
+};
+
+/**
+ * What the filter-link button hands to the clipboard.
+ *
+ * Only the hash is compared: the two targets live at different paths on this
+ * machine (the repository root against `dist/`), so the base of the link
+ * differs between them for a reason that has nothing to do with the filter -
+ * `copiedName` and `copiedText` never hit this because neither copies a URL.
+ */
+const copiedFilterLink = {
+  presses: true,
+  name: 'the filter link that lands on the clipboard',
+  only: ['#/tables/wondrous ~ filtered'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].filterLink);
+    const clip = await d.clipboard();
+    const hash = clip.text?.slice(clip.text.indexOf('#')) ?? null;
+    return { hash };
   }
 };
 
@@ -416,6 +461,46 @@ const STATES = [
       await d.click('Научное');
     }
   },
+  {
+    id: '#/tables/wondrous',
+    route: '#/tables/wondrous',
+    why: 'the first table with a filter: the strip folded, nothing picked'
+  },
+  {
+    id: '#/tables/wondrous ~ panel open',
+    route: '#/tables/wondrous',
+    why: 'the filter panel, unfolded and empty',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/tables/wondrous ~ filtered',
+    route: '#/tables/wondrous',
+    why: 'a value picked, which narrows the table and writes the address',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      /* Not "Equipment" - that word is also the equipment nav chip's, and a
+         click by name finds the link before the panel's own chip. */
+      await d.click('Предметы');
+    }
+  },
+  {
+    id: '#/tables/wondrous ~ filter link',
+    route: '#/tables/wondrous/f_kind-item',
+    why: 'arriving at a filter link, which opens the panel with that value picked'
+  },
+  {
+    id: '#/tables/wondrous ~ nothing found',
+    route: '#/tables/wondrous',
+    why: 'a filter and a query together leaving nothing, with the empty state\'s own reset',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Предметы');
+      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+    }
+  },
+  { id: '#/tables/dread', route: '#/tables/dread', why: 'the second table with a kind row, and the smallest' },
   { id: '#/tables', route: '#/tables', why: 'the table index, which is core_item' },
   {
     id: '#/tables/hnf_consumable',
@@ -476,6 +561,48 @@ const STATES = [
     why: 'one equipment table',
     pending: 'the equipment tables are batch B4'
   },
+  {
+    id: '#/tables/eq_secondary',
+    route: '#/tables/eq_secondary',
+    why: 'a second equipment table',
+    pending: 'the equipment tables are batch B4'
+  },
+  {
+    id: '#/tables/eq_armor',
+    route: '#/tables/eq_armor',
+    why: 'a third equipment table',
+    pending: 'the equipment tables are batch B4'
+  },
+  {
+    id: '#/tables/voa',
+    route: '#/tables/voa',
+    why: 'a sectioned body: Vault of Ages by tier',
+    pending: 'sectioned bodies are batch B3'
+  },
+  {
+    id: '#/tables/frames',
+    route: '#/tables/frames',
+    why: 'a sectioned body: campaign frames',
+    pending: 'sectioned bodies are batch B3'
+  },
+  {
+    id: '#/tables/community',
+    route: '#/tables/community',
+    why: 'a sectioned body: communities',
+    pending: 'sectioned bodies are batch B3'
+  },
+  {
+    id: '#/tables/alt_item',
+    route: '#/tables/alt_item',
+    why: 'the alternate items table',
+    pending: 'sectioned bodies are batch B3'
+  },
+  {
+    id: '#/tables/alt_consumable',
+    route: '#/tables/alt_consumable',
+    why: 'the alternate consumables table',
+    pending: 'sectioned bodies are batch B3'
+  },
   { id: '#/lists', route: '#/lists', why: 'the lists page', pending: 'lists slice' },
   { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
   { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
@@ -490,6 +617,8 @@ const SPECS = [
   copiedText,
   copiedImage,
   rollControls,
+  filteredAddress,
+  copiedFilterLink,
   visuals
 ];
 
@@ -631,6 +760,39 @@ const VISUAL_DEBT = {
   '#/tables ~ searched @ en 375': { pct: 1.04, why: 'the same, in English' },
   '#/tables ~ nothing found @ ru 375': { pct: 0.12, why: 'the same, on a phone' },
   '#/tables ~ nothing found @ en 375': { pct: 0.13, why: 'the same, in English' },
+
+  /* B2's six wondrous states carry the same placeholder noise as the four
+     tables above - every one is exact at 1100, where the placeholder is not
+     cropped by the toolbar's narrower layout. On a phone, wondrous is also
+     the first table B1 or B2 built with a description long enough to wrap
+     differently by a word - see the note on dread below; it is the same
+     noise, just reached from a different row this time. */
+  '#/tables/wondrous @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/wondrous @ ru 375': { pct: 1.56, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app - both measured, nothing to copy' },
+  '#/tables/wondrous @ en 375': { pct: 1.51, why: 'the same, in English' },
+  '#/tables/wondrous ~ panel open @ ru 1100': { pct: 0.11, why: 'the space in "любое" rasterises a shade differently at full width - measured character-for-character identical' },
+  '#/tables/wondrous ~ panel open @ en 768': { pct: 0.11, why: 'the same rasterisation noise, in English at mid width' },
+  '#/tables/wondrous ~ panel open @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/wondrous ~ panel open @ ru 375': { pct: 0.29, why: 'the same, on a phone' },
+  '#/tables/wondrous ~ panel open @ en 375': { pct: 0.41, why: 'the same, in English' },
+  '#/tables/wondrous ~ filtered @ ru 768': { pct: 0.13, why: 'the same, mid width' },
+  '#/tables/wondrous ~ filtered @ ru 375': { pct: 0.29, why: 'the same, on a phone' },
+  '#/tables/wondrous ~ filtered @ en 375': { pct: 0.22, why: 'the same, in English' },
+  '#/tables/wondrous ~ filter link @ ru 768': { pct: 0.13, why: 'the same, mid width' },
+  '#/tables/wondrous ~ filter link @ ru 375': { pct: 0.29, why: 'the same, on a phone' },
+  '#/tables/wondrous ~ filter link @ en 375': { pct: 0.22, why: 'the same, in English' },
+  '#/tables/wondrous ~ nothing found @ ru 375': { pct: 0.12, why: 'the same, on a phone' },
+  '#/tables/wondrous ~ nothing found @ en 375': { pct: 0.13, why: 'the same, in English' },
+
+  '#/tables/dread @ ru 768': { pct: 0.13, why: 'the same, mid width' },
+  /* Dread's own row text happens to break one word earlier on a phone -
+     measured against the live app rather than guessed: the picture, the
+     name, the stat line and every badge are pixel-identical, and only the
+     description's line-wrap point differs by a few sub-pixels of kerning.
+     No table B1 or B2 built had a row long enough at 375px to show this;
+     dread is the first, not a regression the filter caused. */
+  '#/tables/dread @ ru 375': { pct: 1.51, why: 'a description line wraps one word earlier than the live app at this width - measured pixel-identical apart from the wrap point, nothing to copy' },
+  '#/tables/dread @ en 375': { pct: 1.41, why: 'the same, in English' },
 
   /* The record modal a row opens is the same short-by-a-row card every other
      modal draws - see the note on #/roll/wondrous ~ modal above. */
