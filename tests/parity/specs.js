@@ -287,6 +287,20 @@ const STATES = [
      chain, the references and the footer were not. */
   { id: '#/i/ci1 ~ whole', route: '#/i/ci1', why: 'a record page end to end', whole: true },
 
+  /* A rung of the tier ladder. Улучшенный, Продвинутый and Легендарный are the
+     same weapon at four tiers and the ladder is how a person moves between
+     them; it opens the other rung over this page rather than navigating, so no
+     route draws it. It went unported for weeks behind a debt whose reason
+     named only the add-to-list row. */
+  {
+    id: '#/i/q1 ~ another tier',
+    route: '#/i/q1',
+    why: 'the card a rung of the tier ladder opens',
+    enter: async (d) => {
+      await d.click('Улучшенный Палаш');
+    }
+  },
+
   /* What the app says after a copy. The live app raises a toast; the rewrite
      only announces it, to a screen reader. Found by accident: the screenshot
      used to be taken after the clipboard specs had pressed things, so the
@@ -472,12 +486,24 @@ const VISUAL_DEBT = {
   '#/i/ci1 @ en 768': listRow(0.57, 'in English, mid width'),
   '#/i/ci1 @ en 375': listRow(1.32, 'in English on a phone, where the two buttons wrap'),
 
-  '#/i/q1 @ ru 1100': listRow(0.86, 'under an equipment card'),
-  '#/i/q1 @ ru 768': listRow(0.9, 'under an equipment card, mid width'),
-  '#/i/q1 @ ru 375': listRow(0.73, 'under an equipment card, on a phone'),
-  '#/i/q1 @ en 1100': listRow(0.67, 'in English'),
-  '#/i/q1 @ en 768': listRow(0.67, 'in English, mid width'),
-  '#/i/q1 @ en 375': listRow(1.03, 'in English on a phone'),
+  /* Four of these six entries are gone, and the two that are left are a
+     tenth of what they were. Almost all of it was the tier ladder, which was
+     unported and which this reason never named - at 768 and 375 the equipment
+     card is tall enough to push the add-to-list row below the fold, so with
+     the ladder drawn those states are exact. What is left at 1100 is the row
+     itself, just above the fold. */
+  '#/i/q1 @ ru 1100': listRow(0.12, 'the top of the row, just above the fold'),
+  '#/i/q1 @ en 1100': listRow(0.1, 'the same, in English'),
+
+  /* The modal a rung of the ladder opens. Same cause as the Wondrous modal:
+     the card in it is short by the add-to-list row, and a centred dialog moves
+     everything in it when its height changes. */
+  '#/i/q1 ~ another tier @ ru 1100': listRow(5.05, 'inside the modal a rung opens'),
+  '#/i/q1 ~ another tier @ ru 768': listRow(7.22, 'inside that modal, mid width'),
+  '#/i/q1 ~ another tier @ ru 375': listRow(11.92, 'inside that modal, on a phone'),
+  '#/i/q1 ~ another tier @ en 1100': listRow(4.61, 'inside that modal, in English'),
+  '#/i/q1 ~ another tier @ en 768': listRow(6.63, 'inside that modal, in English, mid width'),
+  '#/i/q1 ~ another tier @ en 375': listRow(11.06, 'inside that modal, in English, on a phone'),
 
   '#/i/ci1 ~ whole @ ru 1100': listRow(5.29, 'over the whole page, which it shifts the footer down'),
   '#/i/ci1 ~ whole @ ru 768': listRow(5.39, 'over the whole page, mid width'),
@@ -569,6 +595,10 @@ const ACCEPTED = {
   '#/i/ci1 ~ whole @ en :: the controls on the page :: controls': 'add-to-list and print, whole page',
   '#/roll/wondrous ~ modal @ ru :: the controls on the page :: controls':
     'add-to-list, which the card in a modal offers too',
+  '#/i/q1 ~ another tier @ ru :: the controls on the page :: controls':
+    'add-to-list and print, in the modal a rung of the ladder opens',
+  '#/i/q1 ~ another tier @ en :: the controls on the page :: controls':
+    'add-to-list and print, in the modal a rung of the ladder opens',
   '#/roll/wondrous ~ modal @ en :: the controls on the page :: controls':
     'add-to-list, which the card in a modal offers too',
 

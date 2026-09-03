@@ -164,7 +164,7 @@ const COVERED: Record<string, string> = {
   'PageHead.svelte': 'the heading of every roll page, with both help states above',
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
   'RecordCard.svelte': 'record.test.ts, and inside the modal above',
-  'RecordModal.svelte': 'the first state above, which is the only way in',
+  'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'Shell.svelte': 'shell.test.ts, including the storage warning',

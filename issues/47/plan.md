@@ -51,11 +51,13 @@ already being collected against the live app:
 
 ### What every remaining `VISUAL_DEBT` entry is
 
-Nothing outstanding is a styling defect. The 42 entries are three causes:
+Nothing outstanding is a styling defect. The 44 entries are three causes:
 
 1. **The add-to-list and print row** under every record card - both record
-   routes, the whole-page state and the modal. It is code that does not exist
-   yet and lands with the lists and print slices, not polish to be chased.
+   routes, the whole-page state, and both modals. It is code that does not
+   exist yet and lands with the lists and print slices, not polish to be
+   chased. Do not let this reason absorb anything else: it did once, and the
+   tier ladder hid behind it for weeks.
 2. **The toast**, on `~ pinned`. The live app raises one when the starting
    section changes; the rewrite announces it to a screen reader only.
    `#/i/ci1 ~ toast` is `pending` for the same gap.
@@ -132,6 +134,33 @@ linked rather than copied, because 80 MB per build is not worth paying for a
 folder that has not changed, and `junction` makes that work on Windows without
 elevation. `tests/parity.js` used to lay the same links itself; that workaround
 is gone.
+
+### The tier ladder was missing, behind a debt reason that hid it
+
+`lineStepsHTML` in `app.js` draws the row of tier buttons on equipment that
+belongs to an upgrade line - Палаш, Улучшенный, Продвинутый, Легендарный are
+one weapon at four tiers, and the ladder is how a person moves between them.
+`upgradeLine` was extracted and tested in Phase 2; no component ever called it,
+so the row was never drawn.
+
+It stayed invisible because every `#/i/q1` debt was filed as "the add-to-list
+and print row" and that route was short of two things. The number looked
+explained. Porting the ladder took the route to **exact at four of its six
+cells** and to 0.1% at the other two, which is the add-to-list row peeking
+above the fold - so the ladder had been almost the whole difference all along.
+
+Two things came with it, both faithful rather than invented:
+
+- **a rung opens the record over the page.** The live app answers `data-open`
+  with the modal, on the record page as well as from a roll, so `RecordPage`
+  now has one - which also makes the card's picture work there, as it does in
+  the live app. `onopen` carries the record because the ladder opens a
+  different one.
+- **each rung is named.** The live app gives it a `title` and a digit for its
+  content, and content wins the accessible name, so a screen reader hears
+  "button, 2" three times with nothing to tell them apart. An `aria-label`
+  carrying the same string the title does fixes it, and the parity inventory
+  reads the same on both apps - so there is nothing to record in `ACCEPTED`.
 
 ### The Core rules help shipped with its markup showing
 

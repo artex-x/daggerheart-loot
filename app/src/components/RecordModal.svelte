@@ -25,12 +25,15 @@
     index: Index;
     it: Record_;
     onclose: () => void;
+    /* A rung of the tier ladder swaps which record the modal is showing, the
+       way the live app replaces the modal's body rather than stacking one. */
+    onopen?: ((r: Record_) => void) | undefined;
   }
 
   /* The index is a prop rather than read off `app`: a modal is only ever opened
      from a screen that already has one, so asking again would add a branch
      nothing can take. */
-  const { app, index, it, onclose }: Props = $props();
+  const { app, index, it, onclose, onopen }: Props = $props();
 
   let dialog = $state<HTMLDialogElement | null>(null);
 
@@ -81,6 +84,7 @@
       {index}
       lang={app.lang}
       artBroken={app.artBroken(it.id)}
+      {onopen}
       onartfail={(bad: string) => {
         app.markArtBroken(bad);
       }}

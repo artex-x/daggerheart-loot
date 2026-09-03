@@ -283,6 +283,32 @@ Two things that will happen and are not failures:
   less wrong content differs less. Reproduce the original anyway. The metric is
   a servant.
 
+### What you find in passing goes in the plan, not into a reason
+
+A slice turns up things that are not its own: an element nobody ported, a
+behaviour that only half arrived, a rule that is not what it looks like. Two
+places take them, and a commit message is neither:
+
+- **`issues/<id>/plan.md`**, under its own heading, saying what it is and why
+  it is not done. That is the file the next session reads before it picks a
+  batch, and a finding that is only in the history is a finding nobody acts on.
+- **the debt's reason**, which has to name *everything* the state is short of.
+
+The second is the one that failed, and it failed quietly for weeks. Every
+`#/i/q1` entry read "the add-to-list and print row" while that route was short
+of two things: the row, and the **tier ladder** - the four buttons that move
+between the tiers of one weapon, which nothing had ported. `upgradeLine` had
+been extracted and tested in Phase 2 and no component ever called it. The
+reason accounted for the whole residue, so the number looked explained; it took
+somebody opening a diff image for an unrelated question to see the row was
+missing. Porting it took that route from 0.86% to **exact at four of its six
+cells**.
+
+So: a reason that explains less than the whole difference is worse than no
+reason - it turns a debt into a receipt. When a number is not obviously the
+sum of the things the reason names, open the diff image and find out what the
+rest is.
+
 ### Coverage exceptions
 
 A file that cannot reach a bar gets **its own entry**, named, with the reason in

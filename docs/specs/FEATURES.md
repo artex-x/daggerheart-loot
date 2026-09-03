@@ -81,7 +81,14 @@ Six modes. Each keeps its own input in memory only.
   asterisks are deliberately not used.
 - Consumables get a "(consumable)" suffix outside the app, where the badge is
   not visible.
-- Upgrade chains render both directions; the reverse is computed at load.
+- Upgrade chains render both directions; the reverse is computed at load. That
+  is `craft` - one thing made from another - and it is not the tier ladder
+  below.
+- Equipment that belongs to an upgrade **line** carries a tier ladder: one rung
+  per tier of that line, in tier order, the rung you are on marked and inert
+  and the others opening that tier's record over whatever is on screen. A line
+  of one is not a ladder and is not drawn. Each rung is named for the piece it
+  leads to, because its own content is a bare digit.
 - Referenced Core cards render as a collapsed block and travel with the item
   into copies and shares.
 - A record with no artwork falls back to `_none.webp` and hides the image

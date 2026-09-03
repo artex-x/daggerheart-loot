@@ -13,6 +13,7 @@
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
   import { cardBadges, srcLabel } from '../lib/label.js';
+  import { upgradeLine } from '../lib/data.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
@@ -41,8 +42,13 @@
     /** Which duality column found it, badged in that column's colour. */
     col?: AltCol;
     onartfail: (id: string) => void;
-    /** Opens the record: a modal from a result, the page from a table row. */
-    onopen?: () => void;
+    /**
+     * Opens a record over whatever is on screen.
+     *
+     * It carries the record because it is not always this one: the tier ladder
+     * opens a different rung of the same upgrade line.
+     */
+    onopen?: ((r: Record_) => void) | undefined;
     /** The two icon buttons beside the name: copy the name, copy the link. */
     nameActions?: Snippet;
     /** The labelled row under the description: send, picture, text. */
@@ -80,6 +86,13 @@
   const badges = $derived(cardBadges(it, lang, t));
 
   const upgrade = $derived(it.craft ? index.byId.get(it.craft) : undefined);
+
+  /* The tier ladder: every rung of this upgrade line, in tier order. A line of
+     one is not a ladder, and the live app leaves it out. */
+  const ladder = $derived.by(() => {
+    const line = it.eq?.line ? upgradeLine(index, it) : [];
+    return line.length > 1 ? line : [];
+  });
   const madeFrom = $derived.by(() => {
     const from = index.craftedFrom.get(it.id);
     return from ? index.byId.get(from) : undefined;
@@ -92,7 +105,7 @@
 <article class="card {variant}" data-id={it.id}>
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
-  <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.()}>
+  <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.(it)}>
     <img
       src={art}
       alt=""
@@ -155,6 +168,35 @@
         {/if}
       {/each}
     </div>
+
+    {#if ladder.length}
+      <!-- Улучшенный / Продвинутый / Легендарный are the same weapon four
+           times over, so the card offers the ladder rather than making a
+           person search for the next rung. The one they are on is a label
+           rather than a button: it goes nowhere. -->
+      <div class="steps">
+        <span class="steps-l">{t.tier}</span>
+        {#each ladder as rung (rung.id)}
+          {#if rung.id === it.id}
+            <span class="step on" aria-current="true">{rung.eq?.tier}</span>
+          {:else}
+            <!-- Named as well as titled. The live app gives the rung a title
+                 and a digit for its content, and content wins the accessible
+                 name - so a screen reader hears "button, 2" three times over
+                 with nothing saying where any of them goes. The label is the
+                 same string the title carries, so the parity inventory reads
+                 the same on both apps. -->
+            <button
+              type="button"
+              class="step"
+              title={nameOf(rung, lang)}
+              aria-label={nameOf(rung, lang)}
+              onclick={() => onopen?.(rung)}>{rung.eq?.tier}</button
+            >
+          {/if}
+        {/each}
+      </div>
+    {/if}
 
     {#if upgrade || madeFrom}
       <!-- Both directions on the card: where a thing goes, and where it came
@@ -359,6 +401,51 @@
     letter-spacing: 0;
     color: var(--gold-soft);
     border-color: rgb(216 171 94 / 50%);
+  }
+
+  /* off `.steps`, `.steps-l` and `.step` in style.css. The rungs are a fixed
+     26px square whatever digit is in them, so a line of four reads as a row of
+     equal steps rather than as text. */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0 0;
+    flex-wrap: wrap;
+  }
+
+  .steps-l {
+    font: 650 10.5px/1 var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  .steps .step {
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 7px;
+    border: 1px solid var(--line2);
+    background: var(--surface);
+    color: var(--muted);
+    font: 650 12.5px/1 var(--ui);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.15s;
+  }
+
+  .steps button.step:hover {
+    color: var(--txt);
+    border-color: var(--gold);
+    cursor: pointer;
+  }
+
+  .steps .step.on {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #191320;
   }
 
   /* The two duality columns, in the colours the dice are named for. */

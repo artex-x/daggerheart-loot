@@ -6,10 +6,12 @@
   import Icon from './Icon.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
+  import RecordModal from './RecordModal.svelte';
   import { tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
+  import type { Record_ } from '../lib/types.js';
 
   interface Props {
     app: AppState;
@@ -29,6 +31,11 @@
   const say = (msg: string): void => {
     said = msg;
   };
+
+  /* A record opened over this page: a rung of the tier ladder, or the picture,
+     both of which the live app answers with the modal rather than a
+     navigation. */
+  let open = $state<Record_ | null>(null);
 
   /* The line under the heading: where the record is from, and its number in the
      table it is printed in. The link goes to the row itself rather than to the
@@ -71,6 +78,9 @@
       onartfail={(bad: string) => {
         app.markArtBroken(bad);
       }}
+      onopen={(r: Record_) => {
+        open = r;
+      }}
     >
       {#snippet nameActions()}
         <RecordActions {app} {index} {it} row="name" {say} />
@@ -80,6 +90,20 @@
       {/snippet}
     </RecordCard>
   </div>
+{/if}
+
+{#if open && index}
+  <RecordModal
+    {app}
+    {index}
+    it={open}
+    onclose={() => {
+      open = null;
+    }}
+    onopen={(r: Record_) => {
+      open = r;
+    }}
+  />
 {/if}
 
 <!-- Present from the start and empty: a live region has to be in the page

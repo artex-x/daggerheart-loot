@@ -18,8 +18,14 @@ and unpushed**. Pushing is the repository owner's job, never the agent's.
   `PageHead.svelte` extracted from the two panels that had copied it.
 - `e5985ff` - **the Core rules help was printing its own markup.** A paragraph
   can now carry a line break and a bold word; `#/roll/std ~ help` is a state.
+- **the tier ladder** - the row of tier buttons on equipment in an upgrade
+  line, which nothing had ported. `upgradeLine` had been extracted and tested
+  in Phase 2 and no component called it. It hid behind a debt reason that named
+  only the add-to-list row; porting it took `#/i/q1` to **exact at four of its
+  six cells**. A rung opens the record over the page, so `RecordPage` has a
+  modal now, and each rung is named for the piece it leads to.
 
-Three things the slice found, each written up in `plan.md`:
+Four things the work found, each written up in `plan.md`:
 
 - **every icon in a button is 15px**, whatever its `width` attribute says -
   `.btn svg` in style.css overrides it. `lib/icons.ts` had copied the
@@ -33,19 +39,27 @@ Three things the slice found, each written up in `plan.md`:
 - **the Core rules help had never been read by anything.** See above; the
   general lesson is already a standing rule - a slice is not finished until its
   states are in `STATES`.
+- **a debt reason has to name everything the state is short of.** The one on
+  `#/i/q1` named the add-to-list row while the route was also missing the tier
+  ladder, so the number looked explained and the missing control stayed
+  invisible. Now a standing rule in `CLAUDE.md`, "What you find in passing goes
+  in the plan, not into a reason".
 
-## Ten parity failures that are not yours
+## Nine parity failures that are not yours
 
-`node tests/parity.js` reports **10 разхождений on this machine and reported
-the same ten before any of this session's work**. Verified: `git stash push -u`,
+`node tests/parity.js` reports **9 расхождений on this machine, and reported
+the same states before any of this session's work**. Verified: `git stash push -u`,
 rebuild, run the failing states - the numbers came back identical to two
 decimals.
 
-All ten are debt-carrying states at 768 or 375 whose measured difference sits
-0.12-0.68 above the recorded number, which is more than `JITTER` (0.1):
+All nine are debt-carrying states at 768 or 375 whose measured difference sits
+0.12-0.68 above the recorded number, which is more than `JITTER` (0.1). There
+were ten; `#/i/q1 @ ru 375` came off the list when the tier ladder landed,
+which is a hint about the rest - the drift scales with how much of the screen
+already differs, so the states carrying the biggest debts are the ones that
+cross the threshold.
 
 ```
-#/i/q1 @ ru 375                  1.02 vs 0.73
 #/roll/wondrous ~ modal @ ru 768 8.73 vs 8.57
 #/roll/wondrous ~ modal @ ru 375 13.90 vs 13.55
 #/roll/wondrous ~ help @ ru 768  0.92 vs 0.73
@@ -64,7 +78,7 @@ other debt state reproduces within a few hundredths, so this is not a case for
 loosening `JITTER` either. The trap is now a standing note in `CLAUDE.md`
 ("A debt number belongs to the machine that recorded it").
 
-If a future session runs on the Linux agent and these ten come back green, that
+If a future session runs on the Linux agent and these nine come back green, that
 confirms the diagnosis and nothing needs doing. If somebody decides the
 Windows numbers should be the recorded ones, that is a deliberate change to
 make on its own, with CI checked afterwards.
@@ -116,7 +130,7 @@ Then Phase 6 (deployment, the `_site` file list becomes `dist/`) and Phase 7
   harness already drives both apps in a real browser.
 - **Do not chase the help-panel debts.** Both of them are measured identical;
   there is nothing to copy.
-- **Do not re-record the ten failing debts.** See above.
+- **Do not re-record the nine failing debts.** See above.
 - **Do not translate the legacy Russian comments** in `app.js`, `style.css` and
   the older suites. Those files are deleted at the cut-over.
 
@@ -132,9 +146,9 @@ node tests/parity.js   # the rewrite against the live app
 parity run takes about nine minutes here; filter while working, the argument is
 a substring of the expanded id: `node tests/parity.js "alt @ ru"`.
 
-Must pass: 570+ tests, per-file coverage thresholds, 0 svelte-check errors,
+Must pass: 580+ tests, per-file coverage thresholds, 0 svelte-check errors,
 prettier clean, and no `VISUAL_DEBT` entry that is stale in either direction -
-apart from the ten above.
+apart from the nine above.
 
 ## Environment
 

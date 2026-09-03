@@ -173,8 +173,8 @@
       onartfail={(bad: string) => {
         app.markArtBroken(bad);
       }}
-      onopen={() => {
-        open = it;
+      onopen={(r: Record_) => {
+        open = r;
       }}
     >
       {#snippet nameActions()}
@@ -196,6 +196,9 @@
     it={open}
     onclose={() => {
       open = null;
+    }}
+    onopen={(r: Record_) => {
+      open = r;
     }}
   />
 {/if}

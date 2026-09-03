@@ -8,7 +8,7 @@
  * refusal is reported rather than swallowed, and that the markup is one a
  * screen reader can follow. */
 
-import { cleanup, render, screen } from '@testing-library/svelte';
+import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
@@ -84,7 +84,56 @@ const LOOT: Loot = {
       ende: 'Reliable: +1 to attack rolls',
       ru: 'Палаш',
       rud: 'Надёжное: +1 к Броскам Атаки',
-      eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', dmg: 'd8+3', bu: 1 }
+      eq: {
+        t: 'weapon',
+        tier: 1,
+        cls: 'phy',
+        tr: 'agility',
+        rg: 'melee',
+        dmg: 'd8+3',
+        bu: 1,
+        line: 'broadsword'
+      }
+    },
+    /* The rest of one upgrade line, which is what the tier ladder is made of.
+       Out of tier order on purpose: the ladder sorts them. */
+    {
+      id: 'q3',
+      src: 'core',
+      kind: 'equip',
+      en: 'Advanced Broadsword',
+      ende: 'Reliable: +3 to attack rolls',
+      ru: 'Продвинутый Палаш',
+      rud: 'Надёжное: +3 к Броскам Атаки',
+      eq: {
+        t: 'weapon',
+        tier: 3,
+        cls: 'phy',
+        tr: 'agility',
+        rg: 'melee',
+        dmg: 'd8+9',
+        bu: 1,
+        line: 'broadsword'
+      }
+    },
+    {
+      id: 'q2',
+      src: 'core',
+      kind: 'equip',
+      en: 'Improved Broadsword',
+      ende: 'Reliable: +2 to attack rolls',
+      ru: 'Улучшенный Палаш',
+      rud: 'Надёжное: +2 к Броскам Атаки',
+      eq: {
+        t: 'weapon',
+        tier: 2,
+        cls: 'phy',
+        tr: 'agility',
+        rg: 'melee',
+        dmg: 'd8+6',
+        bu: 1,
+        line: 'broadsword'
+      }
     }
   ],
   refs: {
@@ -306,6 +355,53 @@ describe('taking a record somewhere else', () => {
   });
 });
 
+describe('the tier ladder', () => {
+  it('offers every rung of the upgrade line, in tier order', () => {
+    /* Improved, Advanced and Legendary are the same weapon at four tiers, and
+       the card is where a person moves between them. The fixture stores them
+       out of order to prove the ladder does the sorting. */
+    render(App, { env: at('q1') });
+    const steps = screen.getByText('Ранг').parentElement;
+    expect(steps?.textContent.replace('Ранг', '').trim()).toBe('123');
+  });
+
+  it('marks the rung you are on rather than offering it', () => {
+    render(App, { env: at('q1') });
+    expect(screen.getByText('1', { selector: '.step' })).toHaveAttribute(
+      'aria-current',
+      'true'
+    );
+    expect(screen.queryByRole('button', { name: 'Палаш' })).not.toBeInTheDocument();
+  });
+
+  it('names each rung by the weapon it leads to, not by its number', () => {
+    /* The digit alone tells a screen reader nothing about where it goes. */
+    render(App, { env: at('q1') });
+    expect(screen.getByRole('button', { name: 'Улучшенный Палаш' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Продвинутый Палаш' })).toBeInTheDocument();
+  });
+
+  it('opens the rung over the page rather than navigating to it', async () => {
+    /* The live app answers with the modal, which keeps the page you came from
+       underneath - and the ladder inside the modal keeps working. */
+    render(App, { env: at('q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Улучшенный Палаш')).toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Продвинутый Палаш' }));
+    expect(
+      within(screen.getByRole('dialog')).getByText('Продвинутый Палаш')
+    ).toBeInTheDocument();
+  });
+
+  it('draws no ladder for a piece that stands alone', () => {
+    /* A line of one is not a ladder, and neither is a loot record. */
+    render(App, { env: at('ci1') });
+    expect(screen.queryByText('Ранг')).not.toBeInTheDocument();
+  });
+});
+
 describe('accessibility', () => {
   it('has no axe violations on a record with everything on it', async () => {
     const { container } = render(App, { env: at('ci1') });
@@ -314,6 +410,13 @@ describe('accessibility', () => {
 
   it('has no axe violations on a referenced card', async () => {
     const { container } = render(App, { env: at('ci2') });
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations with the tier ladder and the card it opens', async () => {
+    const { container } = render(App, { env: at('q1') });
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await expectNoA11yViolations(container);
   });
 
