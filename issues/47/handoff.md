@@ -5,58 +5,84 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 
 ## Status
 
-Phase 4 is **in progress**. Five of the six roll modes and the record page are
-built and match the live app exactly - every state, both languages, all three
-widths. `HEAD` is `d8f77f6`; `origin/main` is at `a772a15`, so **six commits are
-local and unpushed**. Pushing is the repository owner's job, never the agent's.
+Phase 4 is **in progress**. All six roll modes and the record page are built
+and match the live app exactly - every state, both languages, all three widths.
+`HEAD` is `e5985ff`; `origin/main` is at `a772a15`, so **nine commits are local
+and unpushed**. Pushing is the repository owner's job, never the agent's.
 
 ## Completed this session
 
-In commit order:
+- `1d99d07` - **the alternate tables** (`#/roll/alt`), the last roll mode.
+  `lib/alt.ts` (which four rows a hope/fear pair produces, which tables a crit
+  opens, what the step-up offers), `AltPanel.svelte`, four parity states, and
+  `PageHead.svelte` extracted from the two panels that had copied it.
+- `e5985ff` - **the Core rules help was printing its own markup.** A paragraph
+  can now carry a line break and a bold word; `#/roll/std ~ help` is a state.
 
-- `24d42b3` - two standing rules written into `CLAUDE.md`: a slice is not
-  finished until its states are in `STATES`; when something is slow, measure it,
-  report the number, and fix what is on this side without asking.
-- `de514bd` - the `/tmp` mirror is how a session works here, not a bad-day
-  workaround. Measured: a Dev Drive did not move the numbers, `git gc` did.
-- `3506b04` - **Vault of Ages and Communities.** RollPanel takes rows plus an
-  optional picker. Extracted `Field`, `ChipRow`, `Chip`. Found: no help text
-  ported for either section, the picker label was the tab's word rather than the
-  singular, three missing card badges, an invented `ul` rule, and a roll field
-  that kept a number the new section could not hold.
-- `117af2e` - **parity runs the whole matrix.** `STATES` x `LANGS` x `WIDTHS`,
-  debts keyed `"<id> @ <lang> <width>"`, plus a report of how many control names
-  the run pressed against how many it only saw. Found: every English help
-  paragraph had been rewritten rather than copied, and `recordActions` gripped
-  Russian literals with `has`, so in English it reported every button missing on
-  both apps and agreed with itself.
-- `1c71365` - **axe on pressed states**, plus the `COVERED` guard that fails
-  when a component has no named state rendering it under axe.
-- `f68b64c` - **Core rules.** `OrGrid`, `DiceBar`, `lib/std.ts`, `shareRoll`,
-  the std help. All eighteen cells matched on the first measurement.
-- `d8f77f6` - the build links `img/`, `og/`, `card/` into `dist/`; `npm run
-  check:built` added. Fixes a CI failure, see gotchas.
+Three things the slice found, each written up in `plan.md`:
+
+- **every icon in a button is 15px**, whatever its `width` attribute says -
+  `.btn svg` in style.css overrides it. `lib/icons.ts` had copied the
+  external-link icon's 13 and the crit box came out four pixels narrow per
+  link. The rule, and the `.btn .dieicon` counter-rule the live app also
+  writes, now live in `Button.svelte`.
+- **the two dice name their own controls.** The live app calls both number
+  fields "Roll result" and all four steppers "One lower"/"One higher", so a
+  screen reader hears the same controls twice on the one screen with two dice.
+  Eight `ACCEPTED` entries record the deviation.
+- **the Core rules help had never been read by anything.** See above; the
+  general lesson is already a standing rule - a slice is not finished until its
+  states are in `STATES`.
+
+## Ten parity failures that are not yours
+
+`node tests/parity.js` reports **10 разхождений on this machine and reported
+the same ten before any of this session's work**. Verified: `git stash push -u`,
+rebuild, run the failing states - the numbers came back identical to two
+decimals.
+
+All ten are debt-carrying states at 768 or 375 whose measured difference sits
+0.12-0.68 above the recorded number, which is more than `JITTER` (0.1):
+
+```
+#/i/q1 @ ru 375                  1.02 vs 0.73
+#/roll/wondrous ~ modal @ ru 768 8.73 vs 8.57
+#/roll/wondrous ~ modal @ ru 375 13.90 vs 13.55
+#/roll/wondrous ~ help @ ru 768  0.92 vs 0.73
+#/roll/wondrous ~ help @ ru 375  0.64 vs 0.52
+#/roll/wondrous ~ help @ en 375  0.95 vs 0.79
+#/i/ci1 ~ whole @ ru 768         5.61 vs 5.39
+#/i/ci1 ~ whole @ ru 375         7.64 vs 7.28
+#/i/ci1 ~ whole @ en 768         5.40 vs 5.22
+#/i/ci1 ~ whole @ en 375         7.69 vs 7.01
+```
+
+**They were left alone on purpose.** The numbers were recorded on the Linux
+agent, CI runs there, and re-recording them to this machine's rendering would
+only move the failure to CI - four of them by more than `DEBT_SLACK`. Every
+other debt state reproduces within a few hundredths, so this is not a case for
+loosening `JITTER` either. The trap is now a standing note in `CLAUDE.md`
+("A debt number belongs to the machine that recorded it").
+
+If a future session runs on the Linux agent and these ten come back green, that
+confirms the diagnosis and nothing needs doing. If somebody decides the
+Windows numbers should be the recorded ones, that is a deliberate change to
+make on its own, with CI checked afterwards.
 
 ## Remaining work, in batches
-
-**Batch A - the alternate tables** (`#/roll/alt`). The last roll mode and the
-only one that rolls two dice at once. Needs: the duality pair (two number fields
-labelled hope and fear, `rollDuality` already in `lib/roll.ts`), the five rarity
-chips, and the critical-success box - which appears when hope equals fear and
-carries links into the alt tables plus a "bump to the next rarity" button
-(`nextRarity` already exists). The OR grid, chips and card are all built.
-Live source: `renderAlt` in `app.js` around line 2234; CSS `.crit`, `.crit-acts`,
-`.dieblock`, `.dielbl` in `style.css`.
 
 **Batch B - tables** (`#/tables`, `#/tables/eq_weapon`). The biggest remaining
 surface, and it unlocks the modal-from-a-row path. Two-level chip navigation,
 the filter bar, list and grid views, section anchors. `lib/filters.ts` and
-`lib/label.ts` already hold the logic.
+`lib/label.ts` already hold the logic. Two things now waiting on it: the crit
+box on `#/roll/alt` links into `#/tables/alt_item/<rarity>` and
+`#/tables/alt_consumable/<rarity>`, so those anchors have to land; and the
+tables help uses `<b>` mid-sentence, which the help shape now supports.
 
 **Batch C - search** (`#/search`). `lib/search.ts` exists.
 
-**Batch D - lists** (`#/lists`). Also pays off three of the outstanding debts:
-the add-to-list row on both record routes and in the modal.
+**Batch D - lists** (`#/lists`). Also pays off the outstanding add-to-list
+debts on both record routes and in the modal.
 
 **Batch E - print** (`#/print/<ids>`). Pays the print half of the same row.
 
@@ -68,17 +94,16 @@ Then Phase 6 (deployment, the `_site` file list becomes `dist/`) and Phase 7
 
 ## Ordered next steps
 
-1. Read `CLAUDE.md`, this file, `issues/47/plan.md`, and `docs/specs/FEATURES.md`
-   for the alternate tables.
-2. Rebuild the session environment - see "Environment" below. Nothing works
-   until the mirror exists.
-3. Batch A: `lib/alt.ts` first (pure: which four records a hope/fear pair
-   produces, and whether it is a critical success), with its unit test.
-4. `AltPanel.svelte` reusing `OrGrid`, `Chip`, `ChipRow`, `Field`, `NumberField`.
-5. Add its parity states in the **same** commit: the page, a critical success,
-   and a rarity other than the first. Add a `COVERED` entry for every new
-   component in `app/src/components/a11y.test.ts`.
-6. Measure, record any debt with a real reason, run both gates, commit.
+1. Read `CLAUDE.md`, this file, `issues/47/plan.md`, then `docs/specs/ROUTES.md`
+   and `docs/specs/FEATURES.md` for the tables surface.
+2. Confirm the environment - see "Environment" below. It is not what the last
+   handoff described.
+3. Batch B, smallest coherent piece first: the table index (`#/tables`) with
+   its chip navigation, before the filter bar and the two views.
+4. Add its parity states in the **same** commit - the index, one table, one
+   filtered table, the two views - and a `COVERED` entry in
+   `app/src/components/a11y.test.ts` for every new component.
+5. Measure, record any debt with a real reason, run both gates, commit.
 
 ## What not to start yet
 
@@ -89,8 +114,9 @@ Then Phase 6 (deployment, the `_site` file list becomes `dist/`) and Phase 7
   Settings -> Pages -> Source first.
 - **Do not start Playwright.** Ask first whether it earns its place - the parity
   harness already drives both apps in a real browser.
-- **Do not chase the help-panel debts.** Measured identical; there is nothing to
-  copy.
+- **Do not chase the help-panel debts.** Both of them are measured identical;
+  there is nothing to copy.
+- **Do not re-record the ten failing debts.** See above.
 - **Do not translate the legacy Russian comments** in `app.js`, `style.css` and
   the older suites. Those files are deleted at the cut-over.
 
@@ -102,72 +128,71 @@ npm run check:built    # build, file:// smoke, bundle budget
 node tests/parity.js   # the rewrite against the live app
 ```
 
-`check:built` is required for anything that alters what a screen draws - that is
-the gate whose absence let a CI failure through this session. A full parity run
-takes several minutes; filter while working, the argument is a substring of the
-expanded id: `node tests/parity.js "alt @ ru"`.
+`check:built` is required for anything that alters what a screen draws. A full
+parity run takes about nine minutes here; filter while working, the argument is
+a substring of the expanded id: `node tests/parity.js "alt @ ru"`.
 
-Must pass: 525+ tests, per-file coverage thresholds, 0 svelte-check errors,
-prettier clean, `расхождений нет` from parity, and no `VISUAL_DEBT` entry that
-is stale in either direction.
+Must pass: 570+ tests, per-file coverage thresholds, 0 svelte-check errors,
+prettier clean, and no `VISUAL_DEBT` entry that is stale in either direction -
+apart from the ten above.
 
-## Environment (rebuild every session)
+## Environment
 
-The working copy is `E:\dev\daggerheart-loot`, reached over a host mount. The
-mount costs ~10 ms per file whatever the disk underneath - eslint on three files
-is 150 seconds there and under a second in a local mirror. So:
+**This session ran natively on Windows** at `E:\dev\daggerheart-loot`, not in a
+Linux sandbox reaching the repository over a host mount. The `/tmp` mirror
+described in `CLAUDE.md` had nothing to mirror, and none of the mount costs
+applied. Measured here, from the repository root:
 
-```
-# 1. mirror (see CLAUDE.md for the tar pipe)
-cd <repo> && tar -cf - --exclude=node_modules --exclude=.git --exclude=img \
-  --exclude=og --exclude=card --exclude=i --exclude=dist --exclude=test-output . \
-  | (mkdir -p /tmp/work && cd /tmp/work && tar -xf -)
-for d in img og card i; do ln -sfn "$PWD/$d" /tmp/work/$d; done
-cd /tmp/work && npm ci
+| | this machine |
+|---|---|
+| `vitest run --coverage`, 27 files | 40 s |
+| `svelte-check` | 15 s |
+| `eslint .` | 25 s |
+| `vite build` | 1 s |
+| `npm run check` end to end | ~2 min |
+| full `node tests/parity.js` | ~9 min |
 
-# 2. puppeteer needs one 7 kB library
-mkdir -p /tmp/sysroot/dl && cd /tmp/sysroot/dl
-apt-get download libxdamage1 && dpkg -x libxdamage1_*.deb /tmp/sysroot/root
-export LD_LIBRARY_PATH=/tmp/sysroot/root/usr/lib/x86_64-linux-gnu
-```
+So: **check which kind of session you are in before paying for a mirror.** If
+`node -v` and `npx eslint` on a couple of files answer in seconds, work in
+place. The mirror is for the sandbox, and the numbers in `CLAUDE.md` are that
+sandbox's.
 
-Run **prettier on the mount** (3.2 s); run eslint, vitest, `vite build` and
-parity **in the mirror**. Copy edited sources in with the same tar pipe before
-each run.
+`prettier --write` after editing, always: it is the one gate that fails on
+whitespace, and three files went in unformatted this session before the check
+caught them.
 
 ## Session gotchas
 
-- **Do not build on the mount.** `node_modules` there carries Windows native
-  bindings only; `@rolldown/binding-linux-x64-gnu` and `lightningcss-linux-x64-gnu`
-  are missing, so `vite build` fails. The mirror's own `npm ci` gets the right
-  ones.
-- **Parity: one page at a time.** Two apps loaded at once had Chrome killed
-  part-way through a screenshot on a two-core box, and a browser that dies
-  reports every later state as a failure of the port. Already fixed in
-  `tests/parity.js`; do not "optimise" it back.
-- **A parity run wipes `test-output/parity/`.** Analyse a diff image in the same
-  command that produced it, or it is gone.
-- **The tool call cap is about 178 seconds.** A full parity run exceeds it; use
-  the filter and run in slices.
-- **Local `dist/` used to lie.** Until `d8f77f6` the parity harness left
-  `img/` symlinks in `dist/`, so the smoke check passed locally on links CI did
-  not have. The build owns those links now, but the lesson stands: a green local
-  run of a CI-only check is not evidence.
+- **Parity output is buffered when redirected.** `node tests/parity.js > log`
+  writes nothing until the process ends, so a background run cannot be watched
+  through its log. Watching `ls test-output/parity | wc -l` gives progress -
+  three files per state - and a `grep -q FAIL` loop on the log fires as soon as
+  the buffer flushes.
+- **A parity run wipes `test-output/parity/`.** Analyse a diff image before
+  starting another run, or it is gone.
+- **Do not pipe a long parity run through `tail`.** The FAIL lines scroll past
+  the window and the summary alone does not name them. Redirect the whole
+  thing.
+- **The tool call cap is about 178 seconds.** A full parity run exceeds it; run
+  it in the background and wait on it.
+- **Two parity runs at once, or a run alongside `npm test`,** compete for CPU
+  and can make a screenshot race. Serialise them.
 
 ## Open questions
 
 - **Pages source.** Settings -> Pages -> Source is still not "GitHub Actions",
-  so a red build can still publish. Owner-side; nothing in a workflow can fix it.
-- **Playwright.** Phase 5 asks for it. The parity harness may already cover what
-  it would. Worth a decision before building anything.
+  so a red build can still publish. Owner-side; nothing in a workflow can fix
+  it.
+- **Playwright.** Phase 5 asks for it. The parity harness may already cover
+  what it would. Worth a decision before building anything.
 - **`noData` and `storageOff`.** Two dictionary strings in the rewrite have no
   twin in the live app's dictionary - the live app words the "storage is
   blocked" case as `noStorageTitle` + `noStorage`. Neither is reachable by any
-  parity state today, so neither is compared. Worth aligning when the lists
-  slice touches storage.
-- **`#/roll/alt` help text.** `helpFor('alt', ...)` returns null on purpose and
-  `help.test.ts` asserts it. The live app has help for `alt`; port it with the
-  slice and update that assertion.
+  parity state today. Worth aligning when the lists slice touches storage.
+- **The kind filter's scope.** The live app shares one `S.kind` across Core
+  rules, the alternate tables and Tables; the rewrite gives each panel its own.
+  Nothing compares it. The tables slice is where a person might notice, and
+  `plan.md` records the decision.
 
 ## Critical files
 
@@ -177,11 +202,12 @@ each run.
 | `tests/parity.js` | the runner: matrix expansion, one page per target, coverage report |
 | `tests/parity/driver.js` | gripping by accessible name, `settle`, waiting for artwork |
 | `app/src/components/a11y.test.ts` | axe on pressed states, and the `COVERED` guard |
+| `app/src/components/PageHead.svelte` | the heading, the two round buttons, the help panel |
+| `app/src/components/AltPanel.svelte` | the duality pair and the critical-success box |
 | `app/src/components/RollPanel.svelte` | the shape four sections share |
-| `app/src/components/StdPanel.svelte` | the multi-card shape Batch A copies |
-| `app/src/components/OrGrid.svelte` | 1 / 2 / 4 card layouts with OR |
-| `app/src/lib/std.ts` | `poolFor`, `isLastOn`, `NDICE` |
-| `app/src/lib/help.ts` | the help shape: paragraphs of parts, optional bold lead |
+| `app/src/components/OrGrid.svelte` | 1 / 2 / 4 card layouts with OR, generic in its item |
+| `app/src/lib/alt.ts` | the alternate tables: picks, the crit's links, the step up |
+| `app/src/lib/help.ts` | the help shape: text, links, bold words, breaks |
 | `app/src/lib/dict.ts` | `Dict` derives from the Russian side; parity is a compile error |
 | `vite.config.mts` | the artwork links, the `file://` build, coverage thresholds |
 | `app.js`, `style.css`, `index.html` | the expectation. Read values from here, never guess |

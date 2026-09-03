@@ -456,6 +456,17 @@ conclude the browser suites are unrunnable without checking `ldd` first: the
 whole set was skipped once on the strength of a launch error that turned out to
 be a single missing file.
 
+### Check which kind of session this is before mirroring anything
+
+Two shapes of session run here. An agent sandbox reaches the repository over a
+host mount, and everything below applies. A session running natively on the
+Windows machine pays none of it: `npm run check` is about two minutes there,
+`vite build` is one second, and there is nothing to mirror.
+
+Tell them apart with one command rather than a rule of thumb - `npx eslint` on
+a couple of files is 150 seconds over the mount and under thirty in place. If
+it answers quickly, work where the files are.
+
 ### The working copy is on a mount; mirror it before running anything
 
 An agent sandbox reaches the repository over a host mount, and the cost there is
