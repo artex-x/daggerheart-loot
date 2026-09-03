@@ -324,10 +324,10 @@ change, it is the machine, and re-recording it would only move the failure to
 CI. The check costs two minutes and it settles the question; the alternative is
 an afternoon looking for a defect in code that does not have one.
 
-One debt is not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
-lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes
-and the colour were measured identical to three decimals and the text matches
-character for character, so there is no value to copy.
+One kind of debt is not worth hunting. The two help panels sit at 0.29-0.79%
+because a line or two rasterises a pixel lower: the box, every paragraph, every
+line box and the colour were measured identical to three decimals and the text
+matches character for character, so there is no value to copy.
 
 ### Copy the behaviour, not the intent
 

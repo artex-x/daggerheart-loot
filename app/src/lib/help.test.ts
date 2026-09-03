@@ -1,17 +1,24 @@
 /* What a roll page explains about itself. */
 
 import { describe, expect, it } from 'vitest';
-import { helpFor, isLink } from './help.js';
-import type { Help, HelpLink } from './help.js';
+import { helpFor, isBold, isBreak, isLink } from './help.js';
+import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
 const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'community'];
 
+/** What one part reads as, so a paragraph can be compared as plain text. */
+const partText = (part: HelpPart): string => {
+  if (isLink(part)) return part.label;
+  if (isBold(part)) return part.b;
+  if (isBreak(part)) return '\n';
+  return part;
+};
+
 /** Everything a paragraph says, with the link labels in place. */
 const textOf = (help: Help | null, i: number): string =>
-  (help?.paragraphs[i]?.lead ?? '') +
-  (help?.paragraphs[i]?.parts ?? []).map((part) => (isLink(part) ? part.label : part)).join('');
+  (help?.paragraphs[i]?.lead ?? '') + (help?.paragraphs[i]?.parts ?? []).map(partText).join('');
 
 const linksOf = (help: Help | null): HelpLink[] =>
   (help?.paragraphs ?? []).flatMap((para) => para.parts.filter(isLink));
@@ -61,6 +68,34 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('wondrous', 'ru'), 0)).toContain('Кости на такой диапазон не бывает');
     expect(textOf(helpFor('dread', 'ru'), 0)).toContain('Кости на такой диапазон не бывает');
     expect(textOf(helpFor('voa', 'ru'), 0)).toContain('Своей таблицы броска у книги нет');
+  });
+
+  it('carries markup as shape rather than as text', () => {
+    /* The Core rules paragraph that lists where each rarity fits is one
+       paragraph with four bold lines inside it. It was ported as a string with
+       the tags still in it and shipped showing "<br><b>Common</b>" as words,
+       because nothing rendered that panel and no parity state opened it. */
+    for (const lang of LANGS) {
+      for (const para of helpFor('std', lang)?.paragraphs ?? []) {
+        for (const part of para.parts) {
+          if (typeof part === 'string') expect(part, lang).not.toMatch(/[<>]/);
+        }
+      }
+    }
+
+    const ru = helpFor('std', 'ru')?.paragraphs[1];
+    expect(ru?.parts.filter(isBreak)).toHaveLength(4);
+    expect(ru?.parts.filter(isBold).map((b) => b.b)).toEqual([
+      'Обычная',
+      'Необычная',
+      'Редкая',
+      'Легендарная'
+    ]);
+    expect(
+      helpFor('std', 'en')
+        ?.paragraphs[1]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual(['Common', 'Uncommon', 'Rare', 'Legendary']);
   });
 
   it('credits the alternate tables to the person who wrote them', () => {

@@ -315,6 +315,19 @@ const STATES = [
     }
   },
 
+  /* The help panel Core rules shipped without a state for. It is the one help
+     text with markup inside a paragraph - four rarities in bold on their own
+     lines - and it went out with the tags showing as words, because axe reads
+     structure and the other suites never opened it. */
+  {
+    id: '#/roll/std ~ help',
+    route: '#/roll/std',
+    why: 'the help panel with bold lines inside a paragraph',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
+
   /* And one kind off, which is the other way to get to two cards - down the
      other axis, so the pair that is left is a different pair. */
   {
@@ -495,6 +508,16 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ pinned @ en 1100': { pct: 1.36, why: 'the same toast, in English' },
   '#/roll/wondrous ~ pinned @ en 768': { pct: 1.95, why: 'the same toast, in English, mid width' },
   '#/roll/wondrous ~ pinned @ en 375': { pct: 3.82, why: 'the same toast, in English, on a phone' },
+
+  /* Core rules has the same rasterisation noise, and its help is the one with
+     four bold lines inside a paragraph - the whole text was compared character
+     for character after the shape landed, and it is identical. */
+  '#/roll/std ~ help @ ru 1100': helpNoise(0.36),
+  '#/roll/std ~ help @ ru 768': helpNoise(0.72),
+  '#/roll/std ~ help @ ru 375': helpNoise(0.6),
+  '#/roll/std ~ help @ en 1100': helpNoise(0.49),
+  '#/roll/std ~ help @ en 768': helpNoise(0.66),
+  '#/roll/std ~ help @ en 375': helpNoise(0.34),
 
   '#/roll/wondrous ~ help @ ru 1100': helpNoise(0.29),
   '#/roll/wondrous ~ help @ ru 768': helpNoise(0.73),

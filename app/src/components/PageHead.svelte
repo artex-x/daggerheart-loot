@@ -7,7 +7,7 @@
      style, and the alternate tables would have been a third copy. Both copies
      are gone; this is where the padding is decided now. */
   import Icon from './Icon.svelte';
-  import { isLink } from '../lib/help.js';
+  import { isBold, isBreak, isLink } from '../lib/help.js';
   import type { Help } from '../lib/help.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -70,7 +70,8 @@
               href={part.href}
               target="_blank"
               rel="noopener">{part.label}</a
-            >{:else}{part}{/if}{/each}
+            >{:else if isBold(part)}<b>{part.b}</b>{:else if isBreak(part)}<br
+            />{:else}{part}{/if}{/each}
       </p>
     {/each}
   </div>

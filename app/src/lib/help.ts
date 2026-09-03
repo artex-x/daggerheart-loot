@@ -1,10 +1,14 @@
 /* What each roll page explains about itself, off the `help` block in app.js.
  *
  * The live app keeps these as HTML strings and injects them. Here a paragraph
- * is a shape instead: a run of text and links, with an optional bold lead-in.
- * Nothing has to be injected to render it, and the two things the live text
- * actually uses - `<b>` at the start of a paragraph, and a source line with
- * three links in it - both fit without a special case.
+ * is a shape instead: a run of text, links, bold words and line breaks.
+ * Nothing has to be injected to render it.
+ *
+ * The shape started as text plus links plus a bold lead-in, which covered the
+ * four sections ported first and quietly failed on the fifth: the Core rules
+ * paragraph that lists where each rarity fits is one paragraph with four
+ * `<br><b>Word</b>` lines inside it, and it shipped showing those tags as
+ * words. Nothing looked at it, because no parity state opened that panel.
  *
  * This is the product's own text, so it is Russian and English rather than
  * source prose, and the em dashes in it are the ones the live app prints.
@@ -17,8 +21,17 @@ export interface HelpLink {
   label: string;
 }
 
-/** A run of a paragraph: plain text, or a link to a book. */
-export type HelpPart = string | HelpLink;
+/** A line break inside a paragraph, where the live text has one. */
+export const BR = { br: true } as const;
+export type HelpBreak = typeof BR;
+
+/** A word in bold partway through a run, rather than opening one. */
+export interface HelpBold {
+  b: string;
+}
+
+/** A run of a paragraph: plain text, a link, a bold word, or a break. */
+export type HelpPart = string | HelpLink | HelpBold | HelpBreak;
 
 export interface HelpPara {
   /** The bold opening of a paragraph, where the live text has one. */
@@ -32,6 +45,18 @@ export interface Help {
 
 /** A paragraph of plain text, which is most of them. */
 const p = (text: string): HelpPara => ({ parts: [text] });
+
+/**
+ * One of the "where this rarity fits" lines in the Core rules help: a break, a
+ * rarity in bold, and the places it belongs. Four of them hang off the end of
+ * one paragraph rather than standing as paragraphs of their own, which is how
+ * the live text is written and how it measures.
+ */
+const rarityLine = (word: string, where: string): HelpPart[] => [
+  BR,
+  { b: word },
+  ` — ${where}`
+];
 
 const WONDROUS: Record<Lang, Help> = {
   ru: {
@@ -252,9 +277,24 @@ const STD: Record<Lang, Help> = {
       p(
         'Бросьте d12 и сложите результаты — сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.'
       ),
-      p(
-        'Сколько костей брать, решает редкость добычи — она подписана под каждой кнопкой. Где какая редкость уместна:<br><b>Обычная</b> — заброшенный лагерь, обычная лавка.<br><b>Необычная</b> — ограниченный товар в лавке, тайник в лагере, часть награды.<br><b>Редкая</b> — под замком в лавке, единственная награда за работу, вещи сильного НИП.<br><b>Легендарная</b> — единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
-      ),
+      {
+        parts: [
+          'Сколько костей брать, решает редкость добычи — она подписана под каждой кнопкой. Где какая редкость уместна:',
+          ...rarityLine('Обычная', 'заброшенный лагерь, обычная лавка.'),
+          ...rarityLine(
+            'Необычная',
+            'ограниченный товар в лавке, тайник в лагере, часть награды.'
+          ),
+          ...rarityLine(
+            'Редкая',
+            'под замком в лавке, единственная награда за работу, вещи сильного НИП.'
+          ),
+          ...rarityLine(
+            'Легендарная',
+            'единственная в своём роде, награда за смертельно опасное дело, сокровище могущественного противника.'
+          )
+        ]
+      },
       p(
         'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
       )
@@ -265,9 +305,24 @@ const STD: Record<Lang, Help> = {
       p(
         'Roll d12 and add them up — the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.'
       ),
-      p(
-        "How many dice you take depends on the rarity you are after — each button is captioned with the rarities it covers. Where each one fits:<br><b>Common</b> — an abandoned camp, a local shop.<br><b>Uncommon</b> — limited stock in a shop, a stash in a camp, part of a reward.<br><b>Rare</b> — under lock and key, the sole reward for a job, a powerful NPC's possessions.<br><b>Legendary</b> — the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
-      ),
+      {
+        parts: [
+          'How many dice you take depends on the rarity you are after — each button is captioned with the rarities it covers. Where each one fits:',
+          ...rarityLine('Common', 'an abandoned camp, a local shop.'),
+          ...rarityLine(
+            'Uncommon',
+            'limited stock in a shop, a stash in a camp, part of a reward.'
+          ),
+          ...rarityLine(
+            'Rare',
+            "under lock and key, the sole reward for a job, a powerful NPC's possessions."
+          ),
+          ...rarityLine(
+            'Legendary',
+            "the only one of its kind, a reward for a deadly job, a powerful adversary's treasure."
+          )
+        ]
+      },
       p(
         'Tiers attached to rarities are a recommendation, not a limit. The GM may hand out any rarity at any level if it suits the table.'
       )
@@ -339,7 +394,17 @@ export function helpFor(section: string, lang: Lang): Help | null {
   return HELP[section]?.[lang] ?? null;
 }
 
-/** Whether a part of a paragraph is a link rather than plain text. */
+/** Whether a part of a paragraph is a link to a book. */
 export function isLink(part: HelpPart): part is HelpLink {
-  return typeof part !== 'string';
+  return typeof part !== 'string' && 'href' in part;
+}
+
+/** Whether it is a word set in bold partway through the run. */
+export function isBold(part: HelpPart): part is HelpBold {
+  return typeof part !== 'string' && 'b' in part;
+}
+
+/** Whether it is a line break. */
+export function isBreak(part: HelpPart): part is HelpBreak {
+  return typeof part !== 'string' && 'br' in part;
 }

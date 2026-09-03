@@ -51,7 +51,7 @@ already being collected against the live app:
 
 ### What every remaining `VISUAL_DEBT` entry is
 
-Nothing outstanding is a styling defect. The 36 entries are three causes:
+Nothing outstanding is a styling defect. The 42 entries are three causes:
 
 1. **The add-to-list and print row** under every record card - both record
    routes, the whole-page state and the modal. It is code that does not exist
@@ -59,16 +59,16 @@ Nothing outstanding is a styling defect. The 36 entries are three causes:
 2. **The toast**, on `~ pinned`. The live app raises one when the starting
    section changes; the rewrite announces it to a screen reader only.
    `#/i/ci1 ~ toast` is `pending` for the same gap.
-3. **Help-panel rasterisation**, 0.29-0.79%. Measured, not guessed: the box,
-   every paragraph, every line box and the colour are identical to three
-   decimals and the text matches character for character. There is no value to
-   copy - do not go looking for one.
+3. **Help-panel rasterisation**, 0.29-0.79% on Wondrous and 0.34-0.72% on Core
+   rules. Measured, not guessed: the box, every paragraph, every line box and
+   the colour are identical to three decimals and the text matches character
+   for character. There is no value to copy - do not go looking for one.
 
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
 
-- 525 unit and component tests, per-file coverage thresholds
+- 570 unit and component tests, per-file coverage thresholds
 - `app/src/components/a11y.test.ts` - axe on **pressed** states, plus a guard
   that fails when a component has no named state rendering it under axe
 - `tests/parity.js` - the rewrite against the live app, every state in both
@@ -132,6 +132,23 @@ linked rather than copied, because 80 MB per build is not worth paying for a
 folder that has not changed, and `junction` makes that work on Windows without
 elevation. `tests/parity.js` used to lay the same links itself; that workaround
 is gone.
+
+### The Core rules help shipped with its markup showing
+
+`helpFor` modelled a paragraph as text, links and an optional bold lead-in.
+That covered the four sections ported first and quietly failed on the fifth:
+the Core rules paragraph listing where each rarity fits is one paragraph with
+four `<br><b>Word</b>` lines inside it, and the port kept it as a string with
+the tags in it. Svelte escapes what it renders, so the panel said
+`<br><b>Обычная</b>` in both languages, on a screen that has been "finished"
+for weeks.
+
+Nothing caught it because nothing looked. Coverage renders the panel, axe reads
+its structure, and neither reads prose; the parity harness would have seen it
+at a glance and Core rules had shipped without a `~ help` state. That state
+exists now, and a paragraph is a run that can carry a break and a bold word -
+which the tables and lists help will need as well, because both use `<b>`
+mid-sentence.
 
 ### The kind filter is per panel, not per app
 
