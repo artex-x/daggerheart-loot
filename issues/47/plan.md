@@ -40,31 +40,44 @@ Built, and matching the live app exactly in both languages at all three widths:
 | Communities | `#/roll/community` | page, a second community |
 | Core rules | `#/roll/std` | page, one source off, one kind off |
 | Alternate tables | `#/roll/alt` | page, a critical success, the same at the top rarity, the same with one kind on |
+| Tables (B1, the four filterless tables) | `#/tables`, `#/tables/hnf_consumable` | index, a second table, grid, searched, empty, a row opened, a row ticked, the help panel |
 
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/tables`, `#/tables/eq_weapon` - the tables slice
+- `#/tables/eq_weapon` and the other ten tables with a filter or a sectioned
+  body - batches B2 through B4
 - `#/lists` - the lists slice
 - `#/search` - the search slice
 - `#/print/ci1-q1` - the print slice
 
 ### What every remaining `VISUAL_DEBT` entry is
 
-Nothing outstanding is a styling defect. The 44 entries are three causes:
+Nothing outstanding is a styling defect. The 77 entries are five causes:
 
 1. **The add-to-list and print row** under every record card - both record
-   routes, the whole-page state, and both modals. It is code that does not
-   exist yet and lands with the lists and print slices, not polish to be
-   chased. Do not let this reason absorb anything else: it did once, and the
-   tier ladder hid behind it for weeks.
+   routes, the whole-page state, both roll modals, and now the table row's
+   modal too. It is code that does not exist yet and lands with the lists and
+   print slices, not polish to be chased. Do not let this reason absorb
+   anything else: it did once, and the tier ladder hid behind it for weeks.
 2. **The toast**, on `~ pinned`. The live app raises one when the starting
    section changes; the rewrite announces it to a screen reader only.
    `#/i/ci1 ~ toast` is `pending` for the same gap.
-3. **Help-panel rasterisation**, 0.29-0.79% on Wondrous and 0.34-0.72% on Core
-   rules. Measured, not guessed: the box, every paragraph, every line box and
-   the colour are identical to three decimals and the text matches character
-   for character. There is no value to copy - do not go looking for one.
+3. **The selection bar**, on `#/tables ~ a row ticked` - add to list, print,
+   copy selection, at the bottom of the window once something is ticked. Same
+   kind of gap as the first cause, named separately because it is a bar rather
+   than a row and the reason has to say what it actually looks like.
+4. **Help-panel rasterisation**, 0.29-0.79% on Wondrous, 0.34-0.72% on Core
+   rules, and 0.40-2.12% on Tables. Measured, not guessed: the box, every
+   paragraph, every line box and the colour are identical to three decimals
+   and the text matches character for character. There is no value to copy -
+   do not go looking for one.
+5. **Search-box placeholder antialiasing**, under 900px on every Tables state -
+   0.10-1.61%. The box and its placeholder measured pixel-identical, crop for
+   crop, against the live app: same left edge, same width, same text: and the
+   rest of each screen matched exactly on its own. What is left reads as
+   antialiasing on the placeholder's thin, muted glyphs - the same class of
+   noise cause 4 names, just on a control rather than a paragraph.
 
 ### The tables surface, and how it splits
 
@@ -118,6 +131,68 @@ screen. `#/tables` with no table name shows `core_item` - that is
   cannot tell one table from another. The rewrite has to reset it when the hash
   changes, not when the component unmounts, because a hash-only move between
   two tables keeps the same component alive.
+
+### B1 built: the plain table
+
+`TablesPage.svelte` now holds every table id - the four with no facet render
+in full, the other ten fall through to a `.todo` placeholder that still
+resolves through the chip nav, so no chip is a dead end while B2-B4 are
+outstanding. `lib/tables.ts` holds `TABLE_GROUPS`, `SUB_LABEL`/`subLabelOf` and
+`groupOf`, all unit-tested including the exhaustiveness of the grouping against
+`TABLE_IDS`. `Chip.svelte` grew an `href` form for the nav (a real `<a>`, same
+as the tab bar) and a `size="sm"` variant for the sub-row; `ChipRow.svelte`
+grew a `sub` flag for the same row's spacing. Seven parity states plus a
+`~ help` state, all exact except the debts below.
+
+**Found while building it, not before:**
+
+- **A legacy numbering bug in the grid view, not reproduced.** `list.map(tileHTML)`
+  in `app.js` passes the array's own index as `tileHTML`'s second parameter,
+  which the function reads as a roll-number override - so every tile past the
+  first shows its position in the list rather than its own roll. Confirmed
+  against `data.js`: `core_item`'s first twelve rows are a plain 1-12, and the
+  live grid draws 1, 1, 2, 3, 4, .... The rewrite draws each tile's real
+  `it.roll`, which is what the row view (and the book) already shows, and the
+  divergence is recorded in `ACCEPTED` in `tests/parity/specs.js` rather than
+  copied - the live app is being deleted at the cut-over, and reproducing a
+  numbering bug on purpose to keep a diff at zero would only carry it forward
+  into the version that survives. Worth a word to the repository owner about
+  the legacy site while it is still live.
+- **Two spacing bugs, both from values that were guessed instead of read.**
+  `.toolbar` in style.css carries `margin-bottom:18px`; the port had only
+  reproduced the inline `margin-top:16px` the live markup adds on top of it,
+  and invented a 6px bottom margin of its own that didn't exist anywhere in the
+  original. The two are not additive - the wrapper below the toolbar opens
+  with its own 6px top margin, and adjacent margins collapse to the larger
+  rather than sum - so the real gap is 18px, not the fabricated 6. The result
+  was every row 12px higher than the original, worse at every row further down
+  the table, which is what a "growing drift" in a pixel diff usually means:
+  not a value that changes per row, but one constant offset that reads as one
+  the deeper into a long list you look. Fixed by copying `.toolbar`'s real
+  margin rather than reasoning about the wrapper div's.
+- **Svelte's whitespace collapsing changes what `textContent` says, not just
+  how the page looks.** A row's accessible name is its whole content (see
+  below), so a newline the compiler turns into a single space between two
+  sibling elements shows up in that name even though it is invisible on
+  screen - `.rt` and `.rm` are both `display:block`, so the browser does not
+  render the gap, but `element.textContent` still contains it. Three
+  boundaries needed the tight `>`/`<` placement RecordCard already uses
+  elsewhere in the codebase: between the name and the stat line, between the
+  row and its badges, and between a tile's number and its name. The last one
+  took two tries - Prettier reformats a short tag like `<div class="tile-b">`
+  back onto its own line even when the source had it hugging the previous
+  element, undoing the fix on the next format. A single `<!-- prettier-ignore -->`
+  placed before the whole `<button class="tile">` - not before each inner
+  `<div>` separately - is what actually survives formatting, because Prettier
+  ignores everything inside the node it is told to skip, not just that node's
+  own tag.
+- **The row's accessible name is deliberately its whole content, not a label.**
+  Confirmed against the live app rather than assumed: `rowHTML`'s button
+  carries no `aria-label`, so a screen reader reads the name, the stat line,
+  the description and the badges together. Verbose, but matching it exactly is
+  what let the two bugs above surface at all - the parity harness's control
+  inventory diffs exact strings, and a hand-written `aria-label` would have
+  quietly hidden both.
 
 ## Phase 5 - what already exists
 

@@ -163,7 +163,30 @@ const ru = {
   eqTh: 'Пороги',
   eqScore: 'Броня',
 
-  storageOff: 'Браузер не даёт сохранять: списки не переживут перезагрузку.'
+  storageOff: 'Браузер не даёт сохранять: списки не переживут перезагрузку.',
+
+  /* The two groups the tab bar has no word for - both a slice through every
+     book rather than a book of their own. */
+  grpEquipment: 'Снаряжение',
+  grpFrames: 'Фреймы',
+  /* The three equipment tables' sub-caption, shorter than the book's own name
+     for the kind of gear - "Основное оружие" on the badge, "Оружие" here. */
+  subWeapon: 'Оружие',
+  subSecondary: 'Вторичное',
+  subArmor: 'Броня',
+
+  subTables:
+    'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
+
+  searchPh: 'Поиск по названию или описанию…',
+  tableLink: 'Ссылка на таблицу',
+  tableLinkCopied: 'Ссылка на таблицу скопирована',
+  view: 'Вид',
+  viewList: 'Списком',
+  viewGrid: 'Сеткой',
+  nothing: 'Ничего не найдено',
+  selectAll: 'Выбрать все',
+  selected: 'Выбрано'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -289,7 +312,25 @@ const en: Dict = {
   eqTh: 'Thresholds',
   eqScore: 'Armor',
 
-  storageOff: 'This browser will not save: lists are lost on reload.'
+  storageOff: 'This browser will not save: lists are lost on reload.',
+
+  grpEquipment: 'Equipment',
+  grpFrames: 'Frames',
+  subWeapon: 'Weapons',
+  subSecondary: 'Secondary',
+  subArmor: 'Armor',
+
+  subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
+
+  searchPh: 'Search by name or description…',
+  tableLink: 'Link to this table',
+  tableLinkCopied: 'Table link copied',
+  view: 'View',
+  viewList: 'List',
+  viewGrid: 'Grid',
+  nothing: 'Nothing found',
+  selectAll: 'Select all',
+  selected: 'Selected'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

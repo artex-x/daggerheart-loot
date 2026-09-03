@@ -61,7 +61,10 @@ const LOOT: Loot = {
 const at = (hash: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), ...over });
 
-const press = (name: string): Promise<void> =>
+/* A RegExp is for a table row: its accessible name is the whole row - name,
+   stat line, description and badges - so an exact match would have to spell
+   all of that out rather than the one word that identifies it. */
+const press = (name: string | RegExp): Promise<void> =>
   userEvent.click(screen.getByRole('button', { name }));
 
 /**
@@ -71,7 +74,7 @@ const press = (name: string): Promise<void> =>
  * checked, so adding a way into a screen means adding it - the same rule
  * STATES follows in tests/parity/specs.js.
  */
-const STATES: { what: string; route: string; enter?: () => Promise<void> }[] = [
+const STATES: { what: string; route: string; enter?: (() => Promise<void>) | undefined }[] = [
   {
     what: 'the record over the page, which has the focus trap',
     route: '#/roll/wondrous',
@@ -127,6 +130,16 @@ const STATES: { what: string; route: string; enter?: () => Promise<void> }[] = [
     what: 'communities in English',
     route: '#/roll/community',
     enter: () => press('EN')
+  },
+  {
+    what: 'the record modal over a table',
+    route: '#/tables',
+    enter: () => press(/Предмет корника/)
+  },
+  {
+    what: 'the grid view of a table',
+    route: '#/tables',
+    enter: () => press('Сеткой')
   }
 ];
 
@@ -169,6 +182,7 @@ const COVERED: Record<string, string> = {
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'Shell.svelte': 'shell.test.ts, including the storage warning',
   'TabBar.svelte': 'the frame, on every state',
+  'TablesPage.svelte': 'tables.test.ts, and both pressed states below',
   'VoaPanel.svelte': 'sections.test.ts, and in English above'
 };
 

@@ -380,13 +380,123 @@ const ALT: Record<Lang, Help> = {
   }
 };
 
+const DAGGERHEART_SU: HelpLink = {
+  href: 'https://ru.daggerheart.su/',
+  label: 'daggerheart.su'
+};
+
+/**
+ * The tables screen's help. Two paragraphs carry a bold word at the very
+ * start - the `lead` shape - and one carries two bold words mid-sentence,
+ * which is why a paragraph is a run of parts rather than a lead plus plain
+ * text: "Улучшаемые" and "Уникальные" both sit inside the same sentence as
+ * plain prose, not at its head.
+ */
+const TABLES: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу.'
+      ),
+      {
+        lead: 'Снаряжение',
+        parts: [
+          ' собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages и фреймах. Отобрать нужную книгу можно фильтром «Источник».'
+        ]
+      },
+      p(
+        'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.'
+      ),
+      p(
+        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
+      ),
+      p(
+        'Ранг есть у всего снаряжения, включая Wondrous Loot. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 — значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.'
+      ),
+      {
+        lead: 'Класс',
+        parts: [
+          ' — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.'
+        ]
+      },
+      {
+        parts: [
+          'Фильтр «Линейка» делит снаряжение надвое. ',
+          { b: 'Улучшаемые' },
+          ' — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. ',
+          { b: 'Уникальные' },
+          ' — то, что существует в единственном виде и не улучшается.'
+        ]
+      },
+      p(
+        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
+      ),
+      p(
+        'Одиннадцать предметов из Wondrous Loot на самом деле оружие. В этих таблицах их нет — они остались в своей таблице Wondrous, но выглядят и копируются как снаряжение.'
+      ),
+      {
+        parts: [
+          'Источники: Daggerheart Core Set и Hope & Fear. Русские названия и формулировки — перевод ',
+          DAGGERHEART_SU,
+          ', для Hope & Fear — таблица сообщества. Значения даны с учётом эрраты.'
+        ]
+      }
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, frames, communities — and the row under it picks a section of that book, when there is more than one. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.'
+      ),
+      {
+        lead: 'Equipment',
+        parts: [
+          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages and the campaign frames too. Narrow it to one book with the "Source" filter.'
+        ]
+      },
+      p(
+        'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.'
+      ),
+      p(
+        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
+      ),
+      p(
+        'Every piece of equipment has a tier, Wondrous Loot included. The book does not print it next to the item, but it binds each piece of loot to a location in the "Loot items by environment" table, and every location has a tier: the Staff of the Whispering Archive comes from The Watcher\'s Grave, which is tier 2, so the staff is tier 2. This is not an estimate from the stats - it is the same book, one page earlier.'
+      ),
+      {
+        lead: 'Class',
+        parts: [
+          ' is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.'
+        ]
+      },
+      {
+        parts: [
+          'The "Line" filter splits equipment in two. ',
+          { b: 'Upgradable' },
+          ' means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. ',
+          { b: 'Unique' },
+          ' means it exists in one form only.'
+        ]
+      },
+      p(
+        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for the campaign frames, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
+      ),
+      p(
+        'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.'
+      ),
+      p('Sources: the Daggerheart Core Set and Hope & Fear, with the errata applied.')
+    ]
+  }
+};
+
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,
   wondrous: WONDROUS,
   dread: DREAD,
   voa: VOA,
-  community: COMMUNITY
+  community: COMMUNITY,
+  tables: TABLES
 };
 
 /** What this section explains about itself, or null where nothing is written. */

@@ -3,9 +3,14 @@
 
      Extracted on the second use, not before: the Vault of Ages section picker
      and the community picker are both a row of these, and the source, kind and
-     rarity rows of the other two roll modes will be the third and fourth. */
+     rarity rows of the other two roll modes will be the third and fourth.
 
-  interface Props {
+     The `href` form is the table navigation's second use: the live app writes
+     those chips as `<a>` rather than `<button>`, so middle-click and
+     open-in-new-tab work on them for free - the same reason the tab bar is
+     real links rather than buttons with a click handler. */
+
+  interface Base {
     label: string;
     /** Whether this is the one currently chosen. */
     on: boolean;
@@ -19,15 +24,41 @@
      * the count above, the rarities under it.
      */
     sub?: string | undefined;
-    onclick: () => void;
+    /** `sm` is the table nav's second row - a book's own sections, quieter
+     *  than the row of books above them. */
+    size?: 'md' | 'sm';
   }
 
-  const { label, on, title, sub, onclick }: Props = $props();
+  /* One or the other, never both: a chip that both navigates and handles a
+     click is not what either the roll pickers or the table nav actually is. */
+  type Props = Base &
+    ({ href: string; onclick?: never } | { href?: never; onclick: () => void });
+
+  const { label, on, title, sub, size = 'md', href, onclick }: Props = $props();
 </script>
 
-<button type="button" class="chip" class:on aria-pressed={on} {title} {onclick}
-  >{label}{#if sub}<small>{sub}</small>{/if}</button
->
+{#if href}
+  <a
+    class="chip"
+    class:on
+    class:sm={size === 'sm'}
+    aria-current={on ? 'page' : undefined}
+    {title}
+    {href}
+    >{label}{#if sub}<small>{sub}</small>{/if}</a
+  >
+{:else}
+  <button
+    type="button"
+    class="chip"
+    class:on
+    class:sm={size === 'sm'}
+    aria-pressed={on}
+    {title}
+    {onclick}
+    >{label}{#if sub}<small>{sub}</small>{/if}</button
+  >
+{/if}
 
 <style>
   /* off `.chip` in style.css. `inline-block` and the missing underline are
@@ -65,5 +96,11 @@
     border-color: var(--gold);
     color: #1a1206;
     font-weight: 650;
+  }
+
+  /* off `.chip.sm` in style.css */
+  .chip.sm {
+    padding: 5px 11px;
+    font-size: 12.5px;
   }
 </style>

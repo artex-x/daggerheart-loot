@@ -416,12 +416,65 @@ const STATES = [
       await d.click('Научное');
     }
   },
-  { id: '#/tables', route: '#/tables', why: 'the table index', pending: 'tables slice' },
+  { id: '#/tables', route: '#/tables', why: 'the table index, which is core_item' },
+  {
+    id: '#/tables/hnf_consumable',
+    route: '#/tables/hnf_consumable',
+    why: 'a second table: the chosen chip moves, and the sub-row changes'
+  },
+  {
+    id: '#/tables ~ grid',
+    route: '#/tables',
+    why: 'the grid view, a different body entirely',
+    enter: async (d) => {
+      await d.click('Сеткой');
+    }
+  },
+  {
+    id: '#/tables ~ searched',
+    route: '#/tables',
+    why: 'a query that narrows the table',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'кольцо');
+    }
+  },
+  {
+    id: '#/tables ~ nothing found',
+    route: '#/tables',
+    why: 'the empty state, which no route draws',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+    }
+  },
+  {
+    id: '#/tables ~ a row opened',
+    route: '#/tables',
+    why: 'the record modal over a table',
+    enter: async (d) => {
+      await d.click('Кольцо Тишины');
+    }
+  },
+  {
+    id: '#/tables ~ a row ticked',
+    route: '#/tables',
+    why: 'the selection, where the missing bar is honest',
+    enter: async (d) => {
+      await d.click('Выбрано');
+    }
+  },
+  {
+    id: '#/tables ~ help',
+    route: '#/tables',
+    why: 'the help panel, which uses a bold word mid-sentence twice over',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
   {
     id: '#/tables/eq_weapon',
     route: '#/tables/eq_weapon',
     why: 'one equipment table',
-    pending: 'tables slice'
+    pending: 'the equipment tables are batch B4'
   },
   { id: '#/lists', route: '#/lists', why: 'the lists page', pending: 'lists slice' },
   { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
@@ -477,6 +530,10 @@ const helpNoise = (pct) => ({
   pct,
   why: 'a line or two of the help text rasterises a pixel lower; geometry, colour and text were measured identical, so there is nothing to copy'
 });
+
+/* The selection bar - add to list, print, copy selection - is lists' and
+   print's job, not the plain table's; see ACCEPTED for the control list. */
+const selBar = (pct, where) => ({ pct, why: `the selection bar, ${where}` });
 
 const VISUAL_DEBT = {
   '#/i/ci1 @ ru 1100': listRow(0.7, 'under a loot card'),
@@ -550,7 +607,60 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ help @ ru 375': helpNoise(0.52),
   '#/roll/wondrous ~ help @ en 1100': helpNoise(0.44),
   '#/roll/wondrous ~ help @ en 768': helpNoise(0.29),
-  '#/roll/wondrous ~ help @ en 375': helpNoise(0.79)
+  '#/roll/wondrous ~ help @ en 375': helpNoise(0.79),
+
+  /* Below 900px the toolbar's search box carries almost the whole of these
+     numbers: the box and its placeholder measured pixel-identical crop for
+     crop against the live app (same left, same width, same text), and the
+     rest of each screen - the chips, the rows, the tiles - matched exactly on
+     its own. What is left reads as antialiasing on the placeholder's thin,
+     muted glyphs, the same class of noise `helpNoise` names, not a value
+     to go copy. */
+  '#/tables @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables @ ru 375': { pct: 1.14, why: 'the same, on a phone' },
+  '#/tables @ en 375': { pct: 1.0, why: 'the same, in English' },
+  '#/tables/hnf_consumable @ ru 768': { pct: 0.13, why: 'the same, mid width' },
+  '#/tables/hnf_consumable @ ru 375': { pct: 1.49, why: 'the same, on a phone' },
+  '#/tables/hnf_consumable @ en 375': { pct: 1.61, why: 'the same, in English on a phone' },
+  '#/tables ~ grid @ ru 1100': { pct: 0.1, why: 'the same, at full width' },
+  '#/tables ~ grid @ ru 768': { pct: 0.14, why: 'the same, mid width' },
+  '#/tables ~ grid @ ru 375': { pct: 0.28, why: 'the same, on a phone' },
+  '#/tables ~ grid @ en 768': { pct: 0.11, why: 'the same, in English, mid width' },
+  '#/tables ~ grid @ en 375': { pct: 0.22, why: 'the same, in English, on a phone' },
+  '#/tables ~ searched @ ru 375': { pct: 1.0, why: 'the same, with a query typed into the box' },
+  '#/tables ~ searched @ en 375': { pct: 1.04, why: 'the same, in English' },
+  '#/tables ~ nothing found @ ru 375': { pct: 0.12, why: 'the same, on a phone' },
+  '#/tables ~ nothing found @ en 375': { pct: 0.13, why: 'the same, in English' },
+
+  /* The record modal a row opens is the same short-by-a-row card every other
+     modal draws - see the note on #/roll/wondrous ~ modal above. */
+  '#/tables ~ a row opened @ ru 1100': listRow(4.65, 'inside the modal a row opens'),
+  '#/tables ~ a row opened @ ru 768': listRow(6.7, 'inside that modal, mid width'),
+  '#/tables ~ a row opened @ ru 375': listRow(10.72, 'inside that modal, on a phone'),
+  '#/tables ~ a row opened @ en 1100': listRow(4.06, 'inside that modal, in English'),
+  '#/tables ~ a row opened @ en 768': listRow(5.82, 'inside that modal, in English, mid width'),
+  '#/tables ~ a row opened @ en 375': listRow(9.21, 'inside that modal, in English, on a phone'),
+
+  /* The selection bar - add to list, print, copy selection - sits at the
+     bottom of the window once a row is ticked, and does not exist yet; the
+     control list says so in ACCEPTED. Bigger on a phone, where the bar wraps
+     to two rows instead of one. */
+  '#/tables ~ a row ticked @ ru 1100': selBar(1.19, 'at the bottom of the window'),
+  '#/tables ~ a row ticked @ ru 768': selBar(1.52, 'mid width'),
+  '#/tables ~ a row ticked @ ru 375': selBar(4.59, 'on a phone, where the bar wraps to two rows'),
+  '#/tables ~ a row ticked @ en 1100': selBar(1.0, 'in English'),
+  '#/tables ~ a row ticked @ en 768': selBar(1.32, 'in English, mid width'),
+  '#/tables ~ a row ticked @ en 375': selBar(4.51, 'in English, on a phone'),
+
+  /* The tables help panel has the same rasterisation noise as the other two -
+     the box, every paragraph and the colour were measured identical, and two
+     of the paragraphs carry a bold lead the way Wondrous's does. */
+  '#/tables ~ help @ ru 1100': helpNoise(0.4),
+  '#/tables ~ help @ ru 768': helpNoise(1.08),
+  '#/tables ~ help @ ru 375': helpNoise(2.12),
+  '#/tables ~ help @ en 1100': helpNoise(0.49),
+  '#/tables ~ help @ en 768': helpNoise(1.58),
+  '#/tables ~ help @ en 375': helpNoise(0.65)
 };
 
 
@@ -615,7 +725,40 @@ const ACCEPTED = {
   '#/roll/alt ~ legendary crit @ ru :: the controls on the page :: controls': 'the same, at the top rarity',
   '#/roll/alt ~ legendary crit @ en :: the controls on the page :: controls': 'the same, at the top rarity',
   '#/roll/alt ~ crit, items only @ ru :: the controls on the page :: controls': 'the same, with one kind on',
-  '#/roll/alt ~ crit, items only @ en :: the controls on the page :: controls': 'the same, with one kind on'
+  '#/roll/alt ~ crit, items only @ en :: the controls on the page :: controls': 'the same, with one kind on',
+
+  /* B1 draws the selection box that ticks and the checkbox that carries it, but
+     not the bar that appears at the bottom of the window once something is
+     ticked - add to list, print, copy selection. Naming that bar is lists' and
+     print's job, not this slice's. */
+  '#/tables ~ a row ticked @ ru :: the controls on the page :: controls':
+    'the selection bar - add to list, print, copy selection - is lists and print, not this slice',
+  '#/tables ~ a row ticked @ en :: the controls on the page :: controls':
+    'the same, in English',
+
+  /* The record modal a row opens is the same card every other modal draws, and
+     it is short by the same row. */
+  '#/tables ~ a row opened @ ru :: the controls on the page :: controls':
+    'add-to-list, which the card in a modal offers too',
+  '#/tables ~ a row opened @ en :: the controls on the page :: controls':
+    'add-to-list, which the card in a modal offers too',
+
+  /* A legacy defect, not an accessibility fix, and recorded here rather than
+     reproduced: `list.map(tileHTML)` in app.js passes the array index as
+     `tileHTML`'s second parameter (`num`), which the function treats as a roll
+     number override. Every tile past the first in a plain table's grid view
+     therefore shows its position in the list instead of its own roll number -
+     confirmed against data.js, where core_item's first twelve rolls are a
+     plain 1-12 and the live app draws 1, 1, 2, 3, 4, .... The rewrite draws
+     each tile's real `roll`, which is the number the row view already shows
+     and the number printed in the book. Copying the bug would mean carrying
+     it forward past the point the live app is deleted, for a rewrite that is
+     supposed to fix nothing on its own initiative - worth a note to the
+     repository owner, not a value to reproduce. */
+  '#/tables ~ grid @ ru :: the controls on the page :: controls':
+    "a legacy bug: list.map(tileHTML) passes the array index as the tile's number past the first row",
+  '#/tables ~ grid @ en :: the controls on the page :: controls':
+    'the same, in English'
 };
 
 

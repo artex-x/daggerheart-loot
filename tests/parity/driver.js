@@ -150,12 +150,46 @@ function makeDriver(page, target) {
       }, NAME_FN);
     },
 
-    /** Clicks the control a person would click, by what it says. */
+    /**
+     * Types into a field found by its placeholder, the way a person would find
+     * it - a table's query lives in memory and never reaches the address, so a
+     * placeholder is the only thing a spec has to grip.
+     */
+    async type(placeholder, text) {
+      const ok = await page.evaluate(
+        (ph, val) => {
+          const el = [...document.querySelectorAll('input')].find(
+            (i) => i.placeholder === ph
+          );
+          if (!el) return false;
+          el.focus();
+          el.value = val;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          return true;
+        },
+        placeholder,
+        text
+      );
+      if (!ok) throw new Error(`${target}: no field with placeholder "${placeholder}"`);
+      d.pressed.add(`type:${placeholder}`);
+      await settle(page);
+      return true;
+    },
+
+    /**
+     * Clicks the control a person would click, by what it says.
+     *
+     * Includes `input` so a checkbox with an `aria-label` - the row selection
+     * box, which carries no text of its own - answers to the same verb as a
+     * button. `has()` already searched inputs; `click()` had not.
+     */
     async click(name) {
       const ok = await page.evaluate(
         (n, nameSrc) => {
           const nameOf = eval(nameSrc);
-          const els = [...document.querySelectorAll('button, a[href], [role="button"]')];
+          const els = [
+            ...document.querySelectorAll('button, a[href], [role="button"], input')
+          ];
           const el = els.find((e) => nameOf(e) === n) || els.find((e) => nameOf(e).includes(n));
           if (!el) return false;
           el.click();

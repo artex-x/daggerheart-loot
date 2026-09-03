@@ -39,6 +39,7 @@
   import RollPanel from './components/RollPanel.svelte';
   import Shell from './components/Shell.svelte';
   import StdPanel from './components/StdPanel.svelte';
+  import TablesPage from './components/TablesPage.svelte';
   import VoaPanel from './components/VoaPanel.svelte';
   import { AppState } from './state/app.svelte.js';
   import type { Env } from './ports/index.js';
@@ -79,8 +80,7 @@
   {:else if app.route.kind === 'record'}
     <RecordPage {app} id={app.route.id} />
   {:else if app.route.kind === 'tables'}
-    <h1>{app.t.tables}</h1>
-    <p class="todo">{app.hash}</p>
+    <TablesPage {app} />
   {:else}
     <p class="todo">{app.hash}</p>
   {/if}
