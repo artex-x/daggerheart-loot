@@ -42,12 +42,11 @@ Built, and matching the live app exactly in both languages at all three widths:
 | Alternate tables | `#/roll/alt` | page, a critical success, the same at the top rarity, the same with one kind on |
 | Tables (B1, the four filterless tables) | `#/tables`, `#/tables/hnf_consumable` | index, a second table, grid, searched, empty, a row opened, a row ticked, the help panel |
 | Tables (B2, the filter) | `#/tables/wondrous`, `#/tables/dread` | folded, panel open, a value picked, a filter link arrived at, a filter plus a query leaving nothing |
+| Tables (B3, sectioned bodies and anchors) | `#/tables/voa`, `#/tables/frames`, `#/tables/community`, `#/tables/alt_item`, `#/tables/alt_consumable` | each table's own page, a section anchor arriving on `voa`, a row anchor arriving on `core_item` (a B1 table) |
 
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/tables/voa`, `#/tables/frames`, `#/tables/community`, `#/tables/alt_item`,
-  `#/tables/alt_consumable` - sectioned bodies, batch B3
 - `#/tables/eq_weapon`, `#/tables/eq_secondary`, `#/tables/eq_armor` - the
   equipment tables, batch B4
 - `#/lists` - the lists slice
@@ -57,7 +56,8 @@ already being collected against the live app:
 ### What every remaining `VISUAL_DEBT` entry is
 
 Nothing outstanding is a styling defect. The 77 entries were five causes
-before B2; B2 adds a sixth, all of it measured rather than guessed:
+before B2; B2 added a sixth. B3 adds no new cause - every one of its new
+entries, below, is one of the same six, on new rows or a new control:
 
 1. **The add-to-list and print row** under every record card - both record
    routes, the whole-page state, both roll modals, and now the table row's
@@ -89,6 +89,50 @@ before B2; B2 adds a sixth, all of it measured rather than guessed:
    point in the description differs by a few sub-pixels of kerning. First seen
    because B2 is the first slice to put a long Wondrous or Dread description on
    screen at 375px - not something the filter itself changed.
+
+**B3's own new entries are the same six causes, not a seventh: cause 5 on
+each sectioned table at 768px, cause 6 on each at 375px, and both the row and
+section anchor states carry cause 6 as well - amplified rather than new,
+because arriving at an anchor scrolls straight past the toolbar and filter
+bar, so several description-heavy rows land above the fold *together* where
+the bare route only ever showed one or two. Confirmed by measuring the
+anchored row/section directly rather than assuming the bigger number meant a
+bigger problem: its own position and size match the live app to the pixel in
+both languages, and every row inside Vault of Ages' own artifact section
+reports an identical name and height on both apps - the whole difference is
+several already-known word-wraps landing on screen at once. The row and
+section anchors also carry a small new instance of cause 4 (rasterisation) at
+1100 and 768: the flash outline itself, 2px of gold, rasterises a fraction of
+a pixel differently between the two apps, same as the help panel's text does.
+
+Two real bugs surfaced while building the anchor - both fixed before any of
+the above was measured, not filed as debt:
+
+- **A font-loading race put the scroll target a few pixels off.**
+  `scrollIntoView` computes where to land from the layout at the moment it is
+  called; the monospace numerals in `.rnum` and the toolbar are wide enough
+  that swapping from the fallback face to the real one shifts a row by a
+  handful of pixels, and a scroll computed before that swap lands short or
+  long by exactly that much. Deterministic once isolated - not jitter, and not
+  something `document.getAnimations()` (already in the parity driver, for CSS
+  animations) has any way to see, since a font swap is neither. Confirmed with
+  a standalone script that read `window.scrollY` after each app's own anchor
+  fired, repeated across several fresh browser launches: the live app landed
+  on the same pixel every time, the rewrite alternated between two values a
+  handful of pixels apart depending on how the font-load race fell. Fixed by
+  waiting on `document.fonts.ready` before scrolling - the flash itself still
+  fires immediately, matching the live app, since it does not depend on
+  layout and gating it behind the same wait would only have made it start
+  visibly later than the live app's own.
+- **`SectionHead.svelte` was missing style.css's mobile override for
+  `.tsec-link`** - `padding:11px;margin-bottom:2px` under 600px, a bigger tap
+  target for a bare icon button that is otherwise a 20px square. Missing it
+  made every section heading 10px shorter than the live app's on a phone, and
+  because a `.tsection`'s own top offset compounds with every section above
+  it, the drift kept growing down a table with several sections - exactly the
+  "one constant offset reads as growing drift" pattern B1's toolbar margin and
+  B2's `.field:last-child` cascade tie already taught, a third instance of it
+  now on a rule that was ported once but only for the base width.
 
 ### The tables surface, and how it splits
 
@@ -463,6 +507,350 @@ difference is how the tier ladder stayed missing for weeks.
   the nav strip; `.ffilter` is `.panel`'s second use in this file and needed
   the same background, border and padding written into its own scoped rule -
   missing it left the panel with no box at all around the label and chips.
+
+### B3 planned: sectioned bodies and section anchors
+
+**Objective.** Draw the four remaining plain-body tables that split their list
+into subsections - `voa` (by tier), `frames` (by campaign), `community` (by
+community) - plus the two alternate tables, which split by rarity and then by
+hope/fear. Bring the facet rows those tables need (`tier`, `frame`, `comm`)
+and the row/section anchor - `#/tables/<table>/<key>` - which nothing renders
+today. Nothing outside `TablesPage.svelte` and its two new library modules
+changes.
+
+**Scope.** `voa`, `frames`, `community`, `alt_item`, `alt_consumable` join
+`KNOWN` in `TablesPage.svelte`. `facets.ts` grows `tier`, `frame` and `comm`
+rows. A new `<div class="tsection">` wrapper, its heading (with a
+copy-section-link button), and the scroll-and-flash behaviour the anchor
+segment triggers.
+
+**Non-goals.** No equipment facets or tier sections (B4). No selection bar, no
+add-to-list row (batch D). No search page (batch C). No change to the hash
+grammar, `filters.ts`'s `PLAIN_GROUPS`, `CONTRACTS.md` or `llms.txt` - the
+groups for these five tables are already frozen and implemented
+(`PLAIN_GROUPS` already lists `voa: ['kind','tier']`, `frames:
+['kind','frame']`, `community: ['comm']`), and `plainFacets()` in
+`lib/data.ts` already answers `tier`, `frame` and `comm` for any record. Only
+`facets.ts` (which values a row *offers*, and what to call them) and the
+rendering are new.
+
+#### What the live app does, read off app.js and confirmed against a running
+copy of `index.html` this session (not assumed)
+
+- `renderTables()` (2457-2543) branches on `st.t`: `voa` walks `VOA_TIERS = [1,
+  2, 3, 4, 'A', 'C']`, `frames` walks `FRAME_ORDER` (four campaigns), and
+  `community` walks `COMMUNITIES` (nine names) - each producing one
+  `<div class="tsection" id="sec-<key>">` per non-empty group, `sectionHead()`
+  plus `renderList()` inside. `alt_item`/`alt_consumable` are their own branch
+  (2464-2494): five rarities, each with up to two `<h4 class="altcol
+  hope|fear">` subsections holding the same row/tile markup, hope before fear,
+  and only where that column has rows after the query narrows it.
+- `sectionHead(label, table, key)` (2389) is a small heading row: a label and
+  one button, `.tsec-link`, that copies `#/tables/<table>/<key>` -
+  `t().copySection` for its title, `t().sectionLinkCopied` toasted after
+  (confirmed by reading `app.js:3886-3890`: `data-copy-sec` splits on `/`
+  and picks `sectionLinkCopied` whenever a key is present, `tableLinkCopied`
+  when it is not - the same handler `TablesPage.svelte`'s existing "copy table
+  link" button already exercises for the table-only case).
+- **The row/section anchor is a real, working, completely unported feature.**
+  Confirmed by running `index.html` in the browser this session:
+  `#/tables/alt_item/rare` scrolls to and outlines `#sec-rare`;
+  `#/tables/core_item/ci1` - a *row* anchor on one of **B1's own tables** -
+  scrolls to and outlines the row for `ci1`. The mechanism (`app.js`
+  3832-3845) is one piece of code for both: it looks up
+  `#sec-<key>` first, falls back to `[data-row="<key>"]`, calls
+  `scrollIntoView({behavior:'smooth', block:'start'})` and toggles a `.flash`
+  class removed after 1.6s. `RecordPage`'s "show in table" link
+  (`RecordPage.svelte:66`, already built) has been generating
+  `#/tables/<table>/<id>` row-anchor links since Phase 4 with **nothing on the
+  other end** - the target table draws the row, but nothing scrolls to it or
+  flashes it, on any of the six tables built so far. No parity state visits
+  this at all (`grep` of `tests/parity/specs.js` for `itemtable`, `anchor`,
+  `flash` and `showInTable` all come back empty), so it has been invisible the
+  whole time B1 and B2 were being verified - the same shape of gap as the tier
+  ladder in `#/i/q1`. **This batch is where it gets built**, because B3 is
+  what makes `route.anchor` real for the first time (B1/B2 parsed and ignored
+  it), and the same code serves both cases.
+  - CSS is entirely written already and needs no change: `.row.flash,
+    .tilewrap.flash{outline:2px solid var(--gold);outline-offset:2px}` (row
+    and tile anchors), `.tsection{scroll-margin-top:110px}` plus
+    `.tsection.flash{animation:flash 1.6s ease-out}` with a `prefers-reduced-
+    motion` fallback to a plain outline (section anchors). `style.css:171-174,
+    536-544`.
+  - The parity harness already sets `prefers-reduced-motion: reduce`
+    (`driver.js:334`, for the card fade-in), so a screenshot of an anchored
+    state lands on the static outline, not mid-animation - no new driver
+    plumbing needed there.
+- **A bare number does *not* read as a bare number in the tier facet's
+  labels.** The B2 handoff filed this as "B3's" - re-checked this session by
+  reading `tblFacets`'s `voa` branch (`app.js:2634`) and confirmed live:
+  `o[1]` for a numeric VoA tier is `voaTierName(k)`, i.e. `"Ранг 2"` already,
+  not the bare digit `"2"`. `fChosen`'s `/^\d+$/.test(o[1])` therefore never
+  fires for `voa`'s tier facet - it only ever fires for the *equipment*
+  tables' tier facet (`eqFacets`, `app.js:2575`, whose labels really are bare
+  `"1"`-`"4"`), which is **B4's**, not B3's. Browser-confirmed on
+  `#/tables/voa`: picking "Ранг 1" produces a pill reading "Ранг 1", not
+  "Ранг Ранг 1". **`FilterBar.svelte`'s existing rule already handles both
+  cases correctly and needs no change**: it tests `v.value` (`/^\d+$/`), not
+  `v.label`, so for `voa` (`value: "2"`, `label: "Ранг 2"`) the test fires and
+  reconstructs `row.label + ' ' + v.value` = `"Ранг" + " " + "2"` = `"Ранг 2"`
+  - the same string, purely because `row.label` for the tier facet is the same
+  word `voaTierName` uses. `facets.ts`'s job for `tier` is simply to mirror
+  `voaSectionName` (already in `lib/sections.ts` - see below), not to invent a
+  new numeric rule.
+- `voa`'s tier values are `[1, 2, 3, 4, 'A', 'C']`; `sections.ts`'s
+  `VOA_SECTIONS` and `voaSectionName(k, t)` **already exist**, built for
+  `#/roll/voa`, and produce exactly the labels the tables facet needs
+  (`"Ранг 2"`, `t.voaArtifact`, `t.voaCursed`) - confirmed against `data.json`
+  this session: `voa` holds `tier` values `1,2,3,4,'A','C'`, matching
+  `VOA_SECTIONS` exactly. `facets.ts`'s `tier` row for `voa` is a thin wrapper
+  around `voaSectionName`, not a new naming function.
+- `community`'s facet values and the section list are **the same derivation**:
+  `sections.ts`'s `communities(index)` and `communityName(c, lang)` already
+  exist (built for `#/roll/community`) and read the list off the records
+  rather than a hardcoded pair - confirmed against `data.json`: `community`
+  holds exactly the 9 names `COMMUNITIES` lists, in the same order (first
+  appearance in the data). `facets.ts`'s `comm` row and `renderTables`'s
+  per-community section both reuse `communities()` directly; nothing new to
+  derive.
+- `frames` has **no roll section** (frames never appear in `SECTIONS`/`TAB_LIST`
+  - checked `types.ts`), so unlike `voa` and `community` there is no existing
+  `lib` module naming a frame. `FRAME_ORDER` (`app.js:483`, four ids) and
+  `FRAME_LABEL` (476-481, both languages) are new to the rewrite. Confirmed
+  against `data.json`: `frames` holds all four (`beast_feast` 36,
+  `colossus` 21, `dark_heart` 36, `motherboard` 1) - `motherboard` having only
+  one row does not change the facet: `tblFacets` lists all four unconditionally
+  (`app.js:2637`), so an unpicked, single-row group still gets its own chip.
+- **`label.ts`'s `srcLabel` frame branch is already wrong, already shipped,
+  and invisible for the same reason the anchor is: nothing has visited it.**
+  `srcLabel(it, lang)`'s `case 'frame'` (`label.ts:82-83`) returns
+  `it.frame ?? t.srcFrame` - the **raw id**, e.g. `"beast_feast"` - where the
+  live app's `srcName(k)` (`app.js:944-948`) falls through to `frameName(k)`
+  and shows `"Пир зверей"` / `"Beast Feast"`. Confirmed live this session:
+  `#/i/f1`'s source badge reads "Пир зверей" on the live app. `label.ts` is
+  Phase 2 code, used by every record card and row (`cardBadges`/`srcLabel` in
+  `TablesPage.svelte` and `RecordCard.svelte`), so this has been wrong since
+  before B1 - it stayed invisible because no parity state has ever opened a
+  frame-equipment record (`#/i/f1` or any other), and `frames` itself has been
+  `.todo` until now. **Not fixed by chance in B3's own work** - `srcLabel`
+  is outside `TablesPage.svelte` - so it needs its own line item: once B3
+  writes the frame-name lookup (for the `frame` facet's labels and the
+  section headings), the same lookup fixes `srcLabel`'s `frame` case in the
+  same commit, with a `label.test.ts` case and, ideally, a parity state that
+  opens one frame-equipment record (`#/i/f1` is real data) to keep it from
+  going invisible again.
+
+#### How it is built
+
+**`app/src/lib/frames.ts`** (new, pure, mirrors `sections.ts`'s shape).
+`FRAME_ORDER` (the four ids, in book order - not derived from the data the way
+`communities()` is, because `app.js` doesn't derive it either: order is a
+book-authored fact, not something to infer from row counts) and
+`frameName(id, lang)` off `FRAME_LABEL`. Used by `facets.ts`'s `frame` row,
+`TablesPage.svelte`'s section loop, and `label.ts`'s `srcLabel` fix.
+
+**`app/src/lib/facets.ts`** grows three branches, each thin:
+- `tier` on `voa`: `VOA_SECTIONS.map(k => ({ value: String(k), label:
+  voaSectionName(k, t) }))`, imported from `sections.ts` rather than
+  reimplemented.
+- `frame` on `frames`: `FRAME_ORDER.map(id => ({ value: id, label:
+  frameName(id, t.lang or similar) }))` - check whether `Dict` alone can name
+  a frame or whether `frameName` needs the `Lang`, matching `sections.ts`'s
+  `communityName(c, lang)` signature rather than threading `t` where the
+  existing sibling threads `lang`.
+- `comm` on `community`: `communities(index).map(c => ({ value: c.id, label:
+  communityName(c, lang) }))`.
+
+Each is gated on the table actually holding that facet (mirroring the `kind`
+row's `groupsFor(table).includes(...)` check) and, for `frame`/`comm`, gated
+on nothing else - `tblFacets` always lists all four frames and all nine
+communities, not only the ones with rows in the current filter state, because
+the facet *offers* values independent of what else is picked.
+
+**`TablesPage.svelte`** grows:
+- A `sections(table, filtered)` computation (or three small ones) that groups
+  the already-filtered, already-searched list by tier/frame/community/rarity,
+  in book order, dropping empty groups - mirrors `renderTables`'s per-branch
+  `.filter(...)` + `.map(...)`, reusing the existing row/tile markup inside
+  each group rather than duplicating it.
+- A `TableSection.svelte` (new, small) or inline block for one
+  `<div class="tsection" id="sec-<key>">` - heading, copy-link button, then
+  the same rows/tiles block B1 already renders, parameterised by the list.
+  Whether this is worth its own component or stays inline in
+  `TablesPage.svelte` is a real question (see below) - the alt-table body
+  needs two nested levels (rarity, then hope/fear), the other three need one,
+  so the shared part is the section wrapper and heading, not the whole body.
+- Anchor handling: on `route.anchor` (already parsed by `hash.ts`, already
+  typed on `Route`, unused by any component today), after the list renders,
+  find `#sec-<anchor>` or `[data-row="<anchor>"]`, scroll it into view, and
+  flash it for 1.6s (or apply the reduced-motion outline directly, matching
+  the live app's own media query - Svelte can toggle a class and let CSS carry
+  the animation the same way `style.css` already does, rather than
+  reimplementing the timing in script). Needs an effect keyed on
+  `route.anchor` and `table` together, cleared once used (matching
+  `S.tables.anchor = ''` after the live app consumes it - an anchor should not
+  re-fire on every re-render, only once per navigation to it).
+- `alt_item`/`alt_consumable` need their own body branch: five rarities from
+  `RARITIES5`-equivalent (check whether a `lib` module already has this -
+  `rarityKey`/`rarityLabel` exist in `label.ts` for the roll picker; the
+  `hope`/`fear` split reads `index.altRow`... no - re-check: `altRow` is a
+  *lookup by face*, not a listing. The alt-table body needs the **columns**,
+  not a random-access lookup - confirm whether `Loot.alt[kind][rarity]` (the
+  raw `hope`/`fear` id arrays) is exposed anywhere in `Index`, or whether this
+  branch has to read `loot.alt` directly. This is a real open question for the
+  implementer to resolve before writing code, not answered by this session's
+  reading.
+
+**CSS**: `.tsec-head`, `.tsec-link`, `.altcol` (two colour variants, `hope`/
+`fear`), the `.tsection` scroll-margin and flash keyframes, `.field:last-child`
+already learned. All values are in `style.css:527-544` (already quoted above)
+plus wherever `.altcol` is declared - not yet located this session, worth
+finding early.
+
+**`dict.ts`** gains `frameF`, `commF` (facet row labels - `t().frameF`,
+`t().commF` in `app.js`, not yet copied), `copySection`, `sectionLinkCopied`
+(both already used by the table-link button's sibling case but not yet needed
+until a component actually renders a per-section link), plus whatever
+`frameName`'s dictionary needs (four names x two languages - check whether
+these belong in `dict.ts` proper, following `voaArtifact`/`voaCursed`'s
+precedent of living in the shared dictionary, or in `frames.ts` itself,
+following `sections.ts`'s precedent of deriving community names from data
+rather than the dictionary - frames cannot be derived from data the way
+communities are, since a frame's *name* is not stored on any record, so this
+one likely wants its own small table in `frames.ts`, matching `FRAME_LABEL`'s
+own location in `app.js` rather than `T.ru`/`T.en`).
+
+#### Open questions for the implementer, not resolved by this session
+
+1. **Where do the four frame names live** - `frames.ts` (own table, like
+   `app.js`'s `FRAME_LABEL`) or `dict.ts` (like `voaArtifact`)? Leaning
+   `frames.ts`, stated above, but not verified against how `dict.ts` is
+   organised elsewhere (single free-standing strings vs. small lookup tables)
+   - worth a quick look at `dict.ts`'s existing shape before deciding.
+2. **Does `Index` need to expose the alternate tables' raw hope/fear id lists**,
+   or is there already a way to get "every record in rarity R, column C" that
+   this session did not find? `altRow` answers "the Nth one", not "all of
+   them" - check before assuming `data.ts` needs a new field.
+3. **One component or inline per body shape?** A `TableSection.svelte` that
+   only wraps a heading and one list is cheap to write and might be premature -
+   CLAUDE.md's rule is extract on the second use, and this batch is the first
+   and only place four different sectioning schemes exist at once. Decide
+   once the four branches are actually written and it is visible whether they
+   share more than the heading.
+4. **Should the `srcLabel` fix and the anchor-scroll feature be their own
+   commits inside this batch, or folded into "B3 built"?** Both are
+   pre-existing gaps this session found rather than B3-shaped work in the
+   narrow sense - but both share code/data with what B3 is building anyway
+   (the frame name table; `route.anchor`, which nothing but B3 will ever
+   populate meaningfully with a section key). Splitting them out only pays if
+   review wants to see them separately; recorded as a decision to make, not
+   made here.
+
+#### What B3 has to leave behind
+
+Tests, in the same commit as the behaviour, following B1/B2's pattern:
+
+- `lib/facets.test.ts` - the `tier` row for `voa` (values and labels, using
+  `voaSectionName`), the `frame` row for `frames` (all four, in order, even
+  though `motherboard` has one row), the `comm` row for `community` (all
+  nine, in the data's order).
+- `lib/frames.test.ts` (new) - `frameName` in both languages for all four ids.
+- `lib/label.test.ts` - the `srcLabel` fix: a frame-equipment record's badge
+  reads the frame's name, not its id, in both languages.
+- `components/tables.test.ts` - each of the five tables groups into the right
+  sections in the right order, empty groups are dropped, a row/section anchor
+  scrolls (or at least sets the expected state/class - jsdom has no real
+  layout, so "scrolled" likely means "the target element gained the flash
+  class and `scrollIntoView` was called", not a pixel check, matching how
+  other component tests already avoid asserting real geometry).
+- `components/a11y.test.ts` - a pressed state for a sectioned table (the
+  panel now has two fields for `voa`/`frames`, which is where `.field:
+  last-child` would first matter for real, per the B2 handoff's own note).
+- `tests/parity/specs.js` - replace the five `pending` entries
+  (`#/tables/voa`, `#/tables/frames`, `#/tables/community`, `#/tables/alt_item`,
+  `#/tables/alt_consumable`) with real states, each comparing at minimum the
+  bare route; add states for a section-anchor arrival (e.g.
+  `#/tables/alt_item/rare`) and a row-anchor arrival on **an already-built B1
+  table** (e.g. `#/tables/core_item/ci1`) - the latter is not new *scope* for
+  B3 in the sense of a new table, but it is the only way the anchor feature's
+  fix gets verified on the tables that have existed since B1, and per
+  CLAUDE.md ("a state that is absent is invisible forever") it has been
+  missing this whole time. Add `#/i/f1` (or similar) as a state if one does
+  not exist, to catch the `srcLabel` fix.
+- `NAME` gains whatever section heading or copy-link button text the new
+  states grip (`t().copySection`, community/frame names as needed for
+  `enter` steps).
+
+Expect new `VISUAL_DEBT` entries for the same three noise causes B1/B2 already
+carry (help-panel rasterisation, search-placeholder antialiasing, and possibly
+a new description-reflow case if a sectioned table's rows are long enough at
+375px) - open the diff image before writing any reason that is not one of
+those three, per CLAUDE.md's warning about reasons that explain less than the
+whole difference.
+
+### B3 built: sectioned bodies and section anchors
+
+What was built matches the design above. The four open questions it left were
+resolved while writing the code, not guessed at beforehand:
+
+1. **Frame names live in `lib/frames.ts`**, its own small table
+   (`FRAME_ORDER`, `FRAME_LABEL`, `frameName(id, lang)`), matching
+   `FRAME_LABEL`'s own location in `app.js` rather than `dict.ts` - a frame's
+   name is not derivable from any record, so it earns the same shape
+   `sections.ts` already uses for the two facts that *are* derivable.
+2. **`Index` grew `altColumn(kind, rarity, col)`**, returning `{ it, n }[]` for
+   a whole column rather than one face - `altRow`'s sibling, sharing the same
+   internal `altCols` map `buildIndex` already builds. `n` is the face that
+   found the record, 1-indexed, which is what the alt-table body shows instead
+   of the record's own `roll` in whatever table it is also printed in.
+3. **The row/tile markup is a genuine component, not a snippet.** The plan
+   above suggested a `TableSection.svelte` for the heading and left the body
+   itself inline; building it surfaced a real blocker for that: Svelte 5's
+   `{#snippet}` blocks, called locally with `{@render}` in the same file
+   eslint-plugin-svelte's `@typescript-eslint/no-confusing-void-expression`
+   flags every such call as "placing a void expression inside another
+   expression" - confirmed with a two-line reproduction file outside this
+   component, so it is not a mistake in the markup, it is the tool. Every
+   existing snippet in this codebase is a *prop* (`Snippet<T>`, passed down
+   and rendered by the child), never a same-file `{#snippet}` rendered by the
+   component that declared it - which is exactly the pattern this batch was
+   the first to want, four times over. Rather than fight the linter, the row
+   and tile markup - by now wanted by five call sites (plain, tier, frame,
+   comm, and each alt column) - moved into `TableRows.svelte`, well past
+   "extract on the second use", and the heading became `SectionHead.svelte`
+   (used by the same five). `TablesPage.svelte` is left holding only the
+   per-body-shape grouping logic and the `.tsection`/`.altcol` wrappers.
+4. **The `srcLabel` fix and the anchor-scroll effect landed inside this
+   batch's own commit**, not split out - both share code this batch is
+   already writing (`frameName`; `route.anchor`, which nothing but this batch
+   ever populates with a section key), and splitting them into their own
+   commits would have meant re-deriving the same context for a reviewer twice.
+
+**The anchor effect** lives in `TablesPage.svelte`, keyed off `app.route`'s
+`anchor` field and guarded by `app.navigations` (not by the anchor string
+alone) so a search or a filter pick - which do not touch `navigations` - never
+re-fires a scroll a link already played. It looks up `#sec-<anchor>` first,
+then `[data-row="<anchor>"]`, and toggles `.flash` for 1.6s on whichever it
+finds - the same lookup order and the same class `app.js`'s own version used,
+now serving all eleven tables built so far rather than only the five this
+batch adds. Confirmed live before writing it, and again after: `#/i/f1`'s
+"show in table" link and `#/roll/alt`'s critical-success links have both been
+generating anchors nothing consumed since Phase 4; both work now.
+
+**Testing**: `lib/facets.test.ts` grew the `tier`/`frame`/`comm` rows;
+`lib/frames.test.ts` (new) covers `frameName`; `lib/label.test.ts`'s frame case
+was rewritten to assert the fix rather than the bug; `lib/data.test.ts` covers
+`altColumn` against the real dataset. `components/tables.test.ts` grew: each
+sectioned table groups correctly and drops empty groups, each section carries
+its own select-all scoped to its own rows, the alt tables number by die face
+and draw no select-all at all, the section-link button copies and announces,
+the row and section anchors flash the right element (and a third test checks
+an anchor naming neither does nothing), and the `frames` row's badge now reads
+the campaign's name. `components/a11y.test.ts` gained a pressed state for a
+sectioned table's filter panel - two fields, not one, which is where
+B2's `.field:last-child` note said it would first matter for real - and
+`TableRows.svelte`/`SectionHead.svelte` were added to its `COVERED` guard,
+both pointed at `tables.test.ts`'s new sectioned-body axe check.
 
 ## Phase 5 - what already exists
 

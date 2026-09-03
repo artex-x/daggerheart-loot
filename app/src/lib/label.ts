@@ -10,6 +10,7 @@
  * carries an item badge, because on a card it is a thing you have. */
 
 import { dict } from './dict.js';
+import { frameName } from './frames.js';
 import { EQ_TYPE, eqWord } from './i18n.js';
 import type { Dict } from './dict.js';
 import type { Lang, Record_, TableId } from './types.js';
@@ -80,7 +81,7 @@ export function srcLabel(it: Record_, lang: Lang): string {
     case 'voa':
       return t.srcVoa;
     case 'frame':
-      return it.frame ?? t.srcFrame;
+      return it.frame ? frameName(it.frame, lang) : t.srcFrame;
     case 'community':
       return (lang === 'ru' ? it.community_ru : it.community) ?? t.srcComm;
     default:

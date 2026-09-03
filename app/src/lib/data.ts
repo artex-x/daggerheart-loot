@@ -60,6 +60,14 @@ export interface Index {
    * the face, which the caller drops rather than drawing as a gap.
    */
   altRow: (kind: AltKind, rarity: Rarity, col: AltCol, n: number) => Record_ | undefined;
+  /**
+   * A whole column of an alternate table, for the `#/tables/alt_*` listing
+   * rather than a single die-face lookup. `n` is the face that found each
+   * record - the alternate tables' own numbering, not the record's `roll` in
+   * whatever table it is also printed in - so the tables page can show it
+   * without borrowing a number that belongs to a different book.
+   */
+  altColumn: (kind: AltKind, rarity: Rarity, col: AltCol) => { it: Record_; n: number }[];
   /** Referenced rulebook cards, by the key a record names in `refs`. */
   refs: Record<string, RefCard>;
 }
@@ -132,6 +140,13 @@ export function buildIndex(loot: Loot): Index {
     craftedFrom,
     rarityOf: (id) => rarity.get(id),
     altRow: (kind, r, col, n) => altCols.get(`${kind}/${r}/${col}`)?.[n - 1],
+    altColumn: (kind, r, col) => {
+      const out: { it: Record_; n: number }[] = [];
+      (altCols.get(`${kind}/${r}/${col}`) ?? []).forEach((it, i) => {
+        if (it) out.push({ it, n: i + 1 });
+      });
+      return out;
+    },
     refs: loot.refs ?? {}
   };
 }

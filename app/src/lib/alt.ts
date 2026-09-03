@@ -11,6 +11,7 @@
 
 import type { AltCol, Index } from './data.js';
 import type { Dict } from './dict.js';
+import { rarityKey } from './label.js';
 import type { Rarity } from './money.js';
 import { nextRarity } from './roll.js';
 import type { Duality } from './roll.js';
@@ -72,6 +73,14 @@ export function altPicks(
     }
   }
   return out;
+}
+
+/**
+ * A rarity's heading on the alternate tables' own page - off `rarityLabel` in
+ * app.js: the rarity's name, then the tiers it is a recommendation for.
+ */
+export function rarityLabel(r: Rarity, t: Dict): string {
+  return `${t[rarityKey(r)]} · ${t.tier} ${RARITY_TIERS[r]}`;
 }
 
 export interface AltTable {

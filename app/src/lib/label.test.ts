@@ -45,8 +45,9 @@ describe('the book a record comes from', () => {
     expect(srcLabel(rec({ src: 'voa' }), 'ru')).toBe('Vault of Ages');
   });
 
-  it('names the frame rather than the word "frame"', () => {
-    expect(srcLabel(rec({ src: 'frame', frame: 'beast_feast' }), 'ru')).toBe('beast_feast');
+  it('names the frame, not its raw id', () => {
+    expect(srcLabel(rec({ src: 'frame', frame: 'beast_feast' }), 'ru')).toBe('Пир зверей');
+    expect(srcLabel(rec({ src: 'frame', frame: 'beast_feast' }), 'en')).toBe('Beast Feast');
     expect(srcLabel(rec({ src: 'frame' }), 'ru')).toBe('Фрейм');
   });
 

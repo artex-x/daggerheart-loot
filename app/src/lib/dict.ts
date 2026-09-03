@@ -193,12 +193,19 @@ const ru = {
      hands the picked state to somebody else. */
   filters: 'Фильтры',
   kindF: 'Тип',
+  frameF: 'Фрейм',
+  commF: 'Сообщество',
   anyValue: 'любое',
   outOf: 'из',
   dropValue: 'Убрать из фильтра',
   resetAll: 'Сбросить всё',
   filterLink: 'Ссылка на фильтры',
-  filterLinkCopied: 'Ссылка на фильтры скопирована'
+  filterLinkCopied: 'Ссылка на фильтры скопирована',
+
+  /* A section heading's own link, off `sectionHead` in app.js - the table
+     link button's sibling, one level down. */
+  copySection: 'Скопировать ссылку на этот раздел',
+  sectionLinkCopied: 'Ссылка на раздел скопирована'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -347,12 +354,17 @@ const en: Dict = {
 
   filters: 'Filters',
   kindF: 'Type',
+  frameF: 'Frame',
+  commF: 'Community',
   anyValue: 'any',
   outOf: 'of',
   dropValue: 'Remove from the filter',
   resetAll: 'Reset all',
   filterLink: 'Filter link',
-  filterLinkCopied: 'Filter link copied'
+  filterLinkCopied: 'Filter link copied',
+
+  copySection: 'Copy a link to this section',
+  sectionLinkCopied: 'Section link copied'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

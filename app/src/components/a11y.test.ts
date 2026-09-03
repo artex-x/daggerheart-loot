@@ -46,7 +46,10 @@ const LOOT: Loot = {
     hnf_consumable: [
       row({ id: 'hc1', src: 'hnf', kind: 'consumable', roll: 1, ru: 'Расходник H&F' })
     ],
-    voa: [row({ id: 'v1', src: 'voa', tier: 1, ru: 'Реликвия' })],
+    voa: [
+      row({ id: 'v1', src: 'voa', tier: 1, ru: 'Реликвия' }),
+      row({ id: 'v2', src: 'voa', tier: 1, kind: 'consumable', ru: 'Эликсир' })
+    ],
     community: [
       row({ id: 'c1', src: 'community', community: 'Loreborne', community_ru: 'Научное' })
     ]
@@ -151,6 +154,11 @@ const STATES: { what: string; route: string; enter?: (() => Promise<void>) | und
       await press('Фильтры');
       await press('Предметы');
     }
+  },
+  {
+    what: 'a sectioned table with its filter panel open - two fields, not one',
+    route: '#/tables/voa',
+    enter: () => press('Фильтры')
   }
 ];
 
@@ -192,8 +200,10 @@ const COVERED: Record<string, string> = {
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
+  'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'Shell.svelte': 'shell.test.ts, including the storage warning',
   'TabBar.svelte': 'the frame, on every state',
+  'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
   'VoaPanel.svelte': 'sections.test.ts, and in English above'
 };

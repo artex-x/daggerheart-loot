@@ -5,10 +5,10 @@
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import TablesPage from './TablesPage.svelte';
 import { fakeClipboard, fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
@@ -72,11 +72,53 @@ const LOOT: Loot = {
     hnf_item: [row({ id: 'hi1', src: 'hnf', roll: 1, ru: 'Предмет H&F' })],
     hnf_consumable: [
       row({ id: 'hc1', src: 'hnf', kind: 'consumable', roll: 1, ru: 'Расходник H&F' })
+    ],
+    voa: [
+      row({ id: 'v1', src: 'voa', tier: 1, ru: 'Реликвия Первого Ранга' }),
+      row({ id: 'v2', src: 'voa', tier: 'A', ru: 'Артефакт Утра' })
+    ],
+    frames: [
+      row({
+        id: 'f1',
+        src: 'frame',
+        frame: 'beast_feast',
+        kind: 'consumable',
+        ru: 'Пирог Зверя'
+      }),
+      row({
+        id: 'f2',
+        src: 'frame',
+        frame: 'motherboard',
+        kind: 'consumable',
+        ru: 'Чип Памяти'
+      })
+    ],
+    community: [
+      row({
+        id: 'com1',
+        src: 'community',
+        community: 'Loreborne',
+        community_ru: 'Научное',
+        ru: 'Свиток Знания'
+      }),
+      row({
+        id: 'com2',
+        src: 'community',
+        community: 'Highborne',
+        community_ru: 'Великородное',
+        ru: 'Перстень Рода'
+      })
     ]
   },
   eq: [],
   refs: {},
-  alt: {}
+  /* `ci3` (roll 3 in core_item) and `ci2` (roll 2) are reused as alternate-
+     table entries, so a test can tell the die-face number apart from the
+     record's own roll in the table it also belongs to. */
+  alt: {
+    item: { common: { hope: ['ci3'], fear: ['ci2'] } },
+    consumable: { common: { hope: ['cc1'], fear: [] } }
+  }
 };
 
 const at = (over: Partial<Env> = {}): Env =>
@@ -434,6 +476,141 @@ describe('a table this slice has not built', () => {
   });
 });
 
+describe('a sectioned body: Vault of Ages by tier', () => {
+  it('groups rows into their tier, in book order, dropping tiers with no rows', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
+    });
+    expect(screen.getByText('Ранг 1')).toBeInTheDocument();
+    expect(screen.getByText('Артефакты')).toBeInTheDocument();
+    /* Nothing at all in tier 2, 3, 4 or the cursed-objects division. */
+    expect(screen.queryByText('Ранг 2')).not.toBeInTheDocument();
+    expect(screen.queryByText('Проклятые предметы')).not.toBeInTheDocument();
+  });
+
+  it('copies a direct link to one section, off its own link button', async () => {
+    const clip = fakeClipboard();
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/voa'),
+        data: fakeData(LOOT),
+        clipboard: clip
+      })
+    });
+    const [, artifactSection] = screen.getAllByRole('button', {
+      name: 'Скопировать ссылку на этот раздел'
+    });
+    await userEvent.click(artifactSection as HTMLElement);
+    expect(clip.last.text).toBe('https://example.test/#/tables/voa/tA');
+    expect(screen.getByText('Ссылка на раздел скопирована')).toBeInTheDocument();
+  });
+
+  it('gives each section its own select-all, scoped to its own rows only', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
+    });
+    const boxes = screen.getAllByText(/Выбрать все/);
+    expect(boxes).toHaveLength(2);
+    expect(boxes[0]).toHaveTextContent('Выбрать все (1)');
+  });
+});
+
+describe('a sectioned body: campaign frames', () => {
+  it('lists every campaign that has a row, including one with a single row', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/frames'), data: fakeData(LOOT) })
+    });
+    /* The row's own source badge carries the same name (label.test.ts's own
+       fix), so a section heading is not the only place the text appears. */
+    expect(document.querySelectorAll('.tsec-head .lbl')).toHaveLength(2);
+    expect(screen.getAllByText('Пир зверей').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Материнская Плата').length).toBeGreaterThan(0);
+    /* No row belongs to it in this fixture, so it draws no section at all. */
+    expect(screen.queryByText('Колоссы Сухоземья')).not.toBeInTheDocument();
+  });
+});
+
+describe('a sectioned body: communities', () => {
+  it("names each section with the community's own name, in the language on screen", () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/community'), data: fakeData(LOOT) })
+    });
+    /* The row's own source badge carries the same name, so a section heading
+       is not the only place the text appears - each community still gets one. */
+    expect(document.querySelectorAll('.tsec-head .lbl')).toHaveLength(2);
+    expect(screen.getAllByText('Научное').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Великородное').length).toBeGreaterThan(0);
+  });
+});
+
+describe('the alternate tables', () => {
+  it('numbers each row by the die face that found it, not by its own table roll', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/alt_item'), data: fakeData(LOOT) })
+    });
+    /* ci3's own roll in core_item is 3; as the first hope entry here it reads 1. */
+    const hopeRow = document.querySelector('[data-row="ci3"]');
+    expect(hopeRow).not.toBeNull();
+    expect(within(hopeRow as HTMLElement).getByText('1')).toBeInTheDocument();
+  });
+
+  it('splits hope and fear into their own subheadings, per rarity', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/alt_item'), data: fakeData(LOOT) })
+    });
+    expect(screen.getByText('Надежда')).toBeInTheDocument();
+    expect(screen.getByText('Страх')).toBeInTheDocument();
+  });
+
+  it('draws no select-all bar - the live app never wraps these rows in one', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/alt_item'), data: fakeData(LOOT) })
+    });
+    expect(screen.queryByText(/Выбрать все/)).not.toBeInTheDocument();
+  });
+
+  it("reads the source badge as the frame's own name, not its raw id", () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/frames'), data: fakeData(LOOT) })
+    });
+    const row = screen.getByRole('button', { name: /Пирог Зверя/ });
+    expect(within(row).getByText('Пир зверей')).toBeInTheDocument();
+  });
+});
+
+describe('the row and section anchor', () => {
+  it('scrolls to and flashes the row a link named', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    const target = document.querySelector('[data-row="ci2"]');
+    await waitFor(() => {
+      expect(target).toHaveClass('flash');
+    });
+    expect(scroll).toHaveBeenCalled();
+  });
+
+  it('scrolls to and flashes the section a link named', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/voa/tA'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(document.getElementById('sec-tA')).toHaveClass('flash');
+    });
+  });
+
+  it('does nothing when the address names neither a row nor a section', () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/nope'), data: fakeData(LOOT) })
+    });
+    expect(document.querySelector('.flash')).not.toBeInTheDocument();
+  });
+});
+
 describe('a dataset that did not load', () => {
   it('says so rather than drawing an empty table', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/tables'), data: noData() }) });
@@ -466,6 +643,13 @@ describe('mounted off its own route', () => {
 describe('accessibility', () => {
   it('has no axe violations on the page', async () => {
     const { container } = render(App, { env: at() });
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations on a sectioned body', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
+    });
     await expectNoA11yViolations(container);
   });
 });

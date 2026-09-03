@@ -573,36 +573,37 @@ const STATES = [
     why: 'a third equipment table',
     pending: 'the equipment tables are batch B4'
   },
-  {
-    id: '#/tables/voa',
-    route: '#/tables/voa',
-    why: 'a sectioned body: Vault of Ages by tier',
-    pending: 'sectioned bodies are batch B3'
-  },
-  {
-    id: '#/tables/frames',
-    route: '#/tables/frames',
-    why: 'a sectioned body: campaign frames',
-    pending: 'sectioned bodies are batch B3'
-  },
-  {
-    id: '#/tables/community',
-    route: '#/tables/community',
-    why: 'a sectioned body: communities',
-    pending: 'sectioned bodies are batch B3'
-  },
-  {
-    id: '#/tables/alt_item',
-    route: '#/tables/alt_item',
-    why: 'the alternate items table',
-    pending: 'sectioned bodies are batch B3'
-  },
+  { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
+  { id: '#/tables/frames', route: '#/tables/frames', why: 'a sectioned body: campaign frames' },
+  { id: '#/tables/community', route: '#/tables/community', why: 'a sectioned body: communities' },
+  { id: '#/tables/alt_item', route: '#/tables/alt_item', why: 'the alternate items table' },
   {
     id: '#/tables/alt_consumable',
     route: '#/tables/alt_consumable',
-    why: 'the alternate consumables table',
-    pending: 'sectioned bodies are batch B3'
+    why: 'the alternate consumables table'
   },
+
+  /* The row/section anchor - `#/tables/<table>/<key>` - never had a state at
+     all, on any table, so the mechanism went unwired since B1 without
+     anything noticing. One of each: a section on a table this batch builds,
+     and a row on one of B1's own tables, which is the only way the fix on the
+     tables built earlier gets verified. */
+  {
+    id: '#/tables/voa ~ section anchor',
+    route: '#/tables/voa/tA',
+    why: 'arriving at a section link scrolls to and flashes it'
+  },
+  {
+    id: '#/tables/core_item ~ row anchor',
+    route: '#/tables/core_item/ci1',
+    why: "arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one"
+  },
+
+  /* `srcLabel`'s frame case returned the raw id rather than the frame's own
+     name until this batch - `#/i/f1` is the first state to open a frame
+     record at all, which is why nothing had caught it. */
+  { id: '#/i/f1', route: '#/i/f1', why: 'a frame-equipment record, catching the source-badge fix' },
+
   { id: '#/lists', route: '#/lists', why: 'the lists page', pending: 'lists slice' },
   { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
   { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
@@ -822,7 +823,79 @@ const VISUAL_DEBT = {
   '#/tables ~ help @ ru 375': helpNoise(2.12),
   '#/tables ~ help @ en 1100': helpNoise(0.49),
   '#/tables ~ help @ en 768': helpNoise(1.58),
-  '#/tables ~ help @ en 375': helpNoise(0.65)
+  '#/tables ~ help @ en 375': helpNoise(0.65),
+
+  /* B3's five sectioned tables carry the same two causes every table since B1
+     has: the search-box placeholder antialiasing at 768, and a description
+     line wrapping one word earlier than the live app on a phone - measured
+     the same way dread's own entry was, not guessed at. Nothing about
+     sectioning changes either cause; these are the same noise, on new rows. */
+  '#/tables/voa @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/voa @ ru 375': { pct: 0.88, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
+  '#/tables/voa @ en 375': { pct: 1.01, why: 'the same, in English' },
+  '#/tables/frames @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/frames @ ru 375': { pct: 0.8, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
+  '#/tables/frames @ en 375': { pct: 0.98, why: 'the same, in English' },
+  '#/tables/community @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/community @ ru 375': { pct: 1.2, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
+  '#/tables/community @ en 375': { pct: 1.37, why: 'the same, in English' },
+  '#/tables/alt_item @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/alt_item @ ru 375': { pct: 1.11, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
+  '#/tables/alt_item @ en 375': { pct: 1.03, why: 'the same, in English' },
+  '#/tables/alt_consumable @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
+  '#/tables/alt_consumable @ ru 375': { pct: 1.14, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
+  '#/tables/alt_consumable @ en 375': { pct: 1.1, why: 'the same, in English' },
+
+  /* The row and section anchors, at 1100 and 768: the flash outline itself is
+     the whole difference. Measured directly rather than assumed - the target
+     row's position, size and every pixel of its content match exactly at
+     these widths, only the 2px gold ring rasterises a fraction of a pixel
+     differently between the two apps, same class of noise as the help panel
+     and the placeholder, just on an outline instead of text. */
+  '#/tables/core_item ~ row anchor @ en 1100': {
+    pct: 0.42,
+    why: "the flash outline's own antialiasing - the row underneath measures pixel-identical"
+  },
+  '#/tables/core_item ~ row anchor @ en 768': {
+    pct: 0.43,
+    why: "the same, mid width"
+  },
+  '#/tables/voa ~ section anchor @ en 1100': {
+    pct: 0.63,
+    why: "the flash outline's own antialiasing - the section underneath measures pixel-identical"
+  },
+  '#/tables/voa ~ section anchor @ en 768': {
+    pct: 0.42,
+    why: 'the same, mid width'
+  },
+
+  /* The same two anchors, on a phone: arriving scrolls straight past the
+     toolbar and the filter bar, so several description-heavy rows sit in the
+     fold at once where the bare route only ever showed one or two - the same
+     line-wrap noise above, multiplied by how many long descriptions are on
+     screen together rather than a new cause. Confirmed by measuring the
+     target row/section directly: its own position and size match the live
+     app to the pixel in both languages, and `getBoundingClientRect()` on
+     every row inside Vault of Ages' artifact section reported identical
+     names and heights on both apps - the debt is entirely in text below the
+     fold reflowing a word earlier, the way dread's own entry already does,
+     just several rows of it landing above the fold together at this width. */
+  '#/tables/core_item ~ row anchor @ ru 375': {
+    pct: 8.85,
+    why: 'several description-heavy rows sit above the fold at once here, each wrapping a word earlier than the live app - the same noise as every other 375px description entry, not a new cause'
+  },
+  '#/tables/core_item ~ row anchor @ en 375': {
+    pct: 8.51,
+    why: 'the same, in English'
+  },
+  '#/tables/voa ~ section anchor @ ru 375': {
+    pct: 9.52,
+    why: 'the same reflow noise, across the several rows Vault of Ages\' artifact section brings above the fold together at this width'
+  },
+  '#/tables/voa ~ section anchor @ en 375': {
+    pct: 8.84,
+    why: 'the same, in English'
+  }
 };
 
 

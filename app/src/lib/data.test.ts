@@ -95,6 +95,16 @@ describe('rarity, read off the alternate tables', () => {
     const wondrous = index.all.find((it) => it.src === 'wondrous' && !index.rarityOf(it.id));
     expect(wondrous).toBeDefined();
   });
+
+  it('lists a whole column, numbered by the face that found each row', () => {
+    const hope = index.altColumn('item', 'common', 'hope');
+    expect(hope.length).toBeGreaterThan(0);
+    expect(hope.length).toBeLessThanOrEqual(12);
+    expect(hope.map((x) => x.n)).toEqual(hope.map((_, i) => i + 1));
+    for (const { it, n } of hope) {
+      expect(index.altRow('item', 'common', 'hope', n)).toBe(it);
+    }
+  });
 });
 
 describe('what a record counts as', () => {
