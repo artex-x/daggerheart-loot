@@ -66,6 +66,59 @@ Nothing outstanding is a styling defect. The 44 entries are three causes:
    the colour are identical to three decimals and the text matches character
    for character. There is no value to copy - do not go looking for one.
 
+### The tables surface, and how it splits
+
+Tables is the biggest thing left, and it is too big for one slice: 79
+top-level rules in `style.css` and **four different body shapes** - a plain
+list, a list cut into sections by tier, frame or community, the alternate
+tables with hope/fear subheadings inside each rarity, and the equipment tables
+with facets of their own. Split into four, each with a boundary chosen so
+nothing has to be faked:
+
+| | what | why it is a boundary |
+|---|---|---|
+| **B1** | the plain table: two-level chip nav, the toolbar, rows and tiles, selection, the empty state, a row opening the modal | the four tables with no filter |
+| **B2** | the filter: the bar, the chosen pills, the folded panel, reset, the filter link, the `f_` segment | unlocks `wondrous`, `dread`, `community` |
+| **B3** | sectioned bodies and section anchors: `voa`, `frames`, `community`, and the two alternate tables | the anchors `#/roll/alt`'s crit box already links to |
+| **B4** | the equipment tables, their facets and tier sections | the last body shape |
+
+**B1's boundary is the four tables that have no filter.** `tblFacets` is empty
+only where a table holds a single kind of record, and exactly four do - checked
+against `data.js` rather than assumed:
+
+| table | rows | kinds |
+|---|---|---|
+| `core_item` | 60 | item |
+| `core_consumable` | 60 | consumable |
+| `hnf_item` | 60 | item |
+| `hnf_consumable` | 60 | consumable |
+
+Every other table draws a filter bar: `wondrous`, `dread`, `frames` and `voa`
+because they mix equipment in, `community` because of its `comm` facet. So B1
+can build the whole page for those four without one deferred control on
+screen. `#/tables` with no table name shows `core_item` - that is
+`S.tables.t`'s default - and an unknown name is ignored rather than erroring.
+
+### Three things found while planning the tables slice
+
+- **The parity driver cannot type.** A table's query lives in `S.tables.q` and
+  never enters the hash, so no URL reaches a searched table: a search box would
+  ship uncompared, which is the hole that let the Core rules help print its own
+  markup. B1 adds `type(placeholder, text)` to `tests/parity/driver.js`,
+  gripping by the placeholder because that is the text a person reads - not by
+  `id="tq"`, which is implementation and the thing the harness deliberately
+  avoids gripping.
+- **Search reuses the row wholesale.** `renderSearch` in `app.js` calls the
+  same `rowHTML` and `selectAllHTML` as the tables. That is why search stays
+  its own slice and comes after: the row is written once for tables and
+  extracted on its second use, rather than designed for two callers before
+  either exists.
+- **A selection belongs to the page it was made on.** The live app clears
+  `S.sel` on every `hashchange`, and says so in a comment - route strings
+  cannot tell one table from another. The rewrite has to reset it when the hash
+  changes, not when the component unmounts, because a hash-only move between
+  two tables keeps the same component alive.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
