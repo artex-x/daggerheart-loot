@@ -54,6 +54,18 @@ export function cardBadges(it: Record_, lang: Lang, t: Dict): Badge[] {
   return out;
 }
 
+/**
+ * The dictionary key a rarity's name is under.
+ *
+ * Only `very_rare` differs, and it differs in the one place a dictionary key
+ * cannot carry an underscore. Two screens name rarities - the dice buttons on
+ * Core rules and the chips on the alternate tables - so the mapping is here
+ * rather than in both.
+ */
+export function rarityKey(r: string): keyof Dict {
+  return r === 'very_rare' ? 'veryRare' : (r as keyof Dict);
+}
+
 export function srcLabel(it: Record_, lang: Lang): string {
   const t = dict(lang);
   switch (it.src) {

@@ -14,7 +14,7 @@
   import { recordHash } from '../lib/hash.js';
   import { cardBadges, srcLabel } from '../lib/label.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
-  import type { Index } from '../lib/data.js';
+  import type { AltCol, Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
   import type { Snippet } from 'svelte';
 
@@ -30,6 +30,16 @@
     lang: Lang;
     /** Whether the picture failed to load earlier in this session. */
     artBroken: boolean;
+    /**
+     * The number badge, where the row it came up on is not its own row number.
+     *
+     * The alternate tables are twelve rows per column, and a record keeps the
+     * number it has in the book it was printed in - so the badge has to say
+     * which face found it, not where it sits in Core.
+     */
+    rollLabel?: number;
+    /** Which duality column found it, badged in that column's colour. */
+    col?: AltCol;
     onartfail: (id: string) => void;
     /** Opens the record: a modal from a result, the page from a table row. */
     onopen?: () => void;
@@ -45,6 +55,8 @@
     index,
     lang,
     artBroken,
+    rollLabel,
+    col,
     onartfail,
     onopen,
     nameActions,
@@ -95,7 +107,10 @@
   <div class="card-body">
     <div class="card-meta">
       {#if it.roll}
-        <span class="badge num">{it.roll}</span>
+        <span class="badge num">{rollLabel ?? it.roll}</span>
+      {/if}
+      {#if col}
+        <span class="badge {col}">{col === 'hope' ? t.hope : t.fear}</span>
       {/if}
       {#each badges as b, i (i)}
         <span class="badge {b.cls}" title={b.title}>{b.text}</span>
@@ -344,6 +359,17 @@
     letter-spacing: 0;
     color: var(--gold-soft);
     border-color: rgb(216 171 94 / 50%);
+  }
+
+  /* The two duality columns, in the colours the dice are named for. */
+  .badge.hope {
+    color: var(--hope);
+    border-color: rgb(233 185 73 / 50%);
+  }
+
+  .badge.fear {
+    color: var(--fear);
+    border-color: rgb(138 114 214 / 55%);
   }
 
   .card-name {

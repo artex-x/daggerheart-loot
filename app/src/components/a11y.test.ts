@@ -49,7 +49,13 @@ const LOOT: Loot = {
     ]
   },
   eq: [],
-  refs: {}
+  refs: {},
+  /* One row per column, which is all the alternate tables need to draw a card
+     and a critical-success box. */
+  alt: {
+    item: { common: { hope: ['ci1'], fear: ['hi1'] } },
+    consumable: { common: { hope: ['cc1'], fear: ['hc1'] } }
+  }
 };
 
 const at = (hash: string, over: Partial<Env> = {}): Env =>
@@ -97,6 +103,17 @@ const STATES: { what: string; route: string; enter?: () => Promise<void> }[] = [
     enter: () => press('Как это работает')
   },
   {
+    what: 'the alternate tables on a critical success, which raises the box',
+    route: '#/roll/alt',
+    /* Hope opens on 1 and Fear on 2, so one press puts them level. */
+    enter: () => press('Кость Страха: На единицу меньше')
+  },
+  {
+    what: 'the alternate tables with the help panel unfolded',
+    route: '#/roll/alt',
+    enter: () => press('Как это работает')
+  },
+  {
     what: 'a division of Vault of Ages that is not a tier',
     route: '#/roll/voa',
     enter: () => press('Артефакты')
@@ -136,6 +153,7 @@ const COVERED: Record<string, string> = {
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte': 'the roll button and the card actions, on every roll page',
   'Chip.svelte': 'the Vault of Ages and community pickers - sections.test.ts and above',
+  'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
   'ChipRow.svelte': 'the same two pickers',
   'CommunityPanel.svelte': 'sections.test.ts, and in English above',
   'Die.svelte': 'the roll button on every roll page',
@@ -143,6 +161,7 @@ const COVERED: Record<string, string> = {
   'Icon.svelte': 'the card actions and the pin toggle',
   'LangSwitch.svelte': 'the frame, on every state here and in shell.test.ts',
   'NumberField.svelte': 'the number row on every roll page',
+  'PageHead.svelte': 'the heading of every roll page, with both help states above',
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
   'RecordCard.svelte': 'record.test.ts, and inside the modal above',
   'RecordModal.svelte': 'the first state above, which is the only way in',

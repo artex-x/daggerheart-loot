@@ -14,10 +14,19 @@
     label: string;
     stepDownLabel: string;
     stepUpLabel: string;
+    /**
+     * Which die this field is, where it is one of a named pair.
+     *
+     * The alternate tables roll Hope and Fear rather than a sum, and the live
+     * app colours each field's focus ring to match its label. Everywhere else
+     * the number has no name and the ring stays gold.
+     */
+    tone?: 'hope' | 'fear';
     onchange: (n: number) => void;
   }
 
-  const { value, min, max, label, stepDownLabel, stepUpLabel, onchange }: Props = $props();
+  const { value, min, max, label, stepDownLabel, stepUpLabel, tone, onchange }: Props =
+    $props();
 
   /* What the field shows while it is being edited, which is not always a
      number: an empty field and a half-typed one both have to be allowed. */
@@ -67,7 +76,7 @@
   }
 </script>
 
-<div class="numbox">
+<div class="numbox {tone ?? ''}">
   <button
     type="button"
     aria-label={stepDownLabel}
@@ -130,6 +139,16 @@
   .numbox:focus-within {
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
+  }
+
+  .numbox.hope:focus-within {
+    border-color: var(--hope);
+    box-shadow: 0 0 0 3px rgb(233 185 73 / 14%);
+  }
+
+  .numbox.fear:focus-within {
+    border-color: var(--fear);
+    box-shadow: 0 0 0 3px rgb(138 114 214 / 16%);
   }
 
   button {

@@ -26,6 +26,12 @@ interface AltColumns {
   fear: string[];
 }
 
+/** Which column of an alternate table a row came out of. */
+export type AltCol = 'hope' | 'fear';
+
+/** The two kinds the alternate tables are split into. Nothing there is gear. */
+export type AltKind = 'item' | 'consumable';
+
 export interface Index {
   /** Every record by id: loot and equipment together, one lookup for both. */
   byId: ReadonlyMap<string, Record_>;
@@ -46,6 +52,14 @@ export interface Index {
   craftedFrom: ReadonlyMap<string, string>;
   /** A loot record's rarity, where the alternate tables give it one. */
   rarityOf: (id: string) => Rarity | undefined;
+  /**
+   * One row of an alternate table, by the face the die showed.
+   *
+   * A column is a table of its own - twelve rows, one per face - so a roll is
+   * a lookup rather than a search. Undefined where a column is shorter than
+   * the face, which the caller drops rather than drawing as a gap.
+   */
+  altRow: (kind: AltKind, rarity: Rarity, col: AltCol, n: number) => Record_ | undefined;
   /** Referenced rulebook cards, by the key a record names in `refs`. */
   refs: Record<string, RefCard>;
 }
@@ -88,12 +102,24 @@ export function buildIndex(loot: Loot): Index {
      Wondrous, Dread, community - have none, and the caller decides what to do
      about that. */
   const rarity = new Map<string, Rarity>();
-  for (const kind of Object.keys(loot.alt ?? {}) as ('item' | 'consumable')[]) {
+  /* The same pass resolves each column to records, so a roll on those tables
+     is a lookup by die face rather than a walk over the ids. */
+  const altCols = new Map<string, readonly (Record_ | undefined)[]>();
+  for (const kind of Object.keys(loot.alt ?? {}) as AltKind[]) {
     const byRarity = loot.alt?.[kind] ?? {};
     for (const r of Object.keys(byRarity) as Rarity[]) {
       const cols = byRarity[r];
       if (!cols) continue;
       for (const id of [...cols.hope, ...cols.fear]) rarity.set(id, r);
+      /* An id nothing answers to leaves a hole rather than closing the gap:
+         the face is the position, so dropping one would move every row under
+         it onto the wrong number. */
+      for (const col of ['hope', 'fear'] as AltCol[]) {
+        altCols.set(
+          `${kind}/${r}/${col}`,
+          cols[col].map((id) => byId.get(id))
+        );
+      }
     }
   }
 
@@ -105,6 +131,7 @@ export function buildIndex(loot: Loot): Index {
     allEquip,
     craftedFrom,
     rarityOf: (id) => rarity.get(id),
+    altRow: (kind, r, col, n) => altCols.get(`${kind}/${r}/${col}`)?.[n - 1],
     refs: loot.refs ?? {}
   };
 }

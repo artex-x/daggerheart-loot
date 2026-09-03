@@ -296,19 +296,33 @@ would have hidden a component nobody rendered.
 
 Debts first, then screens - a screen built on an unfinished pattern copies it.
 
-Five of the six roll modes match the original exactly, in both languages at all
-three widths: Wondrous, Dread, Vault of Ages and Communities - each with the
-state that presses its picker - and Core rules with both of the states that
-narrow it. Every
-remaining debt on a screen that has been built is **the add-to-list and print
-row**, on both record routes, in both languages, at both widths, and in the
+All six roll modes match the original exactly, in both languages at all three
+widths: Wondrous, Dread, Vault of Ages and Communities - each with the state
+that presses its picker - Core rules with both of the states that narrow it,
+and the alternate tables with the three that reach the critical-success box.
+Every remaining debt on a screen that has been built is **the add-to-list and
+print row**, on both record routes, in both languages, at both widths, and in the
 modal. That is not deferred polish - it is code that does not exist yet - and it
 lands with the lists and print slices rather than before them.
 
-Left, in order: **the alternate tables** - the last roll mode, and the only one
-that rolls two dice at once, so it needs the duality pair and the critical-
-success box on top of the OR grid Core rules already built - then tables,
-search, lists, print, and Phase 5 onwards in `issues/47/plan.md`.
+Left, in order: **tables** - the biggest remaining surface, and the one that
+unlocks the modal-from-a-row path - then search, lists, print, and Phase 5
+onwards in `issues/47/plan.md`.
+
+### A debt number belongs to the machine that recorded it
+
+`VISUAL_DEBT` holds percentages, and a percentage of differing pixels is not
+portable: the same two builds compared on Windows read a few hundredths higher
+than on the Linux agent the numbers came from. `JITTER` absorbs most of that,
+and on ten states it does not - the large debts, and the narrow widths where
+text reflows. Those ten fail with "got worse" on a machine that has never
+touched them.
+
+So **before chasing a red debt, find out whether it is yours**: stash the work,
+rebuild, and run that one state. If the number is identical without your
+change, it is the machine, and re-recording it would only move the failure to
+CI. The check costs two minutes and it settles the question; the alternative is
+an afternoon looking for a defect in code that does not have one.
 
 One debt is not worth hunting. `#/roll/wondrous ~ help` is 0.29% because two
 lines rasterise a pixel lower: the box, every paragraph, all thirteen line boxes
@@ -324,6 +338,13 @@ field is 74px on a phone and the media rule is dead. The port implemented the
 intent, and the parity diff charged eighteen pixels for it. When a value looks
 deliberate but the screenshots disagree, the screenshots are right; measure the
 element in both apps before changing anything.
+
+The same trap runs the other way, from the markup: an attribute in `app.js` is
+only what the element asks for, not what it gets. Every icon inside a button is
+drawn at 15px by `.btn svg`, whatever `width=` says - the external-link icon is
+written at 13 and rendered at 15, and `lib/icons.ts` had faithfully copied the
+13. It cost four pixels a button the first time that icon landed in a button.
+Read the computed value out of both apps rather than the source of either.
 
 ## Components
 

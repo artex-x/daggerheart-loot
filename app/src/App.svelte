@@ -21,8 +21,8 @@
   /* The sections that roll a single number over a whole table. Vault of Ages
      and Communities roll one number too, but inside a part of their book, so
      they have panels of their own that choose the part and hand the rows over.
-     Core rules and the alternate tables roll several cards at once and are not
-     here yet. */
+     Core rules and the alternate tables roll several cards at once, and the
+     alternate tables roll two dice, so both have panels of their own. */
   const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
     'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
     'roll/dread': { table: 'dread', title: 'pageDread' }
@@ -33,6 +33,7 @@
   /* The application. Routes are matched here and nowhere else; every branch
      below will become its own component as the phases go on. */
   import { untrack } from 'svelte';
+  import AltPanel from './components/AltPanel.svelte';
   import CommunityPanel from './components/CommunityPanel.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
@@ -66,6 +67,8 @@
     />
   {:else if app.route.kind === 'section' && app.route.section === 'roll/std'}
     <StdPanel {app} />
+  {:else if app.route.kind === 'section' && app.route.section === 'roll/alt'}
+    <AltPanel {app} />
   {:else if app.route.kind === 'section' && app.route.section === 'roll/voa'}
     <VoaPanel {app} />
   {:else if app.route.kind === 'section' && app.route.section === 'roll/community'}

@@ -6,7 +6,7 @@ import type { Help, HelpLink } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'wondrous', 'dread', 'voa', 'community'];
+const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'community'];
 
 /** Everything a paragraph says, with the link labels in place. */
 const textOf = (help: Help | null, i: number): string =>
@@ -63,10 +63,21 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('voa', 'ru'), 0)).toContain('Своей таблицы броска у книги нет');
   });
 
+  it('credits the alternate tables to the person who wrote them', () => {
+    /* Not a book but a Reddit post, and the two links say different things -
+       one names the author, the other the tables. Dropping either turns a
+       credit into a claim. */
+    for (const lang of LANGS) {
+      const links = linksOf(helpFor('alt', lang));
+      expect(links.map((l) => l.href)).toEqual([
+        'https://www.reddit.com/user/PrinceOfNowhereee/',
+        'https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/'
+      ]);
+    }
+    expect(linksOf(helpFor('alt', 'ru'))[1]?.label).toBe('пост на Reddit');
+  });
+
   it('has nothing to say about a section nobody wrote one for', () => {
-    /* `alt` is the last roll mode still to be ported; its help arrives with
-       it, and until then nothing must claim to have written one. */
-    expect(helpFor('alt', 'ru')).toBe(null);
     expect(helpFor('nonsense', 'ru')).toBe(null);
   });
 });

@@ -39,11 +39,11 @@ Built, and matching the live app exactly in both languages at all three widths:
 | Vault of Ages | `#/roll/voa` | page, the artifacts division |
 | Communities | `#/roll/community` | page, a second community |
 | Core rules | `#/roll/std` | page, one source off, one kind off |
+| Alternate tables | `#/roll/alt` | page, a critical success, the same at the top rarity, the same with one kind on |
 
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/roll/alt` - the alternate tables, the last roll mode
 - `#/tables`, `#/tables/eq_weapon` - the tables slice
 - `#/lists` - the lists slice
 - `#/search` - the search slice
@@ -132,6 +132,49 @@ linked rather than copied, because 80 MB per build is not worth paying for a
 folder that has not changed, and `junction` makes that work on Windows without
 elevation. `tests/parity.js` used to lay the same links itself; that workaround
 is gone.
+
+### The kind filter is per panel, not per app
+
+The live app keeps one `S.kind` for Core rules, the alternate tables and
+Tables, so switching consumables off on one screen switches them off on the
+others. The rewrite gives each panel its own, which is what
+`docs/specs/STATE.md` argues for everywhere else: what was *asked* on a page
+belongs to the page. Nothing compares it - no parity state navigates between
+two roll modes - so it is written down here rather than caught. If the tables
+slice finds that a person expects the filter to follow them, this is the
+decision to revisit, and `AppState` is where it would move to.
+
+### Every icon in a button is 15px, whatever its attribute says
+
+`style.css` has `.btn svg{width:15px;height:15px}`, and it beats the `width`
+attribute in the markup. The external-link icon is written at 13 and drawn at
+15; `lib/icons.ts` had copied the 13. Nothing noticed until the alternate
+tables put that icon inside a button for the first time, and the crit box came
+out four pixels narrow per link. The rule now lives in `Button.svelte`, with
+the `.btn .dieicon` counter-rule the live app also writes, because a die is a
+different shape at a different height.
+
+The general form of this is already a standing rule in `CLAUDE.md` - copy the
+behaviour, not the intent - and this is its second instance after the 74px
+number field.
+
+### The two dice name their own controls
+
+The live app calls both number fields "Result of the roll" and all four
+steppers "One lower" / "One higher". On the one screen with two dice that
+means a screen reader hears the same two controls twice and nothing says which
+die is being changed. The rewrite puts the die in front of each name. That is
+the accessibility exception in `CLAUDE.md`, and it is recorded in `ACCEPTED` in
+`tests/parity/specs.js` - eight entries, one per state per language, all for
+the control inventory.
+
+### `PageHead` was extracted at the third use
+
+The heading row, the two round buttons and the help panel they fold open were
+written twice - `RollPanel` and `StdPanel` - about thirty lines of markup and
+two hundred of style each. The alternate tables would have been a third copy,
+so both were deleted into `components/PageHead.svelte`. The existing parity
+states are what verified it: nothing moved.
 
 ### A red run has to leave something to read
 

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
   /* One roll's worth of cards, separated by OR.
 
      A roll offers a choice rather than a result: the player takes one of them,
@@ -10,22 +10,26 @@
      three times. That keeps the markup to one loop, and it makes the list
      itself the statement of what a layout is - easier to read than three
      branches, and easier to check. */
-  import type { Record_ } from '../lib/types.js';
   import type { Snippet } from 'svelte';
 
   interface Props {
     /** The word between two options, which is the dictionary's. */
     or: string;
-    /** What the roll produced, in the order the live app lays them out. */
-    items: Record_[];
+    /**
+     * What the roll produced, in the order the live app lays them out.
+     *
+     * Generic because the alternate tables carry more than the record: which
+     * die found it, and the face it showed. The grid only counts them.
+     */
+    items: T[];
     /** How to draw one of them. */
-    card: Snippet<[Record_]>;
+    card: Snippet<[T]>;
   }
 
   const { or, items, card }: Props = $props();
 
   type Cell =
-    | { kind: 'card'; it: Record_ }
+    | { kind: 'card'; it: T }
     | { kind: 'or' }
     /* The separator between the two rows of a 2x2, which spans both columns. */
     | { kind: 'or-row' };

@@ -109,6 +109,33 @@ const ru = {
   subWondrous: 'Введите результат броска или получите случайную позицию.',
   subVoa: 'Выберите раздел книги и бросьте кость по нему.',
   subCommunity: 'Выберите происхождение и бросьте d10.',
+
+  /* The alternate tables. Two dice with names instead of a sum, so each one
+     is labelled and the card says which of them found it. */
+  pageAlt: 'Альтернативные таблицы',
+  subAlt: 'Бросок Костей Дуальности по объединённым таблицам обеих книг.',
+  rarity: 'Редкость',
+  hopeDie: 'Кость Надежды',
+  fearDie: 'Кость Страха',
+  rollDuality: 'Бросить кости',
+  hope: 'Надежда',
+  fear: 'Страх',
+  crit: 'Критический успех!',
+  critSub:
+    'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
+  /* One link per kind that is on; with a single kind there is nothing to tell
+     apart and the label stays general. */
+  openTable: 'Открыть таблицу',
+  openItems: 'Таблица предметов',
+  openCons: 'Таблица расходников',
+  /* The whole phrase rather than "Поднять до" plus a rarity: Russian needs the
+     genitive there, which no concatenation of the chip labels can produce.
+     There is no `common` twin - a critical success only ever steps up. */
+  bumpUncommon: 'Поднять до Необычной',
+  bumpRare: 'Поднять до Редкой',
+  bumpVeryRare: 'Поднять до Очень редкой',
+  bumpLegendary: 'Поднять до Легендарной',
+
   voaSection: 'Раздел книги',
   voaArtifact: 'Артефакты',
   voaCursed: 'Проклятые предметы',
@@ -221,6 +248,26 @@ const en: Dict = {
   subWondrous: 'Enter your roll result, or pick a random entry.',
   subVoa: 'Pick a section of the book and roll within it.',
   subCommunity: 'Pick an origin and roll d10.',
+
+  pageAlt: 'Alternate tables',
+  subAlt: 'A Duality Dice roll over both books merged into one set of tables.',
+  rarity: 'Rarity',
+  hopeDie: 'Hope Die',
+  fearDie: 'Fear Die',
+  rollDuality: 'Roll the dice',
+  hope: 'Hope',
+  fear: 'Fear',
+  crit: 'Critical success!',
+  critSub:
+    'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
+  openTable: 'Open table',
+  openItems: 'Items table',
+  openCons: 'Consumables table',
+  bumpUncommon: 'Bump to Uncommon',
+  bumpRare: 'Bump to Rare',
+  bumpVeryRare: 'Bump to Very rare',
+  bumpLegendary: 'Bump to Legendary',
+
   voaSection: 'Section',
   voaArtifact: 'Artifacts',
   voaCursed: 'Cursed objects',

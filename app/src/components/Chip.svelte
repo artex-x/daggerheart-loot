@@ -11,13 +11,23 @@
     on: boolean;
     /** Why pressing it will be refused, where it will be. */
     title?: string | undefined;
+    /**
+     * A second line under the label, smaller and quieter.
+     *
+     * The rarity chips carry the tiers each rarity is a recommendation for.
+     * The dice buttons on Core rules do the same thing the other way round -
+     * the count above, the rarities under it.
+     */
+    sub?: string | undefined;
     onclick: () => void;
   }
 
-  const { label, on, title, onclick }: Props = $props();
+  const { label, on, title, sub, onclick }: Props = $props();
 </script>
 
-<button type="button" class="chip" class:on aria-pressed={on} {title} {onclick}>{label}</button>
+<button type="button" class="chip" class:on aria-pressed={on} {title} {onclick}
+  >{label}{#if sub}<small>{sub}</small>{/if}</button
+>
 
 <style>
   /* off `.chip` in style.css. `inline-block` and the missing underline are
@@ -35,6 +45,14 @@
     font-size: 13px;
     font-weight: 540;
     transition: 0.15s;
+  }
+
+  .chip small {
+    display: block;
+    font-size: 10.5px;
+    opacity: 0.72;
+    font-weight: 500;
+    letter-spacing: 0.02em;
   }
 
   .chip:hover {

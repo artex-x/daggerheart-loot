@@ -325,7 +325,46 @@ const STATES = [
       await d.click('Расходники');
     }
   },
-  { id: '#/roll/alt', route: '#/roll/alt', why: 'the alternate tables', pending: 'duality dice' },
+  { id: '#/roll/alt', route: '#/roll/alt', why: 'the alternate tables' },
+
+  /* The critical-success box, which no route draws: the page opens on Hope 1
+     and Fear 2, and stepping Hope up puts the two dice level. It carries the
+     links into the tables and the offer of a rarity above this one, so it is
+     the whole reason this mode is not just another roll. */
+  {
+    id: '#/roll/alt ~ crit',
+    route: '#/roll/alt',
+    why: 'the two dice agreeing, which is the offer of a whole rarity',
+    enter: async (d) => {
+      await d.click('На единицу больше');
+    }
+  },
+
+  /* The top of the ladder: the same box, with nothing to bump to. The chips
+     also change every card, so this is the rarity picker as a state and not
+     only as a row of names. */
+  {
+    id: '#/roll/alt ~ legendary crit',
+    route: '#/roll/alt',
+    why: 'a critical success with no rarity above it',
+    enter: async (d) => {
+      await d.click('Легендарная');
+      await d.click('На единицу больше');
+    }
+  },
+
+  /* One kind off, which halves the grid and renames what the crit box opens:
+     with both kinds on the two links name their tables, with one they cannot
+     be told apart and the label stays general. */
+  {
+    id: '#/roll/alt ~ crit, items only',
+    route: '#/roll/alt',
+    why: 'the crit box with a single table to open',
+    enter: async (d) => {
+      await d.click('Расходники');
+      await d.click('На единицу больше');
+    }
+  },
   { id: '#/roll/voa', route: '#/roll/voa', why: 'Vault of Ages' },
   { id: '#/roll/community', route: '#/roll/community', why: 'communities' },
 
@@ -508,7 +547,22 @@ const ACCEPTED = {
   '#/roll/wondrous ~ modal @ ru :: the controls on the page :: controls':
     'add-to-list, which the card in a modal offers too',
   '#/roll/wondrous ~ modal @ en :: the controls on the page :: controls':
-    'add-to-list, which the card in a modal offers too'
+    'add-to-list, which the card in a modal offers too',
+
+  /* An accessibility fix, not a drift. The live app names both number fields
+     "Result of the roll" and all four steppers "One lower" / "One higher", so
+     a screen reader hears the same two controls twice over and nothing says
+     which die is being changed - on the one screen where that is the whole
+     point. The rewrite puts the die in front of each name, which is what makes
+     these sets differ. */
+  '#/roll/alt @ ru :: the controls on the page :: controls': 'each die names its own field and steppers',
+  '#/roll/alt @ en :: the controls on the page :: controls': 'each die names its own field and steppers',
+  '#/roll/alt ~ crit @ ru :: the controls on the page :: controls': 'the same, on a critical success',
+  '#/roll/alt ~ crit @ en :: the controls on the page :: controls': 'the same, on a critical success',
+  '#/roll/alt ~ legendary crit @ ru :: the controls on the page :: controls': 'the same, at the top rarity',
+  '#/roll/alt ~ legendary crit @ en :: the controls on the page :: controls': 'the same, at the top rarity',
+  '#/roll/alt ~ crit, items only @ ru :: the controls on the page :: controls': 'the same, with one kind on',
+  '#/roll/alt ~ crit, items only @ en :: the controls on the page :: controls': 'the same, with one kind on'
 };
 
 

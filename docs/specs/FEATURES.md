@@ -23,8 +23,14 @@ Six modes. Each keeps its own input in memory only.
   each button is labelled with the count and the rarities it covers.
 - The roll button uses a real die where the range is one, and reads
   "Random 1-N" where it is not (119, 29, a list of arbitrary length).
-- A critical success in the alternate tables offers a jump to the matching block
-  in Tables, one rarity up.
+- A critical success in the alternate tables - the two dice showing the same
+  face - hands over the whole rarity rather than a row: a link into each table
+  that is switched on, at that rarity, plus a button that steps the rarity up
+  one. There is no such button on legendary. With both kinds on the two links
+  name their tables apart; with one on the label stays general.
+- Each card on the alternate tables says which die found it, and its number
+  badge is the face that die showed rather than the row the record has in the
+  book it was printed in.
 - Vault of Ages sections are different lengths, so changing section resets the
   roll: a number from one section would point past the end of another.
 - The number field accepts digits only, clamps to the range, and keeps the caret

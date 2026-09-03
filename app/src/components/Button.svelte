@@ -7,7 +7,7 @@
      arrives when a screen needs one, not in anticipation. */
   import type { Snippet } from 'svelte';
 
-  interface Props {
+  interface Base {
     /** `primary` is the gold fill the live app keeps for the main action. */
     variant?: 'plain' | 'primary';
     /** `sm` is the 32px row on a card; the default 46px is the panel's. */
@@ -15,17 +15,52 @@
     title?: string;
     /** For a button whose visible text is not its name. */
     label?: string;
-    /* Required: a button that does nothing is not one. */
-    onclick: () => void;
+    /**
+     * Where it goes, for the ones that are links.
+     *
+     * The live app shares `.btn` between buttons and anchors, and a link has
+     * to stay a link: the critical-success box opens a table in a new tab, and
+     * a button with a click handler would lose the middle-click and the
+     * history entry. The only link-button today is that external one, so the
+     * new tab is fixed here rather than offered as a prop; an in-app one gets
+     * the prop when a screen needs it.
+     */
+    href?: string | undefined;
+    onclick?: (() => void) | undefined;
     children: Snippet;
   }
 
-  const { variant = 'plain', size = 'md', title, label, onclick, children }: Props = $props();
+  /* One or the other, never both and never neither: a button that does nothing
+     is not one, and a link does its work by being a link. */
+  type Props = Base & ({ href: string } | { onclick: () => void });
+
+  const {
+    variant = 'plain',
+    size = 'md',
+    title,
+    label,
+    href,
+    onclick,
+    children
+  }: Props = $props();
 </script>
 
-<button type="button" class="btn {variant} {size}" {title} aria-label={label} {onclick}>
-  {@render children()}
-</button>
+{#if href}
+  <a
+    class="btn {variant} {size}"
+    {href}
+    {title}
+    aria-label={label}
+    target="_blank"
+    rel="noopener"
+  >
+    {@render children()}
+  </a>
+{:else}
+  <button type="button" class="btn {variant} {size}" {title} aria-label={label} {onclick}>
+    {@render children()}
+  </button>
+{/if}
 
 <style>
   /* off `.btn` */
@@ -54,6 +89,26 @@
     border-radius: 8px;
     gap: 6px;
     white-space: nowrap;
+  }
+
+  /* off `.btn svg` in style.css: every icon inside a button is 15px, whatever
+     its own width attribute says. The external-link icon is written at 13 in
+     the live markup and drawn at 15 by this rule, and copying the attribute
+     rather than the rule cost four pixels a button on the parity diff. */
+  .btn :global(svg) {
+    width: 15px;
+    height: 15px;
+    fill: currentcolor;
+    flex: none;
+  }
+
+  /* The one exception the live app writes out as well: `.btn .dieicon` beats
+     `.btn svg`, so a die keeps its own height and its own width - each die is
+     a different shape and squaring them makes a d4 heavier than a d20. */
+  .btn :global(.dieicon) {
+    width: auto;
+    height: 18px;
+    fill: none;
   }
 
   .btn:hover {

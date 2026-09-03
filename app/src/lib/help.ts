@@ -275,8 +275,59 @@ const STD: Record<Lang, Help> = {
   }
 };
 
+const ALT_AUTHOR: HelpLink = {
+  href: 'https://www.reddit.com/user/PrinceOfNowhereee/',
+  label: 'PrinceOfNowhereee'
+};
+const ALT_POST: HelpLink = {
+  href: 'https://www.reddit.com/r/daggerheart/comments/1v3z3gm/alternate_loot_tables_combining_hope_fear_with/',
+  label: 'the Reddit post'
+};
+
+const ALT: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'Предметы разнесены по колонкам «Надежда» и «Страх» по смыслу: в «Надежде» то, что помогает, защищает и решает задачи, в «Страхе» — то, что вредит, обманывает и работает исподтишка.'
+      ),
+      p(
+        'Выберите редкость и бросьте Кости Дуальности. Игрок выбирает между вариантом по Кости Надежды и вариантом по Кости Страха.'
+      ),
+      p(
+        'При критическом успехе, когда обе кости совпали, игрок берёт любую позицию из таблицы этой редкости, а Мастер может разрешить подняться на ступень выше.'
+      ),
+      p('Ранги у редкостей — рекомендация, а не ограничение.'),
+      {
+        parts: [
+          'Автор таблиц: ',
+          ALT_AUTHOR,
+          '. Источник: ',
+          { ...ALT_POST, label: 'пост на Reddit' },
+          '.'
+        ]
+      }
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        'Items are split between the Hope and Fear columns by theme: Hope holds what aids, protects and solves problems, Fear holds what harms, deceives and works by stealth.'
+      ),
+      p(
+        'Choose a rarity and roll the Duality Dice. The player picks between the entry matching the Hope Die and the one matching the Fear Die.'
+      ),
+      p(
+        'On a critical success, when both dice match, the player may take any entry from that rarity table, and the GM may allow jumping up a rarity.'
+      ),
+      p('Tiers attached to rarities are a recommendation, not a limit.'),
+      { parts: ['Tables by ', ALT_AUTHOR, '. Source: ', ALT_POST, '.'] }
+    ]
+  }
+};
+
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
+  alt: ALT,
   wondrous: WONDROUS,
   dread: DREAD,
   voa: VOA,
