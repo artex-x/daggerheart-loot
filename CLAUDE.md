@@ -641,3 +641,17 @@ rather than redrawn by eye.
   "Loot items by environment" table binds each piece to a location, and the
   location has a tier. `tests/derived.js` pins those eleven tiers by name, so a
   silent drift is caught.
+
+<!-- setup-claude-agents:begin -->
+## Orchestration
+
+Feature work uses roles (see `.claude/`):
+- **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code)
+- **implementer** -> next batch only (`model: inherit`)
+- **reviewer** (optional) -> high-risk batches; max one remediation cycle
+- **add-source** -> rare end-to-end content ingest
+
+Prompts: `.claude/prompts/`. Agents: `.claude/agents/`.
+Pass `TASK: <id>` at runtime. Orchestrator selects models/effort and maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
+Use supported agent tools when the host provides them; otherwise run the prompt files sequentially with `issues/<id>/` as handoff.
+<!-- setup-claude-agents:end -->
