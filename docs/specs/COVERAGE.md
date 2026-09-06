@@ -66,6 +66,9 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 `tests/parity.js` is the answer to "is anything missing from the port?", and it
 answers it without anybody having to remember what the old screen did.
 
+Use [`docs/parity.md`](../parity.md) for the operational loop. Current migration
+status and debt belong in `issues/47/plan.md` and `issues/47/handoff.md`.
+
 Every spec in `tests/parity/specs.js` observes a **state** - the controls on it,
 what a button puts on the clipboard, the label on the roll button, the title of
 the document - and returns what it saw. The harness runs each spec twice,
@@ -157,11 +160,6 @@ So it can only ratchet towards zero, and the slice that finishes a screen
 deletes its entry. `JITTER` is a tenth of a percent for machine-to-machine text
 rendering; pixelmatch already discards antialiasing, so a real difference is
 worth whole percents rather than hundredths.
-
-What is owed today: the record card's internals - the metadata line, the badges
-over the art, the action row - and, on the roll pages, the intro text, the help
-panel and the footer. The palette, the font, the page heading and the container
-geometry already match exactly.
 
 ## What is enforced, and by what
 
@@ -280,9 +278,9 @@ Not blocking, recorded so they are not mistaken for coverage:
 - Colour contrast is switched off in the axe pass, because jsdom lays nothing
   out and resolves no cascade. Contrast stays a real measurement in `qa` and
   `typo`, on a real page.
-- `tests/parity.js` drives the built bundle, but only on the routes the rewrite
-  has reached, and it compares behaviour rather than appearance. Nothing
-  compares the two apps pixel for pixel yet.
+- `tests/parity.js` compares behaviour and screenshots only for registered
+  states the rewrite has reached. Missing states remain invisible, so each new
+  interaction surface must be registered in `STATES` in the same change.
 - A native `<dialog>` cannot be opened in jsdom - there is no `showModal` - so
   `app/vitest-setup.ts` shims presence and open/closed. The focus trap, Escape
   and the page behind going inert are the browser's, and are checked in one:
