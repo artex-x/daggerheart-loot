@@ -99,6 +99,15 @@ If the human says the session is ending (or usage is exhausted):
 - if mid-work: worker stops coding, no half-batch commit, handoff updated with partial progress and exact next step
 - summarize state for the next session: TASK id, context/handoff paths, next step
 
+## Task closeout and cleanup
+Before reporting a batch or task complete:
+1. Wait for every dispatched worker to finish or report a blocker; collect each result. If the host exposes teammate lifecycle controls, request shutdown of any remaining teammates. Do not edit or delete host-managed agent/team state by hand.
+2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree.
+3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
+4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, send exactly one writer to verify and commit the coherent change; the reviewer stays read-only. Never push.
+5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, issue documents, and anything user-owned or ambiguous. Record what was removed or deliberately retained in `handoff.md`.
+6. Finish with a concise summary: outcome, commits, checks, cleanup, retained artifacts, deferred work, and whether human action is required.
+
 ## Rules
 - One implement batch per implement cycle unless human asks for more
 - Prefer larger coherent batches (planner policy)

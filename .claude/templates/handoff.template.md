@@ -40,4 +40,5 @@
 ## Notes
 - Mocks path:
 - Screenshot findings:
+- Cleanup performed / retained artifacts:
 - Session end partial progress (if any):

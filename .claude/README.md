@@ -9,6 +9,8 @@
 
 Orchestrator: prompts/orchestrate.prompt.md
 
+The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
+
 Per-task disk state under issues/<id>/:
 - context.md - shared facts (issue summary, constraints); avoid re-fetch
 - plan.md / handoff.md - design + execution (see templates/)
