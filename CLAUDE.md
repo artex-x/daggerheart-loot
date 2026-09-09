@@ -35,6 +35,10 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 
 ## Task and session protocol
 
+One session at a time per working tree. A second session's `npm ci`, staged
+index, vitest coverage directory or parity run will corrupt the first's
+results, and the failure looks like a bug in whatever was running.
+
 Task state belongs under `issues/<id>/`:
 
 - `context.md` - shared facts, source links, constraints, and decisions
@@ -139,6 +143,8 @@ See `.claude/README.md`.
 - Record intentional accessibility differences in `ACCEPTED` with a reason.
 - Inspect diff images before changing debt. Use `docs/parity.md`; migration
   backlog stays in issue 47 plan/handoff.
+- Port the live app's text-node structure, not only its rendered string: a
+  split text node measures a different advance than a joined one.
 - A `VISUAL_DEBT` number is whatever CI measures. A local run is advisory and
   may legitimately fail a cell CI passes; see `docs/parity.md`.
 - Port a rule with every `@media` override it has; a base-width-only port
