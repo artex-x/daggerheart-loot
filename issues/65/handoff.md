@@ -2,11 +2,211 @@
 
 ## Status
 
-- Task status: **done** (B2 shipped, then one review-remediation pass)
-- Last agent: implementer (R1, remediation of the reviewer's four blockers)
-- NEEDS_HUMAN_CONFIRMATION: no
+- Task status: **done** (B2 shipped, R1 remediation, then R2 - the CI
+  Linux-portability fix)
+- Last agent: implementer (R2)
+- NEEDS_HUMAN_CONFIRMATION: **push is pending** - `origin/main`'s `check` job
+  was RED at `1d368e2` (before R1/R2 even landed there); local `main` now has
+  R1 (`773a2e6`) and R2 (`ed4f693`) on top, unpushed. The human needs to push
+  for CI to re-run. See R2 below for exactly what CI was missing.
 - Branch: `main`
-- Base / starting commit: `8e7fed1` for B2, `1d368e2` for R1
+- Base / starting commit: `8e7fed1` for B2, `1d368e2` for R1, `773a2e6` for R2
+
+## Completed - R2, fix the two Linux `check` failures
+
+- Batch name/id: **R2 - fix the two hook selftest failures that make
+  `npm run check` fail on Linux CI, and only there**
+- Scope: bug fixes only, diagnosed by the human before dispatch (see the
+  GOAL/evidence/root-cause block the orchestrator gave this session -
+  reproduced in full at the top of this task's prompt, not restated here).
+  No replanning, no redesign, no re-litigation of R1's guard work.
+- Files changed: `.claude/hooks/lib.mjs`, `.claude/hooks/edit-guard.mjs`,
+  `.claude/hooks/edit-followup.mjs`, `.claude/hooks/selftest.mjs`
+- Commit: `ed4f693`
+
+### Root cause, confirmed as diagnosed
+
+CI run https://github.com/artex-x/daggerheart-loot/actions/runs/34396944582
+(`check` job, ubuntu) failed two of the hooks selftest's 140-then-194
+assertions: `#36 Windows-normalised path: denies` and `#42 contract
+reminder`. Both are exactly what the human's diagnosis said, verified by
+reading the code before touching it:
+
+- **`#42` was a real behaviour bug**, not just a test bug.
+  `edit-followup.mjs`'s `remind:contract` group compared `relPath()`'s
+  output against the lowercase literal `'docs/specs/contracts.md'`. The
+  real file is `docs/specs/CONTRACTS.md` (mixed case; confirmed with
+  `ls docs/specs/` - `CONTRACTS.md`, `ROUTES.md`). `relPath()` only
+  lower-cases on win32 (`lib.mjs`, the `process.platform === 'win32'`
+  branch it still uses for path *resolution* - unchanged), so the
+  comparison matched by accident on this Windows box and could never match
+  on Linux. The public-contract reminder never fired on Linux for
+  `CONTRACTS.md`, `ROUTES.md`, `tests/contracts.js`, `llms.txt`, or anything
+  under `docs/fixtures/` compared the same way.
+- **`#36` was test-only.** `selftest.mjs` built a literal backslash path
+  with an upper-cased drive letter and asserted `edit-guard.mjs` denies it
+  unconditionally. POSIX never treats `\` as a separator, so
+  `path.isAbsolute()` is false for that string there and it can never
+  resolve to `data.json` - the case could only pass on win32.
+
+### The fix
+
+1. **`pathKey()` in `lib.mjs` now folds case on every platform**, not only
+   win32. It exists for matching (a rule site comparing a repo-relative path
+   against a hand-written literal), not identity, per the human's diagnosis.
+   `relPath()` itself is **unchanged** - it still only lower-cases on win32,
+   because its return value is also used for display and a real Linux file
+   named `Foo.md` is genuinely not `foo.md`.
+2. **`edit-guard.mjs` and `edit-followup.mjs` now compare `pathKey(rel)`
+   against their literal tables, not `rel` directly.** `edit-followup.mjs`'s
+   messages still interpolate `rel` (real casing) so the spoken text names
+   the file the way it's actually spelled - only the *test* is folded, not
+   the *display*. `edit-guard.mjs`'s five literals (`data.json`,
+   `catalog.csv`, `i/`, `dist/`, `package-lock.json`) were already all-real
+   files with all-lowercase names, so this was a no-op there today, but
+   makes the rule site consistent and future-proof against a generated
+   mixed-case literal being added later.
+3. **Audited every other caller of `pathKey()`/`relPath()`** per the
+   diagnosis's instruction:
+   - `session-stop.mjs` already built its dirty-`Map` keyed by `pathKey()`
+     and valued by git's own spelling. Folding `pathKey()` on POSIX too
+     does not change that file - the *value* stored is still git's raw
+     spelling, untouched by the key's folding, so the warning still names
+     the file correctly. The only behavioural change is a (very unlikely)
+     collision between two dirty paths that differ only in case now
+     matching the same session-write record on Linux; accepted, same
+     reasoning the diagnosis gave for the hand-written literal tables.
+   - `bash-guard.mjs`'s `rmTargetInsideRepo()` tests `relPath()`'s result
+     against a lowercase-literal exempt regex (`dist`, `coverage`,
+     `test-output`, `node_modules`). Left unchanged: these are real,
+     always-lowercase directory names in this repo, so there is no latent
+     mismatch to fix, and changing it would be scope creep beyond what the
+     evidence showed was broken.
+4. **`selftest.mjs` case #36** now branches on `process.platform`: the win32
+   branch keeps the original assertion (still exercised on this box); a new
+   POSIX branch asserts the backslash-shaped path stays **silent** (not
+   `data.json`), which is the real contract on Linux. Coverage is not
+   deleted, it is corrected.
+5. **`selftest.mjs` case #42** unchanged in shape (still drives the real
+   `edit-followup.mjs` hook against `docs/specs/CONTRACTS.md`), with a
+   comment recording the historical bug. Now passes because the underlying
+   comparison is fixed, not because the test was loosened.
+6. **New cases #61-#63**, added specifically to prove the fix's core logic
+   independent of which OS runs the suite: `pathKey()` is now pure string
+   folding with no `process.platform` branch, so calling it directly with
+   `docs/specs/CONTRACTS.md`, a POSIX-shaped forward-slash mixed-case path,
+   and the CONTRACTS.md-vs-literal comparison edit-followup.mjs actually
+   performs, are all real evidence on any host - not "happens to pass on
+   this box" the way the old #36 case was.
+
+### Sweep for other latent Windows-only assumptions in `selftest.mjs`
+
+Grepped for `win32`, `platform`, backslash literals, drive-letter handling.
+Found exactly the two comment references to the already-fixed win32
+case-folding bug (context, not bugs) and the one `#36` case itself. No other
+case bakes in Windows path shape, drive letters, or case-folding.
+
+### Verification - R2
+
+- Commands run (exact), foreground, both completed before ending the turn:
+  - `node .claude/hooks/selftest.mjs` -> **198 passed, 0 failed** (194 before
+    this batch + 4 new: `#36`'s POSIX branch replaces nothing, it's an
+    `if/else` so the same case count; `#61`, `#61a`, `#62`, `#63` are new)
+  - `npm run check 2>&1 | tail -n 130`, run twice (once mid-diagnosis while
+    an unrelated concurrent-writer formatting issue was present - see
+    Deviations - and once clean after it resolved itself) -> **exit 0** both
+    times on the second, clean run: `format:check` "All matched files use
+    Prettier code style!"; `lint` clean; `typecheck` 513 files / 0 errors /
+    0 warnings; `npm run data` regenerated identical outputs; `tests/derived.js`
+    and `tests/i18n.js` clean; `.claude/hooks/selftest.mjs: 198 passed, 0
+    failed`; `vitest` 33 files / 659 tests passed; coverage
+    `All files | 96.43 | 90.02 | 95.91-95.92 | 96.65` (matches R1's baseline)
+  - Individually, while the concurrent-writer formatting issue was present
+    and blocking the aggregate script: `npm run lint`, `npm run typecheck`,
+    `npm run data`, `node tests/derived.js`, `node tests/i18n.js`,
+    `node .claude/hooks/selftest.mjs`, `npm run test` - all run directly and
+    all passed, proving this batch's own files carried no regression before
+    the aggregate `npm run check` could be confirmed clean end to end.
+  - `npx prettier --check .claude/hooks/edit-followup.mjs
+    .claude/hooks/edit-guard.mjs .claude/hooks/lib.mjs
+    .claude/hooks/selftest.mjs` -> clean, scoped to this batch's own files,
+    while the unrelated file was still failing the repo-wide check.
+- Portability proof beyond the local suite (task explicitly asked for this,
+  since Linux cannot be run on this box):
+  - **Proved, with real evidence, not just reasoning:** `pathKey()`'s
+    folding logic itself (cases #61-#63) - it is pure string manipulation
+    with no `process.platform` branch left, so running it on this Windows
+    box is genuine evidence for every OS, not a coincidence of this host.
+  - **Proved with `path.posix` (Node's OS-independent POSIX path
+    implementation, not this host's native path module) standing in for
+    real Linux path resolution:** the exact `#36` backslash-path scenario -
+    `path.posix.isAbsolute('\TMP\...\data.json')` is `false`,
+    `path.posix.relative(root, path.posix.resolve(root, thatString))`
+    returns the literal backslash string unchanged, not `data.json`. Script
+    used: a throwaway file in the session scratchpad
+    (`posix-proof.mjs`), not committed - not part of the repo.
+  - **NOT verified locally, remains open until CI runs:** the two selftest
+    cases still cannot literally execute their POSIX branch on this box
+    (this Windows Node build's default `path` module is win32-native, and
+    `process.platform` cannot be faked into changing that), so `#36`'s
+    `else` branch and every other assertion in the suite that would only
+    run under a real `process.platform !== 'win32'` are exercised by
+    reasoning plus the `path.posix` proof above, not by literal execution.
+    Say plainly: **CI has not run against this fix yet.** The human needs
+    to push for that to happen; this session did not (per constraints,
+    pushing is never this agent's job).
+- Gates: `npm run check` only, per `context.md`'s "Command costs" - this
+  task touches no rendered screen, so `check:built` and the parity suite are
+  not required.
+
+### Deviations - R2
+
+1. **A concurrent writer was live on `main` throughout this batch, exactly
+   as R1's context predicted, and its churn extended past the four files
+   named in the dispatch.** At batch start: `docs/specs/COVERAGE.md`,
+   `tests/parity.js`, `tests/parity/driver.js`, `tests/parity/specs.js` (as
+   told). Mid-batch, `app/src/components/FilterBar.svelte`,
+   `app/src/components/TablesPage.svelte`, `docs/parity.md`, and
+   `tools/parity-ubuntu/README.md` also appeared dirty. All eight were
+   preserved - never staged, never touched, never reverted. Only this
+   batch's four files were staged, by name (`git add` with explicit
+   filenames, not `-A`), both times `npm run check` and the commit were run.
+2. **`npm run check` genuinely failed once, for a reason outside this
+   batch, then passed cleanly on retry with no code change on either
+   side.** Mid-verification, `format:check` failed on
+   `app/src/components/TablesPage.svelte` - `git diff` on that file showed
+   **zero content difference** (a CRLF/LF-only difference; `file` reported
+   the file as CRLF, Prettier's default `endOfLine` is `lf`, and this repo
+   has no `.gitattributes` to pin line endings). This was the concurrent
+   writer's in-flight state, not this batch's. Rather than touch their file
+   (forbidden by this task's own constraints) or fake a pass, this session
+   ran every other `npm run check` step individually to prove this batch's
+   files carried no regression (see Verification above), then re-checked
+   `git status` a few minutes later: the concurrent writer had resolved it
+   themselves (`TablesPage.svelte` no longer appeared dirty), and the full
+   `npm run check` then passed clean on the very next run, unmodified. No
+   workaround, no `SKIP_CHECK_GATE=1` bypass was needed in the end - flagged
+   here only because CLAUDE.md asks a failed required check to be explained
+   before committing, and this one very nearly required judgment about
+   touching someone else's file.
+3. **The commit gate was live and worked exactly as designed.** The
+   `npm run check 2>&1 | tail -n 130` invocation (piped, not redirected to a
+   file, per this task's own instruction and `.claude/README.md`) produced
+   a real `.claude/.check-cache.json` write via `check-observer.mjs`
+   (`{"key":"eab5d839ea56af5c", ...}`), confirmed by reading the file
+   directly. `git status` was re-checked immediately before staging and
+   showed no drift since that run, so `bash-guard.mjs`'s commit gate let
+   `git commit` through with no `SKIP_CHECK_GATE=1` needed. One later
+   verification run used `npm run check > file 2>&1; ...; tail ...` (to
+   capture the exit code robustly) - that redirect-based invocation, as
+   `.claude/README.md` warns, would not have satisfied `check-observer.mjs`
+   had it been the one relied on for the cache; it wasn't - the piped run
+   moments earlier already had.
+
+### Deferred - R2
+
+None new. The R1 deferred list (below) is unchanged and not touched by this
+batch.
 
 ## Completed - R1, review remediation
 
@@ -303,12 +503,20 @@ Reviewer findings deliberately left for a later pass, with the reason:
 
 ## Next batch
 
-None. This was the whole task (`plan.md` section 1: "one batch, implement-ready. No
-later batches").
+None from this session. The only remaining action is the human's:
+**push `main` (currently at `ed4f693`) so CI re-runs the `check` job**, which
+was RED at `1d368e2` for exactly the two reasons R2 above fixes. R2 could not
+verify Linux behaviour directly (no Linux available on this box) - watch that
+CI run specifically for `.claude/hooks/selftest.mjs` under the `check` job
+and confirm both `#36` and `#42` pass there, since that is the one thing this
+session's local verification could not prove.
 
 ## Blockers
 
-None.
+None from this session's own work. The unpushed CI-red state on
+`origin/main` at `1d368e2` is the reason this task was reopened as R2; it is
+resolved locally (`ed4f693`) but not yet confirmed on CI, since nothing here
+pushes.
 
 ## Deferred - B2
 
