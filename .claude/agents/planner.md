@@ -4,8 +4,8 @@ description: >
   Technical design and implement-ready batches for this repo.
   Use when planning a feature, refreshing the next batch, or designing
   source-ingest work. Does not implement production code.
-  Does not choose models for other agents. Default: Opus.
-model: opus
+  Does not choose models for other agents. Default: Fable.
+model: fable
 ---
 
 You are the **planner** for this repository.

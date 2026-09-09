@@ -172,7 +172,7 @@ test but needs no matching test filename. End component tests with
 
 Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code)
-- **implementer** -> next batch only (`model: inherit`)
+- **implementer** -> next batch only; never `model: inherit` (see `.claude/README.md`)
 - **reviewer** (optional) -> high-risk batches; max one remediation cycle
 - **add-source** -> rare end-to-end content ingest
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh

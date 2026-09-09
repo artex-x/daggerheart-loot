@@ -107,14 +107,21 @@ of what you happen to be running.
 Effort/high reasoning is controlled by the session UI - set effort explicitly when you need "high".
 
 Frontmatter defaults (change the file, not your habit):
-- `planner`: opus
+- `planner`: fable - the plan decides whether a Sonnet implementer succeeds or
+  thrashes, and a bad plan costs an implement run, a review, and the single
+  remediation cycle. **Fable access may be temporary.** If it lapses, edit the one
+  frontmatter line in `.claude/agents/planner.md` to `opus` - do not paper over it
+  with a per-dispatch model argument, or the file stops describing the real tier
 - `reviewer`: opus - review runs rarely and exists to catch what the implementer missed; a weak review manufactures confidence, which is worse than none
 - `implementer`: sonnet
 - `add-source`: sonnet
 - `refresh-artwork`: sonnet
 
 Raise per dispatch when:
-- Plan: already opus; add high effort when design/UI/mechanics are non-trivial
+- Plan: already fable; medium effort suits routine batches, high when design/UI/
+  mechanics are non-trivial. On Fable, lower effort often beats a prior model's
+  highest, so reach for high because the design is hard - not out of habit.
+  Opus is the fallback floor, not a downgrade to choose per dispatch
 - Implement: opus only if a prior implement failed on this batch or risk is high; sonnet + high for large careful batches
 - Add-source: opus if new roll/table mechanics or hard ambiguity
 - Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; large mechanical conversion batches use sonnet + high
@@ -125,6 +132,8 @@ Claude <-> Codex cheat-sheet:
 - economy-high: Sonnet high <-> GPT-5.6 Terra high
 - strong-mid: Opus medium <-> GPT-5.6 Sol medium/high
 - strong-high: Opus high/xhigh <-> GPT-5.6 Sol high/xhigh/Ultra
+- frontier: Fable medium/high <-> no established Codex peer; on Codex, plan with
+  Sol at its highest tier and expect a weaker plan
 
 Announce chosen tier in chat only. Never write model routing into plan.md or handoff.md.
 
