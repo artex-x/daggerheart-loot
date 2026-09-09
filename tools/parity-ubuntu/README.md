@@ -13,6 +13,10 @@ docker run --rm -v "$PWD:/work:ro" dh-parity:ubuntu24 \
   sh -c 'npm run build && node tests/parity.js "<filter>"'
 ```
 
+**Redirect the output.** `--rm` removes the container the moment it exits, and
+`docker logs` then has nothing left - a full-suite run was lost that way. Send
+stdout to a file on the host, the same discipline a long local run needs.
+
 The repository is mounted read-only and copied to `/app` inside the container,
 so a run cannot touch your working tree, and `node_modules` comes from the
 image - the host's is a Windows install and puppeteer's Chrome is
@@ -31,7 +35,19 @@ hundredth**:
 | `#/tables/core_item ~ row anchor @ ru 375` | 10.52 | 10.52 |
 | `#/tables/core_item ~ row anchor @ en 375` | 9.92 | 9.92 |
 
-So a number from this image may be written into `VISUAL_DEBT`. That permission
+**It does not agree everywhere, and the exception is not small.** On
+`#/roll/wondrous ~ pinned @ ru|en 375` the container measures **0.00%** where
+CI and a development host both measure about 3.5-3.8%. That state's difference
+is a toast the live app raises and the rewrite lacks; a toast fades, and the
+container is slow enough that it has gone before the screenshot, so both sides
+photograph an empty screen and the real gap scores zero. The new `VISUAL_DEBT`
+ratchet duly reported the entries as stale - they are not.
+
+So: a number from this image may be written into `VISUAL_DEBT` **for a state
+whose difference is layout**, which is what the four calibration cells above
+are. For anything whose difference is timed - a toast, a flash, an animation
+mid-flight - the container is not evidence, and CI is. When in doubt, check
+whether the state's `why` describes something that appears and then goes away. That permission
 depends on the calibration holding, and it is calibrated against a moving
 target: GitHub rolls `ubuntu-latest` forward, and Chrome arrives with
 puppeteer's version in `package-lock.json`. **Re-run the comparison above after

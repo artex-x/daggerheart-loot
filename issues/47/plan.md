@@ -2006,6 +2006,111 @@ on Windows and pass exactly on CI are the same thing from the other side.
   not committed. Both apps read the same files, and the artwork is drawn at a
   fixed CSS size, so no parity number depends on which bytes are there.
 
+### B3.6 built, part 2: the instrument that would have caught them
+
+Built by an implementer that lost its turn twice; the orchestrator finished the
+verification, the one fix the instrument found, and the commit.
+
+**What shipped.** `typeAt(probes)` in `tests/parity/driver.js`; a `typeRuns`
+spec (`perWidth: true`) over four probes - the toolbar search box, a row's text
+and title, and a filter label - scoped to the `only` list this plan named;
+`tests/parity.js` split into `looks` and `measured`, the latter run inside the
+width sweep; the `DEBT_SLACK` ratchet, so an entry that has been paid off fails
+instead of passing in silence; and `docs/specs/COVERAGE.md` describing three
+instruments rather than two.
+
+**One interaction worth keeping in mind.** A state carrying a `measured` spec
+cannot use part 0's legacy screenshot cache: the cache stands in for the
+viewport switch as well as the shot, and a `perWidth` probe has to run at a
+real viewport. `tests/parity.js` therefore skips the cache for those states.
+Caching and per-width measurement are not independent, and a later change to
+either has to remember it.
+
+#### The instrument fires - proved by reverting each fix
+
+Each of B3.5's three fixes reverted alone, rebuilt, measured on
+`#/tables/community ~ panel open`, then restored:
+
+| reverted | probe that failed | where |
+|---|---|---|
+| the search box's invented `font-size: 14px` | `:: search` | 1100, 768, 375 |
+| the space before the `любое` hint | `:: filterLabel` | all six cells |
+| `.selbox`'s missing 38px override | `:: rowText`, `:: rowTitle` | **375 only** |
+
+The third row is the argument for `perWidth`. That defect does not exist at
+1100, so a spec measured at the widest layout alone - which is what every
+`looks` spec does - would have caught two of the three and missed the one that
+took an afternoon to find.
+
+#### What it found on its first clean run, and the fix
+
+`filterLabel` failed in English at all three widths with everything correct:
+
+```
+было:  {"font":"650 11.5px/18.4px","family":"Inter","text":"Community any","advance":105.9}
+стало: {"font":"650 11.5px/18.4px","family":"Inter","text":"Community any","advance":106}
+```
+
+Same font, same family, same string, same element width, and the pixel verdict
+was `вид: совпадает` - 0.00%. Only the measured advance differed, by 0.1px, and
+only in English.
+
+The cause is B3.5's own fix. `app.js` emits the label and its trailing space as
+**one** text node (`Сообщество <i>любое</i>`); the port emitted two, because a
+literal leading space at the start of an `{#if}` is trimmed by Svelte and
+`{' '}` was the workaround. A text advance rounds per text node, so two nodes
+measure 0.1px wider than one, and English happens to sit on the rounding
+boundary where Russian does not.
+
+Fixed rather than accepted: the space now lives inside the label's own
+expression (`{`${row.label} `}`), which Svelte cannot trim - an expression is
+not markup whitespace - and which emits a single text node like the live app.
+`ACCEPTED` was the alternative this plan allowed, and it would have cost three
+keys and a paragraph to describe a difference that one line removes. The
+probe passes; the state is `расхождений нет`.
+
+**This is the whole point of the batch, demonstrated on its first run:** the
+page percentage said the screen was identical while the type was measurably
+different, which is precisely how three defects hid behind an "antialiasing"
+reason for three batches.
+
+#### The ratchet's first catch was a false one, and the rule caught it
+
+Run in the ubuntu container, the new ratchet reported two entries as paid off:
+
+```
+FAIL #/roll/wondrous ~ pinned @ ru 375 :: вид :: 0.00%, долг записан как 3.64%
+FAIL #/roll/wondrous ~ pinned @ en 375 :: вид :: 0.00%, долг записан как 3.82%
+```
+
+They are not paid off. Measured on a development host the same states read
+3.52% and 3.76%, and CI passes them, so **the container is the outlier**. Those
+entries describe a toast the live app raises and the rewrite lacks; a toast
+fades, and the container is slow enough that it has gone before the screenshot,
+so both sides photograph an empty screen and a real missing feature scores
+zero. The entries were kept.
+
+The rule that saved them is B3.5's: do not delete an entry a ratchet surfaces
+without opening the diff first. It paid for itself on the ratchet's first run.
+
+#### The four anchor cells, re-baselined to CI
+
+`#/tables/{core_item ~ row anchor, voa ~ section anchor} @ ru|en 375` carried
+figures measured on a development machine, and CI had been red on them since
+part 1. They are now recorded at what CI measures - 10.52, 9.92, 11.55, 10.31 -
+each `why` saying out loud that it was raised and off which machine. Four
+independent measurements agree: two CI runs, an orchestrator container run, and
+an implementer container run.
+
+#### What the container is and is not
+
+`tools/parity-ubuntu/` reproduces CI **to the hundredth on states whose
+difference is layout**, which is what those four cells are. It does not
+reproduce CI on states whose difference is timed, and the failure is silent - a
+faded toast scores a perfect 0.00%. Both its README and `docs/parity.md` now
+say so, with the recognition test: does the state's `why` describe something
+that appears and then goes away?
+
 ### What lands in the specs and in CLAUDE.md
 
 Three questions, three different answers.

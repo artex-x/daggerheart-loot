@@ -53,10 +53,13 @@
 
   /* A literal space at the start of an `{#if}` block is dropped by Svelte's
      whitespace trimming, not just collapsed - unlike the space `t().anyValue`
-     puts before the italic hint in app.js. Referencing this instead of writing
-     `{' '}` inline keeps the mustache from reading as a no-op string literal to
-     `svelte/no-useless-mustaches`, which cannot tell the two cases apart. */
-  const anySep = ' ';
+     puts before the italic hint in app.js.
+
+     The space therefore lives inside the label's own expression rather than
+     beside it. That is not only about trimming: app.js emits the label and its
+     space as one text node, and a separate `{' '}` made two, which measures
+     0.1px wider in English because a text advance rounds per node. The parity
+     type probe caught it - see issue 47, B3.6 part 2. */
 </script>
 
 {#if rows.length}
@@ -100,7 +103,10 @@
       {#each rows as row (row.group)}
         <div class="field">
           <!-- prettier-ignore -->
-          <span class="lbl">{row.label}{#if groupIsAny(picked, row.group)}{anySep}<i>{t.anyValue}</i>{/if}</span>
+          <span class="lbl"
+            >{#if groupIsAny(picked, row.group)}{`${row.label} `}<i>{t.anyValue}</i
+              >{:else}{row.label}{/if}</span
+          >
           <ChipRow>
             {#each row.values as v (v.value)}
               <Chip

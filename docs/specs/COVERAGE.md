@@ -135,14 +135,25 @@ percent.
 
 ### The look
 
-Two instruments, because they answer different questions.
+Three instruments, because they answer different questions.
 
 **Measured** - typography and colour of the landmarks both apps certainly share,
 compared strictly. These name something to go and change: "the heading is 800 at
 24px and was 680 at 23px" is a fix, where "40% of pixels differ" is not.
-Position and size are deliberately *not* measured: two layouts mid-port disagree
-about them by definition, and a metric that always differs teaches everyone to
-ignore the report.
+Position and size are not measured this way: two layouts mid-port disagree about
+them by definition, and a metric that always differs teaches everyone to ignore
+the report.
+
+**A per-control probe** (`driver.js`'s `typeAt`, `specs.js`'s `typeRuns`) -
+computed type, text content and a measured text advance for a handful of named
+controls, run at every width rather than once. It exists because a whole-page
+percentage cannot see a control-sized defect: a wrong font-size on one line of
+a 1100x900 screen scores about 0.09%, under `JITTER`, so the pixel diff below
+reported the state as matching while three real defects sat inside it (B3.6).
+This is where geometry *is* measured, as the exception to the paragraph above:
+on a named handful of controls, on screens that are already built, where a
+width is the consequence of a rule that was ported wrong rather than of a
+layout that has not settled yet.
 
 **A pixel diff, against zero.** `pixelmatch` compares the two screenshots and
 writes a diff image next to them in `test-output/parity/`. The expectation is
@@ -155,6 +166,8 @@ not been reproduced yet, with the reason, and it is enforced from both sides:
 - the screen drifts worse than the number - it regressed, and the run fails
 - the screen gets better than the number - the run fails too, asking for the
   number to come down
+- the screen reaches `JITTER` or below - the run fails too, asking for the
+  entry to be deleted rather than left to sit inside `DEBT_SLACK` unnoticed
 
 So it can only ratchet towards zero, and the slice that finishes a screen
 deletes its entry. `JITTER` is a tenth of a percent for machine-to-machine text

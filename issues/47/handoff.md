@@ -7,13 +7,14 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress
-- Last agent: implementer (B3.6 part 1)
+- Last agent: orchestrator (finished part 2 after its implementer lost its
+  turn twice)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `4976cb4` (planning session). B3.5's own commit is
-  `a58dd97`; its remediation commit is `fb8cb0d`. **B3.6 parts 0 and 1 are
-  built and committed** - part 0 is `f7308a9`, part 1 is this session's commit
-  on top of it.
+  `a58dd97`; its remediation commit is `fb8cb0d`. **B3.6 is complete: parts 0, 1 and 2 are
+  built and committed** - part 0 is `f7308a9`, part 1 is `38cfbbb`, part 2 is
+  this session's commit. The container tooling is `1d368e2`.
 
 Phase 4 is in progress. B1, B2, B3 and now **B3.5 are built**. The batch order
 ahead is **B3.6 -> B4**; B4 (the three equipment tables) is unchanged and still
@@ -23,7 +24,7 @@ follows, with both of its early checks intact - see "Deferred".
 standing "prefer larger coherent batches" policy: **part 0** makes the parity
 suite quick enough to run repeatedly, **part 1** greens the red CI run, and
 **part 2** builds the instrument that would have caught B3.5's defects.
-**Parts 0 and 1 are built and committed; part 2 is next.** Part 0's own speed
+**All three parts are built and committed; B4 is next.** Part 0's own speed
 claim failed measurement - the cache buys ~10%, not half, and the 4-way shard
 is what actually makes CI affordable. Part 1 diagnosed all 22 failing CI cells,
 fixed one real defect worth eighteen debt entries, closed a harness race and
@@ -291,7 +292,65 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     selector and re-querying: 768 went from exact to 8-9% anyway). The width
     sweep's remaining cost is recorded as debt rather than papered over.
 
+- Batch name/id: **B3.6 part 2 - the instrument that would have caught them**
+  (this session)
+- What shipped: `typeAt` in `tests/parity/driver.js`; a `typeRuns` spec
+  (`perWidth: true`) over the search box, a row's text and title, and a filter
+  label; a `looks`/`measured` split in `tests/parity.js` with `measured` run
+  inside the width sweep; the `DEBT_SLACK` ratchet, so a paid-off entry fails
+  instead of passing silently; `docs/specs/COVERAGE.md` on three instruments.
+  Also the four anchor cells re-baselined to CI, and one defect the instrument
+  itself found. Full accounting in `plan.md`, "B3.6 built, part 2".
+- Files changed: `tests/parity.js`, `tests/parity/driver.js`,
+  `tests/parity/specs.js`, `docs/specs/COVERAGE.md`,
+  `app/src/components/FilterBar.svelte`, `docs/parity.md`,
+  `tools/parity-ubuntu/README.md`, `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's part 2 commit.
+- **The instrument found a real defect on its first clean run.** `filterLabel`
+  differed in English by 0.1px of text advance, with identical font, family,
+  string and element width - and a pixel verdict of `вид: совпадает`, 0.00%.
+  Cause: B3.5's `{' '}` fix emitted two text nodes where `app.js` emits one,
+  and an advance rounds per node. Fixed by moving the space inside the label's
+  own expression, which Svelte cannot trim and which emits one node. This is
+  the batch's thesis demonstrated on its first run: the page percentage called
+  the screen identical while the type was measurably different.
+- **The ratchet's first catch was false, and B3.5's rule caught it.** In the
+  container, `#/roll/wondrous ~ pinned @ ru|en 375` measured 0.00% against
+  3.64/3.82 and were reported stale. They are not: the host measures 3.52/3.76
+  and CI passes them. The difference is a toast that fades before the slower
+  container photographs it. Entries kept. Never delete an entry a ratchet
+  surfaces without opening the diff first.
+- Deviations and rationale: `app/src/components/FilterBar.svelte` was edited,
+  outside part 2's stated scope of the harness. It is the fix for what the
+  instrument found, it is one line, and `ACCEPTED` - the alternative the plan
+  allowed - would have cost three keys and a paragraph to excuse a difference
+  the line removes outright.
+
 ## Verification
+
+- Commands run (exact), this session (B3.6 part 2):
+  - The revert proof, scripted: each of B3.5's three fixes reverted alone,
+    `npm run build`, `node tests/parity.js "community ~ panel open"`, restored
+    after each. `:: search` failed at 1100/768/375; `:: filterLabel` failed in
+    all six cells; `:: rowText` and `:: rowTitle` failed **at 375 only** - the
+    case for `perWidth`, since that defect does not exist at 1100.
+  - `node tests/parity.js "community ~ panel open"` clean tree - **3
+    расхождений**, all `filterLabel` in English (advance 105.9 vs 106).
+  - The same after the one-line fix - **`расхождений нет`**.
+  - `node tests/parity.js "pinned"` on the host - 3.52% and 3.76% against
+    3.64/3.82, passing, which is what proved the container's 0.00% wrong.
+  - `npm run check` - **exit 0**; 96.43% statements, 90.02% branches, 95.91%
+    functions, 96.65% lines. An earlier attempt failed on
+    `ENOENT app/coverage/.tmp/coverage-1.json` while another session's vitest
+    ran in the same tree; alone, it passes.
+  - `npm run check:built` - **exit 0**, 56.8 kB gzip against 120 kB.
+  - A full-suite container run was **lost**: started with `docker run --rm` and
+    no redirect, so the container was removed on exit and `docker logs` had
+    nothing left. See gotchas.
+- **Not run: a clean full local suite.** Since part 1 the table follows CI, so a
+  development host disagrees with it by design on a handful of cells. CI is the
+  gate; the container covers layout states only. See "Blockers".
+
 
 - Commands run (exact), this session (B3.6 part 1):
   - `gh run download 34361836525 -n failure-output` into a scratch directory
@@ -426,8 +485,10 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch (implement-ready)
 
-- **Name:** B3.6 - a parity harness you can trust. Three parts, one batch.
-  **Parts 0 and 1 are built and committed. The next batch is part 2.**
+- **Name:** B4 - the equipment tables, their facets and tier sections.
+  **B3.6 is complete in all three parts.** Its sections below are kept for
+  their reasoning, not as work to do; B4's own brief, with its two early
+  checks preserved verbatim, is under "Deferred".
 
 ### Part 0 - BUILT. Kept for its reasoning, not as work to do
 
@@ -879,6 +940,24 @@ item under "Deferred". The original text follows unedited.
 - **Session gotchas.** New this session (B3.5's own, appended at the end),
   then B3's, then carried further back:
 
+  - **`docker run --rm` without a redirect loses everything.** A full-suite
+    container run ended, the container was removed, and `docker logs` had
+    nothing left to read - the same loss as a dead shell, by another route.
+    Always redirect a container run's stdout to a file on the host.
+  - **The ubuntu container reproduces CI only for layout.** It matched CI to
+    the hundredth on the four anchor cells and reported 0.00% on a state whose
+    difference is a toast that fades before the slower machine photographs it.
+    Silent, and it looks exactly like a defect that got fixed.
+    `tools/parity-ubuntu/` and `docs/parity.md` carry the recognition test.
+  - **Python's `write_text` converts LF to CRLF on Windows.** A read-modify-
+    write round trip leaves every line changed, `git diff` shows nothing
+    (git normalises) and `git status` still says modified. Write bytes, or
+    pass `newline='
+'`.
+  - **Use a quoted heredoc (`<<'EOF'`) for anything containing backticks.**
+    An unquoted one ran `npm ci` from inside a comment being written into a
+    Dockerfile, deleting `node_modules` while another session was four minutes
+    into `npm run check`.
   - **A stopped agent is not a dead agent, and its background run is not
     stopped either.** A task notification fires when an agent ends a *turn*.
     `ListAgents` gives the real status (`running` / `killed` / `completed`).

@@ -347,8 +347,13 @@ function pixelDiff(aBuf, bBuf, outPath) {
       if (!wanted) continue;
 
       const mine = SPECS.filter((s) => !s.only || s.only.includes(id));
-      const looks = mine.filter((s) => !s.presses);
+      const looks = mine.filter((s) => !s.presses && !s.perWidth);
       const presses = mine.filter((s) => s.presses);
+      /* `perWidth` specs measure a control rather than a page, so they cannot
+         read the widest layout and call it done - the row-width defect only
+         showed at 375. They run inside the width sweep below, once per size,
+         on both targets. */
+      const measured = mine.filter((s) => s.perWidth);
 
       /* The specs read the widest layout: they are about content and controls,
          which the breakpoints do not change, and running them six times would
@@ -356,6 +361,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
          with width, so that is what the widths are for. */
       const shots = {};
       const seenLooks = { legacy: {}, next: {} };
+      const perWidth = { legacy: {}, next: {} };
       let broke = null;
 
       const cacheKey = CACHE.keyFor(state, lang);
@@ -391,18 +397,34 @@ function pixelDiff(aBuf, bBuf, outPath) {
              The legacy side checks the cache first - a hit is the exact bytes
              an uncached shot would have produced, so skipping the viewport
              switch, the settle wait and the screenshot itself cannot change
-             the verdict, only how long it takes to reach it. */
+             the verdict, only how long it takes to reach it.
+             A state that carries a `measured` spec cannot take that shortcut:
+             the cache stands in for the viewport switch too, and a `perWidth`
+             spec has to read the page actually sized to that width, not the
+             1100 layout the cached path leaves it at. So caching is off for
+             the handful of states typeRuns names, on both sides. */
           for (const size of WIDTHS) {
             const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
-            const cached = target === 'legacy' ? CACHE.read(cacheKey, size.w) : null;
+            const cached =
+              target === 'legacy' && !measured.length ? CACHE.read(cacheKey, size.w) : null;
             if (cached) {
               fs.writeFileSync(at, cached);
             } else {
               await d.viewport(size.w, size.h);
               await d.settle();
+              if (measured.length) {
+                perWidth[target][size.w] = {};
+                for (const spec of measured) {
+                  try {
+                    perWidth[target][size.w][spec.name] = await spec.run(d, lang);
+                  } catch (e) {
+                    perWidth[target][size.w][spec.name] = { error: String(e.message || e) };
+                  }
+                }
+              }
               const buf = await d.shot(whole);
               fs.writeFileSync(at, buf);
-              if (target === 'legacy') CACHE.write(cacheKey, size.w, buf);
+              if (target === 'legacy' && !measured.length) CACHE.write(cacheKey, size.w, buf);
             }
             shots[target][size.w] = at;
           }
@@ -413,6 +435,21 @@ function pixelDiff(aBuf, bBuf, outPath) {
       if (!broke) {
         for (const spec of looks) {
           diff(`${id} @ ${lang}`, spec.name, seenLooks.legacy[spec.name], seenLooks.next[spec.name]);
+        }
+
+        /* Keyed with the width in the route, unlike `looks` above: a
+           `perWidth` spec answers a different question at each size, so
+           `#/tables/community @ ru 375 :: ... :: rowText` and its 1100
+           counterpart are two separate fields, not one read three times. */
+        for (const size of WIDTHS) {
+          for (const spec of measured) {
+            diff(
+              `${id} @ ${lang} ${String(size.w)}`,
+              spec.name,
+              perWidth.legacy[size.w]?.[spec.name],
+              perWidth.next[size.w]?.[spec.name]
+            );
+          }
         }
 
         for (const spec of presses) {
@@ -472,6 +509,18 @@ function pixelDiff(aBuf, bBuf, outPath) {
             `  FAIL ${full} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`
           );
           console.log('       стало лучше - опусти число в VISUAL_DEBT');
+        } else if (pct <= JITTER && debt.pct > JITTER) {
+          /* DEBT_SLACK alone left a hole: an entry recorded at, say, 0.13
+             sits inside half a percent of 0.00 forever, so a state that has
+             actually reached zero never has to say so - it passes silently,
+             which is the same failure this whole batch is about, on the debt
+             table instead of the screen. A paid-off entry has to fail until
+             somebody deletes it. */
+          fail++;
+          console.log(
+            `  FAIL ${full} :: вид :: ${pct.toFixed(2)}%, долг записан как ${String(debt.pct)}%`
+          );
+          console.log('       долг погашен - удали запись из VISUAL_DEBT');
         } else {
           console.log(`       вид: ${pct.toFixed(2)}% из ${String(debt.pct)}% долга`);
         }

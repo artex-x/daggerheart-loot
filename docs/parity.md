@@ -91,7 +91,10 @@ There is also a **local ubuntu container that reproduces CI exactly**
 measures may be written into the table. Its calibration is against a moving
 target - the runner image and puppeteer's Chrome both roll forward - so re-run
 the comparison in its README after either changes, and fall back to CI if it
-drifts.
+drifts. It agrees on states whose difference is layout and **disagrees on
+states whose difference is timed**: a toast that fades scores 0.00% there and
+3.5% on CI, because the slower machine photographs it after it has gone. Use
+CI for those.
 
 The CI numbers are readable without pushing: `gh run view <id> --log-failed`
 prints about a dozen grepped lines, and the run's `failure-output` artifact

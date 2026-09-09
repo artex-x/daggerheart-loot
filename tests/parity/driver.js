@@ -324,6 +324,70 @@ function makeDriver(page, target) {
     },
 
     /**
+     * Computed type, and the measured run of text, for named controls.
+     *
+     * The one place in this driver that takes a CSS selector. Everywhere else
+     * grips a control by the name a person reads, because a spec must not know
+     * which app it is driving; this method measures one specific *ported*
+     * control, and the class names are themselves ported - every component in
+     * `app/src/components/` writes its CSS "off `.x` in style.css", and
+     * Svelte's scoping keeps the original class in the `class` attribute
+     * alongside its hash. Selectors stay structural or contract-level wherever
+     * one exists (`input[type=search]`, `[data-row]`) and use a ported class
+     * only where none does.
+     *
+     * `probes` is a plain `{ name: selector }` map. A probe that resolves to
+     * nothing returns `null` rather than throwing: the live app certainly has
+     * these controls, so a class the rewrite renamed reports `null` against
+     * real numbers and fails loudly. The one silent case is a control missing
+     * from *both* apps, which means style.css changed - and style.css is
+     * frozen.
+     *
+     * This exists because a whole-page pixel percentage cannot see a
+     * control-sized defect: a wrong font-size on one line of a 1100x900 screen
+     * scores about 0.09%, under JITTER. Two apps drawing the same string in the
+     * same face at the same size in the same browser produce the same advance,
+     * so rounding is one decimal and no more - a difference smaller than that
+     * with no visible cause belongs in ACCEPTED with the measured reason, not
+     * in a wider tolerance.
+     */
+    async typeAt(probes) {
+      /* Fonts are the one thing neither ready() nor settle() waits on for a
+         page that has already painted - see the comment on ready(). A probe
+         read before a font swap has finished could move between runs on the
+         same machine; this makes that the same non-issue it already is for the
+         anchor scroll. */
+      await page.evaluate(async () => {
+        await document.fonts?.ready;
+      });
+      return page.evaluate((map) => {
+        const out = {};
+        for (const [name, sel] of Object.entries(map)) {
+          const el = document.querySelector(sel);
+          if (!el) {
+            out[name] = null;
+            continue;
+          }
+          const c = getComputedStyle(el);
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const round1 = (n) => Math.round(n * 10) / 10;
+          out[name] = {
+            font: `${c.fontWeight} ${c.fontSize}/${c.lineHeight}`,
+            family: c.fontFamily.split(',')[0].replace(/["']/g, ''),
+            /* Whitespace runs collapsed, not trimmed at the ends - a missing
+               separator (the `любое` hint sitting flush against the label) has
+               to stay visible rather than being trimmed away. */
+            text: (el.textContent || '').replace(/\s+/g, ' '),
+            advance: round1(range.getBoundingClientRect().width),
+            width: round1(el.getBoundingClientRect().width)
+          };
+        }
+        return out;
+      }, probes);
+    },
+
+    /**
      * A screenshot, for the look comparison.
      *
      * The fold by default. `whole` takes the page end to end, which is the only

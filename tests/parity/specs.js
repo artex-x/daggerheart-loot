@@ -234,6 +234,43 @@ const visuals = {
 };
 
 /**
+ * The type on the controls a page percentage cannot see.
+ *
+ * `#/tables/community`'s search box, row text and filter hint each carried a
+ * real defect - a wrong font-size, a wrapped width 4px short, a trimmed space -
+ * while the whole-page pixel diff scored under JITTER and reported the state
+ * as matching (B3.6). These four probes measure the controls those defects
+ * went through directly: computed type, text content and a measured advance,
+ * rather than a percentage of the page.
+ *
+ * `perWidth: true` runs this once per viewport inside the width sweep, not
+ * once at the widest layout the way `looks` specs do - the row-width defect
+ * only showed at 375, so a spec that ran at 1100 alone would have caught two
+ * of the three.
+ */
+const typeRuns = {
+  perWidth: true,
+  name: 'the type on the controls a page percentage cannot see',
+  only: [
+    '#/tables',
+    '#/tables/hnf_consumable',
+    '#/tables/dread',
+    '#/tables/wondrous ~ panel open',
+    '#/tables/community ~ panel open',
+    '#/tables/community',
+    '#/tables/voa'
+  ],
+  async run(d) {
+    return await d.typeAt({
+      search: '.toolbar input[type=search]',
+      rowText: '[data-row] .rt',
+      rowTitle: '[data-row] .rt b',
+      filterLabel: '.ffilter .field .lbl'
+    });
+  }
+};
+
+/**
  * The states both apps are asked about, and whether the rewrite draws them yet.
  *
  * A state is a route plus what was done to it. Opening a URL and screenshotting
@@ -628,7 +665,8 @@ const SPECS = [
   rollControls,
   filteredAddress,
   copiedFilterLink,
-  visuals
+  visuals,
+  typeRuns
 ];
 
 /**
@@ -883,21 +921,21 @@ const VISUAL_DEBT = {
      found yet. Recorded as the debt it is, with the part that is understood
      named and the part that is not admitted. */
   '#/tables/core_item ~ row anchor @ ru 375': {
-    pct: 8.85,
-    why: "the width sweep: both apps scroll once at 1100 to the same pixel, and Chrome's own scroll anchoring moves them 13px apart when the viewport narrows to 375 - see the note above VISUAL_DEBT"
+    pct: 10.52,
+    why: "RAISED from 8.85, which was a development machine's figure: the width sweep, where both apps scroll once at 1100 to the same pixel and Chrome's own scroll anchoring moves them 13px apart as the viewport narrows to 375 - see the note above VISUAL_DEBT. 10.52 is what CI measures, reproduced by three CI runs and the ubuntu container"
   },
   '#/tables/core_item ~ row anchor @ en 375': {
-    pct: 7.92,
-    why: 'the same mechanism, in English - a shorter fold at this width means less of the page is shifted, so a lower percentage'
+    pct: 9.92,
+    why: 'RAISED from 7.92 to what CI measures: the same mechanism, in English, where a shorter fold at this width shifts less of the page. Three CI runs and the container all read 9.92'
   },
 
   '#/tables/voa ~ section anchor @ ru 375': {
-    pct: 10.05,
-    why: 'the same width sweep, on a section deep in Vault of Ages, where the page is twice as tall again by 375 - see the note above VISUAL_DEBT'
+    pct: 11.55,
+    why: 'RAISED from 10.05 to what CI measures: the same width sweep, on a section deep in Vault of Ages, where the page is twice as tall again by 375 - see the note above VISUAL_DEBT'
   },
   '#/tables/voa ~ section anchor @ en 375': {
-    pct: 8.84,
-    why: 'the same cause, in English, where less text wraps differently and the compounded drift is smaller'
+    pct: 10.31,
+    why: 'RAISED from 8.84 to what CI measures: the same cause, in English, where less text wraps differently and the compounded drift is smaller'
   }
 };
 
