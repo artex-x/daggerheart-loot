@@ -66,9 +66,17 @@ For the current batch:
    - `npm run check:built` when screen output / dist assets may change (per CLAUDE.md)
    - data/image/stub/build steps for data batches
 6. Do not commit if required checks fail
-7. Review the final diff for unintended changes
-8. Update `<TASK_DIR>/plan.md`
-9. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)
-10. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - commit the coherent batch, not unrelated foreign changes
+7. Never end a turn with a check still running. Its stdout belongs to a shell
+   that stops with you, so the result is lost even when the process itself
+   keeps going - and from outside, a stopped turn is indistinguishable from a
+   dead agent, which has already cost this repository a duplicate worker. Run
+   long checks in the background with stdout redirected to a file, and stay in
+   the turn until they finish. If you must stop first, say in your final
+   message exactly what is still running, its pid or task id, and where its
+   output is being written
+8. Review the final diff for unintended changes
+9. Update `<TASK_DIR>/plan.md`
+10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)
+11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - commit the coherent batch, not unrelated foreign changes
 
 Finish with a concise summary of the batch, verification, commit, and next batch.

@@ -64,6 +64,32 @@ So, before dispatching:
 - Do not fan out parallel writers against the same working tree
 - Use git worktrees only if the human explicitly sets that up
 
+### A worker that went quiet is not a worker that died
+
+A task notification fires when an agent **ends a turn**, not when it exits. Its
+`completed` status describes that turn. An agent that stopped mid-work is still
+listed, still holds its context, and the human can resume it from their side -
+the orchestrator cannot, because `SendMessage` is not exposed on every host.
+
+Happened once, 2026-09-09, and cost a duplicate agent: a worker ended its turn
+waiting on a parity run, the orchestrator read the notification as termination,
+killed the run's processes, dispatched a cold replacement, and only then found
+both agents `running` against the same tree. Verify, then act:
+
+1. **`ListAgents` before you conclude anything.** It prints `running`, `killed`
+   or `completed` per subagent. Assumption is not a status.
+2. **Never dispatch a replacement for an agent that shows `running`.** That is
+   two writers on one tree, which the rule above forbids.
+3. **If it genuinely has to be replaced: `TaskStop` it first, confirm it shows
+   `killed`, then look at `git status` and `git diff` for a half-applied edit,
+   then dispatch.** Order matters - killing a worker's background run while the
+   worker is still alive makes its next turn reason from a corpse.
+4. **Prefer resuming to replacing.** A live agent holds the context a cold one
+   re-derives at full cost. If only the human can resume it, ask - do not spend
+   a fresh agent to avoid one question.
+5. Say "it stopped" until you have checked. "It died" is a claim about a status
+   you have not read.
+
 ## Model selection (orchestrator only)
 Agents must not choose models.
 Each agent's frontmatter carries its real default, so a dispatch that names no
