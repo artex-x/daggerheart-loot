@@ -18,8 +18,8 @@ export default ts.config(
       'tests/**',
       'tools/**',
       'i/**',
-      /* Agent wiring, not app code: the statusline and usage-guard scripts run
-         under Claude Code rather than under the build, and sit outside every
+      /* Agent wiring, not app code: the .claude/hooks/ scripts run under
+         Claude Code rather than under the build, and sit outside every
          tsconfig, so the type-aware rules have no project to resolve them
          against. Same treatment as tools/. */
       '.claude/**'

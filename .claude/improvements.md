@@ -1,5 +1,12 @@
 # Orchestration improvements
 
+Status, updated 2026-09-09. Finding 1 (long-running checks) shipped in the prompts at
+60172d3 and is now also a hook (issue 65). Finding 2 (model defaults) shipped at
+60172d3. Finding 3 (shared context) shipped in the template at 60172d3. **Finding 4
+(the usage nudge) was built, measured, and withdrawn at 79e26c9: the five-hour window
+is not readable on this host. Do not rebuild it.** Findings 5 and 6 (the parity
+harness, the vitest timeout) belong to issue 47; 5a and 5b shipped at f7308a9.
+
 Findings from the 2026-09-09 session (TASK 47, batches B3.5 and the B3.6
 planning), and an implement-ready plan. Written for whoever picks up the
 orchestration wiring next; unrelated to the migration backlog, which stays in

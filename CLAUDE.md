@@ -110,7 +110,6 @@ Useful focused commands:
 npm run test
 node tests/run-all.js
 node tests/run-all.js eqtest,qa
-node tests/parity.js "<state filter>"
 ```
 
 Definition of done: checks pass, fixed defects and changed behaviour have
@@ -121,6 +120,11 @@ Coverage is enforced per file and directory; a new file must be reached by a
 test but needs no matching test filename. End component tests with
 `expectNoA11yViolations`; cover meaningful pressed/open states with axe. See
 `docs/specs/COVERAGE.md`.
+
+Deterministic guards run as Claude Code hooks (`.claude/hooks/`): dangerous git
+commands, writes to generated files, and a commit gate that wants a passing
+`npm run check` for the current tree. They enforce; this file states intent.
+See `.claude/README.md`.
 
 ## Migration and parity
 

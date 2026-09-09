@@ -1,7 +1,8 @@
 # Plan - TASK 65: Claude Code hooks
 
-Status: **one batch, implement-ready.** No later batches. This plan is the
-specification; `issues/65/handoff.md` is the short entry point that points here.
+Status: **shipped.** B2 implemented this plan in full; see `issues/65/handoff.md`
+for the commit, verification results, and the two measured facts (section 8,
+steps 1 and 9) this plan asked to settle before shipping.
 
 NEEDS_HUMAN_CONFIRMATION: **no**.
 

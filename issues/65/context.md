@@ -120,9 +120,11 @@ This task touches no rendered screen, so only `npm run check` is required.
 
 ## Working tree at task start
 
-`app/src/components/PageHead.svelte` and `app/src/components/TablesPage.svelte`
-are modified and belong to issue 47, not to this task. Preserve them; never
-stage or commit them here.
+Clean, on `main` at `8e7fed1` (2026-09-09, implement session). The issue-47
+edits to `app/src/components/PageHead.svelte`, `app/src/components/TablesPage.svelte`
+and `tests/parity/driver.js` that the plan session saw uncommitted have since
+landed in `38cfbbb` and `8e7fed1`. Nothing unrelated is pending, but still stage
+this task's files by name rather than `git add -A`.
 
 ## Constraints
 

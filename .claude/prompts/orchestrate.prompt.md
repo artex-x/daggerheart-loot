@@ -38,12 +38,10 @@ When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to pl
 
 ## Long-running checks (the most expensive mistake this setup makes)
 
-A worker that ends its turn with a check still running loses it: the shell dies
-with the agent, the result is gone even if the command finished, and the work
-sits uncommitted. Worse, a stopped worker may not be resumable - `SendMessage`
-is not available on every host - so the replacement is a **cold** agent that
-re-reads everything and re-runs the same check. That happened twice in one
-session and cost more than the batch itself.
+A worker that ends its turn with a check still running loses it: the shell dies with the agent
+and the result is gone even though the command finished. The replacement may
+be a cold agent that re-reads everything - that happened twice in one session and cost
+more than the batch itself.
 
 Known costs in this repo:
 

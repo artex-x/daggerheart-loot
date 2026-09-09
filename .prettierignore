@@ -17,6 +17,13 @@ coverage/
 node_modules/
 docs/fixtures/
 
+# Hook runtime state: gitignored (.claude/.gitignore), but Prettier does not
+# read a nested .gitignore, so format:check would otherwise trip on whatever
+# a live hook wrote during the session.
+.claude/.check-cache.json
+.claude/.check-index
+.claude/.hook-state.json
+
 # Markdown is wrapped by hand: in the READMEs and specs a line break carries
 # meaning, and the licence notice has to stay on one line (tests/derived.js pins it).
 *.md

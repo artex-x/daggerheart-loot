@@ -66,14 +66,10 @@ For the current batch:
    - `npm run check:built` when screen output / dist assets may change (per CLAUDE.md)
    - data/image/stub/build steps for data batches
 6. Do not commit if required checks fail
-7. Never end a turn with a check still running. Its stdout belongs to a shell
-   that stops with you, so the result is lost even when the process itself
-   keeps going - and from outside, a stopped turn is indistinguishable from a
-   dead agent, which has already cost this repository a duplicate worker. Run
-   long checks in the background with stdout redirected to a file, and stay in
-   the turn until they finish. If you must stop first, say in your final
-   message exactly what is still running, its pid or task id, and where its
-   output is being written
+7. Never end a turn with a check still running: its output dies with your shell, and
+   from outside a stopped turn is indistinguishable from a dead agent. Redirect long
+   runs to a file and stay in the turn until they finish. If you must stop first, name
+   the command, its task id, and the output path in your final message.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
 10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)
