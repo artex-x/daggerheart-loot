@@ -97,11 +97,18 @@ export default defineConfig({
        anyone looked at the config.
 
        30s is a little over twice the slowest measured test, so a genuinely
-       hung test still fails rather than hanging the run. It does not fix the
-       second half of the problem: a timed-out test leaves `axe.run()` in
-       flight and axe holds a global lock, so one timeout takes the rest of the
-       file with it (`Axe is already running`). That, and whether the larger
-       timeout should be scoped to the a11y specs alone, is issue 47's B3.6. */
+       hung test still fails rather than hanging the run. Scoping it to the
+       a11y specs alone was considered and dropped: vitest has no per-file
+       timeout without splitting into projects, and 30s is a bounded cost for
+       a non-a11y test to hang before failing, not an unbounded one.
+
+       The second half of the problem - a timed-out test leaves `axe.run()`
+       in flight and axe holds a global lock, so one timeout takes the rest of
+       the file with it (`Axe is already running`) - was not a timeout value
+       and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
+       clears axe's `_running` flag before every run, so an abandoned run from
+       a timed-out neighbour can no longer block the next one. See
+       app/src/test/a11y.test.ts for the regression test (issue 47, B3.6). */
     testTimeout: 30_000,
     include: ['src/**/*.test.ts'],
     setupFiles: ['./vitest-setup.ts'],

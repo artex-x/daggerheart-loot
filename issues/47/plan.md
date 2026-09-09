@@ -1732,6 +1732,94 @@ their own reasons, and because it still answers "how many pixels" where the
 report's stated job is to name a value to go and change. Worth revisiting only
 if the probe approach turns out to need more than a handful of selectors.
 
+### B3.6 built, part 0: make the harness quick enough to use
+
+Built across three agents, two of which ended a turn with a check still running
+and lost it; the orchestrator ran the final verification itself. What shipped:
+
+- `tests/parity.js`: a content-addressed cache for the **legacy** screenshots,
+  `--no-cache`, and `--shard=N/M`. The key hashes `index.html`, `app.js`,
+  `style.css`, `data.js`, `img/`, `og/`, `card/`, `tests/parity/driver.js` and
+  `tests/parity.js` itself, plus the state's `id`/`route`/`enter` source, the
+  `whole` flag, the language and the viewport list.
+- `tests/run-all.js`: `--exclude=parity`.
+- `.github/workflows/ci.yml`: parity leaves the pooled run and becomes its own
+  4-way sharded job; `deploy` now needs it.
+- `app/src/test/a11y.ts` + `a11y.test.ts`: `expectNoA11yViolations` clears
+  axe's `_running` flag, so a test that times out no longer takes the rest of
+  its file down with `Axe is already running`. `testTimeout: 30_000` already
+  existed; only its comment changed.
+
+#### Two defects found in review, before the evidence was taken
+
+1. **`arrive()` was not in the cache key.** It lives in `tests/parity.js` and
+   decides what the legacy page shows - `d.open(route)`, `enter(d)`, the
+   language click - while only `driver.js` was hashed. Editing it (the
+   frozen-scrollY anchor fix is a known future one) would have served stale
+   PNGs forever, breaking the cache's own guarantee that a hit cannot mask a
+   difference. `parity.js` is now hashed in; any edit to it invalidates the
+   cache, which is the correct trade.
+2. **Cache writes were not atomic.** `fs.writeFileSync` straight onto the final
+   path leaves a truncated PNG if a run is killed mid-write - and one was
+   killed, minutes earlier. Now a temp name plus `fs.renameSync`.
+
+#### The speed claim did not survive measurement
+
+This section planned "close to half the wall clock". Measured, on the `tables`
+filter: uncached 12m39s, warm 11m22s - about 10%, and the uncached run was
+contended, so the true figure is smaller still.
+
+The estimate assumed the legacy *page work* was cacheable. It is not: the
+legacy page is still opened and `arrive()`d for every state, because the
+`looks` specs and `controls` read it. Only the per-width viewport switch,
+`settle()` and screenshot are skipped - roughly 44 state-language pairs x 3
+widths x ~1s, i.e. 1-2 minutes of a 12-minute run.
+
+So **the 4-way shard, not the cache, is what makes CI affordable**, and the
+cache buys a person re-running one filter far less than this plan promised.
+Whether it earns its complexity - a correctness-critical component for ~10% -
+is a fair question for whoever reviews B3.6; it is recorded here rather than
+quietly left as an unexamined win. Part 1's item 5 is settled either way: the
+unfiltered suite stays a blocking gate, sharded.
+
+#### Evidence
+
+Four runs, `tables` filter, logs kept outside the repository:
+
+| Run | Cache | Wall clock | Verdict |
+|---|---|---|---|
+| A `--no-cache` | none | 12m39s | 1 расхождений |
+| B | inherited 28, ended 44 | 12m22s | 1 расхождений |
+| C warm | 44 hits | 11m22s | 1 расхождений |
+
+`diff A B` and `diff B C` are both **byte-identical**, which is the acceptance
+criterion: a cached run and an uncached one produce the same verdicts and the
+same percentages. Invalidation: changing `style.css`'s *content* (not `touch` -
+the key hashes bytes) added four new keys, 44 -> 48, and the file was restored
+byte-identical. `--no-cache` was separately proved inert on a clear machine:
+48 keys before, 48 after.
+
+`npm run check` exits 0 (96.43% statements, 90.02% branches, 95.92% functions,
+96.65% lines). `npm run check:built` was not run: part 0 changes no file a
+screen draws - only the harness, the CI workflow, a test helper and a config
+comment.
+
+#### Two things the evidence exposed, neither part 0's to fix
+
+- **`#/tables/core_item ~ row anchor @ en 375` measures 8.47% against its
+  recorded 7.92%**, in every run here and in an independent run earlier the
+  same day. B3.5's remediation lowered that entry to 7.92 on its own repeated
+  measurement; both numbers are real, which is what a race looks like. The
+  `fonts.ready`-deferred `scrollIntoView` that pass root-caused is the
+  mechanism. **Part 1 owns it, and should not re-baseline it to either value
+  without fixing or characterising the race first.**
+- **A stopped agent's background run can still be running.** One overlapped
+  run A for twelve minutes, writing cache entries and sharing
+  `test-output/parity/`, which is why A's own "expect 0 keys" counter read 28.
+  The verdicts were unaffected - A matched an independent run exactly - but
+  two parity runs sharing one output directory is a real hazard for anyone
+  reading numbers.
+
 ### What lands in the specs and in CLAUDE.md
 
 Three questions, three different answers.

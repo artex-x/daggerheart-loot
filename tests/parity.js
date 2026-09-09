@@ -22,6 +22,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./parity/driver.js');
 const {
@@ -41,14 +42,152 @@ const { PNG } = require('pngjs');
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist', 'index.html');
 const SHOTS = path.join(ROOT, 'test-output', 'parity');
+const CACHE_DIR = path.join(ROOT, 'test-output', '.parity-cache');
 
 let fail = 0;
 const outstanding = [];
 const stale = [];
 
+/* `--no-cache` turns the legacy screenshot cache off for this run - both
+   reading and writing - so it reproduces a cold run exactly rather than
+   quietly warming the cache while pretending not to use it. Everything else
+   in argv is a state-name filter, same as before. */
+const NO_CACHE = process.argv.includes('--no-cache');
+
+/* `--shard=2/4` runs every fourth state starting at the second, so CI can
+   split one 867s run across a job matrix instead of gating every push on it
+   whole. Shards partition by index, not by cost, so they are uneven by a
+   state or two rather than by wall clock - close enough at four shards, and
+   simpler than carrying a weight per state. */
+const shardArg = process.argv.find((a) => a.startsWith('--shard='));
+const SHARD = shardArg
+  ? (() => {
+      const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
+      const n = m && Number(m[1]);
+      const of = m && Number(m[2]);
+      if (!n || !of || n < 1 || n > of) {
+        throw new Error(`--shard must look like --shard=1/4 (got "${shardArg}")`);
+      }
+      return { n: n - 1, of };
+    })()
+  : null;
+
 /* Substrings of the states to run, for paying one debt at a time:
    `node tests/parity.js modal 375`. Empty means all of them. */
-const WANTED = process.argv.slice(2);
+const WANTED = process.argv
+  .slice(2)
+  .filter((a) => a !== '--no-cache' && !a.startsWith('--shard='));
+
+/**
+ * Content-addressed cache for the legacy side's screenshots.
+ *
+ * The static root is frozen by policy (CLAUDE.md forbids touching index.html,
+ * app.js and style.css because they are the expectation), so a screenshot of
+ * it taken for a given route/enter/viewport is the same PNG every time until
+ * one of those inputs changes. Re-shooting it on every run is pure waste - it
+ * is one of two page opens per state per language - so it is cached, keyed on
+ * a hash of everything that can change the resulting pixels.
+ *
+ * Only screenshots are cached, not the "look"/"press" spec JSON: those are
+ * governed by tests/parity/specs.js, which changes far more often than the
+ * frozen app does (part 1 of this batch is about to edit it), and a cache
+ * keyed only on the app's own files would silently serve stale JSON across
+ * such an edit. Screenshots have no such dependency - what a spec's `run`
+ * does with a page afterwards cannot change what the page looked like - so
+ * caching only them keeps the guarantee the design asks for: a hit is
+ * byte-identical to what an uncached run would have written, so it cannot
+ * mask a difference.
+ *
+ * driver.js *is* hashed in, alongside the app's own files: `ready()`'s wait
+ * heuristics, `settle()`'s animation wait and `shot()`'s screenshot options
+ * all affect the bytes of the PNG a run produces, unlike specs.js.
+ *
+ * This file is hashed in too. `arrive()` below - open, enter, language click -
+ * decides what actually ends up on the legacy page before it is shot, so an
+ * edit to it (the frozen-scrollY anchor fix left for later, for instance)
+ * changes the bytes a cached entry stands for exactly as much as an edit to
+ * driver.js does. Leaving parity.js out of the key would mean a hit could
+ * mask exactly the kind of difference the cache promises never to mask. The
+ * cost is that any edit to this file invalidates the whole cache - correct,
+ * and cheap next to silently serving stale legacy PNGs.
+ */
+const CACHE = (() => {
+  const hashFile = (h, at) => {
+    h.update(path.relative(ROOT, at));
+    h.update(fs.readFileSync(at));
+  };
+  const hashDir = (h, dir) => {
+    if (!fs.existsSync(dir)) return;
+    for (const name of fs.readdirSync(dir).sort()) {
+      const at = path.join(dir, name);
+      if (fs.statSync(at).isDirectory()) hashDir(h, at);
+      else hashFile(h, at);
+    }
+  };
+
+  /* Everything that can change what a legacy screenshot looks like: the
+     frozen root files, the assets they load, and the harness code that
+     decides when a page has settled and how it is shot. */
+  const rootHash = () => {
+    const h = crypto.createHash('sha256');
+    for (const f of ['index.html', 'app.js', 'style.css', 'data.js']) {
+      hashFile(h, path.join(ROOT, f));
+    }
+    for (const dir of ['img', 'og', 'card']) hashDir(h, path.join(ROOT, dir));
+    hashFile(h, path.join(__dirname, 'parity', 'driver.js'));
+    hashFile(h, path.join(__dirname, 'parity.js'));
+    return h.digest('hex');
+  };
+
+  const ROOT_HASH = NO_CACHE ? null : rootHash();
+
+  /* One key per state x language: everything about *what* was shot, on top of
+     the root hash's *what it would look like*. `enter`'s source text stands
+     in for "what was pressed to get there" - two states with the same id
+     never differ, but the function is defined inline in specs.js and has no
+     other identity to hash. */
+  const keyFor = (state, lang) =>
+    crypto
+      .createHash('sha256')
+      .update(
+        JSON.stringify({
+          root: ROOT_HASH,
+          id: state.id,
+          route: state.route,
+          enter: state.enter ? state.enter.toString() : null,
+          whole: !!state.whole,
+          lang,
+          widths: WIDTHS
+        })
+      )
+      .digest('hex');
+
+  const dirFor = (key) => path.join(CACHE_DIR, key);
+
+  return {
+    enabled: !NO_CACHE,
+    keyFor,
+    read(key, width) {
+      if (NO_CACHE) return null;
+      const at = path.join(dirFor(key), `${String(width)}.png`);
+      return fs.existsSync(at) ? fs.readFileSync(at) : null;
+    },
+    write(key, width, buf) {
+      if (NO_CACHE) return;
+      const dir = dirFor(key);
+      fs.mkdirSync(dir, { recursive: true });
+      const at = path.join(dir, `${String(width)}.png`);
+      /* Write to a temp name in the same directory, then rename onto the
+         final path. A run killed mid-write (the failure mode that orphaned
+         this batch's predecessor) must never leave a truncated PNG that a
+         content-addressed cache would then trust forever - rename is atomic,
+         a direct write is not. */
+      const tmp = path.join(dir, `.${String(width)}.${String(process.pid)}.tmp`);
+      fs.writeFileSync(tmp, buf);
+      fs.renameSync(tmp, at);
+    }
+  };
+})();
 
 /** The file name a state's screenshots and diff are written under. */
 const slugOf = (id, lang, width) => `${id} @ ${lang} ${String(width)}`.replace(/\W+/g, '_');
@@ -180,7 +319,8 @@ function pixelDiff(aBuf, bBuf, outPath) {
     }
   };
 
-  for (const state of STATES) {
+  for (const [stateIdx, state] of STATES.entries()) {
+    if (SHARD && stateIdx % SHARD.of !== SHARD.n) continue;
     const { id, route, why, pending, enter, whole } = state;
     if (pending) {
       if (!WANTED.length || WANTED.some((w) => id.includes(w))) {
@@ -218,6 +358,8 @@ function pixelDiff(aBuf, bBuf, outPath) {
       const seenLooks = { legacy: {}, next: {} };
       let broke = null;
 
+      const cacheKey = CACHE.keyFor(state, lang);
+
       for (const target of ['legacy', 'next']) {
         shots[target] = {};
         // eslint-disable-next-line no-await-in-loop
@@ -245,12 +387,23 @@ function pixelDiff(aBuf, bBuf, outPath) {
           if (target === 'legacy') d.note(route, await d.controls());
 
           /* Written as they are taken rather than collected: the diff reads
-             them off disk anyway, and nothing is held while the next is made. */
+             them off disk anyway, and nothing is held while the next is made.
+             The legacy side checks the cache first - a hit is the exact bytes
+             an uncached shot would have produced, so skipping the viewport
+             switch, the settle wait and the screenshot itself cannot change
+             the verdict, only how long it takes to reach it. */
           for (const size of WIDTHS) {
-            await d.viewport(size.w, size.h);
-            await d.settle();
             const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
-            fs.writeFileSync(at, await d.shot(whole));
+            const cached = target === 'legacy' ? CACHE.read(cacheKey, size.w) : null;
+            if (cached) {
+              fs.writeFileSync(at, cached);
+            } else {
+              await d.viewport(size.w, size.h);
+              await d.settle();
+              const buf = await d.shot(whole);
+              fs.writeFileSync(at, buf);
+              if (target === 'legacy') CACHE.write(cacheKey, size.w, buf);
+            }
             shots[target][size.w] = at;
           }
         });
@@ -388,6 +541,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
   }
 
   if (WANTED.length) console.log(`\nтолько состояния: ${WANTED.join(', ')} - это не полный прогон`);
+  if (SHARD) console.log(`шард ${String(SHARD.n + 1)}/${String(SHARD.of)} - это не полный прогон`);
   console.log(fail ? `\n${fail} расхождений` : '\nрасхождений нет');
   process.exit(fail ? 1 : 0);
 })();

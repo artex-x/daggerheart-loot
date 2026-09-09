@@ -3,6 +3,7 @@
      node tests/run-all.js                 all suites, in parallel
      node tests/run-all.js eqtest,behave   just those two
      node tests/run-all.js --jobs 1        one at a time, for debugging
+     node tests/run-all.js --exclude=parity   everything but that one suite
 
    Needs NODE_PATH and LD_LIBRARY_PATH for puppeteer.
 
@@ -59,9 +60,15 @@ const args = process.argv.slice(2);
 const jobsArg = args.indexOf('--jobs');
 const JOBS = jobsArg >= 0 ? Math.max(1, +args[jobsArg + 1] || 1)
                           : Math.max(1, Math.min(os.cpus().length, 8));
+/* `--exclude=parity` pulls a suite out of this run without touching the
+   include list - CI runs it as its own sharded job matrix instead (parity.js
+   `--shard`), so the pooled run here would otherwise gate every push on the
+   same 867s a second time, serialised behind everything else in the pool. */
+const excludeArg = args.find(a => a.startsWith('--exclude='));
+const exclude = excludeArg ? excludeArg.slice('--exclude='.length).split(',').filter(Boolean) : [];
 const only = args.filter((a, i) => a[0] !== '-' && !(jobsArg >= 0 && i === jobsArg + 1))
                  .join(',').split(',').filter(Boolean);
-const queue = SUITES.filter(s => !only.length || only.indexOf(s[0]) >= 0);
+const queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && exclude.indexOf(s[0]) < 0);
 /* Ключ для отчёта: у обхода страниц наборов четыре под одним именем */
 const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
 /* The key tells two runs of one suite apart with a colon, which is fine on

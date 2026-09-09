@@ -25,6 +25,18 @@ const OFF = {
  * violation id on its own sends the reader to a search engine.
  */
 export async function expectNoA11yViolations(container: Element): Promise<void> {
+  /* axe.run() sets a global `_running` flag when it starts and clears it only
+   * when it finishes. A vitest timeout does not cancel that call - it just
+   * stops waiting on it - so a test that times out can leave the flag set,
+   * and the very next axe.run() in the same file throws "Axe is already
+   * running" before it looks at anything. Without this, one slow test takes
+   * every a11y assertion after it down with it, which is why the failure
+   * count swung with machine load instead of staying put (issue 47, B3.6).
+   *
+   * Clearing it here is safe either way: on the common path the previous run
+   * already cleared it and this is a no-op; on the timeout path, the run it
+   * belonged to already failed its own test and nothing reads its result. */
+  (axe as unknown as { _running: boolean })._running = false;
   const result = await axe.run(container, { rules: OFF });
   if (result.violations.length === 0) return;
 

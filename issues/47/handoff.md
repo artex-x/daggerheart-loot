@@ -7,12 +7,14 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress
-- Last agent: implementer
+- Last agent: orchestrator (finished part 0's verification after two
+  implementers lost theirs)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `4976cb4` (planning session). B3.5's own commit is
-  `a58dd97`; this session's remediation commit is on top of it - see `git log`
-  for its hash.
+  `a58dd97`; its remediation commit is `fb8cb0d`. **B3.6 part 0 is built and
+  committed** - see `git log` for its hash, on top of the agent-tooling
+  commits `001aa43`, `46b0585`, `000c147` and `79e26c9`.
 
 Phase 4 is in progress. B1, B2, B3 and now **B3.5 are built**. The batch order
 ahead is **B3.6 -> B4**; B4 (the three equipment tables) is unchanged and still
@@ -22,6 +24,9 @@ follows, with both of its early checks intact - see "Deferred".
 standing "prefer larger coherent batches" policy: **part 0** makes the parity
 suite quick enough to run repeatedly, **part 1** greens the red CI run, and
 **part 2** builds the instrument that would have caught B3.5's defects.
+**Part 0 is built and committed; part 1 is next.** Part 0's own speed claim
+failed measurement - the cache buys ~10%, not half, and the 4-way shard is
+what actually makes CI affordable. See `plan.md`, "B3.6 built, part 0".
 Both are about whether the harness's verdict can be believed and both edit
 `tests/parity/*`. Part 1 first - part 2's acceptance criterion is that its new
 spec fails on the fixes part 1 and B3.5 made, which needs those fixes to exist.
@@ -191,7 +196,59 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   session's own repeated, stable measurement is what got recorded, per
   `docs/parity.md`'s own rule to measure rather than copy a prior number.
 
+- Batch name/id: **B3.6 part 0 - make the harness quick enough to use** (this
+  session)
+- What shipped: a content-addressed cache for the legacy screenshots in
+  `tests/parity.js` with `--no-cache` and `--shard=N/M`; `--exclude=parity` in
+  `tests/run-all.js`; parity moved out of CI's pooled run into its own 4-way
+  sharded job with `deploy` gated on it; and the axe global-lock fix in
+  `app/src/test/a11y.ts` (`expectNoA11yViolations` clears axe's `_running`
+  flag) with `a11y.test.ts` as its regression test. `testTimeout: 30_000`
+  already existed - only its comment changed. Full accounting, including the
+  two review defects fixed before evidence was taken and the failed speed
+  claim, is in `plan.md`, "B3.6 built, part 0".
+- Files changed: `tests/parity.js`, `tests/run-all.js`,
+  `.github/workflows/ci.yml`, `vite.config.mts`, `app/src/test/a11y.ts`, new
+  `app/src/test/a11y.test.ts`, `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's part 0 commit.
+- Deviations and rationale: **the objective was met, the justification was
+  not.** `plan.md` predicted "close to half the wall clock"; measurement gives
+  ~10%, because only the per-width screenshot is cacheable - the legacy page is
+  still opened and `arrive()`d for every state, since `looks` and `controls`
+  read it. The cache is correct (three runs byte-identical) but small; the
+  shard is what makes CI affordable. Recorded rather than presented as a win.
+  Whether the cache earns its complexity is a fair question for review.
+- Process note, worth more than the batch: **three agents were spent on this
+  one part.** Two ended a turn with a check still running and lost its output;
+  the orchestrator then misread a stop notification as a death, killed the
+  run, and dispatched a duplicate against the same tree. Both failure modes are
+  now rules in `.claude/prompts/` (`001aa43`), and the usage guard that was
+  supposed to catch the third was removed as unworkable (`79e26c9`) - the
+  five-hour window is not machine-readable outside a terminal session, so the
+  human calls time.
+
 ## Verification
+
+- Commands run (exact), this session (B3.6 part 0), all by the orchestrator
+  after the workers lost theirs:
+  - `node tests/parity.js tables --no-cache` (empty cache) - 12m39s, exit 1 on
+    the one pre-existing failure below.
+  - `node tests/parity.js tables` - 12m22s, exit 1, same.
+  - `node tests/parity.js tables` again (warm, 44 cache keys) - 11m22s, exit 1,
+    same. **`diff` of all three logs is byte-identical**, which is part 0's
+    acceptance criterion.
+  - Invalidation: appended a comment to `style.css`, ran `node tests/parity.js
+    dread`, watched the key count go 44 -> 48, restored the file from a byte
+    copy - `git diff` clean afterwards.
+  - `node tests/parity.js dread --no-cache` on a clear machine - 48 keys
+    before, 48 after, proving the flag writes nothing.
+  - `npm run check` - **exit 0**; 96.43% statements, 90.02% branches, 95.92%
+    functions, 96.65% lines.
+  - `npm run check:built` - **not run, deliberately**: part 0 changes nothing a
+    screen draws (harness, CI workflow, a test helper, a config comment).
+- The one failure, in every run: `#/tables/core_item ~ row anchor @ en 375`
+  at **8.47% against its recorded 7.92%**. Pre-existing, not part 0's, and
+  see "Blockers" - it is a race, not a drift.
 
 - Commands run (exact), previous session:
   - `npm run check` - passes: format, lint, typecheck (0 errors), data build,
@@ -238,8 +295,14 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 ## Next batch (implement-ready)
 
 - **Name:** B3.6 - a parity harness you can trust. Three parts, one batch.
+  **Part 0 is built and committed. The next batch is part 1.**
 
-### Part 0 - make the harness quick enough to use
+### Part 0 - BUILT. Kept for its reasoning, not as work to do
+
+Built and committed this session; see "Completed" and `plan.md`, "B3.6 built,
+part 0". Read it only for what it intended - and note that its central estimate
+was wrong: the cache buys ~10% of the wall clock, not half, because only the
+per-width screenshot is cacheable. The original text follows unedited.
 
 - **Objective:** cut the parity suite's wall clock before part 1 runs it a
   dozen times. It is 867s on CI and ~9 min for the `tables` filter alone, and
@@ -423,6 +486,18 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   needs more than a handful of selectors.
 
 ## Blockers
+
+- **`#/tables/core_item ~ row anchor @ en 375` is a race, and both of its
+  numbers are real (found this session, part 1 owns it).** B3.5's remediation
+  pass measured 7.92% four times and lowered the entry to it. Part 0's three
+  runs, plus an independent run earlier the same day, all measure **8.47%** -
+  and the brief that pass worked from had also cited 8.47 from a third
+  session. That is not drift between machines: it is one machine giving two
+  stable answers, which is what the `fonts.ready`-deferred `scrollIntoView`
+  racing the harness's resize sweep would produce. **Do not re-baseline this
+  entry to either value.** Characterise the race or fix it - the effect should
+  not let a viewport resize outrace its own deferred scroll - and only then
+  record a number. It is currently the sole failure of the `tables` filter.
 
 - **New: `node tests/run-all.js parity` (the unfiltered suite) fails on four
   states, discovered while running B3.5's own gate. Confirmed pre-existing,
@@ -623,6 +698,31 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 - **Session gotchas.** New this session (B3.5's own, appended at the end),
   then B3's, then carried further back:
 
+  - **A stopped agent is not a dead agent, and its background run is not
+    stopped either.** A task notification fires when an agent ends a *turn*.
+    `ListAgents` gives the real status (`running` / `killed` / `completed`).
+    This session read a notification as a death, killed the run the agent was
+    waiting on, dispatched a replacement, and had two writers on one tree
+    before noticing. Later, a *stopped* agent's own background parity run was
+    still going twelve minutes into an unrelated run, sharing
+    `test-output/parity/` and writing cache keys. Check `ListAgents` and
+    `tasklist` for `node tests/parity.js` before trusting any measurement.
+    Now a rule in `.claude/prompts/orchestrate.prompt.md`.
+  - **Two parity runs share one output directory.** `test-output/parity/` is
+    wiped and rewritten per run, so overlapping runs clobber each other's
+    screenshots and each other's cache-key counts. Verdicts survived it once
+    here, but do not assume that twice.
+  - **`npm run check` starts with `prettier --check .`, which covers
+    markdown.** Editing `plan.md` or `handoff.md` while a check runs risks a
+    torn read and a format failure blamed on the wrong change. Write the docs
+    first, or after, never during.
+  - **The five-hour usage window is not machine-readable outside a terminal
+    session.** It reaches only the `statusLine` command, which the desktop app
+    never invokes - measured: a probe recorded zero invocations while hooks
+    fired nine times. It is in no transcript, nowhere under `~/.claude`, and
+    in no CLI. The guard built for it was removed (`79e26c9`). Do not infer
+    budget, and do not read silence as permission to continue.
+
   - **A literal leading space at the start of a Svelte `{#if}` or `{#each}`
     block is dropped by the compiler.** Ported markup of the shape `' <tag>'`
     inside a block has this bug; emit the space as `{' '}`, which is a text
@@ -728,8 +828,30 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   and is committed at its final, correct state (all three fixes present, none
   reverted).
 
-- Session end partial progress: none - B3.5 is complete and committed. B3.6 is
-  fully designed and implement-ready in two parts; see "Next batch". The
-  full-suite/CI blocker under "Blockers" is unresolved by design: it is B3.6
-  part 1's scope, and the owner asked for it to be executed in a separate
-  session.
+- Session end partial progress: none - B3.5 is complete and committed, and
+  **B3.6 part 0 is complete and committed**. Part 1 is next and is
+  implement-ready below. The full-suite/CI blocker under "Blockers" is
+  unresolved by design: it is part 1's scope.
+
+- **Deferred, decided by the owner this session:**
+  - **B3.7, shipping self-hosted fonts, was considered and dropped.** The app
+    declares `"Inter", -apple-system, "Segoe UI", Roboto, ... sans-serif` with
+    no `@font-face` and no font files, so glyphs depend on the machine. The
+    weights in use (`650`, `680`, `620`, `560`, `540`) only render as authored
+    with a variable font, and `style.css:1394` needs a real italic for the
+    print card. It would remove cross-platform variance at the root, but it
+    edits the frozen static root, invalidates every recorded `VISUAL_DEBT`
+    number at once, and risks the browser-measured print fitting. Owner's
+    call: not now, and not worth the attention it was taking.
+  - **A `ubuntu:24.04` container for authoritative parity numbers** was
+    prepared and not built: Docker is available (Rancher), and the image
+    definition (node 24 per `.nvmrc`, linux `node_modules` baked in, fonts
+    installed, repo mounted read-only) is in the session scratchpad, not the
+    repository. The idea is to calibrate it against the twelve known ubuntu
+    numbers from run `34019148841` and, if they reproduce, use it to verify
+    part 1 locally instead of push-and-wait. Rebuild the definition from
+    scratch if it is wanted; it is small.
+  - **Making the usage guard autonomous** (summing `message.usage` from the
+    session transcript, which exists in every surface). Rejected for now
+    because it measures this session's spend rather than the account's window,
+    so its thresholds would have to be re-derived rather than carried over.
