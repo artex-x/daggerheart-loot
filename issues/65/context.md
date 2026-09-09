@@ -108,6 +108,30 @@ messages are evidence and carry three facts that shape this task:
 
 This task touches no rendered screen, so only `npm run check` is required.
 
+## Verifying the hooks on Linux without pushing
+
+The selftest is inside `npm run check`, so a Windows-only assumption in it turns
+CI red for everyone. It can be checked locally in seconds - Docker is available
+on this box and both images are already built:
+
+```sh
+git archive HEAD .claude package.json | tar -x -C <scratch>/hookonly
+docker run --rm -v "<scratch>/hookonly:/src:ro" node:22 bash -c   'cp -r /src /app && cd /app && git init -q . && git config user.email t@t.local    && git config user.name t && git add -A && git commit -qm init    && node .claude/hooks/selftest.mjs'
+```
+
+Measured 2026-09-09: reproduced CI's `#36`/`#42` failures on `773a2e6`
+(192 passed, 2 FAILED) and confirmed `ed4f693` green (198 passed, 0 failed).
+
+Two things that will bite:
+
+- **Do not bind-mount the repository and run git inside it.** `git add -A` over
+  a Windows bind mount of ~1000 files hangs for minutes. Copy into the container
+  first - which is also why `tools/parity-ubuntu/` mounts `:ro` and copies to
+  `/app`.
+- Only `.claude/` and `package.json` are needed for the selftest, so archive
+  those two paths rather than the whole tree. A full `npm run check` on Linux
+  needs `node_modules`, which the `dh-parity:ubuntu24` image already has baked.
+
 ## Which machine is authoritative
 
 - This Windows box, for anything about hook behaviour. The hook payload shape

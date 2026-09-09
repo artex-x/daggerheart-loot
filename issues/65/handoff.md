@@ -511,6 +511,27 @@ CI run specifically for `.claude/hooks/selftest.mjs` under the `check` job
 and confirm both `#36` and `#42` pass there, since that is the one thing this
 session's local verification could not prove.
 
+## Linux verification (orchestrator, post-R2)
+
+R2 could not execute the POSIX branches on this Windows host. The orchestrator
+closed that gap with a container, using the recipe now in `context.md`:
+
+- `773a2e6` (pre-fix) on `node:22`, platform `linux`:
+  `.claude/hooks/selftest.mjs: 192 passed, 2 FAILED` - `#36 Windows-normalised
+  path: denies` and `#42 contract reminder`, exactly the two cases CI reported.
+- `ed4f693` + `7e1def5` (post-fix) on the same image:
+  `.claude/hooks/selftest.mjs: 198 passed, 0 failed`, exit 0.
+
+So the R2 fix is proven on the platform CI runs, before any push.
+
+**CI state at handoff.** `origin/main` is `773a2e6`; run `34402007348` is red
+there for two independent reasons. `check` fails on the selftest - fixed by
+`ed4f693`, which is committed locally and **not pushed**. `parity (3)` and
+`parity (4)` also fail, and they predate this task entirely: the same two shards
+were already red on `8e7fed1` (run `34383263349`), before any hook existed. They
+belong to issue 47, not here. Pushing `ed4f693` should green `check` and will
+not touch the parity shards.
+
 ## Blockers
 
 None from this session's own work. The unpushed CI-red state on
