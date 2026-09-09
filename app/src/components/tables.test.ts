@@ -329,6 +329,14 @@ describe('the filter', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('renders the field label with a real space before "any", lost once picked', async () => {
+    const { container } = render(App, { env: wond() });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(container.querySelector('.field .lbl')?.textContent).toBe('Тип любое');
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    expect(container.querySelector('.field .lbl')?.textContent).toBe('Тип');
+  });
+
   it('narrows the table on a chip, names the pick and the shown/of count', async () => {
     render(App, { env: wond() });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));

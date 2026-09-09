@@ -14,6 +14,13 @@ migration debt and ordering live only in `issues/47/plan.md` and
 - Expect zero pixel difference. `VISUAL_DEBT` is explicit debt, not tolerance;
   ratchet it down and delete it when paid.
 - Record deliberate accessibility improvements in `ACCEPTED` with a reason.
+- A whole-page percentage cannot see a control-sized defect. A wrong font size
+  on one line of a 1100x900 screen scores about 0.09% - under `JITTER`, so the
+  state reports as matching. Before writing "antialiasing", "rasterisation" or
+  "line-wrap" as a reason, measure the thing itself: the computed type, the
+  text content, and the advance of the run, in both apps. A reason that names
+  rendering noise is only allowed once a measurement at that level has been
+  taken and recorded.
 
 ## Before a run
 

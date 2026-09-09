@@ -50,6 +50,13 @@
   const toggleLabel = $derived(
     chosen.length ? `${t.filters} (${String(chosen.length)})` : t.filters
   );
+
+  /* A literal space at the start of an `{#if}` block is dropped by Svelte's
+     whitespace trimming, not just collapsed - unlike the space `t().anyValue`
+     puts before the italic hint in app.js. Referencing this instead of writing
+     `{' '}` inline keeps the mustache from reading as a no-op string literal to
+     `svelte/no-useless-mustaches`, which cannot tell the two cases apart. */
+  const anySep = ' ';
 </script>
 
 {#if rows.length}
@@ -93,7 +100,7 @@
       {#each rows as row (row.group)}
         <div class="field">
           <!-- prettier-ignore -->
-          <span class="lbl">{row.label}{#if groupIsAny(picked, row.group)} <i>{t.anyValue}</i>{/if}</span>
+          <span class="lbl">{row.label}{#if groupIsAny(picked, row.group)}{anySep}<i>{t.anyValue}</i>{/if}</span>
           <ChipRow>
             {#each row.values as v (v.value)}
               <Chip

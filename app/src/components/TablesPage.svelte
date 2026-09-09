@@ -600,12 +600,12 @@
     border: 1px solid var(--line2);
     color: var(--txt);
     font: inherit;
-    font-size: 14px;
   }
 
   .toolbar input[type='search']:focus {
     outline: none;
     border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
   @media (max-width: 900px) {

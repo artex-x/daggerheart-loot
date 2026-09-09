@@ -1,0 +1,154 @@
+# Shared task context - TASK 47
+
+Orchestrator maintains this file so later steps do not re-fetch the same sources.
+Read this before `plan.md` and `handoff.md`.
+
+## Goal
+
+Finish the next Phase 4 batch, plus a human-raised audit: the parity harness has
+been passing states that a person can see are wrong. Two were reported from a
+manual review of `#/tables/community` at full width, and a third was found while
+confirming them.
+
+## GitHub issue (if any)
+
+- URL: https://github.com/artex-x/daggerheart-loot/issues/47
+- Captured or last verified: already summarized in `plan.md`; not re-fetched this
+  session and not needed for this batch.
+- Decisions already settled: see `plan.md`. Phase 4 batches B1-B3 are built; B4
+  (the three equipment tables) was the next batch before this audit.
+
+## Human report (2026-09-09, two screenshots of `#/tables/community` at ~1100px)
+
+1. The search box "is using a different font" in the rewrite.
+2. The `любое` hint next to a filter row's label "is too close to the main text".
+
+Both are real. Both were being absorbed by `VISUAL_DEBT` entries whose stated
+reason is antialiasing. Measured, not guessed - see below.
+
+## Measured findings (orchestrator, this session)
+
+Method: Puppeteer, `args: ['--no-sandbox', '--disable-dev-shm-usage',
+'--disable-gpu']` (the harness's own args), both `index.html` and
+`dist/index.html` at the same route, reading computed styles and
+`getBoundingClientRect()` via `page.evaluate`. `dist/` was the build at
+`4976cb4`, working tree clean.
+
+### Defect 1 - the toolbar search box is 14px, not 15.5px
+
+- Live: `input[type=search]` inherits the body font. Computed `font-size:
+  15.5px`, `line-height: 24.8px`. Placeholder measures **259.59px** wide.
+- Rewrite: `app/src/components/TablesPage.svelte` `.toolbar input[type='search']`
+  writes `font: inherit` and then `font-size: 14px`. Computed `14px / 22.4px`.
+  Same placeholder measures **234.47px**.
+- `style.css:254` has no font-size at all - only `font:inherit`. The 14px is
+  invented, and it is the whole of the "search-box placeholder antialiasing"
+  debt. The debt's reason claims the placeholder "measured pixel-identical";
+  it is 25px narrower.
+- Fix: delete the `font-size: 14px` line.
+
+### Defect 2 - Svelte trimmed the space before the `любое` hint
+
+- Live (`app.js:2692`): `Сообщество <i>любое</i>` - `textContent` is
+  `"Сообщество любое"`.
+- Rewrite (`app/src/components/FilterBar.svelte:96`): the space sits at the
+  start of the `{#if}` block, so Svelte's whitespace normalisation drops it.
+  Rendered HTML is `Сообщество<i>любое</i>`, `textContent`
+  `"Сообществолюбое"`. The `<i>` starts 4.3px to the left.
+- Fix: emit the space as an expression - `{' '}` - so it is a text node the
+  compiler cannot trim. Do not put the space inside the `<i>`: an italic space
+  is not the same glyph advance.
+- Standing rule worth carrying: **a literal leading space at the start of a
+  Svelte block is not preserved.** Any ported markup with `' <tag>'` inside an
+  `{#if}`/`{#each}` has the same bug.
+
+### Defect 3 - `.selbox` is missing its mobile width override
+
+- `style.css:820`, inside `@media (max-width:600px)`: `.selbox{width:38px}`.
+  `TableRows.svelte` ported the base `width: 42px` (line ~220) but not the
+  override, so at 375px every row's checkbox column is 4px too wide.
+- Consequence: `.row-main` starts at x=59 instead of 55 and is 284px instead of
+  288, so `.rt` is 196px instead of 200. Rows whose title or description sits
+  near the wrap point gain a whole extra line - e.g. row 5
+  ("Разговаривающие Сферы") is 158.95px tall against the live app's 136.56px,
+  and row 41 likewise. The page ends up ~78px taller.
+- This is the entire "description line-wrap at 375px" debt. It is the **fourth**
+  instance of the pattern the B3 handoff already names: a mobile-only override
+  ported for the base width only, whose constant offset reads as growing drift.
+- Fix: add `@media (max-width: 600px) { .selbox { width: 38px } }` to
+  `TableRows.svelte`.
+
+### What the three fixes are worth, simulated
+
+`#/tables @ ru`, whole-page pixelmatch (`threshold: 0.1, includeAA: false`,
+the harness's own settings), fixes injected as a stylesheet rather than edited
+into source:
+
+| width | as-is | + search font-size | + `.selbox` 38px |
+|---|---|---|---|
+| 1100 | 0.092% | 0.000% | 0.000% |
+| 768 | 0.131% | 0.000% | 0.000% |
+| 375 | 1.749% | 1.494% | 0.145% |
+
+So both the 1100 and 768 states go to an exact match, and 375 loses 92% of its
+difference. Every "search-box placeholder antialiasing" entry in `VISUAL_DEBT`
+is expected to be deleted, not lowered.
+
+### Why the harness did not catch this
+
+Not a bug in the harness, a limit of its metric, and worth writing down:
+
+- The verdict is a percentage of the **whole page**. A wrong font size on one
+  line of a 1100x900 screen is ~0.09% - under `JITTER` (0.1), so
+  `#/tables @ ru 1100` had **no `VISUAL_DEBT` entry at all** and was reported
+  as `вид: совпадает`. A control-sized defect cannot outvote a page-sized
+  denominator.
+- `includeAA: false` is not the main culprit here - rescoring the same pair
+  with `includeAA: true` moved 1100 from 0.092% to 0.127% and 768 from 0.131%
+  to 0.181%. Do not "fix" the harness by flipping that flag and calling it
+  done.
+- The word "antialiasing" in a `VISUAL_DEBT` reason has become an absorbing
+  excuse - exactly what the note above `VISUAL_DEBT` warns about for the
+  add-to-list row ("Do not let this reason absorb anything else: it did once").
+  Three of the six documented noise causes were written against measurements
+  that were not actually taken at the level of the glyph run.
+- The durable countermeasure is a **nonvisual spec**, not a smaller `JITTER`:
+  the harness already compares non-pixel fields between the two apps, and
+  computed typography (`font-size`, `line-height`, `font-family`) plus a
+  measured text advance for the toolbar search box, a row title, a row
+  description and a filter label is deterministic across machines and would
+  have failed loudly on all three defects.
+
+## Key paths
+
+- Specs: `docs/specs/CONTRACTS.md`, `ROUTES.md`, `STATE.md`, `FEATURES.md`,
+  `COVERAGE.md`, `I18N.md`, `META.md`; workflow in `docs/parity.md`
+- Harness: `tests/parity.js` (verdict logic ~line 288-325, pixelmatch ~line 115),
+  `tests/parity/specs.js` (`SPECS`, `STATES`, `VISUAL_DEBT` ~line 668,
+  `DEBT_SLACK`, `JITTER` ~line 903)
+- Code hot paths for this audit:
+  - `app/src/components/TablesPage.svelte` - `.toolbar input[type='search']`
+  - `app/src/components/FilterBar.svelte` - the `.lbl` line
+  - `app/src/components/TableRows.svelte` - `.selbox`
+  - Originals: `style.css:254`, `style.css:408-420`, `style.css:820`,
+    `app.js:2686-2699`
+- Scratch probes used for the measurements are disposable and were not kept.
+
+## Constraints
+
+- Contracts, routes and generated artefacts are untouched by these fixes.
+- All three are style/markup parity fixes: `npm run check:built` is required.
+- `VISUAL_DEBT` is enforced from both sides, but only outside `DEBT_SLACK`
+  (0.5). The check is `pct < debt.pct - DEBT_SLACK`, so an entry recorded at
+  0.13 that now measures 0.00 sits inside the slack and passes **silently** -
+  which is true of most entries this audit is about. Corrected by the planner
+  against an earlier claim here that any improvement fails. Practically: paid
+  off entries have to be deleted by reading the run output, not by waiting for
+  a failure. Still part of the same change, not a follow-up.
+- A full parity run is ~9 minutes; filter while working.
+
+## Do not re-fetch unless
+
+- The human provides new info
+- context.md is missing a fact you need
+- You suspect drift vs issue or plan

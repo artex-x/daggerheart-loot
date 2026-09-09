@@ -44,11 +44,18 @@ Built, and matching the live app exactly in both languages at all three widths:
 | Tables (B2, the filter) | `#/tables/wondrous`, `#/tables/dread` | folded, panel open, a value picked, a filter link arrived at, a filter plus a query leaving nothing |
 | Tables (B3, sectioned bodies and anchors) | `#/tables/voa`, `#/tables/frames`, `#/tables/community`, `#/tables/alt_item`, `#/tables/alt_consumable` | each table's own page, a section anchor arriving on `voa`, a row anchor arriving on `core_item` (a B1 table) |
 
+**"Matching exactly" in that table means "matching within its recorded
+`VISUAL_DEBT`", and for the tables screens that turned out to be a weaker claim
+than it reads. Three real defects were sitting inside debt entries whose reason
+said antialiasing.** Two batches are inserted ahead of B4: **B3.5**, which
+fixes them and re-baselines the debt, and **B3.6**, which builds the
+measurement that would have caught them. Both are below, after "B3 built".
+
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
 - `#/tables/eq_weapon`, `#/tables/eq_secondary`, `#/tables/eq_armor` - the
-  equipment tables, batch B4
+  equipment tables, batch B4 - unchanged, and still the batch after B3.6
 - `#/lists` - the lists slice
 - `#/search` - the search slice
 - `#/print/ci1-q1` - the print slice
@@ -76,13 +83,15 @@ entries, below, is one of the same six, on new rows or a new control:
    paragraph, every line box and the colour are identical to three decimals
    and the text matches character for character. There is no value to copy -
    do not go looking for one.
-5. **Search-box placeholder antialiasing**, under 900px on every Tables state -
+5. **Withdrawn - this was a defect, see the correction below.**
+   ~~Search-box placeholder antialiasing~~, under 900px on every Tables state -
    0.10-1.61%. The box and its placeholder measured pixel-identical, crop for
    crop, against the live app: same left edge, same width, same text: and the
    rest of each screen matched exactly on its own. What is left reads as
    antialiasing on the placeholder's thin, muted glyphs - the same class of
    noise cause 4 names, just on a control rather than a paragraph.
-6. **A description line wrapping one word earlier on a phone**, 1.41-1.56% on
+6. **Withdrawn - this was a defect, see the correction below.**
+   ~~A description line wrapping one word earlier on a phone~~, 1.41-1.56% on
    `wondrous` and `dread` at 375px. Neither B1's four tables nor Core rules had
    a row with a long enough description to show it: the picture, the name, the
    stat line and every badge measured pixel-identical, and only the line-break
@@ -104,6 +113,25 @@ several already-known word-wraps landing on screen at once. The row and
 section anchors also carry a small new instance of cause 4 (rasterisation) at
 1100 and 768: the flash outline itself, 2px of gold, rasterises a fraction of
 a pixel differently between the two apps, same as the help panel's text does.
+
+**Correction, written after a human read `#/tables/community` at full width:
+causes 5 and 6 above are wrong, and everything built on them is wrong with
+them.** Cause 5 is `TablesPage.svelte` writing `font-size: 14px` on the
+toolbar search box where the live app inherits 15.5px - the placeholder is
+25px narrower, not identically rendered. Cause 6 is `TableRows.svelte` missing
+`style.css:820`'s `@media (max-width:600px){.selbox{width:38px}}`, which makes
+`.rt` 196px instead of 200px at 375 and pushes rows near a wrap point onto an
+extra line - the wrap is a consequence of a 4px column, not of kerning. The
+`~ panel open` entries blaming the space in `любое` on rasterisation are a
+third: Svelte trimmed that space out of the markup entirely. Six causes are
+therefore three, plus three defects that hid inside them for four batches. The
+paragraph below about B3's entries being "the same six causes, not a seventh"
+was true as an observation and false as a reassurance - the entries were the
+same because the defects were the same, on new rows. B3.5 fixes all three and
+rewrites this section's remainder against the numbers a real run produces; B3.6
+builds the instrument that would have failed loudly on all three. The word
+"antialiasing" had become the absorbing excuse this section's own cause 1
+warns about.
 
 Two real bugs surfaced while building the anchor - both fixed before any of
 the above was measured, not filed as debt:
@@ -851,6 +879,661 @@ sectioned table's filter panel - two fields, not one, which is where
 B2's `.field:last-child` note said it would first matter for real - and
 `TableRows.svelte`/`SectionHead.svelte` were added to its `COVERED` guard,
 both pointed at `tables.test.ts`'s new sectioned-body axe check.
+
+### B3.5 built: the absorbed parity debt
+
+All three fixes shipped as planned, plus the focus-glow line. The real numbers,
+read from `node tests/parity.js "tables"` (Rewritten build off this session's
+final source, three fixes and the focus glow all present):
+
+- `#/tables @ ru`: 1100 already had no entry (`совпадает`); 768 dropped from a
+  0.13% debt to 0.00%; 375 dropped from 1.14% to 0.00%. `#/tables @ en 375`:
+  1.0% to 0.00%. Matches `context.md`'s simulated prediction closely (it
+  predicted 0.00/0.00/0.145 for the three widths, without the focus-glow line
+  in the mix - the real 375 number came in lower still, at 0.00, not 0.145).
+- Every other table this batch and B1-B3 built moved the same way at 375:
+  `hnf_consumable`, `dread`, `voa`, `frames`, `community`, `alt_item`,
+  `alt_consumable` all went from a 0.8-1.61% debt to 0.00% (one exception,
+  below). `#/tables ~ searched` and `#/tables ~ nothing found` did too.
+  `#/tables/wondrous` and its four sub-states (`~ panel open`, `~ filtered`,
+  `~ filter link`, `~ nothing found`) all went to 0.00% at every width that
+  had carried an entry, including `~ panel open @ ru 1100` (0.11% -> 0.00%),
+  the exact cell the `любое` space was measured on. `#/tables ~ grid` dropped
+  from 0.10-0.28% to 0.00-0.01% at every cell - under `JITTER` everywhere, so
+  gone rather than lowered.
+- **49 entries deleted.** 20 were the run failing outright ("стало лучше -
+  опусти число" - the number the harness itself refuses to let stand); the
+  other 29 were already inside `DEBT_SLACK` and had to be found by reading the
+  percentages rather than waiting for a red run, exactly as `context.md`
+  warned. None of the 49 kept "search-box placeholder antialiasing" or a
+  `любое`-rasterisation reason - the whole comment block above them, which
+  named those two causes, went with them. The full list is the `git diff` on
+  `tests/parity/specs.js`; it is not worth re-typing here.
+- **One entry survived unchanged in each language for a genuine, still-real
+  cause:** `#/tables/core_item ~ row anchor @ ru|en 375` (8.85%/8.51% recorded,
+  8.84%/8.47% measured - inside slack, still real, still large). The English
+  1100/768 flash-outline entries for both anchors were exact matches to the
+  measured value, also unchanged.
+
+**One entry got worse, and it is B3.5's own fix that did it - confirmed, not
+guessed.** `#/tables/voa ~ section anchor @ ru 375` moved from a 9.52% debt to
+10.05% measured, twice, reproducibly - a real fail, not machine noise. Root
+cause, found the way `context.md`'s method describes (a standalone script,
+`getBoundingClientRect`/`scrollY` read directly, the harness's own launch
+args), plus one extra step this time: reverting just the `.selbox` mobile fix
+in a scratch copy, rebuilding `dist/`, and re-running the one state.
+
+`tests/parity.js` scrolls to an anchor exactly once, at `WIDTHS[0]` (1100),
+inside `arrive()`. The 768 and 375 screenshots that follow only resize the
+viewport and call `settle()` - nothing re-scrolls. So the 375px screenshot
+shows whatever the scrollY computed at 1100 lands on once the document has
+reflowed to roughly double its 1100-width height. `tA` (Vault of Ages'
+artifact tier) sits near the bottom of a long table, so the per-row reflow
+difference between the two apps compounds over several dozen rows before it,
+and the frozen scrollY ends up pointing at a different stretch of the list
+entirely between legacy and next - not a word wrapping earlier, a whole
+screenful landing elsewhere. Reverting `.selbox { width: 38px }` alone (keeping
+the other two fixes) and rebuilding reproduced the old 9.52% exactly, twice.
+The fix did not misplace the anchor - it changed how much the rows above it
+reflow differently before the frozen scrollY is reinterpreted at 375, and this
+time the change happened to move the number the wrong way. This is a property
+of the harness's scroll-once-then-resize design, not a defect in either app,
+and it is a **new**, previously undocumented failure mode, distinct from the
+font-loading race B3 already fixed (that one was about *when* the scroll fires
+within one width; this one is about screenshotting three widths off one
+scroll). Recorded in `VISUAL_DEBT` at the measured 10.05%, with a reason
+naming the real mechanism; `#/tables/voa ~ section anchor @ en 375` kept its
+old value (8.84%, measured 8.90% - inside `JITTER` of it, not a fail) but got
+the same corrected reason, since it is the same mechanism at a smaller
+magnitude - English text compounds less reflow difference per row.
+`#/tables/core_item ~ row anchor` does not show this pattern because its
+target sits near the top of a short table, where the frozen scrollY is small
+in both apps regardless of width.
+
+This is worth a line in B3.6's own scope, not a fix here: the per-width probes
+B3.6 is about to add will read a **different** scrollY at each width than the
+whole-page screenshot does, because nothing about a probe requires the anchor
+scroll to have happened at all. Whether that matters for the four named
+controls depends on where they sit relative to an anchor state, which is not
+one of B3.6's four `only`-listed states - so it likely does not apply, but the
+mechanism above is worth having in mind if a future per-width spec ever runs
+against an anchor route.
+
+**The restored focus glow did not move any parity number.** Tested directly:
+with the `box-shadow` line removed again and `dist/` rebuilt, `#/tables ~
+searched` - the only state that ever focuses the search box (`d.type()` calls
+`el.focus()` and never blurs it) - produced the identical six numbers with and
+without the glow (`совпадает`/0.00%/0.01% at every cell, both ways). No other
+state focuses the search box. The glow is correct to have restored - it is in
+`style.css:258` and its absence was a real gap against the live app - but no
+state in the current `STATES` list is capable of seeing it move a percentage.
+Recorded here rather than asserted from reading the CSS, per this batch's own
+standard.
+
+**`.selbox`'s specificity, confirmed in the rendered build rather than by
+argument:** a small puppeteer probe against `dist/index.html` at 375px read
+`getComputedStyle(...).width` directly. `.selall .selbox` (the "select all" row
+in list view): 42px. A plain row's `.selbox`: 38px, the new override actually
+applying. `.tilewrap .selbox` (grid view): 30px, untouched. Matches the
+acceptance criterion exactly.
+
+**A new, unrelated blocker surfaced by the full-suite gate, not by this
+batch's own changes - see the handoff's Blockers section for the full
+writeup.** `node tests/run-all.js parity` (the unfiltered suite) fails on four
+states this batch never touches: `#/roll/wondrous ~ modal @ ru 768|375`,
+`#/roll/wondrous ~ help @ ru 768|375` and `@ en 375`, `#/i/ci1 ~ whole @
+ru|en 768|375`, and `#/i/f1` (both languages - a missing `ACCEPTED` entry for
+the add-to-list control, plus a small unrecorded pixel drift at 1100/768).
+Confirmed pre-existing with `git stash` - identical failures, same numbers,
+reproduce against the unmodified `main` tree with none of B3.5's changes
+present. Left alone rather than fixed: none of the four are tables states, all
+four are demonstrably unrelated to the three CSS defects this batch owns, and
+chasing them would have turned a three-rule fix into an open-ended one. The
+`"tables"`-filtered run this batch is scoped to is clean (`расхождений нет`,
+confirmed twice, before and after the `.selbox` root-cause experiment).
+
+
+
+A human read `#/tables/community` at full width and saw two things the harness
+was reporting as clean. The orchestrator confirmed both by measurement and
+found a third while confirming them. All three had been absorbed by
+`VISUAL_DEBT` entries whose stated reason is antialiasing. The measurements,
+the method and the simulated scores are in `issues/47/context.md` - read that
+rather than re-deriving them; this section says what to change and what has to
+land with it.
+
+#### The three defects
+
+1. **The toolbar search box is 14px where the live app is 15.5px.**
+   `style.css:254` gives `input[type=search]` `font:inherit` and no
+   `font-size`, so the live box inherits the body's 15.5px/24.8px.
+   `TablesPage.svelte`'s `.toolbar input[type='search']` writes `font: inherit`
+   and then `font-size: 14px` - an invented value with no comment and no source
+   rule behind it. The placeholder measures 259.59px in the live app and
+   234.47px in the rewrite: 25px narrower, on a control that is on every table
+   route. This is the whole of the "search-box placeholder antialiasing" debt,
+   whose reason claims the placeholder "measured pixel-identical".
+
+2. **Svelte trimmed the space before the `любое` hint.** `app.js:2692` writes
+   `esc(f[1]) + ' <i>' + esc(t().anyValue) + '</i>'`, so the live label's
+   `textContent` is `"Тип любое"`. `FilterBar.svelte:96` puts that space at the
+   *start* of the `{#if}` block, where Svelte's whitespace normalisation drops
+   it: the rewrite renders `Тип<i>любое</i>`, `textContent` `"Типлюбое"`, and
+   the `<i>` starts 4.3px to the left. This is the whole of the two
+   `~ panel open` entries whose reason is "the space in `любое` rasterises a
+   shade differently".
+
+3. **`.selbox` is missing its mobile width override.** `style.css:820`, inside
+   `@media (max-width:600px)`, sets `.selbox{width:38px}`. `TableRows.svelte`
+   ported the base `width: 42px` and not the override, so at 375px every row's
+   checkbox column is 4px too wide: `.row-main` starts at x=59 rather than 55
+   and is 284px rather than 288, so `.rt` is 196px rather than 200. Rows whose
+   title or description sits near the wrap point gain a whole extra line - row
+   5 ("Разговаривающие Сферы") is 158.95px against 136.56px - and the page ends
+   up about 78px taller. This is the whole of the "description line-wrap at
+   375px" debt.
+
+   **This is the fourth instance of one pattern**: a rule ported at its base
+   width with its `@media` override left behind, whose constant offset
+   compounds down the page and reads as growing drift. B1's toolbar margin,
+   B2's `.field:last-child` cascade tie, B3's `.tsec-link` mobile padding, now
+   this. It has earned a line in `CLAUDE.md`; see "What lands in the specs and
+   in CLAUDE.md" below.
+
+#### A fourth, suspected, not yet measured
+
+`style.css:257` gives the focused search box
+`box-shadow:0 0 0 3px rgba(216,171,94,.14)` on top of the gold border.
+`TablesPage.svelte:606`'s `.toolbar input[type='search']:focus` has the
+`outline: none` and the `border-color` and **not** the `box-shadow`, with no
+comment saying why - the same shape of omission as defect 1 and defect 3, in
+the same rule this batch is already editing. Three states focus that box (the
+driver's `type()` calls `el.focus()`): `#/tables ~ searched`,
+`#/tables ~ nothing found` and `#/tables/wondrous ~ nothing found`.
+
+It was not measured this session and the planner is not asserting it changes
+any number - a 14%-alpha glow may well sit under pixelmatch's threshold. It is
+a missing declaration from a ported rule either way, it is cheap, local and
+safe, and CLAUDE.md's campsite rule covers exactly that. Restore it, in the
+repository's own colour syntax (`rgb(216 171 94 / 14%)`, matching
+`TableRows.svelte`'s existing `rgb(216 171 94 / 10%)`), and record in the
+handoff whether it moved any debt.
+
+#### What to change
+
+| File | Change |
+|---|---|
+| `app/src/components/TablesPage.svelte` | delete the `font-size: 14px` line from `.toolbar input[type='search']`; add `box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);` to `.toolbar input[type='search']:focus` |
+| `app/src/components/FilterBar.svelte` | line 96: `{#if groupIsAny(picked, row.group)}{' '}<i>{t.anyValue}</i>{/if}` |
+| `app/src/components/TableRows.svelte` | add `.selbox { width: 38px; }` to the existing `@media (max-width: 600px)` block |
+| `app/src/components/tables.test.ts` | the two label assertions below |
+| `tests/parity/specs.js` | the `VISUAL_DEBT` bookkeeping below |
+| `docs/parity.md` | the standing rule about page-sized denominators |
+| `CLAUDE.md` | one line: port a rule with its `@media` overrides |
+| `issues/47/plan.md`, `issues/47/handoff.md` | corrections and the next batch |
+
+Notes the implementer must not have to rediscover:
+
+- **`{' '}`, not a literal space and not `&nbsp;`.** An expression tag is a text
+  node the compiler cannot trim. A non-breaking space is a different glyph
+  advance and a different line-break opportunity, so it would trade one
+  measurable difference for another. Do not move the space inside the `<i>`
+  either: an italic space is not the same advance.
+- **Keep the `<!-- prettier-ignore -->`** above that line. It is there because
+  prettier reflows the tag and reintroduces the trimming.
+- **`.selall .selbox` must stay 42px at 375.** `style.css:418` sets
+  `.selall .selbox{...width:42px}` at specificity (0,2,0), which beats the
+  media query's `.selbox` (0,1,0) in the live app; `TableRows.svelte` already
+  carries that rule at line ~261, so adding the media query reproduces the live
+  behaviour with no further change. Svelte's scoping hash is added to every
+  selector equally, so relative specificity is preserved. The same reasoning
+  covers `.tilewrap .selbox` (30px, 0,2,0): grid tiles are unaffected in both
+  apps.
+- **Put the override in the `@media (max-width: 600px)` block that already
+  exists** in `TableRows.svelte` (around line 275, currently holding
+  `:global([data-row]) { scroll-margin-top: 132px }`) rather than opening a
+  second one.
+
+#### Coverage: what belongs where
+
+jsdom does not apply a Svelte component's scoped `<style>`, so the component
+suite cannot see a `font-size` or a `width` at all. That draws the line
+cleanly, and it is the line to hold rather than reaching for a source-text
+assertion (grepping a component's style block tests the source, not the
+behaviour, and would rot on the first refactor):
+
+- **`tables.test.ts` carries defect 2**, because it is DOM text and nothing
+  else. Two assertions, in the existing `describe('the filter')` block, both
+  against `#/tables/wondrous` where the `kind` row's label is `Тип`:
+  1. with the panel open and nothing picked,
+     `container.querySelector('.field .lbl')?.textContent` is exactly
+     `'Тип любое'` - use `toBe` on the raw string, not `toHaveTextContent`,
+     which normalises whitespace and would pass on the bug;
+  2. after clicking `Предметы`, the same node's `textContent` is exactly
+     `'Тип'` - this is what catches the space being hoisted out of the `{#if}`
+     rather than into it.
+  Russian only. There is no English render helper in `tables.test.ts` and this
+  batch should not invent one; the parity harness already runs every state in
+  both languages.
+- **Parity carries defects 1, 3 and 4**, because they are CSS. Today that means
+  the pixel diff plus the re-baselined debt. B3.6 is what turns them into a
+  named value that fails loudly; see below.
+- No new files, so no new coverage thresholds to satisfy.
+
+#### The `VISUAL_DEBT` bookkeeping
+
+This lands in the same change, not as a follow-up. Three things the
+implementer needs to know before touching the table:
+
+1. **A state that becomes exact must have its entry deleted, not lowered.** An
+   entry of `0` still fails: `pct > JITTER` with no entry is the only passing
+   shape for a matching state.
+2. **The harness will not tell you about the small ones.** The ratchet is
+   `pct < debt.pct - DEBT_SLACK` with `DEBT_SLACK = 0.5`, so an entry recorded
+   at 0.13 that now measures 0.00 is *inside* the slack and passes silently.
+   Every entry under 0.5 has to be deleted by reading the number in the run
+   output, not by waiting for a failure. (B3.6 closes this; see there.)
+3. **Entries above 0.5 will fail if they improve**, which is the harness doing
+   its job - lower those to the measured value.
+
+Expected outcome, from the simulated scores in `context.md`
+(`#/tables @ ru`: 0.092 -> 0.000 at 1100, 0.131 -> 0.000 at 768,
+1.749 -> 0.145 at 375). These are expectations to check against the real run,
+not numbers to write down:
+
+- **Expected to be deleted.** Every entry at 768 whose reason is "search-box
+  placeholder antialiasing" (the 0.11-0.14 band, on `#/tables`,
+  `hnf_consumable`, `wondrous` and its four sub-states, `dread`, and B3's five
+  sectioned tables); `#/tables ~ grid` at every width and both languages (the
+  grid's tiles carry their own 30px `.selbox`, so the search box is the whole
+  of it); both `~ nothing found` pairs at 375 (no rows on screen, so nothing
+  but the search box); and the two `~ panel open` entries whose reason is the
+  `любое` space (`@ ru 1100`, `@ en 768`).
+- **Expected to survive with a corrected reason.** The 375px entries on table
+  routes that still show rows. `#/tables @ ru 375` simulates at 0.145, above
+  `JITTER`, so something is left - and whatever it is, its reason may no longer
+  say "description line-wrap": that phrase described defect 3 and defect 3 is
+  gone. Open the diff image before writing the new reason. If a residue turns
+  out to be genuinely sub-`JITTER`, delete the entry instead.
+- **Expected to survive unchanged.** The four anchor entries at 1100/768
+  (`#/tables/core_item ~ row anchor @ en 1100|768`,
+  `#/tables/voa ~ section anchor @ en 1100|768`, 0.42-0.63, the flash
+  outline). Note what these already tell you: they are English-only, and the
+  Russian cells carry no entry at all, which is consistent with the search box
+  being scrolled out of the fold in an anchor state - so the search fix should
+  not move them.
+- **Expected to move without being about this batch.** The 375px anchor
+  entries (8.51-9.52) are the same reflow, multiplied by how many rows land
+  above the fold together; they should collapse. `#/tables ~ a row ticked`,
+  `#/tables ~ a row opened` and `#/tables ~ help` at 375 all draw rows behind
+  or beside their own cause and may drop by more than `DEBT_SLACK`, which will
+  fail the run and ask for a lower number. That is expected work, not a
+  surprise.
+- **Not touched.** Everything on `#/i/*`, `#/roll/*` and the help panels at
+  1100/768. If one of those moves, stop: it means the change reached further
+  than three CSS rules.
+
+Two entries carry reasons that are now known to be false and must not be
+copied forward under a new number: "search-box placeholder antialiasing - see
+the note above `VISUAL_DEBT`" and "the space in `любое` rasterises a shade
+differently at full width - measured character-for-character identical". Both
+were written against measurements that were never taken at the level of the
+glyph run. Any surviving entry needs a reason that names something measured
+this time.
+
+The prose above `VISUAL_DEBT` and in `plan.md`'s "What every remaining
+`VISUAL_DEBT` entry is" both state causes 5 and 6 as noise. Both have to be
+corrected in this change - see the correction already written into that
+section.
+
+#### Registering the state the human actually reported
+
+`#/tables/community`'s filter panel has no state: `~ panel open` exists on
+`wondrous` only, so the exact screen in the human's screenshot was never
+compared. `docs/parity.md` is explicit that an absent state is invisible to the
+harness. Add:
+
+```js
+{
+  id: '#/tables/community ~ panel open',
+  route: '#/tables/community',
+  why: "the filter panel on a sectioned table - the screen the любое defect was reported from",
+  enter: async (d) => { await d.click('Фильтры'); }
+}
+```
+
+That is six more cells (two languages, three widths) and roughly a minute of
+run time. It is worth it: it is the screen a person looked at, and the `comm`
+facet row is a different row from `wondrous`'s `kind`.
+
+#### Verification
+
+```text
+npm run check
+npm run check:built
+node tests/parity.js "tables"
+node tests/run-all.js parity
+```
+
+`check:built` is required - all three fixes alter what a screen draws. The
+filtered `tables` run is the working loop; the full `parity` run is the gate,
+because the debt table was edited across many states and a stale entry
+elsewhere fails the suite rather than this filter. Copy anything worth keeping
+out of `test-output/parity/` before a second, narrower run: every invocation
+wipes it.
+
+#### Acceptance criteria
+
+- `#/tables/wondrous`'s open filter panel renders `.field .lbl` as exactly
+  `Тип любое`, and exactly `Тип` once a value is picked; both asserted in
+  `tables.test.ts`.
+- `.toolbar input[type='search']` has no `font-size` declaration; the focused
+  rule carries the 3px glow.
+- `TableRows.svelte` has `.selbox { width: 38px }` under
+  `@media (max-width: 600px)`, and `.selall .selbox` still resolves to 42px.
+- `node tests/run-all.js parity` passes with no state failing in either
+  direction.
+- No `VISUAL_DEBT` entry anywhere still gives "search-box placeholder
+  antialiasing" or the `любое` rasterisation as its reason.
+- `docs/parity.md` carries the denominator rule; `CLAUDE.md` carries the
+  `@media` porting line.
+- `#/tables/community ~ panel open` is in `STATES`.
+
+#### Risks and do-nots
+
+- **Do not lower `JITTER` and do not flip `includeAA`.** Rescoring the same
+  pair with `includeAA: true` moved 1100 from 0.092% to 0.127% and 768 from
+  0.131% to 0.181% - still the same order of magnitude as the threshold, so it
+  converts a silent pass into a marginal one that the next session absorbs into
+  a fresh "antialiasing" entry. It would make the excuse more plausible, not
+  less. The denominator is the problem, not the sensitivity.
+- **Do not fix a debt number by eye.** Read it out of the run output, and open
+  the diff image before writing any surviving reason.
+- **Do not touch `index.html`, `app.js` or `style.css`.** They are the
+  expectation.
+- **Do not extend the fixes past these rules.** Any other missing declaration
+  found while reading the two CSS blocks goes in the handoff, not in this
+  commit, unless it is inside a rule this batch already edits.
+
+### B3.6 planned: the instrument that would have caught them
+
+Its own batch, ordered immediately after B3.5 and before B4.
+
+#### Why it is separate, and why it is not just a smaller threshold
+
+The harness did not fail because it is broken. It failed because its verdict is
+a percentage of the whole page. A wrong font size on one line of a 1100x900
+screen is about 0.09% - under `JITTER`, so `#/tables @ ru 1100` had no
+`VISUAL_DEBT` entry at all and printed `вид: совпадает`. **A control-sized
+defect cannot outvote a page-sized denominator**, and no setting of `JITTER`
+fixes that: below 0.1 the number starts tracking machine-to-machine text
+hinting, which is the noise `JITTER` exists to absorb. `includeAA` is not the
+culprit either (0.092 -> 0.127; 0.131 -> 0.181).
+
+What does fix it is measuring the control instead of counting the page. The
+harness already has that instrument and already trusts it: `metrics()` compares
+computed typography between the two apps, with no expected value written down
+anywhere, and `COVERAGE.md` says why - "the heading is 800 at 24px and was 680
+at 23px" is a fix, where "40% of pixels differ" is not. This batch points that
+same instrument at four named controls on the tables screen. All three defects
+were values: `14px` against `15.5px`, `"Типлюбое"` against `"Тип любое"`,
+`196px` against `200px`.
+
+Separate from B3.5 for three reasons: it touches the harness loop rather than
+the app, so its blast radius is every state rather than one screen; a reviewer
+of B3.5 wants to see three CSS rules and a debt table, which is a different
+review; and if the new spec surfaces differences on surfaces nobody has looked
+at yet - which is the point of building it - that must not block a fix the
+human is waiting on.
+
+It is ordered *after* B3.5 rather than before so that no commit is left with a
+red parity run. The proof that the instrument works is recovered without that:
+see the acceptance criteria.
+
+#### What to build
+
+**1. One new driver method.** `tests/parity/driver.js`:
+
+```js
+/** Computed type, and the measured run of text, for named controls. */
+async typeAt(probes) { ... }
+```
+
+`probes` is a plain `{ name: selector }` map, evaluated in the page. For each
+probe return `null` when the element is absent, otherwise:
+
+- `font` - `` `${c.fontWeight} ${c.fontSize}/${c.lineHeight}` ``, the same
+  shape `metrics()` already uses
+- `family` - `c.fontFamily.split(',')[0]` with quotes stripped, as `metrics()`
+  does
+- `text` - `textContent` with whitespace runs collapsed but **not** trimmed at
+  the ends, so a missing separator is visible
+- `advance` - the width of a `Range` over the element's contents,
+  `getBoundingClientRect().width`, rounded to one decimal
+- `width` - the element's own `getBoundingClientRect().width`, rounded to one
+  decimal
+
+The rounding is one decimal and no more. Two apps drawing the same string in
+the same face at the same size in the same browser produce the same advance;
+anything that differs by less than that and has no visible cause belongs in
+`ACCEPTED` with the measured reason, not in a wider tolerance.
+
+This is the one place in the driver that takes a CSS selector, and the comment
+must say why: everything else grips a control by the name a person reads,
+because a spec must not know which app it is driving; this method is measuring
+one specific ported control, and the class names *are* ported - every component
+in `app/src/components/` writes its CSS "off `.x` in `style.css`", and Svelte's
+scoping keeps the original class in the `class` attribute alongside its hash.
+Selectors stay structural or contract-level wherever one exists
+(`input[type=search]`, `[data-row]`) and use a ported class only where none
+does.
+
+**2. One new spec** in `tests/parity/specs.js`:
+
+```js
+const typeRuns = {
+  perWidth: true,
+  name: 'the type on the controls a page percentage cannot see',
+  only: [ /* the states below */ ],
+  async run(d) {
+    return await d.typeAt({
+      search: '.toolbar input[type=search]',
+      rowText: '[data-row] .rt',
+      rowTitle: '[data-row] .rt b',
+      filterLabel: '.ffilter .field .lbl'
+    });
+  }
+};
+```
+
+Four controls, which is the handful `context.md` named, and each one is there
+because a defect went through it:
+
+| probe | catches |
+|---|---|
+| `search` | defect 1 - `font` is `400 14px/22.4px` against `400 15.5px/24.8px` |
+| `filterLabel` | defect 2 - `text` is `"Типлюбое"` against `"Тип любое"` |
+| `rowText` | defect 3 - `width` is 196 against 200, at 375 only |
+| `rowTitle` | the row title's own face and advance, the value `rowText` cannot separate from its container |
+
+A probe that resolves to nothing returns `null`; the live app is the one that
+certainly has these controls, so a class the rewrite renamed reports `null`
+against numbers and fails. The one silent case is a control missing from *both*
+apps, which means `style.css` changed - and `style.css` is frozen.
+
+**3. Per-width specs.** This is the part that is not optional: `parity.js` runs
+every spec once, at `WIDTHS[0]` (1100), because the specs are about content and
+the widths are for pixels. Defect 3 exists only at 375, so a spec that runs at
+1100 alone would have caught two defects out of three.
+
+The width sweep already sets the viewport and settles once per width, so this
+is cheap. In `parity.js`:
+
+- `const looks = mine.filter((s) => !s.presses && !s.perWidth);`
+- `const measured = mine.filter((s) => s.perWidth);`
+- inside the existing `for (const size of WIDTHS)` loop in `withPage`, after
+  `await d.settle()`, run each `measured` spec and store it under
+  `perWidth[target][size.w][spec.name]`
+- after both targets, call `diff()` once per width with the route string built
+  as `<id> @ <lang> <width>` (a template literal over `id`, `lang` and
+  `String(size.w)`) rather than the `<id> @ <lang>` the once-per-language specs
+  use - so an `ACCEPTED` key for a per-width spec is
+  `"<id> @ <lang> <width> :: <spec> :: <field>"`
+
+**4. The ratchet hole.** `pct < debt.pct - DEBT_SLACK` with `DEBT_SLACK = 0.5`
+means an entry recorded at 0.13 that now measures 0.00 passes silently. Every
+entry under half a percent is currently un-ratcheted in one direction, which is
+the same failure as the one this whole batch is about: debt that cannot come
+due. Add the missing case - a state with an entry that now measures at or under
+`JITTER` fails, asking for the entry to be deleted:
+
+```js
+} else if (pct <= JITTER && debt.pct > JITTER) {
+  fail++;  // the entry is paid; delete it
+```
+
+Expect this to find stale entries elsewhere in the table. That is the point;
+delete them, with the run output as the evidence.
+
+**5. Specs.** `docs/specs/COVERAGE.md` owns the harness's instruments and needs
+two edits in this commit:
+
+- "The look" describes two instruments. It is three now: measured typography,
+  the per-control type-and-advance probes, and the pixel diff. Say what the
+  third one is for in one sentence - a percentage of a page cannot see a
+  control.
+- The same section says "Position and size are deliberately *not* measured"
+  and gives a good reason (two layouts mid-port disagree about them by
+  definition). The new spec measures a width. Amend it rather than contradict
+  it: geometry is not measured across the board, and is measured on a named
+  handful of controls on screens that are already built, where a width is the
+  consequence of a rule that was ported wrong.
+- The same file states the debt is "enforced from both sides ... So it can only
+  ratchet towards zero". That becomes true only with change 4; if 4 is dropped,
+  this sentence has to be corrected instead.
+
+`docs/parity.md`'s standing rule is B3.5's, not this batch's - see there.
+
+#### Determinism
+
+- Both apps are measured in the same browser, at the same viewport, in the same
+  run, one after the other. Machine-to-machine differences in hinting and face
+  selection cancel: nothing is compared against a number stored in the
+  repository.
+- No probe reads a colour, an opacity or a shadow, so nothing depends on the
+  GPU path or on `--disable-gpu`.
+- Rounding to one decimal absorbs float formatting and nothing else.
+- The probes are read after the existing `settle()`, which already waits on
+  `document.getAnimations()`, and after `ready()`, which waits on the artwork.
+  Fonts are the one thing neither waits on - B3's anchor bug was exactly that -
+  so the probe evaluation must `await document.fonts.ready` first. It is a
+  no-op once the page has settled and it removes the only known source of a
+  measurement that moves between runs on the same machine.
+
+#### Which states
+
+Start with the tables states that certainly have all four controls, and let the
+`only` list be the whole scope of this batch:
+
+- `#/tables`, `#/tables/hnf_consumable`, `#/tables/dread` - search and rows,
+  no panel (`filterLabel` is `null` on both, which is honest)
+- `#/tables/wondrous ~ panel open` and `#/tables/community ~ panel open` - all
+  four
+- `#/tables/community`, `#/tables/voa` - a sectioned body's rows
+
+Extending it to `#/i/*`, `#/roll/*` and the equipment tables is deferred, and
+named in "Deferred" below rather than attempted here: a spec that suddenly
+reports on every surface at once is a batch whose size nobody can predict.
+
+#### Acceptance criteria
+
+- `node tests/run-all.js parity` passes.
+- **The instrument is proved to fail.** With each of B3.5's three fixes reverted
+  locally, one at a time, and the working tree restored afterwards, a filtered
+  run reports a `FAIL` naming the field:
+  `... :: the type on the controls a page percentage cannot see :: search`,
+  `... :: filterLabel`, `... :: rowText` at 375. The exact output goes in the
+  handoff. A spec that cannot find anything must not agree with itself, and a
+  spec written after the fix has not been shown to find anything.
+- The per-width wiring runs the spec at 1100, 768 and 375, and the report shows
+  the width in the state name.
+- The ratchet change fails a deliberately stale entry (record which one) and
+  every stale entry it finds is deleted.
+- `COVERAGE.md`'s "The look" describes three instruments, the geometry
+  exception, and a debt statement that is true.
+
+#### Risks and do-nots
+
+- **Do not widen the rounding to make a probe agree.** A sub-pixel difference
+  with no cause is an `ACCEPTED` entry with a measured reason.
+- **Do not add probes for controls that are not built.** A probe that is `null`
+  on both sides costs a line of report and proves nothing.
+- **Do not let the `only` list grow past the tables states in this batch.**
+- **Do not delete a `VISUAL_DEBT` entry the ratchet change surfaces without
+  opening the diff image first.** The new failure says the number is stale; it
+  does not say the screen is exact.
+
+#### Fallback, considered and not chosen
+
+A **region diff**: crop each screenshot to the toolbar, the filter bar and the
+first row and score those separately. It fixes the denominator honestly and it
+would have caught all three defects. Rejected because it needs a grip per
+region (the same selector question, with no compensating value), because it
+produces three more percentages that each need their own debt bookkeeping and
+their own reasons, and because it still answers "how many pixels" where the
+report's stated job is to name a value to go and change. Worth revisiting only
+if the probe approach turns out to need more than a handful of selectors.
+
+### What lands in the specs and in CLAUDE.md
+
+Three questions, three different answers.
+
+**`docs/parity.md` gets the standing rule, in B3.5.** It is the operational
+runbook and it is where a session goes before touching a debt number. It
+already says "Expect zero pixel difference" and "`VISUAL_DEBT` is explicit debt,
+not tolerance"; what it does not say is the thing that let three defects sit
+inside those rules for four batches. Add to "Contract", or as a short block
+under it:
+
+> A whole-page percentage cannot see a control-sized defect. A wrong font size
+> on one line of a 1100x900 screen scores about 0.09% - under `JITTER`, so the
+> state reports as matching. Before writing "antialiasing", "rasterisation" or
+> "line-wrap" as a reason, measure the thing itself: the computed type, the
+> text content and the advance of the run, in both apps. A reason that names
+> rendering noise is only allowed once a measurement at that level has been
+> taken and recorded.
+
+That is the rule the three false reasons broke, phrased so the next session
+cannot satisfy it by eye.
+
+**`CLAUDE.md` gets the `@media` line, in B3.5.** CLAUDE.md's own bar is "Add a
+rule only after an agent repeats a mistake", and this one is on its fourth
+instance across four batches: B1's toolbar margin, B2's `.field:last-child`
+cascade tie, B3's `.tsec-link` mobile padding, B3.5's `.selbox`. Every one of
+them ported a rule at its base width and left an override behind, and every one
+of them read as growing drift because a constant offset compounds down a page.
+One imperative line in "Migration and parity":
+
+> - Port a rule with every `@media` override it has; a base-width-only port
+>   reads as growing drift, not as a constant offset.
+
+CLAUDE.md is at 179 lines of its 200 and this keeps it there.
+
+**The Svelte leading-space gotcha stays in the handoff.** It is a first
+occurrence, not a repeat, and CLAUDE.md's bar is explicit about that. It is
+also narrower than it looks - it is one compiler behaviour, and the handoff's
+"Session gotchas found this session" is exactly where B3's snippet/`{@render}`
+finding and the jsdom `scrollIntoView` finding already live. Write it there as
+a rule with its detection recipe:
+
+> A literal leading space at the start of a Svelte `{#if}` or `{#each}` block
+> is dropped by the compiler. Ported markup of the shape `' <tag>'` inside a
+> block has this bug; emit the space as `{' '}`. Worth grepping for whenever a
+> batch ports inline markup out of an `app.js` string template.
+
+If a second instance turns up in B4 or later, it graduates to CLAUDE.md. Say so
+in the handoff so the next session knows the promotion rule rather than
+re-arguing it.
 
 ## Phase 5 - what already exists
 

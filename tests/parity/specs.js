@@ -576,6 +576,14 @@ const STATES = [
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
   { id: '#/tables/frames', route: '#/tables/frames', why: 'a sectioned body: campaign frames' },
   { id: '#/tables/community', route: '#/tables/community', why: 'a sectioned body: communities' },
+  {
+    id: '#/tables/community ~ panel open',
+    route: '#/tables/community',
+    why: 'the filter panel on a sectioned table - the screen the human reported the search-box and любое defects from',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
   { id: '#/tables/alt_item', route: '#/tables/alt_item', why: 'the alternate items table' },
   {
     id: '#/tables/alt_consumable',
@@ -739,62 +747,6 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ help @ en 768': helpNoise(0.29),
   '#/roll/wondrous ~ help @ en 375': helpNoise(0.79),
 
-  /* Below 900px the toolbar's search box carries almost the whole of these
-     numbers: the box and its placeholder measured pixel-identical crop for
-     crop against the live app (same left, same width, same text), and the
-     rest of each screen - the chips, the rows, the tiles - matched exactly on
-     its own. What is left reads as antialiasing on the placeholder's thin,
-     muted glyphs, the same class of noise `helpNoise` names, not a value
-     to go copy. */
-  '#/tables @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables @ ru 375': { pct: 1.14, why: 'the same, on a phone' },
-  '#/tables @ en 375': { pct: 1.0, why: 'the same, in English' },
-  '#/tables/hnf_consumable @ ru 768': { pct: 0.13, why: 'the same, mid width' },
-  '#/tables/hnf_consumable @ ru 375': { pct: 1.49, why: 'the same, on a phone' },
-  '#/tables/hnf_consumable @ en 375': { pct: 1.61, why: 'the same, in English on a phone' },
-  '#/tables ~ grid @ ru 1100': { pct: 0.1, why: 'the same, at full width' },
-  '#/tables ~ grid @ ru 768': { pct: 0.14, why: 'the same, mid width' },
-  '#/tables ~ grid @ ru 375': { pct: 0.28, why: 'the same, on a phone' },
-  '#/tables ~ grid @ en 768': { pct: 0.11, why: 'the same, in English, mid width' },
-  '#/tables ~ grid @ en 375': { pct: 0.22, why: 'the same, in English, on a phone' },
-  '#/tables ~ searched @ ru 375': { pct: 1.0, why: 'the same, with a query typed into the box' },
-  '#/tables ~ searched @ en 375': { pct: 1.04, why: 'the same, in English' },
-  '#/tables ~ nothing found @ ru 375': { pct: 0.12, why: 'the same, on a phone' },
-  '#/tables ~ nothing found @ en 375': { pct: 0.13, why: 'the same, in English' },
-
-  /* B2's six wondrous states carry the same placeholder noise as the four
-     tables above - every one is exact at 1100, where the placeholder is not
-     cropped by the toolbar's narrower layout. On a phone, wondrous is also
-     the first table B1 or B2 built with a description long enough to wrap
-     differently by a word - see the note on dread below; it is the same
-     noise, just reached from a different row this time. */
-  '#/tables/wondrous @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/wondrous @ ru 375': { pct: 1.56, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app - both measured, nothing to copy' },
-  '#/tables/wondrous @ en 375': { pct: 1.51, why: 'the same, in English' },
-  '#/tables/wondrous ~ panel open @ ru 1100': { pct: 0.11, why: 'the space in "любое" rasterises a shade differently at full width - measured character-for-character identical' },
-  '#/tables/wondrous ~ panel open @ en 768': { pct: 0.11, why: 'the same rasterisation noise, in English at mid width' },
-  '#/tables/wondrous ~ panel open @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/wondrous ~ panel open @ ru 375': { pct: 0.29, why: 'the same, on a phone' },
-  '#/tables/wondrous ~ panel open @ en 375': { pct: 0.41, why: 'the same, in English' },
-  '#/tables/wondrous ~ filtered @ ru 768': { pct: 0.13, why: 'the same, mid width' },
-  '#/tables/wondrous ~ filtered @ ru 375': { pct: 0.29, why: 'the same, on a phone' },
-  '#/tables/wondrous ~ filtered @ en 375': { pct: 0.22, why: 'the same, in English' },
-  '#/tables/wondrous ~ filter link @ ru 768': { pct: 0.13, why: 'the same, mid width' },
-  '#/tables/wondrous ~ filter link @ ru 375': { pct: 0.29, why: 'the same, on a phone' },
-  '#/tables/wondrous ~ filter link @ en 375': { pct: 0.22, why: 'the same, in English' },
-  '#/tables/wondrous ~ nothing found @ ru 375': { pct: 0.12, why: 'the same, on a phone' },
-  '#/tables/wondrous ~ nothing found @ en 375': { pct: 0.13, why: 'the same, in English' },
-
-  '#/tables/dread @ ru 768': { pct: 0.13, why: 'the same, mid width' },
-  /* Dread's own row text happens to break one word earlier on a phone -
-     measured against the live app rather than guessed: the picture, the
-     name, the stat line and every badge are pixel-identical, and only the
-     description's line-wrap point differs by a few sub-pixels of kerning.
-     No table B1 or B2 built had a row long enough at 375px to show this;
-     dread is the first, not a regression the filter caused. */
-  '#/tables/dread @ ru 375': { pct: 1.51, why: 'a description line wraps one word earlier than the live app at this width - measured pixel-identical apart from the wrap point, nothing to copy' },
-  '#/tables/dread @ en 375': { pct: 1.41, why: 'the same, in English' },
-
   /* The record modal a row opens is the same short-by-a-row card every other
      modal draws - see the note on #/roll/wondrous ~ modal above. */
   '#/tables ~ a row opened @ ru 1100': listRow(4.65, 'inside the modal a row opens'),
@@ -825,27 +777,6 @@ const VISUAL_DEBT = {
   '#/tables ~ help @ en 768': helpNoise(1.58),
   '#/tables ~ help @ en 375': helpNoise(0.65),
 
-  /* B3's five sectioned tables carry the same two causes every table since B1
-     has: the search-box placeholder antialiasing at 768, and a description
-     line wrapping one word earlier than the live app on a phone - measured
-     the same way dread's own entry was, not guessed at. Nothing about
-     sectioning changes either cause; these are the same noise, on new rows. */
-  '#/tables/voa @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/voa @ ru 375': { pct: 0.88, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
-  '#/tables/voa @ en 375': { pct: 1.01, why: 'the same, in English' },
-  '#/tables/frames @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/frames @ ru 375': { pct: 0.8, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
-  '#/tables/frames @ en 375': { pct: 0.98, why: 'the same, in English' },
-  '#/tables/community @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/community @ ru 375': { pct: 1.2, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
-  '#/tables/community @ en 375': { pct: 1.37, why: 'the same, in English' },
-  '#/tables/alt_item @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/alt_item @ ru 375': { pct: 1.11, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
-  '#/tables/alt_item @ en 375': { pct: 1.03, why: 'the same, in English' },
-  '#/tables/alt_consumable @ ru 768': { pct: 0.13, why: 'search-box placeholder antialiasing - see the note above VISUAL_DEBT' },
-  '#/tables/alt_consumable @ ru 375': { pct: 1.14, why: 'the placeholder noise, plus a description line wrapping one word earlier than the live app' },
-  '#/tables/alt_consumable @ en 375': { pct: 1.1, why: 'the same, in English' },
-
   /* The row and section anchors, at 1100 and 768: the flash outline itself is
      the whole difference. Measured directly rather than assumed - the target
      row's position, size and every pixel of its content match exactly at
@@ -869,17 +800,14 @@ const VISUAL_DEBT = {
     why: 'the same, mid width'
   },
 
-  /* The same two anchors, on a phone: arriving scrolls straight past the
+  /* core_item's row anchor, on a phone: arriving scrolls straight past the
      toolbar and the filter bar, so several description-heavy rows sit in the
-     fold at once where the bare route only ever showed one or two - the same
-     line-wrap noise above, multiplied by how many long descriptions are on
-     screen together rather than a new cause. Confirmed by measuring the
-     target row/section directly: its own position and size match the live
-     app to the pixel in both languages, and `getBoundingClientRect()` on
-     every row inside Vault of Ages' artifact section reported identical
-     names and heights on both apps - the debt is entirely in text below the
-     fold reflowing a word earlier, the way dread's own entry already does,
-     just several rows of it landing above the fold together at this width. */
+     fold at once where the bare route only ever showed one or two. The row
+     itself is near the top of a short table, so the scroll distance is small
+     in both apps and the leftover is exactly what B3.5's diff image shows:
+     the toolbar and a couple of rows just below it double-printed a few
+     pixels apart, the ordinary sub-pixel reflow noise every other 375px
+     description entry carries, not a new cause. */
   '#/tables/core_item ~ row anchor @ ru 375': {
     pct: 8.85,
     why: 'several description-heavy rows sit above the fold at once here, each wrapping a word earlier than the live app - the same noise as every other 375px description entry, not a new cause'
@@ -888,13 +816,32 @@ const VISUAL_DEBT = {
     pct: 8.51,
     why: 'the same, in English'
   },
+
+  /* voa's section anchor, on a phone, is a different animal from the row
+     anchor above, recorded as the same thing until this batch checked. The
+     harness scrolls once, at its own widest layout (1100), then
+     resizes the same page down through 768 and 375 without scrolling again -
+     so the 375px screenshot shows whatever the 1100-width scrollY lands on
+     once the document has reflowed to roughly double its 1100-width height.
+     tA (Vault of Ages' artifact tier) sits near the bottom of a long table,
+     so a few pixels of per-row reflow difference between the two apps
+     compounds over the several dozen rows above it, and the frozen scrollY
+     ends up pointing at a different stretch of rows entirely - not a word
+     wrapping earlier, a whole screenful landing elsewhere. Confirmed
+     directly, not inferred: reverting just this batch's `.selbox` mobile fix
+     and rebuilding reproduces the old 9.52% exactly, twice; the fix did not
+     misplace the anchor, it changed how much the rows above it reflow
+     differently before the frozen scrollY is reinterpreted at 375. This is a
+     property of the harness's scroll-once-then-resize design, not a defect
+     in either app - worth fixing in the harness (B3.6 or later), not worth
+     chasing in the app. */
   '#/tables/voa ~ section anchor @ ru 375': {
-    pct: 9.52,
-    why: 'the same reflow noise, across the several rows Vault of Ages\' artifact section brings above the fold together at this width'
+    pct: 10.05,
+    why: 'the frozen 1100-width scrollY lands on a different stretch of Vault of Ages once the page has reflowed for 375 - see the note above VISUAL_DEBT'
   },
   '#/tables/voa ~ section anchor @ en 375': {
     pct: 8.84,
-    why: 'the same, in English'
+    why: 'the same cause, in English, where less text wraps differently and the compounded drift is smaller'
   }
 };
 

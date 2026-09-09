@@ -276,6 +276,10 @@
     :global([data-row]) {
       scroll-margin-top: 132px;
     }
+
+    .selbox {
+      width: 38px;
+    }
   }
 
   .row.flash,
