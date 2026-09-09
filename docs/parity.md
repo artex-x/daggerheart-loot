@@ -85,6 +85,14 @@ when that machine is the only one in front of you. Settled by the repository
 owner on 2026-09-09; per-platform pairs of numbers and a wider `JITTER` were
 both considered and rejected.
 
+There is also a **local ubuntu container that reproduces CI exactly**
+(`tools/parity-ubuntu/`): on 2026-09-09 it matched runs `34382722764` and
+`34383263349` to the hundredth on all four then-failing cells, so a figure it
+measures may be written into the table. Its calibration is against a moving
+target - the runner image and puppeteer's Chrome both roll forward - so re-run
+the comparison in its README after either changes, and fall back to CI if it
+drifts.
+
 The CI numbers are readable without pushing: `gh run view <id> --log-failed`
 prints about a dozen grepped lines, and the run's `failure-output` artifact
 (`gh run download <id> -n failure-output`, roughly 200 MB, expiring) carries the
