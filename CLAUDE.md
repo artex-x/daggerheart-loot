@@ -175,6 +175,7 @@ Feature work uses roles (see `.claude/`):
 - **implementer** -> next batch only (`model: inherit`)
 - **reviewer** (optional) -> high-risk batches; max one remediation cycle
 - **add-source** -> rare end-to-end content ingest
+- **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 
 Prompts: `.claude/prompts/`. Agents: `.claude/agents/`.
 Pass `TASK: <id>` at runtime. Orchestrator selects models/effort and maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.

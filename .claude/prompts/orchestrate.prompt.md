@@ -3,7 +3,7 @@ You coordinate roles; you do NOT implement large features yourself.
 If you write production application code in the main session, you are doing it wrong - dispatch the right worker agent instead.
 
 Agent-agnostic:
-- Hosts with subagent or agent-team tools: dispatch planner / implementer / reviewer / add-source through the host's supported agent mechanism.
+- Hosts with subagent or agent-team tools: dispatch planner / implementer / reviewer / add-source / refresh-artwork through the host's supported agent mechanism.
 - Hosts without agent tools: run the same roles sequentially by following the prompt files under `.claude/prompts/` and using `issues/<id>/` as the handoff bus.
 - Never claim that delegation occurred unless the host actually exposed and used an agent tool.
 
@@ -26,6 +26,10 @@ Before dispatching workers, create or refresh `issues/<TASK_ID>/context.md` usin
 When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to plan/handoff, and the single next action. Do not paste the entire issue body into every spawn message if it is already in context.md.
 
 ## Route the GOAL
+- **Existing-art replacement / audited regeneration delivery** (replace current catalog images, reconcile a reviewed image drop, refresh WebP/JPEG assets, update a local art reference cache):
+  - Prefer **refresh-artwork** (`.claude/prompts/refresh-artwork.prompt.md`)
+  - Do not route to add-source unless records, ids, text, mechanics, or image mappings must change
+  - Treat missing required accepted images, ambiguous acceptance state, and non-square sources as hard pre-write gates
 - **Add-source / content ingest** (new book, community set, attached item dumps + images, "add these items"):
   - Prefer **add-source** (`.claude/prompts/add-source.prompt.md`) - one coherent pass is expected for this rare operation
   - Do not also run a full planner pass for pure content ingest unless add-source stops and asks for multi-batch app design
@@ -60,7 +64,7 @@ So, before dispatching:
   stray `chrome.exe` before trusting a timeout.
 
 ## Concurrency
-- Only one writer on this branch at a time (implementer or add-source)
+- Only one writer on this branch at a time (implementer, add-source, or refresh-artwork)
 - Do not fan out parallel writers against the same working tree
 - Use git worktrees only if the human explicitly sets that up
 
@@ -107,11 +111,13 @@ Frontmatter defaults (change the file, not your habit):
 - `reviewer`: opus - review runs rarely and exists to catch what the implementer missed; a weak review manufactures confidence, which is worse than none
 - `implementer`: sonnet
 - `add-source`: sonnet
+- `refresh-artwork`: sonnet
 
 Raise per dispatch when:
 - Plan: already opus; add high effort when design/UI/mechanics are non-trivial
 - Implement: opus only if a prior implement failed on this batch or risk is high; sonnet + high for large careful batches
 - Add-source: opus if new roll/table mechanics or hard ambiguity
+- Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; large mechanical conversion batches use sonnet + high
 - Review: already opus; lower to sonnet only for a small, low-risk batch
 
 Claude <-> Codex cheat-sheet:
@@ -127,6 +133,7 @@ Run reviewer after implement or add-source when ANY of:
 - public contracts, routes, list links, or generated artefacts changed
 - visual parity / new or changed UI
 - large data ingest or new source mechanics
+- a large artwork refresh changed many catalog assets or required crop/pad/regeneration exceptions
 - worker reported uncertainty or deviation from plan
 Otherwise skip review.
 
@@ -148,12 +155,21 @@ Otherwise skip review.
 6. Apply **After review** (max one remediation cycle) below - fix-pass via add-source or implementer as appropriate; replan via planner only if verdict is replan
 7. Stop when done, blocked, or human stops
 
+## Procedure (refresh-artwork path)
+1. Ensure context.md captures the approval source, upload/drop inputs, and explicit allowed exclusions
+2. Dispatch refresh-artwork with TASK + GOAL (point at context.md)
+3. HARD STOP before repository writes if required current accepted bytes are missing, acceptance is ambiguous, or a format exception lacks human direction
+4. Require content-hash reconciliation, mapping through current `img` fields, deterministic dual-format verification, and focused image/data checks
+5. Run reviewer for a large refresh or any crop/pad/regeneration exception
+6. Apply **After review** at most once; fix-pass through refresh-artwork, replan only when the verdict requires it
+7. Stop when done, blocked, or human stops
+
 ## After review (max one remediation cycle)
 Review returns to the orchestrator only - do not chain review -> planner -> review loops.
 
 - **approve** -> continue to next batch or finish
-- **fix-then-continue** -> dispatch implementer (or add-source) ONCE for blockers only; do not replan; do not send nits through a full cycle
-- **replan** -> dispatch planner ONCE to revise the affected batch, then implementer/add-source ONCE
+- **fix-then-continue** -> dispatch implementer, add-source, or refresh-artwork ONCE for blockers only; do not replan; do not send nits through a full cycle
+- **replan** -> dispatch planner ONCE to revise the affected batch, then the appropriate writer ONCE
 - After that single remediation, do not auto-review again unless contracts/UI still changed and risk rules still match
 - If still blocked after one remediation cycle -> stop and ask the human
 - Record nits in handoff Deferred; do not burn a cycle on nits alone

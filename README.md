@@ -253,7 +253,7 @@ style.css                   styles
 app.js                      routing, roll modes, search, tables, lists, print
 data.js                     the data: window.LOOT
 card/*.svg                  36 vectors for the print cards, exported from Figma
-img/*.webp                  850 pictures, 640x640, ~31 MB
+img/*.webp                  846 pictures, 640x640, ~31 MB
 og/*.jpg                    the same pictures as JPEG for link previews, ~47 MB
 i/*.html                    1061 stub pages with Open Graph markup
 data.json                   the same data as plain JSON, for outside readers
