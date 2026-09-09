@@ -23,6 +23,23 @@
  *
  * Fires once per threshold per window. The marker carries the window's
  * `resets_at`, so a new window re-arms both thresholds on its own.
+ *
+ * Where it is registered matters, and was measured rather than assumed
+ * (2026-09-09, desktop app). Hooks do fire here; only the snapshot was ever
+ * missing. `additionalContext` is delivered to whoever's turn it is:
+ *
+ * - `UserPromptSubmit` reaches the session - correct, and kept.
+ * - `SubagentStop` reaches the *subagent*, which is already stopping. A test
+ *   agent asked to reply "OK" instead replied that it was wrapping up at 80%.
+ *   The message is written for a coordinator ("do not dispatch another
+ *   worker"), which a worker cannot act on, so this registration was dropped.
+ * - `PostToolUse` on the agent tool reaches the session, at the moment a
+ *   worker returns - which is exactly when a coordinator decides whether to
+ *   dispatch the next one. Verified by a Bash-matched probe: the message
+ *   arrived in the coordinator's own context.
+ *
+ * A coordinator waiting on workers submits no prompts for hours, so
+ * PostToolUse is the registration that actually protects a long session.
  */
 import fs from 'node:fs';
 import path from 'node:path';

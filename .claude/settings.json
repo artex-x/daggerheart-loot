@@ -5,8 +5,11 @@
     "refreshInterval": 30000
   },
   "hooks": {
-    "SubagentStop": [
-      { "hooks": [{ "type": "command", "command": "node .claude/usage-guard.mjs" }] }
+    "PostToolUse": [
+      {
+        "matcher": "Task|Agent",
+        "hooks": [{ "type": "command", "command": "node .claude/usage-guard.mjs" }]
+      }
     ],
     "UserPromptSubmit": [
       { "hooks": [{ "type": "command", "command": "node .claude/usage-guard.mjs" }] }
