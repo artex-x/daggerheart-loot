@@ -9,6 +9,18 @@
  * whenever it cannot say something useful - no file, a stale file, no
  * `rate_limits` at all (it is Pro/Max only), or below the first threshold.
  *
+ * Known inert in the Claude desktop app (Code tab), verified 2026-09-09: the
+ * statusLine command only runs where a status line is rendered, so .usage.json
+ * is never written there and every invocation quits on the missing file. The
+ * five-hour percentage exists nowhere else on disk - not in the transcripts,
+ * not under ~/.claude, and no CLI reports it - so the desktop fallback is the
+ * human saying "we're at 75%". Both scripts were tested in isolation and work:
+ * given a synthetic payload the status line writes the snapshot and this guard
+ * emits its message. Switching the source to the transcript's own token totals
+ * (hook input carries `transcript_path`) would work in both, but measures this
+ * session's spend rather than the account's window, so the thresholds would
+ * have to be re-derived rather than carried over. See issue 47's handoff.
+ *
  * Fires once per threshold per window. The marker carries the window's
  * `resets_at`, so a new window re-arms both thresholds on its own.
  */
@@ -20,6 +32,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const USAGE = path.join(HERE, '.usage.json');
 const MARKER = path.join(HERE, '.usage-warned');
+const TRACE = path.join(HERE, '.usage-hook.log');
 
 /* A number nobody has refreshed for ten minutes is not evidence of anything.
    statusLine needs `refreshInterval` set, or it goes quiet exactly while a
@@ -35,6 +48,20 @@ try {
   hook = JSON.parse(fs.readFileSync(0, 'utf8'));
 } catch {
   /* Hook input is optional here; only the event name comes from it. */
+}
+
+/* Did this hook run at all? Every exit below is silent by design, so "the
+   guard fired and had nothing to say" and "the guard was never invoked" look
+   identical from outside - and one session burned real time guessing which it
+   was. One line per invocation, in a gitignored file, tells them apart.
+   Diagnostics must never fail a turn, so the whole thing is best-effort. */
+try {
+  fs.appendFileSync(
+    TRACE,
+    `${new Date().toISOString()} ${hook.hook_event_name ?? 'unknown-event'}\n`
+  );
+} catch {
+  /* no trace is a worse diagnosis, not a broken turn */
 }
 
 let usage;
