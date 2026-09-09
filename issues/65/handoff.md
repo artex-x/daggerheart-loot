@@ -126,6 +126,19 @@ Unchanged from the planner's list - carried forward, not re-derived:
   an empty stash list, either the deny path is not honoured (fall back to exit 2
   per `plan.md` section 9) or hooks were not picked up (restart again / run
   `/hooks`). `.claude/README.md`'s Hooks section records this ambiguity.
+- **`check-observer.mjs` needs to actually see `All files` in the Bash tool's own
+  captured stdout - which a truncated tail can defeat.** Discovered live while
+  committing this batch: redirecting `npm run check`'s output to a file and then
+  printing only the last N lines (as the prompts recommend, to avoid dumping a huge
+  log into the transcript) can leave `All files` - which sits near the *top* of the
+  coverage table, not the bottom - outside that final slice. Two commit attempts
+  were correctly blocked because a `tail -N` that was too short meant the hook never
+  observed the passing run, even though the run had genuinely passed. Fixed by
+  piping straight to `tail` without an intermediate redirect-and-reopen, and sizing
+  the tail to include the coverage header. No code change: the gate behaved exactly
+  as designed (fail closed on "cannot confirm a pass"), and the fix belongs in how a
+  future agent invokes the command, not in `check-observer.mjs`. Worth carrying into
+  `.claude/README.md` or the prompts if this recurs.
 - **A transient, unrelated `node_modules` issue during the first `npm run check`
   run**: `vitest run --coverage` failed with `Cannot find module
   '.../node_modules/vitest/suppress-warnings.cjs'`, and a direct `require()` of
