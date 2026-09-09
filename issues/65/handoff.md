@@ -147,6 +147,19 @@ Unchanged from the planner's list - carried forward, not re-derived:
   race outside this task's control (this task never ran `npm install`). Not
   reproduced on the second, third, or fourth `npm run check` run. Flagged here in
   case it recurs for someone else; no code change was made for it.
+- **A concurrent commit landed on `main` mid-session, from outside this
+  implementer.** `74348b6` ("chore(agents): plan on Fable, and resync the tier
+  docs", 20:50:27) appeared between this batch's starting commit (`8e7fed1`) and
+  its own commits, touching `.claude/README.md`, `.claude/agents/planner.md`,
+  `.claude/prompts/orchestrate.prompt.md` and `CLAUDE.md` - three files this batch
+  also edited. No conflict occurred in practice: this session's in-session `Read`
+  of each file happened after `74348b6` landed, so every `Edit` call operated on
+  the already-merged content, and the final `CLAUDE.md`/`README.md`/prompt content
+  reads coherently (checked by hand post-commit). Flagging it anyway - CLAUDE.md's
+  "only one implementer should be writing this working tree at a time" rule was not
+  honoured for this window, whatever wrote `74348b6` and this implementer were both
+  live against `main` concurrently. Worth the orchestrator's attention even though
+  this batch shipped clean.
 - **`docs/specs/COVERAGE.md`**: no row added, per `plan.md` section 2 - the
   selftest is agent wiring, not product coverage, and maps onto no `FEATURES.md`
   row.
