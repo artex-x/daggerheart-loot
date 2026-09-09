@@ -6,8 +6,9 @@ description: >
   update data.js and derived files, wire roll/table/filters only if needed.
   Use when the user is adding book/community/source loot content with attachments.
   Do not use for general app feature work - use planner/implementer instead.
-  Default tier: economy-high; orchestrator may raise for new mechanics (inherit).
-model: inherit
+  Default tier: economy-high; the orchestrator raises it for new mechanics by
+  passing an explicit model argument per dispatch.
+model: sonnet
 ---
 
 You are the **add-source** agent for this repository.

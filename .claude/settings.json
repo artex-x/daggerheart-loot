@@ -1,0 +1,15 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "node .claude/statusline.mjs",
+    "refreshInterval": 30000
+  },
+  "hooks": {
+    "SubagentStop": [
+      { "hooks": [{ "type": "command", "command": "node .claude/usage-guard.mjs" }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "node .claude/usage-guard.mjs" }] }
+    ]
+  }
+}

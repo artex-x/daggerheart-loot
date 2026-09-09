@@ -32,6 +32,33 @@ When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to pl
   - If the source is huge or needs a multi-batch app surface, you may plan with **planner** first, then **implementer**
 - **App/feature/refactor work** (including issue-driven code changes): **planner** -> **implementer** -> optional **reviewer**
 
+## Long-running checks (the most expensive mistake this setup makes)
+
+A worker that ends its turn with a check still running loses it: the shell dies
+with the agent, the result is gone even if the command finished, and the work
+sits uncommitted. Worse, a stopped worker may not be resumable - `SendMessage`
+is not available on every host - so the replacement is a **cold** agent that
+re-reads everything and re-runs the same check. That happened twice in one
+session and cost more than the batch itself.
+
+Known costs in this repo:
+
+| Command | Wall clock | Fits one foreground call (600s cap)? |
+|---|---|---|
+| `npm run check` | a few minutes | yes |
+| `npm run check:built` | a few minutes | yes |
+| `node tests/parity.js "<filter>"` | ~9 min for `tables` | barely |
+| `node tests/run-all.js parity` (full) | ~867s on CI | **no** |
+
+So, before dispatching:
+
+- Name the checks the batch needs and say which fit one foreground call.
+- If the full parity suite is required, expect to run it yourself after the
+  worker commits, rather than asking a worker to babysit it.
+- Never let two heavy runs overlap - a vitest coverage pass started while a
+  parity run's browsers are alive produces spurious 5000ms timeouts. Check for
+  stray `chrome.exe` before trusting a timeout.
+
 ## Concurrency
 - Only one writer on this branch at a time (implementer or add-source)
 - Do not fan out parallel writers against the same working tree
@@ -39,15 +66,27 @@ When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to pl
 
 ## Model selection (orchestrator only)
 Agents must not choose models.
-Worker agents use `model: inherit` so your session model applies when you escalate.
-Planner defaults to opus in frontmatter; override it per invocation when the host supports a model parameter.
+Each agent's frontmatter carries its real default, so a dispatch that names no
+model still runs at the intended tier. **Do not use `model: inherit` for
+workers** - inherit means *the session model*, so an implementer dispatched
+from an Opus session silently runs on Opus, which is the opposite of its
+documented economy default and the fastest way to exhaust the 5-hour window.
+Escalation is an explicit `model` argument on the dispatch, never a side effect
+of what you happen to be running.
+
 Effort/high reasoning is controlled by the session UI - set effort explicitly when you need "high".
 
-Defaults:
-- Plan: Opus + high when design/UI/mechanics are non-trivial; Opus medium if tiny
-- Implement: Sonnet + medium; Sonnet + high for large careful batches; Opus only if a prior implement failed or risk is high
-- Add-source: Sonnet + high for large careful data entry; Opus if new roll/table mechanics or hard ambiguity
-- Review (optional): Sonnet + medium; Opus if contracts/parity sensitive
+Frontmatter defaults (change the file, not your habit):
+- `planner`: opus
+- `reviewer`: opus - review runs rarely and exists to catch what the implementer missed; a weak review manufactures confidence, which is worse than none
+- `implementer`: sonnet
+- `add-source`: sonnet
+
+Raise per dispatch when:
+- Plan: already opus; add high effort when design/UI/mechanics are non-trivial
+- Implement: opus only if a prior implement failed on this batch or risk is high; sonnet + high for large careful batches
+- Add-source: opus if new roll/table mechanics or hard ambiguity
+- Review: already opus; lower to sonnet only for a small, low-risk batch
 
 Claude <-> Codex cheat-sheet:
 - economy-mid: Sonnet medium <-> GPT-5.6 Terra medium

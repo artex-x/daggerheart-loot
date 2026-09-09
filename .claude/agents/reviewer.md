@@ -3,8 +3,9 @@ name: reviewer
 description: >
   Read-only review of a completed batch for contracts, parity, data integrity,
   tests, and handoff quality. Use after high-risk batches when asked.
-  Orchestrator selects model via session (inherit).
-model: inherit
+  Defaults to Opus: review runs rarely and exists to catch what the implementer
+  missed, so a weak review is worse than none - it manufactures confidence.
+model: opus
 permissionMode: plan
 ---
 

@@ -3,9 +3,10 @@ name: implementer
 description: >
   Execute the next implement-ready batch from issues/<id>/handoff.md.
   Do not replan or redesign. Do not choose models.
-  Default tier: economy (Sonnet / Terra). Orchestrator may raise to Opus / Sol via session model (inherit).
+  Default tier: economy (Sonnet / Terra). The orchestrator raises it by passing an
+  explicit model argument per dispatch - never by relying on the session model.
   Only one implementer should run on this branch at a time.
-model: inherit
+model: sonnet
 ---
 
 You are the **implementer** for this repository.
