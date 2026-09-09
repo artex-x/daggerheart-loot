@@ -1256,6 +1256,94 @@ wipes it.
   found while reading the two CSS blocks goes in the handoff, not in this
   commit, unless it is inside a rule this batch already edits.
 
+### B3.6 planned, part 0: make the harness quick enough to use
+
+Ordered first inside B3.6, before part 1's diagnosis. Full reasoning in
+`.claude/improvements.md`, "Finding 5"; this is the scoped version.
+
+`node tests/run-all.js parity` takes **867s on CI** and the `tables` filter
+alone takes ~9 minutes locally. That cost is not incidental - it is why workers
+push long runs into the background and lose them, why a filtered run gets
+treated as the gate, and therefore why CI stayed red for eight runs with nobody
+looking. Part 1 is about to run this suite many times, so halving it pays for
+itself inside the same batch.
+
+Two structural facts, read off `tests/parity.js`:
+
+- The run is **fully sequential** - `for state -> for lang -> for target -> for
+  width`, one page at a time, with `no-await-in-loop` disabled at both hot
+  spots.
+- The **`legacy` side is re-shot on every run**, although the static root is
+  frozen by policy: `CLAUDE.md` forbids touching `index.html`, `app.js` and
+  `style.css` precisely because they are the expectation.
+
+**In scope.**
+
+1. **Cache the legacy screenshots, content-addressed.** Key each cached PNG on
+   a hash of everything that can change it - `index.html`, `app.js`,
+   `style.css`, `data.js`, the referenced assets, plus the state's own
+   `id`/`route`/`enter` source and the viewport list. A hit is byte-identical
+   to what the run would have produced, so it cannot mask a difference; a miss
+   re-shoots and re-stores. Expect close to **half the wall clock**. Needs a
+   `--no-cache` flag and a hash manifest stored beside the cache, under
+   `test-output/` or a gitignored `.cache/` - never in the repo.
+
+2. **Shard the CI run** across a job matrix (4 shards, roughly 220s each), the
+   gate failing if any shard fails. Costs runner minutes, not correctness, and
+   it removes the excuse for treating a filtered local run as the gate. This
+   also settles part 1's item 5 - keep the unfiltered suite blocking, just make
+   it affordable.
+
+3. **Give the test suite a timeout that matches what it does.**
+   `vite.config.mts`'s `test` block sets **no `testTimeout`**, so vitest uses
+   its 5000ms default - while the a11y and component tests legitimately take
+   5-13 seconds each, because axe over a full page in jsdom is slow. That is
+   not flake: it is a timeout set below the work. It holds on an unloaded
+   machine and on CI, and collapses the moment anything else runs - a single
+   `npm run check` on a developer box during this session produced **66 failures,
+   50 of them `Test timed out in 5000ms`**, against a suite that passes clean
+   on its own. Three separate sessions have now written this off as
+   "contention" in a handoff.
+
+   There is a second mechanism on top of the first, and fixing only the
+   timeout would leave it: **a timed-out test leaves `axe.run()` in flight, and
+   axe holds a global lock**, so every later a11y test dies with `Axe is
+   already running`. One timeout takes the rest of the file with it, which is
+   why the failure count swings with load rather than staying put - 53 alone,
+   66 during a `check`, 92 with one puppeteer probe alongside. Proof the
+   timeout is the trigger: `npx vitest run --root app --testTimeout=30000
+   src/components/a11y.test.ts` passes 17 of 17 where the same file fails
+   wholesale at the default.
+
+   Measure first: run the suite alone and record the slowest tests, then set
+   `testTimeout` from what the work actually costs plus headroom, rather than
+   picking a round number. Consider a higher timeout scoped to the a11y specs
+   rather than raising it globally and hiding a genuinely hung test. Whatever
+   is chosen, write the reasoning next to the value - an unexplained timeout is
+   how this one got left at the default.
+
+   This is a correctness issue as much as a speed one: a gate that fails
+   randomly teaches everyone to re-run it until it passes, which is exactly how
+   the red CI run in part 1 went unexamined for eight builds.
+
+**Out of scope, deliberately: local parallelism.** A pool of 2-4 pages would
+cut the rest, but it can change timing, and this repo has already been bitten -
+the B3 handoff records five spurious `Test timed out in 5000ms` failures from a
+vitest run overlapping a parity run's browsers. B3.6 part 2 exists to make
+measurements trustworthy; do not destabilise the instrument in the same batch.
+If it is attempted later, it goes behind a flag defaulted off and is adopted
+only after a run at that concurrency reproduces every recorded number exactly -
+the evidence bar the B3.5 reviewer used to rule out machine drift.
+
+**Acceptance.** A cold run and a warm run produce identical verdicts and
+identical percentages for every state; `--no-cache` reproduces the cold run;
+the cache invalidates when any hashed input changes (prove it by touching
+`style.css` and watching the miss); CI green and measurably faster.
+
+**Why this is safe to do before part 1.** Caching cannot change a pixel - it
+returns the same bytes or re-shoots. So the instrument is unchanged while part
+1 uses it to diagnose, which is the property that matters.
+
 ### B3.6 planned, part 1: the red CI run
 
 **B3.6 is one batch in two parts, merged at the owner's request on the standing

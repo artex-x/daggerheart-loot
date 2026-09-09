@@ -212,3 +212,39 @@ Do not re-open these; they are settled input, not options.
    another absorbing excuse of the kind this session just spent a batch
    removing. `#/i/ci1 ~ whole` overshooting by ~1.4pp is expected to be a real
    defect, not drift.
+
+## Correction: the CI failures are stale baselines, not machine drift (2026-09-09)
+
+Found by the B3.5 reviewer and verified by the orchestrator against `git show`.
+**This supersedes the "genuine cross-platform variance" branch offered in the
+section above.** Do not start B3.6 part 1 from the drift hypothesis.
+
+The control that rules drift out is in the reviewer's own run, on the Windows
+machine: `#/tables ~ a row opened` - the same "card short by the add-to-list
+row inside a modal" shape as `#/roll/wondrous ~ modal` - reproduces all six of
+its recorded numbers **to the hundredth**, as does `#/tables ~ help`. This
+machine reproduces recorded numbers exactly. So the failing entries are not
+failing because the machine renders differently.
+
+What actually happened is that the numbers were recorded, and then the
+components those states render were changed without anyone re-baselining them:
+
+| Commit | Date | What it changed | Re-baselined? |
+|---|---|---|---|
+| `117af2e` | 2026-09-02 | rewrote `tests/parity/specs.js`; every failing entry dates from here | n/a |
+| `9fa9ad5` | 2026-09-03 | `RecordCard`, `RecordModal`, `AltPanel`, `RollPanel`, `StdPanel` - the components `#/i/ci1 ~ whole` and `#/roll/wondrous ~ modal` draw | **no** - the commit touches no specs file |
+| `e5985ff` | 2026-09-03 | `PageHead`, `help.ts` - the components `~ help` draws | touched `specs.js`, but not these entries |
+
+The entries that *do* reproduce exactly were recorded in `64e79a0`/`9fa9ad5`,
+i.e. after those component changes. That is the whole pattern.
+
+`#/i/f1` is a separate and simpler case: `2970c03` (B3) added the state with
+**no `ACCEPTED` entry and no debt entry**, so it has never passed. Every other
+record-card route has the add-to-list `ACCEPTED` entry; this one was missed.
+
+Practical consequence for B3.6 part 1: the branch to expect is "the debt was
+recorded before a change to the component and nobody re-ran it", which is
+re-baselining with a reason that names the commit and the change - not
+"rendering noise" and not "another machine". Cross-platform variance is still
+real at the tenth-of-a-percent level (the CI and Windows failing lists differ
+slightly) but it is not what these failures are.

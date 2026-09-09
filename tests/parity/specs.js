@@ -760,12 +760,12 @@ const VISUAL_DEBT = {
      bottom of the window once a row is ticked, and does not exist yet; the
      control list says so in ACCEPTED. Bigger on a phone, where the bar wraps
      to two rows instead of one. */
-  '#/tables ~ a row ticked @ ru 1100': selBar(1.19, 'at the bottom of the window'),
-  '#/tables ~ a row ticked @ ru 768': selBar(1.52, 'mid width'),
-  '#/tables ~ a row ticked @ ru 375': selBar(4.59, 'on a phone, where the bar wraps to two rows'),
-  '#/tables ~ a row ticked @ en 1100': selBar(1.0, 'in English'),
-  '#/tables ~ a row ticked @ en 768': selBar(1.32, 'in English, mid width'),
-  '#/tables ~ a row ticked @ en 375': selBar(4.51, 'in English, on a phone'),
+  '#/tables ~ a row ticked @ ru 1100': selBar(1.1, 'at the bottom of the window'),
+  '#/tables ~ a row ticked @ ru 768': selBar(1.39, 'mid width'),
+  '#/tables ~ a row ticked @ ru 375': selBar(4.3, 'on a phone, where the bar wraps to two rows'),
+  '#/tables ~ a row ticked @ en 1100': selBar(0.94, 'in English'),
+  '#/tables ~ a row ticked @ en 768': selBar(1.23, 'in English, mid width'),
+  '#/tables ~ a row ticked @ en 375': selBar(4.29, 'in English, on a phone'),
 
   /* The tables help panel has the same rasterisation noise as the other two -
      the box, every paragraph and the colour were measured identical, and two
@@ -800,21 +800,40 @@ const VISUAL_DEBT = {
     why: 'the same, mid width'
   },
 
-  /* core_item's row anchor, on a phone: arriving scrolls straight past the
-     toolbar and the filter bar, so several description-heavy rows sit in the
-     fold at once where the bare route only ever showed one or two. The row
-     itself is near the top of a short table, so the scroll distance is small
-     in both apps and the leftover is exactly what B3.5's diff image shows:
-     the toolbar and a couple of rows just below it double-printed a few
-     pixels apart, the ordinary sub-pixel reflow noise every other 375px
-     description entry carries, not a new cause. */
+  /* core_item's row anchor, on a phone: not a wrap difference, and not voa's
+     harness-side frozen-scrollY mechanism either - both measured directly, a
+     standalone script replicating the harness's own sequence (arrive at
+     1100, then resize through 768 to 375 with no further navigation,
+     prepare()'s prefers-reduced-motion applied throughout) and reading
+     window.scrollY plus [data-row="ci1"]'s getBoundingClientRect() at every
+     step. At 1100 and 768 the two apps match to the pixel - same scrollY,
+     same document height, same row rect - so nothing about this row's own
+     position or wrap ever differs, in either app, at those widths. The two
+     apps only split at 375, where `next`'s scrollY lands ~13px further down
+     the page than `legacy`'s: TablesPage.svelte's anchor effect defers
+     `target.scrollIntoView(...)` behind `document.fonts.ready`, unlike
+     app.js's synchronous call inside render(), and in this environment that
+     resolves only after the harness has already stepped past the 768px
+     screenshot - so the rewrite's one and only scroll computes its target
+     against the 375px layout's `[data-row]` `scroll-margin-top` (132px,
+     TableRows.svelte's `max-width:600px` override) instead of the 118px
+     `legacy` scrolled against once, back at 1100px, and never revisited. The
+     14px gap between those two constants is where the measured ~13px comes
+     from; the remainder shifts every line in the fold, which is what reads
+     as a doubled image in the diff. This is the opposite shape from voa: voa's
+     harness never rescrolls and reuses one frozen value across widths; here
+     the rewrite really does scroll a second time, just against the wrong
+     width's constant. A real, reproducible defect in the port, not rendering
+     noise - worth a fix (the effect should not let a viewport resize outrace
+     its own deferred scroll) but out of this batch's scope. Reproduced twice
+     in each language with identical results. */
   '#/tables/core_item ~ row anchor @ ru 375': {
     pct: 8.85,
-    why: 'several description-heavy rows sit above the fold at once here, each wrapping a word earlier than the live app - the same noise as every other 375px description entry, not a new cause'
+    why: "TablesPage.svelte's row-anchor scroll fires late, behind document.fonts.ready, and lands against the 375px scroll-margin-top (132px) instead of the 118px the live app scrolled against once at 1100px - see the note above VISUAL_DEBT"
   },
   '#/tables/core_item ~ row anchor @ en 375': {
-    pct: 8.51,
-    why: 'the same, in English'
+    pct: 7.92,
+    why: 'the same mechanism, in English - a shorter fold at this width means less of the page is shifted, so a lower percentage'
   },
 
   /* voa's section anchor, on a phone, is a different animal from the row

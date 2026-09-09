@@ -88,6 +88,21 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    /* Vitest defaults to 5000ms, which is below what these tests actually do:
+       axe over a full page in jsdom takes seconds, and the slowest a11y specs
+       were measured at 13.5s. The default held only on an idle machine - one
+       `npm run check` with a single puppeteer probe alongside produced 92
+       failures, 71 of them `Test timed out in 5000ms`, on a suite that passes
+       658/658 at 30s. Three sessions wrote that off as "contention" before
+       anyone looked at the config.
+
+       30s is a little over twice the slowest measured test, so a genuinely
+       hung test still fails rather than hanging the run. It does not fix the
+       second half of the problem: a timed-out test leaves `axe.run()` in
+       flight and axe holds a global lock, so one timeout takes the rest of the
+       file with it (`Axe is already running`). That, and whether the larger
+       timeout should be scoped to the a11y specs alone, is issue 47's B3.6. */
+    testTimeout: 30_000,
     include: ['src/**/*.test.ts'],
     setupFiles: ['./vitest-setup.ts'],
     coverage: {

@@ -11,15 +11,17 @@ depends on chat history.
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `4976cb4` (planning session). B3.5's own commit is
-  this session's; see `git log` for its hash.
+  `a58dd97`; this session's remediation commit is on top of it - see `git log`
+  for its hash.
 
 Phase 4 is in progress. B1, B2, B3 and now **B3.5 are built**. The batch order
 ahead is **B3.6 -> B4**; B4 (the three equipment tables) is unchanged and still
 follows, with both of its early checks intact - see "Deferred".
 
-**B3.6 is one batch in two parts**, merged at the owner's request on the
-standing "prefer larger coherent batches" policy: **part 1** greens the red CI
-run, **part 2** builds the instrument that would have caught B3.5's defects.
+**B3.6 is one batch in three parts**, merged at the owner's request on the
+standing "prefer larger coherent batches" policy: **part 0** makes the parity
+suite quick enough to run repeatedly, **part 1** greens the red CI run, and
+**part 2** builds the instrument that would have caught B3.5's defects.
 Both are about whether the harness's verdict can be believed and both edit
 `tests/parity/*`. Part 1 first - part 2's acceptance criterion is that its new
 spec fails on the fixes part 1 and B3.5 made, which needs those fixes to exist.
@@ -115,6 +117,80 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   states this batch never touches, confirmed pre-existing via `git stash` - see
   "Blockers".
 
+- Batch name/id: **B3.5 remediation - fix-then-continue blockers** (this
+  session, on top of `a58dd97`)
+- What shipped: two review blockers only, per the orchestrator's explicit
+  scope (no replanning, no B3.6, no B4, one commit).
+  - **Blocker 1**, six stale `#/tables ~ a row ticked` entries sitting inside
+    `DEBT_SLACK` (silent pass): confirmed by a filtered run
+    (`node tests/parity.js "a row ticked"`) and lowered to the measured
+    values - `ru 1100` 1.19->1.1, `ru 768` 1.52->1.39, `ru 375` 4.59->4.3,
+    `en 1100` 1.0->0.94, `en 768` 1.32->1.23, `en 375` 4.51->4.29. All six
+    match the numbers the orchestrator had already measured; nothing moved
+    between that measurement and this run.
+  - **Blocker 2**, `#/tables/core_item ~ row anchor @ ru|en 375`'s disproved
+    reason: a standalone script replicated the harness's own arrival
+    sequence (`prepare()`'s reduced-motion, open at 1100, resize through 768
+    to 375 with no further navigation) and read `window.scrollY` plus
+    `[data-row="ci1"]`'s `getBoundingClientRect()` at every step, in both
+    apps. Result: legacy and next match to the pixel at 1100 and 768 -
+    same scrollY, same document height, same row rect - so neither the
+    "wraps a word earlier" reason nor the frozen-scrollY-in-the-harness
+    mechanism voa has applies here; both are ruled out by measurement, not
+    assertion. The two apps only split at 375, where `next`'s scrollY lands
+    about 13px further down than `legacy`'s. Root cause: `TablesPage.svelte`'s
+    row/section-anchor effect defers `target.scrollIntoView(...)` behind
+    `document.fonts.ready`, unlike `app.js`'s synchronous call inside
+    `render()`; in this environment that resolves only after the harness has
+    already stepped past the 768px screenshot, so the rewrite's one and only
+    scroll computes its target against the 375px layout's
+    `[data-row]` `scroll-margin-top` (132px, `TableRows.svelte`'s
+    `max-width:600px` override) instead of the 118px `legacy` scrolled
+    against once, at 1100px, and never revisited - a 14px constant gap that
+    accounts for essentially all of the measured ~13px. **A real,
+    reproducible defect in the port** (confirmed twice per language, same
+    result both times), not rendering noise - the block comment and both
+    entries' `why` were rewritten to name it; the `pct` values were updated
+    to what this session actually measured (`ru 375` stays 8.85, matching;
+    `en 375` moves from 8.51 to 7.92, since 8.51 no longer passes
+    `DEBT_SLACK` against this session's repeatable 7.92 measurement -
+    lowering it is the same "read the run output, don't guess" standard
+    B3.5 held itself to). The underlying bug (the effect racing the
+    harness's own resize sweep) is not fixed here - out of this pass's
+    scope, worth a real fix later: the effect should not let a viewport
+    resize outrace its own `fonts.ready`-deferred scroll.
+  - **Also fixed:** `issues/47/context.md`'s "Correction" section (already
+    present in the working tree, uncommitted, before this pass started) is
+    included in this commit since it is exactly what "note the new final
+    section" in this pass's own instructions pointed at.
+  - **Not fixed, flagged for the next session:** while confirming Blocker 2,
+    `#/tables/core_item ~ row anchor @ en 768` measured `0.00%` against its
+    recorded `0.43%` debt, four times in a row (once alone, three times in a
+    tight loop) - a silent `DEBT_SLACK` pass, the same shape as Blocker 1's
+    six entries. This contradicts this pass's own instructions, which stated
+    the reviewer had already checked "the four 1100/768 anchor entries" and
+    found them reproducing their recorded numbers exactly. Left untouched
+    because it is not one of the two named blockers and this pass's scope is
+    explicitly "two blockers only, one commit" - but it is real on this
+    machine, right now, and worth a second look before it is assumed stale
+    or assumed accurate. Possibly related to Blocker 2's own finding: the
+    `fonts.ready`-gated scroll's timing is inherently race-prone, and 768 is
+    close to wherever that race resolves in this environment.
+  - **Handoff and context corrected, not the plan:** `plan.md` was read but
+    not edited - none of this pass's fixes are a plan-level design change,
+    and the task explicitly excludes replanning.
+- Files changed: `tests/parity/specs.js` (the two blockers);
+  `issues/47/context.md` (pre-existing uncommitted "Correction" section,
+  included); `issues/47/handoff.md` (Blockers correction, Deferred nits, this
+  entry).
+- Commit(s): see `git log` for this session's remediation commit, on top of
+  `a58dd97`.
+- Deviations and rationale: none from the two named blockers. The `en 375`
+  `pct` change (8.51 -> 7.92) was not explicitly pre-computed in the task
+  brief (which cited 8.47 from a different session's measurement) - this
+  session's own repeated, stable measurement is what got recorded, per
+  `docs/parity.md`'s own rule to measure rather than copy a prior number.
+
 ## Verification
 
 - Commands run (exact), previous session:
@@ -161,7 +237,39 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch (implement-ready)
 
-- **Name:** B3.6 - a parity harness you can trust. Two parts, one batch.
+- **Name:** B3.6 - a parity harness you can trust. Three parts, one batch.
+
+### Part 0 - make the harness quick enough to use
+
+- **Objective:** cut the parity suite's wall clock before part 1 runs it a
+  dozen times. It is 867s on CI and ~9 min for the `tables` filter alone, and
+  that cost is why workers push runs into the background and lose them, why a
+  filtered run gets treated as the gate, and therefore why CI stayed red for
+  eight runs unnoticed. Full design in `plan.md`, "B3.6 planned, part 0";
+  reasoning in `.claude/improvements.md`, "Finding 5".
+
+- **In scope:** a `testTimeout` that matches what the tests actually do
+  (`vite.config.mts` sets none, so vitest uses 5000ms while the a11y specs
+  legitimately take 5-13s - one `npm run check` this session produced 66
+  failures, 50 of them `Test timed out in 5000ms`, on a suite that passes
+  clean alone; three sessions have now written this off as "contention");
+  content-addressed caching of the **legacy** screenshots (the
+  static root is frozen by policy, so they are recomputed identically every
+  run - key on a hash of `index.html`, `app.js`, `style.css`, `data.js`, the
+  referenced assets, the state's own definition and the viewport list; expect
+  ~half the wall clock), plus sharding the CI run across a 4-way job matrix.
+
+- **Out of scope:** local parallelism. It can change timing, and the B3 handoff
+  already records spurious 5000ms timeouts from overlapping browser work. Part
+  2 exists to make measurements trustworthy; do not destabilise the instrument
+  in the same batch.
+
+- **Acceptance:** cold and warm runs give identical verdicts and identical
+  percentages for every state; `--no-cache` reproduces the cold run; touching
+  `style.css` provably invalidates the cache; CI green and faster.
+
+- **Why it is safe before part 1:** caching returns the same bytes or re-shoots,
+  so it cannot change a pixel. The instrument is unchanged while part 1 uses it.
 
 ### Part 1 - the red CI run
 
@@ -337,10 +445,28 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     further.
   - All eleven cells are "стало хуже" (worse than the recorded debt) or a bare
     inventory mismatch - not the "got better, forgot to lower the number"
-    shape B3.5's own deletions were. Something regressed these, or the debt was
-    recorded on a machine that renders slightly differently, or `#/i/f1`
-    simply never got its `ACCEPTED` entry when it was added. Not diagnosed
-    further - out of scope for a "tables" audit batch.
+    shape B3.5's own deletions were.
+  - **Correction (this remediation pass): the cause is not machine drift.**
+    The "recorded on a machine that renders slightly differently" hypothesis
+    offered above is ruled out, not just unlikely - see `context.md`'s
+    "Correction: the CI failures are stale baselines, not machine drift"
+    section for the full evidence. The control: the same Windows machine's
+    `#/tables ~ a row opened` and `#/tables ~ help` reproduce their own
+    recorded numbers to the hundredth, so this machine does not render
+    differently from whatever recorded the debt table. What actually
+    happened is that `117af2e` (2026-09-02) recorded the numbers, then
+    `9fa9ad5` (2026-09-03) changed `RecordCard`/`RecordModal`/`AltPanel`/
+    `RollPanel`/`StdPanel` - the components `#/i/ci1 ~ whole` and
+    `#/roll/wondrous ~ modal` draw - without touching `specs.js`, and
+    `e5985ff` (2026-09-03) changed `PageHead`/`help.ts` - what `~ help`
+    draws - touching `specs.js` but not these entries. B3.6 part 1's branch
+    to expect is "recorded before a component change, never re-baselined,"
+    named with the commit - not "rendering noise" and not "another machine."
+  - `#/i/f1` is a separate, simpler case: `2970c03` (B3) added the state with
+    no `ACCEPTED` entry and no debt entry for the missing add-to-list
+    control, so **this state has never passed**, on any machine, since it
+    was added - not a regression, an omission every other record-card route
+    has already had covered.
   - **Confirmed pre-existing, not B3.5's:** `git stash push -u`, rebuild
     `dist/`, re-run the same four filters (`"wondrous ~ modal"`,
     `"wondrous ~ help"`, `"ci1 ~ whole"`, `"i/f1"`) against the unmodified
@@ -365,6 +491,57 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Deferred
 
+- **This remediation pass's own nits, from the B3.5 reviewer, recorded but not
+  fixed - do not fold any of these into a future batch without re-reading
+  them first, they are small and easy to lose:**
+  - `#/tables/voa ~ section anchor @ ru 375`'s raised entry: the entry's own
+    `why` does not itself say the number went up - only the block comment
+    above `VISUAL_DEBT` does. A reader of the entry alone cannot tell it was
+    raised rather than just recorded.
+  - `VISUAL_DEBT`'s own doc comment (`tests/parity/specs.js`, above line 676)
+    still says an entry "may go up in one case" - it now needs a second
+    clause, or a generalisation, since this remediation pass's `core_item`
+    fix keeps the entry's *reason* accurate without raising its number at
+    all, which is a second way an entry legitimately changes without either
+    ratcheting down or being the one documented raise case.
+  - `#/tables/voa ~ section anchor @ en 375` is recorded at 8.84% but
+    currently measures 8.90% (passes, inside `JITTER` of the recorded value)
+    while its sibling (`@ ru 375`) was raised to its exact measured value.
+    Inconsistent treatment of two entries with the same cause - worth
+    reconciling, not urgent since both currently pass.
+  - `plan.md`'s "What every remaining `VISUAL_DEBT` entry is" (around line 64
+    and 104) still calls the 375px row/section anchor debt "cause 6" and
+    still promises a rewrite of that section; the actual correction landed
+    as a new "B3.5 built" section instead, appended rather than folded back
+    into the original "cause" enumeration. The document now has two places
+    describing the same debt with different framing.
+  - `docs/specs/COVERAGE.md:159-160` still states debt "can only ratchet
+    towards zero" - not true today, per the same `DEBT_SLACK`-silence gap
+    B3.5 and this pass both had to work around by hand. B3.6 part 2's own
+    plan already carries the fix (`plan.md:1572`) but it has not landed.
+  - The handoff's "Cleanup performed / retained artifacts" note (B3.5, this
+    file) says `dist/` "is committed at its final, correct state" - `dist/`
+    is gitignored (`.gitignore:30`) and was never committed. The sentence
+    should have said "built," not "committed."
+  - `docs/parity.md`'s new "whole-page percentage" rule (in the `Contract`
+    list) is a seven-line paragraph sitting among one-line bullets -
+    stylistically inconsistent with the rest of the section, worth trimming
+    or moving to its own subsection later.
+- **`.selbox:has(:focus-visible)` (`style.css:1013`) has no port in
+  `TableRows.svelte`.** The live app draws an inset focus ring because the
+  row clips an outside one; the rewrite leans on `tokens.css`'s universal
+  `:focus-visible` at `outline-offset: 2px` instead, which is a visible
+  difference the moment a row checkbox is reached by keyboard. No current
+  state exercises keyboard focus on a row checkbox, so parity cannot see the
+  gap yet. Pre-existing before this remediation pass, but sits in the same
+  rule family (`TableRows.svelte`'s `.selbox`) this pass and B3.5 both
+  edited, so it is worth a line here rather than staying purely tribal
+  knowledge.
+- **The 600px overrides for `.selx`, `.selacts`, `.seldrop`, `.dropmenu`, the
+  `.lrow*` family, `.npair` and `.batch-acts` belong to components that do
+  not exist yet.** They must be ported together with their base rules when
+  those components are built, not piecemeal - the exact mistake `.selbox`'s
+  missing override was, four times over, per B3.5's `CLAUDE.md` line.
 - **B4 - the equipment tables, their facets and tier sections.** Unchanged and
   still the batch after B3.6: `eq_weapon`, `eq_secondary`, `eq_armor`.
   `docs/specs/ROUTES.md`'s filter-grammar table and `lib/filters.ts`'s
