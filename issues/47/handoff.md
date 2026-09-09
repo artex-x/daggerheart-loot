@@ -7,14 +7,13 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress
-- Last agent: orchestrator (finished part 0's verification after two
-  implementers lost theirs)
+- Last agent: implementer (B3.6 part 1)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `4976cb4` (planning session). B3.5's own commit is
-  `a58dd97`; its remediation commit is `fb8cb0d`. **B3.6 part 0 is built and
-  committed** - see `git log` for its hash, on top of the agent-tooling
-  commits `001aa43`, `46b0585`, `000c147` and `79e26c9`.
+  `a58dd97`; its remediation commit is `fb8cb0d`. **B3.6 parts 0 and 1 are
+  built and committed** - part 0 is `f7308a9`, part 1 is this session's commit
+  on top of it.
 
 Phase 4 is in progress. B1, B2, B3 and now **B3.5 are built**. The batch order
 ahead is **B3.6 -> B4**; B4 (the three equipment tables) is unchanged and still
@@ -24,13 +23,13 @@ follows, with both of its early checks intact - see "Deferred".
 standing "prefer larger coherent batches" policy: **part 0** makes the parity
 suite quick enough to run repeatedly, **part 1** greens the red CI run, and
 **part 2** builds the instrument that would have caught B3.5's defects.
-**Part 0 is built and committed; part 1 is next.** Part 0's own speed claim
-failed measurement - the cache buys ~10%, not half, and the 4-way shard is
-what actually makes CI affordable. See `plan.md`, "B3.6 built, part 0".
-Both are about whether the harness's verdict can be believed and both edit
-`tests/parity/*`. Part 1 first - part 2's acceptance criterion is that its new
-spec fails on the fixes part 1 and B3.5 made, which needs those fixes to exist.
-Part 1 is a coherent commit boundary on its own if the batch is interrupted.
+**Parts 0 and 1 are built and committed; part 2 is next.** Part 0's own speed
+claim failed measurement - the cache buys ~10%, not half, and the 4-way shard
+is what actually makes CI affordable. Part 1 diagnosed all 22 failing CI cells,
+fixed one real defect worth eighteen debt entries, closed a harness race and
+wrote the platform rule; **whether CI is actually green needs the owner to
+push, and nobody has verified it**. See `plan.md`, "B3.6 built, part 0" and
+"B3.6 built, part 1".
 
 B4 was offered as a merge target too and is deliberately **not** folded in:
 B4's own acceptance includes a clean parity run and new `VISUAL_DEBT` entries,
@@ -227,9 +226,142 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   five-hour window is not machine-readable outside a terminal session, so the
   human calls time.
 
+- Batch name/id: **B3.6 part 1 - the red CI run** (this session)
+- What shipped:
+  - **The complete failing list, off CI rather than off a local run.** The
+    `failure-output` artifact of run `34361836525` (commit `79e26c9`) carries
+    the whole ubuntu `parity.log` plus every screenshot and diff image; it
+    failed **22** cells, not the dozen `gh run view --log-failed` prints.
+    Every one is diagnosed with a named cause in `plan.md`, "B3.6 built,
+    part 1"; none is left as "antialiasing".
+  - **One real defect, worth eighteen debt entries.** `PageHead.svelte`'s
+    `.helpbox` had dropped the `animation: pop .2s ... both` line style.css
+    gives it. An element that animates a transform is painted through its own
+    layer and the layer rounds text differently, which is why the panel's
+    geometry measured identical in both apps to three decimals while single
+    lines came out a pixel apart. With the line ported, **all eighteen help
+    cells measure 0.00%** - `#/roll/std ~ help`, `#/roll/wondrous ~ help` and
+    `#/tables ~ help`, both languages, all three widths. `helpNoise` and its
+    entries are deleted.
+  - **A harness race closed.** `tests/parity/driver.js`'s `ready()` now waits
+    for `document.fonts.ready`, the promise `TablesPage.svelte`'s anchor
+    effect defers its scroll behind, so the width sweep cannot start while
+    that scroll is outstanding. `#/tables/core_item ~ row anchor @ en 375` has
+    produced 7.92% on three consecutive runs where it used to alternate
+    7.92/8.47 - the blocker part 0 handed to part 1.
+  - **`#/i/f1` finally has its entries.** Two `ACCEPTED` control-list lines
+    (the add-to-list gap every other record route already had, missed by
+    `2970c03`) and four `VISUAL_DEBT` cells for the row peeking above the
+    fold.
+  - **Re-baselined to CI, per owner decision 1:** the six `#/i/ci1 ~ whole`
+    cells and `#/tables ~ a row ticked @ en 375`. Each `why` says it was
+    raised and why. `#/roll/wondrous ~ modal` was left alone - it reproduces
+    its recorded numbers exactly on CI and only Windows disagrees.
+  - **The platform rule** is in `docs/parity.md`, "Machine variance": CI is
+    the baseline, a local run is advisory, how to read CI's numbers without
+    pushing, and how to tell variance from a defect (size, and whether both
+    machines agree). `VISUAL_DEBT`'s own doc comment now lists the three ways
+    a figure legitimately goes up instead of one.
+  - **Item 5 settled and recorded:** the unfiltered suite stays a blocking
+    gate, sharded four ways by part 0. No workflow change.
+- Files changed: `app/src/components/PageHead.svelte`,
+  `app/src/components/TablesPage.svelte`, `tests/parity/driver.js`,
+  `tests/parity/specs.js`, `docs/parity.md`, `issues/47/plan.md`,
+  `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's part 1 commit, on top of
+  `f7308a9`.
+- Deviations and rationale:
+  - **A defect was found and deliberately left unfixed: the rewrite's anchor
+    flash has never been visible.** The four 1100/768 anchor entries said "the
+    flash outline's own antialiasing"; the ring is not rasterised differently,
+    it is absent. `classList.add('flash')` on an element a keyed `{#each}`
+    owns is dropped by the next render. The fix will move the `@ ru` cells
+    that currently pass by accident, so it needs the whole anchor set
+    re-measured at once - see "Next batch" and `plan.md`.
+  - **The synchronous scroll was tried and reverted.** app.js scrolls inside
+    `render()`, so matching it looked like the faithful port; measured, this
+    component's first layout is 8px short of its final one, and the sync
+    version took `#/tables/core_item ~ row anchor` from exact to 6-8% at 1100
+    and 768. Recorded in the effect's comment so the next session does not
+    re-try it.
+  - **A harness re-scroll on every width change was tried twice and
+    reverted.** Replaying the page's own `scrollIntoView` after each resize
+    made 768 worse in both variants (holding the node: the live app rebuilds
+    its DOM on a language switch, so only the rewrite re-scrolled; holding a
+    selector and re-querying: 768 went from exact to 8-9% anyway). The width
+    sweep's remaining cost is recorded as debt rather than papered over.
+
 ## Verification
 
-- Commands run (exact), this session (B3.6 part 0), all by the orchestrator
+- Commands run (exact), this session (B3.6 part 1):
+  - `gh run download 34361836525 -n failure-output` into a scratch directory
+    outside the repository - 205 MB, the ubuntu `parity.log` plus 810 PNGs.
+    **22 FAIL lines**, against the dozen `gh run view 34361836525
+    --log-failed` prints. The extra ten: `#/tables ~ help @ en 768` and
+    `@ en 375`, both `voa ~ section anchor @ 375` cells, both `core_item ~ row
+    anchor @ 375` cells, and `#/i/f1`'s four (two inventory, two pixel).
+  - `npm run build` - clean, five times across the session.
+  - `node tests/parity.js "ci1 ~ whole" "wondrous ~ help" "i/f1" "a row
+    ticked" "tables ~ help" "section anchor" "row anchor" "wondrous ~ modal"`
+    - the baseline before any fix: 16 расхождений, matching what the CI
+    artifact says except where the two machines differ.
+  - `node tests/parity.js "~ help" "ci1 ~ whole" "a row ticked" "i/f1"
+    "wondrous ~ modal"` after the `.helpbox` fix - **all eighteen help cells
+    0.00%**; `ci1 ~ whole`, `a row ticked`, `modal` and `f1` unmoved, which is
+    what says the fix is confined to the panel.
+  - `node tests/parity.js "section anchor" "row anchor"` - run three times
+    across the session after the `ready()` change, `расхождений нет` each
+    time, same numbers to the hundredth (`row anchor @ en 375` 7.92 three
+    times where it used to alternate 7.92/8.47).
+  - `npm run check` - **exit 0**; 96.43% statements, 90.02% branches, 95.92%
+    functions, 96.65% lines.
+  - `npm run check:built` - **exit 0**: build, `file://` smoke, bundle budget
+    (56.8 kB gzip against 120 kB).
+  - `node tests/run-all.js parity` (full, unfiltered) - **three attempts, no
+    clean result, and the reason is not this batch.** A second agent was
+    rewriting `img/`, `og/`, `data.js` and `i/*.html` in the same working tree
+    and deleting `test-output/` under the run; see "Blockers". Attempt 1 died
+    at 153s, attempt 2 at 286s and attempt 3 at 44s, each with `ENOENT` on a
+    screenshot path because the output directory had been removed mid-run.
+    Attempt 2 got through **130 of the ~264 cells** before it died and its
+    failures are exactly the six this batch predicts and no others:
+    `#/roll/wondrous ~ modal @ ru 768` (8.73 against 8.57) and `@ ru 375`
+    (13.90 against 13.55), which pass on CI and fail only here, plus five of
+    the six re-baselined `#/i/ci1 ~ whole` cells reported as *improved*
+    (5.37 against 5.87, 5.61 against 6.14, 7.64 against 8.49, 5.40 against
+    5.91, 7.69 against 8.37) because the table now follows CI and this machine
+    reads lower. Everything else in those 130 cells passed, including all
+    twelve `~ help` cells it reached. **Re-run this gate on a quiet tree
+    before trusting it.**
+- Standalone probes, all with the harness's own launch args
+  (`--no-sandbox --disable-dev-shm-usage --disable-gpu`) and its
+  `prefers-reduced-motion: reduce`, both apps, kept outside the repository:
+  - `document.fonts` in both apps: `size` **0**, `status` `loaded` before the
+    first paint, `ready` settling ~400ms in. This is what disproves the
+    face-swap reason the anchor effect's comment carried.
+  - the help panel at 768: box rect, padding, border, margin, and every
+    paragraph's rect, computed `font`, `line-height` and per-line client
+    rects - **identical to three decimals in both apps** before the fix, which
+    is what makes the pixel difference a paint difference rather than a layout
+    one.
+  - the width sweep: `window.scrollY` 368/368/374 for the live app against
+    368/368/387 for the rewrite at 1100/768/375, one `scrollIntoView` each, at
+    1100, against the same 118px `scroll-margin-top`.
+  - `.flash` presence: live app yes on arrival, no after 1.6s, **yes again
+    after the EN click**; rewrite no at every step.
+  - pixel decomposition of the CI screenshots (pixelmatch with the harness's
+    own settings, `diffMask`, banded by row): `#/i/ci1 ~ whole @ ru 1100` is
+    0.49% the missing row, ~1.7% the footer it holds down and 3.62% the 38px
+    band the shorter page runs out at; reinserting those 38px leaves
+    **zero** changed pixels below the row.
+- Results: the batch's own fixes are clean and reproducible under focused
+  runs; `npm run check` and `npm run check:built` pass. The unfiltered gate
+  has no clean result and could not get one while a second agent shared the
+  tree - reported rather than worked around. **CI green is the criterion that
+  matters and it is not verified either** - it needs the owner to push. Read
+  the run against the resulting commit before treating part 1 as done.
+
+- Commands run (exact), the part 0 session, all by the orchestrator
   after the workers lost theirs:
   - `node tests/parity.js tables --no-cache` (empty cache) - 12m39s, exit 1 on
     the one pre-existing failure below.
@@ -250,14 +382,14 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   at **8.47% against its recorded 7.92%**. Pre-existing, not part 0's, and
   see "Blockers" - it is a race, not a drift.
 
-- Commands run (exact), previous session:
+- Commands run (exact), the B3 session:
   - `npm run check` - passes: format, lint, typecheck (0 errors), data build,
     `derived`, `i18n`, and the full Vitest suite (657 tests, all thresholds
     met).
   - `npm run check:built` - passes: build, `file://` smoke, bundle budget
     (56.8 kB gzip against a 120 kB budget).
   - `node tests/parity.js "tables"` - passes clean (`расхождений нет`).
-- Commands run, this session (B3.5, in order):
+- Commands run, the B3.5 session, in order:
   - `node tests/parity.js "tables"` (twice - once to recover the numbers the
     predecessor agent's background run had produced but not logged, once after
     the `VISUAL_DEBT` rewrite) - both **`расхождений нет`**, second run's exact
@@ -287,15 +419,15 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   proof.
 - Gates for the next batch: `npm run check`, `npm run check:built`,
   `node tests/parity.js "tables"` while working (or a narrower filter matching
-  B3.6's own `only` list), `node tests/run-all.js parity` before the commit.
-  That last command was **already red going into B3.6, for reasons B3.6 did
-  not cause** - greening it is now B3.6 part 1's whole job, so the gate and
-  the batch are the same thing. See "Blockers".
+  part 2's own `only` list), `node tests/run-all.js parity` before the commit.
+  Part 1 has diagnosed every cell that command was failing; what is left of
+  its redness on a Windows machine is the documented per-platform tolerance,
+  cell by cell, in "Blockers".
 
 ## Next batch (implement-ready)
 
 - **Name:** B3.6 - a parity harness you can trust. Three parts, one batch.
-  **Part 0 is built and committed. The next batch is part 1.**
+  **Parts 0 and 1 are built and committed. The next batch is part 2.**
 
 ### Part 0 - BUILT. Kept for its reasoning, not as work to do
 
@@ -334,7 +466,16 @@ per-width screenshot is cacheable. The original text follows unedited.
 - **Why it is safe before part 1:** caching returns the same bytes or re-shoots,
   so it cannot change a pixel. The instrument is unchanged while part 1 uses it.
 
-### Part 1 - the red CI run
+### Part 1 - BUILT. Kept for its reasoning, not as work to do
+
+Built and committed this session; see "Completed" and `plan.md`, "B3.6 built,
+part 1". What it found that this section did not anticipate: the `~ help`
+states were not rendering noise at all but one unported CSS declaration, worth
+eighteen entries; `#/i/ci1 ~ whole` was the right reason with a stale number
+taken on the wrong machine; and the 375 anchor states are the harness's own
+width sweep, not anything either app does. It also found a defect it did not
+fix - the rewrite's anchor flash has never been drawn - which is now the first
+item under "Deferred". The original text follows unedited.
 
 - **Objective:** make `node tests/run-all.js parity` green, on CI, honestly.
   `.github/workflows/ci.yml` runs `npm run test:legacy` = `node
@@ -385,9 +526,29 @@ per-width screenshot is cacheable. The original text follows unedited.
   this section is the condensed, implement-ready version of the same plan,
   plus what B3.5 learned that touches it.
 
+- **What part 1 changed under this section, before anything else is read:**
+  - The `~ help` states are now **0.00% in all eighteen cells**, so they are
+    no longer an example of anything absorbed. The absorbing reason they
+    carried has been deleted along with the `helpNoise` helper.
+  - The `only` list's probe on `.ffilter .field .lbl` and
+    `.toolbar input[type=search]` still tests exactly what B3.5 fixed, so
+    part 2's "revert each fix and watch the probe name it" criterion is
+    unchanged.
+  - The four "pre-existing full-suite failures" this section's acceptance
+    criteria hedge about are **gone**: part 1 diagnosed all 22 CI cells and
+    the table now follows CI. Delete that hedge rather than carrying it. What
+    replaces it is narrower and is under "Blockers": a handful of cells fail
+    on a Windows machine *because* the table follows CI, and the rewrite's
+    anchor flash is a known unfixed defect.
+  - The planned ratchet (`pct <= JITTER && debt.pct > JITTER` fails) will not
+    fire on `#/i/f1 @ ru|en 768`, which are recorded at 0.08 - under `JITTER`
+    on purpose, because that cell straddles it between machines.
+
 - **Read `plan.md`'s "B3.5 built" section first**, specifically the paragraph
   on the frozen-scrollY mechanism `#/tables/voa ~ section anchor @ ru 375`
-  exposed. B3.6's four probes do not read a screenshot's scrollY - a probe is
+  exposed - and then `plan.md`'s "B3.6 built, part 1", which corrects it: the
+  two apps scroll once each, at 1100, to the same pixel, and part with the
+  width sweep. B3.6's four probes do not read a screenshot's scrollY - a probe is
   `getBoundingClientRect()`/`textContent` on a live element, not a pixel
   count - so the mechanism most likely does not apply to this batch's `only`
   list. It is flagged here as a thing to keep in mind, not a known defect in
@@ -487,84 +648,104 @@ per-width screenshot is cacheable. The original text follows unedited.
 
 ## Blockers
 
-- **`#/tables/core_item ~ row anchor @ en 375` is a race, and both of its
-  numbers are real (found this session, part 1 owns it).** B3.5's remediation
-  pass measured 7.92% four times and lowered the entry to it. Part 0's three
-  runs, plus an independent run earlier the same day, all measure **8.47%** -
-  and the brief that pass worked from had also cited 8.47 from a third
-  session. That is not drift between machines: it is one machine giving two
-  stable answers, which is what the `fonts.ready`-deferred `scrollIntoView`
-  racing the harness's resize sweep would produce. **Do not re-baseline this
-  entry to either value.** Characterise the race or fix it - the effect should
-  not let a viewport resize outrace its own deferred scroll - and only then
-  record a number. It is currently the sole failure of the `tables` filter.
+- **CI green is unverified and only the owner can verify it.** Part 1's whole
+  point was the red run, and the acceptance criterion that matters cannot be
+  reached from a working tree: it needs a push. Read the run against this
+  commit before treating part 1 as done. What to expect if it is still red:
+  - the eighteen `~ help` cells should be **0.00%** and their entries are
+    deleted, so a `помимо` failure there would mean the `.helpbox` animation
+    behaves differently on ubuntu than it does here - unlikely, since the fix
+    is one CSS declaration, but it is the first thing to check;
+  - the six `#/i/ci1 ~ whole` cells and `#/tables ~ a row ticked @ en 375`
+    are recorded at the figures run `34361836525` measured, so they should
+    land on their number;
+  - **the four 375 anchor cells are the ones to watch.** They are recorded at
+    what this machine measures (10.05 / 8.84 / 8.85 / 7.92) and CI measured
+    9.93-11.55 on a run where the scroll could still lose its race. The race
+    is closed now, so CI should move towards these figures - but that is a
+    prediction, not a measurement, and it is the one place part 1 could still
+    leave the run red. If it does, they are the cells to re-baseline off the
+    new artifact, and nothing else needs touching.
 
-- **New: `node tests/run-all.js parity` (the unfiltered suite) fails on four
-  states, discovered while running B3.5's own gate. Confirmed pre-existing,
-  not caused by B3.5, not caused by B3.6 either - but both batches list that
-  command as an acceptance criterion, so the next session that wants a truly
-  clean full run has to deal with this first.** The failures:
-  - `#/roll/wondrous ~ modal @ ru 768` (8.73% measured against an 8.57% debt)
-    and `@ ru 375` (13.90% against 13.55%).
-  - `#/roll/wondrous ~ help @ ru 768` (0.92% against 0.73%), `@ ru 375` (0.64%
-    against 0.52%), `@ en 375` (0.95% against 0.79%).
-  - `#/i/ci1 ~ whole @ ru 768` (5.61% against 5.39%), `@ ru 375` (7.64% against
-    7.28%), `@ en 768` (5.40% against 5.22%), `@ en 375` (7.69% against 7.01%).
-  - `#/i/f1` (both languages): a `the controls on the page :: controls`
-    mismatch - the live app's control inventory includes `Добавить в список`/
-    `Add to list`, the rewrite's does not, and this state's `ACCEPTED` entry
-    for that gap was never written (every other record-card route has one).
-    Also a small pixel drift with **no** `VISUAL_DEBT` entry at all: `@ ru
-    1100` 0.60%, `@ ru 768` 0.11%, `@ en 1100` 0.44%, `@ en 768` 0.10% -
-    plausibly the same missing-control gap shifting the layout, not measured
-    further.
-  - All eleven cells are "стало хуже" (worse than the recorded debt) or a bare
-    inventory mismatch - not the "got better, forgot to lower the number"
-    shape B3.5's own deletions were.
-  - **Correction (this remediation pass): the cause is not machine drift.**
-    The "recorded on a machine that renders slightly differently" hypothesis
-    offered above is ruled out, not just unlikely - see `context.md`'s
-    "Correction: the CI failures are stale baselines, not machine drift"
-    section for the full evidence. The control: the same Windows machine's
-    `#/tables ~ a row opened` and `#/tables ~ help` reproduce their own
-    recorded numbers to the hundredth, so this machine does not render
-    differently from whatever recorded the debt table. What actually
-    happened is that `117af2e` (2026-09-02) recorded the numbers, then
-    `9fa9ad5` (2026-09-03) changed `RecordCard`/`RecordModal`/`AltPanel`/
-    `RollPanel`/`StdPanel` - the components `#/i/ci1 ~ whole` and
-    `#/roll/wondrous ~ modal` draw - without touching `specs.js`, and
-    `e5985ff` (2026-09-03) changed `PageHead`/`help.ts` - what `~ help`
-    draws - touching `specs.js` but not these entries. B3.6 part 1's branch
-    to expect is "recorded before a component change, never re-baselined,"
-    named with the commit - not "rendering noise" and not "another machine."
-  - `#/i/f1` is a separate, simpler case: `2970c03` (B3) added the state with
-    no `ACCEPTED` entry and no debt entry for the missing add-to-list
-    control, so **this state has never passed**, on any machine, since it
-    was added - not a regression, an omission every other record-card route
-    has already had covered.
-  - **Confirmed pre-existing, not B3.5's:** `git stash push -u`, rebuild
-    `dist/`, re-run the same four filters (`"wondrous ~ modal"`,
-    `"wondrous ~ help"`, `"ci1 ~ whole"`, `"i/f1"`) against the unmodified
-    tree - identical failures, identical numbers. `git stash pop`, rebuild,
-    confirmed B3.5's own three fixes are back and the `"tables"` filter is
-    still clean. The scratch stash left no trace; nothing from it was
-    committed.
-  - **Owned by B3.6 part 1**, which is the next batch. It runs each failing
-    state down with the standalone-script method `context.md` and B3.5's own
-    section-anchor investigation used, decides per state whether the cause
-    needs fixing or the number is genuine cross-platform variance, and adds
-    `#/i/f1`'s missing `ACCEPTED` entry. See "Next batch" and `plan.md`,
-    "B3.6 planned, part 1".
-  - **The local list above is not the whole story.** CI failed at `4976cb4` on
-    a partly different set - `#/roll/wondrous ~ help @ en 768` fails on ubuntu
-    and passes on Windows, `#/i/f1` and `~ modal` the reverse - and
-    `run-all.js` caps its CI output at about a dozen lines, so even the ubuntu
-    list may be incomplete. `context.md`'s "CI is red" section has both lists
-    and the run id. Two of the CI failures (`#/tables/wondrous @ en 768` and
-    `@ en 375`) are **already fixed** by B3.5.
+- **A local Windows run fails cells that CI passes, by design.** Four
+  `#/i/ci1 ~ whole` cells sit at the CI figure, more than `DEBT_SLACK` above
+  what this machine reads, so a full local run reports them as improved and
+  fails them; the two `#/roll/wondrous ~ modal` cells that pass exactly on CI
+  fail here for the mirror reason. This is owner decision 1 working as
+  intended and is written into `docs/parity.md`, "Machine variance". **Do not
+  edit those numbers off a local run.**
+
+- **The rewrite's anchor flash has never been drawn** - found by part 1,
+  deliberately not fixed by it. `TablesPage.svelte` adds `flash` with
+  `target.classList.add(...)` and the rows are a keyed `{#each}`, so the next
+  render replaces the element and the class goes with it. Separately, the live
+  app re-plays the flash on a language switch and the rewrite's effect is
+  guarded on `app.navigations`, so it does not. Together they are the whole of
+  the four 1100/768 anchor debt cells, whose reason used to say
+  "antialiasing". The fix is reactive state rather than a class added behind
+  Svelte's back, and it will move the `@ ru` cells that currently pass by
+  accident - both apps show no ring there - so it needs the whole anchor set
+  re-measured in one go. A batch, not a footnote.
+
+- **The parity harness's width sweep is not a state.** It looks at one
+  document at 1100, 768 and 375 without re-arriving, and a browser moves a
+  scrolled document on reflow to hold the reading position - by picking an
+  element out of the DOM, which the two apps do not share. That is what the
+  four 375 anchor cells are, measured rather than assumed (`plan.md`, "B3.6
+  built, part 1"). Fixing it means re-arriving per width, which changes how
+  every state in the suite is measured; `overflow-anchor: none` on both sides
+  was tried and shuffles the figures without removing them. Not part 1's, not
+  part 2's as planned - worth its own decision.
+
+- **A second agent was working this tree while part 1 was verifying it, and
+  that is why the unfiltered gate has no clean result.** It calls itself
+  `refresh-artwork` - it added `.claude/agents/refresh-artwork.md` and
+  `.claude/prompts/refresh-artwork.prompt.md`, a line to `CLAUDE.md`'s
+  orchestration list, and an edit to `.claude/prompts/orchestrate.prompt.md`.
+  Between 18:57 and 19:14 local time on 2026-09-09 it rewrote **402 files
+  under `img/` and `og/`**, deleted four more (`q149`, `q182`, `q216`,
+  `q81`), and changed `data.js`, `data.json`, `catalog.csv` and every
+  `i/*.html`. **All of that is left alone and none of it is in part 1's
+  commit** - the one exception is that `CLAUDE.md` carries one line from each
+  of us, and part 1's was staged as a patch hunk so the other agent's line
+  stayed in the working tree.
+
+  What it cost: two full `node tests/run-all.js parity` runs died with
+  `ENOENT` on `test-output/parity/`, which that agent's own tooling deleted
+  mid-run, and one of them had `data.js` changed under it while the built
+  `dist/` still held the old copy - which makes every state after that point
+  meaningless. **Check `git status` before assuming any of those 400-odd
+  files are yours, and do not read a parity number taken while two agents
+  share this tree.**
+
+- **Language leaks between states through `localStorage`.** `file://` is one
+  origin, so a state that ran at `en` can leave the next state's `@ ru`
+  screenshots in English. Both apps read the same storage so no verdict is
+  wrong, but a person reading a `_ru_` screenshot will find English in it.
+  Noted, not fixed.
+
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+**Part 1's own list, and what it closed of the previous one:**
+
+- Closed: `VISUAL_DEBT`'s doc comment no longer claims a figure may go up "in
+  one case" - it now lists the three ways one legitimately does, including the
+  new one, a number taken on a machine that is not the baseline.
+- Closed: nothing in `VISUAL_DEBT` says "antialiasing" any more.
+- Still open, and now cheaper: `#/tables/voa ~ section anchor @ en 375` is
+  recorded at 8.84 and measures 8.90 here. Both pass. It was left alone
+  deliberately - CI has not measured the post-fix value yet, and moving it to a
+  local figure is exactly what the platform rule forbids. Reconcile it off the
+  next CI artifact, together with the other three 375 anchor cells.
+- New: `app/src/components/TablesPage.svelte`'s anchor effect and
+  `TableRows.svelte` need the flash to be reactive state - see "Blockers".
+- New: the harness's width sweep needs a decision - see "Blockers".
+- New: `tests/parity/driver.js`'s `prepare()` clears storage per page, but
+  `file://` shares one origin, so the language leaks between states. Harmless
+  to verdicts, confusing to a person reading screenshots.
+
 
 - **This remediation pass's own nits, from the B3.5 reviewer, recorded but not
   fixed - do not fold any of these into a future batch without re-reading

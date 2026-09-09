@@ -1820,6 +1820,192 @@ comment.
   two parity runs sharing one output directory is a real hazard for anyone
   reading numbers.
 
+### B3.6 built, part 1: the red CI run
+
+The complete failing list came off the `failure-output` artifact of run
+`34361836525` (commit `79e26c9`), not off `gh run view --log-failed`: the log
+shows about a dozen grepped lines and the run actually failed **22** cells. The
+artifact carries `test-output/parity.log` in full plus every screenshot and
+diff image the ubuntu run produced, which is what made a per-state diagnosis
+possible without guessing at CI.
+
+#### The complete list, and what each one is
+
+| State (cells) | CI | Windows | Diagnosis |
+| --- | --- | --- | --- |
+| `#/roll/wondrous ~ help` (4 failing of 6) | 0.40-1.08 | 0.35-0.95 | **Defect, fixed.** `.helpbox` never got the `animation: pop` line style.css gives it. |
+| `#/tables ~ help` (2 failing of 6) | 0.77-1.88 | at debt | Same defect, same fix. |
+| `#/roll/std ~ help` (passing, inside slack) | at debt | at debt | Same defect; found by fixing the other two. |
+| `#/i/ci1 ~ whole` (6) | 5.70-8.49 | 5.20-7.69 | Not a defect: the missing add-to-list row, proved by reconstruction. Stale number, re-baselined to CI. |
+| `#/tables ~ a row ticked @ en 375` | 4.50 | 4.29 | Not a defect: B3.5 recorded the Windows figure. Re-baselined to CI. |
+| `#/i/f1` (2 inventory, 2-4 pixel cells) | 0.62/0.46 at 1100, 0.075 at 768 | 0.60/0.44, 0.11/0.10 | Missing `ACCEPTED` and missing `VISUAL_DEBT`; the state has never passed since `2970c03`. Both written. |
+| `#/tables/core_item ~ row anchor @ 375` (2) | 9.93/10.52 | 7.92/8.84 | The harness's width sweep. Race closed; the platform gap is not. |
+| `#/tables/voa ~ section anchor @ 375` (2) | 10.31/11.55 | 8.84/10.05 | The same width sweep. |
+| `#/roll/wondrous ~ modal` (0 on CI, 2 on Windows) | at debt exactly | 8.73/13.90 | Cross-platform variance, one machine only. Table left alone. |
+
+Nothing is recorded as "antialiasing". Two of the reasons that were are now
+named defects, and the two that are not defects say which machine and which
+mechanism.
+
+#### The help panel: one missing line, eighteen entries
+
+`style.css:131-135` gives `.helpbox` `animation:pop .2s cubic-bezier(.2,.8,.3,1)
+both`. `PageHead.svelte` had ported the box and dropped that line.
+
+It reads as a motion difference and it is not only one. An element that
+animates a transform is painted through its own layer, and the layer rounds the
+text to a different set of pixels. The panel's geometry was identical before the
+fix - box, every paragraph, every line rect, computed font, to three decimals,
+measured in both apps at 768 - and yet single lines came out one pixel apart.
+Which lines was the tell: only those whose top landed on a .5-.8 fraction of a
+pixel, out of line boxes 21.6px tall. Shifting the changed band by one pixel
+made it byte-identical to the other app, which is a paint difference, not a
+layout one.
+
+With the line ported, **all eighteen help cells measure 0.00%** - `#/roll/std`,
+`#/roll/wondrous` and `#/tables`, both languages, all three widths. Every
+`helpNoise` entry is deleted and the helper with them. This is the third time
+this batch pair has found a single unported declaration behind a reason that
+said "rasterisation".
+
+#### `#/i/ci1 ~ whole`: the reason was right, the number was old
+
+Decomposed rather than assumed. The two documents differ by exactly 38px in
+height at every width; putting those 38px back into the shorter one and
+re-diffing leaves **zero** changed pixels below the missing row. Above it there
+was never anything. So the whole 5.87% is the add-to-list and print row, the
+footer it holds down, and the 38px band at the bottom - which is what the entry
+already said.
+
+Why the number moved without the component moving: it was recorded at
+`117af2e` on this project's Windows machine, and a whole-page state is the most
+platform-sensitive shape in the suite - its denominator is the whole document
+and its numerator counts every line of the shifted footer. CI reads about half
+a percent higher for the identical cause. Re-baselined to CI per owner decision
+1, with the reason saying it went up and why.
+
+#### `#/i/f1`: the state that never passed
+
+`2970c03` added it with no `ACCEPTED` entry and no debt entry, so it has failed
+on every machine since the day it was written - which is also why it never
+appeared in a CI excerpt anyone read. Added: the two `ACCEPTED` control-list
+entries every other record route already had, and four debt cells for the row
+peeking above the fold (1100 in both languages, plus 768 where only a few
+pixels show - 0.075% on CI, just over `JITTER` on Windows, which is exactly the
+kind of cell that flips between machines when it is left unrecorded).
+
+#### The anchor states: one race closed, one mechanism named, one not solved
+
+Three readings of these states have now been written down as fact. The first
+two were wrong and this section replaces them.
+
+**What was measured**, replicating the run's own sequence and reading
+`window.scrollY`, document height and the target's rect at each step:
+
+```text
+legacy  1100 sy 368  |  768 sy 368  |  375 sy 374
+next    1100 sy 368  |  768 sy 368  |  375 sy 387
+```
+
+Both apps scroll exactly once, at 1100, against the same 118px
+`scroll-margin-top`. They are on the same pixel at 1100 and at 768. They part
+only when the width sweep reaches 375, and neither lands where it was put:
+Chrome moves a scrolled document on reflow to hold the reading position, it
+chooses what to hold from the DOM, and the two DOMs are different.
+
+So it is **not** `TablesPage.svelte` scrolling a second time against the phone's
+132px margin (B3.5's reading - there is one scroll, at 118px, in both apps) and
+it is **not** rows above the target reflowing differently (B3's reading - at 375
+the two documents are the same 10065px tall and both tables are pixel-exact at
+that width).
+
+**The race is closed.** `document.fonts.ready`, which the anchor effect defers
+behind, was measured to be doing something other than what its comment claimed:
+neither app declares an `@font-face` or links a font service, so
+`document.fonts.size` is 0 and the status is `loaded` before the first paint.
+`ready` still settles ~400ms in, tracking the document's load rather than any
+font work. The deferral is still needed - scrolling synchronously in the effect
+lands the row 8px low, because this component's first layout is not its final
+one (`abs` 493.97 against 485.97, `scrollHeight` 5909 against 5890), and trying
+it took the 1100 and 768 cells from exact to 6-8%. What was wrong is that the
+run could start its width sweep while that deferral was outstanding. So
+`tests/parity/driver.js`'s `ready()` now waits for the same promise: a state
+that has not stopped moving is not a state. `@ en 375` has since produced 7.92%
+on three consecutive runs where it used to alternate 7.92/8.47.
+
+**What is left is the sweep itself**, and it is not this batch's to fix: the
+harness looks at one document at three widths, which is not what a person does,
+and re-arriving per width changes how every state in the suite is measured.
+Turning `overflow-anchor` off for both apps was tried and moves the two 375
+figures around (8.84/7.92 becomes 7.92/8.47) without removing them, so
+something else is in there that has not been found. Recorded as debt with the
+understood part named and the rest admitted.
+
+#### A defect found and deliberately not fixed: the anchor never flashes
+
+The four 1100/768 anchor entries said "the flash outline's own antialiasing".
+Cropped out of the run's own screenshots, `@ en 1100` is the live app's 2px
+gold ring against **nothing at all** in the rewrite. Confirmed off the pixels
+by asking each app for `.flash` directly:
+
+```text
+legacy   on arrival: yes  |  after 1.6s: no  |  after the EN click: yes
+next     on arrival: no   |  after 1.6s: no  |  after the EN click: no
+```
+
+Two real things. `TablesPage.svelte` adds the class with
+`target.classList.add('flash')` while the rows are drawn by a keyed `{#each}`,
+so the next render replaces the element and takes the class with it - the
+rewrite's anchor highlight has never been visible on any route. And the live
+app re-plays the flash on a language switch, because switching re-enters
+`render()` with the anchor still in the address, where the rewrite's effect is
+guarded on `app.navigations`. That second one is why only the `@ en` cells
+carry a number: at `@ ru` nothing is clicked, the live app's flash has expired
+by screenshot time, and the two apps agree by accident.
+
+Not fixed here on purpose. The fix is to make `flash` reactive state rather
+than a class added behind Svelte's back, and it will move the `@ ru` cells that
+currently pass - they pass because neither app shows a ring, and one that draws
+its ring correctly will differ from one whose ring has expired. That needs the
+whole anchor set re-measured together, which is a batch, not a footnote.
+
+#### Item 5, the blocking gate: settled, unchanged
+
+The unfiltered suite stays a blocking gate on every push and pull request. It
+is the only thing that would have caught eight red builds, and part 0 made it
+affordable by sharding it four ways, so the cost argument that was the only
+case against it is gone. No workflow change in this part.
+
+#### The platform rule
+
+`docs/parity.md`'s "Machine variance" now says which machine establishes debt
+(CI), that a local run is advisory, how to read the CI numbers without pushing,
+and how to tell variance from a defect: under ~0.3pp on one machine only is
+variance; over ~0.5pp, or both machines over the recorded figure, is a defect
+or a stale baseline. It also says out loud the consequence nobody had written
+down - a local run can legitimately fail a cell CI passes, reported as
+"stalo luchshe", and that is not licence to edit the number.
+
+#### What this leaves red on Windows, and why that is expected
+
+Four `#/i/ci1 ~ whole` cells now sit at the CI figure, which is more than
+`DEBT_SLACK` above what this machine measures, so a local full run reports them
+as improved and fails them. That is the documented per-platform tolerance, not
+a defect, and CI is the gate. The two `#/roll/wondrous ~ modal` cells that fail
+on Windows and pass exactly on CI are the same thing from the other side.
+
+#### Two things found in passing, neither part 1's
+
+- **The language leaks between states through `localStorage`.** `file://` shares
+  one origin, so a state that ran at `en` can leave the next state's `@ ru`
+  screenshots in English. Both apps read the same storage, so it cancels out
+  and no number is wrong - but a person reading `_ru_` screenshots will find
+  English in them and should know why before chasing it.
+- **`img/` and `og/` were rewritten in the working tree by something outside
+  this session**, 402 files between 18:57 and 18:58 local time. Left alone and
+  not committed. Both apps read the same files, and the artwork is drawn at a
+  fixed CSS size, so no parity number depends on which bytes are there.
+
 ### What lands in the specs and in CLAUDE.md
 
 Three questions, three different answers.

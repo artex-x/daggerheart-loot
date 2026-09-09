@@ -53,6 +53,21 @@ async function ready(page) {
       })
   );
 
+  /* And until the document has finished loading, which is what an empty
+     `document.fonts` set makes `fonts.ready` mean.
+     Not decoration: `TablesPage.svelte`'s row/section anchor defers its
+     `scrollIntoView` behind that same promise, because its first layout is
+     8px short of its final one. Without this wait the run could start the
+     width sweep while that scroll was still outstanding, and whether it
+     landed before or after a resize decided whether the browser's own scroll
+     anchoring got to adjust it - one machine reporting 7.92% and 8.47% for
+     `#/tables/core_item ~ row anchor @ en 375` on alternate runs. A state
+     that has not stopped moving is not a state, so this belongs to arrival
+     rather than to the app. */
+  await page.evaluate(async () => {
+    await document.fonts?.ready;
+  });
+
   /* One frame for the effects that run after the first paint. */
   await new Promise((r) => setTimeout(r, 120));
 }

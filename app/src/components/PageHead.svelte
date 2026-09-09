@@ -188,6 +188,28 @@
     border-radius: var(--r);
     background: var(--surface);
     border: 1px solid var(--line2);
+    /* The panel folds open the same way the card and the modal do. The port
+       had dropped this one line, and it is not only motion: an element that
+       animates a transform is painted through its own layer, and the layer
+       snaps the text to a different set of pixels. Every line box in here
+       measures identical in the two apps to three decimals - it was the lines
+       whose top lands on a .5-.8 fraction that came out one pixel apart,
+       which is a paint difference, not a layout one. Left in the reduced-motion
+       block deliberately: style.css turns off `.card`'s animation there and
+       nothing else's. */
+    animation: pop 0.2s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .helpbox p {

@@ -77,10 +77,47 @@ Record the command and result in the task handoff.
 
 ## Machine variance
 
+**CI is the baseline. A local run is advisory.** A `VISUAL_DEBT` figure is
+whatever the CI job measures, because CI is the gate that has to go green and
+it is the one machine every contributor shares. A number taken on a development
+machine may not be written into the table as though it were the baseline, even
+when that machine is the only one in front of you. Settled by the repository
+owner on 2026-09-09; per-platform pairs of numbers and a wider `JITTER` were
+both considered and rejected.
+
+The CI numbers are readable without pushing: `gh run view <id> --log-failed`
+prints about a dozen grepped lines, and the run's `failure-output` artifact
+(`gh run download <id> -n failure-output`, roughly 200 MB, expiring) carries the
+whole log plus every screenshot and diff image the run produced. Download it
+outside the repository.
+
+When a local run disagrees with the table, the question is which of the two it
+is, and the answer is in the size and in whether both machines agree:
+
+- **Under about 0.3pp, and only one machine sees it: variance.** Text hinting
+  and wrapping differ between platforms; a state whose diff is mostly text will
+  read a little differently. Leave the table alone and say so in the handoff.
+- **Over about 0.5pp, or both machines are over the recorded number: a
+  defect, or a stale baseline.** Diagnose it. Both machines agreeing that a
+  figure is wrong means the figure is wrong, whatever machine it was taken on.
+- **A whole-page state amplifies both.** Its denominator is the whole document
+  and its numerator includes every line of text below whatever moved, so it is
+  the most platform-sensitive shape in the suite. `#/i/ci1 ~ whole` reads about
+  half a percent higher on CI than on a Windows machine for one unchanged
+  cause.
+- **A state that is scrolled when the width sweep reaches it amplifies them
+  further**, because the browser repositions a scrolled document on reflow.
+  Expect whole percents, not tenths, between machines there.
+
+Because the table follows CI, a local run can legitimately fail a cell that CI
+passes - it fails as `стало лучше` when the local machine reads more than
+`DEBT_SLACK` under the recorded figure. That is expected, and it is not licence
+to edit the number. Record which cells and why in the handoff.
+
 When output looks machine-specific, first run an unchanged baseline on the same
-machine. Do not replace established debt values with local drift. For a large or
-unexpected diff, reproduce with the same Puppeteer arguments and inspect page
-bounds, scroll position, fonts, artwork readiness, and computed styles.
+machine. For a large or unexpected diff, reproduce with the same Puppeteer
+arguments and inspect page bounds, scroll position, fonts, artwork readiness,
+and computed styles.
 
 ## Harness invariants
 

@@ -645,29 +645,34 @@ const SPECS = [
  * - the screen gets better than the number -> fail, lower the number
  *
  * So the figure normally only ratchets down, and the last slice to close a
- * screen deletes its entry. It may go up in one case, and it needs saying out
- * loud in the reason when it does: content that is required and correct can
- * land before the content that positions it, and then it is in the right shape
- * at the wrong height. The footer did exactly that - it is on every page
- * because the licence asks for it, and until the panels above it are the same
- * height as the original's it counts as changed twice over. Both screenshots and a diff image land in
- * test-output/parity/ on every run, so what is left is a picture rather than an
- * argument.
+ * screen deletes its entry. A figure that goes **up** always has to say so in
+ * its own reason, not only in a comment above it, and there are three ways it
+ * legitimately can:
+ *
+ * 1. content that is required and correct lands before the content that
+ *    positions it, so it is in the right shape at the wrong height. The footer
+ *    did exactly that - it is on every page because the licence asks for it,
+ *    and until the panels above it are the same height as the original's it
+ *    counts as changed twice over;
+ * 2. a fix elsewhere moves the state - `#/tables/voa ~ section anchor @ ru
+ *    375` went up when the `.selbox` mobile width was corrected, because the
+ *    rows above its target then reflowed differently;
+ * 3. the number was taken on a machine that is not the baseline. CI is the
+ *    baseline (docs/parity.md, "Machine variance"): a whole-page state can
+ *    read half a percent higher there than on a development machine, and the
+ *    CI figure is the one that goes in.
+ *
+ * A number may also stay put while its reason is rewritten, which is what
+ * happens when a "noise" excuse turns out to name a real cause.
+ *
+ * Both screenshots and a diff image land in test-output/parity/ on every run,
+ * so what is left is a picture rather than an argument.
  */
 /* The add-to-list and print row is missing from every record card, so it is
    owed once per cell rather than once. The number is bigger on a phone, where
    the row would wrap to two lines, and bigger again end to end, where it moves
    a whole footer. */
 const listRow = (pct, where) => ({ pct, why: `the add-to-list and print row, ${where}` });
-
-/* Two lines of the help text rasterise a pixel lower. Measured, not guessed:
-   the box, every paragraph, every line box and the colour were identical to
-   three decimals and the text matches character for character, so there is no
-   value here to copy - do not go looking for one. */
-const helpNoise = (pct) => ({
-  pct,
-  why: 'a line or two of the help text rasterises a pixel lower; geometry, colour and text were measured identical, so there is nothing to copy'
-});
 
 /* The selection bar - add to list, print, copy selection - is lists' and
    print's job, not the plain table's; see ACCEPTED for the control list. */
@@ -700,12 +705,42 @@ const VISUAL_DEBT = {
   '#/i/q1 ~ another tier @ en 768': listRow(6.63, 'inside that modal, in English, mid width'),
   '#/i/q1 ~ another tier @ en 375': listRow(11.06, 'inside that modal, in English, on a phone'),
 
-  '#/i/ci1 ~ whole @ ru 1100': listRow(5.29, 'over the whole page, which it shifts the footer down'),
-  '#/i/ci1 ~ whole @ ru 768': listRow(5.39, 'over the whole page, mid width'),
-  '#/i/ci1 ~ whole @ ru 375': listRow(7.28, 'over the whole page, on a phone'),
-  '#/i/ci1 ~ whole @ en 1100': listRow(5.17, 'over the whole page, in English'),
-  '#/i/ci1 ~ whole @ en 768': listRow(5.22, 'over the whole page, in English, mid width'),
-  '#/i/ci1 ~ whole @ en 375': listRow(7.01, 'over the whole page, in English, on a phone'),
+  /* All six raised, and there is nothing new behind them: it is still only
+     the add-to-list and print row, proved rather than assumed. Reconstructing
+     the CI screenshots with the row's 38px put back - the exact height the two
+     documents differ by, 1085x1050 against 1085x1012 - leaves **zero** changed
+     pixels below the row, so the whole percentage is that row plus the footer
+     it holds down plus the 38px band at the bottom where the shorter page has
+     run out. Nothing above the row differs at all.
+
+     Why they went up rather than down: these were recorded at `117af2e` on
+     this project's Windows machine, and the numbers a whole-page state scores
+     are the most platform-sensitive the suite has - the shorter page's missing
+     38px is a fixed 3.6%, but how much of the shifted footer text differs
+     depends on how that machine wraps and hints it. CI reads 5.87/6.14/8.49
+     and 5.70/5.91/8.37 where Windows reads 5.37/5.61/7.64 and 5.20/5.40/7.69.
+     Recorded against CI, per the owner's decision that CI is the baseline;
+     see docs/parity.md, "Machine variance". Deleted, not lowered, when lists
+     and print land. */
+  '#/i/ci1 ~ whole @ ru 1100': listRow(5.87, 'over the whole page, which it shifts the footer down'),
+  '#/i/ci1 ~ whole @ ru 768': listRow(6.14, 'over the whole page, mid width'),
+  '#/i/ci1 ~ whole @ ru 375': listRow(8.49, 'over the whole page, on a phone'),
+  '#/i/ci1 ~ whole @ en 1100': listRow(5.7, 'over the whole page, in English'),
+  '#/i/ci1 ~ whole @ en 768': listRow(5.91, 'over the whole page, in English, mid width'),
+  '#/i/ci1 ~ whole @ en 375': listRow(8.37, 'over the whole page, in English, on a phone'),
+
+  /* The same row again, on the one record route that never had an entry for
+     it: `2970c03` added `#/i/f1` with neither a debt nor an ACCEPTED line, so
+     it has failed on every machine since the day it was written. At 1100 the
+     row's top edge sits just above the fold, the way #/i/q1's does; at 768
+     only a few pixels of it show, which is under JITTER on CI and just over
+     it on Windows - a difference small enough that leaving it unrecorded is
+     what makes the state flip between machines, so it is recorded. Nothing
+     shows at 375, where the card is tall enough to push the row off. */
+  '#/i/f1 @ ru 1100': listRow(0.62, 'the top of the row, just above the fold'),
+  '#/i/f1 @ ru 768': listRow(0.08, 'a few pixels of the same row, mid width'),
+  '#/i/f1 @ en 1100': listRow(0.46, 'the same, in English'),
+  '#/i/f1 @ en 768': listRow(0.08, 'the same few pixels, in English, mid width'),
 
   /* The same row, plus a focus ring the original has not got: showModal() moves
      the keyboard into the dialog and the live app leaves it on the page behind,
@@ -730,23 +765,6 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ pinned @ en 768': { pct: 1.95, why: 'the same toast, in English, mid width' },
   '#/roll/wondrous ~ pinned @ en 375': { pct: 3.82, why: 'the same toast, in English, on a phone' },
 
-  /* Core rules has the same rasterisation noise, and its help is the one with
-     four bold lines inside a paragraph - the whole text was compared character
-     for character after the shape landed, and it is identical. */
-  '#/roll/std ~ help @ ru 1100': helpNoise(0.36),
-  '#/roll/std ~ help @ ru 768': helpNoise(0.72),
-  '#/roll/std ~ help @ ru 375': helpNoise(0.6),
-  '#/roll/std ~ help @ en 1100': helpNoise(0.49),
-  '#/roll/std ~ help @ en 768': helpNoise(0.66),
-  '#/roll/std ~ help @ en 375': helpNoise(0.34),
-
-  '#/roll/wondrous ~ help @ ru 1100': helpNoise(0.29),
-  '#/roll/wondrous ~ help @ ru 768': helpNoise(0.73),
-  '#/roll/wondrous ~ help @ ru 375': helpNoise(0.52),
-  '#/roll/wondrous ~ help @ en 1100': helpNoise(0.44),
-  '#/roll/wondrous ~ help @ en 768': helpNoise(0.29),
-  '#/roll/wondrous ~ help @ en 375': helpNoise(0.79),
-
   /* The record modal a row opens is the same short-by-a-row card every other
      modal draws - see the note on #/roll/wondrous ~ modal above. */
   '#/tables ~ a row opened @ ru 1100': listRow(4.65, 'inside the modal a row opens'),
@@ -765,98 +783,117 @@ const VISUAL_DEBT = {
   '#/tables ~ a row ticked @ ru 375': selBar(4.3, 'on a phone, where the bar wraps to two rows'),
   '#/tables ~ a row ticked @ en 1100': selBar(0.94, 'in English'),
   '#/tables ~ a row ticked @ en 768': selBar(1.23, 'in English, mid width'),
-  '#/tables ~ a row ticked @ en 375': selBar(4.29, 'in English, on a phone'),
+  /* Raised from 4.29, and only because 4.29 was the wrong machine's answer:
+     B3.5's remediation pass lowered all six of these to what it measured on
+     Windows, and CI reads 4.50 for this one cell. Same selection bar, same
+     cause; recorded against CI per docs/parity.md, "Machine variance". */
+  '#/tables ~ a row ticked @ en 375': selBar(4.5, 'in English, on a phone'),
 
-  /* The tables help panel has the same rasterisation noise as the other two -
-     the box, every paragraph and the colour were measured identical, and two
-     of the paragraphs carry a bold lead the way Wondrous's does. */
-  '#/tables ~ help @ ru 1100': helpNoise(0.4),
-  '#/tables ~ help @ ru 768': helpNoise(1.08),
-  '#/tables ~ help @ ru 375': helpNoise(2.12),
-  '#/tables ~ help @ en 1100': helpNoise(0.49),
-  '#/tables ~ help @ en 768': helpNoise(1.58),
-  '#/tables ~ help @ en 375': helpNoise(0.65),
+  /* The row and section anchors, at 1100 and 768. The reason here used to be
+     "the flash outline's own antialiasing", and it is wrong: the ring is not
+     rasterised differently, **the rewrite does not draw it at all.**
 
-  /* The row and section anchors, at 1100 and 768: the flash outline itself is
-     the whole difference. Measured directly rather than assumed - the target
-     row's position, size and every pixel of its content match exactly at
-     these widths, only the 2px gold ring rasterises a fraction of a pixel
-     differently between the two apps, same class of noise as the help panel
-     and the placeholder, just on an outline instead of text. */
+     Cropped out of the run's own screenshots, `@ en 1100` is the live app's
+     2px gold ring around the row against nothing at all in the rewrite -
+     everything inside the ring is identical, which is why the number is a
+     ring's worth of pixels and no more. Confirmed off the pixels with a probe
+     that asks each app for `.flash` directly:
+
+       legacy   on arrival: yes  |  after 1.6s: no  |  after the EN click: yes
+       next     on arrival: no   |  after 1.6s: no  |  after the EN click: no
+
+     Two separate things, both real. `TablesPage.svelte`'s anchor effect adds
+     the class with `target.classList.add('flash')`, and the rows are drawn by
+     a keyed `{#each}` in `TableRows.svelte`, so the next render replaces the
+     element and the class goes with it - the rewrite's anchor highlight has
+     never been visible, on any route, since it was wired up. And the live app
+     re-plays the flash when the language is switched, because switching
+     re-enters `render()` with the anchor still in the address, while the
+     rewrite's effect is guarded on `app.navigations` and does not fire again.
+     That second one is why only the `@ en` cells carry a number: at `@ ru`
+     the harness never clicks anything, so the live app's flash has expired by
+     the time the screenshot is taken and the two apps agree by accident.
+
+     Not fixed here, deliberately. The fix is to make `flash` reactive state
+     rather than a class added behind Svelte's back, and it will move the
+     `@ ru` cells that currently pass - they pass because both apps show no
+     ring, and one that draws its ring correctly will differ from one whose
+     ring has expired. That needs the whole anchor set re-measured in one go,
+     which is a batch, not a footnote. */
   '#/tables/core_item ~ row anchor @ en 1100': {
     pct: 0.42,
-    why: "the flash outline's own antialiasing - the row underneath measures pixel-identical"
+    why: "the anchor's gold ring, which the live app re-plays on the language switch and the rewrite never draws at all - see the note above VISUAL_DEBT"
   },
   '#/tables/core_item ~ row anchor @ en 768': {
     pct: 0.43,
-    why: "the same, mid width"
+    why: 'the same missing ring, mid width'
   },
   '#/tables/voa ~ section anchor @ en 1100': {
     pct: 0.63,
-    why: "the flash outline's own antialiasing - the section underneath measures pixel-identical"
+    why: "the same missing ring, around a section instead of a row - the section's own content measures pixel-identical"
   },
   '#/tables/voa ~ section anchor @ en 768': {
     pct: 0.42,
     why: 'the same, mid width'
   },
 
-  /* core_item's row anchor, on a phone: not a wrap difference, and not voa's
-     harness-side frozen-scrollY mechanism either - both measured directly, a
-     standalone script replicating the harness's own sequence (arrive at
-     1100, then resize through 768 to 375 with no further navigation,
-     prepare()'s prefers-reduced-motion applied throughout) and reading
-     window.scrollY plus [data-row="ci1"]'s getBoundingClientRect() at every
-     step. At 1100 and 768 the two apps match to the pixel - same scrollY,
-     same document height, same row rect - so nothing about this row's own
-     position or wrap ever differs, in either app, at those widths. The two
-     apps only split at 375, where `next`'s scrollY lands ~13px further down
-     the page than `legacy`'s: TablesPage.svelte's anchor effect defers
-     `target.scrollIntoView(...)` behind `document.fonts.ready`, unlike
-     app.js's synchronous call inside render(), and in this environment that
-     resolves only after the harness has already stepped past the 768px
-     screenshot - so the rewrite's one and only scroll computes its target
-     against the 375px layout's `[data-row]` `scroll-margin-top` (132px,
-     TableRows.svelte's `max-width:600px` override) instead of the 118px
-     `legacy` scrolled against once, back at 1100px, and never revisited. The
-     14px gap between those two constants is where the measured ~13px comes
-     from; the remainder shifts every line in the fold, which is what reads
-     as a doubled image in the diff. This is the opposite shape from voa: voa's
-     harness never rescrolls and reuses one frozen value across widths; here
-     the rewrite really does scroll a second time, just against the wrong
-     width's constant. A real, reproducible defect in the port, not rendering
-     noise - worth a fix (the effect should not let a viewport resize outrace
-     its own deferred scroll) but out of this batch's scope. Reproduced twice
-     in each language with identical results. */
+  /* Both anchors, on a phone, are one mechanism and it lives in the harness.
+
+     What was measured, replicating the run's own sequence - arrive at 1100,
+     then resize through 768 to 375 with no further navigation, reduced motion
+     applied throughout - and reading `window.scrollY`, the document height and
+     the target's rect at each step:
+
+       legacy  1100 sy 368  |  768 sy 368  |  375 sy 374
+       next    1100 sy 368  |  768 sy 368  |  375 sy 387
+
+     Both apps scroll exactly once, at 1100, against the same 118px
+     `scroll-margin-top`, and land on the same pixel; they are still on the
+     same pixel at 768. They part only when the viewport narrows to 375, and
+     neither of them is where it was put: Chrome moves a scrolled document on
+     reflow to keep the reading position, and it chooses what to hold still
+     from the DOM. The two apps have different DOM, so it holds different
+     things and they end 13px apart. Everything the diff shows is that offset
+     - the same rows, the same text, one page a few pixels lower than the
+     other.
+
+     That number is a browser heuristic answering two DOM trees, and it is only
+     reachable because the harness sweeps widths on one document instead of
+     arriving at each. Nobody resizes their phone to 375 mid-read.
+
+     This corrects two earlier readings of the same states, both written here
+     as fact and both wrong. It is not `TablesPage.svelte` scrolling a second
+     time against the 132px phone margin: the probe above shows one scroll, at
+     1100, at 118px, in both apps. And it is not rows reflowing differently
+     above the target: at 375 the two documents are the same 10065px tall and
+     `#/tables/voa` and `#/tables/core_item` are pixel-exact at that width.
+
+     The 7.92%/8.47% flip that made `@ en 375` look like a coin toss was this
+     too, and it is closed: `tests/parity/driver.js` now waits for the same
+     promise the anchor effect defers behind, so the scroll always happens
+     before the sweep. Three runs since have reproduced these four numbers
+     exactly.
+
+     What is left is the harness's to fix, by re-arriving at each width rather
+     than resizing - which is a change to how every state is measured and does
+     not belong in a batch about reading the numbers honestly. Turning
+     `overflow-anchor` off for both apps was tried and is not the whole answer:
+     it moves the two 375 figures around (8.84/7.92 becomes 7.92/8.47) without
+     removing them, so something else is in there as well and has not been
+     found yet. Recorded as the debt it is, with the part that is understood
+     named and the part that is not admitted. */
   '#/tables/core_item ~ row anchor @ ru 375': {
     pct: 8.85,
-    why: "TablesPage.svelte's row-anchor scroll fires late, behind document.fonts.ready, and lands against the 375px scroll-margin-top (132px) instead of the 118px the live app scrolled against once at 1100px - see the note above VISUAL_DEBT"
+    why: "the width sweep: both apps scroll once at 1100 to the same pixel, and Chrome's own scroll anchoring moves them 13px apart when the viewport narrows to 375 - see the note above VISUAL_DEBT"
   },
   '#/tables/core_item ~ row anchor @ en 375': {
     pct: 7.92,
     why: 'the same mechanism, in English - a shorter fold at this width means less of the page is shifted, so a lower percentage'
   },
 
-  /* voa's section anchor, on a phone, is a different animal from the row
-     anchor above, recorded as the same thing until this batch checked. The
-     harness scrolls once, at its own widest layout (1100), then
-     resizes the same page down through 768 and 375 without scrolling again -
-     so the 375px screenshot shows whatever the 1100-width scrollY lands on
-     once the document has reflowed to roughly double its 1100-width height.
-     tA (Vault of Ages' artifact tier) sits near the bottom of a long table,
-     so a few pixels of per-row reflow difference between the two apps
-     compounds over the several dozen rows above it, and the frozen scrollY
-     ends up pointing at a different stretch of rows entirely - not a word
-     wrapping earlier, a whole screenful landing elsewhere. Confirmed
-     directly, not inferred: reverting just this batch's `.selbox` mobile fix
-     and rebuilding reproduces the old 9.52% exactly, twice; the fix did not
-     misplace the anchor, it changed how much the rows above it reflow
-     differently before the frozen scrollY is reinterpreted at 375. This is a
-     property of the harness's scroll-once-then-resize design, not a defect
-     in either app - worth fixing in the harness (B3.6 or later), not worth
-     chasing in the app. */
   '#/tables/voa ~ section anchor @ ru 375': {
     pct: 10.05,
-    why: 'the frozen 1100-width scrollY lands on a different stretch of Vault of Ages once the page has reflowed for 375 - see the note above VISUAL_DEBT'
+    why: 'the same width sweep, on a section deep in Vault of Ages, where the page is twice as tall again by 375 - see the note above VISUAL_DEBT'
   },
   '#/tables/voa ~ section anchor @ en 375': {
     pct: 8.84,
@@ -904,6 +941,11 @@ const ACCEPTED = {
   '#/i/q1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
   '#/i/ci1 ~ whole @ ru :: the controls on the page :: controls': 'add-to-list and print, whole page',
   '#/i/ci1 ~ whole @ en :: the controls on the page :: controls': 'add-to-list and print, whole page',
+  /* The frame-equipment record page is a record card like the rest and is
+     short by the same control; this is the entry `2970c03` did not write when
+     it added the state. */
+  '#/i/f1 @ ru :: the controls on the page :: controls': 'add-to-list and print are later slices',
+  '#/i/f1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
   '#/roll/wondrous ~ modal @ ru :: the controls on the page :: controls':
     'add-to-list, which the card in a modal offers too',
   '#/i/q1 ~ another tier @ ru :: the controls on the page :: controls':

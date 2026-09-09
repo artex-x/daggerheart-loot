@@ -135,6 +135,8 @@ test but needs no matching test filename. End component tests with
 - Record intentional accessibility differences in `ACCEPTED` with a reason.
 - Inspect diff images before changing debt. Use `docs/parity.md`; migration
   backlog stays in issue 47 plan/handoff.
+- A `VISUAL_DEBT` number is whatever CI measures. A local run is advisory and
+  may legitimately fail a cell CI passes; see `docs/parity.md`.
 - Port a rule with every `@media` override it has; a base-width-only port
   reads as growing drift, not as a constant offset.
 

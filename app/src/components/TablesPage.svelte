@@ -330,15 +330,31 @@
 
      The flash starts immediately, same as the live app's own synchronous
      `render()` call - it is a decorative outline and does not depend on
-     layout. The *scroll* waits for the page's own fonts first:
-     `scrollIntoView` computes its target from the layout at the moment it is
-     called, and the monospace numerals in `.rnum`/the toolbar are wide enough
-     that swapping from the fallback face to the real one shifts the row a few
-     pixels - a race between that swap and this effect, invisible on a fast
-     machine and real on a slow one, landed the target a handful of pixels off
-     in exactly the way a growing-drift bug would. Splitting the two matters:
-     gating the flash behind the same wait made it start visibly later than
-     the live app's, which is its own small, avoidable difference.
+     layout. The *scroll* waits, and the reason is not the one this comment
+     used to give. It said the wait was for a font face to swap in. Measured:
+     that face does not exist. Neither app declares an `@font-face` or links a
+     font service - `--ui` and `--mono` are lists of locally installed
+     families - so `document.fonts.size` is 0 and `document.fonts.status` is
+     already `loaded` before the first paint.
+
+     The wait is still load-bearing, for a different reason: this component's
+     first layout is not its final one. Scrolling synchronously here lands the
+     row 8px low - `[data-row="ci1"]`'s absolute top reads 493.97 at effect
+     time against 485.97 once the page settles, and `scrollHeight` 5909
+     against 5890 - so `#/tables/core_item ~ row anchor` went from exact to
+     6-8% at 1100 and 768 when this was tried. `document.fonts.ready` is doing
+     duty as "the document has finished loading", which is what it actually
+     tracks with an empty font set, and by then the layout is final.
+
+     What that costs is determinism, and it is the harness that pays: it
+     arrives at 1100 and then sweeps the viewport down through 768 to 375, so
+     a scroll deferred to the load could land on either side of a resize -
+     and which side decides whether the browser's own scroll anchoring gets
+     to adjust it, which is one machine giving two stable answers, 7.92% and
+     8.47%, for `#/tables/core_item ~ row anchor @ en 375`. That is fixed
+     where it belongs, in `tests/parity/driver.js`: `ready()` now waits for
+     the same promise, so the sweep cannot start before this scroll has
+     happened.
      `document.fonts` does not exist in jsdom, so component tests fall through
      to an already-resolved promise. */
   let anchoredAt = $state(-1);
