@@ -17,7 +17,7 @@
   `.claude/hooks/selftest.mjs`, `.claude/README.md`,
   `.claude/prompts/implement.prompt.md`, `issues/65/plan.md` (status line),
   `issues/65/handoff.md`
-- Commit: `4f0cf0e`
+- Commit: `3dc26b4`, plus this one-line sha correction on top
 
 ### Blocker 1 - `git commit -am` defeated both the staging block and the gate
 
