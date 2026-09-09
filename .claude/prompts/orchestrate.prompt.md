@@ -159,6 +159,19 @@ Review returns to the orchestrator only - do not chain review -> planner -> revi
 - Record nits in handoff Deferred; do not burn a cycle on nits alone
 
 ## Session ending
+
+**Usage is the human's call, and only the human can see it.** The five-hour
+window is not machine-readable here: it reaches only the `statusLine` command,
+which the desktop app never invokes (measured 2026-09-09 - a probe recorded
+zero invocations while hooks fired nine times), and it appears nowhere else -
+not in the transcripts, not under `~/.claude`, not from any CLI. An automated
+guard was built, wired, and removed again for exactly this reason; see
+`git show 60172d3` if it is ever worth reviving in a terminal session. So do
+not infer remaining budget, and do not claim a session is safe to continue
+because nothing has warned you. Take the human's figure when offered, act on
+it, and otherwise keep every batch at a committed boundary with the handoff
+current - which is the behaviour that made the guard unnecessary anyway.
+
 If the human says the session is ending (or usage is exhausted):
 - do not start a new batch
 - if mid-work: worker stops coding, no half-batch commit, handoff updated with partial progress and exact next step
