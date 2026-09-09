@@ -5,10 +5,17 @@
 - Task status: **done** (B2 shipped, R1 remediation, then R2 - the CI
   Linux-portability fix)
 - Last agent: implementer (R2)
-- NEEDS_HUMAN_CONFIRMATION: **push is pending** - `origin/main`'s `check` job
-  was RED at `1d368e2` (before R1/R2 even landed there); local `main` now has
-  R1 (`773a2e6`) and R2 (`ed4f693`) on top, unpushed. The human needs to push
-  for CI to re-run. See R2 below for exactly what CI was missing.
+- NEEDS_HUMAN_CONFIRMATION: no. R1 and R2 were pushed; `origin/main` is
+  `7e1def5` and CI run `34403278558` has **`check` green in 2m47s**. That run
+  is still red overall from `parity (3)` and `parity (4)`, which predate this
+  task - the same two shards were already failing on `8e7fed1` (run
+  `34383263349`), before any hook existed. They belong to issue 47.
+- `plan.md` was retired at task closeout. Its durable content - the 26-row
+  candidate table - now lives in `.claude/README.md` under "Candidates
+  considered (issue 65)". The full plan remains in git history; the last
+  commit to carry it is recoverable via `git log -- issues/65/plan.md`.
+  References to "`plan.md` section N" below are historical records of what the
+  work followed, not live pointers.
 - Branch: `main`
 - Base / starting commit: `8e7fed1` for B2, `1d368e2` for R1, `773a2e6` for R2
 
@@ -546,10 +553,11 @@ Unchanged from the planner's list - carried forward, not re-derived:
 - Candidate #19 - scoping the planner's writes to `issues/<id>/` via `agent_type`.
   Still deferred: `agent_type`'s value strings remain unverified on this host.
   `session-start.mjs` does not currently log it; that would be the next step to
-  settle this, per `plan.md` section 5, row 19.
+  settle this, per `.claude/README.md` "Candidates considered", row 19.
 - Candidate #15 - blocking overlapping heavy runs (needs a `tests/` lockfile,
   out of this task's scope).
-- The full rejected list with reasons is `plan.md` section 5 (26 rows).
+- The full rejected list with reasons is `.claude/README.md` under
+  "Candidates considered (issue 65)" (26 rows).
 
 ## Notes
 
