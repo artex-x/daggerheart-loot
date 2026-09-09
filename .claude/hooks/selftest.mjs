@@ -420,13 +420,27 @@ function testEditGuard() {
   }
 
   // #36 - Windows normalisation: backslashes and an upper-case drive letter
+  // only mean anything as path separators on win32. On POSIX a backslash is
+  // just another filename character, so the very same string can never
+  // resolve to data.json there - path.isAbsolute() is false for it, and it
+  // ends up as one odd relative filename, not a path into the repo root.
+  // Asserting "denies" unconditionally baked in Windows-only path shape;
+  // this case could only ever pass on this one OS. Assert per-platform
+  // instead, so the suite proves the real contract on both.
   const upperDrive = scratchRoot
     .replace(/^([a-z]):/i, (m, d) => `${d.toUpperCase()}:`)
     .replace(/\//g, '\\');
   const windowsPath = `${upperDrive}\\data.json`;
-  {
+  if (process.platform === 'win32') {
     const result = runHook('edit-guard.mjs', editPayload(windowsPath));
     check('#36 Windows-normalised path: denies', isDeny(result));
+  } else {
+    const result = runHook('edit-guard.mjs', editPayload(windowsPath));
+    check(
+      '#36 backslash-string on POSIX: not data.json, stays silent',
+      isSilent(result),
+      result.stdout
+    );
   }
 
   const silentCases = [
@@ -477,6 +491,15 @@ function testEditFollowup() {
     );
     check('#41 data.js reminder once per session', isSilent(result), result.stdout);
   }
+  // #42 - the real repo file is docs/specs/CONTRACTS.md (mixed case;
+  // CLAUDE.md and this directory both spell it that way). The rule used to
+  // compare against a lowercase literal directly: relPath() lower-cases its
+  // return value on win32, so it matched there, but on POSIX relPath() keeps
+  // real casing and the comparison never matched - the reminder could not
+  // fire on Linux for CONTRACTS.md, ROUTES.md, or any other mixed-case
+  // literal in this file. Fixed by folding both sides with pathKey() at the
+  // rule site (lib.mjs); this case now exercises that fix on whichever
+  // platform runs it.
   {
     const result = runHook(
       'edit-followup.mjs',
@@ -683,6 +706,40 @@ async function testCheckObserver() {
   clearCache();
 }
 
+// ---------- pathKey() portability (#61-63) ----------
+//
+// pathKey() is now pure string folding with no process.platform branch (see
+// lib.mjs), so unlike relPath() (which genuinely behaves differently per OS
+// because path.resolve/relative do), these assertions are not platform-
+// dependent and are real evidence on any host, this Windows box included -
+// they do not merely happen to pass here the way the old #36 case did.
+
+async function testPathKeyPortability() {
+  const { pathKey } = await import(pathToFileUrlHref('lib.mjs'));
+
+  check(
+    '#61 pathKey folds mixed case the same on every platform',
+    pathKey('docs/specs/CONTRACTS.md') === 'docs/specs/contracts.md'
+  );
+  check(
+    '#61a pathKey folds a POSIX-shaped forward-slash path (no OS path resolution involved)',
+    pathKey('App/Src/Components/PageHead.svelte') === 'app/src/components/pagehead.svelte'
+  );
+  check(
+    '#62 pathKey is idempotent / already-lowercase input is unchanged',
+    pathKey('docs/specs/contracts.md') === 'docs/specs/contracts.md'
+  );
+  // #63 - the comparison edit-followup.mjs's remind:contract group actually
+  // performs: fold both the recorded path and the hand-written literal, then
+  // compare. This is exactly what #42 exercises end to end through the real
+  // hook; this restates it as a direct, OS-independent unit check of the
+  // helper the fix relies on.
+  check(
+    '#63 folded comparison matches CONTRACTS.md against the lowercase literal',
+    pathKey('docs/specs/CONTRACTS.md') === pathKey('docs/specs/contracts.md')
+  );
+}
+
 // ---------- session-start.mjs (#50) ----------
 
 function testSessionStart() {
@@ -870,6 +927,7 @@ async function main() {
     testEditGuard();
     testEditFollowup();
     await testCheckObserver();
+    await testPathKeyPortability();
     testSessionStart();
     await testSessionStop();
     testFailOpen();

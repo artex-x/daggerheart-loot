@@ -109,12 +109,19 @@ export function relPath(filePath, cwd) {
   }
 }
 
-/** Comparison key for a repo-relative path. relPath() lower-cases what it
- * returns on win32 (the resolve step folds case there), so anything matched
- * against a recorded path - git's own output, most of all - has to be folded
- * the same way or a mixed-case name like PageHead.svelte never matches. */
+/** Comparison key for a repo-relative path. Always folds case, on every
+ * platform: this exists for matching, not identity, and a rule site
+ * comparing a repo-relative path against a hand-written literal (rmTargetInsideRepo's
+ * exempt list, edit-guard's and edit-followup's deny/reminder tables) has to
+ * agree with itself regardless of OS, or the literal only ever matches on
+ * whichever platform happens to share its casing. relPath() itself keeps
+ * real casing on POSIX (the return value is also used for display in
+ * messages), so callers that recorded a path via relPath() and later match
+ * it against another relPath() result, or against a literal, must fold both
+ * sides with this function rather than compare `===` directly - see
+ * session-stop.mjs, edit-guard.mjs, edit-followup.mjs. */
 export function pathKey(p) {
-  return process.platform === 'win32' ? String(p).toLowerCase() : String(p);
+  return String(p).toLowerCase();
 }
 
 // ---------- shell sanitiser + segmenter ----------

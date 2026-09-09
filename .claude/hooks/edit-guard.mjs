@@ -1,8 +1,11 @@
 // PreToolUse(Edit|MultiEdit|Write|NotebookEdit): block direct writes to
 // generated files. See issues/65/plan.md section 4, hook 4.
 
-import { readInput, guard, deny, relPath } from './lib.mjs';
+import { readInput, guard, deny, relPath, pathKey } from './lib.mjs';
 
+// Every test here runs against pathKey(rel), not rel itself: relPath() keeps
+// real casing on POSIX, and a literal like 'data.json' must match regardless
+// of how the caller happened to spell it - see pathKey()'s doc comment.
 const DENY = [
   {
     test: (p) => p === 'data.json',
@@ -37,9 +40,10 @@ guard(() => {
   const filePath = input.tool_input && input.tool_input.file_path;
   const rel = relPath(filePath, input.cwd);
   if (rel === null) return undefined;
+  const key = pathKey(rel);
 
   for (const rule of DENY) {
-    if (rule.test(rel)) return deny(event, rule.message);
+    if (rule.test(key)) return deny(event, rule.message);
   }
   return undefined;
 });

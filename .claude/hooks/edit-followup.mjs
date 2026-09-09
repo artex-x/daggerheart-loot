@@ -3,8 +3,15 @@
 // most once per session per group about derived artefacts, contracts, and
 // the parity baseline. Never blocks. See issues/65/plan.md section 4, hook 5.
 
-import { readInput, guard, speak, relPath, recordWrite, once } from './lib.mjs';
+import { readInput, guard, speak, relPath, pathKey, recordWrite, once } from './lib.mjs';
 
+// Every test here runs against pathKey(rel) (always-folded), not rel itself.
+// docs/specs/CONTRACTS.md and docs/specs/ROUTES.md are the real, mixed-case
+// filenames in this repo (CLAUDE.md, docs/specs/CONTRACTS.md); relPath()
+// keeps that real casing on POSIX, so a lowercase-literal `===` comparison
+// matched only on win32, where relPath() itself lower-cases first, and this
+// reminder never fired on Linux. Messages still use `rel` (real casing), not
+// the folded key, so the spoken text names the file the way it is spelled.
 const GROUPS = [
   {
     id: 'remind:data',
@@ -37,11 +44,12 @@ guard(() => {
   const filePath = input.tool_input && input.tool_input.file_path;
   const rel = relPath(filePath, input.cwd);
   if (rel === null) return undefined;
+  const key = pathKey(rel);
 
   recordWrite(input.session_id, rel);
 
   for (const group of GROUPS) {
-    if (!group.test(rel)) continue;
+    if (!group.test(key)) continue;
     if (!once(input.session_id, group.id)) continue;
     const text = typeof group.message === 'function' ? group.message(rel) : group.message;
     return speak(event, text);
