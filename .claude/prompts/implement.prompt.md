@@ -67,9 +67,11 @@ For the current batch:
    - data/image/stub/build steps for data batches
 6. Do not commit if required checks fail
 7. Never end a turn with a check still running: its output dies with your shell, and
-   from outside a stopped turn is indistinguishable from a dead agent. Redirect long
-   runs to a file and stay in the turn until they finish. If you must stop first, name
-   the command, its task id, and the output path in your final message.
+   from outside a stopped turn is indistinguishable from a dead agent. Pipe a long run
+   to `tail` (`npm run check 2>&1 | tail -n 120`) and stay in the turn until it
+   finishes - do not redirect it to a file, which hides the result from the commit
+   gate and blocks the commit. See `.claude/README.md`. If you must stop first, name
+   the command and its task id in your final message.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
 10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)

@@ -1,8 +1,10 @@
 # Plan - TASK 65: Claude Code hooks
 
-Status: **shipped.** B2 implemented this plan in full; see `issues/65/handoff.md`
-for the commit, verification results, and the two measured facts (section 8,
-steps 1 and 9) this plan asked to settle before shipping.
+Status: **shipped, then remediated.** B2 implemented this plan in full; a
+single review pass afterwards found four bypasses of what the plan specifies
+and they were fixed in place. This plan is still the spec - the remediation
+changed no design decision, only code that did not implement one. See
+`issues/65/handoff.md` for both commits and their verification results.
 
 NEEDS_HUMAN_CONFIRMATION: **no**.
 

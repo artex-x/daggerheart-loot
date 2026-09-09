@@ -2,13 +2,229 @@
 
 ## Status
 
-- Task status: **done**
-- Last agent: implementer (B2, the whole remaining task)
+- Task status: **done** (B2 shipped, then one review-remediation pass)
+- Last agent: implementer (R1, remediation of the reviewer's four blockers)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
-- Base / starting commit: `8e7fed1`
+- Base / starting commit: `8e7fed1` for B2, `1d368e2` for R1
 
-## Completed
+## Completed - R1, review remediation
+
+- Batch name/id: **R1 - fix the reviewer's four blockers and the same-class nits**
+- Scope: bug fixes against `plan.md`, not changes to it. No design decision moved.
+- Files changed: `.claude/hooks/lib.mjs`, `.claude/hooks/bash-guard.mjs`,
+  `.claude/hooks/check-observer.mjs`, `.claude/hooks/session-stop.mjs`,
+  `.claude/hooks/selftest.mjs`, `.claude/README.md`,
+  `.claude/prompts/implement.prompt.md`, `issues/65/plan.md` (status line),
+  `issues/65/handoff.md`
+- Commit: `4f0cf0e`
+
+### Blocker 1 - `git commit -am` defeated both the staging block and the gate
+
+`rest.includes('-a')` / `includes('-A')` are equality tests against a whole
+token; the idiomatic spelling is the cluster. Replaced with the existing
+`flagMatches()` helper (the one rule 2b already used correctly for
+`git clean`) at both sites: `evaluateBlanketStage()` and `commitInfo()`.
+Fixing `commitInfo().hasAllFlag` also restores the `git diff --name-only`
+union, so an empty index no longer reads as "nothing for the check to cover".
+
+Probed before: `git commit -am "x"`, `git commit -avm "x"`, `git add -Av` all
+allowed silently; `git commit -a -m "x"` denied. Probed after: all four deny,
+and `git commit -m "chore: x"` / `git add -N <file>` still do not (the flag
+test must not fire on unrelated short flags). Selftest cases #15a-#15f, and
+#59, which proves the gate union specifically by using a clean tree plus one
+modified file, so the 2+-dirty-paths blanket rule cannot be what denies.
+
+### Blocker 2 - `rm -rf .` and `rm -rf ./` were not blocked
+
+`relPath()` returned `null` for the repo root itself (`path.relative` gives
+`''`), and every caller reads `null` as "outside the repo, allow". It now
+returns `'.'` for the root and keeps `null` for genuinely-outside paths.
+Checked every caller: `bash-guard`'s `rmTargetInsideRepo` now denies (`'.'` is
+truthy and not exempt); `edit-guard`'s five deny rules and `edit-followup`'s
+three reminder groups all fail to match `'.'`, so neither starts denying or
+speaking on the sentinel.
+
+Probed before: `rm -rf .` and `rm -rf ./` allowed; `rm -rf app` and `rm -rf *`
+denied. Probed after: all deny, `rm -rf dist`, `rm -rf node_modules` and
+`rm -rf /tmp/elsewhere` still allowed. Selftest #13a, #13b, #25c, #25d, and
+#39a-#39e for the edit-guard non-regression the reviewer named (repo root
+itself, `app/data.json`, `docs/i/x.html`, `input/x.html`, `app/dist/x.html`,
+plus the existing `data.js` and `docs/fixtures/` cases).
+
+### Blocker 3 - `check-observer.mjs` could record a pass for a failed run
+
+`CHECK_RE` matched the raw command anywhere in it, and `All files` anywhere in
+stdout. New `isCheckInvocation()` reuses the (now shared) segmenter and
+requires all three of: no chaining (`&&`, `||`, `;`, `&`, `$(`, backtick,
+newline - `2>&1` is normalised away first, so it is not read as chaining); the
+FIRST segment matches an anchored `^npm run check`; and that segment does not
+redirect stdout to a file. A pipeline still qualifies, because a pipe still
+shows the check's own stdout. `EXIT_CODE_FIELDS` also gained `status` and
+`exitStatus`, so an unrecognised numeric failure field cannot read as
+"absent, assume a pass".
+
+Probed before: `npm run check > o.txt 2>&1 || true; grep "All files" o.txt`
+(check FAILED), `echo "npm run check says All files"`, and `{status: 1}` with
+pass-shaped stdout all wrote a cache entry. Probed after: none of them does,
+`npm run check > o.txt` does not either, and `npm run check`,
+`npm run -s check` and `npm run check 2>&1 | tail -n 120` all still do.
+Selftest #49a-#49g.
+
+**One relaxation, found the hard way.** The first version of this rule also
+rejected a leading `cd <dir> && `, which is what an agent actually types - so
+this batch's own commit was blocked by its own new rule after a check that had
+genuinely passed. `cd` writes nothing to stdout, so it cannot be the source of
+a pass-shaped line; leading `cd` segments are now stripped before the chain
+test. Everything after the check is still rejected (`cd /repo && npm run check
+&& echo "All files"` writes no cache, #49g). Verified live: with the
+relaxation in place, `cd "E:/dev/daggerheart-loot" && npm run check 2>&1 |
+tail -n 130` refreshed `.claude/.check-cache.json` and the gate let the commit
+through.
+
+**The conflict on disk is resolved.** `implement.prompt.md` step 7 told
+workers to "redirect long runs to a file", which is exactly the invocation the
+observer cannot see, while the mitigation lived only in this handoff. The
+prompt, `bash-guard.mjs`'s own long-check reminder text, and a new
+`.claude/README.md` section now all say the same thing: pipe to `tail -n 120`,
+never redirect to a file, because `All files` sits near the top of the
+coverage table and the gate only trusts output it can see.
+
+### Blocker 4 - the Stop warning never fired for mixed-case paths on Windows
+
+`relPath()` lower-cases the whole path on win32, so `edit-followup.mjs`
+recorded `.../pagehead.svelte` while `session-stop.mjs` matched it against raw
+`git status --porcelain` output saying `PageHead.svelte`. Added `pathKey()` to
+`lib.mjs` (fold on win32, verbatim elsewhere); `session-stop.mjs` now builds a
+`Map` keyed by `pathKey()` and valued by git's own spelling, so the match works
+and the message still names the real file.
+
+Probed before: with `PageHead.svelte` and `lowercase.txt` both written and both
+dirty, only `lowercase.txt` was named. Probed after: both are named, with
+`PageHead.svelte` spelled as git spells it.
+
+The selftest certified this bug rather than catching it - `recordWrite()` was
+called with an already-lower-case literal. Case #52 now drives
+`edit-followup.mjs` with a mixed-case path (`app/src/components/PageHead.svelte`,
+added to the scratch repo and left dirty) and asserts the Stop message names
+that exact spelling, so the record -> match chain is exercised end to end
+(#60).
+
+### Also fixed - same bypass class
+
+- **`SKIP_CHECK_GATE=1` as prose.** `/SKIP_CHECK_GATE=1/` tested the raw
+  command, so `git commit -m "add SKIP_CHECK_GATE=1 support"` bypassed the
+  gate. New `hasGateBypass()` walks only the leading environment assignments of
+  each segment. Probed both ways; selftest #28 (real prefix still speaks) and
+  #28a (prose still denies).
+- **`env git reset --hard`.** New `unwrap()` in `lib.mjs` strips leading
+  assignments and the wrappers `env`, `command`, `nohup`, `time`, `xargs` (and
+  their flags) before the program is read. Selftest #13c, #13g.
+- **`git reset "--hard"`.** The quote stripper erased the flag. It now
+  preserves a quoted span that is a single shell-inert word
+  (`^[-A-Za-z0-9._/=:]+$`) and still erases anything with a space or shell
+  metacharacter in it - so unquoting can never invent a new segment, and
+  `git commit -m "chore: a; then b"` stays silent. Selftest #13d, #25a, #25b.
+- **Anything after a heredoc.** `sanitize()` truncated at the first `<<` and
+  dropped the rest. New `stripHeredocs()` removes only the heredoc *body*,
+  keeping the rest of the marker line and everything after the terminator.
+  Whitespace collapse also stopped eating newlines, so `SPLIT_RE`'s `\n` case
+  is finally reachable. Selftest #13e, #13f, and the existing #20 still passes.
+- **`.claude/README.md` honesty fix.** `tool_response.exit_code` moved out of
+  "settled by measurement" into an explicit "looked up, not measured" line, per
+  the Deviations section below.
+- **Selftest: missing "cache present, tree since moved -> deny" case.** Added as
+  #27a - the gate's most important safety property, previously untested.
+- **Selftest: skip when git is absent.** `gitSh` threw, and the selftest runs
+  inside `npm run check`, so a box without git failed the whole gate. `main()`
+  now probes `git --version` and skips. Verified by running with git off PATH:
+  `.claude/hooks/selftest.mjs: skipped (git is not on PATH)`, exit 0.
+
+### Refactor note
+
+`sanitize`/`segments`/`tokensOf`/`dropAssignments` moved from `bash-guard.mjs`
+to `lib.mjs` and gained `unwrap`, because `check-observer.mjs` must segment a
+command exactly the way `bash-guard.mjs` does. Second real caller, so the
+extraction is earned; `bash-guard.mjs` keeps no copy.
+
+### Fail-open contract
+
+Unchanged. All eight scripts still survive empty / `{}` / not-json stdin
+(selftest #56-#58, 48 assertions), `guard()` still swallows throws, and nothing
+above adds an exit-2 path.
+
+## Verification - R1
+
+- Commands run (exact):
+  - `node .claude/hooks/selftest.mjs`
+  - `PATH="$(dirname "$(command -v node)")" node .claude/hooks/selftest.mjs`
+    (git deliberately off PATH)
+  - `npm run format`
+  - `cd "E:/dev/daggerheart-loot" && npm run check 2>&1 | tail -n 130`
+    (run three times: twice before the `cd` relaxation above, once after)
+- Results:
+  - `node .claude/hooks/selftest.mjs`: **194 passed, 0 failed** (was 140; the
+    54 new assertions cover all four blockers and every nit above)
+  - git-off-PATH run: `.claude/hooks/selftest.mjs: skipped (git is not on
+    PATH)`, exit 0
+  - `npm run check`: **exit 0**. `format:check` "All matched files use Prettier
+    code style!"; `lint` clean; `typecheck` 513 files / 0 errors / 0 warnings;
+    `npm run data` regenerated identical outputs ("производные файлы: всё
+    сходится"); `tests/derived.js` and `tests/i18n.js` clean ("переводы:
+    паритет соблюдён"); `.claude/hooks/selftest.mjs: 194 passed, 0 failed`;
+    `vitest` 33 files / 659 tests passed; coverage `All files | 96.43 | 90.02 |
+    95.92 | 96.65`
+  - `npm run format`: every file reported unchanged; `.claude/**` is
+    Prettier-gated and was already clean
+- Gates: `npm run check` only. This batch touches no rendered screen, so
+  `check:built` and the parity suite are not required (context.md, "Command
+  costs").
+
+## Deviations - R1
+
+1. **The `npm run check` run covered a tree that carried another agent's
+   in-flight work.** `tests/parity.js`, `tests/parity/driver.js`,
+   `tests/parity/specs.js`, `app/src/components/TablesPage.svelte` and
+   `docs/specs/COVERAGE.md` were modified by something else during this
+   session, and commit `1d368e2` ("tools(parity): run the suite on ubuntu
+   locally, calibrated against CI") landed on `main` mid-session. The check
+   passed with those edits present. Only this batch's own files were staged, by
+   name; nothing foreign was committed or reverted. This is the second session
+   in a row where a concurrent writer was live on `main` - see the B2 note
+   about `74348b6` below.
+2. **The hooks were live for this session, deny path included.** The commit
+   gate really did block this batch's first `git commit` attempt, with the
+   exact message `bash-guard.mjs` emits. That settles the open question B2
+   left in the Notes below: `permissionDecision: "deny"` is honoured on this
+   host, and hook scripts are re-read from disk per invocation rather than
+   snapshotted - the block came from code written minutes earlier in the same
+   session. `PostToolUse(Edit|Write)` fired too (16 writes recorded in
+   `.claude/.hook-state.json` under this session id).
+3. **That block was a real defect in this batch, not a false alarm.** The
+   first `isCheckInvocation()` rejected the leading `cd <dir> &&` that this
+   agent types on every command, so no invocation could ever satisfy the
+   gate. Fixed rather than bypassed - `SKIP_CHECK_GATE=1` was available and
+   was deliberately not used. See the relaxation note under Blocker 3.
+
+## Deferred - R1
+
+Reviewer findings deliberately left for a later pass, with the reason:
+
+- `session-stop.mjs:22` - rename and quoted-path parsing of
+  `git status --porcelain` (`R  old -> new`, and paths git quotes because they
+  contain non-ASCII or spaces). Real, but a parser, not a one-line fix.
+- `.hook-state.json` unbounded growth (`lib.mjs`) - `saveState()` keeps the
+  five newest sessions but a single session's `wrote` map grows without limit.
+- `bash-guard.mjs`'s `/^npm run check\b/` long-check reminder also matches
+  `check:fast`, so the reminder overstates that command's cost. Cosmetic.
+- The sanitised command is echoed back in the long-check message, so an
+  unusual quoting can produce a slightly odd-looking sentence.
+- `git restore --worktree --staged` restores the worktree too but is allowed,
+  because the rule only tests for the presence of `--staged`.
+- `CLAUDE.md` lost the discoverability of `node tests/parity.js "<state
+  filter>"` when the focused-commands block was pruned in B2.
+
+## Completed - B2
 
 - Batch name/id: **B2 - implement the hooks setup and the prompt cleanup**
 - What shipped: `plan.md` implemented in full - eight scripts under `.claude/hooks/`
@@ -52,8 +268,16 @@
      the design is correct even if a host ever disagrees with the docs.
   3. **The "hooks are inert this session" assumption did not hold here.** Unexpectedly
      - see Notes below, this is the most important finding to carry forward.
+  4. **`selftest.mjs` exempts `session-start.mjs` from plan section 7's cases 56-58**
+     (recorded by the R1 reviewer; B2 explained it in a code comment but never listed
+     it as a deviation here). The plan asks every script to be silent on empty / `{}` /
+     not-json stdin. `session-start.mjs` builds its whole report from git and the
+     `issues/` scan, never from its stdin payload, so it still speaks on malformed
+     input. The selftest asserts exit 0 plus well-formed-or-silent JSON for it instead
+     of silence. Intentional and correct, but it is a narrowing of the plan's contract
+     and belongs on the record.
 
-## Verification
+## Verification - B2
 
 - Commands run (exact):
   - `npx prettier --write ".claude/settings.json" ".claude/hooks/*.mjs" package.json`
@@ -86,7 +310,7 @@ later batches").
 
 None.
 
-## Deferred
+## Deferred - B2
 
 Unchanged from the planner's list - carried forward, not re-derived:
 

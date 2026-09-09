@@ -83,7 +83,10 @@ export function stateDir() {
 /** Resolve an absolute (or cwd-relative) path to a repo-relative, forward-
  * slashed form for matching against the deny/allow lists in edit-guard and
  * edit-followup. Returns null when the path is outside the repo - every
- * caller treats null as "allow". */
+ * caller treats null as "allow" - and '.' for the repository root itself,
+ * which is very much inside it: `rm -rf .` is the most destructive form of
+ * the command bash-guard's rm rule exists to stop, and an empty string read
+ * as "outside" let it straight through. */
 export function relPath(filePath, cwd) {
   if (!filePath) return null;
   try {
@@ -98,11 +101,110 @@ export function relPath(filePath, cwd) {
       rootCmp = rootCmp.toLowerCase();
     }
     const rel = path.relative(rootCmp, resolved);
+    if (rel === '') return '.';
     if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
     return rel.split(path.sep).join('/');
   } catch {
     return null;
   }
+}
+
+/** Comparison key for a repo-relative path. relPath() lower-cases what it
+ * returns on win32 (the resolve step folds case there), so anything matched
+ * against a recorded path - git's own output, most of all - has to be folded
+ * the same way or a mixed-case name like PageHead.svelte never matches. */
+export function pathKey(p) {
+  return process.platform === 'win32' ? String(p).toLowerCase() : String(p);
+}
+
+// ---------- shell sanitiser + segmenter ----------
+//
+// Shared by bash-guard.mjs (which rule family sees which segment) and
+// check-observer.mjs (is the FIRST segment really the check invocation).
+// See issues/65/plan.md section 4, hook 2a. This is a guard against habit
+// and haste, not against an adversary - the known gaps are listed in
+// .claude/README.md.
+
+/** Drop heredoc *bodies* only. Truncating at the first `<<` also hid every
+ * command after the terminator, so `cat <<EOF ... EOF; git reset --hard`
+ * was invisible to every rule. */
+function stripHeredocs(s) {
+  const marker = /<<-?[ \t]*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1/;
+  let out = s;
+  for (let i = 0; i < 8; i++) {
+    const m = marker.exec(out);
+    if (!m) break;
+    const head = out.slice(0, m.index);
+    const afterMarker = out.slice(m.index + m[0].length);
+    const nl = afterMarker.indexOf('\n');
+    if (nl === -1) {
+      // No body at all: keep the rest of the line, drop the marker.
+      out = `${head} ${afterMarker}`;
+      continue;
+    }
+    const restOfLine = afterMarker.slice(0, nl);
+    const body = afterMarker.slice(nl);
+    const terminator = new RegExp(`\\n[ \\t]*${m[2]}[ \\t]*(?:\\n|$)`);
+    const end = terminator.exec(body);
+    const tail = end ? body.slice(end.index + end[0].length) : '';
+    out = `${head} ${restOfLine}\n${tail}`;
+  }
+  return out;
+}
+
+// A quoted span is normally erased, because its contents are data. The one
+// exception is a span that is a single shell-inert word: `git reset "--hard"`
+// is the same command as `git reset --hard`, and erasing the flag was a
+// bypass. Anything with a space or a shell metacharacter in it stays erased,
+// so unquoting can never invent a new segment.
+const INERT_WORD = /^[-A-Za-z0-9._/=:]+$/;
+
+function keepIfInert(inner) {
+  return INERT_WORD.test(inner) ? ` ${inner} ` : ' ';
+}
+
+export function sanitize(raw) {
+  let s = stripHeredocs(String(raw));
+  s = s.replace(/\\./g, ' '); // backslash-escaped chars
+  s = s.replace(/'([^']*)'/g, (_m, inner) => keepIfInert(inner));
+  s = s.replace(/"([^"]*)"/g, (_m, inner) => keepIfInert(inner));
+  s = s.replace(/[^\S\n]+/g, ' ').trim();
+  return s;
+}
+
+const SPLIT_RE = /&&|\|\||;|\||&|\n|\$\(|\)|`/;
+
+export function segments(sanitized) {
+  return sanitized
+    .split(SPLIT_RE)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export function tokensOf(segment) {
+  return segment.split(/\s+/).filter(Boolean);
+}
+
+export function dropAssignments(tokens) {
+  const t = tokens.slice();
+  while (t.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(t[0])) t.shift();
+  return t;
+}
+
+// `env git reset --hard` read as the program `env`, so no git rule saw it.
+// These wrappers all take the real program as their first non-flag argument.
+const WRAPPERS = new Set(['env', 'command', 'nohup', 'time', 'xargs']);
+
+/** Strip leading assignments and any command wrappers, so the returned
+ * tokens start at the program actually being run. */
+export function unwrap(tokens) {
+  let t = dropAssignments(tokens);
+  for (let i = 0; i < 4 && t.length && WRAPPERS.has(t[0]); i++) {
+    t = t.slice(1);
+    while (t.length && t[0].startsWith('-')) t = t.slice(1);
+    t = dropAssignments(t);
+  }
+  return t;
 }
 
 /** Run git synchronously against repoRoot(). Returns stdout, or null on any

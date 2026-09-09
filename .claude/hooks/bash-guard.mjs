@@ -4,7 +4,19 @@
 // the exact trap table. Never blocks anything not listed there.
 
 import { spawnSync } from 'node:child_process';
-import { readInput, guard, deny, speak, once, repoRoot, relPath } from './lib.mjs';
+import {
+  readInput,
+  guard,
+  deny,
+  speak,
+  once,
+  repoRoot,
+  relPath,
+  sanitize,
+  segments,
+  tokensOf,
+  unwrap
+} from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
 
 const READERS = new Set([
@@ -43,36 +55,9 @@ const MSG = {
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
-
-function sanitize(raw) {
-  let s = raw;
-  const heredocIdx = s.indexOf('<<');
-  if (heredocIdx !== -1) s = s.slice(0, heredocIdx);
-  s = s.replace(/\\./g, ' '); // backslash-escaped chars
-  s = s.replace(/'[^']*'/g, ' '); // single-quoted spans
-  s = s.replace(/"[^"]*"/g, ' '); // double-quoted spans
-  s = s.replace(/\s+/g, ' ').trim();
-  return s;
-}
-
-const SPLIT_RE = /&&|\|\||;|\||&|\n|\$\(|\)|`/;
-
-function segments(sanitized) {
-  return sanitized
-    .split(SPLIT_RE)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-function tokensOf(segment) {
-  return segment.split(' ').filter(Boolean);
-}
-
-function dropAssignments(tokens) {
-  const t = tokens.slice();
-  while (t.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(t[0])) t.shift();
-  return t;
-}
+//
+// sanitize/segments/tokensOf/unwrap now live in lib.mjs, because
+// check-observer.mjs has to segment a command the same way this file does.
 
 function gitSubcommand(tokens) {
   // tokens[0] === 'git'
@@ -93,7 +78,7 @@ function gitSubcommand(tokens) {
 }
 
 function segmentInfo(segment) {
-  const tokens = dropAssignments(tokensOf(segment));
+  const tokens = unwrap(tokensOf(segment));
   if (!tokens.length) return null;
   const program = tokens[0];
   if (READERS.has(program)) return null;
@@ -192,16 +177,19 @@ function commitOrAddInfo(segList) {
 
 function evaluateBlanketStage(segList, cwd) {
   const hits = commitOrAddInfo(segList);
+  // flagMatches, not includes(): the idiomatic spellings are clusters
+  // (`git commit -am`, `git add -Av`), and an equality test against a whole
+  // token missed every one of them.
   const triggered = hits.some((h) => {
     if (h.kind === 'add') {
       return (
-        h.rest.includes('-A') ||
+        flagMatches(h.rest, 'A') ||
         h.rest.includes('--all') ||
         h.rest.includes('.') ||
         h.rest.includes(':/')
       );
     }
-    return h.rest.includes('-a') || h.rest.includes('--all');
+    return flagMatches(h.rest, 'a') || h.rest.includes('--all');
   });
   if (!triggered) return null;
   const status = spawnSync('git', ['status', '--porcelain', '-uall'], {
@@ -251,7 +239,10 @@ function commitInfo(segList) {
     if (subcommand === 'commit') {
       return {
         isCommit: true,
-        hasAllFlag: rest.includes('-a') || rest.includes('--all'),
+        // Cluster-aware: `git commit -am` stages every modified tracked file
+        // exactly as `-a` does, so the gate has to union the unstaged diff
+        // for it too or an empty index reads as "nothing to check".
+        hasAllFlag: flagMatches(rest, 'a') || rest.includes('--all'),
         hasDryRun: rest.includes('--dry-run')
       };
     }
@@ -259,7 +250,20 @@ function commitInfo(segList) {
   return { isCommit: false };
 }
 
-function evaluateCommitGate(rawCommand, segList, cwd) {
+/** True only when SKIP_CHECK_GATE=1 is a real environment prefix on some
+ * segment. Testing the raw command let `git commit -m "add SKIP_CHECK_GATE=1
+ * support"` bypass the gate by talking about it. */
+function hasGateBypass(segList) {
+  for (const segment of segList) {
+    for (const token of tokensOf(segment)) {
+      if (!/^[A-Za-z_][A-Za-z0-9_]*=/.test(token)) break;
+      if (token === 'SKIP_CHECK_GATE=1') return true;
+    }
+  }
+  return false;
+}
+
+function evaluateCommitGate(segList, cwd) {
   const info = commitInfo(segList);
   if (!info.isCommit || info.hasDryRun) return null;
 
@@ -288,7 +292,7 @@ function evaluateCommitGate(rawCommand, segList, cwd) {
   const cache = readCache();
   if (cache && cache.key === key) return null; // already passing
 
-  if (/SKIP_CHECK_GATE=1/.test(rawCommand)) {
+  if (hasGateBypass(segList)) {
     return { type: 'speak', message: MSG.gateBypassed };
   }
 
@@ -322,7 +326,7 @@ function evaluateLongCheck(segList, sessionId) {
         if (!once(sessionId, `long-check:${spec.family}`)) return null;
         return {
           type: 'speak',
-          message: `\`${joined}\` takes ${spec.cost} here. Redirect its output to a file and stay in this turn until it finishes - a turn that ends with a check still running loses the result, and from outside a stopped turn is indistinguishable from a dead agent.`
+          message: `\`${joined}\` takes ${spec.cost} here. Pipe it to \`tail -n 120\` and stay in this turn until it finishes - a turn that ends with a check still running loses the result, and from outside a stopped turn is indistinguishable from a dead agent. Do not redirect it to a file: the commit gate only trusts output it can see.`
         };
       }
     }
@@ -355,7 +359,7 @@ guard(() => {
   const attribution = evaluateAttribution(rawCommand, segList);
   if (attribution) return deny(event, attribution.message);
 
-  const gate = evaluateCommitGate(rawCommand, segList, cwd);
+  const gate = evaluateCommitGate(segList, cwd);
   if (gate) {
     return gate.type === 'deny' ? deny(event, gate.message) : speak(event, gate.message);
   }

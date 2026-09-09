@@ -44,6 +44,17 @@ function check(label, cond, detail) {
 let scratchRoot;
 let scratchState;
 
+/** This file runs inside `npm run check`, so a box without git must skip,
+ * not fail the whole gate. Every case below needs a real git repository. */
+function gitAvailable() {
+  try {
+    const r = spawnSync('git', ['--version'], { encoding: 'utf8' });
+    return !r.error && r.status === 0;
+  } catch {
+    return false;
+  }
+}
+
 function gitSh(args, cwd = scratchRoot) {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
   if (r.status !== 0) {
@@ -106,6 +117,14 @@ function setupScratch() {
   writeFile('tests/contracts.js', '// contracts test\n');
   writeFile('llms.txt', 'llms\n');
   writeFile('app/src/lib/x.ts', 'export const x = 1;\n');
+  // Mixed case on purpose: the Stop hook's record->match chain has to survive
+  // relPath()'s win32 case folding (case #60).
+  writeFile('app/src/components/PageHead.svelte', '<h1>x</h1>\n');
+  // Near-misses for edit-guard's deny list, none of which may deny (#39a).
+  writeFile('app/data.json', '{}\n');
+  writeFile('docs/i/x.html', '<html></html>\n');
+  writeFile('input/x.html', '<html></html>\n');
+  writeFile('app/dist/x.html', '<html></html>\n');
   writeFile('issues/65/context.md', '# context\n');
   writeFile('issues/65/plan.md', '# plan\n');
   writeFile('issues/65/handoff.md', '# handoff\n');
@@ -124,6 +143,15 @@ function setupScratch() {
   // baseline that the blanket-stage and Stop cases need something to see.
   appendFile('app/src/lib/x.ts', '// touched\n');
   appendFile('README.md', '\ntouched\n');
+  appendFile('app/src/components/PageHead.svelte', '<p>touched</p>\n');
+}
+
+/** Restore the "several tracked files modified, nothing staged" baseline the
+ * later cases assume, after a sub-case has had to commit the tree clean. */
+function dirtyBaseline() {
+  appendFile('app/src/lib/x.ts', '// touched again\n');
+  appendFile('README.md', '\ntouched again\n');
+  appendFile('app/src/components/PageHead.svelte', '<p>touched again</p>\n');
 }
 
 function teardownScratch() {
@@ -227,7 +255,16 @@ function testBashDenyCases() {
     ['#10 git checkout --', 'git checkout -- app/src/lib/x.ts', null],
     ['#11 git restore', 'git restore app/src/lib/x.ts', null],
     ['#12 git stash drop', 'git stash drop', null],
-    ['#13 rm -rf app', 'rm -rf app', null]
+    ['#13 rm -rf app', 'rm -rf app', null],
+    // Regression guards for the four reviewer blockers and the sanitiser
+    // gaps found with them. Each of these was probed as ALLOWED before.
+    ['#13a rm -rf . (repo root)', 'rm -rf .', 'rm -rf'],
+    ['#13b rm -rf ./ (repo root)', 'rm -rf ./', 'rm -rf'],
+    ['#13c env wrapper', 'env git reset --hard', '--hard'],
+    ['#13d quoted flag', 'git reset "--hard"', '--hard'],
+    ['#13e command after a heredoc', 'cat <<EOF\nbody\nEOF\ngit reset --hard', '--hard'],
+    ['#13f command on a later line', 'npm test\ngit push', 'pushing is the repository'],
+    ['#13g wrapper + quoted flag', 'command git clean "-fd"', 'deletes untracked files']
   ];
   for (const [label, command, fragment] of cases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
@@ -253,7 +290,17 @@ function testBashSilentCases() {
     ['#22 git push --dry-run', 'git push --dry-run'],
     ['#23 git restore --staged', 'git restore --staged app/src/lib/x.ts'],
     ['#24 rm -rf dist', 'rm -rf dist'],
-    ['#25 git add named file', 'git add app/src/lib/x.ts']
+    ['#25 git add named file', 'git add app/src/lib/x.ts'],
+    // The quote stripper now preserves a quoted span that is one inert word,
+    // so a flag cannot hide in quotes. A span with a space or a shell
+    // metacharacter in it still vanishes, and so cannot invent a segment.
+    [
+      '#25a message naming a blocked command',
+      'git commit -m "docs: warn about git reset --hard"'
+    ],
+    ['#25b message with a semicolon', 'git commit -m "chore: a; then b"'],
+    ['#25c rm -rf outside the repo', 'rm -rf /tmp/elsewhere'],
+    ['#25d rm -rf node_modules', 'rm -rf node_modules']
   ];
   for (const [label, command] of cases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
@@ -277,6 +324,29 @@ function testBlanketStaging() {
   {
     const result = runHook('bash-guard.mjs', bashPayload('git commit -a -m "x"'));
     check('#15 git commit -a: denies', isDeny(result));
+  }
+  // The idiomatic spellings are clusters, and an equality test against a
+  // whole token missed every one of them.
+  for (const [label, command] of [
+    ['#15a git commit -am', 'git commit -am "x"'],
+    ['#15b git commit -avm', 'git commit -avm "x"'],
+    ['#15c git add -Av', 'git add -Av'],
+    ['#15d git add --all', 'git add --all']
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`${label}: denies`, isDeny(result), JSON.stringify(result.json));
+  }
+  // ...and the flag test must still not fire on unrelated short flags.
+  for (const [label, command] of [
+    ['#15e git commit -m only', 'git commit -m "chore: x"'],
+    ['#15f git add -N', 'git add -N app/src/lib/x.ts']
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(
+      `${label}: no blanket-stage deny`,
+      !denyReason(result).includes('Stage the files this batch touched'),
+      denyReason(result)
+    );
   }
 }
 
@@ -362,7 +432,15 @@ function testEditGuard() {
   const silentCases = [
     ['#37 data.js', path.join(scratchRoot, 'data.js')],
     ['#38 docs/fixtures', path.join(scratchRoot, 'docs', 'fixtures', 'lists', 'x.json')],
-    ['#39 outside repo', path.join(os.tmpdir(), 'elsewhere.txt')]
+    ['#39 outside repo', path.join(os.tmpdir(), 'elsewhere.txt')],
+    // #39a - relPath() now returns '.' for the repo root instead of null, so
+    // bash-guard can deny `rm -rf .`. edit-guard must not start denying on
+    // that sentinel, and its near-miss paths must stay clean.
+    ['#39a repo root itself', scratchRoot],
+    ['#39b app/data.json', path.join(scratchRoot, 'app', 'data.json')],
+    ['#39c docs/i/x.html', path.join(scratchRoot, 'docs', 'i', 'x.html')],
+    ['#39d input/x.html', path.join(scratchRoot, 'input', 'x.html')],
+    ['#39e app/dist/x.html', path.join(scratchRoot, 'app', 'dist', 'x.html')]
   ];
   for (const [label, filePath] of silentCases) {
     const result = runHook('edit-guard.mjs', editPayload(filePath));
@@ -540,6 +618,68 @@ async function testCheckObserver() {
     runHook('check-observer.mjs', payload);
     check('#49 check:fast: no cache written', !fs.existsSync(cacheFilePath()));
   }
+
+  // #49a-g - the observer must only trust stdout it can attribute to a real
+  // check run. Every "no cache" case here was probed writing a cache entry.
+  const attributionCases = [
+    [
+      '#49a redirect then grep (the check FAILED)',
+      'npm run check > o.txt 2>&1 || true; grep "All files" o.txt',
+      passingResponse,
+      false
+    ],
+    [
+      '#49b echo naming the command',
+      'echo "npm run check says All files"',
+      passingResponse,
+      false
+    ],
+    ['#49c stdout redirected away', 'npm run check > o.txt', passingResponse, false],
+    [
+      '#49d unrecognised numeric failure field',
+      'npm run check',
+      { status: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
+      false
+    ],
+    [
+      '#49e piped to tail (the recommended invocation)',
+      'npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      true
+    ],
+    // #49f - found the hard way while committing this very batch: a leading
+    // `cd <dir> &&` is habit, not a second output producer, and rejecting it
+    // made the gate unsatisfiable for an agent that types one.
+    [
+      '#49f leading cd',
+      'cd "E:/dev/daggerheart-loot" && npm run check 2>&1 | tail -n 130',
+      passingResponse,
+      true
+    ],
+    // #49g - but a trailing command after the check is still not trusted:
+    // its stdout is the last thing written, and it is not the check's.
+    [
+      '#49g cd, check, then something else',
+      'cd /repo && npm run check && echo "All files"',
+      passingResponse,
+      false
+    ]
+  ];
+  for (const [label, command, response, shouldCache] of attributionCases) {
+    clearCache();
+    runHook('check-observer.mjs', {
+      session_id: 's-observer',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command, run_in_background: false },
+      tool_response: response
+    });
+    check(
+      `${label}: ${shouldCache ? 'cache written' : 'no cache written'}`,
+      fs.existsSync(cacheFilePath()) === shouldCache
+    );
+  }
   clearCache();
 }
 
@@ -599,9 +739,24 @@ async function testSessionStop() {
     );
   }
 
-  // #52 - a wrote entry that is still dirty -> systemMessage names the path
+  // #52 / #60 - a wrote entry that is still dirty -> systemMessage names the
+  // path. Driven through edit-followup.mjs, not recordWrite(), and with a
+  // MIXED-CASE path: recording and matching are two different normalisations
+  // on win32, and a pre-normalised literal certified the bug instead of
+  // catching it. PageHead.svelte stands in for every Svelte component,
+  // CLAUDE.md and both READMEs - the files most likely left uncommitted.
   const stopSession = 's-stop-dirty';
-  recordWrite(stopSession, 'app/src/lib/x.ts');
+  const mixedCase = 'app/src/components/PageHead.svelte';
+  {
+    const recorded = runHook(
+      'edit-followup.mjs',
+      editPayload(path.join(scratchRoot, ...mixedCase.split('/')), {
+        session_id: stopSession,
+        event: 'PostToolUse'
+      })
+    );
+    check('#60 mixed-case write: silent', isSilent(recorded), recorded.stdout);
+  }
   {
     const result = runHook('session-stop.mjs', {
       session_id: stopSession,
@@ -611,7 +766,7 @@ async function testSessionStop() {
     });
     check(
       '#52 uncommitted work: names the path',
-      systemMessage(result).includes('app/src/lib/x.ts'),
+      systemMessage(result).includes(mixedCase),
       systemMessage(result)
     );
 
@@ -700,6 +855,10 @@ function testFailOpen() {
 // ---------- run ----------
 
 async function main() {
+  if (!gitAvailable()) {
+    console.log('.claude/hooks/selftest.mjs: skipped (git is not on PATH)');
+    return;
+  }
   setupScratch();
   try {
     testBashDenyCases();
@@ -751,6 +910,20 @@ async function testCommitGateAsync() {
     check('#27 gate: silent once cached', isSilent(result), result.stdout);
   }
 
+  // #27a - the gate's most important safety property: a cache that was
+  // valid a moment ago must stop counting the instant the tree moves.
+  appendFile('app/src/lib/x.ts', '// moved since the cached run\n');
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'));
+    check('#27a gate: stale cache denies', isDeny(result), JSON.stringify(result.json));
+    check(
+      '#27a gate: stale cache reason',
+      denyReason(result).includes('has not passed for this working tree'),
+      denyReason(result)
+    );
+  }
+
+  clearCache();
   gitSh(['reset']);
   appendFile('issues/65/plan.md', '\nmore plan\n');
   gitSh(['add', 'issues/65/plan.md']);
@@ -775,6 +948,40 @@ async function testCommitGateAsync() {
     );
   }
 
+  // #28a - the bypass is an env prefix, not a word. Talking about it in a
+  // commit message used to be enough to skip the gate.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('git commit -m "feat: add SKIP_CHECK_GATE=1 support"')
+    );
+    check('#28a prose bypass: still denies', isDeny(result), JSON.stringify(result.json));
+  }
+
+  // #59 - `git commit -am` must reach the gate, not just the blanket-stage
+  // rule. Proven on a clean tree plus exactly one modified file, so the
+  // blanket-stage rule (which needs 2+ dirty paths) cannot be what denies,
+  // and with an empty index, so only the unstaged union can supply a path.
+  gitSh(['reset']);
+  gitSh(['add', '-A']);
+  gitCommit('chore: scratch clean');
+  clearCache();
+  appendFile('app/src/lib/x.ts', '// gate union\n');
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -am "chore: x"'));
+    check('#59 -am cluster: gate denies', isDeny(result), JSON.stringify(result.json));
+    check(
+      '#59 -am cluster: gate reason',
+      denyReason(result).includes('has not passed for this working tree'),
+      denyReason(result)
+    );
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'));
+    check('#59 without -a: empty index stays silent', isSilent(result), result.stdout);
+  }
+
+  dirtyBaseline();
   gitSh(['reset']);
   clearCache();
 }

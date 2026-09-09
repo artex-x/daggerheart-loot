@@ -45,11 +45,13 @@ ones listed below; everything else is silent or a message.
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and the parity baseline. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. | warn, never block |
 
-**Hook config is snapshotted at session start.** Editing a hook script or
-`settings.json` has no effect on the session that made the edit - restart the
-session, or run `/hooks`, to pick it up. (On at least one host build this
-session's own hooks were observed to fire live regardless - see
-`issues/65/handoff.md` - but do not rely on that across hosts.)
+**Hook config may be snapshotted at session start.** Editing a hook script or
+`settings.json` may have no effect on the session that made the edit - restart
+the session, or run `/hooks`, to pick it up. On this Windows desktop build the
+opposite has now been observed twice, deny path included: a script edited
+mid-session blocked a command minutes later, so the scripts are re-read per
+invocation here. See `issues/65/handoff.md`. Do not rely on either behaviour
+across hosts.
 
 Three runtime files live under `.claude/` and are gitignored
 (`.claude/.gitignore`):
@@ -61,18 +63,50 @@ Three runtime files live under `.claude/` and are gitignored
 | `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. |
 
 **Escape hatch:** `SKIP_CHECK_GATE=1 git commit -m "..."` bypasses the commit
-gate and announces the bypass to the human via `systemMessage`. Use it only
-when `npm run check` genuinely cannot run - not because it is inconvenient.
+gate and announces the bypass to the human via `systemMessage`. It must be a
+real environment prefix; merely naming it in a commit message does nothing.
+Use it only when `npm run check` genuinely cannot run - not because it is
+inconvenient.
+
+**Run a long check so the gate can see it pass.** `check-observer.mjs` reads
+the Bash tool's own captured stdout, and only trusts stdout it can attribute
+to the check: the command must start with the check invocation (a leading
+`cd <dir> &&` is fine), must not chain anything after it (`&&`, `;`, `||`),
+and must not redirect stdout to a file. A pipe is fine and is the way to keep
+a huge log out of the transcript, but `All files` sits near the *top* of the
+coverage table, so size the tail generously:
+
+```text
+npm run check 2>&1 | tail -n 120
+```
+
+`npm run check > out.txt 2>&1` then reading the file does **not** satisfy the
+gate, however genuinely the run passed - the hook never saw the output.
 
 Run the tests: `node .claude/hooks/selftest.mjs` (also wired into `npm run
-check`). It never touches this repository's tree or state - every case runs
-against a throwaway git repo in the OS temp directory.
+check`; it skips when git is not on PATH). It never touches this repository's
+tree or state - every case runs against a throwaway git repo in the OS temp
+directory.
 
-Facts settled by measurement during implementation (issue 65):
+Known limitations of `bash-guard.mjs`'s sanitiser, recorded rather than
+papered over. It is a guard against habit and haste, not against an
+adversary:
 
-- `tool_response.exit_code` is the numeric Bash exit-code field
-  (`check-observer.mjs` also accepts `exitCode`/`returnCode`/`code` and treats
-  a missing field as a pass, so the design stays correct even off this host).
-- `All files` (vitest's coverage-table header) reliably appears in a passing
-  `npm run check`, and does not appear alongside the failure markers
+- A command hidden inside `sh -c "..."` or `bash -lc '...'` is erased with the
+  quoted span and matches nothing.
+- A quoted span is only preserved when it is a single shell-inert word, so
+  `git reset "--hard"` is caught but `git reset "--hard HEAD~1"` is not.
+- `git commit <pathspec>` with an explicit path can slip a checked file past
+  the commit gate; CI still runs the suite.
+- Wrapper stripping covers `env`, `command`, `nohup`, `time` and `xargs`, not
+  every possible launcher.
+
+Facts settled during implementation (issue 65):
+
+- Measured: `All files` (vitest's coverage-table header) reliably appears in a
+  passing `npm run check`, and does not appear alongside the failure markers
   (`npm error`, `ELIFECYCLE`, `FAILED`, `Tests \d+ failed`) in a passing run.
+- Looked up, not measured: `tool_response.exit_code` is the numeric Bash
+  exit-code field, per the official hooks reference. `check-observer.mjs` also
+  accepts `exitCode`/`returnCode`/`code`/`status`/`exitStatus`, and treats a
+  missing field as a pass, so the design stays correct even off this host.

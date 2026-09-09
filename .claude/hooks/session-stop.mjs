@@ -5,7 +5,7 @@
 import { createHash } from 'node:crypto';
 import { statSync } from 'node:fs';
 import path from 'node:path';
-import { readInput, guard, warn, git, activeTask, getWrote, once } from './lib.mjs';
+import { readInput, guard, warn, git, activeTask, getWrote, once, pathKey } from './lib.mjs';
 
 guard(() => {
   const input = readInput();
@@ -15,16 +15,21 @@ guard(() => {
   const writtenPaths = Object.keys(wrote);
   if (!writtenPaths.length) return undefined;
 
+  // Keyed by pathKey(), valued by git's own spelling: relPath() lower-cases
+  // on win32, so a raw `dirty.has(p)` never matched a mixed-case name -
+  // PageHead.svelte, CLAUDE.md and both READMEs were silently dropped from
+  // the warning, which is most of what gets left uncommitted here.
   const status = git(['status', '--porcelain', '-uall']);
-  const dirty = new Set();
+  const dirty = new Map();
   if (status !== null) {
     for (const row of status.split('\n')) {
       if (!row) continue;
-      dirty.add(row.slice(3));
+      const raw = row.slice(3);
+      dirty.set(pathKey(raw), raw);
     }
   }
 
-  const uncommitted = writtenPaths.filter((p) => dirty.has(p));
+  const uncommitted = writtenPaths.map((p) => dirty.get(pathKey(p))).filter(Boolean);
 
   const task = activeTask();
   let staleness = null;
