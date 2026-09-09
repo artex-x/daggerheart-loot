@@ -15,11 +15,23 @@ depends on chat history.
 
 Phase 4 is in progress. B1, B2, B3 and now **B3.5 are built**. The batch order
 ahead is **B3.6 -> B4**; B4 (the three equipment tables) is unchanged and still
-follows, with both of its early checks intact - see "Deferred". A new,
-unrelated blocker surfaced while running B3.5's own full-suite gate - see
-"Blockers" before starting B3.6.
+follows, with both of its early checks intact - see "Deferred".
 
-Why two batches were inserted: a human manually reviewed `#/tables/community`
+**B3.6 is one batch in two parts**, merged at the owner's request on the
+standing "prefer larger coherent batches" policy: **part 1** greens the red CI
+run, **part 2** builds the instrument that would have caught B3.5's defects.
+Both are about whether the harness's verdict can be believed and both edit
+`tests/parity/*`. Part 1 first - part 2's acceptance criterion is that its new
+spec fails on the fixes part 1 and B3.5 made, which needs those fixes to exist.
+Part 1 is a coherent commit boundary on its own if the batch is interrupted.
+
+B4 was offered as a merge target too and is deliberately **not** folded in:
+B4's own acceptance includes a clean parity run and new `VISUAL_DEBT` entries,
+so building it while the debt table and the instrument are both being replaced
+would make every number unattributable - the same confounding that hid three
+defects behind an "antialiasing" reason for three batches.
+
+Why these batches were inserted: a human manually reviewed `#/tables/community`
 at full width and reported two rendering defects the parity harness was
 reporting as clean. The orchestrator confirmed both by measurement and found a
 third. All three had been absorbed by `VISUAL_DEBT` entries whose stated reason
@@ -142,13 +154,56 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   proof.
 - Gates for the next batch: `npm run check`, `npm run check:built`,
   `node tests/parity.js "tables"` while working (or a narrower filter matching
-  B3.6's own `only` list), `node tests/run-all.js parity` before the commit -
-  **read "Blockers" first**, because that command was already red going into
-  B3.6 for reasons B3.6 did not cause either.
+  B3.6's own `only` list), `node tests/run-all.js parity` before the commit.
+  That last command was **already red going into B3.6, for reasons B3.6 did
+  not cause** - greening it is now B3.6 part 1's whole job, so the gate and
+  the batch are the same thing. See "Blockers".
 
 ## Next batch (implement-ready)
 
-- **Name:** B3.6 - the instrument that would have caught them.
+- **Name:** B3.6 - a parity harness you can trust. Two parts, one batch.
+
+### Part 1 - the red CI run
+
+- **Objective:** make `node tests/run-all.js parity` green, on CI, honestly.
+  `.github/workflows/ci.yml` runs `npm run test:legacy` = `node
+  tests/run-all.js` **unfiltered**, so the full parity suite gates every push
+  and pull request, and `main` has been red for eight consecutive runs since
+  2026-09-03. Nobody noticed because sessions only ever ran the filtered
+  `tables` subset locally. Full design in `plan.md`, "B3.6 planned, part 1";
+  the failing states, both machines' numbers and the method are in
+  `context.md` under "CI is red". Do not re-run to rediscover the list.
+
+- **Two owner decisions, settled - do not re-open:**
+  1. **CI (ubuntu) is the authoritative machine for `VISUAL_DEBT` numbers.** A
+     local Windows run is advisory. Local-only drift may not be written into
+     the table as if it were the baseline.
+  2. **Diagnose every failing state and fix root causes; re-baseline only what
+     is genuinely machine variance.** Not "green it now, diagnose later" - that
+     risks writing another absorbing excuse of the kind B3.5 just removed.
+
+- **In scope:** the complete failing-state list (the CI log is capped at about
+  a dozen lines - use an unfiltered local run or the `failure-output` artifact
+  from run `34019148841`); a per-state diagnosis with a named cause; the fixes
+  those diagnoses call for; `#/i/f1`'s missing `ACCEPTED` entry for the
+  add-to-list gap that every other record-card route already has; the platform
+  rule written into `docs/parity.md`'s "Machine variance"; and a recorded
+  decision on whether CI keeps the unfiltered suite as a blocking gate (~867s).
+
+- **Start with `#/i/ci1 ~ whole`.** Largest overshoot (up to 1.4pp), over on
+  both machines, and a whole-page state where one missing element shifts the
+  footer and costs a lot of pixels at once. Expect B3.5's pattern: separate
+  "noise" reasons that each turn out to be one CSS declaration.
+
+- **Acceptance:** every failing state diagnosed and named, not one left as
+  "antialiasing"; the suite clean locally with stated reasoning for why it will
+  be clean on ubuntu; `npm run check` and `npm run check:built` pass; any
+  raised debt entry says out loud that it was raised and why. **CI green on the
+  resulting commit is the criterion that matters and cannot be verified from
+  the working tree - it needs the owner to push. Say so rather than declaring
+  victory locally.**
+
+### Part 2 - the instrument that would have caught them
 
 - **Objective:** add the measurement that would have failed loudly on all
   three of B3.5's defects instead of silently absorbing them - computed
@@ -293,16 +348,19 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     confirmed B3.5's own three fixes are back and the `"tables"` filter is
     still clean. The scratch stash left no trace; nothing from it was
     committed.
-  - **Recommended next step, not started:** a short, separate batch - call it
-    B3.5.5 or fold it into B3.6's own start - that runs each of the four
-    states down with the same standalone-script method `context.md` and
-    B3.5's own section-anchor investigation used, decides for each whether the
-    debt number needs raising (if it is real drift) or the cause needs fixing
-    (if it is a real regression from some earlier batch), and adds `#/i/f1`'s
-    missing `ACCEPTED` entry. Until then, `node tests/run-all.js parity`
-    cannot exit clean, and any batch that lists a clean full run as its own
-    acceptance criterion needs to say explicitly whether these four are
-    included in that claim.
+  - **Owned by B3.6 part 1**, which is the next batch. It runs each failing
+    state down with the standalone-script method `context.md` and B3.5's own
+    section-anchor investigation used, decides per state whether the cause
+    needs fixing or the number is genuine cross-platform variance, and adds
+    `#/i/f1`'s missing `ACCEPTED` entry. See "Next batch" and `plan.md`,
+    "B3.6 planned, part 1".
+  - **The local list above is not the whole story.** CI failed at `4976cb4` on
+    a partly different set - `#/roll/wondrous ~ help @ en 768` fails on ubuntu
+    and passes on Windows, `#/i/f1` and `~ modal` the reverse - and
+    `run-all.js` caps its CI output at about a dozen lines, so even the ubuntu
+    list may be incomplete. `context.md`'s "CI is red" section has both lists
+    and the run id. Two of the CI failures (`#/tables/wondrous @ en 768` and
+    `@ en 375`) are **already fixed** by B3.5.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
@@ -494,5 +552,7 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   reverted).
 
 - Session end partial progress: none - B3.5 is complete and committed. B3.6 is
-  fully designed and implement-ready; see "Next batch". The full-suite
-  blocker under "Blockers" is new and unresolved.
+  fully designed and implement-ready in two parts; see "Next batch". The
+  full-suite/CI blocker under "Blockers" is unresolved by design: it is B3.6
+  part 1's scope, and the owner asked for it to be executed in a separate
+  session.

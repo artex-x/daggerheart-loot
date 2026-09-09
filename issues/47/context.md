@@ -152,3 +152,63 @@ Not a bug in the harness, a limit of its metric, and worth writing down:
 - The human provides new info
 - context.md is missing a fact you need
 - You suspect drift vs issue or plan
+
+## CI is red, and has been since B1 (added 2026-09-09)
+
+`.github/workflows/ci.yml` runs `npm run test:legacy`, which is
+`node tests/run-all.js` with **no filter**, so the full parity suite runs on
+every push and pull request. Every run on `main` since
+"Batch B1 planned and written down" (2026-09-03) has failed. Sessions recorded
+parity as passing while only ever running the filtered `tables` subset locally.
+
+Latest red run at `4976cb4` (`gh run view 34019148841 --log-failed`), on
+ubuntu:
+
+```
+#/roll/wondrous ~ help  @ ru 768   0.98% vs debt 0.73%
+#/roll/wondrous ~ help  @ ru 375   0.68% vs debt 0.52%
+#/roll/wondrous ~ help  @ en 768   0.40% vs debt 0.29%
+#/roll/wondrous ~ help  @ en 375   1.08% vs debt 0.79%
+#/i/ci1 ~ whole         @ ru 1100  5.87% vs debt 5.29%
+#/i/ci1 ~ whole         @ ru 768   6.14% vs debt 5.39%
+#/i/ci1 ~ whole         @ ru 375   8.49% vs debt 7.28%
+#/i/ci1 ~ whole         @ en 1100  5.70% vs debt 5.17%
+#/i/ci1 ~ whole         @ en 768   5.91% vs debt 5.22%
+#/i/ci1 ~ whole         @ en 375   8.37% vs debt 7.01%
+#/tables/wondrous       @ en 768   0.12%, expected zero
+#/tables/wondrous       @ en 375   1.64% vs debt 1.51%
+```
+
+**That list may be incomplete.** `run-all.js` prints only about a dozen grepped
+lines per suite on CI - the workflow's own comment says so. The complete list
+needs an unfiltered local run or the uploaded `failure-output` artifact.
+
+Two facts to keep apart:
+
+- The last two entries are **already fixed** by B3.5 - `#/tables/wondrous` was
+  the search-box defect.
+- The CI list and the local Windows list **overlap but differ**. Locally
+  `#/roll/wondrous ~ modal` and `#/i/f1` fail and `~ help @ en 768` passes; on
+  ubuntu the reverse. So there are two causes tangled together: a consistent
+  overshoot on both machines (`~ help` and `#/i/ci1 ~ whole` are over debt
+  everywhere, `~ whole` by up to 1.4pp - too large to be hinting noise), plus
+  genuine cross-platform variance of a tenth or two on top.
+
+### Decisions taken by the repository owner, 2026-09-09
+
+Do not re-open these; they are settled input, not options.
+
+1. **CI (ubuntu) is the authoritative machine for `VISUAL_DEBT` numbers.** A
+   debt figure must make CI green. A local Windows run is advisory and gets a
+   documented per-platform tolerance; local drift may not be written into the
+   table as if it were the baseline, which is what `docs/parity.md`'s
+   "Machine variance" section already says. Rejected alternatives, on the
+   record: per-platform pairs of numbers (doubles bookkeeping this migration
+   already struggles with) and simply widening `JITTER`/`DEBT_SLACK` (loosens
+   the exact mechanism that let three defects hide this session).
+2. **Diagnose every failing state and fix root causes; re-baseline only what is
+   genuinely machine variance.** Explicitly *not* "re-baseline everything to
+   green now, diagnose later" - the owner's reason is that it risks writing
+   another absorbing excuse of the kind this session just spent a batch
+   removing. `#/i/ci1 ~ whole` overshooting by ~1.4pp is expected to be a real
+   defect, not drift.

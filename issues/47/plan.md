@@ -48,8 +48,9 @@ Built, and matching the live app exactly in both languages at all three widths:
 `VISUAL_DEBT`", and for the tables screens that turned out to be a weaker claim
 than it reads. Three real defects were sitting inside debt entries whose reason
 said antialiasing.** Two batches are inserted ahead of B4: **B3.5**, which
-fixes them and re-baselines the debt, and **B3.6**, which builds the
-measurement that would have caught them. Both are below, after "B3 built".
+fixes them and re-baselines the debt, and **B3.6**, a two-part batch that greens
+the red CI run and then builds the measurement that would have caught them.
+Both are below, after "B3 built".
 
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
@@ -1255,9 +1256,168 @@ wipes it.
   found while reading the two CSS blocks goes in the handoff, not in this
   commit, unless it is inside a rule this batch already edits.
 
-### B3.6 planned: the instrument that would have caught them
+### B3.6 planned, part 1: the red CI run
 
-Its own batch, ordered immediately after B3.5 and before B4.
+**B3.6 is one batch in two parts, merged at the owner's request on the standing
+"prefer larger coherent batches" policy.** Part 1 (this section) makes the full
+parity suite green on CI; part 2 (the next section) builds the instrument that
+would have caught the defects B3.5 fixed. They belong together: both are about
+whether the harness's verdict can be believed, both edit `tests/parity/*`, and
+part 2's acceptance criterion is that it fails on part 1's own findings.
+
+Ordered immediately after B3.5 and before B4. Written by the orchestrator at
+the owner's request; to be executed in a separate session.
+
+**Why B4 stays separate**, having been offered as a merge target: B4's own
+acceptance includes a clean parity run and new `VISUAL_DEBT` entries for three
+new tables. Building it inside a batch that is simultaneously rewriting the
+debt table and replacing the instrument means no number can be attributed to
+one change or the other - which is precisely the confounding that let three
+defects hide behind an "antialiasing" reason for three batches. Fix the ruler,
+then measure.
+
+#### The finding
+
+`.github/workflows/ci.yml` runs `npm run test:legacy`, which is
+`node tests/run-all.js` with **no filter**. The full parity suite therefore runs
+on every push and pull request. Every run on `main` since "Batch B1 planned and
+written down" (2026-09-03) has failed - eight consecutive red builds. Sessions
+recorded parity as passing while only ever running the filtered `tables` subset
+locally, so nobody was looking at the gate that actually blocks.
+
+The failures at `4976cb4` on ubuntu, and the same suite's failures on the
+Windows development machine, are in `issues/47/context.md` under "CI is red".
+Read that section rather than re-running to rediscover the list.
+
+Two things are tangled together there, and the batch's first job is to separate
+them:
+
+- **A consistent overshoot on both machines.** `#/roll/wondrous ~ help` and
+  `#/i/ci1 ~ whole` are over their recorded debt on ubuntu *and* on Windows.
+  `~ whole` is over by up to 1.4pp, which is far too large to be text hinting.
+  Something regressed these, or their debt was recorded against a baseline that
+  no longer exists.
+- **Genuine cross-platform variance of a tenth or two on top.** The two lists
+  do not match: locally `#/roll/wondrous ~ modal` and `#/i/f1` fail and
+  `~ help @ en 768` passes; on ubuntu the reverse.
+
+`#/tables/wondrous @ en 768` and `@ en 375` are in the CI list and are
+**already fixed** - they were the search-box defect, closed by B3.5. Expect
+them to be green and do not go looking for them.
+
+#### Owner decisions - settled input, do not re-open
+
+Both taken by the repository owner on 2026-09-09 and recorded in `context.md`:
+
+1. **CI (ubuntu) is the authoritative machine for `VISUAL_DEBT` numbers.** A
+   debt figure must make CI green. A local Windows run is advisory and gets a
+   documented per-platform tolerance; local drift may not be written into the
+   table as though it were the baseline - which is what `docs/parity.md`'s
+   "Machine variance" section already says, and which this batch is the first
+   to have to honour in practice. Rejected on the record: per-platform pairs of
+   numbers, and simply widening `JITTER`/`DEBT_SLACK`.
+2. **Diagnose every failing state and fix root causes. Re-baseline only what is
+   genuinely machine variance.** Explicitly not "green CI now, diagnose later" -
+   the owner's stated reason is that it risks writing another absorbing excuse
+   of the kind B3.5 just spent a batch removing.
+
+#### What to build
+
+1. **Get the complete list.** The CI log is not it: `run-all.js` prints only
+   about a dozen grepped lines per suite, and the workflow's own comment says
+   so. Either run `node tests/run-all.js parity` unfiltered locally and read
+   `test-output/`, or download the `failure-output` artifact from a red run
+   (`gh run download <id> -n failure-output`; it is ~197 MB, and the run at
+   `4976cb4` is `34019148841`). Prefer the artifact for the ubuntu numbers,
+   because those are the authoritative ones - a local run tells you about the
+   advisory machine only.
+
+2. **Run each failing state down individually**, with the standalone-puppeteer
+   method the handoff's "Session gotchas" section and `context.md` both
+   describe: the harness's own launch args
+   (`['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']`), both
+   `index.html` and `dist/index.html` at the same route, computed styles and
+   `getBoundingClientRect()` read directly. For each state decide, with
+   evidence, which of these it is:
+   - a real defect in the rewrite -> fix the cause, and expect the number to
+     fall a long way rather than a hair;
+   - content that is correct but positioned by something not built yet -> the
+     debt reason has to say that specifically, naming the control, not the
+     word "antialiasing";
+   - genuine cross-platform variance -> record against **ubuntu**, per
+     decision 1.
+
+   `#/i/ci1 ~ whole` is the one to start with. It is the largest overshoot, it
+   is over on both machines, and it is a whole-page state, so a single missing
+   element that shifts the footer accounts for a lot of pixels at once. B3.5's
+   own experience is the pattern to expect: three separate "noise" reasons all
+   turned out to be one CSS declaration each.
+
+3. **`#/i/f1`'s missing `ACCEPTED` entry.** The Windows run fails it on
+   `the controls on the page :: controls`: the live app's inventory carries
+   `Добавить в список` / `Add to list` and the rewrite's does not. Every other
+   record-card route has an `ACCEPTED` entry for exactly that gap; this one was
+   never written when the state was added in B3. Add it, keyed the way the
+   neighbours are - check the actual spec and field names in
+   `tests/parity/specs.js` rather than copying a shape from here.
+
+   Note that this failure did **not** appear in the CI log excerpt, which is
+   most likely the dozen-line cap rather than a real pass; confirm against the
+   full ubuntu output before concluding either way.
+
+   `#/i/f1` also shows a small pixel drift with no `VISUAL_DEBT` entry at all
+   (`@ ru 1100` 0.60%, `@ ru 768` 0.11%, `@ en 1100` 0.44%, `@ en 768` 0.10%).
+   Plausibly the same missing control shifting the layout; not measured. Do not
+   write an entry for it until it has been.
+
+4. **Write the platform rule down.** `docs/parity.md`'s "Machine variance"
+   section currently says not to replace established debt with local drift but
+   does not say which machine establishes it. Add decision 1 there: CI/ubuntu
+   is the baseline, a local run is advisory, and a local-only difference of a
+   tenth or two is expected and is not licence to edit the table. Say how a
+   person on another platform is meant to tell the two apart - the honest
+   answer is the failing state's size and whether both machines agree, and that
+   is worth stating rather than leaving to judgement.
+
+5. **Decide whether CI should keep running the unfiltered suite as a blocking
+   gate**, and record the decision either way. It is currently the only thing
+   that would have caught this, which argues for keeping it; it also takes
+   ~867s on CI, which is most of the run. Do not change the workflow without
+   saying why in the plan.
+
+#### Acceptance
+
+- The complete failing-state list is written down, each with a diagnosis and a
+  named cause - not one of them left as "antialiasing".
+- `node tests/run-all.js parity` exits clean locally, and the reasoning for why
+  it will also be clean on ubuntu is stated per re-baselined entry.
+- `npm run check` and `npm run check:built` pass.
+- CI is green on the resulting commit. **This is the acceptance criterion that
+  matters**, and it cannot be verified from the working tree - it needs the
+  owner to push. Say so in the handoff rather than declaring victory locally.
+- `docs/parity.md` carries the platform rule.
+- No `VISUAL_DEBT` entry was raised without its reason saying out loud that it
+  was raised and why, per the doc comment above the table.
+
+#### Out of scope for part 1
+
+- The equipment tables (**B4**).
+- The harness's metric and the new probe spec - that is part 2. Part 1 uses the
+  harness as it stands, so that its diagnoses are made with the same instrument
+  that produced the red run.
+- `index.html`, `app.js`, `style.css` - they are the expectation.
+
+#### Ordering within the batch
+
+Part 1 first, part 2 second, and **do not collapse them into one pass**. Part
+2's distinguishing acceptance criterion is that reverting each fix makes the
+new spec fail by name; that only works if the fixes exist first. Part 1 may be
+committed on its own if the batch is interrupted - it is a coherent boundary.
+
+### B3.6 planned, part 2: the instrument that would have caught them
+
+The second half of B3.6, run after part 1's fixes are in the tree - see part 1's
+"Ordering within the batch" for why the order is load-bearing.
 
 #### Why it is separate, and why it is not just a smaller threshold
 
