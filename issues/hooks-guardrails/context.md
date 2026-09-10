@@ -70,6 +70,70 @@ questions in `handoff.md`.
 - `issues/65/` is **retired history**. Its durable knowledge was moved into
   `.claude/README.md` on purpose. Do not mine it for instructions.
 
+## Measured while answering the owner, 2026-09-10 - B1 must carry these
+
+Four facts the B1 batch needs and nobody should re-derive. All measured on
+this host with the Bash tool.
+
+1. **`set -o pipefail` scopes to a pipe into `tail`, not to every command.**
+   `yes | head -n 2` exits **0** without the prefix and **141** with it - the
+   producer takes SIGPIPE when `head` leaves early. `| tail` drains its input,
+   so it never happens there. A blanket "prefix everything" rule would make
+   `grep ... | head` report a load-dependent, intermittent failure and send a
+   worker back for a second run, which is the waste this batch removes. The
+   documented rule is therefore: **pipe a long verification run into `tail`
+   with the prefix, because you need its status** - not "prefix everything".
+   The hook change itself is narrower still and structural: `check-observer.mjs`
+   only ever attributes `npm run check`, so only that command needs it to arm
+   the gate.
+2. **The prefix alone tells a worker that it failed, not why - `tee` is the
+   other half.** With an early error followed by 200 lines of output,
+   `| tail -n 120` loses the error entirely (grep: 0 matches) while reporting
+   status 1; `| tee <log> | tail -n 120` keeps status **1** and the error is in
+   the log (grep: 1 match). This is exactly a failing `npm run check`: vitest
+   prints failure detail first, then the ~45-line coverage table and summary
+   push it past a 120-line window. So the canonical invocation B1 writes into
+   its five places should be
+   `set -o pipefail; npm run check 2>&1 | tee <log> | tail -n 120`.
+   Two things B1 has to settle rather than assume:
+   - **the log belongs outside the repository** - a `check.log` in the tree is
+     an untracked file that dirties `git status` and can be swept into someone
+     else's commit;
+   - **that the observer accepts a `tee` pipeline is read from the code, not
+     measured.** `isCheckInvocation` allows pipes, rejects `&&`/`||`/`;`/`&`/
+     newline/`$(`/backtick, and inspects only the first segment for a stdout
+     redirect - which stays `npm run check 2>&1`. It was deliberately not
+     probed by hand, because a crafted payload writes `.check-cache.json` and
+     could arm the gate against someone else's tree. **It needs a selftest
+     case, not an assumption.**
+3. **`npm run check` does not check markdown at all, and never has.**
+   `.prettierignore` has carried `*.md` since `5ab5880` (2026-08-30, Phase 1)
+   with its reason - markdown here is wrapped by hand because a line break
+   carries meaning in the specs and the licence line is pinned by
+   `tests/derived.js`. `prettier --file-info` returns `"ignored": true` for
+   `issues/47/handoff.md`, `docs/specs/COVERAGE.md` and `CLAUDE.md` alike. So
+   an `issues/**` edit can neither fail a check nor be corrupted by one, which
+   matches the commit gate's own `isExempt` (`issues/` and every `.md` but the
+   two root READMEs). The repository has decided this twice; only a wrong
+   sentence in a handoff said otherwise.
+4. **`npx prettier --check <some>.md` prints "All matched files use Prettier
+   code style!" while matching zero files.** A success message from an empty
+   set reads exactly like a verified one. Worth knowing before anyone cites it
+   as evidence.
+
+**Two pieces of durable text B1 owns**, since it already rewrites
+`.claude/README.md`'s "Run a long check" section whole:
+
+- That section should say what the check does **not** cover - markdown is not
+  formatted or linted by it - so nobody is cautious about editing a handoff
+  mid-run, and so the way to change that is visible: it is one line in
+  `.prettierignore`, which carries the reasoning beside it.
+- `issues/47/handoff.md`'s gotcha beginning **"`npm run check` starts with
+  `prettier --check .`, which covers markdown"** is **false** and must be
+  deleted. It caused repeated, real caution, including two deferred edits by
+  the orchestrator on 2026-09-10. If B1 does not own that file, say so and the
+  orchestrator will delete it during reconciliation.
+
 ## Key paths
 
 - Hooks: `.claude/hooks/*.mjs`, registered in `.claude/settings.json`;
