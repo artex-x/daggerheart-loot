@@ -202,6 +202,23 @@ const STATES: {
       await press('Фильтры');
       await press('1');
     }
+  },
+  {
+    what: 'the selection bar with its menu open',
+    route: '#/tables',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
+        { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+      ])
+    },
+    /* `press` grips buttons; the row checkbox is reached by role instead. */
+    enter: async () => {
+      await userEvent.click(
+        screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
+      );
+      await press('Добавить в список');
+    }
   }
 ];
 
@@ -249,6 +266,7 @@ const COVERED: Record<string, string> = {
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
+  'SelBar.svelte': 'the state above, and tables.test.ts',
   'Shell.svelte': 'shell.test.ts, including the storage warning',
   'TabBar.svelte': 'the frame, on every state',
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",

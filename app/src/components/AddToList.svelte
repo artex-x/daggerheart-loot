@@ -230,9 +230,12 @@
 
 <style>
   /* off `.seldrop`/`.dropmenu` in style.css - the add-to-list menu, shared by
-     the card and (once B5.2 builds it) the selection bar. The card's own
-     `.cardpick :global(.dropmenu)` rules in RecordCard.svelte flip which side
-     this opens on by default; this is the bar's own default (upward). */
+     the card and the selection bar. The base rule below (`bottom: calc(100% +
+     8px)`) opens upward, which is the bar's own default - `placeMenu` in
+     app.js always adds `up` at the bottom of the window, and style.css has no
+     base `.dropmenu.up` rule to flip it, only `.cardpick .dropmenu.up`. The
+     card's own `.cardpick :global(.dropmenu)` rules in RecordCard.svelte are
+     what flip which side the card's copy opens on. */
   .seldrop {
     position: relative;
   }
@@ -253,11 +256,6 @@
     flex-direction: column;
     gap: 6px;
     animation: pop 0.16s cubic-bezier(0.2, 0.8, 0.3, 1) both;
-  }
-
-  .dropmenu.up {
-    bottom: auto;
-    top: calc(100% + 8px);
   }
 
   @keyframes pop {

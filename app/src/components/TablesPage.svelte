@@ -19,7 +19,6 @@
      `equipOfKind`/`equipFacets` are what tell that shape apart from the
      plain one below. */
   import { untrack } from 'svelte';
-  import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -82,18 +81,19 @@
   let q = $state('');
   let view = $state<'list' | 'grid'>('list');
 
-  /* A selection belongs to the page it was made on, and so does an open
-     modal. `app.navigations` counts a real move - `go()`, or the address
-     changing under the app - and not a filter pick, which rewrites the
-     address with `replace()` and must keep both. Route strings cannot tell
-     one table from another on their own - they all read "tables" - which is
-     why a hash-only move needs this signal rather than `app.hash` itself. */
-  const sel = new SvelteSet<string>();
+  /* An open modal belongs to the page it was opened on, the same as the
+     selection - but the selection now lives on `app` (the bar that draws it
+     is in the frame, not here) and clears itself there on every real
+     navigation. This effect only has the modal left to close. `app.navigations`
+     counts a real move - `go()`, or the address changing under the app - and
+     not a filter pick, which rewrites the address with `replace()`. Route
+     strings cannot tell one table from another on their own - they all read
+     "tables" - which is why a hash-only move needs this signal rather than
+     `app.hash` itself. */
   let open = $state<Record_ | null>(null);
   $effect(() => {
     void app.navigations;
     untrack(() => {
-      sel.clear();
       open = null;
     });
   });
@@ -193,8 +193,8 @@
   });
 
   function toggleSel(id: string): void {
-    if (sel.has(id)) sel.delete(id);
-    else sel.add(id);
+    if (app.sel.has(id)) app.sel.delete(id);
+    else app.sel.add(id);
   }
 
   /** "Select all" always means all of one list - the whole table for the
@@ -202,10 +202,10 @@
    *  `TableRows` computes its own checkbox state; this only has to carry the
    *  toggle out to the shared selection. */
   function toggleAllIn(ids: readonly string[]): void {
-    const on = ids.some((id) => !sel.has(id));
+    const on = ids.some((id) => !app.sel.has(id));
     for (const id of ids) {
-      if (on) sel.add(id);
-      else sel.delete(id);
+      if (on) app.sel.add(id);
+      else app.sel.delete(id);
     }
   }
 
@@ -493,7 +493,7 @@
               {view}
               {index}
               lang={app.lang}
-              selected={(id: string) => sel.has(id)}
+              selected={(id: string) => app.sel.has(id)}
               artBroken={(id: string) => app.artBroken(id)}
               ontoggle={toggleSel}
               onartfail={(id: string) => {
@@ -529,7 +529,7 @@
           {view}
           {index}
           lang={app.lang}
-          selected={(id: string) => sel.has(id)}
+          selected={(id: string) => app.sel.has(id)}
           artBroken={(id: string) => app.artBroken(id)}
           ontoggle={toggleSel}
           onartfail={(id: string) => {
@@ -550,7 +550,7 @@
       {view}
       {index}
       lang={app.lang}
-      selected={(id: string) => sel.has(id)}
+      selected={(id: string) => app.sel.has(id)}
       artBroken={(id: string) => app.artBroken(id)}
       ontoggle={toggleSel}
       onartfail={(id: string) => {

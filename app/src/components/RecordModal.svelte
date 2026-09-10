@@ -52,6 +52,17 @@
   $effect(() => {
     dialog?.showModal();
   });
+
+  /* Every way this dialog closes - the close button, the backdrop, Escape -
+     ends in the browser firing the dialog's own "close" event, so one handler
+     on it reaches all three paths. `app.menuFor` is folded first, matching the
+     live app's own order (`S.menuFor = ''` ahead of `closeModal()`): without
+     it, the card's add-to-list menu, left open when the modal closes, is
+     still `open` the next time this same record's modal is shown. */
+  function handleClose(): void {
+    app.menuFor = '';
+    onclose();
+  }
 </script>
 
 <!-- Pressing the backdrop closes it, as pressing `.modal-back` does in the live
@@ -61,7 +72,7 @@
 <dialog
   bind:this={dialog}
   aria-label={app.t.close}
-  {onclose}
+  onclose={handleClose}
   onclick={(e) => {
     if (e.target === dialog) dialog?.close();
   }}

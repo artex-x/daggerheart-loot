@@ -44,7 +44,10 @@ const NAME = {
     filters: 'Фильтры',
     itemsChip: 'Предметы',
     resetFilter: 'Сбросить всё',
-    filterLink: 'Ссылка на фильтры'
+    filterLink: 'Ссылка на фильтры',
+    copySel: 'Скопировать',
+    clearSel: 'Снять выделение',
+    selected: 'Выбрано'
   },
   en: {
     copyName: 'Copy name',
@@ -59,7 +62,10 @@ const NAME = {
     filters: 'Filters',
     itemsChip: 'Items',
     resetFilter: 'Reset all',
-    filterLink: 'Filter link'
+    filterLink: 'Filter link',
+    copySel: 'Copy',
+    clearSel: 'Clear selection',
+    selected: 'Selected'
   }
 };
 
@@ -224,6 +230,53 @@ const listMembership = {
     return {
       ticked: await d.has('✓ Клад дракона'),
       stored: stored.map((l) => [l.id, l.ids])
+    };
+  }
+};
+
+/**
+ * What copying the whole selection puts on the clipboard.
+ *
+ * `#/tables ~ a row ticked` only ticks one row itself, before the `EN` press
+ * `arrive()` makes for an English run - so by the time this runs, the
+ * checkbox's own name has already followed the language switch. A second tick
+ * (`click(NAME[lang].selected, 1)`) before pressing copy is what lands two
+ * records - `shareSelection` meeting `selAsText`/`selAsHtml` in app.js, with
+ * no OR between them, unlike a copied roll.
+ */
+const copiedSelection = {
+  presses: true,
+  name: 'the selection that lands on the clipboard',
+  only: ['#/tables ~ a row ticked'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].selected, 1);
+    await d.click(NAME[lang].copySel);
+    return { clip: await d.clipboard() };
+  }
+};
+
+/**
+ * The write path a press on the bar's own menu takes, off `applyAddTo`/
+ * `addIdsTo` in app.js.
+ *
+ * `#/tables ~ bar menu`'s own English cells show the menu folded - the same
+ * outside-click rule `listMembership` already works around - so this reopens
+ * it first when the chip is not already on screen, presses it, and reads
+ * storage back: both ids land in the one list in a single press, and the
+ * selection (and the bar itself) survives it.
+ */
+const barMembership = {
+  presses: true,
+  name: "the write path a press on the bar's own menu takes",
+  only: ['#/tables ~ bar menu'],
+  async run(d, lang) {
+    if (!(await d.has('Клад дракона'))) await d.click(NAME[lang].addToList);
+    await d.click('Клад дракона');
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return {
+      stored: stored.map((l) => [l.id, l.ids.length]),
+      barStillUp: await d.has(NAME[lang].clearSel)
     };
   }
 };
@@ -692,10 +745,32 @@ const STATES = [
   {
     id: '#/tables ~ a row ticked',
     route: '#/tables',
-    why: 'the selection, where the missing bar is honest',
+    why: 'the bar, one row ticked',
     enter: async (d) => {
       await d.click('Выбрано');
     }
+  },
+  {
+    id: '#/tables ~ bar menu',
+    route: '#/tables',
+    why: "the bar's own add-to-list menu, above it, right-aligned",
+    storage: two,
+    enter: async (d) => {
+      await d.click('Выбрано');
+      await d.click('Выбрано', 1);
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/tables ~ selection copied',
+    route: '#/tables',
+    why: 'what the app says after copying the selection',
+    enter: async (d) => {
+      await d.click('Выбрано');
+      await d.click('Скопировать');
+    },
+    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    timed: true
   },
   {
     id: '#/tables ~ help',
@@ -817,6 +892,8 @@ const SPECS = [
   filteredAddress,
   copiedFilterLink,
   listMembership,
+  copiedSelection,
+  barMembership,
   visuals,
   typeRuns,
   geometry
@@ -859,10 +936,6 @@ const SPECS = [
  * Both screenshots and a diff image land in test-output/parity/ on every run,
  * so what is left is a picture rather than an argument.
  */
-/* The selection bar - add to list, print, copy selection - is lists' and
-   print's job, not the plain table's; see ACCEPTED for the control list. */
-const selBar = (pct, where) => ({ pct, why: `the selection bar, ${where}` });
-
 const VISUAL_DEBT = {
   /* The row landed (B5.1). What is left in all three modal states below is
      the residue B5 planning already named: showModal() moves the keyboard
@@ -900,21 +973,6 @@ const VISUAL_DEBT = {
   '#/tables ~ a row opened @ en 1100': { pct: 0.02, why: 'the same ring, in English' },
   '#/tables ~ a row opened @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
   '#/tables ~ a row opened @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
-
-  /* The selection bar - add to list, print, copy selection - sits at the
-     bottom of the window once a row is ticked, and does not exist yet; the
-     control list says so in ACCEPTED. Bigger on a phone, where the bar wraps
-     to two rows instead of one. */
-  '#/tables ~ a row ticked @ ru 1100': selBar(1.1, 'at the bottom of the window'),
-  '#/tables ~ a row ticked @ ru 768': selBar(1.39, 'mid width'),
-  '#/tables ~ a row ticked @ ru 375': selBar(4.3, 'on a phone, where the bar wraps to two rows'),
-  '#/tables ~ a row ticked @ en 1100': selBar(0.94, 'in English'),
-  '#/tables ~ a row ticked @ en 768': selBar(1.23, 'in English, mid width'),
-  /* Raised from 4.29, and only because 4.29 was the wrong machine's answer:
-     B3.5's remediation pass lowered all six of these to what it measured on
-     Windows, and CI reads 4.50 for this one cell. Same selection bar, same
-     cause; recorded against CI per docs/parity.md, "Machine variance". */
-  '#/tables ~ a row ticked @ en 375': selBar(4.5, 'in English, on a phone'),
 
   /* The row and section anchors, at 1100 and 768. The reason here used to be
      "the flash outline's own antialiasing", and it is wrong: the ring is not
@@ -1065,15 +1123,6 @@ const ACCEPTED = {
   '#/roll/alt ~ legendary crit @ en :: the controls on the page :: controls': 'the same, at the top rarity',
   '#/roll/alt ~ crit, items only @ ru :: the controls on the page :: controls': 'the same, with one kind on',
   '#/roll/alt ~ crit, items only @ en :: the controls on the page :: controls': 'the same, with one kind on',
-
-  /* B1 draws the selection box that ticks and the checkbox that carries it, but
-     not the bar that appears at the bottom of the window once something is
-     ticked - add to list, print, copy selection. Naming that bar is lists' and
-     print's job, not this slice's. */
-  '#/tables ~ a row ticked @ ru :: the controls on the page :: controls':
-    'the selection bar - add to list, print, copy selection - is lists and print, not this slice',
-  '#/tables ~ a row ticked @ en :: the controls on the page :: controls':
-    'the same, in English',
 
   /* A legacy defect, not an accessibility fix, and recorded here rather than
      reproduced: `list.map(tileHTML)` in app.js passes the array index as

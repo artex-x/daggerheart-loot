@@ -149,3 +149,24 @@ export function shareRoll(
     html: parts.map((p) => p.html).join(`<br><br><b>— ${or} —</b><br><br>`)
   };
 }
+
+/**
+ * A ticked selection as one message - `selAsText`/`selAsHtml` in app.js
+ * (1961-1966).
+ *
+ * A set, not alternatives: unlike `shareRoll`, there is no `skip` and no OR
+ * between entries. A roll offers options a player picks one of; a selection
+ * is a list of things somebody is actually taking, so a craft target two of
+ * them share is written out under each rather than once for the group.
+ */
+export function shareSelection(
+  items: readonly Record_[],
+  index: Index,
+  lang: Lang
+): { text: string; html: string } {
+  const parts = items.map((it) => share(it, index, lang));
+  return {
+    text: parts.map((p) => p.text).join('\n\n'),
+    html: parts.map((p) => p.html).join('<br><br>')
+  };
+}

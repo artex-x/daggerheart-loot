@@ -195,6 +195,9 @@ const ru = {
   nothing: 'Ничего не найдено',
   selectAll: 'Выбрать все',
   selected: 'Выбрано',
+  clearSel: 'Снять выделение',
+  copySel: 'Скопировать',
+  selCopied: 'Выбранное скопировано',
 
   /* The table filter: the strip, the panel it folds open, and the link that
      hands the picked state to somebody else. */
@@ -384,6 +387,9 @@ const en: Dict = {
   nothing: 'Nothing found',
   selectAll: 'Select all',
   selected: 'Selected',
+  clearSel: 'Clear selection',
+  copySel: 'Copy',
+  selCopied: 'Selection copied',
 
   filters: 'Filters',
   kindF: 'Type',

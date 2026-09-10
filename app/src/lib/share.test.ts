@@ -13,7 +13,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
-import { share, shareBlocks, shareName } from './share.js';
+import { dict } from './dict.js';
+import { share, shareBlocks, shareName, shareSelection } from './share.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -173,5 +174,55 @@ describe('what travels with a record', () => {
     if (!any) return;
     const { text } = share(any, index, 'ru', { extra: [note] });
     expect(text.endsWith(`\n\n${note.head}\n${note.body}`)).toBe(true);
+  });
+});
+
+describe('a ticked selection, off selAsText/selAsHtml in app.js', () => {
+  it('joins several records with no OR between them', () => {
+    const [a, b] = index.searchable;
+    expect(a).toBeDefined();
+    expect(b).toBeDefined();
+    if (!a || !b) return;
+    const { text, html } = shareSelection([a, b], index, 'ru');
+    expect(text).toBe([share(a, index, 'ru').text, share(b, index, 'ru').text].join('\n\n'));
+    expect(html).toBe(
+      [share(a, index, 'ru').html, share(b, index, 'ru').html].join('<br><br>')
+    );
+    /* shareRoll's own separator, ruled out rather than assumed absent. */
+    expect(text).not.toContain('—');
+    expect(html).not.toContain('—');
+  });
+
+  it('repeats a craft target shared by two selected records, rather than skipping it', () => {
+    /* No `skip` set, unlike shareRoll: a selection is a set of things somebody
+       is actually taking, not alternatives, so a target the two share is
+       written out under each rather than once for the pair. */
+    const target = index.searchable[0];
+    expect(target).toBeDefined();
+    if (!target) return;
+    const a: Record_ = {
+      id: 'x1',
+      src: 'core',
+      kind: 'item',
+      en: 'A',
+      ende: '',
+      ru: 'А',
+      rud: '',
+      craft: target.id
+    };
+    const b: Record_ = {
+      id: 'x2',
+      src: 'core',
+      kind: 'item',
+      en: 'B',
+      ende: '',
+      ru: 'Б',
+      rud: '',
+      craft: target.id
+    };
+    const marker = `${dict('ru').craftInto}: ${target.ru}`;
+    const { text } = shareSelection([a, b], index, 'ru');
+    const occurrences = text.split(marker).length - 1;
+    expect(occurrences).toBe(2);
   });
 });

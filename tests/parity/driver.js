@@ -197,23 +197,32 @@ function makeDriver(page, target) {
      * Includes `input` so a checkbox with an `aria-label` - the row selection
      * box, which carries no text of its own - answers to the same verb as a
      * button. `has()` already searched inputs; `click()` had not.
+     *
+     * `nth` picks among several controls that share one accessible name - every
+     * row checkbox on a table is named "Выбрано", and select-all has no
+     * accessible name of its own for a spec to grip at all, so a second row is
+     * reached by index rather than by naming select-all. The loose `includes`
+     * fallback only applies at `nth` 0, matching the exact-match behaviour this
+     * always had before a second match could exist.
      */
-    async click(name) {
+    async click(name, nth = 0) {
       const ok = await page.evaluate(
-        (n, nameSrc) => {
+        (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
           const els = [
             ...document.querySelectorAll('button, a[href], [role="button"], input')
           ];
-          const el = els.find((e) => nameOf(e) === n) || els.find((e) => nameOf(e).includes(n));
+          const exact = els.filter((e) => nameOf(e) === n);
+          const el = exact[idx] ?? (idx === 0 ? els.find((e) => nameOf(e).includes(n)) : undefined);
           if (!el) return false;
           el.click();
           return true;
         },
         name,
+        nth,
         NAME_FN
       );
-      if (!ok) throw new Error(`${target}: no control named "${name}"`);
+      if (!ok) throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
       d.pressed.add(name);
       await settle(page);
       return true;

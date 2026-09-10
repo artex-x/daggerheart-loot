@@ -2,10 +2,12 @@
  *
  * docs/specs/STATE.md draws the line: how a page looks is remembered, what was
  * asked on it is not. So the language and the starting section live here and go
- * to storage; a roll, a search or a ticked row do not - they belong to the
- * component that owns them, and they start over on reload on purpose. A filter
- * carried in from yesterday is a state nobody remembers, and the page just
- * looks broken.
+ * to storage; a roll or a search do not - they belong to the component that
+ * owns them, and start over on reload on purpose. A ticked row is shared
+ * instead, memory-only like the rest: the selection bar it raises is drawn by
+ * the frame, not by the page, so it lives here for the same reason `menuFor`
+ * does, and it still starts over on reload. A filter carried in from
+ * yesterday is a state nobody remembers, and the page just looks broken.
  *
  * Everything outside arrives as an `Env`. That is what makes this testable and
  * what stops a component reaching past it. */
@@ -98,6 +100,20 @@ export class AppState {
    */
   menuFor = $state('');
 
+  /**
+   * The ids ticked on the current page, app-wide - a table's rows today,
+   * search's rows once that slice exists. It lives here rather than on the
+   * page component because the selection bar is drawn by the frame, not by
+   * the page: `Shell.svelte` renders it for whichever screen is current.
+   *
+   * Memory only, cleared on a real navigation and left alone by `replace()` -
+   * the same rule `menuFor` follows and the live app's own `hashchange`
+   * listener (`S.sel = {}`). A filter pick or a search keystroke does not
+   * touch it; a route change does, because a selection belongs to the page it
+   * was made on, not to whatever page loads next.
+   */
+  readonly sel = new SvelteSet<string>();
+
   /** What the toast is showing, or nothing. `Shell.svelte` renders it. */
   toast = $state<Toast | null>(null);
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -134,6 +150,7 @@ export class AppState {
       this.hash = h;
       this.navigations++;
       this.menuFor = '';
+      this.sel.clear();
       this.#applySource();
     });
     this.#stopListWatch = this.lists.watch();
@@ -236,7 +253,14 @@ export class AppState {
     this.hash = hash;
     this.navigations++;
     this.menuFor = '';
+    this.sel.clear();
     this.#applySource();
+  }
+
+  /** Clears the selection and folds its menu - the live `clearSel` action. */
+  clearSel(): void {
+    this.sel.clear();
+    this.menuFor = '';
   }
 
   /**

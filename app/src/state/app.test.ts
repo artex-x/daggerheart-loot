@@ -252,6 +252,39 @@ describe('the add-to-list menu', () => {
   });
 });
 
+describe('the selection', () => {
+  it('clears on go(), and on a navigation the router announces', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+
+    app.sel.add('ci1');
+    app.go('#/tables/eq_weapon');
+    expect(app.sel.size).toBe(0);
+
+    app.sel.add('ci1');
+    router.navigate('#/lists');
+    expect(app.sel.size).toBe(0);
+  });
+
+  it('survives replace() - a filter pick must not drop the ticks', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.sel.add('ci1');
+    app.replace('#/tables/f_kind-item');
+    expect([...app.sel]).toEqual(['ci1']);
+  });
+
+  it('clearSel empties the selection and folds an open menu', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.sel.add('ci1');
+    app.sel.add('q1');
+    app.menuFor = 'sel';
+    app.clearSel();
+    expect(app.sel.size).toBe(0);
+    expect(app.menuFor).toBe('');
+  });
+});
+
 describe('the toast', () => {
   it('shows a plain notice for 1600ms', () => {
     vi.useFakeTimers();

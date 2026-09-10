@@ -241,6 +241,7 @@ people use, these test the one that will replace it.
 | `search.test.ts`, `lib/lists.test.ts`, `roll.test.ts` | stated behaviour |
 | `state/lists.test.ts` | the live app's own list-store rules - `loadLists`..`storageWorks` and `createList` (app.js 1149-1330): the v1-to-v2 migration runs once and leaves v1 alone, a save merges with whatever another tab wrote, a refused write keeps the session working |
 | `components/lists.test.ts` | the add-to-list row itself - `listMenuHTML`/`addToListBtn` and `listMemberFor(item)`'s live behaviour: the button, the menu, a chip's tick, the new-list form, and the toast each raises |
+| `components/tables.test.ts` | the plain table's own behaviour - chip nav, the toolbar, selection, sectioned bodies, the row/section anchor - and, off `renderSelBar` (app.js 3706-3721), the selection bar it raises once a row is ticked: the count, the cross, its own add-to-list menu, and copying the whole selection |
 | `filters.test.ts` | the facet grammar both ways, and the predicate and counters the panel is built from |
 | `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share; and the hash router against a fake window |
 | `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets |

@@ -10,7 +10,7 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import {
   fakeClipboard,
@@ -25,6 +25,11 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView - the add-to-list menu's placement
+   effect calls it unconditionally once open, which the tier-ladder modal's own
+   AddToList control reaches too. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const LOOT: Loot = {
   items: {
@@ -399,6 +404,48 @@ describe('the tier ladder', () => {
     /* A line of one is not a ladder, and neither is a loot record. */
     render(App, { env: at('ci1') });
     expect(screen.queryByText('Ранг')).not.toBeInTheDocument();
+  });
+
+  it('folds a menu left open when the modal closes by its own button', async () => {
+    /* Without `app.menuFor = ''` on every close path, the card's add-to-list
+       menu, left open when a modal closes, is still `open` the next time the
+       same record's modal is shown - `aria-expanded="true"`, menu drawn. */
+    render(App, { env: at('q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
+    );
+    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    const reopened = screen.getByRole('dialog');
+    expect(within(reopened).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+  });
+
+  it('folds the same menu when the modal closes through the backdrop', async () => {
+    render(App, { env: at('q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
+    );
+    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('dialog'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    const reopened = screen.getByRole('dialog');
+    expect(within(reopened).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
   });
 });
 

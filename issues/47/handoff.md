@@ -7,43 +7,47 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress - B4 built (`fde9cdc`, reviewed); B5.1 built
-  (`fe0043b`) with its fix-then-continue pass (`d1c1367`); **B5.2 part 0 is
-  built (tests and docs, no production code) - `f167e62`, on top of the
-  planning commit `2f3659d`.** All local acceptance
-  criteria met; **CI green on the commit is unread as of this writing - that
-  read is the orchestrator's and is what closes the part**, see "Blockers".
-  **B5.2 part 1 (the selection bar) is next and implement-ready** - see "Next
-  batch" and `plan.md`, "B5.2 built, part 0" / "planned, part 1"
-- Last agent: implementer (2026-09-10: B5.2 part 0 built - the five unstable
-  `VISUAL_DEBT` entries deleted, `timed: true` on the two toast states with
-  per-width re-arrival in the runner, a stable-capture retry and a `geometry`
-  probe for the whole-page state, docs updated; every local check and parity
-  filter this batch owns is clean)
-- NEEDS_HUMAN_CONFIRMATION: no - except the CI read itself, which only the
-  orchestrator can perform
+  (`fe0043b`) with its fix-then-continue pass (`d1c1367`); B5.2 part 0 built
+  (tests and docs, no production code) - `f167e62`, on top of the planning
+  commit `2f3659d`. **B5.2 part 1 (the selection bar) is now built too** - see
+  git log for this session's `feat(lists): ...` commit, on top of `4210ee3`.
+  All local acceptance criteria met, three parity filters clean, `npm run
+  check` and `npm run check:built` both exit 0. **B5.3 (the lists page,
+  `noData`, `storageOff`) is next and needs planning first** - see "Next
+  batch".
+- Last agent: implementer (2026-09-10: B5.2 part 1 built - `app.sel` lifted
+  onto `AppState`, `SelBar.svelte` renders between the footer and the toast,
+  the invented `.dropmenu.up` rule deleted, `RecordModal` folds a stale
+  `menuFor` on every close path, `shareSelection` added with no skip set; a
+  one-line correction to the harness's own written design found and fixed
+  while running it - see `plan.md`, "B5.2 built, part 1")
+- NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
   `fb8cb0d`; B3.6 is complete in all three parts - part 0 `f7308a9`, part 1
   `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`. B4 is
   `fde9cdc`. B5.1 is `fe0043b`; its fix-then-continue pass is `d1c1367`; the
   full unfiltered parity run against `fe0043b` is recorded under "Blockers"
-  at `541d529`. Planning for B5.2 (both parts) is `2f3659d`. Part 0 is `f167e62`, on top
-  of `2f3659d`** - re-read `git log --oneline
-  -3` before starting the next batch, other sessions share this tree.
+  at `541d529`. Planning for B5.2 (both parts) is `2f3659d`. Part 0 is
+  `f167e62`, then a docs-only commit `4210ee3`, both on top of `2f3659d`. Part
+  1 (this session) is the current HEAD - see `git log` for its sha - re-read
+  `git log --oneline -3` before starting the next batch, other sessions share
+  this tree.
 
 Phase 4's B1-B3.6, B4 and B5.1 are all built. B4 was the last body shape the
 tables slice needed (`plan.md`, "the tables surface, and how it splits"), so
 every table in `TABLE_DEFS` now draws a real body and `TablesPage.svelte`
 carries no placeholder branch. The lists slice is planned as six batches
-(`plan.md`, "B5 planned") and **B5.1 is the first of them, built**: the list
-store, the toast and the add-to-list row on the card. **B5.2 part 0 is now
-built too** - tests and docs only, no production code: the five unstable
-`VISUAL_DEBT` entries are gone, the timed class re-arrives per width, the
-whole-page class re-shoots until stable and carries a `geometry` probe. What
-is left of Phase 4 is B5.2 part 1, B5.3-B5.6, the search slice and the print
-slice. **B5.2 part 1 (the selection bar) is next and implement-ready** - see
-"Next batch" and `plan.md`, "B5.2 planned, part 1". B5.3-B5.6, search and
-print are outlines only.
+(`plan.md`, "B5 planned") and **B5.1 and B5.2 (both parts) are built**: the
+list store, the toast, the add-to-list row on the card, CI-green tests and
+docs, and now the selection bar - ticking any row on a table raises "Выбрано
+N" with a cross, an add-to-list control, a print link and a copy button, all
+at the bottom of the window. What is left of Phase 4 is B5.3-B5.6, the search
+slice and the print slice. **B5.3 (the lists page itself, `noData`, and
+`Shell.svelte`'s `storageOff` paragraph reconciled against the real thing) is
+next** - it is an outline only in `plan.md`, "B5 planned", and needs a
+planning pass before it is implement-ready. B5.4-B5.6, search and print remain
+outlines only.
 
 B4 was offered as a merge target for B3.6 and was deliberately not folded in:
 its acceptance includes a clean parity run and possibly new `VISUAL_DEBT`
@@ -585,7 +589,111 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 - Commit(s): see `git log` for this session's `fix(parity): ...` commit, on
   top of `2f3659d`.
 
+- Batch name/id: **B5.2 part 1 - the selection bar** (this session, on top of
+  `4210ee3`)
+- What shipped: `app.sel` (a `SvelteSet<string>`) and `clearSel()` lifted onto
+  `AppState`, cleared wherever `menuFor` already is and untouched by
+  `replace()`; `TablesPage.svelte`'s local `sel` removed entirely.
+  `lib/share.ts` gained `shareSelection` (no `skip` set, unlike `shareRoll`).
+  `SelBar.svelte` (new) renders the count, the cross, the bar's own
+  `AddToList`, a print link and a copy button, styled off `style.css`'s
+  `.selbarwrap`/`.selbar`/`.selcount`/`.selx`/`.selacts` and their 600px
+  overrides, read from source rather than guessed. `Shell.svelte` renders it
+  between the footer and the toast. `AddToList.svelte`'s invented
+  `.dropmenu.up` rule is deleted - style.css has no base rule for it, only
+  `.cardpick .dropmenu.up`, so the bar's menu now opens upward by the base
+  rule alone, as the live app's does. `RecordModal.svelte` folds a stale
+  `app.menuFor` before every close path tells its parent to close, through a
+  single `handleClose()` wrapper on the dialog's native `close` event (the
+  close button, the backdrop and Escape all end there). `dict.ts` gained
+  `clearSel`/`copySel`/`selCopied`. The harness's `driver.js` gained `nth` on
+  `click()`; `specs.js` gained `NAME.copySel`/`clearSel`/`selected`, two states
+  (`~ bar menu`, `~ selection copied` - the latter `timed: true`), two press
+  specs (`copiedSelection`, `barMembership`), and deleted the six `selBar`
+  debt entries plus the two stale `~ a row ticked … :: controls` `ACCEPTED`
+  lines. Full accounting, every value read from `style.css` rather than
+  guessed, and the one correction found while running the harness (a press
+  spec's own commands run in whatever language `arrive()` left the page in,
+  unlike a state's `enter`) are in `plan.md`, "B5.2 built, part 1".
+- Files changed: `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
+  new `app/src/components/SelBar.svelte`, `app/src/components/Shell.svelte`,
+  `app/src/components/TablesPage.svelte`, `app/src/components/AddToList.svelte`,
+  `app/src/components/RecordModal.svelte`, `app/src/components/record.test.ts`,
+  `app/src/components/tables.test.ts`, `app/src/components/a11y.test.ts`,
+  `app/src/lib/dict.ts`, `app/src/lib/share.ts`, `app/src/lib/share.test.ts`,
+  `tests/parity/driver.js`, `tests/parity/specs.js`, `docs/specs/COVERAGE.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's `feat(lists): ...` commit, on
+  top of `4210ee3`.
+- Deviations and rationale: none from the brief's scope, in-scope file list,
+  ordered steps, or acceptance criteria. The `NAME.selected` addition and
+  `copiedSelection`'s switch to `NAME[lang].selected` is a one-line correction
+  to how the written design said to reach a state the design itself specified
+  correctly - not a change to scope, and written up in full in `plan.md`.
+
 ## Verification
+
+- Commands run (exact), this session (B5.2 part 1):
+  - `npm run lint` - exit 0. `npm run typecheck` - `svelte-check`, 519 files, 0
+    errors, 0 warnings.
+  - `npm run format:check` - four newly-written/edited files needed
+    `prettier --write` (whitespace/wrapping only); `npx prettier --write` on
+    those four, then a clean re-run.
+  - `npx vitest run app/src/state/app.test.ts app/src/lib/share.test.ts
+    app/src/components/tables.test.ts app/src/components/record.test.ts
+    app/src/components/a11y.test.ts app/src/components/lists.test.ts
+    app/src/components/shell.test.ts` - first run: **2 failed of 228** -
+    `tables.test.ts` queried the print link by its `title` text
+    (`getByRole('link', { name: <the long title> })`), which is not how
+    testing-library computes an accessible name when the element also has
+    visible text content (`lists.test.ts`'s own existing test already queries
+    the same live-app print link by `'Печать'` and checks `title` as a
+    separate attribute - the harness's own `NAME_FN` is the one that
+    deliberately prefers `title`, for its own reasons, not testing-library);
+    and `record.test.ts` was missing the `Element.prototype.scrollIntoView`
+    stub `lists.test.ts`/`a11y.test.ts` already carry, which the tier-ladder
+    modal's own `AddToList` control now needs too. Both fixed; clean re-run:
+    **228 passed**.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call,
+    `timeout: 600000`: **exit 0** - format/lint/typecheck/data/derived/i18n/
+    selftest all pass, `.claude/hooks/selftest.mjs` 292 passed, `vitest run
+    --coverage` **751 tests**, 96.74/90/96.84/97.1 statements/branches/
+    functions/lines, every threshold met.
+  - `npm run build` - clean; `dist/assets/app.js` 204.84 kB, 63.78 kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "a row ticked" "bar menu"
+    "selection copied"` (3 states, 18 cells, one timed) - first run: **1
+    расхождение**, `copiedSelection`'s own `run()` throwing "no control named
+    Выбрано (nth 1)" on both apps identically in English - see `plan.md`,
+    "B5.2 built, part 1" for the root cause (a press spec's commands run
+    against whatever language `arrive()` already switched to, unlike a
+    state's own `enter`) and the fix (`NAME[lang].selected`). Re-run: **
+    расхождений нет**, every cell `совпадает`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables ~"` (8 states, 48
+    cells - the full filter, not merged with the one above) - **расхождений
+    нет**: the three new/changed states read `совпадает` at every cell; the
+    five untouched states (`~ grid`, `~ searched`, `~ nothing found`, `~ a row
+    opened`, `~ help`) matched their pre-existing recorded numbers exactly
+    (`~ a row opened`'s six cells at 0.02-0.07%, the close button's own focus
+    ring, unrelated to this batch) or read `совпадает`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "i/ci1 ~"` (6 states, 36 cells -
+    the card's own add-to-list states, run specifically to prove the
+    `.dropmenu.up` deletion did not regress the card) - **расхождений нет**,
+    every cell `совпадает`.
+  - `npm run check:built` - **exit 0**: build, `file://` smoke, bundle budget
+    (61.9 kB gzip against 120 kB).
+  - **No `VISUAL_DEBT` number was written from this host.** Every cell either
+    matched a pre-existing entry or read `совпадает`; no diff image was
+    opened because none was needed.
+  - `git log --oneline -3` and `git status --porcelain`, checked twice (once
+    before starting, once immediately before committing): HEAD stayed at
+    `4210ee3` on `f167e62`/`2f3659d` throughout - no peer session touched this
+    tree while this batch ran. Only the files named in "Completed" above were
+    modified.
+  - Note on the shell: `"#/tables ~"` and similar arguments starting with `/`
+    are rewritten by Git Bash's own path conversion (into something like
+    `#C:/Program Files/Git/tables ~`) unless the call carries
+    `MSYS_NO_PATHCONV=1` - worth carrying forward, since the first attempt at
+    the `"#/tables ~"` filter silently ran zero states because of it.
 
 - Commands run (exact), this session (B5.2 part 0):
   - `npm run build` - clean; `dist/assets/app.js` 201.70 kB, gzip 63.09 kB.
@@ -1067,10 +1175,48 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-- **Name:** B5.2 part 1 - the selection bar. (Part 0, green CI and the two
-  unstable classes, is built - see "Completed" and `plan.md`, "B5.2 built,
-  part 0". Its retired brief is kept below, in the collapsed section, for the
-  record.)
+- **Name:** B5.3 - the lists index (`#/lists`), the storage warning
+  reconciled, `noData`. **Not implement-ready** - it exists only as one row of
+  the outline table in `plan.md`, "B5 planned: the lists slice, and how it
+  splits", not as an "B5.3 planned" section with ordered steps and acceptance
+  criteria the way B5.1/B5.2 have. A planning pass is the next step, not an
+  implementer.
+
+- **What the outline already says**, `plan.md`'s table row (do not re-derive,
+  but do not treat as implement-ready either): the page head and its help,
+  the storage warning in both its forms (`dhloot.warn.v1`, the dismiss
+  cross), create, import, the list cards (share as a short link, delete
+  behind `confirm()`), the empty state; `Shell.svelte`'s invented
+  `storageOff` paragraph goes and the live app's `storageWarning()` lands
+  where the live app actually draws it. It is the route that is `pending`
+  today in `tests/parity/specs.js`; `deleteList` and the `deleted` set in the
+  merge signature (already taken by `mergeLists`, unused since B5.1) get
+  their first caller here.
+
+- **Settled decisions already on the record, not to reopen:** `plan.md`,
+  "B5 planned", "Decided in planning" - in particular, `Shell`'s `storageOff`
+  paragraph stays exactly as B5.1 left it **until** this batch (line ~2692);
+  `addIds` takes only ids until B5.6 adds notes; no `Panel.svelte`; no
+  `deleted` set beyond the field the signature already carries until this
+  batch writes to it (line ~2842).
+
+- **What a planner has to do before this is implement-ready:** read the live
+  `#/lists` route (`renderLists`/`listCardHTML`/`storageWarning` in app.js -
+  not yet cited with line numbers anywhere in `plan.md`, unlike every other
+  batch's brief), measure it the way B5.1/B5.2's planning sessions measured
+  theirs, decide the file list and ordered steps, and write a "B5.3 planned"
+  section plus the "Next batch" brief this file currently lacks. `context.md`
+  has no "B5.3 planning facts" section yet either - that is this pass's to
+  add.
+
+- **Out of scope for the planning pass itself:** writing production code;
+  replanning B5.1/B5.2 (both built and closed); touching B5.4-B5.6, search or
+  print beyond what the outline table already says.
+
+<details>
+<summary>B5.2 part 1's retired brief (implemented; kept for the record, not for reuse)</summary>
+
+- **Name:** B5.2 part 1 - the selection bar.
 
 - **Objective:** ticking rows in a table raises the live app's bar at the
   bottom of the window - "Выбрано N" with a cross that clears everything, and
@@ -1082,105 +1228,16 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   one. Full design, every measured number, and the rejected alternatives:
   `plan.md`, "B5.2 planned, part 1".
 
-- **Read first, in this order:** `plan.md`, "B5.2 planned, part 1" in full -
-  "What the live app does" (the bar's markup read back from the live DOM, the
-  handlers, the styles, live measurements at all three widths, the menu's
-  always-`up` placement and the invented `.dropmenu.up` rule that has to go),
-  then "How it is built" file by file. The live functions to read yourself
-  before writing a line: `renderSelBar` (app.js 3706-3721), `clearSel`/
-  `copySel` (4235, 4246-4250), `selAsText`/`selAsHtml` (1961-1966), the tick
-  handlers (4403-4420), the `hashchange` listener's `S.sel = {}` (4632),
-  `placeMenu` (3695-3704). Styles: `.selbarwrap`/`.selbar`/`.selcount`/`.selx`/
-  `.selacts` (style.css 54, 799-829, the 600px block 817-828), `.wrap` (52-53).
+- **Built as designed, one correction found while running the harness, not
+  before.** See "Completed" above and `plan.md`, "B5.2 built, part 1" for the
+  full accounting: `copiedSelection`'s own literal `'Выбрано'` (as the design
+  itself wrote it) failed identically on both apps in English, because a
+  press spec's commands run in whatever language `arrive()` already switched
+  to - unlike a state's `enter`, which always runs in Russian. Fixed with
+  `NAME[lang].selected`, the same pattern `listMembership` already used one
+  comment above it for a related reason.
 
-- **In scope:** `app/src/state/app.svelte.ts` (`sel` lifted onto `AppState` as
-  a `SvelteSet`, `clearSel()`, cleared wherever `menuFor` is); new
-  `app/src/components/SelBar.svelte`; `Shell.svelte` (renders it between the
-  footer and the toast); `TablesPage.svelte` (reads `app.sel` instead of a
-  local set); `AddToList.svelte` (delete the invented `.dropmenu.up` rule and
-  its comment); `RecordModal.svelte` (`app.menuFor = ''` before every close
-  path closes, so a card's menu left open does not read pressed-but-closed
-  when the same record's modal reopens); `lib/dict.ts` (`clearSel`, `copySel`,
-  `selCopied`); new `lib/share.ts` `shareSelection` (no skip set, unlike
-  `shareRoll`); `tests/parity/driver.js` (`click(name, nth)`);
-  `tests/parity/specs.js` (`NAME.copySel`/`clearSel`, two new states -
-  `#/tables ~ bar menu` and `#/tables ~ selection copied`, the latter
-  `timed: true` - two press specs `copiedSelection`/`barMembership`, the six
-  `selBar` entries and the `selBar` helper deleted, the two stale `~ a row
-  ticked … :: controls` `ACCEPTED` lines deleted); tests per `plan.md`,
-  "Tests" (`state/app.test.ts`, `lib/share.test.ts`, a new `describe` in
-  `components/tables.test.ts`, a modal-reopen case, an `a11y.test.ts` state,
-  `COVERAGE.md`'s row).
-
-- **Out of scope:** `#/search` and its own use of `app.sel` (search slice);
-  `#/lists`, `lsel`, batch actions (B5.3-B5.5); a print page (the link is
-  enough); `@media print` rules for the bar; `Panel.svelte`; any change to
-  `docs/specs/*` beyond `COVERAGE.md`'s test-table row, `docs/fixtures/`,
-  `CONTRACTS.md` or `llms.txt`.
-
-- **Files expected:** `app/src/state/app.svelte.ts`, `app/src/state/
-  app.test.ts`, new `app/src/components/SelBar.svelte`, `app/src/components/
-  Shell.svelte`, `app/src/components/TablesPage.svelte`, `app/src/components/
-  AddToList.svelte`, `app/src/components/RecordModal.svelte`, `app/src/
-  components/tables.test.ts`, `app/src/components/record.test.ts` (or
-  `roll.test.ts`, wherever the modal-close cases live), `app/src/test/
-  a11y.test.ts`, `app/src/lib/dict.ts`, new `app/src/lib/share.ts` addition
-  and `share.test.ts`, `tests/parity/driver.js`, `tests/parity/specs.js`,
-  `docs/specs/COVERAGE.md`, `issues/47/plan.md`, `issues/47/handoff.md`.
-
-- **Steps:** `plan.md`, "B5.2 planned, part 1", "Ordered steps" 1-10 - dict
-  and `shareSelection` first, then `sel`/`clearSel` on `AppState` with
-  `TablesPage` switched over (green before continuing), the two component
-  fixes, `SelBar.svelte` and `Shell.svelte`, the tests, the harness, the
-  check, then three separate parity filters (do not merge them), then
-  `check:built`, then the commit.
-
-- **Acceptance criteria:** `plan.md`, "B5.2 planned, part 1", "Acceptance
-  criteria" - in one line each: the bar renders after the footer with the
-  live markup, count node, cross, and the three actions; the menu opens above
-  the bar at every width with the invented rule gone; a chip adds every id
-  the list lacks in one press and keeps the selection; copy joins both
-  flavours of every selected record with no OR; the 600px layout stacks as
-  measured (53px/137px tall); `#/tables ~ a row ticked`, `~ bar menu` and
-  `~ selection copied` read 0.00% at every cell in both languages; the six
-  `selBar` entries and the two `ACCEPTED` lines are gone; `copiedSelection`
-  and `barMembership` match; `node tests/parity.js "i/ci1 ~"` still reads
-  zero on the card's own menu states after the `.dropmenu.up` deletion;
-  `npm run check` and `npm run check:built` exit 0 with thresholds met.
-
-- **Verification commands:**
-
-  ```text
-  set -o pipefail; npm run check 2>&1 | tail -n 120
-  npm run build
-  node tests/parity.js "a row ticked" "bar menu" "selection copied"
-  node tests/parity.js "#/tables ~"
-  node tests/parity.js "i/ci1 ~"
-  npm run check:built
-  ```
-
-  Wall clock, so each fits its call: the first parity filter is 3 states (one
-  timed); `"#/tables ~"` is 8 states (grid, searched, nothing found, a row
-  opened, a row ticked, help, bar menu, selection copied); `"i/ci1 ~"` is 6 -
-  each about a third of the pre-B4 "tables" run or smaller, well inside the
-  cap; do not merge the three calls. `npm run check`: one foreground call,
-  `timeout: 600000`, unchained and unredirected - a run that goes over is
-  re-run, not salvaged (`context.md`, "npm run check, settled").
-
-  Numbers: none are written from this host. A non-zero cell is a diff image
-  opened before anything is recorded - `plan.md`'s "How it is built" names
-  the first places to look (the bar's height at 375, the menu's vertical
-  position, the count's text node, the print link's `title`).
-
-- **Risks / do-nots:** `plan.md`, "B5.2 planned, part 1", "Risks and
-  do-nots" - do not keep `.dropmenu.up` "for the card"; do not render the bar
-  inside `TablesPage` or put it before the footer; do not split "Выбрано" and
-  the number into two text nodes or move the cross outside `.selcount`; do
-  not pass a `skip` set to `share()` in `shareSelection`; do not `aria-label`
-  select-all to make it clickable; make `~ bar menu` **not** timed and do not
-  forget `timed: true` on `~ selection copied`; no `VISUAL_DEBT` number from
-  this host; one commit, `feat(lists): ...`, authored as `artex-x`, no push,
-  no `Co-Authored-By`.
+</details>
 
 <details>
 <summary>B5.2 part 0's retired brief (implemented; kept for the record, not for reuse)</summary>
@@ -1412,6 +1469,14 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Blockers
 
+- **CI has not yet read this session's B5.2 part 1 commit.** Three filtered
+  parity runs from this host are clean (`a row ticked`/`bar menu`/`selection
+  copied`, `#/tables ~`, `i/ci1 ~` - see "Verification"), `npm run check` and
+  `npm run check:built` both exit 0, and no `VISUAL_DEBT` number was written -
+  but per owner decision 1, CI is the authoritative machine and a local run is
+  advisory. The orchestrator's CI read of this commit (and of the still-open
+  read on part 0's `f167e62`, below) is what actually closes B5.2 in full.
+
 - **The full unfiltered suite on `fe0043b`: 12 failing cells** (orchestrator,
   2026-09-10, `node tests/run-all.js parity`, 1826s, 8 workers). Read the
   output, not the exit status - the run was invoked as `... > file 2>&1; echo
@@ -1601,10 +1666,11 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   in `d1c1367`). Each is real, none is urgent, and the first two are the ones
   most likely to bite:
   - **`app.menuFor` is left stale when a modal closes with the menu open.**
-    *Taken into B5.2 part 1* (planner, 2026-09-10): `RecordModal.svelte`
-    clears `app.menuFor` before every close path, the live order, with a
-    test - see `plan.md`, "B5.2 planned, part 1". The rest of the finding, for
-    the record:
+    *Built in B5.2 part 1* (this session): `RecordModal.svelte` folds
+    `app.menuFor` before every close path calls its parent's `onclose`, via a
+    single `handleClose()` wrapper on the dialog's native `close` event, with
+    two tests (button and backdrop) in `record.test.ts` - see `plan.md`, "B5.2
+    built, part 1". The rest of the finding, for the record:
     `AddToList.svelte`'s outside-click handler catches the null-prop race and
     returns early, so the live app's own rule - clear `S.menuFor` *before*
     `closeModal()` - never runs. Reopening that record's modal shows the menu
@@ -1639,7 +1705,10 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   - `pick()` and `createNew()` each define an identical `knows` closure
     (`AddToList.svelte:77`, `:104`).
   - The multi-id branches (`t.addTo` as the label, `': ' + fresh.length` on the
-    toast) have no caller until B5.2 and so no test.
+    toast) got their first caller in B5.2 part 1 (the bar's `AddToList`, with
+    two or more ticked ids) and are now exercised by `tables.test.ts`'s "the
+    selection bar" tests and `barMembership`/`copiedSelection` in
+    `tests/parity/specs.js`.
   - `shell.test.ts`'s "calls showPopover/hidePopover when the browser has them"
     stops one step short of its own title: it never asserts `el.style.display`
     was left alone, which is the half that proves the jsdom fallback did not

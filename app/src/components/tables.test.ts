@@ -11,7 +11,14 @@ import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import TablesPage from './TablesPage.svelte';
-import { fakeClipboard, fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
+import {
+  fakeClipboard,
+  fakeData,
+  fakeEnv,
+  memoryRouter,
+  memoryStorage,
+  noData
+} from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -310,6 +317,141 @@ describe('selection', () => {
   });
 });
 
+const TWO_LISTS = JSON.stringify([
+  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
+  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+]);
+
+/** Typed, so a read-back assertion is not an unsafe member access on `any`. */
+const readLists = (storage: {
+  get: (k: string) => string | null;
+}): { id: string; ids: string[] }[] =>
+  JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as { id: string; ids: string[] }[];
+
+describe('the selection bar', () => {
+  it('draws nothing until something is ticked', () => {
+    const { container } = render(App, { env: at() });
+    expect(container.querySelector('.selcount')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Снять выделение' })).not.toBeInTheDocument();
+  });
+
+  it('reads the count, and offers add-to-list, print and copy for one tick', async () => {
+    const { container } = render(App, { env: at() });
+    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    await userEvent.click(boxes[0] as HTMLElement);
+
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
+    expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    const print = screen.getByRole('link', { name: 'Печать' });
+    expect(print).toHaveAttribute('href', '#/print/ci1');
+    expect(print).toHaveAttribute('title', 'Собрать карточки для печати: девять на лист A4');
+    expect(screen.getByRole('button', { name: 'Скопировать' })).toBeInTheDocument();
+  });
+
+  it('carries every ticked id, in tick order, on the print link', async () => {
+    render(App, { env: at() });
+    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    await userEvent.click(boxes[1] as HTMLElement);
+    await userEvent.click(boxes[0] as HTMLElement);
+
+    const print = screen.getByRole('link', { name: 'Печать' });
+    expect(print).toHaveAttribute('href', '#/print/ci2-ci1');
+  });
+
+  it('the cross clears every tick and folds the bar', async () => {
+    const { container } = render(App, { env: at() });
+    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    await userEvent.click(boxes[0] as HTMLElement);
+    await userEvent.click(boxes[1] as HTMLElement);
+    await userEvent.click(screen.getByRole('button', { name: 'Снять выделение' }));
+
+    expect(container.querySelector('.selcount')).not.toBeInTheDocument();
+    for (const b of boxes) expect(b).not.toBeChecked();
+  });
+
+  it("select-all's count reaches the bar too", async () => {
+    const { container } = render(App, { env: at() });
+    await userEvent.click(screen.getByRole('checkbox', { name: /Выбрать все/ }));
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 6');
+  });
+
+  it('the menu names a single ticked record "лежит в списках"', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
+    await userEvent.click(
+      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+  });
+
+  it('the menu names two or more ticked records "Добавить в"', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
+    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    await userEvent.click(boxes[0] as HTMLElement);
+    await userEvent.click(boxes[1] as HTMLElement);
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    expect(screen.getByText('Добавить в')).toBeInTheDocument();
+  });
+
+  it('a chip adds every ticked id in one press, keeps the ticks, and toasts the count', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const storage = memoryStorage({ 'dhloot.lists.v2': TWO_LISTS });
+    render(App, { env: at({ storage }) });
+    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    await userEvent.click(boxes[0] as HTMLElement);
+    await userEvent.click(boxes[1] as HTMLElement);
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+
+    expect(screen.getByText('Добавлено в «Клад дракона»: 2')).toBeInTheDocument();
+    expect(boxes[0]).toBeChecked();
+    expect(boxes[1]).toBeChecked();
+    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'ci2']);
+  });
+
+  it('copies both flavours of every ticked record, joined with no OR, and toasts', async () => {
+    const clip = fakeClipboard();
+    render(App, { env: at({ clipboard: clip }) });
+    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    await userEvent.click(boxes[0] as HTMLElement);
+    await userEvent.click(boxes[1] as HTMLElement);
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+
+    const rich = clip.last.rich;
+    expect(rich?.plain).toContain('Кольцо Тишины');
+    expect(rich?.plain).toContain('Плащ Теней');
+    expect(rich?.plain).not.toMatch(/— .+ —/);
+    expect(screen.getByText('Выбранное скопировано')).toBeInTheDocument();
+  });
+
+  it('toasts an alert when the clipboard refuses', async () => {
+    render(App, { env: at({ clipboard: fakeClipboard({ fail: true }) }) });
+    await userEvent.click(
+      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Не удалось скопировать');
+  });
+
+  it('has no axe violations with the bar up and its menu open', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) })
+    });
+    await userEvent.click(
+      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe('a row opened', () => {
   it('opens the record over the table, in the same modal every route uses', async () => {
     render(App, { env: at() });
@@ -442,20 +584,23 @@ describe('the filter', () => {
     );
   });
 
-  it('keeps the selection on a filter pick, and drops it on a navigation', async () => {
+  it('keeps the selection (and the bar) on a filter pick, and drops both on a navigation', async () => {
     const env = wond();
-    render(App, { env });
+    const { container } = render(App, { env });
     const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
 
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })[0]).toBeChecked();
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
 
     env.router.navigate('#/tables/wondrous');
     await tick();
     expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })[0]).not.toBeChecked();
+    expect(container.querySelector('.selcount')).not.toBeInTheDocument();
   });
 
   it('closes the modal on a navigation, but a filter pick leaves it alone', async () => {

@@ -3,6 +3,7 @@
      that has to be visible before anything else is. */
   import { untrack } from 'svelte';
   import LangSwitch from './LangSwitch.svelte';
+  import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
   import Toast from './Toast.svelte';
   import type { Snippet } from 'svelte';
@@ -75,6 +76,8 @@
     >{app.t.footAfter}
   </p>
 </footer>
+
+<SelBar {app} />
 
 <Toast {app} />
 

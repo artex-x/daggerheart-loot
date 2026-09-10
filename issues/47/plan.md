@@ -4038,6 +4038,159 @@ unread as of this writing. See `handoff.md`, "Blockers".
 - Commit(s): see `git log` for this session's `fix(parity): ...` commit, on
   top of `2f3659d`.
 
+### B5.2 built, part 1: the selection bar
+
+**What shipped**, matching the design in "B5.2 planned, part 1" with one
+addition the design did not anticipate (below):
+
+- **`app/src/state/app.svelte.ts`** gained `readonly sel = new
+  SvelteSet<string>()` and `clearSel()`. `sel` clears wherever `menuFor`
+  already does - the router's `onChange` and `go()` - and is untouched by
+  `replace()`, the same split `menuFor` already draws. The class's opening
+  comment, which said a ticked row "belongs to the component that owns them,"
+  is corrected: the selection is shared because the bar that draws it lives in
+  the frame, not on the page, and it still starts over on reload.
+- **`app/src/components/TablesPage.svelte`** lost its local `sel` entirely;
+  every read and write goes through `app.sel`. The `$effect` on
+  `app.navigations` now only clears `open` - `app.sel` clears itself at the
+  source.
+- **`app/src/lib/share.ts`** gained `shareSelection(items, index, lang)` -
+  `share()` per record with no `skip` set, joined by `\n\n` / `<br><br>`,
+  beside `shareRoll`'s sibling shape with the OR. `share.test.ts` pins the join
+  and a craft target two selected records share landing twice, not once - the
+  opposite of `shareRoll`'s dedupe.
+- **`app/src/components/SelBar.svelte`** (new) - `{#if n}` around the bar,
+  `n = app.sel.size`, `ids = [...app.sel]` in tick order. The count is one
+  interpolated expression (`t.selected + ' ' + String(n)`) immediately
+  followed by the cross inside the same `<span class="selcount">`, using the
+  tight `>`/`<` placement the codebase already uses to stop Svelte inserting a
+  whitespace text node between them. Renders `AddToList` (`key="sel"`,
+  `primary`), a `Button` print link (`href={printHash(ids)}`, `sameTab`,
+  `title={t.printHint}`) and a `Button` calling `copySel()`, which builds
+  `shareSelection` off `app.index`/`app.lang` and writes it through
+  `app.env.clipboard.writeRich`, toasting `selCopied`/`copyFailed`. Styles are
+  `.selbarwrap` (both style.css declarations merged - the safe-area padding
+  and the sticky/gradient/border/blur block), `.selbar` composing `--wrap`'s
+  four properties (no global `.wrap` class exists in the rewrite), `.selcount`,
+  `.selx`/`:hover`, `.selacts`, and the 600px block
+  (`.selx`/`.selacts`/`.selacts :global(.seldrop)`/`.selacts :global(.btn)`) -
+  every value read off `style.css:54, 799-829` rather than guessed; the first
+  draft guessed several (a generic transparent-to-black gradient, a round
+  cross, `gap:8px`) and all of them were wrong against the real rules, caught
+  before the parity run rather than by it.
+- **`app/src/components/Shell.svelte`** renders `<SelBar {app} />` between
+  `</footer>` and `<Toast {app} />`, matching the live DOM order
+  (`index.html` 75-92: footer, `#selBar`, modal, `#toast`).
+- **`app/src/components/AddToList.svelte`**: the invented `.dropmenu.up {
+  bottom: auto; top: calc(100% + 8px) }` rule is deleted, along with the
+  comment above it that promised the base rule was "the bar's own default
+  (upward)" as a future fact - it now says so as a present one, and explains
+  why: `placeMenu` in app.js always adds `up` at the bottom of the window and
+  style.css has no base `.dropmenu.up` rule to flip against, only
+  `.cardpick .dropmenu.up`.
+- **`app/src/components/RecordModal.svelte`**: the dialog's `onclose` prop is
+  no longer bound directly to the element. A `handleClose()` wrapper sets
+  `app.menuFor = ''` first, then calls the prop - matching the live app's own
+  order (`S.menuFor = ''` ahead of `closeModal()`). Because the close button,
+  the backdrop click and Escape all end in the browser firing the dialog's own
+  native `close` event, one handler reaches all three paths; no per-path
+  branching was needed.
+- **`app/src/lib/dict.ts`** gained `clearSel`, `copySel`, `selCopied`,
+  character for character from app.js 113-114 / 299-300, placed directly after
+  `selected`/`selectAll` to match app.js's own key order.
+- **`tests/parity/driver.js`**: `click(name, nth = 0)` - exact-name matches
+  are collected into an array and `nth` indexes it; the `includes` fallback
+  only runs at `nth` 0, unchanged from before. `pressed` still records the bare
+  `name`, as the brief specified.
+- **`tests/parity/specs.js`**: `NAME` gained `copySel`/`clearSel` (both
+  languages) and, found necessary while running the harness (below),
+  `selected`. Two new states after `#/tables ~ a row ticked` -
+  `#/tables ~ bar menu` (`storage: two`, ticks two rows then opens the menu,
+  not timed) and `#/tables ~ selection copied` (ticks one row then copies,
+  `timed: true`). `#/tables ~ a row ticked`'s own `why` changed from "the
+  selection, where the missing bar is honest" to "the bar, one row ticked".
+  Two new press specs, `copiedSelection` (only on `~ a row ticked`, ticks a
+  second row and reads the clipboard) and `barMembership` (only on `~ bar
+  menu`, reopens the menu if English folded it, presses a chip, and reads
+  storage plus whether the bar is still up). The six `selBar(...)`
+  `VISUAL_DEBT` entries and the `selBar` helper are deleted, and so are the two
+  `#/tables ~ a row ticked … :: controls` `ACCEPTED` lines.
+- **`docs/specs/COVERAGE.md`** gained a `components/tables.test.ts` row in the
+  unit-suite table - there was none before, despite the file existing since
+  B1; it now names the bar alongside the rest of what that file covers.
+
+**One thing the design's own written spec got wrong, found while running the
+harness rather than assumed:** `copiedSelection` reads `d.click('Выбрано', 1)`
+in the design as written. That fails in English, because `arrive()` presses
+`EN` *after* the state's own `enter` but *before* a press spec's `run()` -
+unlike a state's `enter`, which always fires in Russian, a press spec's own
+commands run against whatever language `arrive()` left the page in. By the
+time `copiedSelection` runs in an English pass, the checkbox's accessible name
+has already followed the switch to "Selected", so a literal `'Выбрано'`
+throws "no control named" on *both* apps identically - a same-shaped failure
+on both sides that still reads as a diff, because the error strings embed
+`legacy:`/`next:`. Confirmed by running the filter, reading the exact failure,
+and reasoning through `arrive()`'s own press order in `tests/parity.js` before
+touching anything. Fixed by adding `selected: 'Выбрано'/'Selected'` to `NAME`
+and using `NAME[lang].selected` in the spec - the same pattern
+`listMembership` already uses for the outside-click-folds-the-menu case one
+comment above it. Not a deviation from the brief's intent (both flavours of
+two ticked records still land on the clipboard, in every language, exactly as
+specified) - a one-line correction to how the brief said to reach that state,
+found by running it rather than transcribing it.
+
+**Verification, exact commands and results:**
+
+- `npm run lint` - exit 0. `npm run typecheck` - `svelte-check`, 519 files, 0
+  errors, 0 warnings. `npm run format:check` - four newly-written files needed
+  `prettier --write` (formatting only, no logic changed); re-run clean.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call,
+  **exit 0**: format/lint/typecheck/data/derived/i18n/selftest all pass,
+  `vitest run --coverage` **751 tests**, 96.74/90/96.84/97.1
+  statements/branches/functions/lines, every threshold met (`Button.svelte`'s
+  named 50%-branch exception was not needed - it measured 66.66%; `SelBar.svelte`
+  itself measured 95.34/75/100/100).
+- `npm run build` - clean; `dist/assets/app.js` 204.84 kB, 63.78 kB gzip.
+- `node tests/parity.js "a row ticked" "bar menu" "selection copied"` (3
+  states, 18 cells, one timed) - first run caught the `copiedSelection`
+  language bug above (both languages "erroring" identically, read as a diff);
+  fixed, re-run: **`расхождений нет`**, every cell `совпадает`.
+- `node tests/parity.js "#/tables ~"` (8 states, 48 cells) - **`расхождений
+  нет`**: the six new/changed cells for `~ a row ticked`/`~ bar menu`/
+  `~ selection copied` all `совпадает`; the five untouched states
+  (`~ grid`/`~ searched`/`~ nothing found`/`~ a row opened`/`~ help`) read
+  exactly their pre-existing recorded numbers (`~ a row opened`'s six cells at
+  their recorded 0.02-0.07%, the close button's own focus ring - unrelated to
+  this batch) or `совпадает`, confirming the shared `TablesPage.svelte` edits
+  did not move anything this batch was not asked to touch.
+- `node tests/parity.js "i/ci1 ~"` (6 states, 36 cells - the card's own
+  add-to-list states, to prove the `.dropmenu.up` deletion did not regress the
+  card) - **`расхождений нет`**, every cell `совпадает`.
+- `npm run check:built` - **exit 0**: build, `file://` smoke ("the built page
+  opens from a folder"), bundle budget (61.9 kB gzip against 120 kB).
+- **No `VISUAL_DEBT` number was written from this host.** Every cell either
+  matched a pre-existing entry exactly or read `совпадает`; nothing needed a
+  diff image opened.
+- `git log --oneline -3`, re-read immediately before committing: HEAD still
+  `4210ee3` on top of `f167e62`/`2f3659d` - unmoved since the batch started, no
+  peer session touched this tree while this batch ran.
+
+- Files changed: `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
+  new `app/src/components/SelBar.svelte`, `app/src/components/Shell.svelte`,
+  `app/src/components/TablesPage.svelte`, `app/src/components/AddToList.svelte`,
+  `app/src/components/RecordModal.svelte`, `app/src/components/record.test.ts`,
+  `app/src/components/tables.test.ts`, `app/src/components/a11y.test.ts`,
+  `app/src/lib/dict.ts`, `app/src/lib/share.ts`, `app/src/lib/share.test.ts`,
+  `tests/parity/driver.js`, `tests/parity/specs.js`, `docs/specs/COVERAGE.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's `feat(lists): ...` commit, on
+  top of `4210ee3`.
+- Deviations and rationale: none from the brief's scope, file list, ordered
+  steps, or acceptance criteria. The one thing not anticipated in the written
+  design - `copiedSelection`'s literal `'Выбрано'` failing in English - is
+  documented above; the fix is a one-line addition to `NAME` and the spec, not
+  a change to what the spec verifies.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
