@@ -7,10 +7,12 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress - B4 built and committed (`fde9cdc`, reviewed);
-  **B5.1 is built and committed as `fe0043b`**; B5.2 is next, not yet planned
-  in detail (see "Next batch")
-- Last agent: implementer (2026-09-10: built B5.1 - the list store, the
-  toast, and the add-to-list row on the card)
+  B5.1 is `fe0043b`; **the B5.1 fix-then-continue pass (blockers only) is
+  built and committed this session, on top of `541d529`**; B5.2 is next, not
+  yet planned in detail (see "Next batch")
+- Last agent: implementer (2026-09-10: the B5.1 fix-then-continue pass - the
+  reviewer's two blockers in `tests/parity/specs.js` and `PageHead.svelte`,
+  plus the three findings the full parity run surfaced)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
@@ -18,7 +20,10 @@ depends on chat history.
   part 1 `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`.
   B4 is `fde9cdc`. **B5.1 is `fe0043b`**, committed by the orchestrator after
   the implementer reached its usage limit with the tree staged, its checks
-  green and the gate armed - see "Verification".
+  green and the gate armed - see "Verification". The full unfiltered parity
+  run against `fe0043b` is recorded in `handoff.md`, "Blockers", at
+  `541d529`. **This session's fix-then-continue pass is the next commit after
+  `541d529`** - see "Completed" and "Verification" below.
 
 Phase 4's B1-B3.6, B4 and B5.1 are all built. B4 was the last body shape the
 tables slice needed (`plan.md`, "the tables surface, and how it splits"), so
@@ -440,7 +445,127 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   Popover-API gap and the outside-click null-prop race, both found and fixed
   while getting `npm run check` green.
 
+- Batch name/id: **B5.1 fix-then-continue pass - blockers only** (this
+  session, on top of `541d529`)
+- What shipped: the reviewer's two blockers in `tests/parity/specs.js`, plus
+  the three findings the full unfiltered run against `fe0043b` surfaced
+  (`handoff.md`, "Blockers"). No replanning, no B5.2, one commit, per the
+  orchestrator's explicit scope.
+  - **Reviewer blocker B1, three stale excuses in `tests/parity/specs.js`:**
+    - The six `#/roll/wondrous ~ pinned` entries and their block comment
+      ("the rewrite has no toast yet") are **deleted**. `PageHead` has raised
+      the toast since B5.1; the full unfiltered run already read all six at
+      0.00% against debt 1.36-3.82, which is exactly the criterion B5.1's own
+      brief set for deleting them. Confirmed again by this pass's own
+      `node tests/parity.js "pinned"`: `расхождений нет`, all six
+      `совпадает`.
+    - The `listRow` helper and its four-line comment are **deleted** - no
+      call site remained anywhere in the file (confirmed by grep before
+      deleting).
+    - `#/i/ci1 ~ toast @ en 375`'s `why` was a comma-spliced fragment ("the
+      rewrite's toast still up, the live app's already faded - a timed
+      state, not a difference"), not a sentence. Rewritten to "The rewrite's
+      toast was still up while the live app's had already faded - a timed
+      state, not a real difference."
+  - **Reviewer blocker B2:** `PageHead.svelte:44`'s refused-pin toast said
+    `t.copyFailed` where `app.js:4171` says `saveFailed` (B5.1 had already
+    added the `saveFailed` key to `dict.ts` but the call site was never
+    switched to it). Fixed to `say(t.saveFailed, true)`. This broke
+    `roll.test.ts`'s "says nothing was saved when the browser refuses" test,
+    which had asserted the old, wrong `copyFailed` text
+    ("Не удалось скопировать") - updated to assert `saveFailed`'s text
+    ("Не удалось сохранить: браузер блокирует локальное хранилище"). Checked
+    every other `copyFailed` assertion in the suite
+    (`tables.test.ts`, `alt.test.ts`, `record.test.ts`) - all four are real
+    clipboard-copy-failure tests, unrelated to the pin/save path, untouched.
+  - **`#/i/ci1 ~ whole @ ru 768` - 7.31% in the full run, expected zero, no
+    entry.** Opened the diff image (`test-output/parity/
+    _i_ci1_whole_ru_768-diff.png`) before writing anything, per this task's
+    own instruction and `docs/parity.md`'s rule: it shows no visible content
+    difference - not the picker row, not any other geometry change. Three
+    consecutive `node tests/parity.js "ci1 ~ whole"` runs this session read
+    `ru 768` and `en 768` at `совпадает` (0.00%) every time, while the
+    sibling `@ 1100` cells (already-recorded `VISUAL_DEBT` entries) kept
+    fluctuating between ~1.4-1.7% and their recorded 4.88-5.53%, on an
+    unchanged build - the same instability class already documented for
+    1100, just one that this host's quiet, filtered runs did not reproduce
+    and the full suite's heavier concurrent run did. Recorded as debt at the
+    full-run's 7.31% (the worst reading taken, not this pass's own 0.00%,
+    per `VISUAL_DEBT`'s own "a figure only moves down once it is shown to
+    hold" rule) with a reason naming the instability and asking CI to
+    confirm - the same shape as the 1100 siblings, not a new defect.
+  - **`#/i/ci1 ~ toast @ en 768` - 0.86% in the full run, expected zero, no
+    entry.** Reproduced exactly at 0.86% by this pass's own
+    `node tests/parity.js "pinned" "i/ci1"` run. Recorded plainly as a toast
+    whose fade races the screenshot, the same class as the already-recorded
+    `en 375` entry, with the reason stating the class is B5.2's to solve - no
+    investigation beyond that, per the owner's explicit instruction not to
+    chase the timed-toast problem in this pass.
+  - **Nit taken:** `docs/specs/COVERAGE.md`'s suite-ownership table listed a
+    bare `lists.test.ts` under "stated behaviour", but three files now share
+    that name (`lib/`, `state/`, `components/`). Disambiguated the existing
+    row to `lib/lists.test.ts` and added the two missing rows -
+    `state/lists.test.ts` (held to `loadLists`..`storageWorks`/`createList`,
+    app.js 1149-1330: the v1-to-v2 migration, merge-on-save, a refused
+    write) and `components/lists.test.ts` (held to `listMenuHTML`/
+    `addToListBtn`/`listMemberFor`'s live behaviour: the button, the menu, a
+    chip's tick, the new-list form, the toast).
+  - **Not touched, per the task's explicit scope:** the `menuFor`-after-
+    modal-close divergence, the `!important` guard on the toast's hide, the
+    unverified "announced above the dialog" claim, the `stop()` timer, the
+    duplicated `knows` closure, the three anchor cells measuring better than
+    recorded debt (pre-existing since B4), and the `#/i/ci1 ~ whole @ ru|en
+    1100` cells' own instability (pre-existing, unchanged, still "CI to
+    confirm" exactly as B5.1 left them) - all left for the orchestrator to
+    record in Deferred, or already there.
+- Files changed: `tests/parity/specs.js`, `app/src/components/
+  PageHead.svelte`, `app/src/components/roll.test.ts`, `docs/specs/
+  COVERAGE.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's fix-then-continue commit, on
+  top of `541d529`.
+- Deviations and rationale: none from the five named items. The
+  `roll.test.ts` fix is not in the task's line list but is the direct,
+  necessary consequence of blocker B2's one-word fix - the touched path's
+  own existing test asserted the text the fix removes, so leaving it broken
+  was not an option.
+
 ## Verification
+
+- Commands run (exact), this session (B5.1 fix-then-continue pass):
+  - `npm run check 2>&1 | tail -n 120` - first run: **1 failed of 732**,
+    `roll.test.ts`'s "says nothing was saved when the browser refuses" test,
+    which asserted the pre-fix `copyFailed` text against `PageHead.svelte`'s
+    now-corrected `saveFailed` call. Fixed the test's expectation (see
+    "Completed"). Clean re-run: **exit 0** - format/lint/typecheck/data/
+    derived/i18n/selftest all pass, `svelte-check` 518 files/0 errors/0
+    warnings, `vitest run --coverage` 732 tests, 96.67%/89.64%/96.57%/97.01%
+    statements/branches/functions/lines, every threshold met. Both runs used
+    the plain form (no `set -o pipefail` prefix), per the task's explicit
+    instruction that the hook accepting it is not yet built.
+  - `node tests/parity.js "pinned" "i/ci1"` - **3 расхождения**, all
+    accounted for and none new:
+    - All six `#/roll/wondrous ~ pinned` cells: `совпадает` - confirms the
+      deletion criterion. A follow-up `node tests/parity.js "pinned"` alone
+      (run to get the literal text the task's own acceptance line names)
+      printed **`расхождений нет`**.
+    - `#/i/ci1 ~ whole @ ru 1100` (1.43% against recorded 5.53%) and
+      `@ en 1100` (1.70% against recorded 4.88%) - the pre-existing,
+      already-documented instability on this cell family, untouched by this
+      pass, reproducing the same "стало лучше" shape it already carries.
+    - `#/i/ci1 ~ whole @ ru 768` - **0.00%** this run, against the 7.31%
+      just recorded from the full run's own reading (see "Completed" for the
+      diff-image check and the three prior runs that also read 0.00%). Left
+      at 7.31% rather than lowered, matching how the 1100 siblings are
+      already handled and per `VISUAL_DEBT`'s own rule that a figure moves
+      down only once shown to hold, not off a single quiet run.
+    - `#/i/ci1 ~ toast @ en 768` read exactly its newly-recorded 0.86% and
+      `@ en 375` exactly its existing 2.78% - both pass within debt, printed
+      as `вид: X% из Y% долга` rather than as failures; the tool's own exit
+      code counts only the three cells above as расхождения, all of them
+      the pre-existing/already-accounted-for instability, none the toast
+      entries.
+  - Both parity commands were run as their own foreground call, unchained
+    and unredirected, exactly as instructed.
 
 - Commands run (exact), this session (B5.1):
   - `npm run check 2>&1 | tail -n 120` - **first attempt exceeded the 600s
@@ -1068,20 +1193,19 @@ own - it names the surface, not the file-by-file design.
   "EXIT $?"`, so the harness reported the `echo`'s 0 while the suite failed.
   The same class of mistake this session documented, committed by the
   orchestrator an hour after writing the rule down.
-  - **Six `#/roll/wondrous ~ pinned` cells now read 0.00%** against debt
-    1.36-3.82. That is B5.1 working: the excuse said "the rewrite has no toast
-    yet", and `PageHead` now raises one, so both apps match. All six read zero
-    in one run, which is exactly the criterion B5.1's brief set for deleting
-    them - the implementer left them alone only because its own two runs
-    disagreed. Delete the six entries and the block comment.
-  - **`#/i/ci1 ~ whole @ ru 768` - 7.31%, expected zero, no entry.** The
-    sibling 1100 cells already carry entries reading "unstable on this host
-    ... CI to confirm". This is B5.1's own surface (`~ whole` photographs the
-    full card, which grew the picker row), so it is in scope: open the diff
-    image before any reason is written.
-  - **`#/i/ci1 ~ toast @ en 768` 0.86% expected zero, `@ en 375` 0.00% against
-    2.78** - the timed-state coin flip the reviewer predicted (R1). Record
-    honestly as timed-state debt; do not chase. See the research note below.
+  - **Resolved, fix-then-continue pass:** the six `#/roll/wondrous ~ pinned`
+    cells and their block comment are deleted -
+    `node tests/parity.js "pinned"` now reports `расхождений нет`.
+  - **Resolved, fix-then-continue pass:** `#/i/ci1 ~ whole @ ru 768` has a
+    `VISUAL_DEBT` entry, at the full run's 7.31% (the diff image was opened
+    first and shows no visible content difference - not the picker row).
+    Same instability class as the already-recorded 1100 siblings; CI to
+    confirm.
+  - **Resolved, fix-then-continue pass:** `#/i/ci1 ~ toast @ en 768` has a
+    `VISUAL_DEBT` entry at 0.86%, recorded plainly as a toast-fade race and
+    assigned to B5.2, not chased further. `@ en 375` was already recorded and
+    is unchanged in value; only its `why` was rewritten into a full sentence
+    (reviewer blocker B1).
   - Three anchor cells (`voa ~ section anchor @ ru|en 375`,
     `core_item ~ row anchor @ ru 375`) measuring better than recorded debt -
     pre-existing since B4, unrelated to B5.1, still the orchestrator's.

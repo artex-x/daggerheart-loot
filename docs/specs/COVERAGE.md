@@ -233,7 +233,9 @@ people use, these test the one that will replace it.
 | `i18n.test.ts` | `docs/fixtures/statlines/equipment.json` |
 | `data.test.ts` | the real `data.json`, and the counts the README publishes |
 | `money.test.ts` | the worked examples in the app's own help panel |
-| `search.test.ts`, `lists.test.ts`, `roll.test.ts` | stated behaviour |
+| `search.test.ts`, `lib/lists.test.ts`, `roll.test.ts` | stated behaviour |
+| `state/lists.test.ts` | the live app's own list-store rules - `loadLists`..`storageWorks` and `createList` (app.js 1149-1330): the v1-to-v2 migration runs once and leaves v1 alone, a save merges with whatever another tab wrote, a refused write keeps the session working |
+| `components/lists.test.ts` | the add-to-list row itself - `listMenuHTML`/`addToListBtn` and `listMemberFor(item)`'s live behaviour: the button, the menu, a chip's tick, the new-list form, and the toast each raises |
 | `filters.test.ts` | the facet grammar both ways, and the predicate and counters the panel is built from |
 | `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share; and the hash router against a fake window |
 | `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets |

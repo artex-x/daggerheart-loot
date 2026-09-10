@@ -841,12 +841,6 @@ const SPECS = [
  * Both screenshots and a diff image land in test-output/parity/ on every run,
  * so what is left is a picture rather than an argument.
  */
-/* The add-to-list and print row is missing from every record card, so it is
-   owed once per cell rather than once. The number is bigger on a phone, where
-   the row would wrap to two lines, and bigger again end to end, where it moves
-   a whole footer. */
-const listRow = (pct, where) => ({ pct, why: `the add-to-list and print row, ${where}` });
-
 /* The selection bar - add to list, print, copy selection - is lists' and
    print's job, not the plain table's; see ACCEPTED for the control list. */
 const selBar = (pct, where) => ({ pct, why: `the selection bar, ${where}` });
@@ -869,18 +863,33 @@ const VISUAL_DEBT = {
   '#/i/ci1 ~ whole @ ru 1100': { pct: 5.53, why: 'unstable on this host (1.43/5.53 across two runs) - paint noise, geometry identical; CI to confirm' },
   '#/i/ci1 ~ whole @ en 1100': { pct: 4.88, why: 'unstable on this host (4.88/0.00 across two runs) - paint noise, geometry identical; CI to confirm' },
 
+  /* Found by the full unfiltered suite (B5.1 fix-then-continue): `@ ru 768`
+     read 7.31% there, expected zero, with no entry. Opened the diff image
+     before writing this - it shows no visible content difference, matching
+     the "совпадает" verdict this pass's own three consecutive filtered runs
+     gave the same cell (0.00% every time, ru and en alike). Same shape as the
+     1100 entries above: a whole-card screenshot that only misbehaves under
+     the full suite's heavier concurrent load, not under a quiet filtered run
+     - paint, not layout. Recorded at the full-suite figure since that is the
+     worst reading taken, not at this pass's own 0.00%, per the rule that a
+     figure only moves down once it is shown to hold. CI to confirm. */
+  '#/i/ci1 ~ whole @ ru 768': { pct: 7.31, why: 'unstable under the full suite\'s load (0.00% on three quiet filtered runs, 7.31% under the full run) - paint noise, no visible diff; CI to confirm' },
+
   /* Also found while measuring, also not predicted: `#/i/ci1 ~ toast` is a
-     timed state, the same class `#/roll/wondrous ~ pinned` already carries -
-     `enter` presses "Скопировать название" and then, for `en`, presses `EN`
-     as a second, later action; the screenshot shows the rewrite's toast
-     (1600ms) still up while the legacy screenshot shows none, meaning the
-     live app's own toast had already faded by the time the language press
-     completed on this machine. Confirmed by the screenshots themselves: the
-     legacy shot has no toast at either width one below this, only `en 375`
-     lands inside the window where the timing differs. Measured on this host
-     (Windows, advisory - CI to confirm); see docs/parity.md, "Machine
-     variance" for why a timed cell is not evidence off this machine. */
-  '#/i/ci1 ~ toast @ en 375': { pct: 2.78, why: "the rewrite's toast still up, the live app's already faded - a timed state, not a difference" },
+     timed state - `enter` presses "Скопировать название" and then, for `en`,
+     presses `EN` as a second, later action; the screenshot shows the
+     rewrite's toast (1600ms) still up while the legacy screenshot shows none,
+     meaning the live app's own toast had already faded by the time the
+     language press completed on this machine. Confirmed by the screenshots
+     themselves: the legacy shot has no toast at either width one below this,
+     only `en 375` lands inside the window where the timing differs. Measured
+     on this host (Windows, advisory - CI to confirm); see docs/parity.md,
+     "Machine variance" for why a timed cell is not evidence off this
+     machine. `@ en 768` is the same race, caught by the B5.1 fix-then-continue
+     pass's full-suite run at 0.86% against an expected zero, with no entry -
+     not chased further: the class is B5.2's to solve, not this pass's. */
+  '#/i/ci1 ~ toast @ en 375': { pct: 2.78, why: "The rewrite's toast was still up while the live app's had already faded - a timed state, not a real difference." },
+  '#/i/ci1 ~ toast @ en 768': { pct: 0.86, why: "A timed state: the toast's fade races the screenshot. This class is B5.2's to solve." },
 
   /* The row landed (B5.1). What is left in all three modal states below is
      the residue B5 planning already named: showModal() moves the keyboard
@@ -908,17 +917,6 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ modal @ en 1100': { pct: 0.02, why: 'the same ring, in English' },
   '#/roll/wondrous ~ modal @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
   '#/roll/wondrous ~ modal @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
-
-  /* The live app raises a toast to say where the app will open now, and the
-     rewrite has no toast yet - the same gap #/i/ci1 ~ toast is pending for.
-     It grows as the window narrows because the toast is a fixed size and the
-     screen around it is not. */
-  '#/roll/wondrous ~ pinned @ ru 1100': { pct: 1.36, why: 'the toast that says where the app will open, which is a later slice' },
-  '#/roll/wondrous ~ pinned @ ru 768': { pct: 1.95, why: 'the same toast, mid width' },
-  '#/roll/wondrous ~ pinned @ ru 375': { pct: 3.64, why: 'the same toast, on a phone' },
-  '#/roll/wondrous ~ pinned @ en 1100': { pct: 1.36, why: 'the same toast, in English' },
-  '#/roll/wondrous ~ pinned @ en 768': { pct: 1.95, why: 'the same toast, in English, mid width' },
-  '#/roll/wondrous ~ pinned @ en 375': { pct: 3.82, why: 'the same toast, in English, on a phone' },
 
   /* The row landed. Same shape as #/roll/wondrous ~ modal above - only the
      close button's own focus ring is left. Measured on this host (Windows,

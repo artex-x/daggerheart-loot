@@ -183,7 +183,9 @@ describe('pinning the section', () => {
     expect(pin()).toHaveAttribute('aria-pressed', 'false');
     /* The shell also warns that storage is off, so both live regions are on
        the page; this asks for the panel's. */
-    expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
+    expect(
+      screen.getByText('Не удалось сохранить: браузер блокирует локальное хранилище')
+    ).toBeInTheDocument();
   });
 });
 

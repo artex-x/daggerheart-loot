@@ -42,7 +42,7 @@
     aria-pressed={app.isHome}
     onclick={() => {
       const wasHome = app.isHome;
-      if (!app.toggleHome()) say(t.copyFailed, true);
+      if (!app.toggleHome()) say(t.saveFailed, true);
       else say(wasHome ? t.homeReset : t.homeSet);
     }}
   >
