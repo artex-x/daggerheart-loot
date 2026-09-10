@@ -56,7 +56,8 @@ Both are below, after "B3 built".
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/lists` - the lists slice
+- `#/lists` - the lists slice, **planned as six batches B5.1-B5.6** (see "B5
+  planned"); B5.1 is implement-ready in `handoff.md`
 - `#/search` - the search slice
 - `#/print/ci1-q1` - the print slice
 
@@ -2573,6 +2574,587 @@ component).
 No leading-space defect was found - B4 ports no new inline markup out of an
 `app.js` string template, the tier body reuses B3's own row/section markup
 unchanged, so the rule was not promoted to `CLAUDE.md`.
+
+### B5 planned: the lists slice, and how it splits
+
+Picked by the orchestrator on 2026-09-10 over search and print, because the
+other deferred work waits on it: the 600px overrides for `.selx`, `.selacts`,
+`.seldrop`, `.dropmenu`, the `.lrow*` family, `.npair` and `.batch-acts`;
+`noData`/`storageOff`; and the add-to-list row that every `listRow` debt entry
+and every `addToList` line in `ACCEPTED` currently excuses. Search reuses the
+row and the selection bar wholesale, so it is cheaper after lists.
+
+**The surface, read off app.js rather than remembered.** Lists is not one
+screen; it is one piece of state and six places that draw it:
+
+| piece | where it lives in app.js | what it draws |
+|---|---|---|
+| the store | `loadLists`/`keepLists`/`liftNotes`/`saveLists`/`mergeLists`/`storageWorks` 1149-1204, `createList`/`deleteList`/`toggleInList` 1320-1350, the `storage` listener 4621-4625 | nothing; everything below reads it |
+| the toast | `toast`/`toastAction`/`hideToast`/`showToast` 969-1006, `#toast` in index.html, `.toast`/`.toast.err`/`.toast.act`/`.toast-act` in style.css | every "added to", "removed", "copied" and every undo |
+| the add-to-list control | `listMenuHTML` 1831-1859, `idsForKey`/`metaForKey` 1865-1876, `addToListBtn` 1879-1891, `applyAddTo`/`addIdsTo`/`afterListChange`/`markMembership` 1907-1958, `placeMenu` 3695-3704, the outside click 3865-3869 | the `.seldrop` button with its `.dropmenu`; one instance per opener key |
+| the card row | `listPicker` 1893-1896, called from `cardHTML` 2041 on a full card only | `.cardpick`: the control plus the print link |
+| the selection bar | `renderSelBar` 3706-3721, `#selBar` after the footer in index.html, `S.sel` cleared on `hashchange` 4632 | count, cross, the control, print, copy selection |
+| the lists index | `renderLists` 2909-2931, `storageWarning` 2872-2886 with `WARN_KEY`, `listCardHTML` 2888-2907 | `#/lists` |
+| the list page | `renderOneList` 2960-2995, `listRollPanel`, `rolledNoteHTML`, `listRowHTML` 3040-3092, `listNoteHTML`, `notePairHTML`, `moneyPickerHTML`, the address sync `goToList`/`findListByPayload`/`freshenListUrl`/`syncListUrl` 1537-1607, the edit handlers 4371-4435, drag 4443-4535, position 4550-4558 | `#/lists/<id>`, rewritten to `#/l/<payload>` |
+| batch actions | `batchBarHTML`/`moneyPanelHTML`/`guessPrice` 724-830, the handlers 3985-4084 | the `.batch` bar's `.batch-acts` and the `.guess` panel |
+| the shared list | `renderSharedList` 3130-3170, `expandHash` 3591-3606, the `createFor` branch for `N_SHARED` 4213-4224, `importList` 4258-4270 | someone else's `#/l/<payload>`, and taking it |
+
+Too big for one batch, and the boundaries below are chosen the way B1-B4's
+were: so that nothing on screen has to be faked and every batch ends on states
+the harness can reach.
+
+| | what | why it is a boundary |
+|---|---|---|
+| **B5.1** | the list store, the toast, and the add-to-list row on the card - `ListStore` (v2 read, the one-time v1 migration, save-with-merge, the two-tab `storage` event), `Toast` driven by `app.say`, `AddToList` (the button and its menu: chips with membership ticks, the inline new-list form, the search box from the eighth list), `.cardpick` on the full card with the print link; the driver learns to seed storage | closes every `listRow` debt entry and every `addToList`/`controls` line in `ACCEPTED` on the record routes and the modals; the control is written once, for the card, and the bar and the shared page reuse it |
+| **B5.2** | the selection bar: `sel` lifted from `TablesPage` to `AppState` (search is its second owner), `SelBar` in `Shell` after the footer, the cross, the control, print, copy selection; the 600px overrides for `.selx` and `.selacts` | the second caller of `AddToList` and of the print link; closes the `selBar` debt and the `~ a row ticked` `ACCEPTED` lines |
+| **B5.3** | the lists index `#/lists`: the page head and its help, the storage warning in both its forms (`dhloot.warn.v1`, the dismiss cross), create, import, the list cards (share as a short link, delete behind `confirm()`), the empty state; `Shell`'s invented `storageOff` paragraph goes and the live app's `storageWarning()` lands where the live app draws it | the route that is `pending` today; `deleteList` and the `deleted` set in the merge |
+| **B5.4** | the list page as a page: `#/lists/<id>` rewritten to `#/l/<payload>` and kept fresh on every edit, own-list recognition, rename, the action row, the money picker and its help, the list note, the roll panel, the batch bar's select-all, the rows (`.lrow*`, quantity and price with the gold hint, the two notes, remove with undo, position, drag through the drag port), `contextNote` on the card's copy; the 600px `.lrow*` and 640px `.npair` overrides | the biggest surface; everything on it is per list and none of it needs batch actions to draw. May be split into 4a (the page and the rows) and 4b (notes, roll panel, drag) when it is planned |
+| **B5.5** | batch actions and prices: `.batch-acts`, the money panel (reprice, suggest, clear), delete selected, the undo toasts, the 640px `.batch-acts` override; `lib/money.ts` gets its first callers | its own panel and its own undo set, on top of B5.4's `lsel` |
+| **B5.6** | the shared list that is not ours: hitnotes, rows with tails, take into a list or a new list with the name and both notes, packed `~` links expanded and rewritten on open, the bad-link page, `listNotFound`; import on the index (B5.3) reuses the same decode | the other reader of the same page; completes the link contract loop that `contracts` replays |
+
+**The harness can reach a list state, with one addition.** Lists live in
+`localStorage`, and every state opens a fresh page whose `prepare()` clears
+storage. So a state that needs lists to exist cannot be *entered*; it has to be
+*seeded*. `tests/select.js` and `tests/lists2.js` already do exactly this on the
+live app - `evaluateOnNewDocument` writing `dhloot.lists.v2` - and the same
+technique works on `dist/`, which loads from the same `file://` origin. B5.1
+adds it to the driver as `d.seed(entries)` (a second `evaluateOnNewDocument`,
+registered after `prepare()`'s and so running after its `clear()`) and to the
+runner as a `storage` field on a state, applied inside `arrive()` before
+`open()` and hashed into the cache key. A press spec reads the result back
+through `d.storage(key)`, so the write path is compared as data and not only as
+the tick on a chip. Ids and `created` stamps come from the seed, so nothing in a
+seeded state depends on the clock.
+
+Two limits of the driver shape the states and are recorded so nobody "fixes"
+the app against them:
+
+- **The English cells of a menu state show the menu closed.** `arrive()`
+  presses `EN` after `enter`, and the live app's document click handler treats
+  any click outside `.seldrop`/`.dropmenu` as "dismiss the menu" before it does
+  anything else - the language button included. The rewrite has to do the
+  same, so `@ en` compares the row with the menu folded. Honest on both sides;
+  the menu's own pixels are compared in Russian.
+- **A toast is a timed state.** 1600ms for a plain notice, 2600ms for an error,
+  7000ms for one with an undo. CI photographs `~ pinned` inside that window at
+  all three widths (its debt is the toast's own pixels); the ubuntu container
+  does not (`tools/parity-ubuntu/README.md`). A toast cell's number is CI's,
+  and a Windows run that catches one side's toast expiring is the documented
+  timed-state class, not a defect.
+
+**Decided in planning - do not reopen.**
+
+- **The toast is B5.1's, not a slice of its own.** The first list press raises
+  one, every later lists batch raises several, and the record routes already
+  owe one (`#/i/ci1 ~ toast` is `pending` for it; `~ pinned` carries it as
+  debt). It replaces the `said` live regions the pages invented - the live app
+  announces through the toast's own `role`/`aria-live`, and a visible `.said`
+  paragraph under a page is not something the live app draws.
+- **The toast goes in the top layer.** `RecordModal` is a native `<dialog>`
+  (recorded in `ACCEPTED` as an accessibility fix), and a modal dialog makes the
+  rest of the document inert and paints over it - so a fixed `.toast` in
+  `Shell` would sit under the backdrop and go unannounced exactly when a person
+  adds from the modal card. `popover="manual"` puts the toast in the top layer
+  above the dialog and outside its inertness, at the cost of resetting the
+  popover UA styles (`inset`, `margin`, `border`, `padding`, `overflow`,
+  `color`, `background`). Fallback if that does not measure identical on
+  `#/i/ci1 ~ toast @ ru 1100`: a plain `{#if}` fixed element, and the modal
+  case is written into the handoff as B5.2's to close.
+- **One component, `AddToList.svelte`, with the menu inside it.** `listMenuHTML`
+  has one caller; a separate `ListMenu.svelte` is an abstraction ahead of need.
+  `menuFor` - which opener has its menu open, app-wide, one at a time - lives on
+  `AppState` beside `navigations`, because the live app clears it on every
+  `hashchange` and closes it from any click outside the control, both of which
+  are app-level facts. `newListFor`, `newListDraft` and `pickQ` are the
+  component's own.
+- **The print link is a link, and it is B5.1's.** `printBtn` is
+  `<a class="btn sm" href="#/print/<ids>">` with an icon, a label and a title.
+  It needs no print page to exist; `printHash` is in `lib/hash.ts` already. The
+  print *page* stays the print slice. `Button.svelte`'s `href` form gets a
+  `sameTab` prop for it - its two existing callers open a table in a new tab
+  and keep doing so.
+- **`Button.svelte` grows what the live `.btn` already has and this row uses:
+  `on` (`.btn.on` and `.btn.primary.on`, the pressed look), `ghost`
+  (`.btn.ghost`, the cancel button), and `caret` (the `<i class="caret">` that
+  `FilterBar.svelte` draws inline today - second use, so the element and its two
+  rules move into `Button` and `FilterBar`'s copy goes).**
+- **The menu's chips are `Chip.svelte`.** Its button form carries
+  `aria-pressed`, which the live chip does not; the accessible *name* is the
+  text, which is what the inventory compares, and a membership tick is a
+  pressed state in fact. Not an `ACCEPTED` entry: nothing the harness reads
+  differs.
+- **`+ Новый список` draws as a plain chip.** The live markup says
+  `class="chip ghost"`, but the only `.chip.ghost` rule is `.picker .chip.ghost`
+  and the menu is not inside `.picker` - so in the menu the dashed border never
+  applies. Port the class, not the intent.
+- **`Shell`'s `storageOff` paragraph stays until B5.3.** The live app has no
+  chrome-level warning; it draws `storageWarning()` on the two lists pages.
+  Reconciling `noData`/`storageOff` is the index batch's, where the live
+  markup lands. Nothing in the harness sees the paragraph (storage works there).
+- **`sel` stays in `TablesPage` until B5.2.** The bar is what needs it on
+  `AppState`; moving it a batch early adds an export with no second caller.
+- **Numbers for the three modal states come from the container or CI, not
+  this host.** `#/roll/wondrous ~ modal`, `#/tables ~ a row opened` and
+  `#/i/q1 ~ another tier` keep a residue after the row lands (the focus ring
+  on the close button, recorded in `ACCEPTED`) and every one of their eighteen
+  figures changes. Their difference is layout, which `tools/parity-ubuntu/` is
+  calibrated for; if docker is not available the Windows figure goes in with a
+  reason that says so and the handoff lists the cells for the orchestrator to
+  reconcile off CI. Owner decision 1 stands.
+- **Ids come from `env.random()` and `Date.now()`**, the way `newId()` does.
+  No clock port: nothing else wants one, and a test stubs `Date.now`.
+
+### B5.1 planned: the list store, the toast, and the add-to-list row
+
+**Objective.** A person can put a record into a list from its card - the page
+at `#/i/<id>` and the record modal - and take it out again, and the app
+remembers it in `dhloot.lists.v2` the way the live app does, merging rather
+than overwriting when two tabs are open. The row under every full card draws:
+the add-to-list button with its menu and the print link. The app has a toast.
+With that, every `listRow` entry in `VISUAL_DEBT` and every `addToList` and
+record-route `controls` line in `ACCEPTED` is deleted, not lowered, and
+`#/i/ci1 ~ toast` stops being `pending`.
+
+**Scope.** `state/lists.svelte.ts` (new), `state/app.svelte.ts` (the store,
+`menuFor`, `say`/`toast`), `components/Toast.svelte` (new),
+`components/AddToList.svelte` (new), `components/Button.svelte` (`on`, `ghost`,
+`caret`, `sameTab`), `components/FilterBar.svelte` (its caret moves into
+`Button`), `components/RecordCard.svelte` (a `pick` snippet and `.cardpick`),
+`components/RecordPage.svelte`, `RecordModal.svelte`, `TablesPage.svelte`,
+`PageHead.svelte` (`say` becomes `app.say`; the `.said` paragraphs go),
+`components/Shell.svelte` (renders the toast), `lib/dict.ts` (seventeen keys),
+`lib/icons.ts` (`plus`, `print`), the driver, the runner, the specs, and tests
+for all of it.
+
+**Non-goals.** No selection bar and nothing on `AppState` for `sel` (B5.2). No
+`#/lists`, no storage warning, no `storageOff` reconciliation (B5.3). No list
+page, no shared-list page, no import (B5.4-B5.6). No `deleteList` and no
+`deleted` set beyond the field the merge signature already takes (B5.3). No
+`meta` travelling with an add - the only source of meta is a shared page
+(B5.6), so `addIds` takes ids and nothing else until then. No `Panel.svelte`.
+No `typeRuns` probe on the menu. No change to `docs/specs/*`, `docs/fixtures/`,
+`CONTRACTS.md` or `llms.txt` - nothing here alters a contract or a behaviour
+`FEATURES.md` describes.
+
+#### What the live app does, read off app.js
+
+**The control** (`addToListBtn`, 1879-1891). `<div class="seldrop">`, then -
+only while `S.menuFor === key` - the menu, then the button:
+`<button class="btn sm[ primary][ on]" data-act="menu" aria-expanded>` holding
+`ICON_PLUS`, `t.addToList` and `<i class="caret[ up]">`. The menu comes
+*before* the button in the DOM. `key` is the opener: a record id on a card,
+`'sel'` on the bar, `'@'` on a shared page. On a card `primary` is true.
+
+**The menu** (`listMenuHTML`, 1831-1859), for ids `[id]` on a card:
+
+1. `<div class="dropmenu[ long]">`; `long` when the search box is drawn.
+2. `<span class="lbl">` - `t.inLists` when there is exactly one id, `t.addTo`
+   otherwise. A single record's menu says "Лежит в списках" even when it lies
+   in none.
+3. The search box, only when `S.lists.length >= 8` (`PICKER_SEARCH_AT`):
+   `<input type="search" class="pickq" id="pickq" placeholder=aria-label=
+   t.findList>`; typing filters chips by lowercase substring of the name.
+4. `<div class="pickchips">` (`display:contents`) holding one
+   `<button class="chip[ on]">` per list, **sorted by `created` descending**,
+   text `'✓ ' + name` when the one id is in that list, else `name`. Nothing
+   left after the search: `<span class="picker-none">t.nothing</span>`.
+5. The tail: when `S.newListFor === key`, `<span class="picker-new">` with
+   `<input type="text" id="newlist" placeholder=t.listNamePh>`, a
+   `.btn.sm.primary` "Создать" and a `.btn.sm.ghost` "Отмена"; otherwise
+   `<button class="chip ghost">+ t.newList</button>`.
+
+**Pressing a chip** (`applyAddTo` 1907-1919, `addIdsTo` 1923-1940,
+`afterListChange` 1943-1948). One id already in the list: remove it, save,
+toast `removedFrom` with the name. Otherwise add the ids the data knows and the
+list lacks, save, toast `addedTo` with the name (plus `': ' + fresh` when more
+than one id was offered). The menu **stays open** - the live app redraws only
+the chip (`markMembership`) unless the list page itself is showing.
+
+**The new-list form** (4198-4225). `newListFor` opens it and focuses the input;
+"Отмена" closes it; "Создать" with an empty name toasts `nameFirst` as an error
+and refocuses; with a name it `createList`s (name trimmed, `untitled` if it
+somehow ends up empty, `unshift`ed so newest is first, `created: Date.now()`,
+saved) and then `addIdsTo` the same ids - so the toast is `addedTo`, not
+`listCreated`. `createList.saved` is false when the write failed, and
+`saveLists` itself has already toasted `saveFailed` as an error.
+
+**Opening and closing** (3865-3869, 4234, 4627-4633). `data-act="menu"`
+toggles `S.menuFor` between `''` and the key. Any click whose target is outside
+`.seldrop` and `.dropmenu` closes it and clears `newListFor` - this check runs
+*first* in the document handler, so pressing the language switch, a tab, or
+another card's button all fold the menu. `hashchange` clears `menuFor` and
+`newListFor` too.
+
+**Placing it** (`placeMenu`, 3695-3704), after every render while a menu is
+open: `below = innerHeight - button.bottom`, `need = menu.height + 16`,
+`menu.classList.toggle('up', below < need)`, then
+`menu.scrollIntoView({ block: 'nearest' })`. On the card `.cardpick .dropmenu`
+opens **downward** (`top: calc(100% + 8px); left: 0; right: auto`) and `.up`
+flips it above; on the bar the base rule opens upward. The scroll is part of
+the state: on `#/i/ci1` at 1100x900 the row is below the fold and the live app
+scrolls the menu into view, so both apps end up scrolled by the same amount.
+
+**The card row** (`listPicker`, 1893-1896; `cardHTML` 2041): after
+`.card-acts`, inside `.card-body`, only on a full card:
+`<div class="cardpick">` holding the control (primary) and
+`printBtn([id], 'sm')` - `<a class="btn sm" href="#/print/ci1" title=t.printHint>`
+with `ICON_PRINT` and `t.print`.
+
+**The store** (1149-1204, 1320-1350, 4621-4625). `loadLists` reads v2; when v2
+is absent it reads v1, `keepLists` it, `liftNotes` each, writes the result to
+v2 and **leaves v1 alone**. Anything that fails to parse is `[]`. `saveLists`
+writes `mergeLists(S.lists)` and toasts `saveFailed` (error) on a throw. The
+`storage` event for `LS_KEY` replaces `S.lists` with what storage holds
+(`mergeLists(loadLists())` has empty `theirs`, so it is a plain take). All of
+this is already pure in `lib/lists.ts` (`keepLists`, `liftNotes`,
+`mergeLists`) and has had no caller since Phase 2; B5.1 is its caller.
+
+**The toast** (969-1006). One element, `#toast`, after the modal in
+`index.html`. `showToast(msg, mode, ms, action)`: `role` is `alert` and
+`aria-live` `assertive` for `err`, `status`/`polite` otherwise; class
+`toast[ err| act]`; text, then for an action a `<button class="toast-act">`
+with the label; `hidden = false`; the previous timer is cleared and a new one
+hides it after `ms` - 1600 plain, 2600 error, 7000 with an action. Pressing the
+action hides the toast and runs it. `[hidden]{display:none !important}` is what
+hides it, and `toastIn` replays each time it comes back.
+
+**Three things the rewrite is missing, found by reading:**
+
+1. `dict.ts` lacks seventeen keys this batch draws: `addToList`, `addTo`,
+   `inLists`, `newList`, `listNamePh`, `create`, `cancel`, `findList`,
+   `addedTo`, `removedFrom`, `nameFirst`, `untitled`, `saveFailed`, `print`,
+   `printHint`, `homeSet`, `homeReset`. Russian at app.js 109-164 and 199-200,
+   English at 295-348 and 380-381; copy them character for character (the
+   English `addedTo` uses straight quotes, `listCreated` beside it curly ones -
+   only the former is needed).
+2. `lib/icons.ts` lacks `plus` (`M11 5h2v14h-2zM5 11h14v2H5z`, 15) and `print`
+   (app.js 1044, 15).
+3. `PageHead.svelte` reports only a failed pin; the live app toasts `homeSet`
+   or `homeReset` on success. That toast is the whole `~ pinned` debt.
+
+#### How it is built
+
+**`app/src/state/lists.svelte.ts`** - `ListStore`. Constructed by `AppState`
+with the `Env`, a `say(msg, error?)` and a `() => Dict`. Holds
+`lists = $state<StoredList[]>([])` and a session-only `#deleted` record (the
+third argument `mergeLists` already takes; nothing writes to it until B5.3).
+
+- `load()`: `LISTS_KEY = 'dhloot.lists.v2'`; on `null`, `LISTS_KEY_V1`
+  through `keepLists` and `liftNotes`, written to v2, v1 untouched; a parse
+  failure is `[]`.
+- `save(): boolean`: `mergeLists(this.lists, storedNow, this.#deleted)` where
+  `storedNow` is `keepLists(JSON.parse(storage.get(LISTS_KEY) ?? '[]'))` (a
+  parse failure means "merge with nothing"); `storage.set`; on `false`,
+  `say(t.saveFailed, true)` and return false. The lists stay in memory either
+  way - the session still works, as the live app's comment says.
+- `get(id)`, `create(name)` (`'l' + Date.now().toString(36) + random36(4)`
+  off `env.random`, name trimmed or `t.untitled`, `unshift`, `created:
+  Date.now()`, `save()`), `addIds(list, ids, knows)` returning the fresh ids
+  (`knows(id)` is `index.byId.has` - the store does not import the index),
+  `removeId(list, id)`.
+- `watch()`: `storage.onExternalChange(key => { if (key === LISTS_KEY)
+  this.lists = this.load(); })`, returning the unsubscribe. `AppState.start()`
+  calls it and `stop()` releases it, beside the router.
+
+**`app/src/state/app.svelte.ts`** - `readonly lists: ListStore`;
+`menuFor = $state('')`, cleared wherever `navigations` is bumped (the router's
+`onChange` and `go()`); `toast = $state<Toast | null>(null)` with
+`say(msg, opts?: { error?: boolean; action?: { label: string; run: () =>
+void } })` and `hideToast()`. `say` sets the toast, clears the previous timer
+and starts one for 1600/2600/7000ms. A `Toast` is `{ msg, mode: '' | 'err' |
+'act', action? }`.
+
+**`app/src/components/Toast.svelte`** - reads `app.toast`; renders
+`<div class="toast" class:err class:act popover="manual" role=... aria-live=...>`
+with the text and, for an action, `<button class="toast-act">` that calls
+`app.hideToast()` then the action. An `$effect` calls `showPopover()` when a
+toast arrives and `hidePopover()` when it goes, guarded on
+`matches(':popover-open')` (calling `showPopover` on an open popover throws).
+Styles off `.toast`, `.toast.err`, `.toast.act`, `.toast-act`, `@keyframes
+toastIn`, plus the popover resets: `inset: auto auto 26px 50%; margin: 0;
+border: 0; overflow: visible` (`width`/`height: fit-content` from the UA sheet
+is what a shrink-to-fit fixed element measured anyway). `Shell.svelte` renders
+it after the footer.
+
+**`app/src/components/AddToList.svelte`** - props `app`, `key`, `ids:
+readonly string[]`, `primary?: boolean`. `open = $derived(app.menuFor ===
+key)`; local `newListFor = $state(false)`, `draft`, `pickQ`. Renders the
+`.seldrop` with the menu **before** the `Button` (`size="sm"`, `variant`
+primary or plain, `on={open}`, `expanded={open}`, `caret`), the button's
+content `<Icon name="plus" />{t.addToList}`. The menu is the five-part markup
+above: `Chip` per list with `label={(inList ? '✓ ' : '') + l.name}`, `on={inList}`
+- the tick and its space are one string expression, so the leading-space rule
+cannot bite - and a plain `<button class="chip">+ {t.newList}</button>` for
+the tail (a `Chip` too, `label={'+ ' + t.newList}`, `on={false}`). Behaviour:
+
+- the button toggles `app.menuFor` between `''` and `key`, and folds the form;
+- a chip: one id already in the list → `removeId`, `save`, `say(removedFrom)`;
+  else `addIds`, `save`, `say(addedTo + (ids.length > 1 ? ': ' + fresh.length :
+  ''))`. The menu stays open; the chip re-derives its tick from the store;
+- `<svelte:document onclick>`: when `open` and `event.target` is not inside
+  this component's root (`bind:this`), set `app.menuFor = ''` and fold the
+  form. Checked against `app.menuFor === key` at the moment the handler runs,
+  so a click on another control's button - whose own handler already switched
+  `menuFor` to its key - is not undone;
+- the form: `+ Новый список` opens it and focuses the input (an `$effect` on
+  the bound input); "Отмена" folds it; "Создать" with a blank draft →
+  `say(t.nameFirst, { error: true })` and focus, else `create`, then the same
+  add path, then fold;
+- placement: an `$effect` reading `open`, the shown chips' length and
+  `newListFor`, then after `tick()` measuring the menu and the button as
+  `placeMenu` does - `classList`-free: an `up = $state(false)` on the menu and
+  `menu.scrollIntoView({ block: 'nearest' })`.
+
+Styles off style.css: `.seldrop`, `.dropmenu` (with `pop`), `.dropmenu .lbl`,
+`.dropmenu :global(.chip)` (`width:100%; text-align:left; font-size:13px`),
+`.dropmenu.long`, `input.pickq` and its focus, `.pickchips`, `.picker-none`,
+`.picker-new`, `.picker-new input` and its focus, and the 600px
+`.dropmenu { left: 0; right: 0; max-width: none }`. `.lbl` is the global rule
+(`Field.svelte` carries a copy; a third copy here is the trigger to extract
+it - do that only if a fourth appears, the rule is two uses of *shared UI*,
+and a caption line is not a component).
+
+**`app/src/components/RecordCard.svelte`** - `pick?: Snippet`; after the
+`.card-acts` block, `{#if pick}<div class="cardpick">{@render pick()}</div>{/if}`.
+Styles: `.cardpick` (`border-top`, `margin-top:12px`, `padding-top:12px`,
+flex, `gap:6px`, wrap, `align-items:center`) and the two descendant rules
+`.cardpick :global(.dropmenu) { bottom:auto; top:calc(100% + 8px); left:0;
+right:auto }` and `.cardpick :global(.dropmenu.up) { top:auto; bottom:calc(100%
++ 8px) }`. Specificity matters here: the live `.cardpick .dropmenu` (0,2,0)
+beats both `.dropmenu` (0,1,0) and the 600px `.dropmenu{left:0;right:0}`
+(0,1,0), so on a phone the card's menu keeps `right:auto` and gains only
+`max-width:none`. Svelte's scoping makes both sides (0,2,0); the parity cell
+`#/i/ci1 ~ list menu @ ru 375` is what checks the cascade came out the same.
+
+**`RecordPage.svelte`, `RecordModal.svelte`** - the `pick` snippet:
+`<AddToList {app} key={it.id} ids={[it.id]} primary />` then
+`<Button size="sm" href={printHash([it.id])} sameTab title={t.printHint}><Icon
+name="print" />{t.print}</Button>`. `say` becomes `(m) => app.say(m)`; the
+`.said` paragraph in `RecordPage` and the `sr-only` region in `RecordModal` go
+- the toast is in the top layer and announced. `TablesPage.svelte` and
+`PageHead.svelte` the same (`PageHead` says `homeSet`/`homeReset` on a
+successful pin, `copyFailed` on a refused one).
+
+**`Button.svelte`** - `on`, `ghost` (a third variant, `.btn.ghost`), `caret`
+(renders `<i class="caret" class:up={expanded}>` after the children; the two
+rules move here from `FilterBar.svelte`, which passes `caret`), `sameTab` on
+the `href` form (omits `target`/`rel`). `AltPanel`'s two callers are untouched.
+
+**`Shell.svelte`** - `<Toast {app} />` after the footer. Nothing else.
+
+**`tests/parity/driver.js`** - `seed(entries)` and `storage(key)`, both as
+described under "The harness can reach a list state". **`tests/parity.js`** -
+`arrive()` seeds when `state.storage` is set; `keyFor` hashes
+`storage: state.storage ?? null`.
+
+#### Parity states, each in both languages at three widths
+
+Seeds, defined once at the top of `STATES`:
+
+```js
+const LISTS = [
+  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
+  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+];
+const two = { 'dhloot.lists.v2': JSON.stringify(LISTS) };
+const inList = { 'dhloot.lists.v2': JSON.stringify([{ ...LISTS[0], ids: ['ci1'] }, LISTS[1]]) };
+const eight = { 'dhloot.lists.v2': JSON.stringify([...LISTS,
+  ...Array.from({ length: 6 }, (_, i) => ({ id: 'x' + i, name: 'Лавка №' + (i + 1), ids: [], created: 10 + i }))]) };
+```
+
+| id | storage | how it is reached | what it is for |
+|---|---|---|---|
+| `#/i/ci1 ~ list menu` | `two` | press `Добавить в список` | the menu open under the card: label "Лежит в списках", "Лавка в порту" above "Клад дракона" (newest first), "+ Новый список"; the button pressed with its caret up; the page scrolled by `placeMenu` |
+| `#/i/ci1 ~ in a list` | `inList` | press `Добавить в список` | the chip "✓ Клад дракона" lit |
+| `#/i/ci1 ~ many lists` | `eight` | press `Добавить в список`, then `d.type('Найти список', 'порту')` | the `.long` menu with its search box, narrowed to one chip |
+| `#/i/ci1 ~ new list` | `two` | press `Добавить в список`, then `+ Новый список` | the inline form with the input focused - both apps focus it, so the ring is on both |
+| `#/i/ci1 ~ toast` | - | press `Скопировать название` (already registered, `pending` removed) | the toast, on a state that is not a menu |
+
+Existing states that change: `#/i/ci1`, `#/i/ci1 ~ whole`, `#/i/q1`, `#/i/f1`
+(the row lands: expect **zero**, delete the `listRow` entries), `#/roll/wondrous
+~ pinned` (the toast lands: expect zero on CI, delete the six entries),
+`#/roll/wondrous ~ modal`, `#/tables ~ a row opened`, `#/i/q1 ~ another tier`
+(the row lands inside the modal; the focus-ring residue stays - re-baseline
+from the container or CI, reason rewritten to name only the ring).
+
+Nonvisual, in `SPECS`:
+
+- `listMembership` (`presses: true`, `only: ['#/i/ci1 ~ list menu']`): a
+  press spec re-arrives on its own page, and in English the `EN` click has
+  already folded the menu (the outside-click rule above), so the spec first
+  reopens it when the chip is not on screen - `if (!(await d.has('Клад
+  дракона'))) await d.click(NAME[lang].addToList)` - then presses `Клад
+  дракона` and returns `{ ticked: await d.has('✓ Клад дракона'), stored:
+  JSON.parse(await d.storage('dhloot.lists.v2')).map(l => [l.id, l.ids]) }`.
+  Both apps, both languages: `[['a', ['ci1']], ['b', []]]` - the seed order is
+  the save order. A list's name is data, not interface text, so the chip is
+  gripped by the same string in both languages.
+- `recordActions.addToList` now answers `true` on both sides; the six
+  `addToList` lines in `ACCEPTED` and the twelve record-route/modal `controls`
+  lines (`#/i/ci1`, `#/i/q1`, `#/i/ci1 ~ whole`, `#/i/f1`, `#/roll/wondrous ~
+  modal`, `#/i/q1 ~ another tier`, `#/tables ~ a row opened`) are deleted -
+  the run fails on a stale one, so this is not optional. The two `#/tables ~ a
+  row ticked` lines stay: the bar is B5.2's.
+
+`NAME` needs nothing new: every `enter` step runs in Russian, `d.type` grips
+the search box by its placeholder, and the one spec that presses per language
+uses `NAME[lang].addToList`, which is already there.
+
+Expect **zero** on every new cell in Russian and on every record route. The
+control's rules are copied, not invented; the card row is a flex row of two
+`.btn.sm` the card already draws three of. Two places to look first if a cell
+is not zero: the menu's placement (`up` and the scroll - compare
+`window.scrollY` and the menu's rect in both apps with the standalone-probe
+technique in the handoff's gotchas), and the popover resets on the toast
+(compare `getComputedStyle` of `.toast` on both apps: `inset`, `margin`,
+`padding`, `border`, `width`).
+
+#### What B5.1 leaves behind
+
+Tests, in the same commit:
+
+- `state/lists.test.ts` - reads v2; migrates v1 once (v2 written with
+  `hnote`, v1 byte-identical afterwards); a broken JSON is `[]`; `save` merges
+  with what another tab wrote (a list only storage has is appended after ours);
+  `save` on `brokenStorage()` says `saveFailed` and keeps the list in memory;
+  `create` puts the new list first with a trimmed name, `untitled` for a blank
+  one, and a `created` stamp; `addIds` skips unknown ids and ids already there
+  and returns the fresh ones; `removeId`; `watch` reloads on the v2 key and
+  ignores others.
+- `state/app.test.ts` - `say` sets the toast and clears it after 1600ms, an
+  error after 2600ms, an action after 7000ms (`vi.useFakeTimers`); a second
+  `say` replaces the first and restarts the clock; `hideToast`; `menuFor`
+  clears on `go()` and on an external hash change and survives `replace()`.
+- `components/lists.test.ts` (new) - through `App` at `#/i/ci1` with
+  `memoryStorage({ 'dhloot.lists.v2': ... })`: the row draws the button
+  (`aria-expanded="false"`) and the print link (`href="#/print/ci1"`, the
+  title); pressing opens the menu newest first with "Лежит в списках"; a chip
+  adds `ci1` to storage, ticks itself, keeps the menu open and toasts
+  `Добавлено в «Клад дракона»`; pressing it again removes and toasts
+  `Убрано из «Клад дракона»`; eight lists draw the search box and typing
+  narrows the chips, `Ничего не найдено` when none is left; `+ Новый список`
+  opens the form with focus, a blank "Создать" toasts `Сначала назовите
+  список` as an alert, a named one creates the list first-in-order with `ci1`
+  in it and folds the form; "Отмена" folds it; a click outside closes the
+  menu; `router.navigate` closes it; `brokenStorage()` still adds for the
+  session and toasts `saveFailed`; the same row draws in the modal a table row
+  opens. Every case ends with `expectNoA11yViolations`.
+- `components/shell.test.ts` - the toast: `role="status"` and polite by
+  default, `role="alert"` and assertive for an error, the action button runs
+  the action and hides the toast. (`showPopover` does not exist in jsdom -
+  guard the effect on `typeof el.showPopover === 'function'`, which is also
+  the browser fallback.)
+- `components/button.test.ts` - `on`, `ghost`, `caret` up/down, `sameTab`
+  omits `target`.
+- `components/record.test.ts`, `tables.test.ts`, `roll.test.ts` and
+  `std.test.ts` - wherever they assert the `said` text, assert the toast
+  instead (`getByRole('status')`).
+- `test/a11y.test.ts` - a pressed state: `#/i/ci1` with two lists seeded,
+  press `Добавить в список`; and `COVERED` gains `Toast.svelte` and
+  `AddToList.svelte` (`lists.test.ts` reaches both; the sweep's guard fails
+  on a component no named state renders).
+- `tests/parity/specs.js` - the states, the seeds, the spec, the deletions.
+
+#### Ordered steps
+
+1. `dict.ts`: the seventeen keys, both languages. `icons.ts`: `plus`, `print`.
+2. `state/lists.svelte.ts` and its test. `state/app.svelte.ts`: `lists`,
+   `menuFor`, `say`/`hideToast`/`toast`; `start()`/`stop()` wire `watch()`.
+   `app.test.ts` cases.
+3. `Button.svelte`: `on`, `ghost`, `caret`, `sameTab`; `FilterBar.svelte`
+   passes `caret` and loses its `<i>` and two rules. `button.test.ts`.
+4. `Toast.svelte`; `Shell.svelte` renders it. `shell.test.ts` cases.
+5. `AddToList.svelte`.
+6. `RecordCard.svelte`: `pick` and `.cardpick`. `RecordPage`, `RecordModal`:
+   the snippet, `say` → `app.say`, the `.said`/`sr-only` regions deleted.
+   `TablesPage`, `PageHead`: `say` → `app.say`, `homeSet`/`homeReset`.
+7. `lists.test.ts`; the `said` assertions in the four existing files; the
+   a11y state and `COVERED`.
+8. `driver.js`: `seed`, `storage`. `parity.js`: `arrive` seeds, `keyFor`.
+   `specs.js`: seeds, five states (one un-pended), `listMembership`, `NAME`,
+   the `VISUAL_DEBT` and `ACCEPTED` deletions.
+9. `npm run check 2>&1 | tail -n 120` - one foreground call, unchained,
+   unredirected (`context.md`, "npm run check, settled").
+10. `npm run build`, then `node tests/parity.js "i/ci1"` (7 states) and
+    `node tests/parity.js "i/q1" "i/f1" "wondrous ~ modal" "a row opened" "pinned"`
+    (6 states) - two foreground calls, each well inside the cap. Open every
+    nonzero diff. Re-baseline the three modal states from the container
+    (`tools/parity-ubuntu/README.md`) when docker is available, else record
+    the Windows figure with a reason that says "Windows, advisory" and list
+    the cells in the handoff for the orchestrator.
+11. `npm run check:built`. `node tests/parity.js "tables"` and the unfiltered
+    suite are the orchestrator's.
+12. `plan.md` gains "B5.1 built"; `handoff.md`'s Completed/Verification/Next
+    batch; commit as one batch, `feat(lists): ...`, authored as `artex-x`.
+
+#### Acceptance criteria
+
+- On `#/i/ci1`, `#/i/q1`, `#/i/f1` and in every record modal the card ends
+  with a `.cardpick` row: "Добавить в список" (`aria-expanded`) and a "Печать"
+  link to `#/print/<id>` with the live title.
+- Pressing the button opens the menu before it in the DOM, with "Лежит в
+  списках", the lists newest first, "+ Новый список"; pressing it again, or
+  anywhere outside, or changing the hash, closes it.
+- A chip adds the record to that list in `dhloot.lists.v2` (merged, not
+  overwritten), ticks to "✓ name", keeps the menu open and toasts; a lit chip
+  removes and toasts. Storage that refuses keeps the list for the session and
+  toasts `saveFailed` as an alert.
+- Eight lists draw the search box; the query narrows by substring.
+- The new-list form focuses, refuses a blank name with an alert, and a named
+  one creates the list first and adds the record.
+- `dhloot.lists.v1` is read once into v2 and left untouched; another tab's
+  write replaces the in-memory lists.
+- The toast is one element in the top layer: `status`/polite, `alert`/
+  assertive for an error, an action button that runs and hides, 1600/2600/
+  7000ms.
+- `#/roll/wondrous ~ pinned` raises `homeSet`/`homeReset`.
+- The four new `#/i/ci1` states and `~ toast` report 0.00% at every Russian
+  cell and every English cell; `#/i/ci1`, `~ whole`, `#/i/q1`, `#/i/f1` report
+  0.00% everywhere and their `listRow` entries are deleted; the `~ pinned`
+  entries are deleted or, if a Windows run cannot settle them, left for CI
+  with a note. The three modal states carry new, smaller numbers whose reason
+  names only the close button's focus ring.
+- `listMembership` matches; no `ACCEPTED` entry is stale; `recordActions.
+  addToList` is `true` on both.
+- `npm run check` and `npm run check:built` exit 0 with thresholds met.
+
+#### Risks and do-nots
+
+- Do not build `ListMenu.svelte`, `SelBar.svelte`, or anything under
+  `#/lists`. Do not move `sel` to `AppState`.
+- Do not draw the menu after the button: the live DOM order is menu, then
+  button, and a focus order that differs is a difference.
+- Do not give `+ Новый список` a dashed border; see "Decided".
+- Do not keep the menu open across the language click, and do not "fix" the
+  English cells: the outside-click rule is the live app's.
+- Do not hide the toast with `{#if}` while `popover` is in play - the popover
+  needs its element to exist to `hidePopover()`; use the effect. If the
+  popover route fails the `~ toast @ ru 1100` cell after the resets above
+  have been compared computed-style for computed-style, take the fallback in
+  "Decided" and write the modal gap into the handoff.
+- Do not set the toast's timers in the component; they are the state's, so a
+  second `say` from anywhere restarts the same clock.
+- Do not call `save()` from `create()` and then again from `addIds()` in one
+  press expecting one merge - two saves are fine (the live app does the same)
+  but the second must see the first's write, which it does because `save`
+  re-reads storage.
+- Do not write `Date.now()` into anything a parity state can see; the seeds
+  carry ids and stamps, and a *new* list is only made in the `~ new list`
+  state, whose id never reaches the screen.
+- Do not write a `VISUAL_DEBT` number off a Windows run for the three modal
+  states as though it were CI's; see "Decided".
+- Do not touch `RecordCard.svelte:81`'s `noType`, the `matches` callbacks, or
+  anything B4 settled.
+- Grep the diff for `' <` at the start of an `{#if}`/`{#each}` block. The
+  `✓ ` and `+ ` prefixes are string expressions, not literal text nodes; if a
+  literal one appears, promote the leading-space rule to `CLAUDE.md`.
+- One batch, one commit, `feat(lists): ...`, authored as `artex-x`, no push.
+
+**Fallback, considered:** rendering a second `Toast` inside `RecordModal`'s
+`<dialog>` instead of using the top layer. Rejected as the primary route - two
+live regions for one message - but it is the honest second answer if
+`popover` cannot be made to measure identical, and it is a one-line change in
+`RecordModal` on top of this design.
 
 ## Phase 5 - what already exists
 

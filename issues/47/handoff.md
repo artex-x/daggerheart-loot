@@ -6,10 +6,11 @@ depends on chat history.
 
 ## Status
 
-- Task status: in_progress - B4 built and committed; no next batch is
-  implement-ready below (see "Next batch")
-- Last agent: orchestrator (committed B4 as `fde9cdc` after two implementers
-  stalled on background checks; review dispatched)
+- Task status: in_progress - B4 built and committed (`fde9cdc`, reviewed);
+  **B5.1 is implement-ready below** (see "Next batch")
+- Last agent: planner (2026-09-10: the lists slice split into B5.1-B5.6 in
+  `plan.md`, "B5 planned"; B5.1's brief below; nothing committed, no
+  production code touched)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
@@ -648,216 +649,218 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   and after the root-cause experiment. The unfiltered gate is red for reasons
   proven unrelated to this batch - see "Blockers" for the exact states and the
   proof.
-- Gates for the next batch (B4): `npm run check`, `npm run build`,
-  `node tests/parity.js "eq_"` while working (fits one foreground call),
-  `npm run check:built`, then `node tests/parity.js "tables"` in the
-  background or by the orchestrator (over the 600s cap after B4's eight
-  states), and the unfiltered `node tests/run-all.js parity` by the
-  orchestrator. What is left of a full run's redness on a Windows machine is
-  the documented per-platform tolerance, cell by cell, in "Blockers".
+- Gates for the next batch (B5.1): `npm run check 2>&1 | tail -n 120` (one
+  foreground call, ~165s), `npm run build`, `node tests/parity.js "i/ci1"`
+  (7 states) and `node tests/parity.js "i/q1" "i/f1" "wondrous ~ modal"
+  "a row opened" "pinned"` (6 states) - each its own foreground call - then
+  `npm run check:built`. `node tests/parity.js "tables"` and the unfiltered
+  `node tests/run-all.js parity` are the orchestrator's. What is left of a
+  full run's redness on a Windows machine is the documented per-platform
+  tolerance, cell by cell, in "Blockers".
 
 ## Next batch (implement-ready)
 
-B3.6's three parts and B4 are all built (`f7308a9`, `38cfbbb`, `958f182`, and
-B4's commit - see "Completed"). Their briefs used to sit here and are
-retired: B3.6's designs are `plan.md`, "B3.6 planned, part 0/1/2", and what
-was actually built is "B3.6 built, part 0/1/2"; B4's design is "B4 planned"
-and what was actually built - including the `allEquip` ordering defect the
-design did not anticipate - is "B4 built". Nothing from any of them is work
-to do.
+B4 is built (`fde9cdc`, reviewed, no blockers). Its brief used to sit here and
+is retired: the design is `plan.md`, "B4 planned", and what was built -
+including the `allEquip` ordering defect - is "B4 built". The lists slice is
+planned as six batches in `plan.md`, "B5 planned: the lists slice, and how it
+splits"; **this is the first of them and the only one handed off.**
 
-**No next batch is implement-ready below.** B4 was the last body shape the
-tables slice needed; every table in `TABLE_DEFS` now draws a real body. What
-is left of Phase 4 - the lists slice, the search slice, the print slice - has
-no design or brief written yet, and picking one is a planning decision, not
-this session's to make unasked. Candidates and open items, all already on
-record and none re-derived here:
+- **Name:** B5.1 - the list store, the toast, and the add-to-list row on the
+  card.
 
-- **The lists slice** (`#/lists`, `pending` in `tests/parity/specs.js`) - the
-  selection bar, the add-to-list row/menu, list rows, notes and batch actions.
-  It is also what several deferred items below are waiting on: the 600px
-  overrides for `.selx`/`.selacts`/`.seldrop`/`.dropmenu`/`.lrow*`/`.npair`/
-  `.batch-acts`, and `noData`/`storageOff`.
-- **The search slice** (`#/search`, `pending`) - `renderSearch` reuses the row
-  wholesale (`plan.md`, "Three things found while planning the tables
-  slice"), and the shared-`S.kind` question (`plan.md`, "The kind filter is
-  per panel, not per app") comes due here.
-- **The print slice** (`#/print/ci1-q1`, `pending`).
-- The **anchor-flash defect** (`Blockers`) and the **harness width-sweep
-  decision** (`Blockers`) are real, found, and still open, but neither is
-  scoped as a batch yet.
+- **Objective:** a person can put a record into a list from its card - the
+  page at `#/i/<id>` and the record modal - and take it out again, and the app
+  remembers it in `dhloot.lists.v2` the way the live app does (`loadLists`/
+  `saveLists`/`mergeLists`, app.js 1149-1204: v1 migrated once and left
+  untouched, saves merged by id, another tab's write taken over). The row under
+  every full card draws (`listPicker`, app.js 1893: the add-to-list button with
+  its menu, and the print link). The app has a toast (`showToast`, app.js
+  983-1006). With that, every `listRow` entry in `VISUAL_DEBT` and every
+  `addToList` and record-route `controls` line in `ACCEPTED` is **deleted**,
+  and `#/i/ci1 ~ toast` stops being `pending`. Full design: `plan.md`, "B5.1
+  planned"; the settled decisions: "B5 planned", "Decided in planning".
 
-The former B4 brief below is historical - what was actually handed to the
-implementer this session - kept for the record rather than deleted, since
-`plan.md`'s "B4 built" already carries what was built against it.
-
-- **Name:** B4 - the equipment tables, their facets and tier sections.
-
-- **Objective:** draw `#/tables/eq_weapon`, `#/tables/eq_secondary` and
-  `#/tables/eq_armor` the way `renderEquipTable` in `app.js` (2735-2761) draws
-  them - the facet strip and panel with up to seven rows, four tier sections
-  keyed `t1`-`t4` and labelled "Ранг n" / "Tier n", and the empty state - so
-  that every table in `TABLE_DEFS` is real and `TablesPage.svelte`'s
-  placeholder branch can go. Full design: `plan.md`, "B4 planned".
-
-- **The two early checks, answered - do not re-derive:**
-  1. **The bare-number pill rule is wrong in `FilterBar.svelte`.** `fChosen`
-     (app.js 2604) tests the **label**; the port tests the **value**. Same
-     answer on `voa` and on the equipment tier row; different on **burden**,
-     whose values are `'1'`/`'2'` and whose labels are Одноручное/Двуручное -
-     the live pill reads "Двуручное", the port's would read "Хват 2". Fix: test
-     `v.label`. Test both pills at once; the `~ filtered` state below carries
-     both branches.
-  2. **The equipment tables have tier sections as well as facets.** Four
-     groups `[1,2,3,4]` off `it.eq.tier`, `.tsection#sec-t<n>` at
-     `margin-top:22px`, `sectionHead` plus `renderList` (select-all per tier),
-     empty tiers skipped, `.fcount` total = the whole pool (317 / 108 / 90).
-     It is `voa`'s tier body with a different key, label and tier list; the
-     existing sectioned branch in `TablesPage.svelte` draws it unchanged.
+- **Read first, in this order:** `plan.md` "B5 planned" (the split, the
+  harness addition, the decisions), then "B5.1 planned" (what the live app does,
+  read off app.js with line numbers; how it is built, file by file). The live
+  functions to read yourself before writing a line: `listMenuHTML` (1831),
+  `addToListBtn` (1879), `applyAddTo`/`addIdsTo`/`afterListChange` (1907-1948),
+  `placeMenu` (3695), the outside-click check at the top of the document click
+  handler (3865-3869), the `menu`/`newListFor`/`cancelNew`/`createFor` branches
+  (4198-4235), `showToast` (983), `loadLists`..`storageWorks` (1149-1204),
+  `createList` (1320), and the `storage`/`hashchange` listeners (4621-4633).
+  Styles: `.seldrop`..`.picker-new input:focus` (style.css 430-457), `.cardpick`
+  (439-443), `.dropmenu.long`/`.pickq`/`.pickchips`/`.picker-none` (978-986),
+  `.toast*` (602-613, 989-994, `toastIn` 614), `.btn.on`/`.btn.primary.on`
+  (792-794), `.btn.ghost` (250), `.caret` (945-947), the 600px `.dropmenu`
+  override (828).
 
 - **In scope:**
-  - `app/src/lib/dict.ts`: six missing keys, both languages - `eqClass`
-    (Класс / Class), `eqDmg` (Тип урона / Damage type), `eqTrait`
-    (Характеристика / Trait), `eqRange` (Дистанция / Range), `eqBurden`
-    (Хват / Burden), `eqLineF` (Линейка / Line). Copied from app.js 101-103
-    and 287-289.
-  - `app/src/lib/label.ts`: `srcName(key, lang)` - five book keys to
-    `t.srcCore`..`t.srcVoa`, otherwise `frameName(key, lang)` (which already
-    falls back to the key). `srcLabel`'s five book cases delegate to it.
-  - `app/src/lib/facets.ts`: `EQ_SRC` (`core`, `hnf`, `wondrous`, `dread`,
-    `voa`, then `...FRAME_ORDER`); `eqFacetRows(index, kind, t, lang)` that
-    walks `EQ_GROUPS[kind]` and maps each group name to its row - order taken
-    from `filters.ts` by construction; the `src` row keeps only sources with a
-    record of this kind in `index.allEquip` (armour offers five, the other two
-    eight); `facetRows` returns `eqFacetRows` when `EQ_TABLE[table]` is set.
-    Row labels and values are the table in `plan.md`, "The facet rows".
-  - `app/src/components/FilterBar.svelte`: `v.value` to `v.label` in
-    `chosen`; the comment names burden.
-  - `app/src/components/TablesPage.svelte`: delete `KNOWN`, `known`, the
-    `{#if !known}` branch, the `.todo` rule and the placeholder story in the
-    header comment (every `TableId` is drawn now); the anchor effect's `ready`
-    becomes `!!index`; `eqKind = $derived(EQ_TABLE[table])`; `rows` becomes
-    `eqKind ? equipOfKind(index, eqKind) : index.rows.get(table) ?? []`;
-    `facPassed`'s `valueOf` uses `equipFacets(it)[g]` when `eqKind` is set;
-    `bodyKind` gains `'eq'` and an `eqSections` derivation (`[1,2,3,4]`,
-    key `t<n>`, label `${t.tier} ${n}`, entries `filtered` where
-    `it.eq?.tier === n`, empties dropped) that `activeSections` returns; both
-    `matches` callbacks share one `statLine` **without** `noType` - app.js's
-    `matches` searches `eqLine(it)` with the type word in it (see plan). The
-    row's display keeps `noType: true`.
-  - `app/src/components/TableRows.svelte`: port `style.css:1013` -
-    `.selbox:has(:focus-visible){outline:2px solid var(--gold);outline-offset:-3px;border-radius:8px}`
-    - beside the `.selbox` family, with the live app's reason in a comment.
-  - `tests/parity/specs.js`: the three `pending` entries become real states;
-    five more states; `filteredAddress.only` and `copiedFilterLink.only` gain
-    `'#/tables/eq_weapon ~ filtered'`. The state table is in `plan.md`,
-    "Parity states"; the `enter` steps are: `~ panel open` presses `Фильтры`;
-    `~ filtered` presses `Фильтры`, `1`, `Двуручное`; `eq_secondary ~ filter
-    link` is the route `#/tables/eq_secondary/f_cls-mag`; `eq_secondary ~
-    searched` types `вторичное`; `eq_armor ~ nothing found` presses `Фильтры`,
-    `Уникальные`, then types `zzzqqqxx123`.
-  - Tests: `lib/facets.test.ts`, `lib/label.test.ts`,
-    `components/tables.test.ts` (fixture gains equipment; the placeholder test
-    is deleted; cases listed in `plan.md`, "What B4 leaves behind"),
-    `components/a11y.test.ts` (one pressed state: `#/tables/eq_weapon`,
-    `Фильтры` then `1`).
+  - `app/src/lib/dict.ts`: seventeen keys, both languages, copied character
+    for character - `addToList`, `addTo`, `inLists`, `newList`, `listNamePh`,
+    `create`, `cancel`, `findList`, `addedTo`, `removedFrom`, `nameFirst`,
+    `untitled`, `saveFailed`, `print`, `printHint`, `homeSet`, `homeReset`
+    (app.js 109-164 and 199-200; 295-348 and 380-381).
+  - `app/src/lib/icons.ts`: `plus` (`M11 5h2v14h-2zM5 11h14v2H5z`, 15) and
+    `print` (app.js 1044, 15).
+  - `app/src/state/lists.svelte.ts` (new): `ListStore` - `lists` state,
+    `load()` (v2, else v1 through `keepLists`+`liftNotes` written to v2, v1
+    untouched, parse failure `[]`), `save()` (merge with what storage holds
+    now via `mergeLists`, `say(t.saveFailed, true)` on a refused write, the
+    lists stay in memory), `get`, `create(name)` (`'l' + Date.now().toString(36)`
+    + four base-36 chars off `env.random`, trimmed name or `t.untitled`,
+    `unshift`, `created: Date.now()`, save), `addIds(list, ids, knows)`
+    returning the fresh ids, `removeId`, `watch()` (reload on the v2 key).
+    `lib/lists.ts`'s `keepLists`/`liftNotes`/`mergeLists` finally get a caller.
+  - `app/src/state/app.svelte.ts`: `readonly lists`, `menuFor` (cleared
+    wherever `navigations` bumps), `toast`/`say(msg, { error?, action? })`/
+    `hideToast()` with the 1600/2600/7000ms timers; `start()`/`stop()` wire
+    `watch()`.
+  - `app/src/components/Toast.svelte` (new): one element, `popover="manual"`,
+    `status`/polite or `alert`/assertive, `.toast[.err|.act]`, `.toast-act`,
+    `toastIn`, the popover UA-style resets. Rendered by `Shell.svelte` after
+    the footer.
+  - `app/src/components/AddToList.svelte` (new): props `app`, `key`, `ids`,
+    `primary?`; the `.seldrop` with the menu **before** the `Button`; the
+    five-part menu (`plan.md`, "The menu"); chips are `Chip` with
+    `label={(inList ? '✓ ' : '') + l.name}`; the tail is a `Chip` reading
+    `'+ ' + t.newList` or the inline form; outside-click and hash-change
+    closing; `placeMenu`'s flip and `scrollIntoView`; the 600px `.dropmenu`
+    override with the base rule.
+  - `app/src/components/Button.svelte`: `on`, `ghost`, `caret` (the `<i>` and
+    its two rules move here from `FilterBar.svelte`, which passes `caret`),
+    `sameTab` on the `href` form.
+  - `app/src/components/RecordCard.svelte`: `pick?: Snippet` after
+    `.card-acts` inside `.cardpick`; `.cardpick` and the two
+    `.cardpick :global(.dropmenu)` placement rules.
+  - `RecordPage.svelte`, `RecordModal.svelte`: the `pick` snippet (`AddToList`
+    primary, then `Button size="sm" href={printHash([it.id])} sameTab
+    title={t.printHint}` with the print icon and `t.print`); `say` ->
+    `app.say`; the `.said` paragraph and the `sr-only` region deleted.
+    `TablesPage.svelte`, `PageHead.svelte`: `say` -> `app.say`; `PageHead` says
+    `homeSet`/`homeReset` on a successful pin.
+  - `tests/parity/driver.js`: `seed(entries)` (an `evaluateOnNewDocument`
+    registered after `prepare()`'s, `try`-wrapped like it) and `storage(key)`.
+    `tests/parity.js`: `arrive()` calls `d.seed(state.storage)` before
+    `d.open()` when set; `keyFor` hashes `storage`.
+  - `tests/parity/specs.js`: the three seeds, four new `#/i/ci1` states
+    (`~ list menu`, `~ in a list`, `~ many lists`, `~ new list` - the table in
+    `plan.md`, "Parity states"), `~ toast` un-pended, the `listMembership`
+    press spec (it reopens the menu when the chip is not on screen - in
+    English the language click has folded it), and the deletions: every
+    `listRow(...)` entry,
+    the six `~ pinned` entries (once they measure zero - see Verification),
+    the six `addToList` and twelve record-route/modal `controls` lines in
+    `ACCEPTED`. The three modal states are re-baselined with a reason naming
+    only the close button's focus ring.
+  - Tests: `state/lists.test.ts` (new), `state/app.test.ts`,
+    `components/lists.test.ts` (new), `shell.test.ts`, `button.test.ts`, the
+    `said` assertions in `record.test.ts`/`tables.test.ts`/`roll.test.ts`/
+    `std.test.ts`, `test/a11y.test.ts` (a pressed state with two lists seeded;
+    `COVERED` gains `Toast.svelte` and `AddToList.svelte`). The case list is
+    `plan.md`, "What B5.1 leaves behind".
 
-- **Out of scope:** the selection bar and add-to-list row (lists);
-  `Panel.svelte`; extending `typeRuns.only` to the equipment tables (deferred
-  by the orchestrator); the anchor flash (never drawn - see Blockers); the
-  harness width-sweep decision; the 600px overrides for `.selx`, `.selacts`,
-  `.seldrop`, `.dropmenu`, `.lrow*`, `.npair`, `.batch-acts` (their base rules
-  belong to components that do not exist - see Deferred); an equipment anchor
-  parity state (deferred with a reason - see Deferred); `noData`/`storageOff`;
-  any change to `docs/specs/*`, `docs/fixtures/`, `CONTRACTS.md` or `llms.txt`
-  - none is needed, and if one turns out to be, stop and say so.
+- **Out of scope:** the selection bar and `sel` on `AppState` (B5.2);
+  `#/lists`, the storage warning, `Shell`'s `storageOff` paragraph and
+  `noData` (B5.3); the list page, batch actions, the shared page, import
+  (B5.4-B5.6); `deleteList` and writes to the `deleted` set; `meta` travelling
+  with an add; a separate `ListMenu.svelte`; `Panel.svelte`; a `typeRuns`
+  probe on the menu; any change to `docs/specs/*`, `docs/fixtures/`,
+  `CONTRACTS.md` or `llms.txt` - none is needed, and if one turns out to be,
+  stop and say so.
 
-- **Files expected:** `app/src/lib/dict.ts`, `app/src/lib/label.ts`,
-  `app/src/lib/label.test.ts`, `app/src/lib/facets.ts`,
-  `app/src/lib/facets.test.ts`, `app/src/components/FilterBar.svelte`,
-  `app/src/components/TablesPage.svelte`, `app/src/components/TableRows.svelte`,
-  `app/src/components/tables.test.ts`, `app/src/components/a11y.test.ts`,
-  `tests/parity/specs.js`, `issues/47/plan.md`, `issues/47/handoff.md`.
+- **Files expected:** `app/src/lib/dict.ts`, `app/src/lib/icons.ts`,
+  `app/src/state/lists.svelte.ts`, `app/src/state/lists.test.ts`,
+  `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
+  `app/src/components/Toast.svelte`, `app/src/components/AddToList.svelte`,
+  `app/src/components/Button.svelte`, `app/src/components/button.test.ts`,
+  `app/src/components/FilterBar.svelte`, `app/src/components/RecordCard.svelte`,
+  `app/src/components/RecordPage.svelte`, `app/src/components/RecordModal.svelte`,
+  `app/src/components/TablesPage.svelte`, `app/src/components/PageHead.svelte`,
+  `app/src/components/Shell.svelte`, `app/src/components/shell.test.ts`,
+  `app/src/components/lists.test.ts`, `app/src/components/record.test.ts`,
+  `app/src/components/tables.test.ts`, `app/src/components/roll.test.ts`,
+  `app/src/components/std.test.ts`, `app/src/test/a11y.test.ts`,
+  `tests/parity/driver.js`, `tests/parity.js`, `tests/parity/specs.js`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
 
-- **Steps:** `plan.md`, "B4 planned", "Ordered steps" 1-11 - dict, label,
-  facets, FilterBar, TablesPage, TableRows, the tests, the states, then the
-  checks in the order given there.
+- **Steps:** `plan.md`, "B5.1 planned", "Ordered steps" 1-12 - dict and
+  icons, the store and `AppState`, `Button`, `Toast`, `AddToList`, the card
+  and the pages, the tests, the harness, then the checks in the order given
+  there.
 
-- **Acceptance criteria:**
-  - All fourteen tables draw a body; `TablesPage.svelte` has no `KNOWN` and no
-    `.todo`.
-  - On `#/tables/eq_weapon` the panel has seven fields in `EQ_GROUPS.weapon`
-    order; on `eq_secondary` six with the `cls` row labelled "Тип урона"; on
-    `eq_armor` three with a five-value `src` row.
-  - The strip's count reads the pool (317 / 108 / 90) with nothing picked.
-  - Picking tier `1` yields a pill "Ранг 1"; picking two-handed yields a pill
-    "Двуручное"; the address reads `#/tables/eq_weapon/f_tier-1.burden-2`
-    whichever was clicked first.
-  - `#/tables/eq_weapon/f_tier-2.cls-mag` arrives with the panel open and
-    both chips pressed; `#/tables/eq_armor/f_burden-2` leaves armour whole.
-  - Typing `основное` on `eq_weapon` keeps every weapon.
-  - `#/tables/eq_weapon/t2` flashes `#sec-t2`; a `q*` row anchor flashes its
-    row.
-  - Every tier of every kind draws as its own `.tsection` with its own
-    select-all, in order, and an emptied tier disappears.
-  - `node tests/parity.js "eq_"` reports `расхождений нет` with every cell at
-    0.00% and **no new `VISUAL_DEBT` entry**. A nonzero cell is a diff image
-    opened and a control measured before anything is written, and any figure
-    written is CI's (owner decision 1), not this machine's.
-  - `npm run check` and `npm run check:built` exit 0 with thresholds met.
-  - `plan.md` gains "B4 built" (what matched the design, what did not, the
-    exact per-state percentages) and the Phase 4 table gains a B4 row; this
-    file's Completed / Verification / Next batch are updated.
+- **Acceptance criteria:** `plan.md`, "B5.1 planned", "Acceptance criteria" -
+  in one line each: the row on every full card and in every modal; the menu
+  opens before the button, newest list first, and closes on a second press,
+  an outside click or a hash change; a chip adds (merged) and ticks and
+  toasts, a lit chip removes and toasts, a refusing storage keeps the session
+  and toasts `saveFailed`; the search box from the eighth list; the new-list
+  form with its blank-name refusal; v1 read once and left alone; another tab's
+  write taken over; the toast in the top layer with the three durations;
+  `~ pinned` toasts; **every new `#/i/ci1` cell and every record-route cell at
+  0.00%**, the `listRow` entries deleted, the three modal states at new,
+  smaller, explained numbers; `listMembership` matching; no stale `ACCEPTED`
+  line; `npm run check` and `npm run check:built` exit 0.
 
 - **Verification commands:**
+
   ```text
-  npm run check
+  npm run check 2>&1 | tail -n 120
   npm run build
-  node tests/parity.js "eq_"
+  node tests/parity.js "i/ci1"
+  node tests/parity.js "i/q1" "i/f1" "wondrous ~ modal" "a row opened" "pinned"
   npm run check:built
-  node tests/parity.js "tables"
   ```
-  Wall clock, so each fits its call: `npm run check` and `npm run check:built`
-  are a few minutes each and fit one foreground call (600s cap);
-  `node tests/parity.js "eq_"` is eight states and fits; `node tests/parity.js
-  "tables"` was ~9 min before B4 and gains eight states, so it **no longer fits
-  a foreground call** - run it in the background with stdout redirected to a
-  file, or hand it to the orchestrator. The unfiltered `node tests/run-all.js
-  parity` is the orchestrator's. Never run a vitest coverage pass concurrently
-  with a parity run, and check for a lingering `chrome.exe` before trusting a
-  vitest timeout.
 
-- **Risks / do-nots:**
-  - Do not restate `EQ_GROUPS`'s order in `facets.ts`; walk it. A test asserts
-    `rows.map(r => r.group)` equals `groupsFor(table)` for all three tables.
-  - Do not build the `src` row from `EQ_SRC` unfiltered: armour has no
-    wondrous, dread or colossus entries, and the live panel does not offer
-    them. `motherboard` has no equipment of any kind and never appears.
-  - Do not fix the pill rule by special-casing `tier`; test the label, which
-    is what app.js does.
-  - Do not port `.selbox:has(:focus-visible)` with `outline-offset: 2px`; the
-    live value is `-3px` because the row clips an outside ring.
-  - Do not touch `RecordCard.svelte:81`'s `noType` or the row's display
-    `noType` - only the two `matches` callbacks lose it.
-  - Do not add `#/tables/eq_weapon ~ filtered` to `typeRuns.only`.
-  - Do not write a `VISUAL_DEBT` number off a Windows run; do not write one at
-    all before the diff image has been opened and the control measured.
-  - Do not re-baseline anything outside B4's own states; the CI result for
-    `958f182`/`bc91e63` is the orchestrator's to record (see Blockers).
-  - `d.click('1')` matches the tier chip by exact name; if the driver ever
-    falls to its substring fallback here, the `~ filtered` state is gripping
-    the wrong control - stop and look, do not rename.
-  - Grep the diff for `' <` at the start of an `{#if}`/`{#each}` block. B4
-    ports no new inline string markup so none is expected; if one appears,
-    promote the leading-space rule to `CLAUDE.md`'s "Migration and parity" in
-    the same commit.
-  - One batch, one commit, `feat(tables): ...`, authored as `artex-x`, no
-    push.
+  Wall clock, so each fits its call: `npm run check` is ~165s measured
+  (`context.md`, "npm run check, settled") - run it exactly as written, one
+  foreground call, unchained, unredirected, piped to `tail`; if it reports
+  zeros down the coverage table with `Errors` equal to the file count, no test
+  ran - re-run it, do not background it. `npm run check:built` is a build, a
+  `file://` smoke and a bundle budget, a couple of minutes. The two parity
+  filters are **7 states** (`#/i/ci1`, `~ whole`, `~ toast`, and the four new
+  ones) and **6 states** (`#/i/q1`, `#/i/q1 ~ another tier`, `#/i/f1`,
+  `#/roll/wondrous ~ modal`, `#/tables ~ a row opened`, `#/roll/wondrous ~
+  pinned`) - each about a third of B4's 26-state "tables" run, so each fits
+  one foreground call with room; do not merge them into one call, the
+  whole-page and modal states are the heavy ones. `node tests/parity.js
+  "tables"` and the unfiltered `node tests/run-all.js parity` are the
+  orchestrator's. Never run a vitest coverage pass concurrently with a parity
+  run, and check for a lingering `chrome.exe` before trusting a vitest timeout.
 
-- **Fallback (optional):** none needed. If `eqSections` cannot reuse the
-  existing sectioned template branch for a reason not visible from planning,
-  the answer is still not a new component: `TableRows` and `SectionHead` are
-  the markup, and a fourth `Section[]` derivation is the whole difference.
+  Numbers: a new `#/i/ci1` cell or a record-route cell that is not 0.00% is
+  a diff image opened and a value measured before anything is written (the
+  two places to look first are named in `plan.md`, "Parity states"). The
+  three modal states' new figures come from `tools/parity-ubuntu/` (docker;
+  the README has the command - redirect its output) when it is available,
+  and otherwise go in as the Windows figure with a reason that says "Windows,
+  advisory, CI to confirm" and a line in Blockers listing the eighteen cells.
+  The six `~ pinned` cells are timed: on this host they may match or may
+  catch one side's toast expiring; delete the entries only if all six read
+  0.00% here, otherwise leave them as they are with a note in the handoff
+  that CI decides - never write a Windows number over them.
+
+- **Risks / do-nots:** `plan.md`, "B5.1 planned", "Risks and do-nots", and in
+  particular: the menu is drawn before the button; `+ Новый список` is a
+  plain chip, not dashed; the English cells of a menu state show the menu
+  closed because the language click is an outside click - do not "fix" that;
+  the toast's timers live in `AppState`, not the component; the popover is
+  hidden through `hidePopover()` in an effect, not `{#if}`; no `Date.now()`
+  reaches a screen a parity state photographs; no Windows number is written
+  as though it were CI's; grep the diff for `' <` at the start of an
+  `{#if}`/`{#each}` block (the `✓ `/`+ ` prefixes are string expressions,
+  which is why they are written that way); one commit, `feat(lists): ...`,
+  authored as `artex-x`, no push.
+
+- **Fallback (optional):** if the top-layer toast cannot be made to measure
+  identical on `#/i/ci1 ~ toast @ ru 1100` after its computed `inset`,
+  `margin`, `padding`, `border` and `width` have been compared against the
+  live `.toast`, drop `popover` and render it as a plain `{#if}` fixed
+  element; then a toast raised from inside the record modal sits under the
+  dialog's backdrop and is not announced - write that into "Blockers" for
+  B5.2 with the second answer already considered in `plan.md` (a `Toast`
+  rendered inside the dialog).
 
 ## Blockers
 
@@ -1033,7 +1036,17 @@ implementer this session - kept for the record rather than deleted, since
   harness already drives both apps in a real browser.
 - **`Panel.svelte`.** Still unscheduled - `.ffilter` and `.tablenav`.
   `TableRows`/`SectionHead` are not `.panel` copies.
-- **`noData` and `storageOff`.** Untouched, waiting on the lists slice.
+- **`noData` and `storageOff`.** Untouched; assigned to **B5.3** (the lists
+  index), where the live app's `storageWarning()` lands and `Shell`'s invented
+  paragraph goes - see `plan.md`, "B5 planned". B5.1 does not touch either.
+- **The 600px overrides above are now assigned**: `.seldrop`/`.dropmenu` to
+  B5.1 (with the menu), `.selx`/`.selacts` to B5.2 (with the bar), `.lrow*`
+  and `.npair` to B5.4, `.batch-acts` to B5.5 - each with its base rule.
+- **A toast over a native `<dialog>`.** B5.1's design puts the toast in the
+  top layer (`popover="manual"`) so it is visible and announced while the
+  record modal is open; the fallback (a plain fixed element, with the modal
+  case left to B5.2) is written into the brief. Whichever lands is recorded
+  in "B5.1 built".
 - **The legacy grid-numbering bug** (`list.map(tileHTML)` passing the array
   index as the tile's number) - worth reporting to the repository owner, still
   deliberately not reproduced; recorded in `ACCEPTED`.
@@ -1043,7 +1056,9 @@ implementer this session - kept for the record rather than deleted, since
 
 - Mocks path: none. B3.5, B3.6 and B4 introduce no new UI; every value B4
   draws is already in `style.css` and `app.js`, and the tier body reuses B3's
-  markup.
+  markup. B5.1 likewise: the menu, the card row and the toast are ported from
+  `app.js`/`style.css` line by line (references in `plan.md`, "B5.1 planned"),
+  and the live app at `#/i/ci1` with two lists seeded is the mock.
 
 - Screenshot findings: two screenshots of `#/tables/community` at ~1100px, from
   the human, 2026-09-09. (1) the search box "is using a different font" -

@@ -335,3 +335,48 @@ batch". Facts that were read off the source rather than assumed:
 - Wall clock: `node tests/parity.js "eq_"` (8 states) fits one 600s call;
   `node tests/parity.js "tables"` no longer does after B4 (was ~9 min for 26
   states, gains 8).
+
+## B5 planning facts (planner, 2026-09-10) - durable, read before implementing
+
+Full design in `plan.md`, "B5 planned" and "B5.1 planned"; the brief in
+`handoff.md`, "Next batch". Facts read off the source rather than assumed:
+
+- **The add-to-list menu is drawn before its button** in the DOM
+  (`addToListBtn`, app.js 1879-1891), and the live document click handler
+  closes any open menu *first*, on any click outside `.seldrop`/`.dropmenu` -
+  so the harness's `EN` press after `enter` folds the menu, and every menu
+  state's English cells compare the folded row. Not a defect on either side.
+- **The menu sorts lists by `created` descending** (newest first,
+  `listMenuHTML` 1834) while the lists index shows `S.lists` order (newest
+  first because `createList` `unshift`s). A single record's menu label is
+  `inLists` ("Лежит в списках") even when it lies in none; several ids read
+  `addTo`. The search box appears at **eight** lists (`PICKER_SEARCH_AT`).
+- **`+ Новый список` carries `class="chip ghost"` but draws plain**: the only
+  `.chip.ghost` rule is `.picker .chip.ghost` and the menu is not inside
+  `.picker`.
+- **`placeMenu` (3695-3704) is part of every menu state**: `up` when
+  `innerHeight - button.bottom < menu.height + 16`, then
+  `scrollIntoView({ block: 'nearest' })` - on `#/i/ci1` at 1100x900 the row is
+  below the fold, so a menu state is a scrolled state.
+- **Toast timings**: 1600ms plain, 2600ms error (`role=alert`, assertive),
+  7000ms with an undo action (`.toast.act`, `.toast-act`). `[hidden]{display:
+  none !important}` hides it; `toastIn` replays on each show.
+- **A `storage` event replaces the lists outright**: `mergeLists(loadLists())`
+  has empty `theirs`, so it is a plain take of what storage holds.
+- **The storage warning is not chrome**: the live app draws `storageWarning()`
+  on the two lists pages only; `Shell.svelte`'s `storageOff` paragraph is the
+  rewrite's invention and is reconciled in B5.3, not B5.1.
+- **`dict.ts` keys are named differently from app.js in places** (`helpHint`
+  for `whatIsThis`, `homeHint` for `setHome`); B5.1 adds seventeen keys under
+  the live names listed in the plan. `lib/lists.ts` (`keepLists`, `liftNotes`,
+  `mergeLists`) and `lib/money.ts` have had no caller since Phase 2.
+- **The harness reaches list states by seeding**: `tests/select.js` and
+  `tests/lists2.js` already write `dhloot.lists.v2` through
+  `evaluateOnNewDocument` on the live app under `file://`; `dist/` is the
+  same origin. B5.1 adds `d.seed(entries)` and `d.storage(key)` to the driver
+  and a `storage` field on a state, hashed into the cache key.
+- **`RecordModal` is a native `<dialog>`**, so a fixed toast in `Shell` sits
+  under its backdrop and is inert while it is open; the design puts the toast
+  in the top layer with `popover="manual"`, with a recorded fallback.
+- Wall clock for B5.1's filters: `"i/ci1"` is 7 states, the second filter 6;
+  each is about a third of the pre-B4 "tables" run (~9 min for 26 states).
