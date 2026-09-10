@@ -8,8 +8,8 @@ depends on chat history.
 
 - Task status: in_progress - B4 built (`fde9cdc`, reviewed); B5.1 built
   (`fe0043b`) with its fix-then-continue pass (`d1c1367`); **B5.2 part 0 is
-  built (tests and docs, no production code) - see git log for the
-  `fix(parity): ...` commit on top of `2f3659d`.** All local acceptance
+  built (tests and docs, no production code) - `f167e62`, on top of the
+  planning commit `2f3659d`.** All local acceptance
   criteria met; **CI green on the commit is unread as of this writing - that
   read is the orchestrator's and is what closes the part**, see "Blockers".
   **B5.2 part 1 (the selection bar) is next and implement-ready** - see "Next
@@ -27,8 +27,8 @@ depends on chat history.
   `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`. B4 is
   `fde9cdc`. B5.1 is `fe0043b`; its fix-then-continue pass is `d1c1367`; the
   full unfiltered parity run against `fe0043b` is recorded under "Blockers"
-  at `541d529`. Planning for B5.2 (both parts) is `2f3659d`. **This session's
-  B5.2 part 0 commit lands on top of `2f3659d`** - re-read `git log --oneline
+  at `541d529`. Planning for B5.2 (both parts) is `2f3659d`. Part 0 is `f167e62`, on top
+  of `2f3659d`** - re-read `git log --oneline
   -3` before starting the next batch, other sessions share this tree.
 
 Phase 4's B1-B3.6, B4 and B5.1 are all built. B4 was the last body shape the
@@ -618,6 +618,15 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     moved this tree while this batch ran.
   - `npm run check:built` was not run, per the brief: nothing under `app/`
     changed and `dist/` is unaffected by this batch's edits.
+  - **Breadth check, orchestrator, after the commit at `f167e62`:**
+    `node tests/parity.js "tables/community" "roll/std ~ one source"` -
+    **`расхождений нет`**, all 18 cells `совпадает`. The point of it was the
+    refactor rather than the mechanisms: the shared `shootWidth` closure is on
+    the path of *every* state, and these three states are untouched by this
+    batch, use the ordinary sweep, and exercise the warm legacy cache. Only
+    three states in the suite carry `whole` or `timed`
+    (`#/i/ci1 ~ whole`, `#/i/ci1 ~ toast`, `#/roll/wondrous ~ pinned`) and the
+    implementer ran all three; this covers the other path.
 
 - Commands run (exact), this session (B5.1 fix-then-continue pass):
   - `npm run check 2>&1 | tail -n 120` - first run: **1 failed of 732**,
