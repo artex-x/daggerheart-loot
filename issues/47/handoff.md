@@ -2247,7 +2247,33 @@ and planning the next one is the orchestrator's, not implement-ready yet.
   batch (below, retired brief) applied path 1 and B5.3 is now one commit -
   see `git log` for `feat(lists): the lists index`.
 
-- **CI has not yet read this session's B5.2 part 1 commit.** Three filtered
+- **RESOLVED, measured: CI has read the selection bar and the lists index,
+  and its parity is green.** Someone pushed this machine's work through
+  `e82cd24` (`git reflog show origin/main` records "update by push"; not the
+  orchestrator, which never pushes). Run **`34521343531`** on `e82cd24`:
+  `check` **success**, all four `parity` shards **success**, `audit`
+  **success**. That is CI's authoritative word on B5.2 part 1 and on B5.3 -
+  the condition both were waiting on. `deploy` is **skipped**, behind the one
+  failing job below.
+
+- **CI run `34521343531` fails one job: `secrets`, on three false
+  positives - and B5.3's own commits are the cause.** gitleaks' default
+  `generic-api-key` rule flags `const WARN_KEY = 'dhloot.warn.v1'`
+  (`app/src/state/app.svelte.ts:32`, commit `ba8f4b1`), its test copy, and
+  `plan.md:4343` quoting it: the string clears the rule's 3.5 entropy
+  threshold by 0.02. These are localStorage key names, public by
+  construction and already written down in `docs/specs/STATE.md`; the app
+  has no backend to authenticate against. **Already being handled outside
+  this session** - an untracked `.gitleaks.toml` sits in the working tree,
+  written by another session, extending the default ruleset with an
+  allowlist for the key-name shape and recording that `[allowlist]` must be
+  used rather than `[[allowlists]]`, which parses and is then silently
+  ignored in gitleaks 8.24.3. The orchestrator left it untouched and
+  uncommitted. **Do not duplicate that work**; check whether it has landed
+  before writing anything about gitleaks.
+
+- **Superseded, kept for the shape of it: "CI has not yet read this
+  session's B5.2 part 1 commit."** Three filtered
   parity runs from this host are clean (`a row ticked`/`bar menu`/`selection
   copied`, `#/tables ~`, `i/ci1 ~` - see "Verification"), `npm run check` and
   `npm run check:built` both exit 0, and no `VISUAL_DEBT` number was written -

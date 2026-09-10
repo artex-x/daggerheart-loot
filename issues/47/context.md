@@ -552,9 +552,15 @@ Measured at dispatch, not inferred:
   `#/tables ~ selection copied @ en 1100` at 0.74%, is new, reproduces
   identically alone, and is left for the planner. Full numbers and what
   bounds them: `handoff.md`, "Blockers", first entry. Do not re-measure it.
-- Unpushed, and therefore unread by CI: `ff741ad`, `6084846`, `afa82f3`,
-  `91d7899`, `ba8f4b1`, `e82cd24`. The owner's push is what closes both the
-  selection bar and the lists index.
+- **Pushed and read by CI, during this session and not by the orchestrator**
+  (`git reflog show origin/main`: "update by push" to `e82cd24`). Run
+  `34521343531`: `check`, `audit` and **all four `parity` shards succeed** -
+  CI's authoritative word on both the selection bar and the lists index, and
+  the condition B5.2 part 1 was waiting on. One job fails, `secrets`, on
+  three gitleaks false positives over the localStorage key name
+  `dhloot.warn.v1`; `deploy` is skipped behind it. Another session is already
+  fixing that with an untracked `.gitleaks.toml` - see `handoff.md`,
+  "Blockers". Do not duplicate it.
 
 ## B5.3 planning facts (planner, 2026-09-10) - durable, read before implementing
 
