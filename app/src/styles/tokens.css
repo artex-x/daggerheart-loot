@@ -120,6 +120,17 @@ a {
   color: var(--gold-soft);
 }
 
+/* style.css:727 - global, because every input in the app inherits it there.
+   Measured against Chrome's UA style: live rgb(138,131,163) at 0.7 opacity,
+   this rule's absence left every search box at Chrome's own rgb(117,117,117)
+   at full opacity - under JITTER on any one screen, but the class B3.6 wrote
+   down for the toolbar search box and every other placeholder since B1. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted2);
+  opacity: 0.7;
+}
+
 /* A focus ring that only appears for people who need it, on everything, once.
    Setting it per component is how one control ends up without one. */
 :focus-visible {

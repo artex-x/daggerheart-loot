@@ -5,6 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserCompress, plainCompress } from './compress.js';
+import { browserDialog, fakeDialog } from './dialog.js';
 import { nativeDrag } from './drag.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
@@ -294,6 +295,25 @@ describe('the clipboard fake', () => {
   });
 });
 
+describe('confirming', () => {
+  it("hands the message to the window's confirm and returns its answer", () => {
+    const calls: string[] = [];
+    const win = { confirm: (m: string) => (calls.push(m), false) } as unknown as Window;
+    expect(browserDialog(win).confirm('Удалить список «Клад»?')).toBe(false);
+    expect(calls).toEqual(['Удалить список «Клад»?']);
+  });
+
+  it('refuses and records what it was asked', () => {
+    const d = fakeDialog(false);
+    expect(d.confirm('sure?')).toBe(false);
+    expect(d.asked).toEqual(['sure?']);
+  });
+
+  it('answers yes by default', () => {
+    expect(fakeDialog().confirm('sure?')).toBe(true);
+  });
+});
+
 describe('dragging', () => {
   const rows = (n: number): HTMLElement => {
     const box = document.createElement('div');
@@ -476,9 +496,17 @@ describe('the address bar', () => {
 
 describe('the environment', () => {
   it('assembles a real one with every port present', () => {
-    /* Six ports, and a missing one is a crash on a page rather than here. */
+    /* Seven ports, and a missing one is a crash on a page rather than here. */
     const env = browserEnv();
-    for (const k of ['storage', 'clipboard', 'share', 'router', 'compress', 'drag'] as const) {
+    for (const k of [
+      'storage',
+      'clipboard',
+      'share',
+      'router',
+      'compress',
+      'drag',
+      'dialog'
+    ] as const) {
       expect(env[k], k).toBeDefined();
     }
     expect(env.storage.set('dhloot.probe', '1')).toBe(true);

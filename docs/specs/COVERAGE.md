@@ -244,8 +244,9 @@ people use, these test the one that will replace it.
 | `components/tables.test.ts` | the plain table's own behaviour - chip nav, the toolbar, selection, sectioned bodies, the row/section anchor - and, off `renderSelBar` (app.js 3706-3721), the selection bar it raises once a row is ticked: the count, the cross, its own add-to-list menu, and copying the whole selection |
 | `filters.test.ts` | the facet grammar both ways, and the predicate and counters the panel is built from |
 | `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share; and the hash router against a fake window |
-| `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets |
-| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, a browser that refuses storage, and axe on three states |
+| `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets, the storage notice's own dismissal flag |
+| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, and axe on three states |
+| `components/listsPage.test.ts` | `#/lists` - off `renderLists`/`storageWarning`/`listCardHTML` and the create/share/delete/restore handlers (app.js 2865-2931, 4136-4270): the head and its help, the storage notice in both live forms, a card per list with a known-record badge and its actions, and `noData` |
 
 The browser adapters' happy paths are the one thing these cannot reach - a real
 clipboard write, a real share sheet - because jsdom has neither. That is what

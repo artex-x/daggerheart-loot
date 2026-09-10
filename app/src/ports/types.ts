@@ -141,6 +141,19 @@ export interface CompressPort {
   unpack(payload: string): Promise<string>;
 }
 
+/* ---------- confirming ---------- */
+
+/**
+ * A yes/no question the browser owns, off `window.confirm`.
+ *
+ * Deleting a list is the only caller: `confirm()` blocks the calling script
+ * until it is answered, which a headless driver cannot do without help, and a
+ * test cannot exercise as a global at all.
+ */
+export interface DialogPort {
+  confirm(message: string): boolean;
+}
+
 /* ---------- dragging ---------- */
 
 export interface DragHandlers {
@@ -210,4 +223,5 @@ export interface Env {
   router: RouterPort;
   compress: CompressPort;
   drag: DragPort;
+  dialog: DialogPort;
 }

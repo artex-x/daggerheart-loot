@@ -1,7 +1,6 @@
 <script lang="ts">
-  /* The frame every route sits in: brand, tabs, language, and the one warning
-     that has to be visible before anything else is. */
-  import { untrack } from 'svelte';
+  /* The frame every route sits in: brand, tabs and language. The storage
+     notice moved to the lists index (B5.3), where the live app draws it. */
   import LangSwitch from './LangSwitch.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
@@ -16,10 +15,6 @@
   }
 
   const { app, children }: Props = $props();
-
-  /* Read once: whether storage works does not change while the page is open,
-     and asking on every render costs a write and a delete each time. */
-  const storageWorks = untrack(() => app.env.storage.works());
 
   /* Screen readers and hyphenation both read this, and it has to follow the
      switch rather than the page it was loaded with. */
@@ -56,12 +51,6 @@
   </div>
   <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} />
 </header>
-
-{#if !storageWorks}
-  <!-- Said plainly and up front: a person about to spend ten minutes building
-       a list deserves to know it will not survive a reload. -->
-  <p class="warn" role="status">{app.t.storageOff}</p>
-{/if}
 
 <main id="main" tabindex="-1">
   {@render children()}
@@ -151,16 +140,6 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted2);
-  }
-
-  .warn {
-    margin: 0;
-    padding: var(--gap-sm) var(--gap-lg);
-    width: var(--wrap);
-    margin-inline: auto;
-    background: rgb(224 104 95 / 12%);
-    color: var(--txt);
-    font-size: var(--step--1);
   }
 
   /* off `.foot` in style.css */

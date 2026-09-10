@@ -115,4 +115,37 @@ describe('the help for a section', () => {
   it('has nothing to say about a section nobody wrote one for', () => {
     expect(helpFor('nonsense', 'ru')).toBe(null);
   });
+
+  it('bolds both roles the two notes and the two links play, mid-sentence', () => {
+    /* "Для игроков"/"Только для мастера" and "Ссылка игрокам"/"Ссылка себе"
+       sit inside running prose rather than opening their paragraph, so each
+       pair is a run of parts rather than a `lead`. */
+    for (const lang of LANGS) {
+      const lists = helpFor('lists', lang);
+      expect(lists?.paragraphs.length, lang).toBe(4);
+      expect(lists?.paragraphs[0]?.lead, lang).toBeUndefined();
+      expect(lists?.paragraphs[1]?.parts.filter(isBold), lang).toHaveLength(2);
+      expect(lists?.paragraphs[2]?.parts.filter(isBold), lang).toHaveLength(2);
+    }
+    expect(
+      helpFor('lists', 'ru')
+        ?.paragraphs[1]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual(['Для игроков', 'Только для мастера']);
+    expect(
+      helpFor('lists', 'ru')
+        ?.paragraphs[2]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual(['Ссылка игрокам', 'Ссылка себе']);
+    expect(
+      helpFor('lists', 'en')
+        ?.paragraphs[1]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual(['For players', 'GM only']);
+    expect(
+      helpFor('lists', 'en')
+        ?.paragraphs[2]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual(['Players’ link', 'Your own link']);
+  });
 });

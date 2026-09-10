@@ -489,6 +489,71 @@ const TABLES: Record<Lang, Help> = {
   }
 };
 
+/**
+ * The lists index's help. Paragraphs 2 and 3 each carry two bold words
+ * mid-sentence rather than a `lead` - "Для игроков"/"Только для мастера" and
+ * "Ссылка игрокам"/"Ссылка себе" both sit inside running prose, not at the
+ * paragraph's head, so each is a run of parts like `TABLES`'s "Линейка" one.
+ */
+const LISTS: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета — меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
+      ),
+      {
+        parts: [
+          'У списка и у каждой позиции две заметки. ',
+          { b: 'Для игроков' },
+          ' уезжает вместе с текстом и ссылкой для игроков. ',
+          { b: 'Только для мастера' },
+          ' остаётся у вас: ни в текст, ни в ссылку для игроков она не попадает.'
+        ]
+      },
+      {
+        parts: [
+          'Отсюда и две кнопки. ',
+          { b: 'Ссылка игрокам' },
+          ' — то, что можно кинуть в чат партии. ',
+          { b: 'Ссылка себе' },
+          ' — полный снимок со всеми заметками: это и способ сохранить список, чтобы восстановить его потом или открыть на другом устройстве. В адресной строке браузера лежит ссылка для игроков, так что скопировать её оттуда тоже безопасно.'
+        ]
+      },
+      p(
+        'Поле «Восстановить из ссылки» принимает любую из них обратно — получится обычный список, который можно править. Хранятся в ссылке только название, id позиций, количество, цена и заметки, поэтому правки в данных подхватятся сами.'
+      )
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card — the menu stays open, so one item goes into several lists without reopening anything.'
+      ),
+      {
+        parts: [
+          'A list and every entry in it carry two notes. ',
+          { b: 'For players' },
+          ' travels with the copied text and with the players’ link. ',
+          { b: 'GM only' },
+          ' stays with you: it reaches neither.'
+        ]
+      },
+      {
+        parts: [
+          'Hence the two buttons. ',
+          { b: 'Players’ link' },
+          ' is the one to drop into the party chat. ',
+          { b: 'Your own link' },
+          ' is a full snapshot with every note — which is also how you keep a list to restore later or open on another device. The browser’s address bar holds the players’ link, so copying it from there is safe too.'
+        ]
+      },
+      p(
+        'The “Restore from a link” field takes either of them back and gives you an ordinary, editable list. A link stores only the name, the entry ids, quantity, price and the notes, so edits to the data are picked up on their own.'
+      )
+    ]
+  }
+};
+
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,
@@ -496,7 +561,8 @@ const HELP: Record<string, Record<Lang, Help>> = {
   dread: DREAD,
   voa: VOA,
   community: COMMUNITY,
-  tables: TABLES
+  tables: TABLES,
+  lists: LISTS
 };
 
 /** What this section explains about itself, or null where nothing is written. */

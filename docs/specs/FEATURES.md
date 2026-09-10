@@ -70,8 +70,14 @@ Six modes. Each keeps its own input in memory only.
 - Two notes per list and per entry - see `CONTRACTS.md` for how they encode and
   which link carries which.
 - The address bar always holds the player link and is refreshed on every edit.
-- Import: paste a link or a payload to take a copy of someone else's list.
+- Import: paste a link or a payload to take a copy of someone else's list -
+  either link form, plain or packed.
 - Two open tabs merge rather than overwrite (`STATE.md`).
+- A storage notice at the top of the index and of a list page: when storage
+  refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
+  live in this browser only" disclosure whose cross is remembered in
+  `dhloot.warn.v1`; unfolding is not remembered - the notice comes back folded
+  after a language switch, as the live re-render leaves it.
 
 ## Records
 
@@ -109,8 +115,6 @@ Six modes. Each keeps its own input in memory only.
 
 - Language switch, tab bar, skip link, starting-section pin (nine sections or
   any table by name; not a record or a list).
-- Storage warning when `localStorage` is unavailable, dismissible and
-  remembered.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
 - Toasts with an undo action for destructive things.

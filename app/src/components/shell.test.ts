@@ -163,18 +163,6 @@ describe('the address on the way in', () => {
   });
 });
 
-describe('storage that does not work', () => {
-  it('says so before anyone builds a list', () => {
-    render(App, { env: at('#/lists', { storage: brokenStorage() }) });
-    expect(screen.getByRole('status')).toHaveTextContent('не переживут перезагрузку');
-  });
-
-  it('says nothing when it does', () => {
-    render(App, { env: at('#/lists') });
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  });
-});
-
 describe('the toast, through what a real page raises it with', () => {
   it('is a status message, polite, for a plain notice', async () => {
     /* Not #/roll/std - it is DEFAULT_HOME, so it starts pinned and the button

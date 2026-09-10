@@ -22,6 +22,7 @@
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
+  import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
   import Icon from './Icon.svelte';
   import PageHead from './PageHead.svelte';
@@ -475,7 +476,7 @@
 
   {#if bodyKind === 'alt'}
     {#if altSections.length === 0}
-      <div class="empty">{t.nothing}</div>
+      <Empty>{t.nothing}</Empty>
     {:else}
       {#each altSections as s (s.key)}
         <div class="tsection" id={'sec-' + s.key} style="margin-top:20px">
@@ -508,12 +509,12 @@
       {/each}
     {/if}
   {:else if filtered.length === 0}
-    <div class="empty">
+    <Empty>
       {t.nothing}
       {#if chosenCount(filterState, facetGroups) > 0}
         <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
       {/if}
-    </div>
+    </Empty>
   {:else if bodyKind === 'tier' || bodyKind === 'frame' || bodyKind === 'comm' || bodyKind === 'eq'}
     {#each activeSections as s (s.key)}
       <div class="tsection" id={'sec-' + s.key} style="margin-top:22px">
@@ -691,17 +692,6 @@
     .seg.small button {
       padding: 8px 14px;
     }
-  }
-
-  /* off `.empty` */
-  .empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 40px 0;
-    text-align: center;
-    color: var(--muted2);
   }
 
   /* off `.tsection` and its flash keyframes - style.css:536-544. The heading

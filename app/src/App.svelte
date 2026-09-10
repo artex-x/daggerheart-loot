@@ -35,6 +35,7 @@
   import { untrack } from 'svelte';
   import AltPanel from './components/AltPanel.svelte';
   import CommunityPanel from './components/CommunityPanel.svelte';
+  import ListsPage from './components/ListsPage.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
   import Shell from './components/Shell.svelte';
@@ -74,6 +75,8 @@
     <VoaPanel {app} />
   {:else if app.route.kind === 'section' && app.route.section === 'roll/community'}
     <CommunityPanel {app} />
+  {:else if app.route.kind === 'section' && app.route.section === 'lists'}
+    <ListsPage {app} />
   {:else if app.route.kind === 'section'}
     <h1>{app.t[sectionKey(app.route.section)]}</h1>
     <p class="todo">{app.hash}</p>

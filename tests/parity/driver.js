@@ -109,6 +109,19 @@ const NAME_FN = `(el) => (
 function makeDriver(page, target) {
   const url = TARGETS[target];
 
+  /**
+   * `confirm()` blocks the calling script until something answers it, and
+   * `el.click()` inside `page.evaluate` never returns while one is open - so
+   * without this, no state could ever press a destructive control. Every
+   * dialog raised on this page is accepted, and its message kept so a spec
+   * can compare it as data (`deletedList`, `tests/parity/specs.js`).
+   */
+  let dialog = null;
+  page.on('dialog', (dlg) => {
+    dialog = dlg.message();
+    dlg.accept().catch(() => {});
+  });
+
   const d = {
     target,
 
@@ -210,7 +223,9 @@ function makeDriver(page, target) {
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
           const els = [
-            ...document.querySelectorAll('button, a[href], [role="button"], input')
+            ...document.querySelectorAll(
+              'button, a[href], [role="button"], input, summary'
+            )
           ];
           const exact = els.filter((e) => nameOf(e) === n);
           const el = exact[idx] ?? (idx === 0 ? els.find((e) => nameOf(e).includes(n)) : undefined);
@@ -285,6 +300,12 @@ function makeDriver(page, target) {
 
     hash() {
       return page.evaluate(() => location.hash);
+    },
+
+    /** The message the last `confirm()` on this page carried, or null if none
+     *  has fired yet. */
+    dialog() {
+      return dialog;
     },
 
     /**

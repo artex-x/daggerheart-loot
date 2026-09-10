@@ -4,7 +4,8 @@
      It exists because two places now want it - the roll panel and the record's
      action row - which is the rule: extract on the second use, never before.
      The two variants are the two the live app has in these places, and a third
-     arrives when a screen needs one, not in anticipation. */
+     arrives when a screen needs one, not in anticipation - `danger`, for the
+     lists index's delete button, is that third. */
   import type { Snippet } from 'svelte';
 
   interface Base {
@@ -13,7 +14,7 @@
      *  on a gold-tinted border rather than a fill, and only once it has
      *  something picked. `ghost` is `.btn.ghost` - a transparent fill, the
      *  cancel button beside a primary one. */
-    variant?: 'plain' | 'primary' | 'toggle' | 'ghost';
+    variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger';
     /** `sm` is the 32px row on a card; the default 46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
@@ -169,6 +170,17 @@
   .btn.ghost {
     background: transparent;
     border-color: var(--line);
+  }
+
+  /* off `.btn.danger` - the lists index's delete button. */
+  .btn.danger {
+    border-color: rgb(224 104 95 / 40%);
+    color: #f0a49d;
+  }
+
+  .btn.danger:hover {
+    border-color: var(--danger);
+    background: rgb(224 104 95 / 12%);
   }
 
   /* off `.btn.on` / `.btn.primary.on` in style.css: gold outline on a plain

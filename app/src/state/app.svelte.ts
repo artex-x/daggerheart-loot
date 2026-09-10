@@ -29,6 +29,7 @@ import { ListStore } from './lists.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
+const WARN_KEY = 'dhloot.warn.v1';
 
 const DEFAULT_HOME = '#/roll/std';
 
@@ -119,6 +120,10 @@ export class AppState {
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   #home = $state(DEFAULT_HOME);
+  /** Whether the "lists live in this browser only" notice has been dismissed
+   *  for good - the live app's `dhloot.warn.v1`. App-level because the list
+   *  page (B5.4) reads the same flag, not only the index. */
+  #warnHidden = $state(false);
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
 
@@ -128,6 +133,7 @@ export class AppState {
     this.index = loot ? buildIndex(loot) : null;
     this.lang = readLang(env);
     this.#home = readHome(env);
+    this.#warnHidden = env.storage.get(WARN_KEY) === '1';
     this.lists = new ListStore(
       env,
       (msg, error) => {
@@ -301,5 +307,18 @@ export class AppState {
   get canPinHome(): boolean {
     const r = this.route;
     return r.kind === 'section' || (r.kind === 'tables' && !!r.table);
+  }
+
+  /** Whether the "lists live in this browser only" notice has been dismissed. */
+  get warnHidden(): boolean {
+    return this.#warnHidden;
+  }
+
+  /** Dismisses the notice for good - the live `hideWarn`, which ignores a
+   *  refused write the same way: storage refusing means the page is drawing
+   *  the other, undismissable warning anyway. */
+  hideWarn(): void {
+    this.env.storage.set(WARN_KEY, '1');
+    this.#warnHidden = true;
   }
 }

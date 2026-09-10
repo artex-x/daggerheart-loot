@@ -30,6 +30,10 @@ function random36(n: number, random: () => number): string {
 
 export class ListStore {
   lists = $state<StoredList[]>([]);
+  /** Whether the last `save()` actually wrote. The live `createList.saved` -
+   *  a refused write has already toasted `saveFailed`, and a caller must not
+   *  follow it with a cheerful "created". */
+  saved = $state(true);
 
   readonly #env: Env;
   /** What the app's own `say` needs, without this module knowing `AppState`. */
@@ -37,8 +41,8 @@ export class ListStore {
   readonly #dict: () => Dict;
 
   /* Remembered for this tab's lifetime only, so a merge cannot resurrect a
-   * list from another tab's copy after this tab deleted it. Nothing writes to
-   * it until the lists index (B5.3) adds delete. */
+   * list from another tab's copy after this tab deleted it. `remove` is its
+   * writer. */
   readonly #deleted: Record<string, boolean> = {};
 
   constructor(env: Env, say: (msg: string, error?: boolean) => void, dict: () => Dict) {
@@ -93,6 +97,7 @@ export class ListStore {
     }
     const merged = mergeLists(this.lists, storedNow, this.#deleted);
     const ok = this.#env.storage.set(LISTS_KEY, JSON.stringify(merged));
+    this.saved = ok;
     if (!ok) {
       this.#say(this.#dict().saveFailed, true);
       return false;
@@ -104,18 +109,37 @@ export class ListStore {
     return this.lists.find((l) => l.id === id);
   }
 
-  /** Puts the new list first, saves it, and hands it back for the caller to add to. */
-  create(name: string): StoredList {
+  /**
+   * Puts the new list first, saves it, and hands it back for the caller to
+   * add to. `init` spreads in before the one save - a restore hands it `ids`
+   * and `meta` in the same write the live app makes as two (create, then fill
+   * in), which is unobservable except by another tab's `storage` event
+   * landing mid-restore.
+   */
+  create(
+    name: string,
+    init: Partial<Omit<StoredList, 'id' | 'name' | 'created'>> = {}
+  ): StoredList {
     const trimmed = name.trim();
     const l: StoredList = {
       id: 'l' + Date.now().toString(36) + random36(4, this.#env.random),
       name: trimmed || this.#dict().untitled,
       ids: [],
-      created: Date.now()
+      created: Date.now(),
+      ...init
     };
     this.lists = [l, ...this.lists];
     this.save();
     return l;
+  }
+
+  /** Drops the list for good - the live `deleteList`. Remembered in
+   *  `#deleted` so a later merge cannot bring it back from another tab's
+   *  still-unmerged copy. */
+  remove(id: string): void {
+    this.#deleted[id] = true;
+    this.lists = this.lists.filter((l) => l.id !== id);
+    this.save();
   }
 
   /** Every id the data knows and the list does not already hold. Does not save. */

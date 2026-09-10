@@ -107,6 +107,16 @@ describe('the shared button', () => {
     expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'ghost', 'sm');
   });
 
+  it('carries the danger variant, for the lists index delete button', () => {
+    render(Button, {
+      variant: 'danger',
+      size: 'sm',
+      onclick: () => undefined,
+      children: label
+    });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'danger', 'sm');
+  });
+
   it('carries the pressed look with `on`, without changing its variant', () => {
     render(Button, {
       variant: 'primary',

@@ -132,6 +132,34 @@ describe('pinning', () => {
   });
 });
 
+describe('the storage notice', () => {
+  const WARN_KEY = 'dhloot.warn.v1';
+
+  it('is hidden with the flag stored, and shown otherwise', () => {
+    expect(
+      new AppState(at('#/lists', { storage: stored({ [WARN_KEY]: '1' }) })).warnHidden
+    ).toBe(true);
+    expect(new AppState(at('#/lists')).warnHidden).toBe(false);
+  });
+
+  it('dismisses for good, writing the flag', () => {
+    const env = at('#/lists');
+    const app = new AppState(env);
+    app.hideWarn();
+    expect(app.warnHidden).toBe(true);
+    expect(env.storage.get(WARN_KEY)).toBe('1');
+  });
+
+  it('sets the flag in memory even when storage refuses the write', () => {
+    /* The live `hideWarn` ignores the write's result too: with storage
+       refusing, the page draws the undismissable warning instead, so the
+       flag reaching storage does not matter. */
+    const app = new AppState(at('#/lists', { storage: brokenStorage() }));
+    app.hideWarn();
+    expect(app.warnHidden).toBe(true);
+  });
+});
+
 describe('which tab is lit', () => {
   it('lights the section a route belongs to', () => {
     /* A section id carries its prefix - see SECTIONS in lib/types.ts */

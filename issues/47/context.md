@@ -514,6 +514,13 @@ Measured at dispatch, not inferred:
 - HEAD is `afa82f3` (`docs(issue-47): CI is green - B5.2 part 0 closed by run
   34492619641`); `git status` clean; no `test-output/parity.lock`; no heavy
   run alive on this host.
+- **Re-measured at the implement dispatch (2026-09-10, later session):** HEAD
+  is `91d7899` (`docs(issue-47): plan B5.3 ...`), the planning commit; tree
+  clean; still no `test-output/parity.lock` and no vitest or parity process
+  alive (26 `node.exe` are peer Claude sessions, none running a check). 19
+  peer sessions now share the tree. The line below about this cycle being
+  "planner first" is spent - B5.3 is planned and implement-ready as of
+  `91d7899`, and this cycle dispatches the implementer only.
 - `origin/main` is `4210ee3`, so **three commits are unpushed**: `ff741ad`
   (B5.2 part 1, the selection bar), `6084846` and `afa82f3` (both docs). CI
   has therefore still not read the selection bar - that is the owner's push
@@ -625,3 +632,35 @@ launch args, three widths), not assumed:
 - Wall clock for the filters: `"#/lists"` is 6 states (one timed) and does
   not match `#/i/ci1 ~ many lists`; `"nothing found"` is 3; `"#/tables ~"` is
   8. Each fits one foreground call; do not merge them.
+
+## B5.3 close-out facts (planner, 2026-09-10) - durable
+
+Read off the source while deciding the `~ notice unfolded @ en` blocker; the
+decision itself is `plan.md`, "B5.3 built", "Close-out decision", and the
+brief is `handoff.md`, "Next batch".
+
+- **The live app has an opt-in for DOM state that survives `render()`.**
+  `restoreOpen()` (app.js 3769-3775) re-applies `S.keepOpen[...]` to every
+  `[data-keep]` element (`open` on a `<details>`, `hidden` otherwise), fed by
+  a capturing `toggle` listener (3780-3783). Three elements opt in: the roll
+  panel `roll:<id>` (3011), the note box `rnote:<key>` (3047), the list note
+  `note:<id>` (3095) - all on B5.4's list page. `storageWarning()` writes no
+  `data-keep`, so the notice folds on every re-render, a language switch
+  included, by the live app's own rule.
+- **`ACCEPTED` never reaches a pixel cell.** It is read only by the spec
+  `diff()` (`tests/parity.js` 214), keyed `<state> @ <lang> :: <spec> ::
+  <field>`; the pixel verdict (538-575) consults `VISUAL_DEBT` alone.
+  "Accept a visual difference" therefore means a `VISUAL_DEBT` figure, which
+  owner decision 1 forbids off this host.
+- **`arrive()` runs `enter(d)` with no `lang`, then presses `EN`**
+  (`parity.js` 353-363), deliberately - every `enter` grips Russian names.
+  Any state whose `enter` leaves DOM-only state that the live `render()`
+  discards shows the same English-only divergence unless the port
+  re-creates the element on `app.lang`.
+- **`AppState.setLang()` does not bump `navigations`** (`app.svelte.ts`
+  252-255); `go()` and the router's `onChange` do. `App.svelte` (62-85)
+  remounts the page component on every route change, so `ListsPage` never
+  survives a navigation and a `navigations` key there would be a no-op.
+- Wall clock unchanged: `"#/lists"` is 6 states / 36 cells, one foreground
+  call. The other two B5.3 filters are banked by the implementer's run and
+  are not re-run at close-out.

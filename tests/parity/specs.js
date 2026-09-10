@@ -12,6 +12,10 @@
  * rather than as a failure.
  */
 
+/** A known-good list link, shared with `listLink.test.ts` and `contracts.js`
+ *  so all three read the same fixture rather than three copies of one payload. */
+const EQUIPMENT_ENTRY = require('../../docs/fixtures/lists/equipment-entry.json');
+
 /*
  * `presses: true` marks a spec that changes the page - it clicks something, or
  * it reads a clipboard that a click filled. Those get a page of their own.
@@ -47,7 +51,11 @@ const NAME = {
     filterLink: 'Ссылка на фильтры',
     copySel: 'Скопировать',
     clearSel: 'Снять выделение',
-    selected: 'Выбрано'
+    selected: 'Выбрано',
+    share: 'Поделиться',
+    del: 'Удалить',
+    restore: 'Восстановить',
+    importPh: 'Ссылка на список'
   },
   en: {
     copyName: 'Copy name',
@@ -65,7 +73,11 @@ const NAME = {
     filterLink: 'Filter link',
     copySel: 'Copy',
     clearSel: 'Clear selection',
-    selected: 'Selected'
+    selected: 'Selected',
+    share: 'Share',
+    del: 'Delete',
+    restore: 'Restore',
+    importPh: 'Paste a list link'
   }
 };
 
@@ -281,6 +293,61 @@ const barMembership = {
   }
 };
 
+/**
+ * The short players' link a share press copies - `listShareUrlShort` in
+ * app.js, `share()` here. `file://index.html` and `dist/index.html` are
+ * different bases, so only the hash after it is compared: both apps deflate
+ * the same bytes in the same Chrome and both keep the packed form only when
+ * it comes out shorter, so the string itself has to match.
+ */
+const sharedListLink = {
+  presses: true,
+  name: "the short players' link a share press copies",
+  only: ['#/lists ~ two lists'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].share);
+    const clip = await d.clipboard();
+    return { hash: clip.text.slice(clip.text.indexOf('#')) };
+  }
+};
+
+/**
+ * Deleting a list, off `deleteList` in app.js. Neither the question nor the
+ * result paints anything a screenshot can catch, so this compares them as
+ * data: the driver's own dialog auto-accept is what lets `el.click()` return
+ * at all here (context.md, "confirm() blocks puppeteer").
+ */
+const deletedList = {
+  presses: true,
+  name: 'deleting a list, and the question it asks first',
+  only: ['#/lists ~ two lists'],
+  async run(d, lang) {
+    await d.click(NAME[lang].del);
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return { asked: d.dialog(), stored: stored.map((l) => l.id) };
+  }
+};
+
+/**
+ * Restoring a list from a plain link, off `importList` in app.js. A plain
+ * link on purpose, not the packed short one `sharedListLink` reads back: the
+ * packed form is where the two apps now differ, by this batch's own fix to
+ * the restore field's regex (context.md, "Decided in planning"), so this
+ * proves the path the fix does not touch.
+ */
+const restoredList = {
+  presses: true,
+  name: 'restoring a list from a plain link',
+  only: ['#/lists'],
+  async run(d, lang) {
+    await d.type(NAME[lang].importPh, '#/l/' + EQUIPMENT_ENTRY.player.payload);
+    await d.click(NAME[lang].restore);
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return { hash: await d.hash(), stored: stored.map((l) => [l.name, l.ids]) };
+  }
+};
+
 /** The roll pages: the label on the button says which die, or that there is none. */
 const rollControls = {
   name: 'the roll controls',
@@ -431,6 +498,15 @@ const eight = {
       ids: [],
       created: 10 + i
     }))
+  ])
+};
+
+/* The lists index's own seed: one card with six thumbnails and a badge of 7,
+   one empty card - `plan.md`, "B5.3 planned", "Parity states". */
+const seven = {
+  'dhloot.lists.v2': JSON.stringify([
+    { ...LISTS[0], ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'] },
+    LISTS[1]
   ])
 };
 
@@ -875,7 +951,55 @@ const STATES = [
      record at all, which is why nothing had caught it. */
   { id: '#/i/f1', route: '#/i/f1', why: 'a frame-equipment record, catching the source-badge fix' },
 
-  { id: '#/lists', route: '#/lists', why: 'the lists page', pending: 'lists slice' },
+  /* The lists index, off `renderLists`/`storageWarning` in app.js. */
+  {
+    id: '#/lists',
+    route: '#/lists',
+    why: 'the folded notice, both fields, no lists yet'
+  },
+  {
+    id: '#/lists ~ two lists',
+    route: '#/lists',
+    why: 'a card with six thumbs and a badge of 7, and an empty card',
+    storage: seven
+  },
+  {
+    id: '#/lists ~ notice unfolded',
+    route: '#/lists',
+    why: 'the disclosure open, the hint hidden, the page taller',
+    storage: seven,
+    enter: async (d) => {
+      await d.click('подробнее');
+    }
+  },
+  {
+    id: '#/lists ~ notice dismissed',
+    route: '#/lists',
+    why: 'no notice at all - the panel sits directly under the page-sub',
+    storage: seven,
+    enter: async (d) => {
+      await d.click('Скрыть');
+    }
+  },
+  {
+    id: '#/lists ~ help',
+    route: '#/lists',
+    why: 'the four paragraphs, two of them with two bold runs each',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
+  {
+    id: '#/lists ~ created',
+    route: '#/lists',
+    why: 'the new card first, the field cleared, the toast',
+    enter: async (d) => {
+      await d.type('Например: клад дракона', 'Тайник');
+      await d.click('Создать');
+    },
+    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    timed: true
+  },
   { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
   { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
 ];
@@ -894,6 +1018,9 @@ const SPECS = [
   listMembership,
   copiedSelection,
   barMembership,
+  sharedListLink,
+  deletedList,
+  restoredList,
   visuals,
   typeRuns,
   geometry

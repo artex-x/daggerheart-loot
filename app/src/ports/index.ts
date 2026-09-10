@@ -7,6 +7,7 @@
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserCompress, plainCompress } from './compress.js';
 import { browserData, fakeData } from './data.js';
+import { browserDialog, fakeDialog } from './dialog.js';
 import { browserImage, fakeImage } from './image.js';
 import { nativeDrag, noDrag } from './drag.js';
 import { hashRouter, memoryRouter } from './router.js';
@@ -18,6 +19,7 @@ export * from './types.js';
 export { browserClipboard, fakeClipboard } from './clipboard.js';
 export { browserCompress, plainCompress } from './compress.js';
 export { browserData, fakeData, noData } from './data.js';
+export { browserDialog, fakeDialog } from './dialog.js';
 export { brokenImage, browserImage, fakeImage } from './image.js';
 export { nativeDrag, noDrag } from './drag.js';
 export { hashRouter, memoryRouter } from './router.js';
@@ -34,7 +36,8 @@ export function browserEnv(): Env {
     share: browserShare(),
     router: hashRouter(),
     compress: browserCompress(),
-    drag: nativeDrag()
+    drag: nativeDrag(),
+    dialog: browserDialog()
   };
 }
 
@@ -53,6 +56,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     router: memoryRouter(),
     compress: plainCompress(),
     drag: noDrag(),
+    dialog: fakeDialog(),
     ...over
   };
 }

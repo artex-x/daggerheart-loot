@@ -104,6 +104,26 @@ describe('creating a list', () => {
     const l = store.create('   ');
     expect(l.name).toBe(t().untitled);
   });
+
+  it('writes ids and meta from init in the one save - a restore', () => {
+    const store = new ListStore(at(), say, t);
+    const meta = { q26: { qty: 2 } };
+    const l = store.create('Оружейная', { ids: ['q26', 'q33'], meta });
+    expect(l.ids).toEqual(['q26', 'q33']);
+    expect(l.meta).toEqual(meta);
+    expect(store.get(l.id)).toEqual(l);
+  });
+
+  it('reads saved true after a good write and false after a refused one', () => {
+    const good = new ListStore(at(), say, t);
+    expect(good.saved).toBe(true);
+    good.create('Клад');
+    expect(good.saved).toBe(true);
+
+    const bad = new ListStore(at({ storage: brokenStorage() }), say, t);
+    bad.create('Клад');
+    expect(bad.saved).toBe(false);
+  });
 });
 
 describe('adding and removing ids', () => {
@@ -126,6 +146,33 @@ describe('adding and removing ids', () => {
 
     store.removeId(l, 'w1');
     expect(store.get('a')?.ids).toEqual(['w2']);
+  });
+});
+
+describe('removing a list', () => {
+  it('drops it from memory and storage', () => {
+    const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
+    const store = new ListStore(at({ storage }), say, t);
+
+    store.remove('a');
+    expect(store.lists).toEqual([]);
+    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([]);
+  });
+
+  it('does not come back through a merge with another tab that still has it', () => {
+    /* The `#deleted` set is what tells "I removed it" apart from "I never had
+       it" - without it, a save's own merge would take the other tab's copy
+       right back. */
+    const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
+    const store = new ListStore(at({ storage }), say, t);
+    store.remove('a');
+
+    // another tab's still-unmerged copy of the deleted list lands in storage
+    storage.set('dhloot.lists.v2', JSON.stringify([l]));
+    store.save();
+    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([]);
   });
 });
 

@@ -219,6 +219,20 @@ const STATES: {
       );
       await press('Добавить в список');
     }
+  },
+  {
+    what: 'the lists index with its notice unfolded and two lists',
+    route: '#/lists',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
+        { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+      ])
+    },
+    /* `press` grips buttons; "подробнее" sits in an `<i>` inside the
+       disclosure's `<summary>`, which jsdom toggles open the same way a
+       browser does on a click. */
+    enter: () => userEvent.click(screen.getByText('подробнее'))
   }
 ];
 
@@ -255,8 +269,10 @@ const COVERED: Record<string, string> = {
   'ChipRow.svelte': 'the same two pickers',
   'CommunityPanel.svelte': 'sections.test.ts, and in English above',
   'Die.svelte': 'the roll button on every roll page',
+  'Empty.svelte': "tables.test.ts's nothing-found states, and the lists index above",
   'Field.svelte': 'the number row on every roll page, and both pickers',
   'Icon.svelte': 'the card actions and the pin toggle',
+  'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'LangSwitch.svelte': 'the frame, on every state here and in shell.test.ts',
   'NumberField.svelte': 'the number row on every roll page',
   'PageHead.svelte': 'the heading of every roll page, with both help states above',
@@ -267,7 +283,7 @@ const COVERED: Record<string, string> = {
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'SelBar.svelte': 'the state above, and tables.test.ts',
-  'Shell.svelte': 'shell.test.ts, including the storage warning',
+  'Shell.svelte': 'shell.test.ts',
   'TabBar.svelte': 'the frame, on every state',
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',

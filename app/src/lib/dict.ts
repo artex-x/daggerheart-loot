@@ -171,8 +171,6 @@ const ru = {
   eqBurden: 'Хват',
   eqLineF: 'Линейка',
 
-  storageOff: 'Браузер не даёт сохранять: списки не переживут перезагрузку.',
-
   /* The two groups the tab bar has no word for - both a slice through every
      book rather than a book of their own. */
   grpEquipment: 'Снаряжение',
@@ -185,6 +183,7 @@ const ru = {
 
   subTables:
     'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
+  subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -235,7 +234,29 @@ const ru = {
   print: 'Печать',
   printHint: 'Собрать карточки для печати: девять на лист A4',
   homeSet: 'Приложение будет открываться на этом разделе',
-  homeReset: 'Приложение снова будет открываться на обычных правилах'
+  homeReset: 'Приложение снова будет открываться на обычных правилах',
+
+  /* The lists index - app.js 107-108/110-111/154/156/159-160/162-168/163/148,
+     the storage notice's two live forms and the panel's restore row. */
+  importList: 'Восстановить из ссылки',
+  importBtn: 'Восстановить',
+  importPh: 'Ссылка на список',
+  dismiss: 'Скрыть',
+  readMore: 'подробнее',
+  listCreated: 'Список «%s» создан',
+  noLists: 'Списков пока нет — создайте первый выше',
+  share: 'Поделиться',
+  del: 'Удалить',
+  listEmpty: 'Список пуст',
+  noStorageTitle: 'Браузер блокирует локальное хранилище.',
+  noStorage:
+    'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
+  localOnlyTitle: 'Списки живут только в этом браузере.',
+  localOnly:
+    'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
+  deleteConfirm: 'Удалить список «%s»? Это действие необратимо.',
+  playersLinkCopied: 'Ссылка для игроков скопирована — заметок мастера в ней нет',
+  badShare: 'Ссылка повреждена или собрана в другой версии данных.'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -368,8 +389,6 @@ const en: Dict = {
   eqBurden: 'Burden',
   eqLineF: 'Line',
 
-  storageOff: 'This browser will not save: lists are lost on reload.',
-
   grpEquipment: 'Equipment',
   grpFrames: 'Frames',
   subWeapon: 'Weapons',
@@ -377,6 +396,7 @@ const en: Dict = {
   subArmor: 'Armor',
 
   subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
+  subLists: 'Collect loot into a list and send it to your players as a single link.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',
@@ -421,7 +441,27 @@ const en: Dict = {
   print: 'Print',
   printHint: 'Lay these out for printing: nine to an A4 sheet',
   homeSet: 'The app will open on this section',
-  homeReset: 'The app will open on the standard rules again'
+  homeReset: 'The app will open on the standard rules again',
+
+  importList: 'Restore from a link',
+  importBtn: 'Restore',
+  importPh: 'Paste a list link',
+  dismiss: 'Dismiss',
+  readMore: 'more',
+  listCreated: 'List “%s” created',
+  noLists: 'No lists yet — create one above',
+  share: 'Share',
+  del: 'Delete',
+  listEmpty: 'The list is empty',
+  noStorageTitle: 'The browser is blocking local storage.',
+  noStorage:
+    'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
+  localOnlyTitle: 'Lists live in this browser only.',
+  localOnly:
+    'The app has no server. Clearing site data, a private window or another device, and the lists are gone. To keep one, press “Your own link”: the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under “GM only”. Send players the “Players’ link” or the result of “Copy text”: only what is written under “For players” goes there. The browser’s own address bar holds the players’ link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
+  deleteConfirm: 'Delete the list "%s"? This cannot be undone.',
+  playersLinkCopied: 'Players’ link copied — it carries no GM notes',
+  badShare: 'The link is damaged or was built from a different data version.'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

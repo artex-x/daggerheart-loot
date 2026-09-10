@@ -16,9 +16,47 @@ depends on chat history.
   exit 0. **Part 0 is closed by CI: run `34492619641` on `4210ee3` is green on
   every job, `deploy` included.** Part 1 (`ff741ad`) is unpushed and unread;
   see "Blockers". **B5.3 (the lists index, the storage notice where the
-  live app draws it, `noData`) is planned and implement-ready** - one batch,
-  no parts; see "Next batch".
-- Last agent: planner (2026-09-10: B5.3 planned - `plan.md`, "B5.3
+  live app draws it, `noData`) is built, closed out, and committed as one
+  batch.** All ten original ordered steps plus the close-out's three are
+  done; `node tests/parity.js "#/lists"` reads all 36 cells `совпадает`,
+  both languages, including the three English `~ notice unfolded` cells
+  that were 5.88/6.40/9.05% before the close-out. `npm run check` and `npm
+  run check:built` both exit 0 (782 tests, thresholds met). The blocker -
+  the storage notice's open state surviving a language switch where the
+  live app's does not - is resolved: `ListsPage.svelte` wraps the
+  `<details class="warn">` in `{#key app.lang}` … `{/key}`, per the
+  planner's decision (path 1, language change only; paths 2 and 3 rejected
+  on mechanics). See `plan.md`, "B5.3 built", "Close-out decision",
+  "Close-out run" for the complete accounting, and `git log` for the
+  `feat(lists): the lists index` commit.
+- Last agent: implementer (2026-09-10, B5.3 close-out: applied path 1 -
+  `{#key app.lang}` around `ListsPage.svelte`'s `<details class="warn">`
+  with a comment naming the mechanism, one `listsPage.test.ts` case, one
+  `FEATURES.md` clause. `npm run check` needed one re-run on the documented
+  worker-fork crash, otherwise no deviation. `node tests/parity.js
+  "#/lists"` - `расхождений нет`, all 36 cells. One commit, `feat(lists):
+  the lists index`, on top of `91d7899`, containing the whole B5.3 batch.
+  No push.)
+  Before it: planner (2026-09-10, B5.3 close-out: decided the `~ notice
+  unfolded @ en` blocker - path 1, language change only; paths 2 and 3
+  rejected on mechanics, not preference. Wrote the close-out brief into
+  "Next batch", the decision with its rejected alternatives into `plan.md`,
+  "B5.3 built", "Close-out decision", the standing rule into `plan.md`,
+  "Working rules during the migration", and the durable facts into
+  `context.md`, "B5.3 close-out facts". No production code, no test, no
+  commit; the uncommitted B5.3 tree is the implementer's.)
+  Before it: implementer (2026-09-10: B5.3 built to this point, not
+  committed - see "Completed" and `plan.md`, "B5.3 built". Two real findings
+  along the way, both fixed: axe's `nested-interactive` rule on the storage
+  notice's live-app-inherited button-in-`<summary>` shape, accommodated in
+  `app/src/test/a11y.ts`'s `OFF` map; and a `prettier --write` run
+  reformatting `ListsPage.svelte`'s whitespace-sensitive card markup back
+  into a real defect, fixed with the same `<!-- prettier-ignore -->` device
+  `TableRows.svelte` already uses. The blocker itself - the storage
+  notice's open state surviving a language switch where the live app's does
+  not - was found by the harness, not guessed, and is reported rather than
+  resolved unilaterally, per this task's own explicit stop condition.)
+  Before it: planner (2026-09-10: B5.3 planned - `plan.md`, "B5.3
   planned"; `context.md`, "B5.3 planning facts"; the brief in "Next batch".
   Measured the live `#/lists` at three widths with a read-only probe rather
   than guessed; found and recorded three things by reading - the live
@@ -34,7 +72,9 @@ depends on chat history.
   `menuFor` on every close path, `shareSelection` added with no skip set; a
   one-line correction to the harness's own written design found and fixed
   while running it - see `plan.md`, "B5.2 built, part 1")
-- NEEDS_HUMAN_CONFIRMATION: no
+- NEEDS_HUMAN_CONFIRMATION: no - the `~ notice unfolded @ en` decision was
+  made in planning (path 1, language change only; `plan.md`, "B5.3 built",
+  "Close-out decision") and is now built, verified, and committed.
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
   `fb8cb0d`; B3.6 is complete in all three parts - part 0 `f7308a9`, part 1
@@ -43,9 +83,10 @@ depends on chat history.
   full unfiltered parity run against `fe0043b` is recorded under "Blockers"
   at `541d529`. Planning for B5.2 (both parts) is `2f3659d`. Part 0 is
   `f167e62`, then a docs-only commit `4210ee3`, both on top of `2f3659d`. Part
-  1 (this session) is the current HEAD - see `git log` for its sha - re-read
-  `git log --oneline -3` before starting the next batch, other sessions share
-  this tree.
+  1 is `ff741ad`. Planning for B5.3 is `91d7899`; B5.3 in full, including its
+  close-out, is this session's `feat(lists): the lists index` commit on top
+  of `91d7899` - see `git log` for its sha - re-read `git log --oneline -3`
+  before starting the next batch, other sessions share this tree.
 
 Phase 4's B1-B3.6, B4 and B5.1 are all built. B4 was the last body shape the
 tables slice needed (`plan.md`, "the tables surface, and how it splits"), so
@@ -55,10 +96,12 @@ carries no placeholder branch. The lists slice is planned as six batches
 list store, the toast, the add-to-list row on the card, CI-green tests and
 docs, and now the selection bar - ticking any row on a table raises "Выбрано
 N" with a cross, an add-to-list control, a print link and a copy button, all
-at the bottom of the window. What is left of Phase 4 is B5.3-B5.6, the search
-slice and the print slice. **B5.3 (the lists index, the storage notice where the live
-app draws it, and `noData`) is next and implement-ready** - `plan.md`, "B5.3
-planned", one batch. B5.4-B5.6, search and print remain outlines only.
+at the bottom of the window. What is left of Phase 4 is B5.4-B5.6, the search
+slice and the print slice. **B5.3 (the lists index, the storage notice where
+the live app draws it, and `noData`) is built, closed out, and committed** -
+the notice now re-folds on a language switch, and `node tests/parity.js
+"#/lists"` reads clean on all 36 cells. B5.4-B5.6, search and print remain
+outlines only; picking the next batch is the orchestrator's.
 
 B4 was offered as a merge target for B3.6 and was deliberately not folded in:
 its acceptance includes a clean parity run and possibly new `VISUAL_DEBT`
@@ -642,7 +685,207 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   to how the written design said to reach a state the design itself specified
   correctly - not a change to scope, and written up in full in `plan.md`.
 
+- Batch name/id: **B5.3 - the lists index, the storage notice, `noData`**
+  (this session, on top of `91d7899`). **Implemented in full; not
+  committed** - see "Blockers".
+- What shipped: `#/lists` draws the head with its four-paragraph help, the
+  storage notice in both live forms (a plain undismissable warning when
+  storage refuses; a folded "lists live in this browser only" disclosure
+  otherwise, its cross remembered in `dhloot.warn.v1`), the panel with the
+  create and restore rows, a card per list (a known-record badge, up to six
+  thumbnails or "Список пуст", "Поделиться" copying the short players'
+  link, "Удалить" behind a `DialogPort`), and the "no lists yet" empty
+  state. `Shell.svelte`'s invented `storageOff` paragraph and dictionary key
+  are gone. `ListStore` gained `remove` and `create(name, init)`; `AppState`
+  gained `warnHidden`/`hideWarn()`. `Empty.svelte` (new) is the shared
+  `.empty` box, its second real use, both inline copies removed.
+  `ports/dialog.ts` (new) wraps `window.confirm`. Eighteen dictionary keys
+  landed, the `lists` help entry, and the global `input::placeholder` rule
+  in `tokens.css`. The driver gained `summary` in `click()`'s selector and a
+  dialog auto-accept; the specs gained a seed, six states and three press
+  specs. Full accounting, every measured number, the two things found and
+  fixed along the way, and the one blocker found and reported rather than
+  resolved: `plan.md`, "B5.3 built".
+- **Two things found and fixed inside the touched path, neither in the
+  brief's line list:** axe's `nested-interactive` rule fires on the storage
+  notice's dismiss button sitting inside its own `<summary>` - app.js's own
+  markup, unavoidable given `<details>` hides every child but the first
+  `<summary>` while closed - accommodated in `app/src/test/a11y.ts`'s `OFF`
+  map alongside `color-contrast`. And `npm run check`'s own first `prettier
+  --write` pass (needed to clear an unrelated formatting failure)
+  reformatted `ListsPage.svelte`'s hand-glued whitespace-avoidance markup
+  back into a real bug - fixed with the `<!-- prettier-ignore -->` device
+  `TableRows.svelte` already carries for the identical reason.
+- **One blocker, found by the harness, reported rather than resolved:**
+  `#/lists ~ notice unfolded @ en 1100/768/375` read 5.88/6.40/9.05% against
+  an expected zero; the Russian cells of the same state are exact, and every
+  other `#/lists` state and cell reads `совпадает`. Root cause, confirmed by
+  reading `storageWarning()`/`hideWarn` in app.js: the live app's `<details>`
+  carries no `open` state tracked in JS, so pressing `EN` - which rebuilds
+  `#view`'s `innerHTML` from scratch - silently re-folds it; the rewrite's
+  Svelte-owned `<details>` persists across the same language switch because
+  nothing recreates the element. This is exactly the divergence `plan.md`'s
+  own "Decided in planning" already reasoned about and accepted **on the
+  stated assumption that it would be invisible to every state** - an
+  assumption this state's own English cells disprove. Not one of the six
+  causes the plan named to check first, and not an implementer's design
+  call to re-open alone - see "Blockers" for the three unchosen paths
+  forward.
+- Files changed: `app/src/lib/dict.ts`, `help.ts`, `help.test.ts`;
+  `app/src/styles/tokens.css`; new `app/src/ports/dialog.ts`;
+  `app/src/ports/types.ts`, `index.ts`, `ports.test.ts`;
+  `app/src/state/lists.svelte.ts`, `lists.test.ts`, `app.svelte.ts`,
+  `app.test.ts`; `app/src/components/Button.svelte`, `button.test.ts`; new
+  `app/src/components/Empty.svelte`; `app/src/components/TablesPage.svelte`;
+  new `app/src/components/ListsPage.svelte`, `listsPage.test.ts`;
+  `app/src/App.svelte`; `app/src/components/Shell.svelte`, `shell.test.ts`,
+  `a11y.test.ts`; `app/src/test/a11y.ts`; `tests/parity/driver.js`,
+  `tests/parity/specs.js`; `docs/specs/FEATURES.md`, `docs/specs/
+  COVERAGE.md`; `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): **none.** Working tree left uncommitted, per this task's own
+  explicit stop condition - the acceptance criterion "every `#/lists` cell
+  at 0.00%" is not met, for a reason outside the six the plan named to
+  check, and deciding how to close it is not this pass's call. The
+  pre-existing uncommitted change to `issues/47/context.md` (present before
+  this session started) was left exactly as found.
+- Deviations and rationale: none from the brief's scope, in-scope file
+  list, or ordered steps. The two in-path fixes above are cheap, local, and
+  inside the touched path, per `CLAUDE.md`. The one substantive departure
+  from "done" is the blocker itself, which is a stop rather than a design
+  choice made in this pass - full reasoning in `plan.md`, "B5.3 built".
+
+- Batch name/id: **B5.3 close-out - the notice re-folds on a language
+  switch** (this session, on top of `91d7899`). **Implemented; closes B5.3
+  as one commit.**
+- What shipped: `ListsPage.svelte`'s `{:else if !app.warnHidden}` branch
+  wraps the `<details class="warn">` … `</details>` in `{#key app.lang}` …
+  `{/key}`, with a comment naming the mechanism (`restoreOpen`, app.js
+  3769) - the live `render()` builds the notice fresh on a language switch
+  and only re-applies a person's fold/unfold to `[data-keep]` elements,
+  which this is not. The `<summary>`'s glued children and the `<p>` are
+  untouched; `npx prettier --write` made no change, so no
+  `<!-- prettier-ignore -->` was needed. `listsPage.test.ts` gained one case
+  in `describe('the head and the panel')`: unfold, press `EN`, assert the
+  fresh `details.warn` is closed and `'more'` (English `readMore`) is
+  present, ending in `expectNoA11yViolations`. `docs/specs/FEATURES.md`'s
+  Lists storage-notice bullet gained the one clause on unfolding not being
+  remembered across a language switch. Full accounting: `plan.md`, "B5.3
+  built", "Close-out decision", "Close-out run".
+- **No deviation from the brief.** `npm run check` needed one re-run on the
+  documented worker-fork host-load crash (`Test Files 34 passed (36)`,
+  `Tests 687 passed (782)`, two unhandled errors) - re-run per the brief's
+  own instruction, not salvaged; the second attempt was exit 0.
+- Files changed: `app/src/components/ListsPage.svelte`,
+  `app/src/components/listsPage.test.ts`, `docs/specs/FEATURES.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md`; `issues/47/context.md` goes
+  into the same commit as it stood (untouched by this pass).
+- Commit(s): one commit, `feat(lists): the lists index`, authored `artex-x
+  <artex-x@users.noreply.github.com>`, on top of `91d7899`, containing the
+  whole B5.3 batch (the 26 paths B5.3 already held plus the five above) -
+  see `git log` for its sha. No push.
+- Deviations and rationale: none from the brief's scope, file list, or
+  ordered steps.
+
 ## Verification
+
+- Commands run (exact), this session (B5.3 close-out):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+    call, `timeout: 600000` - **two attempts**:
+    1. Hit the documented worker-fork host-load crash: `Worker exited
+       unexpectedly`, `Test Files 34 passed (36)`, `Tests 687 passed
+       (782)`, two unhandled errors, several components reading
+       artificially low coverage because their files never ran under the
+       dead worker. Not a code defect; re-run per the brief's own
+       instruction not to salvage a run that goes over under load.
+    2. **Exit 0.** format/lint/typecheck (523 files, 0/0)/data/derived/
+       i18n/selftest (292 passed) all clean; `vitest run --coverage`:
+       **782 tests, 36/36 files passing**, 96.89/90.09/96.93/97.15
+       statements/branches/functions/lines, every threshold met.
+  - `npx prettier --write app/src/components/ListsPage.svelte` before the
+    check - unchanged; the glued `<summary>` survives formatting, so no
+    `<!-- prettier-ignore -->` was added.
+  - `npm run test -- listsPage` - 20/20 passed (the run's own per-file
+    coverage errors are the filter's own artifact, not a gate failure).
+  - `npm run build` - clean; `dist/assets/app.js` 223.59 kB, 69.23 kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists"` (6 states, 36
+    cells, one timed) - **`расхождений нет`**, all 36 cells `совпадает`,
+    including the three `~ notice unfolded @ en` cells that read
+    5.88/6.40/9.05% before this pass. **Supersedes the "3 расхождения"
+    line in the B5.3 entry below**, which is kept as the historical record
+    of the blocker as found.
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - one
+    foreground call, `timeout: 600000` - **exit 0**: build, `file://`
+    smoke, bundle budget (67.2 kB gzip against 120 kB).
+  - **No `VISUAL_DEBT` or `ACCEPTED` entry was written** - the three cells
+    are now exact, not excused.
+  - `"nothing found" "#/tables ~"` (10 states, 60 cells) and `"i/ci1 ~"`
+    (6 states, 36 cells) were **not re-run**, per the brief - banked from
+    B5.3's own run below; nothing outside `ListsPage.svelte` renders the
+    keyed block.
+  - `git log --oneline -3` and `git status --porcelain`, checked before
+    starting and again immediately before staging: HEAD stayed at
+    `91d7899` throughout; only the five files named in "Completed" (close-
+    out) changed, plus the pre-existing 26 B5.3 paths.
+
+- Commands run (exact), this session (B5.3):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call
+    each time, `timeout: 600000`, needed **six attempts** on this loaded host
+    (19 peer sessions, measured 1.3 GB free of 16 GB at the time):
+    1. `format:check` failed on six files this batch touched
+       (whitespace/wrapping only) - fixed with `npx prettier --write` on
+       those six.
+    2. `lint` failed - one `@typescript-eslint/no-confusing-void-expression`
+       on `ListsPage.svelte`'s delete button - fixed with braces, matching
+       `AddToList.svelte`'s own convention.
+    3. `svelte-check` crashed the process with a V8 out-of-memory error - a
+       host-load crash, not a code defect; re-run per the brief's own
+       instruction not to salvage a run that goes over under load.
+    4. `typecheck` passed (523 files, 0/0); `vitest run --coverage` crashed a
+       worker fork (`ERR_IPC_CHANNEL_CLOSED`), leaving many components read
+       as 0% because their tests never ran under the dead worker - the same
+       documented memory-pressure signature, not a defect; re-run.
+    5. Everything passed except one real failure this run surfaced:
+       `listsPage.test.ts`'s "draws two cards..." case, off by a literal
+       space (`'Клад дракона1 '`). Traced to attempt 1's own `prettier
+       --write` reformatting `ListsPage.svelte`'s hand-glued
+       whitespace-avoidance markup onto separate lines, reintroducing the
+       exact whitespace text node the glueing exists to prevent -
+       `TableRows.svelte` already carries a `<!-- prettier-ignore -->`
+       comment for this identical failure mode. Fixed the same way,
+       confirmed stable (`prettier --write` again, diffed, no change), the
+       single test re-run alone (19/19) before the next full attempt.
+    6. **Exit 0.** format/lint/typecheck (523 files, 0 errors, 0
+       warnings)/data/derived (`производные файлы: всё сходится`)/i18n
+       (`переводы: паритет соблюдён`)/selftest (292 passed) all clean;
+       `vitest run --coverage`: **781 tests, all files passing**,
+       96.89/90.09/96.93/97.15 statements/branches/functions/lines, every
+       per-file and overall threshold met.
+  - `npm run build` - clean; `dist/assets/app.js` 223.39 kB, 69.15 kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists"` (6 states, 36 cells,
+    one timed) - **3 расхождения**, all `#/lists ~ notice unfolded @ en
+    1100/768/375` (5.88/6.40/9.05%), all diagnosed in "Completed" and
+    "Blockers"; the other 33 cells `совпадает`. Run once; the diff images
+    were read before anything was written, per `docs/parity.md`'s own rule,
+    and the cause is structural (a language switch, not a rendering
+    fluke) so a second run was not expected to, and would not, change it.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "nothing found" "#/tables ~"`
+    (10 states, 60 cells - the `Empty` extraction and the placeholder rule)
+    - `расхождений нет`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "i/ci1 ~"` (6 states, 36 cells
+    - the `pickq` and new-list placeholders) - `расхождений нет`, including
+    three `снимок целиком` retries on `~ whole`'s already-known
+    instability, not a new one.
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - exit 0:
+    build, `file://` smoke (`the built page opens from a folder`), bundle
+    budget (67.1 kB gzip against 120 kB).
+  - **No `VISUAL_DEBT` or `ACCEPTED` entry was written.** Writing one for
+    the failing state would be exactly the design call "Blockers" reports
+    rather than makes.
+  - `git log --oneline -3` and `git status --porcelain`, checked repeatedly
+    (before starting, before each `npm run check` retry, and again at the
+    end): HEAD stayed at `91d7899` throughout - no peer session touched this
+    tree while this batch ran. The pre-existing uncommitted change to
+    `issues/47/context.md` was left exactly as found.
 
 - Commands run (exact), this session (B5.2 part 1):
   - `npm run lint` - exit 0. `npm run typecheck` - `svelte-check`, 519 files, 0
@@ -1186,8 +1429,153 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
+B5.3, close-out included, is built, verified and committed as one commit,
+`feat(lists): the lists index` (see `git log`). B5.4-B5.6 (the list page,
+search and print) remain outlines only in `plan.md`, "B5 planned" - picking
+and planning the next one is the orchestrator's, not implement-ready yet.
+
+<details>
+<summary>B5.3 close-out's own brief (implemented; kept for the record, not for reuse)</summary>
+
+- **Name:** B5.3 close-out - the storage notice re-folds on a language
+  switch. **Implement-ready.** Not a new batch: a bounded addition to the
+  uncommitted B5.3 tree already in the working directory (26 modified or
+  untracked paths, HEAD `91d7899`), closed by the one commit `feat(lists):
+  the lists index`. Do not start B5.4; do not re-implement B5.3.
+
+- **Objective:** `#/lists ~ notice unfolded @ en 1100/768/375` read 0.00%,
+  because the rewrite's storage notice, like the live app's, comes back
+  folded after a language switch. The decision, its evidence and the two
+  rejected paths: `plan.md`, "B5.3 built", "Close-out decision" - read it,
+  do not re-derive it, do not reopen paths 2 and 3. The one-line reason:
+  the live `render()` re-applies a person's fold/unfold only to `data-keep`
+  elements (`restoreOpen`, app.js 3769-3775) and the notice is not one, so
+  it folds on a language switch by the live app's own rule; the port
+  re-creates the element on `app.lang`.
+
+- **Read first:** that subsection; `context.md`, "B5.3 close-out facts";
+  `app.js` 3769-3783 (`restoreOpen` and the `toggle` listener);
+  `tests/parity.js` 353-363 (`arrive()`: `enter`, then `EN`);
+  `app/src/components/ListsPage.svelte` 118-133 (the `<details>` as built).
+
+- **In scope:** exactly the files below. Nothing else in the tree changes;
+  the paths B5.3 already modified stay as they are.
+
+- **Out of scope / do not:** `app.navigations` in the key (a no-op here -
+  `App.svelte` remounts `ListsPage` on every route change; B5.4 decides for
+  the list page, with a state); a counter bumped by create or delete (the
+  create/delete divergence stands, "Decided in planning" as corrected);
+  `StorageNotice.svelte` (B5.4's second use); any harness change
+  (`driver.js`, `parity.js`, `specs.js` are done); any `VISUAL_DEBT` or
+  `ACCEPTED` line - none is expected, and `ACCEPTED` cannot excuse a pixel
+  cell anyway; `Shell.svelte`, `app.svelte.ts`; a Windows figure written
+  anywhere.
+
+- **Files expected:** `app/src/components/ListsPage.svelte`,
+  `app/src/components/listsPage.test.ts`, `docs/specs/FEATURES.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md` (both docs: the run results
+  and the commit sha; the decision text is already written), and
+  `issues/47/context.md` goes into the same commit as it stands (the
+  orchestrator's dispatch hunk and the planner's close-out section are both
+  this batch's record).
+
+- **Steps:**
+  1. `ListsPage.svelte`, the `{:else if !app.warnHidden}` branch: wrap the
+     `<details class="warn">` … `</details>` element in `{#key app.lang}` …
+     `{/key}`. `app.lang` is a `$state` on `AppState`; `setLang()` does not
+     bump `navigations`, so nothing else would fire. Keep the `<summary>`'s
+     three children glued exactly as they are (`><b>…</b><i>…</i><button
+     …>&times;</button\n></summary\n>`) and the `<p>` inside the block. Put
+     a short comment above the block naming the mechanism: the live
+     `render()` builds the notice fresh on a language switch and
+     `restoreOpen` re-applies open state only to `data-keep` elements, which
+     this is not (app.js 3769). Then `npx prettier --write
+     app/src/components/ListsPage.svelte` and diff: if prettier splits the
+     glued summary, wrap the `<details>` in `<!-- prettier-ignore -->` the
+     way the `.listcard-main` link already is. The Russian `~ notice
+     unfolded` cells and `#/lists` folded going non-zero is the signature
+     of a stray space.
+  2. `listsPage.test.ts`, inside `describe('the head and the panel')`: one
+     case, `folds the notice again on a language switch, as the live
+     re-render does` - `const { container } = render(App, { env: at() })`;
+     `await userEvent.click(screen.getByText('подробнее'))`; assert
+     `container.querySelector<HTMLDetailsElement>('details.warn')?.open`
+     is `true`; `await userEvent.click(screen.getByRole('button', { name:
+     'EN' }))` (the pattern `shell.test.ts` 42 uses); assert the new
+     `details.warn` has `open === false` and `screen.getByText('more')`
+     (the English `readMore`, `dict.ts` 450) is in the document; end with
+     `await expectNoA11yViolations(container)`. `npm run test -- listsPage`
+     (20 cases) before the full check.
+  3. `docs/specs/FEATURES.md`, the Lists storage-notice bullet (76-79):
+     after "whose cross is remembered in `dhloot.warn.v1`" add "; unfolding
+     is not remembered - the notice comes back folded after a language
+     switch, as the live re-render leaves it".
+  4. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+     Bash call, `timeout: 600000`, exactly that shape.
+  5. `npm run build`, then `MSYS_NO_PATHCONV=1 node tests/parity.js
+     "#/lists"` (6 states, 36 cells, one timed) - **every cell
+     `совпадает`**. A non-zero cell is a diff image opened first.
+  6. `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - one
+     foreground call, `timeout: 600000` (one state's screen changes).
+  7. `plan.md`, "B5.3 built", "Close-out decision": fill in "Close-out run"
+     (36/36, the check results, the sha). `handoff.md`: Status (task
+     status, last agent), Completed (files, commit sha), Verification (the
+     exact commands and results, replacing "3 расхождения"), the first
+     Blockers bullet → resolved with the sha, this brief → retired into a
+     `<details>` like the ones below.
+  8. Re-read `git log --oneline -3`; HEAD must still be `91d7899` - if it
+     moved, stop and report. Stage the batch's paths by name, never `git
+     add -A`. One commit, `feat(lists): the lists index`, authored as
+     `artex-x <artex-x@users.noreply.github.com>`, no `Co-Authored-By`, no
+     push.
+
+- **Acceptance criteria:** `node tests/parity.js "#/lists"` 36/36
+  `совпадает`, both languages; `listsPage.test.ts` 20 cases green, the new
+  one ending in `expectNoA11yViolations`; `npm run check` and `npm run
+  check:built` exit 0 with thresholds met; no `VISUAL_DEBT`/`ACCEPTED`
+  change; `FEATURES.md` carries the clause; one commit on top of `91d7899`
+  containing all of B5.3.
+
+- **Verification commands - re-run vs banked:**
+
+  ```text
+  set -o pipefail; npm run check 2>&1 | tail -n 120         # re-run: production code and a test change
+  npm run build                                              # re-run
+  MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists"          # re-run: 6 states / 36 cells, all expected clean
+  set -o pipefail; npm run check:built 2>&1 | tail -n 120   # re-run: a screen changes
+  ```
+
+  **Banked, do not re-run:** `node tests/parity.js "nothing found"
+  "#/tables ~"` (10 states, 60 cells, `расхождений нет`) and `node
+  tests/parity.js "i/ci1 ~"` (6 states, 36 cells, `расхождений нет`) -
+  nothing outside `ListsPage.svelte` renders the keyed block and those
+  routes never mount it. Shapes: `npm run check` and `npm run check:built`
+  are one foreground call each, never backgrounded or redirected - a
+  backgrounded run cannot arm the commit gate; a run that goes over the cap
+  is re-run, not salvaged; zeros down the coverage table with `Errors`
+  equal to the file count means no test ran - re-run. No vitest pass
+  concurrently with a parity run.
+
+- **Risks / do-nots:** a whitespace text node between `{#key}` and
+  `<details>` is harmless (block context); a split `<summary>` is not - see
+  step 1. Do not key on anything but `app.lang`. Do not touch the harness,
+  `Shell.svelte` or `app.svelte.ts`. Do not write a Windows figure. If HEAD
+  moved, stop.
+
+- **Fallback (optional):** none expected - a Svelte 5 `{#key}` block
+  destroys and re-creates its content when the expression changes. If the
+  built app somehow keeps the element, the alternative is
+  `bind:open={noticeOpen}` with `$effect(() => { void app.lang; untrack(()
+  => { noticeOpen = false; }); })` - more code for the same result; record
+  in "Blockers" why the first form failed before taking it.
+
+</details>
+
+<details>
+<summary>B5.3's retired brief (implemented; kept for the record, not for reuse)</summary>
+
 - **Name:** B5.3 - the lists index (`#/lists`), the storage notice where the
-  live app draws it, and `noData`. **Implement-ready**; one batch, no parts.
+  live app draws it, and `noData`. **Implemented**; one batch, no parts.
 
 - **Objective:** `#/lists` draws the live index - the page head with its
   four-paragraph help, the storage notice in both live forms (a plain
@@ -1343,6 +1731,8 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   `summary` verb and the other two press specs do not depend on it. Not
   expected: `page.on('dialog')` is puppeteer's documented answer to exactly
   this.
+
+</details>
 
 <details>
 <summary>B5.2 part 1's retired brief (implemented; kept for the record, not for reuse)</summary>
@@ -1599,6 +1989,78 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 </details>
 
 ## Blockers
+
+- **RESOLVED (implementer, 2026-09-10) - B5.3's `~ notice unfolded @ en`
+  cells: the notice re-folds on a language switch.** Path 1, language change
+  only, built exactly as decided: `{#key app.lang}` around the `<details>`
+  in `ListsPage.svelte` with a comment naming the mechanism, one new
+  `listsPage.test.ts` case, one clause in `FEATURES.md`. `node
+  tests/parity.js "#/lists"` now reads all 36 cells `совпадает`, including
+  the three that were `5.88%/6.40%/9.05%` before this fix. Closed by this
+  session's `feat(lists): the lists index` commit - see `git log`. Full
+  verification: "Verification" below and `plan.md`, "B5.3 built", "Close-out
+  decision", "Close-out run". What follows is the original diagnosis, kept
+  as the record - it was confirmed, not re-derived. `node tests/parity.js
+  "#/lists"` read 33 of 36 cells at `совпадает`; `#/lists ~ notice unfolded
+  @ en 1100/768/375` read 5.88%/6.40%/9.05% against an expected zero
+  (Russian cells of the same state are exact). Diff images opened first, per
+  `docs/parity.md`'s rule: `-legacy.png` shows the storage notice **folded**,
+  `-next.png` shows it still **open** with the `<p>` body text visible and
+  the page correspondingly taller.
+
+  **Root cause, confirmed by reading source, not guessed.** `storageWarning()`
+  (app.js 2872-2886) and `hideWarn`/`warnHidden` (2865-2871) never track the
+  disclosure's open/closed state in JS - it is transient, native `<details>`
+  DOM state, read by nobody. `arrive()`'s own sequence presses `EN` *after*
+  `enter()` has already opened the disclosure in Russian; pressing `EN` on
+  the live app calls its `render()`, which rebuilds `#view`'s `innerHTML`
+  from scratch, and a freshly-built `<details>` with no `open` attribute
+  starts closed - the earlier click's effect is silently discarded. The
+  rewrite's `<details>` is a persistent Svelte-owned element nothing
+  recreates on a language change, so its `open` property survives exactly
+  as the person left it.
+
+  **This is not a new defect - it is `plan.md`'s own "Decided in planning"
+  section, already reasoned about, on an assumption this state disproves.**
+  Verbatim: *"The disclosure keeps its open state across a create. Live
+  folds it as a side effect of replacing `innerHTML`; the rewrite's
+  `<details>` persists. Invisible to every state (each starts folded),
+  kinder to a person, recorded rather than reproduced."* That reasoning
+  covered a *create*; it did not anticipate that a *language switch* is the
+  same class of live-app re-render, and `#/lists ~ notice unfolded` - the
+  very state the plan wrote to prove the disclosure opens - is exactly where
+  a language switch after the press makes the assumption visible instead of
+  invisible. Not one of the plan's own six named first-look causes (all
+  either ruled out by the other 33 passing cells, or simply inapplicable to
+  a state-persistence question).
+
+  **Three paths, as the implementer reported them - since decided: 1 taken
+  (language change only; navigation already remounts the page, create and
+  delete stay as "Decided in planning" has them), 2 rejected on mechanics
+  (`ACCEPTED` is read only by the spec `diff()`, so a pixel cell could only
+  be excused by a Windows `VISUAL_DEBT` figure, which owner decision 1
+  forbids), 3 rejected (a ten-line harness change that would blind the
+  suite to a divergence a person reaches in two clicks):**
+  1. Make the rewrite's disclosure re-fold on a language switch (a
+     production change beyond B5.3's line list, and its own open design
+     question: only on a language change, matching what actually triggered
+     this failure, or on every navigation, matching what the live app's
+     `render()` implies more broadly - which would also touch B5.4's list
+     page once it exists).
+  2. Accept the kinder rewrite behaviour and add an `ACCEPTED` line naming
+     it - directly contradicts this batch's own written acceptance
+     criterion ("no `VISUAL_DEBT` or `ACCEPTED` entry expected... none names
+     `#/lists`") and needs the owner's sign-off to override a criterion
+     rather than an implementer's judgement call.
+  3. Change what `~ notice unfolded` compares so it does not span a language
+     switch after the press - not obviously possible in the current
+     one-state-many-widths-and-languages model without a new harness
+     mechanism.
+
+  Everything else about B5.3 is done and verified - see "Completed" and
+  `plan.md`, "B5.3 built" for the full accounting. **Closed**: the close-out
+  batch (below, retired brief) applied path 1 and B5.3 is now one commit -
+  see `git log` for `feat(lists): the lists index`.
 
 - **CI has not yet read this session's B5.2 part 1 commit.** Three filtered
   parity runs from this host are clean (`a row ticked`/`bar menu`/`selection
