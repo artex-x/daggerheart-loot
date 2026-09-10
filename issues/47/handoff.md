@@ -8,7 +8,8 @@ depends on chat history.
 
 - Task status: in_progress - B4 built and committed; no next batch is
   implement-ready below (see "Next batch")
-- Last agent: implementer (B4 built)
+- Last agent: orchestrator (committed B4 as `fde9cdc` after two implementers
+  stalled on background checks; review dispatched)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
@@ -348,7 +349,12 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   `app/src/components/FilterBar.svelte`, `TablesPage.svelte`,
   `TableRows.svelte`, `tables.test.ts`, `a11y.test.ts`, `tests/parity/specs.js`,
   `issues/47/plan.md`, `issues/47/handoff.md`.
-- Commit(s): see `git log` for this session's B4 commit.
+- Commit(s): **`fde9cdc`** - `feat(tables): the equipment tables, their facets
+  and tier sections`, all sixteen paths in one commit (the fourteen above plus
+  `issues/47/context.md`). Committed by the orchestrator, not by an
+  implementer: two implementers in a row lost their turns waiting on
+  background checks, and the batch was already code-complete and verified.
+  See "Notes" for what that cost and the rule it earned.
 - Deviations and rationale: the `allEquip` order fix (above) was not named in
   the brief's line list, but it sits directly in the lines B4 rewrites
   (`equipOfKind`, `equipFacets`, both first called by this batch) and is
@@ -422,6 +428,34 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     findings were.
   - Every other one of the 34 states in the "tables" filter - including all
     eight of B4's own - measured `совпадает`/`0.00%`.
+
+- **The commit's own check evidence is the 00:11 run, and later attempts could
+  not reproduce it - said plainly rather than rounded up.** The passing
+  `npm run check` recorded against this tree (683 tests, thresholds met) is the
+  implementer's, run after the last production edit; every code and test file
+  in the commit was last written at 23:51 and only `issues/47/*.md` changed
+  afterwards, which is why the commit gate accepted the commit. The
+  orchestrator then ran `npm run check` twice more, at 03:03 and 03:49, and
+  **both failed to run any test at all**: `Test Files no tests`, `Errors 33`,
+  every file reporting
+  `[vitest-pool]: Failed to start forks worker ... Timeout waiting for worker
+  to respond`, and a coverage table reading 0% for everything. That is the
+  vitest fork pool failing to spawn, not a coverage regression - no test
+  asserted anything, so nothing could have regressed. Machine state at the
+  time: 2.9 GB free of 16 GB, 372 processes, five peer sessions live, zero
+  `chrome.exe` and zero stray vitest workers. The documented "one flaky
+  timeout, re-run before investigating" gotcha is the same failure in a milder
+  form; on a loaded host it takes the whole suite.
+- **`npm run check` no longer fits one foreground tool call, and that breaks
+  the commit gate's only source of evidence.** It ran ~345s of pool timeouts
+  alone and exceeded the 600s cap on a real run with B4's tests added. The
+  gate hook reads the Bash tool's own captured stdout, so a run that is
+  backgrounded - by the agent, or by the harness moving it there at the cap -
+  is invisible to it however honestly it passes. This is what stalled two
+  implementers in a row: each started the check in the background, then spent
+  its turns waiting for a result the gate could never accept. Next session
+  should either run the check on a quiet machine in one foreground call, or
+  decide deliberately how the gate is to be satisfied - see "Notes".
 
 - Commands run (exact), this session (B3.6 part 2):
   - The revert proof, scripted: each of B3.5's three fixes reverted alone,
@@ -856,6 +890,61 @@ implementer this session - kept for the record rather than deleted, since
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B4's review: approve, no blockers** (reviewer, this session, against
+  `fde9cdc`). It verified rather than read: the `allEquip` order against
+  `data.json` (`[...eq, ...all]` gives Палаш first, matching `app.js:936`),
+  the pool counts 317/108/90, all four `matches` call sites in `app.js`, the
+  facet group order and `src` presence filter against real data, and the tier
+  sections against `renderEquipTable`. It confirmed the "dead code on
+  `voa`/`core_item`" reasoning holds structurally: `noUncheckedIndexedAccess`
+  makes `eqKind` genuinely `EquipKind | undefined`, so every added branch is
+  `eqKind ? ... : <previous expression>`. It judged the 00:11 check sufficient
+  evidence for this commit and explicitly did not want a local re-run - the
+  03:03/03:49 runs are non-evidence, not counter-evidence.
+
+- **Three risks the review raised, none blocking, all worth knowing before
+  someone leans on the wrong guard:**
+  - `#/tables/eq_secondary ~ searched` guards the `noType` fix **in Russian
+    only**. `enter` runs before the language click by design, so the query
+    stays `вторичное`; in English no record's text contains that substring, so
+    the three `@ en` cells render the empty state in both apps. They compare
+    honestly at 0.00%, but the type-word path is guarded by the RU pixels plus
+    `tables.test.ts`'s `основное` case, not by six cells.
+  - `upgradeLine`'s order changed as a side effect of the `allEquip` fix. The
+    change is an improvement - it now matches `app.js`'s `BY_LINE`, built from
+    the same expression - but `data.test.ts` pins `equipOfKind`, not the
+    ladder. A future flip would be caught on weapons and pass silently on the
+    tier ladder in `RecordCard`.
+  - `facets.test.ts`'s "never offers motherboard" case is **vacuous**: its
+    fixture index holds no `motherboard` record, so the assertion cannot fail
+    whatever the presence filter does. The real-data fact is true and was
+    checked against real data; this test does not establish it.
+
+- **B4 review nits, recorded not fixed** (no remediation cycle was spent, per
+  the orchestration rule that nits do not earn one):
+  - `app/src/lib/facets.ts:79` - `eqFacetRows` is exported with no consumer
+    outside its own module; `facetRows` is its only caller. `CLAUDE.md`'s "add
+    no export before something uses it" says module-private. The only nit with
+    a standing-rule basis.
+  - `facets.ts:137` - `if (!row) throw` is unreachable: `EQ_GROUPS` is
+    exhaustive and typed and `build` covers every key. Defensive dead code in
+    a pure module.
+  - `data.test.ts` builds its expected order with the same `[...eq, ...all]`
+    shape as the implementation. It does pin the order, but a concrete
+    first-id assertion (`Палаш`) would be independent of the implementation
+    rather than a restatement of it.
+  - The axe sweep covers the weapons panel with a tier pressed, but not the
+    equipment empty state (which grows its own reset button) nor the
+    `eq_armor` three-row panel.
+
+- **The one check B4 still owes, and nobody here can run it: CI on
+  `fde9cdc`.** Owner decision 1 makes ubuntu authoritative, and the eight new
+  states' 0.00% and the "no new `VISUAL_DEBT`" claim are Windows-local
+  measurements. When the owner next pushes, read the four parity shards on
+  that commit and reconcile the eight `eq_` states against that run. If a cell
+  comes back non-zero, the entry is recorded from CI's figure, not from this
+  host.
 
 - **The 600px overrides for `.selx`, `.selacts`, `.seldrop`, `.dropmenu`, the
   `.lrow*` family, `.npair` and `.batch-acts` belong to components that do
