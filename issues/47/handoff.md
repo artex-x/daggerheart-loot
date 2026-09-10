@@ -9,13 +9,18 @@ depends on chat history.
 - Task status: in_progress - B4 built (`fde9cdc`, reviewed); B5.1 built
   (`fe0043b`) with its fix-then-continue pass (`d1c1367`); B5.2 part 0 built
   (tests and docs, no production code) - `f167e62`, on top of the planning
-  commit `2f3659d`. **B5.2 part 1 (the selection bar) is now built too** - see
-  git log for this session's `feat(lists): ...` commit, on top of `4210ee3`.
-  All local acceptance criteria met, three parity filters clean, `npm run
-  check` and `npm run check:built` both exit 0. **B5.3 (the lists page,
+  commit `2f3659d`. **B5.2 part 1 (the selection bar) is now built too** -
+  `ff741ad`, on top of `4210ee3`, **reviewed: approve, no blockers**
+  (four nits in "Deferred"). All local acceptance criteria met, three parity
+  filters clean (102 cells), `npm run check` and `npm run check:built` both
+  exit 0. **Neither part has been read by CI** - nothing is pushed, and that
+  read is what closes both; see "Blockers". **B5.3 (the lists page,
   `noData`, `storageOff`) is next and needs planning first** - see "Next
   batch".
-- Last agent: implementer (2026-09-10: B5.2 part 1 built - `app.sel` lifted
+- Last agent: reviewer (2026-09-10, opus, against `ff741ad`: **approve**, no
+  blockers, four nits recorded in "Deferred"; its press-spec language sweep
+  came back clean across all eight `presses` specs and both `looks` specs).
+  Before it: implementer (2026-09-10: B5.2 part 1 built - `app.sel` lifted
   onto `AppState`, `SelBar.svelte` renders between the footer and the toast,
   the invented `.dropmenu.up` rule deleted, `RecordModal` folds a stale
   `menuFor` on every close path, `shareSelection` added with no skip set; a
@@ -1660,6 +1665,44 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B5.2 part 1's review: approved, no blockers** (reviewer, opus, against
+  `ff741ad`, 2026-09-10). The sweep the batch was reviewed for came back
+  clean: **all eight `presses: true` specs and both `looks` specs in
+  `tests/parity/specs.js` take their control names through `NAME[lang]`** -
+  only `#/i/ci1 ~ selection copied`'s own spec had the literal, and the
+  implementer had already fixed it. The Russian literals that remain are
+  either seeded list names (`Клад дракона`, user data, identical in both
+  languages) or inside a state's `enter`, which `arrive()` runs *before* the
+  language press and so is correct by construction.
+  - Worth keeping, because it lowers the residual risk of this whole class:
+    **the failure is loud, not silent.** `driver.js` throws
+    `` `${target}: no control named "${name}"` `` and `target` differs between
+    the two sides, so the error strings differ and the run reports a
+    разница - which is how it was caught. The silent variant would be a spec
+    calling `d.has()` with a Russian literal; no spec does that today. If one
+    is ever written, that is the shape to catch in review.
+  - Four nits, recorded rather than fixed - the review rules keep a
+    remediation cycle for blockers, and none of these is one. The first two
+    are the ones worth taking as campsite work in the next batch that touches
+    those files:
+    1. `SelBar.svelte:98-99` gives `.selbar` `padding-left/right:
+       env(safe-area-inset-*)`. In `style.css` the `.selbar{padding:10px 0}`
+       shorthand (807) comes *after* `.wrap` (52-53) at equal specificity, so
+       the live element's computed left/right padding is `0`. Every other
+       `--wrap` composition in the rewrite carries only `width` and
+       `margin-inline`. Invisible to the harness (`env()` is 0 without a
+       display cutout) and divergent only on a notched device. The batch
+       followed the plan, which asked for "`.wrap`'s four properties"; the
+       plan was one property pair too generous.
+    2. `RecordCard.svelte:636` still calls the `AddToList` base rule "the
+       future selection bar's". The batch fixed the twin comment in
+       `AddToList.svelte` and left this one stale.
+    3. `SelBar.svelte` measures 75% branches against a threshold of exactly 75
+       (`vite.config.mts:150-155`) - no margin for the next edit to that file.
+    4. `tables.test.ts` re-assigns `Element.prototype.scrollIntoView = vi.fn()`
+       inside five separate `it` bodies; `record.test.ts` does it once at
+       module scope, which is the shape to copy.
 
 - **B5.1's review findings the fix-pass deliberately did not take** (reviewer,
   opus, against `fe0043b`; verdict fix-then-continue, its two blockers fixed
