@@ -7,16 +7,17 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress - B4 built and committed (`fde9cdc`, reviewed);
-  **B5.1 is implement-ready below** (see "Next batch")
-- Last agent: planner (2026-09-10: the lists slice split into B5.1-B5.6 in
-  `plan.md`, "B5 planned"; B5.1's brief below; nothing committed, no
-  production code touched)
+  **B5.1 is built this session** - see "Completed" for its commit sha; B5.2
+  is next, not yet planned in detail (see "Next batch")
+- Last agent: implementer (2026-09-10: built B5.1 - the list store, the
+  toast, and the add-to-list row on the card)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
   `fb8cb0d`; **B3.6 is complete in all three parts** - part 0 `f7308a9`,
   part 1 `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`.
-  **B4 is built this session** - see "Completed" for its commit sha.
+  B4 is `fde9cdc`. **B5.1 is built this session** - see "Completed" for its
+  commit sha.
 
 Phase 4's B1-B3.6 and B4 are all built. B4 was the last body shape the tables
 slice needed (`plan.md`, "the tables surface, and how it splits"), so every
@@ -362,7 +363,187 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   exactly the kind of "cheap, local, safe bug in a touched path" `CLAUDE.md`
   says to fix rather than defer. No other deviation from the brief.
 
+- Batch name/id: **B5.1 - the list store, the toast, and the add-to-list row
+  on the card** (this session)
+- What shipped: `ListStore` (`app/src/state/lists.svelte.ts`) reads v2, migrates
+  v1 once and leaves it untouched, saves merged with whatever storage holds
+  now, and reloads on another tab's write; `AppState` grew `lists`, `menuFor`
+  (cleared on `go()` and on the router's own `onChange`, not on `replace()`),
+  and `say`/`hideToast`/`toast` with the live app's three durations
+  (1600/2600/7000ms). `Toast.svelte` (new) is a `popover="manual"` element in
+  `Shell.svelte`, in the top layer above `RecordModal`'s dialog and its own
+  inertness. `AddToList.svelte` (new) is the button-then-menu control off
+  `addToListBtn`/`listMenuHTML`: newest list first, the search box past eight
+  lists, the inline new-list form, `placeMenu`'s flip-and-scroll, and the
+  live app's own outside-click rule. `Button.svelte` grew `on`, `ghost`,
+  `caret` (moved out of `FilterBar.svelte`, its first use) and `sameTab`.
+  `RecordCard.svelte` grew the `pick` snippet and `.cardpick`;
+  `RecordPage.svelte` and `RecordModal.svelte` render it
+  (`AddToList` + the print link); `TablesPage.svelte`, `RollPanel.svelte`,
+  `StdPanel.svelte`, `AltPanel.svelte` and `PageHead.svelte` all route their
+  local `say` through `app.say` and lost their own `.said`/`sr-only` regions -
+  `PageHead` now toasts `homeSet`/`homeReset` on a successful pin, matching
+  `#/roll/wondrous ~ pinned`. `tests/parity/driver.js` gained `seed`/`storage`;
+  `tests/parity.js`'s `arrive()` seeds before opening and `keyFor` hashes the
+  seed; `tests/parity/specs.js` gained the four new `#/i/ci1` states, un-pended
+  `~ toast`, added `listMembership`, and rewrote `VISUAL_DEBT`/`ACCEPTED` per
+  what was actually measured (below).
+- **Two things not in the brief's line list, fixed anyway because the touched
+  path already owned them:**
+  - `RollPanel.svelte`, `StdPanel.svelte` and `AltPanel.svelte` were not named
+    in "Files expected" or "How it is built", but B5's own "Decided in
+    planning" section says the toast "replaces the `said` live regions the
+    pages invented" - plural, not the four files literally spelled out
+    elsewhere. Left alone, `#/roll/wondrous ~ pinned` (Wondrous is `RollPanel`)
+    could not have raised a real toast at all, which the acceptance criteria
+    require. All three now route through `app.say`, including `StdPanel`'s
+    `keepOneSource`/`keepOneKind` refusals and `AltPanel`'s `keepOneKind`,
+    which previously wrote straight to local `said` state with no error flag.
+  - Every `say(ok ? successMsg : t.copyFailed)` call site (`RecordActions`,
+    `TablesPage`'s three copy-link functions, `StdPanel`/`AltPanel`'s
+    `copyRoll`) needed a second argument once `say` could raise a real error
+    toast - app.js's own `copyText`/`copyRich` always toast a failure with
+    `role=alert` via a boolean second argument to `toast()`, which a
+    text-only `said` region had no way to represent and so nobody had ported.
+    Fixed by widening every `say` signature to `(msg, error?)` and passing
+    `!ok` (or `true` for a refusal) at each site.
+- **A defect the design's own acceptance criteria surfaced, not the plan
+  itself: app.js's success toast always overwrites a just-shown failure
+  toast, so a real live-app storage refusal is never actually seen.**
+  `addIdsTo` calls `saveLists()` (which toasts `saveFailed` internally on a
+  throw) and then unconditionally toasts `addedTo` right after, on the same
+  synchronous pass - the second call always wins the single toast slot. Since
+  this batch's acceptance criteria explicitly require "a refusing storage
+  keeps the session and toasts `saveFailed`," `AddToList.svelte`'s `pick()`
+  and `createNew()` check `save()`'s return value before showing the success
+  toast on top of it - a deliberate, reasoned departure from copying app.js's
+  literal call order rather than a parity gap: no parity state exercises a
+  real storage failure, so nothing the harness compares moves either way.
+- Files changed: `app/src/lib/dict.ts`, `icons.ts`; new `app/src/state/
+  lists.svelte.ts`, `lists.test.ts`; `app/src/state/app.svelte.ts`,
+  `app.test.ts`; new `app/src/components/Toast.svelte`, `AddToList.svelte`,
+  `lists.test.ts`; `app/src/components/Button.svelte`, `button.test.ts`,
+  `FilterBar.svelte`, `RecordCard.svelte`, `RecordPage.svelte`,
+  `RecordModal.svelte`, `RollPanel.svelte`, `StdPanel.svelte`,
+  `AltPanel.svelte`, `TablesPage.svelte`, `PageHead.svelte`, `Shell.svelte`,
+  `shell.test.ts`, `a11y.test.ts`; `tests/parity/driver.js`, `tests/parity.js`,
+  `tests/parity/specs.js`; `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's B5.1 commit.
+- Deviations and rationale: the three findings above (`RollPanel`/`StdPanel`/
+  `AltPanel` in scope, every `say` call site widened to carry `error`, and the
+  success-toast-over-failure fix); otherwise matches the brief. See
+  `plan.md`, "B5.1 built" for the full accounting including the jsdom
+  Popover-API gap and the outside-click null-prop race, both found and fixed
+  while getting `npm run check` green.
+
 ## Verification
+
+- Commands run (exact), this session (B5.1):
+  - `npm run check 2>&1 | tail -n 120` - **first attempt exceeded the 600s
+    foreground cap and was moved to the background** (this host measured
+    slower than context.md's 165s baseline this session); the background run
+    itself finished at exit 0 and was read from its own captured output, not
+    treated as the gate-arming call. Every subsequent call was run to
+    completion in the foreground as the brief requires.
+  - `npm run lint` - first real run: **5 errors**, `@typescript-eslint/
+    no-unsafe-member-access`/`no-unsafe-assignment` on `JSON.parse(...)[0]`
+    in `components/lists.test.ts` (three call sites). Fixed with a typed
+    `readLists(storage): StoredList[]` helper. Clean re-run: **exit 0**.
+  - `npm run typecheck` - first real run: **11 errors**, all
+    `exactOptionalPropertyTypes` violations from passing `{ error }` where
+    `error: boolean | undefined` into an opt-in `error?: boolean` object
+    property (`AppState.say`'s `opts`, the `Toast`/`ToastAction` interfaces,
+    every `say` wrapper's own call to `app.say`, and one test's `said` array
+    type), plus one `Array.prototype.map(liftNotes)` type mismatch
+    (`StoredList` lacks `LegacyList`'s index signature) and one unused
+    `menuEl` binding in `AddToList.svelte`. All eleven fixed - the `error`/
+    `action` properties widened to `T | undefined` everywhere they are
+    optional and might be assigned one, `liftNotes` called through a small
+    cast with a comment naming the exact mismatch, `menuEl` removed since
+    the placement effect already queries `.dropmenu` off `root`. Clean
+    re-run: **exit 0**, 518 files, 0 errors, 0 warnings.
+  - `npm run test` (`vitest run --coverage`) - first real run: **7 failed of
+    730**. In order, found and fixed:
+    - `AddToList.svelte`'s outside-click handler throwing
+      `Cannot read properties of null (reading 'id')` when a modal closes
+      (three `roll.test.ts`/`alt.test.ts` failures) - the null-prop race in
+      "Completed" above, fixed with the `try`/`catch`.
+    - `Element.prototype.scrollIntoView is not a function` (four
+      `lists.test.ts` failures) - jsdom does not implement it; stubbed with
+      `Element.prototype.scrollIntoView = vi.fn()` at the top of
+      `lists.test.ts` and `a11y.test.ts`, the existing pattern
+      `tables.test.ts` already uses per-test.
+    - Re-run: **3 failed** - `shell.test.ts`'s `getByRole('alert')` and
+      `getByRole('status')` not finding the toast despite it being in the
+      DOM with the right `role`/text (`screen.debug` confirmed this); traced
+      to jsdom's own `[popover]:not(:popover-open){display:none}` default
+      stylesheet rule, which it applies without implementing
+      `showPopover`/`hidePopover`/`:popover-open` matching, so the element
+      was permanently `display:none` in every test. Fixed in `Toast.svelte`'s
+      effect: when `showPopover` is not a function, set `el.style.display`
+      directly, which wins over the UA rule the way any inline style does.
+      One of the three failures was a second, independent bug in the new
+      test itself - `#/roll/std` is `DEFAULT_HOME`, so its pin button starts
+      already pinned and the button named "Открывать этот раздел при
+      запуске" never existed; moved that assertion to `#/roll/wondrous`,
+      which is not the default and is the actual route `#/roll/wondrous ~
+      pinned` exercises.
+    - Re-run: **1 failed** - `state/lists.test.ts`'s `create()` test asserted
+      `toBe` (reference equality) on `store.lists[0]`, but `lists` is
+      `$state` and Svelte 5 wraps a stored object in a reactive proxy, so
+      the reference is not the one `create()` handed back. Changed to
+      `toEqual`.
+    - Clean re-run: **exit 0**, 730 tests. Coverage then failed its own gate:
+      `Toast.svelte` (80.64%/63.33% stmts/branches) and `Button.svelte`
+      (83.33%/66.66%/75% stmts/branches/funcs) both under their per-file
+      thresholds - the `showPopover`-present branch and the anchor form's
+      caret were each exercised by nothing. Added one test to each: `shell.
+      test.ts` stubs `showPopover`/`hidePopover`/`matches` directly on the
+      toast element to exercise the branch a real browser takes and jsdom
+      cannot; `button.test.ts` renders the href form with `caret: true`.
+      Final clean run: **exit 0**, 732 tests, 96.67%/89.64%/96.57%/97.01%
+      statements/branches/functions/lines, all thresholds met.
+  - Final gate-arming call, exactly as the brief writes it,
+    `npm run check 2>&1 | tail -n 120`, one foreground call: **exit 0**, 732
+    tests, thresholds met.
+  - `npm run build` - clean; `dist/assets/app.js` 201.70 kB, 63.09 kB gzip.
+  - `node tests/parity.js "i/ci1"` (7 states) - first run: **3 расхождения**,
+    all on states the design predicted would go to zero and one it did not
+    predict at all (`#/i/ci1 ~ toast @ en 375`, still `pending` at the start
+    of this batch) - every one of the four new list states was already
+    `совпадает` (0.00%) on this first run, in both languages, at every
+    width. Investigated and recorded as `VISUAL_DEBT` rather than chased
+    further - see "Blockers" for what each one is and why. Re-run twice more
+    while measuring `#/i/ci1 ~ whole @ 1100`'s stability (below); the four
+    new list states and `listMembership` stayed at `совпадает` across every
+    run.
+  - `node tests/parity.js "i/q1" "i/f1" "wondrous ~ modal" "a row opened"
+    "pinned"` (6 states) - first run: **22 расхождения**, all of them the
+    ratchet's own "стало лучше - опусти число" shape (every recorded debt
+    figure measuring far better than what was recorded pre-B5.1) except
+    `#/roll/wondrous ~ pinned @ ru 375`, which read inside its slack. `#/i/q1`
+    and `#/i/f1` themselves were exact on every cell. Re-run once more to
+    check stability: `#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal` and
+    `#/tables ~ a row opened` reproduced their 0.02/0.03/0.07 figures exactly,
+    both languages, both runs - recorded as measured. `#/roll/wondrous ~
+    pinned` did not reproduce (five of six cells flipped between ~0% and
+    their recorded figure across the two runs) - left exactly as recorded,
+    per the brief's own instruction for a state that does not read 0.00% on
+    all six.
+  - `npm run check:built` - **exit 0**: build, `file://` smoke, bundle budget
+    (61.3 kB gzip against 120 kB).
+  - `docker build -t dh-parity:ubuntu24 tools/parity-ubuntu` - **fails as
+    committed**: `COPY package.json package-lock.json ./` with a build
+    context of `tools/parity-ubuntu` finds neither file there - they live at
+    the repository root. Copying both in temporarily (not committed) let the
+    image build; `docker run --rm -v "$PWD:/work:ro" ...` then did not
+    finish its own `cp -a /work/. /app/` inside a 60s probe on this host and
+    was killed rather than pursued further - Windows volume-mount
+    performance through Docker Desktop, not investigated past that. Not
+    fixed here: the Dockerfile/README are B3.6's, out of this batch's scope,
+    and the gap is recorded in "Blockers" for whoever picks it up. `node
+    tests/parity.js "tables"` and the unfiltered suite are the
+    orchestrator's, per the brief.
 
 - Commands run (exact), this session (B4):
   - `npm run check` - first attempt **exit 1** on one lint error
@@ -658,13 +839,23 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   full run's redness on a Windows machine is the documented per-platform
   tolerance, cell by cell, in "Blockers".
 
-## Next batch (implement-ready)
+## Next batch
 
-B4 is built (`fde9cdc`, reviewed, no blockers). Its brief used to sit here and
-is retired: the design is `plan.md`, "B4 planned", and what was built -
-including the `allEquip` ordering defect - is "B4 built". The lists slice is
-planned as six batches in `plan.md`, "B5 planned: the lists slice, and how it
-splits"; **this is the first of them and the only one handed off.**
+B5.1 is built this session - see "Completed" and "Verification". Its brief
+used to sit here and is retired: the design is `plan.md`, "B5.1 planned", and
+what was built - including the two real bugs found while getting `npm run
+check` green and the three measured, unstable parity findings - is "B5.1
+built". The lists slice is planned as six batches in `plan.md`, "B5 planned:
+the lists slice, and how it splits"; **B5.2 (the selection bar) is next, and
+it is not implement-ready yet** - only the one-paragraph sketch in "B5
+planned"'s table exists. A planner needs to read that sketch plus app.js's
+`renderSelBar`/`selIds`/`selCount` (3706-3721) and the `S.sel` clearing rule,
+then write B5.2 a proper brief the way B5.1 got one, before an implementer
+picks it up. Do not treat the paragraph in "B5 planned" as sufficient on its
+own - it names the surface, not the file-by-file design.
+
+<details>
+<summary>B5.1's retired brief (implemented; kept for the record, not for reuse)</summary>
 
 - **Name:** B5.1 - the list store, the toast, and the add-to-list row on the
   card.
@@ -860,9 +1051,56 @@ splits"; **this is the first of them and the only one handed off.**
   element; then a toast raised from inside the record modal sits under the
   dialog's backdrop and is not announced - write that into "Blockers" for
   B5.2 with the second answer already considered in `plan.md` (a `Toast`
-  rendered inside the dialog).
+  rendered inside the dialog). Not needed: `popover` measured pixel-identical
+  on every state this batch built.
+
+</details>
 
 ## Blockers
+
+- **`#/i/ci1 ~ whole @ 1100` needs a CI reading before its `VISUAL_DEBT`
+  figure can be trusted - this machine gave two different answers on an
+  unchanged tree.** `ru` read 1.43% then 5.53%; `en` read 4.88% then 0.00%,
+  across two consecutive `node tests/parity.js "i/ci1"` runs this session,
+  nothing else touched in between. A standalone probe
+  (`getBoundingClientRect` on `.card`, `.cardpick` and `.foot`, both apps,
+  both languages, with and without the English switch) found every rect
+  byte-identical to the fraction in every configuration, which rules out a
+  layout defect and leaves paint - the same class `docs/parity.md` names for
+  the help panel, just larger and, on this host, genuinely unstable rather
+  than a fixed small number. 768 and 375 are exact zero on every run and are
+  not part of this. Recorded at the worse of the two runs per cell
+  (`VISUAL_DEBT`, `#/i/ci1 ~ whole @ ru|en 1100`) with a reason naming the
+  instability; read CI's own number for these two cells before trusting
+  either the recorded figure or a future local re-run.
+- **`tools/parity-ubuntu`'s documented build command does not work as
+  committed.** `docker build -t dh-parity:ubuntu24 tools/parity-ubuntu` fails
+  on `COPY package.json package-lock.json ./`: that build context
+  (`tools/parity-ubuntu`) holds neither file, they are at the repository
+  root. Copying both in (untracked, not committed) lets the image build
+  cleanly. Not a regression from this batch - the Dockerfile is B3.6's and
+  this is the first session since to actually run the documented command
+  fresh rather than reusing an already-built image. Whoever next needs the
+  container should either add a `COPY ../../package.json` two directories up
+  (context would need to move to the repo root, which changes the README's
+  own command) or have the Dockerfile copy from a path relative to a
+  repo-root build context - a real fix, not attempted here since it is
+  outside this batch's file list. Separately, once the image did build, `docker
+  run --rm -v "$PWD:/work:ro" ... sh -c '...'` did not finish copying `/work`
+  into `/app` inside a 60s wait on this host and was killed rather than
+  pursued further - possibly Windows/Docker-Desktop volume-mount performance
+  on a repository this size (`img/`, `og/`, 1061 share pages), not diagnosed
+  further. The three modal states' `VISUAL_DEBT` figures (below, and in
+  `plan.md`, "B5.1 built") are Windows-measured, not container- or
+  CI-confirmed, as a result.
+- **`#/roll/wondrous ~ pinned` still does not read all-six-zero on this
+  host**, so its six `VISUAL_DEBT` entries are untouched, exactly as
+  recorded before this batch, per the brief's own instruction. `ru 375` reads
+  stably around 3.5% (its recorded figure is 3.64%, inside `DEBT_SLACK`);
+  `en 375` alternates between ~3.8% (matching its recorded figure) and 0.00%
+  between runs - the documented timed-state class (a toast that may or may
+  not have faded by the time the screenshot is taken), not a new finding.
+  CI decides this entry, as it already did before B5.1.
 
 - **Resolved: CI is green, and B3.6 part 1's "CI green is unverified" is
   closed.** The owner pushed through `bc91e63`; run `34404013490` on `958f182`
@@ -1039,14 +1277,14 @@ splits"; **this is the first of them and the only one handed off.**
 - **`noData` and `storageOff`.** Untouched; assigned to **B5.3** (the lists
   index), where the live app's `storageWarning()` lands and `Shell`'s invented
   paragraph goes - see `plan.md`, "B5 planned". B5.1 does not touch either.
-- **The 600px overrides above are now assigned**: `.seldrop`/`.dropmenu` to
-  B5.1 (with the menu), `.selx`/`.selacts` to B5.2 (with the bar), `.lrow*`
-  and `.npair` to B5.4, `.batch-acts` to B5.5 - each with its base rule.
-- **A toast over a native `<dialog>`.** B5.1's design puts the toast in the
-  top layer (`popover="manual"`) so it is visible and announced while the
-  record modal is open; the fallback (a plain fixed element, with the modal
-  case left to B5.2) is written into the brief. Whichever lands is recorded
-  in "B5.1 built".
+- **The 600px overrides above are now assigned**: `.seldrop`/`.dropmenu`
+  **built in B5.1** (with the menu), `.selx`/`.selacts` to B5.2 (with the
+  bar), `.lrow*` and `.npair` to B5.4, `.batch-acts` to B5.5 - each with its
+  base rule.
+- **Resolved in B5.1: a toast over a native `<dialog>`.** `popover="manual"`
+  puts the toast in the top layer, visible and announced while the record
+  modal is open; it measured pixel-identical to the live app on every state
+  this batch built, so the plain-fixed-element fallback was not needed.
 - **The legacy grid-numbering bug** (`list.map(tileHTML)` passing the array
   index as the tile's number) - worth reporting to the repository owner, still
   deliberately not reproduced; recorded in `ACCEPTED`.
@@ -1088,9 +1326,39 @@ splits"; **this is the first of them and the only one handed off.**
     batch is running broke something: since B3.6 part 1 the table follows CI,
     so a Windows run fails a handful of cells by design; see "Blockers".
 
-- **Session gotchas.** New this session (B3.5's own, appended at the end),
-  then B3's, then carried further back:
+- **Session gotchas.** New this session (B5.1's own, appended first), then
+  B3.5's, then B3's, then carried further back:
 
+  - **jsdom implements `[popover]:not(:popover-open){display:none}` from its
+    own default stylesheet but neither `showPopover`/`hidePopover` nor
+    `:popover-open` matching.** An element with `popover="manual"` that is
+    never shown via the (nonexistent) API is permanently `display:none` in
+    every component test - findable by `getByText`, invisible to `getByRole`.
+    The fix, matching the "browser fallback" a `typeof el.showPopover ===
+    'function'` guard already anticipates: when the function does not exist,
+    toggle `el.style.display` directly, which wins over the UA stylesheet
+    rule the way any inline style does.
+  - **A raw `<svelte:document>` (or `<svelte:window>`) handler can outlive
+    the reactive prop it reads by a few microseconds.** A native click event
+    still bubbling through the document sees a parent's state change
+    immediately (reads are live), but the child component's own effects -
+    including the one that would otherwise have torn down its listener -
+    have not necessarily run yet. Reading a prop derived from something the
+    parent just set to `null` (`key={it.id}` where `it` just became `null`)
+    throws inside that raw handler even though nothing about the component
+    tree looks wrong a moment later. A `try`/`catch` around the one read is
+    the practical fix; there is nothing left to do once it throws, since the
+    element is on its way out anyway.
+  - **`$state` wraps a stored object in a reactive proxy - `toBe` (reference
+    equality) on something read back out of it fails even when nothing is
+    wrong.** `store.list = [x, ...]; store.list[0] === x` is `false` in
+    Svelte 5; use `toEqual` for content, not `toBe` for identity, on
+    anything that passed through a `$state` array or object.
+  - **`tools/parity-ubuntu`'s documented `docker build` command does not
+    work as committed** - its build context (`tools/parity-ubuntu`) holds
+    neither `package.json` nor `package-lock.json`, which the Dockerfile
+    `COPY`s from `./`. Not diagnosed further than confirming the gap; see
+    "Blockers".
   - **`docker run --rm` without a redirect loses everything.** A full-suite
     container run ended, the container was removed, and `docker logs` had
     nothing left to read - the same loss as a dead shell, by another route.
@@ -1248,11 +1516,19 @@ splits"; **this is the first of them and the only one handed off.**
   and was left built at its final, correct state (all three fixes present,
   none reverted) - built, not committed: `dist/` is gitignored.
 
-- Session end partial progress: none - B3.6 and B4 are both complete and
-  committed; the tree is at a coherent boundary. B4's own gate results are in
-  "Verification"; the CI result for B3.6 part 2 is recorded under "Blockers":
-  run `34404013490` on `958f182` is green on every job, which closes B3.6
-  part 1's last open criterion.
+- Session end partial progress (this session, B5.1): none - the batch is
+  complete and committed, `npm run check` and `npm run check:built` both
+  exit 0 on the committed tree, and the two filtered parity runs the brief
+  asks for both ran to completion (their results and the three open findings
+  are in "Verification" and "Blockers"). `node tests/parity.js "tables"` and
+  the unfiltered suite were not run - explicitly the orchestrator's, per the
+  brief.
+
+- Session end partial progress (B3.6/B4 session): none - B3.6 and B4 are both
+  complete and committed; the tree is at a coherent boundary. B4's own gate
+  results are in "Verification"; the CI result for B3.6 part 2 is recorded
+  under "Blockers": run `34404013490` on `958f182` is green on every job,
+  which closes B3.6 part 1's last open criterion.
 
 - **Deferred, decided by the owner this session:**
   - **B3.7, shipping self-hosted fonts, was considered and dropped.** The app

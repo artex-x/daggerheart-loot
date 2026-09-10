@@ -3156,6 +3156,106 @@ live regions for one message - but it is the honest second answer if
 `popover` cannot be made to measure identical, and it is a one-line change in
 `RecordModal` on top of this design.
 
+### B5.1 built: the list store, the toast, and the add-to-list row
+
+What was built matches the design closely. `popover="manual"` measured
+pixel-identical on every new state at every width in both languages - the
+fallback was not needed. Three things the design did not anticipate, found
+while building and while measuring:
+
+1. **The success toast always racing the failure toast, unfixed in app.js,
+   fixed here.** `addIdsTo` in app.js calls `saveLists()` - which itself
+   toasts `saveFailed` on a throw - and then unconditionally toasts
+   `addedTo` right after, on the same synchronous pass, so a real storage
+   refusal is never actually seen in the live app: the success message
+   always overwrites it before a screen reader or a person can register it.
+   The acceptance criteria for this batch require the opposite - "a refusing
+   storage keeps the session and toasts `saveFailed`" - so `AddToList.svelte`
+   checks `save()`'s own return value before showing the success toast on
+   top of it, in `pick()` and in `createNew()`. This is a deliberate
+   departure from copying app.js's literal call order, not a parity gap: no
+   parity state exercises a real storage failure (broken storage is a unit-
+   test-only scenario), so nothing the harness compares is affected either
+   way, and the fix is a strict improvement over a live-app defect nobody
+   had reason to reproduce on purpose.
+2. **jsdom implements `[popover]:not(:popover-open){display:none}` from its
+   own default stylesheet, but neither `showPopover`/`hidePopover` nor
+   `:popover-open` matching.** The effect's existing guard
+   (`typeof el.showPopover !== 'function'`) already anticipated "the browser
+   fallback" for exactly this shape of gap; what needed adding was the
+   fallback's own body - toggling `el.style.display` directly, which wins
+   over the UA rule by ordinary cascade precedence (inline beats any
+   stylesheet). Without it every component test asserting `getByRole
+   ('status'|'alert')` on the toast failed while `getByText` on the same
+   element passed, since jsdom's CSS-only implementation left the element
+   permanently `display:none` - a real component behaviour gap the design's
+   "browser fallback" language did not spell out needed a body of its own.
+3. **A per-instance outside-click handler reading a prop derived from a
+   record that is mid-close throws.** `key={it.id}` on `AddToList` is a
+   live getter into the parent's `it`; closing the modal (the close button,
+   the backdrop) sets `it`'s source to `null` on the same synchronous pass a
+   native click event is still bubbling through, and Svelte's own effects
+   are torn down for a destroyed component before they run again but a
+   raw `<svelte:document onclick>` listener is not - it fires once more,
+   with the now-null-backed prop, and reading `key` throws
+   `Cannot read properties of null (reading 'id')`. Reproduced in
+   `roll.test.ts`'s existing "closes on the close button"/"closes on the
+   backdrop" tests, unrelated to lists until `AddToList` started rendering
+   inside every modal. Fixed with a `try`/`catch` around the one read: the
+   record is on its way out either way, so there is nothing left to close.
+
+**Numbers, measured this session, `node tests/parity.js "i/ci1"` and
+`node tests/parity.js "i/q1" "i/f1" "wondrous ~ modal" "a row opened"
+"pinned"`:**
+
+- Every new `#/i/ci1` state - `~ list menu`, `~ in a list`, `~ many lists`,
+  `~ new list` - measures **0.00%** at every width, in both languages,
+  reproduced across repeated runs. `~ toast` is the same at five of six
+  cells; `@ en 375` does not reproduce (below).
+- `listMembership` matches on both apps, both languages:
+  `[['a', ['ci1']], ['b', []]]`.
+- `#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal` and
+  `#/tables ~ a row opened` all dropped from 4.6-13.6% to **0.02% at 1100,
+  0.03% at 768, 0.07% at 375**, identically in both languages, reproduced
+  exactly across two full runs - the close-button focus ring residue the
+  design predicted, and nothing else. Recorded at these figures with a
+  reason naming only the ring; `docker` is installed and its daemon runs on
+  this host, but `tools/parity-ubuntu`'s own documented build command
+  fails as committed (`COPY package.json package-lock.json ./` with a build
+  context of `tools/parity-ubuntu`, which holds neither file - copying them
+  in from the repo root makes the image build, but the container's own
+  entrypoint copying `/work` into `/app` did not complete inside a 60s
+  probe on this host, mount performance on Windows likely, and was not
+  pursued further). These three figures are Windows, advisory; CI's own
+  numbers are what actually settle the entries.
+- `#/roll/wondrous ~ pinned` did not reach all-six-zero on this host across
+  two runs (`ru 375` reads 3.52-3.64%, stably above the ratchet slack every
+  time; `en 375` alternates between ~3.8% and 0.00% between runs) - per the
+  brief's own instruction, left exactly as recorded, untouched, for CI to
+  decide.
+- **`#/i/ci1 ~ whole @ 1100` is a genuine finding, not predicted by the
+  design: it does not go to zero, and it is not a stable number on this
+  host.** 768 and 375 are exact zero on every run. At 1100, `ru` read
+  1.43% then 5.53% and `en` read 4.88% then 0.00%, on an unchanged build,
+  across consecutive runs. A standalone probe
+  (`getBoundingClientRect` on `.card`, `.cardpick` and `.foot`, both apps,
+  both languages, with and without the English language switch) found
+  every rect byte-identical to the fraction in every configuration - same
+  document height, same card, same row, same footer position - so this is
+  paint, not layout, the same class `docs/parity.md` already names for the
+  help panel, just unusually large and unusually unstable for that class.
+  Recorded at the worse of the two runs per cell, with a reason naming the
+  instability itself rather than a guessed cause, and flagged for CI to
+  settle - see `handoff.md`, "Blockers".
+- `recordActions.addToList` reads `true` on both apps at every one of the
+  seven states now in its `only` list (`#/i/ci1`, `#/i/q1`,
+  `#/i/ci1 ~ whole`, `#/i/f1`, `#/roll/wondrous ~ modal`,
+  `#/i/q1 ~ another tier`, `#/tables ~ a row opened`); every `addToList` and
+  `controls` ACCEPTED line naming those states as short of the row is
+  deleted - twenty lines in total: six `addToList` lines (`#/i/ci1`, `#/i/q1`
+  and `#/roll/wondrous ~ modal`, both languages) and fourteen `controls`
+  lines across all seven states.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:

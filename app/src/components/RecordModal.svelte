@@ -14,8 +14,12 @@
      with showModal() gets the focus trap, the inert background and Escape from
      the browser. It is recorded in ACCEPTED as an accessibility fix, and it
      changes nothing about how the thing looks. */
+  import AddToList from './AddToList.svelte';
+  import Button from './Button.svelte';
+  import Icon from './Icon.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
+  import { printHash } from '../lib/hash.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
   import type { Index } from '../lib/data.js';
@@ -37,13 +41,10 @@
 
   let dialog = $state<HTMLDialogElement | null>(null);
 
-  /* What the last action said. The card's own buttons report a refusal, and
-     without a region of its own the message would land on the page underneath,
-     which the browser has just made inert. */
-  let said = $state('');
-
-  const say = (msg: string): void => {
-    said = msg;
+  /** Says what the last action did - the toast, in the top layer above this
+   *  dialog's own inertness, off `app.say`. */
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
   };
 
   /* Opened as a modal rather than shown: that is what makes the rest of the
@@ -95,9 +96,13 @@
       {#snippet actions()}
         <RecordActions {app} {index} {it} row="card" {say} />
       {/snippet}
+      {#snippet pick()}
+        <AddToList {app} key={it.id} ids={[it.id]} primary />
+        <Button size="sm" href={printHash([it.id])} sameTab title={app.t.printHint}
+          ><Icon name="print" />{app.t.print}</Button
+        >
+      {/snippet}
     </RecordCard>
-
-    <p class="sr-only" role="status" aria-live="polite">{said}</p>
   </div>
 </dialog>
 
@@ -175,16 +180,5 @@
   .modal-x:hover {
     border-color: var(--gold);
     color: var(--gold);
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 </style>

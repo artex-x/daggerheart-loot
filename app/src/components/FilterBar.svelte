@@ -72,9 +72,10 @@
       variant={chosen.length ? 'toggle' : 'plain'}
       size="sm"
       expanded={open}
+      caret
       onclick={ontoggle}
     >
-      {toggleLabel}<i class="caret" class:up={open}></i>
+      {toggleLabel}
     </Button>
     {#each chosen as c (c.group + ':' + c.value)}
       <button
@@ -139,22 +140,6 @@
     align-items: center;
     margin-top: 16px;
     flex-wrap: wrap;
-  }
-
-  .caret {
-    width: 0;
-    height: 0;
-    margin-left: 2px;
-    border: 4px solid transparent;
-    border-top-color: currentcolor;
-    transform: translateY(2px);
-    display: inline-block;
-  }
-
-  .caret.up {
-    border-top-color: transparent;
-    border-bottom-color: currentcolor;
-    transform: translateY(-2px);
   }
 
   /* off `.fpill` */

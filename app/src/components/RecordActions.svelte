@@ -28,8 +28,9 @@
     index: Index;
     it: Record_;
     row: ActionRow;
-    /** Says what happened. The live region belongs to the page, not here. */
-    say: (msg: string) => void;
+    /** Says what happened, off `toast` in app.js - `error` is what makes a
+     *  refused copy `role="alert"` rather than a plain notice. */
+    say: (msg: string, error?: boolean) => void;
   }
 
   const { app, index, it, row, say }: Props = $props();
@@ -39,24 +40,24 @@
 
   async function copyName(): Promise<void> {
     const ok = await app.env.clipboard.writeText(shareName(it, app.lang));
-    say(ok ? t.nameCopied : t.copyFailed);
+    say(ok ? t.nameCopied : t.copyFailed, !ok);
   }
 
   async function copyText(): Promise<void> {
     const { text, html } = share(it, index, app.lang);
     const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    say(ok ? t.textCopied : t.copyFailed);
+    say(ok ? t.textCopied : t.copyFailed, !ok);
   }
 
   async function copyImage(): Promise<void> {
     const src = artSrc(it.img, app.artBroken(it.id));
     const ok = await app.env.clipboard.writeImage(() => app.env.image.pngOf(src));
-    say(ok ? t.imgCopied : t.copyFailed);
+    say(ok ? t.imgCopied : t.copyFailed, !ok);
   }
 
   async function copyLink(): Promise<void> {
     const ok = await app.env.clipboard.writeText(link);
-    say(ok ? t.linkCopied : t.copyFailed);
+    say(ok ? t.linkCopied : t.copyFailed, !ok);
   }
 
   async function send(): Promise<void> {

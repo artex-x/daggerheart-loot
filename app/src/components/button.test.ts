@@ -101,4 +101,63 @@ describe('the shared button', () => {
     expect(el).toHaveAttribute('title', 'Share');
     expect(el).toHaveClass('btn', 'primary', 'sm');
   });
+
+  it('carries the ghost variant, for the cancel button beside a primary one', () => {
+    render(Button, { variant: 'ghost', size: 'sm', onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'ghost', 'sm');
+  });
+
+  it('carries the pressed look with `on`, without changing its variant', () => {
+    render(Button, {
+      variant: 'primary',
+      on: true,
+      onclick: () => undefined,
+      children: label
+    });
+    expect(screen.getByRole('button', { name: 'Press' })).toHaveClass('btn', 'primary', 'on');
+  });
+
+  it('leaves the pressed class off by default', () => {
+    render(Button, { onclick: () => undefined, children: label });
+    expect(screen.getByRole('button', { name: 'Press' })).not.toHaveClass('on');
+  });
+
+  it('draws a caret after the children, flipped by expanded', () => {
+    const { container, rerender } = render(Button, {
+      caret: true,
+      expanded: false,
+      onclick: () => undefined,
+      children: label
+    });
+    const caret = container.querySelector('i.caret');
+    expect(caret).toBeInTheDocument();
+    expect(caret).not.toHaveClass('up');
+
+    void rerender({ caret: true, expanded: true, onclick: () => undefined });
+    expect(container.querySelector('i.caret')).toHaveClass('up');
+  });
+
+  it('draws no caret unless asked', () => {
+    const { container } = render(Button, { onclick: () => undefined, children: label });
+    expect(container.querySelector('i.caret')).not.toBeInTheDocument();
+  });
+
+  it('draws a caret on the href form too', () => {
+    const { container } = render(Button, { href: '#/tables', caret: true, children: label });
+    expect(container.querySelector('a i.caret')).toBeInTheDocument();
+  });
+
+  it('opens the href form in a new tab by default', () => {
+    render(Button, { href: '#/tables', children: label });
+    const el = screen.getByRole('link', { name: 'Press' });
+    expect(el).toHaveAttribute('target', '_blank');
+    expect(el).toHaveAttribute('rel', 'noopener');
+  });
+
+  it('omits target and rel when sameTab is set - the print link opens in place', () => {
+    render(Button, { href: '#/print/ci1', sameTab: true, children: label });
+    const el = screen.getByRole('link', { name: 'Press' });
+    expect(el).not.toHaveAttribute('target');
+    expect(el).not.toHaveAttribute('rel');
+  });
 });

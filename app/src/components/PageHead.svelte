@@ -17,8 +17,9 @@
     sub: string;
     /** What this section explains about itself, where anything is written. */
     help: Help | null;
-    /** How the page says something that has no place on screen. */
-    say: (msg: string) => void;
+    /** How the page says something that has no place on screen - the toast,
+     *  off `toast`/`showToast` in app.js. */
+    say: (msg: string, error?: boolean) => void;
   }
 
   const { app, title, sub, help, say }: Props = $props();
@@ -40,7 +41,9 @@
     aria-label={app.isHome ? t.homeOn : t.homeHint}
     aria-pressed={app.isHome}
     onclick={() => {
-      if (!app.toggleHome()) say(t.copyFailed);
+      const wasHome = app.isHome;
+      if (!app.toggleHome()) say(t.copyFailed, true);
+      else say(wasHome ? t.homeReset : t.homeSet);
     }}
   >
     <Icon name="home" />

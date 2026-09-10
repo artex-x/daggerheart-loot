@@ -5,11 +5,14 @@
  * whole argument for Phase 3 in one file. */
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { tick } from 'svelte';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import Toast from './Toast.svelte';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
+import { AppState } from '../state/app.svelte.js';
 
 afterEach(cleanup);
 
@@ -169,6 +172,81 @@ describe('storage that does not work', () => {
   it('says nothing when it does', () => {
     render(App, { env: at('#/lists') });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe('the toast, through what a real page raises it with', () => {
+  it('is a status message, polite, for a plain notice', async () => {
+    /* Not #/roll/std - it is DEFAULT_HOME, so it starts pinned and the button
+       would already read "Открывается при запуске" before anything is
+       pressed. Wondrous is not the default, so this is the pin, not the
+       unpin, and it is the exact state #/roll/wondrous ~ pinned exercises. */
+    render(App, { env: at('#/roll/wondrous') });
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Открывать этот раздел при запуске' })
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Приложение будет открываться на этом разделе'
+    );
+  });
+
+  it('is role=alert, assertive, for an error', async () => {
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(screen.getByRole('button', { name: 'Hope & Fear' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Core' }));
+    const el = screen.getByRole('alert');
+    expect(el).toHaveAttribute('aria-live', 'assertive');
+    expect(el).toHaveTextContent('Нужен хотя бы один источник');
+  });
+
+  it('says nothing before anything has happened', () => {
+    render(App, { env: at('#/roll/std') });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
+
+describe('the toast component, directly - the action path nothing on a page uses yet', () => {
+  it('runs the action and hides the toast when its button is pressed', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const run = vi.fn();
+    render(Toast, { app });
+    app.say('«Клад» убран', { action: { label: 'Вернуть', run } });
+
+    const btn = await screen.findByRole('button', { name: 'Вернуть' });
+    await userEvent.click(btn);
+    expect(run).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('calls showPopover/hidePopover when the browser has them, not the display fallback', async () => {
+    /* jsdom has neither, so this is the one branch a real run through the
+       component tree cannot reach - stubbed here the way a browser that does
+       implement the Popover API would answer. */
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const el = container.querySelector('.toast') as HTMLElement;
+    let open = false;
+    const show = vi.fn(() => {
+      open = true;
+    });
+    const hide = vi.fn(() => {
+      open = false;
+    });
+    Object.assign(el, {
+      showPopover: show,
+      hidePopover: hide,
+      matches: (sel: string) => (sel === ':popover-open' ? open : false)
+    });
+
+    app.say('привет');
+    await tick();
+    expect(show).toHaveBeenCalledOnce();
+    expect(hide).not.toHaveBeenCalled();
+
+    app.hideToast();
+    await tick();
+    expect(hide).toHaveBeenCalledOnce();
   });
 });
 

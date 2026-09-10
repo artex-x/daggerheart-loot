@@ -53,6 +53,9 @@
     nameActions?: Snippet;
     /** The labelled row under the description: send, picture, text. */
     actions?: Snippet;
+    /** The add-to-list control and the print link, off `listPicker` in app.js -
+     *  only the full card draws it, the same as `actions`. */
+    pick?: Snippet;
   }
 
   const {
@@ -66,7 +69,8 @@
     onartfail,
     onopen,
     nameActions,
-    actions
+    actions,
+    pick
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -238,6 +242,10 @@
 
     {#if actions}
       <div class="card-acts">{@render actions()}</div>
+    {/if}
+
+    {#if pick}
+      <div class="cardpick">{@render pick()}</div>
     {/if}
   </div>
 </article>
@@ -609,6 +617,36 @@
     align-items: center;
     margin-top: auto;
     padding-top: 3px;
+  }
+
+  /* off `.cardpick` in style.css - the add-to-list control and the print
+     link, under `.card-acts`. */
+  .cardpick {
+    border-top: 1px solid var(--line);
+    margin-top: 12px;
+    padding-top: 12px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* off `.cardpick .dropmenu` / `.cardpick .dropmenu.up`: the card opens its
+     menu downward by default and flips up only when there is no room below,
+     the opposite of `AddToList.svelte`'s own base rule (the future selection
+     bar's). Two classes deep, same as the live rule, so this beats both the
+     bare `.dropmenu` and its own 600px override at equal specificity - see
+     issue 47, B5.1 planned, "Specificity matters here". */
+  .cardpick :global(.dropmenu) {
+    bottom: auto;
+    top: calc(100% + 8px);
+    left: 0;
+    right: auto;
+  }
+
+  .cardpick :global(.dropmenu.up) {
+    top: auto;
+    bottom: calc(100% + 8px);
   }
 
   /* ---------- referenced rulebook cards ---------- */

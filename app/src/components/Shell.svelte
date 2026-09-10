@@ -4,6 +4,7 @@
   import { untrack } from 'svelte';
   import LangSwitch from './LangSwitch.svelte';
   import TabBar from './TabBar.svelte';
+  import Toast from './Toast.svelte';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -74,6 +75,8 @@
     >{app.t.footAfter}
   </p>
 </footer>
+
+<Toast {app} />
 
 <style>
   .skip {

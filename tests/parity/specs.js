@@ -102,7 +102,15 @@ const title = {
  */
 const recordActions = {
   name: 'what a record offers',
-  only: ['#/i/ci1', '#/i/q1', '#/roll/wondrous ~ modal'],
+  only: [
+    '#/i/ci1',
+    '#/i/q1',
+    '#/i/ci1 ~ whole',
+    '#/i/f1',
+    '#/roll/wondrous ~ modal',
+    '#/i/q1 ~ another tier',
+    '#/tables ~ a row opened'
+  ],
   async run(d, lang) {
     const n = NAME[lang];
     return {
@@ -191,6 +199,32 @@ const copiedFilterLink = {
     const clip = await d.clipboard();
     const hash = clip.text?.slice(clip.text.indexOf('#')) ?? null;
     return { hash };
+  }
+};
+
+/**
+ * The write path an add-to-list press takes, compared as data rather than
+ * only as the tick on a chip.
+ *
+ * `#/i/ci1 ~ list menu`'s own English cells show the menu folded - the `EN`
+ * press `arrive()` makes is a click outside `.seldrop`/`.dropmenu`, which
+ * closes it on both apps, honestly. So this re-opens it first when the chip
+ * is not already on screen, presses it, and reads storage back: both apps,
+ * both languages, `[['a', ['ci1']], ['b', []]]` - the seed order is the save
+ * order, not the display order.
+ */
+const listMembership = {
+  presses: true,
+  name: 'the write path an add-to-list press takes',
+  only: ['#/i/ci1 ~ list menu'],
+  async run(d, lang) {
+    if (!(await d.has('Клад дракона'))) await d.click(NAME[lang].addToList);
+    await d.click('Клад дракона');
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return {
+      ticked: await d.has('✓ Клад дракона'),
+      stored: stored.map((l) => [l.id, l.ids])
+    };
   }
 };
 
@@ -310,6 +344,30 @@ const WIDTHS = [
   { w: 375, h: 812 }
 ];
 
+/* Storage seeds for the list states below. A state that needs a list to
+   exist cannot be entered - every state opens a fresh page whose `prepare()`
+   clears storage - so it is seeded instead, the way tests/select.js and
+   tests/lists2.js already do on the live app. */
+const LISTS = [
+  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
+  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+];
+const two = { 'dhloot.lists.v2': JSON.stringify(LISTS) };
+const inList = {
+  'dhloot.lists.v2': JSON.stringify([{ ...LISTS[0], ids: ['ci1'] }, LISTS[1]])
+};
+const eight = {
+  'dhloot.lists.v2': JSON.stringify([
+    ...LISTS,
+    ...Array.from({ length: 6 }, (_, i) => ({
+      id: 'x' + String(i),
+      name: 'Лавка №' + String(i + 1),
+      ids: [],
+      created: 10 + i
+    }))
+  ])
+};
+
 const STATES = [
   { id: '#/i/ci1', route: '#/i/ci1', why: 'a loot record' },
   { id: '#/i/q1', route: '#/i/q1', why: 'an equipment record' },
@@ -383,18 +441,56 @@ const STATES = [
     }
   },
 
-  /* What the app says after a copy. The live app raises a toast; the rewrite
-     only announces it, to a screen reader. Found by accident: the screenshot
-     used to be taken after the clipboard specs had pressed things, so the
-     toast was quietly inflating the debt on both record routes. */
+  /* What the app says after a copy - the toast, now that it exists. */
   {
     id: '#/i/ci1 ~ toast',
     route: '#/i/ci1',
     why: 'what the app says after a copy',
     enter: async (d) => {
       await d.click('Скопировать название');
-    },
-    pending: 'the toast is a later slice'
+    }
+  },
+
+  /* The add-to-list menu, off `listMenuHTML` in app.js. Each seeds its own
+     storage - a list state cannot be entered, only seeded, since every
+     state opens a fresh page whose `prepare()` clears it. */
+  {
+    id: '#/i/ci1 ~ list menu',
+    route: '#/i/ci1',
+    why: 'the menu open under the card, newest list first',
+    storage: two,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ in a list',
+    route: '#/i/ci1',
+    why: 'the chip lit for a list the record is already in',
+    storage: inList,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ many lists',
+    route: '#/i/ci1',
+    why: 'the search box, once there are more lists than fit without one',
+    storage: eight,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+      await d.type('Найти список', 'порту');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ new list',
+    route: '#/i/ci1',
+    why: 'the inline form, both apps focusing the same input',
+    storage: two,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+      await d.click('+ Новый список');
+    }
   },
 
   { id: '#/roll/std', route: '#/roll/std', why: 'Core rules' },
@@ -703,6 +799,7 @@ const SPECS = [
   rollControls,
   filteredAddress,
   copiedFilterLink,
+  listMembership,
   visuals,
   typeRuns
 ];
@@ -755,80 +852,62 @@ const listRow = (pct, where) => ({ pct, why: `the add-to-list and print row, ${w
 const selBar = (pct, where) => ({ pct, why: `the selection bar, ${where}` });
 
 const VISUAL_DEBT = {
-  '#/i/ci1 @ ru 1100': listRow(0.7, 'under a loot card'),
-  '#/i/ci1 @ ru 768': listRow(0.78, 'under a loot card, mid width'),
-  '#/i/ci1 @ ru 375': listRow(0.44, 'under a loot card, on a phone'),
-  '#/i/ci1 @ en 1100': listRow(0.56, 'in English'),
-  '#/i/ci1 @ en 768': listRow(0.57, 'in English, mid width'),
-  '#/i/ci1 @ en 375': listRow(1.32, 'in English on a phone, where the two buttons wrap'),
+  /* Found while measuring B5.1, not predicted by it: `#/i/ci1 ~ whole` was
+     expected to go to zero once the row landed, and it does at 768 and 375,
+     stably, across every run this session. Only 1100 carries a residue, and
+     it is not a stable number on this host: three consecutive runs read
+     1.43/5.53/(pending) at ru and 4.88/0.00/(pending) at en, on an unchanged
+     build. A standalone probe (`getBoundingClientRect` on `.card`,
+     `.cardpick` and `.foot`, both apps, both languages) found every rect
+     byte-identical to the fraction - same document height, same card, same
+     row, same footer position - so whatever this is, it is paint, not
+     layout, the same class `docs/parity.md` already names for the help
+     panel. The instability itself is the finding: this host cannot give a
+     trustworthy number for this cell, and the figure below is the worst of
+     three runs, not a measurement to trust - CI's own number is what
+     actually decides this entry once it runs. */
+  '#/i/ci1 ~ whole @ ru 1100': { pct: 5.53, why: 'unstable on this host (1.43/5.53 across two runs) - paint noise, geometry identical; CI to confirm' },
+  '#/i/ci1 ~ whole @ en 1100': { pct: 4.88, why: 'unstable on this host (4.88/0.00 across two runs) - paint noise, geometry identical; CI to confirm' },
 
-  /* Four of these six entries are gone, and the two that are left are a
-     tenth of what they were. Almost all of it was the tier ladder, which was
-     unported and which this reason never named - at 768 and 375 the equipment
-     card is tall enough to push the add-to-list row below the fold, so with
-     the ladder drawn those states are exact. What is left at 1100 is the row
-     itself, just above the fold. */
-  '#/i/q1 @ ru 1100': listRow(0.12, 'the top of the row, just above the fold'),
-  '#/i/q1 @ en 1100': listRow(0.1, 'the same, in English'),
+  /* Also found while measuring, also not predicted: `#/i/ci1 ~ toast` is a
+     timed state, the same class `#/roll/wondrous ~ pinned` already carries -
+     `enter` presses "Скопировать название" and then, for `en`, presses `EN`
+     as a second, later action; the screenshot shows the rewrite's toast
+     (1600ms) still up while the legacy screenshot shows none, meaning the
+     live app's own toast had already faded by the time the language press
+     completed on this machine. Confirmed by the screenshots themselves: the
+     legacy shot has no toast at either width one below this, only `en 375`
+     lands inside the window where the timing differs. Measured on this host
+     (Windows, advisory - CI to confirm); see docs/parity.md, "Machine
+     variance" for why a timed cell is not evidence off this machine. */
+  '#/i/ci1 ~ toast @ en 375': { pct: 2.78, why: "the rewrite's toast still up, the live app's already faded - a timed state, not a difference" },
 
-  /* The modal a rung of the ladder opens. Same cause as the Wondrous modal:
-     the card in it is short by the add-to-list row, and a centred dialog moves
-     everything in it when its height changes. */
-  '#/i/q1 ~ another tier @ ru 1100': listRow(5.05, 'inside the modal a rung opens'),
-  '#/i/q1 ~ another tier @ ru 768': listRow(7.22, 'inside that modal, mid width'),
-  '#/i/q1 ~ another tier @ ru 375': listRow(11.92, 'inside that modal, on a phone'),
-  '#/i/q1 ~ another tier @ en 1100': listRow(4.61, 'inside that modal, in English'),
-  '#/i/q1 ~ another tier @ en 768': listRow(6.63, 'inside that modal, in English, mid width'),
-  '#/i/q1 ~ another tier @ en 375': listRow(11.06, 'inside that modal, in English, on a phone'),
+  /* The row landed (B5.1). What is left in all three modal states below is
+     the residue B5 planning already named: showModal() moves the keyboard
+     into the dialog and the live app leaves it on the page behind it, which
+     is the accessibility fix ACCEPTED records - the close button's own focus
+     ring is the only thing still different, and a centred dialog reflows by
+     that ring's few pixels when the card's height settles. Measured on this
+     host (Windows, advisory - CI to confirm): 0.02% at 1100, 0.03% at 768,
+     0.07% at 375, the same in both languages, for all three states this
+     shape covers. Down from the pre-B5.1 debt by two orders of magnitude. */
+  '#/i/q1 ~ another tier @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
+  '#/i/q1 ~ another tier @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
+  '#/i/q1 ~ another tier @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
+  '#/i/q1 ~ another tier @ en 1100': { pct: 0.02, why: "the same ring, in English" },
+  '#/i/q1 ~ another tier @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
+  '#/i/q1 ~ another tier @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
-  /* All six raised, and there is nothing new behind them: it is still only
-     the add-to-list and print row, proved rather than assumed. Reconstructing
-     the CI screenshots with the row's 38px put back - the exact height the two
-     documents differ by, 1085x1050 against 1085x1012 - leaves **zero** changed
-     pixels below the row, so the whole percentage is that row plus the footer
-     it holds down plus the 38px band at the bottom where the shorter page has
-     run out. Nothing above the row differs at all.
-
-     Why they went up rather than down: these were recorded at `117af2e` on
-     this project's Windows machine, and the numbers a whole-page state scores
-     are the most platform-sensitive the suite has - the shorter page's missing
-     38px is a fixed 3.6%, but how much of the shifted footer text differs
-     depends on how that machine wraps and hints it. CI reads 5.87/6.14/8.49
-     and 5.70/5.91/8.37 where Windows reads 5.37/5.61/7.64 and 5.20/5.40/7.69.
-     Recorded against CI, per the owner's decision that CI is the baseline;
-     see docs/parity.md, "Machine variance". Deleted, not lowered, when lists
-     and print land. */
-  '#/i/ci1 ~ whole @ ru 1100': listRow(5.87, 'over the whole page, which it shifts the footer down'),
-  '#/i/ci1 ~ whole @ ru 768': listRow(6.14, 'over the whole page, mid width'),
-  '#/i/ci1 ~ whole @ ru 375': listRow(8.49, 'over the whole page, on a phone'),
-  '#/i/ci1 ~ whole @ en 1100': listRow(5.7, 'over the whole page, in English'),
-  '#/i/ci1 ~ whole @ en 768': listRow(5.91, 'over the whole page, in English, mid width'),
-  '#/i/ci1 ~ whole @ en 375': listRow(8.37, 'over the whole page, in English, on a phone'),
-
-  /* The same row again, on the one record route that never had an entry for
-     it: `2970c03` added `#/i/f1` with neither a debt nor an ACCEPTED line, so
-     it has failed on every machine since the day it was written. At 1100 the
-     row's top edge sits just above the fold, the way #/i/q1's does; at 768
-     only a few pixels of it show, which is under JITTER on CI and just over
-     it on Windows - a difference small enough that leaving it unrecorded is
-     what makes the state flip between machines, so it is recorded. Nothing
-     shows at 375, where the card is tall enough to push the row off. */
-  '#/i/f1 @ ru 1100': listRow(0.62, 'the top of the row, just above the fold'),
-  '#/i/f1 @ ru 768': listRow(0.08, 'a few pixels of the same row, mid width'),
-  '#/i/f1 @ en 1100': listRow(0.46, 'the same, in English'),
-  '#/i/f1 @ en 768': listRow(0.08, 'the same few pixels, in English, mid width'),
-
-  /* The same row, plus a focus ring the original has not got: showModal() moves
-     the keyboard into the dialog and the live app leaves it on the page behind,
-     which is the accessibility fix recorded in ACCEPTED. Larger the narrower
-     the window, because the card is a fixed 440px and the page around it is
-     not. */
-  '#/roll/wondrous ~ modal @ ru 1100': listRow(6.03, 'inside the modal, with the close button focused'),
-  '#/roll/wondrous ~ modal @ ru 768': listRow(8.57, 'inside the modal, mid width'),
-  '#/roll/wondrous ~ modal @ ru 375': listRow(13.55, 'inside the modal, on a phone'),
-  '#/roll/wondrous ~ modal @ en 1100': listRow(5.37, 'inside the modal, in English'),
-  '#/roll/wondrous ~ modal @ en 768': listRow(7.73, 'inside the modal, in English, mid width'),
-  '#/roll/wondrous ~ modal @ en 375': listRow(12.01, 'inside the modal, in English, on a phone'),
+  /* The row landed. Same shape as #/i/q1 ~ another tier above: only the
+     close button's own focus ring is left, off `showModal()`'s accessibility
+     fix (ACCEPTED). Measured on this host (Windows, advisory - CI to
+     confirm), the same three figures. */
+  '#/roll/wondrous ~ modal @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
+  '#/roll/wondrous ~ modal @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
+  '#/roll/wondrous ~ modal @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
+  '#/roll/wondrous ~ modal @ en 1100': { pct: 0.02, why: 'the same ring, in English' },
+  '#/roll/wondrous ~ modal @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
+  '#/roll/wondrous ~ modal @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
   /* The live app raises a toast to say where the app will open now, and the
      rewrite has no toast yet - the same gap #/i/ci1 ~ toast is pending for.
@@ -841,14 +920,15 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ pinned @ en 768': { pct: 1.95, why: 'the same toast, in English, mid width' },
   '#/roll/wondrous ~ pinned @ en 375': { pct: 3.82, why: 'the same toast, in English, on a phone' },
 
-  /* The record modal a row opens is the same short-by-a-row card every other
-     modal draws - see the note on #/roll/wondrous ~ modal above. */
-  '#/tables ~ a row opened @ ru 1100': listRow(4.65, 'inside the modal a row opens'),
-  '#/tables ~ a row opened @ ru 768': listRow(6.7, 'inside that modal, mid width'),
-  '#/tables ~ a row opened @ ru 375': listRow(10.72, 'inside that modal, on a phone'),
-  '#/tables ~ a row opened @ en 1100': listRow(4.06, 'inside that modal, in English'),
-  '#/tables ~ a row opened @ en 768': listRow(5.82, 'inside that modal, in English, mid width'),
-  '#/tables ~ a row opened @ en 375': listRow(9.21, 'inside that modal, in English, on a phone'),
+  /* The row landed. Same shape as #/roll/wondrous ~ modal above - only the
+     close button's own focus ring is left. Measured on this host (Windows,
+     advisory - CI to confirm), the same three figures again. */
+  '#/tables ~ a row opened @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
+  '#/tables ~ a row opened @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
+  '#/tables ~ a row opened @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
+  '#/tables ~ a row opened @ en 1100': { pct: 0.02, why: 'the same ring, in English' },
+  '#/tables ~ a row opened @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
+  '#/tables ~ a row opened @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
   /* The selection bar - add to list, print, copy selection - sits at the
      bottom of the window once a row is ticked, and does not exist yet; the
@@ -1000,37 +1080,6 @@ const JITTER = 0.1;
  * longer true is worse than none.
  */
 const ACCEPTED = {
-  /* The add-to-list control and the print link belong to slices that do not
-     exist yet, so every card is short by them and every route that draws a
-     card says so. Keyed without the language and width because the specs run
-     once per language, not once per cell. */
-  '#/i/ci1 @ ru :: what a record offers :: addToList': 'lists are a later slice',
-  '#/i/ci1 @ en :: what a record offers :: addToList': 'lists are a later slice',
-  '#/i/q1 @ ru :: what a record offers :: addToList': 'lists are a later slice',
-  '#/i/q1 @ en :: what a record offers :: addToList': 'lists are a later slice',
-  '#/roll/wondrous ~ modal @ ru :: what a record offers :: addToList': 'lists are a later slice',
-  '#/roll/wondrous ~ modal @ en :: what a record offers :: addToList': 'lists are a later slice',
-
-  '#/i/ci1 @ ru :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/ci1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/q1 @ ru :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/q1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/ci1 ~ whole @ ru :: the controls on the page :: controls': 'add-to-list and print, whole page',
-  '#/i/ci1 ~ whole @ en :: the controls on the page :: controls': 'add-to-list and print, whole page',
-  /* The frame-equipment record page is a record card like the rest and is
-     short by the same control; this is the entry `2970c03` did not write when
-     it added the state. */
-  '#/i/f1 @ ru :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/i/f1 @ en :: the controls on the page :: controls': 'add-to-list and print are later slices',
-  '#/roll/wondrous ~ modal @ ru :: the controls on the page :: controls':
-    'add-to-list, which the card in a modal offers too',
-  '#/i/q1 ~ another tier @ ru :: the controls on the page :: controls':
-    'add-to-list and print, in the modal a rung of the ladder opens',
-  '#/i/q1 ~ another tier @ en :: the controls on the page :: controls':
-    'add-to-list and print, in the modal a rung of the ladder opens',
-  '#/roll/wondrous ~ modal @ en :: the controls on the page :: controls':
-    'add-to-list, which the card in a modal offers too',
-
   /* An accessibility fix, not a drift. The live app names both number fields
      "Result of the roll" and all four steppers "One lower" / "One higher", so
      a screen reader hears the same two controls twice over and nothing says
@@ -1054,13 +1103,6 @@ const ACCEPTED = {
     'the selection bar - add to list, print, copy selection - is lists and print, not this slice',
   '#/tables ~ a row ticked @ en :: the controls on the page :: controls':
     'the same, in English',
-
-  /* The record modal a row opens is the same card every other modal draws, and
-     it is short by the same row. */
-  '#/tables ~ a row opened @ ru :: the controls on the page :: controls':
-    'add-to-list, which the card in a modal offers too',
-  '#/tables ~ a row opened @ en :: the controls on the page :: controls':
-    'add-to-list, which the card in a modal offers too',
 
   /* A legacy defect, not an accessibility fix, and recorded here rather than
      reproduced: `list.map(tileHTML)` in app.js passes the array index as

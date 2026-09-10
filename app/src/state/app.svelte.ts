@@ -23,11 +23,26 @@ import {
 } from '../lib/hash.js';
 import type { Lang, Section } from '../lib/types.js';
 import type { Env } from '../ports/index.js';
+import { ListStore } from './lists.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
 
 const DEFAULT_HOME = '#/roll/std';
+
+/** What one action can undo, carried on a toast for the 7000ms it lasts. */
+export interface ToastAction {
+  label: string;
+  run: () => void;
+}
+
+/** Off `showToast` in app.js: a plain notice, an error (`role=alert`), or one
+ *  with an undo action - each its own duration, decided by `say` below. */
+export interface Toast {
+  msg: string;
+  mode: '' | 'err' | 'act';
+  action?: ToastAction | undefined;
+}
 
 /** Settings are read as untrusted data: a bad value falls back, quietly. */
 function readLang(env: Env): Lang {
@@ -73,8 +88,23 @@ export class AppState {
    */
   navigations = $state(0);
 
+  /** The lists a person has made, and how they are saved. */
+  readonly lists: ListStore;
+
+  /**
+   * Which opener's add-to-list menu is open, app-wide - a record id on a
+   * card, or an id the bar and the shared page will use once they exist.
+   * One at a time, the way `S.menuFor` is: opening one closes any other.
+   */
+  menuFor = $state('');
+
+  /** What the toast is showing, or nothing. `Shell.svelte` renders it. */
+  toast = $state<Toast | null>(null);
+  #toastTimer: ReturnType<typeof setTimeout> | null = null;
+
   #home = $state(DEFAULT_HOME);
   #stopRouter: (() => void) | null = null;
+  #stopListWatch: (() => void) | null = null;
 
   constructor(env: Env) {
     this.env = env;
@@ -82,6 +112,13 @@ export class AppState {
     this.index = loot ? buildIndex(loot) : null;
     this.lang = readLang(env);
     this.#home = readHome(env);
+    this.lists = new ListStore(
+      env,
+      (msg, error) => {
+        this.say(msg, { error });
+      },
+      () => this.t
+    );
 
     /* An empty address opens the pinned section - but only an empty one. A link
        to a record or a shared list must not be overridden by a preference. */
@@ -96,8 +133,10 @@ export class AppState {
     this.#stopRouter = this.env.router.onChange((h) => {
       this.hash = h;
       this.navigations++;
+      this.menuFor = '';
       this.#applySource();
     });
+    this.#stopListWatch = this.lists.watch();
     return () => {
       this.stop();
     };
@@ -106,6 +145,35 @@ export class AppState {
   stop(): void {
     this.#stopRouter?.();
     this.#stopRouter = null;
+    this.#stopListWatch?.();
+    this.#stopListWatch = null;
+  }
+
+  /**
+   * Says something with no place on screen - a toast, off `showToast` in
+   * app.js. Plain notices last 1600ms, an error 2600ms and `role="alert"`,
+   * and one with an action 7000ms. A second call replaces the first and
+   * restarts the clock, the same as the live app's single timer.
+   */
+  say(
+    msg: string,
+    opts: { error?: boolean | undefined; action?: ToastAction | undefined } = {}
+  ): void {
+    const mode: Toast['mode'] = opts.action ? 'act' : opts.error ? 'err' : '';
+    const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
+    this.toast = { msg, mode, action: opts.action };
+    if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    this.#toastTimer = setTimeout(() => {
+      this.hideToast();
+    }, ms);
+  }
+
+  hideToast(): void {
+    this.toast = null;
+    if (this.#toastTimer) {
+      clearTimeout(this.#toastTimer);
+      this.#toastTimer = null;
+    }
   }
 
   #applySource(): void {
@@ -167,6 +235,7 @@ export class AppState {
     this.env.router.navigate(hash);
     this.hash = hash;
     this.navigations++;
+    this.menuFor = '';
     this.#applySource();
   }
 

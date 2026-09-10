@@ -62,12 +62,9 @@
   });
 
   let open = $state<Record_ | null>(null);
-  /* What the last action said - a refused setting, or a copy that did not go
-     through. Announced rather than drawn; see the region at the end. */
-  let said = $state('');
-
-  const say = (msg: string): void => {
-    said = msg;
+  /** Says what the last action did - the toast, off `app.say`. */
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
   };
 
   /* The record for whatever number is in the field, from the first paint. The
@@ -155,12 +152,6 @@
   {/if}
 {/if}
 
-<!-- Announced but not drawn: the live app reports a refused setting in a toast,
-     which is a later slice, and a message painted here that the original does
-     not have would be a visual difference. Saying nothing at all would leave a
-     button that quietly lies. -->
-<p class="sr-only" role="status" aria-live="polite">{said}</p>
-
 {#if open && app.index}
   <RecordModal
     {app}
@@ -194,17 +185,6 @@
   .miss {
     margin: 0;
     color: var(--muted);
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   /* off `.results` in style.css */

@@ -54,6 +54,16 @@ export const ICONS = {
   ref: {
     d: 'M6 2h11a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1 0-5h11V4H6a.5.5 0 0 0 0 1h9v2H6a2.5 2.5 0 0 1 0-5z',
     size: 13
+  },
+  /* The add-to-list button's own icon, off ICON_PLUS in app.js. */
+  plus: {
+    d: 'M11 5h2v14h-2zM5 11h14v2H5z',
+    size: 15
+  },
+  /* The print link's icon, off ICON_PRINT (app.js:1044). */
+  print: {
+    d: 'M19 8H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3zm-3 11H8v-5h8v5zm3-7a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM18 3H6v4h12V3z',
+    size: 15
   }
 } as const satisfies Record<string, IconDef>;
 

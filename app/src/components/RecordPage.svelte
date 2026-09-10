@@ -3,11 +3,13 @@
      line saying where the record is from, and the card.
      Three states, and two of them happen - a link to a record that has been
      renumbered, and a deploy where data.js did not load. */
+  import AddToList from './AddToList.svelte';
+  import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
-  import { tablesHash } from '../lib/hash.js';
+  import { printHash, tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -24,12 +26,9 @@
   const index = $derived(app.index);
   const it = $derived(index?.byId.get(id));
 
-  /* What the last action did. A live region rather than a toast: it has to be
-     announced, and a message that only appears is one a screen reader misses. */
-  let said = $state('');
-
-  const say = (msg: string): void => {
-    said = msg;
+  /** Says what the last action did - the toast, off `app.say`. */
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
   };
 
   /* A record opened over this page: a rung of the tier ladder, or the picture,
@@ -88,6 +87,12 @@
       {#snippet actions()}
         <RecordActions {app} {index} {it} row="card" {say} />
       {/snippet}
+      {#snippet pick()}
+        <AddToList {app} key={it.id} ids={[it.id]} primary />
+        <Button size="sm" href={printHash([it.id])} sameTab title={t.printHint}
+          ><Icon name="print" />{t.print}</Button
+        >
+      {/snippet}
     </RecordCard>
   </div>
 {/if}
@@ -105,10 +110,6 @@
     }}
   />
 {/if}
-
-<!-- Present from the start and empty: a live region has to be in the page
-     before its text changes, or the change is not announced. -->
-<p class="said" role="status" aria-live="polite">{said}</p>
 
 <style>
   /* off `.page-h` and `.page-sub` in style.css */
@@ -158,12 +159,5 @@
   .miss {
     margin: 0;
     color: var(--muted);
-  }
-
-  .said {
-    margin: var(--gap) 0 0;
-    min-height: 1.2em;
-    color: var(--muted);
-    font-size: var(--step--1);
   }
 </style>

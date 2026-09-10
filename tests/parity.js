@@ -157,7 +157,8 @@ const CACHE = (() => {
           enter: state.enter ? state.enter.toString() : null,
           whole: !!state.whole,
           lang,
-          widths: WIDTHS
+          widths: WIDTHS,
+          storage: state.storage ?? null
         })
       )
       .digest('hex');
@@ -321,7 +322,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
 
   for (const [stateIdx, state] of STATES.entries()) {
     if (SHARD && stateIdx % SHARD.of !== SHARD.n) continue;
-    const { id, route, why, pending, enter, whole } = state;
+    const { id, route, why, pending, enter, whole, storage } = state;
     if (pending) {
       if (!WANTED.length || WANTED.some((w) => id.includes(w))) {
         console.log(`${id}  (${why})`);
@@ -336,6 +337,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
          pressing it after `enter` rather than before keeps every `enter` step
          written in one language - the names it grips are Russian. */
       const arrive = async (d) => {
+        if (storage) await d.seed(storage);
         await d.open(route);
         if (enter) await enter(d);
         if (lang !== 'ru') await d.click(lang.toUpperCase());

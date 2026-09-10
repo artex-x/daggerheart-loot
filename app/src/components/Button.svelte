@@ -11,8 +11,9 @@
     /** `primary` is the gold fill the live app keeps for the main action.
      *  `toggle` is `.ftoggle.has` - the filter strip's own button, gold text
      *  on a gold-tinted border rather than a fill, and only once it has
-     *  something picked. */
-    variant?: 'plain' | 'primary' | 'toggle';
+     *  something picked. `ghost` is `.btn.ghost` - a transparent fill, the
+     *  cancel button beside a primary one. */
+    variant?: 'plain' | 'primary' | 'toggle' | 'ghost';
     /** `sm` is the 32px row on a card; the default 46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
@@ -20,6 +21,12 @@
     label?: string;
     /** `aria-expanded`, for a button that folds a panel open. */
     expanded?: boolean;
+    /** The pressed look - `.btn.on` / `.btn.primary.on` - for a toggle that
+     *  stays visible once it is on, rather than a filled fill like `toggle`. */
+    on?: boolean;
+    /** Renders `<i class="caret">` after the children, flipped by `expanded` -
+     *  the filter toggle's and the add-to-list button's own down/up arrow. */
+    caret?: boolean;
     /**
      * Where it goes, for the ones that are links.
      *
@@ -31,6 +38,9 @@
      * the prop when a screen needs it.
      */
     href?: string | undefined;
+    /** Omits `target`/`rel` - the print link opens over the current page,
+     *  the same tab the button click would have used anyway. */
+    sameTab?: boolean;
     onclick?: (() => void) | undefined;
     children: Snippet;
   }
@@ -45,7 +55,10 @@
     title,
     label,
     expanded,
+    on,
+    caret,
     href,
+    sameTab,
     onclick,
     children
   }: Props = $props();
@@ -54,24 +67,26 @@
 {#if href}
   <a
     class="btn {variant} {size}"
+    class:on
     {href}
     {title}
     aria-label={label}
-    target="_blank"
-    rel="noopener"
+    target={sameTab ? undefined : '_blank'}
+    rel={sameTab ? undefined : 'noopener'}
   >
-    {@render children()}
+    {@render children()}{#if caret}<i class="caret" class:up={expanded}></i>{/if}
   </a>
 {:else}
   <button
     type="button"
     class="btn {variant} {size}"
+    class:on
     {title}
     aria-label={label}
     aria-expanded={expanded}
     {onclick}
   >
-    {@render children()}
+    {@render children()}{#if caret}<i class="caret" class:up={expanded}></i>{/if}
   </button>
 {/if}
 
@@ -147,5 +162,46 @@
   .btn.toggle {
     color: var(--gold-soft);
     border-color: rgb(216 171 94 / 45%);
+  }
+
+  /* off `.btn.ghost` - a transparent fill, the cancel button beside a primary
+     one in the add-to-list form. */
+  .btn.ghost {
+    background: transparent;
+    border-color: var(--line);
+  }
+
+  /* off `.btn.on` / `.btn.primary.on` in style.css: gold outline on a plain
+     button, a pushed-in look on a gold one - the add-to-list button while its
+     menu is open. */
+  .btn.on {
+    border-color: var(--gold);
+    color: var(--gold-soft);
+    background: var(--surface2);
+  }
+
+  .btn.primary.on {
+    background: linear-gradient(180deg, #c99b52, #b8873f);
+    border-color: #c99b52;
+    color: #1a1206;
+    box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%);
+  }
+
+  /* off `.caret` in style.css - moved here from FilterBar.svelte, its first
+     use, now that the add-to-list button wants the same down/up arrow. */
+  .caret {
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    border: 4px solid transparent;
+    border-top-color: currentcolor;
+    transform: translateY(2px);
+    display: inline-block;
+  }
+
+  .caret.up {
+    border-top-color: transparent;
+    border-bottom-color: currentcolor;
+    transform: translateY(-2px);
   }
 </style>

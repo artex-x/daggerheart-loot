@@ -278,6 +278,33 @@ function makeDriver(page, target) {
       return page.evaluate(() => location.hash);
     },
 
+    /**
+     * Writes storage entries before the page's first paint.
+     *
+     * Lists live in `localStorage`, and every state opens a fresh page whose
+     * `prepare()` clears it - so a state that needs a list to already exist
+     * cannot be *entered*, it has to be *seeded*. Registered with
+     * `evaluateOnNewDocument`, the same way `prepare()` clears storage, and
+     * called after it (from `arrive()`, before `open()`) so this write
+     * survives the clear rather than racing it. `tests/select.js` and
+     * `tests/lists2.js` already do exactly this on the live app.
+     */
+    async seed(entries) {
+      await page.evaluateOnNewDocument((kv) => {
+        try {
+          for (const k of Object.keys(kv)) localStorage.setItem(k, kv[k]);
+        } catch (e) {
+          void e;
+        }
+      }, entries);
+    },
+
+    /** Reads one storage key back, so a write path is compared as data and
+     *  not only as the tick on a chip. */
+    storage(key) {
+      return page.evaluate((k) => localStorage.getItem(k), key);
+    },
+
     /** What the tab says. Off screen, so no screenshot can catch it drifting. */
     title() {
       return page.title();

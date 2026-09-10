@@ -11,15 +11,19 @@
 
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import { fakeData, fakeEnv, memoryRouter } from '../ports/index.js';
+import { fakeData, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView - the add-to-list menu's placement
+   effect calls it unconditionally once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const row = (over: Partial<Record_>): Record_ => ({
   id: 'x',
@@ -95,11 +99,27 @@ const press = (name: string | RegExp): Promise<void> =>
  * checked, so adding a way into a screen means adding it - the same rule
  * STATES follows in tests/parity/specs.js.
  */
-const STATES: { what: string; route: string; enter?: (() => Promise<void>) | undefined }[] = [
+const STATES: {
+  what: string;
+  route: string;
+  storage?: Record<string, string>;
+  enter?: (() => Promise<void>) | undefined;
+}[] = [
   {
     what: 'the record over the page, which has the focus trap',
     route: '#/roll/wondrous',
     enter: () => press('Страница')
+  },
+  {
+    what: 'the add-to-list menu, with two lists to choose from',
+    route: '#/i/ci1',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
+        { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+      ])
+    },
+    enter: () => press('Добавить в список')
   },
   {
     what: 'the help panel, unfolded',
@@ -186,8 +206,10 @@ const STATES: { what: string; route: string; enter?: (() => Promise<void>) | und
 ];
 
 describe('states reached by pressing something', () => {
-  it.each(STATES)('has no axe violations on $what', async ({ route, enter }) => {
-    const { container } = render(App, { env: at(route) });
+  it.each(STATES)('has no axe violations on $what', async ({ route, storage, enter }) => {
+    const { container } = render(App, {
+      env: at(route, storage ? { storage: memoryStorage(storage) } : {})
+    });
     await enter?.();
     await expectNoA11yViolations(container);
   });
@@ -203,6 +225,9 @@ describe('states reached by pressing something', () => {
  * question and the one that was going unasked.
  */
 const COVERED: Record<string, string> = {
+  'AddToList.svelte': 'the add-to-list menu, in the state above',
+  'Toast.svelte':
+    'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
   'FilterBar.svelte': 'tables.test.ts, and the filter panel state below',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',

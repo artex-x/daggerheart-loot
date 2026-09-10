@@ -8,7 +8,7 @@
  * because those are the rules that would be re-derived, differently, by whoever
  * writes that screen. */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { AppState } from './app.svelte.js';
@@ -226,5 +226,101 @@ describe('replace vs navigate', () => {
     app.start();
     router.navigate('#/lists');
     expect(app.navigations).toBe(1);
+  });
+});
+
+describe('the add-to-list menu', () => {
+  it('clears on go(), and on a navigation the router announces', () => {
+    const router = memoryRouter('#/i/ci1');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+
+    app.menuFor = 'ci1';
+    app.go('#/i/q1');
+    expect(app.menuFor).toBe('');
+
+    app.menuFor = 'q1';
+    router.navigate('#/lists');
+    expect(app.menuFor).toBe('');
+  });
+
+  it('survives replace() - a filter pick must not fold an open menu', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.menuFor = 'sel';
+    app.replace('#/tables/f_kind-item');
+    expect(app.menuFor).toBe('sel');
+  });
+});
+
+describe('the toast', () => {
+  it('shows a plain notice for 1600ms', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say('Добавлено в «Клад дракона»');
+    expect(app.toast).toEqual({
+      msg: 'Добавлено в «Клад дракона»',
+      mode: '',
+      action: undefined
+    });
+
+    vi.advanceTimersByTime(1599);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('shows an error for 2600ms', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say('Сначала назовите список', { error: true });
+    expect(app.toast?.mode).toBe('err');
+
+    vi.advanceTimersByTime(2599);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('shows an action for 7000ms', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const run = vi.fn();
+    app.say('«Клад» убран', { action: { label: 'Вернуть', run } });
+    expect(app.toast?.mode).toBe('act');
+    expect(app.toast?.action?.label).toBe('Вернуть');
+
+    vi.advanceTimersByTime(6999);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    expect(run).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('replaces the first toast and restarts the clock', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say('one');
+    vi.advanceTimersByTime(1000);
+    app.say('two');
+    vi.advanceTimersByTime(1000);
+    // the first timer would have fired by now had it not been cleared
+    expect(app.toast?.msg).toBe('two');
+    vi.advanceTimersByTime(600);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('hides immediately and clears the timer', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say('one');
+    app.hideToast();
+    expect(app.toast).toBeNull();
+    vi.advanceTimersByTime(5000);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
   });
 });

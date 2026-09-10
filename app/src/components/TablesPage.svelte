@@ -98,9 +98,9 @@
     });
   });
 
-  let said = $state('');
-  const say = (msg: string): void => {
-    said = msg;
+  /** Says what the last action did - the toast, off `app.say`. */
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
   };
 
   const help = $derived(helpFor('tables', app.lang));
@@ -161,7 +161,7 @@
     const ok = await app.env.clipboard.writeText(
       app.linkTo(tablesHash(table, { filter: filterState }))
     );
-    say(ok ? t.filterLinkCopied : t.copyFailed);
+    say(ok ? t.filterLinkCopied : t.copyFailed, !ok);
   }
 
   const rows = $derived(
@@ -211,14 +211,14 @@
 
   async function copyTableLink(): Promise<void> {
     const ok = await app.env.clipboard.writeText(app.linkTo(tablesHash(table)));
-    say(ok ? t.tableLinkCopied : t.copyFailed);
+    say(ok ? t.tableLinkCopied : t.copyFailed, !ok);
   }
 
   async function copySectionLink(key: string): Promise<void> {
     const ok = await app.env.clipboard.writeText(
       app.linkTo(tablesHash(table, { anchor: key }))
     );
-    say(ok ? t.sectionLinkCopied : t.copyFailed);
+    say(ok ? t.sectionLinkCopied : t.copyFailed, !ok);
   }
 
   /* Which body shape this table draws, off `renderTables()`'s own branches:
@@ -566,8 +566,6 @@
   {/if}
 {/if}
 
-<p class="sr-only" role="status" aria-live="polite">{said}</p>
-
 {#if open && index}
   <RecordModal
     {app}
@@ -756,16 +754,5 @@
 
   .altcol.fear {
     color: var(--fear);
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 </style>

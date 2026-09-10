@@ -212,7 +212,27 @@ const ru = {
   /* A section heading's own link, off `sectionHead` in app.js - the table
      link button's sibling, one level down. */
   copySection: 'Скопировать ссылку на этот раздел',
-  sectionLinkCopied: 'Ссылка на раздел скопирована'
+  sectionLinkCopied: 'Ссылка на раздел скопирована',
+
+  /* The add-to-list row every full card draws, and the toast it and the pin
+     button both raise - app.js 109-164, 199-200. */
+  addToList: 'Добавить в список',
+  addTo: 'Добавить в',
+  inLists: 'Лежит в списках',
+  newList: 'Новый список',
+  listNamePh: 'Например: клад дракона',
+  create: 'Создать',
+  cancel: 'Отмена',
+  findList: 'Найти список',
+  addedTo: 'Добавлено в «%s»',
+  removedFrom: 'Убрано из «%s»',
+  nameFirst: 'Сначала назовите список',
+  untitled: 'Без названия',
+  saveFailed: 'Не удалось сохранить: браузер блокирует локальное хранилище',
+  print: 'Печать',
+  printHint: 'Собрать карточки для печати: девять на лист A4',
+  homeSet: 'Приложение будет открываться на этом разделе',
+  homeReset: 'Приложение снова будет открываться на обычных правилах'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -377,7 +397,25 @@ const en: Dict = {
   filterLinkCopied: 'Filter link copied',
 
   copySection: 'Copy a link to this section',
-  sectionLinkCopied: 'Section link copied'
+  sectionLinkCopied: 'Section link copied',
+
+  addToList: 'Add to list',
+  addTo: 'Add to',
+  inLists: 'Sits in lists',
+  newList: 'New list',
+  listNamePh: 'For example: dragon hoard',
+  create: 'Create',
+  cancel: 'Cancel',
+  findList: 'Find a list',
+  addedTo: 'Added to "%s"',
+  removedFrom: 'Removed from "%s"',
+  nameFirst: 'Give the list a name first',
+  untitled: 'Untitled',
+  saveFailed: 'Could not save: the browser is blocking local storage',
+  print: 'Print',
+  printHint: 'Lay these out for printing: nine to an A4 sheet',
+  homeSet: 'The app will open on this section',
+  homeReset: 'The app will open on the standard rules again'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

@@ -49,10 +49,10 @@
   let kinds = $state<Chosen<LootKind>>({ item: true, consumable: true });
 
   let open = $state<Record_ | null>(null);
-  let said = $state('');
 
-  const say = (msg: string): void => {
-    said = msg;
+  /** Says what the last action did - the toast, off `app.say`. */
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
   };
 
   const picks = $derived(index ? altPicks(index, rarity, roll, kinds) : []);
@@ -92,12 +92,12 @@
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
     const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    said = ok ? t.textCopied : t.copyFailed;
+    say(ok ? t.textCopied : t.copyFailed, !ok);
   }
 
   function toggleKind(kind: LootKind): void {
     if (isLastOn(kinds, LOOT_KINDS, kind)) {
-      said = t.keepOneKind;
+      say(t.keepOneKind, true);
       return;
     }
     kinds = { ...kinds, [kind]: !kinds[kind] };
@@ -258,8 +258,6 @@
   {/if}
 {/snippet}
 
-<p class="sr-only" role="status" aria-live="polite">{said}</p>
-
 {#if open && index}
   <RecordModal
     {app}
@@ -375,17 +373,6 @@
 
   .crit-acts :global(.btn) {
     max-width: 100%;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   /* On a phone the actions take their own row and share it evenly, rather than
