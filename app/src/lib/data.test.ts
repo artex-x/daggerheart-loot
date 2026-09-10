@@ -47,6 +47,18 @@ describe('the index over the real dataset', () => {
     );
     expect(books).toHaveLength(239);
   });
+
+  it("orders the equipment pool the way app.js's ALL_EQ does - eq before the roll tables", () => {
+    /* `ALL_EQ = EQ.concat(...Object.values(DATA))` in app.js: `eq` first, then
+       every roll table in its own order. `allEquip` used to read `all` (the
+       roll tables) before `eq`, which was invisible until the equipment
+       tables (B4) drew a pool off it directly - a bare `#/tables/eq_weapon`
+       opened on a table-embedded weapon rather than on `eq`'s own first one. */
+    const want = [...(LOOT.eq ?? []), ...Object.values(LOOT.items).flat()]
+      .filter((it) => it.eq?.t === 'weapon')
+      .map((it) => it.id);
+    expect(equipOfKind(index, 'weapon').map((it) => it.id)).toEqual(want);
+  });
 });
 
 describe('upgrade chains', () => {

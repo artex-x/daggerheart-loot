@@ -43,6 +43,7 @@ Built, and matching the live app exactly in both languages at all three widths:
 | Tables (B1, the four filterless tables) | `#/tables`, `#/tables/hnf_consumable` | index, a second table, grid, searched, empty, a row opened, a row ticked, the help panel |
 | Tables (B2, the filter) | `#/tables/wondrous`, `#/tables/dread` | folded, panel open, a value picked, a filter link arrived at, a filter plus a query leaving nothing |
 | Tables (B3, sectioned bodies and anchors) | `#/tables/voa`, `#/tables/frames`, `#/tables/community`, `#/tables/alt_item`, `#/tables/alt_consumable` | each table's own page, a section anchor arriving on `voa`, a row anchor arriving on `core_item` (a B1 table) |
+| Tables (B4, the equipment tables) | `#/tables/eq_weapon`, `#/tables/eq_secondary`, `#/tables/eq_armor` | each table's own page, the panel open, a value picked on both branches of the pill rule, a filter link, a search that keeps the type word, the empty state |
 
 **"Matching exactly" in that table means "matching within its recorded
 `VISUAL_DEBT`", and for the tables screens that turned out to be a weaker claim
@@ -55,8 +56,6 @@ Both are below, after "B3 built".
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/tables/eq_weapon`, `#/tables/eq_secondary`, `#/tables/eq_armor` - the
-  equipment tables, batch B4 - unchanged, and still the batch after B3.6
 - `#/lists` - the lists slice
 - `#/search` - the search slice
 - `#/print/ci1-q1` - the print slice
@@ -2161,6 +2160,419 @@ a rule with its detection recipe:
 If a second instance turns up in B4 or later, it graduates to CLAUDE.md. Say so
 in the handoff so the next session knows the promotion rule rather than
 re-arguing it.
+
+### B4 planned: the equipment tables, their facets and tier sections
+
+**Objective.** Draw the three equipment tables - `eq_weapon`, `eq_secondary`,
+`eq_armor` - the way `renderEquipTable` draws them: the facet strip and panel
+with up to seven rows, four tier sections, and the empty state. With them every
+table in `TABLE_DEFS` is real, so `TablesPage.svelte`'s `.todo` placeholder
+branch goes. Nothing in the hash grammar, the fixtures, `CONTRACTS.md` or
+`llms.txt` changes: the seven groups, their order and the `f_` segment are
+frozen, already implemented in `lib/filters.ts` (`EQ_GROUPS`, `EQ_TABLE`) and
+already replayed by `docs/fixtures/urls/routes.json`, which holds five
+`eq_weapon` filter links (`f_tier-2.cls-mag`, `f_range-melee`, `f_burden-2`,
+`f_tier-1-2`, and the bare route).
+
+**Scope.** `eq_weapon`, `eq_secondary`, `eq_armor` render in full. `facets.ts`
+grows the equipment branch. `dict.ts` gains six row labels it is missing.
+`label.ts` gains `srcName`. `FilterBar.svelte`'s pill rule is corrected.
+`TablesPage.svelte` grows the equipment pool, predicate and tier body, loses
+`KNOWN`, and its search callback stops dropping the type word.
+`TableRows.svelte` ports the one focus rule it lacks. Eight parity states and
+two `only` lists in `tests/parity/specs.js`.
+
+**Non-goals.** No selection bar, no add-to-list row (lists). No
+`Panel.svelte`. No `typeRuns` probe on the equipment tables (deferred by the
+orchestrator, unchanged). No anchor-flash fix and no width-sweep decision. No
+600px overrides for components that do not exist (`.selx`, `.selacts`,
+`.seldrop`, `.dropmenu`, `.lrow*`, `.npair`, `.batch-acts` - see "Decided"
+below). No `noData`/`storageOff`. No change to `docs/specs/*`: `FEATURES.md`
+already describes these three tables and the `src` facet, and nothing here
+alters behaviour.
+
+#### Early check 2: what `renderEquipTable` actually draws (app.js 2735-2761)
+
+Read, not summarised. In order:
+
+1. `pool` is `ALL_EQ` narrowed to `it.eq.t === kind`. `ALL_EQ` is `EQ` plus
+   every `DATA` record carrying `eq` (app.js 936), so the table holds gear
+   from every book, not only the `q*` records. Counted off `data.json`:
+
+   | kind | pool | from `eq` (no `roll`) | from the roll tables |
+   |---|---|---|---|
+   | weapon | 317 | 239 | 78: wondrous 8, dread 6, voa 15, beast_feast 25, colossus 12, dark_heart 12 |
+   | secondary | 108 | 73 | 35: wondrous 3, dread 1, voa 4, beast_feast 7, colossus 8, dark_heart 12 |
+   | armor | 90 | 69 | 21: voa 5, beast_feast 4, dark_heart 12 |
+
+   These are the 317 / 108 / 90 `FEATURES.md` publishes. `equipOfKind(index,
+   kind)` in `lib/data.ts` already computes exactly this off `index.allEquip`
+   and has had no caller since Phase 2; B4 is its caller.
+2. `list` is `pool` narrowed by `eqPasses` and, when there is a query, by
+   `matches`.
+3. `fBarHTML(st.t, list.length, pool.length)` - so `.fcount` reads the **pool**
+   when nothing is picked (`317`) and `shown of pool` when something is.
+4. Nothing left: `.empty` holding `t().nothing` and, only when something is
+   picked, a `.btn.sm` reset - the same markup as the plain table's empty state
+   at 2534, which `TablesPage.svelte` already draws.
+5. Otherwise four groups, `[1, 2, 3, 4]`, each `['t' + n, t().tier + ' ' + n,
+   rows where eq.tier === n]`; an empty tier is skipped; each drawn one is
+   `<div class="tsection" id="sec-t<n>" style="margin-top:22px">` holding
+   `sectionHead(label, table, key)` and `renderList(rows)` - select-all scoped
+   to the tier, then rows or tiles.
+
+**So the answer is yes: tier sections as well as facets.** The body is
+`voa`'s tier body with three substitutions - keyed on `it.eq.tier` rather than
+`it.tier`, labelled `${t.tier} ${n}` ("Ранг 1" / "Tier 1") rather than
+`voaSectionName`, and keys `t1`-`t4` with no `tA`/`tC`. Every tier is populated
+on every kind (weapon 70/80/87/80, secondary 25/27/29/27, armor 16/27/23/24),
+so all four sections draw on a bare route.
+
+Two consequences that need no new code but do need tests: `#/tables/eq_weapon/t2`
+is a live section anchor (`tests/eqtest.js:188` asserts `#sec-t2`), and
+`#/i/q1`'s "show in table" link resolves through `tableOf` to
+`#/tables/eq_weapon/q1`, a row anchor - both go through the effect B3 wired
+and start working the moment the body exists. And 239 of the 317 weapons have
+no `roll`, so their rows draw no `.rnum` and their tiles read `tileTier`
+("Ранг 1") - `TableRows.svelte` already does both (`tables.test.ts:222`).
+
+#### The facet rows, read off `eqFacets` (app.js 2571-2597)
+
+| group | row label | values, in order | value labels | kinds |
+|---|---|---|---|---|
+| `tier` | `t.tier` | `'1'` `'2'` `'3'` `'4'` | the bare digit | all |
+| `src` | `t.source` | `EQ_SRC` = `core`, `hnf`, `wondrous`, `dread`, `voa`, then `FRAME_ORDER`, **only those with at least one record of this kind** | `srcName(k)` | all |
+| `cls` | `t.eqClass` on weapon, **`t.eqDmg` on secondary** | `phy` `mag` | `EQ_CLS` | weapon, secondary |
+| `trait` | `t.eqTrait` | `EQ_TRAIT` keys in declared order | `EQ_TRAIT` | weapon, secondary |
+| `range` | `t.eqRange` | `EQ_RANGE` keys in declared order | `EQ_RANGE` | weapon, secondary |
+| `burden` | `t.eqBurden` | `'1'` `'2'` | `EQ_BURDEN` (Одноручное / Двуручное) | weapon |
+| `line` | `t.eqLineF` | `line` `uniq` | `EQ_LINE` | all |
+
+The order is `EQ_GROUPS[kind]` in `filters.ts`, exactly. `EQ_TRAIT` and
+`EQ_RANGE` in `lib/i18n.ts` declare their keys in app.js's order (agility,
+strength, finesse, instinct, presence, knowledge; melee, veryclose, close, far,
+veryfar) - checked side by side, since `Object.keys` order is what both apps
+draw. The `src` presence rule matters: weapon and secondary offer eight sources
+(no `motherboard` equipment exists), armor offers **five** - `core`, `hnf`,
+`voa`, `beast_feast`, `dark_heart` - because no wondrous, dread or colossus
+armour exists. `equipFacets(it)` in `lib/data.ts` already answers every group
+with the strings `eqPasses` compares (`String(e.tier)`, `eqSrcOf`,
+`line`/`uniq`, `cls`, `tr`, `rg`, `String(bu)`); its one difference - `''`
+against `'undefined'` for a missing burden - cannot matter, because `burden`
+is a group only on weapon and every one of the 317 weapons has one (151 + 166).
+
+Three things the rewrite is missing, found by reading rather than assumed:
+
+1. **`dict.ts` has no `eqClass`, `eqDmg`, `eqTrait`, `eqRange`, `eqBurden` or
+   `eqLineF`.** Nothing has needed a row label past `eqTh`/`eqScore` yet. Six
+   keys in both languages, copied from app.js 101-103 (ru) and 287-289 (en):
+   Класс / Тип урона / Характеристика / Дистанция / Хват / Линейка; Class /
+   Damage type / Trait / Range / Burden / Line. `source` is already there.
+2. **There is no `srcName(key)`.** `label.ts` names a source off a record
+   (`srcLabel(it, lang)`); the facet needs a name off a key. app.js's
+   `srcName(k)` is `named[k] || frameName(k) || k`. The rewrite's
+   `frameName(id, lang)` already falls back to the id, so `srcName(key, lang)`
+   is the five book keys to `t.srcCore`..`t.srcVoa`, else `frameName`.
+   `srcLabel`'s five book cases then delegate to it - a second use, so the
+   words live once.
+3. **`EQ_SRC`'s order** exists nowhere in the rewrite. It goes in `facets.ts`,
+   its only consumer, built off `FRAME_ORDER` rather than restating the four
+   frame ids.
+
+#### Early check 1: the bare-number pill rule is wrong, and B4 is where it shows
+
+`fChosen` (app.js 2604) tests **the label**: `/^\d+$/.test(o[1]) ? f[1] + ' '
++ o[1] : o[1]`. `FilterBar.svelte` tests **the value**: `/^\d+$/.test(v.value)
+? row.label + ' ' + v.value : v.label`. The two agree on `voa` (value `'2'`,
+label `'Ранг 2'` - both print "Ранг 2", for the reason B3 recorded) and on the
+equipment tier row (value `'1'`, label `'1'` - both print "Ранг 1"). They part
+on **burden**: value `'1'`, label `'Одноручное'`. The live pill reads
+"Одноручное"; the rewrite's rule would read "Хват 1". B2 wrote the rule against
+a table with no numeric value, B3 confirmed it on a table where the two tests
+coincide, and B4 is the first table where they do not.
+
+The fix is one word - test `v.label` - with a component test asserting both
+pills at once, and the `~ filtered` parity state below picks tier 1 **and**
+two-handed so the pixel diff carries both branches of the rule.
+
+#### A second divergence in the touched path: search drops the type word
+
+`matches` (app.js 2834) tests `eqLine(it)` - `eqParts(it, undefined)`, so the
+stat line it searches **starts with the type word** ("Основное оружие · Ранг 1
+· ..."). `TablesPage.svelte`'s two `matches` callbacks (lines 191 and 309) pass
+`{ noType: true }`, so "основное" finds all 317 weapons on the live app and
+none in the rewrite. Pre-existing since B1 - equipment rows have been in
+`wondrous`, `voa` and `frames` all along - and invisible because no state types
+an equipment word. It is in the exact line B4 rewrites (`filtered` gains the
+equipment pool), so it is fixed here: one shared `statLine` for both callbacks,
+without `noType`. The row's *display* keeps `noType: true` - that matches
+`rowHTML`'s own `eqLine(it, true)`. `RecordCard.svelte:81` is display too and
+is untouched. A component test types the type word; the
+`#/tables/eq_secondary ~ searched` state does the same in both apps.
+
+#### How it is built
+
+**`app/src/lib/dict.ts`** - the six keys above, both languages.
+
+**`app/src/lib/label.ts`** - `srcName(key: string, lang: Lang): string`, and
+`srcLabel`'s `core`/`hnf`/`wondrous`/`dread`/`voa` cases collapse to
+`return srcName(it.src, lang)`. The existing `label.test.ts` cases for those
+five keep passing unchanged; `srcName` gets its own case, including a frame key
+and an unknown key falling back to itself.
+
+**`app/src/lib/facets.ts`** - `facetRows(index, table, t, lang)` keeps its
+signature; its first line becomes `const kind = EQ_TABLE[table]; if (kind)
+return eqFacetRows(index, kind, t, lang);`, so `TablesPage` keeps calling one
+function. `eqFacetRows` builds one `FacetRow` per group by walking
+`EQ_GROUPS[kind]` and mapping each name to its row - **the order is taken from
+`filters.ts` by construction**, never restated, which is what keeps the panel,
+the address and the frozen grammar from drifting apart. The `src` row filters
+`EQ_SRC` by `index.allEquip.some(it => it.eq?.t === kind && srcOf(it) === k)`.
+Update the module's header comment: it is no longer "plain tables" only.
+
+**`app/src/components/FilterBar.svelte`** - `v.value` becomes `v.label` in the
+`chosen` derivation, and the comment above it names burden as the case that
+tells the two apart.
+
+**`app/src/components/TablesPage.svelte`**:
+
+- `KNOWN`, `known`, the `{#if !known}` branch, the `.todo` rule and the header
+  comment's placeholder story all go - every `TableId` is drawn now, and a
+  branch nothing can reach is dead code in a touched path. The anchor effect's
+  `ready` becomes `!!index`.
+- `eqKind = $derived(EQ_TABLE[table])` (imported from `filters.ts`, which
+  already exports it).
+- `rows` becomes `eqKind ? equipOfKind(index, eqKind) : index.rows.get(table)
+  ?? []` - this is what makes `total` the pool.
+- `facPassed`'s `valueOf` becomes `eqKind ? equipFacets(it)[g] :
+  plainFacets(it)[g]`.
+- `bodyKind` gains `'eq'`; `eqSections` is a fourth `Section[]` derivation,
+  `[1, 2, 3, 4].map(n => ({ key: 't' + n, label: `${t.tier} ${n}`, entries:
+  filtered.filter(it => it.eq?.tier === n) }))` with empties dropped, and
+  `activeSections` returns it for `'eq'`. The template's existing sectioned
+  branch (`.tsection` at `margin-top:22px`, `SectionHead`, `TableRows` with
+  `ontoggleall`) draws it unchanged - no new markup, because the live app's
+  markup is the same.
+- The two `matches` callbacks share one `statLine` without `noType`.
+
+**`app/src/components/TableRows.svelte`** - port `style.css:1013`:
+`.selbox:has(:focus-visible) { outline: 2px solid var(--gold); outline-offset:
+-3px; border-radius: 8px }`, beside the `.selbox` family, with the live app's
+reason (the row clips an outside ring; `:focus-within` would fire from the
+mouse). See "Decided" for why it is B4's.
+
+**`tests/parity/specs.js`** - the three `pending` entries become real and five
+states join them (below); `filteredAddress.only` and `copiedFilterLink.only`
+gain `'#/tables/eq_weapon ~ filtered'`. `NAME` needs nothing: `enter` steps run
+in Russian before the language switch, and the filter-link name is already
+there. `typeRuns.only` is **not** extended.
+
+#### Parity states, each in both languages at three widths
+
+| id | how it is reached | what it is for |
+|---|---|---|
+| `#/tables/eq_weapon` | route | the biggest table: four tier sections, `.fcount` 317, the strip folded |
+| `#/tables/eq_secondary` | route | a second kind, six groups |
+| `#/tables/eq_armor` | route | the third kind, three groups, the shortest |
+| `#/tables/eq_weapon ~ panel open` | press `Фильтры` | seven rows, the widest panel the app has; at 375 the source and trait chips wrap several lines |
+| `#/tables/eq_weapon ~ filtered` | press `Фильтры`, then `1`, then `Двуручное` | both branches of the pill rule on one screen ("Ранг 1" and "Двуручное"), a two-group address `f_tier-1.burden-2`, and the same on the clipboard |
+| `#/tables/eq_secondary ~ filter link` | route `#/tables/eq_secondary/f_cls-mag` | arriving opens the panel; the `cls` row reads "Тип урона" here and "Класс" on weapons |
+| `#/tables/eq_secondary ~ searched` | type `вторичное` | the type word is part of the searched stat line: every row stays in both apps, or the empty state shows in one |
+| `#/tables/eq_armor ~ nothing found` | press `Фильтры`, then `Уникальные`, then type `zzzqqqxx123` | the three-row panel open, a pill, `0 из 90`, the empty state with its own reset |
+
+`d.click('1')` is safe: the driver matches a control's whole name exactly
+before it falls back to a substring, and the tier chip is the only control on
+the page named exactly `1` - rows are named by their whole content and the
+`q*` rows have no roll number. `Уникальные` (the chip, plural) is not the
+`.badge.uniq` text (`Уникальное`, singular), and a badge is a span anyway.
+
+Expect **zero** in every cell. The rows, the strip, the panel, the section
+heading and the empty state are all already exact on `voa`, `community` and
+`wondrous`; B4 adds no rule of its own. Any nonzero cell gets its diff image
+opened and the control measured (`docs/parity.md`, the denominator rule) before
+a reason is written, and the number written is CI's, not this machine's. The
+one state to watch is `~ panel open` at 375, where seven rows of chips make the
+tallest panel yet - if it differs, measure a chip row's height in both apps.
+
+#### What B4 leaves behind
+
+Tests, in the same commit as the behaviour:
+
+- `lib/facets.test.ts` - for each kind: `rows.map(r => r.group)` equals
+  `groupsFor(table)` (the two modules cannot drift); the tier row's labels are
+  the bare digits; the `src` row lists only sources with a record of that kind,
+  in `EQ_SRC` order, a frame named by `frameName`, and `motherboard` absent;
+  `cls` is labelled `Класс` on weapon and `Тип урона` on secondary; `burden`
+  exists on weapon only; `line`'s two labels. Fixture: a few `eq` records plus
+  one frame record and one voa record carrying `eq`, so the pool provably spans
+  `items` as well as `eq`.
+- `lib/label.test.ts` - `srcName` for the five book keys in both languages, a
+  frame key, and an unknown key falling back to itself.
+- `components/tables.test.ts` - the fixture's `eq: []` gains weapons of all
+  four tiers with both burdens and both classes, a secondary weapon, and an
+  armour; `items.frames` gains one armour so the frame source shows in the
+  `src` row (adjust the frames test that enumerates campaigns). Cases: each
+  equipment table groups by `eq.tier` into `#sec-t1`-`#sec-t4` labelled
+  "Ранг n", in order, dropping an empty tier; the pool spans every source and
+  `.fcount` reads the pool; the panel has seven fields on weapons, six on
+  secondary (no burden), three on armour; the `cls` label differs by kind; a
+  tier pick's pill reads "Ранг 1" and a burden pick's reads "Двуручное" (the
+  rule fix); a `mag` pick drops physical weapons; `#/tables/eq_weapon/f_tier-2.cls-mag`
+  arrives with the panel open and both chips pressed; `#/tables/eq_armor/f_burden-2`
+  leaves armour whole; the empty state grows its own reset; typing "основное"
+  keeps every weapon (the search fix); `#/tables/eq_weapon/t2` flashes
+  `#sec-t2` and `#/tables/eq_weapon/q1`-shaped row anchors flash the row. The
+  "a table this slice has not built" placeholder test is deleted, not
+  rewritten; keep its sibling about a single-table book.
+- `components/a11y.test.ts` - a pressed state: `#/tables/eq_weapon`, press
+  `Фильтры` then `1` - the widest panel, with a bare-number value pressed. No
+  `COVERED` change: no new component.
+- `tests/parity/specs.js` - the eight states and two `only` lists above.
+
+#### Decided in planning - do not reopen
+
+- **`.selbox:has(:focus-visible)` is B4's.** It is in a rule family the
+  equipment rows draw, three lines, and the live app has it, so porting it can
+  only reduce a difference. It cannot be pixel-verified: no state reaches a
+  row checkbox by keyboard and the driver has no key press. It is verified by
+  reading, and the instrument gap is recorded rather than invented around.
+- **The 600px overrides for `.selx`, `.selacts`, `.seldrop`, `.dropmenu`, the
+  `.lrow*` family, `.npair` and `.batch-acts` stay deferred.** Their base
+  rules belong to the selection bar, the add-to-list menu, list rows, notes and
+  batch actions - none exists. Porting an override without its base rule is
+  the mistake `CLAUDE.md`'s `@media` line forbids, mirrored.
+- **No equipment anchor parity state.** A section or row anchor state on an
+  equipment table can only add 375 cells whose difference is the harness's own
+  width sweep - a known, unfixed, not-B4 cause that would need `VISUAL_DEBT`
+  entries taken from CI. The equipment-specific fact - section ids `sec-t1`-
+  `sec-t4` and a `q*` row target - is pinned by component tests; the anchor
+  mechanism itself already has two states. Revisit once the width-sweep
+  decision lands.
+- **`KNOWN` goes.** A branch no table reaches is dead code in a touched path.
+- **`typeRuns.only` is not extended** to the equipment tables - the
+  orchestrator deferred it explicitly.
+- **One batch, not split.** The pieces are one vertical slice with one
+  acceptance (the eight states and the checks); splitting facets from body
+  would leave a table drawing a panel over a placeholder.
+- **The Svelte leading-space rule.** B4 ports no new inline markup out of an
+  `app.js` string - the tier body reuses B3's markup - so a second instance is
+  unlikely; grep the diff for `' <` inside `{#if}`/`{#each}` anyway, and if one
+  appears, promote the rule to `CLAUDE.md` in the same commit.
+
+#### Ordered steps
+
+1. `dict.ts`: the six keys, both languages. `npm run typecheck` (or the
+   `check` typecheck step) confirms `Dict` accepts them.
+2. `label.ts`: `srcName`; `srcLabel` delegates its five book cases.
+   `label.test.ts` cases.
+3. `facets.ts`: `EQ_SRC`, `eqFacetRows`, the `EQ_TABLE` branch at the top of
+   `facetRows`, header comment. `facets.test.ts` cases.
+4. `FilterBar.svelte`: `v.value` to `v.label` in `chosen`; the comment.
+5. `TablesPage.svelte`: delete `KNOWN`/`known`/`.todo`; `eqKind`; `rows`;
+   `facPassed`'s `valueOf`; `bodyKind 'eq'` and `eqSections`; the shared
+   `statLine`; the anchor effect's `ready`; the header comment.
+6. `TableRows.svelte`: the `:has(:focus-visible)` rule.
+7. `tables.test.ts`: fixture, the cases above, delete the placeholder test.
+   `a11y.test.ts`: the pressed state.
+8. `tests/parity/specs.js`: the eight states, the two `only` lists.
+9. `npm run check`. Then `npm run build` and `node tests/parity.js "eq_"`
+   (fits one foreground call). Open every nonzero diff before writing anything
+   into `VISUAL_DEBT`; expect none.
+10. `npm run check:built`. Then `node tests/parity.js "tables"` - now over the
+    600s foreground cap with eight more states, so run it in the background
+    with output redirected to a file, or hand it to the orchestrator. The
+    unfiltered `node tests/run-all.js parity` is the orchestrator's.
+11. Update `plan.md` (this section's "built" counterpart, the Phase 4 table)
+    and `handoff.md`; commit as one batch, `feat(tables): ...`, authored as
+    `artex-x`.
+
+### B4 built: the equipment tables, their facets and tier sections
+
+What was built matches the design above with one addition the design did not
+anticipate - a real ordering defect in code B4 was the first caller of.
+Otherwise: `dict.ts` gained the six keys, `label.ts` gained `srcName` with
+`srcLabel`'s five book cases delegating to it, `facets.ts` gained `EQ_SRC` and
+`eqFacetRows` dispatched from `facetRows`'s first line, `FilterBar.svelte`'s
+pill rule now tests `v.label`, `TableRows.svelte` carries
+`.selbox:has(:focus-visible)`, and `TablesPage.svelte` lost `KNOWN`/`known`/
+`.todo` and gained `eqKind`, the equipment `rows`/`facPassed` branches,
+`bodyKind 'eq'`, `eqSections`, and a shared `statLine` without `noType` for
+both `matches` callbacks - the row's own display keeps `noType: true`
+(`TableRows.svelte`, `RecordCard.svelte:81`, both untouched).
+
+**Found while building it, not anticipated by the design: `allEquip`'s
+concat order was backwards, and B4 is what exposed it.** `equipOfKind` and
+`equipFacets` had no caller since Phase 2, so nothing had ever looked at
+`allEquip`'s *order* - only its membership and length, which every existing
+test happened to check. `data.ts` built it as `[...all, ...eq].filter(it =>
+it.eq)` - the roll-table records first, `eq` last. app.js's own
+`ALL_EQ = EQ.concat(...Object.values(DATA))` puts `eq` **first**. The first
+`node tests/parity.js "eq_"` run caught it immediately and unambiguously: a
+bare `#/tables/eq_weapon` opened on `beast_feast`'s frame weapons (`Тесак`,
+`Заточенные Грабли`, ...) with roll numbers and `УНИКАЛЬНОЕ` badges, where the
+live app opens on Core's `Палаш`/`Длинный Меч`/... - not a styling difference,
+a completely different first screenful, 0.95-2.46% at every width on all
+three tables. Fixed by swapping the concat order in `data.ts` to
+`[...eq, ...all]`, matching app.js exactly; a new `data.test.ts` case
+reproduces `ALL_EQ`'s construction directly off `data.json` and asserts
+`equipOfKind(index, 'weapon')` returns the same id order, so a future change
+to either side is caught by a unit test rather than by a parity screenshot.
+No other caller of `allEquip` depends on order (`upgradeLine` sorts by tier
+itself; every other use is `.find`/`.length`/`.some`), so the fix is confined
+to this one line plus its test - not a redesign, a bug in a touched path per
+`CLAUDE.md`.
+
+**Everything else matched on the first `eq_` run** after that fix: all eight
+states, both languages, all three widths, `расхождений нет` - the facet rows,
+the pill-rule fix (both "Ранг 1" and "Двуручное" render correctly on the same
+screen), the panel widths (7/6/3 fields), the tier sections, the search fix
+(the type word narrows the equipment pool the same way in both apps), and the
+empty state. No `VISUAL_DEBT` entry was added or needed - the brief's
+"expect zero" held once the pool order matched.
+
+**Per-state percentages, `node tests/parity.js "eq_"`, this session's build:**
+
+| state | every cell, both languages, all three widths |
+|---|---|
+| `#/tables/eq_weapon` | 0.00% |
+| `#/tables/eq_secondary` | 0.00% |
+| `#/tables/eq_armor` | 0.00% |
+| `#/tables/eq_weapon ~ panel open` | 0.00% |
+| `#/tables/eq_weapon ~ filtered` | 0.00% |
+| `#/tables/eq_secondary ~ filter link` | 0.00% |
+| `#/tables/eq_secondary ~ searched` | 0.00% |
+| `#/tables/eq_armor ~ nothing found` | 0.00% |
+
+`filteredAddress` and `copiedFilterLink`'s new `#/tables/eq_weapon ~ filtered`
+entries also matched: the address reads `#/tables/eq_weapon/f_tier-1.burden-2`
+and the same string lands on the clipboard, in both apps.
+
+`node tests/parity.js "tables"` (the full tables suite, gained eight states)
+is reported separately once the run completes - see `handoff.md`,
+"Verification".
+
+**Tests added, matching the design's list:** `lib/facets.test.ts` (group-order
+guard against `groupsFor`, the tier row's bare digits, the `src` row's
+presence filter and `motherboard`'s absence, the `cls` label split by kind,
+`burden` weapon-only, `line`'s two labels), `lib/label.test.ts` (`srcName` for
+the five books, a frame, and an unknown key), `lib/data.test.ts` (the ordering
+fix, described above), `components/tables.test.ts` (the fixture's `eq` array
+gained weapons of all four tiers with both burdens and both classes, a
+secondary and an armour, and `items.frames` gained a frame-sourced armour so
+the `src` row has a frame to offer; the placeholder test for "a table this
+slice has not built" was deleted, its single-table-book sibling kept under a
+renamed `describe('the chip nav', ...)`; a new `describe('the equipment
+tables', ...)` covers tier sectioning, the pool-wide `.fcount`, panel field
+counts per kind, the `cls` label split, both branches of the pill-rule fix, a
+`mag` pick, a filter link opening the panel with both chips pressed, a group
+the table does not offer leaving it whole, the empty state's own reset, the
+search fix, and both anchor shapes), `components/a11y.test.ts` (one pressed
+state: `#/tables/eq_weapon`, `Фильтры` then `1` - no `COVERED` change, no new
+component).
+
+No leading-space defect was found - B4 ports no new inline markup out of an
+`app.js` string template, the tier body reuses B3's own row/section markup
+unchanged, so the rule was not promoted to `CLAUDE.md`.
 
 ## Phase 5 - what already exists
 

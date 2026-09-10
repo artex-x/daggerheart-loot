@@ -6,46 +6,34 @@ depends on chat history.
 
 ## Status
 
-- Task status: in_progress
-- Last agent: orchestrator (finished part 2 after its implementer lost its
-  turn twice)
+- Task status: in_progress - B4 built and committed; no next batch is
+  implement-ready below (see "Next batch")
+- Last agent: implementer (B4 built)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
-- Base / starting commit: `4976cb4` (planning session). B3.5's own commit is
-  `a58dd97`; its remediation commit is `fb8cb0d`. **B3.6 is complete: parts 0, 1 and 2 are
-  built and committed** - part 0 is `f7308a9`, part 1 is `38cfbbb`, part 2 is
-  this session's commit. The container tooling is `1d368e2`.
+- Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
+  `fb8cb0d`; **B3.6 is complete in all three parts** - part 0 `f7308a9`,
+  part 1 `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`.
+  **B4 is built this session** - see "Completed" for its commit sha.
 
-Phase 4 is in progress. B1, B2, B3 and now **B3.5 are built**. The batch order
-ahead is **B3.6 -> B4**; B4 (the three equipment tables) is unchanged and still
-follows, with both of its early checks intact - see "Deferred".
+Phase 4's B1-B3.6 and B4 are all built. B4 was the last body shape the tables
+slice needed (`plan.md`, "the tables surface, and how it splits"), so every
+table in `TABLE_DEFS` now draws a real body and `TablesPage.svelte` carries no
+placeholder branch. What is left of Phase 4 is the lists, search and print
+slices - none of them implement-ready yet; see "Next batch".
 
-**B3.6 is one batch in three parts**, merged at the owner's request on the
-standing "prefer larger coherent batches" policy: **part 0** makes the parity
-suite quick enough to run repeatedly, **part 1** greens the red CI run, and
-**part 2** builds the instrument that would have caught B3.5's defects.
-**All three parts are built and committed; B4 is next.** Part 0's own speed
-claim failed measurement - the cache buys ~10%, not half, and the 4-way shard
-is what actually makes CI affordable. Part 1 diagnosed all 22 failing CI cells,
-fixed one real defect worth eighteen debt entries, closed a harness race and
-wrote the platform rule; **whether CI is actually green needs the owner to
-push, and nobody has verified it**. See `plan.md`, "B3.6 built, part 0" and
-"B3.6 built, part 1".
+B4 was offered as a merge target for B3.6 and was deliberately not folded in:
+its acceptance includes a clean parity run and possibly new `VISUAL_DEBT`
+entries, and building it while the debt table and the instrument were being
+replaced would have made every number unattributable. That work is done; B4
+starts on a settled table and a finished instrument.
 
-B4 was offered as a merge target too and is deliberately **not** folded in:
-B4's own acceptance includes a clean parity run and new `VISUAL_DEBT` entries,
-so building it while the debt table and the instrument are both being replaced
-would make every number unattributable - the same confounding that hid three
-defects behind an "antialiasing" reason for three batches.
-
-Why these batches were inserted: a human manually reviewed `#/tables/community`
-at full width and reported two rendering defects the parity harness was
-reporting as clean. The orchestrator confirmed both by measurement and found a
-third. All three had been absorbed by `VISUAL_DEBT` entries whose stated reason
-is antialiasing. `issues/47/context.md` carries the measurements, the method
-and the simulated scores; `plan.md`'s "B3.5 planned" and "B3.6 planned"
-sections carry the design. Do not re-measure and do not re-run parity to
-confirm the diagnosis - the implementer produces the real numbers.
+Why B3.5 and B3.6 were inserted ahead of it: a human review of
+`#/tables/community` found two defects the harness reported as clean, the
+orchestrator confirmed both by measurement and found a third, and all three
+sat inside `VISUAL_DEBT` entries whose reason said antialiasing. `context.md`
+carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
+carry what was done about it. Do not re-measure any of it.
 
 ## Completed
 
@@ -326,7 +314,114 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   allowed - would have cost three keys and a paragraph to excuse a difference
   the line removes outright.
 
+- Batch name/id: **B4 - the equipment tables, their facets and tier sections**
+  (this session)
+- What shipped: `#/tables/eq_weapon`, `#/tables/eq_secondary` and
+  `#/tables/eq_armor` draw in full - the facet strip and panel (up to seven
+  rows), four tier sections keyed `t1`-`t4` and labelled "Ранг n"/"Tier n",
+  and the shared empty state. `dict.ts` gained the six equipment row labels;
+  `label.ts` gained `srcName` with `srcLabel`'s five book cases delegating to
+  it; `facets.ts` gained `EQ_SRC` and `eqFacetRows`, dispatched from the top
+  of `facetRows`; `FilterBar.svelte`'s bare-number pill rule now tests
+  `v.label` (the burden row's fix); `TableRows.svelte` carries
+  `.selbox:has(:focus-visible)`; `TablesPage.svelte` lost `KNOWN`/`known`/
+  `.todo` (every `TableId` draws a real body now) and gained `eqKind`, the
+  equipment `rows`/`facPassed` branches, `bodyKind 'eq'`, `eqSections`, and a
+  shared `statLine` used by both `matches` callbacks without `noType` (the
+  search fix - typing the type word now keeps every weapon, matching
+  app.js). Full accounting, including what matched the design and the one
+  thing it did not anticipate, is in `plan.md`, "B4 built".
+- **One real defect found and fixed, outside the brief's line list but inside
+  the same touched path: `data.ts`'s `allEquip` concatenated `eq` and the
+  roll-table records in the wrong order.** `equipOfKind`/`equipFacets` had no
+  caller before B4, so nothing had ever looked at `allEquip`'s order - app.js's
+  own `ALL_EQ = EQ.concat(...Object.values(DATA))` puts `eq` first; `data.ts`
+  had `[...all, ...eq]`, `eq` last. The first `node tests/parity.js "eq_"` run
+  caught it immediately: a bare `#/tables/eq_weapon` opened on `beast_feast`'s
+  frame weapons instead of Core's, 0.95-2.46% on every cell of all three
+  bare-route states. Fixed by swapping the concat order; a new `data.test.ts`
+  case reproduces `ALL_EQ`'s construction directly off `data.json` and pins
+  the id order so a future change is caught by a unit test rather than a
+  parity screenshot. Confirmed no other caller of `allEquip` depends on order.
+- Files changed: `app/src/lib/dict.ts`, `label.ts`, `label.test.ts`,
+  `facets.ts`, `facets.test.ts`, `data.ts`, `data.test.ts`,
+  `app/src/components/FilterBar.svelte`, `TablesPage.svelte`,
+  `TableRows.svelte`, `tables.test.ts`, `a11y.test.ts`, `tests/parity/specs.js`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's B4 commit.
+- Deviations and rationale: the `allEquip` order fix (above) was not named in
+  the brief's line list, but it sits directly in the lines B4 rewrites
+  (`equipOfKind`, `equipFacets`, both first called by this batch) and is
+  exactly the kind of "cheap, local, safe bug in a touched path" `CLAUDE.md`
+  says to fix rather than defer. No other deviation from the brief.
+
 ## Verification
+
+- Commands run (exact), this session (B4):
+  - `npm run check` - first attempt **exit 1** on one lint error
+    (`@typescript-eslint/no-unnecessary-type-assertion` on the `EQ_LINE` cast
+    in `facets.ts` - `EQ_LINE`'s declared type is already `Record<string,
+    Pair>`, so `Object.keys(EQ_LINE) as (keyof typeof EQ_LINE)[]` changes
+    nothing; removed). Typecheck then failed twice more on real type errors
+    (`build[g]()` possibly undefined; `facets.test.ts`'s loop variables typed
+    `string` rather than `TableId`), both fixed. Clean re-run: **exit 0**,
+    format/lint/typecheck/data/derived/i18n/selftest all pass, 682 tests
+    (later 683 with the `data.test.ts` addition), coverage 96.47%
+    statements / 89.94% branches / 96.13% functions / 96.7% lines - all above
+    threshold.
+  - One `npm run check` re-run mid-session hit the documented
+    vitest-pool-runner timeout on four unrelated test files (`money.ts`,
+    `lists.ts`, `listLink.ts`, `hash.ts`, `search.ts`, `tables.ts`, `dice.ts`
+    reported low/zero coverage because their suites never started) with zero
+    `chrome.exe` running - the same "one flaky timeout, re-run before
+    investigating" gotcha `handoff.md` already names for B3.5. A clean re-run
+    immediately after passed the same way as the first: 683 tests, thresholds
+    met.
+  - `npm run build` - clean.
+  - `node tests/parity.js "eq_"` - **first run: 21 расхождений**, every
+    bare-route state (`eq_weapon`/`eq_secondary`/`eq_armor`) and
+    `eq_secondary ~ searched` failing 0.95-2.46% at every width, both
+    languages; the five other new states (`~ panel open`, `~ filtered`,
+    `~ filter link`, `~ nothing found`) were already clean. Root-caused to
+    `data.ts`'s `allEquip` order (see "Completed") rather than accepted as
+    debt - the diff images showed a different first screenful, not noise.
+    After the one-line fix in `data.ts`: **`расхождений нет`**, every one of
+    the eight states at 0.00% in both languages at all three widths; the two
+    off-screen specs (`filteredAddress`, `copiedFilterLink` on
+    `#/tables/eq_weapon ~ filtered`) matched too. Exact per-state percentages
+    are in `plan.md`, "B4 built".
+  - `npm run check:built` - **exit 0**: build, `file://` smoke
+    ("the built page opens from a folder"), bundle budget (57.4 kB gzip
+    against the 120 kB budget).
+  - `node tests/parity.js "tables"` (full, all 34 states in the filter,
+    run in the background per the brief - over the 600s foreground cap with
+    B4's eight new states added) - **7 расхождений, all pre-existing and
+    unrelated to B4.** Every failing cell is one of two anchor states neither
+    B4 built nor touched:
+    `#/tables/voa ~ section anchor @ ru 375` (9.97% vs. debt 11.55%),
+    `@ en 768` (0.00% vs. debt 0.42%), `@ en 375` (8.90% vs. debt 10.31%), and
+    `#/tables/core_item ~ row anchor @ ru 375` (8.84% vs. debt 10.52%),
+    `@ en 1100` (0.00% vs. debt 0.42%), `@ en 768` (0.00% vs. debt 0.43%),
+    `@ en 375` (7.91% vs. debt 9.92%) - every one measuring **better** than
+    its recorded debt, the `DEBT_SLACK` ratchet's "стало лучше - опусти
+    число" shape, not a regression. These are exactly the states
+    "Blockers" already names as fragile on this machine - the anchor-flash
+    defect and the harness's frozen-scrollY-across-the-width-sweep
+    limitation, both pre-existing and explicitly not B4's to fix per the
+    brief's own scope. Confirmed unrelated to this batch by reading the
+    diff rather than by `git stash` (blocked by the permission classifier
+    this session): `eqKind` is falsy for both `voa` and `core_item` (neither
+    is an equipment table), so every branch B4 added
+    (`eqKind`/`rows`/`facPassed`/`bodyKind 'eq'`/`eqSections`) is dead code
+    on these two tables' render path, and the one piece of shared code
+    (`statLine`) is only invoked when a query is typed - neither anchor
+    state types one. No code this batch touched executes differently for
+    these two tables than before the batch. **Not re-baselined**, per owner
+    decision 1 and the brief's own instruction not to touch anything outside
+    B4's states - left for the orchestrator, same as B3's unfiltered-gate
+    findings were.
+  - Every other one of the 34 states in the "tables" filter - including all
+    eight of B4's own - measured `совпадает`/`0.00%`.
 
 - Commands run (exact), this session (B3.6 part 2):
   - The revert proof, scripted: each of B3.5's three fixes reverted alone,
@@ -476,257 +571,236 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   and after the root-cause experiment. The unfiltered gate is red for reasons
   proven unrelated to this batch - see "Blockers" for the exact states and the
   proof.
-- Gates for the next batch: `npm run check`, `npm run check:built`,
-  `node tests/parity.js "tables"` while working (or a narrower filter matching
-  part 2's own `only` list), `node tests/run-all.js parity` before the commit.
-  Part 1 has diagnosed every cell that command was failing; what is left of
-  its redness on a Windows machine is the documented per-platform tolerance,
-  cell by cell, in "Blockers".
+- Gates for the next batch (B4): `npm run check`, `npm run build`,
+  `node tests/parity.js "eq_"` while working (fits one foreground call),
+  `npm run check:built`, then `node tests/parity.js "tables"` in the
+  background or by the orchestrator (over the 600s cap after B4's eight
+  states), and the unfiltered `node tests/run-all.js parity` by the
+  orchestrator. What is left of a full run's redness on a Windows machine is
+  the documented per-platform tolerance, cell by cell, in "Blockers".
 
 ## Next batch (implement-ready)
 
+B3.6's three parts and B4 are all built (`f7308a9`, `38cfbbb`, `958f182`, and
+B4's commit - see "Completed"). Their briefs used to sit here and are
+retired: B3.6's designs are `plan.md`, "B3.6 planned, part 0/1/2", and what
+was actually built is "B3.6 built, part 0/1/2"; B4's design is "B4 planned"
+and what was actually built - including the `allEquip` ordering defect the
+design did not anticipate - is "B4 built". Nothing from any of them is work
+to do.
+
+**No next batch is implement-ready below.** B4 was the last body shape the
+tables slice needed; every table in `TABLE_DEFS` now draws a real body. What
+is left of Phase 4 - the lists slice, the search slice, the print slice - has
+no design or brief written yet, and picking one is a planning decision, not
+this session's to make unasked. Candidates and open items, all already on
+record and none re-derived here:
+
+- **The lists slice** (`#/lists`, `pending` in `tests/parity/specs.js`) - the
+  selection bar, the add-to-list row/menu, list rows, notes and batch actions.
+  It is also what several deferred items below are waiting on: the 600px
+  overrides for `.selx`/`.selacts`/`.seldrop`/`.dropmenu`/`.lrow*`/`.npair`/
+  `.batch-acts`, and `noData`/`storageOff`.
+- **The search slice** (`#/search`, `pending`) - `renderSearch` reuses the row
+  wholesale (`plan.md`, "Three things found while planning the tables
+  slice"), and the shared-`S.kind` question (`plan.md`, "The kind filter is
+  per panel, not per app") comes due here.
+- **The print slice** (`#/print/ci1-q1`, `pending`).
+- The **anchor-flash defect** (`Blockers`) and the **harness width-sweep
+  decision** (`Blockers`) are real, found, and still open, but neither is
+  scoped as a batch yet.
+
+The former B4 brief below is historical - what was actually handed to the
+implementer this session - kept for the record rather than deleted, since
+`plan.md`'s "B4 built" already carries what was built against it.
+
 - **Name:** B4 - the equipment tables, their facets and tier sections.
-  **B3.6 is complete in all three parts.** Its sections below are kept for
-  their reasoning, not as work to do; B4's own brief, with its two early
-  checks preserved verbatim, is under "Deferred".
 
-### Part 0 - BUILT. Kept for its reasoning, not as work to do
+- **Objective:** draw `#/tables/eq_weapon`, `#/tables/eq_secondary` and
+  `#/tables/eq_armor` the way `renderEquipTable` in `app.js` (2735-2761) draws
+  them - the facet strip and panel with up to seven rows, four tier sections
+  keyed `t1`-`t4` and labelled "Ранг n" / "Tier n", and the empty state - so
+  that every table in `TABLE_DEFS` is real and `TablesPage.svelte`'s
+  placeholder branch can go. Full design: `plan.md`, "B4 planned".
 
-Built and committed this session; see "Completed" and `plan.md`, "B3.6 built,
-part 0". Read it only for what it intended - and note that its central estimate
-was wrong: the cache buys ~10% of the wall clock, not half, because only the
-per-width screenshot is cacheable. The original text follows unedited.
+- **The two early checks, answered - do not re-derive:**
+  1. **The bare-number pill rule is wrong in `FilterBar.svelte`.** `fChosen`
+     (app.js 2604) tests the **label**; the port tests the **value**. Same
+     answer on `voa` and on the equipment tier row; different on **burden**,
+     whose values are `'1'`/`'2'` and whose labels are Одноручное/Двуручное -
+     the live pill reads "Двуручное", the port's would read "Хват 2". Fix: test
+     `v.label`. Test both pills at once; the `~ filtered` state below carries
+     both branches.
+  2. **The equipment tables have tier sections as well as facets.** Four
+     groups `[1,2,3,4]` off `it.eq.tier`, `.tsection#sec-t<n>` at
+     `margin-top:22px`, `sectionHead` plus `renderList` (select-all per tier),
+     empty tiers skipped, `.fcount` total = the whole pool (317 / 108 / 90).
+     It is `voa`'s tier body with a different key, label and tier list; the
+     existing sectioned branch in `TablesPage.svelte` draws it unchanged.
 
-- **Objective:** cut the parity suite's wall clock before part 1 runs it a
-  dozen times. It is 867s on CI and ~9 min for the `tables` filter alone, and
-  that cost is why workers push runs into the background and lose them, why a
-  filtered run gets treated as the gate, and therefore why CI stayed red for
-  eight runs unnoticed. Full design in `plan.md`, "B3.6 planned, part 0";
-  reasoning in `.claude/improvements.md`, "Finding 5".
+- **In scope:**
+  - `app/src/lib/dict.ts`: six missing keys, both languages - `eqClass`
+    (Класс / Class), `eqDmg` (Тип урона / Damage type), `eqTrait`
+    (Характеристика / Trait), `eqRange` (Дистанция / Range), `eqBurden`
+    (Хват / Burden), `eqLineF` (Линейка / Line). Copied from app.js 101-103
+    and 287-289.
+  - `app/src/lib/label.ts`: `srcName(key, lang)` - five book keys to
+    `t.srcCore`..`t.srcVoa`, otherwise `frameName(key, lang)` (which already
+    falls back to the key). `srcLabel`'s five book cases delegate to it.
+  - `app/src/lib/facets.ts`: `EQ_SRC` (`core`, `hnf`, `wondrous`, `dread`,
+    `voa`, then `...FRAME_ORDER`); `eqFacetRows(index, kind, t, lang)` that
+    walks `EQ_GROUPS[kind]` and maps each group name to its row - order taken
+    from `filters.ts` by construction; the `src` row keeps only sources with a
+    record of this kind in `index.allEquip` (armour offers five, the other two
+    eight); `facetRows` returns `eqFacetRows` when `EQ_TABLE[table]` is set.
+    Row labels and values are the table in `plan.md`, "The facet rows".
+  - `app/src/components/FilterBar.svelte`: `v.value` to `v.label` in
+    `chosen`; the comment names burden.
+  - `app/src/components/TablesPage.svelte`: delete `KNOWN`, `known`, the
+    `{#if !known}` branch, the `.todo` rule and the placeholder story in the
+    header comment (every `TableId` is drawn now); the anchor effect's `ready`
+    becomes `!!index`; `eqKind = $derived(EQ_TABLE[table])`; `rows` becomes
+    `eqKind ? equipOfKind(index, eqKind) : index.rows.get(table) ?? []`;
+    `facPassed`'s `valueOf` uses `equipFacets(it)[g]` when `eqKind` is set;
+    `bodyKind` gains `'eq'` and an `eqSections` derivation (`[1,2,3,4]`,
+    key `t<n>`, label `${t.tier} ${n}`, entries `filtered` where
+    `it.eq?.tier === n`, empties dropped) that `activeSections` returns; both
+    `matches` callbacks share one `statLine` **without** `noType` - app.js's
+    `matches` searches `eqLine(it)` with the type word in it (see plan). The
+    row's display keeps `noType: true`.
+  - `app/src/components/TableRows.svelte`: port `style.css:1013` -
+    `.selbox:has(:focus-visible){outline:2px solid var(--gold);outline-offset:-3px;border-radius:8px}`
+    - beside the `.selbox` family, with the live app's reason in a comment.
+  - `tests/parity/specs.js`: the three `pending` entries become real states;
+    five more states; `filteredAddress.only` and `copiedFilterLink.only` gain
+    `'#/tables/eq_weapon ~ filtered'`. The state table is in `plan.md`,
+    "Parity states"; the `enter` steps are: `~ panel open` presses `Фильтры`;
+    `~ filtered` presses `Фильтры`, `1`, `Двуручное`; `eq_secondary ~ filter
+    link` is the route `#/tables/eq_secondary/f_cls-mag`; `eq_secondary ~
+    searched` types `вторичное`; `eq_armor ~ nothing found` presses `Фильтры`,
+    `Уникальные`, then types `zzzqqqxx123`.
+  - Tests: `lib/facets.test.ts`, `lib/label.test.ts`,
+    `components/tables.test.ts` (fixture gains equipment; the placeholder test
+    is deleted; cases listed in `plan.md`, "What B4 leaves behind"),
+    `components/a11y.test.ts` (one pressed state: `#/tables/eq_weapon`,
+    `Фильтры` then `1`).
 
-- **In scope:** a `testTimeout` that matches what the tests actually do
-  (`vite.config.mts` sets none, so vitest uses 5000ms while the a11y specs
-  legitimately take 5-13s - one `npm run check` this session produced 66
-  failures, 50 of them `Test timed out in 5000ms`, on a suite that passes
-  clean alone; three sessions have now written this off as "contention");
-  content-addressed caching of the **legacy** screenshots (the
-  static root is frozen by policy, so they are recomputed identically every
-  run - key on a hash of `index.html`, `app.js`, `style.css`, `data.js`, the
-  referenced assets, the state's own definition and the viewport list; expect
-  ~half the wall clock), plus sharding the CI run across a 4-way job matrix.
+- **Out of scope:** the selection bar and add-to-list row (lists);
+  `Panel.svelte`; extending `typeRuns.only` to the equipment tables (deferred
+  by the orchestrator); the anchor flash (never drawn - see Blockers); the
+  harness width-sweep decision; the 600px overrides for `.selx`, `.selacts`,
+  `.seldrop`, `.dropmenu`, `.lrow*`, `.npair`, `.batch-acts` (their base rules
+  belong to components that do not exist - see Deferred); an equipment anchor
+  parity state (deferred with a reason - see Deferred); `noData`/`storageOff`;
+  any change to `docs/specs/*`, `docs/fixtures/`, `CONTRACTS.md` or `llms.txt`
+  - none is needed, and if one turns out to be, stop and say so.
 
-- **Out of scope:** local parallelism. It can change timing, and the B3 handoff
-  already records spurious 5000ms timeouts from overlapping browser work. Part
-  2 exists to make measurements trustworthy; do not destabilise the instrument
-  in the same batch.
+- **Files expected:** `app/src/lib/dict.ts`, `app/src/lib/label.ts`,
+  `app/src/lib/label.test.ts`, `app/src/lib/facets.ts`,
+  `app/src/lib/facets.test.ts`, `app/src/components/FilterBar.svelte`,
+  `app/src/components/TablesPage.svelte`, `app/src/components/TableRows.svelte`,
+  `app/src/components/tables.test.ts`, `app/src/components/a11y.test.ts`,
+  `tests/parity/specs.js`, `issues/47/plan.md`, `issues/47/handoff.md`.
 
-- **Acceptance:** cold and warm runs give identical verdicts and identical
-  percentages for every state; `--no-cache` reproduces the cold run; touching
-  `style.css` provably invalidates the cache; CI green and faster.
+- **Steps:** `plan.md`, "B4 planned", "Ordered steps" 1-11 - dict, label,
+  facets, FilterBar, TablesPage, TableRows, the tests, the states, then the
+  checks in the order given there.
 
-- **Why it is safe before part 1:** caching returns the same bytes or re-shoots,
-  so it cannot change a pixel. The instrument is unchanged while part 1 uses it.
-
-### Part 1 - BUILT. Kept for its reasoning, not as work to do
-
-Built and committed this session; see "Completed" and `plan.md`, "B3.6 built,
-part 1". What it found that this section did not anticipate: the `~ help`
-states were not rendering noise at all but one unported CSS declaration, worth
-eighteen entries; `#/i/ci1 ~ whole` was the right reason with a stale number
-taken on the wrong machine; and the 375 anchor states are the harness's own
-width sweep, not anything either app does. It also found a defect it did not
-fix - the rewrite's anchor flash has never been drawn - which is now the first
-item under "Deferred". The original text follows unedited.
-
-- **Objective:** make `node tests/run-all.js parity` green, on CI, honestly.
-  `.github/workflows/ci.yml` runs `npm run test:legacy` = `node
-  tests/run-all.js` **unfiltered**, so the full parity suite gates every push
-  and pull request, and `main` has been red for eight consecutive runs since
-  2026-09-03. Nobody noticed because sessions only ever ran the filtered
-  `tables` subset locally. Full design in `plan.md`, "B3.6 planned, part 1";
-  the failing states, both machines' numbers and the method are in
-  `context.md` under "CI is red". Do not re-run to rediscover the list.
-
-- **Two owner decisions, settled - do not re-open:**
-  1. **CI (ubuntu) is the authoritative machine for `VISUAL_DEBT` numbers.** A
-     local Windows run is advisory. Local-only drift may not be written into
-     the table as if it were the baseline.
-  2. **Diagnose every failing state and fix root causes; re-baseline only what
-     is genuinely machine variance.** Not "green it now, diagnose later" - that
-     risks writing another absorbing excuse of the kind B3.5 just removed.
-
-- **In scope:** the complete failing-state list (the CI log is capped at about
-  a dozen lines - use an unfiltered local run or the `failure-output` artifact
-  from run `34019148841`); a per-state diagnosis with a named cause; the fixes
-  those diagnoses call for; `#/i/f1`'s missing `ACCEPTED` entry for the
-  add-to-list gap that every other record-card route already has; the platform
-  rule written into `docs/parity.md`'s "Machine variance"; and a recorded
-  decision on whether CI keeps the unfiltered suite as a blocking gate (~867s).
-
-- **Start with `#/i/ci1 ~ whole`.** Largest overshoot (up to 1.4pp), over on
-  both machines, and a whole-page state where one missing element shifts the
-  footer and costs a lot of pixels at once. Expect B3.5's pattern: separate
-  "noise" reasons that each turn out to be one CSS declaration.
-
-- **Acceptance:** every failing state diagnosed and named, not one left as
-  "antialiasing"; the suite clean locally with stated reasoning for why it will
-  be clean on ubuntu; `npm run check` and `npm run check:built` pass; any
-  raised debt entry says out loud that it was raised and why. **CI green on the
-  resulting commit is the criterion that matters and cannot be verified from
-  the working tree - it needs the owner to push. Say so rather than declaring
-  victory locally.**
-
-### Part 2 - the instrument that would have caught them
-
-- **Objective:** add the measurement that would have failed loudly on all
-  three of B3.5's defects instead of silently absorbing them - computed
-  typography and a measured text/element advance on four named controls, run
-  at every width, not only the widest - plus the `DEBT_SLACK` ratchet fix that
-  B3.5 had to work around by hand. Full design in `plan.md`, "B3.6 planned"
-  (`#### What to build` through `#### Fallback, considered and not chosen`);
-  this section is the condensed, implement-ready version of the same plan,
-  plus what B3.5 learned that touches it.
-
-- **What part 1 changed under this section, before anything else is read:**
-  - The `~ help` states are now **0.00% in all eighteen cells**, so they are
-    no longer an example of anything absorbed. The absorbing reason they
-    carried has been deleted along with the `helpNoise` helper.
-  - The `only` list's probe on `.ffilter .field .lbl` and
-    `.toolbar input[type=search]` still tests exactly what B3.5 fixed, so
-    part 2's "revert each fix and watch the probe name it" criterion is
-    unchanged.
-  - The four "pre-existing full-suite failures" this section's acceptance
-    criteria hedge about are **gone**: part 1 diagnosed all 22 CI cells and
-    the table now follows CI. Delete that hedge rather than carrying it. What
-    replaces it is narrower and is under "Blockers": a handful of cells fail
-    on a Windows machine *because* the table follows CI, and the rewrite's
-    anchor flash is a known unfixed defect.
-  - The planned ratchet (`pct <= JITTER && debt.pct > JITTER` fails) will not
-    fire on `#/i/f1 @ ru|en 768`, which are recorded at 0.08 - under `JITTER`
-    on purpose, because that cell straddles it between machines.
-
-- **Read `plan.md`'s "B3.5 built" section first**, specifically the paragraph
-  on the frozen-scrollY mechanism `#/tables/voa ~ section anchor @ ru 375`
-  exposed - and then `plan.md`'s "B3.6 built, part 1", which corrects it: the
-  two apps scroll once each, at 1100, to the same pixel, and part with the
-  width sweep. B3.6's four probes do not read a screenshot's scrollY - a probe is
-  `getBoundingClientRect()`/`textContent` on a live element, not a pixel
-  count - so the mechanism most likely does not apply to this batch's `only`
-  list. It is flagged here as a thing to keep in mind, not a known defect in
-  this batch's own design; do not go looking for it without a reason.
-
-- **In scope** (unchanged from `plan.md`):
-  - `tests/parity/driver.js`: one new method, `typeAt(probes)` - see
-    `plan.md`'s exact shape (`font`, `family`, `text`, `advance`, `width` per
-    probe, `null` for an absent element).
-  - `tests/parity/specs.js`: one new spec, `typeRuns`, `perWidth: true`, over
-    four probes - `.toolbar input[type=search]`, `[data-row] .rt`,
-    `[data-row] .rt b`, `.ffilter .field .lbl` - scoped to the `only` list
-    `plan.md` names (`#/tables`, `#/tables/hnf_consumable`, `#/tables/dread`,
-    `#/tables/wondrous ~ panel open`, `#/tables/community ~ panel open`,
-    `#/tables/community`, `#/tables/voa`).
-  - `tests/parity.js`: split `looks` from a new `measured` (`perWidth`) list;
-    run `measured` specs inside the existing per-width loop, after
-    `d.settle()`; diff once per width with `<id> @ <lang> <width>` as the key.
-  - `tests/parity.js`: the ratchet fix -
-    `pct <= JITTER && debt.pct > JITTER` fails, asking for the entry to be
-    deleted - closing exactly the hole B3.5 had to work around by reading run
-    output instead of trusting a red run.
-  - `docs/specs/COVERAGE.md`: "The look" describes three instruments now, not
-    two; the geometry exception is amended, not contradicted; the "can only
-    ratchet towards zero" line becomes true rather than aspirational.
-
-- **Out of scope** (unchanged from `plan.md`):
-  - `#/i/*`, `#/roll/*` and the equipment tables' probes - deliberately
-    deferred, named in "Deferred" below.
-  - Region-diff scoring (`plan.md`'s "Fallback, considered and not chosen").
-  - B4's equipment tables.
-  - **The four pre-existing full-suite failures under "Blockers" below.**
-    They are not this batch's defects and none of them are tables states, but
-    B3.6's own ratchet fix and its own acceptance criterion
-    (`node tests/run-all.js parity` passes) will hit them regardless, because
-    they already fail that same command today. Read "Blockers" before
-    assuming a red full run means this batch broke something.
-
-- **Files expected:** `tests/parity/driver.js`, `tests/parity/specs.js`,
-  `tests/parity.js`, `docs/specs/COVERAGE.md`, `issues/47/plan.md`,
-  `issues/47/handoff.md`.
-
-- **Steps:** follow `plan.md`'s "B3.6 planned" `#### What to build`, items 1-5,
-  in order - the driver method, the spec, the per-width wiring, the ratchet
-  fix, then `COVERAGE.md`. Determinism notes and the exact `only` list are in
-  the same section (`#### Determinism`, `#### Which states`).
-
-- **Acceptance criteria** (from `plan.md`, plus one addition):
-  - `node tests/run-all.js parity` passes **once the four pre-existing
-    failures under "Blockers" are resolved or explicitly excluded from this
-    batch's own claim of done** - decide which at the start of this batch and
-    record the decision here; do not let it sit ambiguous through the whole
-    batch. (Resolving them is not required to be B3.6's own work - they
-    predate B3.6 as much as they predate B3.5 - but *something* has to give
-    the run a clean exit before this batch can claim its own acceptance
-    criterion.)
-  - The instrument is proved to fail: each of B3.5's three fixes reverted
-    locally, one at a time, working tree restored after each - a filtered run
-    reports a `FAIL` naming the field (`... :: typeAt :: search`, `::
-    filterLabel`, `:: rowText` at 375). Exact output goes in the handoff.
-  - The per-width wiring runs `typeRuns` at 1100, 768 and 375, width visible in
-    the state name.
-  - The ratchet change fails at least one genuinely stale entry (record which)
-    and every stale entry it finds elsewhere in `VISUAL_DEBT` is deleted, with
-    the run output as evidence - the same standard B3.5 held itself to by
-    hand.
-  - `COVERAGE.md`'s "The look" describes three instruments, the geometry
-    exception, and a debt statement that is true.
+- **Acceptance criteria:**
+  - All fourteen tables draw a body; `TablesPage.svelte` has no `KNOWN` and no
+    `.todo`.
+  - On `#/tables/eq_weapon` the panel has seven fields in `EQ_GROUPS.weapon`
+    order; on `eq_secondary` six with the `cls` row labelled "Тип урона"; on
+    `eq_armor` three with a five-value `src` row.
+  - The strip's count reads the pool (317 / 108 / 90) with nothing picked.
+  - Picking tier `1` yields a pill "Ранг 1"; picking two-handed yields a pill
+    "Двуручное"; the address reads `#/tables/eq_weapon/f_tier-1.burden-2`
+    whichever was clicked first.
+  - `#/tables/eq_weapon/f_tier-2.cls-mag` arrives with the panel open and
+    both chips pressed; `#/tables/eq_armor/f_burden-2` leaves armour whole.
+  - Typing `основное` on `eq_weapon` keeps every weapon.
+  - `#/tables/eq_weapon/t2` flashes `#sec-t2`; a `q*` row anchor flashes its
+    row.
+  - Every tier of every kind draws as its own `.tsection` with its own
+    select-all, in order, and an emptied tier disappears.
+  - `node tests/parity.js "eq_"` reports `расхождений нет` with every cell at
+    0.00% and **no new `VISUAL_DEBT` entry**. A nonzero cell is a diff image
+    opened and a control measured before anything is written, and any figure
+    written is CI's (owner decision 1), not this machine's.
+  - `npm run check` and `npm run check:built` exit 0 with thresholds met.
+  - `plan.md` gains "B4 built" (what matched the design, what did not, the
+    exact per-state percentages) and the Phase 4 table gains a B4 row; this
+    file's Completed / Verification / Next batch are updated.
 
 - **Verification commands:**
   ```text
   npm run check
+  npm run build
+  node tests/parity.js "eq_"
   npm run check:built
   node tests/parity.js "tables"
-  node tests/run-all.js parity
   ```
-  Same shape as B3.5's. Do not run `npx vitest run --coverage` and
-  `node tests/parity.js`/`node tests/run-all.js parity` concurrently - see
-  Notes; check for lingering `chrome.exe` before trusting a `npm run check`
-  timeout as real.
+  Wall clock, so each fits its call: `npm run check` and `npm run check:built`
+  are a few minutes each and fit one foreground call (600s cap);
+  `node tests/parity.js "eq_"` is eight states and fits; `node tests/parity.js
+  "tables"` was ~9 min before B4 and gains eight states, so it **no longer fits
+  a foreground call** - run it in the background with stdout redirected to a
+  file, or hand it to the orchestrator. The unfiltered `node tests/run-all.js
+  parity` is the orchestrator's. Never run a vitest coverage pass concurrently
+  with a parity run, and check for a lingering `chrome.exe` before trusting a
+  vitest timeout.
 
-- **Risks / do-nots** (from `plan.md`, unchanged):
-  - Do not widen the rounding to make a probe agree - an unexplained sub-pixel
-    difference is an `ACCEPTED` entry with a measured reason, not a wider
-    tolerance.
-  - Do not add probes for controls that are not built.
-  - Do not let the `only` list grow past the tables states named above.
-  - Do not delete a `VISUAL_DEBT` entry the ratchet change surfaces without
-    opening the diff image first - the new failure says the number is stale,
-    not that the screen is exact.
-  - Do not assume a red `node tests/run-all.js parity` means this batch broke
-    something before checking it against the four states named in "Blockers".
+- **Risks / do-nots:**
+  - Do not restate `EQ_GROUPS`'s order in `facets.ts`; walk it. A test asserts
+    `rows.map(r => r.group)` equals `groupsFor(table)` for all three tables.
+  - Do not build the `src` row from `EQ_SRC` unfiltered: armour has no
+    wondrous, dread or colossus entries, and the live panel does not offer
+    them. `motherboard` has no equipment of any kind and never appears.
+  - Do not fix the pill rule by special-casing `tier`; test the label, which
+    is what app.js does.
+  - Do not port `.selbox:has(:focus-visible)` with `outline-offset: 2px`; the
+    live value is `-3px` because the row clips an outside ring.
+  - Do not touch `RecordCard.svelte:81`'s `noType` or the row's display
+    `noType` - only the two `matches` callbacks lose it.
+  - Do not add `#/tables/eq_weapon ~ filtered` to `typeRuns.only`.
+  - Do not write a `VISUAL_DEBT` number off a Windows run; do not write one at
+    all before the diff image has been opened and the control measured.
+  - Do not re-baseline anything outside B4's own states; the CI result for
+    `958f182`/`bc91e63` is the orchestrator's to record (see Blockers).
+  - `d.click('1')` matches the tier chip by exact name; if the driver ever
+    falls to its substring fallback here, the `~ filtered` state is gripping
+    the wrong control - stop and look, do not rename.
+  - Grep the diff for `' <` at the start of an `{#if}`/`{#each}` block. B4
+    ports no new inline string markup so none is expected; if one appears,
+    promote the leading-space rule to `CLAUDE.md`'s "Migration and parity" in
+    the same commit.
+  - One batch, one commit, `feat(tables): ...`, authored as `artex-x`, no
+    push.
 
-- **Fallback (optional):** a region diff, considered and rejected in
-  `plan.md`'s "B3.6 planned" - worth revisiting only if the probe approach
-  needs more than a handful of selectors.
+- **Fallback (optional):** none needed. If `eqSections` cannot reuse the
+  existing sectioned template branch for a reason not visible from planning,
+  the answer is still not a new component: `TableRows` and `SectionHead` are
+  the markup, and a fourth `Section[]` derivation is the whole difference.
 
 ## Blockers
 
-- **CI green is unverified and only the owner can verify it.** Part 1's whole
-  point was the red run, and the acceptance criterion that matters cannot be
-  reached from a working tree: it needs a push. Read the run against this
-  commit before treating part 1 as done. What to expect if it is still red:
-  - the eighteen `~ help` cells should be **0.00%** and their entries are
-    deleted, so a `помимо` failure there would mean the `.helpbox` animation
-    behaves differently on ubuntu than it does here - unlikely, since the fix
-    is one CSS declaration, but it is the first thing to check;
-  - the six `#/i/ci1 ~ whole` cells and `#/tables ~ a row ticked @ en 375`
-    are recorded at the figures run `34361836525` measured, so they should
-    land on their number;
-  - **the four 375 anchor cells are the ones to watch.** They are recorded at
-    what this machine measures (10.05 / 8.84 / 8.85 / 7.92) and CI measured
-    9.93-11.55 on a run where the scroll could still lose its race. The race
-    is closed now, so CI should move towards these figures - but that is a
-    prediction, not a measurement, and it is the one place part 1 could still
-    leave the run red. If it does, they are the cells to re-baseline off the
-    new artifact, and nothing else needs touching.
+- **Resolved: CI is green, and B3.6 part 1's "CI green is unverified" is
+  closed.** The owner pushed through `bc91e63`; run `34404013490` on `958f182`
+  (B3.6 part 2) completed **`success` on every job** - `check`, `audit`,
+  `secrets`, all four `parity` shards and `deploy` - read by the orchestrator
+  on 2026-09-09. That is the first green run on `main` since 2026-09-03, and it
+  is the criterion part 1 said could only be reached by a push. Part 0's shard
+  also did what it claimed: each parity shard finished in 4-5 minutes against
+  the old 867s single job. Nothing in part 1's red-run prediction had to be
+  used: no `~ help` cell, no `#/i/ci1 ~ whole` cell and none of the four 375
+  anchor cells needed touching, because the run passed as recorded.
+  Consequences for B4:
+  - The debt table as it stands is CI-true. Do not re-baseline anything
+    outside B4's own states.
+  - `#/tables/voa ~ section anchor @ en 375`, left at 8.84 pending a CI
+    measurement, now has one - run `34404013490` passed it at that figure.
+    It is reconciled by that run, not by a local reading. Removed from
+    "Deferred" on this basis.
 
 - **A local Windows run fails cells that CI passes, by design.** Four
   `#/i/ci1 ~ whole` cells sit at the CI figure, more than `DEBT_SLACK` above
@@ -734,19 +808,34 @@ item under "Deferred". The original text follows unedited.
   fails them; the two `#/roll/wondrous ~ modal` cells that pass exactly on CI
   fail here for the mirror reason. This is owner decision 1 working as
   intended and is written into `docs/parity.md`, "Machine variance". **Do not
-  edit those numbers off a local run.**
+  edit those numbers off a local run.** `tools/parity-ubuntu/` reproduces CI to
+  the hundredth on layout states and not on timed ones.
+  - **The B4 session's `node tests/parity.js "tables"` hit the same shape on
+    seven cells**, all `#/tables/voa ~ section anchor` and
+    `#/tables/core_item ~ row anchor`, all measuring *better* than their
+    recorded debt (three of the seven at an exact 0.00% against a
+    0.42-0.43% debt - the same "`en 768`/`en 1100` measures 0.00% four times
+    in a row" pattern the B3.5 remediation session already flagged and
+    deliberately left alone, now reproduced). Confirmed unrelated to B4 by
+    reading the diff: `eqKind` is falsy for both tables, so none of B4's new
+    branches execute on their render path. Not re-baselined - see
+    `handoff.md`, "Verification", for the full cell list. Worth a real look
+    before the next full-suite run: either these three genuinely reproduce
+    0.00% on Windows now (worth lowering, on CI's word, not this machine's),
+    or the harness's anchor-scroll timing has drifted further since B3.6
+    part 1 wired `ready()` to `document.fonts.ready`.
 
-- **The rewrite's anchor flash has never been drawn** - found by part 1,
+- **The rewrite's anchor flash has never been drawn** - found by B3.6 part 1,
   deliberately not fixed by it. `TablesPage.svelte` adds `flash` with
   `target.classList.add(...)` and the rows are a keyed `{#each}`, so the next
   render replaces the element and the class goes with it. Separately, the live
   app re-plays the flash on a language switch and the rewrite's effect is
   guarded on `app.navigations`, so it does not. Together they are the whole of
-  the four 1100/768 anchor debt cells, whose reason used to say
-  "antialiasing". The fix is reactive state rather than a class added behind
-  Svelte's back, and it will move the `@ ru` cells that currently pass by
-  accident - both apps show no ring there - so it needs the whole anchor set
-  re-measured in one go. A batch, not a footnote.
+  the four 1100/768 anchor debt cells. The fix is reactive state rather than a
+  class added behind Svelte's back, and it will move the `@ ru` cells that
+  currently pass by accident - both apps show no ring there - so it needs the
+  whole anchor set re-measured in one go. A batch, not a footnote, and not
+  B4's.
 
 - **The parity harness's width sweep is not a state.** It looks at one
   document at 1100, 768 and 375 without re-arriving, and a browser moves a
@@ -755,29 +844,8 @@ item under "Deferred". The original text follows unedited.
   four 375 anchor cells are, measured rather than assumed (`plan.md`, "B3.6
   built, part 1"). Fixing it means re-arriving per width, which changes how
   every state in the suite is measured; `overflow-anchor: none` on both sides
-  was tried and shuffles the figures without removing them. Not part 1's, not
-  part 2's as planned - worth its own decision.
-
-- **A second agent was working this tree while part 1 was verifying it, and
-  that is why the unfiltered gate has no clean result.** It calls itself
-  `refresh-artwork` - it added `.claude/agents/refresh-artwork.md` and
-  `.claude/prompts/refresh-artwork.prompt.md`, a line to `CLAUDE.md`'s
-  orchestration list, and an edit to `.claude/prompts/orchestrate.prompt.md`.
-  Between 18:57 and 19:14 local time on 2026-09-09 it rewrote **402 files
-  under `img/` and `og/`**, deleted four more (`q149`, `q182`, `q216`,
-  `q81`), and changed `data.js`, `data.json`, `catalog.csv` and every
-  `i/*.html`. **All of that is left alone and none of it is in part 1's
-  commit** - the one exception is that `CLAUDE.md` carries one line from each
-  of us, and part 1's was staged as a patch hunk so the other agent's line
-  stayed in the working tree.
-
-  What it cost: two full `node tests/run-all.js parity` runs died with
-  `ENOENT` on `test-output/parity/`, which that agent's own tooling deleted
-  mid-run, and one of them had `data.js` changed under it while the built
-  `dist/` still held the old copy - which makes every state after that point
-  meaningless. **Check `git status` before assuming any of those 400-odd
-  files are yours, and do not read a parity number taken while two agents
-  share this tree.**
+  was tried and shuffles the figures without removing them. Worth its own
+  decision; it is also why B4 adds no equipment anchor state (see Deferred).
 
 - **Language leaks between states through `localStorage`.** `file://` is one
   origin, so a state that ran at `en` can leave the next state's `@ ru`
@@ -789,101 +857,46 @@ item under "Deferred". The original text follows unedited.
 
 ## Deferred
 
-**Part 1's own list, and what it closed of the previous one:**
-
-- Closed: `VISUAL_DEBT`'s doc comment no longer claims a figure may go up "in
-  one case" - it now lists the three ways one legitimately does, including the
-  new one, a number taken on a machine that is not the baseline.
-- Closed: nothing in `VISUAL_DEBT` says "antialiasing" any more.
-- Still open, and now cheaper: `#/tables/voa ~ section anchor @ en 375` is
-  recorded at 8.84 and measures 8.90 here. Both pass. It was left alone
-  deliberately - CI has not measured the post-fix value yet, and moving it to a
-  local figure is exactly what the platform rule forbids. Reconcile it off the
-  next CI artifact, together with the other three 375 anchor cells.
-- New: `app/src/components/TablesPage.svelte`'s anchor effect and
-  `TableRows.svelte` need the flash to be reactive state - see "Blockers".
-- New: the harness's width sweep needs a decision - see "Blockers".
-- New: `tests/parity/driver.js`'s `prepare()` clears storage per page, but
-  `file://` shares one origin, so the language leaks between states. Harmless
-  to verdicts, confusing to a person reading screenshots.
-
-
-- **This remediation pass's own nits, from the B3.5 reviewer, recorded but not
-  fixed - do not fold any of these into a future batch without re-reading
-  them first, they are small and easy to lose:**
-  - `#/tables/voa ~ section anchor @ ru 375`'s raised entry: the entry's own
-    `why` does not itself say the number went up - only the block comment
-    above `VISUAL_DEBT` does. A reader of the entry alone cannot tell it was
-    raised rather than just recorded.
-  - `VISUAL_DEBT`'s own doc comment (`tests/parity/specs.js`, above line 676)
-    still says an entry "may go up in one case" - it now needs a second
-    clause, or a generalisation, since this remediation pass's `core_item`
-    fix keeps the entry's *reason* accurate without raising its number at
-    all, which is a second way an entry legitimately changes without either
-    ratcheting down or being the one documented raise case.
-  - `#/tables/voa ~ section anchor @ en 375` is recorded at 8.84% but
-    currently measures 8.90% (passes, inside `JITTER` of the recorded value)
-    while its sibling (`@ ru 375`) was raised to its exact measured value.
-    Inconsistent treatment of two entries with the same cause - worth
-    reconciling, not urgent since both currently pass.
-  - `plan.md`'s "What every remaining `VISUAL_DEBT` entry is" (around line 64
-    and 104) still calls the 375px row/section anchor debt "cause 6" and
-    still promises a rewrite of that section; the actual correction landed
-    as a new "B3.5 built" section instead, appended rather than folded back
-    into the original "cause" enumeration. The document now has two places
-    describing the same debt with different framing.
-  - `docs/specs/COVERAGE.md:159-160` still states debt "can only ratchet
-    towards zero" - not true today, per the same `DEBT_SLACK`-silence gap
-    B3.5 and this pass both had to work around by hand. B3.6 part 2's own
-    plan already carries the fix (`plan.md:1572`) but it has not landed.
-  - The handoff's "Cleanup performed / retained artifacts" note (B3.5, this
-    file) says `dist/` "is committed at its final, correct state" - `dist/`
-    is gitignored (`.gitignore:30`) and was never committed. The sentence
-    should have said "built," not "committed."
-  - `docs/parity.md`'s new "whole-page percentage" rule (in the `Contract`
-    list) is a seven-line paragraph sitting among one-line bullets -
-    stylistically inconsistent with the rest of the section, worth trimming
-    or moving to its own subsection later.
-- **`.selbox:has(:focus-visible)` (`style.css:1013`) has no port in
-  `TableRows.svelte`.** The live app draws an inset focus ring because the
-  row clips an outside one; the rewrite leans on `tokens.css`'s universal
-  `:focus-visible` at `outline-offset: 2px` instead, which is a visible
-  difference the moment a row checkbox is reached by keyboard. No current
-  state exercises keyboard focus on a row checkbox, so parity cannot see the
-  gap yet. Pre-existing before this remediation pass, but sits in the same
-  rule family (`TableRows.svelte`'s `.selbox`) this pass and B3.5 both
-  edited, so it is worth a line here rather than staying purely tribal
-  knowledge.
 - **The 600px overrides for `.selx`, `.selacts`, `.seldrop`, `.dropmenu`, the
   `.lrow*` family, `.npair` and `.batch-acts` belong to components that do
-  not exist yet.** They must be ported together with their base rules when
-  those components are built, not piecemeal - the exact mistake `.selbox`'s
-  missing override was, four times over, per B3.5's `CLAUDE.md` line.
-- **B4 - the equipment tables, their facets and tier sections.** Unchanged and
-  still the batch after B3.6: `eq_weapon`, `eq_secondary`, `eq_armor`.
-  `docs/specs/ROUTES.md`'s filter-grammar table and `lib/filters.ts`'s
-  `EQ_GROUPS`/`EQ_TABLE` already describe the groups (`tier`, `src`, `cls`,
-  `trait`, `range`, `burden`, `line`) - frozen, no change expected.
-  `lib/data.ts`'s `equipFacets` already answers every value a record has for
-  those groups; `facets.ts` needs an `eqFacetRows` (or similar) the way B2/B3
-  added the plain-table rows, off `eqFacets(kind)` in `app.js` (2575-2620ish -
-  re-read it fresh rather than trusting that range). Its **two early checks are
-  preserved verbatim**:
-  1. **The bare-number pill rule (`fChosen`'s `/^\d+$/` test) is B4's for
-     real this time.** B3 confirmed `voa`'s tier facet never hits it -
-     `voaSectionName` produces `"Ранг 2"`, not a bare digit - but the
-     *equipment* tables' tier facet (`eqFacets`) really does carry bare
-     `"1"`-`"4"` values, which is exactly the case `FilterBar.svelte`'s
-     existing rule was written for and has been untested since B2. Confirm it
-     still does the right thing once a numeric-valued facet actually exists.
-  2. **Whether the equipment tables need tier sections in addition to facets.**
-     The batch's own name suggests yes - re-read `renderEquipTable` in `app.js`
-     before assuming the facet bar is the whole body. B1-B3 all found the real
-     shape only by reading the function, never by trusting a summary of it.
-- **Extending B3.6's probes past the tables states** - `#/i/*`, `#/roll/*`, and
-  the equipment tables once B4 lands. Deliberately not attempted in B3.6: a
-  spec that starts reporting on every surface at once is a batch whose size
-  nobody can predict.
+  not exist yet** - the selection bar, the add-to-list menu, list rows, notes
+  and batch actions. They must be ported together with their base rules when
+  those components are built, not piecemeal: porting an override without its
+  base rule is the mistake `CLAUDE.md`'s `@media` line forbids, mirrored.
+  Re-confirmed as not B4's during B4 planning.
+- **Closed into B4:** `.selbox:has(:focus-visible)` (`style.css:1013`) - three
+  lines in a rule family the equipment rows draw, and the live app has it, so
+  porting it can only reduce a difference. It cannot be pixel-verified: no
+  state reaches a row checkbox by keyboard and the driver has no key press.
+  That instrument gap is recorded here rather than invented around.
+- **An equipment anchor parity state** (`#/tables/eq_weapon/t2`, or the
+  `#/tables/eq_weapon/q1` row anchor `#/i/q1`'s "show in table" link produces).
+  Not added in B4: it can only add 375 cells whose difference is the harness's
+  own width sweep - a known, unfixed, not-B4 cause that would need
+  `VISUAL_DEBT` entries taken from CI. The equipment-specific fact (section
+  ids `sec-t1`-`sec-t4`, a `q*` row target) is pinned by component tests, and
+  the anchor mechanism already has two states. Revisit once the width-sweep
+  decision lands.
+- **Extending B3.6's probes past the tables states** - `#/i/*`, `#/roll/*`,
+  and the equipment tables now that B4 builds them. Deliberately not attempted
+  in B3.6 and deliberately not B4's: a spec that starts reporting on every
+  surface at once is a batch whose size nobody can predict.
+- `app/src/components/TablesPage.svelte`'s anchor effect and `TableRows.svelte`
+  need the flash to be reactive state - see Blockers.
+- The harness's width sweep needs a decision - see Blockers.
+- `tests/parity/driver.js`'s `prepare()` clears storage per page, but
+  `file://` shares one origin, so the language leaks between states. Harmless
+  to verdicts, confusing to a person reading screenshots.
+- **Nits from the B3.5 reviewer still open** (the rest of that list was closed
+  by B3.6: the `VISUAL_DEBT` doc comment by part 1, `COVERAGE.md`'s ratchet
+  claim by part 2, and the four 375 anchor entries, `voa @ en 375` included,
+  re-baselined to CI with a `why` that says so):
+  - `plan.md`'s "What every remaining `VISUAL_DEBT` entry is" (around line 64
+    and 104) still calls the 375px row/section anchor debt "cause 6" and still
+    promises a rewrite of that section; the correction landed as "B3.5 built"
+    instead. Two places describe the same debt with different framing.
+  - `docs/parity.md`'s "whole-page percentage" rule is a seven-line paragraph
+    among one-line bullets - worth trimming or moving to its own subsection.
 - **Playwright.** Still worth a decision before building anything; the parity
   harness already drives both apps in a real browser.
 - **`Panel.svelte`.** Still unscheduled - `.ffilter` and `.tablenav`.
@@ -893,20 +906,12 @@ item under "Deferred". The original text follows unedited.
   index as the tile's number) - worth reporting to the repository owner, still
   deliberately not reproduced; recorded in `ACCEPTED`.
 - **The shared `S.kind`.** Batch C's.
-- **Resolved: why the row/section anchor's flash-outline antialiasing shows in
-  English but not Russian at 1100/768.** The planning hypothesis was right,
-  confirmed rather than just left standing: all four English entries
-  (`core_item ~ row anchor @ en 1100|768`, `voa ~ section anchor @ en
-  1100|768`) measured exactly their old recorded value after B3.5's three
-  fixes, unchanged. The Russian cells at those two widths still carry no
-  entry at all and still print `совпадает`. Nothing moved them, which is
-  itself the confirmation - the search box is genuinely out of the fold in an
-  anchor state, and these four entries are genuinely about the outline alone.
 
 ## Notes
 
-- Mocks path: none. B3.5 and B3.6 introduce no new UI; every value is already
-  in `style.css` and `app.js`.
+- Mocks path: none. B3.5, B3.6 and B4 introduce no new UI; every value B4
+  draws is already in `style.css` and `app.js`, and the tier body reuses B3's
+  markup.
 
 - Screenshot findings: two screenshots of `#/tables/community` at ~1100px, from
   the human, 2026-09-09. (1) the search box "is using a different font" -
@@ -932,10 +937,9 @@ item under "Deferred". The original text follows unedited.
     description-reflow debts were B3.5's defects, and B3.5 fixed and deleted
     them. The help-panel debt stands as written, unchanged, and is still worth
     the same caution.
-  - **New:** do not assume a red `node tests/run-all.js parity` means whatever
-    batch is running broke something - four states (`#/roll/wondrous ~
-    modal`, `#/roll/wondrous ~ help`, `#/i/ci1 ~ whole`, `#/i/f1`) were already
-    failing before B3.5 touched anything; see "Blockers".
+  - Do not assume a red local `node tests/run-all.js parity` means whatever
+    batch is running broke something: since B3.6 part 1 the table follows CI,
+    so a Windows run fails a handful of cells by design; see "Blockers".
 
 - **Session gotchas.** New this session (B3.5's own, appended at the end),
   then B3's, then carried further back:
@@ -1002,12 +1006,13 @@ item under "Deferred". The original text follows unedited.
     too" holds only above the slack. **Confirmed the hard way in B3.5**: 29 of
     the 49 entries it deleted were exactly this shape - a silent pass the run
     never flagged, found only by reading every printed percentage by hand.
-    B3.6 fixes the check; until then, delete small paid-off entries by reading
-    the run output.
+    **Fixed by B3.6 part 2's ratchet**: a cell at or under `JITTER` that still
+    carries an entry now fails, asking for the entry to be deleted. Open the
+    diff before deleting - the container reported a fading toast as 0.00%.
   - **A whole-page percentage cannot see a control-sized defect.** A wrong font
     size on one line of a 1100x900 screen scores about 0.09%, which is under
-    `JITTER`. This is the root cause of the whole audit and it is being written
-    into `docs/parity.md` by B3.5.
+    `JITTER`. This is the root cause of the whole audit and it is in
+    `docs/parity.md`, "Contract".
   - A locally declared `{#snippet}` rendered with `{@render}` in the same file
     trips `@typescript-eslint/no-confusing-void-expression`, every time.
     Reproduced with a two-line component. The fix is the codebase's convention:
@@ -1085,13 +1090,14 @@ item under "Deferred". The original text follows unedited.
   probe) and one `git stash` round-trip, all outside the repository or reverted
   before the commit; nothing was left in the working tree or committed from
   them. `dist/` was rebuilt several times over the course of the investigation
-  and is committed at its final, correct state (all three fixes present, none
-  reverted).
+  and was left built at its final, correct state (all three fixes present,
+  none reverted) - built, not committed: `dist/` is gitignored.
 
-- Session end partial progress: none - B3.5 is complete and committed, and
-  **B3.6 part 0 is complete and committed**. Part 1 is next and is
-  implement-ready below. The full-suite/CI blocker under "Blockers" is
-  unresolved by design: it is part 1's scope.
+- Session end partial progress: none - B3.6 and B4 are both complete and
+  committed; the tree is at a coherent boundary. B4's own gate results are in
+  "Verification"; the CI result for B3.6 part 2 is recorded under "Blockers":
+  run `34404013490` on `958f182` is green on every job, which closes B3.6
+  part 1's last open criterion.
 
 - **Deferred, decided by the owner this session:**
   - **B3.7, shipping self-hosted fonts, was considered and dropped.** The app
@@ -1104,13 +1110,10 @@ item under "Deferred". The original text follows unedited.
     number at once, and risks the browser-measured print fitting. Owner's
     call: not now, and not worth the attention it was taking.
   - **A `ubuntu:24.04` container for authoritative parity numbers** was
-    prepared and not built: Docker is available (Rancher), and the image
-    definition (node 24 per `.nvmrc`, linux `node_modules` baked in, fonts
-    installed, repo mounted read-only) is in the session scratchpad, not the
-    repository. The idea is to calibrate it against the twelve known ubuntu
-    numbers from run `34019148841` and, if they reproduce, use it to verify
-    part 1 locally instead of push-and-wait. Rebuild the definition from
-    scratch if it is wanted; it is small.
+    first prepared and not built, then built in B3.6 as `tools/parity-ubuntu/`
+    (`1d368e2`). It reproduces CI to the hundredth on layout states and not on
+    timed ones; `docs/parity.md`, "Machine variance", carries the recognition
+    test.
   - **Making the usage guard autonomous** (summing `message.usage` from the
     session transcript, which exists in every surface). Rejected for now
     because it measures this session's spend rather than the account's window,

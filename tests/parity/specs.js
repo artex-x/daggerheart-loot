@@ -167,7 +167,7 @@ const copiedImage = {
 const filteredAddress = {
   presses: true,
   name: 'the address after a filter pick',
-  only: ['#/tables/wondrous ~ filtered'],
+  only: ['#/tables/wondrous ~ filtered', '#/tables/eq_weapon ~ filtered'],
   async run(d) {
     return { hash: await d.hash() };
   }
@@ -184,7 +184,7 @@ const filteredAddress = {
 const copiedFilterLink = {
   presses: true,
   name: 'the filter link that lands on the clipboard',
-  only: ['#/tables/wondrous ~ filtered'],
+  only: ['#/tables/wondrous ~ filtered', '#/tables/eq_weapon ~ filtered'],
   async run(d, lang) {
     await d.resetClipboard();
     await d.click(NAME[lang].filterLink);
@@ -595,20 +595,58 @@ const STATES = [
   {
     id: '#/tables/eq_weapon',
     route: '#/tables/eq_weapon',
-    why: 'one equipment table',
-    pending: 'the equipment tables are batch B4'
+    why: 'the biggest table: four tier sections, .fcount 317, the strip folded'
   },
   {
     id: '#/tables/eq_secondary',
     route: '#/tables/eq_secondary',
-    why: 'a second equipment table',
-    pending: 'the equipment tables are batch B4'
+    why: 'a second kind, six facet groups'
   },
   {
     id: '#/tables/eq_armor',
     route: '#/tables/eq_armor',
-    why: 'a third equipment table',
-    pending: 'the equipment tables are batch B4'
+    why: 'the third kind, three facet groups, the shortest'
+  },
+  {
+    id: '#/tables/eq_weapon ~ panel open',
+    route: '#/tables/eq_weapon',
+    why: 'seven rows, the widest panel the app has',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ filtered',
+    route: '#/tables/eq_weapon',
+    why: 'both branches of the pill rule on one screen - "Ранг 1" and "Двуручное" - and a two-group address',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('1');
+      await d.click('Двуручное');
+    }
+  },
+  {
+    id: '#/tables/eq_secondary ~ filter link',
+    route: '#/tables/eq_secondary/f_cls-mag',
+    why: 'arriving opens the panel; the cls row reads "Тип урона" here and "Класс" on weapons'
+  },
+  {
+    id: '#/tables/eq_secondary ~ searched',
+    route: '#/tables/eq_secondary',
+    why: 'the type word is part of the searched stat line',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'вторичное');
+    }
+  },
+  {
+    id: '#/tables/eq_armor ~ nothing found',
+    route: '#/tables/eq_armor',
+    why: 'the three-row panel open, a pill, 0 из 90, the empty state with its own reset',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Уникальные');
+      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+    }
   },
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
   { id: '#/tables/frames', route: '#/tables/frames', why: 'a sectioned body: campaign frames' },

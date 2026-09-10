@@ -32,9 +32,13 @@
     $props();
 
   /* Everything picked, in the order the rows are drawn - `fChosen` in app.js.
-     A bare number takes its row's name rather than standing for itself; no
-     value B2 offers is numeric, but the rule is copied whole rather than left
-     to be re-derived when B3 adds `tier`. */
+     A bare number takes its row's name rather than standing for itself - but
+     `fChosen` tests the value's *label*, not its value. They agree everywhere
+     B2 and B3 offer a numeric value (`voa`'s tier prints "Ранг 2" either way,
+     because its label already is that string), and part on the equipment
+     tables' burden row: value `'1'`/`'2'`, label "Одноручное"/"Двуручное" -
+     testing the value would print "Хват 2" where the live app prints
+     "Двуручное". */
   const chosen = $derived(
     rows.flatMap((row) =>
       row.values
@@ -42,7 +46,7 @@
         .map((v) => ({
           group: row.group,
           value: v.value,
-          label: /^\d+$/.test(v.value) ? row.label + ' ' + v.value : v.label
+          label: /^\d+$/.test(v.label) ? row.label + ' ' + v.label : v.label
         }))
     )
   );

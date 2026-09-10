@@ -5,10 +5,45 @@ Read this before `plan.md` and `handoff.md`.
 
 ## Goal
 
-Finish the next Phase 4 batch, plus a human-raised audit: the parity harness has
-been passing states that a person can see are wrong. Two were reported from a
-manual review of `#/tables/community` at full width, and a third was found while
-confirming them.
+**Current: B4 - the equipment tables, their facets and tier sections**
+(`eq_weapon`, `eq_secondary`, `eq_armor`). This is the last body shape in
+Phase 4. Everything below the next section is the record of B3.5/B3.6, which
+are **built and committed**; read it for the standing rules and the settled
+owner decisions, not as work to do.
+
+## State at B4 kickoff (2026-09-09, orchestrator)
+
+- Working tree clean at `ccb80cb`. B3.6 is complete in all three parts:
+  part 0 `f7308a9`, part 1 `38cfbbb`, part 2 `958f182`; the ubuntu container
+  tooling is `1d368e2`.
+- **CI is green, measured. B3.6 part 1's open blocker is closed.** Run
+  `34404013490` on `958f182` (B3.6 part 2) completed `success` on every job:
+  `check`, `audit`, `secrets`, all four `parity` shards, and `deploy`. That is
+  the first green run on `main` since 2026-09-03, and it is the criterion part
+  1 said could only be reached by a push. The 4-way shard also did what part 0
+  claimed: each parity shard finished in 4-5 minutes against the old 867s
+  single job. The `bc91e63` run was still in flight when this was read; it is
+  docs-only on top of a green tree.
+- Owner decision 1 stands unchanged: CI (ubuntu) is authoritative for
+  `VISUAL_DEBT` numbers, a local Windows run is advisory, and no number is
+  re-baselined off a local run.
+- `#/tables/voa ~ section anchor @ en 375` was left at 8.84 pending a CI
+  measurement (handoff, "Deferred"). Run `34404013490` is that measurement -
+  reconcile it off that run's artifact rather than off a local figure.
+- `ccb80cb` (issue 65 docs) is local-only and unpushed. Not this task's.
+- The parity harness now carries a third instrument, `typeRuns` (computed type
+  plus a measured advance on four controls, per width), and a `DEBT_SLACK`
+  ratchet that fails a paid-off entry instead of passing in silence.
+  Extending the probes to the equipment tables is explicitly **deferred**, not
+  B4's.
+- Standing rules earned by the previous batches, already written down where
+  they belong - do not re-derive them:
+  - `CLAUDE.md`: port a rule with every `@media` override it has.
+  - `docs/parity.md`: a whole-page percentage cannot see a control-sized
+    defect; measure the control before writing a rendering-noise reason.
+  - Handoff: a literal leading space at the start of a Svelte block is dropped
+    by the compiler; emit it as an expression, inside one text node.
+    **A second instance in B4 promotes this rule to `CLAUDE.md`.**
 
 ## GitHub issue (if any)
 
@@ -18,7 +53,7 @@ confirming them.
 - Decisions already settled: see `plan.md`. Phase 4 batches B1-B3 are built; B4
   (the three equipment tables) was the next batch before this audit.
 
-## Human report (2026-09-09, two screenshots of `#/tables/community` at ~1100px)
+## History - B3.5/B3.6 (built). Human report (2026-09-09, two screenshots of `#/tables/community` at ~1100px)
 
 1. The search box "is using a different font" in the rewrite.
 2. The `любое` hint next to a filter row's label "is too close to the main text".
@@ -248,3 +283,33 @@ re-baselining with a reason that names the commit and the change - not
 "rendering noise" and not "another machine". Cross-platform variance is still
 real at the tenth-of-a-percent level (the CI and Windows failing lists differ
 slightly) but it is not what these failures are.
+
+## B4 planning facts (planner, 2026-09-09) - durable, read before implementing
+
+Full design in `plan.md`, "B4 planned"; the brief in `handoff.md`, "Next
+batch". Facts that were read off the source rather than assumed:
+
+- `renderEquipTable` (app.js 2735-2761) draws **tier sections as well as
+  facets**: `[1,2,3,4]` off `it.eq.tier`, keys `t1`-`t4`, labels
+  `t().tier + ' ' + n`, `.tsection#sec-t<n>` at `margin-top:22px`,
+  `sectionHead` + `renderList` (select-all per tier), empty tiers skipped.
+  `.fcount` reads the whole pool: 317 / 108 / 90 (`data.json`, counted).
+- `fChosen` tests the pill's **label** for `/^\d+$/`; `FilterBar.svelte`
+  tests the **value**. They differ on the weapons' `burden` row (values
+  `'1'`/`'2'`, labels Одноручное/Двуручное): the port would print "Хват 2".
+  Fix is `v.label`.
+- `dict.ts` lacks `eqClass`, `eqDmg`, `eqTrait`, `eqRange`, `eqBurden`,
+  `eqLineF` (app.js 101-103 / 287-289). `source` exists.
+- app.js `matches` searches `eqLine(it)` **with the type word**;
+  `TablesPage.svelte`'s two `matches` callbacks pass `noType: true`. B4 fixes
+  both; the row's display keeps `noType`.
+- The `src` facet offers only sources with a record of that kind: weapon and
+  secondary eight (no `motherboard` equipment exists), armor five (`core`,
+  `hnf`, `voa`, `beast_feast`, `dark_heart`).
+- `EQ_TRAIT`/`EQ_RANGE` key order in `lib/i18n.ts` matches app.js.
+- `equipOfKind` and `equipFacets` in `lib/data.ts` exist and are uncalled; B4
+  calls them. `frameName(id, lang)` falls back to the id, which is what
+  `srcName`'s fallback needs.
+- Wall clock: `node tests/parity.js "eq_"` (8 states) fits one 600s call;
+  `node tests/parity.js "tables"` no longer does after B4 (was ~9 min for 26
+  states, gains 8).

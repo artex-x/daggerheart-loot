@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
-import { badgeKind, srcLabel, tableOf, whereFrom } from './label.js';
+import { badgeKind, srcLabel, srcName, tableOf, whereFrom } from './label.js';
 import type { Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -69,6 +69,25 @@ describe('the book a record comes from', () => {
       expect(srcLabel(it, 'ru'), it.id).not.toBe('');
       expect(srcLabel(it, 'en'), it.id).not.toBe('');
     }
+  });
+});
+
+describe('naming a source key with no record behind it', () => {
+  it('names each of the five books', () => {
+    expect(srcName('core', 'ru')).toBe('Core');
+    expect(srcName('hnf', 'ru')).toBe('Hope & Fear');
+    expect(srcName('wondrous', 'ru')).toBe('Wondrous');
+    expect(srcName('dread', 'ru')).toBe('Dread');
+    expect(srcName('voa', 'ru')).toBe('Vault of Ages');
+  });
+
+  it('falls through to a frame name', () => {
+    expect(srcName('beast_feast', 'ru')).toBe('Пир зверей');
+    expect(srcName('beast_feast', 'en')).toBe('Beast Feast');
+  });
+
+  it('falls back to the key itself for anything else', () => {
+    expect(srcName('somethingnew', 'ru')).toBe('somethingnew');
   });
 });
 

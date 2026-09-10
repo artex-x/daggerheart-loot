@@ -77,22 +77,6 @@ const LOOT: Loot = {
       row({ id: 'v1', src: 'voa', tier: 1, ru: 'Реликвия Первого Ранга' }),
       row({ id: 'v2', src: 'voa', tier: 'A', ru: 'Артефакт Утра' })
     ],
-    frames: [
-      row({
-        id: 'f1',
-        src: 'frame',
-        frame: 'beast_feast',
-        kind: 'consumable',
-        ru: 'Пирог Зверя'
-      }),
-      row({
-        id: 'f2',
-        src: 'frame',
-        frame: 'motherboard',
-        kind: 'consumable',
-        ru: 'Чип Памяти'
-      })
-    ],
     community: [
       row({
         id: 'com1',
@@ -108,9 +92,55 @@ const LOOT: Loot = {
         community_ru: 'Великородное',
         ru: 'Перстень Рода'
       })
+    ],
+    /* One more frame-sourced record, an armour, so the equipment `src` facet
+       row has a frame to offer alongside the books - f1 and f2 stay as they
+       were for the plain sectioned-body tests above. */
+    frames: [
+      row({
+        id: 'f1',
+        src: 'frame',
+        frame: 'beast_feast',
+        kind: 'consumable',
+        ru: 'Пирог Зверя'
+      }),
+      row({
+        id: 'f2',
+        src: 'frame',
+        frame: 'motherboard',
+        kind: 'consumable',
+        ru: 'Чип Памяти'
+      }),
+      row({
+        id: 'f3',
+        src: 'frame',
+        frame: 'beast_feast',
+        kind: 'item',
+        ru: 'Доспех Зверя',
+        eq: { t: 'armor', tier: 2, as: 5 }
+      })
     ]
   },
-  eq: [],
+  /* Weapons of all four tiers with both burdens and both classes, a
+     secondary weapon, and an armour - enough to exercise every facet row the
+     equipment tables offer and every one of their four tier sections. */
+  eq: [
+    row({
+      id: 'q1',
+      ru: 'Меч Рассвета',
+      eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', bu: 1 }
+    }),
+    row({
+      id: 'q2',
+      src: 'hnf',
+      ru: 'Посох Бури',
+      eq: { t: 'weapon', tier: 2, cls: 'mag', tr: 'knowledge', rg: 'far', bu: 2 }
+    }),
+    row({ id: 'q3', ru: 'Копьё Ранга', eq: { t: 'weapon', tier: 3, cls: 'phy', bu: 1 } }),
+    row({ id: 'q4', ru: 'Клинок Легенды', eq: { t: 'weapon', tier: 4, cls: 'mag', bu: 2 } }),
+    row({ id: 'q5', ru: 'Кинжал Тени', eq: { t: 'secondary', tier: 1, cls: 'mag' } }),
+    row({ id: 'q6', ru: 'Латы Стража', eq: { t: 'armor', tier: 1, as: 3 } })
+  ],
   refs: {},
   /* `ci3` (roll 3 in core_item) and `ci2` (roll 2) are reused as alternate-
      table entries, so a test can tell the die-face number apart from the
@@ -459,18 +489,177 @@ describe('the filter', () => {
   });
 });
 
-describe('a table this slice has not built', () => {
-  it('still resolves through the nav, as a placeholder', () => {
+describe('the equipment tables', () => {
+  it('groups weapons into their own tier sections, in order, dropping an empty tier', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    expect(screen.getByRole('link', { name: 'Снаряжение' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
-    expect(screen.getByText('#/tables/eq_weapon')).toBeInTheDocument();
+    expect(document.getElementById('sec-t1')).not.toBeNull();
+    expect(document.getElementById('sec-t2')).not.toBeNull();
+    expect(document.getElementById('sec-t3')).not.toBeNull();
+    expect(document.getElementById('sec-t4')).not.toBeNull();
+    expect(document.querySelectorAll('.tsec-head .lbl')[0]).toHaveTextContent('Ранг 1');
   });
 
+  it('drops a tier with no rows - armour has none in tier 3 or 4', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
+    });
+    expect(document.getElementById('sec-t1')).not.toBeNull();
+    expect(document.getElementById('sec-t2')).not.toBeNull();
+    expect(document.getElementById('sec-t3')).toBeNull();
+    expect(document.getElementById('sec-t4')).toBeNull();
+  });
+
+  it('reads the whole pool in .fcount with nothing picked', () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    /* The pool is every weapon in the catalogue, not only `eq`: `ci4` under
+       `core_item` carries a weapon stat block too, so the count is one more
+       than `eq`'s own four weapon rows. */
+    expect(container.querySelector('.fcount')).toHaveTextContent('5');
+  });
+
+  it('draws seven panel fields on weapons, six on secondary (no burden), three on armour', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(document.querySelectorAll('.field')).toHaveLength(7);
+
+    cleanup();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(document.querySelectorAll('.field')).toHaveLength(6);
+
+    cleanup();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(document.querySelectorAll('.field')).toHaveLength(3);
+  });
+
+  it('labels the class row by kind: Класс on weapons, Тип урона on secondary', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(screen.getByText('Класс')).toBeInTheDocument();
+
+    cleanup();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    expect(screen.getByText('Тип урона')).toBeInTheDocument();
+  });
+
+  it('a tier pick reads "Ранг 1" and a burden pick reads "Двуручное" - the pill rule fix', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: '1' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Двуручное' }));
+    /* The pill's own textContent carries the dismiss glyph (`&times;`) after
+       the label - `title`, not text, is its accessible name. */
+    const pills = [...container.querySelectorAll('.fpill')].map((p) => p.textContent);
+    expect(pills).toContain('Ранг 1×');
+    expect(pills).toContain('Двуручное×');
+  });
+
+  it('a mag pick drops physical weapons', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
+    expect(screen.queryByText('Меч Рассвета')).not.toBeInTheDocument();
+    expect(screen.getByText('Посох Бури')).toBeInTheDocument();
+  });
+
+  it('a filter link arrives with the panel open and both chips pressed', () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon/f_tier-2.cls-mag'),
+        data: fakeData(LOOT)
+      })
+    });
+    expect(screen.getByRole('button', { name: /Фильтры/ })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Магическое' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  it('a group the table does not offer leaves it whole - burden on armour', () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_armor/f_burden-2'),
+        data: fakeData(LOOT)
+      })
+    });
+    expect(screen.getByText('Латы Стража')).toBeInTheDocument();
+    expect(screen.getByText('Доспех Зверя')).toBeInTheDocument();
+  });
+
+  it('the empty state grows its own reset button', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Одноручное' }));
+    const empty = screen.getByText('Ничего не найдено').closest('.empty');
+    expect(
+      within(empty as HTMLElement).getByRole('button', { name: 'Сбросить всё' })
+    ).toBeInTheDocument();
+  });
+
+  it('searching the type word keeps every weapon - the search fix', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
+    });
+    await userEvent.type(
+      screen.getByPlaceholderText('Поиск по названию или описанию…'),
+      'основное'
+    );
+    expect(screen.getByText('Меч Рассвета')).toBeInTheDocument();
+    expect(screen.getByText('Посох Бури')).toBeInTheDocument();
+    expect(screen.getByText('Копьё Ранга')).toBeInTheDocument();
+    expect(screen.getByText('Клинок Легенды')).toBeInTheDocument();
+  });
+
+  it('a section anchor flashes its tier section', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon/t2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(document.getElementById('sec-t2')).toHaveClass('flash');
+    });
+  });
+
+  it('a row anchor flashes the row', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon/q1'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(document.querySelector('[data-row="q1"]')).toHaveClass('flash');
+    });
+  });
+});
+
+describe('the chip nav', () => {
   it('draws only the top row of chips for a book with one table', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT) })

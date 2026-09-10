@@ -240,6 +240,17 @@
     background: rgb(216 171 94 / 10%);
   }
 
+  /* off `style.css:1013`. The row clips everything past its edge, so an
+     outside ring would only ever show one sliver of itself - a gold streak
+     along the checkbox. It also fired from the mouse: `:focus-within` does
+     not know how a control was reached. This rule keeps the ring inside and
+     keyboard-only. */
+  .selbox:has(:focus-visible) {
+    outline: 2px solid var(--gold);
+    outline-offset: -3px;
+    border-radius: 8px;
+  }
+
   .selall {
     display: inline-flex;
     align-items: center;

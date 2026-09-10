@@ -54,7 +54,22 @@ const LOOT: Loot = {
       row({ id: 'c1', src: 'community', community: 'Loreborne', community_ru: 'Научное' })
     ]
   },
-  eq: [],
+  /* Two weapons of different tiers, enough for the equipment tables' own
+     tier sections and the widest facet panel to both draw. */
+  eq: [
+    row({
+      id: 'q1',
+      src: 'core',
+      ru: 'Меч',
+      eq: { t: 'weapon', tier: 1, cls: 'phy', bu: 1 }
+    }),
+    row({
+      id: 'q2',
+      src: 'hnf',
+      ru: 'Посох',
+      eq: { t: 'weapon', tier: 2, cls: 'mag', bu: 2 }
+    })
+  ],
   refs: {},
   /* One row per column, which is all the alternate tables need to draw a card
      and a critical-success box. */
@@ -159,6 +174,14 @@ const STATES: { what: string; route: string; enter?: (() => Promise<void>) | und
     what: 'a sectioned table with its filter panel open - two fields, not one',
     route: '#/tables/voa',
     enter: () => press('Фильтры')
+  },
+  {
+    what: 'the equipment table with its widest panel open and a bare-number value pressed',
+    route: '#/tables/eq_weapon',
+    enter: async () => {
+      await press('Фильтры');
+      await press('1');
+    }
   }
 ];
 

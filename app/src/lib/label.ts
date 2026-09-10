@@ -67,19 +67,33 @@ export function rarityKey(r: string): keyof Dict {
   return r === 'very_rare' ? 'veryRare' : (r as keyof Dict);
 }
 
+/**
+ * The name a source *key* takes, off `srcName` in app.js - not a record's own
+ * source, which `srcLabel` below already names. The equipment facet's `src`
+ * row picks a value out of `EQ_SRC` (the five books plus the four frames) and
+ * needs a name for the key alone, with no record behind it.
+ */
+export function srcName(key: string, lang: Lang): string {
+  const t = dict(lang);
+  const named: Partial<Record<string, string>> = {
+    core: t.srcCore,
+    hnf: t.srcHnf,
+    wondrous: t.srcWond,
+    dread: t.srcDread,
+    voa: t.srcVoa
+  };
+  return named[key] ?? frameName(key, lang);
+}
+
 export function srcLabel(it: Record_, lang: Lang): string {
   const t = dict(lang);
   switch (it.src) {
     case 'core':
-      return t.srcCore;
     case 'hnf':
-      return t.srcHnf;
     case 'wondrous':
-      return t.srcWond;
     case 'dread':
-      return t.srcDread;
     case 'voa':
-      return t.srcVoa;
+      return srcName(it.src, lang);
     case 'frame':
       return it.frame ? frameName(it.frame, lang) : t.srcFrame;
     case 'community':

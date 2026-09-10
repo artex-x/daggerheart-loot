@@ -3,7 +3,8 @@ import { buildIndex } from './data.js';
 import { dict } from './dict.js';
 import { facetRows } from './facets.js';
 import { FRAME_ORDER } from './frames.js';
-import type { Record_ } from './types.js';
+import { groupsFor } from './filters.js';
+import type { EquipKind, Record_, TableId } from './types.js';
 
 const row = (over: Partial<Record_>): Record_ => ({
   id: over.id ?? 'x',
@@ -104,6 +105,125 @@ describe('the frame row', () => {
     const [frameRow] = facetRows(index, 'frames', t, 'ru');
     expect(frameRow?.values.map((v) => v.value)).toEqual(FRAME_ORDER);
     expect(frameRow?.values.find((v) => v.value === 'beast_feast')?.label).toBe('Пир зверей');
+  });
+});
+
+describe('the equipment tables', () => {
+  const EQ_TABLE: Record<EquipKind, TableId> = {
+    weapon: 'eq_weapon',
+    secondary: 'eq_secondary',
+    armor: 'eq_armor'
+  };
+
+  const index = buildIndex({
+    items: {
+      frames: [
+        row({
+          id: 'f1',
+          src: 'frame',
+          frame: 'beast_feast',
+          kind: 'item',
+          eq: { t: 'armor', tier: 2 }
+        })
+      ]
+    },
+    eq: [
+      row({
+        id: 'w1',
+        src: 'core',
+        kind: 'item',
+        eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', bu: 1 }
+      }),
+      row({
+        id: 'w2',
+        src: 'hnf',
+        kind: 'item',
+        eq: { t: 'weapon', tier: 2, cls: 'mag', tr: 'strength', rg: 'far', bu: 2 }
+      }),
+      row({
+        id: 's1',
+        src: 'core',
+        kind: 'item',
+        eq: { t: 'secondary', tier: 1, cls: 'phy', tr: 'finesse', rg: 'close' }
+      }),
+      row({
+        id: 'a1',
+        src: 'core',
+        kind: 'item',
+        eq: { t: 'armor', tier: 1, as: 3, line: 'a1' }
+      })
+    ]
+  });
+
+  it('never drifts from the frozen group order', () => {
+    for (const kind of Object.keys(EQ_TABLE) as EquipKind[]) {
+      const table = EQ_TABLE[kind];
+      const rows = facetRows(index, table, t, 'ru');
+      expect(rows.map((r) => r.group)).toEqual(groupsFor(table));
+    }
+  });
+
+  it("labels the tier row's values with the bare digit", () => {
+    const [tierRow] = facetRows(index, 'eq_weapon', t, 'ru');
+    expect(tierRow).toEqual({
+      group: 'tier',
+      label: 'Ранг',
+      values: [
+        { value: '1', label: '1' },
+        { value: '2', label: '2' },
+        { value: '3', label: '3' },
+        { value: '4', label: '4' }
+      ]
+    });
+  });
+
+  it('offers only sources with a record of this kind, in book order, naming a frame by frameName', () => {
+    const [, srcRow] = facetRows(index, 'eq_armor', t, 'ru');
+    expect(srcRow?.values).toEqual([
+      { value: 'core', label: 'Core' },
+      { value: 'beast_feast', label: 'Пир зверей' }
+    ]);
+  });
+
+  it('never offers motherboard: no equipment of any kind carries it', () => {
+    for (const table of ['eq_weapon', 'eq_secondary', 'eq_armor'] as TableId[]) {
+      const [, srcRow] = facetRows(index, table, t, 'ru');
+      expect(srcRow?.values.map((v) => v.value)).not.toContain('motherboard');
+    }
+  });
+
+  it('labels the class row by kind: Класс on weapons, Тип урона on secondary', () => {
+    const [, , clsWeapon] = facetRows(index, 'eq_weapon', t, 'ru');
+    const [, , clsSecondary] = facetRows(index, 'eq_secondary', t, 'ru');
+    expect(clsWeapon?.label).toBe('Класс');
+    expect(clsSecondary?.label).toBe('Тип урона');
+  });
+
+  it('offers burden only on weapons', () => {
+    expect(groupsFor('eq_weapon')).toContain('burden');
+    expect(groupsFor('eq_secondary')).not.toContain('burden');
+    expect(groupsFor('eq_armor')).not.toContain('burden');
+    const burdenRow = facetRows(index, 'eq_weapon', t, 'ru').find((r) => r.group === 'burden');
+    expect(burdenRow).toEqual({
+      group: 'burden',
+      label: 'Хват',
+      values: [
+        { value: '1', label: 'Одноручное' },
+        { value: '2', label: 'Двуручное' }
+      ]
+    });
+  });
+
+  it("labels the line row's two values", () => {
+    const lineRow = facetRows(index, 'eq_armor', t, 'ru').find((r) => r.group === 'line');
+    expect(lineRow).toEqual({
+      group: 'line',
+      label: 'Линейка',
+      values: [
+        { value: 'line', label: 'Улучшаемые' },
+        { value: 'uniq', label: 'Уникальные' }
+      ]
+    });
   });
 });
 

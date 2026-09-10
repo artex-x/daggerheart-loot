@@ -163,6 +163,13 @@ const ru = {
   tier: 'Ранг',
   eqTh: 'Пороги',
   eqScore: 'Броня',
+  /* The equipment tables' own facet row labels */
+  eqClass: 'Класс',
+  eqDmg: 'Тип урона',
+  eqTrait: 'Характеристика',
+  eqRange: 'Дистанция',
+  eqBurden: 'Хват',
+  eqLineF: 'Линейка',
 
   storageOff: 'Браузер не даёт сохранять: списки не переживут перезагрузку.',
 
@@ -331,6 +338,12 @@ const en: Dict = {
   tier: 'Tier',
   eqTh: 'Thresholds',
   eqScore: 'Armor',
+  eqClass: 'Class',
+  eqDmg: 'Damage type',
+  eqTrait: 'Trait',
+  eqRange: 'Range',
+  eqBurden: 'Burden',
+  eqLineF: 'Line',
 
   storageOff: 'This browser will not save: lists are lost on reload.',
 

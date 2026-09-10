@@ -2,19 +2,22 @@
   /* The plain table: chip nav, a toolbar, rows or tiles, selection, and a row
      opening the record modal. Reproduced from `renderTables()` in app.js.
 
-     One component holds every table, including the ones this slice has not
-     built: `#/tables/eq_weapon` and the rest draw the same nav and a `.todo`
-     placeholder rather than crashing, so the address always resolves to
-     something and the chip that leads there is never a dead link. Building
-     five separate page components for one route would also fight the second
-     use this component is heading for - search reuses the row wholesale.
+     One component holds every table - the fourteen `TableId`s in `data.js`
+     all draw a real body now. Building separate page components for one route
+     would fight the second use this component is heading for - search reuses
+     the row wholesale.
 
      Four tables have no facet to filter by at all (`docs/specs/ROUTES.md`,
      "Filter grammar"): `core_item`, `core_consumable`, `hnf_item` and
      `hnf_consumable`. Two more offer exactly one - `kind` - and nothing else:
-     `wondrous` and `dread`. Both groups draw in full; every other table still
-     shows the nav and falls through to the placeholder until the sectioned
-     bodies (B3) and the equipment facets (B4) land. */
+     `wondrous` and `dread`. `voa`, `frames` and `community` split their body
+     into sections and offer `tier`, `frame` or `comm` on top of `kind`. The
+     three equipment tables (`eq_weapon`, `eq_secondary`, `eq_armor`) are a
+     second shape entirely: their pool is every piece of gear in the
+     catalogue rather than one book's rows, split into four tier sections of
+     their own, with up to seven facet rows - `eqKind`, `eqFacetRows` and
+     `equipOfKind`/`equipFacets` are what tell that shape apart from the
+     plain one below. */
   import { untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
@@ -28,11 +31,12 @@
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
-  import { plainFacets, type AltKind } from '../lib/data.js';
+  import { equipFacets, equipOfKind, plainFacets, type AltKind } from '../lib/data.js';
   import { facetRows } from '../lib/facets.js';
   import {
     chosenCount,
     encodeFilter,
+    EQ_TABLE,
     groupsFor,
     passes,
     type FilterState
@@ -56,23 +60,6 @@
   const t = $derived(app.t);
   const index = $derived(app.index);
 
-  /* The tables this slice draws in full - checked against data.js in
-     tables.test.ts rather than assumed. Every other table id still resolves
-     through the nav, and falls through to the placeholder below. */
-  const KNOWN: readonly TableId[] = [
-    'core_item',
-    'core_consumable',
-    'hnf_item',
-    'hnf_consumable',
-    'wondrous',
-    'dread',
-    'voa',
-    'frames',
-    'community',
-    'alt_item',
-    'alt_consumable'
-  ];
-
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
      or unknown, and the live app keeps whichever table was on screen rather
      than resetting. `core_item` is what a bare `#/tables` opens on. */
@@ -86,7 +73,8 @@
   );
 
   const group = $derived(groupOf(table));
-  const known = $derived(KNOWN.includes(table));
+  /* The equipment tables draw a second body shape - see the header comment. */
+  const eqKind = $derived(EQ_TABLE[table]);
 
   /* View and the search box are memory only, same as the live app -
      docs/specs/STATE.md is explicit that what was asked on a page is not
@@ -176,20 +164,32 @@
     say(ok ? t.filterLinkCopied : t.copyFailed);
   }
 
-  const rows = $derived(index?.rows.get(table) ?? []);
+  const rows = $derived(
+    eqKind ? (index ? equipOfKind(index, eqKind) : []) : (index?.rows.get(table) ?? [])
+  );
   const facPassed = $derived.by(() => {
     if (!facetGroups.length) return rows;
-    return rows.filter((it) =>
-      passes(filterState, facetGroups, (g) => plainFacets(it)[g] ?? '')
-    );
+    const valueOf = eqKind
+      ? (it: Record_, g: string) => equipFacets(it)[g] ?? ''
+      : (it: Record_, g: string) => plainFacets(it)[g] ?? '';
+    return rows.filter((it) => passes(filterState, facetGroups, (g) => valueOf(it, g)));
   });
+  /* The stat line `matches` searches - shared with `altSections` below, so
+     the rule lives once. app.js's own `matches` searches `eqLine(it)` *with*
+     the type word ("Основное оружие · Ранг 1 · ..."), so typing "основное"
+     finds every weapon; both callbacks here drop `noType` for the same
+     reason. The row's own *display* keeps `noType: true`, matching
+     `rowHTML`'s `eqLine(it, true)` - `TableRows.svelte` and
+     `RecordCard.svelte` are untouched. */
+  const statLine = $derived.by(() => {
+    const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
+    return (r: Record_): string => eqLine(r, app.lang, labels);
+  });
+
   const filtered = $derived.by(() => {
     const query = q.trim().toLowerCase();
     if (!query) return facPassed;
-    const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
-    return facPassed.filter((it) =>
-      matches(it, query, (r) => eqLine(r, app.lang, labels, { noType: true }))
-    );
+    return facPassed.filter((it) => matches(it, query, statLine));
   });
 
   function toggleSel(id: string): void {
@@ -222,19 +222,22 @@
   }
 
   /* Which body shape this table draws, off `renderTables()`'s own branches:
-     a plain list, or one split by tier, frame, community, or the alternate
-     tables' rarity/hope-fear columns. */
-  type BodyKind = 'plain' | 'tier' | 'frame' | 'comm' | 'alt';
+     a plain list, or one split by tier, frame, community, the equipment
+     tables' own tier sections, or the alternate tables' rarity/hope-fear
+     columns. */
+  type BodyKind = 'plain' | 'tier' | 'frame' | 'comm' | 'eq' | 'alt';
   const bodyKind = $derived<BodyKind>(
-    table === 'voa'
-      ? 'tier'
-      : table === 'frames'
-        ? 'frame'
-        : table === 'community'
-          ? 'comm'
-          : table === 'alt_item' || table === 'alt_consumable'
-            ? 'alt'
-            : 'plain'
+    eqKind
+      ? 'eq'
+      : table === 'voa'
+        ? 'tier'
+        : table === 'frames'
+          ? 'frame'
+          : table === 'community'
+            ? 'comm'
+            : table === 'alt_item' || table === 'alt_consumable'
+              ? 'alt'
+              : 'plain'
   );
 
   interface Section {
@@ -274,9 +277,26 @@
       .filter((s) => s.entries.length > 0);
   });
 
-  /* One list, whichever of the three above is actually populated - `bodyKind`
+  /* The equipment tables' own tier sections, off `renderEquipTable`
+     (app.js 2735-2761): `voa`'s tier body with a different key (`t1`-`t4`,
+     not `t1`-`t4`/`tA`/`tC`), a different label (`${t.tier} ${n}`, not
+     `voaSectionName`) and a different source field (`it.eq.tier`, not
+     `it.tier`). */
+  const eqSections = $derived.by<Section[]>(() =>
+    bodyKind !== 'eq'
+      ? []
+      : [1, 2, 3, 4]
+          .map((n) => ({
+            key: `t${String(n)}`,
+            label: `${t.tier} ${String(n)}`,
+            entries: filtered.filter((it) => it.eq?.tier === n).map((it) => ({ it }))
+          }))
+          .filter((s) => s.entries.length > 0)
+  );
+
+  /* One list, whichever of the four above is actually populated - `bodyKind`
      gates them so only one ever is, and the template draws them through a
-     single branch rather than three copies of the same markup. */
+     single branch rather than four copies of the same markup. */
   const activeSections = $derived<Section[]>(
     bodyKind === 'tier'
       ? tierSections
@@ -284,7 +304,9 @@
         ? frameSections
         : bodyKind === 'comm'
           ? commSections
-          : []
+          : bodyKind === 'eq'
+            ? eqSections
+            : []
   );
 
   interface AltCol {
@@ -305,8 +327,6 @@
   const altSections = $derived.by<AltSection[]>(() => {
     if (!altKind || !index) return [];
     const query = q.trim().toLowerCase();
-    const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
-    const statLine = (r: Record_): string => eqLine(r, app.lang, labels, { noType: true });
     return RARITIES.map((r) => {
       const cols: AltCol[] = (['hope', 'fear'] as const)
         .map((col) => ({
@@ -362,7 +382,7 @@
     const route = app.route;
     const anchor = route.kind === 'tables' ? route.anchor : '';
     const nav = app.navigations;
-    const ready = known && !!index;
+    const ready = !!index;
     if (!anchor || !ready) return;
     if (anchoredAt === nav) return;
     anchoredAt = nav;
@@ -403,11 +423,7 @@
   {/if}
 </div>
 
-{#if !known}
-  <!-- Every table this slice has not reached yet: the nav still resolves, so
-       no chip is a dead end, but nothing renders a body for it. -->
-  <p class="todo">{app.hash}</p>
-{:else if !index}
+{#if !index}
   <p class="miss">{t.noData}</p>
 {:else}
   <div class="toolbar">
@@ -498,7 +514,7 @@
         <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
       {/if}
     </div>
-  {:else if bodyKind === 'tier' || bodyKind === 'frame' || bodyKind === 'comm'}
+  {:else if bodyKind === 'tier' || bodyKind === 'frame' || bodyKind === 'comm' || bodyKind === 'eq'}
     {#each activeSections as s (s.key)}
       <div class="tsection" id={'sec-' + s.key} style="margin-top:22px">
         <SectionHead
@@ -569,12 +585,6 @@
 <style>
   /* off `.page-h`, `.itemtable` and friends were already covered; what
      follows is the tables screen's own furniture. */
-  .todo {
-    color: var(--muted2);
-    font-family: var(--mono);
-    font-size: var(--step--1);
-  }
-
   .miss {
     margin: 0;
     color: var(--muted);
