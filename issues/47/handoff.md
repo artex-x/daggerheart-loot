@@ -7,38 +7,43 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress - B4 built (`fde9cdc`, reviewed); B5.1 built
-  (`fe0043b`) with its fix-then-continue pass (`d1c1367`); **CI is red on five
-  B5.1 cells** (`context.md`, "CI is red again"); **B5.2 is planned and split
-  - part 0 (green CI, the two unstable classes) is next and implement-ready,
-  part 1 (the selection bar) is implement-ready behind it** - see "Next
-  batch" and `plan.md`, "B5.2 planned, part 0" / "part 1"
-- Last agent: planner (2026-09-10: B5.2 planned as two parts; the five red
-  cells decided - deleted; the timed class gets per-width re-arrival, the
-  whole-page class a stable-capture re-shoot and a geometry probe; one live
-  measurement taken of the bar and its menu)
-- NEEDS_HUMAN_CONFIRMATION: no
+  (`fe0043b`) with its fix-then-continue pass (`d1c1367`); **B5.2 part 0 is
+  built (tests and docs, no production code) - see git log for the
+  `fix(parity): ...` commit on top of `2f3659d`.** All local acceptance
+  criteria met; **CI green on the commit is unread as of this writing - that
+  read is the orchestrator's and is what closes the part**, see "Blockers".
+  **B5.2 part 1 (the selection bar) is next and implement-ready** - see "Next
+  batch" and `plan.md`, "B5.2 built, part 0" / "planned, part 1"
+- Last agent: implementer (2026-09-10: B5.2 part 0 built - the five unstable
+  `VISUAL_DEBT` entries deleted, `timed: true` on the two toast states with
+  per-width re-arrival in the runner, a stable-capture retry and a `geometry`
+  probe for the whole-page state, docs updated; every local check and parity
+  filter this batch owns is clean)
+- NEEDS_HUMAN_CONFIRMATION: no - except the CI read itself, which only the
+  orchestrator can perform
 - Branch: `main`
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
   `fb8cb0d`; B3.6 is complete in all three parts - part 0 `f7308a9`, part 1
   `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`. B4 is
   `fde9cdc`. B5.1 is `fe0043b`; its fix-then-continue pass is `d1c1367`; the
   full unfiltered parity run against `fe0043b` is recorded under "Blockers"
-  at `541d529`. **Local HEAD at planning time is `252e0a6`** (hooks-guardrails
-  docs, another task's), three docs-only commits ahead of `origin/main`
-  `b6a2fcd`; nothing the harness photographs has changed since `d1c1367`, so
-  the CI run at `b6a2fcd` reads for the current tree. Re-read `git log
-  --oneline -3` before starting - other sessions share this tree.
+  at `541d529`. Planning for B5.2 (both parts) is `2f3659d`. **This session's
+  B5.2 part 0 commit lands on top of `2f3659d`** - re-read `git log --oneline
+  -3` before starting the next batch, other sessions share this tree.
 
 Phase 4's B1-B3.6, B4 and B5.1 are all built. B4 was the last body shape the
 tables slice needed (`plan.md`, "the tables surface, and how it splits"), so
 every table in `TABLE_DEFS` now draws a real body and `TablesPage.svelte`
 carries no placeholder branch. The lists slice is planned as six batches
 (`plan.md`, "B5 planned") and **B5.1 is the first of them, built**: the list
-store, the toast and the add-to-list row on the card. What is left of Phase 4
-is B5.2-B5.6, the search slice and the print slice. **B5.2 is planned in two
-parts and both are implement-ready** - part 0 (tests and docs: CI green, the
-timed and whole-page classes) is next, part 1 (the bar) follows it; see "Next
-batch" and `plan.md`. B5.3-B5.6, search and print are outlines only.
+store, the toast and the add-to-list row on the card. **B5.2 part 0 is now
+built too** - tests and docs only, no production code: the five unstable
+`VISUAL_DEBT` entries are gone, the timed class re-arrives per width, the
+whole-page class re-shoots until stable and carries a `geometry` probe. What
+is left of Phase 4 is B5.2 part 1, B5.3-B5.6, the search slice and the print
+slice. **B5.2 part 1 (the selection bar) is next and implement-ready** - see
+"Next batch" and `plan.md`, "B5.2 planned, part 1". B5.3-B5.6, search and
+print are outlines only.
 
 B4 was offered as a merge target for B3.6 and was deliberately not folded in:
 its acceptance includes a clean parity run and possibly new `VISUAL_DEBT`
@@ -535,7 +540,84 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   own existing test asserted the text the fix removes, so leaving it broken
   was not an option.
 
+- Batch name/id: **B5.2 part 0 - green CI, and the two unstable classes
+  named** (this session, on top of `2f3659d`)
+- What shipped: exactly the brief's scope, no production code, nothing under
+  `app/`.
+  - **The five entries CI failed at an exact 0.00% on two runs are deleted**,
+    not lowered - `#/i/ci1 ~ whole @ ru 1100 / en 1100 / ru 768` and
+    `#/i/ci1 ~ toast @ en 375 / en 768` in `tests/parity/specs.js`, along with
+    the three block comments that described the instability they carried.
+    Owner decision 1 leaves no figure but 0.00, and 0.00 is deletion by the
+    ratchet's own rule.
+  - **The timed class gets a mechanism, not a tolerance.** `#/i/ci1 ~ toast`
+    and `#/roll/wondrous ~ pinned` gained `timed: true`, each with a one-line
+    comment naming the reason. `tests/parity.js` now shares a `shootWidth(d,
+    size)` closure between the ordinary width sweep and a timed state's own
+    per-width re-arrival: a timed state's first page shoots only `WIDTHS[0]`
+    (looks/controls/the 1100 shot untouched), then one further `withPage` per
+    remaining width - `viewport`, `arrive` (open, seed, enter, language press),
+    `shootWidth` - with the legacy screenshot cache still consulted per width
+    before a page opens. `keyFor` now hashes `timed` so a future toggle
+    invalidates the right cache entries.
+  - **The whole-page class gets a mechanism too.** `driver.js`'s `shot(whole)`
+    retakes a full-page capture until two in a row are `Buffer.equals()`,
+    capped at four, logging one line naming the count only past the baseline
+    two captures. A new `rectsAt(probes)` method (same selector policy as
+    `typeAt`, `document.fonts.ready` first) backs a `geometry` spec
+    (`perWidth`, `only: ['#/i/ci1 ~ whole']`) recording `.card`/`.cardpick`/
+    `.foot` rects and `docHeight` at every width, appended to `SPECS`.
+  - **Docs**: `docs/parity.md` gained `timed` in "Register the state first"
+    and a "Two unstable classes" subsection under "Machine variance" with the
+    recipe for a local red on each, plus two lines in "Harness invariants".
+    `docs/specs/COVERAGE.md`'s "Three conditions the harness controls"
+    became five clauses. The `STATES` doc comment in `specs.js` gained a
+    `timed` line.
+- **No deviation from the brief.** The `shootWidth` extraction and the
+  `shot(whole)` retry counter are how the design's own "one page at a time is
+  preserved" and "a page that has stopped moving is not a state" were made
+  concrete in code; nothing outside the brief's scope, file list, or ordered
+  steps was touched. No `VISUAL_DEBT` number was written from this host, per
+  the brief's explicit prohibition.
+- Files changed: `tests/parity/specs.js`, `tests/parity.js`,
+  `tests/parity/driver.js`, `docs/parity.md`, `docs/specs/COVERAGE.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's `fix(parity): ...` commit, on
+  top of `2f3659d`.
+
 ## Verification
+
+- Commands run (exact), this session (B5.2 part 0):
+  - `npm run build` - clean; `dist/assets/app.js` 201.70 kB, gzip 63.09 kB.
+  - `node tests/parity.js "i/ci1 ~ toast" "pinned"` (12 cells, the two timed
+    states) - **run twice, `расхождений нет` both times**, every cell
+    `совпадает` in both languages at every width. The second run exercises
+    the per-width cache path for the timed states (the cache key now hashes
+    `timed`, so this batch's edit invalidated it once and only once).
+  - `node tests/parity.js "ci1 ~ whole"` (6 cells) - one console line,
+    `снимок целиком: 3 попытки до устойчивого кадра`, then every cell
+    `совпадает`; `geometry` produced no `FAIL` line at any width - silent, as
+    the acceptance criteria require.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+    call, `timeout: 600000`: **exit 0**, format/lint/typecheck/data/derived/
+    i18n/selftest all pass, `svelte-check` 518 files/0 errors/0 warnings,
+    `vitest run --coverage` 732 tests, 96.67/89.64/96.57/97.01 statements/
+    branches/functions/lines, every threshold met. As the brief notes,
+    `.prettierignore` and `eslint.config.mjs` both skip `tests/`, so this run
+    does not prove the harness edits' own style - matched by hand against the
+    surrounding code instead, and proven correct by the parity filters above
+    and below.
+  - `node tests/parity.js "i/ci1"` (7 states, 42 cells - the full record-route
+    family, including the four B5.1 list states) - **`расхождений нет`**,
+    every cell `совпадает`.
+  - **No cell read non-zero on this host at any point in this batch.** No
+    `VISUAL_DEBT` number was written, per scope.
+  - `git status --porcelain` before committing: only the six files the brief
+    named as expected were modified; `git log --oneline -3` re-read
+    immediately beforehand still showed HEAD at `2f3659d` - no peer session
+    moved this tree while this batch ran.
+  - `npm run check:built` was not run, per the brief: nothing under `app/`
+    changed and `dist/` is unaffected by this batch's edits.
 
 - Commands run (exact), this session (B5.1 fix-then-continue pass):
   - `npm run check 2>&1 | tail -n 120` - first run: **1 failed of 732**,
@@ -976,10 +1058,125 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
+- **Name:** B5.2 part 1 - the selection bar. (Part 0, green CI and the two
+  unstable classes, is built - see "Completed" and `plan.md`, "B5.2 built,
+  part 0". Its retired brief is kept below, in the collapsed section, for the
+  record.)
+
+- **Objective:** ticking rows in a table raises the live app's bar at the
+  bottom of the window - "Выбрано N" with a cross that clears everything, and
+  three actions on the right: add the whole selection to a list (the same
+  control the card has, opening above the bar), print the selection, copy it
+  as one message. With it, the six `selBar` entries in `VISUAL_DEBT` and the
+  two `~ a row ticked` lines in `ACCEPTED` are deleted, and the multi-id
+  branches B5.1 built without a caller (`t.addTo`, `': N'` on the toast) get
+  one. Full design, every measured number, and the rejected alternatives:
+  `plan.md`, "B5.2 planned, part 1".
+
+- **Read first, in this order:** `plan.md`, "B5.2 planned, part 1" in full -
+  "What the live app does" (the bar's markup read back from the live DOM, the
+  handlers, the styles, live measurements at all three widths, the menu's
+  always-`up` placement and the invented `.dropmenu.up` rule that has to go),
+  then "How it is built" file by file. The live functions to read yourself
+  before writing a line: `renderSelBar` (app.js 3706-3721), `clearSel`/
+  `copySel` (4235, 4246-4250), `selAsText`/`selAsHtml` (1961-1966), the tick
+  handlers (4403-4420), the `hashchange` listener's `S.sel = {}` (4632),
+  `placeMenu` (3695-3704). Styles: `.selbarwrap`/`.selbar`/`.selcount`/`.selx`/
+  `.selacts` (style.css 54, 799-829, the 600px block 817-828), `.wrap` (52-53).
+
+- **In scope:** `app/src/state/app.svelte.ts` (`sel` lifted onto `AppState` as
+  a `SvelteSet`, `clearSel()`, cleared wherever `menuFor` is); new
+  `app/src/components/SelBar.svelte`; `Shell.svelte` (renders it between the
+  footer and the toast); `TablesPage.svelte` (reads `app.sel` instead of a
+  local set); `AddToList.svelte` (delete the invented `.dropmenu.up` rule and
+  its comment); `RecordModal.svelte` (`app.menuFor = ''` before every close
+  path closes, so a card's menu left open does not read pressed-but-closed
+  when the same record's modal reopens); `lib/dict.ts` (`clearSel`, `copySel`,
+  `selCopied`); new `lib/share.ts` `shareSelection` (no skip set, unlike
+  `shareRoll`); `tests/parity/driver.js` (`click(name, nth)`);
+  `tests/parity/specs.js` (`NAME.copySel`/`clearSel`, two new states -
+  `#/tables ~ bar menu` and `#/tables ~ selection copied`, the latter
+  `timed: true` - two press specs `copiedSelection`/`barMembership`, the six
+  `selBar` entries and the `selBar` helper deleted, the two stale `~ a row
+  ticked … :: controls` `ACCEPTED` lines deleted); tests per `plan.md`,
+  "Tests" (`state/app.test.ts`, `lib/share.test.ts`, a new `describe` in
+  `components/tables.test.ts`, a modal-reopen case, an `a11y.test.ts` state,
+  `COVERAGE.md`'s row).
+
+- **Out of scope:** `#/search` and its own use of `app.sel` (search slice);
+  `#/lists`, `lsel`, batch actions (B5.3-B5.5); a print page (the link is
+  enough); `@media print` rules for the bar; `Panel.svelte`; any change to
+  `docs/specs/*` beyond `COVERAGE.md`'s test-table row, `docs/fixtures/`,
+  `CONTRACTS.md` or `llms.txt`.
+
+- **Files expected:** `app/src/state/app.svelte.ts`, `app/src/state/
+  app.test.ts`, new `app/src/components/SelBar.svelte`, `app/src/components/
+  Shell.svelte`, `app/src/components/TablesPage.svelte`, `app/src/components/
+  AddToList.svelte`, `app/src/components/RecordModal.svelte`, `app/src/
+  components/tables.test.ts`, `app/src/components/record.test.ts` (or
+  `roll.test.ts`, wherever the modal-close cases live), `app/src/test/
+  a11y.test.ts`, `app/src/lib/dict.ts`, new `app/src/lib/share.ts` addition
+  and `share.test.ts`, `tests/parity/driver.js`, `tests/parity/specs.js`,
+  `docs/specs/COVERAGE.md`, `issues/47/plan.md`, `issues/47/handoff.md`.
+
+- **Steps:** `plan.md`, "B5.2 planned, part 1", "Ordered steps" 1-10 - dict
+  and `shareSelection` first, then `sel`/`clearSel` on `AppState` with
+  `TablesPage` switched over (green before continuing), the two component
+  fixes, `SelBar.svelte` and `Shell.svelte`, the tests, the harness, the
+  check, then three separate parity filters (do not merge them), then
+  `check:built`, then the commit.
+
+- **Acceptance criteria:** `plan.md`, "B5.2 planned, part 1", "Acceptance
+  criteria" - in one line each: the bar renders after the footer with the
+  live markup, count node, cross, and the three actions; the menu opens above
+  the bar at every width with the invented rule gone; a chip adds every id
+  the list lacks in one press and keeps the selection; copy joins both
+  flavours of every selected record with no OR; the 600px layout stacks as
+  measured (53px/137px tall); `#/tables ~ a row ticked`, `~ bar menu` and
+  `~ selection copied` read 0.00% at every cell in both languages; the six
+  `selBar` entries and the two `ACCEPTED` lines are gone; `copiedSelection`
+  and `barMembership` match; `node tests/parity.js "i/ci1 ~"` still reads
+  zero on the card's own menu states after the `.dropmenu.up` deletion;
+  `npm run check` and `npm run check:built` exit 0 with thresholds met.
+
+- **Verification commands:**
+
+  ```text
+  set -o pipefail; npm run check 2>&1 | tail -n 120
+  npm run build
+  node tests/parity.js "a row ticked" "bar menu" "selection copied"
+  node tests/parity.js "#/tables ~"
+  node tests/parity.js "i/ci1 ~"
+  npm run check:built
+  ```
+
+  Wall clock, so each fits its call: the first parity filter is 3 states (one
+  timed); `"#/tables ~"` is 8 states (grid, searched, nothing found, a row
+  opened, a row ticked, help, bar menu, selection copied); `"i/ci1 ~"` is 6 -
+  each about a third of the pre-B4 "tables" run or smaller, well inside the
+  cap; do not merge the three calls. `npm run check`: one foreground call,
+  `timeout: 600000`, unchained and unredirected - a run that goes over is
+  re-run, not salvaged (`context.md`, "npm run check, settled").
+
+  Numbers: none are written from this host. A non-zero cell is a diff image
+  opened before anything is recorded - `plan.md`'s "How it is built" names
+  the first places to look (the bar's height at 375, the menu's vertical
+  position, the count's text node, the print link's `title`).
+
+- **Risks / do-nots:** `plan.md`, "B5.2 planned, part 1", "Risks and
+  do-nots" - do not keep `.dropmenu.up` "for the card"; do not render the bar
+  inside `TablesPage` or put it before the footer; do not split "Выбрано" and
+  the number into two text nodes or move the cross outside `.selcount`; do
+  not pass a `skip` set to `share()` in `shareSelection`; do not `aria-label`
+  select-all to make it clickable; make `~ bar menu` **not** timed and do not
+  forget `timed: true` on `~ selection copied`; no `VISUAL_DEBT` number from
+  this host; one commit, `feat(lists): ...`, authored as `artex-x`, no push,
+  no `Co-Authored-By`.
+
+<details>
+<summary>B5.2 part 0's retired brief (implemented; kept for the record, not for reuse)</summary>
+
 - **Name:** B5.2 part 0 - green CI, and the two unstable classes named.
-  (Part 1, the selection bar, is the batch after this one; its brief is
-  `plan.md`, "B5.2 planned, part 1", already implement-ready, and it depends
-  on part 0's `timed` flag for its copy-selection state.)
 
 - **Objective:** CI goes green on the tree as it stands, and the two
   measurement classes B5.1 ran into stop being judgement calls. The five
@@ -994,131 +1191,13 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   `geometry` spec records the page's rects at every width so "paint or
   layout?" is a line in the report. `docs/parity.md` names both classes and
   says what a person does on a local red. **No production code; nothing under
-  `app/`.** Full design and the rejected alternatives: `plan.md`, "B5.2
-  planned, part 0".
+  `app/`.**
 
-- **Read first, in this order:** `context.md`, "CI is red again" (the run
-  ids, the five cells, what passes); `plan.md`, "B5.2 planned, part 0" (all
-  of it - it is short); then the code the change touches: `tests/parity.js`
-  352-453 (`arrive`, the per-target block, the width sweep, the cache read
-  at 426-448) and 512-546 (the verdict branches - read, do not touch);
-  `tests/parity/driver.js` `shot()` (the last method), `typeAt()` (the
-  selector-policy comment and the fonts wait, which `rectsAt` copies) and
-  `settle()`; `tests/parity/specs.js` 317-323 (the `STATES` doc comment),
-  416-452 (`~ pinned`, `~ whole`, `~ toast`), 285-300 (`typeRuns`, the
-  `perWidth` shape), 791-805 (`SPECS`), 848-892 (the entries and comments to
-  delete); `docs/parity.md` "Machine variance" and "Harness invariants";
-  `docs/specs/COVERAGE.md`, the paragraph beginning "Three conditions the
-  harness controls".
+- **Built as designed, no deviation.** See "Completed" above and `plan.md`,
+  "B5.2 built, part 0" for the full accounting, exact measurements, and the
+  commands run.
 
-- **In scope:**
-  - `tests/parity/specs.js`: delete the five entries and the two block
-    comments above them (848-877); `timed: true` with a one-line comment on
-    `#/i/ci1 ~ toast` and `#/roll/wondrous ~ pinned`; a `timed` line in the
-    `STATES` doc comment; the `geometry` spec (`perWidth: true`, `only:
-    ['#/i/ci1 ~ whole']`, `d.rectsAt({ card: '.card', pick: '.cardpick', foot:
-    '.foot' })`) appended to `SPECS`.
-  - `tests/parity.js`: destructure `timed`; hash `timed: !!state.timed` in
-    `keyFor`; for a timed state the first page shoots `WIDTHS[0]` only
-    (looks, `controls` and the 1100 shot stay exactly where they are), then
-    one further `withPage` per remaining width - viewport, `arrive`,
-    `settle`, the `measured` specs if any, `shot` - with the legacy cache
-    consulted per width *before* a page is opened; `broke` handled the same
-    way. One sentence added to the comment above `arrive`.
-  - `tests/parity/driver.js`: `shot(whole)` - for `whole`, capture repeatedly
-    until two consecutive buffers are `equals()`, at most four captures, and
-    `console.log` one line when more than one was needed; `rectsAt(probes)` -
-    `document.fonts.ready`, then per name `null` or `{ x, y, w, h }` rounded
-    to a tenth, plus `docHeight`.
-  - `docs/parity.md`: `timed` in "Register the state first"; a "Two unstable
-    classes" subsection under "Machine variance" with the recipe for a local
-    red on each; two lines in "Harness invariants".
-  - `docs/specs/COVERAGE.md`: "Three conditions" becomes five.
-  - `issues/47/plan.md` ("B5.2 built, part 0"), `issues/47/handoff.md`.
-
-- **Out of scope:** anything under `app/`; the selection bar (part 1);
-  `JITTER`, `DEBT_SLACK`, the verdict branches; re-arrival for any non-timed
-  state (the anchor width-sweep decision stays open); the
-  `tools/parity-ubuntu` Dockerfile; any `VISUAL_DEBT` number from this host;
-  any change to `docs/specs/*` other than the one `COVERAGE.md` paragraph.
-
-- **Files expected:** `tests/parity/specs.js`, `tests/parity.js`,
-  `tests/parity/driver.js`, `docs/parity.md`, `docs/specs/COVERAGE.md`,
-  `issues/47/plan.md`, `issues/47/handoff.md`.
-
-- **Steps:** `plan.md`, "B5.2 planned, part 0", "Ordered steps" 1-10 - the
-  deletions and `timed` first, measured on the two timed states (twice, for
-  the cache path); then the capture re-shoot and `geometry`, measured on
-  `~ whole`; then the docs, the check, the `"i/ci1"` regression filter, the
-  commit.
-
-- **Acceptance criteria:** `plan.md`, "B5.2 planned, part 0", "Acceptance
-  criteria" - in one line each: none of the five ids in `VISUAL_DEBT`;
-  `timed` on exactly the two states and honoured per width with the cache;
-  `shot(true)` stable or fourth, one console line on retry; `geometry` at
-  every width on `~ whole`, silent; `docs/parity.md` and `COVERAGE.md`
-  updated; `npm run check` exit 0; `node tests/parity.js "i/ci1"` and
-  `"pinned"` at `расхождений нет` on this host; **CI green on the commit,
-  read by the orchestrator and recorded here with the run id** - that read is
-  what closes the part, not the local run.
-
-- **Verification commands:**
-
-  ```text
-  npm run build
-  node tests/parity.js "i/ci1 ~ toast" "pinned"        (twice)
-  node tests/parity.js "ci1 ~ whole"
-  set -o pipefail; npm run check 2>&1 | tail -n 120
-  node tests/parity.js "i/ci1"
-  ```
-
-  Wall clock, so each fits its call: the two-state timed filter is 12 cells
-  with 3 arrivals per language per side on a cold cache - a few minutes; the
-  second run hits the cache on the legacy side and is quicker. `"ci1 ~
-  whole"` is one state, six cells, uncached on both sides once `geometry` is
-  on it, plus a second full-page capture per cell - under two minutes.
-  `"i/ci1"` is 7 states (`#/i/ci1`, `~ whole`, `~ toast`, `~ list menu`, `~ in
-  a list`, `~ many lists`, `~ new list`) - about a third of the pre-B4
-  "tables" run, well inside the cap. `npm run check`: one foreground call,
-  `timeout: 600000`, exactly as written; it measured 165s on an idle host and
-  has exceeded the cap on a loaded one - a run that goes over is re-run, not
-  salvaged, and a backgrounded or redirected run cannot arm the commit gate
-  (`context.md`, "npm run check, settled"; `bash-guard.mjs` enforces it).
-  Never run vitest coverage beside a live parity run. `npm run check:built` is
-  not needed: nothing under `app/` changes and `dist/` is unchanged.
-
-  What the check does **not** cover: `.prettierignore` and `eslint.config.mjs`
-  both skip `tests/`, so the runner and driver edits are proven only by the
-  parity filters above - match the files' style by hand.
-
-  Numbers: none are written. If a cell on `~ whole` reads non-zero here after
-  the re-shoot, the `geometry` line is the verdict (agreeing → paint on this
-  host, re-run the one state, record both readings in the handoff;
-  disagreeing → a real difference, stop and name the field). If a timed cell
-  reads non-zero, open the diff: that is the toast's own pixels, a defect,
-  not the class.
-
-- **Risks / do-nots:** `plan.md`, "B5.2 planned, part 0", "Risks and
-  do-nots" - no `VISUAL_DEBT` number from this host; no change to the gate's
-  constants or verdicts; no `timed` on a non-toast state and no wholesale
-  re-arrival; no timer stubbing in `prepare()`; the re-shoot cap is four, not
-  two; the first page's looks/controls/1100 shot stay where they are for
-  timed states; one commit, `fix(parity): ...`, authored as `artex-x`, no
-  push, no `Co-Authored-By`.
-
-- **Fallback (optional):** if the per-width arrival does not make
-  `~ toast @ en` read zero here (the EN press adds a settle after the copy;
-  on a heavily loaded host the 1600ms window could still close), the honest
-  second answer is to record the cell's *CI* reading - it is 0.00 there twice
-  - and note the local reading in the handoff, which is exactly what the
-  deletions already do. Do not reach for a slack; see "Decided in planning".
-
-**What comes after:** part 1, the selection bar - `plan.md`, "B5.2 planned,
-part 1", implement-ready: `sel` on `AppState`, `SelBar.svelte` in `Shell`
-after the footer, `shareSelection` in `lib/share.ts`, the invented
-`.dropmenu.up` rule deleted from `AddToList.svelte`, `d.click(name, nth)`,
-two states (`~ bar menu`, `~ selection copied` - timed), two press specs, the
-six `selBar` entries and two `ACCEPTED` lines deleted.
+</details>
 
 <details>
 <summary>B5.1's retired brief (implemented; kept for the record, not for reuse)</summary>
@@ -1347,18 +1426,21 @@ six `selBar` entries and two `ACCEPTED` lines deleted.
     `core_item ~ row anchor @ ru 375`) measuring better than recorded debt -
     pre-existing since B4, unrelated to B5.1, still the orchestrator's.
 
-- **CI is red on five cells, two runs running (`34482875625` on `a404a52`,
-  `34485537392` on `b6a2fcd`) - planned, not yet fixed.** All five are B5.1
-  entries written off Windows readings with "CI to confirm" in their `why`
+- **CI is red on five cells, two runs (`34482875625` on `a404a52`,
+  `34485537392` on `b6a2fcd`) - fixed locally in B5.2 part 0, CI's read of the
+  fix is still open.** All five were B5.1 entries written off Windows
+  readings with "CI to confirm" in their `why`
   (`#/i/ci1 ~ whole @ ru 1100 / ru 768 / en 1100`, `#/i/ci1 ~ toast @ en 768 /
-  en 375`); CI reads every one at 0.00%, so the ratchet fails them as
-  improved. `deploy` is skipped on every push until they go. **Decided in
-  planning (2026-09-10): deleted, in B5.2 part 0 - the next batch.** No
-  figure exists to lower to but zero, and owner decision 1 forbids the
-  Windows one. `context.md`, "CI is red again", carries the run ids and the
-  passing siblings; `plan.md`, "B5.2 planned, part 0", the reasoning and the
-  rejected alternatives. Closed when the orchestrator reads a green run on
-  part 0's commit and records its id here.
+  en 375`); CI read every one at 0.00%, so the ratchet failed them as
+  improved. `deploy` was skipped on every push while they stood. **This
+  session (B5.2 part 0) deleted all five**, per owner decision 1 - no figure
+  exists to lower to but zero, and the Windows one is forbidden as a
+  baseline. `context.md`, "CI is red again", carries the run ids and the
+  passing siblings; `plan.md`, "B5.2 built, part 0", the reasoning and the
+  reduction commands. **Not yet closed: the orchestrator has not read a CI
+  run on this batch's commit.** That read - and recording its run id here -
+  is what closes this blocker and B5.2 part 0 itself; nothing about it can be
+  verified from this host.
 
 - **The timed-state class - decided: per-width re-arrival, not a slack.**
   The owner assigned this to B5.2's planning on 2026-09-10 with two candidates
@@ -1371,7 +1453,10 @@ six `selBar` entries and two `ACCEPTED` lines deleted.
   slack class is rejected on the record: it would have to be as wide as the
   toast (0.9-2.8% of the fold), which is the size of defect the toast state
   exists to catch, and the owner has already rejected widening the gate.
-  Built in part 0; the reasoning is `plan.md`, "B5.2 planned, part 0",
+  **Built in part 0, this session** - `#/i/ci1 ~ toast` and
+  `#/roll/wondrous ~ pinned` both carry `timed: true` and both read
+  `совпадает` at every cell, both languages, both filtered runs this session
+  made. The reasoning is `plan.md`, "B5.2 built, part 0" / "planned, part 0",
   "Decided in planning".
 
 - **The whole-page class - decided: a stable-capture re-shoot plus a
@@ -1387,11 +1472,14 @@ six `selBar` entries and two `ACCEPTED` lines deleted.
   a scratch probe. **What a person does on a local red after this** is written
   into `docs/parity.md` by part 0 ("Two unstable classes"): `geometry`
   agreeing → this host's paint, re-run the one state, write nothing, CI
-  decides; disagreeing → a layout difference, named by field. The trade is
+  decides; disagreeing → a layout difference, named by field. The trade was
   taken deliberately: those cells were already red locally under their
   Windows figures (1.43 against 5.53 fails as `стало лучше`), so deletion
-  changes the message, not the colour, on a noisy host - and the re-shoot is
-  expected to remove the noise itself.
+  changes the message, not the colour, on a noisy host. **Built in part 0,
+  this session** - `node tests/parity.js "ci1 ~ whole"` needed one retry
+  (`3 попытки до устойчивого кадра`, logged once) and then read every one of
+  the six cells `совпадает`, `geometry` silent throughout; the noise is gone
+  on this host, as expected.
 - **`tools/parity-ubuntu`'s documented build command does not work as
   committed.** `docker build -t dh-parity:ubuntu24 tools/parity-ubuntu` fails
   on `COPY package.json package-lock.json ./`: that build context
@@ -1412,14 +1500,15 @@ six `selBar` entries and two `ACCEPTED` lines deleted.
   further. The three modal states' `VISUAL_DEBT` figures (below, and in
   `plan.md`, "B5.1 built") are Windows-measured, not container- or
   CI-confirmed, as a result.
-- **`#/roll/wondrous ~ pinned` still does not read all-six-zero on this
-  host**, so its six `VISUAL_DEBT` entries are untouched, exactly as
-  recorded before this batch, per the brief's own instruction. `ru 375` reads
-  stably around 3.5% (its recorded figure is 3.64%, inside `DEBT_SLACK`);
-  `en 375` alternates between ~3.8% (matching its recorded figure) and 0.00%
-  between runs - the documented timed-state class (a toast that may or may
-  not have faded by the time the screenshot is taken), not a new finding.
-  CI decides this entry, as it already did before B5.1.
+- **Resolved, B5.2 part 0.** `#/roll/wondrous ~ pinned` used to alternate
+  between its recorded figures and 0.00% on this host - the timed-state class
+  named above. With `timed: true` on it, this session's two consecutive
+  `node tests/parity.js "pinned"` runs both read all six cells `совпадает`,
+  both languages, every width. No entry was ever written for it in
+  `VISUAL_DEBT` (its debt lived only as the six deleted `~ toast`-shaped
+  entries' sibling instability, never its own), so there is nothing left to
+  delete here - just the confirmation that the mechanism works on the state
+  it was named for.
 
 - **Resolved: CI is green, and B3.6 part 1's "CI green is unverified" is
   closed.** The owner pushed through `bc91e63`; run `34404013490` on `958f182`

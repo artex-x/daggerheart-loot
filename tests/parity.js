@@ -162,6 +162,7 @@ const CACHE = (() => {
           route: state.route,
           enter: state.enter ? state.enter.toString() : null,
           whole: !!state.whole,
+          timed: !!state.timed,
           lang,
           widths: WIDTHS,
           storage: state.storage ?? null
@@ -340,7 +341,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
   for (const [stateIdx, state] of STATES.entries()) {
     lock.touch(ROOT); /* Heartbeat: a full run outlives a fixed TTL, a crashed one must not. */
     if (SHARD && stateIdx % SHARD.of !== SHARD.n) continue;
-    const { id, route, why, pending, enter, whole, storage } = state;
+    const { id, route, why, pending, enter, whole, storage, timed } = state;
     if (pending) {
       if (!WANTED.length || WANTED.some((w) => id.includes(w))) {
         console.log(`${id}  (${why})`);
@@ -353,7 +354,8 @@ function pixelDiff(aBuf, bBuf, outPath) {
       /* One arrival per language, and the widths swept inside it. The
          breakpoints are CSS and need no reload; the language is a press, and
          pressing it after `enter` rather than before keeps every `enter` step
-         written in one language - the names it grips are Russian. */
+         written in one language - the names it grips are Russian.
+         A timed state arrives afresh at every width - see docs/parity.md. */
       const arrive = async (d) => {
         if (storage) await d.seed(storage);
         await d.open(route);
@@ -388,6 +390,31 @@ function pixelDiff(aBuf, bBuf, outPath) {
 
       for (const target of ['legacy', 'next']) {
         shots[target] = {};
+
+        /* Shoots one width on an already-open, already-arrived page: settle,
+           run the `measured` specs if any, take the shot, write it and (for
+           the legacy side, when nothing forces the cache off) warm the
+           cache. Shared between the ordinary sweep below and a timed state's
+           per-width re-arrival, so the two paths cannot drift apart. */
+        const shootWidth = async (d, size) => {
+          await d.settle();
+          if (measured.length) {
+            perWidth[target][size.w] = {};
+            for (const spec of measured) {
+              try {
+                perWidth[target][size.w][spec.name] = await spec.run(d, lang);
+              } catch (e) {
+                perWidth[target][size.w][spec.name] = { error: String(e.message || e) };
+              }
+            }
+          }
+          const buf = await d.shot(whole);
+          const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
+          fs.writeFileSync(at, buf);
+          if (target === 'legacy' && !measured.length) CACHE.write(cacheKey, size.w, buf);
+          shots[target][size.w] = at;
+        };
+
         // eslint-disable-next-line no-await-in-loop
         await withPage(target, async (d) => {
           try {
@@ -422,33 +449,51 @@ function pixelDiff(aBuf, bBuf, outPath) {
              the cache stands in for the viewport switch too, and a `perWidth`
              spec has to read the page actually sized to that width, not the
              1100 layout the cached path leaves it at. So caching is off for
-             the handful of states typeRuns names, on both sides. */
-          for (const size of WIDTHS) {
+             the handful of states typeRuns names, on both sides.
+             A `timed` state only sweeps its first width here - the rest
+             arrive on a fresh page each, below, so a shot is never a stale
+             clock away from the press. */
+          const sweep = timed ? [WIDTHS[0]] : WIDTHS;
+          for (const size of sweep) {
             const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
             const cached =
               target === 'legacy' && !measured.length ? CACHE.read(cacheKey, size.w) : null;
             if (cached) {
               fs.writeFileSync(at, cached);
-            } else {
-              await d.viewport(size.w, size.h);
-              await d.settle();
-              if (measured.length) {
-                perWidth[target][size.w] = {};
-                for (const spec of measured) {
-                  try {
-                    perWidth[target][size.w][spec.name] = await spec.run(d, lang);
-                  } catch (e) {
-                    perWidth[target][size.w][spec.name] = { error: String(e.message || e) };
-                  }
-                }
-              }
-              const buf = await d.shot(whole);
-              fs.writeFileSync(at, buf);
-              if (target === 'legacy' && !measured.length) CACHE.write(cacheKey, size.w, buf);
+              shots[target][size.w] = at;
+              continue;
             }
-            shots[target][size.w] = at;
+            await d.viewport(size.w, size.h);
+            // eslint-disable-next-line no-await-in-loop
+            await shootWidth(d, size);
           }
         });
+        if (broke) break;
+
+        if (timed) {
+          for (const size of WIDTHS.slice(1)) {
+            const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
+            const cached =
+              target === 'legacy' && !measured.length ? CACHE.read(cacheKey, size.w) : null;
+            if (cached) {
+              fs.writeFileSync(at, cached);
+              shots[target][size.w] = at;
+              continue;
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await withPage(target, async (d) => {
+              try {
+                await d.viewport(size.w, size.h);
+                await arrive(d);
+              } catch (e) {
+                broke = `${target}: ${String(e.message || e)}`;
+                return;
+              }
+              await shootWidth(d, size);
+            });
+            if (broke) break;
+          }
+        }
         if (broke) break;
       }
 

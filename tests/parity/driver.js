@@ -421,9 +421,63 @@ function makeDriver(page, target) {
      * way to compare a record card - it is taller than the window, so the
      * description, the craft chain and the footer are all below the default
      * shot and were never being looked at.
+     *
+     * A full-page capture rasterises the whole document in one go, most of it
+     * never painted before this call - B5.1 measured the geometry
+     * byte-identical across readings while the pixels swung 0.00-7.31% on an
+     * unchanged build, worse under load: a capture handed back before the
+     * raster finished, not anything the app drew. Same invariant `settle()`
+     * already applies to animations, applied to the capture itself: retake
+     * until two in a row agree, so what is compared is a page that has
+     * actually stopped moving. Capped at four - under real load the second
+     * capture can be the unfinished one too.
      */
-    shot(whole) {
-      return page.screenshot({ type: 'png', fullPage: !!whole });
+    async shot(whole) {
+      if (!whole) return page.screenshot({ type: 'png', fullPage: false });
+      let prev = await page.screenshot({ type: 'png', fullPage: true });
+      let count = 1;
+      let next;
+      do {
+        next = await page.screenshot({ type: 'png', fullPage: true });
+        count++;
+        if (next.equals(prev)) break;
+        prev = next;
+      } while (count < 4);
+      if (count > 2) {
+        console.log(`       снимок целиком: ${String(count)} попытки до устойчивого кадра`);
+      }
+      return next;
+    },
+
+    /**
+     * A control's rect, for the one state whose shot is `whole` - so a full-
+     * page capture that misbehaves can be told apart from a real layout
+     * change by reading a number rather than probing by hand. `probes` is a
+     * plain `{ name: selector }` map, the same policy `typeAt` documents:
+     * selectors stay structural or contract-level wherever one exists and use
+     * a ported class only where none does. A probe that resolves to nothing
+     * returns `null` rather than throwing - a class the rewrite renamed
+     * reports `null` against a real rect and fails loudly.
+     */
+    async rectsAt(probes) {
+      await page.evaluate(async () => {
+        await document.fonts?.ready;
+      });
+      return page.evaluate((map) => {
+        const round1 = (n) => Math.round(n * 10) / 10;
+        const out = {};
+        for (const [name, sel] of Object.entries(map)) {
+          const el = document.querySelector(sel);
+          if (!el) {
+            out[name] = null;
+            continue;
+          }
+          const r = el.getBoundingClientRect();
+          out[name] = { x: round1(r.x), y: round1(r.y), w: round1(r.width), h: round1(r.height) };
+        }
+        out.docHeight = round1(document.documentElement.scrollHeight);
+        return out;
+      }, probes);
     }
   };
   return d;

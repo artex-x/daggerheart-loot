@@ -46,10 +46,16 @@ and now refuse each other, which they always should have.
 ## Register the state first
 
 Add every new interactive surface to `STATES` in `tests/parity/specs.js` in the
-same change. Include its `id`, `route`, and, where relevant, `enter`, `whole`, or
-`pending`. Use localized visible names for controls. Add a nonvisual spec when a
-person depends on state pixels cannot prove, such as title, URL, clipboard
-content, or accessible name.
+same change. Include its `id`, `route`, and, where relevant, `enter`, `whole`,
+`timed`, or `pending`. Use localized visible names for controls. Add a
+nonvisual spec when a person depends on state pixels cannot prove, such as
+title, URL, clipboard content, or accessible name.
+
+Mark a state `timed` when its `enter` raises a toast or anything else that
+fades on its own clock. A timed state is arrived at afresh at every width
+instead of swept on one page, so every shot is the same fixed distance from
+the press rather than however far a width sweep happened to get before the
+clock ran out - see "Two unstable classes" below.
 
 Use `pending` when the rewrite cannot reach a state yet. Use `VISUAL_DEBT` with
 a precise reason when it renders but does not match. Never omit the state: an
@@ -140,6 +146,41 @@ machine. For a large or unexpected diff, reproduce with the same Puppeteer
 arguments and inspect page bounds, scroll position, fonts, artwork readiness,
 and computed styles.
 
+### Two unstable classes
+
+Two shapes of instability turned out to have a mechanism each, not a tolerance
+- found while measuring B5.1, closed in B5.2 part 0. Neither is fixed by
+widening `JITTER` or `DEBT_SLACK`: both would have to grow past the size of
+defect the state exists to catch.
+
+1. **Timed states.** The width sweep opens one page, presses `enter`, and
+   shoots three viewports off the same document one after another - so a
+   1600ms toast is photographed at whatever distance from the press host load
+   happened to leave it, and the legacy side may come from a cache written on
+   a different clock. Mark the state `timed: true` and the runner arrives at
+   it afresh at every width, on both sides, so every shot is the same fixed
+   distance from the press. A `timed` cell that is still non-zero locally is
+   the toast's own pixels, not the class - open the diff.
+2. **Full-page captures.** `whole: true` rasterises the whole document in one
+   `page.screenshot({ fullPage: true })`, most of it never painted before that
+   call; the geometry read back byte-identical while the pixels swung
+   0.00-7.31% on an unchanged build, worse under load - a capture returned
+   before the raster finished, not anything the app drew. `shot(whole)` now
+   retakes the capture until two in a row agree (capped at four) and a
+   `geometry` spec (`only: ['#/i/ci1 ~ whole']`) records the document height
+   and the rects of `.card`, `.cardpick` and `.foot` at every width on both
+   apps, so "paint or layout?" is a line in the report rather than an hour
+   with a scratch script. The recipe for a local red on `~ whole`: open
+   `geometry` for that width first. Agreeing on both apps, with a diff image
+   showing no content change, is this host's paint - re-run the one state
+   (`node tests/parity.js "ci1 ~ whole"`) and write no entry, the latest CI
+   shard decides. Disagreeing is a real layout difference, and the field that
+   differs names it.
+
+Neither class licenses a number from this host: owner decision 1 (above)
+still stands, and a `timed` or `whole` cell only ever enters `VISUAL_DEBT` off
+a CI reading.
+
 ## Harness invariants
 
 - Give every state a fresh document; hash navigation alone does not reset state.
@@ -147,6 +188,8 @@ and computed styles.
 - Capture the intended state before unrelated toasts or transient UI appear.
 - Give specs that press controls their own page.
 - Do not fake determinism for random output; test the stable surrounding shape.
+- A `timed` state is arrived at afresh at every width, not swept on one page.
+- A full-page capture is taken until two in a row agree, not on the first try.
 
 ## Done
 

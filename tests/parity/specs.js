@@ -304,6 +304,17 @@ const typeRuns = {
   }
 };
 
+/* Geometry for the one full-page state, so a noisy capture can be told from
+   a layout change by reading, not by probing (B5.2 part 0). */
+const geometry = {
+  perWidth: true,
+  name: 'the geometry of the page a full-page capture photographs',
+  only: ['#/i/ci1 ~ whole'],
+  async run(d) {
+    return await d.rectsAt({ card: '.card', pick: '.cardpick', foot: '.foot' });
+  }
+};
+
 /**
  * The states both apps are asked about, and whether the rewrite draws them yet.
  *
@@ -320,6 +331,8 @@ const typeRuns = {
  *   width    the viewport, where it is not the default 1100
  *   whole    the entire page rather than the fold, for a screen that scrolls
  *   pending  the slice that will draw it, for a route the rewrite has not reached
+ *   timed    an `enter` that raises a toast; arrived at afresh at every width
+ *            instead of swept, so a shot is never a stale clock away from the press
  *
  * A state marked pending is still visited on the live app - the expectation is
  * collected from the first run - and reported as outstanding rather than failed.
@@ -419,7 +432,9 @@ const STATES = [
     why: 'the section pinned as the one to open on',
     enter: async (d) => {
       await d.click('Открывать этот раздел при запуске');
-    }
+    },
+    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    timed: true
   },
 
   /* Below the fold. A record card is taller than the window, so the picture,
@@ -448,7 +463,9 @@ const STATES = [
     why: 'what the app says after a copy',
     enter: async (d) => {
       await d.click('Скопировать название');
-    }
+    },
+    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    timed: true
   },
 
   /* The add-to-list menu, off `listMenuHTML` in app.js. Each seeds its own
@@ -801,7 +818,8 @@ const SPECS = [
   copiedFilterLink,
   listMembership,
   visuals,
-  typeRuns
+  typeRuns,
+  geometry
 ];
 
 /**
@@ -846,51 +864,6 @@ const SPECS = [
 const selBar = (pct, where) => ({ pct, why: `the selection bar, ${where}` });
 
 const VISUAL_DEBT = {
-  /* Found while measuring B5.1, not predicted by it: `#/i/ci1 ~ whole` was
-     expected to go to zero once the row landed, and it does at 768 and 375,
-     stably, across every run this session. Only 1100 carries a residue, and
-     it is not a stable number on this host: three consecutive runs read
-     1.43/5.53/(pending) at ru and 4.88/0.00/(pending) at en, on an unchanged
-     build. A standalone probe (`getBoundingClientRect` on `.card`,
-     `.cardpick` and `.foot`, both apps, both languages) found every rect
-     byte-identical to the fraction - same document height, same card, same
-     row, same footer position - so whatever this is, it is paint, not
-     layout, the same class `docs/parity.md` already names for the help
-     panel. The instability itself is the finding: this host cannot give a
-     trustworthy number for this cell, and the figure below is the worst of
-     three runs, not a measurement to trust - CI's own number is what
-     actually decides this entry once it runs. */
-  '#/i/ci1 ~ whole @ ru 1100': { pct: 5.53, why: 'unstable on this host (1.43/5.53 across two runs) - paint noise, geometry identical; CI to confirm' },
-  '#/i/ci1 ~ whole @ en 1100': { pct: 4.88, why: 'unstable on this host (4.88/0.00 across two runs) - paint noise, geometry identical; CI to confirm' },
-
-  /* Found by the full unfiltered suite (B5.1 fix-then-continue): `@ ru 768`
-     read 7.31% there, expected zero, with no entry. Opened the diff image
-     before writing this - it shows no visible content difference, matching
-     the "совпадает" verdict this pass's own three consecutive filtered runs
-     gave the same cell (0.00% every time, ru and en alike). Same shape as the
-     1100 entries above: a whole-card screenshot that only misbehaves under
-     the full suite's heavier concurrent load, not under a quiet filtered run
-     - paint, not layout. Recorded at the full-suite figure since that is the
-     worst reading taken, not at this pass's own 0.00%, per the rule that a
-     figure only moves down once it is shown to hold. CI to confirm. */
-  '#/i/ci1 ~ whole @ ru 768': { pct: 7.31, why: 'unstable under the full suite\'s load (0.00% on three quiet filtered runs, 7.31% under the full run) - paint noise, no visible diff; CI to confirm' },
-
-  /* Also found while measuring, also not predicted: `#/i/ci1 ~ toast` is a
-     timed state - `enter` presses "Скопировать название" and then, for `en`,
-     presses `EN` as a second, later action; the screenshot shows the
-     rewrite's toast (1600ms) still up while the legacy screenshot shows none,
-     meaning the live app's own toast had already faded by the time the
-     language press completed on this machine. Confirmed by the screenshots
-     themselves: the legacy shot has no toast at either width one below this,
-     only `en 375` lands inside the window where the timing differs. Measured
-     on this host (Windows, advisory - CI to confirm); see docs/parity.md,
-     "Machine variance" for why a timed cell is not evidence off this
-     machine. `@ en 768` is the same race, caught by the B5.1 fix-then-continue
-     pass's full-suite run at 0.86% against an expected zero, with no entry -
-     not chased further: the class is B5.2's to solve, not this pass's. */
-  '#/i/ci1 ~ toast @ en 375': { pct: 2.78, why: "The rewrite's toast was still up while the live app's had already faded - a timed state, not a real difference." },
-  '#/i/ci1 ~ toast @ en 768': { pct: 0.86, why: "A timed state: the toast's fade races the screenshot. This class is B5.2's to solve." },
-
   /* The row landed (B5.1). What is left in all three modal states below is
      the residue B5 planning already named: showModal() moves the keyboard
      into the dialog and the live app leaves it on the page behind it, which

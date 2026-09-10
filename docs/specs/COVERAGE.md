@@ -122,7 +122,7 @@ because a component test only checks what somebody remembered to write:
 This is also where the canvas conversion behind `ImagePort` is exercised: it
 cannot run in jsdom, and here it runs in a real Chrome on both apps.
 
-Three conditions the harness controls, each of which had produced a false
+Five conditions the harness controls, each of which had produced a false
 reading before it did: every state is opened from a fresh document, because a
 hash-only navigation keeps the previous state's variables; the screenshot waits
 for the artwork, because `loading="lazy"` keeps images out of `networkidle0` and
@@ -131,7 +131,12 @@ rather than a timer, because the modal animates in one app and not the other.
 The screenshot is also taken before the clipboard specs press anything - the
 live app raises a toast after a copy, and taking the picture afterwards was
 quietly inflating the debt on both record routes by about seven tenths of a
-percent.
+percent. A `timed` state is arrived at afresh at every width rather than swept
+on one page, because a width sweep photographs a fading toast at whatever
+distance from the press host load happened to leave it. A full-page capture is
+retaken until two in a row agree, because `page.screenshot({ fullPage: true })`
+can hand back a raster that has not finished, geometry unchanged and pixels
+swinging by several percent on an unchanged build.
 
 ### The look
 

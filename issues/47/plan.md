@@ -3950,6 +3950,94 @@ rule is still there); the `.selcount` text (one node); the print link's
 - **Search stays where it is.** `SelBar` reads `app.sel` from any page, so the
   search slice gets the bar for free when it builds its rows.
 
+### B5.2 built, part 0: green CI, and the two unstable classes named
+
+**What shipped**, exactly as designed - no deviation, no production code, no
+file under `app/`:
+
+- `tests/parity/specs.js`: the five `VISUAL_DEBT` entries (`#/i/ci1 ~ whole @
+  ru 1100`, `@ en 1100`, `@ ru 768`; `#/i/ci1 ~ toast @ en 375`, `@ en 768`)
+  and their three block comments are deleted - the modal-state and `~ a row
+  ticked` entries right after them are untouched. `#/i/ci1 ~ toast` and
+  `#/roll/wondrous ~ pinned` each gained `timed: true` with the one-line
+  comment the brief specified. The `STATES` doc comment gained a `timed` line.
+  A `geometry` spec (`perWidth: true`, `only: ['#/i/ci1 ~ whole']`,
+  `d.rectsAt({ card: '.card', pick: '.cardpick', foot: '.foot' })`) was added
+  after `typeRuns` and appended to `SPECS`.
+- `tests/parity/driver.js`: `shot(whole)` now retakes a full-page capture
+  until two in a row are `Buffer.equals()`, capped at four, logging one line
+  naming the count only when more than the baseline two captures were needed.
+  `rectsAt(probes)` waits on `document.fonts.ready` (the same wait `typeAt`
+  already documents) and returns `{x, y, w, h}` rounded to a tenth per probe,
+  `null` for one that resolves to nothing, plus `docHeight`.
+- `tests/parity.js`: `timed` is destructured off the state and hashed into
+  `keyFor` (`timed: !!state.timed`) so a future toggle invalidates the cache
+  honestly. The per-target block now shares a `shootWidth(d, size)` closure
+  (settle, run `measured` specs, shoot, write, warm the legacy cache) between
+  the ordinary sweep and a timed state's re-arrival, so the two paths cannot
+  drift apart: a `timed` state's first `withPage` shoots only `WIDTHS[0]`
+  (looks, controls and the 1100 shot land exactly where they always did), then
+  one further `withPage` per remaining width - viewport, `arrive`, `shootWidth`
+  - with the legacy cache still consulted per width before a page opens. `broke`
+  is set and checked the same way after each stage, so a state that fails to
+  arrive at any width still stops the run for that target rather than reading
+  as a false pass.
+- `docs/parity.md`: `timed` joins the state fields in "Register the state
+  first" with when to use it; a new "Two unstable classes" subsection under
+  "Machine variance" names both mechanisms and gives the local-red recipe for
+  each; "Harness invariants" gained the two lines the brief specified.
+- `docs/specs/COVERAGE.md`: "Three conditions the harness controls" is now
+  five, with one clause each for the timed re-arrival and the stable capture.
+
+**Nothing deviated from the brief.** The `shot(whole)` retry counter and the
+`shootWidth` extraction were implementation choices inside the design's own
+description ("a page that has stopped moving," "the two paths cannot drift
+apart" is this session's phrasing of the brief's own "one page at a time is
+preserved"), not a change to what was asked for.
+
+**Measured, not assumed:**
+
+- `node tests/parity.js "i/ci1 ~ toast" "pinned"` (12 cells, the two timed
+  states): `расхождений нет` on the first run and, run again immediately
+  after, on the second - both runs read every cell `совпадает`. The second
+  run's per-width legacy screenshots came off the cache (the cache key change
+  did not evict anything meaningful since only the two timed states' own keys
+  moved).
+- `node tests/parity.js "ci1 ~ whole"` (6 cells): one console line, `снимок
+  целиком: 3 попытки до устойчивого кадра`, on the first target/width the
+  capture needed a retry for; every one of the six cells then read
+  `совпадает`, and `geometry` produced no `FAIL` line at any width - silent,
+  as the acceptance criteria require.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call,
+  exit 0: format/lint/typecheck/data/derived/i18n/selftest all pass,
+  `svelte-check` 518 files/0 errors/0 warnings, `vitest run --coverage` 732
+  tests, 96.67/89.64/96.57/97.01 statements/branches/functions/lines, every
+  threshold met. `.prettierignore` and `eslint.config.mjs` both skip `tests/`,
+  confirmed by inspection before relying on it - so this run proves nothing
+  about `parity.js`/`driver.js`/`specs.js` beyond "still valid JavaScript that
+  does not break the rest of the suite"; the parity filters above are what
+  actually exercise the edits.
+- `node tests/parity.js "i/ci1"` (7 states, 42 cells, the full record-route
+  family including the four B5.1 list states): `расхождений нет`, every cell
+  `совпадает`.
+- **No cell read non-zero on this host at any point in this batch.** No
+  `VISUAL_DEBT` number was written from this host, per scope.
+- `git log --oneline -3` re-read immediately before this commit: HEAD is
+  still `2f3659d`, unmoved since the batch started - no peer session touched
+  this tree while this batch ran.
+
+**What is not yet known - the orchestrator's to close:** CI green on this
+commit. Every acceptance criterion this session can check locally is met; the
+one it explicitly cannot (`plan.md`'s own acceptance line: "CI green on the
+commit, read by the orchestrator and recorded here with the run id") is
+unread as of this writing. See `handoff.md`, "Blockers".
+
+- Files changed: `tests/parity/specs.js`, `tests/parity.js`,
+  `tests/parity/driver.js`, `docs/parity.md`, `docs/specs/COVERAGE.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): see `git log` for this session's `fix(parity): ...` commit, on
+  top of `2f3659d`.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
