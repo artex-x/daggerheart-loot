@@ -43,7 +43,13 @@ questions in `handoff.md`.
    ordering: the lockfile edits `tests/parity.js`, which issue 47's B5.1 holds
    uncommitted, so the bundled batch waits for B5.1 to land - as it already
    had to for the commit gate.
-3. **The one `CLAUDE.md` line is approved** - under Quality gates, taking the
+3. **Q1 answered 2026-09-10: the observer accepts a leading `set -o pipefail`**
+   (candidate row 30, the recommended option). The canonical agent call becomes
+   `set -o pipefail; npm run check 2>&1 | tail -n 120`; the strip removes
+   exactly `set -o pipefail` plus one `;` or `&&` at the start and nothing
+   else; the plain pipe stays accepted for a human at a terminal. Every
+   forgery the row lists must still be refused, with its selftest case.
+4. **The one `CLAUDE.md` line is approved** - under Quality gates, taking the
    file from 194 to 195 lines.
 
 ## Where the prior art is - read before designing anything

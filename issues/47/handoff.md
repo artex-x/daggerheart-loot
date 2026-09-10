@@ -1062,6 +1062,41 @@ own - it names the surface, not the file-by-file design.
 
 ## Blockers
 
+- **The full unfiltered suite on `fe0043b`: 12 failing cells** (orchestrator,
+  2026-09-10, `node tests/run-all.js parity`, 1826s, 8 workers). Read the
+  output, not the exit status - the run was invoked as `... > file 2>&1; echo
+  "EXIT $?"`, so the harness reported the `echo`'s 0 while the suite failed.
+  The same class of mistake this session documented, committed by the
+  orchestrator an hour after writing the rule down.
+  - **Six `#/roll/wondrous ~ pinned` cells now read 0.00%** against debt
+    1.36-3.82. That is B5.1 working: the excuse said "the rewrite has no toast
+    yet", and `PageHead` now raises one, so both apps match. All six read zero
+    in one run, which is exactly the criterion B5.1's brief set for deleting
+    them - the implementer left them alone only because its own two runs
+    disagreed. Delete the six entries and the block comment.
+  - **`#/i/ci1 ~ whole @ ru 768` - 7.31%, expected zero, no entry.** The
+    sibling 1100 cells already carry entries reading "unstable on this host
+    ... CI to confirm". This is B5.1's own surface (`~ whole` photographs the
+    full card, which grew the picker row), so it is in scope: open the diff
+    image before any reason is written.
+  - **`#/i/ci1 ~ toast @ en 768` 0.86% expected zero, `@ en 375` 0.00% against
+    2.78** - the timed-state coin flip the reviewer predicted (R1). Record
+    honestly as timed-state debt; do not chase. See the research note below.
+  - Three anchor cells (`voa ~ section anchor @ ru|en 375`,
+    `core_item ~ row anchor @ ru 375`) measuring better than recorded debt -
+    pre-existing since B4, unrelated to B5.1, still the orchestrator's.
+
+- **Owner decision, 2026-09-10: the timed-state problem is B5.2's research.**
+  `#/i/ci1 ~ toast` and `#/roll/wondrous ~ pinned` cannot photograph a toast
+  deterministically - the width sweep takes three shots against a 1600ms
+  toast, on each side independently, and the legacy side may come from the
+  screenshot cache - so each cell is a coin flip and the ratchet fails it in
+  both directions. The two candidate answers already on the table: name timed
+  states as a class in `docs/parity.md` with a slack the runner honours, or
+  re-arrive per width for them. **Do not settle this in a fix-pass.** B5.2 is
+  planned extensively in its own session; this is part of its brief.
+
+
 - **`#/i/ci1 ~ whole @ 1100` needs a CI reading before its `VISUAL_DEBT`
   figure can be trusted - this machine gave two different answers on an
   unchanged tree.** `ru` read 1.43% then 5.53%; `en` read 4.88% then 0.00%,
