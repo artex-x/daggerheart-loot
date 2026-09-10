@@ -94,6 +94,19 @@ prevents it belongs in the dispatch: name the checks, say they fit one
 foreground call, and say plainly that a backgrounded or file-redirected run
 cannot satisfy the gate however honestly it passes.
 
+**And that did not work.** The third occurrence had all of it - three
+paragraphs of it, in the dispatch, naming the two implementers it had already
+cost - and the worker backgrounded the check anyway. So do not answer a fourth
+occurrence with a fourth paragraph. Prose has now failed at this three times;
+the next lever is deterministic (`.claude/README.md` carries it as an open hook
+candidate), and choosing it is a planning decision, not an orchestrator one.
+
+While nothing is running, a foreground `npm run check` of your own is worth
+the few minutes: it is a status, so it is yours to take, it arms the commit
+gate for that exact tree, and it hands the resumed worker its next action
+instead of a shrug. It found eleven typecheck errors on a stalled batch this
+way, 2026-09-10.
+
 Known costs in this repo:
 
 | Command | Wall clock | Fits one foreground call (600s cap)? |
@@ -116,6 +129,29 @@ So, before dispatching:
 - Only one writer on this branch at a time (implementer, add-source, or refresh-artwork)
 - Do not fan out parallel writers against the same working tree
 - Use git worktrees only if the human explicitly sets that up
+
+### Your writers are not the only writers
+
+That rule binds the agents you dispatch. It does not bind the other sessions
+on the same machine, which share one working tree and one branch, and which
+you cannot see except as `ListAgents`' peer list. On 2026-09-10 `ListAgents`
+showed fifteen peers, six of them interactive, and a peer session committed
+`ce0c414 chore(art): refresh polished catalog images` - 52 binary files - onto
+`main` while a dispatched implementer had 27 uncommitted paths in that same
+tree. Nothing collided, because artwork and application source do not overlap.
+That was luck, not the rule working.
+
+So treat HEAD as something that moves under you:
+
+- Re-read `git log --oneline -3` before you dispatch a writer and again at
+  closeout, and compare it with what `handoff.md` records. `SessionStart`
+  reports HEAD once and never again.
+- If it moved and the commit is not yours, identify it (`git show --stat`),
+  preserve it, and tell the human. Never reset, rebase or `git add -A` your
+  way past it.
+- Say it in the dispatch, so the worker's commit lands on top instead of
+  fighting it - and name what the foreign commit touched, because a batch
+  judged on pixels needs to know whether the bytes behind an image changed.
 
 ### A worker that went quiet is not a worker that died
 

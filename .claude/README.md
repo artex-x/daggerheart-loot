@@ -81,7 +81,27 @@ npm run check 2>&1 | tail -n 120
 ```
 
 `npm run check > out.txt 2>&1` then reading the file does **not** satisfy the
-gate, however genuinely the run passed - the hook never saw the output.
+gate, however genuinely the run passed - the hook never saw the output. Nor
+does a run started with `run_in_background` - `check-observer.mjs` returns
+early on it by design, because there is no stdout to attribute yet. The check
+is ~165s on this host (measured 2026-09-10, stage by stage: format 11s, lint
+30s, typecheck 12s, data 4s, derived 1s, i18n 0s, selftest 19s, vitest with
+coverage 88s), so it fits one foreground tool call with room. Backgrounding it
+has cost three worker runs on issue 47 alone.
+
+**A check reporting zero coverage everywhere ran no test at all.** Vitest's
+fork-pool worker start timeout is 60s and hardcoded (`START_TIMEOUT` in
+`vitest/dist/chunks/cli-api.*.js` - no config knob), and `isolate` defaults to
+true, so the forks pool spawns one child per test file. When the host cannot
+boot a child in time, every file fails in turn and the output reads
+`Test Files no tests`, `Errors <file count>`, `Failed to start forks worker ...
+Timeout waiting for worker to respond`, with zeros down the whole coverage
+table. Nothing ran, so nothing regressed - re-run it rather than investigating
+a coverage drop. If it repeats on the same tree,
+`npx vitest run --coverage --maxWorkers=4` is the measured fallback and costs
+171s against 88s; the gate still needs a real `npm run check` call afterwards.
+Free memory does **not** predict this: the failing session had 2.9 GB free and
+the passing one 1.0 GB, so do not build a rule around watching it.
 
 Run the tests: `node .claude/hooks/selftest.mjs` (also wired into `npm run
 check`; it skips when git is not on PATH). It never touches this repository's
@@ -146,3 +166,4 @@ not changed.
 | 24 | Anything reading the five-hour usage window | any | **reject** | Measured impossible on this host (`79e26c9`, `issues/65/context.md`). Explicitly out of scope. |
 | 25 | Block edits to `docs/fixtures/**` as "generated" | `PreToolUse(Edit\|Write)` | **reject** | They look generated but CLAUDE.md requires updating them by hand in the same commit as a contract change. Blocking them would block the correct fix. Listed here because it is the tempting mistake in hook 4. |
 | 26 | `SessionEnd` bookkeeping | `SessionEnd` | **reject** | Cannot influence the model or the human in time. `Stop` already covers the moment that matters. |
+| 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **open - needs a planner pass** | Nominated 2026-09-10 after a third worker on issue 47 backgrounded the check and lost it, with three paragraphs of the dispatch warning against exactly that. Deterministic and false-positive-free in principle: `check-observer.mjs` already refuses a backgrounded run, so one can never satisfy the gate, and blocking it forbids nothing that works. Unsettled: whether the block should extend to the other long checks, what it says instead (the message is the whole value), and whether a hook can read `run_in_background` from `tool_input` on this host - unverified, and hook 19 is the standing warning about acting on an unverified input field. Not adopted by an orchestrator; design it before wiring it. |
