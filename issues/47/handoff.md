@@ -8,8 +8,8 @@ depends on chat history.
 
 - Task status: in_progress - **B5.3's fix-then-continue remediation pass is
   built and committed.** The reviewer's one blocker against `ba8f4b1` (the
-  list card's `href` rendered the GM payload where the live app's own bug
-  renders it too - see "Blockers") is fixed, the two facts in `context.md`
+  list card's `href` rendered the players' payload where the live app
+  renders the GM one - see "Blockers") is fixed, the two facts in `context.md`
   and `plan.md` that stated the wrong live behaviour are corrected, and
   `listsPage.test.ts`'s two href assertions now use a list carrying an
   `hnote` so they can tell the two payload flavours apart. `npm run check`
@@ -19,8 +19,9 @@ depends on chat history.
   coverage gap the blocker exposed are recorded in "Deferred", not fixed, per
   this pass's explicit blockers-only scope. B5.4-B5.6 remain outlines only;
   picking the next batch is the orchestrator's.
-- Task status (B4-B5.3, prior sessions): B4 built
-  (`fe0043b`) with its fix-then-continue pass (`d1c1367`); B5.2 part 0 built
+- Task status (B4-B5.3, prior sessions): B4 built (`fde9cdc`, reviewed);
+  B5.1 built (`fe0043b`) with its fix-then-continue pass (`d1c1367`);
+  B5.2 part 0 built
   (tests and docs, no production code) - `f167e62`, on top of the planning
   commit `2f3659d`. **B5.2 part 1 (the selection bar) is now built too** -
   `ff741ad`, on top of `4210ee3`, **reviewed: approve, no blockers**
@@ -2107,6 +2108,46 @@ and planning the next one is the orchestrator's, not implement-ready yet.
 </details>
 
 ## Blockers
+
+- **The full unfiltered suite on `e82cd24`: five failing cells, 1848.8s, 8
+  workers** (orchestrator, 2026-09-10, `node tests/run-all.js parity`, run in
+  the foreground and read from its own output, not from an exit status).
+  **None of the five is a `#/lists` cell** - B5.3's own six states are clean
+  at 36/36, measured three times.
+
+  ```text
+  FAIL #/tables ~ selection copied @ en 1100 :: 0.74% отличий, ожидался ноль
+  FAIL #/tables/voa ~ section anchor @ ru 375 :: 10.03%, долг записан как 11.55%
+  FAIL #/tables/voa ~ section anchor @ en 375 :: 8.90%,  долг записан как 10.31%
+  FAIL #/tables/core_item ~ row anchor @ ru 375 :: 8.84%, долг записан как 10.52%
+  FAIL #/tables/core_item ~ row anchor @ en 375 :: 8.47%, долг записан как 9.92%
+  ```
+
+  - **The four anchor cells are the documented machine-variance class and
+    need no action.** All four `VISUAL_DEBT` entries say so in their own
+    `why`: each was RAISED from a development machine's figure to "what CI
+    measures", reproduced by three CI runs and the ubuntu container
+    (`tests/parity/specs.js` 1197-1213). A local Windows run reads lower and
+    the ratchet therefore fails them as improved - owner decision 1 working
+    as intended, written into `docs/parity.md`, "Machine variance". **Do not
+    edit these numbers off a local run.**
+  - **`#/tables ~ selection copied @ en 1100` is new and is not explained by
+    that class.** It is a B5.2 part 1 state, not B5.3's, and no `#/lists` or
+    `ListsPage` code renders on its path. Measured twice: 0.74% under the
+    full suite, then **0.74% again in an isolated six-cell run**
+    (`node tests/parity.js "selection copied"`), with all five sibling cells
+    - `ru 1100/768/375` and `en 768/375` - reading `совпадает` both times.
+    Reproducing identically under load and alone rules out suite load as the
+    cause. Two facts that bound it and are not a diagnosis: this state has
+    never been through a full unfiltered suite (the last one ran on
+    `fe0043b`, before the selection bar existed) and CI has never read it
+    either (`ff741ad` is unpushed), so "expected zero" is a value it was
+    given, not one any full run or CI has ever confirmed; and B5.3's own
+    verification run of `"nothing found" "#/tables ~"` covered this state and
+    read it clean. **Root-causing it is a planning question, deliberately not
+    settled by the orchestrator** - the diff image has not been opened and no
+    `VISUAL_DEBT` entry has been written. Next session: hand it to the
+    planner with these measurements rather than re-measuring them.
 
 - **RESOLVED (implementer, 2026-09-10) - B5.3 fix-then-continue: the list
   card's link rendered the GM payload, not the players' one.** Found by the

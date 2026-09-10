@@ -530,6 +530,32 @@ Measured at dispatch, not inferred:
 - B5.3 is the next batch and is **outline-only** in `plan.md` ("B5 planned"),
   so this cycle is planner first, then implementer.
 
+## B5.3 closed, and the full suite on it (orchestrator, 2026-09-10)
+
+- B5.3 is built, reviewed, remediated and committed: `ba8f4b1`
+  (`feat(lists): the lists index`, 30 files) and `e82cd24`
+  (`fix(lists): match live's GM-payload list card link`, the review's one
+  blocker). Review was opus against `ba8f4b1`: fix-then-continue, one
+  blocker, five nits - the nits are in `handoff.md`, "Deferred".
+- The blocker is worth remembering as a class, not as an incident: the card
+  link's payload flavour was wrong, and **nothing in the harness could have
+  caught it**. No parity spec reads an `href`, and the `seven` seed carries
+  no `hnote`, so the two flavours are byte-identical for every seeded list.
+  36/36 green cells and a full unit suite were silent on it. It was found by
+  reading `app.js` against the port. The false fact had also been written
+  into this file and into `plan.md` as measured, where B5.4 would have
+  inherited it; both are corrected with verified line numbers
+  (app.js:2894 for the call, 1534 for the signature).
+- **The full unfiltered suite was run on `e82cd24`**: 1848.8s, 8 workers,
+  five failing cells, none of them `#/lists`. Four are the documented
+  Windows-vs-CI machine-variance class and need no action; the fifth,
+  `#/tables ~ selection copied @ en 1100` at 0.74%, is new, reproduces
+  identically alone, and is left for the planner. Full numbers and what
+  bounds them: `handoff.md`, "Blockers", first entry. Do not re-measure it.
+- Unpushed, and therefore unread by CI: `ff741ad`, `6084846`, `afa82f3`,
+  `91d7899`, `ba8f4b1`, `e82cd24`. The owner's push is what closes both the
+  selection bar and the lists index.
+
 ## B5.3 planning facts (planner, 2026-09-10) - durable, read before implementing
 
 Full design in `plan.md`, "B5.3 planned"; the brief in `handoff.md`, "Next
