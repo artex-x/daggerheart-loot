@@ -5,11 +5,33 @@ Read this before `plan.md` and `handoff.md`.
 
 ## Goal
 
-**Current: B4 - the equipment tables, their facets and tier sections**
-(`eq_weapon`, `eq_secondary`, `eq_armor`). This is the last body shape in
-Phase 4. Everything below the next section is the record of B3.5/B3.6, which
-are **built and committed**; read it for the standing rules and the settled
-owner decisions, not as work to do.
+**Current: B5 - the lists slice** (`#/lists`). B4 is built and committed
+(`fde9cdc`, reviewed, approve/no blockers), so every table in `TABLE_DEFS`
+draws a real body and the tables surface is finished. Of the three slices left
+in Phase 4 - lists, search, print - the orchestrator picked lists on
+2026-09-10 because it is the one the other deferred work waits on: the 600px
+overrides for `.selx`/`.selacts`/`.seldrop`/`.dropmenu`/`.lrow*`/`.npair`/
+`.batch-acts`, `noData`/`storageOff`, and the add-to-list row that several
+`ACCEPTED` parity entries currently excuse. Search reuses the row wholesale
+and is cheaper after lists, not before. Everything below the "History" heading
+is the record of B3.5/B3.6/B4, which are **built and committed**; read it for
+the standing rules and the settled owner decisions, not as work to do.
+
+## `npm run check`, settled (orchestrator, 2026-09-10) - do not re-derive
+
+The B4 handoff's claim that the check "no longer fits one foreground tool
+call" is **withdrawn**. Measured at `720266d` on a loaded host (1.0 GB free of
+16 GB, 383 processes): 165s in total - `format:check` 11s, `lint` 30s,
+`typecheck` 12s, `data` 4s, `derived` 1s, `i18n` 0s, `selftest` 19s, vitest
+with coverage 88s - exit 0, 683 tests, thresholds met, and the commit gate
+armed itself from that one foreground call. What the B4 session hit was
+vitest's fork pool failing to boot workers within its hardcoded 60s
+`START_TIMEOUT`; the signature is zeros down the whole coverage table with
+`Errors N` equal to the file count, which means no test ran, not that anything
+regressed. Re-run it. Fallback if it repeats on a loaded host,
+`npx vitest run --coverage --maxWorkers=4`, costs 171s against 88s. Nothing in
+`vite.config.mts`, `package.json` or the hooks is changed. Full write-up:
+`handoff.md`, "Verification".
 
 ## State at B4 kickoff (2026-09-09, orchestrator)
 

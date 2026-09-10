@@ -446,16 +446,59 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   `chrome.exe` and zero stray vitest workers. The documented "one flaky
   timeout, re-run before investigating" gotcha is the same failure in a milder
   form; on a loaded host it takes the whole suite.
-- **`npm run check` no longer fits one foreground tool call, and that breaks
-  the commit gate's only source of evidence.** It ran ~345s of pool timeouts
-  alone and exceeded the 600s cap on a real run with B4's tests added. The
+- **`npm run check` fit one foreground tool call and stalled two implementers
+  in a row.** Both are true, and the second is not caused by the first. The
   gate hook reads the Bash tool's own captured stdout, so a run that is
   backgrounded - by the agent, or by the harness moving it there at the cap -
-  is invisible to it however honestly it passes. This is what stalled two
-  implementers in a row: each started the check in the background, then spent
-  its turns waiting for a result the gate could never accept. Next session
-  should either run the check on a quiet machine in one foreground call, or
-  decide deliberately how the gate is to be satisfied - see "Notes".
+  is invisible to it however honestly it passes; each implementer started the
+  check in the background and then spent its turns waiting for a result the
+  gate could never accept. That part stands. The diagnosis written beside it -
+  that the suite had outgrown the 600s cap - is **withdrawn, measured**; see
+  the bullets that follow.
+
+- **The `npm run check` question, settled (orchestrator, 2026-09-10). It fits,
+  with room.** At `720266d`, tree clean, timed stage by stage in one
+  foreground call each: `format:check` 11s, `lint` 30s, `typecheck` 12s,
+  `data` 4s, `derived.js` 1s, `i18n.js` 0s, `selftest.mjs` 19s,
+  `vitest run --coverage` 88s - **165s in total against a 600s cap.** Then the
+  whole thing as one command, `npm run check 2>&1 | tail -n 120`: **exit 0,
+  33 files, 683 tests, 96.47/89.94/96.13/96.7, every threshold met**, and
+  `.claude/.check-cache.json` picked it up (`1b74ffa56fc2ecb7`), so the commit
+  gate is armed for this tree exactly as `.claude/README.md` documents. The
+  host was not idle while this ran: 1.0 GB free of 16 GB, 383 processes, 20
+  node processes (all MCP servers - no stray vitest worker, no `chrome.exe`).
+- **What the B4 session actually hit was the fork pool failing to boot, not a
+  suite that had grown.** Vitest's worker start timeout is **60s and
+  hardcoded** - `START_TIMEOUT` in `vitest/dist/chunks/cli-api.*.js`, read this
+  session; there is no config knob for it - and `isolate` defaults to true, so
+  the forks pool spawns a fresh child per test file. On a host too short of
+  memory to boot a child within 60s, all 33 files fail one after another,
+  which is precisely the recorded signature: `Test Files no tests`,
+  `Errors 33`, `Failed to start forks worker ... Timeout waiting for worker to
+  respond`, and a coverage table of zeros. The ~345s was 33 doomed 60s waits
+  overlapped across the pool - the suite never ran at all.
+- **Recognition test**, so this is never investigated as a coverage regression
+  again: zeros across the whole coverage table, `Errors N` equal to the number
+  of test files, and no test assertion anywhere in the output. Nothing ran, so
+  nothing can have regressed. Re-run before reading a single number.
+- **The fallback, if it repeats on a loaded host** - measured, not guessed:
+  `npx vitest run --coverage --maxWorkers=4` cuts the peak fork count and the
+  memory that goes with it, at a real cost - **171s against 88s**, because
+  fewer forks is less parallelism, not less work. Reach for it only after the
+  default has failed twice on the same tree. It is a fallback, not an
+  improvement to adopt.
+- **Nothing is changed in `vite.config.mts`, `package.json` or the gate.** A
+  cap on `maxForks` would double the check's cost on every healthy run to
+  insure against a host condition; `isolate: false` would cut the spawn count
+  but trades jsdom isolation between files for it, which is the property the
+  component suite rests on; and the gate has no defect - it accepted this
+  session's run on the first try. The smallest change that preserves behaviour
+  here is none.
+- **The standing rule this leaves:** run `npm run check` as one foreground
+  call, unchained and unredirected, piped to `tail`. If it fails without
+  running a test, that is the host, and the answer is to re-run it - not to
+  background it, not to redirect it to a file, and not to reach for
+  `SKIP_CHECK_GATE=1`.
 
 - Commands run (exact), this session (B3.6 part 2):
   - The revert proof, scripted: each of B3.5's three fixes reverted alone,
@@ -1166,6 +1209,14 @@ implementer this session - kept for the record rather than deleted, since
     failures (`#/roll/wondrous ~ modal`/`~ help`, `#/i/ci1 ~ whole`, `#/i/f1`)
     were identical on the unmodified tree - see "Blockers". Rebuild `dist/`
     both before and after; a stale build makes the "before" comparison lie.
+  - **A `npm run check` that reports zero coverage everywhere ran no test at
+    all.** Vitest's fork-pool worker start timeout is 60s and hardcoded, and
+    `isolate: true` spawns one child per test file, so a host short of memory
+    fails every file in turn: `Test Files no tests`, `Errors 33`, `Failed to
+    start forks worker`, zeros down the whole coverage table. Nothing ran, so
+    nothing regressed - re-run it. Measured and written up in "Verification",
+    "The `npm run check` question, settled"; the check itself is 165s on this
+    host, so it fits one foreground call and the gate accepts it.
   - **`npm run check`'s Vitest pass can time out on a single test with zero
     `chrome.exe` processes running** - not only the documented
     vitest-vs-parity contention. Seen once in B3.5 (`sections.test.ts`, 5000ms
