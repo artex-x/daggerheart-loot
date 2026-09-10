@@ -33,6 +33,16 @@ npm run build
 Every parity invocation clears `test-output/parity/`. Copy evidence needed for a
 review or later session into the task directory before the next run.
 
+One parity run per tree. `tests/parity.js` writes `test-output/parity.lock`
+while it runs and removes it on exit. A second parity run refuses to start
+over a live lock, and `bash-guard.mjs` blocks `npm run check`, `npm
+test`/vitest, `npm run build`, `check:built` and `run-all` beside one. A lock
+is live only while its pid answers and its heartbeat is under fifteen minutes
+old, so a killed run's lock is ignored by itself; if the block names a run
+that is not alive, delete `test-output/parity.lock`. CI shards run on
+separate runners and never share a lock; parallel local shards share one tree
+and now refuse each other, which they always should have.
+
 ## Register the state first
 
 Add every new interactive surface to `STATES` in `tests/parity/specs.js` in the

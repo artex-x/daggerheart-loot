@@ -97,9 +97,11 @@ cannot satisfy the gate however honestly it passes.
 **And that did not work.** The third occurrence had all of it - three
 paragraphs of it, in the dispatch, naming the two implementers it had already
 cost - and the worker backgrounded the check anyway. So do not answer a fourth
-occurrence with a fourth paragraph. Prose has now failed at this three times;
-the next lever is deterministic (`.claude/README.md` carries it as an open hook
-candidate), and choosing it is a planning decision, not an orchestrator one.
+occurrence with a fourth paragraph. Prose failed at this three times;
+`bash-guard.mjs` now blocks a backgrounded `npm run check` (candidate 27) and
+any heavy run beside a live parity run (candidate 28). The foreground check is
+`set -o pipefail; npm run check 2>&1 | tail -n 120` with `timeout: 600000`;
+`.claude/README.md` says why each part matters.
 
 While nothing is running, a foreground `npm run check` of your own is worth
 the few minutes: it is a status, so it is yours to take, it arms the commit

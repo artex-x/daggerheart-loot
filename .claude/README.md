@@ -39,9 +39,9 @@ ones listed below; everything else is silent or a message.
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. | warn (informational) |
-| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, `git push`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, and commits when `npm run check` has not passed for the tree. Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
+| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, `git push`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and a heavy run (`npm run check`, `check:built`, `npm test`/vitest, `npm run build`, parity, run-all) while `test-output/parity.lock` is live. Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
 | `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`. | **block** |
-| `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. | never (silent) |
+| `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` and `set -o pipefail;`. | never (silent) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and the parity baseline. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. | warn, never block |
 
@@ -68,26 +68,68 @@ real environment prefix; merely naming it in a commit message does nothing.
 Use it only when `npm run check` genuinely cannot run - not because it is
 inconvenient.
 
-**Run a long check so the gate can see it pass.** `check-observer.mjs` reads
-the Bash tool's own captured stdout, and only trusts stdout it can attribute
-to the check: the command must start with the check invocation (a leading
-`cd <dir> &&` is fine), must not chain anything after it (`&&`, `;`, `||`),
-and must not redirect stdout to a file. A pipe is fine and is the way to keep
-a huge log out of the transcript, but `All files` sits near the *top* of the
-coverage table, so size the tail generously:
+**Run a long check so the gate can see it pass, and so you can read
+the result.** `check-observer.mjs` reads the Bash tool's own captured
+stdout, and only trusts stdout it can attribute to the check: the
+command must start with the check invocation (a leading `cd <dir> &&`
+and a leading `set -o pipefail;` are fine - neither writes to stdout),
+must not chain anything after it (`&&`, `;`, `||`), and must not
+redirect stdout to a file. A pipe is fine and is the way to keep a
+huge log out of the transcript, but `All files` sits near the *top*
+of the coverage table, so size the tail generously. The one
+invocation, in one foreground call with the Bash tool's `timeout` set
+to 600000:
 
 ```text
-npm run check 2>&1 | tail -n 120
+set -o pipefail; npm run check 2>&1 | tail -n 120
 ```
 
-`npm run check > out.txt 2>&1` then reading the file does **not** satisfy the
-gate, however genuinely the run passed - the hook never saw the output. Nor
-does a run started with `run_in_background` - `check-observer.mjs` returns
-early on it by design, because there is no stdout to attribute yet. The check
-is ~165s on this host (measured 2026-09-10, stage by stage: format 11s, lint
-30s, typecheck 12s, data 4s, derived 1s, i18n 0s, selftest 19s, vitest with
-coverage 88s), so it fits one foreground tool call with room. Backgrounding it
-has cost three worker runs on issue 47 alone.
+Each part is load-bearing (all measured 2026-09-10 on this host):
+
+- **The prefix is how you learn whether it passed.** A pipeline's
+  status is its last command's, so without the prefix a failed check
+  exits 0 through `tail`, the tool prints no exit line, and the
+  result reads as a pass. With it the tool prints `Exit code 1` as
+  the first line of a failed run, and the hook sees `exit_code: 1`
+  and refuses to arm. Twelve check runs across five sessions were
+  spent re-running the check to learn its status a second way. Do
+  not ask a later call for `$?`: each call is a fresh shell, and
+  `$?` there is always 0.
+- **The timeout is how the call survives.** The tool never kills a
+  command; when it outlives its `timeout` it is moved to the
+  background (`Command did not complete within its 120s timeout and
+  was moved to the background`), and for a subagent that is a lost
+  run. The default is 120 s and the check is ~165 s (stage by stage:
+  format 11s, lint 30s, typecheck 12s, data 4s, derived 1s, i18n 0s,
+  selftest 19s, vitest with coverage 88s), so a check call without a
+  timeout cannot finish in the foreground. 600000 is the tool's
+  maximum; a check that outlives even that is the fork-pool stall
+  below, not a timeout problem.
+- **The tail keeps the result under the tool's cap.** A result over
+  about 30,000 characters is not shown; the tool saves it to
+  `tool-results/<id>.txt` and names the path. `npm run check` piped
+  to `tail -n 120` stays under. Parity does not: its diff lines carry
+  a page's whole text, so `tail -n` cannot bound the bytes - grep the
+  file the tool names instead of running it again.
+
+`npm run check > out.txt 2>&1` then reading the file does **not**
+satisfy the gate, however genuinely the run passed - the hook never
+saw the output - and after the prefix there is no status a file gets
+you that the pipe does not. Nor does a run started with
+`run_in_background`: `check-observer.mjs` returns early on it by
+design, because there is no stdout to attribute yet. Backgrounding
+cost three worker runs on issue 47 and is now blocked at
+`PreToolUse` (candidate 27).
+
+**One heavy run at a time.** `tests/parity.js` writes
+`test-output/parity.lock` (`pid`, `startedAt`, heartbeat `at`, `argv`)
+while it runs, touches it once per state, removes it on exit, and
+refuses to start over a live one. `bash-guard.mjs` reads the same lock
+through `tests/parity/lock.js` and blocks the heavy runs listed in the
+table beside it. A lock is live only while its pid answers
+`kill(pid, 0)` and the heartbeat is under fifteen minutes old, so a
+killed run's lock is ignored on its own; if a block names a run that is
+not actually alive, delete `test-output/parity.lock`.
 
 **A check reporting zero coverage everywhere ran no test at all.** Vitest's
 fork-pool worker start timeout is 60s and hardcoded (`START_TIMEOUT` in
@@ -120,6 +162,14 @@ adversary:
   the commit gate; CI still runs the suite.
 - Wrapper stripping covers `env`, `command`, `nohup`, `time` and `xargs`, not
   every possible launcher.
+- The vitest-alive side of "one heavy run" is invisible: `npm run check`
+  writes no lock, so a coverage pass beside a live parity run is only caught
+  by the parity side blocking `npm run check`, not by anything watching vitest.
+- A container parity run (`tools/parity-ubuntu/`) writes its own
+  `test-output/` inside the container and is invisible to this host's lock.
+- On Windows a crashed run's pid can be reused inside the fifteen-minute TTL
+  and reads as alive until the heartbeat expires - the deny message says to
+  delete the lock.
 
 Facts settled during implementation (issue 65):
 
@@ -130,6 +180,25 @@ Facts settled during implementation (issue 65):
   exit-code field, per the official hooks reference. `check-observer.mjs` also
   accepts `exitCode`/`returnCode`/`code`/`status`/`exitStatus`, and treats a
   missing field as a pass, so the design stays correct even off this host.
+
+Facts settled during implementation (`hooks-guardrails`, 2026-09-10):
+
+- `PreToolUse(Bash)` fires on a backgrounded call, and denies it under rule
+  2g (probe A): `tool_input.run_in_background` reaches the hook as `true`.
+- `tool_input`'s key list depends on what the caller set: a foreground call
+  with an explicit `timeout: 600000` carries `["command","timeout","description"]`
+  with `timeout` a number; a call with no `timeout` carries
+  `["command","description"]` - the key is absent entirely, not present as
+  `null` (probe A0).
+- A live lock denies a heavy run and names the holder's pid and filter; a
+  dead-pid lock does not deny, and after a run acquires over it and exits,
+  the lock file is gone (probe B).
+- On the Bash tool, `false | tail -n 2` comes back as `(Bash completed with
+  no output)` and `set -o pipefail; false | tail -n 2` as `Exit code 1`.
+- A command that outlives its `timeout` is moved to the background, not
+  killed - 27 recorded results.
+- A result over about 30,000 characters is persisted to
+  `tool-results/<id>.txt`, largest shown 29,787, smallest persisted 29.8 KB.
 
 ## Candidates considered (issue 65)
 
@@ -166,4 +235,11 @@ not changed.
 | 24 | Anything reading the five-hour usage window | any | **reject** | Measured impossible on this host (`79e26c9`, `issues/65/context.md`). Explicitly out of scope. |
 | 25 | Block edits to `docs/fixtures/**` as "generated" | `PreToolUse(Edit\|Write)` | **reject** | They look generated but CLAUDE.md requires updating them by hand in the same commit as a contract change. Blocking them would block the correct fix. Listed here because it is the tempting mistake in hook 4. |
 | 26 | `SessionEnd` bookkeeping | `SessionEnd` | **reject** | Cannot influence the model or the human in time. `Stop` already covers the moment that matters. |
-| 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **open - needs a planner pass** | Nominated 2026-09-10 after a third worker on issue 47 backgrounded the check and lost it, with three paragraphs of the dispatch warning against exactly that. Deterministic and false-positive-free in principle: `check-observer.mjs` already refuses a backgrounded run, so one can never satisfy the gate, and blocking it forbids nothing that works. Unsettled: whether the block should extend to the other long checks, what it says instead (the message is the whole value), and whether a hook can read `run_in_background` from `tool_input` on this host - unverified, and hook 19 is the standing warning about acting on an unverified input field. Not adopted by an orchestrator; design it before wiring it. |
+| 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **adopt** | Three workers on issue 47 backgrounded the check, the third with three paragraphs of dispatch warning against it; prose is exhausted. False-positive-free: `check-observer.mjs` refuses a backgrounded run by design, so one can never satisfy the gate, and blocking it forbids nothing that works. Scoped to the gate-feeding check only - `check:built`, parity and run-all can legitimately run detached from a main session, and the reminder already covers them. Matched per segment, because the recorded shapes were piped, chained, `cd`-prefixed and file-redirected. The message names the replacement in one line, including the Bash timeout. Measured 2026-09-10: `PreToolUse(Bash)` fires for a backgrounded call and denies it (probe A); `tool_input.run_in_background` reaches the hook as `true`. |
+| 28 | Block a heavy run while a parity run is alive, via a lockfile `tests/parity.js` writes | `PreToolUse(Bash)` | **adopt** (bundled with #27 by owner decision, 2026-09-10) | #15's deferred alternative. The input problem #15 rejected on is gone: the run itself writes the lock, so the hook stats one file instead of enumerating processes, and a human's terminal run is seen too. The stale-lock false positive is closed by liveness (`process.kill(pid, 0)`, no `tasklist`) plus a heartbeat TTL - a dead pid or a stale heartbeat is ignored, so the rule can only fire on a run that is actually alive, and a second heavy run beside it produces garbage, so the block forbids nothing that works. `parity.js` also refuses to start over a live lock, which covers parity-vs-parity with no hook in the loop. Fifteen peers on one tree make the overlap a matter of when. Known gaps, recorded above: the vitest-alive side is invisible; a container run is invisible; on Windows a crashed run's pid can be reused inside the TTL, which the message answers with "delete the lock". Measured 2026-09-10 (probe B): a live lock denies, a dead-pid lock does not. |
+| 29 | Report HEAD moving under a session | `PreToolUse(Bash)` on `git commit`, or `Stop` | **reject for now** | Nothing collided in the recorded case; the prose that owns it ("Your writers are not the only writers", `3541a23`/`e5a26a2`) is one day old and has not been given a chance to fail, and the standing bar is a repeated mistake. Not `PreToolUse(Task)`: the dispatch tool is `Agent` on this host and `Task` in the reference, an unverified matcher (#19-shaped). Not `UserPromptSubmit`: #22. If the prose fails once, the cheapest deterministic form needs no unverified input: `session-start.mjs` records the HEAD sha in the session's `.hook-state.json` entry; `bash-guard.mjs`, on a `git commit` segment it already parses, compares `git rev-parse HEAD` against it and speaks (never denies) "HEAD moved since this session started: X -> Y, N commits not yours - `git log --oneline X..Y`; your commit lands on top, record Y as the base in the handoff"; `check-observer.mjs` refreshes the stored sha after the session's own commit. |
+| 30 | Accept a leading `set -o pipefail` in the observer's attribution rule, and make the canonical invocation carry it | `PostToolUse(Bash)` (attribution only) | **adopt** (owner decision, 2026-09-10) | The recommended pipe reports `tail`'s status, so a failed check comes back with no exit line and reads as a pass; twelve check runs across five sessions were spent learning the status a second way. With the prefix the tool prints `Exit code 1` on a failed check, `check-observer.mjs` sees `exit_code: 1` and refuses to arm, and the worker reads one line. Forgery: `set -o pipefail` writes nothing to stdout, so the check stays the only stdout producer; the strip removes exactly the tokens `set -o pipefail` plus one `;` or `&&` at the start, on either side of the `cd` strip, and nothing else, after which every existing refusal applies unchanged. `set -o pipefail; echo "All files"`, `set -o pipefail; npm run check > o.txt 2>&1; grep "All files" o.txt`, `set -o pipefail; true; npm run check ...`, `set -eo pipefail; ...` and `set -x; ...` are all still refused. A forger gains nothing: omitting the prefix is today's state, and with it the exit code only tightens the gate. Measured 2026-09-10 on the Bash tool. |
+| 31 | Deny a foreground `npm run check` with no `timeout` (rule 2g, second trigger) | `PreToolUse(Bash)` | **reject for now**, sketched | The tool moves a call that outlives its timeout to the background instead of killing it, the default is 120 s, and the check is ~165 s healthy, so a check call without a `timeout` cannot finish in the foreground on this host and is lost exactly as a backgrounded one is - measured once (`8ba57351` afff seq 57). But the number was undocumented until now: B1 puts it in the 2g deny message, the 2f reminder, the README, `CLAUDE.md` and the implement prompt, and the deny message arrives at the exact moment a worker retries in the foreground. That prose has not been given a chance to fail, which is the standing bar (row 29). And the deny has a failure mode of its own: it must fire on an *absent* field, so a host that stops passing `tool_input.timeout` to hooks would deny every foreground check - loud and diagnosable, but the one thing a guard must not do. Sketched verbatim in `issues/hooks-guardrails/plan.md` section 5, "Row 31, when it is needed"; probe A0 measured the field's shape on 2026-09-10 so the decision is a copy-paste later. |
+| 32 | The observer speaks its verdict (armed / not armed and why) | `PostToolUse(Bash)` | **reject** | Tempting and cheap. But the only recorded reads of `.check-cache.json` are issue 65 verifying its own hook, and once the exit code is the check's (row 30) the worker has the status. No evidence; the observer stays silent by design. |
+| 33 | Speak on `echo $?` as the first command of a call | `PreToolUse(Bash)` | **reject** | Two occurrences, both inside R1; row 30 removes the reason to ask. One README sentence instead. |
+| 34 | A hook for a result over the output cap | any | **reject** | The size is unknowable before the run, and the tool already persists the full output and names the file. The failure is re-running instead of reading it: the reminder gains one clause and the README one sentence. Parity's one-line-per-page diff text is the producer; shortening it is a `tests/` change with diagnostic cost, not this task's. |

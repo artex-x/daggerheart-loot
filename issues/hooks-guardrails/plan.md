@@ -16,6 +16,11 @@ is measured in section 2d, decided in section 3 (rows 30-34) and folded into
 B1 (section 4, "The third instrument folds in too"). One decision needs the
 owner: section 10, Q1.
 
+Revision 2026-09-10 (implementer): Q1 answered yes by the owner
+(`context.md`, decision 3). B1 implemented in one commit - section 7, and
+`handoff.md` for the exact verification results and probe outcomes. Task
+done; see `handoff.md` for the closing state.
+
 ## 1. Objective and current state
 
 Four failures. The first three are measured in `context.md`, the fourth in
@@ -1241,9 +1246,12 @@ untouched by that revert.
 
 | Batch | Scope | Status |
 |---|---|---|
-| B1 | Rule 2g (backgrounded check) + rule 2h (live parity lock) + `tests/parity/lock.js` + runner wiring + the observer's `set -o pipefail` prefix + the one canonical invocation in every quoted place + reminder timeout and persisted-file hints + shared regex + selftest `#64-#101` + README/prompts/parity.md/CLAUDE.md text + probes A0, A and B; one commit | **planned - implement-ready, blocked on issue 47 B5.1 landing and on Q1 (section 10)** |
+| B1 | Rule 2g (backgrounded check) + rule 2h (live parity lock) + `tests/parity/lock.js` + runner wiring + the observer's `set -o pipefail` prefix + the one canonical invocation in every quoted place + reminder timeout and persisted-file hints + shared regex + selftest `#64-#101` + README/prompts/parity.md/CLAUDE.md text + probes A0, A and B; one commit | **implemented, 2026-09-10** - see `handoff.md` for the commit sha, verification results and probe outcomes |
 
 There is no B2. The former B2 is inside B1 by owner decision (section 4).
+
+Task done. Everything in scope for section 5 steps 1-10 shipped in one commit;
+row 31 (section 5, "Row 31, when it is needed") was not shipped, per plan.
 
 ## 8. Risks, assumptions, dependencies
 

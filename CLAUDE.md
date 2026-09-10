@@ -101,6 +101,7 @@ Before every commit:
 ```text
 npm run check
 ```
+Agents: one foreground call, `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
 
 If a change alters what a screen draws, also run:
 

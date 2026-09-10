@@ -1,7 +1,9 @@
-// PreToolUse(Bash): five rule families evaluated in order, first deny wins.
+// PreToolUse(Bash): seven rule families evaluated in order, first deny wins.
 // See issues/65/plan.md section 4, hook 2, for the full specification -
 // this file follows it literally, including the sanitiser/segmenter and
-// the exact trap table. Never blocks anything not listed there.
+// the exact trap table. Never blocks anything not listed there. segmentInfo
+// already skips READERS and unwraps env/command/nohup/time/xargs, so
+// `echo npm run check` never matches and `nohup npm run check` does.
 
 import { spawnSync } from 'node:child_process';
 import {
@@ -15,9 +17,21 @@ import {
   sanitize,
   segments,
   tokensOf,
-  unwrap
+  unwrap,
+  CHECK_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
+
+// The lock module is test code shared with tests/parity.js, so the two
+// sides agree on what "live" means. Imported inside a try: a missing or
+// broken module means no rule, never a crashed hook.
+let parityLock = null;
+try {
+  parityLock = (await import(new URL('../../tests/parity/lock.js', import.meta.url).href))
+    .default;
+} catch {
+  // fail open
+}
 
 const READERS = new Set([
   'echo',
@@ -51,7 +65,11 @@ const MSG = {
   commitAttribution:
     'Blocked: this commit message carries AI attribution. This repository\'s commit messages never carry it - no Co-Authored-By trailer, no "Generated with" line. Rewrite the message without it.',
   gateBypassed:
-    'Commit gate bypassed with SKIP_CHECK_GATE=1 - npm run check has not passed for this tree.'
+    'Commit gate bypassed with SKIP_CHECK_GATE=1 - npm run check has not passed for this tree.',
+  backgroundCheck:
+    "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `set -o pipefail; npm run check 2>&1 | tail -n 120` (the prefix makes the exit code the check's).",
+  parityLock: (cmd, holder) =>
+    `Blocked: a parity run is alive on this tree (${holder}), and \`${cmd}\` beside it corrupts both - test-output/parity/ is wiped per run, and vitest next to a live parity run throws spurious 5000ms timeouts. Wait for it to finish; if no parity run is actually alive (a crashed run whose pid was reused), delete test-output/parity.lock.`
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -303,8 +321,6 @@ function evaluateCommitGate(segList, cwd) {
   };
 }
 
-// ---------- 2f: long-check reminder (allow, not block) ----------
-
 const LONG_CHECKS = [
   { re: /^npm run check:built\b/, family: 'check:built', cost: 'a few minutes' },
   { re: /^npm run check\b/, family: 'check', cost: 'a few minutes' },
@@ -316,6 +332,71 @@ const LONG_CHECKS = [
   { re: /^node tests\/run-all\.js\b/, family: 'run-all', cost: 'about fifteen minutes' }
 ];
 
+// ---------- 2g: a backgrounded npm run check (deny) ----------
+//
+// check-observer.mjs refuses a run_in_background launch by design (no
+// stdout to attribute), so such a run can never satisfy the commit gate,
+// and a worker whose turn ends with it running loses the result. Three
+// workers on issue 47 did exactly this with the dispatch warning against
+// it. Blocking it forbids nothing that works. Only the gate-feeding check:
+// the other long checks can legitimately run detached from a main session.
+// Per segment, not first-segment: the recorded shapes were piped, chained,
+// `cd`-prefixed and file-redirected. Strict boolean, as the observer: an
+// absent field must make this rule inert, never a false block.
+
+function evaluateBackgroundCheck(segList, toolInput) {
+  if (!toolInput || toolInput.run_in_background !== true) return null;
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    if (CHECK_INVOCATION_RE.test(info.tokens.join(' '))) {
+      return { id: 'background-check', message: MSG.backgroundCheck };
+    }
+  }
+  return null;
+}
+
+// ---------- 2h: a heavy run beside a live parity run (deny) ----------
+//
+// tests/parity.js writes test-output/parity.lock while it runs (see
+// tests/parity/lock.js). Two heavy runs on one tree corrupt each other:
+// test-output/parity/ is wiped per run, and a vitest coverage pass beside
+// a live parity run threw spurious 5000ms timeouts on issue 47. Fifteen
+// sessions shared this tree on 2026-09-10. Liveness is the module's, not
+// ours: a dead pid or a stale heartbeat is no lock, so this cannot fire
+// on a crashed run's leftovers. One stat, one parse, one kill(0).
+
+const HEAVY_RUNS = [
+  ...LONG_CHECKS.map((s) => s.re),
+  CHECK_INVOCATION_RE,
+  /^npm (?:run )?test\b/,
+  /^(?:npx )?vitest\b/,
+  // dist/ is parity's candidate side; rebuilding it mid-run changes
+  // what later states measure.
+  /^npm run build\b/,
+  /^(?:npx )?vite build\b/
+];
+
+function evaluateParityLock(segList) {
+  if (!parityLock) return null;
+  let heavy = null;
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    const joined = info.tokens.join(' ');
+    if (HEAVY_RUNS.some((re) => re.test(joined))) {
+      heavy = joined;
+      break;
+    }
+  }
+  if (!heavy) return null;
+  const lock = parityLock.readLock(repoRoot());
+  if (!parityLock.isLive(lock)) return null;
+  return { id: 'parity-lock', message: MSG.parityLock(heavy, parityLock.describe(lock)) };
+}
+
+// ---------- 2f: long-check reminder (allow, not block) ----------
+
 function evaluateLongCheck(segList, sessionId) {
   for (const segment of segList) {
     const info = segmentInfo(segment);
@@ -326,7 +407,7 @@ function evaluateLongCheck(segList, sessionId) {
         if (!once(sessionId, `long-check:${spec.family}`)) return null;
         return {
           type: 'speak',
-          message: `\`${joined}\` takes ${spec.cost} here. Pipe it to \`tail -n 120\` and stay in this turn until it finishes - a turn that ends with a check still running loses the result, and from outside a stopped turn is indistinguishable from a dead agent. Do not redirect it to a file: the commit gate only trusts output it can see.`
+          message: `\`${joined}\` takes ${spec.cost} here. Run it as \`set -o pipefail; ${joined} 2>&1 | tail -n 120\` with the Bash timeout set to 600000 - the default 120000 is shorter than the run, and the tool moves a call that outlives its timeout to the background - and stay in this turn until it finishes: a turn that ends with a check still running loses the result. Do not redirect it to a file; the commit gate only trusts output it can see. If the result comes back persisted as too large, grep the file it names rather than running it again.`
         };
       }
     }
@@ -363,6 +444,12 @@ guard(() => {
   if (gate) {
     return gate.type === 'deny' ? deny(event, gate.message) : speak(event, gate.message);
   }
+
+  const background = evaluateBackgroundCheck(segList, input.tool_input);
+  if (background) return deny(event, background.message);
+
+  const parity = evaluateParityLock(segList);
+  if (parity) return deny(event, parity.message);
 
   const longCheck = evaluateLongCheck(segList, input.session_id);
   if (longCheck) return speak(event, longCheck.message);

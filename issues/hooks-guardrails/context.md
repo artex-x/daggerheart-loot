@@ -3,6 +3,11 @@
 Orchestrator maintains this file so later steps do not re-fetch the same
 sources. Read this before `plan.md` and `handoff.md`.
 
+**Status, 2026-09-10: done.** B1 (the only batch) is implemented and
+committed in one commit - see `handoff.md` "Completed" for the sha and
+`plan.md` section 7. Nothing else in this file changed; the decisions and
+measurements below held through implementation without revision.
+
 ## Goal
 
 Design the deterministic guardrails for the failures recorded on issue 47,

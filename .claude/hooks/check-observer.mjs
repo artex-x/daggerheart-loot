@@ -8,13 +8,16 @@
 // The candidate list below is kept anyway - it costs nothing and keeps the
 // design correct even if a future host differs.
 
-import { readInput, guard, sanitize, segments, tokensOf, unwrap } from './lib.mjs';
+import {
+  readInput,
+  guard,
+  sanitize,
+  segments,
+  tokensOf,
+  unwrap,
+  CHECK_INVOCATION_RE
+} from './lib.mjs';
 import { treeKey, writeCache } from './tree-key.mjs';
-
-// npm run check:built is `build && smoke && budget` and never runs the
-// check suite; npm run check:fast skips format:check, npm run data,
-// tests/derived.js and tests/i18n.js. Neither may satisfy the gate.
-const CHECK_RE = /^npm\s+run\s+(?:-s\s+)?check(?![:\w-])/;
 
 const FAILURE_MARKERS = [/npm error/i, /ELIFECYCLE/, /\bFAILED\b/, /Tests\s+\d+\s+failed/];
 
@@ -42,23 +45,39 @@ const EXIT_CODE_FIELDS = [
  *   - the first segment must be the check invocation itself; and
  *   - that segment must not redirect stdout away, because then what the hook
  *     sees is by definition not the check's own output.
- * A pipeline is still allowed: `npm run check 2>&1 | tail -120` shows the
- * check's own stdout, and is the invocation .claude/README.md recommends.
- * So is a leading `cd <dir> &&`, which is habit rather than a second output
+ * A pipeline is still allowed: `set -o pipefail; npm run check 2>&1 | tail -n 120`
+ * shows the check's own stdout, and is the invocation .claude/README.md
+ * recommends. So is a leading `cd <dir> &&`, which is habit rather than a second output
  * producer - cd writes nothing to stdout, so the check is still the only
  * thing that can have produced what the hook reads. (Found the hard way:
  * the first version of this rule rejected the very command that was meant
- * to satisfy the gate.)
+ * to satisfy the gate.) A leading `set -o pipefail;` is accepted for the
+ * same reason and is the recommended prefix: without it the pipeline's
+ * status is `tail`'s, the Bash tool prints no exit line for a failed check,
+ * and a worker re-runs the check to learn what it already ran - measured
+ * twelve times across five sessions, `issues/hooks-guardrails/plan.md`
+ * section 2d. With it `exit_code` is the check's and the non-zero test
+ * below refuses to arm. Accepting the prefix cannot weaken the gate: a
+ * forger who omits it is where the gate stood before.
  */
 function isCheckInvocation(rawCommand) {
   let s = sanitize(rawCommand).replace(/\d?>&\d/g, ' ');
-  for (let i = 0; i < 2; i++) s = s.replace(/^cd(\s+[^\s;&|]+)?\s*&&\s*/i, '');
+  // `cd <dir> &&` and `set -o pipefail;` are habit and hygiene, not output
+  // producers: neither writes to stdout, so the check is still the only
+  // thing that can have produced what this hook reads. Exactly those
+  // tokens, at the start, in either order; `set -eo pipefail`, `set -x` or
+  // anything else between them and the check leaves a separator behind
+  // and is refused by the test below.
+  for (let i = 0; i < 3; i++) {
+    s = s.replace(/^cd(\s+[^\s;&|]+)?\s*&&\s*/i, '');
+    s = s.replace(/^set -o pipefail\s*(?:;|&&)\s*/, '');
+  }
   if (/&&|\|\||;|&|\n|\$\(|`/.test(s)) return false;
   const first = segments(s)[0];
   if (!first) return false;
   const tokens = unwrap(tokensOf(first));
   if (tokens.some((t) => /^\d?>>?/.test(t))) return false;
-  return CHECK_RE.test(tokens.join(' '));
+  return CHECK_INVOCATION_RE.test(tokens.join(' '));
 }
 
 function firstExitCode(toolResponse) {

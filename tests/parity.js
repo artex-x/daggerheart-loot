@@ -19,12 +19,18 @@
  *
  * Needs a build: node tools/build.js && vite build. Without dist/ it says so
  * and stops rather than reporting every state as broken.
+ *
+ * One run per tree: writes test-output/parity.lock while it runs and
+ * refuses to start over a live one; .claude/hooks/bash-guard.mjs reads
+ * the same lock to keep vitest and a second parity off this tree
+ * meanwhile. See tests/parity/lock.js.
  */
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./parity/driver.js');
+const lock = require('./parity/lock.js');
 const {
   SPECS,
   STATES,
@@ -286,6 +292,17 @@ function pixelDiff(aBuf, bBuf, outPath) {
     }
   }
 
+  /* Before the wipe, not after: the wipe is the thing a second run must
+     not do to a live one. See tests/parity/lock.js. */
+  const held = lock.acquire(ROOT, process.argv.slice(2));
+  if (!held.ok) {
+    console.log(
+      `паритет уже идёт в другом процессе (${lock.describe(held.held)}) - дождись его или удали test-output/parity.lock, если тот процесс мёртв`
+    );
+    process.exit(1);
+  }
+  process.on('exit', () => lock.release(ROOT));
+
   fs.rmSync(SHOTS, { recursive: true, force: true });
   fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -321,6 +338,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
   };
 
   for (const [stateIdx, state] of STATES.entries()) {
+    lock.touch(ROOT); /* Heartbeat: a full run outlives a fixed TTL, a crashed one must not. */
     if (SHARD && stateIdx % SHARD.of !== SHARD.n) continue;
     const { id, route, why, pending, enter, whole, storage } = state;
     if (pending) {

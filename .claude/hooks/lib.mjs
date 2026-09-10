@@ -192,6 +192,11 @@ export function tokensOf(segment) {
   return segment.split(/\s+/).filter(Boolean);
 }
 
+/** `npm run check` and nothing else: `check:built` never runs the suite
+ * and `check:fast` skips half of it, so neither may satisfy the gate, and
+ * neither is the backgrounded run bash-guard blocks. */
+export const CHECK_INVOCATION_RE = /^npm\s+run\s+(?:-s\s+)?check(?![:\w-])/;
+
 export function dropAssignments(tokens) {
   const t = tokens.slice();
   while (t.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(t[0])) t.shift();

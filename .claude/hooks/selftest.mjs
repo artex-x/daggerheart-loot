@@ -4,8 +4,9 @@
 // LOOT_HOOK_STATE_DIR at a throwaway git repo in the OS temp directory,
 // built once and reused, removed in a finally.
 //
-// See issues/65/plan.md section 7 for the full case list this file
-// implements (numbered #1-#58 in the comments below).
+// See issues/65/plan.md section 7 and issues/hooks-guardrails/plan.md
+// section 5 for the full case list this file implements (numbered #1-#101
+// in the comments below).
 
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -227,6 +228,24 @@ function bashPayload(command, extra = {}) {
   };
 }
 
+const scratchLockPath = () => path.join(scratchRoot, 'test-output', 'parity.lock');
+function writeLock(contents) {
+  fs.mkdirSync(path.dirname(scratchLockPath()), { recursive: true });
+  fs.writeFileSync(
+    scratchLockPath(),
+    typeof contents === 'string' ? contents : JSON.stringify(contents)
+  );
+}
+function removeLock() {
+  fs.rmSync(scratchLockPath(), { force: true });
+}
+/** A pid that has certainly exited: a child that ran and returned. The
+ * reuse window between its exit and the assertion is milliseconds. */
+function deadPid() {
+  return spawnSync(process.execPath, ['-e', '0']).pid;
+}
+const lockDeny = (result) => denyReason(result).includes('parity run is alive');
+
 function editPayload(filePath, extra = {}) {
   return {
     session_id: extra.session_id || 's-edit',
@@ -392,6 +411,12 @@ function testLongCheck() {
       systemMessage(result).includes('stay in this turn'),
       systemMessage(result)
     );
+    check('#29 long-check: message includes 600000', systemMessage(result).includes('600000'));
+    check(
+      '#29 long-check: message includes the canonical invocation',
+      systemMessage(result).includes('set -o pipefail; npm run check 2>&1 | tail -n 120'),
+      systemMessage(result)
+    );
   }
   {
     const result = runHook(
@@ -399,6 +424,357 @@ function testLongCheck() {
       bashPayload('npm run check', { session_id: session })
     );
     check('#30 long-check: once per session', isSilent(result), result.stdout);
+  }
+}
+
+// ---------- bash-guard.mjs: rule 2g, backgrounded check (#64-#75) ----------
+
+function testBackgroundCheck() {
+  const session = 's-bgcheck';
+  const cases = [
+    ['#64 background check: plain', 'npm run check'],
+    ['#65 background check: recorded shape, piped', 'npm run check 2>&1 | tail -20'],
+    [
+      '#66 background check: recorded shape, cd-prefixed and file-redirected',
+      'cd E:/dev/daggerheart-loot && npm run check > "C:/Users/x/scratchpad/check3.log" 2>&1'
+    ],
+    [
+      '#67 background check: recorded shape, chained',
+      'npm run check 2>&1 | grep -E "Test Files|Tests |FAIL" ; echo CHECK_EXIT=$?\nnpm run check:built 2>&1 | tail -15'
+    ]
+  ];
+  for (const [label, command] of cases) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { run_in_background: true, session_id: session })
+    );
+    check(`${label}: exit 0`, result.status === 0);
+    check(`${label}: denies`, isDeny(result), JSON.stringify(result.json));
+    check(
+      `${label}: reason includes the canonical invocation`,
+      denyReason(result).includes('set -o pipefail; npm run check 2>&1 | tail -n 120'),
+      denyReason(result)
+    );
+    check(`${label}: reason includes 600000`, denyReason(result).includes('600000'));
+  }
+
+  // #68 - the bypass belongs to the gate, not this rule.
+  for (const command of [
+    'npm run -s check',
+    'SKIP_CHECK_GATE=1 npm run check',
+    'nohup npm run check'
+  ]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { run_in_background: true, session_id: session })
+    );
+    check(`#68 background check: -s/env/nohup "${command}": denies`, isDeny(result));
+  }
+
+  // #69 - foreground is not denied by this rule (it may still speak).
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check', { run_in_background: false, session_id: 's-bgcheck-fg' })
+    );
+    check(
+      '#69 background check: foreground is not denied',
+      !isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+
+  // #70 - a hand-built payload with no run_in_background key at all.
+  {
+    const payload = bashPayload('npm run check', { session_id: 's-bgcheck-absent' });
+    delete payload.tool_input.run_in_background;
+    const result = runHook('bash-guard.mjs', payload);
+    check(
+      '#70 background check: absent field is inert',
+      !isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+
+  // #71 - a non-boolean flag must not be read as true.
+  {
+    const payload = bashPayload('npm run check', { session_id: 's-bgcheck-nonbool' });
+    payload.tool_input.run_in_background = 'true';
+    const result = runHook('bash-guard.mjs', payload);
+    check(
+      '#71 background check: non-boolean flag is inert',
+      !isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+
+  // #72 - other families are not this rule's business.
+  for (const command of [
+    'npm run check:built',
+    'npm run check:fast',
+    'node tests/parity.js tables',
+    'node tests/run-all.js parity',
+    'npx vitest run --coverage'
+  ]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { run_in_background: true, session_id: 's-bgcheck-other' })
+    );
+    check(`#72 background check: other family "${command}": not denied`, !isDeny(result));
+  }
+
+  // #73 - readers and quoted mentions must not be read as the check itself.
+  for (const command of [
+    'echo npm run check',
+    'grep -r "npm run check" .claude',
+    'git log --grep "npm run check"',
+    'cat notes.txt'
+  ]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { run_in_background: true, session_id: 's-bgcheck-readers' })
+    );
+    check(`#73 background check: reader/mention "${command}": not denied`, !isDeny(result));
+  }
+
+  // #74 - deny wins over the reminder: no systemMessage alongside a deny.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check', { run_in_background: true, session_id: 's-bgcheck-wins' })
+    );
+    check('#74 background check: deny wins, isDeny', isDeny(result));
+    check('#74 background check: deny wins, no systemMessage', !systemMessage(result));
+  }
+
+  // #75 - after #64's deny in this same session, the foreground retry still
+  // gets the long-check reminder (the deny does not consume the once marker).
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check', { run_in_background: false, session_id: session })
+    );
+    check(
+      '#75 background check: foreground retry still gets the reminder',
+      systemMessage(result).includes('stay in this turn') &&
+        systemMessage(result).includes('600000'),
+      systemMessage(result)
+    );
+  }
+}
+
+// ---------- bash-guard.mjs: rule 2h, live parity lock (#76-#91) ----------
+
+async function testParityLock() {
+  const session = 's-lock';
+  const liveLock = () => ({
+    pid: process.pid,
+    startedAt: Date.now(),
+    at: Date.now(),
+    argv: ['modal 375']
+  });
+
+  try {
+    writeLock(liveLock());
+
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('npm run check', { session_id: session })
+      );
+      check('#76 lock: live lock denies npm run check', lockDeny(result), denyReason(result));
+      check('#76 lock: reason includes pid', denyReason(result).includes(String(process.pid)));
+      check('#76 lock: reason includes argv', denyReason(result).includes('modal 375'));
+      check(
+        '#76 lock: reason includes parity.lock',
+        denyReason(result).includes('parity.lock')
+      );
+    }
+
+    for (const command of [
+      'node tests/parity.js modal',
+      'node tests/run-all.js parity',
+      'npm test',
+      'npm run test',
+      'npx vitest run --coverage',
+      'vitest run',
+      'npm run check:built',
+      'npm run check:fast',
+      'npm run build',
+      'cd E:/dev/daggerheart-loot && npm run check 2>&1 | tail -n 120'
+    ]) {
+      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: session }));
+      check(
+        `#77 lock: live lock denies heavy family "${command}"`,
+        lockDeny(result),
+        denyReason(result)
+      );
+    }
+
+    for (const command of [
+      'git status',
+      'npm run lint',
+      'node tests/derived.js',
+      'echo npm test',
+      'cat test-output/parity.lock',
+      'grep -r vitest app/',
+      'npm run dev'
+    ]) {
+      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: session }));
+      check(
+        `#78 lock: live lock leaves "${command}" alone`,
+        !lockDeny(result),
+        denyReason(result)
+      );
+    }
+
+    writeLock({ pid: deadPid(), startedAt: Date.now(), at: Date.now(), argv: ['x'] });
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('npm run check', { session_id: session })
+      );
+      check('#79 lock: dead pid is ignored', !lockDeny(result), denyReason(result));
+    }
+
+    writeLock({
+      pid: process.pid,
+      startedAt: Date.now(),
+      at: Date.now() - 16 * 60 * 1000,
+      argv: ['x']
+    });
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('npm run check', { session_id: session })
+      );
+      check('#80 lock: stale heartbeat is ignored', !lockDeny(result), denyReason(result));
+    }
+
+    writeLock('not json');
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('node tests/parity.js x', { session_id: session })
+      );
+      check('#81 lock: malformed lock is ignored', !lockDeny(result), denyReason(result));
+    }
+
+    for (const contents of [{}, { pid: '12', at: Date.now() }, { pid: 0, at: Date.now() }]) {
+      writeLock(contents);
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('npm test', { session_id: session })
+      );
+      check(
+        `#82 lock: pid-less lock ${JSON.stringify(contents)} is ignored`,
+        !lockDeny(result),
+        denyReason(result)
+      );
+    }
+
+    removeLock();
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('npm test', { session_id: session })
+      );
+      check('#83 lock: no lock file', !lockDeny(result), denyReason(result));
+    }
+
+    writeLock(liveLock());
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('node tests/parity.js x', { session_id: 's-lock-wins' })
+      );
+      check('#84 lock: deny wins over the reminder, isDeny', isDeny(result));
+      check('#84 lock: deny wins over the reminder, no systemMessage', !systemMessage(result));
+    }
+
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('npm run check', { run_in_background: true, session_id: 's-lock-bg' })
+      );
+      check('#85 lock: backgrounded check under a live lock is still denied', isDeny(result));
+    }
+  } finally {
+    removeLock();
+  }
+
+  // Lock module, imported directly (#86-#91).
+  const lockMod = (await import(new URL('../../tests/parity/lock.js', import.meta.url).href))
+    .default;
+  removeLock();
+  try {
+    {
+      const result = lockMod.acquire(scratchRoot, ['modal']);
+      check('#86 lock module: acquire on a clean tree: ok', result.ok === true);
+      const parsed = lockMod.readLock(scratchRoot);
+      check('#86 lock module: file exists and parses', Boolean(parsed));
+      check('#86 lock module: pid matches', parsed && parsed.pid === process.pid);
+      check('#86 lock module: startedAt === at', parsed && parsed.startedAt === parsed.at);
+      check(
+        '#86 lock module: argv round-trips',
+        parsed && Array.isArray(parsed.argv) && parsed.argv[0] === 'modal'
+      );
+    }
+
+    {
+      writeLock({ pid: process.pid, startedAt: 1, at: Date.now(), argv: ['held'] });
+      const before = fs.readFileSync(scratchLockPath(), 'utf8');
+      const result = lockMod.acquire(scratchRoot, ['other']);
+      check('#87 lock module: acquire over a live lock refuses', result.ok === false);
+      check(
+        '#87 lock module: held pid matches the holder',
+        result.held && result.held.pid === process.pid
+      );
+      const after = fs.readFileSync(scratchLockPath(), 'utf8');
+      check('#87 lock module: file unchanged', before === after);
+    }
+
+    {
+      writeLock({ pid: deadPid(), startedAt: 1, at: Date.now(), argv: ['dead'] });
+      const result = lockMod.acquire(scratchRoot, ['fresh']);
+      check('#88 lock module: acquire over a dead-pid lock overwrites: ok', result.ok === true);
+      const parsed = lockMod.readLock(scratchRoot);
+      check('#88 lock module: file now carries our pid', parsed && parsed.pid === process.pid);
+    }
+
+    {
+      removeLock();
+      lockMod.acquire(scratchRoot, ['x'], 1000);
+      lockMod.touch(scratchRoot, 5000);
+      const parsed = lockMod.readLock(scratchRoot);
+      check('#89 lock module: touch advances at', parsed && parsed.at === 5000);
+      check('#89 lock module: touch keeps startedAt', parsed && parsed.startedAt === 1000);
+    }
+
+    {
+      removeLock();
+      lockMod.acquire(scratchRoot, ['x']);
+      lockMod.release(scratchRoot);
+      check('#90 lock module: release removes our own lock', !fs.existsSync(scratchLockPath()));
+
+      writeLock({ pid: deadPid(), startedAt: 1, at: Date.now(), argv: ['dead'] });
+      lockMod.release(scratchRoot);
+      check(
+        '#90 lock module: release leaves a foreign lock in place',
+        fs.existsSync(scratchLockPath())
+      );
+    }
+
+    {
+      removeLock();
+      fs.rmSync(path.join(scratchRoot, 'test-output'), { recursive: true, force: true });
+      const parsed = lockMod.readLock(scratchRoot);
+      check('#91 lock module: readLock with no test-output/: returns null', parsed === null);
+      const result = lockMod.acquire(scratchRoot, ['x']);
+      check('#91 lock module: acquire then succeeds', result.ok === true);
+    }
+  } finally {
+    removeLock();
   }
 }
 
@@ -665,7 +1041,7 @@ async function testCheckObserver() {
       false
     ],
     [
-      '#49e piped to tail (the recommended invocation)',
+      '#49e piped to tail (the plain pipe, still accepted)',
       'npm run check 2>&1 | tail -n 120',
       passingResponse,
       true
@@ -685,6 +1061,78 @@ async function testCheckObserver() {
       '#49g cd, check, then something else',
       'cd /repo && npm run check && echo "All files"',
       passingResponse,
+      false
+    ],
+    // #92-#101 - row 30, the set -o pipefail prefix: the four accepted
+    // shapes and the six refused ones are the whole of what it promises.
+    [
+      '#92 pipefail prefix, semicolon',
+      'set -o pipefail; npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      true
+    ],
+    [
+      '#93 pipefail prefix, &&',
+      'set -o pipefail && npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      true
+    ],
+    [
+      '#94 cd then pipefail',
+      'cd "E:/dev/daggerheart-loot" && set -o pipefail; npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      true
+    ],
+    [
+      '#95 pipefail then cd',
+      'set -o pipefail; cd /repo && npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      true
+    ],
+    [
+      '#96 pipefail then echo (forgery)',
+      'set -o pipefail; echo "All files"',
+      passingResponse,
+      false
+    ],
+    [
+      '#97 pipefail, redirect, grep (forgery)',
+      'set -o pipefail; npm run check > o.txt 2>&1; grep "All files" o.txt',
+      passingResponse,
+      false
+    ],
+    [
+      '#98 pipefail, something between, check',
+      'set -o pipefail; true; npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      false
+    ],
+    [
+      '#99a other set forms are not stripped: -eo pipefail',
+      'set -eo pipefail; npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      false
+    ],
+    [
+      '#99b other set forms are not stripped: -x',
+      'set -x; npm run check 2>&1 | tail -n 120',
+      passingResponse,
+      false
+    ],
+    [
+      '#100 pipefail, check:built',
+      'set -o pipefail; npm run check:built 2>&1 | tail -n 120',
+      passingResponse,
+      false
+    ],
+    // #101 - beside #92, which arms on the same stdout with exit_code: 0,
+    // this is the case that shows the prefix tightens the gate rather than
+    // loosening it: with no failure marker in the output, only the prefix
+    // carrying the real exit code stops this from arming.
+    [
+      '#101 pipefail carries the status',
+      'set -o pipefail; npm run check 2>&1 | tail -n 120',
+      { exit_code: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
       false
     ]
   ];
@@ -924,6 +1372,8 @@ async function main() {
     testCommitAttribution();
     await testCommitGateAsync();
     testLongCheck();
+    testBackgroundCheck();
+    await testParityLock();
     testEditGuard();
     testEditFollowup();
     await testCheckObserver();
