@@ -1,0 +1,31 @@
+# Configuration for the `secrets` job in .github/workflows/ci.yml.
+#
+# This extends gitleaks' default rules, it does not replace them: that ruleset
+# is the whole point of the job, and this file only carves out one shape it
+# gets wrong here.
+
+[extend]
+useDefault = true
+
+# The app's localStorage keys are named `dhloot.<thing>.v<n>` and live in
+# constants named `<THING>_KEY` - `const WARN_KEY = 'dhloot.warn.v1'`. That is
+# exactly the shape the default `generic-api-key` rule hunts for, and
+# `dhloot.warn.v1` clears its 3.5 entropy threshold by 0.02, so run 34521343531
+# went red on three copies of that one line: the constant, its test, and the
+# plan quoting it. Its siblings `dhloot.lang.v1` and `dhloot.lists.v2` sit just
+# under the threshold, which makes this a coin flip the next key can also lose -
+# so allow the key-name shape rather than those three findings.
+#
+# These are storage key names, not credentials. The app has no backend and
+# nothing to authenticate against: lists live in the URL hash and localStorage
+# (CLAUDE.md, "Product laws that look negotiable but are not"), so the keys are
+# public by construction - readable in devtools on the live site and written
+# down in docs/specs/STATE.md.
+#
+# Use `[allowlist]`, not `[[allowlists]]`: the plural form parses without
+# complaint in gitleaks 8.24.3 and is then ignored, so it looks like a working
+# allowlist while the job stays red.
+[allowlist]
+  description = "localStorage key names, not secrets - see docs/specs/STATE.md"
+  regexTarget = "secret"
+  regexes = ['''^dhloot\.[a-z.]+\.v\d+$''']
