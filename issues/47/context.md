@@ -390,3 +390,119 @@ Full design in `plan.md`, "B5 planned" and "B5.1 planned"; the brief in
   in the top layer with `popover="manual"`, with a recorded fallback.
 - Wall clock for B5.1's filters: `"i/ci1"` is 7 states, the second filter 6;
   each is about a third of the pre-B4 "tables" run (~9 min for 26 states).
+
+## CI is red again, and the five cells are stable (orchestrator, 2026-09-10)
+
+Measured, not guessed. Two consecutive runs on `main`, different commits, the
+same five failing cells with the same figures - so this is not CI flake:
+
+| run | commit | failing cells |
+|---|---|---|
+| `34482875625` | `a404a52` | the five below |
+| `34485537392` | `b6a2fcd` | the five below, identically |
+
+```text
+shard 1  FAIL #/i/ci1 ~ whole @ ru 1100 :: вид :: 0.00%, долг записан как 5.53%
+shard 1  FAIL #/i/ci1 ~ whole @ ru 768  :: вид :: 0.00%, долг записан как 7.31%
+shard 1  FAIL #/i/ci1 ~ whole @ en 1100 :: вид :: 0.00%, долг записан как 4.88%
+shard 3  FAIL #/i/ci1 ~ toast @ en 768  :: вид :: 0.00%, долг записан как 0.86%
+shard 3  FAIL #/i/ci1 ~ toast @ en 375  :: вид :: 0.00%, долг записан как 2.78%
+```
+
+Every one is the ratchet firing in the *improvement* direction - `стало лучше -
+опусти число в VISUAL_DEBT`. Every other cell in all four shards passes, and
+`check`, `audit` and `secrets` are green; `deploy` is skipped because `parity`
+failed.
+
+Facts that follow from that, and that nobody needs to re-derive:
+
+- **All five entries are B5.1's and its fix-pass's**, `specs.js` 863-892, and
+  every one of them was written with a Windows figure and the words "CI to
+  confirm" or "This class is B5.2's to solve" in its `why`. CI has now
+  confirmed, twice: on the authoritative machine all five are an exact match.
+- **The `~ whole` trio is the "paint noise" class** the handoff names
+  ("A second unstable class, distinct from the toast"); the two `~ toast`
+  cells are the "timed state" class. Both classes were already recorded as
+  B5.2's research by owner decision, 2026-09-10.
+- **`#/i/ci1 ~ whole @ ru 375`, `@ en 768`, `@ en 375` pass** (`совпадает`),
+  as does every one of the twenty-four new B5.1 list-menu/`in a list`/
+  `many lists`/`new list` cells. B5.1's actual work is CI-clean.
+- Owner decision 1 (`CI (ubuntu) is authoritative for VISUAL_DEBT numbers`)
+  decides the direction. What it does not decide is how a local Windows run
+  stops re-introducing a Windows figure the next time somebody reads a red
+  cell - that is the class question, and it is the planner's.
+- The failing-shard artifacts (`failure-output-parity-1`, `-3`) hold
+  `test-output/` and `dist/` for 14 days if a diff image is wanted.
+
+`dc31460` (local HEAD) is one docs-only commit ahead of `b6a2fcd`, so it
+changes nothing the harness photographs; the run at `b6a2fcd` reads for the
+current tree.
+
+## B5.2 planning facts (planner, 2026-09-10) - durable, read before implementing
+
+Full design in `plan.md`, "B5.2 planned, part 0" (CI green, the two unstable
+classes - tests and docs only) and "part 1" (the selection bar); the brief for
+part 0 is `handoff.md`, "Next batch". Facts read off the source or measured,
+not assumed:
+
+- **Local HEAD moved to `252e0a6`** during planning (hooks-guardrails docs,
+  another task's); still docs-only over `d1c1367`, so the CI run at `b6a2fcd`
+  reads for the tree. Re-read `git log --oneline -3` before starting.
+- **The five red cells are decided: deleted.** Owner decision 1 leaves no
+  figure but 0.00, and 0.00 is deletion by the ratchet's own rule
+  (`parity.js` 532-543). They were already red on a local Windows run under
+  their Windows figures (1.43 vs 5.53 fails as `стало лучше`), so deletion
+  does not turn a green local run red.
+- **The timed class is the width sweep** (`parity.js` 352-450: one arrival,
+  three viewports, a `settle()` of up to 680ms each, an `EN` press in between
+  for English) against a 1600ms toast, with the legacy PNG possibly from a
+  cache written on another clock. Chosen fix: `timed: true` on a state makes
+  the runner arrive afresh at every width. The slack class is rejected (a
+  tolerance as wide as the toast). Two states carry the flag; part 1's
+  `~ selection copied` is the third.
+- **The whole-page class is the capture**: `fullPage: true` rasterises a
+  3000px document in one go; geometry was byte-identical in every reading
+  while pixels swung 0.00-7.31% under load; CI reads 0.00. Chosen fix:
+  `shot(whole)` captures until two consecutive captures are byte-equal (cap
+  four), plus a `geometry` `perWidth` spec on `#/i/ci1 ~ whole` (which, like
+  `typeRuns`, turns the legacy cache off for that state).
+- **`.prettierignore` and `eslint.config.mjs` both skip `tests/`**, so runner
+  and driver edits are verified only by running the harness; `npm run check`
+  does not read them.
+- **The live selection bar, measured** (read-only puppeteer probe on
+  `index.html#/tables`, two lists seeded, reduced motion): 53px tall at 1100
+  and 768, **137px at 375** (count row, the add-to-list control alone on a
+  328px row, print and copy at 160px each below); `.selacts` children 176.7 /
+  86.6 / 121.9px wide at 1100; `#/tables` has 60 rows and "Выбрано 60" when
+  all are ticked. The bar's `innerHTML` is transcribed in `plan.md`, part 1.
+- **The bar's menu opens above the bar at every width, with `up` set and
+  inert.** `placeMenu` (app.js 3695-3704) always adds `up` at the bottom of
+  the window, and **style.css has no base `.dropmenu.up` rule** - only
+  `.cardpick .dropmenu.up` (443). `AddToList.svelte`'s `.dropmenu.up {
+  bottom: auto; top: calc(100% + 8px) }` is invented; harmless on the card,
+  it would push the bar's menu off-screen. Part 1 deletes it. Measured menu:
+  230x171 with two lists, y=679 against the bar at y=847, right-aligned at
+  x=614 at 1100; x=16-344 at 375; `scrollY` 0.
+- **The print link's accessible name is its `title`** ("Собрать карточки для
+  печати: девять на лист A4"): the driver's `NAME_FN` prefers `title` over
+  text, so the inventory compares the long string and `d.click('Печать')`
+  finds nothing. The bar's four control names, live: "Снять выделение",
+  "Добавить в список", the title above, "Скопировать".
+- **Select-all cannot be gripped by the harness**: `<label class="selall">`
+  wraps an input with no `aria-label`/`title`, and `NAME_FN` reads none of
+  the label. Every row box is named "Выбрано", so a second row needs
+  `d.click(name, nth)` - part 1 adds the index; it does not name select-all
+  (the inventory would differ).
+- **The count is one text node** (`t.selected + ' ' + n`) followed by the
+  cross inside `.selcount`; `selIds()` is `Object.keys(S.sel)` in tick order
+  (existing keys keep position on select-all), which `SvelteSet` matches.
+- **Copy selection** is each record's `shareText`/`shareHtml` with **no skip
+  set**, joined by `\n\n` / `<br><br>` (app.js 1961-1966) - no OR, unlike a
+  copied roll; the rewrite's `share()` per record joined the same way is
+  `shareSelection` in `lib/share.ts`.
+- **Three dictionary keys are missing**: `clearSel`, `copySel`, `selCopied`
+  (app.js 113-114 / 299-300). `selected`, `print`, `printHint`, `copyFailed`
+  exist. `lib/icons.ts` `copy` is `ICON_COPY`'s path.
+- Wall clock for part 1's filters: `"a row ticked" "bar menu" "selection
+  copied"` is 3 states (one timed); `"#/tables ~"` is 8; `"i/ci1 ~"` is 6.
+  Each fits one foreground call; do not merge them.

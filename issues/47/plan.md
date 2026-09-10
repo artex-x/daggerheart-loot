@@ -2601,7 +2601,9 @@ screen; it is one piece of state and six places that draw it:
 
 Too big for one batch, and the boundaries below are chosen the way B1-B4's
 were: so that nothing on screen has to be faked and every batch ends on states
-the harness can reach.
+the harness can reach. (B5.2 was split in planning on 2026-09-10 into a part 0
+- CI green and the two unstable measurement classes, tests and docs only - and
+a part 1, the bar itself; see "B5.2 planned, part 0" and "part 1" below.)
 
 | | what | why it is a boundary |
 |---|---|---|
@@ -3255,6 +3257,698 @@ while building and while measuring:
   deleted - twenty lines in total: six `addToList` lines (`#/i/ci1`, `#/i/q1`
   and `#/roll/wondrous ~ modal`, both languages) and fourteen `controls`
   lines across all seven states.
+
+### B5.2 planned, part 0: green CI, and the two unstable classes named
+
+**Why a part 0, and why it goes first.** Two things were on the table on
+2026-09-10: CI red on five parity cells for two consecutive runs
+(`context.md`, "CI is red again"), and the selection bar. They are one batch
+name and two different kinds of work - the first is tests and docs with no
+production code, finishable in a session with two short parity filters; the
+second is a full UI surface. And the bar *depends* on the first: its
+copy-selection state raises a 1600ms toast, so it is a timed state, and it
+cannot be measured honestly until timed states have a mechanism. So part 0 goes
+first, small, and part 1 lands on a green baseline with the instrument it needs.
+CI red also blocks `deploy` on every push, which is reason enough on its own.
+
+**Objective.** CI is green on the tree as it stands; the two measurement
+classes B5.1 found - the timed toast and the whole-page capture - are named,
+have a mechanism each, and a person who hits either on a local Windows run has
+a written recipe rather than a judgement to make.
+
+**Scope.** `tests/parity/specs.js` (five deletions, a `timed` flag on two
+states, one new `perWidth` spec), `tests/parity.js` (timed states re-arrive per
+width), `tests/parity/driver.js` (`shot()` waits for a stable capture;
+`rectsAt()`), `docs/parity.md`, `docs/specs/COVERAGE.md`. No file under
+`app/`.
+
+**Non-goals.** Nothing about the bar. No change to `JITTER`, `DEBT_SLACK` or
+the verdict logic in `parity.js` (288-325). No re-arrival for non-timed states
+- the width-sweep decision for the anchor cells stays open (handoff,
+"Blockers"). No fix to `tools/parity-ubuntu`'s Dockerfile. No `VISUAL_DEBT`
+number written from this host, for any reason.
+
+#### The five entries: deleted
+
+`specs.js` 863-892: `#/i/ci1 ~ whole @ ru 1100` (5.53), `@ en 1100` (4.88),
+`@ ru 768` (7.31), `#/i/ci1 ~ toast @ en 375` (2.78), `@ en 768` (0.86). CI
+measured all five at an exact 0.00% on two runs, two commits, identically
+(`34482875625` on `a404a52`, `34485537392` on `b6a2fcd`). Every one carries
+"CI to confirm" or "B5.2's to solve" in its own `why`. CI has confirmed.
+
+Deleted, not lowered: the ratchet's own rule is that a cell at or under
+`JITTER` fails until its entry is gone (`parity.js` 532-543), and the only
+figure that is not 0.00 is a Windows figure, which owner decision 1 forbids
+writing as a baseline. Their block comments go with them - `specs.js` 848-
+862 and 866-877 describe an instability this part removes, and a comment about
+a deleted entry is a story nobody can check.
+
+What that does to a local Windows run is the trade, and it is taken with the
+eyes open: those cells were **already red locally** - the fix-pass read `@ ru
+1100` at 1.43 against 5.53 and failed it as `стало лучше` - so deletion moves
+them from one failure message to another (`ожидался ноль`) on a host that
+reads noise, and to a pass on one that does not. What is *new* in this part is
+that both classes get a mechanism that removes the noise at its source on
+every machine, and a recipe for the residue (below, "What a local run does
+afterwards").
+
+#### Two classes, two mechanisms
+
+The handoff already says it: two mechanisms, one symptom. Read off the runner:
+
+**The timed class is the width sweep.** `parity.js` 352-450: one arrival per
+language, then three viewports on the same document, each with a `settle()`
+(up to 680ms) and a screenshot. A 1600ms toast raised by `enter` is
+photographed three times on one clock, and in English a fourth press (`EN`)
+sits between the toast and the first shot. Whether the 375 shot lands inside
+the window depends on host load, and the legacy side may come from the cache -
+a PNG taken on a different clock altogether. The fix is not a tolerance; it is
+to stop sweeping a clock: **a state marked `timed: true` is arrived at afresh
+at every width**, so every shot is the same few hundred milliseconds after the
+press, on both sides, at every width. Two states carry it: `#/i/ci1 ~ toast`
+and `#/roll/wondrous ~ pinned` (its `homeSet` toast is the same 1600ms; six
+entries were deleted in the fix-pass and it still flaps locally). Any state a
+later batch adds whose `enter` raises a toast carries it too - part 1's
+`~ selection copied` is the first.
+
+**The whole-page class is the capture.** `#/i/ci1 ~ whole` is the only
+`whole: true` state; its shot is `page.screenshot({ fullPage: true })`, which
+rasterises the whole 3000-plus-pixel document, most of it never painted before,
+in one go. B5.1 measured the geometry byte-identical across every reading and
+the pixels swinging 0.00-7.31% on an unchanged build, worst under the full
+suite's load - the signature of a capture handed back before the raster
+finished, not of anything the app drew (hypothesis, named as one; what is
+established is that it is paint and not layout). The fix is the harness's own
+invariant - a state that has not stopped moving is not a state - applied to
+the capture: **`shot(whole)` takes full-page captures until two consecutive
+ones are byte-identical** (cap at four), and says so on the console when it had
+to retry. It cannot mask a difference between the apps: both captures it
+compares are of the same page. Beside it, a **`geometry` spec** (`perWidth`,
+`only: ['#/i/ci1 ~ whole']`) records the document height and the rects of
+`.card`, `.cardpick` and `.foot` at every width, on both apps, rounded to a
+tenth - the standalone probe B5.1's implementer wrote by hand, made part of the
+suite. With it, "paint or layout?" is a line in the report rather than an hour
+with a scratch script.
+
+#### How it is built
+
+**`tests/parity/specs.js`**
+
+- Delete the five entries and their two block comments (848-877). The
+  modal-state and `~ a row ticked` blocks below them stay.
+- `#/i/ci1 ~ toast` and `#/roll/wondrous ~ pinned` gain `timed: true`, each
+  with a one-line comment: "a 1600ms toast; arrived at afresh per width - see
+  docs/parity.md, 'Timed states'".
+- The `STATES` doc comment (317-323) gains a line for `timed`.
+- A `geometry` spec after `typeRuns`:
+
+  ```js
+  /* Geometry for the one full-page state, so a noisy capture can be told from
+     a layout change by reading, not by probing (B5.2 part 0). */
+  const geometry = {
+    perWidth: true,
+    name: 'the geometry of the page a full-page capture photographs',
+    only: ['#/i/ci1 ~ whole'],
+    async run(d) {
+      return await d.rectsAt({ card: '.card', pick: '.cardpick', foot: '.foot' });
+    }
+  };
+  ```
+
+  and `geometry` appended to `SPECS`. Note the consequence the runner already
+  enforces: a state with a `perWidth` spec is shot uncached on both sides
+  (`parity.js` 421-429), which for this one state is the point.
+
+**`tests/parity/driver.js`**
+
+- `shot(whole)`: unchanged for the fold. For `whole`, capture, then capture
+  again; return when two in a row are equal (`Buffer.equals`), at most four
+  captures; when more than one was needed, `console.log` one line naming the
+  count (`       снимок целиком: N попыток до устойчивого кадра`). Comment:
+  why (the class above), and that this is the animation/font wait applied to
+  the capture itself.
+- `rectsAt(probes)`: `{ name: selector }` in, per name `null` when absent or
+  `{ x, y, w, h }` off `getBoundingClientRect()` rounded to a tenth, plus a
+  `docHeight` field off `document.documentElement.scrollHeight`. Waits on
+  `document.fonts.ready` first, like `typeAt`. The selector policy comment on
+  `typeAt` applies - copy its one-paragraph rationale in a sentence, do not
+  restate it.
+
+**`tests/parity.js`**
+
+- Destructure `timed` from the state. Hash it in `keyFor` (`timed:
+  !!state.timed`) - parity.js's own hash already invalidates the whole cache
+  on this edit, and the field keeps a later toggle honest.
+- In the per-target block (389-453): when `timed`, the first page shoots only
+  `WIDTHS[0]` (looks, controls and the 1100 shot stay exactly where they are);
+  then, after that `withPage` has closed, one more `withPage` per remaining
+  width: `viewport(size)`, `arrive(d)`, `settle()`, the `measured` specs if
+  any, `shot(whole)`. The legacy cache is consulted per width *before* opening
+  the page (a hit writes the file and skips the page), so a warm run stays
+  cheap. `broke` is set the same way and breaks the same loops. One page at
+  a time is preserved: `withPage` closes in `finally` before the next opens.
+- The comment above `arrive` (352-356) gains the sentence: "A timed state
+  arrives afresh at every width - see docs/parity.md."
+
+**`docs/parity.md`**
+
+- "Register the state first": `timed` joins `enter`, `whole`, `pending` in
+  the field list, with when to use it (any `enter` that raises a toast).
+- "Machine variance": the sentence about the container and timed states
+  stays; a new short subsection **"Two unstable classes"** after it:
+  1. *Timed states* - the mechanism (width sweep), the flag, and that its
+     number is still CI's.
+  2. *Full-page captures* - the mechanism (capture), the re-shoot, the
+     `geometry` spec, and the recipe: a `whole` cell that fails locally with
+     `geometry` agreeing on both apps and a diff image with no content change
+     is this host's paint; re-run the one state (`node tests/parity.js "ci1 ~
+     whole"`); write no entry; the latest CI shard decides. A `whole` cell
+     that fails with `geometry` *disagreeing* is a layout defect, and the
+     field that differs names it.
+- "Harness invariants": two lines - a timed state is arrived at per width; a
+  full-page capture is taken until two agree.
+
+**`docs/specs/COVERAGE.md`** - the paragraph "Three conditions the harness
+controls" becomes five, one clause each for the two above. Nothing else.
+
+#### What a local run does afterwards
+
+Written down because the question was asked, and because it is the part a
+person hits at 11pm:
+
+- `#/i/ci1 ~ toast` and `~ pinned`: expected to read 0.00 at all twelve cells
+  on this host as well, since the shot is now a fixed distance from the press.
+  If one does not, the toast's own pixels differ - open the diff; that is a
+  defect, not the class.
+- `#/i/ci1 ~ whole`: expected to read 0.00 on a quiet host now that the
+  capture waits for itself; the console says when it had to retry. If a cell
+  still reads non-zero: the `geometry` line for that width is the verdict.
+  Agreeing → paint on this host, re-run the one state, write nothing.
+  Disagreeing → a real difference, named by field.
+- Nothing about owner decision 1 changes: no figure from this host enters the
+  table. CI's shards are read with `gh run view <id> --log-failed`.
+
+#### Ordered steps
+
+1. `specs.js`: the five deletions and their comments; `timed: true` on the two
+   states; the `STATES` doc line.
+2. `parity.js`: `timed` in `keyFor` and the per-width arrival.
+3. `npm run build` (dist is needed by the runner; nothing under `app/`
+   changed, so the existing `dist/` is current if it is from this tree -
+   build anyway, it is cheap).
+4. `node tests/parity.js "i/ci1 ~ toast" "pinned"` - the two timed states,
+   12 cells. Expect `расхождений нет`. Run it twice: the second run exercises
+   the per-width cache path for timed states and should be visibly faster.
+5. `driver.js`: `shot()`'s stable capture; `rectsAt()`. `specs.js`: the
+   `geometry` spec, in `SPECS`.
+6. `node tests/parity.js "ci1 ~ whole"` - one state, six cells, uncached both
+   sides. Expect 0.00 everywhere and `geometry` silent. If the console shows
+   retries, that is the class firing and being absorbed - note the count in
+   the handoff. If a cell is non-zero and `geometry` agrees, run it once more
+   and record both readings in the handoff without touching the table.
+7. `docs/parity.md`, `docs/specs/COVERAGE.md`.
+8. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call,
+   `timeout: 600000`; over the cap means re-run, not salvage (`context.md`,
+   "npm run check, settled", and its correction).
+9. `node tests/parity.js "i/ci1"` (7 states, the full record-route family
+   including the four list states) as the regression pass over everything
+   this part touched. Expect `расхождений нет`.
+10. `plan.md` gains "B5.2 built, part 0"; `handoff.md` Completed/Verification/
+    Next batch (part 1 becomes next); one commit, `fix(parity): ...`, authored
+    as `artex-x`, no push. The orchestrator reads the CI run on it.
+
+#### Acceptance criteria
+
+- `VISUAL_DEBT` holds none of the five ids; `node tests/parity.js "i/ci1"`
+  and `"pinned"` report `расхождений нет` on this host.
+- `STATES` has `timed: true` on exactly `#/i/ci1 ~ toast` and
+  `#/roll/wondrous ~ pinned`; the runner opens a fresh page per width for
+  them and the cache is honoured per width (a second run of step 4 is visibly
+  faster and passes).
+- `d.shot(true)` returns a capture equal to the one before it, or the fourth;
+  a retry prints one line.
+- `geometry` runs at every width on `#/i/ci1 ~ whole` and reports nothing.
+- `docs/parity.md` names both classes, the flag, and the recipe;
+  `COVERAGE.md`'s paragraph counts five conditions.
+- `npm run check` exits 0. Note what it does *not* check: `.prettierignore`
+  and `eslint.config.mjs` both skip `tests/`, so the runner and driver edits
+  are verified only by running them (steps 4, 6, 9) - match the files' own
+  style by hand.
+- CI green on the commit - the orchestrator's read, recorded in the handoff
+  with the run id, is what closes this part.
+
+#### Risks and do-nots
+
+- Do not write any `VISUAL_DEBT` number in this part. If a cell is non-zero
+  on this host after steps 4-6, the handoff carries the reading and CI
+  decides.
+- Do not touch `JITTER`, `DEBT_SLACK`, or the five verdict branches. The
+  answer to a flaky cell is never a wider gate.
+- Do not mark a non-toast state `timed`, and do not re-arrive every state:
+  that is the width-sweep decision, deliberately still open.
+- Do not stub `setTimeout` or the toast's clock from `prepare()`. Both apps
+  must run their own timers; the harness fixes *when it looks*, not what the
+  app does.
+- Do not cap the re-shoot at two: under real load the second capture can be
+  the unfinished one. Four, then give up and let the diff speak.
+- Keep the first page's `looks`/`controls`/1100 shot exactly where they are
+  for timed states - a different inventory page would change every
+  `inventory` comparison on those two states.
+- `rectsAt` selectors are ported classes; if `.card` or `.cardpick` reports
+  `null` on the rewrite, a class was renamed - that is a finding, not a reason
+  to loosen the selector.
+- One commit, no push, no `Co-Authored-By`.
+
+**Decided in planning - do not reopen.**
+
+- **Timed states re-arrive per width; the slack class is rejected.** A slack
+  is a tolerance under another name: the toast is 0.9-2.8% of the fold, so
+  the slack would have to be that wide, which is exactly the size of defect
+  the toast state exists to catch (a wrong toast colour, a missing action
+  button), and the owner has already rejected widening the gate. Also
+  rejected: stubbing the toast timer from `prepare()` (fakes the app; couples
+  the harness to three durations); excluding the toast's rectangle from the
+  pixel compare (compares less; the toast's pixels are the point of the
+  state); pressing `EN` before `enter` for timed states (changes what every
+  `@ en` cell has meant since B1 and the flash-replay states depend on the
+  order).
+- **The five entries are deleted, not lowered and not kept.** There is no
+  figure to lower to but 0.00, which is deletion by the ratchet's own rule;
+  keeping them with a "local" reason is a permanently red CI gate.
+- **Two mechanisms, two fixes, one part.** They are cheap enough to land
+  together and the second (the capture) is what makes the local story after
+  deletion honest rather than "expect red".
+- **The `geometry` spec is a probe on one state, not a new instrument
+  family.** It reuses the `perWidth` path `typeRuns` opened; extending it to
+  other states waits for a reason, the same way `typeRuns` did.
+- **`tools/parity-ubuntu`'s Dockerfile stays broken for now.** The fix moves
+  the build context to the repository root and needs a `.dockerignore` for
+  `img/`, `og/` and `i/`; a real change with its own verification, still in
+  "Deferred". CI is the authoritative reader for this part, as it already is.
+
+### B5.2 planned, part 1: the selection bar
+
+**Objective.** Ticking rows in a table raises the live app's bar at the bottom
+of the window: "Выбрано N" with a cross that clears everything, and three
+actions on the right - add the whole selection to a list (the same control the
+card has, opening above the bar), print the selection, copy it as one message.
+With it, the six `selBar` entries in `VISUAL_DEBT` and the two `~ a row
+ticked` lines in `ACCEPTED` are deleted, and the multi-id branches B5.1 built
+without a caller (`t.addTo`, `': N'` on the toast) get one.
+
+**Scope.** `state/app.svelte.ts` (`sel` lifted, `clearSel`),
+`components/SelBar.svelte` (new), `components/Shell.svelte` (renders it),
+`components/TablesPage.svelte` (reads `app.sel`), `components/AddToList.svelte`
+(one invented rule deleted), `components/RecordModal.svelte` (folds the menu
+before it closes - the live rule, a cheap fix in a path this batch makes
+busier), `lib/dict.ts` (three keys), `lib/share.ts` (`shareSelection`), the
+driver (`click(name, nth)`), the specs (two states, two press specs,
+deletions), and tests for all of it.
+
+**Non-goals.** No `#/search` (the second owner of `sel`; it arrives with the
+search slice and reads `app.sel` as-is). No `#/lists`, no `lsel`, no batch
+actions (B5.3-B5.5). No print *page*; the link is enough, as on the card. No
+`@media print` rules for the bar (the print slice owns print styles; the live
+`#selBar{display:none}` under print is recorded there). No `Panel.svelte`. No
+change to `docs/specs/*` beyond `COVERAGE.md`'s test table, `docs/fixtures/`,
+`CONTRACTS.md` or `llms.txt` - the print route already exists in the contracts
+and nothing else here is public.
+
+#### What the live app does, read off app.js and measured
+
+**The bar** (`renderSelBar`, 3706-3721; `#selBar` in index.html:81, right
+after `</footer>` and before the modal). `<div class="selbarwrap" id="selBar"
+hidden>`; while `selCount()` is zero it is `hidden` and empty. Otherwise
+`innerHTML` is:
+
+```html
+<div class="wrap selbar">
+  <span class="selcount">Выбрано 1<button type="button" class="selx" data-act="clearSel"
+    title="Снять выделение" aria-label="Снять выделение">×</button></span>
+  <div class="selacts">
+    <div class="seldrop">…addToListBtn('sel', selIds(), true)…</div>
+    <a class="btn sm" href="#/print/ci1" title="Собрать карточки для печати: девять на лист A4">
+      <svg…/>Печать</a>
+    <button type="button" class="btn sm" data-act="copySel"><svg…/>Скопировать</button>
+  </div>
+</div>
+```
+
+(Read back from the live DOM by a probe, not transcribed.) Facts in it:
+
+- The count is **one text node**, `t.selected + ' ' + n`, followed by the
+  cross. Emit it as one expression.
+- The add-to-list control is `primary` on the bar too (third argument `true`),
+  key `'sel'`, ids `selIds()` = `Object.keys(S.sel)` in insertion order.
+- The print link is `printBtn(selIds(), 'sm')` (3245-3249): an `<a class="btn
+  sm">` to `#/print/<ids joined by ->` with `title=t.printHint`, `ICON_PRINT`
+  and `t.print`. Its **accessible name is its title** (the driver's `NAME_FN`
+  prefers `title` over text), so the inventory compares the long string, and
+  `d.click('Печать')` would not find it.
+- Copy is `<button class="btn sm" data-act="copySel">` with `ICON_COPY`
+  (1041; `lib/icons.ts` `copy` is the same path) and `t.copySel`.
+- `renderSelBar()` runs on every `render()` (3790), on every tick (4407,
+  4419), after a list change (1947) and after a list rename (4433) - i.e. the
+  bar is always current. In the rewrite that is reactivity, not calls.
+
+**The handlers.**
+
+- `clearSel` (4235): `S.sel = {}; S.menuFor = ''; render()`.
+- `copySel` (4246-4250): `items = selIds().map(id => BY_ID[id]).filter
+  (Boolean)`; if any, `copyRich(selAsHtml(items), selAsText(items),
+  t().selCopied)`. `selAsText`/`selAsHtml` (1961-1966) are each record's
+  `shareText`/`shareHtml` **with no skip set** joined by `'\n\n'` /
+  `'<br><br>'` - a set, not alternatives, so no OR (the comment above them
+  says so; `tests/select.js` asserts it). `copyRich` (1010-1018) toasts
+  `selCopied` on success and `copyFailed` as an error otherwise - the
+  rewrite's `writeRich` already carries that split.
+- Ticks (4403-4420): a row box sets or deletes `S.sel[id]`; select-all walks
+  its `data-sel-all` ids in list order. Existing keys keep their position, so
+  the print link's id order is tick order. `TablesPage.svelte`'s
+  `toggleSel`/`toggleAllIn` already do exactly this on a `SvelteSet`.
+- `hashchange` (4632): `S.sel = {}; S.lsel = {}; S.menuFor = ''; S.newListFor
+  = ''` - a selection belongs to the page it was made on. The rewrite clears
+  on `app.navigations` today, inside `TablesPage`; the bar in the frame needs
+  the same rule at app level.
+
+**The styles** (style.css 54, 799-829): `.selbarwrap` is declared twice -
+`padding-bottom: env(safe-area-inset-bottom)` at 54, and at 799 `position:
+sticky; bottom: 0; z-index: 45` (above the sticky topbar's 40, below the
+menu's 60), the gradient, the gold top border, `backdrop-filter: blur(12px)`
+with its `-webkit-` twin; `.selbarwrap[hidden]{display:none}`. `.selbar` is
+`display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 0`
+**plus `.wrap`** (52-53: `width: min(1180px, 100% - 32px); margin-inline:
+auto; padding-left/right: env(safe-area-inset-*)`). `.selcount`, `.selx`,
+`.selx:hover`, `.selacts{display:flex; gap:8px; flex-wrap:wrap; margin-left:
+auto}`. Under `@media (max-width:600px)` (817-828): `.selx{width:32px;
+height:32px}`, `.selacts{width:100%; margin-left:0}`, `.selacts .seldrop{flex:
+1 1 100%}`, `.selacts .btn{flex:1 1 0; min-width:0; width:100%;
+justify-content:center; overflow:hidden}`, and the `.dropmenu{left:0; right:0;
+max-width:none}` that `AddToList.svelte` already carries. (`.selbox{width:
+38px}` in the same block is B3.5's, already ported.)
+
+**Measured, live, 2026-09-10** (a read-only puppeteer probe on `index.html
+#/tables`, two lists seeded, reduced motion): at 1100x900 the bar is 53px
+tall at y=847, `.selbar` 1053 wide from x=16, `.selacts` children 176.7 /
+86.6 / 121.9 px wide at y=858; 768 the same heights, narrower; at 375x812 the
+bar is **137px** tall (the count on one row, the add-to-list control filling
+the second at 328px, print and copy at 160px each on the third). `#/tables`
+(core_item) has 60 rows and a select-all; all ticked reads "Выбрано 60".
+
+**The bar's menu opens above the bar at every width, and `up` is set.**
+`placeMenu` (3695-3704) toggles `up` when `innerHeight - button.bottom <
+menu.height + 16`, which at the bottom of the window is always true - and
+**style.css has no base `.dropmenu.up` rule**, only `.cardpick .dropmenu.up`
+(443). So on the bar the class is inert and the base `bottom: calc(100% +
+8px)` keeps the menu above (measured: menu y=679 with the bar at 847, 230x171
+with two lists, right-aligned at x=614; at 375 it spans x=16-344 under the
+600px override). No scroll happens (`scrollY` 0; the menu is inside the
+sticky bar and already in view).
+
+**One thing the rewrite already has wrong.** `AddToList.svelte` carries
+`.dropmenu.up { bottom: auto; top: calc(100% + 8px) }` - an invented rule with
+no counterpart in style.css. On the card it is harmless (RecordCard's
+`.cardpick :global(.dropmenu.up)` overrides it); on the bar it would put the
+menu *below* a bar that sits at the bottom of the window, off-screen. Delete
+it, and correct the comment above the base rule that promises "this is the
+bar's own default (upward)" - it is, once the flip rule is gone.
+
+**Three dictionary keys are missing:** `clearSel`, `copySel`, `selCopied`
+(app.js 113-114 / 299-300). `selected`, `print`, `printHint`, `copyFailed`
+exist.
+
+#### How it is built
+
+**`app/src/state/app.svelte.ts`** - `readonly sel = new SvelteSet<string>()`
+(the type `TablesPage` already uses), documented beside `menuFor`: the bar in
+the frame reads it and the live app clears it on `hashchange`, which is why it
+is app-level and memory-only (`STATE.md`: a selection is not persisted).
+Cleared wherever `menuFor` is cleared - the router's `onChange` and `go()` -
+and untouched by `replace()`. `clearSel(): void { this.sel.clear();
+this.menuFor = ''; }` - the live `clearSel` action. The class comment's
+"a ticked row … belongs to the component that owns them" is corrected to say
+the selection is shared because the bar draws it, and still starts over on
+reload.
+
+**`app/src/components/TablesPage.svelte`** - the local `sel` goes; every
+`sel.` becomes `app.sel.`; the `$effect` on `app.navigations` keeps only
+`open = null`. Nothing else moves.
+
+**`app/src/lib/share.ts`** - `shareSelection(items, index, lang): { text,
+html }`: `share(it, index, lang)` per record with **no skip set**, texts joined
+by `'\n\n'`, htmls by `'<br><br>'`. Beside `shareRoll`, which is the same
+shape with the OR; the comment says why this one has none (a set, not
+alternatives - `selAsText` in app.js). `share.test.ts` pins the join and the
+absence of any OR word in either flavour.
+
+**`app/src/components/SelBar.svelte`** (new) - props `app`. `n =
+$derived(app.sel.size)`, `ids = $derived([...app.sel])`, `t = $derived(app.t)`.
+Renders nothing when `n` is 0 (`{#if n}` - the honest equivalent of `hidden`
+plus an emptied `innerHTML`, and it unmounts the bar's `AddToList` the way the
+live app throws its markup away). Otherwise:
+
+```svelte
+<div class="selbarwrap">
+  <div class="selbar">
+    <span class="selcount">{t.selected + ' ' + String(n)}<button
+        type="button" class="selx" title={t.clearSel} aria-label={t.clearSel}
+        onclick={() => app.clearSel()}>&times;</button></span>
+    <div class="selacts">
+      <AddToList {app} key="sel" {ids} primary />
+      <Button size="sm" href={printHash(ids)} sameTab title={t.printHint}
+        ><Icon name="print" />{t.print}</Button>
+      <Button size="sm" onclick={copySel}><Icon name="copy" />{t.copySel}</Button>
+    </div>
+  </div>
+</div>
+```
+
+`copySel`: `const index = app.index; if (!index) return; const items =
+ids.map((id) => index.byId.get(id)).filter((it): it is Record_ => !!it); if
+(!items.length) return; const { text, html } = shareSelection(items, index,
+app.lang); const ok = await app.env.clipboard.writeRich({ html, plain: text });
+app.say(ok ? t.selCopied : t.copyFailed, { error: !ok });` - the same shape
+as `RecordActions.copyText`.
+
+Styles, off style.css: `.selbarwrap` with **both** declarations merged (the
+safe-area padding from line 54 and the sticky block from 799); `.selbar`
+carrying `.wrap`'s four properties (the rewrite has no global `.wrap`;
+`Shell`'s `.foot` and `TabBar` compose `--wrap` the same way, and `var(--wrap)`
+is `min(1180px, 100% - 32px)` in `tokens.css:68`); `.selcount`; `.selx` and
+`:hover`; `.selacts`; and the 600px block: `.selx`, `.selacts`, `.selacts
+:global(.seldrop)`, `.selacts :global(.btn)`. On specificity: the live
+`.selacts .btn` wins over `.btn.sm` by order, but the properties it sets
+(`flex`, `min-width`, `width`, `justify-content`, `overflow`) are set by
+neither `.btn` nor `.btn.sm`, so the Svelte-scoped equivalents cannot collide
+whatever the bundle order - unlike the `.dropmenu` case B5.1 had to reason
+about. No `@media print`.
+
+**`app/src/components/Shell.svelte`** - `<SelBar {app} />` between
+`</footer>` and `<Toast {app} />`, the live order (index.html 75-92: footer,
+`#selBar`, modal, `#toast`). Sticky `bottom: 0` works inside `#app` as it does
+inside `body`: `#app` spans the document.
+
+**`app/src/components/AddToList.svelte`** - delete `.dropmenu.up`; fix the
+header comment ("once B5.2 builds it") and the base-rule comment. The
+`try`/`catch` in `onDocumentClick` stays - it is the belt.
+
+**`app/src/components/RecordModal.svelte`** - the braces: every close path
+(the close button, the backdrop, Escape/`cancel`) sets `app.menuFor = ''`
+*before* telling the parent to close, which is the live app's own order
+(`S.menuFor = ''` ahead of `closeModal()`, as B5.1's reviewer noted). Without
+it the card's menu, left open when the modal closes, is still `open` when
+that record's modal is reopened (`aria-expanded="true"`, menu drawn) - the
+first Deferred finding from B5.1's review, taken here because a second
+`AddToList` in the frame makes a stale `menuFor` twice as visible: the bar's
+own button would read pressed-but-closed. One line per close path; the
+component already holds `app`.
+
+**`app/src/lib/dict.ts`** - `clearSel: 'Снять выделение' / 'Clear selection'`,
+`copySel: 'Скопировать' / 'Copy'`, `selCopied: 'Выбранное скопировано' /
+'Selection copied'`, character for character from app.js 113-114 and
+299-300.
+
+**`tests/parity/driver.js`** - `click(name, nth = 0)`: exact-name matches are
+collected, the `nth` taken; the `includes` fallback applies only when `nth`
+is 0, as today. Needed because every row checkbox is named "Выбрано" and
+select-all has no accessible name of its own (a `<label>` wraps it; `NAME_FN`
+reads `aria-label`/`title`/text and finds none on the input), so a second
+row is the only way to two ids. `pressed` records the name as before.
+
+**`tests/parity/specs.js`**
+
+- `NAME` gains `copySel: 'Скопировать' / 'Copy'` and `clearSel: 'Снять
+  выделение' / 'Clear selection'`. Both are exact-unique among controls on
+  `#/tables` (the other copy buttons are "Скопировать ссылку …" / "Copy …
+  link"; `click` prefers an exact match).
+- States, after `#/tables ~ a row ticked`:
+
+  | id | storage | enter | what it is for |
+  |---|---|---|---|
+  | `#/tables ~ bar menu` | `two` | `click('Выбрано')`, `click('Выбрано', 1)`, `click('Добавить в список')` | "Выбрано 2"; the menu above the bar, right-aligned, labelled "Добавить в" (two ids), "Лавка в порту" over "Клад дракона", "+ Новый список"; the button pressed, caret up; at 375 the menu spans the bar's width. English cells show the menu folded (the outside-click rule, as on the card). |
+  | `#/tables ~ selection copied` | - | `click('Выбрано')`, `click('Скопировать')`; **`timed: true`** | the "Выбранное скопировано" toast over the bar with one row ticked |
+
+  `#/tables ~ a row ticked`'s `why` is rewritten ("the bar, one row ticked")
+  now that the missing bar is no longer what it is honest about.
+- Press specs:
+  - `copiedSelection` (`presses: true`, `only: ['#/tables ~ a row
+    ticked']`): `resetClipboard()`, `click('Выбрано', 1)`, `click(NAME[lang]
+    .copySel)`, return `{ clip: await d.clipboard() }` - both flavours of two
+    records joined, compared character for character across the apps. This
+    is where `shareSelection` meets `selAsText`/`selAsHtml`.
+  - `barMembership` (`presses: true`, `only: ['#/tables ~ bar menu']`):
+    reopen the menu when the chip is not on screen (`if (!(await d.has('Клад
+    дракона'))) await d.click(NAME[lang].addToList)`), `click('Клад дракона')`,
+    then return `{ stored: JSON.parse(await d.storage('dhloot.lists.v2')).map
+    ((l) => [l.id, l.ids.length]), barStillUp: await d.has(NAME[lang].
+    clearSel) }` - `[['a', 2], ['b', 0]]` and `true`: two ids landed in one
+    press, and the selection survived it (`tests/select.js` asserts the
+    same on the live app: "мешает добавить в два списка подряд").
+- Deletions: the six `selBar(...)` entries, the `selBar` helper and its
+  comment (845-847), and the two `#/tables ~ a row ticked … :: controls`
+  lines in `ACCEPTED` (the run fails on a stale one).
+
+Expect **zero** on every cell of all three states in both languages. Where
+to look first if one is not: the bar's height at 375 (137px live - a wrap
+that differs is `.selacts .btn`'s `flex: 1 1 0` or `min-width: 0` missing);
+the menu's vertical position (if it is not above the bar, the `.dropmenu.up`
+rule is still there); the `.selcount` text (one node); the print link's
+`title`.
+
+#### Tests
+
+- `state/app.test.ts` - `sel` clears on `go()` and on a change the router
+  announces, survives `replace()`; `clearSel()` empties it and folds
+  `menuFor`.
+- `lib/share.test.ts` - `shareSelection`: two records joined by `\n\n` and
+  `<br><br>`, no OR in either flavour, a shared craft target repeated rather
+  than skipped (the live behaviour, no skip set).
+- `components/tables.test.ts`, a new `describe('the selection bar')` using
+  the file's `LOOT` and `at()`: no bar and no "Снять выделение" with nothing
+  ticked; one tick draws "Выбрано 1", the cross, "Добавить в список"
+  (`aria-expanded="false"`), a print link with `href="#/print/<id>"` and the
+  live title, and "Скопировать"; a second tick reads "Выбрано 2" and the href
+  carries both ids in tick order; the cross clears every checkbox and the bar
+  goes; select-all reads the row count; the bar's menu says "Добавить в" with
+  two ids and "Лежит в списках" with one (two lists in `memoryStorage`); a
+  chip adds both ids to storage, keeps the ticks and toasts `Добавлено в
+  «Клад дракона»: 2`; copy calls `writeRich` with the joined flavours and
+  toasts "Выбранное скопировано", `fakeClipboard({ fail: true })` toasts
+  "Не удалось скопировать" as an alert; `router.navigate` to another table
+  drops the bar (the existing "keeps the selection on a filter pick, and
+  drops it on a navigation" case stays and now also asserts the bar). Each
+  ends with `expectNoA11yViolations`.
+- `components/record.test.ts` (or `roll.test.ts`, wherever the modal's close
+  cases live) - open a record's modal, open its add-to-list menu, close the
+  modal by the button; reopen the same record: the button reads
+  `aria-expanded="false"` and no menu is drawn. The same through the backdrop.
+- `components/a11y.test.ts` - a state `{ what: 'the selection bar with its
+  menu open', route: '#/tables', storage: <two lists>, enter: tick the first
+  row checkbox by role (`press` grips buttons; use `getAllByRole('checkbox',
+  { name: 'Выбрано' })[0]`), then `press('Добавить в список')` }`; `COVERED`
+  gains `'SelBar.svelte'`.
+- `docs/specs/COVERAGE.md` - the `components/tables.test.ts` row in the test
+  table mentions the bar.
+
+#### Ordered steps
+
+1. `dict.ts`: the three keys. `share.ts`: `shareSelection` and its test.
+2. `app.svelte.ts`: `sel`, `clearSel`, the clearing, the comment;
+   `app.test.ts` cases. `TablesPage.svelte`: `app.sel`; `npm run test --
+   tables` green before going on.
+3. `AddToList.svelte`: the rule and the two comments. `RecordModal.svelte`:
+   `app.menuFor = ''` on every close path, and its test.
+4. `SelBar.svelte`; `Shell.svelte` renders it.
+5. `tables.test.ts` cases; `a11y.test.ts` state and `COVERED`;
+   `COVERAGE.md`'s row.
+6. `driver.js`: `nth`. `specs.js`: `NAME`, the two states, the two press
+   specs, the deletions.
+7. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call,
+   `timeout: 600000`.
+8. `npm run build`, then `node tests/parity.js "a row ticked" "bar menu"
+   "selection copied"` (3 states, one timed) - the loop while getting to
+   zero; then `node tests/parity.js "#/tables ~"` (8 states: grid, searched,
+   nothing found, a row opened, a row ticked, help, bar menu, selection
+   copied) and `node tests/parity.js "i/ci1 ~"` (6 states - the card's menu
+   states must still be zero after the `.dropmenu.up` deletion). Three
+   foreground calls, each inside the cap; do not merge them.
+9. `npm run check:built`.
+10. `plan.md` gains "B5.2 built, part 1"; `handoff.md`; one commit,
+    `feat(lists): the selection bar`, authored as `artex-x`, no push.
+
+#### Acceptance criteria
+
+- Ticking any row on any table raises the bar after the footer, sticky at the
+  window's bottom: "Выбрано N", the cross (named "Снять выделение"), the
+  primary add-to-list control, a print link to `#/print/<ids in tick order>`
+  titled with `printHint`, and "Скопировать".
+- The cross clears every tick and folds an open menu; a navigation clears the
+  selection; a filter pick does not.
+- The bar's menu opens **above** the bar, labelled "Добавить в" for two or
+  more ids and "Лежит в списках" for one; a chip adds every id the list lacks
+  in one press, keeps the selection and toasts with the count.
+- Copy puts both flavours of every selected record on the clipboard, joined
+  by `\n\n` / `<br><br>`, with no OR; toasts "Выбранное скопировано", or
+  "Не удалось скопировать" as an alert.
+- At 600px and under, the cross is 32px, the actions take a full row, the
+  add-to-list control fills a row of its own and print/copy share the next.
+- `#/tables ~ a row ticked`, `~ bar menu` and `~ selection copied` read 0.00%
+  at every cell in both languages; the six `selBar` entries and the two
+  `ACCEPTED` lines are gone; `copiedSelection` and `barMembership` match;
+  `node tests/parity.js "i/ci1 ~"` still reads zero on the card's menu
+  states.
+- `npm run check` and `npm run check:built` exit 0 with thresholds met.
+
+#### Risks and do-nots
+
+- Do not keep `.dropmenu.up` in `AddToList.svelte` "for the card" - the card's
+  flip is RecordCard's rule, and on the bar this one hides the menu.
+- Do not render the bar inside `TablesPage`, and do not put it before the
+  footer: the live DOM order is footer, bar, modal, toast, and sticky
+  geometry follows the DOM.
+- Do not split "Выбрано" and the number into two text nodes; do not put the
+  cross outside `.selcount`.
+- Do not pass a `skip` set to `share()` in `shareSelection`: the live
+  selection copy repeats a shared craft target, and `copiedSelection` compares
+  it character for character.
+- Do not `aria-label` the select-all checkbox to make it clickable from the
+  harness - the live app has none, and the inventory would differ.
+- Do not make `~ bar menu` timed (nothing in it fades) and do not forget
+  `timed: true` on `~ selection copied` (part 0's rule: an `enter` that raises
+  a toast).
+- Do not write a `VISUAL_DEBT` number from this host; the three states are
+  expected at zero and a non-zero cell is a diff image opened first.
+- Grep the diff for `' <` at the start of an `{#if}`/`{#each}` block.
+- One commit, no push, no `Co-Authored-By`.
+
+**Decided in planning - do not reopen.**
+
+- **`sel` lives on `AppState` as a `SvelteSet`, cleared with `menuFor`.**
+  The bar is in the frame and the live app clears the selection on
+  `hashchange`; both are app-level facts. Rejected: a `sel` store module of
+  its own (one set and one method - an abstraction ahead of need), and
+  keeping `sel` in `TablesPage` with the bar rendered from there (the frame
+  owns the bar, and search will own the same set).
+- **`SelBar.svelte` is `{#if n}`, not `hidden`.** Unmounting is what the live
+  app's emptied `innerHTML` does to the menu inside it; `hidden` would keep a
+  live `AddToList` and its document listener around for no reason.
+- **`shareSelection` lives in `lib/share.ts`.** The join is logic, the module
+  already holds `shareRoll` with the sibling rule, and a unit test pins the
+  no-OR contract. Rejected: joining inline in the component (untestable
+  without the DOM, and the second copier - the list page - is one batch away).
+- **`.wrap` is composed into `.selbar`, not added as a global class.** Every
+  frame element in the rewrite composes `--wrap`; a utility class would be a
+  fourth way to say the same thing.
+- **`d.click` grows `nth`, not a selector.** The harness grips by name on
+  purpose; an index on an exact-name match keeps that rule and is the smallest
+  thing that reaches a second identical checkbox. Rejected: naming select-all
+  (changes the live-vs-rewrite inventory), a `clickAll(name)` verb (nothing
+  else wants it).
+- **Two new states, not four.** A "two rows ticked" state without the menu
+  and an "all ticked" state add cells that differ from `~ bar menu` and
+  `~ a row ticked` by a digit; the count and select-all are component-tested.
+- **Search stays where it is.** `SelBar` reads `app.sel` from any page, so the
+  search slice gets the bar for free when it builds its rows.
 
 ## Phase 5 - what already exists
 
