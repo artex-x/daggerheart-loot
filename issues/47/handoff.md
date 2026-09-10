@@ -13,8 +13,9 @@ depends on chat history.
   `ff741ad`, on top of `4210ee3`, **reviewed: approve, no blockers**
   (four nits in "Deferred"). All local acceptance criteria met, three parity
   filters clean (102 cells), `npm run check` and `npm run check:built` both
-  exit 0. **Neither part has been read by CI** - nothing is pushed, and that
-  read is what closes both; see "Blockers". **B5.3 (the lists page,
+  exit 0. **Part 0 is closed by CI: run `34492619641` on `4210ee3` is green on
+  every job, `deploy` included.** Part 1 (`ff741ad`) is unpushed and unread;
+  see "Blockers". **B5.3 (the lists page,
   `noData`, `storageOff`) is next and needs planning first** - see "Next
   batch".
 - Last agent: reviewer (2026-09-10, opus, against `ff741ad`: **approve**, no
@@ -1505,9 +1506,20 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     `core_item ~ row anchor @ ru 375`) measuring better than recorded debt -
     pre-existing since B4, unrelated to B5.1, still the orchestrator's.
 
-- **CI is red on five cells, two runs (`34482875625` on `a404a52`,
-  `34485537392` on `b6a2fcd`) - fixed locally in B5.2 part 0, CI's read of the
-  fix is still open.** All five were B5.1 entries written off Windows
+- **RESOLVED, measured: CI is green. B5.2 part 0 did what it was for.** The
+  owner pushed through `4210ee3`; run **`34492619641`** completed `success`
+  on **every job** - `check`, `audit`, `secrets`, all four `parity` shards and
+  `deploy`, read by the orchestrator on 2026-09-10. That is the first green
+  run on `main` since `34448283081`, and `deploy` ran for the first time since
+  the five cells went red. Part 0 is closed. What follows is the record of
+  what was wrong and why it was fixed the way it was; it is history, not work.
+  **Still open, and the only thing outstanding on this task: `ff741ad` (part 1,
+  the selection bar) and `6084846` are not pushed, so CI has not read the
+  selection bar.** Same shape, same closing condition - a run id recorded
+  here.
+
+- **The history: CI was red on five cells, two runs (`34482875625` on
+  `a404a52`, `34485537392` on `b6a2fcd`).** All five were B5.1 entries written off Windows
   readings with "CI to confirm" in their `why`
   (`#/i/ci1 ~ whole @ ru 1100 / ru 768 / en 1100`, `#/i/ci1 ~ toast @ en 768 /
   en 375`); CI read every one at 0.00%, so the ratchet failed them as
@@ -1516,10 +1528,7 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   exists to lower to but zero, and the Windows one is forbidden as a
   baseline. `context.md`, "CI is red again", carries the run ids and the
   passing siblings; `plan.md`, "B5.2 built, part 0", the reasoning and the
-  reduction commands. **Not yet closed: the orchestrator has not read a CI
-  run on this batch's commit.** That read - and recording its run id here -
-  is what closes this blocker and B5.2 part 0 itself; nothing about it can be
-  verified from this host.
+  reduction commands. Closed by run `34492619641` above.
 
 - **The timed-state class - decided: per-width re-arrival, not a slack.**
   The owner assigned this to B5.2's planning on 2026-09-10 with two candidates
