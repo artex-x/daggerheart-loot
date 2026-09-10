@@ -116,6 +116,13 @@ const WANTED = process.argv
  * mask exactly the kind of difference the cache promises never to mask. The
  * cost is that any edit to this file invalidates the whole cache - correct,
  * and cheap next to silently serving stale legacy PNGs.
+ *
+ * A `timed` state's legacy side is never served from this cache, on either
+ * the read or the write side. A timed shot's bytes depend on the clock at
+ * capture - how far a 1600ms toast had faded when the shutter fired - so no
+ * cached entry can be "the exact bytes an uncached shot would have
+ * produced": the promise above holds only for a page whose pixels are a pure
+ * function of route/enter/viewport, and a timed state's are not.
  */
 const CACHE = (() => {
   const hashFile = (h, at) => {
@@ -411,7 +418,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
           const buf = await d.shot(whole);
           const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
           fs.writeFileSync(at, buf);
-          if (target === 'legacy' && !measured.length) CACHE.write(cacheKey, size.w, buf);
+          if (target === 'legacy' && !measured.length && !timed) CACHE.write(cacheKey, size.w, buf);
           shots[target][size.w] = at;
         };
 
@@ -457,7 +464,9 @@ function pixelDiff(aBuf, bBuf, outPath) {
           for (const size of sweep) {
             const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
             const cached =
-              target === 'legacy' && !measured.length ? CACHE.read(cacheKey, size.w) : null;
+              target === 'legacy' && !measured.length && !timed
+                ? CACHE.read(cacheKey, size.w)
+                : null;
             if (cached) {
               fs.writeFileSync(at, cached);
               shots[target][size.w] = at;
@@ -474,7 +483,9 @@ function pixelDiff(aBuf, bBuf, outPath) {
           for (const size of WIDTHS.slice(1)) {
             const at = path.join(SHOTS, `${slugOf(id, lang, size.w)}-${target}.png`);
             const cached =
-              target === 'legacy' && !measured.length ? CACHE.read(cacheKey, size.w) : null;
+              target === 'legacy' && !measured.length && !timed
+                ? CACHE.read(cacheKey, size.w)
+                : null;
             if (cached) {
               fs.writeFileSync(at, cached);
               shots[target][size.w] = at;

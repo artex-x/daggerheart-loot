@@ -160,7 +160,9 @@ defect the state exists to catch.
    a different clock. Mark the state `timed: true` and the runner arrives at
    it afresh at every width, on both sides, so every shot is the same fixed
    distance from the press. A `timed` cell that is still non-zero locally is
-   the toast's own pixels, not the class - open the diff.
+   the toast's own pixels, not the class - open the diff. Its legacy side is
+   never served from the screenshot cache - a cached timed shot is a clock
+   frozen under whatever load wrote it.
 2. **Full-page captures.** `whole: true` rasterises the whole document in one
    `page.screenshot({ fullPage: true })`, most of it never painted before that
    call; the geometry read back byte-identical while the pixels swung
