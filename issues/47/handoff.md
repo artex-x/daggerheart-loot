@@ -7,8 +7,8 @@ depends on chat history.
 ## Status
 
 - Task status: in_progress - B4 built and committed (`fde9cdc`, reviewed);
-  **B5.1 is built this session** - see "Completed" for its commit sha; B5.2
-  is next, not yet planned in detail (see "Next batch")
+  **B5.1 is built and committed as `fe0043b`**; B5.2 is next, not yet planned
+  in detail (see "Next batch")
 - Last agent: implementer (2026-09-10: built B5.1 - the list store, the
   toast, and the add-to-list row on the card)
 - NEEDS_HUMAN_CONFIRMATION: no
@@ -16,14 +16,18 @@ depends on chat history.
 - Base / starting commit: `ccb80cb`. B3.5 is `a58dd97` plus its remediation
   `fb8cb0d`; **B3.6 is complete in all three parts** - part 0 `f7308a9`,
   part 1 `38cfbbb`, part 2 `958f182`; the container tooling is `1d368e2`.
-  B4 is `fde9cdc`. **B5.1 is built this session** - see "Completed" for its
-  commit sha.
+  B4 is `fde9cdc`. **B5.1 is `fe0043b`**, committed by the orchestrator after
+  the implementer reached its usage limit with the tree staged, its checks
+  green and the gate armed - see "Verification".
 
-Phase 4's B1-B3.6 and B4 are all built. B4 was the last body shape the tables
-slice needed (`plan.md`, "the tables surface, and how it splits"), so every
-table in `TABLE_DEFS` now draws a real body and `TablesPage.svelte` carries no
-placeholder branch. What is left of Phase 4 is the lists, search and print
-slices - none of them implement-ready yet; see "Next batch".
+Phase 4's B1-B3.6, B4 and B5.1 are all built. B4 was the last body shape the
+tables slice needed (`plan.md`, "the tables surface, and how it splits"), so
+every table in `TABLE_DEFS` now draws a real body and `TablesPage.svelte`
+carries no placeholder branch. The lists slice is planned as six batches
+(`plan.md`, "B5 planned") and **B5.1 is the first of them, built**: the list
+store, the toast and the add-to-list row on the card. What is left of Phase 4
+is B5.2-B5.6, the search slice and the print slice - none implement-ready
+yet; see "Next batch".
 
 B4 was offered as a merge target for B3.6 and was deliberately not folded in:
 its acceptance includes a clean parity run and possibly new `VISUAL_DEBT`

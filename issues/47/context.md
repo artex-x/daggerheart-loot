@@ -33,6 +33,16 @@ regressed. Re-run it. Fallback if it repeats on a loaded host,
 `vite.config.mts`, `package.json` or the hooks is changed. Full write-up:
 `handoff.md`, "Verification".
 
+**Corrected the same day: 165s is not a constant, it is one host's idle
+moment.** B5.1's implementer, hours later on this same machine, had its first
+`npm run check` **exceed the 600s foreground cap** and get moved to the
+background; its later calls, including the gate-arming one, finished in the
+foreground. So the standing instruction is unchanged - run it in the
+foreground, one call, `timeout: 600000` - but a worker must expect the cap to
+be reachable under load and must not read "165s" as a guarantee. What does not
+change: a backgrounded run cannot arm the gate however honestly it passes, so
+a run that goes over is re-run, not salvaged.
+
 ## State at B4 kickoff (2026-09-09, orchestrator)
 
 - Working tree clean at `ccb80cb`. B3.6 is complete in all three parts:
