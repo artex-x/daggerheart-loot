@@ -36,12 +36,63 @@ When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to pl
   - If the source is huge or needs a multi-batch app surface, you may plan with **planner** first, then **implementer**
 - **App/feature/refactor work** (including issue-driven code changes): **planner** -> **implementer** -> optional **reviewer**
 
+## Do not do the planner's job
+
+Coordinating is not deciding. The orchestrator runs things and records what
+they measured; turning an open question into an answer is the planner's role,
+and it is the one this session keeps taking back.
+
+The test, and it is a sharp one:
+
+- **A number or a status is yours.** A check's wall clock, a parity cell's
+  percentage, a CI run's conclusion, which commit a tree sits on. Measure it,
+  write it into `context.md`, move on.
+- **Anything that would be written down as a design is the planner's.** A root
+  cause, a rejected-alternatives list, a standing rule, a "what we do about X",
+  a change to config or tooling. Hand it over with the evidence already
+  collected, so nothing is measured twice.
+
+A GOAL of the shape "figure out what to do about X" is a planning dispatch,
+not an invitation to settle X inline. Happened 2026-09-10 with the
+`npm run check` question: the orchestrator timed every stage, read vitest's
+internals, decided against a config change and wrote the verdict into
+`context.md` and `handoff.md` itself. The verdict held up - and that is the
+trap. Nothing reviews the orchestrator's reasoning, no `plan.md` section
+carries it, and the strongest coordination context in the session gets spent
+on analysis instead of on dispatching. Measure the symptom if a cheap
+measurement is what routing needs, then let the planner own the answer.
+
 ## Long-running checks (the most expensive mistake this setup makes)
 
 A worker that ends its turn with a check still running loses it: the shell dies with the agent
 and the result is gone even though the command finished. The replacement may
 be a cold agent that re-reads everything - that happened twice in one session and cost
 more than the batch itself.
+
+### A worker waiting on a background check: wait with it
+
+When a worker's turn ends saying it is waiting for a check, that is a claim to
+verify, not a state to act on. Before anything else, find out whether a run is
+actually alive - `ListAgents` for the agent, and the host's own process list
+for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
+
+- **Something is running: wait.** Do not conclude, do not dispatch, do not kill
+  it, and do not start a heavy run of your own alongside it - two heavy runs on
+  one tree corrupt each other's results. Say so to the human and hold.
+- **Nothing is running: the result is gone**, whether or not the command
+  finished. The worker has to re-run it in the foreground, one call, unchained
+  and unredirected, or the commit gate can never see it. Resume the worker -
+  it holds the context a fresh one would re-derive at full cost.
+- **If this host cannot resume it, ask the human.** Measured 2026-09-10 on the
+  Windows desktop app: `SendMessage` is disabled for the main session and for
+  subagents alike, so a stopped worker is resumable only from the human's side.
+  One question is cheaper than a cold replacement, and far cheaper than two
+  writers on one tree.
+
+Third occurrence of this shape on one task, 2026-09-10. The instruction that
+prevents it belongs in the dispatch: name the checks, say they fit one
+foreground call, and say plainly that a backgrounded or file-redirected run
+cannot satisfy the gate however honestly it passes.
 
 Known costs in this repo:
 
@@ -72,6 +123,9 @@ A task notification fires when an agent **ends a turn**, not when it exits. Its
 `completed` status describes that turn. An agent that stopped mid-work is still
 listed, still holds its context, and the human can resume it from their side -
 the orchestrator cannot, because `SendMessage` is not exposed on every host.
+Measured on the Windows desktop app, 2026-09-10: it is disabled there for the
+main session and for subagents alike, so on that host resuming is always the
+human's to do.
 
 Happened once, 2026-09-09, and cost a duplicate agent: a worker ended its turn
 waiting on a parity run, the orchestrator read the notification as termination,
