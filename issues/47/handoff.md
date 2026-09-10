@@ -1220,6 +1220,18 @@ own - it names the surface, not the file-by-file design.
   re-arrive per width for them. **Do not settle this in a fix-pass.** B5.2 is
   planned extensively in its own session; this is part of its brief.
 
+- **A second unstable class, distinct from the toast and worth naming in the
+  same research.** `#/i/ci1 ~ whole` fluctuates on this host with an unchanged
+  build - `@ ru|en 1100` carry entries reading "unstable on this host - paint
+  noise, geometry identical", and B5.1's fix-pass had to add `@ ru 768` at
+  7.31 after the full suite caught it, having itself read 0.00% on three
+  consecutive local runs. It recorded the **worst** reading rather than its own
+  best, which is the honest choice and has a consequence to expect: the
+  ratchet fails a cell that measures better than its debt by more than
+  `DEBT_SLACK`, so these entries will flap red locally until CI settles them.
+  Timed toasts and paint-noise whole-page shots are two different mechanisms
+  with one symptom; a fix for one does not fix the other.
+
 
 - **`#/i/ci1 ~ whole @ 1100` needs a CI reading before its `VISUAL_DEBT`
   figure can be trusted - this machine gave two different answers on an
@@ -1337,6 +1349,56 @@ own - it names the surface, not the file-by-file design.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B5.1's review findings the fix-pass deliberately did not take** (reviewer,
+  opus, against `fe0043b`; verdict fix-then-continue, its two blockers fixed
+  in `d1c1367`). Each is real, none is urgent, and the first two are the ones
+  most likely to bite:
+  - **`app.menuFor` is left stale when a modal closes with the menu open.**
+    `AddToList.svelte`'s outside-click handler catches the null-prop race and
+    returns early, so the live app's own rule - clear `S.menuFor` *before*
+    `closeModal()` - never runs. Reopening that record's modal shows the menu
+    already open with `aria-expanded="true"`. Live has the same hole on the
+    Escape path, so it is a small divergence rather than a new class of bug,
+    and nothing covers it. The reviewer's suggested shape:
+    `if (!root?.isConnected) return;` before reading `key`, so a torn-down
+    instance bows out while a live one still closes.
+  - **The toast's hide dropped a guard the live app paid for.** `style.css:608`
+    records defect #10 by name: `.toast.act`'s `display:inline-flex` beat
+    `display:none` at equal specificity and left an empty gold plate on screen,
+    fixed there with `[hidden]{display:none !important}`. The rewrite hides
+    through the UA rule `[popover]:not(:popover-open){display:none}`, which an
+    author style outranks - so `.toast.act { display: inline-flex }` would
+    defeat it. It is safe today only because Svelte runs render effects before
+    user `$effect`s, so the class is gone before `hidePopover()`. One refactor
+    from reintroducing a defect this project already paid for, and untested.
+  - **"The toast is announced above the dialog's inertness" is asserted, never
+    verified.** It is the stated reason for `popover="manual"` over a plain
+    fixed element. Parity proves it *paints* above the backdrop; nothing proves
+    a screen reader hears an `aria-live` region in the top layer while a modal
+    dialog is open. If it is false, the `sr-only` region B5.1 deleted from
+    `RecordModal.svelte` was load-bearing. B5.1 deleted the belt and kept only
+    the braces.
+  - `AppState.stop()` clears the router and the list watch but not
+    `#toastTimer`, so a pending `hideToast()` outlives a stopped app.
+  - `ListStore.load()` ignores `storage.set`'s return during the v1 migration
+    where `app.js:1149-1160` returns `[]` on a throw - arguably better, but an
+    undocumented divergence in a data path with no test either way.
+  - `AddToList.toggle()` folds `newListFor` where `app.js:4234` does not;
+    reachable only by close-then-reopen.
+  - `pick()` and `createNew()` each define an identical `knows` closure
+    (`AddToList.svelte:77`, `:104`).
+  - The multi-id branches (`t.addTo` as the label, `': ' + fresh.length` on the
+    toast) have no caller until B5.2 and so no test.
+  - `shell.test.ts`'s "calls showPopover/hidePopover when the browser has them"
+    stops one step short of its own title: it never asserts `el.style.display`
+    was left alone, which is the half that proves the jsdom fallback did not
+    fire.
+- **Three anchor cells still measuring better than their recorded debt** -
+  `#/tables/voa ~ section anchor @ ru|en 375`, `#/tables/core_item ~ row anchor
+  @ ru 375`. Pre-existing since B4, unrelated to B5.1, and still nobody's
+  batch. They are the frozen-scrollY-across-the-width-sweep limitation.
+
 
 - **B4's review: approve, no blockers** (reviewer, this session, against
   `fde9cdc`). It verified rather than read: the `allEquip` order against
@@ -1554,10 +1616,28 @@ own - it names the surface, not the file-by-file design.
     wiped and rewritten per run, so overlapping runs clobber each other's
     screenshots and each other's cache-key counts. Verdicts survived it once
     here, but do not assume that twice.
-  - **`npm run check` starts with `prettier --check .`, which covers
-    markdown.** Editing `plan.md` or `handoff.md` while a check runs risks a
-    torn read and a format failure blamed on the wrong change. Write the docs
-    first, or after, never during.
+  - **Withdrawn, and it was false from the day it was written: `npm run check`
+    does not check markdown at all.** This entry used to say that
+    `prettier --check .` covers markdown and that editing a doc mid-run risks
+    a torn read. `.prettierignore` has carried `*.md` since `5ab5880`
+    (2026-08-30, Phase 1), with its reason beside it - markdown here is
+    wrapped by hand because a line break carries meaning in the specs, and the
+    licence line is pinned by `tests/derived.js`. `prettier --file-info`
+    returns `"ignored": true` for this file, for `docs/specs/COVERAGE.md` and
+    for `CLAUDE.md` alike. An `issues/**` edit can neither fail a check nor be
+    corrupted by one. The false version cost real caution for months,
+    including two deferred edits by the orchestrator on 2026-09-10 - it is
+    left here as a withdrawal rather than deleted silently, because a gotcha
+    that was believed is worth one line saying it should not be.
+  - **`npx prettier --check <file>.md` prints "All matched files use Prettier
+    code style!" while matching zero files.** A success message from an empty
+    set is indistinguishable from a verified one. Do not cite it as evidence
+    that a doc edit is well-formed; there is nothing to be well-formed
+    against.
+  - **The real reason not to edit a doc mid-run is a second writer**, not a
+    formatter: an agent holding `handoff.md` and an orchestrator writing to it
+    is a genuine conflict. Check `ListAgents` before writing a file a worker
+    was dispatched to update.
   - **The five-hour usage window is not machine-readable outside a terminal
     session.** It reaches only the `statusLine` command, which the desktop app
     never invokes - measured: a probe recorded zero invocations while hooks
