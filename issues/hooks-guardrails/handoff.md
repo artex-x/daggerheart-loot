@@ -7,7 +7,22 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 - Task status: **done**. B1 (the only batch) implemented and committed in
   one commit, 2026-09-10 - see "Completed" below for the sha and "Next
   batch" for why there is none.
-- Last agent: implementer (2026-09-10: implemented plan.md section 5 steps
+- Reviewed: **approve** (reviewer, Opus, read-only, 2026-09-10). It
+  re-derived `isCheckInvocation` from the shipped file and ran ~50 adversarial
+  shapes through it: no ordering, repetition or interleaving of the `cd` and
+  `set -o pipefail` strips admits anything new, and all six of row 30's
+  forgery shapes are refused by the shipped code, not merely by a selftest
+  string. It confirmed rule 2g inert on an absent or non-boolean flag, rule 2h
+  fail-open on every malformed/dead/stale/missing-lock path, the lock acquired
+  before the `test-output/` wipe and unable to wedge the tree, and one
+  canonical invocation across `.claude`, `CLAUDE.md` and `docs`. It verified
+  `selftest.mjs` at **292 passed, 0 failed** itself. One gap, fixed in
+  reconciliation (below); nits are in Deferred. It also judged the two
+  commits acceptable (a handoff cannot carry its own sha) and the
+  `check-observer.mjs` doc-comment fix correct under the campsite rule.
+- Last agent: orchestrator (2026-09-10, reconciliation: the review's one
+  finding plus its nit 3, `.md` only - see "Completed")
+- Prior agent: implementer (2026-09-10: implemented plan.md section 5 steps
   1-10 exactly - the shared regex and observer prefix strip, the lock
   module, the runner wiring, rules 2g and 2h in `bash-guard.mjs`, the
   reminder's timeout and persisted-file hints, selftest cases `#64-#101`
@@ -225,12 +240,36 @@ liveness across processes is probe B.
     - a fresh `at`. `wc -l CLAUDE.md` -> **195**, matching the acceptance
     number.
 
+## Reconciliation (orchestrator, 2026-09-10, after review)
+
+One `.md`-only commit; `.claude/README.md` is gate-exempt (`isExempt`), so no
+`npm run check` re-run was needed and the armed cache for `b6a2fcd`'s tree
+still stands.
+
+- **The review's one finding.** `context.md`'s "two pieces of durable text B1
+  owns" named the markdown-coverage sentence, and plan section 5 step 6's
+  verbatim README paragraph silently dropped it - a planning miss the
+  implementer could not have caught while following the plan literally. The
+  "Run a long check" section now ends with a paragraph saying the check does
+  not cover markdown at all, that `.prettierignore` has carried `*.md` since
+  `5ab5880` with its reasoning beside it, that an `issues/**` or
+  `docs/specs/` edit therefore can neither fail a check nor be corrupted by
+  one (which is also why the gate exempts those paths), how to change it, and
+  the trap that `npx prettier --check <some>.md` prints a success message
+  while matching zero files. The other piece - deleting issue 47's false
+  gotcha - had already landed in `a404a52`.
+- **Nit 3.** The hook table's rule 2h row omitted `check:fast` from the
+  blocked heavy families. It is blocked (`LONG_CHECKS`'s `/^npm run check/`
+  matches it, proved by selftest `#77`); only the table was wrong.
+
 ## Next batch
 - None. This was the only batch (`plan.md` section 7; "There is no B2").
-  The task directory is ready for orchestrator reconciliation and
-  retirement per `.claude/prompts/orchestrate.prompt.md`'s task-closeout
-  checklist - durable knowledge already lives in `.claude/README.md` and
-  `docs/parity.md`, not only here.
+- **`plan.md` is deliberately retained.** `.claude/README.md`'s candidate
+  row 31 points at `plan.md` section 5, "Row 31, when it is needed" for the
+  verbatim sketch, so the closeout rule's condition - delete it once nothing
+  in it is still referenced - is not met. Everything else durable already
+  lives in `.claude/README.md` and `docs/parity.md`. Whoever ships row 31
+  should move the sketch into its README row and delete `plan.md` then.
 - Not shipped, by scope, with its own precondition already measured: row
   31 (the no-timeout deny), sketched verbatim in `plan.md` section 5, "Row
   31, when it is needed". Probe A0 above measured `tool_input.timeout`
@@ -243,6 +282,45 @@ liveness across processes is probe B.
 - None. The task is done.
 
 ## Deferred
+
+Review nits, 2026-09-10. None justified a remediation cycle; the reviewer's
+one blocker-shaped finding was fixed in reconciliation instead.
+
+- `context.md`'s measured fact 2 still names
+  `set -o pipefail; npm run check 2>&1 | tee <log> | tail -n 120` as the form
+  B1 should write into its five places. It is superseded: the owner's
+  decision 3 and the shipped batch use the `tail`-only form, and "no second
+  form circulates" is a settled constraint. The `tee` measurement itself
+  stands. The reviewer confirmed by direct probe that the observer **does**
+  accept a `tee` pipeline with or without the prefix - so fact 2's
+  read-from-code claim was right - but nothing pins that with a selftest
+  case, because `tee` left the canonical form before the case list was
+  written. Measured, not pinned.
+- `tests/parity/lock.js:54`: `describe()` can throw `RangeError` on a
+  finite-but-out-of-range `startedAt`; `readLock` validates `at`, not
+  `startedAt`. In the hook this fails open (`guard()` swallows it); on
+  `tests/parity.js:299`'s already-running path it would surface as an
+  uncaught throw. Needs a live pid plus a hand-corrupted lock.
+- `tests/parity/lock.js:68`: `acquire` is read-then-write, not atomic (no
+  `wx` open), so two runs starting in the same instant can both acquire.
+  Consistent with "a guard against habit and haste, not against an
+  adversary".
+- The heartbeat covers only the `STATES` loop; browser launch, `prepare` and
+  post-loop reporting do not touch the lock. If either exceeds the 15-minute
+  TTL the lock reads stale while the run is alive - the fail-open direction
+  (the guard goes quiet), never a false block.
+- **Pre-existing, recorded so it is not rediscovered as new:** the `cd` strip
+  runs before the `$(`/backtick test, so `cd $(pwd) && npm run check` is
+  accepted by the observer. Not a stdout-forgery vector - a command
+  substitution's stdout is captured by the substitution and never reaches the
+  tool's captured stdout, which is what the `All files` test reads. Identical
+  regex, identical ordering, before and after `b6a2fcd`.
+- `CLAUDE.md:104` sits flush against the closing fence with no blank line, to
+  hit the plan's `wc -l` = 195 acceptance number. Renders correctly; the
+  constraint was self-imposed.
+
+Standing deferrals:
+
 - Row 31, the no-timeout deny, on the first check lost to the default
   timeout after this batch's prose has had its chance; sketch in `plan.md`
   section 5, precondition measured by probe A0.

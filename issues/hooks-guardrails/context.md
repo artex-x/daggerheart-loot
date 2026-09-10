@@ -111,6 +111,18 @@ this host with the Bash tool.
      probed by hand, because a crafted payload writes `.check-cache.json` and
      could arm the gate against someone else's tree. **It needs a selftest
      case, not an assumption.**
+
+   **Superseded on both counts, 2026-09-10 - read this before quoting the
+   form above.** The owner's decision 3 and the shipped B1 settled the
+   canonical invocation as the `tail`-only
+   `set -o pipefail; npm run check 2>&1 | tail -n 120`; `tee` is not in it,
+   and "no second form circulates" is a shipped constraint, so do not quote
+   this bullet's `tee` form anywhere. The measurement behind it still stands.
+   The reviewer then probed the observer directly and it **does** accept a
+   `tee` pipeline, with or without the prefix - so the read-from-code claim
+   was right - but nothing pins that with a selftest case, because `tee` had
+   left the canonical form before the case list was written. Measured, not
+   pinned; recorded in `handoff.md`, Deferred.
 3. **`npm run check` does not check markdown at all, and never has.**
    `.prettierignore` has carried `*.md` since `5ab5880` (2026-08-30, Phase 1)
    with its reason - markdown here is wrapped by hand because a line break

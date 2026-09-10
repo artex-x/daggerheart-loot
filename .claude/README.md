@@ -39,7 +39,7 @@ ones listed below; everything else is silent or a message.
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. | warn (informational) |
-| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, `git push`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and a heavy run (`npm run check`, `check:built`, `npm test`/vitest, `npm run build`, parity, run-all) while `test-output/parity.lock` is live. Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
+| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, `git push`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and a heavy run (`npm run check`, `check:built`, `check:fast`, `npm test`/vitest, `npm run build`, parity, run-all) while `test-output/parity.lock` is live. Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
 | `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`. | **block** |
 | `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` and `set -o pipefail;`. | never (silent) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and the parity baseline. | warn |
@@ -120,6 +120,21 @@ you that the pipe does not. Nor does a run started with
 design, because there is no stdout to attribute yet. Backgrounding
 cost three worker runs on issue 47 and is now blocked at
 `PreToolUse` (candidate 27).
+
+**What the check does not cover: markdown.** `.prettierignore` has
+carried `*.md` since `5ab5880` (2026-08-30), with its reasoning beside
+it - the markdown here is wrapped by hand because a line break carries
+meaning in the specs, and the licence line is pinned by
+`tests/derived.js`. `prettier --file-info` reports `"ignored": true`
+for a handoff, a spec and `CLAUDE.md` alike. So an `issues/**` or
+`docs/specs/` edit can neither fail a check nor be corrupted by one,
+and there is no reason to hold off editing a handoff while a check
+runs - which is also why the commit gate exempts those paths
+(`isExempt`). To change that, remove the one line from
+`.prettierignore`; the reasoning is written next to it. Beware the
+opposite error too: `npx prettier --check <some>.md` prints "All
+matched files use Prettier code style!" while matching zero files, so
+a success message there is not evidence of anything.
 
 **One heavy run at a time.** `tests/parity.js` writes
 `test-output/parity.lock` (`pid`, `startedAt`, heartbeat `at`, `argv`)
