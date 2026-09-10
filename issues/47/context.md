@@ -506,3 +506,122 @@ not assumed:
 - Wall clock for part 1's filters: `"a row ticked" "bar menu" "selection
   copied"` is 3 states (one timed); `"#/tables ~"` is 8; `"i/ci1 ~"` is 6.
   Each fits one foreground call; do not merge them.
+
+## State at B5.3 kickoff (orchestrator, 2026-09-10)
+
+Measured at dispatch, not inferred:
+
+- HEAD is `afa82f3` (`docs(issue-47): CI is green - B5.2 part 0 closed by run
+  34492619641`); `git status` clean; no `test-output/parity.lock`; no heavy
+  run alive on this host.
+- `origin/main` is `4210ee3`, so **three commits are unpushed**: `ff741ad`
+  (B5.2 part 1, the selection bar), `6084846` and `afa82f3` (both docs). CI
+  has therefore still not read the selection bar - that is the owner's push
+  to make, and the only thing outstanding on B5.2. It does not block B5.3.
+- 18 peer sessions share this working tree (9 interactive). Re-read
+  `git log --oneline -3` before writing, and never `git add -A`.
+- B5.3 is the next batch and is **outline-only** in `plan.md` ("B5 planned"),
+  so this cycle is planner first, then implementer.
+
+## B5.3 planning facts (planner, 2026-09-10) - durable, read before implementing
+
+Full design in `plan.md`, "B5.3 planned"; the brief in `handoff.md`, "Next
+batch". Facts read off the source or measured on the live app (a read-only
+puppeteer probe on `index.html#/lists`, reduced motion, the harness's own
+launch args, three widths), not assumed:
+
+- **The live index is one function, `renderLists` (app.js 2909-2931)**:
+  `pageHead('lists')`, `storageWarning()` (2872-2886), a `.panel` with inline
+  `margin-top:16px` holding two `.field`s (`.lbl` + `.numrow` with a `.grow`
+  input and a button: "Новый список"/`#lname`/"Создать" primary, "Восстановить
+  из ссылки"/`#limport`/"Восстановить" plain), then either `.listgrid` of
+  `listCardHTML` (2888-2907) in `S.lists` order (newest first) or
+  `<div class="empty">` with `noLists`. No "storage off" chrome anywhere else:
+  `Shell.svelte`'s `storageOff` paragraph and its dictionary key are the
+  rewrite's invention.
+- **The warning has two forms and only one is dismissible.** `storageWorks()`
+  false: `<div class="warn"><b>noStorageTitle</b> noStorage</div>` - one text
+  node after the `<b>`, starting with a space - and it cannot be dismissed
+  (nothing would remember it). Storage working and `dhloot.warn.v1 !== '1'`:
+  `<details class="warn"><summary><b>localOnlyTitle</b><i>readMore</i><button
+  class="warn-x" data-act="hideWarn" title=aria-label=dismiss>×</button>
+  </summary><p>localOnly</p></details>`, no whitespace between the three
+  children of the summary. `hideWarn` (4175) calls `e.preventDefault()` - the
+  cross sits inside the summary and a plain click would also toggle it - then
+  writes `'1'` and re-renders. `.warn` is declared twice in style.css (855-861
+  the box; 963 `position:relative; margin-bottom:16px`), then `summary`,
+  `::-webkit-details-marker`, `summary i`, `[open] summary i{visibility:
+  hidden}`, `p`, `.warn-x` and `:hover` (964-975), plus `.warn-x:focus-visible`
+  in the keyboard block (1002-1005).
+- **Measured, 1100x900**: folded warning 1053x43.5 at y=212.78 (18px under
+  the page-sub, `.warn-x` 26x26 at top/right 6); unfolded 150px tall (the
+  `<p>` 97.5px); the storage-off div 1053x64.5 at 768 / 121.5 at 375; panel
+  198.78 tall (254.78 at 375, where the import row wraps its button under the
+  input because `.numrow .grow{flex:1 1 170px}` cannot fit 170+10+127.56 in
+  290px while the create row's 92.42px button fits); inputs 46px, `font-size`
+  15.5px inherited; `.listgrid` `repeat(auto-fill, minmax(280px, 1fr))` gives
+  three 341.66px columns at 1100, two 353.5 at 768, one at 375; a card with
+  six thumbs is 149.59 tall, an empty one 129.59; `.empty` 104.8 tall. Unfolded
+  at 375 the warning is 429.5px - the reason the live app folds it.
+- **A card's accessible name is its text with no spaces**: `a.listcard-main`
+  reads "Клад дракона7" / "Лавка в порту0Список пуст" through `NAME_FN`, because
+  `<b>`, the `.badge.num` and the empty-state `<p>` are adjacent with no
+  whitespace. A Svelte template with a newline between them would put a space
+  in the inventory. The badge counts **known** records (`listItems`), not
+  `l.ids.length`; thumbs are the first six known records, `imgTag(it,
+  'thumb')` = `<img src alt="" loading="lazy" decoding="async">`.
+- **The card link is the players' payload**: `listHash(l, true)` = `'#/l/' +
+  encodeList(l, true)`, deterministic from name and ids - no list id in it,
+  so a list created inside a parity state links identically on both apps.
+- **Controls on the live index** (NAME_FN, chrome removed): "Как это
+  работает", "Открывать этот раздел при запуске" (`homeHash()` returns
+  `#/lists`, so the pin draws), "Скрыть", "Создать", "Восстановить", and per
+  card "Поделиться", "Удалить" and the link name above. Both text inputs have
+  no name (no label, aria-label or title) and are gripped by placeholder:
+  "Например: клад дракона" / "Ссылка на список".
+- **Share** (3971-3976): an empty list toasts `listEmpty` (plain) and stops;
+  otherwise `listShareUrlShort(l, true)` = `appUrl('#/l/' + packPayload(
+  encodeListRaw(l, true)))` - packed only when shorter - copied with
+  `playersLinkCopied`. **Delete** (4136-4150): `confirm(deleteConfirm % name)`,
+  then `deleteList` (1332-1336: `S.deleted[id] = true`, filter, `saveLists`);
+  on the index it re-renders, on a list page it goes to `#/lists`.
+  **Create** (4195-4203): blank → `nameFirst` error and focus; else
+  `createList`, draft cleared, `listCreated % name` only if `createList.saved`.
+  **Import** (4257-4270): `/#\/l\/([A-Za-z0-9_-]+)/` on the trimmed field,
+  `decodeList` of the capture or the raw text, `badShare` error on null, else
+  `createList(name)` + ids + meta, save, `goToList` (navigates to the players'
+  hash).
+- **Live defect, found by reading**: that regex has no `~`, and `decodeList`
+  `atob`s the payload, so a packed short link - the very link "Поделиться"
+  copies - is refused by "Восстановить" with `badShare`. The rewrite fixes it
+  (`env.compress.unpack` before decode); see `plan.md`, "Decided".
+- **`confirm()` blocks puppeteer**: an `el.click()` inside `page.evaluate`
+  that opens a dialog never returns unless something accepts it - no state can
+  press "Удалить" today. The batch gives the driver a dialog auto-accept that
+  records the message, so delete is compared as data (`deletedList` press
+  spec). `<summary>` is not in `click()`'s selector list either, so the
+  unfolded warning needs `summary` added there (not to `has`/`controls`).
+- **Missing from the rewrite**: 18 dictionary keys (`importList`, `importBtn`,
+  `importPh`, `dismiss`, `readMore`, `listCreated`, `noLists`, `share`, `del`,
+  `listEmpty`, `noStorageTitle`, `noStorage`, `localOnlyTitle`, `localOnly`,
+  `deleteConfirm`, `playersLinkCopied`, `badShare`, `subLists`); the `lists`
+  help (`help.ts` has no entry; app.js 252-257 / 433-438, four paragraphs,
+  two with `<b>` parts); a `danger` button variant (`.btn.danger`, style.css
+  795-796); a dialog port (`window.confirm` is a browser API and belongs
+  behind `ports/`); `ListStore.remove` (the `#deleted` writer) and a
+  `create` that takes ids/meta for import. `icons.ts` already has `link`
+  (`ICON_LINK`, app.js 1054). No `::placeholder` rule exists anywhere under
+  `app/` while style.css:727 sets one - see the plan for what that means.
+- **`noData` is the rewrite's own state, kept.** The live app has no
+  "data did not load" screen: `app.js:7` throws on a missing `window.LOOT`
+  and index.html's static shell is all that draws. Every rewrite page draws
+  `t.noData` in a `.miss` paragraph when `app.index` is null, per the
+  `AppState.index` comment (FEATURES.md, "Records"); the lists page does the
+  same. `storageOff`, by contrast, replaces a real live warning and goes.
+- **Nothing in `VISUAL_DEBT` or `ACCEPTED` names `#/lists`**: the route was
+  `pending`, so the batch deletes only the `pending: 'lists slice'` marker
+  and the `outstanding` line it prints. `#/tables ~ nothing found` and its two
+  siblings are the states that guard the `Empty.svelte` extraction.
+- Wall clock for the filters: `"#/lists"` is 6 states (one timed) and does
+  not match `#/i/ci1 ~ many lists`; `"nothing found"` is 3; `"#/tables ~"` is
+  8. Each fits one foreground call; do not merge them.

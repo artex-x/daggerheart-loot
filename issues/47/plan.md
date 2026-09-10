@@ -4191,6 +4191,581 @@ found by running it rather than transcribing it.
   documented above; the fix is a one-line addition to `NAME` and the spec, not
   a change to what the spec verifies.
 
+### B5.3 planned: the lists index, the storage notice where the live app draws it, and `noData`
+
+**Objective.** `#/lists` draws: the page head with its four-paragraph help,
+the storage notice in both of its live forms (a plain undismissable warning
+when storage refuses; otherwise a folded "lists live in this browser only"
+disclosure with a cross remembered in `dhloot.warn.v1`), the panel with the
+create and restore rows, and a card per list - name, a count badge, up to six
+thumbnails or "Список пуст", a share button that copies the short players'
+link, and a delete button behind `confirm()` - or the "no lists yet" empty
+state. `Shell.svelte`'s invented `storageOff` paragraph goes, and the
+`storageOff` key with it. `ListStore` gets `remove`, the first writer of the
+`#deleted` set `mergeLists` has carried since B5.1. `#/lists` stops being
+`pending` in `tests/parity/specs.js`. Every measured number and every line
+number below is in `context.md`, "B5.3 planning facts".
+
+**Scope.** `components/ListsPage.svelte` (new), `components/Empty.svelte`
+(new - the second use of `.empty`), `components/TablesPage.svelte` (uses
+`Empty`), `components/Shell.svelte` (the paragraph, its rule and
+`storageWorks` deleted), `components/Button.svelte` (`danger`), `App.svelte`
+(the route), `state/lists.svelte.ts` (`remove`, `create(name, init)`,
+`saved`), `state/app.svelte.ts` (`warnHidden`, `hideWarn`), `ports/dialog.ts`
+(new), `ports/types.ts`, `ports/index.ts`, `lib/dict.ts` (18 keys in, one
+out), `lib/help.ts` (`lists`), `styles/tokens.css` (the global placeholder
+rule), the driver (`summary` in `click`, a dialog auto-accept), the specs (a
+seed, six states, three press specs, `NAME`), `docs/specs/FEATURES.md` (one
+bullet corrected), `docs/specs/COVERAGE.md`, and tests for all of it.
+
+**Non-goals.** No `#/lists/<id>` or `#/l/<payload>` page - after a restore or
+a card click the rewrite lands on its `todo` paragraph, as it does today
+(B5.4/B5.6). No rename, no `.listcard.active`, no `openList`/`urlPayload`
+(B5.4). No `StorageNotice.svelte` - one use; B5.4's list page is the second
+and extracts it then. No `Badge.svelte` and no `Panel.svelte` (see
+"Decided"). No `typeRuns` probe on the index. No change to `CONTRACTS.md`,
+`docs/fixtures/`, `ROUTES.md`, `STATE.md` or `llms.txt` - the route, the key
+and the link format already exist there; the one spec line that changes is a
+description that was wrong about where the notice is drawn (FEATURES.md).
+
+#### What the live app does, read off app.js and measured
+
+**The page** (`renderLists`, 2909-2931): `pageHead('lists')` - the `Списки`
+heading, the pin (`homeHash()` returns `#/lists`, so it draws, unpressed),
+the `?` with `t.help.lists` (252-257 / 433-438: four paragraphs; the second
+and third carry two `<b>` runs each), the page-sub `pages.lists[1]`; then
+`storageWarning()`; then `<div class="panel" style="margin-top:16px">` with
+two `.field`s - `.lbl` "Новый список", `.numrow` > `.grow` > `<input type=
+"text" id="lname" placeholder="Например: клад дракона">` + `.btn.primary`
+"Создать"; `.lbl` "Восстановить из ссылки", `.numrow` > `.grow` > `<input
+id="limport" placeholder="Ссылка на список">` + `.btn` "Восстановить"; then
+`.listgrid` of `listCardHTML` in `S.lists` order (newest first, the seed
+order in a parity state) or `<div class="empty">noLists</div>`.
+
+**The notice** (`storageWarning`, 2872-2886). `storageWorks()` false:
+`<div class="warn"><b>noStorageTitle</b> noStorage</div>` - after the `<b>`
+**one** text node beginning with a space; nothing dismisses it. Otherwise,
+unless `dhloot.warn.v1 === '1'`: `<details class="warn"><summary><b>
+localOnlyTitle</b><i>readMore</i><button type="button" class="warn-x"
+data-act="hideWarn" title=aria-label=dismiss>&times;</button></summary><p>
+localOnly</p></details>` - the summary's three children touch. `hideWarn`
+(4175) calls `e.preventDefault()` first (a click inside a summary would also
+toggle the disclosure), writes `'1'` (`hideWarn` 2869, swallowing a throw)
+and re-renders. Measured: folded 43.5px tall at 1100 and 768, 69.5 at 375
+(the `<i>` wraps under the `<b>`); unfolded 150 / 189 / 429.5; the storage-off
+div 43.5 / 64.5 / 121.5. Styles: `.warn` twice (855-861 and 963), `.warn b`,
+`.warn summary`, `::-webkit-details-marker`, `.warn summary i`, `.warn[open]
+summary i`, `.warn p`, `.warn-x`, `:hover` (964-975), `.warn-x:focus-visible`
+(1002-1005). No `@media` override touches any of them.
+
+**A card** (`listCardHTML`, 2888-2907): `<div class="listcard"><a class=
+"listcard-main" href="#/l/<encodeList(l, true)>"><div class="listcard-top">
+<b>name</b><span class="badge num">N</span></div>` then either `<div class=
+"listcard-thumbs">` of up to six `<img src alt="" loading="lazy" decoding=
+"async">` or `<p class="listcard-empty">listEmpty</p>`, `</a><div class=
+"listcard-acts"><button class="btn sm" data-share-list>ICON_LINK share
+</button><button class="btn sm danger" data-del-list>del</button></div></div>`.
+`N` and the thumbs are `listItems(l)` - ids the data knows - not `l.ids`.
+The link's accessible name is therefore "Клад дракона7" and, for an empty
+list, "Лавка в порту0Список пуст": no whitespace between the children.
+Styles: 831-846 (`.listgrid` `repeat(auto-fill, minmax(280px, 1fr))`, gap 14,
+margin-top 18; `.listcard` gradient/border/radius/overflow/flex-column/
+`transition:.16s`; `:hover`; `-main` block padding `14px 15px 12px` flex 1;
+`-top` flex space-between gap 10 margin-bottom 10; `-top b` 15.5px/650/1.3;
+`-main:hover -top b` gold-soft; `-thumbs` flex gap 5 wrap; `-thumbs img`
+40x40 radius 7 cover `#0a0810`; `-empty` margin 0 12.5px muted2; `-acts`
+flex gap 6 wrap padding `0 15px 14px`), `.badge` (331-335) and `.badge.num`
+(349-352), `.btn.danger` and `:hover` (795-796). Measured at 1100: three
+341.66px columns, a six-thumb card 149.59 tall, an empty one 129.59; two
+columns at 768, one at 375.
+
+**The panel and the fields**: `.panel` (145-149), `.field`/`.lbl` (150-152 -
+`Field.svelte` already), `.numrow` and `.numrow .grow{flex:1 1 170px;
+min-width:0}` (181-182), the global `input[type=text]` and `:focus` (254-258:
+100% wide, 46px, padding `0 14px`, `var(--bg2)`, `var(--line2)` border,
+`font:inherit` - so 15.5px) and `input::placeholder,textarea::placeholder
+{color:var(--muted2);opacity:.7}` (727). Measured: the panel is 198.78px tall
+at 1100 and 768, 254.78 at 375 - the restore row's 127.56px button drops
+under its input there because 170+10+127.56 does not fit 290px, while the
+create row's 92.42px button still does. `.empty` (524-525) is 104.8px.
+
+**The handlers.** Create (4195-4203): a blank name toasts `nameFirst` as an
+error and focuses the input; otherwise `createList` (unshift, save), the
+draft is cleared, and `listCreated % name` toasts **only if
+`createList.saved`** - a refused write has already toasted `saveFailed` and
+must not be followed by a cheerful "created". Share (3971-3976): an empty
+list (`!l.ids.length`) toasts `listEmpty` plain and stops; otherwise
+`listShareUrlShort(l, true)` - `appUrl('#/l/' + packPayload(encodeListRaw(l,
+true)))`, packed only when the packed form is shorter - is copied with
+`playersLinkCopied`, `copyFailed` as an error otherwise. Delete (4136-4150):
+`confirm(deleteConfirm % name)`; yes → `deleteList` (1332-1336: `S.deleted[id]
+= true`, filter, `saveLists`), then on the index a re-render (a list page goes
+to `#/lists` - B5.4's). Restore (4257-4270): the trimmed field through
+`/#\/l\/([A-Za-z0-9_-]+)/`, `decodeList` of the capture or of the raw text,
+`badShare` error on null, else `createList(data.name)`, `ids` and `meta`
+copied on, save, `goToList` → `location.hash = '#/l/' + encodeList(l, true)`;
+the render that follows `syncListUrl`s to that same string, so the address
+after a restore is deterministic.
+
+**Three things found by reading, not assumed:**
+
+1. **The restore field refuses the app's own short links.** The regex has no
+   `~` and `decodeList` `atob`s whatever it gets, so a packed link - the one
+   "Поделиться" copies - fails as `badShare`. The rewrite fixes it: see
+   "Decided".
+2. **`confirm()` blocks puppeteer.** `el.click()` inside `page.evaluate`
+   never returns while a dialog is open, so no state has ever pressed a
+   destructive control. The driver grows an auto-accept that records the
+   message; delete is then compared as data.
+3. **The rewrite has no `::placeholder` rule at all.** Measured on
+   `#/tables`: live `rgb(138,131,163)` at opacity 0.7, rewrite Chrome's
+   `rgb(117,117,117)` at 1 - on every search box since B1, under `JITTER`
+   because a placeholder is ~0.05% of a page. The same class B3.6 wrote down.
+   Fixed here, globally, where the live rule is global.
+
+#### How it is built
+
+**`app/src/ports/dialog.ts`** (new) - `DialogPort { confirm(message: string):
+boolean }`; `browserDialog(win = window)` calls `win.confirm`; `fakeDialog
+(answer = true)` returns `answer` and records every message in `asked:
+string[]`. `ports/types.ts` declares the interface and adds `dialog:
+DialogPort` to `Env`; `ports/index.ts` wires `browserDialog()` into
+`browserEnv` and `fakeDialog()` into `fakeEnv`, and re-exports both.
+
+**`app/src/state/lists.svelte.ts`** - `saved = true`, set by every `save()`
+(the live `createList.saved`); `create(name, init: Partial<Omit<StoredList,
+'id' | 'name' | 'created'>> = {})` spreads `init` into the new list before
+the one save (restore hands it `ids` and `meta`; B5.6 will hand it notes);
+`remove(id)`: `this.#deleted[id] = true`, filter, `save()` - the live
+`deleteList`. The comment on `#deleted` that says "nothing writes to it
+until B5.3" is rewritten to say `remove` does.
+
+**`app/src/state/app.svelte.ts`** - `WARN_KEY = 'dhloot.warn.v1'`;
+`#warnHidden = $state(env.storage.get(WARN_KEY) === '1')` read in the
+constructor beside `lang` and `home`; `get warnHidden()`; `hideWarn()` writes
+`'1'` and sets the flag (the write's result is ignored, as the live
+`hideWarn` ignores it; with storage refusing, the page draws the other form
+anyway). App-level because B5.4's list page reads the same flag.
+
+**`app/src/lib/dict.ts`** - eighteen keys, both languages, character for
+character from app.js: `importList`, `importBtn`, `importPh` (107-108 /
+293-294), `dismiss`, `readMore` (110-111 / 296-297), `listCreated` (154 /
+338), `noLists` (156 / 340), `share`, `del` (159 / 343), `listEmpty` (160 /
+344), `noStorageTitle`, `noStorage`, `localOnlyTitle`, `localOnly` (165-168 /
+349-352), `deleteConfirm` (163 / 347), `playersLinkCopied` (148 / 332),
+`badShare` (162 / 346), and `subLists` from `pages.lists[1]` (267 / 448).
+`storageOff` is deleted from both. `listCreated` and `deleteConfirm` carry
+`%s`; the English `listCreated` uses curly quotes and `deleteConfirm`
+straight ones - copy, do not normalise.
+
+**`app/src/lib/help.ts`** - `LISTS: Record<Lang, Help>` from app.js 252-257 /
+433-438, registered as `lists` in `HELP`: paragraphs 1 and 4 through `p()`;
+2 and 3 as `parts` arrays with `{ b: 'Для игроков' }`, `{ b: 'Только для
+мастера' }`, `{ b: 'Ссылка игрокам' }`, `{ b: 'Ссылка себе' }` (and the
+English equivalents) between the plain runs. No `lead`: none of the four
+opens with a bold.
+
+**`app/src/styles/tokens.css`** - beside `button` and `a`: `input::
+placeholder, textarea::placeholder { color: var(--muted2); opacity: 0.7; }`
+with a comment naming style.css:727 and the measurement above.
+
+**`app/src/components/Button.svelte`** - `variant` gains `'danger'`;
+`.btn.danger { border-color: rgb(224 104 95 / 40%); color: #f0a49d }` and
+`.btn.danger:hover { border-color: var(--danger); background: rgb(224 104
+95 / 12%) }` off 795-796. The header comment's "a third arrives when a screen
+needs one" is that third.
+
+**`app/src/components/Empty.svelte`** (new) - `children: Snippet`; `<div
+class="empty">{@render children()}</div>`; the `.empty` rule moved from
+`TablesPage.svelte` (696-705), which loses the rule and wraps both of its
+empty branches (478, 511-516) in `<Empty>` with their inner markup unchanged.
+Second real use, both inline copies removed - the rule in `CLAUDE.md`.
+
+**`app/src/components/Shell.svelte`** - the `{#if !storageWorks}` block, the
+`storageWorks` constant, the `untrack` import (if nothing else uses it) and
+the `.warn` rule go. The header comment's "the one warning that has to be
+visible before anything else is" goes with them.
+
+**`app/src/components/ListsPage.svelte`** (new) - props `app`. `t`, `index`,
+`lists = app.lists.lists`; `works = untrack(() => app.env.storage.works())`
+(read once per mount, the way `Shell` did); `draft`, `importDraft` as
+`$state('')`; `say = (msg, error?) => app.say(msg, { error })`. Template,
+in this order and with this whitespace:
+
+```svelte
+<PageHead {app} title={t.lists} sub={t.subLists} help={helpFor('lists', app.lang)} {say} />
+
+{#if !works}
+  <div class="warn"><b>{t.noStorageTitle}</b>{' ' + t.noStorage}</div>
+{:else if !app.warnHidden}
+  <details class="warn"><summary><b>{t.localOnlyTitle}</b><i>{t.readMore}</i><button
+      type="button" class="warn-x" title={t.dismiss} aria-label={t.dismiss}
+      onclick={dismiss}>&times;</button></summary><p>{t.localOnly}</p></details>
+{/if}
+
+{#if !index}
+  <p class="miss">{t.noData}</p>
+{:else}
+  <div class="panel">
+    <Field label={t.newList}>
+      <div class="numrow">
+        <div class="grow"><input type="text" bind:value={draft} bind:this={nameInput} placeholder={t.listNamePh} /></div>
+        <Button variant="primary" onclick={create}>{t.create}</Button>
+      </div>
+    </Field>
+    <Field label={t.importList}>
+      <div class="numrow">
+        <div class="grow"><input type="text" bind:value={importDraft} placeholder={t.importPh} /></div>
+        <Button onclick={restore}>{t.importBtn}</Button>
+      </div>
+    </Field>
+  </div>
+  {#if lists.length}
+    <div class="listgrid">
+      {#each lists as l (l.id)}
+        {@const items = knownItems(l)}
+        <div class="listcard">
+          <a class="listcard-main" href={sharedListHash(encodeList(l, true))}
+            ><div class="listcard-top"><b>{l.name}</b><span class="badge num">{items.length}</span></div
+            >{#if items.length}<div class="listcard-thumbs">{#each items.slice(0, 6) as it (it.id)}<img
+                  src={artSrc(it.img, app.artBroken(it.id))} alt="" loading="lazy" decoding="async"
+                  onerror={() => app.markArtBroken(it.id)} />{/each}</div
+            >{:else}<p class="listcard-empty">{t.listEmpty}</p>{/if}</a
+          >
+          <div class="listcard-acts">
+            <Button size="sm" onclick={() => share(l)}><Icon name="link" />{t.share}</Button>
+            <Button size="sm" variant="danger" onclick={() => del(l)}>{t.del}</Button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <Empty>{t.noLists}</Empty>
+  {/if}
+{/if}
+```
+
+The `>`/`<` placement inside `.listcard-main` and the summary is the same
+device `SelBar.svelte` uses: Svelte turns a newline between two elements
+into a space text node, and the live link's name has none. The storage-off
+div's text is one expression, `' ' + t.noStorage`, because the live text
+node is one node beginning with a space - `{' '}{t.noStorage}` would be two
+nodes and the leading-space rule applies (context.md, "Defect 2").
+
+Handlers: `dismiss(e)`: `e.preventDefault(); app.hideWarn()`. `create()`:
+`if (!draft.trim()) { say(t.nameFirst, true); nameInput.focus(); return; }
+const l = app.lists.create(draft); draft = ''; if (app.lists.saved) say(t.
+listCreated.replace('%s', l.name))`. `share(l)`: `if (!l.ids.length) { say(t.
+listEmpty); return; } const payload = await app.env.compress.pack(
+encodeListRaw(l, true)); const ok = await app.env.clipboard.writeText(app.
+linkTo(sharedListHash(payload))); say(ok ? t.playersLinkCopied : t.copyFailed,
+!ok)`. `del(l)`: `if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s',
+l.name))) return; app.lists.remove(l.id)`. `restore()`: `const raw =
+importDraft.trim(); const m = /#\/l\/([~A-Za-z0-9_-]+)/.exec(raw); let pay = m
+? m[1] : raw; try { pay = await app.env.compress.unpack(pay); } catch { pay =
+''; } const data = decodeList(pay, (id) => index.byId.has(id)); if (!data) {
+say(t.badShare, true); return; } const l = app.lists.create(data.name, { ids:
+data.ids, ...(data.meta ? { meta: data.meta } : {}) }); importDraft = '';
+app.go(sharedListHash(encodeList(l, true)))`. `knownItems(l)` = `l.ids.map(
+(id) => index.byId.get(id)).filter(Boolean)`. Whether `StoredList` satisfies
+`ListShape` is a typecheck question the implementer answers by running it;
+the fields match by name.
+
+Styles, every value off style.css rather than typed from memory: `.warn`
+(both declarations merged), `.warn b`, `.warn summary`, `.warn summary::
+-webkit-details-marker`, `.warn summary i`, `.warn[open] summary i`, `.warn
+p`, `.warn-x`, `.warn-x:hover`, `.warn-x:focus-visible` (outline 2px gold,
+offset 2, radius 8 - the keyboard block's rule); `.miss` as `TablesPage`
+has it; `.panel` (145-149) plus `margin-top: 16px` from the live inline
+style; `.numrow`, `.numrow .grow`; `input[type='text']` and `:focus` (the
+global rule, scoped here - `TablesPage` did the same for its search box);
+`.listgrid`, `.listcard`, `:hover`, `-main`, `-top`, `-top b`, `-main:hover
+-top b`, `-thumbs`, `-thumbs img`, `-empty`, `-acts`; `.badge` and `.badge.
+num` (the third copy - see "Decided"). No `@media`: none of these rules has
+an override in style.css.
+
+**`app/src/App.svelte`** - `{:else if app.route.kind === 'section' && app.
+route.section === 'lists'}<ListsPage {app} />` before the generic section
+branch.
+
+**`tests/parity/driver.js`** - `click()`'s selector list gains `summary`
+(the disclosure's own control; `has()` and `controls()` do not, so the
+inventory is unchanged - a summary is not a button in either app). In
+`makeDriver`: `let dialog = null; page.on('dialog', (dlg) => { dialog = dlg.
+message(); dlg.accept().catch(() => {}); });` and `dialog() { return dialog; }`
+- a `confirm()` inside `el.click()` is answered yes and its text kept for a
+spec to compare.
+
+**`tests/parity/specs.js`** - a seed beside `eight`:
+
+```js
+const seven = {
+  'dhloot.lists.v2': JSON.stringify([
+    { ...LISTS[0], ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'] },
+    LISTS[1]
+  ])
+};
+```
+
+`NAME` gains `share: 'Поделиться' / 'Share'`, `del: 'Удалить' / 'Delete'`,
+`restore: 'Восстановить' / 'Restore'`, `importPh: 'Ссылка на список' /
+'Paste a list link'`. The `pending` `#/lists` line is replaced by:
+
+| id | storage | enter | what it is for |
+|---|---|---|---|
+| `#/lists` | - | - | the folded notice, both fields, "Списков пока нет — создайте первый выше" |
+| `#/lists ~ two lists` | `seven` | - | a card with six thumbs and a badge of 7 above "Поделиться"/"Удалить", and an empty card with "Список пуст"; three columns at 1100, one at 375 |
+| `#/lists ~ notice unfolded` | `seven` | `d.click('подробнее')` | the `<p>` open, the `<i>` hidden, the page 106px taller |
+| `#/lists ~ notice dismissed` | `seven` | `d.click('Скрыть')` | no notice; the panel directly under the page-sub |
+| `#/lists ~ help` | - | `d.click('Как это работает')` | the four paragraphs with their bold runs |
+| `#/lists ~ created` | - | `d.type('Например: клад дракона', 'Тайник')`, `d.click('Создать')`; **`timed: true`** | the "Тайник" card first with "Список пуст", the field cleared, the toast |
+
+The `~ created` card's link is `#/l/` + the payload of a name and no ids -
+identical on both apps; the list's id never reaches the screen.
+
+Press specs:
+
+- `sharedListLink` (`presses: true`, `only: ['#/lists ~ two lists']`):
+  `resetClipboard()`, `click(NAME[lang].share)` (the first card - seven
+  ids), return `{ hash: clip.text.slice(clip.text.indexOf('#')) }` - the
+  base differs between the two targets, the payload must not; both apps
+  deflate the same bytes in the same Chrome and both keep the packed form
+  only when it is shorter, so the string is the same on both.
+- `deletedList` (`presses: true`, `only: ['#/lists ~ two lists']`):
+  `click(NAME[lang].del)`, return `{ asked: d.dialog(), stored: JSON.parse(
+  await d.storage('dhloot.lists.v2')).map((l) => l.id) }` - the confirm text
+  in the language `arrive()` left the page in, and `['b']`.
+- `restoredList` (`presses: true`, `only: ['#/lists']`): `d.type(NAME[lang].
+  importPh, '#/l/' + PAYLOAD)` with `PAYLOAD` the `player.payload` of
+  `docs/fixtures/lists/equipment-entry.json` (`Оружейная`, `q26`, `q33` - a
+  plain link, on purpose: the packed form is where the two apps now differ,
+  see "Decided"), `click(NAME[lang].restore)`, return `{ hash: await d.hash(),
+  stored: JSON.parse(await d.storage('dhloot.lists.v2')).map((l) => [l.name,
+  l.ids]) }` - `#/l/<that same payload>` and `[['Оружейная', ['q26', 'q33']]]`
+  on both. The rewrite's `#/l/` page is a `todo` paragraph; no shot is taken
+  by a press spec.
+
+Expect **zero** on every cell of all six states in both languages, and no
+`VISUAL_DEBT` or `ACCEPTED` entry written or deleted - none names `#/lists`.
+Where to look first if a cell is not zero: the summary's three children
+touching (a space text node shows as the `<i>` shifted); `.warn`'s
+`margin-bottom:16px` (the second declaration, easy to miss); the restore
+row's wrap at 375 (`flex: 1 1 170px` on `.grow`, not `flex: 1`); the badge
+counting `l.ids` instead of known records; the thumbs' `background:#0a0810`
+behind a `NO_ART` image; the placeholder colour.
+
+#### Tests
+
+- `ports/ports.test.ts` - `browserDialog` hands the message to the window's
+  `confirm` and returns its answer; `fakeDialog(false)` refuses and records
+  what it was asked.
+- `state/lists.test.ts` - `remove` drops the list from memory and storage;
+  a later `save()` does not bring it back when storage still holds another
+  tab's copy of it (the `#deleted` set's first real test); `create(name, {
+  ids, meta })` writes them in one save; `saved` reads `false` after a
+  refused write and `true` after a good one.
+- `state/app.test.ts` - `warnHidden` is `true` with `'1'` stored and `false`
+  otherwise; `hideWarn()` writes `'1'` and flips it.
+- `lib/help.test.ts` - `lists` is written in both languages with four
+  paragraphs, the second and third carrying two bold parts each (the
+  existing "every section that has one" case picks it up if it enumerates).
+- `components/button.test.ts` - `danger` carries the class.
+- `components/listsPage.test.ts` (new) - through `App` at `#/lists` with a
+  `LOOT` of one known record (`ci1`, no `img`): the head, the folded notice
+  (`Списки живут только в этом браузере.`, `подробнее`, a "Скрыть" button),
+  both fields by placeholder, and "Списков пока нет — создайте первый выше";
+  pressing "Скрыть" removes the notice and writes `dhloot.warn.v1 = '1'`;
+  with `'1'` seeded no notice draws; `brokenStorage()` draws "Браузер
+  блокирует локальное хранилище." with no cross; two lists seeded (`a` with
+  `['ci1', 'nope']`, `b` empty) draw two cards in seed order, the first with
+  one thumbnail and a badge of `1` (the unknown id not counted) and a link to
+  `sharedListHash(encodeList(a, true))`, the second with "Список пуст" and
+  `0`; a blank "Создать" toasts "Сначала назовите список" as an alert and
+  focuses the input; "Тайник" creates a first card, clears the field, toasts
+  "Список «Тайник» создан" and lands in storage; under `brokenStorage()` the
+  card still appears, `saveFailed` toasts as an alert and no "создан"
+  follows; "Поделиться" on the empty list toasts "Список пуст" and writes
+  nothing; on the filled list writes `<base>index.html#/l/<payload>` (the
+  plain payload under `plainCompress`) and toasts "Ссылка для игроков
+  скопирована — заметок мастера в ней нет"; `fakeClipboard({ fail: true })`
+  toasts "Не удалось скопировать" as an alert; "Удалить" with `fakeDialog(
+  false)` asks "Удалить список «Клад дракона»? Это действие необратимо." and
+  changes nothing; with `fakeDialog(true)` the card and the stored list go;
+  "Восстановить" with `'#/l/' + encodeList(list, true)` of a known list
+  navigates to that hash (`memoryRouter`) and stores the name, ids and meta;
+  a bare payload works too; a packed `~` payload works through a compress
+  port whose `unpack` maps it to the plain one; garbage toasts "Ссылка
+  повреждена или собрана в другой версии данных." as an alert; `noData()`
+  draws "Данные не загрузились. Обновите страницу." and no panel. Every case
+  ends with `expectNoA11yViolations`.
+- `components/shell.test.ts` - the two 'storage that does not work' cases
+  go (the frame no longer says anything; the page test above does); the
+  axe case "while warning that storage is off" stays as it is - it renders
+  `#/lists` with `brokenStorage()`, which now exercises the page's warning.
+- `components/tables.test.ts` - unchanged; its nothing-found assertions keep
+  passing through `Empty`.
+- `components/a11y.test.ts` - a state `{ what: 'the lists index with its
+  notice unfolded and two lists', route: '#/lists', storage: two lists,
+  enter: click the 'подробнее' text }`; `COVERED` gains `'ListsPage.svelte'`
+  and `'Empty.svelte'` (the guard fails without them).
+- `docs/specs/COVERAGE.md` - a `components/listsPage.test.ts` row; the
+  `shell.test.ts` row loses "a browser that refuses storage".
+- `docs/specs/FEATURES.md` - the "Chrome" bullet "Storage warning when
+  `localStorage` is unavailable, dismissible and remembered" is wrong on
+  both counts and moves to "Lists" as: a storage notice at the top of the
+  index and of a list page - when storage refuses, a plain warning that
+  cannot be dismissed; otherwise a folded "lists live in this browser only"
+  disclosure whose cross is remembered in `dhloot.warn.v1`. The "Import"
+  bullet gains "either link form, plain or packed".
+
+#### Ordered steps
+
+1. `dict.ts`: the eighteen keys, `storageOff` out. `help.ts`: `LISTS`;
+   `help.test.ts`. `tokens.css`: the placeholder rule.
+2. `ports/dialog.ts`, `types.ts`, `index.ts`; `ports.test.ts`.
+3. `lists.svelte.ts`: `saved`, `create(name, init)`, `remove`; its test.
+   `app.svelte.ts`: `warnHidden`, `hideWarn`; its test.
+4. `Button.svelte`: `danger`; `button.test.ts`. `Empty.svelte`;
+   `TablesPage.svelte` uses it; `npm run test -- tables` green before going
+   on.
+5. `ListsPage.svelte`; `App.svelte` routes to it; `Shell.svelte` loses the
+   paragraph; `shell.test.ts`.
+6. `listsPage.test.ts`; `a11y.test.ts` state and `COVERED`; `COVERAGE.md`;
+   `FEATURES.md`.
+7. `driver.js`: `summary`, the dialog. `specs.js`: `seven`, `NAME`, the six
+   states, the three press specs, the pending line and its `outstanding`
+   gone.
+8. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground call,
+   `timeout: 600000`.
+9. `npm run build`, then `node tests/parity.js "#/lists"` (6 states, one
+   timed) - the loop while getting to zero; then `node tests/parity.js
+   "nothing found" "#/tables ~"` (10 states: the three empty states through
+   `Empty`, and the search-box placeholder) and `node tests/parity.js
+   "i/ci1 ~"` (6 states: the `pickq` and new-list inputs' placeholders).
+   Three foreground calls, each inside the cap; do not merge them.
+10. `npm run check:built`.
+11. `plan.md` gains "B5.3 built"; `handoff.md`; one commit, `feat(lists):
+    the lists index`, authored as `artex-x`, no push.
+
+#### Acceptance criteria
+
+- `#/lists` draws the head with the pin and the `?`, and the `?` opens four
+  paragraphs with "Для игроков", "Только для мастера", "Ссылка игрокам" and
+  "Ссылка себе" in bold.
+- With storage working and nothing dismissed, a folded notice sits between
+  the page-sub and the panel; "подробнее" unfolds it and hides itself; the
+  cross removes it for good (`dhloot.warn.v1 = '1'`) without toggling the
+  disclosure. With storage refusing, the plain warning draws instead and
+  has no cross. The frame draws no warning anywhere.
+- The panel holds the create row and the restore row; at 375 the restore
+  button wraps under its input and the create button does not.
+- Every list is a card in store order with its name, a badge counting known
+  records, up to six thumbnails or "Список пуст", a link to the players'
+  payload, "Поделиться" and "Удалить"; with no lists, "Списков пока нет —
+  создайте первый выше".
+- Create refuses a blank name with an alert and focus, otherwise puts the
+  new list first, clears the field and toasts "Список «…» создан" - not when
+  the write was refused.
+- Share copies the short players' link and toasts; an empty list toasts
+  "Список пуст" instead. Delete asks the live question, and a yes removes
+  the list from memory and storage and keeps it from coming back through a
+  merge. Restore takes a full link, a bare payload, or a packed one, lands
+  the list in storage and navigates to its players' hash; a bad one toasts
+  `badShare` as an alert.
+- With no data the page draws `noData` and no panel.
+- `#/lists` and its five states read 0.00% at every cell in both languages;
+  `sharedListLink`, `deletedList` and `restoredList` match; `"nothing
+  found" "#/tables ~"` and `"i/ci1 ~"` still read zero (or their recorded
+  numbers) after the `Empty` extraction and the placeholder rule; `#/lists`
+  no longer prints as outstanding.
+- `npm run check` and `npm run check:built` exit 0 with thresholds met.
+
+#### Risks and do-nots
+
+- Do not leave a newline between `<b>`, the badge and the thumbs/empty
+  paragraph inside `.listcard-main`, or between the summary's children:
+  the inventory names are "Клад дракона7" and "Лавка в порту0Список пуст".
+- Do not count `l.ids` on the badge; count known records, as `listItems`
+  does.
+- Do not write the storage-off text as `{' '}{t.noStorage}` - one text node,
+  one expression.
+- Do not forget `e.preventDefault()` on the cross: without it the disclosure
+  toggles under the click and the live app's does not.
+- Do not toast `listCreated` when `saved` is false; do not toast `listEmpty`
+  as an error - it is plain.
+- Do not put `summary` into `has()` or `controls()`; the inventory must
+  stay what the live app's is.
+- Do not make any state but `~ created` timed, and do not forget `timed:
+  true` on it (an `enter` that raises a toast - part 0's rule).
+- Do not write a `VISUAL_DEBT` number from this host; every cell is expected
+  at zero and a non-zero one is a diff image opened first.
+- Do not add a `StorageNotice.svelte`, a `Badge.svelte` or a `Panel.svelte`
+  (see "Decided"). Do not build anything under `#/l/` or `#/lists/<id>`.
+- Grep the diff for `' <` at the start of an `{#if}`/`{#each}` block.
+- One commit, no push, no `Co-Authored-By`.
+
+**Decided in planning - do not reopen.**
+
+- **One batch, not parts.** Six light states on one new page component, no
+  modal, no whole-page capture, two five-line driver verbs. B5.2 split
+  because CI was red and a measurement class needed naming first; nothing
+  here is that.
+- **The short-link restore defect is fixed, not reproduced.** Live refuses
+  its own "Поделиться" output in "Восстановить" (`badShare`), which no user
+  can want; the precedent is the grid-numbering bug (`ACCEPTED`), fixed in
+  the rewrite and reported rather than carried. The fix is `env.compress.
+  unpack` before `decodeList` and a `~` in the regex; `restoredList` uses a
+  plain link so the two apps still agree on what a spec can see. Reported to
+  the owner in the handoff. Rejected: waiting for B5.6 (which owns the packed
+  *open* path) - the restore path is this batch's, and `CLAUDE.md` says fix
+  cheap, local, safe bugs in a touched path.
+- **`noData` stays; `storageOff` goes.** `noData` is a state the live app
+  cannot draw (`app.js:7` throws on a missing `window.LOOT`) and the rewrite
+  chose to render rather than crash - documented on `AppState.index`. The
+  lists page joins every other page in drawing it. `storageOff` replaced a
+  live warning with an invented one in the wrong place; the live markup lands
+  and the invention is deleted, key and all.
+- **A `DialogPort`, not `window.confirm` in the component.** The
+  architecture boundary; a fake answers tests and records the question.
+  Rejected: an in-page dialog (a redesign, and a different inventory) and
+  hanging `confirm` on the router port (it is not routing).
+- **`warnHidden`/`hideWarn` on `AppState`; the markup inline in `ListsPage`.**
+  The flag is a storage-backed setting like `lang` and `home`, and B5.4's
+  list page reads it too; the markup has one use until then, and B5.4
+  extracts `StorageNotice.svelte` on its second.
+- **`Empty.svelte` now, `Badge.svelte` not.** `.empty` reaches its second
+  use here and the rule says extract and remove both copies - three
+  nothing-found states guard it. `.badge` already has two copies (the card
+  and the rows) that nobody extracted; a third is copied, and the extraction
+  is recorded as deferred because it touches components with thirty-odd
+  parity states for a two-rule gain.
+- **The placeholder rule is global, in `tokens.css`.** style.css:727 is
+  global and every input in the app inherits it; a per-component port would
+  fix the lists page and leave the search box wrong. Every state with a
+  placeholder is expected to stay at zero - the difference was always under
+  `JITTER`, and closing it cannot raise a number.
+- **Drafts are component-local.** Live `S.listDraft`/`S.importDraft` survive
+  a navigation within the session; the rewrite's do not. The same call
+  `TablesPage` made for the search query; nothing a spec or a person leans
+  on. Rejected: two fields on `AppState` for a half-typed name.
+- **The disclosure keeps its open state across a create.** Live folds it as
+  a side effect of replacing `innerHTML`; the rewrite's `<details>` persists.
+  Invisible to every state (each starts folded), kinder to a person, recorded
+  rather than reproduced.
+- **`create(name, init)` and `saved` on the store, rather than a `fill()`.**
+  Live saves twice on a restore (create, then ids and meta); one write with
+  the same end state is unobservable except by another tab's `storage`
+  event mid-restore. `saved` is the live `createList.saved` by another name.
+- **Delete and share are press specs, not states.** A dialog is not painted
+  and a toast reads the same on both apps; the data - the question asked,
+  what storage holds, what the clipboard got - is what can differ. The
+  storage-off form has no state at all: the driver has no verb to make
+  storage refuse, and adding one for a screen the component test already
+  draws is an instrument nobody else needs.
+- **`summary` joins `click()` only.** The unfolded notice is otherwise
+  unreachable; `has()`/`controls()` stay as they are so the compared
+  inventory does not change.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:

@@ -15,10 +15,17 @@ depends on chat history.
   filters clean (102 cells), `npm run check` and `npm run check:built` both
   exit 0. **Part 0 is closed by CI: run `34492619641` on `4210ee3` is green on
   every job, `deploy` included.** Part 1 (`ff741ad`) is unpushed and unread;
-  see "Blockers". **B5.3 (the lists page,
-  `noData`, `storageOff`) is next and needs planning first** - see "Next
-  batch".
-- Last agent: reviewer (2026-09-10, opus, against `ff741ad`: **approve**, no
+  see "Blockers". **B5.3 (the lists index, the storage notice where the
+  live app draws it, `noData`) is planned and implement-ready** - one batch,
+  no parts; see "Next batch".
+- Last agent: planner (2026-09-10: B5.3 planned - `plan.md`, "B5.3
+  planned"; `context.md`, "B5.3 planning facts"; the brief in "Next batch".
+  Measured the live `#/lists` at three widths with a read-only probe rather
+  than guessed; found and recorded three things by reading - the live
+  restore field refuses the app's own short links, `confirm()` blocks the
+  parity driver, and the rewrite has never had a `::placeholder` rule. No
+  production code written.)
+  Before it: reviewer (2026-09-10, opus, against `ff741ad`: **approve**, no
   blockers, four nits recorded in "Deferred"; its press-spec language sweep
   came back clean across all eight `presses` specs and both `looks` specs).
   Before it: implementer (2026-09-10: B5.2 part 1 built - `app.sel` lifted
@@ -49,11 +56,9 @@ list store, the toast, the add-to-list row on the card, CI-green tests and
 docs, and now the selection bar - ticking any row on a table raises "Выбрано
 N" with a cross, an add-to-list control, a print link and a copy button, all
 at the bottom of the window. What is left of Phase 4 is B5.3-B5.6, the search
-slice and the print slice. **B5.3 (the lists page itself, `noData`, and
-`Shell.svelte`'s `storageOff` paragraph reconciled against the real thing) is
-next** - it is an outline only in `plan.md`, "B5 planned", and needs a
-planning pass before it is implement-ready. B5.4-B5.6, search and print remain
-outlines only.
+slice and the print slice. **B5.3 (the lists index, the storage notice where the live
+app draws it, and `noData`) is next and implement-ready** - `plan.md`, "B5.3
+planned", one batch. B5.4-B5.6, search and print remain outlines only.
 
 B4 was offered as a merge target for B3.6 and was deliberately not folded in:
 its acceptance includes a clean parity run and possibly new `VISUAL_DEBT`
@@ -1181,43 +1186,163 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-- **Name:** B5.3 - the lists index (`#/lists`), the storage warning
-  reconciled, `noData`. **Not implement-ready** - it exists only as one row of
-  the outline table in `plan.md`, "B5 planned: the lists slice, and how it
-  splits", not as an "B5.3 planned" section with ordered steps and acceptance
-  criteria the way B5.1/B5.2 have. A planning pass is the next step, not an
-  implementer.
+- **Name:** B5.3 - the lists index (`#/lists`), the storage notice where the
+  live app draws it, and `noData`. **Implement-ready**; one batch, no parts.
 
-- **What the outline already says**, `plan.md`'s table row (do not re-derive,
-  but do not treat as implement-ready either): the page head and its help,
-  the storage warning in both its forms (`dhloot.warn.v1`, the dismiss
-  cross), create, import, the list cards (share as a short link, delete
-  behind `confirm()`), the empty state; `Shell.svelte`'s invented
-  `storageOff` paragraph goes and the live app's `storageWarning()` lands
-  where the live app actually draws it. It is the route that is `pending`
-  today in `tests/parity/specs.js`; `deleteList` and the `deleted` set in the
-  merge signature (already taken by `mergeLists`, unused since B5.1) get
-  their first caller here.
+- **Objective:** `#/lists` draws the live index - the page head with its
+  four-paragraph help, the storage notice in both live forms (a plain
+  undismissable warning when storage refuses; otherwise a folded "Списки
+  живут только в этом браузере." disclosure with a cross remembered in
+  `dhloot.warn.v1`), the panel with the create and restore rows, a card per
+  list (name, a badge counting known records, up to six thumbnails or
+  "Список пуст", "Поделиться" copying the short players' link, "Удалить"
+  behind `confirm()`) or the "no lists yet" empty state. `Shell.svelte`'s
+  invented `storageOff` paragraph and dictionary key are deleted; `ListStore`
+  gets `remove`, the first writer of the `#deleted` set `mergeLists` has
+  carried since B5.1; `#/lists` stops being `pending`. Full design, every
+  measured number and the rejected alternatives: `plan.md`, "B5.3 planned";
+  the facts read off the source: `context.md`, "B5.3 planning facts".
 
-- **Settled decisions already on the record, not to reopen:** `plan.md`,
-  "B5 planned", "Decided in planning" - in particular, `Shell`'s `storageOff`
-  paragraph stays exactly as B5.1 left it **until** this batch (line ~2692);
-  `addIds` takes only ids until B5.6 adds notes; no `Panel.svelte`; no
-  `deleted` set beyond the field the signature already carries until this
-  batch writes to it (line ~2842).
+- **Read first, in this order:** `context.md` "State at B5.3 kickoff" and
+  "B5.3 planning facts"; `plan.md` "B5 planned" (the split, the harness
+  seeding, "Decided in planning") and "B5.3 planned" end to end. The live
+  functions to read yourself before writing a line: `renderLists` (app.js
+  2909-2931), `storageWarning`/`warnHidden`/`hideWarn` (2865-2886),
+  `listCardHTML` (2888-2907), `listItems` (1207), `createList`/`deleteList`
+  (1320-1336), `listHash`/`goToList` (1534-1543), `listShareUrlShort`
+  (1527-1529) and `packPayload` (1508-1516), the `data-share-list` handler
+  (3971-3976), the `data-del-list` handler (4136-4150), `hideWarn` (4175),
+  `createList` (4195-4203) and `importList` (4257-4270) in the action
+  handler, the help text (252-257 / 433-438). Styles: `.panel` 145-149,
+  `.numrow` 181-182, `input[type=text]` 254-258, `.badge`/`.badge.num`
+  331-335/349-352, `.empty` 524-525, `input::placeholder` 727, `.btn.danger`
+  795-796, `.listgrid`..`.listcard-acts` 831-846, `.warn` 855-861 **and**
+  963-975 (declared twice), `.warn-x:focus-visible` 1002-1005.
 
-- **What a planner has to do before this is implement-ready:** read the live
-  `#/lists` route (`renderLists`/`listCardHTML`/`storageWarning` in app.js -
-  not yet cited with line numbers anywhere in `plan.md`, unlike every other
-  batch's brief), measure it the way B5.1/B5.2's planning sessions measured
-  theirs, decide the file list and ordered steps, and write a "B5.3 planned"
-  section plus the "Next batch" brief this file currently lacks. `context.md`
-  has no "B5.3 planning facts" section yet either - that is this pass's to
-  add.
+- **In scope:** `plan.md`, "B5.3 planned", "How it is built" - in one line
+  each: `ports/dialog.ts` (new, `browserDialog`/`fakeDialog`) wired into
+  `Env`; `ListStore.remove`, `create(name, init)`, `saved`; `AppState.
+  warnHidden`/`hideWarn()`; eighteen dictionary keys in and `storageOff`
+  out; the `lists` help; the global `input::placeholder` rule in
+  `tokens.css`; `Button` `danger`; `Empty.svelte` extracted from
+  `TablesPage`'s two empty branches; `ListsPage.svelte` with the template
+  transcribed in the plan; `App.svelte` routes `section === 'lists'` to it;
+  `Shell.svelte` loses the paragraph, its rule and `storageWorks`; the
+  driver's `summary` verb and dialog auto-accept; the `seven` seed, six
+  states, three press specs and four `NAME` entries; `FEATURES.md`'s
+  misplaced storage-warning bullet corrected; `COVERAGE.md` rows; tests for
+  all of it.
 
-- **Out of scope for the planning pass itself:** writing production code;
-  replanning B5.1/B5.2 (both built and closed); touching B5.4-B5.6, search or
-  print beyond what the outline table already says.
+- **Out of scope:** anything under `#/l/` or `#/lists/<id>` (after a restore
+  or a card click the rewrite lands on its `todo` paragraph - B5.4/B5.6);
+  rename, `.listcard.active`, `openList` (B5.4); `StorageNotice.svelte`
+  (B5.4 extracts it on the second use), `Badge.svelte`, `Panel.svelte`; a
+  `typeRuns` probe on the index; any change to `CONTRACTS.md`, `ROUTES.md`,
+  `STATE.md`, `docs/fixtures/` or `llms.txt` - nothing here alters a
+  contract, and if something turns out to, stop and say so.
+
+- **Files expected:** `app/src/ports/dialog.ts`, `app/src/ports/types.ts`,
+  `app/src/ports/index.ts`, `app/src/ports/ports.test.ts`,
+  `app/src/state/lists.svelte.ts`, `app/src/state/lists.test.ts`,
+  `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
+  `app/src/lib/dict.ts`, `app/src/lib/help.ts`, `app/src/lib/help.test.ts`,
+  `app/src/styles/tokens.css`, `app/src/components/Button.svelte`,
+  `app/src/components/button.test.ts`, `app/src/components/Empty.svelte`,
+  `app/src/components/TablesPage.svelte`, `app/src/components/ListsPage.svelte`,
+  `app/src/components/listsPage.test.ts`, `app/src/components/Shell.svelte`,
+  `app/src/components/shell.test.ts`, `app/src/components/a11y.test.ts`,
+  `app/src/App.svelte`, `tests/parity/driver.js`, `tests/parity/specs.js`,
+  `docs/specs/FEATURES.md`, `docs/specs/COVERAGE.md`, `issues/47/plan.md`,
+  `issues/47/handoff.md`.
+
+- **Steps:** `plan.md`, "B5.3 planned", "Ordered steps" 1-11 - dict, help
+  and the placeholder rule; the dialog port; the store and `AppState`;
+  `Button` and `Empty`; `ListsPage`, the route and `Shell`; the tests; the
+  harness; then the checks in the order given there.
+
+- **Acceptance criteria:** `plan.md`, "B5.3 planned", "Acceptance criteria" -
+  in one line each: the head with pin, `?` and four help paragraphs; the
+  folded notice that unfolds on "подробнее" and goes for good on the cross
+  without toggling; the plain warning with no cross when storage refuses;
+  no warning in the frame; the two panel rows, the restore button wrapping
+  at 375 and the create button not; a card per list in store order with a
+  known-record badge, six thumbs or "Список пуст", the players' link and
+  both buttons, or the empty state; create's blank-name refusal and its
+  "создан" toast only on a successful write; share's short link and its
+  empty-list toast; delete's question and a deletion that survives a merge;
+  restore of a full link, a bare payload or a packed one, and `badShare` on
+  garbage; `noData` with no data; **every cell of `#/lists` and its five
+  states at 0.00% in both languages**, the three press specs matching,
+  `"nothing found" "#/tables ~"` and `"i/ci1 ~"` unchanged; `npm run check`
+  and `npm run check:built` exit 0.
+
+- **Verification commands** - and the two rules three implementers on this
+  task have got wrong, stated plainly:
+
+  ```text
+  set -o pipefail; npm run check 2>&1 | tail -n 120
+  npm run build
+  node tests/parity.js "#/lists"
+  node tests/parity.js "nothing found" "#/tables ~"
+  node tests/parity.js "i/ci1 ~"
+  npm run check:built
+  ```
+
+  **`npm run check` is exactly one foreground Bash call**, the first line
+  above verbatim, with the Bash tool's `timeout` set to `600000`. Not
+  backgrounded, not `run_in_background`, not redirected to a file, not
+  chained with `&&` or `;` to anything else. The commit gate arms itself
+  only from that shape: a backgrounded or file-redirected run cannot arm it
+  however honestly it passes, and the commit is then blocked at
+  `PreToolUse`. If it goes over the cap on a loaded host (it has, once), it
+  is re-run in the same shape, not salvaged; if it reports zeros down the
+  coverage table with `Errors` equal to the file count, no test ran - re-run
+  it (`context.md`, "npm run check, settled"). **`npm run check:built` takes
+  the same shape**: one foreground call, `timeout: 600000`.
+
+  **Parity filters, with their state counts, each one foreground call:**
+  `"#/lists"` is **6 states** (36 cells, `~ created` timed so it arrives
+  afresh at every width; the substring does not match `#/i/ci1 ~ many
+  lists`) - the loop while getting to zero; `"nothing found" "#/tables ~"`
+  is **10 states** (`#/tables/wondrous ~ nothing found`, `#/tables ~ nothing
+  found`, `#/tables/eq_armor ~ nothing found` guard the `Empty` extraction;
+  the eight `#/tables ~` states carry the search box whose placeholder the
+  global rule now colours); `"i/ci1 ~"` is **6 states** (the `pickq` and
+  new-list inputs' placeholders). Each fits one 600s call with room, going
+  by B5.2's 8-state run; do not merge them into one. **`node tests/parity.js
+  "tables"` and the unfiltered `node tests/run-all.js parity` are the
+  orchestrator's, not the implementer's.** Never run a vitest coverage pass
+  concurrently with a parity run, and check for a lingering `chrome.exe`
+  before trusting a vitest timeout.
+
+  Numbers: every `#/lists` cell is expected at zero. A cell that is not is a
+  diff image opened and a value measured before anything is written; the
+  six places to look first are listed at the end of "Parity states" in the
+  plan. No `VISUAL_DEBT` entry is expected to be written or deleted - none
+  names `#/lists` - and no Windows figure is ever written as though it were
+  CI's (owner decision 1). The three untouched filters must read exactly
+  what they read before this batch (`совпадает`, or the recorded modal
+  ring figures on `~ a row opened`).
+
+- **Risks / do-nots:** `plan.md`, "B5.3 planned", "Risks and do-nots", and
+  in particular: no whitespace between `<b>`, the badge and the thumbs or
+  empty paragraph inside `.listcard-main`, nor between the summary's three
+  children - the inventory names are "Клад дракона7" and "Лавка в
+  порту0Список пуст"; the badge counts known records, not `l.ids`; the
+  storage-off text is one expression `' ' + t.noStorage`, not `{' '}{...}`;
+  `e.preventDefault()` on the cross; `listCreated` only when `saved`;
+  `listEmpty` is a plain toast; `summary` goes into `click()` only; only
+  `~ created` is timed; grep the diff for `' <` at the start of an
+  `{#if}`/`{#each}` block; one commit, `feat(lists): the lists index`,
+  authored as `artex-x`, no push, no `Co-Authored-By`.
+
+- **Fallback (optional):** if the dialog auto-accept cannot be made to
+  answer a `confirm()` raised from inside `page.evaluate` (the evaluate
+  would hang), drop `deletedList` and the driver's `dialog()` and record in
+  "Blockers" that delete is covered by `listsPage.test.ts` alone; the
+  `summary` verb and the other two press specs do not depend on it. Not
+  expected: `page.on('dialog')` is puppeteer's documented answer to exactly
+  this.
 
 <details>
 <summary>B5.2 part 1's retired brief (implemented; kept for the record, not for reuse)</summary>
@@ -1675,6 +1800,33 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Deferred
 
+- **For the repository owner, found while planning B5.3 (2026-09-10):** the
+  live "Восстановить из ссылки" field refuses the app's own short links.
+  `importList` (app.js 4257-4270) matches `/#\/l\/([A-Za-z0-9_-]+)/` - no
+  `~` - and `decodeList` `atob`s whatever it gets, so a packed link, which is
+  exactly what "Поделиться" copies, fails as "Ссылка повреждена". Opening the
+  same link in the address bar works (`expandHash` unpacks it). B5.3 fixes it
+  in the rewrite rather than reproducing it (`plan.md`, "B5.3 planned",
+  "Decided") - the precedent is the grid-numbering bug in `ACCEPTED`. Worth
+  a one-line fix in app.js (`unpackPayload` before `decodeList`, `~` in the
+  class) if the live app gets another release before cut-over.
+- **The rewrite has no `::placeholder` rule and never had one** - measured
+  on `#/tables`: live `rgb(138,131,163)` at opacity 0.7 (style.css:727),
+  rewrite Chrome's default `rgb(117,117,117)` at 1. Under `JITTER` on every
+  state because a placeholder is a twentieth of a percent of a page; the
+  class B3.6 documented. B5.3 ports the rule globally in `tokens.css`; if
+  the placeholder colour is ever worth a `typeRuns`-style probe, `color` and
+  `opacity` of `::placeholder` on the toolbar search box is the field.
+- **`.badge` is now copied three times** (the card, the rows, and B5.3's
+  list cards). A `Badge.svelte` is the rule's answer; deferred because the
+  extraction touches the card and the rows, which sit under thirty-odd parity
+  states, for a two-rule gain. Take it in a batch that already re-measures
+  them.
+- **`StorageNotice.svelte`** is B5.4's to extract on the notice's second
+  use (the list page draws the same `storageWarning()`); B5.3 writes it
+  inline in `ListsPage.svelte` and puts only the `warnHidden` flag on
+  `AppState`.
+
 - **B5.2 part 1's review: approved, no blockers** (reviewer, opus, against
   `ff741ad`, 2026-09-10). The sweep the batch was reviewed for came back
   clean: **all eight `presses: true` specs and both `looks` specs in
@@ -1870,9 +2022,10 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   harness already drives both apps in a real browser.
 - **`Panel.svelte`.** Still unscheduled - `.ffilter` and `.tablenav`.
   `TableRows`/`SectionHead` are not `.panel` copies.
-- **`noData` and `storageOff`.** Untouched; assigned to **B5.3** (the lists
-  index), where the live app's `storageWarning()` lands and `Shell`'s invented
-  paragraph goes - see `plan.md`, "B5 planned". B5.1 does not touch either.
+- **`noData` and `storageOff`.** Planned in **B5.3** (the lists index):
+  `storageOff` and `Shell`'s paragraph go and the live `storageWarning()`
+  lands on the page; `noData` stays as the rewrite's documented state and the
+  lists page draws it too - see `plan.md`, "B5.3 planned", "Decided".
 - **The 600px overrides above are now assigned**: `.seldrop`/`.dropmenu`
   **built in B5.1** (with the menu), `.selx`/`.selacts` to B5.2 (with the
   bar), `.lrow*` and `.npair` to B5.4, `.batch-acts` to B5.5 - each with its
@@ -1888,7 +2041,9 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Notes
 
-- Mocks path: none. B3.5, B3.6 and B4 introduce no new UI; every value B4
+- Mocks path: none for B5.3 either - the index is transcribed from the live
+  DOM and measured (`context.md`, "B5.3 planning facts"); the probe scripts
+  lived in the session scratchpad and were not kept. B3.5, B3.6 and B4 introduce no new UI; every value B4
   draws is already in `style.css` and `app.js`, and the tier body reuses B3's
   markup. B5.1 likewise: the menu, the card row and the toast are ported from
   `app.js`/`style.css` line by line (references in `plan.md`, "B5.1 planned"),
