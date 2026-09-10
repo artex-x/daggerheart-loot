@@ -129,9 +129,12 @@ liveness across processes is probe B.
     precondition (probe A0's key-shape measurement) is recorded below for
     whoever ships it later.
   - `issues/47/handoff.md`'s false gotcha ("`npm run check` starts with
-    `prettier --check .`, which covers markdown") was **not** touched -
-    plan.md section 5 does not assign that file to this batch, and the
-    dispatch said to leave it for orchestrator reconciliation if so.
+    `prettier --check .`, which covers markdown") was already gone before
+    this batch started - `grep -n "starts with \`prettier"
+    issues/47/handoff.md` finds nothing, and `a404a52`
+    ("docs(issue-47): close B5.1, withdraw a gotcha that was never true")
+    is the commit that removed it. Nothing for this batch to do there;
+    `plan.md` section 5 does not assign that file to it either way.
 - Files changed: `.claude/hooks/lib.mjs`, `.claude/hooks/check-observer.mjs`,
   `.claude/hooks/bash-guard.mjs`, `.claude/hooks/selftest.mjs`,
   `tests/parity.js`, `.claude/README.md`,
@@ -139,9 +142,11 @@ liveness across processes is probe B.
   `.claude/prompts/implement.prompt.md`, `docs/parity.md`, `CLAUDE.md`,
   `issues/hooks-guardrails/plan.md`, `handoff.md`, `context.md`. Created:
   `tests/parity/lock.js`.
-- Commit(s): one commit, staged by name -
-  `feat(hooks): the check call shows its status, cannot be lost, runs alone`
-  - sha `<FILL AFTER COMMIT>`.
+- Commit(s): one commit, staged by name - `b6a2fcd`
+  `feat(hooks): the check call shows its status, cannot be lost, runs alone`.
+  Working tree clean afterward; `git log --oneline -3` ->
+  `b6a2fcd`/`a404a52`/`d1c1367`, HEAD unmoved from dispatch until this
+  commit landed on top of it.
 - Deviations and rationale: none against plan.md section 5's steps. One
   local fix within a touched file, per CLAUDE.md's campsite rule: the
   `isCheckInvocation` doc comment in `check-observer.mjs` had a stale
@@ -211,9 +216,14 @@ liveness across processes is probe B.
     (live-not-denied, dead-denied) were **not** hit - every step matched
     its expected branch, nothing to stop-and-report.
   - Gate: `set -o pipefail; npm run check 2>&1 | tail -n 120`, foreground,
-    Bash `timeout: 600000` - see the next message in this session for the
-    live run and its tail; `.claude/.check-cache.json`'s `at` and `wc -l
-    CLAUDE.md` (195) recorded there too.
+    Bash `timeout: 600000` - format/lint/typecheck/data/derived/i18n all
+    clean, `.claude/hooks/selftest.mjs: 292 passed, 0 failed`, vitest
+    `Test Files 35 passed (35)`, `Tests 732 passed (732)`, coverage `All
+    files 96.67/89.64/96.57/97.01`. No `Exit code` line (status 0).
+    `cat .claude/.check-cache.json` afterward ->
+    `{"key":"6cd429588709e821","at":1789048401,"command":"npm run check"}`
+    - a fresh `at`. `wc -l CLAUDE.md` -> **195**, matching the acceptance
+    number.
 
 ## Next batch
 - None. This was the only batch (`plan.md` section 7; "There is no B2").
