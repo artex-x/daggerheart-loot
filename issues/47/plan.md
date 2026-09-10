@@ -4259,7 +4259,7 @@ summary i`, `.warn p`, `.warn-x`, `:hover` (964-975), `.warn-x:focus-visible`
 (1002-1005). No `@media` override touches any of them.
 
 **A card** (`listCardHTML`, 2888-2907): `<div class="listcard"><a class=
-"listcard-main" href="#/l/<encodeList(l, true)>"><div class="listcard-top">
+"listcard-main" href="#/l/<encodeList(l, false)>"><div class="listcard-top">
 <b>name</b><span class="badge num">N</span></div>` then either `<div class=
 "listcard-thumbs">` of up to six `<img src alt="" loading="lazy" decoding=
 "async">` or `<p class="listcard-empty">listEmpty</p>`, `</a><div class=

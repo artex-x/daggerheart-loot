@@ -6,7 +6,20 @@ depends on chat history.
 
 ## Status
 
-- Task status: in_progress - B4 built (`fde9cdc`, reviewed); B5.1 built
+- Task status: in_progress - **B5.3's fix-then-continue remediation pass is
+  built and committed.** The reviewer's one blocker against `ba8f4b1` (the
+  list card's `href` rendered the GM payload where the live app's own bug
+  renders it too - see "Blockers") is fixed, the two facts in `context.md`
+  and `plan.md` that stated the wrong live behaviour are corrected, and
+  `listsPage.test.ts`'s two href assertions now use a list carrying an
+  `hnote` so they can tell the two payload flavours apart. `npm run check`
+  exits 0 on the first attempt (782 tests, no worker-fork crash this run);
+  `npm run build` clean; `node tests/parity.js "#/lists"` reads all 36 cells
+  `совпадает`; `npm run check:built` exits 0. The five nits and the parity-
+  coverage gap the blocker exposed are recorded in "Deferred", not fixed, per
+  this pass's explicit blockers-only scope. B5.4-B5.6 remain outlines only;
+  picking the next batch is the orchestrator's.
+- Task status (B4-B5.3, prior sessions): B4 built
   (`fe0043b`) with its fix-then-continue pass (`d1c1367`); B5.2 part 0 built
   (tests and docs, no production code) - `f167e62`, on top of the planning
   commit `2f3659d`. **B5.2 part 1 (the selection bar) is now built too** -
@@ -29,7 +42,21 @@ depends on chat history.
   on mechanics). See `plan.md`, "B5.3 built", "Close-out decision",
   "Close-out run" for the complete accounting, and `git log` for the
   `feat(lists): the lists index` commit.
-- Last agent: implementer (2026-09-10, B5.3 close-out: applied path 1 -
+- Last agent: implementer (2026-09-10, B5.3 fix-then-continue remediation:
+  one blocker only, per the orchestrator's explicit scope - no replanning,
+  no B5.4, one commit. `ListsPage.svelte:181`'s card link changed from
+  `encodeList(l, true)` to `encodeList(l, false)`, matching the live app's
+  own `listHash(l)` one-argument call (app.js:2894/1534). `context.md` and
+  `plan.md`'s two facts that stated the players' payload were corrected with
+  the verified line numbers. `listsPage.test.ts`'s two `href` assertions
+  fixed to `encodeList(listA/B, false)`; `listA` gained an `hnote` and a new
+  inequality assertion so the test can actually distinguish the two payload
+  flavours, which are byte-identical without one. Five review nits and the
+  parity-coverage gap the blocker exposed recorded in "Deferred", not fixed.
+  `npm run check` exit 0 (no re-run needed), `npm run build` clean, `node
+  tests/parity.js "#/lists"` all 36 cells `совпадает`, `npm run check:built`
+  exit 0. One commit on top of `ba8f4b1`. No push.)
+  Before it: implementer (2026-09-10, B5.3 close-out: applied path 1 -
   `{#key app.lang}` around `ListsPage.svelte`'s `<details class="warn">`
   with a comment naming the mechanism, one `listsPage.test.ts` case, one
   `FEATURES.md` clause. `npm run check` needed one re-run on the documented
@@ -786,7 +813,98 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 - Deviations and rationale: none from the brief's scope, file list, or
   ordered steps.
 
+- Batch name/id: **B5.3 fix-then-continue - one blocker, remediation only**
+  (this session, on top of `ba8f4b1`).
+- What shipped: the reviewer's one blocker against `ba8f4b1`, plus the two
+  recorded facts that stated the live behaviour incorrectly and the coverage
+  gap that let it through, per the orchestrator's explicit blockers-only
+  scope. No replanning, no B5.4, one commit.
+  - **The blocker**: `ListsPage.svelte:181`'s card link called
+    `encodeList(l, true)` (the players' payload); the live app's own
+    `listCardHTML` (app.js:2894) calls `listHash(l)` with one argument, so
+    `listHash`'s `forPlayers` (app.js:1534) goes undefined, falsy, and
+    `encodeListRaw(l, false)` keeps any `hnote`. Only `goToList`
+    (app.js:1539-1540) passes `true`. Fixed to `encodeList(l, false)` to
+    match live - a port, per `CLAUDE.md`'s first migration law; the
+    reviewer's "keep the safer players' link as a deliberate deviation"
+    alternative was ruled out by the task rather than chosen here. After
+    navigation `syncListUrl` (app.js:1599-1606) still `replaceState`s to the
+    players' form regardless, so the address bar converges - what the fix
+    changes is the rendered `href` attribute, the hover status bar and the
+    history entry, for any list carrying a GM-only note.
+  - **The two facts**: `context.md`'s "The card link is the players'
+    payload" and `plan.md`'s "A card" both stated `listHash(l, true)`/
+    `encodeList(l, true)`; both corrected to name the bug, cite app.js:2894
+    (the call) and app.js:1534 (the signature) - verified by reading the
+    file directly rather than copied from the task brief, which cited
+    2895/1554 (a small, immaterial citation drift, noted rather than
+    silently overridden) - and to note the `syncListUrl` convergence nuance.
+  - **The coverage gap**: `listsPage.test.ts`'s two `toHaveAttribute('href',
+    ...)` assertions pinned `encodeList(listA/B, true)`, the wrong value;
+    fixed to `false`. Simply flipping the boolean would leave the test
+    unable to ever catch this again, since the two payload flavours are
+    byte-identical for a list with no `hnote` - exactly why 36/36 parity
+    cells and the whole unit suite passed with the bug in place. `listA`
+    gained `hnote: 'только для мастера'` and the test now asserts
+    `encodeList(listA, false)` and `encodeList(listA, true)` are unequal
+    immediately before the href assertions, so the test proves it can tell
+    the two flavours apart rather than merely executing a line that would
+    pass either way.
+  - **Not fixed, deferred**: a parity spec that reads `a.listcard-main`'s
+    `href`, seeded with an `hnote`-carrying list, is the only thing that
+    would have caught this from the outside - no parity spec reads any
+    `href` today, and adding one is a harness change beyond this pass's
+    scope. Recorded in "Deferred".
+  - **Also recorded, not fixed**: the reviewer's five nits (the
+    suite-wide `nested-interactive` a11y override, `FEATURES.md:79` reading
+    narrower than the code, `.badge` inline in a third component, the
+    once-read `works` flag, `ListStore.create`'s wider-than-needed `init`)
+    and the review verdict itself (reviewer, opus, against `ba8f4b1`,
+    fix-then-continue, one blocker, five nits) - both in "Deferred".
+- Files changed: `app/src/components/ListsPage.svelte`,
+  `app/src/components/listsPage.test.ts`, `issues/47/context.md`,
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): one commit, `fix(lists): ...`, authored `artex-x
+  <artex-x@users.noreply.github.com>`, on top of `ba8f4b1` - see `git log`
+  for its sha. No push.
+- Deviations and rationale: none from the task's scope, file list, or
+  ordered steps. The app.js line-number citations (2894/1534) differ from
+  the task brief's (2895/1554); both are corrected to the verified figures
+  since the whole point of citing them is that "the next reader can check
+  rather than trust."
+
 ## Verification
+
+- Commands run (exact), this session (B5.3 fix-then-continue remediation,
+  against `ba8f4b1`):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+    call, `timeout: 600000`. **Exit 0 on the first attempt** - no worker-fork
+    crash this run. format/lint/typecheck (523 files, 0/0)/data/derived/
+    i18n/selftest (292 passed) all clean; `vitest run --coverage`: **782
+    tests, 36/36 files passing**, 96.89/90.09/96.93/97.15
+    statements/branches/functions/lines, every threshold met -
+    `ListsPage.svelte` itself at 98.78/92.85/100/97.67.
+  - `npm run build` - clean; `dist/assets/app.js` 223.59 kB, 69.23 kB gzip
+    (unchanged from B5.3's own reading - a one-word value change, not a new
+    branch).
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists"` (6 states, 36 cells,
+    one timed) - **`расхождений нет`**, all 36 cells `совпадает`. This run is
+    a regression guard, not proof of the fix: no parity spec reads any
+    `href` attribute, so the card-link payload flavour is invisible to pixel
+    comparison whenever no list carries an `hnote` - see "Deferred", the
+    parity-coverage-gap entry.
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - one
+    foreground call, `timeout: 600000`. **Exit 0.** `npm run build` (clean,
+    same output as above), `npm run smoke` ("the built page opens from a
+    folder"), `npm run budget` (67.2 kB gzip against the 120 kB budget).
+  - **The corrected test actually distinguishes the two payload flavours**:
+    `listsPage.test.ts` now seeds `listA` with `hnote: 'только для мастера'`
+    and asserts `expect(encodeList(listA, false)).not.toBe(encodeList(listA,
+    true))` immediately before the two `toHaveAttribute('href', ...)`
+    assertions - so the suite would fail if the two flavours ever collapsed
+    back to being byte-identical for this fixture, which is exactly the
+    condition that let the original bug through 36/36 parity cells and the
+    whole unit suite unnoticed.
 
 - Commands run (exact), this session (B5.3 close-out):
   - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
@@ -1990,6 +2108,32 @@ and planning the next one is the orchestrator's, not implement-ready yet.
 
 ## Blockers
 
+- **RESOLVED (implementer, 2026-09-10) - B5.3 fix-then-continue: the list
+  card's link rendered the GM payload, not the players' one.** Found by the
+  reviewer against `ba8f4b1`: `ListsPage.svelte:181` called
+  `encodeList(l, true)`, but the live app's `listCardHTML` (app.js:2894) calls
+  `listHash(l)` with **one argument** - `listHash(l, forPlayers)` (app.js:1534)
+  then has `forPlayers` undefined, falsy, so `encodeListRaw(l, false)` keeps
+  any `hnote` on the card's own `href`. Only `goToList` (app.js:1539-1540)
+  passes `true`. Fixed to match live: `encodeList(l, false)`. Not a design
+  call - `CLAUDE.md`'s first migration law is to reproduce the shipped app's
+  rendered behaviour, and the "keep the safer players' link" alternative the
+  reviewer offered was explicitly ruled out by the task, not chosen here.
+  `context.md` ("The card link renders the GM payload...") and `plan.md`
+  ("A card") both carried the wrong claim and are corrected in the same
+  commit, with the app.js line numbers this pass verified by reading
+  (2894/1534, not the review's 2895/1554 - a minor citation drift, re-checked
+  against the file rather than copied). `listsPage.test.ts`'s two
+  `toHaveAttribute('href', ...)` assertions pinned the old, wrong value;
+  fixed to `encodeList(listA/B, false)`, and `listA` now carries an `hnote` so
+  the two payload flavours actually diverge (`expect(encodeList(listA,
+  false)).not.toBe(encodeList(listA, true))` proves it) - without that, the
+  two flavours are byte-identical for any list with no `hnote`, which is
+  exactly why 36/36 parity cells and the whole unit suite passed with the bug
+  in place. See "Verification" for the commands and results, and "Deferred"
+  for the parity-coverage gap this pass deliberately left open (no `href` is
+  read by any parity spec) and the five nits the review also raised.
+
 - **RESOLVED (implementer, 2026-09-10) - B5.3's `~ notice unfolded @ en`
   cells: the notice re-folds on a language switch.** Path 1, language change
   only, built exactly as decided: `{#key app.lang}` around the `<details>`
@@ -2261,6 +2405,50 @@ and planning the next one is the orchestrator's, not implement-ready yet.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B5.3's review: fix-then-continue, one blocker, five nits** (reviewer,
+  opus, against `ba8f4b1`, 2026-09-10). The blocker (the card link's payload
+  flavour) is fixed - see "Blockers". The five nits, recorded rather than
+  fixed per the no-remediation-cycle-for-nits rule:
+  1. `app/src/test/a11y.ts`'s `OFF` map disables axe's `nested-interactive`
+     rule **suite-wide** to accommodate the storage notice's one ported shape
+     (a `<button>` inside its own `<summary>`, live app's own markup,
+     unavoidable given `<details>` hides every child but the first `summary`
+     while closed). A per-call rule override on `expectNoA11yViolations` for
+     just that one component's assertions would keep the rule live
+     everywhere else instead of turning it off globally.
+  2. `docs/specs/FEATURES.md:79`'s Lists storage-notice bullet reads narrower
+     than the code: the rewrite's notice survives a create and a delete where
+     the live `render()` re-folds it on every re-render, and `plan.md`'s
+     "Close-out decision" already argues that deviation deliberately (kinder
+     to a person, invisible to every state that starts folded) - the spec
+     should carry that clause alongside the language-switch one it already
+     has.
+  3. `.badge`/`.badge.num` is now inline in a **third** component
+     (`ListsPage.svelte`, after `RecordCard.svelte` and `TableRows.svelte`),
+     against the campsite rule's "extract on the second use." Already
+     recorded above ("`.badge` is now copied three times") as `Badge.svelte`'s
+     future extraction point; this is the same finding, from the review.
+  4. `ListsPage.svelte:37`'s `works` reads `app.env.storage.works()` once, via
+     `untrack`, at creation - the live `storageWarning()` re-probes on every
+     render, so a storage quota failure that occurs mid-session swaps the
+     live app's notice live and does not swap the port's. Cosmetic: nobody
+     has reported hitting a quota failure while the page is open, and the
+     initial read is correct.
+  5. `ListStore.create(name, init)` lets `init` override `ids` and `meta`,
+     wider than its one caller (`ListsPage.svelte`'s `restore()`) needs -
+     `restore` is the only place that ever passes `init` at all.
+
+- **The parity-coverage gap the card-link blocker exposed.** No parity spec
+  reads any `href` attribute today, so the GM-payload/players-payload bug was
+  invisible to all 36 `#/lists` cells and to CI - a pixel comparison cannot
+  see an attribute two apps render identically in most cases and differently
+  only when a list carries an `hnote`, which no seeded `#/lists` list does.
+  Not fixed here - adding a parity state or a new seed is a harness change
+  beyond this blockers-only pass. **What would have caught it:** a parity
+  spec that reads `a.listcard-main`'s `href`, seeded with a list carrying an
+  `hnote`, comparing the two apps' attribute values directly rather than
+  their rendered pixels.
 
 - **For the repository owner, found while planning B5.3 (2026-09-10):** the
   live "Восстановить из ссылки" field refuses the app's own short links.

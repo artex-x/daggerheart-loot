@@ -577,9 +577,22 @@ launch args, three widths), not assumed:
   in the inventory. The badge counts **known** records (`listItems`), not
   `l.ids.length`; thumbs are the first six known records, `imgTag(it,
   'thumb')` = `<img src alt="" loading="lazy" decoding="async">`.
-- **The card link is the players' payload**: `listHash(l, true)` = `'#/l/' +
-  encodeList(l, true)`, deterministic from name and ids - no list id in it,
-  so a list created inside a parity state links identically on both apps.
+- **The card link renders the GM payload, not the players' - a bug in the
+  live app, not a deliberate choice.** `listCardHTML` (app.js:2894) calls
+  `listHash(l)` with **one argument**; `listHash(l, forPlayers)` (app.js:1534)
+  is `'#/l/' + encodeList(l, forPlayers)`, so `forPlayers` is `undefined`,
+  falsy, and `encodeListRaw(l, false)` keeps any `hnote` records on the card's
+  own link. Only `goToList` (app.js:1539-1540) calls `listHash(l, true)`. The
+  two payload flavours are byte-identical whenever no record in the list
+  carries an `hnote`, which is why this went unnoticed - deterministic from
+  name and ids either way, so a list created inside a parity state still
+  links identically on both apps in the common case. After navigation,
+  `syncListUrl` (app.js:1599-1606) `replaceState`s the address bar to the
+  players' form regardless, so the address bar converges; what the bug
+  affects is the rendered `href` attribute itself - "copy link address", the
+  hover status bar, and the history entry pushed on click - for any list
+  carrying a GM-only note. The port matches this: `ListsPage.svelte`'s card
+  link calls `encodeList(l, false)`.
 - **Controls on the live index** (NAME_FN, chrome removed): "Как это
   работает", "Открывать этот раздел при запуске" (`homeHash()` returns
   `#/lists`, so the pin draws), "Скрыть", "Создать", "Восстановить", and per

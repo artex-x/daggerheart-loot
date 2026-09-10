@@ -178,7 +178,7 @@
                format, reintroducing the gap - the ignore has to cover the
                whole link, the same fix TableRows.svelte already needed. -->
           <!-- prettier-ignore -->
-          <a class="listcard-main" href={sharedListHash(encodeList(l, true))}
+          <a class="listcard-main" href={sharedListHash(encodeList(l, false))}
             ><div class="listcard-top"><b>{l.name}</b><span class="badge num"
                 >{items.length}</span
               ></div

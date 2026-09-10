@@ -47,8 +47,16 @@ const LOOT: Loot = {
 };
 
 /** A list with one known id and one the data does not - the badge counts
- *  known records, not `l.ids.length`. */
-const listA: StoredList = { id: 'a', name: 'Клад дракона', ids: ['ci1', 'nope'], created: 2 };
+ *  known records, not `l.ids.length`. Carries a GM-only `hnote` so its two
+ *  payload flavours (`encodeList(listA, true|false)`) are not byte-identical -
+ *  see the card-link assertions below. */
+const listA: StoredList = {
+  id: 'a',
+  name: 'Клад дракона',
+  ids: ['ci1', 'nope'],
+  created: 2,
+  hnote: 'только для мастера'
+};
 const listB: StoredList = { id: 'b', name: 'Лавка в порту', ids: [], created: 1 };
 const TWO = JSON.stringify([listA, listB]);
 
@@ -128,12 +136,21 @@ describe('a card per list', () => {
        `textContent` check below is the one that actually pins the no-space
        requirement, reading the DOM text nodes directly rather than through
        that computation. */
+    /* The card link renders the GM payload, not the players' one - a live-app
+       bug (`listCardHTML` calls `listHash(l)` with no second argument;
+       `listHash`'s `forPlayers` goes undefined, falsy) that this port
+       matches: see context.md, "The card link renders the GM payload". Proof
+       the two flavours actually differ for `listA` (its `hnote` makes them
+       diverge) is what makes the assertion below meaningful rather than a
+       line that would pass either way. */
+    expect(encodeList(listA, false)).not.toBe(encodeList(listA, true));
+
     const cardA = screen.getByRole('link', { name: /Клад дракона/ });
-    expect(cardA).toHaveAttribute('href', '#/l/' + encodeList(listA, true));
+    expect(cardA).toHaveAttribute('href', '#/l/' + encodeList(listA, false));
     expect(cardA.querySelectorAll('img')).toHaveLength(1);
 
     const cardB = screen.getByRole('link', { name: /Лавка в порту/ });
-    expect(cardB).toHaveAttribute('href', '#/l/' + encodeList(listB, true));
+    expect(cardB).toHaveAttribute('href', '#/l/' + encodeList(listB, false));
     expect(cardB.querySelectorAll('img')).toHaveLength(0);
 
     // store order, not alphabetical
