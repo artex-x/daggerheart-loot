@@ -10294,10 +10294,9 @@ against 120 kB). The commit gate is armed for the committed tree.
 No `VISUAL_DEBT` figure was written from this host (owner decision 1
 honoured - every anchor entry was deleted outright, none re-numbered).
 
-**Committed as `<pending - see handoff.md for the hash>`; not pushed
-(never this session's to do).** B9's own closing condition, same shape as
-B8's: a green CI read of the owner's push. Open in `handoff.md`,
-"Blockers", until then.
+**Committed as `ad46dac`; not pushed (never this session's to do).** B9's
+own closing condition, same shape as B8's: a green CI read of the
+owner's push. Open in `handoff.md`, "Blockers", until then.
 
 ### B10 outlined: the page-furniture extraction pass (planner, 2026-09-11)
 

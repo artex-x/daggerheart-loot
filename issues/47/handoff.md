@@ -75,7 +75,7 @@ depends on chat history.
     confirmed by eye, matching the acceptance criterion.
   - `npm run check` green twice (after the doc/component edits and again
     after the `specs.js` edit), `npm run check:built` green once, all in
-    the foreground. Commit: see below.
+    the foreground. Commit: `ad46dac`.
 - Last agent: implementer
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
@@ -2862,8 +2862,9 @@ register B9 opened.
 
 ## Blockers
 
-- **OPEN: B9's commit is made; waits on CI's read of the owner's push**
-  (implementer, 2026-09-11). Same shape as B8's own closing condition.
+- **OPEN: B9's commit (`ad46dac`) is made; waits on CI's read of the
+  owner's push** (implementer, 2026-09-11). Same shape as B8's own closing
+  condition.
   Locally: all seven anchor `VISUAL_DEBT` entries deleted, the 12-cell
   `"anchor"` re-run reads `совпадает` on every cell (`расхождений нет`),
   the 24-cell `"#/print/ci1-q1"` match (actually 36 - see "Status" above)
