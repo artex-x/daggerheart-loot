@@ -159,6 +159,12 @@ export interface DialogPort {
 export interface DragHandlers {
   /** Where the entry ended up, both indices zero-based. */
   onDrop(from: number, to: number): void;
+  /** dragstart: which row is being dragged. */
+  onDrag?(from: number): void;
+  /** dragover on a row: where the entry would land; `null` over the dragged row itself. */
+  onOver?(over: number, where: 'before' | 'after' | null): void;
+  /** dragend, and after a drop: no row is dragged, no row is marked. */
+  onEnd?(): void;
 }
 
 /**

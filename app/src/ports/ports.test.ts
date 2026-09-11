@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserCompress, plainCompress } from './compress.js';
 import { browserDialog, fakeDialog } from './dialog.js';
-import { nativeDrag } from './drag.js';
+import { edgeSpeed, nativeDrag } from './drag.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
@@ -315,32 +315,54 @@ describe('confirming', () => {
 });
 
 describe('dragging', () => {
+  /* Each row is 40px tall, stacked in index order - `top: i * 40, height: 40`
+     - so a `clientY` can be aimed above or below any row's own midpoint. */
   const rows = (n: number): HTMLElement => {
     const box = document.createElement('div');
     for (let i = 0; i < n; i++) {
       const row = document.createElement('div');
       row.dataset['index'] = String(i);
+      row.getBoundingClientRect = () => new DOMRect(0, i * 40, 0, 40);
       box.appendChild(row);
     }
     document.body.appendChild(box);
     return box;
   };
 
+  /** A `DragEvent` jsdom does not construct, with just what the port reads. */
+  const fire = (
+    el: Element | Document,
+    type: string,
+    opts: { clientY?: number; dataTransfer?: unknown } = {}
+  ): void => {
+    const e = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(e, 'dataTransfer', {
+      value: opts.dataTransfer ?? {
+        effectAllowed: '',
+        dropEffect: '',
+        setData: () => undefined,
+        getData: () => '',
+        setDragImage: () => undefined
+      }
+    });
+    if ('clientY' in opts) Object.defineProperty(e, 'clientY', { value: opts.clientY });
+    el.dispatchEvent(e);
+  };
+
+  /** The three-event shape every case below drives: start, one dragover at
+   *  `clientY`, then the drop on the same row and the same `clientY` - the
+   *  live app reads `after` off the row's own class state at drop time, which
+   *  is exactly what the last `dragover` on that row just set. */
+  const dragAt = (box: HTMLElement, from: number, to: number, clientY: number): void => {
+    fire(box.children[from] as Element, 'dragstart');
+    fire(box.children[to] as Element, 'dragover', { clientY });
+    fire(box.children[to] as Element, 'drop', { clientY });
+  };
+
+  /** Before the target's own midpoint - the shape these three cases were
+   *  written against, before B5.5 added the midpoint rule. */
   const drag = (box: HTMLElement, from: number, to: number): void => {
-    const data = new Map<string, string>();
-    const dt = {
-      effectAllowed: '',
-      setData: (k: string, v: string) => data.set(k, v),
-      getData: (k: string) => data.get(k) ?? ''
-    };
-    const fire = (type: string, at: number): void => {
-      const e = new Event(type, { bubbles: true, cancelable: true });
-      Object.defineProperty(e, 'dataTransfer', { value: dt });
-      box.children[at]?.dispatchEvent(e);
-    };
-    fire('dragstart', from);
-    fire('dragover', to);
-    fire('drop', to);
+    dragAt(box, from, to, to * 40);
   };
 
   it('reports where an entry was dropped', () => {
@@ -365,6 +387,92 @@ describe('dragging', () => {
     nativeDrag().bind(box, { onDrop })();
     drag(box, 0, 2);
     expect(onDrop).not.toHaveBeenCalled();
+  });
+
+  it('reports which row started dragging', () => {
+    const box = rows(3);
+    const onDrag = vi.fn();
+    nativeDrag().bind(box, { onDrop: vi.fn(), onDrag });
+    fire(box.children[2] as Element, 'dragstart');
+    expect(onDrag).toHaveBeenCalledWith(2);
+  });
+
+  it('marks before above a row’s midpoint and after below it', () => {
+    const box = rows(3);
+    const onOver = vi.fn();
+    nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
+    fire(box.children[0] as Element, 'dragstart');
+    fire(box.children[2] as Element, 'dragover', { clientY: 2 * 40 + 5 }); // top 80, mid 100
+    expect(onOver).toHaveBeenLastCalledWith(2, 'before');
+    fire(box.children[2] as Element, 'dragover', { clientY: 2 * 40 + 35 });
+    expect(onOver).toHaveBeenLastCalledWith(2, 'after');
+  });
+
+  it('reports null over the row being dragged', () => {
+    const box = rows(3);
+    const onOver = vi.fn();
+    nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
+    fire(box.children[1] as Element, 'dragstart');
+    fire(box.children[1] as Element, 'dragover', { clientY: 1 * 40 });
+    expect(onOver).toHaveBeenCalledWith(1, null);
+  });
+
+  it('adjusts the target index for the entry’s own removal, both directions', () => {
+    const box = rows(5);
+    const onDrop = vi.fn();
+    nativeDrag().bind(box, { onDrop });
+
+    /* after, to < from: the entry leaving index 4 shifts everything below it
+       up by one, so landing after row 1 is really index 2. */
+    dragAt(box, 4, 1, 1 * 40 + 35);
+    expect(onDrop).toHaveBeenLastCalledWith(4, 2);
+
+    /* after, to > from: nothing between `from` and the target moves. */
+    dragAt(box, 1, 3, 3 * 40 + 35);
+    expect(onDrop).toHaveBeenLastCalledWith(1, 3);
+
+    /* before, to > from: the entry leaving index 1 shifts the target up by
+       one before it lands ahead of it. */
+    dragAt(box, 1, 3, 3 * 40 + 5);
+    expect(onDrop).toHaveBeenLastCalledWith(1, 2);
+
+    /* before, to < from: landing ahead of an earlier row needs no shift. */
+    dragAt(box, 4, 1, 1 * 40 + 5);
+    expect(onDrop).toHaveBeenLastCalledWith(4, 1);
+  });
+
+  it('reports the drag ending, from a drop and from a plain dragend', () => {
+    const box = rows(3);
+    const onEnd = vi.fn();
+    nativeDrag().bind(box, { onDrop: vi.fn(), onEnd });
+
+    dragAt(box, 0, 1, 1 * 40 + 35);
+    expect(onEnd).toHaveBeenCalledTimes(1);
+
+    fire(box.children[2] as Element, 'dragstart');
+    fire(box.children[2] as Element, 'dragend');
+    expect(onEnd).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops driving the edge scroll once unbound', () => {
+    const box = rows(3);
+    const raf = vi.spyOn(window, 'requestAnimationFrame');
+    const unbind = nativeDrag().bind(box, { onDrop: vi.fn() });
+    fire(box.children[0] as Element, 'dragstart');
+    unbind();
+    raf.mockClear();
+    fire(document, 'dragover', { clientY: 0 });
+    expect(raf).not.toHaveBeenCalled();
+    raf.mockRestore();
+  });
+
+  describe('the edge-scroll speed, off a pointer position alone', () => {
+    it('tops out at each edge’s own band and stands still in the middle', () => {
+      expect(edgeSpeed(0, 900)).toBe(-22);
+      expect(edgeSpeed(60, 900)).toBe(-11);
+      expect(edgeSpeed(899, 900)).toBe(22);
+      expect(edgeSpeed(450, 900)).toBe(0);
+    });
   });
 });
 

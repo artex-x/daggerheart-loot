@@ -258,6 +258,47 @@ function makeDriver(page, target) {
       return settle(page);
     },
 
+    /**
+     * Reordering a row by dragging it, the way a pointer does: both apps
+     * render `.lrow` in list order, so this grips row `from`'s own handle and
+     * drops it above or below row `to`'s midpoint - a name-based lookup would
+     * have to read a row's own text, which is the description, not the grip.
+     * Chrome constructs `DataTransfer` and `DragEvent`, and puppeteer's Chrome
+     * is the only browser this runs in.
+     */
+    async drag(from, to, after) {
+      await page.evaluate(
+        (f, t, aft) => {
+          const rows = document.querySelectorAll('.lrow');
+          const grip = rows[f].querySelector('[data-drag]');
+          const target = rows[t];
+          const dt = new DataTransfer();
+          grip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+          const rect = target.getBoundingClientRect();
+          const clientX = rect.left + 10;
+          const clientY = rect.top + rect.height * (aft ? 0.75 : 0.25);
+          target.dispatchEvent(
+            new DragEvent('dragover', {
+              bubbles: true,
+              cancelable: true,
+              dataTransfer: dt,
+              clientX,
+              clientY
+            })
+          );
+          target.dispatchEvent(
+            new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt, clientX, clientY })
+          );
+          grip.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt }));
+        },
+        from,
+        to,
+        after
+      );
+      d.pressed.add(`drag:${from}->${to}`);
+      await settle(page);
+    },
+
     /** Whether a control is on screen at all. */
     has(name) {
       return page.evaluate(

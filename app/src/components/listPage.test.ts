@@ -5,6 +5,7 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
 import { buildIndex } from '../lib/data.js';
@@ -514,6 +515,38 @@ describe('drag', () => {
   it('marks the grip draggable, so the browser actually fires dragstart', () => {
     const { container } = render(App, { env: withA() });
     expect(container.querySelector('.lrow-grip')).toHaveAttribute('draggable', 'true');
+  });
+
+  it('follows the port’s onDrag/onOver/onEnd with the dragging/drop-before/drop-after classes', async () => {
+    const drag = fakeDrag();
+    const { container } = render(App, { env: withA('#/lists/a', { drag }) });
+    const rowAt = (i: number): HTMLElement =>
+      container.querySelectorAll('.lrow')[i] as HTMLElement;
+
+    drag.handlers?.onDrag?.(0);
+    await tick();
+    expect(rowAt(0)).toHaveClass('dragging');
+    expect(rowAt(1)).not.toHaveClass('dragging');
+
+    drag.handlers?.onOver?.(2, 'after');
+    await tick();
+    expect(rowAt(2)).toHaveClass('drop-after');
+    expect(rowAt(2)).not.toHaveClass('drop-before');
+
+    drag.handlers?.onOver?.(2, 'before');
+    await tick();
+    expect(rowAt(2)).toHaveClass('drop-before');
+    expect(rowAt(2)).not.toHaveClass('drop-after');
+
+    drag.handlers?.onOver?.(0, null);
+    await tick();
+    expect(rowAt(0)).not.toHaveClass('drop-before');
+    expect(rowAt(0)).not.toHaveClass('drop-after');
+
+    drag.handlers?.onEnd?.();
+    await tick();
+    expect(rowAt(0)).not.toHaveClass('dragging');
+    expect(rowAt(2)).not.toHaveClass('drop-before');
   });
 });
 

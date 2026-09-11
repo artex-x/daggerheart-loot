@@ -419,6 +419,19 @@ const movedByPosition = {
   }
 };
 
+const reorderedByDrag = {
+  presses: true,
+  name: 'reordering by dragging',
+  only: ['#/lists/a'],
+  async run(d) {
+    await d.drag(0, 2, true);
+    const first = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
+    await d.drag(2, 0, false);
+    const second = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
+    return { first, hash: await d.hash(), second };
+  }
+};
+
 const pricedRow = {
   presses: true,
   name: "a row's first price, and the money picker it raises",
@@ -1296,6 +1309,7 @@ const SPECS = [
   listAddress,
   renamedList,
   movedByPosition,
+  reorderedByDrag,
   pricedRow,
   removedRow,
   deletedFromPage,

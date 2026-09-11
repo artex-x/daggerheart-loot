@@ -4,12 +4,10 @@
    * (2997-3029), `rolledNoteHTML` (3031-3037), `listRowHTML` (3040-3092),
    * `listNoteHTML` (3094-3101), `notePairHTML` (3109-3128), the address
    * (1537-1607), the handlers (3944-3969, 4086-4150, 4251-4256, 4346-4434,
-   * 4532-4571), the copy (1609-1647) and `contextNote`/`onListPage` (568-578).
-   *
-   * Complete but for the live drag semantics (B5.4b): dropping through the
-   * existing `nativeDrag` port moves the entry to the target row's index
-   * rather than before/after its pointer midpoint - every affordance on
-   * screen does something, just not with the live marks yet. */
+   * 4532-4571), the copy (1609-1647), `contextNote`/`onListPage` (568-578),
+   * the live drag event model (4443-4530), the bar's actions (`batchBarHTML`,
+   * 724-745) and the money panel (`moneyPanelHTML`, 750-782, `guessWhy`
+   * 831-842). */
   import { onDestroy, tick, untrack } from 'svelte';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
@@ -112,13 +110,19 @@
      the component rather than in app memory - a recorded difference (a roll
      made, then a navigation away and back, shows an empty field here and the
      result there); `noteOpen` is the live `S.keepOpen['rnote:...']`, a
-     person's own fold/unfold per entry. */
+     person's own fold/unfold per entry. `dragFrom`/`dragMark` have no live
+     counterpart at all - they exist only to drive the three drag classes off
+     the port's callbacks, since Svelte drops a scoped rule no template
+     element can match and `npm run check` fails it as dead CSS if the port
+     toggled them itself. */
   const lsel = new SvelteSet<string>();
   let roll = $state(0);
   let moneyHelp = $state(false);
   const noteOpen = new SvelteMap<string, boolean>();
   let open = $state<Record_ | null>(null);
   let rowsEl = $state<HTMLDivElement | undefined>(undefined);
+  let dragFrom = $state(-1);
+  let dragMark = $state<{ over: number; where: 'before' | 'after' } | null>(null);
 
   const hit = $derived(roll >= 1 && roll <= items.length ? (items[roll - 1] ?? null) : null);
   const rollLabel = $derived(rollLabelFor(items.length, t));
@@ -324,8 +328,11 @@
     if (on && own) for (const id of own.ids) lsel.add(id);
   }
 
-  /* Drag through the existing `nativeDrag` port, unchanged: a drop lands on
-     the target row's index. B5.4b replaces this with the live marks. */
+  /* Drag through the `nativeDrag` port's live event model (app.js 4443-4530):
+     the port owns every listener and the edge-scroll loop, and reports back
+     which row is being dragged and where it would land so the template can
+     drive the three classes below off state rather than off a class the port
+     would have to toggle itself. */
   $effect(() => {
     const el = rowsEl;
     const l = own;
@@ -334,6 +341,16 @@
       onDrop: (from, to) => {
         const id = l.ids[from];
         if (id !== undefined) store.move(l.id, id, to);
+      },
+      onDrag: (from) => {
+        dragFrom = from;
+      },
+      onOver: (over, where) => {
+        dragMark = where ? { over, where } : null;
+      },
+      onEnd: () => {
+        dragFrom = -1;
+        dragMark = null;
       }
     });
   });
@@ -583,7 +600,14 @@
       {#each items as it, i (it.id)}
         {@const m = metaOf(it.id)}
         {@const hasNote = !!(m.note || m.hnote)}
-        <div class="row lrow" class:has-note={hasNote} data-index={i}>
+        <div
+          class="row lrow"
+          class:has-note={hasNote}
+          class:dragging={dragFrom === i}
+          class:drop-before={dragMark?.over === i && dragMark.where === 'before'}
+          class:drop-after={dragMark?.over === i && dragMark.where === 'after'}
+          data-index={i}
+        >
           <span
             class="lrow-grip"
             draggable="true"
@@ -1243,10 +1267,18 @@
     box-shadow: inset 0 0 0 1px var(--gold);
   }
 
-  /* `.lrow.dragging`, `.drop-before`, `.drop-after` (style.css:747-749) are
-     B5.4b's: nothing in this batch's template ever sets those classes, and a
-     rule scoped here with no matching selector fails `npm run check` as dead
-     CSS. B5.4b adds the rule and the class binding together. */
+  /* off `.lrow.dragging`, `.drop-before`, `.drop-after` (style.css:747-749) */
+  .lrow.dragging {
+    opacity: 0.45;
+  }
+
+  .lrow.drop-before {
+    box-shadow: inset 0 3px 0 0 var(--gold);
+  }
+
+  .lrow.drop-after {
+    box-shadow: inset 0 -3px 0 0 var(--gold);
+  }
 
   /* off `.lrow-meta` and its nine, including `.goldhint` and the
      `:hover`/`:focus-within` pair (style.css:750-776) */
