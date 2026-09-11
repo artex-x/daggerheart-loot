@@ -6,6 +6,35 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B8 is closed - committed, pushed, and confirmed by CI's
+  second reading** (orchestrator, 2026-09-11). Tree preflight found HEAD past
+  where the session brief left it: `274aa99 test(parity): the anchor debts
+  follow CI's read of 9fd3000` carries B8's five paths exactly as the entry
+  below describes them, and `435a5ac docs(issue-47): the fourth check run, and
+  the tail that closed the gate` is a docs-only correction on top of it. Both
+  were already pushed - `origin/main` == local HEAD == `435a5ac`, working tree
+  clean but for the untracked `issues/tg-preview-refresh/`, another task's,
+  preserved and never staged. So the staged-but-uncommitted state the brief
+  expected had in fact been committed before that session ended; no check was
+  re-run to arm a gate that had already fired.
+  **The push produced run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995), and that run is B8's second
+  reading.** All four parity shards **green**: shards 2 and 3, which carried
+  the three red ratchet cells on `9fd3000`, pass against the figures B8 wrote
+  (9.35 / 8.85 / 9.86), and the deleted `voa ~ section anchor @ ru 375` entry
+  is confirmed by a shard that no longer has a cell to fail. The 54 `#/print`
+  cells are clean a second consecutive run. `audit` and `secrets` green.
+  **The one red is `check`, on the legacy `behave` suite against the live
+  app** - "приложение открылось не на поиске", selector `.subchips .chip.on`
+  - which none of B8's five paths can reach (a parity spec file, a tools
+  README, three `issues/47/*.md`), which was green on `9fd3000` an hour
+  earlier, and which the owner identified as flaky and re-ran (attempt 2, in
+  flight at closeout; a re-run of failed jobs does not re-run the four green
+  parity shards). That re-run is the owner's to read. It does not gate B8,
+  whose closing condition was the parity read and has it. No reviewer: B8
+  changed no production code, no contract and nothing a screen draws, so no
+  risk rule in `orchestrate.prompt.md` applies. Next: a planning pass on B9
+  or B10 - **B9 needs an owner answer first**. See "Next batch".
+
 - Task status: **B8 built and committed - `tests/parity/specs.js` says what
   CI measures on `9fd3000` and why** (implementer, 2026-09-11). Tree
   preflight matched the brief exactly: `git log --oneline -3` showed
@@ -2735,12 +2764,12 @@ planning pass is next, not an implementer.**
   files and can run in either order. B9 first is recommended (`plan.md`,
   "B10 outlined", last paragraph) since it retires debt entries that would
   otherwise sit through a furniture refactor.
-- **Not yet done, and not this batch's to do:** the owner's push of B8's
-  commit and the CI run it produces. That run is B8's second reading (the
-  deleted `voa ~ section anchor @ ru 375` entry and the three lowered
-  figures all wait on it) and is expected green on all four shards. Record
-  its run id in "Blockers" (first entry) once it exists - do not fabricate
-  one.
+- **Done, and recorded:** the owner's push of B8's commit and the CI run it
+  produced - [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995) on `435a5ac`, four parity shards green. That
+  was B8's second reading; the deleted `voa ~ section anchor @ ru 375` entry
+  and the three lowered figures all have it. See "Blockers", first entry. The
+  `check` job's `behave` failure in the same run is a live-app flake the owner
+  re-ran; it belongs to no batch here.
 
 - **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
   naming the deleted `todo` paragraph - not opened by B7 or B8.
@@ -2749,8 +2778,22 @@ planning pass is next, not an implementer.**
 
 ## Blockers
 
-- **B8's commit is made; OPEN until the owner's push produces a green CI
-  run.** (implementer, 2026-09-11.) `main` was red on three `VISUAL_DEBT`
+- **RESOLVED by CI run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995) (orchestrator, 2026-09-11): B8's
+  four anchor figures are confirmed by a second, independent reading, and
+  `main`'s parity is green.** All four shards pass on `435a5ac`. Shard 3's
+  `#/tables/core_item ~ row anchor @ ru|en 375` and shard 2's `#/tables/voa ~
+  section anchor @ en 375` now read at or under the figures B8 wrote from run
+  `34616445556`, and the deleted `voa @ ru 375` entry is confirmed by the
+  absence of a cell to fail - the 0.00 was the reading, not a one-run
+  artefact. The 54 `#/print` cells read `совпадает` for the second
+  consecutive run. **Not part of this entry, and not B8's:** the same run's
+  `check` job failed on the legacy `behave` suite against the live app
+  (`.subchips .chip.on`), green on `9fd3000` an hour before and on `37ecc8d`
+  before that; the owner called it flaky and re-ran it. The record of how the
+  entry was reached is kept below.
+
+- **(superseded by the entry above) B8's commit is made; OPEN until the
+  owner's push produces a green CI run.** (implementer, 2026-09-11.) `main` was red on three `VISUAL_DEBT`
   ratchet cells - `#/tables/core_item ~ row anchor @ ru 375` 9.35 against a
   recorded 10.52, `@ en 375` 8.85 against 9.92, `#/tables/voa ~ section
   anchor @ ru 375` 0.00 against 11.55, all "стало лучше"; `voa @ en 375`

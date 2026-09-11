@@ -9810,6 +9810,21 @@ above threshold). The commit gate is armed for this tree.
 No production code touched; `npm run check:built` was not run, per the brief
 (nothing a screen draws changes in this batch).
 
+**Committed as `274aa99`, with the docs correction `435a5ac` on top; pushed by
+the owner; confirmed by CI run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995) on `435a5ac`** (orchestrator,
+2026-09-11). B8's design named one closing condition - a second, independent
+reading of the four anchor figures - and the run supplies it: **all four parity
+shards green**, including shard 3 (`core_item ~ row anchor`) and shard 2 (`voa ~
+section anchor`), the two that were red on `9fd3000`. The deleted `voa @ ru 375`
+entry is confirmed by the absence of a cell to fail, so the `0.00` was the
+reading and not a one-run artefact, which is what the ratchet's own rule needed
+before the entry could stay deleted. The 54 `#/print` cells read `совпадает` a
+second consecutive run. The same run's `check` job failed on the legacy
+`behave` suite against the live app, a flake the owner re-ran; none of B8's five
+paths can reach it. **B8 is closed.**
+
+### B9 outlined: the anchor re-play and the reduced-motion policy (planner, 2026-09-11)
+
 Not implement-ready; a planning pass expands it. Everything measured is in
 `context.md`, "B8 planning facts". Its purpose is to retire all **eight**
 anchor entries (`@ en 1100|768` x4 and the three B8 leaves) by porting two

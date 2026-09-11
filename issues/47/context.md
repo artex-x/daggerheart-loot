@@ -1929,3 +1929,47 @@ steps: `plan.md`, "B8 planned".
   then 9.86 once the transition policy changed. The alignment script is
   disposable and was not kept; the artifact is outside the tree and expires
   with the run's retention.
+
+## The CI read on `435a5ac`: B8's second reading, parity green (orchestrator, 2026-09-11)
+
+Run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995), the owner's push of `274aa99` + `435a5ac`, four parity
+shards. This is the reading B8 was designed to wait for, and it agrees.
+
+**All four parity shards green**, `audit` and `secrets` green. Shards 2 and 3 -
+the two that failed on `9fd3000` - now pass:
+
+| cell | recorded by B8 | on `9fd3000` | on `435a5ac` |
+|---|---|---|---|
+| `#/tables/core_item ~ row anchor @ ru 375` | 9.35 | 9.35 FAIL vs 10.52 | pass |
+| `#/tables/core_item ~ row anchor @ en 375` | 8.85 | 8.85 FAIL vs 9.92 | pass |
+| `#/tables/voa ~ section anchor @ ru 375` | entry deleted | 0.00 FAIL vs 11.55 | no cell to fail |
+| `#/tables/voa ~ section anchor @ en 375` | 9.86 | 9.86 (0.45 of slack) | pass |
+
+Two facts the next reader should not re-derive. **The deleted `voa @ ru 375`
+entry is now safe**: a second independent run with no cell to fail is what the
+ratchet's rule wanted before a `0.00` could lose its entry, so the deletion
+stands on evidence rather than on one reading. And **the 54 `#/print` cells are
+`совпадает` for the second consecutive run**, which closes the print residue
+question for good - the four-cell image residue measured three times on the
+Windows host was that machine's paint, and no `VISUAL_DEBT` entry exists or is
+needed.
+
+**The one red in the run is not parity and not B8's.** The `check` job failed
+on the legacy `behave` suite against the **live** app - `FAIL приложение
+открылось не на поиске`, `failed to find element matching selector ".subchips
+.chip.on"`, 18.8s - with all 20 other legacy suites green. B8's five paths are
+`tests/parity/specs.js`, `tools/parity-ubuntu/README.md` and three
+`issues/47/*.md`; none can reach the live app. `behave` was green on `9fd3000`
+an hour earlier and on `37ecc8d` before that. The owner identified it as flaky
+and re-ran the failed jobs (attempt 2; a re-run of failed jobs leaves the four
+green parity shards alone). If it recurs on a clean tree it is a real
+live-app regression and belongs to its own task, not to issue 47.
+
+**Tree at this read:** HEAD `435a5ac` == `origin/main`, working tree clean but
+for untracked `issues/tg-preview-refresh/`, which belongs to another task and
+is preserved.
+
+**One cheap correction made in the same pass:** `plan.md` had no `### B9
+outlined` heading - the section's text ran straight on from "B8 built", while
+`plan.md`'s own Phase 4 summary and `handoff.md`'s "Next batch" both send
+readers to "B9 outlined" by name. The heading is restored; no content changed.
