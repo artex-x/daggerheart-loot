@@ -6968,6 +6968,622 @@ the tree fingerprint, immediately before the commit below.
 instructed: the `$effect` rebind risk and `batchDelete`'s N saves (both
 already recorded and deliberate), and B5.4a's nits 1, 4 and 6.
 
+### B5.6 planned: the shared page, the packed link, the bad link, and taking a shared list
+
+**Objective.** After this batch `#/l/<payload>` for a list that is nobody's
+draws what the live `renderSharedList` draws: the list's name (or `Без
+названия`) as the heading; `Список от другого игрока · N позиций` under it;
+one `Добавить в список` control, whose `+ Новый список` takes the whole list -
+name, both list notes, every entry's meta - into a new list of one's own and
+lands on it, and whose chips pour the ids with their quantities, prices and
+players' notes (never the GM's) into an existing list; the two list hitnotes
+above the rows; the rows as the tables draw them (checkbox, thumbnail, name
+with `×qty · price` after it, badges), each followed by its own hitnotes. A
+ticked row raises the selection bar, whose add-to-list carries the shared
+meta too. `#/l/~<packed>` expands through the compress port and rewrites the
+address to the plain form in place; a packed link that cannot be expanded,
+and any payload that does not decode, lands on `#/l/zzzz`: `Предмет не
+найден`, `Ссылка повреждена…`, `На главную`. The last lists batch; it closes
+B5.4a nit 1 (`RowMain`'s `tail` gets its caller) and B5.3 nit 5
+(`ListStore.create(name, init)` gets its second caller).
+
+**In scope.** `lib/dict.ts` (two keys), `lib/lists.ts` (`N_SHARED`),
+`state/lists.svelte.ts` (`addIds` copies meta), `state/app.svelte.ts`
+(`shared`, `toggleSel`, packed expansion), `components/HitNote.svelte` (new,
+second use), `components/SharedListPage.svelte` (new), `TableRows.svelte`
+(`tail`, `after`), `RowMain.svelte` (comments only), `AddToList.svelte`
+(shared meta, the `@` take), `ListPage.svelte` (the branch, `HitNote`, dead
+rules), `TablesPage.svelte` (`toggleSel` moves to `AppState`), their tests,
+`a11y.test.ts`'s guard, one driver verb, four parity states, two press
+specs, `NAME`, `listAddress`, `COVERAGE.md`'s suite table.
+
+**Out of scope.** Any change to `CONTRACTS.md`, `docs/fixtures/`,
+`tests/contracts.js`, `ROUTES.md`, `llms.txt` - nothing here touches a
+route, a key or a payload; the packed form is already in `ROUTES.md` and
+`CONTRACTS.md` section 3. `Button.svelte` (`href` + `sameTab` +
+`variant="primary"` exist - the bad-link button is `ListPage`'s
+list-not-found button with other words). `ListStore.create`'s signature.
+`RecordModal`'s `extra` on the shared page (live `contextNote`, app.js
+568-578, returns `[]` there: `onListPage()` is `''` without `S.openList`).
+A `PageTitle`/`.page-h` extraction (`RecordPage`, `ListPage`, `PageHead`
+each carry the rule; the shared page is a fourth copy, recorded in the
+handoff's Deferred, not fixed here). Search, print.
+
+#### What the live app does, read off app.js (HEAD `d6c951f`; unchanged since `d5d63c1`)
+
+- **Expansion** (3589-3603, 4633-4636). `expandHash()` runs before every
+  `render()` and on `hashchange`; a hash starting `l/~` is unpacked with
+  `DecompressionStream('deflate-raw')` (1517-1521), then `replaceState` to
+  `#/l/<plain>` and `render()`; the `catch` (a bad payload, or no
+  `DecompressionStream` at all) replaces with `#/l/zzzz` and renders. While
+  unpacking `render()` is not called at all (4636: `if (!expandHash())
+  render()`), so `#view` stays empty; `currentRoute` (3604-3606) reports
+  `l/zzzz` in that window. `#/l/zzzz` itself is an ordinary `l/<payload>`
+  route whose `decodeList` returns null.
+- **The shared page** (`renderSharedList`, 3130-3170). Null decode: `<h1
+  class="page-h">notFound</h1><p class="page-sub">badShare</p><a class="btn
+  primary" href="#/roll/std">toStart</a>`. Otherwise: `S.shared = { ids,
+  meta: data.meta || {}, name, note, hnote }` (3140-3141); `h1.page-h`
+  `data.name || untitled` (one text node); `p.page-sub` `sharedList + ' · '
+  + items.length + ' ' + plural(n)` (**one** text node - `esc()` of one
+  joined string); `<div class="card-acts" style="margin-bottom:18px">` with
+  `addToListBtn(N_SHARED, data.ids, true)` (primary, `aria-expanded`); if
+  either list note, `<div style="margin-bottom:18px">` holding
+  `shown(ICON_EYE, notePub, note)` then `shown(ICON_EYE_OFF, noteHid,
+  hnote)` - each `<div class="hitnote">icon<span><b>label</b>lines(text)
+  </span></div>` (3144-3147; `lines` = `esc` then `\n` → `<br>`, 589); then
+  `<div class="rows">` of, per entry, `rowHTML(it, '', tail)` followed by
+  the entry's own `shown(...)` pair (3159-3166). `tail` is `bits.join('
+  · ')` of `'×' + m.qty` when `m.qty > 1` and `priceText(m.gold,
+  moneyMode(fake))` when `m.gold` - `×` is U+00D7, the separators U+00B7;
+  port the bytes. No `selectAllHTML` - **no `.selall`** on this page.
+- **The row** (`rowHTML`, 2785-2803): with `removeFrom === ''` the row
+  carries `selBox(it.id)` and `.sel` off `S.sel[it.id]`, so the selection
+  bar works here exactly as on `#/tables`; `tail` renders as `<i
+  class="rtail">` inside `<b>` right after the name (2794).
+- **Where the ticked and added meta comes from.** `idsForKey('@')` is
+  `S.shared.ids` (1865-1869); `metaForKey(key)` (1874-1877) is
+  `S.shared.meta` for `'@'`, and for any other key **while the route is
+  `l/` with no `S.openList`** - so the bar's `sel` key and a card's own
+  key both copy meta on the shared page, and nowhere else.
+  `applyAddTo` (1907-1920): `'@'` goes straight to `addIdsTo(l, ids,
+  S.shared.meta)` **before** the single-record toggle; every other key
+  toggles a single record that is already in the list, else `addIdsTo(l,
+  ids, metaForKey(key))`. `addIdsTo` (1924-1940): fresh ids appended; for
+  each fresh id with meta, `setMeta` qty when `> 1`, gold when `> 0`, note
+  when present - **in that order, and never hnote**; one save; toast
+  `addedTo` + `': ' + fresh.length` when `ids.length > 1`. The outline's
+  "adding to an existing list copies ids only" was wrong: ids **and** the
+  players-visible meta travel; only the GM's note stays behind.
+- **Taking the whole list.** `newListFor` (4205-4210): the new-list draft
+  starts as `S.shared.name` for `'@'`, empty otherwise. `createFor`
+  (4213-4232): a blank name toasts `nameFirst` as an error and focuses the
+  input; for `'@'` the new list gets `ids` (a copy), `meta` (a deep copy,
+  if any), `note`, `hnote` (each only if present), one save, toast
+  `addedTo` with the name, then `goToList(l)` (1537-1545): `S.openList =
+  l.id` and `location.hash = '#/l/' + encodeList(l, true)` - a navigation,
+  not a replace; an identical hash re-renders by hand.
+- **Strings**: ru 156 `untitled`, 161 `sharedList`, 162 `badShare`, 179
+  `toStart`, 189 `notFound`; en 340, 345, 346, 363, 373. `dict.ts` already
+  has `untitled`, `badShare`, `notFound`, `notePub`, `noteHid`, `addedTo`,
+  `nameFirst`, `newList`, `create`, `cancel`, `addToList`; it lacks
+  `sharedList` and `toStart`.
+- **CSS**: `.page-h` 105, `.page-sub` 140, `.card-acts` 405 (plus the
+  inline `margin-bottom:18px`), `.hitnote` and its four 626-633, `.rtail`
+  785. All but `.card-acts`-outside-the-card are already ported somewhere
+  (`ListPage`, `RowMain`); the shared page composes them.
+
+#### How it is built
+
+- **`lib/dict.ts`.** `sharedList: 'Список от другого игрока'` /
+  `'A list from another player'`; `toStart: 'На главную'` / `'Home'`. Both
+  blocks, beside `badShare`.
+- **`lib/lists.ts`.** `export const N_SHARED = '@';` with app.js 1356's
+  comment ("not an id either: the menu key for taking a shared list").
+  Pure module, no other change.
+- **`state/lists.svelte.ts` - `addIds(list, ids, knows, meta?)`.** Fourth
+  parameter `meta?: Readonly<Record<string, ListEntryMeta>>`. Inside the
+  existing `if (fresh.length)` map, when `meta` is given: start from `{
+  ...(l.meta ?? {}) }`, and for each **fresh** id with a `meta[id]` build a
+  fresh `ListEntryMeta` in the live order - `qty` when `(m.qty ?? 0) > 1`,
+  `gold` when `(m.gold ?? 0) > 0`, `note` when truthy, never `hnote` - and
+  set it only when non-empty; assign `next.meta` only when the merged
+  object has keys. Still does not save. Every existing caller passes three
+  arguments and is unchanged. (Key order matters: the parity spec compares
+  the stored JSON of both apps, and the live `setMeta` sequence writes
+  `qty`, `gold`, `note`.)
+- **`state/app.svelte.ts`.** Three additions.
+  1. `shared = $state<DecodedList | null>(null)` (type from
+     `lib/listLink.js`). Doc: the live `S.shared` (app.js 51, 3140-3141) -
+     what the open shared page shows, so every add-to-list menu on it (the
+     page's own, the bar's, a card's) copies its qty, price and players'
+     note along (`metaForKey`, 1874-1877) and `+ Новый список` on it takes
+     the whole list (`createFor`, 4221-4228). Set by `SharedListPage`
+     while mounted, null on every other page - the route gate the live
+     `metaForKey` applies, done by mount instead.
+  2. `toggleSel(id)`: `if (this.sel.has(id)) this.sel.delete(id); else
+     this.sel.add(id);` - `TablesPage.svelte`'s local `toggleSel` (197-200)
+     moves here on its second use; `TablesPage` calls `app.toggleSel`.
+  3. `#expand()`, the live `expandHash`: `const r = this.route; if (r.kind
+     !== 'sharedList' || !r.packed) return;` then `void
+     this.env.compress.unpack(r.payload).then((plain) => {
+     this.replace(sharedListHash(plain.startsWith(PACK_MARK) ? 'zzzz' :
+     plain)); }).catch(() => { this.replace(sharedListHash('zzzz')); });`.
+     The `startsWith(PACK_MARK)` guard is load-bearing: `plainCompress`
+     hands a packed payload back untouched, and a browser without
+     `DecompressionStream` throws inside `browserCompress.unpack` - the
+     live `catch` covers both by landing on `#/l/zzzz`, and without the
+     guard the fake would `replace` the same packed hash forever. Called
+     at the end of the constructor (after `#applySource()`), at the end of
+     `start()`'s `onChange` handler, and at the end of `go()`. **Not** from
+     `replace()` - nothing replaces to a packed hash, and the expansion
+     itself replaces. `replace` fires no navigation, so `navigations`,
+     `sel` and `menuFor` are untouched by an expansion, as the live
+     `replaceState` path leaves them.
+- **`components/HitNote.svelte` (new).** Props `icon: IconName`, `label:
+  string`, `text: string | undefined`; renders nothing when `text` is
+  empty, else exactly `ListPage.svelte`'s `hitnote` snippet (570-580):
+  `<div class="hitnote"><Icon name={icon} /><span><b>{label}</b>` then
+  `text.split('\n')` joined by `<br />` `</span></div>`, keeping the
+  snippet's whitespace-free markup. Styles: the five rules moved verbatim
+  from `ListPage.svelte` 1261-1300 (`.hitnote`, `.hitnote :global(svg)`,
+  `.hitnote b`, `.hitnote span`) - **except** the sibling rule, which
+  becomes `:global(.hitnote + .hitnote) { margin-top: 8px; }` placed
+  *after* the base `.hitnote` rule: a scoped `.hitnote + .hitnote` cannot
+  be matched inside one instance's own template, Svelte would prune it and
+  `npm run check` fails pruned CSS; the two rules are now equal in
+  specificity, so source order is what makes the 8px win, exactly as the
+  live cascade does by specificity. Second use of the shape: the list
+  page's rolled entry (first, B5.4a) and the shared page (second); both
+  inline copies go.
+- **`components/TableRows.svelte`.** `TableEntry` gains `tail?: string`
+  ("the shared page's `×qty · price` after the name - `rtail`"); the
+  list-view `<RowMain>` passes `tail={entry.tail}`. `Props` gains `after?:
+  Snippet<[Record_]>` ("drawn right after a list-view row - the shared
+  page's per-entry hitnotes, which the live `renderSharedList` puts
+  between the rows, app.js 3163-3166"); right after the list-view `.row`
+  `</div>`, `{#if after}{@render after(it)}{/if}`. Grid view untouched
+  (the live shared page has no grid). A rendered snippet *prop* does not
+  trip the void-expression lint that the file's header comment describes
+  for a *local* snippet - `RecordCard.svelte` 243-244 renders its
+  `actions` prop the same way with no disable comment.
+- **`components/RowMain.svelte`.** Comments only: lines 6, 25 and 254 say
+  the decoration is B5.6's and unused; they now name the caller
+  (`TableRows`'s `TableEntry.tail`, from the shared page). No markup or
+  rule changes.
+- **`components/AddToList.svelte`.** Imports `N_SHARED` from
+  `lib/lists.js`, `encodeList` from `lib/listLink.js`, `sharedListHash`
+  from `lib/hash.js`; `const shared = $derived(app.shared)`.
+  - `pick(l)`: the single-record toggle branch is skipped when `key ===
+    N_SHARED` (live 1911: the whole list is only ever added); the add
+    call becomes `app.lists.addIds(l, ids, knows, shared?.meta)` -
+    `app.shared` is non-null exactly where the live `metaForKey` returns
+    `S.shared.meta`, for every key. Message unchanged.
+  - `openNew()`: `draft = key === N_SHARED ? (shared?.name ?? '') : ''`
+    (live 4208).
+  - `createNew()`: after the blank-name refusal, `if (key === N_SHARED &&
+    shared)`: `init = { ids: [...shared.ids] }`; `meta` copied entry by
+    entry (`{ ...m }` per id - meta values are flat) only when `shared.meta`
+    has keys; `note`/`hnote` only when truthy; `const l =
+    app.lists.create(draft, init)` (one save - B5.3 nit 5's second
+    caller); `if (app.lists.saved) app.say(t.addedTo.replace('%s',
+    l.name))`; fold the form; `app.go(sharedListHash(encodeList(l,
+    true)))` - the live `goToList`. When the taken link *was* the players'
+    payload the hash does not change; `go()` still bumps `navigations`
+    and clears `sel`/`menuFor`, and `ListPage`'s `own` recomputes off
+    `app.lists.lists` and finds the new list, so the own page draws - no
+    special case, `syncListUrl` then sets `openList`. Every other key
+    keeps the existing path.
+  - The header comment's "a shared page will pass their own once they
+    exist" becomes present tense.
+- **`components/SharedListPage.svelte` (new).** Props `app: AppState`,
+  `index: Index` (non-null - `ListPage` only mounts it past its own
+  `{#if !index}`), `payload: string`. Off `renderSharedList` 3130-3170.
+  - `knows`, `shared = $derived(decodeList(payload, knows))`, `items`
+    (`shared.ids.map(byId)`, filtered - `decodeList` already dropped
+    unknown ids, so `items.length === shared.ids.length`), `mode =
+    $derived(moneyMode(shared))`, `metaOf(id) = shared?.meta?.[id] ??
+    {}`, `tailOf(id)` (the bits rule above, `'×' + String(qty)` and
+    `priceText(gold, mode, app.lang)`, joined `' · '`, `undefined` when
+    empty), `entries = $derived(items.map((it) => ({ it, tail:
+    tailOf(it.id) })))`, `sub = $derived(`${t.sharedList} ·
+    ${String(items.length)} ${itemsWord(items.length, app.lang)}`)` -
+    **one string, one text node**, the live structure.
+  - `$effect(() => { app.shared = shared; })` and `onDestroy(() => {
+    app.shared = null; })` - the same two-part shape `ListPage` uses for
+    `syncListUrl`/`clearOpenList`, for the same reason its comment gives.
+  - `let open = $state<Record_ | null>(null)`; `<RecordModal {app} {index}
+    it={open} onclose onopen />` at the end, no `extra`.
+  - Template. `{#if !shared}`: `<h1 class="page-h">{t.notFound}</h1><p
+    class="page-sub">{t.badShare}</p><Button variant="primary"
+    href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>` -
+    `ListPage`'s list-not-found block with other words. `{:else}`: `<h1
+    class="page-h">{shared.name || t.untitled}</h1>`, `<p
+    class="page-sub">{sub}</p>`, `<div class="card-acts"><AddToList {app}
+    key={N_SHARED} ids={shared.ids} primary /></div>`, `{#if shared.note
+    || shared.hnote}<div class="notes"><HitNote icon="eye"
+    label={t.notePub} text={shared.note} /><HitNote icon="eyeOff"
+    label={t.noteHid} text={shared.hnote} /></div>{/if}`, then
+    `<TableRows {entries} view="list" {index} lang={app.lang}
+    selected={(id) => app.sel.has(id)} artBroken={(id) =>
+    app.artBroken(id)} ontoggle={(id) => { app.toggleSel(id); }}
+    onartfail={(id) => { app.markArtBroken(id); }} onopen={(r) => { open =
+    r; }}>` with `{#snippet after(it)}<HitNote icon="eye" label={t.notePub}
+    text={metaOf(it.id).note} /><HitNote icon="eyeOff" label={t.noteHid}
+    text={metaOf(it.id).hnote} />{/snippet}` and **no `ontoggleall`** (no
+    `.selall` live).
+  - Styles: `.page-h` and `.page-sub` copied from `ListPage.svelte`
+    917-935 (the tokens, not literals); `.card-acts` off style.css 405
+    with the live inline style folded in (`display:flex; gap:6px;
+    flex-wrap:wrap; align-items:center; margin-top:auto; padding-top:3px;
+    margin-bottom:18px`); `.notes { margin-bottom: 18px; }` (the live
+    inline-styled wrapper). Nothing else - rows, badges, hitnotes and the
+    menu bring their own.
+- **`components/ListPage.svelte`.** (1) The `{:else if !own}` branch:
+  `{#if route.kind === 'sharedList' && route.packed}` an HTML comment only
+  ("a packed link: `AppState` is expanding it and will rewrite the address
+  to the plain form or to `#/l/zzzz`; the live app draws nothing until
+  then either, app.js 4636") `{:else if route.kind === 'sharedList'}
+  <SharedListPage {app} {index} payload={route.payload} />{/if}` - the
+  `todo` paragraph goes, and with it `.todo` from the `.miss, .todo` rule
+  and the `.todo` font rule (938-946; a rule with no element fails the
+  check). (2) The `hitnote` snippet (570-580) and its two `{@render}`
+  lines with their `eslint-disable-next-line` comments (703-706) become
+  `<HitNote icon="eye" label={t.notePub} text={metaOf(h.id).note} />` and
+  the `eyeOff` twin; the five `.hitnote` rules (1261-1300) go; import
+  `HitNote`; drop the `IconName` type import if nothing else uses it. (3)
+  The header comment's two "B5.6" mentions (66-67) become present tense.
+- **`components/TablesPage.svelte`.** Local `toggleSel` (197-200) removed;
+  `app.toggleSel(id)` in its place. `toggleAllIn` stays (one caller).
+- **`components/a11y.test.ts`.** The guard compares `COVERED` against the
+  files on disk, so both new components need an entry:
+  `'HitNote.svelte': "the list page's priced, noted entry with the roll
+  panel open above, and the shared list below"`, `'SharedListPage.svelte':
+  'sharedListPage.test.ts, and the shared list below'`. `STATES` gains `{
+  what: 'a list from another player, with both notes and a noted entry',
+  route: '#/l/' + NOTES_BOTH_KINDS.gm.payload }` - no storage, no `enter`;
+  the file's `LOOT` already knows `ci1` and `cc1`. Read the fixture the way
+  `listLink.test.ts` does (`readFileSync` + `join(import.meta.dirname,
+  ...)`), or paste the payload with a comment naming the fixture - either
+  is fine; do not compute it in the test.
+- **`tests/parity/driver.js`.** One verb, `expanded()`: `await
+  page.waitForFunction(() => !location.hash.startsWith('#/l/~')); await
+  settle(page);`. Why: `ready()` waits for `#view`/`#app` to have
+  children, which on the live app already means the expansion has landed
+  (nothing renders before it), but the rewrite's `Shell` mounts at once
+  and the replace lands a few milliseconds later - without the wait the
+  packed cell would race the expansion on one side only.
+- **`tests/parity/specs.js`.** Below.
+- **`docs/specs/COVERAGE.md`.** The suite table gains a
+  `components/sharedListPage.test.ts` row (what it owns, per the tests
+  below); the `state/app.test.ts` row adds "a packed address expanded
+  through the compress port, and where it lands when the port cannot"; the
+  `components/listPage.test.ts` row adds "and the branch into the shared
+  page". No threshold changes.
+
+#### Resolved: the outline's two open questions
+
+**(a) `RowMain`'s `tail`/`.rtail` - use it, do not delete it.** The live
+`rowHTML(it, '', tail)` puts the decoration inside `<b>` right after the name
+(2794), which is exactly `RowMain`'s existing `{#if tail}<i class="rtail">`;
+the shared page's rows are `TableRows`'s list rows byte for byte (`.row` +
+`.selbox` + `.row-main`, `.sel` off the app-wide selection, no `.selall`), so
+`TableRows` is the right caller and `tail` only needs threading through
+`TableEntry`. The one thing `TableRows` could not give - the per-entry
+hitnotes drawn *between* rows, inside `.rows` where the 8px column gap and
+the hitnote's own 12px top margin compose - is what the `after` snippet
+supplies. Deleting `tail` would have meant `SharedListPage` drawing
+`.row`/`.selbox` itself: a third copy of `TableRows`'s rules for a row that
+is otherwise identical. Nit 1 closes with the caller.
+
+**(b) The tails state uses `docs/fixtures/lists/qty-and-price.json`.** Its
+payload (`player` and `gm` are the same string - no notes) carries `ci1*2`,
+`cc21*5*50`, `q337*1*12`: a bare quantity, a quantity with a price, and a
+bare price - all three tail shapes, and every id is in `data.js` (checked
+with `window.LOOT` at `d6c951f`). `notes-both-kinds.json` carries notes and
+no qty/gold, so it has no tails; `unicode-heavy.json` and
+`money-coin-mode.json` are one-entry payloads that cover less. So the plain
+shared state is the qty-and-price payload (tails, no notes), the noted
+state is notes-both-kinds' `gm` payload (notes, no tails), and coin mode is
+a unit case on `money-coin-mode.json`'s payload (`750 зол.`), not a pixel
+state. The outline's "seven plain rows with the own-list payload" state is
+dropped: it would show nothing the own-list state and the tails state do
+not already show.
+
+#### Tests
+
+Every component test ends with `expectNoA11yViolations`; the pressed states
+named below get their own axe pass (`COVERAGE.md`).
+
+- **`lib/dict.ts`** needs no test: `Dict` is `Record<keyof typeof ru, string>`,
+  so a key present in `ru` and absent in `en` fails `svelte-check` on its own.
+- **`state/lists.test.ts`**, in "adding and removing ids": (1) `addIds`
+  with `meta` copies `qty` only when above 1, `gold` only when above 0,
+  `note` when present, and never `hnote` - assert the stored entry is
+  `{ qty: 5, gold: 50, note: 'x' }` for one id, `{ gold: 12 }` for a
+  `qty: 1` id, and absent for an id whose meta is `{ qty: 1 }`; (2) an id
+  already in the list keeps its own meta untouched even when `meta`
+  offers another; (3) a call without `meta` leaves `list.meta` exactly as
+  it was (the existing case, kept green).
+- **`state/app.test.ts`**. New `describe('a packed address')` with a
+  compress fake whose `unpack` is `(p) => Promise.resolve(p.slice(1))`
+  (the shape `listsPage.test.ts` 302-314 already uses): (1) at
+  construction `#/l/~abc` becomes `#/l/abc` on both `app.hash` and
+  `router.hash()`, with `router.stack.length` still 1 and `navigations`
+  0 - a replace, not a step (use `await vi.waitFor(...)`); (2) the
+  default `plainCompress` (cannot unpack) lands on `#/l/zzzz` and stays
+  there - assert the hash and that `unpack` was called once (spy), so a
+  loop cannot pass; (3) an `unpack` that rejects lands on `#/l/zzzz`; (4)
+  a packed hash the router announces after `start()` expands the same
+  way; (5) `go('#/l/~abc')` expands. In "the selection": `toggleSel` adds
+  an absent id and removes a present one. `shared` starts null (one
+  line, in the constructor tests).
+- **`components/listPage.test.ts`**, in "the address": replace "draws the
+  todo paragraph for a payload that is nobody's" with "draws the shared
+  page for a payload that is nobody's" (the `h1` reads the payload's
+  name, no title input); add "draws only the frame while a packed address
+  expands, then the shared page once it lands" (compress fake as above;
+  before `waitFor`, no `h1` in the main region; after, the name); add
+  "lands on the bad-link page when the port cannot expand a packed
+  address" (default env → `Предмет не найден`, the `badShare` line, a
+  link `На главную` with `href` `#/roll/std`). The roll-panel case "shows
+  an entry's compact card, badged, with both hitnotes" stays green
+  through the component swap - it is the proof the extraction moved
+  nothing.
+- **`components/sharedListPage.test.ts` (new).** Harness as
+  `listPage.test.ts`: `render(App, { env })` with `memoryRouter('#/l/' +
+  payload)`, a `LOOT` that knows `ci1`, `cc1`, `cc21`, `q337` (four plain
+  records are enough - names are what the assertions read), fixtures read
+  from `docs/fixtures/lists/` the way `listLink.test.ts` does. Cases:
+  1. **heading and sub** (notes-both-kinds `gm`): `h1` `Тайник`; the sub
+     paragraph's `textContent` is exactly `Список от другого игрока · 2
+     позиции` and it has **one** child node; the `Добавить в список`
+     button is present with `aria-expanded="false"`; no `select all`
+     checkbox (`t.selectAll` text absent); no selection bar.
+  2. **untitled**: `encodeList({ name: '', ids: ['ci1'] }, true)` → `h1`
+     `Без названия`.
+  3. **notes**: above the rows, two `.hitnote`s in order `Для игроков` /
+     `Только для мастера` with the fixture's texts; after `ci1`'s row
+     (`[data-row="ci1"]`) its two entry hitnotes (`Видно игрокам`,
+     `Подделка`) and none after `cc1`'s; a note containing `\n` (build one
+     with `encodeList`) renders a `<br>`.
+  4. **tails** (qty-and-price): `.rtail` under `ci1` reads `×2`, under
+     `cc21` `×5 · ${priceText(50, 'bag', 'ru')}`, under `q337`
+     `${priceText(12, 'bag', 'ru')}`; the noted payload's rows have no
+     `.rtail`; money-coin-mode's payload reads `750 зол.`.
+  5. **selection**: ticking `ci1`'s checkbox (`aria-label` `Выбрано`) puts
+     `.sel` on its row and raises the bar with `Выбрано 1`; ticking again
+     removes both.
+  6. **the bar carries the shared meta** (qty-and-price, storage `TWO`):
+     tick `cc21`, open the bar's `Добавить в список`, press `Клад
+     дракона` → stored `a` is `{ ids: ['cc21'], meta: { cc21: { qty: 5,
+     gold: 50 } } }` and `b` untouched.
+  7. **a chip pours the whole list** (qty-and-price, storage `TWO`): the
+     page's `Добавить в список`, then `Клад дракона` → `a.ids` `['ci1',
+     'cc21', 'q337']`, `a.meta` `{ ci1: { qty: 2 }, cc21: { qty: 5, gold:
+     50 }, q337: { gold: 12 } }`, no `note`/`hnote` anywhere; toast
+     `Добавлено в «Клад дракона»: 3`; the menu stays open.
+  8. **the GM's note stays behind** (notes-both-kinds `gm`, storage
+     `TWO`): chip `Клад дракона` → `a.meta.ci1` is `{ note: 'Видно
+     игрокам' }` - no `hnote` - and `a` has no list `note`/`hnote`.
+  9. **taking into a new list** (notes-both-kinds `gm`, empty storage):
+     `+ Новый список` → the input's value is `Тайник` and it has focus;
+     `Создать` → storage holds one list with `name` `Тайник`, `ids`
+     `['ci1', 'cc1']`, `note` `Лавка закрыта до утра`, `hnote` `Хозяин -
+     контрабандист`, `meta.ci1` `{ note: 'Видно игрокам', hnote:
+     'Подделка' }`; toast `Добавлено в «Тайник»`; `router.hash()` is
+     `'#/l/' + NOTES_BOTH_KINDS.player.payload`; the page now draws the own
+     list page (a title input with value `Тайник`, no `Список от другого
+     игрока`).
+  10. **a blank name is refused** (notes-both-kinds, `+ Новый список`,
+      clear the input, `Создать`): alert toast `Сначала назовите список`,
+      storage still empty, the form still open.
+  11. **a row opens the modal**: click `ci1`'s `.row-main` → a `dialog`
+      naming the record; close it.
+  12. **the bad link** (`#/l/zzzz`): `h1` `Предмет не найден`, the
+      `badShare` line, link `На главную` → `#/roll/std`; no add button.
+  13. **English** (notes-both-kinds, `EN` press): sub `A list from another
+      player · 2 items`; labels `For players` / `GM only`; the add button
+      `Add to list`.
+  14. **axe**: `expectNoA11yViolations` on (a) the noted page as drawn,
+      (b) the bad-link page, (c) the page with the menu open and the
+      new-list form showing, (d) the page with a row ticked and the bar
+      showing.
+- **`components/tables.test.ts`**: nothing new - `toggleSel` moving to
+  `AppState` is covered by its existing selection cases staying green.
+
+#### Parity states, each in both languages at three widths
+
+`NOTES_BOTH_KINDS` and `QTY_AND_PRICE` are `require`d beside
+`EQUIPMENT_ENTRY` (specs.js 17). The packed payload is pasted, computed once
+by this command from the repository root (its output is below - the
+implementer pastes it, and keeps the command in the comment beside it):
+
+```text
+node -e "const z=require('zlib');const f=require('./docs/fixtures/lists/notes-both-kinds.json');console.log('~'+z.deflateRawSync(Buffer.from(f.gm.raw,'utf8')).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''))"
+```
+
+```text
+~JY2hDsIwFAD9PqKrH5AUwwfVMIXCLqNIBAkWQUKCL6xkpdB-w70_IgN5d-K44nmRiaRquVhttuvOtmZmralU09Wc8TxIeM2IJ0kvB3ETBoqWvTjp8aqruVEY5Ugk67kmUcj_yh1PJhBlJ041tjU1JyKBTNFEBukp04WP-tULhUDgyXvSXw
+```
+
+(Verified in planning: `inflateRawSync` of it re-encodes to exactly
+`gm.payload`; Node's deflate bytes differ from Chrome's `CompressionStream`
+but both are raw deflate, which `DecompressionStream('deflate-raw')` reads.)
+
+| id | route | storage | enter | why |
+|---|---|---|---|---|
+| `#/l/ ~ shared` | `'#/l/' + QTY_AND_PRICE.player.payload` | `two` | - | a list from another player: heading `Лавка`, the sub, the add control, three rows with their tails (`×2`; `×5 · price`; `price`), no notes, no bar. Seeded so `addedSharedToList` has a list to add to; the lists are not drawn here, so the seed costs no pixel |
+| `#/l/ ~ shared, noted` | `'#/l/' + NOTES_BOTH_KINDS.gm.payload` | - | - | `Тайник`: both list hitnotes above two rows, `ci1` with both entry hitnotes under it, no tails |
+| `#/l/ ~ packed` | `'#/l/' + PACKED` (the string above) | - | `(d) => d.expanded()` | the packed form, expanded and rewritten to the plain form - pixels identical to `~ shared, noted`; `listAddress` proves the rewrite |
+| `#/l/zzzz` | `#/l/zzzz` | - | - | the bad-link page: `Предмет не найден`, the `badShare` line, the `На главную` button |
+
+None is `timed`. A ticked row on the shared page is `#/tables ~ a row
+ticked`'s bar, already covered; it is a press spec here, not a pixel state.
+
+`NAME` gains `newList: '+ Новый список'` / `'+ New list'` and `create:
+'Создать'` / `'Create'` (the chip's text carries the `+ `; `d.click` needs
+the exact string because the EN press has already renamed it by the time a
+press spec runs). `listAddress.only` gains the four ids - `~ packed` must
+read `'#/l/' + NOTES_BOTH_KINDS.gm.payload` on both apps.
+
+Press specs, each `presses: true`:
+
+- `tookSharedList` (`only: ['#/l/ ~ shared, noted']`): `click(addToList)`,
+  `click(newList)`, `click(create)`; return `{ hash: await d.hash(),
+  stored: stored.map((l) => [l.name, l.ids, l.note ?? null, l.hnote ??
+  null, l.meta ?? null]) }`. Both apps: hash `'#/l/' +
+  NOTES_BOTH_KINDS.player.payload`, one list `['Тайник', ['ci1', 'cc1'],
+  'Лавка закрыта до утра', 'Хозяин - контрабандист', { ci1: { note: 'Видно
+  игрокам', hnote: 'Подделка' } }]`.
+- `addedSharedToList` (`only: ['#/l/ ~ shared']`): `click(addToList)`,
+  `click('Клад дракона')`; return `{ hash, stored: stored.map((l) =>
+  [l.id, l.ids, l.meta ?? null]) }`. Both apps: the hash unchanged (the
+  live `afterListChange` → `freshenListUrl` rewrites only when
+  `S.openList === l.id`, which it is not here), `[['a', ['ci1', 'cc21',
+  'q337'], { ci1: { qty: 2 }, cc21: { qty: 5, gold: 50 }, q337: { gold: 12
+  } }], ['b', [], null]]`.
+
+#### Ordered steps
+
+One code commit. The planning docs land first, on their own commit with an
+explicit pathspec (`issues/47/plan.md issues/47/handoff.md
+issues/47/context.md`), as B5.5's did. Each check is `set -o pipefail; npm
+run check 2>&1 | tail -n 120`, one foreground call, Bash timeout 600000;
+the last one runs after the doc edits, immediately before `git commit`,
+because the docs move the tree fingerprint the gate reads.
+
+1. `lib/dict.ts` (two keys, both blocks); `lib/lists.ts` (`N_SHARED`);
+   `state/lists.svelte.ts` (`addIds` meta) + `state/lists.test.ts` cases;
+   `state/app.svelte.ts` (`shared`, `toggleSel`, `#expand` and its three
+   call sites) + `state/app.test.ts` cases. `npx vitest run app/src/state
+   app/src/lib` green.
+2. `components/HitNote.svelte`; `ListPage.svelte` swaps its snippet and
+   drops the five rules; `TableRows.svelte` (`tail`, `after`);
+   `RowMain.svelte` comments; `TablesPage.svelte` uses `app.toggleSel`.
+   `npx vitest run app/src/components/listPage.test.ts
+   app/src/components/tables.test.ts` green.
+3. `AddToList.svelte` (shared meta, the `@` take, `openNew`'s draft).
+4. `SharedListPage.svelte`; `ListPage.svelte`'s `{:else if !own}` branch
+   and the `.todo` rules; `a11y.test.ts` (`COVERED` ×2, the state).
+5. `components/sharedListPage.test.ts` (the fourteen cases);
+   `listPage.test.ts`'s three address cases.
+6. `tests/parity/driver.js` `expanded()`; `tests/parity/specs.js`: the two
+   `require`s, `PACKED` with its comment, four states, `NAME` ×2,
+   `listAddress.only` ×4, `tookSharedList`, `addedSharedToList`, both in
+   `SPECS`.
+7. `npm run check` green (fix, do not skip; if the host is loaded, read
+   `.claude/README.md` "Run a long check" and `context.md` "The host block
+   lifted" before retrying).
+8. `npm run build`, then the parity loop - one foreground call per group,
+   none merged, `MSYS_NO_PATHCONV=1` in front of each:
+   - `node tests/parity.js "#/l/"` - 5 states (`~ own list` included), 30
+     cells, `listAddress` ×5, `tookSharedList`, `addedSharedToList`;
+   - `node tests/parity.js "i/ci1 ~"` - the `AddToList` regression, 36
+     cells;
+   - `node tests/parity.js "#/tables @" "#/tables ~ a row ticked" "#/tables
+     ~ bar menu" "#/lists/a @" "#/lists/a ~ rolled"` - `TableRows`, the
+     bar's menu, `ListPage`'s branch and the `HitNote` extraction, 30
+     cells.
+   Every cell zero; open a diff image before touching any value. If the
+   `~ packed` rewrite cell is the only red, the verb did not wait - check
+   `listAddress`'s two hashes first.
+9. `npm run check:built` (the screen changes; the bundle budget).
+10. `plan.md` "B5.6 built" (what shipped, exact commands and results, any
+    deviation), `handoff.md` (Status, Completed, Verification, Next batch =
+    the lists slice is closed - name what follows in the phase plan,
+    Deferred: nit 1 closed), `COVERAGE.md`'s three rows, `context.md` only
+    for a durable fact learned.
+11. `npm run check` again (the docs moved the fingerprint); commit
+    `feat(lists): the shared list page`. No push.
+
+**Fits one implement cycle.** The batch is one component, one seed set,
+one filter (`"#/l/"`) plus two regression groups; ~25 paths, under B5.4a's
+43 and near B5.3's 26, both of which passed one foreground `npm run check`
+on an idle host. Nothing here needs a contract change, a seed that does
+not exist, or a verb the harness lacks beyond the eight-line `expanded()`
+that lands in the same commit. No split.
+
+#### Acceptance criteria
+
+- `npm run check` exit 0 before the commit; thresholds met with
+  `SharedListPage.svelte`, `HitNote.svelte`, `app.svelte.ts`'s `#expand`
+  and `lists.svelte.ts`'s meta branch all reached.
+- `a11y.test.ts`'s guard passes with both new components named, and the
+  shared-list state passes axe.
+- All five `#/l/` states read `совпадает` in both languages at 1100, 768
+  and 375; `listAddress` reports the plain hash for `~ packed` on both
+  apps; `tookSharedList` and `addedSharedToList` return the same data on
+  both apps.
+- The three regression groups read `совпадает` throughout - the `HitNote`
+  extraction, the `TableRows` props and the `AddToList` change move no
+  pixel.
+- `npm run check:built` exit 0.
+- No `VISUAL_DEBT` entry written from this host; no `ACCEPTED` entry
+  added.
+- `ListPage.svelte` has no `todo` element or rule, no `hitnote` snippet
+  and no `.hitnote` rule; `RowMain.svelte`'s comments name the caller;
+  `TablesPage.svelte` has no local `toggleSel`.
+- `handoff.md` "Deferred" marks B5.4a nit 1 and B5.3 nit 5 closed by this
+  batch.
+
+#### Risks and do-nots
+
+- Do not compute the packed payload in `specs.js` at run time, and do not
+  let the live app's `sharedListLink` output stand in for it: paste the
+  string above with its command.
+- Do not put `after`'s hitnotes outside `TableRows`: the 8px column gap
+  plus the hitnote's 12px top margin is the live geometry, and it only
+  composes inside `.rows`.
+- Do not write `.hitnote + .hitnote` scoped in `HitNote.svelte` - it
+  prunes and the check fails; `:global(.hitnote + .hitnote)`, after the
+  base rule.
+- Do not call `#expand()` from `replace()`; the expansion's own `replace`
+  would re-enter it.
+- Do not drop the `startsWith(PACK_MARK)` guard: the test env's
+  `plainCompress` returns the packed payload unchanged and the app would
+  replace the same hash forever.
+- Do not toggle a single record when the key is `'@'`; the live app adds
+  the whole list even when it has one entry (1911, before the toggle).
+- Do not copy `hnote` in `addIds`, and do not copy meta for an id that is
+  already in the list (only `fresh` ids get it, 1930-1936).
+- Do not build the sub from three text nodes; one string.
+- Do not pass `ontoggleall` to `TableRows` on the shared page: the live
+  page has no `.selall`.
+- Do not seed storage on `~ shared, noted`: `tookSharedList` expects one
+  list in storage afterwards. Do seed `two` on `~ shared`.
+- Do not mark any of the four states `timed`; nothing on them fades.
+- The `~ packed` state's `enter` must be the `expanded()` verb, not a
+  `settle()`; the race is on the rewrite's side only.
+- Do not write a `VISUAL_DEBT` number from this host.
+- Two commits total (planning docs, then code), no push, no attribution
+  trailer.
+
+#### Decided in planning - do not reopen
+
+- **`SharedListPage.svelte` is a component, rendered by `ListPage`'s
+  `{:else if !own}` branch**, not more markup in `ListPage.svelte`: it owns
+  the decode, `app.shared`, its own modal and the bad-link block. The
+  fourth `.page-h`/`.page-sub` copy it carries is the pattern the three
+  existing pages set; the extraction is recorded, not done.
+- **`app.shared` is the route gate.** Set while `SharedListPage` is
+  mounted, null otherwise - equivalent to the live `metaForKey`'s `route
+  is l/ and no openList` test, and it lets `AddToList` read one field for
+  every key instead of a `fresh` prop plus a `meta` prop.
+- **`RowMain.tail` stays and is used** (nit 1); `TableRows` gets
+  `TableEntry.tail` and an `after` snippet - the two differences the one
+  real caller needs, nothing more.
+- **`HitNote` is extracted now** - second use.
+- **`toggleSel` moves to `AppState`** - second use, three lines, one test.
+- **The packed expansion lives in `AppState`**, off the same three moments
+  the live `expandHash` runs (first render, `hashchange`, a programmatic
+  step), and lands on `#/l/zzzz` for both failure shapes.
+- **Four states, not five**: the tails state carries the plain page; the
+  "seven plain rows" state of the outline is dropped as redundant.
+- **Coin mode on the shared page is a unit case**, not a state.
+- **One code commit**; the harness verb is eight lines and lands with the
+  state that uses it.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:

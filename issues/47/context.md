@@ -1210,3 +1210,84 @@ Rewrite facts (`app/src` at `3cb2bd0`):
   existed from B5.1 and are exactly what the `.batch-acts` pair needed
   (`caret` flips via `expanded`, `on` draws the pushed-in look) - confirm
   this before adding anything to `Button` for B5.6's own controls.
+
+## State at the B5.6 kickoff (orchestrator, 2026-09-11)
+
+- HEAD `d6c951f` (`fix(lists): start a drag only from the grip`), working tree
+  **clean**, no `test-output/parity.lock`. B5.5 is closed by four commits:
+  `36fd2f1` (planning docs), `a006792` (drag), `ba0a92d` (batch actions),
+  `d6c951f` (the one allowed review remediation).
+- Host reading before anything heavy: RAM free 4.44 GB of 15.82 GB, **no
+  `chrome.exe`**, 12 `node` processes (editor/tooling). Less headroom than the
+  B5-remainder kickoff's 6.84 GB; `npm run check` has exceeded the 600s
+  foreground cap under load before, so treat a timeout here as host load, not
+  as a suite regression.
+- `ListAgents` shows **two interactive peer sessions** on this tree
+  (`daggerheart-loot-96` ~1h old, `daggerheart-loot-ce` ~2h old); every other
+  peer is offline. HEAD can move under this task - re-read `git log --oneline
+  -3` before dispatching a writer and again at closeout.
+- Human GOAL this session: finish the next batch. **B5.6 is the last lists
+  batch** and the only one left in the slice. It is outlined in `plan.md`,
+  "B5.6 outlined", but the handoff records it as not implement-ready: the
+  outline names the pieces, not ordered steps, exact test cases, or acceptance
+  criteria. Planner first, then implementer.
+
+## B5.6 planning facts (planner, 2026-09-11) - durable, read before implementing
+
+Read alongside "B5-remainder planning facts" and "B5.5 built" above; this
+adds only what B5.6's own reading found. Line numbers are `app.js` at
+`d6c951f` (unchanged since `d5d63c1`).
+
+- **The outline's "adding to an existing list copies ids only" was wrong.**
+  `applyAddTo` (1907-1920) sends `'@'` to `addIdsTo(l, ids, S.shared.meta)`
+  *before* the single-record toggle, and every other key goes through
+  `metaForKey(key)` (1874-1877), which returns `S.shared.meta` whenever the
+  route is `l/` with no `S.openList` - so the bar's `sel` key and a card's
+  own key copy meta on the shared page too. `addIdsTo` (1924-1940) writes
+  `qty` (`> 1`), `gold` (`> 0`), `note` - in that order, for fresh ids only,
+  never `hnote`. Only the GM's note stays behind. The rewrite ports this as
+  `ListStore.addIds(list, ids, knows, meta?)` plus `AppState.shared`
+  (`DecodedList | null`, set while `SharedListPage` is mounted).
+- **`contextNote` (568-578) is empty on a shared page** - `onListPage()`
+  needs `S.openList`. The shared page's modal passes no `extra`.
+- **The live app renders nothing while a packed link expands**: `if
+  (!expandHash()) render()` (4636), and `expandHash` returns true the
+  moment it sees `l/~`. The harness's `ready()` waits for `#view`/`#app`
+  children, which on the live side therefore already implies the expansion
+  landed; the rewrite's `Shell` mounts at once, so the packed state needs
+  the `expanded()` verb (waits on `location.hash` leaving `#/l/~`).
+- **`plainCompress.unpack` returns a packed payload unchanged** (it has no
+  decompressor), so an expansion that `replace`s whatever `unpack` returns
+  would loop under the test env. `#expand` treats a result still starting
+  with `~` as the failure it is (`#/l/zzzz`), which is also what a browser
+  without `DecompressionStream` gets from the live `catch`.
+- **Fixture ids are all in `data.js`**: `ci1`, `cc1`, `cc21`, `q337`,
+  `voa2_a1`, `q26`, `q33` (checked with `window.LOOT` - items are nested
+  under `LOOT.items.<table>` and `LOOT.eq`). `qty-and-price.json`'s payload
+  carries the three tail shapes (`×2`, `×5 · price`, bare price);
+  `notes-both-kinds.json`'s `gm` payload carries all four notes and no
+  meta; `player === gm` for both equipment-entry and qty-and-price.
+- **The packed form of `notes-both-kinds.json`'s `gm.raw`**, computed with
+  `zlib.deflateRawSync` and round-tripped through `inflateRawSync` back to
+  `gm.payload`: `~JY2hDsIwFAD9PqKrH5AUwwfVMIXCLqNIBAkWQUKCL6xkpdB-w70_IgN5d-K44nmRiaRquVhttuvOtmZmralU09Wc8TxIeM2IJ0kvB3ETBoqWvTjp8aqruVEY5Ugk67kmUcj_yh1PJhBlJ041tjU1JyKBTNFEBukp04WP-tULhUDgyXvSXw`
+  (179 chars against 223 plain). Node's deflate bytes differ from Chrome's
+  `CompressionStream` output, but both are raw deflate and
+  `DecompressionStream('deflate-raw')` reads either. The command is in
+  `plan.md`, "B5.6 planned", "Parity states".
+- **Svelte prunes a scoped sibling rule a single instance cannot match.**
+  `HitNote.svelte` cannot carry `.hitnote + .hitnote` scoped; it carries
+  `:global(.hitnote + .hitnote)` after the base rule (equal specificity,
+  source order decides - the live cascade decides by specificity, same
+  result).
+- **`a11y.test.ts`'s guard compares `COVERED` against every `*.svelte` on
+  disk** - a new component fails the suite until it is named there with a
+  state that renders it under axe. `HitNote` and `SharedListPage` both need
+  entries and the shared-list state.
+- **`specs.js` already `require`s a fixture** (`EQUIPMENT_ENTRY`, line 17);
+  the new states read `notes-both-kinds.json` and `qty-and-price.json` the
+  same way rather than pasting plain payloads. A spec has no `storage` of
+  its own - only a state seeds (parity.js 367) - so `#/l/ ~ shared` seeds
+  `two` for `addedSharedToList`, and `~ shared, noted` seeds nothing for
+  `tookSharedList`.
+- **`TablesPage`'s local `toggleSel` (197-200) was the first copy**; the
+  shared page is the second, so it moves to `AppState.toggleSel`.

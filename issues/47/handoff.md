@@ -6,6 +6,29 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B5.6 planned and implement-ready - the last lists batch**
+  (planner, 2026-09-11, on `d6c951f`, working tree clean but for the
+  orchestrator's own `context.md` kickoff section, which is kept and
+  committed with this pass). The outline's two open questions are resolved
+  by reading the code and fixtures: (a) `RowMain`'s `tail`/`.rtail` is
+  used, not deleted - the live `rowHTML(it, '', tail)` is exactly its
+  markup, `TableRows`'s list rows are the shared page's rows byte for byte,
+  and only a per-row `after` snippet was missing; (b) the tails state uses
+  `docs/fixtures/lists/qty-and-price.json` (three tail shapes, all ids in
+  `data.js`), the noted state `notes-both-kinds.json`'s `gm` payload, and
+  coin mode is a unit case. Four states (`#/l/ ~ shared`, `~ shared, noted`,
+  `~ packed`, `#/l/zzzz`), two press specs, `listAddress` +4, `NAME` +2, one
+  eight-line driver verb (`expanded()`, so the packed cell cannot race the
+  rewrite's async replace). The packed payload is computed once with
+  `zlib.deflateRawSync` and pasted with its command. One correction to the
+  outline: adding a shared list into an *existing* list copies qty, gold
+  and the players' note (live `addIdsTo`, 1924-1940), not ids only - so
+  `ListStore.addIds` grows a `meta` parameter and `AppState` a `shared`
+  field that gates it the way the live `metaForKey` gates on the route.
+  Eleven ordered steps, exact tests per file, three parity groups each
+  sized to one foreground call, one code commit after this planning commit.
+  No production code touched; no check run (a planning pass needs none).
+  NEEDS_HUMAN_CONFIRMATION: no.
 - Task status: **B5.5's review remediation is built, verified and committed -
   the lists slice still needs only B5.6.** (implementer, 2026-09-11, on
   `ba0a92d`). Both blockers fixed: `drag.ts`'s `dragstart` now requires a
@@ -1946,28 +1969,77 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B5.5 is closed, remediation included.** All thirteen ordered steps landed
-exactly as planned, in the two commits the brief named (three total with the
-planning-docs commit), and the one fix-then-continue remediation pass a
-review requested afterward - both blockers and five lower-severity findings -
-landed as a fourth commit, `fix(lists): start a drag only from the grip`, on
-top of `ba0a92d`. See "Status" and "Completed" above, and `plan.md`, "B5.5
-built" and its "Correction, one remediation pass..." for the full accounting.
-That was the protocol's one allowed remediation pass for this batch; there is
-no second review.
+**B5.6 - the shared page, the packed link, the bad link, and taking a shared
+list - is implement-ready.** The full brief is `plan.md`, "B5.6 planned"
+(ordered steps, the exact test cases per file, the four states with their
+routes and the pasted packed payload, the two press specs, the verification
+groups, the do-nots, and the decisions not to reopen). This section is the
+template's summary of it; where the two differ, the plan wins.
 
-**B5.6 - the shared page, packed-link expansion, the bad-link page, taking a
-shared list - is outlined, not implement-ready.** It closes B5.4a's nit 1
-(`RowMain`'s dead `tail`, used through `TableRows` on the shared page, or
-deleted if it turns out not to be needed) and B5.3's nit 5
-(`ListStore.create`'s `init` parameter getting its second caller). The
-outline - the packed-expansion mechanism, `SharedListPage.svelte`,
-`HitNote.svelte`'s second use, `AddToList`'s new `fresh` prop, four parity
-states, two press specs and two filters - is in `plan.md`, "B5.6 outlined".
-**A planner pass is needed before implementation**: the outline names the
-pieces but not ordered steps, exact test cases, or acceptance criteria the
-way B5.5's own brief did - do not implement from the outline directly.
-
+- **Name:** B5.6 - the shared list page.
+- **Objective:** `#/l/<payload>` for a list that is nobody's draws the live
+  `renderSharedList` (app.js 3130-3170): heading, `Список от другого игрока
+  · N позиций`, one `Добавить в список` whose `+ Новый список` takes the
+  whole list (name, both notes, meta) into a new list and lands on it, and
+  whose chips copy ids with qty/gold/players' note into an existing list;
+  the two list hitnotes; `TableRows` rows with `×qty · price` tails and
+  per-row hitnotes; the selection bar off a ticked row, carrying the same
+  meta. `#/l/~<packed>` expands through the compress port and rewrites the
+  address in place; a packed link that cannot expand, or any payload that
+  does not decode, lands on `#/l/zzzz` (`Предмет не найден`, the
+  `badShare` line, `На главную`). Closes B5.4a nit 1 and B5.3 nit 5.
+- **In scope:** `lib/dict.ts` (`sharedList`, `toStart`), `lib/lists.ts`
+  (`N_SHARED`), `state/lists.svelte.ts` (`addIds(list, ids, knows,
+  meta?)`), `state/app.svelte.ts` (`shared`, `toggleSel`, `#expand`),
+  `components/HitNote.svelte` (new, second use), `SharedListPage.svelte`
+  (new), `TableRows.svelte` (`TableEntry.tail`, `after` snippet),
+  `RowMain.svelte` (comments), `AddToList.svelte`, `ListPage.svelte`,
+  `TablesPage.svelte`, `a11y.test.ts`, `tests/parity/driver.js`
+  (`expanded()`), `tests/parity/specs.js`, `docs/specs/COVERAGE.md`.
+- **Out of scope:** `CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`,
+  `ROUTES.md`, `llms.txt` (nothing here changes a contract); `Button.svelte`
+  (`href` + `sameTab` + `primary` exist); `ListStore.create`'s signature;
+  `RecordModal`'s `extra` on the shared page (live returns none there); a
+  `.page-h`/`.page-sub` extraction (recorded below); search; print.
+- **Files expected:** the list above plus `state/lists.test.ts`,
+  `state/app.test.ts`, `components/listPage.test.ts`,
+  `components/sharedListPage.test.ts` (new); `plan.md`, this file,
+  `context.md` at close-out.
+- **Steps:** eleven, in `plan.md` "B5.6 planned", "Ordered steps" - lib,
+  store and state first (1); `HitNote`, `TableRows`, `RowMain`,
+  `TablesPage` (2); `AddToList` (3); `SharedListPage` and `ListPage`'s
+  branch, the a11y guard (4); the tests (5); driver verb and specs (6);
+  `npm run check` (7); build and the three parity groups (8);
+  `check:built` (9); docs (10); check again, commit (11). One code commit,
+  `feat(lists): the shared list page`, on top of this planning commit.
+- **Acceptance criteria:** `plan.md` "B5.6 planned", "Acceptance criteria" -
+  check green with the four new code paths reached; the a11y guard names
+  both new components; all five `#/l/` states `совпадает` at three widths
+  in both languages; `listAddress` reads the plain hash for `~ packed` on
+  both apps; `tookSharedList` and `addedSharedToList` agree; the three
+  regression groups untouched; `check:built` green; no `VISUAL_DEBT`, no
+  `ACCEPTED`.
+- **Verification commands:** `set -o pipefail; npm run check 2>&1 | tail -n
+  120` (one foreground call, timeout 600000) before the commit and again
+  after the doc edits; `npm run build`; then, each its own foreground call,
+  none merged, `MSYS_NO_PATHCONV=1` in front: `node tests/parity.js "#/l/"`
+  (30 cells + 3 specs); `node tests/parity.js "i/ci1 ~"` (36 cells); `node
+  tests/parity.js "#/tables @" "#/tables ~ a row ticked" "#/tables ~ bar
+  menu" "#/lists/a @" "#/lists/a ~ rolled"` (30 cells); `npm run
+  check:built`. Each group fits one call on the evidence of B5.4a/B5.5
+  (42-cell groups ran inside one); the three merged (96 cells) would not
+  reliably - do not merge.
+- **Risks / do-nots:** `plan.md` "B5.6 planned", "Risks and do-nots" - the
+  packed payload is pasted, not computed; `:global(.hitnote + .hitnote)`
+  in `HitNote`, after the base rule; the `startsWith(PACK_MARK)` guard in
+  `#expand`; no `#expand` from `replace()`; the `'@'` key never toggles;
+  `addIds` never copies `hnote` and only for fresh ids; one text node for
+  the sub; no `ontoggleall` on the shared page; `two` seeded on `~ shared`
+  only; `~ packed`'s `enter` is `expanded()`, not `settle()`; nothing
+  `timed`.
+- **Fallback:** none needed. If `expanded()` still leaves the `~ packed`
+  rewrite cell red on the rewrite side, the wait is on the wrong signal -
+  wait for the `h1` to exist in `#app main` instead, and record which.
 - **NEEDS_HUMAN_CONFIRMATION: no.**
 
 ## Blockers
@@ -2371,6 +2443,17 @@ way B5.5's own brief did - do not implement from the outline directly.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B5.4a nit 1 and B5.3 nit 5 are assigned to B5.6 with their answers
+  (planner, 2026-09-11).** Nit 1: `RowMain`'s `tail`/`.rtail` gets its
+  caller - `TableRows`'s `TableEntry.tail`, from the shared page - and
+  stays; see `plan.md`, "B5.6 planned", "Resolved". Nit 5:
+  `ListStore.create(name, init)`'s second caller is `AddToList`'s take of
+  a whole shared list. Both close when B5.6 lands. Recorded, not fixed,
+  by the same pass: `.page-h`/`.page-sub` now have three scoped copies
+  (`RecordPage`, `ListPage`, `PageHead`) and `SharedListPage` adds a
+  fourth - a heading-rule extraction is project-wide cleanup for after the
+  lists slice, not a B5.6 change.
 
 - **B5.4a's nits 2, 3 and 5 are closed by B5.5 (implementer, 2026-09-11).**
   Nit 2: `specs.js` carries the "Recorded, not keyed" paragraph above
