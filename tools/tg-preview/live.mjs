@@ -32,14 +32,17 @@ export async function verify(urls, { site, fetch: fetchImpl, sleep, log }) {
   const imageCache = new Map();
   function imageSha(name) {
     if (!imageCache.has(name)) {
-      imageCache.set(
-        name,
-        (async () => {
-          const res = await fetchImpl(site + 'og/' + name);
-          if (!res.ok) throw new Error('image fetch failed: ' + name + ' (' + res.status + ')');
-          return sha256(Buffer.from(await res.arrayBuffer()));
-        })()
-      );
+      const promise = (async () => {
+        const res = await fetchImpl(site + 'og/' + name);
+        if (!res.ok) throw new Error('image fetch failed: ' + name + ' (' + res.status + ')');
+        return sha256(Buffer.from(await res.arrayBuffer()));
+      })();
+      // A rejected promise must not stay cached: a new `og/<name>.jpg` can
+      // 404 in round 1 while Pages catches up - exactly the case the rounds
+      // exist for - and the next round needs to fetch again, not replay the
+      // same rejection.
+      promise.catch(() => imageCache.delete(name));
+      imageCache.set(name, promise);
     }
     return imageCache.get(name);
   }

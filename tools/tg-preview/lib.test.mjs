@@ -27,6 +27,22 @@ function realData() {
 const derived = require(join(ROOT, 'tools', 'derived.js'));
 const { page } = require(join(ROOT, 'tools', 'build-share-pages.js'));
 
+// Small Msg builders (the shape client.mjs's `plain()` mapper produces) -
+// shared by the matchButtons and runRefresh suites below.
+function buttonMsg(id, url, photoId = null) {
+  return {
+    id,
+    text: '',
+    url,
+    pending: false,
+    photoId,
+    buttons: [{ text: lib.UPDATE_BUTTON, data: Buffer.from('press-' + id) }]
+  };
+}
+function summaryMsg(id, text = 'Link previews was updated successfully. Check them out!') {
+  return { id, text, url: null, pending: false, photoId: null, buttons: [] };
+}
+
 describe('urls', () => {
   it('is the root plus one stub per record, each unique, root first', () => {
     const records = derived.everything(realData());
@@ -187,6 +203,12 @@ describe('decide', () => {
     }
   }
   class PeerFloodError extends Error {}
+  class BotResponseTimeoutError extends Error {
+    constructor() {
+      super('timeout');
+      this.errorMessage = 'BOT_RESPONSE_TIMEOUT';
+    }
+  }
   class AuthKeyUnregisteredError extends Error {}
   class SessionRevokedError extends Error {}
   class SessionExpiredError extends Error {}
@@ -217,6 +239,16 @@ describe('decide', () => {
 
   it('stops on PEER_FLOOD', () => {
     assert.equal(lib.decide(new PeerFloodError(), {}).stop, true);
+  });
+
+  it('BotResponseTimeoutError is neither a retry nor a stop - the press was delivered', () => {
+    assert.deepEqual(lib.decide(new BotResponseTimeoutError(), {}), { unanswered: true });
+  });
+
+  it('also matches BOT_RESPONSE_TIMEOUT by errorMessage alone', () => {
+    const err = new Error('x');
+    err.errorMessage = 'BOT_RESPONSE_TIMEOUT';
+    assert.deepEqual(lib.decide(err, {}), { unanswered: true });
   });
 
   for (const Cls of [
@@ -312,6 +344,79 @@ describe('parseArgs', () => {
   it('throws on an unknown mode', () => {
     assert.throws(() => lib.parseArgs(['--mode', 'partial']));
   });
+
+  it('--limit 0 is legal (phase 1 only, send nothing)', () => {
+    const o = lib.parseArgs(['--limit', '0']);
+    assert.equal(o.limit, 0);
+  });
+
+  it('throws on a non-numeric --limit/--max-wait/--budget-minutes rather than silently no-op-ing', () => {
+    assert.throws(() => lib.parseArgs(['--limit', 'ten']), /--limit must be a number, got ten/);
+    assert.throws(() => lib.parseArgs(['--max-wait', 'x']), /--max-wait must be a number, got x/);
+    assert.throws(() => lib.parseArgs(['--budget-minutes', 'x']), /--budget-minutes must be a number, got x/);
+  });
+
+  it('throws on a negative --limit', () => {
+    assert.throws(() => lib.parseArgs(['--limit', '-1']), /--limit must be a number, got -1/);
+  });
+});
+
+describe('matchButtons', () => {
+  function noButtonWebpage(id, url) {
+    return { id, text: '', url, pending: false, photoId: null, buttons: [] };
+  }
+
+  it('matches by exact media.webpage.url', () => {
+    const msgs = [buttonMsg(1, 'https://x/a'), buttonMsg(2, 'https://x/b')];
+    const { matched, unmatched } = lib.matchButtons(msgs, ['https://x/a', 'https://x/b']);
+    assert.deepEqual(Object.keys(matched).sort(), ['https://x/a', 'https://x/b']);
+    assert.deepEqual(unmatched, []);
+  });
+
+  it('a message without webpage media (the summary) is never a button message', () => {
+    const msgs = [summaryMsg(1)];
+    const { matched, unmatched, summary } = lib.matchButtons(msgs, ['https://x/a']);
+    assert.deepEqual(matched, {});
+    assert.deepEqual(unmatched, ['https://x/a']);
+    assert.deepEqual(summary, [msgs[0].text]);
+  });
+
+  it('a message with a webpage but without the UPDATE_BUTTON button is not one either, and is not the summary', () => {
+    const msgs = [noButtonWebpage(1, 'https://x/a')];
+    const { matched, unmatched, summary } = lib.matchButtons(msgs, ['https://x/a']);
+    assert.deepEqual(matched, {});
+    assert.deepEqual(unmatched, ['https://x/a']);
+    assert.deepEqual(summary, []);
+  });
+
+  it('the newest of duplicate button messages wins', () => {
+    const msgs = [buttonMsg(1, 'https://x/a'), buttonMsg(5, 'https://x/a'), buttonMsg(3, 'https://x/a')];
+    const { matched } = lib.matchButtons(msgs, ['https://x/a']);
+    assert.equal(matched['https://x/a'].id, 5);
+  });
+
+  it('the trailing-slash fallback matches the root; an unrelated URL is not normalised', () => {
+    const msgs = [buttonMsg(1, 'https://x/'), buttonMsg(2, 'https://x/i/other.html')];
+    const { matched, unmatched } = lib.matchButtons(msgs, ['https://x', 'https://x/i/a.html']);
+    assert.equal(matched['https://x'].id, 1);
+    assert.deepEqual(unmatched, ['https://x/i/a.html']);
+  });
+
+  it('unmatched URLs are reported in input order', () => {
+    const msgs = [buttonMsg(1, 'https://x/b')];
+    const { unmatched } = lib.matchButtons(msgs, ['https://x/a', 'https://x/b', 'https://x/c']);
+    assert.deepEqual(unmatched, ['https://x/a', 'https://x/c']);
+  });
+
+  it('a message that looks like our own echo (webpage present, no matching button) is ignored: not matched, not summarised', () => {
+    // incoming() already filters `!m.out` at the port boundary (client.mjs);
+    // this proves matchButtons stays safe even if such a message reached it.
+    const echo = noButtonWebpage(1, 'https://x/a');
+    const { matched, unmatched, summary } = lib.matchButtons([echo], ['https://x/a']);
+    assert.deepEqual(matched, {});
+    assert.deepEqual(unmatched, ['https://x/a']);
+    assert.deepEqual(summary, []);
+  });
 });
 
 describe('runRefresh', () => {
@@ -322,22 +427,55 @@ describe('runRefresh', () => {
     return { site, urls, missing: [] };
   }
 
-  // `script` is consumed one entry per cx.send() call, in order, across
-  // retries too: {ok:true} succeeds, {throw:err} throws err for that call.
-  function fakeClient(script) {
-    let i = 0;
+  function repliesFor(urlsList, baseId, photoId = null) {
+    const msgs = [summaryMsg(baseId)];
+    urlsList.forEach((url, i) => msgs.push(buttonMsg(baseId + 1 + i, url, photoId)));
+    return msgs;
+  }
+
+  // `send` is consumed one entry per cx.send() call ({ok:true} succeeds,
+  // {throw:err} throws); `incoming` is a queue of canned Msg[] answers, one
+  // per call (the first call is always phase 1's recovery scan); `press` is
+  // consumed one entry per cx.press() call; `photoAfter` backs byIds's photo
+  // lookup by message id.
+  function fakeClient({ send = [], incoming = [], press = [], photoAfter = new Map() } = {}) {
+    let sendIdx = 0;
+    let pressIdx = 0;
+    let nextId = 9000;
+    const queue = incoming.slice();
     const sent = [];
+    const pressedCalls = [];
     const closed = { value: false };
     return {
       async client() {
         return {
           async send(text) {
-            const step = script[i++];
+            const step = send[sendIdx++];
             if (step && step.throw) throw step.throw;
-            sent.push(text);
+            const id = nextId++;
+            sent.push({ id, text });
+            return { id };
           },
-          async lastReply() {
-            return 'ok';
+          async incoming() {
+            return queue.length ? queue.shift() : [];
+          },
+          async byIds(ids) {
+            return ids
+              .filter((id) => photoAfter.has(id))
+              .map((id) => ({
+                id,
+                text: '',
+                url: null,
+                pending: false,
+                photoId: photoAfter.get(id),
+                buttons: []
+              }));
+          },
+          async press(id, data) {
+            pressedCalls.push({ id, data });
+            const step = press[pressIdx++];
+            if (step && step.throw) throw step.throw;
+            return { text: (step && step.text) || 'ok' };
           },
           async close() {
             closed.value = true;
@@ -345,6 +483,7 @@ describe('runRefresh', () => {
         };
       },
       sent,
+      pressedCalls,
       closed
     };
   }
@@ -388,45 +527,75 @@ describe('runRefresh', () => {
       }
     });
     const result = await runRefresh({ mode: 'incremental' }, deps);
-    assert.deepEqual(result, { sent: [], pending: [], notLive: [], floodWaits: 0, stopped: null, exitCode: 0 });
+    assert.deepEqual(result, {
+      sent: [],
+      pending: [],
+      notLive: [],
+      unmatched: [],
+      pressed: 0,
+      confirmed: [],
+      photo: { changed: 0, same: 0, none: 0 },
+      floodWaits: 0,
+      stopped: null,
+      exitCode: 0
+    });
   });
 
-  it('sends batches in manifest order and writes state after each', async () => {
-    const manifest = fakeManifest(25); // 26 urls -> chunks of 10,10,6
-    const fake = fakeClient([{ ok: true }, { ok: true }, { ok: true }]);
+  it('sends batches in manifest order, presses every button, and writes state after each batch', async () => {
+    const manifest = fakeManifest(25); // 26 urls -> chunks of 10, 10, 6
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const incoming = [[]]; // phase 1: nothing to recover
+    const press = [];
+    let baseId = 1000;
+    for (const b of batches) {
+      incoming.push(repliesFor(b, baseId));
+      baseId += b.length + 100;
+      b.forEach(() => press.push({ text: 'ok' }));
+    }
+    const fake = fakeClient({ incoming, press });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
     assert.equal(fake.sent.length, 3);
-    assert.equal(fake.sent[0].split('\n').length, 10);
-    assert.equal(fake.sent[2].split('\n').length, 6);
-    assert.equal(result.sent.length, 26);
+    assert.equal(fake.sent[0].text.split('\n').length, 10);
+    assert.equal(fake.sent[2].text.split('\n').length, 6);
+    assert.equal(result.confirmed.length, 26);
     assert.equal(result.pending.length, 0);
+    assert.equal(result.pressed, 26);
     assert.equal(deps.written.length, 3);
     assert.ok(fake.closed.value);
   });
 
   it('--limit sends at most that many messages, the rest pending', async () => {
     const manifest = fakeManifest(25);
-    const fake = fakeClient([{ ok: true }]);
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const b0 = batches[0];
+    const fake = fakeClient({
+      incoming: [[], repliesFor(b0, 1000)],
+      press: b0.map(() => ({ text: 'ok' }))
+    });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full', limit: 1 }, deps);
     assert.equal(fake.sent.length, 1);
-    assert.equal(result.sent.length + result.pending.length, Object.keys(manifest.urls).length);
-    assert.equal(result.pending.length, Object.keys(manifest.urls).length - result.sent.length);
+    assert.equal(result.confirmed.length, 10);
+    assert.equal(result.confirmed.length + result.pending.length, Object.keys(manifest.urls).length);
     assert.ok(result.pending.length > 0);
   });
 
   it('--only narrows to the given record ids, "root" included', async () => {
     const manifest = fakeManifest(5);
-    const fake = fakeClient([{ ok: true }]);
+    const wanted = [manifest.site, manifest.site + 'i/r2.html'];
+    const fake = fakeClient({
+      incoming: [[], repliesFor(wanted, 1000)],
+      press: wanted.map(() => ({ text: 'ok' }))
+    });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full', only: ['r2', 'root'] }, deps);
-    assert.equal(result.sent.length, 2);
-    assert.ok(fake.sent[0].includes('r2.html'));
-    assert.ok(fake.sent[0].includes(manifest.site));
+    assert.equal(result.confirmed.length, 2);
+    assert.ok(fake.sent[0].text.includes('r2.html'));
+    assert.ok(fake.sent[0].text.includes(manifest.site));
   });
 
-  it('a dry run sends and writes nothing', async () => {
+  it('a dry run sends and writes nothing, and never loads the client', async () => {
     const manifest = fakeManifest(15);
     const deps = baseDeps(manifest, {
       clientFactory: async () => {
@@ -434,12 +603,244 @@ describe('runRefresh', () => {
       }
     });
     const result = await runRefresh({ mode: 'full', dryRun: true }, deps);
-    assert.equal(result.sent.length, 0);
+    assert.equal(result.confirmed.length, 0);
     assert.equal(result.pending.length, Object.keys(manifest.urls).length);
     assert.equal(deps.written.length, 0);
   });
 
-  it('resends the same batch once after a small FLOOD_WAIT', async () => {
+  it('resends the same batch once after a small FLOOD_WAIT on a send', async () => {
+    class FloodWaitError extends Error {
+      constructor(s) {
+        super('flood');
+        this.seconds = s;
+      }
+    }
+    const manifest = fakeManifest(3); // 4 urls, 1 batch
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      send: [{ throw: new FloodWaitError(5) }, { ok: true }],
+      incoming: [[], repliesFor(urls, 1000)],
+      press: urls.map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(fake.sent.length, 1);
+    assert.equal(result.floodWaits, 1);
+    assert.equal(result.confirmed.length, urls.length);
+  });
+
+  it('stops on PEER_FLOOD on a send, green, with everything confirmed so far recorded', async () => {
+    class PeerFloodError extends Error {}
+    const manifest = fakeManifest(25); // 3 batches
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const fake = fakeClient({
+      send: [{ ok: true }, { ok: true }, { throw: new PeerFloodError() }],
+      incoming: [[], repliesFor(batches[0], 1000), repliesFor(batches[1], 2000)],
+      press: [...batches[0], ...batches[1]].map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.ok(result.stopped);
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.confirmed.length, 20);
+    assert.equal(result.pending.length, Object.keys(manifest.urls).length - 20);
+    assert.ok(fake.closed.value);
+  });
+
+  it('is fatal (exit 2) on a dead credential on a send, stopping the run', async () => {
+    class AuthKeyUnregisteredError extends Error {}
+    const manifest = fakeManifest(5);
+    const fake = fakeClient({ send: [{ throw: new AuthKeyUnregisteredError() }], incoming: [[]] });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.exitCode, 2);
+    assert.equal(result.confirmed.length, 0);
+  });
+
+  it('a FLOOD_WAIT on a press re-presses the same button', async () => {
+    class FloodWaitError extends Error {
+      constructor(s) {
+        super('flood');
+        this.seconds = s;
+      }
+    }
+    const manifest = fakeManifest(3); // 4 urls, 1 batch
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: [
+        { throw: new FloodWaitError(5) },
+        { text: 'ok' },
+        { text: 'ok' },
+        { text: 'ok' },
+        { text: 'ok' }
+      ]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.floodWaits, 1);
+    assert.equal(result.confirmed.length, urls.length);
+    assert.equal(fake.pressedCalls.length, urls.length + 1);
+  });
+
+  it('PEER_FLOOD on a press stops with earlier presses recorded', async () => {
+    class PeerFloodError extends Error {}
+    const manifest = fakeManifest(3); // 4 urls
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: [{ text: 'ok' }, { text: 'ok' }, { throw: new PeerFloodError() }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.ok(result.stopped);
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.confirmed.length, 2);
+    assert.ok(fake.closed.value);
+  });
+
+  it('is fatal (exit 2) on a dead credential mid-press', async () => {
+    class AuthKeyUnregisteredError extends Error {}
+    const manifest = fakeManifest(3);
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: [{ text: 'ok' }, { throw: new AuthKeyUnregisteredError() }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.exitCode, 2);
+    assert.equal(result.confirmed.length, 1);
+  });
+
+  it('an unanswered press is confirmed when the photo changed, and pending when it did not', async () => {
+    class BotResponseTimeoutError extends Error {
+      constructor() {
+        super('timeout');
+        this.errorMessage = 'BOT_RESPONSE_TIMEOUT';
+      }
+    }
+    const manifest = fakeManifest(2); // 3 urls: root, r0, r1
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000, 'before')],
+      press: urls.map(() => ({ throw: new BotResponseTimeoutError() })),
+      photoAfter: new Map([
+        [1001, 'after'], // changed
+        [1002, 'before'], // same
+        [1003, null] // no photo at all
+      ])
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.confirmed.length, 1);
+    assert.equal(result.pending.length, urls.length - 1);
+    assert.deepEqual(result.photo, { changed: 1, same: 1, none: 1 });
+  });
+
+  it('the photo telemetry is right, and an unchanged/absent photo is not failure when the press was answered', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000, 'before')],
+      press: urls.map(() => ({ text: 'ok' })),
+      photoAfter: new Map([
+        [1001, 'after'], // changed
+        [1002, 'before'], // same
+        [1003, null] // none
+      ])
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.deepEqual(result.photo, { changed: 1, same: 1, none: 1 });
+    // Every press was answered, so all three are confirmed regardless of
+    // their photo delta - the photo-id trap (plan.md section 3.4).
+    assert.equal(result.confirmed.length, 3);
+  });
+
+  it('fewer button messages than links leaves the unmatched ones pending and unrecorded', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const onlyTwo = urls.slice(0, 2);
+    const incoming = [[]];
+    for (let i = 0; i <= lib.BUTTON_WAIT_ROUNDS; i++) incoming.push(repliesFor(onlyTwo, 1000));
+    const fake = fakeClient({ incoming, press: onlyTwo.map(() => ({ text: 'ok' })) });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.confirmed.length, 2);
+    assert.equal(result.pending.length, 1);
+    assert.deepEqual(result.unmatched, [urls[2]]);
+  });
+
+  it('a button message that arrives late is found on a later wait round', async () => {
+    const manifest = fakeManifest(0); // just the root, 1 url
+    const rootUrl = manifest.site;
+    const fake = fakeClient({
+      incoming: [
+        [], // phase 1 scan
+        [summaryMsg(1000)], // round 0: summary only, no button yet
+        repliesFor([rootUrl], 1000) // round 1: the button has arrived
+      ],
+      press: [{ text: 'ok' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.confirmed.length, 1);
+    assert.equal(result.unmatched.length, 0);
+  });
+
+  it('phase 1 presses a button message found in the scan and sends nothing for that URL', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const residueUrl = urls[1];
+    const others = urls.filter((u) => u !== residueUrl);
+    const fake = fakeClient({
+      incoming: [[buttonMsg(9999, residueUrl, 'before')], repliesFor(others, 1000)],
+      press: [{ text: 'ok' }, { text: 'ok' }, { text: 'ok' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.confirmed.length, 3);
+    assert.equal(fake.sent.length, 1);
+    assert.ok(!fake.sent[0].text.includes(residueUrl));
+  });
+
+  it('--limit 0 still runs phase 1 (a free press, no new send)', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const residueUrl = urls[0];
+    const fake = fakeClient({
+      incoming: [[buttonMsg(9999, residueUrl, 'before')]],
+      press: [{ text: 'ok' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full', limit: 0 }, deps);
+    assert.equal(fake.sent.length, 0);
+    assert.equal(result.confirmed.length, 1);
+    assert.equal(result.pending.length, urls.length - 1);
+  });
+
+  it('the deadline stops between two presses, with the confirmed ones recorded', async () => {
+    const manifest = fakeManifest(15); // 16 urls -> batches of 10, 6
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const b0 = batches[0];
+    const fake = fakeClient({
+      incoming: [[], repliesFor(b0, 1000)],
+      press: b0.map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    // clock-driven `now` (baseDeps default): deadline = 4500ms. The send's
+    // pace (4000ms, random()=>0) leaves it open; the first press's pace
+    // (1000ms) pushes the clock to 5000ms, past the deadline, so the second
+    // press in the batch never starts.
+    const result = await runRefresh({ mode: 'full', budgetMinutes: 4500 / 60000 }, deps);
+    assert.ok(result.stopped);
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.confirmed.length, 1);
+    assert.ok(result.confirmed.length < b0.length);
+  });
+
+  it('a flood wait that would end past the deadline is not started', async () => {
     class FloodWaitError extends Error {
       constructor(s) {
         super('flood');
@@ -447,58 +848,23 @@ describe('runRefresh', () => {
       }
     }
     const manifest = fakeManifest(3);
-    const fake = fakeClient([{ throw: new FloodWaitError(5) }, { ok: true }]);
+    const fake = fakeClient({ send: [{ throw: new FloodWaitError(500) }], incoming: [[]] });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
-    const result = await runRefresh({ mode: 'full' }, deps);
-    assert.equal(fake.sent.length, 1);
-    assert.equal(result.floodWaits, 1);
-    assert.equal(result.sent.length, Object.keys(manifest.urls).length);
-  });
-
-  it('stops on PEER_FLOOD, green, with everything sent so far recorded', async () => {
-    class PeerFloodError extends Error {}
-    const manifest = fakeManifest(25); // 3 batches
-    const fake = fakeClient([{ ok: true }, { ok: true }, { throw: new PeerFloodError() }]);
-    const deps = baseDeps(manifest, { clientFactory: fake.client });
-    const result = await runRefresh({ mode: 'full' }, deps);
+    const result = await runRefresh({ mode: 'full', budgetMinutes: 1 }, deps); // deadline = 60000ms
     assert.ok(result.stopped);
+    assert.match(result.stopped, /flood wait of 502s would exceed the budget/);
     assert.equal(result.exitCode, 0);
-    assert.equal(result.sent.length, 20);
-    assert.equal(result.pending.length, Object.keys(manifest.urls).length - 20);
-    assert.ok(fake.closed.value);
-  });
-
-  it('is fatal (exit 2) on a dead credential, stopping the run', async () => {
-    class AuthKeyUnregisteredError extends Error {}
-    const manifest = fakeManifest(5);
-    const fake = fakeClient([{ throw: new AuthKeyUnregisteredError() }]);
-    const deps = baseDeps(manifest, { clientFactory: fake.client });
-    const result = await runRefresh({ mode: 'full' }, deps);
-    assert.equal(result.exitCode, 2);
-    assert.equal(result.sent.length, 0);
-  });
-
-  it('stops cleanly when the time budget runs out', async () => {
-    const manifest = fakeManifest(25); // 3 batches
-    const fake = fakeClient([{ ok: true }, { ok: true }, { ok: true }]);
-    let calls = 0;
-    const deps = baseDeps(manifest, {
-      clientFactory: fake.client,
-      now: () => {
-        calls++;
-        return calls <= 2 ? 0 : 100 * 60000;
-      }
-    });
-    const result = await runRefresh({ mode: 'full', budgetMinutes: 1 }, deps);
-    assert.ok(result.stopped);
-    assert.equal(result.exitCode, 0);
-    assert.ok(result.sent.length < Object.keys(manifest.urls).length);
+    assert.equal(fake.sent.length, 0);
   });
 
   it('excludes not-live urls from sending and reports them as pending', async () => {
-    const manifest = fakeManifest(5);
+    const manifest = fakeManifest(5); // 6 urls
     const notLiveUrl = manifest.site + 'i/r0.html';
-    const fake = fakeClient([{ ok: true }]);
+    const readyUrls = Object.keys(manifest.urls).filter((u) => u !== notLiveUrl);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(readyUrls, 1000)],
+      press: readyUrls.map(() => ({ text: 'ok' }))
+    });
     const deps = baseDeps(manifest, {
       clientFactory: fake.client,
       verify: async (picked) => ({
@@ -509,12 +875,13 @@ describe('runRefresh', () => {
     const result = await runRefresh({ mode: 'full' }, deps);
     assert.deepEqual(result.notLive, [notLiveUrl]);
     assert.ok(result.pending.includes(notLiveUrl));
-    assert.ok(!result.sent.includes(notLiveUrl));
+    assert.ok(!result.confirmed.includes(notLiveUrl));
   });
 
   it('--no-verify skips the live check entirely', async () => {
     const manifest = fakeManifest(3);
-    const fake = fakeClient([{ ok: true }]);
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({ incoming: [[], repliesFor(urls, 1000)], press: urls.map(() => ({ text: 'ok' })) });
     let verifyCalled = false;
     const deps = baseDeps(manifest, {
       clientFactory: fake.client,
@@ -525,23 +892,33 @@ describe('runRefresh', () => {
     });
     const result = await runRefresh({ mode: 'full', noVerify: true }, deps);
     assert.equal(verifyCalled, false);
-    assert.equal(result.sent.length, Object.keys(manifest.urls).length);
+    assert.equal(result.confirmed.length, urls.length);
   });
 
-  it('writes a --result entry alongside state after each message', async () => {
+  it('writes a --result entry alongside state after each batch', async () => {
     const manifest = fakeManifest(3);
-    const fake = fakeClient([{ ok: true }]);
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({ incoming: [[], repliesFor(urls, 1000)], press: urls.map(() => ({ text: 'ok' })) });
     const deps = baseDeps(manifest, { clientFactory: fake.client, withResult: true });
     await runRefresh({ mode: 'full' }, deps);
     assert.equal(deps.results.length, 1);
-    assert.equal(Object.keys(deps.results[0].urls).length, Object.keys(manifest.urls).length);
+    assert.equal(Object.keys(deps.results[0].urls).length, urls.length);
   });
 
-  it('the summary numbers always add up to the stale count', async () => {
+  it('confirmed and pending always add up to the stale count', async () => {
     const manifest = fakeManifest(37); // 38 urls -> 4 batches
-    const fake = fakeClient([{ ok: true }, { ok: true }, { ok: true }, { ok: true }]);
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const incoming = [[]];
+    const press = [];
+    let baseId = 1000;
+    for (const b of batches) {
+      incoming.push(repliesFor(b, baseId));
+      baseId += b.length + 100;
+      b.forEach(() => press.push({ text: 'ok' }));
+    }
+    const fake = fakeClient({ incoming, press });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
-    assert.equal(result.sent.length + result.pending.length, Object.keys(manifest.urls).length);
+    assert.equal(result.confirmed.length + result.pending.length, Object.keys(manifest.urls).length);
   });
 });

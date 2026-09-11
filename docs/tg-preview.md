@@ -3,25 +3,31 @@
 Telegram caches a link's unfurl preview - title, description, picture - keyed
 on the URL, with no TTL, and ignores everything the origin serves: a changed
 `Cache-Control`, a changed `og:image` byte, a redeploy. Nothing served from
-this site can invalidate that cache; the only way to change it is to ask
-`@WebpageBot` to refresh the URL. Three artwork commits
+this site can invalidate that cache; the only way to change it is to send the
+URL to `@WebpageBot` **and press its "Update with content" button**. A plain
+send alone only refreshes the page's title and description - it keeps the
+cached picture whenever `og:image` still points at the same address, which is
+exactly this site's case, because three artwork commits
 (`8e7fed1`, `ce0c414`, `37ecc8d`) rewrote `og/<id>.jpg` bytes under unchanged
-URLs, which is exactly the case Telegram's cache never notices - see
+URLs. Only the button forces Telegram to re-download the image - see
 `docs/specs/META.md` section 7 for the durable rule.
 
-**A refresh repairs the existing backlog.** Asking `@WebpageBot` to refresh a
-URL updates the preview in every message that already carries that link, not
-only in links shared afterwards - the owner has done this by hand and watched
-already-posted messages change. Some published write-ups claim a refresh only
-helps future shares; that claim does not hold for this site and is not
-repeated here.
+**A refresh repairs the existing backlog.** Sending a URL to `@WebpageBot` and
+pressing "Update with content" on its reply updates the preview in every
+message that already carries that link, not only in links shared afterwards -
+the owner has done this by hand and watched already-posted messages change.
+Some published write-ups claim a refresh only helps future shares; that claim
+does not hold for this site and is not repeated here.
 
 `tools/tg-preview/` is the tool that does this at scale: it derives every
 share URL from `data.js`, fingerprints what Telegram would see for each one,
-keeps a committed log (`tools/tg-preview/state.json`) of what was last sent,
-and sends only what changed - in batches, paced, resumable after a crash or a
-flood wait. `.github/workflows/previews.yml` runs it after every deploy that
-reaches `main`; the same script runs by hand from a developer machine.
+sends the stale ones to `@WebpageBot` in batches, waits for the bot's
+one-message-per-link replies, presses "Update with content" on each, and
+records a URL into the committed log (`tools/tg-preview/state.json`) only
+once that press is acknowledged - paced on both the send and the press axis,
+resumable after a crash or a flood wait on either.
+`.github/workflows/previews.yml` runs it after every deploy that reaches
+`main`; the same script runs by hand from a developer machine.
 
 There is no bot-token path: `@WebpageBot` is a Telegram bot, and bots cannot
 message other bots. Every automation route here is MTProto acting as a user
@@ -108,38 +114,52 @@ the account is allowed to talk to it.
 **E. Dry runs (no Telegram involved).**
 
 1. `node tools/tg-preview/run.mjs --dry-run --mode full` - expect
-   `1062 urls, 107 messages`, and the live check finding all of them ready
-   (the site must be deployed at the commit you are on; otherwise you will
-   see some reported not live, which is the check working, not a bug).
+   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses`, and the
+   live check finding all of them ready (the site must be deployed at the
+   commit you are on; otherwise you will see some reported not live, which
+   is the check working, not a bug).
 2. `node tools/tg-preview/run.mjs --dry-run --only w76` - one URL, one
-   message.
+   message, one press.
 
-**F. The first real message.**
+**F. The residue check - the first run of the fixed tool.**
 
-1. `node tools/tg-preview/run.mjs --only w76`
-2. Open the throwaway account's chat with `@WebpageBot`: the message with
-   the link and the bot's reply should be there; the tool logged the reply
-   too.
+1. `node tools/tg-preview/run.mjs --only cc12,cc24,cc38`. These three were
+   sent by an earlier probe of the unfixed tool and never pressed; their
+   button messages are already sitting in the chat. Expect the log to show
+   phase 1 pressing three buttons and phase 2 sending **nothing**, and the
+   summary `refreshed 3, pending 0` / `pressed 3 (photo changed 3, same 0,
+   none 0)`. `changed 3` is the expected result because all three pictures
+   are known stale; `same` on any of them is worth reporting before going on.
+2. Open the throwaway account's chat with `@WebpageBot`: nothing new was
+   sent; the three button messages now show the new pictures.
 3. In Saved Messages (any account), paste
-   `https://artex-x.github.io/daggerheart-loot/i/w76.html` and compare the
-   preview picture with `https://artex-x.github.io/daggerheart-loot/og/`
-   plus that record's image name. Same picture = the refresh works.
-4. **Regression check:** find an old message that already contained the
-   `w76` link (or any link refreshed here) and confirm its preview changed
-   too - that is the whole reason the first full reindex below is worth its
-   twelve minutes. If it did not change, stop and report that; it would mean
-   this page's opening claim no longer holds.
-5. `git status` shows `tools/tg-preview/state.json` with one entry. Keep it.
+   `https://artex-x.github.io/daggerheart-loot/i/cc12.html` and compare the
+   preview picture with the live `og/` image for that record. Same picture =
+   the press works through the tool, not only by hand.
+4. **Regression check:** find an already-posted message carrying one of
+   those three links and confirm its preview changed too. If it did not,
+   stop and report that; it would mean this page's opening claim no longer
+   holds.
+5. `git status` shows `tools/tg-preview/state.json` with four entries (one
+   from an earlier hand press, plus these three). Keep it.
 
 **G. The full reindex.**
 
-1. `node tools/tg-preview/run.mjs --mode full` - about 12 minutes if
-   Telegram never says wait; the log shows every batch, every reply and
-   every flood wait. If it stops with a `PeerFloodError`, the account is
-   limited: wait a day and run the same command again - it resumes.
-2. When it prints `pending 0`:
+1. Run it in chunks, locally: `node tools/tg-preview/run.mjs --mode full
+   --limit 10` sends 100 URLs and presses 100 buttons in about four minutes;
+   repeat it, spread across the day, until it prints `pending 0`. Each run is
+   resumable: it only sends what is not yet confirmed and presses anything
+   already waiting in the chat. If a run stops with `PeerFloodError`, the
+   account is limited: stop for the day. One unchunked run is about 40
+   minutes (up from 12, now that every URL also costs a press) and is fine on
+   a healthier account.
+2. Read the `photo changed` count each time. On this reindex it should be
+   the large majority, because most cached photos are known stale; a chunk
+   reporting mostly `same` means spot-check a few of its links by pasting
+   before trusting it, and report it.
+3. When `pending 0`:
    `git add tools/tg-preview/state.json && git commit -m "chore(tg-preview): record the first full reindex"`
-   and push. From here, CI only ever sends what changed.
+   and push. From here, CI only ever sends and presses what changed.
 
 **H. Repository secrets.** GitHub -> the repository -> Settings -> Secrets
 and variables -> Actions -> New repository secret, three times, the same
@@ -165,21 +185,28 @@ the job then exits 0 with a notice.
   root. Combine with `--dry-run` for a one-URL preview, or without it to
   refresh one thing by hand.
 - `--limit N` sends at most N messages, then stops (exit 0) with the rest
-  left pending for the next run.
-- The summary line is `refreshed N, pending M`. `pending` covers everything
-  not sent this run - not yet live on the CDN, past `--limit`, or the run
-  stopped early - and a GitHub Actions run additionally prints
-  `::warning::` when it is above zero. Only a dead or missing credential
-  (exit 2) or a crash (exit 1) turns the job red; Telegram-side limits and a
-  budget stop are green with a recorded backlog, because the site itself is
-  already live and a red job would say something false about it.
+  left pending for the next run. `--limit` counts sends only, never phase 1's
+  presses (below): `--limit 0` is a press-only run - nothing new is sent, but
+  any button message already waiting in the chat still gets pressed.
+- The summary is two lines: `refreshed N, pending M` (`N` is how many URLs
+  had their "Update with content" press acknowledged - not how many were
+  merely sent), followed by `pressed P (photo changed C, same S, none Z)`.
+  `pending` covers everything not confirmed this run - not yet live on the
+  CDN, past `--limit`, no button message ever arrived, the press went
+  unanswered with no photo change, or the run stopped early - and a GitHub
+  Actions run additionally prints `::warning::` when it is above zero.
+- What turns the CI job red: a crash or a dead/missing credential (`Refresh`
+  exiting 1 or 2), a failed `npm audit --audit-level=high`, or a failed state
+  push after three retries. A Telegram-side stop (`PeerFloodError`, a budget
+  stop) is green with a recorded backlog, because the site itself is already
+  live and a red job would say something false about it.
 - `--mode full` ignores the committed state when deciding what is stale (it
   still records into it): the way to force a full reindex without touching
   the state file.
 - Deleting `tools/tg-preview/state.json` has the same effect as `--mode
   full` on the next run, but starting cold: use it only if the file's
   content is not trusted. It is otherwise the log of what has actually been
-  sent, not a cache to casually clear.
+  confirmed refreshed, not a cache to casually clear.
 - `--no-verify` skips the live-CDN check. Use it only when there is no
   network path to Pages from where the tool is running, or right after
   confirming by hand that a deploy has landed; skipping it risks refreshing
@@ -201,18 +228,42 @@ this one.
 
 ## Rate limiting and resumability
 
-`tools/tg-preview/lib.mjs` sends `PER_MESSAGE` (10, the bot's documented
-bulk figure) URLs per message, paced 4-6 seconds apart with the bot's reply
-wait folded into that pace, and rests 30 seconds every 25 messages as
-insurance against limits Telegram has not documented. A `FLOOD_WAIT` or
-`SLOW_MODE_WAIT` under the configured `--max-wait` (600 seconds by default)
-is slept through and the same message resent; a bigger one stops the run. A
-`PeerFloodError` (the account is rate-limited for the day) also stops the
-run, cleanly. Either way the run exits green: the committed state is written
-after every accepted message, so a crash, a stop, or the next scheduled run
-picks up exactly what is still stale - there is no separate backlog file,
-because the backlog is simply whatever the manifest says and the state does
-not.
+The bot answers one send with one summary message plus **one button message
+per link**, so the run has two axes with independent pacing: sends and
+presses. `tools/tg-preview/lib.mjs` sends `PER_MESSAGE` (10, the bot's
+documented bulk figure) URLs per message, paced 4-6 seconds apart with the
+wait for the bot's button messages folded into that pace, and rests 30
+seconds every 25 messages as insurance against limits Telegram has not
+documented. Presses are paced separately, 1-2 seconds apart, and never
+rested - they are a different RPC method (`messages.getBotCallbackAnswer`),
+so a send-axis rest is not assumed to apply to them. A full reindex is
+therefore about 40 minutes end to end (107 sends plus 1062 presses), up from
+the 12 minutes a send-only pass would take.
+
+A `FLOOD_WAIT` or `SLOW_MODE_WAIT` under the configured `--max-wait` (600
+seconds by default) is slept through and the same send or press retried; a
+bigger one stops the run, and so does a wait that would end past
+`--budget-minutes`'s deadline - that deadline is checked before every single
+send and press, not once per batch, so a run never overshoots it by more
+than one wait. A `PeerFloodError` (the account is rate-limited for the day)
+also stops the run, cleanly, wherever it comes from. A press that Telegram
+never answers in time (`BOT_RESPONSE_TIMEOUT`) is neither of those: the tool
+re-fetches the button message and treats a changed photo as confirmation,
+since the press was still delivered.
+
+Either way the run exits green: the committed state is written after every
+batch's presses (and after phase 1, below), so a crash, a stop, or the next
+scheduled run picks up exactly what is still unconfirmed - there is no
+separate backlog file, because the backlog is simply whatever the manifest
+says and the state does not.
+
+**Phase 1 - a button message already in the chat is a free retry.** Pressing
+it needs no new link, so it costs nothing on the send axis. Every run starts
+by scanning the last 200 chat messages for button messages that answer a
+still-stale URL, and presses every one of them before sending anything new.
+This is what makes a crash mid-run, a budget stop, or an unanswered press
+cheap to recover from, and it is also how the residue from an earlier probe
+of the unfixed tool gets fixed with zero new sends (setup step F).
 
 ## Secrets
 
@@ -227,9 +278,11 @@ refuses it.
 
 `tools/tg-preview/lib.test.mjs` runs under `node --test` inside `npm run
 check` and covers every pure function: URL derivation, fingerprinting, what
-counts as stale, batching, the error-handling table, and the send loop
-itself against a fake client, a fake clock and a fake live check.
-`tools/tg-preview/client.mjs` (the real Telegram connection) and
+counts as stale, batching, the error-handling table (including an
+unanswered press), `matchButtons` (exact and trailing-slash matching, the
+bot's plain summary, duplicate button messages), and the two-phase
+send-and-press loop itself against a fake client, a fake clock and a fake
+live check. `tools/tg-preview/client.mjs` (the real Telegram connection) and
 `tools/tg-preview/live.mjs` (the real CDN fetch) have no unit test - they are
 thin, and the only real proof either works is Telegram and the CDN
 themselves, which is what step F above is for.

@@ -171,6 +171,82 @@ cannot start**, so there is no `state.json`, no first reindex, and no reason
 to create the three repository secrets yet. Nothing downstream is blocked by
 anything an agent can do.
 
+## Sending a link to @WebpageBot does NOT refresh the image (measured 2026-09-11)
+
+**This invalidates a core assumption of `plan.md` sections 3.4 and 5.5 and of
+B1's `client.mjs`/`run.mjs`.** Measured on the live bot with the owner's
+account, on `cc19`, after B1/R1/R2 were committed.
+
+What a plain send does, verified end to end:
+
+1. `run.mjs --only cc19` sent the link. The bot answered **"Link previews was
+   updated successfully. Check them out!"** and `run.mjs` printed
+   `refreshed 1, pending 0`.
+2. **The preview did not change** - on Telegram Desktop *or* on mobile, on a
+   fresh paste. Ruled out as causes: the live artefact (live `og/cc19.jpg` is
+   byte-identical to local, sha256
+   `0a99d061b3fbdd4e9c00d9b8e61db0cb8a628e7ff6de02cdd70dd32e021b3899`, 25401
+   bytes, HTTP 200) and a client-side cache.
+3. The bot's reply carries a `ReplyInlineMarkup` with **two** buttons:
+   `"Update preview again"` and `"Update with content"`.
+4. Pressing **"Update with content"** (one `messages.getBotCallbackAnswer`, no
+   new link sent) changed the webpage's **photo id** from
+   `5768401444200452036` to `5849419826076520298`, under an unchanged webpage
+   id `5240737599179400329`. The owner confirmed the preview then updated.
+
+**Conclusion: a plain send refreshes the page metadata but keeps the cached
+photo when `og:image` still points at the same URL.** That is exactly this
+site's case - the root cause of this whole task is `og/<id>.jpg` bytes
+changing under an unchanged address - so the plain send is precisely the
+operation that cannot fix it. `"Update with content"` forces the re-download.
+
+Consequences, all of which the next plan revision must address:
+
+- **B1's success accounting is wrong.** `run.mjs` counts a URL refreshed when
+  the message was sent and any reply arrived. The bot's "updated
+  successfully" is truthful about the metadata and silent about the photo, so
+  the tool cannot distinguish a real refresh from a no-op. A full run today
+  would write a `state.json` asserting all 1062 URLs are current while
+  changing nothing - strictly worse than no state at all, because the next
+  run would then skip them.
+- **The interaction is now two-phase**: send a batch, then find the bot's
+  button message(s) and press "Update with content" on each, then confirm
+  from the callback answer.
+- **The rate-limit maths in `plan.md` section 3.4 no longer holds.** 107
+  messages was the budget; each batch now also costs one or more callback
+  presses. How many per batch depends on whether the bot emits one button
+  message per link or one per message - **measured separately, see below.**
+- The click is cheap in one respect: it needs no new link, so re-pressing a
+  message already in the chat costs nothing against the send budget.
+
+### One button message per link - measured 2026-09-11
+
+Sent **one** message containing three links (`cc12`, `cc24`, `cc38`). The bot
+answered with **four** messages: one plain
+`"Link previews was updated successfully. Check them out!"` carrying no
+buttons, then **one message per link**, each with that link's own
+`ReplyInlineMarkup` of `["Update preview again", "Update with content"]`.
+
+So the click axis scales with **URLs, not messages**: a full reindex is 107
+sends **plus 1062 callback presses**. Batching ten per message still earns its
+keep on the send axis and must not be abandoned on these grounds alone.
+
+Two facts that make the implementation tractable:
+
+- Each button message carries `media.webpage.url`, so a button can be mapped
+  back to its URL exactly, with no ordering assumption.
+- The summary message is distinguishable: it has text but no `replyMarkup`.
+
+**Residue from this probe:** `cc12`, `cc24` and `cc38` were sent but **not**
+pressed, so they have refreshed metadata and stale photos, and they are not in
+`state.json` (the probe bypassed `run.mjs`). They need a normal pass once the
+tool is fixed. `state.json` currently holds **`cc19` only**, and that entry is
+honest - its button was pressed by hand.
+
+`docs/tg-preview.md` currently tells the owner that a send refreshes the
+preview. That is now known to be false and must be corrected wherever it
+appears.
+
 ## Scale, measured 2026-09-11 at `8b96ff4`
 
 | Thing | Count |

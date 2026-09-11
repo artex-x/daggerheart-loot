@@ -9,10 +9,12 @@
 */
 import { createHash } from 'node:crypto';
 
-// The bot's only documented bulk figure (context.md).
+// The bot's only documented bulk figure (context.md). The press cost is per
+// URL and identical at any batch size, so batching only shapes the send
+// axis - the largest documented batch is the fewest sends.
 export const PER_MESSAGE = 10;
-// Between messages; the wait for the bot's reply (section 5.5) is folded into
-// this, not added on top. [min, max) ms, jittered by `random()`.
+// Between messages; the wait for the bot's button messages (section 5.5) is
+// folded into this, not added on top. [min, max) ms, jittered by `random()`.
 export const PACE_MS = [4000, 6000];
 // Undocumented flood limits: a periodic pause is cheap insurance.
 export const REST_EVERY = 25;
@@ -28,6 +30,21 @@ export const NET_RETRY_MS = 10000;
 export const VERIFY_ROUNDS = 5;
 export const VERIFY_ROUND_MS = 60000;
 export const VERIFY_CONCURRENCY = 6;
+// Between callback presses - a different RPC method from sends, so never
+// rested on the send-axis clock; insurance on a days-old account.
+export const PRESS_PACE_MS = [1000, 2000];
+// Extra polls when fewer button messages than links have arrived yet - the
+// bot fetches every page before it can answer for it.
+export const BUTTON_WAIT_ROUNDS = 6;
+export const BUTTON_WAIT_MS = 5000;
+// `limit` when reading replies newer than the sent message; 11 are expected
+// per batch (one summary + one per link).
+export const BUTTON_FETCH = 50;
+// How many recent chat messages are read at run start to find pressable
+// button messages that need no new send (resumability, plan.md section 3.4).
+export const RECOVER_SCAN = 200;
+// Matched by exact button text - never parsed from the bot's prose.
+export const UPDATE_BUTTON = 'Update with content';
 
 function sha256(data) {
   return createHash('sha256').update(data).digest('hex');
@@ -170,6 +187,12 @@ export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
   if (name === 'PeerFloodError') {
     return { stop: true, reason: 'PeerFloodError: the account is limited for today' };
   }
+  // Telegram delivered the callback query but the bot did not answer inside
+  // its own window - neither a retry nor a stop; confirmation falls back to
+  // the photo check (plan.md section 3.4).
+  if (name === 'BotResponseTimeoutError' || (err && err.errorMessage === 'BOT_RESPONSE_TIMEOUT')) {
+    return { unanswered: true };
+  }
   if (FATAL_ERRORS.has(name)) {
     return { fatal: true, reason: name + ': the credential is dead' };
   }
@@ -235,9 +258,20 @@ export function parseArgs(argv) {
     } else if (a in FLAGS) {
       const key = FLAGS[a];
       const value = argv[++i];
-      if (key === 'limit' || key === 'maxWaitS' || key === 'budgetMinutes') opts[key] = Number(value);
-      else if (key === 'only') opts[key] = value.split(',').map((s) => s.trim()).filter(Boolean);
-      else opts[key] = value;
+      if (key === 'limit' || key === 'maxWaitS' || key === 'budgetMinutes') {
+        // A NaN here would silently mean "send nothing" or "no budget",
+        // both exit 0 - the same species of lie the state's evidence rule
+        // exists to remove, so a bad number is a thrown error, not a no-op.
+        const n = Number(value);
+        if (!Number.isFinite(n) || n < 0) {
+          throw new Error(a + ' must be a number, got ' + value);
+        }
+        opts[key] = n;
+      } else if (key === 'only') {
+        opts[key] = value.split(',').map((s) => s.trim()).filter(Boolean);
+      } else {
+        opts[key] = value;
+      }
     } else {
       throw new Error('unknown flag: ' + a);
     }
@@ -254,9 +288,56 @@ function idOf(url, site) {
   return m ? m[1] : null;
 }
 
-// The send loop: steps 4-10 of plan.md section 5.2. `deps.manifest` and
-// `deps.state` are already-built/already-read values (see run.mjs); the rest
-// are the seams that make this testable without a network or a clock.
+function stripSlash(u) {
+  return u.endsWith('/') ? u.slice(0, -1) : u;
+}
+
+function updateButtonData(m) {
+  const b = m.buttons.find((btn) => btn.text === UPDATE_BUTTON);
+  return b ? b.data : null;
+}
+
+// Matches the bot's button messages to the URLs a run cares about, by exact
+// `media.webpage.url` equality with one trailing-slash fallback - the root
+// is the only URL Telegram could plausibly canonicalise; nothing else is
+// normalised. Never matches by position or count. The newest (highest id)
+// message wins when several answer the same URL. A message with text but no
+// webpage media is the bot's plain summary, collected verbatim for logging,
+// never parsed for control flow (plan.md section 5.5).
+export function matchButtons(messages, urls) {
+  const byUrl = new Map();
+  const byStripped = new Map();
+  const summary = [];
+
+  for (const m of messages) {
+    const data = updateButtonData(m);
+    if (m.url === null || data === null) {
+      if (m.url === null && m.text) summary.push(m.text);
+      continue;
+    }
+    const existing = byUrl.get(m.url);
+    if (existing && existing.id >= m.id) continue;
+    const entry = { id: m.id, data, photoId: m.photoId };
+    byUrl.set(m.url, entry);
+    const stripped = stripSlash(m.url);
+    const existingS = byStripped.get(stripped);
+    if (!existingS || existingS.id < m.id) byStripped.set(stripped, entry);
+  }
+
+  const matched = {};
+  const unmatched = [];
+  for (const url of urls) {
+    const entry = byUrl.get(url) || byStripped.get(stripSlash(url));
+    if (entry) matched[url] = entry;
+    else unmatched.push(url);
+  }
+  return { matched, unmatched, summary };
+}
+
+// Phase 1 (recovery) then phase 2 (send-and-press) - plan.md section 5.2,
+// steps 4-13. `deps.manifest` and `deps.state` are already-built/already-read
+// values (see run.mjs); the rest are the seams that make this testable
+// without a network or a clock.
 export async function runRefresh(opts, deps) {
   const { mode, dryRun, limit, only, maxWaitS, noVerify, budgetMinutes } = opts;
   const { manifest, state, client, verify, sleep, now, random, writeState, writeResult, log } = deps;
@@ -267,9 +348,24 @@ export async function runRefresh(opts, deps) {
     todo = todo.filter((url) => wanted.has(idOf(url, manifest.site)));
   }
 
+  function baseResult() {
+    return {
+      sent: [],
+      pending: [],
+      notLive: [],
+      unmatched: [],
+      pressed: 0,
+      confirmed: [],
+      photo: { changed: 0, same: 0, none: 0 },
+      floodWaits: 0,
+      stopped: null,
+      exitCode: 0
+    };
+  }
+
   if (todo.length === 0) {
     log('nothing to refresh');
-    return { sent: [], pending: [], notLive: [], floodWaits: 0, stopped: null, exitCode: 0 };
+    return baseResult();
   }
 
   let ready = todo;
@@ -280,78 +376,271 @@ export async function runRefresh(opts, deps) {
     notLive = v.notLive;
   }
 
-  let batches = chunk(ready, PER_MESSAGE);
-  if (limit != null) batches = batches.slice(0, limit);
-
   if (dryRun) {
-    log(todo.length + ' urls, ' + batches.length + ' messages');
+    let batches = chunk(ready, PER_MESSAGE);
+    if (limit != null) batches = batches.slice(0, limit);
+    log(
+      todo.length +
+        ' urls stale, ' +
+        ready.length +
+        ' ready, up to ' +
+        batches.length +
+        ' messages, ' +
+        ready.length +
+        ' presses'
+    );
     batches.slice(0, 3).forEach((b, i) => log('batch ' + (i + 1) + ': ' + b.join(', ')));
     if (notLive.length) log('not live (' + notLive.length + '): ' + notLive.join(', '));
-    return { sent: [], pending: todo, notLive, floodWaits: 0, stopped: null, exitCode: 0 };
+    const result = baseResult();
+    result.pending = todo;
+    result.notLive = notLive;
+    return result;
   }
 
-  if (batches.length === 0) {
+  if (ready.length === 0) {
     log('nothing ready to send (' + notLive.length + ' not live)');
-    return { sent: [], pending: todo, notLive, floodWaits: 0, stopped: null, exitCode: 0 };
+    const result = baseResult();
+    result.pending = todo;
+    result.notLive = notLive;
+    return result;
   }
 
   const cx = await client();
 
-  const sent = [];
+  const deadline = budgetMinutes != null ? now() + budgetMinutes * 60000 : null;
   let floodWaits = 0;
   let stopped = null;
   let exitCode = 0;
-  const deadline = budgetMinutes != null ? now() + budgetMinutes * 60000 : null;
-  let sinceRest = 0;
 
-  batchLoop: for (const batch of batches) {
-    if (deadline != null && now() >= deadline) {
-      stopped = 'budget exhausted';
-      break;
-    }
-
-    let attempt = 0;
+  // The shared retry table (plan.md section 3.4): checked before every send
+  // and every press attempt, and before every wait a retry would start - a
+  // wait that would end past the deadline is refused rather than begun.
+  async function attempt(action) {
+    let n = 0;
     for (;;) {
+      if (deadline != null && now() >= deadline) {
+        return { stopped: 'budget exhausted' };
+      }
       try {
-        const sentAt = now();
-        await cx.send(batch.join('\n'));
-        const paceMs = PACE_MS[0] + random() * (PACE_MS[1] - PACE_MS[0]);
-        // The reply wait is folded into the pace, not added on top of it.
-        await sleep(paceMs);
-        const reply = await cx.lastReply(sentAt);
-        log('sent ' + batch.length + ' url(s); reply: ' + (reply || '(none)'));
-        sent.push(...batch);
-
-        // Carry forward whatever the state already had for records still in
-        // the manifest (a dropped record is silently left out here - section
-        // 5.4), then overwrite with the fresh fingerprint for everything
-        // sent so far this run.
-        const carried = {};
-        for (const url of Object.keys(state.urls || {})) {
-          if (url in manifest.urls) carried[url] = state.urls[url];
-        }
-        const nextUrls = sortedMap({ ...carried, ...pick(manifest.urls, sent) });
-        await writeState({ version: 1, site: manifest.site, urls: nextUrls });
-        if (writeResult) await writeResult({ urls: pick(manifest.urls, sent) });
-        break;
+        const value = await action();
+        return { value };
       } catch (err) {
-        const d = decide(err, { attempt, maxWaitS });
+        const d = decide(err, { attempt: n, maxWaitS });
+        if (d.unanswered) return { unanswered: true };
         if (d.retry) {
           if (WAIT_ERRORS.has(err && err.constructor && err.constructor.name)) floodWaits++;
-          attempt++;
+          if (deadline != null && now() + d.waitMs > deadline) {
+            return { stopped: 'flood wait of ' + Math.round(d.waitMs / 1000) + 's would exceed the budget' };
+          }
+          n++;
           await sleep(d.waitMs);
           continue;
         }
-        if (d.fatal) {
-          log('fatal: ' + d.reason);
-          stopped = d.reason;
-          exitCode = 2;
-          break batchLoop;
-        }
-        log('stopping: ' + d.reason);
-        stopped = d.reason;
-        break batchLoop;
+        if (d.fatal) return { stopped: d.reason, exitCode: 2 };
+        return { stopped: d.reason };
       }
+    }
+  }
+
+  async function pressOne(entry) {
+    const r = await attempt(() => cx.press(entry.id, entry.data));
+    if (r.stopped) return r;
+    if (r.unanswered) return { unanswered: true };
+    return { answered: true, text: r.value && r.value.text };
+  }
+
+  // Presses `urlsInOrder`'s matches, in that order, paced by PRESS_PACE_MS
+  // and never rested (presses are a different method from sends); re-fetches
+  // once by id afterwards for the photo delta, which gates confirmation only
+  // in the unanswered case and is telemetry otherwise - the photo-id trap:
+  // an unchanged photo is not evidence of failure when the press was
+  // acknowledged (plan.md section 3.4).
+  async function pressGroup(urlsInOrder, matched) {
+    const pressedList = [];
+    let stop = null;
+    let code = 0;
+
+    for (const url of urlsInOrder) {
+      const entry = matched[url];
+      if (!entry) continue;
+      const r = await pressOne(entry);
+      if (r.stopped) {
+        stop = r.stopped;
+        code = r.exitCode || 0;
+        break;
+      }
+      pressedList.push({ url, id: entry.id, photoBefore: entry.photoId, answered: !!r.answered });
+      const pace = PRESS_PACE_MS[0] + random() * (PRESS_PACE_MS[1] - PRESS_PACE_MS[0]);
+      await sleep(pace);
+    }
+
+    const ids = pressedList.map((p) => p.id);
+    const refetched = ids.length ? await cx.byIds(ids) : [];
+    const photoAfter = new Map(refetched.map((m) => [m.id, m.photoId]));
+
+    const confirmed = [];
+    const photo = { changed: 0, same: 0, none: 0 };
+    for (const p of pressedList) {
+      const after = photoAfter.has(p.id) ? photoAfter.get(p.id) : undefined;
+      const delta = after === undefined ? 'same' : after == null ? 'none' : after !== p.photoBefore ? 'changed' : 'same';
+      photo[delta]++;
+      if (p.answered || delta === 'changed') confirmed.push(p.url);
+    }
+
+    return { confirmed, photo, pressedCount: pressedList.length, stopped: stop, exitCode: code };
+  }
+
+  // Carry-forward write of state and --result: everything the state already
+  // had for records still in the manifest, overwritten with the fresh
+  // fingerprint for every URL confirmed so far this run (plan.md 5.4).
+  async function record(confirmedSoFar) {
+    const carried = {};
+    for (const url of Object.keys(state.urls || {})) {
+      if (url in manifest.urls) carried[url] = state.urls[url];
+    }
+    const nextUrls = sortedMap({ ...carried, ...pick(manifest.urls, confirmedSoFar) });
+    await writeState({ version: 1, site: manifest.site, urls: nextUrls });
+    if (writeResult) await writeResult({ urls: pick(manifest.urls, confirmedSoFar) });
+  }
+
+  const sent = [];
+  const confirmedAll = [];
+  const unmatchedAll = [];
+  const photoTotals = { changed: 0, same: 0, none: 0 };
+  let pressedTotal = 0;
+
+  function addPhoto(p) {
+    photoTotals.changed += p.changed;
+    photoTotals.same += p.same;
+    photoTotals.none += p.none;
+  }
+
+  function finish() {
+    const confirmedSet = new Set(confirmedAll);
+    const pending = todo.filter((u) => !confirmedSet.has(u));
+    log('refreshed ' + confirmedAll.length + ', pending ' + pending.length);
+    return {
+      sent,
+      pending,
+      notLive,
+      unmatched: unmatchedAll,
+      pressed: pressedTotal,
+      confirmed: confirmedAll,
+      photo: photoTotals,
+      floodWaits,
+      stopped,
+      exitCode
+    };
+  }
+
+  // Phase 1 - recovery: a button message already in the chat is a free
+  // retry (plan.md section 3.4). Every URL matched here - confirmed or not -
+  // is removed from `ready` so phase 2 never re-sends it in the same run.
+  const scan = await cx.incoming({ limit: RECOVER_SCAN });
+  const recovery = matchButtons(scan, ready);
+  const recoveredUrls = Object.keys(recovery.matched);
+  if (recoveredUrls.length) {
+    const g = await pressGroup(recoveredUrls, recovery.matched);
+    pressedTotal += g.pressedCount;
+    confirmedAll.push(...g.confirmed);
+    addPhoto(g.photo);
+    if (g.stopped) {
+      stopped = g.stopped;
+      exitCode = g.exitCode;
+    }
+    log(
+      'phase 1: pressed ' +
+        g.pressedCount +
+        ', confirmed ' +
+        g.confirmed.length +
+        ' (photo changed ' +
+        g.photo.changed +
+        ', same ' +
+        g.photo.same +
+        ', none ' +
+        g.photo.none +
+        ')'
+    );
+    await record(confirmedAll);
+  }
+  const recoveredSet = new Set(recoveredUrls);
+  ready = ready.filter((u) => !recoveredSet.has(u));
+
+  if (stopped) {
+    await cx.close();
+    return finish();
+  }
+
+  let batches = chunk(ready, PER_MESSAGE);
+  if (limit != null) batches = batches.slice(0, limit);
+
+  let sinceRest = 0;
+
+  batchLoop: for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i];
+
+    const sendOutcome = await attempt(() => cx.send(batch.join('\n')));
+    if (sendOutcome.stopped) {
+      stopped = sendOutcome.stopped;
+      exitCode = sendOutcome.exitCode || 0;
+      break batchLoop;
+    }
+    const sentId = sendOutcome.value.id;
+    sent.push(...batch);
+
+    const paceMs = PACE_MS[0] + random() * (PACE_MS[1] - PACE_MS[0]);
+    // The reply wait is folded into the pace, not added on top of it.
+    await sleep(paceMs);
+
+    let replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH });
+    let m = matchButtons(replies, batch);
+    let rounds = 0;
+    while (m.unmatched.length && rounds < BUTTON_WAIT_ROUNDS) {
+      rounds++;
+      await sleep(BUTTON_WAIT_MS);
+      replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH });
+      m = matchButtons(replies, batch);
+    }
+    if (m.summary.length) log('bot: ' + m.summary[m.summary.length - 1]);
+    if (m.unmatched.length) {
+      unmatchedAll.push(...m.unmatched);
+      m.unmatched.forEach((u) => log('no button message for ' + u));
+    }
+
+    const matchedUrls = batch.filter((u) => m.matched[u]);
+    const g = await pressGroup(matchedUrls, m.matched);
+    pressedTotal += g.pressedCount;
+    confirmedAll.push(...g.confirmed);
+    addPhoto(g.photo);
+
+    await record(confirmedAll);
+
+    log(
+      'batch ' +
+        (i + 1) +
+        '/' +
+        batches.length +
+        ': sent ' +
+        batch.length +
+        ', buttons ' +
+        matchedUrls.length +
+        ', pressed ' +
+        g.pressedCount +
+        ', confirmed ' +
+        g.confirmed.length +
+        ' (photo changed ' +
+        g.photo.changed +
+        ', same ' +
+        g.photo.same +
+        ', none ' +
+        g.photo.none +
+        ')'
+    );
+
+    if (g.stopped) {
+      stopped = g.stopped;
+      exitCode = g.exitCode;
+      break batchLoop;
     }
 
     sinceRest++;
@@ -362,9 +651,5 @@ export async function runRefresh(opts, deps) {
   }
 
   await cx.close();
-
-  const sentSet = new Set(sent);
-  const pending = todo.filter((u) => !sentSet.has(u));
-  log('refreshed ' + sent.length + ', pending ' + pending.length);
-  return { sent, pending, notLive, floodWaits, stopped, exitCode };
+  return finish();
 }

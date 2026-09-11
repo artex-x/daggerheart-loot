@@ -80,4 +80,7 @@ URL (an artwork refresh, for instance) therefore needs a refresh pushed to
 `@WebpageBot`, or every messenger preview of that record stays on the old
 picture indefinitely. Nothing at the app level can fix this; see
 `docs/tg-preview.md` for the tool that does it and why the fix has to be
-pushed rather than served.
+pushed rather than served. A plain send to `@WebpageBot` only refreshes the
+page's title and description and keeps the cached picture when `og:image`
+still points at the same URL - this site's exact case; only the bot's
+"Update with content" button re-downloads the image.

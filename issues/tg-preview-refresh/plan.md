@@ -6,12 +6,31 @@ actually changed. One mechanism, two callers (CI and the owner's machine).
 Local-only task id; no GitHub issue. Read `context.md` first, then this file,
 then `handoff.md`.
 
-Planner pass 2026-09-11. The four owner decisions in `context.md` (task id,
-both callers, a dedicated throwaway account, survive issue 47's cut-over) are
-taken as settled and are not re-opened here. Two questions need the owner
-before implementation starts: section 11.
+## Revision history - read this first
+
+- **Pass 1, 2026-09-11.** The original design (sections 1-13 below). Two
+  owner questions; both answered before dispatch (`context.md`, decisions
+  5 and 6). B1, R1 and R2 implemented it and were reviewed and approved.
+- **Pass 3, 2026-09-11 (this revision).** O1's first real run **disproved
+  the assumption under section 3.4 and 5.5 and under B1's send loop**: a
+  plain send to `@WebpageBot` refreshes a page's title and description and
+  **keeps the cached photo** when `og:image` still points at the same URL -
+  which is this site's exact case. Only pressing the bot's **"Update with
+  content"** inline button re-downloads the image. Everything measured is in
+  `context.md`, "Sending a link to @WebpageBot does NOT refresh the image";
+  nothing there is re-derived or re-tested here.
+
+  How to read the rest of this file: every section carries one of these
+  markers at its top. **Stands** - unchanged and still true. **Revised** -
+  rewritten in this pass; the superseded text is summarised in a
+  `> Superseded:` note and is readable in full at commit `0ab04eb`.
+  Sections without a marker are pass-3 additions.
+
+The six owner decisions in `context.md` stand and are not re-opened here.
 
 ## 1. Objective and current state
+
+**Stands**, with one addition at the end.
 
 `og/<id>.jpg` bytes were rewritten under unchanged URLs three times
 (`8e7fed1`, `ce0c414`, `37ecc8d`). Telegram keys its preview cache on the
@@ -38,948 +57,932 @@ What exists today and is reused as-is:
 - Node 24 (`.nvmrc`), which has `fetch`, `node:test`, `node --test` and
   `process.loadEnvFile` built in - no new dependency for any of those.
 
+**Added in pass 3 - what the bot actually does (measured, `context.md`).**
+One outgoing message with N links makes the bot answer with **N + 1
+messages**: one plain summary (`"Link previews was updated successfully.
+Check them out!"`, text only, no `replyMarkup`, no webpage media) and then
+**one message per link**, each carrying that link as `media.webpage.url` and
+an inline keyboard of two callback buttons, `"Update preview again"` and
+`"Update with content"`. The send alone updates the page's metadata and keeps
+the cached photo; pressing `"Update with content"` (one
+`messages.getBotCallbackAnswer`, no new link) changed the webpage's photo id
+under an unchanged webpage id, and the owner saw the preview update. So the
+click axis scales with **URLs**, not messages: a full reindex is 107 sends
+**plus 1062 presses**.
+
 ## 2. Scope and non-goals
+
+**Revised** - the fourth non-goal changed.
 
 In scope: a repo tool under `tools/tg-preview/` that derives the URL set from
 `data.js`, fingerprints what Telegram would see, keeps a committed state file
-of what was last refreshed, sends the stale URLs to `@WebpageBot` with pacing
-and flood handling, and resumes after a crash; a second workflow file that
-runs it after every successful deploy and on demand; the owner's runbook.
+of what was last **confirmed refreshed**, sends the stale URLs to
+`@WebpageBot` in batches, **presses "Update with content" on every button
+message the bot produces**, records a URL only when that press is confirmed,
+paces both axes and handles flood limits on both, and resumes after a crash;
+a second workflow file that runs it after every successful deploy and on
+demand; the owner's runbook.
 
 Out of scope, on purpose:
 
 - Any change to `i/<id>.html`, `og/*.jpg`, `noindex`, `robots.txt`,
   `llms.txt`, `docs/fixtures/` or `tests/contracts.js`. The public contract
-  does not move.
+  does not move. See "Cache-busting the `og:image` URL - not taken" in
+  section 3.4 for why this stays true even now.
 - A hosted service, a webhook, a backend (`META.md` section 3).
 - Other messengers (Discord, WhatsApp, Slack). Their caches differ and none
   has a refresh bot; not this task.
-- Parsing `@WebpageBot`'s replies for control flow. The vocabulary is
-  unverified; replies are logged verbatim (section 5.5) and nothing more.
-- Refreshing the previews of messages that were already posted, if Telegram
-  does not do that - section 11, Q1.
+- Parsing the bot's **text** for control flow. The reply and callback-answer
+  vocabulary is still unverified beyond the one summary sentence; texts are
+  logged verbatim and never branched on. What the tool *does* read is the
+  bot's message **structure** - `media.webpage.url` and the callback buttons -
+  which is typed TL data, not prose.
 
-## 3. The eight decisions
+> Superseded: pass 1 also excluded "refreshing previews of already-posted
+> messages if Telegram does not do that" - answered by owner decision 6: it
+> does.
+
+## 3. The decisions
 
 ### 3.1 The client: `teleproto` from a repo script, not `WebpageBot-api`
 
-**Decision.** A Node script in `tools/tg-preview/` talks MTProto directly
-through **`teleproto`** (`npm view`: 1.229.0, modified 2026-08-25, MIT,
-engines node >= 18). It is the maintained fork of gramjs (`telegram`), which
-npm now marks *archived, development continues in teleproto*, with the same
-public surface: `TelegramClient`, `sessions.StringSession`,
-`client.start/connect/sendMessage/getMessages/getEntity`, `errors.RPCError`,
-`errors.FloodWaitError` (`.seconds`), `errors.PeerFloodError`,
-`errors.SessionRevokedError`, `errors.AuthKeyUnregisteredError`,
-`errors.SessionPasswordNeededError` - all verified by introspection on
-2026-09-11.
+**Stands.** `teleproto@1.229.0` in a nested package `tools/tg-preview/`,
+verified by introspection and by B1's install; `telegram@2.26.22` is the
+API-identical fallback. The rejections (`WebpageBot-api`, gramjs itself,
+`@mtcute/node`, `@mtproto/core`, TDLib) stand. Full text at `0ab04eb`.
 
-Measured in a scratchpad on this host (2026-09-11):
-
-| package | packages installed | `npm audit --audit-level=high` | native build | install |
-|---|---|---|---|---|
-| `teleproto@1.229.0` | 12 | 0 vulnerabilities | none | 2 s |
-| `telegram@2.26.22` (gramjs) | 46 | 0 vulnerabilities | `bufferutil`/`utf-8-validate` via prebuilds (no compile here) plus an `es5-ext` postinstall | 3 s |
-
-**Where it lives: a nested package `tools/tg-preview/package.json` with its
-own lockfile**, installed only by the refresh job (`npm ci` in that
-directory) and by the owner. Not a root `devDependency`, for two reasons:
-
-1. A high finding in an MTProto client would otherwise turn the site's
-   `audit` job red and block every deploy of a static site that does not
-   ship the client. The refresh job runs its own
-   `npm audit --audit-level=high` against the nested lockfile, so the
-   posture is the same, but a red there fails only the refresh.
-2. `npm ci` on every CI job and every developer machine should not grow by a
-   Telegram client nobody there uses.
-
-The app's bundle is untouched either way (nothing under `app/` imports it),
-so `npm run budget` is unaffected. `node_modules/` in `.gitignore` already
-matches the nested install. ESLint and Prettier both ignore `tools/**`, so
-the script is neither linted nor format-checked, same as every sibling in
-`tools/`.
-
-**Rejected: `my-telegram-bots/WebpageBot-api`.** It is a long-running Koa
-service with an HTTP shim (`POST 127.0.0.1:2344`), its own `npm run login`
-and its own session store. A CI step wants one process, one exit code and a
-summary; it would have to start the service, wait for the port, POST, poll,
-and kill it, and the service's dependency tree would sit outside every gate
-this repository has. It offers no batching, pacing, flood handling or
-resumability, which are the actual design problems at 1062 URLs. Everything
-it does for us is one `sendMessage` call.
-
-**Rejected: `telegram` (gramjs) itself** - archived upstream; four times the
-dependency count; two packages with install scripts. Same API, so the choice
-costs nothing if it ever has to be reversed.
-
-**Rejected: `@mtcute/node`** (`better-sqlite3` native dependency, wasm;
-heavier in CI) and **`@mtproto/core`** (low level: no `start()` login flow,
-no session string helper; the owner would hand-roll the auth flow).
-**Rejected: TDLib bindings** (a native binary per platform).
+One pass-3 addition: the button press uses `client.invoke(new
+Api.messages.GetBotCallbackAnswer(...))`, not `Message.click()`. `click()`
+swallows `BOT_RESPONSE_TIMEOUT` into `null` (read in
+`tl/custom/messageButton.js`), and the loop must tell an answered press from
+an unanswered one (section 3.4).
 
 ### 3.2 URL discovery: from `data.js`, through `tools/derived.js`
 
-```text
-urls(L) = [ SITE ]                                   // the root, og/_share.jpg
-        ++ everything(L).map(it => SITE + 'i/' + it.id + '.html')
-```
-
-`everything` and `SITE` are `tools/derived.js`'s own exports; nothing reads
-`i/`. Count at `8b96ff4`: 1062, and the unit test pins it against the real
-`data.js` the way `tests/derived.js` pins the catalogue.
-
-The root is in the set because a shared app link
-(`https://artex-x.github.io/daggerheart-loot/#/i/w76`) is, to Telegram, the
-root URL - fragments never reach the crawler - and its picture is
-`og/_share.jpg`.
-
-**After issue 47's cut-over.** The set depends on `data.js` and the site
-base only. The stub *content* (section 3.3) is rendered in memory through
-`tools/build-share-pages.js`'s exported `page(it)`, so it needs no `i/` on
-disk; if the generator moves into the Vite build at cut-over, the one
-`import` in `tools/tg-preview/manifest.mjs` moves with it and nothing else
-changes. `og/` is a source asset today (`vite.config.mts` links it into
-`dist/`); should it ever become a build output, `--assets <dir>` points the
-hasher at that directory instead of the repository root. Recorded for the
-issue 47 cut-over checklist in `handoff.md`, "Deferred".
+**Stands.** 1062 URLs, root first, from `everything(L)` and `SITE`; stub
+content rendered in memory by `page(it)`; cut-over seams are the two
+`require()`s in `manifest.mjs` and `--assets`.
 
 ### 3.3 Change detection: a committed fingerprint state, written by both callers
 
-**What is fingerprinted.** Telegram's preview is built from three things:
-`og:title`, `og:description`, `og:image` - and the *bytes* behind
-`og:image`, which is the whole root cause. So, per URL:
+**Stands**, with the meaning of one sentence sharpened.
 
-```text
-meta        = extractMeta(html)        // { title, description, image } from <meta property="og:...">
-imageSha    = sha256(bytes of og/<basename of meta.image>)
-fingerprint = sha256(JSON.stringify([meta.title, meta.description, meta.image, imageSha])) (hex)
-```
+Fingerprint per URL: `sha256([og:title, og:description, og:image, sha256(image bytes)])`.
+State at `tools/tg-preview/state.json`, committed on `main`, schema
+`version: 1`, `{ site, updatedAt, urls: { url: fingerprint } }`. Bootstrap,
+loss, deleted-record and two-writer rules unchanged; the rejected
+alternatives (git diff, Actions cache, Pages-published manifest, orphan ref)
+unchanged.
 
-For a stub, `html` is `page(it)` rendered in memory; for the root it is
-`index.html` read from disk. Everything outside those three tags - the
-stub's CSS, the redirect, the body - is deliberately ignored, so a generator
-edit that does not touch the preview refreshes nothing. Hashing the stub HTML
-alone is insufficient (`context.md`, root cause); hashing whole files would
-turn a CSS tweak into a 1062-URL reindex.
+The sharpened sentence: the state records the fingerprint *as last
+**confirmed** refreshed*, where confirmed is defined in section 3.4 - a sent
+message with a reply is **no longer** sufficient evidence. The schema does
+not change (still a fingerprint string per URL), so the one honest entry
+that exists today (`cc19`, whose button the owner pressed by hand) stays
+valid without migration.
 
-The same `fingerprint` function runs against **fetched** bytes in the live
-check (section 5.3), which is what makes "the CDN serves what I hashed"
-checkable with no second implementation.
+### 3.4 Rate limiting, confirmation and resumability - two axes
 
-**Where the state lives: `tools/tg-preview/state.json`, committed on
-`main`.**
+**Revised.**
 
-```json
-{
-  "version": 1,
-  "site": "https://artex-x.github.io/daggerheart-loot/",
-  "updatedAt": "2026-09-11T12:34:56Z",
-  "urls": {
-    "https://artex-x.github.io/daggerheart-loot/": "3f...",
-    "https://artex-x.github.io/daggerheart-loot/i/a1.html": "9c..."
-  }
-}
-```
+> Superseded: pass 1 sized the run at 107 messages, ~12 minutes, with a
+> URL counted as refreshed once its message was sent and any reply arrived,
+> and treated the bot's reply as an opaque string to log. All of that is
+> replaced below. The error table survives with one added row.
 
-Keys sorted, two-space JSON, trailing newline; ~120 KB at 1062 entries. It
-records the fingerprint *as last successfully sent to `@WebpageBot`*, not the
-fingerprint in the tree - that difference is what makes it a refresh log
-rather than a derived file.
+#### Constants
 
-- **Bootstrap.** No file, or a file whose `site` differs, means every URL is
-  stale. The first run is therefore a full reindex without a flag.
-- **Loss.** Deleting the file is the recovery path for "I do not trust the
-  state": the next run reindexes everything. `--mode full` does the same
-  without touching the file first.
-- **Who writes it.** A local run writes it through (after every sent
-  message - section 5.4). The CI job commits it back to `main` after the run
-  (section 3.5). Both callers read it from the tree they run in; CI reads the
-  freshest `main`, not the deployed sha, before committing (section 6).
-- **Deleted records.** A URL in the state but not in the manifest is dropped
-  on the next write. Nothing can be refreshed to for a stub that no longer
-  exists, and the contract forbids renumbering anyway.
-
-**Rejected: `git diff -- i/ og/`.** Disallowed by the owner as the only
-mechanism (`context.md`, decision 4) - it stops working the day `i/` is a
-build output, and it cannot tell "changed since the last *successful*
-refresh" from "changed since the last commit".
-
-**Rejected: Actions cache.** Evicted after seven days unused and at 10 GB;
-the loss mode is a silent full reindex, which is the flood risk this task is
-about. Fine for a backlog, wrong for the record.
-
-**Rejected: publishing the manifest on the Pages site.** The refresh must
-run *after* the deploy that changed the bytes (or Telegram re-fetches the old
-ones), so the site already carries the *new* manifest by the time the job
-needs the *old* one; that forces a second store (an artifact) for the
-baseline and a third for a backlog, and the owner's machine cannot write any
-of them. Three stores where one file will do.
-
-**Rejected: an orphan ref (`refs/tg-preview/state`) or a Release asset.**
-Both keep `main` clean, both are invisible in the places the owner looks, and
-both hand a smaller implementer git plumbing or a token dance to get wrong.
-If the owner declines Q2 (section 11), the orphan ref is the named fallback
-because it keeps one store for both callers.
-
-### 3.4 Rate limiting and resumability
-
-Constants (all in `lib.mjs`, one place, tunable after the first real run):
+All in `lib.mjs`, one place. Values marked *kept* are pass 1's.
 
 | name | value | why |
 |---|---|---|
-| `PER_MESSAGE` | 10 | the bot's documented bulk figure |
-| `PACE_MS` | 4000 + random(0..2000) | between messages; the reply wait (section 5.5) is folded into it, not added |
-| `REST_EVERY` / `REST_MS` | 25 messages / 30 s | undocumented flood limits; a periodic pause is cheap insurance |
-| `MAX_WAIT_S` | 600 (`--max-wait`) | the largest `FLOOD_WAIT` the run will sleep through; larger stops the run |
-| `NET_RETRIES` | 3, 10 s apart | transport errors, not RPC errors |
-| `BUDGET_MIN` | none locally; 45 in CI (`--budget-minutes`) | stop cleanly before the job's `timeout-minutes` kills the state commit |
+| `PER_MESSAGE` | 10 (*kept*) | still the right batch: the press cost is per URL and is the same at any batch size, so batching earns its keep only on the send axis, and the largest documented batch is the fewest sends. Ten links measured fine (three did); nothing argues for changing it |
+| `PACE_MS` | 4000-6000 ms (*kept*) | between sends; doubles as the first wait for the bot's button messages |
+| `BUTTON_WAIT_ROUNDS` / `BUTTON_WAIT_MS` | 6 / 5000 ms | extra polls when fewer button messages than links have arrived yet - the bot fetches every page before it can answer for it |
+| `BUTTON_FETCH` | 50 | `limit` when reading replies newer than the sent message; 11 are expected per batch |
+| `PRESS_PACE_MS` | 1000-2000 ms | between callback presses. Official clients press with no pacing at all; this is insurance on a days-old account |
+| `RECOVER_SCAN` | 200 | how many recent chat messages are read at run start to find pressable button messages that need no new send (resumability, below) |
+| `UPDATE_BUTTON` | `'Update with content'` | matched by exact button text |
+| `REST_EVERY` / `REST_MS` | 25 sends / 30 s (*kept*) | send axis only |
+| `MAX_WAIT_S` | 600, `--max-wait` (*kept*) | applies to a `FLOOD_WAIT` on either axis |
+| `NET_RETRIES` / `NET_RETRY_MS` | 3 / 10 s (*kept*) | transport errors on either axis |
+| `BUDGET_MIN` | none locally; 45 in CI (*kept*) | see "The deadline" below - its semantics tightened |
 
-Full reindex arithmetic: 1062 / 10 = 107 messages, ~5 s each, plus four
-rests = **about 12 minutes** with no flood waits, plus the live check
-(section 5.3, ~2-3 minutes for 1062 stubs and 847 images at concurrency 6).
+#### Arithmetic
 
-`decide(error, ctx)` is a pure function that returns one of
-`{ retry, waitMs }`, `{ stop, reason }`, `{ fatal, reason }`:
+Send axis: 107 sends at ~5 s plus four rests = **~11 min**. Press axis: 1062
+presses at ~1.5 s = **~27 min**. Button waits mostly fall inside the pace;
+one re-fetch per batch is negligible. A full reindex with no flood waits is
+therefore **~40 minutes**, up from 12. That fits CI's 45-minute budget with
+little to spare, and the state is written after every batch, so a budget
+stop simply leaves the remainder for the next run. The runbook keeps the
+orchestrator's advice for the first reindex: run it locally in `--limit 10`
+chunks (100 URLs, ~4 minutes each) rather than as one run.
+
+#### The pace and flood model per axis
+
+- **Sends** behave as in pass 1: pace, rest every 25, `decide()` on error,
+  retry the same message after a `FLOOD_WAIT` under `MAX_WAIT_S`.
+- **Presses** are paced by `PRESS_PACE_MS`, never rested (rests are a
+  send-axis guess and presses are a different method). A `FLOOD_WAIT` on
+  `messages.getBotCallbackAnswer` goes through the same `decide()` table:
+  sleep `seconds + 2` and **re-press the same button**; over `MAX_WAIT_S`
+  stops the run; `PEER_FLOOD` stops the run. Presses are not sends, so a
+  send-side `PEER_FLOOD` does not imply presses would fail - but the run
+  stops on the first `PEER_FLOOD` wherever it comes from; nothing is gained
+  by finding out.
+- **`BOT_RESPONSE_TIMEOUT`** (`BotResponseTimeoutError`, `errorMessage
+  'BOT_RESPONSE_TIMEOUT'`, present in teleproto's error list) is the one
+  press-only error: Telegram delivered the callback query but the bot did
+  not answer within Telegram's window. It is neither a retry nor a stop;
+  `decide()` returns `{ unanswered: true }` and confirmation falls back to
+  the photo check below.
+
+`decide(error, ctx)` table, pass 1's rows plus one:
 
 | error | outcome |
 |---|---|
-| `FloodWaitError`, `SlowModeWaitError` with `seconds <= MAX_WAIT_S` | retry the **same** message after `seconds + 2` |
+| `FloodWaitError`, `SlowModeWaitError` with `seconds <= MAX_WAIT_S` | retry the **same** send or press after `seconds + 2` |
 | the same with `seconds > MAX_WAIT_S` | stop; reason names the seconds |
 | `PeerFloodError` | stop: the account is limited; nothing more will go through today |
+| **`BotResponseTimeoutError`** | **`{ unanswered: true }` - the press was delivered; confirmation needs the photo check** |
 | `AuthKeyUnregisteredError`, `SessionRevokedError`, `SessionExpiredError`, `SessionPasswordNeededError`, `AuthKeyInvalidError` | fatal: the credential is dead, exit 2, do not retry |
 | any other `RPCError` | stop; reason is `errorMessage` |
 | non-RPC error (socket, DNS) | retry after 10 s, up to `NET_RETRIES`, then stop |
 
-**Resumability is the state file.** The state is written after every
-successful message, so a process that dies loses at most ten URLs of
-progress, and the next run - local or CI, incremental - picks up exactly the
-URLs that are still stale. There is no separate backlog file: *the backlog is
-whatever the manifest says and the state does not*.
+#### The deadline (`--budget-minutes`)
 
-**When Telegram limits the run: exit green with a recorded backlog.** The
-site is already live; a red job would say something false about it. The run
-prints `refreshed N, pending M` with the pending URLs, writes the same to
-`$GITHUB_STEP_SUMMARY` when set, and emits one `::warning::` when M > 0. The
-next push, or a `workflow_dispatch`, continues from there. Only a dead
-credential or a missing one (exit 2) or an unexpected crash (exit 1) turns
-the job red - both are things a person has to fix.
+Still meaningful - it is what keeps a CI run inside `timeout-minutes: 60`
+with room for the state commit - and tightened, folding in the reviewer's
+deferred item 1 (section 13):
+
+- The deadline is checked before **every send attempt and every press
+  attempt**, not once per batch. Pass 1 checked it per batch, so a
+  `FLOOD_WAIT` sleep followed by the retry could overshoot it by up to
+  `MAX_WAIT_S`; with ten presses per batch the per-batch check would have
+  been looser still.
+- A wait that would **end** past the deadline is not started: `stop` with
+  reason `flood wait of Ns would exceed the budget`. The run therefore ends
+  no later than the deadline plus one pace.
+- The clock starts after the live check, as before (the check has its own
+  five-round bound).
+
+When the deadline hits mid-batch, the presses already confirmed are
+recorded, the rest of the batch stays pending, and the next run recovers
+those without a new send (below).
+
+#### What counts as confirmed - the state's evidence rule
+
+The state must not assert what the tool cannot show. A URL's entry is
+written only when **all** of these hold:
+
+1. **A button message was matched to it exactly.** Among the bot's incoming
+   messages, a *button message* is one whose `media.webpage.url` is
+   non-null and whose inline keyboard contains a callback button with text
+   `UPDATE_BUTTON`. It is matched to a sent URL by **`media.webpage.url`
+   equality**, never by position or count. One permitted normalisation:
+   if exact equality fails, compare with a single trailing `/` stripped from
+   both sides - that covers the site root, the one URL Telegram could
+   plausibly canonicalise; nothing else is normalised. When the same URL
+   has several button messages, the newest (highest id) wins. The summary
+   message is excluded by construction: it has no webpage media and no
+   buttons.
+2. **The press was acknowledged, or its effect was observed.** Either
+   `messages.getBotCallbackAnswer` returned a `BotCallbackAnswer` (answered
+   - the bot handled the press), **or** it raised `BOT_RESPONSE_TIMEOUT`
+   *and* re-fetching the button message afterwards shows a **different
+   `photo.id`** than before the press (unanswered, but the re-download
+   visibly happened).
+
+Everything else leaves the URL **pending**: no button message arrived for it
+(logged as `no button message for <url>`), the press was stopped by the
+deadline or a flood stop, or the press went unanswered and the photo did not
+change.
+
+**The photo-id trap, handled.** A photo id that stays the same is **not**
+evidence of failure: an image whose bytes are genuinely unchanged on the
+site keeps its Telegram photo, and so does a URL whose cache was already
+current (the hand-pressed `cc19`, or a page first unfurled after the artwork
+commits). So the photo delta is a **gate only in the unanswered case**, where
+it is the sole signal, and **telemetry everywhere else**: after each batch's
+presses, the button messages are re-fetched once by id and each is classed
+`changed`, `same` or `none` (no photo on the webpage - a pending or
+imageless preview). The counts go into the log, the summary line and
+`$GITHUB_STEP_SUMMARY`. The runbook tells the owner what to expect: on the
+first full reindex `changed` should dominate, because most cached photos are
+known stale; a chunk that reports mostly `same` is the signal to spot-check
+by pasting a link before trusting that chunk's state. The tool cannot make
+that judgement, and does not pretend to.
+
+**Considered and not taken: recording the photo id in the state** so an
+incremental run could demand a *changed* photo whenever the image sha
+changed since the last entry. It is the stronger rule, but it needs a
+schema `version: 2`, it cannot apply to the first reindex (no prior id), and
+Telegram may reuse a photo for bytes it has seen before (an artwork revert),
+which would leave a URL pending forever. Recorded in section 13 as a
+follow-up worth doing once the first reindex shows how often `same` really
+occurs.
+
+**Cache-busting the `og:image` URL - not taken.** Appending a content hash
+to the image URL would make even a plain send re-download, and would break a
+frozen contract: `og/<id>.jpg` is a published artefact (`CONTRACTS.md`), so
+`docs/fixtures/`, `tests/contracts.js`, `CONTRACTS.md` and `llms.txt` would
+move in the same commit, `tools/build-share-pages.js` would change, and
+every previously shared stub would still carry the *old* image URL in
+Telegram's cache until refreshed anyway - so it saves nothing on the first
+reindex and only helps future artwork refreshes, which the incremental path
+already handles. The press is measured to do the job without any of that.
+It stays the named escape hatch only if a later measurement shows the press
+stops working.
+
+#### Resumability - the state file plus the chat itself
+
+Pass 1's rule stands: the backlog is whatever the manifest says and the
+state does not; the state is written after every batch (and after the
+recovery phase), so a crash loses at most one batch of presses.
+
+New: **a button message already in the chat is a free retry.** Pressing it
+needs no new link, so it costs nothing on the send axis. At run start,
+after the live check and before any send, the tool reads the last
+`RECOVER_SCAN` incoming messages and matches them against the stale, ready
+URLs exactly as above. Every match is pressed (**phase 1, recovery**)
+before any batch is sent (**phase 2**). This covers, with no extra send:
+
+- a run that died between the send and the presses;
+- a budget or flood stop mid-batch;
+- a press that went unanswered with an unchanged photo;
+- **the residue** from O1's probe - `cc12`, `cc24` and `cc38` were sent and
+  never pressed, so their button messages sit in the chat now. The first
+  run of the fixed tool, `--only cc12,cc24,cc38`, is exactly this path:
+  three presses, zero sends, three state entries. The runbook makes it
+  step F.
+
+A stale URL whose button message is older than the scan window is simply
+re-sent in phase 2 and pressed like any other. URLs matched in phase 1 but
+left unconfirmed are **not** re-sent in the same run - a fresh send would
+only produce another button message to press - they stay pending for the
+next run.
+
+The assumption under phase 1, stated so it can be checked: pressing "Update
+with content" on an **older** button message performs the whole update -
+page metadata and image - not only the image. Evidence for it: the measured
+`cc19` press changed the photo on a message created by an earlier send, and
+"with content" names the superset of "Update preview again". If the residue
+check (runbook F) ever shows a stale *title* after a press-only refresh,
+the fallback is one constant: `RECOVER_SCAN = 0` disables phase 1 and every
+stale URL is re-sent.
+
+**Exit codes stand:** green with a recorded backlog on any Telegram-side
+limit or a budget stop; red (2) only for a dead or missing credential; red
+(1) for a crash.
 
 ### 3.5 Where it hangs in CI: a second workflow, `previews.yml`
 
-**Decision.** `.github/workflows/previews.yml`, triggered by
-`workflow_run` on the `check` workflow (`types: [completed]`,
-`branches: [main]`), running only when
-`github.event.workflow_run.conclusion == 'success'`, plus `workflow_dispatch`
-with inputs `mode` (`incremental` | `full`), `dry_run` (boolean) and `limit`
-(messages, empty = unlimited). It checks out
-`github.event.workflow_run.head_sha` - the sha `deploy` just published - or
-`github.sha` on a dispatch.
-
-Why not a `needs: [deploy]` job inside `ci.yml`, although that is viable:
-
-- A forced full reindex would otherwise mean a `workflow_dispatch` of the
-  whole `check` workflow - fifteen minutes of check, four parity shards,
-  audit and gitleaks - before the job we wanted, and `deploy` is `if: push`,
-  so the job would need an `always()`-style condition to run at all.
-- `contents: write` for the state commit would land in a workflow whose
-  top-level permission is `contents: read` on purpose. A separate file keeps
-  that permission on the one job that needs it.
-- The refresh's own state commit carries `[skip ci]`, which GitHub honours
-  for `push`-triggered workflows, so it starts neither `check` nor - since
-  `workflow_run` only follows a run that happened - another `previews`. No
-  loop.
-
-`concurrency: { group: tg-previews, cancel-in-progress: false }`. Its own
-group rather than `pages`: a refresh holding the `pages` group would queue
-the next deploy behind up to 45 minutes of Telegram pacing, and the refresh
-does not need exclusivity against a deploy - if a deploy changes bytes under
-a running refresh, the live check (section 5.3) skips those URLs and the run
-that deploy triggers picks them up. `cancel-in-progress: false` is kept so a
-half-done refresh is never cut before its state commit.
-
-**Allowed to fail the run?** The job is red only for exit 1 or 2 (crash,
-missing or dead credential, a nested `npm audit` finding, a state push that
-still fails after three attempts). A Telegram-side limit is green with a
-warning. It never blocks a deploy: `deploy` finished before it started.
-
-**When the secrets are not set** (before the owner's setup, or a fork), the
-job notes it and exits 0 without installing anything.
+**Stands.** `previews.yml` is **not touched** by the next batch: its inputs,
+permissions, concurrency, the state read from the freshest `main`,
+`--budget-minutes 45`, the `[skip ci]` record step and R1's four fixes all
+remain correct under the two-phase loop. The only thing that changed is what
+the 45 minutes buy (section 3.4, arithmetic).
 
 ### 3.6 Secret handling
 
-Three repository secrets, three env vars, the same names everywhere:
-
-| name | what | where |
-|---|---|---|
-| `TG_API_ID` | numeric app id from `my.telegram.org` | repo secret; `.env` locally |
-| `TG_API_HASH` | 32-hex app hash from the same page | repo secret; `.env` locally |
-| `TG_SESSION` | `StringSession` for the throwaway account - **a full-account credential** | repo secret; `.env` locally |
-
-- Local store: **`.env` in the repository root**, read by
-  `process.loadEnvFile('.env')` inside a `try` (a missing file is fine; CI
-  has none). `.gitignore` gains `.env` and `.env.*` **in the same batch**.
-  No `.env.example`: the names are documented in `docs/tg-preview.md`, and a
-  file that exists only to be copied is a file nobody uses.
-- Nothing echoes a value: the tool reads `process.env` into a config object
-  and never prints it; the client's logger is set to error level; the dry run
-  needs none of the three and prints URLs only; Actions masks its own secrets
-  in logs anyway. The `secrets present?` step tests emptiness and prints a
-  fixed sentence.
-- Nothing lands in `_site`: `state.json` lives under `tools/`, which the
-  `deploy` job does not copy and whose presence in `_site` the
-  `Nothing private slipped in` guard already refuses. The allow-list holds
-  unchanged; this batch does not touch `ci.yml`.
-- gitleaks: a session string pasted into any tracked file would be a
-  ~350-character base64 blob, which the default rules flag. Nothing to
-  allowlist; `.gitleaks.toml` is untouched.
-- Rotation: Telegram -> Settings -> Devices -> terminate the session, delete
-  the secret, run `login.mjs` again (section 9, step J).
+**Stands.**
 
 ### 3.7 Verification, honestly
 
-**What a test can assert** - all pure logic, under `node:test`, in
-`tools/tg-preview/lib.test.mjs`, run by `npm run check`:
+**Revised** - the test list and the port grew.
 
-- `urls(L)`: 1062 against the real `data.js`, root first, unique, every
-  other one `SITE + 'i/' + id + '.html'`.
-- `extractMeta` on a real `page(it)` and on `index.html`.
-- `fingerprint`: stable; changes on each of title, description, image URL,
-  image bytes; unchanged when the body changes.
-- `buildManifest` with an injected `readFile`: a missing image is reported,
-  not thrown.
-- `stale(manifest, state, mode)`: full, incremental, absent state, foreign
-  `site`, a dropped record.
-- `chunk`: 1062 -> 107 chunks, the last of two.
-- `decide`: every row of the table in section 3.4.
-- `runRefresh` with a fake client, fake clock, fake live check: sends in
-  order; writes state after each message; `--limit 1` sends one; `--only`
-  narrows; dry run sends and writes nothing; `FLOOD_WAIT` resends the same
-  message once; `PEER_FLOOD` stops with the sent ones recorded; budget
-  exhaustion stops; not-live URLs are excluded and reported; the summary
-  numbers add up.
-- `applyResult(state, result)`: ours wins, the rest is kept.
-- `parseArgs`.
+What a test can assert, all pure, under `node:test` in
+`tools/tg-preview/lib.test.mjs`, run by `npm run check` (pass 1's list is
+kept in full; additions are marked):
+
+- `urls`, `extractMeta`, `fingerprint`, `imageName`, `buildManifest`,
+  `stale`, `chunk`, `applyResult` - unchanged.
+- `decide`: every row of the table in 3.4, **plus** `BotResponseTimeoutError`
+  -> `{ unanswered: true }`.
+- `parseArgs`: unchanged, **plus** a non-numeric or negative `--limit`,
+  `--max-wait` or `--budget-minutes` throws (reviewer's item 3).
+- **`matchButtons(messages, urls)`**: exact `url` match; a message without
+  webpage media (the summary) is never a button message; a message with a
+  webpage but without the `UPDATE_BUTTON` button is not one either; the
+  newest of duplicate button messages wins; the trailing-slash fallback
+  matches the root and nothing else; unmatched URLs are reported in input
+  order; outgoing messages are ignored.
+- `runRefresh` with a fake client, fake clock and fake live check. Kept from
+  pass 1: sends in manifest order; `--limit` counts sends; `--only`
+  narrows; dry run sends and writes nothing and never loads the client;
+  small `FLOOD_WAIT` on a send resends the same message once; `PEER_FLOOD`
+  on a send stops green with the confirmed ones recorded; a dead credential
+  is exit 2; not-live URLs are excluded and reported; the summary numbers
+  add up. **Added:** a batch's button messages are pressed and only
+  confirmed URLs reach the state; fewer button messages than links leaves
+  the unmatched ones pending and unrecorded; button messages that arrive
+  late are found on a later wait round; a `FLOOD_WAIT` on a press re-presses
+  the same button; `PEER_FLOOD` on a press stops with earlier presses
+  recorded; an unanswered press with a changed photo is confirmed and with
+  an unchanged photo is pending; phase 1 presses a button message found in
+  the scan and sends nothing for that URL; `--limit 0` still runs phase 1;
+  the deadline stops between two presses with the confirmed ones recorded;
+  a flood wait that would end past the deadline is not started; the photo
+  telemetry counts are right.
 
 **What no test can assert:** that Telegram's cache changed. The network
-client sits behind a three-method port (`send`, `lastReply`, `close`) in
-`client.mjs`, and is the one file with no unit test; its surface is small
-enough to read. A green job proves a message was accepted by Telegram's
-API, nothing more.
+client is now a **five**-method port (section 4) in `client.mjs`, still the
+one file with no unit test; its surface is small enough to read, and every
+TL field it touches is named in section 5.5 against the installed
+teleproto's generated types. A green job proves messages were accepted and
+presses acknowledged, nothing more.
 
-**How the owner verifies a real refresh** (section 9, steps F and G):
-
-1. Open the throwaway account's chat with `@WebpageBot` and read the bot's
-   reply to the message the tool sent; the tool logs the same text.
-2. In any Telegram chat (Saved Messages is enough), paste one refreshed URL
-   and compare the preview picture with the live `og/<id>.jpg`.
-3. For Q1: find an *old* message that already carried that URL and see
-   whether its preview changed too.
-
-Nothing in the tool's output stands in for step 2.
+**How the owner verifies a real refresh** (runbook steps F and G): paste
+the URL in any chat and compare the picture with the live `og/<id>.jpg`;
+find an already-posted message with that link and confirm it changed too;
+read the `photo changed` count in the summary. Nothing in the tool's output
+stands in for the paste.
 
 ### 3.8 The owner's manual steps
 
-Section 9. They are also copied into `docs/tg-preview.md` by B1 so they
-outlive this task directory.
+**Stands** as a pointer to section 9, which is revised.
 
 ## 4. Architecture
 
+**Revised** - one port grew, one pure function was added.
+
 ```text
 tools/tg-preview/
-  package.json        private, "type": "module", dependency: teleproto
-  package-lock.json   pinned; installed only here
-  lib.mjs             pure: urls, extractMeta, fingerprint, buildManifest, stale,
-                      chunk, decide, runRefresh, applyResult, parseArgs, constants
+  package.json        private, "type": "module", dependency: teleproto   (unchanged)
+  package-lock.json   pinned; installed only here                         (unchanged)
+  lib.mjs             pure: urls, extractMeta, fingerprint, imageName, buildManifest,
+                      stale, chunk, decide, matchButtons, runRefresh, applyResult,
+                      parseArgs, constants
   lib.test.mjs        node:test over lib.mjs; imports nothing from node_modules
-  manifest.mjs        composes lib with the repo: data.js, derived.js, page(), og/ reads
+  manifest.mjs        composes lib with the repo (unchanged)
   live.mjs            fetch(url) -> fingerprint of the live page + its image
-  client.mjs          the port over teleproto: createClient(env) -> { send, lastReply, close }
-  run.mjs             the CLI: args, env, manifest, state, diff, live check, send loop, summary
-  login.mjs           interactive, once: phone -> code -> 2FA -> prints TG_SESSION=...
-  state.json          created by the first run; committed
-.github/workflows/previews.yml
+  client.mjs          the port over teleproto:
+                      createClient(env) -> { send, incoming, byIds, press, close }
+  run.mjs             the CLI: args, env, manifest, state, diff, live check, the two
+                      phases, summary
+  login.mjs           interactive, once (unchanged)
+  state.json          created by the owner's runs; committed by the owner
+.github/workflows/previews.yml                                             (unchanged)
 docs/tg-preview.md    the runbook (section 9 plus operations)
 ```
 
-Boundaries, in the spirit of `CLAUDE.md`'s `lib`/`ports` split even though
-this is tooling and not `app/src`: `lib.mjs` touches no network, filesystem,
-clock or process - everything arrives as an argument (`readFile`, `client`,
-`verify`, `sleep`, `now`, `writeState`, `log`). `run.mjs` is wiring. The
-client is loaded lazily (`await import('./client.mjs')`) only when there is
-something to send and it is not a dry run, so `npm run check`, a dry run and
-a no-op run all work without `tools/tg-preview/node_modules`.
+Boundaries unchanged: `lib.mjs` touches no network, filesystem, clock or
+process; the client is loaded lazily only when there is something to press
+or send and it is not a dry run.
 
-`manifest.mjs` reaches the CommonJS neighbours with
-`createRequire(import.meta.url)`: `../derived.js` for `everything`/`SITE`,
-`../build-share-pages.js` for `page` (it loads `data.js` into
-`global.window.LOOT` itself when nothing has).
+**The port, and why five methods is the smallest honest surface.** Pass 1's
+three (`send`, `lastReply`, `close`) described a one-way conversation. The
+loop now has to (a) anchor "the bot's answers to *this* message" on
+something exact, (b) read button messages both after a send and from recent
+history, (c) re-read messages by id after pressing, and (d) press. That is
+four reads and writes of genuinely different shape, and hiding them behind
+fewer methods would mean a union-typed selector argument or a method that
+does two things. `lastReply` goes away: its job (log the bot's text) is done
+by the summary message that `incoming` returns anyway, and its epoch-ms
+comparison - the reviewer's unfloored `sinceMs` - is replaced by the sent
+message's **id**, which needs no clock at all.
+
+```text
+send(text)                  -> { id }             the sent message's id
+incoming({ afterId, limit }) -> Msg[]             incoming (not `out`) messages, ascending by id;
+                                                 with afterId: only ids > afterId; always capped by limit
+byIds(ids)                  -> Msg[]             the current state of those messages (edited in place after a press)
+press(id, data)             -> { text }          messages.getBotCallbackAnswer; throws teleproto errors through
+close()
+```
+
+`Msg` is a plain object the port builds from teleproto's `Api.Message`, so
+`lib.mjs` and its tests never see a TL class:
+
+```text
+{ id: number, text: string, url: string | null, pending: boolean,
+  photoId: string | null, buttons: [{ text: string, data: Buffer }] }
+```
 
 ## 5. Behaviour of `run.mjs`
 
 ### 5.1 Arguments
 
-```text
-node tools/tg-preview/run.mjs [--mode incremental|full] [--dry-run] [--limit N]
-     [--only id1,id2,...] [--max-wait S] [--budget-minutes M]
-     [--state <path>] [--result <path>] [--assets <dir>] [--no-verify]
-node tools/tg-preview/run.mjs --apply <result.json> [--state <path>]
-```
-
-- `--mode` default `incremental`. `full` ignores the state when choosing
-  what to send (it still records into it).
-- `--only` narrows to record ids (`root` for the site root). For the first
-  real message and for a spot check.
-- `--limit N` sends at most N messages, then stops green with the rest
-  pending. `--limit 1` is the first real test.
-- `--no-verify` skips the live check. For a machine without network reach
-  to Pages, or an owner who has just watched the deploy finish. Default is
-  to verify.
-- `--result <path>` additionally writes `{ "urls": { url: fingerprint } }`
-  of what *this run* sent. `--apply` merges such a file into the state:
-  this is how CI commits onto a `main` that may have moved (section 6).
+**Stands**, plus one rule: `--limit`, `--max-wait` and `--budget-minutes`
+must parse to a finite, non-negative number (`--limit 0` is legal and means
+"phase 1 only, send nothing"); anything else throws `--limit must be a
+number, got <value>` from `parseArgs`. Pass 1 let `Number('ten')` through as
+`NaN`, which made `--limit` silently send nothing and `--budget-minutes`
+silently mean "no budget" - both exit 0, both lies of the kind this revision
+exists to remove. `--limit` still counts **sends**; phase 1 presses are
+bounded by `RECOVER_SCAN`, not by `--limit`.
 
 ### 5.2 Steps
 
+**Revised** - steps 7-10 replaced.
+
 1. Load `.env` if present; parse args.
-2. Build the manifest (1062 fingerprints) from the tree. Report any URL
-   whose image is missing on disk and exclude it (a `dataint` failure, not
-   ours).
+2. Build the manifest (1062 fingerprints) from the tree. Report and exclude
+   any URL whose image is missing on disk.
 3. Read the state (`{}` when absent or `site` differs).
 4. `todo = stale(manifest, state, mode)` filtered by `--only`. Empty ->
-   print `nothing to refresh`, exit 0, never load the client.
+   `nothing to refresh`, exit 0, never load the client.
 5. Live check (5.3) unless `--no-verify` -> `ready`, `notLive`.
-6. `batches = chunk(ready, PER_MESSAGE)` cut by `--limit`.
-7. Dry run -> print the counts, the first three batches in full, the
-   `notLive` list, exit 0. Nothing loaded, nothing written.
-8. Fail fast on config: all three env vars present or exit 2 with a fixed
-   sentence naming which is missing (never its value).
-9. Connect; `ensureStarted()` (5.5); loop over batches per section 3.4;
-   write state and `--result` after every accepted message; pace; rest;
-   stop on budget.
-10. Summary to stdout and `$GITHUB_STEP_SUMMARY`; `::warning::` when pending
-    > 0; `close()`; exit per section 3.4.
+6. `batches = chunk(ready, PER_MESSAGE)` cut by `--limit` (a provisional
+   count - phase 1 may shrink it).
+7. Dry run -> print `<todo> urls stale, <ready> ready, up to <batches>
+   messages, <ready> presses`, the first three batches in full, the
+   `notLive` list, exit 0. Nothing loaded, nothing written. A dry run cannot
+   show what phase 1 would recover: that needs the chat, which needs the
+   credential.
+8. Nothing ready -> `nothing ready to send (<n> not live)`, exit 0.
+9. Fail fast on config: all three env vars present or exit 2, names only.
+10. Connect (`createClient` still resolves the peer and sends `/start` on an
+    empty history).
+11. **Phase 1 - recovery.** `scan = incoming({ limit: RECOVER_SCAN })`;
+    `found = matchButtons(scan, ready)`. Press each match in manifest order
+    (deadline check, `PRESS_PACE_MS`, `decide()`); then `byIds` on the
+    pressed ids once for the photo delta; record the confirmed URLs; write
+    state and `--result`. Remove every URL matched in phase 1 - confirmed
+    or not - from `ready`; rebuild `batches` from what is left, cut by
+    `--limit`.
+12. **Phase 2 - send and press**, per batch: deadline check; send (with
+    `decide()` retries) -> `{ id }`; sleep one pace; `replies = incoming({
+    afterId: id, limit: BUTTON_FETCH })`; `m = matchButtons(replies, batch)`;
+    while `m.unmatched` is non-empty and rounds remain, sleep
+    `BUTTON_WAIT_MS` and re-read; log the summary text verbatim once; press
+    each match (deadline check per press); `byIds` once; record the
+    confirmed URLs; write state and `--result`; log one line per batch:
+    `batch 3/107: sent 10, buttons 10, pressed 10, confirmed 10 (photo
+    changed 9, same 1, none 0)`; rest every `REST_EVERY` sends.
+13. Summary to stdout and `$GITHUB_STEP_SUMMARY`: `refreshed N, pending M`
+    (N = confirmed), then `pressed P (photo changed C, same S, none Z)`,
+    then `not live L` / `no button message U` / `stopped: <reason>` when
+    non-zero; `::warning::` when pending > 0; `close()`; exit per section
+    3.4.
 
 ### 5.3 The live check
 
-For each stale URL, `live.mjs` fetches the page and its `og:image` and
-computes the same `fingerprint`. Match -> `ready`. Mismatch or HTTP error ->
-retried in rounds: all mismatches again after 60 s, up to 5 rounds (Pages
-edges cache for up to ten minutes after a deploy). Still mismatching ->
-`notLive`, reported, not sent. Concurrency 6; images are fetched once per
-distinct URL within a run (records share pictures).
-
-Why it is not optional by default: a refresh that runs before the CDN serves
-the new bytes makes Telegram re-cache the *old* preview under a state entry
-that says it is current - the one failure the state cannot see. It also
-makes a local run safe against an unpushed tree: unpushed changes simply
-come back as `notLive`.
+**Stands**, plus one local fix folded in (reviewer's item 2): `live.mjs`
+caches the image-hash *promise* per name, so a fetch that fails in round 1
+(a **new** `og/<name>.jpg` returning 404 while Pages catches up - the exact
+case the rounds exist for) stays rejected for rounds 2-5 and the URL is
+reported not live for the whole run. Fix: drop the cache entry when the
+promise rejects, so the next round fetches again. Three lines; no unit test
+(the file is outside the pure suite by design).
 
 ### 5.4 State writes
 
-`writeState` runs after every accepted message, atomically (write to
-`state.json.tmp`, rename). Keys sorted. Entries whose URL is not in the
-manifest are dropped. `updatedAt` is the only timestamp in the file.
+**Revised.** `writeState` runs after phase 1 and after every batch,
+atomically, sorted, with only **confirmed** URLs added; the carry-forward of
+entries for records still in the manifest is unchanged. `--result` is
+written alongside with the same confirmed set. `updatedAt` is still the only
+timestamp.
 
 ### 5.5 Talking to the bot
 
-- `peer = await client.getEntity('WebpageBot')` once.
-- `ensureStarted()`: `getMessages(peer, { limit: 1 })`; if the chat is
-  empty, send `/start` and wait one pace. Idempotent.
-- A message is the batch's URLs joined by `\n`, no command. `PER_MESSAGE`
-  is a constant so the form can change if the first real message shows the
-  bot only took the first link.
-- `lastReply(sinceDate)`: after the pace sleep, `getMessages(peer,
-  { limit: 3 })`, return the text of the newest incoming message newer than
-  the send. Logged verbatim beside the batch; never parsed.
+**Revised.**
+
+> Superseded: pass 1's `lastReply(sinceDate)` (read the newest incoming
+> message newer than an epoch-ms timestamp and log it) and the sentence
+> "a message is the batch's URLs joined by `\n`" - the second stands, the
+> first is gone.
+
+Every TL name below was read from the installed
+`tools/tg-preview/node_modules/teleproto/tl/generated/api.d.ts` and
+`tl/custom/message.d.ts` on 2026-09-11; the implementer does not need to
+re-derive them, and should not guess alternatives.
+
+- `peer = await client.getEntity('WebpageBot')` once; `/start` on an empty
+  history - unchanged.
+- **`send(text)`**: `const m = await client.sendMessage(peer, { message:
+  text })` returns `Api.Message`; return `{ id: m.id }`.
+- **`incoming({ afterId, limit })`**: `client.getMessages(peer, { minId:
+  afterId || 0, limit })` - `minId` excludes ids `<=` the value, `limit`
+  caps the newest-first result and is always passed explicitly (gramjs's
+  `getMessages` changes its default when `limit` is the only key). Filter
+  `!m.out`, map to `Msg`, sort ascending by `id`.
+- **`byIds(ids)`**: `client.getMessages(peer, { ids })`; the result has
+  `undefined` in the place of a deleted message - filter those, map, sort.
+- **`press(id, data)`**: `client.invoke(new Api.messages.GetBotCallbackAnswer({
+  peer, msgId: id, data }))` -> `Api.messages.BotCallbackAnswer` with
+  optional `message`, `alert`, `url`; return `{ text: r.message || null }`.
+  Let every error propagate: `decide()` in `lib.mjs` owns the table, and
+  `BotResponseTimeoutError` must reach it. `Api` is exported from
+  `teleproto`'s index.
+- **`Msg` mapping**, with the TL shapes:
+  - `media` is `Api.MessageMediaWebPage { webpage }` for a button message;
+    `webpage` is `Api.WebPage { id, url, photo? }` or
+    `Api.WebPagePending { id, url?, date }`. `url = media?.webpage?.url ??
+    null`; `pending = media?.webpage?.className === 'WebPagePending'`.
+  - `photoId = String(media.webpage.photo.id)` when `webpage.photo` exists
+    and is an `Api.Photo` (its `id` is a `BigInteger` - stringify, never
+    compare as a number); else `null`.
+  - `replyMarkup` is `Api.ReplyInlineMarkup { rows: KeyboardInlineButtonRow[]
+    }`; each row's `buttons[]` is `Api.KeyboardInlineButton { text, type }`;
+    keep those whose `type.className === 'InlineButtonTypeCallback'` as
+    `{ text, data: type.data }` (`data` is a Buffer; pass it back to `press`
+    untouched). Every other button type is dropped. No `replyMarkup` ->
+    `buttons: []`.
+  - `text = m.message || ''`.
+- **`matchButtons(messages, urls)`** (pure, `lib.mjs`): a message qualifies
+  when `url !== null` and `buttons.some(b => b.text === UPDATE_BUTTON)`;
+  index qualifying messages by `url`, newest id winning; for each wanted
+  URL look up exact, then with one trailing `/` stripped from both sides;
+  return `{ matched: { [url]: { id, data, photoId } }, unmatched: [url],
+  summary: [text] }` where `summary` holds the texts of non-qualifying
+  messages that have text and no webpage (logged verbatim, never parsed).
 
 ## 6. `previews.yml`
 
-Sketch for the implementer; the exact YAML goes through
-`npx prettier --write` before commit because `.github/**` is format-checked.
-
-```yaml
-name: previews
-
-on:
-  workflow_run:
-    workflows: [check]
-    types: [completed]
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      mode:
-        type: choice
-        options: [incremental, full]
-        default: incremental
-      dry_run:
-        type: boolean
-        default: false
-      limit:
-        type: string
-        default: ''
-
-permissions:
-  contents: write # the state commit; nothing else
-
-concurrency:
-  group: tg-previews
-  cancel-in-progress: false
-
-jobs:
-  refresh:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      TG_API_ID: ${{ secrets.TG_API_ID }}
-      TG_API_HASH: ${{ secrets.TG_API_HASH }}
-      TG_SESSION: ${{ secrets.TG_SESSION }}
-      MODE: ${{ inputs.mode || 'incremental' }}
-      DRY_RUN: ${{ inputs.dry_run || 'false' }}
-      LIMIT: ${{ inputs.limit || '' }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-
-      - name: Secrets present?
-        id: cfg
-        run: |
-          if [ -z "$TG_SESSION" ] || [ -z "$TG_API_ID" ] || [ -z "$TG_API_HASH" ]; then
-            echo "::notice::Telegram secrets are not configured; nothing to do"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - uses: actions/setup-node@v5
-        if: steps.cfg.outputs.skip != 'true'
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: tools/tg-preview/package-lock.json
-
-      - name: Install the client
-        if: steps.cfg.outputs.skip != 'true'
-        working-directory: tools/tg-preview
-        run: npm ci
-
-      - name: Vulnerabilities we will not wave through
-        if: steps.cfg.outputs.skip != 'true'
-        working-directory: tools/tg-preview
-        run: npm audit --audit-level=high
-
-      # The state is read from the freshest main, not from the deployed sha:
-      # a refresh committed between two quick pushes must not be re-sent.
-      - name: Refresh
-        if: steps.cfg.outputs.skip != 'true'
-        run: |
-          git fetch --depth=1 origin main
-          git show origin/main:tools/tg-preview/state.json > tools/tg-preview/state.json 2>/dev/null || true
-          args="--mode $MODE --budget-minutes 45 --result $RUNNER_TEMP/result.json"
-          [ "$DRY_RUN" = "true" ] && args="$args --dry-run"
-          [ -n "$LIMIT" ] && args="$args --limit $LIMIT"
-          node tools/tg-preview/run.mjs $args
-
-      - name: Record what was refreshed
-        if: always() && steps.cfg.outputs.skip != 'true' && env.DRY_RUN != 'true'
-        run: |
-          [ -s "$RUNNER_TEMP/result.json" ] || { echo "nothing sent"; exit 0; }
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for attempt in 1 2 3; do
-            git fetch --depth=1 origin main
-            git checkout -q --detach origin/main
-            node tools/tg-preview/run.mjs --apply "$RUNNER_TEMP/result.json"
-            git add tools/tg-preview/state.json
-            git diff --cached --quiet && exit 0
-            git commit -q -m "chore(tg-preview): record refreshed previews [skip ci]"
-            git push origin HEAD:main && exit 0
-            echo "push rejected, retrying"; sleep 10
-          done
-          exit 1
-```
-
-Notes the implementer must keep:
-
-- `git show origin/main:...` failing on a missing file is the bootstrap
-  case; `|| true` is intentional and the run then treats everything as
-  stale.
-- `--apply` onto a fresh `origin/main` is what makes the commit correct when
-  the owner committed a local run in the meantime: ours wins per URL, theirs
-  is kept.
-- The `always()` on the record step is what makes a budget stop, a
-  `PEER_FLOOD` stop and even a crash mid-run leave their progress in `main`.
-- `[skip ci]` is load-bearing (section 3.5).
-- The `secrets present?` step prints no value. Do not "improve" it with an
-  echo of the variable.
+**Stands.** Not touched by the next batch. The notes at `0ab04eb` and the
+four R1 fixes all remain in force.
 
 ## 7. Contracts, specs and docs that move
 
-- No public contract changes: `CONTRACTS.md`, `docs/fixtures/`,
+**Revised** for the next batch.
+
+- No public contract changes, still: `CONTRACTS.md`, `docs/fixtures/`,
   `tests/contracts.js`, `llms.txt`, `robots.txt` untouched.
-- `docs/specs/META.md` gains a short section 7, "Link previews are cached by
-  Telegram until pushed": the fact, the rule ("`og/` bytes under an unchanged
-  URL need a refresh"), and a pointer to `docs/tg-preview.md`. Durable
-  behaviour belongs in specs.
-- `docs/tg-preview.md` (new): the runbook.
-- `docs/specs/COVERAGE.md`: one paragraph under "The unit suite" saying
-  `tools/tg-preview/lib.test.mjs` runs under `node --test` inside
-  `npm run check`, covers the pure module, and that the client port is the
-  deliberate gap.
-- `README.md` / `README.ru.md`: one line each in the file map, next to
-  `tools/build-share-pages.js`, aligned.
-- `package.json`: `"check"` gains
-  `&& node --test tools/tg-preview/lib.test.mjs` after the hooks selftest;
-  a convenience script `"previews": "node tools/tg-preview/run.mjs"`.
-- `.gitignore`: `.env`, `.env.*`.
-- `CLAUDE.md`: untouched by B1 (194 of 200 lines). The orchestrator may add
-  one pointer line under "Data and published artefacts" if it judges the
-  rule standing; noted in `handoff.md`.
+- `docs/specs/META.md` section 7 gains **one sentence** of durable Telegram
+  behaviour: a plain send to `@WebpageBot` refreshes the page's text and
+  keeps the cached picture when `og:image` still points at the same URL;
+  only the bot's "Update with content" button re-downloads it. That is a
+  fact about Telegram, not about this tool, so it belongs in the spec.
+- `docs/tg-preview.md`: every sentence that says or implies a send
+  refreshes the preview is corrected - the opening paragraphs, the tool
+  description, step E's counts line, all of step F, step G's timing and
+  chunking, the "Operations" summary vocabulary, "Rate limiting and
+  resumability", and "Coverage". The full list is in the batch below.
+- `docs/specs/COVERAGE.md`: the `tools/tg-preview/lib.test.mjs` paragraph
+  names button matching and the two-phase loop; `client.mjs` and `live.mjs`
+  stay the deliberate gap.
+- `README.md` / `README.ru.md`, `package.json`, `.gitignore`, `CLAUDE.md`:
+  untouched.
 
 ## 8. Parity and gates - confirmed, not assumed
 
-Files touched: `tools/tg-preview/**`, `.github/workflows/previews.yml`,
-`docs/**`, `README*.md`, `package.json` (scripts only), `.gitignore`. None of
+**Stands.** Files touched by the next batch: `tools/tg-preview/**` (not
+`package*.json`, `manifest.mjs`, `login.mjs`), `docs/tg-preview.md`,
+`docs/specs/META.md`, `docs/specs/COVERAGE.md`, this task directory. None of
 `index.html`, `app.js`, `style.css`, `app/src/**`, `data.js`, `og/`, `i/`,
-`tests/parity/**`. Nothing a screen draws changes, `dist/` is not rebuilt
-differently, no `STATES` entry is owed.
-
-Gates for B1: **`npm run check` only** (one foreground call, see
-`CLAUDE.md`). Not `check:built`, not parity. The new `node --test` step adds
-about a second.
+`tests/parity/**`. Nothing a screen draws changes. Gate: **`npm run check`
+only**, one foreground call. Not `check:built`, not parity.
 
 ## 9. The owner's manual steps, start to finish
 
-Everything here is the owner's to do; no agent should perform any of it, and
-no agent can (it needs a phone, a Telegram login and repository settings).
-The same text lands in `docs/tg-preview.md`.
+**Revised** - steps E, F and G. A-D, H-J stand (D.3's troubleshooting block
+from R2 stands). The runbook `docs/tg-preview.md` carries the same text.
 
-**A. The throwaway account.**
-1. Get a phone number that is not the one on the owner's own Telegram
-   account. A real SIM; Telegram routinely refuses VoIP and virtual numbers
-   at registration.
-2. Install Telegram (Desktop or phone) and register that number. Give the
-   account a name (any) so it does not look like a blank spam account.
-3. Recommended: Settings -> Privacy and Security -> Two-Step Verification,
-   set a password. It does not protect an already-issued session, but it
-   stops anyone with the SIM from taking the account by code alone.
-4. Optional but sensible: leave the account for a day before step G. Very
-   fresh accounts are the ones Telegram limits first.
-
-**B. API credentials.**
-1. Open `https://my.telegram.org`, enter the throwaway's number; the login
-   code arrives *inside Telegram* on that account, not by SMS.
-2. "API development tools" -> create an application: title
-   `daggerheart-loot previews`, short name `dhlootprev`, platform *Other*,
-   description optional.
-3. Copy `api_id` (a number) and `api_hash` (32 hex characters). These
-   identify the application, not the account; they go in `TG_API_ID` and
-   `TG_API_HASH`.
-4. Known gotcha: the form sometimes answers a bare `ERROR` for very new
-   numbers or some networks. Retry later, from another network, or after
-   step A.4. There is no support channel for it.
-
-**C. Say hello to the bot.** In the throwaway account, open `@WebpageBot`
-and press *Start*. The tool would do it, but seeing the bot answer by hand
-proves the account is allowed to talk to it.
-
-**D. Local setup (after B1 is merged and pulled).**
-1. `cd tools/tg-preview && npm ci && cd ../..`
-2. Create `.env` in the repository root (it is gitignored):
-   ```text
-   TG_API_ID=123456
-   TG_API_HASH=0123456789abcdef0123456789abcdef
-   ```
-   No quotes, no spaces around `=`.
-3. `node tools/tg-preview/login.mjs` - it asks for the phone number
-   (international form, `+7...`), then the code Telegram shows in the app,
-   then the 2FA password if set (it echoes; use a private terminal). It
-   prints **one** line, `TG_SESSION=...`. Append that line to `.env`.
-4. That string *is* the account. Do not paste it into chat, an issue, a
-   commit, or a file outside `.env`. If it ever leaks: Telegram -> Settings
-   -> Devices -> terminate that session, and redo step D.3.
+**A-D.** Unchanged; all done by the owner on 2026-09-11 (the session exists
+in the owner's `.env`).
 
 **E. Dry runs (no Telegram involved).**
 1. `node tools/tg-preview/run.mjs --dry-run --mode full` - expect
-   `1062 urls, 107 messages`, the live check reporting 1062 ready (the site
-   must be deployed at the same commit you are on; otherwise you will see
-   `notLive` entries, which is the check working).
+   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses` when the
+   site is deployed at the commit you are on; otherwise some are reported
+   not live, which is the check working.
 2. `node tools/tg-preview/run.mjs --dry-run --only w76` - one URL, one
-   message.
+   message, one press.
 
-**F. The first real message.**
-1. `node tools/tg-preview/run.mjs --only w76`
-2. Open the throwaway account's chat with `@WebpageBot`: the message with
-   the link and the bot's reply should be there; the tool logged the reply
-   too.
+**F. The residue check - the first run of the fixed tool.**
+1. `node tools/tg-preview/run.mjs --only cc12,cc24,cc38`. These three were
+   sent by the probe and never pressed; their button messages are already
+   in the chat. Expect the log to show phase 1 pressing three buttons and
+   phase 2 sending **nothing**, and the summary `refreshed 3, pending 0` /
+   `pressed 3 (photo changed 3, same 0, none 0)`. `changed 3` is the
+   expected result because all three pictures are known stale; `same` on
+   any of them is worth reporting before going on.
+2. Open the throwaway account's chat with `@WebpageBot`: nothing new was
+   sent; the three button messages now show the new pictures.
 3. In Saved Messages (any account), paste
-   `https://artex-x.github.io/daggerheart-loot/i/w76.html` and compare the
-   preview picture with `https://artex-x.github.io/daggerheart-loot/og/`
-   plus that record's image name. Same picture = the refresh works.
-4. **Q1 evidence:** find an old message that already contained the `w76`
-   link (or any link refreshed here) and see whether its preview changed.
-   Tell the orchestrator either way.
-5. `git status` shows `tools/tg-preview/state.json` with one entry. Keep it.
+   `https://artex-x.github.io/daggerheart-loot/i/cc12.html` and compare the
+   preview picture with the live `og/` image for that record. Same picture
+   = the press works through the tool, not only by hand.
+4. **Regression check:** find an already-posted message carrying one of
+   those three links and confirm its preview changed too. If it did not,
+   stop and report; the runbook's opening claim would no longer hold.
+5. `git status` shows `tools/tg-preview/state.json` with four entries
+   (`cc19` from the hand press plus these three). Keep it.
 
 **G. The full reindex.**
-1. `node tools/tg-preview/run.mjs --mode full` - about 12 minutes if
-   Telegram never says wait; the log shows every batch, every reply and
-   every `FLOOD_WAIT`. If it stops with `PEER_FLOOD`, the account is limited:
-   wait a day and run the same command again - it resumes.
-2. When it prints `pending 0`:
-   `git add tools/tg-preview/state.json && git commit -m "chore(tg-preview): record the first full reindex"`
-   and push. From here CI only ever sends what changed.
+1. Run it in chunks, locally: `node tools/tg-preview/run.mjs --mode full
+   --limit 10` sends 100 URLs and presses 100 buttons in about four
+   minutes; repeat it, spread across the day, until it prints `pending 0`.
+   Each run is resumable: it only sends what is not yet confirmed and
+   presses anything already waiting in the chat. If a run stops with
+   `PeerFloodError`, the account is limited: stop for the day. One
+   unchunked run is ~40 minutes and is fine on a healthier account.
+2. Read the `photo changed` count each time. On this reindex it should be
+   the large majority; a chunk reporting mostly `same` means spot-check a
+   few of its links by pasting before trusting it, and report it.
+3. When `pending 0`: `git add tools/tg-preview/state.json && git commit -m
+   "chore(tg-preview): record the first full reindex"` and push. From here
+   CI only ever sends and presses what changed.
 
-**H. Repository secrets.** GitHub -> the repository -> Settings -> Secrets
-and variables -> Actions -> New repository secret, three times, the same
-values as `.env`: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION`.
-
-**I. First CI run.** Actions -> `previews` -> Run workflow -> mode
-`incremental`, dry run **on**. Read the job summary. Then the next push to
-`main` runs it for real: `deploy` first, then `previews`, then a commit
-`chore(tg-preview): record refreshed previews [skip ci]` appears on `main`
-whenever something was sent.
-
-**J. Rotation and shutdown.** Telegram -> Settings -> Devices -> terminate
-the tool's session; delete the `TG_SESSION` secret and the `.env` line. To
-stop the automation without touching the account, delete the three secrets:
-the job then exits 0 with a notice.
+**H-J.** Unchanged.
 
 ## 10. Batches
 
-### B1 - the refresh tool, its workflow and its runbook (one batch, one commit)
+### B1 - the refresh tool, its workflow and its runbook
 
-**Status: implemented and committed.** Built in the dedicated worktree
-`E:/dev/daggerheart-loot-wt/tg-preview-refresh`, branch
-`automation/tg-preview-refresh`; not merged, not pushed - see `handoff.md`.
+**Status: implemented, committed (`cce10cb`), reviewed and approved.** Full
+implement-ready text at `0ab04eb`, section 10. Its send loop is what B3
+replaces; everything else it built stands.
 
-**Objective.** Everything in sections 3-7 in one commit, verifiable by
-`npm run check` and a dry run against the live site. No Telegram credentials
-exist yet, so the batch never sends anything; that is by design.
+### R1 - review remediation, blockers only
 
-**In scope.** Every file in section 4 except `state.json` (created by the
-owner's first run); the doc and spec edits of section 7; `.gitignore`;
-`package.json` scripts.
+**Status: done (`5a959ca`).** Four workflow/.gitignore fixes; see
+`handoff.md`.
 
-**Out of scope.** `ci.yml`; any public contract; running against Telegram;
-`CLAUDE.md`.
+### R2 - login.mjs diagnostics
 
-**Files.**
+**Status: done (`a4c9066`).** See `handoff.md`.
 
-Create: `tools/tg-preview/package.json`, `tools/tg-preview/package-lock.json`
-(generated by `npm install`, never by hand), `tools/tg-preview/lib.mjs`,
-`tools/tg-preview/lib.test.mjs`, `tools/tg-preview/manifest.mjs`,
-`tools/tg-preview/live.mjs`, `tools/tg-preview/client.mjs`,
-`tools/tg-preview/run.mjs`, `tools/tg-preview/login.mjs`,
-`.github/workflows/previews.yml`, `docs/tg-preview.md`.
+### O1 (first attempt) - the owner's operations
 
-Edit: `.gitignore`, `package.json`, `docs/specs/META.md`,
-`docs/specs/COVERAGE.md`, `README.md`, `README.ru.md`.
+**Status: partially done, and the reason for this revision.** Steps A-D
+complete; the first real send (`cc19`) proved the plain send does not
+refresh the image; the owner pressed the button by hand and probed a
+three-link message. Residue: `cc12`, `cc24`, `cc38` sent, not pressed.
+`state.json` holds `cc19` only, honestly. O1 resumes at step E after B3.
+
+### B3 - the two-phase refresh: press "Update with content", record only confirmed presses (one batch, one commit)
+
+**Status: implemented, committed.** `lib.mjs`'s `runRefresh` is now the
+two-phase loop (recovery then send-and-press); `client.mjs` is the
+five-method port with the `Msg` mapper; `live.mjs`'s cached-rejection fix,
+`decide()`'s `BotResponseTimeoutError` row, `parseArgs`'s numeric guards, and
+`matchButtons` all landed as specified. 68 `lib.test.mjs` cases pass (up from
+23), all three doc/spec files corrected. Full record in `handoff.md`.
+Next: O1 (resumed) at section 9, step E.
+
+**Objective.** Replace B1's send-and-trust loop with the send-and-press loop
+of sections 3.4, 4 and 5, so that `state.json` records a URL only when its
+"Update with content" press was confirmed; correct every document that says
+a send refreshes the preview; fold in the four reviewer items that live on
+the same paths.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `lib.test.mjs`, `client.mjs`,
+`run.mjs`, `live.mjs` (item 2 only); `docs/tg-preview.md`;
+`docs/specs/META.md` section 7 (one sentence); `docs/specs/COVERAGE.md`
+(one paragraph); `issues/tg-preview-refresh/{context,plan,handoff}.md`
+(stage the orchestrator's unstaged `context.md` - it is the evidence this
+batch acts on).
+
+**Out of scope.** `.github/workflows/previews.yml`, `ci.yml`,
+`tools/tg-preview/package.json` and lockfile (no new dependency),
+`manifest.mjs`, `login.mjs`, `README*.md`, `package.json`, any public
+contract, `CLAUDE.md`. `tools/tg-preview/state.json` is the owner's
+untracked file: **do not commit it, do not delete it, do not edit it.** Any
+Telegram contact of any kind: the owner's live session is in `.env`; the
+implementer never runs `run.mjs` without `--dry-run`.
+
+**Behaviour constraints (settled; do not reopen).** Sections 3.4, 4, 5.1,
+5.2, 5.4, 5.5 as written. `PER_MESSAGE` stays 10. The state schema stays
+`version: 1`. The five-method port and the `Msg` shape are fixed. The
+confirmation rule is fixed. Phase 1 runs before phase 2 and is not limited
+by `--limit`.
 
 **Steps.**
 
-1. `mkdir tools/tg-preview`; write `package.json`:
-   `{ "name": "dhloot-tg-preview", "private": true, "type": "module", "engines": { "node": ">=22" }, "dependencies": { "teleproto": "^1.229.0" } }`.
-   Run `npm install` **inside that directory** to produce the lockfile
-   (the root `package-lock.json` must not change - check `git status`).
-   Run `npm audit --audit-level=high` there; expect 0.
-2. `lib.mjs` - exports, in this order, each a named export with a one-line
-   why-comment:
-   - constants `PER_MESSAGE = 10`, `PACE_MS = [4000, 6000]`,
-     `REST_EVERY = 25`, `REST_MS = 30000`, `MAX_WAIT_S = 600`,
-     `NET_RETRIES = 3`, `NET_RETRY_MS = 10000`, `VERIFY_ROUNDS = 5`,
-     `VERIFY_ROUND_MS = 60000`, `VERIFY_CONCURRENCY = 6`.
-   - `urls(L, site)` per section 3.2.
-   - `extractMeta(html)` -> `{ title, description, image }` from
-     `<meta property="og:title|og:description|og:image" content="...">`,
-     HTML entities decoded for the five `esc()` produces (`&amp; &lt; &gt;
-     &quot; &#39;`); missing tag -> `''`.
-   - `fingerprint(meta, imageSha)` per section 3.3 (`node:crypto` sha256
-     hex).
-   - `imageName(meta, site)` -> basename under `og/`, or `null` when the
-     image is not under `site + 'og/'`.
-   - `buildManifest({ site, L, renderStub, rootHtml, readImage })` ->
-     `{ urls: { url: fingerprint }, missing: [url] }`. `readImage(name)`
-     returns a Buffer or `null`.
-   - `stale(manifest, state, mode)` -> `[url]` in manifest order.
-   - `chunk(list, n)`.
-   - `decide(err, { attempt, maxWaitS })` per section 3.4, matching by
-     `err.constructor.name` / `err.errorMessage` / `err.seconds` so the
-     test needs no teleproto - document that the names are teleproto's
-     class names (`FloodWaitError`, `SlowModeWaitError`, `PeerFloodError`,
-     `AuthKeyUnregisteredError`, `SessionRevokedError`,
-     `SessionExpiredError`, `SessionPasswordNeededError`,
-     `AuthKeyInvalidError`, `RPCError`).
-   - `applyResult(state, result, site)`.
-   - `parseArgs(argv)` -> the options of section 5.1 with defaults;
-     unknown flag throws.
-   - `runRefresh(opts, deps)` - the loop of section 5.2 steps 4-10 with
-     `deps = { manifest, state, client(), verify, sleep, now, random,
-     writeState, writeResult, log }`; returns
-     `{ sent, pending, notLive, floodWaits, stopped, exitCode }`.
-     `client()` is a factory called only when there is something to send
-     and it is not a dry run.
-3. `manifest.mjs` - `createRequire`; load `../derived.js` and
-   `../build-share-pages.js`; `readImage = name => fs.readFileSync(join(assets, 'og', name))`
-   guarded to `null`; `rootHtml = readFileSync(join(assets, 'index.html'))`;
-   export `buildFromTree({ assets })`.
-4. `live.mjs` - `verify(urls, { site, fetch, sleep, log })` per section
-   5.3, using `fingerprint`/`extractMeta` from `lib.mjs`; returns
-   `{ ready, notLive }`.
-5. `client.mjs` - `createClient({ apiId, apiHash, session, log })` with
-   `import { TelegramClient, sessions, Logger } from 'teleproto'`;
-   `StringSession`; `connect()`; refuse (exit 2 path) when
-   `!await client.isUserAuthorized()`; `getEntity('WebpageBot')`;
-   `send(text)`, `lastReply(sinceUnix)`, `close()` per section 5.5. Logger
-   at error level. No console output of any argument.
-6. `run.mjs` - section 5 wiring: `process.loadEnvFile` in `try`; build the
-   manifest; read state; `runRefresh`; summary; `$GITHUB_STEP_SUMMARY`
-   append when the variable is set; `process.exit(code)` after `close()`.
-   `--apply` branch: read state, read result, `applyResult`, write, exit 0.
-7. `login.mjs` - `readline/promises`; `client.start({ phoneNumber,
-   phoneCode, password, onError })`; on success print exactly
-   `TG_SESSION=<session>` and a one-line warning that it is the account;
-   `disconnect()`; exit 0.
-8. `lib.test.mjs` - the list in section 3.7 under `node:test`, `describe`
-   / `it`, `node:assert/strict`. Load the real `data.js` for the count
-   test the way `tests/derived.js` does (`global.window = {}` then
-   `require`). Fake client: records `send` calls, scripted to throw a given
-   error object on a given call. Fake sleep records durations and never
-   waits.
-9. `previews.yml` from section 6; `npx prettier --write .github/workflows/previews.yml`.
-10. Docs: `docs/tg-preview.md` = section 9 verbatim plus an "Operations"
-    section (dry run, `--only`, `--limit`, reading the summary, what
-    `pending` means, `--mode full`, deleting `state.json`, the `[skip ci]`
-    commit); `META.md` section 7; `COVERAGE.md` paragraph; the two README
-    lines; `.gitignore`; `package.json` scripts.
-11. Dry run against the live site from this tree (no secrets needed):
-    `node tools/tg-preview/run.mjs --dry-run --mode full` - expect
-    `1062 urls`, `107 messages`; note how many are `ready` (the live site
-    is at `main`'s last deployed sha, so a tree ahead of it shows
-    `notLive` for the changed ones - record the number, do not "fix" it).
-    Then `--dry-run --only w76,root`.
-12. `set -o pipefail; npm run check 2>&1 | tail -n 120` with Bash timeout
-    600000. Confirm `git status` shows only this batch's paths plus the
-    unrelated issue 47 work that was already there; stage **only** this
-    batch's paths by name; commit
-    `feat(tooling): refresh Telegram link previews after deploy`.
+1. `lib.mjs` - constants: add `PRESS_PACE_MS = [1000, 2000]`,
+   `BUTTON_WAIT_ROUNDS = 6`, `BUTTON_WAIT_MS = 5000`, `BUTTON_FETCH = 50`,
+   `RECOVER_SCAN = 200`, `UPDATE_BUTTON = 'Update with content'`, each with
+   a one-line why-comment from the table in 3.4. Keep every existing
+   constant and its value.
+2. `lib.mjs` - `decide()`: add the `BotResponseTimeoutError` row before the
+   generic `errorMessage` branch: match `name === 'BotResponseTimeoutError'
+   || err.errorMessage === 'BOT_RESPONSE_TIMEOUT'` -> `{ unanswered: true }`.
+3. `lib.mjs` - `parseArgs()`: after `Number(value)` for `limit`, `maxWaitS`,
+   `budgetMinutes`, throw `<flag> must be a number, got <value>` unless
+   `Number.isFinite(n) && n >= 0`. Keep `--limit 0` legal.
+4. `lib.mjs` - export `matchButtons(messages, urls)` per 5.5. Pure; takes
+   `Msg[]` and `string[]`; returns `{ matched, unmatched, summary }`.
+5. `lib.mjs` - `runRefresh(opts, deps)`: rewrite the send loop as steps
+   10-13 of section 5.2. Structure it as three inner helpers so a reader can
+   hold each in one screen: `pressOne(url, entry)` (deadline check, one
+   press with `decide()` retries, pace, returns `{ answered, text } |
+   { unanswered } | { stopped, reason, exitCode }`), `pressGroup(matched)`
+   (presses in manifest order, then one `byIds`, classifies the photo delta,
+   returns `{ confirmed: [url], photo: { changed, same, none }, stopped }`),
+   and `record(confirmedUrls)` (the carry-forward write of state and
+   `--result`, unchanged in spirit from B1). The deadline is checked inside
+   `pressOne` and before each send attempt; a `retry` whose `waitMs` would
+   end past the deadline becomes `stopped: 'flood wait of Ns would exceed
+   the budget'`. Return `{ sent, pressed, confirmed, pending, notLive,
+   unmatched, photo, floodWaits, stopped, exitCode }` where `pending = todo
+   - confirmed` (so the summary's numbers still add up to the stale count).
+   The dry-run branch prints the new counts line from 5.2 step 7 and still
+   returns before `client()` is called.
+6. `client.mjs` - replace `lastReply` with `incoming`, add `byIds` and
+   `press`, make `send` return `{ id }`; add `Api` to the lazy `import`;
+   add the `Msg` mapper as a module-private `plain(m)` exactly per 5.5.
+   Keep the header comment's promise: nothing prints `apiId`, `apiHash`,
+   `session`; the logger stays at error level. Add one comment line saying
+   why `invoke(GetBotCallbackAnswer)` is used instead of `Message.click()`.
+7. `run.mjs` - summary block per 5.2 step 13; `result.confirmed` feeds
+   `refreshed N`; append the `pressed P (photo changed C, same S, none Z)`
+   line to stdout and `$GITHUB_STEP_SUMMARY`; keep the `::warning::` on
+   pending. No other wiring changes (the deps object is unchanged - the
+   client factory already returns whatever `createClient` returns).
+8. `live.mjs` - in `imageSha(name)`, attach `.catch` that deletes the cache
+   entry and rethrows, so a failed image fetch is retried on the next round.
+   One why-comment.
+9. `lib.test.mjs` - the fake client gains scripted `send` (returns
+   incrementing ids), `incoming` (a queue of canned `Msg[]` answers, one per
+   call, so a test can make button messages arrive on the second wait
+   round), `byIds` (returns from a mutable `photoAfter` map so a test can
+   flip a photo id after a press) and `press` (a script of `{ ok, text } |
+   { throw }` per call). Add small builders `buttonMsg(id, url, photoId)`
+   and `summaryMsg(id)`. Add every test named in section 3.7; keep every
+   existing test, adapting the B1 loop tests to the new result shape
+   (`confirmed` where they asserted `sent`). Fake presses must count
+   against the same `sleep` recorder so the pace is observable.
+10. `docs/specs/META.md` section 7: the one sentence from section 7 of this
+    plan. `docs/specs/COVERAGE.md`: extend the `tools/tg-preview/lib.test.mjs`
+    paragraph with "button matching and the two-phase send-and-press loop".
+11. `docs/tg-preview.md` - correct, in place, in this order: (a) paragraph 1,
+    "the only way to change it is to ask `@WebpageBot` to refresh the URL"
+    -> send the URL **and press its "Update with content" button**, with
+    the measured reason (a plain send updates title and description and
+    keeps the cached picture when `og:image` still points at the same
+    address - this site's exact case); (b) paragraph 2, define "a refresh"
+    as send + press; (c) paragraph 3, the tool description: "sends only
+    what changed" -> sends, waits for the bot's one-message-per-link
+    replies, presses each, and records a URL only after the press is
+    acknowledged; (d) step E counts line; (e) step F replaced by section
+    9's F; (f) step G replaced by section 9's G; (g) "Operations": the
+    summary vocabulary (`refreshed` = confirmed presses; `pressed`/`photo`
+    line; `pending` now also covers "no button message" and "unconfirmed
+    press"; `--limit` counts sends and does not cap phase 1; `--limit 0`
+    is the press-only run), and fix the sentence about what turns the CI
+    job red so it matches `previews.yml`'s actual `if:` conditions
+    (reviewer's item 9: the job is red on exit 1/2 from `Refresh` or on a
+    failed `npm audit`/state push; a Telegram-side stop is green); (h)
+    "Rate limiting and resumability": the two axes, the constants, the
+    deadline rule, phase 1 as the free retry, the ~40-minute figure; (i)
+    "Coverage": name `matchButtons` and the loop; (j) grep the file for
+    "reply" and "refresh" afterwards and make sure no remaining sentence
+    implies a send is enough.
+12. `node --test tools/tg-preview/lib.test.mjs`; then
+    `node tools/tg-preview/run.mjs --dry-run --mode full` and `--dry-run
+    --only cc12,cc24,cc38` (needs no credential; must print the new counts
+    line and load no client); then `set -o pipefail; npm run check 2>&1 |
+    tail -n 120` with Bash timeout 600000. Stage by name: the five
+    `tools/tg-preview/*.mjs`, the three docs, the three task files. Commit
+    `fix(tg-preview): press "Update with content" and record only confirmed
+    presses`.
 
 **Acceptance criteria.**
 
-- `node --test tools/tg-preview/lib.test.mjs` passes with no
-  `tools/tg-preview/node_modules` present (delete it to prove it, then
-  `npm ci` again).
-- `node tools/tg-preview/run.mjs --dry-run --mode full` prints 1062 URLs,
-  107 messages, sends nothing, writes nothing, exits 0, without the three
-  env vars.
-- `node tools/tg-preview/run.mjs` with no state and no env exits 2 with a
-  sentence that names the missing variable and not its value.
-- `--apply` on a state with a foreign entry keeps the entry and takes ours.
-- `git status` after the batch shows no change to the root
-  `package-lock.json`, `ci.yml`, `i/`, `og/`, `data.js`.
-- `grep -n "^\.env" .gitignore` finds both lines.
+- `node --test tools/tg-preview/lib.test.mjs` passes without
+  `tools/tg-preview/node_modules` present.
+- `node tools/tg-preview/run.mjs --dry-run --mode full` prints `1062 urls
+  stale, ... up to 107 messages, ... presses`, sends nothing, writes nothing,
+  exits 0, without the three env vars. (The `ready` count depends on the
+  live site; record it, do not fix it.)
+- `node tools/tg-preview/run.mjs --limit ten --dry-run` exits non-zero with
+  `--limit must be a number, got ten`.
+- A `runRefresh` test proves a URL whose button message never arrives is
+  absent from every `writeState` call; another proves an unanswered press
+  with an unchanged photo is absent and with a changed photo is present.
+- `grep -n "lastReply" tools/tg-preview/*.mjs` finds nothing;
+  `grep -n "sinceMs" tools/tg-preview/*.mjs` finds nothing.
+- `grep -in "send.*refresh\|refresh.*send" docs/tg-preview.md` shows no
+  sentence claiming a send refreshes the preview (the implementer reads
+  each hit).
+- `git status` after the batch shows no change to `previews.yml`,
+  `package*.json`, `i/`, `og/`, `data.js`; `state.json` remains untracked.
 - `npm run check` green in one foreground call.
-- The workflow file passes `npx prettier --check .github/workflows/previews.yml`.
 
 **Verification commands.**
 
 ```text
 node --test tools/tg-preview/lib.test.mjs
 node tools/tg-preview/run.mjs --dry-run --mode full
-node tools/tg-preview/run.mjs --dry-run --only w76,root
-set -o pipefail; npm run check 2>&1 | tail -n 120        # Bash timeout 600000
-npx prettier --check .github/workflows/previews.yml
+node tools/tg-preview/run.mjs --dry-run --only cc12,cc24,cc38
+node tools/tg-preview/run.mjs --limit ten --dry-run        # expect a thrown parse error, non-zero exit
+set -o pipefail; npm run check 2>&1 | tail -n 120          # Bash timeout 600000
 ```
 
 **Risks / do-nots.**
 
-- Do not add `teleproto` (or anything) to the root `package.json`.
-- Do not touch `ci.yml`, the deploy allow-list, `og/`, `i/`, any fixture.
-- Do not run anything that sends to Telegram; there are no credentials and
-  there must not be any in the tree.
-- Do not commit a `state.json`; the owner's first run creates it.
-- Do not `git add -A`; the tree carries issue 47's B7 files.
-- The `Secrets present?` step and every log line: no secret values, ever.
-- `PER_MESSAGE`, the pacing and the rest interval are guesses around the
-  one documented number; leave them as named constants with the reason, so
-  B2 can tune them from the first real run.
+- Never run `run.mjs` without `--dry-run`. The owner's session is live in
+  `.env`; every send and press costs a young account's flood budget. No
+  agent presses anything.
+- Do not "improve" `matchButtons` with fuzzy URL matching beyond the
+  trailing-slash rule; do not match by order or by count.
+- Do not treat an unchanged photo id as failure in the answered case, and
+  do not treat it as success in the unanswered case.
+- Do not touch `previews.yml`; it is correct as is and R1 was reviewed.
+- Do not add a dependency; teleproto already exports `Api`.
+- Do not `git add -A`; stage by path.
+- The `Msg` shape and the TL field names in 5.5 were verified against the
+  installed package; if the implementer finds a mismatch at runtime of the
+  tests (they cannot at runtime of the client - no agent runs it), record
+  it in the handoff rather than guessing a new name.
 
-**Fallback.** If `teleproto` turns out to lack something at implementation
-time, `telegram@2.26.22` is API-identical (measured), audit-clean today, and
-a one-line swap in `client.mjs` and `package.json`; record the reason in the
-handoff.
+**Fallback.** None needed for the design. If the implementer cannot make
+`getMessages(peer, { ids })` return holes as `undefined` in a way the mapper
+tolerates, filter with `Array.isArray(list) ? list.filter(Boolean) : []` -
+that is the documented behaviour, not a workaround.
 
-### O1 - the owner's operations (not a code batch)
+### O1 (resumed) - the owner's operations, from step E
 
-Section 9, A through I, in order. Produces `state.json` on `main` and the
-three secrets. The orchestrator collects the Q1 evidence from step F.4.
+Not a code batch. Section 9, E then F (the residue check) then G (chunked),
+then H-J. Produces `state.json` on `main` and the three secrets. The
+orchestrator collects: F.1's `photo changed` count, F.4's already-posted
+check, and G.2's per-chunk `photo` counts.
 
 ### B2 - tuning from the first real run (outline; may be empty)
 
-After O1: fold in what Telegram actually did - whether one message with ten
-links is honoured, the real flood behaviour, the bot's reply vocabulary
-(then, and only then, decide whether a reply like "not found" should mark a
-URL pending). Update the constants and `docs/tg-preview.md`. Gate:
-`npm run check`. If nothing needs changing, close the task without it.
+After O1: fold in what Telegram actually did on both axes - whether ten
+links per message are honoured across 107 sends, the real `FLOOD_WAIT` /
+`PEER_FLOOD` behaviour of presses versus sends, how often presses go
+unanswered, the `same`/`changed` ratio, and the remaining deferred items in
+section 13 that O1's evidence makes worth doing. Gate: `npm run check`. If
+nothing needs changing, close the task without it.
 
-## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: yes
+## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: no
 
-**Q1 - does a refresh change previews in already-posted messages?**
-`context.md` records a claimed caveat that only *new* shares pick up the
-refreshed preview and old messages keep theirs forever. The owner has
-refreshed links by hand before and may know. It does not change the design;
-it changes the promise: if the caveat is true, this task makes every new
-share correct and cannot touch old ones, and `docs/tg-preview.md` must say
-so in its first paragraph. Step F.4 in section 9 is the cheap way to find
-out. Recommended: proceed with B1 either way; the answer only edits one
-paragraph.
+Both pass-1 questions were answered by the owner (`context.md`, decisions 5
+and 6). Pass 3 raises none: every fork was decided from measured evidence.
 
-**Q2 - may the CI job commit `tools/tg-preview/state.json` to `main` as
-`github-actions[bot]` with `[skip ci]`?** Section 3.3 chose a committed
-state file because it is the one store both callers can read and write with
-plain git, it is visible and diffable, and its loss mode is explicit. The
-cost is a bot commit on `main` after every deploy that changed a preview
-(artwork or data pushes, not every push), the job holding
-`contents: write`, and any branch protection on `main` having to admit the
-bot. `CLAUDE.md`'s "never push" is an agent rule, but the owner should say
-yes to a bot doing it. Recommended: **yes**. Fallback if no: an orphan ref
-`refs/tg-preview/state` written with `git push origin <sha>:refs/tg-preview/state`
-- same file, no commits on `main`, harder to see; the plan's sections 3.3
-and 6 would be revised before dispatch.
+**Can the owner trust `state.json` entries written before B3?** Stated
+plainly: **no entry written by the unfixed tool can be trusted on its own,
+and there is exactly one such entry - `cc19` - which happens to be honest
+only because the owner pressed its button by hand.** No other run ever
+wrote state: CI has no secrets and the probe bypassed `run.mjs`. So the file
+as it stands is correct and should be kept; nothing needs deleting. If that
+is ever in doubt, `--mode full` re-does every URL - send and press - and
+overwrites the entries honestly.
 
 ## 12. Risks and assumptions
 
-- **Fresh-account limits.** A new account is the kind Telegram limits first
-  (`PEER_FLOOD`). The tool stops green; the owner waits a day. Section 9,
-  A.4 softens it.
-- **"10 links per message" is the reference's number**, not Telegram's
-  documentation. The first real message (`--limit 1`, `--only`) shows what
-  the bot did with it; `PER_MESSAGE` is one constant.
-- **Pages edge caching** after a deploy: the live check waits up to five
-  minutes per round set; beyond that, URLs stay pending for the next run.
-- **`workflow_run` semantics.** Fires on the completion of `check` for
-  `main`; a dispatch of `check` on `main` also fires it, which is a
-  harmless no-op run. The checkout is `head_sha`, the deployed commit. If
-  the owner later renames the `check` workflow, `workflows: [check]` must
-  follow.
-- **Branch protection**, if any, must allow `github-actions[bot]` to push
-  to `main` (Q2).
-- **Two writers.** A local run and a CI run at the same time are serialised
-  by `--apply` onto fresh `origin/main` plus three push attempts; the
-  residue of a lost race is one URL refreshed twice, never a lost record.
-- **The session's IP.** Created on the owner's machine, used from GitHub's
-  runners. Telegram allows a session from anywhere; nothing to configure.
-- **Cut-over.** Section 3.2; the generator import and `--assets` are the
-  two seams. Carried in `handoff.md`, "Deferred", for issue 47.
+**Revised.**
+
+- **Fresh-account limits, now on two axes.** Presses are a different method
+  from sends and may have their own limits; the account is days old. The
+  run stops green on the first `PEER_FLOOD` from either. Chunked local
+  runs (section 9, G) are the mitigation.
+- **Unanswered presses.** If `@WebpageBot` never answers callback queries,
+  every press waits out Telegram's bot-response window before
+  `BOT_RESPONSE_TIMEOUT` arrives, and confirmation rests entirely on the
+  photo delta - a URL whose image really is unchanged would then stay
+  pending. The measured press on `cc19` produced an answer, so this is not
+  the expected case; if F.1 shows `unanswered` on all three, B2 tunes (a
+  shorter effective pace and treating "unanswered and pending is false"
+  as confirmed are the candidates - not decided now, no evidence).
+- **Press-only recovery updates metadata too** (the phase-1 assumption in
+  3.4). Fallback: `RECOVER_SCAN = 0`.
+- **`media.webpage.url` equality for the root.** The one URL Telegram might
+  canonicalise; the trailing-slash rule covers the plausible form. The
+  `--only root` dry run cannot see this; the first real send that includes
+  the root will, and an unmatched root shows up in the log as `no button
+  message for <url>` next to the bot's actual `url`, which is enough to
+  fix in B2.
+- **The 45-minute CI budget** now fits roughly one full reindex, not four.
+  Incremental runs are small; a full CI reindex is two runs at most, and
+  the state is written per batch.
+- **Pages edge caching**, `workflow_run` semantics, branch protection, two
+  writers, the session's IP, cut-over: unchanged from pass 1 (`0ab04eb`).
 
 ## 13. Deferred
 
-- A pointer line in `CLAUDE.md` ("after changing `og/` bytes, CI refreshes
-  Telegram previews; see `docs/tg-preview.md`") and in
-  `.claude/prompts/refresh-artwork.prompt.md` - orchestrator's call, one
-  line each.
-- Other messengers' caches (Discord re-fetches on its own; WhatsApp has no
-  refresh path). Not this task.
-- Reply parsing (B2, only with evidence).
-- An issue 47 cut-over checklist item: keep `page()` importable, or point
+**Revised** - the reviewer's nine deferred items from R1, decided:
+
+Folded into B3 (they live on the paths B3 rewrites, and each is a few
+lines):
+
+1. **Flood-wait deadline check** - the loop is rewritten and presses make
+   the per-batch check materially looser; section 3.4, "The deadline".
+2. **`live.mjs` cached rejected promises** - a real bug in the deploy-lag
+   case the rounds exist for; three lines; section 5.3.
+3. **`NaN` guards on `--limit`/`--budget-minutes`** - a silent exit-0
+   no-op is the same species of lie as the success accounting; section 5.1.
+4. **`sinceMs` not floored** - resolved by construction: the anchor is now
+   the sent message id, and `lastReply` is gone.
+8. **Dry-run counts wording** - the dry-run line is rewritten anyway
+   (section 5.2, step 7).
+9. **The doc sentence about what turns the CI job red** - the doc is
+   rewritten anyway (B3 step 11g).
+
+Left deferred, with the reason:
+
+5. **Unquoted `$args`/`$LIMIT` in the workflow** - `previews.yml` is
+   deliberately untouched by B3 (R1 was reviewed as a unit; nothing in the
+   loop change needs the workflow to move). `$args` must stay unquoted to
+   word-split; `"$LIMIT"` should be quoted. B2.
+6. **The unused `urls()` export** - test-only surface in `lib.mjs`; removing
+   it churns the 1062-count test for no behaviour change. B2, or never.
+7. **`--apply`'s needless `buildFromTree()`** - it exists only to obtain
+   `site`; cosmetic cost on a path B3 does not touch. B2.
+
+Other deferrals:
+
+- **Photo id in the state (schema v2)** so incremental runs can demand a
+  changed photo whenever the image sha changed - section 3.4, "Considered
+  and not taken". Revisit after O1 reports the `same`/`changed` ratio.
+- A pointer line in `CLAUDE.md` and `.claude/prompts/refresh-artwork.prompt.md`
+  - orchestrator's call, one line each.
+- Other messengers' caches. Not this task.
+- Issue 47 cut-over checklist item: keep `page()` importable, or point
   `manifest.mjs` at the new generator; decide whether `og/` stays a source
   asset.

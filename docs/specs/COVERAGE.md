@@ -260,10 +260,11 @@ actually lives, are covered here.
 `node --test` as its own step in `npm run check` rather than through vitest:
 it covers the Telegram preview refresher's pure logic (URL derivation,
 fingerprinting, what counts as stale, batching, the flood/fatal error table,
-and the send loop against a fake client, clock and live check). The real
-Telegram connection (`client.mjs`) and the real CDN fetch (`live.mjs`) are
-deliberately outside it - thin wrappers around a live network, where the only
-honest proof is Telegram and the CDN themselves. See `docs/tg-preview.md`.
+button matching, and the two-phase send-and-press loop against a fake
+client, clock and live check). The real Telegram connection (`client.mjs`)
+and the real CDN fetch (`live.mjs`) are deliberately outside it - thin
+wrappers around a live network, where the only honest proof is Telegram and
+the CDN themselves. See `docs/tg-preview.md`.
 
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code

@@ -123,19 +123,31 @@ async function main() {
 
   // A dry run already logged its own counts, batches and not-live list
   // (lib.mjs's runRefresh); the "refreshed/pending" summary and the
-  // ::warning:: below describe an attempted send, which a dry run never
-  // makes.
+  // ::warning:: below describe an attempted send-and-press, which a dry run
+  // never makes.
   if (!opts.dryRun) {
     const summary =
       'refreshed ' +
-      result.sent.length +
+      result.confirmed.length +
       ', pending ' +
       result.pending.length +
       (result.notLive.length ? ', not live ' + result.notLive.length : '') +
+      (result.unmatched.length ? ', no button message ' + result.unmatched.length : '') +
       (result.stopped ? ', stopped: ' + result.stopped : '');
+    const pressedLine =
+      'pressed ' +
+      result.pressed +
+      ' (photo changed ' +
+      result.photo.changed +
+      ', same ' +
+      result.photo.same +
+      ', none ' +
+      result.photo.none +
+      ')';
     log(summary);
+    log(pressedLine);
     if (process.env.GITHUB_STEP_SUMMARY) {
-      writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n', { flag: 'a' });
+      writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n' + pressedLine + '\n', { flag: 'a' });
     }
     if (result.pending.length > 0 && result.exitCode === 0) {
       console.log('::warning::' + result.pending.length + ' url(s) still pending a refresh');
