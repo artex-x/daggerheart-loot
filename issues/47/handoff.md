@@ -6,6 +6,27 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B5.6 is built, verified, committed and reviewed - the lists
+  slice B5.1-B5.6 is closed.** (implementer then reviewer, 2026-09-11, on
+  `ccbf345`). All eleven ordered steps landed with no deviation from the
+  brief; the plan's stated `~ packed` fallback was never needed - every
+  packed cell read `совпадает` on the first parity run. One code commit,
+  `feat(lists): the shared list page` (`ccbf345`, 22 files, +1392/-189), on
+  top of the planning commit `3324039`. No push. Checks, each its own
+  foreground call: `npm run check` **exit 0** twice (pre-commit and after
+  the doc edits), 921 tests, coverage 96.3 / 88.51 / 96.77 / 97.06;
+  `npm run build` clean (83.59 kB gzip); `node tests/parity.js "#/l/"` 30
+  cells **расхождений нет**; `"i/ci1 ~"` 36 cells нет; the tables/lists
+  regression group 30 cells нет; `npm run check:built` **exit 0** (budget
+  81.2 / 120 kB). **Review verdict: approve** - no blockers, nothing drawn
+  but inert, no divergence from `app.js` in the ported behaviour, no
+  contract file moved, and every new interactive element is reached by a
+  real event on at least one of the two proofs rather than through a
+  directly-invoked handler. That was this batch's one review; four risks
+  and five nits are recorded in "Deferred", not fixed. B5.4a nit 1 and
+  B5.3 nit 5 are closed by this batch.
+  NEEDS_HUMAN_CONFIRMATION: no.
+
 - Task status: **B5.6 planned and implement-ready - the last lists batch**
   (planner, 2026-09-11, on `d6c951f`, working tree clean but for the
   orchestrator's own `context.md` kickoff section, which is kept and
@@ -2105,6 +2126,13 @@ session did not plan either; no batch below is implement-ready.
 - **NEEDS_HUMAN_CONFIRMATION: no** - closing a slice and naming what is left
   needs no confirmation; picking between search and print, or splitting
   either into batches, is a planning decision for the next session.
+- **Carried into whichever batch next touches these files** (from B5.6's
+  review, full text in "Deferred"): `ListPage.svelte:103`'s `$effect`
+  comment still names the `todo` paragraph that `ccbf345` deleted - one
+  line, campsite, not worth a commit of its own; and the `~ packed` parity
+  cell cannot yet distinguish a real expansion from both apps failing
+  identically, which a one-spec throw would close the way `reorderedByDrag`
+  closed the same shape. Neither blocks the slice.
 
 ## Blockers
 
@@ -2507,6 +2535,69 @@ session did not plan either; no batch below is implement-ready.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B5.6's review findings (reviewer, 2026-09-11, against `ccbf345`) -
+  approved with no blockers; recorded, not fixed.** The batch's one review
+  cycle is spent; none of these justifies a remediation pass on its own.
+
+  Risks:
+
+  1. **`#/l/ ~ packed` cannot tell a real expansion from a symmetric
+     failure.** The driver's `expanded()` returns as soon as the hash leaves
+     `#/l/~`, including when it lands on `#/l/zzzz`. If both apps failed to
+     decompress, the two bad-link pages match pixel for pixel and
+     `listAddress` reads `#/l/zzzz` on both: cell green, nothing expanded -
+     the app-to-app blind spot B5.5's review closed in `reorderedByDrag`
+     with a throw (`tests/parity/specs.js:520-528`). Smallest close: a spec
+     with `only: ['#/l/ ~ packed']` that throws when `await d.hash()` is
+     `#/l/zzzz`. `listAddress` itself cannot carry it - it also covers the
+     legitimate `#/l/zzzz` state and its `run(d, lang)` never sees the state
+     id.
+  2. **The in-flight packed window is an unrecorded visual difference.** The
+     live app draws nothing while expanding (`app.js:4636` - no frame, no
+     tabs); the rewrite mounts `Shell` at once and shows an empty content
+     area under a live frame. The harness cannot measure it (the live
+     `ready()` blocks until expansion), so it is neither a `STATES` entry
+     nor `VISUAL_DEBT` - but it is real for a slow or large payload, and it
+     is stated only inside an HTML comment in `ListPage.svelte`.
+  3. **A stale expansion can pull the reader back.** `#expand`'s `then`
+     replaces unconditionally, so an unpack resolving after the person has
+     navigated away rewrites the address to the shared list. The live
+     `expandHash` has the identical flaw, so the rewrite is parity-correct
+     and must not be "fixed" without recording the divergence - but nothing
+     pins it today.
+
+  Nits:
+
+  1. `app/src/components/ListPage.svelte:103` - the `$effect` comment still
+     explains a failure mode as ending on "the 'not ours' `todo`
+     paragraph"; that element was deleted in `ccbf345`. Should name
+     `SharedListPage`. One line, for the next campsite pass in this file.
+  2. `AddToList.createNew`'s `N_SHARED` branch gates the toast on
+     `app.lists.saved`; live `createFor` toasts `addedTo` unconditionally
+     after `saveLists()` (`app.js:4227`). Visible only when storage refuses
+     (live: `addedTo` overwrites `saveFailed`; rewrite: only `saveFailed`).
+     The rewrite's shape is better and matches its own sibling path -
+     recorded as **intentional** rather than left silent.
+  3. Taking a **players'** link - where `encodeList(l, true)` already equals
+     the address - is the one `createNew` path nothing exercises; both the
+     component test and `tookSharedList` start from the `gm` payload, so the
+     hash always changes. It works; one assertion would pin it.
+  4. `sharedListPage.test.ts`'s `withTwo` helper has a single caller; every
+     other seeded case builds storage inline.
+  5. `docs/specs/FEATURES.md` (79-80) describes Import but has no bullet for
+     the shared-list page itself. Pre-existing and out of B5.6's declared
+     scope - not introduced by this batch.
+
+  Judged and dismissed by the same review, so nobody re-opens them: the
+  implementer's self-reported deviation (`screen.getByRole('main')` instead
+  of an `#app main` CSS selector) **does not matter** - same element, the
+  assertion is an absence, a broader scope makes it stricter, and it still
+  discriminates because the bad-link page would put an `h1` there. And in a
+  real browser `go('#/l/~x')` runs `#expand` twice (once from `go`, once
+  from the `hashchange` it causes), resolving to two identical
+  `replaceState` calls - harmless, and the double-`onChange`-after-`go`
+  shape is pre-existing for every navigation, not introduced here.
 
 - **B5.4a nit 1 and B5.3 nit 5 are closed by B5.6 (implementer,
   2026-09-11).** Nit 1: `RowMain`'s `tail`/`.rtail` has its caller -

@@ -1323,3 +1323,30 @@ adds only what B5.6's own reading found. Line numbers are `app.js` at
   surfaced in `npx vitest run` - only `svelte-check`/`tsc` catch them, so a
   batch that skips the typecheck step before the full `npm run check` risks
   finding both at once inside the slow gate instead of a fast one.
+
+## B5.6 reviewed and approved; the lists slice is closed (orchestrator, 2026-09-11)
+
+- HEAD `ccbf345` (`feat(lists): the shared list page`) on top of `3324039`
+  (the planning commit). Working tree clean; no peer commit landed during
+  either dispatch - `git log` read the same two commits at closeout as at
+  dispatch, with two interactive peer sessions live throughout.
+- **Review verdict: approve, no blockers** (reviewer, against `ccbf345`).
+  The three things this slice's reviews kept catching were all checked and
+  all clean here: no affordance drawn but inert (every new interactive
+  element is reached by a real event on at least one of the two proofs, not
+  through a directly-invoked handler), no divergence from `app.js` in the
+  ported behaviour or its product-text bytes, no contract file moved. Four
+  risks and five nits recorded in `handoff.md`, "Deferred", not fixed - the
+  batch's one remediation cycle went unused and there is no second review.
+- **The `~ packed` cell's blind spot is the one worth acting on later**, and
+  it is recorded rather than fixed: the driver's `expanded()` returns as soon
+  as the hash leaves `#/l/~`, so two apps that both fail to decompress land
+  on identical `#/l/zzzz` pages and the cell reads green. Same app-to-app
+  shape `reorderedByDrag` closed with a throw; the close is one spec with
+  `only: ['#/l/ ~ packed']`.
+- **What is left of the migration: the search slice (`#/search`) and the
+  print slice (`#/print/ci1-q1`)**, both still `pending` in
+  `tests/parity/specs.js`, neither planned. The next session starts with a
+  planner pass, not an implement dispatch. Print carries the heavier
+  evidence requirement - the Figma nodes named in `CLAUDE.md` must be opened
+  before any visual work.
