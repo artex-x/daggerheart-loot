@@ -1291,3 +1291,35 @@ adds only what B5.6's own reading found. Line numbers are `app.js` at
   `tookSharedList`.
 - **`TablesPage`'s local `toggleSel` (197-200) was the first copy**; the
   shared page is the second, so it moves to `AppState.toggleSel`.
+
+## B5.6 built: the lists slice is closed, and a `svelte-check` narrowing trap (implementer, 2026-09-11)
+
+- **The lists slice (`#/lists*`, `#/l/*`) is done as of `feat(lists): the
+  shared list page`.** `plan.md`'s "Not built" list under "Phase 4" now
+  names only `#/search` and `#/print/ci1-q1` as `pending` in
+  `tests/parity/specs.js`. Whoever plans next picks one of those two, or
+  scopes a first batch of one - there is no third `#/lists` follow-up.
+- **`svelte-check`'s narrowing of a `$derived.by` nullable across an
+  `{#if}/{:else if}/{:else}` chain needs the terminating negative check to
+  be bare.** `ListPage.svelte`'s `own: StoredList | null` narrowed to
+  non-null in the final `{:else}` only because the branch directly above it
+  was `{:else if !own}` - a compound condition like `{:else if route.kind
+  === 'sharedList' && !own}` sitting in that same position breaks it: TS
+  cannot prove `own` is non-null from a chain of conjunctions it cannot
+  fully enumerate (the component's own `Route` type has cases besides
+  `storedList`/`sharedList`, even though `App.svelte` never actually mounts
+  `ListPage` for one). Fixed by nesting the route-kind branch *inside* a
+  bare `{:else if !own}`, keeping the outer chain's narrowing intact. Worth
+  knowing before the next component that branches on both a route kind and
+  a derived nullable in the same `{#if}` chain.
+- **`exactOptionalPropertyTypes: true` (already on in `tsconfig.json`)
+  rejects `{ tail: undefined }` for a `tail?: string` field, and rejects
+  re-reading `m.qty` after only a `(m.qty ?? 0) > 1` check** (the boolean
+  coercion does not narrow the property access). Two instances hit in this
+  batch: `SharedListPage.svelte`'s `entries` now omits the `tail` key
+  entirely rather than setting it `undefined`; `state/lists.svelte.ts`'s
+  `addIds` meta-copy uses `typeof m.qty === 'number' && m.qty > 1` (and the
+  same shape for `gold`) instead of the `??`-coerced comparison. Neither
+  surfaced in `npx vitest run` - only `svelte-check`/`tsc` catch them, so a
+  batch that skips the typecheck step before the full `npm run check` risks
+  finding both at once inside the slow gate instead of a fast one.

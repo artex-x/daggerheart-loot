@@ -3,7 +3,8 @@
      app.js (2785-2803). Extracted out of `TableRows.svelte` on its second
      real use - the list page's own row (B5.4) draws the same body without
      `num` (`rnum` - only the alternate tables' columns override the roll
-     number) or `tail` (`rtail` - B5.6's shared-list decoration). */
+     number) or `tail` (`rtail` - the shared page's decoration, threaded
+     through `TableRows`'s own `TableEntry.tail`). */
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -22,7 +23,8 @@
     /** Overrides `it.roll` - only the alternate tables' own die-face number
      *  does this; the list page's row does not pass one. */
     num?: number | undefined;
-    /** The shared-list decoration after the name - B5.6's, unused today. */
+    /** The shared-list decoration after the name - `TableRows`'s
+     *  `TableEntry.tail`, from the shared page. */
     tail?: string | undefined;
   }
 
@@ -251,7 +253,7 @@
     color: #9a9aa6;
   }
 
-  /* off the `.rtail` rule, style.css:785 - B5.6's shared-list decoration. */
+  /* off the `.rtail` rule, style.css:785 - the shared page's decoration. */
   .rtail {
     font-style: normal;
     font-weight: 600;

@@ -15,6 +15,27 @@
 /** A known-good list link, shared with `listLink.test.ts` and `contracts.js`
  *  so all three read the same fixture rather than three copies of one payload. */
 const EQUIPMENT_ENTRY = require('../../docs/fixtures/lists/equipment-entry.json');
+/** Both notes on the list and both on one entry - the shared page's own
+ *  noted state, and the payload `PACKED` below decompresses to. */
+const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
+/** Quantity and price on the shared page's rows - all three tail shapes. */
+const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
+
+/**
+ * The packed form of `NOTES_BOTH_KINDS.gm.raw`, pasted rather than computed at
+ * run time - computing it here would let a regression in the pack path pass
+ * unnoticed, and the live app's own `sharedListLink` output must not stand in
+ * for it either, for the same reason. Computed once, by hand:
+ *
+ *   node -e "const z=require('zlib');const f=require('./docs/fixtures/lists/notes-both-kinds.json');console.log('~'+z.deflateRawSync(Buffer.from(f.gm.raw,'utf8')).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''))"
+ *
+ * Verified in planning: `inflateRawSync` of it re-encodes to exactly
+ * `NOTES_BOTH_KINDS.gm.payload`. Node's deflate bytes differ from Chrome's
+ * `CompressionStream` output, but both are raw deflate, which
+ * `DecompressionStream('deflate-raw')` reads either of.
+ */
+const PACKED =
+  '~JY2hDsIwFAD9PqKrH5AUwwfVMIXCLqNIBAkWQUKCL6xkpdB-w70_IgN5d-K44nmRiaRquVhttuvOtmZmralU09Wc8TxIeM2IJ0kvB3ETBoqWvTjp8aqruVEY5Ugk67kmUcj_yh1PJhBlJ041tjU1JyKBTNFEBukp04WP-tULhUDgyXvSXw';
 
 /*
  * `presses: true` marks a spec that changes the page - it clicks something, or
@@ -76,7 +97,12 @@ const NAME = {
     delOne: 'Удалить (1)',
     clearPriceOne: 'Убрать цену (1)',
     applyPrices: 'Проставить эти цены',
-    discount: 'Сделать скидку'
+    discount: 'Сделать скидку',
+    /* The chip's own text carries the "+ " - `d.click` needs the exact string
+       because the EN press has already renamed it by the time a press spec
+       runs. */
+    newList: '+ Новый список',
+    create: 'Создать'
   },
   en: {
     copyName: 'Copy name',
@@ -117,7 +143,9 @@ const NAME = {
     delOne: 'Delete (1)',
     clearPriceOne: 'Clear price (1)',
     applyPrices: 'Set these prices',
-    discount: 'Discount'
+    discount: 'Discount',
+    newList: '+ New list',
+    create: 'Create'
   }
 };
 
@@ -410,10 +438,51 @@ const listAddress = {
     '#/lists/a ~ batch deleted',
     '#/lists/b',
     '#/lists/nope',
-    '#/l/ ~ own list'
+    '#/l/ ~ own list',
+    '#/l/ ~ shared',
+    '#/l/ ~ shared, noted',
+    '#/l/ ~ packed',
+    '#/l/zzzz'
   ],
   async run(d) {
     return { hash: await d.hash() };
+  }
+};
+
+/**
+ * Taking a shared list whole, off `+ Новый список` on the shared page's own
+ * add-to-list menu - the live `createFor`'s '@' branch (app.js 4221-4228).
+ */
+const tookSharedList = {
+  presses: true,
+  name: "taking a shared list whole, into a new list of one's own",
+  only: ['#/l/ ~ shared, noted'],
+  async run(d, lang) {
+    await d.click(NAME[lang].addToList);
+    await d.click(NAME[lang].newList);
+    await d.click(NAME[lang].create);
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return {
+      hash: await d.hash(),
+      stored: stored.map((l) => [l.name, l.ids, l.note ?? null, l.hnote ?? null, l.meta ?? null])
+    };
+  }
+};
+
+/**
+ * Adding a shared list's ids into an existing list of one's own, off a chip
+ * on the shared page's own add-to-list menu - the live `applyAddTo`'s '@'
+ * branch (app.js 1907-1920), which copies the players'-visible meta along.
+ */
+const addedSharedToList = {
+  presses: true,
+  name: "a chip adding a shared list's ids and meta into an existing list",
+  only: ['#/l/ ~ shared'],
+  async run(d, lang) {
+    await d.click(NAME[lang].addToList);
+    await d.click('Клад дракона');
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return { hash: await d.hash(), stored: stored.map((l) => [l.id, l.ids, l.meta ?? null]) };
   }
 };
 
@@ -1439,6 +1508,35 @@ const STATES = [
     why: 'own-list recognition: the same page as #/lists/a'
   },
 
+  {
+    id: '#/l/ ~ shared',
+    route: '#/l/' + QTY_AND_PRICE.player.payload,
+    storage: two,
+    why:
+      'a list from another player: heading "Лавка", the sub, the add control, three rows with ' +
+      'their tails (×2; ×5 · price; price), no notes, no bar. Seeded so addedSharedToList has a ' +
+      'list to add to; the lists are not drawn here, so the seed costs no pixel'
+  },
+  {
+    id: '#/l/ ~ shared, noted',
+    route: '#/l/' + NOTES_BOTH_KINDS.gm.payload,
+    why:
+      '"Тайник": both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails'
+  },
+  {
+    id: '#/l/ ~ packed',
+    route: '#/l/' + PACKED,
+    enter: (d) => d.expanded(),
+    why:
+      'the packed form, expanded and rewritten to the plain form - pixels identical to ' +
+      '"~ shared, noted"; listAddress proves the rewrite'
+  },
+  {
+    id: '#/l/zzzz',
+    route: '#/l/zzzz',
+    why: 'the bad-link page: "Предмет не найден", the badShare line, the "На главную" button'
+  },
+
   { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
   { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
 ];
@@ -1461,6 +1559,8 @@ const SPECS = [
   deletedList,
   restoredList,
   listAddress,
+  tookSharedList,
+  addedSharedToList,
   renamedList,
   movedByPosition,
   reorderedByDrag,

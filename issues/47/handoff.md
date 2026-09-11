@@ -1189,7 +1189,115 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   item 4 (removing `committed`'s clamp for the negative range would otherwise
   silently un-clamp the stepper too) rather than a separate deviation.
 
+- Batch name/id: **B5.6 - the shared list page, the packed link, the bad
+  link, and taking a shared list - the last lists batch** (this session, on
+  `3324039`)
+- What shipped: `#/l/<payload>` for a payload that is nobody's own list now
+  draws the live `renderSharedList`: heading (or `Без названия`), the
+  `Список от другого игрока · N позиций` sub as one text node, one
+  `Добавить в список` control whose `+ Новый список` takes the whole list
+  (name, both notes, every entry's players'-visible meta) into a new list
+  and navigates to it, and whose chips pour ids with qty/gold/note (never
+  the GM's own note) into an existing list; both list hitnotes above the
+  rows, `TableRows` rows with `×qty · price` tails, each row's own hitnotes
+  after it; a ticked row raises the selection bar, whose add-to-list also
+  carries the shared meta. `#/l/~<packed>` expands through the compress port
+  and rewrites the address to the plain form in place; a packed link that
+  cannot expand, or any payload that does not decode, lands on `#/l/zzzz`.
+  Closes B5.4a nit 1 (`RowMain`'s `tail` gets its caller) and B5.3 nit 5
+  (`ListStore.create(name, init)` gets its second caller).
+- Tests: `state/lists.test.ts` - `addIds` with `meta` copies qty above 1,
+  gold above 0 and note, never `hnote`, for fresh ids only; an id already in
+  the list keeps its own meta; no `meta` argument leaves `list.meta`
+  untouched. `state/app.test.ts` - a new `describe('a packed address')`
+  (five cases: expands at construction as a replace, lands on `#/l/zzzz`
+  when the port cannot unpack without looping, lands there when `unpack`
+  rejects, expands a hash the router announces after `start()`, expands
+  through `go()`) and `toggleSel`/`shared` cases in the existing describes.
+  `components/listPage.test.ts` - the "todo paragraph" case replaced with
+  "draws the shared page"; two new cases for the packed-address frame and
+  the bad-link landing. `components/sharedListPage.test.ts` (new, 20 cases
+  across heading/sub, untitled, notes (including a `\n` → `<br>`), the three
+  tail shapes plus coin mode, selection, the bar and the page's own chip
+  carrying shared meta, the GM's note staying behind, taking the whole list
+  into a new one, a blank name refused, a row's own modal, the bad link,
+  English, and four axe passes). `a11y.test.ts` - both new components named
+  in `COVERED`, one new `STATES` entry (the noted shared list, read from
+  `notes-both-kinds.json` the way `listLink.test.ts` reads fixtures).
+- Files changed: new `app/src/components/HitNote.svelte`,
+  `SharedListPage.svelte`, `sharedListPage.test.ts`; changed
+  `app/src/lib/dict.ts`, `lib/lists.ts`, `state/lists.svelte.ts`,
+  `state/lists.test.ts`, `state/app.svelte.ts`, `state/app.test.ts`,
+  `components/AddToList.svelte`, `components/ListPage.svelte`,
+  `components/TableRows.svelte`, `components/RowMain.svelte`,
+  `components/TablesPage.svelte`, `components/a11y.test.ts`,
+  `components/listPage.test.ts`, `tests/parity/driver.js`,
+  `tests/parity/specs.js`, `docs/specs/COVERAGE.md`, `issues/47/plan.md`,
+  `issues/47/handoff.md`.
+- Commit(s): one, `feat(lists): the shared list page`, on top of `3324039`.
+  No push.
+- Deviations and rationale: none from the brief's eleven ordered steps. One
+  test-writing choice not spelled out in the brief: `listPage.test.ts`'s
+  packed-address test scopes its query with `screen.getByRole('main')`
+  rather than a `#app main` CSS selector - the same element, and the
+  accessible-role form this suite already uses elsewhere. See `plan.md`,
+  "B5.6 built", for the full accounting and exact verification commands/
+  results.
+
 ## Verification
+
+- Commands run (exact), this session (B5.6, on `3324039`):
+  - `npx vitest run app/src/state app/src/lib` (step 1) - green, 501 tests.
+  - `npx vitest run app/src/components/sharedListPage.test.ts` and the full
+    `npx vitest run` (ad hoc, between steps, to catch compile/logic errors
+    before the formal gates) - one failure found and fixed (`getByText('For
+    players')` matched two elements in the English case - the list note and
+    ci1's own entry note share the label; changed to `getAllByText(...)
+    .length`), then 38 files / 921 tests green.
+  - `npx eslint <every file this batch touched>` - one error found and fixed
+    (`@typescript-eslint/no-unnecessary-type-assertion` on an unneeded `as
+    HTMLInputElement` in `sharedListPage.test.ts`), then clean (the two
+    `tests/parity/*.js` files are eslint-ignored by config, expected).
+  - `npx svelte-check --tsconfig ./tsconfig.json --fail-on-warnings` - eleven
+    errors on the first run, all fixed: `state/lists.svelte.ts`'s `addIds`
+    meta-copy used `(m.qty ?? 0) > 1` then read `m.qty` again, which
+    `exactOptionalPropertyTypes` does not narrow - changed to `typeof m.qty
+    === 'number' && m.qty > 1`, same for `gold`; `SharedListPage.svelte`'s
+    `entries` built `{ it, tail: undefined }` objects, not assignable to
+    `TableEntry`'s optional `tail?: string` under the same flag - changed to
+    omit the key entirely when `tailOf` returns `undefined`;
+    `ListPage.svelte`'s final `{:else}` lost `own`'s null-narrowing once a
+    second `{:else if route.kind === 'sharedList' && ...}` branch sat beside
+    the bare `!own` one - restructured to `{:else if !own}` with the
+    packed/shared-page distinction nested inside it, so the bare `!own` check
+    is what narrows `own` for the final branch, same as before this batch;
+    `listPage.test.ts`'s new bad-link case passed `{ id: 'z', ... }` to
+    `encodeList`, which takes `ListShape` (no `id`) not `StoredList` -
+    dropped the field. **exit 0** on the second run: 532 files, 0 errors, 0
+    warnings.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 7, one
+    foreground call, `timeout: 600000`) - **exit 0** on the first attempt:
+    format/lint/typecheck clean, `data`/`derived.js`/`i18n.js`/
+    `selftest.mjs` clean (292 passed), 921 tests / 0 failures, coverage 96.3
+    stmts / 88.51 branch / 96.77 funcs / 97.06 lines.
+  - `npm run build` (step 8) - clean; `dist/assets/app.js` 278.03 kB, 83.59
+    kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/l/"` (step 8) - 30 state
+    cells (five states × two languages × three widths) plus `listAddress`,
+    `tookSharedList`, `addedSharedToList` - **расхождений нет**. Every
+    `~ packed` cell read `совпадает`; `expanded()` needed no fallback.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "i/ci1 ~"` (step 8) - 36 cells
+    (the `AddToList` regression) - **расхождений нет**.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables @" "#/tables ~ a row
+    ticked" "#/tables ~ bar menu" "#/lists/a @" "#/lists/a ~ rolled"` (step
+    8) - 30 cells (`TableRows`, the bar's menu, `ListPage`'s branch and the
+    `HitNote` extraction) - **расхождений нет**.
+  - `npm run check:built` (step 9) - **exit 0**: build clean, `file://`
+    smoke opens from a folder, bundle budget 81.2 kB against 120 kB.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 11, one
+    foreground call, `timeout: 600000`, run immediately before the commit
+    since the doc edits above moved the tree fingerprint) - **exit 0**,
+    re-arming the gate for `feat(lists): the shared list page`.
 
 - Commands run (exact), this session (B5.5's remediation pass, on `ba0a92d`):
   - `set -o pipefail; npm run check 2>&1 | tail -n 120` (one foreground call,
@@ -1969,78 +2077,34 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B5.6 - the shared page, the packed link, the bad link, and taking a shared
-list - is implement-ready.** The full brief is `plan.md`, "B5.6 planned"
-(ordered steps, the exact test cases per file, the four states with their
-routes and the pasted packed payload, the two press specs, the verification
-groups, the do-nots, and the decisions not to reopen). This section is the
-template's summary of it; where the two differ, the plan wins.
+**The lists slice is closed.** B5.6 was its last batch (see "Completed" and
+`plan.md`, "B5.6 built"); every `#/lists*` and `#/l/*` state in
+`tests/parity/specs.js` reads `совпадает`, none `pending`. `plan.md`, "Phase
+4 - where the rewrite is" is updated to say so.
 
-- **Name:** B5.6 - the shared list page.
-- **Objective:** `#/l/<payload>` for a list that is nobody's draws the live
-  `renderSharedList` (app.js 3130-3170): heading, `Список от другого игрока
-  · N позиций`, one `Добавить в список` whose `+ Новый список` takes the
-  whole list (name, both notes, meta) into a new list and lands on it, and
-  whose chips copy ids with qty/gold/players' note into an existing list;
-  the two list hitnotes; `TableRows` rows with `×qty · price` tails and
-  per-row hitnotes; the selection bar off a ticked row, carrying the same
-  meta. `#/l/~<packed>` expands through the compress port and rewrites the
-  address in place; a packed link that cannot expand, or any payload that
-  does not decode, lands on `#/l/zzzz` (`Предмет не найден`, the
-  `badShare` line, `На главную`). Closes B5.4a nit 1 and B5.3 nit 5.
-- **In scope:** `lib/dict.ts` (`sharedList`, `toStart`), `lib/lists.ts`
-  (`N_SHARED`), `state/lists.svelte.ts` (`addIds(list, ids, knows,
-  meta?)`), `state/app.svelte.ts` (`shared`, `toggleSel`, `#expand`),
-  `components/HitNote.svelte` (new, second use), `SharedListPage.svelte`
-  (new), `TableRows.svelte` (`TableEntry.tail`, `after` snippet),
-  `RowMain.svelte` (comments), `AddToList.svelte`, `ListPage.svelte`,
-  `TablesPage.svelte`, `a11y.test.ts`, `tests/parity/driver.js`
-  (`expanded()`), `tests/parity/specs.js`, `docs/specs/COVERAGE.md`.
-- **Out of scope:** `CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`,
-  `ROUTES.md`, `llms.txt` (nothing here changes a contract); `Button.svelte`
-  (`href` + `sameTab` + `primary` exist); `ListStore.create`'s signature;
-  `RecordModal`'s `extra` on the shared page (live returns none there); a
-  `.page-h`/`.page-sub` extraction (recorded below); search; print.
-- **Files expected:** the list above plus `state/lists.test.ts`,
-  `state/app.test.ts`, `components/listPage.test.ts`,
-  `components/sharedListPage.test.ts` (new); `plan.md`, this file,
-  `context.md` at close-out.
-- **Steps:** eleven, in `plan.md` "B5.6 planned", "Ordered steps" - lib,
-  store and state first (1); `HitNote`, `TableRows`, `RowMain`,
-  `TablesPage` (2); `AddToList` (3); `SharedListPage` and `ListPage`'s
-  branch, the a11y guard (4); the tests (5); driver verb and specs (6);
-  `npm run check` (7); build and the three parity groups (8);
-  `check:built` (9); docs (10); check again, commit (11). One code commit,
-  `feat(lists): the shared list page`, on top of this planning commit.
-- **Acceptance criteria:** `plan.md` "B5.6 planned", "Acceptance criteria" -
-  check green with the four new code paths reached; the a11y guard names
-  both new components; all five `#/l/` states `совпадает` at three widths
-  in both languages; `listAddress` reads the plain hash for `~ packed` on
-  both apps; `tookSharedList` and `addedSharedToList` agree; the three
-  regression groups untouched; `check:built` green; no `VISUAL_DEBT`, no
-  `ACCEPTED`.
-- **Verification commands:** `set -o pipefail; npm run check 2>&1 | tail -n
-  120` (one foreground call, timeout 600000) before the commit and again
-  after the doc edits; `npm run build`; then, each its own foreground call,
-  none merged, `MSYS_NO_PATHCONV=1` in front: `node tests/parity.js "#/l/"`
-  (30 cells + 3 specs); `node tests/parity.js "i/ci1 ~"` (36 cells); `node
-  tests/parity.js "#/tables @" "#/tables ~ a row ticked" "#/tables ~ bar
-  menu" "#/lists/a @" "#/lists/a ~ rolled"` (30 cells); `npm run
-  check:built`. Each group fits one call on the evidence of B5.4a/B5.5
-  (42-cell groups ran inside one); the three merged (96 cells) would not
-  reliably - do not merge.
-- **Risks / do-nots:** `plan.md` "B5.6 planned", "Risks and do-nots" - the
-  packed payload is pasted, not computed; `:global(.hitnote + .hitnote)`
-  in `HitNote`, after the base rule; the `startsWith(PACK_MARK)` guard in
-  `#expand`; no `#expand` from `replace()`; the `'@'` key never toggles;
-  `addIds` never copies `hnote` and only for fresh ids; one text node for
-  the sub; no `ontoggleall` on the shared page; `two` seeded on `~ shared`
-  only; `~ packed`'s `enter` is `expanded()`, not `settle()`; nothing
-  `timed`.
-- **Fallback:** none needed. If `expanded()` still leaves the `~ packed`
-  rewrite cell red on the rewrite side, the wait is on the wrong signal -
-  wait for the `h1` to exist in `#app main` instead, and record which.
-- **NEEDS_HUMAN_CONFIRMATION: no.**
+**What is left of Phase 4's "Not built" list, per `plan.md`: the search
+slice (`#/search`) and the print slice (`#/print/ci1-q1`), both still
+`pending` in `tests/parity/specs.js`.** Neither has a plan yet - the next
+planning pass picks one (or scopes a first batch of one) the way "B5
+planned" scoped the lists slice before B5.1 was implement-ready. This
+session did not plan either; no batch below is implement-ready.
+
+- **Name:** not yet chosen - planning is the next step, not implementation.
+- **Candidates, per `plan.md`'s own "Not built" list:**
+  - **Search** (`#/search`) - the search slice. No planning notes exist yet
+    in `plan.md`; `lib/search.ts`'s `matches` already has unit coverage
+    (`search.test.ts`, per `COVERAGE.md`) but no screen consumes it.
+  - **Print** (`#/print/ci1-q1`) - the print slice. `docs/specs/FEATURES.md`
+    documents the nine-per-A4-sheet layout and the colour/black-and-white
+    split (`CLAUDE.md`, "Product laws"); the Figma print design nodes
+    (`88Hhc89oY9Orcbvd2ok1Hx`, `714-42387`/`3773-90792`) are the evidence to
+    open before any visual work here, per `CLAUDE.md`, "Source and commit
+    conventions".
+- **Steps:** none yet - a planner pass is needed first, the same shape "B5
+  planning facts" and "B5.6 planning facts" took for the lists slice.
+- **NEEDS_HUMAN_CONFIRMATION: no** - closing a slice and naming what is left
+  needs no confirmation; picking between search and print, or splitting
+  either into batches, is a planning decision for the next session.
 
 ## Blockers
 
@@ -2444,16 +2508,16 @@ template's summary of it; where the two differ, the plan wins.
 
 ## Deferred
 
-- **B5.4a nit 1 and B5.3 nit 5 are assigned to B5.6 with their answers
-  (planner, 2026-09-11).** Nit 1: `RowMain`'s `tail`/`.rtail` gets its
-  caller - `TableRows`'s `TableEntry.tail`, from the shared page - and
-  stays; see `plan.md`, "B5.6 planned", "Resolved". Nit 5:
-  `ListStore.create(name, init)`'s second caller is `AddToList`'s take of
-  a whole shared list. Both close when B5.6 lands. Recorded, not fixed,
-  by the same pass: `.page-h`/`.page-sub` now have three scoped copies
-  (`RecordPage`, `ListPage`, `PageHead`) and `SharedListPage` adds a
-  fourth - a heading-rule extraction is project-wide cleanup for after the
-  lists slice, not a B5.6 change.
+- **B5.4a nit 1 and B5.3 nit 5 are closed by B5.6 (implementer,
+  2026-09-11).** Nit 1: `RowMain`'s `tail`/`.rtail` has its caller -
+  `TableRows`'s `TableEntry.tail`, threaded from `SharedListPage.svelte` -
+  and stays. Nit 5: `ListStore.create(name, init)`'s second caller is
+  `AddToList.svelte`'s `createNew()`, taking a whole shared list
+  (`key === N_SHARED`) into a new list in one call. Recorded, still not
+  fixed, by the same pass: `.page-h`/`.page-sub` now have four scoped
+  copies (`RecordPage`, `ListPage`, `PageHead`, `SharedListPage`) - a
+  heading-rule extraction is project-wide cleanup for after the lists
+  slice, not a B5.6 change; nobody has picked it up yet.
 
 - **B5.4a's nits 2, 3 and 5 are closed by B5.5 (implementer, 2026-09-11).**
   Nit 2: `specs.js` carries the "Recorded, not keyed" paragraph above

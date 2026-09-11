@@ -17,6 +17,7 @@
   import Field from './Field.svelte';
   import HelpBox from './HelpBox.svelte';
   import HelpButton from './HelpButton.svelte';
+  import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
   import NumberField from './NumberField.svelte';
   import OrGrid from './OrGrid.svelte';
@@ -24,10 +25,10 @@
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
   import RowMain from './RowMain.svelte';
+  import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
-  import type { IconName } from '../lib/icons.js';
   import { itemsWord, nameOf } from '../lib/i18n.js';
   import { encodeListRaw } from '../lib/listLink.js';
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
@@ -63,8 +64,8 @@
 
   /**
    * The list this address shows, or `null` for an id nobody has, a shared
-   * payload matching no list of ours (B5.6 keeps the `todo` paragraph for
-   * that), or a packed payload (also B5.6's).
+   * payload matching no list of ours (drawn by `SharedListPage`), or a
+   * packed payload (drawn while `AppState` expands it, see below).
    */
   const own = $derived.by((): StoredList | null => {
     const r = route;
@@ -567,18 +568,6 @@
   </div>
 {/snippet}
 
-{#snippet hitnote(icon: IconName, label: string, text: string | undefined)}
-  {#if text}
-    <div class="hitnote">
-      <Icon name={icon} />
-      <span
-        ><b>{label}</b>{#each text.split('\n') as line, i (i)}{#if i > 0}<br
-            />{/if}{line}{/each}</span
-      >
-    </div>
-  {/if}
-{/snippet}
-
 {#if !index}
   <p class="miss">{t.noData}</p>
 {:else if route.kind === 'storedList' && !own}
@@ -586,8 +575,13 @@
   <p class="page-sub">{t.listNotFoundSub}</p>
   <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
 {:else if !own}
-  <!-- B5.6's shared page: a payload that decodes to nobody's list. -->
-  <p class="todo">{app.hash}</p>
+  {#if route.kind === 'sharedList' && route.packed}
+    <!-- A packed link: `AppState` is expanding it and will rewrite the
+         address to the plain form or to `#/l/zzzz`; the live app draws
+         nothing until then either, app.js 4636. -->
+  {:else if route.kind === 'sharedList'}
+    <SharedListPage {app} {index} payload={route.payload} />
+  {/if}
 {:else}
   <!-- The live app's own shape: the heading carries no text of its own, only
        the rename input - `renderOneList` writes no separate title. -->
@@ -700,10 +694,8 @@
             </RecordCard>
           {/snippet}
         </OrGrid>
-        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-        {@render hitnote('eye', t.notePub, metaOf(h.id).note)}
-        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-        {@render hitnote('eyeOff', t.noteHid, metaOf(h.id).hnote)}
+        <HitNote icon="eye" label={t.notePub} text={metaOf(h.id).note} />
+        <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(h.id).hnote} />
       {/if}
     </details>
   {/if}
@@ -934,15 +926,9 @@
     max-width: 70ch;
   }
 
-  .miss,
-  .todo {
+  .miss {
     margin: 0;
     color: var(--muted2);
-  }
-
-  .todo {
-    font-family: var(--mono);
-    font-size: var(--step--1);
   }
 
   /* off the global `input[type=text]` rule (style.css:254-258), scoped as
@@ -1256,47 +1242,6 @@
     gap: 10px;
     align-items: stretch;
     flex-wrap: wrap;
-  }
-
-  /* off `.hitnote` and its four (style.css:626-633) */
-  .hitnote {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    margin-top: 12px;
-    padding: 10px 12px;
-    border: 1px solid var(--line2);
-    border-left: 2px solid var(--gold);
-    border-radius: 9px;
-    background: rgb(216 171 94 / 6%);
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--txt);
-  }
-
-  .hitnote :global(svg) {
-    fill: var(--gold);
-    margin-top: 3px;
-    flex: none;
-  }
-
-  .hitnote + .hitnote {
-    margin-top: 8px;
-  }
-
-  .hitnote b {
-    display: block;
-    font-size: 10.5px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted2);
-    font-weight: 650;
-    margin-bottom: 2px;
-  }
-
-  .hitnote span {
-    min-width: 0;
-    overflow-wrap: break-word;
   }
 
   /* off `.batch`, `.batch.on`, `.batch-all`, `.batch.on .batch-all`

@@ -231,6 +231,10 @@ const ru = {
   nameFirst: 'Сначала назовите список',
   untitled: 'Без названия',
   saveFailed: 'Не удалось сохранить: браузер блокирует локальное хранилище',
+  /* The shared page - app.js 3130-3170: a list from another player, and the
+     bad-link page's own link home. */
+  sharedList: 'Список от другого игрока',
+  toStart: 'На главную',
   print: 'Печать',
   printHint: 'Собрать карточки для печати: девять на лист A4',
   homeSet: 'Приложение будет открываться на этом разделе',
@@ -495,6 +499,8 @@ const en: Dict = {
   nameFirst: 'Give the list a name first',
   untitled: 'Untitled',
   saveFailed: 'Could not save: the browser is blocking local storage',
+  sharedList: 'A list from another player',
+  toStart: 'Home',
   print: 'Print',
   printHint: 'Lay these out for printing: nine to an A4 sheet',
   homeSet: 'The app will open on this section',

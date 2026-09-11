@@ -17,6 +17,7 @@
      the live app draws those straight from `rowHTML`/`tileHTML` with no
      `selectAllHTML` wrapper, unlike every other body, which goes through
      `renderList` and always gets one. */
+  import type { Snippet } from 'svelte';
   import RowMain from './RowMain.svelte';
   import { artSrc } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -30,6 +31,8 @@
     /** Overrides `it.roll` - only the alternate tables' own die-face number
      *  does this; every other body shows the record's real roll. */
     n?: number;
+    /** The shared page's `×qty · price` after the name - `RowMain`'s `rtail`. */
+    tail?: string;
   }
 
   interface Props {
@@ -43,6 +46,10 @@
     onartfail: (id: string) => void;
     onopen: (it: Record_) => void;
     ontoggleall?: (ids: string[]) => void;
+    /** Drawn right after a list-view row - the shared page's per-entry
+     *  hitnotes, which the live `renderSharedList` puts between the rows,
+     *  app.js 3163-3166. */
+    after?: Snippet<[Record_]>;
   }
 
   const {
@@ -55,7 +62,8 @@
     ontoggle,
     onartfail,
     onopen,
-    ontoggleall
+    ontoggleall,
+    after
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -105,8 +113,18 @@
             }}
           />
         </label>
-        <RowMain {it} {index} {lang} {artBroken} {onartfail} {onopen} num={rollNum} />
+        <RowMain
+          {it}
+          {index}
+          {lang}
+          {artBroken}
+          {onartfail}
+          {onopen}
+          num={rollNum}
+          tail={entry.tail}
+        />
       </div>
+      {#if after}{@render after(it)}{/if}
     {:else}
       {@const sub = lang === 'ru' ? it.en : it.ru || ''}
       {@const n = rollNum ? String(rollNum) : tileTier(it)}

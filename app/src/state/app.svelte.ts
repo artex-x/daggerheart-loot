@@ -18,13 +18,14 @@ import { dict, type Dict } from '../lib/dict.js';
 import {
   appUrl,
   legacySource,
+  PACK_MARK,
   parseHash,
   recordUrl,
   sharedListHash,
   type Route,
   type Site
 } from '../lib/hash.js';
-import { encodeList } from '../lib/listLink.js';
+import { encodeList, type DecodedList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
 import type { Lang, Section } from '../lib/types.js';
 import type { Env } from '../ports/index.js';
@@ -127,6 +128,17 @@ export class AppState {
    */
   readonly sel = new SvelteSet<string>();
 
+  /**
+   * What the open shared page shows - the live `S.shared` (app.js 51,
+   * 3140-3141). Set by `SharedListPage` while mounted, null on every other
+   * page: the route gate the live `metaForKey` applies (`route is l/ and no
+   * openList`, 1874-1877), done here by mount instead. Every add-to-list menu
+   * on the shared page - the page's own, the bar's, a card's - reads this to
+   * copy the entry's qty, price and players' note along, and `+ Новый
+   * список` on it takes the whole list.
+   */
+  shared = $state<DecodedList | null>(null);
+
   /** What the toast is showing, or nothing. `Shell.svelte` renders it. */
   toast = $state<Toast | null>(null);
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -160,6 +172,7 @@ export class AppState {
     this.hash = first === '' || first === '#' || first === '#/' ? this.#home : first;
     if (this.hash !== first) env.router.replace(this.hash);
     this.#applySource();
+    this.#expand();
   }
 
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
@@ -170,6 +183,7 @@ export class AppState {
       this.menuFor = '';
       this.sel.clear();
       this.#applySource();
+      this.#expand();
     });
     this.#stopListWatch = this.lists.watch();
     return () => {
@@ -274,12 +288,47 @@ export class AppState {
     this.menuFor = '';
     this.sel.clear();
     this.#applySource();
+    this.#expand();
   }
 
   /** Clears the selection and folds its menu - the live `clearSel` action. */
   clearSel(): void {
     this.sel.clear();
     this.menuFor = '';
+  }
+
+  /** Ticks or unticks one row - `TablesPage.svelte`'s own copy moved here on
+   *  its second use (the shared page). */
+  toggleSel(id: string): void {
+    if (this.sel.has(id)) this.sel.delete(id);
+    else this.sel.add(id);
+  }
+
+  /**
+   * Expands a packed shared-list address in place - the live `expandHash`
+   * (app.js 3589-3603). Runs at the same three moments the live app calls it:
+   * the constructor (after the first route is settled), every navigation the
+   * router announces, and every `go()`. Never from `replace()` - the
+   * expansion's own `replace` below would re-enter this.
+   *
+   * `unpack` hands back a payload still starting with `PACK_MARK` when the
+   * port cannot decompress at all (the test env's `plainCompress`, and a
+   * browser without `DecompressionStream` inside the real port's own catch) -
+   * that is the same failure as a rejected promise, and both land on
+   * `#/l/zzzz`. Without this guard a port that cannot unpack would replace
+   * the same packed hash forever.
+   */
+  #expand(): void {
+    const r = this.route;
+    if (r.kind !== 'sharedList' || !r.packed) return;
+    void this.env.compress
+      .unpack(r.payload)
+      .then((plain) => {
+        this.replace(sharedListHash(plain.startsWith(PACK_MARK) ? 'zzzz' : plain));
+      })
+      .catch(() => {
+        this.replace(sharedListHash('zzzz'));
+      });
   }
 
   /**

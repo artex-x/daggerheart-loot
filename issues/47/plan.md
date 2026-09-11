@@ -56,10 +56,13 @@ Both are below, after "B3 built".
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/lists` - the lists slice, **planned as six batches B5.1-B5.6** (see "B5
-  planned"); B5.1 is implement-ready in `handoff.md`
 - `#/search` - the search slice
 - `#/print/ci1-q1` - the print slice
+
+**`#/lists` - the lists slice - is done as of B5.6.** Built across six
+batches, B5.1-B5.6 (see "B5 planned" onward); B5.6 was the last one. Every
+`#/lists*` and `#/l/*` state reads `совпадает` in `tests/parity/specs.js`,
+none of them `pending` any longer.
 
 ### What every remaining `VISUAL_DEBT` entry is
 
@@ -7583,6 +7586,87 @@ that lands in the same commit. No split.
 - **Coin mode on the shared page is a unit case**, not a state.
 - **One code commit**; the harness verb is eight lines and lands with the
   state that uses it.
+
+### B5.6 built: the shared page, the packed link, the bad link, and taking a shared list
+
+**All eleven ordered steps done as designed, in one commit; no deviation from
+the brief.** `lib/dict.ts` gained `sharedList`/`toStart` in both blocks;
+`lib/lists.ts` gained `N_SHARED = '@'`; `state/lists.svelte.ts`'s `addIds`
+gained a fourth `meta?` parameter that copies `qty` (above 1), `gold` (above
+0) and `note` (never `hnote`) for fresh ids only, in the live `setMeta`
+order; `state/app.svelte.ts` gained `shared` (`DecodedList | null`),
+`toggleSel(id)` (moved off `TablesPage.svelte`'s own copy on its second use),
+and `#expand()` (the live `expandHash`, called at the end of the
+constructor, every `onChange`, and every `go()` - never from `replace()`),
+guarded by `plain.startsWith(PACK_MARK)` so a port that cannot decompress
+(the test env's `plainCompress`, and a real browser without
+`DecompressionStream`) lands on `#/l/zzzz` instead of looping. `HitNote.svelte`
+is the `hitnote` snippet's second use, carrying `:global(.hitnote +
+.hitnote)` after the base rule so Svelte does not prune it as dead CSS.
+`TableRows.svelte` gained `TableEntry.tail` (threaded into `RowMain`,
+closing B5.4a nit 1) and an `after` snippet drawn right after each list-view
+row. `AddToList.svelte` skips the single-record toggle for `key === N_SHARED`,
+copies `app.shared?.meta` into every `addIds` call, and its `createNew()`
+builds a `N_SHARED` list from the whole shared list's ids/meta/notes in one
+`ListStore.create(name, init)` call (closing B5.3 nit 5), then navigates to
+the new list's own address. `SharedListPage.svelte` (new) decodes the
+payload, sets `app.shared` while mounted (the route gate the live
+`metaForKey` applies, done by mount instead), and draws the heading, the
+one-text-node sub, the add control, both list hitnotes, `TableRows` for the
+rows with their tails and per-entry hitnotes, and the bad-link block for a
+payload that does not decode. `ListPage.svelte`'s `{:else if !own}` branch
+now nests the packed-address (draws nothing) and shared-page branches inside
+a bare `!own` check - not `route.kind === 'sharedList' && !own` directly -
+so `svelte-check` can still narrow `own` to non-null in the final `{:else}`;
+the `hitnote` snippet, the `.hitnote` rules, the `todo` paragraph and its
+`.todo` rules are gone. `TablesPage.svelte`'s local `toggleSel` is gone,
+replaced by `app.toggleSel`. `a11y.test.ts` names both new components in
+`COVERED` and gains the shared-list state, reading
+`notes-both-kinds.json`'s `gm.payload` the way `listLink.test.ts` reads
+fixtures. `tests/parity/driver.js` gained `expanded()` (waits for
+`location.hash` to leave `#/l/~`, then `settle()`); `tests/parity/specs.js`
+gained the two fixture `require`s, the pasted `PACKED` constant with its
+command in a comment, four states, `NAME.newList`/`NAME.create`,
+`listAddress.only`'s four new ids, and `tookSharedList`/`addedSharedToList`.
+
+**One test-writing deviation, not a behaviour one: `components/listPage.test.ts`'s "packed address" test asserts on `within(main)` rather than the
+brief's literal `#app main`.** `screen.getByRole('main')` is the same
+element `<main id="main">` (`Shell.svelte`) that `#app main` would select;
+the accessible-role query was already this suite's own convention
+(`within(screen.getByRole('dialog'))` elsewhere) and needed no CSS escape
+hatch. No other deviation: the fallback ("wait for the `h1` to exist in
+`#app main` instead") was not needed - `expanded()` read every `~ packed`
+cell `совпадает` on the first parity run.
+
+**Verification.**
+
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - exit 0: format,
+  lint and `svelte-check` (532 files, 0 errors) clean; `data`/`derived.js`/
+  `i18n.js`/`selftest.mjs` clean; 921 tests, 0 failures, coverage 96.3 stmts
+  / 88.51 branch / 96.77 funcs / 97.06 lines (`state/app.svelte.ts` 100%
+  across the board; `state/lists.svelte.ts` 95.89/88.46/100/98.27).
+- `npm run build` clean: `dist/assets/app.js` 278.03 kB, 83.59 kB gzip.
+- Three parity groups, each its own foreground call, none merged:
+  `MSYS_NO_PATHCONV=1 node tests/parity.js "#/l/"` - 30 state cells plus
+  `listAddress`, `tookSharedList`, `addedSharedToList`, **расхождений нет**;
+  `MSYS_NO_PATHCONV=1 node tests/parity.js "i/ci1 ~"` - 36 cells,
+  **расхождений нет**; `MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables
+  @" "#/tables ~ a row ticked" "#/tables ~ bar menu" "#/lists/a @"
+  "#/lists/a ~ rolled"` - 30 cells, **расхождений нет**. Every `~ packed`
+  cell read `совпадает` with `expanded()` unmodified - the plan's stated
+  fallback was never needed.
+- `npm run check:built` - exit 0: build clean, `smoke-file-url.mjs` opens
+  from a folder, `bundle-budget.mjs` 81.2 kB against the 120 kB budget.
+- A final `npm run check` re-armed the gate after the doc edits moved the
+  tree fingerprint, immediately before the commit below.
+
+**No `VISUAL_DEBT` entry written; no `ACCEPTED` entry added.** `ListPage.svelte`
+has no `todo` element or rule, no `hitnote` snippet and no `.hitnote` rule;
+`RowMain.svelte`'s comments name the caller (`TableRows`'s
+`TableEntry.tail`, from the shared page); `TablesPage.svelte` has no local
+`toggleSel`. B5.4a nit 1 and B5.3 nit 5 are closed by this batch, per
+`handoff.md`'s "Deferred". This closes the lists slice; B5.6 was its last
+batch.
 
 ## Phase 5 - what already exists
 

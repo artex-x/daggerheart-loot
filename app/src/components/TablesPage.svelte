@@ -193,11 +193,6 @@
     return facPassed.filter((it) => matches(it, query, statLine));
   });
 
-  function toggleSel(id: string): void {
-    if (app.sel.has(id)) app.sel.delete(id);
-    else app.sel.add(id);
-  }
-
   /** "Select all" always means all of one list - the whole table for the
    *  plain body, or one section's own rows where the body is split.
    *  `TableRows` computes its own checkbox state; this only has to carry the
@@ -496,7 +491,9 @@
               lang={app.lang}
               selected={(id: string) => app.sel.has(id)}
               artBroken={(id: string) => app.artBroken(id)}
-              ontoggle={toggleSel}
+              ontoggle={(id: string) => {
+                app.toggleSel(id);
+              }}
               onartfail={(id: string) => {
                 app.markArtBroken(id);
               }}
@@ -532,7 +529,9 @@
           lang={app.lang}
           selected={(id: string) => app.sel.has(id)}
           artBroken={(id: string) => app.artBroken(id)}
-          ontoggle={toggleSel}
+          ontoggle={(id: string) => {
+            app.toggleSel(id);
+          }}
           onartfail={(id: string) => {
             app.markArtBroken(id);
           }}
@@ -553,7 +552,9 @@
       lang={app.lang}
       selected={(id: string) => app.sel.has(id)}
       artBroken={(id: string) => app.artBroken(id)}
-      ontoggle={toggleSel}
+      ontoggle={(id: string) => {
+        app.toggleSel(id);
+      }}
       onartfail={(id: string) => {
         app.markArtBroken(id);
       }}

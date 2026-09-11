@@ -9,6 +9,8 @@
  * This file holds the states reached by pressing, and the guard below, which
  * is what keeps the coverage from quietly lapsing when a component is added. */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -18,6 +20,27 @@ import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
+
+/** A list from another player, both notes and a noted entry - read the same
+ *  way `listLink.test.ts` reads every fixture. `ci1` and `cc1` are both in
+ *  this file's own `LOOT` below. */
+const NOTES_BOTH_KINDS_GM_PAYLOAD: string = (
+  JSON.parse(
+    readFileSync(
+      join(
+        import.meta.dirname,
+        '..',
+        '..',
+        '..',
+        'docs',
+        'fixtures',
+        'lists',
+        'notes-both-kinds.json'
+      ),
+      'utf8'
+    )
+  ) as { gm: { payload: string } }
+).gm.payload;
 
 afterEach(cleanup);
 
@@ -267,6 +290,10 @@ const STATES: {
       'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
     },
     enter: () => press('Заметка')
+  },
+  {
+    what: 'a list from another player, with both notes and a noted entry',
+    route: '#/l/' + NOTES_BOTH_KINDS_GM_PAYLOAD
   }
 ];
 
@@ -298,6 +325,8 @@ const COVERED: Record<string, string> = {
   'HelpBox.svelte': "PageHead's help panel states above",
   'HelpButton.svelte':
     "PageHead's help panel states above, and the list page's own priced entry below",
+  'HitNote.svelte':
+    "the list page's priced, noted entry with the roll panel open above, and the shared list below",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
@@ -323,6 +352,7 @@ const COVERED: Record<string, string> = {
     "tables.test.ts's sectioned-body axe check, and both list-page states below",
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'SelBar.svelte': 'the state above, and tables.test.ts',
+  'SharedListPage.svelte': 'sharedListPage.test.ts, and the shared list below',
   'Shell.svelte': 'shell.test.ts',
   'StorageNotice.svelte': 'the lists index state above, and the list page below',
   'TabBar.svelte': 'the frame, on every state',

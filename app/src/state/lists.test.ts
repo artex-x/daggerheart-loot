@@ -147,6 +147,43 @@ describe('adding and removing ids', () => {
     store.removeId(l, 'w1');
     expect(store.get('a')?.ids).toEqual(['w2']);
   });
+
+  it('copies qty above 1, gold above 0 and note, never hnote, for fresh ids only', () => {
+    const store = new ListStore(at(), say, t);
+    const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+    store.lists = [l];
+
+    store.addIds(l, ['w1', 'w2', 'w3'], knows, {
+      w1: { qty: 5, gold: 50, note: 'x', hnote: 'y' },
+      w2: { gold: 12 },
+      w3: { qty: 1 }
+    });
+
+    expect(store.get('a')?.meta).toEqual({
+      w1: { qty: 5, gold: 50, note: 'x' },
+      w2: { gold: 12 }
+    });
+  });
+
+  it('leaves an id already in the list with its own meta untouched', () => {
+    const store = new ListStore(at(), say, t);
+    const l = { id: 'a', name: 'Клад', ids: ['w1'], created: 1, meta: { w1: { qty: 3 } } };
+    store.lists = [l];
+
+    store.addIds(l, ['w1', 'w2'], knows, { w1: { qty: 9 }, w2: { qty: 5 } });
+
+    expect(store.get('a')?.meta).toEqual({ w1: { qty: 3 }, w2: { qty: 5 } });
+  });
+
+  it('leaves list.meta exactly as it was when called without meta', () => {
+    const store = new ListStore(at(), say, t);
+    const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+    store.lists = [l];
+
+    store.addIds(l, ['w1'], knows);
+
+    expect(store.get('a')?.meta).toBeUndefined();
+  });
 });
 
 describe('removing a list', () => {

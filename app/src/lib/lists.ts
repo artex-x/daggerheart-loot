@@ -8,6 +8,13 @@
 
 import { decodeList, type KnowsId, type ListEntryMeta, type MoneyMode } from './listLink.js';
 
+/** Not an id either: the menu key for taking a shared list whole - app.js
+ *  1356's comment. `AddToList`'s `key` prop reads this the way it reads a
+ *  record id or the selection bar's own key, but `pick`'s single-record
+ *  toggle is skipped for it and `AppState.shared` is what a "whole list"
+ *  add pulls its meta from. */
+export const N_SHARED = '@';
+
 export interface StoredList {
   id: string;
   name: string;

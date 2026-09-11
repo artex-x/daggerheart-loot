@@ -5,13 +5,15 @@
 
      One component, menu included - `listMenuHTML` has one caller, and a
      separate `ListMenu.svelte` would be an abstraction ahead of need. `key`
-     is the opener (a record id on a card today; the bar and a shared page
-     will pass their own once they exist), `ids` is what a chip acts on. */
+     is the opener (a record id on a card, the bar's own key, or `N_SHARED`
+     for the shared page's own control), `ids` is what a chip acts on. */
   import { tick } from 'svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
-  import type { StoredList } from '../lib/lists.js';
+  import { sharedListHash } from '../lib/hash.js';
+  import { encodeList } from '../lib/listLink.js';
+  import { N_SHARED, type StoredList } from '../lib/lists.js';
   import type { AppState } from '../state/app.svelte.js';
 
   /** `S.lists.length >= PICKER_SEARCH_AT` in app.js - the picker grows a
@@ -30,6 +32,10 @@
 
   const t = $derived(app.t);
   const open = $derived(app.menuFor === key);
+  /* Non-null exactly where the live `metaForKey` would return `S.shared.meta`
+     for this key - `app.shared` is the route gate, set only while the shared
+     page is mounted. */
+  const shared = $derived(app.shared);
   /* A single record's menu names it - `t.inLists` even where it lies in no
      list at all, matching the live app's own reading of `listMenuHTML`. */
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
@@ -69,13 +75,16 @@
      is never actually seen - not reproduced here, since the acceptance this
      batch is held to is that a refusal is seen. */
   function pick(l: StoredList): void {
-    if (one !== undefined && l.ids.includes(one)) {
+    /* The whole list is only ever added under `N_SHARED` - the live
+       `applyAddTo` (1911) sends '@' straight to `addIdsTo`, before the
+       single-record toggle every other key gets. */
+    if (key !== N_SHARED && one !== undefined && l.ids.includes(one)) {
       app.lists.removeId(l, one);
       if (app.lists.save()) app.say(t.removedFrom.replace('%s', l.name));
       return;
     }
     const knows = (id: string): boolean => !!app.index?.byId.has(id);
-    const fresh = app.lists.addIds(l, ids, knows);
+    const fresh = app.lists.addIds(l, ids, knows, shared?.meta);
     if (app.lists.save()) {
       app.say(
         t.addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')
@@ -85,7 +94,7 @@
 
   function openNew(): void {
     newListFor = true;
-    draft = '';
+    draft = key === N_SHARED ? (shared?.name ?? '') : '';
   }
 
   function cancelNew(): void {
@@ -98,6 +107,30 @@
     if (!name) {
       app.say(t.nameFirst, { error: true });
       newInput?.focus();
+      return;
+    }
+    /* Taking a whole shared list: the new list gets its ids, meta, and both
+       notes in the same one save `create`'s own `init` makes - the live
+       `createFor` (4221-4228). */
+    if (key === N_SHARED && shared) {
+      let meta: StoredList['meta'];
+      if (shared.meta && Object.keys(shared.meta).length) {
+        meta = {};
+        for (const id of Object.keys(shared.meta)) {
+          const m = shared.meta[id];
+          if (m) meta[id] = { ...m };
+        }
+      }
+      const l = app.lists.create(draft, {
+        ids: [...shared.ids],
+        ...(meta ? { meta } : {}),
+        ...(shared.note ? { note: shared.note } : {}),
+        ...(shared.hnote ? { hnote: shared.hnote } : {})
+      });
+      if (app.lists.saved) app.say(t.addedTo.replace('%s', l.name));
+      newListFor = false;
+      draft = '';
+      app.go(sharedListHash(encodeList(l, true)));
       return;
     }
     const l = app.lists.create(draft);

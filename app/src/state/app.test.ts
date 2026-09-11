@@ -13,7 +13,7 @@ import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CompressPort, Env } from '../ports/index.js';
 import { AppState } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -353,6 +353,80 @@ describe('the selection', () => {
     app.clearSel();
     expect(app.sel.size).toBe(0);
     expect(app.menuFor).toBe('');
+  });
+
+  it('toggleSel adds an absent id and removes a present one', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.toggleSel('ci1');
+    expect([...app.sel]).toEqual(['ci1']);
+    app.toggleSel('ci1');
+    expect(app.sel.size).toBe(0);
+  });
+
+  it('shared starts null', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    expect(app.shared).toBeNull();
+  });
+});
+
+describe('a packed address', () => {
+  /** The shape `listsPage.test.ts` (302-314) already uses: no real deflate,
+   *  only that `unpack` runs before the payload is read as plain. */
+  const stub = (
+    unpack: CompressPort['unpack'] = (p) => Promise.resolve(p.slice(1))
+  ): CompressPort => ({
+    available: () => true,
+    pack: (raw) => Promise.resolve(raw),
+    unpack
+  });
+
+  it('expands at construction - a replace, not a step', async () => {
+    const router = memoryRouter('#/l/~abc');
+    const app = new AppState(fakeEnv({ router, compress: stub() }));
+    await vi.waitFor(() => {
+      expect(app.hash).toBe('#/l/abc');
+    });
+    expect(router.hash()).toBe('#/l/abc');
+    expect(router.stack).toHaveLength(1);
+    expect(app.navigations).toBe(0);
+  });
+
+  it('lands on #/l/zzzz when the port cannot unpack, and does not loop', async () => {
+    const router = memoryRouter('#/l/~abc');
+    const unpack = vi.fn((p: string) => Promise.resolve(p));
+    const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
+    await vi.waitFor(() => {
+      expect(app.hash).toBe('#/l/zzzz');
+    });
+    expect(router.hash()).toBe('#/l/zzzz');
+    expect(unpack).toHaveBeenCalledTimes(1);
+  });
+
+  it('lands on #/l/zzzz when unpack rejects', async () => {
+    const router = memoryRouter('#/l/~abc');
+    const unpack = () => Promise.reject(new Error('no DecompressionStream'));
+    const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
+    await vi.waitFor(() => {
+      expect(app.hash).toBe('#/l/zzzz');
+    });
+  });
+
+  it('expands a packed hash the router announces after start()', async () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router, compress: stub() }));
+    app.start();
+    router.navigate('#/l/~abc');
+    await vi.waitFor(() => {
+      expect(app.hash).toBe('#/l/abc');
+    });
+  });
+
+  it('expands through go()', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables'), compress: stub() }));
+    app.go('#/l/~abc');
+    await vi.waitFor(() => {
+      expect(app.hash).toBe('#/l/abc');
+    });
   });
 });
 

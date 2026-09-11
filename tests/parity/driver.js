@@ -259,6 +259,21 @@ function makeDriver(page, target) {
     },
 
     /**
+     * Waits for a packed shared-list address to finish expanding.
+     *
+     * `ready()` alone is not enough here: on the live app nothing renders
+     * before `expandHash()` replaces the hash (app.js 4636, `if
+     * (!expandHash()) render()`), so its own wait for `#view`/`#app` to have
+     * children already implies the expansion landed. The rewrite's `Shell`
+     * mounts at once and the replace lands a few milliseconds later, so
+     * without this the packed cell would race the expansion on one side only.
+     */
+    async expanded() {
+      await page.waitForFunction(() => !location.hash.startsWith('#/l/~'));
+      await settle(page);
+    },
+
+    /**
      * Reordering a row by dragging it, the way a pointer does: both apps
      * render `.lrow` in list order, so this grips row `from`'s own handle and
      * drops it above or below row `to`'s midpoint - a name-based lookup would

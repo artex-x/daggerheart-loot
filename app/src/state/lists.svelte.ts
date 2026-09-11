@@ -145,13 +145,41 @@ export class ListStore {
     this.save();
   }
 
-  /** Every id the data knows and the list does not already hold. Does not save. */
-  addIds(list: StoredList, ids: readonly string[], knows: (id: string) => boolean): string[] {
+  /**
+   * Every id the data knows and the list does not already hold. Does not save.
+   *
+   * `meta`, when given, copies the players'-visible facts along for each
+   * fresh id - `qty` above 1, `gold` above 0, `note` when present - the live
+   * `addIdsTo`'s own `setMeta` sequence (app.js 1924-1940), in that order.
+   * `hnote` never travels: only the GM's own note stays behind. An id already
+   * in the list keeps whatever meta it already had.
+   */
+  addIds(
+    list: StoredList,
+    ids: readonly string[],
+    knows: (id: string) => boolean,
+    meta?: Readonly<Record<string, ListEntryMeta>>
+  ): string[] {
     const fresh = ids.filter((id) => knows(id) && !list.ids.includes(id));
     if (fresh.length) {
-      this.lists = this.lists.map((l) =>
-        l.id === list.id ? { ...l, ids: [...l.ids, ...fresh] } : l
-      );
+      this.lists = this.lists.map((l) => {
+        if (l.id !== list.id) return l;
+        const next: StoredList = { ...l, ids: [...l.ids, ...fresh] };
+        if (meta) {
+          const nextMeta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
+          for (const id of fresh) {
+            const m = meta[id];
+            if (!m) continue;
+            const entry: ListEntryMeta = {};
+            if (typeof m.qty === 'number' && m.qty > 1) entry.qty = m.qty;
+            if (typeof m.gold === 'number' && m.gold > 0) entry.gold = m.gold;
+            if (m.note) entry.note = m.note;
+            if (Object.keys(entry).length) nextMeta[id] = entry;
+          }
+          if (Object.keys(nextMeta).length) next.meta = nextMeta;
+        }
+        return next;
+      });
     }
     return fresh;
   }

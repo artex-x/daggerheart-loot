@@ -3,7 +3,7 @@
  * way `listsPage.test.ts` reaches the index: the address rewrite, the tab bar
  * and the modal all live above this component. */
 
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -25,7 +25,7 @@ import {
   noData,
   plainCompress
 } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CompressPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -120,11 +120,47 @@ describe('the address', () => {
     expect(screen.getByDisplayValue('Тайник')).toBeInTheDocument();
   });
 
-  it('draws the todo paragraph for a payload that is nobody’s', () => {
+  it('draws the shared page for a payload that is nobody’s', () => {
     const other: StoredList = { id: 'z', name: 'Другой', ids: ['ci1'] };
     const payload = encodeList(other, true);
-    const { container } = render(App, { env: withA('#/l/' + payload) });
-    expect(container.querySelector('.todo')).toHaveTextContent('#/l/' + payload);
+    render(App, { env: withA('#/l/' + payload) });
+    /* The `h1` reads the payload's own name, not a title input - this is the
+       shared page, not the own-list page with a rename box. */
+    expect(screen.getByRole('heading', { level: 1, name: 'Другой' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Название списка' })).not.toBeInTheDocument();
+  });
+
+  it('draws only the frame while a packed address expands, then the shared page once it lands', async () => {
+    const other: StoredList = { id: 'z', name: 'Другой', ids: ['ci1'] };
+    const payload = encodeList(other, true);
+    const compress: CompressPort = {
+      available: () => true,
+      pack: (raw) => Promise.resolve(raw),
+      unpack: (p) => Promise.resolve(p.slice(1))
+    };
+    render(App, { env: withA('#/l/~' + payload, { compress }) });
+    const main = screen.getByRole('main');
+    expect(within(main).queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(within(main).getByRole('heading', { level: 1 })).toHaveTextContent('Другой');
+    });
+  });
+
+  it('lands on the bad-link page when the port cannot expand a packed address', async () => {
+    const payload = encodeList({ name: 'Другой', ids: ['ci1'] }, true);
+    render(App, { env: withA('#/l/~' + payload) });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Предмет не найден' })
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText('Ссылка повреждена или собрана в другой версии данных.')
+    ).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'На главную' });
+    expect(link).toHaveAttribute('href', '#/roll/std');
   });
 
   it('draws "Список не найден" for an unknown id, and never rewrites', () => {
