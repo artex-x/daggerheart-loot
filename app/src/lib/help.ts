@@ -554,6 +554,59 @@ const LISTS: Record<Lang, Help> = {
   }
 };
 
+/**
+ * The money picker's own help, off the `moneyHelp` string in app.js - one
+ * paragraph with five bold runs mid-sentence: the three-unit list, then each
+ * of the three worked examples' rounded answer. Not a section's help (no
+ * page has a route called "money"), so it stays out of `HELP` and is read
+ * through `moneyHelpFor` instead.
+ */
+const MONEY: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      {
+        parts: [
+          'Корник считает золото ',
+          { b: 'горстями, мешками и сундуками' },
+          ': 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Читается она так, как о деньгах говорят за столом — двумя старшими единицами и с округлением до ближайшей: 750 — это ',
+          { b: '7 мешков 5 горстей' },
+          ', 894 — ',
+          { b: '8 мешков 9 горстей' },
+          ', а 899 — уже ',
+          { b: '9 мешков' },
+          '. Монет в этом виде нет вовсе: 804 — просто ',
+          { b: '8 мешков' },
+          '.'
+        ]
+      }
+    ]
+  },
+  en: {
+    paragraphs: [
+      {
+        parts: [
+          'The core book counts gold in ',
+          { b: 'handfuls, bags and chests' },
+          ': 10 handfuls = 1 bag, 10 bags = 1 chest. Coins are an optional rule where 1 handful = 10 coins, so a bag is 100 and a chest 1000. A price is always typed in coins: the mode only changes how it reads. It reads the way money is spoken of at the table - two units at most, rounded to the nearest: 750 is ',
+          { b: '7 bags 5 handfuls' },
+          ', 894 is ',
+          { b: '8 bags 9 handfuls' },
+          ', and 899 is already ',
+          { b: '9 bags' },
+          '. There are no coins in this reading at all: 804 is simply ',
+          { b: '8 bags' },
+          '.'
+        ]
+      }
+    ]
+  }
+};
+
+/** The money picker's help, in the given language. */
+export function moneyHelpFor(lang: Lang): Help {
+  return MONEY[lang];
+}
+
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,

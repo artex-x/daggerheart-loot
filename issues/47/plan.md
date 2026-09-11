@@ -2610,7 +2610,7 @@ a part 1, the bar itself; see "B5.2 planned, part 0" and "part 1" below.)
 | **B5.1** | the list store, the toast, and the add-to-list row on the card - `ListStore` (v2 read, the one-time v1 migration, save-with-merge, the two-tab `storage` event), `Toast` driven by `app.say`, `AddToList` (the button and its menu: chips with membership ticks, the inline new-list form, the search box from the eighth list), `.cardpick` on the full card with the print link; the driver learns to seed storage | closes every `listRow` debt entry and every `addToList`/`controls` line in `ACCEPTED` on the record routes and the modals; the control is written once, for the card, and the bar and the shared page reuse it |
 | **B5.2** | the selection bar: `sel` lifted from `TablesPage` to `AppState` (search is its second owner), `SelBar` in `Shell` after the footer, the cross, the control, print, copy selection; the 600px overrides for `.selx` and `.selacts` | the second caller of `AddToList` and of the print link; closes the `selBar` debt and the `~ a row ticked` `ACCEPTED` lines |
 | **B5.3** | the lists index `#/lists`: the page head and its help, the storage warning in both its forms (`dhloot.warn.v1`, the dismiss cross), create, import, the list cards (share as a short link, delete behind `confirm()`), the empty state; `Shell`'s invented `storageOff` paragraph goes and the live app's `storageWarning()` lands where the live app draws it | the route that is `pending` today; `deleteList` and the `deleted` set in the merge |
-| **B5.4** | the list page as a page: `#/lists/<id>` rewritten to `#/l/<payload>` and kept fresh on every edit, own-list recognition, rename, the action row, the money picker and its help, the list note, the roll panel, the batch bar's select-all, the rows (`.lrow*`, quantity and price with the gold hint, the two notes, remove with undo, position, drag through the drag port), `contextNote` on the card's copy; the 600px `.lrow*` and 640px `.npair` overrides | the biggest surface; everything on it is per list and none of it needs batch actions to draw. May be split into 4a (the page and the rows) and 4b (notes, roll panel, drag) when it is planned |
+| **B5.4** | the list page as a page: `#/lists/<id>` rewritten to `#/l/<payload>` and kept fresh on every edit, own-list recognition, rename, the action row, the money picker and its help, the list note, the roll panel, the batch bar's select-all, the rows (`.lrow*`, quantity and price with the gold hint, the two notes, remove with undo, position, drag through the drag port), `contextNote` on the card's copy; the 600px `.lrow*` and 640px `.npair` overrides | the biggest surface; everything on it is per list and none of it needs batch actions to draw. May be split into 4a (the page and the rows) and 4b (notes, roll panel, drag) when it is planned. **Planned 2026-09-10: split into 4a (the page complete but for the live drag semantics; implement-ready) and 4b (drag as the live app does it; outlined) - the notes and the roll panel are on screen folded at arrival and cannot be cut without faking them; see "B5.4 planned"** |
 | **B5.5** | batch actions and prices: `.batch-acts`, the money panel (reprice, suggest, clear), delete selected, the undo toasts, the 640px `.batch-acts` override; `lib/money.ts` gets its first callers | its own panel and its own undo set, on top of B5.4's `lsel` |
 | **B5.6** | the shared list that is not ours: hitnotes, rows with tails, take into a list or a new list with the name and both notes, packed `~` links expanded and rewritten on open, the bad-link page, `listNotFound`; import on the index (B5.3) reuses the same decode | the other reader of the same page; completes the link contract loop that `contracts` replays |
 
@@ -5100,6 +5100,1042 @@ bullet gained the one clause.
   commit, authored `artex-x <artex-x@users.noreply.github.com>`, containing
   all of B5.3 plus this close-out (the 26 paths the batch already held plus
   this file, the test, `FEATURES.md`, and `handoff.md`). No push.
+
+### B5.4 planned: the list page - split into 4a (the page, complete but for drag semantics) and 4b (drag as the live app does it)
+
+**The split, and why it is drawn where it is.** The batch table offered
+"4a (the page and the rows) and 4b (notes, roll panel, drag)". Measured on the
+live page (`context.md`, "B5.4 planning facts"), that line cannot be drawn
+without faking something on screen: the folded list note (`.lnote`, 36px) and
+the folded roll panel (`.lroll`, 43px) are on every non-empty list at arrival,
+every row carries the note button (`.lrow-note`, a 38px column) and any row
+with a note shows its `.rnote` box open - leave them out and every row shifts
+and every cell fails; draw them folded with nothing inside and a click opens an
+empty panel, which is the faked affordance the B1-B4 rule forbids. The one
+piece of B5.4 with no footprint the harness can see is reordering by drag: the
+grip is an `aria-hidden` span drawn either way, the driver has no drag verb,
+and the live semantics (`drop-before`/`drop-after` by pointer midpoint, the
+row as drag image, edge autoscroll - app.js 4443-4530) are exactly what the
+rewrite's index-based `nativeDrag` port does not carry. So:
+
+- **4a** is the list page complete: every control that draws, every press,
+  every address rewrite, the notes, the roll panel, `contextNote`, remove with
+  undo, position by typing, and drag through the *existing* `nativeDrag` port
+  (functional - drop on a row moves the entry there - without the live marks).
+  Nothing on screen is inert. Implement-ready below.
+- **4b** is drag with the live semantics: the port rewritten to the live
+  event model, the marks and the dragging opacity, the drag image, edge
+  autoscroll, a driver verb that dispatches synthetic `DragEvent`s on both
+  apps, and a `reorderedByDrag` press spec. Outlined at the end.
+- **Step 0 of 4a is a harness fix that stands on its own commit**: the legacy
+  screenshot cache is turned off for `timed` states - the root cause of
+  `#/tables ~ selection copied @ en 1100`, decided below. 4a adds a fifth timed
+  state (`~ removed`) and would otherwise inherit the same trap.
+
+One batch was considered and rejected: 4a alone is ~40 paths (B5.3 was 26 and
+took six `npm run check` attempts under host load), and the drag port is the
+one piece that can be cut cleanly. Putting the roll panel into 4b instead was
+rejected for the reason above (its summary is on screen folded; its content
+reuses `NumberField`, `Die`, `Button`, `OrGrid`, `RecordCard` and
+`RecordActions`, so it is ~100 template lines, not a slice).
+
+**Objective (4a).** `#/lists/<id>` draws the person's own list and rewrites
+the address to `#/l/<players' payload>` at once and after every edit;
+`#/l/<payload>` that decodes to one of the person's lists draws the same page
+(a payload that is nobody's stays on the `todo` paragraph - B5.6). The page:
+the name as a text input in the `h1`, the count line, the action row (players'
+link, own link, copy text, print, delete), the storage notice (extracted to
+`StorageNotice.svelte` on this second use), the money picker with its help
+(only when some entry has a price), the list note (a `<details>` open when
+either note exists), the roll panel (only with two or more entries; folded;
+opens on its summary; a number typed or stepped, or the random button, shows
+the entry's card with its roll number and both of its notes), the batch bar
+with select-all and the count, and a row per known entry: grip, checkbox,
+position field, the row body, quantity and price with the gold hint, the note
+button and the remove cross, and the note box under the row. Empty list: the
+hint. Unknown id: "Список не найден". No tab is lit.
+
+**Non-goals (4a).** Drag marks, drag image, edge scroll (4b). `.batch-acts`
+and everything under the bar - "Цены", "Удалить (N)", the money panel, batch
+delete, reprice, suggest (B5.5): a ticked row in 4a shows the count and no
+buttons, so no parity state ticks a row (the ticked bar is B5.5's state). The
+shared page for a payload that is not ours, `#/l/~packed` expansion,
+`listNotFound` for a payload, `renderSharedList`, `N_SHARED` (B5.6). No
+`Badge.svelte`, `Panel.svelte`, `Row.svelte` (see "Decided"). No change to
+`CONTRACTS.md`, `docs/fixtures/`, `ROUTES.md`, `STATE.md`, `llms.txt` - every
+route, key and payload format already exists and is fixture-tested.
+
+#### What the live app does, read off app.js and measured
+
+Line numbers verified on `app.js` at HEAD `13bba19` (the file is unchanged
+since B5.3's citations). Measurements: read-only puppeteer probe with the
+harness's own launch args and reduced motion, `index.html#/lists/a` seeded
+with `a` = seven Core items, `meta.ci2 = {qty 2, gold 750, note, hnote}`, a
+list note; `b` empty; `c` two entries, no meta. Full record in `context.md`,
+"B5.4 planning facts".
+
+**Routing and the address** (`render`, 3792-3814; `goToList`/`findListByPayload`/
+`freshenListUrl`/`syncListUrl` 1537-1607; `onListPage` 574-578). A `lists/<id>`
+route resolves the list by id, sets `S.openList` and calls `syncListUrl`, which
+`replaceState`s the address to `#/l/` + `encodeList(l, true)` - the players'
+flavour, always plain - and remembers that payload in `S.urlPayload`. An
+`l/<payload>` route is ours when `payload === S.urlPayload && getList(S.openList)`
+(the short-circuit for a payload we wrote ourselves) or when
+`findListByPayload` finds a stored list with the same name, the same ids in
+the same order, no `qty`/`gold`/`note`/`hnote` in the payload's meta that
+contradicts the stored one, and no list note that contradicts (a players'
+payload simply lacks GM notes - that is not a disagreement). Every edit calls
+`freshenListUrl(l)` = `syncListUrl` when `S.openList === l.id`. Measured: the
+hash after opening `#/lists/a` is the players' payload; after remove, undo,
+position, rename and the money mode each rewrite it; reopening that hash
+draws the own page. `renderTabs` (3667-3673) lights a tab only when
+`tab[0] === currentRoute()`, and the route is the string `l/…` or `lists/…`:
+**no tab is lit on a list page** (measured: `#tabs a.on` empty at every
+width). `homeHash()` (1133-1136) is `''` there, and `renderOneList` writes its
+own `<h1>` rather than `pageHead()`: no pin, no `?`. `document.title` is the
+plain `docTitle`. `hashchange` (4627-4635) clears `S.lsel`.
+
+**The page** (`renderOneList` 2960-2995), top to bottom, with 1100px numbers:
+
+- `<h1 class="page-h">` (46px tall) holding `<input type="text" id="rename"
+  class="titleinput" value=name aria-label=rename>`. **`.titleinput`
+  (style.css 848-853) mostly loses**: the global `input[type=text]` rule
+  (254-258, specificity 0,1,1) beats the class (0,1,0), so the computed box is
+  the ordinary text field - 46px tall, `padding: 0 14px`, `background:
+  var(--bg2)` (`rgb(20,17,29)`), `border: 1px solid var(--line2)` on all four
+  sides, `border-radius: 9px`, and the global `:focus` gold border with the
+  `0 0 0 3px rgba(216,171,94,.14)` shadow. What survives of `.titleinput` is
+  `max-width: 560px` (measured 560 wide at 1100/768, 328 at 375), `font-size:
+  23px`, `font-weight: 680`, `letter-spacing: -.01em` (computed -0.23px) and
+  `width: 100%`. Port both rules in the live order and specificity - the
+  scoped `input[type='text']` rule `ListsPage.svelte` already carries, then
+  `.titleinput` - and the cascade produces the same box; do not "fix" the
+  dashed underline the class intended.
+- `<p class="page-sub">` = `items.length + ' ' + plural(items.length)`
+  (`plural` 3168-3175: ru позиция/позиции/позиций by the 1/2-4/5 rule with the
+  11-14 exception, en item/items) - "7 позиций", "2 позиции", "7 items".
+  22.39px tall, margin-bottom 18.
+- `<div class="card-acts" style="margin-bottom:16px">` - five `.btn.sm`:
+  `ICON_LINK sharePlayers`, `ICON_LINK shareGm`, `ICON_COPY copyText`,
+  `printBtn(items ids, 'sm')` (an `<a href="#/print/…" title=printHint>` -
+  absent on an empty list), `danger del`. 35px tall at 1100 and 768, 73 at
+  375 (wraps to two lines).
+- `storageWarning()` (2872-2886) - the same two forms as the index, in the
+  same slot; 43.5px folded at 1100/768, 69.5 at 375, margin-bottom 16.
+- `moneyPickerHTML(l)` (2933-2958) - only when some entry has `gold > 0`:
+  `<div class="money"><span class="money-l">moneyAs</span>` then a `.chip`
+  per `MONEY_MODES` (`bag`, `coin`) with `on` + `aria-current="true"` on the
+  current mode, then `<button class="helpbtn sm" data-act="moneyHelp"
+  aria-expanded title=aria-label=whatIsThis>?</button>`, and when open a
+  `<span class="money-br"></span>` line break plus `<div class="helpbox
+  money-help"><p>moneyHelp</p></div>` (the dictionary string carries five
+  `<b>` runs in each language). Measured: 36.8 tall (chips 98.97 wide, the `?`
+  22x22), 235.95 with the help open at 1100/768, 394.52 at 375; 65.8 folded at
+  375 (the `?` wraps to its own line). `S.moneyHelp` is app memory; the mode
+  is `l.money` (`coin`) or absent for `bag`; picking a mode saves, freshens
+  the address, re-renders (4086-4094). The gold hint (`goldHintHTML` 1306-1311)
+  and the field `title` (`goldTitle` 1297-1300) read `goldText` = `priceText`
+  in bag mode, nothing in coin mode.
+- `listNoteHTML(l)` (3094-3101): `<details class="lnote" data-keep="note:<id>"
+  [open when l.note || l.hnote]><summary>ICON_NOTE<span>listNote</span></summary>`
+  + `notePairHTML` with the list placeholders. Folded 36px (summary 34 +
+  borders; padding 10/10); open 153 at 1100 (`[open] summary` padding-bottom
+  6), 172 at 768, 285 at 375 (`.npair` stacks under 640px); margin-bottom 16.
+- `notePairHTML(attr, o, opt)` (3109-3128): `<div class="npair">` of two
+  `.nfield` (`n-pub` with `ICON_EYE`, `n-hid` with `ICON_EYE_OFF` and a dashed
+  textarea border): `<span class="nlbl">icon label<i>hint</i><button
+  class="note-x" data-note-clear title=aria-label=noteClear>&times;</button>
+  </span><textarea rows="3" [attr] placeholder=ph>value</textarea>`. The
+  cross is hidden by `.nfield:has(textarea:placeholder-shown) .note-x
+  {display:none}` (1096) - CSS, no JS. Measured: `.nlbl` 20px tall at 1100
+  (39 at 768/375 where the hint wraps), `.note-x` 20x20, textareas 509.5 wide
+  in a row's pair at 1100 (343.5 at 768, 304 at 375; the list note's 506.5 /
+  340.5 / 300). **Auto-size** (`autoSize`/`autoSizeNotes` 1100-1116, `NOTE_SEL`,
+  `NOTE_MAX = 320`): on render and on every `input`, `height = auto` then
+  `min(scrollHeight + (offsetHeight - clientHeight), 320)`, skipped for a box
+  with `data-manual` or no `offsetParent`; measured 79px for a one-line row
+  note (font 13px), 83px for a one-line list note (14px); an empty box keeps
+  its `rows="3"` natural height (`style.height` unset). A hand-resized box is
+  marked `data-manual` by the `pointerdown`/`pointerup` pair (4562-4571)
+  when its `offsetHeight` changed between the two.
+- `listRollPanel(l, items)` (2997-3029), only when `items.length > 1`:
+  `<details class="panel lroll" data-keep="roll:<id>" [open when hit]>
+  <summary>ICON_DIE<span>rollBy</span></summary>` then `<div class="field"
+  style="margin-bottom:14px|0">` (14 when there is a hit, else 0 - inline, so
+  it beats `.lroll>:last-child{margin-bottom:13px}`) with `<span class="lbl">
+  rollResult (1–N)</span>` and a `.numrow` of `numBox('n', n, 1, N)` (**empty
+  when `n < 1`** - #16, the field shows `''` and means "no roll yet"), the
+  primary button `dieIcon(N) + rollLabel(N)` ("Случайно 1–7" for seven; a real
+  die name for 4/6/8/10/12/20/100), and, with a hit, `.btn.ghost` "Сбросить"
+  (`clearRoll` 4256); without a hit `<p class="rollhint">rollHint</p>`; with a
+  hit `orGrid([cardHTML(hit, { rollLabel: n })])` (a compact card whose number
+  badge is the position, name a link) and `rolledNoteHTML` (3031-3037): a
+  `.hitnote` per non-empty note - `ICON_EYE`/`ICON_EYE_OFF` + `<span><b>label
+  </b>lines(text)</span>`. `rollList` (4251-4255) sets `S.listRoll = {id, n:
+  d(items.length)}`; typing or stepping goes through `applyNum` (4295-4306,
+  `onListPage()` branch; the `input` handler's `n` branch 4315-4331): on the list page an empty field applies 0 on
+  `input`, digits apply on `input`, and the `change` handler leaves an empty
+  field alone (4536-4541). Measured: folded 43 (summary 41 + borders, its svg
+  15x15); unfolded with no result 138.39 (numbox 156x48, button 157.53x46,
+  rollhint 20 tall); with result 2 at 1100: 452.08 (field 74.39, card 178.19,
+  hitnote 59.25 each, ghost button 100.23x46). `clearRoll` leaves the panel
+  open (`keepOpen`). `.lroll>:not(summary)` carries `margin: 0 13px`.
+- `batchBarHTML(l)` (724-748): `<div class="batch[ on]"><label class="batch-all">
+  <input type="checkbox" data-lsel-all [checked when all]>text</label>` where
+  the text is `pickAll` with nothing ticked, else `pickedN + ' ' + n`; with
+  anything ticked, `.batch-acts` follows (B5.5). Measured 36px tall unticked
+  (margin-top 16, `border-bottom: none`, radius 10 10 0 0), 49 with acts at
+  1100, 80 at 375. The bar's own checkbox has no accessible name (like the
+  tables' select-all) and is not in the inventory. `data-lsel` (4389-4393)
+  and `data-lsel-all` (4394-4402) both re-render.
+- `<div class="rows lrows">` of `listRowHTML(l, it, i)` (3040-3092), or
+  `<div class="empty">listEmptyHint</div>` (129.59 tall) when empty.
+
+**A row** (`listRowHTML`), `<div class="row lrow[ has-note]">` - 78px tall at
+1100 with the plain description of a Core item (102.03 at 768, 202.63 at 375
+where it wraps to three bands), in DOM order:
+
+1. `<span class="lrow-grip" draggable="true" data-drag="<lid>:<id>"
+   title=dragHint aria-hidden="true">ICON_GRIP</span>` - 26px wide, the grip
+   svg 15x15, `cursor: grab`, `touch-action: none`, `background:
+   rgba(216,171,94,.05)`, `border-right`.
+2. `<label class="lrow-pick"><input type="checkbox" data-lsel=id [checked]
+   aria-label=pickRow></label>` - 32px wide (`padding: 0 2px 0 10px`, the
+   native 13px box with its 4/3px margins).
+3. `<input type="number" class="lrow-n" min="1" max=l.ids.length
+   inputmode="numeric" value=i+1 data-pos aria-label=position>` - 40px wide,
+   mono 650 12px, gold-soft, `-moz-appearance: textfield` and the webkit
+   spinner hidden; `:focus` inset gold ring. Reorders on `change` (4545-4549:
+   `moveToInList(l, id, n - 1)` then `freshenListUrl`; an out-of-range or
+   empty value re-renders, which puts the position back).
+4. `<button type="button" class="row-main" data-open=id>` - the same body as
+   a table row (`rowHTML` 2785-2803) **without** `rnum` and `rtail`: `imgTag(it,
+   'row')`, `.rt` with `<b>name</b>`, `.rstats` for equipment, the clamped
+   description span, `rowCraft`, then `.rm` with `kindBadge uniqBadge
+   tierBadge` and the `badge src`. Its accessible name is the whole row text
+   (no `aria-label`), as on the tables. Opens the modal (`openModal`,
+   4572-4578: `cardHTML(it, { full: true })`).
+5. `<div class="lrow-meta">` - 161px wide - two `<label><span>caption
+   [goldhint]</span><input type="number" …></label>`: `qty` (`min 1 max 99
+   inputmode="numeric" data-qty value=m.qty||'' placeholder="1"`, 70 wide,
+   `padding-right: 2px`, native spinner kept) and `gold` (`min 0 max 99999
+   data-gold value=m.gold||'' placeholder="—"` + `goldTitle`, 64 wide, spinner
+   hidden). Both 30px tall, mono 600 13px, centred. The caption span is 9.5px
+   uppercase; `goldHintHTML` puts `<span class="goldhint" data-goldhint=title=
+   text>?</span>` (13x13, `cursor: help`) after the `gold` caption when the
+   entry has a price in bag mode - measured `?` on row 2 only, the field's
+   title "7 мешков 5 горстей". Handler (4346-4370): `setMeta` on every
+   `input`, `freshenListUrl`; for gold, the field's own `title` is rewritten in
+   place and **the page re-renders only when the first price appears or the
+   last disappears** (`had !== has`) - so a typed price updates the title at
+   once but the `?` in the caption appears only on the next render (measured:
+   title "2 мешка 3 горсти" set, no `.goldhint` yet).
+6. `<div class="lrow-acts">` - 39px wide, a column of two 38px buttons:
+   `<button class="lrow-note[ on]" data-note-toggle title=aria-label=note>
+   ICON_NOTE</button>` (37.5 tall; `.on` gold on a gold tint when the row has a
+   note) and `<button class="row-x" data-remove title=aria-label=removeItem>
+   &times;</button>` (38.5 tall, 18px cross, `border-top`). `data-note-toggle`
+   (4113-4123) flips the box's `hidden`, records `S.keepOpen`, auto-sizes and
+   focuses the first textarea (measured: focus lands in the textarea).
+   `data-remove` (3944-3969): remembers the index and a copy of the meta,
+   `toggleInList` (1337-1342, removes), `freshenListUrl`, `render`, then
+   `toastAction(removedItem % name, undo, fn)` - the 7000ms `.toast.act` with
+   the `.toast-act` button (measured 313.42x50, the button 73.78x30; text
+   "«Заряжающий Колчан» убранВернуть"); undo splices the id back at
+   `min(at, length)`, restores the meta, saves, freshens, re-renders
+   (measured: order and count restored).
+7. `<div class="rnote" data-keep="rnote:<lid>:<id>" [hidden unless note||hnote]>`
+   + `notePairHTML` with the entry placeholders - a full-width band under the
+   row (`flex: 0 0 100%`, `border-top`, `background: var(--bg2)`, padding
+   `9px 11px`; textareas 13px on `var(--surface)`). Measured: row 2 with its
+   one-line notes is 202.64 tall at 1100 (the box 123); an opened empty box
+   is 116 tall. Typing a note (4371-4388) never re-renders: `setMeta`, the
+   row's `has-note` and the button's `on` are toggled in place from "either
+   textarea has text", then `freshenListUrl`. The clear cross (4096-4111)
+   empties the textarea through a synthetic `input` event and toasts
+   `noteCleared` with an undo that puts the text back the same way.
+
+The list note's inputs (4421-4430) write `l.note`/`l.hnote` (deleting the key
+when blank), save and freshen. `rename` (4431-4434) writes `l.name`, saves,
+`renderSelBar()`, freshens - no re-render, the `h1` text stays `''` (measured).
+
+**Copying** (`listAsText`/`listAsHtml` 1625-1647, `itemLine` 1313-1318,
+`listSkip`/`noteBlocks`/`listNoteTail` 1609-1623, `textBlock`/`blockHtml`
+583-588, `data-copy-listtext` 4133): text = `name` + `listNoteTail` blocks
+(`\n\n` + `noteHead` + `\n` + `l.note`, only the players' note) + `\n\n` +
+per known entry `itemLine` (`nameForShare` + ` ×qty` when `qty > 1` + ` — ` +
+`priceText(gold, moneyMode(l))` when priced) + `\n` + stats + `\n\n` + desc +
+`extraBlocks(it, skip)` (skip = every id in the list) + `noteBlocks` (the
+entry's players' note as a `noteHead` block), entries joined by `\n\n`; html the
+same with `<b>` names, `<br>` and `<br><br><i>head</i><br>body`. Toast
+`listCopied`. **`contextNote`** (568-573): while a list is open, `shareText`/
+`shareHtml` of any record in it append its players' note as a `noteHead` block
+- measured on the roll card's "Скопировать текст": the copy ends `\n\nЗаметка\n
+Светится в темноте`; the GM note does not travel. The modal opened from a row
+copies the same way. The players' link (3971-3976) and the own link (3978-3984)
+are `listShareUrlShort(l, true|false)` - packed when shorter - toasting
+`playersLinkCopied` / `gmLinkCopied`, or `listEmpty` on an empty list. Delete
+(4136-4150) asks `deleteConfirm`, removes, and **goes to `#/lists`** when the
+deleted list was the open one.
+
+**What survives a re-render** (`restoreOpen` 3769-3783, "B5.3 close-out
+facts"): all three `data-keep` elements are on this page - the roll panel, the
+row note boxes, the list note. A person's own fold/unfold wins over the
+markup's default on every later render; the default (`open` when a hit / a
+note exists; `hidden` when no note) applies only to elements never toggled.
+The port's persistent elements give the same result on every path a state
+reaches, with one recorded difference (see "Decided").
+
+**The inventory the harness compares** (NAME_FN: `aria-label`, then `title`,
+then `textContent`), Russian, list `a` with the seed above: `7 мешков 5
+горстей` (the priced gold input, named by its title), `Выбрать позицию`,
+`Заметка`, `Как в книге`, `Как это работает`, `Лавка закрыта до утра` and
+`Светится в темноте` and `Проклят` (**the textareas, named by their text
+content**), `Монетами`, `На единицу больше`/`меньше`, `Название списка`,
+`Очистить заметку`, `Позиция в списке`, `Результат броска`, `Скопировать
+текст`, `Скрыть`, `Случайно 1–7`, the print link's title, `Ссылка игрокам`,
+`Ссылка себе`, `Убрать из списка`, `Удалить`, and one whole-row name per
+entry. Empty and unpriced inputs have no name and are skipped. **Svelte does
+not give a textarea a text child**: `<textarea>{x}</textarea>` and
+`bind:value` both compile to `set_value` (a `.value` assignment, verified with
+`svelte/compiler`), leaving `textContent` empty - so a ported textarea would
+be nameless in the inventory and `~ noted`'s inventory spec would differ. The
+port seeds the text child (see "How it is built").
+
+**English** presses the language after `enter`: names become `7 bags 5
+handfuls`, `Select entry`, `Note`, `As in the book`, `How this works`, `In
+coins`, `List name`, `Clear the note`, `Position in the list`, `Roll result`,
+`Copy text`, `Dismiss`, `Random 1–7`, `Players’ link` (curly apostrophe),
+`Your own link`, `Remove from the list`, `Delete`; the sub reads `7 items`,
+the bar `Select all`, the captions `Qty`/`Gold`. The Russian note texts stay
+(user data).
+
+#### How it is built
+
+**`tests/parity.js`** (step 0, its own commit) - three edits, no production
+code: the two `CACHE.read` guards and the one `CACHE.write` in `shootWidth`
+gain `&& !timed`, so a `timed` state's legacy side is shot fresh at every
+width on every run; the `CACHE` doc comment gains a paragraph saying why (a
+timed shot's bytes depend on the clock at capture, so no cached entry can be
+"the exact bytes an uncached shot would have produced"); `docs/parity.md`,
+"Two unstable classes", item 1, gains the sentence "and its legacy side is
+never served from the screenshot cache - a cached timed shot is a clock
+frozen under whatever load wrote it". Verification: `node tests/parity.js
+"selection copied"` - the six cells are expected at 0.00%; see "Decided" for
+what a residue means. `.prettierignore` and `eslint.config.mjs` skip
+`tests/`, so `npm run check` does not read this edit; running the harness is
+its check.
+
+**`app/src/lib/dict.ts`** - forty keys, both languages, character for
+character from app.js (ru 114-158 / 176-184 / 195; en 300-344 / 360-368 /
+376): `rename`, `sharePlayers`, `shareGm`, `gmLinkCopied`, `listCopied`,
+`listEmptyHint`, `listNotFound`, `listNotFoundSub`, `rollBy`, `rollHint`,
+`clear`, `note`, `listNote`, `noteHead`, `notePub`, `noteHid`, `notePubHint`,
+`noteHidHint`, `listNotePhPub`, `listNotePhHid`, `notePhPub`, `notePhHid`,
+`noteClear`, `noteCleared`, `qty`, `gold`, `position`, `pickRow`, `dragHint`,
+`removeItem`, `removedItem`, `undo`, `pickAll`, `pickedN`, `moneyAs`,
+`money_bag`, `money_coin`. Not added: `moneyHelp` (structured, in `help.ts`
+below - it carries markup), `whatIsThis` (`helpHint` already holds that
+string), `goldUnit` (`priceText` already defaults it), `batchMoney` (B5.5),
+`sharedList`/`toStart` (B5.6). The English `removedItem` uses curly quotes
+and `sharePlayers` a curly apostrophe - copy, do not normalise.
+
+**`app/src/lib/help.ts`** - `MONEY: Record<Lang, Help>`: one paragraph, the
+`moneyHelp` string as `parts` with five `{ b: … }` runs per language (ru:
+"горстями, мешками и сундуками", "7 мешков 5 горстей", "8 мешков 9 горстей",
+"9 мешков", "8 мешков"; en: "handfuls, bags and chests", "7 bags 5 handfuls",
+"8 bags 9 handfuls", "9 bags", "8 bags"), exported as `moneyHelpFor(lang)` -
+not registered in `HELP` (it is not a section's help). `help.test.ts` reads it
+back in both languages with five bold parts.
+
+**`app/src/lib/icons.ts`** - `eye` (13), `eyeOff` (13), `note` (14), `grip`
+(15), `die` (16) off `ICON_EYE`/`ICON_EYE_OFF`/`ICON_NOTE` (1047-1049),
+`ICON_GRIP` (1053), `ICON_DIE` (1760); paths verbatim. `Icon.svelte` needs no
+change (the live `ICON_DIE` lacks `aria-hidden`; the summary rule sizes it to
+15px either way).
+
+**`app/src/lib/i18n.ts`** - `itemsWord(n, lang)`: the live `plural` (ru
+позиция/позиции/позиций by the same rule `moneyWord` uses; en item/items);
+`i18n.test.ts` covers 1, 2, 5, 11, 21, 0 in both languages.
+
+**`app/src/lib/lists.ts`** - `findListByPayload(lists, payload, knows)`: the
+live 1551-1574 over `decodeList` - same name, same ids in order, no meta field
+among `qty`/`gold`/`note`/`hnote` in the payload that is defined and differs
+from the stored entry's, `note`/`hnote` defined in the payload must equal the
+stored ones; returns the list or `null`. Pure; `lib/lists.test.ts` covers a
+players' payload of a list with a GM note (matches), a GM payload (matches), a
+renamed list (no), a reordered list (no), a payload with a price the store
+does not have (no), a bad payload (null).
+
+**`app/src/lib/share.ts`** - `share()` gains `opts.suffix?: string`, appended
+to the name in both flavours (inside the `<b>`; the live `itemLine` is one
+bold run); `shareList(list, index, lang, t)` = the live `listAsText`/
+`listAsHtml`: `skip` = every id in the list, `suffix` = ` ×qty` when `qty > 1`
+plus ` — priceText(gold, moneyMode(list), lang)` when priced (the mode: the
+list's `money` when it is one of `MONEY_MODES`, else `bag`), `extra` = the
+entry's `note` as a `{ head: t.noteHead, body }` block, the list's own `note`
+block right after the name, entries joined by `\n\n` / `<br><br>`. `share.test.ts`
+pins a list with a priced, counted, noted entry against a string written from
+the live functions; `copiedListText` (below) is the honest fixture.
+`entryNoteBlock(meta, t)` - the one `contextNote` block - lives here too, so
+the roll card and the modal pass the same thing.
+
+**`app/src/state/lists.svelte.ts`** - seven writers, each ending in one
+`save()`: `rename(id, name)` (4431-4434, no trim - the live keeps what was
+typed); `setMeta(id, entryId, field, value)` (1211-1219: truthy sets, falsy
+deletes, empty objects pruned); `setNote(id, kind, text)` (4421-4430: trimmed,
+blank deletes the key); `setMoney(id, mode)` (4086-4094: `bag` deletes the
+key); `move(id, entryId, to)` (1223-1231 through `moveEntry`; returns whether
+anything moved, saves only then); `restoreEntry(id, entryId, at, meta)` (the undo
+of 3944-3969: splice at `min(at, length)`, meta put back when non-empty, save);
+`removeEntry(id, entryId)` = the existing `removeId` + `save()` - the row's
+cross (`remove(id)` already means deleting a list and keeps that meaning). Every method replaces the list object
+(`this.lists = this.lists.map(...)`) so `$derived` readers update. Tests: one
+`it` per method in `state/lists.test.ts`, each asserting memory and storage.
+
+**`app/src/state/app.svelte.ts`** - `section` returns `null` for `storedList`
+and `sharedList` (the live `renderTabs`; the getter's own comment already says
+"nothing is lit on a list" and the code disagreed); `openList = $state('')`,
+`urlPayload = $state('')`, `syncListUrl(l)`: `payload = encodeList(l, true)`;
+`openList = l.id; urlPayload = payload; if (hash !== '#/l/' + payload) replace(
+sharedListHash(payload))` - the live 1599-1606; `clearOpenList()` empties both
+(the live `S.openList = ''; S.urlPayload = ''` on every other route). Tests:
+`section` null on `#/lists/abc` and `#/l/xyz`; `syncListUrl` rewrites through
+the router and leaves an already-right address alone; `shell.test.ts`'s
+"lights Tables for a table, and Lists for a list" becomes "…and nothing for a
+list" (assert no `aria-current` on `#/lists/abc`).
+
+**`app/src/components/StorageNotice.svelte`** (new, the second use) - props
+`app`; the `{#if !works}` div / `{:else if !app.warnHidden}` `{#key app.lang}`
+`<details class="warn">` block moved verbatim from `ListsPage.svelte` (its
+`works` read, `dismiss`, and every `.warn*` rule, `.warn-x:focus-visible`
+included, go with it; the header comment names `restoreOpen` as before).
+`ListsPage.svelte` renders `<StorageNotice {app} />` in the same slot and
+loses the inline copy. `listsPage.test.ts`'s notice cases keep passing
+unchanged (they go through `App`).
+
+**`app/src/components/HelpButton.svelte`** and **`HelpBox.svelte`** (new,
+second uses): the `?` (`.helpbtn` with `:hover`, `.on`, `::after` target, the
+600px 34px override; props `open`, `onclick`, `size?: 'sm'` for `.helpbtn.sm`
+- 22x22, 12px, style.css 696, which the class specificity keeps at 22 inside
+the 600px override) and the box (`.helpbox` with its `p`, `b`, `a`,
+`:last-child` rules and the paragraph renderer PageHead carries today; prop
+`help: Help`, an optional `class` for `money-help`). `PageHead.svelte`
+composes both and loses its inline copies; `.page-head`, `.page-h`,
+`.page-sub`, `.homebtn` stay in PageHead. The money picker uses both.
+
+**`app/src/components/RowMain.svelte`** (new, second use): the `.row-main`
+button and everything inside it, moved out of `TableRows.svelte` with the
+`<!-- prettier-ignore -->` glue intact: props `it`, `index`, `lang`,
+`artBroken`, `onartfail`, `onopen`, `num?: number` (the `rnum`, which the
+list row does not pass), `tail?: string` (the `rtail`, B5.6's). The styles
+that move: `.row-main` and its `:hover`/`:focus-visible`, `img`, `.rt`, `.rt
+b`, `.rnum`, `.rt span`, `.rcraft` (+ svg), `.rstats` and its colour
+variants, `.rm`, every `.badge*` rule, `.rtail` (style.css 785), and the
+600px block for `.row-main`, `.rm` (+ the 400px inner rule) and `.rt span`.
+`TableRows.svelte` keeps `.rows`, `.row`, `.row.sel`, the selbox rules, the
+tile view and the anchor flash, and renders `<RowMain … num={rollNum} />`.
+`tables.test.ts` and `sections.test.ts` keep passing unchanged (they read
+rendered text); re-run `"#/tables ~"` and `"#/tables/eq_weapon"` before
+going on (the row is on every table state).
+
+**`app/src/components/NumberField.svelte`** - one prop, `empty?: boolean`,
+the live #16 rule for the list page: with it, `value < min` draws as `''`
+(the live `numBox` writes `''` below the minimum), an emptied field commits
+`0` at once on `input` rather than `min` on `change`, digits commit on `input`
+(the live list page applies every keystroke; roll pages keep `change`), and a
+step from an empty field starts at 0 (`(parseInt('') || 0) + by`, clamped -
+so `+` and `−` both land on `min`). The `$effect` that re-syncs `text` from
+`value` uses the same "draw `''` below `min`" rule so it does not put `0` on
+screen. Without the prop nothing changes; `record.test.ts`/`roll.test.ts` stay
+as they are; a `numberField` case in `listPage.test.ts` covers the empty
+field, a typed digit, and both steps from empty.
+
+**`app/src/components/Field.svelte`** - `after?: number`, rendered as
+`style="margin-bottom:{after}px"` when given - the live inline style on the
+roll panel's field (14 with a hit, 0 without). One caller.
+
+**`app/src/components/RecordActions.svelte`** - `extra?: readonly ShareBlock[]`
+passed to `share()` in `copyText` (the live `contextNote`); `RecordModal.svelte`
+takes the same prop and forwards it to its card-row `RecordActions`. The name
+row and `send` are untouched (the live `copyName`/`shareItem` carry no note).
+
+**`app/src/components/ListPage.svelte`** (new) - props `app`. Script:
+
+- `route = $derived(app.route)`; `own = $derived.by(...)`: `storedList` →
+  `app.lists.get(listId) ?? null`; `sharedList` and not `packed` → the
+  `urlPayload` short-circuit, then `findListByPayload(app.lists.lists,
+  payload, knows)`; `packed` → `null`. `items = $derived(own ? own.ids.map(
+  byId).filter(Boolean) : [])`.
+- `$effect(() => { if (own) app.syncListUrl(own); })` - reading `own`'s
+  fields through `encodeList` subscribes the effect to every edit, which is
+  the live `freshenListUrl` after each writer collapsed into one place; the
+  teardown calls `app.clearOpenList()`. No loop: after `replace`, the route's
+  payload equals `urlPayload`, the same list resolves, the hash already
+  matches.
+- Local state: `lsel = new SvelteSet<string>()`; `roll = $state(0)` (the
+  live `S.listRoll.n` for this list - memory only, component-local, see
+  "Decided"); `moneyHelp = $state(false)`; `noteOpen = new SvelteMap<string,
+  boolean>()` - a person's own toggles per entry, the live `S.keepOpen[
+  'rnote:…']`; `open = $state<Record_ | null>(null)` for the modal;
+  `hit = $derived(roll >= 1 && roll <= items.length ? items[roll - 1] : null)`.
+- `boxHidden(id, meta)` = `noteOpen.has(id) ? !noteOpen.get(id) : !(meta.note
+  || meta.hnote)` - the live `hidden` default with `keepOpen` winning.
+- `say`, `knows`, `metaOf(id) = itemMeta(own, id)`, `mode = moneyMode(own)`,
+  `priced = own.ids.some(gold > 0)`, `goldText(coins)` = `priceText` in bag
+  mode else `''`.
+- Handlers, each the live one by line: `rename` (`oninput` → `store.rename`);
+  `sharePlayers`/`shareGm` (empty → `say(t.listEmpty)`; else `compress.pack(
+  encodeListRaw(own, forPlayers))` → `clipboard.writeText(app.linkTo(
+  sharedListHash(payload)))` → `playersLinkCopied`/`gmLinkCopied` or
+  `copyFailed` as an error - `ListsPage.share` is the model); `copyList`
+  (`shareList` → `writeRich` → `listCopied`/`copyFailed`); `del` (`dialog.
+  confirm(deleteConfirm % name)` → `store.remove(id)` → `app.go('#/lists')`);
+  `pickMoney(mode)` → `store.setMoney`; `toggleMoneyHelp`; `noteInput(kind,
+  e)` for the list note → `store.setNote`; `noteInput` for an entry →
+  `store.setMeta(id, entryId, 'note'|'hnote', value.trim())`; `clearNote(ta)`
+  (empty the textarea, dispatch `input`, `say(t.noteCleared, { action: {
+  label: t.undo, run: () => put(was) } })`); `toggleNote(id)` (`noteOpen.set(
+  id, hidden)`, then `tick()`, `autoSize` the box's textareas and focus the
+  first - 4113-4123); `removeEntry(it, i)` (copy the meta, `store.removeEntry(own.id,
+  it.id)`, `say(t.removedItem.replace('%s', nameOf(it)), { action: { label:
+  t.undo, run: () => store.restoreEntry(own.id, it.id, i, meta) } })`); `setPos(it,
+  i, e)` on `change` (`n` in `1..own.ids.length` → `store.move(own.id, it.id,
+  n - 1)`, else reset the field to `i + 1`); `setQty`/`setGold` on `input`
+  (`store.setMeta(..., parseInt(value) || 0)` - the gold `title` is reactive
+  from `goldText`, and so is the `?`: see "Decided"); `rollNow` (`roll = pick(
+  items.length, app.env.random)`); `setRoll(n)` from `NumberField`; `clearRoll`
+  (`roll = 0`); `pickRow(id, on)` and `pickAll(on)` for `lsel`.
+- Auto-size: a module-level `autoSize(ta)` = the live 1102-1110 (skip when
+  `ta.dataset['manual']` or `!ta.offsetParent`; `height = auto`; `min(
+  scrollHeight + frame, 320)`), called from an `$effect` after mount over
+  every `.lnote textarea, .rnote textarea` (the live `autoSizeNotes` on
+  render), from every note `oninput`, and after `toggleNote`; the
+  `pointerdown`/`pointerup` pair on the page root marks a hand-resized box
+  `data-manual` (4562-4571). In jsdom `offsetParent` is null and the function
+  returns early, so tests reach it through `toggleNote` only; the coverage
+  threshold is met by the branch structure, not by measuring.
+- The textarea's text child: an action `use:seedText={value}` that sets
+  `node.textContent = value` once on mount - the textarea's value follows its
+  text content until it is dirtied, which is exactly the live `<textarea>
+  esc(value)</textarea>`; the component never binds `value` and reads edits
+  from `oninput`. This is what gives the inventory the live names.
+
+Template, in the live order with the live whitespace (glue `>`/`<` where the
+live markup has no whitespace between siblings, `<!-- prettier-ignore -->`
+on each glued block as `TableRows` and `ListsPage` already do):
+
+```svelte
+{#if !index}
+  <p class="miss">{t.noData}</p>
+{:else if route.kind === 'storedList' && !own}
+  <h1 class="page-h">{t.listNotFound}</h1>
+  <p class="page-sub">{t.listNotFoundSub}</p>
+  <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+{:else if !own}
+  <p class="todo">{app.hash}</p>            <!-- B5.6's shared page -->
+{:else}
+  <h1 class="page-h"><input type="text" class="titleinput" value={own.name} aria-label={t.rename} oninput={rename} /></h1>
+  <p class="page-sub">{String(items.length) + ' ' + itemsWord(items.length, app.lang)}</p>
+  <div class="card-acts">
+    <Button size="sm" onclick={() => void sharePlayers()}><Icon name="link" />{t.sharePlayers}</Button>
+    <Button size="sm" onclick={() => void shareGm()}><Icon name="link" />{t.shareGm}</Button>
+    <Button size="sm" onclick={() => void copyList()}><Icon name="copy" />{t.copyText}</Button>
+    {#if items.length}<Button size="sm" href={printHash(items.map((x) => x.id))} sameTab title={t.printHint}><Icon name="print" />{t.print}</Button>{/if}
+    <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
+  </div>
+  <StorageNotice {app} />
+  {#if priced}
+    <div class="money"><span class="money-l">{t.moneyAs}</span>{#each MONEY_MODES as m (m)}<Chip label={t[`money_${m}`]} on={m === mode} onclick={() => { pickMoney(m); }} />{/each}<HelpButton size="sm" open={moneyHelp} onclick={toggleMoneyHelp} />{#if moneyHelp}<span class="money-br"></span><HelpBox help={moneyHelpFor(app.lang)} class="money-help" />{/if}</div>
+  {/if}
+  <details class="lnote" open={untrack(() => !!(own.note || own.hnote))}>
+    <summary><Icon name="note" /><span>{t.listNote}</span></summary>
+    {@render notePair(own, 'list')}
+  </details>
+  {#if items.length > 1}
+    <details class="panel lroll">
+      <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
+      <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
+        <div class="numrow">
+          <NumberField value={roll} min={1} max={items.length} empty label={t.rollResult} stepDownLabel={t.stepDown} stepUpLabel={t.stepUp} onchange={setRoll} />
+          <Button variant="primary" onclick={rollNow}><Die faces={items.length} />{rollLabel}</Button>
+          {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
+        </div>
+        {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
+      </Field>
+      {#if hit}
+        <OrGrid or={t.or} items={[hit]}>{#snippet card(it)}<RecordCard variant="compact" {it} {index} lang={app.lang} rollLabel={roll} … >{#snippet nameActions()}<RecordActions … row="name" />{/snippet}{#snippet actions()}<RecordActions … row="card" extra={entryNoteBlock(metaOf(it.id), t)} />{/snippet}</RecordCard>{/snippet}</OrGrid>
+        {@render hitnote('eye', t.notePub, metaOf(hit.id).note)}
+        {@render hitnote('eyeOff', t.noteHid, metaOf(hit.id).hnote)}
+      {/if}
+    </details>
+  {/if}
+  {#if items.length}
+    <div class="batch" class:on={lsel.size}>
+      <label class="batch-all"><input type="checkbox" checked={lsel.size > 0 && lsel.size === own.ids.length} onchange={(e) => { pickAll(e.currentTarget.checked); }} />{lsel.size ? t.pickedN + ' ' + String(lsel.size) : t.pickAll}</label>
+    </div>
+    <div class="rows lrows" bind:this={rowsEl}>
+      {#each items as it, i (it.id)}
+        {@const m = metaOf(it.id)}
+        {@const hasNote = !!(m.note || m.hnote)}
+        <div class="row lrow" class:has-note={hasNote} data-index={i}>
+          <span class="lrow-grip" draggable="true" title={t.dragHint} aria-hidden="true"><Icon name="grip" /></span>
+          <label class="lrow-pick"><input type="checkbox" checked={lsel.has(it.id)} aria-label={t.pickRow} onchange={(e) => { pickRow(it.id, e.currentTarget.checked); }} /></label>
+          <input type="number" class="lrow-n" min="1" max={own.ids.length} inputmode="numeric" value={i + 1} aria-label={t.position} onchange={(e) => { setPos(it, i, e); }} />
+          <RowMain {it} {index} lang={app.lang} artBroken={app.artBroken(it.id)} onartfail={…} onopen={(r) => { open = r; }} />
+          <div class="lrow-meta">
+            <label><span>{t.qty}</span><input type="number" min="1" max="99" inputmode="numeric" value={m.qty || ''} placeholder="1" oninput={(e) => { setQty(it.id, e); }} /></label>
+            <label><span>{t.gold}{#if goldText(m.gold)}<span class="goldhint" data-goldhint={goldText(m.gold)} title={goldText(m.gold)}>?</span>{/if}</span><input type="number" min="0" max="99999" inputmode="numeric" value={m.gold || ''} placeholder="—" title={goldText(m.gold) || undefined} oninput={(e) => { setGold(it.id, e); }} /></label>
+          </div>
+          <div class="lrow-acts">
+            <button type="button" class="lrow-note" class:on={hasNote} title={t.note} aria-label={t.note} onclick={() => { toggleNote(it.id); }}><Icon name="note" /></button>
+            <button type="button" class="row-x" title={t.removeItem} aria-label={t.removeItem} onclick={() => { removeEntry(it, i); }}>&times;</button>
+          </div>
+          <div class="rnote" hidden={boxHidden(it.id, m)}>{@render notePair(m, it.id)}</div>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <Empty>{t.listEmptyHint}</Empty>
+  {/if}
+{/if}
+{#if open && index}<RecordModal {app} {index} it={open} extra={entryNoteBlock(metaOf(open.id), t)} onclose={…} onopen={…} />{/if}
+```
+
+The `notePair(o, key)` snippet draws `<div class="npair">` and two `.nfield`s
+exactly as `notePairHTML` does - `n-pub` with `<Icon name="eye" />`, `n-hid`
+with `eyeOff`, `.nlbl` = icon + label + `<i>hint</i>` + the `.note-x` button,
+then `<textarea rows="3" placeholder=… use:seedText={value} oninput=…>` - with
+the list placeholders when `key === 'list'` and the entry ones otherwise. The
+`hitnote(icon, label, text)` snippet draws nothing for an empty text and
+otherwise `<div class="hitnote"><Icon /><span><b>{label}</b>{lines}</span></div>`
+with `\n` rendered as `<br />` through an `{#each text.split('\n')}`. Drag:
+`$effect(() => app.env.drag.bind(rowsEl, { onDrop: (from, to) => { const id
+= own.ids[from]; if (id !== undefined) store.move(own.id, id, to); } }))`
+returning the unbind - the existing port, unchanged, on the `data-index` rows.
+
+Styles, every value off style.css and never from memory, in this order:
+`.page-h` (105), `.page-sub` (140); the global `input[type='text']` and
+`:focus` (254-258) scoped as `ListsPage` did, then `.titleinput`, `:focus`,
+`:hover` (848-853) - see the specificity note above; `.miss` and `.todo` as
+`RecordPage`/`App` have them; `.card-acts` (405) plus `margin-bottom: 16px`;
+`.money`, `.money-l`, `.money-br`, `.money-help` (694-702); `.lnote` and
+its `summary`, `::-webkit-details-marker`, `svg`, `span`, `i`, `:hover span`,
+`[open] summary` (636-644); `.lnote textarea, .rnote textarea`, `.rnote
+textarea`, the `:focus` pair (646-657); `.npair`, `.lnote .npair`, `.rnote
+.npair`, `.nfield`, `.nlbl` (both declarations, 663 and 1088), `.nlbl i`,
+`.n-hid textarea`, the 640px `.npair` override (659-670); `.note-x`, `:hover`,
+`.nfield:has(textarea:placeholder-shown) .note-x` (1089-1096); `.panel`
+(145-149), `.lroll` and its seven rules (679-687), `.rollhint` (690); `.numrow`
+(181); `.hitnote` and its four (626-633); `.batch`, `.batch.on`, `.batch-all`,
+`.batch.on .batch-all` (1050-1058); `.rows`, `.row`, the `(hover:hover)`
+`.row:hover` (547-553 - the third copy of three short rules, recorded); the
+`.lrow` family: `.lrow`, `.rnote`, `.lrow.has-note`, `.lrow-acts .lrow-note`,
+`.on`, `svg` (618-623); `.lrow-grip`, `:hover`, `:active`, `.lrow-n` and its
+three (732-746); `.lrow.dragging`, `.drop-before`, `.drop-after` (747-749 -
+port now, 4b sets the classes); `.lrow-meta` and its nine including
+`.goldhint` and the `:hover`/`:focus-within` pair (750-776); `.lrow-acts` and
+its four (777-784); `.lrow-pick` (1083); `.empty` through `Empty`; the focus
+rules for `.lrow-acts button`, `.row-x`, `.lrow-grip` (999-1004); and the
+600px block for `.lrow`, `.lrow .row-main`, `.lrow-meta`, `.lrow-acts`, its
+`button`, `.row-x` (890-895). No `.selbox`: the list row's checkbox is
+`.lrow-pick`. Svelte scopes every compound selector, so the rules that reach
+into a child component's root need `:global()`: `.lroll > :global(:not(
+summary))` and `.lroll > :global(:last-child)` (the `Field`, `OrGrid`),
+`.lrow > :global(.row-main)` in the 600px block (`RowMain`), `.money >
+:global(.money-help)` (`HelpBox`). The snippets are this component's own
+markup and need none.
+
+**`app/src/App.svelte`** - `{:else if app.route.kind === 'storedList' ||
+app.route.kind === 'sharedList'}<ListPage {app} />` before the final `{:else}`.
+`App.svelte` keeps its final `{:else}` and its `.todo` rule; `ListPage`
+copies the rule for the paragraph it draws for a payload that is not ours.
+
+**`tests/parity/driver.js`** - `type(placeholder, text, event = 'input')`:
+finds the field by placeholder **or by accessible name** (`NAME_FN`, so the
+title input and the position field are gripped by their `aria-label`) and
+dispatches `event` - `'change'` for the position field, whose live handler
+waits for the field to be committed. `NAME` gains `note`, `removeItem`,
+`undo`, `noteClear`, `sharePlayers`, `shareGm`, `rollBy`, `moneyCoin`,
+`rename`, `position`, `stepUp`, `whatIsThis`, `printHint` in both languages
+(the English `sharePlayers` with its curly apostrophe).
+
+**`tests/parity/specs.js`** - two seeds beside `seven`: `noted` = list `a`
+with `ids ci1..ci7`, `meta: { ci2: { qty: 2, gold: 750, note: 'Светится в
+темноте', hnote: 'Проклят' } }`, `note: 'Лавка закрыта до утра'`, plus `b`;
+`oneEmpty` = `[LISTS[1]]`. States (route, storage, enter, what for):
+
+| id | route | storage | enter | what it is for |
+|---|---|---|---|---|
+| `#/lists/a` | `#/lists/a` | `seven` | - | the page: title input, "7 позиций", five actions, the notice, no money picker, folded note and roll panel, "Выбрать все", seven plain rows; the 600px row bands at 375 |
+| `#/lists/a ~ noted` | `#/lists/a` | `noted` | - | the money picker, the list note open with two texts, row 2 with qty 2, "7 мешков 5 горстей" and the `?`, its note box open, `has-note`; the 640px `.npair` stack at 375 |
+| `#/lists/a ~ money help` | `#/lists/a` | `noted` | `d.click('Как это работает')` | the help box under the chips, `?` pressed |
+| `#/lists/a ~ roll panel` | `#/lists/a` | `seven` | `d.click('Бросок по списку')` | the panel open: empty numbox, "Случайно 1–7", the hint |
+| `#/lists/a ~ rolled` | `#/lists/a` | `noted` | `d.click('Бросок по списку')`, `d.click('На единицу больше')` twice | result 2: the compact card badged 2, both hitnotes, "Сбросить" |
+| `#/lists/a ~ removed` | `#/lists/a` | `seven` | `d.click('Убрать из списка')`; **`timed: true`** | six rows, the undo toast |
+| `#/lists/a ~ note opened` | `#/lists/a` | `seven` | `d.click('Заметка')` | row 1 with its empty note box open, focus in the first textarea |
+| `#/lists/b` | `#/lists/b` | `oneEmpty` | - | the empty page: no print link, no money, the note folded, no roll panel, no bar, the hint |
+| `#/lists/nope` | `#/lists/nope` | - | - | "Список не найден", the sub, the "Списки" button; the address not rewritten |
+| `#/l/ ~ own list` | `'#/l/' + encodeList(seven's a, true)` | `seven` | - | own-list recognition: the same page as `#/lists/a` |
+
+The `~ rolled` result is deterministic (the stepper, not the die) - the
+random button is covered by `listPage.test.ts` with `random: () => 0`. Every
+`enter` grips Russian names and runs before the `EN` press.
+
+Specs: `listAddress` (a look, `only` all ten list-page states: `{ hash }` -
+the rewritten address byte for byte, or the untouched one on `#/lists/nope`); presses (`presses: true`, each on its
+own page): `renamedList` (`only: ['#/lists/a']`: `d.type(NAME[lang].rename,
+'Тайник')` → `{ hash, name: stored[0].name }`); `movedByPosition` (`#/lists/a`:
+`d.type(NAME[lang].position, '3', 'change')` → `{ hash, ids }` = `ci2, ci3,
+ci1, …`); `pricedRow` (`#/lists/a`: `d.type('—', '231')` → `{ hash, meta:
+stored[0].meta, picker: await d.has(NAME[lang].moneyCoin) }` - the picker
+appears on the first price); `removedRow` (`#/lists/a`: click `removeItem` →
+`{ afterRemove: ids, hash }`, then click `undo` → `{ afterUndo: ids }`);
+`deletedFromPage` (`#/lists/a`: click `del` → `{ asked: d.dialog(), hash }` =
+`#/lists`); `copiedListText` (`~ noted`: `resetClipboard`, click `copyText`
+→ `{ text, html }` - the whole list export with the note tail, `×2`, `7
+мешков 5 горстей`, the entry note); `ownLinks` (`~ noted`: click
+`sharePlayers` → the hash part of the clipboard, `resetClipboard`, click
+`shareGm` → the hash part - two packed payloads, identical on both apps as
+`sharedListLink` already proves); `moneyMode` (`~ noted`: click `moneyCoin` →
+`{ hash, money: stored[0].money }`); `noteCleared` (`~ noted`: click
+`noteClear` - the first, the list note's players' side → `{ note: stored[0].
+note ?? null, hash }`, then click `undo` → `{ back: stored[0].note }`).
+
+Expect **zero** on every cell of all ten states in both languages and no
+`VISUAL_DEBT` or `ACCEPTED` entry. Where to look first if a cell is not zero:
+the title input's box (the specificity note - a dashed underline means the
+class won where the attribute selector should); a space text node inside
+`.nlbl` or between the summary's icon and span; `.batch`'s `margin: 16px 0 0`;
+the row note textarea at 13px on `var(--surface)` against the list note's
+14px on `var(--bg2)`; an auto-sized textarea that was not sized (79/83px
+against the `rows="3"` height); `.lrow-meta`'s 44px left padding at 600px;
+the `?` in the caption drawn without a price; `hitnote + hitnote` 8px; the
+field's 14px/0 inline margin; the `.lroll>:last-child` 13px on the last
+hitnote.
+
+#### Tests
+
+- `lib/i18n.test.ts` (`itemsWord`), `lib/lists.test.ts` (`findListByPayload`),
+  `lib/share.test.ts` (`suffix`; `shareList` on a two-entry list with qty,
+  price in both modes, an entry note, a list note; `entryNoteBlock`),
+  `lib/help.test.ts` (`moneyHelpFor`).
+- `state/lists.test.ts` - the seven writers; `state/app.test.ts` - `section`
+  null on both list routes, `syncListUrl`/`clearOpenList`.
+- `components/shell.test.ts` - the tab case corrected.
+- `components/listPage.test.ts` (new) - through `App` with `memoryRouter(
+  '#/lists/a')`, a `LOOT` of three known records (one equipment, for `.rstats`),
+  storage seeded as in `noted`: the address is rewritten to the players'
+  payload on mount; the title input holds the name and renaming stores it and
+  rewrites the address; the sub counts known records; the five actions by
+  name and the print link's `href`; no print link on an empty list; the
+  storage notice draws (and `Скрыть` dismisses it); the money picker only with
+  a price - `Монетами` stores `coin` and rewrites the address, `Как в книге`
+  deletes the key; `Как это работает` opens the help with five bold runs and
+  presses the button (`aria-expanded`); the list note is open with a note,
+  folded without, typing stores and blank deletes; the roll panel is absent
+  with one entry, folded with two; typing 2 shows the second entry's card
+  badged 2 with both hitnotes and `Сбросить`; `Случайно 1–N` with `random:
+  () => 0` shows entry 1; `Сбросить` empties the field and keeps the panel
+  open; the empty field shows `''` and `+` from it gives 1; select-all ticks
+  every row and the bar reads `Выбрано N`, one row `Выбрано 1`, none `Выбрать
+  все`; the position field moves an entry on `change` and resets on an
+  out-of-range value; qty and gold store on `input`, the gold title and `?`
+  follow the price in bag mode and vanish in coin mode; `Заметка` opens the
+  box and focuses its first textarea, `has-note` follows the text, the clear
+  cross empties the box, toasts with `Вернуть`, and undo puts the text back;
+  `Убрать из списка` removes the row, toasts `«…» убран` with `Вернуть`, and
+  undo restores the entry at its index with its meta; `Скопировать текст`
+  writes the list export (assert the string from `shareList`); the two links
+  write packed players'/GM payloads under `plainCompress` and toast; an empty
+  list toasts `listEmpty` for both; `Удалить` asks and, accepted, navigates to
+  `#/lists` (`memoryRouter.stack`); a row's body opens the modal and its
+  `Скопировать текст` includes the entry's players' note; `#/lists/nope` draws
+  the not-found page with a `Списки` link and no rewrite; `#/l/<payload of a>`
+  draws the own page; `#/l/<payload of nobody's list>` draws the `todo`
+  paragraph; the drag port's `onDrop(0, 2)` (through a `fakeDrag` that exposes
+  the handlers - add it to `ports/drag.ts` beside `noDrag`) moves the entry;
+  `noData` draws the paragraph; the textarea's `textContent` equals its value
+  after mount; every case ends with `expectNoA11yViolations`.
+- `components/a11y.test.ts` - states: `a list page with a priced, noted entry
+  and the roll panel open` (`#/lists/a`, `noted`, press `Бросок по списку`),
+  `a list page with a row's note box open` (press `Заметка`); `COVERED` gains
+  `ListPage.svelte`, `StorageNotice.svelte`, `RowMain.svelte`, `HelpButton.
+  svelte`, `HelpBox.svelte`.
+- `docs/specs/COVERAGE.md` - a `components/listPage.test.ts` row; the
+  `listsPage.test.ts` row notes the notice moved to `StorageNotice`.
+- `docs/specs/FEATURES.md`, "Lists": "The list page draws the roll panel
+  folded and opens it on its summary; an empty roll field means no roll yet;
+  the panel, a row's note box and the list note keep the person's own
+  fold/unfold across a language switch (the live `data-keep` opt-ins), and
+  the page rewrites its address to the players' link on open and after every
+  edit." "Chrome": "No tab is lit on a record, a list page or a print sheet."
+
+#### Ordered steps
+
+0. `tests/parity.js`: the three `!timed` guards and the comment; `docs/parity.md`
+   sentence. `npm run build` if `dist/` is stale, then `node tests/parity.js
+   "selection copied"`. **Commit** `test(parity): no legacy cache for timed
+   states`, authored `artex-x`, no push. Record the six cells in the handoff.
+1. `dict.ts` (forty keys); `help.ts` `MONEY`/`moneyHelpFor` + test; `icons.ts`
+   five icons; `i18n.ts` `itemsWord` + test; `rollLabel(max, t)` moves from
+   `RollPanel.svelte`'s `$derived` into `lib/roll.ts` on this second use
+   (RollPanel calls it; `roll.test.ts` covers a real die and a random range).
+2. `lib/lists.ts` `findListByPayload` + test; `lib/share.ts` `suffix`,
+   `shareList`, `entryNoteBlock` + tests.
+3. `state/lists.svelte.ts` seven writers + tests; `state/app.svelte.ts`
+   `section`, `openList`/`urlPayload`/`syncListUrl`/`clearOpenList` + tests;
+   `shell.test.ts` corrected. `npm run test -- lists app shell` green.
+4. `StorageNotice.svelte`; `ListsPage.svelte` uses it. `npm run test --
+   listsPage` green.
+5. `HelpButton.svelte`, `HelpBox.svelte`; `PageHead.svelte` uses them. `npm
+   run test -- roll std alt` green. `npm run build`; `node tests/parity.js
+   "~ help"` (the four help states) - zero, before going on.
+6. `RowMain.svelte`; `TableRows.svelte` uses it. `npm run test -- tables
+   sections` green. `npm run build`; `node tests/parity.js "#/tables ~"
+   "#/tables/eq_weapon"` (8 + 3 states) - the recorded numbers, before going on.
+7. `NumberField.svelte` `empty`; `Field.svelte` `after`; `RecordActions.svelte`
+   and `RecordModal.svelte` `extra`; `ports/drag.ts` `fakeDrag`.
+8. `ListPage.svelte`; `App.svelte` routes to it; `listPage.test.ts`;
+   `a11y.test.ts` states and `COVERED`; `COVERAGE.md`; `FEATURES.md`.
+9. `driver.js` `type` by name and event; `specs.js` seeds, `NAME`, ten
+   states, ten specs.
+10. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+    call, `timeout: 600000`.
+11. `npm run build`, then, each its own foreground call, the loop while
+    getting to zero: `node tests/parity.js "#/lists/a @"` (1 state, 6 presses);
+    `node tests/parity.js "~ noted" "~ money help"` (2 states, 4 presses);
+    `node tests/parity.js "~ roll panel" "~ rolled" "~ removed" "~ note opened"`
+    (4 states, one timed); `node tests/parity.js "#/lists/b" "#/lists/nope"
+    "own list"` (3 states); then the regressions: `node tests/parity.js
+    "#/lists @" "#/lists ~"` (the six index states through `StorageNotice` and
+    `HelpBox`) and `node tests/parity.js "i/ci1 ~"` (the modal with `extra`
+    undefined, the toast). Do not merge them; do not run `"#/lists"` bare -
+    it now matches every list-page state too.
+12. `set -o pipefail; npm run check:built 2>&1 | tail -n 120`.
+13. `plan.md` gains "B5.4a built"; `handoff.md`; one commit, `feat(lists):
+    the list page`, authored as `artex-x`, no push.
+
+#### Acceptance criteria
+
+- `#/lists/a` (seeded) draws the page as measured: the title input as a 46px
+  text field 560px wide, "7 позиций", the five actions (35px row), the
+  notice, the folded note (36px), the folded roll panel (43px), the bar (36px,
+  "Выбрать все"), seven 78px rows at 1100 that band into grip/pick/position,
+  body, meta/acts at 375; the address reads `#/l/<players' payload>` at once.
+- With a priced entry the money picker draws (36.8px) with `Как в книге`
+  pressed, the `?` opens the help (235.95px); picking `Монетами` stores
+  `coin`, rewrites the address, removes every `?` and gold title.
+- The list note opens when a note exists; both boxes auto-size to their text
+  (83px one-line); the clear cross appears only on a non-empty box, empties
+  it, toasts, and undoes.
+- The roll panel opens on its summary; the field is empty; `+` gives 1; a 2
+  shows the second entry's compact card badged 2 with both hitnotes (59.25px
+  each) and `Сбросить`, which empties the field and leaves the panel open; the
+  card's copy text carries the entry's players' note, not the GM's.
+- A row's note button opens its box (116px empty) and focuses the first
+  textarea; text marks the row `has-note` and the button `on`.
+- The cross removes the row, rewrites the address, and toasts `«…» убран` with
+  `Вернуть` for 7s; undo puts the entry back at its position with its meta.
+- Typing a position and committing moves the entry; out of range resets the
+  field. Quantity and price store on input; the first price makes the picker
+  appear.
+- Select-all ticks every row and reads `Выбрано 7`; nothing draws under the
+  bar (B5.5).
+- Players' and own links copy packed payloads; an empty list toasts
+  `listEmpty`. `Скопировать текст` copies the list export. `Удалить` asks and
+  goes to `#/lists`.
+- `#/lists/nope` draws the not-found page and leaves the address alone;
+  `#/l/<own payload>` draws the own page; no tab is lit on any of them.
+- All ten states read 0.00% at every cell in both languages; the ten specs
+  match; `"~ help"`, `"#/tables ~" "#/tables/eq_weapon"`, `"#/lists @" "#/lists
+  ~"` and `"i/ci1 ~"` still read zero or their recorded numbers.
+- `"selection copied"` reads six `совпадает` after step 0 (see "Decided" for
+  the one residue that is allowed and what it means).
+- `npm run check` and `npm run check:built` exit 0 with thresholds met.
+
+#### Risks and do-nots
+
+- Do not give the title input the dashed underline `.titleinput` describes;
+  port the cascade. Measured: 46px, filled, 1px solid, radius 9.
+- Do not bind the textareas' `value`; seed the text child and read `oninput`.
+  The inventory names them by `textContent`.
+- Do not bind `open` on `.lroll` or `.lnote` reactively; set it once at mount.
+  `Сбросить` must leave the panel open, as the live `keepOpen` does.
+- Do not draw `.batch-acts` (B5.5) or the shared page (B5.6); do not add
+  `Badge.svelte`, `Panel.svelte`, `Row.svelte`.
+- Do not make the `?` in the gold caption or the field title lag a render:
+  the port is reactive and the divergence is recorded ("Decided"); do not add
+  a render counter to imitate it.
+- Do not put the position field on `input`; the live handler is `change`.
+- Do not forget `timed: true` on `~ removed`, and do not add it to any other
+  state.
+- Do not write a `VISUAL_DEBT` number from this host.
+- Do not run `node tests/parity.js "#/lists"` expecting six states.
+- Two commits, no push, no `Co-Authored-By`.
+
+**Decided in planning - do not reopen.**
+
+- **The `selection copied @ en 1100` cell is a stale cache hit, not a defect
+  in either app, and not a debt.** Evidence, in order: the diff image
+  (`test-output/parity/_tables_selection_copied_en_1100-diff.png`) is red
+  only over the toast - the legacy shot has none, the rewrite's has
+  "Выбранное скопировано" in Russian (right: the toast was raised before the
+  `EN` press and is not re-translated in either app); the legacy PNG is
+  byte-identical (`md5 c3551f51…`) to `test-output/.parity-cache/a6515261…/
+  1100.png`, written 21:50:41 - inside the full suite's 21:33-22:03 window,
+  under its load - while the "isolated" run at 22:04-22:05 wrote all three
+  English legacy files within 35ms of each other (cache copies; a fresh
+  arrival takes about seven seconds, which is the spacing of the `next` files
+  at 22:05:16/23/30). The isolated run therefore never shot the legacy side:
+  both measurements share one capture, which is why they agree to the
+  hundredth. The mechanism: `tests/parity.js` turns the legacy cache off for
+  `measured` states and not for `timed` ones (459-460, 476-477, 414), so a
+  toast that had expired under load was cached and served ever after - the
+  "cache written on a different clock" `docs/parity.md` names, made
+  permanent. 0.74% is the toast's own pixels (a 200x44 plate over 1100x900
+  is ~0.9% with its rounded corners). Sibling cells are clean because their
+  cached captures happened to catch the toast. CI is unaffected (fresh
+  runners, empty cache), which is consistent with every green parity shard.
+  **Decision: fix the harness (step 0), no `VISUAL_DEBT` line, no
+  re-measure before the fix.** If, with the cache off, the cell still reads
+  non-zero on this host, it is the timed class `docs/parity.md` already
+  documents ("a `timed` cell that is still non-zero locally is the toast's
+  own pixels") and CI decides it - the implementer records the six cells and
+  writes nothing. Rejected: deleting the two stale cache directories by hand
+  (fixes one cell, keeps the trap for the four other timed states and 4a's
+  fifth); a `VISUAL_DEBT` entry (a Windows figure, forbidden by owner
+  decision 1, for a difference that is not in the app); widening `JITTER`
+  (the toast is the thing the state exists to see).
+- **4a/4b as above**, for the reasons in the opening paragraph.
+- **Drag through the existing port in 4a.** `nativeDrag` works and has tests;
+  binding it makes every affordance on screen do something. 4b replaces it
+  with the live semantics; until then a drop lands on the target row's index
+  rather than before/after its midpoint. Recorded, reachable by nobody in the
+  harness.
+- **The four extractions happen now**: `StorageNotice` (B5.3's own
+  inheritance), `RowMain`, `HelpButton`, `HelpBox` - each is a second real
+  use of the same live markup and the campsite rule is explicit. The `.badge`
+  rules move with `RowMain` and their copy count does not change. `.rows`/
+  `.row`/`.row:hover` (three short rules) are copied a third time and
+  recorded with `.badge`'s deferred extraction; `.page-h`/`.page-sub` are
+  copied because the list page's heading is an input, not `PageHead`'s
+  string.
+- **`open` on the two `<details>` and `hidden` on the note boxes are the
+  person's, not the data's.** The live app applies the markup default only
+  to elements the person never toggled (`restoreOpen`). The port sets the
+  default once at mount and lets the element keep whatever the person does;
+  `noteOpen` keeps the row toggles because those elements are re-created by
+  `{#each}` only when the entry changes. Two consequences are recorded, not
+  reproduced: a list note cleared to empty and then re-rendered by a
+  select-all folds in the live app and stays open in the port; a roll made,
+  then a navigation away and back, shows the result again in the live app
+  (`S.listRoll` is app memory) and an empty field in the port (component
+  state) - the same call B5.3 made for drafts. No state reaches either.
+- **The gold hint and the field title are reactive.** The live app updates
+  the title in place and the `?` on the next render (measured); the port
+  draws both from the price at once. Kinder, invisible to every state (no
+  state types a price and then looks), recorded.
+- **`NumberField` grows `empty` rather than the list page drawing its own
+  box.** The live `numBox` is one function with the #16 rule inside it; the
+  roll pages never exercise the rule, the list page always does. One prop,
+  four lines, no second numbox.
+- **The address effect replaces eight `freshenListUrl` calls.** Every live
+  writer calls it; a `$effect` over `encodeList(own, true)` re-runs on exactly
+  the edits that change the payload and no others. Rejected: calling
+  `syncListUrl` from each handler (the live shape, eight chances to forget
+  one, and the live app itself forgot none only by discipline).
+- **Delete on the page goes to `#/lists` through `app.go`**, counting as a
+  navigation, so the index mounts fresh and `lsel`/`menuFor` clear - the live
+  `location.hash = '#/lists'` fires `hashchange`, which does the same.
+- **`copiedListText` is the fixture for `shareList`.** A string pinned in
+  `share.test.ts` is written by hand from the live functions; the press spec
+  reads the live app's clipboard and holds the port to it, in both languages,
+  every run.
+- **The shared page keeps the `todo` paragraph.** `#/l/` for a list that is
+  not ours is B5.6's; today it draws `todo` in `App.svelte`, after 4a it draws
+  the same paragraph from `ListPage`. Nothing on screen changes for that
+  route.
+
+#### B5.4b outlined: drag as the live app does it
+
+- **`ports/drag.ts`** rewritten to the live event model (app.js 4443-4530):
+  `dragstart` on `[data-drag]` sets the key, adds `dragging` to the row,
+  `effectAllowed = 'move'`, `setData('text/plain', key)` (Firefox), and
+  `setDragImage(row, 24, 24)`; a capturing `dragover` drives edge autoscroll
+  (`EDGE = 120`, `EDGE_MAX = 22`, speed by depth, on `requestAnimationFrame`
+  off the frame rather than the mouse); the bubbling `dragover` marks the row
+  under the pointer `drop-before`/`drop-after` by its vertical midpoint and
+  `preventDefault`s; `dragend` clears everything; `drop` computes `to` from
+  the target's index and the mark (`after && to < from` → `+1`, `!after && to
+  > from` → `-1`) and calls `onDrop(from, to)`. `DragHandlers` gains
+  `onMark(rowIndex, where)` / `onClear()` so the component toggles the
+  classes (or the port toggles them itself on the container's rows - decide
+  by what keeps `lib/` and the component free of DOM listeners; the port is
+  the place for listeners).
+- **`ListPage.svelte`**: the grip gets `data-drag`; the row's `dragging`/
+  `drop-before`/`drop-after` classes are driven by the port's callbacks. The
+  rules were ported in 4a.
+- **Driver**: `drag(fromName, toName, after)` dispatching synthetic
+  `DragEvent`s with a `DataTransfer` on both apps (`dragstart` on the grip
+  inside the row named `fromName`'s body, `dragover` on the target with a
+  `clientY` above or below its midpoint, `drop`, `dragend`); rows are found
+  through their `.row-main` accessible names.
+- **Specs**: `reorderedByDrag` (`presses: true`, `only: ['#/lists/a']`): drag
+  row 1 after row 3 → `{ ids, hash }` on both apps; and a second call before
+  row 1 from row 3. A pixel state mid-drag is not attempted: a synthetic drag
+  has no drag image to paint.
+- **Tests**: `ports.test.ts` on a container of `[data-index]` rows with fake
+  `DragEvent`s (jsdom has no `DragEvent`; construct `Event` with a
+  `dataTransfer` stub) covering the midpoint rule, the adjusted index, edge
+  speed at three depths, and the unbind.
+- Also 4b's, as campsite: the deferred `.badge` and `.rows`/`.row`
+  extraction if a `Row.svelte` earns its way by then; the `Badge.svelte`
+  question stays deferred otherwise.
+
+### B5.4a built: the list page - implemented and verified, both commits landed
+
+**"Ordered steps" 0-13 are done as designed; no deviation from the plan.**
+Step 0 landed earlier as `f38b900`. Steps 1-9 were already written and
+uncommitted when this session picked up the tree; step 10 (`npm run check`)
+had already gone green on an idle host (854 tests, 0 failures, coverage
+96.24/88.87/96.86/96.86, all thresholds met) in the session before this one.
+This session resumed at step 11.
+
+**Step 11, the parity loop**, `npm run build` then six foreground filter
+groups, none merged: `"#/lists/a @"` (1 state, 6 cells); `"~ noted" "~ money
+help"` (2 states, 12 cells); `"~ roll panel" "~ rolled" "~ removed" "~ note
+opened"` (4 states, 24 cells); `"#/lists/b" "#/lists/nope" "own list"` (3
+states, 18 cells); the regressions `"#/lists @" "#/lists ~"` (36 cells) and
+`"i/ci1 ~"` (36 cells). **All ten new states read `совпадает` (matching) on
+every cell in both languages at all three widths on the first pass - no
+port fix was needed, no group was re-run.** The regression filters read
+zero as well: the lists index and its five sub-states, and the record modal
+with `extra` undefined, are unaffected by the `PageHead`/`RowMain`/
+`RecordActions`/`RecordModal`/`NumberField` extractions and prop additions.
+
+**Step 12**, `npm run check:built`: build, `smoke-file-url.mjs` ("the built
+page opens from a folder"), `bundle-budget.mjs` (77.3 kB gzip against the
+120 kB budget) - exit 0.
+
+**Step 13**, this section plus `handoff.md` and `context.md`, then one more
+`npm run check` immediately before the commit (the doc edits change the
+tree fingerprint - `tree-key.mjs` fingerprints `issues/**` and `*.md`
+though the gate does not count them - so the armed cache from step 10 no
+longer applies and a fresh pass is required right before `git commit`).
+
+**What shipped**, on top of steps 1-9's already-written files: no production
+code changed in this session; the session's own contribution is the parity
+verification, `npm run check:built`, and the docs update. The 43 paths from
+the previous session (five new components - `ListPage.svelte`, `RowMain`,
+`HelpBox`, `HelpButton`, `StorageNotice` - `listPage.test.ts`, the route in
+`App.svelte`, and the dict/lib/state/ports/harness edits) are committed as
+written, unchanged.
+
+**Nothing deferred beyond what the plan already named for 4b/B5.5/B5.6.**
+B5.4b (drag as the live app does it), B5.5 (batch actions) and B5.6 (the
+shared page) remain outlined/unplanned as before; this batch did not touch
+their surface.
 
 ## Phase 5 - what already exists
 

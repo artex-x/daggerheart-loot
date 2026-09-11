@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
-import { descOf, eqLine, eqParts, EQ_TRAIT, eqWord, nameOf } from './i18n.js';
+import { descOf, eqLine, eqParts, EQ_TRAIT, eqWord, itemsWord, nameOf } from './i18n.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -200,5 +200,26 @@ describe('a stat block with gaps in it', () => {
     const { eq, ...loot } = gear({ t: 'weapon', tier: 1 });
     void eq;
     expect(eqParts(loot, 'ru', LABELS.ru)).toEqual([]);
+  });
+});
+
+describe('itemsWord', () => {
+  it('picks the Russian form by the last digits, with the 11-14 exception', () => {
+    expect(itemsWord(1, 'ru')).toBe('позиция');
+    expect(itemsWord(21, 'ru')).toBe('позиция');
+    expect(itemsWord(2, 'ru')).toBe('позиции');
+    expect(itemsWord(4, 'ru')).toBe('позиции');
+    expect(itemsWord(5, 'ru')).toBe('позиций');
+    expect(itemsWord(0, 'ru')).toBe('позиций');
+    expect(itemsWord(11, 'ru')).toBe('позиций');
+    expect(itemsWord(14, 'ru')).toBe('позиций');
+  });
+
+  it('only ever singular or plural in English', () => {
+    expect(itemsWord(1, 'en')).toBe('item');
+    expect(itemsWord(0, 'en')).toBe('items');
+    expect(itemsWord(2, 'en')).toBe('items');
+    expect(itemsWord(11, 'en')).toBe('items');
+    expect(itemsWord(21, 'en')).toBe('items');
   });
 });

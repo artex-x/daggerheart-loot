@@ -99,7 +99,11 @@ describe('which tab is lit', () => {
     );
   });
 
-  it('lights Tables for a table, and Lists for a list', () => {
+  it('lights Tables for a table, and nothing for a list', () => {
+    /* The live `renderTabs` (app.js 3667-3673) compares against the raw route
+       string, and a list route - `l/…` or `lists/…` - is never that string,
+       so Lists stays unlit on its own pages, same as a record or a print
+       sheet. */
     render(App, { env: at('#/tables/eq_weapon') });
     expect(screen.getByRole('link', { name: 'Таблицы' })).toHaveAttribute(
       'aria-current',
@@ -108,10 +112,9 @@ describe('which tab is lit', () => {
     cleanup();
 
     render(App, { env: at('#/lists/abc') });
-    expect(screen.getByRole('link', { name: 'Списки' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
+    for (const link of screen.getAllByRole('link')) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
   });
 
   it('lights nothing on a record', () => {

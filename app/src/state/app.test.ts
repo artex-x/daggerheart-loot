@@ -9,6 +9,9 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
+import { sharedListHash } from '../lib/hash.js';
+import { encodeList } from '../lib/listLink.js';
+import type { StoredList } from '../lib/lists.js';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { AppState } from './app.svelte.js';
@@ -165,13 +168,53 @@ describe('which tab is lit', () => {
     /* A section id carries its prefix - see SECTIONS in lib/types.ts */
     expect(new AppState(at('#/roll/dread')).section).toBe('roll/dread');
     expect(new AppState(at('#/tables/eq_weapon')).section).toBe('tables');
-    expect(new AppState(at('#/lists/abc')).section).toBe('lists');
-    expect(new AppState(at('#/l/eyJ')).section).toBe('lists');
   });
 
-  it('lights nothing on a record or a print sheet', () => {
+  it('lights nothing on a record, a list page or a print sheet', () => {
+    /* The live `renderTabs` (app.js 3667-3673) compares against the raw route
+       string, and a list route - `l/…` or `lists/…` - is never that string,
+       so no tab is lit there either, Lists included. */
     expect(new AppState(at('#/i/w12')).section).toBe(null);
     expect(new AppState(at('#/print/w1,w2')).section).toBe(null);
+    expect(new AppState(at('#/lists/abc')).section).toBe(null);
+    expect(new AppState(at('#/l/eyJ')).section).toBe(null);
+  });
+});
+
+describe('the list page address', () => {
+  const list: StoredList = { id: 'a', name: 'Клад', ids: ['w1', 'w2'] };
+
+  it('rewrites the address to the players’ payload and remembers both', () => {
+    const app = new AppState(at('#/lists/a'));
+    app.syncListUrl(list);
+    const payload = encodeList(list, true);
+    expect(app.hash).toBe(sharedListHash(payload));
+    expect(app.openList).toBe('a');
+    expect(app.urlPayload).toBe(payload);
+  });
+
+  it('leaves an address that already matches the payload alone', () => {
+    const payload = encodeList(list, true);
+    const app = new AppState(at(sharedListHash(payload)));
+    const before = app.hash;
+    app.syncListUrl(list);
+    expect(app.hash).toBe(before);
+  });
+
+  it('rewrites again after an edit changes the payload', () => {
+    const app = new AppState(at('#/lists/a'));
+    app.syncListUrl(list);
+    const first = app.hash;
+    app.syncListUrl({ ...list, name: 'Другое имя' });
+    expect(app.hash).not.toBe(first);
+  });
+
+  it('clears both on clearOpenList, as every other route does', () => {
+    const app = new AppState(at('#/lists/a'));
+    app.syncListUrl(list);
+    app.clearOpenList();
+    expect(app.openList).toBe('');
+    expect(app.urlPayload).toBe('');
   });
 });
 

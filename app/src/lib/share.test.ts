@@ -14,7 +14,15 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
 import { dict } from './dict.js';
-import { share, shareBlocks, shareName, shareSelection } from './share.js';
+import type { ListShape } from './listLink.js';
+import {
+  entryNoteBlock,
+  share,
+  shareBlocks,
+  shareList,
+  shareName,
+  shareSelection
+} from './share.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -224,5 +232,81 @@ describe('a ticked selection, off selAsText/selAsHtml in app.js', () => {
     const { text } = shareSelection([a, b], index, 'ru');
     const occurrences = text.split(marker).length - 1;
     expect(occurrences).toBe(2);
+  });
+});
+
+describe('entryNoteBlock, the one contextNote block (app.js 568-573)', () => {
+  it('is a single block off the players’ note, never the GM one', () => {
+    const t = dict('ru');
+    expect(entryNoteBlock({ note: 'Светится в темноте', hnote: 'Проклят' }, t)).toEqual([
+      { head: t.noteHead, body: 'Светится в темноте' }
+    ]);
+  });
+
+  it('is empty when the entry carries no players’ note', () => {
+    expect(entryNoteBlock({}, dict('ru'))).toEqual([]);
+    expect(entryNoteBlock({ hnote: 'Только для мастера' }, dict('ru'))).toEqual([]);
+  });
+});
+
+describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
+  const list = (): ListShape => ({
+    name: 'Клад дракона',
+    ids: ['ci1', 'ci2'],
+    note: 'Лавка закрыта до утра',
+    hnote: 'Только для мастера - не для игроков',
+    meta: { ci2: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' } }
+  });
+
+  it('writes the name, the list’s own players’ note, then every entry with its suffix', () => {
+    const t = dict('ru');
+    const l = list();
+    const { text, html } = shareList(l, index, 'ru', t);
+
+    const ci1 = rec('ci1');
+    const ci2 = rec('ci2');
+    const a = share(ci1, index, 'ru', { skip: new Set(l.ids) });
+    const b = share(ci2, index, 'ru', {
+      skip: new Set(l.ids),
+      suffix: ' ×2 — 7 мешков 5 горстей',
+      extra: [{ head: t.noteHead, body: 'Светится в темноте' }]
+    });
+
+    expect(text).toBe(
+      [`${l.name}\n\n${t.noteHead}\n${l.note ?? ''}`, a.text, b.text].join('\n\n')
+    );
+    expect(html).toBe(
+      [`<b>${l.name}</b><br><br><i>${t.noteHead}</i><br>${l.note ?? ''}`, a.html, b.html].join(
+        '<br><br>'
+      )
+    );
+    /* The GM's own note never leaves the list. */
+    expect(text).not.toContain(l.hnote);
+    expect(html).not.toContain(l.hnote);
+  });
+
+  it('has no note preamble and no suffix on a plain, unnoted list', () => {
+    const t = dict('ru');
+    const plain: ListShape = { name: 'Пустой', ids: ['ci1'] };
+    const { text } = shareList(plain, index, 'ru', t);
+    expect(text).toBe(
+      [plain.name, share(rec('ci1'), index, 'ru', { skip: new Set(['ci1']) }).text].join('\n\n')
+    );
+  });
+
+  it('reads a priced entry in coins when the list is set to coin mode', () => {
+    const t = dict('ru');
+    const l: ListShape = { ...list(), money: 'coin' };
+    const { text } = shareList(l, index, 'ru', t);
+    expect(text).toContain('750 зол.');
+  });
+
+  it('drops an id the data does not know, silently', () => {
+    const t = dict('ru');
+    const l: ListShape = { name: 'X', ids: ['ci1', 'nonexistent'] };
+    const { text } = shareList(l, index, 'ru', t);
+    expect(text).toBe(
+      [l.name, share(rec('ci1'), index, 'ru', { skip: new Set(l.ids) }).text].join('\n\n')
+    );
   });
 });

@@ -20,7 +20,7 @@
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
   import { helpFor } from '../lib/help.js';
-  import { hasRealDie, pick } from '../lib/roll.js';
+  import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
   import type { Snippet } from 'svelte';
@@ -81,11 +81,7 @@
      119 and 29 are not dice anybody owns. */
   const help = $derived(helpFor(section, app.lang));
 
-  const rollLabel = $derived(
-    /* An en dash in the range, as the live app prints it - tests/parity.js
-       compares this string character for character, and it is read aloud. */
-    hasRealDie(max) ? `${t.roll} d${String(max)}` : `${t.randomIn} 1\u2013${String(max)}`
-  );
+  const rollLabel = $derived(rollLabelFor(max, t));
 
   function roll(): void {
     n = pick(max, app.env.random);

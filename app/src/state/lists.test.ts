@@ -244,3 +244,127 @@ describe('watching for another tab', () => {
     expect(store.lists).toEqual([]);
   });
 });
+
+/* The list page's own writers - app.js 1211-1231, 3944-3969, 4086-4094,
+   4421-4434. Every one ends in a save, so each test reads storage back
+   rather than only memory. */
+describe('the list page writers', () => {
+  const seed = (l: { id: string; name: string; ids: string[] } & Record<string, unknown>) => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
+    const store = new ListStore(at({ storage }), say, t);
+    const stored = (): unknown => JSON.parse(storage.get('dhloot.lists.v2') ?? 'null');
+    return { store, stored };
+  };
+
+  describe('rename', () => {
+    it('keeps whatever was typed, with no trim', () => {
+      const { store, stored } = seed({ id: 'a', name: 'Old', ids: [] });
+      store.rename('a', '  Тайник  ');
+      expect(store.get('a')?.name).toBe('  Тайник  ');
+      expect((stored() as { name: string }[])[0]?.name).toBe('  Тайник  ');
+    });
+  });
+
+  describe('setMeta', () => {
+    it('sets a truthy value and prunes an entry emptied by a falsy one', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['ci1'] });
+      store.setMeta('a', 'ci1', 'qty', 3);
+      expect(store.get('a')?.meta).toEqual({ ci1: { qty: 3 } });
+
+      store.setMeta('a', 'ci1', 'qty', 0);
+      expect(store.get('a')?.meta).toBeUndefined();
+    });
+
+    it('keeps a sibling field when only one is cleared', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['ci1'] });
+      store.setMeta('a', 'ci1', 'qty', 2);
+      store.setMeta('a', 'ci1', 'gold', 750);
+      store.setMeta('a', 'ci1', 'gold', 0);
+      expect(store.get('a')?.meta).toEqual({ ci1: { qty: 2 } });
+    });
+  });
+
+  describe('setNote', () => {
+    it('trims the text and deletes the key when it is blank', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: [] });
+      store.setNote('a', 'note', '  Лавка закрыта  ');
+      expect(store.get('a')?.note).toBe('Лавка закрыта');
+      store.setNote('a', 'note', '   ');
+      expect(store.get('a')?.note).toBeUndefined();
+    });
+
+    it('writes hnote and note independently', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: [] });
+      store.setNote('a', 'hnote', 'Только для мастера');
+      expect(store.get('a')?.hnote).toBe('Только для мастера');
+      expect(store.get('a')?.note).toBeUndefined();
+    });
+  });
+
+  describe('setMoney', () => {
+    it('stores coin mode and deletes the key for the default bag mode', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: [] });
+      store.setMoney('a', 'coin');
+      expect(store.get('a')?.money).toBe('coin');
+      store.setMoney('a', 'bag');
+      expect(store.get('a')?.money).toBeUndefined();
+    });
+  });
+
+  describe('move', () => {
+    it('reorders and reports true when the position actually changes', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x', 'y', 'z'] });
+      expect(store.move('a', 'z', 0)).toBe(true);
+      expect(store.get('a')?.ids).toEqual(['z', 'x', 'y']);
+    });
+
+    it('reports false and does not save when the position does not change', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x', 'y', 'z'] });
+      expect(store.move('a', 'x', 0)).toBe(false);
+      expect(store.get('a')?.ids).toEqual(['x', 'y', 'z']);
+    });
+
+    it('reports false for an entry the list does not have', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x'] });
+      expect(store.move('a', 'ghost', 0)).toBe(false);
+    });
+  });
+
+  describe('restoreEntry', () => {
+    it('splices the entry back at its old position and restores its meta', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x', 'z'], meta: {} });
+      store.restoreEntry('a', 'y', 1, { qty: 2 });
+      expect(store.get('a')?.ids).toEqual(['x', 'y', 'z']);
+      expect(store.get('a')?.meta).toEqual({ y: { qty: 2 } });
+    });
+
+    it('clamps a position past the end', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x'] });
+      store.restoreEntry('a', 'y', 99, {});
+      expect(store.get('a')?.ids).toEqual(['x', 'y']);
+    });
+
+    it('does nothing when the entry is already there', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x', 'y'] });
+      store.restoreEntry('a', 'y', 0, { qty: 5 });
+      expect(store.get('a')?.ids).toEqual(['x', 'y']);
+      expect(store.get('a')?.meta).toBeUndefined();
+    });
+  });
+
+  describe('removeEntry', () => {
+    it('removes the id and saves, leaving the list itself alone', () => {
+      const { store, stored } = seed({ id: 'a', name: 'A', ids: ['x', 'y'] });
+      store.removeEntry('a', 'x');
+      expect(store.get('a')?.ids).toEqual(['y']);
+      expect(store.lists).toHaveLength(1);
+      expect((stored() as { ids: string[] }[])[0]?.ids).toEqual(['y']);
+    });
+
+    it('does nothing for a list that does not exist', () => {
+      const { store } = seed({ id: 'a', name: 'A', ids: ['x'] });
+      store.removeEntry('ghost', 'x');
+      expect(store.get('a')?.ids).toEqual(['x']);
+    });
+  });
+});

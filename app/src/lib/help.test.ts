@@ -1,7 +1,7 @@
 /* What a roll page explains about itself. */
 
 import { describe, expect, it } from 'vitest';
-import { helpFor, isBold, isBreak, isLink } from './help.js';
+import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
@@ -147,5 +147,37 @@ describe('the help for a section', () => {
         ?.paragraphs[2]?.parts.filter(isBold)
         .map((b) => b.b)
     ).toEqual(['Players’ link', 'Your own link']);
+  });
+
+  it('bolds the three-unit list and the three worked examples in the money help', () => {
+    /* Not a section's help (no page route is called "money"), so it is read
+       through its own function rather than helpFor. */
+    for (const lang of LANGS) {
+      const help = moneyHelpFor(lang);
+      expect(help.paragraphs.length, lang).toBe(1);
+      expect(help.paragraphs[0]?.parts.filter(isBold), lang).toHaveLength(5);
+    }
+    expect(
+      moneyHelpFor('ru')
+        .paragraphs[0]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual([
+      'горстями, мешками и сундуками',
+      '7 мешков 5 горстей',
+      '8 мешков 9 горстей',
+      '9 мешков',
+      '8 мешков'
+    ]);
+    expect(
+      moneyHelpFor('en')
+        .paragraphs[0]?.parts.filter(isBold)
+        .map((b) => b.b)
+    ).toEqual([
+      'handfuls, bags and chests',
+      '7 bags 5 handfuls',
+      '8 bags 9 handfuls',
+      '9 bags',
+      '8 bags'
+    ]);
   });
 });

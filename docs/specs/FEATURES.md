@@ -66,10 +66,16 @@ Six modes. Each keeps its own input in memory only.
   rides in the link.
 - Batch actions over a selection within a list: set prices, clear prices, shift
   all by a percentage, suggest prices from tier or rarity, remove.
-- A list has its own roll button; the row numbers match it.
+- A list has its own roll button, folded by default and opened on its
+  summary; the row numbers match it. An empty roll field means no roll has
+  been made yet, not zero. The panel, a row's own note box and the list note
+  each keep the person's own fold/unfold across a language switch - the live
+  `data-keep` opt-ins - rather than resetting to the data's own default the
+  way every other re-render does.
 - Two notes per list and per entry - see `CONTRACTS.md` for how they encode and
   which link carries which.
-- The address bar always holds the player link and is refreshed on every edit.
+- The address bar always holds the player link and is refreshed on every edit
+  - opening the page, and after every writer on it.
 - Import: paste a link or a payload to take a copy of someone else's list -
   either link form, plain or packed.
 - Two open tabs merge rather than overwrite (`STATE.md`).
@@ -118,3 +124,6 @@ Six modes. Each keeps its own input in memory only.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
 - Toasts with an undo action for destructive things.
+- No tab is lit on a record, a list page or a print sheet - the live
+  `renderTabs` compares against the raw route string, and none of those three
+  route kinds is ever that string.

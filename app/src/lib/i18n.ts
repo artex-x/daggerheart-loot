@@ -145,3 +145,19 @@ export function eqLine(
 ): string {
   return eqParts(it, lang, labels, opts).join(' · ');
 }
+
+/* ---------- the list page's count line ---------- */
+
+/**
+ * How many entries a list has, off the live `plural` (app.js 3168-3175):
+ * Russian needs one of three forms by the last digits (with the 11-14
+ * exception), English needs two.
+ */
+export function itemsWord(n: number, lang: Lang): string {
+  if (lang !== 'ru') return n === 1 ? 'item' : 'items';
+  const a = n % 10;
+  const b = n % 100;
+  if (a === 1 && b !== 11) return 'позиция';
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return 'позиции';
+  return 'позиций';
+}

@@ -709,3 +709,363 @@ brief is `handoff.md`, "Next batch".
 - Wall clock unchanged: `"#/lists"` is 6 states / 36 cells, one foreground
   call. The other two B5.3 filters are banked by the implementer's run and
   are not re-run at close-out.
+
+## State at B5.4 kickoff (orchestrator, 2026-09-10)
+
+- HEAD `543222d` (docs), on top of `4b23f44` (docs) and `e82cd24` (B5.3's
+  fix-then-continue). Working tree clean except one untracked path,
+  `.gitleaks.toml`, written by another session and deliberately left alone -
+  see `handoff.md`, "Blockers", the `secrets` bullet. Do not stage it, do not
+  rewrite it, and check whether it has landed before writing anything about
+  gitleaks.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` on this exact tree:
+  **exit 0**, thresholds met (statements 96.89, branches 90.09, functions
+  96.93, lines 97.15), vitest 67s, one foreground call, no worker-fork crash.
+  The commit gate is armed for `543222d`.
+- `ListAgents` shows no subagent of this session running; the twenty-one peers
+  are other sessions on the same tree. HEAD moves under this task - re-read
+  `git log --oneline -3` before and after any writer.
+- B5.1, B5.2 (both parts) and B5.3 are built, committed and read by CI
+  (run `34521343531`: `check`, `audit` and all four `parity` shards green;
+  `secrets` red on three localStorage-key-name false positives; `deploy`
+  skipped behind it). **B5.4 is the next batch and is an outline only** -
+  `plan.md`, "B5 planned", the batch table row - so it is planned before it
+  is implemented.
+- Open, and handed to B5.4's planning rather than re-measured:
+  `#/tables ~ selection copied @ en 1100` reads 0.74% against an expected
+  zero, twice (full suite and an isolated six-cell run), all five sibling
+  cells clean. The diff image has not been opened and no `VISUAL_DEBT` line
+  has been written; the measurements are in `handoff.md`, "Blockers", first
+  bullet. Root-causing it is the planner's, not the orchestrator's.
+
+## B5.4 planning facts (planner, 2026-09-10) - durable, read before implementing
+
+Full design in `plan.md`, "B5.4 planned" (4a implement-ready, 4b outlined);
+the brief in `handoff.md`, "Next batch". Facts read off the source or
+measured on the live app (a read-only puppeteer probe with the harness's own
+launch args and reduced motion, `index.html#/lists/<id>` seeded with `a` =
+seven Core items + `meta.ci2 = {qty 2, gold 750, note, hnote}` + a list
+note, `b` empty, `c` two entries; three widths), not assumed. HEAD at
+planning: `13bba19` (the gitleaks allowlist landed); `app.js` unchanged since
+B5.3, so every line below is current.
+
+- **`#/tables ~ selection copied @ en 1100` is a stale cache hit.** The
+  diff image is red only over the toast: the legacy shot has none, the
+  rewrite's shows "Выбранное скопировано" (Russian - the toast is raised
+  before the `EN` press in both apps). The legacy PNG is byte-identical to
+  `test-output/.parity-cache/a6515261…/1100.png`, written 21:50:41 inside the
+  full suite's 21:33-22:03 window; in the "isolated" 22:04-22:05 run all
+  three English legacy files were written within 35ms of each other (cache
+  copies - a fresh arrival is ~7s apart, which is the spacing of the `next`
+  files). The two measurements share one legacy capture, taken under load
+  after the 1600ms toast had gone. `tests/parity.js` turns the legacy cache
+  off for `measured` states only (lines 414, 459-460, 476-477), never for
+  `timed` ones. CI never caches (fresh runners). Decision: `&& !timed` on the
+  three guards, no debt line - `plan.md`, "Decided", first bullet.
+- **No tab is lit on a list page.** `renderTabs` (app.js 3667-3673) lights
+  `tab[0] === currentRoute()` and the route string is `l/…` or `lists/…`;
+  measured `#tabs a.on` empty at every width. `AppState.section` (rewrite)
+  returns `'lists'` for both list route kinds and `shell.test.ts` asserts it -
+  both wrong; B5.4a corrects them. `homeHash()` is `''` there and the page
+  writes its own `<h1>`: no pin, no `?`, `document.title` plain.
+- **The title input is the ordinary text field, not a dashed underline.**
+  `.titleinput` (style.css 848-853, specificity 0,1,0) loses to the global
+  `input[type=text]` (254-258, 0,1,1): computed 46px tall, `padding 0 14px`,
+  `background rgb(20,17,29)`, `1px solid` border on all sides, `radius 9px`,
+  the global gold `:focus` border and `0 0 0 3px rgba(216,171,94,.14)`
+  shadow; only `max-width 560px`, `font-size 23px`, `font-weight 680`,
+  `letter-spacing -0.23px` survive from the class. 560 wide at 1100/768, 328
+  at 375. Port the cascade, not the intent.
+- **The address.** Opening `#/lists/a` rewrites to `#/l/<encodeList(l,
+  true)>` at once (`syncListUrl` 1599-1606 via `render` 3799-3803); remove,
+  undo, position, rename, the money mode each rewrite it
+  (`freshenListUrl` 1596-1598 after every writer); reopening that hash draws
+  the own page (`findListByPayload` 1551-1574, or the `S.urlPayload`
+  short-circuit 3805-3808); `#/lists/nope` stays as typed and draws "Список
+  не найден" / `listNotFoundSub` / a `btn primary` "Списки" link (87.42x46).
+- **Measured, 1100 (768 / 375 where different):** `h1.page-h` 46 tall;
+  `.page-sub` "7 позиций" 22.39, margin-bottom 18; `.card-acts` 35 (73 at 375),
+  margin-bottom 16; `.warn` 43.5 (69.5 at 375); `.money` 36.8 (65.8 at 375 -
+  the `?` wraps), chips 98.97 wide, `.helpbtn.sm` 22x22 at every width, help
+  open 235.95 (394.52 at 375), `.money-help p` 567.53 wide; `.lnote` folded
+  36 (summary 34, padding 10/10), open 153 (172 / 285 - `.npair` stacks under
+  640px), `[open] summary` padding-bottom 6, textareas 506.5 / 340.5 / 300
+  wide, 83 tall auto-sized for one line; `.lroll` folded 43 (summary 41, svg
+  15x15), open with no result 138.39 (numbox 156x48, primary button
+  157.53x46, `.rollhint` 20), with result 2: 452.08 (field 74.39 with inline
+  `margin-bottom:14px`, card 178.19, each `.hitnote` 59.25, ghost "Сбросить"
+  100.23x46); at 375 the numrow wraps (button under the numbox, 214.39
+  without a result, 600.98 with); `.batch` 36 unticked ("Выбрать все"), 49
+  with acts at 1100, 80 at 375; `.lrow` 78 (102.03 / 202.63: three bands -
+  grip+pick+position 19px tall, body 116.44, meta+acts 65.19); `.lrow-grip`
+  26 wide, `.lrow-pick` 32, `.lrow-n` 40 (font 650 12px mono), `.row-main`
+  753 wide, `.lrow-meta` 161 (238 at 375 with `padding-left 44`), qty input
+  70x30, gold 64x30, `.goldhint` 13x13 at 9.5px, `.lrow-acts` 39 wide
+  (88 at 375: two 44px buttons in a row), `.lrow-note` 37.5 tall, `.row-x`
+  38.5; a row with one-line notes 202.64 (its `.rnote` 123, `.npair` 104,
+  `.nlbl` 20 - 39 at 768/375, `.note-x` 20x20, textareas 509.5 / 343.5 / 304
+  wide, 79 tall auto-sized); an opened empty box 116 (row 194); `.empty`
+  129.59; `.toast.act` after a remove 313.42x50 with `.toast-act` 73.78x30,
+  text "«Заряжающий Колчан» убранВернуть"; the plain copy toast 152.55x41.59.
+- **Behaviour measured:** `.lnote` opens when a note exists, `.lroll` starts
+  folded; the note box of a noted row is visible and the row `has-note`;
+  `Сбросить` empties `#n` and leaves the panel open; the note toggle shows
+  the box and focuses its first textarea; a typed gold sets the field's
+  `title` at once ("2 мешка 3 горсти") but the `?` appears only after the
+  next render (`had !== has`, 4346-4370); the coin mode removes every title
+  and `?` and marks the chip `on` + `aria-current="true"`; `.note-x` is
+  `display:none` on an empty box (`:has(textarea:placeholder-shown)`, 1096);
+  remove → 6 rows and the address rewritten, undo → 7 in the original order;
+  position "1" typed on row 5 and committed → that entry first, storage and
+  address updated; rename → storage and address updated, the `h1` text stays
+  `''`; the roll card's "Скопировать текст" ends `\n\nЗаметка\nСветится в
+  темноте` (the players' note; the GM's does not travel) - `contextNote`
+  568-573.
+- **The inventory names a textarea by its text content** (NAME_FN falls
+  through `aria-label`, `title`, `textContent`): "Лавка закрыта до утра",
+  "Светится в темноте", "Проклят" are in the live inventory; empty boxes
+  and unpriced number inputs are not; the priced gold input is named by its
+  `title` "7 мешков 5 горстей". Svelte's `<textarea>{x}</textarea>` and
+  `bind:value` both compile to a `.value` assignment (verified with
+  `svelte/compiler`) and leave `textContent` empty - the port seeds the text
+  child with an action.
+- **Live controls on the page** (Russian, NAME_FN): "Название списка",
+  "Ссылка игрокам", "Ссылка себе", "Скопировать текст", the print link by its
+  title, "Удалить", "Скрыть", "Как в книге", "Монетами", "Как это работает"
+  (the money `?`), "Очистить заметку" (x4), "Бросок по списку" (a `summary`),
+  "Результат броска", "На единицу меньше"/"больше", "Случайно 1–7",
+  "Выбрать позицию", "Позиция в списке", "Заметка", "Убрать из списка", one
+  whole-row name per entry. English: "List name", "Players’ link" (curly
+  apostrophe), "Your own link", "Copy text", "Delete", "Dismiss", "As in the
+  book", "In coins", "How this works", "Clear the note", "Roll on this list",
+  "Roll result", "One lower"/"One higher", "Random 1–7", "Select entry",
+  "Position in the list", "Note", "Remove from the list"; the sub "7 items",
+  the bar "Select all", captions "Qty"/"Gold".
+- **Forty dictionary keys are missing from the rewrite** (list in `plan.md`);
+  `helpHint` already equals `whatIsThis`; `moneyHelp` carries five `<b>`
+  runs per language and goes into `help.ts` structured, not the dictionary.
+- **`Field`'s margin is set inline on the roll panel** (`margin-bottom:14px`
+  with a hit, `0` without), which beats `.lroll>:last-child{margin-bottom:
+  13px}`; `NumberField` shows `String(value)` where the live `numBox` shows
+  `''` below `min` (#16) and steps from `(parseInt('') || 0)`.
+- **Wall clock:** `"#/lists/a @"` 1 state + 6 press specs; `"~ noted" "~
+  money help"` 2 + 4; `"~ roll panel" "~ rolled" "~ removed" "~ note opened"`
+  4 (one timed); `"#/lists/b" "#/lists/nope" "own list"` 3; regressions `"~
+  help"` 4, `"#/tables ~" "#/tables/eq_weapon"` 11, `"#/lists @" "#/lists ~"`
+  6, `"i/ci1 ~"` 6. Each fits one foreground call; do not merge them. A bare
+  `"#/lists"` now matches sixteen states.
+- **4b inherits:** the live drag model (app.js 4443-4530): `data-drag` on the
+  grip, `dragging` on the row, `setDragImage(row, 24, 24)`, `drop-before`/
+  `drop-after` by the row's vertical midpoint, `EDGE = 120` / `EDGE_MAX = 22`
+  autoscroll on `requestAnimationFrame`, `to` adjusted by the mark; the
+  rewrite's `nativeDrag` is index-on-drop only and 4a binds it as is.
+
+## B5.4a step 6's parity result, and how it was nearly lost (orchestrator, 2026-09-10)
+
+- `MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables ~" "#/tables/eq_weapon"`
+  (11 states, 66 cells, both languages, three widths) finished **clean at
+  23:36:43**: `расхождений нет`, 60 cells `совпадает` and six reading exactly
+  their recorded debt (0.02/0.02/0.03/0.03/0.07/0.07% `из ... долга`). No
+  `FAIL`. That is step 6's acceptance - `RowMain.svelte`'s extraction from
+  `TableRows.svelte` is proved, and the batch is clear to continue at step 7.
+  The run also carries the harness's own advisory notes (the two `#/tables ~
+  grid` `controls` lines are the known legacy `tileHTML` index bug, not this
+  batch's).
+- **The near-loss, worth one line so the next session does not repeat it.**
+  The implementer backgrounded that run and ended its turn on it. Two
+  false readings followed, both the orchestrator's:
+  1. Git Bash's `kill -0 <pid>` answers in the **MSYS pid namespace**, not the
+     Windows one, so it reported the live `node` as dead. Use `tasklist //FI
+     "PID eq <pid>"`, or PowerShell `Get-Process -Id`, to ask about a Windows
+     pid. `.claude/hooks/bash-guard.mjs` reads the lock through
+     `tests/parity/lock.js`, which uses Node's `process.kill(pid, 0)` - it was
+     right and the shell check was wrong, which is what the block was saying.
+  2. A background run's `.output` file **reads 0 bytes until the run flushes**.
+     An empty file is not a lost result while the pid is alive; `parity.lock`
+     tells the difference - a released (absent) lock means a clean exit, a lock
+     left behind with a dead pid means the run was killed.
+  So the standing rule is unchanged and now has a test: a backgrounded check
+  is not to be started at all. But if one is found running, wait on the
+  Windows pid and read the lock, rather than concluding from a shell builtin
+  and an unflushed file.
+
+## The commit gate cannot arm on this host tonight (orchestrator, 2026-09-11)
+
+**Measured, three runs, no edits between the last two - so this is the gate
+mechanism, not a failing batch.** B5.4a's code is written (43 uncommitted
+paths on top of `f38b900`) and the implementer spent roughly two hours
+re-running `npm run check` without being able to commit.
+
+| run | pid | duration | gate armed? |
+|---|---|---|---|
+| 02:37:50 - 03:01:47 | 258284 | ~1437s | no |
+| ~03:14 - 03:24:51 | 261096 | ~630s | no |
+| ~03:38 - 03:52:22 | 262164 | >=813s | no |
+
+`.claude/.check-cache.json` still holds `388cd5e9e1099e7a`, written by the
+orchestrator's own 23:00 run on the `543222d` tree - no run since has been
+observed.
+
+**Why, exactly.** `check-observer.mjs` is a PostToolUse(Bash) hook: it arms
+the gate only from a **foreground** call whose own stdout it can read. The
+Bash tool's ceiling is 600000ms and it moves a call that outlives its timeout
+into the background, where there is no stdout to attribute. So once
+`npm run check` exceeds ten minutes on this host, **every** attempt is
+unobservable by construction, and retrying cannot help. `bash-guard.mjs`
+(line 70) correctly refuses a deliberately backgrounded check for the same
+reason, so that is not a way round it either.
+
+**It is load, not a regression.** The same check took ~165s at `720266d` and
+~3 minutes at `543222d` tonight (orchestrator, 23:00, exit 0). `ListAgents`
+showed twenty-one peer sessions on this machine, ten of them interactive, for
+the whole window above. The figure is this host's load at this hour, and the
+"165s is not a constant" correction earlier in this file now has its third
+data point.
+
+**The sanctioned escape is in the gate's own message:** run the commit again
+with `SKIP_CHECK_GATE=1` in front of it and say why in the summary. That is
+only honest if the last full check actually passed - a fact only the worker
+that read the output holds, which is why this was put to the owner rather
+than decided here.
+
+## The host block lifted, and the check is green (orchestrator, 2026-09-11, 08:25-08:30)
+
+The two sections above - "The commit gate cannot arm on this host tonight" and
+"The B5.4a tree passes; the host cannot prove it" - are **closed**. They
+described a loaded host, not a defect, and the diagnosis held exactly.
+
+One reading before anything heavy, which is the whole procedure the amended
+brief asks for: `Get-CimInstance Win32_OperatingSystem` gave **RAM free
+7.44 GB of 15.82 GB**, 251 processes, no `chrome.exe`, no
+`test-output/parity.lock`. Against 0.35 GB free and 424 processes at 06:25,
+that is the difference between a fork pool that boots its children and one
+that loses 11-13 files to its hardcoded 60s `START_TIMEOUT`.
+
+On that host, one foreground call, unchained and unredirected:
+
+```text
+set -o pipefail; npm run check 2>&1 | tail -n 120
+```
+
+exit 0, well inside the 600000ms ceiling. 37 test files, 854 tests, 0
+failures; coverage 96.24 stmts / 88.87 branch / 96.86 funcs / 96.86 lines,
+every threshold met; vitest with coverage 78.8s. No zero rows, no `Errors N`,
+no worker-fork crash. `check-observer.mjs` armed `.claude/.check-cache.json`
+at tree key `2ab9c1a7...` from that one call, which is what five previous
+attempts could never reach.
+
+Three durable things follow, and none of them should be re-derived:
+
+1. **Nothing in B5.4a's code was ever wrong.** The 469-test run and the
+   isolated 35/35 `listPage.test.ts` pass recorded at 06:25 were right; the
+   854-test run confirms it with every file present.
+2. **The rule is the reading, not the retry.** Do not re-run a heavy check on
+   a loaded host hoping for a different answer, and do not treat a zeroed
+   coverage table as a regression - take the RAM reading first and wait. The
+   same command that burned roughly two hours across two sessions cost 165s
+   on an idle host.
+3. **A doc edit disarms the gate.** `tree-key.mjs` fingerprints tracked and
+   untracked content alike, `issues/**` and `*.md` included; the gate exempts
+   those paths from *what it counts* but not from *the fingerprint*. So a
+   batch whose last step writes `plan.md` and `handoff.md` must run one more
+   foreground `npm run check` after those writes and immediately before
+   `git commit`, or the gate blocks a commit whose code has genuinely passed.
+
+## The B5.4a tree passes; the host cannot prove it (orchestrator, 2026-09-11, scheduled run)
+
+**The batch is not the problem, and that is now measured rather than hoped.**
+Picking up the tree the previous session left (43 uncommitted paths on
+`f38b900`, B5.4a steps 1-9 written, stalled at step 10), three runs:
+
+| run | command | wall clock | result |
+|---|---|---|---|
+| 05:28-05:42 | `npm run check` | >600s, backgrounded | exit 1, coverage thresholds only |
+| 05:49-05:57 | `npx vitest run` | 437s | **26 files passed, 469 tests passed, 0 failures, 11 files failed to start** |
+| 06:0x | `npx vitest run --coverage --maxWorkers=4` | see below | the README's documented fallback |
+
+**Every coverage ERROR in run 1 is a file that never ran.** The eleven files
+that died on `Failed to start forks worker ... Timeout waiting for worker to
+respond` include `record`, `roll`, `listsPage`, `std`, `shell`, `ports` and
+`hash` - and those are precisely the components reading 0-50% in run 1's
+table (`AltPanel` 0%, `SectionHead` 0%, `SelBar` 9.3%, `FilterBar` 34%,
+`TablesPage` 50%, `RecordCard` 46%). Files this batch never touched do not
+regress from 100% to 0%; they regress to 0% when nothing imports them.
+So run 1's exit 1 is the fork-pool failure mode `.claude/README.md` already
+documents, reading as a coverage regression. **No test failed anywhere in
+this batch.**
+
+**Do not re-run `npm run check` on this host at this hour hoping for a
+different answer.** That is now five attempts across two sessions (three
+last night at 1437s/630s/813s, two this morning) and the ceiling is
+structural, not statistical: the Bash tool caps at 600000ms and moves a
+longer call to the background, where `check-observer.mjs` has no stdout to
+attribute, so the commit gate cannot arm however well the run goes. The
+run above took 437s for vitest *alone*, without coverage and without the
+seven stages that precede it.
+
+**`--reporter=basic` no longer exists** in this vitest (`Failed to load
+custom Reporter from basic`). The default reporter with a `grep`/`tail`
+filter is the way to keep the output under the tool's ~30000-char cap.
+
+### Why, measured rather than inferred (06:25)
+
+`RAM free 0.35 GB of 15.82 GB; CPU 100%; 424 processes, 26 of them node; 8
+cores.` That is the cause of every number above. A fork pool that must boot
+one child per test file inside a hardcoded 60s `START_TIMEOUT` cannot do it
+with ~350 MB free, and the files that lose the race read 0% coverage.
+
+Note against the README's own caution ("free memory does not predict this -
+the failing session had 2.9 GB free and the passing one 1.0 GB"): that
+caution stands for the 1-3 GB range and is not contradicted here. 0.35 GB
+with the CPU pegged is a different regime, not a counter-example. Do not
+promote this into a rule off one reading - it is recorded as a measurement.
+
+### What was proved about the batch anyway
+
+| run | what it proves |
+|---|---|
+| `npx vitest run` (437s) | 26 files, 469 tests, **0 failures** |
+| `npx vitest run --coverage --maxWorkers=4` (1067s) | 23 files pass, 13 fail to start, **1 test fails**: `listPage.test.ts > a row's note > clears the box on the cross...` at 14745ms |
+| `npx vitest run app/src/components/listPage.test.ts` (211s) | **35 tests, all pass** |
+
+The one failure is a load-induced timeout, not a defect: the same file passes
+alone. Between the first two runs every component test file and most of `lib`
+has been observed passing at least once. **No genuine test failure has been
+found in B5.4a.** What has *not* been achieved is a single complete run, so
+the coverage thresholds - the thing the gate actually needs - remain
+unevaluated.
+
+**`--maxWorkers=4` made it worse here, not better** (1067s against 437s, 13
+failed starts against 11). The README's fallback was measured on a host with
+memory to spare; under memory starvation, reducing worker count does not help
+because the cost is per-fork allocation, not scheduling. Recorded as a
+measurement, not a rule change.
+
+### A peer session is on this batch too (06:31)
+
+`test-output/parity.lock` appeared mid-session: pid 276576, `argv
+["#/lists/a @"]`, started 06:20:21, confirmed alive. That is B5.4a step 11's
+first filter, so a second session is already verifying this tree. This
+session therefore committed nothing, dispatched nobody, and left the lock
+alone. Anyone reading this must re-read `git log --oneline -3` and the lock
+before assuming the batch is still at step 10 - see `handoff.md`, Status.
+
+Note for the record: this session's 06:19 single-file vitest run (211s for 35
+tests) overlapped that parity run's start, so its wall clock is contended and
+should not be quoted as a baseline.
+
+## B5.4a closed: step 11 needed no fix (implementer, 2026-09-11)
+
+Resuming at step 11 exactly as directed, on the tree the prior sessions left
+(HEAD `f38b900`, step 10 already green): all six parity filter groups - ten
+new states across 96 cells, plus the two regression filters at 72 cells -
+read `совпадает` on the first pass, in both languages, at all three widths.
+No diff image was ever opened, because no cell ever went non-zero. This is
+the strongest confirmation available that steps 1-9's port matches the
+measurements `plan.md`'s "B5.4 planned" recorded: every number in that
+section (the title input's cascade, the auto-size heights, the folded/open
+panel heights, the row bands) was ported correctly the first time, with no
+iteration needed. `npm run check:built` also exited 0 on the first attempt
+(77.3 kB gzip against the 120 kB budget). One commit, `feat(lists): the list
+page`, on top of `f38b900`. B5.4b (drag), B5.5 (batch actions) and B5.6 (the
+shared page) remain unplanned - see `handoff.md`, "Next batch".

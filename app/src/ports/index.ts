@@ -21,7 +21,7 @@ export { browserCompress, plainCompress } from './compress.js';
 export { browserData, fakeData, noData } from './data.js';
 export { browserDialog, fakeDialog } from './dialog.js';
 export { brokenImage, browserImage, fakeImage } from './image.js';
-export { nativeDrag, noDrag } from './drag.js';
+export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { hashRouter, memoryRouter } from './router.js';
 export { browserShare, fakeShare } from './share.js';
 export { brokenStorage, browserStorage, memoryStorage } from './storage.js';

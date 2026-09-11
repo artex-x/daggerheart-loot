@@ -233,6 +233,40 @@ const STATES: {
        disclosure's `<summary>`, which jsdom toggles open the same way a
        browser does on a click. */
     enter: () => userEvent.click(screen.getByText('подробнее'))
+  },
+  {
+    what: 'a list page with a priced, noted entry and the roll panel open',
+    route: '#/lists/a',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        {
+          id: 'a',
+          name: 'Тайник',
+          ids: ['ci1', 'cc1'],
+          meta: {
+            ci1: {
+              qty: 2,
+              gold: 100,
+              note: 'Заметка для игроков',
+              hnote: 'Только для мастера'
+            }
+          }
+        }
+      ])
+    },
+    /* `press` grips buttons; the roll panel folds open on its `<summary>`,
+       which jsdom does not expose as role "button" the way a browser does -
+       the same reason the lists index's own disclosure above is clicked by
+       its text. */
+    enter: () => userEvent.click(screen.getByText('Бросок по списку'))
+  },
+  {
+    what: "a list page with a row's note box open",
+    route: '#/lists/a',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
+    },
+    enter: () => press('Заметка')
   }
 ];
 
@@ -261,6 +295,10 @@ const COVERED: Record<string, string> = {
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
   'FilterBar.svelte': 'tables.test.ts, and the filter panel state below',
+  'HelpBox.svelte': "PageHead's help panel states above",
+  'HelpButton.svelte':
+    "PageHead's help panel states above, and the list page's own priced entry below",
+  'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte': 'the roll button and the card actions, on every roll page',
@@ -281,9 +319,12 @@ const COVERED: Record<string, string> = {
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
+  'RowMain.svelte':
+    "tables.test.ts's sectioned-body axe check, and both list-page states below",
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'SelBar.svelte': 'the state above, and tables.test.ts',
   'Shell.svelte': 'shell.test.ts',
+  'StorageNotice.svelte': 'the lists index state above, and the list page below',
   'TabBar.svelte': 'the frame, on every state',
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',

@@ -1,6 +1,7 @@
 /* Randomness is an argument here, so these check what the engines guarantee -
    the range, the clamp, the carry - not what one draw happened to produce. */
 import { describe, expect, it } from 'vitest';
+import { dict } from './dict.js';
 import {
   clamp,
   coreRoll,
@@ -12,6 +13,7 @@ import {
   pick,
   RARITY_ORDER,
   rollDuality,
+  rollLabel,
   rollNd12,
   type Random
 } from './roll.js';
@@ -121,6 +123,18 @@ describe('ranges that are not a die', () => {
     expect(hasRealDie(100)).toBe(true);
     expect(hasRealDie(119)).toBe(false);
     expect(hasRealDie(29)).toBe(false);
+  });
+});
+
+describe('rollLabel', () => {
+  it('names the real die when the range has one', () => {
+    expect(rollLabel(12, dict('ru'))).toBe('Бросить d12');
+    expect(rollLabel(12, dict('en'))).toBe('Roll d12');
+  });
+
+  it('says "random 1-N" with an en dash for a range that is not a die', () => {
+    expect(rollLabel(119, dict('ru'))).toBe('Случайно 1–119');
+    expect(rollLabel(29, dict('en'))).toBe('Random 1–29');
   });
 });
 

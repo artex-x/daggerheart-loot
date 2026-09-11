@@ -6,7 +6,7 @@
  *
  * Pure module: no localStorage, no DOM. */
 
-import type { ListEntryMeta, MoneyMode } from './listLink.js';
+import { decodeList, type KnowsId, type ListEntryMeta, type MoneyMode } from './listLink.js';
 
 export interface StoredList {
   id: string;
@@ -121,4 +121,41 @@ export function moveEntry(ids: readonly string[], from: number, to: number): str
   if (moved === undefined) return [...ids];
   out.splice(Math.max(0, Math.min(to, out.length)), 0, moved);
   return out;
+}
+
+/**
+ * Which of the person's own lists an `#/l/<payload>` address is showing.
+ *
+ * Comparing encoded payloads is brittle: a list has two flavours (with the
+ * GM's notes and without), links made before the checksum look different
+ * again, and any future change to the encoding would break recognition once
+ * more. So the payload is decoded and the contents compared instead: same
+ * name, same entries in the same order, and nothing the link carries that
+ * contradicts what is stored - a players' link simply has no GM notes, which
+ * is not a disagreement (app.js 1551-1574).
+ */
+export function findListByPayload(
+  lists: readonly StoredList[],
+  payload: string,
+  knows: KnowsId
+): StoredList | null {
+  const want = decodeList(payload, knows);
+  if (!want) return null;
+  const fields = ['qty', 'gold', 'note', 'hnote'] as const;
+  for (const l of lists) {
+    if (l.name !== want.name || l.ids.length !== want.ids.length) continue;
+    if (l.ids.some((id, k) => id !== want.ids[k])) continue;
+    const meta = want.meta ?? {};
+    const clash = Object.keys(meta).some((id) => {
+      const wm = meta[id];
+      if (!wm) return false;
+      const mine = itemMeta(l, id);
+      return fields.some((f) => wm[f] !== undefined && wm[f] !== mine[f]);
+    });
+    if (clash) continue;
+    if (want.note !== undefined && want.note !== l.note) continue;
+    if (want.hnote !== undefined && want.hnote !== l.hnote) continue;
+    return l;
+  }
+  return null;
 }

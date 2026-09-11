@@ -15,6 +15,17 @@ export type MoneyMode = 'bag' | 'coin';
 export const MONEY_MODES: readonly MoneyMode[] = ['bag', 'coin'];
 export const MONEY_DEFAULT: MoneyMode = 'bag';
 
+/**
+ * The mode a list displays its prices in - the live `moneyMode` (app.js
+ * 1290-1292). Untrusted storage may hold anything in `money`, so the value is
+ * checked against `MONEY_MODES` rather than trusted outright.
+ */
+export function moneyMode(list: { money?: MoneyMode } | null | undefined): MoneyMode {
+  return list?.money && (MONEY_MODES as readonly string[]).includes(list.money)
+    ? list.money
+    : MONEY_DEFAULT;
+}
+
 interface Step {
   n: number;
   ru: [string, string, string];

@@ -22,15 +22,30 @@
      * the number has no name and the ring stays gold.
      */
     tone?: 'hope' | 'fear';
+    /**
+     * The live #16 rule (`numBox`, app.js 2096-2107, comment): a value below
+     * `min` means "no roll yet" and draws as an empty field rather than as
+     * the number. On the list page this also changes how the field commits -
+     * every keystroke applies at once, an emptied field commits `0` rather
+     * than waiting for `change` to land on `min`, and a step from empty
+     * starts counting at 0 - so a first `+` or `-` both land on `min`. A
+     * roll page never passes this and keeps waiting for `change`.
+     */
+    empty?: boolean;
     onchange: (n: number) => void;
   }
 
-  const { value, min, max, label, stepDownLabel, stepUpLabel, tone, onchange }: Props =
+  const { value, min, max, label, stepDownLabel, stepUpLabel, tone, empty, onchange }: Props =
     $props();
+
+  /** What the field shows for a given number - `''` below `min` when `empty`
+   *  is set (the live app's own reading of "no roll yet"), the number itself
+   *  otherwise. */
+  const shownText = (v: number): string => (empty && v < min ? '' : String(v));
 
   /* What the field shows while it is being edited, which is not always a
      number: an empty field and a half-typed one both have to be allowed. */
-  let text = $state(untrack(() => String(value)));
+  let text = $state(untrack(() => shownText(value)));
 
   /* A roll, or a step, changes the number from outside; typing changes it from
      inside and must not be overwritten mid-word. Comparing what the field
@@ -45,8 +60,10 @@
          satisfied, and the live app - which redraws the input every time -
          showed 1. What the field shows has to be the number, not something
          that rounds to it. */
-      const shown = text === '' ? null : Number(text);
-      if (committed(text, min, max) !== v || (shown !== null && shown !== v)) text = String(v);
+      const shownNum = text === '' ? null : Number(text);
+      if (committed(text, min, max) !== v || (shownNum !== null && shownNum !== v)) {
+        text = shownText(v);
+      }
     });
   });
 
@@ -56,11 +73,21 @@
     text = next.value;
     el.value = next.value;
     el.setSelectionRange(next.caret, next.caret);
+    /* The live list page applies every keystroke rather than waiting for
+       `change` (app.js 4315-4331): an emptied field commits 0 at once, and a
+       digit commits clamped into range at once. A roll page passes no
+       `empty` and keeps the old `change`-only commit below. */
+    if (empty) onchange(next.value === '' ? 0 : committed(next.value, min, max));
   }
 
   function commit(): void {
+    /* The live `change` handler leaves an empty field alone on the list page
+       (app.js comment above `numBox`) - `oninput` already committed 0 for
+       it, and `change` re-committing `min` over that would undo the "no
+       roll yet" state the moment the field loses focus. */
+    if (empty && text.trim() === '') return;
     const n = committed(text, min, max);
-    text = String(n);
+    text = shownText(n);
     onchange(n);
   }
 
@@ -70,8 +97,11 @@
      stepper, so a keyboard user loses sight of where they are, and the parity
      diff charged the whole box for the glow. */
   function step(by: number): void {
-    const n = committed(String(committed(text, min, max) + by), min, max);
-    text = String(n);
+    /* An empty field starts counting at 0, not at `min` - the live
+       `(parseInt('') || 0) + by`, so a first `+` or `-` both land on `min`. */
+    const current = empty && text.trim() === '' ? 0 : committed(text, min, max);
+    const n = committed(String(current + by), min, max);
+    text = shownText(n);
     onchange(n);
   }
 </script>

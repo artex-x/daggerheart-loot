@@ -64,3 +64,24 @@ export function nativeDrag(): DragPort {
 export function noDrag(): DragPort {
   return { bind: () => () => undefined };
 }
+
+/**
+ * Exposes the bound handlers directly, with no DOM events at all.
+ *
+ * jsdom has no drag events to dispatch, and a component test does not need
+ * them: what matters is that the component wires `onDrop` up to the right
+ * call, which this lets a test prove by invoking `.handlers.onDrop(from, to)`
+ * itself once the component has mounted and bound it.
+ */
+export function fakeDrag(): DragPort & { handlers: DragHandlers | null } {
+  const port: DragPort & { handlers: DragHandlers | null } = {
+    handlers: null,
+    bind(_container, handlers) {
+      port.handlers = handlers;
+      return () => {
+        port.handlers = null;
+      };
+    }
+  };
+  return port;
+}

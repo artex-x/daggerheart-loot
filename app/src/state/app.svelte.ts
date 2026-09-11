@@ -20,9 +20,12 @@ import {
   legacySource,
   parseHash,
   recordUrl,
+  sharedListHash,
   type Route,
   type Site
 } from '../lib/hash.js';
+import { encodeList } from '../lib/listLink.js';
+import type { StoredList } from '../lib/lists.js';
 import type { Lang, Section } from '../lib/types.js';
 import type { Env } from '../ports/index.js';
 import { ListStore } from './lists.svelte.js';
@@ -93,6 +96,15 @@ export class AppState {
 
   /** The lists a person has made, and how they are saved. */
   readonly lists: ListStore;
+
+  /**
+   * The list currently open on the list page, and the payload its address
+   * was last rewritten to - the live `S.openList` / `S.urlPayload`. Both are
+   * cleared on any route that is not a list page, the way the live app
+   * clears them on every other route.
+   */
+  openList = $state('');
+  urlPayload = $state('');
 
   /**
    * Which opener's add-to-list menu is open, app-wide - a record id on a
@@ -240,12 +252,13 @@ export class AppState {
     return parseHash(this.hash);
   }
 
-  /** Which tab is lit. Nothing is lit on a record, a list or a print sheet. */
+  /** Which tab is lit. Nothing is lit on a record, a list page or a print
+   *  sheet - the live `renderTabs` (app.js 3667-3673) compares against the
+   *  raw route string, and a list route is never that string. */
   get section(): Section | null {
     const r = this.route;
     if (r.kind === 'section') return r.section;
     if (r.kind === 'tables') return 'tables';
-    if (r.kind === 'storedList' || r.kind === 'sharedList') return 'lists';
     return null;
   }
 
@@ -279,6 +292,29 @@ export class AppState {
     this.env.router.replace(hash);
     this.hash = hash;
     this.#applySource();
+  }
+
+  /**
+   * Rewrites the address to the list's players' payload, in place - the live
+   * `syncListUrl` (app.js 1596-1598). `replace` uses `replaceState`, which
+   * fires no navigation, so this never re-enters the router's own `onChange`:
+   * after it runs, the route's payload equals `urlPayload` and the same list
+   * resolves, so the hash already matches and the effect that calls this
+   * does not loop.
+   */
+  syncListUrl(l: StoredList): void {
+    const payload = encodeList(l, true);
+    this.openList = l.id;
+    this.urlPayload = payload;
+    const want = sharedListHash(payload);
+    if (this.hash !== want) this.replace(want);
+  }
+
+  /** The live app clears `S.openList`/`S.urlPayload` on every route that is
+   *  not a list page. */
+  clearOpenList(): void {
+    this.openList = '';
+    this.urlPayload = '';
   }
 
   get home(): string {

@@ -35,6 +35,7 @@
   import { untrack } from 'svelte';
   import AltPanel from './components/AltPanel.svelte';
   import CommunityPanel from './components/CommunityPanel.svelte';
+  import ListPage from './components/ListPage.svelte';
   import ListsPage from './components/ListsPage.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
@@ -84,6 +85,8 @@
     <RecordPage {app} id={app.route.id} />
   {:else if app.route.kind === 'tables'}
     <TablesPage {app} />
+  {:else if app.route.kind === 'storedList' || app.route.kind === 'sharedList'}
+    <ListPage {app} />
   {:else}
     <p class="todo">{app.hash}</p>
   {/if}

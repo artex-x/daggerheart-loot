@@ -3,12 +3,12 @@
    * `storageWarning`/`hideWarn` (2865-2886, 4175) and `listCardHTML`
    * (2888-2907). The storage notice lives here and on the list page (B5.4),
    * nowhere else - `Shell.svelte`'s own copy was the rewrite's invention. */
-  import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
   import PageHead from './PageHead.svelte';
+  import StorageNotice from './StorageNotice.svelte';
   import { artSrc } from '../lib/desc.js';
   import { sharedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
@@ -27,11 +27,6 @@
   const index = $derived(app.index);
   const lists = $derived(app.lists.lists);
 
-  /* Read once: whether storage works does not change while the page is
-     open, and asking on every render costs a write and a delete each
-     time - the same reason `Shell.svelte` used to read it once. */
-  const works = untrack(() => app.env.storage.works());
-
   const say = (msg: string, error?: boolean): void => {
     app.say(msg, { error });
   };
@@ -47,14 +42,6 @@
     return l.ids
       .map((id) => index?.byId.get(id))
       .filter((it): it is Record_ => it !== undefined);
-  }
-
-  function dismiss(e: MouseEvent): void {
-    /* The cross sits inside the summary, so a plain click would also toggle
-       the disclosure - the live `hideWarn` calls this first for the same
-       reason. */
-    e.preventDefault();
-    app.hideWarn();
   }
 
   function create(): void {
@@ -113,29 +100,7 @@
 
 <PageHead {app} title={t.lists} sub={t.subLists} help={helpFor('lists', app.lang)} {say} />
 
-{#if !works}
-  <!-- Nothing dismisses this one - there is nothing to remember it with. -->
-  <div class="warn"><b>{t.noStorageTitle}</b>{' ' + t.noStorage}</div>
-{:else if !app.warnHidden}
-  <!-- The live `render()` builds this notice fresh on a language switch, and
-       `restoreOpen` (app.js 3769) only re-applies a person's fold/unfold to
-       `[data-keep]` elements - this is not one. Keyed on `app.lang` so the
-       rewrite's own `<details>` is destroyed and re-created the same way. -->
-  {#key app.lang}
-    <details class="warn">
-      <summary
-        ><b>{t.localOnlyTitle}</b><i>{t.readMore}</i><button
-          type="button"
-          class="warn-x"
-          title={t.dismiss}
-          aria-label={t.dismiss}
-          onclick={dismiss}>&times;</button
-        ></summary
-      >
-      <p>{t.localOnly}</p>
-    </details>
-  {/key}
-{/if}
+<StorageNotice {app} />
 
 {#if !index}
   <p class="miss">{t.noData}</p>
@@ -359,82 +324,5 @@
     letter-spacing: 0;
     color: var(--gold-soft);
     border-color: rgb(216 171 94 / 50%);
-  }
-
-  /* off `.warn` in style.css, declared twice there (855-861, 963) - merged
-     into one rule here. */
-  .warn {
-    padding: 11px 14px;
-    border-radius: var(--r-sm);
-    line-height: 1.5;
-    background: rgb(224 104 95 / 9%);
-    border: 1px solid rgb(224 104 95 / 30%);
-    color: #e0b6b1;
-    font-size: 13px;
-    position: relative;
-    margin-bottom: 16px;
-  }
-
-  .warn b {
-    color: #f5c0ba;
-    font-weight: 650;
-  }
-
-  .warn summary {
-    list-style: none;
-    cursor: pointer;
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-    flex-wrap: wrap;
-    padding-right: 26px;
-  }
-
-  .warn summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .warn summary i {
-    font-style: normal;
-    font-size: 12px;
-    color: #e0b6b1;
-    opacity: 0.75;
-    text-decoration: underline;
-  }
-
-  .warn[open] summary i {
-    visibility: hidden;
-  }
-
-  .warn p {
-    margin: 9px 0 0;
-  }
-
-  .warn-x {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--muted2);
-    font-size: 19px;
-    line-height: 1;
-    border-radius: 7px;
-    transition: 0.15s;
-  }
-
-  .warn-x:hover {
-    background: rgb(255 255 255 / 7%);
-    color: var(--txt);
-  }
-
-  /* off the keyboard-focus block in style.css, `.warn-x`'s own share of it */
-  .warn-x:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
-    border-radius: 8px;
   }
 </style>

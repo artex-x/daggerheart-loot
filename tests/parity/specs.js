@@ -55,7 +55,19 @@ const NAME = {
     share: 'Поделиться',
     del: 'Удалить',
     restore: 'Восстановить',
-    importPh: 'Ссылка на список'
+    importPh: 'Ссылка на список',
+    note: 'Заметка',
+    removeItem: 'Убрать из списка',
+    undo: 'Вернуть',
+    noteClear: 'Очистить заметку',
+    sharePlayers: 'Ссылка игрокам',
+    shareGm: 'Ссылка себе',
+    rollBy: 'Бросок по списку',
+    moneyCoin: 'Монетами',
+    rename: 'Название списка',
+    position: 'Позиция в списке',
+    whatIsThis: 'Как это работает',
+    printHint: 'Собрать карточки для печати: девять на лист A4'
   },
   en: {
     copyName: 'Copy name',
@@ -77,7 +89,20 @@ const NAME = {
     share: 'Share',
     del: 'Delete',
     restore: 'Restore',
-    importPh: 'Paste a list link'
+    importPh: 'Paste a list link',
+    note: 'Note',
+    removeItem: 'Remove from the list',
+    undo: 'Undo',
+    noteClear: 'Clear the note',
+    /* A curly apostrophe, the way the live app prints it - not a plain one. */
+    sharePlayers: 'Players’ link',
+    shareGm: 'Your own link',
+    rollBy: 'Roll on this list',
+    moneyCoin: 'In coins',
+    rename: 'List name',
+    position: 'Position in the list',
+    whatIsThis: 'How this works',
+    printHint: 'Lay these out for printing: nine to an A4 sheet'
   }
 };
 
@@ -348,6 +373,148 @@ const restoredList = {
   }
 };
 
+/**
+ * The address a list page settles on - the live `syncListUrl`/`freshenListUrl`
+ * (app.js 1596-1606), which every writer on the page calls. `#/lists/nope`
+ * is the one case that never adopts: an id nobody has stays as typed.
+ */
+const listAddress = {
+  name: 'the address the list page settles on',
+  only: [
+    '#/lists/a',
+    '#/lists/a ~ noted',
+    '#/lists/a ~ money help',
+    '#/lists/a ~ roll panel',
+    '#/lists/a ~ rolled',
+    '#/lists/a ~ removed',
+    '#/lists/a ~ note opened',
+    '#/lists/b',
+    '#/lists/nope',
+    '#/l/ ~ own list'
+  ],
+  async run(d) {
+    return { hash: await d.hash() };
+  }
+};
+
+const renamedList = {
+  presses: true,
+  name: 'renaming a list, off the title input',
+  only: ['#/lists/a'],
+  async run(d, lang) {
+    await d.type(NAME[lang].rename, 'Тайник');
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return { hash: await d.hash(), name: stored[0].name };
+  }
+};
+
+const movedByPosition = {
+  presses: true,
+  name: 'moving an entry by typing its position',
+  only: ['#/lists/a'],
+  async run(d, lang) {
+    await d.type(NAME[lang].position, '3', 'change');
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return { hash: await d.hash(), ids: stored[0].ids };
+  }
+};
+
+const pricedRow = {
+  presses: true,
+  name: "a row's first price, and the money picker it raises",
+  only: ['#/lists/a'],
+  async run(d, lang) {
+    await d.type('—', '231');
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return {
+      hash: await d.hash(),
+      meta: stored[0].meta,
+      picker: await d.has(NAME[lang].moneyCoin)
+    };
+  }
+};
+
+const removedRow = {
+  presses: true,
+  name: 'removing a row, and undoing it',
+  only: ['#/lists/a'],
+  async run(d, lang) {
+    await d.click(NAME[lang].removeItem);
+    const afterRemove = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
+    const hash = await d.hash();
+    await d.click(NAME[lang].undo);
+    const afterUndo = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
+    return { afterRemove, hash, afterUndo };
+  }
+};
+
+const deletedFromPage = {
+  presses: true,
+  name: 'deleting a list from its own page',
+  only: ['#/lists/a'],
+  async run(d, lang) {
+    await d.click(NAME[lang].del);
+    return { asked: d.dialog(), hash: await d.hash() };
+  }
+};
+
+const copiedListText = {
+  presses: true,
+  name: "the list's own export, off shareList",
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].copyText);
+    const clip = await d.clipboard();
+    return { text: clip.text, html: clip.html };
+  }
+};
+
+const ownLinks = {
+  presses: true,
+  name: "the players' and the GM's own links",
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].sharePlayers);
+    const players = await d.clipboard();
+    await d.resetClipboard();
+    await d.click(NAME[lang].shareGm);
+    const gm = await d.clipboard();
+    return {
+      players: players.text.slice(players.text.indexOf('#')),
+      gm: gm.text.slice(gm.text.indexOf('#'))
+    };
+  }
+};
+
+const moneyMode = {
+  presses: true,
+  name: 'switching the money mode to coins',
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    await d.click(NAME[lang].moneyCoin);
+    const stored = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]');
+    return { hash: await d.hash(), money: stored[0].money ?? null };
+  }
+};
+
+const noteCleared = {
+  presses: true,
+  name: "clearing the list's own note, and undoing it",
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    /* The first "Очистить заметку" in DOM order is the list note's own
+       players' side - it comes before every row's. */
+    await d.click(NAME[lang].noteClear);
+    const after = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].note ?? null;
+    const hash = await d.hash();
+    await d.click(NAME[lang].undo);
+    const back = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].note;
+    return { note: after, hash, back };
+  }
+};
+
 /** The roll pages: the label on the button says which die, or that there is none. */
 const rollControls = {
   name: 'the roll controls',
@@ -509,6 +676,25 @@ const seven = {
     LISTS[1]
   ])
 };
+
+/* The list page's own seed: a priced, counted, noted entry, and a list note
+   both public and hidden - `plan.md`, "B5.4 planned". */
+const noted = {
+  'dhloot.lists.v2': JSON.stringify([
+    {
+      ...LISTS[0],
+      ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'],
+      meta: {
+        ci2: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' }
+      },
+      note: 'Лавка закрыта до утра'
+    },
+    LISTS[1]
+  ])
+};
+
+/* The empty list, on its own - `#/lists/b`. */
+const oneEmpty = { 'dhloot.lists.v2': JSON.stringify([LISTS[1]]) };
 
 const STATES = [
   { id: '#/i/ci1', route: '#/i/ci1', why: 'a loot record' },
@@ -1000,6 +1186,92 @@ const STATES = [
     /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
     timed: true
   },
+
+  /* The list page, off `renderOneList` and everything it draws - app.js
+     2933-3128. `plan.md`, "B5.4 planned". */
+  {
+    id: '#/lists/a',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'the page: the title input, "7 позиций", five actions, the notice, no money picker, folded note and roll panel, "Выбрать все", seven plain rows'
+  },
+  {
+    id: '#/lists/a ~ noted',
+    route: '#/lists/a',
+    storage: noted,
+    why: 'the money picker, the list note open with two texts, row 2 priced and noted, its note box open, has-note'
+  },
+  {
+    id: '#/lists/a ~ money help',
+    route: '#/lists/a',
+    storage: noted,
+    why: 'the help box under the chips, "?" pressed',
+    enter: async (d) => {
+      await d.click(NAME.ru.whatIsThis);
+    }
+  },
+  {
+    id: '#/lists/a ~ roll panel',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'the panel open: empty numbox, "Случайно 1-7", the hint',
+    enter: async (d) => {
+      await d.click(NAME.ru.rollBy);
+    }
+  },
+  {
+    id: '#/lists/a ~ rolled',
+    route: '#/lists/a',
+    storage: noted,
+    why: 'result 2: the compact card badged 2, both hitnotes, "Сбросить"',
+    enter: async (d) => {
+      await d.click(NAME.ru.rollBy);
+      await d.click(NAME.ru.stepUp);
+      await d.click(NAME.ru.stepUp);
+    }
+  },
+  {
+    id: '#/lists/a ~ removed',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'six rows, the undo toast',
+    enter: async (d) => {
+      await d.click(NAME.ru.removeItem);
+    },
+    /* a 7000ms toast; arrived at afresh per width - docs/parity.md, 'Timed states' */
+    timed: true
+  },
+  {
+    id: '#/lists/a ~ note opened',
+    route: '#/lists/a',
+    storage: seven,
+    why: "row 1's empty note box open, focus in the first textarea",
+    enter: async (d) => {
+      await d.click(NAME.ru.note);
+    }
+  },
+  {
+    id: '#/lists/b',
+    route: '#/lists/b',
+    storage: oneEmpty,
+    why: 'the empty page: no print link, no money, the note folded, no roll panel, no bar, the hint'
+  },
+  {
+    id: '#/lists/nope',
+    route: '#/lists/nope',
+    why: '"Список не найден", the sub, the "Списки" button; the address not rewritten'
+  },
+  {
+    /* `encodeList({ name: 'Клад дракона', ids: [ci1..ci7] }, true)` - the
+       payload `seven`'s list `a` rewrites its own address to. Computed once,
+       by hand, off the frozen format (docs/specs/CONTRACTS.md section 3) -
+       verified byte-identical to `encodeList`'s own output. */
+    id: '#/l/ ~ own list',
+    route: '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw',
+    storage: seven,
+    why: 'own-list recognition: the same page as #/lists/a'
+  },
+
   { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
   { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
 ];
@@ -1021,6 +1293,16 @@ const SPECS = [
   sharedListLink,
   deletedList,
   restoredList,
+  listAddress,
+  renamedList,
+  movedByPosition,
+  pricedRow,
+  removedRow,
+  deletedFromPage,
+  copiedListText,
+  ownLinks,
+  moneyMode,
+  noteCleared,
   visuals,
   typeRuns,
   geometry

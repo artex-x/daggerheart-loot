@@ -18,7 +18,7 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { artSrc } from '../lib/desc.js';
-  import { share, shareName } from '../lib/share.js';
+  import { share, shareName, type ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Index } from '../lib/data.js';
   import type { Record_ } from '../lib/types.js';
@@ -31,9 +31,14 @@
     /** Says what happened, off `toast` in app.js - `error` is what makes a
      *  refused copy `role="alert"` rather than a plain notice. */
     say: (msg: string, error?: boolean) => void;
+    /** The live `contextNote` (app.js 568-573): while a list is open, copying
+     *  one of its entries appends the players' note it carries there. Passed
+     *  in rather than looked up here - this component does not know what a
+     *  list is. */
+    extra?: readonly ShareBlock[] | undefined;
   }
 
-  const { app, index, it, row, say }: Props = $props();
+  const { app, index, it, row, say, extra }: Props = $props();
 
   const t = $derived(app.t);
   const link = $derived(app.linkToRecord(it.id));
@@ -44,7 +49,7 @@
   }
 
   async function copyText(): Promise<void> {
-    const { text, html } = share(it, index, app.lang);
+    const { text, html } = share(it, index, app.lang, { extra });
     const ok = await app.env.clipboard.writeRich({ html, plain: text });
     say(ok ? t.textCopied : t.copyFailed, !ok);
   }

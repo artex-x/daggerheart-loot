@@ -20,6 +20,7 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import { printHash } from '../lib/hash.js';
+  import type { ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
   import type { Index } from '../lib/data.js';
@@ -32,12 +33,16 @@
     /* A rung of the tier ladder swaps which record the modal is showing, the
        way the live app replaces the modal's body rather than stacking one. */
     onopen?: ((r: Record_) => void) | undefined;
+    /** The live `contextNote` block, forwarded to the card row's "Copy text" -
+     *  a list's own row opens the same modal and the copy has to carry the
+     *  entry's note the same way the row itself does. */
+    extra?: readonly ShareBlock[] | undefined;
   }
 
   /* The index is a prop rather than read off `app`: a modal is only ever opened
      from a screen that already has one, so asking again would add a branch
      nothing can take. */
-  const { app, index, it, onclose, onopen }: Props = $props();
+  const { app, index, it, onclose, onopen, extra }: Props = $props();
 
   let dialog = $state<HTMLDialogElement | null>(null);
 
@@ -105,7 +110,7 @@
         <RecordActions {app} {index} {it} row="name" {say} />
       {/snippet}
       {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" {say} />
+        <RecordActions {app} {index} {it} row="card" {say} {extra} />
       {/snippet}
       {#snippet pick()}
         <AddToList {app} key={it.id} ids={[it.id]} primary />

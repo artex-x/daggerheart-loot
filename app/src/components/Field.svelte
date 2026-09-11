@@ -8,13 +8,17 @@
 
   interface Props {
     label: string;
+    /** An inline `margin-bottom`, overriding the class rule below - the roll
+     *  panel's own field carries one (14px with a result shown, 0 without),
+     *  which is how it beats `.lroll>:last-child{margin-bottom:13px}`. */
+    after?: number;
     children: Snippet;
   }
 
-  const { label, children }: Props = $props();
+  const { label, after, children }: Props = $props();
 </script>
 
-<div class="field">
+<div class="field" style={after === undefined ? undefined : `margin-bottom:${String(after)}px`}>
   <span class="lbl">{label}</span>
   {@render children()}
 </div>

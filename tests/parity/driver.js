@@ -179,24 +179,34 @@ function makeDriver(page, target) {
     },
 
     /**
-     * Types into a field found by its placeholder, the way a person would find
-     * it - a table's query lives in memory and never reaches the address, so a
-     * placeholder is the only thing a spec has to grip.
+     * Types into a field found by its placeholder, or by its accessible name
+     * where it has none - a table's query lives in memory and never reaches
+     * the address, so a placeholder is the only thing a spec has to grip
+     * there, but the list page's title input and position field are named
+     * instead (`aria-label`), the way a person reads them.
+     *
+     * `event` is `'change'` for the position field, whose live handler
+     * (app.js 4545-4549) waits for the field to be committed rather than
+     * acting on every keystroke; every other field keeps the default
+     * `'input'`.
      */
-    async type(placeholder, text) {
+    async type(placeholder, text, event = 'input') {
       const ok = await page.evaluate(
-        (ph, val) => {
-          const el = [...document.querySelectorAll('input')].find(
-            (i) => i.placeholder === ph
-          );
+        (ph, val, ev, nameSrc) => {
+          const nameOf = eval(nameSrc);
+          const inputs = [...document.querySelectorAll('input, textarea')];
+          const el =
+            inputs.find((i) => i.placeholder === ph) ?? inputs.find((i) => nameOf(i) === ph);
           if (!el) return false;
           el.focus();
           el.value = val;
-          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event(ev, { bubbles: true }));
           return true;
         },
         placeholder,
-        text
+        text,
+        event,
+        NAME_FN
       );
       if (!ok) throw new Error(`${target}: no field with placeholder "${placeholder}"`);
       d.pressed.add(`type:${placeholder}`);

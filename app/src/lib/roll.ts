@@ -7,6 +7,8 @@
  *
  * Pure module: no DOM, no data. */
 
+import type { Dict } from './dict.js';
+
 /** A source of randomness. `Math.random` in the app, something fixed in tests. */
 export type Random = () => number;
 
@@ -79,4 +81,15 @@ export const REAL_DICE = [4, 6, 8, 10, 12, 20, 100] as const;
 
 export function hasRealDie(count: number): boolean {
   return (REAL_DICE as readonly number[]).includes(count);
+}
+
+/**
+ * The roll button's own label: a real die where the range has one, "Random
+ * 1-N" where it does not - 119 and 29 are not dice anybody owns. Moved here
+ * on its second use (the list page's roll panel, alongside `RollPanel`'s) -
+ * an en dash in the range, as the live app prints it; tests/parity.js
+ * compares this string character for character, and it is read aloud.
+ */
+export function rollLabel(max: number, t: Dict): string {
+  return hasRealDie(max) ? `${t.roll} d${String(max)}` : `${t.randomIn} 1–${String(max)}`;
 }

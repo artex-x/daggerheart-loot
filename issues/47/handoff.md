@@ -6,6 +6,101 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B5.4a is built, verified, and committed** (implementer,
+  2026-09-11). Resumed at step 11 as directed, on `f38b900` with the 43
+  uncommitted paths from steps 1-9 unchanged and step 10 already green.
+  `npm run build` then all six step-11 parity filter groups, each its own
+  foreground call, none merged: `"#/lists/a @"` (6 cells), `"~ noted" "~
+  money help"` (12 cells), `"~ roll panel" "~ rolled" "~ removed" "~ note
+  opened"` (24 cells), `"#/lists/b" "#/lists/nope" "own list"` (18 cells),
+  the regressions `"#/lists @" "#/lists ~"` (36 cells) and `"i/ci1 ~"` (36
+  cells) - **every cell in every group read `совпадает` on the first pass;
+  no port fix was needed, nothing was re-run.** `npm run check:built` exited
+  0 (build, `smoke-file-url.mjs`, `bundle-budget.mjs` at 77.3 kB gzip against
+  the 120 kB budget). `plan.md` gained "B5.4a built"; this file and
+  `context.md` updated. A final `set -o pipefail; npm run check 2>&1 | tail
+  -n 120` re-armed the gate after the doc edits (exit 0, 37 files, 854
+  tests, 0 failures, coverage 96.24/88.87/96.86/96.86). One commit,
+  `feat(lists): the list page`, on top of `f38b900`. No push. HEAD did not
+  move under this session; no other session was active (no
+  `test-output/parity.lock`, lock absent throughout). B5.4b, B5.5 and B5.6
+  remain outlines only - not started, not replanned, per this batch's
+  explicit scope.
+- Task status: in_progress - **step 10 is done and green; the host block is
+  gone** (orchestrator, 2026-09-11, 08:25-08:30). One reading before anything
+  heavy, as the amended brief asks: RAM free 7.44 GB of 15.82 GB, 251
+  processes, no `chrome.exe`, no `test-output/parity.lock`. On that host
+  `set -o pipefail; npm run check 2>&1 | tail -n 120` exited 0 in one
+  foreground call - 37 test files, 854 tests, 0 failures, coverage 96.24
+  stmts / 88.87 branch / 96.86 funcs / 96.86 lines, every threshold met,
+  vitest 78.8s. No fork-pool loss, no zero rows: **the five failed attempts
+  were host load, exactly as diagnosed, and nothing in the batch's code was
+  ever wrong.** `.claude/.check-cache.json` armed at key `2ab9c1a7...`.
+  HEAD is still `f38b900`; the 43 uncommitted paths are unchanged and are
+  still B5.4a's declared scope. **Resume at step 11** (the parity loop).
+  Note for whoever commits: step 13's doc edits change the tree fingerprint
+  and therefore disarm the gate, so the last action before `git commit` is
+  one more foreground `npm run check`.
+- Task status: in_progress - **B5.4a's code is written and uncommitted; the
+  batch is blocked on the host, not on the work** (orchestrator, 2026-09-11,
+  scheduled run). Steps 0-9 are done: step 0 is committed as `f38b900`
+  (`test(parity): no legacy cache for timed states`) and steps 1-9 sit in the
+  working tree as 43 uncommitted paths - five new components
+  (`ListPage.svelte` 1419 lines, `RowMain`, `HelpBox`, `HelpButton`,
+  `StorageNotice`), `listPage.test.ts`, the route in `App.svelte`, and the
+  dict/lib/state/ports/harness edits the brief lists. Everything uncommitted
+  is in B5.4a's declared scope; there is no foreign work in the tree to
+  preserve. **Resume at step 10.**
+  **No genuine test failure has been found**: `npx vitest run` gave 26 files /
+  469 tests / 0 failures, and the one failure a later run produced
+  (`listPage.test.ts > a row's note > clears the box on the cross...`,
+  14745ms) passes in isolation - 35/35. What blocks the batch is that the
+  host cannot complete a run: `RAM free 0.35 GB of 15.82 GB, CPU 100%, 424
+  processes on 8 cores`, so vitest's fork pool loses 11-13 test files to its
+  hardcoded 60s worker `START_TIMEOUT` and every lost file reads 0% coverage,
+  which `npm run check` reports as a coverage regression. Five `npm run check`
+  attempts across two sessions (1437s, 630s, 813s, and two this morning) have
+  all exceeded the Bash tool's 600000ms ceiling, and a call that outlives it is
+  moved to the background where `check-observer.mjs` has no stdout to
+  attribute - so the commit gate cannot arm, by construction, however well the
+  run goes. `--maxWorkers=4` made it worse here (1067s against 437s).
+  **Do not re-run `npm run check` on a loaded host hoping for a different
+  answer, and do not dispatch a worker into this wall** - that is what cost
+  the previous session roughly two hours. The measurements are in
+  `context.md`, "The B5.4a tree passes; the host cannot prove it".
+  Nothing was committed this run and nothing was reverted.
+- **A peer session is working this same batch, observed live at 06:31**
+  (orchestrator, 2026-09-11). `test-output/parity.lock` appeared during this
+  run: `{"pid":276576,"startedAt":...,"argv":["#/lists/a @"]}`, pid confirmed
+  alive (`Get-Process -Id 276576` - node, started 06:20:21). That filter is
+  **step 11's first parity run**, so another session is past step 10 and into
+  verification on this tree. Two consequences, and they are not optional:
+  1. The "Resume at step 10" line in the entry above is this session's
+     reading at 06:25 and may already be stale - **check the lock and
+     `git log --oneline -3` before believing it.** If that peer commits,
+     B5.4a may be closed by the time this is read.
+  2. **Nothing heavy may be started while that lock is live** - `bash-guard.mjs`
+     blocks it, and a vitest pass beside a live parity run produces spurious
+     timeouts anyway. This session's own 06:19 `listPage.test.ts` run
+     (211s for 35 tests) overlapped the peer's parity start at 06:20, so treat
+     its wall clock as contended.
+  This session did not touch the lock, did not commit, and did not dispatch a
+  worker - precisely because a second writer was already on the tree.
+- Last agent: orchestrator (2026-09-11, scheduled run: measured only - four
+  test runs, one host reading, `context.md` and this Status. No production
+  code, no commit, no dispatch.)
+- Task status: in_progress - **B5.4 planned (planner, 2026-09-10): 4a is
+  implement-ready, 4b outlined**, and `#/tables ~ selection copied @ en 1100`
+  is diagnosed as a stale legacy-cache hit (the diff is the toast alone; the
+  legacy PNG is byte-identical to a cache entry written under the full
+  suite's load, and the "isolated" re-run copied it rather than shooting
+  it) - fixed by 4a's step 0 in the harness, no `VISUAL_DEBT` line. HEAD
+  moved to `13bba19` (the gitleaks allowlist) during planning; no
+  application source changed. No production code written. See "Next
+  batch", `plan.md` "B5.4 planned", `context.md` "B5.4 planning facts".
+- Last agent: planner (2026-09-10, B5.4 planning; read-only puppeteer probe
+  of the live list page at three widths; wrote `plan.md`, `handoff.md`,
+  `context.md` only).
 - Task status: in_progress - **B5.3's fix-then-continue remediation pass is
   built and committed.** The reviewer's one blocker against `ba8f4b1` (the
   list card's `href` rendered the players' payload where the live app
@@ -874,7 +969,60 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   since the whole point of citing them is that "the next reader can check
   rather than trust."
 
+- Batch name/id: **B5.4a - the list page (complete but for the live drag
+  semantics)** (this session, resuming a tree two prior sessions had
+  already written steps 1-9 into and proved step 10 on).
+- What shipped: verification and close-out only - no production code
+  changed in this session; steps 1-9's five new components (`ListPage.svelte`,
+  `RowMain.svelte`, `HelpBox.svelte`, `HelpButton.svelte`,
+  `StorageNotice.svelte`), `listPage.test.ts`, the `App.svelte` route, and
+  the dict/lib/state/ports/harness edits are committed exactly as the
+  previous sessions left them. Step 11's parity loop (six filter groups, ten
+  new states across 96 cells, plus 72 regression cells) read `совпадает`
+  everywhere on the first pass - no diff was ever opened because none went
+  non-zero. `npm run check:built` exited 0. Full accounting in `plan.md`,
+  "B5.4a built".
+- Files changed: none beyond what steps 1-9 already staged (see "Files
+  expected" in "Next batch" below for the full list); this session's own
+  edits are `issues/47/plan.md`, `issues/47/handoff.md`,
+  `issues/47/context.md`.
+- Commit(s): one commit, `feat(lists): the list page`, authored `artex-x
+  <artex-x@users.noreply.github.com>`, on top of `f38b900` - see `git log`
+  for its sha. No push.
+- Deviations and rationale: none from the plan's ordered steps, acceptance
+  criteria, or file list.
+
 ## Verification
+
+- Commands run (exact), this session (B5.4a, resuming at step 11 on
+  `f38b900`):
+  - `npm run build` - clean; `dist/assets/app.js` 263.46 kB, 79.59 kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/a @"` (1 state, 6
+    cells) - `расхождений нет`, all 6 `совпадает`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "~ noted" "~ money help"` (2
+    states, 12 cells) - all 12 `совпадает`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "~ roll panel" "~ rolled" "~
+    removed" "~ note opened"` (4 states, one timed, 24 cells) - all 24
+    `совпадает`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/b" "#/lists/nope" "own
+    list"` (3 states, 18 cells) - all 18 `совпадает`.
+  - Regression: `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists @" "#/lists
+    ~"` (6 states, 36 cells) - all 36 `совпадает`, unchanged from B5.3's own
+    reading.
+  - Regression: `MSYS_NO_PATHCONV=1 node tests/parity.js "i/ci1 ~"` (6
+    states, 36 cells) - all 36 `совпадает`, unchanged.
+  - **Ten new states, 96 cells, all `совпадает` on the first pass; 72
+    regression cells, all `совпадает`. No diff image was opened - nothing
+    ever read non-zero.**
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - one
+    foreground call, `timeout: 600000`. **Exit 0.** `npm run build` (clean,
+    same output as above), `npm run smoke` ("the built page opens from a
+    folder"), `npm run budget` (77.3 kB gzip against the 120 kB budget).
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+    call, `timeout: 600000`, run immediately before `git commit` per the
+    brief (the doc edits in this same batch change the tree fingerprint and
+    disarm the cache step 10 armed). See the exact result recorded once the
+    call completes, below/in Status.
 
 - Commands run (exact), this session (B5.3 fix-then-continue remediation,
   against `ba8f4b1`):
@@ -1548,567 +1696,39 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-B5.3, close-out included, is built, verified and committed as one commit,
-`feat(lists): the lists index` (see `git log`). B5.4-B5.6 (the list page,
-search and print) remain outlines only in `plan.md`, "B5 planned" - picking
-and planning the next one is the orchestrator's, not implement-ready yet.
+**B5.4a is closed** (this session) - built, verified, and committed as
+`feat(lists): the list page` on top of `f38b900`. The brief that stood here
+(implement-ready, steps 0-13) is retired to `plan.md`, "B5.4a built". Do not
+reopen it.
 
-<details>
-<summary>B5.3 close-out's own brief (implemented; kept for the record, not for reuse)</summary>
+What is left of the lists slice: **B5.4b (drag as the live app does it -
+outlined, not planned, in `plan.md`, "B5.4b outlined"), B5.5 (the batch
+bar's actions under a ticked selection) and B5.6 (the shared page, packed-
+link expansion, taking a shared list)** - all three unplanned. Picking and
+planning the next of them is the orchestrator's / planner's call, not this
+session's; this batch's own instructions were explicit not to start any of
+the three.
 
-- **Name:** B5.3 close-out - the storage notice re-folds on a language
-  switch. **Implement-ready.** Not a new batch: a bounded addition to the
-  uncommitted B5.3 tree already in the working directory (26 modified or
-  untracked paths, HEAD `91d7899`), closed by the one commit `feat(lists):
-  the lists index`. Do not start B5.4; do not re-implement B5.3.
-
-- **Objective:** `#/lists ~ notice unfolded @ en 1100/768/375` read 0.00%,
-  because the rewrite's storage notice, like the live app's, comes back
-  folded after a language switch. The decision, its evidence and the two
-  rejected paths: `plan.md`, "B5.3 built", "Close-out decision" - read it,
-  do not re-derive it, do not reopen paths 2 and 3. The one-line reason:
-  the live `render()` re-applies a person's fold/unfold only to `data-keep`
-  elements (`restoreOpen`, app.js 3769-3775) and the notice is not one, so
-  it folds on a language switch by the live app's own rule; the port
-  re-creates the element on `app.lang`.
-
-- **Read first:** that subsection; `context.md`, "B5.3 close-out facts";
-  `app.js` 3769-3783 (`restoreOpen` and the `toggle` listener);
-  `tests/parity.js` 353-363 (`arrive()`: `enter`, then `EN`);
-  `app/src/components/ListsPage.svelte` 118-133 (the `<details>` as built).
-
-- **In scope:** exactly the files below. Nothing else in the tree changes;
-  the paths B5.3 already modified stay as they are.
-
-- **Out of scope / do not:** `app.navigations` in the key (a no-op here -
-  `App.svelte` remounts `ListsPage` on every route change; B5.4 decides for
-  the list page, with a state); a counter bumped by create or delete (the
-  create/delete divergence stands, "Decided in planning" as corrected);
-  `StorageNotice.svelte` (B5.4's second use); any harness change
-  (`driver.js`, `parity.js`, `specs.js` are done); any `VISUAL_DEBT` or
-  `ACCEPTED` line - none is expected, and `ACCEPTED` cannot excuse a pixel
-  cell anyway; `Shell.svelte`, `app.svelte.ts`; a Windows figure written
-  anywhere.
-
-- **Files expected:** `app/src/components/ListsPage.svelte`,
-  `app/src/components/listsPage.test.ts`, `docs/specs/FEATURES.md`,
-  `issues/47/plan.md`, `issues/47/handoff.md` (both docs: the run results
-  and the commit sha; the decision text is already written), and
-  `issues/47/context.md` goes into the same commit as it stands (the
-  orchestrator's dispatch hunk and the planner's close-out section are both
-  this batch's record).
-
-- **Steps:**
-  1. `ListsPage.svelte`, the `{:else if !app.warnHidden}` branch: wrap the
-     `<details class="warn">` … `</details>` element in `{#key app.lang}` …
-     `{/key}`. `app.lang` is a `$state` on `AppState`; `setLang()` does not
-     bump `navigations`, so nothing else would fire. Keep the `<summary>`'s
-     three children glued exactly as they are (`><b>…</b><i>…</i><button
-     …>&times;</button\n></summary\n>`) and the `<p>` inside the block. Put
-     a short comment above the block naming the mechanism: the live
-     `render()` builds the notice fresh on a language switch and
-     `restoreOpen` re-applies open state only to `data-keep` elements, which
-     this is not (app.js 3769). Then `npx prettier --write
-     app/src/components/ListsPage.svelte` and diff: if prettier splits the
-     glued summary, wrap the `<details>` in `<!-- prettier-ignore -->` the
-     way the `.listcard-main` link already is. The Russian `~ notice
-     unfolded` cells and `#/lists` folded going non-zero is the signature
-     of a stray space.
-  2. `listsPage.test.ts`, inside `describe('the head and the panel')`: one
-     case, `folds the notice again on a language switch, as the live
-     re-render does` - `const { container } = render(App, { env: at() })`;
-     `await userEvent.click(screen.getByText('подробнее'))`; assert
-     `container.querySelector<HTMLDetailsElement>('details.warn')?.open`
-     is `true`; `await userEvent.click(screen.getByRole('button', { name:
-     'EN' }))` (the pattern `shell.test.ts` 42 uses); assert the new
-     `details.warn` has `open === false` and `screen.getByText('more')`
-     (the English `readMore`, `dict.ts` 450) is in the document; end with
-     `await expectNoA11yViolations(container)`. `npm run test -- listsPage`
-     (20 cases) before the full check.
-  3. `docs/specs/FEATURES.md`, the Lists storage-notice bullet (76-79):
-     after "whose cross is remembered in `dhloot.warn.v1`" add "; unfolding
-     is not remembered - the notice comes back folded after a language
-     switch, as the live re-render leaves it".
-  4. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
-     Bash call, `timeout: 600000`, exactly that shape.
-  5. `npm run build`, then `MSYS_NO_PATHCONV=1 node tests/parity.js
-     "#/lists"` (6 states, 36 cells, one timed) - **every cell
-     `совпадает`**. A non-zero cell is a diff image opened first.
-  6. `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - one
-     foreground call, `timeout: 600000` (one state's screen changes).
-  7. `plan.md`, "B5.3 built", "Close-out decision": fill in "Close-out run"
-     (36/36, the check results, the sha). `handoff.md`: Status (task
-     status, last agent), Completed (files, commit sha), Verification (the
-     exact commands and results, replacing "3 расхождения"), the first
-     Blockers bullet → resolved with the sha, this brief → retired into a
-     `<details>` like the ones below.
-  8. Re-read `git log --oneline -3`; HEAD must still be `91d7899` - if it
-     moved, stop and report. Stage the batch's paths by name, never `git
-     add -A`. One commit, `feat(lists): the lists index`, authored as
-     `artex-x <artex-x@users.noreply.github.com>`, no `Co-Authored-By`, no
-     push.
-
-- **Acceptance criteria:** `node tests/parity.js "#/lists"` 36/36
-  `совпадает`, both languages; `listsPage.test.ts` 20 cases green, the new
-  one ending in `expectNoA11yViolations`; `npm run check` and `npm run
-  check:built` exit 0 with thresholds met; no `VISUAL_DEBT`/`ACCEPTED`
-  change; `FEATURES.md` carries the clause; one commit on top of `91d7899`
-  containing all of B5.3.
-
-- **Verification commands - re-run vs banked:**
-
-  ```text
-  set -o pipefail; npm run check 2>&1 | tail -n 120         # re-run: production code and a test change
-  npm run build                                              # re-run
-  MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists"          # re-run: 6 states / 36 cells, all expected clean
-  set -o pipefail; npm run check:built 2>&1 | tail -n 120   # re-run: a screen changes
-  ```
-
-  **Banked, do not re-run:** `node tests/parity.js "nothing found"
-  "#/tables ~"` (10 states, 60 cells, `расхождений нет`) and `node
-  tests/parity.js "i/ci1 ~"` (6 states, 36 cells, `расхождений нет`) -
-  nothing outside `ListsPage.svelte` renders the keyed block and those
-  routes never mount it. Shapes: `npm run check` and `npm run check:built`
-  are one foreground call each, never backgrounded or redirected - a
-  backgrounded run cannot arm the commit gate; a run that goes over the cap
-  is re-run, not salvaged; zeros down the coverage table with `Errors`
-  equal to the file count means no test ran - re-run. No vitest pass
-  concurrently with a parity run.
-
-- **Risks / do-nots:** a whitespace text node between `{#key}` and
-  `<details>` is harmless (block context); a split `<summary>` is not - see
-  step 1. Do not key on anything but `app.lang`. Do not touch the harness,
-  `Shell.svelte` or `app.svelte.ts`. Do not write a Windows figure. If HEAD
-  moved, stop.
-
-- **Fallback (optional):** none expected - a Svelte 5 `{#key}` block
-  destroys and re-creates its content when the expression changes. If the
-  built app somehow keeps the element, the alternative is
-  `bind:open={noticeOpen}` with `$effect(() => { void app.lang; untrack(()
-  => { noticeOpen = false; }); })` - more code for the same result; record
-  in "Blockers" why the first form failed before taking it.
-
-</details>
-
-<details>
-<summary>B5.3's retired brief (implemented; kept for the record, not for reuse)</summary>
-
-- **Name:** B5.3 - the lists index (`#/lists`), the storage notice where the
-  live app draws it, and `noData`. **Implemented**; one batch, no parts.
-
-- **Objective:** `#/lists` draws the live index - the page head with its
-  four-paragraph help, the storage notice in both live forms (a plain
-  undismissable warning when storage refuses; otherwise a folded "Списки
-  живут только в этом браузере." disclosure with a cross remembered in
-  `dhloot.warn.v1`), the panel with the create and restore rows, a card per
-  list (name, a badge counting known records, up to six thumbnails or
-  "Список пуст", "Поделиться" copying the short players' link, "Удалить"
-  behind `confirm()`) or the "no lists yet" empty state. `Shell.svelte`'s
-  invented `storageOff` paragraph and dictionary key are deleted; `ListStore`
-  gets `remove`, the first writer of the `#deleted` set `mergeLists` has
-  carried since B5.1; `#/lists` stops being `pending`. Full design, every
-  measured number and the rejected alternatives: `plan.md`, "B5.3 planned";
-  the facts read off the source: `context.md`, "B5.3 planning facts".
-
-- **Read first, in this order:** `context.md` "State at B5.3 kickoff" and
-  "B5.3 planning facts"; `plan.md` "B5 planned" (the split, the harness
-  seeding, "Decided in planning") and "B5.3 planned" end to end. The live
-  functions to read yourself before writing a line: `renderLists` (app.js
-  2909-2931), `storageWarning`/`warnHidden`/`hideWarn` (2865-2886),
-  `listCardHTML` (2888-2907), `listItems` (1207), `createList`/`deleteList`
-  (1320-1336), `listHash`/`goToList` (1534-1543), `listShareUrlShort`
-  (1527-1529) and `packPayload` (1508-1516), the `data-share-list` handler
-  (3971-3976), the `data-del-list` handler (4136-4150), `hideWarn` (4175),
-  `createList` (4195-4203) and `importList` (4257-4270) in the action
-  handler, the help text (252-257 / 433-438). Styles: `.panel` 145-149,
-  `.numrow` 181-182, `input[type=text]` 254-258, `.badge`/`.badge.num`
-  331-335/349-352, `.empty` 524-525, `input::placeholder` 727, `.btn.danger`
-  795-796, `.listgrid`..`.listcard-acts` 831-846, `.warn` 855-861 **and**
-  963-975 (declared twice), `.warn-x:focus-visible` 1002-1005.
-
-- **In scope:** `plan.md`, "B5.3 planned", "How it is built" - in one line
-  each: `ports/dialog.ts` (new, `browserDialog`/`fakeDialog`) wired into
-  `Env`; `ListStore.remove`, `create(name, init)`, `saved`; `AppState.
-  warnHidden`/`hideWarn()`; eighteen dictionary keys in and `storageOff`
-  out; the `lists` help; the global `input::placeholder` rule in
-  `tokens.css`; `Button` `danger`; `Empty.svelte` extracted from
-  `TablesPage`'s two empty branches; `ListsPage.svelte` with the template
-  transcribed in the plan; `App.svelte` routes `section === 'lists'` to it;
-  `Shell.svelte` loses the paragraph, its rule and `storageWorks`; the
-  driver's `summary` verb and dialog auto-accept; the `seven` seed, six
-  states, three press specs and four `NAME` entries; `FEATURES.md`'s
-  misplaced storage-warning bullet corrected; `COVERAGE.md` rows; tests for
-  all of it.
-
-- **Out of scope:** anything under `#/l/` or `#/lists/<id>` (after a restore
-  or a card click the rewrite lands on its `todo` paragraph - B5.4/B5.6);
-  rename, `.listcard.active`, `openList` (B5.4); `StorageNotice.svelte`
-  (B5.4 extracts it on the second use), `Badge.svelte`, `Panel.svelte`; a
-  `typeRuns` probe on the index; any change to `CONTRACTS.md`, `ROUTES.md`,
-  `STATE.md`, `docs/fixtures/` or `llms.txt` - nothing here alters a
-  contract, and if something turns out to, stop and say so.
-
-- **Files expected:** `app/src/ports/dialog.ts`, `app/src/ports/types.ts`,
-  `app/src/ports/index.ts`, `app/src/ports/ports.test.ts`,
-  `app/src/state/lists.svelte.ts`, `app/src/state/lists.test.ts`,
-  `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
-  `app/src/lib/dict.ts`, `app/src/lib/help.ts`, `app/src/lib/help.test.ts`,
-  `app/src/styles/tokens.css`, `app/src/components/Button.svelte`,
-  `app/src/components/button.test.ts`, `app/src/components/Empty.svelte`,
-  `app/src/components/TablesPage.svelte`, `app/src/components/ListsPage.svelte`,
-  `app/src/components/listsPage.test.ts`, `app/src/components/Shell.svelte`,
-  `app/src/components/shell.test.ts`, `app/src/components/a11y.test.ts`,
-  `app/src/App.svelte`, `tests/parity/driver.js`, `tests/parity/specs.js`,
-  `docs/specs/FEATURES.md`, `docs/specs/COVERAGE.md`, `issues/47/plan.md`,
-  `issues/47/handoff.md`.
-
-- **Steps:** `plan.md`, "B5.3 planned", "Ordered steps" 1-11 - dict, help
-  and the placeholder rule; the dialog port; the store and `AppState`;
-  `Button` and `Empty`; `ListsPage`, the route and `Shell`; the tests; the
-  harness; then the checks in the order given there.
-
-- **Acceptance criteria:** `plan.md`, "B5.3 planned", "Acceptance criteria" -
-  in one line each: the head with pin, `?` and four help paragraphs; the
-  folded notice that unfolds on "подробнее" and goes for good on the cross
-  without toggling; the plain warning with no cross when storage refuses;
-  no warning in the frame; the two panel rows, the restore button wrapping
-  at 375 and the create button not; a card per list in store order with a
-  known-record badge, six thumbs or "Список пуст", the players' link and
-  both buttons, or the empty state; create's blank-name refusal and its
-  "создан" toast only on a successful write; share's short link and its
-  empty-list toast; delete's question and a deletion that survives a merge;
-  restore of a full link, a bare payload or a packed one, and `badShare` on
-  garbage; `noData` with no data; **every cell of `#/lists` and its five
-  states at 0.00% in both languages**, the three press specs matching,
-  `"nothing found" "#/tables ~"` and `"i/ci1 ~"` unchanged; `npm run check`
-  and `npm run check:built` exit 0.
-
-- **Verification commands** - and the two rules three implementers on this
-  task have got wrong, stated plainly:
-
-  ```text
-  set -o pipefail; npm run check 2>&1 | tail -n 120
-  npm run build
-  node tests/parity.js "#/lists"
-  node tests/parity.js "nothing found" "#/tables ~"
-  node tests/parity.js "i/ci1 ~"
-  npm run check:built
-  ```
-
-  **`npm run check` is exactly one foreground Bash call**, the first line
-  above verbatim, with the Bash tool's `timeout` set to `600000`. Not
-  backgrounded, not `run_in_background`, not redirected to a file, not
-  chained with `&&` or `;` to anything else. The commit gate arms itself
-  only from that shape: a backgrounded or file-redirected run cannot arm it
-  however honestly it passes, and the commit is then blocked at
-  `PreToolUse`. If it goes over the cap on a loaded host (it has, once), it
-  is re-run in the same shape, not salvaged; if it reports zeros down the
-  coverage table with `Errors` equal to the file count, no test ran - re-run
-  it (`context.md`, "npm run check, settled"). **`npm run check:built` takes
-  the same shape**: one foreground call, `timeout: 600000`.
-
-  **Parity filters, with their state counts, each one foreground call:**
-  `"#/lists"` is **6 states** (36 cells, `~ created` timed so it arrives
-  afresh at every width; the substring does not match `#/i/ci1 ~ many
-  lists`) - the loop while getting to zero; `"nothing found" "#/tables ~"`
-  is **10 states** (`#/tables/wondrous ~ nothing found`, `#/tables ~ nothing
-  found`, `#/tables/eq_armor ~ nothing found` guard the `Empty` extraction;
-  the eight `#/tables ~` states carry the search box whose placeholder the
-  global rule now colours); `"i/ci1 ~"` is **6 states** (the `pickq` and
-  new-list inputs' placeholders). Each fits one 600s call with room, going
-  by B5.2's 8-state run; do not merge them into one. **`node tests/parity.js
-  "tables"` and the unfiltered `node tests/run-all.js parity` are the
-  orchestrator's, not the implementer's.** Never run a vitest coverage pass
-  concurrently with a parity run, and check for a lingering `chrome.exe`
-  before trusting a vitest timeout.
-
-  Numbers: every `#/lists` cell is expected at zero. A cell that is not is a
-  diff image opened and a value measured before anything is written; the
-  six places to look first are listed at the end of "Parity states" in the
-  plan. No `VISUAL_DEBT` entry is expected to be written or deleted - none
-  names `#/lists` - and no Windows figure is ever written as though it were
-  CI's (owner decision 1). The three untouched filters must read exactly
-  what they read before this batch (`совпадает`, or the recorded modal
-  ring figures on `~ a row opened`).
-
-- **Risks / do-nots:** `plan.md`, "B5.3 planned", "Risks and do-nots", and
-  in particular: no whitespace between `<b>`, the badge and the thumbs or
-  empty paragraph inside `.listcard-main`, nor between the summary's three
-  children - the inventory names are "Клад дракона7" and "Лавка в
-  порту0Список пуст"; the badge counts known records, not `l.ids`; the
-  storage-off text is one expression `' ' + t.noStorage`, not `{' '}{...}`;
-  `e.preventDefault()` on the cross; `listCreated` only when `saved`;
-  `listEmpty` is a plain toast; `summary` goes into `click()` only; only
-  `~ created` is timed; grep the diff for `' <` at the start of an
-  `{#if}`/`{#each}` block; one commit, `feat(lists): the lists index`,
-  authored as `artex-x`, no push, no `Co-Authored-By`.
-
-- **Fallback (optional):** if the dialog auto-accept cannot be made to
-  answer a `confirm()` raised from inside `page.evaluate` (the evaluate
-  would hang), drop `deletedList` and the driver's `dialog()` and record in
-  "Blockers" that delete is covered by `listsPage.test.ts` alone; the
-  `summary` verb and the other two press specs do not depend on it. Not
-  expected: `page.on('dialog')` is puppeteer's documented answer to exactly
-  this.
-
-</details>
-
-<details>
-<summary>B5.2 part 1's retired brief (implemented; kept for the record, not for reuse)</summary>
-
-- **Name:** B5.2 part 1 - the selection bar.
-
-- **Objective:** ticking rows in a table raises the live app's bar at the
-  bottom of the window - "Выбрано N" with a cross that clears everything, and
-  three actions on the right: add the whole selection to a list (the same
-  control the card has, opening above the bar), print the selection, copy it
-  as one message. With it, the six `selBar` entries in `VISUAL_DEBT` and the
-  two `~ a row ticked` lines in `ACCEPTED` are deleted, and the multi-id
-  branches B5.1 built without a caller (`t.addTo`, `': N'` on the toast) get
-  one. Full design, every measured number, and the rejected alternatives:
-  `plan.md`, "B5.2 planned, part 1".
-
-- **Built as designed, one correction found while running the harness, not
-  before.** See "Completed" above and `plan.md`, "B5.2 built, part 1" for the
-  full accounting: `copiedSelection`'s own literal `'Выбрано'` (as the design
-  itself wrote it) failed identically on both apps in English, because a
-  press spec's commands run in whatever language `arrive()` already switched
-  to - unlike a state's `enter`, which always runs in Russian. Fixed with
-  `NAME[lang].selected`, the same pattern `listMembership` already used one
-  comment above it for a related reason.
-
-</details>
-
-<details>
-<summary>B5.2 part 0's retired brief (implemented; kept for the record, not for reuse)</summary>
-
-- **Name:** B5.2 part 0 - green CI, and the two unstable classes named.
-
-- **Objective:** CI goes green on the tree as it stands, and the two
-  measurement classes B5.1 ran into stop being judgement calls. The five
-  `VISUAL_DEBT` entries CI fails at an exact 0.00% on two consecutive runs
-  (`#/i/ci1 ~ whole @ ru 1100 / ru 768 / en 1100`, `#/i/ci1 ~ toast @ en 768 /
-  en 375`; `tests/parity/specs.js` 863-892) are **deleted** - owner decision
-  1, CI is the baseline, and there is no figure to lower to but zero. The
-  timed-toast class gets a mechanism: a state marked `timed: true` is arrived
-  at afresh at every width instead of swept, so every shot is the same few
-  hundred milliseconds after the press. The whole-page class gets one too:
-  `shot(whole)` captures until two consecutive full-page captures agree, and a
-  `geometry` spec records the page's rects at every width so "paint or
-  layout?" is a line in the report. `docs/parity.md` names both classes and
-  says what a person does on a local red. **No production code; nothing under
-  `app/`.**
-
-- **Built as designed, no deviation.** See "Completed" above and `plan.md`,
-  "B5.2 built, part 0" for the full accounting, exact measurements, and the
-  commands run.
-
-</details>
-
-<details>
-<summary>B5.1's retired brief (implemented; kept for the record, not for reuse)</summary>
-
-- **Name:** B5.1 - the list store, the toast, and the add-to-list row on the
-  card.
-
-- **Objective:** a person can put a record into a list from its card - the
-  page at `#/i/<id>` and the record modal - and take it out again, and the app
-  remembers it in `dhloot.lists.v2` the way the live app does (`loadLists`/
-  `saveLists`/`mergeLists`, app.js 1149-1204: v1 migrated once and left
-  untouched, saves merged by id, another tab's write taken over). The row under
-  every full card draws (`listPicker`, app.js 1893: the add-to-list button with
-  its menu, and the print link). The app has a toast (`showToast`, app.js
-  983-1006). With that, every `listRow` entry in `VISUAL_DEBT` and every
-  `addToList` and record-route `controls` line in `ACCEPTED` is **deleted**,
-  and `#/i/ci1 ~ toast` stops being `pending`. Full design: `plan.md`, "B5.1
-  planned"; the settled decisions: "B5 planned", "Decided in planning".
-
-- **Read first, in this order:** `plan.md` "B5 planned" (the split, the
-  harness addition, the decisions), then "B5.1 planned" (what the live app does,
-  read off app.js with line numbers; how it is built, file by file). The live
-  functions to read yourself before writing a line: `listMenuHTML` (1831),
-  `addToListBtn` (1879), `applyAddTo`/`addIdsTo`/`afterListChange` (1907-1948),
-  `placeMenu` (3695), the outside-click check at the top of the document click
-  handler (3865-3869), the `menu`/`newListFor`/`cancelNew`/`createFor` branches
-  (4198-4235), `showToast` (983), `loadLists`..`storageWorks` (1149-1204),
-  `createList` (1320), and the `storage`/`hashchange` listeners (4621-4633).
-  Styles: `.seldrop`..`.picker-new input:focus` (style.css 430-457), `.cardpick`
-  (439-443), `.dropmenu.long`/`.pickq`/`.pickchips`/`.picker-none` (978-986),
-  `.toast*` (602-613, 989-994, `toastIn` 614), `.btn.on`/`.btn.primary.on`
-  (792-794), `.btn.ghost` (250), `.caret` (945-947), the 600px `.dropmenu`
-  override (828).
-
-- **In scope:**
-  - `app/src/lib/dict.ts`: seventeen keys, both languages, copied character
-    for character - `addToList`, `addTo`, `inLists`, `newList`, `listNamePh`,
-    `create`, `cancel`, `findList`, `addedTo`, `removedFrom`, `nameFirst`,
-    `untitled`, `saveFailed`, `print`, `printHint`, `homeSet`, `homeReset`
-    (app.js 109-164 and 199-200; 295-348 and 380-381).
-  - `app/src/lib/icons.ts`: `plus` (`M11 5h2v14h-2zM5 11h14v2H5z`, 15) and
-    `print` (app.js 1044, 15).
-  - `app/src/state/lists.svelte.ts` (new): `ListStore` - `lists` state,
-    `load()` (v2, else v1 through `keepLists`+`liftNotes` written to v2, v1
-    untouched, parse failure `[]`), `save()` (merge with what storage holds
-    now via `mergeLists`, `say(t.saveFailed, true)` on a refused write, the
-    lists stay in memory), `get`, `create(name)` (`'l' + Date.now().toString(36)`
-    + four base-36 chars off `env.random`, trimmed name or `t.untitled`,
-    `unshift`, `created: Date.now()`, save), `addIds(list, ids, knows)`
-    returning the fresh ids, `removeId`, `watch()` (reload on the v2 key).
-    `lib/lists.ts`'s `keepLists`/`liftNotes`/`mergeLists` finally get a caller.
-  - `app/src/state/app.svelte.ts`: `readonly lists`, `menuFor` (cleared
-    wherever `navigations` bumps), `toast`/`say(msg, { error?, action? })`/
-    `hideToast()` with the 1600/2600/7000ms timers; `start()`/`stop()` wire
-    `watch()`.
-  - `app/src/components/Toast.svelte` (new): one element, `popover="manual"`,
-    `status`/polite or `alert`/assertive, `.toast[.err|.act]`, `.toast-act`,
-    `toastIn`, the popover UA-style resets. Rendered by `Shell.svelte` after
-    the footer.
-  - `app/src/components/AddToList.svelte` (new): props `app`, `key`, `ids`,
-    `primary?`; the `.seldrop` with the menu **before** the `Button`; the
-    five-part menu (`plan.md`, "The menu"); chips are `Chip` with
-    `label={(inList ? '✓ ' : '') + l.name}`; the tail is a `Chip` reading
-    `'+ ' + t.newList` or the inline form; outside-click and hash-change
-    closing; `placeMenu`'s flip and `scrollIntoView`; the 600px `.dropmenu`
-    override with the base rule.
-  - `app/src/components/Button.svelte`: `on`, `ghost`, `caret` (the `<i>` and
-    its two rules move here from `FilterBar.svelte`, which passes `caret`),
-    `sameTab` on the `href` form.
-  - `app/src/components/RecordCard.svelte`: `pick?: Snippet` after
-    `.card-acts` inside `.cardpick`; `.cardpick` and the two
-    `.cardpick :global(.dropmenu)` placement rules.
-  - `RecordPage.svelte`, `RecordModal.svelte`: the `pick` snippet (`AddToList`
-    primary, then `Button size="sm" href={printHash([it.id])} sameTab
-    title={t.printHint}` with the print icon and `t.print`); `say` ->
-    `app.say`; the `.said` paragraph and the `sr-only` region deleted.
-    `TablesPage.svelte`, `PageHead.svelte`: `say` -> `app.say`; `PageHead` says
-    `homeSet`/`homeReset` on a successful pin.
-  - `tests/parity/driver.js`: `seed(entries)` (an `evaluateOnNewDocument`
-    registered after `prepare()`'s, `try`-wrapped like it) and `storage(key)`.
-    `tests/parity.js`: `arrive()` calls `d.seed(state.storage)` before
-    `d.open()` when set; `keyFor` hashes `storage`.
-  - `tests/parity/specs.js`: the three seeds, four new `#/i/ci1` states
-    (`~ list menu`, `~ in a list`, `~ many lists`, `~ new list` - the table in
-    `plan.md`, "Parity states"), `~ toast` un-pended, the `listMembership`
-    press spec (it reopens the menu when the chip is not on screen - in
-    English the language click has folded it), and the deletions: every
-    `listRow(...)` entry,
-    the six `~ pinned` entries (once they measure zero - see Verification),
-    the six `addToList` and twelve record-route/modal `controls` lines in
-    `ACCEPTED`. The three modal states are re-baselined with a reason naming
-    only the close button's focus ring.
-  - Tests: `state/lists.test.ts` (new), `state/app.test.ts`,
-    `components/lists.test.ts` (new), `shell.test.ts`, `button.test.ts`, the
-    `said` assertions in `record.test.ts`/`tables.test.ts`/`roll.test.ts`/
-    `std.test.ts`, `test/a11y.test.ts` (a pressed state with two lists seeded;
-    `COVERED` gains `Toast.svelte` and `AddToList.svelte`). The case list is
-    `plan.md`, "What B5.1 leaves behind".
-
-- **Out of scope:** the selection bar and `sel` on `AppState` (B5.2);
-  `#/lists`, the storage warning, `Shell`'s `storageOff` paragraph and
-  `noData` (B5.3); the list page, batch actions, the shared page, import
-  (B5.4-B5.6); `deleteList` and writes to the `deleted` set; `meta` travelling
-  with an add; a separate `ListMenu.svelte`; `Panel.svelte`; a `typeRuns`
-  probe on the menu; any change to `docs/specs/*`, `docs/fixtures/`,
-  `CONTRACTS.md` or `llms.txt` - none is needed, and if one turns out to be,
-  stop and say so.
-
-- **Files expected:** `app/src/lib/dict.ts`, `app/src/lib/icons.ts`,
-  `app/src/state/lists.svelte.ts`, `app/src/state/lists.test.ts`,
-  `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
-  `app/src/components/Toast.svelte`, `app/src/components/AddToList.svelte`,
-  `app/src/components/Button.svelte`, `app/src/components/button.test.ts`,
-  `app/src/components/FilterBar.svelte`, `app/src/components/RecordCard.svelte`,
-  `app/src/components/RecordPage.svelte`, `app/src/components/RecordModal.svelte`,
-  `app/src/components/TablesPage.svelte`, `app/src/components/PageHead.svelte`,
-  `app/src/components/Shell.svelte`, `app/src/components/shell.test.ts`,
-  `app/src/components/lists.test.ts`, `app/src/components/record.test.ts`,
-  `app/src/components/tables.test.ts`, `app/src/components/roll.test.ts`,
-  `app/src/components/std.test.ts`, `app/src/test/a11y.test.ts`,
-  `tests/parity/driver.js`, `tests/parity.js`, `tests/parity/specs.js`,
-  `issues/47/plan.md`, `issues/47/handoff.md`.
-
-- **Steps:** `plan.md`, "B5.1 planned", "Ordered steps" 1-12 - dict and
-  icons, the store and `AppState`, `Button`, `Toast`, `AddToList`, the card
-  and the pages, the tests, the harness, then the checks in the order given
-  there.
-
-- **Acceptance criteria:** `plan.md`, "B5.1 planned", "Acceptance criteria" -
-  in one line each: the row on every full card and in every modal; the menu
-  opens before the button, newest list first, and closes on a second press,
-  an outside click or a hash change; a chip adds (merged) and ticks and
-  toasts, a lit chip removes and toasts, a refusing storage keeps the session
-  and toasts `saveFailed`; the search box from the eighth list; the new-list
-  form with its blank-name refusal; v1 read once and left alone; another tab's
-  write taken over; the toast in the top layer with the three durations;
-  `~ pinned` toasts; **every new `#/i/ci1` cell and every record-route cell at
-  0.00%**, the `listRow` entries deleted, the three modal states at new,
-  smaller, explained numbers; `listMembership` matching; no stale `ACCEPTED`
-  line; `npm run check` and `npm run check:built` exit 0.
-
-- **Verification commands:**
-
-  ```text
-  npm run check 2>&1 | tail -n 120
-  npm run build
-  node tests/parity.js "i/ci1"
-  node tests/parity.js "i/q1" "i/f1" "wondrous ~ modal" "a row opened" "pinned"
-  npm run check:built
-  ```
-
-  Wall clock, so each fits its call: `npm run check` is ~165s measured
-  (`context.md`, "npm run check, settled") - run it exactly as written, one
-  foreground call, unchained, unredirected, piped to `tail`; if it reports
-  zeros down the coverage table with `Errors` equal to the file count, no test
-  ran - re-run it, do not background it. `npm run check:built` is a build, a
-  `file://` smoke and a bundle budget, a couple of minutes. The two parity
-  filters are **7 states** (`#/i/ci1`, `~ whole`, `~ toast`, and the four new
-  ones) and **6 states** (`#/i/q1`, `#/i/q1 ~ another tier`, `#/i/f1`,
-  `#/roll/wondrous ~ modal`, `#/tables ~ a row opened`, `#/roll/wondrous ~
-  pinned`) - each about a third of B4's 26-state "tables" run, so each fits
-  one foreground call with room; do not merge them into one call, the
-  whole-page and modal states are the heavy ones. `node tests/parity.js
-  "tables"` and the unfiltered `node tests/run-all.js parity` are the
-  orchestrator's. Never run a vitest coverage pass concurrently with a parity
-  run, and check for a lingering `chrome.exe` before trusting a vitest timeout.
-
-  Numbers: a new `#/i/ci1` cell or a record-route cell that is not 0.00% is
-  a diff image opened and a value measured before anything is written (the
-  two places to look first are named in `plan.md`, "Parity states"). The
-  three modal states' new figures come from `tools/parity-ubuntu/` (docker;
-  the README has the command - redirect its output) when it is available,
-  and otherwise go in as the Windows figure with a reason that says "Windows,
-  advisory, CI to confirm" and a line in Blockers listing the eighteen cells.
-  The six `~ pinned` cells are timed: on this host they may match or may
-  catch one side's toast expiring; delete the entries only if all six read
-  0.00% here, otherwise leave them as they are with a note in the handoff
-  that CI decides - never write a Windows number over them.
-
-- **Risks / do-nots:** `plan.md`, "B5.1 planned", "Risks and do-nots", and in
-  particular: the menu is drawn before the button; `+ Новый список` is a
-  plain chip, not dashed; the English cells of a menu state show the menu
-  closed because the language click is an outside click - do not "fix" that;
-  the toast's timers live in `AppState`, not the component; the popover is
-  hidden through `hidePopover()` in an effect, not `{#if}`; no `Date.now()`
-  reaches a screen a parity state photographs; no Windows number is written
-  as though it were CI's; grep the diff for `' <` at the start of an
-  `{#if}`/`{#each}` block (the `✓ `/`+ ` prefixes are string expressions,
-  which is why they are written that way); one commit, `feat(lists): ...`,
-  authored as `artex-x`, no push.
-
-- **Fallback (optional):** if the top-layer toast cannot be made to measure
-  identical on `#/i/ci1 ~ toast @ ru 1100` after its computed `inset`,
-  `margin`, `padding`, `border` and `width` have been compared against the
-  live `.toast`, drop `popover` and render it as a plain `{#if}` fixed
-  element; then a toast raised from inside the record modal sits under the
-  dialog's backdrop and is not announced - write that into "Blockers" for
-  B5.2 with the second answer already considered in `plan.md` (a `Toast`
-  rendered inside the dialog). Not needed: `popover` measured pixel-identical
-  on every state this batch built.
-
-</details>
+- **NEEDS_HUMAN_CONFIRMATION: no.**
 
 ## Blockers
 
+- **RESOLVED in planning (planner, 2026-09-10): `#/tables ~ selection copied
+  @ en 1100` is a stale legacy-cache hit, not a defect and not a debt.** The
+  diff image (opened first) is red only over the toast: the legacy shot has
+  none, the rewrite's has it. The legacy PNG is byte-identical to
+  `test-output/.parity-cache/a6515261…/1100.png`, written 21:50:41 during
+  the full suite under its load - after the 1600ms toast had gone - and the
+  22:05 "isolated" run wrote all three English legacy files within 35ms of
+  each other, i.e. copied them from the cache rather than shooting them, so
+  the two measurements share one capture. `tests/parity.js` turns the cache
+  off for `measured` states and not for `timed` ones (414, 459-460,
+  476-477). Fix: B5.4a step 0 (`&& !timed` on the three guards, a doc
+  sentence), its own commit; then `node tests/parity.js "selection copied"`
+  is expected at six `совпадает`, and a residue on `@ en 1100` alone would be
+  the documented timed class for CI to read. Full evidence and the rejected
+  alternatives: `plan.md`, "B5.4 planned", "Decided in planning", first
+  bullet. The measurement record below stands as taken.
 - **The full unfiltered suite on `e82cd24`: five failing cells, 1848.8s, 8
   workers** (orchestrator, 2026-09-10, `node tests/run-all.js parity`, run in
   the foreground and read from its own output, not from an exit status).
@@ -2542,7 +2162,12 @@ and planning the next one is the orchestrator's, not implement-ready yet.
 - **`StorageNotice.svelte`** is B5.4's to extract on the notice's second
   use (the list page draws the same `storageWarning()`); B5.3 writes it
   inline in `ListsPage.svelte` and puts only the `warnHidden` flag on
-  `AppState`.
+  `AppState`. **Planned into B5.4a** (with three more second-use
+  extractions the list page forces: `RowMain`, `HelpButton`, `HelpBox`).
+- **B5.4b - drag as the live app does it** (marks, drag image, edge
+  autoscroll, a synthetic-drag driver verb and a `reorderedByDrag` spec):
+  outlined in `plan.md`, "B5.4b outlined"; 4a binds the existing index-based
+  `nativeDrag` port so nothing on screen is inert meanwhile.
 
 - **B5.2 part 1's review: approved, no blockers** (reviewer, opus, against
   `ff741ad`, 2026-09-10). The sweep the batch was reviewed for came back

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { encodeList } from './listLink.js';
 import {
+  findListByPayload,
   itemMeta,
   keepLists,
   liftNotes,
@@ -135,5 +137,48 @@ describe('entry meta', () => {
   it('is empty rather than missing on a list saved before it existed', () => {
     expect(itemMeta(list('a'), 'ci1')).toEqual({});
     expect(itemMeta({ ...list('a'), meta: { ci1: { qty: 3 } } }, 'ci1').qty).toBe(3);
+  });
+});
+
+describe('findListByPayload', () => {
+  const knows = (id: string): boolean => ['ci1', 'ci2'].includes(id);
+
+  const stored: StoredList = {
+    id: 'a',
+    name: 'Тайник',
+    ids: ['ci1', 'ci2'],
+    hnote: 'Только для мастера'
+  };
+
+  it('recognises its own players’ payload even though it carries no GM note', () => {
+    const payload = encodeList(stored, true);
+    expect(findListByPayload([stored], payload, knows)).toBe(stored);
+  });
+
+  it('recognises its own GM payload', () => {
+    const payload = encodeList(stored, false);
+    expect(findListByPayload([stored], payload, knows)).toBe(stored);
+  });
+
+  it('does not match a renamed list', () => {
+    const payload = encodeList(stored, true);
+    const renamed: StoredList = { ...stored, name: 'Другое имя' };
+    expect(findListByPayload([renamed], payload, knows)).toBeNull();
+  });
+
+  it('does not match a reordered list', () => {
+    const payload = encodeList(stored, true);
+    const reordered: StoredList = { ...stored, ids: ['ci2', 'ci1'] };
+    expect(findListByPayload([reordered], payload, knows)).toBeNull();
+  });
+
+  it('does not match when the payload carries a price the store does not have', () => {
+    const priced: StoredList = { ...stored, meta: { ci1: { gold: 100 } } };
+    const payload = encodeList(priced, true);
+    expect(findListByPayload([stored], payload, knows)).toBeNull();
+  });
+
+  it('is null for a payload that will not decode', () => {
+    expect(findListByPayload([stored], 'not-a-real-payload', knows)).toBeNull();
   });
 });

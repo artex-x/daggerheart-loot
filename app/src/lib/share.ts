@@ -14,10 +14,12 @@
  * Pure: it takes the index as data and returns strings. Nothing here touches a
  * clipboard; that is `ClipboardPort`'s job. */
 
-import { dict } from './dict.js';
+import { dict, type Dict } from './dict.js';
 import type { Index } from './data.js';
 import { descHtml, esc } from './desc.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
+import type { ListEntryMeta, ListShape } from './listLink.js';
+import { moneyMode, priceText } from './money.js';
 import type { Lang, Record_ } from './types.js';
 
 /** An attached paragraph: a heading and a body, both of them plain text. */
@@ -96,14 +98,22 @@ function statLine(it: Record_, lang: Lang): string {
  * `extra` is appended after the derived blocks. It exists for the note a list
  * entry carries: the note belongs to the list, and this module does not know
  * what a list is.
+ *
+ * `suffix` is appended to the name itself, inside the bold run - the live
+ * `itemLine` (app.js 1313-1318) is one bold run of name plus quantity plus
+ * price, not a name followed by separate runs.
  */
 export function share(
   it: Record_,
   index: Index,
   lang: Lang,
-  opts: { skip?: ReadonlySet<string>; extra?: readonly ShareBlock[] } = {}
+  opts: {
+    skip?: ReadonlySet<string>;
+    extra?: readonly ShareBlock[] | undefined;
+    suffix?: string;
+  } = {}
 ): { text: string; html: string } {
-  const name = shareName(it, lang);
+  const name = shareName(it, lang) + (opts.suffix ?? '');
   const stats = statLine(it, lang);
   const desc = descOf(it, lang) || '';
   const blocks = [...shareBlocks(it, index, lang, opts.skip), ...(opts.extra ?? [])];
@@ -168,5 +178,56 @@ export function shareSelection(
   return {
     text: parts.map((p) => p.text).join('\n\n'),
     html: parts.map((p) => p.html).join('<br><br>')
+  };
+}
+
+/**
+ * The one block `contextNote` attaches (app.js 568-573): while a list is
+ * open, copying one of its entries appends the players' note it carries
+ * there. The GM's own note never travels - it stays with the list. Lives
+ * here, not on the list page, so the roll card and the record modal can pass
+ * the same thing the list page's own rows do.
+ */
+export function entryNoteBlock(meta: ListEntryMeta, t: Dict): ShareBlock[] {
+  return meta.note ? [{ head: t.noteHead, body: meta.note }] : [];
+}
+
+/**
+ * A whole list as one message - the live `listAsText`/`listAsHtml` (app.js
+ * 1609-1647). The list's own note (the players' one; the GM's stays home)
+ * sits right under the name as a preamble, then every known entry, each
+ * carrying its quantity and price in the same bold run as its name
+ * (`itemLine`), its derived blocks, and its own note last.
+ */
+export function shareList(
+  list: ListShape,
+  index: Index,
+  lang: Lang,
+  t: Dict
+): { text: string; html: string } {
+  const skip = new Set(list.ids);
+  const mode = moneyMode(list);
+
+  const noteText = list.note ? `\n\n${t.noteHead}\n${list.note}` : '';
+  const noteHtml = list.note
+    ? '<br><br><i>' + esc(t.noteHead) + '</i><br>' + esc(list.note).replace(/\n/g, '<br>')
+    : '';
+
+  const parts = list.ids
+    .map((id): Record_ | undefined => index.byId.get(id))
+    .filter((it): it is Record_ => it != null)
+    .map((it) => {
+      const meta: ListEntryMeta = list.meta?.[it.id] ?? {};
+      const suffix =
+        (meta.qty && meta.qty > 1 ? ` ×${String(meta.qty)}` : '') +
+        (meta.gold ? ` — ${priceText(meta.gold, mode, lang)}` : '');
+      return share(it, index, lang, { skip, suffix, extra: entryNoteBlock(meta, t) });
+    });
+
+  return {
+    text: [list.name + noteText, ...parts.map((p) => p.text)].join('\n\n'),
+    html: ['<b>' + esc(list.name) + '</b>' + noteHtml, ...parts.map((p) => p.html)].join(
+      '<br><br>'
+    )
   };
 }

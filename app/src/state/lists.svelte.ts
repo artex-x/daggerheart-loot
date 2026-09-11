@@ -12,10 +12,13 @@ import {
   keepLists,
   liftNotes,
   mergeLists,
+  moveEntry,
   type LegacyList,
   type StoredList
 } from '../lib/lists.js';
 import type { Dict } from '../lib/dict.js';
+import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
+import { MONEY_DEFAULT } from '../lib/money.js';
 import type { Env } from '../ports/index.js';
 
 const LISTS_KEY = 'dhloot.lists.v2';
@@ -166,5 +169,108 @@ export class ListStore {
     return this.#env.storage.onExternalChange((key) => {
       if (key === LISTS_KEY) this.lists = this.load();
     });
+  }
+
+  /* ---------- the list page's own writers ---------- */
+
+  /** The live `rename` handler (app.js 4431-4434) - whatever was typed, no
+   *  trim: a list is allowed a name that is all spaces, the same as the live
+   *  app allows. */
+  rename(id: string, name: string): void {
+    this.lists = this.lists.map((l) => (l.id === id ? { ...l, name } : l));
+    this.save();
+  }
+
+  /** The live `setMeta` (app.js 1211-1219): truthy sets, falsy deletes, and an
+   *  entry (or the whole `meta` object) emptied by that is pruned rather than
+   *  left behind as `{}`. */
+  setMeta(
+    id: string,
+    entryId: string,
+    field: 'qty' | 'gold' | 'note' | 'hnote',
+    value: string | number
+  ): void {
+    this.lists = this.lists.map((l) => {
+      if (l.id !== id) return l;
+      const meta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
+      const m: ListEntryMeta = { ...meta[entryId] };
+      if (value) m[field] = value as never;
+      else Reflect.deleteProperty(m, field);
+      if (Object.keys(m).length) meta[entryId] = m;
+      else Reflect.deleteProperty(meta, entryId);
+      const next: StoredList = { ...l };
+      if (Object.keys(meta).length) next.meta = meta;
+      else Reflect.deleteProperty(next, 'meta');
+      return next;
+    });
+    this.save();
+  }
+
+  /** The live list-note writer (app.js 4421-4430): trimmed, and a blank value
+   *  deletes the key rather than storing an empty string. */
+  setNote(id: string, kind: 'note' | 'hnote', text: string): void {
+    const v = text.trim();
+    this.lists = this.lists.map((l) => {
+      if (l.id !== id) return l;
+      const next: StoredList = { ...l };
+      if (v) next[kind] = v;
+      else Reflect.deleteProperty(next, kind);
+      return next;
+    });
+    this.save();
+  }
+
+  /** The live money-mode writer (app.js 4086-4094): the default mode is not
+   *  stored at all. */
+  setMoney(id: string, mode: MoneyMode): void {
+    this.lists = this.lists.map((l) => {
+      if (l.id !== id) return l;
+      const next: StoredList = { ...l };
+      if (mode === MONEY_DEFAULT) delete next.money;
+      else next.money = mode;
+      return next;
+    });
+    this.save();
+  }
+
+  /** Through `moveEntry`; returns whether anything actually moved, and saves
+   *  only then - the live `moveToInList` (app.js 1223-1231). */
+  move(id: string, entryId: string, to: number): boolean {
+    const l = this.get(id);
+    if (!l) return false;
+    const from = l.ids.indexOf(entryId);
+    if (from < 0) return false;
+    const clamped = Math.max(0, Math.min(to, l.ids.length - 1));
+    if (from === clamped) return false;
+    const ids = moveEntry(l.ids, from, to);
+    this.lists = this.lists.map((x) => (x.id === id ? { ...x, ids } : x));
+    this.save();
+    return true;
+  }
+
+  /** The undo of a removed row (app.js 3944-3969's `toastAction`): splice the
+   *  entry back in at `min(at, length)`, and put its meta back only when it
+   *  is non-empty. A second undo (the entry already back) is a no-op, as the
+   *  live handler's own guard makes it. */
+  restoreEntry(id: string, entryId: string, at: number, meta: ListEntryMeta): void {
+    this.lists = this.lists.map((l) => {
+      if (l.id !== id || l.ids.includes(entryId)) return l;
+      const ids = [...l.ids];
+      ids.splice(Math.min(at, ids.length), 0, entryId);
+      const next: StoredList = { ...l, ids };
+      if (Object.keys(meta).length) next.meta = { ...(l.meta ?? {}), [entryId]: meta };
+      return next;
+    });
+    this.save();
+  }
+
+  /** The row's own remove cross: the existing `removeId` plus the save the
+   *  live `toggleInList` performs inline. `remove(id)` already means deleting
+   *  a whole list and keeps that meaning. */
+  removeEntry(id: string, entryId: string): void {
+    const l = this.get(id);
+    if (!l) return;
+    this.removeId(l, entryId);
+    this.save();
   }
 }
