@@ -76,6 +76,31 @@ the account is allowed to talk to it.
    (international form, `+7...`), then the code Telegram shows in the app,
    then the 2FA password if set (it echoes; use a private terminal). It
    prints **one** line, `TG_SESSION=...`. Append that line to `.env`.
+
+   **Troubleshooting: no code arrives.** `login.mjs` now prints, before it
+   asks for the code, whether Telegram delivered it in-app (the throwaway
+   account's own `Telegram` service chat, from `777000`) or by SMS (the
+   phone's messages, and also its call log - Telegram sometimes places a
+   missed call whose calling number's last digits are the code) - read that
+   line and check the place it names. If nothing arrives either way, that is
+   very likely Telegram withholding codes from a third-party `api_id`, worst
+   on a **new account with a new `api_id`** - exactly this setup. It has been
+   observed directly: `auth.sendCode` succeeded, Telegram reported in-app
+   delivery, nothing appeared, and the same account received its code
+   immediately in an official client. `login.mjs --sms` (`forceSMS: true`) is
+   a **last resort, not a first move** - on the number this was tried on it
+   returned `SEND_CODE_UNAVAILABLE` ("all available options for this type of
+   number were already used"); reaching `auth.ResendCode` at all is itself
+   proof the first send used a non-SMS channel, so forcing SMS on top of that
+   is what exhausts the number's remaining options. If no code arrives: **age
+   the account** - use it normally from the official Telegram app for several
+   days - **then retry once**, not in a loop; the code-send throttle
+   escalates per attempt, and a spent number's resend options do not come
+   back. Ageing is not guaranteed to fix it. If it does not, the fallbacks
+   are: a manual-paste mode (not built - would need its own batch); the
+   owner's own long-standing Telegram account, session for **local runs
+   only**, never a repository secret; or a second throwaway account on a
+   different SIM.
 4. That string *is* the account. Do not paste it into chat, an issue, a
    commit, or a file outside `.env`. If it ever leaks: Telegram -> Settings
    -> Devices -> terminate that session, and redo step D.3.

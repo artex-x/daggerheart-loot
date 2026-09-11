@@ -4,22 +4,32 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 `issues/tg-preview-refresh/context.md`, then `plan.md`, then this file.
 
 ## Status
-- Task status: **B1 implemented and committed; R1 review remediation
-  implemented and committed.** Both owner questions were answered before
-  dispatch (see `context.md`); the design in `plan.md` was followed as
-  written, with a handful of small gaps filled in during B1 implementation -
-  see "Deviations" below. A reviewer then approved the design, the pure
-  logic, all six of B1's deviations, and the docs, and raised seven risks and
-  five nits against `.github/workflows/previews.yml`; four were blockers and
-  are fixed in R1 (this session), the rest are Deferred below for B2.
-- Last agent: implementer (2026-09-11), batch R1 (review remediation,
-  blockers only).
+- Task status: **All code work is complete. B1, R1 and R2 are implemented,
+  committed and gated. The task is parked waiting on O1, which no agent can
+  perform** - it needs a phone, a Telegram login, and repository settings,
+  and per `context.md` ("Telegram will not issue a login code yet") the
+  owner's throwaway account cannot retry before **2026-09-16** at the
+  earliest, and ageing is not guaranteed to fix it. Nothing else in this task
+  is blocked on anything an agent can do; the next session on this task
+  should re-read `context.md` for whether O1 produced evidence before
+  assuming there is a code batch to run.
+- Both owner questions were answered before dispatch (see `context.md`); the
+  design in `plan.md` was followed as written, with a handful of small gaps
+  filled in during B1 implementation - see "Deviations" below. A reviewer
+  then approved the design, the pure logic, all six of B1's deviations, and
+  the docs, and raised seven risks and five nits against
+  `.github/workflows/previews.yml`; four were blockers and were fixed in R1,
+  the rest are Deferred below for B2. R2 is a small, evidence-driven
+  follow-up (not part of the reviewer's findings) - see "R2" below.
+- Last agent: implementer (2026-09-11), batch R2 (login.mjs diagnostics for
+  O1's retry, driven by the owner's first O1 attempt).
 - NEEDS_HUMAN_CONFIRMATION: no.
 - Branch: `automation/tg-preview-refresh`, in the dedicated worktree
-  `E:/dev/daggerheart-loot-wt/tg-preview-refresh`, HEAD now the R1 commit on
-  top of `cce10cb`. **Not merged, not pushed** - pushing and merging are the
-  owner's call (`CLAUDE.md`), and merging should wait for issue 47's B7 to
-  land in the main checkout, per the original dispatch note in `context.md`.
+  `E:/dev/daggerheart-loot-wt/tg-preview-refresh`, HEAD now the R2 commit on
+  top of the R1 commit on top of `cce10cb`. **Not merged, not pushed** -
+  pushing and merging are the owner's call (`CLAUDE.md`), and merging should
+  wait for issue 47's B7 to land in the main checkout, per the original
+  dispatch note in `context.md`.
 - The worktree's `node_modules` (root) and `tools/tg-preview/node_modules`
   (nested) both exist from this session's `npm ci` / `npm install`; both are
   gitignored and neither was committed.
@@ -212,6 +222,82 @@ Fixed, all in `.github/workflows/previews.yml` unless noted:
   nothing under `tools/tg-preview/**`, `docs/tg-preview.md`, `ci.yml`, or any
   spec touched, per the batch's explicit boundary.
 
+## R2 - login.mjs diagnostics, driven by the owner's first O1 attempt
+
+Small, contained follow-up. Not one of the R1 review's deferred items; driven
+by real evidence from the owner's first attempt at O1 step D.3, recorded in
+`context.md`'s "Telegram will not issue a login code yet" section. Touched
+exactly three files, none of the files the dispatch named off-limits
+(`tools/tg-preview/lib.mjs`, `run.mjs`, `manifest.mjs`, `live.mjs`,
+`client.mjs`, `previews.yml`, `ci.yml`, no spec).
+
+1. **`tools/tg-preview/login.mjs` reports the delivery channel.** The
+   `phoneCode` callback teleproto calls already receives `isCodeViaApp`
+   (confirmed by reading `teleproto`'s `client/auth.d.ts`/`auth.js` in
+   `node_modules` - `phoneCode: (isCodeViaApp?: boolean) => Promise<string>`,
+   sourced from `sendCodeResult.isCodeViaApp`); the callback previously
+   ignored it. Now it prints, before asking for the code: in-app -> the
+   throwaway account's `Telegram` service chat (from `777000`), no SMS will
+   arrive while that session exists; otherwise -> the phone's texts and its
+   call log (a missed call's last digits can be the code). Still prints only
+   `TG_SESSION=<...>` as its stdout result line and writes no file.
+2. **`tools/tg-preview/login.mjs` gained `--sms`** (`process.argv.includes('--sms')`),
+   passed as `forceSMS` in the `client.start()` options object (confirmed
+   against `UserAuthParams.forceSMS?: boolean` in `auth.d.ts`). Documented in
+   the file's header comment: on the owner's number this returned
+   `SEND_CODE_UNAVAILABLE`, so it is a last resort; reaching
+   `auth.ResendCode` at all proves the first send used a non-SMS channel.
+   Default stays off (flag absent -> `forceSMS: false`).
+3. **`docs/tg-preview.md` gained a troubleshooting block inside step D.3**
+   (not a new top-level step, to keep it next to the command it explains):
+   what the owner saw, what it means, what to do - age the account and retry
+   once, not in a loop, and the three fallbacks from `context.md` if ageing
+   fails (manual-paste mode - not built; the owner's own long-standing
+   account for local runs only; a different SIM). States plainly that ageing
+   is not guaranteed to work, per `context.md`.
+
+Also staged `issues/tg-preview-refresh/context.md` - the orchestrator's own
+write of the "Telegram will not issue a login code yet" section, left
+unstaged by the previous session, which is the entire reason for this batch
+and belongs in the same commit.
+
+Coverage: checked before touching the file. `login.mjs` is interactive and
+network-bound (asks for phone/code/password over a live MTProto connection);
+it was already outside every coverage mechanism and stays that way - vitest's
+`coverage-v8` is scoped to `app/src/**` only (`root: 'app'` in
+`vite.config.mts`), and `tools/tg-preview/lib.test.mjs` (the `node --test`
+step) does not import `login.mjs` and carries no coverage threshold of its
+own (`docs/specs/COVERAGE.md`: "`client.mjs`... and `live.mjs`... deliberately
+outside it"; `login.mjs` was already implicitly in that same category and
+this batch changed nothing about that). No test was added or needed for the
+new code; none was invented to satisfy a threshold that does not apply.
+
+### R2 verification
+- `node --check tools/tg-preview/login.mjs` - syntax OK.
+- `npx eslint tools/tg-preview/login.mjs` - 0 errors (1 "file ignored"
+  warning: `tools/**` is excluded from ESLint's config, same as every other
+  file under `tools/`, unrelated to this change).
+- `npx prettier --check docs/tg-preview.md issues/tg-preview-refresh/context.md`
+  - clean (`tools/` stays outside Prettier's scope per `.prettierignore`,
+    same as B1/R1).
+- `git diff --stat` before staging: exactly `docs/tg-preview.md` (+25),
+  `issues/tg-preview-refresh/context.md` (+52), `tools/tg-preview/login.mjs`
+  (+30/-1) - nothing else in the tree touched.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout 600000,
+  single foreground call) - clean: `node --test tools/tg-preview/lib.test.mjs`
+  46/46 passed (unaffected by this change, confirming `login.mjs` stayed
+  outside it), then `npm run test` (vitest): **39/39 test files, 947/947
+  tests**, coverage summary printed with no threshold failures (96.27%
+  statements / 88.53% branches / 96.67% funcs / 97.01% lines - `src/**`
+  only, `tools/tg-preview/**` not in scope). No `searchPage.test.ts` flake
+  this run. This is the run the commit is staged against.
+- Manual read-through only for the interactive path itself (asking for a
+  phone/code/live Telegram round trip is exactly what O1 needs and no agent
+  has the credentials or phone to drive) - confirmed by inspection that
+  `phoneCode`'s two branches are mutually exclusive on `isCodeViaApp`'s
+  truthiness and that `forceSMS` defaults to `false` when `--sms` is absent
+  from `process.argv`.
+
 ## Next batch
 - Name: **O1 - the owner's operations** (`plan.md` section 9, `docs/tg-preview.md`
   "Setup, start to finish"), not a code batch. No agent can perform any of
@@ -220,7 +306,10 @@ Fixed, all in `.github/workflows/previews.yml` unless noted:
   the bot by hand, `npm ci` + `login.mjs` + dry runs locally, the first real
   message (and the regression check that already-posted messages update -
   `docs/tg-preview.md` step F.4), the full reindex, the three repository
-  secrets, the first CI dispatch.
+  secrets, the first CI dispatch. The owner's first attempt reached step D.3
+  and could not get a login code (see `context.md`); R2 above gives the retry
+  better diagnostics, but the retry itself still needs the account aged past
+  **2026-09-16** and is still the owner's to run.
 - After O1 produces evidence: **B2 - tuning from the first real run**
   (`plan.md` section 10, outline only) - whether ten links per message are
   honoured, the bot's real flood behaviour, its reply vocabulary - **plus**
@@ -234,11 +323,16 @@ Fixed, all in `.github/workflows/previews.yml` unless noted:
   the merge, not about a real conflict.
 
 ## Blockers
-- None for B1 or R1.
-- The branch is not merged and not pushed - `main` gains nothing from either
+- None for B1, R1 or R2.
+- The branch is not merged and not pushed - `main` gains nothing from any
   batch until the owner merges it (see "Next batch").
-- O1 cannot start until the owner has a phone number free for the throwaway
-  account (`docs/tg-preview.md`, step A.1) - no timeline is recorded.
+- **O1 cannot start before 2026-09-16** (`context.md`, "Telegram will not
+  issue a login code yet") - the owner's throwaway account and `api_id` were
+  denied a login code on the first attempt, diagnosed as Telegram withholding
+  codes from third-party `api_id`s on a new account; the owner's decision was
+  to age the account and retry no earlier than that date, and not in a loop.
+  Ageing is not guaranteed to fix it (`context.md` is explicit about the
+  uncertainty). No agent can perform or accelerate this.
 
 ## Deferred
 - B2 - tuning from the first real run; may be empty.
@@ -304,3 +398,16 @@ Fixed, all in `.github/workflows/previews.yml` unless noted:
 - Cleanup performed / retained artifacts: none - no scratch files left in
   the tree.
 - Session end partial progress: none - R1 is complete and committed.
+
+### R2 notes
+- Mocks path: none. Screenshot findings: none.
+- No `local.env` or any other stray file present at this session's start;
+  `git status` was clean apart from the pre-staged `context.md` edit named in
+  the dispatch.
+- Verified via `node_modules` introspection (not assumed from memory) that
+  `teleproto`'s `phoneCode` callback signature and `UserAuthParams.forceSMS`
+  match what the dispatch described - `tools/tg-preview/node_modules/teleproto/client/auth.d.ts`
+  and `auth.js`.
+- Cleanup performed / retained artifacts: none - no scratch files left in
+  the tree.
+- Session end partial progress: none - R2 is complete and committed.

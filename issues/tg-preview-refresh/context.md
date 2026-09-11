@@ -95,6 +95,58 @@ automation route is MTProto acting as a **user**:
 Sources: `https://opengraphplus.com/consumers/telegram/caching`,
 `https://github.com/my-telegram-bots/WebpageBot-api`.
 
+## Telegram will not issue a login code yet (measured 2026-09-11, O1 step D.3)
+
+The owner's first attempt at `login.mjs` failed, and the cause is **Telegram's
+own policy, not this tool**. Do not "fix" `login.mjs` for it; the sequence
+below is correct MTProto and was verified against an official client.
+
+What was observed, in order:
+
+1. `auth.sendCode` **succeeded** - the client migrated to DC 4 and Telegram
+   returned a sent-code type. No error.
+2. No code arrived: not by SMS, not in the throwaway account's `Telegram`
+   service chat (`777000`), not as a missed call.
+3. Forcing SMS (`forceSMS: true`, which issues `auth.ResendCode`) returned
+   **`SEND_CODE_UNAVAILABLE`** - "all available options for this type of
+   number were already used". That the client reached `ResendCode` at all
+   proves the first send used a **non-SMS** channel.
+4. A diagnostic that surfaces `isCodeViaApp` (which `login.mjs` discards)
+   reported **`delivered IN-APP`** - and still nothing appeared in the
+   service chat.
+5. **Logging the same account in from another device, using an official
+   Telegram client, delivered its code in-app immediately.**
+
+Step 5 is the decisive one: the in-app channel works for that account; it
+fails only for a third-party `api_id`. This is Telegram's restriction on
+third-party API credentials, and it bites hardest on a **new account** using
+a **new `api_id`** - which is exactly the combination the owner's security
+decision 3 produced. Security and loginability pull in opposite directions
+here; that is a property of Telegram, not a mistake in the plan.
+
+**Owner decision, 2026-09-11: age the account and retry.** Use the throwaway
+normally from the official Telegram app for several days, then re-run
+`login.mjs`. **Do not retry before 2026-09-16**, and do not retry in a loop -
+Telegram's code-send throttle escalates per attempt and the resend options
+for this number are already exhausted.
+
+Rejected for now, and why they remain available if ageing fails:
+
+- **A manual-paste mode** (tool prints batched message texts, owner pastes
+  into `@WebpageBot` from the official app). Needs no session at all and
+  keeps every part of the design that matters - URL derivation,
+  fingerprinting, delta, 10-per-message batching. ~107 pastes for the first
+  reindex, one or two per run afterwards. This is the strongest fallback.
+- **The owner's personal, long-standing account.** Far likelier to be issued
+  a code. Its session is full access to their real Telegram, so it would be
+  for **local runs only** and the CI secrets would stay unset.
+- **A second throwaway on a different SIM.** Re-rolls the same dice.
+
+Consequence for the task: B1 (and R1) are code-complete and gated, but **O1
+cannot start**, so there is no `state.json`, no first reindex, and no reason
+to create the three repository secrets yet. Nothing downstream is blocked by
+anything an agent can do.
+
 ## Scale, measured 2026-09-11 at `8b96ff4`
 
 | Thing | Count |
