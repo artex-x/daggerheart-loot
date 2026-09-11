@@ -4,6 +4,58 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 `issues/tg-preview-refresh/context.md` (in full), then `plan.md` (its
 "Revision history" block first), then this file.
 
+## Start here - a session that has none of this in context
+
+**This work is not in the main checkout.** It lives in a worktree the owner
+authorised on 2026-09-11:
+
+| | |
+|---|---|
+| Worktree | `E:/dev/daggerheart-loot-wt/tg-preview-refresh` |
+| Branch | `automation/tg-preview-refresh` |
+| Base | `8b96ff4`, the main checkout's local HEAD at the time |
+| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` |
+
+The task-directory copies **in that worktree** are authoritative. The copy
+under `E:/dev/daggerheart-loot` is a snapshot taken before the worktree
+existed and is stale by several batches - do not read it as current.
+
+Establish state before acting; do not assume this file is the newest thing
+that happened:
+
+```
+git log --oneline -5
+git status --porcelain
+```
+
+Five facts a fresh session will not infer, in descending order of how much
+damage getting them wrong does:
+
+1. **`.env` in this worktree holds a live Telegram user session** for a
+   days-old account that Telegram flood-limited once on 2026-09-11. **No
+   agent runs `run.mjs` without `--dry-run`, ever** - every send and press
+   spends a budget the owner needs for a 1062-URL reindex. Do not read,
+   print or copy `.env`; `bash-guard` denies it and that is correct.
+2. **`tools/tg-preview/state.json` is untracked and holds `cc19` only.** That
+   entry is honest because the owner pressed its button by hand before B3
+   existed. Keep it. Do not commit it until after the full reindex (runbook
+   step G.2), do not delete it, do not edit it.
+3. **`origin/main` moved during the session that did this work** - from
+   `37ecc8d` to `9fd3000 docs(issue-47): the print image residue, measured a
+   third time`, pushed by a peer session on the same machine. Nothing here
+   is affected (this branch never pushes), but **merge onto the current
+   `origin/main`**, not onto the base this branch was cut from. Re-read
+   `git log --oneline -3 origin/main` rather than trusting that sha too.
+4. **Nobody pushes.** Pushing and merging are the owner's, per `CLAUDE.md`.
+   Merging should still wait for issue 47's B7 to land in the main checkout.
+5. **Parity is confirmed not required** for this task, and a
+   `app/src/components/searchPage.test.ts` timeout in `npm run check` is a
+   known load flake on this host - this task touches nothing under `app/**`.
+   Re-run it; do not diagnose it as a regression.
+
+The next batch is **O1, the owner's own operations**. No agent can perform
+it and none should be dispatched for it. See "Next batch" below.
+
 ## Status
 - Task status: **in_progress - B3 implemented and committed; O1 (resumed)
   is next, and it is the owner's operations, not a code batch.**
