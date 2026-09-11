@@ -4,17 +4,22 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 `issues/tg-preview-refresh/context.md`, then `plan.md`, then this file.
 
 ## Status
-- Task status: **B1 implemented and committed.** Both owner questions were
-  answered before dispatch (see `context.md`); the design in `plan.md` was
-  followed as written, with a handful of small gaps filled in during
-  implementation - see "Deviations" below.
-- Last agent: implementer (2026-09-11), batch B1.
+- Task status: **B1 implemented and committed; R1 review remediation
+  implemented and committed.** Both owner questions were answered before
+  dispatch (see `context.md`); the design in `plan.md` was followed as
+  written, with a handful of small gaps filled in during B1 implementation -
+  see "Deviations" below. A reviewer then approved the design, the pure
+  logic, all six of B1's deviations, and the docs, and raised seven risks and
+  five nits against `.github/workflows/previews.yml`; four were blockers and
+  are fixed in R1 (this session), the rest are Deferred below for B2.
+- Last agent: implementer (2026-09-11), batch R1 (review remediation,
+  blockers only).
 - NEEDS_HUMAN_CONFIRMATION: no.
 - Branch: `automation/tg-preview-refresh`, in the dedicated worktree
-  `E:/dev/daggerheart-loot-wt/tg-preview-refresh`, based on `8b96ff4`.
-  **Not merged, not pushed** - pushing and merging are the owner's call
-  (`CLAUDE.md`), and merging should wait for issue 47's B7 to land in the
-  main checkout, per the original dispatch note in `context.md`.
+  `E:/dev/daggerheart-loot-wt/tg-preview-refresh`, HEAD now the R1 commit on
+  top of `cce10cb`. **Not merged, not pushed** - pushing and merging are the
+  owner's call (`CLAUDE.md`), and merging should wait for issue 47's B7 to
+  land in the main checkout, per the original dispatch note in `context.md`.
 - The worktree's `node_modules` (root) and `tools/tg-preview/node_modules`
   (nested) both exist from this session's `npm ci` / `npm install`; both are
   gitignored and neither was committed.
@@ -92,6 +97,56 @@ change the design in `plan.md` sections 3-7, all recorded here per
 None of these needed a fallback or touched anything outside
 `tools/tg-preview/`.
 
+## R1 - review remediation, blockers only
+
+A reviewer read B1's commit (`.github/workflows/previews.yml`,
+`tools/tg-preview/**`, `.gitignore`, docs) and raised seven risks and five
+nits, all against the workflow file or `.gitignore` - none against the pure
+`lib.mjs`/`client.mjs`/`manifest.mjs` logic, which was approved as-is. Four of
+the seven risks were blockers; this batch fixed exactly those four, in one
+commit, and touched no other file. The remaining three risks and all five
+nits are recorded verbatim enough to act on in "Deferred" below.
+
+Fixed, all in `.github/workflows/previews.yml` unless noted:
+
+1. **`git checkout -q --detach origin/main` in `Record what was refreshed`
+   aborted in the exact race it exists for.** After any real send,
+   `tools/tg-preview/state.json` is always locally modified, so a plain
+   `git checkout` to a different commit refuses to switch when that tracked
+   file differs between HEAD and the target - Actions' `bash -e {0}` then
+   kills the step, `result.json` is never recorded, and the next run
+   re-sends everything just sent. Fixed by adding `-f`:
+   `git checkout -q -f --detach origin/main`. Discarding the worktree copy is
+   correct here - the immediately following `--apply` rebuilds state from
+   `origin/main`'s file plus `result.json`.
+2. **The state read in `Refresh` truncated before it could fail.**
+   `git show origin/main:tools/tg-preview/state.json > tools/tg-preview/state.json
+   2>/dev/null || true` redirects onto the destination file before `git show`
+   runs, so any failure (network hiccup, path briefly missing) leaves
+   `state.json` empty rather than unchanged; `readState` swallows the
+   `JSON.parse` throw and returns `{}`, every one of the ~1062 URLs becomes
+   stale, and a fresh throwaway account fires 107 messages straight into
+   `PEER_FLOOD` - the exact outcome the rate-limit design exists to prevent.
+   Fixed by reading into `$RUNNER_TEMP/state.json` first and `mv`-ing it into
+   place only on success, with a comment explaining why (kept in the file's
+   existing comment style, per the review's own instruction not to let this
+   get "simplified back"); the `|| true` bootstrap case became an `if/else`
+   with an explanatory `echo` on the missing-state branch.
+3. **The full-account credential (`TG_API_ID`, `TG_API_HASH`, `TG_SESSION`)
+   sat in job-level `env:`**, so it was present in the environment of
+   `actions/checkout`, `npm ci`, `npm audit`, and the commit/push step, none
+   of which need it. Moved to step-level `env:` on exactly the two steps that
+   use them - `Secrets present?` and `Refresh`. `MODE`, `DRY_RUN`, and
+   `LIMIT` stayed at job level, since `Record what was refreshed`'s `if:`
+   reads `env.DRY_RUN` and moving them would have broken that condition.
+4. **`.gitignore` did not cover `local.env`.** It had `.env` and `.env.*`,
+   neither of which matches a bare `local.env` (no leading dot) - the owner
+   already has one in this worktree, protected only by a local `info/exclude`
+   entry that travels to no other machine. Added `*.env` alongside the
+   existing two patterns, extending the existing comment rather than adding
+   a second block (`.env.*` stays, since it still catches `.env.local`,
+   which `*.env` alone would not).
+
 ## Verification
 - Commands run (exact) and results:
   - `node --test tools/tg-preview/lib.test.mjs` - 46/46 passed, both with
@@ -134,6 +189,29 @@ None of these needed a fallback or touched anything outside
   `app/src/**`, `og/`, `i/`, `data.js`, `tests/parity/**` changed). Not run:
   `check:built`, parity - both correctly out of scope for this batch.
 
+### R1 verification
+- `npx prettier --check .github/workflows/previews.yml` - clean.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout 600000,
+  single foreground call) - the arming run: format/lint/typecheck/data,
+  `node tests/derived.js`, `node tests/i18n.js`, hooks selftest (292 passed),
+  `node --test tools/tg-preview/lib.test.mjs` (46/46), and `npm run test`
+  (vitest: **39/39 test files, 947/947 tests**) all green, no failures
+  visible in the tail. No `searchPage.test.ts` flake this time - host load
+  was apparently lower than during B1's run.
+- A second run, piped to a log file for full-output inspection only (not a
+  valid gate arm per this task's own instructions - noted so it is not
+  mistaken for the one that counts), confirmed the same result with nothing
+  hidden above the `tail -n 120` cutoff: every step from `format:check`
+  through `test` passed, same 947/947 and 46/46 counts.
+- `git status` after `npm run check` (which regenerates `i/*.html`,
+  `data.json`, `catalog.csv` via the `data` step): clean except the two
+  intended files - the regenerated outputs matched the committed state
+  exactly, confirming this batch needed no `tools/build.js` re-run.
+- Diff scope confirmed via `git diff --stat` before staging: exactly
+  `.github/workflows/previews.yml` (+19/-5) and `.gitignore` (+2/-0) -
+  nothing under `tools/tg-preview/**`, `docs/tg-preview.md`, `ci.yml`, or any
+  spec touched, per the batch's explicit boundary.
+
 ## Next batch
 - Name: **O1 - the owner's operations** (`plan.md` section 9, `docs/tg-preview.md`
   "Setup, start to finish"), not a code batch. No agent can perform any of
@@ -145,8 +223,10 @@ None of these needed a fallback or touched anything outside
   secrets, the first CI dispatch.
 - After O1 produces evidence: **B2 - tuning from the first real run**
   (`plan.md` section 10, outline only) - whether ten links per message are
-  honoured, the bot's real flood behaviour, its reply vocabulary. May turn
-  out to be empty if the constants already hold.
+  honoured, the bot's real flood behaviour, its reply vocabulary - **plus**
+  the R1 review's deferred items below, which do not need O1's evidence and
+  can be picked up independently. May turn out non-empty even if the tuning
+  half is empty.
 - Before either: **merge `automation/tg-preview-refresh` into `main`**, the
   owner's call, and per the original dispatch note this should wait until
   issue 47's B7 (the print slice) lands in the main checkout - this branch
@@ -154,14 +234,40 @@ None of these needed a fallback or touched anything outside
   the merge, not about a real conflict.
 
 ## Blockers
-- None for B1 itself.
-- The branch is not merged and not pushed - `main` gains nothing from this
+- None for B1 or R1.
+- The branch is not merged and not pushed - `main` gains nothing from either
   batch until the owner merges it (see "Next batch").
 - O1 cannot start until the owner has a phone number free for the throwaway
   account (`docs/tg-preview.md`, step A.1) - no timeline is recorded.
 
 ## Deferred
 - B2 - tuning from the first real run; may be empty.
+- **R1 review findings, deferred by the dispatch (explicitly out of scope for
+  R1, not fixed in this session), recorded verbatim enough for B2 to act on
+  without re-reading the review:**
+  1. The flood-wait deadline check - a risk in the review, not yet detailed
+     further here; re-derive from the review or ask the owner if it resurfaces.
+  2. `live.mjs`'s cached rejected promises.
+  3. Missing `NaN` guards on `--limit`/`--budget-minutes`.
+  4. `sinceMs` is not floored.
+  5. `$args`/`$LIMIT` are unquoted in the workflow's shell steps.
+  6. The unused `urls()` export (in `lib.mjs`, per B1's `Deviations` item 2 -
+     `manifest.mjs`'s `buildFromTree` calls it, but nothing else does; the
+     review flagged it as dead surface, not a bug).
+  7. The `--apply` branch's needless `buildFromTree()` call - it rebuilds
+     the whole manifest to apply a result that only needs the state file and
+     `result.json`.
+  8. The dry-run counts wording (imprecise phrasing in a dry-run summary
+     line - cosmetic, not a correctness issue).
+  9. A `docs/tg-preview.md` sentence about what turns the CI job red is
+     imprecise given the actual `if:` conditions in
+     `.github/workflows/previews.yml`.
+
+  R1 fixed only the four blockers (checkout `-f`, the state-read truncation,
+  moving credentials to step-level `env:`, and `*.env` in `.gitignore` - see
+  "R1 - review remediation" above). None of the nine items above were
+  touched; `tools/tg-preview/**`, `docs/tg-preview.md`, and `ci.yml` are
+  untouched by R1 per the dispatch's explicit boundary.
 - One pointer line in `CLAUDE.md` ("Data and published artefacts") and in
   `.claude/prompts/refresh-artwork.prompt.md` - orchestrator's call, not
   taken in B1 (`CLAUDE.md` was explicitly out of scope for this batch).
@@ -186,3 +292,15 @@ None of these needed a fallback or touched anything outside
   status` by the end of this session (unclear how; possibly cleaned up by
   another process on this host) - noted in case it resurfaces.
 - Session end partial progress: none - B1 is complete and committed.
+
+### R1 notes
+- Mocks path: none. Screenshot findings: none.
+- The dispatch for R1 stated `local.env` "has already been created in this
+  worktree" (referring to B1's own note above). At R1's start it was not
+  present (`ls local.env` - no such file; `git status --ignored` does not
+  list it either) - consistent with B1's note that it disappeared by that
+  session's end for an unclear reason. `.gitignore`'s new `*.env` line
+  covers it regardless of whether or when it reappears.
+- Cleanup performed / retained artifacts: none - no scratch files left in
+  the tree.
+- Session end partial progress: none - R1 is complete and committed.

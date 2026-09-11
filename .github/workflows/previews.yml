@@ -31,9 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      TG_API_ID: ${{ secrets.TG_API_ID }}
-      TG_API_HASH: ${{ secrets.TG_API_HASH }}
-      TG_SESSION: ${{ secrets.TG_SESSION }}
       MODE: ${{ inputs.mode || 'incremental' }}
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
       LIMIT: ${{ inputs.limit || '' }}
@@ -44,6 +41,10 @@ jobs:
 
       - name: Secrets present?
         id: cfg
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION: ${{ secrets.TG_SESSION }}
         run: |
           if [ -z "$TG_SESSION" ] || [ -z "$TG_API_ID" ] || [ -z "$TG_API_HASH" ]; then
             echo "::notice::Telegram secrets are not configured; nothing to do"
@@ -71,9 +72,22 @@ jobs:
       # a refresh committed between two quick pushes must not be re-sent.
       - name: Refresh
         if: steps.cfg.outputs.skip != 'true'
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION: ${{ secrets.TG_SESSION }}
         run: |
           git fetch --depth=1 origin main
-          git show origin/main:tools/tg-preview/state.json > tools/tg-preview/state.json 2>/dev/null || true
+          # Read through a temp file, not a direct redirect onto state.json: a
+          # redirect truncates the checked-out file before `git show` runs, so
+          # any failure here (missing path on a fresh main, network hiccup)
+          # would leave state.json empty rather than unchanged. An empty file
+          # makes every URL look stale - a full re-send, not a bootstrap.
+          if git show origin/main:tools/tg-preview/state.json > "$RUNNER_TEMP/state.json" 2>/dev/null; then
+            mv "$RUNNER_TEMP/state.json" tools/tg-preview/state.json
+          else
+            echo "no state on main yet; every url counts as stale"
+          fi
           args="--mode $MODE --budget-minutes 45 --result $RUNNER_TEMP/result.json"
           [ "$DRY_RUN" = "true" ] && args="$args --dry-run"
           [ -n "$LIMIT" ] && args="$args --limit $LIMIT"
@@ -87,7 +101,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
             git fetch --depth=1 origin main
-            git checkout -q --detach origin/main
+            git checkout -q -f --detach origin/main
             node tools/tg-preview/run.mjs --apply "$RUNNER_TEMP/result.json"
             git add tools/tg-preview/state.json
             git diff --cached --quiet && exit 0
