@@ -50,6 +50,12 @@
      *  hitnotes, which the live `renderSharedList` puts between the rows,
      *  app.js 3163-3166. */
     after?: Snippet<[Record_]>;
+    /** The id of the row the anchor effect is outlining right now - state
+     *  rather than a DOM write, so a keyed re-render (a view switch, a
+     *  language switch) keeps the outline on the right element instead of
+     *  losing it to a replaced node. `TablesPage`'s `flashKey`; `undefined`
+     *  for `SearchPage` and `SharedListPage`, which pass nothing. */
+    flash?: string;
   }
 
   const {
@@ -63,7 +69,8 @@
     onartfail,
     onopen,
     ontoggleall,
-    after
+    after,
+    flash
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -102,7 +109,12 @@
     {@const it = entry.it}
     {@const rollNum = entry.n ?? it.roll}
     {#if view === 'list'}
-      <div class="row" class:sel={selected(it.id)} data-row={it.id}>
+      <div
+        class="row"
+        class:sel={selected(it.id)}
+        class:flash={flash === it.id}
+        data-row={it.id}
+      >
         <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
           <input
             type="checkbox"
@@ -128,7 +140,12 @@
     {:else}
       {@const sub = lang === 'ru' ? it.en : it.ru || ''}
       {@const n = rollNum ? String(rollNum) : tileTier(it)}
-      <div class="tilewrap" class:sel={selected(it.id)} data-row={it.id}>
+      <div
+        class="tilewrap"
+        class:sel={selected(it.id)}
+        class:flash={flash === it.id}
+        data-row={it.id}
+      >
         <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
           <input
             type="checkbox"

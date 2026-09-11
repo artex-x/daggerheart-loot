@@ -6,6 +6,106 @@ depends on chat history.
 
 ## Status
 
+- Task status: **in_progress - B9 is built and committed; CI's read of the
+  owner's push is the open blocker** (implementer, 2026-09-11). Preflight
+  matched the brief: HEAD `bb61db0`, `git status --short` showed only the
+  planner's uncommitted `context.md`/`plan.md`/`handoff.md` edits and the
+  untracked `issues/tg-preview-refresh/` (another task's, preserved, never
+  staged) - no drift to reconcile.
+  - `TablesPage.svelte`'s anchor effect: `anchoredAt` replaced with
+    `flashKey` (`$state`, read by the template), `played` (a
+    `${navigations}|${lang}` stamp) and `flashTimer`; the element lookup
+    moved inside the `fonts.ready` `.then` (the effect-time element can be
+    replaced by a keyed re-render before the promise resolves); a second,
+    dependency-free `$effect` clears the timer on unmount only.
+    `TableRows.svelte` gained an optional `flash?: string` prop and
+    `class:flash` on `.row` and `.tilewrap`; `SearchPage`/`SharedListPage`
+    pass nothing, unchanged. `tokens.css` lost the whole
+    `@media (prefers-reduced-motion: reduce)` block (lines 156-176),
+    replaced with a four-line comment; `grep -rn "prefers-reduced-motion"
+    app/src` now finds exactly the two per-component rules
+    (`RecordCard.svelte`, `TablesPage.svelte`).
+  - `tables.test.ts`: three new cases in `describe('the row and section
+    anchor')` - the outline follows the record into the grid view, the
+    scroll and outline re-play on `EN`, a search keystroke does not
+    re-play them. The four pre-existing anchor cases (two in that
+    `describe`, two in `describe('the equipment tables')`) are unchanged.
+  - Two lint errors surfaced only at `npm run check` (svelte-check is
+    clean but eslint catches both): a template literal over
+    `app.navigations` (`number`) needed `String(nav)`, and the unmount
+    cleanup's inner arrow needed braces
+    (`@typescript-eslint/no-confusing-void-expression` on a bare
+    `() => clearTimeout(...)` shorthand). Both fixed; not a design
+    deviation.
+  - `docs/specs/DEBT.md` created with the header and D1-D4, text verbatim
+    from `plan.md`, "Phase 8". `CLAUDE.md` gained the spec-table row and
+    the `ACCEPTED`-bullet half-line (now 193 lines, under 200).
+    `FEATURES.md` gained the two bullets ("Tables and search", "Chrome").
+    `docs/parity.md` gained the three sentences (Contract, Harness
+    invariants, the intro paragraph). `docs/specs/COVERAGE.md` gained the
+    "fourth thing is never a finding" sentence.
+  - Parity filter `"anchor" "#/print/ci1-q1"` matched **36 cells, not the
+    plan's predicted 24**: the substring `"#/print/ci1-q1"` also matches
+    `"#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11"` (it is a prefix of
+    that id too), so both print states drew, not one - 4 print states x 6
+    cells = 24, plus 12 anchor cells = 36. Harmless: every print cell read
+    `совпадает` regardless, which is the acceptance criterion; noted here
+    because the plan's own arithmetic assumed 4 states/24 cells total and
+    the discrepancy is worth flagging rather than silently absorbing.
+  - All seven anchor `VISUAL_DEBT` entries read **0.00% locally**, not
+    just the four the outline's "долг погашен" message flagged - the
+    other three (`voa @ en 1100`, and the three `375` entries) read
+    "стало лучше - опусти число" instead, because their recorded figures
+    exceeded `DEBT_SLACK` (0.5) and the message-selection branch in
+    `parity.js` picks the wording off the *old* figure's size, not off
+    whether the actual result is zero. Per decided 5 ("delete an entry
+    only when the local run reads it as a match and the mechanism this
+    batch closed is the entry's - every anchor entry is"), all seven were
+    deleted, matching the batch's own Objective ("retire all seven
+    remaining anchor `VISUAL_DEBT` entries"). The two long comment blocks
+    above them were replaced with one short note per plan step 13,
+    pointing at `274aa99` for the measured history rather than repeating
+    it. The re-run of `"anchor"` alone (12 cells) read `совпадает` on
+    every cell, `расхождений нет`.
+  - Evidence: the four `@ en 1100|768` anchor states' `-next.png`/
+    `-diff.png` pairs (`core_item`/`voa`, `1100`/`768`) copied to
+    `issues/47/evidence/b9/` before the 12-cell re-run overwrote
+    `test-output/parity/`. `core_item ~ row anchor @ en 1100`'s
+    `-next.png` shows the gold ring around "Premium Bedroll" (`ci1`) -
+    confirmed by eye, matching the acceptance criterion.
+  - `npm run check` green twice (after the doc/component edits and again
+    after the `specs.js` edit), `npm run check:built` green once, all in
+    the foreground. Commit: see below.
+- Last agent: implementer
+- NEEDS_HUMAN_CONFIRMATION: no
+- Branch: `main`
+- Base / starting commit: `bb61db0`
+
+- Task status: **in_progress - B9 is implement-ready; Phase 8 (the
+  post-migration review) is designed** (planner, 2026-09-11). Tree at
+  planning: HEAD `bb61db0`, two docs-only commits ahead of `origin/main`
+  (`435a5ac`), working tree clean but for the untracked
+  `issues/tg-preview-refresh/` (another task's, preserved, never staged);
+  nothing running. The owner answered B9's one question - **option (a),
+  port the live reduced-motion policy** - so B9 carries no open question.
+  This pass wrote `plan.md`, "B9 planned" (steps 1-15, gates, filters,
+  acceptance) and "Phase 8" (the register's home and shape, the sweep of
+  this file's "Deferred"/"Notes" classified, the entry condition, batches
+  R1-Rn), corrected the outline's print filter (`"#/print/ci1-q1"`; the
+  outline's `-q313` string matches no state id), and measured two things
+  it did not expect: the "missing `Button.svelte` focus ring" carried
+  below is a stale claim (the ring is the global rule in `tokens.css:150`,
+  gold in both apps; only the focused radius differs, 9 px against the
+  live `8px`), and the live app re-plays the anchor scroll on *every*
+  render - a search keystroke included (`app.js:4435`) - which B9 does not
+  copy and records instead. Durable facts: `context.md`, "B9 planning
+  facts". No production code was written. Next: an implementer on B9 -
+  "Next batch". `NEEDS_HUMAN_CONFIRMATION: no`.
+- Last agent: planner
+- NEEDS_HUMAN_CONFIRMATION: no
+- Branch: `main`
+- Base / starting commit: `bb61db0`
+
 - Task status: **B8 is closed - committed, pushed, and confirmed by CI's
   second reading** (orchestrator, 2026-09-11). Tree preflight found HEAD past
   where the session brief left it: `274aa99 test(parity): the anchor debts
@@ -2744,41 +2844,37 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B8 is built and committed. `plan.md` holds two outlines, not briefs - a
-planning pass is next, not an implementer.**
+**B9 is built and committed.** See "Status" above for what shipped and
+"Blockers" for the open CI-read condition. Nothing about B9 remains to
+implement.
 
-- **B9 outlined** (`plan.md`, "B9 outlined"): the anchor re-play on a
-  language switch, plus the reduced-motion policy for transitions. Retires
-  all eight remaining anchor entries (the `@ en 1100|768` x4 this batch left
-  untouched and the three `375` entries this batch just wrote). Needs an
-  owner decision first - port the live app's reduced-motion policy
-  (recommended) or keep the rewrite's blanket transition kill as a
-  deliberate accessibility choice - written down in `plan.md`, "B9
-  outlined", "Questions for the owner before B9 is planned". Filter for its
-  eventual implementer: `"anchor"` + `"#/print/ci1-q1-q313"`.
-- **B10 outlined** (`plan.md`, "B10 outlined"): the page-furniture
-  extraction pass. Touches every page, so its honest parity read is the
-  full unfiltered suite - a different route-and-filter set from B8/B9,
-  which is why it was never a candidate to merge with either. Includes the
-  `RecordPage.svelte:59` `.miss`-vs-`.page-sub` divergence (`context.md`,
-  "B8 planning facts") as its first real fix.
-- Either needs a planning pass before an implementer; they touch different
-  files and can run in either order. B9 first is recommended (`plan.md`,
-  "B10 outlined", last paragraph) since it retires debt entries that would
-  otherwise sit through a furniture refactor.
-- **Done, and recorded:** the owner's push of B8's commit and the CI run it
-  produced - [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995) on `435a5ac`, four parity shards green. That
-  was B8's second reading; the deleted `voa ~ section anchor @ ru 375` entry
-  and the three lowered figures all have it. See "Blockers", first entry. The
-  `check` job's `behave` failure in the same run is a live-app flake the owner
-  re-ran; it belongs to no batch here.
-
-- **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
-  naming the deleted `todo` paragraph - not opened by B7 or B8.
-- **Carried, still recorded:** `Button.svelte`'s missing `:focus-visible`
-  ring (`style.css:1002`) - not B8's file.
+**B10 - the page-furniture extraction pass** is next, and it is **not
+implement-ready**: `plan.md`, "B10 outlined" (plus the paragraph the B9
+planning pass appended to it, "Assigned by the B9 planning pass") is an
+inventory and a set of design questions, not a step list. A planning pass
+is needed before an implementer can take it - it touches every page
+(`.panel`, `.page-h`, `.page-sub`, `.card-acts`, `.miss`, plus
+`RecordPage.svelte:59`'s `.miss`-vs-`.page-sub` divergence), so its honest
+parity read is the full suite's filter set, different from B9's. After
+B10: Phase 6/7 (the cut-over, owner-gated: Pages source, the regression
+net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase 8") on the
+register B9 opened.
 
 ## Blockers
+
+- **OPEN: B9's commit is made; waits on CI's read of the owner's push**
+  (implementer, 2026-09-11). Same shape as B8's own closing condition.
+  Locally: all seven anchor `VISUAL_DEBT` entries deleted, the 12-cell
+  `"anchor"` re-run reads `совпадает` on every cell (`расхождений нет`),
+  the 24-cell `"#/print/ci1-q1"` match (actually 36 - see "Status" above)
+  reads `совпадает` on every print cell, `npm run check` and
+  `npm run check:built` are green in the foreground. None of that is CI's
+  word - owner decision 1 stands: no `VISUAL_DEBT` number is written from
+  this host, and this batch wrote none (all seven entries were deleted,
+  not re-numbered). Not yet closed: the commit has not been pushed (never
+  this session's to do - "Never push", the task brief and `CLAUDE.md`
+  both). Record the green run id here once the owner's push produces one;
+  that CI read is what closes B9, exactly as it closed B8.
 
 - **RESOLVED by CI run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995) (orchestrator, 2026-09-11): B8's
   four anchor figures are confirmed by a second, independent reading, and
@@ -3279,6 +3375,39 @@ planning pass is next, not an implementer.**
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **Classified by the B9 planning pass (planner, 2026-09-11) - every
+  item in this section and in "Notes" has a home now; the table is
+  `plan.md`, "Phase 8", "What the sweep ... found, classified".** In one
+  line each: the reduced-motion kill, the stale packed-link expansion
+  (B5.6 risk 3), the storage notice's button-in-summary with
+  `nested-interactive` off suite-wide (B5.3 nit 1) and the shared `S.kind`
+  (B6) become `docs/specs/DEBT.md` D1-D4, written by B9; the anchor
+  re-play and the never-drawn ring are fixed by B9; `RecordPage.svelte:59`,
+  the furniture copies, `ListPage.svelte:103`'s comment, `Shell.svelte`'s
+  `@page`, the two missing "Recorded, not keyed" sentences and the spec
+  nits (B6 nit 10, B5.3 nit 2, B5.6 nit 5) are B10's; the fixed-not-ported
+  improvements (the dice names, the grid numbering, short links in the
+  import field, `Chip`/`Seg` `aria-pressed`, the rung labels, the notice
+  surviving a create/delete, `createNew`'s toast gating, and now B9's
+  keystroke re-play) are Phase 7's sweep into `FEATURES.md`/`STATE.md`
+  when `specs.js` retires; the unverified toast-over-dialog claim, the
+  `works()` once-read, the in-flight packed window, the `menuFor`-on-Escape
+  hole and every test/code nit are Phase 8 R1's to verify and R2-R4's to
+  fix in the batch that opens the file; the harness limitations (the
+  `href` gap, no keyboard state, no equipment anchor state, the width
+  sweep, the language leak) die with the harness and Phase 7 decides what
+  the post-cut-over net keeps; Playwright is answered at Phase 7's
+  planning pass. **Two entries below are corrected by measurement**: the
+  "`Button.svelte` ports no `.btn:focus-visible` rule ... the rewrite
+  shows the browser's default ring" note under B7's assignment is false -
+  `tokens.css:150`'s global `:focus-visible` draws the gold 2 px ring at
+  2 px offset on every `.btn` in the rewrite, the live app draws the same
+  ring from `style.css:1002`, and the only difference is the focused
+  radius (9 px from `--r-sm` against the live rule's `8px`); the earlier
+  reading that saw "solid 3px currentColor" on both apps was a t=0 read
+  of the 150 ms outline transition (`context.md`, "B9 planning facts").
+  And B6 nit 9 (the kind-filter heading) is fixed in `plan.md`.
 
 - **Recorded by the B8 planning pass (planner, 2026-09-11), for B9/B10 -
   not B8's:**

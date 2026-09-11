@@ -955,6 +955,52 @@ describe('the row and section anchor', () => {
     });
     expect(document.querySelector('.flash')).not.toBeInTheDocument();
   });
+
+  it('the outline follows the record into the grid view', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    const tile = document.querySelector('[data-row="ci2"]');
+    expect(tile).toHaveClass('tilewrap');
+    expect(tile).toHaveClass('flash');
+    expect(scroll).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-plays the scroll and the outline on a language switch', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+      expect(scroll).toHaveBeenCalledTimes(1);
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await waitFor(() => {
+      expect(scroll).toHaveBeenCalledTimes(2);
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+    });
+  });
+
+  it('a search keystroke does not re-play it', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(scroll).toHaveBeenCalledTimes(1);
+    });
+    await userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию…'), 'а');
+    expect(scroll).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('a dataset that did not load', () => {

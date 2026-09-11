@@ -1960,132 +1960,25 @@ const VISUAL_DEBT = {
   '#/tables ~ a row opened @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
   '#/tables ~ a row opened @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
-  /* The row and section anchors, at 1100 and 768. The reason here used to be
-     "the flash outline's own antialiasing", and it is wrong: the ring is not
-     rasterised differently, **the rewrite does not draw it at all.**
-
-     Cropped out of the run's own screenshots, `@ en 1100` is the live app's
-     2px gold ring around the row against nothing at all in the rewrite -
-     everything inside the ring is identical, which is why the number is a
-     ring's worth of pixels and no more. Confirmed off the pixels with a probe
-     that asks each app for `.flash` directly:
-
-       legacy   on arrival: yes  |  after 1.6s: no  |  after the EN click: yes
-       next     on arrival: no   |  after 1.6s: no  |  after the EN click: no
-
-     Two separate things, both real. `TablesPage.svelte`'s anchor effect adds
-     the class with `target.classList.add('flash')`, and the rows are drawn by
-     a keyed `{#each}` in `TableRows.svelte`, so the next render replaces the
-     element and the class goes with it - the rewrite's anchor highlight has
-     never been visible, on any route, since it was wired up. And the live app
-     re-plays the flash when the language is switched, because switching
-     re-enters `render()` with the anchor still in the address, while the
-     rewrite's effect is guarded on `app.navigations` and does not fire again.
-     That second one is why only the `@ en` cells carry a number: at `@ ru`
-     the harness never clicks anything, so the live app's flash has expired by
-     the time the screenshot is taken and the two apps agree by accident.
-
-     Not fixed here, deliberately. The fix is to make `flash` reactive state
-     rather than a class added behind Svelte's back, and it will move the
-     `@ ru` cells that currently pass - they pass because both apps show no
-     ring, and one that draws its ring correctly will differ from one whose
-     ring has expired. That needs the whole anchor set re-measured in one go,
-     which is a batch, not a footnote. */
-  '#/tables/core_item ~ row anchor @ en 1100': {
-    pct: 0.42,
-    why: "the anchor's gold ring, which the live app re-plays on the language switch and the rewrite never draws at all - see the note above VISUAL_DEBT"
-  },
-  '#/tables/core_item ~ row anchor @ en 768': {
-    pct: 0.43,
-    why: 'the same missing ring, mid width'
-  },
-  '#/tables/voa ~ section anchor @ en 1100': {
-    pct: 0.63,
-    why: "the same missing ring, around a section instead of a row - the section's own content measures pixel-identical"
-  },
-  '#/tables/voa ~ section anchor @ en 768': {
-    pct: 0.42,
-    why: 'the same, mid width'
-  },
-
-  /* Both anchors, on a phone, are one mechanism and it lives in the harness.
-
-     What was measured, replicating the run's own sequence - arrive at 1100,
-     then resize through 768 to 375 with no further navigation, reduced motion
-     applied throughout - and reading `window.scrollY`, the document height and
-     the target's rect at each step:
-
-       legacy  1100 sy 368  |  768 sy 368  |  375 sy 374
-       next    1100 sy 368  |  768 sy 368  |  375 sy 387
-
-     Both apps scroll exactly once, at 1100, against the same 118px
-     `scroll-margin-top`, and land on the same pixel; they are still on the
-     same pixel at 768. They part only when the viewport narrows to 375, and
-     neither of them is where it was put: Chrome moves a scrolled document on
-     reflow to keep the reading position, and it chooses what to hold still
-     from the DOM. The two apps have different DOM, so it holds different
-     things and they end 13px apart. Everything the diff shows is that offset
-     - the same rows, the same text, one page a few pixels lower than the
-     other.
-
-     That number is a browser heuristic answering two DOM trees, and it is only
-     reachable because the harness sweeps widths on one document instead of
-     arriving at each. Nobody resizes their phone to 375 mid-read.
-
-     This corrects two earlier readings of the same states, both written here
-     as fact and both wrong. It is not `TablesPage.svelte` scrolling a second
-     time against the 132px phone margin: the probe above shows one scroll, at
-     1100, at 118px, in both apps. And it is not rows reflowing differently
-     above the target: at 375 the two documents are the same 10065px tall and
-     `#/tables/voa` and `#/tables/core_item` are pixel-exact at that width.
-
-     The 7.92%/8.47% flip that made `@ en 375` look like a coin toss was this
-     too, and it is closed: `tests/parity/driver.js` now waits for the same
-     promise the anchor effect defers behind, so the scroll always happens
-     before the sweep. Three runs since have reproduced these four numbers
-     exactly.
-
-     Found, at B7 (2026-09-11): the "something else" was the reduced-motion
-     transition policy. The live app leaves every declared `transition` alive
-     under `prefers-reduced-motion: reduce` (style.css 311 and 544 kill two
-     named animations and nothing else), so when the sweep crosses 600px its
-     mobile overrides animate for ~150ms and Chrome's scroll anchoring
-     adjusts the scrolled document across those frames - 6px on `core_item`
-     on a Windows host. The rewrite's tokens.css kills transitions outright
-     (`transition-duration: 0s !important` since B7; `0.01ms` before, a
-     two-frame transition with a third, different adjustment - the 368 -> 387
-     above), so it is not adjusted. Measured, not inferred: the live app with
-     every transition killed lands exactly where the rewrite lands, in both
-     languages. That is why all four 375 figures moved on 9fd3000 after three
-     CI runs had agreed to the hundredth, and by different amounts - the
-     adjustment is a browser heuristic over each table's own DOM.
-
-     The `@ en` cells carry a second, English-only mechanism on top: the live
-     render() re-parses the anchor from the hash on every render and
-     re-scrolls to it on the language switch (app.js 3832-3845), the
-     rewrite's effect is guarded on `app.navigations` and stays where scroll
-     anchoring left it after the English reflow. On CI that is a 22px offset
-     on `voa @ en 375` (the run's diff image) against 0.00 at `@ ru 375`.
-
-     Both are the port's to close, not the table's - the anchor re-play on
-     `app.lang` and the live reduced-motion policy for transitions, B9 in
-     issues/47/plan.md. Until then the figures below are CI's, run
-     34616445556 on 9fd3000; a Windows host reads `core_item` 6px apart and
-     `voa @ en` not apart at all, so a local run of these cells is advisory
-     in both directions (docs/parity.md, "Machine variance"). */
-  '#/tables/core_item ~ row anchor @ ru 375': {
-    pct: 9.35,
-    why: 'LOWERED from 10.52 on 9fd3000, where B7 set transition-duration to 0s under reduced motion: the width sweep, where the live app is scroll-anchored 6px during the transitions it keeps alive under reduced motion and the rewrite, with none, is not - see the note above. 9.35 is what CI measures (run 34616445556)'
-  },
-  '#/tables/core_item ~ row anchor @ en 375': {
-    pct: 8.85,
-    why: 'LOWERED from 9.92 on 9fd3000: the same transition-policy offset, in English. 8.85 is what CI measures (run 34616445556)'
-  },
-
-  '#/tables/voa ~ section anchor @ en 375': {
-    pct: 9.86,
-    why: "LOWERED from 10.31 on 9fd3000: after the EN press the live app re-scrolls to the section and the rewrite is left where scroll anchoring put it - 22px apart on CI (the run's own diff image), 0.00 on the same state at @ ru 375, whose entry is deleted. 9.86 is what CI measures (run 34616445556); it was 0.45 under the old figure, inside DEBT_SLACK, and is lowered now rather than left for the next run to trip"
-  }
+  /* The row and section anchors - all seven remaining entries, deleted by B9.
+     Two mechanisms, both closed: the flash was a class written straight onto
+     the DOM node (`target.classList.add('flash')`), which a keyed
+     `{#each}`/`{#if}` re-render (a view switch, a language switch) discards
+     along with the node, so the ring never drew on any route since it was
+     wired up - that was the `@ en 1100|768` residue. And the 375 cells'
+     residue was `tokens.css`'s blanket reduced-motion kill: the live app
+     leaves every declared `transition` alive under `prefers-reduced-motion:
+     reduce` (style.css 311/544 kill only two named animations), so Chrome's
+     scroll anchoring adjusts the live document across the width sweep's
+     transitions and the rewrite, with every transition dead, was not
+     adjusted. B9 makes the flash reactive state (`flashKey` on
+     `TablesPage`/`TableRows`, keyed on `${navigations}|${lang}` so it also
+     re-plays on a language switch, as the live app does) and deletes the
+     blanket kill outright - a real policy is owed after the migration,
+     `docs/specs/DEBT.md`, D1. Measured 0.00% on every one of the seven
+     entries, locally, after both fixes. The full diagnostic history - the
+     `.flash` probe, the scroll-position readings, the transition-policy
+     injection proof - is in git at `274aa99`, not repeated here. */
 };
 
 
@@ -2109,6 +2002,12 @@ const JITTER = 0.1;
  * `aria-current="true"` (app.js 2944). `d.controls()` reads names only, so no
  * key differs - an entry here would fail every run as stale, per `parity.js`'s
  * own rule that a stale `ACCEPTED` key is a failure, not a silent pass.
+ *
+ * The live app also re-plays the anchor scroll-and-flash on every `render()`,
+ * a tables search keystroke included (app.js:4435: `S.tables.q = el.value;
+ * render()`); the rewrite re-plays it on a navigation and a language switch
+ * only. No parity state types or ticks with an anchor in the address, so
+ * nothing keys this either (`docs/specs/FEATURES.md`, "Tables and search").
  */
 
 /**

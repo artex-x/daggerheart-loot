@@ -78,6 +78,7 @@ Read the files the change touches:
 | `docs/specs/COVERAGE.md` | suite ownership, thresholds, and known gaps |
 | `docs/specs/I18N.md` | bilingual behaviour |
 | `docs/specs/META.md` | `noindex`, crawling, URL-only lists, `file://`, tiers |
+| `docs/specs/DEBT.md` | live defects the rewrite reproduces on purpose, and live decisions kept over its own; owed a fix after the migration |
 | `docs/parity.md` | operational parity workflow |
 
 Public contracts default to no change. An unavoidable change updates
@@ -137,7 +138,8 @@ See `.claude/README.md`.
   and empty states add `STATES` entries in the same change.
 - Every state is exercised in both languages at three widths. Pixel difference
   is zero unless recorded as explicit `VISUAL_DEBT`; debt must ratchet down.
-- Record intentional accessibility differences in `ACCEPTED` with a reason.
+- Record intentional accessibility differences in `ACCEPTED` with a reason; a
+  live defect reproduced on purpose goes in `docs/specs/DEBT.md`.
 - Inspect diff images before changing debt. Use `docs/parity.md`; migration
   backlog stays in issue 47 plan/handoff.
 - Port the live app's text-node structure, not only its rendered string: a

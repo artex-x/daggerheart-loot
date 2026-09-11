@@ -109,6 +109,10 @@ Three kinds of finding:
 - **stale** is an `ACCEPTED` entry that is no longer a difference. It fails, so
   an excuse has to be deleted by the slice that makes it untrue
 
+A fourth thing is never a finding: a live defect the rewrite reproduces on
+purpose is identical on both sides, so it is written in `docs/specs/DEBT.md`
+rather than keyed here.
+
 It found four things on its first run, all of which a component test had missed
 because a component test only checks what somebody remembered to write:
 

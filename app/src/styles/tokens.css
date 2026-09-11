@@ -153,24 +153,9 @@ textarea::placeholder {
   border-radius: var(--r-sm);
 }
 
-/* Anyone who has asked their system for less movement gets none of ours. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    /* `0s`, not the `0.01ms` the popular snippet uses: a non-zero duration
-       still starts a real `CSSTransition`, whose value at t=0 is the *old*
-       one. `PrintCard.svelte`'s `fit()` writes an inline `cqw` size and reads
-       the layout back synchronously, so under the snippet every read answered
-       from the pre-write layout, `tight()` never turned false, all three
-       ladders ran to their floors and the first cards lost their art. The
-       live app's reduced-motion rules kill two named animations and leave
-       `transition-duration` at its initial `0s`, which is why it reads
-       correctly. Nothing in `app/src` listens for `transitionend`, so killing
-       the transition outright costs nothing. */
-    transition-duration: 0s !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* No blanket reduced-motion rule here, on purpose: the live app has none
+   either, only two named animations killed per component
+   (`RecordCard.svelte`, `TablesPage.svelte`). A blanket `transition-duration`
+   of any value differs from the live app at `#/tables/core_item ~ row anchor
+   @ 375` (B8) and a non-zero one breaks `PrintCard.svelte`'s `fit()` (B7).
+   Owed a real policy after the migration - `docs/specs/DEBT.md`, D1. */

@@ -338,11 +338,24 @@
   /* The row/section anchor - `#/tables/<table>/<key>` - off the scroll-and-
      flash block at the end of `render()` in app.js. One mechanism for both: a
      row anchor names a record id, a section anchor names a section's own key.
-     Guarded on `app.navigations` rather than firing on every re-render - a
-     search or a filter pick must not re-trigger the scroll a link already
-     played once.
+     Guarded on a `${navigations}|${lang}` stamp rather than firing on every
+     re-render - a search or a filter pick must not re-trigger the scroll a
+     link already played once, but the live app *does* re-play the scroll and
+     the flash on a language switch (`render()` re-parses the anchor and runs
+     the scroll-and-flash block on every call, `app.js:3632-3634`/`3832-3845`),
+     so this is keyed on `app.lang` as well as `app.navigations`. The live app
+     also re-plays on every other `render()` with the anchor still in the
+     address - a tables search keystroke included (`app.js:4435`: `S.tables.q
+     = el.value; render()`) - which would drag the reader back to the anchor
+     on every keystroke. That is a live defect, not reproduced here: no parity
+     state types or ticks with an anchor in the address, so nothing keys it
+     (`docs/specs/FEATURES.md`, "Tables and search").
 
-     The flash starts immediately, same as the live app's own synchronous
+     The flash is state (`flashKey`), not a class written straight onto the
+     element: a view switch (list <-> grid) replaces the row's DOM node
+     outright, and only a keyed re-render survives that - a plain
+     `element.classList.add` would flash a node about to be discarded. It
+     still *starts* immediately, same as the live app's own synchronous
      `render()` call - it is a decorative outline and does not depend on
      layout. The *scroll* waits, and the reason is not the one this comment
      used to give. It said the wait was for a font face to swap in. Measured:
@@ -371,32 +384,44 @@
      happened.
      `document.fonts` does not exist in jsdom, so component tests fall through
      to an already-resolved promise. */
-  let anchoredAt = $state(-1);
+  let flashKey = $state('');
+  let played = '';
+  let flashTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
     const route = app.route;
     const anchor = route.kind === 'tables' ? route.anchor : '';
     const nav = app.navigations;
+    const lang = app.lang;
     const ready = !!index;
     if (!anchor || !ready) return;
-    if (anchoredAt === nav) return;
-    anchoredAt = nav;
+    const stamp = `${String(nav)}|${lang}`;
+    if (played === stamp) return;
+    played = stamp;
     untrack(() => {
-      const target =
-        document.getElementById('sec-' + anchor) ??
-        document.querySelector<HTMLElement>(`[data-row="${anchor}"]`);
-      if (!target) return;
-      target.classList.add('flash');
-      setTimeout(() => {
-        target.classList.remove('flash');
+      clearTimeout(flashTimer);
+      flashKey = anchor;
+      flashTimer = setTimeout(() => {
+        flashKey = '';
       }, 1600);
       /* `document.fonts` is declared non-optional in lib.dom, but jsdom does
          not implement it - the cast is what lets a component test run this
          effect without FontFaceSet existing at all. */
       const fonts = (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts;
       void (fonts?.ready ?? Promise.resolve()).then(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        /* The lookup happens here, not above: the element the effect saw at
+           trigger time can be replaced by a keyed re-render (a language
+           switch swaps the row's text nodes; a view switch swaps list rows
+           for grid tiles) before this promise resolves, and it is the
+           element live *now* that has to scroll into view. */
+        const target =
+          document.getElementById('sec-' + anchor) ??
+          document.querySelector<HTMLElement>(`[data-row="${anchor}"]`);
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
+  });
+  $effect(() => () => {
+    clearTimeout(flashTimer);
   });
 </script>
 
@@ -464,7 +489,12 @@
       <Empty>{t.nothing}</Empty>
     {:else}
       {#each altSections as s (s.key)}
-        <div class="tsection" id={'sec-' + s.key} style="margin-top:20px">
+        <div
+          class="tsection"
+          class:flash={flashKey === s.key}
+          id={'sec-' + s.key}
+          style="margin-top:20px"
+        >
           <SectionHead
             label={s.label}
             title={t.copySection}
@@ -479,6 +509,7 @@
               {view}
               {index}
               lang={app.lang}
+              flash={flashKey}
               selected={(id: string) => app.sel.has(id)}
               artBroken={(id: string) => app.artBroken(id)}
               ontoggle={(id: string) => {
@@ -504,7 +535,12 @@
     </Empty>
   {:else if bodyKind === 'tier' || bodyKind === 'frame' || bodyKind === 'comm' || bodyKind === 'eq'}
     {#each activeSections as s (s.key)}
-      <div class="tsection" id={'sec-' + s.key} style="margin-top:22px">
+      <div
+        class="tsection"
+        class:flash={flashKey === s.key}
+        id={'sec-' + s.key}
+        style="margin-top:22px"
+      >
         <SectionHead
           label={s.label}
           title={t.copySection}
@@ -517,6 +553,7 @@
           {view}
           {index}
           lang={app.lang}
+          flash={flashKey}
           selected={(id: string) => app.sel.has(id)}
           artBroken={(id: string) => app.artBroken(id)}
           ontoggle={(id: string) => {
@@ -540,6 +577,7 @@
       {view}
       {index}
       lang={app.lang}
+      flash={flashKey}
       selected={(id: string) => app.sel.has(id)}
       artBroken={(id: string) => app.artBroken(id)}
       ontoggle={(id: string) => {

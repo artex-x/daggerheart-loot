@@ -1977,3 +1977,124 @@ is preserved.
 outlined` heading - the section's text ran straight on from "B8 built", while
 `plan.md`'s own Phase 4 summary and `handoff.md`'s "Next batch" both send
 readers to "B9 outlined" by name. The heading is restored; no content changed.
+
+## The owner's answer on B9, and a post-migration review step (orchestrator, 2026-09-11)
+
+Two decisions from the repository owner, given at the B9 kickoff. Both are
+durable; neither is the orchestrator's to reinterpret.
+
+**1. The reduced-motion policy: option (a), port the live app.** The B9 outline
+put two options to the owner (`plan.md`, "B9 outlined", item 2 and "Questions
+for the owner before B9 is planned"): (a) delete `tokens.css`'s blanket
+`transition-duration: 0s !important` and let the rewrite transition exactly
+where the live app does, or (b) keep the blanket kill as a deliberate
+accessibility improvement and carry the `375` anchor cells as ~9% debt. **The
+owner chose (a): full parity.** The parity law - reproduce the shipped app -
+wins over an improvement the rewrite invented, and a pixel cell cannot be
+parked in `ACCEPTED`. `NEEDS_HUMAN_CONFIRMATION` for B9 is therefore **no** on
+this question; B9's planning pass proceeds without a second ask.
+
+**2. Parity-over-improvement is not "never fix it" - it is "fix it after the
+migration", and it needs somewhere to be written down.** The owner's
+instruction, verbatim in substance: achieve full parity, but *document* items
+like this one so they are handled post-migration, and add a separate step to
+the plan where the migrated app's state is reviewed, its issues identified, and
+those issues addressed **together with everything already recorded as deferred
+or ported-not-fixed**.
+
+So the rewrite now carries a third category alongside `VISUAL_DEBT` and
+`ACCEPTED`: a defect or a regression that the port **reproduced on purpose**
+because the live app has it. The reduced-motion kill is the first entry -
+deleting it is a real accessibility regression against the rewrite's own
+behaviour, accepted because parity demands it, and owed a fix once parity stops
+being the measure. Known candidates already scattered through `handoff.md`'s
+"Deferred": `Button.svelte`'s missing `:focus-visible` ring (`style.css:1002`
+has none either - the same shape of decision), `ListPage.svelte:103`'s stale
+`$effect` comment, and whatever `RecordPage.svelte:59`'s `.miss`-vs-`.page-sub`
+divergence turns out to be. The register's shape, its permanent home (a task
+directory is retired; `docs/specs/` and the READMEs are not - `CLAUDE.md`,
+"Task closeout and cleanup", step 6), and the review step's own gates are a
+**design question and therefore the planner's**, not something to be settled
+here.
+
+## B9 planning facts (planner, 2026-09-11) - durable, read before implementing
+
+Read off `bb61db0` and measured with three read-only puppeteer probes
+(scratchpad, not kept; harness launch args, `file://`, 1100 px) against
+`index.html` and the `dist/` built at 18:09 from `ee73d2e`, the last
+production change. Design and steps: `plan.md`, "B9 planned"; the review
+phase and the register: `plan.md`, "Phase 8".
+
+- **The parity filter for the print states is `"#/print/ci1-q1"`, not
+  `"#/print/ci1-q1-q313"`.** `WANTED` (`tests/parity.js:83-85`) filters on
+  the expanded state id, and the two print ids are `#/print/ci1-q1` and
+  `#/print/ci1-q1 ~ black and white` (`specs.js:1784, 1789`); no id carries
+  the route's full tail. Multiple filters are OR-ed (`parity.js:353`,
+  `WANTED.some`), so `"anchor" "#/print/ci1-q1"` is one 24-cell call.
+- **The flash target is `TablesPage`'s own `.tsection` div, not
+  `SectionHead`.** Both section bodies (`alt` at ~line 464 and
+  tier/frame/comm/eq at ~line 502) draw `<div class="tsection" id={'sec-'
+  + s.key}>` around `<SectionHead>`; the rows and tiles carry
+  `data-row={it.id}` on `.row` (`TableRows.svelte:105`) and `.tilewrap`
+  (`:131`), which is what the live `querySelector('[data-row=...]')`
+  finds in either view. `SearchPage` and `SharedListPage` also render
+  `TableRows` and pass no `flash`.
+- **The live app re-plays the anchor scroll-and-flash on every
+  `render()`, not only on a language switch.** `currentRoute()` writes
+  `S.tables.anchor = tail` on every call (`app.js:3632-3634`) and
+  `render()` ends with the scroll-and-flash block (3832-3845) that clears
+  it; `render()` is called 56 times in `app.js`, including from the
+  tables search box's input handler (`app.js:4435`: `if (el.id === 'tq')
+  { S.tables.q = el.value; render(); }`). So with an anchor in the
+  address, every keystroke in the live search box scrolls back to the
+  anchor and re-flashes it. No parity state types or ticks with an
+  anchor in the address. B9 ports the language-switch re-play only and
+  records the rest (`FEATURES.md`; `specs.js`, "Recorded, not keyed").
+- **Every rewrite animation has a live twin, so deleting the whole
+  `tokens.css` reduced-motion block leaves the live policy exactly:**
+  `.card` pop (`RecordCard.svelte:262`/`:278` = `style.css:308`/`311`),
+  `.modal-card` pop and `.modal-card .card{animation:none}`
+  (`RecordModal.svelte:159`/`:165` = 591/593), `.helpbox` pop
+  (`HelpBox.svelte:53` = 134, no reduced-motion rule on either side),
+  `.dropmenu` pop (`AddToList.svelte:291` = 435), `toastIn`
+  (`Toast.svelte:96` = 606), `.tsection.flash` (`TablesPage.svelte:635`/
+  `:655` = 538/544). None loops. The live stylesheet has no
+  `scroll-behavior` rule and both apps scroll with an explicit
+  `scrollIntoView({ behavior: 'smooth' })`, which the CSS property does
+  not override - the `scroll-behavior: auto !important` line is inert.
+  `tokens.css` declares no `transition` of its own; every transition in
+  the rewrite is a per-component port of a live one.
+- **The "missing `Button.svelte` focus ring" is a stale claim.**
+  `tokens.css:148-154` has a global `:focus-visible { outline: 2px solid
+  var(--gold); outline-offset: 2px; border-radius: var(--r-sm) }` since
+  `ae28b23` (Phase 4's first slice). Measured on a keyboard-focused `.btn`
+  ("Ссылка на таблицу", `#/tables`, reduced motion emulated so the
+  rewrite's transitions were off): rewrite `solid 2px rgb(216,171,94)`,
+  offset `2px`, radius `9px`; live, read at t=0 of its still-alive 150 ms
+  `.btn{transition:.15s}`, `solid 3px rgb(236,232,246)` (currentColor,
+  `--txt`), offset `0px`, radius `9px` - the pre-transition values, not
+  the browser's default ring (the UA ring reads `auto 1px`, seen on the
+  skip link). The live target is `style.css:1002-1005`: gold 2 px, 2 px
+  offset, `border-radius:8px`. So both apps draw the gold ring on a
+  button; the one difference is the focused radius, 9 px (`--r-sm`)
+  against 8. **Rule for anyone probing focus styles: read them after
+  `document.getAnimations()` is empty**, or every transitioning control
+  reports its old value. Also seen in the same walk and left for Phase 8
+  R1's keyboard pass, unmeasured beyond the raw read: the rewrite's skip
+  link and brand get the gold ring where the live app leaves the UA ring
+  (`auto 1px rgb(238,238,238)`), the search input's `outline-offset`
+  differs (0 against 2 px, with the same gold box-shadow), and the
+  rewrite's row checkbox draws its own gold ring where the live app rings
+  the `.selbox` label via `:has()`.
+- **`document.styleSheets[n].cssRules` throws over `file://`** (the sheet
+  is cross-origin to the page), so a probe cannot read which rule matched;
+  read computed values and reason from the source.
+- **`docs/specs/DEBT.md` is the register's home** (decided; reasons and
+  rejected homes in `plan.md`, "Phase 8"). `CLAUDE.md` is 191 lines; B9's
+  row and half-line take it to 193.
+- **The brief cited `CLAUDE.md`, "Task closeout and cleanup", step 6 for
+  the task directory's retirement; no such section exists at `bb61db0`.**
+  The nearest text is `plan.md`'s own line 8 ("Historical once ...") and
+  `CLAUDE.md`, "Orchestration" (the orchestrator "removes only clearly
+  disposable task-scoped scratch artifacts"). The conclusion the brief
+  drew - the register must not live in `issues/47/` - holds either way.

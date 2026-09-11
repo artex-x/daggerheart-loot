@@ -3,7 +3,8 @@
 Use this loop while reproducing the shipped static app in the Svelte rewrite.
 Coverage ownership and harness design live in `docs/specs/COVERAGE.md`; current
 migration debt and ordering live only in `issues/47/plan.md` and
-`issues/47/handoff.md`.
+`issues/47/handoff.md`; behaviour reproduced on purpose lives in
+`docs/specs/DEBT.md`.
 
 ## Contract
 
@@ -14,6 +15,8 @@ migration debt and ordering live only in `issues/47/plan.md` and
 - Expect zero pixel difference. `VISUAL_DEBT` is explicit debt, not tolerance;
   ratchet it down and delete it when paid.
 - Record deliberate accessibility improvements in `ACCEPTED` with a reason.
+- A live defect the rewrite reproduces on purpose is identical on both sides,
+  so nothing can key it; record it in `docs/specs/DEBT.md` instead.
 - A whole-page percentage cannot see a control-sized defect. A wrong font size
   on one line of a 1100x900 screen scores about 0.09% - under `JITTER`, so the
   state reports as matching. Before writing "antialiasing", "rasterisation" or
@@ -192,6 +195,9 @@ a CI reading.
 - Do not fake determinism for random output; test the stable surrounding shape.
 - A `timed` state is arrived at afresh at every width, not swept on one page.
 - A full-page capture is taken until two in a row agree, not on the first try.
+- Both apps are photographed under `prefers-reduced-motion: reduce`, and the
+  rewrite's policy there is the live app's - two named animations off, every
+  transition alive - so `settle()` waits on transitions as well as animations.
 
 ## Done
 

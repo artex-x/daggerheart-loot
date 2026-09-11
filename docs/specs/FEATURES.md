@@ -43,6 +43,12 @@ Six modes. Each keeps its own input in memory only.
 - Search covers all 1061 records: names, descriptions and stat lines, both
   languages at once; the first 300 matches are shown.
 - Every heading has a copy-link button; sections are addressable.
+- A row or section link (`#/tables/<table>/<key>` - what a record's "show in
+  table" link and a section's copy-link button produce) scrolls to its target
+  and outlines it in gold for 1.6 s. The scroll and the outline re-play on a
+  language switch. A search keystroke, a tick or a view switch does not
+  re-play them - the live app re-renders and re-scrolls on each, a defect not
+  reproduced.
 - **The three equipment tables hold equipment from every source, not only the
   two books**: 317 weapons, 108 secondary, 90 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages, Wondrous
@@ -133,3 +139,7 @@ Six modes. Each keeps its own input in memory only.
 - No tab is lit on a record, a list page or a print sheet - the live
   `renderTabs` compares against the raw route string, and none of those three
   route kinds is ever that string.
+- Under `prefers-reduced-motion: reduce` the card's entrance and the section
+  outline's fade are off (the outline is static); every other transition and
+  animation runs. Ported from the live app and owed a real policy:
+  `DEBT.md`, D1.

@@ -5,7 +5,8 @@ issue is the agreed plan; this file is the working copy, plus the decisions
 taken while carrying it out. Where the two differ, the difference is written
 down here with a reason.
 
-Historical once the cut-over is done. After that, work is driven by `CLAUDE.md`,
+Historical once Phase 8 closes - the cut-over retires the static root, and the
+review after it ("Phase 8", below) is the last phase here. After that, work is driven by `CLAUDE.md`,
 `docs/specs/*` and the tests.
 
 ## What must survive
@@ -25,7 +26,8 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | **in progress** - see below |
 | 5 | Testing pyramid: unit, component, a11y, e2e | largely arrived early, see below |
 | 6 | Build, artefacts, deployment | started: the build now completes `dist/` |
-| 7 | Cut-over, cleanup, README, standing agent guidance | not started |
+| 7 | Cut-over, cleanup, README, standing agent guidance | not started; its planning pass answers the Playwright question and does the `ACCEPTED` sweep - see "Phase 8", "Where the phase sits" |
+| 8 | Post-migration review: the app on its own terms | designed (2026-09-11) - see "Phase 8" below; runs after the cut-over, on the register B9 opens (`docs/specs/DEBT.md`) |
 
 ## Phase 4 - where the rewrite is
 
@@ -63,8 +65,9 @@ already being collected against the live app:
   `9fd3000` has all 54 `#/print` cells `совпадает` - see "B7 planned" and
   "B7 built". Phase 4 is complete.** What is open after it is bookkeeping
   and two follow-ups: "B8 planned" (the anchor debts, `main` red on the
-  ratchet), "B9 outlined" (the anchor re-play and the reduced-motion
-  policy), "B10 outlined" (the page-furniture extraction).
+  ratchet), "B9 planned" (implement-ready: the anchor re-play, the live
+  reduced-motion policy and the behaviour-debt register), "B10 outlined"
+  (the page-furniture extraction).
 
 **`#/lists` - the lists slice - is done as of B5.6.** Built across six
 batches, B5.1-B5.6 (see "B5 planned" onward); B5.6 was the last one. Every
@@ -9890,6 +9893,412 @@ are not lost): the reduced-motion policy, (a) or (b) above, with (a)
 recommended. `NEEDS_HUMAN_CONFIRMATION` for B9 is therefore expected to be
 `yes` at its planning pass unless the owner answers first.
 
+**Answered (owner, 2026-09-11): option (a).** Expanded to implement-ready
+in "B9 planned", next. One correction to the outline: the print filter is
+`"#/print/ci1-q1"`, not `"#/print/ci1-q1-q313"` - `WANTED` filters on the
+state id, and no id carries the route's full tail.
+
+### B9 planned: the anchor re-play, the live reduced-motion policy, and the behaviour-debt register (planner, 2026-09-11)
+
+Implement-ready. Supersedes "B9 outlined" above, which stays as the record
+of the question it put to the owner. Measured facts: `context.md`, "B8
+planning facts" and "B9 planning facts". The owner's decisions:
+`context.md`, "The owner's answer on B9, and a post-migration review step".
+
+**Objective.** Retire all seven remaining anchor `VISUAL_DEBT` entries by
+porting two behaviours the live app has and the rewrite does not - the
+anchor scroll-and-flash re-playing on a language switch, and transitions
+staying alive under `prefers-reduced-motion: reduce` - and open the
+register that the second of those is the first entry of:
+`docs/specs/DEBT.md`, the third category beside `VISUAL_DEBT` and
+`ACCEPTED` (design and rejected alternatives: "Phase 8", below).
+
+**Decided, not to be reopened.**
+
+1. **Reduced motion: option (a), the live policy, by deleting the whole
+   `@media (prefers-reduced-motion: reduce)` block in `tokens.css`**
+   (lines 156-176 at `bb61db0`) - all four lines, not only
+   `transition-duration`. Evidence, per line:
+   - `transition-duration: 0s !important` is the 6px on `core_item @ 375`
+     (B8, measured by injection both ways). The live app keeps every
+     declared `transition` alive under reduced motion.
+   - `animation-duration: 0.01ms` / `animation-iteration-count: 1`: the
+     rewrite's six `animation:` declarations map one to one onto the live
+     ones - `.card` pop (`RecordCard.svelte:262` = style.css:308, with the
+     reduced-motion `animation:none` ported at `:278` = 311), `.modal-card`
+     pop (`RecordModal.svelte:159` = 591, and `.modal-card .card
+     {animation:none}` at `:165` = 593), `.helpbox` pop (`HelpBox.svelte:53`
+     = 134, kept under reduced motion on purpose, its own comment says why),
+     `.dropmenu` pop (`AddToList.svelte:291` = 435), `toastIn`
+     (`Toast.svelte:96` = 606), and `.tsection.flash`
+     (`TablesPage.svelte:635` = 538, with 544's `animation:none; outline`
+     ported at `:655`). No animation in `app/src` loops. So with the block
+     gone the rewrite's per-component rules *are* the live policy, and the
+     harness's `settle()` (`driver.js:85`, `document.getAnimations()`,
+     which includes `CSSTransition`s) waits them out - timing, not pixels.
+   - `scroll-behavior: auto !important`: inert. Both apps scroll with
+     `scrollIntoView({ behavior: 'smooth' })`, and an explicit `behavior`
+     option is not overridden by the CSS property. The live app has no
+     `scroll-behavior` rule at all.
+   - Print is safe: `PrintCard.svelte` and `PrintPage.svelte` declare no
+     `transition`, so `fit()`'s synchronous read-back cannot hit a
+     `CSSTransition` (the B7 defect needed a non-zero duration on `*`).
+     The `"#/print/ci1-q1"` filter below is the proof, not the argument.
+   - Leave a four-line comment where the block was, so nobody reintroduces
+     it: no blanket rule on purpose, the live policy is two named
+     animations off and every transition alive, a blanket
+     `transition-duration` of *any* value differs from the live app (B8)
+     and a non-zero one broke `fit()` (B7); owed a real policy after the
+     migration - `docs/specs/DEBT.md`, D1.
+2. **The re-play is keyed on the language, and only the language.** The
+   live `render()` re-parses the anchor from the hash on every call
+   (app.js 3632-3634) and runs the scroll-and-flash block at its end
+   (3832-3845), so the `EN` press re-scrolls and re-flashes. It also does
+   so on every other `render()` with the anchor still in the address - a
+   search keystroke (`app.js:4435`: `S.tables.q = el.value; render()`), a
+   tick, a view switch - which drags the reader back to the anchor on every
+   keystroke. That is a live defect and B9 does **not** reproduce it: the
+   precedent is the grid-numbering bug in `ACCEPTED`; no parity state types
+   or ticks with an anchor in the address, so nothing keys it, and it is
+   written down instead (`FEATURES.md` bullet and `specs.js`'s "Recorded,
+   not keyed" paragraph, both in this batch). The port re-plays on the two
+   renders a person can cause with the anchor still in the address: a
+   navigation (`app.navigations`, as today) and a language switch
+   (`app.lang`, new).
+3. **The flash is state, not a DOM write.** `flashKey` on `TablesPage` and
+   a `flash` prop on `TableRows`; `class:flash` on `.tsection`, `.row` and
+   `.tilewrap`. The timer starts in the effect, synchronously, as today -
+   the live `render()` adds the class synchronously too, and the `@ ru`
+   cells pass today because both rings have expired by the shot; a later
+   start would keep the rewrite's ring alive past the live one's and
+   regress those cells. Only the scroll waits (`document.fonts.ready`, the
+   measured reason in the component's own comment - keep it).
+4. **`SectionHead.svelte` is not touched.** The outline named it, but the
+   flash target is the `.tsection` div that `TablesPage` draws around it,
+   not the heading.
+5. **Numbers.** None from this host. Delete an entry only when the local
+   advisory run reads it `совпадает` *and* the mechanism behind it is one
+   this batch closed (every anchor entry is); leave any cell that still
+   reads non-zero at its recorded CI figure, untouched, and hand it to CI.
+   The batch's closing condition is the CI read on the owner's push, as
+   B8's was - an OPEN "Blockers" entry until then.
+6. **The register is created in this batch, not at Phase 8.** The D1 entry
+   carries measurements (the 6px, the 22px, the injection proof) that
+   cannot be retaken once the static root is gone; and a `CLAUDE.md` row
+   makes B10, Phase 7 and every later batch write its own entries as it
+   goes instead of a sweep from memory at the end. Shape and rejected
+   homes: "Phase 8", below.
+
+**In scope.** `TablesPage.svelte` (effect and template), `TableRows.svelte`
+(one optional prop, two `class:` bindings), `tables.test.ts`, `tokens.css`,
+`tests/parity/specs.js` (entries and the note), `docs/specs/FEATURES.md`,
+`docs/specs/DEBT.md` (new, with D1-D4), `docs/parity.md`,
+`docs/specs/COVERAGE.md` (one sentence), `CLAUDE.md` (one table row, one
+half-line).
+
+**Out of scope.** `SectionHead.svelte`; `Button.svelte` and any focus-ring
+work (measured, not a defect - `context.md`, "B9 planning facts"); the
+`RecordPage.svelte:59` `.miss` fix and every other furniture item (B10); the
+harness's width sweep; any `VISUAL_DEBT` figure from this host; any
+reduced-motion policy *design* (Phase 8's).
+
+**Steps.**
+
+1. Preflight: `git log --oneline -3` shows `bb61db0` on top; `git status
+   --short` shows nothing but `?? issues/tg-preview-refresh/` (another
+   task's - never stage it) and, after step 2, your own edits. No
+   `node tests/parity.js` in `tasklist`.
+2. `app/src/components/TablesPage.svelte`, the anchor effect (lines
+   338-399 at `bb61db0`):
+   - Replace `let anchoredAt = $state(-1)` with three declarations: `let
+     flashKey = $state('')` (read by the template), and two plain
+     non-reactive `let`s - `played = ''` (the `${navigations}|${lang}`
+     stamp the anchor was last played for) and `flashTimer:
+     ReturnType<typeof setTimeout> | undefined`.
+   - In the effect: read `app.route`, `app.navigations`, `app.lang` and
+     `index` as tracked dependencies; compute `stamp =
+     \`${nav}|${lang}\``; return if no anchor or no index; return if
+     `played === stamp`; set `played = stamp`; then inside `untrack`:
+     `clearTimeout(flashTimer)`, `flashKey = anchor`, `flashTimer =
+     setTimeout(() => { flashKey = ''; }, 1600)`, and the existing
+     `fonts.ready` promise whose `.then` now *does the lookup itself*
+     (`document.getElementById('sec-' + anchor) ??
+     document.querySelector<HTMLElement>(\`[data-row="${anchor}"]\`)`) and
+     calls `scrollIntoView({ behavior: 'smooth', block: 'start' })` on it
+     if found. The lookup moves into the `.then` because the element the
+     effect saw can be replaced by a keyed re-render before the promise
+     resolves; nothing about *when* the scroll happens changes.
+   - Add `$effect(() => () => clearTimeout(flashTimer))` - unmount only,
+     no dependencies; a cleanup returned from the anchor effect itself
+     would clear the timer on every re-run, which the live app does not.
+   - Rewrite the comment's first paragraph to say what decided 2 says
+     (guarded on the navigation count *and* the language; the keystroke
+     re-play is a live defect not copied, with `app.js:4435` cited) and
+     its "The flash starts immediately" paragraph to add why the class is
+     state (decided 3). Keep the measured `fonts.ready` paragraphs as they
+     are.
+   - Template: on both `.tsection` divs (the `alt` body and the
+     tier/frame/comm/eq body) add `class:flash={flashKey === s.key}`; on
+     all three `<TableRows>` call sites add `flash={flashKey}`.
+3. `app/src/components/TableRows.svelte`: add `flash?: string` to `Props`
+   with a doc comment ("the id of the row the anchor effect is outlining
+   right now - state rather than a DOM write, so a keyed re-render keeps
+   it; `TablesPage`'s `flashKey`"); destructure it; add
+   `class:flash={flash === it.id}` to the `.row` div (line 105) and the
+   `.tilewrap` div (line 131). `SearchPage` and `SharedListPage` pass
+   nothing and need no change.
+4. `app/src/components/tables.test.ts`, in `describe('the row and section
+   anchor')`, real timers, the file's existing `render(App, { env:
+   fakeEnv({ router: memoryRouter(...), data: fakeData(LOOT) }) })` shape,
+   `Element.prototype.scrollIntoView = vi.fn()` per case as the file does:
+   - "the outline follows the record into the grid view": arrive at
+     `#/tables/core_item/ci2`, wait for `[data-row="ci2"]` to have `flash`,
+     then `await userEvent.click(screen.getByRole('button', { name:
+     'Сеткой' }))` (the file's own shape, line 247), re-query
+     `[data-row="ci2"]` - it is now the `.tilewrap` - and assert it has
+     `flash` and `scroll` was still called once. The view switch replaces
+     the element outright, which is the regression a class written behind
+     Svelte's back cannot survive and state can; a tick only toggles
+     `class:sel` on the same element and would pass either way.
+   - "re-plays the scroll and the outline on a language switch": arrive
+     the same way, wait for `flash` and one scroll call, `await
+     userEvent.click(screen.getByRole('button', { name: 'EN' }))`, then
+     `waitFor` `scroll` called twice and the target (re-query it) has
+     `flash`.
+   - "a search keystroke does not re-play it": arrive, wait for one scroll
+     call, type one character into the toolbar search box
+     (`getByPlaceholderText('Поиск по названию или описанию…')`), assert
+     `scroll` still called once.
+   - Keep the four existing anchor cases unchanged. End each new case the
+     way the file's other cases in this `describe` end (they assert and
+     return; the axe sweep for this screen is `a11y.test.ts`'s).
+5. `app/src/styles/tokens.css`: delete lines 156-176 (the comment line
+   "Anyone who has asked..." through the block's closing brace) and put
+   the four-line comment from decided 1 in their place.
+6. `docs/specs/DEBT.md`: create it from the shape in "Phase 8", below,
+   with entries D1-D4 whose text is given there verbatim. D1 is this
+   batch's; D2-D4 are the sweep's, written now because the register's
+   first commit should show the shape on more than one entry and because
+   each is already measured and cited.
+7. `CLAUDE.md`: add the row `| \`docs/specs/DEBT.md\` | live defects the
+   rewrite reproduces on purpose, and live decisions kept over its own;
+   owed a fix after the migration |` to the spec table after `META.md`,
+   and extend the "Migration and parity" bullet "Record intentional
+   accessibility differences in `ACCEPTED` with a reason." with "; a live
+   defect reproduced on purpose goes in `docs/specs/DEBT.md`." The file is
+   191 lines; stay under 200.
+8. `docs/specs/FEATURES.md`: under "Tables and search", after "Every
+   heading has a copy-link button; sections are addressable.", add: "A row
+   or section link (`#/tables/<table>/<key>` - what a record's "show in
+   table" link and a section's copy-link button produce) scrolls to its
+   target and outlines it in gold for 1.6 s. The scroll and the outline
+   re-play on a language switch. A search keystroke, a tick or a view
+   switch does not re-play them - the live app re-renders and re-scrolls
+   on each, a defect not reproduced." Under "Chrome", add: "Under
+   `prefers-reduced-motion: reduce` the card's entrance and the section
+   outline's fade are off (the outline is static); every other transition
+   and animation runs. Ported from the live app and owed a real policy:
+   `DEBT.md`, D1."
+9. `docs/parity.md`: in "Contract", after the `ACCEPTED` bullet, add
+   "- A live defect the rewrite reproduces on purpose is identical on both
+   sides, so nothing can key it; record it in `docs/specs/DEBT.md`
+   instead." In "Harness invariants", add "- Both apps are photographed
+   under `prefers-reduced-motion: reduce`, and the rewrite's policy there
+   is the live app's - two named animations off, every transition alive -
+   so `settle()` waits on transitions as well as animations." In the
+   intro paragraph, extend "current migration debt and ordering live only
+   in `issues/47/plan.md` and `issues/47/handoff.md`" with "; behaviour
+   reproduced on purpose lives in `docs/specs/DEBT.md`". `docs/specs/
+   COVERAGE.md`, "The rewrite against the app it replaces", after the
+   three kinds of finding: "A fourth thing is never a finding: a live
+   defect the rewrite reproduces on purpose is identical on both sides,
+   so it is written in `docs/specs/DEBT.md` rather than keyed here."
+10. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one foreground
+    call, Bash timeout 600000. Green before anything below.
+11. `set -o pipefail; npm run check:built 2>&1 | tail -n 60` - one
+    foreground call, timeout 600000 (build + `file://` smoke + budget; a
+    screen changes, so it is a gate).
+12. `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor" "#/print/ci1-q1"` -
+    one foreground call, timeout 600000. Filters are OR-ed
+    (`tests/parity.js:353`, `WANTED.some`), so this is four states, 24
+    cells. **The outline's `"#/print/ci1-q1-q313"` matches nothing** -
+    `WANTED` filters on the state id, and the print ids are
+    `#/print/ci1-q1` and `#/print/ci1-q1 ~ black and white`. If the call
+    approaches the cap, split it into two calls, each in the foreground.
+    Read the twelve anchor lines and the twelve print lines. Expected: the
+    twelve print cells `совпадает` (unchanged); the eight `@ ru|en
+    1100|768` anchor cells `совпадает`, the four `@ en` ones now failing
+    as `долг погашен - удали запись`; the three `375` cells either
+    `совпадает`/`долг погашен` (the mechanism closed on this host too) or
+    a figure inside their recorded debt.
+    Open `test-output/parity/` for `core_item ~ row anchor @ en 1100`: the
+    `-next.png` shows the gold ring around `ci1`'s row where before it
+    showed none. Copy the four anchor `-next.png`/`-diff.png` pairs to
+    `issues/47/evidence/b9/` (create it) before any further run wipes
+    them.
+13. `tests/parity/specs.js`: delete every anchor entry the run reported
+    `долг погашен` (decided 5). Replace the long comment block above the
+    `@ en 1100|768` entries and the one above the `375` entries with one
+    short note in their place: what the two mechanisms were, that B9
+    closed both (the ring is state, the re-play on `app.lang`, the live
+    reduced-motion policy - `docs/specs/DEBT.md`, D1), and that the
+    measured history is in git at `274aa99`. Do not append to the old
+    text; a note that is three screens long stops being read. In the
+    "Recorded, not keyed" paragraph above `ACCEPTED`, add one sentence:
+    the live app re-plays the anchor scroll-and-flash on every render -
+    a search keystroke included (`app.js:4435`) - and the rewrite re-plays
+    it on a navigation and a language switch only; no state types with an
+    anchor in the address, so nothing keys it (`FEATURES.md`, "Tables and
+    search"). Re-run step 12's anchor filter once after editing
+    (`"anchor"` alone, 12 cells) to confirm no `FAIL VISUAL_DEBT[...]
+    такого состояния нет` and no remaining `долг погашен`.
+14. Re-run step 10 (the tree changed since it armed). Commit as one
+    commit, Conventional Commits, author `artex-x
+    <artex-x@users.noreply.github.com>`, no attribution trailer, e.g.
+    `feat(app): the anchor re-play and the live reduced-motion policy
+    (#47)`. Public contracts are untouched, so no fixture or `llms.txt`
+    change. Never push.
+15. Update `handoff.md` (Status, Completed, Verification with every
+    command and the 24 + 12 parity lines verbatim, Blockers with the OPEN
+    "waits on CI's read" entry, Next batch -> B10) and `plan.md` ("B9
+    built"). Any cell left at its CI figure is named there, with "CI
+    decides".
+
+**Acceptance criteria.**
+
+- `tables.test.ts`: the three new cases pass and the four existing anchor
+  cases are unchanged and green; per-file coverage thresholds hold.
+- `tokens.css` has no `prefers-reduced-motion` block; `grep -rn
+  "prefers-reduced-motion" app/src` finds exactly the two per-component
+  rules (`RecordCard.svelte`, `TablesPage.svelte`) and nothing else.
+- Step 12: all twelve `#/print/ci1-q1` cells `совпадает`; every anchor
+  cell either `совпадает` or inside its recorded debt; no cell worse than
+  its recorded figure. The four `@ en 1100|768` entries are deleted
+  (their only content was the ring, which now draws; if any of the four
+  still reads non-zero locally, stop and record the diff image - that is
+  a defect in the port, not a machine variance, because the ring is above
+  the fold at those widths).
+- The `-next.png` for `core_item ~ row anchor @ en 1100` shows the ring.
+- `specs.js`: no `VISUAL_DEBT` key without a state, no entry the local run
+  reports `долг погашен`; the "Recorded, not keyed" paragraph names the
+  keystroke re-play.
+- `docs/specs/DEBT.md` exists with the header and D1-D4; `CLAUDE.md`
+  routes to it and is under 200 lines; `FEATURES.md`, `parity.md`,
+  `COVERAGE.md` carry the sentences in steps 8-9.
+- `npm run check` and `npm run check:built` green on the committed tree,
+  in the foreground; the commit gate armed from that run.
+
+**Gates and cost.** `npm run check` (~165 s idle, once per commit),
+`check:built` (a few minutes, once), the parity filter (24 cells, once,
+plus a 12-cell re-run after the `specs.js` edit). One batch: the anchor
+states and the print states share nothing but the run, but the print
+filter is the transition policy's own proof and costs one call more, not
+a separate batch. The full suite is CI's on the owner's push.
+
+**Risks / do-nots.**
+
+- Do not write a `VISUAL_DEBT` figure from this host (owner decision 1).
+  A cell that improves but does not reach zero keeps its CI figure until
+  CI reads it.
+- Do not move the flash's start into the `fonts.ready` `.then` (decided
+  3): the `@ ru` cells would regress.
+- Do not key the re-play on anything but `navigations` and `lang` - not
+  on `q`, `view` or the selection (decided 2).
+- Do not port a `.tsection.flash`/`.row.flash` rule change; only the
+  class application changes. The reduced-motion `outline` on
+  `.tsection.flash` (`TablesPage.svelte:655`) is what the harness
+  photographs and it stays.
+- Do not add `flash` to `SectionHead`; do not touch `Button.svelte`.
+- If `npm run check` is moved to the background by the cap, re-run it; a
+  backgrounded run cannot arm the gate and `bash-guard.mjs` blocks a
+  deliberately backgrounded one.
+- Reviewer: this batch changes what a screen draws, so the orchestrator's
+  risk rules put a review on it.
+
+**Fallback.** If the language-keyed re-play moves an unrelated tables
+cell (none is expected - every other tables state has no anchor in its
+address, so the effect returns early), the re-play is still correct and
+the cell's diff image is the evidence to read before anything is undone.
+
+### B9 built: the anchor re-play, the live reduced-motion policy, and the behaviour-debt register (implementer, 2026-09-11)
+
+Built to the plan above with no design deviation. Preflight matched the
+brief exactly: HEAD `bb61db0`, `git status --short` showed only the
+planner's uncommitted `context.md`/`plan.md`/`handoff.md` and the
+untracked `issues/tg-preview-refresh/` (another task's, never staged).
+
+Steps 2-9 as specified: `TablesPage.svelte`'s effect now keys on
+`${navigations}|${lang}` (`played`), holds `flashKey` as `$state`, and
+does the element lookup inside the `fonts.ready` `.then` rather than at
+trigger time; a second, dependency-free `$effect` clears `flashTimer` on
+unmount only. `TableRows.svelte` takes an optional `flash?: string` and
+applies `class:flash` on `.row` and `.tilewrap` (the CSS rules themselves
+were untouched, per decided 4). `tokens.css` lost the whole
+`@media (prefers-reduced-motion: reduce)` block; `grep -rn
+"prefers-reduced-motion" app/src` now finds exactly `RecordCard.svelte`
+and `TablesPage.svelte`. `docs/specs/DEBT.md` was created with D1-D4
+verbatim; `CLAUDE.md` (193 lines), `FEATURES.md`, `docs/parity.md`,
+`docs/specs/COVERAGE.md` all carry the sentences the plan specifies.
+
+Two eslint errors surfaced at `npm run check` that `svelte-check` had not
+caught: `${nav}` over a `number` needed `String(nav)`
+(`@typescript-eslint/restrict-template-expressions`), and the unmount
+effect's inner arrow `() => clearTimeout(flashTimer)` needed braces
+(`@typescript-eslint/no-confusing-void-expression` on the shorthand-void
+form). Neither is a design deviation; both are one-line fixes the plan's
+steps did not anticipate because they were written against `svelte-check`
+output, not `eslint`'s.
+
+**`MSYS_NO_PATHCONV=1 node tests/parity.js "anchor" "#/print/ci1-q1"`**
+(one foreground call) matched **36 cells, not the predicted 24**: the
+filter string `"#/print/ci1-q1"` is also a prefix of
+`"#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11"`, so both print states
+matched, not one - 4 print states x 6 cells = 24 print cells, plus 12
+anchor cells = 36. Every print cell read `совпадает`, satisfying the
+acceptance criterion regardless of the count; the plan's own filter-cost
+arithmetic ("four states, 24 cells") undercounted by exactly this, worth
+recording so a later batch does not re-derive it as a surprise.
+
+All twelve print-suite states (both ids, both layouts) read `совпадает`.
+All seven anchor `VISUAL_DEBT` entries read **0.00% locally** - not only
+the four whose message was `долг погашен - удали запись` (`core_item @ en
+1100|768`, `voa @ en 768`), but also the other three, which read `стало
+лучше - опусти число` (`voa @ en 1100`, and all three `375` entries)
+because their recorded figures exceeded `DEBT_SLACK` (0.5) and
+`parity.js`'s message-selection branches on the *recorded* figure's size,
+not on whether the actual result is a match. Per decided 5 - delete an
+entry when the local run reads it as a match and the mechanism this batch
+closed is the entry's, and "every anchor entry is" - all seven were
+deleted, matching the batch's own Objective. `core_item ~ row anchor @ en
+1100`'s `-next.png` shows the gold ring around "Premium Bedroll" (`ci1`),
+confirmed by eye; that pair and the other three `@ en 1100|768` pairs are
+copied to `issues/47/evidence/b9/`.
+
+`tests/parity/specs.js`: the two long comment blocks above the anchor
+entries replaced with one short note pointing at `274aa99` for the
+measured history rather than repeating it; the "Recorded, not keyed"
+paragraph gained the keystroke-re-play sentence. Re-running
+`"anchor"` alone (12 cells) afterward read `совпадает` on every cell -
+`расхождений нет`, no `долг погашен` left, no `такого состояния нет`.
+
+**`set -o pipefail; npm run check 2>&1 | tail -n 120`** (Bash timeout
+600000): exit 0 both times it was run (after the component/docs edits,
+and again after the `specs.js` edit) - `format:check`, `lint`,
+`typecheck` (540 files, 0 problems), `data`/`derived`/`i18n`/`selftest`
+(292/292), `vitest run --coverage` (41 files, 997 tests passing;
+statements 96.49%, branches 88.38%, functions 96.89%, lines 97.21% - all
+above threshold). **`set -o pipefail; npm run check:built 2>&1 | tail -n
+60`**: exit 0 - build, `file://` smoke, bundle budget (88.5 kB gzip
+against 120 kB). The commit gate is armed for the committed tree.
+
+No `VISUAL_DEBT` figure was written from this host (owner decision 1
+honoured - every anchor entry was deleted outright, none re-numbered).
+
+**Committed as `<pending - see handoff.md for the hash>`; not pushed
+(never this session's to do).** B9's own closing condition, same shape as
+B8's: a green CI read of the owner's push. Open in `handoff.md`,
+"Blockers", until then.
+
 ### B10 outlined: the page-furniture extraction pass (planner, 2026-09-11)
 
 Not implement-ready; a planning pass expands it. Inventoried at `9fd3000`
@@ -9946,6 +10355,17 @@ percentage points of recorded debt and restores a user-visible behaviour,
 and because B10's whole-suite CI read is cleaner once the anchor cells are
 exact.
 
+**Assigned by the B9 planning pass (2026-09-11), for B10's planning pass
+to fold in** (the classification table is in "Phase 8", below):
+`ListPage.svelte:103`'s stale `$effect` comment (B10 opens `ListPage`);
+`Shell.svelte`'s `@page` outside `@media print` if B10 opens `Shell`;
+the two "Recorded, not keyed" sentences for B7's segment `aria-pressed`
+and `<h2 class="pc-name">` (B10 touches `specs.js` for its re-read); the
+spec nits B6 nit 10, B5.3 nit 2 and B5.6 nit 5 (B10 touches `FEATURES.md`
+for the `.page-sub` fix); `.badge` only if the card and the rows are
+re-measured anyway. Any register entry B10 finds itself writing goes in
+`docs/specs/DEBT.md` in the same commit, in the shape "Phase 8" gives.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
@@ -9958,6 +10378,344 @@ The pyramid arrived alongside Phase 4 rather than after it:
 
 What is left of Phase 5 is Playwright, and it is worth asking whether it is
 still needed: the parity harness already drives both apps in a real browser.
+**Answered where it comes due, not before:** the harness is the net until
+the static root retires, so Phase 7's planning pass decides what replaces
+it - see "Phase 8", "Where the phase sits", entry condition 3.
+
+## Phase 8 - the post-migration review: the app on its own terms (planner, 2026-09-11)
+
+Asked for by the owner at the B9 kickoff (`context.md`, "The owner's answer
+on B9, and a post-migration review step"): achieve full parity now, write
+down what parity made the rewrite keep, and add a separate step where the
+migrated app is reviewed, its issues found, and those fixed together with
+everything already recorded as deferred or ported-not-fixed. This section
+is that step's design. It is not implement-ready - it cannot be until
+Phase 7 has happened - but its entry condition, its batches, its gates and
+its register are decided here so that B9 can open the register today.
+
+### The register: `docs/specs/DEBT.md`
+
+**What it is.** The third category beside `VISUAL_DEBT` and `ACCEPTED`. A
+`VISUAL_DEBT` entry is a pixel difference not yet reproduced; an `ACCEPTED`
+entry is a *difference* kept on purpose, keyed and enforced (a stale key
+fails the run). Neither can hold a defect the rewrite reproduced *because
+the live app has it*: there is no difference to key, both apps are
+identical by construction, and the harness will never mention it. That is
+what the register holds, and it is the one of the three that must outlive
+the migration - the other two are deleted with the harness.
+
+**Where, and why there.** `docs/specs/DEBT.md`, a spec file, listed in
+`CLAUDE.md`'s spec table with the authority "live defects the rewrite
+reproduces on purpose, and live decisions kept over its own; owed a fix
+after the migration". Reasons: `docs/specs/` is what every agent reads for
+a touched path and it is the one place `CLAUDE.md` says durable behaviour
+belongs; a spec file survives the task directory's retirement and the
+harness's; and an entry *is* a behaviour statement ("the app does X; X is
+wrong; here is why it does it anyway") - it reads as a spec with a debt
+attached, which is exactly what it is.
+
+Rejected homes:
+
+- `tests/parity/specs.js`, beside `ACCEPTED` - nothing keys an identical
+  behaviour (the "Recorded, not keyed" precedent), and the file goes when
+  the static root does.
+- a section in `docs/parity.md` - the runbook is the harness's and retires
+  with it; its own first paragraph sends migration debt to `issues/47/`.
+- a section in `docs/specs/FEATURES.md` - the product spec should say what
+  the app does, and an entry that says "and this is wrong, fix it later"
+  in the middle of it would either be read as behaviour or skipped. The
+  register cross-references `FEATURES.md` bullets instead (D1 does).
+- `issues/47/` - retired with the task; and Phase 8 needs the register as
+  its *input*, which a retired directory cannot be.
+- GitHub issues, one per entry - outlive the task but not in the tree, need
+  `gh` and a network, and cannot carry a rule or a measurement verbatim.
+  Phase 8 R1 files issues *from* the register for whatever it does not fix.
+- the READMEs - a reader's document, not a maintainer's.
+
+**Shape.** A short header (what the file is, the two sibling categories,
+the rule that the batch which pays an entry deletes it - the same ratchet
+culture as `VISUAL_DEBT` - and that a new entry is written in the batch
+that makes the decision, never later), then two sections:
+
+1. **Defects reproduced on purpose** - the live app is wrong, the rewrite
+   copies it, parity was the reason.
+2. **Live decisions kept over the rewrite's own** - not a defect; a design
+   the rewrite argued against and lost to parity. Re-examined at Phase 8,
+   and either kept (entry deleted, `FEATURES.md`/`STATE.md` say so) or
+   changed.
+
+Each entry is a `### D<n> - <name>` with these fields, in this order, every
+one filled:
+
+- **Where** - the rewrite's file and line at the commit that wrote the
+  entry, and the live rule or code *quoted* with its `style.css`/`app.js`
+  line and a commit hash it can be read at (`git show <hash>:app.js`). The
+  quote is load-bearing: the live source is deleted at the cut-over, and a
+  line number into a deleted file is no evidence.
+- **Live behaviour** - what a person experiences, one or two sentences.
+- **What the rewrite would do instead** - the fix, as a behaviour, not a
+  diff.
+- **Why parity won** - the batch, the date, the measured reason.
+- **How to verify the fix** - the test, state or probe that pins it, and
+  what has to change in specs at fix time.
+- **Recorded by** - batch and date.
+
+**The four entries B9 writes.** Verbatim, so the implementer copies rather
+than composes. Cite `bb61db0` as the commit the live lines are read at.
+
+> ### D1 - transitions run under `prefers-reduced-motion: reduce`
+>
+> - **Where**: `app/src/styles/tokens.css` - no reduced-motion block, by
+>   design (a comment marks the place). Live: `style.css:311`
+>   `@media (prefers-reduced-motion:reduce){.card{animation:none}}` and
+>   `:544` `@media (prefers-reduced-motion:reduce){.tsection.flash{
+>   animation:none;outline:2px solid var(--gold)}}` - the only two
+>   reduced-motion rules in the live stylesheet; every `transition:` (`.btn`
+>   232, `.row` 550, `.chip` 159, `.tsec-link` 531 and twenty-odd more) and
+>   the `pop`/`toastIn` animations on the help box (134), the menu (435),
+>   the modal (591) and the toast (606) stay live. Read at `bb61db0`.
+> - **Live behaviour**: a person who has asked their system for less motion
+>   still gets every 150 ms colour, width and position ease on hover,
+>   press and breakpoint, the toast's slide-in, the menu's and the modal's
+>   pop. Only the card's entrance and the section outline's fade are off.
+> - **What the rewrite would do instead**: a real policy - the blanket
+>   kill it shipped with until B9 (`animation-duration: 0.01ms`,
+>   `animation-iteration-count: 1`, `transition-duration: 0s`,
+>   `scroll-behavior: auto`, all `!important` on `*`) or a narrower one,
+>   designed with `PrintCard.svelte`'s `fit()` in mind: a non-zero blanket
+>   `transition-duration` starts a `CSSTransition` whose value at t=0 is
+>   the old one and breaks the synchronous read-back (B7).
+> - **Why parity won**: the harness photographs both apps under reduced
+>   motion. With every transition killed the rewrite is not adjusted by
+>   Chrome's scroll anchoring when the width sweep crosses 600 px and the
+>   live app is - 6 px on `#/tables/core_item ~ row anchor @ 375`, both
+>   languages, proved by injection both ways (B8, `issues/47/context.md`,
+>   "B8 planning facts"). The owner chose full parity over the rewrite's
+>   invented improvement (2026-09-11). Deleted in B9.
+> - **How to verify the fix**: under `page.emulateMediaFeatures([{ name:
+>   'prefers-reduced-motion', value: 'reduce' }])`, `document.getAnimations()`
+>   after a hover or a breakpoint change is empty; `#/print/ci1-q1` still
+>   fits (the `print` suite's geometry) and the first cards keep their art;
+>   `FEATURES.md`, "Chrome", reduced-motion bullet rewritten.
+> - **Recorded by**: B9, 2026-09-11.
+
+> ### D2 - a stale packed-link expansion rewrites the address after the reader has left
+>
+> - **Where**: `app/src/state/app.svelte.ts`, `#expand()` - the `.then`
+>   replaces the address unconditionally. Live: `app.js:3589-3603`
+>   `expandHash()`: `unpackPayload(h.slice(2)).then(function (plain) {
+>   if (history.replaceState) history.replaceState(null, '',
+>   appUrl('#/l/' + plain)); else location.hash = '#/l/' + plain;
+>   render(); })`. Read at `bb61db0`.
+> - **Live behaviour**: open a `#/l/~...` link, navigate away before it has
+>   unpacked (a slow device, a large list), and the unpack, resolving late,
+>   sends you back to the shared list.
+> - **What the rewrite would do instead**: drop the result when the route
+>   is no longer the packed address it was unpacking (compare the payload
+>   captured at start with `this.route` at resolve time).
+> - **Why parity won**: B5.6 (2026-09-11) ported the live shape; its review
+>   named the flaw and said it must not be fixed without recording the
+>   divergence. Nothing pins it: the harness's `ready()` blocks until the
+>   expansion is done, so no state can observe the window.
+> - **How to verify the fix**: `app.test.ts` - a `compress` port whose
+>   `unpack` resolves on demand; `go()` elsewhere before it resolves; the
+>   hash stays where the person went. `STATE.md`, "The list migration" or
+>   `FEATURES.md`, "Lists", one clause.
+> - **Recorded by**: B9, 2026-09-11 (found by the B5.6 review).
+
+> ### D3 - the storage notice's dismiss button lives inside its `<summary>`
+>
+> - **Where**: `app/src/components/StorageNotice.svelte:43-50`, a
+>   `<button class="warn-x">` inside `<summary>`; `app/src/test/a11y.ts`
+>   turns axe's `nested-interactive` rule off **suite-wide** to allow it.
+>   Live: `app.js:2881-2884` `'<details class="warn"><summary>' + '<b>' +
+>   ... + '<button type="button" class="warn-x" data-act="hideWarn" ...
+>   >&times;</button>'`, with the comment "The cross lives inside the
+>   summary: a closed <details> hides everything else, which would leave
+>   nothing to dismiss it with." Read at `bb61db0`.
+> - **Live behaviour**: a screen reader lands on a summary that is also a
+>   button; activating the cross toggles and dismisses in one gesture on
+>   some assistive technology, and the nested-interactive shape is a WCAG
+>   4.1.2 failure axe reports on any page it runs on.
+> - **What the rewrite would do instead**: a notice that is a region with
+>   its own "read more" toggle and a sibling dismiss button, or the cross
+>   outside the `<details>`; then `nested-interactive` back on for the
+>   whole suite (the per-call override the B5.3 review suggested is the
+>   interim shape if only this component needs it).
+> - **Why parity won**: B5.3 (2026-09-10) ported the live markup so the
+>   `#/lists` states compare pixel for pixel; the rule was switched off
+>   rather than the markup changed.
+> - **How to verify the fix**: `OFF` in `a11y.ts` has no `nested-interactive`
+>   line; `listsPage.test.ts`'s notice cases end in
+>   `expectNoA11yViolations`; every `#/lists` state in the post-cut-over
+>   net still passes. `FEATURES.md`, "Lists", the storage-notice bullet.
+> - **Recorded by**: B9, 2026-09-11 (found by the B5.3 review).
+
+> ### D4 - one kind filter shared by Core rules, the alternate tables and search
+>
+> (Section 2 - a decision, not a defect.)
+>
+> - **Where**: `app/src/state/app.svelte.ts`, `kinds`/`toggleKind`, memory
+>   only, untouched by navigation. Live: `S.kind`, one object - the
+>   kind chips flip it (`app.js:4162` `S.kind[val] = !S.kind[val]`) and
+>   `kindAllows()` (2132), the alternate-table pickers (2286-2293) and
+>   `renderSearch` (2841) all read it. Read at `bb61db0`.
+> - **Live behaviour**: switching consumables off on Core rules switches
+>   them off on the alternate tables and on search too.
+> - **What the rewrite would do instead**: a kind filter per page, which
+>   is what `docs/specs/STATE.md`'s own rule argues for ("what was asked
+>   on a page belongs to the page") and what the rewrite shipped until B6.
+> - **Why parity won**: B6 (2026-09-11) moved it to `AppState` as the live
+>   shape - `plan.md`, "The kind filter: per panel first, then per app".
+>   No parity state navigates between two roll modes, so neither shape
+>   is measured; parity won as the default, not as a finding.
+> - **How to verify the fix**: if per-page wins at Phase 8, `app.test.ts`
+>   loses `kinds` and each page's test pins its own; `STATE.md`, "The
+>   in-memory state object", says which. If the live shape is kept, delete
+>   this entry and write the sharing down in `FEATURES.md`, "Rolling".
+> - **Recorded by**: B9, 2026-09-11.
+
+**What the sweep of `handoff.md`'s "Deferred" and "Notes" found, classified.**
+Everything there is one of four things; only the second goes in the
+register.
+
+| item (handoff "Deferred"/"Notes") | class | goes to |
+|---|---|---|
+| reduced-motion kill in `tokens.css` | ported-not-fixed | `DEBT.md` D1 (B9) |
+| stale packed-link expansion (B5.6 risk 3) | ported-not-fixed | `DEBT.md` D2 (B9) |
+| storage notice's button-in-summary, `nested-interactive` off suite-wide (B5.3 nit 1) | ported-not-fixed | `DEBT.md` D3 (B9) |
+| shared `S.kind` (B6 decision) | live decision kept | `DEBT.md` D4, section 2 (B9) |
+| the anchor never re-plays on a language switch; the ring never drawn | port defect | **fixed in B9** |
+| `RecordPage.svelte:59` `.miss` where the live app draws `.page-sub` | port defect | B10 |
+| `Shell.svelte`'s `@page` outside `@media print` (B7 review) | fidelity nit | B10 if it opens `Shell.svelte`; else Phase 8 R1 backlog |
+| `ListPage.svelte:103` `$effect` comment names a deleted paragraph (B5.6 nit 1) | comment nit | B10 (it opens `ListPage` for `.page-h`/`.card-acts`) |
+| `Button.svelte` "missing `:focus-visible` ring" (B7 planning note) | **stale claim** - measured false; the ring is the global rule in `tokens.css:150`, gold 2 px at 2 px offset in both apps; the one difference is the focused button's radius, 9 px (`--r-sm`) against the live rule's `8px` (`context.md`, "B9 planning facts") | closed here; the 1 px radius is Phase 8 R1's keyboard walk, not a batch |
+| `.badge` copied three times (B5.3 nit 3) | refactor debt | B10 if the card and rows are re-measured there anyway; else Phase 8 R2 |
+| `.panel`, `.page-h`, `.page-sub`, `.card-acts`, `.miss` copies | refactor debt | B10 |
+| `specs.js` "Recorded, not keyed" does not name B7's `aria-pressed` on the segments and `<h2 class="pc-name">` (B7 review) | doc nit, and a **fixed-not-ported** improvement to carry into specs | B10 adds the two sentences (it touches `specs.js` for its re-read); Phase 7's sweep (below) |
+| `ListsPage` reads `storage.works()` once where the live app re-probes per render (B5.3 nit 4) | rewrite-only divergence, minor | Phase 8 R1 verifies, R3 fixes if kept |
+| the in-flight packed window draws a frame where the live app draws nothing (B5.6 risk 2) | rewrite-only divergence, unmeasurable | Phase 8 R1 decides (likely keep; record in `FEATURES.md`) |
+| `AddToList.createNew` gates the toast on `saved` where the live app toasts unconditionally (B5.6 nit 2); the two dice name their controls; the grid-numbering bug not copied; the import field takes short links; `Chip` `aria-pressed`; rung `aria-label`s; the notice survives a create/delete; the keystroke anchor re-play not copied (B9) | **fixed-not-ported** improvements, today in `ACCEPTED`, prose, or plan decisions | Phase 7's sweep: each becomes a `FEATURES.md`/`STATE.md` bullet when `specs.js` retires |
+| `moneyHelp`, `rp`, `guess`, `listRoll`, `keepOpen`, the tables/search query: component memory where the live app remembers (the timed-state-divergence list) | intentional, `STATE.md`'s rule | Phase 7's sweep confirms `STATE.md` says it; nothing else |
+| the toast over a native `<dialog>` is asserted announced, never verified (B5.1 review) | unverified a11y claim | Phase 8 R1, screen-reader pass |
+| `[hidden]`/`.toast.act` display guard dropped (B5.1 review) | fragility, no test | Phase 8 R2 adds the test |
+| `app.menuFor` stale on Escape close (B5.1 review) | probably closed by B5.2's `handleClose` on the native `close` event | Phase 8 R1 verifies; a test if it holds |
+| `AppState.stop()` leaves `#toastTimer`; `ListStore.load()` ignores `set`'s return; `AddToList.toggle()` folds `newListFor`; duplicate `knows`; `shell.test.ts` half-assertion; B6 nits 4, 5, 7, 11; B4 nits (`eqFacetRows` export, unreachable throw, order assertion, two axe states); B5.4a nit 4 (`.row-main:focus-visible` unrecorded); B5.2 nits 1-4 | test/code nits | Phase 8 R2-R3, each in the batch that opens its file; none earns a batch alone |
+| B6 nit 9 (the kind-filter heading) | doc nit | **fixed by this planning pass** (heading renamed) |
+| B6 nit 10 (`FEATURES.md` cap clause names no page) and B5.3 nit 2 (the storage-notice clause narrower than the code) and B5.6 nit 5 (no shared-list bullet) | spec nits | B10 (it touches `FEATURES.md` for the `.page-sub` fix) or Phase 7's sweep |
+| the parity-coverage gap on `href` (B5.3), no keyboard-focus state, no equipment anchor state, the width sweep not a state, language leaking through `localStorage` in the harness, probes not extended past tables | harness limitations | die with the harness; Phase 7 decides what the post-cut-over net keeps (below) |
+| Playwright | open decision | Phase 7's planning pass (below) |
+| `lib/dict.ts`'s `1061` joins the count-checked file list | Phase 7 chore | Phase 7 |
+| Pages source not switched | owner | Phase 7's entry condition |
+| B3.7 self-hosted fonts; the usage guard; the ubuntu container | owner-decided or done | nothing |
+
+### Where the phase sits
+
+`B9 -> B10 -> Phase 6/7 (cut-over, owner-gated) -> Phase 8`. Phase 8
+**follows** the cut-over. Every fix it makes is a parity regression by
+construction - that is the definition of the register - so while the
+static root is the expectation and the parity shards are the gate, each
+fix would need a `VISUAL_DEBT` or `ACCEPTED` entry to go green, which is
+the "keep the improvement as debt" option the owner rejected for D1. The
+review part of R1 (read-only) could run earlier, but its findings could
+not be acted on, and a finding list that sits for a phase goes stale;
+R1 runs once, on the app people are using.
+
+**"Migration complete", the entry condition, spelled out:**
+
+1. Phase 4 closed: no `pending` state in `tests/parity/specs.js`,
+   `VISUAL_DEBT` empty or every entry a CI figure with a current reason;
+   B9 and B10 landed and read by CI.
+2. Phase 7 done: the owner has switched Pages to "GitHub Actions", the
+   `deploy` job publishes `dist/`, the static root is retired the way
+   Phase 7's plan says, `main` green.
+3. **A regression net that does not need the live app exists** - the
+   load-bearing one. Today the parity harness is the only real-browser
+   coverage of the rewrite's states, and it needs `index.html` as its
+   expectation. Phase 7's planning pass decides the net's shape; the two
+   candidates are the Playwright layer the issue's Phase 5 planned, and
+   the parity driver re-pointed at committed goldens of `dist/` (its
+   `STATES`, `driver.js` verbs, `typeRuns`, `geometry` and clipboard specs
+   are already the inventory, and `docs/parity.md`'s "Two unstable
+   classes" already say which states cannot be goldens). That is where
+   the Playwright question in "Phase 5 - what already exists" is answered
+   - not before, because until then the harness is the net.
+4. The `ACCEPTED` sweep done: when `specs.js` retires, every `ACCEPTED`
+   reason and every "Recorded, not keyed" divergence has become a
+   `FEATURES.md`/`STATE.md` bullet or been dropped with a reason in the
+   commit - otherwise the fixed-not-ported decisions (table above) are
+   lost with the file.
+
+### The batches
+
+**R1 - the review.** Read-only; one artefact. A new task directory
+(`issues/<id>/`, the orchestrator's id) so this file can retire with
+issue 47; the register is independent of that.
+
+- *Surfaces*: every state in `tests/parity/specs.js`'s `STATES` at the
+  moment of retirement (the inventory is copied into the R1 task
+  directory in Phase 7 - it is the only list of "everything a person can
+  reach" the project has), both languages, 1100/768/375, on the deployed
+  `dist/`.
+- *Against*: (a) `docs/specs/DEBT.md` - each entry re-verified as still
+  true and given a decision (fix in R2-Rn, keep and delete the entry with
+  a spec bullet, or file); (b) `docs/specs/FEATURES.md`, `STATE.md`,
+  `I18N.md`, `META.md` - each bullet observed on the built app, both
+  languages; a bullet that is not observable is a finding; (c)
+  accessibility, in a real browser, not jsdom: `axe-core` (already a
+  dependency) driven by puppeteer over every state, `color-contrast` *on*
+  (jsdom has it off for a reason a real browser does not have); a
+  keyboard walk of every route - Tab order, that every focusable control
+  draws a visible ring, no trap, the `.selbox:has(:focus-visible)`
+  instrument gap - reading focus styles only after `getAnimations()` is
+  empty, because the rings transition for 150 ms (D1) and a t=0 read
+  shows the pre-transition values (`context.md`, "B9 planning facts");
+  a screen-reader pass (NVDA or VoiceOver, by hand) of three flows: the
+  toast over the record modal (the unverified B5.1 claim), the storage
+  notice (D3), ticking rows and using the selection bar; a
+  reduced-motion pass (D1's fix design); (d) the backlog table above,
+  each line marked open or closed against the tree.
+- *Output*: `issues/<id>/review.md` - a findings table: id, surface (state
+  id), evidence (screenshot path or measurement), class (`defect` /
+  `a11y` / `register` / `spec` / `nit`), decision (`R2` .. `Rn` / `file`
+  / `keep`), plus the register updated (new entries for anything found
+  that the app does on purpose, decisions on D1-D4) and one GitHub issue
+  per `file`. No production code.
+- *Fix in the phase versus file*: fixed in R2-Rn - every `DEBT.md`
+  section-1 entry; every `a11y` finding; every `defect` with a local fix
+  and a test; every nit in a file a fix batch opens. Filed - a redesign
+  (a new panel, a changed flow), a feature, a harness or tooling rewrite,
+  anything the owner has to design (D1's real reduced-motion policy is
+  proposed by R1 and confirmed by the owner at the phase's planning pass:
+  that pass is expected to carry `NEEDS_HUMAN_CONFIRMATION: yes` on it).
+- *Acceptance*: every `DEBT.md` entry has a decision; every backlog line
+  a status; every finding a class and a decision; the findings table is
+  the input to R2's planning pass.
+
+**R2 .. Rn - the fixes**, grouped by surface and gate, sized by the rule
+in `CLAUDE.md` ("size a batch by its gates"): one component family, one
+seed, one net filter per batch. The grouping R1 is expected to produce,
+revised by what it finds:
+
+- *R2 - motion and focus*: D1's policy; the focused-button radius if the
+  keyboard walk cares; the `.toast.act` display guard test; anything the
+  a11y sweep found in `tokens.css`, `Button`, `Chip`, `Seg`.
+- *R3 - lists and storage*: D2, D3 (`nested-interactive` back on),
+  `works()` re-probe, `AppState.stop()`'s timer, `ListStore.load()`,
+  `AddToList` nits, the shared-list spec bullet.
+- *R4 - rolling and search*: D4's outcome, B6 nits 4/5/7/11, the B4 nits.
+- *R5 - the rest of the findings*, or folded into R2-R4 by surface.
+
+Each fix batch: a test per fixed defect (`CLAUDE.md`, "every defect fix
+gets a test"), the spec bullet in the same commit, `npm run check`,
+`npm run check:built`, the Phase 7 net's filter for its surface, and the
+register entry deleted in the commit that pays it.
+
+**Exit.** `DEBT.md` section 1 is empty or every remaining entry names the
+filed issue; section 2 is decided; `review.md` has no row without an
+outcome; the handoff records exact commands and results. After that the
+register stays as the place a *future* "kept on purpose" decision is
+written - the file outlives the phase, not only the migration.
 
 ## Decisions taken while working
 
@@ -10059,7 +10817,7 @@ exists now, and a paragraph is a run that can carry a break and a bold word -
 which the tables and lists help will need as well, because both use `<b>`
 mid-sentence.
 
-### The kind filter is per panel, not per app
+### The kind filter: per panel first, then per app (B6)
 
 The live app keeps one `S.kind` for Core rules, the alternate tables and
 **search**, so switching consumables off on one screen switches them off on the
