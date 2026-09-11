@@ -1753,3 +1753,29 @@ The remaining group-A residue after the fix - 4 image cells, a different
 non-overlapping 3 on a re-run of the same build, every `cardFit`/`sheetCounts`
 cell agreeing - is the already-documented `whole:true` full-page capture class
 and is CI's to adjudicate: `handoff.md`, "Blockers", first entry.
+
+## The print image residue, measured a third time (orchestrator, 2026-09-11)
+
+A status, recorded so CI's reader does not re-derive it. After `ee73d2e`, on a
+quiet host with nothing else running, `MSYS_NO_PATHCONV=1 node tests/parity.js
+"voa2_a3-voa2_a1" "ci1-q1-q313"` read **4 расхождений** - a third set, again
+not the same one:
+
+- run 1 (implementer): `NINE @ en 1100`, `NINE @ en 768`, `LONG @ en 768`,
+  `LONG @ ru 1100`
+- run 2 (implementer): `NINE @ ru 1100`, `NINE @ ru 768`, `NINE @ en 1100`;
+  both `LONG` states clean
+- run 3 (orchestrator): `LONG @ en 1100` (3.10%), `LONG @ en 768` (3.53%), and
+  two `NINE` cells; the `LONG` pair clean in run 2 is red here
+
+Three runs, three non-overlapping sets, one unchanged build. The diff image for
+`LONG @ en 1100` was opened rather than inferred: all nine cards carry their
+art on both sides and no text differs - the red is an edge outline over
+**every** element on the page, the topbar, the tab row and the footer legal
+text included, none of which B7 touched. That is a whole-page one-pixel shift,
+i.e. `docs/parity.md`'s existing "Full-page captures" class, whose recipe is
+re-run, write nothing, let CI decide. No `VISUAL_DEBT` entry was written, and
+`docs/parity.md` gains no third class.
+
+The `cardFit` numbers - the thing that actually broke and was actually fixed -
+agree on both apps at every width in every one of these runs.
