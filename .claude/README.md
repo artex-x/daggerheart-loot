@@ -29,6 +29,38 @@ Kickoff:
   TASK: <id>
   GOAL: <feature or add source items...>
 
+## Resuming a worker
+
+A subagent that ended its turn is still listed and still holds its
+context; `SendMessage` to its name resumes it from its transcript, and
+its reply arrives as an ordinary task notification. Measured 2026-09-11
+on the Windows desktop app - the host `improvements.md` Finding 1 and
+the orchestrate prompt (until this change) recorded as unable to do it:
+
+| Direction | Status | Evidence |
+|---|---|---|
+| main session -> its own subagent | works, context intact | the issue 47 B9 implementer, resumed with the review's blocker after its turn had ended, kept every fact and produced `84ca6df` |
+| subagent -> main session | works | a probe loaded `SendMessage` via `ToolSearch` and delivered a line that arrived as `<agent-message from="...">` |
+| subagent -> sibling subagent | **unproven** | only one subagent was alive; the probe's reported sibling id was its own. Settle it with two live subagents before designing on it |
+
+Facts that bound the rules in `prompts/orchestrate.prompt.md`, "Resume,
+do not replace":
+
+- `SendMessage` is not in a subagent's default tool list here; a subagent
+  must `ToolSearch select:SendMessage` first. No prompt currently tells a
+  subagent to send; one that does must say this. `ListAgents` is built in
+  and lists the parent, the subagent itself and every peer session.
+- A send carries no `model`; a resumed agent keeps its tier. Escalation is
+  a fresh dispatch.
+- A subagent's send goes out under its parent session's address and any
+  reply lands in the parent's conversation, so two subagents cannot hold a
+  conversation on this host; one-way dispatch is what exists.
+- Resuming a finished writer while another writer is live is two writers
+  on one tree - the same violation as spawning one. The orchestrator does
+  the `ListAgents` and HEAD preflight before a resume as before a spawn.
+- Whether the reviewer's `permissionMode: plan` blocks `SendMessage` is
+  unknown; the review prompt forbids the send in prose (candidate 36).
+
 ## Hooks
 
 Deterministic enforcement lives in `.claude/hooks/*.mjs`, registered in
@@ -258,3 +290,6 @@ not changed.
 | 32 | The observer speaks its verdict (armed / not armed and why) | `PostToolUse(Bash)` | **reject** | Tempting and cheap. But the only recorded reads of `.check-cache.json` are issue 65 verifying its own hook, and once the exit code is the check's (row 30) the worker has the status. No evidence; the observer stays silent by design. |
 | 33 | Speak on `echo $?` as the first command of a call | `PreToolUse(Bash)` | **reject** | Two occurrences, both inside R1; row 30 removes the reason to ask. One README sentence instead. |
 | 34 | A hook for a result over the output cap | any | **reject** | The size is unknowable before the run, and the tool already persists the full output and names the file. The failure is re-running instead of reading it: the reminder gains one clause and the README one sentence. Parity's one-line-per-page diff text is the producer; shortening it is a `tests/` change with diagnostic cost, not this task's. |
+| 35 | Deny `SendMessage` to a writer while another writer is live | `PreToolUse(SendMessage)` | **reject** | The input does not exist in a hook: liveness and role come from `ListAgents`, which a hook cannot call - it gets stdin JSON and nothing else. The matcher is unverified on this host (`tool_name` for `SendMessage` has never reached a hook here; #19/#29-shaped). Zero recorded failures; the standing bar is a repeated one. The prompt's "a resume is a dispatch" sentence owns it. |
+| 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. |
+| 37 | Warn on a second implementer dispatch for the same task while a completed one is listed | `PreToolUse(Agent)` | **reject** | The dispatch tool is `Agent` here and `Task` in the reference - the unverified matcher row 29 already rejects - and the hook cannot see the agent list. "Resume, do not replace" is a preference, and a wrong warning on a legitimate fresh dispatch (tier change, killed agent) is the one thing a guard must not do. |

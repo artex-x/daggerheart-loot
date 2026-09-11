@@ -71,7 +71,9 @@ For the current batch:
    `set -o pipefail; npm run check 2>&1 | tail -n 120` with the Bash timeout set to
    600000 and stay in the turn until it finishes - do not redirect it to a file, which
    hides the result from the commit gate and blocks the commit. See `.claude/README.md`.
-   If you must stop first, name the command and its task id in your final message.
+   If you must stop first, name the command and its task id in your final message - the
+   orchestrator can resume you with your context intact, so say exactly
+   where you stopped.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
 10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)

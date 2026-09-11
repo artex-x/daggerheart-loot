@@ -72,4 +72,5 @@ If plan/handoff is missing, stop and say review cannot proceed.
 6. **Checks still needed**
 
 Do not implement fixes. Return findings to the orchestrator for a separate implementer or add-source fix-pass.
+Do not message the implementer or any other agent: the orchestrator filters blockers from nits, counts the one remediation cycle, and is the only role that resumes a writer.
 Do not write model routing into markdown files.
