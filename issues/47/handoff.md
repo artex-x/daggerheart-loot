@@ -775,8 +775,8 @@ carry what was done about it. Do not re-measure any of it.
   `CLAUDE.md`, `issues/47/evidence/b9/` (four screenshot pairs),
   `issues/47/plan.md`, `issues/47/context.md`, this file.
 - Commits: `ad46dac` (the batch), `dba79ee` (docs-only, the commit hash
-  filled in after the fact), and the remediation commit on top of both
-  (hash recorded once made - see "Verification" below).
+  filled in after the fact), `84ca6df` (the remediation - the blocker and
+  six nits).
 - No `VISUAL_DEBT` figure was written from this host at any point (owner
   decision 1): the seven entries were deleted outright, never
   re-numbered. The review confirmed deleting all seven - not only the
@@ -3073,20 +3073,21 @@ register B9 opened.
 
 ## Blockers
 
-- **OPEN: B9's commit (`ad46dac`) is made; waits on CI's read of the
-  owner's push** (implementer, 2026-09-11). Same shape as B8's own closing
-  condition.
+- **OPEN: B9's commits (`ad46dac`, `dba79ee`, and the remediation
+  `84ca6df`) are made; waits on CI's read of the owner's push**
+  (implementer, 2026-09-11). Same shape as B8's own closing condition.
   Locally: all seven anchor `VISUAL_DEBT` entries deleted, the 12-cell
-  `"anchor"` re-run reads `совпадает` on every cell (`расхождений нет`),
-  the 24-cell `"#/print/ci1-q1"` match (actually 36 - see "Status" above)
+  `"anchor"` re-run reads `совпадает` on every cell (`расхождений нет`,
+  re-confirmed byte-identical after the remediation's code changes), the
+  24-cell `"#/print/ci1-q1"` match (actually 36 - see "Status" above)
   reads `совпадает` on every print cell, `npm run check` and
   `npm run check:built` are green in the foreground. None of that is CI's
   word - owner decision 1 stands: no `VISUAL_DEBT` number is written from
   this host, and this batch wrote none (all seven entries were deleted,
-  not re-numbered). Not yet closed: the commit has not been pushed (never
-  this session's to do - "Never push", the task brief and `CLAUDE.md`
-  both). Record the green run id here once the owner's push produces one;
-  that CI read is what closes B9, exactly as it closed B8.
+  not re-numbered). Not yet closed: none of the three commits has been
+  pushed (never this session's to do - "Never push", the task brief and
+  `CLAUDE.md` both). Record the green run id here once the owner's push
+  produces one; that CI read is what closes B9, exactly as it closed B8.
   **If CI reads any anchor cell red, open `#/tables/voa ~ section anchor
   @ en 375` first.** It is the one deletion with no local before/after
   delta to lean on: B8's own verbatim run already read this host at

@@ -10366,8 +10366,7 @@ comment and docs prose only, so nothing a parity state photographs
 changed beyond what B9's own `check:built` run already covered.
 `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` (12 cells) re-run after
 N3/N4, byte-identical to the run right after the `specs.js` edit - no
-anchor cell moved. **Committed as `<pending - see handoff.md for the
-hash>`; not pushed.**
+anchor cell moved. **Committed as `84ca6df`; not pushed.**
 
 ### B10 outlined: the page-furniture extraction pass (planner, 2026-09-11)
 
