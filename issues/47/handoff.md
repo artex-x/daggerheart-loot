@@ -6,6 +6,51 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B10 is closed - built, committed, and approved by review;
+  the owner's push and CI's read are the only things left** (orchestrator,
+  2026-09-11). Commits `8b0c3ce` (the batch) and `60047d4` (the hash
+  fill-in). The reviewer (opus, read-only) returned **approve** with no
+  blockers and six nits, all recorded in "Deferred" below. What it verified
+  independently rather than taking on report:
+  - The implementer's one deviation - `PageTitle.svelte:29-39` hoists each
+    `{#if}` to wrap the whole `<h1>`/`<p>` instead of nesting it inside, as
+    the plan's snippet had it - is **correct at all eight call sites, and
+    better than the plan's own form**. The string branch renders one text
+    node, matching `app.js:3194-3196`/`2963-2965`/`2972`, which concatenate
+    and escape a single string; the snippet branch's render-tag anchor is a
+    *comment*, which generates no box and does not split a text run, so it
+    is not the failure `CLAUDE.md`'s text-node rule names. `ListPage`'s sub
+    is now **more** faithful than before the batch: three nodes became one,
+    which is what `app.js:2972` writes. The plan's documented fallback
+    addressed a different failure and was rightly not used.
+  - Each furniture class reaches exactly one component, by grep over both
+    markup and rule blocks; the four recorded exceptions survive with their
+    comments. No inline copy left behind.
+  - All four margins are inline `style=` attributes matching the live
+    bytes (`app.js` 2912, 2854, 2972, 3154); the two rules that had folded
+    them in are gone; the two call sites live writes no style for pass
+    nothing.
+  - `RecordCard`'s two 600px rules still outrank `Button`'s own after the
+    `.card :global(.card-acts ...)` re-anchoring (0,3,0 -> 0,4,0), pinned
+    empirically by the 375px cells of `#/i/q1`, `#/i/f1` and the roll
+    states.
+  - The not-found fix is pinned twice over and in both halves: the class
+    (`.miss` has no font-size/margin/max-width where `.page-sub` has
+    14px / `0 0 18px` / 70ch, so the six `#/i/nope` cells would catch a
+    regression) and the button (`inventory` reads `a[href]`, so parity
+    sees it; `record.test.ts:276-279` asserts the href and the classes).
+  - **D5 is a true statement about the live app**, read at source:
+    `app.js:3795` writes the record name into the title, `syncChrome()` at
+    `:3822` runs on every branch, and `:3658` overwrites it with
+    `t().docTitle`. The entry carries all six Phase-8 fields in order.
+  - Coverage needed no config change - `vite.config.mts:150`'s glob
+    reaches the four new files - and authored template comments do not
+    reach the DOM (`svelte.config.mjs` sets no `preserveComments`).
+- Last agent: reviewer (read-only); the batch's writer was the implementer
+- NEEDS_HUMAN_CONFIRMATION: no
+- Branch: `main`
+- Base / starting commit: `b967481`; HEAD at closeout `60047d4`
+
 - Task status: **in_progress - B10 is built and committed; CI has not yet
   read the owner's push** (implementer, 2026-09-11). Preflight matched
   the brief: HEAD `b967481`, then one docs-only commit from another task
@@ -3237,8 +3282,11 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch (implement-ready)
 
-**B10, below, is built and committed - see "Completed" and "Verification".**
-Not yet implement-ready: Phase 6/7 (the cut-over, owner-gated: Pages
+**B10, below, is built, committed and reviewed - see "Completed",
+"Verification" and the newest "Status" entry. The reviewer returned
+approve with no blockers; its six nits are in "Deferred". The only thing
+left is the owner's push and CI's read, recorded in "Blockers".**
+Nothing about B10 remains to implement. Not yet implement-ready: Phase 6/7 (the cut-over, owner-gated: Pages
 source, the regression net, the `ACCEPTED` sweep - named in `plan.md`,
 "Phases") or Phase 8 (the register sweep B9 opened and B10 extended with
 D5 - `plan.md`, "Phase 8"). Neither is planned into decided
@@ -3326,6 +3374,24 @@ regression net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase
 8") on the register B9 opened and B10 extends with D5.
 
 ## Blockers
+
+- **OPEN, and it is the only thing left on B10: `8b0c3ce` and `60047d4`
+  are committed but not pushed, so CI has not read them** (orchestrator,
+  2026-09-11). Same shape as B8's and B9's closing conditions, and pushing
+  is never this session's to do (`CLAUDE.md`, "Never push"). Locally the
+  batch is green: `npm run check` (998 tests, thresholds held),
+  `npm run check:built` with `git diff -- app.js style.css index.html`
+  empty, and 96 parity cells in three foreground calls - 90 `совпадает`
+  including the six new `#/i/nope` cells, the six `#/roll/wondrous ~
+  modal` cells inside their recorded debt with no `стало лучше` line. No
+  `VISUAL_DEBT` or `ACCEPTED` change, so CI has no ratchet to trip; what
+  it decides is whether the refactor moved a pixel on ubuntu that this
+  host reads as still. **If a shard reads red, start at the six `#/i/nope`
+  cells** - the one state in the filter set that never existed before, so
+  the only cells with no prior CI reading to compare against. After them,
+  the eight `PageTitle` call sites, in the order `ListPage` then
+  `RecordPage`: they are the two snippet branches, the only places the
+  component's DOM differs from a plain string. Record the run id here.
 
 - **RESOLVED, and B9 is closed: CI run [`34640328352`](https://github.com/artex-x/daggerheart-loot/actions/runs/34640328352) on `55f2fa2` -
   the first head carrying the remediation `84ca6df` - is green end to end**
@@ -3876,6 +3942,41 @@ regression net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B10's review nits (reviewer, 2026-09-11; approve, no blockers).** None
+  was worth the remediation cycle; each names its file so the next batch
+  that opens it can pay it. Nits 1-3 most naturally ride with Phase 8's
+  register sweep, which already owns `plan.md` and `DEBT.md`.
+  1. `app/src/components/TablesPage.svelte:446-449` - the comment claims
+     `.tablenav` is "the base `.panel` rule plus this screen's own
+     margin-free nav row", but there is no delta: the rule is byte-identical
+     to `Panel`'s and `style.css` styles nothing with the class. The real
+     reason it stays inline is DOM fidelity to live's `class="panel
+     tablenav"` (`app.js:2559`) under decided 1's no-`class`-prop rule.
+     `plan.md`'s decided 1 carries the same weak wording - true of
+     `.ffilter` and `.lroll`, false of `.tablenav`.
+  2. `issues/47/plan.md:10915` - "998 tests (997 before this batch plus the
+     new not-found case)". The count is right, the arithmetic is not: B10
+     rewrote the existing not-found case rather than adding one, and B9's
+     own record already read 998.
+  3. One structural pin for eight call sites: `sharedListPage.test.ts:114`
+     is the only assertion that would catch `PageTitle`'s `{#if}` being
+     re-nested. A `childNodes` length assertion on the `h1` and the
+     `p.page-sub` in `record.test.ts`'s not-found case costs one line each
+     and covers what the pixels cannot see.
+  4. `app/src/components/SearchPage.svelte:151-153` - the note about the
+     deleted `<style>` block sits at the end of the template as an HTML
+     comment; the file's other explanation lives in the script header,
+     which reads better.
+  5. `.miss` moved `--muted2` -> `--muted` in `ListPage`/`PrintPage`.
+     Sanctioned by decided 3, unphotographable (the harness always loads
+     data), explained in `NoData.svelte`'s header - recorded here only so
+     it is not rediscovered as drift.
+  6. `svelte-ignore a11y_missing_content` was deleted rather than moved
+     (old `ListPage.svelte:591`). Correct - `svelte-check` raises nothing
+     on `PageTitle`'s `<h1>` - but the compile-time empty-heading guard is
+     now unreachable for all eight call sites. The why survives at
+     `ListPage.svelte:589-590`.
 
 - **Assigned by the B10 planning pass (planner, 2026-09-11).** Of the
   carry-ins the B9 pass handed B10, five are in B10 (`plan.md`, "B10

@@ -2233,3 +2233,25 @@ B9 has the two independent readings its design asked for, and all seven
 anchor `VISUAL_DEBT` deletions stand - `#/tables/voa ~ section anchor @ en
 375` included, the one cell this host could not corroborate before or after.
 No `VISUAL_DEBT` number was written from this host. B9 is closed.
+
+## B10 reviewed and approved; the furniture slice is closed (orchestrator, 2026-09-11)
+
+Verdict **approve**, no blockers, six nits (`handoff.md`, "Deferred").
+Durable findings worth carrying past this task:
+
+- **A Svelte 5 `{#if}` inside an element is not free.** The compiler marks
+  the live branch with an anchor comment, which lands inside that element -
+  invisible to a pixel diff, visible to a `childNodes` assertion, and the
+  reason B10's `PageTitle` wraps whole `<h1>`/`<p>` branches instead of
+  branching inside them. A render-tag anchor is a *comment*, so it
+  generates no box and does not split a text run; `CLAUDE.md`'s text-node
+  rule is about split text nodes, not about comments. The faithful form is
+  still one text node per live `esc(...)` concatenation.
+- **`.card :global(.card-acts ...)` raises specificity, it does not lose
+  it**: 0,3,0 -> 0,4,0, so `RecordCard`'s two 600px rules still outrank
+  `Button`'s own. Confirmed empirically by the 375px cells.
+- **`vite.config.mts:150`'s coverage glob (`src/**/!(Button|DiceBar).svelte`)
+  reaches new component files automatically** - a new component needs no
+  coverage-config edit, only a test that reaches it.
+- **Authored template comments do not reach the DOM**: `app/svelte.config.mjs`
+  sets no `preserveComments`.
