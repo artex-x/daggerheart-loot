@@ -32,7 +32,14 @@
   import { encodeListRaw } from '../lib/listLink.js';
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
   import { findListByPayload, itemMeta, type StoredList } from '../lib/lists.js';
-  import { MONEY_MODES, moneyMode, priceText } from '../lib/money.js';
+  import {
+    guessPrice,
+    guessWhy,
+    MONEY_MODES,
+    moneyMode,
+    priceText,
+    reprice
+  } from '../lib/money.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import { entryNoteBlock, shareList } from '../lib/share.js';
   import type { Record_ } from '../lib/types.js';
@@ -110,14 +117,19 @@
      the component rather than in app memory - a recorded difference (a roll
      made, then a navigation away and back, shows an empty field here and the
      result there); `noteOpen` is the live `S.keepOpen['rnote:...']`, a
-     person's own fold/unfold per entry. `dragFrom`/`dragMark` have no live
-     counterpart at all - they exist only to drive the three drag classes off
-     the port's callbacks, since Svelte drops a scoped rule no template
-     element can match and `npm run check` fails it as dead CSS if the port
-     toggled them itself. */
+     person's own fold/unfold per entry. `guess` and `rp` are the live
+     `S.guess`/`S.rp` (default `false`/`-20`) the same way: the panel's own
+     open state and a typed percentage forget themselves on a navigation away
+     and back here, where the live app's app-wide memory keeps them.
+     `dragFrom`/`dragMark` have no live counterpart at all - they exist only
+     to drive the three drag classes off the port's callbacks, since Svelte
+     drops a scoped rule no template element can match and `npm run check`
+     fails it as dead CSS if the port toggled them itself. */
   const lsel = new SvelteSet<string>();
   let roll = $state(0);
   let moneyHelp = $state(false);
+  let guess = $state(false);
+  let rp = $state(-20);
   const noteOpen = new SvelteMap<string, boolean>();
   let open = $state<Record_ | null>(null);
   let rowsEl = $state<HTMLDivElement | undefined>(undefined);
@@ -132,6 +144,10 @@
     const l = own;
     return l ? l.ids.some((id) => (itemMeta(l, id).gold ?? 0) > 0) : false;
   });
+
+  /** The ticked ids, in list order - the live `batchBarHTML`'s own `ids`. */
+  const ticked = $derived(own ? own.ids.filter((id) => lsel.has(id)) : []);
+  const pricedCount = $derived(ticked.filter((id) => (metaOf(id).gold ?? 0) > 0).length);
 
   /** The live `hidden` default (no note → hidden), with a person's own
    *  fold/unfold winning once they have touched it - the live `keepOpen`. */
@@ -326,6 +342,114 @@
   function pickAll(on: boolean): void {
     lsel.clear();
     if (on && own) for (const id of own.ids) lsel.add(id);
+  }
+
+  /* ---------- the actions under a ticked selection (app.js 3986-4083) ---------- */
+
+  function toggleGuess(): void {
+    guess = !guess;
+  }
+
+  /** The live `data-guess-apply` handler (3989-4010): every ticked row a band
+   *  can be guessed for gets its gold set to the guessed price. */
+  function applyGuess(): void {
+    const l = own;
+    if (!l || !index) return;
+    const before: Record<string, number> = {};
+    let n = 0;
+    for (const id of ticked) {
+      const it = byId(id);
+      if (!it) continue;
+      const v = guessPrice(it, index.rarityOf);
+      if (!v) continue;
+      before[id] = metaOf(id).gold ?? 0;
+      store.setMeta(l.id, id, 'gold', v);
+      n++;
+    }
+    if (!n) return;
+    guess = false;
+    app.say(`${t.guessDone} (${String(n)})`, {
+      action: {
+        label: t.repriceUndo,
+        run: () => {
+          for (const [id, gold] of Object.entries(before))
+            store.setMeta(l.id, id, 'gold', gold);
+        }
+      }
+    });
+  }
+
+  /** The live `data-reprice` handler (4012-4040): every ticked, priced row
+   *  shifts by `rp` percent. */
+  function repriceTicked(): void {
+    const l = own;
+    if (!l || !rp) return;
+    const before: Record<string, number> = {};
+    let n = 0;
+    for (const id of ticked) {
+      const gold = metaOf(id).gold ?? 0;
+      if (!(gold > 0)) continue;
+      before[id] = gold;
+      store.setMeta(l.id, id, 'gold', reprice(gold, rp));
+      n++;
+    }
+    if (!n) return;
+    app.say(`${t.repriceDone} (${rp > 0 ? '+' : ''}${String(rp)}%, ${String(n)})`, {
+      action: {
+        label: t.repriceUndo,
+        run: () => {
+          for (const [id, gold] of Object.entries(before))
+            store.setMeta(l.id, id, 'gold', gold);
+        }
+      }
+    });
+  }
+
+  /** The live `data-batch-clearprice` handler (4042-4059): every ticked,
+   *  priced row loses its price. */
+  function clearPrices(): void {
+    const l = own;
+    if (!l) return;
+    const before: Record<string, number> = {};
+    for (const id of ticked) {
+      const gold = metaOf(id).gold ?? 0;
+      if (!(gold > 0)) continue;
+      before[id] = gold;
+      store.setMeta(l.id, id, 'gold', 0);
+    }
+    if (!Object.keys(before).length) return;
+    app.say(t.batchNoPrice, {
+      action: {
+        label: t.repriceUndo,
+        run: () => {
+          for (const [id, gold] of Object.entries(before))
+            store.setMeta(l.id, id, 'gold', gold);
+        }
+      }
+    });
+  }
+
+  /** The live `data-batch-del` handler (4061-4083): remembers every ticked
+   *  row's own position and meta, so the undo puts each back exactly where it
+   *  was. */
+  function batchDelete(): void {
+    const l = own;
+    if (!l) return;
+    const gone: { id: string; at: number; meta: ListEntryMeta }[] = [];
+    l.ids.forEach((id, i) => {
+      if (lsel.has(id)) gone.push({ id, at: i, meta: { ...itemMeta(l, id) } });
+    });
+    if (!gone.length) return;
+    for (const g of gone) store.removeEntry(l.id, g.id);
+    lsel.clear();
+    app.say(`${t.batchDeleted} (${String(gone.length)})`, {
+      action: {
+        label: t.undo,
+        run: () => {
+          for (const g of gone) store.restoreEntry(l.id, g.id, g.at, g.meta);
+        }
+      }
+    });
   }
 
   /* Drag through the `nativeDrag` port's live event model (app.js 4443-4530):
@@ -595,6 +719,63 @@
           }}
         />{lsel.size ? `${t.pickedN} ${String(lsel.size)}` : t.pickAll}</label
       >
+      {#if ticked.length}
+        <span class="batch-acts">
+          <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
+            >{t.batchMoney}</Button
+          >
+          <Button size="sm" variant="danger" onclick={batchDelete}
+            >{t.del} ({String(ticked.length)})</Button
+          >
+        </span>
+      {/if}
+      {#if ticked.length && guess}
+        <div class="guess">
+          {#if pricedCount}
+            <div class="money-act">
+              <span class="batch-lbl">{t.repricePct}</span>
+              <NumberField
+                value={rp}
+                min={-90}
+                max={500}
+                empty
+                label={t.rollResult}
+                stepDownLabel={t.stepDown}
+                stepUpLabel={t.stepUp}
+                onchange={(n: number) => {
+                  rp = n;
+                }}
+              />
+              <Button size="sm" onclick={repriceTicked}
+                >{rp < 0 ? t.repriceDown : t.repriceUp}</Button
+              >
+              <span class="money-hint">{t.repriceHint}</span>
+            </div>
+          {/if}
+          <p class="guess-note">{t.guessWhy}</p>
+          <div class="guess-rows">
+            {#each ticked as id (id)}
+              {@const it = byId(id)}
+              {#if it}
+                {@const v = guessPrice(it, index.rarityOf)}
+                <div class="guess-row">
+                  <span>{nameOf(it, app.lang)}</span>
+                  <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
+                  <b>{v ? priceText(v, mode, app.lang) : '—'}</b>
+                </div>
+              {/if}
+            {/each}
+          </div>
+          <div class="money-act">
+            <Button size="sm" variant="primary" onclick={applyGuess}>{t.guessApply}</Button>
+            {#if pricedCount}
+              <Button size="sm" onclick={clearPrices}
+                >{t.batchNoPrice} ({String(pricedCount)})</Button
+              >
+            {/if}
+          </div>
+        </div>
+      {/if}
     </div>
     <div class="rows lrows" bind:this={rowsEl}>
       {#each items as it, i (it.id)}
@@ -736,9 +917,9 @@
   /* off `.page-h` (style.css:105) */
   .page-h {
     margin: 0 0 4px;
-    font-size: 23px;
-    font-weight: 680;
-    letter-spacing: -0.01em;
+    font-size: var(--h-page-size);
+    font-weight: var(--h-page-weight);
+    letter-spacing: var(--h-page-spacing);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -796,9 +977,9 @@
     border-bottom: 1px dashed var(--line2);
     color: var(--txt);
     font: inherit;
-    font-size: 23px;
-    font-weight: 680;
-    letter-spacing: -0.01em;
+    font-size: var(--h-page-size);
+    font-weight: var(--h-page-weight);
+    letter-spacing: var(--h-page-spacing);
     padding: 0 0 4px;
   }
 
@@ -1151,6 +1332,139 @@
 
   .batch.on .batch-all {
     color: var(--gold-soft);
+  }
+
+  /* off `.batch-acts` (style.css:1059) */
+  .batch-acts {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  /* off `.batch .btn.sm` (style.css:1081) */
+  .batch :global(.btn.sm) {
+    height: 32px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .batch-acts {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  /* off `.guess`, `.guess-note`, `.guess-rows`, `.guess-row` and its three
+     (style.css:709-720) */
+  .guess {
+    flex: 0 0 100%;
+    margin-top: 10px;
+    padding: 11px 0 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .guess-note {
+    margin: 0 0 9px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .guess-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 11px;
+    max-height: 210px;
+    overflow: auto;
+  }
+
+  .guess-row {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    font-size: 12.5px;
+    color: var(--txt);
+  }
+
+  .guess-row > span:first-child {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .guess-band {
+    color: var(--muted2);
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+
+  .guess-row b {
+    color: var(--gold-soft);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  /* off `.money-act`, `:last-child`, `.numbox`, `.numbox button`,
+     `.numbox input[type=text]` (style.css:1069-1073) - reaching into
+     `NumberField`'s own root, hence `:global()` on the inner selector only,
+     the way `.money > :global(.money-help)` above already does. */
+  .money-act {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-bottom: 11px;
+  }
+
+  .money-act:last-child {
+    margin-bottom: 0;
+  }
+
+  .money-act :global(.numbox) {
+    margin: 0;
+    height: 32px;
+  }
+
+  .money-act :global(.numbox button) {
+    width: 28px;
+    height: 30px;
+    font-size: 15px;
+  }
+
+  .money-act :global(.numbox input[type='text']) {
+    width: 52px;
+    height: 30px;
+    font-size: 13.5px;
+    padding: 0;
+  }
+
+  /* off `.money-hint` (style.css:1074) */
+  .money-hint {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--muted2);
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+
+  /* off `.money-act .btn` (style.css:1077) */
+  .money-act :global(.btn) {
+    font-weight: 650;
+  }
+
+  /* off `.batch-lbl` (style.css:1077) */
+  .batch-lbl {
+    font: 650 10.5px/1 var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted2);
   }
 
   /* off `.rows`, `.row`, the `(hover:hover)` `.row:hover` (style.css:547-553)

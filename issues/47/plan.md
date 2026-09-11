@@ -6770,6 +6770,116 @@ contract changes.
 - Verification: `npm run check`, the filters, `npm run check:built`. One
   commit.
 
+### B5.5 built: the list page complete - drag as the live app does it, and the actions under a ticked selection
+
+**All thirteen ordered steps done as designed, in the two commits the brief
+named; no deviation.** Steps 1-4 landed as `feat(lists): drag as the live app
+does it` (`a006792`), on top of `36fd2f1` (the docs-only commit carrying the
+five B5-remainder planning paths, per the brief's pathspec). Steps 5-13 land
+as this section's own commit, `feat(lists): the actions under a ticked
+selection`.
+
+**The fallback was not needed.** The synthetic `DragEvent` sequence
+(`tests/parity/driver.js`'s `drag(from, to, after)`) drove the **live** app's
+own handlers correctly on the first attempt: `MSYS_NO_PATHCONV=1 node
+tests/parity.js "#/lists/a @"` read all six pre-existing cells `совпадает`
+and `reorderedByDrag`'s `first`/`second` id orders matched on both apps with
+no re-run.
+
+**Drag (steps 1-4).** `DragHandlers` gained `onDrag`/`onOver`/`onEnd`;
+`ports/drag.ts`'s `nativeDrag()` was rewritten to the live event model
+(app.js 4443-4530) - a capturing `document` `dragover` bound only while a
+drag is live, driving the edge-scroll `requestAnimationFrame` loop via the
+pure exported `edgeSpeed(y, innerHeight)`; the bubbling `dragover` marks
+`before`/`after` off the pointer's own midpoint, `null` over the dragged row
+itself; `drop` adjusts the target index off the *last reported* mark, exactly
+as app.js's `if (after && to < from) to += 1; if (!after && to > from) to -=
+1;`. `ListPage.svelte` gained `dragFrom`/`dragMark` state and the three
+`class:` bindings (`dragging`/`drop-before`/`drop-after`) driven by the port's
+callbacks - never by the port itself, since Svelte drops a scoped rule no
+template element can match and the check fails it as dead CSS. `ports.test.ts`
+covers `onDrag`, the midpoint rule both sides, `null` over the dragged row,
+all four `to` adjustments, `onEnd` from both a drop and a plain `dragend`, the
+unbind removing the document listener, and `edgeSpeed` at four depths; the
+three pre-existing `nativeDrag` cases stayed green by giving the shared `rows`
+fixture a real `getBoundingClientRect` (`new DOMRect(0, i * 40, 0, 40)`) and
+aiming the shared `drag()` helper's `clientY` at each target row's own top
+edge - `before` its midpoint, the shape those three cases were written
+against.
+
+**The actions under a ticked selection (steps 5-13).** `dict.ts` gained the
+fifteen ru/en key pairs byte-exact from app.js (ru 116-188, en 302-372):
+`goldUnit`, `batchMoney`, `batchNoPrice`, `repricePct`, `repriceDown`,
+`repriceUp`, `repriceHint`, `repriceDone`, `repriceUndo`, `batchDeleted`,
+`guessApply`, `guessWhy`, `guessNoTier`, `guessNoRarity`, `guessDone` (the
+five rarity labels already existed). `lib/money.ts` gained `guessWhy(it,
+rarityOf, t)` and a local `voaTierName` (no existing helper was found; `grep
+-rn "tierName\|voaTier"` came back empty) - `reprice()` was already the exact
+formula (`Math.max(1, Math.round((gold * (100 + percent)) / 100))`), confirmed
+rather than rewritten. `ListPage.svelte` gained `guess`/`rp` state, `ticked`/
+`pricedCount` derived, the `.batch-acts` pair (`Button` already had `on`,
+`caret` and `expanded` from B5.1 - no change to `Button.svelte` was needed),
+the `.guess` panel (the reprice row only when a ticked row is priced, the
+note, one row per ticked id with its band and suggested price, apply and
+clear-price buttons), the four handlers looping the store's existing
+`setMeta`/`removeEntry`/`restoreEntry`, and every rule `style.css` gives them
+(`.batch-acts`, `.batch .btn.sm`, `.guess` and its five, `.money-act` and its
+four, `.money-hint`, `.batch-lbl`, the 640px override). Nit 3's tokens
+(`--h-page-size`/`--h-page-weight`/`--h-page-spacing`) replaced `23px`/`680`/
+`-0.01em` in both blocks that had them; nit 5's line joined `rp`/`guess` to
+the "Local state" comment beside `roll`/`moneyHelp`. `specs.js` gained the
+"Recorded, not keyed" paragraph above `ACCEPTED` for nit 2, five parity
+states, `NAME` entries (`pickRow`, `prices`, `delOne` - exact, see
+"Risks" - `clearPriceOne`, `applyPrices`, `discount`, `rollResult` for the
+`rp` field, which `numBox` names identically to the roll field), `listAddress`'s
+`only`, and four press specs (`guessedPrices`, `repricedRows`, `clearedPrices`,
+`batchDeleted`).
+
+**One real gap found and fixed in the touched path, not named in the
+brief's line list: `NumberField`/`lib/numField.ts` could not type a negative
+number at all.** `typed()` and `committed()` stripped every non-digit
+character including a leading `-`, which is invisible for every existing
+caller (every roll field's `min` is 1 or more) but breaks the reprice field
+outright - its default is `-20` and its whole point is a negative percentage.
+Read off app.js's own `#rp` input handler (4336-4344): the live field commits
+on every keystroke, unclamped, and only re-renders when the sign flips (so
+the reprice/markup button label tracks the field live, not just on blur) -
+matched here by passing `empty` to `NumberField` for `rp`, which already
+commits per keystroke through `committed()`. Both functions gained a `min`
+parameter (default `0`, so every existing call site is byte-for-byte
+unchanged) and a `digitsOf(raw, allowNeg)` helper that keeps a single leading
+minus when `min < 0` and treats one anywhere else, or a second one, as noise
+from a stray keystroke - exactly `CLAUDE.md`'s "fix cheap, local, safe bugs...
+in a touched path" rule, since `NumberField` is what step 6 was already
+extending to its first negative-range use. `numField.test.ts` gained a
+`describe` block for the negative-range path; the existing positive-range
+cases are untouched and still pass, confirming no behaviour moved for the
+roll fields.
+
+**Verification.** `set -o pipefail; npm run check 2>&1 | tail -n 120` exit 0
+after steps 1-4 (one foreground call) and again after steps 5-9's production
+code and tests (883 tests, 0 failures, coverage 96.11 stmts / 88.28 branch /
+96.97 funcs / 97.05 lines - `money.ts` and `drag.ts` both fully reached by the
+new cases). `npm run build` clean (80.1 kB gzip). The parity loop, four
+foreground calls, none merged: `"~ a row ticked" "~ prices"` (30 cells -
+the substring also matched `~ prices, none priced` and `~ prices set`, as the
+brief warned); `"~ batch deleted"` (6 cells); the regression `"#/lists/a @"
+"#/lists/a ~ noted" "~ money help" "~ roll panel" "~ rolled" "~ removed" "~
+note opened"` (42 cells, all four `only: ['#/lists/a ~ noted']` press specs
+included); `"#/lists/b" "#/lists/nope" "own list"` (18 cells) - **every cell
+`совпадает` on the first pass, no diff image opened.** Because
+`NumberField.svelte` changed, the extra regression the brief names also ran:
+`"#/tables @" "i/ci1 @" "#/roll/alt @"` - clean as well. `npm run check:built`
+exit 0 (build, `smoke-file-url.mjs`, `bundle-budget.mjs` at 80.1 kB against
+the 120 kB budget). A final `npm run check` re-armed the gate after the docs
+moved the tree fingerprint, immediately before this commit.
+
+**No `VISUAL_DEBT` entry written; no `ACCEPTED` entry added.** `Удалить (1)`
+(not `Удалить`) is `delOne` in `NAME`, exactly as the brief's do-not required.
+`rp`/`guess` are component-local, never on `AppState`. B5.4a's nits 2, 3 and
+5 are closed by this batch; nit 1 (`RowMain`'s dead `tail`) is B5.6's; nits 4
+and 6 stay recorded as notes.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:

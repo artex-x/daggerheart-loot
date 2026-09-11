@@ -338,6 +338,132 @@ describe('select-all', () => {
   });
 });
 
+describe('the actions under a ticked selection', () => {
+  /* listA's rows in order: ci1 (unpriced), cc1 (750 gold), q1 (unpriced). */
+  const tickRow = async (n: number): Promise<void> => {
+    const rows = screen.getAllByRole('checkbox', { name: 'Выбрать позицию' });
+    await userEvent.click(rows[n] as HTMLElement);
+  };
+
+  it('shows Цены and Удалить (N) once a row is ticked, and hides them again', async () => {
+    render(App, { env: withA() });
+    expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
+
+    await tickRow(0);
+    expect(screen.getByRole('button', { name: 'Цены' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeInTheDocument();
+
+    await tickRow(0);
+    expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Удалить \(/ })).not.toBeInTheDocument();
+  });
+
+  it('opens the panel on Цены and flips aria-expanded', async () => {
+    render(App, { env: withA() });
+    await tickRow(0);
+    const btn = screen.getByRole('button', { name: 'Цены' });
+    expect(btn).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText(/^В книге цен нет/)).not.toBeInTheDocument();
+
+    await userEvent.click(btn);
+    expect(btn).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/^В книге цен нет/)).toBeInTheDocument();
+  });
+
+  it('shows the reprice row and the clear-price button only once a ticked row is priced', async () => {
+    render(App, { env: withA() });
+    await tickRow(0); // ci1, unpriced
+    await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
+    expect(screen.queryByText('Изменить на, %')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Убрать цену/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Проставить эти цены' })).toBeInTheDocument();
+
+    await tickRow(1); // cc1, priced
+    expect(screen.getByText('Изменить на, %')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Убрать цену (1)' })).toBeInTheDocument();
+  });
+
+  it('flips the reprice button’s label as the percentage’s own sign flips', async () => {
+    const { container } = render(App, { env: withA() });
+    await tickRow(1); // cc1, priced
+    await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
+    const panel = within(container.querySelector('.guess') as HTMLElement);
+    expect(panel.getByRole('button', { name: 'Сделать скидку' })).toBeInTheDocument();
+
+    const field = panel.getByRole('textbox', { name: 'Результат броска' });
+    await userEvent.clear(field);
+    await userEvent.type(field, '5');
+    expect(panel.getByRole('button', { name: 'Поднять цену' })).toBeInTheDocument();
+  });
+
+  it('applies the guessed price, toasts, folds the panel, and undoes it', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(0); // ci1: no eq, no rarity, no tier - the uncommon band, 150-250
+    await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Проставить эти цены' }));
+
+    expect(screen.getByText('Цены проставлены (1)')).toBeInTheDocument();
+    expect(screen.queryByText(/^В книге цен нет/)).not.toBeInTheDocument(); // the panel folded
+    expect(readLists(storage)[0]?.meta?.['ci1']?.gold).toBe(200);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.meta?.['ci1']?.gold).toBeUndefined();
+  });
+
+  it('reprices a ticked, priced row at -20% and undoes it', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(1); // cc1, 750 gold
+    await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сделать скидку' }));
+
+    expect(screen.getByText('Цены пересчитаны (-20%, 1)')).toBeInTheDocument();
+    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(600);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+  });
+
+  it('clears the price on a ticked, priced row and undoes it', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(1); // cc1, 750 gold
+    await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Убрать цену (1)' }));
+
+    expect(screen.getByText('Убрать цену')).toBeInTheDocument();
+    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBeUndefined();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+  });
+
+  it('batch-deletes the ticked rows, clears the ticks, and undoes both back into place', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(0); // ci1
+    await tickRow(2); // q1 (cc1, index 1, stays)
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
+
+    expect(screen.getByText('Убрано из списка (2)')).toBeInTheDocument();
+    expect(readLists(storage)[0]?.ids).toEqual(['cc1']);
+    expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+  });
+
+  it('has no violations with the money panel open and both a priced and an unpriced row ticked', async () => {
+    const { container } = render(App, { env: withA() });
+    await tickRow(0);
+    await tickRow(1);
+    await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe('a row', () => {
   it('moves on a committed position and resets on an out-of-range one', async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });

@@ -7,7 +7,8 @@
  *
  * Pure module: the language arrives as an argument, not from any state. */
 
-import type { Lang, Record_ } from './types.js';
+import type { Dict } from './dict.js';
+import type { Lang, Record_, VoaTier } from './types.js';
 
 export type MoneyMode = 'bag' | 'coin';
 
@@ -184,4 +185,46 @@ export function guessPrice(it: Record_, rarityOf: (id: string) => Rarity | undef
  */
 export function reprice(gold: number, percent: number): number {
   return Math.max(1, Math.round((gold * (100 + percent)) / 100));
+}
+
+/** `Rarity` read back into the dictionary key that names it (app.js's `RAR_KEY`). */
+const RAR_KEY: Record<Rarity, keyof Dict> = {
+  common: 'common',
+  uncommon: 'uncommon',
+  rare: 'rare',
+  very_rare: 'veryRare',
+  legendary: 'legendary'
+};
+
+/** Vault of Ages tiers 1-4 read "Tier N"; 'A' and 'C' are the artifact and
+ *  cursed-object sections, which are not tiers at all (app.js's `voaTierName`,
+ *  920-924). */
+function voaTierName(tier: VoaTier, t: Dict): string {
+  if (tier === 'A') return t.voaArtifact;
+  if (tier === 'C') return t.voaCursed;
+  return `${t.tier} ${String(tier)}`;
+}
+
+/**
+ * The band's own label - which fact it was read off: a rank for equipment, a
+ * rarity for loot the alternate tables know, a Vault of Ages tier where
+ * there is one, or a plain admission that none of those apply. The live
+ * `guessWhy` (app.js 831-842).
+ */
+export function guessWhy(
+  it: Record_,
+  rarityOf: (id: string) => Rarity | undefined,
+  t: Dict
+): string {
+  const band = guessBand(it, rarityOf);
+  if (!band) return t.guessNoTier;
+  const rarity = rarityOf(it.id);
+  const src = it.eq
+    ? `${t.tier} ${String(it.eq.tier)}`
+    : rarity
+      ? t[RAR_KEY[rarity]]
+      : it.tier != null
+        ? voaTierName(it.tier, t)
+        : t.guessNoRarity;
+  return `${src} · ${String(band[0])}–${String(band[1])} ${t.goldUnit}`;
 }

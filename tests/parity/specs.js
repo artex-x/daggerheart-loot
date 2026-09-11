@@ -67,7 +67,19 @@ const NAME = {
     rename: 'Название списка',
     position: 'Позиция в списке',
     whatIsThis: 'Как это работает',
-    printHint: 'Собрать карточки для печати: девять на лист A4'
+    printHint: 'Собрать карточки для печати: девять на лист A4',
+    pickRow: 'Выбрать позицию',
+    prices: 'Цены',
+    /* Exact, not the default fuzzy match: the action row's own delete-list
+       button is named exactly "Удалить", and `d.click()` prefers an exact
+       match at every index - the plain name would delete the list instead. */
+    delOne: 'Удалить (1)',
+    clearPriceOne: 'Убрать цену (1)',
+    applyPrices: 'Проставить эти цены',
+    discount: 'Сделать скидку',
+    /* `numBox` gives every field the same aria-label regardless of which one
+       it is (app.js 2096-2115) - the reprice field carries this name too. */
+    rollResult: 'Результат броска'
   },
   en: {
     copyName: 'Copy name',
@@ -102,7 +114,14 @@ const NAME = {
     rename: 'List name',
     position: 'Position in the list',
     whatIsThis: 'How this works',
-    printHint: 'Lay these out for printing: nine to an A4 sheet'
+    printHint: 'Lay these out for printing: nine to an A4 sheet',
+    pickRow: 'Select entry',
+    prices: 'Prices',
+    delOne: 'Delete (1)',
+    clearPriceOne: 'Clear price (1)',
+    applyPrices: 'Set these prices',
+    discount: 'Discount',
+    rollResult: 'Roll result'
   }
 };
 
@@ -388,6 +407,11 @@ const listAddress = {
     '#/lists/a ~ rolled',
     '#/lists/a ~ removed',
     '#/lists/a ~ note opened',
+    '#/lists/a ~ a row ticked',
+    '#/lists/a ~ prices',
+    '#/lists/a ~ prices, none priced',
+    '#/lists/a ~ prices set',
+    '#/lists/a ~ batch deleted',
     '#/lists/b',
     '#/lists/nope',
     '#/l/ ~ own list'
@@ -429,6 +453,77 @@ const reorderedByDrag = {
     await d.drag(2, 0, false);
     const second = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
     return { first, hash: await d.hash(), second };
+  }
+};
+
+const guessedPrices = {
+  presses: true,
+  name: 'applying the suggested price to a ticked row, and undoing it',
+  only: ['#/lists/a'],
+  async run(d, lang) {
+    await d.click(NAME[lang].pickRow);
+    await d.click(NAME[lang].prices);
+    await d.click(NAME[lang].applyPrices);
+    const gold =
+      JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].meta?.ci1?.gold ?? null;
+    await d.click(NAME[lang].undo);
+    const undone =
+      JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].meta?.ci1?.gold ?? null;
+    return { gold, hash: await d.hash(), undone };
+  }
+};
+
+const repricedRows = {
+  presses: true,
+  name: "discounting a ticked, priced row, and undoing it",
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    await d.click(NAME[lang].pickRow, 1);
+    await d.click(NAME[lang].prices);
+    await d.click(NAME[lang].discount);
+    const gold =
+      JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].meta?.ci2?.gold ?? null;
+    await d.click(NAME[lang].undo);
+    const undone =
+      JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].meta?.ci2?.gold ?? null;
+    return { gold, hash: await d.hash(), undone };
+  }
+};
+
+const clearedPrices = {
+  presses: true,
+  name: "clearing a ticked, priced row's price, and undoing it",
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    await d.click(NAME[lang].pickRow, 1);
+    await d.click(NAME[lang].prices);
+    await d.click(NAME[lang].clearPriceOne);
+    const gold =
+      JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].meta?.ci2?.gold ?? null;
+    await d.click(NAME[lang].undo);
+    const undone =
+      JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].meta?.ci2?.gold ?? null;
+    return { gold, hash: await d.hash(), undone };
+  }
+};
+
+const batchDeleted = {
+  presses: true,
+  name: 'batch-deleting a ticked row, and undoing it',
+  only: ['#/lists/a ~ noted'],
+  async run(d, lang) {
+    await d.click(NAME[lang].pickRow, 1);
+    await d.click(NAME[lang].delOne);
+    const gone = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0];
+    await d.click(NAME[lang].undo);
+    const back = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0];
+    return {
+      ids: gone.ids,
+      meta: gone.meta ?? null,
+      hash: await d.hash(),
+      backIds: back.ids,
+      backMeta: back.meta ?? null
+    };
   }
 };
 
@@ -1264,6 +1359,60 @@ const STATES = [
     }
   },
   {
+    id: '#/lists/a ~ a row ticked',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'the bar on, "Выбрано 1", Цены with its caret, Удалить (1) - at 375 the 640px override drops the pair to its own full-width line',
+    enter: async (d) => {
+      await d.click(NAME.ru.pickRow);
+    }
+  },
+  {
+    id: '#/lists/a ~ prices',
+    route: '#/lists/a',
+    storage: noted,
+    why: 'row 2 (750, bags) ticked: the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
+    enter: async (d) => {
+      await d.click(NAME.ru.pickRow, 1);
+      await d.click(NAME.ru.prices);
+    }
+  },
+  {
+    id: '#/lists/a ~ prices, none priced',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'row 1 ticked: no percentage row, no clear button - the two `priced` branches off',
+    enter: async (d) => {
+      await d.click(NAME.ru.pickRow);
+      await d.click(NAME.ru.prices);
+    }
+  },
+  {
+    id: '#/lists/a ~ prices set',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'the panel folded, row 1 priced, the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
+    enter: async (d) => {
+      await d.click(NAME.ru.pickRow);
+      await d.click(NAME.ru.prices);
+      await d.click(NAME.ru.applyPrices);
+    },
+    /* a 7000ms toast (it carries an undo); arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    timed: true
+  },
+  {
+    id: '#/lists/a ~ batch deleted',
+    route: '#/lists/a',
+    storage: seven,
+    why: 'six rows, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
+    enter: async (d) => {
+      await d.click(NAME.ru.pickRow);
+      await d.click(NAME.ru.delOne);
+    },
+    /* a 7000ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    timed: true
+  },
+  {
     id: '#/lists/b',
     route: '#/lists/b',
     storage: oneEmpty,
@@ -1310,6 +1459,10 @@ const SPECS = [
   renamedList,
   movedByPosition,
   reorderedByDrag,
+  guessedPrices,
+  repricedRows,
+  clearedPrices,
+  batchDeleted,
   pricedRow,
   removedRow,
   deletedFromPage,
@@ -1523,6 +1676,14 @@ const DEBT_SLACK = 0.5;
  * not hundredths.
  */
 const JITTER = 0.1;
+
+/**
+ * Recorded, not keyed: `Chip.svelte`'s button form writes `aria-pressed` where
+ * the live money chips write nothing and the live menu chips write
+ * `aria-current="true"` (app.js 2944). `d.controls()` reads names only, so no
+ * key differs - an entry here would fail every run as stale, per `parity.js`'s
+ * own rule that a stale `ACCEPTED` key is a failure, not a silent pass.
+ */
 
 /**
  * Differences that are expected and are not defects.

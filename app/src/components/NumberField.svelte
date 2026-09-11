@@ -69,7 +69,7 @@
 
   function oninput(e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
-    const next = typed(el.value, el.selectionStart ?? el.value.length, max);
+    const next = typed(el.value, el.selectionStart ?? el.value.length, max, min);
     text = next.value;
     el.value = next.value;
     el.setSelectionRange(next.caret, next.caret);

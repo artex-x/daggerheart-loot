@@ -1186,3 +1186,27 @@ Rewrite facts (`app/src` at `3cb2bd0`):
   `gm.payload` carries all four notes and is contract-tested. A packed
   parity state computes its payload once with Node's `zlib.deflateRawSync`
   and records the command beside it.
+
+## B5.5 built: durable facts for B5.6 (implementer, 2026-09-11)
+
+- **The drag verb needed no fallback.** `tests/parity/driver.js`'s
+  `drag(from, to, after)` (a synthetic `DataTransfer` and three `DragEvent`s
+  on `.lrow`/`[data-drag]`) drove the **live** app's own 4443-4530 handlers
+  correctly on the first attempt in puppeteer's Chrome - `reorderedByDrag`
+  observed the same id order on both apps with no re-run.
+- **`NumberField`/`lib/numField.ts` now supports a negative `min`.**
+  `typed(raw, caret, max, min = 0)` and `committed(raw, min, max)` keep a
+  single leading minus when `min < 0` (a `digitsOf` helper); every existing
+  call passes no fourth argument and is byte-for-byte unchanged. Needed
+  because the reprice field's default is `-20` and the old code stripped
+  every non-digit, minus included. Any future field with a negative range
+  (there is only the one today) needs no further change here.
+- **A loot record's `guessBand` never returns `null`** - only equipment can
+  (`GUESS_EQ[t]?.[tier-1] ?? null`), and every other kind falls back to
+  `GUESS_RAR[kind].uncommon`. `ci1` (a plain core item, no `eq`, no `tier`)
+  always gets a band; the "confirm ci1 gets one" caveat in `plan.md`'s "B5.5
+  planned" never applied and needed no substitution.
+- **`Button.svelte` needed no change.** `on`, `caret` and `expanded` already
+  existed from B5.1 and are exactly what the `.batch-acts` pair needed
+  (`caret` flips via `expanded`, `on` draws the pushed-in look) - confirm
+  this before adding anything to `Button` for B5.6's own controls.

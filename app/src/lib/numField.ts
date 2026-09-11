@@ -26,6 +26,19 @@ export interface Typed {
 }
 
 /**
+ * Digits only, plus a single leading minus when the field's own range dips
+ * below zero - the reprice field is the one caller with a negative `min`
+ * (`-90`); every roll field keeps `min` at 1 or more, so this is unreachable
+ * there and their stripping is untouched. A minus anywhere but the front, or
+ * a second one, is noise from a stray keystroke rather than a sign.
+ */
+function digitsOf(raw: string, allowNeg: boolean): string {
+  if (!allowNeg) return raw.replace(/\D/g, '');
+  const kept = raw.replace(/[^-0-9]/g, '');
+  return (kept.startsWith('-') ? '-' : '') + kept.replace(/-/g, '');
+}
+
+/**
  * What a keystroke leaves behind.
  *
  * Digits only, and the caret moves back by the number of characters removed
@@ -37,12 +50,13 @@ export interface Typed {
  * they look away. Nothing is clamped upward here: 0 on the way to 10 is a
  * half-typed number, not a mistake.
  */
-export function typed(raw: string, caret: number, max: number): Typed {
-  const digits = raw.replace(/\D/g, '');
-  if (digits === '') return { value: '', caret: 0 };
+export function typed(raw: string, caret: number, max: number, min = 0): Typed {
+  const allowNeg = min < 0;
+  const digits = digitsOf(raw, allowNeg);
+  if (digits === '' || digits === '-') return { value: digits, caret: digits.length };
 
   const removedBefore =
-    raw.slice(0, caret).length - raw.slice(0, caret).replace(/\D/g, '').length;
+    raw.slice(0, caret).length - digitsOf(raw.slice(0, caret), allowNeg).length;
   const at = clamp(caret - removedBefore, 0, digits.length);
 
   const n = Number(digits);
@@ -61,6 +75,7 @@ export function typed(raw: string, caret: number, max: number): Typed {
  * minimum on a roll page - there would be nothing to show otherwise.
  */
 export function committed(raw: string, min: number, max: number): number {
-  const n = Number(raw.replace(/\D/g, ''));
-  return raw.trim() === '' || !Number.isFinite(n) ? min : clamp(n, min, max);
+  const digits = digitsOf(raw, min < 0);
+  const n = Number(digits);
+  return raw.trim() === '' || digits === '-' || !Number.isFinite(n) ? min : clamp(n, min, max);
 }

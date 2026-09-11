@@ -50,6 +50,37 @@ describe('while it is being typed', () => {
   });
 });
 
+describe('a field whose range dips below zero', () => {
+  /* The reprice field is the one caller: `min` is `-90`, so a leading minus is
+     a sign rather than noise - unlike every roll field, where `min` stays 1 or
+     more and a stray `-` is still stripped like any other letter. */
+  it('keeps a leading minus as a sign', () => {
+    expect(typed('-20', 3, 500, -90)).toEqual({ value: '-20', caret: 3 });
+    expect(typed('-2', 2, 500, -90)).toEqual({ value: '-2', caret: 2 });
+  });
+
+  it('drops a minus that is not in front, or a second one', () => {
+    expect(typed('2-0', 3, 500, -90)).toEqual({ value: '20', caret: 2 });
+    expect(typed('--20', 4, 500, -90)).toEqual({ value: '-20', caret: 3 });
+  });
+
+  it('lets the field be just a sign, mid-typing', () => {
+    expect(typed('-', 1, 500, -90)).toEqual({ value: '-', caret: 1 });
+  });
+
+  it('does not read a minus alone as a positive-only field would - unaffected', () => {
+    /* Without a negative `min` this is exactly the existing stray-character
+       case above: the sign is noise, not a digit. */
+    expect(typed('4-7', 2, 60)).toEqual({ value: '47', caret: 1 });
+  });
+
+  it('commits a negative number in range, and a bare minus to the minimum', () => {
+    expect(committed('-20', -90, 500)).toBe(-20);
+    expect(committed('-999', -90, 500)).toBe(-90);
+    expect(committed('-', -90, 500)).toBe(-90);
+  });
+});
+
 describe('once it is committed', () => {
   it('brings a number into range', () => {
     expect(committed('0', 1, 60)).toBe(1);

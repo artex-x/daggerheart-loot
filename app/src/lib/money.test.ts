@@ -2,9 +2,11 @@
    help panel promises a reader, word for word. If this file and that text ever
    disagree, one of them is lying to somebody. */
 import { describe, expect, it } from 'vitest';
+import { dict } from './dict.js';
 import {
   guessBand,
   guessPrice,
+  guessWhy,
   MONEY_DEFAULT,
   priceText,
   reprice,
@@ -145,6 +147,108 @@ describe('suggested prices', () => {
   it('read Vault of Ages off its tier instead', () => {
     const voa: Record_ = { ...loot('item', 'voa2_a1'), tier: 'A' };
     expect(guessBand(voa, none)).toEqual([1500, 2500]);
+  });
+});
+
+describe('the band label', () => {
+  const ru = dict('ru');
+  const none = (): Rarity | undefined => undefined;
+
+  it('names the rank, for equipment', () => {
+    const weapon: Record_ = {
+      id: 'q1',
+      src: 'core',
+      kind: 'equip',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: '',
+      eq: { t: 'weapon', tier: 2 }
+    };
+    expect(guessWhy(weapon, none, ru)).toBe('Ранг 2 · 100–150 зол.');
+  });
+
+  it('names the rarity, for loot the alternate tables know', () => {
+    const loot: Record_ = {
+      id: 'ci1',
+      src: 'core',
+      kind: 'item',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: ''
+    };
+    const rare = (): Rarity => 'rare';
+    expect(guessWhy(loot, rare, ru)).toBe('Редкая · 400–600 зол.');
+  });
+
+  it('names the Vault of Ages tier, where there is no rarity to read', () => {
+    const voa: Record_ = {
+      id: 'voa2_a1',
+      src: 'voa',
+      kind: 'item',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: '',
+      tier: 'A'
+    };
+    expect(guessWhy(voa, none, ru)).toBe('Артефакты · 1500–2500 зол.');
+  });
+
+  it('names the other Vault of Ages sections and its numbered tiers', () => {
+    const cursed: Record_ = {
+      id: 'voa2_c1',
+      src: 'voa',
+      kind: 'item',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: '',
+      tier: 'C'
+    };
+    expect(guessWhy(cursed, none, ru)).toBe('Проклятые предметы · 1500–2500 зол.');
+
+    const tier2: Record_ = {
+      id: 'voa1_i1',
+      src: 'voa',
+      kind: 'item',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: '',
+      tier: 2
+    };
+    expect(guessWhy(tier2, none, ru)).toBe('Ранг 2 · 150–250 зол.');
+  });
+
+  it('admits there is nothing to go on, for equipment outside every band', () => {
+    /* Off the map entirely - guessBand's GUESS_EQ has no such kind. */
+    const unknown = {
+      id: 'q9',
+      src: 'core',
+      kind: 'equip',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: '',
+      eq: { t: 'shield', tier: 2 }
+    } as unknown as Record_;
+    expect(guessWhy(unknown, none, ru)).toBe(ru.guessNoTier);
+  });
+
+  it('reads the same way in English', () => {
+    const en = dict('en');
+    const loot: Record_ = {
+      id: 'ci1',
+      src: 'core',
+      kind: 'item',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: ''
+    };
+    expect(guessWhy(loot, () => 'rare', en)).toBe('Rare · 400–600 gp');
   });
 });
 

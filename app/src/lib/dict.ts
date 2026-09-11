@@ -297,7 +297,23 @@ const ru = {
   pickedN: 'Выбрано',
   moneyAs: 'Отображение цен',
   money_bag: 'Как в книге',
-  money_coin: 'Монетами'
+  money_coin: 'Монетами',
+  goldUnit: 'зол.',
+  batchMoney: 'Цены',
+  batchNoPrice: 'Убрать цену',
+  repricePct: 'Изменить на, %',
+  repriceDown: 'Сделать скидку',
+  repriceUp: 'Поднять цену',
+  repriceHint: 'Минус — скидка, плюс — наценка. Считается от текущей цены.',
+  repriceDone: 'Цены пересчитаны',
+  repriceUndo: 'Вернуть',
+  batchDeleted: 'Убрано из списка',
+  guessApply: 'Проставить эти цены',
+  guessWhy:
+    'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
+  guessNoTier: 'нечем оценить',
+  guessNoRarity: 'редкость не указана',
+  guessDone: 'Цены проставлены'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -541,7 +557,23 @@ const en: Dict = {
   pickedN: 'Selected',
   moneyAs: 'Price display',
   money_bag: 'As in the book',
-  money_coin: 'In coins'
+  money_coin: 'In coins',
+  goldUnit: 'gp',
+  batchMoney: 'Prices',
+  batchNoPrice: 'Clear price',
+  repricePct: 'Change by, %',
+  repriceDown: 'Discount',
+  repriceUp: 'Mark up',
+  repriceHint: 'Minus discounts, plus marks up. Counted from the current price.',
+  repriceDone: 'Prices recalculated',
+  repriceUndo: 'Undo',
+  batchDeleted: 'Removed from the list',
+  guessApply: 'Set these prices',
+  guessWhy:
+    'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
+  guessNoTier: 'nothing to go on',
+  guessNoRarity: 'no rarity given',
+  guessDone: 'Prices set'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };
