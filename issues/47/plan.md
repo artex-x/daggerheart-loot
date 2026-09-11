@@ -10944,9 +10944,9 @@ Files changed: `app/src/components/{Panel,PageTitle,Actions,NoData}.svelte`
 (carrying the planning pass's own edits into this batch's commit, per the
 tree preflight).
 
-Commit: one commit, this session - hash filled in after the fact (the
-repo's own convention for a doc that must describe its own commit).
-Not pushed - "Never push" stands.
+Commit: `8b0c3ce` (`refactor(app): the page furniture as components, and
+the not-found record page (#47)`, 25 files). Not pushed - "Never push"
+stands.
 
 Next: Phase 6/7 (the cut-over, owner-gated) or Phase 8 (the register
 sweep) - `handoff.md`, "Next batch" for the orchestrator's call between

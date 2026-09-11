@@ -26,9 +26,8 @@ depends on chat history.
   including all six new `#/i/nope` cells - and the six `~ modal` cells
   read inside their recorded debt with no `стало лучше`/`долг погашен`
   line. No `VISUAL_DEBT` or `ACCEPTED` change. `git diff -- app.js
-  style.css index.html` empty throughout. Commit: one commit, this
-  session - hash filled in after the fact. Not pushed - "Never push"
-  stands; CI's read of the push is the only thing this batch leaves
+  style.css index.html` empty throughout. Commit: `8b0c3ce`. Not pushed -
+  "Never push" stands; CI's read of the push is the only thing this batch leaves
   open, and nothing in it depends on that read the way B8/B9's debt
   deletions did (no `VISUAL_DEBT` figure moved). Next: Phase 6/7 or
   Phase 8 - "Next batch" for the orchestrator's call.
@@ -846,8 +845,9 @@ carry what was done about it. Do not re-measure any of it.
   `issues/47/plan.md`, `issues/47/handoff.md`, `issues/47/context.md`
   (carrying the planning pass's own edits into this batch's commit, per
   the tree preflight).
-- Commit(s): one commit, this session - hash filled in after the fact.
-  Not pushed - "Never push" stands.
+- Commit(s): `8b0c3ce` (`refactor(app): the page furniture as components,
+  and the not-found record page (#47)`, 25 files). Not pushed - "Never
+  push" stands.
 - Deviations and rationale: the `PageTitle` markup fix above is the only
   deviation from the plan's own text; every decided point (1-7) and every
   numbered step (1-16) otherwise landed as specified. No `VISUAL_DEBT` or
