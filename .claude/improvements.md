@@ -8,7 +8,9 @@ is not readable on this host. Do not rebuild it.** Findings 5 and 6 (the parity
 harness, the vitest timeout) belong to issue 47; 5a and 5b shipped at f7308a9.
 Finding 1's "do not design around resumption being available" is withdrawn 2026-09-11:
 `SendMessage` resumes a subagent on this host - `.claude/README.md`,
-"Resuming a worker".
+"Resuming a worker". Finding 4's hook-input `effort` is an object `{ level }`,
+and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`
+(`issues/agent-effort/`, 2026-09-11).
 
 Findings from the 2026-09-09 session (TASK 47, batches B3.5 and the B3.6
 planning), and an implement-ready plan. Written for whoever picks up the

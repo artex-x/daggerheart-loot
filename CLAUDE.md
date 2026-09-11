@@ -187,7 +187,7 @@ Feature work uses roles (see `.claude/`):
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 
 Prompts: `.claude/prompts/`. Agents: `.claude/agents/`.
-Pass `TASK: <id>` at runtime. Orchestrator selects models/effort and maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
+Pass `TASK: <id>` at runtime. Orchestrator selects models; effort is the session's, set by the human. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
 Use supported agent tools when the host provides them; otherwise run the prompt files sequentially with `issues/<id>/` as handoff.
 Before completion, the orchestrator waits for workers, reconciles context/plan/handoff, preserves evidence and unrelated work, and removes only clearly disposable task-scoped scratch artifacts.
 <!-- setup-claude-agents:end -->

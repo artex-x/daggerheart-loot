@@ -17,6 +17,10 @@ silently runs at that tier instead of its documented one. The orchestrator raise
 a tier with an explicit `model` argument per dispatch; see the model selection
 section of prompts/orchestrate.prompt.md.
 
+Effort: see the orchestrate prompt's model selection section - no dispatch
+carries an effort argument, and a worker runs at the session's own effort
+level, set by the human.
+
 The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
 
 Per-task disk state under issues/<id>/:
@@ -42,6 +46,8 @@ the orchestrate prompt (until this change) recorded as unable to do it:
 | main session -> its own subagent | works, context intact | the issue 47 B9 implementer, resumed with the review's blocker after its turn had ended, kept every fact and produced `84ca6df` |
 | subagent -> main session | works | a probe loaded `SendMessage` via `ToolSearch` and delivered a line that arrived as `<agent-message from="...">` |
 | subagent -> sibling subagent | **unproven** | only one subagent was alive; the probe's reported sibling id was its own. Settle it with two live subagents before designing on it |
+
+A send carries no model; a resumed agent keeps its tier.
 
 Facts that bound the rules in `prompts/orchestrate.prompt.md`, "Resume,
 do not replace":
@@ -253,6 +259,28 @@ Facts settled during implementation (`hooks-guardrails`, 2026-09-10):
 - A result over about 30,000 characters is persisted to
   `tool-results/<id>.txt`, largest shown 29,787, smallest persisted 29.8 KB.
 
+Facts settled during measurement (`agent-effort`, 2026-09-11):
+
+- `$CLAUDE_EFFORT` in a worker's Bash tool reports the level it runs under;
+  the PowerShell tool does not carry it on this host.
+- Hook input's `effort` field is `{ level }` (docs; not measured here - the
+  fallback instrument that would read it was not needed).
+- **Propagation, measured**: three probes against three controls read
+  `high` / `low` / `high` in lockstep with the session (W1=E0, W2=E1,
+  W3=E0) - session effort propagates to a dispatched worker.
+- **Frontmatter `effort:` key, unverified**: one probe under a session at
+  `high` still read `high` while `implementer.md` carried a scratch
+  `effort: low` line. Agent definitions may be read once at session start,
+  so a mid-session edit could simply not have been seen; a fresh-session
+  repeat, not yet run, would settle it - the same standing as
+  `disallowedTools` at candidate row 36.
+- Model default effort is `high` on every model that supports effort, which
+  is why a single `high` reading under a `high` session proves nothing;
+  contrast levels must be `low` vs `high`.
+- `set_session_effort` refuses the calling session and targets sessions, not
+  subagents - the orchestrator has no lever to set a worker's effort per
+  dispatch, only the human's own session control or `/effort`.
+
 ## Candidates considered (issue 65)
 
 The full list evaluated when the hooks were designed, kept so nobody re-derives
@@ -299,3 +327,4 @@ not changed.
 | 35 | Deny `SendMessage` to a writer while another writer is live | `PreToolUse(SendMessage)` | **reject** | The input does not exist in a hook: liveness and role come from `ListAgents`, which a hook cannot call - it gets stdin JSON and nothing else. The matcher is unverified on this host (`tool_name` for `SendMessage` has never reached a hook here; #19/#29-shaped). Zero recorded failures; the standing bar is a repeated one. The prompt's "a resume is a dispatch" sentence owns it. |
 | 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. |
 | 37 | Warn on a second implementer dispatch for the same task while a completed one is listed | `PreToolUse(Agent)` | **reject** | The dispatch tool is `Agent` here and `Task` in the reference - the unverified matcher row 29 already rejects - and the hook cannot see the agent list. "Resume, do not replace" is a preference, and a wrong warning on a legitimate fresh dispatch (tier change, killed agent) is the one thing a guard must not do. |
+| 38 | Log effort from a hook | `PreToolUse(Bash)` | **reject** | The Bash tool's `$CLAUDE_EFFORT` is the same value with no edit (measured 2026-09-11); an observe-only hook would be the first here, guards no recorded mistake, and re-measurement is one echo from any worker. Fallback sketched in `issues/agent-effort/plan.md` 3.4, reverted if used. |

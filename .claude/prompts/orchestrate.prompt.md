@@ -181,7 +181,7 @@ reply lands here, so two subagents cannot converse. Facts and evidence:
 `.claude/README.md`, "Resuming a worker".
 
 ## Model selection (orchestrator only)
-Agents must not choose models.
+Agents must not choose models or effort.
 Each agent's frontmatter carries its real default, so a dispatch that names no
 model still runs at the intended tier. **Do not use `model: inherit` for
 workers** - inherit means *the session model*, so an implementer dispatched
@@ -190,7 +190,19 @@ documented economy default and the fastest way to exhaust the 5-hour window.
 Escalation is an explicit `model` argument on the dispatch, never a side effect
 of what you happen to be running.
 
-Effort/high reasoning is controlled by the session UI - set effort explicitly when you need "high".
+Effort has no dispatch argument - the `Agent` tool's schema is `description`,
+`prompt`, `subagent_type`, `model`, `isolation`, `run_in_background`,
+nothing more. Measured 2026-09-11, three probes against three controls:
+**session effort propagates to a dispatched worker** (`high`/`low`/`high`
+both directions) - an orchestrator on high silently runs every worker on
+high too, the `model: inherit` failure again. The frontmatter `effort:`
+key stays **unverified**: one probe still read the session's level while
+`implementer.md` carried `effort: low`, but agent files may load once
+at session start, so only a fresh-session repeat settles it - the same
+treatment README row 36 gives `disallowedTools`; do not add the key on
+this reading. A throwaway dispatch inherits the session's level too: three
+single-`echo` probes cost roughly 68k tokens each at `high`, so dropping
+the session first is the one case that clearly pays.
 
 Frontmatter defaults (change the file, not your habit):
 - `planner`: fable - the plan decides whether a Sonnet implementer succeeds or
@@ -204,13 +216,13 @@ Frontmatter defaults (change the file, not your habit):
 - `refresh-artwork`: sonnet
 
 Raise per dispatch when:
-- Plan: already fable; medium effort suits routine batches, high when design/UI/
+- Plan: already fable; ask for the session at `high` when design/UI/
   mechanics are non-trivial. On Fable, lower effort often beats a prior model's
   highest, so reach for high because the design is hard - not out of habit.
   Opus is the fallback floor, not a downgrade to choose per dispatch
-- Implement: opus only if a prior implement failed on this batch or risk is high; sonnet + high for large careful batches
+- Implement: opus only if a prior implement failed on this batch or risk is high; for a large careful batch ask for the session at high
 - Add-source: opus if new roll/table mechanics or hard ambiguity
-- Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; large mechanical conversion batches use sonnet + high
+- Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; for large mechanical conversion batches ask for the session at high
 - Review: already opus; lower to sonnet only for a small, low-risk batch
 
 Claude <-> Codex cheat-sheet:
@@ -220,6 +232,7 @@ Claude <-> Codex cheat-sheet:
 - strong-high: Opus high/xhigh <-> GPT-5.6 Sol high/xhigh/Ultra
 - frontier: Fable medium/high <-> no established Codex peer; on Codex, plan with
   Sol at its highest tier and expect a weaker plan
+Effort on the Claude side is the session's level, set by the human.
 
 Announce chosen tier in chat only. Never write model routing into plan.md or handoff.md.
 
