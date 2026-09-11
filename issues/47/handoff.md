@@ -6,6 +6,39 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B6 is reviewed and approved - the search slice is closed,
+  and print is the only Phase 4 slice left.** (reviewer, 2026-09-11, on
+  `9d5ca02`). **Verdict: approve, no blockers**, and no remediation cycle
+  spent - the batch's one cycle is unused. The review checked the two
+  failure shapes this task has already paid for and found neither: every new
+  interactive element in `SearchBox.svelte` and `SearchPage.svelte` is
+  reached by a real event on a real rendered node and asserted through a
+  downstream effect (rows appearing, `aria-pressed` flipping *and* the row
+  set changing, `Выбрано 300` in the bar), not by a directly-invoked
+  handler; and `TablesPage.svelte:420` passes no `focus` prop against
+  `SearchBox`'s `focus = false` default, so the tables toolbar neither
+  gained nor lost focus-on-arrival. All three recorded deviations are
+  correct readings of live behaviour, verified against the catalogue and
+  `app.js` rather than taken on trust: `$eval` would have returned
+  `undefined` for `els.length`; exactly two records carry "основное оружие"
+  and neither has `eq.t === 'weapon'` (`hi20` has no `eq` block at all,
+  `voa3_t4g` is `secondary`), so the brief's assertion was false in two
+  independent ways; and `userEvent.paste` is not a different code path -
+  the live handler is an `input` handler (`app.js:4333`) and the cap lives
+  in a `$derived` that never sees how `q` was set. `statLineFor`'s move is
+  byte-equivalent with the same read set; `AppState.kinds` matches
+  `app.js:60`'s one `S.kind` shared by all three screens, and the extra
+  `equip: true` key the roll pages now receive is inert
+  (`poolFor`/`allows` hard-code `kind !== 'equip'`; `altTables`/`altPicks`
+  read only `.item`/`.consumable`), which `app.test.ts`'s fourth case pins.
+  `packedExpanded` closes B5.6's risk 1 rather than restating it: a failed
+  unpack writes literally `#/l/zzzz` (`app.js:3596-3600`) and the spec
+  throws on it, while the other failure - the hash never leaving `#/l/~` -
+  is already fatal through the state's own `d.expanded()` `waitForFunction`.
+  The artwork commit `37ecc8d` cannot confound the parity result: both apps
+  read the same `img/` bytes on one tree. Three risks and eight nits are
+  recorded in "Deferred", not fixed. NEEDS_HUMAN_CONFIRMATION: no.
+
 - Task status: **B6 is built, verified and committed - the search slice is
   closed; print is the only Phase 4 slice left.** (implementer, 2026-09-11,
   on `a25eeac`, HEAD moved under this batch to `37ecc8d`
@@ -2215,96 +2248,46 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B6 is closed** (implementer, 2026-09-11, on `a25eeac`/`37ecc8d` - see
-`plan.md`, "B6 built" and the Status entry above). The search slice is done;
-`#/search` is no longer `pending` in `tests/parity/specs.js`. **Print
-(`#/print/ci1-q1`) is the only Phase 4 slice left, and it needs a planning
-pass before it is implement-ready** - unlike search, print has no measured
-surface and no planning notes yet, and its own evidence (Figma nodes
-`88Hhc89oY9Orcbvd2ok1Hx`, `714-42387`/`3773-90792`) needs the Figma
-connector authenticated, which this session did not have. The next step is
-a planner dispatch, not an implementer one.
+**B6 is closed - built, verified, and reviewed `approve` with no blockers**
+(implementer then reviewer, 2026-09-11, on `9d5ca02`; see the two Status
+entries above and `plan.md`, "B6 built"). The search slice is done;
+`#/search` is no longer `pending` in `tests/parity/specs.js`. B6's own
+implement-ready brief is not repeated here - it is `plan.md`, "B6 planned",
+in full, and its measurements are `context.md`, "B6 planning facts".
 
-B6's own record, kept for reference - the batch that just closed:
+**Print (`#/print/ci1-q1`) is the only Phase 4 slice left, and it needs a
+planning pass before it is implement-ready.** The next step is a planner
+dispatch, not an implementer one.
 
-**B6 - the search slice, one batch, implement-ready** (planner, 2026-09-11,
-on `16bc32e`). Full design: `plan.md`, "B6 planned"; durable measurements:
-`context.md`, "B6 planning facts".
-
-- **Name:** B6 - the search page (`#/search`).
-- **Objective:** `#/search` draws what the live `renderSearch` (app.js
-  2841-2859) draws - the head, the focused search box and the three kind
-  chips in one panel, then the hint / up to 300 rows under `Выбрать все
-  (N)` / `Ничего не найдено`; a ticked row raises the bar, a row opens the
-  modal; the kind filter is shared with Core rules and the alternate tables
-  the way the live `S.kind` is. `#/search` stops being `pending` in
-  `tests/parity/specs.js`; print is then the only Phase 4 slice left.
-- **In scope:** `app/src/lib/types.ts` (`KINDS`/`Kind`), `lib/dict.ts`
-  (`subSearch`, `startTyping`), `lib/search.ts` (`statLineFor`) + test,
-  `state/app.svelte.ts` (`kinds`, `toggleKind`) + test,
-  `components/SearchBox.svelte` (new), `components/SearchPage.svelte` (new),
-  `components/searchPage.test.ts` (new), `Field.svelte` (`label` optional),
-  `TablesPage.svelte` (uses `SearchBox` and `statLineFor`), `StdPanel.svelte`
-  and `AltPanel.svelte` (onto `app.kinds`), `App.svelte` (the route; the
-  section fallback and its `h1` rule go), `components/a11y.test.ts`
-  (`COVERED` x2, one state), `tests/parity/driver.js` (`count`),
-  `tests/parity/specs.js` (seven states, `copiedSelection.only`,
-  `typeRuns` probe + `only`, `foundRows`, `packedExpanded`),
-  `docs/specs/FEATURES.md` (the 300 cap), `docs/specs/COVERAGE.md` (one row).
-- **Out of scope:** `CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`,
-  `ROUTES.md`, `llms.txt`, `STATE.md` (no contract or grammar moves; the
-  kind filter is already listed as memory-only). A `.panel` component.
-  `S.search.q` surviving a route change. `ListPage.svelte:103` (this batch
-  does not touch that file). Print.
-- **Files expected:** the list above - about twenty paths.
-- **Steps:** `plan.md`, "B6 planned", "Ordered steps" 1-12, in order. In
-  short: types/dict/search/state + their tests (1); the two roll panels and
-  `Field` (2); `SearchBox` and `TablesPage` (3); `SearchPage`, `App`, the
-  a11y guard (4); the fifteen component cases (5); the driver verb and the
-  specs (6); the two spec docs (7); `npm run check` (8); `npm run build`
-  and the two parity groups (9); `npm run check:built` (10); the docs (11);
-  `npm run check` and one commit `feat(search): the search page` (12).
-- **Acceptance criteria:** `plan.md`, "B6 planned", "Acceptance criteria" -
-  check green; all seven `#/search` states `совпадает` at both languages
-  and three widths with `foundRows` 87 / 34 / (stat line) / 300 equal on
-  both apps; group B `совпадает` and `packedExpanded` `{ expanded: true }`
-  on both; `check:built` green; no debt or `ACCEPTED` written; the four
-  "has no ..." structural checks; the two spec docs updated.
-- **Verification commands** (each its own foreground call, Bash timeout
-  600000, `MSYS_NO_PATHCONV=1` in front of the parity ones):
-  - `set -o pipefail; npm run check 2>&1 | tail -n 120`
-  - `npm run build`
-  - `node tests/parity.js "#/search"` - group A, 7 states, 42 cells
-  - `node tests/parity.js "roll/std ~ items only" "roll/alt ~ crit, items
-    only" "#/tables ~ searched" "#/tables/eq_secondary ~ searched" "#/tables
-    ~ nothing found" "#/l/ ~ packed"` - group B, 6 states, 36 cells
-  - `npm run check:built`
-  - `set -o pipefail; npm run check 2>&1 | tail -n 120` again after the doc
-    edits, immediately before the commit
-  The full suite (`node tests/run-all.js parity`) is the orchestrator's,
-  not this batch's.
-- **Risks / do-nots:** `plan.md`, "B6 planned", "Risks and do-nots". The
-  three that bite: focus the box from `SearchBox`'s `onMount` (the live
-  box is focused on arrival, ring painted - measured), not via the
-  `autofocus` attribute and not not-at-all; filter before the cap
-  (`filter(...).slice(0, 300)`); judge "the last kind on" over the row the
-  chip sits in (`LOOT_KINDS` on a roll page, `KINDS` on search).
-- **Fallback:** if `#/search @ ru` alone is red at the box after `onMount`
-  focus, compare `document.activeElement` in both apps (a two-line
-  puppeteer probe) before anything else; if Svelte's mount order leaves
-  the box unfocused, move the `focus()` into a `$effect` keyed on the
-  element binding. If `foundRows` disagrees on `~ stat line` only, the
-  labels handed to `statLineFor` differ from the live `eqLine`'s - compare
-  `docs/fixtures/statlines/equipment.json` before touching the query.
-- **NEEDS_HUMAN_CONFIRMATION: no** - the one design fork (where the kind
-  filter lives) was pre-decided by the repository's own decision entry,
-  which named search as where it comes due and `AppState` as the
-  destination; the query's locality follows `TablesPage`'s precedent and
-  `STATE.md`. No public contract, route or fixture moves.
+- **Name:** not yet chosen - the print slice, unscoped.
+- **Why it is not implement-ready:** unlike search, print has no measured
+  surface and no planning notes anywhere in `plan.md`.
+- **Evidence to open before any visual work**, per `CLAUDE.md`, "Product
+  laws" and "Source and commit conventions": the Figma print design,
+  `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (colour) and `3773-90792`
+  (black-and-white). Export the vectors; do not redraw them.
+- **The blocker on that evidence:** the Figma connector was
+  **unauthenticated** in the 2026-09-11 session and cannot be authorized
+  from a non-interactive one. The repository owner authorizes it from
+  claude.ai connector settings or an interactive `claude mcp` / `/mcp`
+  session. A planning pass can measure the live `#/print/...` surface off
+  `app.js`/`style.css` without it, but the design-node comparison cannot
+  happen until it is connected.
+- **Product laws that bind this slice** (`CLAUDE.md`): nine 63x88 mm cards
+  per A4 sheet; colour and black-and-white are **distinct layouts**, not a
+  filter over one; browser-measured fitting is preserved. `FEATURES.md`
+  documents the behaviour.
+- **Two things B6's review says to read on the next CI run, before or
+  alongside the print pass** (full text in "Deferred", risks 1-2): the
+  seven `typeRuns` tables cells and the plain `#/tables` cells. B6 widened
+  the `typeRuns` `search` selector and neither of its parity groups
+  exercises those states; the widening was verified by inspection only.
+- **NEEDS_HUMAN_CONFIRMATION: no** for planning the slice - but the Figma
+  authorization is human action the owner must take before the visual work
+  inside it can be done.
 - **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
-  naming the deleted `todo` paragraph - not this batch's file. The `~
-  packed` blind spot **is** this batch's (`packedExpanded`, one spec in
-  `specs.js`, which the batch edits anyway).
+  naming the deleted `todo` paragraph - neither B6 nor a print batch opens
+  that file, so it waits for whatever does.
 
 ## Blockers
 
@@ -2707,6 +2690,79 @@ on `16bc32e`). Full design: `plan.md`, "B6 planned"; durable measurements:
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B6's review findings (reviewer, 2026-09-11, on `9d5ca02`) - recorded,
+  not fixed; the verdict was approve and no remediation cycle was spent.**
+
+  Risks, in the order they would bite:
+  1. **The `typeRuns` probe change was never re-run on the states that use
+     it.** `tests/parity/specs.js:768` widened `search` from `.toolbar
+     input[type=search]` to `input[type=search]`, which affects seven
+     existing tables states, and **none of them is in either parity group
+     B6 ran** - group B's three tables states are not in `typeRuns.only`.
+     The reviewer verified by inspection that the selector resolves to the
+     same element on all seven (the only other `input[type=search]` in the
+     rewrite is `AddToList.svelte:210`, in the DOM only with the menu open,
+     and no `typeRuns` state opens it). **CI is the actual proof: on the
+     next run read the seven `typeRuns` tables cells and the plain
+     `#/tables` cells specifically.** CI's five standing red cells are all
+     `#/i/ci1`, so a tables regression would stand out.
+  2. **Nothing photographs the tables toolbar box unfocused.** All three
+     tables states in group B type into it, so "TablesPage did not silently
+     acquire focus-on-arrival" rests on reading the code, not on a
+     measurement. The plain `#/tables` cell in the full suite covers it.
+  3. **`foundRows`'s actual numbers are not recorded.** The acceptance
+     criterion names 87 / 34 / the stat-line count / 300; "Verification"
+     records only `расхождений нет`, which would also read green if
+     `.rows [data-row]` matched nothing on both apps. The reviewer
+     confirmed both apps do render `.rows` + `[data-row]` (`app.js:2788`,
+     `TableRows.svelte:100-105`) and that `#/search ~ a row ticked`'s
+     `d.click('Выбрано')` would have thrown with no rows - so rows
+     certainly drew. **Print the figures next time the group runs.**
+
+  Nits, for whichever batch next touches the file:
+  4. `app/src/state/app.test.ts`'s "resets on a fresh app" case calls
+     `fakeEnv()` twice and `fakeEnv` mints a new `memoryStorage()` each
+     call, so it cannot detect `kinds` being persisted - the plan's
+     "storage holds no new key" is unproven. One line: share one storage
+     instance across the two renders, or assert on its keys.
+  5. No test asserts the tables toolbar box is *not* focused on arrival.
+     `expect(box).not.toHaveFocus()` in `tables.test.ts` would turn the
+     `focus` default into a guarded contract.
+  6. `plan.md`, "B6 built" says "three test-writing deviations" while
+     "Verification" records two more (the modal case closes via the
+     "Закрыть" button instead of `Escape`, and a `tick()` after
+     `router.navigate`). Both extra ones are correct - `RecordModal.svelte`
+     relies on the native `<dialog>` `close` event and nothing in the app
+     hand-writes Escape, so jsdom's gap is real - but the two accounts
+     disagree on the count.
+  7. The rewritten `search.test.ts` cases prove the built line contains the
+     type word but no longer prove `search()` *reaches* the line for such a
+     query; that claim now rests on the `#/search ~ stat line` parity state
+     and on `matches`' older cases. A corpus-independent version is
+     available: `search([gear], 'основное оружие', line)` returns the
+     record and `search([gear], 'основное оружие')` (no line) returns none.
+  8. `SearchPage.svelte`'s `.miss` rule is a second copy of `TablesPage`'s
+     - not recorded alongside the `.panel` and `toggleAllIn` copies below.
+  9. `plan.md`'s decision heading still reads "The kind filter is per
+     panel, not per app" while its body and the code now say the opposite;
+     a reader skimming headings gets the wrong answer.
+  10. `docs/specs/FEATURES.md`'s new cap clause sits on a bullet whose
+      neighbour is about each table's own search box; naming `#/search` in
+      the clause would remove the ambiguity, since the cap is that page's
+      alone.
+  11. `app/src/App.svelte` - with the generic section fallback gone, a
+      `Section` added later without its own branch silently falls to the
+      `.todo` paragraph instead of drawing its heading. Unreachable today
+      (`tables` is caught by `TABLES_RE` before `isSection`; every other
+      section has a branch), but nothing forces the next author to notice.
+
+- **Cleanup done at B6 closeout (orchestrator, 2026-09-11).** The stray
+  gitignored vitest cache the planner found at
+  `app/src/components/app/node_modules/.vite/vitest/` (6.1 MB, left by some
+  session running a single-file vitest from the wrong cwd) was deleted,
+  along with the otherwise-empty `app/src/components/app/` that held it.
+  Nothing tracked was touched; no other scratch artifact was removed.
 
 - **B5.6's review findings, assigned by the B6 planning pass (planner,
   2026-09-11) - risk 1 closed by B6 (implementer, 2026-09-11).** A

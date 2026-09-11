@@ -1508,3 +1508,40 @@ kept). Design and steps: `plan.md`, "B6 planned".
   B6 - it is now the only Phase 4 slice left, and this session's Figma
   connector was unauthenticated, so the print batch's surface is
   unmeasured. A planning pass is needed before it is implement-ready.
+
+## B6 reviewed and approved; the search slice is closed (orchestrator, 2026-09-11)
+
+- HEAD `9d5ca02` (`feat(search): the search page`), working tree clean apart
+  from this closeout's doc edits. The batch sits on `37ecc8d`
+  (`feat(artwork): refresh audited polish batch`), a peer session's
+  images-only commit that landed mid-batch and was preserved, not fought.
+- **Review verdict: approve, no blockers; the batch's one remediation cycle is
+  unspent.** Three risks and eight nits are in `handoff.md`, "Deferred". Two
+  are worth carrying into any later session as facts rather than as chores:
+  1. **B6 widened the `typeRuns` `search` probe** from `.toolbar
+     input[type=search]` to `input[type=search]` (`tests/parity/specs.js:768`),
+     which touches seven existing tables states, and **neither parity group B6
+     ran exercises them**. The selector was verified by inspection only (the
+     only other `input[type=search]` is `AddToList.svelte:210`, in the DOM
+     only with the menu open, and no `typeRuns` state opens it). **CI is the
+     proof - read those seven cells and the plain `#/tables` cells on the next
+     run.** CI's five standing red cells are all `#/i/ci1`, so a tables
+     regression would stand out.
+  2. **A parity group reading `расхождений нет` does not by itself prove rows
+     drew.** `foundRows`' figures (87 / 34 / stat line / 300) were compared but
+     not printed, and an empty match on both apps would read green too. The
+     reviewer closed it by other means this time; print the figures next run.
+- Durable, and the reason no `ACCEPTED` or `VISUAL_DEBT` entry was written:
+  `style.css:254-258` (the search box) is top-level with **no `@media`
+  override**, so `SearchBox.svelte` is a complete port; and `app.js:60`'s
+  `S.kind` is genuinely one object shared by Core rules, the alternate tables
+  and search, which is why `AppState.kinds` is right and `plan.md`'s old
+  decision heading "The kind filter is per panel, not per app" is now
+  retired by its own body.
+- **Cleanup:** the stray gitignored vitest cache at
+  `app/src/components/app/node_modules/.vite/vitest/` (6.1 MB) and its
+  otherwise-empty parent `app/src/components/app/` were deleted. Nothing
+  tracked was touched.
+- **Phase 4 has one slice left: print (`#/print/ci1-q1`).** It needs a planner
+  pass, and its design evidence needs the Figma connector authorized by the
+  owner - see `handoff.md`, "Next batch".
