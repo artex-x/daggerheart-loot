@@ -510,6 +510,11 @@ describe('drag', () => {
     drag.handlers?.onDrop(0, 2);
     expect(readLists(storage)[0]?.ids).toEqual(['cc1', 'q1', 'ci1']);
   });
+
+  it('marks the grip draggable, so the browser actually fires dragstart', () => {
+    const { container } = render(App, { env: withA() });
+    expect(container.querySelector('.lrow-grip')).toHaveAttribute('draggable', 'true');
+  });
 });
 
 describe('no data', () => {

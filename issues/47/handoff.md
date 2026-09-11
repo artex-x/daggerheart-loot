@@ -6,6 +6,25 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B5.4a's one-blocker remediation pass is built, verified, and
+  committed** (implementer, 2026-09-11, on top of `8873473`). The reviewer's
+  one blocker - the list row grip missing `draggable="true"`, so no
+  `dragstart` could ever fire in a real browser and the fully-styled grip did
+  nothing - is fixed with the one attribute, matching `app.js:3053`. A new
+  `listPage.test.ts` case asserts `draggable="true"` on the rendered
+  `.lrow-grip` element itself (a real DOM query, not a port call), since the
+  existing drag test's `drag.handlers?.onDrop(0, 2)` call proved the port
+  wiring while missing exactly this. `npx prettier --write
+  app/src/components/ListPage.svelte` left the file unchanged - no
+  `prettier-ignore` needed. `npm run build` then `MSYS_NO_PATHCONV=1 node
+  tests/parity.js "#/lists/a @"` read all six cells `совпадает` (an attribute
+  has no geometry). `set -o pipefail; npm run check 2>&1 | tail -n 120` exited
+  0 as the last action before commit. One commit, `fix(lists): make the list
+  row grip draggable`, on top of `8873473`. No push. The reviewer's six nits
+  are recorded, not fixed, in "Deferred"; `plan.md` gained a correction
+  paragraph under "B5.4a built" naming the parity driver's missing drag verb
+  as why neither green proof could have caught this. B5.4b, B5.5 and B5.6
+  remain outlines only - not started, not replanned.
 - Task status: **B5.4a is built, verified, and committed** (implementer,
   2026-09-11). Resumed at step 11 as directed, on `f38b900` with the 43
   uncommitted paths from steps 1-9 unchanged and step 10 already green.
@@ -1713,6 +1732,26 @@ the three.
 
 ## Blockers
 
+- **RESOLVED: B5.4a's review against `8873473` - the grip was inert**
+  (reviewer, then implementer, 2026-09-11). `ListPage.svelte`'s
+  `.lrow-grip` span had no `draggable="true"`; `app/src/ports/drag.ts`'s
+  `nativeDrag` listens for `dragstart` and sets no attribute itself, so with
+  none present no `dragstart` could ever fire and `onDrop` could never run in
+  a real browser - a fully-drawn, fully-inert affordance (`cursor: grab`,
+  `grabbing` on `:active`, `touch-action: none`, the drag-hint tooltip), and a
+  behaviour divergence from `app.js:3053`, which writes `draggable="true"` on
+  the same span. Both proofs green at `8873473` were structurally blind to
+  it: the parity driver has no drag verb, so none of the 96 cells could reach
+  it, and `listPage.test.ts`'s existing drag test called
+  `drag.handlers?.onDrop(0, 2)` directly, proving the port-to-component
+  wiring while bypassing the element-to-browser wiring entirely - the same
+  shape as B5.3's card-link blocker. Fixed with the one missing attribute;
+  `listPage.test.ts` gained a real-DOM assertion (`container.querySelector(
+  '.lrow-grip')` carries `draggable="true"`), not a port-level one.
+  `node tests/parity.js "#/lists/a @"` read all six cells `совпадает`
+  (an attribute change has no geometry). One commit on top of `8873473`.
+  Six review nits recorded, not fixed - see "Deferred".
+
 - **RESOLVED in planning (planner, 2026-09-10): `#/tables ~ selection copied
   @ en 1100` is a stale legacy-cache hit, not a defect and not a debt.** The
   diff image (opened first) is red only over the toast: the legacy shot has
@@ -2092,6 +2131,43 @@ the three.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B5.4a's review against `8873473`: fix-then-continue, one blocker, six
+  nits** (reviewer, then implementer, 2026-09-11). The blocker (the grip's
+  missing `draggable="true"`) is fixed - see "Blockers" and `plan.md`,
+  "B5.4a built", the correction paragraph. The six nits, recorded rather than
+  fixed per the no-remediation-cycle-for-nits rule:
+  1. **For B5.6.** `RowMain.svelte`'s `tail`/`.rtail` is dead code until
+     B5.6 uses it. The planner sanctioned it, but `CLAUDE.md`'s "add no
+     variant before something uses it" was still breached - B5.6 should
+     justify keeping it or drop it.
+  2. **For planning, not B5.4b/B5.6 specifically.** The money chips write
+     `aria-pressed` where the live `moneyPickerHTML` (`app.js:2944`) writes
+     `aria-current="true"` and no `aria-pressed`. Reusing `Chip.svelte` is
+     defensible; the divergence just is not recorded. `CLAUDE.md` asks for
+     intentional accessibility differences to go in `ACCEPTED` with a
+     reason - a planning decision, not a review-time fix.
+  3. **Cosmetic, no behaviour change.** `ListPage.svelte` (~714-716,
+     ~774-776) hardcodes `23px` / `680` / `-0.01em` where `--h-page-size`,
+     `--h-page-weight`, `--h-page-spacing` exist in
+     `app/src/styles/tokens.css:70-72`. Computed values are identical
+     today, so nothing renders differently; worth tokenising whenever that
+     block is next touched.
+  4. **Worth noting for a future keyboard-parity state.** `RowMain.svelte:118`
+     adds `.row-main:focus-visible`, which `TableRows.svelte` never had. It
+     correctly restores `style.css:1001` and is a welcome campsite fix, but
+     it changes what every table row draws on keyboard focus and was
+     unrecorded - flagged so a future keyboard-focus parity state is not
+     misread as a regression.
+  5. **Add to the existing timed-state-divergence list** (alongside
+     `listRoll`/`keepOpen`). `moneyHelp` is component state where the live
+     `S.moneyHelp` is app memory (`STATE.md`, "Prices"), so navigating away
+     and back folds the help here and leaves it open live.
+  6. **Nothing to fix; recorded so it is not re-derived.** `ListPage.svelte:701`
+     renders the sub as three text nodes where the live app writes one
+     escaped string. All six `#/lists/a @` cells read `совпадает`, so there
+     is no measured difference today - noted only in case that line ever
+     picks up debt later.
 
 - **B5.3's review: fix-then-continue, one blocker, five nits** (reviewer,
   opus, against `ba8f4b1`, 2026-09-10). The blocker (the card link's payload

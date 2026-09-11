@@ -586,6 +586,7 @@
         <div class="row lrow" class:has-note={hasNote} data-index={i}>
           <span
             class="lrow-grip"
+            draggable="true"
             data-drag="{own.id}:{it.id}"
             title={t.dragHint}
             aria-hidden="true"><Icon name="grip" /></span

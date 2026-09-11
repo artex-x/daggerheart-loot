@@ -6137,6 +6137,23 @@ B5.4b (drag as the live app does it), B5.5 (batch actions) and B5.6 (the
 shared page) remain outlined/unplanned as before; this batch did not touch
 their surface.
 
+**Correction, one remediation pass on top of `8873473` (reviewer then
+implementer, 2026-09-11): the blocker found in review is fixed.**
+`ListPage.svelte`'s grip span was missing `draggable="true"`, so `nativeDrag`'s
+`dragstart` listener could never fire and the grip - fully styled with
+`cursor: grab`/`grabbing`, `touch-action: none`, and a drag-hint tooltip - did
+nothing in a real browser, even though `listPage.test.ts`'s existing drag test
+passed by calling `drag.handlers?.onDrop(0, 2)` directly, bypassing the
+element entirely. Fixed with the one missing attribute, matching `app.js:3053`
+exactly; a new `listPage.test.ts` case asserts `draggable="true"` on the
+rendered `.lrow-grip` element itself, not through the port. `node
+tests/parity.js "#/lists/a @"` reads all six cells `совпадает` (an attribute
+has no geometry). **The parity driver has no drag verb**, so none of its 96
+cells could have caught this - the port-to-component wiring was tested, the
+element-to-browser wiring was not. That gap is why this needed a human-shaped
+review rather than the harness; it is not fixed here (B5.4b's territory if it
+is ever worth a driver verb).
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
