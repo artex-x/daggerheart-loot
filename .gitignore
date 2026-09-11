@@ -33,3 +33,8 @@ coverage/
 
 # Per-suite logs from tests/run-all.js: the CI artifact, not source.
 test-output/
+
+# tools/tg-preview/'s local credentials (docs/tg-preview.md, step D.2): a
+# TG_SESSION value is a full Telegram account and must never be tracked.
+.env
+.env.*

@@ -263,6 +263,7 @@ robots.txt                  crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/ from data.js
 tools/derived.js            how the derived files are assembled
+tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
 tests/                      19 suites plus the runner
 docs/specs/                 behaviour and frozen contracts, for maintainers
 docs/fixtures/              golden fixtures the contract suite replays

@@ -70,3 +70,14 @@ in `tests/derived.js`.
 Interface text and test messages are Russian. English only in code comments and
 in the machine-facing files (`llms.txt`, `docs/`, `CLAUDE.md`) - models read
 those, and it is cheaper that way.
+
+## 7. Link previews are cached by Telegram until pushed
+
+Telegram keys a link's unfurl preview on the URL, with no TTL, and ignores
+everything the origin serves - a changed `Cache-Control`, a changed
+`og:image` byte, a redeploy. Rewriting `og/<id>.jpg` bytes under an unchanged
+URL (an artwork refresh, for instance) therefore needs a refresh pushed to
+`@WebpageBot`, or every messenger preview of that record stays on the old
+picture indefinitely. Nothing at the app level can fix this; see
+`docs/tg-preview.md` for the tool that does it and why the fix has to be
+pushed rather than served.
