@@ -45,12 +45,22 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   live app is - 6 px on `#/tables/core_item ~ row anchor @ 375`, both
   languages, proved by injection both ways (B8, `issues/47/context.md`,
   "B8 planning facts"). The owner chose full parity over the rewrite's
-  invented improvement (2026-09-11). Deleted in B9.
-- **How to verify the fix**: under `page.emulateMediaFeatures([{ name:
-  'prefers-reduced-motion', value: 'reduce' }])`, `document.getAnimations()`
-  after a hover or a breakpoint change is empty; `#/print/ci1-q1` still
-  fits (the `print` suite's geometry) and the first cards keep their art;
-  `FEATURES.md`, "Chrome", reduced-motion bullet rewritten.
+  invented improvement (2026-09-11). **The blanket kill in `tokens.css`
+  was deleted in B9 - this entry is not: it stays open, the real policy
+  is owed at Phase 8, and only that fix deletes D1.**
+- **How to verify the fix**: this is the register's own category, so the
+  check has to survive the harness that photographed the original
+  problem, not depend on it. Toggle Chrome DevTools' rendering emulation
+  ("Emulate CSS media feature `prefers-reduced-motion`" -> `reduce`) by
+  hand, hover a button and change the viewport width, and confirm
+  `document.getAnimations()` reads empty against whatever the real policy
+  keeps alive - or, if the policy is componentised the way D1's
+  `RecordCard`/`TablesPage` rules are, a Vitest assertion against each
+  component's own reduced-motion CSS block (`getComputedStyle` inside a
+  mocked `matchMedia`) is the one that runs on every `npm run check`
+  rather than by hand. Either way: `#/print/ci1-q1` still fits (the
+  `print` suite's geometry, while it exists) and the first cards keep
+  their art; `FEATURES.md`, "Chrome", reduced-motion bullet rewritten.
 - **Recorded by**: B9, 2026-09-11.
 
 ### D2 - a stale packed-link expansion rewrites the address after the reader has left

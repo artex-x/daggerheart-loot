@@ -76,9 +76,11 @@ async function ready(page) {
  * Waits for whatever a press started to finish moving.
  *
  * A fixed pause is the wrong instrument here: the modal opens with a 0.22s
- * animation in the live app and none at all in the rewrite, so a screenshot
- * taken on a timer catches one of them mid-flight and the number moves with how
- * busy the machine is. Asking the browser which animations are running answers
+ * `pop` animation in both apps (style.css:591, RecordModal.svelte:159 - B9
+ * deleted the rewrite's blanket reduced-motion kill, so this now runs under
+ * reduced motion too, on both sides), and a screenshot taken on a timer
+ * catches either app mid-flight, with the number moving with how busy the
+ * machine is. Asking the browser which animations are running answers
  * exactly the question. The cap is for anything that loops forever.
  */
 async function settle(page) {

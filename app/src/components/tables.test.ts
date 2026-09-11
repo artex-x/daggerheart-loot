@@ -1001,6 +1001,29 @@ describe('the row and section anchor', () => {
     await userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию…'), 'а');
     expect(scroll).toHaveBeenCalledTimes(1);
   });
+
+  it('clears a flash in flight when a route change drops the anchor', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/core_item/ci2'),
+      data: fakeData(LOOT)
+    });
+    render(App, { env });
+    await waitFor(() => {
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+    });
+    /* A different table under 1.6s carries no anchor of its own, and the
+       alternate tables share ids across tables (`ci*`/`q*`): without the
+       clear, the stale class would light whatever row on the new table
+       happens to carry the same id. A real address-bar click cannot be
+       used here - `Chip`'s `<a href>` relies on a browser's own
+       hashchange, which `memoryRouter` does not fire - so the fake
+       router is driven directly, the file's own pattern (see "belongs
+       to the table it was made on: a hash change drops it"). */
+    env.router.navigate('#/tables/hnf_item');
+    await tick();
+    expect(document.querySelector('.flash')).not.toBeInTheDocument();
+  });
 });
 
 describe('a dataset that did not load', () => {

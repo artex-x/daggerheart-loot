@@ -10261,8 +10261,8 @@ recording so a later batch does not re-derive it as a surprise.
 
 All twelve print-suite states (both ids, both layouts) read `совпадает`.
 All seven anchor `VISUAL_DEBT` entries read **0.00% locally** - not only
-the four whose message was `долг погашен - удали запись` (`core_item @ en
-1100|768`, `voa @ en 768`), but also the other three, which read `стало
+the three whose message was `долг погашен - удали запись` (`core_item @ en
+1100|768`, `voa @ en 768`), but also the other four, which read `стало
 лучше - опусти число` (`voa @ en 1100`, and all three `375` entries)
 because their recorded figures exceeded `DEBT_SLACK` (0.5) and
 `parity.js`'s message-selection branches on the *recorded* figure's size,
@@ -10297,6 +10297,77 @@ honoured - every anchor entry was deleted outright, none re-numbered).
 **Committed as `ad46dac`; not pushed (never this session's to do).** B9's
 own closing condition, same shape as B8's: a green CI read of the
 owner's push. Open in `handoff.md`, "Blockers", until then.
+
+**Correction, one remediation pass on top of `ad46dac` (`dba79ee` docs-only
+in between) (reviewer then implementer, 2026-09-11): one blocker and six
+nits, all fixed in one pass, per the review's own instruction.**
+
+- **Blocker**: `handoff.md` had no `## Completed`/`## Verification` entry
+  for B9 - both sections' newest entry was still B8's, and the run that
+  measured all seven anchor cells at 0.00% (the justification for
+  deleting them) existed nowhere in the repo once the 12-cell re-run
+  overwrote `test-output/parity/`. Fixed: both sections now carry a B9
+  entry, the `Verification` one quoting the 24-cell pre-deletion run
+  (all seven debt-bearing cells, verbatim) and two 12-cell post-deletion
+  runs (before and after this remediation's own code changes, confirmed
+  identical).
+- **N1**: `plan.md`'s and `handoff.md`'s own prose had the count backwards
+  - "the four `долг погашен` cells" next to a three-item list, "the other
+    three `стало лучше` cells" next to a four-item list. The lists were
+    right; the counting words are swapped now (three `долг погашен`:
+    0.42/0.43/0.42; four `стало лучше`: 0.63/9.35/8.85/9.86, matching
+    `parity.js:582-599`'s branch order).
+- **N2**: `#/tables/voa ~ section anchor @ en 375` is the one deleted
+  entry with no local before/after delta of its own - B8's own run had
+  already read this host at 0.00% on `9fd3000`, before either B9 fix
+  existed, so 9.86 was CI-only. Its deletion still stands on the
+  mechanism argument (the 1100/768 cells at the same two states prove
+  both fixes independently), but it is the cell most likely to turn
+  `main` red if that argument is wrong in a way this host cannot see -
+  named first in `handoff.md`'s OPEN blocker for whoever reads CI.
+- **N3**: `TablesPage.svelte`'s anchor effect returned on `!anchor ||
+  !ready` without clearing `flashKey`/`flashTimer`, so a route change
+  that drops the anchor within the 1.6s window left a stale ring lit on
+  whatever `.row`/`.tilewrap` happens to carry the same id on the next
+  table (the alternate tables reuse `ci*`/`q*` ids). Unreachable before
+  B9 because the ring never drew at all. One added branch clears both;
+  no parity state keys it (none navigates away from an anchor inside the
+  window), so this is the campsite rule, not a measured fix - but
+  `CLAUDE.md`'s "every defect fix gets a test" still applies, and a new
+  `tables.test.ts` case pins it directly (arrive with the anchor, wait
+  for the flash, click to a different table, assert no `.flash` remains).
+- **N4**: `tests/parity/driver.js`'s `settle()` comment still said the
+  modal "opens with a 0.22s animation in the live app and none at all in
+  the rewrite" - true before B9, false after: `RecordModal.svelte:159`'s
+  `pop` animation now runs under reduced motion on both sides. Reworded
+  to say so, with both source lines cited.
+- **N5**: `docs/specs/DEBT.md` D1's "How to verify the fix" opened with a
+  parity-harness-only call (`page.emulateMediaFeatures`), but D1's fix
+  lands at Phase 8, after the harness that call depends on is gone. Now
+  names a DevTools rendering-emulation check or a Vitest assertion
+  against a mocked `matchMedia` - either survives the harness's
+  retirement.
+- **N6**: D1's "Why parity won" ended "Deleted in B9", ambiguous between
+  the `tokens.css` block (true) and the debt entry itself (false - D1 is
+  open, owed to Phase 8). Reworded to say both explicitly.
+
+No design was reopened; no decision already marked "Decided" was
+touched. N3 also got its own regression test (`CLAUDE.md`, "every defect
+fix gets a test") - one attempt failed first: it clicked `Chip`'s `<a
+href>` expecting a route change, but `memoryRouter` does not listen for
+a browser `hashchange` the way the real router does, so the click never
+reached anything; fixed by driving `env.router.navigate(...)` directly,
+the file's own established pattern. `set -o pipefail; npm run check
+2>&1 | tail -n 120` green after the fix (998 tests, one more than B9's
+own 997, coverage 96.49/88.38/96.89/97.22). `npm run check:built` was
+**not** re-run - N3's clear changes what a route change draws only
+inside a window no parity state exercises, and N4-N6 touch a test-helper
+comment and docs prose only, so nothing a parity state photographs
+changed beyond what B9's own `check:built` run already covered.
+`MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` (12 cells) re-run after
+N3/N4, byte-identical to the run right after the `specs.js` edit - no
+anchor cell moved. **Committed as `<pending - see handoff.md for the
+hash>`; not pushed.**
 
 ### B10 outlined: the page-furniture extraction pass (planner, 2026-09-11)
 

@@ -393,7 +393,22 @@
     const nav = app.navigations;
     const lang = app.lang;
     const ready = !!index;
-    if (!anchor || !ready) return;
+    if (!anchor || !ready) {
+      /* A route change that drops the anchor - to the same table with none,
+         or to a different one entirely - has to clear a flash already in
+         flight. The live app's render() rebuilds the DOM from scratch on
+         every call and cannot carry a stale highlight forward; this effect
+         reuses whatever row is already on screen, and the alternate tables
+         reuse `ci*`/`q*` ids across tables, so a flash left running would
+         light an unrelated row on the next table over. No parity state
+         keys this - none navigates away from an anchor inside the 1.6s
+         window - so it is a campsite fix, not a measured one. */
+      untrack(() => {
+        clearTimeout(flashTimer);
+        flashKey = '';
+      });
+      return;
+    }
     const stamp = `${String(nav)}|${lang}`;
     if (played === stamp) return;
     played = stamp;

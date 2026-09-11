@@ -53,8 +53,8 @@ depends on chat history.
     because the plan's own arithmetic assumed 4 states/24 cells total and
     the discrepancy is worth flagging rather than silently absorbing.
   - All seven anchor `VISUAL_DEBT` entries read **0.00% locally**, not
-    just the four the outline's "долг погашен" message flagged - the
-    other three (`voa @ en 1100`, and the three `375` entries) read
+    just the three the outline's "долг погашен" message flagged - the
+    other four (`voa @ en 1100`, and the three `375` entries) read
     "стало лучше - опусти число" instead, because their recorded figures
     exceeded `DEBT_SLACK` (0.5) and the message-selection branch in
     `parity.js` picks the wording off the *old* figure's size, not off
@@ -715,6 +715,79 @@ carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
 carry what was done about it. Do not re-measure any of it.
 
 ## Completed
+
+- Batch name/id: **B9 - the anchor re-play, the live reduced-motion
+  policy, and the behaviour-debt register** (implementer, 2026-09-11, on
+  `bb61db0`), plus its one-pass remediation (same session)
+- What shipped: `TablesPage.svelte`'s anchor effect replaces
+  `anchoredAt`/`classList.add('flash')` with reactive state -
+  `flashKey` (`$state`), a `played` stamp keyed `${navigations}|${lang}`
+  so the scroll-and-flash re-plays on a language switch as well as a
+  navigation, and the target element looked up inside the `fonts.ready`
+  `.then` rather than at trigger time (a keyed re-render can replace the
+  element the effect saw before the promise resolves). `TableRows.svelte`
+  takes an optional `flash?: string` prop and applies `class:flash` on
+  `.row` and `.tilewrap` - the CSS rules themselves are untouched.
+  `tokens.css` loses the whole `@media (prefers-reduced-motion: reduce)`
+  block (four lines of comment left in its place); the live app's own
+  two per-component reduced-motion rules (`RecordCard.svelte`,
+  `TablesPage.svelte`) are now the only ones in `app/src`. All seven
+  remaining anchor `VISUAL_DEBT` entries are deleted -
+  `docs/specs/DEBT.md` is created as their replacement register, with
+  D1-D4 (D1 is this batch's own reduced-motion kill; D2-D4 are prior
+  batches' findings, written now because the register's first commit
+  should show more than one entry). `docs/specs/FEATURES.md`,
+  `docs/parity.md`, `docs/specs/COVERAGE.md` and `CLAUDE.md` (193 lines)
+  each carry the sentences routing to it.
+  - Remediation, same pass: the anchor effect's early return (no anchor,
+    or `index` not ready) now clears `flashKey`/`flashTimer` before
+    returning, so a route change that drops the anchor cannot leave a
+    stale gold ring lit on an unrelated row that happens to share a
+    `ci*`/`q*` id on a different table - a campsite fix, since no parity
+    state keys it (none navigates away from an anchor inside the 1.6s
+    window). A new `tables.test.ts` case ("clears a flash in flight when
+    a route change drops the anchor") pins it directly, per `CLAUDE.md`'s
+    "every defect fix gets a test" - it arrives at `#/tables/core_item/
+    ci2`, waits for the flash, clicks the "Hope & Fear" chip, and asserts
+    no `.flash` remains anywhere on the page. `tests/parity/driver.js`'s
+    `settle()` comment, stale
+    since B9 deleted the blanket reduced-motion kill, now says the modal's
+    `pop` animation runs on both sides rather than "none at all in the
+    rewrite". `docs/specs/DEBT.md` D1's "Why parity won" now says plainly
+    that the *entry* is not deleted by B9 (only the `tokens.css` block
+    is) and stays open for the real policy at Phase 8; its "How to verify
+    the fix" no longer opens with a parity-harness-only call
+    (`page.emulateMediaFeatures`), since the register is the category that
+    outlives the harness - it now names a DevTools rendering-emulation
+    check or a Vitest assertion against a mocked `matchMedia` as the
+    check that survives. Two word-order slips (which anchor cells got
+    which `parity.js` message) were corrected in `plan.md`/`handoff.md`'s
+    own prose; the underlying decision (delete all seven) is unchanged
+    and was confirmed correct by the review. `#/tables/voa ~ section
+    anchor @ en 375` - the one deletion this host cannot corroborate with
+    a before/after delta of its own - is now named first in "Blockers"
+    for whoever reads the CI result.
+- Files changed: `app/src/components/TablesPage.svelte`,
+  `app/src/components/TableRows.svelte`, `app/src/components/tables.test.ts`,
+  `app/src/styles/tokens.css`, `tests/parity/specs.js`,
+  `tests/parity/driver.js` (remediation only), `docs/specs/DEBT.md` (new),
+  `docs/specs/FEATURES.md`, `docs/parity.md`, `docs/specs/COVERAGE.md`,
+  `CLAUDE.md`, `issues/47/evidence/b9/` (four screenshot pairs),
+  `issues/47/plan.md`, `issues/47/context.md`, this file.
+- Commits: `ad46dac` (the batch), `dba79ee` (docs-only, the commit hash
+  filled in after the fact), and the remediation commit on top of both
+  (hash recorded once made - see "Verification" below).
+- No `VISUAL_DEBT` figure was written from this host at any point (owner
+  decision 1): the seven entries were deleted outright, never
+  re-numbered. The review confirmed deleting all seven - not only the
+  three whose message literally read `долг погашен` - was the rule's
+  intent, not a deviation: `parity.js` tests its "стало лучше" branch
+  before "долг погашен", so any entry recorded above `DEBT_SLACK` (0.5)
+  reports "стало лучше" however completely it actually reached zero, and
+  decided 5's literal wording ("reads it as `совпадает`") is
+  unsatisfiable while a debt entry still exists - `совпадает` only ever
+  prints when none does. Delete, then re-run to confirm, is the rule's
+  intent.
 
 - Batch name/id: **B8 - the anchor debts after B7** (this session, on
   `9fd3000`)
@@ -1744,6 +1817,144 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   port: `plan.md`, "B7 built", and "Blockers" below.
 
 ## Verification
+
+- Commands run (exact), B9 on `bb61db0` plus its remediation, each one
+  foreground call:
+  - `git log --oneline -3` / `git status --short` (preflight, twice - once
+    at B9's start, once at the remediation's start) - matched the brief
+    both times: only the expected `issues/47/*.md` edits and the
+    untracked `issues/tg-preview-refresh/`, never staged.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+    600000) - run **six** times over the whole pass (after the
+    component/docs edits; after the `specs.js` edit; after the final
+    handoff/plan wording; after the remediation's code and doc edits; a
+    fifth run that failed - see below; a sixth after the fix), the tree
+    changing between each, matching B8's own "the gate re-checks against
+    the exact tree being committed" pattern. The first four: **exit 0**,
+    997 tests passed, coverage 96.49 / 88.38 / 96.89 / 97.21. The fifth,
+    right after adding N3's regression test, **failed one test**: the
+    new case clicked `Chip`'s `<a href>` and expected a route change, but
+    `memoryRouter` (unlike the real `hashRouter`) does not listen for a
+    browser `hashchange`, so the click never reached the router at all -
+    the file's own established pattern is to drive `env.router.navigate`
+    directly (see "belongs to the table it was made on: a hash change
+    drops it"), which the new case had not followed. Fixed by calling
+    `env.router.navigate('#/tables/hnf_item')` and `await tick()` instead
+    of clicking. The sixth run: **exit 0** - `format:check`/`lint`
+    clean, `svelte-check` 540 files / 0 errors / 0 warnings, `data`
+    (derived files match, catalog reads, stubs match, `noindex` present,
+    i18n parity ru 251/en 251), `.claude/hooks/selftest.mjs` 292/292,
+    `vitest run --coverage` 41 files / **998 tests passed**, coverage
+    96.49 / 88.38 / 96.89 / 97.22 - all above threshold. The sixth run is
+    the one that armed the gate for the remediation commit.
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 60` (Bash timeout
+    600000) - run once, during B9 proper (a screen changes: the ring now
+    draws). **Exit 0** - build (`dist/assets/app.js` 306.67 kB / 91.06 kB
+    gzip), `file://` smoke, bundle budget (88.5 kB gzip against 120 kB).
+    **Not re-run for the remediation** - N3's clear only changes what
+    draws on a route change inside the flash's 1.6 s window, which no
+    parity state exercises, and N4/N5/N6 touch a test-helper comment and
+    docs prose only; nothing else in the remediation changes what a
+    screen draws.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor" "#/print/ci1-q1"`
+    (before the `specs.js` edit, with all seven `VISUAL_DEBT` entries
+    still in place) - advisory only, this host; no number written to
+    `specs.js`. This is the measurement that justifies deleting all
+    seven: every one of the seven debt-bearing anchor cells reads exactly
+    **0.00%** against its old recorded figure. Matched 36 cells, not the
+    predicted 24 (`"#/print/ci1-q1"` is also a prefix of
+    `"#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11"`, so both print
+    states matched); the twelve print lines all read `совпадает` and are
+    not reproduced here since no print entry changed. The twelve anchor
+    lines, verbatim:
+
+    ```text
+    #/tables/voa ~ section anchor @ ru 1100
+         вид: совпадает
+    #/tables/voa ~ section anchor @ ru 768
+         вид: совпадает
+    #/tables/voa ~ section anchor @ ru 375
+         вид: совпадает
+    #/tables/voa ~ section anchor @ en 1100
+      FAIL #/tables/voa ~ section anchor @ en 1100 :: вид :: 0.00%, долг записан как 0.63%
+           стало лучше - опусти число в VISUAL_DEBT
+    #/tables/voa ~ section anchor @ en 768
+      FAIL #/tables/voa ~ section anchor @ en 768 :: вид :: 0.00%, долг записан как 0.42%
+           долг погашен - удали запись из VISUAL_DEBT
+    #/tables/voa ~ section anchor @ en 375
+      FAIL #/tables/voa ~ section anchor @ en 375 :: вид :: 0.00%, долг записан как 9.86%
+           стало лучше - опусти число в VISUAL_DEBT
+    #/tables/core_item ~ row anchor @ ru 1100
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 768
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 375
+      FAIL #/tables/core_item ~ row anchor @ ru 375 :: вид :: 0.00%, долг записан как 9.35%
+           стало лучше - опусти число в VISUAL_DEBT
+    #/tables/core_item ~ row anchor @ en 1100
+      FAIL #/tables/core_item ~ row anchor @ en 1100 :: вид :: 0.00%, долг записан как 0.42%
+           долг погашен - удали запись из VISUAL_DEBT
+    #/tables/core_item ~ row anchor @ en 768
+      FAIL #/tables/core_item ~ row anchor @ en 768 :: вид :: 0.00%, долг записан как 0.43%
+           долг погашен - удали запись из VISUAL_DEBT
+    #/tables/core_item ~ row anchor @ en 375
+      FAIL #/tables/core_item ~ row anchor @ en 375 :: вид :: 0.00%, долг записан как 8.85%
+           стало лучше - опусти число в VISUAL_DEBT
+    ```
+
+    Three cells read `долг погашен` (`voa @ en 768` 0.42, `core_item @ en
+    1100` 0.42, `core_item @ en 768` 0.43); four read `стало лучше` (`voa
+    @ en 1100` 0.63, `voa @ en 375` 9.86, `core_item @ ru 375` 9.35,
+    `core_item @ en 375` 8.85) - `parity.js:582-599` tests the "стало
+    лучше" branch first, so any entry recorded above `DEBT_SLACK` (0.5)
+    reports that message regardless of how completely the actual result
+    reached zero. All seven read 0.00%, which is why all seven were
+    deleted. The four `@ en 1100|768` `-next.png`/`-diff.png` pairs from
+    this exact run were copied to `issues/47/evidence/b9/` before the
+    next run overwrote `test-output/parity/`;
+    `core_item ~ row anchor @ en 1100`'s shows the gold ring around
+    "Premium Bedroll" (`ci1`), confirmed by eye.
+  - `tests/parity/specs.js` edited: all seven entries above deleted, the
+    two long comment blocks replaced with one short note, one sentence
+    added to "Recorded, not keyed".
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` (12 cells, run
+    twice - once right after the `specs.js` edit, once more after the
+    remediation's N3/N4 code and comment changes, to confirm neither
+    changed an anchor cell). Both runs identical, advisory only, no
+    number written. All twelve lines, verbatim (second run; the first
+    was byte-identical):
+
+    ```text
+    #/tables/voa ~ section anchor @ ru 1100  (arriving at a section link scrolls to and flashes it)
+         вид: совпадает
+    #/tables/voa ~ section anchor @ ru 768  (arriving at a section link scrolls to and flashes it)
+         вид: совпадает
+    #/tables/voa ~ section anchor @ ru 375  (arriving at a section link scrolls to and flashes it)
+         вид: совпадает
+    #/tables/voa ~ section anchor @ en 1100  (arriving at a section link scrolls to and flashes it)
+         вид: совпадает
+    #/tables/voa ~ section anchor @ en 768  (arriving at a section link scrolls to and flashes it)
+         вид: совпадает
+    #/tables/voa ~ section anchor @ en 375  (arriving at a section link scrolls to and flashes it)
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 1100  (arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one)
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 768  (arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one)
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 375  (arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one)
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ en 1100  (arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one)
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ en 768  (arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one)
+         вид: совпадает
+    #/tables/core_item ~ row anchor @ en 375  (arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one)
+         вид: совпадает
+    ```
+
+    `расхождений нет` both times - clean exit, no `FAIL`, no `долг
+    погашен` left, no `такого состояния нет`.
+  - `docker info` - not attempted this pass (B8's own reading already
+    established the panic on this host; not re-checked).
 
 - Commands run (exact), B8 on `9fd3000`, each one foreground call:
   - `git log --oneline -3` - `9fd3000` on top, matching the brief; `git
@@ -2876,6 +3087,17 @@ register B9 opened.
   this session's to do - "Never push", the task brief and `CLAUDE.md`
   both). Record the green run id here once the owner's push produces one;
   that CI read is what closes B9, exactly as it closed B8.
+  **If CI reads any anchor cell red, open `#/tables/voa ~ section anchor
+  @ en 375` first.** It is the one deletion with no local before/after
+  delta to lean on: B8's own verbatim run already read this host at
+  0.00% on `9fd3000`, *before* either B9 fix landed, so the 9.86 debt
+  figure was CI-only and this host cannot corroborate its removal the
+  way it can for the six other cells (each of which measured non-zero
+  before B9 and 0.00% after). Its deletion still stands on the mechanism
+  argument - the 1100/768 cells at the same state prove the ring now
+  draws and the re-play now fires, independently of this cell's own
+  before/after - but it is the single cell most likely to turn `main`
+  red if the mechanism argument is wrong in some way this host cannot see.
 
 - **RESOLVED by CI run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995) (orchestrator, 2026-09-11): B8's
   four anchor figures are confirmed by a second, independent reading, and
