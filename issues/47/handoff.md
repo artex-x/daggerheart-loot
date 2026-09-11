@@ -1661,12 +1661,23 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     ru 251 / en 251), `.claude/hooks/selftest.mjs` 292 passed / 0 failed,
     `vitest run --coverage` 41 files / **994 tests passed**, coverage
     96.52 / 88.44 / 96.95 / 97.24 - all above threshold, identically on
-    every run. Run three times (70.25s / 92.04s / 63.24s of vitest time):
-    the commit gate re-checks against the exact tree being committed, and
-    each pass over these docs while writing this record changed that tree,
-    so `npm run check` was re-run after every further docs edit until one
-    ran with no edit after it. That last run is the one that armed the
-    gate for the commit below.
+    every run. Run **four** times, three of them timed (70.25s / 92.04s /
+    63.24s of vitest time): the commit gate re-checks against the exact tree
+    being committed, and each pass over these docs while writing this record
+    changed that tree, so `npm run check` was re-run after every further docs
+    edit until one ran with no edit after it. That last run is the one that
+    armed the gate for the commit below.
+
+    **Corrected after the fact (orchestrator, 2026-09-11): this line first
+    said three runs, and the fourth is the one worth keeping.** That run was
+    piped through `tail -n 40` instead of the required `tail -n 120`, which
+    truncated the coverage table's `All files` row out of what the gate's
+    observer hook can see - so the check passed honestly and the gate
+    silently did **not** arm. `CLAUDE.md` and `.claude/README.md` already
+    mandate `tail -n 120`; what was not written down anywhere is the failure
+    mode when you shorten it, which is not an error message but a gate that
+    quietly stays closed. A shorter tail is not a smaller version of the
+    command, it is a different one.
   - `docker info` - panics on this host too (`reflect: indirection through
     nil pointer`, client-side), same as the planning host. Fallback
     container reading not available; CI on the owner's push is the only
