@@ -1779,3 +1779,153 @@ re-run, write nothing, let CI decide. No `VISUAL_DEBT` entry was written, and
 
 The `cardFit` numbers - the thing that actually broke and was actually fixed -
 agree on both apps at every width in every one of these runs.
+
+## The CI read on `9fd3000`: print is clean, four table-anchor debts moved down (orchestrator, 2026-09-11)
+
+Run [`34616445556`](https://github.com/artex-x/daggerheart-loot/actions/runs/34616445556),
+push of `9fd3000`, four parity shards. `check`, `audit` and `secrets` green.
+Shards 1 and 4 green; **shards 2 and 3 red, on three cells, all of them
+`VISUAL_DEBT` ratchet failures** - "стало лучше - опусти число в VISUAL_DEBT".
+No other cell failed anywhere in the run.
+
+**The print blocker is closed by this read.** All **54** `#/print` cells -
+every one of the nine states, both languages, all three widths, the 24
+`whole:true` ones included - read `совпадает`. The 4-cell image residue this
+host measured three times, in three non-overlapping sets, was this machine's
+paint, exactly as `docs/parity.md`'s "Full-page captures" class predicts. No
+`VISUAL_DEBT` entry was ever written for it and none is needed; `handoff.md`,
+"Blockers", first entry can be marked resolved.
+
+**What is red.** The four `375` anchor cells, which had been dead stable at
+their recorded figures across the two preceding CI runs (`34588378763` and
+`34591864170`, identical to the hundredth), all moved **down** on `9fd3000`:
+
+| cell | recorded | prior two CI runs | this run |
+|---|---|---|---|
+| `#/tables/core_item ~ row anchor @ ru 375` | 10.52 | 10.51 | **9.35** FAIL |
+| `#/tables/core_item ~ row anchor @ en 375` | 9.92 | 9.92 | **8.85** FAIL |
+| `#/tables/voa ~ section anchor @ ru 375` | 11.55 | 11.55 | **0.00** FAIL |
+| `#/tables/voa ~ section anchor @ en 375` | 10.31 | 10.31 | 9.86 (passes, 0.45 under a `DEBT_SLACK` of 0.5) |
+
+The `@ 1100` and `@ 768` members of those states are unmoved (`0.42%`/`0.43%`
+of their own debts). Two facts the next reader should not re-derive: the move
+is **caused, not noise** - three consecutive CI runs agreed to the hundredth
+before it, and the only global change in between is B7's
+`transition-duration: 0.01ms` -> `0s` in `tokens.css`, which is the one edit
+that could touch a state whose subject is a re-played flash; and the `ru`/`en`
+split on `voa ~ section anchor` (**0.00 against 9.86** on the same state) is
+not explained by that, and is the reason this is a planning question rather
+than a mechanical edit.
+
+**Not settled here, by design:** what numbers to write, whether a cell reading
+`0.00` once has its entry deleted or waits for a second reading (the existing
+reasons in `specs.js` cite "three CI runs and the ubuntu container", and
+`tools/parity-ubuntu/` reproduces CI), and whether this rides alone to get
+`main` green or merges with the next batch. Planner's.
+
+**Tree at this read:** HEAD `9fd3000` == `origin/main`, working tree clean but
+for untracked `issues/tg-preview-refresh/`, which belongs to another task and
+is preserved.
+
+## B8 planning facts - the anchor debts after B7, measured (planner, 2026-09-11) - durable, read before implementing
+
+Read off the source at HEAD `9fd3000` and measured with two read-only
+puppeteer probes that drive the harness's own `tests/parity/driver.js`
+(`prepare`, `open`, `click('EN')`, `viewport`, `settle` - the run's exact
+arrival and sweep) against `index.html` and a fresh `npm run build` of
+`dist/index.html`, on `#/tables/voa/tA` and `#/tables/core_item/ci1`, both
+languages, reading `scrollY`, `scrollHeight`, the target's viewport top and
+whether `.flash` is on it at the moment the shot would be taken. The scripts
+are disposable and were not kept. Windows host: **the scroll positions are
+mechanism evidence, not `VISUAL_DEBT` figures** (owner decision 1). Design and
+steps: `plan.md`, "B8 planned".
+
+- **The sweep, as the harness runs it today (arrive at 1100, resize through
+  768 to 375 on one document):**
+
+  | state | lang | app | 1100 | 768 | 375 | `.flash` at shot |
+  |---|---|---|---|---|---|---|
+  | `voa ~ section anchor` | ru | legacy / next | 9642 / 9642 | 9642 / 9642 | 9642 / 9642 | no / no |
+  | `voa ~ section anchor` | en | legacy / next | 9616 / 9616 | 9616 / 9616 | 9616 / 9616 | **yes / no** |
+  | `core_item ~ row anchor` | ru | legacy / next | 368 / 368 | 368 / 368 | **374 / 368** | no / no |
+  | `core_item ~ row anchor` | en | legacy / next | 346 / 346 | 346 / 346 | **352 / 346** | **yes / no** |
+
+  Document heights agree on both apps at every width (voa 11061 / 11523 /
+  19332 ru, 11035 / 11477 / 18630 en; core_item 5890 / 6129 / 10065 ru, 5850 /
+  6041 / 9696 en). On `voa` neither app is adjusted by the resize at all: the
+  section's top sits 531px then 7423px below the viewport at 768 and 375 -
+  the 375 shot of the section-anchor state is a slab of the Vault of Ages
+  table thousands of pixels above its subject, in both apps.
+- **`core_item @ 375` is the reduced-motion transition policy, measured, not
+  correlated.** The live app leaves every declared `transition` alive under
+  `prefers-reduced-motion: reduce` (`style.css:311` and `:544` kill two
+  named animations and nothing else), so when the viewport crosses 600px its
+  mobile overrides animate over ~150ms and Chrome's scroll anchoring adjusts
+  the scrolled document by 6px across those frames. The rewrite's
+  `tokens.css` reduced-motion block writes `transition-duration: 0s
+  !important` on `*` (B7; it was `0.01ms` before, a two-frame transition that
+  yielded a different adjustment - the old 368 -> 387 reading in the
+  `specs.js` note), so it gets no adjustment. Proof: the live app with
+  `*{transition-duration:0s!important}` injected lands at **368** at 375 in
+  both languages - exactly where the rewrite lands. The converse was tried
+  with `.selbox{transition-duration:.15s!important}` alone injected into the
+  rewrite and it did **not** reproduce the 6px, so the transitioning element
+  is another of the live rules with a mobile override, not `.selbox` alone;
+  which one is B9's to measure, not B8's. This closes the "something else is
+  in there as well and has not been found yet" sentence in the `specs.js`
+  note: the something else was the transitions.
+- **The `ru`/`en` split on `voa ~ section anchor` is not a scroll
+  difference on this host.** After the `EN` press the two apps sit at the same
+  `scrollY` at every width; the one measured difference is the `.flash` class,
+  which the live app re-plays on the language switch (`render()` re-parses the
+  hash into `S.tables.anchor` every time and runs the scroll-and-flash block,
+  app.js 3832-3845) and the rewrite never re-plays (`TablesPage.svelte`'s
+  effect is guarded on `app.navigations`, which `setLang()` does not bump). At
+  375 the flashed section is 6918px below the fold, so on this host the `en
+  375` cell would be near zero; CI's 9.86 is therefore made of something this
+  host does not reproduce - see the CI diff-image reading below.
+- **Fresh arrival at each width (what `timed: true` does), for the record:**
+  ru identical on both apps at every width (voa 9642 / 10064 / 16955;
+  core_item 368 / 458 / 567); en `core_item` identical (346 / 436 / 545); en
+  `voa` **1px apart at 768** (10018 / 10017) and **8px at 375** (16428 /
+  16436) because the live app re-scrolls to the English anchor on the `EN`
+  press and the rewrite is left where scroll anchoring put it. So flagging
+  the anchor states `timed` would zero the four ru cells and the core_item en
+  cells but make `voa @ en 768` worse than its recorded 0.42 and leave `voa @
+  en 375` several percent - and the container is not evidence for a timed
+  state, so every en number would wait on CI. Rejected for B8; the re-play
+  on language switch is the real fix and is B9's.
+- **`docker` on this host cannot run the ubuntu container today:** `docker
+  --version` answers (20.10.8) but `docker info` panics in the client
+  (`reflect: indirection through nil pointer`), so the daemon is unreachable.
+  The container step in B8 is optional and falls back to CI as the second
+  reading.
+- **Shard map for the two anchor states** (`tests/parity.js:350`,
+  `stateIdx % 4`, shard names 1-based): `voa ~ section anchor` is state 57
+  -> shard 2; `core_item ~ row anchor` is state 58 -> shard 3. Run
+  `34616445556`'s artifacts: `failure-output-parity-2` (134 MB) and `-3`
+  (142 MB), unexpired at planning time.
+- **`RecordPage.svelte:59` draws `notFoundSub` as `<p class="miss">` where
+  the live app draws `<p class="page-sub">`** (app.js:3195) - a real
+  divergence on an unphotographed state (`#/i/<unknown id>` has no parity
+  state). Noticed while inventorying the furniture copies; it is B10's (the
+  furniture pass) and is recorded there, not fixed here.
+- **`toggleAllIn` stays at two copies.** `ListPage.svelte` ticks its own
+  `lsel`, not `app.sel` (lines 340-345), so the "third caller moves it to
+  `AppState`" rule in the handoff has not triggered; B10 leaves it.
+- **CI's own diff image for `voa ~ section anchor @ en 375`, read (artifact
+  `failure-output-parity-2` of run `34616445556`, downloaded to the session
+  scratchpad, outside the repository):** rows 10-13 of the Vault of Ages
+  table (Shaman's Blade, Mastery Bell, Mossblossom Staff, Harrowcleave) with
+  every line doubled - no content difference. Aligning CI's `-legacy.png`
+  against its `-next.png` at every vertical shift from -60 to +60: the best
+  fit is **22px, 2.52% residual** (the fixed topbar and the ring), against
+  20.77% at 0px; the same for `@ ru 375` is **0px, 0.00%**, and for `@ en
+  768` **0px, 0.43%** (the ring). So on ubuntu the two apps are 22px apart
+  in scroll position in English at 375 and coincide in Russian - the
+  English-only divergence is the live app's re-scroll on the `EN` press,
+  which this host happens to converge on and CI does not. A deterministic
+  mechanism, not an unstable one: three runs at 10.31 to the hundredth,
+  then 9.86 once the transition policy changed. The alignment script is
+  disposable and was not kept; the artifact is outside the tree and expires
+  with the run's retention.

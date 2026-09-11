@@ -6,6 +6,67 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B8 built and committed - `tests/parity/specs.js` says what
+  CI measures on `9fd3000` and why** (implementer, 2026-09-11). Tree
+  preflight matched the brief exactly: `git log --oneline -3` showed
+  `9fd3000` on top, `git status --short` showed only the planner's three
+  `issues/47/*.md` files and the untracked `issues/tg-preview-refresh/`
+  (another task's, never staged). The four `375` anchor entries in
+  `specs.js` are now three - `core_item @ ru 375` 9.35, `core_item @ en 375`
+  8.85, `voa @ en 375` 9.86, all `LOWERED ... on 9fd3000` against CI run
+  `34616445556` - and `voa @ ru 375` is deleted (CI reads 0.00, and the
+  ratchet's own rule leaves no passing figure for a `0.00` cell). The note
+  above them keeps its measured-sequence paragraphs and gets the three new
+  closing paragraphs the plan specifies (the reduced-motion transition
+  policy, measured; the English-only re-scroll, read off CI's diff image;
+  both named as B9's to close). `tools/parity-ubuntu/README.md` gains one
+  paragraph pointing a re-calibration at the latest CI run rather than the
+  historical table. No production code touched. `docker info` panics on this
+  host too, so the fallback second reading was unavailable; CI on the
+  owner's push stays the only second reading. `npm run build` +
+  `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` (12 cells) ran as
+  advisory: all eight non-375 cells unchanged (`совпадает` at `@ ru`, inside
+  their 0.42-0.63% debts at `@ en`), and the three remaining 375 cells all
+  read "стало лучше" locally against the new CI figures, exactly as
+  predicted - no number was written from this host. `npm run check` is
+  green (994 tests, thresholds met) and the commit gate armed. One commit,
+  `test(parity): the anchor debts follow CI's read of 9fd3000`, the four
+  paths staged by name. Not pushed - that is the owner's, and the push is
+  the second reading the deleted `voa @ ru 375` entry (and the whole batch)
+  waits on. Next: a planning pass on B9 (the anchor re-play + the
+  reduced-motion policy, needs the owner) or B10 (the furniture extraction).
+  See "Next batch".
+
+- Task status: **B8 planned and implement-ready - the anchor debts follow
+  CI's read of `9fd3000`, and the ratchet rides alone** (planner,
+  2026-09-11, on `9fd3000` == `origin/main`, tree clean but for the
+  untracked `issues/tg-preview-refresh/`, another task's, preserved). Two
+  things CI run `34616445556` settled and one it opened: **the print image
+  residue is closed** - all 54 `#/print` cells `совпадает` on ubuntu, the
+  24 `whole:true` ones included, so the first "Blockers" entry below is
+  marked resolved and no `VISUAL_DEBT` line was ever needed; **Phase 4 is
+  complete and CI-clean**; and **`main` is red on three ratchet cells**,
+  the four `375` anchor cells having moved down together on the commit
+  that set `transition-duration` to `0s` under reduced motion. Planning
+  measured why rather than guessed (`context.md`, "B8 planning facts"): the
+  live app keeps its transitions alive under `prefers-reduced-motion` and
+  Chrome's scroll anchoring adjusts it 6px during them at 375, the rewrite
+  with none is not adjusted - proven by killing the live app's transitions
+  and watching it land where the rewrite lands; and CI's own diff image
+  for `voa ~ section anchor @ en 375` is a 22px whole-viewport offset (0px
+  and 0.00% at `@ ru 375`), the English-only re-scroll the live `render()`
+  plays on the language switch and the rewrite's `navigations`-guarded
+  effect does not. B8 writes CI's figures (9.35 / 8.85 / 9.86), deletes the
+  `0.00` entry, rewrites the reasons and the note, and notes the stale
+  calibration target in `tools/parity-ubuntu/README.md` - one commit, no
+  production code, `npm run check` + a 12-cell `"anchor"` filter. `timed`
+  on the anchor states was measured and rejected; merging with the
+  furniture pass was rejected by the batch-size test (a different filter
+  set; `main` would stay red behind a review-sized refactor). B9 (the
+  anchor re-play + the reduced-motion policy, an owner question) and B10
+  (the furniture extraction, inventoried) are outlined in `plan.md`. See
+  "Next batch". `NEEDS_HUMAN_CONFIRMATION: no` for B8.
+
 - Task status: **B7's one remediation pass is done - the three review
   blockers are fixed and the false durable record they left behind is
   corrected.** (implementer, 2026-09-11, on top of `4776243`.) The print
@@ -523,6 +584,33 @@ carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
 carry what was done about it. Do not re-measure any of it.
 
 ## Completed
+
+- Batch name/id: **B8 - the anchor debts after B7** (this session, on
+  `9fd3000`)
+- What shipped: `tests/parity/specs.js` now says what CI measures on
+  `9fd3000` and why it moved. Four `375` anchor entries become three:
+  `#/tables/core_item ~ row anchor @ ru 375` 9.35 (was 10.52), `@ en 375`
+  8.85 (was 9.92), `#/tables/voa ~ section anchor @ en 375` 9.86 (was
+  10.31); `@ ru 375` on `voa` is deleted (CI reads 0.00). Every `why` string
+  that cited "RAISED ... three CI runs and the ubuntu container" is
+  replaced with one that names the real cause - the reduced-motion
+  transition policy B7 changed, plus, for the `en` cells, the live app's
+  re-scroll on a language switch that the rewrite does not replay. The
+  block comment above the entries keeps its measured-sequence paragraphs
+  and its closing paragraph is replaced with the mechanism as measured
+  (`context.md`, "B8 planning facts"), naming B9 as the fix. No
+  `VISUAL_DEBT` figure was taken from this host: every number is CI's, run
+  `34616445556`, verbatim.
+- Files changed: `tests/parity/specs.js` (four `375` anchor entries -> three,
+  one note paragraph replaced), `tools/parity-ubuntu/README.md` (one
+  paragraph under the calibration table pointing re-calibration at the
+  latest CI run), `issues/47/plan.md`, `issues/47/handoff.md`,
+  `issues/47/context.md` (planner's B8 sections; not re-touched by this
+  batch beyond what the planner already wrote).
+- No production code changed (`app/` untouched); `npm run check:built` was
+  not run, per the brief - nothing a screen draws changes in this batch.
+  `npm run check` is green (see "Verification"); the local `"anchor"`
+  parity filter is advisory only and wrote no number.
 
 - Batch name/id: **B7 remediation - the three review blockers and the false
   record** (this session, on top of `4776243`)
@@ -1525,6 +1613,66 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   port: `plan.md`, "B7 built", and "Blockers" below.
 
 ## Verification
+
+- Commands run (exact), B8 on `9fd3000`, each one foreground call:
+  - `git log --oneline -3` - `9fd3000` on top, matching the brief; `git
+    status --short` - only the planner's three `issues/47/*.md` files and
+    `?? issues/tg-preview-refresh/`, matching the brief. Preflight passed
+    with no drift.
+  - `npm run build` - green (`data.json` 634 KB, `catalog.csv` 563 KB, 1061
+    share pages, `dist/assets/app.js` 306.59 kB / 91.03 kB gzip). Required
+    before the parity run: the harness photographs `dist/index.html`.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` (2 states, 12 cells) -
+    advisory only, this host; no number written. All twelve lines, verbatim:
+
+    ```text
+    #/tables/voa ~ section anchor @ ru 1100   вид: совпадает
+    #/tables/voa ~ section anchor @ ru 768    вид: совпадает
+    #/tables/voa ~ section anchor @ ru 375    вид: совпадает
+    #/tables/voa ~ section anchor @ en 1100   вид: 0.63% из 0.63% долга
+    #/tables/voa ~ section anchor @ en 768    вид: 0.42% из 0.42% долга
+    #/tables/voa ~ section anchor @ en 375
+      FAIL :: вид :: 0.00%, долг записан как 9.86%
+      стало лучше - опусти число в VISUAL_DEBT
+    #/tables/core_item ~ row anchor @ ru 1100   вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 768    вид: совпадает
+    #/tables/core_item ~ row anchor @ ru 375
+      FAIL :: вид :: 7.79%, долг записан как 9.35%
+      стало лучше - опусти число в VISUAL_DEBT
+    #/tables/core_item ~ row anchor @ en 1100   вид: 0.42% из 0.42% долга
+    #/tables/core_item ~ row anchor @ en 768    вид: 0.43% из 0.43% долга
+    #/tables/core_item ~ row anchor @ en 375
+      FAIL :: вид :: 7.31%, долг записан как 8.85%
+      стало лучше - опусти число в VISUAL_DEBT
+    ```
+
+    Exactly as the brief predicted: the eight non-375 cells unchanged
+    (`совпадает` at `@ ru`, inside 0.42-0.63% debts at `@ en`); the three
+    remaining 375 cells all "стало лучше" against the new CI figures on this
+    host (`voa @ en 375` reads 0.00% here - this host measures no scroll
+    offset on that mechanism, CI measures 22px; the two `core_item @ 375`
+    cells sit under CI's figures, the documented Windows-vs-CI offset). The
+    one stop condition named in the brief - any of the eight non-375 cells
+    moving - did not occur, so the batch proceeded.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+    600000) - **exit 0**. `format:check` clean, `lint` clean, `svelte-check`
+    540 files / 0 errors / 0 warnings, `data` (derived files match `data.js`,
+    catalog reads, stubs match the generator, `noindex` present, i18n parity
+    ru 251 / en 251), `.claude/hooks/selftest.mjs` 292 passed / 0 failed,
+    `vitest run --coverage` 41 files / **994 tests passed**, coverage
+    96.52 / 88.44 / 96.95 / 97.24 - all above threshold, identically on
+    every run. Run three times (70.25s / 92.04s / 63.24s of vitest time):
+    the commit gate re-checks against the exact tree being committed, and
+    each pass over these docs while writing this record changed that tree,
+    so `npm run check` was re-run after every further docs edit until one
+    ran with no edit after it. That last run is the one that armed the
+    gate for the commit below.
+  - `docker info` - panics on this host too (`reflect: indirection through
+    nil pointer`, client-side), same as the planning host. Fallback
+    container reading not available; CI on the owner's push is the only
+    second reading, as the plan allows for.
+  - `npm run check:built` was **not** run - the brief marks it not required
+    (no production code, nothing a screen draws changes).
 
 - Commands run (exact), B7 remediation pass on top of `4776243`, each one
   foreground call:
@@ -2554,53 +2702,66 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B6 is closed - built, verified, and reviewed `approve` with no blockers**
-(implementer then reviewer, 2026-09-11, on `9d5ca02`; see the two Status
-entries above and `plan.md`, "B6 built"). The search slice is done;
-`#/search` is no longer `pending` in `tests/parity/specs.js`. B6's own
-implement-ready brief is not repeated here - it is `plan.md`, "B6 planned",
-in full, and its measurements are `context.md`, "B6 planning facts".
+**B8 is built and committed. `plan.md` holds two outlines, not briefs - a
+planning pass is next, not an implementer.**
 
-**B7 is built and committed - Phase 4 is complete.** (implementer,
-2026-09-11, on top of `8b96ff4`.) `#/print/<ids>` draws in full; no
-`pending` state remains anywhere in `tests/parity/specs.js`. Full
-accounting: `plan.md`, "B7 built"; the exact commands and results:
-"Verification" above. B7's own implement-ready brief is not repeated here
-- it was `plan.md`, "B7 planned", in full; that section is now marked
-built and its "Decided in planning" subsection stands as the historical
-record of what was decided, not work still to do.
+- **B9 outlined** (`plan.md`, "B9 outlined"): the anchor re-play on a
+  language switch, plus the reduced-motion policy for transitions. Retires
+  all eight remaining anchor entries (the `@ en 1100|768` x4 this batch left
+  untouched and the three `375` entries this batch just wrote). Needs an
+  owner decision first - port the live app's reduced-motion policy
+  (recommended) or keep the rewrite's blanket transition kill as a
+  deliberate accessibility choice - written down in `plan.md`, "B9
+  outlined", "Questions for the owner before B9 is planned". Filter for its
+  eventual implementer: `"anchor"` + `"#/print/ci1-q1-q313"`.
+- **B10 outlined** (`plan.md`, "B10 outlined"): the page-furniture
+  extraction pass. Touches every page, so its honest parity read is the
+  full unfiltered suite - a different route-and-filter set from B8/B9,
+  which is why it was never a candidate to merge with either. Includes the
+  `RecordPage.svelte:59` `.miss`-vs-`.page-sub` divergence (`context.md`,
+  "B8 planning facts") as its first real fix.
+- Either needs a planning pass before an implementer; they touch different
+  files and can run in either order. B9 first is recommended (`plan.md`,
+  "B10 outlined", last paragraph) since it retires debt entries that would
+  otherwise sit through a furniture refactor.
+- **Not yet done, and not this batch's to do:** the owner's push of B8's
+  commit and the CI run it produces. That run is B8's second reading (the
+  deleted `voa ~ section anchor @ ru 375` entry and the three lowered
+  figures all wait on it) and is expected green on all four shards. Record
+  its run id in "Blockers" (first entry) once it exists - do not fabricate
+  one.
 
-**B7's one remediation pass is spent** (this session, on top of
-`4776243`): the three review blockers are fixed and the false `cqw`
-instability record is corrected everywhere it was written. No further
-remediation on B7 without the human.
-
-**What is genuinely open, and is the next session's first read, not a new
-batch:** the 4-cell image residue on group A's `whole` print captures - see
-"Blockers" above, first entry. This is a **read**, not implementation work:
-push, read CI's four print shards (the run was sharded four ways as of
-B5.2). Clean there closes the entry. A reproducible red there starts from
-the `whole` capture, not from `fit()`, whose arithmetic the now-green
-`cardFit` cells confirm against the live app at every width in both
-languages - and it must not be answered with a `VISUAL_DEBT` number taken
-on a development host.
-
-**After that read, the next planning question is the page-furniture
-extraction pass** the B7 brief deferred (`.panel` x6, `.page-h`/`.page-sub`
-x3+, `.card-acts` x3, `.miss` x3, `toggleAllIn` x2 - every one of these now
-has a real caller in every page that exists, which is what makes it the
-next thing rather than a premature abstraction), then Phase 5's Playwright
-question and Phase 7's cut-over - the orchestrator's routing, not this
-brief's.
-
-- **NEEDS_HUMAN_CONFIRMATION: no.**
 - **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
-  naming the deleted `todo` paragraph - B7 did not open that file either.
+  naming the deleted `todo` paragraph - not opened by B7 or B8.
 - **Carried, still recorded:** `Button.svelte`'s missing `:focus-visible`
-  ring, noticed while reading `style.css:1002` during B7 planning - not
-  this task's file, recorded rather than fixed in passing.
+  ring (`style.css:1002`) - not B8's file.
 
 ## Blockers
+
+- **B8's commit is made; OPEN until the owner's push produces a green CI
+  run.** (implementer, 2026-09-11.) `main` was red on three `VISUAL_DEBT`
+  ratchet cells - `#/tables/core_item ~ row anchor @ ru 375` 9.35 against a
+  recorded 10.52, `@ en 375` 8.85 against 9.92, `#/tables/voa ~ section
+  anchor @ ru 375` 0.00 against 11.55, all "стало лучше"; `voa @ en 375`
+  9.86 against 10.31 passed only by 0.05 of slack - caused by B7's
+  reduced-motion `transition-duration` change, not noise (three prior CI
+  runs had agreed to the hundredth; `context.md`, "B8 planning facts" for
+  the measured mechanism). B8's commit rewrites `specs.js` to those four CI
+  figures (one deleted) with true reason strings. Not yet closed: the
+  commit has not been pushed (never this session's to do), so CI has not
+  re-read `9fd3000`'s successor. Record the green run id here once the
+  owner's push produces it - that is the reading B8's design names as its
+  own closing condition.
+
+- **RESOLVED by CI run `34616445556` (planner, 2026-09-11): the 4-cell print
+  image residue was this host's paint.** All 54 `#/print` cells - nine
+  states, both languages, three widths, the 24 `whole:true` ones included -
+  read `совпадает` on ubuntu. Exactly what `docs/parity.md`'s "Full-page
+  captures" class predicts for a diff that was an edge outline over the
+  whole page, topbar and footer included, on an unchanged build. No
+  `VISUAL_DEBT` entry was ever written and none is needed; `docs/parity.md`
+  gains no class. The entry below is kept as the record of how it was
+  reached.
 
 - **RESOLVED: B7's print parity was broken by `transition-duration: 0.01ms`,
   not by anything to do with `cqw`** (implementer 2026-09-11, then reviewer,
@@ -3062,6 +3223,32 @@ brief's.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **Recorded by the B8 planning pass (planner, 2026-09-11), for B9/B10 -
+  not B8's:**
+  - **`RecordPage.svelte:59` draws `notFoundSub` as `<p class="miss">`
+    where the live app draws `<p class="page-sub">`** (app.js:3195). A real
+    divergence on `#/i/<unknown id>`, which has no parity state. B10's
+    (`plan.md`, "B10 outlined").
+  - **The furniture inventory is re-taken at `9fd3000`** and differs from
+    the counts carried above: `.panel` is five div copies plus one
+    `<details>` (`ListPage`), `.page-h`/`.page-sub` five each (`PageHead`
+    included), `.card-acts` four, `.miss` seven with two different colours
+    (`--muted2` in `ListPage`/`PrintPage`, `--muted` elsewhere),
+    `toggleAllIn` still two (`ListPage` ticks its own `lsel`, so the
+    "third caller" rule has not triggered - it stays). Table and filters:
+    `plan.md`, "B10 outlined".
+  - **The rewrite's reduced-motion block in `tokens.css` is an invention
+    the live app does not have**, and its `transition-duration` line is
+    what puts the `375` anchor cells 6px apart (`context.md`, "B8 planning
+    facts"). Whether to port the live policy or keep the kill as an
+    accessibility choice is the owner's, at B9's planning pass (`plan.md`,
+    "B9 outlined", "Questions for the owner").
+  - **The rewrite never re-plays the anchor scroll-and-flash on a language
+    switch** (the effect is guarded on `app.navigations`; `setLang()` does
+    not bump it) where the live `render()` does on every render. Already
+    named in the `specs.js` note for the ring; now also measured as the
+    22px scroll offset behind `voa ~ section anchor @ en 375` on CI. B9's.
 
 - **Deferred, not fixed (B7 review, 2026-09-11): `Shell.svelte`'s `@page` rule
   sits outside `@media print`.** It is `@page { size: A4 portrait; margin: 0 }`

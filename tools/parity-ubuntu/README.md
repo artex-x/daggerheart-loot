@@ -35,6 +35,15 @@ hundredth**:
 | `#/tables/core_item ~ row anchor @ ru 375` | 10.52 | 10.52 |
 | `#/tables/core_item ~ row anchor @ en 375` | 9.92 | 9.92 |
 
+Those four figures were the readings of runs `34382722764`/`34383263349` and
+were the target at calibration. On `9fd3000` (run `34616445556`) CI reads them
+10.52 -> 9.35, 9.92 -> 8.85, 11.55 -> 0.00, 10.31 -> 9.86, after B7's
+reduced-motion change (`tests/parity/specs.js`, the anchor note) shifted the
+scroll-anchoring offset the table's own resize sweep produces. A
+re-calibration therefore compares against the **latest** CI run's readings of
+those cells, never against this table - it is kept as the historical record of
+when the image was last verified.
+
 **It does not agree everywhere, and the exception is not small.** On
 `#/roll/wondrous ~ pinned @ ru|en 375` the container measures **0.00%** where
 CI and a development host both measure about 3.5-3.8%. That state's difference

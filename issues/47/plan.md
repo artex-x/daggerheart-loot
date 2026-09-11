@@ -58,9 +58,13 @@ already being collected against the live app:
 
 - `#/search` - the search slice. **Built as B6 (`9d5ca02`), reviewed and
   approved 2026-09-11 - see "B6 planned" and "B6 built".**
-- `#/print/ci1-q1` - the print slice. **Planned 2026-09-11 as one batch, B7;
-  implement-ready - see "B7 planned". The last Phase 4 slice; it needs
-  nothing from Figma (every vector the sheet draws is already in `card/`).**
+- `#/print/ci1-q1` - the print slice. **Built as B7 (`4776243`, remediated
+  in `ee73d2e`), reviewed, and read clean by CI: run `34616445556` on
+  `9fd3000` has all 54 `#/print` cells `совпадает` - see "B7 planned" and
+  "B7 built". Phase 4 is complete.** What is open after it is bookkeeping
+  and two follow-ups: "B8 planned" (the anchor debts, `main` red on the
+  ratchet), "B9 outlined" (the anchor re-play and the reduced-motion
+  policy), "B10 outlined" (the page-furniture extraction).
 
 **`#/lists` - the lists slice - is done as of B5.6.** Built across six
 batches, B5.1-B5.6 (see "B5 planned" onward); B5.6 was the last one. Every
@@ -9467,6 +9471,464 @@ loop can set is reset first", which is untrue - `.pc-art`'s `height`, `--artw`
 and `display` are not reset. Harmless, because `.pc-art` is
 `position: absolute` and nothing measures those three, but the comment now says
 what the code does and why the omission is safe.
+
+### B8 planned: the anchor debts after B7 - the ratchet rides alone (planner, 2026-09-11)
+
+Planned at HEAD `9fd3000` == `origin/main`, working tree clean but for the
+untracked `issues/tg-preview-refresh/` (another task's; preserved). CI run
+`34616445556` on `9fd3000` is the input, already read into `context.md`
+("The CI read on `9fd3000`"): `check`, `audit`, `secrets` and parity shards
+1 and 4 green; shards 2 and 3 red on **three `VISUAL_DEBT` ratchet cells**,
+every one of them "стало лучше"; **all 54 `#/print` cells `совпадает`**, the
+24 `whole:true` ones included. So Phase 4's last blocker is closed by that
+read, and `main` is red only on bookkeeping that is now false. This batch
+makes the bookkeeping true again and nothing else. It is small by diff and
+it is the right size by its gates (`CLAUDE.md`, "Task and session
+protocol"; `docs/parity.md`, "Batch size"): see "Batch shape" below for why
+it does not merge with the furniture pass.
+
+**Objective.** After this batch `tests/parity/specs.js`'s four `375` anchor
+entries say what CI measures on `9fd3000` and why it moved; the entry CI
+reads as `0.00` is gone; every reason string that said "RAISED ... to what
+CI measures, reproduced by three CI runs and the ubuntu container" is
+replaced by one that is true today; the note above those entries names the
+mechanism that was "not found yet" in its last paragraph, because it has
+now been measured; `tools/parity-ubuntu/README.md`'s calibration table
+stops reading as a current target; and `handoff.md`'s first "Blockers"
+entry (the print image residue) is marked resolved by the CI read. The
+next CI run on top of this commit is expected green on every shard.
+
+#### Decided in planning
+
+1. **The numbers are CI's, verbatim.** Owner decision 1 leaves nothing else
+   to write (`docs/parity.md`, "Machine variance"; `context.md`, 2026-09-09):
+
+   | entry | was | now |
+   |---|---|---|
+   | `#/tables/core_item ~ row anchor @ ru 375` | 10.52 | **9.35** |
+   | `#/tables/core_item ~ row anchor @ en 375` | 9.92 | **8.85** |
+   | `#/tables/voa ~ section anchor @ ru 375` | 11.55 | **deleted** (CI reads 0.00) |
+   | `#/tables/voa ~ section anchor @ en 375` | 10.31 | **9.86** |
+
+   The `@ 1100` and `@ 768` entries of the same states (0.42 / 0.43 / 0.63 /
+   0.42) are unmoved on CI and are not touched.
+
+2. **A cell that reads `0.00` once is deleted, not held for a second
+   reading.** The ratchet's own rule decides it (`tests/parity.js` 582-595):
+   a cell at `0.00` fails "стало лучше" under any figure above 0.5 and fails
+   "долг погашен" under any figure above `JITTER`, so **no number makes it
+   pass** - the only green entry for a `0.00` cell is no entry. B5.2 part 0
+   deleted five entries on the same rule. If the next CI run reads it
+   non-zero it fails loudly as "ожидался ноль", which is the correct
+   behaviour for a state with no entry and a real difference, and the reader
+   then writes CI's figure with a reason. The reason strings that cited
+   "three CI runs and the ubuntu container" were describing the *old*
+   figures' provenance; they are replaced, not amended, because that
+   sentence would be false about the new ones. The container was tried:
+   `docker info` panics on this host (client-side, `reflect: indirection
+   through nil pointer`), so a second reading comes from CI, on the push
+   that carries this commit. That is not a blocker: CI is the referee the
+   owner named, and it reads every push.
+
+3. **`voa ~ section anchor @ en 375` is lowered to 9.86 in the same pass.**
+   It passed this run only because 0.45 is inside `DEBT_SLACK` (0.5). The
+   figure is what CI measures, three prior runs agreed to the hundredth on
+   the old one, and the move is caused (below) - leaving 10.31 in place
+   would be leaving a coin on the table for the next run to trip over.
+
+4. **The move is caused, and the cause is measured** (`context.md`, "B8
+   planning facts"): the two anchor states are *scrolled* when the width
+   sweep reaches them, and B7 changed the one global thing that touches how a
+   scrolled document survives a resize. The live app keeps every declared
+   `transition` alive under `prefers-reduced-motion: reduce` (`style.css`
+   311 and 544 kill two named animations and nothing else); when the sweep
+   crosses 600px its mobile overrides animate for ~150ms and Chrome's scroll
+   anchoring adjusts the scrolled document across those frames - 6px on
+   `core_item`, measured. The rewrite's `tokens.css` reduced-motion block
+   kills transitions outright (`transition-duration: 0s !important` since
+   `ee73d2e`; `0.01ms` before it, a two-frame transition that yielded a
+   third, different adjustment), so it is not adjusted. Proof, not
+   correlation: the live app with `*{transition-duration:0s!important}`
+   injected lands at 368 at 375 in both languages - **exactly where the
+   rewrite lands**. That closes the sentence in the `specs.js` note that
+   read "something else is in there as well and has not been found yet".
+   (`.selbox`'s own 0.15s restored alone in the rewrite does *not* reproduce
+   the 6px, so the element that transitions is another live rule with a
+   mobile override; B9's to name.)
+
+5. **The `ru`/`en` split on `voa ~ section anchor` names a real mechanism,
+   not an unstable one.** CI's own diff image for `@ en 375` (artifact
+   `failure-output-parity-2`, opened in planning) is rows 10-13 of the Vault
+   of Ages table with every line doubled: the two shots best-align at a
+   **22px vertical shift** (2.52% residual - the fixed topbar and the ring),
+   while `@ ru 375` aligns at 0px with 0.00% and `@ en 768` at 0px with
+   0.43% (the ring). So in English the two apps sit 22px apart at 375 and in
+   Russian they coincide. The only English-only divergence the two apps
+   have on this state is the language switch itself: the live `render()`
+   re-parses the anchor from the hash on every render and re-scrolls to it
+   (app.js 3832-3845, `S.tables.anchor` consumed and re-read), and re-plays
+   the flash; the rewrite's effect is guarded on `app.navigations`, which
+   `setLang()` does not bump, so it is left where scroll anchoring put it
+   after the English reflow. On a Windows host those two positions happen
+   to coincide (measured `scrollY` 9616 on both at every width); on ubuntu
+   they do not. Three CI runs at 10.31 to the hundredth and one at 9.86
+   after a global CSS change is a deterministic mechanism moving once, not
+   noise. It is B9's to close (the re-play), and B8 writes it down as the
+   reason.
+
+6. **Not `timed: true`.** Fresh arrival at every width was measured too: it
+   zeros the four `ru` cells and the `core_item @ en` cells, but the live
+   app's re-scroll on the `EN` press puts `voa @ en` **1px apart at 768 and
+   8px at 375** (the rewrite does not re-scroll), so it would make `@ en
+   768` worse than its recorded 0.42 and leave `@ en 375` several percent -
+   and a `timed` state's numbers can come only from CI (the container is
+   not evidence for a timed difference, `tools/parity-ubuntu/README.md`),
+   so `main` would stay red for at least one more run while they were read.
+   The fix that actually retires the eight anchor entries is the port
+   re-playing scroll-and-flash on `app.lang` plus the live reduced-motion
+   policy for transitions - B9 - not a harness flag.
+
+7. **Batch shape: the ratchet rides alone.** Measured against `docs/
+   parity.md`, "Batch size": B8's gates are `npm run check` (the commit gate
+   wants it because `tests/parity/specs.js` is not exempt, `bash-guard.mjs`
+   `isExempt`) and one 12-cell parity filter (`"anchor"`, ~3-4 min);
+   no `check:built` (nothing a screen draws changes). The furniture pass
+   (B10) touches every page and its honest parity read is the whole suite -
+   a different route-and-filter set, which the batch-size test names as a
+   split point ("the parity cost is not shared, only serialised"). Merging
+   would save one `npm run check` and cost: `main` red until a review-sized
+   refactor lands and is CI-read, and that refactor's CI read judged
+   against numbers changing in the same commit. Separate, B8 first: `main`
+   green on the next push, then every later CI read is legible.
+
+#### In scope
+
+`tests/parity/specs.js` (four entries, one note), `tools/parity-ubuntu/
+README.md` (one paragraph under the calibration table), `issues/47/
+{plan,handoff,context}.md`. One commit.
+
+#### Out of scope
+
+Any change under `app/`, `tests/parity/driver.js`, `tests/parity.js`,
+`docs/parity.md` (no new class, no changed rule - the reduced-motion
+finding is B9's design input and lives in the `specs.js` note and
+`context.md` until B9 decides it), `docs/specs/*`, every other
+`VISUAL_DEBT` entry, the furniture extraction (B10), the anchor re-play
+(B9).
+
+#### Steps
+
+1. **Re-read the tree.** `git log --oneline -3` must show `9fd3000` on top;
+   `git status --short` must show only `?? issues/tg-preview-refresh/`
+   (leave it alone, never `git add -A`). If HEAD moved, read
+   `context.md`'s newest section before continuing.
+2. **`tests/parity/specs.js`, the four entries** (currently 2056-2073).
+   Replace the four entries with exactly three, in this order and with these
+   texts:
+
+   ```js
+   '#/tables/core_item ~ row anchor @ ru 375': {
+     pct: 9.35,
+     why: 'LOWERED from 10.52 on 9fd3000, where B7 set transition-duration to 0s under reduced motion: the width sweep, where the live app is scroll-anchored 6px during the transitions it keeps alive under reduced motion and the rewrite, with none, is not - see the note above. 9.35 is what CI measures (run 34616445556)'
+   },
+   '#/tables/core_item ~ row anchor @ en 375': {
+     pct: 8.85,
+     why: 'LOWERED from 9.92 on 9fd3000: the same transition-policy offset, in English. 8.85 is what CI measures (run 34616445556)'
+   },
+   '#/tables/voa ~ section anchor @ en 375': {
+     pct: 9.86,
+     why: "LOWERED from 10.31 on 9fd3000: after the EN press the live app re-scrolls to the section and the rewrite is left where scroll anchoring put it - 22px apart on CI (the run's own diff image), 0.00 on the same state at @ ru 375, whose entry is deleted. 9.86 is what CI measures (run 34616445556); it was 0.45 under the old figure, inside DEBT_SLACK, and is lowered now rather than left for the next run to trip"
+   }
+   ```
+
+   `'#/tables/voa ~ section anchor @ ru 375'` is deleted.
+3. **`tests/parity/specs.js`, the note above them** (the block comment that
+   starts "Both anchors, on a phone, are one mechanism and it lives in the
+   harness."). Keep every paragraph up to and including "...Three runs since
+   have reproduced these four numbers exactly." Replace the last paragraph
+   ("What is left is the harness's to fix ... admitted.") with:
+
+   ```text
+   Found, at B7 (2026-09-11): the "something else" was the reduced-motion
+   transition policy. The live app leaves every declared `transition` alive
+   under `prefers-reduced-motion: reduce` (style.css 311 and 544 kill two
+   named animations and nothing else), so when the sweep crosses 600px its
+   mobile overrides animate for ~150ms and Chrome's scroll anchoring
+   adjusts the scrolled document across those frames - 6px on `core_item`
+   on a Windows host. The rewrite's tokens.css kills transitions outright
+   (`transition-duration: 0s !important` since B7; `0.01ms` before, a
+   two-frame transition with a third, different adjustment - the 368 -> 387
+   above), so it is not adjusted. Measured, not inferred: the live app with
+   every transition killed lands exactly where the rewrite lands, in both
+   languages. That is why all four 375 figures moved on 9fd3000 after three
+   CI runs had agreed to the hundredth, and by different amounts - the
+   adjustment is a browser heuristic over each table's own DOM.
+
+   The `@ en` cells carry a second, English-only mechanism on top: the live
+   render() re-parses the anchor from the hash on every render and
+   re-scrolls to it on the language switch (app.js 3832-3845), the
+   rewrite's effect is guarded on `app.navigations` and stays where scroll
+   anchoring left it after the English reflow. On CI that is a 22px offset
+   on `voa @ en 375` (the run's diff image) against 0.00 at `@ ru 375`.
+
+   Both are the port's to close, not the table's - the anchor re-play on
+   `app.lang` and the live reduced-motion policy for transitions, B9 in
+   issues/47/plan.md. Until then the figures below are CI's, run
+   34616445556 on 9fd3000; a Windows host reads `core_item` 6px apart and
+   `voa @ en` not apart at all, so a local run of these cells is advisory
+   in both directions (docs/parity.md, "Machine variance").
+   ```
+
+   Do not touch the `@ en 1100` / `@ en 768` entries or the note above
+   *them* ("The row and section anchors, at 1100 and 768...") - both are
+   still true.
+4. **`tools/parity-ubuntu/README.md`**, directly under the calibration
+   table's four rows, add one paragraph: the four figures in that table are
+   the readings of runs `34382722764`/`34383263349` and were the target
+   when the image was calibrated; on `9fd3000` (run `34616445556`) CI reads
+   them 10.52 -> 9.35, 9.92 -> 8.85, 11.55 -> 0.00, 10.31 -> 9.86 after B7's
+   reduced-motion change (`tests/parity/specs.js`, the anchor note), so a
+   re-calibration compares against the **latest** CI run's readings of
+   those cells, never against this table. Keep the table itself as the
+   historical record it is.
+5. **`npm run build`**, then
+   `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` (2 states, 12 cells,
+   one foreground call). Record every cell's line verbatim in the handoff.
+   Expected on this host, **advisory and not a gate** (`docs/parity.md`,
+   "Machine variance": a local run can legitimately fail a cell that CI
+   passes): the six `voa @ ru` / `core_item @ ru 1100|768` cells and
+   `voa @ ru 375` `совпадает`; the `@ en 1100|768` cells inside their
+   0.42-0.63 debts; `voa @ en 375` **likely red as "стало лучше"** against
+   9.86, because this host measures no scroll offset on that cell
+   (`context.md`, "B8 planning facts"); the two `core_item @ 375` cells
+   somewhere near their figures, either side (the pre-B3.6 Windows figures
+   sat 1.7pp under CI's on these two cells, so "стало лучше" or "стало хуже"
+   on them locally is the documented platform offset, not a verdict).
+   **Change no number off this run.** The one result that stops the batch:
+   any of the **eight non-375 cells** (`@ ru|en 1100|768` of both states)
+   reading outside its entry or non-`совпадает` - those are ring-only or
+   zero and reproduce on Windows, so a move there is a real change. Report
+   it with its diff image, do not commit.
+6. **`set -o pipefail; npm run check 2>&1 | tail -n 120`** (Bash timeout
+   600000, one foreground call - it reads none of the files this batch
+   changes, but the commit gate wants it green for the tree). Green arms the
+   gate.
+7. **Docs.** `plan.md`: mark this section built with the parity lines;
+   `handoff.md`: Status, Completed, Verification (exact commands and every
+   anchor cell's line), "Next batch" -> B9 outline pointer, Blockers (the
+   print entry already reads RESOLVED from planning; add nothing), Deferred
+   unchanged; `context.md`: append only if something durable was measured
+   that this section does not already hold.
+8. **One commit**, Conventional Commits, author `artex-x
+   <artex-x@users.noreply.github.com>`, no `Co-Authored-By`:
+   `test(parity): the anchor debts follow CI's read of 9fd3000`. Stage the
+   four paths by name. **Never push.** The owner's push is the second
+   reading the deleted entry waits on.
+
+#### Acceptance criteria
+
+- `tests/parity/specs.js` has exactly three `375` anchor entries with the
+  figures above; `grep -c "RAISED from" tests/parity/specs.js` is 0 for the
+  anchor entries (the string may survive elsewhere only if it is still true
+  there - it is not used elsewhere today).
+- `node -e "require('./tests/parity/specs.js')"` loads (no syntax slip).
+- `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"` ran; every cell's line
+  is in the handoff; the eight non-375 cells read as they do today
+  (`совпадает` at `@ ru`, inside 0.42-0.63 at `@ en`); the four 375 cells
+  are recorded as read and left alone.
+- `npm run check` green; the commit gate armed; one commit; tree clean but
+  for `issues/tg-preview-refresh/`.
+- The next CI run on `main` (owner's push) is expected green on all four
+  shards - the reading that closes B8. Record its run id in the handoff
+  when it exists.
+
+#### Risks and do-nots
+
+- Do not write a Windows figure anywhere. Do not "fix" a locally red
+  `voa @ en 375` by restoring 10.31 or by widening anything.
+- Do not flag the anchor states `timed` (decided above).
+- Do not touch `tokens.css` - the reduced-motion policy is B9's decision and
+  needs the owner (see "Questions for the owner before B9").
+- Do not edit `docs/parity.md`; nothing in it is false.
+- Do not stage `issues/tg-preview-refresh/`.
+- `dist/` is gitignored; `npm run build` before the parity run is required
+  because the harness photographs `dist/index.html`.
+
+#### Fallback
+
+If `docker info` works on the implementing host, the container is a
+legitimate second reading for the three **layout** cells (`docs/parity.md`,
+"Machine variance"; `tools/parity-ubuntu/README.md`) - run
+`docker run --rm -v "$PWD:/work:ro" dh-parity:ubuntu24 sh -c 'npm run build
+&& node tests/parity.js "anchor"' > <scratch>/anchor-ubuntu.log` and record
+the twelve lines. Agreement to the hundredth with 9.35 / 8.85 / 9.86 and
+`совпадает` on `voa @ ru 375` confirms; disagreement is reported, not
+written - CI stays the referee. This is optional; the batch does not wait
+on it.
+
+### B8 built: the anchor debts follow CI's read of 9fd3000 (implementer, 2026-09-11)
+
+Built to the plan above with no design deviation. `docker info` panics on this
+host too (client-side, `reflect: indirection through nil pointer`), so the
+container fallback was not available; the second reading stays CI's, on the
+owner's push.
+
+`tests/parity/specs.js`'s four `375` anchor entries are now three:
+`core_item @ ru 375` 9.35, `core_item @ en 375` 8.85, `voa @ en 375` 9.86 (all
+`LOWERED from ... on 9fd3000`, CI run `34616445556`); `voa @ ru 375` is
+deleted (CI reads 0.00, and the ratchet's own rule admits no passing figure
+for a `0.00` cell). The note above them keeps every paragraph through "...Three
+runs since have reproduced these four numbers exactly." and its last
+paragraph is replaced with the three paragraphs the plan specifies: the
+reduced-motion transition policy (measured), the English-only re-scroll (read
+off CI's own diff image), both named as B9's to close.
+`tools/parity-ubuntu/README.md` gains one paragraph under the calibration
+table pointing a re-calibration at the latest CI run rather than the table.
+
+**`npm run build`, then `MSYS_NO_PATHCONV=1 node tests/parity.js "anchor"`**
+(12 cells, one foreground call) - advisory, this host, both directions
+(`docs/parity.md`, "Machine variance"). All eight non-375 cells read exactly
+as expected and unchanged: `вид: совпадает` on every `@ ru` cell of both
+states at every width, and `@ en 1100|768` inside their existing 0.42-0.63%
+debts. The three remaining 375 cells all read `FAIL ... стало лучше - опусти
+число в VISUAL_DEBT` against the new figures - `core_item @ ru 375` 7.79%
+against 9.35%, `core_item @ en 375` 7.31% against 8.85%, `voa @ en 375` 0.00%
+against 9.86% - exactly the direction and shape the brief predicted (this
+host measures no scroll offset on the `voa @ en` mechanism; the two
+`core_item @ 375` cells sit under CI's figures, the documented platform
+offset). No number was changed off this run. The one stop condition named in
+the brief - a non-375 cell moving - did not occur.
+
+**`set -o pipefail; npm run check 2>&1 | tail -n 120`** (Bash timeout
+600000, one foreground call): exit 0. `format:check`, `lint`, `typecheck`
+(540 files, 0 errors/warnings), `data` (derived files match, catalog reads,
+stubs match, `noindex` present, i18n parity, `.claude/hooks/selftest.mjs`
+292/292), and `vitest run --coverage` (41 files, 994 tests passed, 70.25s;
+statements 96.52%, branches 88.44%, functions 96.95%, lines 97.24% - all
+above threshold). The commit gate is armed for this tree.
+
+No production code touched; `npm run check:built` was not run, per the brief
+(nothing a screen draws changes in this batch).
+
+Not implement-ready; a planning pass expands it. Everything measured is in
+`context.md`, "B8 planning facts". Its purpose is to retire all **eight**
+anchor entries (`@ en 1100|768` x4 and the three B8 leaves) by porting two
+behaviours the live app has and the rewrite does not:
+
+1. **The anchor scroll-and-flash re-plays on a language switch.** Live:
+   `render()` re-reads the anchor from the hash every time and runs the
+   block at app.js 3832-3845, so the `EN` press re-scrolls and re-flashes.
+   Rewrite: `TablesPage.svelte`'s effect is guarded on `app.navigations`
+   only. Port: key the effect on `app.lang` as well (a language switch is a
+   re-render in the live app, and the "DOM-only transient state" rule in
+   "Working rules" already says the port re-creates on `app.lang`), and make
+   `flash` reactive state (`class:flash={flashKey === key}` in `TableRows`
+   and `SectionHead`) rather than a class added behind Svelte's back, so a
+   keyed re-render cannot drop it - the reason the rewrite's ring "has never
+   been visible" (`specs.js`, the 1100/768 note). Expected: the four `@ en
+   1100|768` entries (a ring's worth each) go to 0.00 and are deleted.
+2. **Transitions under `prefers-reduced-motion: reduce`.** The live app
+   keeps every declared `transition` alive and kills two named animations;
+   `tokens.css`'s blanket block (`animation-duration: 0.01ms`,
+   `animation-iteration-count: 1`, `transition-duration: 0s`,
+   `scroll-behavior: auto`, all `!important` on `*`) is the rewrite's
+   invention. The `transition-duration` line is what puts the `375` sweep
+   cells 6px apart on `core_item` (B8, decided 4). Options, for the owner:
+   (a) **port the live policy** - delete the `transition-duration` line
+   (and decide the animation lines on the same evidence: `settle()` waits
+   for animations, so they cost timing, not pixels); the rewrite then
+   transitions exactly where the live app does and the sweep adjusts both
+   the same way - recommended, because the parity law is "reproduce the
+   shipped app" and the transitions in question are 150ms colour/width
+   eases on hover and breakpoint, not motion in the vestibular sense;
+   (b) keep the kill as an accepted accessibility improvement and carry the
+   `375` cells as debt with the reason B8 writes - honest, but it leaves
+   ~9% entries whose only content is a 6px scroll offset, and `ACCEPTED`
+   cannot hold a pixel cell. Print is safe under (a): `PrintCard.svelte`
+   and `PrintPage.svelte` declare no `transition` (grepped), so no
+   `CSSTransition` can start on a measured element - the B7 defect needed a
+   non-zero duration on `*`.
+3. **Which live rule transitions on the breakpoint** is the one open
+   measurement: `.selbox` alone restored in the rewrite does not reproduce
+   the 6px; the candidates are the other `@media (max-width:600px)`
+   overrides on elements with `transition:` (`style.css` 76, 93, 159, 232,
+   409, 418, 495, 813, 835, 880). Under (a) it does not need naming - both
+   apps run the same set; under (b) it does.
+
+Files expected: `app/src/components/TablesPage.svelte`,
+`TableRows.svelte`, `SectionHead.svelte`, `tables.test.ts`,
+`app/src/styles/tokens.css` (under (a)), `tests/parity/specs.js` (entries
+deleted or re-read from CI), `docs/specs/FEATURES.md` (the anchor sentence,
+if the behaviour is written down there - it is not today), `docs/parity.md`
+(the reduced-motion policy, one sentence under "Harness invariants" if (a)).
+Parity filter: `"anchor"` (12 cells) plus `"#/print/ci1-q1-q313"` (12 cells,
+the fit under the transition policy) - one foreground call together; the
+whole suite is CI's. Gates: `npm run check`, `npm run check:built` (a screen
+changes: the ring draws), the filter. Numbers: none from a Windows host;
+the `@ en` residue after the re-play, if any, is CI's to read - which means
+B9 may need one CI round trip before its entries settle, and its handoff
+must say so rather than write a local figure.
+
+**Questions for the owner before B9 is planned** (not B8's; listed so they
+are not lost): the reduced-motion policy, (a) or (b) above, with (a)
+recommended. `NEEDS_HUMAN_CONFIRMATION` for B9 is therefore expected to be
+`yes` at its planning pass unless the owner answers first.
+
+### B10 outlined: the page-furniture extraction pass (planner, 2026-09-11)
+
+Not implement-ready; a planning pass expands it. Inventoried at `9fd3000`
+(grep over `app/src/components`, every non-test caller):
+
+| rule | copies | where | differences between copies |
+|---|---|---|---|
+| `.panel` (div) | 5 | `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage` (+`margin-top:16px`), `SearchPage` (+`margin-bottom:16px`) | the two margins are the live app's *inline* `style=` on those panels |
+| `.panel` (details) | 1 | `ListPage` `<details class="panel lroll">` | a `<details>`, not a div; also composes `.lroll` |
+| `.page-h` | 5 | `PageHead` (`margin:0`, from `.page-head .page-h`), `ListPage` (h1 holds the rename input), `PrintPage`, `RecordPage`, `SharedListPage` | `PageHead`'s margin; `ListPage`'s content is an input |
+| `.page-sub` | 5 | `PageHead`, `ListPage`, `PrintPage`, `RecordPage` (holds a link), `SharedListPage` | none in the rule; `RecordPage`'s content has markup |
+| `.card-acts` | 4 | `RecordCard`, `ListPage` (inline `margin-bottom:16px`), `PrintPage`, `SharedListPage` (`margin-bottom:18px` in the rule) | the two margins - check which are live inline styles and which are live rules before deciding where they go |
+| `.miss` | 7 | `ListPage`, `ListsPage`, `PrintPage`, `RecordPage`, `RollPanel`, `SearchPage`, `TablesPage` - all `{#if !index}<p class="miss">{t.noData}</p>` | colour: `--muted2` in `ListPage`/`PrintPage`, `--muted` in the other five - the rewrite's own state, no live rule to port; pick one and say why |
+| `toggleAllIn` | 2 | `TablesPage`, `SearchPage` | `ListPage` ticks its own `lsel`, so the "third caller moves it to `AppState`" rule has not triggered - **stays** |
+
+Also found and B10's: **`RecordPage.svelte:59` draws `notFoundSub` as
+`<p class="miss">` where the live app draws `<p class="page-sub">`**
+(app.js:3195) - a real divergence on `#/i/<unknown id>`, unphotographed
+(no parity state); fix it in the same pass with a component test that
+asserts the class, or add the state.
+
+Design questions for the planning pass, with the repository's own
+precedents: `PageHead` was extracted as a component at the third use
+("Decisions taken while working"); shared UI belongs in
+`app/src/components/` and `styles/tokens.css` owns tokens, not classes
+(`CLAUDE.md`, "Architecture boundaries") - so the extraction is components,
+not a global class sheet. Candidates: `Panel.svelte` (`children` + an
+optional `style` string that renders as the live app's own inline `style=`,
+which makes the DOM more faithful, not less; the `ListPage` details stays
+inline and is recorded, or `Panel` takes `as` via `svelte:element` only if
+that is cheaper than one recorded exception), `PageTitle.svelte` (h1 +
+sub, both as snippets because two callers put markup in them; `PageHead`
+keeps its own row), `Actions.svelte` for `.card-acts` (or fold it into
+`RecordCard`'s existing rule via a shared component only if a caller
+genuinely shares the row - measure first), `NoData.svelte` for `.miss`.
+"Expose only differences real callers need" and "remove both inline
+copies" apply to each.
+
+Gates and filters: `npm run check`, `npm run check:built` (screens are
+redrawn even if identically), and parity per touched component -
+`"#/roll/std @" "#/roll/alt @" "#/lists @" "#/search @"` (the panels),
+`"#/i/ci1 @" "#/i/q1 @"` (`RecordPage`/`RecordCard`), `"#/lists/a @"
+"#/l/ ~ shared @" "#/print/ci1-q1 @"` (`ListPage`, `SharedListPage`,
+`PrintPage`) - about ten plain states, ~60 cells, in one or two foreground
+calls, with the full suite CI's on the push. `.miss` is never photographed
+(data always loads under the harness) and is covered by component tests
+only. Expected debt change: none - every cell that reads `совпадает` today
+must still; the batch is a refactor and its acceptance is "nothing moved".
+Order relative to B9: independent files (B9 touches `TablesPage`'s effect,
+`TableRows`/`SectionHead`'s flash and `tokens.css`; B10 touches page
+furniture and `RecordPage`), so the orchestrator may run either first
+without re-planning; B9 first is recommended because it retires ~40
+percentage points of recorded debt and restores a user-visible behaviour,
+and because B10's whole-suite CI read is cleaner once the anchor cells are
+exact.
 
 ## Phase 5 - what already exists
 

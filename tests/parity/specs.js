@@ -2045,30 +2045,46 @@ const VISUAL_DEBT = {
      before the sweep. Three runs since have reproduced these four numbers
      exactly.
 
-     What is left is the harness's to fix, by re-arriving at each width rather
-     than resizing - which is a change to how every state is measured and does
-     not belong in a batch about reading the numbers honestly. Turning
-     `overflow-anchor` off for both apps was tried and is not the whole answer:
-     it moves the two 375 figures around (8.84/7.92 becomes 7.92/8.47) without
-     removing them, so something else is in there as well and has not been
-     found yet. Recorded as the debt it is, with the part that is understood
-     named and the part that is not admitted. */
+     Found, at B7 (2026-09-11): the "something else" was the reduced-motion
+     transition policy. The live app leaves every declared `transition` alive
+     under `prefers-reduced-motion: reduce` (style.css 311 and 544 kill two
+     named animations and nothing else), so when the sweep crosses 600px its
+     mobile overrides animate for ~150ms and Chrome's scroll anchoring
+     adjusts the scrolled document across those frames - 6px on `core_item`
+     on a Windows host. The rewrite's tokens.css kills transitions outright
+     (`transition-duration: 0s !important` since B7; `0.01ms` before, a
+     two-frame transition with a third, different adjustment - the 368 -> 387
+     above), so it is not adjusted. Measured, not inferred: the live app with
+     every transition killed lands exactly where the rewrite lands, in both
+     languages. That is why all four 375 figures moved on 9fd3000 after three
+     CI runs had agreed to the hundredth, and by different amounts - the
+     adjustment is a browser heuristic over each table's own DOM.
+
+     The `@ en` cells carry a second, English-only mechanism on top: the live
+     render() re-parses the anchor from the hash on every render and
+     re-scrolls to it on the language switch (app.js 3832-3845), the
+     rewrite's effect is guarded on `app.navigations` and stays where scroll
+     anchoring left it after the English reflow. On CI that is a 22px offset
+     on `voa @ en 375` (the run's diff image) against 0.00 at `@ ru 375`.
+
+     Both are the port's to close, not the table's - the anchor re-play on
+     `app.lang` and the live reduced-motion policy for transitions, B9 in
+     issues/47/plan.md. Until then the figures below are CI's, run
+     34616445556 on 9fd3000; a Windows host reads `core_item` 6px apart and
+     `voa @ en` not apart at all, so a local run of these cells is advisory
+     in both directions (docs/parity.md, "Machine variance"). */
   '#/tables/core_item ~ row anchor @ ru 375': {
-    pct: 10.52,
-    why: "RAISED from 8.85, which was a development machine's figure: the width sweep, where both apps scroll once at 1100 to the same pixel and Chrome's own scroll anchoring moves them 13px apart as the viewport narrows to 375 - see the note above VISUAL_DEBT. 10.52 is what CI measures, reproduced by three CI runs and the ubuntu container"
+    pct: 9.35,
+    why: 'LOWERED from 10.52 on 9fd3000, where B7 set transition-duration to 0s under reduced motion: the width sweep, where the live app is scroll-anchored 6px during the transitions it keeps alive under reduced motion and the rewrite, with none, is not - see the note above. 9.35 is what CI measures (run 34616445556)'
   },
   '#/tables/core_item ~ row anchor @ en 375': {
-    pct: 9.92,
-    why: 'RAISED from 7.92 to what CI measures: the same mechanism, in English, where a shorter fold at this width shifts less of the page. Three CI runs and the container all read 9.92'
+    pct: 8.85,
+    why: 'LOWERED from 9.92 on 9fd3000: the same transition-policy offset, in English. 8.85 is what CI measures (run 34616445556)'
   },
 
-  '#/tables/voa ~ section anchor @ ru 375': {
-    pct: 11.55,
-    why: 'RAISED from 10.05 to what CI measures: the same width sweep, on a section deep in Vault of Ages, where the page is twice as tall again by 375 - see the note above VISUAL_DEBT'
-  },
   '#/tables/voa ~ section anchor @ en 375': {
-    pct: 10.31,
-    why: 'RAISED from 8.84 to what CI measures: the same cause, in English, where less text wraps differently and the compounded drift is smaller'
+    pct: 9.86,
+    why: "LOWERED from 10.31 on 9fd3000: after the EN press the live app re-scrolls to the section and the rewrite is left where scroll anchoring put it - 22px apart on CI (the run's own diff image), 0.00 on the same state at @ ru 375, whose entry is deleted. 9.86 is what CI measures (run 34616445556); it was 0.45 under the old figure, inside DEBT_SLACK, and is lowered now rather than left for the next run to trip"
   }
 };
 
