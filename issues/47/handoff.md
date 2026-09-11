@@ -1715,10 +1715,14 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B5.4a is closed** (this session) - built, verified, and committed as
-`feat(lists): the list page` on top of `f38b900`. The brief that stood here
-(implement-ready, steps 0-13) is retired to `plan.md`, "B5.4a built". Do not
-reopen it.
+**B5.4a is closed** (this session) - built, verified, reviewed and
+committed. Three commits carry it: `f38b900` (step 0, the harness fix),
+`8873473` `feat(lists): the list page` (steps 1-13), and `fe38973`
+`fix(lists): make the list row grip draggable` (the reviewer's one blocker,
+the single remediation cycle the protocol allows). The review verdict was
+fix-then-continue; after the fix no blocker remains and its six nits are in
+"Deferred". The brief that stood here (implement-ready, steps 0-13) is
+retired to `plan.md`, "B5.4a built". Do not reopen it.
 
 What is left of the lists slice: **B5.4b (drag as the live app does it -
 outlined, not planned, in `plan.md`, "B5.4b outlined"), B5.5 (the batch
