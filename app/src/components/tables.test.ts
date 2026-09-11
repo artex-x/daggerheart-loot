@@ -247,6 +247,10 @@ describe('the view switch', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
     expect(screen.getByText('Кольцо Тишины')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Списком' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сеткой' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
   });
 
   it("carries a tile's own tier where there is no roll and no stat block", async () => {

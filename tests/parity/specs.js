@@ -20,6 +20,39 @@ const EQUIPMENT_ENTRY = require('../../docs/fixtures/lists/equipment-entry.json'
 const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
 /** Quantity and price on the shared page's rows - all three tail shapes. */
 const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
+/** The real catalogue, for the print states that need a route built rather
+ *  than typed by hand (the 181-id cap) - generated from `data.js`,
+ *  `tests/derived.js` keeps the two equal. */
+const LOOT = require('../../data.json');
+
+/* The print routes, built once and shared between the states below and the
+ * specs that key off their ids by name - `tests/print.js`'s own long-text
+ * set for LONG. */
+const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
+const LONG =
+  '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
+const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + String(i + 1)).join('-');
+const TOO_MANY =
+  '#/print/' +
+  Object.values(LOOT.items)
+    .flat()
+    .slice(0, 181)
+    .map((x) => x.id)
+    .join('-');
+const TOO_MANY_ID = '#/print/<181 ids> ~ too many';
+
+/** The eight states that draw a sheet at all - every print state but the
+ *  empty one, `#/print/nope`. */
+const PRINT_CARD_STATES = [
+  NINE,
+  NINE + ' ~ black and white',
+  LONG,
+  LONG + ' ~ black and white',
+  '#/print/ci1-q1',
+  '#/print/ci1-q1 ~ black and white',
+  TEN,
+  TOO_MANY_ID
+];
 
 /**
  * The packed form of `NOTES_BOTH_KINDS.gm.raw`, pasted rather than computed at
@@ -89,6 +122,7 @@ const NAME = {
     position: 'Позиция в списке',
     whatIsThis: 'Как это работает',
     printHint: 'Собрать карточки для печати: девять на лист A4',
+    printLink: 'Ссылка на набор',
     pickRow: 'Выбрать позицию',
     prices: 'Цены',
     /* Exact, not the default fuzzy match: the action row's own delete-list
@@ -138,6 +172,7 @@ const NAME = {
     position: 'Position in the list',
     whatIsThis: 'How this works',
     printHint: 'Lay these out for printing: nine to an A4 sheet',
+    printLink: 'Link to this set',
     pickRow: 'Select entry',
     prices: 'Prices',
     delOne: 'Delete (1)',
@@ -791,7 +826,9 @@ const foundRows = {
     '#/search ~ capped'
   ],
   async run(d) {
-    return { rows: await d.count('.rows [data-row]') };
+    const rows = await d.count('.rows [data-row]');
+    console.log(`       foundRows ${d.target}: ${rows}`);
+    return { rows };
   }
 };
 
@@ -829,6 +866,109 @@ const geometry = {
   only: ['#/i/ci1 ~ whole'],
   async run(d) {
     return await d.rectsAt({ card: '.card', pick: '.cardpick', foot: '.foot' });
+  }
+};
+
+/**
+ * The sheet's own arithmetic, as counts rather than pixels - the fast,
+ * always-on half of what a print state checks. Off `renderPrint`
+ * (app.js 3510-3558): how many sheets, how many cards, how many blanks pad
+ * the last one, which sheets are marked as a page break, whether the
+ * black-and-white class reached the sheet as well as every card, and
+ * whether the too-many note is on screen.
+ */
+const sheetCounts = {
+  name: 'the print sheet, in counts',
+  only: PRINT_CARD_STATES,
+  async run(d) {
+    return {
+      sheets: await d.count('.psheet'),
+      cards: await d.count('.pcard'),
+      blanks: await d.count('.pcard.blank'),
+      breaks: await d.count('.psheet[data-next]'),
+      bw: await d.count('.psheet.bw'),
+      warn: await d.count('.printnote.warnnote')
+    };
+  }
+};
+
+/**
+ * The fit, as the numbers `fitPrintCards` actually wrote onto each card -
+ * what tells a noisy `whole` capture from a card that fitted differently
+ * before anyone opens a diff image (`docs/parity.md`, "Two unstable
+ * classes"). `perWidth` because the card's own container query makes its
+ * size the one thing worth re-checking at every width, even though the
+ * card itself is a fixed 63mm regardless of the viewport around it.
+ */
+const cardFit = {
+  perWidth: true,
+  name: 'the fit, as the numbers it wrote onto each card',
+  only: PRINT_CARD_STATES,
+  async run(d) {
+    return {
+      text: await d.eachAt('.pcard:not(.blank) .pc-text', ['font-size']),
+      box: await d.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']),
+      art: await d.eachAt('.pc-art', ['height', '--artw', 'display']),
+      strip: await d.eachAt('.pc-strip .pc-box b', ['font-size']),
+      head: await d.eachAt('.pc-head', [])
+    };
+  }
+};
+
+/**
+ * The sheet under print media - the chrome hidden, the page unshadowed and
+ * page-broken, the print colours kept. Runs before the shots on the same
+ * page (leaving print media on would photograph the wrong medium), so it
+ * always restores the medium in a `finally`.
+ */
+const printMedia = {
+  name: 'the sheet under print media',
+  only: ['#/print/ci1-q1', '#/print/ci1-q1 ~ black and white', TEN, '#/print/nope'],
+  async run(d) {
+    await d.media('print');
+    try {
+      return {
+        header: await d.computed('header', ['display']),
+        nav: await d.computed('nav', ['display']),
+        footer: await d.computed('footer', ['display']),
+        skip: await d.computed('a.skip', ['display']),
+        bar: await d.computed('.printbar', ['display']),
+        body: await d.computed('body', ['background-color', 'color']),
+        main: await d.computed('main', [
+          'max-width',
+          'width',
+          'padding-top',
+          'padding-left',
+          'margin-left'
+        ]),
+        sheet: await d.computed('.psheet', [
+          'margin-top',
+          'margin-left',
+          'box-shadow',
+          'break-inside'
+        ]),
+        last: await d.computed('.psheet:last-child', ['height']),
+        next: await d.computed('.psheet[data-next]', ['break-before']),
+        card: await d.computed('.pcard', ['break-inside', 'print-color-adjust'])
+      };
+    } finally {
+      await d.media(undefined);
+    }
+  }
+};
+
+/** The set-link button, copied - the `copiedFilterLink` shape. Only the hash
+ *  is compared: the two apps live at different paths. */
+const copiedPrintLink = {
+  presses: true,
+  name: 'the print link, copied',
+  only: ['#/print/ci1-q1'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].printLink);
+    const clip = await d.clipboard();
+    const hash = clip.text?.slice(clip.text.indexOf('#')) ?? null;
+    return { hash };
   }
 };
 
@@ -1640,7 +1780,64 @@ const STATES = [
       await d.click('Выбрано');
     }
   },
-  { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
+  {
+    id: '#/print/ci1-q1',
+    route: '#/print/ci1-q1',
+    why: 'a print sheet: a loot card with its art beside a weapon card, seven blank places'
+  },
+  {
+    id: '#/print/ci1-q1 ~ black and white',
+    route: '#/print/ci1-q1',
+    why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: NINE,
+    route: NINE,
+    whole: true,
+    why: 'every card shape on one sheet: item, weapon, armour, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule'
+  },
+  {
+    id: NINE + ' ~ black and white',
+    route: NINE,
+    whole: true,
+    why: 'the same nine, the other layout',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: LONG,
+    route: LONG,
+    whole: true,
+    why: 'the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalogue'
+  },
+  {
+    id: LONG + ' ~ black and white',
+    route: LONG,
+    whole: true,
+    why: 'the same, with the black-and-white padding floor',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: TEN,
+    route: TEN,
+    why: 'a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"'
+  },
+  {
+    id: TOO_MANY_ID,
+    route: TOO_MANY,
+    why: 'the cap: 180 cards on twenty sheets and the red note about the one left out'
+  },
+  {
+    id: '#/print/nope',
+    route: '#/print/nope',
+    why: 'nothing to print: the heading, the note and the way to the lists'
+  }
 ];
 
 const SPECS = [
@@ -1681,7 +1878,11 @@ const SPECS = [
   typeRuns,
   foundRows,
   packedExpanded,
-  geometry
+  geometry,
+  sheetCounts,
+  cardFit,
+  printMedia,
+  copiedPrintLink
 ];
 
 /**

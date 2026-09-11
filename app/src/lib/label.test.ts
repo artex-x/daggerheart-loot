@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
-import { badgeKind, srcLabel, srcName, tableOf, whereFrom } from './label.js';
+import { badgeKind, printSrc, srcLabel, srcName, tableOf, whereFrom } from './label.js';
 import type { Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -69,6 +69,18 @@ describe('the book a record comes from', () => {
       expect(srcLabel(it, 'ru'), it.id).not.toBe('');
       expect(srcLabel(it, 'en'), it.id).not.toBe('');
     }
+  });
+});
+
+describe("the print card's source line", () => {
+  it('names only the book for a shelved record', () => {
+    expect(printSrc(rec({ src: 'core' }), 'ru')).toBe('Core');
+  });
+
+  it('names the community and then the book, because the card leaves the table', () => {
+    const c = rec({ src: 'community', community: 'Highborne', community_ru: 'Великородное' });
+    expect(printSrc(c, 'ru')).toBe('Сообщества · Великородное');
+    expect(printSrc(c, 'en')).toBe('Communities · Highborne');
   });
 });
 

@@ -308,6 +308,13 @@ const STATES: {
       );
       await press('Снаряжение');
     }
+  },
+  {
+    what: 'a print sheet switched to black and white',
+    route: '#/print/w1-w2',
+    enter: async () => {
+      await press('Чёрно-белая');
+    }
   }
 ];
 
@@ -354,7 +361,6 @@ const COVERED: Record<string, string> = {
   'Field.svelte': 'the number row on every roll page, and both pickers',
   'Icon.svelte': 'the card actions and the pin toggle',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
-  'LangSwitch.svelte': 'the frame, on every state here and in shell.test.ts',
   'NumberField.svelte': 'the number row on every roll page',
   'PageHead.svelte': 'the heading of every roll page, with both help states above',
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
@@ -362,6 +368,10 @@ const COVERED: Record<string, string> = {
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
+  'PrintCard.svelte': 'printPage.test.ts, and the black-and-white sheet below',
+  'PrintPage.svelte': 'printPage.test.ts, and the black-and-white sheet below',
+  'Seg.svelte':
+    'the frame, on every state here and in shell.test.ts; the tables view switch in tables.test.ts; the print sheet below',
   'RowMain.svelte':
     "tables.test.ts's sectioned-body axe check, and both list-page states below",
   'SearchBox.svelte':

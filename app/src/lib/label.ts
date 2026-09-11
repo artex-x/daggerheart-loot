@@ -85,6 +85,18 @@ export function srcName(key: string, lang: Lang): string {
   return named[key] ?? frameName(key, lang);
 }
 
+/**
+ * The source line on a print card, off app.js:954.
+ *
+ * A table row's badge names the community, because other communities sit
+ * beside it and the book is obvious. A card leaves the table and goes to the
+ * table alone, so a community record also names the book it came from.
+ */
+export function printSrc(it: Record_, lang: Lang): string {
+  const t = dict(lang);
+  return it.src === 'community' ? `${t.srcComm} · ${srcLabel(it, lang)}` : srcLabel(it, lang);
+}
+
 export function srcLabel(it: Record_, lang: Lang): string {
   const t = dict(lang);
   switch (it.src) {

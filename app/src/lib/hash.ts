@@ -20,7 +20,9 @@ export type Route =
   | { kind: 'section'; section: Section }
   | { kind: 'tables'; table: TableId | null; anchor: string; filter: FilterState }
   | { kind: 'record'; id: string }
-  | { kind: 'print'; ids: string[] }
+  /** `dropped` is how many known ids the cap threw away - the red note on
+   *  the bar counts them, off `printTooMany`. */
+  | { kind: 'print'; ids: string[]; dropped: number }
   | { kind: 'storedList'; listId: string }
   | { kind: 'sharedList'; payload: string; packed: boolean }
   /** Nothing could be read - the caller replaces it with the home section. */
@@ -50,17 +52,22 @@ export function legacySource(hash: string): { core: boolean; hnf: boolean } | nu
   return LEGACY[stripHash(hash)] ?? null;
 }
 
-/** Ids to print: known ones only, no repeats, never more than the limit. */
-export function printIds(segment: string, knows: (id: string) => boolean): string[] {
+/** Ids the address asks for: known ones only, no repeats, uncapped - off
+ *  `printAsked` in app.js. */
+export function printAsked(segment: string, knows: (id: string) => boolean): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const id of segment.split('-')) {
     if (!id || seen.has(id) || !knows(id)) continue;
     seen.add(id);
     out.push(id);
-    if (out.length === PRINT_MAX) break;
   }
   return out;
+}
+
+/** Ids to print: `printAsked`, capped at the limit. */
+export function printIds(segment: string, knows: (id: string) => boolean): string[] {
+  return printAsked(segment, knows).slice(0, PRINT_MAX);
 }
 
 /**
@@ -74,7 +81,11 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'sharedList', payload: h.slice(2), packed: true };
   }
   if (/^i\/[\w-]+$/.test(h)) return { kind: 'record', id: h.slice(2) };
-  if (/^print\/[\w-]+$/.test(h)) return { kind: 'print', ids: printIds(h.slice(6), knows) };
+  if (/^print\/[\w-]+$/.test(h)) {
+    const asked = printAsked(h.slice(6), knows);
+    const ids = asked.slice(0, PRINT_MAX);
+    return { kind: 'print', ids, dropped: asked.length - ids.length };
+  }
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
   if (/^l\/[A-Za-z0-9_-]+$/.test(h)) {
     return { kind: 'sharedList', payload: h.slice(2), packed: false };

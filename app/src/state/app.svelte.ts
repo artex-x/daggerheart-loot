@@ -277,8 +277,10 @@ export class AppState {
     return dict(this.lang);
   }
 
+  /** The one route kind that reads the data at all: print needs to know
+   *  which ids the cap threw away versus which were simply unknown. */
   get route(): Route {
-    return parseHash(this.hash);
+    return parseHash(this.hash, (id) => this.index?.byId.has(id) ?? false);
   }
 
   /** Which tab is lit. Nothing is lit on a record, a list page or a print

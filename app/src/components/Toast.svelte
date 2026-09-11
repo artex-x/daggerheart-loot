@@ -136,4 +136,11 @@
       transform: translate(-50%, 0);
     }
   }
+
+  /* off `#toast` in the live `@media print` block (style.css:1409) */
+  @media print {
+    .toast {
+      display: none;
+    }
+  }
 </style>

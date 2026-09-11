@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import {
   legacySource,
   parseHash,
+  printAsked,
   printHash,
   printIds,
   PRINT_MAX,
@@ -215,6 +216,32 @@ describe('print', () => {
       '-'
     );
     expect(printIds(many, knows)).toHaveLength(PRINT_MAX);
+  });
+
+  it('printAsked keeps every known, deduplicated id - uncapped', () => {
+    const many = Array.from({ length: PRINT_MAX + 20 }, (_, i) => 'ci' + String(i + 1)).join(
+      '-'
+    );
+    expect(printAsked('ci1-zzz-q26-ci1', knows)).toEqual(['ci1', 'q26']);
+    expect(printAsked(many, knows)).toHaveLength(PRINT_MAX + 20);
+  });
+
+  it('a print route counts what the cap dropped', () => {
+    const asked181 = Array.from({ length: 181 }, (_, i) => 'ci' + String(i + 1)).join('-');
+    const r181 = parseHash('#/print/' + asked181, knows);
+    expect(r181.kind).toBe('print');
+    if (r181.kind === 'print') {
+      expect(r181.ids).toHaveLength(180);
+      expect(r181.dropped).toBe(1);
+    }
+
+    const asked180 = Array.from({ length: 180 }, (_, i) => 'ci' + String(i + 1)).join('-');
+    const r180 = parseHash('#/print/' + asked180, knows);
+    expect(r180.kind).toBe('print');
+    if (r180.kind === 'print') {
+      expect(r180.ids).toHaveLength(180);
+      expect(r180.dropped).toBe(0);
+    }
   });
 });
 

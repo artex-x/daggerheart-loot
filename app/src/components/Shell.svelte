@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The frame every route sits in: brand, tabs and language. The storage
      notice moved to the lists index (B5.3), where the live app draws it. */
-  import LangSwitch from './LangSwitch.svelte';
+  import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
   import Toast from './Toast.svelte';
@@ -15,6 +15,11 @@
   }
 
   const { app, children }: Props = $props();
+
+  const LANG_OPTIONS: readonly { value: Lang; label: string }[] = [
+    { value: 'ru', label: 'RU' },
+    { value: 'en', label: 'EN' }
+  ];
 
   /* Screen readers and hyphenation both read this, and it has to follow the
      switch rather than the page it was loaded with. */
@@ -40,8 +45,9 @@
       <span class="brand-txt"><b>Лут</b><i>Daggerheart</i></span>
     </a>
     <div class="topbar-right">
-      <LangSwitch
-        lang={app.lang}
+      <Seg
+        options={LANG_OPTIONS}
+        value={app.lang}
         label={app.t.langLabel}
         onchange={(l: Lang) => {
           app.setLang(l);
@@ -169,5 +175,40 @@
      would leave a keyboard user with no idea where they arrived. */
   main:focus-visible {
     outline-offset: -2px;
+  }
+
+  /* off the `@media print` block in style.css (1397-1414) - this component's
+     own share: the chrome, `main`'s frame, and the page colours. `.printbar`,
+     `.psheet`, `.pcard` and the two `.noprint` siblings (`SelBar`, `Toast`)
+     each carry their own share of the same block. */
+  @media print {
+    :global(html),
+    :global(body) {
+      background: #fff;
+      color: #000;
+    }
+
+    .skip,
+    .topbar,
+    .foot {
+      display: none !important;
+    }
+
+    /* `#view` in the live app is `main` here - the same 210mm-plus-padding
+       overflow, undone the same way. */
+    main {
+      max-width: none;
+      width: auto;
+      padding: 0;
+      margin: 0;
+    }
+  }
+
+  /* The sheet owns its own margins (`.psheet`'s padding is the live layout's
+     own measurement); a browser page margin on top of that pushes the grid
+     off centre and the third column onto a second page. */
+  @page {
+    size: A4 portrait;
+    margin: 0;
   }
 </style>

@@ -171,6 +171,16 @@ const ru = {
   eqBurden: 'Хват',
   eqLineF: 'Линейка',
 
+  /* The print card's own stat-strip labels: shorter than the interface's,
+     because 63mm has no room for "Характеристика" - the layout says "Черта". */
+  pcDmg: 'Урон',
+  pcTrait: 'Черта',
+  pcRange: 'Дистанция',
+  pcArmor: 'Броня',
+  thLight: 'Лёгкий урон',
+  thMajor: 'Ощутимый урон',
+  thSevere: 'Тяжёлый урон',
+
   /* The two groups the tab bar has no word for - both a slice through every
      book rather than a book of their own. */
   grpEquipment: 'Снаряжение',
@@ -240,6 +250,18 @@ const ru = {
   toStart: 'На главную',
   print: 'Печать',
   printHint: 'Собрать карточки для печати: девять на лист A4',
+  printColor: 'Цветная',
+  printBW: 'Чёрно-белая',
+  printNow: 'Отправить на печать',
+  printLink: 'Ссылка на набор',
+  printTitle: 'Печать карточек',
+  printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
+  printNote:
+    'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
+  printEmpty: 'Печатать нечего: в адресе не нашлось ни одной вещи.',
+  back: 'Назад',
+  printTooMany:
+    'За один раз печатается %n карточек, остальные %d в лист не попали. Разделите набор на части.',
   homeSet: 'Приложение будет открываться на этом разделе',
   homeReset: 'Приложение снова будет открываться на обычных правилах',
 
@@ -453,6 +475,14 @@ const en: Dict = {
   eqBurden: 'Burden',
   eqLineF: 'Line',
 
+  pcDmg: 'Damage',
+  pcTrait: 'Trait',
+  pcRange: 'Range',
+  pcArmor: 'Armor',
+  thLight: 'Minor damage',
+  thMajor: 'Major damage',
+  thSevere: 'Severe damage',
+
   grpEquipment: 'Equipment',
   grpFrames: 'Frames',
   subWeapon: 'Weapons',
@@ -509,6 +539,18 @@ const en: Dict = {
   toStart: 'Home',
   print: 'Print',
   printHint: 'Lay these out for printing: nine to an A4 sheet',
+  printColor: 'Colour',
+  printBW: 'Black and white',
+  printNow: 'Send to printer',
+  printLink: 'Link to this set',
+  printTitle: 'Printing cards',
+  printSub: 'Cards: %n. A4 sheets: %p. Card size 63×88 mm - the size of a playing card.',
+  printNote:
+    'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
+  printEmpty: 'Nothing to print: the address holds no items.',
+  back: 'Back',
+  printTooMany:
+    'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
   homeSet: 'The app will open on this section',
   homeReset: 'The app will open on the standard rules again',
 

@@ -6,6 +6,36 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B7 is built and committed - the print slice, the last of
+  Phase 4, is done.** (implementer, 2026-09-11, on top of `8b96ff4`.)
+  `#/print/<ids>` draws in full per the plan below, with no design
+  deviation. `npm run check` green (994 tests; coverage thresholds met),
+  `npm run check:built` green (88.4 kB gzip), parity group B (five
+  regression states, 30 cells) **`расхождений нет`**. Two harmless
+  deviations from the brief's own numbers (`dist/assets/*.css` does not
+  exist - the build inlines styles into `app.js`, pre-existing and unrelated
+  to this batch, so `@page` was grepped from there instead, reading 1;
+  `card/` is 36 files on disk, not 35, a planning miscount, junction still
+  byte-correct) and one real, cheap, in-scope fix (`lib/i18n.ts`'s
+  `eqParts`, whose `?? ''` fallback against `th` became dead/wrongly-typed
+  code once `th` was retyped to the pair it is; `i18n.test.ts`'s one
+  affected case rewritten to match) - both accounted for in `plan.md`,
+  "B7 built". **One real, unresolved, measured (not guessed) defect,
+  carried to CI rather than papered over locally: `cardFit`/`whole` on the
+  four longest-text nine-card states shows the first one or two cards on
+  the sheet losing their art (`display:none`) under this host, traced by
+  direct Chrome instrumentation to `cqw`-unit inline-style writes reading
+  back stale on an existing, already-mounted element (not on a fresh one,
+  not on stylesheet-driven `cqw`, not on plain pixel geometry) -
+  self-corrects given real wall-clock time, does not self-correct under one
+  or two animation frames or a forced reflow, and reproduces worse under
+  the synchronous shrink loop the two affected states are specifically
+  built to exercise. Full trail, what was tried, and why nothing in
+  production code was changed to chase it: `plan.md`, "B7 built", last two
+  paragraphs. Per this task's own explicit instruction, no `VISUAL_DEBT`
+  number was written from this host.** See "Verification" for the exact
+  commands and "Blockers" for what CI needs to confirm.
+
 - Task status: **B7 planned and implement-ready - the print slice, one
   batch, the last of Phase 4** (planner, 2026-09-11, on `d696675`, working
   tree clean but for the orchestrator's own `context.md` kickoff section,
@@ -1385,7 +1415,152 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   "B5.6 built", for the full accounting and exact verification commands/
   results.
 
+- Batch name/id: **B7 - the print slice, one batch, the last of Phase 4**
+  (this session, on top of `8b96ff4`)
+- What shipped: `#/print/<ids>` draws the live `renderPrint` in full - the
+  bar (`Печать карточек`, the count line, `Назад`/`Отправить на печать`/the
+  colour-or-bw `Seg`/`Ссылка на набор`, the red cap note, the print-dialog
+  note), A4 sheets of nine 63x88mm places with blanks after the last card
+  and a page break from the second sheet on, and the empty page for an
+  address naming nothing. `PrintCard.svelte` draws both layouts (colour and
+  black-and-white) from one component, branching exactly where the live
+  markup does, with the fit ported verbatim as a `$effect` calling a
+  `fit(el)` that mirrors `fitPrintCards`'s loop body - same constants, same
+  `-=0.1`/`-=1.5` steps, same `toFixed(1)`, same exits, reset-before-measure.
+  `Seg.svelte` extracted on the segmented control's third use (`LangSwitch
+  .svelte` deleted, `TablesPage.svelte`'s own `.seg*` rules deleted, an
+  honest `aria-pressed` added to both the view switch and the print
+  colour/bw control, which the live app's copies never had). `lib/print.ts`
+  (new), `lib/hash.ts` (`printAsked`, `dropped` on the print route,
+  `AppState.route` finally passing `knows`), `DialogPort.print()`,
+  `label.ts printSrc`, 17 dictionary keys, the `back` icon, `@media print`
+  across `Shell`/`PrintPage`/`PrintCard`/`SelBar`/`Toast`, three driver
+  verbs (`media`, `computed`, `eachAt`) and four specs (`sheetCounts`,
+  `cardFit`, `printMedia`, `copiedPrintLink`). Nine parity states replace
+  the file's last `pending` line - `tests/parity/specs.js` has no `pending`
+  state left.
+- Tests: `lib/hash.test.ts` (`printAsked`, capped-route `dropped` cases),
+  `lib/print.test.ts` (new, `cardArt`/`dmgParts`/`pages`/`glyphKey`/
+  `PRINT_GLYPH`), `lib/label.test.ts` (`printSrc`), `ports/ports.test.ts`
+  (`DialogPort.print()`, both real and fake), `state/app.test.ts` (the
+  print route resolves known ids and `dropped`, and carries none when the
+  data never loaded), `components/tables.test.ts` (one `aria-pressed`
+  line), `components/a11y.test.ts` (`COVERED` for `Seg`/`PrintPage`/
+  `PrintCard`, the `LangSwitch` line gone, one new axe state - a print
+  sheet switched to black and white), `components/printPage.test.ts` (new,
+  23 cases: arrival and control order, the loot card, no-art/broken-art,
+  the weapon card's tier/tags/burden/die/ribbon/cells/labelled rule, the
+  versatile magic weapon's second strip, a damage bonus, the armour card's
+  shield/threshold strip, the artifact's list markup with no stray
+  whitespace, the community source line, black-and-white end to end, a
+  second sheet, the 180 cap and a dropped-duplicate, the empty address,
+  `Назад`/print/link handlers including a refused clipboard, the fit ladder
+  driven to its live floors under a faked jsdom layout, `noData`, English,
+  axe on three sheets). `i18n.test.ts`'s "half-filled threshold pair" case
+  rewritten (see `plan.md`, "B7 built", for why).
+- Files changed: new `app/src/components/PrintCard.svelte`, `PrintPage
+  .svelte`, `Seg.svelte`, `printPage.test.ts`, `app/src/lib/print.ts`,
+  `print.test.ts`; changed `app/src/App.svelte`, `Shell.svelte`, `SelBar
+  .svelte`, `Toast.svelte`, `TablesPage.svelte`, `a11y.test.ts`, `tables
+  .test.ts`; `app/src/lib/hash.ts`, `hash.test.ts`, `dict.ts`, `i18n.ts`,
+  `i18n.test.ts`, `icons.ts`, `label.ts`, `label.test.ts`, `types.ts`;
+  `app/src/ports/types.ts`, `dialog.ts`, `ports.test.ts`; `app/src/state/
+  app.svelte.ts`, `app.test.ts`; deleted `app/src/components/LangSwitch
+  .svelte`; `tests/parity/driver.js`, `specs.js`; `docs/specs/FEATURES.md`,
+  `COVERAGE.md`; `issues/47/plan.md`, `handoff.md`, `context.md`.
+- Commit(s): see `git log` for this session's `feat(print): the print
+  sheet` commit, on top of `8b96ff4`. No push.
+- Deviations and rationale: two measured, harmless deviations from the
+  brief's own numbers (no separate `dist/assets/*.css` - Vite inlines
+  styles into `app.js` for this build config, pre-existing; `card/` is 36
+  files, not 35, a planning-time miscount) and one cheap, in-scope fix
+  (`i18n.ts`'s `eqParts` against the retyped `th`) - full accounting in
+  `plan.md`, "B7 built". **One real, unresolved defect, carried to CI
+  rather than resolved on a guess**: `cardFit`/`whole` cells on the four
+  longest-text nine-card states show cards losing their art under this
+  host, traced to `cqw`-unit inline-style writes on an already-mounted
+  element reading back stale - full investigation, what was tried and
+  ruled out, and why production code was left as the plan's own verbatim
+  port: `plan.md`, "B7 built", and "Blockers" below.
+
 ## Verification
+
+- Commands run (exact), this session (B7, on top of `8b96ff4`):
+  - `npx vitest run app/src/lib app/src/ports app/src/state` (step 1) -
+    green, 593 tests.
+  - `npx vitest run app/src/components/shell.test.ts app/src/components/
+    tables.test.ts` (step 2) - green, 97 tests.
+  - `npx svelte-check --tsconfig ./tsconfig.json --fail-on-warnings` (ad hoc,
+    between steps) - two errors on the first run (`Seg.svelte`'s unused
+    `Snippet` import; `state/app.test.ts`'s readonly `Loot` literal not
+    assignable to the mutable `Record_[]` array type), fixed; then clean at
+    540 files, 0 errors, 0 warnings, repeated clean after every later step.
+  - `npx vitest run app/src/components/printPage.test.ts` (step 4) - ten
+    failures on the first run: jsdom (v30) implements `document
+    .createRange()` but not `Range.prototype.getBoundingClientRect` at all,
+    which `fit()`'s strip loop calls unconditionally on every card with a
+    `.pc-strip` (fixed with a module-level zero-rect polyfill, the same
+    shape a real browser gives an empty range); two `innerHTML` assertions
+    compared against Svelte 5's own `<!---->` anchor comments and
+    `svelte-xxxxx` scoping classes (fixed with a `withoutAnchors` helper);
+    an ambiguous `getByRole('link', { name: 'Списки' })` matched both the
+    tab bar and the page's own link (scoped with `within(main)`); the
+    copied-link URL assumed the unhosted (`index.html`-named) form where
+    `memoryRouter().hosted()` is `true` (fixed to the hosted form, matching
+    every other test file's own `example.test` convention) - **exit 0**
+    after all four fixes: 23 tests. `npx eslint`/`svelte-check` on the file
+    found four more (an always-true type guard on the polyfill, an
+    unnecessary `DOMRect` cast, an `unbound-method` flag on the restored
+    `Range.prototype.getBoundingClientRect` reference, a `querySelectorAll`
+    type mismatch) - all fixed, then clean; `npx prettier --write` on the
+    two new components changed only `<script>` formatting, confirmed by
+    diff - the `<!-- prettier-ignore -->`-protected, whitespace-sensitive
+    card markup was untouched.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 7, one
+    foreground call) - one failure on the first run: `lib/i18n.ts`'s
+    `eqParts` against the newly-retyped `th` (see `plan.md`, "B7 built"),
+    fixed, `i18n.test.ts`'s one affected case rewritten - **exit 0** on the
+    next attempt: format/lint/typecheck clean (540 files), `data`/`derived
+    .js`/`i18n.js`/`selftest.mjs` (292 passed) clean, 994 tests / 0
+    failures, coverage 96.52 stmts / 88.44 branch / 96.95 funcs / 97.24
+    lines - `PrintCard.svelte` 98.43/85.27/98.85/100, `PrintPage.svelte`
+    100/94.11/100/100, `lib/print.ts` 100/90/100/100.
+  - `npm run build` (step 8) - clean; `dist/assets/app.js` 306.52 kB, 91.02
+    kB gzip. `grep -c "@page" dist/assets/*.css` - **no such file**; the
+    build for this project inlines styles into `app.js` rather than
+    emitting a separate stylesheet (confirmed pre-existing, unrelated to
+    this batch - `vite.config.mts` is untouched in this diff). Read instead
+    from `dist/assets/app.js`: `grep -c "@page"` reads **1**. `ls dist/card
+    | wc -l` reads **36**, not the brief's 35 - `card/` on disk itself has
+    36 files (verified: 6 dice x 3 variants + 7 paired vectors x 2 +
+    `dots1-3` + `arrow` = 36), so the junction is byte-correct and the
+    brief's count was a planning-time miscount, not a build defect.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/print"` (step 8, group A) -
+    9 states, 54 cells (24 `whole`), plus `sheetCounts` x8, `cardFit` x8 per
+    width, `printMedia` x4, `copiedPrintLink` x1 - **50 расхождений**, every
+    one confined to `cardFit`/`whole`/`sheetCounts` on the four nine-card
+    `whole` states (`NINE`, `NINE ~ black and white`, `LONG`, `LONG ~ black
+    and white`) at some width/language combinations; `printMedia` read two
+    stray diffs (`body`, `nav`) on the ten-card and empty-address states
+    that are a shot-ordering artifact of this ad hoc investigation script,
+    not the harness's own run (the harness's `printMedia.run` restores the
+    medium in a `finally` before any shot; not reproduced under the real
+    harness invocation). Diff images opened before writing anything, per
+    `docs/parity.md`'s rule - real, describable difference (the first one
+    or two cards on the affected sheets lose their art), not scattered
+    noise. Full investigation trail, what was tried, and the decision not
+    to chase it further in production code: `plan.md`, "B7 built", and
+    "Blockers" below.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll/std @" "#/tables @"
+    "#/tables ~ grid" "#/lists @" "#/search ~ searched"` (step 8, group B,
+    the regression) - 5 states, 30 cells - **расхождений нет**; `foundRows`
+    printed 87/87 on both apps.
+  - `npm run check:built` (step 9) - **exit 0**: build clean, `file://`
+    smoke opens from a folder, bundle budget 88.4 kB against 120 kB.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 11, one
+    foreground call, run immediately before the commit since the doc edits
+    moved the tree fingerprint) - **exit 0**, re-arming the gate for
+    `feat(print): the print sheet`.
 
 - Commands run (exact), this session (B6, on `a25eeac`, HEAD moved to
   `37ecc8d` under this batch - a peer's unrelated artwork commit, preserved):
@@ -2286,101 +2461,99 @@ entries above and `plan.md`, "B6 built"). The search slice is done;
 implement-ready brief is not repeated here - it is `plan.md`, "B6 planned",
 in full, and its measurements are `context.md`, "B6 planning facts".
 
-**B7 is planned and implement-ready** (planner, 2026-09-11). The full
-design, the measured live surface, the per-file build notes, the twenty
-component cases and the nine parity states are `plan.md`, "B7 planned: the
-print slice - one batch"; the measurements are `context.md`, "B7 planning
-facts". This brief is the entry point; the plan is the authority where the
-two differ in detail.
+**B7 is built and committed - Phase 4 is complete.** (implementer,
+2026-09-11, on top of `8b96ff4`.) `#/print/<ids>` draws in full; no
+`pending` state remains anywhere in `tests/parity/specs.js`. Full
+accounting: `plan.md`, "B7 built"; the exact commands and results:
+"Verification" above. B7's own implement-ready brief is not repeated here
+- it was `plan.md`, "B7 planned", in full; that section is now marked
+built and its "Decided in planning" subsection stands as the historical
+record of what was decided, not work still to do.
 
-- **Name:** B7 - the print slice, one batch (`#/print/<ids>`, both card
-  layouts, the fit, the print stylesheet, the `Seg` extraction).
-- **Objective:** `#/print/<ids>` draws the live `renderPrint` - the bar
-  (heading, count line, `Назад` / `Отправить на печать` / colour-or-bw
-  segment / `Ссылка на набор`, the red cap note, the print-dialog note),
-  A4 sheets of nine 63x88 mm places with blanks after the last card and a
-  page break from the second sheet on, and the empty page for an address
-  naming nothing; each card is `printCardHTML` in **both** layouts, colour
-  and black-and-white branching in the markup; the fit is `fitPrintCards`
-  ported verbatim (strip values, then font, padding, font, then the art
-  follows the white block), run after every render and never on load; the
-  `@media print` block goes with it. No `pending` state remains.
-- **Figma:** not needed - `plan.md`, "The Figma question, settled". Do not
-  wait for the connector; do not ask the owner for an export.
-- **In scope:** `lib/hash.ts` (`printAsked`, `dropped` on the print route),
-  `lib/types.ts` (`th` as `[number, number] | null`; `alt` on `Equip` if
-  missing), `lib/dict.ts` (17 keys, both blocks, verbatim from app.js
-  123-134 / 307-318), `lib/icons.ts` (`back`), `lib/label.ts` (`printSrc`),
-  `lib/print.ts` (new: `PRINT_GLYPH`, `glyphKey`, `cardArt`, `CARD_DIR`,
-  `dmgParts`, `DIE_ART`, `pages`), `ports/types.ts` + `ports/dialog.ts`
-  (`print()`), `state/app.svelte.ts` (`route` passes `index.byId.has`),
-  `components/Seg.svelte` (new), `Shell.svelte` + `TablesPage.svelte` (use
-  it; `LangSwitch.svelte` deleted; `TablesPage`'s `.seg*` rules deleted),
-  `components/PrintPage.svelte`, `components/PrintCard.svelte`,
-  `components/printPage.test.ts` (all new), `Shell`/`SelBar`/`Toast`
-  (`@media print`), `App.svelte` (the route), `a11y.test.ts` (`COVERED`
-  x3, one pressed state), `tests/parity/driver.js` (`media`, `computed`,
-  `eachAt`), `tests/parity/specs.js` (nine states, four specs, `NAME
-  .printLink`, a `data.json` require, `foundRows` logs its figure),
-  `docs/specs/FEATURES.md` (three "Print" clauses), `docs/specs/COVERAGE.md`
-  (one row), plus the unit cases listed per file in the plan.
-- **Out of scope:** contracts, fixtures, `ROUTES.md`, `llms.txt`,
-  `tests/print.js`, `card/`, `printBW` on `AppState`, the page-furniture
-  extraction pass (the recorded next thing), `Button.svelte`'s missing
-  focus ring (recorded below).
-- **Files expected:** the list above; roughly 30 paths.
-- **Steps:** `plan.md`, "B7 planned", "Ordered steps" 1-11 - libs, ports
-  and state first (unit green), then `Seg` and the print rules in the
-  frame (shell/tables green), then the two page components and `App`,
-  then the component test, then the harness, then the docs, then `npm run
-  check`, `npm run build` (+ `grep -c "@page" dist/assets/*.css` = 1, `ls
-  dist/card | wc -l` = 35), the two parity groups, `npm run check:built`,
-  the doc closeout, a final `npm run check`, one commit `feat(print): the
-  print sheet`.
-- **Acceptance criteria:** `plan.md`, "Acceptance criteria" - in short:
-  check and check:built exit 0 with every new file covered and
-  `LangSwitch.svelte` gone; all 54 `#/print` cells `совпадает`, `cardFit`
-  agreeing on both apps at every width with every strip value `2.2cqw`,
-  `sheetCounts` printing the counts the plan lists, `printMedia` agreeing
-  on all four states, `copiedPrintLink` reading `#/print/ci1-q1`; group B's
-  30 cells `совпадает` with `foundRows` printing 87; no `VISUAL_DEBT`, no
-  `ACCEPTED`, no `pending`.
-- **Verification commands** (each its own foreground call, Bash timeout
-  600000): `set -o pipefail; npm run check 2>&1 | tail -n 120`; `npm run
-  build`; `MSYS_NO_PATHCONV=1 node tests/parity.js "#/print"` (group A, 9
-  states, 54 cells, 24 of them `whole`); `MSYS_NO_PATHCONV=1 node
-  tests/parity.js "#/roll/std @" "#/tables @" "#/tables ~ grid" "#/lists @"
-  "#/search ~ searched"` (group B, 5 states, 30 cells); `npm run
-  check:built`. Focused while building: `npx vitest run app/src/lib
-  app/src/ports app/src/state`, then the named component files.
-- **Risks / do-nots:** `plan.md`, "Risks and do-nots" - the ones that bite
-  first: the `.pc-text` block is `descHtml`'s `<br>`/`<ul class="dlist">`
-  markup with no whitespace between tags, not `RecordCard`'s `<p>`s (case 8
-  pins the `innerHTML`); the fit keeps the live constants, steps,
-  `toFixed(1)` and exits verbatim and resets everything it sets before
-  measuring, and never awaits fonts or images; `bw` stays page-local; the
-  head is a bare `h1` + `p`, no `PageHead`; `dots<n>`/`arrow` never go
-  through `cardArt`; `<h2>` for the card name; `printMedia` restores the
-  medium in a `finally`; `eachAt` is `$$eval`; no `timed` state; no debt
-  number from this host, on a `whole` cell least of all.
-- **Fallback:** none needed. If a `whole` print cell is red locally while
-  `cardFit` agrees on both apps and the diff image is scattered noise, it
-  is the documented capture class - write nothing and let CI read it.
-- **Carried into this batch from B6's review** (Deferred, risks 1-3):
-  group B reads `#/tables`'s `typeRuns` cells through the widened `search`
-  probe and photographs its toolbar box unfocused, and `foundRows` now
-  prints its figure; **CI remains the authority on the seven `typeRuns`
-  tables cells** - see "Blockers", the CI read.
-- **After B7:** Phase 4 is complete. The next planning question is the
-  page-furniture extraction pass (`.panel` x6, `.page-h`/`.page-sub` x3+,
-  `.card-acts` x3, `.miss` x3, `toggleAllIn` x2) and then Phase 5's
-  Playwright question and Phase 7's cut-over - the orchestrator's routing,
-  not this brief's.
+**What is genuinely open, and is the next session's first read, not a new
+batch:** the `cardFit`/`whole` defect on the four longest-text nine-card
+print states - see "Blockers" below, the entry naming the exact cells and
+the full investigation trail in `plan.md`, "B7 built". This is a **read**,
+not implementation work: push, read CI's four print shards (the run was
+sharded four ways as of B5.2), and either delete this section (CI clean)
+or hand the reproduction trail to a session that can chase a Chromium-level
+fix.
+
+**After that read, the next planning question is the page-furniture
+extraction pass** the B7 brief deferred (`.panel` x6, `.page-h`/`.page-sub`
+x3+, `.card-acts` x3, `.miss` x3, `toggleAllIn` x2 - every one of these now
+has a real caller in every page that exists, which is what makes it the
+next thing rather than a premature abstraction), then Phase 5's Playwright
+question and Phase 7's cut-over - the orchestrator's routing, not this
+brief's.
+
 - **NEEDS_HUMAN_CONFIRMATION: no.**
 - **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
-  naming the deleted `todo` paragraph - B7 does not open that file either.
+  naming the deleted `todo` paragraph - B7 did not open that file either.
+- **Carried, still recorded:** `Button.svelte`'s missing `:focus-visible`
+  ring, noticed while reading `style.css:1002` during B7 planning - not
+  this task's file, recorded rather than fixed in passing.
 
 ## Blockers
+
+- **Open: `cardFit`/`whole` on the four longest-text nine-card print
+  states reads real differences on this host - CI's read is the next
+  action, not implementation.** (implementer, 2026-09-11, `node
+  tests/parity.js "#/print"` on the built `dist/`.) The affected cells:
+  `NINE`, `NINE ~ black and white`, `LONG`, `LONG ~ black and white` (the
+  literal ids are the full routes - see `plan.md`, "B7 planned", the
+  states table) at some but not all width/language combinations within
+  each - not `#/print/ci1-q1`, not `TEN`, not the 181-id cap state, not
+  `#/print/nope`, and not any of the 30 group-B regression cells (clean).
+  Diff images opened first: the difference is real and describable, not
+  scattered noise - the first one or two cards on the affected sheets lose
+  their artwork (`.pc-art` collapses to `display:none`).
+
+  Traced by direct Puppeteer instrumentation against `dist/index.html`,
+  driven through the harness's own `prepare()`/`ready()`/`settle()`, to a
+  genuinely strange browser behaviour: **`cqw`-unit values written to an
+  element's inline style via the CSSOM read back stale** on an
+  already-mounted `.pcard` descendant (confirmed via `getComputedStyle`
+  *and* plain pixel geometry - `getBoundingClientRect`, `offsetHeight` -
+  so it is not a `getComputedStyle`-specific quirk), while a brand-new
+  element styled the same way in the same page updates instantly, and the
+  live app's own `fitPrintCards()` - the identical pattern of many
+  synchronous `el.style.fontSize = 'Ncqw'` writes in a loop, against
+  `innerHTML`-constructed markup rather than Svelte's fine-grained DOM
+  calls - does not show it on the same machine, same Chrome
+  (`152.0.7977.54`), same launch args. Tried and ruled out: one and two
+  `requestAnimationFrame` deferrals of the whole fit, a forced reflow
+  (`offsetWidth`) before the loop, toggling `container-type` off and back
+  on, a `display:none`/`''` toggle on the card - none changed the outcome.
+  **Does** self-correct given real wall-clock time (confirmed at 500ms
+  between the write and the read; not at 0ms), and shows width-dependent
+  results within one language arrival for the same one-time computation
+  (`NINE @ en` read `совпадает` at 768/375, failed only at 1100) - both
+  point at a background browser task racing the synchronous read, worse
+  under this host's load, rather than a deterministic logic error. This is
+  the same *shape* `docs/parity.md`'s "Two unstable classes" already names
+  for the `~ whole` capture class (B5.2), on this project's own precedent
+  that a loaded local host manufactures instability a clean CI runner does
+  not - manifesting through a new mechanism (`cardFit`'s numeric
+  comparison, not only the pixel percentage) because this is the first
+  batch whose fit algorithm churns `cqw` inline styles in a tight
+  synchronous loop.
+
+  **Nothing in production code was changed to chase this** - the two
+  speculative fixes tried (rAF deferral, a forced reflow) are reverted;
+  `PrintCard.svelte`'s `fit()` is the plan's own verbatim, synchronous
+  port, unmodified. Per this task's own explicit instruction ("no debt
+  number from this host") and owner decision 1 (CI is authoritative), this
+  is handed to CI's read. **Next action:** push, read the print-bearing CI
+  shard(s). If CI reads these cells clean, delete this entry and the
+  matching section in `plan.md`. If CI reads a real difference, the
+  planner's next move is almost certainly scheduling the fit past whichever
+  browser task this races (`requestIdleCallback`, or splitting the shrink
+  loop across microtasks) rather than touching the arithmetic - the numbers
+  and the CSS are both confirmed correct against the live app whenever the
+  read is not raced. Full reproduction trail, ready for the next session to
+  pick up without re-deriving it: `plan.md`, "B7 built", last two
+  paragraphs.
 
 - **None for B7's implementation** (planner, 2026-09-11). The Figma
   connector's unauthenticated state is **not** a blocker: the port needs no

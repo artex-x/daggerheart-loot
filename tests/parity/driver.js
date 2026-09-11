@@ -582,6 +582,57 @@ function makeDriver(page, target) {
         out.docHeight = round1(document.documentElement.scrollHeight);
         return out;
       }, probes);
+    },
+
+    /** Switches the emulated media type - `'print'` to see the sheet as a
+     *  printer would, `undefined` to switch back before the next shot. Runs
+     *  before the shots on the same page: leaving print media on would
+     *  photograph the wrong medium. */
+    media(type) {
+      return page.emulateMediaType(type);
+    },
+
+    /**
+     * The first match's computed style, for the named properties - `null`
+     * when nothing matches, the same policy `typeAt`/`rectsAt` document: a
+     * class the rewrite renamed reports `null` against a real value and
+     * fails loudly rather than silently comparing nothing to nothing.
+     */
+    computed(selector, props) {
+      return page.evaluate(
+        (sel, keys) => {
+          const el = document.querySelector(sel);
+          if (!el) return null;
+          const c = getComputedStyle(el);
+          const out = {};
+          for (const k of keys) out[k] = c.getPropertyValue(k);
+          return out;
+        },
+        selector,
+        props
+      );
+    },
+
+    /**
+     * Every match's rect and its own inline style properties - what the
+     * print fit sets and nothing else records: `fitPrintCards` writes its
+     * decision straight onto `style`, never into a class, so the inline
+     * value is the only place a divergent fit shows up.
+     */
+    eachAt(selector, props) {
+      return page.$$eval(
+        selector,
+        (els, keys) => {
+          const round1 = (n) => Math.round(n * 10) / 10;
+          return els.map((el) => {
+            const r = el.getBoundingClientRect();
+            const style = {};
+            for (const k of keys) style[k] = el.style.getPropertyValue(k);
+            return { x: round1(r.x), y: round1(r.y), w: round1(r.width), h: round1(r.height), style };
+          });
+        },
+        props
+      );
     }
   };
   return d;

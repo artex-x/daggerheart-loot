@@ -312,6 +312,20 @@ describe('confirming', () => {
   it('answers yes by default', () => {
     expect(fakeDialog().confirm('sure?')).toBe(true);
   });
+
+  it("hands the print button's press to the window's own print dialog", () => {
+    let calls = 0;
+    const win = { print: () => calls++ } as unknown as Window;
+    browserDialog(win).print();
+    expect(calls).toBe(1);
+  });
+
+  it('counts a print press rather than asking anything', () => {
+    const d = fakeDialog();
+    d.print();
+    d.print();
+    expect(d.printed).toBe(2);
+  });
 });
 
 describe('dragging', () => {

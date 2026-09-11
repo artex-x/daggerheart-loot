@@ -123,7 +123,7 @@ export function eqParts(
   out.push(`${labels.tier} ${String(e.tier)}`);
 
   if (e.t === 'armor') {
-    if (e.th) out.push(`${labels.thresholds} ${e.th[0] ?? ''}/${e.th[1] ?? ''}`);
+    if (e.th) out.push(`${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}`);
     if (e.as != null) out.push(`${labels.armorScore} ${String(e.as)}`);
   } else {
     /* A magic weapon stays a magic weapon even when its damage can be physical,

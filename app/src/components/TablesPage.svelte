@@ -29,6 +29,7 @@
   import RecordModal from './RecordModal.svelte';
   import SearchBox from './SearchBox.svelte';
   import SectionHead from './SectionHead.svelte';
+  import Seg from './Seg.svelte';
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
@@ -81,6 +82,10 @@
      remembered, and neither touches the address. */
   let q = $state('');
   let view = $state<'list' | 'grid'>('list');
+  const VIEWS = $derived([
+    { value: 'list', label: t.viewList },
+    { value: 'grid', label: t.viewGrid }
+  ] as const);
 
   /* An open modal belongs to the page it was opened on, the same as the
      selection - but the selection now lives on `app` (the bar that draws it
@@ -428,22 +433,15 @@
     <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
       <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
     </Button>
-    <div class="seg small" role="group" aria-label={t.view}>
-      <button
-        type="button"
-        class:on={view === 'list'}
-        onclick={() => {
-          view = 'list';
-        }}>{t.viewList}</button
-      >
-      <button
-        type="button"
-        class:on={view === 'grid'}
-        onclick={() => {
-          view = 'grid';
-        }}>{t.viewGrid}</button
-      >
-    </div>
+    <Seg
+      small
+      options={VIEWS}
+      value={view}
+      label={t.view}
+      onchange={(v: 'list' | 'grid') => {
+        view = v;
+      }}
+    />
   </div>
 
   <FilterBar
@@ -621,52 +619,6 @@
 
     .toolbar :global(.btn) {
       padding: 0 13px;
-    }
-  }
-
-  /* off `.seg` and `.seg.small` in style.css - LangSwitch draws the same rule
-     for the language pair; this is the segmented control's second shape and
-     not yet worth extracting on its own. */
-  .seg {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 3px;
-  }
-
-  .seg button {
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    border-radius: 999px;
-    font-weight: 650;
-    letter-spacing: 0.05em;
-    transition: 0.16s;
-  }
-
-  .seg.small {
-    align-self: stretch;
-  }
-
-  .seg.small button {
-    padding: 4px 12px;
-    font-size: 12px;
-  }
-
-  .seg button.on {
-    background: var(--gold);
-    color: #1a1206;
-  }
-
-  .seg button:not(.on):hover {
-    color: var(--txt);
-  }
-
-  @media (max-width: 600px) {
-    .seg button,
-    .seg.small button {
-      padding: 8px 14px;
     }
   }
 

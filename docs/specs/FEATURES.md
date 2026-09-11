@@ -116,6 +116,12 @@ Six modes. Each keeps its own input in memory only.
 - Fitting is measured in the browser after render: rules text steps its font
   down, then the top padding, then the stat values, and text width is measured
   with a `Range` because `text-overflow` hides overflow from `scrollWidth`.
+- An address naming nothing the catalogue knows draws the heading, the "nothing
+  to print" note and a link back to the lists - no bar, no sheet.
+- More than 180 known ids prints the first 180 and a red note counting how many
+  did not make it onto a sheet, telling the reader to split the set in two.
+- `Назад` steps back in browser history; with nowhere to step back to it goes to
+  `#/lists` instead.
 
 ## Chrome
 

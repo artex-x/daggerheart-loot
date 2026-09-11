@@ -9,6 +9,7 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
+import type { Loot } from '../lib/data.js';
 import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
@@ -180,6 +181,33 @@ describe('which tab is lit', () => {
     expect(new AppState(at('#/print/w1,w2')).section).toBe(null);
     expect(new AppState(at('#/lists/abc')).section).toBe(null);
     expect(new AppState(at('#/l/eyJ')).section).toBe(null);
+  });
+});
+
+describe('the print route', () => {
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 }
+      ]
+    }
+  };
+
+  it('resolves the ids the data knows, and counts nothing dropped', () => {
+    const app = new AppState(at('#/print/ci1-zzz', { data: { load: () => loot } }));
+    const r = app.route;
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') {
+      expect(r.ids).toEqual(['ci1']);
+      expect(r.dropped).toBe(0);
+    }
+  });
+
+  it('carries no ids when the data never loaded', () => {
+    const app = new AppState(at('#/print/ci1', { data: { load: () => null } }));
+    const r = app.route;
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') expect(r.ids).toEqual([]);
   });
 });
 

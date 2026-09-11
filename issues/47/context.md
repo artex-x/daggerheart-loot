@@ -1696,3 +1696,50 @@ motion, `ready()`'s waits, 250ms after each press) of
 - Wall clock: group A `"#/print"` is 9 states / 54 cells, 24 `whole`;
   group B is 5 states / 30 cells. Each fits one foreground call; do not
   merge them.
+
+## State at the B7 implement kickoff (orchestrator, 2026-09-11)
+
+- HEAD `8b96ff4` (`docs(issue-47): B7 planned - the print slice, one batch`),
+  working tree **clean** - verified at kickoff, and it matches what
+  `handoff.md` records. `d696675` below it is B6's review close-out. No
+  foreign commit moved HEAD since the planning pass.
+- Nothing heavy is running on this tree: no `chrome.exe`, no parity run, no
+  vitest. The node processes present are the desktop app's own MCP servers.
+- **Next action: one implementer dispatch for B7** - the batch is
+  implement-ready (`handoff.md`, "Next batch"; `plan.md`, "B7 planned"),
+  `NEEDS_HUMAN_CONFIRMATION: no`, blockers none. Tier: economy default
+  (sonnet) - no prior implement failed on this batch, and B5.x/B6 all
+  landed at that tier.
+- **Figma stays unauthenticated in this session** and stays a non-blocker:
+  the planner settled that the port needs no export ("B7 planning facts"
+  above). Do not wait on the connector.
+- No check was run at kickoff: clean tree at a committed boundary, and the
+  implementer's own `npm run check` is what arms the commit gate for the
+  tree it actually builds.
+- Review is expected after this batch: new UI, nine new parity states, and
+  `tests/parity/specs.js` changes all match the risk rules.
+
+## B7 built (implementer, 2026-09-11) - one durable fact for the next session
+
+**A new instability class, discovered while verifying group A, worth
+knowing before re-deriving it:** on this host, `cqw`-unit values written to
+an already-mounted element's inline style via the CSSOM (exactly what
+`fitPrintCards`'s port does, in a loop) can read back stale for a
+measurable window of real time - confirmed via `getBoundingClientRect`/
+`offsetHeight`, not only `getComputedStyle`, so it is not a computed-style-
+specific quirk. A brand-new element responds instantly; the live app's
+identical loop-of-inline-writes pattern, against `innerHTML`-built markup,
+does not show it. Self-corrects given ~500ms of real wall-clock time; does
+not self-correct under one or two `requestAnimationFrame`s, a forced
+reflow, or a `container-type`/`display` toggle. Affects only the states
+whose text is long enough to drive many loop iterations (B7's `NINE`/
+`LONG` states, both layouts) - this is the first batch whose fit algorithm
+churns a `cqw` inline style synchronously in a tight loop, which is why no
+earlier batch surfaced it. Read as the same *shape* as the already-
+documented "unstable capture" class (`docs/parity.md`, "Two unstable
+classes"; B5.2), on this project's own precedent that a loaded local host
+manufactures instability a clean CI runner does not - just reached through
+a new mechanism (`cardFit`'s numeric comparison) rather than only a pixel
+percentage. Full reproduction trail and what was tried: `plan.md`, "B7
+built"; the open action: `handoff.md`, "Blockers", first entry - push and
+read CI's print shard(s), do not re-investigate locally before that.

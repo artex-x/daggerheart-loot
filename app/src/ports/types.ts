@@ -144,14 +144,17 @@ export interface CompressPort {
 /* ---------- confirming ---------- */
 
 /**
- * A yes/no question the browser owns, off `window.confirm`.
+ * The browser's own dialogs: a confirm, and the print dialog.
  *
- * Deleting a list is the only caller: `confirm()` blocks the calling script
- * until it is answered, which a headless driver cannot do without help, and a
- * test cannot exercise as a global at all.
+ * Deleting a list is `confirm`'s only caller: `confirm()` blocks the calling
+ * script until it is answered, which a headless driver cannot do without
+ * help, and a test cannot exercise as a global at all. `print` is the same
+ * kind of seam - `window.print()` opens UI this app does not control - so it
+ * lives on this port rather than opening a new `Env` key for one method.
  */
 export interface DialogPort {
   confirm(message: string): boolean;
+  print(): void;
 }
 
 /* ---------- dragging ---------- */

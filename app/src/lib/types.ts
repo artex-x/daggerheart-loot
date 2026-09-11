@@ -80,9 +80,12 @@ export interface Equip {
   bu?: 1 | 2;
   /** Armour Score and base thresholds - armour only. */
   as?: number | null;
-  th?: string | null;
+  /** Minor and major damage thresholds - the pair the data actually carries. */
+  th?: readonly [number, number] | null;
   /** `id` of the first item in the upgrade line; empty on one-offs. */
   line?: string;
+  /** A versatile weapon's second stat block - the print card draws both. */
+  alt?: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>;
 }
 
 /**

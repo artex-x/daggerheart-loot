@@ -164,11 +164,14 @@ describe('a stat block with gaps in it', () => {
     expect(parts.join(' ')).not.toContain('undefined');
   });
 
-  it('prints a half-filled threshold pair without inventing the other half', () => {
-    const parts = eqParts(gear({ t: 'armor', tier: 1, th: '5' }), 'ru', LABELS.ru, {
+  it('prints a threshold pair, minor and major separated by a slash', () => {
+    /* The data always carries both halves of the pair or neither - `th` is
+       typed as the pair it is - so there is no half-filled case to defend
+       against, unlike `as`, which is a lone number and can be zero alone. */
+    const parts = eqParts(gear({ t: 'armor', tier: 1, th: [5, 11] }), 'ru', LABELS.ru, {
       noType: true
     });
-    expect(parts.join(' ')).toContain(`${LABELS.ru.thresholds} 5/`);
+    expect(parts.join(' ')).toContain(`${LABELS.ru.thresholds} 5/11`);
     expect(parts.join(' ')).not.toContain('undefined');
   });
 

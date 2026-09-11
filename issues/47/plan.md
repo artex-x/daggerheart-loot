@@ -9328,6 +9328,126 @@ harness verbs are three, all land with the specs that use them.
 - **No mock.** The page is transcribed from `app.js`/`style.css` line by
   line and measured live; the harness is the proof.
 
+### B7 built: the print slice (implementer, 2026-09-11)
+
+Built to the plan above with no design deviation. `#/print/<ids>` draws in
+full: the bar, both card layouts, the sheet arithmetic, `@media print`, and
+the fit ported verbatim. `npm run check` is green (994 tests, coverage
+thresholds met - `PrintCard.svelte` 98.4/85.3/98.9/100, `PrintPage.svelte`
+100/94/100/100, `print.ts` 100/90/100/100), `npm run check:built` is green
+(88.4 kB gzip, under budget), and parity group B (five regression states,
+30 cells) reads **`расхождений нет`** - the `Seg` extraction touched nothing.
+
+**Two measured deviations from the brief's own numbers, neither a defect:**
+
+1. **`dist/assets/*.css` does not exist; `grep -c "@page" dist/assets/app.js`
+   is 1.** Vite's build for this project (iife format, no code splitting,
+   `base: './'`) inlines the component styles into the JS bundle rather than
+   emitting a separate stylesheet - true before this batch and unrelated to
+   it (verified: no `vite.config.mts` change in this diff). The `@page`
+   at-rule survives, once, inside the bundle - the only thing the check was
+   ever verifying. Read it from `app.js`, not from a CSS file that the build
+   does not produce.
+2. **`ls dist/card | wc -l` is 36, not 35.** `card/` on disk has 36 files -
+   6 dice x 3 variants (phy/mag/bw) = 18, 7 paired vectors x 2 (banner,
+   burden-1, burden-2, ribbon, ribbon-mag, thbox, shield) = 14, plus
+   `dots1-3` and `arrow` = 4. 18+14+4 = 36. The junction (`dist/card` ==
+   `card/`, byte for byte) is correct; the plan's count was off by one at
+   planning time.
+
+**One real defect found and fixed in a touched path**, per CLAUDE.md: `lib/
+i18n.ts`'s `eqParts` read `e.th[0] ?? ''`/`e.th[1] ?? ''` against a `th`
+typed as `string | null` (a leftover from before this batch retyped it to
+the pair the data actually is, `readonly [number, number] | null`) - once
+retyped, the `?? ''` became dead code, indexing was `number`, not `string`,
+and `npm run lint` failed loudly (`restrict-template-expressions`,
+`no-unnecessary-condition`). Fixed to `String(e.th[0])`/`String(e.th[1])`;
+`i18n.test.ts`'s "half-filled threshold pair" case, which had been testing
+`th: '5'` (a string - a shape the type no longer allows and the data never
+had), is rewritten as "a threshold pair, minor and major separated by a
+slash" against `th: [5, 11]`, since a half-filled pair cannot occur once
+`th` is typed as the pair it is.
+
+**One genuine defect, unresolved, found by measurement rather than
+guessed - do not write a `VISUAL_DEBT` number for it from this host.**
+Parity group A (`node tests/parity.js "#/print"`, 9 states, 54 cells) reads
+clean except the `cardFit`/`whole`/`sheetCounts` cells on the four nine-card
+states (`NINE`, `NINE ~ black and white`, `LONG`, `LONG ~ black and white`)
+at several width/language combinations - not the five- and ten-card states,
+not the cap state, not the empty page: **exactly the four states whose
+`fit()` loop runs the most iterations** (the longest rules text in the
+catalogue, the whole point `LONG`'s `why` names). The diff images
+(`_print_voa2_a3…_ru_1100-{legacy,next}.png`) show a real, describable
+difference: on `next`, the first one or two cards on the sheet lose their
+artwork entirely (`.pc-art` gets `display:none` and a zero rect) while
+every other card on the same sheet, and every card on the shorter `NINE`/
+`ci1-q1`/`TEN` states, render correctly.
+
+Read by direct instrumentation (a standalone Puppeteer script against
+`dist/index.html`, driven through the harness's own `prepare()`/`ready()`/
+`settle()`), not guessed:
+
+- `fit()`'s own `.pc-content`/`.pc-art` `offsetTop` reads are `0` for
+  exactly the affected cards at the moment `fit()` runs, which is what the
+  reset math (`line = 0 + pad`, `top = 0`) turns into the observed
+  `height:14cqw; --artw:7cqw; display:none`.
+- This is not a container-query-establishment race in the usual sense:
+  `.pcard`'s own `clientWidth`/`getBoundingClientRect()` read correctly
+  (238px) throughout. What is wrong is specifically **`cqw`-unit values
+  written to an element's inline style via the CSSOM** (`el.style.fontSize
+  = '…cqw'`, exactly what `fit()` does in its loops) - reading them back,
+  even well after the loop and even via plain pixel geometry
+  (`getBoundingClientRect`, `offsetHeight`, not only `getComputedStyle`),
+  returns a value consistent with the *previous* style rather than the one
+  just written. A **brand-new element** created and styled the same way in
+  the same page responds instantly and correctly; an **existing,
+  already-mounted** `.pcard` descendant does not, and does not self-correct
+  under `requestAnimationFrame` (tried one and two frames), a forced reflow
+  on the container (`offsetWidth`/`offsetHeight`), a `display:none`/`''`
+  toggle on the card, or toggling `container-type` off and back on -
+  **but does self-correct given enough real wall-clock time** (confirmed at
+  500ms between the write and the read, across two separate `page.evaluate`
+  calls; not confirmed at 0ms). The live app's `fitPrintCards()` runs the
+  identical pattern - many synchronous `el.style.fontSize = 'Ncqw'` writes
+  in a tight loop, read back with `Range.getBoundingClientRect()` - against
+  `innerHTML`-constructed markup, and does not show this on the same
+  machine, same Chrome build (`152.0.7977.54`), same launch args
+  (`--no-sandbox --disable-dev-shm-usage --disable-gpu`).
+- Every other read this batch depends on (`.pc-tag`/`.pc-name`'s
+  stylesheet-driven `cqw`, `.pcard`'s own geometry, `foundRows`, all of
+  group B) reads correctly and identically on both apps, including on the
+  very same page as the broken cells - this is not a wider container-query
+  or build problem, and not a CSS porting error: the `.pc-*` block is a
+  verbatim copy, unedited from what B7 planned.
+- The symptom is worse under a synchronous JS loop that churns a `cqw`
+  inline style many times in one task (the fit ladder's own shrink loop,
+  which is exactly what the two affected states are built to exercise) and
+  is not observed on states whose text needs one or zero shrink steps. It
+  also does not reproduce identically at every width within one arrival
+  (`NINE @ en` read `совпадает` at 768/375 and failed only at 1100 - the
+  same one-time computation, read at three different moments during the
+  width sweep's own shot-retry wall-clock time), which is inconsistent with
+  a deterministic logic error and consistent with a background browser task
+  racing the synchronous read, worse under this host's load - **the same
+  shape `docs/parity.md`'s "Two unstable classes" already names for the
+  `~ whole` capture class, on this project's own precedent that a loaded
+  local host manufactures instability a clean CI runner does not.**
+
+Nothing in `PrintCard.svelte`'s `fit()` was changed to chase this: two
+speculative fixes (deferring the effect one and two `requestAnimationFrame`s;
+forcing a reflow before the loop) were tried, built, and measured against
+the live reproduction, and neither changed the outcome - both are reverted,
+and the shipped code is the plan's own verbatim, synchronous port with
+nothing added. Per this task's own explicit instruction ("no debt number
+from this host") and owner decision 1 (CI is authoritative for what the
+rewrite draws), this is handed to CI's read rather than resolved
+unilaterally on a guess. If CI reads these cells clean, this section can be
+deleted; if CI reads a real difference, the fix is almost certainly in
+scheduling the fit past whichever browser task this is racing (a
+`requestIdleCallback`, or splitting the loop across microtasks), not in the
+arithmetic, since the arithmetic and the CSS are both confirmed correct
+against the live app's own numbers whenever the read is not raced.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
