@@ -1545,3 +1545,154 @@ kept). Design and steps: `plan.md`, "B6 planned".
 - **Phase 4 has one slice left: print (`#/print/ci1-q1`).** It needs a planner
   pass, and its design evidence needs the Figma connector authorized by the
   owner - see `handoff.md`, "Next batch".
+
+## State at the print-slice kickoff (orchestrator, 2026-09-11)
+
+- HEAD `d696675` (`docs(issue-47): B6 reviewed and approved - the search slice
+  is closed`), working tree **clean** - verified at kickoff, and it matches
+  what `handoff.md` records. `9d5ca02` is the search code commit; `37ecc8d`
+  below it is the peer session's images-only artwork commit, preserved.
+- **B6 is closed** (built, verified, reviewed `approve`, no blockers, its one
+  remediation cycle unspent). `#/print/ci1-q1` is the single remaining
+  `pending` entry in `tests/parity/specs.js:1643` and the last Phase 4 slice.
+- **Next action: a planner dispatch, not an implementer one.** Print has no
+  measured surface and no planning notes anywhere in `plan.md`; the
+  `handoff.md` "Next batch" section is a brief for planning, not for building.
+- **The Figma connector is unauthenticated in this session too** (2026-09-11,
+  Windows desktop app; `plugin:design:figma` is listed among the servers
+  needing authorization, and a non-interactive session cannot run the OAuth
+  flow). `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (colour) and `3773-90792`
+  (black-and-white) therefore cannot be opened from here. This is owner action
+  - claude.ai connector settings, or `claude mcp` / `/mcp` in an interactive
+  session. Whether the port actually *needs* a vector export, or whether the
+  live `app.js`/`style.css`/`img/` already carry everything the sheet draws,
+  is a planning question and is not settled here.
+- No check was run at kickoff: the tree is clean at a committed boundary and a
+  planning pass writes only `issues/47/*.md`, which `bash-guard.mjs`'s commit
+  gate exempts (`isExempt`: anything under `issues/`).
+
+## B7 planning facts - the print slice (planner, 2026-09-11) - durable, read before implementing
+
+Read off `app.js`/`style.css` at HEAD `d696675` and measured with a
+headless-Chrome probe (puppeteer, the harness's launch args, reduced
+motion, `ready()`'s waits, 250ms after each press) of
+`file:///E:/dev/daggerheart-loot/index.html` on `#/print/ci1-q1`,
+`#/print/nope`, `#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11` and
+`#/print/ci1-...-ci10` at 1100x900 / 768x900 / 375x812, in colour, after the
+`Чёрно-белая` press, after `EN`, and once per route under
+`page.emulateMediaType('print')`. The script is not kept. Design and steps:
+`plan.md`, "B7 planned".
+
+- **Figma is not needed.** `card/` holds 35 SVGs (2026-08-20..26):
+  `banner`, `shield`, `burden-1`, `burden-2`, `ribbon`, `ribbon-mag`,
+  `thbox`, `die-d{4,6,8,10,12,20}-{phy,mag}`, each with a `-bw` twin (the
+  dice one `die-d<n>-bw`), plus `dots1`-`dots3` and `arrow` (no `-bw`).
+  `app.js:3257` `CARD_ART = 'card/'`; `cardArt()` 3282-3291 builds exactly
+  those names (in bw `die-d<n>-(phy|mag)` collapses to `die-d<n>`, then
+  `-bw`); `PRINT_GLYPH` 3259-3266 (five inline paths) and the die hexagon
+  (`clip-path`) are the only other shapes. `vite.config.mts` junctions
+  `card/` into `dist/`; `CONTRACTS.md` section 5 freezes `card/*.svg`.
+- **Live code map.** `PRINT_MAX = 180` 3235; `printAsked` 3237-3240
+  (known, first occurrence), `printIds` 3241 (capped), `printHref` 3242,
+  `printBtn` 3245-3249; `statBox` 3273; `cardArt` 3282-3291; `dmgStripHTML`
+  3298-3320; `dieHTML` 3323-3331 (`DIE_ART` d4-d20); `thStripHTML`
+  3333-3356; `printCardHTML` 3364-3425; `eqClassFor` 3430-3432 (`pk-*`,
+  read by no rule); `fitPrintCards` 3438-3508; `renderPrint` 3510-3558;
+  route 3610; `render()` calls the fit at 3829 on every print render;
+  handlers 4236-4245 (`doPrint` = `window.print()`, `printBack` =
+  `history.length > 1 ? history.back() : #/lists`, `printArt` sets
+  `S.printBW` (49, app memory, never stored), `printLink` =
+  `copyText(appUrl(printHref(printIds(S.printIds))), linkCopied)`);
+  `descHtml` 661-690 (non-plain: `<br>` between consecutive plain lines,
+  `<ul class="dlist">` lists, `<i>label:</i>` + the rest of the line with
+  its leading space, never `<p>`); `printSrc` 954-958; `hasImage` 1675 (a
+  print image has no `data-art` and never marks itself broken, 4597);
+  `ICON_BACK` 1039. CSS: `.printbar`/`.printnote`/`.warnnote` 1112-1116,
+  `.psheet` 1118-1126, `.pcard`...`.pc-bottom` 1128-1395 (no `@media`
+  inside), `@media print` 1397-1414, `.seg`/`.seg.small` 72-81 + mobile
+  880-881 + focus 1002-1005, `.card-acts` 405, `.dlist` 724-725.
+- **Measured, 1100 (ru).** `h1.page-h` 36.8 tall at y=131.59 (23px/680,
+  margin-bottom 4); `.page-sub` 528.28x22.39 (14px, `--muted`, 70ch,
+  margin-bottom 18); `.card-acts` 1053x49 at y=212.78 (gap 6, padding-top
+  3): `Назад` 100.48x46, `Отправить на печать` 203.81x46 (primary), the
+  segment 192.67x46 (`align-self:stretch`; buttons 77.58x38 / 107.09x38,
+  `padding 4px 12px`, 12px/650, letter-spacing 0.6px, **no
+  `aria-pressed`**), `Ссылка на набор` 173.39x46; `.printnote` 417.77x58.13
+  (12.5px/19.375, `--muted2`, 62ch, margin-top 12); `.printbar` 200.31;
+  `.psheet` 793.69x1122.52 at (145.66, 349.91), padding 54.8/32.13,
+  gap 7.56, columns 238.109 x3, shadow `0 0 0 1px rgba(0,0,0,.5), 0 14px
+  40px rgba(0,0,0,.45)`; cards 238.11x332.59, the first at (177.78,
+  404.7); document 1085x1681. English: `Back` 90.7, `Send to printer`
+  160.53, segment 195.34 (`Colour` 65.22 / `Black and white` 122.13), `Link
+  to this set` 153.34. `document.title` `Генератор лута — Daggerheart` /
+  `Daggerheart Loot Generator`; no tab lit; `activeElement` `body`.
+- **768 / 375.** The sheet keeps its 793.69px and sits at x=16 (`margin
+  auto` cannot go negative): `scrollWidth` 810 at both. 768: everything
+  else as at 1100. 375: `.page-sub` 44.78 (two lines); `.card-acts` wraps
+  to three rows - `Назад` + `Отправить` (16..326.29), the segment alone
+  200.67x43.19 (mobile `padding 8px 14px`, buttons 35.19 tall), the link
+  alone - 150.19 tall; `.printbar` 323.89; sheet at y=479.48; document
+  810x1951 (10 cards: 3092).
+- **The empty page** (`#/print/nope`): `h1` + `.page-sub` `Печатать
+  нечего...` + `a.btn.primary[href="#/lists"]` `Списки` 87.42x46 at
+  y=212.78; no `.printbar`; document 900 tall.
+- **Sheets.** 2 cards -> 1 sheet, 9 places, 7 blank; 9 -> 1/9/0; 10 -> 2
+  sheets (second at y=1490.42, `data-next="1"`), 18 places, 8 blank,
+  `Карточек: 10. Листов A4: 2.`; 181 known ids -> 180 cards, 20 sheets, the
+  red note (`tests/print.js` proves the shape; not probed).
+- **The fit, measured.** Every `.pc-strip .pc-box b` ends at inline
+  `font-size: 2.2cqw` - `over()` never turns false (a block `b` in a
+  shrink-to-fit box is never narrower than its text minus 2px) and the loop
+  exits when `sz` reaches 2.1999999999999993 after eight `-= 0.1` steps
+  from 3. Colour: `ci1` art `height 104cqw`, `--artw 97cqw`; `q1`
+  `97.2203cqw` / `90.22033898305084cqw`; `q313` `101.881cqw` / `94.88...`;
+  `cc1` `110.356cqw` / `100cqw`; `q23`, `q35` `71.3729cqw` / `64.37...`;
+  `w51` `79.8475cqw` / `72.85...`; `di11` `51.4576cqw` / `44.46...`;
+  `voa2_a3` text `3.3cqw`, `--pcpad` untouched, art `32.8136cqw` /
+  `25.81...cqw`, no card `display:none`. Identical at 375. Black-and-white:
+  no card of the nine needed a step (`.pc-text` 150-245px for texts up to
+  145); the `-bw` head vectors read `complete` with real heights
+  (`burden-*-bw` 24.66, `shield-bw` 24.7, `banner-bw` 37.31) by the time
+  the probe looked, but the live fit had already run synchronously at
+  render, before any load. Under always-tight conditions (computed): the
+  font ladders stop at `3.0cqw` then `2.6cqw`; the pad floor is `8cqw` in
+  colour and **`2.8cqw`** in bw (`5.8 - 1.5 - 1.5`; the loop stops when
+  `pad > 3` fails).
+- **Card facts.** `.pc-tier` text `1Ранг`, `.pc-bottom` `DaggerheartCore`,
+  `.pc-cells` `УронфизЧертаПроворностьДистанцияВплотную` - no whitespace
+  between siblings; `q1` `.pc-text` `innerHTML` `<i>Надёжное:</i> +1 к
+  Броскам Атаки`; `voa2_a3` `<i>Стоимость Призыва:</i> 2<br>Эта колода...`
+  (and it carries a list: `voa2_a3`, `voa2_a1`, `voa2_a6` have `- ` lines
+  in both languages); `q23` bw: `ribbon-mag-bw.svg`, `die-d6-bw.svg`,
+  `burden-2-bw.svg`; `q313` colour: `banner`, `shield`, `dots1`, `thbox`,
+  `arrow`, `dots2`, `thbox`, `arrow`, `dots3`; `w51` `.pc-c1.wbonus` with
+  `+3` and `d8`; `eq.th` is `[5, 11]` in the data while `lib/types.ts`
+  says `string | null` (fixed in B7). The bw `.pc-head` is 18.09 tall on a
+  loot card, 32.75 with hands, 31.78 with the shield.
+- **Print media, live.** `header.topbar`, `nav.tabs`, `footer.foot`,
+  `a.skip`, `.printbar` `display:none`; `body` `#fff`/`#000`; `main`
+  `max-width:none; width:1085px; padding:0; margin:0`; `.psheet` `margin:0;
+  box-shadow:none; break-inside:avoid`, `:last-child` `height 1122.14px`
+  (296.9mm) against 1122.52 otherwise; `[data-next]` `break-before:page`;
+  `.pcard` `break-inside:avoid`, `-webkit-print-color-adjust:exact`.
+- **Rewrite facts that shape the batch.** `AppState.route` calls
+  `parseHash(hash)` with the default `knows = () => true`, so the print
+  route today keeps unknown ids; `router.canGoBack()`/`back()` already
+  exist ("so a print page knows whether to offer one"); `DialogPort` has
+  `confirm` only; `.seg` is already copied twice (`LangSwitch.svelte`,
+  `TablesPage.svelte` 627-670, "not yet worth extracting on its own") and
+  neither copy ports `.seg button:focus-visible`; `Button.svelte` ports no
+  `.btn:focus-visible` either; `OrGrid.svelte` is the `generics=`
+  precedent; `RecordCard` uses `<h2 class="card-name">` where the live
+  writes `h2`, and the print card's live `<h3>` would fail axe's
+  `heading-order` under the page's `h1`; `test/a11y.ts` switches off only
+  `color-contrast` and `nested-interactive`; `ListPage.svelte` 905-926 and
+  984-991 hold the `.page-h`/`.page-sub`/`.card-acts` copies to reuse;
+  `data.json` is `{ items: { core_item: 60, core_consumable: 60, hnf_item:
+  60, hnf_consumable: 60, wondrous: 119, community: 90, dread: 29, frames:
+  94, voa: 108 }, alt, refs, eq: 381 }` - the first 181 item ids make an
+  884-character route; puppeteer is 25.9.0 (`emulateMediaType(type?:
+  string)`, `undefined` disables).
+- Wall clock: group A `"#/print"` is 9 states / 54 cells, 24 `whole`;
+  group B is 5 states / 30 cells. Each fits one foreground call; do not
+  merge them.

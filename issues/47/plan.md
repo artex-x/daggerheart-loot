@@ -56,9 +56,11 @@ Both are below, after "B3 built".
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/search` - the search slice. **Planned 2026-09-11 as one batch, B6;
-  implement-ready - see "B6 planned"**
-- `#/print/ci1-q1` - the print slice
+- `#/search` - the search slice. **Built as B6 (`9d5ca02`), reviewed and
+  approved 2026-09-11 - see "B6 planned" and "B6 built".**
+- `#/print/ci1-q1` - the print slice. **Planned 2026-09-11 as one batch, B7;
+  implement-ready - see "B7 planned". The last Phase 4 slice; it needs
+  nothing from Figma (every vector the sheet draws is already in `card/`).**
 
 **`#/lists` - the lists slice - is done as of B5.6.** Built across six
 batches, B5.1-B5.6 (see "B5 planned" onward); B5.6 was the last one. Every
@@ -8356,6 +8358,975 @@ is no longer `pending` in `tests/parity/specs.js`; `#/print/ci1-q1` still
 is - print is the only Phase 4 slice left. B5.6 risk 1 (the `~ packed`
 blind spot) is closed by `packedExpanded`; `ListPage.svelte:103`'s stale
 comment stays recorded, this batch did not open that file.
+
+### B7 planned: the print slice - one batch (planner, 2026-09-11)
+
+The last Phase 4 slice. Picked by elimination: lists (B5.1-B5.6) and search
+(B6) are closed and `#/print/ci1-q1` is the only `pending` line left in
+`tests/parity/specs.js` (1643). Planned at HEAD `d696675`, working tree clean
+but for the orchestrator's own `context.md` kickoff section, kept and
+committed with this pass.
+
+**The Figma question, settled: this is a parity port and needs no design
+access.** `CLAUDE.md` names Figma `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387`
+(colour) and `3773-90792` (black-and-white), and says vectors are exported,
+not redrawn. They were - by the live app's author, into `card/` (35 files,
+2026-08-20..26): `banner`, `shield`, `burden-1`, `burden-2`, `ribbon`,
+`ribbon-mag`, `thbox`, `die-d4`..`die-d20` in `-phy`/`-mag`, each with a `-bw`
+twin (the dice a single `-bw`), plus `dots1`-`dots3` and `arrow` used by both
+layouts. `app.js:3257` (`CARD_ART = 'card/'`) and `cardArt()` (3282-3291)
+reference exactly those names and nothing else; the five kind glyphs
+(`PRINT_GLYPH`, 3259-3266) and the die hexagon fallback are inline paths and
+CSS `clip-path`; every other shape on the card is CSS. `vite.config.mts`
+already junctions `card/` into `dist/` beside `img/` and `og/`, and
+`CONTRACTS.md` section 5 freezes `card/*.svg` as a public asset path. The
+rewrite therefore ports `app.js` + `style.css` and reads the same files the
+live app reads - the harness compares the two apps against each other, and
+the Figma nodes are the *provenance* of those files, not an input to this
+batch. **Figma access is not a blocker for implementation.** The one thing
+the nodes would add - a check that the live app itself matches the design -
+is `tests/print.js`'s "размеры по макету" block, which already pins thirteen
+positions against the design's own numbers (344x482 units) on the live app,
+and stays as it is.
+
+**Objective.** After this batch `#/print/<ids>` draws what the live
+`renderPrint` draws: the bar (`Печать карточек`, the count line, `Назад` /
+`Отправить на печать` / the colour-or-black-and-white segment / `Ссылка на
+набор`, the red note when the address held more than 180, the print-dialog
+note), then the sheets - A4 pages of nine 63x88 mm places, cards first and
+blank places after the last card, the second sheet onward marked as a page
+break - and, for an address that names nothing the catalogue knows, the
+heading, `Печатать нечего…` and a gold `Списки` link. Each card is the live
+`printCardHTML` in both of its layouts: **colour** (the art square with the
+blurred backing, the tier band and the burden hands or the armour shield laid
+over it, the white block fading in over the picture) and **black-and-white**
+(no art, the band, the kind tag and the mark in a row over the name, `-bw`
+vectors), branching in the markup as the live code does - two cards, not one
+with a switch. The fit runs in the browser after render exactly as
+`fitPrintCards` runs it: the stat values step down, the rules text steps its
+font down, then the top padding, then the font again, and the art's height
+and width follow the white block; a `Range` measures the text. `Отправить на
+печать` opens the print dialog; `Назад` steps back in history or goes to
+`#/lists`; the link button copies the sheet's own address. The `@media print`
+rules go with it: the chrome hidden, the page margins gone, the sheet
+unshadowed and page-broken. `#/print/ci1-q1`'s `pending` goes and nine states
+take its place; no state in `specs.js` is `pending` after this batch.
+
+**In scope.** `lib/hash.ts` (`printAsked`, `dropped` on the print route) +
+test, `lib/types.ts` (`th` typed as the pair it is), `lib/dict.ts` (17 keys),
+`lib/icons.ts` (`back`), `lib/label.ts` (`printSrc`) + test, `lib/print.ts`
+(new: `cardArt`, `pages`, `dmgParts`, `glyphKey`, `PRINT_GLYPH`) + test,
+`ports/types.ts` + `ports/dialog.ts` (`print()`) + `ports.test.ts`,
+`state/app.svelte.ts` (`route` passes `knows`) + test,
+`components/Seg.svelte` (new, third use of `.seg`), `Shell.svelte` and
+`TablesPage.svelte` (use it; `LangSwitch.svelte` deleted, `TablesPage`'s
+`.seg*` rules deleted), `components/PrintPage.svelte` (new),
+`components/PrintCard.svelte` (new), `components/printPage.test.ts` (new),
+`Shell.svelte`, `SelBar.svelte`, `Toast.svelte` (`@media print`),
+`App.svelte` (the route), `components/a11y.test.ts` (`COVERED` x3, one
+state), `tests/parity/driver.js` (`media`, `computed`, `eachAt`),
+`tests/parity/specs.js` (nine states, four specs, two names, a data require,
+figures logged by `foundRows`), `docs/specs/FEATURES.md` ("Print", three
+clauses), `docs/specs/COVERAGE.md` (one row).
+
+**Out of scope.** Any change to `CONTRACTS.md`, `docs/fixtures/`,
+`tests/contracts.js`, `ROUTES.md`, `llms.txt` - `#/print/<ids>` is frozen
+and unchanged, and `card/*.svg` stays where it is. `tests/print.js` - it
+drives `index.html` and stays the live app's own suite. The Figma nodes.
+`printBW` on `AppState` (see "Decided"). The page-furniture extraction pass
+(`.panel`, `.page-h`/`.page-sub`, `.card-acts`, `.miss`, `toggleAllIn`) that
+`handoff.md` "Deferred" says is owed once every page exists - after this
+batch every page does exist, so it is the *next* thing, not this thing.
+`Button.svelte`'s missing `:focus-visible` ring (noticed while reading
+`style.css:1002`; not this batch's file - recorded in the handoff).
+
+#### What the live app does, read off app.js and style.css (HEAD `d696675`), and measured
+
+Measured in planning with a headless-Chrome probe (puppeteer, the harness's
+own launch args and reduced motion, `ready()`'s waits, then 250ms after each
+press) of `file://.../index.html` on four routes at 1100x900, 768x900 and
+375x812, in colour, after the `Чёрно-белая` press, and after `EN`; and once
+per route under `page.emulateMediaType('print')`. The script is in the
+session scratchpad and is not kept; the numbers are in `context.md`, "B7
+planning facts".
+
+- **The route** (`currentRoute` 3610): `/^print\/[\w-]+$/` sets `S.printIds`
+  to the segment. `printAsked` (3237-3240) keeps ids `BY_ID` knows, first
+  occurrence only; `printIds` (3241) caps at `PRINT_MAX = 180` (3235, twenty
+  sheets); `renderPrint` (3510-3558) computes `dropped = asked.length -
+  ids.length`. `lib/hash.ts`'s `printIds(segment, knows)` already does the
+  known/dedupe/cap in one pass, but `AppState.route` calls `parseHash(hash)`
+  with the default `knows = () => true`, so today the rewrite's print route
+  keeps unknown ids and knows nothing about `dropped`.
+- **The bar** (3524-3548), inside `<div class="printbar noprint">`
+  (`.printbar{margin-bottom:18px}`, 1112): `<h1 class="page-h">` printTitle
+  - drawn directly, **not** through `pageHead()`: no pin button, no help -
+  then `<p class="page-sub">` printSub with `%n` = cards and `%p` =
+  `Math.ceil(n / 9)`; then `<div class="card-acts">` (405: flex, gap 6px,
+  wrap, `padding-top:3px`) holding, in order: `button.btn` `ICON_BACK` +
+  `back`, `button.btn.primary` `ICON_PRINT` + `printNow`, `<div class="seg
+  small" role="group" aria-label=printTitle>` with `button` printColor and
+  `button` printBW (`.on` on the current one, **no `aria-pressed`** - only
+  the language segment has that, 3664), `button.btn` `ICON_LINK` +
+  `printLink`; then `<p class="printnote warnnote">` printTooMany (`%n` =
+  180, `%d` = dropped) only when `dropped`; then `<p class="printnote">`
+  printNote. `.printnote` 1113: `margin:12px 0 0; font-size:12.5px;
+  line-height:1.55; color:var(--muted2); max-width:62ch`; `.warnnote` 1116:
+  `color:var(--danger); font-weight:600`. **Measured, 1100:** `h1` 36.8 tall
+  at y=131.59, margin-bottom 4; `.page-sub` 528.28x22.39 (14px/22.4,
+  `--muted`, 70ch), margin-bottom 18; `.card-acts` 1053x49 at y=212.78;
+  buttons `Назад` 100.48x46, `Отправить на печать` 203.81x46, the segment
+  192.67x46 (`.seg.small{align-self:stretch}` - it fills the 46px row; its
+  buttons 77.58x38 / 107.09x38, `padding 4px 12px`, 12px/650, letter-spacing
+  0.6px), `Ссылка на набор` 173.39x46; `.printnote` 417.77x58.13 at y=273.78
+  (three lines); `.printbar` 200.31 tall. English: `Back` 90.7, `Send to
+  printer` 160.53, the segment 195.34 (`Colour` 65.22, `Black and white`
+  122.13), `Link to this set` 153.34. **At 375** the row wraps to three
+  lines - `Назад` + `Отправить на печать` (16..326.29 fits the 328px main),
+  the segment alone (200.67x43.19: the mobile `padding:8px 14px` makes its
+  buttons 35.19 tall, and stretch on its own line is its own height), the
+  link button alone - `.card-acts` 150.19 tall, `.printbar` 323.89, `.page-sub`
+  two lines (44.78). 768 is identical to 1100 but for the main's x.
+- **The sheets** (3549-3557): `pages` of nine; `<div class="psheet[ bw]"
+  [data-next="1"]>` per page (`data-next` on every sheet but the first);
+  cards, then on the **last** sheet `(9 - n % 9) % 9` `<div class="pcard
+  blank">` places. `.psheet` 1118-1126: `210mm x 297mm`, `padding:14.5mm
+  8.5mm`, `margin:0 auto 18px`, a 3x3 grid of `63mm`/`88mm` with `gap:2mm`,
+  white, the two-layer shadow. **Measured:** 793.69x1122.52 at every width;
+  centred at 1100 (x=145.66), **left-aligned at x=16 at 768 and 375** where
+  `margin:auto` cannot go negative, so the document is 810 wide and scrolls
+  sideways (`scrollWidth` 810 at both) - the fold shot at 375 shows the first
+  card whole and part of the second; cards 238.11x332.59 (= 63x88 mm at
+  96dpi), the first at (177.78, 404.7) at 1100; blanks have `border:0`
+  (1139). Ten cards: two sheets (the second at y=1490.42, `data-next`), 18
+  places, 8 blank, `Карточек: 10. Листов A4: 2.`; document 2822 tall.
+- **The empty page** (3514-3517): `<h1 class="page-h">` printTitle, `<p
+  class="page-sub">` printEmpty, `<a class="btn primary" href="#/lists">`
+  lists - measured 87.42x46 at y=212.78, the exact shape of `ListPage`'s
+  not-found block. No `.printbar`, no note. `#/print/nope` reaches it: the
+  regex accepts the segment and `printAsked` drops the unknown id.
+- **The card** (`printCardHTML` 3364-3425): `<article class="pcard pk-<kind>[
+  bw]" data-pid=id>` where `eqClassFor` (3430-3432) is `pk-weapon` /
+  `pk-secondary` / `pk-armor` / `pk-item` / `pk-cons` - **no rule in
+  style.css reads `pk-*`** (grep), so the class is markup only, still
+  ported. Colour: `<div class="pc-art">` with, when `hasImage(it)` (1675:
+  `it.img` and not `brokenArt[id]`), `<img class="pc-back" src alt=""
+  aria-hidden="true">` + `<img class="pc-img" src alt="">` (the same file
+  twice; **no `loading`, no `data-art`, no error handler** - a print image
+  never marks itself broken, 4597 keys off `data-art`), else
+  `printGlyph(kindKey)` (`<svg class="pc-glyph" viewBox="0 0 48 50"
+  aria-hidden="true">` + one `<path>`); then the band `<span
+  class="pc-tier"><img src=cardArt('banner') alt=""><b>tier</b><i>t.tier</i>
+  </span>` when there is a tier (`eq.tier`, else a numeric `it.tier`; an
+  artifact/cursed `A`/`C` has none), then the mark: armour with `as != null`
+  → `<span class="pc-shield"><img cardArt('shield')><b>as</b><i>pcArmor</i>
+  </span>`, else a burden → `<span class="pc-burden"><small>eqBurden</small>
+  <img cardArt('burden-1'|'burden-2')></span>` (`bu > 1` → 2). Then `<div
+  class="pc-content">`: in bw `<div class="pc-head[ withtier]">` band + tags
+  + mark, else just the tags (`<div class="pc-tags"><span class="pc-tag
+  on">tag1</span>[<span class="pc-tag out">tag2</span>]</div>` - tag1 is
+  `voaArtifact1`/`voaCursed1` for `A`/`C` loot, else `eqWord(EQ_TYPE, eq.t)`
+  or `cons`/`item`; tag2 is `eqWord(EQ_CLS, eq.cls)` for a non-armour piece
+  with a class); `<h3 class="pc-name">` nameOf; the strip - armour
+  `thStripHTML`, else `dmgStripHTML(eq)` plus `dmgStripHTML(eq.alt)` when
+  versatile, else nothing; `<div class="pc-text">` descHtml; `<div
+  class="pc-bottom"><span>Daggerheart</span><span>printSrc</span></div>`.
+  Text nodes: `.pc-tier` reads `1Ранг`, `.pc-bottom` `DaggerheartCore`,
+  `.pc-cells` `УронфизЧертаПроворностьДистанцияВплотную` - no whitespace
+  anywhere between siblings.
+- **`descHtml(it)` for a card is not `RecordCard`'s markup.** The non-plain
+  branch (661-690) emits lines joined with `<br>` **between two consecutive
+  plain lines only**, list runs as `<ul class="dlist"><li>…</li></ul>` with
+  no `<br>` before or after, and a label as `<i>label:</i>` + the rest of
+  the line **including its leading space** (`voa2_a3`: `<i>Стоимость
+  Призыва:</i> 2<br>Эта колода…`; `q1`: `<i>Надёжное:</i> +1 к Броскам
+  Атаки`). No `<p>` ever - `.pc-text p` (1387) matches nothing. `lib/desc.ts`
+  `descParts` gives the same split (`splitLabel` keeps the space in `body`);
+  `RecordCard` renders it as `<p>`s, which is right for the card and wrong
+  here. The global `.dlist li{margin:1px 0}` (725) applies inside the card;
+  `.pc-text ul,.pc-text ol{margin:0 0 1.4cqw;padding-left:4cqw}` (1388)
+  beats `.dlist`'s own margin and padding.
+- **The strips.** `dmgStripHTML` (3298-3320): `<div class="pc-strip"><span
+  class="pc-lead">dieHTML</span><span class="pc-frame"><img class="pc-ribbon"
+  src=cardArt('ribbon'|'ribbon-mag') alt=""><span class="pc-cells"><span
+  class="pc-c1[ wbonus]">[<span class="pc-bonus">+3</span>]statBox(pcDmg,
+  eqWord(EQ_DT, dt) || '—')</span><span class="pc-c2">statBox(pcTrait,
+  …)</span><span class="pc-c3">statBox(pcRange, …)</span></span></span>
+  </div>` - the die and bonus split by `/^(d\d+)(.*)$/` on `dmg` (`d8+3` →
+  `d8`, `+3`); `statBox` (3273) is `<span class="pc-box"><small>label</small>
+  <b>value</b></span>`. `dieHTML` (3323-3331): `<span class="pc-die[ own][
+  mag]" data-die="d8">[<img src=cardArt('die-d8-phy'|'-mag') alt="">]<b>d8
+  </b></span>`, `own` for d4-d20 (`DIE_ART`). `thStripHTML` (3333-3356):
+  `<div class="pc-thstrip"><div class="pc-cells">lab(thLight,1) box(th[0])
+  lab(thMajor,2) box(th[1]) lab(thSevere,3)</div></div>` with `lab` = `<span
+  class="pc-th-lab"><img src="card/dots<n>.svg" alt=""><small>word</small>
+  </span>` and `box` = `<span class="pc-th-box"><img src=cardArt('thbox')
+  alt=""><b>v</b></span><img class="pc-th-arrow" src="card/arrow.svg"
+  alt="">` (the arrow follows every box). `th` is `[5, 11]` in the data
+  (`q313`) or `null`; `lib/types.ts` types it `string | null`, and
+  `i18n.ts:126` already indexes it as the pair it is.
+- **`cardArt(name)`** (3282-3291): in bw, `die-d<n>-phy`/`-mag` collapse to
+  `die-d<n>` (the colour was the only difference), then `-bw` is appended to
+  every name; `dots*` and `arrow` are written with `CARD_ART` directly and
+  never take `-bw`. Measured: `q23` in bw reads `ribbon-mag-bw.svg` (the
+  magic frame keeps its own drawing) and `die-d6-bw.svg`.
+- **The fit** (`fitPrintCards` 3438-3508), run from `render()` (3829) on
+  **every** render of the print route - the first paint, the segment press,
+  the `EN` press - synchronously after `innerHTML`, i.e. before any image of
+  the fresh markup has loaded, and never again on load. Per card: (1) for
+  each `.pc-strip .pc-cells`, reset every `.pc-box b`'s `font-size`, then
+  `sz = 3; while (over() && sz > 2.2) { sz -= 0.1; set sz.toFixed(1)+'cqw' }`
+  where `over()` is any `b` whose `Range` width exceeds `clientWidth - 2`;
+  (2) reset `.pc-text`'s `font-size` and `.pc-content`'s `--pcpad`;
+  `tight()` = `scrollHeight > clientHeight + 1`; `pct = 3.5; while (tight()
+  && pct > 3) { pct -= 0.1; font-size = pct.toFixed(1)+'cqw' }`; `pad = bw ?
+  5.8 : 23; while (tight() && pad > (bw ? 3 : 8)) { pad -= 1.5; --pcpad =
+  pad+'cqw' }`; `while (tight() && pct > 2.6) { … }`; (3) when `.pc-art` and
+  `.pc-content` both exist: `line = box.offsetTop / card.clientWidth * 100 +
+  pad`, `top = art.offsetTop` likewise; `art.style.height = max(0, line -
+  top + 6)+'cqw'`; `--artw = min(100, line - top - 1)+'cqw'`; `art.style
+  .display = line - top < 24 ? 'none' : ''`. **Measured, and the port must
+  reproduce these numbers:** the strip loop always ends at `2.2cqw` on every
+  `b` (a block `b` inside a shrink-to-fit box is never narrower than its own
+  text minus 2px, so `over()` never turns false; the loop exits when `sz`
+  reaches 2.1999999999999993 - **eight subtractions of 0.1 from 3 in
+  double precision**, which is why the port copies the arithmetic and the
+  `toFixed(1)` verbatim rather than "improving" it); `ci1` colour: art
+  `104cqw` high, `--artw 97cqw`; `q1`: `97.2203cqw` / `90.22033898305084cqw`;
+  `q313`: `101.881cqw` / `94.88…`; `cc1`: `110.356cqw` / `100cqw`; `di11`
+  (570 chars): `51.4576cqw` / `44.45…`, text untouched; `voa2_a3` (811
+  chars): text `3.3cqw`, `--pcpad` untouched, art `32.8136cqw` /
+  `25.81…cqw`. Identical at 375 - the fit is in `cqw` of a card whose size
+  never changes. In bw none of the nine chosen cards needed a step
+  (`.pc-text` has 150-245px for texts of at most 145), and the bw vectors
+  in the head (`burden-*-bw` 24.66px tall, `shield-bw` 24.7, `banner-bw`
+  37.31) had loaded before the probe could read them; a bw card whose text
+  is near the limit would fit against a head that has not yet grown, on
+  both apps alike, provided the rewrite fits at the same moment.
+- **`.pc-*` CSS**, style.css 1128-1395, one block, no `@media` inside it
+  (the only `@media` on the print surface is `@media print` at 1397-1414
+  and the mobile `.seg button` rule at 880-881). Everything is in `cqw` off
+  `.pcard{container-type:size}`; the design's 344px card is the unit
+  (`18cqw` = 62px of 344). Port it verbatim, in order, comments included
+  where they explain a number.
+- **`@media print`** (1397-1414), measured under emulation on the live app:
+  `header.topbar`, `nav.tabs`, `footer.foot`, `a.skip`, `.printbar`
+  (`.noprint`) all `display:none`; `body` white on black text; `main`
+  `max-width:none; width:auto` (reads 1085px) `padding:0; margin:0`;
+  `.psheet` `margin:0; box-shadow:none; break-inside:avoid`;
+  `.psheet[data-next]` `break-before:page`; `.psheet:last-child`
+  `height:296.9mm` (reads 1122.14px against 1122.52 for a sheet that is not
+  last); `.pcard` `break-inside:avoid`; `*{print-color-adjust:exact}`;
+  `@page{size:A4 portrait;margin:0}`.
+- **The handlers** (4236-4245): `doPrint` → `window.print()`; `printBack` →
+  `history.length > 1 ? history.back() : location.hash = '#/lists'`;
+  `printArt` → `S.printBW = val === 'bw'; render()` (`S.printBW`, 49, is
+  app memory - it survives leaving the page; see "Decided"); `printLink` →
+  `copyText(appUrl(printHref(printIds(S.printIds))), t().linkCopied)` -
+  `copyText` (1021) toasts `linkCopied` on success and `copyFailed` as an
+  error otherwise. `S.sel` is cleared on `hashchange` as everywhere.
+- **Chrome.** `document.title` is `docTitle` (no record name); no tab lit
+  (`renderTabs` compares the raw route string, `FEATURES.md` "Chrome");
+  `activeElement` is `body` on arrival and stays `body` after a scripted
+  `el.click()` on the segment on both apps (the live `restoreFocus` has
+  nothing to restore; a mouse click focuses the button on both - the probe
+  read `BUTTON.on` after `page.click`, the harness's `d.click` moves no
+  focus).
+- **Missing from the rewrite:** 17 dictionary keys (`pcDmg`, `pcTrait`,
+  `pcRange`, `pcArmor`, `thLight`, `thMajor`, `thSevere`, `printColor`,
+  `printBW`, `printNow`, `printLink`, `printTitle`, `printSub`, `printNote`,
+  `printEmpty`, `printTooMany`, `back`; `pcTh` and `printFoot` exist in
+  app.js but nothing reads them - not added); the `back` icon (`ICON_BACK`
+  1039); a print port (`window.print` is a browser API); `printSrc` (954:
+  `srcComm + ' · ' + srcLabel` for a community record, else `srcLabel`);
+  `card/` art path building; the sheet arithmetic; and the `.seg` control's
+  third use - `LangSwitch.svelte` and `TablesPage.svelte` (627-670) each
+  carry the whole rule set today, the latter with the comment "not yet
+  worth extracting on its own".
+
+#### What is reused, and what is new
+
+| piece | live | rewrite | this batch |
+|---|---|---|---|
+| the route | `currentRoute` + `printAsked`/`printIds` | `parseHash` → `{ kind: 'print', ids }`, `knows` never passed | `printAsked` exported; the route carries `dropped`; `AppState.route` passes `index.byId.has` |
+| the head | `h1.page-h` + `p.page-sub` written by hand | `ListPage`'s own `.page-h`/`.page-sub` rules (no `PageHead` - no pin, no help) | the same two rules, third copy, recorded |
+| the four buttons | `.btn`, `.btn.primary` | `Button` (`md`, `primary`, `href`+`sameTab`, `onclick`) + `Icon` | reuse; `icons.back` added |
+| the segment | `.seg.small` | `LangSwitch.svelte` and `TablesPage.svelte`'s copy | **`Seg.svelte`, extracted on this third use**; both copies go |
+| the print dialog | `window.print()` | - | `DialogPort.print()` (the browser's own dialogs, beside `confirm`) |
+| back | `history.length > 1 ? back() : #/lists` | `router.canGoBack()` / `back()` already there ("so a print page knows whether to offer one") | reuse |
+| the link | `copyText(appUrl(printHref(ids)))` | `app.linkTo(printHash(ids))` + `env.clipboard.writeText` + `say` (the `ListPage` pattern) | reuse |
+| the sheet | `pages` of nine, blanks | - | `lib/print.ts` `pages(items)`; `PrintPage` draws |
+| the card | `printCardHTML` + helpers | `artSrc`, `descParts`, `nameOf`, `eqWord` + the `EQ_*` maps, `srcLabel`, `t.voaArtifact1`/`voaCursed1` | **`PrintCard.svelte`**, both layouts; `lib/print.ts` `cardArt`, `dmgParts`, `glyphKey`, `PRINT_GLYPH`; `label.ts` `printSrc` |
+| the fit | `fitPrintCards` | - | a `$effect` in `PrintCard`, ported verbatim |
+| `@media print` | one block | none anywhere in `app/` | `Shell` (chrome, main, body, `@page`), `PrintPage` (bar, sheets, `*` colour-adjust), `PrintCard` (`break-inside`), `SelBar`, `Toast` |
+| the empty page | `h1` + sub + `a.btn.primary` | `ListPage`'s not-found block | the same shape |
+| no data | - | `.miss` + `t.noData` (every page) | the same |
+
+Genuinely new: `PrintPage.svelte`, `PrintCard.svelte` (the markup is ~90
+lines, the CSS ~270 ported lines, the fit ~60), `Seg.svelte`, `lib/print.ts`,
+the port method, three driver verbs, four specs, the strings.
+
+#### How it is built
+
+- **`lib/types.ts`.** `Equip.th` becomes `readonly [number, number] | null`
+  - the data's shape (`[5, 11]`), what `i18n.ts:126` already indexes, and
+  what the threshold strip prints. No test fixture writes `th` as a string
+  (grepped).
+- **`lib/hash.ts`.** `export function printAsked(segment, knows): string[]`
+  - the ids `knows` accepts, first occurrence only, **uncapped** (the loop
+  `printIds` has today minus the `PRINT_MAX` break). `printIds` becomes
+  `printAsked(segment, knows).slice(0, PRINT_MAX)`. The print `Route` gains
+  `dropped: number`; `parseHash` computes `asked = printAsked(...)`, `ids =
+  asked.slice(0, PRINT_MAX)`, `dropped = asked.length - ids.length`. The
+  doc comment on `Route` says what `dropped` is for (the red note).
+- **`state/app.svelte.ts`.** `get route()` becomes `parseHash(this.hash,
+  (id) => this.index?.byId.has(id) ?? false)` - the one place `knows` is
+  needed, and the one route kind that reads it. `section` needs no change:
+  a print route already returns `null`.
+- **`lib/dict.ts`.** Both blocks, verbatim from app.js 123-134 / 307-318,
+  in this order beside `printHint`: `printColor`, `printBW`, `printNow`,
+  `printLink`, `printTitle`, `printSub`, `printNote`, `printEmpty`, `back`,
+  `printTooMany`; and beside `eqBurden`: `pcDmg`, `pcTrait`, `pcRange`,
+  `pcArmor`, `thLight`, `thMajor`, `thSevere`. Keep the `×` (U+00D7) in
+  `printSub`, the `«нет»` in `printNote`, the plain hyphen after `мм`, the
+  `%n`/`%p`/`%d` markers.
+- **`lib/icons.ts`.** `back: { d: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8
+  1.41-1.41L7.83 13H20v-2z', size: 15 }`, with the `ICON_BACK (app.js:1039)`
+  pointer the other entries carry.
+- **`lib/label.ts`.** `export function printSrc(it, lang): string` - `it.src
+  === 'community' ? \`${dict(lang).srcComm} · ${srcLabel(it, lang)}\` :
+  srcLabel(it, lang)` (the `·` is U+00B7, as `whereFrom` writes it), doc
+  comment off app.js 954: a community card leaves the table, so it names
+  the book as well as the community.
+- **`lib/print.ts`** (new, pure). `PRINT_MAX` stays in `hash.ts` (the route
+  owns the cap). `export type GlyphKey = 'weapon' | 'secondary' | 'armor' |
+  'item' | 'cons'`; `export const PRINT_GLYPH: Record<GlyphKey, string>` -
+  the five `d` strings off app.js 3259-3266, **the `weapon` one is a single
+  string with all four subpaths**; `export function glyphKey(it): GlyphKey`
+  = `it.eq ? it.eq.t : it.kind === 'consumable' ? 'cons' : 'item'`;
+  `export function cardArt(name: string, bw: boolean): string` off 3282-3291
+  (`bw` replaces `S.printBW`; the die collapse, then `-bw`, then `.svg`,
+  under `card/`) and `export const CARD_DIR = 'card/'` for `dots<n>` and
+  `arrow` which never take `-bw`; `export function dmgParts(dmg: string |
+  undefined): { die: string; bonus: string }` off 3299/3321 (`/^(d\d+)(.*)$/`;
+  no match → `{ die: dmg ?? '', bonus: '' }`); `export const DIE_ART = new
+  Set(['d4','d6','d8','d10','d12','d20'])`; `export function pages<T>(items:
+  readonly T[]): { pages: T[][]; blanks: number }` off 3520-3522 (`blanks =
+  (9 - n % 9) % 9`; zero items → no pages). Each with the app.js line in
+  its comment.
+- **`ports/types.ts`, `ports/dialog.ts`.** `DialogPort` gains `print():
+  void` - "the browser's own dialogs: a confirm, and the print dialog";
+  `browserDialog` → `win.print()`; `fakeDialog` gains `printed: number`.
+- **`components/Seg.svelte`** (new; the third real use of `.seg`, so the
+  campsite rule is two uses overdue). `<script lang="ts" generics="T extends
+  string">` (the `OrGrid.svelte` precedent). Props: `options: readonly {
+  value: T; label: string }[]`, `value: T`, `label: string` (the group's
+  `aria-label`), `small?: boolean` (default false), `onchange: (value: T) =>
+  void`. Markup: `<div class="seg" class:small role="group" aria-label=
+  {label}>{#each options as o (o.value)}<button type="button" class:on={o
+  .value === value} aria-pressed={o.value === value} onclick={() => {
+  onchange(o.value); }}>{o.label}</button>{/each}</div>` - `aria-pressed` on
+  every use: the live language segment writes it (3664), the live view and
+  print segments do not, and no spec reads it, so the two gain an honest
+  pressed state rather than the one losing it (recorded below). Styles, off
+  style.css 72-81, 880-881 and 1002-1005: `.seg`, `.seg button` (`padding:
+  5px 13px; font-size: 12.5px; font-weight: 650; letter-spacing: 0.05em;
+  border: 0; background: transparent; color: var(--muted); border-radius:
+  999px; transition: 0.16s; cursor: pointer`), `.seg.small { align-self:
+  stretch }`, `.seg.small button { padding: 4px 12px; font-size: 12px }`,
+  `.seg button.on`, `.seg button:not(.on):hover`, **`.seg button:focus-
+  visible { outline: 2px solid var(--gold); outline-offset: 2px; border-
+  radius: 8px }`** (the live rule neither copy ported - a cheap local fix in
+  a touched path), and `@media (max-width: 600px) { .seg button, .seg.small
+  button { padding: 8px 14px } }`. Measured on the live segment: 46px tall
+  when stretched in the 46px row, buttons 38px; 43.19 alone on a 375px
+  line.
+- **`Shell.svelte`.** `import Seg`; `<Seg options={LANG_OPTIONS} value=
+  {app.lang} label={app.t.langLabel} onchange={(l: Lang) => { app.setLang(l);
+  }} />` with `const LANG_OPTIONS: readonly { value: Lang; label: string }[]
+  = [{ value: 'ru', label: 'RU' }, { value: 'en', label: 'EN' }]` in the
+  script. Delete `components/LangSwitch.svelte`. `shell.test.ts` grips the
+  group by `Язык` and the buttons by `RU`/`EN` - unchanged. Add the print
+  block to its `<style>`: `@media print { :global(html), :global(body) {
+  background: #fff; color: #000; } .skip, .topbar, .foot { display: none
+  !important; } main { max-width: none; width: auto; padding: 0; margin: 0;
+  } }` plus `@page { size: A4 portrait; margin: 0; }` **outside** any
+  selector, with the live comment on why the sheet owns the margins - and
+  after `npm run build`, `grep -c "@page" dist/assets/*.css` must read 1
+  (Svelte prunes unused *selectors*; an at-rule with none should pass
+  through - verify rather than assume). The tabs are inside the header and
+  go with it.
+- **`TablesPage.svelte`.** The view segment (431-445) becomes `<Seg small
+  options={VIEWS} value={view} label={t.view} onchange={(v) => { view = v;
+  }} />` where `const VIEWS = [{ value: 'list', label: t.viewList }, { value:
+  'grid', label: t.viewGrid }] as const` is `$derived` off `t` (the labels
+  switch with the language); `view` is already `$state<'list' | 'grid'>`.
+  Delete the `.seg*` rules and their comment (627-670) and the mobile
+  override for `.seg` inside the 600px block if it is separate. `#/tables
+  @` and `#/tables ~ grid` are the regression cells.
+- **`SelBar.svelte`, `Toast.svelte`.** `@media print { .selbarwrap { display:
+  none } }` and `@media print { .toast { display: none } }` - the live hides
+  `#selBar` and `#toast` (1403). `RecordModal` is never mounted on the print
+  route, so it needs no rule.
+- **`components/PrintCard.svelte`** (new). Props: `it: Record_`, `lang:
+  Lang`, `bw: boolean`, `artBroken: boolean`. `const t = $derived(dict
+  (lang))`; `eq = $derived(it.eq ?? null)`; `kindKey = $derived(glyphKey
+  (it))`; `armor`, `burden` (`eq && !armor && eq.bu ? eq.bu : 0`), `tier`
+  (`eq?.tier ? String(eq.tier) : typeof it.tier === 'number' ? String
+  (it.tier) : ''`), `artifact = (it.tier === 'A' || it.tier === 'C') && !eq`,
+  `tag1`, `tag2`, `parts = $derived(descParts(it, lang))`, `src = $derived(
+  printSrc(it, lang))`, `hasArt = $derived(!!it.img && !artBroken)`. Markup
+  is `printCardHTML` line by line, with the same branching: `<article
+  class="pcard {pkClass}" class:bw data-pid={it.id} bind:this={card}>`;
+  `{#if !bw}<div class="pc-art">{#if hasArt}<img class="pc-back" src={artSrc
+  (it.img)} alt="" aria-hidden="true"><img class="pc-img" src={artSrc(it
+  .img)} alt="">{:else}<svg class="pc-glyph" viewBox="0 0 48 50" aria-hidden
+  ="true"><path d={PRINT_GLYPH[kindKey]} /></svg>{/if}</div>{@render band()}
+  {@render mark()}{/if}` then `<div class="pc-content">{#if bw}<div class=
+  "pc-head" class:withtier={!!tier}>{@render band()}{@render tags()}{@render
+  mark()}</div>{:else}{@render tags()}{/if}<h2 class="pc-name">{nameOf(it,
+  lang)}</h2>{#if armor}{@render thStrip(eq)}{:else if eq}{@render dmgStrip
+  (eq)}{#if eq.alt}{@render dmgStrip(eq.alt)}{/if}{/if}<div class="pc-text">
+  …</div><div class="pc-bottom"><span>Daggerheart</span><span>{src}</span>
+  </div></div></article>` - the band, tags, mark and the two strips as
+  `{#snippet}`s so the two layouts share one definition each (the live
+  builds them once as strings and places them twice). `<h2>`, not the live
+  `<h3>`: axe's `heading-order` (on by default in `test/a11y.ts`) refuses an
+  `h3` straight under the page's `h1`, the pixels are identical (`.pc-name`
+  sets `margin:0` and the whole `font` shorthand), and no spec reads the
+  tag - the same call `RecordCard` made with its `<h2 class="card-name">`.
+  **The `.pc-text` block reproduces `descHtml`'s non-plain branch, not
+  `RecordCard`'s `<p>`s:** `{#each parts as part, i (i)}{#if part.kind ===
+  'list'}<ul class="dlist">{#each part.items as line, k (k)}<li>{#if line
+  .label}<i>{line.label}:</i>{/if}{line.body}</li>{/each}</ul>{:else}{#if i
+  > 0 && parts[i - 1]?.kind === 'line'}<br>{/if}{#if part.label}<i>{part
+  .label}:</i>{/if}{part.body}{/if}{/each}` **written without a newline or
+  space anywhere between those tags** - a leading space at the start of a
+  block is dropped and whitespace between blocks becomes a text node (the
+  B3.5 rule); `part.body` carries its own leading space as an expression.
+  Strips: `dmgStrip(e)` = `<div class="pc-strip"><span class="pc-lead">
+  {@render die(e)}</span><span class="pc-frame"><img class="pc-ribbon" src=
+  {cardArt(e.dt === 'mag' ? 'ribbon-mag' : 'ribbon', bw)} alt=""><span
+  class="pc-cells"><span class="pc-c1" class:wbonus={!!bonus}>{#if bonus}
+  <span class="pc-bonus">{bonus}</span>{/if}{@render box(t.pcDmg, eqWord
+  (EQ_DT, e.dt, lang) || '—')}</span><span class="pc-c2">{@render box(t
+  .pcTrait, eqWord(EQ_TRAIT, e.tr, lang))}</span><span class="pc-c3">{@render
+  box(t.pcRange, eqWord(EQ_RANGE, e.rg, lang))}</span></span></span></div>`
+  with `{ die, bonus } = dmgParts(e.dmg)`; `die(e)` = `<span class="pc-die"
+  class:own class:mag data-die={die}>{#if own}<img src={cardArt(\`die-${die}
+  -${mag ? 'mag' : 'phy'}\`, bw)} alt="">{/if}<b>{die}</b></span>`; `box
+  (label, value)` = `<span class="pc-box"><small>{label}</small><b>{value}
+  </b></span>`; `thStrip(e)` with `th = e.th ?? ['—', '—']` and the
+  `lab`/`box` pair exactly as 3335-3343 (`src="{CARD_DIR}dots{n}.svg"`,
+  `cardArt('thbox', bw)`, `{CARD_DIR}arrow.svg`). `eq.alt` is typed - check
+  `Equip` has `alt?: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>`; add it if it
+  is missing, the data has it (`q23`). Style: style.css 1128-1395 verbatim
+  in order, `.pc-text ul, .pc-text ol` as written, **plus `.pc-text li {
+  margin: 1px 0 }` for the global `.dlist li` the live page still applies**,
+  `.pc-text p` kept as written even though nothing matches it (a verbatim
+  port is easier to audit than a pruned one), and `@media print { .pcard {
+  break-inside: avoid } }`. Nothing in `styles/tokens.css` changes: the
+  card's colours are paper colours (`#fff`, `#000`, `#18171C`, `#75788A`,
+  the golds), not the site's, and `var(--ui)` is the one token it reads.
+  **The fit**, as `$effect(() => { void lang; void bw; void it; fit(card); })`
+  - the three reads are the dependencies (the DOM the effect measures is
+  rendered from them; Svelte runs an effect after the DOM it depends on is
+  updated), and `fit(card)` is `fitPrintCards`'s loop body for one card,
+  ported verbatim: reset **everything it can set** first (`.pc-box b`
+  `font-size`, `.pc-text` `font-size`, `--pcpad`, and `.pc-art`'s `height`,
+  `--artw`, `display` - the live starts from fresh markup every time, so a
+  reset is what makes a re-fit start where the live's starts), then the
+  strip loop, the three text loops and the art geometry, **with the same
+  constants, the same `-= 0.1` / `-= 1.5` steps, the same `toFixed(1)` and
+  the same `> 2.2` / `> 3` / `> 2.6` exits** - the measured `2.2cqw` on every
+  strip value is a floating-point outcome and any "cleaner" arithmetic gives
+  a different number. Do not `await` fonts or images before fitting: the
+  live fits synchronously after render and never again on load, and the
+  bw states' numbers were measured under exactly that timing. `document
+  .createRange` exists in jsdom but its rects are zero, so in a component
+  test every loop exits at once - see the test section for how the loops
+  are still reached.
+- **`components/PrintPage.svelte`** (new). Props: `app: AppState`, `ids:
+  string[]`, `dropped: number`. `const t = $derived(app.t)`, `index`,
+  `items = $derived(index ? ids.flatMap((id) => { const it = index.byId.get
+  (id); return it ? [it] : []; }) : [])`, `sheet = $derived(pages(items))`,
+  `let bw = $state(false)` (page memory, see "Decided"), `say` as the other
+  pages define it. Handlers: `back()` = `if (app.env.router.canGoBack())
+  app.env.router.back(); else app.go(sectionHash('lists'))`; `print()` =
+  `app.env.dialog.print()`; `copyLink()` = `const ok = await app.env
+  .clipboard.writeText(app.linkTo(printHash(ids))); say(ok ? t.linkCopied :
+  t.copyFailed, !ok)`. Markup: `{#if !index}<p class="miss">{t.noData}</p>
+  {:else if !items.length}<h1 class="page-h">{t.printTitle}</h1><p class=
+  "page-sub">{t.printEmpty}</p><Button variant="primary" href={sectionHash
+  ('lists')} sameTab>{t.lists}</Button>{:else}<div class="printbar"><h1
+  class="page-h">{t.printTitle}</h1><p class="page-sub">{sub}</p><div class=
+  "card-acts"><Button onclick={back}><Icon name="back" />{t.back}</Button>
+  <Button variant="primary" onclick={print}><Icon name="print" />{t.printNow}
+  </Button><Seg small options={ART} value={bw ? 'bw' : 'color'} label={t
+  .printTitle} onchange={(v) => { bw = v === 'bw'; }} /><Button onclick=
+  {copyLink}><Icon name="link" />{t.printLink}</Button></div>{#if dropped}
+  <p class="printnote warnnote">{tooMany}</p>{/if}<p class="printnote">{t
+  .printNote}</p></div>{#each sheet.pages as page, i (i)}<div class="psheet"
+  class:bw data-next={i ? '1' : undefined}>{#each page as it (it.id)}
+  <PrintCard {it} lang={app.lang} {bw} artBroken={app.artBroken(it.id)} />
+  {/each}{#if i === sheet.pages.length - 1}{#each { length: sheet.blanks } as
+  _, k (k)}<div class="pcard blank"></div>{/each}{/if}</div>{/each}{/if}` -
+  `sub = $derived(t.printSub.replace('%n', String(items.length)).replace
+  ('%p', String(Math.ceil(items.length / 9))))`, `tooMany` likewise with
+  `PRINT_MAX` and `dropped`, `ART = $derived([{ value: 'color', label: t
+  .printColor }, { value: 'bw', label: t.printBW }] as const)`. Style:
+  `.page-h`/`.page-sub` (the `ListPage` copies, 905-926), `.miss`,
+  `.card-acts` (`ListPage` 984-991, without the inline margin), `.printbar`,
+  `.printnote`, `.printnote.warnnote` (1112-1116), `.psheet` (1118-1126),
+  `.pcard.blank` as `.blank { box-sizing: border-box; background: #fff }`
+  (the blank is this component's element, so `PrintCard`'s `.pcard` rules
+  cannot reach it; `border: 0` is the whole of what `.pcard.blank` adds and
+  the grid sizes the box), and `@media print { .printbar { display: none
+  !important } .psheet { margin: 0; box-shadow: none; break-inside: avoid }
+  .psheet[data-next] { break-before: page } .psheet:last-child { height:
+  296.9mm } :global(*) { -webkit-print-color-adjust: exact; print-color-
+  adjust: exact } }` with the live comments (the Chrome blank-page
+  millimetre, the sheet owning its margins).
+- **`App.svelte`.** `import PrintPage`; `{:else if app.route.kind ===
+  'print'}<PrintPage {app} ids={app.route.ids} dropped={app.route.dropped}
+  />` before the final `{:else}`; the `.todo` comment now names only
+  `unknown`.
+- **`components/a11y.test.ts`.** `COVERED['PrintPage.svelte'] = 'printPage
+  .test.ts, and the black-and-white sheet below'`, `COVERED['PrintCard
+  .svelte'] = 'the same'`, `COVERED['Seg.svelte'] = 'the frame, on every
+  state here and in shell.test.ts; the tables view switch in tables.test.ts;
+  the print sheet below'` replacing the `LangSwitch.svelte` line (357). One
+  state: `{ what: 'a print sheet switched to black and white', route:
+  '#/print/w1-w2', enter: async () => { await press('Чёрно-белая'); } }` -
+  `w1`/`w2` are this file's own `LOOT` rows (check the ids the file
+  defines; use two it has).
+- **`tests/parity/driver.js`**, beside `count`: `media(type)` → `page
+  .emulateMediaType(type)` - `'print'` to emulate, `undefined` to stop
+  (puppeteer 25.9.0, `emulateMediaType(type?: string)`); `computed(selector,
+  props)` → the first match's `getComputedStyle` values for `props`, `null`
+  when nothing matches (the `typeAt` policy on selectors, and the same
+  "null against real numbers fails loudly" reasoning); `eachAt(selector,
+  props)` → for **every** match (`$$eval`, the B6 lesson) `{ x, y, w, h,
+  style: { prop: el.style.getPropertyValue(prop) } }`, `round1`'d - the
+  inline values the fit writes are the only record of what it decided.
+- **`tests/parity/specs.js`.** `const LOOT = require('../../data.json')` at
+  the top (beside the fixture requires; `data.json` is generated from
+  `data.js` and `tests/derived.js` keeps them equal) and three routes built
+  from it and from literals - see the states table. `NAME.ru.printLink =
+  'Ссылка на набор'`, `NAME.en.printLink = 'Link to this set'`. `foundRows
+  .run` logs its figure (`console.log(\`       foundRows ${d.target}: ${rows}\`)`
+  - the seven-space indent `shot()` uses) so a green run still prints 87 /
+  34 / … rather than only comparing them (B6 review risk 3). Four specs:
+  - `sheetCounts` (looks, `only` the eight card states): `{ sheets: count
+    ('.psheet'), cards: count('.pcard'), blanks: count('.pcard.blank'),
+    breaks: count('.psheet[data-next]'), bw: count('.psheet.bw'), warn:
+    count('.printnote.warnnote') }`, logged the same way.
+  - `cardFit` (`perWidth: true`, `only` the eight card states): `{ text:
+    eachAt('.pcard:not(.blank) .pc-text', ['font-size']), box: eachAt
+    ('.pcard:not(.blank) .pc-content', ['--pcpad']), art: eachAt('.pc-art',
+    ['height', '--artw', 'display']), strip: eachAt('.pc-strip .pc-box b',
+    ['font-size']), head: eachAt('.pc-head', []) }` - the fit as numbers, per
+    width, on both apps; what tells a noisy full-page capture from a card
+    that fitted differently (the `geometry` recipe, `docs/parity.md`).
+  - `printMedia` (looks, `only` `#/print/ci1-q1`, `#/print/ci1-q1 ~ black
+    and white`, the ten-card state and `#/print/nope`): `await d.media
+    ('print')`, then in a `try`: `{ header: computed('header', ['display']),
+    nav: computed('nav', ['display']), footer: computed('footer',
+    ['display']), skip: computed('a.skip', ['display']), bar: computed
+    ('.printbar', ['display']), body: computed('body', ['background-color',
+    'color']), main: computed('main', ['max-width', 'width', 'padding-top',
+    'padding-left', 'margin-left']), sheet: computed('.psheet', ['margin-top',
+    'margin-left', 'box-shadow', 'break-inside']), last: computed('.psheet:
+    last-child', ['height']), next: computed('.psheet[data-next]', ['break-
+    before']), card: computed('.pcard', ['break-inside', 'print-color-
+    adjust']) }`, and `finally { await d.media(undefined); }` - it runs
+    before the shots on the same page, so leaving print media on would
+    photograph the wrong medium.
+  - `copiedPrintLink` (presses, `only` `#/print/ci1-q1`): `resetClipboard`,
+    `click(NAME[lang].printLink)`, return `{ hash: clip.text.slice(clip.text
+    .indexOf('#')) }` - the `copiedFilterLink` shape; only the hash is
+    compared because the two apps live at different paths.
+  All four land in `SPECS`.
+- **`docs/specs/FEATURES.md`**, "Print": three clauses the live app has and
+  the spec did not name - the empty address draws the heading, `printEmpty`
+  and a link to the lists; more than 180 ids prints the first 180 and a red
+  note counting the rest; `Назад` steps back in history, or to `#/lists`
+  when there is nothing to step back to.
+- **`docs/specs/COVERAGE.md`**, the unit-suite table: one row for
+  `components/printPage.test.ts` in its neighbours' style (held to
+  `renderPrint`, `printCardHTML` and helpers, `fitPrintCards`, the four
+  handlers: app.js 3235-3558, 4236-4245).
+
+#### Tests
+
+Every component test ends with `expectNoA11yViolations`; the pressed states
+named below get their own axe pass (`COVERAGE.md`).
+
+- **`lib/hash.test.ts`**, in `describe('print')`: (1) `printAsked('ci1-zzz-
+  q26-ci1', knows)` is `['ci1', 'q26']`; (2) 181 known ids parse to a print
+  route with 180 `ids` and `dropped: 1`, 180 give `dropped: 0`; (3) the
+  existing `printIds` cases stay green unchanged.
+- **`lib/print.test.ts`** (new): `cardArt('banner', false)` → `card/banner
+  .svg`, `('banner', true)` → `card/banner-bw.svg`, `('die-d8-phy', true)`
+  → `card/die-d8-bw.svg`, `('ribbon-mag', true)` → `card/ribbon-mag-bw.svg`
+  (the die collapse is the dice's alone); `dmgParts('d8+3')` → `{ die: 'd8',
+  bonus: '+3' }`, `('d6')` → `{ 'd6', '' }`, `(undefined)` → `{ '', '' }`;
+  `pages` of 0 / 2 / 9 / 10 / 180 items → `[[], 0]`, `[[2], 7]`, `[[9], 0]`,
+  `[[9, 1], 8]`, `[[9 x 20], 0]`; `glyphKey` on a weapon, an armour, a
+  consumable, an item; `PRINT_GLYPH` has the five keys and each `d` starts
+  with `M`.
+- **`lib/label.test.ts`**: `printSrc` on a Core item reads `Core`; on a
+  community item `Сообщества · <community>` in Russian and `Communities ·
+  <community>` in English.
+- **`ports/ports.test.ts`**, the dialog block: `browserDialog(win).print()`
+  calls `win.print` once; `fakeDialog().print()` increments `printed`.
+- **`state/app.test.ts`**: `#/print/ci1-zzz` on an app whose data knows
+  `ci1` resolves to `ids: ['ci1'], dropped: 0`; on `noData()` the route is
+  `print` with no ids.
+- **`components/tables.test.ts`, `shell.test.ts`**: nothing new; their view
+  switch and language cases staying green is the proof `Seg` changed
+  nothing. Add one line to `tables.test.ts`: the pressed view button reads
+  `aria-pressed="true"`.
+- **`components/printPage.test.ts`** (new). Harness as `searchPage.test.ts`:
+  `render(App, { env })` with `memoryRouter('#/print/…')` and a `LOOT` of a
+  dozen rows - reuse the `row()` shape - including: an item with `img`, an
+  item without, a consumable, a weapon with `eq: { t: 'weapon', tier: 1, tr:
+  'agility', rg: 'melee', dmg: 'd8', dt: 'phy', bu: 1, cls: 'phy' }`, a
+  two-handed magic versatile weapon (`dmg: 'd6'`, `dt: 'mag'`, `bu: 2`,
+  `cls: 'mag'`, `alt: { tr, rg: 'far', dmg: 'd8', dt: 'mag' }`) with a
+  labelled description (`'Универсальное: …'`), a weapon with `dmg: 'd8+3'`,
+  an armour (`t: 'armor', tier: 2, as: 3, th: [5, 11]`), a `voa` artifact
+  (`tier: 'A'`) whose `rud` has two plain lines and a list, and a community
+  item. Cases:
+  1. **arrival, colour**: `h1` `Печать карточек`; sub `Карточек: 2. Листов
+     A4: 1. …`; no pin button, no help button; the four controls in order
+     `Назад`, `Отправить на печать`, group `Печать карточек` with `Цветная`
+     (`aria-pressed="true"`) and `Чёрно-белая`, `Ссылка на набор`; the
+     note; one `.psheet`, nine `.pcard`, seven `.pcard.blank`, no
+     `[data-next]`; `.pcard[data-pid]` in address order.
+  2. **the loot card**: `.pc-tags` reads `Предмет`; `.pc-img` and `.pc-back`
+     share `src` `img/<file>`; `.pc-back` is `aria-hidden`; no `.pc-tier`,
+     `.pc-strip`, `.pc-thstrip`, `.pc-burden`, `.pc-shield`; `.pc-bottom`
+     `textContent` is exactly `DaggerheartCore`; no `Крафт`/`Craft` text
+     anywhere in the card.
+  3. **no art**: the item without `img` draws `svg.pc-glyph` and no `img`;
+     `markArtBroken(id)` on the item with `img` swaps it to the glyph.
+  4. **the weapon card**: `.pc-tier` `textContent` `1Ранг`; `.pc-tags` two
+     spans `Основное оружие` (`.on`) and `Физическое` (`.out`); `.pc-burden`
+     `small` `Хват` and `img` `src` `card/burden-1.svg`; `.pc-die.own[data-
+     die=d8]` with `img` `card/die-d8-phy.svg` and `b` `d8`; `.pc-ribbon`
+     `card/ribbon.svg`; `.pc-cells` `textContent` exactly `УронфизЧерта
+     ПроворностьДистанцияВплотную`; no `.wbonus`; `.pc-text` `innerHTML`
+     exactly `<i>Надёжное:</i> +1 к Броскам Атаки` for a `rud` of
+     `Надёжное: +1 к Броскам Атаки`.
+  5. **the versatile magic weapon**: two `.pc-strip`; the second's cells
+     name `Далеко`; both `.pc-die.mag`; `.pc-ribbon` `card/ribbon-mag.svg`;
+     `.pc-burden img` `card/burden-2.svg`; `.pc-tag.out` `Магическое`.
+  6. **the bonus**: `d8+3` → `.pc-c1.wbonus` with `.pc-bonus` `+3` and
+     `.pc-die b` `d8`.
+  7. **the armour card**: `.pc-shield` `b` `3`, `i` `Броня`, `img`
+     `card/shield.svg`; no `.pc-burden`, no `.pc-die`; `.pc-thstrip` with
+     three `.pc-th-lab` (`Лёгкий урон`, `Ощутимый урон`, `Тяжёлый урон`,
+     dots `card/dots1.svg`..`dots3.svg`), two `.pc-th-box` (`5`, `11`, img
+     `card/thbox.svg`), two `.pc-th-arrow` `card/arrow.svg`; `.pc-tier`
+     `2Ранг`; `.pc-tags` one span `Броня`.
+  8. **the artifact**: no `.pc-tier`; `.pc-tag.on` `Артефакт`; `.pc-text`
+     `innerHTML` is `line one<br>line two<ul class="dlist"><li>…</li><li>…
+     </li></ul>` for a `rud` of `line one\nline two\n- a\n- b` - no `<p>`,
+     no `<br>` before the list, no whitespace between tags; and a `voa` line
+     with a label keeps the label's `<i>` (`hasLabels`).
+  9. **the community card**: `.pc-bottom` last span `Сообщества · <name>`.
+  10. **black and white**: press `Чёрно-белая` → it reads `aria-pressed=
+      "true"`, `Цветная` `"false"`; `.psheet.bw`, every `.pcard.bw`; no
+      `.pc-art`, `.pc-img`, `.pc-back`, `.pc-glyph` anywhere; the weapon
+      card has `.pc-head.withtier` holding `.pc-tier` then `.pc-tags` then
+      `.pc-burden` in that order, and its band `img` is `card/banner-bw.svg`,
+      the hands `card/burden-2-bw.svg` (the two-handed one), the die
+      `card/die-d6-bw.svg`, the magic ribbon `card/ribbon-mag-bw.svg`, the
+      shield `card/shield-bw.svg`, the threshold box `card/thbox-bw.svg`
+      while the dots and the arrow keep their plain names; the loot card's
+      `.pc-head` has no `withtier`; press `Цветная` → `.pc-art` is back.
+  11. **the second sheet**: `#/print/<ten ids>` → two `.psheet`, the second
+      with `data-next="1"`, 18 `.pcard`, 8 `.pcard.blank` all on the second
+      sheet, none on the first; sub `Карточек: 10. Листов A4: 2.`; no
+      `.warnnote`.
+  12. **the cap**: a `LOOT` of 181 `core_item` rows `Много N` (built with
+      `Array.from`, the B6 precedent), the address naming all 181 → 180
+      non-blank `.pcard`, 20 `.psheet`, `.printnote.warnnote` reading `За
+      один раз печатается 180 карточек, остальные 1 в лист не попали.
+      Разделите набор на части.`; unknown and repeated ids in the address
+      are dropped before counting (`#/print/ci1-ci1-zzz` → one card, no
+      note).
+  13. **nothing to print**: `#/print/zzz` → `h1` `Печать карточек`, sub
+      `Печатать нечего: в адресе не нашлось ни одной вещи.`, a link `Списки`
+      with `href` `#/lists` carrying `btn primary`; no `.printbar`, no
+      `.psheet`, no note.
+  14. **back**: with `memoryRouter` reporting `canGoBack()` true, `Назад`
+      calls `back()` once; with it false, the hash becomes `#/lists`.
+  15. **print**: `Отправить на печать` → `fakeDialog().printed` is 1.
+  16. **the link**: `Ссылка на набор` → `fakeClipboard` holds `<base>#/print/
+      ci1-q1` (the ids as parsed, not the raw address: for `#/print/ci1-zzz-
+      ci1-q1` it is still `#/print/ci1-q1`), toast `Ссылка скопирована`; a
+      clipboard that refuses → `Не удалось скопировать` (or whatever
+      `t.copyFailed` reads) as an error toast.
+  17. **the fit is wired**: jsdom lays nothing out - `clientWidth`,
+      `clientHeight`, `offsetTop` and a `Range`'s rect are all zero, so
+      every loop exits at once and the art arithmetic divides by zero. For
+      the duration of this case, `Object.defineProperty` getters on
+      `HTMLElement.prototype`: `clientWidth` → 238, `clientHeight` → 100,
+      `offsetTop` → 0, `scrollHeight` → 140 for an element with class
+      `pc-text` (always tight) and 100 otherwise; and `Range.prototype
+      .getBoundingClientRect` → `{ width: 9999 }` (always over). Render
+      `#/print/<the weapon>` and assert the floors the live arithmetic
+      reaches - **computed in planning, not reasoned**: every `.pc-strip
+      .pc-box b` has inline `font-size: 2.2cqw`; `.pc-text` `font-size:
+      2.6cqw` (the first ladder stops at `3.0cqw`, the second at `2.6cqw`);
+      `.pc-content` `--pcpad: 8cqw`; `.pc-art` `height: 14cqw`, `--artw:
+      7cqw`, `display: none` (`line = 0 + 8`, `top = 0`, `8 < 24`). Press
+      `Чёрно-белая` → `--pcpad` is **`2.8cqw`** (`5.8 - 1.5 - 1.5`; the
+      loop stops when `pad > 3` fails, so the floor is below 3, not at it)
+      and `.pc-text` again `2.6cqw`. Restore the prototypes in `finally`.
+      This is the one place the loop bodies are reached under coverage; the
+      real numbers are the parity `cardFit` spec's.
+  18. **no data**: `noData()` → `Данные не загрузились. Обновите страницу.`
+      and nothing else.
+  19. **English**: press `EN` → `h1` `Printing cards`, sub `Cards: 2. A4
+      sheets: 1. …`, `Back`, `Send to printer`, `Colour`/`Black and white`,
+      `Link to this set`, the note; the weapon card `1Tier`, `Primary
+      weapon`, `Physical`, `Burden`, `DamagephyTraitAgilityRangeMelee`, the
+      armour `Minor damage`…`Severe damage`, `Armor`; the artifact
+      `Artifact`; `document.title` `Daggerheart Loot Generator`.
+  20. **axe**: `expectNoA11yViolations` on (a) the colour sheet, (b) the
+      black-and-white sheet, (c) the empty page.
+
+#### Parity states, each in both languages at three widths
+
+The `{ id: '#/print/ci1-q1', …, pending: 'print slice' }` line (specs.js
+1643) is replaced by these nine; nothing in `STATES` is `pending` after
+this. Every `enter` grips the Russian name; none is `timed` (the link press
+is a `presses` spec on a fresh arrival, so its toast never reaches a shot);
+none needs `storage`. Routes: `NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-
+w51-q35-di11'`, `LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-
+voa2_t4d-voa2_c1-voa2_a6-di11'` (`tests/print.js`'s own long-text set),
+`TEN = '#/print/' + ids ci1..ci10`, `TOO_MANY = '#/print/' + Object.values
+(LOOT.items).flat().slice(0, 181).map((x) => x.id).join('-')` (884
+characters; `core_item`, `core_consumable`, `hnf_item` and `hc1`).
+
+| id | route | enter | whole | why |
+|---|---|---|---|---|
+| `#/print/ci1-q1` | `#/print/ci1-q1` | - | - | a print sheet: a loot card with its art beside a weapon card, seven blank places |
+| `#/print/ci1-q1 ~ black and white` | `#/print/ci1-q1` | `click('Чёрно-белая')` | - | the other layout: no art, the band, the tag and the mark in a row over the name, `-bw` vectors |
+| `NINE` | `NINE` | - | yes | every card shape on one sheet: item, weapon, armour, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule |
+| `NINE ~ black and white` | `NINE` | `click('Чёрно-белая')` | yes | the same nine, the other layout |
+| `LONG` | `LONG` | - | yes | the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalogue |
+| `LONG ~ black and white` | `LONG` | `click('Чёрно-белая')` | yes | the same, with the black-and-white padding floor |
+| `TEN` | `TEN` | - | - | a second sheet: eighteen places, eight blank, the second sheet a page break; `Листов A4: 2` |
+| `#/print/<181 ids> ~ too many` | `TOO_MANY` | - | - | the cap: 180 cards on twenty sheets and the red note about the one left out |
+| `#/print/nope` | `#/print/nope` | - | - | nothing to print: the heading, the note and the way to the lists |
+
+The two nine-card ids are their literal routes (long, but exact); the
+181-id one carries `<181 ids>` in its id and the built route in `route`.
+`whole: true` on the four nine-card states because a 900px fold shows only
+the top row of a 1122px sheet - six of nine cards would never be looked at;
+`cardFit` runs on them per width so a red `whole` cell can be read as the
+capture class or as a card that fitted differently before anyone opens a
+diff image (`docs/parity.md`, "Two unstable classes", the `geometry`
+recipe). The fold shows both cards of `ci1-q1` whole at 1100 (the row ends
+at y=737); at 768 and 375 it shows the sheet's left edge, the same on both
+apps. Nothing here needs an `ACCEPTED` entry: every control name is a
+dictionary string on both sides, and `aria-pressed` is not a name.
+
+Spec changes: `sheetCounts`, `cardFit`, `printMedia`, `copiedPrintLink` as
+above; `NAME` gains `printLink`; `foundRows` logs; `typeRuns` unchanged
+(there is no search box or filter label on a print page; `visuals` reads the
+heading). `VISUAL_DEBT`, `ACCEPTED`: no entries expected. A red cell is a
+defect to fix, not a number to write - and a `whole` cell that is red
+locally while `cardFit` agrees on both apps is the capture class CI decides
+(owner decision 1).
+
+#### Ordered steps
+
+One code commit. The planning docs land first, on their own commit with an
+explicit pathspec (`issues/47/plan.md issues/47/handoff.md issues/47/
+context.md`), as B6's did. Each check is `set -o pipefail; npm run check
+2>&1 | tail -n 120`, one foreground call, Bash timeout 600000; the last one
+runs after the doc edits, immediately before `git commit`. Re-read `git log
+--oneline -3` before the commit: peer sessions share this tree.
+
+1. `lib/types.ts` (`th`, and `alt` on `Equip` if it is missing); `lib/hash
+   .ts` (`printAsked`, `dropped`) + cases; `lib/dict.ts` (17 keys, both
+   blocks); `lib/icons.ts` (`back`); `lib/label.ts` (`printSrc`) + cases;
+   `lib/print.ts` + `print.test.ts`; `ports/types.ts` + `ports/dialog.ts` +
+   cases; `state/app.svelte.ts` (`route` passes `knows`) + cases. `npx
+   vitest run app/src/lib app/src/ports app/src/state` green.
+2. `Seg.svelte`; `Shell.svelte` uses it (and gains its `@media print` block
+   and `@page`); `TablesPage.svelte` uses it, its `.seg*` rules go; delete
+   `LangSwitch.svelte`; `SelBar.svelte` and `Toast.svelte` print rules.
+   `npx vitest run app/src/components/shell.test.ts app/src/components/
+   tables.test.ts` green (the one added `aria-pressed` line aside).
+3. `PrintCard.svelte`, `PrintPage.svelte`; `App.svelte`; `a11y.test.ts`
+   (`COVERED` x3, the `LangSwitch` line gone, the state).
+4. `components/printPage.test.ts` (the twenty cases).
+5. `tests/parity/driver.js` (`media`, `computed`, `eachAt`); `tests/parity/
+   specs.js` (the `data.json` require and the three routes, the nine states
+   in place of the `pending` line, `NAME.printLink`, the four specs in
+   `SPECS`, `foundRows`' log line).
+6. `docs/specs/FEATURES.md` (three clauses), `docs/specs/COVERAGE.md` (the
+   row).
+7. `npm run check` green (fix, do not skip; a run that crosses the 600s cap
+   is re-run, not salvaged - `context.md`, "`npm run check`, settled").
+8. `npm run build`; `grep -c "@page" dist/assets/*.css` reads 1; `ls dist/
+   card | wc -l` reads 35 (the junction is there). Then the parity loop, one
+   foreground call per group, none merged, `MSYS_NO_PATHCONV=1` in front of
+   each:
+   - **group A** - `node tests/parity.js "#/print"` - 9 states, 54 cells
+     (24 of them `whole`), plus `sheetCounts` x8, `cardFit` x8 per width,
+     `printMedia` x4, `copiedPrintLink` x1, `visuals`, `inventory`,
+     `heading`, `title` on each. Under the pre-B4 `tables` run (192 cells,
+     ~9 min); the four `whole` states retake until stable.
+   - **group B**, the regression - `node tests/parity.js "#/roll/std @"
+     "#/tables @" "#/tables ~ grid" "#/lists @" "#/search ~ searched"` - 5
+     states, 30 cells: the topbar's `Seg` on three pages in both languages
+     at three widths (every page draws it; a moved pixel there would be red
+     everywhere, so three are enough), the tables view switch at rest and
+     pressed, `#/tables`'s `typeRuns` cells through the widened `search`
+     probe (B6 review risk 1, read locally now; CI stays the authority) and
+     its toolbar box photographed unfocused (risk 2), and `foundRows`
+     printing 87 on `~ searched` (risk 3).
+   Every cell zero; open a diff image before touching any value. A red
+   `whole` print cell: read `cardFit` for that width first - agreeing on
+   both apps with a diff image that is scattered noise is the capture class
+   (CI decides; write nothing); a `cardFit` difference is a fit that ran at
+   a different moment or with different arithmetic, and the fix is in
+   `PrintCard`'s effect, never in a number. A difference in `printMedia`
+   is a missing print rule.
+9. `npm run check:built` (the screen changes; the bundle budget - the card
+   CSS is ~8 kB before gzip, well inside the 120 kB).
+10. `plan.md` "B7 built" (what shipped, exact commands and results, any
+    deviation, the `cardFit` and `sheetCounts` figures as printed), `handoff
+    .md` (Status, Completed, Verification, Next batch = Phase 4 is complete
+    and what follows, Deferred as noted), `context.md` only for a durable
+    fact learned.
+11. `npm run check` again (the docs moved the fingerprint); commit
+    `feat(print): the print sheet`. No push.
+
+**Fits one implement cycle, and is one batch, not two.** Sized by its gates
+(`CLAUDE.md`, "Task and session protocol"; `docs/parity.md`, "Batch size"):
+one component set, no seed, one filter (`"#/print"`) plus one regression
+group; ~30 paths - more than B6's ~20 but under B5.4a's 43, and most of the
+weight is one verbatim CSS block and one test file. Nothing here is a
+contract change or a different route-and-filter set: the bar, the sheet and
+both card layouts are one route and one filter, and the colour and
+black-and-white cards share every helper, every strip and the fit, so a
+batch that shipped colour first would pay a second `check`, `check:built`
+and a second `"#/print"` run to add an `{#if bw}` branch and 40 lines of
+`.bw` rules - the "too small" case the rule names. The `Seg` extraction is
+the one piece that could stand alone, and it is ~40 lines whose regression
+group B is what tells it apart from the page in a red run anyway. The
+harness verbs are three, all land with the specs that use them.
+
+#### Acceptance criteria
+
+- `npm run check` exit 0 before the commit; thresholds met with
+  `PrintPage.svelte`, `PrintCard.svelte` (the fit loops reached by case
+  17), `Seg.svelte`, `lib/print.ts`, `hash.ts`'s `printAsked` and
+  `dialog.ts`'s `print` all covered; `LangSwitch.svelte` gone and the
+  `a11y.test.ts` guard passing with the three new components named.
+- All nine `#/print` states read `совпадает` in both languages at 1100, 768
+  and 375; `sheetCounts` prints `1/9/7/0`, `1/9/7/0/bw 1`, `1/9/0`, `1/9/0/
+  bw 1`, `1/9/0`, `1/9/0/bw 1`, `2/18/8/1`, `20/180/0/19/warn 1` and the
+  empty page draws none; `cardFit` agrees on both apps at every width and
+  its strip values all read `2.2cqw`, `voa2_a3`'s text `3.3cqw` in colour
+  and its art `32.8136cqw`; `printMedia` agrees on both apps on all four
+  states; `copiedPrintLink` reads `#/print/ci1-q1` on both.
+- Group B reads `совпадает` throughout; `foundRows` prints 87 for `~
+  searched` on both apps; the `#/tables` `typeRuns` cells agree.
+- `npm run check:built` exit 0; `dist/assets/*.css` carries one `@page`.
+- No `VISUAL_DEBT` entry written; no `ACCEPTED` entry added; no `pending`
+  state left in `specs.js`.
+- `TablesPage.svelte` has no `.seg` rule; `Shell.svelte` imports `Seg`;
+  `RecordCard.svelte` is untouched.
+- `FEATURES.md` "Print" names the empty page, the cap note and the back
+  button; `COVERAGE.md` has the row.
+- `handoff.md` "Deferred" marks B6 risks 1-3 as read locally by group B and
+  names the CI run as the remaining authority; the page-furniture pass is
+  the recorded next thing.
+
+#### Risks and do-nots
+
+- Do not build the card's text from `RecordCard`'s `<p>` markup, and do not
+  leave a newline between the tags of the `.pc-text` block; case 8 pins the
+  exact `innerHTML`.
+- Do not "tidy" the fit: same constants, same steps, same `toFixed(1)`,
+  same exits, same order (strip, font, padding, font, art); reset first;
+  never wait for fonts or images before it.
+- Do not put `printBW` on `AppState`, and do not clear or persist it
+  anywhere (see "Decided").
+- Do not draw the pin button, the help button or `PageHead` on the print
+  page; the live head is a bare `h1` and `p`.
+- Do not use `PageHead`'s `.page-head` wrapper either; the `h1` sits
+  directly in `.printbar` (its `margin:0 0 4px` is the whole spacing).
+- Do not give the print images `loading="lazy"`, `data-art` or an `onerror`
+  - the live card has none, and `ready()` waits on images by `complete`.
+- Do not omit `aria-hidden="true"` on `.pc-back` or the `alt=""` on every
+  card vector.
+- Do not write `dots<n>` or `arrow` through `cardArt` - they never take
+  `-bw`.
+- Do not port `.pcard.blank` into `PrintCard` - the blank is `PrintPage`'s
+  element.
+- Do not use `<h3>` for the card name (axe) and do not use anything but a
+  heading either - `RecordCard` set the precedent with `<h2>`.
+- Do not leave print media on after `printMedia` runs - the `finally` is
+  load-bearing.
+- Do not `page.$eval` in the new verbs where every match matters (`eachAt`
+  is `$$eval`).
+- Do not mark any state `timed`; do not add a toast state for the link.
+- Do not write a `VISUAL_DEBT` number from this host, on a `whole` cell
+  least of all.
+- Do not touch `tests/print.js`, `card/`, `CONTRACTS.md` or the fixtures.
+- Two commits total (planning docs, then code), no push, no attribution
+  trailer.
+
+#### Decided in planning - do not reopen
+
+- **No Figma export, no design access.** Every vector the sheet draws is in
+  `card/`, referenced by name from `app.js`, junctioned into `dist/` by the
+  build, and frozen as a public asset path. The port is a parity port; the
+  Figma nodes are provenance. The orchestrator need not ask the owner for
+  anything.
+- **One batch.** Colour and black-and-white are two layouts that share one
+  route, one filter, every helper and the fit; the split the product law
+  insists on is in the markup and the CSS, not in the schedule.
+- **`bw` is the page's memory.** The live `S.printBW` survives leaving the
+  page (app memory, never stored - `STATE.md` lists it under memory-only);
+  the rewrite's `PrintPage` remounts on every navigation and forgets it,
+  the same intentional divergence B6 recorded for `search.q` and `TablesPage`
+  records for its `q`: one page's own memory is not a cross-page contract,
+  no state can observe it, and a per-page value on `AppState` for one caller
+  is the shape this migration keeps declining. Recorded in Decisions with
+  the other two.
+- **`Seg` is extracted now, and `aria-pressed` goes on every use.** Third
+  use of the same rule set; the live language segment writes `aria-pressed`
+  and the view and print segments do not; one component either drops it
+  from the language pair (a regression) or adds it to the other two (an
+  improvement no spec reads). The latter.
+- **`<h2 class="pc-name">`.** axe's `heading-order` is on, the pixels are
+  identical, and `RecordCard` already made the same call.
+- **`DialogPort.print()`**, not a new port: the print dialog is the
+  browser's own dialog, the port already exists with one method, and a
+  new `Env` key would touch every `fakeEnv` caller for one line.
+- **`dropped` on the route, `knows` from `AppState`.** The cap is the
+  route's rule (`PRINT_MAX` lives in `hash.ts`); the page should not
+  re-parse the address to learn what the parser threw away.
+- **`whole: true` on the four nine-card states, with `cardFit` beside it.**
+  A fold that shows three cards of nine is not a comparison of the sheet;
+  the capture class is documented, the retake is in `shot()`, and `cardFit`
+  is the number that says which class a red cell is.
+- **The 181-id state is built from `data.json`** rather than typed: 884
+  characters nobody should maintain by hand, and `tests/derived.js` keeps
+  the file equal to `data.js`.
+- **No mock.** The page is transcribed from `app.js`/`style.css` line by
+  line and measured live; the harness is the proof.
 
 ## Phase 5 - what already exists
 

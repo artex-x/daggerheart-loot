@@ -6,6 +6,37 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B7 planned and implement-ready - the print slice, one
+  batch, the last of Phase 4** (planner, 2026-09-11, on `d696675`, working
+  tree clean but for the orchestrator's own `context.md` kickoff section,
+  kept and committed with this pass). The surface was read off `app.js`
+  3220-3558 / `style.css` 1112-1414 and measured live in headless Chrome on
+  four routes at three widths, in colour, after the black-and-white press,
+  after `EN`, and under emulated print media, rather than remembered.
+  **The Figma question is settled: no design access is needed.** Every
+  vector the sheet draws is already exported into `card/` (35 files, named
+  by `app.js`'s own `cardArt()`), the build junctions `card/` into `dist/`,
+  and `CONTRACTS.md` freezes the path; the port is a parity port of live
+  code and the Figma nodes are its provenance, not an input. What is new is
+  `PrintPage.svelte` + `PrintCard.svelte` (both layouts branching in the
+  markup, the fit ported verbatim as a `$effect` - the measured `2.2cqw`
+  strip floor is a floating-point outcome, so the arithmetic is copied, not
+  improved), `Seg.svelte` extracted on the `.seg` control's *third* use
+  (`LangSwitch.svelte` and `TablesPage.svelte`'s copy both go),
+  `lib/print.ts`, `printAsked`/`dropped` on the route with `AppState.route`
+  finally passing `knows`, `DialogPort.print()`, `printSrc`, 17 dictionary
+  keys, the `back` icon, the `@media print` rules across `Shell`/`PrintPage`
+  /`PrintCard`/`SelBar`/`Toast`, three driver verbs (`media`, `computed`,
+  `eachAt`) and four specs (`sheetCounts`, `cardFit`, `printMedia`,
+  `copiedPrintLink`). Nine parity states replace the single `pending` line -
+  the last one in `specs.js` - four of them `whole` with `cardFit` beside
+  them. Sized by its gates: group A `"#/print"` (54 cells) and a
+  five-state regression group B (30 cells) that also reads B6's three
+  carried review risks locally; one code commit. Eleven ordered steps,
+  twenty component cases, exact tests per file. No production code
+  touched; no check run (a planning pass needs none). NEEDS_HUMAN_
+  CONFIRMATION: no.
+
 - Task status: **B6 is reviewed and approved - the search slice is closed,
   and print is the only Phase 4 slice left.** (reviewer, 2026-09-11, on
   `9d5ca02`). **Verdict: approve, no blockers**, and no remediation cycle
@@ -2255,41 +2286,112 @@ entries above and `plan.md`, "B6 built"). The search slice is done;
 implement-ready brief is not repeated here - it is `plan.md`, "B6 planned",
 in full, and its measurements are `context.md`, "B6 planning facts".
 
-**Print (`#/print/ci1-q1`) is the only Phase 4 slice left, and it needs a
-planning pass before it is implement-ready.** The next step is a planner
-dispatch, not an implementer one.
+**B7 is planned and implement-ready** (planner, 2026-09-11). The full
+design, the measured live surface, the per-file build notes, the twenty
+component cases and the nine parity states are `plan.md`, "B7 planned: the
+print slice - one batch"; the measurements are `context.md`, "B7 planning
+facts". This brief is the entry point; the plan is the authority where the
+two differ in detail.
 
-- **Name:** not yet chosen - the print slice, unscoped.
-- **Why it is not implement-ready:** unlike search, print has no measured
-  surface and no planning notes anywhere in `plan.md`.
-- **Evidence to open before any visual work**, per `CLAUDE.md`, "Product
-  laws" and "Source and commit conventions": the Figma print design,
-  `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (colour) and `3773-90792`
-  (black-and-white). Export the vectors; do not redraw them.
-- **The blocker on that evidence:** the Figma connector was
-  **unauthenticated** in the 2026-09-11 session and cannot be authorized
-  from a non-interactive one. The repository owner authorizes it from
-  claude.ai connector settings or an interactive `claude mcp` / `/mcp`
-  session. A planning pass can measure the live `#/print/...` surface off
-  `app.js`/`style.css` without it, but the design-node comparison cannot
-  happen until it is connected.
-- **Product laws that bind this slice** (`CLAUDE.md`): nine 63x88 mm cards
-  per A4 sheet; colour and black-and-white are **distinct layouts**, not a
-  filter over one; browser-measured fitting is preserved. `FEATURES.md`
-  documents the behaviour.
-- **Two things B6's review says to read on the next CI run, before or
-  alongside the print pass** (full text in "Deferred", risks 1-2): the
-  seven `typeRuns` tables cells and the plain `#/tables` cells. B6 widened
-  the `typeRuns` `search` selector and neither of its parity groups
-  exercises those states; the widening was verified by inspection only.
-- **NEEDS_HUMAN_CONFIRMATION: no** for planning the slice - but the Figma
-  authorization is human action the owner must take before the visual work
-  inside it can be done.
+- **Name:** B7 - the print slice, one batch (`#/print/<ids>`, both card
+  layouts, the fit, the print stylesheet, the `Seg` extraction).
+- **Objective:** `#/print/<ids>` draws the live `renderPrint` - the bar
+  (heading, count line, `Назад` / `Отправить на печать` / colour-or-bw
+  segment / `Ссылка на набор`, the red cap note, the print-dialog note),
+  A4 sheets of nine 63x88 mm places with blanks after the last card and a
+  page break from the second sheet on, and the empty page for an address
+  naming nothing; each card is `printCardHTML` in **both** layouts, colour
+  and black-and-white branching in the markup; the fit is `fitPrintCards`
+  ported verbatim (strip values, then font, padding, font, then the art
+  follows the white block), run after every render and never on load; the
+  `@media print` block goes with it. No `pending` state remains.
+- **Figma:** not needed - `plan.md`, "The Figma question, settled". Do not
+  wait for the connector; do not ask the owner for an export.
+- **In scope:** `lib/hash.ts` (`printAsked`, `dropped` on the print route),
+  `lib/types.ts` (`th` as `[number, number] | null`; `alt` on `Equip` if
+  missing), `lib/dict.ts` (17 keys, both blocks, verbatim from app.js
+  123-134 / 307-318), `lib/icons.ts` (`back`), `lib/label.ts` (`printSrc`),
+  `lib/print.ts` (new: `PRINT_GLYPH`, `glyphKey`, `cardArt`, `CARD_DIR`,
+  `dmgParts`, `DIE_ART`, `pages`), `ports/types.ts` + `ports/dialog.ts`
+  (`print()`), `state/app.svelte.ts` (`route` passes `index.byId.has`),
+  `components/Seg.svelte` (new), `Shell.svelte` + `TablesPage.svelte` (use
+  it; `LangSwitch.svelte` deleted; `TablesPage`'s `.seg*` rules deleted),
+  `components/PrintPage.svelte`, `components/PrintCard.svelte`,
+  `components/printPage.test.ts` (all new), `Shell`/`SelBar`/`Toast`
+  (`@media print`), `App.svelte` (the route), `a11y.test.ts` (`COVERED`
+  x3, one pressed state), `tests/parity/driver.js` (`media`, `computed`,
+  `eachAt`), `tests/parity/specs.js` (nine states, four specs, `NAME
+  .printLink`, a `data.json` require, `foundRows` logs its figure),
+  `docs/specs/FEATURES.md` (three "Print" clauses), `docs/specs/COVERAGE.md`
+  (one row), plus the unit cases listed per file in the plan.
+- **Out of scope:** contracts, fixtures, `ROUTES.md`, `llms.txt`,
+  `tests/print.js`, `card/`, `printBW` on `AppState`, the page-furniture
+  extraction pass (the recorded next thing), `Button.svelte`'s missing
+  focus ring (recorded below).
+- **Files expected:** the list above; roughly 30 paths.
+- **Steps:** `plan.md`, "B7 planned", "Ordered steps" 1-11 - libs, ports
+  and state first (unit green), then `Seg` and the print rules in the
+  frame (shell/tables green), then the two page components and `App`,
+  then the component test, then the harness, then the docs, then `npm run
+  check`, `npm run build` (+ `grep -c "@page" dist/assets/*.css` = 1, `ls
+  dist/card | wc -l` = 35), the two parity groups, `npm run check:built`,
+  the doc closeout, a final `npm run check`, one commit `feat(print): the
+  print sheet`.
+- **Acceptance criteria:** `plan.md`, "Acceptance criteria" - in short:
+  check and check:built exit 0 with every new file covered and
+  `LangSwitch.svelte` gone; all 54 `#/print` cells `совпадает`, `cardFit`
+  agreeing on both apps at every width with every strip value `2.2cqw`,
+  `sheetCounts` printing the counts the plan lists, `printMedia` agreeing
+  on all four states, `copiedPrintLink` reading `#/print/ci1-q1`; group B's
+  30 cells `совпадает` with `foundRows` printing 87; no `VISUAL_DEBT`, no
+  `ACCEPTED`, no `pending`.
+- **Verification commands** (each its own foreground call, Bash timeout
+  600000): `set -o pipefail; npm run check 2>&1 | tail -n 120`; `npm run
+  build`; `MSYS_NO_PATHCONV=1 node tests/parity.js "#/print"` (group A, 9
+  states, 54 cells, 24 of them `whole`); `MSYS_NO_PATHCONV=1 node
+  tests/parity.js "#/roll/std @" "#/tables @" "#/tables ~ grid" "#/lists @"
+  "#/search ~ searched"` (group B, 5 states, 30 cells); `npm run
+  check:built`. Focused while building: `npx vitest run app/src/lib
+  app/src/ports app/src/state`, then the named component files.
+- **Risks / do-nots:** `plan.md`, "Risks and do-nots" - the ones that bite
+  first: the `.pc-text` block is `descHtml`'s `<br>`/`<ul class="dlist">`
+  markup with no whitespace between tags, not `RecordCard`'s `<p>`s (case 8
+  pins the `innerHTML`); the fit keeps the live constants, steps,
+  `toFixed(1)` and exits verbatim and resets everything it sets before
+  measuring, and never awaits fonts or images; `bw` stays page-local; the
+  head is a bare `h1` + `p`, no `PageHead`; `dots<n>`/`arrow` never go
+  through `cardArt`; `<h2>` for the card name; `printMedia` restores the
+  medium in a `finally`; `eachAt` is `$$eval`; no `timed` state; no debt
+  number from this host, on a `whole` cell least of all.
+- **Fallback:** none needed. If a `whole` print cell is red locally while
+  `cardFit` agrees on both apps and the diff image is scattered noise, it
+  is the documented capture class - write nothing and let CI read it.
+- **Carried into this batch from B6's review** (Deferred, risks 1-3):
+  group B reads `#/tables`'s `typeRuns` cells through the widened `search`
+  probe and photographs its toolbar box unfocused, and `foundRows` now
+  prints its figure; **CI remains the authority on the seven `typeRuns`
+  tables cells** - see "Blockers", the CI read.
+- **After B7:** Phase 4 is complete. The next planning question is the
+  page-furniture extraction pass (`.panel` x6, `.page-h`/`.page-sub` x3+,
+  `.card-acts` x3, `.miss` x3, `toggleAllIn` x2) and then Phase 5's
+  Playwright question and Phase 7's cut-over - the orchestrator's routing,
+  not this brief's.
+- **NEEDS_HUMAN_CONFIRMATION: no.**
 - **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
-  naming the deleted `todo` paragraph - neither B6 nor a print batch opens
-  that file, so it waits for whatever does.
+  naming the deleted `todo` paragraph - B7 does not open that file either.
 
 ## Blockers
+
+- **None for B7's implementation** (planner, 2026-09-11). The Figma
+  connector's unauthenticated state is **not** a blocker: the port needs no
+  export (`plan.md`, "B7 planned", "The Figma question, settled"). What is
+  owner action, and not blocking: the **CI read** after the next push -
+  whoever reads it should look at (a) the seven `typeRuns` tables cells
+  and the plain `#/tables` cells (B6 review risk 1 - group B reads
+  `#/tables` locally; the other six are CI's), (b) the 54 new `#/print`
+  cells, especially the 24 `whole` ones, which may read differently on
+  ubuntu than on this host and which owner decision 1 says CI decides,
+  and (c) `foundRows`' printed figures in the log.
 
 - **RESOLVED: B5.4a's review against `8873473` - the grip was inert**
   (reviewer, then implementer, 2026-09-11). `ListPage.svelte`'s
@@ -2690,6 +2792,18 @@ dispatch, not an implementer one.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **Assigned by the B7 planning pass (planner, 2026-09-11):** B6 review
+  risks 1-3 are folded into B7's group B and the `foundRows` log line
+  (risk 1 for `#/tables` locally, CI for the other six cells; risk 2 by
+  the plain `#/tables` cell; risk 3 by printing the figure). B6 nits 4-11
+  stay as written. Noticed while reading `style.css:1002-1005` for `Seg`:
+  **`Button.svelte` ports no `.btn:focus-visible` rule** - the live gives
+  every `.btn` a 2px gold outline at 2px offset and the rewrite shows the
+  browser's default ring; `Seg` gets its own ring in B7 (a touched path),
+  `Button` is not B7's file and waits for whatever next opens it. Also for
+  the page-furniture pass after B7: `.page-h`/`.page-sub` reach a fourth
+  copy (`PrintPage`), `.card-acts` a third, `.miss` a third.
 
 - **B6's review findings (reviewer, 2026-09-11, on `9d5ca02`) - recorded,
   not fixed; the verdict was approve and no remediation cycle was spent.**
