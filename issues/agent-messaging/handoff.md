@@ -41,9 +41,9 @@ Recovery state for the next session. Read `CLAUDE.md`, then
   `issues/agent-messaging/handoff.md`, `issues/agent-messaging/context.md`.
   Nothing outside this list. `issues/tg-preview-refresh/` (untracked,
   another task's) was left untouched and unstaged throughout.
-- Commit(s): one commit, `docs(agents): a finished worker is resumed, not
+- Commit(s): `02bd1af` - `docs(agents): a finished worker is resumed, not
   replaced, and review still returns to the orchestrator`, staged by name
-  (never `git add -A`) - see `git log -1` for the hash.
+  (never `git add -A`).
 - Deviations and rationale:
   1. **`orchestrate.prompt.md` is 313 lines, not <=310.** The plan's
      acceptance criterion names a deviation band of 311-315 and says to
