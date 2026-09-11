@@ -27,10 +27,12 @@ depends on chat history.
   app** - "приложение открылось не на поиске", selector `.subchips .chip.on`
   - which none of B8's five paths can reach (a parity spec file, a tools
   README, three `issues/47/*.md`), which was green on `9fd3000` an hour
-  earlier, and which the owner identified as flaky and re-ran (attempt 2, in
-  flight at closeout; a re-run of failed jobs does not re-run the four green
-  parity shards). That re-run is the owner's to read. It does not gate B8,
-  whose closing condition was the parity read and has it. No reviewer: B8
+  earlier, and which the owner identified as flaky and re-ran. **Attempt 2
+  passed**, so the flake is confirmed rather than asserted and run
+  `34628983995` is green end to end - `check` in 3m47s, all four parity
+  shards, `audit`, `secrets`, and `deploy`, which had been skipped behind the
+  red `check` on attempt 1 and on the two runs before it. `main` is green for
+  the first time since `37ecc8d`. No reviewer: B8
   changed no production code, no contract and nothing a screen draws, so no
   risk rule in `orchestrate.prompt.md` applies. Next: a planning pass on B9
   or B10 - **B9 needs an owner answer first**. See "Next batch".
@@ -2789,8 +2791,8 @@ planning pass is next, not an implementer.**
   consecutive run. **Not part of this entry, and not B8's:** the same run's
   `check` job failed on the legacy `behave` suite against the live app
   (`.subchips .chip.on`), green on `9fd3000` an hour before and on `37ecc8d`
-  before that; the owner called it flaky and re-ran it. The record of how the
-  entry was reached is kept below.
+  before that; the owner called it flaky and re-ran it, and **attempt 2
+  passed**. The record of how the entry was reached is kept below.
 
 - **(superseded by the entry above) B8's commit is made; OPEN until the
   owner's push produces a green CI run.** (implementer, 2026-09-11.) `main` was red on three `VISUAL_DEBT`

@@ -9820,8 +9820,9 @@ entry is confirmed by the absence of a cell to fail, so the `0.00` was the
 reading and not a one-run artefact, which is what the ratchet's own rule needed
 before the entry could stay deleted. The 54 `#/print` cells read `совпадает` a
 second consecutive run. The same run's `check` job failed on the legacy
-`behave` suite against the live app, a flake the owner re-ran; none of B8's five
-paths can reach it. **B8 is closed.**
+`behave` suite against the live app, a flake the owner re-ran and attempt 2
+passed; none of B8's five paths can reach it. The run is green end to end.
+**B8 is closed.**
 
 ### B9 outlined: the anchor re-play and the reduced-motion policy (planner, 2026-09-11)
 

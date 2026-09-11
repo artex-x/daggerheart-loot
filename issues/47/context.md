@@ -1962,8 +1962,12 @@ on the legacy `behave` suite against the **live** app - `FAIL приложени
 `issues/47/*.md`; none can reach the live app. `behave` was green on `9fd3000`
 an hour earlier and on `37ecc8d` before that. The owner identified it as flaky
 and re-ran the failed jobs (attempt 2; a re-run of failed jobs leaves the four
-green parity shards alone). If it recurs on a clean tree it is a real
-live-app regression and belongs to its own task, not to issue 47.
+green parity shards alone). **Attempt 2 passed** - `check` in 3m47s, all 21
+legacy suites - so the flake is confirmed rather than asserted, and the run is
+green end to end including `deploy`, which had been skipped behind the red
+`check` here and on the two runs before it. `main` is green for the first time
+since `37ecc8d`. If `behave` recurs on a clean tree it is a real live-app
+regression and belongs to its own task, not to issue 47.
 
 **Tree at this read:** HEAD `435a5ac` == `origin/main`, working tree clean but
 for untracked `issues/tg-preview-refresh/`, which belongs to another task and
