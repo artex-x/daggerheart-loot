@@ -6,13 +6,14 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 ## Status
 - Task status: **All code work is complete. B1, R1 and R2 are implemented,
   committed and gated. The task is parked waiting on O1, which no agent can
-  perform** - it needs a phone, a Telegram login, and repository settings,
-  and per `context.md` ("Telegram will not issue a login code yet") the
-  owner's throwaway account cannot retry before **2026-09-16** at the
-  earliest, and ageing is not guaranteed to fix it. Nothing else in this task
-  is blocked on anything an agent can do; the next session on this task
-  should re-read `context.md` for whether O1 produced evidence before
-  assuming there is a code batch to run.
+  perform** - it needs a phone, a Telegram login, and repository settings.
+  **O1 is unblocked as of 2026-09-11**: the owner obtained the login code
+  that same day, superseding the earlier "not before 2026-09-16" decision
+  (`context.md`, "Superseded the same day: the code arrived"). Nothing in
+  this task is blocked on anything an agent can do; the next session should
+  re-read `context.md` for whether O1 produced evidence - especially the
+  step F.4 check on already-posted messages - before assuming there is a
+  code batch to run.
 - Both owner questions were answered before dispatch (see `context.md`); the
   design in `plan.md` was followed as written, with a handful of small gaps
   filled in during B1 implementation - see "Deviations" below. A reviewer
@@ -326,13 +327,21 @@ new code; none was invented to satisfy a threshold that does not apply.
 - None for B1, R1 or R2.
 - The branch is not merged and not pushed - `main` gains nothing from any
   batch until the owner merges it (see "Next batch").
-- **O1 cannot start before 2026-09-16** (`context.md`, "Telegram will not
-  issue a login code yet") - the owner's throwaway account and `api_id` were
-  denied a login code on the first attempt, diagnosed as Telegram withholding
-  codes from third-party `api_id`s on a new account; the owner's decision was
-  to age the account and retry no earlier than that date, and not in a loop.
-  Ageing is not guaranteed to fix it (`context.md` is explicit about the
-  uncertainty). No agent can perform or accelerate this.
+- ~~O1 cannot start before 2026-09-16.~~ **Superseded 2026-09-11: the owner
+  received the login code the same day** - see `context.md`, "Superseded the
+  same day: the code arrived". O1 is unblocked. The failure and its diagnosis
+  are kept in `context.md` because the cause was never proved and the
+  behaviour may recur on a rotation or a new `api_id`; nothing established
+  that ageing is what fixed it.
+- **Live risk for O1, not a blocker:** the throwaway is days old and was
+  flood-limited hours before it worked. The first full reindex is 107
+  messages and `PEER_FLOOD` is the realistic failure. The orchestrator
+  advised running it in chunks (`--mode full --limit 10`, which is 100 URLs -
+  `--limit` counts messages) spread across a day rather than one run;
+  `state.json` makes each run resumable and sends only what is still pending.
+  A run that stops on `PEER_FLOOD` means stop for the day, not push through.
+- O1 itself still needs a phone, a Telegram login and repository settings.
+  **No agent can perform it.**
 
 ## Deferred
 - B2 - tuning from the first real run; may be empty.

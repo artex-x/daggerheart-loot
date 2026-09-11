@@ -126,9 +126,33 @@ here; that is a property of Telegram, not a mistake in the plan.
 
 **Owner decision, 2026-09-11: age the account and retry.** Use the throwaway
 normally from the official Telegram app for several days, then re-run
-`login.mjs`. **Do not retry before 2026-09-16**, and do not retry in a loop -
-Telegram's code-send throttle escalates per attempt and the resend options
-for this number are already exhausted.
+`login.mjs`. Do not retry in a loop - Telegram's code-send throttle escalates
+per attempt and the resend options for this number were already exhausted.
+
+### Superseded the same day: the code arrived
+
+**Later on 2026-09-11 the owner reported receiving the login code**, without
+waiting for the 2026-09-16 date the decision above set. So the block above is
+the record of a real failure mode and its diagnosis, **not a live blocker**:
+Telegram relented within hours, on the same account and the same `api_id`.
+
+What this changes:
+
+- **O1 is unblocked from 2026-09-11.** Ignore any "not before 2026-09-16"
+  wording elsewhere in this task directory; it is superseded by this section.
+- **The diagnosis above still stands and is still worth keeping.** Telegram
+  did withhold codes from a third-party `api_id` while an official client on
+  the same account was served immediately. If it recurs - on a rotation, a
+  second account, or a new `api_id` - this section is the map, and the
+  fallbacks below are still the fallbacks.
+- **What it does not establish is a cause.** Nobody proved ageing fixed it
+  rather than a throttle window simply expiring. Do not write "ageing the
+  account fixes this" into the docs as if it were known.
+- **The account is days old and was flood-limited hours ago.** The first full
+  reindex is 107 messages; `PEER_FLOOD` on a fresh account is the live risk
+  now. The orchestrator advised chunking it with `--limit 10` across a day
+  rather than one twelve-minute run, since `state.json` makes every run
+  resumable and each one sends only what is still pending.
 
 Rejected for now, and why they remain available if ageing fails:
 
