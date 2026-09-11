@@ -338,6 +338,7 @@ describe('states reached by pressing something', () => {
  * question and the one that was going unasked.
  */
 const COVERED: Record<string, string> = {
+  'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
@@ -361,8 +362,12 @@ const COVERED: Record<string, string> = {
   'Field.svelte': 'the number row on every roll page, and both pickers',
   'Icon.svelte': 'the card actions and the pin toggle',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
+  'NoData.svelte': "record.test.ts's no-data case, and every page test's own",
   'NumberField.svelte': 'the number row on every roll page',
   'PageHead.svelte': 'the heading of every roll page, with both help states above',
+  'PageTitle.svelte':
+    "record.test.ts's record and not-found pages, listPage/printPage/sharedListPage.test.ts",
+  'Panel.svelte': 'every roll page state above, the lists index and search',
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
   'RecordCard.svelte': 'record.test.ts, and inside the modal above',
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',

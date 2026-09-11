@@ -8,7 +8,9 @@
   import Field from './Field.svelte';
   import ChipRow from './ChipRow.svelte';
   import Chip from './Chip.svelte';
+  import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
+  import Panel from './Panel.svelte';
   import RecordModal from './RecordModal.svelte';
   import SearchBox from './SearchBox.svelte';
   import TableRows from './TableRows.svelte';
@@ -77,9 +79,9 @@
 <PageHead {app} title={t.search} sub={t.subSearch} help={null} {say} />
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else}
-  <div class="panel">
+  <Panel style="margin-bottom:16px">
     <Field>
       <SearchBox
         value={q}
@@ -104,7 +106,7 @@
         {/each}
       </ChipRow>
     </Field>
-  </div>
+  </Panel>
 
   {#if !query}
     <Empty>{t.startTyping}</Empty>
@@ -146,20 +148,6 @@
   />
 {/if}
 
-<style>
-  .miss {
-    margin: 0;
-    color: var(--muted);
-  }
-
-  /* off `.panel` in style.css, plus the 16px margin-bottom the live markup
-     writes inline on this specific panel. */
-  .panel {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 18px;
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-  }
-</style>
+<!-- `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` (B10) - the
+     16px margin-bottom is the live inline attribute, passed as `style`. No
+     rule of this component's own remains. -->

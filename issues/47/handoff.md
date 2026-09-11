@@ -6,6 +6,67 @@ depends on chat history.
 
 ## Status
 
+- Task status: **in_progress - B10 is built and committed; CI has not yet
+  read the owner's push** (implementer, 2026-09-11). Preflight matched
+  the brief: HEAD `b967481`, then one docs-only commit from another task
+  (`daa2166`) landed mid-batch - touches neither `app/`, `tests/` nor
+  `docs/specs/`, harmless, left alone; `git status --short` showed only
+  the planner's uncommitted `context.md`/`plan.md`/`handoff.md` and the
+  untracked `issues/tg-preview-refresh/`/`issues/agent-effort/` (both
+  another task's, never staged). Built exactly to `plan.md`, "B10
+  planned" with one real deviation, found by `npm run check`'s vitest
+  step rather than by `svelte-check`: `PageTitle.svelte`'s `{#if typeof x
+  === 'string'}` needed to wrap the *whole* `<h1>`/`<p>` element rather
+  than sit inside it, or Svelte's block-anchor comment lands inside
+  `.page-sub` and turns a plain-string caller's one text node into two -
+  `sharedListPage.test.ts` caught it. Full account: `plan.md`, "B10
+  built". `npm run check` (exit 0, 998 tests) and `npm run check:built`
+  both green in the foreground; all three parity calls (96 cells) read
+  `совпадает` on the 90 cells outside `#/roll/wondrous ~ modal` -
+  including all six new `#/i/nope` cells - and the six `~ modal` cells
+  read inside their recorded debt with no `стало лучше`/`долг погашен`
+  line. No `VISUAL_DEBT` or `ACCEPTED` change. `git diff -- app.js
+  style.css index.html` empty throughout. Commit: one commit, this
+  session - hash filled in after the fact. Not pushed - "Never push"
+  stands; CI's read of the push is the only thing this batch leaves
+  open, and nothing in it depends on that read the way B8/B9's debt
+  deletions did (no `VISUAL_DEBT` figure moved). Next: Phase 6/7 or
+  Phase 8 - "Next batch" for the orchestrator's call.
+  `NEEDS_HUMAN_CONFIRMATION: no`.
+- Last agent: implementer
+
+- Task status: **in_progress - B10 is implement-ready** (planner,
+  2026-09-11). Tree at planning: HEAD `b967481`, `origin/main` == HEAD,
+  clean but for the untracked `issues/tg-preview-refresh/` and
+  `issues/agent-effort/` (both another task's, preserved, never staged)
+  and the orchestrator's uncommitted kickoff section in `context.md`. B9
+  is pushed and CI run `34638174347` read it green end to end
+  (`context.md`, "State at the B10 kickoff"); the remediation's own read
+  (`34640328352`) was in progress at kickoff and the orchestrator records
+  its verdict. This pass wrote `plan.md`, "B10 planned" (decided 1-7,
+  the four components' shapes, steps 1-16, three parity calls,
+  acceptance) and settled the outline's open questions: four components
+  extracted, three composed `.panel` variants and `PageHead`'s heading
+  kept inline with a recorded reason; all four inventory margins are live
+  inline `style=` attributes (app.js 2854, 2912, 2972, 3154), so `Panel`
+  and `Actions` take `style`; `.miss` is `--muted`; `RecordPage`'s
+  not-found branch also lacks the live "На главную" button, fixed with a
+  component test **and** a `#/i/nope` state; five carry-ins taken
+  (`ListPage:103`, the two "Recorded, not keyed" sentences, the three
+  `FEATURES.md` nits), two left (`Shell`'s `@page`, `.badge`). Found and
+  written into the batch: **D5** - the live `render()` writes the
+  record's name into the tab title and `syncChrome()` overwrites it on the
+  same render (app.js 3795 / 3822 / 3658); the rewrite never writes it;
+  `#/i/ci1 @` measured `совпадает` on all six cells. Host fact: Git Bash
+  rewrites a parity filter such as `"#/i/ci1 @"` to `"#I:/ci1 @"` -
+  `MSYS_NO_PATHCONV=1` is required or the run is vacuous. No production
+  code was written. Next: an implementer on B10 - "Next batch".
+  `NEEDS_HUMAN_CONFIRMATION: no`.
+- Last agent: planner
+- NEEDS_HUMAN_CONFIRMATION: no
+- Branch: `main`
+- Base / starting commit: `b967481`
+
 - Task status: **in_progress - B9 is built and committed; CI's read of the
   owner's push is the open blocker** (implementer, 2026-09-11). Preflight
   matched the brief: HEAD `bb61db0`, `git status --short` showed only the
@@ -715,6 +776,83 @@ carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
 carry what was done about it. Do not re-measure any of it.
 
 ## Completed
+
+- Batch name/id: **B10 - the page furniture as components, and the
+  not-found record page** (implementer, 2026-09-11, on `b967481`)
+- What shipped: four new components off the plan's own specification -
+  `Panel.svelte` (`.panel`, `style?: string`), `Actions.svelte`
+  (`.card-acts`, `style?: string`), `NoData.svelte` (`.miss`,
+  `var(--muted)`), `PageTitle.svelte` (`.page-h`/`.page-sub`,
+  `title`/`sub` each `string | Snippet`). `Panel` replaces the five
+  identical `.panel` divs in `AltPanel`, `StdPanel`, `RollPanel`,
+  `ListsPage` (`style="margin-top:16px"`), `SearchPage`
+  (`style="margin-bottom:16px"`); the three composed variants
+  (`TablesPage`'s `.tablenav`, `FilterBar`'s `.ffilter`, `ListPage`'s
+  `<details class="panel lroll">`) stay inline with a one-line comment
+  each, as decided. `NoData` replaces all seven `.miss` paragraphs.
+  `Actions` replaces the four `.card-acts` blocks, `RecordCard` included -
+  its two 600px descendant rules re-anchored `.card :global(.card-acts
+  .btn-lbl)` / `.card :global(.card-acts .btn.sm:has(.btn-lbl))`, since a
+  scoped rule cannot otherwise reach inside a child component. `PageTitle`
+  replaces the eight `.page-h`/`.page-sub` pairs in `ListPage` (a
+  `{#snippet renameTitle()}` holding the rename input; the joined
+  `${items.length} ${itemsWord(...)}` sub as a plain string), `PrintPage`,
+  `RecordPage` (its not-found branch gains the live "На главную" button
+  it was missing: `<Button variant="primary"
+  href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>`; its found
+  branch's sub is a `{#snippet sub()}` holding today's `<p>` body
+  verbatim) and `SharedListPage`. `PageHead` keeps its own
+  `.page-h`/`.page-sub` with a one-line comment naming why. Carry-ins
+  landed: `ListPage.svelte:103`'s comment, the two "Recorded, not keyed"
+  sentences in `specs.js`, three `FEATURES.md` nits (B6 nit 10, B5.3 nit
+  2, B5.6 nit 5). Found and registered: **`docs/specs/DEBT.md` D5** - the
+  live `render()` writes a record's name into the tab title and
+  `syncChrome()` overwrites it on the same render (app.js 3795 / 3822 /
+  3658); the rewrite never writes it, so `#/i/ci1 @`'s `title` spec
+  matches on the plain title alone. New parity state `#/i/nope` (six
+  cells) pins the not-found page pixel-for-pixel; `record.test.ts` pins
+  it structurally (heading, `.page-sub` text, no `.miss`, the button's
+  `href`/class, axe).
+  - **One real deviation from the plan's own snippet**, found by
+    `npm run check`'s vitest step, not by `svelte-check`:
+    `PageTitle.svelte`'s `{#if typeof x === 'string'}...{:else}...{/if}`
+    written *inside* `<h1>`/`<p>` (as drafted in the plan) failed an
+    existing test, `sharedListPage.test.ts`'s "draws the name, the sub as
+    one text node..." - `sub?.childNodes` read 2, not 1. Svelte marks an
+    `{#if}` with an anchor comment to track the live branch; nested
+    inside the element, that comment became a child of `.page-sub`,
+    turning a plain-string caller's one text node into a text node plus a
+    comment - invisible to a pixel diff but real to a DOM-structure
+    assertion and to `CLAUDE.md`'s "port the live app's text-node
+    structure" rule. Fixed by hoisting each `{#if}` to wrap the *whole*
+    element - two complete `<h1 class="page-h">...</h1>` branches, two
+    complete `<p class="page-sub">...</p>` branches - so the anchor
+    comment lands as a sibling, not a child. Not the plan's documented
+    fallback (that one is for a `svelte-check` type-narrowing rejection,
+    which never occurred); a different failure mode, caught by the exact
+    gate the plan relied on. Full account: `plan.md`, "B10 built".
+  - A second, smaller correction: prettier reformatted the plan's
+    single-line `{#if}` markup onto its own indented line inside the
+    tags, which would have reintroduced the same whitespace-text-node
+    risk `ListsPage.svelte`'s card link already needed a `prettier-ignore`
+    for. Moot once the `{#if}` moved outside the element (prettier no
+    longer wraps it), so no `prettier-ignore` was needed in the final
+    form.
+- Files changed: `app/src/components/{Panel,PageTitle,Actions,NoData}.svelte`
+  (new); `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage`, `SearchPage`,
+  `TablesPage`, `ListPage`, `PrintPage`, `RecordPage`, `SharedListPage`,
+  `RecordCard`, `PageHead`, `FilterBar`; `record.test.ts`, `a11y.test.ts`;
+  `tests/parity/specs.js`; `docs/specs/FEATURES.md`, `docs/specs/DEBT.md`;
+  `issues/47/plan.md`, `issues/47/handoff.md`, `issues/47/context.md`
+  (carrying the planning pass's own edits into this batch's commit, per
+  the tree preflight).
+- Commit(s): one commit, this session - hash filled in after the fact.
+  Not pushed - "Never push" stands.
+- Deviations and rationale: the `PageTitle` markup fix above is the only
+  deviation from the plan's own text; every decided point (1-7) and every
+  numbered step (1-16) otherwise landed as specified. No `VISUAL_DEBT` or
+  `ACCEPTED` change; no live file touched (`git diff -- app.js style.css
+  index.html` empty).
 
 - Batch name/id: **B9 - the anchor re-play, the live reduced-motion
   policy, and the behaviour-debt register** (implementer, 2026-09-11, on
@@ -1817,6 +1955,50 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   port: `plan.md`, "B7 built", and "Blockers" below.
 
 ## Verification
+
+- Commands run (exact), B10 on `b967481`, each one foreground call:
+  - `git log --oneline -3` / `git status --short` (preflight) - matched
+    the brief: HEAD `b967481` (later `daa2166`, another task's docs-only
+    commit, re-checked before committing), only the planner's
+    `issues/47/*.md` edits and the two untracked `issues/` directories,
+    never staged.
+  - `set -o pipefail; npm run typecheck 2>&1 | tail -n 200` - run twice
+    ahead of the full gate to isolate the narrowing questions the plan
+    flagged (`own.name`/`it` inside a `{#snippet}` closure declared after
+    a truthy check): **0 errors, 0 warnings** both times; the plan's
+    `svelte-check` fallback was never needed.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 150` - run twice. The
+    first failed at `format:check` (`PageTitle.svelte` unformatted; fixed
+    with `npx prettier --write`), then again failed one vitest case after
+    reformatting moved the `{#if}` inside the tags and prettier put it on
+    its own line - `sharedListPage.test.ts`'s "draws the name, the sub as
+    one text node..." (`sub?.childNodes` length 2, not 1). After hoisting
+    `PageTitle`'s `{#if}`s to wrap whole elements (see "Completed"), a
+    third run: **exit 0**, `format:check`/`lint`/`typecheck`/`data`
+    green, **998 tests passed**, thresholds held (statements 96.48,
+    branches 88.4, functions 96.96, lines 97.22, 64.65s test time).
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - build,
+    `smoke` (opens from `file://`) and `budget` (88.4 kB against 120 kB)
+    all green; `git diff -- app.js style.css index.html` empty.
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll/std
+    @" "#/roll/alt @" "#/roll/wondrous @" "#/lists @" "#/search @"` - 30
+    cells, all `совпадает`.
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/q1 @"
+    "#/i/f1 @" "#/i/nope @" "#/i/ci1 ~ whole @" "#/roll/wondrous ~ modal
+    @"` - 30 cells: 24 `совпадает` (the new `#/i/nope` six included), six
+    `#/roll/wondrous ~ modal` cells read exactly their recorded debt
+    (0.02/0.03/0.07% at 1100/768/375, both languages) with no `стало
+    лучше`/`долг погашен` line.
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/a
+    @" "#/lists/nope @" "#/l/ ~ shared @" "#/l/zzzz @" "#/print/ci1-q1 @"
+    "#/print/nope @"` - 36 cells, all `совпадает`.
+  - Every parity call printed its cell list (no vacuous `расхождений
+    нет`); all three ran under `MSYS_NO_PATHCONV=1` from the start, per
+    the host fact already on record.
+  - `git diff -- app.js style.css index.html` (again, post-parity) -
+    empty. `grep -rn` for each furniture class across
+    `app/src/components/*.svelte` matched the acceptance criteria's own
+    description exactly (see "Completed").
 
 - Commands run (exact), B9 on `bb61db0` plus its remediation, each one
   foreground call:
@@ -3053,25 +3235,120 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   full run's redness on a Windows machine is the documented per-platform
   tolerance, cell by cell, in "Blockers".
 
-## Next batch
+## Next batch (implement-ready)
 
-**B9 is built and committed.** See "Status" above for what shipped and
-"Blockers" for the open CI-read condition. Nothing about B9 remains to
-implement.
+**B10, below, is built and committed - see "Completed" and "Verification".**
+Not yet implement-ready: Phase 6/7 (the cut-over, owner-gated: Pages
+source, the regression net, the `ACCEPTED` sweep - named in `plan.md`,
+"Phases") or Phase 8 (the register sweep B9 opened and B10 extended with
+D5 - `plan.md`, "Phase 8"). Neither is planned into decided
+points/numbered steps yet, so the next session is a planner, not an
+implementer, unless the orchestrator picks a different order. This
+implementer did not choose between them.
 
-**B10 - the page-furniture extraction pass** is next, and it is **not
-implement-ready**: `plan.md`, "B10 outlined" (plus the paragraph the B9
-planning pass appended to it, "Assigned by the B9 planning pass") is an
-inventory and a set of design questions, not a step list. A planning pass
-is needed before an implementer can take it - it touches every page
-(`.panel`, `.page-h`, `.page-sub`, `.card-acts`, `.miss`, plus
-`RecordPage.svelte:59`'s `.miss`-vs-`.page-sub` divergence), so its honest
-parity read is the full suite's filter set, different from B9's. After
-B10: Phase 6/7 (the cut-over, owner-gated: Pages source, the regression
-net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase 8") on the
-register B9 opened.
+- Name: **B10 - the page furniture as components, and the not-found
+  record page.** Full design and the exact step list: `plan.md`, "B10
+  planned" (decided 1-7, the four components, steps 1-16). Durable facts:
+  `context.md`, "B10 planning facts". This section is the brief; the
+  plan is the authority where the two differ in detail.
+- Objective: collapse `.panel`, `.page-h`/`.page-sub`, `.card-acts` and
+  `.miss` into `Panel.svelte`, `PageTitle.svelte`, `Actions.svelte` and
+  `NoData.svelte`, delete every inline copy they replace, and make
+  `#/i/<unknown id>` draw what the live page draws (sub as `.page-sub`,
+  plus the "На главную" primary button the rewrite is missing). A
+  refactor: nothing moves on screen.
+- In scope: the four new components; `AltPanel`, `StdPanel`, `RollPanel`,
+  `ListsPage`, `SearchPage`, `TablesPage`, `ListPage`, `PrintPage`,
+  `RecordPage`, `SharedListPage`, `RecordCard` (the `.card :global(
+  .card-acts ...)` re-anchoring of its two 600px rules); one comment line
+  each in `PageHead` and `FilterBar`; `ListPage.svelte:103`'s comment;
+  `record.test.ts` (the not-found case), `a11y.test.ts` (four `COVERED`
+  entries); `specs.js` (`#/i/nope` state, two "Recorded, not keyed"
+  sentences); `FEATURES.md` (the not-found/no-data bullet, B6 nit 10,
+  B5.3 nit 2, B5.6 nit 5); `DEBT.md` D5 verbatim from the plan.
+- Out of scope: `Shell.svelte` (`@page` stays recorded for Phase 8 R1),
+  `TableRows.svelte` (`.badge` stays for Phase 8 R2), `Button.svelte`,
+  `PageHead`'s own heading rules, `tokens.css`, the three composed
+  `.panel` variants (`.tablenav`, `.ffilter`, `ListPage`'s `<details>`),
+  `toggleAllIn`, fixing D5, any `VISUAL_DEBT` figure, contracts,
+  fixtures, `llms.txt`, the live files.
+- Files expected: `app/src/components/{Panel,PageTitle,Actions,NoData}.svelte`
+  (new); the eleven components and two comment-only files above;
+  `app/src/components/record.test.ts`, `app/src/components/a11y.test.ts`;
+  `tests/parity/specs.js`; `docs/specs/FEATURES.md`, `docs/specs/DEBT.md`;
+  `issues/47/plan.md`, `issues/47/handoff.md`.
+- Steps: `plan.md`, "B10 planned", steps 1-16. In one breath: preflight;
+  write the four components (`Panel`/`Actions`: `children` + `style?`,
+  emitted as the `style` attribute; `NoData`: `children`; `PageTitle`:
+  `title` and `sub`, each `string | Snippet`); swap the markup and delete
+  the rules file by file - `ListsPage` `<Panel style="margin-top:16px">`,
+  `SearchPage` `<Panel style="margin-bottom:16px">`, `ListPage` `<Actions
+  style="margin-bottom:16px">`, `SharedListPage` `<Actions
+  style="margin-bottom:18px">` (the live inline attributes), the rest
+  plain; `ListPage`'s title is a `{#snippet title()}` holding the rename
+  input, its sub one joined string; `RecordPage`'s sub is a `{#snippet
+  sub()}` holding today's `<p>` body verbatim, and its not-found branch
+  gains `<Button variant="primary" href={sectionHash('roll/std')}
+  sameTab>{t.toStart}</Button>`; the comment fix; the tests; the state and
+  sentences; the spec edits; the register entry; the gates; one commit;
+  the handoff.
+- Acceptance criteria: `plan.md`, "B10 planned", "Acceptance criteria" -
+  each furniture class in exactly one component plus the recorded
+  exceptions; `git show HEAD -- app.js style.css index.html` empty; all 90
+  cells outside `#/roll/wondrous ~ modal` `совпадает` (the six `#/i/nope`
+  cells included), the six `~ modal` cells inside their recorded debt with
+  no `стало лучше`/`долг погашен` line; no `VISUAL_DEBT` or `ACCEPTED`
+  change; the new test, the a11y guard and per-file thresholds green;
+  `FEATURES.md`, `DEBT.md` and `specs.js` carry their edits.
+- Verification commands (each one foreground call, Bash timeout 600000):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120`
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll/std @" "#/roll/alt @" "#/roll/wondrous @" "#/lists @" "#/search @" 2>&1 | tail -n 120`
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/q1 @" "#/i/f1 @" "#/i/nope @" "#/i/ci1 ~ whole @" "#/roll/wondrous ~ modal @" 2>&1 | tail -n 120`
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/a @" "#/lists/nope @" "#/l/ ~ shared @" "#/l/zzzz @" "#/print/ci1-q1 @" "#/print/nope @" 2>&1 | tail -n 120`
+  (16 states, 96 cells; the trailing ` @` selects the plain state exactly;
+  without `MSYS_NO_PATHCONV=1` Git Bash rewrites `#/i/...` to `#I:/...`
+  and the run matches nothing - confirm each call printed its cells.)
+- Risks / do-nots: `plan.md`, "B10 planned", "Risks / do-nots" - no
+  `class`/`as` prop on `Panel`/`Actions`; margins stay inline attributes;
+  do not open `Shell`, `TableRows`, `Button`, `tokens.css`; do not fix D5;
+  keep the text-node shapes; no `VISUAL_DEBT` figure from this host; a
+  vacuous `расхождений нет` is not a result; a backgrounded `npm run
+  check` is re-run, not salvaged; the orchestrator's risk rules put a
+  review on a batch that redraws every page.
+- Fallback: the two-`$derived` form of `PageTitle` if `svelte-check`
+  rejects the template `typeof` narrowing; if a call site moves a cell,
+  restore that site's text-node shape - the other seven sites are the
+  control.
+
+After B10: Phase 6/7 (the cut-over, owner-gated: Pages source, the
+regression net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase
+8") on the register B9 opened and B10 extends with D5.
 
 ## Blockers
+
+- **RESOLVED, and B9 is closed: CI run [`34640328352`](https://github.com/artex-x/daggerheart-loot/actions/runs/34640328352) on `55f2fa2` -
+  the first head carrying the remediation `84ca6df` - is green end to end**
+  (orchestrator, 2026-09-11): `check`, all four parity shards, `audit`,
+  `secrets`, `deploy`. That is the second independent reading B9's design
+  names as its closing condition, and it is the one that counts, because it
+  reads the remediated component code rather than B9 as first built. The
+  earlier run [`34638174347`](https://github.com/artex-x/daggerheart-loot/actions/runs/34638174347) on `dba79ee` was already green on every job
+  with all seven anchor `VISUAL_DEBT` entries deleted, `#/tables/voa ~
+  section anchor @ en 375` - the one deletion this host could not
+  corroborate - included. The mechanism argument held: nothing turned
+  `main` red, no anchor cell needed re-opening, and no `VISUAL_DEBT`
+  number was written from this host. **Nothing about B9 remains open.**
+
+- **(superseded by the entry above) Updated at B10's planning pass
+  (planner, 2026-09-11): the entry below is satisfied in part.** `origin/main` == `b967481` at kickoff, so all
+  three B9 commits are pushed; run `34638174347` (`dba79ee`) read every
+  job green, all seven anchor deletions included; the remediation's own
+  read, run `34640328352` (`55f2fa2`), had its parity shards still in
+  progress at kickoff (`context.md`, "State at the B10 kickoff"). The
+  orchestrator records that run's verdict here and closes B9 on it - done,
+  green, in the entry above. B10 does not wait on it: its files are
+  independent of B9's.
 
 - **OPEN: B9's commits (`ad46dac`, `dba79ee`, and the remediation
   `84ca6df`) are made; waits on CI's read of the owner's push**
@@ -3599,6 +3876,24 @@ register B9 opened.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **Assigned by the B10 planning pass (planner, 2026-09-11).** Of the
+  carry-ins the B9 pass handed B10, five are in B10 (`plan.md`, "B10
+  planned", decided 6) and two are left where the sweep table already
+  puts them: **`Shell.svelte`'s `@page` outside `@media print`** - B10
+  does not open `Shell` (no furniture lives there), so it stays on Phase
+  8 R1's backlog; **`.badge` copied three times** - B10 does not open
+  `TableRows` and runs no tables state, so "re-measured anyway" does not
+  hold; Phase 8 R2, or the first batch that opens `TableRows` and the
+  card together. Also left, by decision rather than omission: the three
+  composed `.panel` variants (`.tablenav`, `.ffilter`, `ListPage`'s
+  `<details class="panel lroll">`) and `PageHead`'s own `.page-h`/
+  `.page-sub` keep a copy of the base declarations, each with a comment
+  naming the shared component and the Svelte-scoping reason - if a
+  global-class layer is ever adopted (it is not, per `CLAUDE.md`'s
+  architecture boundaries), they are the four places to revisit. And a
+  new register entry, **D5** (the record page's tab title), is written by
+  B10, not fixed; its fix is Phase 8's.
 
 - **Classified by the B9 planning pass (planner, 2026-09-11) - every
   item in this section and in "Notes" has a home now; the table is

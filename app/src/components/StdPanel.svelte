@@ -14,6 +14,7 @@
   import NumberField from './NumberField.svelte';
   import OrGrid from './OrGrid.svelte';
   import PageHead from './PageHead.svelte';
+  import Panel from './Panel.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
@@ -87,7 +88,7 @@
 
 <PageHead {app} title={t.pageStd} sub={t.subStd} {help} {say} />
 
-<div class="panel">
+<Panel>
   <Field label="{t.rollResult} (1–{CORE_MAX})">
     <div class="numrow">
       <NumberField
@@ -132,7 +133,7 @@
       {/each}
     </ChipRow>
   </Field>
-</div>
+</Panel>
 
 {#if choice}
   <!-- The whole roll as one message, with the OR spelled out: the GM pastes
@@ -190,15 +191,8 @@
 {/if}
 
 <style>
-  /* off `.panel`, `.numrow` and `.results` in style.css */
-  .panel {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
+  /* off `.numrow` and `.results` in style.css - `.panel` moved to
+     `Panel.svelte` (B10) */
   .numrow {
     display: flex;
     gap: 10px;

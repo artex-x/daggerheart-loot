@@ -264,11 +264,20 @@ describe('a record on its own page', () => {
 });
 
 describe('a link that no longer resolves', () => {
-  it('says so, rather than rendering an empty page', () => {
-    render(App, { env: at('no-such-id') });
+  it('draws the not-found page for an id the data does not know', async () => {
+    const { container } = render(App, { env: at('nope') });
     expect(
       screen.getByRole('heading', { level: 1, name: 'Предмет не найден' })
     ).toBeInTheDocument();
+    expect(container.querySelector('p.page-sub')?.textContent).toBe(
+      'Возможно, ссылка устарела или данные были изменены.'
+    );
+    expect(container.querySelector('.miss')).toBeNull();
+    const link = screen.getByRole('link', { name: 'На главную' });
+    expect(link).toHaveAttribute('href', '#/roll/std');
+    expect(link.className).toContain('btn');
+    expect(link.className).toContain('primary');
+    await expectNoA11yViolations(container);
   });
 
   it('says so when the dataset itself did not load', () => {

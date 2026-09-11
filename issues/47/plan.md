@@ -66,8 +66,9 @@ already being collected against the live app:
   "B7 built". Phase 4 is complete.** What is open after it is bookkeeping
   and two follow-ups: "B8 planned" (the anchor debts, `main` red on the
   ratchet), "B9 planned" (implement-ready: the anchor re-play, the live
-  reduced-motion policy and the behaviour-debt register), "B10 outlined"
-  (the page-furniture extraction).
+  reduced-motion policy and the behaviour-debt register; built), "B10
+  planned" (implement-ready: the page-furniture extraction and the
+  not-found record page).
 
 **`#/lists` - the lists slice - is done as of B5.6.** Built across six
 batches, B5.1-B5.6 (see "B5 planned" onward); B5.6 was the last one. Every
@@ -10434,6 +10435,522 @@ spec nits B6 nit 10, B5.3 nit 2 and B5.6 nit 5 (B10 touches `FEATURES.md`
 for the `.page-sub` fix); `.badge` only if the card and the rows are
 re-measured anyway. Any register entry B10 finds itself writing goes in
 `docs/specs/DEBT.md` in the same commit, in the shape "Phase 8" gives.
+
+### B10 planned: the page-furniture extraction pass (planner, 2026-09-11)
+
+Implement-ready. Supersedes "B10 outlined" above, which stays as the
+inventory it was. Measured facts: `context.md`, "B10 planning facts"; the
+tree at planning: HEAD `b967481`, `origin/main` == HEAD, clean but for the
+untracked `issues/tg-preview-refresh/` and `issues/agent-effort/` (both
+another task's - preserve, never stage) and this pass's own
+`issues/47/*` edits.
+
+**Objective.** Collapse the five furniture rules every page copies -
+`.panel`, `.page-h`, `.page-sub`, `.card-acts`, `.miss` - into four
+components (`Panel`, `PageTitle`, `Actions`, `NoData`), remove every inline
+copy they replace, and fix the one real divergence the inventory found:
+`#/i/<unknown id>`, where the rewrite draws the sub line as `.miss` and
+omits the "На главную" button the live page has. A refactor: every cell
+that reads `совпадает` today still does, and one new state (`#/i/nope`)
+reads `совпадает` from its first run.
+
+**Decided, not to be reopened.**
+
+1. **Four components, and which copies stay.** Counted on `b967481`, every
+   non-test caller:
+   - `Panel.svelte` replaces the five identical `<div class="panel">`
+     copies - `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage`,
+     `SearchPage`. **Three composed variants stay inline, each with a
+     one-line comment naming `Panel.svelte` and this reason:**
+     `ListPage`'s `<details class="panel lroll">` (a `<details>`, and
+     `.lroll{padding:0}` plus its `summary`/`[open]` rules are ListPage's
+     own), `TablesPage`'s `.tablenav` and `FilterBar`'s `.ffilter` (each
+     is the base rule plus a variant margin the parent owns). Svelte scopes
+     a parent's rule to the parent's elements, so a `class` prop on `Panel`
+     would make all three variants `:global()` - worse than three
+     five-line copies. No `as`/`svelte:element` either: nothing needs it.
+   - `PageTitle.svelte` replaces the eight `<h1 class="page-h">` +
+     `<p class="page-sub">` pairs in `ListPage` (2), `PrintPage` (2),
+     `RecordPage` (2), `SharedListPage` (2). **`PageHead` keeps its own
+     `.page-h`/`.page-sub`**: its `h1` sits in the `.page-head` flex row
+     with the home and help buttons *between* it and the sub, under the
+     live app's own `.page-head .page-h{margin:0}` (style.css:104); hosting
+     that in `PageTitle` would need a wrapper prop no other caller uses.
+     One-line comment in `PageHead` naming `PageTitle.svelte` and this.
+   - `Actions.svelte` replaces the four identical `.card-acts` rules -
+     `RecordCard`, `ListPage`, `PrintPage`, `SharedListPage`. `RecordCard`
+     is included: its two 600px descendant rules (`.card-acts
+     :global(.btn-lbl)`, `.card-acts :global(.btn.sm:has(.btn-lbl))`) are
+     re-anchored on the card's own root - `.card :global(.card-acts
+     .btn-lbl)` - which compiles to `.card.svelte-x .card-acts .btn-lbl`
+     and still outranks `Button.svelte`'s own rules, as before.
+   - `NoData.svelte` replaces all seven `<p class="miss">{t.noData}</p>`
+     (`ListPage`, `ListsPage`, `PrintPage`, `RecordPage`, `RollPanel`,
+     `SearchPage`, `TablesPage`; `RollPanel`'s condition is `max === 0`,
+     the others `!index` - the conditions stay where they are).
+   - `toggleAllIn` stays duplicated (two callers; the outline's ruling).
+2. **Margins: every one in the inventory is a live inline `style=`, none
+   is a rule.** Read off `app.js`: the lists panel `style="margin-top:
+   16px"` (2912), the search panel `style="margin-bottom:16px"` (2854), the
+   list page's `.card-acts` `style="margin-bottom:16px"` (2972), the shared
+   page's `.card-acts` `style="margin-bottom:18px"` (3154). So `Panel` and
+   `Actions` take `style?: string` and emit it as the element's `style`
+   attribute - the DOM gets *more* faithful: `SharedListPage` today folds
+   its 18px into the rule, `ListsPage` and `SearchPage` fold theirs into
+   `.panel`; all three become the live inline attribute. `PageHead`'s
+   `margin:0` is a live rule (style.css:104) and stays a rule. **No
+   `@media` override exists for `.panel`, `.page-h`, `.page-sub` or
+   `.card-acts`** (style.css 800-1000 and the print block 1397-1414
+   grepped); the only descendant rules are the two `.card-acts .btn-lbl`
+   ones at 477-481 inside the 600px block, handled in decided 1.
+3. **`.miss` is `var(--muted)`, margin 0.** The live app has no `.miss`
+   rule and no such screen: `app.js:7` dereferences `window.LOOT.items`
+   and throws, so with `data.js` missing only `index.html`'s static shell
+   draws. The rewrite's state is its own (`FEATURES.md`, "Records", after
+   this batch). `--muted` because five of the seven copies already use it
+   and it is the live tone for `.page-sub` - one line of page-level prose
+   where a heading's sub would be; `--muted2` is the live `.empty`/`.foot`
+   tone for secondary furniture. `ListPage` and `PrintPage` change colour;
+   nothing photographs it (the harness always loads data).
+4. **`RecordPage`'s not-found branch: both fixes, pinned both ways.** The
+   live `renderItemPage` (app.js:3194-3196) draws `h1.page-h` `notFound`,
+   `p.page-sub` `notFoundSub`, and `<a class="btn primary"
+   href="#/roll/std">toStart</a>`; the rewrite (RecordPage.svelte:58-59)
+   draws the sub as `.miss` and **no button** - the outline saw the class
+   and missed the button. Fixed by `PageTitle` plus the same `Button` line
+   `SharedListPage.svelte:83` already uses. Pinned by (a) a `record.test.ts`
+   case modelled on `listPage.test.ts:166` ("draws "Список не найден" for
+   an unknown id"), asserting the class, the button's `href` and axe, and
+   (b) a new parity state `#/i/nope` beside `#/lists/nope` and
+   `#/print/nope` - `CLAUDE.md` makes an empty state a `STATES` entry, the
+   `inventory` spec reads the button's name and `heading` the first line,
+   and the pixels read the class. Both, not one: the state dies with the
+   harness, the test outlives it.
+5. **A register entry, D5, found by the same reading and written by this
+   batch.** The live `render()` writes `document.title = nameOf(it) + ' — '
+   + docTitle` on `#/i/<id>` (app.js:3795) and then calls `syncChrome()`
+   (3822), whose last line (3658) is `document.title = t().docTitle` -
+   the name is lost every render. The rewrite never writes it
+   (`Shell.svelte:28` is the only title write). Identical by construction:
+   measured, `#/i/ci1 @` reads `совпадает` on all six cells with the
+   `title` spec silent (2026-09-11, this host, advisory). That is the
+   register's class exactly; the text is below, verbatim.
+6. **Carry-ins taken: five. Left: two, with their homes.** Taken, because
+   the batch opens the file anyway: `ListPage.svelte:103`'s comment
+   (`"not ours" todo paragraph` -> `SharedListPage`); the two "Recorded,
+   not keyed" sentences in `specs.js` (B7's segment `aria-pressed` and
+   `<h2 class="pc-name">`); B6 nit 10, B5.3 nit 2 and B5.6 nit 5 in
+   `FEATURES.md` (opened for the not-found bullet). Left: `Shell.svelte`'s
+   `@page` outside `@media print` - `Shell` is not opened (nothing in it
+   is furniture) - stays on Phase 8 R1's backlog per the sweep table;
+   `.badge` - `TableRows` is not opened and no tables state is in this
+   batch's filter set, so the "re-measured anyway" condition is not met -
+   stays Phase 8 R2.
+7. **One batch.** By `docs/parity.md`, "Batch size": the parity filters
+   (three calls, below) are serialised whichever way the work is cut, so a
+   split would pay a second `check`, a second `check:built` and a second
+   review for nothing; the check's cost does not scale with the diff; the
+   diff is one class of change (declarations moved into a component,
+   markup swapped for a tag) plus one small behaviour fix, reviewable in
+   one pass; no public contract moves and no commit boundary the harness
+   cannot reach exists (the new state needs no driver verb or seed).
+
+**The components.** Written to fit `Empty.svelte`'s shape - a snippet, one
+rule, a comment saying which live rule and why extracted now.
+
+- `app/src/components/Panel.svelte`: `interface Props { children: Snippet;
+  style?: string }`; `<div class="panel" {style}>{@render children()}</div>`;
+  the five declarations off style.css:145-149 (`background:
+  linear-gradient(180deg, var(--surface2), var(--surface)); border: 1px
+  solid var(--line); border-radius: var(--r); padding: 18px; box-shadow:
+  var(--shadow)`). A caller passes a string literal or nothing - never
+  `style={undefined}` (`exactOptionalPropertyTypes`).
+- `app/src/components/Actions.svelte`: same shape, `<div class="card-acts"
+  {style}>`, the six declarations off style.css:405 (`display: flex; gap:
+  6px; flex-wrap: wrap; align-items: center; margin-top: auto; padding-top:
+  3px`).
+- `app/src/components/NoData.svelte`: `{ children: Snippet }`; `<p
+  class="miss">{@render children()}</p>`; `.miss { margin: 0; color:
+  var(--muted) }`; the comment says it is the rewrite's own state (decided
+  3).
+- `app/src/components/PageTitle.svelte`: `interface Props { title: string
+  | Snippet; sub: string | Snippet }` (both required); template, with the
+  `{#if}` flush against the tags so no whitespace text node is added:
+
+  ```svelte
+  <h1 class="page-h">{#if typeof title === 'string'}{title}{:else}{@render title()}{/if}</h1>
+  <p class="page-sub">{#if typeof sub === 'string'}{sub}{:else}{@render sub()}{/if}</p>
+  ```
+
+  Rules off style.css:105 and 140, using the tokens `ListPage` already
+  uses: `.page-h { margin: 0 0 4px; font-size: var(--h-page-size);
+  font-weight: var(--h-page-weight); letter-spacing:
+  var(--h-page-spacing); display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap }` and `.page-sub { margin: 0 0 18px; color:
+  var(--muted); font-size: 14px; max-width: 70ch }`. If `svelte-check`
+  refuses the `typeof` narrowing in the template (the B5.6 trap was a
+  `$derived.by` nullable across an else-if chain; a two-branch `typeof` on
+  a plain prop is expected to narrow), the fallback is two `$derived`s in
+  the script (`titleSnippet = typeof title === 'function' ? title : null`)
+  and `{#if titleSnippet}{@render titleSnippet()}{:else}{title}{/if}`. If
+  it raises `a11y_missing_content` on the `<h1>`, the `svelte-ignore`
+  comment moves here from `ListPage` with its reason (the live heading
+  holds only the rename input); otherwise that comment is deleted with
+  the `h1` it annotated.
+
+**Files.** New: the four above. Edited: `AltPanel`, `StdPanel`,
+`RollPanel`, `ListsPage`, `SearchPage`, `TablesPage`, `ListPage`,
+`PrintPage`, `RecordPage`, `SharedListPage`, `RecordCard`, `PageHead` (one
+comment line), `FilterBar` (one comment line); `record.test.ts`,
+`a11y.test.ts`; `tests/parity/specs.js`; `docs/specs/FEATURES.md`,
+`docs/specs/DEBT.md`; then `issues/47/plan.md`, `handoff.md`. No
+`CONTRACTS.md`, fixtures, `llms.txt`, `tokens.css`, `Shell.svelte`,
+`TableRows.svelte`, `Button.svelte`.
+
+**Steps.** Find every rule by its selector, not by the line numbers
+quoted (they are `b967481`'s).
+
+1. Preflight: `git log --oneline -3` (expect `b967481` or docs-only
+   commits over it), `git status --short` (expect only `issues/47/*`
+   modified and the two untracked `issues/` directories - never stage
+   them, never `git add -A`), no `test-output/parity.lock`.
+2. Write the four components as specified above.
+3. `Panel` in: `AltPanel.svelte:100`, `StdPanel.svelte:90`,
+   `RollPanel.svelte:100` (`<div class="panel">` -> `<Panel>`, closing tag
+   likewise; delete each file's `.panel {...}` block and trim its "off
+   `.panel`, ..." comment to the rules that remain); `ListsPage.svelte:108`
+   -> `<Panel style="margin-top:16px">` and delete the `.panel` block
+   (its `margin-top: 16px` goes with it); `SearchPage.svelte:82` ->
+   `<Panel style="margin-bottom:16px">`, likewise. Import `Panel` in
+   each. `TablesPage`'s `.tablenav` block, `FilterBar`'s `.ffilter` block
+   and `ListPage`'s `.panel` block (line 1174, the `<details>`) stay;
+   each gets the one-line comment from decided 1.
+4. `NoData` in the seven files: `<p class="miss">{t.noData}</p>` ->
+   `<NoData>{t.noData}</NoData>`; delete each file's `.miss {...}` block
+   (`ListPage:929`, `ListsPage:183`, `PrintPage:143`, `RecordPage:159`,
+   `RollPanel:181`, `SearchPage:150`, `TablesPage:631`, and trim
+   `TablesPage`'s comment above it, which now introduces `.tablenav`).
+5. `PageTitle` in the four page files:
+   - `ListPage.svelte:574-575` -> `<PageTitle title={t.listNotFound}
+     sub={t.listNotFoundSub} />`; `:589-598` -> `<PageTitle sub={...}>`
+     whose `sub` is the *one* joined string `` `${String(items.length)}
+     ${itemsWord(items.length, app.lang)}` `` (the live sub is one text
+     node, app.js:2971) and whose `title` is a snippet holding the
+     `<input class="titleinput" ...>` verbatim:
+     `{#snippet title()}<input .../>{/snippet}` as a child of
+     `<PageTitle>`. The `input[type='text']` and `.titleinput` rules stay
+     in `ListPage` (the input is rendered in `ListPage`'s snippet, so it
+     keeps `ListPage`'s scope; the comment at `:933-940` stays true -
+     `PageTitle`'s `h1` is still the input's parent). Delete `.page-h`
+     (`:909`) and `.page-sub` (`:921`).
+   - `PrintPage.svelte:82-83` -> `<PageTitle title={t.printTitle}
+     sub={t.printEmpty} />`; `:87-88` (inside `.printbar`) ->
+     `<PageTitle title={t.printTitle} {sub} />`. Delete `.page-h`
+     (`:123`) and `.page-sub` (`:135`).
+   - `RecordPage.svelte:58-59` -> `<PageTitle title={t.notFound}
+     sub={t.notFoundSub} />` followed by `<Button variant="primary"
+     href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>` (add
+     `sectionHash` to the `../lib/hash.js` import; `Button` is already
+     imported); `:61-69` -> `<PageTitle title={nameOf(it, app.lang)}>`
+     with `{#snippet sub()}...{/snippet}` whose body is today's `<p>`
+     content **verbatim, whitespace included** (`{where}`, newline, the
+     `{#if table}` link) - the `.itemtable` rules stay in `RecordPage`.
+     Delete `.page-h` and `.page-sub` (`:115-131`); keep `.itemtable*` and
+     `.itempage`. Update the file's header comment ("Three states, and
+     two of them happen") if it no longer reads true - it does.
+   - `SharedListPage.svelte:81-82` -> `<PageTitle title={t.notFound}
+     sub={t.badShare} />`; `:85-86` -> `<PageTitle title={shared.name ||
+     t.untitled} {sub} />`. Delete `.page-h` (`:135`) and `.page-sub`
+     (`:147`).
+6. `Actions` in the four files: `ListPage.svelte:599` -> `<Actions
+   style="margin-bottom:16px">` (delete the `.card-acts` block at `:981`
+   and its comment - the comment's fact, "the live inline style on this
+   block", moves to the call site as an HTML comment or is dropped: the
+   attribute now says it); `PrintPage.svelte:89` -> `<Actions>` (delete
+   `:148`); `SharedListPage.svelte:87` -> `<Actions
+   style="margin-bottom:18px">` (delete `:155-163`; the comment's "folded
+   in" is no longer true); `RecordCard.svelte:244` -> `<Actions>{@render
+   actions()}</Actions>` (delete `:613-620`; in the 600px block rewrite
+   `.card-acts :global(.btn-lbl)` -> `.card :global(.card-acts .btn-lbl)`
+   and `.card-acts :global(.btn.sm:has(.btn-lbl))` -> `.card
+   :global(.card-acts .btn.sm:has(.btn-lbl))`, keeping the comment).
+7. `ListPage.svelte:103`: the sentence ending `the "not ours" \`todo\`
+   paragraph after a single keystroke` -> `the "not ours" branch - the
+   shared page \`SharedListPage\` draws - after a single keystroke`.
+8. `record.test.ts`: a case "draws the not-found page for an id the data
+   does not know" - render `App` at `#/i/nope` with the file's usual env;
+   assert `getByRole('heading', { level: 1, name: 'Предмет не найден' })`;
+   `container.querySelector('p.page-sub')?.textContent` is
+   `'Возможно, ссылка устарела или данные были изменены.'`;
+   `container.querySelector('.miss')` is `null`; a link named
+   `'На главную'` whose `href` is `#/roll/std` and whose `className`
+   includes `btn` and `primary` (use `getAllByRole(...).some(...)` as
+   `listPage.test.ts:176-179` does if the brand link shares the name); end
+   with the file's `expectNoA11yViolations` call. The existing no-data
+   case (`:274`) must still pass unchanged.
+9. `a11y.test.ts` `COVERED`: four entries, each over ten characters, e.g.
+   `'Actions.svelte': 'the card actions on every record state above, and
+   record.test.ts'`, `'NoData.svelte': "record.test.ts's no-data case, and
+   every page test's own"`, `'PageTitle.svelte': "record.test.ts's record
+   and not-found pages, listPage/printPage/sharedListPage.test.ts"`,
+   `'Panel.svelte': 'every roll page state above, the lists index and
+   search'`. The guard compares the sorted key set to the files on disk.
+10. `tests/parity/specs.js`: after `{ id: '#/i/q1', ... }` (line 1071) add
+    `{ id: '#/i/nope', route: '#/i/nope', why: 'the not-found record page:
+    "Предмет не найден", the sub line, the "На главную" button' }`. In the
+    "Recorded, not keyed" comment (1999-2011) add, after the chip
+    sentence: "`Seg.svelte` writes `aria-pressed` on every segment, so the
+    tables view switch (app.js:2553) and the print page's colour /
+    black-and-white switch (3534-3537), which write none live, differ the
+    same way; and `PrintCard.svelte` draws the card's name as `<h2
+    class="pc-name">` where `printCardHTML` writes `<h3>` (app.js:3419) -
+    a heading level `d.controls()` does not read. Both are B7's deliberate
+    improvements; Phase 7's sweep carries them into `FEATURES.md`."
+11. `docs/specs/FEATURES.md`:
+    - "Tables and search", the search bullet (43-44): `...both languages
+      at once; \`#/search\` shows the first 300 matches - the cap is that
+      page's alone, a table's own box is not capped.` (B6 nit 10).
+    - "Lists", after the Import bullet (85-86), a shared-page bullet
+      (B5.6 nit 5): `A shared link (\`#/l/<payload>\`) that is nobody's
+      own list draws the shared page: the name, the shared-list line with
+      the count as one text node, one add-to-list control that takes the
+      whole list into a new or an existing list (quantity, price and a
+      row's public note travel; the GM's note never does), the list's own
+      notes, and the rows; a payload that cannot be decoded draws "Предмет
+      не найден", the bad-link line and a "На главную" button to
+      \`#/roll/std\`.`
+    - "Lists", the storage-notice bullet (88-92), append (B5.3 nit 2):
+      `; on the index it survives a create and a delete, where the live
+      whole-page re-render re-folds it - the rewrite's deliberate
+      deviation, invisible to every parity state because each starts
+      folded.`
+    - "Records", a new bullet after the first: `\`#/i/<id>\` for an id
+      the data does not know draws "Предмет не найден", the sub line and
+      a "На главную" button to \`#/roll/std\` (the live \`renderItemPage\`
+      shape). The tab title on a record page is the app's name alone, on
+      both apps - \`DEBT.md\` D5. When \`data.js\` itself did not load,
+      every page draws the "data did not load" line in place of its
+      content (\`NoData.svelte\`) - the rewrite's own state; the live app
+      throws on a missing \`window.LOOT\` and draws nothing.`
+12. `docs/specs/DEBT.md`, section 1, after D3 (D4 is section 2), verbatim:
+
+    > ### D5 - a record page's tab title loses the record's name
+    >
+    > - **Where**: `app/src/components/Shell.svelte:28` - the rewrite's
+    >   only `document.title` write, `app.t.docTitle` on every route.
+    >   Live: `app.js:3795` `document.title = (it ? nameOf(it) + ' — ' :
+    >   '') + t().docTitle;` in `render()`'s `i/` branch, then
+    >   `app.js:3822` `syncChrome();`, whose last line (`:3658`) is
+    >   `document.title = t().docTitle;` - every render ends by writing
+    >   the plain title over the name. Read at `b967481`.
+    > - **Live behaviour**: the tab and a bookmark of `#/i/<id>` read
+    >   "Генератор лута — Daggerheart" (or the English), never the
+    >   record's name; the name is written and overwritten inside one
+    >   render.
+    > - **What the rewrite would do instead**: title a record page
+    >   `<name> — <docTitle>` in the current language - what line 3795
+    >   intends - and keep the plain title everywhere else.
+    > - **Why parity won**: B10 (2026-09-11), found while porting the
+    >   not-found page. The harness's `title` spec compares `page.title()`
+    >   on every state, and `#/i/ci1 @` reads a match on all six cells
+    >   because both apps end on the plain title; writing the name would
+    >   fail that spec on `#/i/ci1`, `#/i/q1`, `#/i/f1` and `#/i/ci1 ~
+    >   whole` without an `ACCEPTED` key per cell.
+    > - **How to verify the fix**: `record.test.ts` - after rendering
+    >   `#/i/ci1`, `document.title` starts with the record's name in the
+    >   page's language and follows a language switch; `#/i/nope` keeps
+    >   the plain title. If the harness is still alive, the four record
+    >   states' `title` cells get `ACCEPTED` keys; after the cut-over,
+    >   nothing. `FEATURES.md`, "Records", the tab-title clause rewritten.
+    > - **Recorded by**: B10, 2026-09-11.
+
+13. `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+    600000, one foreground call). Then `set -o pipefail; npm run
+    check:built 2>&1 | tail -n 120`, the same way - screens are redrawn
+    even if identically.
+14. The three parity calls, each `set -o pipefail; MSYS_NO_PATHCONV=1
+    node tests/parity.js <filters> 2>&1 | tail -n 120`, Bash timeout
+    600000. **`MSYS_NO_PATHCONV=1` is load-bearing on this host**: Git
+    Bash rewrites a filter such as `"#/i/ci1 @"` to `"#I:/ci1 @"`, which
+    matches nothing, and the run then prints `расхождений нет` for zero
+    cells. Check that every call prints its cells.
+    - Call 1, the panels (5 states, 30 cells): `"#/roll/std @"
+      "#/roll/alt @" "#/roll/wondrous @" "#/lists @" "#/search @"`.
+    - Call 2, the record page and card (5 states, 30 cells): `"#/i/q1 @"
+      "#/i/f1 @" "#/i/nope @" "#/i/ci1 ~ whole @" "#/roll/wondrous ~
+      modal @"`.
+    - Call 3, the list, shared and print pages (6 states, 36 cells):
+      `"#/lists/a @" "#/lists/nope @" "#/l/ ~ shared @" "#/l/zzzz @"
+      "#/print/ci1-q1 @" "#/print/nope @"`.
+    The trailing ` @` selects the plain state exactly, because `WANTED`
+    matches the cell label `<id> @ <lang> <width>` (`tests/parity.js:374`).
+    At the measured ~23 s per state each call is two to three minutes.
+15. Commit as one commit, Conventional Commits, author `artex-x
+    <artex-x@users.noreply.github.com>`, no attribution trailer, e.g.
+    `refactor(app): the page furniture as components, and the not-found
+    record page (#47)`. Never push.
+16. Update `handoff.md` (Status, Completed, Verification with every
+    command and the 96 parity lines' verdict, Blockers, Next batch ->
+    Phase 6/7's planning pass) and `plan.md` ("B10 built").
+
+**Acceptance criteria.**
+
+- `grep -rn "class=\"panel\"\|class=\"card-acts\"\|class=\"miss\"\|class=\"page-h\"\|class=\"page-sub\"" app/src/components/*.svelte`
+  finds each class in exactly one component (`Panel`, `Actions`, `NoData`,
+  `PageTitle` - `PageHead` for `page-h`/`page-sub` as the recorded
+  second, `TablesPage`/`FilterBar`/`ListPage` for the composed `panel`
+  variants) and nowhere else; no `.panel {`, `.card-acts {`, `.miss {`,
+  `.page-h {`, `.page-sub {` rule outside those files except the three
+  recorded variants and `PageHead`.
+- `git show HEAD -- app.js style.css index.html` is empty: no live file
+  moves.
+- Steps 13-14: `npm run check` and `check:built` green in the foreground;
+  all 90 cells outside `#/roll/wondrous ~ modal` read `совпадает`,
+  including the six new `#/i/nope` cells; the six `~ modal` cells read
+  inside their recorded debt with no `стало лучше`/`долг погашен` line -
+  if one appears, stop, leave the figure, and record the cell in the
+  handoff for CI to read (owner decision 1). No `VISUAL_DEBT` entry is
+  added, changed or deleted; no `ACCEPTED` key is added.
+- `record.test.ts`'s new case and its no-data case pass; the a11y guard
+  passes with the four new `COVERED` entries; per-file thresholds hold
+  (each new component is rendered by existing page tests, and
+  `PageTitle`'s string and snippet branches by `RecordPage` and
+  `ListPage`).
+- `FEATURES.md` carries the four edits of step 11; `DEBT.md` carries D5;
+  `specs.js` carries the state and the two sentences.
+
+**Gates and cost.** `npm run check` once per commit (~165 s idle, up to
+the 600 s cap under load - re-run, never salvage a backgrounded one),
+`check:built` once, three parity calls of two to three minutes each. The
+full suite is CI's on the owner's push; B10 closes on that run's four
+shards, as B8 and B9 did.
+
+**Risks / do-nots.**
+
+- Do not give `Panel` or `Actions` a `class` or `as` prop, and do not
+  extract the three composed `.panel` variants (decided 1).
+- Do not fold a live inline margin into a rule; the attribute is the port.
+- Do not open `Shell.svelte`, `TableRows.svelte`, `Button.svelte`,
+  `PageHead.svelte` beyond its one comment, or `tokens.css`.
+- Do not fix D5 - the tab title stays plain; it is recorded, not fixed.
+- Keep the text-node structure: the list page's sub is one joined string;
+  the record page's sub snippet is today's `<p>` body verbatim.
+- Do not write a `VISUAL_DEBT` figure from this host; a red `~ modal`
+  cell is CI's to read.
+- Run every parity call with `MSYS_NO_PATHCONV=1` and confirm the cells
+  printed; a vacuous `расхождений нет` is not a result.
+- Reviewer: the batch redraws every page, so the orchestrator's risk
+  rules put a review on it; the review reads the diff as one class of
+  change plus the not-found fix.
+
+**Fallback.** If `svelte-check` rejects `string | Snippet` in the
+template, the two-`$derived` form above. If a `PageTitle` call site moves
+a cell (a whitespace text node the snippet trimmed or added), the diff
+image names the line; restore that site's exact text-node shape rather
+than touching the component - the other seven sites are the control.
+
+### B10 built: the page-furniture extraction pass (implementer, 2026-09-11)
+
+Built to the plan above with one real deviation from `PageTitle`'s
+markup, found by a test rather than by `svelte-check`. Preflight matched
+the brief: HEAD `b967481`, then one docs-only commit from another task
+landed mid-batch (`daa2166`, `agents` doc, touches neither `app/`,
+`tests/` nor `docs/specs/`) - re-read per the brief, harmless, and left
+alone. `git status --short` showed only the planner's uncommitted
+`context.md`/`plan.md`/`handoff.md` and the untracked
+`issues/tg-preview-refresh/`/`issues/agent-effort/` (both another task's,
+never staged); no `test-output/parity.lock`.
+
+Steps 2-12 as specified: `Panel.svelte`, `Actions.svelte`, `NoData.svelte`
+and `PageTitle.svelte` written per decided 1-3 and the components section
+verbatim; `Panel` swapped into `AltPanel`, `StdPanel`, `RollPanel`,
+`ListsPage` (`style="margin-top:16px"`), `SearchPage`
+(`style="margin-bottom:16px"`), each caller's own `.panel` block deleted;
+`TablesPage`'s `.tablenav` and `FilterBar`'s `.ffilter` kept inline with
+the one-line comment decided 1 asks for, as does `ListPage`'s `<details
+class="panel lroll">`. `NoData` swapped into all seven callers; `Actions`
+into `ListPage` (`style="margin-bottom:16px"`), `PrintPage` (plain),
+`SharedListPage` (`style="margin-bottom:18px"`) and `RecordCard`, whose
+two 600px descendant rules are re-anchored `.card :global(.card-acts
+.btn-lbl)` / `.card :global(.card-acts .btn.sm:has(.btn-lbl))`.
+`PageTitle` into the four page files exactly as spelled out - `ListPage`'s
+title is a `{#snippet renameTitle()}` holding the rename input verbatim
+(the `svelte-ignore a11y_missing_content` comment was tried on the
+snippet's `<input>` line first, found to annotate nothing there, and
+removed rather than moved - `svelte-check` raised no
+`a11y_missing_content` warning on `PageTitle`'s own `<h1>` either, so the
+fallback's ignore-comment branch was never needed); `RecordPage`'s
+not-found branch gained `<Button variant="primary"
+href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>` and its
+found branch's sub is a `{#snippet sub()}` holding today's `<p>` body
+verbatim. `ListPage.svelte:103`'s comment, the two "Recorded, not keyed"
+sentences, the `#/i/nope` state, the `FEATURES.md` bullets (search cap,
+the shared-page bullet, the storage-notice append, the new Records
+bullet) and `DEBT.md` D5 all landed verbatim per steps 7 and 10-12.
+
+**The one real deviation**: `PageTitle`'s first draft put the
+`{#if typeof x === 'string'}...{:else}...{/if}` *inside* `<h1>`/`<p>`, as
+the plan's own snippet shows. `npm run check`'s vitest step failed one
+existing test - `sharedListPage.test.ts`, "draws the name, the sub as one
+text node..." - `sub?.childNodes` read 2, not 1. Svelte 5 marks an
+`{#if}` block with an anchor comment so it can track which branch is
+live; nesting the check inside the element put that comment *inside*
+`.page-sub`, turning a plain-string caller's single text node into a text
+node plus a comment node - invisible to a pixel diff (comment nodes have
+no geometry) but real to a DOM-structure assertion, and to the "port the
+live app's text-node structure" rule in `CLAUDE.md`. Fixed by hoisting
+each `{#if}` to wrap the *whole* element instead - two complete branches
+per heading/sub, each a bare `<h1 class="page-h">{title}</h1>` or
+`<h1 class="page-h">{@render title()}</h1>` - so the anchor comment lands
+as a sibling of `<h1>`/`<p>`, not a child. This is not the plan's
+documented fallback (that one addresses a `svelte-check` type-narrowing
+rejection, which never occurred); it is a different failure mode the plan
+did not anticipate, caught by the exact mechanism the plan relied on
+(`npm run check`'s vitest step) rather than by parity. All 998 tests,
+including the corrected one and the new `record.test.ts` case, passed
+after the fix; no call site needed its own restoration, since the fix is
+in the component and every one of the eight call sites is identical in
+shape before and after.
+
+`npm run check`: exit 0, 998 tests (997 before this batch plus the new
+not-found case), thresholds held (statements 96.48, branches 88.4,
+functions 96.96, lines 97.22); `Panel.svelte`, `Actions.svelte`,
+`NoData.svelte` and `PageTitle.svelte` all read 100% and are omitted from
+the v8 text reporter's per-file table (`skipFull` behaviour, not a
+coverage gap - confirmed against the a11y guard's `COVERED` map, which
+lists all four and passed). `npm run check:built`: build, smoke and the
+88.4 kB bundle budget all green, `git diff -- app.js style.css
+index.html` empty throughout - no live file was touched at any point.
+
+All three parity calls read **all 96 cells** as either `совпадает` (90
+cells, the six new `#/i/nope` cells included) or inside recorded debt
+with no `стало лучше`/`долг погашен` line (the six `#/roll/wondrous ~
+modal` cells, unchanged from their recorded figures - 0.02/0.03/0.07% at
+each width, both languages). No `VISUAL_DEBT` entry was added, changed or
+deleted; no `ACCEPTED` key was added. The acceptance grep
+(`class="panel"` etc. across `app/src/components/*.svelte`) finds each
+furniture class in exactly the components decided 1 names, nowhere else;
+`.panel {` similarly appears only in `Panel.svelte` and `ListPage.svelte`
+(the recorded `lroll` variant) - `TablesPage`'s `.tablenav` and
+`FilterBar`'s `.ffilter` never matched the bare `.panel {` selector to
+begin with, since they declare their own class name.
+
+Files changed: `app/src/components/{Panel,PageTitle,Actions,NoData}.svelte`
+(new); `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage`, `SearchPage`,
+`TablesPage`, `ListPage`, `PrintPage`, `RecordPage`, `SharedListPage`,
+`RecordCard`, `PageHead`, `FilterBar`; `record.test.ts`, `a11y.test.ts`;
+`tests/parity/specs.js`; `docs/specs/FEATURES.md`, `docs/specs/DEBT.md`;
+`issues/47/plan.md`, `issues/47/handoff.md`, `issues/47/context.md`
+(carrying the planning pass's own edits into this batch's commit, per the
+tree preflight).
+
+Commit: one commit, this session - hash filled in after the fact (the
+repo's own convention for a doc that must describe its own commit).
+Not pushed - "Never push" stands.
+
+Next: Phase 6/7 (the cut-over, owner-gated) or Phase 8 (the register
+sweep) - `handoff.md`, "Next batch" for the orchestrator's call between
+the two, neither of which this session picked.
 
 ## Phase 5 - what already exists
 

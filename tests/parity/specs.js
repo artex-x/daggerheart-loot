@@ -1069,6 +1069,11 @@ const oneEmpty = { 'dhloot.lists.v2': JSON.stringify([LISTS[1]]) };
 const STATES = [
   { id: '#/i/ci1', route: '#/i/ci1', why: 'a loot record' },
   { id: '#/i/q1', route: '#/i/q1', why: 'an equipment record' },
+  {
+    id: '#/i/nope',
+    route: '#/i/nope',
+    why: 'the not-found record page: "Предмет не найден", the sub line, the "На главную" button'
+  },
   { id: '#/roll/wondrous', route: '#/roll/wondrous', why: 'a roll on a table with a real die' },
   { id: '#/roll/dread', route: '#/roll/dread', why: 'a roll on a table with no die of its own' },
 
@@ -2002,6 +2007,13 @@ const JITTER = 0.1;
  * `aria-current="true"` (app.js 2944). `d.controls()` reads names only, so no
  * key differs - an entry here would fail every run as stale, per `parity.js`'s
  * own rule that a stale `ACCEPTED` key is a failure, not a silent pass.
+ * `Seg.svelte` writes `aria-pressed` on every segment, so the tables view
+ * switch (app.js:2553) and the print page's colour / black-and-white switch
+ * (3534-3537), which write none live, differ the same way; and
+ * `PrintCard.svelte` draws the card's name as `<h2 class="pc-name">` where
+ * `printCardHTML` writes `<h3>` (app.js:3419) - a heading level
+ * `d.controls()` does not read. Both are B7's deliberate improvements;
+ * Phase 7's sweep carries them into `FEATURES.md`.
  *
  * The live app also re-plays the anchor scroll-and-flash on every `render()`,
  * a tables search keystroke included (app.js:4435: `S.tables.q = el.value;

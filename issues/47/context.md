@@ -2098,3 +2098,138 @@ phase and the register: `plan.md`, "Phase 8".
   `CLAUDE.md`, "Orchestration" (the orchestrator "removes only clearly
   disposable task-scoped scratch artifacts"). The conclusion the brief
   drew - the register must not live in `issues/47/` - holds either way.
+
+## State at the B10 kickoff (orchestrator, 2026-09-11)
+
+Measured, not inferred. `git log --oneline` at kickoff: HEAD `b967481`,
+`origin/main` == HEAD, so **B9's three commits (`ad46dac`, `dba79ee`,
+`84ca6df`) have been pushed** - the condition "Blockers" records as open was
+satisfied by the owner between sessions. HEAD moved past where the B9
+implementer left it by four docs-only commits, three of them another task's
+(`02bd1af`, `fb4c7db`, `88ef6fb`, `b967481` - the agent-messaging task's
+closeout, which retired `issues/agent-messaging/`); none touches `app/`,
+`tests/` or `docs/specs/`. Working tree clean but for the untracked
+`issues/tg-preview-refresh/`, another task's, preserved and never staged.
+
+CI reads, from `gh run list`:
+
+| run | head | verdict |
+|---|---|---|
+| [`34638174347`](https://github.com/artex-x/daggerheart-loot/actions/runs/34638174347) | `dba79ee` (B9 as first built) | **green end to end** - `check`, all four parity shards, `audit`, `secrets`, `deploy` |
+| `34640328352` | `55f2fa2` (carries the remediation `84ca6df`) | `check`, `audit`, `secrets` green; four parity shards in progress at kickoff |
+| `34640746872` | `b967481` | pending at kickoff |
+
+So **B9's anchor question is answered**: run `34638174347` read all four
+shards green with all seven anchor `VISUAL_DEBT` entries deleted, including
+`#/tables/voa ~ section anchor @ en 375`, the single cell the handoff flagged
+as unable to be corroborated from this host. The remediation's own read is
+`34640328352`; it changed component code, so B9 closes on that run's shards,
+not on `34638174347` alone.
+
+No local check was run at kickoff and nothing was running on this host.
+
+## B10 planning facts (planner, 2026-09-11) - durable, read before implementing
+
+Full design in `plan.md`, "B10 planned"; the brief in `handoff.md`, "Next
+batch". Read off `b967481` (`app.js`/`style.css` unchanged since B9) or
+measured, not assumed:
+
+- **Git Bash rewrites parity filters on this host.** `node tests/parity.js
+  "#/i/ci1 @"` arrived as `#I:/ci1 @` (MSYS path conversion reads `/i/` as
+  a drive), matched nothing, and printed `расхождений нет` for zero cells.
+  `MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/ci1 @"` ran the six cells.
+  Earlier sessions avoided it by accident (`"i/ci1"`, `"anchor"` - no
+  leading slash). Any filter beginning `#/` needs the variable under Git
+  Bash; PowerShell does not convert. A run that prints no cell lines is
+  not a result.
+- **`WANTED` matches the cell label, not only the id** (`tests/parity.js:
+  374`, `full.includes(w)` over `<id> @ <lang> <width>`), so `"<id> @"`
+  selects exactly the plain state - `"#/lists @"` is six cells, not the
+  twenty states `"#/lists"` prefixes; `"#/print/ci1-q1 @"` is the one
+  plain print state, not the four B9's prefix filter drew. The outline's
+  ` @` filters were right for that reason.
+- **`#/i/ci1 @` reads `совпадает` on all six cells with every spec silent**
+  (this host, the `dist/` present in the tree - built 20:44, older than
+  the remediation `84ca6df` at 21:24, so advisory twice over; the
+  implementer's `check:built` rebuilds it).
+- **The live tab title on `#/i/<id>` is the plain app title, by a live
+  defect.** `render()` writes `document.title = (it ? nameOf(it) + ' — '
+  : '') + t().docTitle` (app.js:3795) and then calls `syncChrome()`
+  (3822), whose last line is `document.title = t().docTitle` (3658). The
+  rewrite's only title write is `Shell.svelte:28`, `app.t.docTitle`. That
+  is why the `title` spec is green on every record state - and why it is
+  register material (`DEBT.md` D5, written by B10), not a port defect.
+- **`RecordPage`'s not-found branch is short by a button as well as a
+  class.** Live `renderItemPage` (app.js:3194-3196): `h1.page-h`,
+  `p.page-sub`, `<a class="btn primary" href="#/roll/std">toStart</a>`.
+  Rewrite (`RecordPage.svelte:56-59`): `h1.page-h`, `p.miss`, nothing
+  else. `SharedListPage.svelte:83` already has the exact `Button` line.
+  `t.toStart` exists (`dict.ts:250/539`). No parity state and no
+  component test reaches `#/i/<unknown>` today (`record.test.ts` has the
+  no-data case at `:274`, nothing for an unknown id).
+- **All four inventory margins are live inline `style=` attributes**, none
+  a rule: `#/search`'s panel `margin-bottom:16px` (app.js:2854), the lists
+  index's panel `margin-top:16px` (2912), the list page's `.card-acts`
+  `margin-bottom:16px` (2972), the shared page's `.card-acts`
+  `margin-bottom:18px` (3154). `PageHead`'s `margin:0` is the live rule
+  `.page-head .page-h{margin:0}` (style.css:104). `SharedListPage.svelte`
+  today folds its 18px into the rule; `ListsPage`/`SearchPage` fold theirs
+  into `.panel` - all three are the rewrite's own liberty, reversed by
+  B10.
+- **No `@media` override exists for `.panel` (145), `.page-h` (105),
+  `.page-sub` (140) or `.card-acts` (405)** in style.css: the 600px
+  blocks (800-1000) and the print block (1397-1414) name none of them.
+  The only descendant rules are `.card-acts .btn-lbl` and `.card-acts
+  .btn.sm:has(.btn-lbl)` (477-481, inside the 600px block), ported in
+  `RecordCard.svelte:748/757` as `:global()` children of its own
+  `.card-acts` - the one place the extraction has to re-anchor a selector
+  (`.card :global(.card-acts .btn-lbl)`). `.btn-lbl` is emitted only by
+  `RecordActions.svelte` (103-113) and `TablesPage.svelte:474` (whose own
+  `.toolbar :global(.btn-lbl)` rule is untouched).
+- **`.miss` has no live rule** (`style.css` and `index.html` grepped) and
+  no live screen: `app.js:7` is `const DATA = window.LOOT.items;`, so a
+  missing `data.js` throws before anything renders. Seven rewrite copies,
+  two colours (`--muted2` in `ListPage`/`PrintPage`, `--muted` in the
+  other five); never photographed.
+- **The furniture callers, counted:** `.panel` div x5 (`AltPanel:100`,
+  `StdPanel:90`, `RollPanel:100`, `ListsPage:108`, `SearchPage:82`) plus
+  three composed variants (`TablesPage:445` `.tablenav`, `FilterBar:107`
+  `.ffilter`, `ListPage:642` `<details class="panel lroll">`); `.page-h`/
+  `.page-sub` pairs x8 in four files (`ListPage:574/589`, `PrintPage:82/
+  87`, `RecordPage:58/61`, `SharedListPage:81/85`) plus `PageHead:34/62`
+  in its own `.page-head` row; `.card-acts` x4 (`RecordCard:244`,
+  `ListPage:599`, `PrintPage:89`, `SharedListPage:87`); `.miss` x7.
+  `RecordCard` is drawn by `AltPanel`, `ListPage`, `RecordModal`,
+  `RecordPage`, `RollPanel`, `StdPanel`; `PageHead` by the six
+  `PageHead`-using pages and is untouched.
+- **Svelte 5 facts the design leans on:** a snippet declared as a child of
+  a component (`{#snippet title()}...{/snippet}` inside `<PageTitle>`) is
+  passed as the prop of that name, so `title: string | Snippet` takes
+  either form; elements rendered inside a caller's snippet keep the
+  caller's style scope (`ListPage`'s `.titleinput` and `RecordPage`'s
+  `.itemtable` rules still apply); a parent's scoped rule does not reach a
+  child component's root without `:global()`, which is why the composed
+  `.panel` variants stay inline. `exactOptionalPropertyTypes` is on:
+  `style?: string` is passed as a literal or omitted, never as
+  `undefined`.
+- **The remaining `VISUAL_DEBT` keys** are the six `#/i/q1 ~ another
+  tier`, six `#/roll/wondrous ~ modal` and six `#/tables ~ a row opened`
+  cells (all the modal's close-button ring); of B10's sixteen states only
+  `~ modal` carries debt. `ACCEPTED` names no record state's `title`.
+- **The a11y guard** (`a11y.test.ts:392`) compares the sorted keys of
+  `COVERED` to `import.meta.glob('./*.svelte')`; a new component without
+  an entry fails `npm run check`. `Empty.svelte`'s entry is the model.
+- Wall clock: 16 states in three calls (5 / 5 / 6 states, 30 / 30 / 36
+  cells) at the measured ~23 s per state; each call two to three minutes.
+  `#/i/ci1 ~ whole` is `fullPage` and `~ modal` opens a dialog; neither
+  is `timed`.
+
+## The CI read that closed B9 (orchestrator, 2026-09-11)
+
+Run [`34640328352`](https://github.com/artex-x/daggerheart-loot/actions/runs/34640328352) on `55f2fa2`, the first head carrying the remediation
+`84ca6df`, completed **green on every job**: `check`, parity shards 1-4,
+`audit`, `secrets`, `deploy`. With run `34638174347` (`dba79ee`) also green,
+B9 has the two independent readings its design asked for, and all seven
+anchor `VISUAL_DEBT` deletions stand - `#/tables/voa ~ section anchor @ en
+375` included, the one cell this host could not corroborate before or after.
+No `VISUAL_DEBT` number was written from this host. B9 is closed.

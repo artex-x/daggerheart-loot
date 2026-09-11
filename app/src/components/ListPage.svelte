@@ -10,6 +10,7 @@
    * 831-842). */
   import { onDestroy, tick, untrack } from 'svelte';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+  import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import Die from './Die.svelte';
@@ -19,8 +20,10 @@
   import HelpButton from './HelpButton.svelte';
   import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
   import NumberField from './NumberField.svelte';
   import OrGrid from './OrGrid.svelte';
+  import PageTitle from './PageTitle.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
@@ -100,8 +103,9 @@
    * through to the content-based `findListByPayload`, and reject the list
    * against a payload snapshot one keystroke stale, leaving `own` stuck null
    * with nothing left to re-trigger a fix. Measured: clearing a list note's
-   * text this way could permanently swap the page to the "not ours" `todo`
-   * paragraph after a single keystroke. `onDestroy` fires exactly once, when
+   * text this way could permanently swap the page to the "not ours" branch -
+   * the shared page `SharedListPage` draws - after a single keystroke.
+   * `onDestroy` fires exactly once, when
    * `App.svelte` remounts a different page component - the live app's own
    * "every other route" moment.
    */
@@ -569,10 +573,9 @@
 {/snippet}
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else if route.kind === 'storedList' && !own}
-  <h1 class="page-h">{t.listNotFound}</h1>
-  <p class="page-sub">{t.listNotFoundSub}</p>
+  <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
   <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
 {:else if !own}
   {#if route.kind === 'sharedList' && route.packed}
@@ -585,8 +588,7 @@
 {:else}
   <!-- The live app's own shape: the heading carries no text of its own, only
        the rename input - `renderOneList` writes no separate title. -->
-  <!-- svelte-ignore a11y_missing_content -->
-  <h1 class="page-h">
+  {#snippet renameTitle()}
     <input
       type="text"
       class="titleinput"
@@ -594,9 +596,12 @@
       aria-label={t.rename}
       oninput={rename}
     />
-  </h1>
-  <p class="page-sub">{String(items.length)} {itemsWord(items.length, app.lang)}</p>
-  <div class="card-acts" style="margin-bottom:16px">
+  {/snippet}
+  <PageTitle
+    title={renameTitle}
+    sub={`${String(items.length)} ${itemsWord(items.length, app.lang)}`}
+  />
+  <Actions style="margin-bottom:16px">
     <Button size="sm" onclick={() => void sharePlayers()}
       ><Icon name="link" />{t.sharePlayers}</Button
     >
@@ -608,7 +613,7 @@
       >
     {/if}
     <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
-  </div>
+  </Actions>
 
   <StorageNotice {app} />
 
@@ -639,6 +644,10 @@
   </details>
 
   {#if items.length > 1}
+    <!-- `<details class="panel lroll">` is a `Panel.svelte` variant: a
+         `<details>`, and `.lroll{padding:0}` plus its own `summary`/`[open]`
+         rules are this component's own - kept inline (plan.md, "B10
+         planned", decided 1). -->
     <details class="panel lroll">
       <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
       <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
@@ -906,32 +915,11 @@
 {/if}
 
 <style>
-  /* off `.page-h` (style.css:105) */
-  .page-h {
-    margin: 0 0 4px;
-    font-size: var(--h-page-size);
-    font-weight: var(--h-page-weight);
-    letter-spacing: var(--h-page-spacing);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
+  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
+     `NoData.svelte` (B10, though this component's own copy read `--muted2`
+     where `NoData`'s reads `--muted` - never photographed either way).
 
-  /* off `.page-sub` (style.css:140) */
-  .page-sub {
-    margin: 0 0 18px;
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 70ch;
-  }
-
-  .miss {
-    margin: 0;
-    color: var(--muted2);
-  }
-
-  /* off the global `input[type=text]` rule (style.css:254-258), scoped as
+     off the global `input[type=text]` rule (style.css:254-258), scoped as
      `ListsPage.svelte` already does, then `.titleinput` (848-853) - the
      cascade, not the intent: the attribute selector's higher specificity
      beats the class on every property but `max-width` and `letter-spacing`
@@ -978,17 +966,8 @@
     border-bottom-color: var(--muted2);
   }
 
-  /* off `.card-acts` (style.css:405) - `margin-bottom:16px` is the live
-     inline style on this specific block, written directly in the markup
-     above rather than as a class rule. */
-  .card-acts {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 3px;
-  }
+  /* `.card-acts` moved to `Actions.svelte` (B10) - `margin-bottom:16px` is
+     the live inline style on this specific block, now passed as `style`. */
 
   /* off `.money`, `.money-l`, `.money-br`, `.money-help` (style.css:694-702).
      `.money-help` reaches into `HelpBox`'s own root, hence `:global()`. */
@@ -1171,7 +1150,9 @@
     display: none;
   }
 
-  /* off `.panel` (style.css:145-149) */
+  /* off `.panel` (style.css:145-149) - kept here for the `<details
+     class="panel lroll">` variant above; see `Panel.svelte` for the plain
+     rule this one duplicates on purpose. */
   .panel {
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);

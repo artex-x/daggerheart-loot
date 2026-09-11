@@ -30,6 +30,11 @@
   let helpOpen = $state(false);
 </script>
 
+<!-- Keeps its own `.page-h`/`.page-sub` rather than `PageTitle.svelte`: this
+     `h1` sits inside the `.page-head` flex row, between the home and help
+     buttons, under the live `.page-head .page-h{margin:0}` (style.css:104) -
+     hosting that in `PageTitle` would need a wrapper prop no other caller
+     needs (plan.md, "B10 planned", decided 1). -->
 <div class="page-head">
   <h1 class="page-h">{title}</h1>
   <!-- 26px of paint, 44px of target: it sits in the heading row and a mis-tap

@@ -25,6 +25,7 @@
   import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
   import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import RecordModal from './RecordModal.svelte';
   import SearchBox from './SearchBox.svelte';
@@ -442,6 +443,10 @@
 
 <PageHead {app} title={t.tables} sub={t.subTables} {help} {say} />
 
+<!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus this
+     screen's own margin-free nav row. Svelte scopes this component's rule to
+     its own elements, so a `class` prop on `Panel` would have to be
+     `:global()` here - kept inline (plan.md, "B10 planned", decided 1). -->
 <div class="panel tablenav">
   <ChipRow>
     {#each TABLE_GROUPS as g (g.id)}
@@ -458,7 +463,7 @@
 </div>
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else}
   <div class="toolbar">
     <div class="grow">
@@ -627,11 +632,8 @@
 
 <style>
   /* off `.page-h`, `.itemtable` and friends were already covered; what
-     follows is the tables screen's own furniture. */
-  .miss {
-    margin: 0;
-    color: var(--muted);
-  }
+     follows is the tables screen's own furniture. `.miss` moved to
+     `NoData.svelte` (B10). */
 
   /* off `.panel` in style.css */
   .tablenav {

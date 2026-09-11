@@ -14,8 +14,10 @@
   import Button from './Button.svelte';
   import Die from './Die.svelte';
   import Field from './Field.svelte';
+  import NoData from './NoData.svelte';
   import NumberField from './NumberField.svelte';
   import PageHead from './PageHead.svelte';
+  import Panel from './Panel.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
@@ -95,9 +97,9 @@
 <PageHead {app} {title} {sub} {help} {say} />
 
 {#if max === 0}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else}
-  <div class="panel">
+  <Panel>
     <!-- The picker comes first, because it decides what the number means: on
          Vault of Ages the range is the chosen section's length, not the book's. -->
     {@render picker?.()}
@@ -117,7 +119,7 @@
         </Button>
       </div>
     </Field>
-  </div>
+  </Panel>
 
   {#if shown}
     <!-- The result is the record card itself, as the live app draws it: a roll
@@ -163,24 +165,13 @@
 {/if}
 
 <style>
-  /* off `.panel`, `.field`, `.lbl`, `.numrow` and `.btn` in style.css */
-  .panel {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
+  /* off `.field`, `.lbl`, `.numrow` and `.btn` in style.css - `.panel` moved
+     to `Panel.svelte`, `.miss` to `NoData.svelte` (B10) */
   .numrow {
     display: flex;
     gap: 10px;
     align-items: stretch;
     flex-wrap: wrap;
-  }
-  .miss {
-    margin: 0;
-    color: var(--muted);
   }
 
   /* off `.results` in style.css */

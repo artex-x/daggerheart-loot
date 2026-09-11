@@ -115,6 +115,35 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   net still passes. `FEATURES.md`, "Lists", the storage-notice bullet.
 - **Recorded by**: B9, 2026-09-11 (found by the B5.3 review).
 
+### D5 - a record page's tab title loses the record's name
+
+- **Where**: `app/src/components/Shell.svelte:28` - the rewrite's only
+  `document.title` write, `app.t.docTitle` on every route. Live:
+  `app.js:3795` `document.title = (it ? nameOf(it) + ' — ' : '') +
+  t().docTitle;` in `render()`'s `i/` branch, then `app.js:3822`
+  `syncChrome();`, whose last line (`:3658`) is `document.title =
+  t().docTitle;` - every render ends by writing the plain title over the
+  name. Read at `b967481`.
+- **Live behaviour**: the tab and a bookmark of `#/i/<id>` read "Генератор
+  лута — Daggerheart" (or the English), never the record's name; the name is
+  written and overwritten inside one render.
+- **What the rewrite would do instead**: title a record page `<name> —
+  <docTitle>` in the current language - what line 3795 intends - and keep
+  the plain title everywhere else.
+- **Why parity won**: B10 (2026-09-11), found while porting the not-found
+  page. The harness's `title` spec compares `page.title()` on every state,
+  and `#/i/ci1 @` reads a match on all six cells because both apps end on
+  the plain title; writing the name would fail that spec on `#/i/ci1`,
+  `#/i/q1`, `#/i/f1` and `#/i/ci1 ~ whole` without an `ACCEPTED` key per
+  cell.
+- **How to verify the fix**: `record.test.ts` - after rendering `#/i/ci1`,
+  `document.title` starts with the record's name in the page's language and
+  follows a language switch; `#/i/nope` keeps the plain title. If the
+  harness is still alive, the four record states' `title` cells get
+  `ACCEPTED` keys; after the cut-over, nothing. `FEATURES.md`, "Records",
+  the tab-title clause rewritten.
+- **Recorded by**: B10, 2026-09-11.
+
 ## Live decisions kept over the rewrite's own
 
 Not a defect; a design the rewrite argued against and lost to parity.

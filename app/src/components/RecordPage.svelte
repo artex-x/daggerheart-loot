@@ -6,10 +6,12 @@
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
+  import PageTitle from './PageTitle.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordModal from './RecordModal.svelte';
-  import { printHash, tablesHash } from '../lib/hash.js';
+  import { printHash, sectionHash, tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -51,22 +53,22 @@
 </script>
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else if !it}
   <!-- A link to a record that is no longer in the data: an old share, or an id
        that was renumbered. Saying which is kinder than an empty page. -->
-  <h1 class="page-h">{t.notFound}</h1>
-  <p class="miss">{t.notFoundSub}</p>
+  <PageTitle title={t.notFound} sub={t.notFoundSub} />
+  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
 {:else}
-  <h1 class="page-h">{nameOf(it, app.lang)}</h1>
-  <p class="page-sub">
+  {#snippet sub()}
     {where}
     {#if table}
       <a class="itemtable" href={tablesHash(table, { anchor: it.id })}
         >{t.showInTable}<Icon name="external" /></a
       >
     {/if}
-  </p>
+  {/snippet}
+  <PageTitle title={nameOf(it, app.lang)} {sub} />
 
   <div class="itempage">
     <RecordCard
@@ -112,25 +114,8 @@
 {/if}
 
 <style>
-  /* off `.page-h` and `.page-sub` in style.css */
-  .page-h {
-    margin: 0 0 4px;
-    font-size: var(--h-page-size);
-    font-weight: var(--h-page-weight);
-    letter-spacing: var(--h-page-spacing);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .page-sub {
-    margin: 0 0 18px;
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 70ch;
-  }
-
+  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
+     `NoData.svelte` (B10). */
   .itemtable {
     white-space: nowrap;
     font-size: 13px;
@@ -154,10 +139,5 @@
   /* off `.itempage` */
   .itempage {
     max-width: 520px;
-  }
-
-  .miss {
-    margin: 0;
-    color: var(--muted);
   }
 </style>

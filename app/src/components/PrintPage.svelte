@@ -3,8 +3,11 @@
    * handlers (`printBack`/`doPrint`/`printArt`/`printLink`, app.js
    * 4236-4245). No `PageHead`: the live markup writes a bare `h1`+`p`, no
    * pin, no help. */
+  import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
+  import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import Seg from './Seg.svelte';
   import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
@@ -77,16 +80,14 @@
 </script>
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else if !items.length}
-  <h1 class="page-h">{t.printTitle}</h1>
-  <p class="page-sub">{t.printEmpty}</p>
+  <PageTitle title={t.printTitle} sub={t.printEmpty} />
   <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
 {:else}
   <div class="printbar">
-    <h1 class="page-h">{t.printTitle}</h1>
-    <p class="page-sub">{sub}</p>
-    <div class="card-acts">
+    <PageTitle title={t.printTitle} {sub} />
+    <Actions>
       <Button onclick={back}><Icon name="back" />{t.back}</Button>
       <Button variant="primary" onclick={print}><Icon name="print" />{t.printNow}</Button>
       <Seg
@@ -99,7 +100,7 @@
         }}
       />
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
-    </div>
+    </Actions>
     {#if dropped}
       <p class="printnote warnnote">{tooMany}</p>
     {/if}
@@ -120,42 +121,12 @@
 {/if}
 
 <style>
-  /* off `.page-h` (style.css:105) */
-  .page-h {
-    margin: 0 0 4px;
-    font-size: var(--h-page-size);
-    font-weight: var(--h-page-weight);
-    letter-spacing: var(--h-page-spacing);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
+  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
+     `NoData.svelte`, `.card-acts` to `Actions.svelte` (B10, though this
+     component's own `.miss` read `--muted2` where `NoData`'s reads
+     `--muted` - never photographed either way).
 
-  /* off `.page-sub` (style.css:140) */
-  .page-sub {
-    margin: 0 0 18px;
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 70ch;
-  }
-
-  .miss {
-    margin: 0;
-    color: var(--muted2);
-  }
-
-  /* off `.card-acts` (style.css:405) */
-  .card-acts {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 3px;
-  }
-
-  /* off `.printbar`, `.printnote`, `.printnote.warnnote` (style.css:1112-1116) */
+     off `.printbar`, `.printnote`, `.printnote.warnnote` (style.css:1112-1116) */
   .printbar {
     margin-bottom: 18px;
   }

@@ -41,7 +41,8 @@ Six modes. Each keeps its own input in memory only.
 
 - 14 tables (`TABLE_DEFS`), each with its own search box and a list/grid switch.
 - Search covers all 1061 records: names, descriptions and stat lines, both
-  languages at once; the first 300 matches are shown.
+  languages at once; `#/search` shows the first 300 matches - the cap is that
+  page's alone, a table's own box is not capped.
 - Every heading has a copy-link button; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in
   table" link and a section's copy-link button produce) scrolls to its target
@@ -84,16 +85,33 @@ Six modes. Each keeps its own input in memory only.
   - opening the page, and after every writer on it.
 - Import: paste a link or a payload to take a copy of someone else's list -
   either link form, plain or packed.
+- A shared link (`#/l/<payload>`) that is nobody's own list draws the shared
+  page: the name, the shared-list line with the count as one text node, one
+  add-to-list control that takes the whole list into a new or an existing
+  list (quantity, price and a row's public note travel; the GM's note never
+  does), the list's own notes, and the rows; a payload that cannot be decoded
+  draws "Предмет не найден", the bad-link line and a "На главную" button to
+  `#/roll/std`.
 - Two open tabs merge rather than overwrite (`STATE.md`).
 - A storage notice at the top of the index and of a list page: when storage
   refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
   live in this browser only" disclosure whose cross is remembered in
   `dhloot.warn.v1`; unfolding is not remembered - the notice comes back folded
-  after a language switch, as the live re-render leaves it.
+  after a language switch, as the live re-render leaves it; on the index it
+  survives a create and a delete, where the live whole-page re-render re-folds
+  it - the rewrite's deliberate deviation, invisible to every parity state
+  because each starts folded.
 
 ## Records
 
 - Card in a modal from a table row, or a full page at `#/i/<id>`.
+- `#/i/<id>` for an id the data does not know draws "Предмет не найден", the
+  sub line and a "На главную" button to `#/roll/std` (the live
+  `renderItemPage` shape). The tab title on a record page is the app's name
+  alone, on both apps - `DEBT.md` D5. When `data.js` itself did not load,
+  every page draws the "data did not load" line in place of its content
+  (`NoData.svelte`) - the rewrite's own state; the live app throws on a
+  missing `window.LOOT` and draws nothing.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used.
