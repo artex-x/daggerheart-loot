@@ -1719,27 +1719,37 @@ motion, `ready()`'s waits, 250ms after each press) of
 - Review is expected after this batch: new UI, nine new parity states, and
   `tests/parity/specs.js` changes all match the risk rules.
 
-## B7 built (implementer, 2026-09-11) - one durable fact for the next session
+## B7 built, then remediated (implementer, 2026-09-11) - one durable fact
 
-**A new instability class, discovered while verifying group A, worth
-knowing before re-deriving it:** on this host, `cqw`-unit values written to
-an already-mounted element's inline style via the CSSOM (exactly what
-`fitPrintCards`'s port does, in a loop) can read back stale for a
-measurable window of real time - confirmed via `getBoundingClientRect`/
-`offsetHeight`, not only `getComputedStyle`, so it is not a computed-style-
-specific quirk. A brand-new element responds instantly; the live app's
-identical loop-of-inline-writes pattern, against `innerHTML`-built markup,
-does not show it. Self-corrects given ~500ms of real wall-clock time; does
-not self-correct under one or two `requestAnimationFrame`s, a forced
-reflow, or a `container-type`/`display` toggle. Affects only the states
-whose text is long enough to drive many loop iterations (B7's `NINE`/
-`LONG` states, both layouts) - this is the first batch whose fit algorithm
-churns a `cqw` inline style synchronously in a tight loop, which is why no
-earlier batch surfaced it. Read as the same *shape* as the already-
-documented "unstable capture" class (`docs/parity.md`, "Two unstable
-classes"; B5.2), on this project's own precedent that a loaded local host
-manufactures instability a clean CI runner does not - just reached through
-a new mechanism (`cardFit`'s numeric comparison) rather than only a pixel
-percentage. Full reproduction trail and what was tried: `plan.md`, "B7
-built"; the open action: `handoff.md`, "Blockers", first entry - push and
-read CI's print shard(s), do not re-investigate locally before that.
+**`0.01ms` is not zero, and the popular reduced-motion snippet ships it.**
+`app/src/styles/tokens.css`'s `@media (prefers-reduced-motion: reduce)` block
+carried `transition-duration: 0.01ms !important` on `*`. A non-zero duration
+starts a real `CSSTransition` on every inline style write, and a transition's
+value at t=0 is the **old** one - so any code that writes an inline style and
+reads the layout back synchronously reads the pre-write layout. That is exactly
+what `PrintCard.svelte`'s `fit()` does, so `tight()` never turned false, all
+three ladders ran to their floors, the first cards on each sheet lost their
+art, and 50 of 54 group-A parity cells went red at `4776243`. The live app's
+reduced-motion rules (`style.css:311`, `:544`) kill two named animations only
+and leave `transition-duration` at its initial `0s`, which is why the live app
+reads correctly. The parity harness runs every cell under
+`prefers-reduced-motion: reduce` (`tests/parity/driver.js:649`), so this
+surfaces in parity and nowhere else - CI would have read it red too. Fixed to
+`transition-duration: 0s !important`; nothing in `app/src` listens for
+`transitionend`/`animationend`, so the transition bought nothing.
+
+**The first pass's "`cqw` instability class" was a false diagnosis and is
+deleted everywhere, not softened.** It is not in `docs/parity.md`'s "Two
+unstable classes" and must not be added: the staleness reproduces on a
+non-container element with px units, `document.getAnimations()` returns a
+`CSSTransition` on the rewrite and `[]` on the live app, and with
+`transition-duration: 0s` injected the live `fitPrintCards` run verbatim over
+the rewrite's DOM reproduces the legacy numbers exactly. **The standing lesson,
+which this task has now paid for three times: a "measured" fact written into a
+durable doc outlives the session that wrote it and is read as settled. Measure
+the mechanism, not the correlation, before writing one down.**
+
+The remaining group-A residue after the fix - 4 image cells, a different
+non-overlapping 3 on a re-run of the same build, every `cardFit`/`sheetCounts`
+cell agreeing - is the already-documented `whole:true` full-page capture class
+and is CI's to adjudicate: `handoff.md`, "Blockers", first entry.

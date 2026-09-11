@@ -95,4 +95,16 @@
   a.sep {
     margin-left: auto;
   }
+
+  /* This component's share of style.css's `@media print` block (1403), which
+     names `.tabs` alongside `.topbar`. Redundant while the nav sits inside
+     `Shell.svelte`'s header - measured under print media, the header is
+     already `display: none` and the nav has no client rect - but the live
+     rule is per-element, and a nav that ever moves out of the header would
+     otherwise start printing across the top of the first sheet. */
+  @media print {
+    .tabs {
+      display: none !important;
+    }
+  }
 </style>

@@ -203,8 +203,8 @@ Components and state are at 85 and 90.
 with tests asserting that a button renders a button. What is required is that
 every file is *reached* by some test - `perFile` fails at 0% whether the file
 has a test of its own or is exercised through a parent. `TabBar` and
-`LangSwitch` have no test files and are at 100% because `shell.test.ts` drives
-them through `App`. That is the intended shape.
+`Seg` have no test files and are at 100% because `shell.test.ts` drives them
+through `App`. That is the intended shape.
 
 What this found the day it was turned on, all of it invisible to the previous
 global number:

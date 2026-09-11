@@ -6,6 +6,30 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B7's one remediation pass is done - the three review
+  blockers are fixed and the false durable record they left behind is
+  corrected.** (implementer, 2026-09-11, on top of `4776243`.) The print
+  parity failure was **not** a `cqw` browser race: `tokens.css`'s
+  reduced-motion block set `transition-duration: 0.01ms !important`, and a
+  non-zero duration starts a real `CSSTransition` whose value at t=0 is the
+  old one, so `fit()`'s synchronous write-then-read was answered by the
+  pre-write layout every iteration and all three ladders ran to their
+  floors. Fixed to `0s`. Also fixed: `Shell.svelte`'s print colours, which
+  lost the cascade to `tokens.css`'s `body` and were dead code in the built
+  app (moved into `tokens.css`'s own `@media print`), and the missing
+  `.tabs` print rule (added to `TabBar.svelte`, matching the split Shell's
+  comment describes). Two cheap corrections in the same paths:
+  `COVERAGE.md`'s stale `LangSwitch` line and `PrintCard.svelte`'s
+  inaccurate reset comment. `npm run check` green (994 tests, thresholds
+  met), `npm run check:built` green (88.4 kB gzip), parity **group B 30/30
+  `расхождений нет`** - the global `transition-duration` change disturbed
+  no other screen - and **group A's `cardFit`/`sheetCounts` cells all
+  agree**, with an image residue of 4 cells (down from 50) that re-runs as
+  a different, non-overlapping 3 and is the documented `whole:true`
+  full-page capture class. No `VISUAL_DEBT` number written from this host.
+  See "Verification" for exact commands and "Blockers", first entry, for
+  what CI still adjudicates.
+
 - Task status: **B7 is built and committed - the print slice, the last of
   Phase 4, is done.** (implementer, 2026-09-11, on top of `8b96ff4`.)
   `#/print/<ids>` draws in full per the plan below, with no design
@@ -20,21 +44,14 @@ depends on chat history.
   `eqParts`, whose `?? ''` fallback against `th` became dead/wrongly-typed
   code once `th` was retyped to the pair it is; `i18n.test.ts`'s one
   affected case rewritten to match) - both accounted for in `plan.md`,
-  "B7 built". **One real, unresolved, measured (not guessed) defect,
-  carried to CI rather than papered over locally: `cardFit`/`whole` on the
-  four longest-text nine-card states shows the first one or two cards on
-  the sheet losing their art (`display:none`) under this host, traced by
-  direct Chrome instrumentation to `cqw`-unit inline-style writes reading
-  back stale on an existing, already-mounted element (not on a fresh one,
-  not on stylesheet-driven `cqw`, not on plain pixel geometry) -
-  self-corrects given real wall-clock time, does not self-correct under one
-  or two animation frames or a forced reflow, and reproduces worse under
-  the synchronous shrink loop the two affected states are specifically
-  built to exercise. Full trail, what was tried, and why nothing in
-  production code was changed to chase it: `plan.md`, "B7 built", last two
-  paragraphs. Per this task's own explicit instruction, no `VISUAL_DEBT`
-  number was written from this host.** See "Verification" for the exact
-  commands and "Blockers" for what CI needs to confirm.
+  "B7 built". **This entry also reported 50 of 54 group-A cells red and
+  blamed a `cqw` browser race. That diagnosis was wrong** - the cause was
+  `tokens.css`'s `transition-duration: 0.01ms`, found by the review and
+  fixed in the remediation entry above; the `cqw` narrative is deleted from
+  `plan.md`, `handoff.md` and `context.md` rather than softened, and
+  `docs/parity.md` gains no third unstable class. See "Verification" for
+  the exact commands and "Blockers", first entry, for what CI still
+  adjudicates.
 
 - Task status: **B7 planned and implement-ready - the print slice, one
   batch, the last of Phase 4** (planner, 2026-09-11, on `d696675`, working
@@ -506,6 +523,30 @@ carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
 carry what was done about it. Do not re-measure any of it.
 
 ## Completed
+
+- Batch name/id: **B7 remediation - the three review blockers and the false
+  record** (this session, on top of `4776243`)
+- What shipped: the print fit reads the layout it just wrote again.
+  `tokens.css`'s reduced-motion `transition-duration` goes from `0.01ms` to
+  `0s`, so an inline style write no longer starts a `CSSTransition` whose t=0
+  value is the old one; the print page's white ground is enforced from
+  `tokens.css`, where it can win the cascade; `.tabs` carries its own print
+  rule. `plan.md`, `handoff.md` and `context.md` no longer claim a `cqw`
+  instability class, and `docs/parity.md` gains no third one.
+- Files changed: `app/src/styles/tokens.css` (reduced-motion
+  `transition-duration`, and a new `@media print` for `html`/`body`),
+  `app/src/components/Shell.svelte` (print block loses the dead
+  `:global(html), :global(body)` rule; comment names the new split),
+  `app/src/components/TabBar.svelte` (its own `@media print`),
+  `app/src/components/PrintCard.svelte` (comment only - the reset claim now
+  matches the code), `docs/specs/COVERAGE.md` (`LangSwitch` -> `Seg`),
+  `issues/47/{plan,handoff,context}.md`.
+- No production behaviour was added or removed: the fit's arithmetic, the
+  markup and the `.pc-*` CSS are untouched, and no test needed changing -
+  the defect lived entirely in a global CSS declaration that jsdom cannot
+  observe, and its coverage is the parity harness's `cardFit` spec, which
+  went from red on every long-text state to green on all nine in both
+  languages at all three widths.
 
 - Batch name/id: **B3 - sectioned bodies and section anchors** (previous
   session)
@@ -1484,6 +1525,65 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   port: `plan.md`, "B7 built", and "Blockers" below.
 
 ## Verification
+
+- Commands run (exact), B7 remediation pass on top of `4776243`, each one
+  foreground call:
+  - `npm run build` - green; `dist/assets/app.js` 306.59 kB, 91.03 kB gzip.
+  - A standalone Puppeteer probe against `dist/index.html` at 1100 under
+    `emulateMediaFeatures([{ name: 'prefers-reduced-motion', value:
+    'reduce' }])`, on the `LONG` route, run before and after the fix (kept
+    in the session scratchpad, not in the repo - it linted red under the
+    project's eslint config when parked in `test-output/`):
+
+    ```text
+    before  transitionDuration "1e-05s"  getAnimations() ["CSSTransition"]
+            .pc-art 1-4: none/14cqw none/14cqw flex/40.0169cqw flex/40.0169cqw
+            print media: nav display flex (0 client rects), header display none,
+                         body rgb(14,12,21) on rgb(236,232,246), radial-gradient
+    after   transitionDuration "0s"      getAnimations() []
+            .pc-art 1-4: flex/32.8136cqw flex/35.3559cqw flex/40.0169cqw flex/40.0169cqw
+            print media: nav display none, header display none,
+                         body rgb(255,255,255) on rgb(0,0,0), background-image none
+    ```
+
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - **green**.
+    Prettier clean, eslint clean, `svelte-check` 540 files 0 errors 0
+    warnings, derived files match, i18n parity holds, hook selftest 292
+    passed / 0 failed, **vitest 41 files / 994 tests passed**, coverage
+    96.52 / 88.44 / 96.95 / 97.24 with every per-file threshold met
+    (`PrintCard.svelte` 98.43/85.27/98.85/100, `PrintPage.svelte`
+    100/94.11/100/100).
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/print"` (group A, 9 states,
+    54 cells) - **`4 расхождений`**, down from 50 at `4776243`. Every
+    `cardFit`, `sheetCounts` and control-name cell agrees; all four reds are
+    image cells, identified by byte-comparing each `-legacy.png` against its
+    `-next.png`: `NINE @ en 1100` (2.46%), `NINE @ en 768` (3.75%), `LONG @
+    en 768` (3.53%), `LONG @ ru 1100` (3.38%).
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "voa2_a3-voa2_a1" "ci1-q1-q313"`
+    (the same two states again, same build) - **`3 расхождений`**, a
+    **different, non-overlapping set**: `NINE @ ru 1100`, `NINE @ ru 768`,
+    `NINE @ en 1100`; both `LONG` states fully clean. The log printed
+    "снимок целиком: 3/4 попытки до устойчивого кадра" repeatedly. Diff
+    images opened: no content change - every card has its art, the red is a
+    sub-pixel swim across the whole page including the topbar, best-aligned
+    at a one-pixel vertical shift (a scan over shifts -6..+6 scored 1300 at
+    -1 against 1855 at 0). All nine print states are `whole: true`, so this
+    is `docs/parity.md`'s second unstable class and its recipe applies: no
+    entry written, CI decides.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll/std @" "#/tables @"
+    "#/tables ~ grid" "#/lists @" "#/search ~ searched"` (group B, 5 states,
+    30 cells) - **`расхождений нет`**. `foundRows` legacy 87 / next 87. The
+    two `~ grid` control entries remain the recorded legacy `tileHTML`
+    numbering bug, unchanged.
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 60` - **green**;
+    smoke "the built page opens from a folder", budget 88.4 kB gzip within
+    the 120 kB budget.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`, re-run after the
+    doc edits to arm the commit gate - **green**, same figures.
+- Not run, and why: nothing regenerates from `data.js` in this pass, so no
+  `tools/build.js`-specific check beyond the one `npm run check` already
+  runs; no new state was added to `tests/parity/specs.js`, so the state
+  inventory is unchanged.
 
 - Commands run (exact), this session (B7, on top of `8b96ff4`):
   - `npx vitest run app/src/lib app/src/ports app/src/state` (step 1) -
@@ -2470,14 +2570,20 @@ accounting: `plan.md`, "B7 built"; the exact commands and results:
 built and its "Decided in planning" subsection stands as the historical
 record of what was decided, not work still to do.
 
+**B7's one remediation pass is spent** (this session, on top of
+`4776243`): the three review blockers are fixed and the false `cqw`
+instability record is corrected everywhere it was written. No further
+remediation on B7 without the human.
+
 **What is genuinely open, and is the next session's first read, not a new
-batch:** the `cardFit`/`whole` defect on the four longest-text nine-card
-print states - see "Blockers" below, the entry naming the exact cells and
-the full investigation trail in `plan.md`, "B7 built". This is a **read**,
-not implementation work: push, read CI's four print shards (the run was
-sharded four ways as of B5.2), and either delete this section (CI clean)
-or hand the reproduction trail to a session that can chase a Chromium-level
-fix.
+batch:** the 4-cell image residue on group A's `whole` print captures - see
+"Blockers" above, first entry. This is a **read**, not implementation work:
+push, read CI's four print shards (the run was sharded four ways as of
+B5.2). Clean there closes the entry. A reproducible red there starts from
+the `whole` capture, not from `fit()`, whose arithmetic the now-green
+`cardFit` cells confirm against the live app at every width in both
+languages - and it must not be answered with a `VISUAL_DEBT` number taken
+on a development host.
 
 **After that read, the next planning question is the page-furniture
 extraction pass** the B7 brief deferred (`.panel` x6, `.page-h`/`.page-sub`
@@ -2496,64 +2602,55 @@ brief's.
 
 ## Blockers
 
-- **Open: `cardFit`/`whole` on the four longest-text nine-card print
-  states reads real differences on this host - CI's read is the next
-  action, not implementation.** (implementer, 2026-09-11, `node
-  tests/parity.js "#/print"` on the built `dist/`.) The affected cells:
-  `NINE`, `NINE ~ black and white`, `LONG`, `LONG ~ black and white` (the
-  literal ids are the full routes - see `plan.md`, "B7 planned", the
-  states table) at some but not all width/language combinations within
-  each - not `#/print/ci1-q1`, not `TEN`, not the 181-id cap state, not
-  `#/print/nope`, and not any of the 30 group-B regression cells (clean).
-  Diff images opened first: the difference is real and describable, not
-  scattered noise - the first one or two cards on the affected sheets lose
-  their artwork (`.pc-art` collapses to `display:none`).
+- **RESOLVED: B7's print parity was broken by `transition-duration: 0.01ms`,
+  not by anything to do with `cqw`** (implementer 2026-09-11, then reviewer,
+  then this remediation pass). At `4776243` group A read 50 of 54 cells red
+  and the first cards on each sheet lost their artwork. The first pass wrote
+  that down as a host-level browser race over `cqw` inline styles and handed
+  it to CI; **that diagnosis was wrong** and the narrative it left in
+  `plan.md`, `handoff.md` and `context.md` has been deleted rather than
+  softened. `docs/parity.md`'s "Two unstable classes" gains no third entry -
+  this was never an instability class.
 
-  Traced by direct Puppeteer instrumentation against `dist/index.html`,
-  driven through the harness's own `prepare()`/`ready()`/`settle()`, to a
-  genuinely strange browser behaviour: **`cqw`-unit values written to an
-  element's inline style via the CSSOM read back stale** on an
-  already-mounted `.pcard` descendant (confirmed via `getComputedStyle`
-  *and* plain pixel geometry - `getBoundingClientRect`, `offsetHeight` -
-  so it is not a `getComputedStyle`-specific quirk), while a brand-new
-  element styled the same way in the same page updates instantly, and the
-  live app's own `fitPrintCards()` - the identical pattern of many
-  synchronous `el.style.fontSize = 'Ncqw'` writes in a loop, against
-  `innerHTML`-constructed markup rather than Svelte's fine-grained DOM
-  calls - does not show it on the same machine, same Chrome
-  (`152.0.7977.54`), same launch args. Tried and ruled out: one and two
-  `requestAnimationFrame` deferrals of the whole fit, a forced reflow
-  (`offsetWidth`) before the loop, toggling `container-type` off and back
-  on, a `display:none`/`''` toggle on the card - none changed the outcome.
-  **Does** self-correct given real wall-clock time (confirmed at 500ms
-  between the write and the read; not at 0ms), and shows width-dependent
-  results within one language arrival for the same one-time computation
-  (`NINE @ en` read `совпадает` at 768/375, failed only at 1100) - both
-  point at a background browser task racing the synchronous read, worse
-  under this host's load, rather than a deterministic logic error. This is
-  the same *shape* `docs/parity.md`'s "Two unstable classes" already names
-  for the `~ whole` capture class (B5.2), on this project's own precedent
-  that a loaded local host manufactures instability a clean CI runner does
-  not - manifesting through a new mechanism (`cardFit`'s numeric
-  comparison, not only the pixel percentage) because this is the first
-  batch whose fit algorithm churns `cqw` inline styles in a tight
-  synchronous loop.
+  The cause: `app/src/styles/tokens.css`'s reduced-motion block set
+  `transition-duration: 0.01ms !important` on `*`. **`0.01ms` is not zero**, so
+  every inline style write started a real `CSSTransition` whose value at t=0 is
+  the *old* one; `PrintCard.svelte`'s `fit()` writes an inline `cqw` size and
+  reads the layout back synchronously, so `tight()` was answered by the
+  pre-write layout on every iteration, never turned false, and all three
+  ladders ran to their floors. The live app's reduced-motion rules
+  (`style.css:311`, `:544`) kill two named animations and leave
+  `transition-duration` at its initial `0s`, so it reads correctly. The harness
+  runs every cell under `prefers-reduced-motion: reduce`
+  (`tests/parity/driver.js:649`), which is why only parity saw it; CI would
+  have read it red too. Fixed to `transition-duration: 0s !important` - nothing
+  in `app/src` listens for `transitionend`/`animationend` (grepped), so the
+  transition buys nothing. Measured on the built `dist/` at 1100 under reduced
+  motion, `LONG` route, before -> after: `transitionDuration "1e-05s"` ->
+  `"0s"`; `document.getAnimations()` `["CSSTransition"]` -> `[]`; the first two
+  `.pc-art` `none/14cqw` (the floor) -> `flex/32.8136cqw`, `flex/35.3559cqw`.
 
-  **Nothing in production code was changed to chase this** - the two
-  speculative fixes tried (rAF deferral, a forced reflow) are reverted;
-  `PrintCard.svelte`'s `fit()` is the plan's own verbatim, synchronous
-  port, unmodified. Per this task's own explicit instruction ("no debt
-  number from this host") and owner decision 1 (CI is authoritative), this
-  is handed to CI's read. **Next action:** push, read the print-bearing CI
-  shard(s). If CI reads these cells clean, delete this entry and the
-  matching section in `plan.md`. If CI reads a real difference, the
-  planner's next move is almost certainly scheduling the fit past whichever
-  browser task this races (`requestIdleCallback`, or splitting the shrink
-  loop across microtasks) rather than touching the arithmetic - the numbers
-  and the CSS are both confirmed correct against the live app whenever the
-  read is not raced. Full reproduction trail, ready for the next session to
-  pick up without re-deriving it: `plan.md`, "B7 built", last two
-  paragraphs.
+  **Open, and it is CI's call, not this host's: 4 image cells of group A.**
+  After the fix group A's `cardFit`, `sheetCounts` and control-name cells all
+  agree - the actual defect is gone - and the image residue is 4 cells, down
+  from 50. Re-running the two states that carried them produced a **different,
+  non-overlapping set of 3** on the same build (run 1: `NINE @ en 1100`, `NINE
+  @ en 768`, `LONG @ en 768`, `LONG @ ru 1100`; run 2: `NINE @ ru 1100`, `NINE
+  @ ru 768`, `NINE @ en 1100`, both `LONG` states clean). All nine print states
+  are `whole: true`; the log printed "снимок целиком: 3/4 попытки до
+  устойчивого кадра" repeatedly; the diff images were opened and show no
+  content change - every card has its art, the red is a sub-pixel swim over the
+  whole page including the topbar, which this batch never touched, best-aligned
+  at a one-pixel vertical shift. That is `docs/parity.md`'s second unstable
+  class verbatim ("Full-page captures": geometry byte-identical, pixels
+  swinging on an unchanged build, worse under load), whose own recipe is
+  re-run the state, write no entry, let the latest CI shard decide. **No
+  `VISUAL_DEBT` number was written from this host.** **Next action:** push and
+  read the print-bearing CI shard(s). Clean there closes this entry. A
+  reproducible red there is a real difference and the planner's next move
+  starts from the `whole` capture, not from `fit()`, whose arithmetic the
+  `cardFit` cells now confirm against the live app at every width in both
+  languages.
 
 - **None for B7's implementation** (planner, 2026-09-11). The Figma
   connector's unauthenticated state is **not** a blocker: the port needs no
@@ -2966,6 +3063,21 @@ brief's.
 
 ## Deferred
 
+- **Deferred, not fixed (B7 review, 2026-09-11): `Shell.svelte`'s `@page` rule
+  sits outside `@media print`.** It is `@page { size: A4 portrait; margin: 0 }`
+  at the end of the component's `<style>`, where the live app has it inside the
+  print block (`style.css:1398`). `@page` only ever applies to paged media, so
+  it draws identically today; it is a fidelity difference and a reader trap,
+  not a defect. Left alone in the remediation pass because that pass was
+  blockers-only.
+- **Deferred, not fixed (B7 review, 2026-09-11): `tests/parity/specs.js`'s
+  "Recorded, not keyed" note does not cover B7's two deliberate DOM
+  divergences** - `aria-pressed` on the colour/black-and-white segments, where
+  the live app writes none, and `<h2 class="pc-name">` where the live app
+  writes `<h3>`. Both are intentional and both are the rewrite's accessibility
+  improvement over the live markup; the note that explains why such
+  differences are recorded rather than keyed should name them. Documentation
+  only.
 - **Assigned by the B7 planning pass (planner, 2026-09-11):** B6 review
   risks 1-3 are folded into B7's group B and the `foundRows` log line
   (risk 1 for `#/tables` locally, CI for the other six cells; risk 2 by

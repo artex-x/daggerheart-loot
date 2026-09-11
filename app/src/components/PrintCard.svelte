@@ -62,12 +62,17 @@
    * floating-point outcome of eight subtractions of 0.1 from 3 - copy the
    * arithmetic, do not "improve" it.
    *
-   * Everything the loop can set is reset first: the live app fits against a
+   * The two values the ladders read back through - `.pc-text`'s font size and
+   * `.pc-content`'s `--pcpad` - are reset first: the live app fits against a
    * freshly-built DOM every render, and a re-fit here has to start from the
    * same blank state or a card that already shrank would never grow back on
-   * a shorter re-render (a language switch, a layout change). Runs
-   * synchronously after the DOM this effect reads - never awaits fonts or
-   * images, exactly as the live call inside `render()` does not either.
+   * a shorter re-render (a language switch, a layout change). `.pc-art`'s
+   * `height`, `--artw` and `display` are not reset, because nothing measures
+   * them: they are written once at the end, from `pad` and two `offsetTop`s,
+   * and `.pc-art` is absolutely positioned, so its own last value cannot move
+   * what the next pass reads. Runs synchronously after the DOM this effect
+   * reads - never awaits fonts or images, exactly as the live call inside
+   * `render()` does not either.
    */
   function fit(el: HTMLElement): void {
     const text = el.querySelector<HTMLElement>('.pc-text');

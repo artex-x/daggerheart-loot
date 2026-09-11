@@ -178,16 +178,12 @@
   }
 
   /* off the `@media print` block in style.css (1397-1414) - this component's
-     own share: the chrome, `main`'s frame, and the page colours. `.printbar`,
-     `.psheet`, `.pcard` and the two `.noprint` siblings (`SelBar`, `Toast`)
-     each carry their own share of the same block. */
+     own share: the chrome it owns and `main`'s frame. `.tabs` (`TabBar`),
+     `.printbar`, `.psheet`, `.pcard` and the two `.noprint` siblings
+     (`SelBar`, `Toast`) each carry their own share of the same block; the page
+     colours are in `styles/tokens.css`, which owns `html`/`body` and, being
+     emitted after the components, is the only place the override wins. */
   @media print {
-    :global(html),
-    :global(body) {
-      background: #fff;
-      color: #000;
-    }
-
     .skip,
     .topbar,
     .foot {

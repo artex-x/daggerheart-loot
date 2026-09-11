@@ -104,6 +104,20 @@ body {
   min-height: 100vh;
 }
 
+/* off `html,body{background:#fff;color:#000}` in style.css's `@media print`
+   (1403). It lives here rather than in `Shell.svelte` because `:global(html)`
+   and `:global(body)` are specificity (0,0,1), identical to the `body` above,
+   and the bundle emits component styles *before* this file - so the same rule
+   written in the component lost the cascade and printed the dark ground under
+   `print-color-adjust: exact`. In this file it is simply the later rule. */
+@media print {
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+}
+
 /* Off style.css, and load-bearing: without it a button falls back to
    `line-height: normal` and comes out six pixels shorter than the same button
    in the live app. That is the language pill in the header, so every route was
@@ -146,7 +160,17 @@ textarea::placeholder {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    /* `0s`, not the `0.01ms` the popular snippet uses: a non-zero duration
+       still starts a real `CSSTransition`, whose value at t=0 is the *old*
+       one. `PrintCard.svelte`'s `fit()` writes an inline `cqw` size and reads
+       the layout back synchronously, so under the snippet every read answered
+       from the pre-write layout, `tight()` never turned false, all three
+       ladders ran to their floors and the first cards lost their art. The
+       live app's reduced-motion rules kill two named animations and leave
+       `transition-duration` at its initial `0s`, which is why it reads
+       correctly. Nothing in `app/src` listens for `transitionend`, so killing
+       the transition outright costs nothing. */
+    transition-duration: 0s !important;
     scroll-behavior: auto !important;
   }
 }

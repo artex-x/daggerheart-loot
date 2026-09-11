@@ -9368,85 +9368,105 @@ had), is rewritten as "a threshold pair, minor and major separated by a
 slash" against `th: [5, 11]`, since a half-filled pair cannot occur once
 `th` is typed as the pair it is.
 
-**One genuine defect, unresolved, found by measurement rather than
-guessed - do not write a `VISUAL_DEBT` number for it from this host.**
-Parity group A (`node tests/parity.js "#/print"`, 9 states, 54 cells) reads
-clean except the `cardFit`/`whole`/`sheetCounts` cells on the four nine-card
-states (`NINE`, `NINE ~ black and white`, `LONG`, `LONG ~ black and white`)
-at several width/language combinations - not the five- and ten-card states,
-not the cap state, not the empty page: **exactly the four states whose
-`fit()` loop runs the most iterations** (the longest rules text in the
-catalogue, the whole point `LONG`'s `why` names). The diff images
-(`_print_voa2_a3…_ru_1100-{legacy,next}.png`) show a real, describable
-difference: on `next`, the first one or two cards on the sheet lose their
-artwork entirely (`.pc-art` gets `display:none` and a zero rect) while
-every other card on the same sheet, and every card on the shorter `NINE`/
-`ci1-q1`/`TEN` states, render correctly.
+**One genuine defect, diagnosed wrong at first and then fixed: the reduced-
+motion snippet's `0.01ms` was breaking the fit.** As first committed at
+`4776243`, parity group A read 50 of 54 cells red - the `cardFit` cells on
+every state whose text drives the fit ladder - and the diff images showed the
+first cards on a sheet losing their artwork. That pass wrote the cause down as
+a host-level browser race over `cqw` inline styles and handed it to CI. **That
+diagnosis was wrong**, and an independent review disproved it by direct
+measurement. The real cause, and it is deterministic:
 
-Read by direct instrumentation (a standalone Puppeteer script against
-`dist/index.html`, driven through the harness's own `prepare()`/`ready()`/
-`settle()`), not guessed:
+`app/src/styles/tokens.css`'s `@media (prefers-reduced-motion: reduce)` block
+set `transition-duration: 0.01ms !important` on `*` - the popular snippet's
+value. **`0.01ms` is not zero.** Every inline style write therefore started a
+real `CSSTransition`, whose value at t=0 is the *old* one. `PrintCard.svelte`'s
+`fit()` writes an inline `cqw` size and reads the layout back synchronously, so
+`tight()` was answered by the pre-write layout on every iteration, never turned
+false, and all three ladders ran to their floors - which is exactly what
+"`height:14cqw; --artw:7cqw; display:none`" is. The live app's reduced-motion
+rules (`style.css:311`, `:544`) kill two named animations and leave
+`transition-duration` at its initial `0s`, create no transition, and read
+correctly. The harness runs every cell under
+`emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }])`
+(`tests/parity/driver.js:649`), which is why parity saw it and nothing else
+did. Measured on the built `dist/` before and after the one-character-class
+fix, at 1100 under reduced motion, on the `LONG` route:
 
-- `fit()`'s own `.pc-content`/`.pc-art` `offsetTop` reads are `0` for
-  exactly the affected cards at the moment `fit()` runs, which is what the
-  reset math (`line = 0 + pad`, `top = 0`) turns into the observed
-  `height:14cqw; --artw:7cqw; display:none`.
-- This is not a container-query-establishment race in the usual sense:
-  `.pcard`'s own `clientWidth`/`getBoundingClientRect()` read correctly
-  (238px) throughout. What is wrong is specifically **`cqw`-unit values
-  written to an element's inline style via the CSSOM** (`el.style.fontSize
-  = '…cqw'`, exactly what `fit()` does in its loops) - reading them back,
-  even well after the loop and even via plain pixel geometry
-  (`getBoundingClientRect`, `offsetHeight`, not only `getComputedStyle`),
-  returns a value consistent with the *previous* style rather than the one
-  just written. A **brand-new element** created and styled the same way in
-  the same page responds instantly and correctly; an **existing,
-  already-mounted** `.pcard` descendant does not, and does not self-correct
-  under `requestAnimationFrame` (tried one and two frames), a forced reflow
-  on the container (`offsetWidth`/`offsetHeight`), a `display:none`/`''`
-  toggle on the card, or toggling `container-type` off and back on -
-  **but does self-correct given enough real wall-clock time** (confirmed at
-  500ms between the write and the read, across two separate `page.evaluate`
-  calls; not confirmed at 0ms). The live app's `fitPrintCards()` runs the
-  identical pattern - many synchronous `el.style.fontSize = 'Ncqw'` writes
-  in a tight loop, read back with `Range.getBoundingClientRect()` - against
-  `innerHTML`-constructed markup, and does not show this on the same
-  machine, same Chrome build (`152.0.7977.54`), same launch args
-  (`--no-sandbox --disable-dev-shm-usage --disable-gpu`).
-- Every other read this batch depends on (`.pc-tag`/`.pc-name`'s
-  stylesheet-driven `cqw`, `.pcard`'s own geometry, `foundRows`, all of
-  group B) reads correctly and identically on both apps, including on the
-  very same page as the broken cells - this is not a wider container-query
-  or build problem, and not a CSS porting error: the `.pc-*` block is a
-  verbatim copy, unedited from what B7 planned.
-- The symptom is worse under a synchronous JS loop that churns a `cqw`
-  inline style many times in one task (the fit ladder's own shrink loop,
-  which is exactly what the two affected states are built to exercise) and
-  is not observed on states whose text needs one or zero shrink steps. It
-  also does not reproduce identically at every width within one arrival
-  (`NINE @ en` read `совпадает` at 768/375 and failed only at 1100 - the
-  same one-time computation, read at three different moments during the
-  width sweep's own shot-retry wall-clock time), which is inconsistent with
-  a deterministic logic error and consistent with a background browser task
-  racing the synchronous read, worse under this host's load - **the same
-  shape `docs/parity.md`'s "Two unstable classes" already names for the
-  `~ whole` capture class, on this project's own precedent that a loaded
-  local host manufactures instability a clean CI runner does not.**
+```text
+before  transitionDuration "1e-05s"  getAnimations() ["CSSTransition"]
+        first four .pc-art: none/14cqw  none/14cqw  flex/40.0169cqw  flex/40.0169cqw
+after   transitionDuration "0s"      getAnimations() []
+        first four .pc-art: flex/32.8136cqw  flex/35.3559cqw  flex/40.0169cqw  flex/40.0169cqw
+```
 
-Nothing in `PrintCard.svelte`'s `fit()` was changed to chase this: two
-speculative fixes (deferring the effect one and two `requestAnimationFrame`s;
-forcing a reflow before the loop) were tried, built, and measured against
-the live reproduction, and neither changed the outcome - both are reverted,
-and the shipped code is the plan's own verbatim, synchronous port with
-nothing added. Per this task's own explicit instruction ("no debt number
-from this host") and owner decision 1 (CI is authoritative for what the
-rewrite draws), this is handed to CI's read rather than resolved
-unilaterally on a guess. If CI reads these cells clean, this section can be
-deleted; if CI reads a real difference, the fix is almost certainly in
-scheduling the fit past whichever browser task this is racing (a
-`requestIdleCallback`, or splitting the loop across microtasks), not in the
-arithmetic, since the arithmetic and the CSS are both confirmed correct
-against the live app's own numbers whenever the read is not raced.
+Nothing in `app/src` listens for `transitionend` or `animationend` (grepped),
+so killing the transition outright costs nothing. `animation-duration` keeps
+its `0.01ms`: no measurement in this app reads back through an animation, and
+the snippet's value there is what makes a one-shot `animation` finish instead
+of never firing its `animationend`.
+
+**The `cqw` instability narrative this section used to carry is deleted, not
+softened. It was never an instability class** - `docs/parity.md`'s "Two
+unstable classes" gains no third entry. The evidence against it: the staleness
+reproduces on a non-container element with px units, `document.getAnimations()`
+returns a `CSSTransition` on the rewrite and `[]` on the live app, and with
+`transition-duration: 0s` injected the live `fitPrintCards` run verbatim over
+the rewrite's own DOM reproduces the legacy numbers exactly. CI would have read
+it red too.
+
+**Two more corrections in the same pass, both in already-touched paths:**
+
+- `Shell.svelte`'s print block put the page colours on `:global(html),
+  :global(body)` - specificity (0,0,1), identical to `body` in `tokens.css`,
+  and the bundle emits component styles *before* `tokens.css`, so the later
+  rule won and the override was dead code in the built app. Measured under
+  print media: `body` was `rgb(14,12,21)` on `rgb(236,232,246)` with the radial
+  gradient still painted, and `print-color-adjust: exact` on `*` prints that.
+  **Fixed by moving the rule into `tokens.css`'s own `@media print`**, next to
+  the `body` it overrides - not by `!important`, because `tokens.css` owns
+  `html`/`body` (CLAUDE.md, "Architecture boundaries") and being the later
+  sheet makes the win structural rather than a specificity trick. After:
+  `rgb(255,255,255)` on `rgb(0,0,0)`, `background-image: none`.
+- `Shell.svelte`'s print block hid `.skip`, `.topbar` and `.foot` but not
+  `.tabs`, which the live block (`style.css:1403`) names. **Fixed in
+  `TabBar.svelte`'s own `@media print`**, matching the split Shell's comment
+  describes. The review's rendering claim - that the tab bar prints across the
+  top of the first sheet - does **not** hold: measured under print media before
+  the fix, `nav.tabs` computed `display: flex` but had `getClientRects().length
+  === 0`, because the nav sits inside `header.topbar`, which Shell already
+  hides. `getComputedStyle` on a child of a `display:none` parent returns the
+  child's own specified value, which is what that measurement read. The gap was
+  real as source fidelity and is worth closing - a nav that ever moves out of
+  the header would start printing - but it drew nothing.
+
+**Parity after the fix.** Group A (`node tests/parity.js "#/print"`, 9 states,
+54 cells): every `cardFit`, `sheetCounts` and control-name cell agrees, and the
+image residue is **4 cells**, down from 50. Re-running the two states that
+carried them produced a **different, non-overlapping set of 3** on the same
+build (first run: `NINE @ en 1100`, `NINE @ en 768`, `LONG @ en 768`, `LONG @
+ru 1100`; second run: `NINE @ ru 1100`, `NINE @ ru 768`, `NINE @ en 1100`, with
+both `LONG` states fully clean). All nine print states are `whole: true`, the
+log printed "снимок целиком: 3/4 попытки до устойчивого кадра" repeatedly, and
+the diff image shows no content change - every card has its art, the red is a
+sub-pixel swim across the whole page including the topbar, which this batch
+never touched, best-aligned at a one-pixel vertical shift. That is
+`docs/parity.md`'s **second unstable class verbatim** ("Full-page captures":
+geometry byte-identical, pixels swinging on an unchanged build, worse under
+load), and its own recipe applies - re-run the state, write no entry, the
+latest CI shard decides. **No `VISUAL_DEBT` number was written from this host.**
+Group B (5 states, 30 cells) reads `расхождений нет`, so the global
+`transition-duration` change disturbed no other screen.
+
+**Two cheap factual corrections in the same already-touched paths**, per
+CLAUDE.md's campsite rule: `docs/specs/COVERAGE.md` still named `LangSwitch`
+as covered through `shell.test.ts` after `4776243` deleted that component (now
+`Seg`, which is genuinely what `shell.test.ts` drives through the language
+switch), and `PrintCard.svelte`'s `fit()` doc-comment claimed "everything the
+loop can set is reset first", which is untrue - `.pc-art`'s `height`, `--artw`
+and `display` are not reset. Harmless, because `.pc-art` is
+`position: absolute` and nothing measures those three, but the comment now says
+what the code does and why the omission is safe.
 
 ## Phase 5 - what already exists
 
