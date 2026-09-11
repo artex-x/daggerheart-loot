@@ -145,7 +145,9 @@ Gates re-run after both edits, unchanged from B1:
 - `wc -l CLAUDE.md` - **193**, unchanged
 - `git diff --stat` against the prior commit - only `.claude/README.md` (the new bullet) and the `git rm` of `issues/agent-messaging/plan.md`
 
-Commit: one commit on top of `fb4c7db`, staged by name, no `git add -A`, not pushed - see below for the hash.
+Commit: `88ef6fb` - `docs(agent-messaging): home the routing rationale and
+retire the task directory`, one commit on top of `fb4c7db`, staged by name,
+no `git add -A`, not pushed.
 
 ## Deferred
 - Measure sibling -> sibling `SendMessage` delivery with two live
