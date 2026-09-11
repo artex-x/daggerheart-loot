@@ -55,6 +55,12 @@ do not replace":
 - A subagent's send goes out under its parent session's address and any
   reply lands in the parent's conversation, so two subagents cannot hold a
   conversation on this host; one-way dispatch is what exists.
+- Direct reviewer -> implementer routing was proposed and declined
+  2026-09-11: it drops the orchestrator's blocker/nit filter without
+  dropping a hop (the reply still lands in the parent's conversation, not
+  the reviewer's), and the filter has a measured save - the B9
+  remediation, where the implementer was told the reviewer's
+  third-deviation concern was already resolved and not to re-litigate it.
 - Resuming a finished writer while another writer is live is two writers
   on one tree - the same violation as spawning one. The orchestrator does
   the `ListAgents` and HEAD preflight before a resume as before a spawn.

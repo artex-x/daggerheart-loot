@@ -113,12 +113,39 @@ Recovery state for the next session. Read `CLAUDE.md`, then
   changed.
 
 ## Next batch (implement-ready)
-- None. This was the only batch (`plan.md` section 7). Section 9's
-  deferred items remain open (below) but are not implement-ready batches -
-  each names its own trigger condition.
+- None. Task complete and closed out (below).
 
 ## Blockers
 - None.
+
+## Closeout (2026-09-11, resumed implementer)
+
+Resumed under "Resume, do not replace" for an uncommitted change at
+closeout, per the coordinator's message. Two items:
+
+1. **Homed the rationale for declining direct reviewer -> implementer
+   routing.** It survived nowhere once `plan.md` section 3 was gone except
+   as a rule with no reason attached. Added one bullet to
+   `.claude/README.md`, "Resuming a worker" (between the one-way-dispatch
+   fact and the two-writers fact): direct routing drops the orchestrator's
+   blocker/nit filter without dropping the hop (the reply still lands in
+   the parent's conversation, not the reviewer's), and the filter has a
+   measured save - the B9 remediation, where the implementer was told the
+   reviewer's third-deviation concern was already resolved and not to
+   re-litigate it.
+2. **Retired the task directory.** `issues/agent-messaging/plan.md`
+   deleted (`git rm`) - nothing outside the task directory referenced it,
+   and the two things it specified for permanent homes (the README rows
+   and the "Resuming a worker" section, and now the routing rationale
+   above) are in place. `context.md` and `handoff.md` (this file) kept.
+
+Gates re-run after both edits, unchanged from B1:
+- Negative grep (`cannot resume|is disabled|not exposed on every host|only the human can resume|human's to do|resumable only from the human`) - **empty**
+- `wc -l .claude/prompts/orchestrate.prompt.md` - **313** (deviation accepted by the coordinator; not trimmed)
+- `wc -l CLAUDE.md` - **193**, unchanged
+- `git diff --stat` against the prior commit - only `.claude/README.md` (the new bullet) and the `git rm` of `issues/agent-messaging/plan.md`
+
+Commit: one commit on top of `fb4c7db`, staged by name, no `git add -A`, not pushed - see below for the hash.
 
 ## Deferred
 - Measure sibling -> sibling `SendMessage` delivery with two live
@@ -131,17 +158,15 @@ Recovery state for the next session. Read `CLAUDE.md`, then
   usage) into a README "Facts settled" list, if the file grows again - not
   this batch; README candidate row 29 is watching "Your writers are not
   the only writers" as written.
-- Closeout: `plan.md` can be deleted once nothing else references it -
-  the README rows and "Resuming a worker" section it specified are now in
-  place. Left in place this batch since the orchestrator, not the
-  implementer, owns task-directory retirement per `CLAUDE.md`'s closeout
-  step 6.
 
 ## Notes
 - Mocks path: none (no UI, markdown only)
 - Screenshot findings: none
-- Cleanup performed / retained artifacts: nothing created outside
-  `issues/agent-messaging/`; nothing to remove. `issues/tg-preview-refresh/`
-  (another task's untracked directory) was preserved and never staged.
-- Session end partial progress (if any): none - the batch completed and
-  committed in full.
+- Cleanup performed / retained artifacts: `issues/agent-messaging/plan.md`
+  removed at closeout - its content is homed (README rows 35-37, the
+  "Resuming a worker" section, and the routing rationale added above).
+  `context.md` and `handoff.md` kept, per `CLAUDE.md`'s closeout step 6.
+  `issues/tg-preview-refresh/` (another task's untracked directory) was
+  preserved and never staged throughout.
+- Session end partial progress (if any): none - the batch and its
+  closeout completed and committed in full.
