@@ -294,6 +294,20 @@ const STATES: {
   {
     what: 'a list from another player, with both notes and a noted entry',
     route: '#/l/' + NOTES_BOTH_KINDS_GM_PAYLOAD
+  },
+  {
+    /* "вещь" is the word this file's own LOOT gives w1 ("Первая вещь") and
+       w2 ("Вторая вещь"), so this state carries two rows of two kinds with
+       the third chip switched off. */
+    what: 'the search page with a query typed and a kind switched off',
+    route: '#/search',
+    enter: async () => {
+      await userEvent.type(
+        screen.getByPlaceholderText('Поиск по названию или описанию…'),
+        'вещь'
+      );
+      await press('Снаряжение');
+    }
   }
 ];
 
@@ -350,6 +364,9 @@ const COVERED: Record<string, string> = {
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'RowMain.svelte':
     "tables.test.ts's sectioned-body axe check, and both list-page states below",
+  'SearchBox.svelte':
+    "the tables toolbar in tables.test.ts, and the search page's own box below",
+  'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'SelBar.svelte': 'the state above, and tables.test.ts',
   'SharedListPage.svelte': 'sharedListPage.test.ts, and the shared list below',

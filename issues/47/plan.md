@@ -8247,6 +8247,116 @@ them apart from the page in a red run anyway.
   line and measured live (`context.md`, "B6 planning facts"); the harness
   is the proof, as for every lists batch.
 
+### B6 built: the search slice (implementer, 2026-09-11)
+
+**All twelve ordered steps done as designed, in one commit; no design
+deviation from the brief.** `lib/types.ts` gained `KINDS`/`Kind` (the
+`SECTIONS`/`Section` shape) replacing the bare literal union; `lib/dict.ts`
+gained `subSearch` and `startTyping` in both blocks; `lib/search.ts` gained
+`statLineFor(lang, t)` (moved off `TablesPage.svelte`'s own inline builder,
+its doc comment carrying the "type word kept" rule) plus three new test
+cases; `state/app.svelte.ts` gained `kinds`/`toggleKind(kind, among)` (the
+third owner of the live `S.kind`, memory-only, untouched by `go()`/
+`onChange()`/`replace()`) and five new test cases, and its header/`sel`
+doc comments were amended to say so. `StdPanel.svelte` and `AltPanel.svelte`
+lost their own local `kinds`/`toggleKind` and read `app.kinds`/
+`app.toggleKind` instead - unchanged behaviour, proven by their existing
+suites staying green. `Field.svelte`'s `label` became optional.
+`SearchBox.svelte` (new) is the search input extracted on its second real
+use, focusing itself from `onMount` under an explicit `focus` prop rather
+than the `autofocus` attribute; `TablesPage.svelte`'s toolbar uses it and
+`statLineFor`, and its own two `input[type=search]` rules and its long
+stat-line comment are gone. `SearchPage.svelte` (new) composes `PageHead`,
+`Field`+`SearchBox`, `Field`+`ChipRow`+`Chip` over `KINDS`, `Empty` for the
+hint and the nothing-found state, `TableRows` for up to 300 rows (filtered
+before the cap, exactly as the live `.slice(0, 300)` orders it), and
+`RecordModal`. `App.svelte` routes `#/search` to it and lost the generic
+section fallback (`h1`/`.todo`) and its `h1` style rule, now dead code once
+every section had its own page - `KEYS`/`sectionKey` went with it, confirmed
+dead by grep before deletion. `a11y.test.ts` names both new components in
+`COVERED` and gains one pressed state (a query typed, a kind switched off).
+`components/searchPage.test.ts` (new, 17 cases) covers arrival, catalogue
+order, both languages at once, the stat line, nothing found, the 300 cap,
+the kind filter narrowing and refusing its last chip, equipment obeying the
+equipment chip regardless of its own `kind`, the filter shared with Core
+rules, selection, a row's own modal, `noData`, English, and three axe
+passes. `tests/parity/driver.js` gained `count(selector)` (`page.$$eval`,
+not the brief's literal `page.$eval` - see deviation below).
+`tests/parity/specs.js` replaced the `#/search` `pending` line with seven
+states, added `'#/search ~ a row ticked'` to `copiedSelection.only`,
+added `'#/search'`/`'#/search ~ searched'` to `typeRuns.only` and changed
+its `search` probe to the bare `input[type=search]` selector, and added two
+new specs to `SPECS`: `foundRows` (`.rows [data-row]` counts on the four
+searched states) and `packedExpanded` (closes B5.6 risk 1 - throws on
+`#/l/zzzz` rather than reading two identical `false`s as a match).
+`docs/specs/FEATURES.md` names the 300 cap; `docs/specs/COVERAGE.md` gained
+one row for `components/searchPage.test.ts`.
+
+**Two test-writing deviations, neither a behaviour one.**
+
+1. **`driver.js`'s `count()` uses `page.$$eval`, not `page.$eval`.** The
+   brief's literal `return page.$eval(selector, (els) => els.length)` would
+   query only the *first* matching element (`document.querySelector`) and
+   hand a single element to the callback, not a list - `els.length` on one
+   element is `undefined` for anything but a form control. `$$eval` runs
+   `document.querySelectorAll` and hands the whole array, which is what
+   `foundRows` actually needs. Caught immediately by reading the Puppeteer
+   API rather than by a failing run.
+2. **Two `search.test.ts` assertions were rewritten against the real
+   catalogue rather than kept as the brief specified them.** The brief's
+   `search(index.searchable, 'основное оружие', statLineFor(...))` "every
+   hit `eq?.t === 'weapon'`" fails on real data: "основное оружие" is
+   ordinary Russian prose ("Кольцо Возвращения"'s own description uses the
+   phrase), so the query also finds items with no `eq` block at all through
+   their text fields, not only weapons through the stat line. The rewritten
+   case instead builds one gear record's line directly and asserts it
+   contains the type word while the row's own `noType` line does not - the
+   same claim, proven without depending on the corpus having no other use of
+   the phrase. The brief's per-language case (`search(..., 'основное', en)`
+   `toEqual([])`) has the same defect for the same reason and was rewritten
+   the same way: call `statLineFor('ru', ...)` and `statLineFor('en', ...)`
+   on one record directly and compare the two strings, rather than routing
+   through `search()` and the corpus's own text fields.
+
+**One performance fix, not a behaviour one: the 300-cap component test
+types through `userEvent.paste`, not `userEvent.type`.** Typing "Много"
+character by character re-renders 300+ rows on every one of five
+keystrokes; under `vitest run --coverage`'s instrumentation that pushed the
+one test past the 30s default timeout (`npm run check`'s first full run
+failed there, nothing else red). A paste lands the whole query in one
+`input` event, matching what a person pasting a query would do, and the
+suite is back under a few seconds a case.
+
+**Verification.**
+
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - exit 0 (after the
+  fixes above): format, lint and `svelte-check` (535 files, 0 errors)
+  clean; `data`/`derived.js`/`i18n.js`/`selftest.mjs` (292 passed) clean;
+  947 tests, 0 failures, coverage 96.27 stmts / 88.53 branch / 96.67 funcs /
+  97.01 lines (`state/app.svelte.ts` 100% across the board).
+- `npm run build` clean: `dist/assets/app.js` 280.74 kB, 84.13 kB gzip.
+- Two parity groups, each its own foreground call, `MSYS_NO_PATHCONV=1` in
+  front of each: group A - `node tests/parity.js "#/search"` - 7 states, 42
+  cells plus `foundRows` x4, `copiedSelection` x1, `typeRuns` x2, `visuals`,
+  `inventory`, `heading`, `title`, **расхождений нет**; group B - `node
+  tests/parity.js "roll/std ~ items only" "roll/alt ~ crit, items only"
+  "#/tables ~ searched" "#/tables/eq_secondary ~ searched" "#/tables ~
+  nothing found" "#/l/ ~ packed"` - 6 states, 36 cells, **расхождений нет**,
+  `packedExpanded` read `{ expanded: true }` on both apps without throwing.
+- `npm run check:built` - exit 0: build clean, `smoke-file-url.mjs` opens
+  from a folder, `bundle-budget.mjs` 81.7 kB against the 120 kB budget.
+- A final `npm run check` re-armed the gate after the doc edits moved the
+  tree fingerprint, immediately before the commit below.
+
+**No `VISUAL_DEBT` entry written; no `ACCEPTED` entry added.**
+`TablesPage.svelte` has no `input[type='search']` rule and no inline
+stat-line builder; `StdPanel.svelte` and `AltPanel.svelte` have no local
+`kinds`; `App.svelte` has no section fallback and no `h1` rule. `#/search`
+is no longer `pending` in `tests/parity/specs.js`; `#/print/ci1-q1` still
+is - print is the only Phase 4 slice left. B5.6 risk 1 (the `~ packed`
+blind spot) is closed by `packedExpanded`; `ListPage.svelte:103`'s stale
+comment stays recorded, this batch did not open that file.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:

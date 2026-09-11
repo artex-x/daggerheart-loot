@@ -12,6 +12,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
+import { LOOT_KINDS } from '../lib/std.js';
+import { KINDS } from '../lib/types.js';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { CompressPort, Env } from '../ports/index.js';
 import { AppState } from './app.svelte.js';
@@ -366,6 +368,54 @@ describe('the selection', () => {
   it('shared starts null', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
     expect(app.shared).toBeNull();
+  });
+});
+
+describe('the kind filter', () => {
+  it('a fresh app has all three kinds on', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    expect(app.kinds).toEqual({ item: true, consumable: true, equip: true });
+  });
+
+  it('toggleKind turns one off and raises no toast', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.toggleKind('consumable', KINDS);
+    expect(app.kinds.consumable).toBe(false);
+    expect(app.toast).toBeNull();
+  });
+
+  it('refuses to turn the last one off, among the row the chip sits in', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.toggleKind('item', KINDS);
+    app.toggleKind('equip', KINDS);
+    app.toggleKind('consumable', KINDS);
+    expect(app.kinds.consumable).toBe(true);
+    expect(app.toast).toEqual({
+      msg: 'Нужен хотя бы один тип',
+      mode: 'err',
+      action: undefined
+    });
+  });
+
+  it('over LOOT_KINDS the judgement ignores equip', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.toggleKind('consumable', KINDS);
+    /* `equip` is still on, but the roll pages never offer it as a chip - the
+       judgement has to look only at the row it is asked about. */
+    app.toggleKind('item', LOOT_KINDS);
+    expect(app.kinds.item).toBe(true);
+    expect(app.toast?.msg).toBe('Нужен хотя бы один тип');
+  });
+
+  it('is left alone by go() and by a navigation the router announces', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.toggleKind('consumable', KINDS);
+    app.go('#/tables');
+    expect(app.kinds.consumable).toBe(false);
+    router.navigate('#/lists');
+    expect(app.kinds.consumable).toBe(false);
   });
 });
 

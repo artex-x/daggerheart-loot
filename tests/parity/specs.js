@@ -327,7 +327,7 @@ const listMembership = {
 const copiedSelection = {
   presses: true,
   name: 'the selection that lands on the clipboard',
-  only: ['#/tables ~ a row ticked'],
+  only: ['#/tables ~ a row ticked', '#/search ~ a row ticked'],
   async run(d, lang) {
     await d.resetClipboard();
     await d.click(NAME[lang].selected, 1);
@@ -761,15 +761,63 @@ const typeRuns = {
     '#/tables/wondrous ~ panel open',
     '#/tables/community ~ panel open',
     '#/tables/community',
-    '#/tables/voa'
+    '#/tables/voa',
+    '#/search',
+    '#/search ~ searched'
   ],
   async run(d) {
     return await d.typeAt({
-      search: '.toolbar input[type=search]',
+      search: 'input[type=search]',
       rowText: '[data-row] .rt',
       rowTitle: '[data-row] .rt b',
       filterLabel: '.ffilter .field .lbl'
     });
+  }
+};
+
+/**
+ * How many rows a search actually drew, as a number rather than as a set of
+ * deduplicated names - `inventory` reads names off `button, a[href], input,
+ * select, textarea` and dedupes them, so 87 rows of the same three or four
+ * kinds would read as a handful of distinct names. This is what pins 87 / 34
+ * / the stat-line count / 300 as counts.
+ */
+const foundRows = {
+  name: 'how many rows a search drew',
+  only: [
+    '#/search ~ searched',
+    '#/search ~ kind off',
+    '#/search ~ stat line',
+    '#/search ~ capped'
+  ],
+  async run(d) {
+    return { rows: await d.count('.rows [data-row]') };
+  }
+};
+
+/**
+ * Whether a packed shared-list address finished expanding - the carried
+ * B5.6 risk 1 (`handoff.md`, "Deferred"): every other spec on `~ packed`
+ * compares pixels or a control's name, neither of which can tell "expanded"
+ * from "landed on the bad-link page" when both apps land on the same wrong
+ * page.
+ *
+ * The comment on `reorderedByDrag` applies here too: the two apps are
+ * compared against each other, so two identical failures would read
+ * "совпадает" unless something throws. `#/l/zzzz` is exactly that identical
+ * failure, so it throws rather than reporting `expanded: false` on both.
+ */
+const packedExpanded = {
+  name: 'whether the packed address actually expanded',
+  only: ['#/l/ ~ packed'],
+  async run(d) {
+    const hash = await d.hash();
+    if (hash === '#/l/zzzz') {
+      throw new Error(
+        'packedExpanded: the packed address landed on the bad-link page - nothing was expanded'
+      );
+    }
+    return { expanded: !hash.startsWith('#/l/~') };
   }
 };
 
@@ -1537,7 +1585,61 @@ const STATES = [
     why: 'the bad-link page: "Предмет не найден", the badShare line, the "На главную" button'
   },
 
-  { id: '#/search', route: '#/search', why: 'search', pending: 'search slice' },
+  {
+    id: '#/search',
+    route: '#/search',
+    why: 'the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint'
+  },
+  {
+    id: '#/search ~ searched',
+    route: '#/search',
+    why: '87 rows of loot and gear together in catalogue order, "Выбрать все (87)"',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'меч');
+    }
+  },
+  {
+    id: '#/search ~ kind off',
+    route: '#/search',
+    why: '34 rows, no equipment badge left, the chip off',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'меч');
+      await d.click('Снаряжение');
+    }
+  },
+  {
+    id: '#/search ~ stat line',
+    route: '#/search',
+    why: 'rows found by the assembled stat line alone - the word is on no record as text',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'двуручное');
+    }
+  },
+  {
+    id: '#/search ~ capped',
+    route: '#/search',
+    why: 'the 300 cap: "Выбрать все (300)" over the first 300',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'а');
+    }
+  },
+  {
+    id: '#/search ~ nothing found',
+    route: '#/search',
+    why: '"Ничего не найдено", and no reset button - unlike the tables',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+    }
+  },
+  {
+    id: '#/search ~ a row ticked',
+    route: '#/search',
+    why: 'the bar over search',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'меч');
+      await d.click('Выбрано');
+    }
+  },
   { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
 ];
 
@@ -1577,6 +1679,8 @@ const SPECS = [
   noteCleared,
   visuals,
   typeRuns,
+  foundRows,
+  packedExpanded,
   geometry
 ];
 

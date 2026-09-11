@@ -7,7 +7,9 @@
   import type { Snippet } from 'svelte';
 
   interface Props {
-    label: string;
+    /** Omitted for a field with nothing to caption - the search box sits in
+     *  one of its own, with no label the live markup ever gave it. */
+    label?: string;
     /** An inline `margin-bottom`, overriding the class rule below - the roll
      *  panel's own field carries one (14px with a result shown, 0 without),
      *  which is how it beats `.lroll>:last-child{margin-bottom:13px}`. */
@@ -19,7 +21,7 @@
 </script>
 
 <div class="field" style={after === undefined ? undefined : `margin-bottom:${String(after)}px`}>
-  <span class="lbl">{label}</span>
+  {#if label}<span class="lbl">{label}</span>{/if}
   {@render children()}
 </div>
 

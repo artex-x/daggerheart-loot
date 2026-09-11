@@ -23,7 +23,7 @@
   import { CORE_MAX, coreRoll } from '../lib/roll.js';
   import { shareRoll } from '../lib/share.js';
   import { LOOT_KINDS, NDICE, SOURCES, isLastOn, poolFor } from '../lib/std.js';
-  import type { Chosen, LootKind, Source } from '../lib/std.js';
+  import type { LootKind, Source } from '../lib/std.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Dict } from '../lib/dict.js';
   import type { Index } from '../lib/data.js';
@@ -46,11 +46,7 @@
     app.say(msg, { error });
   };
 
-  /* The sources live on the app because an old address sets them: #/roll/core
-     and #/roll/hnf were separate pages once, and their links still work. */
-  let kinds = $state<Chosen<LootKind>>({ item: true, consumable: true });
-
-  const pool = $derived(index ? poolFor(index, n, app.source, kinds) : []);
+  const pool = $derived(index ? poolFor(index, n, app.source, app.kinds) : []);
 
   const SOURCE_LABEL: Record<Source, keyof Dict> = { core: 'srcCore', hnf: 'srcHnf' };
   const KIND_LABEL: Record<LootKind, keyof Dict> = { item: 'fItems', consumable: 'fCons' };
@@ -86,14 +82,6 @@
       return;
     }
     app.source = { ...app.source, [src]: !app.source[src] };
-  }
-
-  function toggleKind(kind: LootKind): void {
-    if (isLastOn(kinds, LOOT_KINDS, kind)) {
-      say(t.keepOneKind, true);
-      return;
-    }
-    kinds = { ...kinds, [kind]: !kinds[kind] };
   }
 </script>
 
@@ -135,10 +123,10 @@
       {#each LOOT_KINDS as kind (kind)}
         <Chip
           label={t[KIND_LABEL[kind]]}
-          on={kinds[kind]}
-          title={isLastOn(kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
+          on={app.kinds[kind]}
+          title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
           onclick={() => {
-            toggleKind(kind);
+            app.toggleKind(kind, LOOT_KINDS);
           }}
         />
       {/each}

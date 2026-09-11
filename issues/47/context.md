@@ -1470,3 +1470,41 @@ kept). Design and steps: `plan.md`, "B6 planned".
 - **Not a fact, a decision, recorded in `plan.md` "Decisions"**: the kind
   filter moves to `AppState` (live shape); the query stays with the page
   (`TablesPage` precedent, `STATE.md`).
+
+## B6 built: durable facts for print (implementer, 2026-09-11)
+
+- **`tests/parity/driver.js`'s `count(selector)` is `page.$$eval`, not
+  `page.$eval`.** Puppeteer's `$eval` queries only the first match
+  (`querySelector`) and hands one element to the callback; `$$eval` queries
+  every match (`querySelectorAll`) and hands the array. Any future driver
+  verb that counts or reduces over several elements needs `$$eval` - `has()`
+  beside it is a single-match lookup and is not a template for this.
+- **A component test that renders 300+ rows must not be typed into
+  character by character.** `userEvent.type` fires one `input` event per
+  keystroke, each re-rendering every row; under `vitest run --coverage`
+  that alone pushed one case past the 30s default timeout. `userEvent.click`
+  the field, then `userEvent.paste(text)`, lands the whole value in one
+  `input` event. `tests/derived.js`'s own counts (1061 records) are far
+  larger than anything a component test builds, so this only bites a
+  fixture built for one test's own reason - the cap test here, and likely
+  the only place in the app a screen ever draws hundreds of rows at once.
+- **`SearchBox.svelte`'s `oninput` callback parameter needs an explicit
+  type annotation at the call site.** `oninput={(v) => { q = v; }}` was
+  flagged `@typescript-eslint/no-unsafe-assignment` in both callers
+  (`SearchPage.svelte`, `TablesPage.svelte`) even though `SearchBox`'s own
+  prop is typed `oninput: (value: string) => void` - the inline arrow
+  function's parameter is not contextually typed through a component prop
+  the way `AltPanel.svelte`'s `onchange={(n: number) => {...}}` already
+  showed for `NumberField`. Write `(v: string) =>` at the call site, the
+  same way the roll panels already do for their own callbacks.
+- **`app.js`'s "основное оружие" (the primary-weapon type word) is not
+  unique to weapon stat lines - it is ordinary prose in at least one
+  record's own description** (`hi20`, "Кольцо Возвращения"). A test that
+  asserts "every hit for this query is equipment" against the real
+  catalogue is not safe; assert on one record's own built stat line
+  instead (`statLineFor(...)`  called directly), not on `search()`'s
+  output over the whole corpus.
+- **`#/print/ci1-q1` is still `pending`** in `tests/parity/specs.js` after
+  B6 - it is now the only Phase 4 slice left, and this session's Figma
+  connector was unauthenticated, so the print batch's surface is
+  unmeasured. A planning pass is needed before it is implement-ready.

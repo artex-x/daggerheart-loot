@@ -1,0 +1,165 @@
+<script lang="ts">
+  /* Search, `#/search` - reproduced from `renderSearch` (app.js 2841-2859).
+     Both languages at once, over loot and gear together: the head, one panel
+     holding the box (focused on arrival) and the three kind chips, then the
+     hint, up to 300 rows, or "nothing found". */
+  import { untrack } from 'svelte';
+  import Empty from './Empty.svelte';
+  import Field from './Field.svelte';
+  import ChipRow from './ChipRow.svelte';
+  import Chip from './Chip.svelte';
+  import PageHead from './PageHead.svelte';
+  import RecordModal from './RecordModal.svelte';
+  import SearchBox from './SearchBox.svelte';
+  import TableRows from './TableRows.svelte';
+  import { kindOf } from '../lib/data.js';
+  import { matches, statLineFor } from '../lib/search.js';
+  import { isLastOn } from '../lib/std.js';
+  import { KINDS } from '../lib/types.js';
+  import type { Dict } from '../lib/dict.js';
+  import type { Kind, Record_ } from '../lib/types.js';
+  import type { AppState } from '../state/app.svelte.js';
+
+  interface Props {
+    app: AppState;
+  }
+
+  const { app }: Props = $props();
+
+  const t = $derived(app.t);
+  const index = $derived(app.index);
+
+  /* Page memory only, the same as `TablesPage`'s own `q` - `docs/specs/
+     STATE.md` is explicit that what was asked on a page is not remembered,
+     and search follows the live `S.search.q`'s own rule. */
+  let q = $state('');
+  let open = $state<Record_ | null>(null);
+  $effect(() => {
+    void app.navigations;
+    untrack(() => {
+      open = null;
+    });
+  });
+
+  /** Says what the last action did - the toast, off `app.say`. */
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
+  };
+
+  const query = $derived(q.trim().toLowerCase());
+  const statLine = $derived(statLineFor(app.lang, t));
+  const found = $derived.by(() =>
+    !index || !query
+      ? []
+      : index.searchable
+          .filter((it) => app.kinds[kindOf(it)] && matches(it, query, statLine))
+          .slice(0, 300)
+  );
+
+  const KIND_LABEL: Record<Kind, keyof Dict> = {
+    item: 'fItems',
+    consumable: 'fCons',
+    equip: 'fEquip'
+  };
+
+  /** "Select all" ticks whatever is on screen and unticks it if it already
+   *  was - `TablesPage.svelte`'s own copy; a third use is where this moves
+   *  to `AppState` (recorded in the handoff's Deferred). */
+  function toggleAllIn(ids: readonly string[]): void {
+    const on = ids.some((id) => !app.sel.has(id));
+    for (const id of ids) {
+      if (on) app.sel.add(id);
+      else app.sel.delete(id);
+    }
+  }
+</script>
+
+<PageHead {app} title={t.search} sub={t.subSearch} help={null} {say} />
+
+{#if !index}
+  <p class="miss">{t.noData}</p>
+{:else}
+  <div class="panel">
+    <Field>
+      <SearchBox
+        value={q}
+        placeholder={t.searchPh}
+        focus
+        oninput={(v: string) => {
+          q = v;
+        }}
+      />
+    </Field>
+    <Field label={t.filter}>
+      <ChipRow>
+        {#each KINDS as kind (kind)}
+          <Chip
+            label={t[KIND_LABEL[kind]]}
+            on={app.kinds[kind]}
+            title={isLastOn(app.kinds, KINDS, kind) ? t.keepOneKind : undefined}
+            onclick={() => {
+              app.toggleKind(kind, KINDS);
+            }}
+          />
+        {/each}
+      </ChipRow>
+    </Field>
+  </div>
+
+  {#if !query}
+    <Empty>{t.startTyping}</Empty>
+  {:else if !found.length}
+    <Empty>{t.nothing}</Empty>
+  {:else}
+    <TableRows
+      entries={found.map((it) => ({ it }))}
+      view="list"
+      {index}
+      lang={app.lang}
+      selected={(id: string) => app.sel.has(id)}
+      artBroken={(id: string) => app.artBroken(id)}
+      ontoggle={(id: string) => {
+        app.toggleSel(id);
+      }}
+      onartfail={(id: string) => {
+        app.markArtBroken(id);
+      }}
+      onopen={(it: Record_) => {
+        open = it;
+      }}
+      ontoggleall={toggleAllIn}
+    />
+  {/if}
+{/if}
+
+{#if open && index}
+  <RecordModal
+    {app}
+    {index}
+    it={open}
+    onclose={() => {
+      open = null;
+    }}
+    onopen={(r: Record_) => {
+      open = r;
+    }}
+  />
+{/if}
+
+<style>
+  .miss {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  /* off `.panel` in style.css, plus the 16px margin-bottom the live markup
+     writes inline on this specific panel. */
+  .panel {
+    background: linear-gradient(180deg, var(--surface2), var(--surface));
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+</style>

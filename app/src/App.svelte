@@ -2,22 +2,6 @@
   import type { Dict } from './lib/dict.js';
   import type { Section } from './lib/types.js';
 
-  const KEYS: Record<Section, keyof Dict> = {
-    'roll/std': 'std',
-    'roll/alt': 'alt',
-    'roll/wondrous': 'wondrous',
-    'roll/dread': 'dread',
-    'roll/voa': 'voa',
-    'roll/community': 'community',
-    tables: 'tables',
-    lists: 'lists',
-    search: 'search'
-  };
-
-  function sectionKey(s: Section): keyof Dict {
-    return KEYS[s];
-  }
-
   /* The sections that roll a single number over a whole table. Vault of Ages
      and Communities roll one number too, but inside a part of their book, so
      they have panels of their own that choose the part and hand the rows over.
@@ -39,6 +23,7 @@
   import ListsPage from './components/ListsPage.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
+  import SearchPage from './components/SearchPage.svelte';
   import Shell from './components/Shell.svelte';
   import StdPanel from './components/StdPanel.svelte';
   import TablesPage from './components/TablesPage.svelte';
@@ -78,9 +63,8 @@
     <CommunityPanel {app} />
   {:else if app.route.kind === 'section' && app.route.section === 'lists'}
     <ListsPage {app} />
-  {:else if app.route.kind === 'section'}
-    <h1>{app.t[sectionKey(app.route.section)]}</h1>
-    <p class="todo">{app.hash}</p>
+  {:else if app.route.kind === 'section' && app.route.section === 'search'}
+    <SearchPage {app} />
   {:else if app.route.kind === 'record'}
     <RecordPage {app} id={app.route.id} />
   {:else if app.route.kind === 'tables'}
@@ -93,12 +77,6 @@
 </Shell>
 
 <style>
-  h1 {
-    margin: 0 0 var(--gap);
-    font: var(--h-page-weight) var(--h-page-size) / 1.6 var(--ui);
-    letter-spacing: var(--h-page-spacing);
-  }
-
   /* Every route the rewrite has not reached yet says so, rather than rendering
      an empty page that looks broken. */
   .todo {

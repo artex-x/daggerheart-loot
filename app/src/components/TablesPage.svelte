@@ -27,6 +27,7 @@
   import Icon from './Icon.svelte';
   import PageHead from './PageHead.svelte';
   import RecordModal from './RecordModal.svelte';
+  import SearchBox from './SearchBox.svelte';
   import SectionHead from './SectionHead.svelte';
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
@@ -44,8 +45,7 @@
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
   import { tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
-  import { eqLine } from '../lib/i18n.js';
-  import { matches } from '../lib/search.js';
+  import { matches, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
   import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -176,16 +176,9 @@
     return rows.filter((it) => passes(filterState, facetGroups, (g) => valueOf(it, g)));
   });
   /* The stat line `matches` searches - shared with `altSections` below, so
-     the rule lives once. app.js's own `matches` searches `eqLine(it)` *with*
-     the type word ("Основное оружие · Ранг 1 · ..."), so typing "основное"
-     finds every weapon; both callbacks here drop `noType` for the same
-     reason. The row's own *display* keeps `noType: true`, matching
-     `rowHTML`'s `eqLine(it, true)` - `TableRows.svelte` and
-     `RecordCard.svelte` are untouched. */
-  const statLine = $derived.by(() => {
-    const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
-    return (r: Record_): string => eqLine(r, app.lang, labels);
-  });
+     the rule lives once. `statLineFor`'s own doc comment carries the reason:
+     the type word is kept here, unlike the row's own display. */
+  const statLine = $derived(statLineFor(app.lang, t));
 
   const filtered = $derived.by(() => {
     const query = q.trim().toLowerCase();
@@ -424,12 +417,11 @@
 {:else}
   <div class="toolbar">
     <div class="grow">
-      <input
-        type="search"
+      <SearchBox
         value={q}
         placeholder={t.searchPh}
-        oninput={(e) => {
-          q = e.currentTarget.value;
+        oninput={(v: string) => {
+          q = v;
         }}
       />
     </div>
@@ -615,23 +607,6 @@
   .toolbar .grow {
     flex: 1;
     min-width: 220px;
-  }
-
-  .toolbar input[type='search'] {
-    width: 100%;
-    height: 46px;
-    padding: 0 14px;
-    border-radius: var(--r-sm);
-    background: var(--bg2);
-    border: 1px solid var(--line2);
-    color: var(--txt);
-    font: inherit;
-  }
-
-  .toolbar input[type='search']:focus {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
   @media (max-width: 900px) {

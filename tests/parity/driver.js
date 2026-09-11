@@ -328,6 +328,14 @@ function makeDriver(page, target) {
       );
     },
 
+    /** How many elements match a selector - a row count, which `inventory`
+     *  cannot see: it reads names off `button, a[href], input, select,
+     *  textarea` and dedupes them, so the search cap has nothing else to
+     *  pin it with. */
+    count(selector) {
+      return page.$$eval(selector, (els) => els.length);
+    },
+
     /** The visible text of the main region, collapsed. */
     text() {
       return page.evaluate(() => {

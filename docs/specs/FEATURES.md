@@ -41,7 +41,7 @@ Six modes. Each keeps its own input in memory only.
 
 - 14 tables (`TABLE_DEFS`), each with its own search box and a list/grid switch.
 - Search covers all 1061 records: names, descriptions and stat lines, both
-  languages at once.
+  languages at once; the first 300 matches are shown.
 - Every heading has a copy-link button; sections are addressable.
 - **The three equipment tables hold equipment from every source, not only the
   two books**: 317 weapons, 108 secondary, 90 armour. The `src` facet is how you

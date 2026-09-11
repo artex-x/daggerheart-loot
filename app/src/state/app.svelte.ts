@@ -2,12 +2,16 @@
  *
  * docs/specs/STATE.md draws the line: how a page looks is remembered, what was
  * asked on it is not. So the language and the starting section live here and go
- * to storage; a roll or a search do not - they belong to the component that
- * owns them, and start over on reload on purpose. A ticked row is shared
- * instead, memory-only like the rest: the selection bar it raises is drawn by
- * the frame, not by the page, so it lives here for the same reason `menuFor`
- * does, and it still starts over on reload. A filter carried in from
- * yesterday is a state nobody remembers, and the page just looks broken.
+ * to storage; a roll's or a search's own query does not - it belongs to the
+ * component that owns it, and starts over on reload on purpose. The kind
+ * filter is the one piece of asked-for state the live app shares across
+ * pages - Core rules, the alternate tables and search all narrow by the same
+ * `S.kind` - so it lives here instead, memory-only and untouched by
+ * navigation. A ticked row is shared the same way: the selection bar it
+ * raises is drawn by the frame, not by the page, so it lives here for the
+ * same reason `menuFor` does, and it still starts over on reload. A filter
+ * carried in from yesterday is a state nobody remembers, and the page just
+ * looks broken.
  *
  * Everything outside arrives as an `Env`. That is what makes this testable and
  * what stops a component reaching past it. */
@@ -27,7 +31,8 @@ import {
 } from '../lib/hash.js';
 import { encodeList, type DecodedList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
-import type { Lang, Section } from '../lib/types.js';
+import { isLastOn, type Chosen } from '../lib/std.js';
+import type { Kind, Lang, Section } from '../lib/types.js';
 import type { Env } from '../ports/index.js';
 import { ListStore } from './lists.svelte.js';
 
@@ -84,6 +89,16 @@ export class AppState {
   source = $state<{ core: boolean; hnf: boolean }>({ core: true, hnf: true });
 
   /**
+   * Which kinds a page's rows are narrowed to - the live `S.kind` (app.js
+   * 60): one object shared by Core rules, the alternate tables and search,
+   * never written to storage and left alone by `go()`, `onChange` and
+   * `replace()` the way the live `hashchange` listener leaves it - a person
+   * who switches consumables off on one screen expects them still off on
+   * the next.
+   */
+  kinds = $state<Chosen<Kind>>({ item: true, consumable: true, equip: true });
+
+  /**
    * How many times somebody has actually gone somewhere, as opposed to the
    * address being rewritten under them.
    *
@@ -115,8 +130,8 @@ export class AppState {
   menuFor = $state('');
 
   /**
-   * The ids ticked on the current page, app-wide - a table's rows today,
-   * search's rows once that slice exists. It lives here rather than on the
+   * The ids ticked on the current page, app-wide - a table's rows, and
+   * search's rows. It lives here rather than on the
    * page component because the selection bar is drawn by the frame, not by
    * the page: `Shell.svelte` renders it for whichever screen is current.
    *
@@ -302,6 +317,22 @@ export class AppState {
   toggleSel(id: string): void {
     if (this.sel.has(id)) this.sel.delete(id);
     else this.sel.add(id);
+  }
+
+  /**
+   * Switches one kind chip - refusing to turn off the last one on, and
+   * saying why rather than doing nothing (the live app's `keepOneKind`
+   * toast). `among` is the row the chip sits in - `LOOT_KINDS` on a roll
+   * page, `KINDS` on search - because "the last one on" is judged among the
+   * chips a person can actually see, the way the live `kindChips(list)`
+   * judges it.
+   */
+  toggleKind(kind: Kind, among: readonly Kind[]): void {
+    if (isLastOn(this.kinds, among, kind)) {
+      this.say(this.t.keepOneKind, { error: true });
+      return;
+    }
+    this.kinds = { ...this.kinds, [kind]: !this.kinds[kind] };
   }
 
   /**

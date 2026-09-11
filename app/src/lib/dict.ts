@@ -184,6 +184,8 @@ const ru = {
   subTables:
     'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
+  subSearch:
+    'Поиск по всем 1061 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -192,6 +194,7 @@ const ru = {
   viewList: 'Списком',
   viewGrid: 'Сеткой',
   nothing: 'Ничего не найдено',
+  startTyping: 'Начните вводить запрос',
   selectAll: 'Выбрать все',
   selected: 'Выбрано',
   clearSel: 'Снять выделение',
@@ -458,6 +461,8 @@ const en: Dict = {
 
   subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
+  subSearch:
+    'Search all 1061 entries at once — loot, consumables and equipment, in Russian and English.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',
@@ -466,6 +471,7 @@ const en: Dict = {
   viewList: 'List',
   viewGrid: 'Grid',
   nothing: 'Nothing found',
+  startTyping: 'Start typing',
   selectAll: 'Select all',
   selected: 'Selected',
   clearSel: 'Clear selection',

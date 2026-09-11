@@ -6,6 +6,36 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B6 is built, verified and committed - the search slice is
+  closed; print is the only Phase 4 slice left.** (implementer, 2026-09-11,
+  on `a25eeac`, HEAD moved under this batch to `37ecc8d`
+  `feat(artwork): refresh audited polish batch` - a foreign, unrelated
+  commit from a peer session, preserved and committed on top of, images
+  only, no overlap with this batch's files). All twelve ordered steps
+  landed in one commit, `feat(search): the search page`, with no design
+  deviation from the plan; see `plan.md`, "B6 built" for the full account,
+  including three test-writing deviations (all caught and fixed before the
+  commit, none a behaviour change): `driver.js`'s `count()` uses
+  `page.$$eval`, not the brief's literal `page.$eval` (which would query
+  only the first match); two `search.test.ts` cases were rewritten against
+  the real catalogue rather than kept as specified, because "основное
+  оружие" is ordinary prose on some non-weapon records and the literal
+  assertions were false on real data; and the 300-cap component test types
+  via `userEvent.paste` rather than `userEvent.type`, because typing
+  "Много" character by character re-renders 300+ rows five times and pushed
+  the case past the 30s test timeout under coverage instrumentation.
+  Checks, each its own foreground call: `npm run check` **exit 0** twice
+  (once after a prettier/eslint/timeout fix pass, once after the doc
+  edits), 947 tests, coverage 96.27 / 88.53 / 96.67 / 97.01; `npm run
+  build` clean (84.13 kB gzip); group A `node tests/parity.js "#/search"`
+  42 cells **расхождений нет**; group B (the regression) 36 cells
+  **расхождений нет**, `packedExpanded` read `{ expanded: true }` on both
+  apps; `npm run check:built` **exit 0** (budget 81.7 / 120 kB). No
+  `VISUAL_DEBT` or `ACCEPTED` entry. B5.6 risk 1 (the `~ packed` blind
+  spot) is closed by `packedExpanded`; `ListPage.svelte:103`'s stale
+  comment stays recorded, not this batch's file. No review requested this
+  pass. NEEDS_HUMAN_CONFIRMATION: no.
+
 - Task status: **B6 planned and implement-ready - the search slice, one
   batch** (planner, 2026-09-11, on `16bc32e`, working tree clean but for
   the orchestrator's own `context.md` kickoff section, which is kept and
@@ -1293,6 +1323,67 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Verification
 
+- Commands run (exact), this session (B6, on `a25eeac`, HEAD moved to
+  `37ecc8d` under this batch - a peer's unrelated artwork commit, preserved):
+  - `npx vitest run app/src/lib app/src/state` (step 1) - two failures on
+    the first run, both in the new `search.test.ts` cases and both a
+    test-writing bug rather than a code bug: "keeps the type word" asserted
+    `hits.every((x) => x.eq?.t === 'weapon')` for a query
+    ("основное оружие") that also matches ordinary prose on non-weapon
+    records; "is per language" asserted `search(..., 'основное', en)`
+    `toEqual([])`, which fails for the same reason. Both rewritten to call
+    `statLineFor` directly on one record and compare the built line rather
+    than routing through `search()` and the corpus's other text fields -
+    **exit 0** after the fix: 22 files, 509 tests.
+  - `npx vitest run app/src/components/std.test.ts app/src/components/alt.test.ts`
+    (step 2) - green unchanged, 34 tests.
+  - `npx vitest run app/src/components/tables.test.ts` (step 3) - green
+    unchanged, 74 tests.
+  - `npx vitest run app/src/components/a11y.test.ts` (step 4) - green, 25
+    tests, guard passes with both new components named.
+  - `npx vitest run app/src/components/searchPage.test.ts` (step 5) - two
+    failures on the first run: Escape did not close the `<dialog>` in
+    jsdom (rewritten to close via the "Закрыть" button, matching how every
+    other test in the suite closes the modal - no other test relies on
+    native Escape either); a selection-bar assertion read stale DOM
+    immediately after `env.router.navigate(...)` with no `tick()` (added
+    one, matching `tables.test.ts`'s own hash-change case) - **exit 0**
+    after both fixes: 17 tests.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 8) - three
+    failures on the first attempt, none a behaviour bug: prettier flagged
+    the three touched test files (fixed with `prettier --write`); eslint
+    flagged `@typescript-eslint/no-unsafe-assignment` on `SearchPage.svelte`
+    and `TablesPage.svelte`'s `oninput={(v) => { q = v; }}` (both needed an
+    explicit `(v: string)` annotation - the inline handler's parameter type
+    was not inferred from `SearchBox`'s own prop signature) and
+    `@typescript-eslint/restrict-template-expressions` on three template
+    literals over a `number` in the new cap-test fixture (wrapped in
+    `String(...)`); the full `npm run test` then timed out at 30s on the
+    cap-test case under `--coverage` instrumentation (five keystrokes each
+    re-rendering 300+ rows; switched to `userEvent.paste`, one `input`
+    event instead of five) - **exit 0** on the next attempt: format/lint/
+    typecheck (535 files, 0 errors) clean, `data`/`derived.js`/`i18n.js`/
+    `selftest.mjs` (292 passed) clean, 947 tests / 0 failures, coverage
+    96.27 stmts / 88.53 branch / 96.67 funcs / 97.01 lines.
+  - `npm run build` (step 9) - clean; `dist/assets/app.js` 280.74 kB, 84.13
+    kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/search"` (step 9, group A) -
+    7 states × 2 languages × 3 widths = 42 cells, plus `foundRows` x4,
+    `copiedSelection` x1, `typeRuns` x2, `visuals`, `inventory`, `heading`,
+    `title` - **расхождений нет**.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "roll/std ~ items only"
+    "roll/alt ~ crit, items only" "#/tables ~ searched" "#/tables/eq_secondary
+    ~ searched" "#/tables ~ nothing found" "#/l/ ~ packed"` (step 9, group
+    B, the regression) - 6 states, 36 cells - **расхождений нет**;
+    `packedExpanded` read `{ expanded: true }` on both apps without
+    throwing.
+  - `npm run check:built` (step 10) - **exit 0**: build clean, `file://`
+    smoke opens from a folder, bundle budget 81.7 kB against 120 kB.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 12, one
+    foreground call, `timeout: 600000`, run immediately before the commit
+    since the doc edits above moved the tree fingerprint) - **exit 0**,
+    re-arming the gate for `feat(search): the search page`.
+
 - Commands run (exact), this session (B5.6, on `3324039`):
   - `npx vitest run app/src/state app/src/lib` (step 1) - green, 501 tests.
   - `npx vitest run app/src/components/sharedListPage.test.ts` and the full
@@ -2124,6 +2215,18 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
+**B6 is closed** (implementer, 2026-09-11, on `a25eeac`/`37ecc8d` - see
+`plan.md`, "B6 built" and the Status entry above). The search slice is done;
+`#/search` is no longer `pending` in `tests/parity/specs.js`. **Print
+(`#/print/ci1-q1`) is the only Phase 4 slice left, and it needs a planning
+pass before it is implement-ready** - unlike search, print has no measured
+surface and no planning notes yet, and its own evidence (Figma nodes
+`88Hhc89oY9Orcbvd2ok1Hx`, `714-42387`/`3773-90792`) needs the Figma
+connector authenticated, which this session did not have. The next step is
+a planner dispatch, not an implementer one.
+
+B6's own record, kept for reference - the batch that just closed:
+
 **B6 - the search slice, one batch, implement-ready** (planner, 2026-09-11,
 on `16bc32e`). Full design: `plan.md`, "B6 planned"; durable measurements:
 `context.md`, "B6 planning facts".
@@ -2606,21 +2709,23 @@ on `16bc32e`). Full design: `plan.md`, "B6 planned"; durable measurements:
 ## Deferred
 
 - **B5.6's review findings, assigned by the B6 planning pass (planner,
-  2026-09-11).** Risk 1 (the `~ packed` blind spot) is **B6's**: a
-  `packedExpanded` spec with `only: ['#/l/ ~ packed']` that throws when
-  `d.hash()` is `#/l/zzzz` - one spec in `tests/parity/specs.js`, which B6
-  edits anyway. Nit 1 (`ListPage.svelte:103`'s comment naming the deleted
-  `todo` paragraph) **stays recorded** - B6 does not open that file. Risks
-  2-3 and nits 2-5 stay as written below.
-- **Recorded by the B6 planning pass, not done (planner, 2026-09-11):**
-  - `.panel` is at its sixth inline copy after `SearchPage.svelte`
-    (`AltPanel`, `ListPage`, `ListsPage`, `RollPanel`, `StdPanel`,
+  2026-09-11) - risk 1 closed by B6 (implementer, 2026-09-11).** A
+  `packedExpanded` spec with `only: ['#/l/ ~ packed']` throws when
+  `d.hash()` is `#/l/zzzz`, else returns `{ expanded: !hash.startsWith(
+  '#/l/~') }`; the group B parity run read `{ expanded: true }` on both
+  apps without throwing. Nit 1 (`ListPage.svelte:103`'s comment naming the
+  deleted `todo` paragraph) **stays recorded** - B6 did not open that file.
+  Risks 2-3 and nits 2-5 stay as written below.
+- **Recorded by the B6 planning pass, still not done (planner, 2026-09-11;
+  confirmed still open after B6 landed, implementer, 2026-09-11):**
+  - `.panel` is now at its sixth inline copy - `SearchPage.svelte` landed it
+    (alongside `AltPanel`, `ListPage`, `ListsPage`, `RollPanel`, `StdPanel`,
     `TablesPage`'s `.tablenav`, `FilterBar`); with the `.page-h`/`.page-sub`
     copies B5.6 recorded, one extraction pass over the page furniture is
     owed once the print slice is in and every page exists.
-  - `toggleAllIn` (the select-all on/off rule over `app.sel`) will be at
-    its second copy (`TablesPage`, `SearchPage`); a third caller moves it
-    to `AppState`.
+  - `toggleAllIn` (the select-all on/off rule over `app.sel`) is now at its
+    second copy (`TablesPage`, `SearchPage`); a third caller moves it to
+    `AppState`.
   - `lib/dict.ts`'s `subSearch` carries the record count `1061`, the same
     number `tests/derived.js` ("счётчики в текстах") checks in `index.html`,
     both READMEs, `app.js`, `llms.txt` and `robots.txt` but not in

@@ -4,8 +4,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
+import { dict } from './dict.js';
 import { eqLine } from './i18n.js';
-import { matches, search } from './search.js';
+import { matches, search, statLineFor } from './search.js';
 import type { Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -122,5 +123,31 @@ describe('without a stat line', () => {
     /* A query that reaches the stat line rather than short-circuiting on the
        name: with no stat line to consult there is nothing to match. */
     expect(search([gear], 'заведомо отсутствующее слово')).toEqual([]);
+  });
+});
+
+describe('the stat line the pages search with', () => {
+  it('still finds a record by name through it', () => {
+    const line = statLineFor('ru', dict('ru'));
+    expect(search(index.searchable, 'Катана', line).map((x) => x.id)).toContain('q26');
+  });
+
+  it('keeps the type word, unlike the row display', () => {
+    /* `TablesPage.svelte`'s row draws `eqLine(it, lang, labels, { noType: true
+       })` - the match must not; a query for the type word alone has to find
+       weapons through the line `statLineFor` builds. */
+    const gear = index.searchable.find((r) => r.eq?.t === 'weapon') as Record_;
+    const line = statLineFor('ru', dict('ru'))(gear);
+    expect(line).toContain('Основное оружие');
+    expect(eqLine(gear, 'ru', LABELS, { noType: true })).not.toContain('Основное оружие');
+  });
+
+  it('is per language, like every other field it searches', () => {
+    const gear = index.searchable.find((r) => r.eq?.t === 'weapon') as Record_;
+    const ru = statLineFor('ru', dict('ru'))(gear);
+    const en = statLineFor('en', dict('en'))(gear);
+    expect(ru).toContain('Основное оружие');
+    expect(en).toContain('Primary weapon');
+    expect(ru).not.toBe(en);
   });
 });

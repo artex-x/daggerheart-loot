@@ -3,7 +3,10 @@
 
 export type Lang = 'ru' | 'en';
 
-export type Kind = 'item' | 'consumable' | 'equip';
+/** The three kinds a record can filter under - Core rules, the alternate
+ *  tables and search all narrow by these, search over all three at once. */
+export const KINDS = ['item', 'consumable', 'equip'] as const;
+export type Kind = (typeof KINDS)[number];
 
 export type EquipKind = 'weapon' | 'secondary' | 'armor';
 

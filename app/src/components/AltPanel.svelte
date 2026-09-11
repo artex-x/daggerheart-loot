@@ -26,7 +26,7 @@
   import { rarityKey } from '../lib/label.js';
   import { shareRoll } from '../lib/share.js';
   import { LOOT_KINDS, isLastOn } from '../lib/std.js';
-  import type { Chosen, LootKind } from '../lib/std.js';
+  import type { LootKind } from '../lib/std.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Index } from '../lib/data.js';
   import type { Dict } from '../lib/dict.js';
@@ -46,7 +46,6 @@
      a person arrives at rather than something they start inside. */
   let rarity = $state<Rarity>('common');
   let roll = $state({ hope: 1, fear: 2 });
-  let kinds = $state<Chosen<LootKind>>({ item: true, consumable: true });
 
   let open = $state<Record_ | null>(null);
 
@@ -55,7 +54,7 @@
     app.say(msg, { error });
   };
 
-  const picks = $derived(index ? altPicks(index, rarity, roll, kinds) : []);
+  const picks = $derived(index ? altPicks(index, rarity, roll, app.kinds) : []);
   const crit = $derived(isCrit(roll));
   /* A critical success on the top rarity has nowhere to go, so the offer is
      the tables alone. */
@@ -93,14 +92,6 @@
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
     const ok = await app.env.clipboard.writeRich({ html, plain: text });
     say(ok ? t.textCopied : t.copyFailed, !ok);
-  }
-
-  function toggleKind(kind: LootKind): void {
-    if (isLastOn(kinds, LOOT_KINDS, kind)) {
-      say(t.keepOneKind, true);
-      return;
-    }
-    kinds = { ...kinds, [kind]: !kinds[kind] };
   }
 </script>
 
@@ -177,10 +168,10 @@
       {#each LOOT_KINDS as kind (kind)}
         <Chip
           label={t[KIND_LABEL[kind]]}
-          on={kinds[kind]}
-          title={isLastOn(kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
+          on={app.kinds[kind]}
+          title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
           onclick={() => {
-            toggleKind(kind);
+            app.toggleKind(kind, LOOT_KINDS);
           }}
         />
       {/each}
@@ -208,7 +199,7 @@
           <span>{t.critSub}</span>
         </div>
         <div class="crit-acts">
-          {#each altTables(kinds) as table (table.table)}
+          {#each altTables(app.kinds) as table (table.table)}
             <Button size="sm" href={app.linkTo(tablesHash(table.table, { anchor: rarity }))}>
               {t[table.label]}<Icon name="external" />
             </Button>

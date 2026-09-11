@@ -11,10 +11,27 @@
  *
  * Pure module: it is handed the records and the stat line, and returns records. */
 
-import type { Record_ } from './types.js';
+import { eqLine } from './i18n.js';
+import type { Dict } from './dict.js';
+import type { Lang, Record_ } from './types.js';
 
 /** How a record's stat line reads. Empty for anything without one. */
 export type StatLine = (it: Record_) => string;
+
+/**
+ * The stat line search matches against - the type word kept, unlike the
+ * row's own display, which drops it (`noType: true`).
+ *
+ * `TablesPage.svelte`'s own `statLine` used to carry this rule; search is
+ * its second caller, so it moved here. The live `matches` searches
+ * `eqLine(it)` *with* the type word ("Основное оружие · Ранг 1 · ..."), so
+ * typing "основное" finds every weapon - dropping the type word here would
+ * silently narrow what a query can reach.
+ */
+export function statLineFor(lang: Lang, t: Pick<Dict, 'tier' | 'eqTh' | 'eqScore'>): StatLine {
+  const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
+  return (it: Record_): string => eqLine(it, lang, labels);
+}
 
 const has = (hay: string | undefined, needle: string): boolean =>
   !!hay && hay.toLowerCase().includes(needle);
