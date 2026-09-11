@@ -1069,3 +1069,120 @@ iteration needed. `npm run check:built` also exited 0 on the first attempt
 (77.3 kB gzip against the 120 kB budget). One commit, `feat(lists): the list
 page`, on top of `f38b900`. B5.4b (drag), B5.5 (batch actions) and B5.6 (the
 shared page) remain unplanned - see `handoff.md`, "Next batch".
+
+## State at the B5-remainder kickoff (orchestrator, 2026-09-11)
+
+- HEAD `3cb2bd0` (`docs(issue-47): B5.4a closed - the three commits that carry
+  it`), working tree **clean**, no `test-output/parity.lock`. B5.4a is closed
+  by three commits: `f38b900`, `8873473`, `fe38973`.
+- Host reading before anything heavy: RAM free 6.84 GB of 15.82 GB, 271
+  processes, **no `chrome.exe`**, 13 `node` processes (editor/tooling). This is
+  the idle-enough shape in which `npm run check` has fit one foreground call.
+- `ListAgents` shows one **interactive peer session** (`daggerheart-loot-ce`,
+  started ~46 min before this reading) on the same tree; every other peer is
+  offline. The tree was clean and unlocked throughout this reading, but HEAD
+  can move under this task - re-read `git log --oneline -3` before dispatching
+  a writer and again at closeout.
+- Human GOAL for this session, recorded verbatim in intent: finish the next
+  batch; **merge the remaining lists batches into fewer, larger batches** if
+  they are individually small; and **write down a standing rule for choosing
+  larger batches**, because the per-batch fixed cost (`npm run check`,
+  `npm run check:built`, the parity loop) is paid once per batch whatever the
+  batch's size. Deciding the merge and authoring the rule are the planner's,
+  not the orchestrator's.
+- What is left of the lists slice, all three unplanned as of this reading:
+  **B5.4b** (drag as the live app does it - outlined, `plan.md` line ~6060),
+  **B5.5** (batch actions, the money panel, delete selected, undo),
+  **B5.6** (the shared list page, packed-link expansion, taking a shared list).
+- Fixed per-batch check costs, measured in this repo and unchanged:
+  `npm run check` a few minutes (165s on an idle host; has exceeded the 600s
+  foreground cap under load), `npm run check:built` a few minutes,
+  `node tests/parity.js "<filter>"` ~9 min for a large filter, the full parity
+  suite ~867s single-job / 4-5 min per shard on CI's 4-way split.
+
+## B5-remainder planning facts (planner, 2026-09-11) - durable, read before implementing
+
+Decision: two batches remain, not three - **B5.5 absorbs B5.4b** (same file,
+same seeds, same parity filter `"#/lists/a"`), **B5.6 stays separate** (its
+own route, filter `"#/l/"`, component, and a routing change). Reasoning and
+the rejected splits: `plan.md`, "B5 remainder planned". The standing rule:
+`CLAUDE.md`, "Task and session protocol"; costs and the test:
+`docs/parity.md`, "Batch size and the fixed cost of a run".
+
+Harness facts that shaped the plan (`tests/parity/driver.js`,
+`tests/parity.js` at `3cb2bd0`):
+
+- `NAME_FN` (driver.js 102-107) names a control by `aria-label`, then
+  `title`, then `textContent`. **`d.controls()` never reads `aria-pressed`
+  or `aria-current`**, so the money chips' `aria-pressed` (rewrite) against
+  `aria-current="true"` (live, app.js 2944) is not a measured difference.
+- **A stale `ACCEPTED` key fails the run** (parity.js ~615: `fail +=
+  stale.length`, printed as `различий больше нет, убери из ACCEPTED`). An
+  entry for an unmeasured difference would therefore be red from its first
+  run. This is why B5.4a nit 2 is recorded as prose, not as an entry.
+- `d.click(name, nth)` prefers an **exact** name match and falls back to
+  `includes` only at `nth` 0. The list page's action row has a delete-list
+  button named exactly `Удалить`, so the batch delete must be pressed as
+  `Удалить (1)`; `Удалить` would delete the list.
+- The driver has no drag verb (B5.4a's review found the inert grip because
+  of it). B5.5 adds `drag(from, to, after)` by `.lrow` index, dispatching
+  synthetic `DragEvent`s with one `DataTransfer` - Chrome constructs both.
+- `enter` runs in Russian; `arrive()` presses `EN` afterwards. Component
+  state that must survive that press (`lsel`, `guess`, `rp`) has to sit
+  outside any `{#key app.lang}` block.
+
+Live-app facts (`app.js`/`style.css` at `3cb2bd0`, unchanged since
+`d5d63c1`):
+
+- Batch bar and money panel: `batchBarHTML` 724-745, `moneyPanelHTML`
+  750-782, `guessBand`/`guessPrice` 811-829, `guessWhy` 831-842, `RAR_KEY`
+  463, `voaTierName` 920, `numBox` 2096, the `#rp` input handler 4336-4344,
+  the four handlers 3986-4083 (`data-guess`, `data-guess-apply`,
+  `data-reprice`, `data-batch-clearprice`, `data-batch-del`). `S.rp` defaults
+  to `-20`, `S.guess` to `false`; `hashchange` (4629-4636) clears `S.lsel`
+  but neither of those.
+- `.batch-price` and its three rules (style.css 1064, 1078-1080) are dead:
+  nothing writes the class. Do not port.
+- Drag: 4443-4530; `EDGE = 120`, `EDGE_MAX = 22`; the edge loop runs off a
+  **capturing** `document` `dragover` because the pointer spends most of a
+  drag between rows; the `to` adjustment is `after && to < from → +1`,
+  `!after && to > from → -1`.
+- Shared page: `renderSharedList` 3130-3170 (rows through `rowHTML(it, '',
+  tail)` - so they carry `selBox` and the selection bar works there; no
+  `.selall`), `expandHash` 3589-3603 (a failed unpack rewrites to
+  `#/l/zzzz`; `currentRoute` reports `l/zzzz` while unpacking), the
+  `N_SHARED` (`'@'`) branch of `createFor` 4213-4224 (a new list takes name,
+  meta, note and hnote; an existing list takes ids only), `lines()` 589.
+- Dictionary strings for everything above: ru 116-188, en 302-372. Product
+  text carries U+2013 (band range), U+2014 (no price), U+00D7 (quantity),
+  U+00B7 (separators); port the bytes.
+
+Rewrite facts (`app/src` at `3cb2bd0`):
+
+- `ListStore` already has `setMeta`, `removeEntry`, `restoreEntry(id,
+  entryId, at, meta)`, `create(name, init)` - B5.5 needs no new method;
+  B5.6's "take into a new list" is `create(name, init)`'s second caller.
+- `lib/money.ts` has `guessBand`, `guessPrice(it, rarityOf)`, `reprice`,
+  `priceText`, `moneyMode`; `index.rarityOf` exists (`lib/data.ts:147`).
+  `guessWhy` does not exist yet.
+- `DragHandlers` is `onDrop(from, to)` only; `nativeDrag` is index-based on
+  `[data-index]`; `fakeDrag` exposes the bound handlers for tests.
+- Svelte drops a scoped rule no template element can match and `npm run
+  check` fails it as dead CSS (`ListPage.svelte` ~1246) - so the drag
+  classes must be `class:` bindings driven by port callbacks, not classes
+  the port toggles.
+- `Chip.svelte`'s button form writes `aria-pressed={on}`; its link form
+  `aria-current="page"`.
+- `browserCompress.unpack` exists, is tested, and has one caller
+  (`ListsPage`'s restore). `AppState` does not expand `#/l/~` yet: `hash.ts`
+  parses it as `{ kind: 'sharedList', packed: true }` and `ListPage` shows
+  the `todo` paragraph.
+- `TableRows.svelte`'s `TableEntry` is `{ it, n? }`; it draws `.selall`
+  only when `ontoggleall` is passed. `RowMain`'s `tail`/`.rtail` has no
+  caller (B5.4a nit 1). `ListPage.svelte` ~434 draws the rolled entry's
+  hitnotes inline - `HitNote.svelte`'s first copy; the shared page is the
+  second.
+- `docs/fixtures/lists/` has no packed (`~`) payload; `notes-both-kinds.json`'s
+  `gm.payload` carries all four notes and is contract-tested. A packed
+  parity state computes its payload once with Node's `zlib.deflateRawSync`
+  and records the command beside it.

@@ -200,3 +200,58 @@ a CI reading.
 - Visual debt moved toward zero; every remaining entry has a current reason.
 - Every `ACCEPTED` difference is intentional and explained.
 - The handoff records exact commands, results, and retained evidence.
+
+## Batch size and the fixed cost of a run
+
+The rule is in `CLAUDE.md`, "Task and session protocol": size a batch by
+its gates, not its diff. This section holds the numbers behind it and the
+test for where the line is.
+
+**What a batch pays whatever its size**, measured in this repository
+(2026-09-10/11, one host, recorded in `issues/47/context.md`):
+
+| gate | idle host | loaded host |
+|---|---|---|
+| `npm run check` | ~165s | past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded, cannot arm the commit gate, and must be re-run - not salvaged |
+| `npm run check:built` | a few minutes | longer |
+| `node tests/parity.js "<filter>"` | up to ~9 min for a large filter | longer, and timed states drift |
+| `node tests/run-all.js parity` | ~867s single-job; 4-5 min per shard on CI's 4-way split | - |
+
+`check:built` and the parity filters are paid once per batch; `npm run
+check` is paid once per commit inside it. None of these scale with the
+diff: eight paths and forty paths cost the same minutes.
+
+**The two ways to get it wrong.**
+
+1. *Too small.* A batch that adds one port and one harness verb still pays a
+   check, a `check:built` and a filter run - most of an hour on an idle
+   host for a change a reviewer reads in five minutes. Three such batches
+   pay three times what one would.
+2. *Too big.* A batch whose `npm run check` cannot finish inside one
+   foreground call on the host as it is, or whose review cannot be held in
+   one pass, forfeits everything when the host stalls: B5.3 (26 paths)
+   needed six check attempts under load; B5.4a (43 paths) lost two sessions
+   to a loaded host between "written" and "step 10 green". The cost of a
+   stall is the whole run again, plus the review and the one remediation
+   cycle the protocol allows.
+
+**The test.** Merge two pieces of work when they share a component, a seed
+and a parity filter - then the filter run for the merged batch costs what
+it would for either alone, and nothing is paid twice. Keep them apart, or
+cut a batch, at any of these:
+
+- a public-contract change (`CONTRACTS.md`, `docs/fixtures/`,
+  `tests/contracts.js`, `llms.txt` in the same commit) - it needs its own
+  commit and its own review;
+- a different route and filter set - the parity cost is not shared, only
+  serialised, so merging saves a `check` and nothing else;
+- a commit boundary the harness cannot reach (a state that needs a driver
+  verb or a seed that does not exist yet) - the piece that adds the
+  reach lands first, on its own commit, so a later red bisects;
+- a batch that could not end on a coherent committed boundary - half a
+  surface on screen with faked controls is never a stopping point
+  (`CLAUDE.md`, "never commit a half-batch").
+
+A batch may hold more than one commit; each commit is green on its own.
+Aim for one parity filter group and one green check per batch; the
+first application is `issues/47/plan.md`, "B5 remainder planned".

@@ -2611,8 +2611,8 @@ a part 1, the bar itself; see "B5.2 planned, part 0" and "part 1" below.)
 | **B5.2** | the selection bar: `sel` lifted from `TablesPage` to `AppState` (search is its second owner), `SelBar` in `Shell` after the footer, the cross, the control, print, copy selection; the 600px overrides for `.selx` and `.selacts` | the second caller of `AddToList` and of the print link; closes the `selBar` debt and the `~ a row ticked` `ACCEPTED` lines |
 | **B5.3** | the lists index `#/lists`: the page head and its help, the storage warning in both its forms (`dhloot.warn.v1`, the dismiss cross), create, import, the list cards (share as a short link, delete behind `confirm()`), the empty state; `Shell`'s invented `storageOff` paragraph goes and the live app's `storageWarning()` lands where the live app draws it | the route that is `pending` today; `deleteList` and the `deleted` set in the merge |
 | **B5.4** | the list page as a page: `#/lists/<id>` rewritten to `#/l/<payload>` and kept fresh on every edit, own-list recognition, rename, the action row, the money picker and its help, the list note, the roll panel, the batch bar's select-all, the rows (`.lrow*`, quantity and price with the gold hint, the two notes, remove with undo, position, drag through the drag port), `contextNote` on the card's copy; the 600px `.lrow*` and 640px `.npair` overrides | the biggest surface; everything on it is per list and none of it needs batch actions to draw. May be split into 4a (the page and the rows) and 4b (notes, roll panel, drag) when it is planned. **Planned 2026-09-10: split into 4a (the page complete but for the live drag semantics; implement-ready) and 4b (drag as the live app does it; outlined) - the notes and the roll panel are on screen folded at arrival and cannot be cut without faking them; see "B5.4 planned"** |
-| **B5.5** | batch actions and prices: `.batch-acts`, the money panel (reprice, suggest, clear), delete selected, the undo toasts, the 640px `.batch-acts` override; `lib/money.ts` gets its first callers | its own panel and its own undo set, on top of B5.4's `lsel` |
-| **B5.6** | the shared list that is not ours: hitnotes, rows with tails, take into a list or a new list with the name and both notes, packed `~` links expanded and rewritten on open, the bad-link page, `listNotFound`; import on the index (B5.3) reuses the same decode | the other reader of the same page; completes the link contract loop that `contracts` replays |
+| **B5.5** | batch actions and prices: `.batch-acts`, the money panel (reprice, suggest, clear), delete selected, the undo toasts, the 640px `.batch-acts` override; `lib/money.ts` gets its first callers | its own panel and its own undo set, on top of B5.4's `lsel`. **Planned 2026-09-11: absorbs B5.4b (drag as the live app does it) as its first commit - see "B5 remainder planned"; implement-ready** |
+| **B5.6** | the shared list that is not ours: hitnotes, rows with tails, take into a list or a new list with the name and both notes, packed `~` links expanded and rewritten on open, the bad-link page, `listNotFound`; import on the index (B5.3) reuses the same decode | the other reader of the same page; completes the link contract loop that `contracts` replays. **Outlined 2026-09-11 as the second and last lists batch** |
 
 **The harness can reach a list state, with one addition.** Lists live in
 `localStorage`, and every state opens a fresh page whose `prepare()` clears
@@ -6153,6 +6153,622 @@ cells could have caught this - the port-to-component wiring was tested, the
 element-to-browser wiring was not. That gap is why this needed a human-shaped
 review rather than the harness; it is not fixed here (B5.4b's territory if it
 is ever worth a driver verb).
+
+### B5 remainder planned: two batches, not three (planner, 2026-09-11)
+
+**The question.** Three pieces of the lists slice are left - B5.4b (drag as
+the live app does it), B5.5 (the actions under a ticked selection) and B5.6
+(the shared page) - and each looks smaller than B5.1-B5.4a. The human asked
+whether they should be merged, because every batch pays the same fixed
+verification cost whatever its size. Merging was the hypothesis; the split
+below is what the evidence supports.
+
+**The fixed cost, taken as measured (`context.md`, "State at the B5-remainder
+kickoff"):** `npm run check` 165s idle and past the 600s foreground cap under
+load, where it must be re-run rather than salvaged; `npm run check:built` a
+few minutes; a parity filter up to ~9 min; the full suite ~867s. Paid once
+per batch, and the check again for every commit inside it (the gate wants a
+green check per commit; `check:built` and the filters are per batch).
+
+**The three remainders, sized off the code they port, not remembered:**
+
+| piece | production paths | harness paths | pixel states | press specs | filter it lives under |
+|---|---|---|---|---|---|
+| B5.4b | `ports/types.ts`, `ports/drag.ts`, `ListPage.svelte` (three classes, three rules) | `driver.js` (one verb), `specs.js` (one spec), `ports.test.ts` | none - a synthetic drag paints no drag image | 1 | `"#/lists/a"` |
+| B5.5 | `dict.ts` (~16 keys x 2), `lib/money.ts` (`guessWhy`), `ListPage.svelte` (the `.batch-acts` pair, the `.guess` panel, four handlers, ~15 rules) | `listPage.test.ts`, `money.test.ts`, `specs.js` (five states, four specs, seven names) | 5 (30 cells) | 4 | `"#/lists/a"` |
+| B5.6 | `state/app.svelte.ts` (packed expansion), a `SharedListPage.svelte`, `TableRows.svelte` (`tail` on an entry), `AddToList.svelte` (one prop), a `HitNote.svelte` on its second use, `ListPage.svelte` (the `!own` branch) | `specs.js` (four states, two specs) | 4 (24 cells) | 2 | `"#/l/"` |
+
+**The split: two batches.**
+
+- **B5.5 absorbs B5.4b** and becomes "the list page complete". Both live in
+  `ListPage.svelte`, both seed `seven`/`noted`, and every state and press
+  spec either adds runs under the one filter `"#/lists/a"` - so the parity
+  cost of the merged batch is the cost of either alone. B5.4b by itself is
+  about eight paths and not one pixel state: paying a check, a `check:built`
+  and a filter run for it is the small-batch failure mode exactly. Inside
+  the batch the port rewrite is its own commit (the shape B5.4a's step 0
+  had), so a regression in drag bisects to one commit.
+- **B5.6 stays its own batch.** It is the other *reader* of the payload: a
+  different route (`#/l/<payload>` that is nobody's, `#/l/~packed`,
+  `#/l/zzzz`), a different filter (`"#/l/"`), its own component, a change to
+  `AppState`'s routing and to `AddToList`, and no seed in common. Nothing it
+  verifies is verified by B5.5's filter, so merging it saves one `check` and
+  one `check:built` and buys a batch that touches routing, the bar's row
+  component and a new page at once - the size B5.3 (26 paths, six check
+  attempts under load) and B5.4a (43 paths, two sessions lost to a loaded
+  host before step 10 went green) showed this host does not verify in one
+  pass reliably.
+
+**Rejected, with the reason.**
+
+1. *One batch of all three* (~30 production paths, three surfaces, two
+   filters, ~11 states). Saves two gates against three; costs a review that
+   has to hold drag semantics, a money panel and a routing change in one
+   head, and - the failure mode B5.4a's history records - a single
+   mid-verification stall that forfeits everything. The filters do not
+   overlap, so the parity cost is not shared, only serialised.
+2. *Three batches as outlined.* B5.4b alone pays a full gate for a port
+   rewrite and a harness verb with no pixel state of its own. This is the
+   case the human named.
+3. *B5.4b with B5.6* ("the harness batch": a driver verb, a packed route).
+   No shared file, seed or filter; nothing coheres but the word harness.
+4. *B5.5 with B5.6, B5.4b alone.* The worse pairing on both counts: the two
+   that share nothing merged, the one that shares everything with B5.5 left
+   to pay a gate by itself.
+
+**The standing rule this applies** is now `CLAUDE.md`, "Task and session
+protocol" (size a batch by its gates, not its diff), with the measured costs
+and the test for where the line is in `docs/parity.md`, "Batch size and the
+fixed cost of a run". This section is the rule's first application.
+
+**B5.4a's six review nits, assigned rather than re-deferred.**
+
+| nit | goes to | what |
+|---|---|---|
+| 1 `RowMain`'s dead `tail`/`.rtail` | B5.6 | used through `TableRows` on the shared page (`x2 · 750 зол.` after the name); if B5.6 finds it does not need it, B5.6 deletes both |
+| 2 money chips `aria-pressed` vs live `aria-current` | B5.5, decided here | **not an `ACCEPTED` entry.** `d.controls()` reads `aria-label`, `title` and text (`driver.js` `NAME_FN`), never `aria-pressed` or `aria-current`, so no key ever differs - and `parity.js` fails a run on a stale `ACCEPTED` key (`fail += stale.length`), so the entry would turn every run red from its first. Recorded instead the way B5.1 recorded the menu chips: in "Decided" below, and as prose in the comment block above `ACCEPTED` in `specs.js`, which B5.5 adds |
+| 3 `23px`/`680`/`-0.01em` hardcoded in `ListPage.svelte` | B5.5 | tokenised while the block is open; `"#/lists/a @"` must stay zero |
+| 4 `.row-main:focus-visible` restored in `RowMain` | recorded, nothing to do | stays in `handoff.md` "Deferred" as the note it is |
+| 5 `moneyHelp` component state vs live `S.moneyHelp` memory | B5.5 | `rp` and `guess` join the same list, in the same place (`ListPage.svelte`'s "Local state" comment and "Decided" below) |
+| 6 three text nodes for the sub | recorded, nothing to do | unchanged |
+
+### B5.5 planned: the list page complete - drag as the live app does it, and the actions under a ticked selection
+
+**Objective.** After this batch `#/lists/<id>` does everything the live list
+page does. Dragging a row by its grip marks the row under the pointer above
+or below its midpoint, dims the row being dragged, scrolls the page from
+either edge, and drops the entry where the mark said - the live event model
+(app.js 4443-4530) instead of the index-only `nativeDrag`. Ticking a row
+puts two buttons on the bar's right - `Цены` with a caret and `Удалить (N)` -
+and `Цены` unfolds the money panel under the bar: the percentage row (only
+when a ticked row has a price), the note on where the numbers come from, one
+line per ticked row with its band and the suggested price, `Проставить эти
+цены`, and `Убрать цену (N)` (only when a ticked row has a price). Every
+action toasts with an undo. At 640px and under the buttons drop to their own
+full-width line.
+
+**In scope.** `ports/types.ts`, `ports/drag.ts` and its tests; the three
+drag classes and rules in `ListPage.svelte`; a `drag` verb in the parity
+driver and a `reorderedByDrag` spec; the dictionary keys; `guessWhy` in
+`lib/money.ts`; the bar's actions, the panel and its four handlers in
+`ListPage.svelte`; their component tests; five parity states, four press
+specs and their names; nits 2, 3 and 5 above.
+
+**Out of scope.** The shared page, packed-link expansion, `#/l/zzzz`,
+`SharedListPage`, `HitNote`, `TableRows`'s `tail` (B5.6). New store methods
+(none are needed - see "How it is built"). `Badge.svelte`, `Row.svelte`,
+`Panel.svelte`. Any change to `CONTRACTS.md`, `docs/fixtures/`, `ROUTES.md`,
+`llms.txt`: nothing here touches a route, a key or a payload. `STATE.md`'s
+memory table describes the live app and stays as it is; the rewrite's
+component-local `rp`/`guess` is recorded in the component and here, the way
+`roll` and `moneyHelp` were.
+
+#### What the live app does, read off app.js
+
+Line numbers are on `app.js` at HEAD `3cb2bd0` (unchanged since `d5d63c1`).
+The CSS is `style.css` at the same HEAD. No measurement pass was taken in
+this planning session: every rule below is a line-by-line port of a rule the
+harness then proves, the same way B5.4a's cascade went in and read zero on
+the first pass. If a cell is non-zero after the port, open the diff before
+touching a value.
+
+**Drag (4443-4530).** Module state `dragKey` (`"<listId>:<itemId>"`), the
+row is `closest('.lrow')`.
+
+- `dragstart` on `[data-drag]`: `dragKey`; the row gets `dragging`;
+  `effectAllowed = 'move'`; `setData('text/plain', dragKey)` in a `try`
+  (Firefox refuses to start without a payload); `setDragImage(row, 24, 24)`
+  when the method exists.
+- Edge autoscroll (4461-4488): `EDGE = 120`, `EDGE_MAX = 22`. A **capturing**
+  `dragover` on `document` calls `edgeScroll(e.clientY)` whenever a drag is
+  live - the pointer spends most of a drag over the gaps between rows, so
+  the bubbling row handler below cannot drive it. `depth` is `y - EDGE` in
+  the top band, `y - (innerHeight - EDGE)` in the bottom band, else 0;
+  `edgeSpeed = round(EDGE_MAX * clamp(depth / EDGE, -1, 1))`; a
+  `requestAnimationFrame` loop `scrollBy(0, edgeSpeed)` runs while the speed
+  is non-zero and is cancelled by `edgeStop()` (on `dragend` and `drop`).
+  Off the frame, not the mouse: it keeps scrolling while the hand is still.
+- Bubbling `dragover` (4491-4500): no `dragKey` → return; the row under the
+  target must contain `[data-drag]` or return; `preventDefault()`;
+  `dropEffect = 'move'`; clear every `drop-before`/`drop-after`; if the row
+  is the dragged one, stop there; else mark `drop-before` when `clientY <
+  top + height / 2`, `drop-after` otherwise.
+- `dragend` (4501-4506): `dragKey = ''`, `edgeStop()`, clear marks, remove
+  `dragging`.
+- `drop` (4507-4525): `edgeStop()`; no key → return; no row → return;
+  `preventDefault()`; `after = row has drop-after`; clear marks; `from`,
+  `to` from the ids; **`if (after && to < from) to += 1; if (!after && to >
+  from) to -= 1;`** then `moveToInList(l, id, to)` → `freshenListUrl` +
+  `render`.
+- Rules (747-749): `.lrow.dragging{opacity:.45}`,
+  `.lrow.drop-before{box-shadow:inset 0 3px 0 0 var(--gold)}`,
+  `.lrow.drop-after{box-shadow:inset 0 -3px 0 0 var(--gold)}`.
+
+**The bar's actions (`batchBarHTML`, 724-745).** `ids` = the list's ids
+that are ticked, in list order; `n = ids.length`. When `n`:
+`<span class="batch-acts">` with `<button class="btn sm[ on]" data-guess
+aria-expanded="true|false">batchMoney<i class="caret[ up]"></i></button>`
+and `<button class="btn sm danger" data-batch-del>del (n)</button>`; then
+`moneyPanelHTML(l, ids)` when `n && S.guess`. `S.guess` (default `false`)
+and `S.rp` (default `-20`) are app memory ("Prices", `STATE.md`); neither
+is cleared on `hashchange` (4629-4636 clears `lsel` only).
+
+**The money panel (`moneyPanelHTML`, 750-782).** `priced` = ticked ids with
+`gold > 0`, counted.
+
+```text
+<div class="guess">
+  [priced]  <div class="money-act">
+              <span class="batch-lbl">repricePct</span>
+              numBox('rp', S.rp, -90, 500)
+              <button class="btn sm" data-reprice>{S.rp < 0 ? repriceDown : repriceUp}</button>
+              <span class="money-hint">repriceHint</span>
+            </div>
+  <p class="guess-note">guessWhy</p>
+  <div class="guess-rows">
+    per ticked id (skipping one the data does not know):
+    <div class="guess-row"><span>nameOf(it)</span><span class="guess-band">guessWhy(it)</span><b>{v ? priceText(v, moneyMode(l)) : '—'}</b></div>
+  </div>
+  <div class="money-act">
+    <button class="btn sm primary" data-guess-apply>guessApply</button>
+    [priced]  <button class="btn sm" data-batch-clearprice>batchNoPrice (priced)</button>
+  </div>
+</div>
+```
+
+`numBox` (2096) is what `NumberField.svelte` already ports for the roll
+panel: give the `rp` field the same names `numBox` gives it (read 2096-2115
+before writing the props) - the inventory compares names, and a better label
+would be a difference.
+
+**`guessWhy(it)` (831-842)** - the band label: no band → `guessNoTier`;
+else `src · lo–hi goldUnit` where `src` is `tier + ' ' + it.eq.tier` for
+equipment, the rarity's dictionary label (`RAR_KEY`, 463: `common`,
+`uncommon`, `rare`, `veryRare`, `legendary`) when the alternate tables give
+the id a rarity, `voaTierName(it.tier)` (920) when the record carries a
+Vault of Ages tier, else `guessNoRarity`. The dash between `lo` and `hi` is
+the live string's own U+2013; the `—` in an unpriced `<b>` is U+2014. Both
+are product text: port the bytes.
+
+**The four handlers (3986-4083).** All read `S.lsel` in list order and
+end with `freshenListUrl(l); render();` (the rewrite's `$effect` on `own`
+does the address for free).
+
+- `data-guess` (3986): `S.guess = !S.guess`.
+- `data-guess-apply` (3989-4010): for each ticked id, `v = guessPrice(it)`;
+  skip `!v`; remember `before[id] = gold || 0`; `setMeta(gold, v)`; count.
+  `!n` → return with no toast. `S.guess = false`. Toast `guessDone + ' (' +
+  n + ')'` with action `repriceUndo` restoring every `before`.
+- `data-reprice` (4012-4040): `pct = S.rp`; `!pct` → return. For each
+  ticked id with `gold > 0`: remember; `Math.max(1, Math.round(g * (100 +
+  pct) / 100))` - `lib/money.ts` `reprice()` exists; confirm it is this
+  formula, and fix it if not. `!n` → return. Toast `repriceDone + ' (' +
+  (pct > 0 ? '+' : '') + pct + '%, ' + n + ')'` with `repriceUndo`.
+- `data-batch-clearprice` (4042-4059): ticked ids with `gold > 0` → gold
+  `0`; none → return. Toast `batchNoPrice` (no count) with `repriceUndo`.
+- `data-batch-del` (4061-4083): `gone = [{ id, at, meta }]` in list order
+  for every ticked id; none → return; splice from the back; **`S.lsel =
+  {}`**; save. Toast `batchDeleted + ' (' + gone.length + ')'` with `undo`
+  (not `repriceUndo`), restoring each at `Math.min(at, ids.length)` in
+  `gone` order with its meta.
+- `#rp` on `input` (4336-4344): `S.rp = parseInt || 0`; the live app
+  re-renders only when the sign flips (so the caret is not yanked); the
+  rewrite is reactive and draws the same thing.
+
+**Rules (style.css).** `.batch-acts` 1059; `.money-act` 1069 and its
+`:last-child`, `.numbox`, `.numbox button`, `.numbox input[type=text]`
+1070-1073; `.money-hint` 1074; `.money-act .btn{font-weight:650}` 1077;
+`.batch-lbl` 1077; `.batch .btn.sm` 1081; `.guess` 709, `.guess-note` 710,
+`.guess-rows` 715-716 (`max-height:210px;overflow:auto`), `.guess-row` 717,
+`.guess-row>span:first-child` 718, `.guess-band` 719, `.guess-row b` 720;
+`@media (max-width:640px){ .batch-acts{margin-left:0;width:100%} }` 1084.
+**Not ported:** `.batch-price` and its three (1064, 1078-1080) - nothing in
+`batchBarHTML` or `moneyPanelHTML` writes that class; it is dead in the live
+app and would be dead CSS here.
+
+#### How it is built
+
+**Drag.** `DragHandlers` (`ports/types.ts`) keeps `onDrop(from, to)` and
+gains three optional callbacks the component draws off:
+
+```ts
+export interface DragHandlers {
+  onDrop(from: number, to: number): void;
+  /** dragstart: which row is being dragged. */
+  onDrag?(from: number): void;
+  /** dragover on a row: where the entry would land; `null` over the dragged row itself. */
+  onOver?(over: number, where: 'before' | 'after' | null): void;
+  /** dragend, and after a drop: no row is dragged, no row is marked. */
+  onEnd?(): void;
+}
+```
+
+The port owns every listener and the scroll loop; the component owns the
+classes. That split is forced, not chosen: Svelte drops a scoped rule no
+template element can match and `npm run check` fails it as dead CSS (the
+comment at `ListPage.svelte` ~1246 says so), so `dragging`/`drop-before`/
+`drop-after` must be `class:` bindings in the template, driven by state the
+port reports. `nativeDrag()` is rewritten in place: `dragstart` (index off
+`closest('[data-index]')`, `effectAllowed`, `setData` in a `try`,
+`setDragImage(row, 24, 24)` when the method exists, `onDrag(from)`); a
+capturing `document` `dragover` bound on `dragstart` and unbound on
+`dragend`/`drop`, running the edge loop exactly as 4461-4488 (`EDGE`,
+`EDGE_MAX`, `requestAnimationFrame`, `scrollBy`); the container's bubbling
+`dragover` (target row must exist, `preventDefault`, `dropEffect`,
+`onOver(over, over === from ? null : clientY < mid ? 'before' : 'after')`);
+`dragend` (`onEnd`, stop the loop, clear `from`); `drop` (`preventDefault`,
+the `to` adjustment above off the *last reported* mark, `onDrop`, `onEnd`).
+The unbind removes everything, the document listener included. `edgeSpeed(y,
+innerHeight)` is a pure exported helper in `drag.ts` so a test can hit three
+depths without a scroll. `noDrag` and `fakeDrag` are unchanged; `fakeDrag`
+exposes the wider handlers for free.
+
+`ListPage.svelte`: `let dragFrom = $state(-1)` and `let dragMark =
+$state<{ over: number; where: 'before' | 'after' } | null>(null)`; the bind
+passes `onDrag`, `onOver`, `onEnd`; the row gets `class:dragging={dragFrom
+=== i}`, `class:drop-before={dragMark?.over === i && dragMark.where ===
+'before'}`, `class:drop-after={...'after'}`; the three rules go in beside
+`.lrow`, replacing the ~1246 comment. The grip keeps `draggable="true"` and
+`data-drag`.
+
+**The driver verb**, `drag(from, to, after)` by row index (both apps render
+`.lrow` in list order, and a name-based lookup would have to read a
+`.row-main` whose text carries the description): inside one
+`page.evaluate`, `rows = document.querySelectorAll('.lrow')`, `grip =
+rows[from].querySelector('[data-drag]')`, `target = rows[to]`; `dt = new
+DataTransfer()`; dispatch `new DragEvent('dragstart', { bubbles: true,
+dataTransfer: dt })` on `grip`; `rect = target.getBoundingClientRect()`;
+dispatch `dragover` on `target` with `clientX: rect.left + 10`, `clientY:
+rect.top + rect.height * (after ? 0.75 : 0.25)`, `bubbles`, `cancelable`,
+`dataTransfer: dt`; dispatch `drop` on `target` with the same `clientY`;
+dispatch `dragend` on `grip`. Then `settle()`. Chrome constructs
+`DataTransfer` and `DragEvent` (puppeteer's Chrome is the only browser this
+runs in); prove it on the **live** side first - `MSYS_NO_PATHCONV=1 node
+tests/parity.js "#/lists/a @"` with the spec below runs both.
+
+**The spec**, `reorderedByDrag` (`presses: true`, `only: ['#/lists/a']`):
+`await d.drag(0, 2, true)` → `first = ids from storage`; `await d.drag(2, 0,
+false)` → `second`; return `{ first, hash: await d.hash(), second }`. On both
+apps `first` is `[ci2, ci3, ci1, ci4, ...]` and `second` is the seed order
+again; the runner compares the two apps, not a constant. Register it in
+`SPECS` beside `movedByPosition`.
+
+**Batch actions.** All in `ListPage.svelte`, beside the bar and `lsel`:
+
+- `let guess = $state(false)`, `let rp = $state(-20)` - component-local,
+  recorded (see "Decided"). `const ticked = $derived(own ? own.ids.filter((id)
+  => lsel.has(id)) : [])`; `const pricedCount = $derived(ticked.filter((id)
+  => (metaOf(id).gold ?? 0) > 0).length)`.
+- Template, after `.batch-all` inside `.batch`: `{#if ticked.length}<span
+  class="batch-acts"><Button size="sm" on={guess} caret={...}
+  aria-expanded={guess} onclick={() => (guess = !guess)}>{t.batchMoney}
+  </Button><Button size="sm" variant="danger" onclick={batchDelete}>{t.del}
+  ({ticked.length})</Button></span>{/if}{#if ticked.length && guess}<div
+  class="guess">...</div>{/if}`. Check `Button.svelte` first: it has `on`
+  and `caret` (B5.1); if `caret` has no open/`up` form, add one that draws
+  `<i class="caret up">` and port `.caret.up` from `style.css` (grep it) -
+  `FilterBar` may already flip it; reuse whatever exists. `aria-expanded`
+  goes through `Button` the way `HelpButton` passes its `open`; if `Button`
+  does not forward it, add the one attribute, not a rest-spread. The
+  `danger` variant exists (the action row's delete uses it) - confirm.
+- The panel is a plain block in the template; `NumberField` for `rp` with
+  `min={-90} max={500}` and the names `numBox` gives; the reprice button's
+  label `rp < 0 ? t.repriceDown : t.repriceUp`; the rows `{#each ticked as
+  id (id)}{@const it = byId(id)}{#if it}...{/if}{/each}` with
+  `guessPrice(it, index.rarityOf)` and `guessWhy(it, index.rarityOf, t)`.
+- Handlers `applyGuess()`, `repriceTicked()`, `clearPrices()`,
+  `batchDelete()` as read off 3989-4083, through the store methods that
+  exist: `store.setMeta(own.id, id, 'gold', v)` per row (the live app also
+  writes per row and saves once; N saves against one is unobservable except
+  by another tab's `storage` event mid-batch, the same trade `ListsPage`'s
+  restore recorded), `store.removeEntry` per gone row, `store.restoreEntry(own.id,
+  id, Math.min(at, own.ids.length), meta)` per row on undo. Undo through
+  `app.say(msg, { action: { label, run } })`, the shape `removeRow` uses.
+  `batchDelete` clears `lsel`; the other three leave it.
+- Rules ported verbatim in the component style; `.money-act .numbox`
+  reaches into `NumberField`'s root the way `.money > :global(.money-help)`
+  does - `:global()` on the inner selector only.
+- Nit 3: replace `23px`/`680`/`-0.01em` in the two blocks (~714-716,
+  ~774-776) with `var(--h-page-size)`/`var(--h-page-weight)`/
+  `var(--h-page-spacing)` (`tokens.css:70-72`). Computed values are
+  identical; the cells prove it.
+
+**`lib/money.ts`** gains `guessWhy(it, rarityOf, t: Dict): string` as read
+off 831-842; find the rewrite's VoA tier-name helper first (`grep -rn
+"tierName\|voaTier" app/src/lib app/src/components`) and reuse it; only if
+none exists does a `voaTierName` land in `lib/` beside `guessWhy`, with the
+mapping off app.js 920. Confirm `reprice()` is `Math.max(1, Math.round(g *
+(100 + pct) / 100))`.
+
+**`dict.ts`**: add, in both languages, byte-exact from app.js (ru 116-188,
+en 302-372), whichever of these are missing: `batchMoney`, `batchNoPrice`,
+`repricePct`, `repriceDown`, `repriceUp`, `repriceHint`, `repriceDone`,
+`repriceUndo`, `batchDeleted`, `guessWhy`, `guessNoTier`, `guessNoRarity`,
+`guessDone`, `guessApply`, `goldUnit`, and the five rarity labels `RAR_KEY`
+maps to if `AltPanel` does not already carry them. `del`, `undo`, `tier`
+exist.
+
+**Nit 2 and nit 5**, in the same commit: a comment paragraph above
+`ACCEPTED` in `specs.js` - "Recorded, not keyed: `Chip.svelte`'s button form
+writes `aria-pressed` where the live menu chips write nothing and the live
+money chips write `aria-current="true"` (app.js 2944). `d.controls()` reads
+names only, so no key differs; an entry here would fail every run as stale."
+- and `rp`/`guess` added to the "Local state" comment in `ListPage.svelte`
+beside `roll`/`moneyHelp`, with the observable difference (a percentage
+typed, a navigation away and back: `-20` here, the typed value there).
+
+#### Tests
+
+- `ports.test.ts`: on a container of `[data-index]` rows with a fake
+  `DragEvent` (jsdom has none: construct `new Event('dragover', { bubbles:
+  true })` and assign `clientY` and a `dataTransfer` stub via
+  `Object.defineProperty`), cover: `onDrag` at dragstart; the midpoint rule
+  both sides; `null` over the dragged row; the four `to` adjustments (after
+  and `to < from`; after and `to > from`; before and `to > from`; before
+  and `to < from`); `onEnd` on dragend and on drop; the unbind removing the
+  document listener (a `dragover` on `document` after unbind changes
+  nothing); `edgeSpeed` at `y = 0` (`-22`), `y = 60` (`-11`), `y =
+  innerHeight - 1` (`22`), `y = innerHeight / 2` (`0`). Keep the three
+  existing `nativeDrag` cases green.
+- `listPage.test.ts`: the classes follow `fakeDrag().handlers.onDrag/onOver/
+  onEnd`; ticking a row shows `Цены` and `Удалить (1)`, unticking hides
+  them; `Цены` opens the panel and flips `aria-expanded`; with a priced row
+  ticked the reprice row and `Убрать цену (1)` are on screen, with an
+  unpriced one neither is; the reprice label flips at `rp = 5`; apply
+  writes the guessed gold, toasts `Цены проставлены (1)`, folds the panel,
+  and undo restores `0`; reprice at `-20` on `750` gives `600` and undo
+  gives `750`; clear gives `0` and undo `750`; batch delete of rows 1 and 3
+  leaves the others, clears the ticks, toasts `Убрано из списка (2)`, and
+  undo puts both back at their positions with their meta; the panel with
+  the guess open passes `expectNoA11yViolations`.
+- `money.test.ts`: `guessWhy` for an equipment record (`Ранг 2 · 100–150
+  зол.`), a rarity-bearing loot record, a VoA-tier record, a record with no
+  band (`нечем оценить`), and English once.
+
+#### Parity states, each in both languages at three widths
+
+All `route: '#/lists/a'`. `pickRow` is the row checkbox's `aria-label`
+(`Выбрать позицию` / `Select entry`), reached by `nth`.
+
+| id | storage | enter | why |
+|---|---|---|---|
+| `#/lists/a ~ a row ticked` | `seven` | `click(pickRow)` | the bar `.on`, "Выбрано 1", `Цены` with the caret, `Удалить (1)`; at 375 the 640px override puts the pair on its own full-width line |
+| `#/lists/a ~ prices` | `noted` | `click(pickRow, 1)`, `click(prices)` | row 2 (750, bags) ticked: the percentage row at -20 with `Сделать скидку` and the hint, the note, one guess row with its band, `Проставить эти цены`, `Убрать цену (1)` |
+| `#/lists/a ~ prices, none priced` | `seven` | `click(pickRow)`, `click(prices)` | row 1 ticked: no percentage row, no clear button - the two `priced` branches off |
+| `#/lists/a ~ prices set` | `seven` | `click(pickRow)`, `click(prices)`, `click(applyPrices)` | the panel folded, row 1 priced, the money picker now drawn (first price on the list), the toast "Цены проставлены (1)" - `timed: true` |
+| `#/lists/a ~ batch deleted` | `seven` | `click(pickRow)`, `click(delOne)` | six rows, the bar off, the toast "Убрано из списка (1)" with `Вернуть` - `timed: true` |
+
+`NAME` gains `pickRow`, `prices` (`Цены`/`Prices`), `delOne` (`Удалить (1)`/
+`Delete (1)` - **exact**, because the action row's delete-list button is
+named exactly `Удалить` and `click()` prefers an exact match, so the short
+name would delete the list), `clearPriceOne` (`Убрать цену (1)`/`Clear price
+(1)`), `applyPrices` (`Проставить эти цены`/`Set these prices`), `discount`
+(`Сделать скидку`/`Discount`), and the `rp` field's name as `numBox` gives
+it. `listAddress`'s `only` list gains the five ids.
+
+Press specs, each `presses: true`:
+
+- `reorderedByDrag` - above.
+- `guessedPrices` (`only: ['#/lists/a']`): `pickRow`, `prices`,
+  `applyPrices`; `gold` of `ci1` from storage; `undo` (`NAME.undo` -
+  `Вернуть` is both `undo` and `repriceUndo`); `gold` again. Return both and
+  the hash.
+- `repricedRows` (`only: ['#/lists/a ~ noted']`): `pickRow` nth 1, `prices`,
+  `discount`; `ci2.gold` (600); `undo`; `ci2.gold` (750).
+- `clearedPrices` (`only: ['#/lists/a ~ noted']`): `pickRow` nth 1, `prices`,
+  `clearPriceOne`; `ci2.gold` (absent); `undo`; (750).
+- `batchDeleted` (`only: ['#/lists/a ~ noted']`): `pickRow` nth 1, `delOne`;
+  ids and `meta` from storage; `undo`; ids and `meta` again (ci2 back at
+  index 1 with its qty, gold and both notes).
+
+Before writing the `~ prices set` state, confirm on the live app that `ci1`
+gets a band (a core item in the alternate tables has a rarity); if it does
+not, the apply returns early with no toast and the state must tick a row
+that does - pick by evidence, then record which.
+
+#### Ordered steps
+
+Two commits, in this order. Steps 1-4 are commit 1; 5-13 are commit 2.
+Each ends with its own green `set -o pipefail; npm run check 2>&1 | tail -n
+120` (one foreground call, Bash timeout 600000) immediately before `git
+commit` - doc edits change the tree fingerprint, so the check comes after
+the docs, not before.
+
+1. `ports/types.ts` (`DragHandlers`), `ports/drag.ts` rewritten as above,
+   `ports.test.ts` cases. `npx vitest run app/src/ports` green.
+2. `ListPage.svelte`: `dragFrom`/`dragMark`, the three callbacks in the
+   bind, the three `class:` bindings, the three rules; `listPage.test.ts`
+   class cases.
+3. `tests/parity/driver.js` `drag()`; `tests/parity/specs.js`
+   `reorderedByDrag` + `SPECS` registration.
+4. `npm run check`; `npm run build`; `MSYS_NO_PATHCONV=1 node
+   tests/parity.js "#/lists/a @"` - six cells `совпадает` and the spec's
+   `first`/`second` equal on both apps. If the live side's synthetic drag
+   does not move the entry, the verb is wrong, not the app: fix the verb
+   (the live handlers are the specification). Commit `feat(lists): drag as
+   the live app does it`.
+5. `dict.ts` keys; `lib/money.ts` `guessWhy` (+ the VoA tier-name reuse),
+   `money.test.ts`.
+6. `ListPage.svelte`: `guess`, `rp`, `ticked`, `pricedCount`; the
+   `.batch-acts` pair (with whatever `Button` needs for the caret's open
+   form and `aria-expanded` - reuse first); the `.guess` panel; the four
+   handlers; the rules; nit 3's tokens; nit 5's comment line.
+7. `listPage.test.ts` cases above.
+8. `specs.js`: the five states, the `NAME` entries, the four press specs,
+   `listAddress`'s `only`, the "Recorded, not keyed" paragraph above
+   `ACCEPTED`.
+9. `npm run check` green (fix, do not skip; if the host is loaded, read
+   `.claude/README.md` "Run a long check" and `context.md` "The host block
+   lifted" before retrying).
+10. `npm run build`, then the parity loop, one foreground call per group,
+    none merged, `MSYS_NO_PATHCONV=1` in front of each:
+    `node tests/parity.js "~ a row ticked" "~ prices"` (3 states - the
+    substring `~ prices` also matches `~ prices, none priced` and `~ prices
+    set`; confirm the count in the run header - 18 cells plus the timed
+    one); `node tests/parity.js "~ batch deleted"` (6 cells); the
+    regression `node tests/parity.js "#/lists/a @" "#/lists/a ~ noted" "~
+    money help" "~ roll panel" "~ rolled" "~ removed" "~ note opened"` (7
+    states, 42 cells); `node tests/parity.js "#/lists/b" "#/lists/nope"
+    "own list"` (18 cells). If `Button.svelte` or `NumberField.svelte`
+    changed, also `node tests/parity.js "#/tables @" "i/ci1 @" "#/roll/alt
+    @"`. Every cell zero; open a diff image before touching any value.
+11. `npm run check:built` (the screen changes; the bundle budget).
+12. `plan.md` "B5.5 built" (what shipped, exact commands and results, any
+    deviation), `handoff.md` (Status, Completed, Verification, Next batch =
+    B5.6, Deferred: nits 2, 3, 5 closed), `context.md` only for a durable
+    fact learned.
+13. `npm run check` again (the docs moved the fingerprint); commit
+    `feat(lists): the actions under a ticked selection`. No push.
+
+#### Acceptance criteria
+
+- `npm run check` exit 0 before each commit; coverage thresholds met with
+  `drag.ts` and `money.ts` reached by the new cases.
+- All eleven `#/lists/a*` states, `#/lists/b`, `#/lists/nope` and `#/l/ ~
+  own list` read `совпадает` in both languages at 1100, 768 and 375 - the
+  six pre-existing list-page states included (nit 3's tokens and the
+  `Button` change must not move a pixel).
+- `reorderedByDrag`, `guessedPrices`, `repricedRows`, `clearedPrices`,
+  `batchDeleted` observe the same data on both apps.
+- `npm run check:built` exit 0.
+- No `VISUAL_DEBT` entry written from this host; no `ACCEPTED` entry added.
+- `ListPage.svelte` carries no `23px`, `680` or `-0.01em` literal; its
+  "Local state" comment lists `rp` and `guess`; `specs.js` carries the
+  "Recorded, not keyed" paragraph.
+- `handoff.md` "Deferred" marks B5.4a nits 2, 3 and 5 closed by this batch
+  and nit 1 as B5.6's.
+
+#### Risks and do-nots
+
+- Do not port `.batch-price`; it is dead in the live app.
+- Do not name the batch delete button `Удалить` in `NAME`; the exact-match
+  rule would press the list's own delete. `Удалить (1)`.
+- Do not put `rp`/`guess` on `AppState`; component-local and recorded, the
+  way `roll`/`moneyHelp` went (nit 5 is the record, not a reversal).
+- Do not add an `ACCEPTED` entry for the chips (nit 2): a stale key fails
+  the run.
+- Do not add a store method for the batch writes; loop the ones that
+  exist.
+- Do not toggle the drag classes from the port: Svelte drops the unmatched
+  scoped rule and the check fails it as dead CSS.
+- Do not attempt a mid-drag pixel state; a synthetic drag paints no drag
+  image on either side.
+- The tick must survive the harness's `EN` press: keep `lsel`, `guess`,
+  `rp` outside any `{#key app.lang}` block.
+- `timed: true` on `~ prices set` and `~ batch deleted` only.
+- Do not write a `VISUAL_DEBT` number from this host.
+- Do not start B5.6's shared branch, `HitNote`, `TableRows`'s `tail` or
+  the packed expansion "while in the file".
+- Two commits, no push, no `Co-Authored-By`.
+
+#### Decided in planning - do not reopen
+
+- **B5.4b is inside B5.5**, as its first commit. See "B5 remainder
+  planned".
+- **The port reports, the component classes.** Forced by scoped CSS.
+- **`drag()` is index-based.** Both apps render `.lrow` in list order.
+- **`rp` and `guess` are component-local**, recorded beside `roll` and
+  `moneyHelp`. Observable only as the percentage field forgetting a typed
+  value across a navigation; no state pixel sees it.
+- **The money chips keep `aria-pressed`; no `ACCEPTED` entry.** Nit 2.
+- **No new store methods.** Per-row `setMeta`/`removeEntry`/`restoreEntry`
+  loops.
+- **The rules come from `style.css` line by line, not from a measurement
+  pass**, and the harness proves them - a non-zero cell is a port defect
+  until the diff image says otherwise.
+
+#### B5.6 outlined: the shared page, the packed link, the bad link
+
+The second and last lists batch. Everything below is a reader of a payload
+the writer side already produces and the fixtures already freeze; no
+contract changes.
+
+- **Packed expansion, in `AppState`** (`state/app.svelte.ts`), off
+  `expandHash` (app.js 3589-3603): when the route is `sharedList` with
+  `packed`, `await env.compress.unpack(payload)` then `router.replace('#/l/'
+  + plain)`; on rejection `router.replace('#/l/zzzz')` so the page says the
+  link is damaged rather than hanging. `currentRoute` treats an unexpanded
+  packed hash as `l/zzzz` while it waits; the rewrite's `ListPage` draws
+  the `todo` paragraph for `packed: true` today (`own` is `null`) and
+  should draw nothing until the replace lands. `browserCompress.unpack`
+  exists and is tested; `ListsPage`'s restore is its first caller, this is
+  the second.
+- **`SharedListPage.svelte`**, rendered by `ListPage.svelte`'s `{:else if
+  !own}` branch (replacing the `todo` paragraph), off `renderSharedList`
+  (3130-3170): `decodeList(payload, knows)`; `null` → `<h1 class="page-h">
+  notFound</h1><p class="page-sub">badShare</p>` and a `Button
+  variant="primary" href={sectionHash('roll/std')} sameTab` `toStart`.
+  Else: `h1` the name or `untitled`; `page-sub` `sharedList · N
+  <plural>` (`itemsWord` in `lib/i18n.ts` is the rewrite's `plural`);
+  `<div class="card-acts" style="margin-bottom:18px">` with `AddToList`
+  keyed `'@'` (`N_SHARED`), `ids`, `primary`; the two list hitnotes when
+  present, in a `margin-bottom:18px` wrapper; then `TableRows` in list
+  view with `entries` carrying a new `tail?: string` (`x{qty} · price` off
+  `itemMeta` and `moneyMode(fake)`, joined with ` · `; `×` is U+00D7 - port
+  the byte) - **this is nit 1's use of `RowMain`'s `tail`**; if the row
+  needs anything `TableRows` cannot give, delete `tail`/`.rtail` from
+  `RowMain` instead and say why - with `selected`/`ontoggle` wired to
+  `app.sel` (the live rows carry `selBox`, so the selection bar works on a
+  shared list) and no `ontoggleall` (no `.selall` on the live page); per-row
+  hitnotes after each row when the entry carries them.
+- **`HitNote.svelte`** on its second use: `ListPage.svelte` ~434 draws the
+  rolled entry's hitnotes inline today; the shared page is the second
+  caller, so both become the component (icon, label, the text split on
+  `\n` into `<br>`s), and the inline copy goes. Rules off `.hitnote` and its
+  four (style.css 626-633).
+- **`AddToList` learns to take a whole list.** One prop, `fresh?: { name:
+  string; meta?: ...; note?: string; hnote?: string }`: the new-list draft
+  starts as `fresh.name` (app.js 4206-4209, `newListFor === N_SHARED`), and
+  `createFor` becomes `app.lists.create(draft, { ids, meta, note, hnote })`
+  - `create(name, init)`'s second caller, which closes B5.3's nit 5 -
+  followed by the `addedTo` toast and `goToList`. Adding to an *existing*
+  list copies ids only (4218-4224: "into a ready list the GM's notes are not
+  poured").
+- **States** (no storage unless said): `#/l/ ~ shared` (the `own list`
+  payload with nothing seeded → seven plain rows, no notes, the add
+  control, no bar); `#/l/ ~ shared, noted` (route =
+  `docs/fixtures/lists/notes-both-kinds.json`'s `gm.payload`: both list
+  hitnotes, `ci1` with both entry hitnotes, no tails - and a second seed
+  variant or `qty-and-price.json`'s payload for the tails, whichever the
+  fixture set covers; pick by reading the fixtures); `#/l/ ~ packed` (the
+  packed form of the `shared, noted` payload, computed once with Node's
+  `zlib.deflateRawSync` in the scratchpad and pasted with a comment naming
+  the command; pixels identical to the plain state, the address spec proves
+  the rewrite); `#/l/zzzz` (the bad-link page). A ticked row on the shared
+  page is the selection bar's state already covered on `#/tables`; a press
+  spec, not a pixel state.
+- **Specs**: `tookSharedList` (`only: ['#/l/ ~ shared, noted']`):
+  `addToList`, `+ Новый список`, the create button → storage holds one list
+  with the name, both notes and `ci1`'s meta; hash is `#/l/<its own
+  players' payload>`. `addedSharedToList` (`only: ['#/l/ ~ shared']`,
+  `storage: two`): `addToList`, the chip `Клад дракона` → list `a` holds
+  the seven ids and no notes. `listAddress` gains all four ids - `~ packed`
+  must read the plain hash on both apps.
+- **Filters**: `"#/l/"` covers every state; the regressions are `"i/ci1 ~"`
+  (the `AddToList` change) and `"#/tables @"` (`TableRows`), and
+  `"#/lists/a ~ rolled"` (the `HitNote` extraction).
+- Verification: `npm run check`, the filters, `npm run check:built`. One
+  commit.
 
 ## Phase 5 - what already exists
 

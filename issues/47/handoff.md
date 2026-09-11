@@ -6,6 +6,22 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B5 remainder planned; B5.5 (the list page complete - drag
+  as the live app does it, and the actions under a ticked selection; it
+  absorbs B5.4b) is implement-ready** (planner, 2026-09-11, on `3cb2bd0`,
+  working tree clean but for the orchestrator's own `context.md` kickoff
+  section, which is kept). Two batches remain, not three: B5.5, then B5.6
+  (outlined). The split, the sizing evidence and the four rejected
+  alternatives are in `plan.md`, "B5 remainder planned". The standing
+  batch-sizing rule landed in `CLAUDE.md`, "Task and session protocol",
+  with its measured costs and the test for where the line is in
+  `docs/parity.md`, "Batch size and the fixed cost of a run". B5.4a's six
+  review nits are assigned, not re-deferred: 1 to B5.6; 2 decided (no
+  `ACCEPTED` entry - a stale key fails the run; recorded as prose by B5.5);
+  3 and 5 to B5.5; 4 and 6 stay recorded. No production code touched; no
+  check run (a planning pass needs none). HEAD did not move under this
+  session. NEEDS_HUMAN_CONFIRMATION: no.
+
 - Task status: **B5.4a's one-blocker remediation pass is built, verified, and
   committed** (implementer, 2026-09-11, on top of `8873473`). The reviewer's
   one blocker - the list row grip missing `draggable="true"`, so no
@@ -1715,22 +1731,124 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B5.4a is closed** (this session) - built, verified, reviewed and
-committed. Three commits carry it: `f38b900` (step 0, the harness fix),
-`8873473` `feat(lists): the list page` (steps 1-13), and `fe38973`
-`fix(lists): make the list row grip draggable` (the reviewer's one blocker,
-the single remediation cycle the protocol allows). The review verdict was
-fix-then-continue; after the fix no blocker remains and its six nits are in
-"Deferred". The brief that stood here (implement-ready, steps 0-13) is
-retired to `plan.md`, "B5.4a built". Do not reopen it.
+**B5.5 - the list page complete: drag as the live app does it, and the
+actions under a ticked selection.** Implement-ready; planned 2026-09-11 on
+`3cb2bd0`. It absorbs the former B5.4b as its first commit. The full design,
+the live-app reading with line numbers, the tests and the parity table are
+in `plan.md`, "B5.5 planned"; the split decision and its rejected
+alternatives are in "B5 remainder planned". What follows is the brief.
 
-What is left of the lists slice: **B5.4b (drag as the live app does it -
-outlined, not planned, in `plan.md`, "B5.4b outlined"), B5.5 (the batch
-bar's actions under a ticked selection) and B5.6 (the shared page, packed-
-link expansion, taking a shared list)** - all three unplanned. Picking and
-planning the next of them is the orchestrator's / planner's call, not this
-session's; this batch's own instructions were explicit not to start any of
-the three.
+- **Name:** B5.5 (two commits: `feat(lists): drag as the live app does it`,
+  then `feat(lists): the actions under a ticked selection`).
+- **Objective:** `#/lists/<id>` does everything the live list page does.
+  Drag by the grip marks the row under the pointer above/below its midpoint
+  (`drop-before`/`drop-after`), dims the dragged row (`dragging`), scrolls
+  from either edge, and drops where the mark said (app.js 4443-4530). A
+  ticked row puts `Цены` (caret, `aria-expanded`) and `Удалить (N)` on the
+  bar's right (`.batch-acts`, app.js 724-745); `Цены` unfolds the `.guess`
+  panel (750-782): the percentage row (only when a ticked row is priced),
+  the note, one line per ticked row with band and suggested price,
+  `Проставить эти цены`, `Убрать цену (N)` (only when priced). Four handlers
+  (3986-4083), each toasting with an undo. At 640px and under the pair drops
+  to its own full-width line (style.css 1084).
+- **In scope:** `app/src/ports/types.ts` (`DragHandlers` gains optional
+  `onDrag(from)`, `onOver(over, 'before'|'after'|null)`, `onEnd()`);
+  `app/src/ports/drag.ts` rewritten to the live event model with a pure
+  exported `edgeSpeed(y, innerHeight)`; `app/src/ports/ports.test.ts`;
+  `app/src/components/ListPage.svelte` (drag class bindings + three rules;
+  `guess`, `rp`, `ticked`, `pricedCount`; the pair, the panel, the four
+  handlers, ~15 rules; nit 3's tokens; nit 5's comment line);
+  `app/src/components/listPage.test.ts`; `app/src/lib/dict.ts` (the missing
+  keys, byte-exact from app.js ru 116-188 / en 302-372); `app/src/lib/money.ts`
+  (`guessWhy`, and confirm `reprice`); `app/src/lib/money.test.ts`;
+  `app/src/components/Button.svelte` only if the caret's open form or
+  `aria-expanded` is missing (reuse first); `tests/parity/driver.js`
+  (`drag(from, to, after)` by row index, synthetic `DragEvent`s with one
+  `DataTransfer`); `tests/parity/specs.js` (five states, five press specs,
+  `NAME` entries, `listAddress`'s `only`, the "Recorded, not keyed"
+  paragraph above `ACCEPTED`).
+- **Out of scope:** the shared page, packed expansion, `#/l/zzzz`,
+  `SharedListPage`, `HitNote`, `TableRows`'s `tail` (all B5.6); new store
+  methods; `Badge`/`Row`/`Panel` components; `CONTRACTS.md`, fixtures,
+  `ROUTES.md`, `STATE.md`, `llms.txt` (nothing here touches a route, key or
+  payload); `.batch-price` (dead in the live app).
+- **Files expected:** the eleven paths above, plus `issues/47/plan.md`
+  ("B5.5 built"), this file, and `issues/47/context.md` only for a durable
+  fact.
+- **Steps** (`plan.md`, "Ordered steps", 1-13; commit 1 = steps 1-4,
+  commit 2 = steps 5-13):
+  1. Types, port, port tests. `npx vitest run app/src/ports` green.
+  2. `ListPage.svelte` drag state, callbacks, `class:` bindings, the three
+     rules (replacing the ~1246 comment); class cases in `listPage.test.ts`.
+  3. Driver `drag()`; spec `reorderedByDrag` (`presses: true`, `only:
+     ['#/lists/a']`: drag 0 after 2 → ids; drag 2 before 0 → ids; return
+     both and the hash); register in `SPECS`.
+  4. `npm run check`; `npm run build`; `MSYS_NO_PATHCONV=1 node
+     tests/parity.js "#/lists/a @"` - six `совпадает`, the spec equal on
+     both apps (if the live side does not move, fix the verb, not the app).
+     Commit 1.
+  5. Dict keys; `guessWhy` (reuse the rewrite's VoA tier-name helper if one
+     exists - grep first); `money.test.ts`.
+  6. The bar's pair, the panel, the four handlers through existing
+     `store.setMeta`/`removeEntry`/`restoreEntry` loops and `app.say(msg,
+     { action })`; the rules; nit 3's tokens; nit 5's comment.
+  7. `listPage.test.ts` cases (`plan.md`, "Tests").
+  8. `specs.js`: states `~ a row ticked`, `~ prices`, `~ prices, none
+     priced`, `~ prices set` (timed), `~ batch deleted` (timed); `NAME`
+     `pickRow`, `prices`, `delOne` (`Удалить (1)` - exact, see do-nots),
+     `clearPriceOne`, `applyPrices`, `discount`, the `rp` field's name;
+     specs `guessedPrices`, `repricedRows`, `clearedPrices`, `batchDeleted`;
+     `listAddress`'s `only`; the "Recorded, not keyed" paragraph.
+  9. `npm run check` green.
+  10. `npm run build`; parity groups, one foreground call each, none
+      merged, `MSYS_NO_PATHCONV=1` in front: `"~ a row ticked" "~ prices"`;
+      `"~ batch deleted"`; the regression `"#/lists/a @" "#/lists/a ~
+      noted" "~ money help" "~ roll panel" "~ rolled" "~ removed" "~ note
+      opened"`; `"#/lists/b" "#/lists/nope" "own list"`; and, only if
+      `Button.svelte` or `NumberField.svelte` changed, `"#/tables @" "i/ci1
+      @" "#/roll/alt @"`.
+  11. `npm run check:built`.
+  12. Docs: `plan.md` "B5.5 built", this file (Status, Completed,
+      Verification, Next batch = B5.6, Deferred: nits 2, 3, 5 closed),
+      `context.md` if warranted.
+  13. `npm run check` again (docs move the fingerprint); commit 2. No push.
+- **Acceptance criteria:** `npm run check` exit 0 before each commit with
+  thresholds met; every `#/lists/a*` state (the six existing and the five
+  new), `#/lists/b`, `#/lists/nope`, `#/l/ ~ own list` read `совпадает` in
+  both languages at 1100/768/375; the five press specs observe the same
+  data on both apps; `npm run check:built` exit 0; no `VISUAL_DEBT` from
+  this host; no `ACCEPTED` entry added; no `23px`/`680`/`-0.01em` literal
+  left in `ListPage.svelte`; `rp`/`guess` listed in its "Local state"
+  comment; the "Recorded, not keyed" paragraph in `specs.js`; "Deferred"
+  below updated for nits 1, 2, 3, 5.
+- **Verification commands:** `set -o pipefail; npm run check 2>&1 | tail
+  -n 120` (one foreground call, Bash timeout 600000, immediately before
+  each commit); `npm run build`; the `MSYS_NO_PATHCONV=1 node
+  tests/parity.js ...` groups in step 10; `npm run check:built`.
+- **Risks / do-nots:** do not port `.batch-price`; do not name the batch
+  delete `Удалить` in `NAME` (the action row's delete-list button is named
+  exactly that and `click()` prefers an exact match - it would delete the
+  list); do not put `rp`/`guess` on `AppState`; do not add an `ACCEPTED`
+  entry for the chips (a stale key fails the run); do not toggle the drag
+  classes from the port (Svelte drops the unmatched scoped rule; the check
+  fails it as dead CSS); do not attempt a mid-drag pixel state; keep
+  `lsel`/`guess`/`rp` outside any `{#key app.lang}` block (the harness
+  presses `EN` after `enter`); `timed: true` on the two toast states only;
+  confirm on the live app that `ci1` gets a band before writing `~ prices
+  set` (else pick a row that does and record it); no `VISUAL_DEBT` number
+  from this host; do not start B5.6 while in the file; two commits, no
+  push, no `Co-Authored-By`.
+- **Fallback:** none needed. If the synthetic `DragEvent` cannot be made to
+  drive the **live** app's handlers in puppeteer's Chrome after an honest
+  attempt, land commit 1 with the port, the classes and the unit tests, drop
+  `reorderedByDrag` and the verb, and record in `plan.md` "B5.5 built" that
+  the drag path is proved by `ports.test.ts` and `listPage.test.ts` only -
+  the same gap B5.4a's review named, now written down rather than left.
+
+After B5.5: **B5.6** (the shared page, packed-link expansion, the bad-link
+page, taking a shared list) - outlined in `plan.md`, "B5.6 outlined", to be
+made implement-ready by the planner at B5.5's close-out. It closes B5.4a's
+nit 1 and B5.3's nit 5.
 
 - **NEEDS_HUMAN_CONFIRMATION: no.**
 
@@ -2136,6 +2254,16 @@ the three.
 
 ## Deferred
 
+- **B5.4a's six nits, assigned (planner, 2026-09-11)** - see `plan.md`,
+  "B5 remainder planned", the nit table. Nit 1 (`RowMain`'s `tail`) is
+  B5.6's to use through `TableRows` on the shared page or delete. Nit 2
+  (the money chips' `aria-pressed`) is decided: **no `ACCEPTED` entry** -
+  `d.controls()` reads names only, so no key differs, and `parity.js` fails
+  a run on a stale key; B5.5 records it as prose above `ACCEPTED`. Nits 3
+  (the hardcoded heading values) and 5 (`rp`/`guess` joining the
+  component-state list) are B5.5's. Nits 4 and 6 are notes and stay as
+  written below.
+
 - **B5.4a's review against `8873473`: fix-then-continue, one blocker, six
   nits** (reviewer, then implementer, 2026-09-11). The blocker (the grip's
   missing `draggable="true"`) is fixed - see "Blockers" and `plan.md`,
@@ -2463,7 +2591,10 @@ the three.
 
 ## Notes
 
-- Mocks path: none for B5.3 either - the index is transcribed from the live
+- Mocks path: none for B5.5 either - the bar's actions, the money panel and the drag marks are
+  ported from `app.js`/`style.css` line by line (references in `plan.md`,
+  "B5.5 planned"); no measurement pass was taken in planning, the harness proves the port.
+  None for B5.3 either - the index is transcribed from the live
   DOM and measured (`context.md`, "B5.3 planning facts"); the probe scripts
   lived in the session scratchpad and were not kept. B3.5, B3.6 and B4 introduce no new UI; every value B4
   draws is already in `style.css` and `app.js`, and the tier body reuses B3's

@@ -47,6 +47,13 @@ Task state belongs under `issues/<id>/`:
 
 When asked to continue, report status and the next batch, then wait for confirmation. Implement only that batch unless the human changes scope.
 
+Size a batch by its gates, not its diff: `npm run check`, `check:built` and a
+parity filter cost the same minutes for eight paths as for forty, so merge work
+that shares a component, seed and parity filter. Split only at a public-contract
+change, a different route and filter set, or a commit the harness cannot reach;
+never plan a batch whose check cannot finish one foreground call or whose review
+cannot be held in one pass. Costs and the test: `docs/parity.md`, "Batch size".
+
 When the human says stop, handoff, or the session is ending:
 
 1. Start no new work.
@@ -103,19 +110,8 @@ npm run check
 ```
 Agents: one foreground call, `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
 
-If a change alters what a screen draws, also run:
-
-```text
-npm run check:built
-```
-
-Useful focused commands:
-
-```text
-npm run test
-node tests/run-all.js
-node tests/run-all.js eqtest,qa
-```
+If a change alters what a screen draws, also run `npm run check:built`.
+Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js eqtest,qa`.
 
 Definition of done: checks pass, fixed defects and changed behaviour have
 meaningful coverage, specs and fixtures match, and the handoff records exact
