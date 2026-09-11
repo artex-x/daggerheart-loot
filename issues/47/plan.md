@@ -56,7 +56,8 @@ Both are below, after "B3 built".
 Not built. Each is `pending` in `tests/parity/specs.js`, so the expectation is
 already being collected against the live app:
 
-- `#/search` - the search slice
+- `#/search` - the search slice. **Planned 2026-09-11 as one batch, B6;
+  implement-ready - see "B6 planned"**
 - `#/print/ci1-q1` - the print slice
 
 **`#/lists` - the lists slice - is done as of B5.6.** Built across six
@@ -7668,6 +7669,584 @@ has no `todo` element or rule, no `hitnote` snippet and no `.hitnote` rule;
 `handoff.md`'s "Deferred". This closes the lists slice; B5.6 was its last
 batch.
 
+### B6 planned: the search slice - one batch (planner, 2026-09-11)
+
+Picked by the orchestrator on 2026-09-11 over print (`context.md`, "State at
+the search-slice kickoff"): search reuses the row, the select-all bar, the
+selection bar and the kind chips wholesale, whereas print is a from-scratch
+visual surface whose evidence is the Figma nodes and the Figma connector is
+unauthenticated. The pick is not reopened here; this section scopes it.
+
+**Objective.** After this batch `#/search` draws what the live `renderSearch`
+draws: the page head (`Поиск`, the pin button, the sub line, no help), one
+panel holding the search box - focused on arrival - and the three kind chips
+(`Предметы`, `Расходники`, `Снаряжение`, all on, the last one on refusing to
+go), and under it one of three bodies: the hint `Начните вводить запрос`
+while nothing is typed, or `Выбрать все (N)` over up to 300 rows of loot and
+gear together in catalogue order, or `Ничего не найдено`. A ticked row raises
+the selection bar; a row opens the record modal. Switching a kind off on
+search switches it off on Core rules and the alternate tables too, the way
+the live `S.kind` does. The `pending` on `#/search` in `tests/parity/specs.js`
+goes. After this batch the only Phase 4 slice left is print.
+
+**In scope.** `lib/types.ts` (`KINDS`), `lib/dict.ts` (two keys),
+`lib/search.ts` (`statLineFor`) + test, `state/app.svelte.ts` (`kinds`,
+`toggleKind`) + test, `components/SearchBox.svelte` (new, second use of the
+search input), `components/SearchPage.svelte` (new),
+`components/searchPage.test.ts` (new), `components/Field.svelte` (`label`
+optional), `TablesPage.svelte` (the box and the stat line move out),
+`StdPanel.svelte` and `AltPanel.svelte` (`kinds` moves up), `App.svelte`
+(the route, and the dead section fallback goes), `components/a11y.test.ts`
+(`COVERED` x2, one state), `tests/parity/driver.js` (`count`),
+`tests/parity/specs.js` (seven states, three spec changes, two new specs -
+one of them the carried `~ packed` throw), `docs/specs/COVERAGE.md` (one
+row), `docs/specs/FEATURES.md` (the 300 cap, one clause).
+
+**Out of scope.** Any change to `CONTRACTS.md`, `docs/fixtures/`,
+`tests/contracts.js`, `ROUTES.md`, `llms.txt` - `#/search` is a plain
+section route with no grammar of its own. `STATE.md` - the kind filter is
+already listed there as memory-only, which is what it stays. A `.panel`
+component (sixth inline copy; recorded in the handoff's Deferred with the
+`.page-h` one, not done here). `S.search.q` surviving a route change in
+memory (see "Decided"). `ListPage.svelte:103`'s stale comment - this batch
+does not touch that file, so it stays recorded. Print.
+
+#### What the live app does, read off app.js and style.css (HEAD `16bc32e`), and measured
+
+Measured in planning with a headless-Chrome probe of
+`file://.../index.html#/search` at 1100x900 (the script lived in the session
+scratchpad and is not kept; the numbers are in `context.md`, "B6 planning
+facts"):
+
+- **The page** (`renderSearch`, 2841-2859; routed at 3574; tab at 3580).
+  `pageHead('search')` (2145-2168): `h1.page-h` `Поиск`, the home button
+  (`homeHash()` is truthy for a section, so it is drawn - measured `home:
+  true`), **no help button** (`t().help` has no `search` key - 201-263,
+  382-445; measured `help: false`), `p.page-sub` `Поиск по всем 1061 позиции
+  сразу — добыча, расходники и снаряжение, на русском и на английском.` /
+  `Search all 1061 entries at once — loot, consumables and equipment, in
+  Russian and English.` (268, 449). Then `<div class="panel"
+  style="margin-bottom:16px">` holding `<div class="field"><input
+  type="search" id="sq" value=... placeholder=t().searchPh autofocus></div>`
+  and `kindChips()`, then the body.
+- **The box is focused on arrival.** `document.activeElement.id` reads `sq`
+  on a fresh open of `#/search`, and the input's border reads
+  `rgb(216,171,94)` - `input[type=search]:focus` (style.css 258) is painted
+  in the first shot. Do not reason this away from the autofocus spec; it is
+  measured. Computed: `15.5px Inter`, height `46px`, padding `0 14px`
+  (style.css 254-257). The `.panel` margin-bottom is `16px` (inline), the
+  input's `.field` is `16px` (150), the chips' `.field:last-child` is `0`
+  (151).
+- **The chips** (`kindChips`, 2114-2127, over `KINDS` 2110): `<div
+  class="field"><span class="lbl">Тип</span><div class="chips">` and one
+  `button.chip` per kind, `.on` and `aria-pressed` off `S.kind[k]`; the last
+  one on carries `data-last="1"` and `title=t().keepOneKind`. The handler
+  (4160-4164) toasts `keepOneKind` as an error and does nothing when
+  `data-last` is set, else flips `S.kind[val]` and renders. `kindOf` (2131)
+  is `equip` for anything with `eq` - the eleven Wondrous weapons stored as
+  items obey the equipment chip, per the comment at 2128-2130 - and
+  `kindAllows` (2132) reads `S.kind`. **`S.kind` is one object (60) shared
+  by Core rules, the alternate tables and search**, never persisted
+  (`tests/behave.js` 262-267 proves it resets on reload) and not cleared on
+  `hashchange` (4628-4636 clears `sel`, `lsel`, `menuFor`, `newListFor`
+  only).
+- **The body** (2842-2851). `q = S.search.q.trim().toLowerCase()`. Empty:
+  `<div class="empty">Начните вводить запрос</div>` / `Start typing` -
+  **inline strings, not dictionary keys** (2845). Otherwise `res =
+  SEARCHABLE.filter(kindAllows(kindOf(x)) && matches(x, q)).slice(0, 300)`
+  where `SEARCHABLE = ALL.concat(EQ)` (23) - the rewrite's
+  `index.searchable` is `[...all, ...eq]` (`lib/data.ts` 144), the same
+  order - and `matches` (2834-2840) is `lib/search.ts`'s `matches` with
+  `eqLine(it)` *with* the type word as the stat line (the rule
+  `TablesPage.svelte` already documents on its own `statLine`). Hits:
+  `selectAllHTML(res)` (2763-2773 - the `.selall` label, `Выбрать все (N)`)
+  then `<div class="rows">` of `rowHTML(it)` (2785-2803: `selBox`
+  2810-2815 with `aria-label=t().selected`, `.sel` off `S.sel`, `rnum` off
+  `it.roll`, no tail). No hits: `<div class="empty">t().nothing</div>` -
+  **no reset button** (that is the tables' `resetAll`, tied to facets).
+  Measured row counts, the parity states are chosen off them: `кольцо` 12,
+  `зелье` 40, `меч` 87 (34 with `Снаряжение` off - equipment gone, no
+  `eq-*` badge left), `а` and `о` 300 (the cap; `Выбрать все (300)`),
+  `zzzqqqxx123` 0 with `.empty`.
+- **Typing** (4333): `S.search.q = el.value; render()` on every `input`
+  event; `keepFocus`/`restoreFocus` (3740-3762) put the caret back after the
+  redraw. A chip press likewise re-focuses the chip (measured
+  `activeElement` `BUTTON` after the press) - the rewrite gets both for free
+  by not redrawing.
+- **Selection and the modal.** `S.sel` is the same app-wide object the bar
+  reads (B5.2); `tests/select.js` 106-112 proves `.selall` on search takes
+  "all of what was found". `data-open` on a row opens the modal (the same
+  handler as the tables); `hashchange` closes it.
+- **CSS**: `.panel` 145-149 (+ the inline 16px), `.field`/`.lbl` 150-152,
+  `.chips`/`.chip`/`.chip.on` 155-163, `input[type=search]` and `:focus`
+  254-258, `.empty` 524-525, `.rows`/`.row` 547+ - all but the first two
+  already ported (`Field`, `ChipRow`, `Chip`, `Empty`, `TableRows`,
+  `RowMain`; the input rule sits in `TablesPage.svelte` as `.toolbar
+  input[type='search']`).
+
+#### What is reused, and what is new
+
+| piece | live | rewrite | this batch |
+|---|---|---|---|
+| page head | `pageHead('search')` | `PageHead` (`help={null}` draws no button) | reuse; `dict.subSearch` added |
+| the search box | `input#sq` in `.field` | `TablesPage.svelte`'s toolbar input and its two rules | **`SearchBox.svelte`, extracted on this second use**; `TablesPage` uses it |
+| the labelless field | `.field` around the input | `Field.svelte` requires `label` | `label` becomes optional - the one difference this caller needs |
+| the kind chips | `kindChips()` over `KINDS` | `Field` + `ChipRow` + `Chip` in `StdPanel`/`AltPanel` over `LOOT_KINDS`, each with its own `kinds` and `toggleKind` | reuse the three components; **`kinds` and `toggleKind` move to `AppState`** (third owner, shared in the live app) |
+| the two empties | `.empty` | `Empty.svelte` | reuse; `dict.startTyping` added |
+| select-all + rows | `selectAllHTML` + `rowHTML` | `TableRows` (`ontoggleall` draws `.selall`), `RowMain` | reuse, `view="list"` |
+| the match | `matches` | `lib/search.ts` `matches`; the stat line built inline in `TablesPage` | `statLineFor(lang, t)` in `lib/search.ts`, both pages call it |
+| the cap | `.slice(0, 300)` | - | `SearchPage` slices; unit-tested |
+| the bar, the modal | `renderSelBar`, `openModal` | `SelBar` via `Shell`, `RecordModal` | reuse; `open` cleared on `app.navigations` as `TablesPage` does |
+| the route | `ROUTES.search` | `App.svelte`'s section fallback (`h1` + `.todo`) | `SearchPage`; the fallback and its `h1` rule go - every section now has a page |
+
+Genuinely new: `SearchPage.svelte` (the composition, ~120 lines of which
+half is the `.panel` copy and the `.miss` line), `SearchBox.svelte` (the
+input, its two rules, a `focus` prop), `AppState.kinds`/`toggleKind`,
+`statLineFor`, the `count` driver verb, and the strings.
+
+#### How it is built
+
+- **`lib/types.ts`.** `export const KINDS = ['item', 'consumable', 'equip']
+  as const;` and `export type Kind = (typeof KINDS)[number];` replacing the
+  literal union at line 6 - the same shape `SECTIONS`/`Section` already
+  take in the same file. `lib/std.ts`'s `LOOT_KINDS` stays as written (the
+  roll pages' two).
+- **`lib/dict.ts`.** In both blocks, beside `subLists`: `subSearch` (the
+  two sub lines above, verbatim - the `—` is U+2014 and the `1061` is the
+  count `tests/derived.js` checks in six other files; see the handoff's
+  Deferred). Beside `nothing`: `startTyping: 'Начните вводить запрос'` /
+  `'Start typing'`.
+- **`lib/search.ts`.** `export function statLineFor(lang: Lang, t: Pick<Dict,
+  'tier' | 'eqTh' | 'eqScore'>): StatLine` returning `(it) => eqLine(it,
+  lang, { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore })` - the
+  type word kept, with `TablesPage.svelte`'s existing paragraph on why
+  (typing `основное` finds every weapon in the live app) moved here as the
+  doc comment. Imports `eqLine` from `./i18n.js` and the two types; still
+  pure.
+- **`state/app.svelte.ts`.** `kinds = $state<Chosen<Kind>>({ item: true,
+  consumable: true, equip: true })` with a doc comment naming the live
+  `S.kind` (app.js 60): shared by Core rules, the alternate tables and
+  search, memory only (never written to storage), and **not** touched by
+  `go()`, `onChange` or `replace()` - the live `hashchange` listener leaves
+  it alone. `toggleKind(kind: Kind, among: readonly Kind[]): void` - when
+  `isLastOn(this.kinds, among, kind)` it says `this.t.keepOneKind` as an
+  error and returns; else `this.kinds = { ...this.kinds, [kind]:
+  !this.kinds[kind] }`. `among` is the row the chip sits in (`LOOT_KINDS` on
+  a roll page, `KINDS` on search), because "the last one on" is judged
+  among the chips a person can see, exactly as `kindChips(list)` judges it
+  (2119). Amend the header comment's "a roll or a search do not" sentence:
+  the *query* stays with the page; the kind filter is the one piece of
+  asked-for state the live app shares across pages, so it lives here. The
+  `sel` doc comment's "search's rows once that slice exists" becomes "and
+  search's rows".
+- **`StdPanel.svelte`, `AltPanel.svelte`.** Delete the local `kinds`
+  `$state` and `toggleKind`; read `app.kinds` where `kinds` was
+  (`poolFor(index, n, app.source, app.kinds)`, `altPicks(index, rarity,
+  roll, app.kinds)`, `altTables(app.kinds)`, `on={app.kinds[kind]}`,
+  `title={isLastOn(app.kinds, LOOT_KINDS, kind) ? ... }`), and
+  `onclick={() => { app.toggleKind(kind, LOOT_KINDS); }}`. `Chosen<Kind>`
+  is assignable wherever `Chosen<LootKind>` is asked for; `poolFor`,
+  `altPicks`, `altTables` and `isLastOn` need no signature change. Drop the
+  now-unused `Chosen` import where it becomes unused; keep `isLastOn` and
+  `LOOT_KINDS`.
+- **`components/SearchBox.svelte`** (new; second real use of the same
+  element and rules, per `CLAUDE.md`, "Extract shared UI on its second real
+  use"). Props: `value: string`, `placeholder: string`, `oninput: (value:
+  string) => void`, `focus?: boolean` (default false). Markup: `<input
+  bind:this={el} type="search" {value} {placeholder} oninput={(e) => {
+  oninput(e.currentTarget.value); }} />`. Style: the two rules from
+  `TablesPage.svelte` (`width:100%; height:46px; padding:0 14px;
+  border-radius:var(--r-sm); background:var(--bg2); border:1px solid
+  var(--line2); color:var(--txt); font:inherit;` and the `:focus` rule with
+  `outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgb(216
+  171 94 / 14%)`) as `input[type='search']` - off style.css 254-258; the
+  values are identical. Focus: `onMount(() => { if (focus) el?.focus(); })`
+  - explicit, the way `ListsPage.svelte` (50) and `AddToList.svelte` focus
+  their inputs, rather than the `autofocus` attribute (which Svelte 5's
+  runtime turns into a `focus()` gated on `document.activeElement ===
+  body` anyway, and which the compiler flags as an a11y warning under
+  `--fail-on-warnings`). The reason for the prop, in its doc comment: the
+  live `#sq` carries `autofocus` and the search page opens with the box
+  focused and its focus ring painted - measured, see above.
+- **`TablesPage.svelte`.** The toolbar's `<input type="search" ...>` becomes
+  `<SearchBox value={q} placeholder={t.searchPh} oninput={(v) => { q = v;
+  }} />` inside the same `.toolbar .grow`; the two `.toolbar input[type=
+  'search']` rules go. `statLine` becomes `$derived(statLineFor(app.lang,
+  t))` and its long comment shrinks to a pointer at `statLineFor`. Nothing
+  else moves; `#/tables ~ searched` and `#/tables/eq_secondary ~ searched`
+  are the regression cells.
+- **`Field.svelte`.** `label?: string`; the `<span class="lbl">` is drawn
+  only when given. No other change - the `.field`/`.field:last-child` rules
+  are exactly what the search panel's two fields need (16px, then 0).
+- **`components/SearchPage.svelte`** (new). Off `renderSearch`:
+
+  - `const t = $derived(app.t)`, `const index = $derived(app.index)`, `let
+    q = $state('')` (page memory, like `TablesPage`'s - see "Decided"), `let
+    open = $state<Record_ | null>(null)` with the same `app.navigations`
+    effect `TablesPage` uses to drop the modal on a real move; `say` as the
+    other pages define it.
+  - `const query = $derived(q.trim().toLowerCase())`; `const statLine =
+    $derived(statLineFor(app.lang, t))`; `const found = $derived.by(() =>
+    !index || !query ? [] : index.searchable.filter((it) =>
+    app.kinds[kindOf(it)] && matches(it, query, statLine)).slice(0, 300))`
+    - `kindOf` from `lib/data.ts`, the filter before the match as the live
+    line has it, the cap last.
+  - `toggleAllIn(ids)` copied from `TablesPage` (the on/off rule over
+    `app.sel`; four lines - a third copy would be the moment to move it to
+    `AppState`, recorded in the handoff, not done for two).
+  - Markup: `<PageHead {app} title={t.search} sub={t.subSearch} help={null}
+    {say} />`; then `{#if !index}<p class="miss">{t.noData}</p>{:else}`
+    (the `TablesPage` precedent for a dataset that did not load); `<div
+    class="panel">` with `<Field><SearchBox value={q} placeholder=
+    {t.searchPh} focus oninput={(v) => { q = v; }} /></Field>` and `<Field
+    label={t.filter}><ChipRow>{#each KINDS as kind (kind)}<Chip label=
+    {t[KIND_LABEL[kind]]} on={app.kinds[kind]} title={isLastOn(app.kinds,
+    KINDS, kind) ? t.keepOneKind : undefined} onclick={() => {
+    app.toggleKind(kind, KINDS); }} />{/each}</ChipRow></Field></div>`
+    (`KIND_LABEL` = `{ item: 'fItems', consumable: 'fCons', equip:
+    'fEquip' }`, the three-key form of `StdPanel`'s); then `{#if !query}
+    <Empty>{t.startTyping}</Empty>{:else if !found.length}<Empty>{t.nothing}
+    </Empty>{:else}<TableRows entries={found.map((it) => ({ it }))}
+    view="list" {index} lang={app.lang} selected=... artBroken=...
+    ontoggle={(id) => { app.toggleSel(id); }} onartfail=... onopen={(it)
+    => { open = it; }} ontoggleall={toggleAllIn} />{/if}{/if}`; then
+    `{#if open && index}<RecordModal {app} {index} it={open} onclose=...
+    onopen=... />{/if}` exactly as `TablesPage` mounts it.
+  - Style: `.miss` (off `TablesPage`), and `.panel` off style.css 145-149
+    **plus `margin-bottom: 16px`** for the inline style the live markup
+    writes (the `ListsPage.svelte` precedent for an inline margin). Nothing
+    else - every other rule lives in the components it composes.
+- **`App.svelte`.** Import `SearchPage`; add `{:else if app.route.kind ===
+  'section' && app.route.section === 'search'}<SearchPage {app} />` after
+  the `lists` branch; delete the `{:else if app.route.kind === 'section'}`
+  fallback (its `h1` and `.todo` paragraph) and the `h1` style rule, and
+  drop `sectionKey`/`KEYS` from the module script if nothing else reads
+  them (nothing does - check before deleting). The final `{:else}` keeps
+  its `.todo` paragraph for `print` and `unknown`.
+- **`components/a11y.test.ts`.** `COVERED['SearchPage.svelte'] =
+  'searchPage.test.ts, and the searched state with a kind off below'`;
+  `COVERED['SearchBox.svelte'] = "the tables toolbar in tables.test.ts, and
+  the search page's own box below"`. One state: `{ what: 'the search page
+  with a query typed and a kind switched off', route: '#/search', enter:
+  async () => { await userEvent.type(screen.getByPlaceholderText('Поиск по
+  названию или описанию…'), 'вещь'); await press('Снаряжение'); } }` -
+  `вещь` is the word the file's own `LOOT` gives `w1` (`Первая вещь`) and
+  `w2` (`Вторая вещь`), so the state has two rows of two kinds on screen
+  with the third chip off.
+- **`tests/parity/driver.js`.** `count(selector)` - three lines, beside
+  `has`: `return page.$eval(selector, (els) => els.length)` wrapped as the
+  other verbs are. The one thing the search states need that no verb
+  reads: the `inventory` spec sees names, not counts, and dedupes them.
+- **`docs/specs/FEATURES.md`**, "Tables and search", the search bullet:
+  append "; the first 300 matches are shown" (live 2847, previously
+  undocumented).
+- **`docs/specs/COVERAGE.md`**, the unit-suite table: one row for
+  `components/searchPage.test.ts` in the style of its neighbours (what it
+  is held to: `renderSearch`, `kindChips` and the `#sq`/`kind` handlers,
+  app.js 2841-2859, 2114-2132, 4160-4164, 4333).
+
+#### Tests
+
+Every component test ends with `expectNoA11yViolations`; the pressed states
+named below get their own axe pass (`COVERAGE.md`).
+
+- **`lib/dict.ts`**: none needed - a key in one block and not the other
+  fails `svelte-check`.
+- **`lib/search.test.ts`**, new `describe('the stat line the pages
+  search')`: (1) `statLineFor('ru', dict('ru'))` finds `q26` for `катана`
+  (the name path still works through it); (2) `search(index.searchable,
+  'основное оружие', statLineFor('ru', dict('ru')))` returns more than 100
+  records, every one with `eq?.t === 'weapon'` - the type word is in the
+  line; (3) the same line under `'en'` finds nothing for `основное` and
+  something for `primary weapon`.
+- **`state/app.test.ts`**, new `describe('the kind filter')`: (1) a fresh
+  `AppState` has all three on; (2) `toggleKind('consumable', KINDS)` turns
+  it off and raises no toast; (3) with `item` and `equip` already off,
+  `toggleKind('consumable', KINDS)` is refused - `kinds.consumable` still
+  true, `toast` is `{ msg: 'Нужен хотя бы один тип', mode: 'err' }`; (4)
+  over `LOOT_KINDS` the judgement ignores `equip`: with `consumable` off,
+  `toggleKind('item', LOOT_KINDS)` is refused even though `equip` is on;
+  (5) `go('#/tables')` and a router-announced change leave `kinds` as they
+  were - contrast with `sel`, which the existing case shows cleared.
+- **`components/searchPage.test.ts`** (new). Harness as `tables.test.ts`:
+  `render(App, { env })` with `memoryRouter('#/search')` and a `LOOT` of a
+  dozen records across `wondrous`, `core_item`, `core_consumable` and
+  `eq` - reuse `tables.test.ts`'s `row()` shape; give two records a shared
+  word in `ru` (`Ветра`) and the same two a shared English word (`Wind`),
+  one consumable among them, and one `eq` record whose `ru` name shares
+  nothing with any query but whose stat line does (`rg: 'melee'` -
+  `eqLine` renders the range word, so `Ближний` finds it in Russian; confirm
+  the word against `docs/fixtures/statlines/equipment.json` before writing
+  the assertion). A helper `type(text)` = `userEvent.type` into
+  `getByPlaceholderText('Поиск по названию или описанию…')`. Cases:
+  1. **arrival**: `h1` `Поиск`; the sub paragraph text; no `Как это
+     работает` button; the pin button present; the search box has focus
+     (`document.activeElement` is the input) and `placeholder` `Поиск по
+     названию или описанию…`; `Начните вводить запрос` shown; no `Выбрать
+     все`, no `[data-row]`; three chips `Предметы`/`Расходники`/
+     `Снаряжение` each `aria-pressed="true"` and none titled.
+  2. **a query narrows, in catalogue order**: `Ветра` → exactly the two
+     rows, `[data-row]` order equal to their order in `index.searchable`;
+     `Выбрать все (2)`; the hint gone.
+  3. **both languages at once**: `Wind` finds the same two while the page
+     is in Russian.
+  4. **the stat line**: the Russian range word finds the `eq` record and
+     nothing else.
+  5. **nothing found**: `zzz` → `Ничего не найдено`, no `Выбрать все`, no
+     `Сбросить всё` button.
+  6. **the cap**: a `LOOT` whose `core_item` holds 305 rows all named
+     `Много N` (built with `Array.from`) → `Много` draws 300 `[data-row]`
+     and `Выбрать все (300)`; ticking select-all raises the bar with
+     `Выбрано 300`.
+  7. **the kind filter narrows**: `Ветра`, press `Расходники` → one row
+     left, the chip `aria-pressed="false"`; press `Предметы` → `Ничего не
+     найдено` (equipment is still on, so nothing is refused).
+  8. **the last kind is refused**: press `Расходники`, `Снаряжение`, then
+     `Предметы` → toast `Нужен хотя бы один тип`, the chip still pressed and
+     now titled `Нужен хотя бы один тип`.
+  9. **equipment obeys the equipment chip whatever its `kind` says**: the
+     `eq` record is stored under `core_item` with `kind: 'item'`; with
+     `Снаряжение` off it is gone from a query that found it.
+  10. **the filter is shared across pages**: switch `Расходники` off on
+      search, `router.navigate('#/roll/std')` → Core rules' `Расходники`
+      chip reads `aria-pressed="false"`; a second `render` with a fresh env
+      starts with it on (memory, not storage: `storage` holds no new key).
+  11. **selection**: tick a row's `Выбрано` checkbox → `.sel` on it, the
+      bar reads `Выбрано 1`; `router.navigate('#/tables')` → no bar.
+  12. **a row opens the modal**: click the row's `.row-main` → a `dialog`
+      naming the record; `Escape` closes it.
+  13. **no data**: `noData()` → `Данные не загрузились. Обновите страницу.`
+      and no search box.
+  14. **English**: press `EN` → `h1` `Search`, the English sub, placeholder
+      `Search by name or description…`, `Start typing`, chips `Items`/
+      `Consumables`/`Equipment`; with a query, `Select all (2)` and `Nothing
+      found`.
+  15. **axe**: `expectNoA11yViolations` on (a) arrival, (b) results with a
+      row ticked and the bar up, (c) the nothing-found page.
+- **`components/tables.test.ts`, `std.test.ts`, `alt.test.ts`**: nothing
+  new; their kind-chip and search-box cases staying green is the proof the
+  three moves changed nothing.
+
+#### Parity states, each in both languages at three widths
+
+The `{ id: '#/search', ..., pending: 'search slice' }` line (specs.js 1540)
+is replaced by these seven; the `#/print/ci1-q1` line stays `pending`. Every
+`enter` types through the placeholder, the way `#/tables ~ searched` does,
+and `settle()`s. None is `timed`; none needs `storage`.
+
+| id | route | enter | why |
+|---|---|---|---|
+| `#/search` | `#/search` | - | the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint |
+| `#/search ~ searched` | `#/search` | `type(searchPh, 'меч')` | 87 rows of loot and gear together in catalogue order, `Выбрать все (87)` |
+| `#/search ~ kind off` | `#/search` | `type(searchPh, 'меч')`, `click('Снаряжение')` | 34 rows, no equipment badge left, the chip off |
+| `#/search ~ stat line` | `#/search` | `type(searchPh, 'двуручное')` | rows found by the assembled stat line alone - the word is on no record as text |
+| `#/search ~ capped` | `#/search` | `type(searchPh, 'а')` | the 300 cap: `Выбрать все (300)` over the first 300 |
+| `#/search ~ nothing found` | `#/search` | `type(searchPh, 'zzzqqqxx123')` | `Ничего не найдено`, and no reset button - unlike the tables |
+| `#/search ~ a row ticked` | `#/search` | `type(searchPh, 'меч')`, `click('Выбрано')` | the bar over search |
+
+Where `searchPh` is the literal `'Поиск по названию или описанию…'`, as the
+tables states write it. The English cells keep the box focused too:
+`d.click` is `el.click()`, which moves no focus, and the `EN` press is the
+same call - so the box holds focus on both apps through the language press
+and through the typed states (`d.type` focuses the field it types into).
+Nothing here needs an `ACCEPTED` entry: the row checkbox, the chips'
+`aria-pressed` and the select-all label are byte-identical to the tables'.
+
+Spec changes:
+
+- `copiedSelection.only` gains `'#/search ~ a row ticked'` - two search rows
+  copied as text and HTML, `shareSelection` on search's own rows.
+- `typeRuns.only` gains `'#/search'` and `'#/search ~ searched'`, and its
+  `search` probe becomes `'input[type=search]'` (from `'.toolbar
+  input[type=search]'`) - on every existing tables state that selector
+  still resolves to the toolbar's box, the only `input[type=search]` there,
+  so no existing reading moves; on search it measures the box's computed
+  type, which is the exact defect class B3.5 found on the tables' box.
+  `rowText`/`rowTitle` measure the first row; `filterLabel` reads `null`
+  on both apps.
+- New looks spec `foundRows` (not `presses`): `only` the four searched
+  states (`~ searched`, `~ kind off`, `~ stat line`, `~ capped`); `run(d)`
+  returns `{ rows: await d.count('.rows [data-row]') }`. This is what pins
+  87 / 34 / (the stat-line count) / 300 as numbers rather than as a set of
+  deduplicated names.
+- New spec `packedExpanded` - **the carried B5.6 risk 1** (`handoff.md`,
+  "Deferred"): `only: ['#/l/ ~ packed']`, `run(d)` reads `const hash =
+  await d.hash()` and **throws** `new Error('packedExpanded: the packed
+  address landed on the bad-link page - nothing was expanded')` when it is
+  `#/l/zzzz`, else returns `{ expanded: !hash.startsWith('#/l/~') }`; the
+  comment beside it is `reorderedByDrag`'s (specs.js 520-528) adapted: the
+  two apps are compared against each other, so two identical failures read
+  green unless something throws. Folded in because this batch edits
+  `specs.js` anyway; it is one spec and it lands in `SPECS`.
+- `NAME`: no additions. No press spec grips a search-only control by name
+  in both languages - `copiedSelection` uses `selected`/`copySel`, already
+  there - and every `enter` runs before the `EN` press, in Russian.
+- `VISUAL_DEBT`, `ACCEPTED`: no entries expected. A red cell is a defect to
+  fix, not a number to write.
+
+#### Ordered steps
+
+One code commit. The planning docs land first, on their own commit with an
+explicit pathspec (`issues/47/plan.md issues/47/handoff.md
+issues/47/context.md`), as B5.6's did. Each check is `set -o pipefail; npm
+run check 2>&1 | tail -n 120`, one foreground call, Bash timeout 600000;
+the last one runs after the doc edits, immediately before `git commit`,
+because the docs move the tree fingerprint the gate reads. Re-read `git log
+--oneline -3` before the commit: three interactive peers share this tree.
+
+1. `lib/types.ts` (`KINDS`, `Kind`); `lib/dict.ts` (two keys, both
+   blocks); `lib/search.ts` (`statLineFor`) + `search.test.ts` cases;
+   `state/app.svelte.ts` (`kinds`, `toggleKind`, the two comments) +
+   `app.test.ts` cases. `npx vitest run app/src/lib app/src/state` green.
+2. `StdPanel.svelte`, `AltPanel.svelte` onto `app.kinds`/`app.toggleKind`;
+   `Field.svelte`'s optional label. `npx vitest run
+   app/src/components/std.test.ts app/src/components/alt.test.ts` green
+   unchanged.
+3. `SearchBox.svelte`; `TablesPage.svelte` uses it and `statLineFor`, its
+   two input rules and the stat-line comment go. `npx vitest run
+   app/src/components/tables.test.ts` green unchanged.
+4. `SearchPage.svelte`; `App.svelte` (the branch, the fallback and its
+   `h1` rule out); `a11y.test.ts` (`COVERED` x2, the state).
+5. `components/searchPage.test.ts` (the fifteen cases).
+6. `tests/parity/driver.js` `count()`; `tests/parity/specs.js`: the seven
+   states in place of the `pending` line, `copiedSelection.only`,
+   `typeRuns` (probe + `only`), `foundRows`, `packedExpanded`, both new
+   specs in `SPECS`.
+7. `docs/specs/FEATURES.md` (the cap), `docs/specs/COVERAGE.md` (the row).
+8. `npm run check` green (fix, do not skip; if the host is loaded, read
+   `.claude/README.md` "Run a long check" and `context.md` "The host block
+   lifted" before retrying).
+9. `npm run build`, then the parity loop - one foreground call per group,
+   none merged, `MSYS_NO_PATHCONV=1` in front of each:
+   - **group A** - `node tests/parity.js "#/search"` - 7 states, 42 cells,
+     plus `foundRows` x4, `copiedSelection` x1, `typeRuns` x2, `visuals`,
+     `inventory`, `heading`, `title` on each. The `"#/l/"` group of B5.6
+     (30 cells) ran in one call; 42 is under `tables`'s 192 (~9 min).
+   - **group B**, the regression - `node tests/parity.js "roll/std ~ items
+     only" "roll/alt ~ crit, items only" "#/tables ~ searched"
+     "#/tables/eq_secondary ~ searched" "#/tables ~ nothing found" "#/l/ ~
+     packed"` - 6 states, 36 cells: the lifted `kinds` on both roll pages
+     (the chip pressed and refused paths), `SearchBox` in the tables
+     toolbar, `statLineFor` on a searched table (an equipment one
+     included), the empty state's reset button still there, and
+     `packedExpanded` reading `expanded: true` on both apps.
+   Every cell zero; open a diff image before touching any value. If
+   `#/search @ ru` alone is red at the box, compare `document.activeElement`
+   in both apps first - the focus ring is the likeliest single-cell
+   difference, and the fix is in `SearchBox`'s `focus`, not in a number.
+10. `npm run check:built` (the screen changes; the bundle budget).
+11. `plan.md` "B6 built" (what shipped, exact commands and results, any
+    deviation), `handoff.md` (Status, Completed, Verification, Next batch =
+    the search slice is closed and print is what is left, Deferred: B5.6
+    risk 1 closed by `packedExpanded`), `context.md` only for a durable
+    fact learned.
+12. `npm run check` again (the docs moved the fingerprint); commit
+    `feat(search): the search page`. No push.
+
+**Fits one implement cycle, and is one batch, not several.** Sized by its
+gates (`CLAUDE.md`, "Task and session protocol"; `docs/parity.md`, "Batch
+size"): one component set, no seed, one filter (`"#/search"`) plus one
+regression group; ~20 paths, under B5.3's 26 and B5.4a's 43, both of which
+passed one foreground `npm run check` on an idle host. Nothing here is a
+contract change, a different route-and-filter set, or a boundary the
+harness cannot reach (the one verb, `count`, is three lines and lands with
+the states that use it). Splitting the three moves (`kinds`, `statLineFor`,
+`SearchBox`) into a batch of their own would pay a check, a `check:built`
+and a filter run for a change a reviewer reads in five minutes - the "too
+small" case the rule names - and their regression group B is what tells
+them apart from the page in a red run anyway.
+
+#### Acceptance criteria
+
+- `npm run check` exit 0 before the commit; thresholds met with
+  `SearchPage.svelte`, `SearchBox.svelte`, `app.svelte.ts`'s `toggleKind`
+  and `search.ts`'s `statLineFor` all reached.
+- `a11y.test.ts`'s guard passes with both new components named, and the
+  search state passes axe.
+- All seven `#/search` states read `совпадает` in both languages at 1100,
+  768 and 375; `foundRows` reports the same counts on both apps (87, 34,
+  the stat-line count, 300); `copiedSelection` returns the same clipboard
+  on `~ a row ticked`; `typeRuns` reads the same computed type for the box
+  on `#/search` and `~ searched`.
+- Group B reads `совпадает` throughout, and `packedExpanded` returns
+  `{ expanded: true }` on both apps without throwing.
+- `npm run check:built` exit 0.
+- No `VISUAL_DEBT` entry written; no `ACCEPTED` entry added; `#/search` no
+  longer `pending`, `#/print/ci1-q1` still is.
+- `TablesPage.svelte` has no `input[type='search']` rule and no inline
+  stat-line builder; `StdPanel.svelte` and `AltPanel.svelte` have no local
+  `kinds`; `App.svelte` has no section fallback and no `h1` rule.
+- `FEATURES.md` names the 300 cap; `COVERAGE.md` has the row.
+- `handoff.md` "Deferred" marks B5.6 risk 1 closed by this batch and
+  leaves nit 1 (`ListPage.svelte:103`) recorded.
+
+#### Risks and do-nots
+
+- Do not port the `autofocus` attribute; focus the box from `SearchBox`'s
+  `onMount` under the `focus` prop. Do not skip the focus either: the
+  live box is focused on arrival and its ring is in the shot (measured).
+- Do not filter after the cap: `filter(...).slice(0, 300)`, in that order
+  (2847) - the cap is on hits, not on candidates.
+- Do not judge "the last one on" over `KINDS` on a roll page or over
+  `LOOT_KINDS` on search; pass the row the chip sits in.
+- Do not clear `kinds` on navigation, and do not write it to storage.
+- Do not keep the search page's `q` on `AppState` (see "Decided").
+- Do not draw a reset button in search's empty state; that is the tables'
+  facet reset.
+- Do not compute `statLine` with `noType: true`; the row's own display
+  keeps `noType`, the *match* does not (`TablesPage`'s rule, now
+  `statLineFor`'s).
+- Do not change the `typeRuns` probe beyond the one selector, and check
+  that group B's `#/tables ~ searched` reading is unchanged from the run
+  before this batch if a doubt arises (the report prints both apps' values).
+- Do not delete `KEYS`/`sectionKey` in `App.svelte` without grepping for a
+  second reader first.
+- Do not mark any state `timed`; the refusal toast is a unit case, not a
+  state.
+- Do not write a `VISUAL_DEBT` number from this host.
+- Two commits total (planning docs, then code), no push, no attribution
+  trailer.
+
+#### Decided in planning - do not reopen
+
+- **The kind filter moves to `AppState` now.** "The kind filter is per
+  panel, not per app" (Decisions, below) said this comes due at search and
+  named `AppState` as the destination; search is the third owner and the
+  live app shares one object across all three. Per-panel copies would ship
+  a divergence a person notices (switch consumables off on search, open
+  Core rules, see them on). `STATE.md` needs no change: `kind` is listed
+  under memory-only already.
+- **The query stays with the page.** The live `S.search.q` survives a
+  route change in memory (the same is true of `S.tables.q`), and the
+  rewrite's `TablesPage` already keeps its `q` local and forgets it on
+  unmount. Search follows that precedent: one page's own memory is not a
+  cross-page contract, no state can observe it, and lifting it would put
+  a per-page value on `AppState` for one caller. Recorded as an intentional
+  divergence in Decisions, next to the kind-filter entry.
+- **`SearchBox` is extracted now** - second real use of the same element
+  and the same two rules (`CLAUDE.md`, campsite). `TablesPage`'s copy goes
+  in the same commit.
+- **`Field.label` becomes optional** rather than `SearchPage` carrying a
+  third `.field` rule.
+- **`statLineFor` lives in `lib/search.ts`**, second caller; it is the
+  search's notion of a stat line, and `TablesPage`'s comment about the type
+  word moves with it.
+- **Seven states, none timed.** The refusal toast (`keepOneKind`) is a
+  timed state the roll pages also do not photograph; it is a unit case
+  here too. The modal over search is `#/tables ~ a row opened`'s modal - a
+  unit case, not a state (the three modal states already carry CI-only
+  numbers, and nothing new draws).
+- **The `~ packed` throw is folded in; `ListPage.svelte:103` is not.** The
+  first is one spec in a file this batch edits; the second is a comment in
+  a file this batch does not touch, and stays recorded for whichever batch
+  next opens it.
+- **One code commit.** The three moves are small, their regression group
+  runs in the same batch, and a separate commit would cost a check for
+  nothing a reviewer could not hold in one pass.
+- **No mock.** The page is transcribed from `app.js`/`style.css` line by
+  line and measured live (`context.md`, "B6 planning facts"); the harness
+  is the proof, as for every lists batch.
+
 ## Phase 5 - what already exists
 
 The pyramid arrived alongside Phase 4 rather than after it:
@@ -7797,6 +8376,16 @@ version of this entry said and what the B1 handoff then repeated as an open
 question. Tables narrows by `S.fOn.kind` - its own object, cleared whenever the
 table changes (app.js:3622) - and has never shared `S.kind` with anything.
 B2 has nothing to reconcile here.
+
+**Came due in B6 (planner, 2026-09-11): the kind filter moves to `AppState`
+as `kinds`/`toggleKind`, shared by Core rules, the alternate tables and
+search, memory only and untouched by navigation - the live shape.** What
+stays per page is the *query*: the live `S.search.q` and `S.tables.q` both
+survive a route change in memory, and the rewrite's `TablesPage` and
+`SearchPage` both forget theirs on unmount. That is an intentional
+divergence: one page's own memory is not a cross-page contract, no parity
+state can observe it, and `STATE.md`'s rule ("what was asked on a page is
+not remembered") is the one the rewrite keeps. See "B6 planned", "Decided".
 
 ### Every icon in a button is 15px, whatever its attribute says
 

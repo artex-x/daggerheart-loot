@@ -6,6 +6,32 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B6 planned and implement-ready - the search slice, one
+  batch** (planner, 2026-09-11, on `16bc32e`, working tree clean but for
+  the orchestrator's own `context.md` kickoff section, which is kept and
+  committed with this pass). The surface was read off `app.js`/`style.css`
+  and measured live in headless Chrome rather than remembered: the box is
+  focused on arrival with its ring painted, `меч` finds 87 rows (34 with
+  `Снаряжение` off), `а` hits the 300 cap, no help button, no reset button
+  in the empty state. Everything on the page has a rewrite counterpart
+  (`PageHead`, `Field`/`ChipRow`/`Chip`, `Empty`, `TableRows`/`RowMain`,
+  `SelBar`, `RecordModal`, `lib/search.ts`); what is new is the composition
+  (`SearchPage.svelte`), the search input extracted on its second use
+  (`SearchBox.svelte`, `TablesPage`'s copy goes), `AppState.kinds`/
+  `toggleKind` (the kind filter comes due here - shared across the two roll
+  pages and search, as the live `S.kind` is; the roll panels' local copies
+  go), `statLineFor` in `lib/search.ts` (second caller), a three-line
+  `count` driver verb, and two dictionary keys. Seven parity states replace
+  the `pending` line, `copiedSelection` and `typeRuns` gain search cells,
+  `foundRows` pins the counts, and the carried `~ packed` blind spot is
+  closed by a one-spec throw (`packedExpanded`) because this batch edits
+  `specs.js` anyway; `ListPage.svelte:103` stays recorded (not this batch's
+  file). Sized by its gates: one filter group (42 cells) plus one
+  regression group (36 cells), each one foreground call; one code commit.
+  Twelve ordered steps, fifteen component cases, exact tests per file.
+  No production code touched; no check run (a planning pass needs none).
+  NEEDS_HUMAN_CONFIRMATION: no.
+
 - Task status: **B5.6 is built, verified, committed and reviewed - the lists
   slice B5.1-B5.6 is closed.** (implementer then reviewer, 2026-09-11, on
   `ccbf345`). All eleven ordered steps landed with no deviation from the
@@ -2098,41 +2124,84 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**The lists slice is closed.** B5.6 was its last batch (see "Completed" and
-`plan.md`, "B5.6 built"); every `#/lists*` and `#/l/*` state in
-`tests/parity/specs.js` reads `совпадает`, none `pending`. `plan.md`, "Phase
-4 - where the rewrite is" is updated to say so.
+**B6 - the search slice, one batch, implement-ready** (planner, 2026-09-11,
+on `16bc32e`). Full design: `plan.md`, "B6 planned"; durable measurements:
+`context.md`, "B6 planning facts".
 
-**What is left of Phase 4's "Not built" list, per `plan.md`: the search
-slice (`#/search`) and the print slice (`#/print/ci1-q1`), both still
-`pending` in `tests/parity/specs.js`.** Neither has a plan yet - the next
-planning pass picks one (or scopes a first batch of one) the way "B5
-planned" scoped the lists slice before B5.1 was implement-ready. This
-session did not plan either; no batch below is implement-ready.
-
-- **Name:** not yet chosen - planning is the next step, not implementation.
-- **Candidates, per `plan.md`'s own "Not built" list:**
-  - **Search** (`#/search`) - the search slice. No planning notes exist yet
-    in `plan.md`; `lib/search.ts`'s `matches` already has unit coverage
-    (`search.test.ts`, per `COVERAGE.md`) but no screen consumes it.
-  - **Print** (`#/print/ci1-q1`) - the print slice. `docs/specs/FEATURES.md`
-    documents the nine-per-A4-sheet layout and the colour/black-and-white
-    split (`CLAUDE.md`, "Product laws"); the Figma print design nodes
-    (`88Hhc89oY9Orcbvd2ok1Hx`, `714-42387`/`3773-90792`) are the evidence to
-    open before any visual work here, per `CLAUDE.md`, "Source and commit
-    conventions".
-- **Steps:** none yet - a planner pass is needed first, the same shape "B5
-  planning facts" and "B5.6 planning facts" took for the lists slice.
-- **NEEDS_HUMAN_CONFIRMATION: no** - closing a slice and naming what is left
-  needs no confirmation; picking between search and print, or splitting
-  either into batches, is a planning decision for the next session.
-- **Carried into whichever batch next touches these files** (from B5.6's
-  review, full text in "Deferred"): `ListPage.svelte:103`'s `$effect`
-  comment still names the `todo` paragraph that `ccbf345` deleted - one
-  line, campsite, not worth a commit of its own; and the `~ packed` parity
-  cell cannot yet distinguish a real expansion from both apps failing
-  identically, which a one-spec throw would close the way `reorderedByDrag`
-  closed the same shape. Neither blocks the slice.
+- **Name:** B6 - the search page (`#/search`).
+- **Objective:** `#/search` draws what the live `renderSearch` (app.js
+  2841-2859) draws - the head, the focused search box and the three kind
+  chips in one panel, then the hint / up to 300 rows under `Выбрать все
+  (N)` / `Ничего не найдено`; a ticked row raises the bar, a row opens the
+  modal; the kind filter is shared with Core rules and the alternate tables
+  the way the live `S.kind` is. `#/search` stops being `pending` in
+  `tests/parity/specs.js`; print is then the only Phase 4 slice left.
+- **In scope:** `app/src/lib/types.ts` (`KINDS`/`Kind`), `lib/dict.ts`
+  (`subSearch`, `startTyping`), `lib/search.ts` (`statLineFor`) + test,
+  `state/app.svelte.ts` (`kinds`, `toggleKind`) + test,
+  `components/SearchBox.svelte` (new), `components/SearchPage.svelte` (new),
+  `components/searchPage.test.ts` (new), `Field.svelte` (`label` optional),
+  `TablesPage.svelte` (uses `SearchBox` and `statLineFor`), `StdPanel.svelte`
+  and `AltPanel.svelte` (onto `app.kinds`), `App.svelte` (the route; the
+  section fallback and its `h1` rule go), `components/a11y.test.ts`
+  (`COVERED` x2, one state), `tests/parity/driver.js` (`count`),
+  `tests/parity/specs.js` (seven states, `copiedSelection.only`,
+  `typeRuns` probe + `only`, `foundRows`, `packedExpanded`),
+  `docs/specs/FEATURES.md` (the 300 cap), `docs/specs/COVERAGE.md` (one row).
+- **Out of scope:** `CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`,
+  `ROUTES.md`, `llms.txt`, `STATE.md` (no contract or grammar moves; the
+  kind filter is already listed as memory-only). A `.panel` component.
+  `S.search.q` surviving a route change. `ListPage.svelte:103` (this batch
+  does not touch that file). Print.
+- **Files expected:** the list above - about twenty paths.
+- **Steps:** `plan.md`, "B6 planned", "Ordered steps" 1-12, in order. In
+  short: types/dict/search/state + their tests (1); the two roll panels and
+  `Field` (2); `SearchBox` and `TablesPage` (3); `SearchPage`, `App`, the
+  a11y guard (4); the fifteen component cases (5); the driver verb and the
+  specs (6); the two spec docs (7); `npm run check` (8); `npm run build`
+  and the two parity groups (9); `npm run check:built` (10); the docs (11);
+  `npm run check` and one commit `feat(search): the search page` (12).
+- **Acceptance criteria:** `plan.md`, "B6 planned", "Acceptance criteria" -
+  check green; all seven `#/search` states `совпадает` at both languages
+  and three widths with `foundRows` 87 / 34 / (stat line) / 300 equal on
+  both apps; group B `совпадает` and `packedExpanded` `{ expanded: true }`
+  on both; `check:built` green; no debt or `ACCEPTED` written; the four
+  "has no ..." structural checks; the two spec docs updated.
+- **Verification commands** (each its own foreground call, Bash timeout
+  600000, `MSYS_NO_PATHCONV=1` in front of the parity ones):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`
+  - `npm run build`
+  - `node tests/parity.js "#/search"` - group A, 7 states, 42 cells
+  - `node tests/parity.js "roll/std ~ items only" "roll/alt ~ crit, items
+    only" "#/tables ~ searched" "#/tables/eq_secondary ~ searched" "#/tables
+    ~ nothing found" "#/l/ ~ packed"` - group B, 6 states, 36 cells
+  - `npm run check:built`
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` again after the doc
+    edits, immediately before the commit
+  The full suite (`node tests/run-all.js parity`) is the orchestrator's,
+  not this batch's.
+- **Risks / do-nots:** `plan.md`, "B6 planned", "Risks and do-nots". The
+  three that bite: focus the box from `SearchBox`'s `onMount` (the live
+  box is focused on arrival, ring painted - measured), not via the
+  `autofocus` attribute and not not-at-all; filter before the cap
+  (`filter(...).slice(0, 300)`); judge "the last kind on" over the row the
+  chip sits in (`LOOT_KINDS` on a roll page, `KINDS` on search).
+- **Fallback:** if `#/search @ ru` alone is red at the box after `onMount`
+  focus, compare `document.activeElement` in both apps (a two-line
+  puppeteer probe) before anything else; if Svelte's mount order leaves
+  the box unfocused, move the `focus()` into a `$effect` keyed on the
+  element binding. If `foundRows` disagrees on `~ stat line` only, the
+  labels handed to `statLineFor` differ from the live `eqLine`'s - compare
+  `docs/fixtures/statlines/equipment.json` before touching the query.
+- **NEEDS_HUMAN_CONFIRMATION: no** - the one design fork (where the kind
+  filter lives) was pre-decided by the repository's own decision entry,
+  which named search as where it comes due and `AppState` as the
+  destination; the query's locality follows `TablesPage`'s precedent and
+  `STATE.md`. No public contract, route or fixture moves.
+- **Carried, still recorded:** `ListPage.svelte:103`'s `$effect` comment
+  naming the deleted `todo` paragraph - not this batch's file. The `~
+  packed` blind spot **is** this batch's (`packedExpanded`, one spec in
+  `specs.js`, which the batch edits anyway).
 
 ## Blockers
 
@@ -2536,6 +2605,33 @@ session did not plan either; no batch below is implement-ready.
 
 ## Deferred
 
+- **B5.6's review findings, assigned by the B6 planning pass (planner,
+  2026-09-11).** Risk 1 (the `~ packed` blind spot) is **B6's**: a
+  `packedExpanded` spec with `only: ['#/l/ ~ packed']` that throws when
+  `d.hash()` is `#/l/zzzz` - one spec in `tests/parity/specs.js`, which B6
+  edits anyway. Nit 1 (`ListPage.svelte:103`'s comment naming the deleted
+  `todo` paragraph) **stays recorded** - B6 does not open that file. Risks
+  2-3 and nits 2-5 stay as written below.
+- **Recorded by the B6 planning pass, not done (planner, 2026-09-11):**
+  - `.panel` is at its sixth inline copy after `SearchPage.svelte`
+    (`AltPanel`, `ListPage`, `ListsPage`, `RollPanel`, `StdPanel`,
+    `TablesPage`'s `.tablenav`, `FilterBar`); with the `.page-h`/`.page-sub`
+    copies B5.6 recorded, one extraction pass over the page furniture is
+    owed once the print slice is in and every page exists.
+  - `toggleAllIn` (the select-all on/off rule over `app.sel`) will be at
+    its second copy (`TablesPage`, `SearchPage`); a third caller moves it
+    to `AppState`.
+  - `lib/dict.ts`'s `subSearch` carries the record count `1061`, the same
+    number `tests/derived.js` ("счётчики в текстах") checks in `index.html`,
+    both READMEs, `app.js`, `llms.txt` and `robots.txt` but not in
+    `app/src/lib/dict.ts`. Add `dict.ts` to that file list when the rewrite
+    is what ships (Phase 7), and to `CLAUDE.md`'s "When counts or source
+    lists change" line at the same time.
+  - A stray vitest cache directory exists at
+    `app/src/components/app/node_modules/.vite/` (gitignored via
+    `node_modules/`; created by a single-file vitest run from the wrong
+    working directory in some session). Disposable; the orchestrator's to
+    remove at reconciliation, not a worker's.
 - **B5.6's review findings (reviewer, 2026-09-11, against `ccbf345`) -
   approved with no blockers; recorded, not fixed.** The batch's one review
   cycle is spent; none of these justifies a remediation pass on its own.
@@ -2961,7 +3057,11 @@ session did not plan either; no batch below is implement-ready.
 
 ## Notes
 
-- Mocks path: none for B5.5 either - the bar's actions, the money panel and the drag marks are
+- Mocks path: none for B6 - the search page is transcribed from
+  `app.js`/`style.css` line by line (references in `plan.md`, "B6 planned")
+  and measured live in headless Chrome (`context.md`, "B6 planning facts");
+  the probe script lived in the session scratchpad and was not kept.
+  None for B5.5 either - the bar's actions, the money panel and the drag marks are
   ported from `app.js`/`style.css` line by line (references in `plan.md`,
   "B5.5 planned"); no measurement pass was taken in planning, the harness proves the port.
   None for B5.3 either - the index is transcribed from the live

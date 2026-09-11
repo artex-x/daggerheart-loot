@@ -1350,3 +1350,123 @@ adds only what B5.6's own reading found. Line numbers are `app.js` at
   planner pass, not an implement dispatch. Print carries the heavier
   evidence requirement - the Figma nodes named in `CLAUDE.md` must be opened
   before any visual work.
+
+## State at the search-slice kickoff (orchestrator, 2026-09-11)
+
+- HEAD `16bc32e` (`docs(issue-47): B5.6 reviewed and approved - the lists slice
+  is closed`), working tree **clean**, no `test-output/parity.lock`. HEAD is
+  unchanged from this session's `SessionStart` reading.
+- Host reading before anything heavy: RAM free 3.63 GB of 15.82 GB, **no
+  `chrome.exe`**, 8 `node` processes (editor/tooling), 312 processes. Less
+  headroom than the B5.6 kickoff's 4.44 GB; `npm run check` has exceeded the
+  600s foreground cap under load before, so treat a timeout here as host load,
+  not as a suite regression.
+- `ListAgents` shows **three interactive peer sessions** on this tree
+  (`daggerheart-loot-96` ~3h, `daggerheart-loot-ce` ~3h, `daggerheart-loot-15`
+  ~1h); every other peer is offline. HEAD can move under this task - re-read
+  `git log --oneline -3` before dispatching a writer and again at closeout.
+- Human GOAL this session: finish the next batch. **The lists slice is closed**
+  (B5.1-B5.6), so the two remaining Phase 4 slices are search (`#/search`) and
+  print (`#/print/ci1-q1`); both are still `pending` in
+  `tests/parity/specs.js:1540-1541` and neither has planning notes. The
+  handoff's "Next batch" says the next step is a planning pass, not
+  implementation.
+- **Orchestrator picks search over print**, on the same sequencing grounds
+  `plan.md`, "B5 planned" recorded when it picked lists: search reuses the row
+  and the selection bar wholesale and is cheaper after lists, whereas print is
+  a from-scratch visual surface whose evidence is the Figma nodes
+  (`88Hhc89oY9Orcbvd2ok1Hx`, `714-42387`/`3773-90792`), and the Figma connector
+  is **unauthenticated in this session**. That is a routing call; how the
+  search slice is scoped and split is the planner's.
+- Measured, so the planner need not: `renderSearch` is `app.js:2841-2859` -
+  `pageHead('search')`, one `.panel` holding a `.field` with
+  `input[type=search]#sq` (`autofocus`) and `kindChips()`, then a body that is
+  one of three shapes: the no-query hint (`Начните вводить запрос` / `Start
+  typing`), `selectAllHTML(res) + '<div class="rows">' + rowHTML(it) ...` over
+  `SEARCHABLE.filter(kindAllows(kindOf(x)) && matches(x, q)).slice(0, 300)`, or
+  the `t().nothing` empty. It is dispatched from the route table at
+  `app.js:3574`. Every part named there already has a rewrite counterpart
+  (`PageHead`, the kind chips, `RowMain`, the select-all row), so this looks
+  like a small slice - but sizing it is the planner's call, not this reading.
+
+## B6 planning facts - the search slice (planner, 2026-09-11) - durable, read before implementing
+
+Read off `app.js`/`style.css` at HEAD `16bc32e` and measured with a
+headless-Chrome probe of `file:///E:/dev/daggerheart-loot/index.html#/search`
+at 1100x900 (puppeteer, 700ms after `domcontentloaded`; the script is not
+kept). Design and steps: `plan.md`, "B6 planned".
+
+- **Live code map.** `renderSearch` 2841-2859 (routed 3574, tab 3580);
+  `matches` 2834-2840; `S.search.q` 58; `S.kind` 60 (one object for Core
+  rules, the alternate tables and search; not cleared on `hashchange`
+  4628-4636, never persisted - `tests/behave.js` 262-267); `KINDS`/
+  `LOOT_KINDS` 2110-2112; `kindChips(list)` 2114-2127 (`data-last` +
+  `title=keepOneKind` on the last one on, `aria-pressed`); `kindOf`/
+  `kindAllows` 2131-2132 (anything with `eq` is `equip` - the Wondrous
+  weapons stored as items obey the equipment chip); the kind handler
+  4160-4164 (error toast when `data-last`); the `#sq` input handler 4333
+  (`S.search.q = el.value; render()`); `keepFocus`/`restoreFocus`
+  3740-3762; `selectAllHTML` 2763-2773; `rowHTML` 2785-2803; `selBox`
+  2810-2815; `SEARCHABLE = ALL.concat(EQ)` 23 - the rewrite's
+  `index.searchable` is `[...all, ...eq]` (`lib/data.ts` 144), same order;
+  the cap `.slice(0, 300)` 2847; the hint strings inline at 2845 (`Начните
+  вводить запрос` / `Start typing` - **not** dictionary keys); `pageHead`
+  2145-2168; the sub lines `t().pages.search` 268 / 449; **no `help.search`
+  key** (201-263, 382-445), so no help button. CSS: `.panel` 145-149,
+  `.field` 150-151, `.lbl` 152, `.chips`/`.chip` 155-163, `input[type=
+  search]` 254-257 and `:focus` 258, `.empty` 524-525, `.rows` 547.
+- **Measured on arrival at `#/search` (ru, 1100).** `document.activeElement.id`
+  = `sq` - the box **is** focused on a fresh open, `autofocus` attribute
+  present, border `rgb(216, 171, 94)` (the `:focus` rule is in the first
+  paint). Input computed: `15.5px Inter`, height `46px`, padding `0 14px`.
+  `.panel` margin-bottom `16px` (inline style); the input's `.field`
+  margin-bottom `16px`; the chips' `.field:last-child` `0px`. `.empty`
+  reads `Начните вводить запрос`; no `.selall`, no rows; `.helpbtn` absent;
+  `.homebtn` present. `#view` text starts `Поиск / Поиск по всем 1061
+  позиции сразу — добыча, расходники и снаряжение, на русском и на
+  английском. / ТИП / Предметы / Рас...`.
+- **Measured row counts (all three kinds on).** `кольцо` 12, `зелье` 40,
+  `меч` 87, `а` 300 (`Выбрать все (300)`), `о` 300, `zzzqqqxx123` 0 with
+  `.empty` `Ничего не найдено`. `меч` with `Снаряжение` pressed off: 34
+  rows, `Выбрать все (34)`, no `eq-*` badge left, `activeElement` is the
+  chip `BUTTON` (the live `restoreFocus` re-focuses it after the redraw).
+  `tests/behave.js` 136-162 additionally proves `катана`/`katana`/`КаТаНа`
+  >= 4, `стресс` > 20, `двуручное` > 20 (assembled from `bu`, on no
+  record as text), `снежный` 1 with equipment on and 0 with it off.
+- **Focus mechanics the harness will see.** `d.type` calls `el.focus()`
+  before dispatching `input`; `d.click` is `el.click()` (moves no focus);
+  `arrive()`'s `EN` press is a `d.click`. So on every search state the box
+  is focused on both apps, ru and en alike, provided the rewrite focuses it
+  on mount. A chip press leaves the chip focused on the live app
+  (`restoreFocus`) and naturally on the rewrite (no redraw); no
+  `:focus-visible` ring is painted for a script click on either - the
+  existing `#/roll/std ~ items only` cells already match under the same
+  mechanics.
+- **Rewrite facts that shape the batch.** `AppState.sel` is app-wide since
+  B5.2 and its doc comment already names search as the second owner.
+  `StdPanel`/`AltPanel` each hold a local `kinds` `$state` and `toggleKind`
+  (StdPanel 51/91-97, AltPanel 49/98-104) over `LOOT_KINDS`; `isLastOn`
+  (`lib/std.ts` 87-93) is generic and needs no change to judge `KINDS`.
+  `Chip.svelte`'s button form writes `aria-pressed` and takes `title`;
+  `Field.svelte` requires `label` today; `ChipRow`, `Empty`, `PageHead`
+  (`help={null}` draws no button), `TableRows` (`ontoggleall` draws
+  `.selall`; `view` prop), `RowMain`, `RecordModal` (`app, index, it,
+  onclose, onopen?`), `SelBar` (mounted by `Shell`) need no change.
+  `TablesPage.svelte` holds the only `input[type='search']` rules
+  (`.toolbar input[type='search']` and `:focus`) and an inline `statLine`
+  builder whose comment records that the live `matches` searches
+  `eqLine(it)` *with* the type word. `App.svelte` still has a generic
+  section fallback (`h1` + `.todo`) that search is the last user of.
+  `lib/search.ts` has `matches(it, q, statLine)` and `search()`; its
+  `search.test.ts` runs against the real `data.json`.
+- **Harness facts.** `d.controls()` reads names off `button, a[href],
+  input, select, textarea` and dedupes them, so a row count is not in the
+  inventory - hence the `count` verb. `typeRuns`'s `search` probe is
+  `.toolbar input[type=search]`; on every tables state `input[type=search]`
+  resolves to the same element (the menu's own search box only exists
+  from the eighth list, inside an open menu). `copiedSelection` ticks a
+  second `Выбрано` then presses `Скопировать` - needs at least two rows.
+  `#/print/ci1-q1` stays `pending` after B6.
+- **Not a fact, a decision, recorded in `plan.md` "Decisions"**: the kind
+  filter moves to `AppState` (live shape); the query stays with the page
+  (`TablesPage` precedent, `STATE.md`).
