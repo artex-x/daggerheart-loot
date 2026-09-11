@@ -5,7 +5,7 @@
      defect #64. The steppers are ours anyway, so the native ones cost nothing
      to give up. */
   import { untrack } from 'svelte';
-  import { committed, typed } from '../lib/numField.js';
+  import { clamp, committed, typed } from '../lib/numField.js';
 
   interface Props {
     value: number;
@@ -98,9 +98,12 @@
      diff charged the whole box for the glow. */
   function step(by: number): void {
     /* An empty field starts counting at 0, not at `min` - the live
-       `(parseInt('') || 0) + by`, so a first `+` or `-` both land on `min`. */
+       `(parseInt('') || 0) + by`, so a first `+` or `-` both land on `min`.
+       The stepper is the one place that clamps a negative-range field
+       (app.js 3916) - `committed` itself no longer does, since typing past
+       the reprice field's own range is not clamped live (numField.ts). */
     const current = empty && text.trim() === '' ? 0 : committed(text, min, max);
-    const n = committed(String(current + by), min, max);
+    const n = clamp(current + by, min, max);
     text = shownText(n);
     onchange(n);
   }

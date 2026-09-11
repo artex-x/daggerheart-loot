@@ -83,8 +83,15 @@ export function nativeDrag(): DragPort {
         handlers.onEnd?.();
       };
 
+      /* app.js 4452-4454: only a grip starts a drag. A row also holds a
+         thumbnail, a note textarea and number inputs, every one of them
+         natively draggable content - without this guard, dragging a thumbnail
+         or a run of selected text out of the note starts a row reorder
+         instead of the browser's own drag. */
       const onStart = (e: Event): void => {
-        const row = (e.target as HTMLElement).closest('[data-index]');
+        const grip = (e.target as HTMLElement).closest('[data-drag]');
+        if (!grip) return;
+        const row = grip.closest('[data-index]');
         from = indexOf(row);
         mark = null;
         const dt = (e as DragEvent).dataTransfer;
@@ -96,7 +103,11 @@ export function nativeDrag(): DragPort {
           } catch {
             /* Nothing more to do when even that throws. */
           }
-          if (row) dt.setDragImage(row, 24, 24);
+          /* app.js 4459: guarded there because `setDragImage` is missing on
+             some real browsers even though lib.dom types it as always
+             present. */
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (row && dt.setDragImage) dt.setDragImage(row, 24, 24);
         }
         handlers.onDrag?.(from);
         document.addEventListener('dragover', onDocOver, true);
@@ -105,6 +116,10 @@ export function nativeDrag(): DragPort {
       /* Without preventDefault on dragover the drop never fires at all - the
          browser's default is to refuse the drop. */
       const onOver = (e: Event): void => {
+        /* app.js 4492: nothing of ours is being dragged - a file from the
+           desktop, an image from another tab - so leave the browser's own
+           drop handling alone. */
+        if (from < 0) return;
         const row = (e.target as HTMLElement).closest('[data-index]');
         if (!row) return;
         e.preventDefault();
@@ -128,11 +143,15 @@ export function nativeDrag(): DragPort {
       };
 
       const onDrop = (e: Event): void => {
-        e.preventDefault();
         stopScroll();
         const start = from;
         const at = mark;
+        /* app.js 4509: the same "nothing of ours is being dragged" guard as
+           onOver, and preventDefault only once it is known there is a drop to
+           make - a stray drop from outside must fall through to the
+           browser's own handling. */
         if (start >= 0 && at) {
+          e.preventDefault();
           let to = at.over;
           if (at.where === 'after' && to < start) to += 1;
           if (at.where === 'before' && to > start) to -= 1;

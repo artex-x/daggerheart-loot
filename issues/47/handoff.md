@@ -6,6 +6,25 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B5.5's review remediation is built, verified and committed -
+  the lists slice still needs only B5.6.** (implementer, 2026-09-11, on
+  `ba0a92d`). Both blockers fixed: `drag.ts`'s `dragstart` now requires a
+  `[data-drag]` grip (`onStart` was accepting any element inside `.lrow`,
+  including the thumbnail and note textarea, and starting a row reorder from
+  native browser drag content); `onOver`/`onDrop` now guard on `if (from < 0)
+  return;` before touching a stray drag from outside the page (a desktop file,
+  another tab's image) - `onDrop`'s `preventDefault()` moved inside the
+  existing `start >= 0 && at` check rather than firing unconditionally. Five
+  more findings from the same review closed alongside: `numField.ts`'s bare
+  minus now commits to `0` not `min`; the reprice field's `typed`/`committed`
+  no longer clamp at all (only the stepper does, matching `app.js:4336-4343`/
+  `3916` - `NumberField.svelte`'s `step()` now clamps explicitly since
+  `committed` no longer does); the restored `setDragImage` guard; a
+  self-verifying assertion in `reorderedByDrag`; the dead `NAME.rollResult`
+  keys removed from `specs.js`. One commit, `fix(lists): start a drag only
+  from the grip`, on top of `ba0a92d`. No push. See `plan.md`, "B5.5 built",
+  "Correction, one remediation pass..." for the full accounting.
+  NEEDS_HUMAN_CONFIRMATION: no.
 - Task status: **B5.5 is built, verified, and committed - the lists slice
   needs only B5.6.** (implementer, 2026-09-11, on `3cb2bd0`). All thirteen
   ordered steps done, no deviation; the drag-verb fallback was not needed -
@@ -1099,7 +1118,80 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
   path" `CLAUDE.md` asks to fix rather than defer. No other deviation from
   the plan's ordered steps, acceptance criteria, or file list.
 
+- Batch name/id: **B5.5's single fix-then-continue remediation pass - both
+  review blockers, plus five lower-severity findings** (this session, on
+  `ba0a92d`)
+- What shipped: `drag.ts`'s `onStart` now requires `(e.target as
+  HTMLElement).closest('[data-drag]')` before reading a row, matching
+  `app.js:4452-4454` - a row's thumbnail, note textarea and number inputs are
+  all natively draggable content, and none of them may start a reorder.
+  `onOver` gained `if (from < 0) return;` at its top (`app.js:4492`); `onDrop`
+  moved `e.preventDefault()` inside the existing `if (start >= 0 && at)` block
+  instead of calling it unconditionally (`app.js:4509`) - together, a file
+  dragged from the desktop or an image from another tab no longer paints a
+  drop mark or has its own drop suppressed. The restored `setDragImage` guard
+  (`if (row && dt.setDragImage)`, `app.js:4459`) needed an
+  `eslint-disable-next-line @typescript-eslint/no-unnecessary-condition` -
+  lib.dom types the method as always present. `numField.ts`: `committed()`
+  and `typed()` no longer clamp at all when `min < 0` (the reprice field) -
+  a bare minus or an empty field now commits to `0`, not `min`, and a typed
+  value like `-900` is kept verbatim rather than clamped to `-90`, matching
+  `app.js:4336-4344`'s unclamped `parseInt(el.value, 10) || 0`; every
+  `min >= 1` caller is untouched (`digitsOf` still collapses to the old
+  `replace(/\D/g, '')` there). `NumberField.svelte`'s `step()` changed from
+  `committed(String(current + by), min, max)` to `clamp(current + by, min,
+  max)`, since the stepper is now the only thing that clamps a negative-range
+  field (`app.js:3916`) - `committed` no longer does it for anyone. `specs.js`:
+  `reorderedByDrag` throws if `first` and `second` come back identical (a
+  synthetic drag sequence that stopped moving anything on both apps used to
+  read `совпадает` silently); the unused `NAME.ru.rollResult`/`NAME.en.
+  rollResult` pair (and the comment explaining it) is removed.
+- Tests: `ports.test.ts`'s shared `rows(n)` fixture now builds a real
+  `[data-drag]` grip plus a `.row-body` child per row; every existing
+  `dragstart` dispatch moved from the row to the grip (`gripOf`); three new
+  cases - `dragstart` on the non-grip body asserts `onDrag` is never called,
+  a stray `dragover` and a stray `drop` (no preceding `dragstart`) each
+  assert their handler is not called and `event.defaultPrevented` stays
+  `false`. `numField.test.ts`'s negative-range `describe` block: the bare-minus
+  case now asserts `0`; a new case asserts an unclamped `committed('-999',
+  -90, 500)` reading of `-999` and an unclamped `typed()` reading for both a
+  positive and a negative overflow.
+- Files changed: `app/src/ports/drag.ts`, `ports.test.ts`; `app/src/lib/
+  numField.ts`, `numField.test.ts`; `app/src/components/NumberField.svelte`;
+  `tests/parity/specs.js`; `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): one, `fix(lists): start a drag only from the grip`, on top of
+  `ba0a92d`. No push.
+- Deviations and rationale: none from the brief's nine numbered items. The
+  `NumberField.svelte` `step()` change is a direct, necessary consequence of
+  item 4 (removing `committed`'s clamp for the negative range would otherwise
+  silently un-clamp the stepper too) rather than a separate deviation.
+
 ## Verification
+
+- Commands run (exact), this session (B5.5's remediation pass, on `ba0a92d`):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (one foreground call,
+    `timeout: 600000`) - one lint failure on the first attempt
+    (`@typescript-eslint/no-unnecessary-condition` on the restored
+    `setDragImage` guard; fixed with an `eslint-disable-next-line`), **exit 0**
+    on the second: 888 tests, 0 failures, coverage 96.15 stmts / 88.41 branch
+    / 96.97 funcs / 97.06 lines. `drag.ts` alone: 99.03 stmts / 86.53 branch /
+    100 funcs / 100 lines - up from B5.5's own 84.61% branch, the new
+    no-active-drag guard cases closing most of the gap the review found; the
+    handful of branches still open are the same class `src/ports/**`'s 55%
+    branch floor exists for - a `DataTransfer` missing `setDragImage`, or
+    missing entirely, which jsdom cannot reproduce.
+  - `npm run build` - clean; `dist/assets/app.js` 273.61 kB, 82.44 kB gzip.
+  - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/a @"` - the drag verb
+    (inside `reorderedByDrag`, `only: ['#/lists/a']`) plus the six
+    pre-existing cells; all six `совпадает`, `расхождений нет`. Neither app's
+    `reorderedByDrag` result carried the spec's new throw.
+  - No `npm run check:built` - the fix changes behaviour, not anything drawn.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (one foreground call,
+    `timeout: 600000`, run immediately before the commit since the doc edits
+    above moved the tree fingerprint) - **exit 0**, same 888 tests and
+    coverage as the first run (no production code moved between the two,
+    only `plan.md`/`handoff.md`); the commit gate armed for `fix(lists): start
+    a drag only from the grip`.
 
 - Commands run (exact), this session (B5.5, on `3cb2bd0`):
   - `npx vitest run app/src/ports` (step 1) - green, 57 tests.
@@ -1147,8 +1239,10 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
     `npm run budget` (80.1 kB gzip against the 120 kB budget).
   - `set -o pipefail; npm run check 2>&1 | tail -n 120` (step 13, one
     foreground call, `timeout: 600000`, run immediately before this commit
-    since the doc edits change the tree fingerprint) - result recorded in
-    Status once the call completes.
+    since the doc edits change the tree fingerprint) - **exit 0**, same 883
+    tests and coverage as step 9 (no production code moved between the two
+    runs, only `plan.md`/`handoff.md`); the commit gate armed for the
+    `feat(lists): the actions under a ticked selection` commit that followed.
 
 - Commands run (exact), this session (B5.4a, resuming at step 11 on
   `f38b900`):
@@ -1852,11 +1946,15 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch
 
-**B5.5 is closed.** All thirteen ordered steps landed exactly as planned, in
-the two commits the brief named (three total with the planning-docs commit -
-see "Status" and "Completed" above, and `plan.md`, "B5.5 built" for the full
-accounting). Nothing here needs a fix-then-continue pass; no review was
-requested for this batch.
+**B5.5 is closed, remediation included.** All thirteen ordered steps landed
+exactly as planned, in the two commits the brief named (three total with the
+planning-docs commit), and the one fix-then-continue remediation pass a
+review requested afterward - both blockers and five lower-severity findings -
+landed as a fourth commit, `fix(lists): start a drag only from the grip`, on
+top of `ba0a92d`. See "Status" and "Completed" above, and `plan.md`, "B5.5
+built" and its "Correction, one remediation pass..." for the full accounting.
+That was the protocol's one allowed remediation pass for this batch; there is
+no second review.
 
 **B5.6 - the shared page, packed-link expansion, the bad-link page, taking a
 shared list - is outlined, not implement-ready.** It closes B5.4a's nit 1

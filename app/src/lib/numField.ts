@@ -59,6 +59,12 @@ export function typed(raw: string, caret: number, max: number, min = 0): Typed {
     raw.slice(0, caret).length - digitsOf(raw.slice(0, caret), allowNeg).length;
   const at = clamp(caret - removedBefore, 0, digits.length);
 
+  /* app.js 4336-4343: the reprice field's own `input` handler never clamps -
+     only the stepper does (app.js 3916, ported in NumberField.svelte's
+     `step()`). A roll field's range never dips below zero, so this leaves
+     every existing caller's per-keystroke cap untouched. */
+  if (allowNeg) return { value: digits, caret: at };
+
   const n = Number(digits);
   if (n > max) {
     const capped = String(max);
@@ -71,11 +77,19 @@ export function typed(raw: string, caret: number, max: number, min = 0): Typed {
  * What the field holds once it is done being edited.
  *
  * Half-typed input is left alone while typing so the caret is not disturbed;
- * on commit it has to be a number in range again. An empty field commits to the
- * minimum on a roll page - there would be nothing to show otherwise.
+ * on commit it has to be a number again. An empty field commits to the minimum
+ * on a roll page - there would be nothing to show otherwise.
+ *
+ * The reprice field (`min < 0`) is not a roll field and is not clamped here at
+ * all - app.js 4336-4343 commits `parseInt(el.value, 10) || 0` verbatim, so a
+ * typed `-900` stays `-900` and a bare `-` or an empty field reads as `0`, not
+ * as `min`; only the stepper clamps (app.js 3916). Every existing `min >= 1`
+ * caller keeps its old clamped reading unchanged.
  */
 export function committed(raw: string, min: number, max: number): number {
-  const digits = digitsOf(raw, min < 0);
+  const allowNeg = min < 0;
+  const digits = digitsOf(raw, allowNeg);
   const n = Number(digits);
-  return raw.trim() === '' || digits === '-' || !Number.isFinite(n) ? min : clamp(n, min, max);
+  if (raw.trim() === '' || digits === '-' || !Number.isFinite(n)) return allowNeg ? 0 : min;
+  return allowNeg ? n : clamp(n, min, max);
 }

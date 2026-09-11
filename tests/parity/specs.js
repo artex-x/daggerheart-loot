@@ -76,10 +76,7 @@ const NAME = {
     delOne: 'Удалить (1)',
     clearPriceOne: 'Убрать цену (1)',
     applyPrices: 'Проставить эти цены',
-    discount: 'Сделать скидку',
-    /* `numBox` gives every field the same aria-label regardless of which one
-       it is (app.js 2096-2115) - the reprice field carries this name too. */
-    rollResult: 'Результат броска'
+    discount: 'Сделать скидку'
   },
   en: {
     copyName: 'Copy name',
@@ -120,8 +117,7 @@ const NAME = {
     delOne: 'Delete (1)',
     clearPriceOne: 'Clear price (1)',
     applyPrices: 'Set these prices',
-    discount: 'Discount',
-    rollResult: 'Roll result'
+    discount: 'Discount'
   }
 };
 
@@ -452,6 +448,15 @@ const reorderedByDrag = {
     const first = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
     await d.drag(2, 0, false);
     const second = JSON.parse((await d.storage('dhloot.lists.v2')) || '[]')[0].ids;
+    /* Legacy and rewrite are compared against each other, never against the
+       order the seed started in - so if the drag sequence ever stops moving
+       anything on *both* apps (a broken driver, a dead grip selector), `first`
+       and `second` come back identically unchanged and the cell still reads
+       "совпадает". This is the one thing the app-to-app comparison alone
+       cannot catch: throw here so a no-op fails instead of passing quietly. */
+    if (JSON.stringify(first) === JSON.stringify(second)) {
+      throw new Error('reorderedByDrag: the two drags left the list order unchanged');
+    }
     return { first, hash: await d.hash(), second };
   }
 };

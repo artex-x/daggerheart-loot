@@ -6860,7 +6860,7 @@ roll fields.
 after steps 1-4 (one foreground call) and again after steps 5-9's production
 code and tests (883 tests, 0 failures, coverage 96.11 stmts / 88.28 branch /
 96.97 funcs / 97.05 lines - `money.ts` and `drag.ts` both fully reached by the
-new cases). `npm run build` clean (80.1 kB gzip). The parity loop, four
+new cases). `npm run build` clean (82.41 kB gzip). The parity loop, four
 foreground calls, none merged: `"~ a row ticked" "~ prices"` (30 cells -
 the substring also matched `~ prices, none priced` and `~ prices set`, as the
 brief warned); `"~ batch deleted"` (6 cells); the regression `"#/lists/a @"
@@ -6879,6 +6879,94 @@ moved the tree fingerprint, immediately before this commit.
 `rp`/`guess` are component-local, never on `AppState`. B5.4a's nits 2, 3 and
 5 are closed by this batch; nit 1 (`RowMain`'s dead `tail`) is B5.6's; nits 4
 and 6 stay recorded as notes.
+
+**Correction, one remediation pass on top of `ba0a92d` (reviewer then
+implementer, 2026-09-11): both blockers found in review are fixed, plus seven
+lower-severity findings from the same review.**
+
+*Blocker 1 - `dragstart` was accepted from any element inside a row, not only
+the grip.* `drag.ts`'s `onStart` read `(e.target).closest('[data-index]')`,
+so dragging `RowMain.svelte`'s thumbnail or a run of selected text out of the
+note textarea started a row reorder instead of the browser's own native drag
+- every one of those elements sits inside `.lrow`, which carries
+`data-index`. Live (`app.js:4452-4454`) checks `e.target.closest('[data-drag]')`
+first and returns if it finds no grip. Fixed the same way, taking the row as
+`grip.closest('[data-index]')`. Neither the unit suite nor the parity driver
+could have caught this: `ports.test.ts`'s fixture rows had no grip element at
+all, and the parity `drag()` verb already dispatches on `rows[f].querySelector(
+'[data-drag]')`, so both exercised only the good path. Fixed alongside the
+code: the shared `rows(n)` fixture now builds a real `[data-drag]` grip plus a
+plain `.row-body` child per row, every existing `dragstart` dispatch moved
+from the row to the grip, and a new case dispatches `dragstart` on the
+`.row-body` and asserts `onDrag` is never called.
+
+*Blocker 2 - `dragover` and `drop` had no "one of our drags is live" guard.*
+Without it, a file dragged in from the desktop, or an image dragged from
+another tab, painted the gold `drop-before`/`drop-after` line and swallowed
+the browser's own drop handling. Live opens both handlers with `if
+(!dragKey) return;` (`app.js:4492`, `app.js:4509`) and calls `preventDefault()`
+in `drop` only once the key and row are known good. Fixed with `if (from < 0)
+return;` at the top of `onOver`, and by moving `onDrop`'s `e.preventDefault()`
+inside the existing `if (start >= 0 && at)` block rather than calling it
+unconditionally first. Two new `ports.test.ts` cases fire a `dragover` and a
+`drop` with no preceding `dragstart` and assert the handler was not called and
+`event.defaultPrevented` stayed `false`.
+
+*The five findings.* (3) `committed('-', -90, 500)` returned `min` (-90) for a
+bare minus; live's `parseInt('-', 10) || 0` is `0` - fixed, and
+`numField.test.ts:79`'s case (which pinned the wrong reading) now asserts `0`.
+(4) `typed`/`committed` clamped a negative-range field into `[-90, 500]` on
+every keystroke and on commit; live's `#rp` handler (`app.js:4336-4343`) never
+clamps at all - only the stepper does (`app.js:3916`). Both functions now skip
+clamping entirely when `min < 0` (an unclamped `parseInt`-equivalent reading,
+with a bare minus or an empty field reading `0`), and `NumberField.svelte`'s
+`step()` was changed from `committed(String(current + by), min, max)` to an
+explicit `clamp(current + by, min, max)` so the stepper keeps clamping now
+that `committed` no longer does it for it. Every `min >= 1` caller is
+unaffected: for a non-negative range `committed(String(v), min, max)` and
+`clamp(v, min, max)` read the same number, and `digitsOf` still collapses to
+the old `replace(/\D/g, '')` there. (5) `drag.ts`'s `setDragImage` call was
+missing the plan's own guard, `if (row && e.dataTransfer.setDragImage)`
+(`app.js:4459`) - restored, with an `eslint-disable-next-line
+@typescript-eslint/no-unnecessary-condition` since lib.dom types the method as
+always present. (6) `reorderedByDrag` (`specs.js`) returned `{first, hash,
+second}` compared app-to-app only, so a synthetic drag sequence that stopped
+moving anything on *both* apps at once (a broken driver selector, say) would
+still read `совпадает`. The spec now throws when `first` and `second` come
+back identical, which a genuinely no-op sequence can no longer pass silently.
+(7) `NAME.ru.rollResult`/`NAME.en.rollResult` (`specs.js`, added by B5.5) were
+never read by any spec - removed, along with the comment explaining why the
+key existed.
+
+**Two doc corrections, not cosmetic.** This section's own "Verification"
+paragraph above read `npm run build` as "clean (80.1 kB gzip)" - that is the
+`bundle-budget.mjs` figure from `check:built`'s budget step, transcribed onto
+the wrong line; the build itself printed 82.41 kB gzip (`handoff.md`,
+"Verification", records both correctly). Fixed in place, above.
+`handoff.md`'s Verification step 13 read "result recorded in Status once the
+call completes" - the call completed in the same session and the result was
+never written back; both that entry and this remediation pass's own closing
+check now carry their real numbers.
+
+**Verification.** `set -o pipefail; npm run check 2>&1 | tail -n 120` - one
+lint failure on the first attempt (`@typescript-eslint/no-unnecessary-condition`
+on the restored `setDragImage` guard, fixed with the disable comment above),
+exit 0 on the second: 888 tests, 0 failures, coverage 96.15 stmts / 88.41
+branch / 96.97 funcs / 97.06 lines (`drag.ts` 99.03/86.53/100/100 - up from
+B5.5's own 84.61% branch, the new no-op-guard cases closing the gap the
+review found; the remaining gaps are the same class the `src/ports/**`
+threshold is set for - a `DataTransfer` without `setDragImage`, or one at all,
+that jsdom cannot reproduce). `npm run build` clean: `dist/assets/app.js`
+273.61 kB, 82.44 kB gzip. `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/a
+@"` - all six pre-existing cells `совпадает`, `расхождений нет`; the drag verb
+(inside `reorderedByDrag`, `only: ['#/lists/a']`) ran for both languages and
+neither app's result carried the new throw. No `check:built` - nothing drawn
+changed. A final `npm run check` re-armed the gate after the doc edits moved
+the tree fingerprint, immediately before the commit below.
+
+**No `VISUAL_DEBT` entry written; no `ACCEPTED` entry added.** Left alone, as
+instructed: the `$effect` rebind risk and `batchDelete`'s N saves (both
+already recorded and deliberate), and B5.4a's nits 1, 4 and 6.
 
 ## Phase 5 - what already exists
 

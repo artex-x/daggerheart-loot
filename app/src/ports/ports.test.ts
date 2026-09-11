@@ -316,25 +316,43 @@ describe('confirming', () => {
 
 describe('dragging', () => {
   /* Each row is 40px tall, stacked in index order - `top: i * 40, height: 40`
-     - so a `clientY` can be aimed above or below any row's own midpoint. */
+     - so a `clientY` can be aimed above or below any row's own midpoint. Each
+     row also carries a real `[data-drag]` grip plus a plain body child - the
+     live row's thumbnail/note/number-input content, none of it a grip - so a
+     fixture that starts a drag on the wrong child is caught the same way a
+     real row would catch it. */
   const rows = (n: number): HTMLElement => {
     const box = document.createElement('div');
     for (let i = 0; i < n; i++) {
       const row = document.createElement('div');
       row.dataset['index'] = String(i);
       row.getBoundingClientRect = () => new DOMRect(0, i * 40, 0, 40);
+      const grip = document.createElement('span');
+      grip.dataset['drag'] = String(i);
+      row.appendChild(grip);
+      const body = document.createElement('div');
+      body.className = 'row-body';
+      row.appendChild(body);
       box.appendChild(row);
     }
     document.body.appendChild(box);
     return box;
   };
 
+  /** The grip inside row `i` - what a real drag actually starts from. */
+  const gripOf = (box: HTMLElement, i: number): Element =>
+    box.children[i]?.querySelector('[data-drag]') as Element;
+
+  /** The non-grip body inside row `i` - dragstart here must be ignored. */
+  const bodyOf = (box: HTMLElement, i: number): Element =>
+    box.children[i]?.querySelector('.row-body') as Element;
+
   /** A `DragEvent` jsdom does not construct, with just what the port reads. */
   const fire = (
     el: Element | Document,
     type: string,
     opts: { clientY?: number; dataTransfer?: unknown } = {}
-  ): void => {
+  ): Event => {
     const e = new Event(type, { bubbles: true, cancelable: true });
     Object.defineProperty(e, 'dataTransfer', {
       value: opts.dataTransfer ?? {
@@ -347,6 +365,7 @@ describe('dragging', () => {
     });
     if ('clientY' in opts) Object.defineProperty(e, 'clientY', { value: opts.clientY });
     el.dispatchEvent(e);
+    return e;
   };
 
   /** The three-event shape every case below drives: start, one dragover at
@@ -354,7 +373,7 @@ describe('dragging', () => {
    *  live app reads `after` off the row's own class state at drop time, which
    *  is exactly what the last `dragover` on that row just set. */
   const dragAt = (box: HTMLElement, from: number, to: number, clientY: number): void => {
-    fire(box.children[from] as Element, 'dragstart');
+    fire(gripOf(box, from), 'dragstart');
     fire(box.children[to] as Element, 'dragover', { clientY });
     fire(box.children[to] as Element, 'drop', { clientY });
   };
@@ -393,15 +412,47 @@ describe('dragging', () => {
     const box = rows(3);
     const onDrag = vi.fn();
     nativeDrag().bind(box, { onDrop: vi.fn(), onDrag });
-    fire(box.children[2] as Element, 'dragstart');
+    fire(gripOf(box, 2), 'dragstart');
     expect(onDrag).toHaveBeenCalledWith(2);
+  });
+
+  it('does not start a drag from anything but the grip', () => {
+    /* app.js 4452-4454: a row's thumbnail, note textarea and number inputs
+       are all natively draggable content, but only the grip may start a
+       reorder - see drag.ts, onStart. */
+    const box = rows(3);
+    const onDrag = vi.fn();
+    nativeDrag().bind(box, { onDrop: vi.fn(), onDrag });
+    fire(bodyOf(box, 1), 'dragstart');
+    expect(onDrag).not.toHaveBeenCalled();
+  });
+
+  it('leaves a stray dragover alone when none of our rows is being dragged', () => {
+    /* app.js 4492: a file from the desktop, or an image from another tab,
+       must not paint a drop mark or suppress the browser's own drop. */
+    const box = rows(3);
+    const onOver = vi.fn();
+    nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
+    const e = fire(box.children[0] as Element, 'dragover', { clientY: 5 });
+    expect(onOver).not.toHaveBeenCalled();
+    expect(e.defaultPrevented).toBe(false);
+  });
+
+  it('leaves a stray drop alone when none of our rows is being dragged', () => {
+    /* app.js 4509: the same guard as onOver, for the same reason. */
+    const box = rows(3);
+    const onDrop = vi.fn();
+    nativeDrag().bind(box, { onDrop });
+    const e = fire(box.children[0] as Element, 'drop', { clientY: 5 });
+    expect(onDrop).not.toHaveBeenCalled();
+    expect(e.defaultPrevented).toBe(false);
   });
 
   it('marks before above a row’s midpoint and after below it', () => {
     const box = rows(3);
     const onOver = vi.fn();
     nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
-    fire(box.children[0] as Element, 'dragstart');
+    fire(gripOf(box, 0), 'dragstart');
     fire(box.children[2] as Element, 'dragover', { clientY: 2 * 40 + 5 }); // top 80, mid 100
     expect(onOver).toHaveBeenLastCalledWith(2, 'before');
     fire(box.children[2] as Element, 'dragover', { clientY: 2 * 40 + 35 });
@@ -412,7 +463,7 @@ describe('dragging', () => {
     const box = rows(3);
     const onOver = vi.fn();
     nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
-    fire(box.children[1] as Element, 'dragstart');
+    fire(gripOf(box, 1), 'dragstart');
     fire(box.children[1] as Element, 'dragover', { clientY: 1 * 40 });
     expect(onOver).toHaveBeenCalledWith(1, null);
   });
@@ -449,7 +500,7 @@ describe('dragging', () => {
     dragAt(box, 0, 1, 1 * 40 + 35);
     expect(onEnd).toHaveBeenCalledTimes(1);
 
-    fire(box.children[2] as Element, 'dragstart');
+    fire(gripOf(box, 2), 'dragstart');
     fire(box.children[2] as Element, 'dragend');
     expect(onEnd).toHaveBeenCalledTimes(2);
   });
@@ -458,12 +509,55 @@ describe('dragging', () => {
     const box = rows(3);
     const raf = vi.spyOn(window, 'requestAnimationFrame');
     const unbind = nativeDrag().bind(box, { onDrop: vi.fn() });
-    fire(box.children[0] as Element, 'dragstart');
+    fire(gripOf(box, 0), 'dragstart');
     unbind();
     raf.mockClear();
     fire(document, 'dragover', { clientY: 0 });
     expect(raf).not.toHaveBeenCalled();
     raf.mockRestore();
+  });
+
+  it('scrolls the page from the frame loop while the pointer sits in the edge band, and stops once it leaves', () => {
+    /* The only test above this line that reaches the document `dragover`
+       listener fires it after `unbind()`, which proves nothing about the loop
+       itself - `step()`, `window.scrollBy` and the `speed && !frame` re-arm
+       guard never ran in any test. This one drives a real frame by hand: the
+       spy hands back the callback `requestAnimationFrame` was given, and
+       invoking it is exactly what the browser would do a frame later. */
+    const box = rows(3);
+    let frameCb: FrameRequestCallback | undefined;
+    const raf = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((cb: FrameRequestCallback) => {
+        frameCb = cb;
+        return 1;
+      });
+    const scrollBy = vi.spyOn(window, 'scrollBy').mockImplementation(() => undefined);
+    const unbind = nativeDrag().bind(box, { onDrop: vi.fn() });
+
+    fire(gripOf(box, 0), 'dragstart');
+    fire(document, 'dragover', { clientY: 0 }); // the top edge, full speed
+    expect(raf).toHaveBeenCalledTimes(1);
+
+    frameCb?.(0);
+    expect(scrollBy).toHaveBeenCalledWith(0, -22);
+    expect(raf).toHaveBeenCalledTimes(2); // step() re-armed itself for the next frame
+
+    /* A second dragover still in the band does not stack a second loop -
+       `speed && !frame` only schedules once. */
+    fire(document, 'dragover', { clientY: 0 });
+    expect(raf).toHaveBeenCalledTimes(2);
+
+    /* The pointer leaves the band; the frame already in flight still runs
+       once more, finds `speed` zero, and stops re-arming itself. */
+    fire(document, 'dragover', { clientY: window.innerHeight / 2 });
+    frameCb?.(0);
+    expect(scrollBy).toHaveBeenCalledTimes(1);
+    expect(raf).toHaveBeenCalledTimes(2);
+
+    unbind();
+    raf.mockRestore();
+    scrollBy.mockRestore();
   });
 
   describe('the edge-scroll speed, off a pointer position alone', () => {
