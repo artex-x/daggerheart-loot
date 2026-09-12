@@ -6,6 +6,78 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B13 CLOSED - THE SITE NOW SERVES THE REWRITE. Phase 6 is
+  done; the soak window is open** (implementer, 2026-09-12). HEAD at close
+  `a004764`; tree clean but for the untracked `issues/tg-preview-refresh/`,
+  a different task's.
+  - **What landed.** Full design: `plan.md`, "B13 planned"; the built record,
+    every number and every deviation: `plan.md`, **"B13 built"**.
+    - `0819a73` (`feat(app): port the live entry document into the rewrite`) -
+      7 files. `app/index.html` gains live's head (`viewport-fit=cover`, the
+      title, the description with its counts, `color-scheme`, the whole Open
+      Graph and Twitter block, the icon) and the `<noscript>` block;
+      `tests/derived.js` gains `noindex` on both entry documents, the seventh
+      `COUNTERS` file and a head-to-head comparison of the two documents with
+      no exception list; `tools/check-site.mjs` is new; `META.md` section 1,
+      `CONTRACTS.md` section 5, `COVERAGE.md` line 28 and `CLAUDE.md`'s counts
+      line follow.
+    - `9177f3b` (`feat(ci): publish the built rewrite instead of the old
+      app`) - **`.github/workflows/ci.yml` alone, 82+/12-.** The flip.
+    - `a004764` (`docs: say what Pages actually serves now that the flip has
+      landed`) - the review's two blockers, both prose.
+  - **The public URL.** CI run **`34718569245`** on `9177f3b` is green in
+    every job: `check`, `parity` 1-4, `audit`, `secrets`, `deploy`. (Run
+    `34715233810` is B12.1's; do not cite it for B13.) The guard printed
+    `published:` and exactly 13 entries - `.nojekyll LICENSE assets card
+    catalog.csv data.js data.json i img index.html llms.txt og robots.txt` -
+    with no `app.js` and no `style.css`. `tools/check-site.mjs` from inside
+    the job: `сайт опубликован верно:
+    https://artex-x.github.io/daggerheart-loot/`. An independent read of the
+    live URL agrees, byte sizes included; both are in `plan.md`, "B13 built".
+  - **The owner walked the live site (plan step 11): LGTM**, with one
+    observation - the roll re-render keeps the previous artwork on screen
+    until the new image decodes. Recorded as Deferred item 1 below, with an
+    owner decision attached about how it gets fixed. Not fixed here.
+  - **Gates, each one foreground call:** `npm run check` before F1, before F2
+    and after the remediation (exit 0 each time, 1011 tests, no threshold
+    moved); `npm run check:built` once (build, `file://` smoke, 88.5 kB of the
+    120 kB budget); `node tests/run-all.js app/sweep` (555.4 s slowest) and
+    `node tests/run-all.js app/typo,app/hues,app/contracts,app/states`
+    (263.0 s slowest), two calls as planned. No local parity call. The
+    remediation re-ran `npm run check` and nothing else, deliberately: both
+    edits are prose and the heavy suites are green on that tree.
+  - **Review: fix-then-continue, two blockers, both documentation, no code
+    defect.** The reviewer re-derived and confirmed the "not a contract
+    change" reasoning (grepping every spec, all four fixture directories, all
+    of `i/*.html`, `llms.txt` and `robots.txt` for `/app.js` and
+    `/style.css` - named nowhere - and following the stub redirect through
+    `hash.ts:125`); both guard deviations, reproducing the `bash -e` trap with
+    `bash -ec 'echo start; false && { echo boom; exit 1; }'` (exits 1) and
+    confirming `.nojekyll` is genuinely 0 bytes; the revert property; and the
+    entry-document port, which it parsed itself - **the union is 20 fields,
+    zero differences, zero missing on either side**. Nothing built was asked
+    to change.
+    - **Blocker 1**: `CLAUDE.md` lines 19 and 21 still called the static root
+      the shipped app and said Pages serves it "until the migration plan and
+      owner perform cut-over" - the opposite of the truth, in the first file
+      every agent reads. An agent acting on it edits `index.html` believing it
+      changes the live site and treats `app/index.html` as not public.
+    - **Blocker 2**: `docs/specs/COVERAGE.md` lines 13-14 introduced the
+      twenty old-app suites as gating "what Pages serves". Both halves false.
+      The batch rewrote line 28 of the same table and walked past the
+      paragraph introducing it - the **third consecutive batch** to land a
+      stale citation and the **second in this file**.
+    - Both fixed in `a004764`, which also swept the specs and `.claude/` for
+      anything else the flip falsified: nothing. Two statements the *counts*
+      change made stale are recorded as nits N1 and N7 below rather than
+      fixed, per the coordinator's deferral.
+  - **The revert, should the soak turn bad:** `git revert 9177f3b`, then push.
+    One file, no possible conflict; the next `deploy` republishes the root
+    files, which never left the repository and are still gated. Revert first
+    and diagnose after. The same instruction is in the job's own comment
+    block.
+  - **Next: the soak**, then Phase 7 R0 and Phase 8. There is no
+    implement-ready batch queued; the next cycle is a planning one.
 - Task status: **B12.1 CLOSED - the router matches live's fallback; a review
   remediation cycle then fixed two documentation blockers; B13 is the next
   batch and is implement-ready** (implementer, 2026-09-12). HEAD at dispatch
@@ -1757,6 +1829,33 @@ carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
 carry what was done about it. Do not re-measure any of it.
 
 ## Completed
+
+- Batch name/id: **B13 - the reversible cut-over** (implementer, 2026-09-12)
+- What shipped: the site's own URL now serves the built rewrite. The entry
+  document was ported first - `app/index.html` had no viewport-fit, no
+  description, no Open Graph or Twitter card, no icon and no `<noscript>`, and
+  nothing in the repository compared the two documents - then
+  `.github/workflows/ci.yml` was flipped in a commit of its own so the revert
+  is one file. `tools/check-site.mjs` reads the live URL as the job's last
+  step. Nothing was deleted: `index.html`, `app.js` and `style.css` stay,
+  gated, as the fallback and the parity expectation.
+- Files changed: `app/index.html`, `tests/derived.js`, `tools/check-site.mjs`
+  (new), `docs/specs/META.md`, `docs/specs/CONTRACTS.md`,
+  `docs/specs/COVERAGE.md`, `CLAUDE.md`, `.github/workflows/ci.yml`, and
+  (F3) `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): `0819a73` (F1), `9177f3b` (F2, one file), `a004764` (the review
+  remediation), plus this documents commit. All pushed.
+- Checks run and results: `npm run check` three times (exit 0, 1011 tests, no
+  threshold moved); `npm run check:built` once (88.5 kB of 120 kB);
+  `node tests/run-all.js app/sweep` (4/4, 555.4 s) and
+  `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` (4/4,
+  263.0 s); no local parity call. CI run `34718569245` green in every job
+  including all four parity shards and `deploy`.
+- Deviations and rationale: six, all recorded in `plan.md`, "B13 built",
+  "Deviations from the plan, and why". The two that matter are `.nojekyll`
+  required with `[ -e ]` rather than `[ -s ]` (it is empty by design) and the
+  guard's `if` blocks rather than `&&`/`||` one-liners (under `bash -e` the
+  one-liner form fails the step on every *good* deploy).
 
 - Batch name/id: **Phase 6 planning pass** (planner, 2026-09-12, on
   `aac1453`)
@@ -4302,12 +4401,42 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch (implement-ready)
 
-**B12.1 is closed - three commits (`bc96b59` the rule, `7a729bd` the
-documents, `cd71897` the review remediation), all pushed, and CI green on
-`7a729bd` including all four parity shards. The next batch is B13, and it is
-implement-ready** (planner, 2026-09-12; closed by the implementer the same
-day). B12.1's, B12's, B11.1's and B11's briefs are kept below only as closed
+**B13 is closed and the site serves the rewrite. There is no implement-ready
+batch queued: the next cycle is a planning one** (implementer, 2026-09-12).
+What is waiting, in order:
+
+1. **The soak.** The window exists so the answer to "is this bad enough to
+   revert?" is always "revert" - `git revert 9177f3b`, then push. Nothing is
+   scheduled against it; it ends when the owner says so.
+2. **Phase 7 R0** - the deletions (`index.html`, `app.js`, `style.css`, the
+   legacy browser suites, `tests/parity.js`, `VISUAL_DEBT`/`ACCEPTED`), behind
+   the six-point entry condition in `plan.md`, "Phase 7 - what has to be true
+   before the net comes out". Do not start any of it on the strength of the
+   flip alone.
+3. **Phase 8** - the post-migration review, `docs/specs/DEBT.md`.
+
+The roll re-render finding in "Deferred" item 1 below carries an owner
+decision about *how* it is scheduled: it is bundled into a batch that already
+has work in those paths, never planned as a batch of its own.
+
+B13's, B12.1's, B12's, B11.1's and B11's briefs are kept below only as closed
 records.
+
+### Closed record: B13 (landed 2026-09-12)
+
+- Name: **B13 - the reversible cut-over.** Full design: `plan.md`, **"B13
+  planned"**; the built record, with the run id, the guard's published list,
+  `check-site.mjs`'s output, all six deviations and the rehearsals:
+  `plan.md`, **"B13 built"**.
+- Landed as three commits, all pushed: `0819a73` (the entry document, the
+  derived checks and `tools/check-site.mjs`), `9177f3b` (`ci.yml` alone, the
+  flip), `a004764` (the review's two documentation blockers).
+- CI run `34718569245` on `9177f3b`: green in every job. The published set is
+  13 entries with no `app.js` and no `style.css`; `check-site.mjs` passed
+  against the live URL; the owner walked the site and returned LGTM.
+- Not touched, as planned: `docs/fixtures/`, `tests/contracts.js`,
+  `llms.txt`, `tests/parity/specs.js`, `index.html`, `app.js`, `style.css`,
+  `base: './'`, and `concurrency: pages` / `cancel-in-progress: false`.
 
 ### Closed record: B12.1 (landed 2026-09-12)
 
@@ -5339,6 +5468,84 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B13's items, deferred by the coordinator's instruction (2026-09-12) -
+  record only, do not fix, and for item 1 do not design the fix either.** B13
+  is mid-plan: the soak, Phase 7 R0 and Phase 8 are queued behind it, and none
+  of this earns a cycle of its own.
+
+  1. **A real behaviour divergence from live, now in production: on a roll,
+     the previous artwork stays on screen until the new image decodes.** Found
+     by the owner on the live site under throttling, in their own words: "when
+     we rerender it preserves old images until new ones are loaded."
+
+     **Owner decision, 2026-09-12, on how it gets fixed: not as a batch of its
+     own. It is bundled into a batch that already has other work in those
+     paths**, so whoever plans next picks it up alongside related work. This
+     is settled, not an option to re-decide; what is still open is the
+     *content* of the fix, which is the planner's.
+
+     Mechanism, confirmed in code, not inferred: `RollPanel.svelte:129` and
+     `StdPanel.svelte:157` each render a single `<RecordCard>` with **no
+     `{#key}`**, so Svelte updates it in place and the `<img>` node is reused -
+     only its `src` changes, and the browser keeps painting the old bytes
+     until the new ones decode. Every other path is keyed and therefore
+     replaces the node: `TableRows.svelte:108` `(entry.it.id)`,
+     `ListPage.svelte:782` `(it.id)`. Live does the opposite everywhere -
+     `app.js:3819` assigns `$('#view').innerHTML`, so each roll builds a
+     brand-new `<img>` that paints empty and fills.
+
+     Measured on the live site: one mutation batch at 4.3 ms, handler 0.9 ms,
+     four image requests starting at 5 ms, and the same four `<img>` elements
+     already present at t=26 ms with three still loading.
+
+     **Not** a loading-strategy difference: both apps ship identical
+     `loading="lazy" decoding="async"` and neither ships `srcset`/`sizes`
+     (live's `imgTag` comment at `app.js:1676-1681` describes a `sizes`
+     attribute its own code never emits). Parity never caught it because it
+     screenshots settled states and this is a transient during re-render -
+     worth remembering as a class, not just as an incident.
+
+     Open for the planner, and only the planner: which call sites, whether
+     `{#key}` is the right instrument, and whether this is a `docs/specs/DEBT.md`
+     entry or work inside a batch.
+
+  2. **B12.1's deferred nit 1 has shipped and is still open.** A pinned bare
+     `#/tables` is accepted by the pin button and silently dropped at the next
+     boot, where live always pins a named table. `context.md`'s B13 dispatch
+     section records the decision to let it go live; the owner has since
+     confirmed it stays deferred. Full mechanism: the B12.1 nit list below,
+     item 1. Still read-verified only - nobody has driven the built app at it.
+
+  3. **The reviewer's N1-N8**, one line each:
+     - **N1** - the seven-file counts rule is now stated in six places, and
+       `.claude/hooks/edit-followup.mjs:20` and
+       `.claude/prompts/add-source.prompt.md:145` still say six. The hook's own
+       reminder therefore leaves `tests/derived.js` failing for whoever follows
+       it. Cheapest of the eight and the only one with a functional edge.
+     - **N2** - the `>= 20` floor in `headFacts`'s sanity check is exactly the
+       current field count with zero headroom, so it really asserts "no field
+       may leave both documents" while its message says the parse broke.
+     - **N3** - the deploy guard greps literal `src="app.js"` while
+       `check-site.mjs` uses `/src="\.?\/?app\.js"/`; the guard is the earlier
+       gate and should be the stricter of the two.
+     - **N4** - `tools/check-site.mjs` is gated by nothing until it runs on
+       `main` after a publish (`tools/` is ignored by both `.prettierignore`
+       and `eslint.config.mjs`), so a later syntax error turns a run red
+       *after* a good deploy. `node --check` in the `check` job closes it.
+     - **N5** - what the guard still cannot catch: no proof `_site/index.html`
+       came from this commit's build; `img og i card` required non-empty but
+       `og/_share.jpg` not by name; no check that `_site/data.js` assigns
+       `window.LOOT`.
+     - **N6** - the ported `<noscript>` links resolve on Pages but not from
+       `dist/` over `file://`; becomes real at Phase 7.
+     - **N7** - `tests/parity/driver.js:11`'s comment, "legacy -> index.html at
+       the repository root, what Pages serves today", is stale in exactly the
+       way blocker 2 was. Left alone only because it falls outside the file set
+       B13 touched.
+     - **N8** - `headFacts()` scans the whole document rather than `<head>` and
+       parses double-quoted attributes only; it fails closed, which is why it
+       is a nit.
 
 - **B12.1 review nits, deferred by the coordinator's own instruction
   (2026-09-12) - record only, do not fix; B12.1 is mid-plan and B13 re-enters

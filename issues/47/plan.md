@@ -13865,6 +13865,162 @@ Three, one batch - they share every gate, and cutting them apart would pay
   revert first and diagnose after. The window exists so that the answer to
   "is this bad enough to revert?" is always "revert".
 
+### B13 built: the site now serves the rewrite (implementer, 2026-09-12)
+
+**The cut-over is live.** `https://artex-x.github.io/daggerheart-loot/` serves
+the built rewrite. Built as designed, in two production commits plus the
+remediation, all pushed:
+
+- **F1 `0819a73`** (`feat(app): port the live entry document into the
+  rewrite`), 7 files: `app/index.html` (the head and the `<noscript>` block),
+  `tests/derived.js` (three changes), `tools/check-site.mjs` (new, not yet
+  called), `docs/specs/META.md` section 1, `docs/specs/CONTRACTS.md` section 5,
+  `docs/specs/COVERAGE.md` line 28, `CLAUDE.md`'s counts line.
+- **F2 `9177f3b`** (`feat(ci): publish the built rewrite instead of the old
+  app`), `.github/workflows/ci.yml` and nothing else - **82 insertions, 12
+  deletions, one file**, which is the revert property the whole batch is built
+  around, and which the reviewer verified independently.
+- **Remediation `a004764`** (`docs: say what Pages actually serves now that the
+  flip has landed`), `CLAUDE.md` "Project shape" and `docs/specs/COVERAGE.md`
+  "Suites" - the review's two blockers, both prose.
+
+#### What the run said
+
+CI run **`34718569245`** on `9177f3b`: green in every job - `check`, `parity`
+shards 1 through 4, `audit`, `secrets`, `deploy`. (Run `34715233810` is
+B12.1's, not this one; do not cite it here.)
+
+`deploy`'s guard printed `published:` and exactly **13 entries**:
+
+```
+.nojekyll LICENSE assets card catalog.csv data.js data.json
+i img index.html llms.txt og robots.txt
+```
+
+No `app.js`, no `style.css`. `tools/check-site.mjs`, from inside the job:
+`сайт опубликован верно: https://artex-x.github.io/daggerheart-loot/`.
+
+An independent read of the live URL, taken outside the job, agrees: the served
+`index.html` carries `noindex`, `assets/app.js`, `<div id="app">`, live's
+`<title>` and an absolute `og:image` at `og/_share.jpg`, with `src="app.js"`
+absent; and every probe is 200 - `assets/app.js` 305559 B, `data.js` 648724,
+`data.json` 648711, `catalog.csv` 576291, `llms.txt` 18225, `robots.txt` 1110,
+`i/w1.html` 3438, `img/_none.webp` 27688, `og/_share.jpg` 31778,
+`card/die-d12-bw.svg` 1116. So the three symlinked folders survived assembly,
+which was the hazard the explicit list exists for.
+
+**Step 11, the human walk, is done: the owner's verdict is LGTM**, with one
+observation, recorded as Deferred item 1 in `handoff.md` and summarised below.
+
+#### Deviations from the plan, and why
+
+1. **`.nojekyll` is required with `[ -e ]`, not `[ -s ]`.** The plan asked for
+   every required path "present and non-empty"; `.nojekyll` is zero bytes by
+   design, so `-s` would have failed every deploy. Presence is the whole
+   signal. The reviewer confirmed the file is genuinely empty.
+2. **The guard's three content assertions are `if` blocks, not `&&`/`||`
+   one-liners.** Actions runs a `run:` step under `bash -e`, where
+   `grep -q 'src="app.js"' … && { …; exit 1; }` returns 1 on the *healthy*
+   path and fails the step on every good deploy. Reproduced by the reviewer:
+   `bash -ec 'echo start; false && { echo boom; exit 1; }'` exits 1. This was
+   the one live bug in the first draft of the guard.
+3. **`docs/specs/COVERAGE.md` joined F1**, outside the plan's file list: line
+   28 said the `derived` suite checks "counts spelled out in six files", which
+   the `COUNTERS` addition makes seven. Fixing the citation in the same commit
+   is the rule the previous two reviews wrote; it did not go far enough, which
+   is what the remediation commit closes.
+4. **`CLAUDE.md`'s counts line gained `app/index.html`** for the same reason:
+   it is the instruction naming which files carry the counts, and
+   `tests/derived.js` now enforces the seventh.
+5. **A campsite fix in a touched path**: `tests/derived.js`'s comment above
+   `COUNTERS` said "в четырёх файлах" while the list already held six.
+6. **F2's message was amended once before pushing.** Its first version carried
+   a placeholder sha in `git revert <sha>`, which a commit cannot know about
+   itself; replaced with `git log --oneline -- .github/workflows/ci.yml` then
+   `git revert <it>`. Unpushed at the time. The `ci.yml` comment block never
+   carried a sha.
+
+#### Found while building, and not predicted by the plan
+
+- **Prettier left `app/index.html` byte-for-byte as written.** The plan warned
+  it would reformat the ported markup. It did not. "Compare values, not bytes"
+  still stands as the rule; it simply was not needed.
+- **The head comparison reads exactly 20 fields**, so its sanity floor is
+  `>= 20`, not `> 20`. The reviewer parsed both documents itself and read the
+  same union: 20 fields, zero differences, zero missing on either side.
+- **`tools/` is ignored by both `.prettierignore` and `eslint.config.mjs`**, so
+  `tools/check-site.mjs` is reached by neither `format:check` nor `lint`. It is
+  checked only by running it - see deferred nit N4.
+- **The live-URL probe, run before the flip, is the cleanest statement of what
+  the deploy had to change**: against the published old app every
+  repository-side path already answered 200, and exactly five assertions
+  failed (no `assets/app.js` reference, no `<div id="app">`, `src="app.js"`
+  present, `assets/app.js` 404 and its size). Those five turning green is the
+  whole post-deploy read, and they did.
+- **`dist/assets/` holds exactly one file and no CSS asset** (reviewer), so the
+  entry document's "the rewrite's CSS ships inside the bundle" comment is
+  verified rather than assumed; `dist/index.html` carries
+  `<script defer src="./assets/app.js">`, classic, not a module.
+
+#### The rehearsals, which were not gates but were the point
+
+Before F2 was committed, the collect and guard steps were replayed verbatim
+against the real tree in a scratch directory: exit 0, the same 13 entries. Then
+three negative probes, each firing the right `::error::` and exit 1 - the old
+`app.js` smuggled into `_site`, a dangling symlink where `card/` should be, and
+an `index.html` still loading the old app - after which the healthy set
+returned to OK. `ci.yml` was parsed with a YAML parser to confirm step order,
+that `id: pages` survived, and that `concurrency` was untouched. None of this
+is a gate; all of it is why the first run of a job that decides what the public
+URL serves was green.
+
+#### Gates
+
+| Command | Result |
+|---|---|
+| `npm run check` (before F1) | exit 0 - 41 files / 1011 tests; statements 96.59, branches 88.54, functions 97.02, lines 97.30; no threshold moved |
+| `npm run check:built` (once) | green - `dist/assets/app.js` 305.55 kB (gzip 91.14), `file://` smoke "the built page opens from a folder", budget 88.5 kB of 120 kB |
+| `node tests/run-all.js app/sweep` | 4/4 ok, slowest 555.4 s |
+| `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` | 4/4 ok, slowest 263.0 s (`app/contracts`) |
+| `npm run check` (before F2) | exit 0, same numbers |
+| `npm run check` (after the remediation) | exit 0, same numbers - the only gate that batch needed, both edits being prose |
+
+No local parity call, as planned, and CI's four shards on the push are the
+read. `check:built`, the five `tests/app/` suites and parity were **not**
+re-run for the remediation: they are green on that exact tree and prose does
+not move a pixel.
+
+#### Acceptance criteria
+
+All met. Every row of the entry-document table is closed and the new
+comparison passes with no exception list; `npm run check` and
+`npm run check:built` green; the five `tests/app/` suites green with no new
+axe `allow` and no parity cell changed (CI's read); the `deploy` run green end
+to end with the guard's list complete and `check-site.mjs` passing against the
+live URL; the live site walked by the owner; `index.html`, `app.js` and
+`style.css` still in the repository, unmodified, with the parity job still in
+CI and green; and F2's diff exactly one file.
+
+#### Not a contract change - confirmed, not merely asserted
+
+The reviewer re-derived the plan's clause-by-clause reasoning independently: it
+grepped every spec, all four fixture directories, all of `i/*.html`, `llms.txt`
+and `robots.txt` for `/app.js` and `/style.css` - named nowhere - and followed
+the stub redirect target through `hash.ts:125`. So no `docs/fixtures/`,
+`tests/contracts.js` or `llms.txt` edit was owed, and `CONTRACTS.md` section
+5's added sentence is a clarification of the same contract.
+
+#### What this batch deliberately did not do
+
+Nothing was deleted - not `index.html`, `app.js` or `style.css`, not a legacy
+suite, not `tests/parity.js`, not a `VISUAL_DEBT` or `ACCEPTED` entry. That is
+Phase 7 and is behind its own entry condition. `base: './'` is unchanged, and
+`concurrency: pages` with `cancel-in-progress: false` stays.
+
+**Next: the soak.** The window's whole purpose is that the answer to "is this
+bad enough to revert?" is always "revert", and the revert is
+`git revert 9177f3b` plus a push. Phase 7 R0 and Phase 8 are queued behind it.
+
 ### Phase 7 - what has to be true before the net comes out
 
 Phase 7's content is unchanged and still stands where it was written ("Phase 6
