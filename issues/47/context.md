@@ -3184,3 +3184,135 @@ again on an independent read from this session.
 dropping a clause the Architecture boundaries section already states. The next
 standing rule added to that file forces a move-out into `docs/specs/*`, and
 that is cheaper to know now than to discover mid-batch.
+
+## The finishing plan, and the facts it measured (planner, 2026-09-12) - durable, read before implementing
+
+The whole remainder of task 47 is planned in `plan.md`, **"The finishing plan -
+every batch from here to done"** (the last section of that file): `B14 -> R0a ->
+R0b -> R0c -> Phase 8 under a new task id`. The brief for B14 is `handoff.md`,
+"Next batch (implement-ready)". Facts below were read off the source or measured
+this session; do not re-derive them.
+
+### Owner decisions, 2026-09-12 - settled input
+
+1. **The soak is dropped.** "I'm ok to get rid of soak, we can revert to
+   previous commit if needed, I would not block all the work." Phase 7's
+   condition 4 (seven days) is removed; condition 2 is reworded (the second
+   `check-site.mjs` read is taken when R0c opens); condition 3 is met by
+   evidence - `9177f3b`, `515e257`, `6cb8293` are three pushes, and R0a records
+   the two run conclusions rather than waiting on a clock; **condition 6 ("the
+   owner says go") now gates R0c alone**, because R0a and R0b delete nothing.
+2. Unchanged from the B13 close-out: the roll fix is never a batch of its own
+   (B14 is its host), and B12.1's nit 1 stays deferred (B14 C2 is where it
+   lands).
+
+### The revert cliff
+
+`git revert 9177f3b` is one command over one file today and stays so through
+B14, R0a and R0b. **R0c ends it**: after the deletions, recovery is restoring
+paths out of git history plus rebuilding the workflow's collect step - a batch,
+not a command. This is why condition 6 hangs on R0c only.
+
+### The roll re-render divergence is four call sites, not two
+
+Measured by reading the components. The handoff named `RollPanel.svelte:129`
+(one `<RecordCard>`, no `{#key}`) and `StdPanel.svelte:157`. The mechanism
+behind the second is **`OrGrid.svelte`'s `{#each cells as cell, i (i)}`, which
+keys by position**, so every caller that draws its card through `OrGrid`'s
+snippet reuses the node:
+
+- `StdPanel.svelte:157` (`items={pool}`)
+- `AltPanel.svelte:228` (`items={picks}`, `AltPick` wrappers)
+- `ListPage.svelte:676` - the **list page's own roll** (`.lroll`, `hit`),
+  `OrGrid or={t.or} items={[h]}`
+
+Keyed and unaffected: `TableRows.svelte:108` `(entry.it.id)`,
+`ListPage.svelte:782` `(it.id)`. Remounted by navigation and unaffected:
+`RecordPage.svelte:74`, `RecordModal.svelte:99`.
+
+`OrGrid` is generic (`items: T[]`), so `cell.it.id` is not available to it -
+object identity (`{#key cell.it}`) is, and it is the right key.
+
+**Classification, and it settles the open half of the owner's decision:** this
+is a divergence *from* live, not a live defect reproduced on purpose, so it is
+**not** a `docs/specs/DEBT.md` entry and not Phase 8's. It is migration work and
+belongs while the live app is still readable as the expectation.
+
+### The pinned bare `#/tables`, both halves
+
+Live does two things the port copied neither of: `homeHash()`
+(`app.js:1133-1136`) **writes** `'#/tables/' + S.tables.t`, always a named
+table; `homeAllows()` (`:1124-1130`) **accepts** any `TAB_LIST` entry - a bare
+`tables` included - as well as a named table. The rewrite's `toggleHome()`
+(`app/src/state/app.svelte.ts:444-454`) stores `this.hash` and `readHome`
+(`:65-72`) refuses a bare `#/tables` next boot.
+
+The writer needs "the table on screen", which lives in
+`TablesPage.svelte:65-75`'s `lastTable`, not in `AppState`. Measured:
+`App.svelte` remounts the page component on every route change and every
+interaction writes a named address, so `route.table ?? 'core_item'` inside
+`AppState` is exact. **Verify the remount before relying on it**; the fallback
+is `toggleHome(hash?)` with `TablesPage` passing `tablesHash(table)` through
+`PageHead`.
+
+### "Delete the legacy browser suites" is fifteen suites, ten with no counterpart
+
+Measured by requiring `tests/lib.js`, whose `ROOT` is
+`file://<repo>/index.html`. Dies with the live app: `audit2`, `behave`,
+`contracts`, `craftmob`, `eqtest`, `flows`, `hues`, `lists2`, `noart`, `notes`,
+`print`, `qa`, `select`, `states`, `typo`. Data-only and unaffected: `craft`,
+`dataint`, `derived`, `i18n`.
+
+`tests/app/` counterparts already exist for `contracts`, `hues`, `states`,
+`typo`, plus `sweep` for `audit2`'s page walk. **Ten have none**: `behave`,
+`craftmob`, `eqtest`, `flows`, `lists2`, `noart`, `notes`, `print`, `qa`,
+`select`. R0b gives each one of *covered already* (named specifically), *ported*
+or *dropped with a reason*; `print`'s geometry is named by Phase 7's own text
+and is a product law in `CLAUDE.md`. A suite whose coverage cannot be accounted
+for is not deleted.
+
+### Costs measured or read this session
+
+- Parity states: **105**. `"#/roll"` matches 18, plus `"#/lists/a ~ roll panel"`
+  and `"#/lists/a ~ rolled"` - 20 states, one foreground call.
+- `CLAUDE.md` is **199 lines** against its own 200-line cap. B14 therefore puts
+  the new standing rule in `.claude/prompts/` only; R0c, which deletes the
+  twenty-line "Migration and parity" section, puts it into `CLAUDE.md`.
+- `npm run check` runs `node .claude/hooks/selftest.mjs`, so a hook-message
+  assertion is gated by a call every batch already makes. `tools/` is ignored by
+  both `.prettierignore` and `eslint.config.mjs`, which is why
+  `tools/check-site.mjs` is reached by nothing until it runs post-deploy;
+  `node --check` in the `check` script closes it without touching `ci.yml`.
+- The counts rule is **seven** files (`tests/derived.js:397`), five after R0c
+  deletes `index.html` and `app.js`.
+
+### The standing rule this session earned
+
+**A placement has to be acceptance, not a footnote.** An item the plan places in
+a batch is written into that batch's acceptance criteria in `handoff.md` as its
+own line, and the closing record says what happened to each: done, or re-placed
+with a reason. A batch is not recorded closed while an inherited line has no
+outcome. Written because B12's nit 1 and nit 2b were placed in B13, B13 closed
+without them, and both documents went on saying they were handled. B14 puts the
+rule into `.claude/prompts/plan.prompt.md` and `implement.prompt.md`; R0c puts
+the one-line version into `CLAUDE.md`.
+
+### Task 47's end
+
+47 closes at **R0c**, not at Phase 8: Phase 8's own design gives R1 a new task
+directory "so this file can retire with issue 47". `plan.md`'s opening line,
+which says the file is historical once Phase 8 closes, is corrected by R0c's
+documentation commit. What happens to `issues/47/` itself is the owner's call;
+the recommendation is to keep it, since it is the only place the migration's
+measurements live.
+
+### One more thing R0a must not walk past (same session)
+
+`tests/parity/specs.js` has **no `pending` state and no `pending` spec** (so
+Phase 4's row in the Phases table was stale and is corrected), and
+**`VISUAL_DEBT` holds 18 entries**. Those 18 are known, measured places where
+the rewrite draws something different from the live app. R0c deletes the table.
+R0a therefore decides each of the 18 - paid off, or carried into a
+`FEATURES.md`/`STATE.md` bullet or a `DEBT.md` section-2 entry - because
+otherwise eighteen recorded divergences disappear with the file, which is the
+same class of loss as the two dropped nits and the ten uncounted legacy suites.

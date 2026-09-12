@@ -6,7 +6,47 @@ depends on chat history.
 
 ## Status
 
-- Task status: **B13 CLOSED - THE SITE NOW SERVES THE REWRITE. Phase 6 is
+- Task status: **THE WHOLE REMAINDER OF 47 IS PLANNED: B14 -> R0a -> R0b -> R0c
+  -> (Phase 8 as its own task). B14 is implement-ready; the soak is gone**
+  (planner, 2026-09-12, planning pass only - no production, test or config code
+  written). HEAD `6cb8293`, equal to `origin/main`; tree clean but for the
+  untracked `issues/tg-preview-refresh/`, another task's - leave it.
+  - Last agent: planner. NEEDS_HUMAN_CONFIRMATION: **no** (one owner decision
+    is queued but blocks nothing yet - see the last bullet).
+  - **Read `plan.md`, "The finishing plan - every batch from here to done"**,
+    the last section of that file. It is the only place that says what happens
+    next and in what order; everything above it in `plan.md` is the record of
+    how the migration was built.
+  - **Owner decision carried in: the soak is dropped** ("I'm ok to get rid of
+    soak, we can revert to previous commit if needed, I would not block all the
+    work"). Phase 7's condition 4 is removed, condition 2 reworded, condition 3
+    met by evidence (`9177f3b`, `515e257`, `6cb8293` are three pushes), and
+    condition 6 - "the owner says go" - now gates **R0c alone**, the batch that
+    deletes the old app. R0a and R0b delete nothing and do not wait on it.
+  - **The revert cliff, written for the owner**: `git revert 9177f3b` is one
+    command over one file today, and stays that way through B14, R0a and R0b.
+    **R0c ends it** - after the deletions, recovery means restoring paths out of
+    git history and rebuilding the workflow step: possible, but a batch with its
+    own review, not a command. Full text: `plan.md`, "The revert cliff".
+  - **B14 is the next batch and is implement-ready**: the roll re-render fix
+    (four call sites, not the two the handoff named - `AltPanel.svelte:228` and
+    `ListPage.svelte:676` have the same shape through `OrGrid`'s positional
+    key), the pinned bare `#/tables`, and six inherited checks. Brief below,
+    "Next batch (implement-ready)"; design in `plan.md`, "B14 planned".
+  - **Two deferred items were dropped by B13 while this file said they were
+    placed there** - B12's nit 1 (`typo.js`'s silent grips) and nit 2b
+    (`states.js` using `d.click` where the plan says `press`). Both are open,
+    both are acceptance lines of B14, and the stale claim is corrected in
+    "Deferred" below and in `plan.md`. The mechanism written to stop it
+    recurring - **a placement is acceptance, not a footnote** - is in `plan.md`,
+    under that name, and B14 puts it into `.claude/prompts/`.
+  - **Queued owner question, not blocking**: the go-ahead for R0c (Phase 7
+    condition 6), wanted when R0b closes - by then the owner will have used the
+    deployed app through two more batches. Asking earlier is fine; nothing
+    stalls until then.
+  - Next action: **B14**, below.
+
+- Task status (previous): **B13 CLOSED - THE SITE NOW SERVES THE REWRITE. Phase 6 is
   done; the soak window is open** (implementer, 2026-09-12). HEAD at close
   `a004764`; tree clean but for the untracked `issues/tg-preview-refresh/`,
   a different task's.
@@ -4401,23 +4441,114 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch (implement-ready)
 
-**B13 is closed and the site serves the rewrite. There is no implement-ready
-batch queued: the next cycle is a planning one** (implementer, 2026-09-12).
-What is waiting, in order:
+- **Name**: **B14 - the roll surface, the pinned home, and the checks that
+  should have caught them.** Full design, with the measurements and every
+  rejected alternative: `plan.md`, **"B14 planned"**, inside "The finishing
+  plan - every batch from here to done". Read that section before starting;
+  this brief is its summary, not a substitute.
+- **Objective**: close the one behaviour divergence the owner found on the live
+  site (a roll keeps the previous artwork on screen until the new image
+  decodes), close the pinned-home gap that shipped with the flip, and repair the
+  six checks and documents that let these through - all under one set of gates,
+  because the owner's standing decision is that the roll fix never gets a batch
+  of its own.
+- **In scope**, as three commits:
+  - **C1 - the roll surface replaces its card, as live does.**
+    `OrGrid.svelte`: `{#key cell.it}` around `{@render card(cell.it)}`, in place
+    of the positional `(i)` key - this one edit covers `StdPanel.svelte:157`,
+    `AltPanel.svelte:228` and `ListPage.svelte:676`. `RollPanel.svelte:129`:
+    `{#key shown.it}` around its single `<RecordCard>`. Two tests: a vitest
+    component test asserting the captured `<img>` is `isConnected === false`
+    after the shown record changes, and a `tests/app/states.js` case that marks
+    the `.results .card-media img`, presses roll until the record changes, and
+    asserts the mark is gone. Record the one remaining deviation from live -
+    rolling the same record twice keeps the node - in the commit message.
+  - **C2 - the pinned home matches live on both sides.** `AppState`: the writer
+    pins `'#/tables/' + (route.table ?? 'core_item')` (live's `homeHash`,
+    `app.js:1133-1136`) and `readHome` accepts a bare `tables` as well as a
+    named table (live's `homeAllows`, `:1124-1130`). Verify first that
+    `App.svelte` remounts `TablesPage` on every route change, which is what
+    makes `'core_item'` exact; the fallback if it does not hold is
+    `toggleHome(hash?)` with `TablesPage` passing `tablesHash(table)` through
+    `PageHead`. Wire or delete `canPinHome` (it has no production consumer).
+    `docs/specs/ROUTES.md` (the "nine a person may pin" line and the
+    "navigating away and back" line) and `STATE.md` change in the same commit.
+  - **C3 - the checks**: `tests/app/typo.js`'s silent grips, `tests/app/states.js`'s
+    `twoFramesPicked` `d.click` -> `d.press`, the six-vs-seven counts list in
+    `.claude/hooks/edit-followup.mjs:20` and `.claude/prompts/add-source.prompt.md:145`
+    plus a `selftest.mjs` assertion on the reminder's content,
+    `node --check tools/check-site.mjs` added to the `check` npm script,
+    `tests/parity/driver.js:11`'s stale comment, and the placement rule into
+    `.claude/prompts/plan.prompt.md` and `implement.prompt.md`.
+- **Out of scope**: `.github/workflows/ci.yml` (the revert must stay one file
+  until R0c - N3, N4-in-CI, N5 and N6 are R0c's); `tests/derived.js`'s
+  `headFacts` (N2, N8 - R0c deletes their host); `docs/specs/DEBT.md`
+  renumbering and `vite.config.mts`'s exclusion comment (Phase 8);
+  `index.html`, `app.js`, `style.css`, `tests/parity/specs.js`,
+  `docs/fixtures/`, `tests/contracts.js`, `llms.txt`.
+- **Files expected**: `app/src/components/OrGrid.svelte`,
+  `app/src/components/RollPanel.svelte`, one component test under
+  `app/src/components/`, `app/src/state/app.svelte.ts`,
+  `app/src/state/app.test.ts` (and `shell.test.ts` if it asserts the pin),
+  `docs/specs/ROUTES.md`, `docs/specs/STATE.md`, `tests/app/states.js`,
+  `tests/app/typo.js`, `tests/parity/driver.js`, `package.json`,
+  `.claude/hooks/edit-followup.mjs`, `.claude/hooks/selftest.mjs`,
+  `.claude/prompts/add-source.prompt.md`, `.claude/prompts/plan.prompt.md`,
+  `.claude/prompts/implement.prompt.md`, plus `issues/47/` at close.
+- **Steps**: follow `plan.md`, "B14 planned", "The commits", in order C1, C2,
+  C3, with `npm run check` before each commit and the heavy gates after C2/C3 as
+  listed below. Re-read `git log --oneline -3` before each commit: peer sessions
+  share this tree.
+- **Acceptance criteria** - every line is checked before the batch is recorded
+  closed, and the closing record says what happened to each inherited line:
+  1. The four roll call sites replace the card's `<img>` node on a roll; prove
+     the two new tests fail with the `{#key}` removed, once, rather than
+     asserting that they would.
+  2. The same-record-twice deviation is written in the commit message and the
+     batch record.
+  3. A pinned bare `#/tables` survives a reboot; `ROUTES.md` and `STATE.md` say
+     so in the same commit; `canPinHome` is wired or gone.
+  4. **Inherited (B12 nit 1, dropped by B13)**: a missing grip in
+     `tests/app/typo.js` fails the suite; demonstrated by renaming one
+     expectation and watching it go red.
+  5. **Inherited (B12 nit 2b, dropped by B13)**: `twoFramesPicked` uses
+     `d.press`, or names the control and the reason it could not.
+  6. **Inherited (B13 review N1)**: both `.claude/` files say seven, and
+     `selftest.mjs` asserts the reminder's content.
+  7. **Inherited (B13 review N4)**: `npm run check` fails on a syntax error in
+     `tools/check-site.mjs`, and `ci.yml` is untouched by this batch.
+  8. **Inherited (B13 review N7)**: `tests/parity/driver.js:11` describes what
+     Pages serves now.
+  9. The placement rule is in both `.claude/prompts/` files.
+  10. `git show 9177f3b | git apply --reverse --check -` exits 0 on the final
+      tree - the one-file revert is intact.
+- **Verification commands** (each a single foreground call,
+  `set -o pipefail; ... 2>&1 | tail -n 120`, Bash timeout 600000):
+  - `npm run check` before C1, before C2, before C3;
+  - `npm run check:built` once, after C2;
+  - `node tests/parity.js "#/roll" "#/lists/a ~ roll panel" "#/lists/a ~ rolled"`
+    after C2 - 20 states, one call, and it is **not** optional: a rebuilt `<img>`
+    has to decode again and a settled capture could catch it unpainted. A cell
+    that moves is a finding, not a debt line;
+  - `node tests/run-all.js app/sweep`, then
+    `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` after C3;
+  - push; the four CI parity shards are the authoritative read.
+- **Risks / do-nots**: do not touch `ci.yml`; do not key `OrGrid` on
+  `cell.it.id` (it is generic - `AltPanel` passes `AltPick`); do not add a
+  roll counter unless a state measurably differs; do not write a `DEBT.md`,
+  `ACCEPTED` or `VISUAL_DEBT` entry for the roll fix - it is a divergence *from*
+  live, which is migration work, not a reproduced live defect.
+- **Fallback**: if `press` cannot reach a control in `twoFramesPicked`, keep
+  `d.click` for that control and write the reason in the case's comment and
+  here. If the `TablesPage` remount claim does not hold, take the
+  `toggleHome(hash?)` route described in C2.
+- **Review**: recommended (four rendering surfaces and a persisted-state
+  change), one remediation cycle, nits to "Deferred" with a batch named for
+  each.
 
-1. **The soak.** The window exists so the answer to "is this bad enough to
-   revert?" is always "revert" - `git revert 9177f3b`, then push. Nothing is
-   scheduled against it; it ends when the owner says so.
-2. **Phase 7 R0** - the deletions (`index.html`, `app.js`, `style.css`, the
-   legacy browser suites, `tests/parity.js`, `VISUAL_DEBT`/`ACCEPTED`), behind
-   the six-point entry condition in `plan.md`, "Phase 7 - what has to be true
-   before the net comes out". Do not start any of it on the strength of the
-   flip alone.
-3. **Phase 8** - the post-migration review, `docs/specs/DEBT.md`.
-
-The roll re-render finding in "Deferred" item 1 below carries an owner
-decision about *how* it is scheduled: it is bundled into a batch that already
-has work in those paths, never planned as a batch of its own.
+After B14: **R0a -> R0b -> R0c**, outlined in `plan.md`, "The finishing plan".
+R0a and R0b delete nothing and need only conditions 1, 2, 3 and 5; **R0c needs
+the owner's go** and is where the one-file revert ends.
 
 B13's, B12.1's, B12's, B11.1's and B11's briefs are kept below only as closed
 records.
@@ -5469,6 +5600,58 @@ cut-over, replanned".
 
 ## Deferred
 
+- **OPEN, and dropped once already: B12's nit 1 and nit 2b** (planner,
+  2026-09-12). Both were marked "PLACED ... go to **B13**" in the entry further
+  down this section and in `plan.md`'s "B12's deferred nits, placed" table.
+  **B13 closed without doing either** - `git log 0819a73~1..HEAD --name-only`
+  touches neither `tests/app/typo.js` nor `tests/app/states.js`, and "B13 built"
+  does not mention them - so a reader of that entry would reasonably conclude
+  they were handled. They were not. Both texts are corrected rather than quietly
+  re-pointed, because the record of the miss is worth more than a tidy table.
+  Carried forward in full:
+  1. **`tests/app/typo.js:11-12` promises that a grip which resolves to nothing
+     "fails loudly rather than being skipped". It does not.** `softClick` at
+     line 50 is `if (await d.has(name)) await d.click(name);` and the inner
+     `hit()` inside `page.evaluate` is `const e = document.querySelector(s); if
+     (e) e.click();` - both silent. So a renamed `Фильтры` or a moved `.helpbtn`
+     stops that panel from being checked on every page, and the suite still goes
+     green. This is the same class of defect B13's publish guard exists to
+     prevent: a check that can quietly stop checking. Five grips are affected -
+     `Фильтры`, `Добавить в список`, `Заметка`, `.helpbtn`, `.lnote summary` -
+     across the thirteen `PAGES`.
+  2. **`tests/app/states.js`'s `twoFramesPicked` (cases 4/5) uses `d.click`**
+     for `Фильтры`, `Пир зверей` and `Колоссы Сухоземья` where B12's own plan
+     text says `press`. B12's C1 existed to give the suite a trusted `press`
+     verb and its commit is titled "the states a real click reaches"; two cases
+     that do not use it undercut the claim.
+  **Now placed in B14 C3, as acceptance lines 4 and 5** of the "Next batch"
+  section above - not as a table row. The mechanism written so this cannot
+  happen a third time is `plan.md`, "A placement has to be acceptance, not a
+  footnote": an item placed in a batch becomes one of that batch's acceptance
+  criteria, and the batch cannot be recorded closed while an inherited line has
+  no outcome. These two are its first customers.
+
+- **Every other item in this section now has a batch** (planner, 2026-09-12).
+  The full reasoning for each placement is `plan.md`, "The finishing plan":
+  - **the roll re-render divergence** (item 1 below) - **B14 C1**, and it is
+    four call sites, not the two recorded below: `AltPanel.svelte:228` and
+    `ListPage.svelte:676` render through `OrGrid`, whose `{#each cells as cell,
+    i (i)}` keys by position, so they reuse the node for the same reason. No
+    `DEBT.md` entry: this is a divergence *from* live, which is migration work,
+    not a live defect reproduced on purpose.
+  - **B12.1's nit 1**, the pinned bare `#/tables` (item 2 below) - **B14 C2**,
+    together with B12.1 nits 3 (`canPinHome` with no consumer), 4 (`ROUTES.md`'s
+    "nine") and 5 (`ROUTES.md:125`'s over-narrow rule). B12.1 nit 2
+    (`go()`/`replace()` bypass `#fallback`) stays open and unreachable; it goes
+    to Phase 8 R1 to verify or close.
+  - **N1, N4, N7** - **B14 C3** (acceptance lines 6, 7, 8).
+  - **N2, N3, N5, N6, N8** - **R0c**. N2 and N8 live in `tests/derived.js`'s
+    head-to-head comparison, which dies with `index.html`; N3, N5 and N6 are
+    edits to `ci.yml`'s `deploy` job, which nothing may touch while
+    `git revert 9177f3b` is the safety net.
+  - **B12's nit 4** (`DEBT.md`'s D10 out of sequence) - Phase 8 R1; **nit 5**
+    (`vite.config.mts`'s exclusion warrant) - Phase 8, with D10. Unchanged.
+
 - **B13's items, deferred by the coordinator's instruction (2026-09-12) -
   record only, do not fix, and for item 1 do not design the fix either.** B13
   is mid-plan: the soak, Phase 7 R0 and Phase 8 are queued behind it, and none
@@ -5587,12 +5770,17 @@ cut-over, replanned".
      never calls `start()`, and `memoryRouter.replace` deliberately does not
      announce, so no test exercises this path.
 
-- **PLACED by the planner (2026-09-12).** The B12 nits below are no longer an
+- **PLACED by the planner (2026-09-12) - and two of these placements failed.
+  Corrected 2026-09-12, later, by the planner: nit 1 and nit 2b were placed in
+  B13, B13 closed without them, and they are OPEN.** See the first entry of this
+  section for both mechanisms in full and for where they now live (B14 C3, as
+  acceptance lines). The rest of this paragraph stands as written.
+  The B12 nits below are no longer an
   undifferentiated list; each has a batch or a phase, with the reasoning, in
-  `plan.md`, "B12's deferred nits, placed". In short: nit 1 (`typo.js`'s
+  `plan.md`, "B12's deferred nits, placed". In short: ~~nit 1 (`typo.js`'s
   silent `softClick`) and nit 2b (`states.js` cases 4/5 using `d.click` where
   the plan says `press`) go to **B13**, which runs all five `tests/app/`
-  suites as its own gate; nit 3 (`App.svelte`'s overclaiming `<h1>` comment)
+  suites as its own gate~~ **- not done by B13; both open, now B14 C3**; nit 3 (`App.svelte`'s overclaiming `<h1>` comment)
   is closed by **B12.1**, which deletes the branch, the comment and the
   `.todo` rule together; nit 4 (`DEBT.md`'s D10 out of sequence) goes to
   **Phase 8 R1**, which rewrites that file entry by entry anyway; nit 5

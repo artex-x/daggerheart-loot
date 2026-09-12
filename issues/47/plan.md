@@ -23,11 +23,11 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 1 | Vite + Svelte + TypeScript scaffold, quality gates, CI, contracts frozen | **done** |
 | 2 | Extract pure logic to TypeScript modules with unit tests | **done** |
 | 3 | Ports for replaceable concerns (drag and drop, search, modal) | **done** |
-| 4 | Svelte component architecture, styling, i18n, the rewrite itself | **in progress** - see below |
+| 4 | Svelte component architecture, styling, i18n, the rewrite itself | **done (closed through B10; row corrected 2026-09-12)** - measured against Phase 8's own entry condition 1: `tests/parity/specs.js` has **no `pending` state and no `pending` spec**, and `VISUAL_DEBT` is 18 entries, every one a CI figure. Phases 5 and 6 both closed after it. See below for the slice-by-slice record |
 | 5 | Testing pyramid: unit, component, a11y, the real-browser net | **done (2026-09-12)** - B11 (`73facda`+`64f9a27`), B11.1, B12 (`a52c17d`, `9a4f8db`, `4adc5a5`, `9ced2b3`). The net is `tests/app/` driving `dist/` in a real browser; see "Phase 5 - the testing pyramid, planned". No Playwright exists or was built; the puppeteer legacy suites are re-homed and are deleted in Phase 7. The one production defect the net found, B12.1, opens Phase 6 |
-| 6 | Build, artefacts, deployment | **planned (2026-09-12)** - two batches: **B12.1** (the router's bare-vs-unreadable fallback, fixed while the old app is still the fallback) then **B13** (the reversible cut-over). **Not owner-gated**: `gh api repos/:owner/:repo/pages` reads `build_type: workflow`, so the "Pages flip" this row was written around is already done - what publishes the old app is one step in `ci.yml`'s `deploy` job. See "Phase 6 - the cut-over, replanned" |
-| 7 | Cut-over, cleanup, README, standing agent guidance | not started; the regression-net question it was to answer is answered by Phase 5 (decided 1-2); it becomes R0 of one 7/8 track - see "Phase 5 - the testing pyramid, planned", decided 8, and "Phase 8", "Where the phase sits". **Re-sequenced 2026-09-12** (owner: publish early, delete later): its deletions land *behind* the flip, not with it, and have their own entry condition - "Phase 7 - what has to be true before the net comes out" |
-| 8 | Post-migration review: the app on its own terms | designed (2026-09-11) - see "Phase 8" below; runs after the cut-over, on the register B9 opens (`docs/specs/DEBT.md`) |
+| 6 | Build, artefacts, deployment | **done (2026-09-12)** - B12.1 (`bc96b59`) then B13 (`0819a73`, `9177f3b`, `a004764`, `515e257`). The site serves the built rewrite; run `34718569245` green in every job, the owner walked it. Originally planned as: two batches: **B12.1** (the router's bare-vs-unreadable fallback, fixed while the old app is still the fallback) then **B13** (the reversible cut-over). **Not owner-gated**: `gh api repos/:owner/:repo/pages` reads `build_type: workflow`, so the "Pages flip" this row was written around is already done - what publishes the old app is one step in `ci.yml`'s `deploy` job. See "Phase 6 - the cut-over, replanned" |
+| 7 | Cut-over, cleanup, README, standing agent guidance | **planned in full (2026-09-12)** as B14 -> R0a -> R0b -> R0c, with the soak dropped by the owner and condition 6 gating R0c alone - see **"The finishing plan - every batch from here to done"**, the last section of this file. Earlier note: not started; the regression-net question it was to answer is answered by Phase 5 (decided 1-2); it becomes R0 of one 7/8 track - see "Phase 5 - the testing pyramid, planned", decided 8, and "Phase 8", "Where the phase sits". **Re-sequenced 2026-09-12** (owner: publish early, delete later): its deletions land *behind* the flip, not with it, and have their own entry condition - "Phase 7 - what has to be true before the net comes out" |
+| 8 | Post-migration review: the app on its own terms | designed (2026-09-11), **confirmed with four revisions (2026-09-12)** - see "The finishing plan", "Phase 8, confirmed against what the migration produced"; it runs under a **new task id**, so task 47 closes at R0c. Design: "Phase 8" below; runs after the cut-over, on the register B9 opens (`docs/specs/DEBT.md`) |
 
 ## Phase 4 - where the rewrite is
 
@@ -14023,6 +14023,15 @@ bad enough to revert?" is always "revert", and the revert is
 
 ### Phase 7 - what has to be true before the net comes out
 
+**Superseded in part, 2026-09-12, by "The finishing plan", "Phase 7's entry
+condition, as it now reads".** Condition 4 (the seven-day soak) is **removed by
+the owner**; condition 2 is reworded because there is no end-of-soak to be green
+at; condition 3 is met by evidence rather than by waiting; condition 6 now gates
+**R0c alone**, because R0a and R0b delete nothing. The list below is kept as the
+reasoning each condition was written with; read the finishing plan for the one
+in force, and read "The revert cliff" for what the owner's "we can revert" costs
+after R0c.
+
 Phase 7's content is unchanged and still stands where it was written ("Phase 6
 and 7 - what this pass adds to their outlines", second bullet): delete
 `index.html`/`app.js`/`style.css` and the legacy browser suites, port `print`'s
@@ -14066,11 +14075,20 @@ From `handoff.md`, "Deferred". Each one goes to the batch that opens the file
 for its own reasons, or to the phase that rewrites it anyway; none stays on an
 undifferentiated list.
 
+**Stale, and corrected in place 2026-09-12 rather than rewritten: two rows of
+this table were not done.** B13 closed without touching either `tests/app/typo.js`
+or `tests/app/states.js` (`git log 0819a73~1..HEAD --name-only` names neither,
+and "B13 built" does not mention them), so nit 1 and nit 2b were placed here,
+believed handled, and dropped. They are **open**, re-placed in **B14** (see "The
+finishing plan", B14 C3), and this is the second time this plan has lost an item
+it had filed - which is why "A placement has to be acceptance, not a footnote"
+exists and why both are acceptance lines of B14 rather than table rows.
+
 | nit | placed in | why there |
 |---|---|---|
-| 1. `tests/app/typo.js:11-12` promises a missing grip "fails loudly"; `softClick` (:50) and `hit()` are both silent, so a renamed `Фильтры` or `.helpbtn` stops checking a panel without saying so | **B13** | B13 runs all five `tests/app/` suites as its own gate, so the fix is verified by a run already paid for; and it is the same class of defect B13's publish guard is about - a check that can stop checking without telling anyone. B12.1 does not open `typo.js` and would have to add a suite to its filter to prove the change |
+| 1. `tests/app/typo.js:11-12` promises a missing grip "fails loudly"; `softClick` (:50) and `hit()` are both silent, so a renamed `Фильтры` or `.helpbtn` stops checking a panel without saying so | ~~B13~~ - **B13 closed without it; OPEN, now B14 C3** | the original reasoning (B13 runs all five `tests/app/` suites as its own gate, and this is the same class of defect B13's publish guard is about - a check that can stop checking without telling anyone) still holds; B14 runs the same suites. What the original row lacked was any mechanism that would notice B13 not doing it |
 | 2. two of B12's plan fallbacks taken without being listed (axe RU-only at 360/390/768, `sweep.js:286`; the focus walk at 1180 only, `:310`) | **closed here** | already named in "B12 built"'s correction paragraph; no code change is wanted - both were the plan's own recorded fallbacks, taken for the reasons the plan gave. Recorded a second time in "B12 built, the fallbacks it took" below so the section reads complete on its own |
-| 2b. `tests/app/states.js` cases 4/5 use `d.click` where the plan's text says `press` | **B13** | the whole point of B12's C1 was a trusted `press` verb, and the commit is titled "the states a real click reaches"; two cases that do not use it undercut the claim. One named step with an explicit fallback: if `press` cannot reach the control, keep `d.click`, write the reason in the case's comment and in the handoff, and do not widen the batch chasing it |
+| 2b. `tests/app/states.js` cases 4/5 use `d.click` where the plan's text says `press` | ~~B13~~ - **B13 closed without it; OPEN, now B14 C3** | same reasoning as nit 1: the whole point of B12's C1 was a trusted `press` verb, and the commit is titled "the states a real click reaches"; two cases that do not use it undercut the claim. The named step and its explicit fallback carry over to B14 unchanged - if `press` cannot reach the control, keep `d.click` for that control, write the reason in the case's comment and in the handoff, and do not widen the batch chasing it |
 | 3. `App.svelte:82-87`'s comment overclaims what the `<h1>` costs | **B12.1** | the branch, the comment and the `.todo` rule all go together |
 | 4. `docs/specs/DEBT.md` reads D7, D10, D8, D4 - D10 was inserted mid-sequence | **Phase 8 R1** | R1 re-verifies every entry and gives each a decision, rewriting the file top to bottom; renumbering it twice is churn, and neither B12.1 nor B13 opens it |
 | 5. `vite.config.mts:127-131`'s warrant for excluding `src/ports/image.ts` is thinner than its comment reads, since D10 says the path cannot complete under `file://` on either app | **Phase 8, with D10** | the nit says so itself - the exclusion's wording is decided by what D10's fix turns out to be, and guessing ahead of that writes the comment twice |
@@ -14091,3 +14109,532 @@ plan itself wrote down and allowed:
 Anyone reading a future a11y gap at a narrow width in English should look here
 first: it is not covered, on purpose, and the place to widen it is the sweep's
 own width loop.
+
+## The finishing plan - every batch from here to done (planner, 2026-09-12)
+
+The owner asked for one ordered account of what is left. This section is it.
+Everything above stays as the record of how the migration was built; this is
+the only place that says what happens next, in what order, and what has to be
+true before each step. Where it changes something written above, it says so and
+the earlier text is corrected in place.
+
+### Where this starts
+
+- **The cut-over is done and live.** `https://artex-x.github.io/daggerheart-loot/`
+  serves the built rewrite. B13 landed as `0819a73` (F1), `9177f3b` (F2,
+  `ci.yml` alone, 82+/12-), `a004764` (two review blockers) and `515e257` (F3);
+  run `34718569245` on `9177f3b` was green in every job including `deploy`, the
+  guard published exactly 13 entries with no `app.js`/`style.css`,
+  `check-site.mjs` passed against the live URL, and the owner walked the site:
+  LGTM. Phase 6 is **done**.
+- **The soak is dropped** (owner, 2026-09-12): "I'm ok to get rid of soak, we
+  can revert to previous commit if needed, I would not block all the work."
+  Condition 4 of "Phase 7 - what has to be true before the net comes out" said
+  the seven days were the plan's number and that the owner alone may move them.
+  They have. See "Phase 7's entry condition, as it now reads" below.
+- **Nothing is implement-ready behind it.** B13's closing record says the next
+  cycle is a planning one. This is that cycle.
+
+### The revert cliff, and where it is
+
+This is the half of the owner's decision that has a date attached, so it is
+written where they will read it rather than inside a batch.
+
+**Today the revert is one command over one file.** `git revert 9177f3b`, push,
+and the next `deploy` republishes the old app - `index.html`, `app.js` and
+`style.css` never left the repository, the parity harness still gates them, and
+the four shards still prove they work. That is what makes "we can revert to
+previous commit if needed" true.
+
+**R0c is where that stops being true.** It deletes the three root files, the
+fifteen legacy browser suites, `tests/parity.js`, `tests/parity/`,
+`VISUAL_DEBT`, `ACCEPTED` and CI's parity job. After it, recovery from a bad
+rewrite is: restore the deleted paths out of git history (`git checkout
+<pre-R0c sha> -- index.html app.js style.css tests/parity.js tests/parity
+tests/<the fifteen>`), restore the workflow's collect step and its `needs:`,
+and re-run the gates - possible, but a batch with its own review, not a
+command. Everything before R0c (B14, R0a, R0b) adds or repairs and deletes
+nothing, so the one-file revert survives all of it.
+
+That is why condition 6, "the owner says go", is attached to **R0c alone**
+below, and to nothing else. Work flows; the irreversible step waits.
+
+### The order
+
+| # | Batch | What it is | Entry condition | Reversible? |
+|---|---|---|---|---|
+| 1 | **B14** | the roll surface, the pinned home, and the checks that should have caught them | none beyond a green HEAD - implement-ready below | yes, and the flip stays one-file revertible |
+| 2 | **R0a** | the evidence, the `ACCEPTED` sweep, the structural goldens - nothing deleted | Phase 7 conditions 1, 2, 3, 5 (evidence, not waiting) | yes |
+| 3 | **R0b** | re-home the live-app coverage that must survive, print geometry included | R0a landed, `main` green on the full workflow | yes |
+| 4 | **R0c** | the deletions, CI's parity job, the documents | R0b landed **and condition 6 - the owner says go** | **no - this is the cliff** |
+| 5 | **Phase 8 R1..Rn** | the post-migration review, under a new task id | R0c landed, `main` green without parity | n/a |
+
+Task 47 closes at the end of R0c; Phase 8 runs as its own task. See "What
+'task 47 is done' means" at the end of this section.
+
+### Phase 7's entry condition, as it now reads
+
+Replaces the six-point list in "Phase 7 - what has to be true before the net
+comes out". Conditions 1, 3 and 5 are unchanged in substance; 2 is reworded
+because there is no end-of-soak to be green at; 4 is **removed** by the owner;
+6 is unchanged and now names the batch it gates.
+
+1. **B13 landed and published.** Satisfied: run `34718569245` on `9177f3b`,
+   `deploy` green, `_site` assembled from `dist/`.
+2. **The live site was checked twice.** Satisfied once - `check-site.mjs` green
+   inside run `34718569245` and again on an independent read this session, plus
+   the owner's walk. The second check is now taken **when R0c opens**, against
+   the live URL, and its output goes in the handoff. (Was: "green again at the
+   end of the soak".)
+3. **The publish path repeats.** Three pushes to `main` since the flip -
+   `9177f3b`, `515e257`, `6cb8293` - each with a `deploy` job. `9177f3b`'s run
+   is green and read. **R0a's first step is to read the other two run
+   conclusions and record the ids**; this is evidence-gathering, not a waiting
+   period, and a non-green `deploy` on either is a blocker to raise rather than
+   a clock to restart.
+4. ~~A soak of at least seven days.~~ **Removed by the owner, 2026-09-12.** Do
+   not replace it with a shorter calendar unless the owner asks for one.
+5. **No unresolved revert.** Unchanged: if the flip is ever reverted, the cause
+   is fixed and a later `deploy` is green before R0 resumes.
+6. **The owner says go**, having used the deployed app themselves, with the
+   date in the handoff. Unchanged, still theirs alone, and it now gates **R0c
+   only** - the batch that ends the cheap revert. R0a and R0b do not wait on
+   it, because neither deletes anything.
+
+And R0a's own condition, unchanged from Phase 5 decided 2: the tree the
+structural goldens are seeded from is green on the **full** workflow, parity
+included, and the seeding commit names that run. A seed from an untested tree
+is a golden that records a bug.
+
+### A placement has to be acceptance, not a footnote
+
+Twice now this plan has filed an item into a future batch and lost it. B12's
+nit 1 (`typo.js`'s silent grips) and nit 2b (`states.js` using `d.click` where
+the plan says `press`) were both placed in **B13**; B13 closed without doing
+either, and `handoff.md` still said they were placed there. Before that, the
+same shape produced the stale-baseline class in B3.6. A table that records an
+intention is not a mechanism, because nothing reads it at the moment a batch
+closes.
+
+**The rule, from B14 onward:** an item this plan places in a batch is written
+into that batch's **acceptance criteria** in `handoff.md`, "Next batch", as its
+own line - not as a cross-reference - and the batch's closing record says what
+happened to each: done, or re-placed with a reason and a new batch. A batch may
+not be recorded closed while an inherited line has no outcome. The reviewer
+checks inherited lines the same way it checks the batch's own.
+
+Where the rule lives: `.claude/prompts/plan.prompt.md` and
+`.claude/prompts/implement.prompt.md` get it in B14 (see C3). It does **not**
+go into `CLAUDE.md` yet - that file is at 199 lines against its own 200-line
+cap, and a contrived move-out to buy one line is worse than waiting. R0c
+rewrites `CLAUDE.md`'s "Migration and parity" section (twenty lines, all of
+which retire with the harness), and the one-line standing rule goes in there,
+as an acceptance line of R0c.
+
+Its first customers are the two nits it was written for: both are acceptance
+lines of B14 below.
+
+### B14 planned: the roll surface, the pinned home, and the checks that should have caught them
+
+**Why these together.** The owner's constraint on the roll fix is settled: it
+is never a batch of its own, it rides in a batch that already has work in those
+paths. B14 is that batch, and it is sized by its gates rather than its diff -
+`npm run check`, `check:built`, the five `tests/app/` suites and one parity
+filter cost the same whether they cover one file or ten, and every item here is
+proved by that same set. Three commits, so each is reviewable and the defect
+lands first if anything interrupts the batch.
+
+#### What is actually wrong, measured
+
+**1. The re-render divergence is four call sites, not two.** The handoff named
+`RollPanel.svelte:129` and `StdPanel.svelte:157`. Read for this plan:
+
+| site | shape | why the node survives |
+|---|---|---|
+| `RollPanel.svelte:129` | one `<RecordCard>` under `{#if shown}` | no `{#key}`; Svelte updates it in place |
+| `StdPanel.svelte:157` | `<RecordCard>` inside the `cardOf` snippet, rendered by `OrGrid` | `OrGrid.svelte`'s `{#each cells as cell, i (i)}` keys by **position** |
+| `AltPanel.svelte:228` | the same snippet shape through `OrGrid` | the same positional key |
+| `ListPage.svelte:676` | the list page's own roll (`.lroll`, `hit`), `OrGrid or={t.or} items={[h]}` | the same positional key |
+
+So one shared instrument covers three of the four: `OrGrid` is where the
+positional key is. `TableRows.svelte:108` `(entry.it.id)` and
+`ListPage.svelte:782` `(it.id)` are keyed and are not affected; `RecordPage`
+and `RecordModal` remount on navigation and are not affected.
+
+Live rebuilds everywhere (`app.js:3819` assigns `$('#view').innerHTML`), so a
+brand-new `<img>` paints empty and fills. Both apps ship identical
+`loading="lazy" decoding="async"` and neither ships `srcset`/`sizes` - this is
+not a loading-strategy difference.
+
+**2. The class, and why nothing caught it.** Parity screenshots settled states;
+this is a transient during re-render, invisible to a settled comparison, and it
+will stay invisible to the structural goldens R0a adds, for the same reason.
+The instrument that can see it is **node identity**, which is assertable
+without timing: tag the current `<img>`, cause the re-render, and look for the
+tag. C1 adds that at two levels (a component test and a `tests/app/states.js`
+case), so the class gets a net rather than this one incident getting a fix.
+
+**3. It is not `DEBT.md` material.** The register holds live defects the
+rewrite reproduces on purpose. This is the opposite - a divergence *from* live
+that parity never measured - so it is migration work, it belongs before the
+harness retires while the live app can still be read as the expectation, and it
+is not a Phase 8 item. That also answers the open half of the owner's decision:
+no register entry, no `ACCEPTED` entry, no `VISUAL_DEBT` figure.
+
+**4. The pinned bare `#/tables`, read against live.** The rewrite's
+`toggleHome()` (`app/src/state/app.svelte.ts:444-454`) stores `this.hash`, so on
+a bare `#/tables` it pins `'#/tables'`; `readHome` (`:65-72`) then refuses that
+value next boot and opens `DEFAULT_HOME`. Live does two different things and
+the port copied neither: `homeHash()` (`app.js:1133-1136`) **writes**
+`'#/tables/' + S.tables.t`, always a named table, and `homeAllows()`
+(`:1124-1130`) **accepts** any tab - a bare `tables` included - as well as a
+named table. The faithful port fixes both sides, which is also what settles
+B12.1's nit 4 (`ROUTES.md:24-25`'s "nine" is eight in the rewrite).
+
+The writer needs "the table on screen", which live keeps in `S.tables.t` and
+the rewrite keeps in `TablesPage.svelte:65-75`'s `lastTable`, out of
+`AppState`'s reach. Measured: `App.svelte` remounts the page component on every
+route change, so `lastTable` is `core_item` whenever the address is bare, and
+every interaction on the page writes a named address. So `route.table ??
+'core_item'` inside `AppState` is exact, and no prop plumbing is needed.
+**Verify that remount claim before choosing it**; the fallback, if it does not
+hold, is an optional argument on `toggleHome(hash?)` with `TablesPage` passing
+`tablesHash(table)` through `PageHead`.
+
+#### The commits
+
+**C1 - the roll surface replaces its card, as live does.**
+
+- `OrGrid.svelte`: key the card cell on the item itself - `{#key cell.it}`
+  around `{@render card(cell.it)}` - rather than on the position. `OrGrid` is
+  generic over `T`, so object identity is the only key available to it, and it
+  is the right one: a different record is a different object, and `AltPanel`'s
+  freshly built `AltPick` wrappers are a new object per roll, which is live's
+  behaviour exactly.
+- `RollPanel.svelte`: `{#key shown.it}` around the single `<RecordCard>`.
+- **The one recorded deviation from live**: rolling *the same* record twice in
+  a row keeps the node, where live rebuilds it. Invisible - the image is
+  identical - and it is the only case where the two still differ after this
+  change. Write it in the commit message and in the batch record; it needs no
+  spec entry because no rendered state differs.
+- Tests, both required by `CLAUDE.md`'s "fixed defects have meaningful
+  coverage":
+  - a component test (vitest, jsdom) that captures the `<img>` element, changes
+    the shown record, and asserts the captured node is `isConnected === false` -
+    node identity, not timing;
+  - a `tests/app/states.js` case on the built app: open a roll route, mark the
+    `.results .card-media img` with a property, press the roll button until the
+    record changes, assert the marked node is gone. Use `d.press`, not
+    `d.click`.
+- Check while you are in `RecordCard`: nothing inside the card holds DOM state
+  the live app restores through `restoreOpen()`/`[data-keep]` (the roll panel
+  and the note boxes do; the card does not). If something does, say so and
+  stop - it changes the design.
+
+**C2 - the pinned home matches live on both sides.**
+
+- `AppState`: a `homeHash` equivalent used by `toggleHome()` - for
+  `kind === 'tables'`, `'#/tables/' + (route.table ?? 'core_item')`; otherwise
+  today's `this.hash` - and `readHome` widened to live's `homeAllows` shape,
+  accepting a bare `tables` as well as a named table. `isHome` follows from both
+  without its own change.
+- `canPinHome` (`:456-460`) has no production consumer (B12.1 nit 3). This batch
+  opens exactly that code: either wire it to the pin button's visibility or
+  delete it, and say which in the commit. Do not leave it as it is.
+- `docs/specs/ROUTES.md`: the "nine a person may pin" line (B12.1 nit 4) and the
+  "Reached by navigating away and back" line (B12.1 nit 5), which names one
+  route where the rule holds for any navigation to a bare address.
+- `docs/specs/STATE.md`: the pinned-home value is persisted state; if its
+  section states the accepted shape, it changes in the same commit.
+- Tests: `app.test.ts` rows for write-named / accept-bare / accept-named /
+  refuse-record, and whatever `shell.test.ts` asserts about the pin.
+
+**C3 - the checks that should have caught all of this.**
+
+- **B12's nit 1, inherited from B13** (`tests/app/typo.js:11-12` promises a
+  missing grip "fails loudly"; `softClick` at `:50` and the inner `hit()` are
+  both silent, so a renamed `Фильтры` or `.helpbtn` stops checking a panel
+  without saying so). Fix: a per-page expectation - which of the five grips must
+  resolve on which of the thirteen `PAGES` - and `ok(...)` when an expected grip
+  is missing. `hit()`'s two selectors return whether they matched, and the
+  assertion is made outside `page.evaluate`. Keep it a table, not a rule: the
+  table is the statement of what each page has.
+- **B12's nit 2b, inherited from B13**: `tests/app/states.js`'s
+  `twoFramesPicked` (cases 4/5) uses `d.click` for `Фильтры`, `Пир зверей` and
+  `Колоссы Сухоземья` where B12's own text says `press`. Switch them. The named
+  fallback, if `press` cannot reach a control: keep `d.click` **for that
+  control**, write the reason in the case's comment and in the handoff, and do
+  not widen the batch chasing it.
+- **N1** - the counts rule is seven files since B13 (`tests/derived.js:397`
+  checks `index.html`, `app/index.html`, both READMEs, `app.js`, `llms.txt`,
+  `robots.txt`), but `.claude/hooks/edit-followup.mjs:20` and
+  `.claude/prompts/add-source.prompt.md:145` still list six, omitting
+  `app/index.html`. The hook's own reminder therefore leaves `tests/derived.js`
+  failing for whoever follows it. Fix both, and add the assertion to
+  `.claude/hooks/selftest.mjs` beside its existing `#40` data.js case, so the
+  reminder's content is checked rather than only its firing. `npm run check`
+  runs `selftest`, so this is gated by a call the batch already makes.
+- **N4** - `tools/check-site.mjs` is reached by no linter, formatter or test
+  (`tools/` is ignored by both `.prettierignore` and `eslint.config.mjs`), so a
+  syntax error in it turns a run red *after* a good deploy - the one signal that
+  means "revert". Close it with `node --check tools/check-site.mjs` in the
+  `check` npm script, **not** in `ci.yml`: the workflow file stays untouched
+  while `git revert 9177f3b` is the revert path, and a local gate catches it
+  before the push rather than in CI. The other two `tools/*.mjs` already run
+  inside `check:built`, so that one file is the whole hole.
+- **N7** - `tests/parity/driver.js:11`'s comment still says
+  "legacy -> index.html at the repository root, what Pages serves today". False
+  since the flip, in the same way B13's review blocker 2 was.
+- **The placement rule** above, into `.claude/prompts/plan.prompt.md` and
+  `.claude/prompts/implement.prompt.md`.
+
+#### Not in B14, and where each went instead
+
+- **N2** (`headFacts`'s `>= 20` floor is exactly the current field count) and
+  **N8** (`headFacts` scans the whole document and parses double-quoted
+  attributes only): both live in `tests/derived.js`'s head-to-head comparison of
+  `index.html` against `app/index.html`, which **R0c deletes** along with
+  `index.html`. Fixing what a planned batch removes is churn. **Placed in R0c**,
+  as "delete with the comparison, or keep the survivor and say why".
+- **N3** (the deploy guard greps literal `src="app.js"` while `check-site.mjs`
+  uses a regex; the earlier gate should be the stricter) and **N5** (what the
+  guard still cannot prove: that `_site/index.html` came from this commit's
+  build, that `og/_share.jpg` exists by name, that `_site/data.js` assigns
+  `window.LOOT`): both are edits to `ci.yml`'s `deploy` job, which nothing may
+  touch while the one-file revert is the safety net. **Placed in R0c**, which
+  rewrites that job anyway.
+- **N6** (the ported `<noscript>` links resolve on Pages but not from `dist/`
+  over `file://`): the note says it becomes real at Phase 7. **Placed in R0c.**
+- **`DEBT.md`'s D10-out-of-sequence numbering** (B12 nit 4) and
+  **`vite.config.mts:127-131`'s thin exclusion warrant** (B12 nit 5): unchanged
+  from "B12's deferred nits, placed" - Phase 8 R1, and Phase 8 with D10.
+
+#### Acceptance
+
+Every line below is checked before B14 is recorded closed, inherited lines
+included, per the placement rule above.
+
+1. The four roll call sites replace the card's `<img>` node on a roll; the
+   component test and the `tests/app/states.js` case both fail if the `{#key}`
+   is removed - prove it once by removing it, not by assertion.
+2. The same-record-twice deviation is written in the commit message and the
+   batch record.
+3. A pinned bare `#/tables` survives a reboot: the pin writes a named table and
+   the reader accepts both shapes; `ROUTES.md` and `STATE.md` say so in the same
+   commit; `canPinHome` is wired or gone.
+4. **Inherited - B12 nit 1**: a missing grip in `tests/app/typo.js` fails the
+   suite; demonstrated by renaming one expectation and watching it go red.
+5. **Inherited - B12 nit 2b**: `twoFramesPicked` uses `d.press`, or names the
+   control and the reason it could not.
+6. **Inherited - N1**: both `.claude/` files say seven, and `selftest.mjs`
+   asserts the reminder's content.
+7. **Inherited - N4**: `npm run check` fails on a syntax error in
+   `tools/check-site.mjs`; `ci.yml` is untouched by this batch.
+8. **Inherited - N7**: the driver comment describes what Pages serves now.
+9. `.claude/prompts/plan.prompt.md` and `implement.prompt.md` carry the
+   placement rule.
+10. `git show 9177f3b | git apply --reverse --check -` still exits 0 on the
+    final tree - the one-file revert is intact.
+
+#### Gates
+
+- `npm run check` before each of C1, C2, C3 - one foreground call each,
+  `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000.
+- `npm run check:built` once, after C2 (C1 and C2 both change what a screen
+  draws).
+- The `tests/app/` suites in **two** calls, after C3:
+  `node tests/run-all.js app/sweep`, then
+  `node tests/run-all.js app/typo,app/hues,app/contracts,app/states`.
+- **One parity filter**, after C2, and it is not optional: a rebuilt `<img>` has
+  to decode again, and a settled capture taken too early would show it
+  unpainted. `node tests/parity.js "#/roll" "#/lists/a ~ roll panel"
+  "#/lists/a ~ rolled"` - 20 states, about a third of the pre-shard full run,
+  one foreground call. A cell that moves is a finding, not a debt line.
+- Push when C3's gates are green; the four CI shards are the authoritative read,
+  as always.
+- **Review recommended** (four rendering surfaces and a persisted-state change),
+  one remediation cycle, nits to the handoff.
+
+#### Risks and do-nots
+
+- Do not touch `.github/workflows/ci.yml`. The revert is one file until R0c.
+- Do not key `OrGrid` on `cell.it.id` - `OrGrid` is generic and `AltPanel`
+  passes `AltPick`, not a record.
+- Do not "fix" the same-record-twice case with a roll counter unless a state
+  measurably differs; a counter keyed on every render is a bigger change than
+  the defect.
+- Do not add a `DEBT.md`, `ACCEPTED` or `VISUAL_DEBT` entry for the roll fix.
+- `index.html`, `app.js`, `style.css`, `tests/parity/specs.js`,
+  `docs/fixtures/`, `tests/contracts.js` and `llms.txt` are untouched.
+
+### R0a planned in outline: the evidence, the sweep, the goldens
+
+Deletes nothing, so it needs conditions 1, 2, 3 and 5 only. Its own planning
+pass writes the steps; these are its parts, and the facts that pass should not
+have to re-derive.
+
+1. **Read and record the evidence.** The `deploy` conclusions of the runs on
+   `515e257` and `6cb8293` (condition 3), a fresh `node tools/check-site.mjs`
+   against the live URL, and the id of the last **full** green workflow run -
+   parity included - which is the seeding warrant for step 3.
+2. **The `ACCEPTED` sweep, which is Phase 8's entry condition 4.** Every
+   `ACCEPTED` reason and every "Recorded, not keyed" divergence in
+   `tests/parity/specs.js` becomes a `FEATURES.md`/`STATE.md` bullet or is
+   dropped with a reason in the commit. It has to happen while the file still
+   exists, and it is additive, so it belongs here rather than in the batch that
+   deletes the file. The fixed-not-ported list in "Phase 8" - the backlog table -
+   is the inventory of what must survive.
+   **And the same question for `VISUAL_DEBT`, which the sweep must not walk
+   past.** It holds **18 entries** today: eighteen places where the rewrite is
+   known to draw something different from live, each carrying a CI figure and a
+   reason. R0c deletes the table, and with it every record that those
+   differences exist - the same "a check quietly stops checking" class as the
+   dropped nits and the ten uncounted suites. R0a decides each of the 18: paid
+   off (the difference goes), or carried into a `FEATURES.md`/`STATE.md` bullet
+   or a `docs/specs/DEBT.md` section-2 entry saying what the rewrite draws and
+   why. None may simply vanish with the file.
+3. **The structural goldens**, per Phase 5 decided 2: accessibility tree plus
+   controls inventory per state, seeded from `dist/` under the warrant from step
+   1, living beside the existing `tests/app/` suites. They are also the durable
+   copy of the `STATES` inventory - 105 states today - which Phase 8 R1 needs as
+   "everything a person can reach" once `specs.js` is gone. No PNG goldens, no
+   frozen measured-spec JSON, no Playwright.
+4. Gates: `npm run check`, `check:built`, the five `tests/app/` suites, and the
+   push's full workflow. No local parity call - CI's shards are the read.
+
+### R0b planned in outline: re-home what must survive
+
+**Measured for this plan, because "delete the legacy browser suites" is one line
+that hides fifteen of them.** Every suite that requires `tests/lib.js` opens
+`file://.../index.html` and dies with the live app:
+
+`audit2`, `behave`, `contracts`, `craftmob`, `eqtest`, `flows`, `hues`,
+`lists2`, `noart`, `notes`, `print`, `qa`, `select`, `states`, `typo`.
+
+Data-only suites are unaffected and stay: `craft`, `dataint`, `derived`, `i18n`.
+
+Counterparts that already exist under `tests/app/`: `contracts`, `hues`,
+`states`, `typo`, plus `sweep` covering `audit2`'s page walk. **Ten have no
+counterpart**: `behave`, `craftmob`, `eqtest`, `flows`, `lists2`, `noart`,
+`notes`, `print`, `qa`, `select`.
+
+R0b's planning pass reads those ten and gives each one of three outcomes, with
+the reason in the commit:
+
+- *covered already* - by a vitest component/unit test or by a `tests/app/`
+  suite, named specifically; not "probably covered";
+- *ported* - re-homed against `dist/` through the `tests/app/` driver. `print`
+  is named by Phase 7's own text ("port `print`'s geometry"): printing is nine
+  63x88 mm cards per A4 with browser-measured fitting, it is a product law in
+  `CLAUDE.md`, and no other instrument measures it;
+- *dropped* - with the reason, in the commit that drops it.
+
+A suite whose coverage cannot be accounted for is not deleted. This is the same
+class of mistake as the two lost nits - a check that quietly stops checking -
+and it is the largest remaining risk in the phase.
+
+Gates: `npm run check`, `check:built`, the `tests/app/` suites (five, plus
+whatever R0b adds), the push's full workflow.
+
+### R0c planned in outline: the deletions, and the cliff
+
+**Entry: R0b landed, `main` green, and condition 6 - the owner says go**, with
+the date in the handoff, plus the second `check-site.mjs` read from condition 2
+taken when the batch opens.
+
+Content, deliberately one batch because its gates are one set and a half-deleted
+harness is worse than either end of it:
+
+- delete `index.html`, `app.js`, `style.css`;
+- delete the fifteen legacy browser suites and `tests/lib.js`, per R0b's table;
+- delete `tests/parity.js`, `tests/parity/` (`specs.js`, `driver.js`),
+  `VISUAL_DEBT`, `ACCEPTED`, and `docs/parity.md`;
+- `.github/workflows/ci.yml`: drop the four-shard `parity` job and `deploy`'s
+  `needs:` on it; rewrite the `deploy` guard with **N3** (make the guard at
+  least as strict as `check-site.mjs`) and **N5** (prove `_site/index.html` came
+  from this build, require `og/_share.jpg` by name, require `_site/data.js` to
+  assign `window.LOOT`); fix **N6**'s `<noscript>` links for `file://`;
+- `tests/derived.js`: the `COUNTERS` file list drops `index.html` and `app.js`
+  (five files remain), and the head-to-head comparison goes with `index.html` -
+  settling **N2** and **N8** by deletion, or keeping a single-document check
+  with a stated reason;
+- `.claude/hooks/edit-followup.mjs` and `.claude/prompts/add-source.prompt.md`:
+  the same list, now five files (B14 makes them seven; this is the second half
+  of the same sentence, which is why B14's fix is worth making anyway - it is
+  wrong *today*);
+- `CLAUDE.md`: "Migration and parity" (twenty lines) goes; "Project shape" and
+  "Quality gates" lose the live app and the parity harness; the spec table loses
+  `docs/parity.md`; and the **placement rule** goes in, in the space this frees.
+  The file must end under 200 lines and should end well under it;
+- `docs/specs/COVERAGE.md`: suite ownership rewritten around what remains; both
+  READMEs and `llms.txt` re-read for anything that names the old files;
+- `docs/specs/DEBT.md` is **not** deleted: its live-code citations are already
+  quoted with a commit hash precisely so they survive this batch. Verify one by
+  `git show bb61db0:app.js` before committing.
+
+Gates: `npm run check`, `check:built`, every `tests/app/` suite, and the push's
+workflow - which is now a workflow without a parity job, so read it carefully:
+the first green run after R0c proves less than the runs before it did, and that
+is the trade the phase exists to make.
+
+Acceptance includes: no reference to `index.html`, `app.js`, `style.css`,
+`tests/parity`, `VISUAL_DEBT` or `ACCEPTED` survives anywhere in the tree (grep,
+do not assert); `CLAUDE.md` under 200 lines and carrying the placement rule; and
+the recovery instruction from "The revert cliff" above written into the commit
+message, because that message is where a future reader will look.
+
+### Phase 8, confirmed against what the migration produced
+
+The design in "Phase 8 - the post-migration review" stands. Four revisions:
+
+1. **The register is nine entries, not four.** `docs/specs/DEBT.md` holds D1,
+   D2, D3, D5, D6, D7, D10, D8, D4 (in file order - D10 is out of sequence,
+   which is B12's nit 4 and R1's to settle when it rewrites the file). R1
+   re-verifies each and gives each a decision.
+2. **R1's surfaces come from the structural goldens**, not from
+   `tests/parity/specs.js`, which no longer exists. R0a makes that true.
+3. **R4 ("rolling and search") loses the roll re-render**, which B14 fixes for
+   the reason given there: it is a divergence from live, not a live defect
+   reproduced, so it was never Phase 8's. R4 keeps D4's outcome, B6 nits
+   4/5/7/11 and the B4 nits.
+4. **Entry condition 4 (the `ACCEPTED` sweep) is satisfied by R0a**, not by
+   Phase 8's own opening.
+
+Everything else - R1's read-only review and its `review.md`, the R2..Rn grouping
+by surface and gate, the fix-versus-file rule, the exit - is unchanged. Phase 8
+runs under a **new task id**, as its own design already says, so that
+`issues/47/` can retire.
+
+### What "task 47 is done" means
+
+Concretely enough to mark the handoff `done` against it:
+
+1. **R0c has landed and `main` is green** on the workflow as it stands after the
+   parity job is gone.
+2. **Nothing is published from the old app.** `check-site.mjs` green against the
+   live URL after R0c's deploy, and the guard's published list contains no file
+   the old app owned.
+3. **Every open item has a home outside `issues/47/`**: a `docs/specs/DEBT.md`
+   entry, a spec bullet, a filed GitHub issue, or a line in the Phase 8 task's
+   opening handoff. `handoff.md`'s "Deferred" ends with no item whose only
+   record is `handoff.md`.
+4. **The specs describe the app as it is**, with no "the live app" as an
+   authority, and `CLAUDE.md` has no migration section.
+5. **Phase 8 is opened as its own task**, with the register, the structural
+   goldens, the backlog table and the open-items list handed to it as inputs.
+6. `issues/47/plan.md` and `handoff.md` are marked historical - Status `done`,
+   the date, and the pointer to the Phase 8 task id.
+
+**This revises the opening of this file**, which says it becomes historical
+"once Phase 8 closes". Phase 8's own design gives R1 a new task directory "so
+this file can retire with issue 47", and the two cannot both be true. The one
+that holds is the later and more specific: **47 is the migration and it closes
+at R0c**; the review that follows is a task of its own. R0c's documentation
+commit corrects line 8.
+
+What happens to the directory itself is the owner's, and it is a small decision:
+keep `issues/47/` in the tree as the record of how the rewrite was built (it is
+the only place the measurements live), or delete it now that the durable parts
+are in `docs/specs/*`. The recommendation is to keep it - three of this
+migration's worst hours were spent re-deriving facts a previous session had
+already measured - but nothing depends on it after point 5.
