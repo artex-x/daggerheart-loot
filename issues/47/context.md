@@ -2797,3 +2797,47 @@ Two consequences for whoever finishes C2/C3:
 2. `npm run check` lints and self-tests `.claude/hooks/`, so a red result may
    belong to the peer's work rather than to B12. Read the failure before
    attributing it.
+
+## The slow host is a runaway desktop process, not the project (orchestrator, 2026-09-12)
+
+Correcting the entry above, and the diagnosis both the B12 implementer and
+the peer session wrote: **`npm run check` crosses 600 s on an idle tree too.**
+Taken on this tree with no peer run alive, the whole check needed roughly 20
+minutes against its recorded ~165 s baseline:
+
+| Step | This run | Baseline (2026-09-10) |
+|---|---|---|
+| everything up to `selftest` | ~8 min | ~58 s |
+| `selftest` | ~3 min | 19 s |
+| vitest `run --coverage` | 491 s wall, 1464 s of test time | ~90 s |
+
+**What is eating the machine**, sampled over 6 s with no npm run alive, on 8
+logical processors: `explorer.exe` at **62 %** and `NGenuity2Helper.exe` at
+**20 %** - together about four fifths of the host, with 3.6 GB free of 16.
+`NGenuity2Helper` had accumulated 513 CPU-minutes and `explorer` 274. Neither
+is this project's, and no amount of scheduling around peer sessions fixes it.
+
+**Consequence for any batch, not just B12**: while those two spin, no
+`npm run check` fits one foreground call, so the commit gate cannot be armed
+and nothing can be committed that touches a checked path. The honest next step
+is to fix the host (restart `explorer.exe`, and `NGenuity2Helper` with it),
+then re-take the check - not to re-run the gate hoping for a quiet minute, and
+not to reach for `SKIP_CHECK_GATE=1`, which would commit code no check has
+read.
+
+**The red check itself, for whoever re-runs it** - two failures, both with the
+shape of starvation rather than defect, neither yet judged:
+
+- `searchPage.test.ts` "shows the first 300 matches, and select-all ticks all
+  300": timed out at its 30 s limit after **99.6 s** of wall clock in a single
+  test. A test that needs 100 s on a host this starved says nothing about the
+  code.
+- `tables.test.ts` "the outline follows the record into the grid view":
+  `[data-row="ci2"]` has `tilewrap` but not `flash`. The flash class is
+  time-bounded, so a starved run can miss its window - but this one is a real
+  candidate for a B12 regression and must be judged on a healthy host before
+  it is dismissed. It is in the anchor family the plan already calls
+  half-solved (`plan.md`, "The anchor states").
+
+`npm run check` also reaches the peer's uncommitted `.claude/hooks/` edits;
+`selftest.mjs` reported 312 passed, 0 failed, so their work is not the red.
