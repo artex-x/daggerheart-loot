@@ -74,20 +74,5 @@
     <ListPage {app} />
   {:else if app.route.kind === 'print'}
     <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} />
-  {:else}
-    <h1 class="todo">{app.hash}</h1>
   {/if}
 </Shell>
-
-<style>
-  /* Only an unreadable address falls through to here now - every route kind
-     `lib/hash.ts` can parse draws a real page. An `<h1>` rather than a `<p>`
-     because a page with no heading at all is axe's `page-has-heading-one`
-     (B12's sweep, `tests/app/sweep.js`) - one line, and this element carries
-     no rendered style of its own beyond what `.todo` already sets below. */
-  .todo {
-    color: var(--muted2);
-    font-family: var(--mono);
-    font-size: var(--step--1);
-  }
-</style>

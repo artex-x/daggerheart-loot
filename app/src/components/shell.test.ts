@@ -157,23 +157,33 @@ describe('the address on the way in', () => {
 
   it('refuses a pinned address that is a snapshot rather than a section', () => {
     /* A record or a list drifts away from the data; only a section or a named
-       table may be pinned */
+       table may be pinned. The refused pin falls back to the default, and
+       under B12.1's rule 1 a default pin writes nothing at boot - so what is
+       drawn is what proves the fallback, not the bar. */
     const router = memoryRouter('');
     render(App, {
       env: fakeEnv({ router, storage: memoryStorage({ 'dhloot.home.v1': '#/i/ci1' }) })
     });
-    expect(router.hash()).toBe('#/roll/std');
+    expect(screen.getByRole('link', { name: 'Обычные правила' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 });
 
 describe('an unreadable address', () => {
-  it('draws the raw hash as a heading rather than a headingless page', () => {
-    /* Every route kind lib/hash.ts can parse draws a real page; only a
-       genuinely unparseable one reaches App.svelte's own fallback - an <h1>
-       rather than a <p> since B12's sweep found axe's page-has-heading-one
-       on it (tests/app/sweep.js). */
-    render(App, { env: at('#/nowhere') });
-    expect(screen.getByRole('heading', { level: 1, name: '#/nowhere' })).toBeInTheDocument();
+  it('draws the home section and rewrites the bar', () => {
+    /* Every route kind lib/hash.ts can parse draws a real page; a genuinely
+       unparseable one now normalises to the pinned home before App.svelte
+       ever sees it (plan.md, "B12.1 planned"), so no fallback heading is
+       reachable any more - see docs/specs/ROUTES.md, "Fallback". */
+    const router = memoryRouter('#/nowhere');
+    render(App, { env: fakeEnv({ router }) });
+    expect(screen.getByRole('link', { name: 'Обычные правила' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(router.hash()).toBe('#/roll/std');
   });
 });
 

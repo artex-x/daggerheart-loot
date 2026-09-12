@@ -145,18 +145,6 @@ function stampOf(parts) {
       };
     });
     const want = fx.resolves;
-    /* plan.md, "B12.1 named": the rewrite's router does not reproduce the
-     * live app's own distinction between a bare address (content changes,
-     * the bar does not) and a truly unreadable one (both change) - found
-     * here because this is the first time routes.json is replayed against
-     * dist/. Not this fixture's to carry: the divergence and its full
-     * field-by-field reading are in plan.md; fixing the router is its own
-     * batch. */
-    if (fx.hash === '#/' || fx.hash === '#/nonsense') {
-      console.log('  skipped (B12.1, plan.md): ' + fx.hash);
-      await ctx.close();
-      continue;
-    }
     ok(seen.hash === want.hash, fx.hash + ': became ' + seen.hash + ', not ' + want.hash);
     ok(seen.tab === want.tab, fx.hash + ': highlighted ' + seen.tab + ', not ' + want.tab);
     ok(seen.rows === want.rows, fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows);

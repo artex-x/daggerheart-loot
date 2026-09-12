@@ -47,7 +47,7 @@ describe('settings are read as untrusted data', () => {
     for (const bad of [
       '#/i/w12',
       '#/lists/abc',
-      '#/print/w1,w2',
+      '#/print/w1-w2',
       '#/tables/weapons',
       'nonsense'
     ]) {
@@ -73,11 +73,38 @@ describe('the address on the way in', () => {
     }
   });
 
-  it('rewrites the address rather than pushing, so back still leaves', () => {
+  it('opens the default at boot and leaves the bare bar untouched when nothing is pinned', () => {
+    /* Row 1 of plan.md's B12.1 table: live's own boot check (app.js
+       4610-4614) never assigns `location.hash` when the pinned home is
+       already the default - there is nothing to add - so a bare address
+       stays bare while the default section draws. */
+    const router = memoryRouter('#/');
+    const app = new AppState(fakeEnv({ router }));
+    expect(app.hash).toBe('#/roll/std');
+    expect(router.stack).toEqual(['#/']);
+  });
+
+  it('pushes a pinned section at boot, so Back leaves the bare address behind', () => {
+    /* Row 2: live's boot check is a plain assignment, not a replaceState
+       (app.js 4610-4614), so a non-default pin is a real history entry -
+       unlike the unreadable-address case below, which replaces. */
     const router = memoryRouter('');
-    new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/dread' }) }));
-    expect(router.stack).toEqual(['#/roll/dread']);
-    expect(router.canGoBack()).toBe(false);
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    expect(app.hash).toBe('#/search');
+    expect(router.stack).toEqual(['', '#/search']);
+    expect(router.canGoBack()).toBe(true);
+  });
+
+  it('replaces an unreadable address at boot with the pinned section', () => {
+    /* Row 3, boot half - the live `currentRoute` fallback (app.js 3638-3647)
+       answers an unknown address the same way whether it is met at boot or
+       on navigation; see 'navigation' below for the navigation half. */
+    const router = memoryRouter('#/nonsense');
+    const app = new AppState(
+      fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) })
+    );
+    expect(app.hash).toBe('#/roll/wondrous');
+    expect(router.stack).toEqual(['#/roll/wondrous']);
   });
 
   it('never overrides a real address with a preference', () => {
@@ -178,7 +205,7 @@ describe('which tab is lit', () => {
        string, and a list route - `l/…` or `lists/…` - is never that string,
        so no tab is lit there either, Lists included. */
     expect(new AppState(at('#/i/w12')).section).toBe(null);
-    expect(new AppState(at('#/print/w1,w2')).section).toBe(null);
+    expect(new AppState(at('#/print/w1-w2')).section).toBe(null);
     expect(new AppState(at('#/lists/abc')).section).toBe(null);
     expect(new AppState(at('#/l/eyJ')).section).toBe(null);
   });
@@ -297,6 +324,30 @@ describe('navigation', () => {
     app.start();
     app.go('#/tables/eq_weapon');
     expect(app.source).toEqual({ core: true, hnf: false });
+  });
+
+  it('reaching a bare address by navigating draws the default, not the pinned section, and leaves the bar bare', () => {
+    /* Row 4 of plan.md's B12.1 table: unlike boot (row 1/2 above), a bare
+       address met after the app is already running never consults the
+       pinned home - live's own home check runs once at boot only, app.js
+       4610-4614 - so it always lands on `#/roll/std`. */
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    app.start();
+    router.navigate('#/');
+    expect(app.hash).toBe('#/roll/std');
+    expect(router.stack).toEqual(['#/tables', '#/']);
+  });
+
+  it('reaching an unreadable address by navigating replaces it with the pinned section', () => {
+    /* Row 3, navigation half - the same fallback rule the boot branch above
+       uses for an unknown kind. */
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    app.start();
+    router.navigate('#/nonsense');
+    expect(app.hash).toBe('#/search');
+    expect(router.stack).toEqual(['#/tables', '#/search']);
   });
 });
 

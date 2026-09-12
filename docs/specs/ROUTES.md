@@ -109,7 +109,18 @@ being handed to another GM.
 
 ## Fallback
 
-An address that matches nothing readable is replaced - via `replaceState`, so
-it does not accumulate in history - with the pinned starting section, or
-`#/roll/std`. An address that resolved to something is left alone, so a link
-someone shared still reads back as they wrote it.
+An address that matches nothing readable - at boot or on navigation - is
+replaced, via `replaceState`, so it does not accumulate in history, with the
+pinned starting section, or `#/roll/std` if none is pinned. An address that
+resolved to something is left alone, so a link someone shared still reads back
+as they wrote it.
+
+A bare address (`''`, `#` or `#/`) is a third case, and boot and navigation
+answer it differently:
+
+- At boot, it draws the pinned starting section and leaves the address bar as
+  it found it - unless a section other than the default is pinned, in which
+  case it navigates there instead (a real history entry, so Back leaves the
+  bare address behind rather than returning to it).
+- Reached by navigating away and back, it draws `#/roll/std` - the default,
+  never the pinned section - and writes nothing to the bar.

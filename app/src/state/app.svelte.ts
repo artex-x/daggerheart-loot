@@ -84,6 +84,14 @@ export class AppState {
   readonly index: Index | null;
 
   lang = $state<Lang>('ru');
+  /**
+   * The address as the app reads it - not always what is in the bar. Live
+   * keeps the two independent the same way: `currentRoute` (app.js
+   * 3638-3647) returns a route that need not equal `location.hash`. A bare
+   * or unreadable address can draw a section while the bar is left as it
+   * was, rewritten, or a step behind - see `#fallback`, the constructor, and
+   * `docs/specs/ROUTES.md`, "Fallback".
+   */
   hash = $state('');
   /** Which sources the Core roll draws from. An old section name sets it. */
   source = $state<{ core: boolean; hnf: boolean }>({ core: true, hnf: true });
@@ -181,19 +189,43 @@ export class AppState {
       () => this.t
     );
 
-    /* An empty address opens the pinned section - but only an empty one. A link
-       to a record or a shared list must not be overridden by a preference. */
+    /* A bare address opens the pinned section - but only at boot, and only a
+       bare one: a link to a record or a shared list must not be overridden by
+       a preference. Live's own boot check, app.js 4610-4614: an assignment,
+       not a replaceState, so a non-default pin still pushes a history entry
+       (Back leaves the bare address rather than returning to it); a default
+       pin - nothing to add - writes nothing and leaves the bar bare. An
+       unreadable address at boot is rule 2, below, same as on navigation. */
     const first = env.router.hash();
-    this.hash = first === '' || first === '#' || first === '#/' ? this.#home : first;
-    if (this.hash !== first) env.router.replace(this.hash);
+    if (first === '' || first === '#' || first === '#/') {
+      this.hash = this.#home;
+      if (this.#home !== DEFAULT_HOME) env.router.navigate(this.hash);
+    } else {
+      this.hash = this.#fallback(first);
+    }
     this.#applySource();
     this.#expand();
+  }
+
+  /**
+   * What a non-boot address resolves to, and what it does to the bar -
+   * live's `currentRoute` fallback (app.js 3638-3647), reused by the
+   * constructor for its own non-bare branch since an unreadable address is
+   * answered the same way at boot or on navigation. A bare address here is
+   * navigation's own rule, distinct from boot's above: it draws the default
+   * section, never the pinned one, and touches nothing.
+   */
+  #fallback(h: string): string {
+    if (h === '' || h === '#' || h === '#/') return DEFAULT_HOME;
+    if (parseHash(h).kind !== 'unknown') return h;
+    this.env.router.replace(this.#home);
+    return this.#home;
   }
 
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
   start(): () => void {
     this.#stopRouter = this.env.router.onChange((h) => {
-      this.hash = h;
+      this.hash = this.#fallback(h);
       this.navigations++;
       this.menuFor = '';
       this.sel.clear();
