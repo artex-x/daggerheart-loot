@@ -1390,6 +1390,20 @@ const STATES = [
     }
   },
   {
+    id: '#/tables ~ a row opened, new list',
+    route: '#/tables',
+    // No `storage`: with the `two` seed every card opens up and the
+    // divergence is never reached. With no lists seeded, Самоцвет Чутья
+    // sits inside the 17px band at 1100 where the rewrite re-measures the
+    // menu from its already-flipped side and sends it under the card's edge.
+    why: 'the new-list form inside the modal, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card\'s edge',
+    enter: async (d) => {
+      await d.click('Самоцвет Чутья');
+      await d.click('Добавить в список');
+      await d.click('+ Новый список');
+    }
+  },
+  {
     id: '#/tables ~ a row ticked',
     route: '#/tables',
     why: 'the bar, one row ticked',
@@ -2043,7 +2057,8 @@ const JITTER = 0.1;
  *
  * A two-frame link (`#/tables/frames/f_frame-beast_feast-colossus`) opens both
  * frames in the rewrite and empties the table in the live app, whose `fDecode`
- * (app.js:2724) reads it as the old `_` form on arrival; no state holds this
+ * (app.js:2718-2726, the heuristic at 2725-2726) reads it as the old `_` form
+ * on arrival; no state holds this
  * because the difference is the whole table, not a control. Phase 7's sweep
  * carries it into `FEATURES.md`.
  */

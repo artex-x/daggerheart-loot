@@ -6,6 +6,49 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B11.1 closed - the menu's second measurement, built and
+  committed** (implementer, 2026-09-12). All gates green.
+  - `AddToList.svelte`'s placement `$effect`: `up = false` before the
+    `tick()` (with a comment naming D6), the unchanged first-`.btn` reading
+    (with a comment naming D6 and Phase 8's more-correct toggle
+    measurement), `flushSync()` before `menu.scrollIntoView` (with a
+    comment naming `placeMenu`'s `classList.toggle`-then-`scrollIntoView`
+    order). `onDocumentClick`'s comment narrowed per nit 4; the guard
+    itself is untouched (`git show HEAD -- app.js style.css index.html`
+    empty, and the guard's lines are the only thing that could have
+    changed production behaviour outside the effect).
+  - Red-first read (state registered, fix not yet applied): `#/tables ~ a
+    row opened, new list` on Самоцвет Чутья, no seed - RU 1100 1.01%, RU
+    768 1.44%, RU 375 2.94%, all against an expected zero; EN 1100/768/375
+    already `совпадает` (the `EN` press folds the menu before it is
+    compared, per B5.1's standing fact). The record was in the band on
+    this tree as planned; no swap to Малое Зелье Лечения was needed.
+  - After the fix, the same state: all six cells `совпадает`.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (foreground): exit
+    0 - `format:check`, `lint`, `typecheck` (0 errors/warnings, 544 files),
+    `data`/`derived`/`i18n` clean, `selftest` 292/292, vitest 1005 tests /
+    41 files passed, coverage 96.48/88.45/96.96/97.23 (thresholds held).
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` (foreground):
+    build, smoke and budget green - `dist/assets/app.js` 88.5 kB gzip
+    inside the 120 kB budget; `git diff -- app.js style.css index.html`
+    confirmed empty.
+  - Parity, second call - `#/tables ~ a row opened` `#/i/ci1 ~ new list`
+    `#/tables ~ bar menu` (`MSYS_NO_PATHCONV=1`, foreground): 5 states / 30
+    cells printed (the first filter is a prefix and also matched `~ a row
+    opened, list menu` and `~ a row opened, new list`); every cell either
+    `совпадает` or its already-recorded debt figure unchanged (`~ a row
+    opened` still 0.02/0.03/0.07% against its own recorded debt at every
+    width/language) - "расхождений нет", not vacuous (per-cell lines
+    printed above it).
+  - Commit: `<filled in after the commit below>`.
+  - Deferred, unchanged from B11.1's own scope: measuring the toggle
+    against `.modal-card` and `overflow: clip` on `.card` (Phase 8, named
+    in D6); a fourth harness width (not needed - decided 7, 2b).
+  - Last agent: implementer
+  - NEEDS_HUMAN_CONFIRMATION: no
+  - Branch: `main`; HEAD was `3ba78e8` at dispatch; this session adds one
+    commit on top. Never pushed.
+
 - Task status: **in_progress - Q2 answered, Q3 root-caused, B11.1
   implement-ready** (planner, 2026-09-12, after B11's close). No
   production code touched. Design: `plan.md`, decided 2 (rewritten: the
@@ -3487,10 +3530,30 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch (implement-ready)
 
-**B11 is closed - committed, all gates green (see "Status" above). The
-next batch is B11.1** (planner, 2026-09-12). After it, B12 ("the
-real-browser layer on `dist/`, and the gates" - decided points made,
-steps at its own short planning pass).
+**B11.1 is closed - committed, all gates green (see "Status" above). The
+next batch is B12** ("the real-browser layer on `dist/`, and the gates" -
+`plan.md`, "B12": decided points made, steps at its own short planning
+pass - B12 is outline-only as of this write-up, so the next cycle is
+planner first, then implementer). B11.1's own brief is kept below only as
+a closed record.
+
+- Name: **B11.1 - the menu's second measurement (CLOSED).** Full design
+  and the exact step list: `plan.md`, "Phase 5 - the testing pyramid,
+  planned", "B11.1"; the root cause: `plan.md`, decided 7, "Defect 2b";
+  the numbers: `context.md`, "Q3 planning facts".
+- What shipped: the placement `$effect` in `AddToList.svelte` now resets
+  `up` to false and lets the DOM catch up before measuring (matching
+  `placeMenu`'s redraw-then-measure order), keeps the first-`.btn` reading
+  (the live reading, D6), and calls `flushSync()` before
+  `menu.scrollIntoView` so the class lands on the menu before it scrolls;
+  `onDocumentClick`'s comment is narrowed (nit 4) with the guard itself
+  byte-identical to B11's. `tests/parity/specs.js` gained `#/tables ~ a
+  row opened, new list` (no seed, Самоцвет Чутья) and the nit-5 line fix;
+  `docs/specs/DEBT.md` gained D6; `docs/specs/FEATURES.md` and
+  `docs/specs/ROUTES.md` each gained one clause (nits 1's companion and
+  nit 2); `app/src/lib/hash.test.ts` gained the nit-3 case.
+- See "Status" above for the red-first reading, every gate's exact result,
+  and the commit hash.
 
 - Name: **B11.1 - the menu's second measurement.** Full design and the
   exact step list: `plan.md`, "Phase 5 - the testing pyramid, planned",

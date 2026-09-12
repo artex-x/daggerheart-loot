@@ -68,7 +68,10 @@ Six modes. Each keeps its own input in memory only.
   undo, delete.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
-  and its cancel; a search box appears from the eighth list.
+  and its cancel; a search box appears from the eighth list; it opens on the
+  side of the button with room in the window, re-measured from its default
+  side whenever it opens or grows (DEBT.md D6 records what that gets wrong
+  inside the modal).
 - Optional quantity and price per entry; both travel into copied text.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.

@@ -124,6 +124,16 @@ describe('tables', () => {
     const r = parseHash('#/tables/eq_weapon/f_tier-2');
     expect((r as Extract<Route, { kind: 'tables' }>).anchor).toBe('');
   });
+
+  it('an unknown table takes no legacy reading', () => {
+    /* With no table there are no groups to check a legacy piece's head
+       against, so the underscore form is never read as the old separator -
+       the safe side, per hash.ts:105. */
+    const r = parseHash('#/tables/nope/f_tier-1_cls-phy');
+    expect((r as Extract<Route, { kind: 'tables' }>).table).toBeNull();
+    expect(r.kind).toBe('tables');
+    expect((r as Extract<Route, { kind: 'tables' }>).filter).not.toHaveProperty('cls');
+  });
 });
 
 describe('the filter segment', () => {

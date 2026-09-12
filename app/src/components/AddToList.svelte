@@ -7,7 +7,7 @@
      separate `ListMenu.svelte` would be an abstraction ahead of need. `key`
      is the opener (a record id on a card, the bar's own key, or `N_SHARED`
      for the shared page's own control), `ids` is what a chip acts on. */
-  import { tick } from 'svelte';
+  import { tick, flushSync } from 'svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
@@ -159,14 +159,26 @@
     if (!open) return;
     void shown.length;
     void newListFor;
+    /* app.js redraws the menu's markup on every render, so `placeMenu` always
+       measures from the default (downward) side; re-measuring from wherever
+       the menu already sits reads a different `below` and can flip the wrong
+       way once the form grows the menu (DEBT.md D6). */
+    up = false;
     void tick().then(() => {
       if (!root) return;
       const menu = root.querySelector<HTMLElement>('.dropmenu');
+      /* The first `.btn` inside `.seldrop`, as `placeMenu` reads it: the
+         toggle while the menu shows chips, the form's own "Создать" once the
+         form is open. This is the live reading, kept on purpose (D6) - the
+         more correct measurement (the toggle itself) is Phase 8's. */
       const btn = root.querySelector<HTMLElement>('.btn');
       if (!menu || !btn) return;
       const below = window.innerHeight - btn.getBoundingClientRect().bottom;
       const need = menu.getBoundingClientRect().height + 16;
       up = below < need;
+      /* `classList.toggle` precedes `scrollIntoView` in `placeMenu` - the class
+         has to be on the menu before it is scrolled into view. */
+      flushSync();
       menu.scrollIntoView({ block: 'nearest' });
     });
   });
@@ -199,8 +211,15 @@
        close the modal) and this document listener, the `{#if}` block that held
        the pressed control may have already replaced it - `e.target` is then
        detached from the document, `root.contains(e.target)` reads false, and
-       the menu closes under its own click. A target no longer in the document
-       was inside this control at the moment it was pressed. */
+       the menu closes under its own click. A detached target was either
+       inside this control or was removed by the same flush; the guard cannot
+       tell them apart, so an outside click whose target Svelte removes during
+       the flush (a filter pill's cross, a toast's undo) leaves the menu open
+       where the live app closes it. No reachable path to that case was found
+       - `RecordModal.svelte`'s close and `app.svelte.ts`'s `menuFor = ''` on
+       modal close and navigation cover the known ones - and `onclickcapture`,
+       which would decide "inside?" before any mutation, is the recorded
+       fallback if one is. */
     if (root && e.target instanceof Node && !e.target.isConnected) return;
     if (root && e.target instanceof Node && root.contains(e.target)) return;
     app.menuFor = '';

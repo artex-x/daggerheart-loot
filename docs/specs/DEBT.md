@@ -144,6 +144,37 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   the tab-title clause rewritten.
 - **Recorded by**: B10, 2026-09-11.
 
+### D6 - the add-to-list menu's flip measures the window, not the card, and re-measures against the wrong button
+
+- **Where**: `app.js:3695-3704` `placeMenu` (`$('.dropmenu')`,
+  `drop.querySelector('.btn')`, `innerHeight - btn.bottom` against
+  `menu.height + 16`, `scrollIntoView({ block: 'nearest' })`), run after
+  every render (`app.js:3824`); the port `AddToList.svelte`'s placement
+  `$effect`; `.card{overflow:hidden}` at `style.css:306` /
+  `RecordCard.svelte:260`.
+- **Live behaviour**: on a tall window a short card's menu opens downward
+  inside the modal, overflows the `.card` article, and `scrollIntoView`
+  scrolls that `overflow: hidden` article (measured `scrollTop` 109 at
+  1913x981 and 1100x900, Кольцо Тишины, no lists) - the top of the picture
+  is chopped with no scrollbar and no way back; pressing "+ Новый список"
+  redraws the card and flips the menu up because the first `.btn` is then
+  the form's own "Создать", under the fold from the default side - which is
+  what heals it.
+- **What the rewrite would do instead**: measure the toggle
+  (`:scope > .btn`) against the nearest clipping box (`.modal-card`), and
+  make `.card` `overflow: clip` so a programmatic scroll cannot move its
+  content (check the rounded corners still clip).
+- **Why parity won**: B11.1 (2026-09-12) - every `~ list menu` /
+  `~ new list` cell compares the side and the article's scroll; the correct
+  measurement flips `#/i/ci1 ~ new list` and the new modal state against the
+  live app with no `ACCEPTED` home for a whole-menu difference.
+- **How to verify the fix**: `tests/app/states.js` - after opening the menu
+  in the modal on Кольцо Тишины at 1100x900 with no lists, `.card.scrollTop`
+  is 0 and the menu's box lies inside `.modal-card`'s; after "+ Новый
+  список", the input's box lies inside `.modal-card`'s and is focused;
+  `#/i/ci1 ~ new list` is re-read by the same instrument.
+- **Recorded by**: B11.1, 2026-09-12.
+
 ## Live decisions kept over the rewrite's own
 
 Not a defect; a design the rewrite argued against and lost to parity.
