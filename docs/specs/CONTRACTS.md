@@ -106,3 +106,9 @@ read it through one typed adapter rather than importing it.
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`. Referenced from
 outside (link previews, other people's bookmarks), so the layout is public.
+
+Those four are committed and published as they are. The entry document and
+`assets/` are not: they are what the build emits (`app/index.html` and the
+bundle become `dist/index.html` and `dist/assets/app.js`), and the deploy job
+publishes them from the build rather than from a committed file. Nothing about
+the frozen paths above changes with them.

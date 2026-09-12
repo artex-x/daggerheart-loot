@@ -98,9 +98,9 @@ in the same commit. Behaviour changes update their specs in the same commit.
 
 After changing `data.js`, run `node tools/build.js` to regenerate `data.json`, `catalog.csv`, and `i/*.html`; never edit outputs as source.
 
-When counts or source lists change, update `index.html`, both READMEs, `app.js`,
-`llms.txt`, and `robots.txt`. Keep the READMEs aligned, reuse identical image
-bytes, and never renumber a shipped record id.
+When counts or source lists change, update `index.html`, `app/index.html`, both
+READMEs, `app.js`, `llms.txt`, and `robots.txt`. Keep the READMEs aligned, reuse
+identical image bytes, and never renumber a shipped record id.
 
 ## Quality gates
 
