@@ -102,7 +102,12 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
        caller keeps whichever is already open. Hence null, not 'core_item'. */
     const table = name && isTableId(name) ? name : null;
     return tail.startsWith('f_')
-      ? { kind: 'tables', table, anchor: '', filter: decodeFilter(tail) }
+      ? {
+          kind: 'tables',
+          table,
+          anchor: '',
+          filter: decodeFilter(tail, table ? groupsFor(table) : [])
+        }
       : { kind: 'tables', table, anchor: tail, filter: {} };
   }
 

@@ -61,8 +61,8 @@ f_<group>-<value>[-<value>...][.<group>-<value>...]
 Groups are separated by `.`, values inside a group by `-`. A `.` was chosen
 because values may contain `_` (`frame-beast_feast`). Links written with the
 older `_` group separator are still read, but only when the segment has no `.`
-and every piece looks like a group; anything else is treated as the current
-format.
+and every piece names a group the table offers; anything else is treated as
+the current format.
 
 Group keys, by table:
 

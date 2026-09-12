@@ -193,6 +193,15 @@
       return;
     }
     if (app.menuFor !== mine) return;
+    /* A trusted click runs a microtask checkpoint after each listener; Svelte 5
+       flushes state in that microtask (svelte/src/internal/client/dom/task.js).
+       Between the app root's delegated handler (which can flip `newListFor` or
+       close the modal) and this document listener, the `{#if}` block that held
+       the pressed control may have already replaced it - `e.target` is then
+       detached from the document, `root.contains(e.target)` reads false, and
+       the menu closes under its own click. A target no longer in the document
+       was inside this control at the moment it was pressed. */
+    if (root && e.target instanceof Node && !e.target.isConnected) return;
     if (root && e.target instanceof Node && root.contains(e.target)) return;
     app.menuFor = '';
     newListFor = false;

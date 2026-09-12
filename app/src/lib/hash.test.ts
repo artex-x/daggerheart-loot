@@ -128,20 +128,29 @@ describe('tables', () => {
 
 describe('the filter segment', () => {
   it('a dot splits groups, a dash splits values', () => {
-    expect(decodeFilter('f_tier-1-2.cls-mag')).toEqual({ tier: ['1', '2'], cls: ['mag'] });
+    expect(decodeFilter('f_tier-1-2.cls-mag', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1', '2'],
+      cls: ['mag']
+    });
   });
 
   it('an underscore inside a value does not split the group', () => {
-    expect(decodeFilter('f_frame-beast_feast')).toEqual({ frame: ['beast_feast'] });
+    expect(decodeFilter('f_frame-beast_feast', groupsFor('frames'))).toEqual({
+      frame: ['beast_feast']
+    });
   });
 
   it('the older separator is still read', () => {
-    expect(decodeFilter('f_tier-1_cls-phy')).toEqual({ tier: ['1'], cls: ['phy'] });
+    expect(decodeFilter('f_tier-1_cls-phy', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1'],
+      cls: ['phy']
+    });
   });
 
   it('builds back into the same segment', () => {
+    const groups = groupsFor('eq_weapon');
     for (const seg of ['f_tier-1-2.cls-mag', 'f_range-melee', 'f_burden-2.line-uniq']) {
-      expect(encodeFilter(decodeFilter(seg), groupsFor('eq_weapon'))).toBe(seg);
+      expect(encodeFilter(decodeFilter(seg, groups), groups)).toBe(seg);
     }
   });
 
@@ -154,6 +163,19 @@ describe('the filter segment', () => {
   it('a group the table does not offer never reaches the address', () => {
     /* The other side of a foreign group being ignored silently on read */
     expect(encodeFilter({ burden: ['2'] }, groupsFor('eq_armor'))).toBe('');
+  });
+
+  it('reads a two-frame link without mistaking a value-head for a group', () => {
+    /* The interim pin for the routes.json entry Phase 7 adds: a link naming
+       two frames must decode both, not fall into the legacy underscore
+       reading because `frame-beast` and `feast-colossus` both "look like a
+       group" - `feast` is nobody's group. */
+    const hash = '#/tables/frames/f_frame-beast_feast-colossus';
+    const route = parseHash(hash) as Extract<Route, { kind: 'tables' }>;
+    expect(route.filter['frame']).toEqual(['beast_feast', 'colossus']);
+    expect(encodeFilter(route.filter, groupsFor('frames'))).toBe(
+      'f_frame-beast_feast-colossus'
+    );
   });
 
   it('the group names are the ones written in the spec', () => {

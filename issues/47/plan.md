@@ -24,9 +24,9 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 2 | Extract pure logic to TypeScript modules with unit tests | **done** |
 | 3 | Ports for replaceable concerns (drag and drop, search, modal) | **done** |
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | **in progress** - see below |
-| 5 | Testing pyramid: unit, component, a11y, e2e | largely arrived early, see below |
+| 5 | Testing pyramid: unit, component, a11y, the real-browser net | **planned (2026-09-12)** - B11 (the two owner-reported defects) and B12 (the browser layer on `dist/` and the gates); see "Phase 5 - the testing pyramid, planned". No Playwright exists or is built; the puppeteer legacy suites are re-homed now and deleted in Phase 7 |
 | 6 | Build, artefacts, deployment | started: the build now completes `dist/` |
-| 7 | Cut-over, cleanup, README, standing agent guidance | not started; its planning pass answers the Playwright question and does the `ACCEPTED` sweep - see "Phase 8", "Where the phase sits" |
+| 7 | Cut-over, cleanup, README, standing agent guidance | not started; the regression-net question it was to answer is answered by Phase 5 (decided 1-2); it becomes R0 of one 7/8 track - see "Phase 5 - the testing pyramid, planned", decided 8, and "Phase 8", "Where the phase sits" |
 | 8 | Post-migration review: the app on its own terms | designed (2026-09-11) - see "Phase 8" below; runs after the cut-over, on the register B9 opens (`docs/specs/DEBT.md`) |
 
 ## Phase 4 - where the rewrite is
@@ -11501,3 +11501,557 @@ Added during the migration:
   English-only non-zero cell. In-page actions that happen to call `render()`
   (create, delete, rename) are not a reason to fold anything. (B5.3
   close-out; the notice on `#/lists`.)
+
+## Phase 5 - the testing pyramid, planned (planner, 2026-09-12)
+
+The owner's GOAL, verbatim, is in `context.md`, "State at the Phase 5
+kickoff". In one line: retire the flaky legacy browser suites into the
+existing infrastructure, challenge every quality gate, review the pyramid
+for gaps (component tests especially, and whether a layer is missing),
+decide whether the legacy suites can be run against the rewrite, and
+recommend the P6/P7/P8 order. Everything below is measured on `9e3d19f`;
+the numbers are in `context.md`, "Phase 5 planning facts".
+
+### What the tree has, said plainly
+
+**There are no Playwright tests, and never were.** `package.json` carries
+no `@playwright/*`; no `*.spec.*` file exists. What the owner calls "the
+playwright tests" is the **puppeteer** legacy set: 20 suites under
+`tests/`, 8.7k lines, run by `tests/run-all.js`, CI step "The legacy
+suites against the live app" (1m57s of the `check` job's 3m40s on run
+`34643510887`). Phase 5's Playwright layer was planned by the issue and
+never built. So "retire the Playwright tests" is, here, "retire the
+puppeteer suites" - and three of those are not browser suites at all:
+`derived`, `i18n` and `dataint` are node-only, and the first two run
+directly inside `npm run check`. They are not retired by this plan.
+
+**`tests/contracts.js` is a contract gate**, named by `CLAUDE.md` and
+`docs/specs/CONTRACTS.md`. Its pure half (list encoding re-derived by a
+second implementation) and its browser half (fixtures replayed on the
+live app: 26 routes, six lists, the stat line in both languages, every
+filter group name selecting something, `llms.txt`'s spelling) are the
+evidence that `hash.test.ts`, `listLink.test.ts` and `i18n.test.ts` are
+replaying real contracts rather than recording what the new code does.
+It is not dropped: the browser half is re-pointed at `dist/` (B12) and
+the live-app copy is deleted only when the live app is (Phase 7).
+
+### Decided
+
+**1. The regression net is the parity driver, re-pointed at `dist/` alone,
+with real input. No Playwright.** Phase 8's entry condition 3 named two
+candidates; this pass answers it one phase early, as the orchestrator
+asked, and it is one decision, not two. Measured before choosing:
+
+- *Can a legacy suite run against `dist/` at all?* Yes, for the
+  state-free sweeps: `typo` (two fonts, one scale, 13 pages, both
+  languages) passes against `dist/index.html` with exactly two changes -
+  `ROOT` and `ready()`'s `#view` becoming `#app` - and so does `audit2`
+  at 1180 (41 addresses, both languages: no script errors, no sideways
+  scroll, no clipped text, no unnamed control, no dead link, no broken
+  image, no duplicate id, no `undefined`). `hues` fails 16 assertions for
+  a reason that has nothing to do with the app: it injects bare
+  `<span class="badge item">` elements and reads their colour, and the
+  rewrite's `.badge` rules are Svelte-scoped so an injected span gets
+  none; and it greps `[data-act="roll"]`. That is the shape of the other
+  thirteen: they grip the live DOM by `data-act`, `data-open`,
+  `data-copy-*`, `#modal`, `#selBar` (`behave` 35 such selectors,
+  `lists2` 29, `select` 28, `print` 24, `flows` 23, `states` 21, `qa` 18,
+  `notes` 12, `eqtest` 9, `noart` 6), none of which the rewrite emits. A
+  re-point is a selector rewrite for those, and a selector rewrite of a
+  suite whose assertions already live in a component test is waste.
+- *What the parity harness cannot see.* `tests/parity/driver.js:245`
+  presses a control with `el.click()` inside `page.evaluate` - a
+  synthetic dispatch, the same kind jsdom's `userEvent` makes. Defect 2
+  below is invisible to both and visible to a real click (measured, both
+  ways, on both apps). A net without trusted input has a hole exactly
+  where the owner found one.
+- *Why not Playwright.* A second browser dependency and a second driver
+  for the same verbs `driver.js` already has (`open`, `click`, `type`,
+  `seed`, `storage`, `hash`, `title`, `clipboard`, `controls`, `computed`,
+  `typeAt`, `rectsAt`, `metrics`, `shot`), a second CI browser install,
+  and nothing puppeteer cannot do here. `STATES` in `specs.js` is already
+  the only inventory of "everything a person can reach". The net is built
+  on that driver with a new trusted `press` verb, under `tests/app/`,
+  targeting `dist/index.html` over `file://` (so `META.md` section 4 is
+  exercised on every run), listed in `run-all.js` beside the legacy
+  suites, and run by CI's existing pooled step - which already runs after
+  `Build`.
+
+**2. After the cut-over, no committed pixel goldens.** The pixel diff is
+a *comparison* instrument; without a live app to compare with it becomes
+a snapshot suite, and this repository has already learned what that
+costs: a figure is only CI's (`docs/parity.md`, "Machine variance"), a
+whole-page percentage misses a control-sized defect (B3.6), and every
+Phase 8 fix would begin with a golden update nobody can review as a
+number. What survives instead is the *measured* half of the harness,
+which is deterministic: the `typeRuns` per-control probe, `geometry`,
+`computed`, the controls inventory, title, clipboard and hash specs. At
+the cut-over (Phase 7) the last green parity run's legacy-side JSON for
+those specs is frozen into `docs/fixtures/states/` and `tests/app/`
+compares `dist/` against it, strictly - the "goldens of `dist/`"
+candidate, JSON-only. Pixel comparison dies with the harness. **Owner
+question 2** offers the alternative (CI-only PNG goldens at one width and
+language); B11 and B12 do not depend on the answer, because B12 asserts
+facts per state either way and the freeze is additive.
+
+**3. The 20 suites, each with a fate.** Timing rule: a browser suite that
+tests the live app is deleted in the Phase 7 batch that deletes the live
+app, never before - until then it is the gate on what Pages serves. A
+suite's *assertions* are re-homed now (B12), so that the deletion batch
+is mechanical.
+
+| suite | fate | where its assertions live afterwards |
+|---|---|---|
+| `derived`, `i18n`, `dataint` | **kept** (node-only, in `npm run check` / `run-all`) | themselves; `dataint` joins the `check` script in Phase 7's guidance sweep if it is still outside it |
+| `contracts` | pure half **kept as is** (a second implementation of the codec is the point); browser half **ported** to `tests/app/contracts.js` against `dist/` in B12; the live copy deleted in Phase 7 | `hash.test.ts`, `listLink.test.ts`, `i18n.test.ts` (already) + `tests/app/contracts.js` |
+| `audit2` | **ported as is** (B12, `tests/app/sweep.js`) - passes re-pointed today | the sweep, plus axe with `color-contrast` on, per page |
+| `typo` | **ported as is** (B12, `tests/app/typo.js`) - passes re-pointed today | itself |
+| `hues` | **rewritten** (B12): read the computed colour off rendered badges (`#/search` with a query that yields every kind, or `#/tables/eq_weapon` + `#/roll/std`), not off injected spans; the roll-button look off `button.btn.primary` with a `.dieicon` | `tests/app/hues.js` |
+| `states` | **superseded** - it walked click-only states and asserted "rendered something"; `STATES` is that list with assertions | `specs.js` `STATES` now, `tests/app/states.js` after Phase 7 |
+| `flows` | **re-homed**: modal/list address/clipboard/roll copy; the `<dialog>` semantics (focus trap, Escape, inert page, focus return) and the clipboard happy path are browser-only | `tests/app/states.js` (B12); `listPage.test.ts`, `record.test.ts` for the rest |
+| `select` | **re-homed**: selection bar, batch add/copy, select all, reset on navigation, card, modal | `tables.test.ts` (78 cases) already; the bar's real-click new-list case in B12 |
+| `lists2` | **re-homed**: reorder, position, list search, storage warning, batch actions, upgrade steps, price modes/suggestion, empty roll field, taking a shared list, per-list roll, kind filter, alternate tables | `listPage.test.ts` (48), `sharedListPage.test.ts` (20), `state/lists.test.ts` (34); the "link assembled from `llms.txt`'s description" case moves into `tests/app/contracts.js` |
+| `notes` | **re-homed**: two notes, copying, both links, v1 lists and links, own link after saving, note field height | `listPage.test.ts`, `state/lists.test.ts` (v1 migration), `listLink.test.ts`; "note field height" (textarea auto-size, a layout fact) -> `tests/app/states.js` |
+| `behave` | **re-homed**: rolls, search, language, remembered/corrupt settings, starting section, navigation, copy and share, storage disabled | `roll.test.ts`, `std.test.ts`, `alt.test.ts`, `searchPage.test.ts`, `shell.test.ts`, `state/app.test.ts` (settings as untrusted data, pinning, refused writes), `ports.test.ts` (`brokenStorage`) |
+| `eqtest` | **re-homed**: class, order, filters, filter links, anchors, colours, copying, all sources | `tables.test.ts`, `facets.test.ts`, `filters.test.ts`, `label.test.ts`; colours -> `tests/app/hues.js` |
+| `craft` | **re-homed**: upgrade chains data/rendering/copying/stubs | `record.test.ts` (the tier ladder), `share.test.ts`, `derived` (stubs) |
+| `craftmob` | **re-homed**: narrow-screen layout, touch highlight, selection bar overflow | the sweep at 360/390 (overflow); `hover: none` cannot be emulated in headless Chrome - stays a known thin spot |
+| `noart` | **re-homed**: records without art, art that fails to load, the rest untouched | `record.test.ts`/`printPage.test.ts` (`artBroken`, the glyph swap); one `tests/app/states.js` state with a broken art path so the real `<img>` error path runs once |
+| `qa` | **re-homed**, one line per numbered case, the honest list: 9.4 contrast -> axe in `tests/app/sweep.js` with `color-contrast` on; 7.2 scrollbar -> the sweep's overflow check; 3.5 previews -> `derived` (stubs, `og:`); 8.2 scripts don't block -> `tools/smoke-file-url.mjs`; 2.2 one dash in ranges -> `label.test.ts`/`desc.test.ts`; 1.1/1.4 number field -> `numField.test.ts`; 9.1 focus survives a redraw -> `tests/app/states.js` (a keystroke in the tables search box keeps focus; Svelte keeps the node, the live app rebuilt it); 9.2 live regions -> `shell.test.ts`; 9.3 heading structure -> axe `heading-order` (on by default) in every component test; 3.2 chrome labels/tab title language -> `shell.test.ts`; 4.1 truncated link -> `listLink.test.ts` + `tests/app/contracts.js`; 5.1 two tabs -> `state/lists.test.ts` (the merge) + one two-page state in `tests/app/states.js` (the `storage` event redraws); 6.3 leaving an empty result -> `tables.test.ts`; 4.4 unreadable address -> `state/app.test.ts` (`#/l/zzzz`); 6.4 unnamed list refused -> `lists.test.ts`; tile without image -> `noart`'s state; restoring a removed row -> `listPage.test.ts`; keyboard -> the focus-ring walk in `tests/app/sweep.js`; table/filter/list links -> `hash.test.ts`; 6.1 warning height -> the sweep (`StorageNotice` at 360) |
+| `print` | **ported in Phase 7's deletion batch** (not B12): the geometry assertions - sheet grid, 63x88 mm card at 96 dpi, nine per sheet, page breaks, the black-and-white layout, the long-text fit ladder, the art edge pixel - are the one set of numbers that survive without a live app and that `printPage.test.ts`'s faked layout cannot measure. Until Phase 7, parity's 54 `#/print` cells are the gate | `tests/app/print.js` (Phase 7) |
+
+**No replacement yet, said honestly** (these are the "Known thin spots"
+that stay): `hover: none` (touch highlight); the share sheet's success
+path (no headless share sheet exists; the fallback is tested); real
+clipboard hardware (the harness stubs `navigator.clipboard`, and the
+stub is what `tests/app/` keeps - the port's happy path *is* exercised,
+the OS clipboard is not); print fitting until Phase 7.
+
+**4. The coverage gates, each with a verdict.** Measured on `9e3d19f`
+(998 tests; per-file minima in `context.md`):
+
+| gate (`vite.config.mts`) | today | measured minimum | verdict |
+|---|---|---|---|
+| `src/lib/**` lines/functions | 90/90 | 100/100 (every file) | **raise to 95/95** - the bar should be within reach of a regression, not thirty points under the floor |
+| `src/lib/**` branches/statements | 85/90 | 88.46 (`data.ts`) / 93.33 (`lists.ts`) | **keep** - three points of room is a bar, not a ceiling |
+| `src/state/**` | 90/90/80/90 | 98.27/100/88.46/95.89 (`lists.svelte.ts`) | **raise to 95/95/85/90** |
+| `src/ports/**` lines/branches/statements | 70/55/70 | 71.42/57.14/70.58 (`compress.ts`) | **keep** - `compress.ts` sits one point over each bar, and the happy paths are Chrome's: `#/l/ ~ packed` runs `CompressionStream` for real in the browser layer (B12 names it) |
+| `src/ports/**` functions | 70 | 87.5 (`share.ts`) | **raise to 80** |
+| components glob | 85/80/75/85 | 88.15/88/75/88.79 (`StdPanel`; branches: `Icon`, `SelBar` at exactly 75) | **keep** - two files sit *on* the branch bar; B12 adds the branch each is missing (`Icon`'s unused name, `SelBar`'s empty-selection arm) rather than moving the bar |
+| `DiceBar.svelte` branches | 55 | 60 | **keep the exception** at 55, reason unchanged (attribute update paths) |
+| `Button.svelte` branches | 50 | 66.66 | **raise the exception to 60** |
+| exclude `src/test/**` | - | - | **keep** - test helpers |
+| exclude `src/ports/types.ts`, `src/vite-env.d.ts` | - | - | **keep** - emit no code |
+| exclude `src/main.ts` | - | - | **keep**, reason rewritten: reached by `tools/smoke-file-url.mjs` and every `tests/app/` run |
+| exclude `src/ports/image.ts` | - | - | **keep**, reason rewritten: the canvas conversion runs in Chrome under `tests/app/states.js`'s copy-image state (today under parity's `clipboardImage` spec) |
+
+**5. The two axe rules off.** `color-contrast` **stays off in jsdom**
+(it lays nothing out) **and goes on in the browser layer** over every
+page of the sweep - that is what replaces `qa` 9.4 and `typo`'s claim,
+and it is the first place contrast is measured on the *rewrite* rather
+than on the live app. `nested-interactive` **narrows from suite-wide to
+per-call**: `expectNoA11yViolations(container, { allow: ['nested-interactive'] })`
+only in the tests that render `StorageNotice` (D3), so the rule is live
+on the other 45 components; D3's fix (Phase 8 R3) deletes the `allow`.
+
+**6. The pyramid, and the layer that is missing.** Unit (`lib`, 25 files,
+37 of 83 files at 100/100/100/100), state, component (jsdom, 16 files,
+axe on named pressed states with a guard that every component has one),
+parity (real Chrome, both apps, until Phase 7), contracts (fixtures
+replayed twice). What nothing reaches, by mechanism rather than by
+percentage:
+
+- **trusted input events** - jsdom and `el.click()` both dispatch
+  synchronously, so no microtask checkpoint runs between listeners; the
+  rewrite flushes in one (Svelte 5, `dom/task.js`). Defect 2 is this
+  class. Only a real click sees it;
+- **native `<dialog>` semantics** - shimmed in jsdom (`vitest-setup.ts`);
+  parity opens the modal but asserts nothing about focus, Escape or
+  inertness; `flows` did, on the live app only;
+- **the ports' happy paths** - clipboard (stubbed in the harness, absent
+  in jsdom), `CompressionStream`, the canvas conversion; the `src/ports/**`
+  bar is low for this reason;
+- **contrast, fonts, the type scale, overflow, clipped text, unnamed
+  controls, broken images** on the rewrite - `qa`/`typo`/`audit2` measure
+  them on the live app; nothing measures them on `dist/`;
+- **two tabs** - the merge is unit-tested, the `storage`-event redraw is
+  not;
+- **keyboard** - focus survives a re-render (Svelte keeps nodes; nothing
+  asserts it), and no focus-ring walk exists outside Phase 8 R1's plan;
+- **print geometry** on the rewrite, until Phase 7 (parity covers it now).
+
+The missing layer is **one real-browser layer against `dist/` with real
+input** - not a second component layer, and not more jsdom. Component
+tests are not thin: 16 files, 78/48/34/27 cases on the four biggest
+pages, every component reached (the `perFile` rule) and every one under
+axe in a pressed state; what they cannot do is the list above, and no
+amount of them will. B12 builds that layer; Phase 8 R1's a11y instruments
+(axe in Chrome with contrast on, the keyboard walk, the reduced-motion
+read) then run on every push rather than once in a review.
+
+**7. The two owner-reported defects - measured, root-caused, placed.**
+
+*Defect 1, `#/tables/frames`: pick "Пир зверей", then "Колоссы Сухоземья"
+-> the filter resets and the table empties.* **Reproduced on `dist/`,
+with real and synthetic clicks alike. The live app does it too - but only
+when the link arrives, not while picking.** Measured: live in-page after
+the second pick reads 57 of 94 rows and two pills (OR works); live at
+`#/tables/frames/f_frame-beast_feast-colossus` arriving fresh reads 0
+rows, no pills, count 94; the rewrite reads 0 rows and no pills in both
+cases. Root cause, two halves: (a) the shared decoder heuristic -
+`app/src/lib/filters.ts` `decodeFilter` and `app.js:2724` `fDecode`
+both read a segment as the older `_`-separated form when it has no `.`
+and every `_`-split piece contains a `-`, and `frame-beast_feast-colossus`
+splits into `frame-beast` and `feast-colossus`, both of which "look like
+a group" - so it decodes as `{frame:['beast'], feast:['colossus']}`,
+`beast` is no frame, and the table is empty with nothing to draw a pill
+from. The same holds for `dark_heart` + `motherboard`; `colossus` +
+`dark_heart` and any three-frame pick decode correctly, which is why it
+reads as "sometimes". (b) The live app never re-reads its own write
+(`S.fSeg` guard, `app.js:3627`, the rule `FEATURES.md` states as "read
+back only when the segment actually changed"), so it only meets the
+heuristic on arrival; the rewrite's `TablesPage` reads the filter off
+`app.route` after every `replace()`, so it meets it on every pick. **Not
+a `DEBT.md` entry**: the rewrite fixes it, and the live app's own
+link-arrival failure becomes a fixed-not-ported divergence, recorded in
+`specs.js` prose and a `FEATURES.md` bullet per the Phase 7 sweep rule.
+**Fix** (B11): `decodeFilter(segment, groups)` reads the old form only
+when every piece's head names a group the table offers - the sharper
+sentence `ROUTES.md` then carries; `parseHash` passes `groupsFor(table)`.
+The grammar in `CONTRACTS.md` item 1 is untouched (dot-separated groups
+were always the contract; this makes the decoder honour it). The
+`routes.json` entry for the two-frame link **waits for Phase 7**: added
+now, `tests/contracts.js` would fail it against the live app in CI.
+**Would parity have caught it?** Yes, with a state - `#/tables/frames ~
+two frames` differs 57 rows to 0 before the fix and matches after; B11
+registers it. **Would the plan's coverage have caught it?** The same
+state in `tests/app/states.js`, plus the link-arrival state (57 rows on
+`dist/`, which no parity state can hold because the live side is
+legitimately different).
+
+*Defect 2, add to list -> "+ Новый список" does nothing, from any view.*
+**Reproduced on `dist/` with a real click only; the live app is fine
+either way.** Measured on `#/i/ci1`: a trusted click on "+ Новый список"
+leaves no menu and no form and focus on `<body>`; the same press via
+`el.click()` opens the form with focus in the input and "Создать" then
+saves the list; from the selection bar on `#/tables`, the same. Root
+cause: `AddToList.svelte:188-200`'s `<svelte:document onclick>` handler
+closes the menu when the click's target is outside `.seldrop`. Svelte 5
+flushes state in a microtask; a trusted event runs a microtask checkpoint
+after each listener, so between the app root's delegated handler (which
+sets `newListFor = true`) and the document listener, `{#if newListFor}`
+has already replaced the chip - `e.target` is detached, `root.contains`
+is false, the menu closes. A synthetic dispatch runs no checkpoint until
+the stack unwinds, which is why `lists.test.ts:147` passes and why
+parity's `#/i/ci1 ~ new list` passes: **neither layer can see this class
+of defect, by construction.** Not a `DEBT.md` entry - a rewrite
+regression. **Fix** (B11): in `onDocumentClick`, a target that is no
+longer connected was inside this control when it was pressed - return.
+One line, a comment naming the checkpoint, and a component test that
+reproduces the ordering by calling `flushSync()` from a listener between
+the app's and the document's. **Would parity have caught it?** No - its
+click is synthetic. **Would the plan's coverage catch it?** Yes: B12's
+`press` is a CDP mouse click, and the new-list states use it.
+
+*Defect 2b, the menu inside the modal opening downward where the live app
+opens it upward.* **Not reproduced.** Measured at 1100x900, 1100x700 and
+375x667 with the card unscrolled: both apps add `up` and draw the menu
+above the button on `#/roll/wondrous ~ modal`; scroll offsets agree
+(0/114/98 px). The mechanism is identical (`placeMenu`, `app.js:3695`,
+against the `$effect` in `AddToList.svelte`), both read
+`window.innerHeight - button.bottom` against the menu's height plus 16.
+One difference exists by construction: the live app re-runs `placeMenu`
+on every render, the rewrite only when the menu opens or its contents
+change - a resize or a scroll after opening is re-placed by neither. B11
+registers `#/tables ~ a row opened, list menu` (six cells, three widths)
+so whatever the owner saw is measured in CI; **owner question 3** asks
+for the window size and whether the card was scrolled.
+
+*This class as coverage grows.* The owner is right to expect more. The
+two mechanisms here - a shared heuristic met on a different code path,
+and event-loop timing that no synthetic dispatch reproduces - are both
+things a component test cannot express and a synthetic-click harness
+cannot see. That is the argument for decided 1 and 6 in one sentence.
+
+**8. P6 -> P7 -> P8, and "unify 7 and 8".** Recommended order, with the
+reason each step cannot move:
+
+1. **Phase 5 (B11, B12) first**: the net must exist before the live app
+   goes (entry condition 3), it runs against `dist/` today, and the two
+   defects are user-visible now.
+2. **Phase 6 - publish `dist/`**: the `deploy` job collects `dist/` (plus
+   the generated `i/`, `og/`, `img/`, `card/`, `llms.txt`, `robots.txt`,
+   `data.json`, `catalog.csv`) instead of the root files, and the owner
+   flips Pages to "GitHub Actions". The static root stays *in the
+   repository* through this phase, because parity is still the gate.
+3. **Phase 7 - the cut-over cleanup**: delete `index.html`/`app.js`/
+   `style.css` and the legacy suites (each in the commit that lands or
+   names its successor - the table in decided 3), retire
+   `tests/parity.js` after the JSON freeze (decided 2), the `ACCEPTED`
+   and "Recorded, not keyed" sweep into `FEATURES.md`/`STATE.md`, the
+   `routes.json` two-frame entry, READMEs, `CLAUDE.md`'s migration
+   section, CI's parity job. Mechanical, contract-touching, its own
+   reviews.
+4. **Phase 8 - the review and the fixes**, on the clean tree, with the
+   net from B12 as its instrument.
+
+7 before 8 is forced: every Phase 8 fix is a parity regression while
+the harness is the gate, and R1's findings go stale if they cannot be
+acted on. 6 before 7 is forced: deleting the root before the deploy job
+publishes `dist/` takes the site down. 5 before 7 is forced by entry
+condition 3; 5 before 6 is a choice, and the right one - the owner's
+two defects are in the built app people will be sent to.
+
+**Can 7 and 8 be unified?** As one *track*, yes - Phase 7's cleanup
+becomes that track's first batch (R0) and R1's review starts the moment
+it lands, on a tree with no old code for an agent to be confused by,
+which is exactly the owner's reason. As one *batch*, no: R0 changes
+public contracts and CI and must land and be reviewed alone
+(`docs/parity.md`, "Batch size", first cut), and R1 is read-only by
+design. **Cost of the recommended order**: nothing extra in gates - the
+parity harness is paid for until R0 either way; one extra owner action
+(the Pages flip) sits between 6 and 7, as it always did. **Cost of the
+alternative** (7 then 6, or 8 before 7): a dark site, or a phase of fixes
+each needing a `VISUAL_DEBT`/`ACCEPTED` excuse the owner already refused
+for D1.
+
+**9. "Phase 5" survives as a label** for the net and the gates - B11 and
+B12 - and absorbs the Playwright question the plan had parked at Phase
+7's planning pass. `docs/specs/COVERAGE.md`'s four "waits for Phase 5"
+sentences are rewritten by B12 to name the state that now covers each.
+
+### The batches
+
+Two, sized by their gates: B11 shares one `check`, one `check:built` and
+one parity filter group (the two defects' surfaces); B12 shares one
+`check`, one `check:built` and one `run-all` filter and touches no
+parity-visible pixel. Merging them would put a contract-adjacent decoder
+change and a new test layer under one review, which is the second way to
+get it wrong (`docs/parity.md`, "Batch size").
+
+#### B11 - the decoder, and the menu that closed itself (implement-ready)
+
+**Objective.** Fix both owner-reported defects in the rewrite, pin each
+with the test that would have caught it, register the two parity states
+that make them visible, and write the behaviour down. No production code
+beyond the two fixes; no harness change.
+
+**In scope.** `app/src/lib/filters.ts`, `app/src/lib/hash.ts`,
+`app/src/lib/filters.test.ts`, `app/src/lib/hash.test.ts`,
+`app/src/components/AddToList.svelte`, `app/src/components/lists.test.ts`,
+`tests/parity/specs.js` (two states, one prose sentence),
+`docs/specs/ROUTES.md` (one sentence), `docs/specs/FEATURES.md` (two
+bullets), `docs/specs/COVERAGE.md` (one thin-spot bullet), `issues/47/`.
+
+**Out of scope.** `docs/fixtures/urls/routes.json` (Phase 7 - see decided
+7), `tests/contracts.js`, `CONTRACTS.md`, `llms.txt`, `TablesPage.svelte`
+(its read-back-on-every-write is correct once the decoder is), the
+`$effect` placement in `AddToList` (2b is not reproduced), `tests/app/`
+(B12), any threshold, the live files, any `VISUAL_DEBT`/`ACCEPTED`
+figure.
+
+**Decided, do not reopen.** The decoder takes the table's groups (not a
+regex over known value spellings, not a `.`-only reading that would
+break the legacy links `filters.test.ts:77` protects). The menu fix is
+the `isConnected` guard, not a capture-phase listener (fallback below)
+and not a `setTimeout`. The link-arrival divergence from the live app is
+prose in `specs.js` and a `FEATURES.md` bullet, not an `ACCEPTED` key
+(a whole-table pixel difference has no `ACCEPTED` home) and not a parity
+state.
+
+**Steps.**
+
+1. Preflight: `git log --oneline -3` reads `9e3d19f` at HEAD (or a
+   docs-only successor); `git status --short` shows only the orchestrator's
+   `issues/47/` edits and the untracked `issues/tg-preview-refresh/`
+   (another task's - never stage it). Read `context.md`, "Phase 5
+   planning facts".
+2. `filters.ts`: `decodeFilter(segment: string, groups: readonly string[]): FilterState`.
+   The legacy reading applies only when the body has no `.` **and** every
+   `_`-split piece has a head (the text before its first `-`) that is in
+   `groups` and a non-empty tail. Rewrite the doc comment's example: the
+   case that made the separator a dot was `frame-beast_feast`; the case
+   that makes the heuristic name its groups is `frame-beast_feast-colossus`,
+   which splits into `frame-beast` and `feast-colossus` - and `feast` is
+   nobody's group.
+3. `hash.ts:105`: `decodeFilter(tail, table ? groupsFor(table) : [])`.
+   With no table there is no legacy reading, which is the safe side (an
+   unknown table draws no filter).
+4. `filters.test.ts`: every `decodeFilter` call gains its groups (use
+   `groupsFor('eq_weapon')`/`groupsFor('frames')` rather than literals, so
+   the test follows the table). Add, under "reading the address": (a)
+   `f_frame-beast_feast-colossus` -> `{frame:['beast_feast','colossus']}`
+   with a comment naming the owner's report; (b)
+   `f_frame-dark_heart-motherboard` -> both values (the second pair the
+   heuristic broke); (c) `f_tier-1_cls-phy` on `eq_weapon` still reads
+   the old way (the existing case, kept); (d) the same
+   `f_tier-1_cls-phy` decoded with `groupsFor('frames')` does **not**
+   take the legacy reading - assert only that the result has no `frame`
+   key, that nothing throws, and that `passes()` with `frames`' groups
+   leaves every row through (a foreign group narrows nothing - what
+   `passes` already promises). The exact shape of the foreign key is not
+   asserted; it is noise the table ignores.
+5. `hash.test.ts`: one case under the route grammar describe -
+   `parseHash('#/tables/frames/f_frame-beast_feast-colossus')` has
+   `filter.frame` equal to `['beast_feast','colossus']` and
+   `encodeFilter(route.filter, groupsFor('frames'))` round-trips to the
+   same segment. This is the interim pin for the `routes.json` entry
+   Phase 7 adds; say so in the comment.
+6. `AddToList.svelte` `onDocumentClick`: before the `root.contains`
+   check, `if (e.target instanceof Node && !e.target.isConnected) return;`
+   with a comment: a trusted click runs a microtask checkpoint after the
+   app's delegated handler, Svelte 5 flushes in that microtask, and the
+   `{#if newListFor}` block has already replaced the chip (or the form's
+   own buttons) by the time the event reaches the document - a target
+   that is no longer in the document was inside this control when it was
+   pressed. Leave the existing `try { mine = key }` as is.
+7. `lists.test.ts`: a new case, "opens the new-list form under a real
+   browser's event ordering", that registers a bubbling `click` listener
+   on `document.body` **after** render (so it runs after Svelte's
+   delegated handler on the app root and before the document listener)
+   which calls `flushSync()` (import from `svelte`), then clicks
+   "+ Новый список" and asserts the input is present and focused and
+   "Лежит в списках" is still on screen; then clicks "Отмена" the same
+   way and asserts the menu is still open with the "+ Новый список" chip
+   back. Remove the body listener in a `finally`. Run the case against
+   the unfixed component first and record in the handoff that it failed
+   (the menu text gone) - that is the proof it pins the mechanism. End
+   with `expectNoA11yViolations`.
+8. `specs.js`, `STATES`: after `#/tables/frames`, add
+   `{ id: '#/tables/frames ~ two frames', route: '#/tables/frames',
+   why: 'two frames picked in one row: values OR, and the second pick
+   keeps the first', enter: async (d) => { await d.click('Фильтры');
+   await d.click('Пир зверей'); await d.click('Колоссы Сухоземья'); } }`
+   (copy `#/tables/wondrous ~ filtered`'s shape). After
+   `#/tables ~ a row opened`, add `#/tables ~ a row opened, list menu`:
+   the same `route`, `storage: two`, `enter` = that state's `enter` plus
+   `await d.click('Добавить в список')`, `why: "the add-to-list menu
+   inside the modal, and which side of the button it opens on"`.
+9. `specs.js`, the "Recorded, not keyed" comment block: one sentence -
+   a two-frame link (`#/tables/frames/f_frame-beast_feast-colossus`)
+   opens both frames in the rewrite and an empty table in the live app,
+   whose `fDecode` (app.js:2724) reads it as the old `_` form; no state
+   holds it because the difference is the whole table; Phase 7's sweep
+   carries it into `FEATURES.md` (B11 already writes the bullet).
+10. `ROUTES.md`, "Filter grammar": replace "every piece looks like a
+    group" with "every piece names a group the table offers".
+11. `FEATURES.md`, "Tables and search", the filter-panel bullet: add
+    "Values in a row combine with *or*; a link naming two frames opens
+    both." "Lists", the card-menu bullet: add "and through the new-list
+    form and its cancel."
+12. `COVERAGE.md`, "Known thin spots": one bullet - a trusted click runs
+    a microtask checkpoint between listeners that neither jsdom nor
+    `el.click()` reproduces; B12's `press` is the instrument.
+13. Gates, each one foreground call, Bash timeout 600000 (see risks on
+    host load):
+    - `set -o pipefail; npm run check 2>&1 | tail -n 120`
+    - `set -o pipefail; npm run check:built 2>&1 | tail -n 120`
+    - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables/frames" "#/tables/wondrous ~ filter" "#/tables/eq_secondary ~ filter link" "#/tables ~ a row opened" 2>&1 | tail -n 120`
+    - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/ci1 ~ list menu" "#/i/ci1 ~ new list" "#/tables ~ bar menu" 2>&1 | tail -n 120`
+    (the first parity call is 7 states, 42 cells; the second 3 states, 18
+    cells; confirm each printed its cells - a vacuous `расхождений нет`
+    is not a result).
+14. One commit, Conventional Commits, `fix(app): ...`; the handoff with
+    exact commands and results, and the step-7 pre-fix failure recorded.
+
+**Acceptance.** `filters.test.ts` and `hash.test.ts` carry the cases
+above; `lists.test.ts`'s new case fails on the unfixed component and
+passes on the fixed one; `#/tables/frames ~ two frames` reads
+`совпадает` on all six cells (both apps 57 rows, two pills);
+`#/tables ~ a row opened, list menu` reads `совпадает` or, if CI reads a
+difference, the diff image is inspected before any entry is written (no
+`VISUAL_DEBT` from this host); the eight pre-existing states in the
+filters read unchanged; `git show HEAD -- app.js style.css index.html`
+empty; `ROUTES.md`, `FEATURES.md`, `COVERAGE.md`, `specs.js` carry their
+edits; `npm run check` green with thresholds held.
+
+**Risks / do-nots.** The host was loaded on 2026-09-12 01:48-02:03:
+vitest alone took 378-393 s (the whole `check` is ~165 s idle), so a
+`check` may cross the 600 s cap - a crossed run is re-run when the host
+is idle, never salvaged, and never backgrounded. Do not widen the legacy
+reading to "any known group anywhere" - `feast` is not a group on any
+table today, but `groupsFor(table)` is the rule, not a global set. Do not
+touch `TablesPage.svelte`'s read-back. Do not add `routes.json` entries.
+If the `~ two frames` English cells differ, the cause is the chip name
+lookup under `EN` (the harness presses the language *after* `enter`, so
+Russian names are right) - not the decoder.
+
+**Fallback.** If the `isConnected` guard proves insufficient in B12's
+real-click state (it will not - the probe's mechanism is exactly the
+detached target), switch the listener to `onclickcapture` so "inside?" is
+decided before any handler mutates the DOM; the test in step 7 passes
+either way.
+
+#### B12 - the real-browser layer on `dist/`, and the gates (outline; decided points)
+
+Expanded to steps at its own planning pass after B11 lands; the decisions
+are made here so that pass is short.
+
+- **Driver.** `tests/parity/driver.js` gains `press(name, nth)` - the same
+  lookup as `click`, but the element is resolved to a puppeteer
+  `ElementHandle` and `.click()`ed (CDP mouse: trusted, scrolls into view).
+  `click` is unchanged so parity's legacy-side cache key changes once
+  (driver.js is hashed in) and its semantics do not. `ready()` must accept
+  `#app` for the `next` target if it does not already.
+- **Files.** `tests/app/lib.js` (a `next`-only driver factory over
+  `makeDriver`/`prepare`, `axe` injection via
+  `page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })`,
+  the sweep reporter lifted from `audit2`), then one suite per file:
+  `sweep.js` (every `STATES` route plus `audit2`'s `PAGES`, four widths,
+  both languages, `audit2`'s eight checks + axe with `color-contrast` on
+  + a focus-ring walk: Tab through every focusable, read `outline` after
+  `getAnimations()` is empty), `typo.js`, `hues.js`, `contracts.js` (the
+  browser half of `tests/contracts.js` on `dist/`: `.fpill` gets the live
+  `data-val` attribute in `FilterBar.svelte` so the fixture's `picked`
+  reads the same way; "which tab is lit" via `aria-current="page"`; rows
+  via the row selector `TableRows.svelte` emits; sources via
+  `aria-pressed`), `states.js` (real-input: new list from the card, the
+  bar and the modal; two frames picked and the two-frame link arriving;
+  `<dialog>` focus/Tab/Escape/return; two pages sharing storage; the
+  packed link (`CompressionStream` for real); copy text and copy image
+  through the stubbed clipboard; a broken art path; focus surviving a
+  tables keystroke; the note textarea's height).
+- **Runner and CI.** `run-all.js` `SUITES` gains the five, named
+  `app/<name>`; the CI step keeps its command (`--exclude=parity`
+  already runs after `Build`) and is renamed "The legacy suites against
+  the live app, and the built app in a browser". `CLAUDE.md`, "Quality
+  gates": one focused-command line for `node tests/run-all.js app/states`.
+- **Gates config.** `vite.config.mts` per decided 4; `a11y.ts` per
+  decided 5 (`OFF` loses `nested-interactive`; `expectNoA11yViolations`
+  takes an optional `{ allow }`; the `StorageNotice` call sites in
+  `listsPage.test.ts`/`listPage.test.ts`/`a11y.test.ts` pass it, each
+  with a `D3` comment); `Icon`/`SelBar` gain the one branch each is
+  missing.
+- **Docs.** `COVERAGE.md` rewritten: the suite table gains the `app/*`
+  rows and marks each legacy row with its fate from decided 3; "Known
+  thin spots" loses its four "waits for Phase 5" sentences and gains the
+  honest remainder (hover, share sheet, OS clipboard, print until Phase
+  7); the "What is enforced" table gains the browser layer. `parity.md`
+  unchanged.
+- **Gates.** `npm run check`; `npm run check:built`;
+  `set -o pipefail; node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts,app/states 2>&1 | tail -n 120`
+  (estimate 3-4 min: `audit2` was 4x45 s in parallel, `typo` 23 s,
+  `contracts` 30 s); parity `"~ filtered"` (12 cells) for the `data-val`
+  attribute; a review, because it changes what CI enforces.
+- **Not in B12.** `print` geometry (Phase 7's deletion batch), the JSON
+  freeze (Phase 7), deleting any legacy suite.
+
+#### Phase 6 and 7 - what this pass adds to their outlines
+
+- Phase 6's one batch: the `deploy` job's "Collect what the site is made
+  of" step copies `dist/` and the generated/asset folders, not the root
+  files; `tests/derived.js`'s `noindex` and count checks read
+  `app/index.html`/`dist/index.html`; the smoke stays. Owner-gated on the
+  Pages flip.
+- Phase 7's first batch (R0 of the unified 7/8 track): delete the three
+  live files and every legacy browser suite (`tests/lib.js` with them),
+  each named with its successor from decided 3 in the commit message;
+  port `print`'s geometry into `tests/app/print.js` in the same batch;
+  freeze the measured specs' legacy-side JSON into `docs/fixtures/states/`
+  from the last green parity run and point `tests/app/contracts.js` (or
+  a `look.js`) at it; delete `tests/parity.js`, `specs.js`'s `VISUAL_DEBT`
+  and `ACCEPTED` after the sweep; add the `routes.json` two-frame entry;
+  `tests/contracts.js`'s pure half moves to `tests/app/contracts.js` or
+  stays as a node-only suite - implementer's call, one file either way;
+  CI drops the parity job; `CLAUDE.md`'s "Migration and parity" section
+  shrinks to the standing rules. Contract-touching: its own review.

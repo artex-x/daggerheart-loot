@@ -315,3 +315,9 @@ Not blocking, recorded so they are not mistaken for coverage:
   `app/vitest-setup.ts` shims presence and open/closed. The focus trap, Escape
   and the page behind going inert are the browser's, and are checked in one:
   `flows` today, `parity` and the Phase 5 e2e layer as they grow.
+- A trusted click runs a microtask checkpoint between listeners on the same
+  event that neither jsdom's `userEvent` nor `parity`'s `el.click()`
+  reproduces - both dispatch on a non-empty call stack, so Svelte 5's flush
+  (a microtask) waits until the stack unwinds. `AddToList.svelte`'s
+  new-list-form defect was invisible to both for exactly this reason;
+  B12's `press`, a real CDP mouse click, is the instrument that sees it.

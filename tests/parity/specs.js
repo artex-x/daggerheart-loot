@@ -1380,6 +1380,16 @@ const STATES = [
     }
   },
   {
+    id: '#/tables ~ a row opened, list menu',
+    route: '#/tables',
+    why: 'the add-to-list menu inside the modal, and which side of the button it opens on',
+    storage: two,
+    enter: async (d) => {
+      await d.click('Кольцо Тишины');
+      await d.click('Добавить в список');
+    }
+  },
+  {
     id: '#/tables ~ a row ticked',
     route: '#/tables',
     why: 'the bar, one row ticked',
@@ -1475,6 +1485,16 @@ const STATES = [
   },
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
   { id: '#/tables/frames', route: '#/tables/frames', why: 'a sectioned body: campaign frames' },
+  {
+    id: '#/tables/frames ~ two frames',
+    route: '#/tables/frames',
+    why: 'two frames picked in one row: values OR, and the second pick keeps the first',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Пир зверей');
+      await d.click('Колоссы Сухоземья');
+    }
+  },
   { id: '#/tables/community', route: '#/tables/community', why: 'a sectioned body: communities' },
   {
     id: '#/tables/community ~ panel open',
@@ -2020,6 +2040,12 @@ const JITTER = 0.1;
  * render()`); the rewrite re-plays it on a navigation and a language switch
  * only. No parity state types or ticks with an anchor in the address, so
  * nothing keys this either (`docs/specs/FEATURES.md`, "Tables and search").
+ *
+ * A two-frame link (`#/tables/frames/f_frame-beast_feast-colossus`) opens both
+ * frames in the rewrite and empties the table in the live app, whose `fDecode`
+ * (app.js:2724) reads it as the old `_` form on arrival; no state holds this
+ * because the difference is the whole table, not a control. Phase 7's sweep
+ * carries it into `FEATURES.md`.
  */
 
 /**

@@ -55,39 +55,88 @@ describe('which groups a table offers', () => {
 
 describe('reading the address', () => {
   it('reads a group with one value and a group with several', () => {
-    expect(decodeFilter('f_tier-1-2.cls-mag')).toEqual({ tier: ['1', '2'], cls: ['mag'] });
+    expect(decodeFilter('f_tier-1-2.cls-mag', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1', '2'],
+      cls: ['mag']
+    });
   });
 
   it('is not a filter without the prefix', () => {
-    expect(decodeFilter('tier-1')).toEqual({});
-    expect(decodeFilter('anchor-name')).toEqual({});
-    expect(decodeFilter('')).toEqual({});
-    expect(decodeFilter('f_')).toEqual({});
+    const groups = groupsFor('eq_weapon');
+    expect(decodeFilter('tier-1', groups)).toEqual({});
+    expect(decodeFilter('anchor-name', groups)).toEqual({});
+    expect(decodeFilter('', groups)).toEqual({});
+    expect(decodeFilter('f_', groups)).toEqual({});
   });
 
   it('drops a repeat: a value is picked or it is not', () => {
-    expect(decodeFilter('f_tier-1-1-2')).toEqual({ tier: ['1', '2'] });
+    expect(decodeFilter('f_tier-1-1-2', groupsFor('eq_weapon'))).toEqual({ tier: ['1', '2'] });
   });
 
   it('ignores a group with a name and no values', () => {
-    expect(decodeFilter('f_tier.cls-mag')).toEqual({ cls: ['mag'] });
-    expect(decodeFilter('f_-1.cls-mag')).toEqual({ cls: ['mag'] });
+    const groups = groupsFor('eq_weapon');
+    expect(decodeFilter('f_tier.cls-mag', groups)).toEqual({ cls: ['mag'] });
+    expect(decodeFilter('f_-1.cls-mag', groups)).toEqual({ cls: ['mag'] });
   });
 
   it('still reads the older underscore separator', () => {
     /* Links written before the separator changed are in other people's chats. */
-    expect(decodeFilter('f_tier-1_cls-mag')).toEqual({ tier: ['1'], cls: ['mag'] });
+    expect(decodeFilter('f_tier-1_cls-mag', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1'],
+      cls: ['mag']
+    });
   });
 
   it('does not mistake an underscore inside a value for a separator', () => {
     /* `frame-beast_feast` is one group whose value has an underscore, and
        reading it the old way would produce two groups and lose the value. This
        is the case that made the separator a dot. */
-    expect(decodeFilter('f_frame-beast_feast')).toEqual({ frame: ['beast_feast'] });
-    expect(decodeFilter('f_kind-armor.frame-beast_feast')).toEqual({
+    expect(decodeFilter('f_frame-beast_feast', groupsFor('frames'))).toEqual({
+      frame: ['beast_feast']
+    });
+    expect(decodeFilter('f_kind-armor.frame-beast_feast', groupsFor('frames'))).toEqual({
       kind: ['armor'],
       frame: ['beast_feast']
     });
+  });
+
+  it('reads the old separator only when every piece names a group the table offers', () => {
+    /* The owner's report: picking "Пир зверей" then "Колоссы Сухоземья" writes
+       `f_frame-beast_feast-colossus`, which splits on `_` into `frame-beast`
+       and `feast-colossus` - both "look like a group" if the heuristic only
+       checks shape. `feast` is nobody's group, so the heuristic must ask
+       `groups` and fall through to the dot reading: one group, two values. */
+    expect(decodeFilter('f_frame-beast_feast-colossus', groupsFor('frames'))).toEqual({
+      frame: ['beast_feast', 'colossus']
+    });
+  });
+
+  it('reads the second pair the heuristic broke the same way', () => {
+    expect(decodeFilter('f_frame-dark_heart-motherboard', groupsFor('frames'))).toEqual({
+      frame: ['dark_heart', 'motherboard']
+    });
+  });
+
+  it('still reads the old form when the table really does offer those groups', () => {
+    /* The existing case, kept: on eq_weapon, `tier` and `cls` both name real
+       groups, so the legacy underscore reading is still the right one. */
+    expect(decodeFilter('f_tier-1_cls-phy', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1'],
+      cls: ['phy']
+    });
+  });
+
+  it('does not take the legacy reading for a table whose groups do not match', () => {
+    /* The same segment, decoded against a table that does not offer `tier` or
+       `cls`, must not take the legacy reading - and must not throw. The exact
+       shape of the foreign key is noise the table ignores; only that no
+       `frame` key appears, and that a foreign group narrows nothing. */
+    const frames = groupsFor('frames');
+    const decoded = decodeFilter('f_tier-1_cls-phy', frames);
+    expect(decoded['frame']).toBeUndefined();
+    expect(() => decodeFilter('f_tier-1_cls-phy', frames)).not.toThrow();
+    const of = (): string => 'beast';
+    expect(passes(decoded, frames, of)).toBe(true);
   });
 });
 
@@ -122,7 +171,7 @@ describe('writing the address', () => {
       line: ['a']
     };
     const groups = groupsFor('eq_weapon');
-    expect(decodeFilter(encodeFilter(state, groups))).toEqual(state);
+    expect(decodeFilter(encodeFilter(state, groups), groups)).toEqual(state);
   });
 });
 

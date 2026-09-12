@@ -7,6 +7,7 @@
 
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import {
@@ -172,6 +173,40 @@ describe('the row under a full card', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
     expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+  });
+
+  it('opens the new-list form under a real browser event ordering', async () => {
+    /* jsdom's userEvent.click and parity's el.click() both dispatch on a
+       non-empty call stack, so no microtask checkpoint runs between the app
+       root's delegated handler and AddToList's own `<svelte:document
+       onclick>` - Svelte 5's flush (a microtask) waits until the stack
+       unwinds, so both layers see the menu still holding the pressed chip
+       and pass regardless of the fix. A trusted click in a real browser runs
+       a checkpoint after every listener; this test reproduces that ordering
+       by flushing from a bubble listener planted between the two: it runs
+       after the app root's handler (a descendant, so bubbles first) and
+       before `document`'s (bubbles last). */
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
+    });
+    await openMenu();
+
+    const onBubble = (): void => {
+      flushSync();
+    };
+    document.body.addEventListener('click', onBubble);
+    try {
+      await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+      expect(screen.getByPlaceholderText('Например: клад дракона')).toHaveFocus();
+      expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
+      expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    } finally {
+      document.body.removeEventListener('click', onBubble);
+    }
+    await expectNoA11yViolations(container);
   });
 
   it('closes on a click outside the control', async () => {

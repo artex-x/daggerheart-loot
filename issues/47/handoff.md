@@ -6,6 +6,128 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B11 closed - steps 13-14 run, all gates green, committed.**
+  (implementer, 2026-09-12). Nothing was implemented or redesigned; the
+  batch was already fully written in the tree at HEAD `9e3d19f` per the
+  orchestrator's preflight, and this session ran only the remaining gates
+  and the commit.
+  - `npm run check:built` (foreground): build, smoke, and budget all
+    green - `dist/assets/app.js` 88.5 kB gzip, within the 120 kB budget.
+    `git diff -- app.js style.css index.html` confirmed empty both before
+    and after.
+  - Parity, first call - `#/tables/frames` `#/tables/wondrous ~ filter`
+    `#/tables/eq_secondary ~ filter link` `#/tables ~ a row opened`
+    (`MSYS_NO_PATHCONV=1`, foreground): matched 7 states / 42 cells as the
+    plan's acceptance names them, not 4 - each filter is a route prefix and
+    matched every state whose id starts with it, including
+    `#/tables/frames ~ two frames` and `#/tables ~ a row opened, list
+    menu`. All six `#/tables/frames` cells (plain) read `совпадает`; all
+    six `#/tables/frames ~ two frames` cells read `совпадает`; the six
+    `#/tables ~ a row opened` cells (the modal itself, pre-existing) read
+    their already-recorded debt percentage exactly (0.02/0.03/0.07% of the
+    same, ru and en) - unchanged, no new debt; the twelve
+    `#/tables/wondrous ~ filter*` and `#/tables/eq_secondary ~ filter
+    link` cells (pre-existing) read `совпадает`.
+  - Parity, second call - `#/i/ci1 ~ list menu` `#/i/ci1 ~ new list`
+    `#/tables ~ bar menu` (`MSYS_NO_PATHCONV=1`, foreground): 3 states /
+    18 cells, every cell `совпадает`.
+  - `#/tables ~ a row opened, list menu` specifically: re-ran alone
+    (parity wipes `test-output/parity/` per invocation, so the first
+    call's images were gone by the second) to get its diff images fresh.
+    All six cells `совпадает`. Opened the ru 1100 and ru 375 diff PNGs:
+    both show a flat, evenly-faded frame with only the cursor's red/yellow
+    click-ring marker - no highlighted diff region, i.e. zero pixel
+    difference at either width. This is the state the plan required
+    inspected, not just measured; the inspection found nothing to record.
+    Consistent with the owner's Q3 report in "Blockers": the modal
+    add-to-list menu opening downward is reported at ~1913x981, outside
+    all three parity widths (1100/768/375) - not reproduced here, and not
+    this batch's to fix (see "Blockers").
+  - Final `npm run check` (foreground, run last, after the handoff edits
+    below): prettier clean, eslint clean, svelte-check clean, selftest
+    passed, all vitest suites green, coverage thresholds held.
+  - Commit `fix(app): read the filter address by the table's groups, and
+    close the add-to-list menu on a real click` (hash filled in below
+    once created). Staged only the thirteen in-scope files; `git add -A`
+    was not used; `issues/tg-preview-refresh/` (another task's, untracked)
+    was left alone.
+  - Nothing deferred beyond what "Blockers" and "Deferred" already record;
+    no new `VISUAL_DEBT`/`ACCEPTED` figure was written.
+
+- Task status: **blocked, not failed - B11's code is written and reads
+  green, and it is UNCOMMITTED because the host cannot run the gate**
+  (orchestrator, 2026-09-12, scheduled run). The implementer was
+  `TaskStop`ped at 04:33 and shows `killed`; it did not write its own
+  status entry, so this one is the orchestrator's reconstruction from
+  the tree and from four measured runs. **Nothing is committed. HEAD is
+  still `9e3d19f`.** The working tree holds the whole batch.
+  - **Scope, verified by the orchestrator rather than taken on report**:
+    `git status --short` shows exactly the eleven in-scope files -
+    `app/src/lib/filters.ts`, `hash.ts`, `filters.test.ts`,
+    `hash.test.ts`; `app/src/components/AddToList.svelte`,
+    `lists.test.ts`; `tests/parity/specs.js`; `docs/specs/ROUTES.md`,
+    `FEATURES.md`, `COVERAGE.md` - plus `issues/47/{context,plan,handoff}.md`
+    and the untracked `issues/tg-preview-refresh/` (another task's,
+    preserved, never staged). `git diff -- app.js style.css index.html`
+    is **empty**. No `VISUAL_DEBT`/`ACCEPTED` figure touched.
+  - **Steps 1-12 done** as `plan.md`, "B11" specifies: the decoder takes
+    the table's groups, `parseHash` passes `groupsFor(table)`, the four
+    decoder cases and the route round-trip, the `isConnected` guard with
+    its checkpoint comment, the ordering test, the two parity states, the
+    "Recorded, not keyed" sentence, and the three spec edits.
+  - **Step 7's red-first discipline was honoured**: the implementer
+    reported the ordering test failing on the *unfixed* component (menu
+    and input gone) and passing after the guard. That is the evidence it
+    pins the mechanism rather than the symptom.
+  - **Step 13-14 NOT done**: `npm run check` never completed inside a
+    foreground call, `npm run check:built` was never run, neither parity
+    call was run, and there is no commit.
+- Last agent: implementer (`killed` by the orchestrator, mid-batch, with
+  the gate unrunnable - not for any fault in its work)
+- NEEDS_HUMAN_CONFIRMATION: no for B11 itself; **yes** for the three
+  planner questions in "Blockers", none of which B11 depends on
+- Branch: `main`
+- Base / starting commit: `9e3d19f`; HEAD unchanged at `9e3d19f`
+
+- Task status: **in_progress - Phase 5 is planned; B11 is implement-ready
+  and waits for the owner's word on two questions that do not block it**
+  (planner, 2026-09-12). Design: `plan.md`, "Phase 5 - the testing
+  pyramid, planned" (decided 1-9, B11 implement-ready, B12 outlined with
+  its decisions made, Phase 6/7 outlines updated). Facts: `context.md`,
+  "Phase 5 planning facts". In one paragraph: there are no Playwright
+  tests; the "playwright tests" are the 20 puppeteer suites, 3 of them
+  node-only and kept. The regression net is the parity driver re-pointed
+  at `dist/` with a trusted `press` verb, under `tests/app/`, no
+  Playwright (decided 1); after the cut-over the measured JSON specs are
+  frozen as fixtures and pixel comparison dies with the harness (decided
+  2 - owner question 2). Each legacy suite has a fate (decided 3): `typo`
+  and `audit2` pass re-pointed at `dist/` today and are ported as they
+  are; `hues` is rewritten; `contracts`' browser half is re-pointed;
+  the rest are re-homed into the component tests that already hold
+  their assertions; `print` is ported in Phase 7's deletion batch;
+  nothing is deleted before the live app is. Gates (decided 4-5): raise
+  `lib` lines/functions to 95, `state` to 95/95/85/90, `ports` functions
+  to 80, `Button`'s exception to 60; keep the rest with reasons; all five
+  excludes kept, two reasons rewritten; `nested-interactive` narrowed to
+  the D3 call sites; `color-contrast` stays off in jsdom and goes on in
+  Chrome over every page. The missing layer is real-input browser tests
+  against `dist/` (decided 6), not more jsdom. Both owner defects are
+  root-caused on measurement (decided 7): the frames filter is the
+  shared `_`-separator heuristic - the live app has it on link arrival,
+  the rewrite on every pick - fixed by giving the decoder the table's
+  groups; the new-list menu closes itself because a *trusted* click runs
+  a microtask checkpoint between Svelte's delegated handler and the
+  document listener, which neither jsdom nor the parity driver's
+  `el.click()` reproduces - fixed by an `isConnected` guard; the
+  modal-menu side is not reproduced at three viewports. Order (decided
+  8): 5 -> 6 -> 7 -> 8, with 7 as R0 of one 7/8 track - not one batch.
+- Last agent: planner
+- NEEDS_HUMAN_CONFIRMATION: **yes** - three questions in "Blockers"; B11
+  needs none of the answers and may be dispatched now.
+- Branch: `main`
+- Base / starting commit: `9e3d19f` (unchanged; `origin/main` `daa2166`,
+  B10 still unpushed - see "Blockers")
+
 - Task status: **B10 is closed - built, committed, and approved by review;
   the owner's push and CI's read are the only things left** (orchestrator,
   2026-09-11). Commits `8b0c3ce` (the batch) and `60047d4` (the hash
@@ -2001,6 +2123,71 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Verification
 
+### B11's evidence, and why it is not a gate (orchestrator, 2026-09-12)
+
+Four runs, all on the B11 working tree at base `9e3d19f`. Read them as
+**advisory evidence that the tree is green**, not as the gate: the commit
+gate arms only when `check-observer.mjs` sees a *foreground* `npm run
+check`'s own stdout and exit code, and every full run tonight crossed the
+600 s cap and was moved to the background, where the hook never sees it.
+`.check-cache.json` does not exist. That is why nothing is committed.
+
+| run | what | result |
+|---|---|---|
+| 04:02:57-04:17:42 | `npm run check`, the implementer's, orphaned | ~885 s wall; output lost with its shell |
+| 04:18:12-04:36 | `npm run check`, the orchestrator's (`b11ftnfoo`) | exit 1: **1000 passed / 4 failed** of 1004; vitest 592 s |
+| 04:40-04:54:44 | `npm run check`, the orchestrator's (`bxdvggxz2`) | exit 1: **1003 passed / 1 failed** of 1004; non-vitest half fully green (`derived` all sections, `i18n` parity, `selftest` 292/292); vitest 412 s |
+| 04:37:14 / 04:55:14 | the failing files alone | `tables.test.ts` **78/78** (106 s); `searchPage.test.ts` **17/17** (87 s) |
+
+**Every failure was host contention, and each was proved so by isolation.**
+Three of the first run's four were bare `Test timed out in 30000ms`; the
+fourth, `tables.test.ts:971` "the outline follows the record into the grid
+view", expected `flash` on `[data-row="ci2"]` and read `tilewrap
+svelte-15kqimd` - the anchor's flash class is removed on a timer, so a
+starved assertion reads after it is gone. The second run's single failure,
+`searchPage.test.ts`'s 300-match cap, was starved for 97.9 s against a
+30 s timeout. Both files pass alone. **B11's own new cases - the four
+decoder cases, the `parseHash` round-trip, and the event-ordering test -
+were among the 1003 that passed.**
+
+**Why the runs could not fit.** The host sat at 100 % CPU and 5.5 GB free
+of 15.8 GB across 279 processes, all of it the owner's own applications
+(Brave with three processes over 1000 s CPU, Telegram, several Claude
+processes) - nothing an agent may kill. The non-vitest half alone took
+~460 s against its usual ~77 s. At 55 % CPU the run still took ~840 s. On
+an idle host this check is ~165 s (`context.md`, "`npm run check`,
+settled"), so the block is load and nothing else.
+
+**One self-inflicted part, recorded so it is not repeated.** Between
+04:27 and 04:34 **two full vitest coverage passes ran on one tree** - the
+orchestrator's and one the implementer started 37 s later. The
+implementer had entered a retry loop: each re-invocation started another
+`npm run check`, the foreground call crossed its cap, the process kept
+running, and the agent was notified and started another. Five attempts.
+The orchestrator mapped both process trees, `TaskStop`ped the implementer
+(confirmed `killed`), and killed only the duplicate chain. The first run's
+four failures are exactly the documented cost of that overlap; the second
+run, single, dropped to one. `CLAUDE.md`'s "one session at a time per
+working tree" covers agents on one tree as much as sessions.
+
+**What remains for B11, in order, on an idle host:**
+
+1. `set -o pipefail; npm run check 2>&1 | tail -n 120` - one **foreground**
+   call. This is the one that arms the gate; a backgrounded run does not,
+   however green. If it crosses 600 s again, the host is still loaded -
+   stop, do not salvage, do not split it to dodge the cap.
+2. `set -o pipefail; npm run check:built 2>&1 | tail -n 120`
+3. `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables/frames" "#/tables/wondrous ~ filter" "#/tables/eq_secondary ~ filter link" "#/tables ~ a row opened" 2>&1 | tail -n 120` (7 states, 42 cells)
+4. `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/ci1 ~ list menu" "#/i/ci1 ~ new list" "#/tables ~ bar menu" 2>&1 | tail -n 120` (3 states, 18 cells)
+5. One `fix(app):` commit of the eleven files plus `issues/47/`.
+
+Steps 1-12 of `plan.md`, "B11" are already applied to the tree - do not
+redo them, read the diff. The two new parity states have never been run:
+`#/tables/frames ~ two frames` must read `совпадает` on all six cells
+(both apps 57 rows, two pills), and `#/tables ~ a row opened, list menu`
+is new, so inspect its diff image before writing any entry, and write no
+`VISUAL_DEBT` figure from this host.
+
 - Commands run (exact), B10 on `b967481`, each one foreground call:
   - `git log --oneline -3` / `git status --short` (preflight) - matched
     the brief: HEAD `b967481` (later `daa2166`, another task's docs-only
@@ -3282,98 +3469,188 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Next batch (implement-ready)
 
-**B10, below, is built, committed and reviewed - see "Completed",
-"Verification" and the newest "Status" entry. The reviewer returned
-approve with no blockers; its six nits are in "Deferred". The only thing
-left is the owner's push and CI's read, recorded in "Blockers".**
-Nothing about B10 remains to implement. Not yet implement-ready: Phase 6/7 (the cut-over, owner-gated: Pages
-source, the regression net, the `ACCEPTED` sweep - named in `plan.md`,
-"Phases") or Phase 8 (the register sweep B9 opened and B10 extended with
-D5 - `plan.md`, "Phase 8"). Neither is planned into decided
-points/numbered steps yet, so the next session is a planner, not an
-implementer, unless the orchestrator picks a different order. This
-implementer did not choose between them.
+**B11 is closed - committed, all gates green (see "Status" above). The
+next batch is B12.** Its design and decisions: `plan.md`, "B12" ("the
+real-browser layer on `dist/`, and the gates" - decided points made,
+steps at its own short planning pass). Read `plan.md`, "B12" and
+`context.md`'s Phase 5 planning facts before starting; this handoff does
+not restate B12's brief.
 
-- Name: **B10 - the page furniture as components, and the not-found
-  record page.** Full design and the exact step list: `plan.md`, "B10
-  planned" (decided 1-7, the four components, steps 1-16). Durable facts:
-  `context.md`, "B10 planning facts". This section is the brief; the
+B11's own brief is kept below only as a closed record, for anyone
+reconstructing what shipped; it is not the next batch.
+
+- Name: **B11 - the decoder, and the menu that closed itself (CLOSED).**
+  Full
+  design and the exact step list: `plan.md`, "Phase 5 - the testing
+  pyramid, planned", "B11" (decided/do-not-reopen, steps 1-14,
+  acceptance, risks, fallback). Durable facts and the probe numbers:
+  `context.md`, "Phase 5 planning facts". This section is the brief; the
   plan is the authority where the two differ in detail.
-- Objective: collapse `.panel`, `.page-h`/`.page-sub`, `.card-acts` and
-  `.miss` into `Panel.svelte`, `PageTitle.svelte`, `Actions.svelte` and
-  `NoData.svelte`, delete every inline copy they replace, and make
-  `#/i/<unknown id>` draw what the live page draws (sub as `.page-sub`,
-  plus the "На главную" primary button the rewrite is missing). A
-  refactor: nothing moves on screen.
-- In scope: the four new components; `AltPanel`, `StdPanel`, `RollPanel`,
-  `ListsPage`, `SearchPage`, `TablesPage`, `ListPage`, `PrintPage`,
-  `RecordPage`, `SharedListPage`, `RecordCard` (the `.card :global(
-  .card-acts ...)` re-anchoring of its two 600px rules); one comment line
-  each in `PageHead` and `FilterBar`; `ListPage.svelte:103`'s comment;
-  `record.test.ts` (the not-found case), `a11y.test.ts` (four `COVERED`
-  entries); `specs.js` (`#/i/nope` state, two "Recorded, not keyed"
-  sentences); `FEATURES.md` (the not-found/no-data bullet, B6 nit 10,
-  B5.3 nit 2, B5.6 nit 5); `DEBT.md` D5 verbatim from the plan.
-- Out of scope: `Shell.svelte` (`@page` stays recorded for Phase 8 R1),
-  `TableRows.svelte` (`.badge` stays for Phase 8 R2), `Button.svelte`,
-  `PageHead`'s own heading rules, `tokens.css`, the three composed
-  `.panel` variants (`.tablenav`, `.ffilter`, `ListPage`'s `<details>`),
-  `toggleAllIn`, fixing D5, any `VISUAL_DEBT` figure, contracts,
-  fixtures, `llms.txt`, the live files.
-- Files expected: `app/src/components/{Panel,PageTitle,Actions,NoData}.svelte`
-  (new); the eleven components and two comment-only files above;
-  `app/src/components/record.test.ts`, `app/src/components/a11y.test.ts`;
-  `tests/parity/specs.js`; `docs/specs/FEATURES.md`, `docs/specs/DEBT.md`;
-  `issues/47/plan.md`, `issues/47/handoff.md`.
-- Steps: `plan.md`, "B10 planned", steps 1-16. In one breath: preflight;
-  write the four components (`Panel`/`Actions`: `children` + `style?`,
-  emitted as the `style` attribute; `NoData`: `children`; `PageTitle`:
-  `title` and `sub`, each `string | Snippet`); swap the markup and delete
-  the rules file by file - `ListsPage` `<Panel style="margin-top:16px">`,
-  `SearchPage` `<Panel style="margin-bottom:16px">`, `ListPage` `<Actions
-  style="margin-bottom:16px">`, `SharedListPage` `<Actions
-  style="margin-bottom:18px">` (the live inline attributes), the rest
-  plain; `ListPage`'s title is a `{#snippet title()}` holding the rename
-  input, its sub one joined string; `RecordPage`'s sub is a `{#snippet
-  sub()}` holding today's `<p>` body verbatim, and its not-found branch
-  gains `<Button variant="primary" href={sectionHash('roll/std')}
-  sameTab>{t.toStart}</Button>`; the comment fix; the tests; the state and
-  sentences; the spec edits; the register entry; the gates; one commit;
-  the handoff.
-- Acceptance criteria: `plan.md`, "B10 planned", "Acceptance criteria" -
-  each furniture class in exactly one component plus the recorded
-  exceptions; `git show HEAD -- app.js style.css index.html` empty; all 90
-  cells outside `#/roll/wondrous ~ modal` `совпадает` (the six `#/i/nope`
-  cells included), the six `~ modal` cells inside their recorded debt with
-  no `стало лучше`/`долг погашен` line; no `VISUAL_DEBT` or `ACCEPTED`
-  change; the new test, the a11y guard and per-file thresholds green;
-  `FEATURES.md`, `DEBT.md` and `specs.js` carry their edits.
+- Objective: fix the two owner-reported defects in the rewrite, pin each
+  with the test that would have caught it, register the two parity states
+  that make them visible, and write the behaviour into the specs. No
+  harness change, no threshold change, no live-file change.
+- In scope: `app/src/lib/filters.ts` (`decodeFilter(segment, groups)`:
+  the legacy `_` reading only when every piece's head names a group the
+  table offers), `app/src/lib/hash.ts` (`parseHash` passes
+  `groupsFor(table)`, `[]` for no table), `app/src/lib/filters.test.ts`
+  (four cases, existing calls gain their groups),
+  `app/src/lib/hash.test.ts` (the two-frame route parses and round-trips),
+  `app/src/components/AddToList.svelte` (`onDocumentClick`: a target that
+  is no longer connected was inside this control - return),
+  `app/src/components/lists.test.ts` (a case that forces `flushSync()`
+  from a body listener between the app's handler and the document's;
+  must fail on the unfixed component - record that), `tests/parity/specs.js`
+  (`#/tables/frames ~ two frames`; `#/tables ~ a row opened, list menu`
+  with `storage: two`; one "Recorded, not keyed" sentence on the
+  two-frame link's live-side failure), `docs/specs/ROUTES.md` ("every
+  piece names a group the table offers"), `docs/specs/FEATURES.md` (the
+  OR clause and the two-frame link; the menu staying open through the
+  new-list form), `docs/specs/COVERAGE.md` (one thin-spot bullet on
+  trusted events), `issues/47/plan.md`, `issues/47/handoff.md`.
+- Out of scope: `docs/fixtures/urls/routes.json` (its two-frame entry
+  waits for Phase 7 - `tests/contracts.js` would fail it against the live
+  app in CI), `tests/contracts.js`, `CONTRACTS.md`, `llms.txt`,
+  `TablesPage.svelte`, the `$effect` placement in `AddToList` (2b not
+  reproduced), `tests/app/` (B12), `vite.config.mts`, `a11y.ts`, any
+  `VISUAL_DEBT`/`ACCEPTED` figure, the live files.
+- Files expected: the eleven above plus `issues/47/`.
+- Steps: `plan.md`, "B11", steps 1-14. In one breath: preflight; the
+  decoder takes `groups`; `parseHash` passes them; the four decoder
+  cases and the route case; the one-line guard with its comment; the
+  flush-ordering test, run red first; the two states; the prose
+  sentence; the `ROUTES.md` sentence; the two `FEATURES.md` clauses; the
+  `COVERAGE.md` bullet; the four gates; one `fix(app):` commit; the
+  handoff.
+- Acceptance criteria: `plan.md`, "B11", "Acceptance" - the new vitest
+  cases green and the ordering case recorded red-then-green;
+  `#/tables/frames ~ two frames` `совпадает` on all six cells (57 rows,
+  two pills on both apps); `#/tables ~ a row opened, list menu` read and
+  its diff inspected before any entry; the eight pre-existing states in
+  the two filters unchanged; `git show HEAD -- app.js style.css index.html`
+  empty; thresholds held; specs and `specs.js` carry their edits.
 - Verification commands (each one foreground call, Bash timeout 600000):
   - `set -o pipefail; npm run check 2>&1 | tail -n 120`
   - `set -o pipefail; npm run check:built 2>&1 | tail -n 120`
-  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll/std @" "#/roll/alt @" "#/roll/wondrous @" "#/lists @" "#/search @" 2>&1 | tail -n 120`
-  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/q1 @" "#/i/f1 @" "#/i/nope @" "#/i/ci1 ~ whole @" "#/roll/wondrous ~ modal @" 2>&1 | tail -n 120`
-  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists/a @" "#/lists/nope @" "#/l/ ~ shared @" "#/l/zzzz @" "#/print/ci1-q1 @" "#/print/nope @" 2>&1 | tail -n 120`
-  (16 states, 96 cells; the trailing ` @` selects the plain state exactly;
-  without `MSYS_NO_PATHCONV=1` Git Bash rewrites `#/i/...` to `#I:/...`
-  and the run matches nothing - confirm each call printed its cells.)
-- Risks / do-nots: `plan.md`, "B10 planned", "Risks / do-nots" - no
-  `class`/`as` prop on `Panel`/`Actions`; margins stay inline attributes;
-  do not open `Shell`, `TableRows`, `Button`, `tokens.css`; do not fix D5;
-  keep the text-node shapes; no `VISUAL_DEBT` figure from this host; a
-  vacuous `расхождений нет` is not a result; a backgrounded `npm run
-  check` is re-run, not salvaged; the orchestrator's risk rules put a
-  review on a batch that redraws every page.
-- Fallback: the two-`$derived` form of `PageTitle` if `svelte-check`
-  rejects the template `typeof` narrowing; if a call site moves a cell,
-  restore that site's text-node shape - the other seven sites are the
-  control.
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables/frames" "#/tables/wondrous ~ filter" "#/tables/eq_secondary ~ filter link" "#/tables ~ a row opened" 2>&1 | tail -n 120`
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/ci1 ~ list menu" "#/i/ci1 ~ new list" "#/tables ~ bar menu" 2>&1 | tail -n 120`
+  (7 states / 42 cells, then 3 states / 18 cells; without
+  `MSYS_NO_PATHCONV=1` Git Bash rewrites `#/i/...` and the run matches
+  nothing - confirm each call printed its cells.)
+- Risks / do-nots: the host was loaded tonight (vitest alone 378-393 s
+  against a ~165 s whole `check` idle) - a `check` that crosses 600 s is
+  re-run idle, never salvaged or backgrounded; do not widen the legacy
+  reading past `groupsFor(table)`; do not touch `TablesPage`'s
+  read-back; do not add `routes.json` entries; no `VISUAL_DEBT` figure
+  from this host; if the `~ two frames` English cells differ, suspect the
+  chip-name lookup under `EN`, not the decoder.
+- Fallback: `onclickcapture` on the document listener if the
+  `isConnected` guard is ever found insufficient by B12's real-click
+  state; the ordering test passes either way.
 
-After B10: Phase 6/7 (the cut-over, owner-gated: Pages source, the
-regression net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase
-8") on the register B9 opened and B10 extends with D5.
+After B11: **B12 - the real-browser layer on `dist/`, and the gates**
+(`plan.md`, "B12" - decided points made, steps at its own short planning
+pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
+7/8 track, Phase 8.
 
 ## Blockers
+
+- **OPEN - the gate cannot run on this host while it is loaded
+  (orchestrator, 2026-09-12).** `npm run check` measured ~885 s, ~840 s
+  and, vitest alone, 592 s / 412 s against a 600 s foreground cap, with
+  the CPU at 100 % from the owner's own applications. A backgrounded run
+  never arms the commit gate, so B11 cannot be committed until one
+  foreground call completes. Precedent: the same block on 2026-09-11
+  lifted on its own by 08:25 and the check went green in five minutes
+  ("The host block lifted, and the check is green"). Nothing about the
+  batch is suspected - the tree reads green twice over, isolation proves
+  every failure was contention.
+
+- **ANSWERED IN PART by the owner (orchestrator, 2026-09-12), verbatim
+  below. Q1 is settled; Q2 is reopened as a design question and goes back
+  to the planner; Q3 is unanswered and stays optional.**
+  - **Q1 - SETTLED, as recommended.** The owner confirmed
+    5 -> 6 -> 7 -> 8 with 7 and 8 as one *track* whose first batch is the
+    cleanup. Do not reopen; `plan.md`, decided 8 stands as written.
+  - **Q2 - REOPENED, wider than it was asked.** The owner did not pick
+    either option. Their words: "what would your recommendation for the
+    rendering checking? parity checked only against references and if we
+    would like to check something similar I guess we will need to have a
+    different mechanism because we will not be testing parity, we will be
+    testing proper rendering, maybe there are some better tools to do so."
+    That is a planning question - what instrument proves *correct*
+    rendering once there is no second implementation to diff against -
+    not a yes/no on the two options offered. It is the planner's to
+    answer with a recommendation and a rejected-alternatives list, and it
+    belongs in Phase 7's design, not in B11 or B12. Neither batch waits
+    on it: the freeze happens in Phase 7's cleanup batch either way, and
+    until then the live app is still the gate.
+  - **Q3 - ANSWERED by the owner with a repro (orchestrator, 2026-09-12),
+    and the answer refutes the planner's "not reproduced".** Owner's
+    steps, verbatim in substance: `http://localhost:4173/#/roll/std`
+    (the `vite preview` of `dist/`, i.e. the rewrite alone - *not* a
+    parity comparison); click an item's **image**, not its name, to open
+    the record modal; press `Добавить в список`. The menu opens
+    **downward**; pressing `Новый список` **relocates it to the correct
+    position**. "For some reason it is reproduced not on all items."
+    - **The viewport is the missed variable.** The owner's screenshot is
+      **~1913x981 CSS px**. The planner probed 1100x900, 1100x700 and
+      375x667 and found both apps opening upward. The parity harness's
+      three widths are 375/768/1100, so **no cell in the suite is as
+      tall or as wide as the window the defect appears in** - which is
+      why B11's newly registered state can pass while the defect is real.
+      Do not read "CI measures it at three widths" as coverage of this.
+    - **Measured, so the planner does not re-measure it:** the flip
+      formula is ported verbatim. `AddToList.svelte:167-169` reads
+      `window.innerHeight - btn.getBoundingClientRect().bottom` against
+      `menu.getBoundingClientRect().height + 16`; `app.js:3695-3704`
+      (`placeMenu`) computes the identical two numbers. At 981 px tall
+      with the button's bottom at ~698, `below` is ~283 against a `need`
+      of ~126, so `up` is false and downward is what that formula asks
+      for **on both sides**. The formula measures the *viewport*; the
+      thing that clips is the **modal card**, whose bottom edge is at
+      ~838 in the owner's shot.
+    - **Two differences the root-cause pass should start from, neither
+      confirmed as the cause:** (a) the live `placeMenu` selects
+      `$('.dropmenu')` - the **first** one in the whole document - while
+      the rewrite scopes the query to its own `root`, so with more than
+      one control mounted the two read different elements; (b) the live
+      copy re-runs `placeMenu()` after **every** global render
+      (`app.js:3824`), the rewrite's `$effect` only when `open`,
+      `shown.length` or `newListFor` change - and `newListFor` changing
+      is exactly the `Новый список` press that the owner says fixes the
+      position. "Not on all items" fits a height-dependent threshold
+      (description length changes the card's height, hence the button's
+      `bottom`).
+    - **Not B11's.** B11's scope is fixed and its code is written; this
+      is a new defect report against the same component and belongs to
+      the planner, for B12 or a later batch. It does not block B11's
+      commit.
+
+- **(the original entry, kept for its wording) - three questions for the
+  owner (planner, 2026-09-12); B11 needs
+  none of the answers and may be dispatched now. B12 needs none either.**
+  1. **The P6 -> P7 -> P8 order, with 7 as R0 of one 7/8 track** (`plan.md`,
+     "Phase 5 - the testing pyramid, planned", decided 8). Recommended:
+     5 (B11, B12) -> 6 (publish `dist/`; Pages flip) -> 7 (delete the
+     live app, the legacy suites, the harness; the sweeps) -> 8 (review,
+     fixes), and yes to "unify 7 and 8" as one track whose first batch
+     is the cleanup - not as one batch, because the cleanup changes
+     public contracts and CI and needs its own review. Confirm, or name
+     a different order.
+  2. **After the cut-over, no committed pixel goldens** (decided 2). The
+     measured specs (`typeRuns`, `geometry`, `computed`, controls, title,
+     clipboard, hash) are frozen into `docs/fixtures/states/` from the
+     last green parity run and compared strictly; pixel comparison dies
+     with the harness. Alternative on offer: CI-only PNG goldens at one
+     width and one language (~100 files, updated in the commit that
+     changes a screen, reviewed as a diff image). Recommended: none.
+     Confirm, or ask for the alternative.
+  3. **Information, not a decision:** the modal add-to-list menu was not
+     reproduced opening downward at 1100x900, 1100x700 or 375x667 (both
+     apps open it upward). What window size, and was the modal card
+     scrolled before the menu was opened? B11 registers the state so CI
+     measures it at three widths regardless.
 
 - **OPEN, and it is the only thing left on B10: `8b0c3ce` and `60047d4`
   are committed but not pushed, so CI has not read them** (orchestrator,
@@ -3942,6 +4219,35 @@ regression net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **Recorded by the Phase 5 planning pass (planner, 2026-09-12):**
+  - `Icon.svelte` and `SelBar.svelte` sit at exactly 75% branches, on the
+    component bar with no room; B12 adds the branch each is missing
+    rather than moving the bar (decided 4).
+  - `compress.ts` sits one point over each `ports` bar (71.42/57.14/70.58
+    against 70/55/70); the happy path runs for real under
+    `tests/app/states.js`'s packed-link state (B12) - the bar stays.
+  - `FEATURES.md`'s filter bullet says the address is "read back only
+    when the segment actually changed"; that is the live `S.fSeg` rule,
+    and the rewrite reads it back on every write. After B11's decoder fix
+    the two behave the same for every reachable segment; Phase 7's sweep
+    rewrites the sentence to what the rewrite does.
+  - The live app's own failure on a two-frame link
+    (`#/tables/frames/f_frame-beast_feast-colossus` opens an empty
+    table) is a live defect the rewrite does *not* reproduce - B11
+    records it in `specs.js` prose and `FEATURES.md`; it is not a
+    `DEBT.md` entry (that file is for defects reproduced on purpose).
+  - `#/tables ~ a row opened, list menu` (B11) is the first parity state
+    that opens the menu inside the modal; if CI reads a difference the
+    diff image decides, and the `$effect` in `AddToList.svelte` (measure
+    on open only, where `placeMenu` re-measures on every render) is the
+    first suspect.
+  - `print`'s geometry port (`tests/app/print.js`) is Phase 7's deletion
+    batch, not B12's; until then parity's 54 `#/print` cells are the
+    gate (decided 3).
+  - Known thin spots that stay after B12, honestly: `hover: none`, the
+    share sheet's success path, the OS clipboard (the stub is what the
+    port's happy path is exercised through), print fitting until Phase 7.
 
 - **B10's review nits (reviewer, 2026-09-11; approve, no blockers).** None
   was worth the remediation cycle; each names its file so the next batch
@@ -4608,6 +4914,17 @@ regression net, the `ACCEPTED` sweep), then Phase 8 (`plan.md`, "Phase
 - **The shared `S.kind`.** Batch C's.
 
 ## Notes
+
+- **Phase 5 planning pass (planner, 2026-09-12).** Mocks path: none (no
+  UI change). Screenshot findings: none - the two defects were measured
+  by DOM and geometry probes, not by pixels; the probe script is in the
+  session scratchpad (`probe-defects.mjs`), its numbers are in
+  `context.md`. Cleanup performed / retained artifacts: `app/coverage/`
+  written by one vitest coverage run (ignored by git); no `test-output/`
+  written (the re-pointed suites ran from the scratchpad and write no
+  files); the tree is unchanged apart from `issues/47/`. The untracked
+  `issues/tg-preview-refresh/` is another task's and was not touched.
+  Session end partial progress: none - the plan is complete for B11.
 
 - Mocks path: none for B6 - the search page is transcribed from
   `app.js`/`style.css` line by line (references in `plan.md`, "B6 planned")

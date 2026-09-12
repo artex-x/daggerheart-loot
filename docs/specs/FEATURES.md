@@ -58,6 +58,7 @@ Six modes. Each keeps its own input in memory only.
   to filter by, there is no panel. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
   and a copy-link button, so they are reachable while the panel is folded.
+  Values in a row combine with *or*; a link naming two frames opens both.
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
   every change, and read back only when the segment actually changed.
 
@@ -66,8 +67,8 @@ Six modes. Each keeps its own input in memory only.
 - Create, rename, reorder (drag handle or by typing a position), remove with
   undo, delete.
 - Add from a table or search selection, or from an item card. The card menu stays
-  open so one item can go into several lists; a search box appears from the
-  eighth list.
+  open so one item can go into several lists, and through the new-list form
+  and its cancel; a search box appears from the eighth list.
 - Optional quantity and price per entry; both travel into copied text.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.

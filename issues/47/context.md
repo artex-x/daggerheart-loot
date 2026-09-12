@@ -5,7 +5,17 @@ Read this before `plan.md` and `handoff.md`.
 
 ## Goal
 
-**Current: B5 - the lists slice** (`#/lists`). B4 is built and committed
+**Current, 2026-09-12: the testing-pyramid pass (the owner's "Phase 5") and
+the P6/P7 ordering call.** Phase 4 is closed through B10. Read
+"State at the Phase 5 kickoff", at the end of this file, first - it carries
+the owner's GOAL verbatim, the tree, the two reported defects, and the one
+fact that reshapes the request: **this repository has no Playwright tests.**
+Everything between here and there is history of B3.5 through B10, built and
+committed; read it for the standing rules and settled owner decisions, not
+as work to do.
+
+**Superseded (kept for its reasoning): B5 - the lists slice** (`#/lists`).
+B4 is built and committed
 (`fde9cdc`, reviewed, approve/no blockers), so every table in `TABLE_DEFS`
 draws a real body and the tables surface is finished. Of the three slices left
 in Phase 4 - lists, search, print - the orchestrator picked lists on
@@ -2255,3 +2265,231 @@ Durable findings worth carrying past this task:
   coverage-config edit, only a test that reaches it.
 - **Authored template comments do not reach the DOM**: `app/svelte.config.mjs`
   sets no `preserveComments`.
+
+## State at the Phase 5 kickoff (orchestrator, 2026-09-12, scheduled run)
+
+The owner's GOAL for this session, verbatim from the scheduled task:
+
+> finish Phase 5 (or at least break to adequate batches and implement first
+> batch, but I would prefer to minimize amount of batches as described in
+> claude.md). I want to retire existing playwright tests - they are flaky,
+> coverage is incosnstient, they are groupped strangely etc and rewrite to
+> fit existing infrastrucutre. we should also challange existing quality
+> gates such as coverage limits, coverage exceptions, a11y rules disabled
+> and do broader review of all tests in pyramid to see where we have gaps
+> in coverage, especially component tests one and if additional layers of
+> testing are required. if we're ready, we can run existing playwright
+> tests against the refactored application to make sure there are no
+> regressions and delete them all together or at least we can plan to do so
+>
+> regarding p6/7 ordering I'm open to your recommendation. I am OK with
+> doing 6 and then doing 7 on clean codebase to make sure there are no
+> leftovers of an old code not to hallucinate much, maybe this way we can
+> even unify phases 7 and 8
+
+Plus two defects reported by the owner, quoted verbatim below under
+"Two owner-reported defects".
+
+### The tree
+
+- HEAD `9e3d19f`, branch `main`, clean but for the untracked
+  `issues/tg-preview-refresh/` (another task's, preserved, never staged).
+- **`origin/main` is `daa2166`.** B10's three commits - `8b0c3ce`,
+  `60047d4`, `9e3d19f` - are committed and **not pushed**, so CI has not
+  read B10. Newest run is `34643510887` on `daa2166`, success. The B10
+  blocker in `handoff.md`, "Blockers", is still open and still the owner's
+  to clear; pushing is never this session's (`CLAUDE.md`, "Never push").
+
+### There are no Playwright tests. Measured, not inferred
+
+`find` over the tree matches no `*playwright*`, no `*.spec.js`, no
+`*.spec.ts`; `package.json` has no `@playwright/*` dependency. What the
+GOAL calls "existing playwright tests" is the **legacy browser suite set**:
+20 suites under `tests/`, driven by **puppeteer** through
+`tests/run-all.js`, 8.7k lines in all. Phase 5's Playwright layer was
+planned by the issue and **never built** (`plan.md`, "Phase 5 - what
+already exists"). So "retire the Playwright tests" is, in this repository,
+"retire the puppeteer legacy suites" - and that is a different and larger
+question, because those suites are the only coverage several features have
+at all (`docs/specs/COVERAGE.md`, "Features to suites").
+
+Measured facts about them, for the planner:
+
+- **They target the live static root, hardcoded.** 15 suites define
+  `ROOT = 'file://' + path.join(__dirname, '..', 'index.html')`, either
+  their own copy or `tests/lib.js`'s. None can be pointed at `dist/`
+  without a change. Whether a re-pointed suite *passes* against the
+  rewrite is unmeasured and is the planner's first probe.
+- **Sizes** (lines): `lists2` 697, `print` 647, `derived` 419, `qa` 373,
+  `behave` 368, `notes` 316, `eqtest` 293, `contracts` 259, `craft` 242,
+  `dataint` 235, `select` 200, `audit2` 195, `flows` 154, `states` 145,
+  `craftmob` 115, `hues` 106, `noart` 102, `typo` 77, `i18n` 47.
+  Plus `tests/lib.js` 85 (shared), and the harness that is **not** legacy:
+  `parity.js` 672, `parity/driver.js` 686, `parity/specs.js` 2067,
+  `parity/lock.js` 92.
+- **Three of the 20 are not browser suites and are already load-bearing in
+  `npm run check`**: `derived`, `i18n` (both run directly by the `check`
+  script) and `dataint` (data invariants, node-only). Retiring "the legacy
+  suites" cannot mean retiring these.
+- **CI runs them as one job**, `node tests/run-all.js --exclude=parity`,
+  beside four sharded `parity` jobs (`.github/workflows/ci.yml`).
+- **`tests/contracts.js` is the contract gate** named by `CLAUDE.md`
+  ("An unavoidable change updates `docs/fixtures/`, `tests/contracts.js`,
+  ...") and by `docs/specs/CONTRACTS.md`. It runs against the live app.
+  Retiring it without a replacement drops a frozen-contract gate.
+
+### The vitest pyramid today
+
+- 41 test files: 20 in `app/src/lib`, 16 in `app/src/components`, 2 in
+  `app/src/state`, 1 in `app/src/ports`, 1 in `app/src/test`. 998 tests at
+  B10's close. 46 components, 46 lib modules.
+- Coverage config and every threshold: `vite.config.mts`, `test.coverage`.
+  `perFile: true`. Bars: `src/lib/**` 90/90/85/90, `src/ports/**`
+  70/70/55/70, `src/state/**` 90/90/80/90, components 85/80/75/85.
+  **Named exceptions, two**: `DiceBar.svelte` (branches 55) and
+  `Button.svelte` (branches 50), both carved out of the component glob.
+  **Coverage `exclude`, five**: `src/test/**`, `src/ports/types.ts`,
+  `src/ports/image.ts`, `src/vite-env.d.ts`, `src/main.ts`.
+- **axe rules switched off, two**, in `app/src/test/a11y.ts`'s `OFF`:
+  `color-contrast` (jsdom resolves no cascade; covered by `qa`/`typo` on a
+  real page - both **legacy suites**, so retiring them without a
+  replacement drops contrast coverage entirely) and `nested-interactive`
+  (D3, a live shape ported on purpose - `docs/specs/DEBT.md`).
+- `docs/specs/COVERAGE.md`, "Known thin spots", is the existing honest gap
+  list: the short link form has no fixture, print fitting has no reference
+  image, `states` asserts little, touch-only behaviour is static-only, the
+  success paths of `clipboard`/`share`/`compress` cannot run in jsdom (the
+  stated reason `src/ports/**` sits at 70/70/55), contrast is off in axe,
+  unregistered parity states are invisible, and `<dialog>` is shimmed.
+  Four of those thin spots end with "waits for Phase 5" or "the Phase 5
+  e2e layer". This session is where that promise comes due.
+- Parity inventory at kickoff: 102 `STATES`, 42 `SPECS`, 10 `ACCEPTED`,
+  18 `VISUAL_DEBT` (`node -e` over `tests/parity/specs.js`).
+
+### The GOAL and Phase 7's open question are the same question
+
+`plan.md`, "Phase 8", "Where the phase sits", entry condition 3 already
+names this: *"A regression net that does not need the live app exists -
+the load-bearing one ... Phase 7's planning pass decides the net's shape;
+the two candidates are the Playwright layer the issue's Phase 5 planned,
+and the parity driver re-pointed at committed goldens of `dist/`."* And
+`plan.md`, "Phase 5 - what already exists", defers the Playwright question
+to exactly that pass. The owner has now asked for it directly, one phase
+early. The planner should treat these as one decision, not two, and say so
+in the plan - including whether "Phase 5" survives as a phase label at all
+or is absorbed into the cut-over.
+
+### Two owner-reported defects
+
+Reported by the owner against `http://localhost:4173` (the built `dist/`
+under `vite preview`), verbatim:
+
+> - http://localhost:4173/#/tables/frames. open filters -> select beast
+>   feast, then collossus. filters reset, page says Nothing found instead
+>   of them working as 'OR'
+> - http://localhost:4173/#/tables. select premium bedroll, click add to
+>   list -> new list, nothing happens (checked and confirmed - it is the
+>   same from any view). also on embedded modal (not sure how it is
+>   called, e.g. when you don't redirected to the new page but it opens in
+>   a pop-up) it opens list to the top on legacy app, but to the bottom on
+>   the new app, maybe we didn't have parity check for that state
+
+Unmeasured by this session on purpose - the first question for each is
+**does the live app do it too**, which decides `DEBT.md` entry versus
+rewrite regression, and that is a planning finding, not a status. Neither
+is in `DEBT.md` today (D1-D5 are transitions under reduced motion, the
+stale packed-link expansion, the notice's nested dismiss button, the
+shared kind filter, and the record tab title). The owner asks for them
+either as an intermediate batch or folded into the coverage-extension
+work, and expects more of the same class to surface as coverage grows.
+
+## Phase 5 planning facts (planner, 2026-09-12) - durable, read before implementing
+
+Measured on `9e3d19f` (HEAD unchanged at the end of the pass; `origin/main`
+still `daa2166`, B10 unpushed). Full design: `plan.md`, "Phase 5 - the
+testing pyramid, planned".
+
+### The legacy suites against `dist/`, measured
+
+- Scratch copies with exactly two edits - `ROOT` -> `dist/index.html`,
+  `ready()`'s `#view` -> `#app` - **`typo` passes** (13 pages, both
+  languages: two fonts, one scale) and **`audit2` at 1180 passes** (41
+  addresses, both languages, all eight checks). **`hues` fails 16
+  assertions** for harness reasons: it injects bare `<span class="badge
+  item">` and reads their colour (Svelte-scoped `.badge` rules give an
+  injected span nothing) and greps `[data-act="roll"]`.
+- The rewrite emits **one id, `#app`**; the live app has `#view`,
+  `#modal`, `#modalBody`, `#selBar`, `#toast`, `#tabs`, `#langSeg`,
+  `#skip`, `#footText`. No `data-act`/`data-open`/`data-copy-*` anywhere
+  in the rewrite. Live-hook selector counts per suite: `behave` 35,
+  `lists2` 29, `select` 28, `print` 24, `flows` 23, `states` 21, `qa` 18,
+  `notes` 12, `eqtest` 9, `noart` 6, `contracts`/`craftmob`/`hues`/`typo`
+  1 each (the `ready()` in `lib.js`), `audit2` 0.
+- CI, run `34643510887` (`daa2166`): `check` job 3m40s of which "The same
+  gate a person has to pass locally" 1m24s and "The legacy suites against
+  the live app" **1m57s**; the four parity shards 8m01s-9m55s each.
+- `tests/parity/driver.js:245`: `click()` presses with `el.click()` inside
+  `page.evaluate` - a synthetic dispatch. Trusted input exists nowhere in
+  the harness today.
+
+### The two defects, measured on both apps (real CDP clicks and `el.click()`)
+
+Probe: scratchpad `probe-defects.mjs`, 1100x900 unless stated, fresh
+document per step (`about:blank` first - a hash-only move keeps
+`S.fOpen` and the menu).
+
+- **Frames, two picks.** Live in-page: after "Пир зверей" then "Колоссы
+  Сухоземья" the hash is `#/tables/frames/f_frame-beast_feast-colossus`,
+  two pills, "57 из 94", 57 rows - both click kinds. **Live arriving at
+  that link fresh: no pills, count "94", 0 rows.** Rewrite: 0 rows and no
+  pills after the second pick, both click kinds, and the same on arrival.
+- **The decoder**, replicated in node: `f_frame-beast_feast-colossus` ->
+  `{frame:['beast'], feast:['colossus']}`; `f_frame-dark_heart-motherboard`
+  breaks the same way; `f_frame-colossus-dark_heart`,
+  `f_frame-beast_feast-dark_heart`, `f_kind-item.frame-beast_feast-colossus`
+  and any three-frame pick decode correctly. Rule: the legacy `_` reading
+  fires iff the body has no `.` and every `_`-split piece contains a `-`
+  after position 0 (`filters.ts:69`, `app.js:2724`). The live app meets it
+  only on arrival because `S.fSeg` (`app.js:3627`) stops it re-reading its
+  own write; the rewrite's `TablesPage` reads `app.route.filter` after
+  every `replace()`.
+- **New list.** Rewrite, trusted click on "+ Новый список" on `#/i/ci1`:
+  `.dropmenu` gone, no `.picker-new`, focus on `<body>`; `el.click()`:
+  form open, focus in the input, "Создать" saves. From the `#/tables`
+  selection bar, trusted: menu gone. Live: fine both ways. Mechanism:
+  Svelte 5 flushes in a microtask (`node_modules/svelte/src/internal/client/dom/task.js:19`
+  `queueMicrotask`); a trusted event runs a microtask checkpoint after
+  each listener, so between the app root's delegated `onclick` and
+  `AddToList.svelte:202`'s `<svelte:document onclick>` the `{#if
+  newListFor}` block has replaced the chip, `e.target.isConnected` is
+  false, `root.contains(e.target)` is false, `app.menuFor = ''`.
+  `userEvent.click` (jsdom) and `el.click()` (parity) dispatch on a
+  non-empty stack: no checkpoint until they return, so both pass.
+- **Menu side in the modal.** Not reproduced: on `#/roll/wondrous ~
+  modal` both apps add `up` and draw the menu above the button at
+  1100x900 (card unscrolled), 1100x700 (card scrolled 114 px by
+  `scrollIntoView`) and 375x667 (98 px). The 43 px height difference in
+  the probe's numbers is one more list chip on the rewrite's side -
+  `file://` pages share one `localStorage` in Chrome, so the legacy pass's
+  created lists leaked into the next pass; not a rendering difference.
+
+### Coverage on `9e3d19f` (vitest, `--coverage.reporter=json-summary`, `app/coverage/`, ignored)
+
+Total 97.25 lines / 88.4 branches / 97.02 functions / 96.5 statements;
+37 of 83 measured files at 100 on all four. Per-directory minima (file):
+`lib` L100 F100 B88.46 (`data.ts`) S93.33 (`lists.ts`); `ports` L71.42
+F87.5 (`share.ts`) B57.14 S70.58 (`compress.ts`); `state` L98.27 F100
+B88.46 S95.89 (`lists.svelte.ts`); components L88.15 F88 S88.79
+(`StdPanel`) B60 (`DiceBar`), then `Button` B66.66, `Icon` B75, `SelBar`
+B75 (both exactly on the bar), `ListPage` B77.39, `RowMain` B79.54.
+`router.ts` B66.66, `clipboard.ts` L78.72 B75, `storage.ts` L86.95.
+
+### Host load
+
+vitest alone took **378 s** (01:48, one timeout on `searchPage.test.ts`'s
+300-cap case at 93 s) and **393 s** (01:56, green with `--testTimeout=120000`)
+on this host tonight, against a ~165 s whole `npm run check` idle. A
+`check` run now may cross the 600 s foreground cap; the rule stands - a
+crossed run is re-run idle, not salvaged, not backgrounded.
+`coverage.reportOnFailure` is off by default, so a red vitest writes no
+summary.

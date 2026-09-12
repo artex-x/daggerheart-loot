@@ -56,17 +56,26 @@ export function groupsFor(table: TableId): readonly string[] {
  * Parses `f_tier-1-2.cls-mag`.
  *
  * The older group separator - an underscore - is read only where it can still
- * be the right reading: when there is no dot and every piece looks like a group.
- * `frame-beast_feast` fails that test, and rightly so: the underscore there
- * belongs to the value. Values like it are why the separator became a dot.
+ * be the right reading: when there is no dot and every piece's head names a
+ * group the table offers. `frame-beast_feast` fails that test, and rightly so:
+ * the underscore there belongs to the value. Values like it are why the
+ * separator became a dot. `frame-beast_feast-colossus` fails it for a sharper
+ * reason - it splits into `frame-beast` and `feast-colossus`, and both "look
+ * like a group" if all the heuristic checks is the shape; `feast` is nobody's
+ * group, so the heuristic must ask `groups` instead.
  */
-export function decodeFilter(segment: string): FilterState {
+export function decodeFilter(segment: string, groups: readonly string[]): FilterState {
   const out: FilterState = {};
   if (!segment.startsWith('f_')) return out;
   const body = segment.slice(2);
   if (!body) return out;
 
-  const legacy = !body.includes('.') && body.split('_').every((g) => g.indexOf('-') > 0);
+  const legacy =
+    !body.includes('.') &&
+    body.split('_').every((g) => {
+      const i = g.indexOf('-');
+      return i > 0 && groups.includes(g.slice(0, i));
+    });
   for (const group of legacy ? body.split('_') : body.split('.')) {
     const parts = group.split('-');
     const name = parts.shift();
