@@ -468,9 +468,21 @@ rather than deleting the row.
 
 ## 5. Batches and status
 
-| Batch | Scope | Status |
+| Batch | Status | Commits |
 |---|---|---|
-| B1 | A (3.1-3.3), B (3.4), C (3.5) - one batch, three commits, one check | in progress, blocked - all edits complete and verified (selftest 312/0); commit 1/3 landed and pushed (`58dbd70`); commits 2-3 blocked on a clean `npm run check` under host contention from a concurrent session - see `handoff.md` |
+| B1 - closeout hygiene (hooks, review clause, closeout prose) | **done**, pushed | `58dbd70`, `2aba1bc`, `8116a6a` |
+
+Shipped exactly as designed in section 3, with no design deviation. The only
+departures from the written steps were operational and are recorded in
+`handoff.md`: the commit split's single check took four attempts because the
+host was throttled to a fifth of its clock (peer sessions measured this on
+issue 47, `cfe9fdf`), and one passing check failed to arm the gate because the
+run used `tail -n 25`, below the `All files` row `check-observer.mjs` looks for.
+
+The acceptance criterion counting `issues/65/plan.md` citations was imprecise in
+this plan's own evidence - there is a third adjacent selftest fixture line and
+three self-citations in `issues/65/handoff.md`, all pre-existing and correct as
+they stand. All ten `.mjs` citation sites the design enumerated are repaired.
 
 ## 6. Deferred
 

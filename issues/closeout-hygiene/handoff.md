@@ -1,21 +1,32 @@
 # Handoff - TASK closeout-hygiene
 
 ## Status
-- Task status: **blocked** (1 of 3 planned commits landed and pushed; 2 remain, blocked on a passing `npm run check`)
-- Last agent: implementer
-- NEEDS_HUMAN_CONFIRMATION: no - this is an environmental blocker (host contention from a concurrent session), not a design question
+- Task status: **done** - all three planned commits landed and pushed
+- Last agent: orchestrator (the implementer's session ended; what remained was a
+  verified tree plus two commits, so the orchestrator took the check and the commits
+  rather than spending a cold writer that could only re-derive them, and that might
+  invalidate the armed gate by touching a file)
+- NEEDS_HUMAN_CONFIRMATION: no
 - Branch: main
-- Base / starting commit: `a52c17d` (unchanged since planning) -> now `58dbd70` after this pass's first commit
+- Base / starting commit: `a52c17d` at planning -> `f6fb246` when the final pass began
+  (five peer `docs(issue-47)` commits landed in between) -> `8116a6a` now, pushed
 
 ## Completed
 - Batch name/id: B1 - closeout hygiene (hooks, review clause, closeout prose)
 - What shipped: all production edits for the batch are written and correct (verified by `node .claude/hooks/selftest.mjs`, 312 passed / 0 failed, including new cases #102-#111). Only the commit split (plan step 9) is partially done - see Blockers.
-- Files changed (all twelve, matching plan section 4 "In scope" exactly):
-  - Committed (`58dbd70`): `.claude/prompts/review.prompt.md`, `.claude/prompts/orchestrate.prompt.md`
-  - Written, not yet committed (blocked on the check - see below): `.claude/hooks/session-stop.mjs`, `.claude/hooks/bash-guard.mjs`, `.claude/hooks/selftest.mjs`, `.claude/README.md`, `.claude/hooks/check-observer.mjs`, `.claude/hooks/edit-followup.mjs`, `.claude/hooks/edit-guard.mjs`, `.claude/hooks/lib.mjs`, `.claude/hooks/session-start.mjs`, `.claude/hooks/tree-key.mjs`
+- Files changed (all twelve, matching plan section 4 "In scope" exactly), now all committed:
+  - `58dbd70`: `.claude/prompts/review.prompt.md`, `.claude/prompts/orchestrate.prompt.md`
+  - `2aba1bc` and `8116a6a`: `.claude/hooks/session-stop.mjs`, `.claude/hooks/bash-guard.mjs`, `.claude/hooks/selftest.mjs`, `.claude/README.md`, `.claude/hooks/check-observer.mjs`, `.claude/hooks/edit-followup.mjs`, `.claude/hooks/edit-guard.mjs`, `.claude/hooks/lib.mjs`, `.claude/hooks/session-start.mjs`, `.claude/hooks/tree-key.mjs`
 - Commit(s):
-  - `58dbd70` `docs(agents): a review clause for session narration, and sharper closeout steps` - pushed, remote confirmed at `58dbd70`
-  - Two more planned per plan step 9 (`feat(hooks): name this session's untracked writes, and refuse to orphan a plan citation`; `docs(hooks): point the header comments at the README, not a retired plan`) - **not yet made**, blocked on the commit gate
+  - `58dbd70` `docs(agents): a review clause for session narration, and sharper closeout steps`
+  - `2aba1bc` `feat(hooks): name this session's untracked writes, and refuse to orphan a plan citation`
+    -> `session-stop.mjs`, `bash-guard.mjs`, `selftest.mjs`, `.claude/README.md`
+  - `8116a6a` `docs(hooks): point the header comments at the README, not a retired plan`
+    -> the six remaining `.mjs` files
+  - All three pushed; `git rev-parse HEAD origin/main` agree at `8116a6a`.
+  - `2aba1bc` was amended once before pushing: the first attempt used PowerShell
+    here-string syntax inside the Bash tool, which left a literal `@` as the subject
+    line. Amended with a heredoc while still unpushed.
 - Deviations and rationale:
   - **The plan's "one check covers all three commits" arithmetic held technically but not in practice.** `treeKey()` is content-only and HEAD-excluding as designed, so a single passing run would indeed have armed the gate for all three commits. But two consecutive `npm run check` attempts both failed, and neither failure was in a file this batch touches:
     - Attempt 1 (after fixing a real prettier issue in the two files I'd rewritten - see below): 4 vitest test files (`app/src/lib/{listLink,lists,help,alt,print,numField,dice,tables,sections,frames}.test.ts` - the fork-pool couldn't start 10 workers) failed with `[vitest-pool-runner]: Timeout waiting for worker to respond` - the exact flake `.claude/README.md` already documents ("A check reporting zero coverage everywhere ran no test at all... re-run it rather than investigating a coverage drop"). Format/lint/typecheck/data/selftest all passed first.
@@ -66,8 +77,65 @@
 - The read-only closeout auditor (reviewer-shaped, reports a delete list the orchestrator executes) remains the fallback if the checklist keeps being skipped. Not built, not needed yet.
 - New: whether `selftest.mjs:1449` and `issues/65/handoff.md`'s three self-citations should ever be touched. Recommendation: no - they are correct as they stand (a scratch-repo fixture and historical record respectively); only the plan's own evidence count was imprecise. Left for the human/orchestrator to note when `plan.md` retires with this task.
 
+- New: `bash-guard` rule 2g denies an explicitly backgrounded `npm run check`, but the harness auto-backgrounds any foreground call that outlives its 600s timeout, and `check-observer` is a `PostToolUse` hook whose result then never reaches a live agent - so the gate cannot arm and 2g cannot see it. Hit three times on this task (twice by the implementer, once by the orchestrator). A planning question, not a patch to guess at: the fix may be a Stop-time reconciliation, a longer-lived observer, or accepting it and documenting the re-run. Evidence is in "Final pass" below.
+
 ## Notes
 - Mocks path: none - no UI surface in this task
 - Screenshot findings: none
 - Cleanup performed / retained artifacts: nothing removed this pass. `issues/closeout-hygiene/` holds `context.md`, `plan.md` and `handoff.md` only; no scratch artifacts were created by this implementer pass.
 - Session end partial progress: 10 of 12 files' worth of work is committed (2 files, `58dbd70`, pushed); the other 10 are fully written, verified by selftest, and staged-ready but uncommitted, blocked purely on a clean `npm run check` under current host load. No file needs further editing.
+
+## Final pass - what actually blocked the gate, and what cleared it
+
+The implementer's three red checks, and a fourth taken by the orchestrator, had
+one cause, and it was neither this batch nor peer-session contention:
+
+- **The host was throttled to a fifth of its nominal clock.** Peer sessions on
+  issue 47 measured it while chasing the same blocker: `% Processor Performance`
+  read **20** on this i7-8565U across four samples (`cfe9fdf`). That supersedes
+  three earlier attributions, this session's "peer-session contention" among them
+  - a percentage of a throttled core reads as a share of the machine. Their
+  `f6fb246` adds the decisive test: the failing *set* was unstable across runs on
+  an unedited tree (three tests, then two, then one, different each time), and a
+  real regression fails the same way every run.
+- Independently confirmed here: `searchPage.test.ts` and `listPage.test.ts` pass
+  **65/65** run alone while failing under the full suite.
+- By the final pass the throttle was gone - `% Processor Performance` read
+  **145-154** - and the suite ran green first time: **1007/1007 in 63.69s**,
+  against 127s on the previous run and roughly five times that while throttled.
+
+**A second, self-inflicted delay worth recording.** A check that passed did not
+arm the gate, and the cause was the invocation, not the hook: `check-observer.mjs`
+requires `All files` in the observed stdout, and that run used `tail -n 25`, which
+truncates the coverage table above that row. `CLAUDE.md` prescribes `tail -n 120`
+for this exact reason. Re-running with the documented tail armed it immediately.
+`check-observer.mjs`'s diff in this batch is a one-line comment repair; it did not
+regress.
+
+**Structural note for a future planner, not acted on here.** `bash-guard` rule 2g
+denies an explicitly backgrounded `npm run check`, but the harness moves any
+foreground call that outlives its 600s timeout into the background on its own, and
+`check-observer` is a `PostToolUse` hook whose result then never returns to a live
+agent. The gate cannot arm, and the rule meant to prevent exactly this cannot see
+it. It happened three times across this task. Recorded in Deferred.
+
+## Verification - final pass (orchestrator)
+
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout 600000):
+  format/lint/typecheck (544 files, 0 errors)/data/derived/i18n green,
+  `selftest.mjs` **312 passed, 0 failed**, vitest **41 files, 1007/1007, 63.69s**.
+- Gate armed and verified: `.check-cache.json` key `ecd0d5a285809527` equals
+  `treeKey()` for the same tree.
+- `npx vitest run src/components/searchPage.test.ts src/components/listPage.test.ts`
+  (isolation, taken while the host was still slow): **65 passed**.
+- `git grep -n "issues/65/plan.md"` outside the selftest fixtures and `issues/65/`
+  now returns only the two `.claude/README.md` candidate rows describing the new
+  rule, and this task's own plan/context/handoff prose. All ten `.mjs` citation
+  sites are repaired.
+- `git status --porcelain -uall` after both commits: only issue 47's B12 paths
+  (`app/src/*`, `CLAUDE.md`, `.github/workflows/ci.yml`, `docs/specs/*`,
+  `tests/run-all.js`) modified-unstaged, plus untracked `tests/app/` and
+  `issues/tg-preview-refresh/`. Nothing of this batch's remains, nothing of
+  B12's was staged, `CLAUDE.md` never touched.
+- `npm run check:built` not run and not required: nothing here alters what a
+  screen draws.
