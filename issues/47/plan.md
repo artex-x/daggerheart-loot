@@ -13490,6 +13490,63 @@ diff is one rule and its tests.
   makes it true one step earlier - the same step live already takes. Nothing
   else in the app reads history length.
 
+### B12.1 built (implementer, 2026-09-12)
+
+Built as designed, in one commit: `bc96b59`, pushed to `origin/main`.
+`app/src/state/app.svelte.ts` (the constructor's bare-address branch plus a
+private `#fallback` shared with `start()`'s `onChange`, and the `hash` field's
+doc comment), `app/src/App.svelte` (the `{:else}` branch, `.todo` style block
+and its comment removed), `app/src/state/app.test.ts` (one case per row of the
+four-row table, each asserting `memoryRouter`'s `stack` and `app.hash`;
+"rewrites the address rather than pushing" split into the row-1 and row-2
+cases since it conflated a default and a non-default pin), `app/src/components/shell.test.ts`
+(both edits: the snapshot-pin refusal now asserts the lit nav link rather than
+`router.hash()`, since a default pin now writes nothing; "an unreadable
+address" now asserts the home section is drawn and the bar rewritten),
+`tests/app/contracts.js` (the `#/`/`#/nonsense` skip and its citation comment
+deleted), `tests/app/sweep.js` (line 53's label), `docs/specs/ROUTES.md`
+("Fallback" gains the bare-address half and the boot-versus-navigation split).
+
+Step 1's gate held on all four rows: `app.js:3642-3647` (the `currentRoute`
+fallback - line numbers shifted by one from the plan's citation because of an
+intervening comment line, content unchanged) and `app.js:4610-4614` (the boot
+check) read exactly as the table says. No row needed correcting.
+
+One deviation, found by `npm run check`'s first run, not by planning: two
+`app.test.ts` fixtures predating this batch, `'#/print/w1,w2'` (lines 50 and
+208), used a comma the print grammar has never accepted - `printHash` joins
+ids on `-`, and the regex in `lib/hash.ts` is `[\w-]+`, which a comma fails.
+Both were silently exercising the `unknown` route instead of `print` and
+happened to read as `null`/refused either way, so nothing caught it until
+rule 2 started rewriting `unknown` addresses to the pinned home - one of them
+then resolved to `'roll/std'` instead of the `null` the test expected. Fixed
+both to `'#/print/w1-w2'`, a one-character-per-line correction, cheap and
+local to a file this batch already touches (`CLAUDE.md`, "fix cheap, local,
+safe bugs, stale tests/fixtures... found in a touched path"). No plan or
+design line changes as a result; this was a latent bug in the fixture, not in
+the rule.
+
+Gates, all green, all fit their foreground call:
+
+- `npm run check`: exit 0. `App.svelte` rose to 100% statements / 91.3%
+  branches (was carrying the now-removed `{:else}` branch as partly
+  uncovered); no other threshold moved, no new exclusion. 1011 tests, up from
+  1007 (the four new row cases plus the split of one).
+- `npm run check:built`: build, `file://` smoke and the 120kB budget (88.5kB
+  actual) all green.
+- `node tests/run-all.js app/contracts,app/sweep`: 574.5s slowest entry (the
+  1180px sweep), all five green - `app/contracts` with **no `skipped` line**,
+  confirming all 26 route fixtures now read field by field.
+
+No parity call, as planned - confirmed again that neither `''`/`'#'`/`'#/'`
+nor `#/nonsense` appears in `tests/parity/specs.js`.
+
+Acceptance criteria: all met as stated in "B12.1 planned". `index.html`,
+`app.js`, `style.css` untouched (confirmed by the commit's own file list -
+seven files, none of the three).
+
+Next batch: **B13 - the reversible cut-over**, outline below, implement-ready.
+
 ### B13 planned: the reversible cut-over
 
 **Objective.** Publish the built rewrite at the site's own URL, with the old

@@ -4228,72 +4228,34 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch (implement-ready)
 
-**B12 is closed - three commits plus the review remediation, all pushed. The
-next batch is B12.1, and it is implement-ready** (planner, 2026-09-12). B13
-is behind it, also designed. B12's, B11.1's and B11's briefs are kept below
-only as closed records.
+**B12.1 is closed - one commit, pushed. The next batch is B13, and it is
+implement-ready** (planner, 2026-09-12; closed by the implementer the same
+day). B12.1's, B12's, B11.1's and B11's briefs are kept below only as closed
+records.
 
-### B12.1 - the router's bare-vs-unreadable fallback
+### Closed record: B12.1 (landed 2026-09-12)
 
 - Name: **B12.1 - the router's bare-vs-unreadable fallback.** Full design,
   the four-row divergence table, the rule, the file list, steps 1-9,
-  acceptance and gates: `plan.md`, **"B12.1 planned"** inside "Phase 6 - the
-  cut-over, replanned". That section is the authority where this brief and it
-  differ in detail; the older "B12.1 named" section is the finding it grew
-  from and is still accurate about the defect itself.
-- Objective: make the rewrite read a bare address (`''`/`'#'`/`'#/'`) and an
-  unreadable one (`#/nonsense`) the way the live app does - and the way
-  `docs/specs/ROUTES.md`, "Fallback", already says the app behaves. It lands
-  before the flip because it is a defect on the public entry point: today a
-  bare `#/` has its address bar overwritten, and an unreadable address draws
-  a debug heading instead of a page.
-- In scope: `app/src/state/app.svelte.ts` (the constructor's three lines and
-  `start()`'s `onChange` handler become one stated rule; a doc comment on
-  `hash` saying it is the address as the app reads it, which is not always
-  what is in the bar); `app/src/App.svelte` (the `{:else}` branch, the
-  `.todo` rule and its comment, removed - see the plan for why removed rather
-  than kept, including the coverage argument); `app/src/state/app.test.ts`
-  (one case per row, each asserting `memoryRouter`'s `stack`);
-  `app/src/components/shell.test.ts` (two edits); `tests/app/contracts.js`
-  (delete the skip at 148-156); `tests/app/sweep.js` (line 53's label);
-  `docs/specs/ROUTES.md` ("Fallback" gains the bare-address half, same
-  commit); `issues/47/`.
-- Out of scope: `docs/fixtures/urls/routes.json` (already correct - that is
-  the point), `tests/contracts.js`, `CONTRACTS.md`, `llms.txt`,
-  `tests/parity/specs.js` and any new `STATES` entry, `vite.config.mts`
-  thresholds, the three live root files, anything in B13.
-- Files expected: eight, plus `issues/47/`.
-- Steps: `plan.md`, "B12.1 planned", steps 1-9. In one breath: re-read the
-  two live call sites and confirm the table; the rule in `app.svelte.ts`; the
-  `{:else}` removal; the tests; `check`; `ROUTES.md`; the skip and the label;
-  `check:built` and the two suites; one commit, push, documents.
-- Acceptance criteria: `plan.md`, "B12.1 planned", "Acceptance criteria" - in
-  short: `app/contracts` green with all 26 fixtures read field by field and
-  no `skipped` line; `#/` keeps `#/` in the bar and lights the `#/roll/std`
-  tab; `#/nonsense` ends at `#/roll/std`; `app/sweep` green at four widths
-  with no new axe `allow`; `npm run check` exit 0 with no threshold lowered
-  and no new exclusion; the three live root files untouched.
-- Verification commands (each **one foreground call**, Bash timeout 600000):
-  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - ~165 s idle.
-    **Never wrap it in `time (...)`** - the hook does not recognise that as a
-    check, writes no cache, and the commit is then refused although the check
-    passed (see this file's B12 "self-inflicted near-miss").
-  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - 8.4 s at B12.
-  - `set -o pipefail; node tests/run-all.js app/contracts,app/sweep 2>&1 | tail -n 120`
-    - if it comes back near the 600 s cap, split it in two rather than
-    backgrounding either half.
-  - No parity call: no `STATES` entry covers a bare or unreadable address, and
-    nothing else in the diff moves a pixel. CI's four shards on the push are
-    the read.
-- Risks / do-nots: do not edit the fixture; do not change what `parseHash`
-  returns for garbage (the kind is right, what the state layer did with it was
-  not); rule 3 leaves `app.hash` and `location.hash` deliberately unequal and
-  the comment must say so; `PrintPage.svelte:68` is the only reader of
-  `canGoBack()`.
-- Fallback: if step 5 shows a coverage threshold moving, report it - do not
-  edit `vite.config.mts` to make it green.
+  acceptance and gates: `plan.md`, **"B12.1 planned"**; the built record and
+  the one deviation found while implementing (two stale `'#/print/w1,w2'`
+  fixtures, unrelated to the rule itself): `plan.md`, **"B12.1 built"**.
+- Landed as one commit, `bc96b59` (`fix(app): make bare and unreadable
+  addresses match live's own fallback`), pushed to `origin/main`. Seven files:
+  `app/src/state/app.svelte.ts`, `app/src/App.svelte`,
+  `app/src/state/app.test.ts`, `app/src/components/shell.test.ts`,
+  `tests/app/contracts.js`, `tests/app/sweep.js`, `docs/specs/ROUTES.md`.
+- All gates green: `npm run check` (exit 0, `App.svelte` coverage rose to
+  100% statements, no threshold moved, 1011 tests); `npm run check:built`;
+  `node tests/run-all.js app/contracts,app/sweep` (574.5s slowest entry,
+  `app/contracts` with no `skipped` line - all 26 route fixtures now read
+  field by field). No parity call, as planned. CI's four shards on the push
+  are still the outstanding read (not checked by this session).
+- Not touched, as planned: `docs/fixtures/urls/routes.json`,
+  `tests/contracts.js`, `docs/specs/CONTRACTS.md`, `llms.txt`,
+  `tests/parity/specs.js`, `index.html`, `app.js`, `style.css`.
 
-### Behind it: B13 - the reversible cut-over
+### B13 - the reversible cut-over
 
 - Name: **B13 - the reversible cut-over.** Full design: `plan.md`, **"B13
   planned"**. Three commits: **F1** the entry document and its checks

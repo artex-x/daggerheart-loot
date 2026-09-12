@@ -3046,3 +3046,26 @@ Two related readings taken at the same time, both durable:
 - **The stub pages need no edit at the cut-over.** `tools/build-share-pages.js:96`
   sends every stub to `SITE + '#/i/' + id` - the site root - which is exactly
   the document that changes hands.
+
+## State at the B12.1 kickoff (orchestrator, 2026-09-12)
+
+Preflight, measured not assumed:
+
+- HEAD `5f6fded` ("replan Phase 6 as a reversible cut-over, and plan B12.1"),
+  and `git fetch origin main` puts `origin/main` on the same sha. Nothing moved
+  under the planner's commit.
+- Working tree clean except the untracked `issues/tg-preview-refresh/` - a
+  different task's documents. Leave them alone; they are not evidence for 47.
+- No subagent of this session is running. `ListAgents` lists three *interactive*
+  peer sessions on this machine, so HEAD can still move under a writer: the
+  implementer re-reads `git log --oneline -3` before it commits.
+- Host is idle for our purposes: no `chrome.exe`, and every live `node.exe` is
+  an MCP server of the desktop app, not a test run. The B12 throttle
+  (see "The host is throttled to ~20% of nominal") is not in evidence; treat
+  the plan's stated costs as the expectation and a 3x overrun as a symptom.
+- Planner tier: Fable access has lapsed, and `.claude/agents/planner.md` was
+  already corrected to `model: opus` - the frontmatter describes the real tier,
+  so no per-dispatch model argument is needed for a planning run.
+
+Next batch dispatched: **B12.1**, design in `plan.md`, "B12.1 planned".
+Not terminal - B13 (the reversible cut-over) is designed and queued behind it.
