@@ -2,7 +2,7 @@
 
 | Agent | Prompt | Default model frontmatter |
 |-------|--------|---------------------------|
-| planner | prompts/plan.prompt.md | fable (opus when Fable access is unavailable) |
+| planner | prompts/plan.prompt.md | opus (fable while Fable access lasts) |
 | implementer | prompts/implement.prompt.md | sonnet |
 | reviewer | prompts/review.prompt.md | opus |
 | add-source | prompts/add-source.prompt.md | sonnet |
