@@ -10,12 +10,15 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 
 ## Suites
 
-Twenty suites test the live app (`index.html`), and their gate is what Pages
-serves until Phase 7 deletes it. Five more, under `tests/app/`, test the
-built rewrite (`dist/`) in the same real Chrome - the layer B12 added because
-nothing before it drove `dist/` with a trusted click, a real network, or a
-real clipboard. Each live suite below carries its **fate**: `kept` (stays
-through Phase 7, node-only), `ported as is` (re-pointed at `dist/`, same
+Twenty suites test the old app (`index.html`). Since B13 it is no longer what
+Pages serves - the built rewrite is - but it stays in the repository as the
+parity expectation and as the target of the one-commit revert, so all twenty
+still run until Phase 7 deletes it. Five more, under `tests/app/`, test the
+built rewrite (`dist/`) - what Pages now serves - in the same real Chrome, the
+layer B12 added because nothing before it drove `dist/` with a trusted click, a
+real network, or a real clipboard. Each old-app suite below carries its
+**fate**: `kept` (stays through Phase 7, node-only), `ported as is`
+(re-pointed at `dist/`, same
 assertions), `rewritten` (same intent, new implementation), or `re-homed`
 (its assertions now live in vitest component/state tests, or in a
 `tests/app/` case) - decided in `plan.md`, "Phase 5 - the testing pyramid,

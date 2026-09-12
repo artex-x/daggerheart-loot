@@ -16,9 +16,11 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 
 ## Project shape
 
-- The shipped app is the static root (`index.html`, `style.css`, `app.js`, `data.js`) and runs from `file://` and GitHub Pages.
-- The Svelte + TypeScript rewrite lives in `app/` and builds to `dist/`.
-- Pages serves the static root until the migration plan and owner perform cut-over.
+- The shipped app is the Svelte + TypeScript rewrite: `app/` builds to `dist/`,
+  which `ci.yml`'s `deploy` job publishes to Pages. It runs from `file://` too.
+- The static root (`index.html`, `style.css`, `app.js`) is now the **fallback**:
+  committed, gated, the parity expectation, the one-commit revert target until
+  Phase 7 deletes it.
 - `data.js` (`window.LOOT`) is canonical. `data.json`, `catalog.csv`, and
   `i/*.html` are generated; `img/` and `og/` are managed separately.
 
