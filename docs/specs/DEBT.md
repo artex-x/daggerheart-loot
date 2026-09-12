@@ -90,8 +90,14 @@ The live app is wrong; the rewrite copies it; parity was the reason.
 ### D3 - the storage notice's dismiss button lives inside its `<summary>`
 
 - **Where**: `app/src/components/StorageNotice.svelte:43-50`, a
-  `<button class="warn-x">` inside `<summary>`; `app/src/test/a11y.ts`
-  turns axe's `nested-interactive` rule off suite-wide to allow it.
+  `<button class="warn-x">` inside `<summary>`; `app/src/test/a11y.ts`'s
+  `expectNoA11yViolations(container, { allow })` disables axe's
+  `nested-interactive` rule only for the call sites that actually render the
+  notice - `listsPage.test.ts`, `listPage.test.ts`, `a11y.test.ts`'s two
+  list-page states, each with a `D3` comment (narrowed from a suite-wide
+  disable at B12, so every other component is still checked against the
+  rule); `tests/app/lib.js`'s `axe()` helper does the same over the built app,
+  for the same two routes.
   Live: `app.js:2881-2884` `'<details class="warn"><summary>' + '<b>' +
   ... + '<button type="button" class="warn-x" data-act="hideWarn" ...
   >&times;</button>'`, with the comment "The cross lives inside the
@@ -109,11 +115,13 @@ The live app is wrong; the rewrite copies it; parity was the reason.
 - **Why parity won**: B5.3 (2026-09-10) ported the live markup so the
   `#/lists` states compare pixel for pixel; the rule was switched off
   rather than the markup changed.
-- **How to verify the fix**: `OFF` in `a11y.ts` has no `nested-interactive`
-  line; `listsPage.test.ts`'s notice cases end in
-  `expectNoA11yViolations`; every `#/lists` state in the post-cut-over
-  net still passes. `FEATURES.md`, "Lists", the storage-notice bullet.
-- **Recorded by**: B9, 2026-09-11 (found by the B5.3 review).
+- **How to verify the fix**: no call site passes `{ allow: ['nested-interactive'] }`
+  to `expectNoA11yViolations` and `tests/app/lib.js`'s `axe()` allows nothing
+  for `#/lists`/`#/lists/a`; every `#/lists` state in the post-cut-over net
+  still passes with the rule fully on. `FEATURES.md`, "Lists", the
+  storage-notice bullet.
+- **Recorded by**: B9, 2026-09-11 (found by the B5.3 review). Narrowed from a
+  suite-wide disable to per-call sites at B12, 2026-09-12.
 
 ### D5 - a record page's tab title loses the record's name
 
@@ -151,7 +159,15 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   `menu.height + 16`, `scrollIntoView({ block: 'nearest' })`), run after
   every render (`app.js:3824`); the port `AddToList.svelte`'s placement
   `$effect`; `.card{overflow:hidden}` at `style.css:306` /
-  `RecordCard.svelte:260`.
+  `RecordCard.svelte:260`. One reading is unsettled rather than untrue: the
+  live app re-inserts the `.dropmenu` markup on every render, so
+  `animation: pop .16s ... both` restarts and `placeMenu` measures a menu
+  still at `translateY(10px) scale(.985)`, while the port's menu element
+  persists across the "+ Новый список" re-measurement and is taken at rest -
+  same side basis, an unmeasured ~10 px against a 17 px band, never observed
+  as a defect. Phase 8's toggle measurement (`:scope > .btn`) sits outside
+  the animated menu and genuinely retires the question, which is why B12
+  records rather than settles it - see "How to verify the fix".
 - **Live behaviour**: on a tall window a short card's menu opens downward
   inside the modal, overflows the `.card` article, and `scrollIntoView`
   scrolls that `overflow: hidden` article (measured `scrollTop` 109 at

@@ -269,7 +269,11 @@ function testBashDenyCases() {
     ['#5 git clean -fd', 'git clean -fd', null],
     ['#6 flag cluster -xdf', 'git clean -xdf', null],
     ['#7 git clean --force', 'git clean --force', null],
-    ['#8 git push --force', 'git push --force origin main', 'overwrites whatever the remote has'],
+    [
+      '#8 git push --force',
+      'git push --force origin main',
+      'overwrites whatever the remote has'
+    ],
     ['#9 git push -f cluster', 'git push -f origin main', 'force-with-lease'],
     ['#10 git checkout --', 'git checkout -- app/src/lib/x.ts', null],
     ['#11 git restore', 'git restore app/src/lib/x.ts', null],
@@ -282,7 +286,11 @@ function testBashDenyCases() {
     ['#13c env wrapper', 'env git reset --hard', '--hard'],
     ['#13d quoted flag', 'git reset "--hard"', '--hard'],
     ['#13e command after a heredoc', 'cat <<EOF\nbody\nEOF\ngit reset --hard', '--hard'],
-    ['#13f command on a later line', 'npm test\ngit push --force', 'overwrites whatever the remote has'],
+    [
+      '#13f command on a later line',
+      'npm test\ngit push --force',
+      'overwrites whatever the remote has'
+    ],
     ['#13g wrapper + quoted flag', 'command git clean "-fd"', 'deletes untracked files']
   ];
   for (const [label, command, fragment] of cases) {

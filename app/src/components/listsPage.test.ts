@@ -77,7 +77,8 @@ describe('the head and the panel', () => {
     expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Ссылка на список')).toBeInTheDocument();
     expect(screen.getByText('Списков пока нет — создайте первый выше')).toBeInTheDocument();
-    await expectNoA11yViolations(container);
+    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
+    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
   });
 
   it('opens the four help paragraphs, two of them with two bold runs', async () => {
@@ -118,7 +119,8 @@ describe('the head and the panel', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(container.querySelector<HTMLDetailsElement>('details.warn')?.open).toBe(false);
     expect(screen.getByText('more')).toBeInTheDocument();
-    await expectNoA11yViolations(container);
+    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
+    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
   });
 });
 
@@ -160,7 +162,8 @@ describe('a card per list', () => {
       'Лавка в порту0Список пуст'
     ]);
 
-    await expectNoA11yViolations(container);
+    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
+    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
   });
 });
 

@@ -150,11 +150,16 @@ describe('a critical success', () => {
   it('offers both tables, named apart, because either may be taken from', async () => {
     render(App, { env: at() });
     await toCrit();
-    expect(screen.getByRole('link', { name: /Таблица предметов/ })).toHaveAttribute(
+    const itemLink = screen.getByRole('link', { name: /Таблица предметов/ });
+    expect(itemLink).toHaveAttribute(
       'href',
       expect.stringContaining('#/tables/alt_item/common')
     );
     expect(screen.getByRole('link', { name: /Таблица расходников/ })).toBeInTheDocument();
+    /* `external` is the one icon carrying `opacity` (lib/icons.ts) - pins the
+       inline style `Icon.svelte`'s `'opacity' in icon` branch produces, as a
+       real assertion rather than an incidental render. */
+    expect(itemLink.querySelector('svg')).toHaveStyle({ opacity: '0.7' });
   });
 
   it('leaves the label general when only one table is open', async () => {

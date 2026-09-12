@@ -14,26 +14,33 @@
 
 import axe from 'axe-core';
 
-/** Rules jsdom cannot answer honestly, plus one the live app itself commits
- *  to. Anything else, we want to hear about. */
+/** Rules jsdom cannot answer honestly. Anything else, we want to hear about.
+ *
+ * `nested-interactive` used to sit here too, disabled for the whole suite -
+ * the lists index's storage notice (`StorageNotice.svelte`, `DEBT.md` D3)
+ * puts a dismiss button inside its own `<summary>`, and that was the only
+ * shape in the app the rule ever fired on. A suite-wide disable hid it from
+ * every *other* component as well, which is more than the one shape earned.
+ * `expectNoA11yViolations`'s `allow` parameter narrows that to the call sites
+ * that actually render the notice - see its call sites in `listsPage.test.ts`
+ * and `listPage.test.ts`, each with a `D3` comment. */
 const OFF = {
-  'color-contrast': { enabled: false },
-  /* The lists index's storage notice (B5.3) puts a dismiss button inside its
-     own `<summary>` - app.js's own `storageWarning()` markup, not the
-     rewrite's invention. `<details>` hides every child but the first
-     `<summary>` while closed, so a button that must stay visible while the
-     notice is folded has nowhere else to live; moving it out would hide it
-     exactly when dismissing it matters most. A real, live, unavoidable
-     nested-interactive shape, ported rather than fixed. */
-  'nested-interactive': { enabled: false }
+  'color-contrast': { enabled: false }
 } satisfies axe.RuleObject;
 
 /**
  * Runs axe over a rendered container and throws with the offending markup if
  * anything fails. The message names the rule and prints the node, because a
  * violation id on its own sends the reader to a search engine.
+ *
+ * `allow` disables additional rules for this one call only, for a component
+ * whose markup is a live-shared defect ported on purpose (`DEBT.md`) rather
+ * than an accident this file should hide from every caller.
  */
-export async function expectNoA11yViolations(container: Element): Promise<void> {
+export async function expectNoA11yViolations(
+  container: Element,
+  { allow }: { allow?: string[] } = {}
+): Promise<void> {
   /* axe.run() sets a global `_running` flag when it starts and clears it only
    * when it finishes. A vitest timeout does not cancel that call - it just
    * stops waiting on it - so a test that times out can leave the flag set,
@@ -46,7 +53,9 @@ export async function expectNoA11yViolations(container: Element): Promise<void> 
    * already cleared it and this is a no-op; on the timeout path, the run it
    * belonged to already failed its own test and nothing reads its result. */
   (axe as unknown as { _running: boolean })._running = false;
-  const result = await axe.run(container, { rules: OFF });
+  const rules: axe.RuleObject = { ...OFF };
+  for (const id of allow ?? []) rules[id] = { enabled: false };
+  const result = await axe.run(container, { rules });
   if (result.violations.length === 0) return;
 
   const report = result.violations

@@ -128,11 +128,16 @@ describe('tables', () => {
   it('an unknown table takes no legacy reading', () => {
     /* With no table there are no groups to check a legacy piece's head
        against, so the underscore form is never read as the old separator -
-       the safe side, per hash.ts:105. */
+       the safe side, per hash.ts:103 (table goes null) and :109 (`[]` groups
+       for a null table). */
     const r = parseHash('#/tables/nope/f_tier-1_cls-phy');
     expect((r as Extract<Route, { kind: 'tables' }>).table).toBeNull();
     expect(r.kind).toBe('tables');
-    expect((r as Extract<Route, { kind: 'tables' }>).filter).not.toHaveProperty('cls');
+    const filter = (r as Extract<Route, { kind: 'tables' }>).filter;
+    expect(filter).not.toHaveProperty('cls');
+    /* With `[]` groups, decodeFilter's legacy `_` reading never fires, so the
+       whole tail is read as one value under its own head rather than split. */
+    expect(filter['tier']).toEqual(['1_cls', 'phy']);
   });
 });
 

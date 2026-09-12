@@ -196,11 +196,20 @@ enforce it, and they catch different mistakes:
 | `expectNoA11yViolations` in every component test | markup a screen reader cannot follow | `app/src/test/a11y.ts` |
 | Layer rules in ESLint | logic that reaches for the DOM and stops being testable | `eslint.config.mjs` |
 
+`color-contrast` is off in `a11y.ts` for every call - jsdom lays nothing out,
+so it can only see declared colours; `tests/app/sweep.js` measures contrast
+for real, over a rendered page (B12). `nested-interactive` is on by default
+and disabled only per call, via `expectNoA11yViolations(container, { allow })`,
+for the handful of states that render the storage notice's live-ported markup
+(`docs/specs/DEBT.md` D3) - every other component is still checked against it.
+
 The bars differ because the obligations do. `src/lib` is pure and has no
-excuse: 90 lines, 90 functions, 85 branches. `src/ports` wraps browser APIs
-whose success paths jsdom cannot run at all, so it sits at 70/70/55 and the
-difference is covered by the browser suites and, from Phase 5, by e2e.
-Components and state are at 85 and 90.
+excuse: 95 lines, 95 functions, 85 branches, 90 statements. `src/ports` wraps
+browser APIs whose success paths jsdom cannot run at all, so it sits at
+70 lines, 80 functions, 55 branches, 70 statements, and the difference is
+covered by `tests/app/` driving the built app in a real browser (B12).
+Components are at 85 lines, 80 functions, 75 branches, 85 statements; state is
+at 95 lines, 95 functions, 85 branches, 90 statements.
 
 **A per-file rule is not a per-file *test* rule.** Nothing requires a
 `Foo.test.ts` beside every `Foo.svelte`, and a rule that did would be answered

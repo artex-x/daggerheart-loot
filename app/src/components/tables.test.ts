@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import SelBar from './SelBar.svelte';
 import TablesPage from './TablesPage.svelte';
 import {
   fakeClipboard,
@@ -441,6 +442,21 @@ describe('the selection bar', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Не удалось скопировать');
+  });
+
+  it('copies nothing and says nothing when a selection outlives the row it named', async () => {
+    /* `app.toggleSel(id)` (state/app.svelte.ts) accepts any id, so a selection
+       holding one the index does not carry is a real shape - a row removed
+       from under a ticked selection, say - and reaches `copySel`'s early
+       return that a chosen-and-present id never does. */
+    const clip = fakeClipboard();
+    const app = new AppState(at({ clipboard: clip }));
+    app.toggleSel('nope');
+    render(SelBar, { app });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    expect(clip.last.rich).toBeUndefined();
+    expect(clip.last.text).toBeUndefined();
+    expect(app.toast).toBeNull();
   });
 
   it('has no axe violations with the bar up and its menu open', async () => {

@@ -255,6 +255,68 @@ function makeDriver(page, target) {
       return true;
     },
 
+    /**
+     * Presses the control a person would click, by what it says - the same
+     * lookup as `click`, a different dispatch.
+     *
+     * `click()` runs `el.click()` inside `page.evaluate`, a synthetic event on
+     * an empty call stack: nothing checkpoints between it and whatever else is
+     * listening. A real click is a Chrome `Input.dispatchMouseEvent`, and
+     * Chrome runs a microtask checkpoint between listeners on the same event -
+     * which is exactly when Svelte 5 flushes state
+     * (`node_modules/svelte/src/internal/client/dom/task.js`, `queueMicrotask`).
+     * Between the app root's delegated handler and a `<svelte:document
+     * onclick>` listener, a block the first handler opened or closed can
+     * already have replaced its target by the time the second one runs - the
+     * class `el.click()` and jsdom's `userEvent` cannot reach by construction
+     * (`plan.md`, "Phase 5 planned", decided 6; the defect it caught was B11's
+     * `isConnected` guard). `tests/app/` is what needs this; no parity state
+     * does, so `click`'s synthetic dispatch - and every debt figure measured
+     * against it - is untouched.
+     *
+     * Resolving to a puppeteer `ElementHandle` and calling its own `.click()`
+     * is what makes the click trusted: puppeteer scrolls the element into view
+     * first (where `click()` does not) and throws its own error when the
+     * element cannot actually be clicked (zero box, covered, detached) rather
+     * than succeeding on a target nothing could reach. Recorded into the same
+     * `d.pressed` set as `click`, so the coverage report does not split one
+     * control into two entries.
+     */
+    async press(name, nth = 0) {
+      const handle = await page.evaluateHandle(
+        (n, idx, nameSrc) => {
+          const nameOf = eval(nameSrc);
+          const els = [
+            ...document.querySelectorAll(
+              'button, a[href], [role="button"], input, summary'
+            )
+          ];
+          const exact = els.filter((e) => nameOf(e) === n);
+          return exact[idx] ?? (idx === 0 ? els.find((e) => nameOf(e).includes(n)) : undefined);
+        },
+        name,
+        nth,
+        NAME_FN
+      );
+      const el = handle.asElement();
+      if (!el) {
+        await handle.dispose();
+        throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
+      }
+      try {
+        await el.click();
+      } catch (e) {
+        await handle.dispose();
+        throw new Error(
+          `${target}: "${name}"${nth ? ` (nth ${nth})` : ''} is not clickable - ${e.message}`
+        );
+      }
+      await handle.dispose();
+      d.pressed.add(name);
+      await settle(page);
+      return true;
+    },
+
     /** Waits for whatever is in flight - a resize, or a press. */
     settle() {
       return settle(page);
