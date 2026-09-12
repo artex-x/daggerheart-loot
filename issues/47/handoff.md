@@ -4400,6 +4400,81 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
 
 ## Deferred
 
+- **B11.1's review nits (reviewer, opus, read-only, 2026-09-12; verdict
+  approve, no blockers).** Recorded by the orchestrator, not acted on.
+  The review's positive findings are worth keeping too, because each one
+  closes a question a later reader would otherwise reopen: the first-`.btn`
+  reading was checked against the live markup generators (`app.js:1881-1886`
+  `addToListBtn`, `:1851-1853` `listMenuHTML`) and **is** the live reading;
+  `up = false` is a no-op in exactly the cases live's rebuild is a no-op;
+  the effect's trigger set was suspected too narrow for a chip press and
+  **is not**, because `ListStore.addIds`/`removeId`
+  (`lists.svelte.ts:165,189`) reassign `this.lists`, so `shown` re-derives
+  on identity; `flushSync()` is outside Svelte's flush, cannot loop (the
+  effect never reads `up`), and is unmount-safe behind `if (!root) return`.
+  1. **The `pop` animation is not restarted, and that is the one place the
+     reconstruction could still diverge (the reviewer's own "would it
+     diverge elsewhere" candidate).** Live re-inserts the `.dropmenu`
+     markup on every render, so `animation: pop .16s ... both` restarts and
+     `placeMenu` measures a menu still at `translateY(10px) scale(.985)` -
+     roughly 10 px lower and ~1.5 % shorter than at rest. In the port the
+     menu element **persists** across the "+ Новый список" re-measurement
+     (the form is an `{#if}` *inside* the menu), so the second measurement
+     is taken at rest. Both apps pop on the *first* measurement, so this
+     touches only re-measurements - which is exactly what B11.1 is about.
+     The measured band is 17 px and this offset is ~10 px, **so the two
+     could disagree at a card height near the boundary even though they
+     agree on Самоцвет Чутья.** Unsettled empirically: whether Blink
+     applies the `from` keyframe at the forced layout that
+     `getBoundingClientRect` triggers. **Planner's call**, and it is a real
+     one: record it in D6's "Where" as "same side basis, not same transform
+     state", or let Phase 8's `.modal-card` measurement retire the question
+     entirely. Not a defect anyone has seen.
+  2. **`hash.test.ts`'s citation is off by four lines**: the comment says
+     `hash.ts:105`, which is `? {`. The load-bearing lines are `hash.ts:103`
+     (`const table = name && isTableId(name) ? name : null;`) and
+     `hash.ts:109` (`filter: decodeFilter(tail, table ? groupsFor(table) : [])`).
+     D5/D6 are meticulous about line citations; this should match. One-line
+     edit, can ride along with B12's first commit.
+  3. **The new `[]`-groups test could pin harder.** `not.toHaveProperty('cls')`
+     proves the legacy reading was not taken but does not assert what *was*
+     read; `expect(filter.tier).toEqual(['1_cls', 'phy'])` would pin the whole
+     outcome and fail loudly if the `.`-split ever changed shape. One-line
+     edit, can ride along with B12's first commit.
+  4. **D6's "How to verify the fix" points at `tests/app/states.js`, which
+     does not exist yet** - it is B12's file (`plan.md:11722`). Consistent
+     with the plan, since D6's fix is Phase 8 and lands after B12; noted only
+     so nobody tries to run that verification today.
+  5. **`FEATURES.md` antecedent.** The appended clause reads "...a search box
+     appears from the eighth list; **it** opens on the side of the button
+     with room in the window..." - the nearest antecedent for "it" is the
+     search box, not the menu. "the menu opens on the side..." removes it.
+  6. **No unit-level pin exists for the placement, and `npm run check`
+     green does not protect that line.** jsdom returns a zero-sized
+     `getBoundingClientRect`, so `lists.test.ts` executes the effect for
+     coverage but can never observe `up`. The committed parity state is the
+     only regression instrument, and it is **RU-only** - see the correction
+     below. That is the right instrument for a geometry defect and B12
+     already homes the assertion; recorded so the gap is known, not
+     rediscovered.
+
+- **CORRECTION, and it narrows B11.1's warrant (reviewer, 2026-09-12).**
+  The orchestrator's review brief guessed that the new state's EN cells read
+  `совпадает` before the fix because translated text changes the card's
+  height and only the RU cards fall inside the 17 px band. **That is wrong.**
+  `tests/parity.js:369-370` runs `enter(d)` in Russian and *then* presses the
+  language button; that press is an outside click, so **both apps fold the
+  menu before the EN cells are shot** - the EN cells of this state (and of
+  the pre-existing `~ a row opened, list menu`) compare a modal with no menu
+  at all and would stay `совпадает` whatever the placement code did.
+  `handoff.md` already stated this correctly ("the `EN` press folds the menu
+  before it is compared, per B5.1's standing fact"), so nothing false is
+  recorded in the task files; the wrong guess lived only in the dispatch.
+  **Consequence: B11.1's warrant is three RU cells, not six** (1.01 / 1.44 /
+  2.94 % -> 0). Still a warrant, and the fix is still justified - but anyone
+  citing "six cells" for this state is citing three real ones and three that
+  cannot fail.
+
 - **B11's review nits (reviewer, opus, read-only, 2026-09-12; verdict
   approve, no blockers).** Recorded here by the orchestrator, not acted
   on - a remediation cycle is not spent on nits. **Placed by the planner
