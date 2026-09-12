@@ -269,8 +269,8 @@ function testBashDenyCases() {
     ['#5 git clean -fd', 'git clean -fd', null],
     ['#6 flag cluster -xdf', 'git clean -xdf', null],
     ['#7 git clean --force', 'git clean --force', null],
-    ['#8 git push', 'git push', null],
-    ['#9 git push --force-with-lease', 'git push --force-with-lease origin main', null],
+    ['#8 git push --force', 'git push --force origin main', 'overwrites whatever the remote has'],
+    ['#9 git push -f cluster', 'git push -f origin main', 'force-with-lease'],
     ['#10 git checkout --', 'git checkout -- app/src/lib/x.ts', null],
     ['#11 git restore', 'git restore app/src/lib/x.ts', null],
     ['#12 git stash drop', 'git stash drop', null],
@@ -282,7 +282,7 @@ function testBashDenyCases() {
     ['#13c env wrapper', 'env git reset --hard', '--hard'],
     ['#13d quoted flag', 'git reset "--hard"', '--hard'],
     ['#13e command after a heredoc', 'cat <<EOF\nbody\nEOF\ngit reset --hard', '--hard'],
-    ['#13f command on a later line', 'npm test\ngit push', 'pushing is the repository'],
+    ['#13f command on a later line', 'npm test\ngit push --force', 'overwrites whatever the remote has'],
     ['#13g wrapper + quoted flag', 'command git clean "-fd"', 'deletes untracked files']
   ];
   for (const [label, command, fragment] of cases) {
@@ -307,6 +307,10 @@ function testBashSilentCases() {
     ['#20 heredoc', "cat > x.md <<'EOF'\ngit reset --hard\nEOF"],
     ['#21 git clean -nd (dry-run)', 'git clean -nd'],
     ['#22 git push --dry-run', 'git push --dry-run'],
+    // Pushing is the agent's to do now; only a bare --force is blocked.
+    ['#22a git push', 'git push'],
+    ['#22b git push --force-with-lease', 'git push --force-with-lease origin main'],
+    ['#22c git push --force --dry-run', 'git push --force --dry-run'],
     ['#23 git restore --staged', 'git restore --staged app/src/lib/x.ts'],
     ['#24 rm -rf dist', 'rm -rf dist'],
     ['#25 git add named file', 'git add app/src/lib/x.ts'],

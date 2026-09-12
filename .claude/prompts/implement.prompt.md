@@ -78,5 +78,6 @@ For the current batch:
 9. Update `<TASK_DIR>/plan.md`
 10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)
 11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - commit the coherent batch, not unrelated foreign changes
+12. Push the current branch once the batch is committed. If the push is rejected, report it - do not force, do not rebase someone else's work away
 
-Finish with a concise summary of the batch, verification, commit, and next batch.
+Finish with a concise summary of the batch, verification, commit, push, and next batch.

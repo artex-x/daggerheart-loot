@@ -67,7 +67,9 @@ If plan/handoff is missing, stop and say review cannot proceed.
 1. **Verdict:** approve | fix-then-continue | replan
 2. **Blockers**
 3. **Risks**
-4. **Nits**
+4. **Nits** - mark each `local` (cheap and safe inside the paths this batch
+   touched) or `deferred-scope`. On a terminal batch the orchestrator sends the
+   `local` ones to the writer; the rest are filed in handoff Deferred
 5. **Suggested next action**
 6. **Checks still needed**
 

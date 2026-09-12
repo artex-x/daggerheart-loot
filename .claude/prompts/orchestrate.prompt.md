@@ -276,18 +276,40 @@ Otherwise skip review.
 Review returns to the orchestrator only: the reviewer messages nobody, and
 you count the one cycle.
 
-- **approve** -> continue to next batch or finish
+- **approve** -> continue to next batch or finish; on a terminal batch
+  (below) carrying local nits, resume the writer ONCE for the nits first
 - **fix-then-continue** -> resume the batch's writer ONCE with the blockers
   only - quoted, with what is already settled, HEAD and the gates; a cold
   fix-pass is the fallback when "Resume, do not replace" says spawn. Do not
-  replan; do not send nits
+  replan; send nits only on a terminal batch, and then in the same message
 - **replan** -> resume the planner ONCE (dispatch it if not listed) to
   revise the affected batch, then the writer ONCE
 - After that single remediation, do not auto-review again unless
   contracts/UI still changed and risk rules still match; when a second
   look is due, resume the same reviewer - it holds the batch
 - If still blocked after one remediation cycle -> stop and ask the human
-- Record nits in handoff Deferred; do not burn a cycle on nits alone
+
+### Nits: defer mid-plan, clear on the terminal batch
+
+A batch is **terminal** when, after it lands, `plan.md` lists no further batch
+and the human has named no further phase or goal for TASK. A batch with work
+queued behind it is mid-plan, whatever its size.
+
+- **Mid-plan** -> record nits in handoff Deferred and continue; do not burn a
+  cycle on nits alone. A later batch re-enters those paths, and one pass over
+  the finished area beats a pass per batch.
+- **Terminal** -> the one remediation cycle carries blockers *and* nits, and a
+  review that returns only nits is worth that cycle, because nothing after it
+  will pick them up. One message, one cycle.
+- Send only nits that are cheap, local and safe inside the paths the batch
+  already touched (`CLAUDE.md`, campsite). A nit wanting a redesign, a
+  public-contract change, a new spec, or work outside those paths goes to
+  Deferred even on a terminal batch - record that it was seen and why it was
+  left.
+- Gates do not move. The fix-pass reruns the batch's checks and commits, or it
+  reverts its own nit fixes and reports. A nit never justifies a red gate.
+- Unsure whether a batch is terminal - ask. It is one question, where a wrong
+  guess either burns the cycle or drops the nits on the floor.
 
 ## Session ending
 
@@ -313,7 +335,7 @@ Before reporting a batch or task complete:
 1. Wait for every dispatched worker to finish or report a blocker; collect each result. If the host exposes teammate lifecycle controls, request shutdown of any remaining teammates. Do not edit or delete host-managed agent/team state by hand.
 2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree.
 3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
-4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and commit the coherent change; the reviewer stays read-only. Never push.
+4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and commit the coherent change; the reviewer stays read-only. The branch is pushed at each committed boundary; confirm the remote matches before reporting done.
 5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. Record what was removed or deliberately retained in `handoff.md`.
 6. Retire the task directory. Durable knowledge earns a permanent home first - behaviour to `docs/specs/`, tooling and rationale to the README that owns that area - because a rejected-options list or a measured fact is worth exactly as much as the next person's ability to find it. Once nothing in `plan.md` is still referenced, delete it; keep `context.md` and `handoff.md`, and mark the handoff status **done**. Never retire a directory the human still calls active - issue 47 holds the live migration backlog by `CLAUDE.md`'s own instruction.
 7. A completed task directory is history, not instructions. Do not read one for a new task unless the human names that id, and never treat a done task's `handoff.md` as the next batch.

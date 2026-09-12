@@ -165,7 +165,9 @@ See `.claude/README.md`.
 - Product text may be Russian; otherwise use ASCII punctuation and characters.
 - Preserve unrelated working-tree changes. Commit only the coherent task scope.
 - Use Conventional Commits; author as `artex-x <artex-x@users.noreply.github.com>`.
-- Never push; `git push` is the repository owner's job.
+- Push the branch once a batch's commits pass their gates; a committed boundary
+  the remote never saw is one lost session away from gone.
+- Never `git push --force`. Use `--force-with-lease` if a rewrite is unavoidable.
 
 ## Maintaining this file
 
@@ -182,7 +184,8 @@ See `.claude/README.md`.
 Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code)
 - **implementer** -> next batch only; never `model: inherit` (see `.claude/README.md`)
-- **reviewer** (optional) -> high-risk batches; max one remediation cycle
+- **reviewer** (optional) -> high-risk batches; max one remediation cycle. Nits
+  defer to handoff mid-plan and are fixed in that cycle on the terminal batch
 - **add-source** -> rare end-to-end content ingest
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 

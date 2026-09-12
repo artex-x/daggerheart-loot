@@ -54,8 +54,8 @@ const MSG = {
     'Blocked: `git reset --hard` discards every uncommitted change in this tree, including work that belongs to another task. Park your own changes with `git stash push -- <paths>`, unstage with `git restore --staged <path>`, or ask the human to run the reset themselves.',
   gitCleanForce:
     'Blocked: `git clean` with -f deletes untracked files permanently. Run it with -n first and act on the list, or delete the specific paths you meant.',
-  gitPush:
-    "Blocked: pushing is the repository owner's job (CLAUDE.md). Commit locally and say in your summary that a push is pending.",
+  gitPushForce:
+    'Blocked: a bare `git push --force` overwrites whatever the remote has, including commits this tree never saw. Push normally, or use `git push --force-with-lease`, which refuses when the remote ref moved under you.',
   gitDiscard:
     'Blocked: this overwrites working-tree changes, and this tree carries in-flight work from other tasks. If you only meant to unstage, use `git restore --staged <path>`. Otherwise name the exact file and confirm with the human.',
   gitStashDestroy:
@@ -153,7 +153,13 @@ function evaluateBlocklist(segList, cwd) {
         }
       }
       if (subcommand === 'push') {
-        if (!tokens.includes('--dry-run')) return { id: 'git-push', message: MSG.gitPush };
+        // Pushing itself is allowed. Only the force that ignores the remote's
+        // state is not: --force-with-lease still refuses to clobber a ref that
+        // moved, so it is a normal push here.
+        const hasForce = tokens.includes('--force') || flagMatches(tokens, 'f');
+        if (hasForce && !tokens.includes('--dry-run')) {
+          return { id: 'git-push-force', message: MSG.gitPushForce };
+        }
       }
       if (subcommand === 'checkout') {
         if (tokens.includes('--') || tokens.includes('.')) {
