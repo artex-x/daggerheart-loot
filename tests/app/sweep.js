@@ -113,7 +113,20 @@ const FOCUS_WALK = [
  *  colour swap to the app's one accent token. An element-only outline/
  *  box-shadow read misses the second and third shapes and reports a real,
  *  visible ring as absent - measured directly against `dist/` on
- *  `#/roll/std`'s custom-modifier field and `#/lists/a`'s qty/gold fields. */
+ *  `#/roll/std`'s custom-modifier field and `#/lists/a`'s qty/gold fields.
+ *
+ *  None of the three indicators is checked in isolation, because "has a
+ *  box-shadow" and "has a gold border" are also true of plenty of elements
+ *  that are not focused at all - `.card`, `.panel` and friends carry a
+ *  permanent drop shadow, and `.chip`/`.homebtn` carry a gold border at
+ *  rest. The walk therefore reads every ancestor (up to four deep) twice:
+ *  once while the element holds focus, once with it blurred a moment later
+ *  (settled the same way, so a transitioning box-shadow is not read
+ *  mid-flight), and only counts a depth whose indicator is present focused
+ *  and *absent* blurred - a ring that does not change on focus is not a
+ *  focus ring, whatever else lit it up. Found by review: the first version
+ *  of this check read the static case as passing on over a third of
+ *  `#/roll/std`'s stops alone. */
 async function focusWalk(page, where) {
   await page.evaluate(() => document.body.focus());
   const cap = await page.evaluate(
@@ -139,30 +152,59 @@ async function focusWalk(page, where) {
       const running = document.getAnimations().map((a) => a.finished.catch(() => undefined));
       await Promise.race([Promise.all(running), new Promise((r) => setTimeout(r, 300))]);
     });
-    const at = await page.evaluate((goldColor) => {
-      const el = document.activeElement;
-      if (!el || el === document.body) return null;
-      const ownRing = (e) => {
-        const c = getComputedStyle(e);
-        const outline = c.outlineStyle !== 'none' && parseFloat(c.outlineWidth) > 0;
-        const box = c.boxShadow !== 'none' && c.boxShadow !== '';
-        const border =
-          c.borderTopStyle !== 'none' && parseFloat(c.borderTopWidth) > 0 && c.borderTopColor === goldColor;
-        return outline || box || border;
-      };
-      /* A ring raised on a wrapper via `:focus-within` (NumberField's
-         `.numbox`) never sits on the focused element itself - walk a few
-         ancestors before giving up. */
-      let visible = false;
-      let node = el;
-      for (let depth = 0; node && depth < 4 && !visible; depth++, node = node.parentElement) {
-        visible = ownRing(node);
-      }
-      const name =
-        el.tagName + (typeof el.className === 'string' && el.className ? '.' + el.className.split(/\s+/)[0] : '');
-      return { name, visible };
-    }, gold);
-    if (!at) break;
+    const elHandle = await page.evaluateHandle(() => document.activeElement);
+    const isBody = await page.evaluate((el) => !el || el === document.body, elHandle);
+    if (isBody) {
+      await elHandle.dispose();
+      break;
+    }
+    const at = await page.evaluate(
+      async (el, goldColor) => {
+        /* Three indicators, read separately rather than pre-collapsed into
+           one boolean - a node can carry a permanent gold border (`.chip.on`,
+           `.homebtn.on`) alongside a genuinely focus-driven outline, and
+           OR-ing them at read time hides the outline's own true-to-false
+           transition behind the border's constant true. Comparing the
+           combined boolean before and after blur missed exactly this: three
+           of `#/roll/std`'s stops carry both, and the outline that really
+           does disappear on blur was invisible next to the border that
+           never does. */
+        const ring = (e) => {
+          const c = getComputedStyle(e);
+          return {
+            outline: c.outlineStyle !== 'none' && parseFloat(c.outlineWidth) > 0,
+            box: c.boxShadow !== 'none' && c.boxShadow !== '',
+            border:
+              c.borderTopStyle !== 'none' && parseFloat(c.borderTopWidth) > 0 && c.borderTopColor === goldColor
+          };
+        };
+        const settle = async () => {
+          const running = document.getAnimations().map((a) => a.finished.catch(() => undefined));
+          await Promise.race([Promise.all(running), new Promise((r) => setTimeout(r, 300))]);
+        };
+        const nodes = [];
+        for (let node = el, depth = 0; node && depth < 4; depth++, node = node.parentElement) {
+          nodes.push(node);
+        }
+        const focused = nodes.map(ring);
+        el.blur();
+        await settle();
+        const blurred = nodes.map(ring);
+        /* Put focus back where Tab left it, so the next real Tab keypress
+           advances from here rather than restarting from the body. */
+        el.focus();
+        const name =
+          el.tagName + (typeof el.className === 'string' && el.className ? '.' + el.className.split(/\s+/)[0] : '');
+        const visible = focused.some(
+          (f, i) =>
+            (f.outline && !blurred[i].outline) || (f.box && !blurred[i].box) || (f.border && !blurred[i].border)
+        );
+        return { name, visible };
+      },
+      elHandle,
+      gold
+    );
+    await elHandle.dispose();
     ok(at.visible, where + ': нет видимого focus-ring на ' + at.name);
   }
 }

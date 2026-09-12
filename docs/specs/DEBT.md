@@ -199,10 +199,12 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   4.5:1 at their font sizes (10.5px, under the 18.66px/14pt-bold large-text
   threshold). Ported: `AltPanel.svelte`'s rank subtitle (`Chip.svelte`'s
   optional `sub` prop, a `<small>` after the label - off `.chip small` in
-  style.css, `opacity:.72`) and `ListPage.svelte`'s money-mode help captions
-  (`<i>уедет с текстом и ссылкой для игроков</i>` /
-  `<i>останется у вас</i>`, off the money-help `<p>`'s two `<i>` runs). Read at
-  `a52c17d`, `tests/app/sweep.js`'s axe pass (B12).
+  style.css, `opacity:.72`) and `ListPage.svelte`'s note-pair hints
+  (`notePubHint`/`noteHidHint`, `app/src/lib/dict.ts:309-310`; rendered as
+  `<i>{t.notePubHint}</i>`/`<i>{t.noteHidHint}</i>` at `ListPage.svelte:538`
+  and `:556`, inside `.lnote > .npair > .nfield.n-pub > .nlbl > i` and its
+  `.n-hid` sibling). Read at `a52c17d`, `tests/app/sweep.js`'s axe pass
+  (B12).
 - **Live behaviour**: `axe.run()` with `color-contrast` on reports the
   identical node, at the identical measured ratio, against `index.html` and
   `dist/index.html` alike - the two muted tokens have always read below AA on
@@ -221,10 +223,11 @@ The live app is wrong; the rewrite copies it; parity was the reason.
 - **How to verify the fix**: `tests/app/sweep.js`'s axe pass finds no
   `color-contrast` violation on `#/roll/alt` (checked - `#/roll/wondrous`,
   `#/roll/community`, `#/roll/voa` and `#/roll/std` carry no such subtitle
-  and read clean already) or `#/lists/<id>` with a priced entry (the
-  money-help captions - checked clean on an unpriced or empty list), with no
-  `allow` naming it; the `--muted`/`--muted2` values in `docs/specs/*` (if any
-  cite them) updated to match.
+  and read clean already) or `#/lists/<id>` with a note open on some entry -
+  the trigger is a NOTE, not a price: `#/lists/b` and `#/lists/empty` read
+  clean because they carry no note, not because they carry no price - with
+  no `allow` naming it; the `--muted`/`--muted2` values in `docs/specs/*` (if
+  any cite them) updated to match.
 - **Recorded by**: B12, 2026-09-12.
 
 ### D10 - copying an image taints the canvas under `file://`, on both apps
