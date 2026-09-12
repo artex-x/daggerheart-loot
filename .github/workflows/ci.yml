@@ -47,7 +47,7 @@ jobs:
       # large share of why CI stayed red for eight runs before anyone with a
       # full run noticed - a filtered local run was the only one anybody
       # could afford to wait for. See issue 47, B3.6 part 0.
-      - name: The legacy suites against the live app
+      - name: The legacy suites against the live app, and the built app in a browser
         run: node tests/run-all.js --exclude=parity
 
       # A CI run is gone by the time anyone looks at it, and the summary prints

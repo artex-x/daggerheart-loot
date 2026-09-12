@@ -110,6 +110,7 @@
         <Chip
           label={t[SOURCE_LABEL[src]]}
           on={app.source[src]}
+          value={src}
           title={isLastOn(app.source, SOURCES, src) ? t.keepOneSource : undefined}
           onclick={() => {
             toggleSource(src);

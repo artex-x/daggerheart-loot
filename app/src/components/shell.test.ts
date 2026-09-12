@@ -166,6 +166,17 @@ describe('the address on the way in', () => {
   });
 });
 
+describe('an unreadable address', () => {
+  it('draws the raw hash as a heading rather than a headingless page', () => {
+    /* Every route kind lib/hash.ts can parse draws a real page; only a
+       genuinely unparseable one reaches App.svelte's own fallback - an <h1>
+       rather than a <p> since B12's sweep found axe's page-has-heading-one
+       on it (tests/app/sweep.js). */
+    render(App, { env: at('#/nowhere') });
+    expect(screen.getByRole('heading', { level: 1, name: '#/nowhere' })).toBeInTheDocument();
+  });
+});
+
 describe('the toast, through what a real page raises it with', () => {
   it('is a status message, polite, for a plain notice', async () => {
     /* Not #/roll/std - it is DEFAULT_HOME, so it starts pinned and the button

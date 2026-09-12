@@ -191,6 +191,114 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   `#/i/ci1 ~ new list` is re-read by the same instrument.
 - **Recorded by**: B11.1, 2026-09-12.
 
+### D7 - the muted-text tokens fail WCAG AA contrast on their dark backgrounds
+
+- **Where**: `style.css` `--muted` (`#77708c` on `--surface` `#1a1626`,
+  measured 3.77:1) and `--muted2` (`#6e6884`/`#6d6782` on `--surface`/
+  `--surface2` `#1a1626`/`#14111d`, measured 3.35:1 and 3.46:1) - both need
+  4.5:1 at their font sizes (10.5px, under the 18.66px/14pt-bold large-text
+  threshold). Ported: `AltPanel.svelte`'s rank subtitle (`Chip.svelte`'s
+  optional `sub` prop, a `<small>` after the label - off `.chip small` in
+  style.css, `opacity:.72`) and `ListPage.svelte`'s money-mode help captions
+  (`<i>уедет с текстом и ссылкой для игроков</i>` /
+  `<i>останется у вас</i>`, off the money-help `<p>`'s two `<i>` runs). Read at
+  `a52c17d`, `tests/app/sweep.js`'s axe pass (B12).
+- **Live behaviour**: `axe.run()` with `color-contrast` on reports the
+  identical node, at the identical measured ratio, against `index.html` and
+  `dist/index.html` alike - the two muted tokens have always read below AA on
+  a dark background, on both apps, at every width (contrast is not a function
+  of layout).
+- **What the rewrite would do instead**: lighten `--muted`/`--muted2` (or the
+  two surfaces they sit on) until both combinations clear 4.5:1, checked
+  against every other place the tokens are used - a global colour change, not
+  a per-component one.
+- **Why parity won**: B12 (2026-09-12) - the tokens are shared globally
+  (`styles/tokens.css`), so changing either for these two call sites alone
+  would either diverge from the live app's exact colours (parity's whole
+  reason to exist) or require a value the live app itself never uses. Not
+  found earlier because no gate ever ran real contrast measurement against
+  either app before B12's sweep.
+- **How to verify the fix**: `tests/app/sweep.js`'s axe pass finds no
+  `color-contrast` violation on `#/roll/alt` (checked - `#/roll/wondrous`,
+  `#/roll/community`, `#/roll/voa` and `#/roll/std` carry no such subtitle
+  and read clean already) or `#/lists/<id>` with a priced entry (the
+  money-help captions - checked clean on an unpriced or empty list), with no
+  `allow` naming it; the `--muted`/`--muted2` values in `docs/specs/*` (if any
+  cite them) updated to match.
+- **Recorded by**: B12, 2026-09-12.
+
+### D10 - copying an image taints the canvas under `file://`, on both apps
+
+- **Where**: `app/src/ports/image.ts`'s `pngOf` (`<img>` -> `<canvas>` ->
+  `toBlob('image/png')`) and the live app's equivalent bitmap conversion for
+  "Скопировать изображение" - both draw the record's own `<img>` (loaded from
+  a relative `img/*.webp` path) onto a canvas and then read it back. Read at
+  `a52c17d`, isolated in the scratchpad against both `dist/index.html` and
+  `index.html` directly (`puppeteer.launch()`, no other stub involved) -
+  `img.onload` fires and `ctx.drawImage()` succeeds on both apps, but
+  `canvas.toDataURL('image/png')` throws `"Tainted canvases may not be
+  exported"` on both, for the identical image, with and without
+  `--disable-gpu`. `canvas.toBlob('image/png')` does not throw at all in this
+  Chromium build - it never calls its callback, which is what made this
+  invisible before: `tests/parity/driver.js`'s `clipboardImage()` reads
+  `m[key].arrayBuffer ? m[key] : null` and a *pending promise* has no
+  `.arrayBuffer`, so it always resolved `{ empty: null }` on both apps -
+  parity's own `copiedImage` spec has been comparing two identical `null`s,
+  never a real byte count.
+- **Live behaviour**: a `file://` document's own resources are treated as
+  cross-origin by Chrome's canvas taint check (no
+  `--allow-file-access-from-files`), so drawing the record's own picture -
+  loaded from the very same folder the document opened from - taints the
+  canvas regardless. "Скопировать изображение"/"Copy image" therefore cannot
+  actually put a picture on the clipboard when the app is opened as a folder
+  - the one HTML-file-serving mode `docs/specs/META.md` names as supported -
+  though the button still shows, presses, and (on the live app) reports
+  success text, because nothing there reads the canvas back to know it
+  failed.
+- **What the rewrite would do instead**: catch the failure (a rejected
+  `pngOf`, or a `toBlob` watchdog timeout) and fall back to `copyText`'s
+  path with a toast that says why - the way `RecordActions.svelte` already
+  does when `it.img` is empty - rather than reporting success (or, for
+  `tests/app/states.js`'s purposes, hanging) on a picture that never left
+  the canvas.
+- **Why parity won**: not caught before B12 - `clipboardImage()`'s own
+  `empty: null` result satisfied every prior reading, on both sides alike,
+  and nobody had awaited the promise itself until `tests/app/states.js`'s
+  copy-image case did.
+- **How to verify the fix**: `tests/app/states.js`'s copy-image case reads a
+  real, non-empty blob size (or, if the fallback is chosen, real text) with
+  no bounded-timeout retry needed; `src/ports/image.ts`'s coverage exclusion
+  in `vite.config.mts` gains a real assertion on the rejection path.
+- **Recorded by**: B12, 2026-09-12 (found while writing `tests/app/states.js`'s
+  copy-image case - the suite's own real unknown, not the step 1 probe's).
+
+### D8 - the alternate-tables page jumps from `<h1>` straight to `<h4>`
+
+- **Where**: `TableRows.svelte`'s `.altcol` column headers
+  (`<h4 class="altcol hope">`/`<h4 class="altcol fear">`, one pair per
+  rarity section on `#/tables/alt_item` and `#/tables/alt_consumable`) sit
+  directly under the page's own `<h1>` with no `<h2>`/`<h3>` between them.
+  Ported: the live markup carries the identical `<h4>` with no intervening
+  level either (`app.js`'s alt-table renderer). Read at `a52c17d`,
+  `tests/app/sweep.js`'s axe pass (B12).
+- **Live behaviour**: `axe.run()`'s `heading-order` rule (moderate) reports
+  the same `<h4 class="altcol hope">Надежда</h4>` node against both apps - a
+  screen reader's heading list jumps two levels at the same place on either
+  one.
+- **What the rewrite would do instead**: give each rarity section its own
+  `<h2>`/`<h3>` (the section title already drawn as plain text) and demote
+  the column pair to `<h4>` under it, or promote the columns to `<h2>` and
+  drop the empty levels between - either heals the sequence without
+  inventing a heading nobody reads today.
+- **Why parity won**: B12 (2026-09-12) - the heading level is part of the
+  ported DOM structure `CLAUDE.md`'s "Migration and parity" asks for; only
+  Phase 7/8's structural review is positioned to change it without touching
+  a pixel the parity harness still measures.
+- **How to verify the fix**: `tests/app/sweep.js`'s axe pass finds no
+  `heading-order` violation on `#/tables/alt_item`/`#/tables/alt_consumable`
+  with no `allow` naming it.
+- **Recorded by**: B12, 2026-09-12.
+
 ## Live decisions kept over the rewrite's own
 
 Not a defect; a design the rewrite argued against and lost to parity.

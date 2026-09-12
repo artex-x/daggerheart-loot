@@ -81,6 +81,7 @@
       <button
         type="button"
         class="fpill"
+        data-val={c.group + ':' + c.value}
         title={t.dropValue}
         onclick={() => {
           onpick(c.group, c.value);
