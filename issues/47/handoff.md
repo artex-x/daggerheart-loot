@@ -4302,7 +4302,9 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch (implement-ready)
 
-**B12.1 is closed - one commit, pushed. The next batch is B13, and it is
+**B12.1 is closed - three commits (`bc96b59` the rule, `7a729bd` the
+documents, `cd71897` the review remediation), all pushed, and CI green on
+`7a729bd` including all four parity shards. The next batch is B13, and it is
 implement-ready** (planner, 2026-09-12; closed by the implementer the same
 day). B12.1's, B12's, B11.1's and B11's briefs are kept below only as closed
 records.

@@ -3069,3 +3069,51 @@ Preflight, measured not assumed:
 
 Next batch dispatched: **B12.1**, design in `plan.md`, "B12.1 planned".
 Not terminal - B13 (the reversible cut-over) is designed and queued behind it.
+
+## The CI read that closed B12.1 (orchestrator, 2026-09-12)
+
+Run `34715233810` on `7a729bd` - the commit carrying the router change - is
+**green in every job**, and this is the read B12.1's design deliberately left
+to CI instead of a local parity call:
+
+```
+check       success  11m41s
+parity (1)  success   9m34s
+parity (2)  success   8m04s
+parity (3)  success  10m36s
+parity (4)  success   9m15s
+audit       success     17s
+secrets     success      7s
+deploy      success     22s
+```
+
+So the rule change moved no parity cell: the four shards pass against the
+unchanged `VISUAL_DEBT`/`ACCEPTED` tables, which is what "no `STATES` entry
+covers a bare or unreadable address" predicted. The `deploy` job ran and
+succeeded as always - it is still publishing the **old** app, by the explicit
+file list in `ci.yml`. That step is exactly what B13's F2 commit rewrites.
+
+Two annotations, both pre-existing and unrelated: `gitleaks-action@v2` and the
+three Pages actions target Node 20 and are forced onto Node 24. Not this
+task's; worth an issue of its own if it ever starts failing rather than warning.
+
+The remediation commit `cd71897` is documentation only and its own run is of no
+consequence to the batch.
+
+## State at the B13 kickoff (orchestrator, 2026-09-12)
+
+- HEAD `cd71897`, equal to `origin/main`. Tree clean but for the untracked
+  `issues/tg-preview-refresh/`, which is a different task's and stays.
+- B12.1 is closed: reviewed (verdict fix-then-continue), one remediation cycle
+  spent on two documentation blockers, both fixed in `cd71897`. No blocker
+  remains open, and `NEEDS_HUMAN_CONFIRMATION` is no.
+- Six review nits are recorded in `handoff.md`, "Deferred". **Nit 1 is the one
+  B13 must not walk past**: a pinned bare `#/tables` is accepted by the pin
+  button and silently dropped at the next boot, where live always pins a named
+  table. Pre-existing and untouched by B12.1 - but B12.1 makes the pinned home
+  the value written to the address bar, and B13 is what puts it in front of
+  real users. Read-verified only; nobody has driven the built app at it.
+- Next batch: **B13 - the reversible cut-over**, `plan.md`, "B13 planned".
+  Three commits (F1 the entry document and its checks, F2 `ci.yml` alone so a
+  revert is one file, F3 the documents), and it is the batch that changes what
+  the public URL serves.
