@@ -12440,6 +12440,574 @@ entries the way `audit2` is.
 - **Not in B12.** `print` geometry (Phase 7's deletion batch), the JSON
   freeze (Phase 7), deleting any legacy suite.
 
+#### B12 planned: the real-browser layer on `dist/`, and the gates (planner, 2026-09-12)
+
+The outline above holds the decisions and is not reopened. This section is
+the batch: the file list, the driver verb's contract, the step order, the
+acceptance, the costs, and the two questions the outline left to this pass
+(the `pop` re-measurement, and where `COVERAGE.md`'s rewrite lands).
+
+Everything below is read off the tree at HEAD `d0963d9` (B11.1's fix
+`e94a90e` plus three commits that touch no application code), so the
+outline still describes the tree it was written against.
+
+##### Decided in this pass - do not reopen
+
+**1. One batch, three commits.** `docs/parity.md`, "Batch size", allows
+both - "A batch may hold more than one commit; each commit is green on its
+own" - and the same section's third cut *requires* the first of them: "a
+commit boundary the harness cannot reach (a state that needs a driver verb
+or a seed that does not exist yet) - the piece that adds the reach lands
+first, on its own commit, so a later red bisects". `press` is exactly that
+piece.
+
+| commit | what | its gate |
+|---|---|---|
+| C1 `test(app): the driver presses like a person, and the gates move` | `press` in `driver.js`; `vite.config.mts` thresholds; `a11y.ts`'s `{ allow }`; the `Icon` and `SelBar` branches; B11.1's nits 2, 3 and 5; D6's "Where" sentence | `npm run check` |
+| C2 `test(app): the built app swept in a real browser` | `tests/app/lib.js`, `sweep.js`, `typo.js`, `hues.js`, `contracts.js`; `data-val` on the filter pills and the source chips; `run-all.js`'s four+1 entries; the CI step's name; `COVERAGE.md`'s enforcement half | `npm run check`, `npm run check:built`, the four `app/*` suites, one parity call |
+| C3 `test(app): the states a real click reaches, and the coverage matrix` | `tests/app/states.js`; its `run-all.js` entry; `COVERAGE.md`'s suite table, fates and thin spots; `CLAUDE.md`'s one focused-command line | `npm run check`, `node tests/run-all.js app/states` |
+
+Not two batches. The diff is large (~1.5k lines) but most of it is a port a
+reviewer diffs against the suite it came from; the genuinely new reading is
+`lib.js`, `states.js`, the sweep's axe and focus-walk additions, `press`,
+and the config edits - roughly 650 lines, one pass. Splitting would pay a
+second `check:built` and a second review dispatch for nothing. Not one
+commit either: the two seams where a red needs to bisect cleanly are the
+driver verb (C1) and the real-input layer (C3). The cost of the three
+boundaries is two extra `npm run check` runs, ~165 s each on an idle host -
+see "Verification commands" below.
+
+**2. Nit 1 - the `pop` re-measurement - is recorded in D6's "Where", in one
+sentence, and is written to be deleted by Phase 8 R3.** Not settled
+empirically, and not left unwritten. The facts, from `handoff.md`,
+"Deferred", nit 1: the live app re-inserts the `.dropmenu` markup on every
+render, so `animation: pop .16s ... both` restarts and `placeMenu` measures
+a menu still at `translateY(10px) scale(.985)`; the port's menu element
+persists across the "+ Новый список" re-measurement, so that second
+measurement is taken at rest. Same side basis, ~10 px of offset against a
+measured 17 px band, never observed as a defect. Four reasons for
+recording rather than probing or ignoring:
+
+- **The only instrument that could ever see it dies before the fix does.**
+  Parity is what compares the two apps, and `tests/parity.js` retires at
+  Phase 7 R0 (decided 2); D6's fix is Phase 8 R3. Unrecorded, the question
+  outlives both its evidence and the only thing that could answer it.
+- **D6's "Where" is the field for exactly this.** D6 frames the
+  first-`.btn` reading as the live reading, ported on purpose. "How
+  faithful, and where not" belongs beside it, not in a handoff nobody
+  reads after the task closes.
+- **Phase 8's named fix genuinely retires it, which is why the sentence is
+  cheap.** `pop` translates the menu; `placeMenu` reads the first `.btn`
+  *inside* the menu ("Создать" once the form is open), so the translate
+  moves what is measured. Phase 8's measurement reads the toggle
+  (`:scope > .btn`), which is outside the menu and untranslated. Only the
+  `scale(.985)` term survives it - about 2 px on a 131 px menu, an order
+  inside the 17 px band. So R3 deletes the sentence along with the reading
+  it qualifies.
+- **Settling it costs a batch's minutes for a defect nobody has seen.** A
+  record-by-height sweep of the live app hunting a disagreement in a ~10 px
+  sub-band, on code scheduled for deletion, buys nothing B12 or Phase 8
+  needs.
+
+No test is written for it. The outline's rule stands: no red test is
+committed, and a verification hook expected to fail until Phase 8 is not
+written.
+
+**3. B11.1's nits 2, 3 and 5 ride in C1**, as the reviewer marked them, and
+they are cheap and local in files C1 opens anyway (`CLAUDE.md`,
+"Engineering posture and campsite"). Nit 2: `hash.test.ts`'s comment cites
+`hash.ts:105`, which is `? {`; the load-bearing lines are `:103` and
+`:109`. Nit 3: the `[]`-groups case adds `expect(filter.tier).toEqual([
+'1_cls', 'phy' ])` beside `not.toHaveProperty('cls')` - the reviewer's
+expectation; if the code produces something else, that is a finding to
+record, not a typo to paper over. Nit 5: `FEATURES.md`'s appended clause
+becomes "the menu opens on the side...", so "it" stops attaching to the
+search box. Nit 4 resolves itself when C3 creates `tests/app/states.js`;
+nit 6 is answered by C3's modal case, which is the unit-level pin it says
+is missing - it is not a code change.
+
+**4. `COVERAGE.md` is rewritten inside B12, split across C1's and C3's
+commits so each commit is true on its own.** `CLAUDE.md`: "Behaviour
+changes update their specs in the same commit", and `COVERAGE.md` is the
+spec for suite ownership and thresholds. C1 moves the bars, so C1 edits
+"What is enforced, and by what" (the three threshold rows' numbers, the
+`src/lib`/`src/ports`/state sentence under the table) and the
+`nested-interactive` line. C2 edits the same section's axe row once
+contrast is measured on a real page. C3 rewrites the suite table with the
+`app/*` rows and each legacy row's fate from decided 3, and replaces
+"Known thin spots"' four "waits for Phase 5" sentences (lines 202, 261,
+307, 317 today) with the honest remainder: `hover: none`, the share
+sheet's success path, the OS clipboard, and print geometry until Phase 7.
+Not after the batch: a threshold table that describes the previous commit
+is the kind of drift this file exists to prevent.
+
+**5. `CLAUDE.md`'s "Quality gates" gains exactly one line**, after the
+`Focused:` line:
+
+```text
+The built app in a real browser (after `npm run build`): `node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts,app/states`.
+```
+
+The build clause is load-bearing: `npm run check` never builds (`package.json`),
+so a local `run-all` on a stale or absent `dist/` would go red on five
+suites for a reason that is not the app's. CI is already safe - the
+"legacy suites" step runs after `Build`. The file is 197 lines against its
+own 200-line cap, so this is one line and nothing else; if anything more
+wants saying, it moves to `COVERAGE.md`.
+
+**6. `Icon` and `SelBar` each gain the one branch they are missing; no
+component threshold moves.** Confirmed on the tree:
+
+- `Icon.svelte:21` - `'opacity' in icon ? ...` - has only its false arm
+  exercised. `external` is the only icon carrying `opacity` (`lib/icons.ts:44`,
+  `opacity: 0.7`) and it renders in `AltPanel.svelte:205` (the crit row's
+  table links) and `RecordPage.svelte:67` ("показать в таблице"). The case
+  goes wherever the fixture already reaches that markup - `alt.test.ts`'s
+  crit render or `record.test.ts`'s equipment record - and asserts the
+  svg's inline style carries `opacity:0.7`, not merely that an icon drew.
+- `SelBar.svelte:33-41` `copySel` - the reachable dead arm is
+  `if (!items.length) return;`, not `if (!index) return;`. `app.toggleSel(id)`
+  (`state/app.svelte.ts:319`) accepts any id, so a selection holding an id
+  the index does not carry renders the bar with `n = 1` and takes the early
+  return. The case belongs beside the existing selection-bar tests and
+  asserts that nothing reached the clipboard and no toast was said - a real
+  shape (a selection outliving the row it named), not a contrivance.
+
+Both are measured by `npm run check`'s coverage report in C1; if either
+file still sits at 75.0 after the case, the case did not reach the arm.
+
+##### What is already measured, and what is not
+
+Measured, and the port can rely on it:
+
+- `driver.js`'s `ready()` already accepts `#app`
+  (`tests/parity/driver.js:25-27`: `#view` **or** `#app`). The outline's
+  "if it does not already" is answered - nothing to change there.
+- `run-all.js` spawns `path.join(HERE, name + '.js')` and keys its log file
+  through `keyOf(...).replace(/[^\w.-]+/g, '-')`, so a suite named
+  `app/sweep` resolves to `tests/app/sweep.js` and writes
+  `test-output/app-sweep.log` with no runner change. `--exclude=parity`
+  and the name filter both compare `s[0]`, so `run-all.js app/sweep` works
+  and CI's existing command picks the new suites up unchanged.
+- `tests/**` is outside both gates: `.prettierignore` lists `tests/`, and
+  `eslint.config.mjs:18` ignores `tests/**`. The new files keep the legacy
+  suites' shape (CommonJS, `const ok = (c, m) => ...`, Russian comments
+  where the original carried them) and nothing reformats them.
+- `axe-core/axe.min.js` resolves from the repository root
+  (`node_modules/axe-core/axe.min.js`); `page.addScriptTag({ path })` reads
+  it in node and inlines it, so it works over `file://`, and neither
+  `index.html` nor `app/index.html` carries a CSP to refuse it.
+- The selectors `tests/app/contracts.js` needs all exist:
+  `.rows .row[data-row]` (`TableRows.svelte:113`), `nav.tabs a[aria-current="page"]`
+  (`TabBar.svelte:38`, whose `href` is `sectionHash(section)` -
+  `hash.test.ts:295` already replays the fixture's `tab` through it),
+  `.pcard:not(.blank)`, `.eqstats span` (`RecordCard.svelte:152`).
+- **The route fixtures replay cleanly against the rewrite**, including the
+  three that could have been broken by B11's decoder fix, checked entry by
+  entry: `f_tier-1_cls-phy` still takes the legacy `_` reading (both heads
+  name groups `eq_weapon` offers) and reads `["tier:1","cls:phy"]`;
+  `f_frame-beast_feast` never took it (`feast` has no `-`) and stays one
+  value; `f_nosuch-1` fails open to the whole table, 317 rows. The
+  two-frame link that B11 fixed is deliberately **not** in `routes.json` -
+  it waits for Phase 7 - so nothing in the fixture set encodes the live
+  app's arrival defect.
+- Pill order and label text already match: parity's `#/tables/eq_weapon ~ filtered`
+  and `#/tables/wondrous ~ filtered` are `совпадает`, which compares the
+  drawn pills. So `picked` will read in the fixture's order.
+
+**Not measured, and this is the batch's real unknown.** `audit2`
+re-pointed at `dist/` was measured passing **at 1180 only** (`context.md`,
+"Phase 5 planning facts"). 360, 390 and 768 were never run against the
+rewrite, and neither was axe with `color-contrast` on, on any width. Step 1
+below measures both before a line of the suite is written, because the
+answer decides whether B12 is a test batch or a test batch with production
+fixes in it.
+
+##### The driver's new verb, and its blast radius
+
+`press(name, nth = 0)` joins `driver.js`'s verbs. Its contract, exactly:
+
+- **The same lookup as `click`** - the same element set
+  (`button, a[href], [role="button"], input, summary`), the same `NAME_FN`,
+  the same rule that an exact name match wins and the loose `includes`
+  fallback applies only at `nth` 0. A spec that swaps `click` for `press`
+  reaches the same element or throws.
+- **A different dispatch, and that is the whole point.** The element is
+  resolved to a puppeteer `ElementHandle` (`page.evaluateHandle` returning
+  the element, then `asElement()`) and `.click()`ed, which is a CDP
+  `Input.dispatchMouseEvent`: `isTrusted` is true, and the browser runs a
+  microtask checkpoint between listeners on the same event. That is the
+  class `el.click()` and jsdom's `userEvent` cannot reach by construction
+  (decided 6; defect 2).
+- **It scrolls the element into view first** (puppeteer does this before
+  it aims), where `click()` does not. A caller that measures geometry after
+  a `press` reads a page that may have scrolled - the modal cases below
+  measure against `.modal-card`'s own box for that reason, not against the
+  window.
+- **It throws when the element is not clickable** - zero box, covered,
+  detached - where `el.click()` succeeds silently. The message names the
+  control and `nth`, matching `click`'s.
+- **It records into `d.pressed` under the same key as `click`**, so the
+  coverage report at the end of a parity run does not split one control
+  into two entries.
+- **`click` is untouched.** Every existing state keeps its semantics, and
+  every `enter` function's source text - which `keyFor` hashes - is
+  unchanged.
+- **No parity state uses `press` in B12.** It exists for `tests/app/`. A
+  later state that adopts it changes that state's own cache key, which is
+  the ordinary behaviour of editing an `enter`.
+
+**Blast radius, measured rather than feared.** `driver.js` is hashed into
+the legacy screenshot cache's root key (`tests/parity.js:150`, inside
+`rootHash()` beside `index.html`, `app.js`, `style.css`, `data.js`, the
+three asset folders and `parity.js`). Editing it invalidates **every**
+cached legacy screenshot, once. What that actually costs:
+
+- **CI: nothing.** `.github/workflows/ci.yml` caches npm and nothing else;
+  `test-output/.parity-cache` is never persisted, so every CI parity shard
+  already runs cold. The four shards' 8-10 min are unaffected.
+- **Locally: one re-capture of the legacy side, for the states the next
+  parity call touches, refilling as it goes.** The whole suite is 582 cells
+  in ~867 s, so ~1.5 s a cell with both sides captured; B12's own 36-cell
+  call pays tens of seconds more than a warm one, not minutes.
+- **And the cache was going to be destroyed anyway.** `run-all.js` does
+  `fs.rmSync(OUT_DIR, { recursive: true, force: true })` on
+  `test-output/` at the start of *every* invocation, and `CACHE_DIR` is
+  `test-output/.parity-cache`. B12's own `node tests/run-all.js app/...`
+  call wipes it. The invalidation is not a new class of cost on this host.
+
+So: no re-capture is scheduled, none is avoided, and the one parity call
+B12 makes is sized as cold below.
+
+##### The files, and what each contains
+
+New, all CommonJS under `tests/app/`:
+
+- **`lib.js`** - the `next`-only half of the harness, and nothing else.
+  `DIST = 'file://' + path.join(__dirname, '..', '..', 'dist', 'index.html')`;
+  a guard that `dist/index.html` exists and, if not, exits with the sentence
+  "сначала `npm run build`" rather than a stack; a `fresh({ width, height,
+  lang, storage })` factory that makes a browser context, applies
+  `prepare(page)` from `tests/parity/driver.js`, seeds
+  `dhloot.lang.v1`/`dhloot.lists.v2` through `page.evaluateOnNewDocument`
+  after it, and returns `{ ctx, page, d }` with `d = makeDriver(page, 'next')`;
+  `axe(page)` which injects `require.resolve('axe-core/axe.min.js')` with
+  `addScriptTag({ path })` and runs it with `color-contrast` enabled,
+  returning violations only; the `ok`/`fail`/summary reporter lifted from
+  `audit2.js` so five suites report the same way. Reuses `makeDriver` and
+  `prepare`; does not fork them.
+- **`sweep.js`** - `audit2.js` ported. Same eight checks, same four widths
+  split into four `run-all.js` entries the way `audit2` is, same two
+  languages, same `landed === asked` assertion, same `.tablenav .chips`
+  strip cap. `PAGES` is `audit2`'s 41 addresses plus the routes only
+  `STATES` reaches - `#/tables` bare, `#/lists/b`, `#/i/ci1`, `#/i/q1` -
+  and `#/print/ci1-q1`, `#/print/nope` **at 1180 only**, because an A4
+  sheet legitimately scrolls sideways in a 360 px window and the overflow
+  check would be reading the medium, not a defect. Adds axe with
+  `color-contrast` on to every cell (no extra navigation - the page is
+  already open) and the focus-ring walk to a named six-address subset at
+  1180 and 360, RU only: a roll page, a table with its filter panel open,
+  the lists index, a list page, a record page, search. The walk Tabs
+  through every focusable, waits for `getAnimations()` to drain, and reads
+  `outline`; it is the one addition that scales with round trips (~25 ms a
+  stop, ~50 stops a page), which is why it is a subset and not the sweep.
+- **`typo.js`** - `tests/typo.js` ported. Two edits are enough for the
+  assertions (`context.md`, "Phase 5 planning facts"), but the `hit()` list
+  that reaches the parts that only exist after a click is live-only
+  (`[data-act="fOpen"]`, `[data-note-toggle]`), so half the page is
+  silently unchecked unless it is re-expressed. Three of the five grips
+  survive as ported classes - `.helpbtn` (`HelpButton.svelte:28`),
+  `.cardpick` (`RecordCard.svelte`), `.lnote summary`
+  (`ListPage.svelte:640`) - and the other two are pressed by accessible
+  name through the shared driver instead. A grip that resolves to nothing
+  fails loudly rather than skipping.
+- **`hues.js`** - rewritten, not ported. The original injects bare
+  `<span class="badge item">` and reads its colour, which Svelte's scoping
+  gives nothing, and greps `[data-act="roll"]`. The rewrite reads the
+  computed colour off **rendered** badges: one route per badge class -
+  `#/tables/core_item`, `#/tables/core_consumable`, `#/tables/eq_weapon`,
+  `#/tables/eq_secondary`, `#/tables/eq_armor` - taking the first
+  `.badge.<cls>` on each, plus `.badge.src`, which every row carries
+  (`RowMain.svelte:98`). Deterministic and language-independent; six opens,
+  ~10 s against the original's 4 s. The hue/saturation maths, the 40-degree
+  floor and the grey exemption are copied unchanged. The roll-button half
+  reads `button.btn.primary:has(.dieicon)` - `:has()` is Chrome's and this
+  only ever runs in Chrome - keeping the original's four assertions
+  (five buttons on `#/roll/std`, a die on each, one look between them, and
+  the same look on `#/roll/alt`, `#/roll/wondrous`, `#/roll/voa`).
+- **`contracts.js`** - the browser half of `tests/contracts.js`, re-pointed.
+  The list fixtures' write path and read path, the truncated link, the 26
+  route fixtures, the stat line in both languages, and the filter group
+  probes. The pure half (the second implementation of the codec) and the
+  `llms.txt`/`CONTRACTS.md`/`ROUTES.md` name greps stay in
+  `tests/contracts.js` - they need no browser, and decided 3 leaves the
+  live copy alive until Phase 7. `lists2`'s "link assembled from
+  `llms.txt`'s description" case moves here (decided 3). Selector map, all
+  verified above: rows `.rows .row[data-row]`; tab
+  `nav.tabs a[aria-current="page"]` read as `href`; print cards
+  `.pcard:not(.blank)`; pills `.fpill` read as `dataset.val`; sources
+  `.chip[data-val]` read as `dataset.val + (aria-pressed === 'true' ? ':on' : ':off')`;
+  stat line `.eqstats span`.
+- **`states.js`** - the real-input layer, and the only file with no
+  ancestor. Thirteen cases, each pressing with `press` where the press is
+  the point:
+
+  1. **New list from the card** (`#/i/ci1`): press "Добавить в список",
+     press "+ Новый список" - the form's input exists and holds focus, the
+     menu is still open. B11's `isConnected` guard under the event that
+     defeated it.
+  2. **New list from the selection bar** (`#/tables`, tick a row, press the
+     bar's "Добавить в список", press "+ Новый список") - the same.
+  3. **New list from the modal** (`#/tables`, press a row for Самоцвет
+     Чутья, press "Добавить в список", press "+ Новый список"), **no seed,
+     1100x900** - the form's input holds focus **and its box lies inside
+     `.modal-card`'s box**. That is decided 7's 2b assertion in its
+     post-cut-over form: it is the cell B11.1 measured clipped before its
+     fix, and it is the unit-level pin nit 6 says does not exist.
+  4. **Two frames picked** (`#/tables/frames`: press "Пир зверей", then
+     "Колоссы Сухоземья") - 57 rows, two pills, hash
+     `#/tables/frames/f_frame-beast_feast-colossus`.
+  5. **The same link arriving fresh** - 57 rows and two pills. No parity
+     state can hold this one: the live side legitimately reads 0
+     (decided 7, defect 1).
+  6. **`<dialog>` semantics** (`#/tables`, press a row): focus lands inside
+     the dialog; Tab never lands outside it; Escape closes it; focus
+     returns to the row that opened it; the page behind is inert while it
+     is open. Shimmed in jsdom, asserted nowhere else once `flows` goes.
+  7. **Two pages sharing storage**: page A creates a list, page B sitting
+     on `#/lists` redraws on the `storage` event. `file://` pages share one
+     origin's storage in Chrome - the fact that leaked lists between probe
+     passes in "Phase 5 planning facts" is what makes this testable, and is
+     why every case clears storage on entry.
+  8. **The packed link**: press the share control on a seeded list, read the
+     `#/l/~` address back, open it, and read the list out - `CompressionStream`
+     for real. This is the `src/ports/**` bar's warrant (decided 4).
+  9. **Copy text** through the stubbed clipboard - `d.clipboard()` carries
+     both `text/html` and `text/plain`.
+  10. **Copy image** - `d.clipboardImage()` reads `image/png`, non-empty.
+      This is what keeps `src/ports/image.ts`'s coverage exclusion honest
+      (decided 4, its rewritten reason).
+  11. **A broken art path** - port the "art that fails to load" half of
+      `tests/noart.js`, so the real `<img>` error path and the glyph swap
+      run once in a browser.
+  12. **Focus survives a tables keystroke** - type into `#/tables`'s search
+      box and assert `document.activeElement` is still it after the redraw.
+      `qa` 9.1; Svelte keeps the node where the live app rebuilt it.
+  13. **The note textarea's height** (`#/lists/a`) - open the note, type
+      several lines, assert the textarea grew to its `scrollHeight`.
+      `notes`' "note field height".
+
+Edited:
+
+- `tests/parity/driver.js` - `press`, and nothing else.
+- `tests/run-all.js` - five names: `app/sweep` four times, one per width,
+  in `audit2`'s shape, plus `app/typo`, `app/hues`, `app/contracts`,
+  `app/states`, placed by their measured seconds so the long ones start
+  first (the list's stated ordering rule).
+- `.github/workflows/ci.yml` - the "The legacy suites against the live app"
+  step is renamed "The legacy suites against the live app, and the built
+  app in a browser". Command unchanged; it already runs after `Build` and
+  already excludes only `parity`.
+- `app/src/components/FilterBar.svelte:83` - `data-val={c.group + ':' + c.value}`
+  on `.fpill`, matching `app.js:2671`.
+- `app/src/components/Chip.svelte` - an optional `value?: string` prop
+  rendered as `data-val`, and `app/src/components/StdPanel.svelte`'s source
+  chips pass it. This is a port, not an invention: `app.js:2217` writes
+  `data-val="core"`/`"hnf"` on the same control, and without it the
+  fixture's `core:on` / `hnf:on` can only be read positionally or by
+  Russian label. `StdPanel` is the only caller - the kind and rarity chips
+  in the same panel pass nothing, so `.chip[data-val]` selects the source
+  row and only it.
+- `vite.config.mts` - decided 4: `src/lib/**` lines/functions 90 -> 95,
+  branches and statements unchanged at 85/90; `src/state/**` 90/90/80/90 ->
+  95/95/85/90; `src/ports/**` functions 70 -> 80, lines/branches/statements
+  unchanged at 70/55/70; `Button.svelte` branches 50 -> 60;
+  `DiceBar.svelte` stays at 55; the component glob stays at 85/80/75/85;
+  the `src/main.ts` and `src/ports/image.ts` exclusion comments are
+  rewritten to name `tools/smoke-file-url.mjs` and `tests/app/states.js`'s
+  copy-image case instead of parity.
+- `app/src/test/a11y.ts` - decided 5: `nested-interactive` leaves `OFF`;
+  `expectNoA11yViolations(container, { allow } = {})` disables only the
+  named rules for that call; the `StorageNotice` call sites pass
+  `{ allow: ['nested-interactive'] }` with a `D3` comment each. Which call
+  sites those are is found by flipping the rule on and reading the
+  failures, not by guessing - `listsPage.test.ts` (the `brokenStorage()`
+  renders around :107 and :188), `listPage.test.ts`'s "the storage notice"
+  describe (:221) and `a11y.test.ts`'s lists-index state (:247) are where
+  to expect them.
+- Two component tests for the `Icon` and `SelBar` branches (decided 6
+  above).
+- `docs/specs/DEBT.md` - D6's "Where" gains the `pop` sentence
+  (decided 2 above).
+- `app/src/lib/hash.test.ts`, `docs/specs/FEATURES.md` - nits 2, 3, 5.
+- `docs/specs/COVERAGE.md`, `CLAUDE.md` - decided 4 and 5 above.
+
+Not touched, and not up for reinterpretation: `print` geometry
+(`tests/app/print.js` is Phase 7's), any structural golden or JSON freeze
+(Phase 7, decided 2), the deletion of any legacy suite (Phase 7,
+decided 3), `tests/parity.js`, `specs.js`'s `VISUAL_DEBT`/`ACCEPTED`,
+`routes.json`, the live files, a fourth harness width.
+
+##### Ordered steps
+
+1. **Preflight and probe, before any file is written.** `git log --oneline -3`
+   (two other sessions share this tree); `git status` shows only
+   `issues/tg-preview-refresh/` untracked and it is left alone.
+   `npm run build`, then a scratchpad script - disposable, not committed -
+   that (a) runs the two-edit `audit2` copy against `dist/index.html` at
+   **360, 390 and 768** in both languages, the three widths nobody has
+   measured, and (b) runs axe with `color-contrast` on over eight
+   representative pages of `dist/`. Record both results in `handoff.md`
+   before continuing. This is the batch's one real unknown and it is
+   measured first on purpose: what it finds decides whether B12 carries
+   production fixes, and the answer is cheaper now than at the gate.
+   Triage rule: a violation the **live app shares** is a live defect
+   reproduced on purpose - `docs/specs/DEBT.md`, plus a named `allow` in
+   the sweep citing it; a violation the **rewrite invented** is fixed here
+   if it is a one-line markup or token change, and otherwise becomes a
+   named follow-up batch in `plan.md` with an `allow` citing it. Either
+   way the suite lands green; no red test is committed.
+2. `press` in `tests/parity/driver.js`, to the contract above, with a
+   comment naming the microtask checkpoint and pointing at decided 6.
+3. `vite.config.mts`'s thresholds, decided 4 as tabulated above, and the
+   two rewritten exclusion comments.
+4. `a11y.ts`'s `{ allow }`, and the `StorageNotice` call sites - found by
+   enabling `nested-interactive` and reading the failures, each given a
+   `D3` comment.
+5. The `Icon` and `SelBar` cases (decided 6 above). Confirm from
+   `npm run check`'s coverage report that both files moved off 75.0
+   branches; if either did not, the case missed its arm.
+6. Nits 2, 3 and 5, and D6's "Where" sentence (decided 2 and 3 above).
+7. `set -o pipefail; npm run check 2>&1 | tail -n 120`. Commit **C1**.
+8. `tests/app/lib.js`, including the missing-`dist/` guard.
+9. `tests/app/sweep.js`, then `typo.js`, then `hues.js`. Run each alone as
+   it lands (`node tests/run-all.js app/sweep` and so on) so a red belongs
+   to the suite that just appeared.
+10. `data-val` on `.fpill`; `Chip`'s `value` prop and `StdPanel`'s source
+    chips; then `tests/app/contracts.js`.
+11. `run-all.js`'s four `app/sweep` entries plus `app/typo`, `app/hues`,
+    `app/contracts`; the CI step's rename; `COVERAGE.md`'s enforcement
+    half.
+12. The gates for the production edit:
+    `set -o pipefail; npm run check 2>&1 | tail -n 120`,
+    `set -o pipefail; npm run check:built 2>&1 | tail -n 120`,
+    `set -o pipefail; node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts 2>&1 | tail -n 120`,
+    and the parity call in "Verification commands". Commit **C2**.
+13. `tests/app/states.js`, cases 1-13, built in that order - 1, 2 and 3
+    first, because they are why `press` exists and because case 3 is the
+    one the plan has already measured the expected numbers for.
+14. `run-all.js`'s `app/states` entry; `COVERAGE.md`'s suite table, fates
+    and thin spots; `CLAUDE.md`'s one line.
+15. `set -o pipefail; npm run check 2>&1 | tail -n 120` and
+    `set -o pipefail; node tests/run-all.js app/states 2>&1 | tail -n 120`.
+    Commit **C3**.
+16. Push the branch (`CLAUDE.md`, "Source and commit conventions" - agents
+    push once a batch's commits pass their gates; never `--force`), then
+    update `plan.md` with what was built and deviated, and `handoff.md`
+    with the exact commands, their results, the probe's findings, and the
+    next batch.
+
+##### Acceptance criteria
+
+- `press` exists, `click` is byte-identical to B11.1's, and
+  `git diff` on `tests/parity/specs.js` is empty - no parity state's
+  `enter` changed, so no state's cache key moved for any reason but the
+  root hash.
+- All five suites green under one `run-all.js` call, and each green alone.
+- The sweep runs axe with `color-contrast` **enabled** on every cell, and
+  the only rules it disables are named, commented, and each points at a
+  `DEBT.md` entry or a plan section.
+- `tests/app/contracts.js` replays all six list fixtures, all 26 route
+  fixtures, the stat line in both languages and the twelve filter-group
+  probes against `dist/`, with no fixture edited. `docs/fixtures/` is
+  untouched; `routes.json` gains nothing.
+- `states.js` case 3 reads the form's input inside `.modal-card`'s box on
+  Самоцвет Чутья at 1100x900 with no seed - the cell B11.1's fix turned.
+  Cases 1, 2 and 3 fail on a tree with B11's `isConnected` guard reverted;
+  the implementer is not asked to revert it, but if a case passes both ways
+  it is not testing what it claims and is recorded as such.
+- Coverage thresholds hold at the raised bars with no file excluded to make
+  them hold, and `Icon.svelte` and `SelBar.svelte` both read above 75.0
+  branches.
+- `git show <C1> -- app.js style.css index.html` and the same for C2 and C3
+  are empty. The live files are frozen.
+- The parity call's cells are unchanged from B11.1's readings - every cell
+  `совпадает` or its already-recorded debt figure exactly. A `data-val`
+  attribute cannot move a pixel; anything that did is the `Chip` prop, not
+  the attribute.
+- `COVERAGE.md` carries no "waits for Phase 5" sentence; `CLAUDE.md` is
+  under 200 lines.
+- `issues/tg-preview-refresh/` is still untracked and unmodified; no
+  `git add -A` was used.
+
+##### Verification commands, with their costs
+
+Each one foreground call, Bash timeout 600000, `set -o pipefail` and
+`2>&1 | tail -n 120`:
+
+| call | when | cost |
+|---|---|---|
+| `npm run check` | before C1, C2 and C3 | ~165 s idle each; ~8 min for the three. A run that crosses 600 s is re-run idle, never salvaged or backgrounded (`context.md`, "Host load") |
+| `npm run check:built` | before C2 | a few minutes; it is what proves `dist/` still builds and opens from a folder after the `Chip`/`FilterBar` edit |
+| `node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts,app/states` | before C2 (first four) and C3 (the fifth) | estimated 3-4 min. Eight processes for five names - the sweep is four - and the pool is `min(cpus, 8)`, so wall clock is the slowest single width: `audit2`'s 45 s plus ~40 s of axe plus the focus walk where it runs. **If the 1180 process passes ~4 min, drop the focus walk to 1180 only and record the measured numbers**; do not widen the timeout |
+| `MSYS_NO_PATHCONV=1 node tests/parity.js "~ filtered" "#/roll/std"` | before C2 | 6 states / 36 cells - `"~ filtered"` matches `#/tables/eq_weapon ~ filtered` and `#/tables/wondrous ~ filtered`, `"#/roll/std"` matches `#/roll/std` and its `~ help`, `~ items only`, `~ one source` siblings (`tests/parity.js:353` matches with `id.includes`). Cold legacy cache, because step 2 changed `driver.js`: ~1.5 s a cell both sides, so a few minutes, comfortably one call. Without `MSYS_NO_PATHCONV=1` Git Bash rewrites the argument and the run matches nothing - confirm the call printed its cells |
+
+The full parity suite (~867 s) is **not** run and is not one foreground
+call. Nothing in B12 asks for it: the only production edit is two
+attributes and one optional prop, and the two surfaces they touch are the
+filter pills and the roll page's source chips, which is exactly what the
+filter above covers.
+
+##### Risks and do-nots
+
+- **The probe in step 1 is the batch's schedule risk.** Three widths and
+  every axe contrast reading are unmeasured against `dist/`. Do not write
+  the sweep first and discover them at the gate.
+- **Do not let the focus-ring walk become the sweep.** It is round trips,
+  not page loads: ~25 ms a stop, ~50 stops a page, 328 cells if it ran
+  everywhere - that alone would be 7 minutes. Six addresses, two widths,
+  one language.
+- **Do not add a fourth harness width.** `WIDTHS` is hashed into every
+  parity cache key (`parity.js:174`): +204 cells and every legacy PNG
+  re-captured, for a question 1100x900 already answers (decided 7, 2b).
+- **Do not "improve" `click` into `press`.** Parity's synthetic dispatch is
+  what every recorded state and every debt figure was measured with.
+- **Do not commit a red or expected-to-fail test.** D6's Phase 8
+  verification hook is named in D6 and written by R3, not here.
+- **Do not delete, skip or weaken a legacy suite.** Their deletion is
+  Phase 7's, each in the commit that lands its successor (decided 3).
+- **Do not move a coverage threshold to make a file pass.** Decided 4 is
+  the whole threshold change; anything else is a finding for the handoff.
+- **Do not touch `docs/fixtures/`.** If a route fixture fails against
+  `dist/`, that is a divergence to root-cause and report, not a fixture to
+  edit - `CLAUDE.md`, "Public contracts default to no change".
+- **Do not run `git add -A`.** `issues/tg-preview-refresh/` belongs to
+  another task.
+- Two other sessions share this working tree. Re-read
+  `git log --oneline -3` before each of the three commits.
+
+##### Fallback
+
+- If the step 1 probe finds a **rewrite-only** defect bigger than a
+  one-line fix: land B12 with the check narrowed by a named `allow`
+  citing a new `B12.1` section in `plan.md`, and record it as the next
+  batch. B12's own acceptance is unaffected.
+- If a **live-shared** a11y violation appears: `docs/specs/DEBT.md` in D6's
+  shape, plus the `allow` citing it. That is what the register is for.
+- If the sweep cannot hold four widths inside its own `run-all.js` entry
+  budget: the focus walk drops to 1180 first, then axe drops to RU at the
+  three narrow widths with EN kept at 1180. Contrast is a function of
+  tokens and breakpoints, not of which language's text occupies a node, so
+  that loses nothing measurable. Record whichever was taken.
+- If `tests/app/contracts.js`'s source reading proves awkward after the
+  `Chip` prop lands: read the source chips positionally in `SOURCES` order
+  within `StdPanel`'s source `Field`, and drop the prop. The prop is the
+  better answer because it ports `app.js:2217`; it is not load-bearing.
+- If `press` cannot reach a control that `click` reaches (covered, zero
+  box): that is a finding about the rewrite's layout at that width, to
+  record - not a reason to fall back to `click` in a case whose point is
+  the trusted event.
+
 #### Phase 6 and 7 - what this pass adds to their outlines
 
 - Phase 6's one batch: the `deploy` job's "Collect what the site is made

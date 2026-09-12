@@ -6,6 +6,60 @@ depends on chat history.
 
 ## Status
 
+- Task status: **in_progress - B12 expanded from outline to implement-ready**
+  (planner, 2026-09-12, after B11.1 closed and was reviewed). No production
+  code, no test code, no config touched; writes are `issues/47/plan.md` and
+  this file only. Design: `plan.md`, "Phase 5 - the testing pyramid,
+  planned", the new **"B12 planned"** section (decided 1-6 of that section,
+  what is already measured and what is not, the file list, the driver verb's
+  contract and blast radius, steps 1-16, acceptance, verification with costs,
+  risks, fallback). The outline above it is unchanged and remains the record
+  of what was decided before this pass.
+  - **Sized as one batch in three commits** (C1 the driver verb and the
+    gates, C2 the four ported sweeps, C3 the real-input states), per
+    `docs/parity.md`, "Batch size": a batch may hold several commits, and
+    the piece that adds the harness reach must land first so a later red
+    bisects. Cost of the three boundaries: two extra `npm run check` runs.
+  - **Nit 1 decided (it was the planner's call):** the `pop`
+    re-measurement is **recorded in D6's "Where"** as one sentence in C1,
+    written to be deleted by Phase 8 R3 - not probed, not ignored. Reason in
+    full in `plan.md`, "B12 planned", decided 2; in one line: parity is the
+    only instrument that could ever see it and parity dies at Phase 7 R0,
+    before Phase 8 R3 fixes it, and R3's toggle measurement (`:scope > .btn`,
+    outside the animated menu) genuinely retires the 10 px term.
+  - **Nits 2, 3 and 5 are folded into C1**, in the files it opens anyway.
+    Nit 4 resolves when C3 creates `tests/app/states.js`; nit 6 is answered
+    by C3's modal case, which is the pin it says is missing.
+  - **Coverage: confirmed, no threshold moves for it.** `Icon's missing arm
+    is `'opacity' in icon` (only `external` carries one, `lib/icons.ts:44`;
+    it renders in `AltPanel.svelte:205` and `RecordPage.svelte:67`);
+    `SelBar's is `if (!items.length) return` in `copySel`, reachable because
+    `app.toggleSel(id)` (`state/app.svelte.ts:319`) accepts an id the index
+    does not carry.
+  - **`COVERAGE.md` is rewritten inside B12**, split across C1 (the
+    enforcement table's numbers) and C3 (the suite table, the fates, the
+    thin spots), so each commit is true on its own. `CLAUDE.md` gains exactly
+    one focused-command line naming the build prerequisite; it is at 197 of
+    its 200 lines.
+  - Measured while planning, so the implementer does not re-derive it:
+    `driver.js`'s `ready()` already accepts `#app`; `run-all.js` resolves
+    `app/sweep` to `tests/app/sweep.js` and logs it as `app-sweep.log` with
+    no runner change; `tests/**` is outside prettier and eslint;
+    `axe-core/axe.min.js` resolves and neither page carries a CSP; all seven
+    `f_` route fixtures still replay correctly after B11's decoder fix; and
+    `driver.js` is hashed into the parity cache root key, which costs **CI
+    nothing** (the cache is never persisted there) and locally is moot
+    because `run-all.js` deletes `test-output/` - the cache's own directory -
+    at the start of every invocation.
+  - Open unknown, deliberately front-loaded as step 1: the sweep at 360, 390
+    and 768 and axe with `color-contrast` on have **never** been run against
+    `dist/`. The probe runs before any file is written, and its triage rule
+    and fallbacks are in the plan.
+  - Last agent: planner
+  - NEEDS_HUMAN_CONFIRMATION: no
+  - Branch: `main`; HEAD `d0963d9` at dispatch, unchanged by this pass
+    (`issues/47/` writes only); `origin/main` the same commit.
+
 - Task status: **B11.1 closed - the menu's second measurement, built and
   committed** (implementer, 2026-09-12). All gates green.
   - `AddToList.svelte`'s placement `$effect`: `up = false` before the
@@ -3532,11 +3586,115 @@ is new, so inspect its diff image before writing any entry, and write no
 ## Next batch (implement-ready)
 
 **B11.1 is closed - committed, all gates green (see "Status" above). The
-next batch is B12** ("the real-browser layer on `dist/`, and the gates" -
-`plan.md`, "B12": decided points made, steps at its own short planning
-pass - B12 is outline-only as of this write-up, so the next cycle is
-planner first, then implementer). B11.1's own brief is kept below only as
-a closed record.
+next batch is B12, and it is now implement-ready** (planner, 2026-09-12).
+B11.1's and B11's own briefs are kept below only as closed records.
+
+- Name: **B12 - the real-browser layer on `dist/`, and the gates.** Full
+  design and the exact step list: `plan.md`, "Phase 5 - the testing
+  pyramid, planned", **"B12 planned"** (decided 1-6 of that section, the
+  file list, the driver contract, steps 1-16, acceptance, verification
+  with costs, risks, fallback). The decisions behind it: the same file's
+  "B12 - ... (outline; decided points)" immediately above it, and Phase 5's
+  decided 1-7. Durable numbers: `context.md`, "Phase 5 planning facts" and
+  "Q3 planning facts". This section is the brief; the plan is the authority
+  where the two differ in detail.
+- Objective: build the one layer the pyramid is missing - a real browser
+  driving `dist/` with trusted input - and move the gates that decided 4
+  and 5 say should move. Five suites under `tests/app/`, one new driver
+  verb, the coverage thresholds, the axe rule narrowing, and the coverage
+  matrix rewritten to say what is true afterwards. No new dependency, no
+  Playwright, no pixel golden.
+- In scope, by commit (three commits, one batch - `plan.md`, "B12
+  planned", decided 1):
+  - **C1** `tests/parity/driver.js` (`press` only), `vite.config.mts`
+    (thresholds per decided 4), `app/src/test/a11y.ts` (`{ allow }` per
+    decided 5) and the `StorageNotice` call sites, the two component cases
+    that give `Icon` and `SelBar` their missing branch,
+    `app/src/lib/hash.test.ts` (nits 2 and 3), `docs/specs/FEATURES.md`
+    (nit 5), `docs/specs/DEBT.md` (D6's "Where" gains the `pop` sentence),
+    `docs/specs/COVERAGE.md`'s enforcement half.
+  - **C2** `tests/app/lib.js`, `sweep.js`, `typo.js`, `hues.js`,
+    `contracts.js`; `app/src/components/FilterBar.svelte` (`data-val` on
+    `.fpill`), `Chip.svelte` (an optional `value` -> `data-val`),
+    `StdPanel.svelte` (the source chips pass it); `tests/run-all.js`;
+    `.github/workflows/ci.yml` (the step's name only).
+  - **C3** `tests/app/states.js`, its `run-all.js` entry,
+    `docs/specs/COVERAGE.md`'s suite table and thin spots, `CLAUDE.md`'s
+    one focused-command line, `issues/47/`.
+- Out of scope: `print` geometry (`tests/app/print.js` is Phase 7's), the
+  structural goldens and any JSON or PNG freeze (Phase 7, decided 2),
+  deleting or weakening any legacy suite (Phase 7, decided 3),
+  `tests/parity.js`, `specs.js`'s `VISUAL_DEBT`/`ACCEPTED`,
+  `docs/fixtures/` including `routes.json`, the live root files, a fourth
+  harness width, Playwright.
+- Files expected: six new under `tests/app/`, eleven edited, plus
+  `issues/47/`. The full list with what each contains is in `plan.md`,
+  "B12 planned", "The files, and what each contains".
+- Steps: `plan.md`, "B12 planned", steps 1-16. In one breath: the step 1
+  probe (the three unmeasured widths and axe contrast against `dist/`,
+  recorded before anything is written); `press`; the thresholds; the axe
+  `allow`; the two branches; the three nits and D6's sentence; check;
+  **C1**; `lib.js`; sweep, typo, hues; the two `data-val` edits and
+  contracts; the runner and CI name; check, check:built, the four suites,
+  one parity call; **C2**; `states.js`'s thirteen cases; the runner entry,
+  `COVERAGE.md` and `CLAUDE.md`; check and `app/states`; **C3**; push;
+  plan and handoff.
+- Acceptance criteria: `plan.md`, "B12 planned", "Acceptance criteria" -
+  in short: all five suites green together and each alone; `click`
+  byte-identical and `specs.js` untouched; axe running with
+  `color-contrast` **on** and every disabled rule named and cited; every
+  fixture replayed against `dist/` with none edited; `states.js` case 3
+  reading the modal's new-list form inside `.modal-card`'s box on Самоцвет
+  Чутья at 1100x900 with no seed; the raised thresholds holding with no
+  new exclusion; `Icon` and `SelBar` above 75.0 branches; the parity cells
+  unchanged from B11.1's readings; `COVERAGE.md` with no "waits for Phase
+  5" sentence and `CLAUDE.md` under 200 lines; the three live root files
+  untouched in all three commits.
+- Verification commands (each **one foreground call**, Bash timeout
+  600000; costs from `plan.md`, "B12 planned", "Verification commands"):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - **before each of
+    the three commits**, ~165 s idle each. A run that crosses 600 s is
+    re-run idle, never salvaged or backgrounded.
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - before C2
+    only; a few minutes.
+  - `set -o pipefail; node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts 2>&1 | tail -n 120`
+    before C2, then
+    `set -o pipefail; node tests/run-all.js app/states 2>&1 | tail -n 120`
+    before C3. Estimated 3-4 min for the first; it needs a **built
+    `dist/`**, which `npm run check` never produces - run `npm run build`
+    (or `check:built`) first.
+  - `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "~ filtered" "#/roll/std" 2>&1 | tail -n 120`
+    before C2 - 6 states / 36 cells, cold legacy cache (step 2 edits
+    `driver.js`, which is hashed into the cache's root key), a few minutes.
+    Without `MSYS_NO_PATHCONV=1` Git Bash rewrites the argument and the run
+    matches nothing: confirm the call printed its cells.
+  - The **full parity suite is not run** and is not one foreground call
+    (~867 s). Nothing in B12 asks for it.
+- Risks / do-nots: run the step 1 probe **first** - three of the sweep's
+  four widths and every axe contrast reading are unmeasured against
+  `dist/`, and what they find decides whether B12 carries production
+  fixes; keep the focus-ring walk to six addresses at two widths in one
+  language (everywhere, it alone would cost ~7 min); do not add a fourth
+  harness width (`WIDTHS` is hashed into every parity cache key); do not
+  turn `click` into `press` - every recorded debt figure was measured with
+  the synthetic dispatch; do not commit a red or expected-to-fail test
+  (D6's Phase 8 verification hook is R3's); do not delete or skip a legacy
+  suite; do not move a threshold to make a file pass; do not edit
+  `docs/fixtures/` if a fixture fails - root-cause and report; do not
+  `git add -A` (`issues/tg-preview-refresh/` is another task's); two other
+  sessions share this tree, so re-read `git log --oneline -3` before each
+  of the three commits.
+- Fallbacks: `plan.md`, "B12 planned", "Fallback" - a rewrite-only defect
+  the probe finds becomes a named `B12.1` with an `allow` citing it; a
+  live-shared a11y violation becomes a `DEBT.md` entry with an `allow`
+  citing it; an over-budget sweep drops the focus walk to 1180 first, then
+  axe to RU at the narrow widths; the `Chip` `value` prop can be dropped in
+  favour of reading the source chips positionally if it proves awkward.
+- A **reviewer runs after B12**, because it changes what CI enforces.
+  B12 is **mid-plan**, not terminal (Phases 6, 7 and 8 remain), so its
+  review nits defer to "Deferred" rather than being fixed in the
+  remediation cycle - `CLAUDE.md`, "Orchestration".
+- NEEDS_HUMAN_CONFIRMATION: no.
 
 - Name: **B11.1 - the menu's second measurement (CLOSED).** Full design
   and the exact step list: `plan.md`, "Phase 5 - the testing pyramid,
@@ -3689,10 +3847,13 @@ reconstructing what shipped; it is not the next batch.
   `isConnected` guard is ever found insufficient by B12's real-click
   state; the ordering test passes either way.
 
-After B11: **B12 - the real-browser layer on `dist/`, and the gates**
-(`plan.md`, "B12" - decided points made, steps at its own short planning
-pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
-7/8 track, Phase 8.
+After B12: **Phase 6** (publish `dist/` - the `deploy` job collects `dist/`
+and the generated folders instead of the root files; owner-gated on the Pages
+flip), then **Phase 7** as R0 of the unified 7/8 track (delete the live files
+and the legacy browser suites, port `print`'s geometry, seed the structural
+goldens, retire the parity harness), then **Phase 8** - the review and the
+fixes, with B12's layer as its instrument. Order fixed by decided 8; not
+reopened.
 
 ## Blockers
 
@@ -4402,6 +4563,14 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
 
 - **B11.1's review nits (reviewer, opus, read-only, 2026-09-12; verdict
   approve, no blockers).** Recorded by the orchestrator, not acted on.
+  **Placed by the planner (2026-09-12, the B12 planning pass):** nit 1 is
+  decided - the `pop` re-measurement is recorded in D6's "Where" in B12's
+  first commit and is written to be deleted by Phase 8 R3 (reasoning:
+  `plan.md`, "B12 planned", decided 2); nits 2, 3 and 5 ride in that same
+  commit, as the reviewer marked them; nit 4 resolves when B12's third
+  commit creates `tests/app/states.js`; nit 6 is answered by that file's
+  modal new-list case, which is the unit-level pin it says does not exist.
+  Nothing here is still open.
   The review's positive findings are worth keeping too, because each one
   closes a question a later reader would otherwise reopen: the first-`.btn`
   reading was checked against the live markup generators (`app.js:1881-1886`

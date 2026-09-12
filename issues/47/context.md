@@ -2663,3 +2663,102 @@ Two of them are inputs to this planning pass rather than backlog:
 parity filter up to ~9 min, the full parity suite ~867 s on CI and **not** one
 foreground call. B12's own gate estimate from its outline is 3-4 min for the
 five new suites.
+
+## B12 planning facts (planner, 2026-09-12) - durable, read before implementing
+
+Read off the tree at HEAD `d0963d9` (no application code above B11.1's
+`e94a90e`). Full design: `plan.md`, "B12 planned". These are the facts that
+would otherwise be re-derived; none of them is a decision.
+
+### The harness, as it already is
+
+- `tests/parity/driver.js:25-27` - `ready()` already accepts `#app` as well
+  as `#view`. B12's outline asked "if it does not already"; it does.
+- `tests/run-all.js` spawns `path.join(HERE, name + '.js')` and names its
+  log `keyOf(...).replace(/[^\w.-]+/g, '-')`, so a suite named `app/sweep`
+  resolves to `tests/app/sweep.js` and writes `test-output/app-sweep.log`
+  with no runner change. The name filter and `--exclude=` both compare
+  `s[0]`.
+- `tests/**` is outside both formatting gates: `.prettierignore` lists
+  `tests/`, and `eslint.config.mjs:18` ignores `tests/**`. New suites keep
+  the legacy shape and nothing reformats them.
+- `npm run check` **never builds** (`package.json`): `format:check`, `lint`,
+  `typecheck`, `data`, `derived`, `i18n`, the hook selftest, vitest. Any
+  `tests/app/` run needs `npm run build` (or `check:built`) first. CI is
+  already safe - its "legacy suites" step runs after `Build`.
+- `axe-core/axe.min.js` resolves from the repository root; neither
+  `index.html` nor `app/index.html` carries a CSP, so
+  `page.addScriptTag({ path })` works over `file://`.
+
+### The parity cache, and what editing `driver.js` actually costs
+
+- `tests/parity.js:150` hashes `tests/parity/driver.js` into `rootHash()`,
+  beside `index.html`, `app.js`, `style.css`, `data.js`, `img/`, `og/`,
+  `card/` and `parity.js`. Any edit invalidates every cached legacy
+  screenshot once.
+- **CI pays nothing for that.** `.github/workflows/ci.yml` caches npm and
+  nothing else; `test-output/.parity-cache` is never persisted, so every
+  parity shard already runs cold.
+- **Locally it is moot as well**, because `tests/run-all.js` does
+  `fs.rmSync(OUT_DIR, { recursive: true, force: true })` on `test-output/`
+  at the start of *every* invocation - and `CACHE_DIR` is
+  `test-output/.parity-cache`. Any `run-all` run destroys the cache anyway.
+- Filters match with `id.includes(w)` (`tests/parity.js:353`). `"~ filtered"`
+  is 2 states / 12 cells; `"#/roll/std"` is 4 states / 24 cells. Whole-suite
+  arithmetic: 582 cells in ~867 s, so ~1.5 s a cell with both sides shot.
+
+### Selectors and markup the ports need
+
+- Rows `.rows .row[data-row]` (`TableRows.svelte:113`) - same on both apps.
+- The lit tab: `#tabs a.on` live; `nav.tabs a[aria-current="page"]`
+  (`TabBar.svelte:38`) here, whose `href` is `sectionHash(section)` -
+  `hash.test.ts:295` already replays the fixture's `tab` through it.
+- Print cards `.pcard:not(.blank)`; stat line `.eqstats span`
+  (`RecordCard.svelte:152`) - same on both.
+- Filter pills: live writes `data-val="group:value"` (`app.js:2671`); the
+  rewrite's `FilterBar.svelte:83` writes none. B12 adds it.
+- Source chips: live writes `data-act="src" data-val="core"` plus
+  `aria-pressed` (`app.js:2217`); the rewrite's `Chip.svelte` writes
+  `aria-pressed` and `.on` but **no value of any kind**, and `StdPanel`'s
+  source, kind and rarity rows are all `Field` + `ChipRow` + `Chip`, so
+  nothing but position or a Russian label distinguishes them. B12 ports the
+  live `data-val` through an optional `Chip` prop; `StdPanel` is its only
+  caller.
+- Roll buttons: `button.btn.primary:has(.dieicon)` (`DiceBar.svelte:30`,
+  `Die.svelte:20`) replaces the live `[data-act="roll"]` grep.
+- Badges are real and token-driven in the rewrite (`RowMain.svelte:96-98`,
+  `.badge.item/.cons/.eq-weapon/.eq-secondary/.eq-armor/.src`), so `hues`
+  reads rendered rows instead of injected spans.
+- `typo`'s click-expansion grips: `.helpbtn` (`HelpButton.svelte:28`),
+  `.cardpick` and `.lnote summary` (`ListPage.svelte:640`) survive as ported
+  classes; `[data-act="fOpen"]` and `[data-note-toggle]` do not and must be
+  pressed by accessible name instead - otherwise half of each page is
+  silently unchecked.
+
+### The route fixtures still replay after B11's decoder fix
+
+Checked entry by entry (`docs/fixtures/urls/routes.json`, seven `f_` shapes):
+`f_tier-2.cls-mag`, `f_range-melee`, `f_burden-2`, `f_tier-1-2` unaffected;
+`f_tier-1_cls-phy` still takes the legacy `_` reading (both heads name groups
+`eq_weapon` offers) and reads `["tier:1","cls:phy"]`; `f_frame-beast_feast`
+never took it (`feast` carries no `-`) and stays one value;
+`f_nosuch-1` fails open to the whole table, 317 rows. The two-frame link B11
+fixed is deliberately absent - it waits for Phase 7.
+
+### The uncovered branches, named
+
+- `Icon.svelte:21` - the `'opacity' in icon` **true** arm. `external` is the
+  only icon with one (`lib/icons.ts:44`, `opacity: 0.7`); it renders in
+  `AltPanel.svelte:205` (the crit row's table links) and
+  `RecordPage.svelte:67` ("показать в таблице").
+- `SelBar.svelte:33-41` `copySel` - the reachable arm is
+  `if (!items.length) return`, not `if (!index) return`.
+  `app.toggleSel(id)` (`state/app.svelte.ts:319`) takes any id, so a
+  selection holding an id the index does not carry reaches it.
+
+### Not measured against `dist/`, and B12 measures it first
+
+`audit2` re-pointed passes at **1180 only**. 360, 390 and 768 have never
+been run against the rewrite, and axe with `color-contrast` on has never
+been run against it at any width. B12's step 1 is a scratch probe for both,
+before a line of the suite is written.
