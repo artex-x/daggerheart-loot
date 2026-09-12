@@ -2494,6 +2494,36 @@ crossed run is re-run idle, not salvaged, not backgrounded.
 `coverage.reportOnFailure` is off by default, so a red vitest writes no
 summary.
 
+**2026-09-12, 13:25-14:05 local - the slowdown is I/O, not the peer
+sessions** (orchestrator, measured). The earlier reading that named "host
+contention from a concurrent session" does not survive measurement:
+
+- `npm run format:check` (documented 11 s idle) took **55.6 s and 54.9 s**
+  on two consecutive runs - not a cold cache, and `user 0m0.883s /
+  sys 0m1.9s` both times. Wall clock 5x, CPU near zero: the stage is
+  **I/O-bound**, so nothing that merely burns cores explains it.
+- Whole-host CPU sat at **20-25% of 8 cores** while measured idle.
+  `ngenuity2helper` holds ~1 core continuously (31,965 CPU-s over 17.9 h
+  of uptime); the six peer Claude sessions together moved ~0.2 cores.
+  **Peer sessions are not the cause** - they cannot be, at that share.
+- Projected `npm run check` at this factor: ~165 s x 5 = **~825 s**,
+  which cannot fit the 600 s foreground cap. Confirmed the hard way: one
+  run reached vitest only after ~10 min of stages that cost 77 s idle,
+  and vitest itself then took **521.8 s** (transform 315.9 s, import
+  498.1 s, environment 849.7 s - every one of them a load figure).
+- Windows Defender real-time protection is **on**; its exclusion list
+  needs an administrator to read, so whether this tree or `node_modules`
+  is excluded is **unverified**. It is a candidate for the I/O factor,
+  named here with its evidence shape rather than asserted - what to do
+  about it is a design question, not a measurement.
+
+**What a crossed run still buys, in the main session only.** A check moved
+to the background loses the *gate* (`check-observer.mjs` reads the Bash
+tool's captured stdout, which a backgrounded call never returns) but not
+the *result*: the orchestrator's own shell survives the turn and the
+output file is readable. A subagent's does not - that asymmetry is why
+the rule still reads "never backgrounded" for workers.
+
 ## Q3 planning facts - the modal menu, measured on both apps (planner, 2026-09-12) - durable
 
 Read-only probe (scratchpad, disposable, not kept): puppeteer with the

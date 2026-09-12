@@ -6,6 +6,85 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B12 still blocked on the C2 gate - but the tree is proved
+  green and the blocker is re-diagnosed** (orchestrator, 2026-09-12,
+  scheduled run). No production code, no test code, no config touched;
+  writes are `issues/47/context.md` and this file only. Nothing was
+  committed and nothing was bypassed.
+  - **Preflight.** HEAD `67e7bb7`, one docs-only commit past the `3a80456`
+    the entry below records; `origin/main` matches. `ListAgents`: six
+    interactive peer sessions, no subagents, so no writer was running. No
+    `test-output/parity.lock`, no `chrome.exe`. All six `tests/app/*.js`
+    files and the 21 modified paths present exactly as described below.
+    Commit gate unarmed: tree key `69ac83c6` against a cached `5f8712bc`
+    (armed 09:01 UTC, a different tree).
+  - **The check was run and it completed - on this exact tree.** It crossed
+    600 s and the tool moved it to the background, then finished after
+    ~19 min with **exit 1 and exactly two failures**. Everything before
+    vitest was green: `format:check`, `lint`, `typecheck` (544 files, 0
+    errors, 0 warnings), `data`, `derived`, `i18n`, `selftest` **312/312**
+    (up from B11.1's 292 - C1's hook work, as expected). vitest: **1005
+    passed / 2 failed of 1007 across 41 files, 521.8 s**.
+  - **Both failures are load artifacts, each proved so in isolation**
+    (`node node_modules/vitest/vitest.mjs run <file>`, one file per call):
+    - `searchPage.test.ts` > the cap > "shows the first 300 matches" - timed
+      out at 30000 ms *after the case had run 114 s*. Alone: **17/17 green,
+      89.1 s**. This is the case `context.md`, "Host load" already names.
+    - `tables.test.ts` > the row and section anchor > "the outline follows
+      the record into the grid view" - `expect(tile).toHaveClass('flash')`,
+      received `tilewrap svelte-15kqimd`. Alone: **79/79 green, 120.2 s**.
+      **New** - not previously recorded, and worth keeping: it is a second
+      shape of load failure (a timing class read before it was applied,
+      not a timeout), so a red `flash` under load is not a regression.
+      Neither file is modified in this tree, and none of C2/C3's production
+      edits touches the grid tile or the search cap.
+  - **So the batch is waiting on a host, not on a fix.** Substantively the
+    tree passes `npm run check`. What is missing is a *captured foreground*
+    run: `check-observer.mjs` arms the gate from the Bash tool's returned
+    stdout, and a call moved to the background returns none.
+  - **Re-diagnosed, and the previous entry's attribution is wrong.** It
+    named "host contention from a concurrent session"; measurement does not
+    support that. `npm run format:check` (11 s idle) took **55.6 s then
+    54.9 s** with `user 0.88 s / sys 1.9 s` both times - 5x wall clock at
+    near-zero CPU, so the stage is **I/O-bound**. Host CPU idles at 20-25%
+    of 8 cores, of which `ngenuity2helper` holds ~1 core and all six peer
+    Claude sessions together ~0.2. Full numbers and the one named candidate
+    (Defender real-time protection is on; its exclusions need admin to
+    read, so it is **unverified**): `context.md`, "Host load".
+  - **Why the gate was not bypassed, though `SKIP_CHECK_GATE=1` exists for
+    exactly this.** It would buy one of C2's four gates. The other three -
+    `npm run check:built`, `node tests/run-all.js
+    app/sweep,app/typo,app/hues,app/contracts`, and the
+    `"~ filtered" "#/roll/std"` parity call - are browser-driven and cost a
+    few minutes each idle; at 5x none fits one foreground call, and a
+    browser suite on a 5x-slow host returns false reds rather than signal.
+    Committing C2 with one gate waived and three unrun is a half-verified
+    production commit, which is worse than waiting.
+  - **Next action, unchanged in substance from the entry below, with one
+    addition**: retry when the host is quiet. The cheap decisive probe
+    first - `npm run format:check` - and read its wall clock: **at or near
+    11 s the host is idle and the full sequence will fit; at ~55 s it will
+    not**, and nothing else needs to be attempted that session. Then C2's
+    file list and gate order exactly as the entry below gives them. Do not
+    re-run the two failing files as evidence of anything; they are green.
+  - Cleanup: a mis-rooted `vitest` invocation of mine created `app/app/`
+    (a `coverage/` and a `node_modules/.vite/` under it). Removed. It was
+    gitignored throughout and the tree key read `69ac83c6` before and after,
+    so it never touched what the gate fingerprints. Nothing else was
+    created; `issues/tg-preview-refresh/` was not touched.
+  - Deferred nit (seen, not acted on - it is a design call, not a local
+    fix): `bash-guard.mjs`'s `rm -rf` exemption is root-anchored,
+    `/^(dist|coverage|test-output|node_modules)(\/|$)/`, so a *nested*
+    `app/app/coverage` is refused while a top-level `coverage/` is allowed.
+    Correct as written; whether it should also match nested build output is
+    for whoever next opens that file.
+  - Last agent: orchestrator (no worker dispatched - there is no implement
+    work left that is not gated, and a worker would meet the same wall)
+  - NEEDS_HUMAN_CONFIRMATION: no - still a resource blocker. The one thing
+    a human could change that this session cannot: the I/O factor above.
+  - Branch: `main`; HEAD `67e7bb7`; `origin/main` the same. C1 (`a52c17d`)
+    remains committed and pushed; C2 and C3 remain uncommitted.
+
 - Task status: **in_progress - B12 expanded from outline to implement-ready**
   (planner, 2026-09-12, after B11.1 closed and was reviewed). No production
   code, no test code, no config touched; writes are `issues/47/plan.md` and
@@ -59,6 +138,261 @@ depends on chat history.
   - NEEDS_HUMAN_CONFIRMATION: no
   - Branch: `main`; HEAD `d0963d9` at dispatch, unchanged by this pass
     (`issues/47/` writes only); `origin/main` the same commit.
+
+- Task status: **B12 implementation started - step 1's probe run and recorded**
+  (implementer, 2026-09-12). Tree at dispatch: HEAD `764c6a9`, `origin/main`
+  the same commit; `git status` shows only `issues/tg-preview-refresh/`
+  untracked. `npm run build` ran clean (`data.json`/`catalog.csv`/`i/*.html`
+  regenerated identically - `git status` unchanged after). The scratchpad probe
+  (`audit2`'s two edits - `ROOT` -> `dist/index.html`, `ready()`'s `#view` ->
+  `#app` - plus an `axe.run()` call with `color-contrast` enabled) found:
+  - **The sweep at 360, 390 and 768, both languages, all 82 page-openings
+    (41 addresses x 2 widths not yet covered... actually 41 addresses x 3
+    widths x 2 languages): clean.** No overflow, no clipped text, no
+    duplicate ids, no unnamed control, no dead link, no broken image, no
+    console error, no wrong landing address, no oversized section strip.
+    Confirms the 1180-only measurement from "Phase 5 planning facts"
+    generalises to the other three widths - **no production fix is needed
+    for the sweep**.
+  - **axe with `color-contrast` enabled: one violation, and it is already
+    named.** `nested-interactive` (serious) fires on `#/lists` and
+    `#/lists/a`, both languages, on `StorageNotice.svelte`'s
+    `<summary><b>...</b><i>...</i><button class="warn-x">` shape - exactly
+    `docs/specs/DEBT.md` D3, already recorded as a live-shared defect ported
+    on purpose (`app.js:2881-2884` carries the identical shape) and already
+    the reason `app/src/test/a11y.ts`'s `OFF` disables the rule suite-wide.
+    Every other probed page (`#/roll/std`, `#/tables/wondrous`,
+    `#/tables/eq_weapon`, `#/i/ci1`, `#/print/ci1-q1`, `#/search`, both
+    languages) is clean. **Triage: live-shared, not rewrite-only - no code
+    fix, no new `DEBT.md` entry (D3 already covers it exactly).** `C2`'s
+    `tests/app/lib.js` disables `nested-interactive` in its `axe()` helper
+    with a comment citing D3, the same way `a11y.ts` does; `color-contrast`
+    stays on.
+  - Conclusion: **B12 is a test batch with no production fixes riding on the
+    probe.** The only production edits in the whole batch remain the ones
+    already planned - `data-val` on the filter pills and the source chips.
+    The probe script was disposable and was not kept (run from a temporary
+    copy under the repository root, deleted after; `git status` confirms no
+    trace).
+  - **A second, smaller divergence from the plan, found while confirming
+    decided 6's coverage claim (step 5): `Icon.svelte`'s named missing arm
+    was already covered before B12.** Measured with `coverage-final.json`'s
+    raw branch map (`svelte/compiler`'s own `compile(..., { generate:
+    'client' })` output inspected directly): the compiled template is
+    `$.set_style(svg, \`flex:none${$0 ?? ''}\`)` fed by
+    `[() => 'opacity' in $.get(icon) ? ... : '']` - two branch points, not
+    one. Branch 1, the `'opacity' in icon` ternary the plan named, reads
+    `[46, 627]` (both arms hit) **even with `alt.test.ts` reverted to its
+    pre-B12 text** - `record.test.ts` alone already exercises both arms via
+    the crit-row / "показать в таблице" links. The actually-uncovered one is
+    branch 0, `$0 ?? ''`, always `[N, 0]`: `$0` is the ternary's own result,
+    which is always a string (`String(icon.opacity)` on the true side, `''`
+    on the false side), so the `?? ''` fallback is compiler-generated
+    defensive code with no reachable input that makes it fire - not a gap
+    this or any component test can close. `SelBar`'s half of decided 6 is
+    unaffected and confirmed working as designed: `87.5%` branches after the
+    new case, up from the recorded `75%` baseline. Action taken: kept the
+    `alt.test.ts` assertion anyway (it pins the opacity contract's true arm
+    as a real behaviour, which was previously untested even though already
+    covered incidentally) but did **not** chase the dead `?? ''` arm or move
+    any threshold - `Icon.svelte` reads exactly `75.0%` branches before and
+    after, which is what `vite.config.mts`'s `>= 75` threshold already
+    requires and passes; the plan's acceptance line ("`Icon.svelte` ... above
+    75.0 branches") is not met for this one file, and that is reported here
+    rather than forced. Not a blocker: `npm run check`'s coverage gate does
+    not read "above 75.0", only "at least 75", so nothing red follows from
+    it.
+
+- Task status: **B12 BLOCKED on the C2 gate - C1 is committed
+  (`a52c17d`), C2's and C3's files are complete and individually verified,
+  but the required `npm run check` cannot complete inside the 600 s
+  foreground cap under sustained host contention** (implementer,
+  2026-09-12). Not committed: per `docs/parity.md`/`CLAUDE.md`, a run that
+  crosses 600 s is re-run idle, never salvaged, and this repository's commit
+  gate hook itself requires a passing `npm run check` for the current tree -
+  so C2 and C3 cannot be committed until one foreground `npm run check`
+  actually finishes. Two consecutive attempts each crossed 600 s with no
+  output at all (piped through `tail -n 120`, which cannot print anything
+  until the stream closes); a third, run in the background purely to see
+  whether it would eventually finish, was still not done after several more
+  minutes. **This is not guesswork**: a peer session sharing this tree
+  committed, during this same window, `docs(closeout-hygiene): record B1's
+  plan and blocked progress` (`3a80456`), whose own message names "host
+  contention from a concurrent session" as the reason two of its own
+  commits are blocked the same way. Two sessions independently hit the same
+  wall at the same time on the same host.
+  - **What is built, and how it was verified** (each suite run individually,
+    by hand, via `node tests/app/<name>.js`, since the combined `run-all.js`
+    call needs the same loaded host `npm run check` does): `tests/app/lib.js`
+    (the shared `fresh`/`sharedPage`/`axe`/`reporter` factory, `dist/`-only);
+    `tests/app/sweep.js` (ported from `audit2.js`, four widths, axe with
+    `color-contrast` on, RU-only at 360/390/768 with EN kept at 1180 per the
+    plan's own fallback, a six-address focus-ring walk at 1180 only) - run
+    clean at 1180 and 768 (the two widths actually re-verified after the
+    final round of fixes; 390/360 share the same code path and were clean
+    before the last two fixes, which touched nothing width-dependent);
+    `tests/app/typo.js` - clean; `tests/app/hues.js` - clean; `tests/app/contracts.js`
+    - clean (two route fixtures skipped with a cited reason - see below);
+    `tests/app/states.js` - all thirteen cases green (see below, the batch's
+    hardest-won result). `press` landed in `tests/parity/driver.js` in C1 and
+    is otherwise untouched here. The two production edits (`data-val` on
+    `FilterBar.svelte`'s pills and an optional `value` prop on `Chip.svelte`,
+    passed by `StdPanel.svelte`'s source row) are the only non-test diffs in
+    C2's file set; `git diff` on them is three small, reviewed hunks.
+  - **The step 1 probe's findings, already recorded above, still stand.**
+    What follows is what the *suites themselves* found once written and run
+    - which step 1's simpler probe (a smaller seed, no real-input layer) did
+    not reach - plus one from `tests/app/contracts.js`'s route-grammar port.
+    All four are genuine "the batch's own real unknown" discoveries, not
+    guesses, each triaged the way step 1's own rule asks: live-shared ->
+    `DEBT.md`; rewrite-only and cheap -> fixed here; rewrite-only and not
+    cheap -> named for a later batch.
+    - **D7 (live-shared, `DEBT.md`)**: `--muted`/`--muted2` read below WCAG
+      AA 4.5:1 on their dark surfaces - measured 3.77:1 and 3.35-3.46:1 -
+      on `#/roll/alt`'s dice-rank subtitle and `#/lists/<priced id>`'s
+      money-help captions, identically on `index.html` and `dist/index.html`
+      (same node, same ratio, checked directly with `axe.run()` against
+      both). `tests/app/sweep.js` allows `color-contrast` only on those two
+      exact routes, cited to D7.
+    - **D8 (live-shared, `DEBT.md`)**: the alternate tables' `<h4
+      class="altcol hope/fear">` column headers sit directly under the
+      page's own `<h1>` with no `<h2>`/`<h3>` between - `heading-order`
+      (moderate), identical on both apps. `tests/app/sweep.js` allows it only
+      on `#/tables/alt_item`/`#/tables/alt_consumable`, cited to D8.
+    - **Rewrite-only, fixed here (one line)**: `#/nowhere`-class unreadable
+      addresses drew `<p class="todo">` with no heading at all -
+      `page-has-heading-one` (moderate), and the live app does not reach
+      this state the same way at all (see the next finding), so it is not
+      live-shared. Changed to `<h1 class="todo">` in `App.svelte`; a new
+      `shell.test.ts` case ("an unreadable address") pins it, since the
+      branch had no test before.
+    - **Rewrite-only, bigger than one line, named `B12.1` in `plan.md`
+      (not `DEBT.md` - see why below)**: while porting `tests/contracts.js`'s
+      route-grammar check to `dist/`, `#/` and `#/nonsense` came back wrong.
+      The live app treats a *bare* address (draws home, leaves the bar
+      alone) and a *genuinely unreadable* one (draws home, rewrites the bar
+      too) differently; the rewrite's `state/app.svelte.ts` constructor
+      conflates them - a bare `#/` gets its bar wrongly overwritten to
+      `#/roll/std`, and an unreadable `#/nonsense` keeps the garbage address
+      and draws the `<h1 class="todo">` fallback instead of home, with no
+      tab lit and no source chips. Measured field-by-field against both
+      apps in `plan.md`, "B12.1 named". Not a `DEBT.md` entry: that file is
+      specifically for a defect the rewrite reproduces *because the live
+      app has it* ("both apps identical by construction"); here the two
+      apps read *differently*, which is the opposite shape, so it went to a
+      named follow-up batch instead, per the fallback's own first bullet.
+      `tests/app/contracts.js` skips exactly these two fixture entries with
+      a comment citing `plan.md`, "B12.1 named" - `routes.json` itself is
+      untouched, and the other 24 route fixtures, all six list fixtures, the
+      llms.txt-described link, the stat line and the twelve filter-group
+      probes are read in full with nothing narrowed.
+    - **D10 (live-shared, `DEBT.md`, found while writing `states.js`'s own
+      case 10, not the step 1 probe)**: "Copy image" cannot actually work
+      under `file://` on *either* app. Isolated directly with `puppeteer`
+      against both `index.html` and `dist/index.html`, no test stub
+      involved: the record's own `<img>` loads and `ctx.drawImage()`
+      succeeds, but `canvas.toDataURL()` throws `"Tainted canvases may not
+      be exported"` on both apps for the identical picture - Chrome treats
+      a `file://` document's own sibling resources as cross-origin for the
+      canvas taint check, with no `--allow-file-access-from-files` set.
+      `canvas.toBlob()` does not throw in this Chromium build; it simply
+      never calls back, which is exactly why nobody had seen this before:
+      `tests/parity/driver.js`'s `clipboardImage()` reads
+      `m[key].arrayBuffer ? m[key] : null`, and a *pending promise* has no
+      `.arrayBuffer`, so it has always resolved `{ empty: null }` on both
+      apps - parity's own `copiedImage` spec has been comparing two
+      identical nulls, never a real byte count, since the spec was written.
+      `tests/app/states.js`'s case 10 now asserts the defect's actual shape
+      (the promise never settles, checked with a 5 s bounded wait) rather
+      than a successful copy, cited to D10; the case that asserts a real
+      copy is what D10's own fix earns.
+  - **`tests/app/states.js` - the hardest case to get green, and why it
+    took this many attempts.** Five real bugs were found and fixed along
+    the way, all in the test code, none in production:
+    1. Case 4/5 (two frames): the frame chips live inside the filter panel;
+       missing `d.click('Фильтры')` before them read 94 rows / 0 pills
+       instead of 57 / 2. Fixed by opening the panel first.
+    2. Case 6 (dialog): a real Tab cycle measures one stop, past the last
+       control and before the close button, where Chrome's own native
+       `<dialog>` focus trap briefly hands focus to the page's skip link
+       before correcting on the very next Tab - reproduced with and without
+       a settle frame in between, so it is the browser's own wrap-boundary
+       behaviour, not a race in the probe. The assertion now fails only on
+       two *consecutive* stops outside the dialog, which still catches a
+       real trap failure.
+    3. Case 8 (packed link): a short seed list never reaches the packed
+       (`~`) branch at all - deflate's header costs more than it saves
+       under about ten entries and no note (`compress.ts`'s own comment).
+       A bigger seed with a long note reaches it; and the reopened link
+       renders as this browser's *own* stored list (same payload, same
+       origin, `findListByPayload`'s short-circuit) rather than a stranger's
+       - `.titleinput`'s value, not text content - so the assertion checks
+       the position count and the note's own `<textarea>` value instead of
+       a name that was never going to appear in `innerText` on either app.
+    4. Case 10 (copy image): the whole D10 investigation above - a bounded
+       in-page wait, not `d.clipboardImage()`, is what a case testing the
+       *real* value has to use once the shared helper's own gap was found.
+    5. Case 13 (note height): `.rnote textarea, .lnote textarea` matches
+       the *list's* own note box first in DOM order, which this case never
+       types into - the height read stayed flat at 83 while the row's own
+       textarea (found and typed into correctly by placeholder) grew fine
+       a few DOM nodes later. Fixed by measuring the exact element `d.type()`
+       targets, by the same placeholder.
+    Beyond the logic fixes, the run itself needed hardening against this
+    host's load: `tests/app/lib.js`'s `puppeteer.launch()` now passes
+    `protocolTimeout: 300_000` (a loaded host makes an individual CDP round
+    trip slower, not wrong), and `states.js`'s thirteen cases each run in
+    their own try/catch with a synchronous (`fs.writeSync`) progress line
+    before each - console.log's own buffering does not survive an abrupt
+    crash, and one case hanging must not silently swallow the other twelve.
+    Both are real, defensible hardening, not workarounds for a bug in the
+    cases themselves.
+  - **What is NOT yet done**: the required gate sequence itself -
+    `npm run check`, `npm run check:built`, the combined
+    `node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts` call,
+    the parity filter (`"~ filtered" "#/roll/std"`), C2's commit, then
+    `tests/app/states.js`'s `run-all.js` entry, `COVERAGE.md`'s suite table
+    (already written) and `CLAUDE.md`'s one line (already written) folded
+    into C3, `npm run check` again, `node tests/run-all.js app/states`, C3's
+    commit, and the push. All of `COVERAGE.md`, `DEBT.md`, `CLAUDE.md`,
+    `plan.md`'s "B12.1 named" section, and every `tests/app/*.js` file are
+    already written and saved in the working tree - nothing here needs
+    redesigning, only the gate needs a host that will hold still for ten
+    minutes.
+  - **Next action, exactly**: re-read `git log --oneline -3` (two peer
+    commits landed on top of `a52c17d` during this session -
+    `58dbd70`/`3a80456`, both docs-only, neither touching a B12 file); stage
+    exactly C2's file list (below); run
+    `set -o pipefail; npm run check 2>&1 | tail -n 120` in one foreground
+    call - if it completes under 600 s, continue down the verification list
+    above in order; if it crosses 600 s again, that is still the host, not
+    the batch - wait and retry rather than change anything to make it pass
+    faster. C2's file list: `tests/app/lib.js`, `tests/app/sweep.js`,
+    `tests/app/typo.js`, `tests/app/hues.js`, `tests/app/contracts.js`,
+    `app/src/components/FilterBar.svelte`, `Chip.svelte`, `StdPanel.svelte`,
+    `tests/run-all.js`, `.github/workflows/ci.yml`, `docs/specs/DEBT.md`
+    (D7, D8, D10), `docs/specs/COVERAGE.md` (the `tests/app/*` table and the
+    thin-spots rewrite - already fully written for both C1's and this
+    commit's share, not just C2's; double check nothing here duplicates
+    what C1 already committed before staging), `issues/47/plan.md` (B12.1).
+    C3's file list, unstaged until C2 lands: `tests/app/states.js`,
+    `tests/run-all.js`'s `app/states` line (already added alongside C2's
+    five - if C2's diff is staged first this is already included; do not
+    stage `run-all.js` twice under two commits, split it by hunk if needed),
+    `CLAUDE.md` (the one focused-command line, already written), the
+    remainder of `COVERAGE.md`'s suite table if any of it was reserved for
+    C3 (check against decided 4's split before assuming), `issues/47/`.
+  - Do not re-run `npm run build` unless `dist/` is stale - it already
+    reflects every file in C2's list as of this entry (built at HEAD
+    `3a80456`, ~58 s under the same load that is blocking `check`).
+  - Last agent: implementer
+  - NEEDS_HUMAN_CONFIRMATION: no - this is a resource blocker, not a design
+    or scope question.
+  - Branch: `main`; HEAD `3a80456` at this entry (two peer commits ahead of
+    where this session's C1 landed, `a52c17d`); nothing of C2/C3 committed.
+    `origin/main` is already `3a80456` too - some session's push already
+    carried C1 along with the two peer commits, so C1 needs no separate
+    push; only C2 and C3, once committed, still need one.
 
 - Task status: **B11.1 closed - the menu's second measurement, built and
   committed** (implementer, 2026-09-12). All gates green.

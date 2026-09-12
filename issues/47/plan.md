@@ -12440,6 +12440,25 @@ entries the way `audit2` is.
 - **Not in B12.** `print` geometry (Phase 7's deletion batch), the JSON
   freeze (Phase 7), deleting any legacy suite.
 
+#### B12 status (implementer, 2026-09-12): C1 committed (`a52c17d`), C2/C3 written and individually verified, blocked on the C2 gate
+
+Full state, findings and next action: `issues/47/handoff.md`, "Status", the
+top entry. In one line: `npm run check` crossed the 600 s foreground cap
+twice in a row under host contention a peer session's own commit
+(`3a80456`) independently confirms was happening at the same time; nothing
+here is a design or scope question, and nothing needs to be written
+differently before the gate is retried. **Re-measured 2026-09-12 by the
+orchestrator, and the attribution corrected**: the peer sessions are not
+the cause (they move ~0.2 of 8 cores); the host is running this workload
+~5x slow and **I/O-bound** - `npm run format:check`, 11 s idle, took
+55.6 s and 54.9 s at `user 0.88 s / sys 1.9 s`. A full `npm run check`
+did complete on this tree in that session and was green apart from two
+cases that each pass in isolation, so the batch waits on a host, not on
+a fix. Numbers: `context.md`, "Host load"; the run: `handoff.md`, the
+top entry. Four findings from writing and
+running C2/C3's suites are recorded as `DEBT.md` D7, D8, D10 and this
+section's own new entry, "B12.1 named", immediately below.
+
 #### B12 planned: the real-browser layer on `dist/`, and the gates (planner, 2026-09-12)
 
 The outline above holds the decisions and is not reopened. This section is
@@ -13007,6 +13026,55 @@ filter above covers.
   box): that is a finding about the rewrite's layout at that width, to
   record - not a reason to fall back to `click` in a case whose point is
   the trusted event.
+
+#### B12.1 named: the router does not reproduce the live app's bare-vs-unreadable address distinction
+
+Found while porting `tests/contracts.js`'s route-grammar check to
+`tests/app/contracts.js` (the fallback's first bullet: a rewrite-only defect
+bigger than a one-line fix becomes a named batch with an `allow` citing it).
+Not a `DEBT.md` entry: that file is for a defect the rewrite reproduces
+*because the live app has it* - "both apps are identical by construction" -
+and here the two apps read differently on the same fixture, which is the
+opposite shape.
+
+- **Live** (`app.js:3636-3644`, `currentRoute`'s last fallback):
+  `if (h && history.replaceState) { ...rewrite the bar to home... }`, where
+  `h` is the hash with its leading `#/` stripped - truthy for a garbage
+  address, empty for a bare `#/`, `#` or `''`. A bare address draws home and
+  leaves the bar alone (`h` falsy, the rewrite branch never runs); a
+  genuinely unreadable one draws home **and** rewrites the bar to it, so a
+  refresh or a step back replays home, not the garbage. Measured directly
+  (`docs/fixtures/urls/routes.json`'s `#/` and `#/nonsense` entries): `#/` ->
+  `{hash:'#/', tab:'#/roll/std', source:['core:on','hnf:on']}`; `#/nonsense`
+  -> `{hash:'#/roll/std', tab:'#/roll/std', source:[...]}`.
+- **The rewrite** (`state/app.svelte.ts`'s constructor) conflates the two:
+  `this.hash = first === '' || first === '#' || first === '#/' ? this.#home
+  : first`, then `env.router.replace(this.hash)` unconditionally whenever it
+  changed - so a bare `#/` gets its bar **overwritten** to `#/roll/std`
+  (the one field wrong there), while an unreadable `#/nonsense` keeps the
+  garbage hash verbatim and draws `App.svelte`'s `{:else}` fallback (the
+  `<h1 class="todo">` B12 gave a heading, for axe's sake, not for parity) -
+  no tab lit, no source chips, content-level wrong, not just the bar.
+  Measured against `dist/` at `a52c17d` with `tests/app/lib.js`'s driver.
+- **Not caught before B12** because no gate had ever replayed
+  `docs/fixtures/urls/routes.json` against `dist/`; `tests/contracts.js`
+  only ran it against `index.html`, where it always passed.
+- **What B12 did**: `tests/app/contracts.js` skips both fixture entries with
+  a comment citing this section, rather than editing the fixture
+  (`CLAUDE.md`, "Public contracts default to no change") or silently
+  narrowing what the rest of the route-grammar check looks at - the other
+  24 fixtures are read in full.
+- **The fix, for whichever batch picks this up**: `state/app.svelte.ts`'s
+  constructor rewrites the bar to home only when the raw hash was non-empty
+  and unparseable (`parseHash(first).kind === 'unknown'`), and leaves a bare
+  `#/`/`#`/`''` alone the way the live app does. `App.svelte`'s `{:else}`
+  branch becomes unreachable in ordinary use once that lands (kept for a
+  defensive fallback, or removed, is that batch's call - if kept, its `<h1>`
+  still earns its keep against axe's `page-has-heading-one`). Verify by
+  removing the two skips in `tests/app/contracts.js` and reading `#/` and
+  `#/nonsense` through the same field-by-field check every other route
+  fixture gets.
+- **Recorded by**: B12, 2026-09-12.
 
 #### Phase 6 and 7 - what this pass adds to their outlines
 
