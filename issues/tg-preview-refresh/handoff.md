@@ -66,8 +66,21 @@ damage getting them wrong does:
 operations, not a code batch; no agent can perform it. See "Next batch".
 
 ## Status
-- Task status: **in_progress - B4 implemented and committed; O2 (the
-  owner's operations) is next and is not a code batch.**
+- Task status: **in_progress - B4 implemented, reviewed and now fixed;
+  O2 (the owner's operations) is next and is not a code batch.**
+- **B4 review verdict: fix-then-continue.** The reviewer walked every path
+  into `confirmed` and found `lib.mjs` implements `plan.md` section 3.4's
+  confirmation rule correctly and asymmetrically - no code defect. One
+  docs blocker: `docs/tg-preview.md` step F described a run the owner will
+  not get (five sends, fifty presses, `changed` dominating) on the first
+  two-to-three runs of the step E.0 restart, because the retired state
+  leaves ~115 `Update with content` buttons in the chat inside
+  `RECOVER_SCAN = 200`, so phase 1 spends the whole press budget re-pressing
+  those before any send happens, reporting `same` (expected) and
+  `stopped: press budget reached` (missing from F.2's outcome list). Fixed
+  in this pass - see "Completed" below for the exact wording added to F.1/
+  F.2 in `docs/tg-preview.md` and the mirrored fix in `plan.md` section 9.
+  Six other review nits recorded under Deferred, not acted on per scope.
 - Last agent: implementer (2026-09-12) - implemented B4 exactly as
   `plan.md` section 10a specifies. No deviation from scope. No Telegram
   contact of any kind: every `run.mjs` invocation used `--dry-run`, `.env`
@@ -172,6 +185,52 @@ operations, not a code batch; no agent can perform it. See "Next batch".
   criterion names "proving" that and a call count is the only way to show it
   from outside.
 
+- Batch name/id: **B4 review remediation - one docs blocker, no code
+  change.**
+- What shipped: the reviewer confirmed `lib.mjs` matches `plan.md` section
+  3.4's confirmation rule exactly (correct and asymmetric across every path
+  into `confirmed`) and found no code defect; the one blocker was
+  `docs/tg-preview.md` step F (and its mirror, `plan.md` section 9, step F)
+  describing a run the owner will not get. Measured, not speculative: step
+  E.0 retires `state.json`, marking all 1062 URLs stale; the chat still
+  holds roughly 115 `Update with content` buttons from the prior run,
+  inside `RECOVER_SCAN = 200`; phase 1 therefore presses those in manifest
+  order until the 50-press budget is gone, so run 1 (and likely runs 2-3)
+  of step F make **zero sends** and stop at `press budget reached` - not
+  "50 URLs: five sends, fifty presses" as the doc claimed - and those
+  presses report `same` (re-presses of already-refreshed URLs), not
+  `changed`, which the doc's "mostly `same`" branch then misroutes to
+  "spot-check before trusting the chunk."
+  - Fixed in `docs/tg-preview.md` F.1/F.2 (and mirrored in `plan.md`
+    section 9, F.1/F.2): F.1 now says the first two-to-three runs of this
+    restart are phase-1-dominated - expect `phase 1: pressed 50`, zero
+    sends, `stopped: press budget reached` - and that `changed` only
+    becomes the expected signal once a run shows `phase 1: pressed 0` and
+    `batch N/5` lines. F.2 gained `phase 1: pressed 50`, zero sends,
+    `stopped: press budget reached` as its own (normal) outcome, and split
+    the old single "Mostly `same`" bullet into "expected while phase 1 is
+    still pressing leftover buttons" versus "the genuine signal once
+    `phase 1: pressed 0` and `batch N/5` lines are running" - the
+    genuine-signal check is kept, not deleted or re-scoped. `docs/
+    tg-preview.md` step G's outcome list already named
+    `press budget reached` (G.3); it needed no change.
+  - Six further review nits (listed below under Deferred) recorded
+    verbatim from the review and not acted on - none is a docs blocker and
+    the task scope for this pass is the one blocker plus this handoff
+    update.
+- Files changed: `docs/tg-preview.md`, `issues/tg-preview-refresh/
+  {plan,handoff}.md`. No file under `tools/tg-preview/*.mjs` touched, per
+  scope - the reviewer found no code defect and none was requested.
+- Commit: one commit, `docs(tg-preview): fix step F's expected-outcome
+  claim for the state-retirement restart`, authored `artex-x
+  <artex-x@users.noreply.github.com>`, no AI attribution trailer. Staged by
+  path (never `git add -A`): `docs/tg-preview.md`, `issues/
+  tg-preview-refresh/plan.md`, `issues/tg-preview-refresh/handoff.md`. Run
+  `git log -1` for its sha.
+- Deviations from scope: none. No `tools/tg-preview/*.mjs` file touched; no
+  `run.mjs` invocation was needed or made; `.env` and `tools/tg-preview/
+  state.json` were not read.
+
 ## Verification
 - Commands run (exact), in order:
   - `node --test tools/tg-preview/lib.test.mjs` - `tests 82, pass 82, fail 0`
@@ -248,6 +307,33 @@ operations, not a code batch; no agent can perform it. See "Next batch".
   is, at the commit this handoff describes.
 
 ## Deferred
+- **Six nits from B4's review, recorded verbatim, not acted on** (this
+  pass's scope was the one docs blocker above plus this handoff; none of
+  these six is a blocker):
+  1. `attempt()`'s transport retries (`NET_RETRIES` = 3) can re-invoke
+     `cx.press` for one `pressOne` decrement, so the press budget can
+     undercount by up to 3 per press under network failure. Absorbed by
+     the default under-shoot (50 vs an observed 115).
+  2. A throttled press decrements `pressBudget` but is excluded from
+     `pressedTotal`, so the `pressed P` line under-reports actual attempts
+     by one on a throttle stop. Worth one clause in the doc if B2 uses `P`
+     to tune the quota.
+  3. The `--mode full` warning sits after `client()`, so
+     `--dry-run --mode full` - the exact invocation "Operations"
+     recommends for previewing a full reindex - never shows it. Moving it
+     above the dry-run return would put it where the owner looks first.
+  4. `client.mjs`'s `incoming` applies `limit` to all messages then
+     filters `!m.out`, so the effective recovery window is ~185 incoming,
+     not 200. Pre-existing and harmless at current volumes, but
+     `RECOVER_SCAN` is an upper bound on a smaller number than the plan's
+     "roughly eighteen batches of history" implies.
+  5. The `--mode full` warning test asserts `l.includes('2')`, which a
+     longer message could satisfy incidentally; the paired negative test
+     carries most of the weight.
+  6. `matchButtons` uses `m.url === null` strictly, so a `url: undefined`
+     message would be silently dropped from `summary`. Cannot occur
+     through `client.mjs`'s `plain()`, which coerces to `null`, but the
+     coupling is implicit.
 - **Reviewer's remaining R1 items** (`plan.md` section 13) - still B2:
   5 (`$LIMIT`/`$args` quoting in `previews.yml`), 6 (unused `urls()`
   export), 7 (`--apply`'s needless `buildFromTree()` call).

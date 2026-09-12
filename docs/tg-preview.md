@@ -134,12 +134,23 @@ the account is allowed to talk to it.
 
 **F. The calibration run - one chunk, read carefully.**
 
-1. `node tools/tg-preview/run.mjs --limit 5 --press-limit 50`. That is 50
-   URLs: five sends, fifty presses, about two minutes. Expect
-   `refreshed 50, pending 1012` and `pressed 50 (photo changed ~50, same ~0,
-   none 0)`. `changed` should dominate, because every cached picture in this
-   reindex is known stale.
+1. `node tools/tg-preview/run.mjs --limit 5 --press-limit 50`. At full scale
+   this is 50 URLs: five sends, fifty presses, about two minutes - but
+   **not on the first two or three runs of this restart.** Step E.0 retired
+   `state.json`, so every one of the 1062 URLs is stale, and the chat still
+   holds roughly 115 `Update with content` button messages left over from
+   the run that tripped the quota. Phase 1 presses those - in manifest
+   order, no new send needed - until the 50-press budget is spent, so
+   expect `phase 1: pressed 50`, **zero sends**, and
+   `stopped: press budget reached` instead of `refreshed 50, pending 1012`.
+   Repeat the same command two or three more times; each run drains more of
+   the leftover ~115 buttons until a run reports `phase 1: pressed 0` and
+   `batch 1/5` lines start appearing - that is the first run actually
+   sending this reindex's own links.
 2. What each outcome means, and what to do:
+   - **`phase 1: pressed 50`, zero sends, `stopped: press budget reached`**
+     - normal for the first two-to-three runs of this restart (see above),
+     not a problem to fix. Just repeat the command.
    - **`stopped: bot throttled: retry in <N>s`** - the quota is *below* 50 on
      this account. Wait the full `N` the bot named, then retry with
      `--limit 2 --press-limit 20` and report the numbers.
@@ -147,8 +158,15 @@ the account is allowed to talk to it.
      three more clean runs are grounds to try `--limit 10 --press-limit 100`;
      the point of the flag is that you tune it on evidence rather than the
      plan guessing.
-   - **Mostly `same`** - spot-check by pasting before trusting the chunk, and
-     report it.
+   - **Mostly `same` while `phase 1: pressed` is still nonzero** - expected,
+     not a reason to distrust the chunk: those are re-presses of the
+     retired state's ~115 leftover URLs, so Telegram's cached photo is
+     often already current. `changed` only becomes the expected signal once
+     a run shows `phase 1: pressed 0` and `batch N/5` lines - i.e. it is
+     actually sending and pressing this reindex's own stale URLs.
+   - **Mostly `same` once `phase 1: pressed 0` and `batch N/5` lines are
+     running** - this is the genuine signal: spot-check by pasting before
+     trusting the chunk, and report it.
 3. In Saved Messages (any account), paste one of the URLs this run confirmed
    and compare the preview picture with the live `og/` image for that
    record. Same picture = the press works through the tool.
