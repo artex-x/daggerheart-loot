@@ -2919,3 +2919,78 @@ full gate sequence will fit one foreground call; ~55 s means it will not**,
 and no amount of waiting for a quiet minute will change it. This is cheaper
 than discovering it 19 minutes into a check, which is what three sessions
 did.
+
+## The throttle has lifted, and B12 is closed (orchestrator, 2026-09-12, later)
+
+The probe above, run at the top of this session: **`npm run format:check` in
+9.4 s**, and the same counter read **139-171%**, not 20. The machine is
+healthy again; nothing was done to it from here, so treat the throttle as a
+state that comes and goes and keep running the one-minute probe.
+
+What that bought, in one session:
+
+- `npm run check` in one foreground call, **exit 0**: selftest 312/312,
+  typecheck 544 files 0/0, vitest **1007 passed / 1007 across 41 files in
+  78.2 s** - against 521.8 s and an *unstable* failing set (2, then 3, with
+  nothing edited) under the throttle. The phantom failures were the throttle
+  and are gone.
+- **The gate arms once for a whole batch.** `tree-key.mjs` fingerprints
+  *content* (staged + unstaged + untracked, HEAD excluded), so committing
+  changes nothing about the key. One passing `npm run check` covered both
+  C2's and C3's commits; the plan's steps 12 and 15 do not each need their
+  own run when no file changes between them. Two runs saved, ~6 minutes.
+  The corollary is the trap: **any edit to any non-gitignored file disarms
+  it**, which is why a remediation cycle that touches one test file pays for
+  a fresh check.
+- B12 landed as `9a4f8db` (C2), `4adc5a5` (C3), `9ced2b3` (the review
+  remediation), plus docs. All pushed; `origin/main` is `fde4da4`.
+
+## GitHub Pages is already served by Actions - the "Pages flip" gate does not exist (orchestrator, 2026-09-12)
+
+Measured, not assumed - `gh api repos/:owner/:repo/pages`:
+
+```
+"build_type": "workflow",  "status": "built",  "source": {"branch":"main","path":"/"}
+"html_url": "https://artex-x.github.io/daggerheart-loot/"
+```
+
+**`build_type: workflow` means the owner has already switched Pages to
+"GitHub Actions".** Two places in `plan.md` are therefore stale and must not
+be planned around any longer:
+
+- the Phases table's Phase 6 row, "Owner-gated on the Pages flip";
+- Phase 8, "Where the phase sits", entry condition 2, "the owner has
+  switched Pages to 'GitHub Actions'" - already satisfied.
+
+**What actually publishes the old app is one step in
+`.github/workflows/ci.yml`'s `deploy` job**, "Collect what the site is made
+of", which copies `index.html style.css app.js data.js data.json catalog.csv
+llms.txt robots.txt .nojekyll LICENSE img og i card` into `_site` by an
+explicit list. The rewrite goes live when that list names the built output
+instead of the root files.
+
+**Hazard for whoever writes that step: `dist/` carries symlinks into the
+repo root** (`dist/card -> /e/dev/daggerheart-loot/card`, absolute). An
+absolute symlink does not survive `upload-pages-artifact` as a directory
+would, so "copy `dist/` instead" is not a one-line change: the step still
+assembles `img/`, `og/`, `i/`, `card/`, `robots.txt`, `llms.txt` and
+`.nojekyll` explicitly alongside the build. The existing "Nothing private
+slipped in" guard (which refuses `app`, `tests`, `tools`, `docs`,
+`node_modules`, `package.json`, `.git` in `_site`) should still hold, but
+re-check it against the new list rather than assuming.
+
+### Owner decision, 2026-09-12: publish early, delete later
+
+Asked directly, given that the cut-over is one workflow step rather than a
+Pages setting. The owner chose **a reversible cut-over**: point the deploy
+step at the built output and go live while `index.html`/`app.js`/`style.css`
+stay in the repository and the parity harness keeps running against them as
+its expectation. A bad deploy is then reverted by one step, with the old app
+still present. Phase 7's deletions - the three live files, the legacy
+browser suites, `tests/parity.js`, `VISUAL_DEBT`/`ACCEPTED` - move *behind*
+that flip and get their own entry condition, instead of landing the same day
+the site goes live.
+
+Sequencing consequence already agreed: **B12.1 lands before the flip.** It
+is a defect on the public entry point - a bare `#/` has its address bar
+wrongly rewritten - so it is fixed while the old app is still the fallback.
