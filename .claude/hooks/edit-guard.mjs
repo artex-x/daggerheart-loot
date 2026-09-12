@@ -1,5 +1,5 @@
 // PreToolUse(Edit|MultiEdit|Write|NotebookEdit): block direct writes to
-// generated files. See issues/65/plan.md section 4, hook 4.
+// generated files. See .claude/README.md, "Hooks".
 
 import { readInput, guard, deny, relPath, pathKey } from './lib.mjs';
 

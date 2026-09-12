@@ -1,6 +1,6 @@
 // Working-tree fingerprint for the commit gate in bash-guard.mjs, and the
 // cache that check-observer.mjs writes after a passing `npm run check`.
-// See issues/65/plan.md section 4, hook 2e for the full rationale.
+// See .claude/README.md, "Hooks", for the commit gate's rationale.
 
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
