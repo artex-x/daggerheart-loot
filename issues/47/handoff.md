@@ -6,7 +6,81 @@ depends on chat history.
 
 ## Status
 
-- Task status: **Phase 5 CLOSED; Phase 6 replanned; B12.1 is the next batch
+- Task status: **B12.1 CLOSED - the router matches live's fallback; a review
+  remediation cycle then fixed two documentation blockers; B13 is the next
+  batch and is implement-ready** (implementer, 2026-09-12). HEAD at dispatch
+  `5f6fded`, matching `origin/main`; tree clean but for the untracked
+  `issues/tg-preview-refresh/`.
+  - **What landed.** Full design: `plan.md`, "B12.1 planned"; the built
+    record: `plan.md`, "B12.1 built". One rule, four rows (boot-bare,
+    boot-or-navigation-unreadable, navigation-bare, everything else), applied
+    in `app/src/state/app.svelte.ts`'s constructor and a private `#fallback`
+    shared with `start()`'s `onChange`; `App.svelte`'s now-unreachable
+    `{:else}` debug heading, its `.todo` style block and the comment above it
+    removed; `docs/specs/ROUTES.md`, "Fallback", gained the bare-address half;
+    the `tests/app/contracts.js` skip at the `#/`/`#/nonsense` fixtures
+    deleted; `tests/app/sweep.js`'s `#/nowhere` label updated.
+  - **Two commits, both pushed:**
+    - `bc96b59` (`fix(app): make bare and unreadable addresses match live's
+      own fallback`) - 7 files, the rule and its tests.
+    - `7a729bd` (`docs(issue-47): close B12.1 - the router now matches live's
+      fallback`) - `issues/47/context.md`, `plan.md`, `handoff.md`.
+  - **Gates, all green, each one foreground call:** `npm run check` (exit 0,
+    `App.svelte` coverage rose to 100% statements / 91.3% branches, no
+    threshold moved, 1011 tests up from 1007); `npm run check:built` (build,
+    `file://` smoke, 120kB budget - 88.5kB actual); `node tests/run-all.js
+    app/contracts,app/sweep` (574.5s slowest entry, all five states green,
+    `app/contracts` with **no `skipped` line** - all 26 route fixtures now
+    read field by field). No parity call, as planned.
+  - **One deviation, found by `npm run check`, not planning:** two
+    `app.test.ts` fixtures predating this batch used `'#/print/w1,w2'` - a
+    comma the print grammar has never accepted (`lib/hash.ts:85`'s
+    `/^print\/[\w-]+$/`; ids join on `-`) - so both silently exercised the
+    `unknown` route instead of `print` and passed by coincidence until rule 2
+    started rewriting unknown addresses to the pinned home. Fixed to
+    `'#/print/w1-w2'`, a one-character-per-line correction, cheap and local
+    to a file this batch already touched (`CLAUDE.md`, "fix cheap, local,
+    safe bugs, stale tests/fixtures... found in a touched path"). No rule or
+    design line changed as a result.
+  - **Review: fix-then-continue, two blockers, both documentation, no
+    production code.** The reviewer independently re-read both live call
+    sites and confirmed all four table rows against
+    `app/src/state/app.svelte.ts:199-223`, confirmed rule 3's `app.hash`/
+    `location.hash` inequality is stated in code, confirmed the print-hash
+    correction against `hash.ts:85` and that no other fixture used the comma
+    shape, and confirmed the `{:else}` deletion is genuinely unreachable by
+    enumerating every writer of `this.hash` and every `go`/`replace` caller.
+    - **Blocker 1**: `docs/specs/COVERAGE.md:55` still said the 26 route
+      fixtures were read "two skipped" with a `plan.md`, "B12.1 named"
+      citation - stale the moment `tests/app/contracts.js` lost its skip.
+      This is the **second consecutive review** to land on this exact line
+      (B12's review blocker 2 corrected it to cite "B12.1 named" precisely
+      because of these skips); root cause is `plan.md`'s own acceptance line
+      ("no other spec changes") written without grepping the specs for what
+      the batch's own fixture-skip removal implied. Fixed: the parenthetical
+      and its citation dropped; `plan.md`'s acceptance line corrected to name
+      `COVERAGE.md:55` explicitly, so the next batch's acceptance list gets
+      written by grepping the specs for what it closes, not by assertion.
+    - **Blocker 2**: this file's own "Next batch" section (below) was
+      corrected by `7a729bd`, but no Status entry was prepended, so this
+      section still opened on the planner's "B12.1 is the next batch" text at
+      HEAD `aac1453` - the file's own recovery state contradicting its
+      "Next batch" section 4,200 lines below. This entry is that missing
+      backfill.
+    - Six items recorded in "Deferred" below, record-only per the
+      coordinator: a pinned bare `#/tables` silently drops at the next boot
+      (highest, flag for B13); `go()`/`replace()` bypass `#fallback`
+      (unreachable today); `canPinHome` has no production consumer;
+      `ROUTES.md`'s "nine" pinnable sections is eight in the rewrite; the
+      bare-address rule in `ROUTES.md` understates its own generality; the
+      boot push is uncovered by a unit test.
+  - **Gates for this remediation**: documentation only - no gate re-run per
+    the coordinator's instruction (nothing moved a pixel or a test).
+  - Last agent: implementer. NEEDS_HUMAN_CONFIRMATION: **no**.
+  - Next action: **B13 - the reversible cut-over**, implement-ready,
+    `plan.md`, "B13 planned"; brief in this file, "Next batch (implement-ready)".
+
+- Task status (previous): **Phase 5 CLOSED; Phase 6 replanned; B12.1 is the next batch
   and is implement-ready** (planner, 2026-09-12, planning pass only - no
   production, test or config code written). HEAD `aac1453`, matching
   `origin/main`; tree clean but for the untracked `issues/tg-preview-refresh/`,
@@ -42,7 +116,7 @@ depends on chat history.
     the same section, "Phase 7 - what has to be true before the net comes out".
     B12's deferred nits are placed there too, one row each.
 
-- Task status (previous): **B12 review remediation CLOSED - both blockers fixed,
+- Task status: **B12 review remediation CLOSED - both blockers fixed,
   gates green, committed and pushed** (implementer, 2026-09-12, single
   remediation cycle per the coordinator's instruction - no replanning, no
   widened scope). HEAD at dispatch `ddd7e11`, matching `origin/main`; tree
@@ -5263,6 +5337,46 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B12.1 review nits, deferred by the coordinator's own instruction
+  (2026-09-12) - record only, do not fix; B12.1 is mid-plan and B13 re-enters
+  these paths.** Recorded verbatim enough to pick up without re-reading the
+  review:
+  1. **Highest - flag it to be settled before or with B13.** A pinned bare
+     `#/tables` is accepted by the UI and silently dropped at the next boot.
+     `TablesPage.svelte:444` renders `PageHead`, whose button calls
+     `toggleHome()` (`app.svelte.ts:445-455`), storing `this.hash` as
+     `'#/tables'` when no table is in the address and lighting the button;
+     `readHome` (`:69-71`) then rejects it next boot, because
+     `parseHash('#/tables')` is `{kind:'tables', table:null}`, and the app
+     opens `#/roll/std` instead. Live has no such gap - `homeHash()`
+     (`app.js:1133-1136`) pins `'#/tables/' + S.tables.t`, always a named
+     table. Entirely pre-existing (B12.1's commit touches none of
+     `toggleHome`, `readHome` or `homeHash`'s port equivalent), but `#home` is
+     now what rules 1 and 2 write to the address bar, and it ships to real
+     users at B13. Read-verified only; nobody drove the built app on this one.
+  2. `go()` and `replace()` bypass `#fallback`, so with `{:else}` gone an
+     unparseable hash reaching either would render an empty content area with
+     no `<h1>` rather than the old debug heading. Unreachable with today's
+     callers; live's `currentRoute` fallback runs on every render and would
+     catch it regardless of caller.
+  3. `canPinHome` (`app/src/state/app.svelte.ts:457`) has no production
+     consumer, only tests - `CLAUDE.md`, "Add no module, export, component,
+     or variant before something uses it".
+  4. `docs/specs/ROUTES.md:24-25`, "the nine a person may pin as their
+     starting section", is true of live (`homeAllows`, `app.js:1124-1130`,
+     accepts bare `tables`) but not of the rewrite's `readHome`, which accepts
+     eight. Same family as item 1 above; one edit should settle both.
+  5. `docs/specs/ROUTES.md:125`, "Reached by navigating away and back", names
+     one route to a bare address; the rule holds for any navigation to bare,
+     including a typed `#/`.
+  6. The boot push is uncovered: in a real browser `navigate` sets
+     `location.hash` -> `hashchange` -> `onChange`, so `navigations` reaches 1
+     at boot with `sel.clear()`/`menuFor=''`. Harmless today (both consumers
+     only do `open = null` - `SearchPage.svelte:39-44`, `TablesPage.svelte:
+     100-105`) and it mirrors live's own assignment, but the row-2 unit test
+     never calls `start()`, and `memoryRouter.replace` deliberately does not
+     announce, so no test exercises this path.
 
 - **PLACED by the planner (2026-09-12).** The B12 nits below are no longer an
   undifferentiated list; each has a batch or a phase, with the reasoning, in

@@ -13446,7 +13446,10 @@ diff is one rule and its tests.
   no threshold lowered.
 - `App.svelte` has no `{:else}`, no `.todo`, and no route-kind branch removed
   other than that one.
-- `docs/specs/ROUTES.md` describes all four rows; no other spec changes.
+- `docs/specs/ROUTES.md` describes all four rows; `docs/specs/COVERAGE.md:55`
+  loses its "two skipped" parenthetical now that `app/contracts` reads every
+  fixture - missed by this line's first draft, caught only in review; no
+  other spec changes.
 - `index.html`, `app.js`, `style.css` untouched.
 
 **Gates, with costs.** Idle host, each one foreground call, Bash timeout
