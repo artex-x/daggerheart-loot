@@ -13120,7 +13120,18 @@ check` was re-run before C2 could commit - see `handoff.md` for the exact
 attempts and their wall clocks, including two hits of the already-documented
 `searchPage.test.ts` load-timeout flake.
 
-Nothing else deviated. `docs/specs/COVERAGE.md`'s split matched decided 4
+**Correction (review remediation, 2026-09-12): this was wrong on two counts,
+both caught by the B12 review rather than by this session.** First, the
+review found the fix above was itself loose enough that a control with no
+focus ring at all could pass - see "B12 review remediation, closed" below
+for the corrected algorithm and its verification. Second, two of the plan's
+own fallbacks were taken without being named here (axe RU-only at
+360/390/768, the focus walk at 1180 only against the plan's "1180 and 360"),
+and `states.js` cases 4/5 use `d.click` where the plan's text says `press`
+- recorded in `handoff.md`, "Deferred", rather than fixed, per the
+coordinator's instruction not to widen the remediation cycle's scope.
+
+`docs/specs/COVERAGE.md`'s split matched decided 4
 exactly once checked against C1's actual diff: C1's commit message
 (`a52c17d`) shows the "axe row" the plan assigned to C2 was written together
 with the threshold-table rewrite in one paragraph of the same commit, so
@@ -13144,6 +13155,51 @@ measured wall clocks, and the acceptance-criteria checks are in
 
 **Next batch: B12.1** (named above, "the router does not reproduce the live
 app's bare-vs-unreadable address distinction") - not started this session.
+
+#### B12 review remediation, closed (implementer, 2026-09-12)
+
+Single remediation cycle, per the coordinator: fix, re-gate, commit, push,
+document - no replanning, no widened scope. Two blockers:
+
+1. **`focusWalk`'s fix above was itself wrong.** The reviewer's replay
+   (verdict computed twice per real Tab stop - once genuinely focused, once
+   with the element forcibly blurred a settle later) found the OR-combined
+   `outline || box || border` check still passed while blurred on over a
+   third of `#/roll/std`'s stops alone, and the same shape on all six
+   `FOCUS_WALK` addresses (894 stops total). Two mechanisms: a permanent
+   ancestor drop shadow (`.card`, `.panel`) satisfies the box-shadow arm
+   with no notion of focus, and a resting gold border (`.chip.on`,
+   `.homebtn.on`) satisfies the border arm the same way. Fixed by requiring
+   the indicator to change - read each of the three separately per depth,
+   compare a genuinely-focused reading against a genuinely-blurred one
+   (settled the same way animations already were, so a transitioning
+   box-shadow is not read mid-flight), and restore focus afterward so the
+   next real Tab continues the walk. A first pass at this fix still
+   combined the three into one flag *before* comparing, which hid a real,
+   measured outline transition (`outlineStyle` solid-to-none on blur)
+   behind a permanently-true border at the same depth on exactly the
+   controls the review named - caught by re-running the reviewer's own
+   replay before committing, not after. The corrected version tracks
+   outline/box/border independently and requires any one, not the combined
+   flag, to flip. Blurred-state replay after the fix: zero
+   pass-when-blurred at every address (56/704/31/76/23/4 stops), full
+   detail and the exact counts in `handoff.md`.
+2. **`docs/specs/COVERAGE.md:55` cited `D9`, which has never existed.**
+   Corrected to cite `plan.md`, "B12.1 named" - matching
+   `tests/app/contracts.js:148-156`'s own citation for the same two
+   skipped route fixtures.
+
+One nit taken by exception (gate-exempt, the file already open): `DEBT.md`
+D7 named the wrong markup and the wrong trigger (money-help captions on a
+priced list; the real nodes are the note-pair hints on a list with a note
+open) - corrected, the live-shared finding itself unchanged.
+
+Everything else the review raised is deferred, per the coordinator's
+instruction - the verbatim list is in `handoff.md`, "Deferred", for
+whichever batch opens these files next (most likely B12.1).
+
+Commit: `9ced2b3` (`fix(app): require the focus ring to change on focus,
+not merely exist`). Pushed; `origin/main` matches.
 
 #### Phase 6 and 7 - what this pass adds to their outlines
 

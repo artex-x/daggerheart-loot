@@ -6,6 +6,102 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B12 review remediation CLOSED - both blockers fixed,
+  gates green, committed and pushed** (implementer, 2026-09-12, single
+  remediation cycle per the coordinator's instruction - no replanning, no
+  widened scope). HEAD at dispatch `ddd7e11`, matching `origin/main`; tree
+  clean but for the untracked `issues/tg-preview-refresh/`.
+  - **Blocker 1 - the widened `focusWalk` (9a4f8db) was loose enough that a
+    control with no focus styling passed.** The reviewer's own replay
+    (verdict computed twice per stop, once focused and once forcibly
+    blurred) found 25/56 stops passing-while-blurred on `#/roll/std` alone,
+    and the same shape on all six `FOCUS_WALK` addresses (704/41, 31/2,
+    76/2, 25/5, 4/3). Two mechanisms: the ancestor walk had no notion of
+    focus (`.card`/`.panel`'s permanent drop shadow satisfied it), and the
+    border arm didn't require the gold border to be focus-dependent
+    (`.chip.on`/`.homebtn.on` carry one at rest).
+    - **First fix attempt was itself wrong, caught by re-running the
+      reviewer's replay before committing rather than after.** Comparing a
+      single OR-combined `outline || box || border` boolean before and
+      after blur still failed 5 real stops (`BUTTON.homebtn`, four
+      `BUTTON.chip`/`A.chip`) - not because they lack a ring, but because
+      their genuinely-changing outline (measured directly: `outlineStyle`
+      solid-to-none on blur) sits behind a permanently-true gold border at
+      the same depth, and OR-ing the three into one flag per depth hides
+      the outline's own transition behind the border's constant true.
+      Found by probing the two failing element classes directly
+      (`document.activeElement`'s own computed style, focused vs blurred,
+      read node by node) rather than trusting the first fix's own green
+      run. **Second fix**: track outline/box/border as three separate
+      booleans per depth, and require any *one* of the three - not the
+      combined flag - to be true focused and false blurred. Re-ran
+      `node tests/app/sweep.js 1180` alone: clean.
+    - **Blurred-state replay after the second fix, all six addresses,
+      pass-when-blurred column**:
+      ```
+      бросок d12                    stops=56   visible=56   pass-when-blurred=0
+      таблица (фильтры открыты)     stops=704  visible=704  pass-when-blurred=0
+      списки                        stops=31   visible=31   pass-when-blurred=0
+      список                        stops=76   visible=76   pass-when-blurred=0
+      карточка                      stops=23   visible=23   pass-when-blurred=0
+      поиск                         stops=4    visible=4    pass-when-blurred=0
+      ```
+      Zero at every address (894 stops total), and every stop also reads
+      `visible=true` against its real, once-focused reading - the
+      `.numbox`/`.lrow-meta` finds that started this are unaffected. The
+      replay script itself is a standalone probe (not the shipped
+      `focusWalk`), written to catch an implementation bug the shipped
+      logic's own success couldn't reveal on its own; disposable, not
+      kept.
+  - **Blocker 2**: `docs/specs/COVERAGE.md:55` cited `D9`, which has never
+    existed in `DEBT.md` (confirmed: `D9` appeared exactly once in the
+    whole repository, on that line). Corrected to cite `plan.md`,
+    "B12.1 named" - matching `tests/app/contracts.js:148-156`'s own
+    citation for the same two skipped route fixtures.
+  - **Nit taken while `DEBT.md` was already open (in scope by the
+    coordinator's own exception)**: D7's "Where" named `ListPage.svelte`'s
+    money-mode help captions and a nonexistent "money-help `<p>`'s two
+    `<i>` runs" selector; the real failing nodes are the note-pair hints
+    (`notePubHint`/`noteHidHint`, `app/src/lib/dict.ts:309-310`, rendered
+    at `ListPage.svelte:538`/`:556` inside `.lnote > .npair >
+    .nfield.n-pub`/`.n-hid > .nlbl > i`), triggered by a list with a NOTE
+    open, not by a priced entry - `#/lists/b` and `#/lists/empty` read
+    clean because they carry no note, not because they carry no price.
+    Both the "Where" and "How to verify the fix" bullets corrected; the
+    live-shared finding itself needed no change.
+  - **Gates, this tree, in the coordinator's stated order:**
+    - `node tests/app/sweep.js 1180` alone - clean, twice (once per fix
+      attempt), plus the blurred-state replay above.
+    - `set -o pipefail; node tests/run-all.js
+      app/sweep,app/typo,app/hues,app/contracts 2>&1 | tail -n 120` -
+      foreground, one call, **567.8s slowest entry, all seven suites
+      green**. `check:built` and the parity call were not re-run per the
+      coordinator's instruction (no production file changed this cycle).
+    - `set -o pipefail; npm run check 2>&1 | tail -n 120`, run bare with no
+      wrapper (the near-miss from wrapping it in `time (...)` is recorded
+      in the prior entry and was not repeated). **Attempts 1-3 hit the
+      same `searchPage.test.ts` load-timeout as before** (each ~104s
+      total vitest duration, near-identical shape each time - confirmed a
+      load artifact, not a regression, by running
+      `npx vitest run --coverage --maxWorkers=4` directly on the same
+      unchanged tree: clean, full coverage, thresholds held). **Attempt 4
+      ran the full 1007-test suite clean, exit 0**, coverage thresholds
+      held identically (96.59/88.55/97.02/97.29), and armed the gate.
+  - **Commit**: `9ced2b3` (`fix(app): require the focus ring to change on
+    focus, not merely exist`), 3 files, 79 insertions / 34 deletions.
+  - **Pushed**: confirmed via `git fetch origin main` -
+    `origin/main` reads `9ced2b353b5fd3951ba69405370dae97733554b3`, matching
+    local HEAD exactly (the push itself printed a
+    `credential-cache unavailable` line to stderr, as it did for the prior
+    two commits - harmless, the ref update landed both times).
+  - **Everything else the review raised is deferred**, per the
+    coordinator's instruction not to widen scope - see "Deferred" below
+    for the verbatim list B12.1 (or whichever batch opens these files
+    next) should pick up.
+  - Last agent: implementer
+  - NEEDS_HUMAN_CONFIRMATION: no
+  - Branch: `main`; HEAD `9ced2b3`, `origin/main` the same commit.
+
 - Task status: **B12 CLOSED - C2 and C3 committed and pushed; all gates
   green; B12.1 is the named next batch** (implementer, 2026-09-12). Every
   file C2 and C3 needed was already written and saved in the working tree
@@ -5052,6 +5148,39 @@ reopened.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **B12 review nits, deferred by the coordinator's own instruction
+  (2026-09-12) - do not act on these until B12.1 or whatever batch opens
+  these files next.** Recorded verbatim enough to pick up without
+  re-reading the review:
+  1. `tests/app/typo.js:11-12` promises a missing grip "fails loudly", but
+     `softClick` at line 50 and the inner `hit()` are both silent - a
+     renamed `Фильтры` or `.helpbtn` would silently stop checking that
+     panel rather than failing the suite.
+  2. `issues/47/plan.md`'s "B12 built" section says nothing else deviated,
+     but two of the plan's own fallbacks were taken without being listed:
+     axe RU-only at 360/390/768 (`tests/app/sweep.js:286`) and the focus
+     walk at 1180 only (`tests/app/sweep.js:310`, against the plan's
+     "1180 and 360"); also, `tests/app/states.js` cases 4/5 use `d.click`
+     where the plan's own text says `press`.
+  3. `app/src/App.svelte:82-87`'s comment claims the `<h1>` "carries no
+     rendered style of its own beyond what `.todo` already sets" - `.todo`
+     sets only colour, family and size, and there is no `h1` reset in
+     `styles/tokens.css`, so the UA's bold weight and `.67em` margins now
+     apply. Harmless (nothing gates it), but the sentence is false.
+  4. `docs/specs/DEBT.md` now reads D7, D10, D8, D4 in file order - D10 was
+     inserted mid-sequence rather than appended, so the numbering no
+     longer reads in order top to bottom.
+  5. `vite.config.mts:127-131`'s exclusion comment says
+     `src/ports/image.ts` "is exercised for real by states.js's copy-image
+     case" - the case does drive it, but D10 establishes the path cannot
+     actually complete under `file://` on either app, so the exclusion's
+     warrant is thinner than the comment reads; worth tightening once
+     D10 itself is picked up.
+  Also fixed while in the handoff, not deferred: the plain factual slip in
+  the entry below this one and in this session's own prior commit
+  message - `CLAUDE.md` is **197 lines**, not 198 as both claimed
+  (confirmed again: `wc -l CLAUDE.md` reads 197 on the current tree).
 
 - **B11.1's review nits (reviewer, opus, read-only, 2026-09-12; verdict
   approve, no blockers).** Recorded by the orchestrator, not acted on.
