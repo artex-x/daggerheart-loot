@@ -1,9 +1,8 @@
-// PreToolUse(Bash): seven rule families evaluated in order, first deny wins.
-// See issues/65/plan.md section 4, hook 2, for the full specification -
-// this file follows it literally, including the sanitiser/segmenter and
-// the exact trap table. Never blocks anything not listed there. segmentInfo
-// already skips READERS and unwraps env/command/nohup/time/xargs, so
-// `echo npm run check` never matches and `nohup npm run check` does.
+// PreToolUse(Bash): eight rule families evaluated in order, first deny wins.
+// See .claude/README.md, "Hooks", for what each family blocks and for the
+// sanitiser's known limits. Never blocks anything not listed there.
+// segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
+// so `echo npm run check` never matches and `nohup npm run check` does.
 
 import { spawnSync } from 'node:child_process';
 import {
@@ -14,6 +13,8 @@ import {
   once,
   repoRoot,
   relPath,
+  pathKey,
+  git,
   sanitize,
   segments,
   tokensOf,
@@ -69,7 +70,12 @@ const MSG = {
   backgroundCheck:
     "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `set -o pipefail; npm run check 2>&1 | tail -n 120` (the prefix makes the exit code the check's).",
   parityLock: (cmd, holder) =>
-    `Blocked: a parity run is alive on this tree (${holder}), and \`${cmd}\` beside it corrupts both - test-output/parity/ is wiped per run, and vitest next to a live parity run throws spurious 5000ms timeouts. Wait for it to finish; if no parity run is actually alive (a crashed run whose pid was reused), delete test-output/parity.lock.`
+    `Blocked: a parity run is alive on this tree (${holder}), and \`${cmd}\` beside it corrupts both - test-output/parity/ is wiped per run, and vitest next to a live parity run throws spurious 5000ms timeouts. Wait for it to finish; if no parity run is actually alive (a crashed run whose pid was reused), delete test-output/parity.lock.`,
+  orphanPlan: (target, hits) => {
+    const shown = hits.slice(0, 4).join(', ');
+    const more = hits.length > 4 ? ', ...' : '';
+    return `Blocked: ${target} is still cited by ${hits.length} tracked line(s): ${shown}${more}. Retiring a plan.md leaves those pointing at nothing. Closeout step 6: move the durable content to its permanent home (.claude/README.md for tooling rationale, docs/specs/ for behaviour), update every citation, and remove the file in that same commit.`;
+  }
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -181,6 +187,74 @@ function evaluateBlocklist(segList, cwd) {
         return { id: 'rm-rf-repo', message: MSG.rmRfRepo };
       }
     }
+  }
+  return null;
+}
+
+// ---------- 2i: deny removing a still-cited issues/<id>/plan.md ----------
+//
+// bash-guard.mjs is the only site with both the input (the rm/git-rm
+// target, before the file is gone) and the timing (before the retirement
+// commit). edit-guard.mjs never sees a deletion; session-stop.mjs would
+// fire on history rather than on the action, after the content is only
+// recoverable from git history; selftest.mjs cannot be the rule, since it
+// runs inside npm run check and a .md-only retirement commit is gate-exempt.
+// See .claude/README.md, "Hooks", row 40, for the rejected sites and the
+// fallback (a speak instead of a deny) if this proves too blunt in use.
+
+const PLAN_MD_RE = /^issues\/[^/]+\/plan\.md$/;
+
+function orphanPlanTargets(segList, cwd) {
+  const targets = new Set();
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    const { tokens, program } = info;
+    let candidateTokens = null;
+    if (program === 'rm') {
+      candidateTokens = tokens.slice(1);
+    } else if (program === 'git') {
+      const { subcommand, rest } = gitSubcommand(tokens);
+      if (subcommand === 'rm') candidateTokens = rest;
+    }
+    if (!candidateTokens) continue;
+    for (const token of candidateTokens.filter((t) => !t.startsWith('-'))) {
+      const rel = relPath(token, cwd);
+      if (!rel) continue;
+      const key = pathKey(rel);
+      if (PLAN_MD_RE.test(key)) targets.add(key);
+    }
+  }
+  return [...targets];
+}
+
+/** Tracked lines citing `target` (a repo-relative, folded path), as
+ * "file:line" strings. `git()` returns null on a non-zero exit, which
+ * covers both "no matches" and "git unavailable" - both mean no deny, and
+ * this function must not try to tell them apart. Drops any hit inside the
+ * target file itself. */
+function citingLines(target) {
+  const out = git(['grep', '-n', '--fixed-strings', '--', target]);
+  if (out === null) return [];
+  const hits = [];
+  for (const row of out.split('\n')) {
+    if (!row) continue;
+    const first = row.indexOf(':');
+    if (first === -1) continue;
+    const file = row.slice(0, first);
+    const rest = row.slice(first + 1);
+    const second = rest.indexOf(':');
+    const line = second === -1 ? rest : rest.slice(0, second);
+    if (pathKey(file) === target) continue;
+    hits.push(`${file}:${line}`);
+  }
+  return hits;
+}
+
+function evaluateOrphanPlan(segList, cwd) {
+  for (const target of orphanPlanTargets(segList, cwd)) {
+    const hits = citingLines(target);
+    if (hits.length) return { id: 'orphan-plan', message: MSG.orphanPlan(target, hits) };
   }
   return null;
 }
@@ -439,6 +513,9 @@ guard(() => {
 
   const blocked = evaluateBlocklist(segList, cwd);
   if (blocked) return deny(event, blocked.message);
+
+  const orphanPlan = evaluateOrphanPlan(segList, cwd);
+  if (orphanPlan) return deny(event, orphanPlan.message);
 
   const blanket = evaluateBlanketStage(segList, cwd);
   if (blanket) return deny(event, blanket.message);

@@ -4,8 +4,8 @@
 // LOOT_HOOK_STATE_DIR at a throwaway git repo in the OS temp directory,
 // built once and reused, removed in a finally.
 //
-// See issues/65/plan.md section 7 and issues/hooks-guardrails/plan.md
-// section 5 for the full case list this file implements (numbered #1-#101
+// See .claude/README.md, "Hooks", and issues/hooks-guardrails/plan.md
+// section 5, for the case list this file implements (numbered #1-#111
 // in the comments below).
 
 import { spawnSync } from 'node:child_process';
@@ -129,6 +129,9 @@ function setupScratch() {
   writeFile('issues/65/context.md', '# context\n');
   writeFile('issues/65/plan.md', '# plan\n');
   writeFile('issues/65/handoff.md', '# handoff\n');
+  // A committed file citing issues/65/plan.md, for the orphan-plan rule
+  // (#102-#104): it stays clean throughout, so no dirty-path count moves.
+  writeFile('tools/cites-plan.js', '// See issues/65/plan.md section 4.\n');
 
   gitSh(['init', '-q']);
   gitSh(['add', '-A']);
@@ -337,6 +340,50 @@ function testBashSilentCases() {
     const result = runHook('bash-guard.mjs', bashPayload(command));
     check(`${label}: exit 0`, result.status === 0);
     check(`${label}: silent`, isSilent(result), result.stdout);
+  }
+}
+
+// ---------- bash-guard.mjs: rule 2i, orphan plan citation (#102-#107) ----------
+
+function testOrphanPlan() {
+  const target = 'issues/65/plan.md';
+  const citingFile = path.join(scratchRoot, 'tools', 'cites-plan.js');
+
+  {
+    const result = runHook('bash-guard.mjs', bashPayload(`rm ${target}`));
+    check('#102 rm issues/65/plan.md: denies', isDeny(result), JSON.stringify(result.json));
+    check(
+      '#102 rm issues/65/plan.md: reason names the citing file and the target',
+      denyReason(result).includes('tools/cites-plan.js') && denyReason(result).includes(target),
+      denyReason(result)
+    );
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload(`git rm ${target}`));
+    check('#103 git rm issues/65/plan.md: denies', isDeny(result), JSON.stringify(result.json));
+  }
+  {
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, '// nothing to see here.\n');
+    const result = runHook('bash-guard.mjs', bashPayload(`rm ${target}`));
+    check('#104 no remaining citation: silent', isSilent(result), JSON.stringify(result.json));
+    fs.writeFileSync(citingFile, original);
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('rm issues/65/handoff.md'));
+    check('#105 rm handoff.md: silent - scoped to plan.md', isSilent(result), result.stdout);
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('rm app/src/lib/x.ts'));
+    check('#106 rm an unrelated file: silent', isSilent(result), result.stdout);
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload(`echo rm ${target}`));
+    check(
+      '#107 echo rm issues/65/plan.md: silent - READERS already covers it',
+      isSilent(result),
+      result.stdout
+    );
   }
 }
 
@@ -1314,6 +1361,88 @@ async function testSessionStop() {
       systemMessage(result)
     );
   }
+
+  // #108-#111 - this session's own untracked writes, named in a sentence
+  // separate from "uncommitted work", excluding docs/ and the task-document
+  // set (row 39).
+  const candSession = 's-stop-candidates';
+  writeFile('tools/scratch-tmp.js', '// scratch\n');
+  recordWrite(candSession, 'tools/scratch-tmp.js');
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: candSession,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    check(
+      '#108 untracked session write: named',
+      systemMessage(result).includes('tools/scratch-tmp.js'),
+      systemMessage(result)
+    );
+  }
+
+  writeFile('issues/99/plan.md', '# scratch plan\n');
+  writeFile('docs/specs/NEW.md', '# scratch spec\n');
+  recordWrite(candSession, 'issues/99/plan.md');
+  recordWrite(candSession, 'docs/specs/NEW.md');
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: candSession,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    check(
+      '#109 excluded untracked writes: neither name appears',
+      !systemMessage(result).includes('issues/99/plan.md') &&
+        !systemMessage(result).includes('docs/specs/NEW.md'),
+      systemMessage(result)
+    );
+  }
+
+  const candCaseSession = 's-stop-candidate-case';
+  const candMixedCase = 'tools/ScratchTmp.js';
+  writeFile(candMixedCase, '// scratch\n');
+  {
+    const recorded = runHook(
+      'edit-followup.mjs',
+      editPayload(path.join(scratchRoot, ...candMixedCase.split('/')), {
+        session_id: candCaseSession,
+        event: 'PostToolUse'
+      })
+    );
+    check('#110 setup write: silent', isSilent(recorded), recorded.stdout);
+  }
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: candCaseSession,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    check(
+      '#110 mixed-case candidate: named with its own spelling',
+      systemMessage(result).includes(candMixedCase),
+      systemMessage(result)
+    );
+  }
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: candCaseSession,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    check('#111 second Stop, unchanged state: silent', isSilent(result), result.stdout);
+  }
+
+  // Clean up this block's own untracked scratch so testFailOpen() sees the
+  // tree it expects.
+  fs.rmSync(path.join(scratchRoot, 'tools/scratch-tmp.js'), { force: true });
+  fs.rmSync(path.join(scratchRoot, 'issues/99/plan.md'), { force: true });
+  fs.rmSync(path.join(scratchRoot, 'docs/specs/NEW.md'), { force: true });
+  fs.rmSync(path.join(scratchRoot, candMixedCase), { force: true });
 }
 
 // ---------- fail-open contract, all eight scripts (#56-58) ----------
@@ -1380,6 +1509,7 @@ async function main() {
   try {
     testBashDenyCases();
     testBashSilentCases();
+    testOrphanPlan();
     testBlanketStaging();
     testCommitAttribution();
     await testCommitGateAsync();
