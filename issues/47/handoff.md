@@ -6,6 +6,117 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B12 CLOSED - C2 and C3 committed and pushed; all gates
+  green; B12.1 is the named next batch** (implementer, 2026-09-12). Every
+  file C2 and C3 needed was already written and saved in the working tree
+  at dispatch (per the entry below); this session's job was gates, precise
+  staging, two commits, the push, then these documents. HEAD at dispatch
+  `9174923`, matching `origin/main`; unchanged by anything until the
+  commits below.
+  - **Gates before C2, each one foreground call, run in order:**
+    - `npm run check:built` - build, smoke, budget all green, **8.4s**.
+    - `node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts` -
+      **first isolated run of `node tests/app/sweep.js 1180` alone (done to
+      separate a real finding from host-load flake before touching
+      anything) reproduced two failures identically twice**: `бросок d12
+      @1180 ru` and `список @1180 ru`, "нет видимого focus-ring". Root-caused
+      by reading the rendered page directly (not guessed): both are real,
+      visible focus rings the live app also draws (`style.css:217-218` and
+      `:776`, byte-identical in the rewrite) that `focusWalk`'s own
+      element-only outline/box-shadow read could not see - a bug in the test
+      this batch was landing, not a rewrite or live defect. Fixed in
+      `tests/app/sweep.js` (walk a few ancestors for a delegated
+      `:focus-within` ring; compare the element's own border colour against
+      the app's `--gold` token, read live rather than hard-coded). Re-ran
+      `node tests/app/sweep.js 1180` alone: clean. Full detail and the
+      "why fix it here" reasoning: `plan.md`, "B12 built".
+      - The combined call itself: first foreground attempt crossed 600s
+        (background-completed at 666s slowest entry, 11m6s wall - discarded
+        per policy, not salvaged, since a backgrounded run cannot arm
+        anything and this instruction applies to every gate in this
+        section, not only `npm run check`). A second foreground attempt,
+        once the prior run's Chrome processes had fully exited, completed
+        at **542.6s slowest entry / 9m2.7s wall, all seven suites green**.
+    - `MSYS_NO_PATHCONV=1 node tests/parity.js "~ filtered" "#/roll/std"` -
+      6 states / 36 cells, every cell `совпадает`, "расхождений нет",
+      **3m36s**.
+  - **The `focusWalk` edit disarmed the commit gate** (it touches a
+    non-gitignored file) before C2 could be staged. `npm run check` was
+    re-run: first two foreground attempts (**1m59.0s**, then, after
+    discovering the first attempt's cache write never landed - see below -
+    a second at **~2m9s**) each hit the already-documented
+    `searchPage.test.ts` > "the cap" > "shows the first 300 matches" load
+    timeout (confirmed a load artifact both times: 17/17 green alone in
+    ~14s). A third attempt ran the full 1007-test suite clean in one pass,
+    **exit 0, coverage thresholds held (96.59/88.55/97.02/97.29)**, and
+    armed the gate for the tree about to be committed.
+    - **Self-inflicted near-miss, worth naming so it is not repeated**: the
+      first two "successful" `npm run check` runs this session were wrapped
+      as `set -o pipefail; time (npm run check 2>&1 | tail -n 120)` for a
+      wall-clock reading. `check-observer.mjs`'s `isCheckInvocation` requires
+      the check to be the literal first segment after stripping `cd &&`/
+      `set -o pipefail;` prefixes; `time (...)` is not one of those prefixes,
+      so the hook never recognised either run as a real check and never
+      wrote the cache - the commit was refused with "has not passed for this
+      working tree" even though the check had, in fact, just passed. Fixed
+      by dropping `time` and running the exact recommended form,
+      `set -o pipefail; npm run check 2>&1 | tail -n 120`, with no wrapper -
+      that is the run whose cache write is recorded above. Do not wrap
+      `npm run check` in `time`, `script`, or anything else that changes
+      what the first segment is; if a wall-clock reading is wanted, read it
+      from the Bash tool's own duration report instead.
+  - **C2 staging, checked rather than assumed**: `tests/app/lib.js`,
+    `sweep.js`, `typo.js`, `hues.js`, `contracts.js` added by name (not
+    `tests/app/`, which also holds C3's untracked `states.js`);
+    `FilterBar.svelte`, `Chip.svelte`, `StdPanel.svelte`; `App.svelte`,
+    `shell.test.ts` (the sweep's own `<h1>` find and its pin - staged with
+    C2 per the task's read of the plan); `.github/workflows/ci.yml`,
+    `docs/specs/DEBT.md` (D7, D8, D10). `docs/specs/COVERAGE.md` staged
+    **whole to C3, not split** - checked against `a52c17d`'s actual diff
+    (not assumed from the plan): C1 already wrote the "axe row" together
+    with the threshold-table rewrite in one paragraph, so C2's file list has
+    nothing left in that file. `CLAUDE.md` staged whole to C3 (its one line
+    is entirely C3's). `tests/run-all.js` split by content, not by hunk -
+    `git hash-object`/`git update-index --cacheinfo` staged a blob with
+    only C2's five new `SUITES` entries, leaving the `app/states` line in
+    the working tree for C3 - `git diff --cached` confirmed the staged
+    version excluded exactly that one line, nothing else.
+  - **Commit C2**: `9a4f8db` (`test(app): the built app swept in a real
+    browser`), 13 files, 1119 insertions / 5 deletions. Full message in the
+    commit itself.
+  - **Gate for C3**: `node tests/run-all.js app/states` - **61.5s, all
+    thirteen cases green on the first attempt**, no re-run needed.
+  - **C3 staging**: `tests/app/states.js`; `tests/run-all.js`'s remaining
+    `app/states` line; `CLAUDE.md` (confirmed 197 lines before the edit, 198
+    after - under the 200-line cap); `docs/specs/COVERAGE.md`'s remainder
+    (the whole file, per the finding above).
+  - `npm run check` before C3: **64.7s, exit 0, first attempt, no flake this
+    time**, coverage thresholds held identically. Gate armed for the C3
+    tree.
+  - **Commit C3**: `4adc5a5` (`test(app): the states a real click reaches,
+    and the coverage matrix`), 4 files, 462 insertions / 31 deletions.
+  - **Pushed**: `git push` (a `credential-cache unavailable` line printed to
+    stderr but the push itself succeeded - confirmed by `git fetch origin
+    main` reading `origin/main` at `4adc5a576e3c7b59a447b0a66e5ad6fa1c5e4139`,
+    matching local HEAD exactly).
+  - **Acceptance criteria checked directly, not assumed**: `git show 9a4f8db
+    -- app.js style.css index.html` and the same for `4adc5a5` both empty;
+    `git diff HEAD -- tests/parity/specs.js` empty (no parity state's `enter`
+    changed all session); `git log --oneline -- tests/parity/driver.js`
+    shows nothing past `a52c17d` (`press`/`click` untouched by C2 or C3);
+    `issues/tg-preview-refresh/` still `??` in `git status`, three files,
+    untouched.
+  - **What remains**: **B12.1**, named in `plan.md` ("the router does not
+    reproduce the live app's bare-vs-unreadable address distinction") - not
+    started. Also open, from B12's own probe (not blocking, not this
+    batch's): D7/D8/D10 in `docs/specs/DEBT.md` are recorded, not fixed, by
+    design (parity - the tokens/DOM are shared globally, and D10's fix needs
+    a real behaviour decision). Phase 6 and the rest of Phase 7 remain
+    outline-only per `plan.md`.
+  - Last agent: implementer
+  - NEEDS_HUMAN_CONFIRMATION: no
+  - Branch: `main`; HEAD `4adc5a5`, `origin/main` the same commit.
+
 - Task status: **B12 still blocked on the C2 gate - but the tree is proved
   green and the blocker is re-diagnosed** (orchestrator, 2026-09-12,
   scheduled run). No production code, no test code, no config touched;

@@ -13078,6 +13078,73 @@ opposite shape.
   fixture gets.
 - **Recorded by**: B12, 2026-09-12.
 
+#### B12 built (implementer, 2026-09-12) - closed, all three commits pushed
+
+C1 `a52c17d` landed in an earlier session (blocked, then unblocked, by host
+load - see `handoff.md`'s "Status" history). This session's job was C2 and
+C3 only: the gates, precise staging, two commits, the push, then these
+documents - no design work was expected, and none was needed for the file
+list itself. One real deviation surfaced while running gate 2 for the first
+time, below.
+
+**Deviation: `tests/app/sweep.js`'s `focusWalk` had a real gap, found and
+fixed in this session, not by the plan or by C1.** Running
+`node tests/app/sweep.js 1180` (isolated, to rule out host-load flake before
+touching anything) reproduced, identically twice, two failures:
+`бросок d12 @1180 ru` and `список @1180 ru` reporting no visible focus ring
+on an `INPUT`. Read off the rendered page rather than guessed:
+
+- `#/roll/std`'s custom-modifier field is `NumberField.svelte`'s `.numbox`
+  wrapper; its own `input[type=text]:focus` rule suppresses both outline and
+  box-shadow and raises the ring on the wrapper instead, via
+  `.numbox:focus-within` - byte-identical to `style.css:217-218`.
+- `#/lists/a`'s qty/gold fields (`ListPage.svelte`) swap only their border
+  colour to `--gold` on focus, with neither outline nor box-shadow -
+  byte-identical to `style.css:776`.
+
+Both are live-shared, faithfully ported focus styles; `focusWalk`'s own
+element-only outline/box-shadow read was too narrow to see either shape,
+which is a bug in the test this batch was landing, not a defect on either
+app's side - `CLAUDE.md`'s "fix cheap, local, safe bugs...in a touched path"
+squarely covers it, and fixing it here (rather than reporting and stopping)
+kept C2 inside its own gate rather than deferring a false-negative check to a
+named follow-up batch that would have bought nothing. Fixed by walking up to
+four ancestors for a delegated box-shadow ring, and by comparing the
+element's own border colour against the app's one accent token
+(`getComputedStyle` of a probe element carrying `border-color: var(--gold)`,
+so the comparison is against what the browser actually resolves the token
+to, not a hard-coded value) rather than special-casing either component.
+Re-ran `node tests/app/sweep.js 1180` alone afterward: clean. This edit
+disarmed the commit gate (it touches a non-gitignored file), so `npm run
+check` was re-run before C2 could commit - see `handoff.md` for the exact
+attempts and their wall clocks, including two hits of the already-documented
+`searchPage.test.ts` load-timeout flake.
+
+Nothing else deviated. `docs/specs/COVERAGE.md`'s split matched decided 4
+exactly once checked against C1's actual diff: C1's commit message
+(`a52c17d`) shows the "axe row" the plan assigned to C2 was written together
+with the threshold-table rewrite in one paragraph of the same commit, so
+C2 has nothing left in that file - the whole remaining diff (the suite
+table with fates, the browser-adapters paragraph, "Known thin spots") is
+C3's, confirmed by diffing line ranges against where "What is enforced, and
+by what" (line 208) sits relative to the untouched region. `App.svelte` and
+`shell.test.ts` (the `<h1>` fix and its pin) were staged in C2, per the
+task's own read of the plan: they are the suite's own step-1-probe find,
+found by the suite C2 lands, and belong with it rather than dangling into
+C3. D10 (found while writing C3's `states.js` case 10) is recorded in
+`DEBT.md` as part of C2's commit rather than C3's, since that file records
+by defect, not by which commit's tests found it, and D7/D8 - also axe
+findings against `dist/` - already live there.
+
+Commits: C2 `9a4f8db` (`test(app): the built app swept in a real browser`),
+C3 `4adc5a5` (`test(app): the states a real click reaches, and the coverage
+matrix`). Both pushed; `origin/main` is `4adc5a5`. Full gate commands, their
+measured wall clocks, and the acceptance-criteria checks are in
+`handoff.md`.
+
+**Next batch: B12.1** (named above, "the router does not reproduce the live
+app's bare-vs-unreadable address distinction") - not started this session.
+
 #### Phase 6 and 7 - what this pass adds to their outlines
 
 - Phase 6's one batch: the `deploy` job's "Collect what the site is made
