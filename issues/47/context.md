@@ -2994,3 +2994,55 @@ the site goes live.
 Sequencing consequence already agreed: **B12.1 lands before the flip.** It
 is a defect on the public entry point - a bare `#/` has its address bar
 wrongly rewritten - so it is fixed while the old app is still the fallback.
+
+## The entry document was never ported (planner, 2026-09-12) - durable, read before the cut-over
+
+Measured by reading `index.html` against `app/index.html` on `aac1453`, not
+inferred. Nothing in the tree compares the two documents' heads: parity shoots
+pixels after the app has booted, and its `title` spec reads `page.title()`
+after `Shell.svelte:28` has overwritten the static title with
+`app.t.docTitle`. So this has been invisible since Phase 1.
+
+`app/index.html` - and therefore `dist/index.html`, which the build emits from
+it with only the script tags rewritten - is missing all of this, which
+`index.html` has:
+
+- `viewport-fit=cover` on the viewport meta. `SelBar.svelte:77,98,99` uses
+  `env(safe-area-inset-*)` (ported from `style.css:53-54`), and without
+  `viewport-fit=cover` those resolve to 0 on a notched phone.
+- `<title>` "Генератор лута — Daggerheart". The rewrite's static title reads
+  "Генератор лута для Daggerheart"; `dict.ts:22` already carries live's string
+  for the runtime write, so only the static one is wrong.
+- `<meta name="description">` (which is where the 680 / 381 counts live).
+- `<meta name="color-scheme" content="dark">` (`tokens.css:13` sets the CSS
+  property; the meta covers the paint before the bundle runs).
+- The whole Open Graph and Twitter block: `og:title`, `og:description`,
+  `og:url`, `og:locale` + alternate, and `og/_share.jpg` at 1200x630. This is
+  **the site's own link preview**, chosen deliberately over an item's artwork
+  - `index.html`'s own comment explains why - and `META.md` section 2 is about
+  messenger previews mattering here.
+- `<link rel="icon">`, a data: SVG.
+- The `<noscript>` block: what the site is and links to `catalog.csv`,
+  `data.json` and `llms.txt`, in both languages. Its comment says it exists
+  because a reader without JS "saw an empty page and left with nothing", which
+  is exactly what `llms.txt` and `robots.txt` promise against.
+
+Consequence: "point the deploy step at `dist/`" is not a complete cut-over.
+Whoever performs it ports the entry document in the same batch - see
+`plan.md`, "B13 planned". Two mechanical traps found with it: `app/index.html`
+is **not** in `.prettierignore` (the root `index.html` is), so the ported
+markup is reformatted and will never be byte-identical to its source - compare
+parsed values; and the `<noscript>` block's `class="wrap"` resolves to nothing
+in the rewrite, where that class lives inside Svelte-scoped components.
+
+Two related readings taken at the same time, both durable:
+
+- **The rewrite states no record count anywhere** (no "запис", "позици",
+  "records" or "entries" count string in `app/src`). So `tests/derived.js`'s
+  `COUNTERS` check has nothing in the built app to re-point at; the counts
+  reach the published site only through the entry document's meta description
+  and `<noscript>` block, and through `llms.txt`, `robots.txt` and the
+  READMEs.
+- **The stub pages need no edit at the cut-over.** `tools/build-share-pages.js:96`
+  sends every stub to `SITE + '#/i/' + id` - the site root - which is exactly
+  the document that changes hands.

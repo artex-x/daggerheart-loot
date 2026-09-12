@@ -6,7 +6,43 @@ depends on chat history.
 
 ## Status
 
-- Task status: **B12 review remediation CLOSED - both blockers fixed,
+- Task status: **Phase 5 CLOSED; Phase 6 replanned; B12.1 is the next batch
+  and is implement-ready** (planner, 2026-09-12, planning pass only - no
+  production, test or config code written). HEAD `aac1453`, matching
+  `origin/main`; tree clean but for the untracked `issues/tg-preview-refresh/`,
+  which belongs to another task and must be left alone.
+  - Last agent: planner. NEEDS_HUMAN_CONFIRMATION: **no**.
+  - **What changed the plan.** `gh api repos/:owner/:repo/pages` reads
+    `"build_type": "workflow"` - Pages is already served by Actions, so the
+    "Pages flip" two sections of `plan.md` were built around does not exist as
+    pending work. What publishes the old app is one step in
+    `.github/workflows/ci.yml`'s `deploy` job. The three stale spots are
+    corrected in place in `plan.md` (the Phases table's Phase 6 row, Phase 8's
+    "Where the phase sits" entry condition 2, and the "Phase 6 and 7" outline),
+    each showing what was believed beside what was measured; `ci.yml`'s own
+    `deploy` comment block is stale the same way and is rewritten by B13.
+  - **Owner decision, 2026-09-12: publish early, delete later.** The flip is
+    reversible: point the deploy step at the built output while
+    `index.html`/`app.js`/`style.css` stay in the repository and parity keeps
+    running against them. Phase 7's deletions move behind the flip and now have
+    their own entry condition.
+  - **New order**: `B12.1 -> B13 (the flip) -> soak -> Phase 7 R0 -> Phase 8`.
+  - **Found while planning, and it is the reason B13 is more than a workflow
+    edit: the entry document was never ported.** `app/index.html` has no
+    description, no Open Graph or Twitter block, no favicon, no
+    `viewport-fit=cover`, no `color-scheme` meta, no `<noscript>` block, and a
+    `<title>` that differs from live's - so the flip as outlined would publish
+    a page with no link-preview card, no no-JS fallback and no safe-area
+    insets. Nothing compares the two documents' heads today (parity shoots
+    pixels after boot; `page.title()` is read after `Shell.svelte:28` has
+    overwritten the static title). Full table and the fix:
+    `plan.md`, "B13 planned", "the entry document was never ported".
+  - Designs, both implement-ready: `plan.md`, "Phase 6 - the cut-over,
+    replanned" - "B12.1 planned" and "B13 planned". Phase 7's entry condition:
+    the same section, "Phase 7 - what has to be true before the net comes out".
+    B12's deferred nits are placed there too, one row each.
+
+- Task status (previous): **B12 review remediation CLOSED - both blockers fixed,
   gates green, committed and pushed** (implementer, 2026-09-12, single
   remediation cycle per the coordinator's instruction - no replanning, no
   widened scope). HEAD at dispatch `ddd7e11`, matching `origin/main`; tree
@@ -183,8 +219,9 @@ depends on chat history.
   - **Gate for C3**: `node tests/run-all.js app/states` - **61.5s, all
     thirteen cases green on the first attempt**, no re-run needed.
   - **C3 staging**: `tests/app/states.js`; `tests/run-all.js`'s remaining
-    `app/states` line; `CLAUDE.md` (confirmed 197 lines before the edit, 198
-    after - under the 200-line cap); `docs/specs/COVERAGE.md`'s remainder
+    `app/states` line; `CLAUDE.md` (**correction, 2026-09-12: the tree reads
+    197 lines, not the 198 this line claimed** - `wc -l CLAUDE.md` on
+    `aac1453`; either way under the 200-line cap); `docs/specs/COVERAGE.md`'s remainder
     (the whole file, per the finding above).
   - `npm run check` before C3: **64.7s, exit 0, first attempt, no flake this
     time**, coverage thresholds held identically. Gate armed for the C3
@@ -1646,6 +1683,24 @@ carries the measurements; `plan.md`'s "B3.5 built" and "B3.6 built" sections
 carry what was done about it. Do not re-measure any of it.
 
 ## Completed
+
+- Batch name/id: **Phase 6 planning pass** (planner, 2026-09-12, on
+  `aac1453`)
+- What shipped: documents only - no production, test or config code. The three
+  stale "Pages flip" spots in `plan.md` corrected in place, each showing what
+  was believed beside what was measured; a new `plan.md` section, "Phase 6 -
+  the cut-over, replanned", carrying the re-sequenced order, **B12.1 planned**
+  and **B13 planned** (both implement-ready), Phase 7's six-point entry
+  condition, the placement of every B12 deferred nit, and B12's two
+  unrecorded fallbacks written into the file that was missing them.
+- Files changed: `issues/47/plan.md`, `issues/47/handoff.md`.
+- Commit(s): none by this pass; the documents are left for the session's own
+  commit.
+- Deviations and rationale: B13 grew a whole workstream the Phase 6 outline
+  did not have - porting the entry document - because reading `index.html`
+  against `app/index.html` showed the rewrite's page carries none of live's
+  head or `<noscript>` block. Not a deviation from a decision, a gap nothing
+  had measured; the table is in the plan.
 
 - Batch name/id: **B10 - the page furniture as components, and the
   not-found record page** (implementer, 2026-09-11, on `b967481`)
@@ -4173,9 +4228,103 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch (implement-ready)
 
-**B11.1 is closed - committed, all gates green (see "Status" above). The
-next batch is B12, and it is now implement-ready** (planner, 2026-09-12).
-B11.1's and B11's own briefs are kept below only as closed records.
+**B12 is closed - three commits plus the review remediation, all pushed. The
+next batch is B12.1, and it is implement-ready** (planner, 2026-09-12). B13
+is behind it, also designed. B12's, B11.1's and B11's briefs are kept below
+only as closed records.
+
+### B12.1 - the router's bare-vs-unreadable fallback
+
+- Name: **B12.1 - the router's bare-vs-unreadable fallback.** Full design,
+  the four-row divergence table, the rule, the file list, steps 1-9,
+  acceptance and gates: `plan.md`, **"B12.1 planned"** inside "Phase 6 - the
+  cut-over, replanned". That section is the authority where this brief and it
+  differ in detail; the older "B12.1 named" section is the finding it grew
+  from and is still accurate about the defect itself.
+- Objective: make the rewrite read a bare address (`''`/`'#'`/`'#/'`) and an
+  unreadable one (`#/nonsense`) the way the live app does - and the way
+  `docs/specs/ROUTES.md`, "Fallback", already says the app behaves. It lands
+  before the flip because it is a defect on the public entry point: today a
+  bare `#/` has its address bar overwritten, and an unreadable address draws
+  a debug heading instead of a page.
+- In scope: `app/src/state/app.svelte.ts` (the constructor's three lines and
+  `start()`'s `onChange` handler become one stated rule; a doc comment on
+  `hash` saying it is the address as the app reads it, which is not always
+  what is in the bar); `app/src/App.svelte` (the `{:else}` branch, the
+  `.todo` rule and its comment, removed - see the plan for why removed rather
+  than kept, including the coverage argument); `app/src/state/app.test.ts`
+  (one case per row, each asserting `memoryRouter`'s `stack`);
+  `app/src/components/shell.test.ts` (two edits); `tests/app/contracts.js`
+  (delete the skip at 148-156); `tests/app/sweep.js` (line 53's label);
+  `docs/specs/ROUTES.md` ("Fallback" gains the bare-address half, same
+  commit); `issues/47/`.
+- Out of scope: `docs/fixtures/urls/routes.json` (already correct - that is
+  the point), `tests/contracts.js`, `CONTRACTS.md`, `llms.txt`,
+  `tests/parity/specs.js` and any new `STATES` entry, `vite.config.mts`
+  thresholds, the three live root files, anything in B13.
+- Files expected: eight, plus `issues/47/`.
+- Steps: `plan.md`, "B12.1 planned", steps 1-9. In one breath: re-read the
+  two live call sites and confirm the table; the rule in `app.svelte.ts`; the
+  `{:else}` removal; the tests; `check`; `ROUTES.md`; the skip and the label;
+  `check:built` and the two suites; one commit, push, documents.
+- Acceptance criteria: `plan.md`, "B12.1 planned", "Acceptance criteria" - in
+  short: `app/contracts` green with all 26 fixtures read field by field and
+  no `skipped` line; `#/` keeps `#/` in the bar and lights the `#/roll/std`
+  tab; `#/nonsense` ends at `#/roll/std`; `app/sweep` green at four widths
+  with no new axe `allow`; `npm run check` exit 0 with no threshold lowered
+  and no new exclusion; the three live root files untouched.
+- Verification commands (each **one foreground call**, Bash timeout 600000):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - ~165 s idle.
+    **Never wrap it in `time (...)`** - the hook does not recognise that as a
+    check, writes no cache, and the commit is then refused although the check
+    passed (see this file's B12 "self-inflicted near-miss").
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - 8.4 s at B12.
+  - `set -o pipefail; node tests/run-all.js app/contracts,app/sweep 2>&1 | tail -n 120`
+    - if it comes back near the 600 s cap, split it in two rather than
+    backgrounding either half.
+  - No parity call: no `STATES` entry covers a bare or unreadable address, and
+    nothing else in the diff moves a pixel. CI's four shards on the push are
+    the read.
+- Risks / do-nots: do not edit the fixture; do not change what `parseHash`
+  returns for garbage (the kind is right, what the state layer did with it was
+  not); rule 3 leaves `app.hash` and `location.hash` deliberately unequal and
+  the comment must say so; `PrintPage.svelte:68` is the only reader of
+  `canGoBack()`.
+- Fallback: if step 5 shows a coverage threshold moving, report it - do not
+  edit `vite.config.mts` to make it green.
+
+### Behind it: B13 - the reversible cut-over
+
+- Name: **B13 - the reversible cut-over.** Full design: `plan.md`, **"B13
+  planned"**. Three commits: **F1** the entry document and its checks
+  (`app/index.html`, `tests/derived.js`, new `tools/check-site.mjs`,
+  `META.md` section 1, `CONTRACTS.md` section 5's sentence); **F2**
+  `.github/workflows/ci.yml` **and nothing else** - the flip, so a revert is
+  one file; **F3** the documents, with the deploy run id and both check
+  outputs.
+- The published set, assembled explicitly (never `cp -r dist/.`, because
+  `dist/img`, `dist/og` and `dist/card` are symlinks the build makes):
+  `dist/index.html`, `dist/assets/`, `dist/data.js` from the build, plus
+  `data.json catalog.csv llms.txt robots.txt .nojekyll LICENSE img og i card`
+  from the repository. Leaving the published set: `index.html`, `style.css`,
+  `app.js` - which are named in no spec, fixture or external document.
+- Not a contract change: the reasoning clause by clause is in the plan. No
+  `docs/fixtures/`, `tests/contracts.js` or `llms.txt` edit.
+- How a bad deploy is caught and undone: the four gates `deploy` already
+  needs, then the assembly guard (refuse `app.js`/`style.css`, require every
+  path and non-empty `img/og/i/card`, require `noindex` and `assets/app.js`
+  and the absence of `src="app.js"` in the published `index.html`), then
+  `tools/check-site.mjs` against the live URL as the job's last step, then one
+  human walk. Revert = `git revert` the F2 commit and push; the old app is
+  still in the repository and still gated.
+- The parity job stays in CI unchanged through the window - it is what keeps
+  the fallback known-good, and `deploy` needs it.
+- Gates: `npm run check` before F1 and before F2; `check:built` once; the five
+  `tests/app/` suites in **two** calls (`app/sweep`, then the other four) -
+  ~9 minutes across the two, and the combined four-suite call crossed 600 s
+  once under the throttle; no local parity call.
+
+### Closed record: B12 (landed 2026-09-12)
 
 - Name: **B12 - the real-browser layer on `dist/`, and the gates.** Full
   design and the exact step list: `plan.md`, "Phase 5 - the testing
@@ -4435,13 +4584,17 @@ reconstructing what shipped; it is not the next batch.
   `isConnected` guard is ever found insufficient by B12's real-click
   state; the ordering test passes either way.
 
-After B12: **Phase 6** (publish `dist/` - the `deploy` job collects `dist/`
+~~After B12: **Phase 6** (publish `dist/` - the `deploy` job collects `dist/`
 and the generated folders instead of the root files; owner-gated on the Pages
-flip), then **Phase 7** as R0 of the unified 7/8 track (delete the live files
-and the legacy browser suites, port `print`'s geometry, seed the structural
-goldens, retire the parity harness), then **Phase 8** - the review and the
-fixes, with B12's layer as its instrument. Order fixed by decided 8; not
-reopened.
+flip), then **Phase 7** as R0 of the unified 7/8 track...~~
+
+**Superseded 2026-09-12.** Phase 6 is not owner-gated - Pages is already
+`build_type: workflow` - and it is two batches: **B12.1**, then **B13**, the
+reversible flip. Phase 7's deletions move behind the flip with their own entry
+condition (the owner's "publish early, delete later"). Phase 8 still follows
+Phase 7, for the unchanged reason. The order is
+`B12.1 -> B13 -> soak -> Phase 7 R0 -> Phase 8`; see `plan.md`, "Phase 6 - the
+cut-over, replanned".
 
 ## Blockers
 
@@ -5148,6 +5301,22 @@ reopened.
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **PLACED by the planner (2026-09-12).** The B12 nits below are no longer an
+  undifferentiated list; each has a batch or a phase, with the reasoning, in
+  `plan.md`, "B12's deferred nits, placed". In short: nit 1 (`typo.js`'s
+  silent `softClick`) and nit 2b (`states.js` cases 4/5 using `d.click` where
+  the plan says `press`) go to **B13**, which runs all five `tests/app/`
+  suites as its own gate; nit 3 (`App.svelte`'s overclaiming `<h1>` comment)
+  is closed by **B12.1**, which deletes the branch, the comment and the
+  `.todo` rule together; nit 4 (`DEBT.md`'s D10 out of sequence) goes to
+  **Phase 8 R1**, which rewrites that file entry by entry anyway; nit 5
+  (`vite.config.mts`'s thin warrant for excluding `src/ports/image.ts`) goes
+  to **Phase 8 with D10**, since the wording depends on what D10's fix turns
+  out to be. Nit 2's two unrecorded fallbacks are **closed**: they are named
+  in `plan.md`'s "B12 built" correction and again, in full, in "B12 built, the
+  fallbacks it took". The `CLAUDE.md` line count is **197**, and the one line
+  in this file that still claimed 198 is corrected above.
 
 - **B12 review nits, deferred by the coordinator's own instruction
   (2026-09-12) - do not act on these until B12.1 or whatever batch opens

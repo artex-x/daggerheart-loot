@@ -24,9 +24,9 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 2 | Extract pure logic to TypeScript modules with unit tests | **done** |
 | 3 | Ports for replaceable concerns (drag and drop, search, modal) | **done** |
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | **in progress** - see below |
-| 5 | Testing pyramid: unit, component, a11y, the real-browser net | **planned (2026-09-12)** - B11 (the two owner-reported defects) and B12 (the browser layer on `dist/` and the gates); see "Phase 5 - the testing pyramid, planned". No Playwright exists or is built; the puppeteer legacy suites are re-homed now and deleted in Phase 7 |
-| 6 | Build, artefacts, deployment | started: the build now completes `dist/` |
-| 7 | Cut-over, cleanup, README, standing agent guidance | not started; the regression-net question it was to answer is answered by Phase 5 (decided 1-2); it becomes R0 of one 7/8 track - see "Phase 5 - the testing pyramid, planned", decided 8, and "Phase 8", "Where the phase sits" |
+| 5 | Testing pyramid: unit, component, a11y, the real-browser net | **done (2026-09-12)** - B11 (`73facda`+`64f9a27`), B11.1, B12 (`a52c17d`, `9a4f8db`, `4adc5a5`, `9ced2b3`). The net is `tests/app/` driving `dist/` in a real browser; see "Phase 5 - the testing pyramid, planned". No Playwright exists or was built; the puppeteer legacy suites are re-homed and are deleted in Phase 7. The one production defect the net found, B12.1, opens Phase 6 |
+| 6 | Build, artefacts, deployment | **planned (2026-09-12)** - two batches: **B12.1** (the router's bare-vs-unreadable fallback, fixed while the old app is still the fallback) then **B13** (the reversible cut-over). **Not owner-gated**: `gh api repos/:owner/:repo/pages` reads `build_type: workflow`, so the "Pages flip" this row was written around is already done - what publishes the old app is one step in `ci.yml`'s `deploy` job. See "Phase 6 - the cut-over, replanned" |
+| 7 | Cut-over, cleanup, README, standing agent guidance | not started; the regression-net question it was to answer is answered by Phase 5 (decided 1-2); it becomes R0 of one 7/8 track - see "Phase 5 - the testing pyramid, planned", decided 8, and "Phase 8", "Where the phase sits". **Re-sequenced 2026-09-12** (owner: publish early, delete later): its deletions land *behind* the flip, not with it, and have their own entry condition - "Phase 7 - what has to be true before the net comes out" |
 | 8 | Post-migration review: the app on its own terms | designed (2026-09-11) - see "Phase 8" below; runs after the cut-over, on the register B9 opens (`docs/specs/DEBT.md`) |
 
 ## Phase 4 - where the rewrite is
@@ -11197,7 +11197,11 @@ register.
 
 ### Where the phase sits
 
-`B9 -> B10 -> Phase 6/7 (cut-over, owner-gated) -> Phase 8`. Phase 8
+`B9 -> B10 -> Phase 6/7 (cut-over, owner-gated) -> Phase 8`. **Superseded
+2026-09-12**, and only in its order and its gate - the reasoning below stands.
+The order is now `B9 -> B10 -> Phase 5 (B11, B11.1, B12) -> B12.1 -> B13 (the
+flip) -> soak -> Phase 7 (R0) -> Phase 8`, and no step of it is owner-gated on
+a Pages setting: see "Phase 6 - the cut-over, replanned". Phase 8
 **follows** the cut-over. Every fix it makes is a parity regression by
 construction - that is the definition of the register - so while the
 static root is the expectation and the parity shards are the gate, each
@@ -11212,9 +11216,19 @@ R1 runs once, on the app people are using.
 1. Phase 4 closed: no `pending` state in `tests/parity/specs.js`,
    `VISUAL_DEBT` empty or every entry a CI figure with a current reason;
    B9 and B10 landed and read by CI.
-2. Phase 7 done: the owner has switched Pages to "GitHub Actions", the
+2. Phase 7 done: ~~the owner has switched Pages to "GitHub Actions"~~, the
    `deploy` job publishes `dist/`, the static root is retired the way
    Phase 7's plan says, `main` green.
+   **Corrected 2026-09-12.** The first clause was written on the belief that
+   Pages still served a branch and that a repository setting was pending.
+   Measured instead (`gh api repos/:owner/:repo/pages`): `"build_type":
+   "workflow"` - the owner switched Pages to "GitHub Actions" at some point
+   before this session, so that condition was already satisfied when it was
+   written down, and nothing was ever waiting on it. What was actually
+   pending is a step in `.github/workflows/ci.yml`. The condition now reads:
+   **B13 has landed, a `deploy` run has published `dist/`, the soak in
+   "Phase 7 - what has to be true before the net comes out" is satisfied, the
+   static root is retired by R0, and `main` is green.**
 3. **A regression net that does not need the live app exists** - the
    load-bearing one. Today the parity harness is the only real-browser
    coverage of the rewrite's states, and it needs `index.html` as its
@@ -13208,6 +13222,15 @@ not merely exist`). Pushed; `origin/main` matches.
   files; `tests/derived.js`'s `noindex` and count checks read
   `app/index.html`/`dist/index.html`; the smoke stays. Owner-gated on the
   Pages flip.
+  **Superseded 2026-09-12 - this outline is wrong in three places**, and it
+  is replaced by "Phase 6 - the cut-over, replanned" below. (a) It is not
+  owner-gated: Pages is already `build_type: workflow`. (b) "copies `dist/`"
+  cannot be taken literally - `dist/img`, `dist/og` and `dist/card` are
+  symlinks the build makes, so the step assembles the root folders
+  explicitly beside the built output. (c) The count checks have nothing to
+  re-point at: the counts live in the entry document's meta description and
+  `<noscript>` block, which the rewrite never ported at all (the finding is
+  in the replan). Phase 6 is also two batches, not one: B12.1 first.
 - Phase 7's first batch (R0 of the unified 7/8 track): delete the three
   live files and every legacy browser suite (`tests/lib.js` with them),
   each named with its successor from decided 3 in the commit message;
@@ -13224,3 +13247,631 @@ not merely exist`). Pushed; `origin/main` matches.
   stays as a node-only suite - implementer's call, one file either way;
   CI drops the parity job; `CLAUDE.md`'s "Migration and parity" section
   shrinks to the standing rules. Contract-touching: its own review.
+
+## Phase 6 - the cut-over, replanned (planner, 2026-09-12)
+
+Two facts arrived after "Phase 5 - the testing pyramid, planned" was written,
+and between them they move the gate and re-cut the batches. Both are in
+`context.md`, "GitHub Pages is already served by Actions".
+
+**Fact, measured.** `gh api repos/:owner/:repo/pages` reads `"build_type":
+"workflow"`. The owner switched Pages to "GitHub Actions" before this session.
+Every sentence in this file that treated "the Pages flip" as pending owner
+work described a state that no longer existed; the three that mattered are
+corrected in place above (the Phases table, Phase 8's entry condition 2, and
+the Phase 6/7 outline), each showing what was believed beside what was
+measured. `.github/workflows/ci.yml`'s own `deploy` comment block - "This job
+does nothing until Pages is switched from 'Deploy from a branch' to 'GitHub
+Actions' in the repository settings" - is stale in the same way and is
+rewritten by B13.
+
+**What actually publishes the old app** is one step, `deploy` -> "Collect what
+the site is made of", copying `index.html style.css app.js data.js data.json
+catalog.csv llms.txt robots.txt .nojekyll LICENSE img og i card` into `_site`
+by an explicit list. The rewrite goes live when that list names the built
+output instead of the two root code files.
+
+**Owner decision, 2026-09-12: publish early, delete later.** Point the deploy
+step at the built output and go live while `index.html`, `app.js` and
+`style.css` stay in the repository and the parity harness keeps running
+against them. A bad deploy is then one `git revert` away from the old app,
+which is still there. Phase 7's deletions move behind the flip and earn their
+own entry condition. Settled; designed to below.
+
+### The order, and why each step sits where it does
+
+`B12.1 -> B13 (the flip) -> soak -> Phase 7 R0 -> Phase 8 R1..Rn`.
+
+- **B12.1 before B13** because it is a defect on the public entry point: a
+  bare `#/` - the address every link to the site root produces - has its
+  address bar rewritten, and an unreadable one draws a debug heading instead
+  of a page. Fixing it after the flip means shipping it to whoever is sent the
+  link first. It is also the smallest possible batch to be holding when the
+  publish path changes: if B13 has to be reverted, B12.1 is not entangled in
+  the revert.
+- **B13 before the deletions** is the owner's decision above.
+- **The soak between B13 and Phase 7** is what makes "reversible" mean
+  anything: a revert is only cheap while the thing to revert to is still in
+  the repository and still gated. Its exit is written out in "Phase 7 - what
+  has to be true before the net comes out".
+- **Phase 8 after Phase 7** is unchanged and for the unchanged reason: every
+  Phase 8 fix is a parity regression while the harness is the gate.
+
+### B12.1 planned: the router's bare-vs-unreadable fallback
+
+**Objective.** Make the rewrite read a bare address and an unreadable one the
+way the live app does, and the way `docs/specs/ROUTES.md` already says the app
+behaves. Verified by deleting the two skips in `tests/app/contracts.js` and
+letting `#/` and `#/nonsense` take the same field-by-field check the other 24
+route fixtures get.
+
+This is not a `DEBT.md` entry and does not become one: that file holds defects
+the rewrite reproduces *because the live app has them*. Here the two apps read
+differently on the same fixture, and the rewrite is also the one that
+contradicts its own spec - `ROUTES.md`, "Fallback", says an unreadable address
+"is replaced - via `replaceState`, so it does not accumulate in history - with
+the pinned starting section, or `#/roll/std`", which is exactly what the
+rewrite does not do.
+
+**The live reading, at two call sites, not one.** "B12.1 named" cited
+`app.js:3636-3644` and that citation is right but partial; the bare-address
+half lives elsewhere and behaves differently again.
+
+- `app.js:3641-3644`, `currentRoute`'s last fallback, runs on **every**
+  render: `if (h && history.replaceState) { const home = loadHome() ||
+  HOME_DEFAULT; history.replaceState(..., home); return home... }`, where `h`
+  is the hash with `#/` stripped. Non-empty and unreadable -> draw home,
+  replace the bar. Empty -> fall past it to `return 'roll/std'`, the default,
+  with the bar untouched and `loadHome()` never consulted.
+- `app.js:4610-4613`, in the boot sequence and **once only**: `if
+  (!location.hash || location.hash === '#' || location.hash === '#/') { const
+  home = loadHome(); if (home && home !== HOME_DEFAULT) location.hash = home; }`
+  - an assignment, not `replaceState`, so it pushes a history entry and Back
+  returns to the bare address.
+
+**The four readings, side by side.** Measured against `dist/` at `aac1453`
+where the column says so; the live column is read off the two call sites
+above.
+
+| when | address | pinned home | live | the rewrite today | after B12.1 |
+|---|---|---|---|---|---|
+| boot | bare | none, or the default | draws `roll/std`; **bar untouched** | draws `roll/std`; **bar overwritten to `#/roll/std`** (measured: `routes.json`'s `#/` entry, the one field wrong) | live's |
+| boot | bare | `#/search` | draws search; bar **assigned** (a history entry; Back returns to the bare address) | draws search; bar **replaced** (no entry; Back leaves the site) | live's |
+| boot or navigation | `#/nonsense` | any | draws home; bar **replaced** by home | keeps the garbage hash verbatim and draws `App.svelte`'s `{:else}` debug heading - no tab lit, no source chips, **content-level wrong** | live's |
+| navigation | bare | `#/search` | draws `roll/std` - the default, not the pinned home; bar untouched | draws the `{:else}` debug heading | live's |
+
+"bare" is `''`, `'#'` or `'#/'` throughout.
+
+Row 2's rewrite behaviour is pinned by `app/src/state/app.test.ts`, "rewrites
+the address rather than pushing, so back still leaves" - a rewrite-only
+decision, argued in the test's own comment, that was never checked against the
+live app and is not recorded in `DEBT.md` or `ACCEPTED`. It is in scope: the
+batch edits those three lines anyway, and leaving one branch faithful to live
+beside a neighbour deliberately not, with no record anywhere, is the worst of
+the three available outcomes. Row 4 is a third divergence, found while
+planning, and it costs one line once rows 1-3 are done.
+
+**The rule, stated once, because the code should read as one rule.** What is
+drawn (`AppState.hash`) and what is written (the router) are independent, and
+the live app keeps them independent too - `currentRoute` returns a route that
+need not equal `location.hash`.
+
+1. boot, bare: draw the pinned home; write only if the pinned home is not the
+   default, and then with `navigate`, never `replace`.
+2. boot or navigation, non-empty with `parseHash(...).kind === 'unknown'`:
+   draw the pinned home; write it with `replace`.
+3. navigation, bare: draw `#/roll/std` - the default, not the pinned home;
+   write nothing.
+4. anything else: draw what was read; write nothing.
+
+**The `{:else}` branch: removed, not kept.** Once rule 2 holds, no address can
+reach `App.svelte`'s fallback - `AppState` normalises `unknown` at the
+boundary, and `go()`/`replace()` are only ever called with hashes the app
+built. Three reasons to delete it rather than keep it defensively: the live
+app has no equivalent surface, so keeping it keeps a rewrite-only screen a
+person can no longer see; its `<h1>` was added by B12 for axe's
+`page-has-heading-one` on a state that will no longer exist; and coverage is
+enforced per file, so an unreachable branch either drops `App.svelte` below
+its threshold or forces a test that pokes `app.hash` past the boundary to
+manufacture a state - inventing a caller to justify code (`CLAUDE.md`, "Add no
+module, export, component, or variant before something uses it"). The `.todo`
+style block and the comment above it go with it, which also closes B12 review
+nit 3 (the comment claims the `<h1>` "carries no rendered style of its own",
+which is false - there is no `h1` reset in `styles/tokens.css`, so the UA's
+bold weight and `.67em` margins applied).
+
+**Files.**
+
+- `app/src/state/app.svelte.ts` - the constructor's three lines become the
+  rule above; `start()`'s `onChange` handler gains rules 2 and 3; the `hash`
+  field's doc comment says that it is the address as the app reads it, which
+  is not always what is in the bar, and names the live counterpart.
+- `app/src/App.svelte` - the `{:else}` branch, the `.todo` rule and the
+  comment above it, all removed.
+- `app/src/state/app.test.ts` - a case per row of the table, each asserting
+  `memoryRouter`'s `stack` (untouched / pushed / replaced, which the fake
+  distinguishes: `navigate` pushes, `replace` overwrites the top) as well as
+  `app.hash`; "rewrites the address rather than pushing" is rewritten to
+  assert the live behaviour with `app.js:4610-4613` as its warrant, not
+  deleted.
+- `app/src/components/shell.test.ts` - "an unreadable address" (`#/nowhere`
+  draws the raw hash as a heading) is replaced by "an unreadable address draws
+  the home section and rewrites the bar"; "refuses a pinned address that is a
+  snapshot rather than a section" currently asserts `router.hash()` is
+  `'#/roll/std'` and must move to what is *drawn* (the nav's `aria-current`),
+  because under rule 1 a default home writes nothing and the bar stays empty.
+- `tests/app/contracts.js` - the `#/` / `#/nonsense` skip and its citation
+  comment deleted, at lines 148-156.
+- `tests/app/sweep.js` - line 53's `#/nowhere` label becomes one that says it
+  now lands on the home section; the entry stays, it is the sweep of exactly
+  this path.
+- `docs/specs/ROUTES.md` - "Fallback" gains the bare-address half and the
+  boot-versus-navigation split, in the same commit as the behaviour.
+- `issues/47/plan.md`, `issues/47/handoff.md`.
+
+Not touched: `docs/fixtures/` (the fixture is already right, which is the
+point), `tests/contracts.js`, `docs/specs/CONTRACTS.md`, `llms.txt`,
+`tests/parity/specs.js`, the three live root files.
+
+**Steps.**
+
+1. Re-read `docs/specs/ROUTES.md`, "Fallback", and the four rows above against
+   `app.js:3641-3644` and `:4610-4613`. If any row does not reproduce, stop
+   and record what was read instead - the table is the batch's warrant.
+2. `app.svelte.ts`: put the rule in the constructor and share a small private
+   helper with the `onChange` handler for rules 2 and 3. Keep `#applySource()`
+   and `#expand()` running after the hash settles, exactly as now.
+3. `App.svelte`: delete the `{:else}` branch, the `.todo` rule, the comment.
+4. The four `app.test.ts` cases; the two `shell.test.ts` edits.
+5. `npm run check`. Expect `App.svelte`'s branch coverage to rise, not fall;
+   if any threshold moves, do not edit `vite.config.mts` - report it.
+6. `docs/specs/ROUTES.md`.
+7. `tests/app/contracts.js`: delete the skip. `tests/app/sweep.js`: the label.
+8. `npm run check:built`, then the two suites.
+9. Commit, push, then plan and handoff.
+
+One commit, unless step 5 turns up something that wants its own; the whole
+diff is one rule and its tests.
+
+**Acceptance criteria.**
+
+- `node tests/run-all.js app/contracts` green with all 26 route fixtures
+  checked field by field and no `skipped` line in its output.
+- `#/` leaves `location.hash` at `#/` and lights the `#/roll/std` tab;
+  `#/nonsense` ends at `#/roll/std` in the bar with the same six fields as the
+  fixture says.
+- `node tests/run-all.js app/sweep` green at all four widths, `#/nowhere`
+  included, with no new axe `allow`.
+- `npm run check` exit 0, coverage thresholds held with no new exclusion and
+  no threshold lowered.
+- `App.svelte` has no `{:else}`, no `.todo`, and no route-kind branch removed
+  other than that one.
+- `docs/specs/ROUTES.md` describes all four rows; no other spec changes.
+- `index.html`, `app.js`, `style.css` untouched.
+
+**Gates, with costs.** Idle host, each one foreground call, Bash timeout
+600000.
+
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - ~165 s, before the
+  commit. Do **not** wrap it in `time (...)`: the hook's `isCheckInvocation`
+  does not recognise that as a check, does not write the cache, and the commit
+  is then refused although the check passed (`handoff.md`, B12's
+  "self-inflicted near-miss").
+- `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - 8.4 s measured
+  at B12; required because what a screen draws changes for one address.
+- `set -o pipefail; node tests/run-all.js app/contracts,app/sweep 2>&1 | tail -n 120`
+  - the two suites whose expectations change. The four-suite call was measured
+  at 542.6 s slowest entry on a healthy host and crossed 600 s once under the
+  throttle; these two are the larger part of it, so if it comes back near the
+  cap, split into `app/contracts` and `app/sweep` rather than backgrounding
+  either - a backgrounded run cannot arm the commit gate.
+- **No parity call.** No `STATES` entry covers a bare or unreadable address
+  (confirmed: neither string appears in `tests/parity/specs.js`), and nothing
+  else in the diff changes a state the harness shoots. CI's four parity shards
+  on the push are the read. Considered and rejected: adding a `#/nowhere`
+  state as a red-before/green-after warrant - it would be a real warrant, but
+  it shoots pixels of the home page, which is not where the defect is, and it
+  would be deleted by Phase 7 R0 two batches later; the un-skipped fixture
+  reads the address bar, which pixels cannot, and outlives the harness.
+
+**Risks and do-nots.**
+
+- Do not edit `docs/fixtures/urls/routes.json`. It already describes the live
+  app correctly; the fixture is the expectation, not a record of what the
+  rewrite does.
+- Do not make `parseHash` return something other than `unknown` for garbage.
+  The kind is right; what was wrong is what the state layer did with it.
+- `replaceState` under `file://` is fine and is already exercised - today's
+  bare-address rewrite is how the divergence was measured in the first place.
+- Rule 3 leaves `app.hash` and `location.hash` deliberately unequal. That is
+  live's own shape, and the `hash` field's comment must say so, or the next
+  reader will "fix" it back.
+- `PrintPage.svelte:68` is the only reader of `canGoBack()`, and row 2's push
+  makes it true one step earlier - the same step live already takes. Nothing
+  else in the app reads history length.
+
+### B13 planned: the reversible cut-over
+
+**Objective.** Publish the built rewrite at the site's own URL, with the old
+app still in the repository and still gated, so that a bad deploy is undone by
+reverting one commit that touches one file. Nothing is deleted by this batch.
+
+#### The finding that makes this more than a workflow edit: the entry document was never ported
+
+Found while planning, by reading `index.html` against `app/index.html` rather
+than trusting that the rewrite's page was equivalent. It is not. Neither the
+parity harness nor any suite compares the two documents' heads - parity shoots
+pixels after the app has booted, and `page.title()` is compared only after
+`Shell.svelte:28` has overwritten the static title with `app.t.docTitle`. So
+the gap has been invisible from the beginning, and the flip is the moment it
+would ship.
+
+| in `index.html` | in `app/index.html` | what is lost at the flip |
+|---|---|---|
+| `viewport-fit=cover` in the viewport meta | absent | `env(safe-area-inset-*)` resolves to 0 on a notched phone - and `SelBar.svelte:77,98,99` uses all three, ported from `style.css:53-54` |
+| `<title>` "Генератор лута — Daggerheart" | "Генератор лута для Daggerheart" | the pre-JS and crawler title; `dict.ts:22` already uses live's string at runtime, so the static one is simply wrong |
+| `<meta name="description">` with 680/381 | absent | the search/preview description, and the counts `tests/derived.js` checks |
+| `<meta name="color-scheme" content="dark">` | absent (`tokens.css:13` sets the CSS property) | the pre-stylesheet paint only; low stakes, but free to keep |
+| the whole Open Graph and Twitter block, `og/_share.jpg` 1200x630, `og:url`, `og:locale` + alternate | absent | **the site's own link preview**. Sharing the root link in Telegram, Discord or Slack unfurls nothing. `index.html`'s own comment explains that this card was chosen deliberately over an item's artwork, and `META.md` section 2 exists because messenger previews matter here |
+| `<link rel="icon" ...>` (a data: SVG) | absent | the tab icon |
+| the `<noscript>` block: what the site is, and links to `catalog.csv`, `data.json`, `llms.txt`, in both languages | absent | the no-JS reader lands on an empty page - which is precisely the failure the block's own comment says it was added to fix, and which `llms.txt` and `robots.txt` both promise against |
+
+So B13's first commit ports the entry document. This is parity work of the
+ordinary kind - reproduce the shipped app - and it is not optional: without
+it, "publish the rewrite" means "publish a page that has lost its preview
+card, its no-JS fallback and its safe-area insets", and each of those would
+come back later as a bug report with no obvious cause.
+
+Two mechanical notes for whoever does it. `app/index.html` is **not** in
+`.prettierignore` (the root `index.html` is), so the ported markup is
+reformatted by Prettier and will not be byte-identical to its source - compare
+values, never bytes. And the `<noscript>` block's `class="wrap"` resolves to
+nothing in the rewrite (the class lives inside Svelte-scoped components), so
+keep the inline padding and drop the class rather than leaving a class that
+does nothing.
+
+#### What the deploy step assembles, and why not "copy dist/"
+
+`dist/` holds `index.html`, `assets/app.js`, `data.js`, and three **symlinks**
+the build makes (`vite.config.mts`'s `artwork()` plugin): `img`, `og`, `card`.
+Locally they are absolute (`dist/card -> /e/dev/daggerheart-loot/card`). Do
+not copy `dist/` wholesale and do not depend on what `upload-pages-artifact`
+does with a symlink either way - assemble explicitly, which is also what keeps
+the step's existing property that a new top-level asset has to be added on
+purpose:
+
+- from the build: `dist/index.html`, `dist/assets/` (the whole directory),
+  `dist/data.js`;
+- from the repository, unchanged from today's list: `data.json`,
+  `catalog.csv`, `llms.txt`, `robots.txt`, `.nojekyll`, `LICENSE`, `img/`,
+  `og/`, `i/`, `card/`;
+- no longer published: `index.html`, `style.css`, `app.js` - the old app's
+  three files, and the only three that leave the published set.
+
+The `deploy` job must therefore build: `actions/setup-node` with
+`node-version-file`, `npm ci`, `npm run build`, before the collect step. The
+alternative - have the `check` job upload `dist/` and have `deploy` download
+it - was considered; it has one real argument in its favour (the published
+bytes are then exactly the bytes the gates ran against) and two against (the
+job stops being readable on its own, and the revert stops being "revert one
+file"). Build in the job; the build is deterministic from the commit, and
+`deploy` already `needs` the jobs that proved it.
+
+#### The guard
+
+Today's "Nothing private slipped in" refuses `package.json`, `node_modules`,
+`app`, `tests`, `tools`, `docs`, `.git` in `_site`. Re-checked against the new
+list, that still holds and still matters, and it gains two entries and a
+positive half:
+
+- **refuse** additionally `app.js` and `style.css` - if either appears in
+  `_site` the step has published a mixture of the two apps, which is the one
+  failure mode a half-finished edit produces.
+- **require**, each on pain of exit 1: `index.html`, `assets/app.js` (and
+  non-empty), `data.js`, `data.json`, `catalog.csv`, `llms.txt`, `robots.txt`,
+  `.nojekyll`, `LICENSE`, and `img/`, `og/`, `i/`, `card/` each present and
+  non-empty. `[ -e ]` is false for a dangling symlink, so this is also the
+  symlink hazard's deterministic detector, before anything is uploaded.
+- **require** in `_site/index.html`: `noindex` (`META.md` section 1 is about
+  what is *published*, so it is checked on the published file), a reference to
+  `assets/app.js`, and the **absence** of `src="app.js"` - the last one is the
+  assertion that the flip actually took.
+
+#### `tests/derived.js`: what is re-pointed and what is not
+
+The Phase 6 outline said the `noindex` and count checks move to
+`app/index.html`/`dist/index.html`. Half right, and the half that is wrong
+matters:
+
+- **`noindex`**: add `app/index.html` to the check. Keep the root
+  `index.html` assertion while that file exists - it is still a real file and
+  the check is free. Assert on `app/index.html`, the **source**, not
+  `dist/index.html`: `npm run check` does not build, so `dist/` may be stale
+  or absent, and a gate that silently reads yesterday's build is worse than no
+  gate.
+- **the counts**: nothing to re-point, because the rewrite has no counts. The
+  numbers live in `index.html`'s meta description and `<noscript>` block, and
+  the rewrite's own UI never states a record count (checked: no "запис",
+  "позици", "records" or "entries" count string anywhere in `app/src`). Once
+  the entry document is ported, `app/index.html` carries them and joins the
+  `COUNTERS` file list. `index.html` and `app.js` leave that list in Phase 7,
+  when the files themselves go; the READMEs, `llms.txt` and `robots.txt` keep
+  it meaningful after that.
+- **new**: the two entry documents must not drift while both exist. One check
+  comparing the parsed values of `<title>`, `description`, `robots`,
+  `color-scheme`, `viewport`, every `og:*` and every `twitter:*` between
+  `index.html` and `app/index.html`, with no exception list - a difference
+  that is wanted has to be written into the check with a reason. It retires in
+  Phase 7 with the root file.
+
+#### Is any of this a contract change?
+
+**No.** Checked clause by clause against `docs/specs/CONTRACTS.md`:
+
+- section 1, hash grammar - unchanged (and B12.1 restores the one clause the
+  rewrite was breaking);
+- section 2, record ids - untouched;
+- section 3, list link encoding - untouched;
+- section 4, machine-readable data - `data.json`, `catalog.csv` and
+  `i/<id>.html` keep their URLs and their generator, and `data.js` still
+  arrives as a classic script (`dist/index.html` loads `./data.js`, which is
+  what `tools/smoke-file-url.mjs` proves every run);
+- section 5, static asset paths - `img/`, `og/`, `card/`, `i/` all still
+  published from the same paths. The stub pages redirect to `SITE + '#/i/' +
+  id` (`tools/build-share-pages.js:96`), i.e. to the site root, which is
+  exactly what changes hands; no stub is edited.
+
+What changes is the bytes of `/index.html` and one added path,
+`/assets/app.js`. Neither is a frozen path. The two paths that stop being
+published, `/app.js` and `/style.css`, are named in no spec, no fixture and no
+external document (`llms.txt` names `index.html`, `catalog.csv`, `data.json`
+and the stubs, and none of the other two).
+
+So: **no change to `docs/fixtures/`, `tests/contracts.js` or `llms.txt`.**
+`CONTRACTS.md` gains one sentence in section 5 saying that the entry document
+and `assets/` are published by the build rather than committed, so the frozen
+list reads complete; that is a clarification of the same contract, and if a
+reviewer disagrees and calls it a change, the rule's own remedy is cheap - the
+four files move together and this batch is already the flip's own review.
+
+`docs/specs/META.md`: section 1 gains `app/index.html` beside `index.html` and
+the stubs; section 2 is unaffected (`robots.txt` is published unchanged);
+section 4, `file://`, is unaffected and still gated by the same step - `npm
+run check:built`'s `tools/smoke-file-url.mjs` opens `dist/index.html` from a
+folder, asserts the app mounted, `window.LOOT` arrived, no `type="module"`
+survived and every script path is relative. That is the product law, and it
+keeps its instrument. Worth stating plainly because the flip invites the
+opposite assumption: **what B13 publishes is the same file that opens from a
+folder**, not a hosted variant of it.
+
+#### How anyone knows a deploy went wrong, and how it is undone
+
+*Before the publish.* `deploy` already `needs: [check, audit, secrets,
+parity]`, and `check` now includes the whole `tests/app/` net against `dist/`
+as well as `npm run check`, the build, the `file://` smoke and the budget. A
+rewrite that fails any of them never reaches the collect step. The guard above
+then fails the job on an assembly mistake, before `upload-pages-artifact`.
+
+*After the publish.* Nothing checks the live URL today. B13 adds
+`tools/check-site.mjs <base-url>`, a plain Node script (global `fetch`, no new
+dependency) run as the `deploy` job's last step against
+`steps.pages.outputs.page_url`, and runnable by hand against the same URL by
+anyone. It retries a few times over ~a minute, because a fresh deploy is not
+served instantly, and then asserts:
+
+- `/` is 200 and HTML, carries `noindex`, references `assets/app.js`, carries
+  `<div id="app">`, and does **not** reference `src="app.js"`;
+- `/assets/app.js` is 200 and larger than a stub;
+- `/data.js` is 200 and assigns `window.LOOT`;
+- `/data.json`, `/catalog.csv`, `/llms.txt`, `/robots.txt` are 200;
+- `/i/w1.html` is 200 and still carries its `og:image` - the stubs are what
+  link previews fetch;
+- `/img/_none.webp`, `/og/_share.jpg`, `/card/die-d12-bw.svg` are 200 - one
+  probe per symlinked folder, which is the live-side detector for the hazard
+  the guard checks at assembly time.
+
+A failure there turns the run red on `main`. It cannot un-publish, and it is
+not meant to: it is the thing that tells a person a revert is needed, in the
+place they already look.
+
+*The human check, once, after the first `dist/` deploy.* Whoever lands B13
+opens the live URL and walks: both languages; the six nav sections; one record
+modal; one list page with a row added and the GM link copied; one print sheet;
+one stub link from `i/` back into the app; one shared-list link. Recorded in
+the handoff with the deploy run id. This is the only check that reads the app
+as a person, and it is cheap exactly once.
+
+*The revert.* The workflow edit is its own commit, touching `ci.yml` and
+nothing else, so:
+
+```
+git revert <the ci.yml commit>   # then push
+```
+
+The next `deploy` run republishes the root files, which are still in the
+repository and still passing their own gates. The commit message says this in
+its own body, and the step's comment block in `ci.yml` says it too, so the
+instruction is where a person under pressure will look. Nothing else in B13
+needs reverting: the entry-document port, the derived checks and
+`tools/check-site.mjs` are all inert while the root is published (the script
+is only invoked by the step that the revert removes).
+
+#### Does the parity job stay in CI during this window? Yes, unchanged.
+
+Three reasons, and they are the window's whole point. The old app is the
+fallback, so it has to stay known-good: a fallback nothing verifies is a
+guess. `deploy` `needs: parity`, so parity is one of the four gates standing
+between a push and the public site - dropping it would weaken the publish gate
+at the exact moment the publish path is new. And it retires on schedule
+anyway, at Phase 7 R0 (Phase 5, decided 3), which is after this window closes.
+Cost is already paid: 4-5 minutes per shard, four shards in parallel.
+
+#### Commits
+
+Three, one batch - they share every gate, and cutting them apart would pay
+`check` three times for one change.
+
+- **F1 - the entry document and its checks.** `app/index.html`;
+  `tests/derived.js` (the `noindex` addition, `app/index.html` into
+  `COUNTERS`, the new two-document comparison); `tools/check-site.mjs` (new,
+  not yet called); `docs/specs/META.md` section 1; `docs/specs/CONTRACTS.md`
+  section 5's sentence.
+- **F2 - the flip.** `.github/workflows/ci.yml` **and nothing else**: the
+  `deploy` job gains setup-node/`npm ci`/`npm run build`; the collect step's
+  list; the guard's refuse and require halves; the `check-site.mjs` step after
+  `deploy-pages`; the stale comment block rewritten to say what publishes now
+  and how to revert.
+- **F3** - `issues/47/plan.md`, `issues/47/handoff.md`, including the deploy
+  run id, the `check-site.mjs` output and the human walk.
+
+#### Steps
+
+1. Read `index.html` lines 1-34 and 56-73 and `app/index.html` side by side;
+   confirm the table above still describes the difference.
+2. Port the head and the `<noscript>` block into `app/index.html`. Keep
+   `og:url` at the site root and `og:image` at `og/_share.jpg`, absolute, as
+   live has them. Do not add a `<link rel="stylesheet">` - the rewrite's CSS
+   ships inside the bundle.
+3. `tests/derived.js`: the three changes above.
+4. `tools/check-site.mjs`, with the assertion list above and a retry loop.
+   Runnable as `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/`.
+5. `npm run check` - `derived.js` runs inside it, so the port is checked here.
+6. `npm run check:built`, then `node tests/run-all.js app/sweep` and
+   `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` - two
+   calls, not one; see the costs below.
+7. **F1.**
+8. `ci.yml`: the five edits listed under F2.
+9. `npm run check` again (the edit disarms the commit gate, whatever the file).
+10. **F2.** Push both. Watch the run: `check`, `audit`, `secrets`, four parity
+    shards, then `deploy` - and read `deploy`'s own log for the guard's output
+    and `check-site.mjs`'s.
+11. The human walk of the live site, above.
+12. **F3**, with the run id and both outputs recorded.
+
+#### Acceptance criteria
+
+- Every row of the entry-document table is closed: `app/index.html` carries
+  the viewport, title, description, colour scheme, Open Graph, Twitter, icon
+  and `<noscript>` content, and the new `derived.js` comparison passes with no
+  exception list.
+- `npm run check` exit 0; `npm run check:built` green, so the published page
+  is the one that opens from a folder.
+- The five `tests/app/` suites green; no new axe `allow`; no parity cell
+  changed (CI's read).
+- The `deploy` run is green end to end, its guard printed the required list
+  with nothing missing, and `check-site.mjs` passed against the live URL.
+- The live site, walked by a person, behaves: both languages, six sections, a
+  record modal, a list, a print sheet, a stub link, a shared link.
+- `index.html`, `app.js`, `style.css` still in the repository, unmodified, and
+  the parity job still in CI and green.
+- F2's diff touches exactly one file.
+
+#### Gates, with costs
+
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - ~165 s, before F1 and
+  again before F2. No `time (...)` wrapper.
+- `set -o pipefail; npm run check:built 2>&1 | tail -n 120` - a few minutes,
+  once, before F1. Mandatory here: the entry document is what the build emits.
+- `set -o pipefail; node tests/run-all.js app/sweep 2>&1 | tail -n 120` and
+  `set -o pipefail; node tests/run-all.js app/typo,app/hues,app/contracts,app/states 2>&1 | tail -n 120`
+  - ~9 minutes across the two, which is why they are two calls: the combined
+  four-suite call was measured at 542.6 s slowest entry on a healthy host and
+  crossed the 600 s cap once when the host was throttled.
+- No local parity call: nothing in the diff moves a pixel on any state (a
+  document head, a node-only check, a new tool, a workflow file). CI's four
+  shards on the push are the read, and `deploy` cannot run without them.
+- Post-deploy: `node tools/check-site.mjs <page_url>` - seconds, and it runs
+  itself as part of the job.
+
+#### Risks and do-nots
+
+- **Do not delete anything.** Not `index.html`, not `app.js`, not
+  `style.css`, not a legacy suite, not `tests/parity.js`, not a `VISUAL_DEBT`
+  or `ACCEPTED` entry. All of that is Phase 7 and is behind an entry
+  condition.
+- **Do not put anything but `ci.yml` in F2.** The revert's whole value is
+  that it cannot conflict.
+- Do not `cp -r dist/. _site/`. See the symlinks above.
+- Do not add `--force`, `--dereference` reasoning or any other workaround for
+  the symlinks instead of assembling explicitly; the explicit list is also the
+  audit of what is public.
+- Do not change `base: './'`. `META.md` section 4 turns on it, and an absolute
+  base breaks the folder case that the same section calls a real property for
+  this audience.
+- The `concurrency: pages` group with `cancel-in-progress: false` stays: two
+  publishes at once, one of them half-done, is the one way to get a broken
+  site out of a green run.
+- If the deploy is green but the site is wrong in a way the checks missed,
+  revert first and diagnose after. The window exists so that the answer to
+  "is this bad enough to revert?" is always "revert".
+
+### Phase 7 - what has to be true before the net comes out
+
+Phase 7's content is unchanged and still stands where it was written ("Phase 6
+and 7 - what this pass adds to their outlines", second bullet): delete
+`index.html`/`app.js`/`style.css` and the legacy browser suites, port `print`'s
+geometry, add the structural goldens, retire `tests/parity.js`,
+`VISUAL_DEBT` and `ACCEPTED`, drop CI's parity job, shrink `CLAUDE.md`'s
+migration section. What it did not have was an entry condition, because it
+used to be the same day as the flip. Now that it is not, it needs one - "the
+owner says so" is a legitimate condition, an unstated one is not.
+
+**R0 may start when all six hold, and the handoff records the evidence for
+each:**
+
+1. **B13 landed and published.** A `deploy` run has assembled `_site` from
+   `dist/` and finished green; its run id is in the handoff.
+2. **The live site was checked, twice.** `tools/check-site.mjs` green against
+   the live URL on that run, and green again at the end of the soak; plus the
+   one human walk B13 records.
+3. **The publish path has been exercised, not just opened.** At least three
+   pushes to `main` in the window, each with `deploy` green - a first deploy
+   proves the step, three prove it repeats.
+4. **A soak of at least seven days** from the first `dist/` deploy. Seven is
+   this plan's number, not the owner's: it is about long enough for the owner
+   and anyone they have sent the link to to have used the app at a table at
+   least once, which is the only test that finds what the suites do not. The
+   owner may shorten or lengthen it by saying so; nobody else may.
+5. **No unresolved revert.** If the window was reverted, the cause is fixed,
+   a later deploy is green, and the clock in 3 and 4 restarts from it.
+6. **The owner says go**, having used the deployed app themselves, and the
+   date is written in the handoff. This is theirs alone: "publish early,
+   delete later" reserves the "later" to the person who made the decision.
+
+And one condition R0 carries for its own sake, unchanged from Phase 5 decided
+2: the tree it seeds the structural goldens from is green on the **full**
+workflow, parity included, and the seeding commit says which run that was. The
+goldens' entire warrant is that last green parity run; a seed taken from an
+untested tree is a golden that records a bug.
+
+### B12's deferred nits, placed
+
+From `handoff.md`, "Deferred". Each one goes to the batch that opens the file
+for its own reasons, or to the phase that rewrites it anyway; none stays on an
+undifferentiated list.
+
+| nit | placed in | why there |
+|---|---|---|
+| 1. `tests/app/typo.js:11-12` promises a missing grip "fails loudly"; `softClick` (:50) and `hit()` are both silent, so a renamed `Фильтры` or `.helpbtn` stops checking a panel without saying so | **B13** | B13 runs all five `tests/app/` suites as its own gate, so the fix is verified by a run already paid for; and it is the same class of defect B13's publish guard is about - a check that can stop checking without telling anyone. B12.1 does not open `typo.js` and would have to add a suite to its filter to prove the change |
+| 2. two of B12's plan fallbacks taken without being listed (axe RU-only at 360/390/768, `sweep.js:286`; the focus walk at 1180 only, `:310`) | **closed here** | already named in "B12 built"'s correction paragraph; no code change is wanted - both were the plan's own recorded fallbacks, taken for the reasons the plan gave. Recorded a second time in "B12 built, the fallbacks it took" below so the section reads complete on its own |
+| 2b. `tests/app/states.js` cases 4/5 use `d.click` where the plan's text says `press` | **B13** | the whole point of B12's C1 was a trusted `press` verb, and the commit is titled "the states a real click reaches"; two cases that do not use it undercut the claim. One named step with an explicit fallback: if `press` cannot reach the control, keep `d.click`, write the reason in the case's comment and in the handoff, and do not widen the batch chasing it |
+| 3. `App.svelte:82-87`'s comment overclaims what the `<h1>` costs | **B12.1** | the branch, the comment and the `.todo` rule all go together |
+| 4. `docs/specs/DEBT.md` reads D7, D10, D8, D4 - D10 was inserted mid-sequence | **Phase 8 R1** | R1 re-verifies every entry and gives each a decision, rewriting the file top to bottom; renumbering it twice is churn, and neither B12.1 nor B13 opens it |
+| 5. `vite.config.mts:127-131`'s warrant for excluding `src/ports/image.ts` is thinner than its comment reads, since D10 says the path cannot complete under `file://` on either app | **Phase 8, with D10** | the nit says so itself - the exclusion's wording is decided by what D10's fix turns out to be, and guessing ahead of that writes the comment twice |
+| 6. `CLAUDE.md` is 197 lines, not 198 | **closed here** | corrected in `handoff.md`; no code, and the cap is 200 either way |
+
+### B12 built, the fallbacks it took
+
+Recorded in full here because "B12 built" above says what deviated and then
+points at the handoff for two of them, which leaves this file incomplete on
+its own (B12 review nit 2). Neither is a defect; both are fallbacks the B12
+plan itself wrote down and allowed:
+
+- **axe runs RU-only at 360, 390 and 768** (`tests/app/sweep.js:286`), both
+  languages at 1180 only. The plan's fallback, taken for run time.
+- **the focus walk runs at 1180 only** (`tests/app/sweep.js:310`), against the
+  plan's "1180 and 360".
+
+Anyone reading a future a11y gap at a narrow width in English should look here
+first: it is not covered, on purpose, and the place to widen it is the sweep's
+own width loop.
