@@ -45,6 +45,15 @@ Example of the stale link shape:
      existing backlog of shared links, not merely correct future shares.
      Runbook step F.4 is no longer evidence-gathering; it is a regression
      check, and a result contradicting this is worth reporting.
+  7. **Retire the 115-entry `state.json` and restart the reindex.** Answering
+     the pass-4 question (owner, 2026-09-12, via orchestrator): the file moves
+     to a backup **outside the repository** - it is not deleted - and the
+     reindex starts cold with the fixed tool, on the plan's
+     `--limit 5 --press-limit 50` incremental cadence. Chosen over keeping it:
+     nothing names which 28 of the 115 are unverified, so re-pressing only
+     those is unactionable and re-pressing all of them costs the same as
+     starting over. ~115 presses and 2-3 extra runs out of ~22 buys uniform
+     provenance - every entry with the same evidence behind it.
 - Open questions:
   - ~~Does a `@WebpageBot` refresh fix previews in already-posted messages?~~
     **Answered by the owner, 2026-09-11: yes, it does.** See decision 6.
@@ -246,6 +255,61 @@ honest - its button was pressed by hand.
 `docs/tg-preview.md` currently tells the owner that a send refreshes the
 preview. That is now known to be false and must be corrected wherever it
 appears.
+
+## The press axis has its own throttle, and `--mode full` re-spends it (measured 2026-09-12)
+
+The owner's **second** chunked reindex run, reported verbatim:
+
+```
+phase 1: pressed 115, confirmed 115 (photo changed 87, same 28, none 0)
+bot: Sorry, too many attempts. Please try again in 3213 seconds.
+no button message for .../i/cc44.html          (x10, cc44-cc53)
+batch 1/10: sent 10, buttons 0, pressed 0, confirmed 0
+```
+
+Measured facts, in the order they matter:
+
+1. **@WebpageBot throttles presses per user, and the limit is below 115 in
+   one run.** After phase 1's 115 presses (about four minutes, paced
+   `PRESS_PACE_MS`), the bot answered the very next *send* with
+   `"Sorry, too many attempts. Please try again in 3213 seconds."` - about
+   54 minutes - and emitted **no button messages at all** for that batch's
+   ten links. This is the first measurement of the press-axis limit; the
+   send axis was never reached. It partially answers the standing open
+   question about `@WebpageBot`'s flood limits: the binding limit is on
+   presses, not sends.
+2. **`--mode full` makes phase 1 re-press what is already confirmed.**
+   `stale()` (`lib.mjs:150`) returns every URL when `mode === 'full'`,
+   ignoring `state.json`. Phase 1 then presses every "Update with content"
+   button it finds in the last `RECOVER_SCAN = 200` chat messages that maps
+   to a URL in that set. `--limit` bounds sends only (documented), so a
+   chunked run's press count is bounded by the scan window, not by the
+   chunk. **`docs/tg-preview.md` step G.1 tells the owner to run
+   `--mode full --limit 10` repeatedly**, which is precisely the loop that
+   re-presses the previous chunk's ~100 buttons on every subsequent run.
+   The owner's read of their own output - "we're trying to click all the
+   previous buttons" - is correct, and the runbook causes it.
+   In `--mode incremental`, phase 1 presses only unconfirmed URLs; the
+   defect is the `--mode full` runbook line, not phase 1 itself.
+3. **A press answered with the throttle message is recorded as confirmed.**
+   `client.mjs`'s `press()` returns the callback answer `text`, `pressOne`
+   carries it, and `pressGroup` **never reads it** - `answered: true` alone
+   confirms the URL. So a press the bot rejected with "too many attempts"
+   would be written into `state.json` as refreshed. This is the same class
+   of defect B3 was created to fix (trusting an answer that is silent about
+   the photo), on the press path instead of the send path.
+4. **Consequence for the 115 entries now in `state.json`.** 87 reported
+   `photo changed` and are real by that evidence alone. The 28 reporting
+   `same` are **not independently verified**: `same` is legitimate when
+   Telegram's cached photo already matched, and is also exactly what a
+   throttle-rejected press at the tail of phase 1 would produce. Nothing in
+   the run's output distinguishes them. Whether to invalidate them is a
+   planning decision, not a fact.
+
+State of the world after that run: `tools/tg-preview/state.json` is still
+untracked and now holds **115 URLs** (the site root, `cc12`/`cc24`/`cc38`
+residue and `cc19` among them), up from `cc19` alone. `cc44`-`cc53` were
+sent but never got buttons and are correctly absent.
 
 ## Scale, measured 2026-09-11 at `8b96ff4`
 

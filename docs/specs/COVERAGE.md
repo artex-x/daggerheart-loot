@@ -261,10 +261,14 @@ actually lives, are covered here.
 it covers the Telegram preview refresher's pure logic (URL derivation,
 fingerprinting, what counts as stale, batching, the flood/fatal error table,
 button matching, and the two-phase send-and-press loop against a fake
-client, clock and live check). The real Telegram connection (`client.mjs`)
-and the real CDN fetch (`live.mjs`) are deliberately outside it - thin
-wrappers around a live network, where the only honest proof is Telegram and
-the CDN themselves. See `docs/tg-preview.md`.
+client, clock and live check), plus `@WebpageBot`'s own per-user attempt
+throttle: recognising its refusal text (`botThrottle`), the run-scoped press
+budget (`--press-limit`/`PRESS_LIMIT`) that spans both phases and stops a run
+before it overspends the bot's quota, and the warning when `--mode full`
+cannot finish the stale set on that budget. The real Telegram connection
+(`client.mjs`) and the real CDN fetch (`live.mjs`) are deliberately outside
+it - thin wrappers around a live network, where the only honest proof is
+Telegram and the CDN themselves. See `docs/tg-preview.md`.
 
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code

@@ -296,6 +296,32 @@ describe('applyResult', () => {
   });
 });
 
+describe('botThrottle', () => {
+  it('recognises the measured sentence and pulls out the seconds', () => {
+    const t = lib.botThrottle('Sorry, too many attempts. Please try again in 3213 seconds.');
+    assert.deepEqual(t, { seconds: 3213 });
+  });
+
+  it('case and surrounding words do not matter', () => {
+    const t = lib.botThrottle('TOO MANY ATTEMPTS!! retry in 90 SECONDS please');
+    assert.deepEqual(t, { seconds: 90 });
+  });
+
+  it('a throttle sentence with no seconds figure is still a throttle', () => {
+    assert.deepEqual(lib.botThrottle('Sorry, too many attempts. Please try again later.'), { seconds: null });
+  });
+
+  it('the bot\'s normal summary is not a throttle', () => {
+    assert.equal(lib.botThrottle('Link previews was updated successfully. Check them out!'), null);
+  });
+
+  it('an empty string and null are not throttles', () => {
+    assert.equal(lib.botThrottle(''), null);
+    assert.equal(lib.botThrottle(null), null);
+    assert.equal(lib.botThrottle(undefined), null);
+  });
+});
+
 describe('parseArgs', () => {
   it('defaults to an incremental, verifying, non-dry run', () => {
     const o = lib.parseArgs([]);
@@ -303,6 +329,7 @@ describe('parseArgs', () => {
     assert.equal(o.dryRun, false);
     assert.equal(o.noVerify, false);
     assert.equal(o.limit, null);
+    assert.equal(o.pressLimit, lib.PRESS_LIMIT);
     assert.equal(o.only, null);
   });
 
@@ -311,6 +338,7 @@ describe('parseArgs', () => {
       '--mode', 'full',
       '--dry-run',
       '--limit', '3',
+      '--press-limit', '7',
       '--only', 'a, b,c',
       '--max-wait', '30',
       '--budget-minutes', '5',
@@ -322,6 +350,7 @@ describe('parseArgs', () => {
     assert.equal(o.mode, 'full');
     assert.equal(o.dryRun, true);
     assert.equal(o.limit, 3);
+    assert.equal(o.pressLimit, 7);
     assert.deepEqual(o.only, ['a', 'b', 'c']);
     assert.equal(o.maxWaitS, 30);
     assert.equal(o.budgetMinutes, 5);
@@ -350,8 +379,9 @@ describe('parseArgs', () => {
     assert.equal(o.limit, 0);
   });
 
-  it('throws on a non-numeric --limit/--max-wait/--budget-minutes rather than silently no-op-ing', () => {
+  it('throws on a non-numeric --limit/--press-limit/--max-wait/--budget-minutes rather than silently no-op-ing', () => {
     assert.throws(() => lib.parseArgs(['--limit', 'ten']), /--limit must be a number, got ten/);
+    assert.throws(() => lib.parseArgs(['--press-limit', 'ten']), /--press-limit must be a number, got ten/);
     assert.throws(() => lib.parseArgs(['--max-wait', 'x']), /--max-wait must be a number, got x/);
     assert.throws(() => lib.parseArgs(['--budget-minutes', 'x']), /--budget-minutes must be a number, got x/);
   });
@@ -446,6 +476,7 @@ describe('runRefresh', () => {
     const sent = [];
     const pressedCalls = [];
     const closed = { value: false };
+    const incomingCalls = { count: 0 };
     return {
       async client() {
         return {
@@ -457,6 +488,7 @@ describe('runRefresh', () => {
             return { id };
           },
           async incoming() {
+            incomingCalls.count++;
             return queue.length ? queue.shift() : [];
           },
           async byIds(ids) {
@@ -484,13 +516,15 @@ describe('runRefresh', () => {
       },
       sent,
       pressedCalls,
-      closed
+      closed,
+      incomingCalls
     };
   }
 
   function baseDeps(manifest, extra = {}) {
     const written = [];
     const results = [];
+    const logs = [];
     let clock = 0;
     const deps = {
       manifest,
@@ -510,10 +544,11 @@ describe('runRefresh', () => {
             results.push(JSON.parse(JSON.stringify(r)));
           }
         : null,
-      log: () => {}
+      log: (msg) => logs.push(msg)
     };
     deps.written = written;
     deps.results = results;
+    deps.logs = logs;
     return deps;
   }
 
@@ -805,7 +840,7 @@ describe('runRefresh', () => {
     assert.ok(!fake.sent[0].text.includes(residueUrl));
   });
 
-  it('--limit 0 still runs phase 1 (a free press, no new send)', async () => {
+  it('--limit 0 still runs phase 1 (a cheaper press, no new send)', async () => {
     const manifest = fakeManifest(2); // 3 urls
     const urls = Object.keys(manifest.urls);
     const residueUrl = urls[0];
@@ -920,5 +955,132 @@ describe('runRefresh', () => {
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
     assert.equal(result.confirmed.length + result.pending.length, Object.keys(manifest.urls).length);
+  });
+
+  // Pass 4 - the bot's own attempt quota (plan.md section 3.4, 10a).
+
+  it('a press answered with the throttle sentence is not recorded and stops the run green, with the presses before it recorded', async () => {
+    const manifest = fakeManifest(2); // 3 urls: root, r0, r1
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: [{ text: 'ok' }, { text: 'ok' }, { text: 'Sorry, too many attempts. Please try again in 3213 seconds.' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.confirmed.length, 2);
+    assert.equal(result.pending.length, 1);
+    assert.match(result.stopped, /bot throttled: retry in 3213s/);
+    assert.equal(result.exitCode, 0);
+    // The throttled URL never reaches any writeState call.
+    const thirdUrl = urls[2];
+    assert.ok(deps.written.every((s) => !(thirdUrl in s.urls)));
+    assert.ok(deps.written.length > 0);
+  });
+
+  it('a throttle in the bot\'s summary stops the run without pressing that batch, and does not burn the remaining button-wait rounds', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], [summaryMsg(1000, 'Sorry, too many attempts. Please try again in 500 seconds.')]],
+      press: []
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.confirmed.length, 0);
+    assert.equal(result.pending.length, urls.length);
+    assert.match(result.stopped, /bot throttled: retry in 500s/);
+    assert.equal(result.exitCode, 0);
+    assert.equal(fake.pressedCalls.length, 0);
+    // phase 1's scan (1 call) + exactly one post-send read - no extra
+    // BUTTON_WAIT_ROUNDS polling once the summary is recognised as a refusal.
+    assert.equal(fake.incomingCalls.count, 2);
+  });
+
+  it('the press budget stops a run mid-phase-1, with the confirmed ones recorded', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[buttonMsg(9001, urls[0], 'before'), buttonMsg(9002, urls[1], 'before'), buttonMsg(9003, urls[2], 'before')]],
+      press: [{ text: 'ok' }, { text: 'ok' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full', pressLimit: 2 }, deps);
+    assert.equal(result.confirmed.length, 2);
+    assert.equal(result.pending.length, 1);
+    assert.equal(result.stopped, 'press budget reached');
+    assert.equal(result.exitCode, 0);
+    assert.equal(fake.sent.length, 0); // phase 2 never starts
+    assert.ok(deps.written.length > 0);
+  });
+
+  it('the press budget stops phase 2 before a send when fewer than PER_MESSAGE presses remain, and no send is attempted', async () => {
+    const manifest = fakeManifest(9); // 10 urls, 1 batch of 10
+    const fake = fakeClient({ incoming: [[]], send: [], press: [] });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full', pressLimit: 5 }, deps);
+    assert.equal(fake.sent.length, 0);
+    assert.equal(fake.pressedCalls.length, 0);
+    assert.equal(result.confirmed.length, 0);
+    assert.equal(result.stopped, 'press budget too low for another batch');
+    assert.equal(result.exitCode, 0);
+  });
+
+  it('phase 1 and phase 2 draw on one press budget', async () => {
+    const manifest = fakeManifest(10); // 11 urls: root + r0..r9
+    const urls = Object.keys(manifest.urls);
+    const recoveredUrl = urls[0];
+    const rest = urls.filter((u) => u !== recoveredUrl); // 10 urls -> exactly one batch
+    const fake = fakeClient({
+      incoming: [[buttonMsg(9000, recoveredUrl, 'before')]],
+      press: [{ text: 'ok' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    // Budget 10: phase 1 spends 1, leaving 9 - one short of PER_MESSAGE (10)
+    // for phase 2's only batch. A separate-budget implementation would let
+    // phase 2 send (it would see a fresh 10); the shared budget stops it.
+    const result = await runRefresh({ mode: 'full', pressLimit: 10 }, deps);
+    assert.equal(result.confirmed.length, 1);
+    assert.equal(result.pending.length, rest.length);
+    assert.equal(result.stopped, 'press budget too low for another batch');
+    assert.equal(fake.sent.length, 0);
+  });
+
+  it('--press-limit 0 sends nothing and presses nothing and exits green', async () => {
+    const manifest = fakeManifest(4); // 5 urls
+    const fake = fakeClient({ incoming: [[]], send: [], press: [] });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full', pressLimit: 0 }, deps);
+    assert.equal(fake.sent.length, 0);
+    assert.equal(fake.pressedCalls.length, 0);
+    assert.equal(result.confirmed.length, 0);
+    assert.equal(result.exitCode, 0);
+  });
+
+  it('--mode full with a press budget below the stale count logs the warning', async () => {
+    const manifest = fakeManifest(4); // 5 urls
+    const fake = fakeClient({ incoming: [[]], send: [], press: [] });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    await runRefresh({ mode: 'full', pressLimit: 2 }, deps);
+    assert.ok(deps.logs.some((l) => l.includes('--mode full') && l.includes('2')));
+  });
+
+  it('does not warn under --mode full when the press budget covers the stale count', async () => {
+    const manifest = fakeManifest(2); // 3 urls
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: urls.map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    await runRefresh({ mode: 'full', pressLimit: lib.PRESS_LIMIT }, deps);
+    assert.ok(!deps.logs.some((l) => l.includes('--mode full cannot finish')));
+  });
+
+  it('the dry-run counts line names the press budget', async () => {
+    const manifest = fakeManifest(4); // 5 urls
+    const deps = baseDeps(manifest, {});
+    await runRefresh({ mode: 'full', dryRun: true, pressLimit: 17 }, deps);
+    assert.ok(deps.logs.some((l) => l.endsWith('(press budget 17)')));
   });
 });

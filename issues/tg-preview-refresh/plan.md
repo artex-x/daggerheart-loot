@@ -26,6 +26,27 @@ then `handoff.md`.
   `> Superseded:` note and is readable in full at commit `0ab04eb`.
   Sections without a marker are pass-3 additions.
 
+- **Pass 4, 2026-09-12 (this revision).** O1's **second** run - the first
+  chunked reindex attempt - disproved the assumption that **presses are
+  free**. `@WebpageBot` has its own attempt quota per user, below 115
+  presses in one run, and answers everything past it with
+  `"Sorry, too many attempts. Please try again in 3213 seconds."` -
+  including a subsequent send, for which it then emits **no button
+  messages at all**. Everything measured is in `context.md`, "The press
+  axis has its own throttle, and `--mode full` re-spends it"; nothing
+  there is re-derived or re-tested here.
+
+  What that invalidates, in the order it matters: (a) the "a button
+  message already in the chat is a **free** retry" framing under section
+  3.4 - free on the send axis, and the send axis was never the binding
+  one; (b) section 9 step G's `--mode full --limit 10` loop, which
+  re-presses the previous chunk's buttons every run; (c) the confirmation
+  rule's "answered is confirmed" clause, because an answer can be a
+  rejection; (d) section 2's blanket non-goal on parsing the bot's text.
+  Sections revised in pass 4 say **Revised (pass 4)** so a pass-3 revision
+  is not mistaken for this one; the superseded pass-3 text is readable in
+  full at commit `5b2a68e`.
+
 The six owner decisions in `context.md` stand and are not re-opened here.
 
 ## 1. Objective and current state
@@ -72,7 +93,8 @@ click axis scales with **URLs**, not messages: a full reindex is 107 sends
 
 ## 2. Scope and non-goals
 
-**Revised** - the fourth non-goal changed.
+**Revised (pass 4)** - the fourth non-goal is narrowed. Pass 3's revision of
+the first paragraph stands.
 
 In scope: a repo tool under `tools/tg-preview/` that derives the URL set from
 `data.js`, fingerprints what Telegram would see, keeps a committed state file
@@ -92,15 +114,33 @@ Out of scope, on purpose:
 - A hosted service, a webhook, a backend (`META.md` section 3).
 - Other messengers (Discord, WhatsApp, Slack). Their caches differ and none
   has a refresh bot; not this task.
-- Parsing the bot's **text** for control flow. The reply and callback-answer
-  vocabulary is still unverified beyond the one summary sentence; texts are
-  logged verbatim and never branched on. What the tool *does* read is the
-  bot's message **structure** - `media.webpage.url` and the callback buttons -
+- Parsing the bot's **text** for control flow, **with exactly one carve-out:
+  the throttle sentence** (below). Everything else the bot says is logged
+  verbatim and never branched on. What the tool otherwise reads is the bot's
+  message **structure** - `media.webpage.url` and the callback buttons -
   which is typed TL data, not prose.
 
 > Superseded: pass 1 also excluded "refreshing previews of already-posted
 > messages if Telegram does not do that" - answered by owner decision 6: it
-> does.
+> does. Pass 3 made the text non-goal absolute; pass 4 narrows it.
+
+**The carve-out, and why it is safe (pass 4).** `@WebpageBot` says
+`"Sorry, too many attempts. Please try again in <N> seconds."` and that
+sentence is the *only* signal that an attempt was refused - it arrives both
+as a callback answer to a press and as the bot's summary reply to a send.
+Refusing to read it is precisely what let the tool write 28 entries it could
+not justify (`context.md`, fact 3). So one case-insensitive match on
+`too many attempts`, plus the seconds figure, is read - and the rule around
+it is **asymmetric by construction**:
+
+- a recognised text can only **withhold** confirmation and **stop** the run;
+- **no text ever grants** confirmation, and no other text is matched.
+
+The failure modes are therefore bounded in the right direction. A false
+positive stops a run early, which is green with a recorded backlog and costs
+one run. A false negative (the bot invents a new wording) leaves the tool
+exactly where pass 3 left it, no worse. Nothing else about the bot's prose
+reaches control flow.
 
 ## 3. The decisions
 
@@ -141,14 +181,20 @@ not change (still a fingerprint string per URL), so the one honest entry
 that exists today (`cc19`, whose button the owner pressed by hand) stays
 valid without migration.
 
-### 3.4 Rate limiting, confirmation and resumability - two axes
+### 3.4 Rate limiting, confirmation and resumability - three limits
 
-**Revised.**
+**Revised (pass 4).**
 
 > Superseded: pass 1 sized the run at 107 messages, ~12 minutes, with a
 > URL counted as refreshed once its message was sent and any reply arrived,
 > and treated the bot's reply as an opaque string to log. All of that is
 > replaced below. The error table survives with one added row.
+>
+> Superseded by pass 4: pass 3's two axes (sends, presses) each bounded only
+> by Telegram's own `FLOOD_WAIT`; presses described as costing "nothing"
+> once a button message exists; and confirmation granted by an answered
+> press alone. There is a **third** limit - the bot's own attempt quota -
+> and it is the binding one.
 
 #### Constants
 
@@ -161,8 +207,10 @@ All in `lib.mjs`, one place. Values marked *kept* are pass 1's.
 | `BUTTON_WAIT_ROUNDS` / `BUTTON_WAIT_MS` | 6 / 5000 ms | extra polls when fewer button messages than links have arrived yet - the bot fetches every page before it can answer for it |
 | `BUTTON_FETCH` | 50 | `limit` when reading replies newer than the sent message; 11 are expected per batch |
 | `PRESS_PACE_MS` | 1000-2000 ms | between callback presses. Official clients press with no pacing at all; this is insurance on a days-old account |
-| `RECOVER_SCAN` | 200 | how many recent chat messages are read at run start to find pressable button messages that need no new send (resumability, below) |
+| `RECOVER_SCAN` | 200 | how many recent chat messages are read at run start to find pressable button messages that need no new send (resumability, below). **Re-examined in pass 4 and kept at 200** - see "Why `RECOVER_SCAN` stays 200" |
 | `UPDATE_BUTTON` | `'Update with content'` | matched by exact button text |
+| **`PRESS_LIMIT`** | **50, `--press-limit`** | **pass 4.** The most presses one run will attempt, across **both** phases. The only measurement of the bot's quota is that 115 in one run tripped it; 50 is a deliberate under-estimate - see "The bot's own attempt quota" |
+| **`THROTTLE_MATCH`** | **`/too many attempts/i`** | **pass 4.** Module-private inside `botThrottle`, not an export - nothing else uses it. The one sentence of the bot's prose that reaches control flow (section 2's carve-out); the seconds figure is read from the same text |
 | `REST_EVERY` / `REST_MS` | 25 sends / 30 s (*kept*) | send axis only |
 | `MAX_WAIT_S` | 600, `--max-wait` (*kept*) | applies to a `FLOOD_WAIT` on either axis |
 | `NET_RETRIES` / `NET_RETRY_MS` | 3 / 10 s (*kept*) | transport errors on either axis |
@@ -170,14 +218,26 @@ All in `lib.mjs`, one place. Values marked *kept* are pass 1's.
 
 #### Arithmetic
 
-Send axis: 107 sends at ~5 s plus four rests = **~11 min**. Press axis: 1062
-presses at ~1.5 s = **~27 min**. Button waits mostly fall inside the pace;
-one re-fetch per batch is negligible. A full reindex with no flood waits is
-therefore **~40 minutes**, up from 12. That fits CI's 45-minute budget with
-little to spare, and the state is written after every batch, so a budget
-stop simply leaves the remainder for the next run. The runbook keeps the
-orchestrator's advice for the first reindex: run it locally in `--limit 10`
-chunks (100 URLs, ~4 minutes each) rather than as one run.
+**Revised in pass 4: wall clock was never the constraint.** Pass 3's sum -
+107 sends at ~5 s plus four rests (~11 min) and 1062 presses at ~1.5 s
+(~27 min), so ~40 minutes for a full reindex - is arithmetically still
+right and **operationally irrelevant**, because no account gets to spend
+1062 presses in forty minutes. The real unit of a reindex is now **runs,
+not minutes**:
+
+| | |
+|---|---|
+| presses a run will attempt | `PRESS_LIMIT`, default 50 |
+| URLs per run at `--limit 5 --press-limit 50` | 50 (5 sends, 50 presses) |
+| wall clock of such a run | ~2 minutes (5 sends at ~5 s, 50 presses at ~1.5 s) |
+| runs to clear 1062 URLs | **~22**, at a cadence the quota allows |
+| observed cooldown after tripping the quota | 3213 s (~54 min), one data point |
+
+So a first reindex is a **multi-day, spaced-out operation** the owner drives
+a chunk at a time, not a job that finishes in one sitting. The runbook
+(section 9, G) says that plainly rather than implying otherwise. CI's
+45-minute budget is untouched and still ample: an incremental run after a
+deploy is a handful of URLs.
 
 #### The pace and flood model per axis
 
@@ -209,6 +269,130 @@ chunks (100 URLs, ~4 minutes each) rather than as one run.
 | `AuthKeyUnregisteredError`, `SessionRevokedError`, `SessionExpiredError`, `SessionPasswordNeededError`, `AuthKeyInvalidError` | fatal: the credential is dead, exit 2, do not retry |
 | any other `RPCError` | stop; reason is `errorMessage` |
 | non-RPC error (socket, DNS) | retry after 10 s, up to `NET_RETRIES`, then stop |
+
+`decide()` is unchanged in pass 4. The throttle below is **not** an error and
+never reaches it.
+
+#### The bot's own attempt quota - the third limit (pass 4)
+
+Neither axis above is what stopped the owner's run. `@WebpageBot` keeps its
+own counter of update attempts per user, independent of Telegram's flood
+control, and refuses everything past it with
+`"Sorry, too many attempts. Please try again in <N> seconds."` The measured
+shape of it (`context.md`):
+
+- 115 presses in ~4 minutes tripped it; `N` was **3213** (~54 minutes).
+- The refusal then applied to a **send** too, and the bot emitted **no
+  button messages at all** for that send's ten links. So the quota governs
+  the bot's willingness to do any work, not one method.
+- The exact quota is unknown. One data point. It may have begun well before
+  press 115 - see "What the 28 are worth" below.
+
+Two mechanisms answer it, and they are deliberately different in kind:
+
+**1. A press budget bounds what a run spends (`PRESS_LIMIT`, `--press-limit`).**
+The tool cannot know the quota, so it does not model it; it simply refuses
+to spend more than a fixed number of presses per run and stops green with
+the rest pending. The budget covers **both phases** - phase 1 spends from
+the same allowance as phase 2, because the quota does not care which phase a
+press came from. Three rules make it useful rather than decorative:
+
+- checked before **every** press attempt, in both phases, exactly where the
+  deadline is checked;
+- **a batch is not sent when fewer than `PER_MESSAGE` presses remain in the
+  budget** (`stopped: 'press budget too low for another batch'`). The owner's
+  run ended by spending ten sends on links whose buttons it could not press;
+  a send whose presses are unaffordable is pure waste on the scarcer axis.
+  The batch is stopped, never trimmed - re-chunking mid-run would make
+  `--limit` mean something different on the last batch;
+- the default is **50**, well under the only observed failure point, because
+  the costs are asymmetric: under-shooting costs one extra two-minute run,
+  over-shooting costs a ~54-minute lockout **plus** the sends already spent
+  in the batch that earned it. `--press-limit` is how the owner raises it
+  once runs at 50 have gone through cleanly a few times; every run's
+  `pressed P` line is a lower bound on the quota, so the runbook has its own
+  measurement loop and B2 has its input.
+
+**2. Recognising the refusal stops the run cleanly.** `botThrottle(text)`
+(pure, in `lib.mjs`) matches `THROTTLE_MATCH` and pulls out the seconds.
+It is consulted in exactly two places:
+
+- the **callback answer** of a press. That press is **not confirmed** - it
+  was refused - and the run stops;
+- the bot's **summary reply** to a send, checked on each button-wait round
+  so the run does not burn `BUTTON_WAIT_ROUNDS x BUTTON_WAIT_MS` waiting for
+  buttons that are never coming. The batch's URLs stay pending; the send is
+  already spent and nothing recovers it.
+
+**The throttle always stops; it is never waited out.** Named and rejected:
+routing it through `decide()`'s wait-or-stop table, so that `N <= MAX_WAIT_S`
+sleeps and retries. Rejected because (a) the one observed `N` is 3213 s,
+five times `MAX_WAIT_S` and longer than CI's entire 45-minute budget; (b)
+unlike a Telegram `FLOOD_WAIT`, which suspends one method, this refusal
+applies to every attempt of either kind, so there is nothing useful to do on
+the other side of the sleep except what the next run would do anyway; and
+(c) a stop is resumable by construction here - the state is written per
+batch and per phase, and phase 1 re-presses whatever is still in the chat.
+`MAX_WAIT_S` and `--budget-minutes` are therefore both **unaffected** by the
+throttle path: nothing sleeps, so no wait can overshoot a deadline.
+
+**Exit code: green (0)**, the same as `PeerFloodError`, with the backlog
+recorded. This needs **no change to the CI-red rules** already in
+`docs/tg-preview.md` ("What turns the CI job red"): a Telegram-side stop is
+green because the site itself is live and a red job would say something
+false about it. The throttle is named there as an example, nothing more.
+
+**Rejected alternatives for bounding the press count**, each named because
+the next reader will think of it:
+
+- **Make phase 1 chunk-aware - bound it by `--limit`.** `--limit` counts
+  *messages* of ten URLs; phase 1 presses individual URLs. Conflating them
+  makes the number mean two things and destroys `--limit 0`, the press-only
+  run. A separate flag keeps both honest.
+- **Default the runbook to `--mode incremental` and stop there.** Necessary
+  (it is done - see below) but not sufficient: a run that stops with a
+  backlog of unpressed buttons leaves them in the scan window, so the next
+  run's phase 1 spends an unbounded number of presses before phase 2 gets a
+  look in. Taken *as well*, not instead.
+- **Make `stale()` respect the state under `--mode full`.** This is where
+  `context.md` fact 2 points, and it is the wrong repair: it deletes the
+  only meaning `--mode full` has - redo everything when the state is
+  distrusted - leaving no way to express that at all. The defect is the
+  runbook line that put `--mode full` in a loop, and `context.md` fact 2
+  says so in its own last sentence.
+- **Slow `PRESS_PACE_MS` down until the quota never fills** (say 20 s). The
+  cooldown's shape (a ~54-minute retry-after) reads as a count per window,
+  not a rate, so pacing multiplies wall clock without changing the count -
+  and 1062 presses at 20 s is six hours. No evidence supports it.
+- **Persist a press ledger across runs** (how many presses in the last hour,
+  in the state) so the tool refuses to start inside a cooldown. It is the
+  nicest version of this and it is guessing at a window we have one sample
+  of; it also needs a schema change to a committed file. Deferred to B2
+  (section 13), where the runbook's per-run `pressed P` numbers are the
+  evidence for it. Until then the protection is procedural: the runbook
+  spaces the chunks, and a throttle stop prints the seconds the bot named.
+
+**`--mode full` is not chunkable, and the tool now says so.** Under
+`--mode full` every URL is stale on every run, so phase 1 re-presses the same
+recovered buttons each time and the run never advances - a livelock the press
+budget bounds but does not cure. `runRefresh` logs one warning when
+`--mode full` is combined with a press budget smaller than the stale set,
+pointing at section 9 step G. `--mode full` remains what it always was: one
+deliberate pass for a state you do not trust, not the way to drive a reindex.
+
+#### Why `RECOVER_SCAN` stays 200 (pass 4)
+
+Re-examined because pass 3 justified the window by presses being free, and
+they are not. It still holds, for a different reason: **the press budget,
+not the scan window, is now what bounds phase 1.** The window only decides
+how far back recovery can *reach*, and a button older than it is not lost -
+it costs a re-send **plus** a press, strictly more than the press alone. In
+the chunked flow a run leaves at most one batch's worth of unconfirmed
+buttons behind, and 200 messages covers roughly eighteen batches of history,
+so the window is not the limiting factor in any case the runbook produces.
+Shrinking it would buy nothing the budget does not already buy and would
+spend sends. `RECOVER_SCAN = 0` keeps its separate, unrelated job: the named
+fallback if press-only recovery is ever shown not to update metadata.
 
 #### The deadline (`--budget-minutes`)
 
@@ -247,17 +431,35 @@ written only when **all** of these hold:
    has several button messages, the newest (highest id) wins. The summary
    message is excluded by construction: it has no webpage media and no
    buttons.
-2. **The press was acknowledged, or its effect was observed.** Either
-   `messages.getBotCallbackAnswer` returned a `BotCallbackAnswer` (answered
-   - the bot handled the press), **or** it raised `BOT_RESPONSE_TIMEOUT`
-   *and* re-fetching the button message afterwards shows a **different
-   `photo.id`** than before the press (unanswered, but the re-download
-   visibly happened).
+2. **The press was acknowledged and not refused, or its effect was
+   observed.** Either `messages.getBotCallbackAnswer` returned a
+   `BotCallbackAnswer` **whose text `botThrottle()` does not recognise as a
+   refusal** (answered - the bot handled the press), **or** it raised
+   `BOT_RESPONSE_TIMEOUT` *and* re-fetching the button message afterwards
+   shows a **different `photo.id`** than before the press (unanswered, but
+   the re-download visibly happened).
+
+   > Superseded (pass 4): pass 3 required only that an answer arrived.
+   > `context.md` fact 3 measured what that costs - a press the bot refused
+   > with "too many attempts" is answered, and was being written into the
+   > state as refreshed. This is the same defect B3 existed to remove, one
+   > axis over.
 
 Everything else leaves the URL **pending**: no button message arrived for it
 (logged as `no button message for <url>`), the press was stopped by the
-deadline or a flood stop, or the press went unanswered and the photo did not
-change.
+deadline, a flood stop, the press budget or the bot's throttle, or the press
+went unanswered and the photo did not change.
+
+**An answered press is still not corroborated against the photo, and must
+not be.** The temptation after pass 4 is to demand a *changed* photo before
+recording anything. Rejected, for the reason pass 3 already gave and pass 4
+does not weaken: `same` is the legitimate result for a URL whose cached
+picture is already current, so demanding `changed` would leave those URLs
+pending forever and hand the owner a `pending` count that never reaches
+zero. The refusal text, not the photo, is what distinguishes a rejected
+press - and unlike the photo it is unambiguous. The photo delta keeps
+exactly the job pass 3 gave it: a gate in the unanswered case, telemetry
+everywhere else.
 
 **The photo-id trap, handled.** A photo id that stays the same is **not**
 evidence of failure: an image whose bytes are genuinely unchanged on the
@@ -273,6 +475,58 @@ first full reindex `changed` should dominate, because most cached photos are
 known stale; a chunk that reports mostly `same` is the signal to spot-check
 by pasting a link before trusting that chunk's state. The tool cannot make
 that judgement, and does not pretend to.
+
+#### What the 115 entries in `state.json` are worth, and what the owner does about them (pass 4)
+
+`context.md` fact 4 leaves this as a planning decision. Taken here.
+
+The split is 87 `photo changed` and 28 `same`. The 87 carry their own
+positive evidence and are fine. The 28 are **indistinguishable** between
+"the cached photo was already current" (benign) and "the press was refused
+by the throttle at the tail of phase 1" (a false entry of exactly the kind
+this task exists to eliminate). Two facts make the ambiguity un-resolvable
+after the fact:
+
+- the run printed **aggregate counts only**, so nothing names *which* 28;
+- `state.json`'s schema is one fingerprint per URL, with no record of the
+  evidence class, so the file cannot be interrogated either.
+
+It is also plausible - and only plausible; nobody measured it - that the
+throttle began well before press 115 and that the `same` entries are
+clustered at the tail. If so the number of false entries is up to 28 and
+the quota is nearer 87 than 115. Neither claim is evidence; both are
+reasons not to keep the file.
+
+**Decision: the owner deletes `state.json` and restarts the reindex under
+the fixed tool, keeping the old file as a backup outside the repository.**
+Stated as a command in section 9, step E.0. Why this and not the
+alternatives:
+
+- **Keep all 115.** Rejected. Up to 28 URLs would be recorded as refreshed
+  while still showing the old picture, and an incremental run skips them
+  forever - until some future artwork commit re-fingerprints them by
+  accident. That is precisely the lie pass 3 was written to remove, and
+  keeping it for convenience would make the state file's guarantee
+  conditional on a footnote.
+- **Delete only the 28.** Not actionable: nothing names them. It is the
+  right answer to a question the tool cannot answer.
+- **Re-press the 115 with `--mode full --only <ids>`.** Same problem - the
+  ids are unknown - and it costs the same presses as restarting while
+  leaving the file's provenance mixed.
+- **Add an evidence class to the state (schema v2) and re-verify.** Cannot
+  label entries already written; the evidence is gone. Still worth doing
+  for future runs - deferred, section 13.
+
+The cost of restarting is **~115 presses re-spent**, about 11% of the 1062
+the reindex costs anyway, i.e. two to three extra chunked runs out of ~22.
+Re-pressing a URL that is already current is harmless: it answers, reports
+`same`, and is confirmed. What it buys is a state file where **every entry
+was written by a tool that can tell an accepted press from a refused one** -
+uniform provenance, no footnote, nothing for a later session to re-litigate.
+
+This is the owner's data and the owner's call; no agent touches
+`state.json`. B4 does not depend on the answer - it is a code and docs
+batch - so the confirmation gates O1/O2's first step only.
 
 **Considered and not taken: recording the photo id in the state** so an
 incremental run could demand a *changed* photo whenever the image sha
@@ -301,21 +555,24 @@ Pass 1's rule stands: the backlog is whatever the manifest says and the
 state does not; the state is written after every batch (and after the
 recovery phase), so a crash loses at most one batch of presses.
 
-New: **a button message already in the chat is a free retry.** Pressing it
-needs no new link, so it costs nothing on the send axis. At run start,
+New: **a button message already in the chat is a cheaper retry** - pass 3
+said *free*, and pass 4 corrects that: pressing it needs no new link, so it
+costs nothing on the **send** axis, and the send axis was never the binding
+one. It still costs a press, from the same `PRESS_LIMIT` allowance phase 2
+draws on, and presses are the scarce resource. Cheaper than a re-send (one
+attempt instead of two), never free. At run start,
 after the live check and before any send, the tool reads the last
 `RECOVER_SCAN` incoming messages and matches them against the stale, ready
 URLs exactly as above. Every match is pressed (**phase 1, recovery**)
 before any batch is sent (**phase 2**). This covers, with no extra send:
 
 - a run that died between the send and the presses;
-- a budget or flood stop mid-batch;
+- a budget, flood, press-budget or throttle stop mid-batch;
 - a press that went unanswered with an unchanged photo;
-- **the residue** from O1's probe - `cc12`, `cc24` and `cc38` were sent and
-  never pressed, so their button messages sit in the chat now. The first
-  run of the fixed tool, `--only cc12,cc24,cc38`, is exactly this path:
-  three presses, zero sends, three state entries. The runbook makes it
-  step F.
+- ~~**the residue** from O1's probe - `cc12`, `cc24` and `cc38`.~~ **Done,
+  2026-09-12**: phase 1 of the owner's second run picked all three up and
+  they are among the 115 in `state.json`. Step F is therefore no longer a
+  residue check and is repurposed in section 9.
 
 A stale URL whose button message is older than the scan window is simply
 re-sent in phase 2 and pressed like any other. URLs matched in phase 1 but
@@ -350,7 +607,30 @@ the 45 minutes buy (section 3.4, arithmetic).
 
 ### 3.7 Verification, honestly
 
-**Revised** - the test list and the port grew.
+**Revised (pass 4)** - the test list grew again; the port did not.
+
+Pass 4 adds to the pure suite in `tools/tg-preview/lib.test.mjs`:
+
+- **`botThrottle(text)`**: the measured sentence is recognised and yields
+  `3213`; case and surrounding words do not matter; a throttle sentence with
+  no seconds figure is still a throttle, with `seconds: null`; the bot's
+  normal summary (`"Link previews was updated successfully..."`), an empty
+  string and `null` are **not** throttles.
+- **`parseArgs`**: `--press-limit` parses, defaults to `PRESS_LIMIT`, and
+  throws on a non-numeric or negative value like the other three.
+- **`runRefresh`**, one case each: a press answered with the throttle text
+  is **not** recorded and stops the run green, with the presses before it
+  recorded; a throttle in the bot's **summary** after a send stops the run
+  without pressing that batch and without burning the remaining button-wait
+  rounds; the press budget stops a run mid-phase-1 with the confirmed ones
+  recorded; the press budget stops phase 2 *before* a send when fewer than
+  `PER_MESSAGE` presses remain, and no send is attempted (asserted against
+  the fake client's `sent` list, which is the whole point of the rule);
+  phase 1 and phase 2 draw on **one** budget; `--press-limit 0` sends
+  nothing and presses nothing and exits green; `--mode full` with a press
+  budget below the stale count logs the warning.
+
+The pass-3 list below stands in full.
 
 What a test can assert, all pure, under `node:test` in
 `tools/tg-preview/lib.test.mjs`, run by `npm run check` (pass 1's list is
@@ -464,18 +744,52 @@ close()
 
 ### 5.1 Arguments
 
-**Stands**, plus one rule: `--limit`, `--max-wait` and `--budget-minutes`
+**Revised (pass 4)**: `--press-limit N` is added. It bounds the presses a
+single run attempts, across **both** phases, and defaults to `PRESS_LIMIT`
+(50). It parses under the same numeric rule as the three flags below.
+`--press-limit 0` is legal and degenerates safely: phase 1 presses nothing,
+and phase 2 never starts a batch it cannot press, so the run sends nothing
+either and exits green - no special case is needed to stop it creating
+unpressable residue.
+
+The pass-3 rule stands: `--limit`, `--max-wait` and `--budget-minutes`
 must parse to a finite, non-negative number (`--limit 0` is legal and means
 "phase 1 only, send nothing"); anything else throws `--limit must be a
 number, got <value>` from `parseArgs`. Pass 1 let `Number('ten')` through as
 `NaN`, which made `--limit` silently send nothing and `--budget-minutes`
 silently mean "no budget" - both exit 0, both lies of the kind this revision
-exists to remove. `--limit` still counts **sends**; phase 1 presses are
-bounded by `RECOVER_SCAN`, not by `--limit`.
+exists to remove. `--limit` still counts **sends** and never presses; phase
+1's presses are bounded by `--press-limit` (pass 4) and reachable only
+within `RECOVER_SCAN`.
 
 ### 5.2 Steps
 
-**Revised** - steps 7-10 replaced.
+**Revised (pass 4)** - steps 7, 11 and 12 amended; pass 3's replacement of
+steps 7-10 otherwise stands.
+
+Pass 4's amendments, in one place so the implementer does not have to diff
+the prose below:
+
+- **Step 7 (dry run)** additionally prints the press budget, so the pairing
+  of `--limit` and `--press-limit` can be sanity-checked before anything is
+  spent: `<todo> urls stale, <ready> ready, up to <batches> messages,
+  <ready> presses (press budget <N>)`.
+- **A new step 10a**, after the client is connected and before phase 1: if
+  `mode === 'full'` and the press budget is smaller than the stale set, log
+  one warning that `--mode full` cannot finish this set in one run and that
+  chunked reindexing uses the default incremental mode (section 3.4,
+  "`--mode full` is not chunkable").
+- **Step 11 (phase 1)** spends from the run's press budget and stops when
+  it is exhausted, exactly as it stops on the deadline.
+- **Step 12 (phase 2)** checks the budget **before the send**: fewer than
+  `PER_MESSAGE` presses remaining stops the run rather than sending a batch
+  whose buttons cannot be pressed. Each button-wait round checks the bot's
+  summary with `botThrottle()` and breaks out of the wait on a match instead
+  of exhausting `BUTTON_WAIT_ROUNDS`.
+- **Both phases**: a press whose callback answer `botThrottle()` recognises
+  is not recorded, and stops the run.
+- Stop reasons added, all green: `press budget reached`, `press budget too
+  low for another batch`, `bot throttled: retry in <N>s`.
 
 1. Load `.env` if present; parse args.
 2. Build the manifest (1062 fingerprints) from the tree. Report and exclude
@@ -596,29 +910,40 @@ four R1 fixes all remain in force.
 
 ## 7. Contracts, specs and docs that move
 
-**Revised** for the next batch.
+**Revised (pass 4)** for B4. Pass 3's list is done and landed at `2a4b78b`;
+what follows is what B4 moves.
 
 - No public contract changes, still: `CONTRACTS.md`, `docs/fixtures/`,
   `tests/contracts.js`, `llms.txt`, `robots.txt` untouched.
-- `docs/specs/META.md` section 7 gains **one sentence** of durable Telegram
-  behaviour: a plain send to `@WebpageBot` refreshes the page's text and
-  keeps the cached picture when `og:image` still points at the same URL;
-  only the bot's "Update with content" button re-downloads it. That is a
-  fact about Telegram, not about this tool, so it belongs in the spec.
-- `docs/tg-preview.md`: every sentence that says or implies a send
-  refreshes the preview is corrected - the opening paragraphs, the tool
-  description, step E's counts line, all of step F, step G's timing and
-  chunking, the "Operations" summary vocabulary, "Rate limiting and
-  resumability", and "Coverage". The full list is in the batch below.
+- `docs/specs/META.md` section 7 gains **one sentence**, alongside pass 3's:
+  `@WebpageBot` also throttles update attempts per user, independently of
+  Telegram's flood control, and refuses further attempts of either kind -
+  presses and sends - with `"Sorry, too many attempts. Please try again in
+  <N> seconds."` That is a durable fact about the bot, not about this tool,
+  so it belongs in the spec next to the sentence about the button.
+- `docs/tg-preview.md`: "Operations" (the `--press-limit` flag, what
+  `--limit` does and does not bound, `--mode full` is a single deliberate
+  pass and not the way to chunk a reindex, the throttle named in the CI-red
+  paragraph as another green Telegram-side stop), "Rate limiting and
+  resumability" (the third limit and the press budget; phase 1 is cheaper,
+  not free), steps E, F and G per section 9 below, and "Coverage".
 - `docs/specs/COVERAGE.md`: the `tools/tg-preview/lib.test.mjs` paragraph
-  names button matching and the two-phase loop; `client.mjs` and `live.mjs`
-  stay the deliberate gap.
-- `README.md` / `README.ru.md`, `package.json`, `.gitignore`, `CLAUDE.md`:
-  untouched.
+  additionally names the throttle rule and the press budget; `client.mjs`
+  and `live.mjs` stay the deliberate gap.
+- `README.md` / `README.ru.md`, `package.json`, `.gitignore`, `CLAUDE.md`,
+  `.github/workflows/previews.yml`: untouched. The default press budget
+  applies in CI too and never binds there - an incremental run after a
+  deploy is a handful of URLs - so no workflow input is added for it.
 
 ## 8. Parity and gates - confirmed, not assumed
 
-**Stands.** Files touched by the next batch: `tools/tg-preview/**` (not
+**Stands**, and is re-confirmed for B4: it touches `tools/tg-preview/lib.mjs`
+and `lib.test.mjs`, three docs and this task directory - nothing under
+`app/src/**`, `data.js`, `i/`, `og/` or `tests/parity/**`, and nothing a
+screen draws. Gate: `npm run check` only. Not `check:built`, not parity.
+
+Pass 3's wording, for the record: files touched by the next batch:
+`tools/tg-preview/**` (not
 `package*.json`, `manifest.mjs`, `login.mjs`), `docs/tg-preview.md`,
 `docs/specs/META.md`, `docs/specs/COVERAGE.md`, this task directory. None of
 `index.html`, `app.js`, `style.css`, `app/src/**`, `data.js`, `og/`, `i/`,
@@ -627,54 +952,91 @@ only**, one foreground call. Not `check:built`, not parity.
 
 ## 9. The owner's manual steps, start to finish
 
-**Revised** - steps E, F and G. A-D, H-J stand (D.3's troubleshooting block
-from R2 stands). The runbook `docs/tg-preview.md` carries the same text.
+**Revised (pass 4)** - steps E, F and G again. A-D, H-J stand (D.3's
+troubleshooting block from R2 stands). The runbook `docs/tg-preview.md`
+carries the same text.
+
+> Superseded (pass 4): pass 3's step F was a residue check on
+> `cc12,cc24,cc38` - **done**, those three are in the state file now. Pass
+> 3's step G told the owner to repeat `--mode full --limit 10`, which is
+> the loop that re-presses the previous chunk every run (`context.md`
+> fact 2). Both are replaced below.
 
 **A-D.** Unchanged; all done by the owner on 2026-09-11 (the session exists
 in the owner's `.env`).
 
-**E. Dry runs (no Telegram involved).**
-1. `node tools/tg-preview/run.mjs --dry-run --mode full` - expect
-   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses` when the
-   site is deployed at the commit you are on; otherwise some are reported
-   not live, which is the check working.
+**E. Clear the untrustworthy state, then dry-run (no Telegram involved).**
+
+0. **Retire the 115-entry state file.** Section 3.4, "What the 115 entries
+   are worth", is the reasoning; this is the command. Move it out of the
+   repository rather than deleting it, so its 87 `photo changed` entries
+   survive as evidence for B2:
+   ```text
+   mv tools/tg-preview/state.json ../state-2026-09-12-115.json.bak
+   ```
+   Do not leave the backup inside the working tree - nothing there is
+   gitignored for it, and `git status` noise around this file is exactly
+   how a half-trusted state gets committed by accident.
+1. `node tools/tg-preview/run.mjs --dry-run` - **no `--mode full`.** With no
+   state file, incremental mode already means "everything": expect
+   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses (press
+   budget 50)` when the site is deployed at the commit you are on;
+   otherwise some are reported not live, which is the check working.
 2. `node tools/tg-preview/run.mjs --dry-run --only w76` - one URL, one
    message, one press.
 
-**F. The residue check - the first run of the fixed tool.**
-1. `node tools/tg-preview/run.mjs --only cc12,cc24,cc38`. These three were
-   sent by the probe and never pressed; their button messages are already
-   in the chat. Expect the log to show phase 1 pressing three buttons and
-   phase 2 sending **nothing**, and the summary `refreshed 3, pending 0` /
-   `pressed 3 (photo changed 3, same 0, none 0)`. `changed 3` is the
-   expected result because all three pictures are known stale; `same` on
-   any of them is worth reporting before going on.
-2. Open the throwaway account's chat with `@WebpageBot`: nothing new was
-   sent; the three button messages now show the new pictures.
-3. In Saved Messages (any account), paste
-   `https://artex-x.github.io/daggerheart-loot/i/cc12.html` and compare the
-   preview picture with the live `og/` image for that record. Same picture
-   = the press works through the tool, not only by hand.
-4. **Regression check:** find an already-posted message carrying one of
-   those three links and confirm its preview changed too. If it did not,
-   stop and report; the runbook's opening claim would no longer hold.
-5. `git status` shows `tools/tg-preview/state.json` with four entries
-   (`cc19` from the hand press plus these three). Keep it.
+**F. The calibration run - one chunk, read carefully.**
 
-**G. The full reindex.**
-1. Run it in chunks, locally: `node tools/tg-preview/run.mjs --mode full
-   --limit 10` sends 100 URLs and presses 100 buttons in about four
-   minutes; repeat it, spread across the day, until it prints `pending 0`.
-   Each run is resumable: it only sends what is not yet confirmed and
-   presses anything already waiting in the chat. If a run stops with
-   `PeerFloodError`, the account is limited: stop for the day. One
-   unchunked run is ~40 minutes and is fine on a healthier account.
-2. Read the `photo changed` count each time. On this reindex it should be
-   the large majority; a chunk reporting mostly `same` means spot-check a
-   few of its links by pasting before trusting it, and report it.
-3. When `pending 0`: `git add tools/tg-preview/state.json && git commit -m
+1. `node tools/tg-preview/run.mjs --limit 5 --press-limit 50`. That is 50
+   URLs: five sends, fifty presses, about two minutes. Expect
+   `refreshed 50, pending 1012` and `pressed 50 (photo changed ~50, same
+   ~0, none 0)`. `changed` should dominate, because every cached picture in
+   this reindex is known stale.
+2. What each outcome means, and what to do:
+   - **`stopped: bot throttled: retry in <N>s`** - the quota is *below* 50
+     on this account. Wait the full `N` the bot named, then retry with
+     `--limit 2 --press-limit 20` and report the numbers.
+   - **A run that completes 50 presses cleanly** - 50 is a safe floor. Two
+     or three more clean runs are grounds to try `--limit 10 --press-limit
+     100`; the point of the flag is that the owner tunes it on evidence
+     rather than the plan guessing.
+   - **Mostly `same`** - spot-check by pasting before trusting the chunk,
+     and report it.
+3. In Saved Messages (any account), paste one of the URLs this run
+   confirmed and compare the preview picture with the live `og/` image for
+   that record. Same picture = the press works through the tool.
+4. **Regression check, still owed and still cheap:** find an
+   already-posted message carrying one of those links and confirm its
+   preview changed too. If it did not, stop and report; the runbook's
+   opening claim would no longer hold. (Owner decision 6 says it does; this
+   is the regression check on that, not new evidence-gathering.)
+
+**G. The rest of the reindex - a multi-day, spaced operation.**
+
+1. Repeat step F.1's command - `--limit 5 --press-limit 50`, **incremental
+   mode, which is the default** - until it prints `pending 0`. About 22
+   runs for 1062 URLs. Each run is resumable: it sends only what is not yet
+   confirmed and presses anything already waiting in the chat.
+2. **Space them.** The one measured cooldown was 3213 s (~54 minutes), so
+   treat roughly an hour between chunks as the working assumption until the
+   numbers say otherwise. Nothing in the tool remembers a cooldown across
+   runs (section 13); the spacing is yours to keep.
+3. Stops, and what they mean - **all of them are green and all of them
+   leave the backlog recorded**: `bot throttled: retry in <N>s` (wait `N`,
+   then continue); `press budget reached` (normal end of a chunk);
+   `PeerFloodError` (Telegram, not the bot - stop for the day).
+4. Do **not** use `--mode full` to drive this. It marks every URL stale on
+   every run, so phase 1 re-presses the same recovered buttons each time
+   and the reindex never advances - the tool warns when you try. `--mode
+   full` is one deliberate pass for a state you do not trust, which is what
+   step E.0 has already handled.
+5. Read the `photo changed` count each time; a chunk reporting mostly
+   `same` means spot-check a few of its links by pasting before trusting
+   it, and report it.
+6. When `pending 0`: `git add tools/tg-preview/state.json && git commit -m
    "chore(tg-preview): record the first full reindex"` and push. From here
-   CI only ever sends and presses what changed.
+   CI only ever sends and presses what changed, a handful of URLs at a
+   time, well inside any quota.
 
 **H-J.** Unchanged.
 
@@ -711,7 +1073,7 @@ five-method port with the `Msg` mapper; `live.mjs`'s cached-rejection fix,
 `decide()`'s `BotResponseTimeoutError` row, `parseArgs`'s numeric guards, and
 `matchButtons` all landed as specified. 68 `lib.test.mjs` cases pass (up from
 23), all three doc/spec files corrected. Full record in `handoff.md`.
-Next: O1 (resumed) at section 9, step E.
+Next, as of pass 4: **B4** (section 10a), then O2.
 
 **Objective.** Replace B1's send-and-trust loop with the send-and-press loop
 of sections 3.4, 4 and 5, so that `state.json` records a URL only when its
@@ -886,39 +1248,237 @@ that is the documented behaviour, not a workaround.
 
 ### O1 (resumed) - the owner's operations, from step E
 
-Not a code batch. Section 9, E then F (the residue check) then G (chunked),
-then H-J. Produces `state.json` on `main` and the three secrets. The
-orchestrator collects: F.1's `photo changed` count, F.4's already-posted
-check, and G.2's per-chunk `photo` counts.
+**Status: attempted 2026-09-12, stopped by the bot's attempt quota, and
+this is the reason for pass 4.** What it produced: the residue
+(`cc12`/`cc24`/`cc38`) pressed, 115 entries in `state.json` of which 87
+carry photo evidence and 28 do not, and the first measurement of the press
+axis. What it did not produce: a completed reindex, or a state file whose
+entries all mean the same thing. Superseded by O2.
+
+### B4 - make the reindex completable against the bot's attempt quota (one batch, one commit)
+
+**Status: implemented 2026-09-12.** Full text in section 10a below. Shipped
+exactly as specified: `PRESS_LIMIT = 50`, `botThrottle()`, `--press-limit`,
+the run-scoped press budget spanning both phases, the pre-send and
+button-wait-round throttle checks, the `--mode full` warning, and the docs
+and specs it names. `npm run check` green. See `handoff.md` for the commit
+and exact commands.
+
+### O2 - the owner's operations, restarted from step E.0
+
+Not a code batch and no agent can perform it. Section 9 as revised in pass
+4: E.0 (retire the 115-entry state) -> E (dry runs) -> F (the calibration
+chunk, read carefully) -> G (~22 spaced chunks) -> H-J. Needs B4 present in
+the tree the owner runs from. The orchestrator collects, because they are
+B2's only input: F.1's counts, whether 50 presses complete cleanly, the
+`N` of any throttle stop, F.4's already-posted regression result, and the
+per-chunk `photo changed`/`same` ratio.
 
 ### B2 - tuning from the first real run (outline; may be empty)
 
-After O1: fold in what Telegram actually did on both axes - whether ten
-links per message are honoured across 107 sends, the real `FLOOD_WAIT` /
+After O2: fold in what Telegram and the bot actually did on all three
+limits - whether ten links per message are honoured, the real `FLOOD_WAIT` /
 `PEER_FLOOD` behaviour of presses versus sends, how often presses go
-unanswered, the `same`/`changed` ratio, and the remaining deferred items in
-section 13 that O1's evidence makes worth doing. Gate: `npm run check`. If
-nothing needs changing, close the task without it.
+unanswered, the `same`/`changed` ratio, **what the bot's attempt quota and
+its window really are** (so `PRESS_LIMIT`'s default can stop being a
+deliberate under-estimate), and the remaining deferred items in section 13
+that O2's evidence makes worth doing. Gate: `npm run check`. If nothing
+needs changing, close the task without it.
 
-## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: no
+## 10a. B4 - the implement-ready batch
 
-Both pass-1 questions were answered by the owner (`context.md`, decisions 5
-and 6). Pass 3 raises none: every fork was decided from measured evidence.
+**Objective.** Make a chunked reindex completable against `@WebpageBot`'s
+attempt quota: bound what one run presses, recognise the bot's refusal
+instead of recording it as success, and correct the runbook loop that
+re-presses the previous chunk. Behaviour constraints are sections 2
+(carve-out), 3.4 (all of it), 5.1 and 5.2 as revised in pass 4; do not
+reopen them.
 
-**Can the owner trust `state.json` entries written before B3?** Stated
-plainly: **no entry written by the unfixed tool can be trusted on its own,
-and there is exactly one such entry - `cc19` - which happens to be honest
-only because the owner pressed its button by hand.** No other run ever
-wrote state: CI has no secrets and the probe bypassed `run.mjs`. So the file
-as it stands is correct and should be kept; nothing needs deleting. If that
-is ever in doubt, `--mode full` re-does every URL - send and press - and
-overwrites the entries honestly.
+**In scope.** `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`;
+`docs/tg-preview.md`; `docs/specs/META.md` section 7 (one sentence);
+`docs/specs/COVERAGE.md` (one paragraph);
+`issues/tg-preview-refresh/{context,plan,handoff}.md` (stage the
+orchestrator's already-modified `context.md` as-is - it is the evidence this
+batch acts on, and this batch changes nothing in it).
+
+**Out of scope.** `tools/tg-preview/run.mjs`, `client.mjs`, `live.mjs`,
+`manifest.mjs`, `login.mjs`, `package*.json` (no new dependency - the
+throttle match is a regex);`.github/workflows/previews.yml` and `ci.yml`;
+`README*.md`; `.gitignore`; `CLAUDE.md`; every public contract. Nothing
+under `app/src/**`, `data.js`, `i/`, `og/`, `tests/parity/**`.
+`tools/tg-preview/state.json` is the owner's untracked file: **do not read
+it, do not commit it, do not delete it, do not edit it.** Retiring it is
+step E.0, the owner's own action. **No Telegram contact of any kind:** the
+owner's live session is in `.env`; every `run.mjs` invocation uses
+`--dry-run`.
+
+**Steps.**
+
+1. `lib.mjs` - constants: `export const PRESS_LIMIT = 50;` with a
+   why-comment carrying the one data point (115 presses tripped the quota;
+   the cost of over-shooting is a ~54-minute lockout plus the sends already
+   spent, so the default under-shoots on purpose and `--press-limit`
+   raises it on evidence). Keep every existing constant and value.
+2. `lib.mjs` - `export function botThrottle(text)`: returns `null` when
+   `text` is falsy or does not match `/too many attempts/i`; otherwise
+   `{ seconds }`, where `seconds` is the first integer followed by
+   `second`/`seconds` in the text, or `null` when there is none. Pure, no
+   other matching, one comment pointing at section 2's carve-out and its
+   asymmetry rule.
+3. `lib.mjs` - `parseArgs()`: add `'--press-limit': 'pressLimit'` to
+   `FLAGS`, default `opts.pressLimit = PRESS_LIMIT`, and include
+   `pressLimit` in the existing numeric-guard branch alongside `limit`,
+   `maxWaitS` and `budgetMinutes` (so `--press-limit ten` throws
+   `--press-limit must be a number, got ten` and `--press-limit 0` is
+   legal).
+4. `lib.mjs` - `runRefresh`: one run-scoped counter of presses attempted,
+   seeded from `opts.pressLimit`.
+   - `pressOne` refuses to press when the budget is exhausted and returns
+     `{ stopped: 'press budget reached' }`; a press that is attempted
+     decrements it whether or not it succeeded (a refused attempt still
+     counts against the bot's quota).
+   - `pressOne` inspects the answer: `botThrottle(text)` non-null means the
+     press was **refused** - return `{ stopped: 'bot throttled: retry in
+     <N>s' }` (or `'bot throttled'` when `seconds` is null) and do **not**
+     report it as answered. `pressGroup` must not push a refused press onto
+     `pressedList`, so it reaches neither `confirmed` nor the photo
+     telemetry.
+   - Phase 2, before each send: stop with `press budget too low for another
+     batch` when fewer than `PER_MESSAGE` presses remain. Stop, never trim
+     the batch.
+   - Phase 2, each button-wait round: if any `m.summary` entry is a
+     throttle, log it, stop the run with the same reason, and press nothing
+     from that batch - do not exhaust the remaining `BUTTON_WAIT_ROUNDS`.
+   - New step 10a after `client()` and before phase 1: when `mode ===
+     'full'` and `opts.pressLimit < todo.length`, log one warning naming
+     `--mode full`, the budget, and `docs/tg-preview.md` step G.
+   - Dry-run counts line gains ` (press budget <N>)`.
+   - Every new stop is green: `exitCode` stays 0.
+5. `lib.test.mjs` - every case named in section 3.7's pass-4 list, plus keep
+   all 68 existing cases passing (the fake client already scripts `press`
+   answers by text, so a throttle case is `{ text: 'Sorry, too many
+   attempts. Please try again in 3213 seconds.' }`). The "no send is
+   attempted" assertions read the fake client's `sent` array.
+6. `docs/specs/META.md` section 7: the one sentence from section 7 of this
+   plan, after the existing "Update with content" sentence.
+   `docs/specs/COVERAGE.md`: extend the `tools/tg-preview/lib.test.mjs`
+   paragraph with the throttle rule and the press budget.
+7. `docs/tg-preview.md` - in place, in this order: (a) "Operations" gains
+   `--press-limit` next to `--limit`, says plainly that `--limit` counts
+   sends and `--press-limit` counts presses across both phases, and that a
+   batch is not sent when its presses are unaffordable; (b) the
+   `--mode full` bullet in "Operations" says it is a single deliberate pass
+   and **not** how to chunk a reindex, and that the tool warns; (c) the
+   CI-red bullet names the bot throttle as another green Telegram-side stop
+   (the red list itself does not change); (d) "Rate limiting and
+   resumability" gains the third limit - the bot's own attempt quota, the
+   measured 115/3213 s data point, the press budget and why the throttle
+   stops rather than waits - and corrects "free retry" to "cheaper retry"
+   in the phase-1 paragraph; (e) steps E, F and G replaced by section 9's;
+   (f) "Coverage" names `botThrottle` and the press budget; (g) afterwards
+   `grep -in "free\|--limit\|mode full" docs/tg-preview.md` and read every
+   hit - no sentence may still imply presses are free or that `--mode full`
+   is the chunking mode.
+8. `node --test tools/tg-preview/lib.test.mjs`; then
+   `node tools/tg-preview/run.mjs --dry-run` and
+   `node tools/tg-preview/run.mjs --dry-run --press-limit ten`; then
+   `set -o pipefail; npm run check 2>&1 | tail -n 120` with Bash timeout
+   600000. Stage by name: `tools/tg-preview/lib.mjs`,
+   `tools/tg-preview/lib.test.mjs`, the three docs, the three task files.
+   Never `git add -A`. Commit `fix(tg-preview): bound presses per run and
+   stop on @WebpageBot's attempt throttle`.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs` passes without
+  `tools/tg-preview/node_modules` present.
+- `node tools/tg-preview/run.mjs --dry-run` prints the counts line ending
+  `(press budget 50)`, sends nothing, writes nothing, exits 0, without the
+  three env vars.
+- `node tools/tg-preview/run.mjs --dry-run --press-limit ten` exits non-zero
+  with `--press-limit must be a number, got ten`.
+- A `runRefresh` test proves a press answered with the throttle sentence is
+  in **no** `writeState` call and that the run's `exitCode` is 0.
+- A `runRefresh` test proves that with a press budget below `PER_MESSAGE`,
+  the fake client's `sent` array is empty.
+- A `runRefresh` test proves phase 1 and phase 2 draw on one budget.
+- `git status` after the batch shows no change to `previews.yml`,
+  `package*.json`, `run.mjs`, `client.mjs`, `i/`, `og/`, `data.js`;
+  `tools/tg-preview/state.json` still untracked and unmodified.
+- `npm run check` green in one foreground call.
+
+**Gates.** `npm run check` only, one foreground call,
+`set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000.
+**Not** `check:built` and **not** parity: nothing under `app/src/**`,
+`data.js`, `i/`, `og/` or `tests/parity/**` is touched and nothing a screen
+draws changes (section 8).
+
+**Risks / do-nots.**
+
+- Never run `run.mjs` without `--dry-run`. Every press spends the quota the
+  owner needs, and the quota is the whole subject of this batch.
+- Do not widen the text match beyond `too many attempts` + the seconds
+  figure, and do not let any text **grant** confirmation. Section 2's
+  carve-out is safe only because it is one-directional.
+- Do not demand a changed photo before recording an answered press
+  (section 3.4) - that is the trap pass 3 already documented.
+- Do not change `stale()`, and do not touch `previews.yml` or `client.mjs`.
+- Do not read, edit, commit or delete `tools/tg-preview/state.json`.
+- Do not trim a batch to fit the remaining press budget; stop instead.
+
+## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: yes, one, and it does not block B4
+
+**Revised (pass 4).** Both pass-1 questions were answered by the owner
+(`context.md`, decisions 5 and 6). Pass 3 raised none. Pass 4 raises exactly
+one, and it is about the owner's own data rather than about the design:
+
+**Q: retire the 115-entry `state.json` and restart the reindex?** The plan's
+answer is yes - section 3.4, "What the 115 entries are worth", with the
+command in section 9 step E.0 (move it to a backup outside the repository,
+do not delete it). 28 of the 115 cannot be distinguished from
+throttle-refused presses, nothing names which 28, and the schema cannot be
+interrogated for it. The cost of restarting is ~115 presses, two or three
+extra chunked runs out of ~22. The owner may reasonably decide the residual
+risk is acceptable and keep the file; in that case up to 28 URLs keep a
+stale preview until some future artwork commit re-fingerprints them, and
+that should be written down rather than forgotten.
+
+**This blocks O2's first step only.** B4 is a code-and-docs batch that never
+touches `state.json`; it can be implemented, reviewed and committed while
+this question is open.
+
+> Superseded (pass 3's answer to a narrower question): "no entry written by
+> the unfixed tool can be trusted on its own, and there is exactly one such
+> entry - `cc19`... the file as it stands is correct and should be kept."
+> True when the file held one hand-pressed entry. It now holds 115 written
+> by a tool that could not tell a refused press from an accepted one.
 
 ## 12. Risks and assumptions
 
-**Revised.**
+**Revised (pass 4).** The pass-4 entries first; pass 3's list follows and
+still holds except where noted.
 
-- **Fresh-account limits, now on two axes.** Presses are a different method
+- **The quota is one data point.** 115 presses tripped it once, with a 3213
+  s cooldown. Nobody knows the count, the window, whether sends and presses
+  share a counter, or whether the limit is per account, per day or per
+  hour. `PRESS_LIMIT = 50` is an under-estimate chosen for asymmetric cost,
+  not a measurement; the runbook's calibration step (section 9, F.2) and
+  every run's `pressed P` line are how it stops being a guess. **Do not
+  write the quota into a doc as if it were known.**
+- **The throttle sentence could change.** The carve-out matches
+  `too many attempts`, case-insensitively, and nothing else. If the bot
+  rewords it, the tool silently returns to pass-3 behaviour - refused
+  presses recorded as confirmed - and nothing alerts anyone. The
+  countervailing signal is the photo telemetry: a run that suddenly reports
+  mostly `same` is the symptom, and the runbook already tells the owner to
+  spot-check on exactly that. A stronger fix (an evidence class in the
+  state) is deferred, section 13.
+- **The reindex is now a multi-day operation.** ~22 spaced chunks. The risk
+  is not technical: it is that a partly-done reindex sits for weeks and
+  nobody remembers where it stopped. The state file *is* the record, and
+  `pending N` is the progress bar; the handoff carries the count.
+- **Fresh-account limits, now on two axes** (pass 3, and the third limit
+  above is the one that actually bit). Presses are a different method
   from sends and may have their own limits; the account is days old. The
   run stops green on the first `PEER_FLOOD` from either. Chunked local
   runs (section 9, G) are the mitigation.
@@ -975,11 +1535,26 @@ Left deferred, with the reason:
 7. **`--apply`'s needless `buildFromTree()`** - it exists only to obtain
    `site`; cosmetic cost on a path B3 does not touch. B2.
 
+Added in pass 4, all for B2 and all wanting O2's numbers first:
+
+- **A persisted press ledger** - remember when the last presses were spent
+  (and any cooldown the bot named) so a run refuses to start inside it,
+  instead of the runbook asking the owner to keep the spacing by hand.
+  Needs a schema change to a committed file and a model of a window we have
+  one sample of; section 3.4 names it as the rejected-for-now option.
+- **An evidence class per URL in the state** (`answered` / `photo-changed`)
+  so a future 28 can be named and re-verified without deleting everything.
+  This is the schema-v2 item below, widened: it is what would have made
+  pass 4's owner decision a two-line command instead of a judgement call.
+- **Tune `PRESS_LIMIT`'s default** once several clean runs bound the quota
+  from below, and consider deriving the chunk's `--limit` from it so the
+  two flags cannot be paired wrongly.
+
 Other deferrals:
 
 - **Photo id in the state (schema v2)** so incremental runs can demand a
   changed photo whenever the image sha changed - section 3.4, "Considered
-  and not taken". Revisit after O1 reports the `same`/`changed` ratio.
+  and not taken". Revisit after O2 reports the `same`/`changed` ratio.
 - A pointer line in `CLAUDE.md` and `.claude/prompts/refresh-artwork.prompt.md`
   - orchestrator's call, one line each.
 - Other messengers' caches. Not this task.

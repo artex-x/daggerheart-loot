@@ -83,4 +83,7 @@ picture indefinitely. Nothing at the app level can fix this; see
 pushed rather than served. A plain send to `@WebpageBot` only refreshes the
 page's title and description and keeps the cached picture when `og:image`
 still points at the same URL - this site's exact case; only the bot's
-"Update with content" button re-downloads the image.
+"Update with content" button re-downloads the image. `@WebpageBot` also
+throttles update attempts per user, independently of Telegram's flood
+control, and refuses further attempts of either kind - presses and sends -
+with "Sorry, too many attempts. Please try again in `<N>` seconds."

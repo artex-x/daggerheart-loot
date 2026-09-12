@@ -45,6 +45,34 @@ export const BUTTON_FETCH = 50;
 export const RECOVER_SCAN = 200;
 // Matched by exact button text - never parsed from the bot's prose.
 export const UPDATE_BUTTON = 'Update with content';
+// @WebpageBot's own per-user attempt quota (plan.md 3.4, "The bot's own
+// attempt quota") - a third limit, independent of Telegram's flood control,
+// that binds before either axis above does. The only measurement is that 115
+// presses in one run tripped it; 50 deliberately under-shoots, because the
+// costs are asymmetric - over-shooting costs a ~54-minute lockout plus the
+// sends already spent, under-shooting costs one extra two-minute run.
+// `--press-limit` raises it once runs at 50 have gone through cleanly.
+export const PRESS_LIMIT = 50;
+
+// The one sentence of @WebpageBot's prose that reaches control flow -
+// plan.md section 2's carve-out from the "never parse the bot's text" rule.
+// Module-private: nothing outside botThrottle matches on it. The rule around
+// it is asymmetric by construction - a match can only withhold confirmation
+// and stop the run; no text, recognised or not, ever grants confirmation.
+const THROTTLE_MATCH = /too many attempts/i;
+
+// null when `text` is not a throttle refusal; otherwise `{ seconds }`, the
+// first integer immediately before "second(s)" in the text, or `null` when
+// the sentence carries no seconds figure (still a throttle either way).
+export function botThrottle(text) {
+  if (!text || !THROTTLE_MATCH.test(text)) return null;
+  const m = text.match(/(\d+)\s*seconds?/i);
+  return { seconds: m ? Number(m[1]) : null };
+}
+
+function throttleReason(t) {
+  return 'bot throttled' + (t.seconds != null ? ': retry in ' + t.seconds + 's' : '');
+}
 
 function sha256(data) {
   return createHash('sha256').update(data).digest('hex');
@@ -226,6 +254,7 @@ export function applyResult(state, result, site) {
 const FLAGS = {
   '--mode': 'mode',
   '--limit': 'limit',
+  '--press-limit': 'pressLimit',
   '--only': 'only',
   '--max-wait': 'maxWaitS',
   '--budget-minutes': 'budgetMinutes',
@@ -240,6 +269,7 @@ export function parseArgs(argv) {
     mode: 'incremental',
     dryRun: false,
     limit: null,
+    pressLimit: PRESS_LIMIT,
     only: null,
     maxWaitS: MAX_WAIT_S,
     budgetMinutes: null,
@@ -258,7 +288,7 @@ export function parseArgs(argv) {
     } else if (a in FLAGS) {
       const key = FLAGS[a];
       const value = argv[++i];
-      if (key === 'limit' || key === 'maxWaitS' || key === 'budgetMinutes') {
+      if (key === 'limit' || key === 'pressLimit' || key === 'maxWaitS' || key === 'budgetMinutes') {
         // A NaN here would silently mean "send nothing" or "no budget",
         // both exit 0 - the same species of lie the state's evidence rule
         // exists to remove, so a bad number is a thrown error, not a no-op.
@@ -340,6 +370,10 @@ export function matchButtons(messages, urls) {
 // without a network or a clock.
 export async function runRefresh(opts, deps) {
   const { mode, dryRun, limit, only, maxWaitS, noVerify, budgetMinutes } = opts;
+  // Same default-when-absent pattern as maxWaitS (relied on by decide()'s own
+  // default): a literal test object that omits pressLimit still gets the
+  // real budget rather than an unbounded one.
+  const pressLimit = opts.pressLimit == null ? PRESS_LIMIT : opts.pressLimit;
   const { manifest, state, client, verify, sleep, now, random, writeState, writeResult, log } = deps;
 
   let todo = stale(manifest, state, mode);
@@ -387,7 +421,9 @@ export async function runRefresh(opts, deps) {
         batches.length +
         ' messages, ' +
         ready.length +
-        ' presses'
+        ' presses (press budget ' +
+        pressLimit +
+        ')'
     );
     batches.slice(0, 3).forEach((b, i) => log('batch ' + (i + 1) + ': ' + b.join(', ')));
     if (notLive.length) log('not live (' + notLive.length + '): ' + notLive.join(', '));
@@ -407,10 +443,29 @@ export async function runRefresh(opts, deps) {
 
   const cx = await client();
 
+  // `--mode full` treats every URL as stale on every run, so a press budget
+  // smaller than the stale set cannot finish it in one run and the next run
+  // re-presses the same recovered buttons - a livelock the budget bounds but
+  // does not cure (plan.md 3.4, "`--mode full` is not chunkable"). This is
+  // advice for the owner, not a stop: the run still makes whatever progress
+  // the budget allows.
+  if (mode === 'full' && pressLimit < todo.length) {
+    log(
+      'warning: --mode full cannot finish ' +
+        todo.length +
+        ' stale url(s) with a press budget of ' +
+        pressLimit +
+        ' in one run; chunked reindexing uses the default incremental mode - see docs/tg-preview.md step G'
+    );
+  }
+
   const deadline = budgetMinutes != null ? now() + budgetMinutes * 60000 : null;
   let floodWaits = 0;
   let stopped = null;
   let exitCode = 0;
+  // One run-scoped allowance spanning both phases - the bot's quota does not
+  // care which phase a press came from (plan.md 3.4).
+  let pressBudget = pressLimit;
 
   // The shared retry table (plan.md section 3.4): checked before every send
   // and every press attempt, and before every wait a retry would start - a
@@ -443,10 +498,17 @@ export async function runRefresh(opts, deps) {
   }
 
   async function pressOne(entry) {
+    if (pressBudget <= 0) return { stopped: 'press budget reached' };
+    // Decremented whether or not the attempt succeeds - a refused attempt
+    // still counts against the bot's quota (plan.md 3.4).
+    pressBudget--;
     const r = await attempt(() => cx.press(entry.id, entry.data));
     if (r.stopped) return r;
     if (r.unanswered) return { unanswered: true };
-    return { answered: true, text: r.value && r.value.text };
+    const text = r.value && r.value.text;
+    const throttle = botThrottle(text);
+    if (throttle) return { stopped: throttleReason(throttle) };
+    return { answered: true, text };
   }
 
   // Presses `urlsInOrder`'s matches, in that order, paced by PRESS_PACE_MS
@@ -533,9 +595,10 @@ export async function runRefresh(opts, deps) {
     };
   }
 
-  // Phase 1 - recovery: a button message already in the chat is a free
-  // retry (plan.md section 3.4). Every URL matched here - confirmed or not -
-  // is removed from `ready` so phase 2 never re-sends it in the same run.
+  // Phase 1 - recovery: a button message already in the chat is a cheaper
+  // retry - no new send, but still a press from the same budget (plan.md
+  // section 3.4). Every URL matched here - confirmed or not - is removed
+  // from `ready` so phase 2 never re-sends it in the same run.
   const scan = await cx.incoming({ limit: RECOVER_SCAN });
   const recovery = matchButtons(scan, ready);
   const recoveredUrls = Object.keys(recovery.matched);
@@ -579,6 +642,15 @@ export async function runRefresh(opts, deps) {
   batchLoop: for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
 
+    // A send whose buttons cannot be afforded is pure waste on the scarcer
+    // axis - stopped, never trimmed: re-chunking mid-run would make --limit
+    // mean something different on the last batch (plan.md 3.4).
+    if (pressBudget < PER_MESSAGE) {
+      stopped = 'press budget too low for another batch';
+      exitCode = 0;
+      break batchLoop;
+    }
+
     const sendOutcome = await attempt(() => cx.send(batch.join('\n')));
     if (sendOutcome.stopped) {
       stopped = sendOutcome.stopped;
@@ -594,14 +666,24 @@ export async function runRefresh(opts, deps) {
 
     let replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH });
     let m = matchButtons(replies, batch);
+    // The bot's summary can itself be a throttle refusal - checked on every
+    // round so the run does not burn BUTTON_WAIT_ROUNDS x BUTTON_WAIT_MS
+    // waiting for buttons that are never coming (plan.md 3.4).
+    let summaryThrottle = m.summary.map(botThrottle).find(Boolean) || null;
     let rounds = 0;
-    while (m.unmatched.length && rounds < BUTTON_WAIT_ROUNDS) {
+    while (!summaryThrottle && m.unmatched.length && rounds < BUTTON_WAIT_ROUNDS) {
       rounds++;
       await sleep(BUTTON_WAIT_MS);
       replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH });
       m = matchButtons(replies, batch);
+      summaryThrottle = m.summary.map(botThrottle).find(Boolean) || null;
     }
     if (m.summary.length) log('bot: ' + m.summary[m.summary.length - 1]);
+    if (summaryThrottle) {
+      stopped = throttleReason(summaryThrottle);
+      exitCode = 0;
+      break batchLoop;
+    }
     if (m.unmatched.length) {
       unmatchedAll.push(...m.unmatched);
       m.unmatched.forEach((u) => log('no button message for ' + u));

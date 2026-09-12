@@ -111,55 +111,78 @@ the account is allowed to talk to it.
    commit, or a file outside `.env`. If it ever leaks: Telegram -> Settings
    -> Devices -> terminate that session, and redo step D.3.
 
-**E. Dry runs (no Telegram involved).**
+**E. Clear the untrustworthy state, then dry-run (no Telegram involved).**
 
-1. `node tools/tg-preview/run.mjs --dry-run --mode full` - expect
-   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses`, and the
-   live check finding all of them ready (the site must be deployed at the
-   commit you are on; otherwise you will see some reported not live, which
-   is the check working, not a bug).
+0. **Retire the 115-entry state file**, if one is sitting in the tree from an
+   earlier run that predates the press budget below -
+   `issues/tg-preview-refresh/plan.md` section 3.4 ("What the 115 entries are
+   worth") has the reasoning. Move it out of the repository rather than
+   deleting it, so its `photo changed` entries survive as evidence:
+   ```text
+   mv tools/tg-preview/state.json ../state-backup.json.bak
+   ```
+   Do not leave the backup inside the working tree - nothing there is
+   gitignored for it, and stray `git status` noise around this file is
+   exactly how a half-trusted state gets committed by accident.
+1. `node tools/tg-preview/run.mjs --dry-run` - **no `--mode full`.** With no
+   state file, incremental mode already means "everything": expect
+   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses (press
+   budget 50)` when the site is deployed at the commit you are on; otherwise
+   some are reported not live, which is the check working, not a bug.
 2. `node tools/tg-preview/run.mjs --dry-run --only w76` - one URL, one
    message, one press.
 
-**F. The residue check - the first run of the fixed tool.**
+**F. The calibration run - one chunk, read carefully.**
 
-1. `node tools/tg-preview/run.mjs --only cc12,cc24,cc38`. These three were
-   sent by an earlier probe of the unfixed tool and never pressed; their
-   button messages are already sitting in the chat. Expect the log to show
-   phase 1 pressing three buttons and phase 2 sending **nothing**, and the
-   summary `refreshed 3, pending 0` / `pressed 3 (photo changed 3, same 0,
-   none 0)`. `changed 3` is the expected result because all three pictures
-   are known stale; `same` on any of them is worth reporting before going on.
-2. Open the throwaway account's chat with `@WebpageBot`: nothing new was
-   sent; the three button messages now show the new pictures.
-3. In Saved Messages (any account), paste
-   `https://artex-x.github.io/daggerheart-loot/i/cc12.html` and compare the
-   preview picture with the live `og/` image for that record. Same picture =
-   the press works through the tool, not only by hand.
+1. `node tools/tg-preview/run.mjs --limit 5 --press-limit 50`. That is 50
+   URLs: five sends, fifty presses, about two minutes. Expect
+   `refreshed 50, pending 1012` and `pressed 50 (photo changed ~50, same ~0,
+   none 0)`. `changed` should dominate, because every cached picture in this
+   reindex is known stale.
+2. What each outcome means, and what to do:
+   - **`stopped: bot throttled: retry in <N>s`** - the quota is *below* 50 on
+     this account. Wait the full `N` the bot named, then retry with
+     `--limit 2 --press-limit 20` and report the numbers.
+   - **A run that completes 50 presses cleanly** - 50 is a safe floor. Two or
+     three more clean runs are grounds to try `--limit 10 --press-limit 100`;
+     the point of the flag is that you tune it on evidence rather than the
+     plan guessing.
+   - **Mostly `same`** - spot-check by pasting before trusting the chunk, and
+     report it.
+3. In Saved Messages (any account), paste one of the URLs this run confirmed
+   and compare the preview picture with the live `og/` image for that
+   record. Same picture = the press works through the tool.
 4. **Regression check:** find an already-posted message carrying one of
-   those three links and confirm its preview changed too. If it did not,
-   stop and report that; it would mean this page's opening claim no longer
-   holds.
-5. `git status` shows `tools/tg-preview/state.json` with four entries (one
-   from an earlier hand press, plus these three). Keep it.
+   those links and confirm its preview changed too. If it did not, stop and
+   report that; it would mean this page's opening claim no longer holds.
 
-**G. The full reindex.**
+**G. The rest of the reindex - a multi-day, spaced operation.**
 
-1. Run it in chunks, locally: `node tools/tg-preview/run.mjs --mode full
-   --limit 10` sends 100 URLs and presses 100 buttons in about four minutes;
-   repeat it, spread across the day, until it prints `pending 0`. Each run is
-   resumable: it only sends what is not yet confirmed and presses anything
-   already waiting in the chat. If a run stops with `PeerFloodError`, the
-   account is limited: stop for the day. One unchunked run is about 40
-   minutes (up from 12, now that every URL also costs a press) and is fine on
-   a healthier account.
-2. Read the `photo changed` count each time. On this reindex it should be
-   the large majority, because most cached photos are known stale; a chunk
-   reporting mostly `same` means spot-check a few of its links by pasting
-   before trusting it, and report it.
-3. When `pending 0`:
+1. Repeat step F.1's command - `--limit 5 --press-limit 50`, **incremental
+   mode, which is the default** - until it prints `pending 0`. About 22 runs
+   for 1062 URLs. Each run is resumable: it sends only what is not yet
+   confirmed and presses anything already waiting in the chat.
+2. **Space them.** The one measured cooldown was 3213 s (~54 minutes), so
+   treat roughly an hour between chunks as the working assumption until the
+   numbers say otherwise. Nothing in the tool remembers a cooldown across
+   runs; the spacing is yours to keep.
+3. Stops, and what they mean - **all of them are green and all of them leave
+   the backlog recorded**: `bot throttled: retry in <N>s` (wait `N`, then
+   continue); `press budget reached` / `press budget too low for another
+   batch` (normal end of a chunk); `PeerFloodError` (Telegram, not the bot -
+   stop for the day).
+4. Do **not** use `--mode full` to drive this. It marks every URL stale on
+   every run, so phase 1 re-presses the same recovered buttons each time and
+   the reindex never advances - the tool warns when you try. `--mode full` is
+   one deliberate pass for a state you do not trust, which is what step E.0
+   already handles.
+5. Read the `photo changed` count each time; a chunk reporting mostly `same`
+   means spot-check a few of its links by pasting before trusting it, and
+   report it.
+6. When `pending 0`:
    `git add tools/tg-preview/state.json && git commit -m "chore(tg-preview): record the first full reindex"`
-   and push. From here, CI only ever sends and presses what changed.
+   and push. From here, CI only ever sends and presses what changed, a
+   handful of URLs at a time, well inside any quota.
 
 **H. Repository secrets.** GitHub -> the repository -> Settings -> Secrets
 and variables -> Actions -> New repository secret, three times, the same
@@ -185,24 +208,37 @@ the job then exits 0 with a notice.
   root. Combine with `--dry-run` for a one-URL preview, or without it to
   refresh one thing by hand.
 - `--limit N` sends at most N messages, then stops (exit 0) with the rest
-  left pending for the next run. `--limit` counts sends only, never phase 1's
-  presses (below): `--limit 0` is a press-only run - nothing new is sent, but
-  any button message already waiting in the chat still gets pressed.
+  left pending for the next run. `--limit` counts **sends** only, never
+  presses: `--limit 0` is a press-only run - nothing new is sent, but any
+  button message already waiting in the chat still gets pressed (phase 1,
+  below).
+- `--press-limit N` (default 50) bounds the presses a single run will
+  attempt, across **both** phases - phase 1's recovery presses and phase 2's
+  fresh ones draw on the same allowance, because `@WebpageBot`'s own attempt
+  quota does not care which phase a press came from (below). A batch is not
+  sent when fewer than `PER_MESSAGE` (10) presses remain in the budget - the
+  run stops rather than sending a batch it cannot afford to press.
 - The summary is two lines: `refreshed N, pending M` (`N` is how many URLs
   had their "Update with content" press acknowledged - not how many were
   merely sent), followed by `pressed P (photo changed C, same S, none Z)`.
   `pending` covers everything not confirmed this run - not yet live on the
-  CDN, past `--limit`, no button message ever arrived, the press went
-  unanswered with no photo change, or the run stopped early - and a GitHub
-  Actions run additionally prints `::warning::` when it is above zero.
+  CDN, past `--limit` or `--press-limit`, no button message ever arrived, the
+  press went unanswered with no photo change, the bot's attempt throttle, or
+  the run stopped early - and a GitHub Actions run additionally prints
+  `::warning::` when it is above zero.
 - What turns the CI job red: a crash or a dead/missing credential (`Refresh`
   exiting 1 or 2), a failed `npm audit --audit-level=high`, or a failed state
   push after three retries. A Telegram-side stop (`PeerFloodError`, a budget
-  stop) is green with a recorded backlog, because the site itself is already
-  live and a red job would say something false about it.
+  stop, `@WebpageBot`'s own attempt throttle) is green with a recorded
+  backlog, because the site itself is already live and a red job would say
+  something false about it.
 - `--mode full` ignores the committed state when deciding what is stale (it
-  still records into it): the way to force a full reindex without touching
-  the state file.
+  still records into it). It is a single deliberate pass for a state you do
+  not trust, **not** how to chunk a reindex: every URL is stale on every
+  run, so phase 1 re-presses the same recovered buttons each time and the
+  run never advances against the bot's attempt quota. The tool warns when
+  `--press-limit` cannot cover the stale set under `--mode full`; chunking a
+  reindex uses the default incremental mode instead (setup step G).
 - Deleting `tools/tg-preview/state.json` has the same effect as `--mode
   full` on the next run, but starting cold: use it only if the file's
   content is not trusted. It is otherwise the log of what has actually been
@@ -236,9 +272,10 @@ wait for the bot's button messages folded into that pace, and rests 30
 seconds every 25 messages as insurance against limits Telegram has not
 documented. Presses are paced separately, 1-2 seconds apart, and never
 rested - they are a different RPC method (`messages.getBotCallbackAnswer`),
-so a send-axis rest is not assumed to apply to them. A full reindex is
-therefore about 40 minutes end to end (107 sends plus 1062 presses), up from
-the 12 minutes a send-only pass would take.
+so a send-axis rest is not assumed to apply to them. That arithmetic (107
+sends plus 1062 presses) says a full reindex is about 40 minutes end to end -
+but no account gets to spend 1062 presses that fast; see the attempt quota
+below, which is the limit that actually governs a first reindex.
 
 A `FLOOD_WAIT` or `SLOW_MODE_WAIT` under the configured `--max-wait` (600
 seconds by default) is slept through and the same send or press retried; a
@@ -257,13 +294,36 @@ scheduled run picks up exactly what is still unconfirmed - there is no
 separate backlog file, because the backlog is simply whatever the manifest
 says and the state does not.
 
-**Phase 1 - a button message already in the chat is a free retry.** Pressing
-it needs no new link, so it costs nothing on the send axis. Every run starts
-by scanning the last 200 chat messages for button messages that answer a
-still-stale URL, and presses every one of them before sending anything new.
-This is what makes a crash mid-run, a budget stop, or an unanswered press
-cheap to recover from, and it is also how the residue from an earlier probe
-of the unfixed tool gets fixed with zero new sends (setup step F).
+**A third limit: `@WebpageBot`'s own attempt quota.** Independently of
+Telegram's flood control above, the bot keeps its own counter of update
+attempts per user and refuses everything past it - presses and sends alike -
+with `"Sorry, too many attempts. Please try again in <N> seconds."` This is
+the limit that actually binds: a measured run of 115 presses in about four
+minutes tripped it, and the very next send got no button messages at all,
+with `N` reported as 3213 (about 54 minutes). The tool cannot know the exact
+quota, so it does not try to model it; `--press-limit` (default 50,
+`PRESS_LIMIT` in `lib.mjs`) is a run-scoped budget on presses, spanning both
+phases, that deliberately under-shoots the one observed failure point - the
+costs are asymmetric, since over-shooting costs the ~54-minute lockout plus
+the sends already spent, and under-shooting costs one extra two-minute run.
+Recognising the refusal text (`botThrottle` in `lib.mjs`) stops the run
+immediately rather than waiting the named `N` out: the one sample is 3213 s,
+well past `--max-wait` and CI's own budget, and unlike a Telegram
+`FLOOD_WAIT` (which suspends one RPC method) this refusal applies to every
+attempt of either kind, so there is nothing useful to do on the other side of
+a sleep that the next run would not do anyway. Both are green, resumable
+stops with the backlog recorded - see setup steps F and G for the chunked
+cadence this implies.
+
+**Phase 1 - a button message already in the chat is a cheaper retry, not a
+free one.** Pressing it needs no new link, so it costs nothing on the send
+axis - but it still costs a press from the same `--press-limit` budget above,
+and presses are the scarcer resource. Every run starts by scanning the last
+200 chat messages for button messages that answer a still-stale URL, and
+presses every one of them before sending anything new.
+This is what makes a crash mid-run, a budget stop, a press-budget stop, or an
+unanswered press cheap to recover from: the next run presses whatever is
+still sitting in the chat before spending a single new send.
 
 ## Secrets
 
@@ -280,9 +340,12 @@ refuses it.
 check` and covers every pure function: URL derivation, fingerprinting, what
 counts as stale, batching, the error-handling table (including an
 unanswered press), `matchButtons` (exact and trailing-slash matching, the
-bot's plain summary, duplicate button messages), and the two-phase
-send-and-press loop itself against a fake client, a fake clock and a fake
-live check. `tools/tg-preview/client.mjs` (the real Telegram connection) and
-`tools/tg-preview/live.mjs` (the real CDN fetch) have no unit test - they are
-thin, and the only real proof either works is Telegram and the CDN
-themselves, which is what step F above is for.
+bot's plain summary, duplicate button messages), `botThrottle` (the bot's
+attempt-throttle sentence, with and without a seconds figure), the
+`--press-limit` press budget (spent across both phases, a batch refused
+before its send when the budget cannot afford it, the `--mode full` warning),
+and the two-phase send-and-press loop itself against a fake client, a fake
+clock and a fake live check. `tools/tg-preview/client.mjs` (the real
+Telegram connection) and `tools/tg-preview/live.mjs` (the real CDN fetch)
+have no unit test - they are thin, and the only real proof either works is
+Telegram and the CDN themselves, which is what step F above is for.
