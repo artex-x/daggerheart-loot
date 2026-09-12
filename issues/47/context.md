@@ -2590,3 +2590,76 @@ number.
   D6's, not B11.1's.
 - The trusted-click and `el.click()` readings agree in every cell tried;
   the microtask class from decided 7 (defect 2) is not involved here.
+
+## State at the B12 kickoff (orchestrator, 2026-09-12)
+
+The owner's GOAL for this session: finish the next batch. B11.1 is closed,
+reviewed and approved, so the next batch is **B12 - the real-browser layer on
+`dist/`, and the gates** (`plan.md`, "B12", outline with decided points).
+B12 is outline-only, so this cycle is **planner first, then implementer,
+then reviewer** - review is required by the risk rules because B12 changes
+what CI enforces and touches the coverage/a11y gate configuration.
+
+### The tree
+
+- HEAD `6e05a11` on `main`, and `origin/main` is the same commit: every
+  committed boundary through B11.1 is pushed. Nothing of TASK 47's is
+  uncommitted.
+- Working tree carries one untracked directory that is **not** this task's:
+  `issues/tg-preview-refresh/` (context/plan/handoff for another task).
+  Leave it alone; never `git add -A`.
+- Two other interactive sessions are live on this machine and share this
+  working tree, so HEAD can move under a worker. Re-read `git log --oneline -3`
+  before committing.
+- Nothing heavy was running at kickoff: no `chrome.exe`, so no parity or
+  puppeteer run is alive, and no subagent of this session is listed.
+
+### The three commits after B11.1's fix, and what they mean for B12
+
+`e94a90e` is B11.1's fix. Above it sit three commits that touch **no**
+application code, so B12 plans against the same `app/`, `tests/` and live
+files B11.1 closed on:
+
+- `64e094d`, `e8bb37f` - `issues/47/` only: B11.1's commit hash filled in,
+  then the review verdict and its six nits recorded.
+- `6e05a11` - agent wiring only (`.claude/`, `CLAUDE.md`). Two standing rules
+  changed and both bind B12's workers: **agents now push the branch** once a
+  batch's commits pass their gates (`bash-guard` still denies only a bare
+  `git push --force`; `--force-with-lease` passes), and a **terminal batch**
+  (no further batch in `plan.md`, no further phase or goal from the human)
+  spends its one remediation cycle on blockers *and* local nits, where a
+  mid-plan batch still defers nits to the handoff. B12 is not terminal for
+  TASK 47 - Phases 6, 7 and 8 remain - so its nits defer unless they are the
+  cheap local kind B12's own paths already touch.
+
+### B11.1's review, and what it hands the B12 planning pass
+
+Verdict: **approve, no blockers**; six nits, none acted on, all recorded in
+`handoff.md`, "Deferred", with the reviewer's positive findings beside them.
+Two of them are inputs to this planning pass rather than backlog:
+
+- **Nit 1 is explicitly the planner's call.** The live app re-inserts the
+  `.dropmenu` markup on every render, so `animation: pop .16s ... both`
+  restarts and `placeMenu` measures a menu still at `translateY(10px)
+  scale(.985)`; in the port the menu element persists across the
+  "+ Новый список" re-measurement, so that second measurement is taken at
+  rest. Same side basis, possibly not the same transform state, ~10 px against
+  a measured 17 px band. Unsettled empirically. The planner either records it
+  in D6's "Where" or lets Phase 8's `.modal-card` measurement retire the
+  question; nobody has seen a defect from it.
+- **Nits 2, 3 and 5 are one-line edits the reviewer marked "can ride along
+  with B12's first commit"**: `hash.test.ts`'s citation should name
+  `hash.ts:103` and `:109`, not `:105`; the new `[]`-groups case should assert
+  `filter.tier` rather than only `not.toHaveProperty('cls')`; `FEATURES.md`'s
+  appended clause should say "the menu opens on the side..." so "it" does not
+  attach to the search box. Nit 4 (D6 pointing at `tests/app/states.js`)
+  resolves itself when B12 creates that file. Nit 6 records a known gap - the
+  placement has no unit-level pin and the parity state is RU-only - and is the
+  reason B12 homes the assertion in `states.js`.
+
+### Costs the planner should size batches against (unchanged)
+
+`npm run check` ~165 s idle, `npm run check:built` a few minutes, a single
+parity filter up to ~9 min, the full parity suite ~867 s on CI and **not** one
+foreground call. B12's own gate estimate from its outline is 3-4 min for the
+five new suites.
