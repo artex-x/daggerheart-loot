@@ -113,6 +113,7 @@ Agents: one foreground call, `set -o pipefail; npm run check 2>&1 | tail -n 120`
 
 If a change alters what a screen draws, also run `npm run check:built`.
 Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js eqtest,qa`.
+The built app in a real browser (after `npm run build`): `node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts,app/states`.
 
 Definition of done: checks pass, fixed defects and changed behaviour have
 meaningful coverage, specs and fixtures match, and the handoff records exact
