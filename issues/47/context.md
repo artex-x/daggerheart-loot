@@ -2762,3 +2762,38 @@ fixed is deliberately absent - it waits for Phase 7.
 been run against the rewrite, and axe with `color-contrast` on has never
 been run against it at any width. B12's step 1 is a scratch probe for both,
 before a line of the suite is written.
+
+## B12's commit block is host contention, measured (orchestrator, 2026-09-12)
+
+B12's C1 landed as `a52c17d` and is on `origin/main`. C2 and C3 are written
+and each suite verified alone, but **uncommitted**, because `npm run check`
+crossed the 600 s foreground cap twice. The cause is not the batch:
+
+- At the implementer's close, a **peer session was running `npm run check`
+  (pid 52124) and `npm run test` (vitest `run --coverage`, pid 64020 with four
+  workers) against this same working tree**, CPU at 100 %, 2.2 GB free of 16.
+  `CLAUDE.md`'s "one session at a time per working tree" is being broken by a
+  second session, not by this task's workers, and the symptom is exactly the
+  one that rule predicts: a check that cannot finish, and a coverage run whose
+  numbers describe a tree holding another task's unfinished work.
+- HEAD moved twice under this task while B12 was being built: `58dbd70`
+  (`docs(agents)`) and `3a80456` (`docs(closeout-hygiene)`), both a peer's,
+  both preserved.
+
+**The tree now mixes two tasks' uncommitted work.** B12's are `tests/app/`,
+`app/src/App.svelte`, `app/src/components/{Chip,FilterBar,StdPanel}.svelte`,
+`app/src/components/shell.test.ts`, `tests/run-all.js`,
+`.github/workflows/ci.yml`, `CLAUDE.md`, `docs/specs/{DEBT,COVERAGE}.md`,
+`issues/47/`. The peer's are `.claude/hooks/*` (ten files) and
+`.claude/README.md` - **do not stage them**, and never `git add -A`.
+
+Two consequences for whoever finishes C2/C3:
+
+1. The commit gate fingerprints the **whole tree**, so the passing
+   `npm run check` has to be taken on a tree that still contains the peer's
+   half-finished hook edits, and it is invalidated again the moment the peer
+   touches another file. The check is worth taking only once the peer's runs
+   are done, and the commit should follow it immediately.
+2. `npm run check` lints and self-tests `.claude/hooks/`, so a red result may
+   belong to the peer's work rather than to B12. Read the failure before
+   attributing it.
