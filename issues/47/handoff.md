@@ -46,11 +46,11 @@ depends on chat history.
   - Final `npm run check` (foreground, run last, after the handoff edits
     below): prettier clean, eslint clean, svelte-check clean, selftest
     passed, all vitest suites green, coverage thresholds held.
-  - Commit `fix(app): read the filter address by the table's groups, and
-    close the add-to-list menu on a real click` (hash filled in below
-    once created). Staged only the thirteen in-scope files; `git add -A`
-    was not used; `issues/tg-preview-refresh/` (another task's, untracked)
-    was left alone.
+  - Commit `73facda` - `fix(app): read the filter address by the table's
+    groups, and close the add-to-list menu on a real click`. Staged only
+    the thirteen in-scope files; `git add -A` was not used;
+    `issues/tg-preview-refresh/` (another task's, untracked) was left
+    alone.
   - Nothing deferred beyond what "Blockers" and "Deferred" already record;
     no new `VISUAL_DEBT`/`ACCEPTED` figure was written.
 
