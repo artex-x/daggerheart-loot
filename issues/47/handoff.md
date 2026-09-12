@@ -40,7 +40,8 @@ depends on chat history.
     opened` still 0.02/0.03/0.07% against its own recorded debt at every
     width/language) - "расхождений нет", not vacuous (per-cell lines
     printed above it).
-  - Commit: `<filled in after the commit below>`.
+  - Commit: `e94a90e` (`fix(app): keep the add-to-list menu on the live
+    app's side when its form opens`).
   - Deferred, unchanged from B11.1's own scope: measuring the toggle
     against `.modal-card` and `overflow: clip` on `.card` (Phase 8, named
     in D6); a fourth harness width (not needed - decided 7, 2b).
