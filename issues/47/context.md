@@ -2501,7 +2501,10 @@ contention from a concurrent session" does not survive measurement:
 - `npm run format:check` (documented 11 s idle) took **55.6 s and 54.9 s**
   on two consecutive runs - not a cold cache, and `user 0m0.883s /
   sys 0m1.9s` both times. Wall clock 5x, CPU near zero: the stage is
-  **I/O-bound**, so nothing that merely burns cores explains it.
+  **I/O-bound** - *this inference was wrong; see the section at the end of
+  this file. Git Bash `time` does not aggregate Windows child-process CPU,
+  so those `user`/`sys` figures measured nothing. The wall-clock numbers
+  stand.*
 - Whole-host CPU sat at **20-25% of 8 cores** while measured idle.
   `ngenuity2helper` holds ~1 core continuously (31,965 CPU-s over 17.9 h
   of uptime); the six peer Claude sessions together moved ~0.2 cores.
@@ -2830,6 +2833,11 @@ Two consequences for whoever finishes C2/C3:
 
 ## The slow host is a runaway desktop process, not the project (orchestrator, 2026-09-12)
 
+> **Superseded by "The host is throttled to ~20% of nominal" below.** The
+> wall-clock measurements here are sound and still worth reading; the
+> *attribution* to `explorer.exe` is not - a percentage of a throttled core
+> is not a share of the machine.
+
 Correcting the entry above, and the diagnosis both the B12 implementer and
 the peer session wrote: **`npm run check` crosses 600 s on an idle tree too.**
 Taken on this tree with no peer run alive, the whole check needed roughly 20
@@ -2871,3 +2879,43 @@ shape of starvation rather than defect, neither yet judged:
 
 `npm run check` also reaches the peer's uncommitted `.claude/hooks/` edits;
 `selftest.mjs` reported 312 passed, 0 failed, so their work is not the red.
+
+## The host is throttled to ~20% of nominal, and that explains every earlier reading (orchestrator, 2026-09-12)
+
+One counter settles what three sessions guessed at:
+
+```
+Get-Counter '\Processor Information(_Total)\% Processor Performance'
+```
+
+It read **20, 20, 20, 20** over four consecutive samples. The CPU is an
+Intel i7-8565U (nominal 1.8 GHz, a 15 W ultrabook part) and it is running at
+about a fifth of that. Every other number on this page is a consequence:
+
+- **The 5x wall clock is the throttle, exactly.** `format:check` 11 s -> 55 s;
+  `npm run check` ~165 s -> ~825 s projected, ~19-20 min observed. One fifth
+  the clock, five times the wall.
+- **"Total CPU 75-95%" and "`explorer.exe` at 62%" are the same illusion.**
+  Both are percentages of *current* capacity, and capacity is one fifth of
+  normal. Sampled during a real `format:check` run, the top consumers were
+  prettier's own two node processes (114-223% each, i.e. 1.1-2.2 cores);
+  `explorer.exe` did not appear at all. Its earlier burst was real and
+  transient, not the standing state, and never "four fifths of the host".
+- **So nothing on the software side is starving the build.** Not the peer
+  Claude sessions (~0.2 cores), not `explorer.exe`, not this project.
+  `NGenuity2Helper` does hold a core continuously, which on a 15 W chip is
+  worth reclaiming as *heat*, but it is not what makes the check slow.
+
+**Not power policy:** on AC, 99% charge, Balanced scheme. That leaves
+thermal or a stuck embedded-controller/DPTF state (`dptf_helper` is running)
+as the cause; `MSAcpi_ThermalZoneTemperature` is unavailable on this host, so
+the temperature itself was not read. Fixing it is the owner's call and needs
+a human at the machine - airflow, ambient, or a reboot to clear a stuck
+policy.
+
+**The one-minute probe before any gated batch.** Read the counter above, or
+time `npm run format:check`: **~11 s means the machine is healthy and the
+full gate sequence will fit one foreground call; ~55 s means it will not**,
+and no amount of waiting for a quiet minute will change it. This is cheaper
+than discovering it 19 minutes into a check, which is what three sessions
+did.

@@ -12447,15 +12447,17 @@ top entry. In one line: `npm run check` crossed the 600 s foreground cap
 twice in a row under host contention a peer session's own commit
 (`3a80456`) independently confirms was happening at the same time; nothing
 here is a design or scope question, and nothing needs to be written
-differently before the gate is retried. **Re-measured 2026-09-12 by the
-orchestrator, and the attribution corrected**: the peer sessions are not
-the cause (they move ~0.2 of 8 cores); the host is running this workload
-~5x slow and **I/O-bound** - `npm run format:check`, 11 s idle, took
-55.6 s and 54.9 s at `user 0.88 s / sys 1.9 s`. A full `npm run check`
-did complete on this tree in that session and was green apart from two
-cases that each pass in isolation, so the batch waits on a host, not on
-a fix. Numbers: `context.md`, "Host load"; the run: `handoff.md`, the
-top entry. Four findings from writing and
+differently before the gate is retried. **Root-caused 2026-09-12 by the
+orchestrator: the CPU is throttled to ~20% of nominal** (`% Processor
+Performance` read 20 four times running on an i7-8565U). One fifth the
+clock, five times the wall - which reproduces every figure three
+sessions collected and supersedes all three attributions, peer
+contention and a runaway `explorer.exe` alike. A full `npm run check`
+did complete on this tree and was green apart from two cases that each
+pass when their file is run alone, so the batch waits on a host, not on
+a fix, and lifting the throttle needs a human at the machine. Numbers:
+`context.md`, "The host is throttled to ~20% of nominal"; the run:
+`handoff.md`, the top entry. Four findings from writing and
 running C2/C3's suites are recorded as `DEBT.md` D7, D8, D10 and this
 section's own new entry, "B12.1 named", immediately below.
 

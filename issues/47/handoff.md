@@ -42,15 +42,33 @@ depends on chat history.
     tree passes `npm run check`. What is missing is a *captured foreground*
     run: `check-observer.mjs` arms the gate from the Bash tool's returned
     stdout, and a call moved to the background returns none.
-  - **Re-diagnosed, and the previous entry's attribution is wrong.** It
-    named "host contention from a concurrent session"; measurement does not
-    support that. `npm run format:check` (11 s idle) took **55.6 s then
-    54.9 s** with `user 0.88 s / sys 1.9 s` both times - 5x wall clock at
-    near-zero CPU, so the stage is **I/O-bound**. Host CPU idles at 20-25%
-    of 8 cores, of which `ngenuity2helper` holds ~1 core and all six peer
-    Claude sessions together ~0.2. Full numbers and the one named candidate
-    (Defender real-time protection is on; its exclusions need admin to
-    read, so it is **unverified**): `context.md`, "Host load".
+  - **Root-caused: the CPU is throttled to ~20% of nominal.** One counter,
+    `Get-Counter '\Processor Information(_Total)\% Processor Performance'`,
+    read **20, 20, 20, 20** over four samples on an Intel i7-8565U. That is
+    the whole story: one fifth the clock, five times the wall - and it
+    reproduces every figure three sessions had collected.
+    `npm run format:check` took **55.6 s and 54.9 s** against 11 s idle;
+    `npm run check` projects to ~825 s and was observed at ~19 min.
+    - **It supersedes both earlier diagnoses, including this entry's own
+      first attempt.** "Host contention from a concurrent session" is wrong
+      (the six peer Claude sessions move ~0.2 of 8 cores). So is the peer
+      session's "`explorer.exe` at 62%" (`d71e3dc`) and so is my own
+      "I/O-bound": both read a **percentage of a throttled core** as a share
+      of the machine. Sampled during a real `format:check`, the top
+      consumers were prettier's own two node processes at 114-223% each and
+      `explorer.exe` did not appear at all. My `user`/`sys` figures were
+      also worthless - Git Bash `time` does not aggregate Windows
+      child-process CPU. The wall-clock numbers from all three sessions are
+      sound; only the attributions were not.
+    - **Not power policy**: AC, 99% charge, Balanced. Thermal or a stuck
+      DPTF/EC state is what is left, and reading the temperature needs a
+      tool this host does not expose. **Fixing it needs a human at the
+      machine** - airflow, ambient, or a reboot to clear a stuck policy.
+      `NGenuity2Helper` holding a core continuously is worth reclaiming as
+      heat on a 15 W part, but it is not the cause.
+    - Full working: `context.md`, "The host is throttled to ~20% of
+      nominal", which also marks the two superseded sections in place
+      rather than deleting their evidence.
   - **Why the gate was not bypassed, though `SKIP_CHECK_GATE=1` exists for
     exactly this.** It would buy one of C2's four gates. The other three -
     `npm run check:built`, `node tests/run-all.js
@@ -63,10 +81,14 @@ depends on chat history.
   - **Next action, unchanged in substance from the entry below, with one
     addition**: retry when the host is quiet. The cheap decisive probe
     first - `npm run format:check` - and read its wall clock: **at or near
-    11 s the host is idle and the full sequence will fit; at ~55 s it will
-    not**, and nothing else needs to be attempted that session. Then C2's
-    file list and gate order exactly as the entry below gives them. Do not
-    re-run the two failing files as evidence of anything; they are green.
+    11 s the host is healthy and the full sequence will fit; at ~55 s it
+    will not**, and nothing else needs to be attempted that session - the
+    throttle above does not lift on its own and no quiet minute defeats it.
+    Then C2's file list and gate order exactly as the entry below gives
+    them. Do not re-run the two failing files as evidence of anything; they
+    are green, and `tables.test.ts` is unmodified in this tree while no
+    B12 edit touches the grid tile - which answers the peer note in
+    `context.md` that asked for that case to be judged, not dismissed.
   - Cleanup: a mis-rooted `vitest` invocation of mine created `app/app/`
     (a `coverage/` and a `node_modules/.vite/` under it). Removed. It was
     gitignored throughout and the tree key read `69ac83c6` before and after,
@@ -82,8 +104,12 @@ depends on chat history.
     work left that is not gated, and a worker would meet the same wall)
   - NEEDS_HUMAN_CONFIRMATION: no - still a resource blocker. The one thing
     a human could change that this session cannot: the I/O factor above.
-  - Branch: `main`; HEAD `67e7bb7`; `origin/main` the same. C1 (`a52c17d`)
-    remains committed and pushed; C2 and C3 remain uncommitted.
+  - Branch: `main`. HEAD was `67e7bb7` at preflight; a peer session
+    committed `d71e3dc` (`context.md` only, its own host reading) into this
+    shared tree during the session, so this entry's own commit landed on top
+    of it and both are pushed. Its evidence is preserved and its conclusion
+    marked superseded, in place. C1 (`a52c17d`) remains committed and
+    pushed; C2 and C3 remain uncommitted.
 
 - Task status: **in_progress - B12 expanded from outline to implement-ready**
   (planner, 2026-09-12, after B11.1 closed and was reviewed). No production
