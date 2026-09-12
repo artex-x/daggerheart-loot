@@ -3117,3 +3117,32 @@ consequence to the batch.
   Three commits (F1 the entry document and its checks, F2 `ci.yml` alone so a
   revert is one file, F3 the documents), and it is the batch that changes what
   the public URL serves.
+
+## State at the B13 dispatch (orchestrator, 2026-09-12)
+
+- HEAD `33c7467`, equal to `origin/main` - the kickoff section above was
+  written at `cd71897` and is that commit's own successor; nothing else moved.
+  Tree clean but for the untracked `issues/tg-preview-refresh/`.
+- Owner GOAL for this session: **finish the next batch**, with Opus as the
+  planning tier because Fable access has lapsed. No planning run is needed -
+  B13 is already implement-ready - and `.claude/agents/planner.md` already
+  carries `model: opus`, so the frontmatter describes the real tier.
+- Host preflight: no `chrome.exe`; every live `node.exe` is a desktop-app MCP
+  server, not a test run. No subagent of this session is running. Four
+  interactive peer sessions share this tree, so HEAD can still move under the
+  writer - it re-reads `git log --oneline -3` before each commit.
+- Implementer tier for B13: **opus**, by the orchestrate prompt's "risk is
+  high" clause. F2 changes what the public URL serves, and its one failure
+  mode - a half-applied edit that publishes a mixture of the two apps - is
+  public before it is visible.
+- Division of labour inside the batch, so no turn ends waiting on a run the
+  shell will lose: the implementer does steps 1-10 (F1, F2, push) and reports;
+  the orchestrator reads the CI run and `deploy`'s log, including the guard's
+  output and `check-site.mjs`'s, because a run conclusion is a status; the
+  owner walks the live site (step 11); the implementer is resumed once for F3
+  carrying the run id, both outputs and the walk.
+- Deferred nit 1 - a pinned bare `#/tables` accepted by the pin button and
+  silently dropped at the next boot - is **not** in B13's design and is not
+  fixed by it. It goes live with the flip. Recorded here so the decision to
+  leave it is deliberate rather than overlooked; the fix belongs to a planned
+  batch, not to this one.
