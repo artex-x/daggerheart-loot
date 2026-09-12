@@ -11218,14 +11218,15 @@ R1 runs once, on the app people are using.
 3. **A regression net that does not need the live app exists** - the
    load-bearing one. Today the parity harness is the only real-browser
    coverage of the rewrite's states, and it needs `index.html` as its
-   expectation. Phase 7's planning pass decides the net's shape; the two
-   candidates are the Playwright layer the issue's Phase 5 planned, and
-   the parity driver re-pointed at committed goldens of `dist/` (its
-   `STATES`, `driver.js` verbs, `typeRuns`, `geometry` and clipboard specs
-   are already the inventory, and `docs/parity.md`'s "Two unstable
-   classes" already say which states cannot be goldens). That is where
-   the Playwright question in "Phase 5 - what already exists" is answered
-   - not before, because until then the harness is the net.
+   expectation. **Decided, 2026-09-12** (Phase 5 planned, decided 1, 2
+   and 6): the net is the parity driver re-pointed at `dist/` with a
+   trusted `press` verb (`tests/app/`, B12), and after the cut-over
+   rendering is proved by named invariants, numeric laws asserted against
+   their source, and structural text goldens per state (accessibility
+   tree + controls inventory) seeded from `dist/` at R0 under the last
+   green parity run's warrant - no Playwright, no PNG goldens, no frozen
+   measured-spec JSON. The rejected alternatives and what the chosen
+   instruments cannot catch are written out under decided 2.
 4. The `ACCEPTED` sweep done: when `specs.js` retires, every `ACCEPTED`
    reason and every "Recorded, not keyed" divergence has become a
    `FEATURES.md`/`STATE.md` bullet or been dropped with a reason in the
@@ -11286,9 +11287,11 @@ revised by what it finds:
 - *R2 - motion and focus*: D1's policy; the focused-button radius if the
   keyboard walk cares; the `.toast.act` display guard test; anything the
   a11y sweep found in `tokens.css`, `Button`, `Chip`, `Seg`.
-- *R3 - lists and storage*: D2, D3 (`nested-interactive` back on),
-  `works()` re-probe, `AppState.stop()`'s timer, `ListStore.load()`,
-  `AddToList` nits, the shared-list spec bullet.
+- *R3 - lists and storage*: D2, D3 (`nested-interactive` back on), D6
+  (the menu measured against its toggle and the box that clips it,
+  `.card` `overflow: clip`, the `tests/app/states.js` assertions D6
+  names), `works()` re-probe, `AppState.stop()`'s timer,
+  `ListStore.load()`, `AddToList` nits, the shared-list spec bullet.
 - *R4 - rolling and search*: D4's outcome, B6 nits 4/5/7/11, the B4 nits.
 - *R5 - the rest of the findings*, or folded into R2-R4 by surface.
 
@@ -11577,22 +11580,131 @@ asked, and it is one decision, not two. Measured before choosing:
   suites, and run by CI's existing pooled step - which already runs after
   `Build`.
 
-**2. After the cut-over, no committed pixel goldens.** The pixel diff is
-a *comparison* instrument; without a live app to compare with it becomes
-a snapshot suite, and this repository has already learned what that
-costs: a figure is only CI's (`docs/parity.md`, "Machine variance"), a
-whole-page percentage misses a control-sized defect (B3.6), and every
-Phase 8 fix would begin with a golden update nobody can review as a
-number. What survives instead is the *measured* half of the harness,
-which is deterministic: the `typeRuns` per-control probe, `geometry`,
-`computed`, the controls inventory, title, clipboard and hash specs. At
-the cut-over (Phase 7) the last green parity run's legacy-side JSON for
-those specs is frozen into `docs/fixtures/states/` and `tests/app/`
-compares `dist/` against it, strictly - the "goldens of `dist/`"
-candidate, JSON-only. Pixel comparison dies with the harness. **Owner
-question 2** offers the alternative (CI-only PNG goldens at one width and
-language); B11 and B12 do not depend on the answer, because B12 asserts
-facts per state either way and the freeze is additive.
+**2. After the cut-over, rendering is proved by named invariants and
+structural text goldens - no pixel goldens, and no frozen dump of the
+measured specs.** Rewritten 2026-09-12 after the owner reopened the
+question and asked the better one: once there is no second implementation
+to diff against, the instrument is not "how do we keep parity" but "what
+proves the rewrite renders correctly on its own terms, and are there
+better tools for that than the ones this repository built". The earlier
+text of this point (freeze the last green run's legacy-side JSON for
+`typeRuns`/`geometry`/`computed` into `docs/fixtures/states/`) is
+withdrawn; its reasoning survives in the rejected list below.
+
+*The recommendation.* Three instruments, all in the real-browser layer
+B12 builds (`tests/app/`, puppeteer over `dist/index.html` from
+`file://`), none of them a bitmap:
+
+- **Invariants that name what "correct" means**, one sentence each,
+  failing with that sentence: no sideways scroll at any width; no text
+  wider than its box; every control named; no dead link, broken image,
+  duplicate id or stray `undefined` (the eight `audit2` checks, ported in
+  B12); axe with `color-contrast` on over every page; a focus-ring walk;
+  a menu or form that opens lies inside the box that clips it (the
+  modal's menu - decided 7, 2b); the dialog is inert behind and returns
+  focus; a keystroke keeps focus; a computed-style anchor per control
+  family asserted against `styles/tokens.css` rather than against a
+  number (body and search-box `font-size` equal, `h1` at its token, the
+  card at `min(440px, 100%)`, `.selbox` 42/38 at the 600 breakpoint -
+  the shape of every B3.6 defect); the type scale (`typo`, ported);
+  badge hues (`hues`, rewritten).
+- **Numeric laws, asserted against their source, not recorded from a
+  run**: the print sheet - 63x88 mm at 96 dpi, nine per A4, page breaks,
+  the black-and-white layout, the fit ladder's written numbers (the
+  `print` port, Phase 7); the three breakpoints; the bundle budget.
+- **Structural text goldens per state**: for every `STATES` entry, in
+  both languages at 1100, the accessibility tree
+  (`page.accessibility.snapshot()` - puppeteer has had it for years, no
+  new dependency) plus the controls inventory the harness already
+  computes, written as one small JSON file under `tests/app/snapshots/`
+  and compared strictly; regenerated with `--update` and read as a text
+  diff in the commit that changes a screen. A structural golden says
+  *what* changed - a control gone, a heading demoted, a label renamed -
+  where a pixel golden says only *that* something did.
+
+*Where the goldens' authority comes from.* They are generated from
+`dist/` at Phase 7's R0, in the same commit that retires the harness,
+and their warrant is the last green parity run at that commit: for every
+state the two apps matched, so a snapshot of `dist/` there is a snapshot
+of the shipped app. That is the only moment such a file can be seeded
+honestly; after it the goldens are the rewrite's own record and change
+only on purpose.
+
+*Cost to run*: the B12 sweep is estimated at 3-4 min inside CI's
+existing pooled step (`audit2` was 4x45 s in parallel, `typo` 23 s,
+`contracts` 30 s); the snapshots add a `page.accessibility.snapshot()`
+per state, well under a second each; nothing new to install. *Cost to
+maintain*: an invariant is edited when the rule changes, which is rare
+and is itself a product decision; a snapshot is regenerated and reviewed
+as text in the commit that changes the screen. Neither needs a human to
+eyeball an image.
+
+*What it cannot catch, said honestly.* A pure repaint that breaks no
+stated rule: a colour swapped for another accessible colour, a wrong icon
+path, padding off by a few pixels inside a box that still fits, a wrong
+picture behind a correct `alt`. Nothing automatic sees those without a
+bitmap, and a bitmap only says "changed"; the honest answer is that a
+person looks at the app - Phase 8 R1 is exactly that pass - and that the
+token anchors above shrink the class to what is genuinely invisible to a
+rule. Which failures this repository has actually had, all of them
+invariant-shaped and none of them a colour: a control at 14px where the
+body is 15.5px, a mobile-only override ported at the base width only, a
+trimmed text node that moved a hint 4.3px, a decoder heuristic met on a
+different code path, a listener racing a microtask checkpoint, and now a
+menu re-measured from the wrong side of its button. The pixel harness
+found the first three only because a second implementation existed to
+diff against; the last three it could not see at all.
+
+*Rejected, each with the reason it loses:*
+
+1. **Freezing the measured JSON specs** (this point's previous text). A
+   golden in JSON clothing: `typeRuns` advances and `geometry` rects are
+   one screen's numbers, every deliberate layout change invalidates them
+   wholesale, and a diff of `668.3 -> 671.1` says nothing about right or
+   wrong. The *questions* those specs asked survive as invariants and
+   laws where a rule exists; the numbers do not.
+2. **Committed PNG goldens** (CI-only, one width and language). A bitmap
+   says changed, not wrong; the figure is one machine's (owner decision 1,
+   `docs/parity.md`, "Machine variance"); a whole-page percentage is
+   blind to a control (B3.6); every deliberate change is a human eyeballing
+   a diff image and re-blessing, which is the workflow this migration has
+   spent batches escaping.
+3. **A hosted visual-regression service** (Percy, Chromatic, Applitools).
+   Bitmaps again behind a paid approval screen; an external service for a
+   static-file project whose product law is "no backend"; the approval
+   click is the same eyeball with a subscription.
+4. **Playwright's screenshot assertions** (`toHaveScreenshot`) - goldens,
+   rejected for what they are, not for the tool. **Playwright's aria
+   snapshots** (`toMatchAriaSnapshot`) - the right idea, and it is
+   adopted: puppeteer's `page.accessibility.snapshot()` yields the same
+   tree, so the idea comes without the second driver. **Vitest browser
+   mode** - would run the component tests in real Chromium and remove the
+   `<dialog>` shim and the trusted-event blind spot at the component
+   level, but it swaps the coverage instrument's environment and
+   duplicates what `tests/app/` does with the app assembled; a Phase 8
+   spike, filed, not planned. **axe over real pages** - adopted (decided
+   5, contrast on).
+5. **Nothing beyond the component tests.** The "Known thin spots" list is
+   the reason, and both owner defects were invisible there by
+   construction (decided 6).
+
+*Playwright specifically.* Decided 1 rejected it for the B12 net with
+three reasons; two still apply to a post-cut-over rendering check (a
+second browser dependency and a second driver for verbs `driver.js`
+already has, plus a second CI browser install) and one does not, quite:
+Playwright's golden management and trace viewer are real conveniences
+that puppeteer lacks. They are conveniences for a golden workflow this
+point rejects, so the rejection stands - but for that reason, not by
+inheritance.
+
+*Where it lands.* Phase 7's first batch (R0 of the 7/8 track - the order
+5 -> 6 -> 7 -> 8 is the owner's, confirmed, not reopened): `tests/app/
+render.js` with the snapshots and the token anchors, the `print` port,
+the sweep already there from B12; `tests/parity.js`, `specs.js`'s
+`VISUAL_DEBT`/`ACCEPTED` and the `.parity-cache` retired in the same
+commit after the `ACCEPTED` sweep. B11 (done) and B12 do not wait on any
+of this: B12 asserts facts per state either way, and the snapshots are
+additive.
 
 **3. The 20 suites, each with a fate.** Timing rule: a browser suite that
 tests the live app is deleted in the Phase 7 batch that deletes the live
@@ -11754,18 +11866,88 @@ click is synthetic. **Would the plan's coverage catch it?** Yes: B12's
 `press` is a CDP mouse click, and the new-list states use it.
 
 *Defect 2b, the menu inside the modal opening downward where the live app
-opens it upward.* **Not reproduced.** Measured at 1100x900, 1100x700 and
-375x667 with the card unscrolled: both apps add `up` and draw the menu
-above the button on `#/roll/wondrous ~ modal`; scroll offsets agree
-(0/114/98 px). The mechanism is identical (`placeMenu`, `app.js:3695`,
-against the `$effect` in `AddToList.svelte`), both read
-`window.innerHeight - button.bottom` against the menu's height plus 16.
-One difference exists by construction: the live app re-runs `placeMenu`
-on every render, the rewrite only when the menu opens or its contents
-change - a resize or a scroll after opening is re-placed by neither. B11
-registers `#/tables ~ a row opened, list menu` (six cells, three widths)
-so whatever the owner saw is measured in CI; **owner question 3** asks
-for the window size and whether the card was scrolled.
+opens it upward.* **Root-caused on measurement, 2026-09-12, after the
+owner's repro (`handoff.md`, "Blockers", Q3) refuted the "not
+reproduced" above.** Probe: a read-only puppeteer script over both apps
+(the harness's launch args, `prepare()`, `el.click()` and a trusted CDP
+click both tried), the modal opened from `#/tables` / `#/tables/
+core_consumable` on four records whose descriptions span the range
+(Малое Зелье Лечения 17 chars, Кольцо Тишины 98, Самоцвет Чутья 118,
+Медальон Хранения Надежд 338), at 1913x981 and 1100x900, with zero, one
+and two lists seeded - 24 cells per app. Numbers in `context.md`, "Q3
+planning facts". Two findings, one live and one the rewrite's:
+
+- **The first open is identical on both apps in all 24 cells, and it is
+  downward on a tall window for a short card.** `placeMenu` and the
+  `$effect` compute the same `below = innerHeight - toggle.bottom` against
+  `need = menu.height + 16`, and at 981 px the centred card leaves ~280 px
+  under its toggle, so a menu of 131 px (no lists) or 144 px (one list)
+  opens down; Медальон's taller card leaves 115 px and opens up. That is
+  the owner's "not on all items": the card's height, hence the toggle's
+  `bottom`, decides the side. The owner's legacy comparison most likely
+  ran with a different list count on the Pages origin (each chip adds
+  ~33 px to `need`; with two lists all four records open up at 981) -
+  plausible, unverified, and immaterial: at equal inputs the apps agree.
+  **What makes the downward open a defect is what it does next**: the
+  menu overflows the card, and `menu.scrollIntoView({ block: 'nearest' })`
+  scrolls the **`.card` article** (`overflow: hidden`, style.css:306 and
+  `RecordCard.svelte:260` - a scroll container for programmatic scrolls),
+  not the `.modal-card` (`overflow: auto`, whose `scrollHeight` equals its
+  `clientHeight`). Measured: `.card.scrollTop` 109 on both apps for
+  Кольцо at 981 with no lists - the top 109 px of the picture chopped off,
+  no scrollbar, no way to scroll it back by hand. The formula measures the
+  window; the thing that clips is the card. **A live defect, reproduced
+  faithfully: `docs/specs/DEBT.md` D6**, written by B11.1, owed a fix in
+  Phase 8 (R3, with the other `AddToList` items). It appears at 1100x900
+  too - Кольцо with no lists opens down there as well (`below` 239.9 vs
+  `need` 131.2) - so no new width is needed to see it; the B11 state
+  `#/tables ~ a row opened, list menu` misses it only because its `two`
+  seed makes every card open up.
+- **After "+ Новый список" the two apps diverge, and this is the
+  rewrite's regression.** Live flips the menu **up in 24 of 24 cells**,
+  by an accident with two parts: `refreshModal()` redraws the card's
+  innerHTML, so the menu is fresh at its default (downward) side and the
+  article's `scrollTop` is 0 again; then `placeMenu` reads
+  `drop.querySelector('.btn')` - the **first** `.btn` inside `.seldrop`,
+  which with the form open is the form's own "Создать" button inside the
+  menu, not the toggle (the menu precedes the toggle in the DOM,
+  `addToListBtn` 1879-1891). Its bottom, from the downward position, is
+  under the fold, so `below` is negative and `up` is set - the "relocates
+  correctly" half of the owner's report, and also why the chopped picture
+  heals on that press. The rewrite's `$effect` reads the same first
+  `.btn` (`AddToList.svelte:165`, ported verbatim) but from wherever the
+  menu already is: with the menu already `up`, "Создать" sits ~50 px
+  above the toggle's bottom, `below` reads ~50 px larger than the toggle
+  would give, `need` grows by only 33 px, and in the band `need - 17 <=
+  below < need` the sign flips - the menu goes **down**, the form lands
+  under the card's edge and is clipped (`clipped: true` in 7 of 24
+  rewrite cells: Самоцвет and Малое at 1100x900 with 0-1 lists, Медальон
+  at 981 with none, Кольцо and Малое at 981 with two, and Кольцо at 1100
+  with one - real and synthetic clicks alike). The 17 px band is why the
+  owner's exact window is not special: 1100x900 reaches it on two of the
+  four records with no lists seeded. **Not a `DEBT.md` entry - a rewrite
+  regression. Fix: B11.1** - port the live algorithm's *order*, not only
+  its formula: reset `up` to false and let the DOM catch up before
+  measuring, keep the first-`.btn` reading (it is the live reading, and
+  D6 records it), and put the class on the menu before scrolling it into
+  view, as `classList.toggle` precedes `scrollIntoView` in `placeMenu`.
+  Measuring the toggle instead (`:scope > .btn`) would be *more* correct
+  and would break parity on every `~ new list` cell - that is the Phase 8
+  fix, named in D6, not this one.
+- **Would parity have caught it?** With a state, yes: `#/tables ~ a row
+  opened, new list` (no seed, Самоцвет Чутья) differs at 1100 before the
+  fix - live up, rewrite down and clipped - and matches after. B11.1
+  registers it and runs it red first. **Would the plan's coverage catch
+  it?** Yes: B12's `tests/app/states.js` "new list from the modal" case
+  asserts the form's input lies inside `.modal-card`'s box and is focused
+  - a rendering invariant, the post-cut-over form of the same test.
+  **Does anything need the owner's 1913x981?** No: the height dependence
+  is fully explained by `below < need`, and 1100x900 exercises both
+  branches across the four records. A fourth harness width would be a
+  global change (`WIDTHS` is hashed into every cache key, `parity.js:174`)
+  costing +204 cells, roughly a third of the parity wall clock per shard
+  (~3 min); per-state widths would be a harness feature nobody else
+  needs. Neither is planned.
 
 *This class as coverage grows.* The owner is right to expect more. The
 two mechanisms here - a shared heuristic met on a different code path,
@@ -11787,7 +11969,7 @@ reason each step cannot move:
 3. **Phase 7 - the cut-over cleanup**: delete `index.html`/`app.js`/
    `style.css` and the legacy suites (each in the commit that lands or
    names its successor - the table in decided 3), retire
-   `tests/parity.js` after the JSON freeze (decided 2), the `ACCEPTED`
+   `tests/parity.js` once the structural goldens are seeded (decided 2), the `ACCEPTED`
    and "Recorded, not keyed" sweep into `FEATURES.md`/`STATE.md`, the
    `routes.json` two-frame entry, READMEs, `CLAUDE.md`'s migration
    section, CI's parity job. Mechanical, contract-touching, its own
@@ -11822,14 +12004,214 @@ sentences are rewritten by B12 to name the state that now covers each.
 
 ### The batches
 
-Two, sized by their gates: B11 shares one `check`, one `check:built` and
-one parity filter group (the two defects' surfaces); B12 shares one
+Three, sized by their gates: B11 (built) shared one `check`, one
+`check:built` and one parity filter group (the two defects' surfaces);
+B11.1 is one component fix, one parity state and one register entry
+under one `check`, one `check:built` and one parity call; B12 shares one
 `check`, one `check:built` and one `run-all` filter and touches no
-parity-visible pixel. Merging them would put a contract-adjacent decoder
-change and a new test layer under one review, which is the second way to
-get it wrong (`docs/parity.md`, "Batch size").
+parity-visible pixel. Merging B11.1 into B12 would bury a user-visible
+production fix inside a ~1k-line review of ported test code that also
+changes what CI enforces - the second way to get it wrong
+(`docs/parity.md`, "Batch size"); merging it into B11 was impossible,
+B11 having landed before the owner's repro arrived. B11.1 is small on
+purpose and is numbered as B11's follow-up so that every existing
+reference to "B12" (`COVERAGE.md`'s thin-spot bullet, the handoff, this
+file) stays right.
 
-#### B11 - the decoder, and the menu that closed itself (implement-ready)
+#### B11 - the decoder, and the menu that closed itself (built: `73facda` + `64f9a27`, reviewed approve)
+
+Built as specified; steps 1-14 done, the step-7 red-then-green recorded
+in `handoff.md`, all gates green (41 files / 1004 tests, `check:built`,
+60 parity cells `совпадает`). Reviewer (read-only): approve, no blockers,
+six nits - recorded in `handoff.md`, "Deferred", and placed: nit 3
+(the `[]`-groups path of `parseHash` unpinned) and nit 5 (`app.js:2724`
+points at the comment, not the code) go to B11.1, which opens
+`hash.test.ts`'s neighbours and `specs.js` anyway; nit 4 (the
+`isConnected` guard's comment is broader than the guard's justification)
+is a comment rewrite in B11.1, in the file it already edits - the
+`onclickcapture` variant stays the recorded fallback and is *not*
+taken, B11's "decided, do not reopen" standing, and B12's real-click
+states exercise the guard as written; nit 2 (a retired group name ahead
+of a live one drops the live narrowing - fails open) becomes one
+sentence in `ROUTES.md` in B11.1; nit 1 (step 2's "non-empty tail" was
+not implemented; behaviourally nil) is recorded here as the deviation
+and nowhere else - `ROUTES.md` documents the code as written.
+
+#### B11.1 - the menu's second measurement (implement-ready)
+
+**Objective.** Make the add-to-list menu inside the record modal keep the
+live app's side after "+ Новый список" is pressed - the rewrite's
+regression root-caused in decided 7, 2b - pin it with a parity state
+that reads red before the fix and green after, write the live defect the
+port reproduces on purpose (the viewport-measured flip that chops the
+card's picture) into `docs/specs/DEBT.md` as D6, and pay B11's cheap
+review nits in the files this batch opens. One component, one state, one
+register entry.
+
+**In scope.** `app/src/components/AddToList.svelte` (the `$effect`, and
+the `onDocumentClick` comment - nit 4), `tests/parity/specs.js` (one
+state; the nit-5 line), `docs/specs/DEBT.md` (D6), `docs/specs/FEATURES.md`
+(one clause), `docs/specs/ROUTES.md` (one sentence - nit 2),
+`app/src/lib/hash.test.ts` (one case - nit 3), `issues/47/`.
+
+**Out of scope.** Measuring the toggle rather than the first `.btn`, or
+the card rather than the window (the Phase 8 fix, named in D6); `overflow:
+clip` on `.card`; `RecordModal.svelte`; `RecordCard.svelte`; the driver;
+`tests/app/` (B12); any threshold; the live files; any `VISUAL_DEBT`/
+`ACCEPTED` figure; a fourth harness width (decided 7, 2b, last bullet).
+
+**Decided, do not reopen.** The fix ports the live *order* - redraw at
+the default side, then measure the first `.btn`, then place, then scroll
+- and keeps the first-`.btn` reading because it is the live reading and
+parity is the gate; the "correct" measurement is Phase 8's. The parity
+state seeds **no** lists and opens **Самоцвет Чутья**: with the `two`
+seed every card opens up and the divergence is not reached at 1100; with
+no seed Самоцвет sits inside the 17 px band at 1100 (`below` 119.5 vs
+`need` 131.2) on the measured tree. If the implementer's tree measures
+differently (a font or a data change moves the card by a few pixels),
+Малое Зелье Лечения on `#/tables/core_consumable` is the second record
+in the band at 1100 with no seed - swap the record, do not add a seed.
+
+**Steps.**
+
+1. Preflight: `git log --oneline -3` reads `64f9a27` at HEAD or a
+   docs-only successor; `git status --short` shows only `issues/47/`
+   edits and the untracked `issues/tg-preview-refresh/` (another task's -
+   never stage it). Read `context.md`, "Q3 planning facts", for the
+   numbers; do not re-measure them.
+2. `AddToList.svelte`, the placement `$effect` (lines 154-172). Replace
+   its body so that it: keeps the `if (!open) return;` and the two `void`
+   reads; then sets `up = false` **before** the `tick()`, with a comment
+   that app.js redraws the menu on every render so `placeMenu` always
+   measures from the default side, and that a re-measure from the flipped
+   side reads a different `below` (D6); then inside `tick().then`, the
+   same lookups as today (`root.querySelector('.dropmenu')`, `root.
+   querySelector('.btn')`), with a comment on the `.btn` line: the first
+   `.btn` inside `.seldrop`, as `placeMenu` reads it - the toggle while
+   the menu shows chips, the form's own "Создать" once the form is open;
+   the live reading, kept on purpose (D6); then `up = below < need;
+   flushSync();` **before** `menu.scrollIntoView({ block: 'nearest' })`,
+   with a comment that `classList.toggle` precedes `scrollIntoView` in
+   `placeMenu` and the class has to be on the menu before it is scrolled
+   into view. Import `flushSync` beside `tick` from `svelte`. Writing
+   `up` inside the effect is safe: the effect reads `open`, `shown.length`
+   and `newListFor`, never `up`. `svelte-check` must stay clean.
+3. `AddToList.svelte`, `onDocumentClick`'s comment block (lines 196-203):
+   narrow the last sentence. What is true: a detached target was either
+   inside this control or was removed by the same flush; the guard
+   cannot tell them apart, so an outside click whose target Svelte
+   removes during the flush (a filter pill's cross, a toast's undo) leaves
+   the menu open where the live app closes it; no reachable path was
+   found (`RecordModal.svelte:68` and `app.svelte.ts`'s `menuFor = ''` on
+   modal close and navigation cover the known ones); `onclickcapture`
+   would decide "inside?" before any mutation and is the recorded
+   fallback. Keep the guard itself byte-for-byte.
+4. `tests/parity/specs.js`, `STATES`: directly after `#/tables ~ a row
+   opened, list menu`, add
+   `{ id: '#/tables ~ a row opened, new list', route: '#/tables', why:
+   "the new-list form inside the modal, and which side the menu keeps
+   when it grows - the rewrite re-measured from the flipped side and sent
+   it under the card's edge", enter: async (d) => { await
+   d.click('Самоцвет Чутья'); await d.click('Добавить в список'); await
+   d.click('+ Новый список'); } }` - **no `storage`** (the reason is in
+   "Decided" above; say it in a one-line comment).
+5. `tests/parity/specs.js`, the "Recorded, not keyed" prose from B11:
+   `app.js:2724` -> `app.js:2718-2726` (`fDecode` starts at 2718, the
+   heuristic is 2725-2726) - nit 5.
+6. `docs/specs/DEBT.md`, section "Defects reproduced on purpose", after
+   D5: **D6 - the add-to-list menu's flip measures the window, not the
+   card, and re-measures against the wrong button.** Follow D5's headings
+   exactly. *Where*: `app.js:3695-3704` `placeMenu` (`$('.dropmenu')`,
+   `drop.querySelector('.btn')`, `innerHeight - btn.bottom` against
+   `menu.height + 16`, `scrollIntoView({ block: 'nearest' })`), run after
+   every render (`app.js:3824`); the port `AddToList.svelte`'s placement
+   `$effect`; `.card{overflow:hidden}` at `style.css:306` /
+   `RecordCard.svelte:260`. *Live behaviour*: on a tall window a short
+   card's menu opens downward inside the modal, overflows the `.card`
+   article, and `scrollIntoView` scrolls that `overflow: hidden` article
+   (measured `scrollTop` 109 at 1913x981 and 1100x900, Кольцо Тишины, no
+   lists) - the top of the picture is chopped with no scrollbar and no way
+   back; pressing "+ Новый список" redraws the card and flips the menu up
+   because the first `.btn` is then the form's own "Создать", under the
+   fold from the default side - which is what heals it. *What the rewrite
+   would do instead*: measure the toggle (`:scope > .btn`) against the
+   nearest clipping box (`.modal-card`), and make `.card` `overflow:
+   clip` so a programmatic scroll cannot move its content (check the
+   rounded corners still clip). *Why parity won*: B11.1 (2026-09-12) -
+   every `~ list menu` / `~ new list` cell compares the side and the
+   article's scroll; the correct measurement flips `#/i/ci1 ~ new list`
+   and the new modal state against the live app with no `ACCEPTED` home
+   for a whole-menu difference. *How to verify the fix*: `tests/app/
+   states.js` - after opening the menu in the modal on Кольцо Тишины at
+   1100x900 with no lists, `.card.scrollTop` is 0 and the menu's box lies
+   inside `.modal-card`'s; after "+ Новый список", the input's box lies
+   inside `.modal-card`'s and is focused; `#/i/ci1 ~ new list` is
+   re-read by the same instrument. *Recorded by*: B11.1, 2026-09-12.
+7. `docs/specs/FEATURES.md`, "Lists", the card-menu bullet: after "and
+   through the new-list form and its cancel", add: "; it opens on the side
+   of the button with room in the window, re-measured from its default
+   side whenever it opens or grows (DEBT.md D6 records what that gets
+   wrong inside the modal)".
+8. `docs/specs/ROUTES.md`, "Filter grammar", after the B11 sentence
+   ("every piece names a group the table offers"): one sentence - a
+   retired group name ahead of a live one (`f_rg-melee_line-uniq`) makes
+   the whole body one unknown group, so the live narrowing is dropped and
+   the table stays whole: unknown groups fail open, never empty - nit 2.
+9. `app/src/lib/hash.test.ts`, the `tables` describe: one case,
+   "an unknown table takes no legacy reading" -
+   `parseHash('#/tables/nope/f_tier-1_cls-phy')` has `table` null,
+   `kind` `'tables'`, and `route.filter` has no `cls` key (the legacy
+   reading is what would add one) - nit 3. Assert nothing about the shape
+   of the foreign key, as B11 step 4(d) decided.
+10. Gates, each one foreground call, Bash timeout 600000:
+    - `set -o pipefail; npm run check 2>&1 | tail -n 120`
+    - `set -o pipefail; npm run check:built 2>&1 | tail -n 120`
+    - **red first**: with steps 4-5 in place and step 2 *not yet*
+      applied, `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js
+      "#/tables ~ a row opened, new list" 2>&1 | tail -n 60` - the 1100
+      cells must read a difference (record the percentages in the
+      handoff; open one diff image: the rewrite's form under the card's
+      edge). If they read `совпадает`, the record is outside the band on
+      this tree - swap to Малое Зелье Лечения on `#/tables/core_consumable`
+      per "Decided" before touching step 2.
+    - then, with step 2 applied: `set -o pipefail; MSYS_NO_PATHCONV=1
+      node tests/parity.js "#/tables ~ a row opened" "#/i/ci1 ~ new list"
+      "#/tables ~ bar menu" 2>&1 | tail -n 120` - 5 states / 30 cells
+      (`#/tables ~ a row opened` is a prefix and matches its two
+      siblings); every cell `совпадает` or its already-recorded debt
+      figure unchanged (the modal itself carries 0.02/0.03/0.07 %).
+      Confirm each call printed its cells; a vacuous `расхождений нет`
+      is not a result.
+11. One commit, `fix(app): keep the add-to-list menu on the live app's
+    side when its form opens`, staging the seven files and `issues/47/`;
+    the handoff with exact commands, the red-first percentages, and the
+    diff image's description.
+
+**Acceptance.** The new state reads a difference at 1100 before step 2
+and `совпадает` on all six cells after; the four neighbouring states are
+unchanged; `hash.test.ts` carries the nit-3 case; `DEBT.md` has D6 in
+D5's shape; `FEATURES.md`, `ROUTES.md`, `specs.js` carry their edits;
+`git show HEAD -- app.js style.css index.html` is empty; `npm run check`
+green with thresholds held; the `onDocumentClick` guard is byte-identical
+to B11's.
+
+**Risks / do-nots.** Do not "improve" the measurement (toggle, card) -
+it fails parity by design and is D6's Phase 8 fix. Do not add a seed to
+the new state. Do not set `up` from inside `tick().then` without the
+`flushSync()` - the scroll would run against the menu's previous side,
+which is what the probe's clipped cells show: `scrollIntoView` ran while
+the menu was still up and had nothing to do, then the class flipped it
+down under the card's edge, unscrolled. If `#/i/ci1 ~ new list`
+or `#/tables ~ bar menu` change, the reset is running with the menu at
+the wrong default: check that `.cardpick :global(.dropmenu)` (down) and
+`AddToList`'s base rule (up, the bar's) are untouched. Host load: the
+rule from B11 stands - a `check` that crosses 600 s is re-run idle, never
+salvaged.
+
+**Fallback.** None needed for the fix. If the band moves on the
+implementer's tree for both named records, register the state on
+whichever of the four measured records reads red at 1100 with no seed
+(`context.md`, "Q3 planning facts", table) and say which in the handoff.
 
 **Objective.** Fix both owner-reported defects in the rewrite, pin each
 with the test that would have caught it, register the two parity states
@@ -11984,8 +12366,30 @@ either way.
 
 #### B12 - the real-browser layer on `dist/`, and the gates (outline; decided points)
 
-Expanded to steps at its own planning pass after B11 lands; the decisions
-are made here so that pass is short.
+Expanded to steps at its own planning pass after B11.1 lands; the
+decisions are made here so that pass is short. Added by the 2026-09-12
+pass (Q2/Q3): `states.js` carries the modal's new-list invariant (the
+form's input inside `.modal-card`'s box and focused - decided 7, 2b, the
+post-cut-over form of B11.1's parity state) and D6's verification hook
+in a form that is *expected to fail until Phase 8* is **not** written -
+no red test is committed; D6 names the assertion, R3 writes it. The
+real-click new-list states (card, bar, modal) are also where B11's
+`isConnected` guard gets its trusted-event reading; nit 4's
+`onclickcapture` variant is not measured separately unless one of them
+fails. Selectors the contracts port needs, read off the tree: rows are
+`.rows .row[data-row]` on both apps already (`TableRows.svelte:113`);
+the lit tab is `#tabs a.on` live and `a[aria-current="page"]`
+(`TabBar.svelte:38`) here; the pills need `data-val={c.group + ':' +
+c.value}` on `FilterBar.svelte:83` to match `app.js:2671`'s
+`group:value`; sources read `aria-pressed` (`Seg.svelte:31`/`Chip.svelte:
+56`); the print cards are `.pcard:not(.blank)` on both; the stat line is
+`.eqstats span` on both (`RecordCard.svelte:152`). `Icon`'s missing
+branch is the `'opacity' in icon` arm (`Icon.svelte`, one icon carries
+`opacity: 0.7`, `lib/icons.ts:44`); `SelBar`'s is the `if (!index)
+return;` / empty-`items` arm of `copySel`. `run-all.js` resolves a
+suite name to `tests/<name>.js`, so `app/sweep` reaches `tests/app/
+sweep.js` without a runner change; the sweep is split by width into four
+entries the way `audit2` is.
 
 - **Driver.** `tests/parity/driver.js` gains `press(name, nth)` - the same
   lookup as `click`, but the element is resolved to a puppeteer
@@ -12047,9 +12451,13 @@ are made here so that pass is short.
   live files and every legacy browser suite (`tests/lib.js` with them),
   each named with its successor from decided 3 in the commit message;
   port `print`'s geometry into `tests/app/print.js` in the same batch;
-  freeze the measured specs' legacy-side JSON into `docs/fixtures/states/`
-  from the last green parity run and point `tests/app/contracts.js` (or
-  a `look.js`) at it; delete `tests/parity.js`, `specs.js`'s `VISUAL_DEBT`
+  add `tests/app/render.js` per decided 2 (rewritten 2026-09-12): the
+  per-state structural goldens (accessibility tree + controls inventory,
+  both languages at 1100, `tests/app/snapshots/`, `--update` to
+  regenerate) seeded from `dist/` in this very commit, whose warrant is
+  the last green parity run at the same tree, plus the token anchors and
+  the numeric laws; **no** frozen `typeRuns`/`geometry`/`computed` JSON
+  and no PNG; delete `tests/parity.js`, `specs.js`'s `VISUAL_DEBT`
   and `ACCEPTED` after the sweep; add the `routes.json` two-frame entry;
   `tests/contracts.js`'s pure half moves to `tests/app/contracts.js` or
   stays as a node-only suite - implementer's call, one file either way;

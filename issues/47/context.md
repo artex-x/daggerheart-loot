@@ -2493,3 +2493,100 @@ on this host tonight, against a ~165 s whole `npm run check` idle. A
 crossed run is re-run idle, not salvaged, not backgrounded.
 `coverage.reportOnFailure` is off by default, so a red vitest writes no
 summary.
+
+## Q3 planning facts - the modal menu, measured on both apps (planner, 2026-09-12) - durable
+
+Read-only probe (scratchpad, disposable, not kept): puppeteer with the
+harness's launch args and `prepare()` (reduced motion, cleared storage),
+`makeDriver` for both targets, a fresh page per cell. The modal is opened
+by pressing a table row (`#/tables`; `#/tables/core_consumable` for the
+consumable), then "Добавить в список", measured, then "+ Новый список",
+measured again. Presses were `el.click()` (the harness's own) and, for the
+regression cell, a trusted CDP click - same numbers. Tree `64f9a27`,
+`dist/` built from it. Design and placement: `plan.md`, decided 7,
+"Defect 2b"; fix: B11.1; live half: `DEBT.md` D6 (written by B11.1).
+
+Records, chosen by Russian description length: Малое Зелье Лечения (cc7,
+17 chars), Кольцо Тишины (ci28, 98 - the B11 state's row), Самоцвет
+Чутья (ci56, 118), Медальон Хранения Надежд (ci39, 338). Windows:
+1913x981 (the owner's) and 1100x900 (the harness's). Lists seeded: 0, 1,
+2 (`LISTS.slice(0, n)` from `specs.js`). `below` = `innerHeight -
+firstBtn.bottom`, `need` = `menu.height + 16`, both as the two apps
+compute them; "first `.btn`" is `.seldrop`'s first `.btn` in DOM order -
+the toggle while the menu shows chips, the form's "Создать" once the form
+is open (the menu precedes the toggle, `addToListBtn` 1879-1891 and
+`AddToList.svelte:213-270` alike).
+
+**On open - both apps agree in all 24 cells.** `up` iff `below < need`:
+
+| window | lists | need | Малое (below / side) | Кольцо | Самоцвет | Медальон |
+|---|---|---|---|---|---|---|
+| 1913x981 | 0 | 131.2 | 278.2 down | 280.4 down | 269.0 down | 114.7 up |
+| 1913x981 | 1 | 144.0 | 291.2 down | 293.4 down | 282.0 down | 114.7 up |
+| 1913x981 | 2 | 186.8 | 169.2 up | 171.4 up | 160.0 up | 114.7 up |
+| 1100x900 | 0 | 131.2 | 128.7 up | 239.9 down | 119.5 up | 74.2 up |
+| 1100x900 | 1 | 144.0 | 128.7 up | 130.9 up | 119.5 up | 74.2 up |
+| 1100x900 | 2 | 186.8 | 128.7 up | 130.9 up | 119.5 up | 74.2 up |
+
+(The four cards are 673 / 668 / 691 / 782 px tall, centred in the
+window; the toggle's `bottom` follows the card's height, so read the
+numbers, not the pattern.) The side is decided by the card's height and
+the list count, identically on both apps; the owner's "legacy opens up"
+is consistent with a different list count on the Pages origin (every
+chip adds ~33 px to `need`), which was not verified and does not matter.
+
+**What a downward open does, both apps**: the menu overflows the `.card`
+article (`overflow: hidden` - style.css:306, `RecordCard.svelte:260`),
+and `scrollIntoView({ block: 'nearest' })` scrolls **that** element:
+Кольцо, 0 lists, 1913x981 - `.card.scrollTop` 109, `scrollHeight` 775
+vs `clientHeight` 666, `card-media` at y 48-468 inside a `.modal-card`
+at 156-825 (top 109 px of the picture hidden, no scrollbar); the
+`.modal-card` (`overflow: auto`) itself reads `scrollTop` 0 and
+`scrollHeight === clientHeight` - it never scrolls, the article does. The
+same on `next`. The live app's `refreshModal()` rebuilds the article on
+the next render, which resets it to 0 - that is why "+ Новый список"
+appears to heal it.
+
+**After "+ Новый список" - live `up` in 24/24; the rewrite diverges in
+7/24.** Live: the redraw puts the menu back at its default side and
+`placeMenu` reads "Создать" (first `.btn`) from there - under the fold,
+`below` negative or small - so `up`. Rewrite: the `$effect` re-runs on
+`newListFor` and reads "Создать" from wherever the menu already is. With
+the menu already up, "Создать" sits ~51 px above the toggle's bottom
+(trusted cell: toggle 739.3-771.3, Создать 688.3-720.3 at 1100x900), so
+`below` reads ~51 px larger while `need` grows by 33 (`+33.2` measured,
+e.g. 131.2 -> 164.4); the sign flips when `below >= need - 18`. The
+seven rewrite cells that flip down and end `clipped` (the menu's box
+below `.modal-card`'s bottom; `.modal-card` `scrollTop` 0; the article
+`scrollHeight` 813 vs `clientHeight` 671 in the trusted cell):
+
+| window | lists | record | open | after "+ Новый список" (rewrite) | live |
+|---|---|---|---|---|---|
+| 1913x981 | 0 | Медальон | up | **down**, menu 874-1023, clipped | up |
+| 1913x981 | 2 | Малое | up | **down**, menu 820-1024, clipped | up |
+| 1913x981 | 2 | Кольцо | up | **down**, menu 818-1022, clipped | up |
+| 1100x900 | 0 | Малое | up | **down**, menu 779-928, clipped | up |
+| 1100x900 | 0 | Самоцвет | up | **down**, menu 789-937, clipped | up |
+| 1100x900 | 1 | Малое | up | **down**, menu 779-941, clipped | up |
+| 1100x900 | 1 | Кольцо | up | **down**, menu 777-938, clipped | up |
+
+Every other rewrite cell matches live after the press (both up, or the
+menu that opened down flips up on both). The cells that opened *down*
+never flip wrong: from the default side the two apps read the same
+number.
+
+**Consequences the batches rest on**:
+
+- No new harness width is needed. 1100x900 with **no** seed reaches the
+  rewrite's regression on two records (Самоцвет, Малое) and the live chop
+  on a third (Кольцо). B11's `#/tables ~ a row opened, list menu` misses
+  both because its `two` seed makes every card open up.
+- A fourth `WIDTHS` entry would be global (`parity.js:174` hashes
+  `WIDTHS` into every cache key): +204 cells, roughly +3 min per shard,
+  and every existing legacy PNG re-captured. Not planned.
+- `.card` is a scroll container only for scripts; `overflow: clip` is
+  the candidate Phase 8 fix for the chop, alongside measuring the toggle
+  (`:scope > .btn`) against `.modal-card`. Both diverge from live and are
+  D6's, not B11.1's.
+- The trusted-click and `el.click()` readings agree in every cell tried;
+  the microtask class from decided 7 (defect 2) is not involved here.

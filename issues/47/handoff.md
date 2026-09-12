@@ -6,6 +6,24 @@ depends on chat history.
 
 ## Status
 
+- Task status: **in_progress - Q2 answered, Q3 root-caused, B11.1
+  implement-ready** (planner, 2026-09-12, after B11's close). No
+  production code touched. Design: `plan.md`, decided 2 (rewritten: the
+  post-cut-over rendering check is named invariants + numeric laws +
+  structural text goldens per state, no PNG and no frozen measured JSON,
+  with the rejected list and what each instrument cannot catch), decided
+  7 "Defect 2b" (the modal menu, root-caused on 48 measured cells), the
+  B11 heading paragraph (built, nits placed), the new "B11.1" section
+  (implement-ready), B12's outline (additions), the Phase 6/7 outline
+  and Phase 8's entry condition 3 (the freeze replaced). Facts:
+  `context.md`, "Q3 planning facts". Next: B11.1, brief under "Next
+  batch". Phase order 5 -> 6 -> 7 -> 8 untouched.
+  - Last agent: planner
+  - NEEDS_HUMAN_CONFIRMATION: no
+  - Branch: `main`; base `64f9a27` (B11's second commit), HEAD unchanged
+    at planning; four commits unpushed (`8b0c3ce`.. `64f9a27` - the
+    owner's push, never this session's)
+
 - Task status: **B11 closed - steps 13-14 run, all gates green, committed.**
   (implementer, 2026-09-12). Nothing was implemented or redesigned; the
   batch was already fully written in the tree at HEAD `9e3d19f` per the
@@ -3470,11 +3488,70 @@ is new, so inspect its diff image before writing any entry, and write no
 ## Next batch (implement-ready)
 
 **B11 is closed - committed, all gates green (see "Status" above). The
-next batch is B12.** Its design and decisions: `plan.md`, "B12" ("the
+next batch is B11.1** (planner, 2026-09-12). After it, B12 ("the
 real-browser layer on `dist/`, and the gates" - decided points made,
-steps at its own short planning pass). Read `plan.md`, "B12" and
-`context.md`'s Phase 5 planning facts before starting; this handoff does
-not restate B12's brief.
+steps at its own short planning pass).
+
+- Name: **B11.1 - the menu's second measurement.** Full design and the
+  exact step list: `plan.md`, "Phase 5 - the testing pyramid, planned",
+  "B11.1" (decided/do-not-reopen, steps 1-11, acceptance, risks,
+  fallback); the root cause: `plan.md`, decided 7, "Defect 2b"; the
+  numbers: `context.md`, "Q3 planning facts". This section is the brief;
+  the plan is the authority where the two differ in detail.
+- Objective: keep the add-to-list menu inside the record modal on the
+  live app's side after "+ Новый список" is pressed (the rewrite flips it
+  under the card's edge in a 17 px band of card heights); pin it with a
+  parity state that reads red before the fix; write the live defect the
+  port reproduces on purpose (the flip measures the window, then
+  `scrollIntoView` chops the card's picture) into `DEBT.md` as D6; pay
+  B11's nits 2-5 in the files this batch opens.
+- In scope: `app/src/components/AddToList.svelte` (the placement
+  `$effect`: `up = false` before the `tick()`, the same first-`.btn`
+  reading with a comment naming D6, `flushSync()` before
+  `scrollIntoView`; the `onDocumentClick` comment narrowed - nit 4),
+  `tests/parity/specs.js` (`#/tables ~ a row opened, new list`, **no
+  seed**, Самоцвет Чутья; the `app.js:2718-2726` line - nit 5),
+  `docs/specs/DEBT.md` (D6, in D5's shape), `docs/specs/FEATURES.md`
+  (one clause on the card-menu bullet), `docs/specs/ROUTES.md` (one
+  sentence: unknown groups fail open - nit 2), `app/src/lib/hash.test.ts`
+  (`#/tables/nope/f_tier-1_cls-phy` takes no legacy reading - nit 3),
+  `issues/47/`.
+- Out of scope: measuring the toggle or the card (Phase 8 R3, named in
+  D6), `overflow: clip`, `RecordModal.svelte`, `RecordCard.svelte`, the
+  driver, `tests/app/` (B12), thresholds, the live files, any
+  `VISUAL_DEBT`/`ACCEPTED` figure, a fourth harness width.
+- Files expected: the six above plus `issues/47/`.
+- Steps: `plan.md`, "B11.1", steps 1-11. In one breath: preflight; the
+  effect's reset-measure-place-scroll order; the guard's comment; the
+  state; the specs line; D6; the two spec sentences; the hash case; the
+  gates with the red-first parity read; one `fix(app):` commit; the
+  handoff.
+- Acceptance criteria: `plan.md`, "B11.1", "Acceptance" - the new state
+  reads a difference at 1100 before step 2 and `совпадает` on all six
+  cells after; `#/tables ~ a row opened`, `~ a row opened, list menu`,
+  `#/i/ci1 ~ new list`, `#/tables ~ bar menu` unchanged; the guard
+  byte-identical to B11's; `git show HEAD -- app.js style.css index.html`
+  empty; thresholds held.
+- Verification commands (each one foreground call, Bash timeout 600000):
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`
+  - `set -o pipefail; npm run check:built 2>&1 | tail -n 120`
+  - red first (state registered, fix not yet applied):
+    `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables ~ a row opened, new list" 2>&1 | tail -n 60`
+  - then: `set -o pipefail; MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables ~ a row opened" "#/i/ci1 ~ new list" "#/tables ~ bar menu" 2>&1 | tail -n 120`
+    (5 states / 30 cells; `#/tables ~ a row opened` is a prefix and
+    matches its two siblings; without `MSYS_NO_PATHCONV=1` Git Bash
+    rewrites `#/i/...` and the run matches nothing - confirm each call
+    printed its cells).
+- Risks / do-nots: do not "improve" the measurement - the toggle-based
+  reading is more correct and fails parity by design; do not seed the
+  new state; keep `flushSync()` between setting `up` and the scroll; if
+  the red-first read is `совпадает` on this tree, swap the record to
+  Малое Зелье Лечения on `#/tables/core_consumable` (the second record
+  in the band) before touching the effect; a `check` that crosses 600 s
+  is re-run idle, never salvaged.
+- Fallback: none for the fix; for the state, any of the four measured
+  records that reads red at 1100 with no seed (`context.md`, "Q3
+  planning facts", table).
 
 B11's own brief is kept below only as a closed record, for anyone
 reconstructing what shipped; it is not the next batch.
@@ -3555,7 +3632,23 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
 
 ## Blockers
 
-- **OPEN - the gate cannot run on this host while it is loaded
+- **RESOLVED - the host block lifted and every gate ran green
+  (orchestrator, 2026-09-12, later the same day).** The CPU read 8 % on
+  the next session; `npm run check` completed in one foreground call
+  (41 files / 1004 tests, thresholds held), `check:built` likewise, both
+  parity calls read `совпадает` on all 60 cells, and B11 committed as
+  `73facda` / `64f9a27`. The second precedent for this block lifting on
+  its own; nothing about the batch was ever suspect. One transient to
+  know about: the first `check` attempt failed on `tests/derived.js`
+  ("заглушек устарело 506") while a peer session was mid-write in `i/` -
+  `node tests/derived.js` passed standalone immediately after and the
+  next full run was green. `i/` was never modified in git. **If that
+  failure appears with `git status -- i/` clean, re-run; do not "fix"
+  anything under `tools/` or `i/`.** The record of the block is kept
+  below.
+
+- **(the original entry, kept as the record) the gate cannot run on this
+  host while it is loaded
   (orchestrator, 2026-09-12).** `npm run check` measured ~885 s, ~840 s
   and, vitest alone, 592 s / 412 s against a 600 s foreground cap, with
   the CPU at 100 % from the owner's own applications. A backgrounded run
@@ -3566,13 +3659,22 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
   batch is suspected - the tree reads green twice over, isolation proves
   every failure was contention.
 
-- **ANSWERED IN PART by the owner (orchestrator, 2026-09-12), verbatim
-  below. Q1 is settled; Q2 is reopened as a design question and goes back
-  to the planner; Q3 is unanswered and stays optional.**
+- **CLOSED by the planner's pass (planner, 2026-09-12, later the same
+  day): Q1 settled by the owner; Q2 answered - `plan.md`, decided 2,
+  rewritten with the recommendation, the rejected list and what each
+  cannot catch; Q3 root-caused on measurement - `plan.md`, decided 7, 2b,
+  and `context.md`, "Q3 planning facts" - fixed in B11.1, the live half
+  registered as `DEBT.md` D6.** The orchestrator's record of the owner's
+  words is kept below in substance.
+- **(the orchestrator's entry, kept) ANSWERED IN PART by the owner
+  (orchestrator, 2026-09-12), verbatim below. Q1 is settled; Q2 is
+  reopened as a design question and goes back to the planner; Q3 is
+  unanswered and stays optional.**
   - **Q1 - SETTLED, as recommended.** The owner confirmed
     5 -> 6 -> 7 -> 8 with 7 and 8 as one *track* whose first batch is the
     cleanup. Do not reopen; `plan.md`, decided 8 stands as written.
-  - **Q2 - REOPENED, wider than it was asked.** The owner did not pick
+  - **Q2 - REOPENED, wider than it was asked; ANSWERED by the planner in
+    `plan.md`, decided 2 (2026-09-12).** The owner did not pick
     either option. Their words: "what would your recommendation for the
     rendering checking? parity checked only against references and if we
     would like to check something similar I guess we will need to have a
@@ -3626,6 +3728,20 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
       is a new defect report against the same component and belongs to
       the planner, for B12 or a later batch. It does not block B11's
       commit.
+    - **ROOT-CAUSED (planner, 2026-09-12) - B11.1.** Twenty-four cells
+      per app measured (4 records x 2 windows x 0/1/2 lists, real and
+      synthetic clicks): the first open is identical on both apps in
+      every cell - downward on a tall window for a short card is what the
+      live app does too, and what it then does is scroll the `overflow:
+      hidden` `.card` article by 109 px, chopping the picture (live
+      defect -> `DEBT.md` D6). The divergence is the press of "+ Новый
+      список": live flips up in 24/24 by redrawing the menu at its
+      default side and then measuring the *form's own "Создать"* (the
+      first `.btn` in `.seldrop`); the rewrite's `$effect` reads the same
+      first `.btn` from the already-flipped side and, in a 17 px band of
+      card heights, flips the menu *down* under the card's edge (7/24
+      cells, two of them at 1100x900 with no lists). No new width is
+      needed; the numbers are in `context.md`, "Q3 planning facts".
 
 - **(the original entry, kept for its wording) - three questions for the
   owner (planner, 2026-09-12); B11 needs
@@ -4220,6 +4336,51 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
 
 ## Deferred
 
+- **B11's review nits (reviewer, opus, read-only, 2026-09-12; verdict
+  approve, no blockers).** Recorded here by the orchestrator, not acted
+  on - a remediation cycle is not spent on nits. **Placed by the planner
+  (2026-09-12)**: nits 2, 3, 4 (comment only; the guard stays, the
+  `onclickcapture` variant stays the fallback) and 5 are B11.1 steps 3,
+  5, 8 and 9; nit 1 is recorded as B11's deviation in `plan.md`'s B11
+  heading paragraph and nowhere else; nit 6 was already fixed.
+  1. **Plan step 2's "non-empty tail" condition was not implemented.**
+     `decodeFilter` checks `i > 0` (non-empty head) plus group
+     membership, not a non-empty tail. Behaviourally nil - `f_frame-`
+     decodes identically either way, and the two readings diverge only
+     on shapes like `f_frame-_cls-mag` that are garbage under both.
+     `ROUTES.md` documents the code as written, so nothing is
+     mis-documented; the deviation from a "decided, do not reopen" step
+     is recorded here because it was otherwise unrecorded.
+  2. **A retired group name placed *before* a live one loses the live
+     one's narrowing.** `f_rg-melee_line-uniq` makes the whole body one
+     group named `rg`, which no table offers, so the `line` narrowing is
+     dropped and the table stays whole. Fails **open** - more rows, never
+     an empty table - which is the direction `filters.ts`'s own header
+     comment already commits to. Needs one sentence somewhere before
+     someone rediscovers it as a mystery.
+  3. **No test pins the `[]`-groups path.** `parseHash('#/tables/nope/f_tier-1_cls-phy')`
+     - plan step 3's "no table, no legacy reading" - has no case in
+     `hash.test.ts`. The one branch of the new rule that no test states
+     aloud. Cheapest of the four to close; a candidate for B12.
+  4. **The guard is broader than its justifying comment.** "A target no
+     longer in the document was inside this control at the moment it was
+     pressed" is false in general: any outside click whose target Svelte
+     removes during the flush (a filter pill's x, a toast's undo) now
+     leaves the menu open where the live app closes it. The reviewer
+     found **no reachable misbehaviour** - `RecordModal.svelte:68` and
+     `app.svelte.ts` (198/305/314) clear `menuFor` explicitly on the
+     modal-close and navigation paths - but the component's preceding
+     comment, "Any click outside `.seldrop`/`.dropmenu` closes the
+     menu", is now slightly untrue. `onclickcapture` decides "inside?"
+     before any mutation and would be exactly right. **Planner's**, to
+     fold into B12's real-click states if it wants the capture-phase
+     variant measured; not worth churning production code for on its own.
+  5. **`app.js:2724` in the `specs.js` prose points at the comment**, not
+     the code: `fDecode` starts at 2718 and the heuristic is 2725-2726.
+     Inherited from the plan's own wording.
+  6. Nit 6 (a stale "OPEN" on the host-load blocker) is **already fixed**
+     - see "Blockers", now marked RESOLVED with its record kept.
+
 - **Recorded by the Phase 5 planning pass (planner, 2026-09-12):**
   - `Icon.svelte` and `SelBar.svelte` sit at exactly 75% branches, on the
     component bar with no room; B12 adds the branch each is missing
@@ -4241,7 +4402,10 @@ pass), then Phase 6 (publish `dist/`, owner-gated), Phase 7 as R0 of the
     that opens the menu inside the modal; if CI reads a difference the
     diff image decides, and the `$effect` in `AddToList.svelte` (measure
     on open only, where `placeMenu` re-measures on every render) is the
-    first suspect.
+    first suspect. **Confirmed and narrowed (planner, 2026-09-12)**: the
+    state itself is clean (its `two` seed makes every card open up); the
+    defect is the re-measure after "+ Новый список", from the flipped
+    side - B11.1, `plan.md`, decided 7, 2b.
   - `print`'s geometry port (`tests/app/print.js`) is Phase 7's deletion
     batch, not B12's; until then parity's 54 `#/print` cells are the
     gate (decided 3).
