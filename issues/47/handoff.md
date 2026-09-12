@@ -38,6 +38,15 @@ depends on chat history.
       not a timeout), so a red `flash` under load is not a regression.
       Neither file is modified in this tree, and none of C2/C3's production
       edits touches the grid tile or the search cap.
+    - **A third run of the same check, on the same unchanged tree, failed
+      three** - the two above plus `sharedListPage.test.ts` > taking the
+      whole list > "creates a new list with the name, ids, both notes and
+      the entry meta" (`getByText('Добавлено в «Тайник»')` not found).
+      Alone: **20/20 green, 61.5 s**. **The instability is the point**: a
+      real regression fails the same way every run, and this failing set
+      grew 2 -> 3 with nothing edited between. Treat any red list from a
+      throttled run as noise, not as a defect list - and do not spend a
+      session bisecting one.
   - **So the batch is waiting on a host, not on a fix.** Substantively the
     tree passes `npm run check`. What is missing is a *captured foreground*
     run: `check-observer.mjs` arms the gate from the Bash tool's returned
@@ -89,6 +98,18 @@ depends on chat history.
     are green, and `tables.test.ts` is unmodified in this tree while no
     B12 edit touches the grid tile - which answers the peer note in
     `context.md` that asked for that case to be judged, not dismissed.
+  - **Hazard, found by walking into it: backticks inside `python -c "..."`
+    in the Bash tool are command-substituted by the shell before python
+    ever sees them.** Editing these documents means writing text full of
+    `` `npm run check` ``, and one such call ran a **stray `npm run check`**
+    and then spliced 77 lines of its own console output into `plan.md`,
+    over a paragraph committed minutes earlier. Caught by `git diff` (one
+    line removed, 77 inserted, nothing from another task) and restored from
+    the blob in HEAD. **Write the edit script to a file and run it** -
+    `python <scratchpad>/x.py` - or use a single-quoted heredoc; never
+    `python -c` with prose containing backticks. Deferred, because
+    `.claude/README.md` is a checked path and no check can pass on this
+    host: this belongs beside "Run a long check" once the throttle lifts.
   - Cleanup: a mis-rooted `vitest` invocation of mine created `app/app/`
     (a `coverage/` and a `node_modules/.vite/` under it). Removed. It was
     gitignored throughout and the tree key read `69ac83c6` before and after,
