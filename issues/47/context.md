@@ -3146,3 +3146,41 @@ consequence to the batch.
   fixed by it. It goes live with the flip. Recorded here so the decision to
   leave it is deliberate rather than overlooked; the fix belongs to a planned
   batch, not to this one.
+
+## B13 closed - the site serves the rewrite (orchestrator, 2026-09-12)
+
+The cut-over landed and is live. `https://artex-x.github.io/daggerheart-loot/`
+serves the built rewrite; `index.html`, `app.js` and `style.css` remain in the
+repository, still gated, and `git revert 9177f3b` is still the whole revert -
+that commit is one file, 82+/12-, and nothing since has touched it.
+
+Commits: `0819a73` (F1, the entry document and its checks), `9177f3b` (F2, the
+flip, `ci.yml` alone), `a004764` (the two review blockers), `515e257` (F3).
+Run `34718569245` on `9177f3b` was green in every job including `deploy`; the
+guard printed 13 published entries with no `app.js` or `style.css`, and
+`tools/check-site.mjs` passed against the live URL from inside the job and
+again on an independent read from this session.
+
+### Settled owner decisions, 2026-09-12 - do not re-decide
+
+1. **The roll re-render keeps the previous artwork on screen until the new
+   image decodes** (`RollPanel.svelte:129`, `StdPanel.svelte:157` render a
+   single `<RecordCard>` with no `{#key}`, so the `<img>` node is reused).
+   Full mechanism, measurements and the reasoning that rules out a
+   loading-strategy cause: `handoff.md`, "Deferred", item 1. **The owner has
+   decided it is not fixed as a batch of its own - it is bundled into a batch
+   that already has other work in those paths.** What remains open is the
+   content of the fix, which is the planner's: which call sites, whether
+   `{#key}` is the right instrument, and whether it is a `DEBT.md` entry or
+   work inside a batch.
+2. **B12.1's deferred nit 1 stays deferred** - a pinned bare `#/tables` is
+   accepted and silently dropped at the next boot. It shipped with the flip
+   and is still open, read-verified only.
+
+### One measured fact worth knowing before the next batch
+
+`CLAUDE.md` is at **199 lines against its own "keep this file under 200" rule**
+- one line of headroom. The B1 fix hit exactly 200 and was compressed to fit by
+dropping a clause the Architecture boundaries section already states. The next
+standing rule added to that file forces a move-out into `docs/specs/*`, and
+that is cheaper to know now than to discover mid-batch.
