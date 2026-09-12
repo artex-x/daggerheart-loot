@@ -3316,3 +3316,31 @@ R0a therefore decides each of the 18 - paid off, or carried into a
 `FEATURES.md`/`STATE.md` bullet or a `DEBT.md` section-2 entry - because
 otherwise eighteen recorded divergences disappear with the file, which is the
 same class of loss as the two dropped nits and the ten uncounted legacy suites.
+
+## Phase 7 condition 3, satisfied by evidence (orchestrator, 2026-09-12)
+
+With the soak dropped, condition 3 - "the publish path has been exercised, not
+just opened: at least three pushes to `main`, each with `deploy` green" - is
+the one that still had to be *earned*. It is now met, and these are the runs
+that prove it:
+
+| push | run | result |
+|---|---|---|
+| `9177f3b` (the flip itself) | `34718569245` | green in every job, `deploy` included |
+| `515e257` (B13's F3) | `34719879067` | green in every job, `deploy` included |
+| `ecbd2f4` (the finishing plan) | `34720438881` | green in every job, `deploy` included |
+
+Each `deploy` re-assembled `_site` from `dist/` and re-ran
+`tools/check-site.mjs` against the live URL, so the published state has been
+verified three times by CI plus once by an independent read from this session.
+
+**One thing to know before reading a run list and drawing conclusions:
+`6cb8293`'s run was `cancelled`, and that is not a failure.** The workflow's
+top-level `concurrency` is `group: pages` with `cancel-in-progress: false`,
+which protects a run already executing but allows only one run *pending* per
+group: `ecbd2f4` arrived while `6cb8293` was still queued and superseded it.
+Nothing was lost - `ecbd2f4` is the later commit on the same branch and
+contains `6cb8293`'s tree. The practical consequence is that a burst of
+doc-only pushes will cancel the intermediate runs, so **a cancelled run is not
+evidence** and must not be counted toward condition 3. Space pushes out when a
+run's own result is the thing being collected.
