@@ -6,6 +6,81 @@ depends on chat history.
 
 ## Status
 
+- Task status: **B14 is reviewed and APPROVED - the batch is closed. The next
+  cycle is a planning one: R0a is still only an outline** (reviewer, 2026-09-13,
+  on `f2dca3b`). **Verdict: approve**, and the batch's one remediation cycle is
+  **unused** - nothing in the diff was asked to change.
+  - **The three self-reported deviations were re-derived, not taken on trust,
+    and all three hold.**
+    - **C2's fallback was the right call because the plan was wrong.**
+      `App.svelte:71` dispatches routes through a single `{#if}` chain with one
+      `{:else if app.route.kind === 'tables'}` arm, and Svelte tears a branch
+      down only when the matched branch changes - so two `tables` addresses in a
+      row do **not** remount `TablesPage`. The plan's primary design
+      (`route.table ?? 'core_item'`) would have pinned `core_item` after a
+      "Таблицы"-tab click from a named table. The fallback is a faithful port:
+      `homeAllows` accepts a bare `tables` because `TAB_LIST` (`app.js:3577-3581`)
+      contains `['tables','tables']`, and `home={tablesHash(table)}` is the same
+      value `homeHash` (`app.js:1133-1136`) writes.
+    - **`canPinHome`'s deletion is correct for every caller, not most.** There
+      are exactly six `<PageHead` render sites (`AltPanel`, `ListsPage`,
+      `RollPanel`, `SearchPage`, `StdPanel`, `TablesPage`); `PrintPage`,
+      `RecordPage` and `ListPage` render none, which matters because `PrintPage`
+      shows up in a naive grep. All six are `TAB_LIST` routes, so a wired
+      `canPinHome` would have been permanently true.
+    - **`RollPanel.svelte`'s 49 lines are all designed** - the existing
+      `<RecordCard>` block re-indented by two under `{#key shown.it}`, plus an
+      eight-line comment. No behaviour beyond the planned wrap.
+    - The undesigned `typo.js` language fix is correct and strengthens the
+      suite: `LABELS` matches `dict.ts` exactly (`filters` 216/511, `addToList`
+      234/525, `note` 304/589), the per-page claims are grounded
+      (`FilterBar.svelte:69` is `{#if rows.length}`, so a facet-less table
+      genuinely draws no filter control), and the legacy `tests/typo.js` does
+      not carry the same bug - its grips are class-based.
+  - **None of the failure shapes this task has already paid for recurred.** No
+    test asserts through a directly-invoked handler: `states.js` case 14 uses
+    `d.press`, a trusted `ElementHandle.click()` that *throws* when no control
+    matches (`tests/parity/driver.js:286-318`), and `shell.test.ts`'s new case
+    uses `userEvent.click` on a node found by role. No stale citation survived
+    in `ROUTES.md`, `STATE.md`, `COVERAGE.md` or `driver.js`, surrounding prose
+    read as well as the edited lines. Acceptance lines 4 and 5 are genuinely
+    closed in code this time, and the rule C3 installed is really in **both**
+    prompt files.
+  - **One blocker, and it is the harness rather than the diff: B1 - a
+    zero-match parity filter is indistinguishable from a passing run.**
+    `tests/parity.js` uses `WANTED` only to `continue` past non-matching cells
+    (`:353`, `:374`, `:551`) and its summary prints the filter names (`:668`)
+    then `расхождений нет` and `process.exit(0)` (`:670-671`). **No cell count
+    is printed anywhere**, so a mangled filter reads exactly like a clean run -
+    which is how B14's first parity attempt looked, and it was caught only
+    because no per-cell lines scrolled past. Every parity call in the remaining
+    batches is exposed. The fix is one line at the summary: if `WANTED.length`
+    and no cell was compared, fail. **It is carried into R0a as its own
+    acceptance line**, under the rule C3 just installed, rather than through a
+    remediation cycle - the reviewer approved the diff on the strength of
+    re-running the filter logic against `specs.js` by hand and finding it
+    selects **exactly 20 states of 105**, the intended set, including
+    `#/roll/wondrous ~ pinned`, so C2's pin rendering was genuinely measured and
+    the rerun was a real gate.
+  - **Two numbers in B14's own record were wrong and are corrected in place**
+    (orchestrator, 2026-09-13): the parity rerun was **120 cells**, not 88 -
+    `LANGS` is `["ru","en"]` and `WIDTHS` is `[1100,768,375]`, so 20 states x 6
+    = 120, every one printing a line, and 88 is what survived `tail -n 120`;
+    and no banner "caught" the zero-match attempt, because the harness prints no
+    counts to read. Both corrections are made in `plan.md`'s "B14 built" and in
+    the two places this file repeated them.
+  - **Unclaimed credit, now recorded**: C1 asked the implementer to check
+    whether anything inside `RecordCard` holds DOM state live restores, and to
+    stop if so; the built record is silent. It checks out - `RecordCard.svelte:232`
+    has a refs `<details>`, and live's equivalent (`app.js:887-888`) carries no
+    `data-keep`, so `restoreOpen()` (`app.js:3769-3775`) never restores it and
+    live closes it on every rebuild. The `{#key}` therefore **removes** a
+    second, unmeasured divergence rather than creating one.
+  - Six nits are recorded in "Deferred" with a batch named for each; none was
+    fixed. NEEDS_HUMAN_CONFIRMATION: no.
+  - Next action: **plan R0a** (planner). It is an outline only - see `plan.md`,
+    "The finishing plan - every batch from here to done".
+
 - Task status: **B14 CLOSED - the roll re-render fix, the pinned bare
   `#/tables`, and all six inherited checks are landed** (implementer,
   2026-09-13). HEAD `a7f8787`, ahead of `origin/main` by three commits, none
@@ -50,9 +125,11 @@ depends on chat history.
   - Gates: `npm run check` **x3** (once per commit, all green, 1013 then 1017
     then 1017 tests), `npm run check:built` once after C2, the required
     parity filter after C2 (first attempt silently matched nothing - Git
-    Bash's path rewriting without `MSYS_NO_PATHCONV=1`, caught by the run's
-    own "not a full run" banner reading zero cells; rerun correctly, 88 cells,
-    no discrepancies), `node tests/run-all.js app/sweep` and the other four
+    Bash's path rewriting without `MSYS_NO_PATHCONV=1`, noticed because no
+    per-cell lines scrolled past, **not** caught by any banner - the harness
+    prints no cell counts, which is R0a's blocker B1; rerun correctly over the
+    intended 20 states = **120 cells**, no discrepancies. The "88 cells" this
+    line first carried was what survived `tail -n 120`), `node tests/run-all.js app/sweep` and the other four
     `tests/app/` suites after C3, both green. `git show 9177f3b | git apply
     --reverse --check -` exits 0 on the final tree.
   - Not touched, as planned: `.github/workflows/ci.yml`, `index.html`,
@@ -4538,9 +4615,10 @@ revert ends.
   then 1017, then 1017 tests); `npm run check:built` once after C2;
   `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll" "#/lists/a ~ roll panel"
   "#/lists/a ~ rolled"` after C2 (the first attempt, without the env var, had
-  its arguments rewritten by Git Bash and matched zero cells - caught by the
-  run's own banner, not assumed passing; rerun correctly, 88 cells, no
-  discrepancies); `node tests/run-all.js app/sweep` and the other four
+  its arguments rewritten by Git Bash and matched zero cells - noticed
+  because no per-cell lines scrolled past, **not** caught by a banner (the
+  harness prints no counts - blocker B1, carried into R0a); rerun correctly
+  over the intended 20 states = **120 cells**, no discrepancies); `node tests/run-all.js app/sweep` and the other four
   `tests/app/` suites after C3, both green. `git show 9177f3b | git apply
   --reverse --check -` exits 0 on the final tree.
 - Not touched, as planned: `.github/workflows/ci.yml`, `index.html`,
@@ -5597,6 +5675,42 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **From B14's review (reviewer, 2026-09-13) - six nits, each with a batch.**
+  None was fixed; none justifies a remediation cycle. Blocker B1 (a zero-match
+  parity filter cannot be told from a passing run) is **not** in this list - it
+  is an acceptance line of R0a, recorded in "Status" above.
+  1. **`isHome` is now dead in production (R0a).**
+     `app/src/state/app.svelte.ts:448-450` - `PageHead` was its only consumer
+     and C2 replaced that read with its own `on`. A grep across `app/src/`
+     finds the getter and nothing else; only `app.test.ts` still calls it.
+     This is the exact condition that justified deleting `canPinHome` in the
+     same commit, and `CLAUDE.md` says "add no export before something uses
+     it". Delete it with its three test assertions, or state why it stays.
+  2. **`states.js` case 14 can pass vacuously (R0a).**
+     `tests/app/states.js:369-372` marks the image under `if (img)` with no
+     assertion that anything was marked; if `.results .card-media img` ever
+     stops matching, the first loop iteration reads `replaced === true` and the
+     case passes green. The roll-button guard covers a missing route but not a
+     renamed card selector. This is the same silent-grip class C3 fixed in
+     `typo.js`, introduced in the same batch. One `ok(marked, ...)` closes it.
+  3. **`EXPECTED[hash] ?? []` re-opens a smaller silence (R0a).**
+     `tests/app/typo.js:113` - a page added to `PAGES` without an `EXPECTED`
+     row expects nothing and says nothing. The key sets align today; assert
+     that the table covers `PAGES`.
+  4. **`FEATURES.md:156` still says "nine sections or any table by name"
+     (R0b/R0c).** `ROUTES.md`'s identical "nine a person may pin" claim was
+     corrected in `af7fa17`; the parallel line in `docs/specs/FEATURES.md` was
+     not touched in the same commit. Defensible as a reader-side statement, but
+     it is the same sentence the batch went to correct.
+  5. **RESOLVED at closeout, kept for the record**: the "88 cells" in B14's
+     built record was a `tail -n 120` artifact, not a measurement. Corrected to
+     120 in `plan.md` and in both places this file repeated it, along with the
+     claim that a banner caught the zero-match run. No batch needed.
+  6. **This file's `## Verification` section holds only B11 evidence (R0a, or
+     at any close).** B14's commands and results live in the "Status" block and
+     in `plan.md`, which meets the content requirement, but the section heading
+     now misleads a cold reader. A pointer line would do.
 
 - **OPEN, and dropped once already: B12's nit 1 and nit 2b** (planner,
   2026-09-12). Both were marked "PLACED ... go to **B13**" in the entry further

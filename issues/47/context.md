@@ -3375,3 +3375,46 @@ Measured, not remembered, before the dispatch:
   already been changed, so nothing was edited and no per-dispatch model
   argument was needed. B14 also needs no planning pass - it was left
   implement-ready by the 2026-09-12 planner.
+
+
+## B14 closed and approved, and the three durable facts it produced (orchestrator, 2026-09-13)
+
+B14 landed as `6b18291` (C1, the roll surface), `af7fa17` (C2, the pinned home)
+and `a7f8787` (C3, the inherited checks), with `b86dffd` and `f2dca3b` as the
+records. Reviewed at Opus: **approve, no blockers in the diff, the remediation
+cycle unused.** Nothing here is pushed - the owner pushes.
+
+Three facts are worth carrying forward. Read them before planning R0a; two of
+them change what a batch has to do.
+
+1. **A parity filter that matches nothing is indistinguishable from a passing
+   run, and this is a live hazard for every remaining batch.**
+   `tests/parity.js` uses `WANTED` only to `continue` past non-matching cells
+   (`:353`, `:374`, `:551`); the summary prints the filter names (`:668`), then
+   `расхождений нет` and `process.exit(0)` (`:670-671`). **No cell count is
+   printed anywhere.** B14's first parity call had its `#/roll` arguments
+   rewritten into filesystem paths by Git Bash, matched zero cells, and looked
+   exactly like a clean pass - it was noticed only because no per-cell lines
+   scrolled past. Two consequences:
+   - **On this host, a parity filter containing `#/...` needs
+     `MSYS_NO_PATHCONV=1`** in front of the command.
+   - **R0a carries the fix as its own acceptance line**: if `WANTED.length` and
+     no cell was compared, fail the run. One line at the summary.
+2. **Svelte does not remount a page component between two addresses of the same
+   route kind.** `App.svelte:71` dispatches through a single `{#if}`/`{:else if}`
+   chain with one `{:else if app.route.kind === 'tables'}` arm, and a branch is
+   torn down only when the *matched branch* changes. So `TablesPage`'s
+   `lastTable` (`TablesPage.svelte:68-74`) survives a move between two `tables`
+   addresses and is what is genuinely on screen. B14's plan assumed the
+   opposite and its primary design would have pinned the wrong table; the
+   fallback shipped instead. **Any future design that reasons about mount
+   lifecycle across routes has to check the branch, not the address.**
+3. **`RecordCard` holds no DOM state that live restores**, so keying it is
+   safe. `RecordCard.svelte:232` has a refs `<details>`, but live's equivalent
+   (`app.js:887-888`) carries no `data-keep`, so `restoreOpen()`
+   (`app.js:3769-3775`) never restores it and live closes it on every rebuild.
+   C1's `{#key}` therefore removed a second, unmeasured divergence rather than
+   creating one.
+
+Six review nits are in `handoff.md`, "Deferred", each named to a batch - four
+of them R0a's.

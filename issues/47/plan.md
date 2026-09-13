@@ -14593,9 +14593,14 @@ criteria and the closing record.
 - `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll" "#/lists/a ~ roll panel"
   "#/lists/a ~ rolled"` after C2 - **the first attempt, without the env var,
   had its arguments rewritten by Git Bash into filesystem paths and matched
-  nothing**; confirmed by the run itself only printing the "not a full run"
-  banner with zero cells read, then rerun correctly: 88 cells across 20
-  states read, `расхождений нет` (no discrepancies).
+  nothing**; noticed because no per-cell lines scrolled past, then rerun
+  correctly over the intended 20 states, `расхождений нет` (no
+  discrepancies). **Two corrections the reviewer made to this line
+  (2026-09-13), both standing**: the run was **120 cells**, not 88 - 20 states
+  x 2 languages x 3 widths, and every one prints a line, so 88 is simply what
+  survived `tail -n 120`; and the zero-match attempt was **not** caught by a
+  banner - the harness prints no cell counts at all, which is the hazard
+  carried into R0a as blocker B1.
 - `node tests/run-all.js app/sweep` after C3: four widths, ~571s, all green.
 - `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` after
   C3: all four green, ~254s slowest (`app/contracts`).
