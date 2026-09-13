@@ -6118,7 +6118,7 @@ cut-over, replanned".
 - **From R0a's review (reviewer, 2026-09-13) - four nits, none fixed.** R0a is
   mid-plan, so these defer rather than earning a remediation cycle; the two
   blockers the same review raised were documentation and are **fixed** in
-  `dee87f1`. Each nit is cheap, local and inside paths a later batch reopens.
+  `530aa10`. Each nit is cheap, local and inside paths a later batch reopens.
   1. **`golden.js`'s `--only=` comment is wrong in the safe direction (R0b).**
      `tests/app/golden.js:438-443` and acceptance line 19 both say `--only=`
      suppresses the missing-golden guard. It does not: the `!fs.existsSync`
