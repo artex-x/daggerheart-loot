@@ -6,6 +6,137 @@ depends on chat history.
 
 ## Status
 
+- Task status: **in_progress. R0a is built - three commits on `main`, none
+  pushed** (implementer, 2026-09-13, on `47a9a15`). Last agent: implementer.
+  NEEDS_HUMAN_CONFIRMATION: **yes** - push the three commits and read CI; this
+  session was explicitly told not to push. Branch `main`, base `47a9a15`
+  (`b0545ed` C1, `30b2744` C2, `47a9a15` C3, on top of `29eae18`).
+  - **All twenty acceptance lines have an outcome** - nineteen closed, line 20
+    (CI's wall-clock delta for the new `golden` job) explicitly open and named
+    to this push, not a footnote. Full disposition, every command and result,
+    every deviation: `plan.md`, **"R0a built: the format revision, and all
+    three commits landed"**.
+  - **The coordinator's mid-batch correction, carried forward**: a `npm run
+    check` reading of 937s was two check runs racing on one tree (the
+    coordinator's own foreground attempt collided with this session's
+    backgrounded one); the gate's real cost, alone on the host, is **147s**.
+    Never run `npm run check` beside a `golden` shard or a second `check`.
+  - **Acceptance line 17 closed on the true numbers, not the plan's predicted
+    317**: `_tables_eq_weapon.txt`'s two elided groups are 321 (checkbox) and
+    318 (button) - `.fcount` (317) counts catalogue rows only; the groups also
+    fold in the table's per-tier select-all checkboxes and its "Ссылка на
+    таблицу" button, which share a signature with a plain row and are never
+    hidden (both survive as kept "first two" lines). Not a bug in rule A -
+    read directly, not adjusted. `_search_capped.txt` matches the plan's own
+    prediction exactly (296 of 300).
+  - Next action: **the coordinator pushes and reads CI** (per their own
+    instruction), then either closes R0a on a green `golden` job or returns a
+    red one to this task. After that: **R0b -> R0c**, `plan.md`, "The
+    finishing plan".
+
+- Task status: **in_progress. R0a's golden format is revised and C1 is
+  implement-ready again** (planner, 2026-09-13, on `29eae18`). Last agent:
+  planner. NEEDS_HUMAN_CONFIRMATION: **no** - the size question that was raised
+  as the owner's is answered below, and the answer makes it a design call rather
+  than an owner's one. Branch `main`, base `29eae18`; `dist/` is still
+  byte-identical to the warranted `32926a0`, so warrant `34747570250` still
+  covers the re-seed and **no new warrant is needed**.
+  - **The decision.** 5.2 MB is refused, but not for its bytes - 5.2 MB is 8% of
+    a 63.4 MB tracked tree that already carries 29 MB of `img/` and 4 MB of
+    `i/`. It is refused because **14,720 of the corpus's 40,361 lines carry an
+    accessible name longer than 64 characters**, running to 1023, and those are
+    catalogue strings `data.js` owns: adding a source would rewrite hundreds of
+    thousand-character lines in a file whose whole value is that a person reads
+    its `git diff`. Two local rules replace it, neither naming a state:
+    **same-shape sibling elision** on the tree (group a node's children by a
+    signature of role + attribute *values* + child shape, names excluded; more
+    than five in a group keeps the first two and last two and writes
+    `... button x313 of 317 same-shape siblings elided`) and a **64-code-point
+    cap** on every name with `namelen`/`namehash` appended. Replayed over the
+    seeded corpus: **5.20 MB -> ~1.50 MB, 40,361 -> 24,346 lines**, largest file
+    372 KB -> 89 KB. Full design, the three safety arguments and the four
+    rejected alternatives: `plan.md`, **"Decided 1, revised: what a golden
+    captures for the largest states"**.
+  - **Acceptance line 2's gate moves from 4 MB to 2 MB**, because 1.50 MB is now
+    a measurement rather than an estimate.
+  - **Acceptance line 3 is rewritten around the measured cost.** The backgrounded
+    comparison landed green - exit 0, 105 states, zero differences, 1005 s - so
+    the capture *is* reproducible; what it proved is kept, and the shape of the
+    gate changes instead. A comparison at 1005 s cannot fit the 600 s foreground
+    cap at any capture size, so the suite gains `--shard=n/of` (`parity.js`'s own
+    grammar) and the proof is **eight foreground calls at ~250 s each**: seed
+    four shards, compare four shards. The 2.4x seed-to-compare gap is
+    **instrumented, not theorised** - the suite prints `съёмка: Xs из Ys` so the
+    next run says whether it is the browser or the compare path.
+  - **`.github/workflows/ci.yml` moves into scope**, deliberately: bolting a
+    7-17 minute suite onto the 11m51s `check` job would make it the workflow's
+    critical path. It gets its own 4-shard job beside `parity`'s, and
+    `ci.yml:51` becomes `--exclude=parity,app/golden`.
+  - **Kept, not rebuilt**: `tests/app/inventory.js` (verified, and it carries
+    `specs.js`'s `NAME` too - see below) and `tests/app/golden.js` (Decided 1-2,
+    plus the `timed`-state `return await` fix). Only `golden.js` is amended;
+    `tests/app/snapshots/` is deleted and re-seeded because the format changed.
+  - Next action: **resume R0a's C1** (implementer) at "What C1 becomes" in the
+    revised plan section. Nothing is committed; stage by path and preserve
+    `issues/tg-preview-refresh/`.
+
+- Task status: **blocked. R0a's C1 stopped at its own size gate, nothing
+  committed** (implementer, 2026-09-13, on `29eae18`). Last agent:
+  implementer. NEEDS_HUMAN_CONFIRMATION: **yes** - a planner-level call on the
+  golden format's size is owed before this batch can continue. Branch `main`,
+  base `29eae18` (three `.md`-only commits ahead of the `32926a0` the seeding
+  warrant covers; `dist/` built from either is byte-identical, so the warrant
+  still holds).
+  - Built through C1's steps 1-5 exactly (`plan.md`, "R0a built: stopped at
+    C1's own size gate, nothing committed" - full detail, every command and
+    result, there). In short: step 0's warrant (`34747570250`) verified green
+    first-hand; `npm run build`; `tests/app/inventory.js` and
+    `tests/app/golden.js` written; the goldens seeded (`node tests/app/golden.js
+    --update`, one real bug found and fixed along the way - a `finally`
+    closing the browser context before an unawaited snapshot promise had
+    settled, a puppeteer `TargetCloseError` on the first attempt).
+  - **Stopped, not failed**: `tests/app/snapshots/` is 105 files at **5.2 MB**,
+    over the plan's own 4 MB line (estimated 1.5-2.5 MB; the estimate's seven
+    sample routes did not include the biggest tables - `eq_weapon` at 317
+    records, `voa`, or the 300-match search cap). Read directly: the size is
+    genuine accessible-name content (a table row's button name is its whole
+    stat line), not a normalisation bug - `plan.md`'s built record has the
+    file-by-file reading. **Nothing in `ACCEPTED`/`VISUAL_DEBT`/specs.js/
+    FEATURES.md/COVERAGE.md/parity.js/the hooks/app.svelte.ts/states.js/typo.js
+    was touched** - C1 never reached its own step 6, and C2/C3 were not
+    started.
+  - **One deviation from the plan's own measured facts, not from its design**:
+    `tests/app/inventory.js` also copies `specs.js`'s `NAME` dictionary
+    (lines 91-185) - sixteen of `STATES`' `enter` closures call `NAME.ru.*`/
+    `NAME[lang]`, which the plan's five-name list (`context.md`, "R0a planning
+    facts") did not enumerate. The rule that governs it ("exactly the
+    module-level constants it reads") already covers this; only the
+    enumeration was short by one name. Verified independently by loading the
+    module and reproducing `context.md`'s own seven measured numbers (105
+    states, 0 pending, 61 `enter`, 24 `storage`, 7 `timed`, 5 `whole`) exactly.
+  - **Acceptance line 3 (two green `node tests/app/golden.js` runs on an
+    unchanged `dist/`) is evidenced but not formally closed**: the seed run
+    (`--update`) reports `сравнено состояний: 105`, exit 0, 414.6s. The plain
+    comparison run crossed the Bash tool's 600s foreground cap, was moved to
+    the background, and finished on its own - **exit 0, 105 states, zero
+    differences**, real 16m45.678s. The goldens *are* reproducible (that is
+    the claim this line checks for), but the run itself does not satisfy the
+    "one foreground call" shape the gate needs to count, the same rule
+    `npm run check` already carries. A fresh, uninterrupted foreground pass is
+    still owed, on a less contended host, once the size question below is
+    settled and worth paying for again.
+  - The three new, **uncommitted** paths are `tests/app/inventory.js`,
+    `tests/app/golden.js`, `tests/app/snapshots/` (105 files) - left in the
+    working tree for the next session to build on rather than discarded.
+    `issues/tg-preview-refresh/` (another task's) and the `.md`-only history
+    on top of `32926a0` are untouched.
+  - **Next action is the owner's, not a re-dispatch of R0a as planned**:
+    decide whether 5.2 MB is the accepted cost of a faithful golden of this
+    catalogue, or whether Decided 1's format needs a narrower capture for the
+    largest tables (a real design change, the planner's to make) - then
+    resume at C1 step 5's determinism proof (a clean foreground run) and step
+    6 onward.
+
 - Task status: **in_progress. R0a is planned and implement-ready** (planner,
   2026-09-13, on `32926a0`). Last agent: planner. NEEDS_HUMAN_CONFIRMATION:
   **no**. Branch `main`, base `32926a0`, level with `origin/main`.
@@ -3288,6 +3419,26 @@ elsewhere, on purpose:
 
 R0a appends its own commands and results under this heading when it closes.
 
+### R0a's own commands and results (implementer, 2026-09-13)
+
+Full write-up, every deviation, and the disposition of all twenty acceptance
+lines: `plan.md`, **"R0a built: the format revision, and all three commits
+landed"**. In one breath: three commits (`b0545ed`, `30b2744`, `47a9a15`),
+none pushed; `npm run check` x3 (one per commit, all exit 0, 1017 tests,
+96.6/88.55/97.03/97.3); `npm run check:built` once; eight
+`node tests/app/golden.js --update|compare --shard=n/4` calls re-seeding the
+goldens in the revised format (105 files, 1.58 MB, all eight green); four more
+`--shard=n/4` comparison calls after C3 (105/105, zero differences,
+proving the `isHome` deletion drew nothing); `node tests/run-all.js app/sweep`
+(593.5s, backgrounded past the 600s cap by its own documented cost, all four
+widths green); `node tests/run-all.js
+app/contracts,app/states,app/typo,app/hues` (260.4s, all green); both B1
+demonstrations (`MSYS_NO_PATHCONV=1 node tests/parity.js "no-such-state"`
+exits 1, `"#/lists ~ created"` exits 0 printing 6 cells);
+`git show 9177f3b | git apply --reverse --check -` exits 0, checked twice.
+Line 20 (CI's wall-clock delta) is **open**, named to the coordinator's own
+push - it cannot be measured before that run exists.
+
 ### B11's evidence, and why it is not a gate (orchestrator, 2026-09-12)
 
 Four runs, all on the B11 working tree at base `9e3d19f`. Read them as
@@ -4649,19 +4800,30 @@ is new, so inspect its diff image before writing any entry, and write no
   contains, how the 105 states are carried, how each of the 18 `VISUAL_DEBT`
   entries and all 10 `ACCEPTED` reasons are dispositioned, and why no public
   contract moves. Do not re-derive those.
+- **Then read `plan.md`, "Decided 1, revised: what a golden captures for the
+  largest states"** (planner, 2026-09-13, after the seed measured 5.2 MB). It
+  replaces Decided 1's capture format with two extra rules, moves the size gate
+  to 2 MB, adds `--shard=n/of`, and puts `ci.yml` in scope. **Where the two
+  disagree, the revision wins.** C1's steps 1-4 are already built and are kept;
+  the batch resumes at "What C1 becomes".
 
 **Preflight** (measured by the orchestrator and the planner this session; do not
 re-measure, but do re-read `git log --oneline -3` and `git status` before
 writing):
 
-- HEAD `32926a0` on `main`, **level with `origin/main`** - B14's three code
-  commits are pushed, which corrects the older lines in this file saying nothing
-  was.
-- The working tree is **not clean**: four tracked files are modified
-  (`.claude/README.md`, `.claude/agents/planner.md`,
-  `.claude/prompts/orchestrate.prompt.md`, `issues/47/context.md`) and
-  `issues/tg-preview-refresh/` is untracked. None of them is this batch's.
-  **Preserve all five; never `git add -A`; stage by path.**
+- **Superseded 2026-09-13 by the format revision** - HEAD is now `29eae18`, three
+  `.md`-only commits past `32926a0`. `dist/` built from either is byte-identical,
+  so warrant `34747570250` still covers the re-seed. The two bullets below are
+  kept because their *rule* still applies, with their contents corrected:
+- HEAD `29eae18` on `main` (was `32926a0` when this batch was first written).
+  B14's three code commits are pushed.
+- The working tree is **not clean**, but differently from how this block first
+  read: the four `.claude/` and `context.md` edits are now committed. What is
+  uncommitted is `issues/47/plan.md` and `issues/47/handoff.md` (this revision),
+  the three new untracked paths this batch owns (`tests/app/golden.js`,
+  `tests/app/inventory.js`, `tests/app/snapshots/`), and
+  **`issues/tg-preview-refresh/`, which is another task's**. Re-read
+  `git status` yourself; **never `git add -A`; stage by path.**
 - **A second interactive session shares this working tree.** This planning pass
   was document-only and safe beside it. The implementer's gates are not: check
   `test-output/parity.lock` and `git status` before any parity or vitest run,
@@ -4676,9 +4838,12 @@ Green -> proceed and name the id in C1's commit message. Not green -> **stop and
 raise**. Run `34721165294` on `37c5c2f` is green and full but predates B14's
 three code commits and is **not** an adequate substitute.
 
-**In scope:** `tests/app/inventory.js` (new), `tests/app/golden.js` (new),
-`tests/app/snapshots/*.txt` (new, 105), `tests/run-all.js`,
-`.claude/hooks/edit-guard.mjs`, `.claude/hooks/selftest.mjs`,
+**In scope:** `tests/app/inventory.js` (new, **written and verified - keep it**),
+`tests/app/golden.js` (new, **written - amend it, do not rewrite**),
+`tests/app/snapshots/*.txt` (new, 105 - **delete and re-seed: the format
+changed**), `tests/run-all.js`, **`.github/workflows/ci.yml`** (moved in by the
+revision - the suite gets its own 4-shard job rather than 17 minutes bolted onto
+`check`), `.claude/hooks/edit-guard.mjs`, `.claude/hooks/selftest.mjs`,
 `docs/specs/COVERAGE.md`, `docs/specs/FEATURES.md`, `tests/parity/specs.js`
 (comments only), `tests/parity.js`, `docs/parity.md`,
 `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
@@ -4687,7 +4852,7 @@ three code commits and is **not** an adequate substitute.
 **Out of scope, and a stop-and-raise if it looks necessary:** any deletion;
 any value change in `ACCEPTED` or `VISUAL_DEBT`; `docs/fixtures/`,
 `tests/contracts.js`, `docs/specs/CONTRACTS.md`, `llms.txt`,
-`.github/workflows/ci.yml`, `index.html`, `app.js`, `style.css`; re-homing
+`index.html`, `app.js`, `style.css`; re-homing
 `tests/parity/driver.js` (R0b's); the fifteen legacy suites (R0b's); `print`'s
 geometry port (R0b's).
 
@@ -4695,20 +4860,40 @@ geometry port (R0b's).
 C1 the goldens (seeded from the warranted tree, so C3's `isHome` deletion is
 then proved harmless by C1's own instrument), C2 the sweep, C3 the inherited
 checks and the B1 harness fix. The per-commit step list is `plan.md`, "The
-commits".
+commits" - **except C1's, which resumes mid-flight**: its steps 1-4 are already
+built and verified (warrant, `npm run build`, `inventory.js`, `golden.js`), so
+C1 starts at `plan.md`, **"What C1 becomes"** - amend `golden.js` with the two
+rules, `--shard`, and the `съёмка:` line; delete and re-seed
+`tests/app/snapshots/`; then the original steps 6-8 plus the `ci.yml` job.
 
-**Acceptance criteria** - sixteen lines, and **the batch may not be recorded
-closed while any one of them has no outcome** (`plan.md`, "A placement has to be
-acceptance, not a footnote"). Numbers 11-16 are inherited items, each here as
-its own line rather than as a cross-reference:
+**Acceptance criteria** - **twenty** lines (sixteen, of which 2 and 3 are
+amended by the format revision, plus four the revision adds), and **the batch may
+not be recorded closed while any one of them has no outcome** (`plan.md`, "A
+placement has to be acceptance, not a footnote"). Numbers 11-16 are inherited
+items, each here as its own line rather than as a cross-reference; 17-20 come
+from `plan.md`, "Decided 1, revised":
 
 1. `gh run view 34747570250`'s conclusion recorded, and the id named in C1's
-   commit message.
-2. `tests/app/snapshots/` holds exactly 105 `.txt` files, one per inventory
-   state, four sections each; the total size is recorded; over 4 MB stops to
-   raise rather than commits.
-3. `node tests/app/golden.js` run twice on the same unchanged `dist/`, both
-   green, both reporting 105 states compared, recorded verbatim.
+   commit message. **Already satisfied and recorded** (every job green,
+   `plan.md`, "R0a built", step 0); `dist/` is still byte-identical to that tree,
+   so it carries over to the re-seed and no new warrant is taken.
+2. **AMENDED.** `tests/app/snapshots/` holds exactly 105 `.txt` files, one per
+   inventory state, four sections each; the total size is recorded; **over 2 MB**
+   stops to raise rather than commits. The gate moved from 4 MB because the
+   revised format replays at **1.50 MB** over this very corpus - a measurement,
+   not an estimate - so 2 MB is headroom for the real capture and still stops a
+   format that has gone wrong. The previous 5.2 MB seed is **deleted**, not
+   migrated.
+3. **AMENDED.** Every state is captured twice on the same unchanged `dist/` and
+   the second capture compares byte-equal to the first, taken as **eight
+   foreground calls**: `--update --shard=n/4` four times, then `--shard=n/4` four
+   times, all eight green and together reporting 105 states. Each call's wall
+   clock and its `съёмка: Xs из Ys` line are recorded verbatim. The old "twice,
+   both compared" shape is dropped, not deferred: a comparison measured 1005 s
+   and cannot fit the 600 s foreground cap at any capture size, and the third
+   capture it asked for re-reads an instrument whose second reading already
+   agreed. The evidence that the capture reproduces is already banked (exit 0,
+   105 states, zero differences, 1005 s) and is cited in the built record.
 4. The three refusals demonstrated and then restored: a deleted `.txt` fails
    "missing", an orphan `.txt` fails "stale", `--only=no-such-state` fails
    "selected nothing".
@@ -4746,24 +4931,69 @@ its own line rather than as a cross-reference:
     line (**written in this planning pass**; confirm it survived the batch's
     edits) and R0a's own commands and results are appended under it.
 
+Added by the format revision, each its own line:
+
+17. **Rule A is demonstrated on the two states it was designed against, by
+    reading the seeded file, not by assertion.** `_tables_eq_weapon.txt` carries
+    a `... button x<N> of 317 same-shape siblings elided` line whose total is
+    317, and `_search_capped.txt` carries one whose total is **300** alongside a
+    surviving `checkbox "Выбрать все (300)"`. Both totals are quoted in the built
+    record. A ticked row is demonstrated **not** to be elided:
+    `_tables_a_row_ticked.txt` keeps its `checkbox "Выбрано" [checked=true]` and
+    its `checkbox "Selected" [checked=true]` in full, one of each, exactly as the
+    5.2 MB seed has them at lines 46 and 311 - a different attribute value means
+    a different signature, so the one ticked row can never fold into the run of
+    unticked ones.
+18. **Rule B is fail-closed, demonstrated not asserted.** Change one character
+    **past position 64** of one long name locally (in `dist/`, or by hand in a
+    golden), run that state's shard, and the run fails on a changed `namehash`.
+    Restore before committing. `namelen`/`namehash` appear **only** on lines the
+    cap fired on.
+19. **`--shard=n/of` behaves like `parity.js`'s.** Four shards together compare
+    105 states and no state twice (`node -e` over the inventory's indices is
+    enough); a malformed or out-of-range `--shard` **throws**; and `--shard`
+    suppresses **neither** the missing-golden nor the stale-file guard - only
+    `--only=` does. Demonstrated: an orphan `.txt` still fails a sharded run.
+20. **CI's wall clock does not grow.** `ci.yml:51` reads
+    `--exclude=parity,app/golden`; a `golden` job with `matrix.shard: [1, 2, 3,
+    4]` exists beside `parity`'s, with the same failure-artifact upload;
+    `tests/run-all.js` carries four `app/golden` rows. The first post-push run's
+    per-job durations are recorded and compared against `34747570250`'s
+    (`check` 11m51s, `parity (3)` 10m32s) - the built record states the delta.
+
 **Verification commands**, one foreground call each, with costs in `plan.md`,
-"Gates, and what each costs". **No local full parity run** - CI's four shards
-are the read:
+"Gates, and what each costs" and the revision's run-cost section. **No local full
+parity run** - CI's four shards are the read:
 
 ```text
 set -o pipefail; npm run check 2>&1 | tail -n 120     # once per commit, timeout 600000
 npm run check:built                                   # once, in C1
-node tests/app/golden.js                              # twice in C1, once after C3
+rm -rf tests/app/snapshots                            # the format changed
+node tests/app/golden.js --update --shard=1/4         # then 2/4, 3/4, 4/4  (~250s each)
+node tests/app/golden.js --shard=1/4                  # then 2/4, 3/4, 4/4  (~250s each)
+node tests/app/golden.js --shard=1/4                  # then 2/4, 3/4, 4/4 again after C3:
+                                                      # C1's own instrument is what proves
+                                                      # C3's isHome deletion drew nothing
 node tests/run-all.js app/sweep
 node tests/run-all.js app/contracts,app/states,app/typo,app/hues
 MSYS_NO_PATHCONV=1 node tests/parity.js "no-such-state"        # must exit 1
 MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists ~ created"    # must exit 0, 6 cells
 ```
 
-**Risks / do-nots:** do not seed the goldens from an unwarranted tree; do not
+**Never call `node tests/run-all.js app/golden` in the foreground**: it runs all
+four shards serially in one process, ~1000 s, past the cap. Locally, call the
+shard directly; CI runs the four in parallel as its own job.
+
+**Risks / do-nots:** do not seed the goldens from an unwarranted tree - and note
+that the moment any **non-document** commit lands before the re-seed, warrant
+`34747570250` stops covering `dist/` and a fresh green run is owed; do not
 substitute an older green run; do not regenerate a golden to make a
 non-reproducible state go quiet (name it and exclude it in code with the reason,
-or report it); do not delete anything; do not `git add -A`.
+or report it); do not delete anything **except `tests/app/snapshots/`, which the
+format change requires be re-seeded from empty**; do not `git add -A`; do not
+widen either new rule to buy bytes - rule A's signature must keep attribute
+*values* and rule B's hash must cover the *whole* name, or both stop being
+fail-closed.
 
 After R0a: **R0b -> R0c**, outlined in `plan.md`, "The finishing plan"; **R0c
 needs the owner's go** and is where the one-file revert ends.
@@ -5152,6 +5382,23 @@ Phase 7, for the unchanged reason. The order is
 cut-over, replanned".
 
 ## Blockers
+
+- **CLOSED by the planner (planner, 2026-09-13): "is 5.2 MB the accepted cost of
+  a faithful structural golden of this catalogue?"** Answered **no**, and the
+  reason is churn rather than bytes - 14,720 of 40,361 lines carry a name over 64
+  characters, so a content edit rewrites an unreadable diff and the instrument
+  stops being read. Two local rules replace the format and take the corpus to
+  ~1.50 MB / 24,346 lines, measured by replaying them over the seed itself. The
+  size gate moves 4 MB -> 2 MB. **Not escalated to the owner**: at 1.5 MB the
+  addition is 2.4% of a 63.4 MB tree and smaller than the already-committed `i/`,
+  which puts it inside the planner's remit. Design: `plan.md`, "Decided 1,
+  revised: what a golden captures for the largest states".
+- **CLOSED in the same pass: "acceptance line 3 cannot be taken in one foreground
+  call."** True as written and true at any capture size - a comparison measured
+  1005 s against a 600 s cap - so the line is rewritten rather than waived. The
+  suite gains `--shard=n/of` and the proof becomes eight ~250 s foreground calls.
+  The 2.4x seed-to-compare gap is unexplained by the compare path's own work and
+  is **instrumented** (`съёмка: Xs из Ys` on every run) rather than guessed at.
 
 - **RESOLVED - the host block lifted and every gate ran green
   (orchestrator, 2026-09-12, later the same day).** The CPU read 8 % on
@@ -5856,6 +6103,17 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **PLACED for R0c: `golden` must join `deploy`'s `needs:` list (implementer,
+  2026-09-13).** R0a gave the structural goldens their own four-shard CI job
+  (`ci.yml`, `golden`, mirroring `parity`), but `deploy`'s `needs:` -
+  `[check, audit, secrets, parity]` - is untouched, on the coordinator's own
+  instruction: B13 fenced `deploy` off while `git revert 9177f3b` is the
+  safety net, and R0c already owns that job's rewrite (N3, N5, dropping
+  `parity`). Until R0c adds `golden` there, a red `golden` job does **not**
+  block a publish - the same "a check quietly stops checking" class R0a exists
+  to close, now open on the other side of the workflow. R0c's own step list
+  needs this line, not a rediscovery.
 
 - **PLACED as acceptance lines of R0a (planner, 2026-09-13).** All five open
   B14 nits below and blocker B1 are now **numbered acceptance criteria** in

@@ -3505,7 +3505,10 @@ reduced motion, 1100x900). Do not re-derive.
 - **Normalised tree sizes** (nodes / bytes of text): `#/tables` 164 / 25.9k,
   `#/search?q=` 90 / 6.5k, the nine-card print sheet 173 / ~10k,
   `#/roll/wondrous` 44 / 3.2k, `#/i/ci1` 39 / 2.6k, `#/lists` 36 / 2.5k.
-  Estimated 1.5-2.5 MB over 105 states x 2 languages.
+  Estimated 1.5-2.5 MB over 105 states x 2 languages. **SUPERSEDED: the real
+  seed is 5,204,669 bytes; the seven routes here miss `eq_weapon` (317), `voa`
+  and the 300-match search cap. See "R0a's golden format, measured and revised",
+  at the end of this file.**
 - **`VISUAL_DEBT`'s 18 entries are one mechanism, not eighteen decisions.**
   Three states (`#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal`,
   `#/tables ~ a row opened`) x 6 cells, all 0.02 / 0.03 / 0.07%, every reason
@@ -3527,6 +3530,8 @@ reduced motion, 1100x900). Do not re-derive.
   constants `STATES` reads are the print routes (`specs.js:28-56`), `PACKED`
   (:70), `NOTES_BOTH_KINDS`, `QTY_AND_PRICE`, `LOOT` and the storage seeds
   (:1017-1067); `EQUIPMENT_ENTRY` belongs to `SPECS` and does not travel.
+  **This list is one short: `NAME` (:91-185) travels too** - sixteen `enter`
+  closures call it. Measured and verified; see the revision section at the end.
 - **`tests/app/lib.js` imports `makeDriver`/`prepare` from
   `../parity/driver.js`.** R0c's outline says it deletes `tests/parity/` whole;
   `driver.js` is live code with four (soon five) dependants under `tests/app/`
@@ -3556,3 +3561,79 @@ built from this tree is byte-identical to `dist/` built from `32926a0` and the
 warrant covers what the goldens actually capture. If any non-document commit
 lands before the goldens are seeded, the warrant no longer covers the tree and
 a fresh green run is needed.
+
+## R0a's golden format, measured and revised (planner, 2026-09-13) - durable, supersedes the size estimate above
+
+The seed was built to Decided 1 and measured. Everything here is a measurement of
+the real corpus or of the app, not an estimate. Full reasoning in `plan.md`,
+**"Decided 1, revised: what a golden captures for the largest states"**.
+
+- **The 1.5-2.5 MB estimate in "R0a planning facts" is wrong and is superseded.**
+  The seed is **5,204,669 bytes over 105 files, 40,361 section lines**. The seven
+  routes that estimate sampled did not include `eq_weapon` (317 records), `voa`,
+  or the 300-match search cap. Mean 50 KB; five files hold ~1.5 MB.
+- **The bytes are catalogue text, not structure.** A table row is a `checkbox`
+  and a `button` at the same depth with **no wrapper element**, and the button's
+  accessible name is that record's whole stat line - up to 1023 characters.
+  **14,720 of the 40,361 lines carry a name over 64 characters**, and every one
+  of the 105 files has at least one (the footer's "Данные: Daggerheart Core
+  Set, ..." is 444).
+- **The revised format is two local rules, applying to all 105 states with no
+  hand-listed set**: same-shape sibling elision (signature = role + attribute
+  *values* + child shape, names excluded; groups of more than five keep the first
+  two and last two and write one `... role xN of M same-shape siblings elided`
+  line) and a 64-code-point cap on every name with `namelen`/`namehash`
+  appended. Replayed over the seeded corpus: **5.20 MB -> ~1.50 MB, 40,361 ->
+  24,346 lines**; largest file 372 KB -> 89 KB.
+- **The controls section and the accessibility tree disagree about the same row,
+  by design, and must not be reconciled.** Matching one against the other to
+  elide the controls list was tried and **matches 462 of 12,829 entries**:
+  `NAME_FN` (`driver.js:105`) is `aria-label || title || textContent`, so a row's
+  control name has no inter-element spaces, carries the roll-number cell, and
+  keeps the DOM's letter case, while the accessibility name inserts boundary
+  spaces, omits the number, and reflects `text-transform: uppercase`. That
+  disagreement is the `Сообщество <i>любое</i>` class the two instruments exist
+  to keep apart. The controls section therefore gets the cap only, and keeps its
+  12,829 lines.
+- **The capture is reproducible; the format was never the problem.** Two
+  independent full captures on an unchanged `dist/` were byte-identical across
+  all 105 states, both languages - exit 0, zero differences. Decided 1's three
+  dropped fields and the `file://` url normalisation really were the whole
+  non-determinism.
+- **Costs, measured on this host**: seeding (`--update`) **414.6 s**; comparison
+  **1005 s**. The 2.4x gap is **not** explained by the compare path - the extra
+  work is one `readFileSync`, one `split`/`join` per section over 5.2 MB, order
+  of a second. Host contention was partly present but is not established, so the
+  suite prints `съёмка: Xs из Ys` on every run and the next log settles it.
+  A comparison at 1005 s cannot fit the 600 s foreground cap at any capture size,
+  so the suite carries `--shard=n/of` (`parity.js:63-76`'s grammar and interleave)
+  and a shard is ~250 s.
+- **`--shard` suppresses neither the missing-golden nor the stale-file guard.**
+  The missing check is per state and runs naturally; the stale check compares the
+  directory against the **whole** inventory, which every shard knows in full.
+  Only `--only=` suppresses them.
+- **`tests/app/inventory.js` carries `specs.js`'s `NAME` too** (`specs.js:91-185`,
+  the two-language button-name dictionary): sixteen `STATES` `enter` closures call
+  `NAME.ru.*` / `NAME[lang]`. The five-name list in "R0a planning facts" above is
+  short by one; the rule it states ("exactly the module-level constants it reads")
+  always covered it. **R0b and R0c must carry `NAME` with the rest.** The copy is
+  verified by reproducing this file's own seven numbers exactly - 105 states, 0
+  pending, 61 `enter`, 24 `storage`, 7 `timed`, 5 `whole`.
+- **A capture loop in this repository must `return await`, not `return`.**
+  `return captureLang(page, d)` inside `try { ... } finally { await ctx.close() }`
+  closes the puppeteer browser context out from under an in-flight CDP call and
+  throws `TargetCloseError` from `Accessibility.snapshot()`. The fix is
+  `return await captureLang(page, d)`. It crashed loudly on the `timed` states,
+  which was luck; a version that only sometimes lost the race would have seeded a
+  golden nobody could trust. This is the general shape, not a `golden.js` detail:
+  the next capture loop written here will hit it.
+- **The suite is not free to CI, contrary to "a new `run-all.js` row is picked up
+  for free".** At 7-17 minutes it would make `check` (11m51s) the workflow's
+  critical path, past the parity shards' ~10 minutes. It goes in `ci.yml` as its
+  own 4-shard job beside `parity`'s, with `ci.yml:51` becoming
+  `--exclude=parity,app/golden` - the precedent `run-all.js:73-76` documents and
+  `ci.yml:44-50` already implements.
+- **Repository size, for perspective on any future artefact question**: 63.4 MB
+  tracked, of which `img/` is 29.1 MB, `i/` 4.0 MB, and `data.js` + `data.json` +
+  `catalog.csv` 1.87 MB. A 1.5 MB golden corpus is 2.4% of the tree and smaller
+  than the generated `i/` directory.
