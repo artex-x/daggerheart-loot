@@ -88,9 +88,9 @@ async function newListFromModal() {
 async function twoFramesPicked() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables/frames');
-  await d.click('Фильтры');
-  await d.click('Пир зверей');
-  await d.click('Колоссы Сухоземья');
+  await d.press('Фильтры');
+  await d.press('Пир зверей');
+  await d.press('Колоссы Сухоземья');
   const hash1 = await d.hash();
   ok(
     hash1 === '#/tables/frames/f_frame-beast_feast-colossus',

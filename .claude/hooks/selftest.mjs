@@ -915,6 +915,16 @@ function testEditFollowup() {
       systemMessage(result).includes('node tools/build.js'),
       systemMessage(result)
     );
+    // #40b - the reminder's own content is checked, not only that it fires:
+    // CLAUDE.md's "Data and published artefacts" names seven files
+    // (index.html, app/index.html, both READMEs, app.js, llms.txt,
+    // robots.txt); the message used to list six, missing app/index.html
+    // (B14 nit N1), which nothing here would have caught before this case.
+    check(
+      '#40b data.js reminder names all seven files, app/index.html included',
+      systemMessage(result).includes('app/index.html'),
+      systemMessage(result)
+    );
   }
   {
     const result = runHook(

@@ -142,7 +142,7 @@ Do:
 5. Place/convert art to `img/` and `og/` naming expected by the project
 6. Run `node tools/build.js` and fix derived drift
 7. Wire roll mode / table / filters / i18n only if required
-8. Update docs and copy that publish counts or source lists when they change (`index.html`, `README.md`, `README.ru.md`, `app.js`, `llms.txt`, and `robots.txt`)
+8. Update docs and copy that publish counts or source lists when they change (`index.html`, `app/index.html`, `README.md`, `README.ru.md`, `app.js`, `llms.txt`, and `robots.txt`)
 9. Update tests/fixtures/specs only if behaviour or public contracts change
 10. Run verification:
     - data/image/stub checks the repo expects

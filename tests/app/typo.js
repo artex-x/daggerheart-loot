@@ -3,13 +3,23 @@
  * the monospace one for numbers - and sizes have to come from an agreed
  * scale, the same rule the live-app suite enforces.
  *
- * Five grips reached the parts that only exist after a click on the live
- * app; three survive as the same classes in the port (`.helpbtn`,
- * `.cardpick`, `.lnote summary`), and the other two - the filter toggle and
- * a list row's note toggle - have no `data-act`/`data-note-toggle` to grep
- * for here, so they are pressed by the accessible name a person reads
- * instead, through the shared driver. A grip that resolves to nothing on a
- * page that should have it fails loudly rather than being skipped. */
+ * Five grips reach the parts that only exist after a click on the live app -
+ * `[data-act="fOpen"]`, `.cardpick [data-act="menu"]`, `.helpbtn`,
+ * `[data-note-toggle]`, `.lnote summary` there. Two of the five survive here
+ * as the same raw selector (`.helpbtn`, `.lnote summary`); the other three -
+ * the filter toggle, the card's add-to-list menu, and a list row's note
+ * toggle - have no class the port kept, so they are pressed by the
+ * accessible name a person reads instead, through the shared driver
+ * (`softClick`, below).
+ *
+ * Both kinds used to fail silently where a page had lost the control they
+ * grip - `softClick`'s `has()` guard and `hit()`'s `querySelector` both
+ * no-op on nothing found, and a renamed name or class stopped checking a
+ * panel without saying so (B12 nit 1). `EXPECTED` is what turns "found
+ * nothing" into a failure where the grip should have resolved: a table of
+ * which of the five each of the thirteen pages actually offers, read off the
+ * components rather than assumed, so a page that loses one goes red instead
+ * of quietly skipping it. */
 const { fresh, reporter, closeBrowser } = require('./lib.js');
 
 const UI = 'Inter';
@@ -41,14 +51,55 @@ const STORAGE = {
   )
 };
 
+/* Which of the five grips each page actually offers - read off the
+ * components, not assumed: `FilterBar.svelte` draws nothing at all where a
+ * table has no facets (`core_item`, `alt_item`), so 'filters' is only for
+ * the two with some (`eq_weapon`'s equipment facets, `community`'s `comm`);
+ * `AddToList.svelte`'s trigger sits on `RecordPage` alone among these pages,
+ * not on a roll/tables card, which only opens it inside a modal `typo.js`
+ * never presses; `.lnote`/the per-row note toggle are `ListPage.svelte`
+ * only, so `#/lists` (no entries of its own) gets neither; every `PageHead`
+ * caller among these routes has help text except `SearchPage`
+ * (`help={null}`), and `RecordPage`/`ListPage` render no `PageHead` at all. */
+const EXPECTED = {
+  '#/roll/std': ['help'],
+  '#/roll/alt': ['help'],
+  '#/roll/wondrous': ['help'],
+  '#/roll/community': ['help'],
+  '#/tables/core_item': ['help'],
+  '#/tables/eq_weapon': ['filters', 'help'],
+  '#/tables/alt_item': ['help'],
+  '#/tables/community': ['filters', 'help'],
+  '#/lists': ['help'],
+  '#/lists/a': ['note', 'listNote'],
+  '#/i/w1': ['addToList'],
+  '#/i/q1': ['addToList'],
+  '#/search': []
+};
+
+/* `softClick`'s three name-based grips, in both languages this suite drives -
+ * the accessible name is the dictionary's own string (`dict.ts`'s `filters`,
+ * `addToList`, `note`), so it changes with `lang` the same way the rest of
+ * the page does. A grip hardcoded to one language silently found nothing on
+ * the other - the exact class of failure `EXPECTED` exists to catch, so this
+ * table cannot itself repeat it. */
+const LABELS = {
+  filters: { ru: 'Фильтры', en: 'Filters' },
+  addToList: { ru: 'Добавить в список', en: 'Add to list' },
+  note: { ru: 'Заметка', en: 'Note' }
+};
+
 const rep = reporter();
 const { ok } = rep;
 
-/** Presses a control by name if the page has one, and does nothing rather
- *  than throw if it does not - the live equivalent of `hit()`'s
- *  `querySelector` returning null. */
+/** Presses a control by name if the page has one, and reports whether it
+ *  did - the live equivalent of `hit()`'s `querySelector` returning null,
+ *  but reported rather than swallowed: a grip `EXPECTED` names for this page
+ *  and does not find is a failure, not a skip (B12 nit 1). */
 async function softClick(d, name) {
-  if (await d.has(name)) await d.click(name);
+  const has = await d.has(name);
+  if (has) await d.click(name);
+  return has;
 }
 
 (async () => {
@@ -58,18 +109,26 @@ async function softClick(d, name) {
     for (const hash of PAGES) {
       await d.open(hash);
 
-      await softClick(d, 'Фильтры');
-      await softClick(d, 'Добавить в список');
-      await softClick(d, 'Заметка');
-      await page.evaluate(() => {
-        const hit = (s) => {
+      const found = {
+        filters: await softClick(d, LABELS.filters[lang]),
+        addToList: await softClick(d, LABELS.addToList[lang]),
+        note: await softClick(d, LABELS.note[lang])
+      };
+      const hit = await page.evaluate(() => {
+        const press = (s) => {
           const e = document.querySelector(s);
           if (e) e.click();
+          return !!e;
         };
-        hit('.helpbtn');
-        hit('.lnote summary');
+        return { help: press('.helpbtn'), listNote: press('.lnote summary') };
       });
+      Object.assign(found, hit);
       await new Promise((r) => setTimeout(r, 300));
+
+      const where = hash + ' ' + lang;
+      for (const grip of EXPECTED[hash] ?? []) {
+        ok(found[grip], where + ': ожидаемый элемент управления не найден — ' + grip);
+      }
 
       const bad = await page.evaluate(
         ({ UI, MONO, SCALE }) => {
@@ -95,7 +154,6 @@ async function softClick(d, name) {
         { UI, MONO, SCALE }
       );
 
-      const where = hash + ' ' + lang;
       ok(!bad.fam.length, where + ': чужой шрифт — ' + bad.fam.slice(0, 3).join(', '));
       ok(!bad.size.length, where + ': размер вне шкалы — ' + bad.size.slice(0, 3).join(', '));
     }

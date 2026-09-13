@@ -8,8 +8,9 @@
  * depend on somebody remembering.
  *
  * The two targets are separate files, so they never clash:
- *   legacy -> index.html at the repository root, what Pages serves today
- *   next   -> dist/index.html, the built rewrite
+ *   legacy -> index.html at the repository root, the pre-cutover fallback -
+ *             not what Pages serves since B13's flip
+ *   next   -> dist/index.html, the built rewrite, what Pages serves now
  */
 const path = require('path');
 

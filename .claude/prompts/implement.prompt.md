@@ -53,6 +53,10 @@ Session rules:
 * Do not expand beyond the batch to make it "bigger"
 * Follow settled decisions; do not reopen without concrete conflict evidence
 * Update affected docs/specs/tests/fixtures in the same batch when required
+* A placement is acceptance, not a footnote: an inherited item (a deferred
+  review nit, a nit carried from an earlier batch) is only done when its own
+  acceptance-criteria line is checked, not when it is merely mentioned in a
+  commit or a comment - a plan has already lost items this way
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
 
@@ -76,7 +80,7 @@ For the current batch:
    where you stopped.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
-10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)
+10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own
 11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - commit the coherent batch, not unrelated foreign changes
 12. Push the current branch once the batch is committed. If the push is rejected, report it - do not force, do not rebase someone else's work away
 

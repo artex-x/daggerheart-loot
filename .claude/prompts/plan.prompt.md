@@ -104,6 +104,14 @@ Each implement-ready batch must include:
 - Risks / do-nots / settled decisions not to reopen
 - Fallback alternatives only when a meaningful secondary approach was considered
 
+A placement has to be acceptance, not a footnote: an item this plan places in a
+future batch (a deferred review nit, a nit from an earlier batch, anything not
+done now) is written into that batch's own acceptance criteria as its own
+line - not only as a cross-reference to where it was mentioned. A table that
+records an intention is not a mechanism, because nothing reads it at the
+moment a batch closes; a plan has already lost inherited items this way by
+recording them only as prose.
+
 Verification gate matrix (pick what applies per batch):
 - Data-only (`data.js`, art mapping): data/image/stub checks + `node tools/build.js` + relevant tests
 - App/code behaviour: `npm run check`

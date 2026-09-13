@@ -17,7 +17,7 @@ const GROUPS = [
     id: 'remind:data',
     test: (p) => p === 'data.js',
     message:
-      'data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, index.html, README.md, README.ru.md, app.js, llms.txt and robots.txt change with it.'
+      'data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, index.html, app/index.html, README.md, README.ru.md, app.js, llms.txt and robots.txt change with it.'
   },
   {
     id: 'remind:contract',
