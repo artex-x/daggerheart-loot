@@ -14784,3 +14784,501 @@ the only place the measurements live), or delete it now that the durable parts
 are in `docs/specs/*`. The recommendation is to keep it - three of this
 migration's worst hours were spent re-deriving facts a previous session had
 already measured - but nothing depends on it after point 5.
+
+### R0a planned: the evidence, the sweep, and the structural goldens (planner, 2026-09-13)
+
+Turns the outline above into one implement-ready batch. R0a **deletes nothing** -
+not a file, not a `VISUAL_DEBT` entry, not an `ACCEPTED` key - so the one-file
+revert (`git revert 9177f3b`) survives it untouched, and it needs Phase 7's
+conditions 1, 2, 3 and 5 only. All four are satisfied with run ids in
+`context.md`, "State at the R0a planning kickoff"; the implementer reads them
+there and does not re-derive them.
+
+#### Why this is one batch and not three
+
+Every part of R0a is proved by the same gate set - `npm run check`,
+`npm run check:built`, the `tests/app/` suites and one **one-state** parity
+filter - and `CLAUDE.md` sizes a batch by its gates, not its diff. Splitting the
+sweep from the goldens would pay that set twice for work that shares a build, a
+`dist/` and a suite directory. Neither of the two things that force a split is
+present: **no public contract changes** (see "Decided 4") and every commit is
+reachable by the harness.
+
+It is three commits, in the order below, because the order is load-bearing
+rather than tidy - see "The seeding warrant, and why C1 goes first".
+
+#### Measured for this plan - do not re-derive
+
+Read off the source, or probed read-only against the `dist/` built at `32926a0`
+(one puppeteer page, the harness's own launch args, reduced motion via
+`prepare()`, 1100x900). Nothing below is an estimate unless it says so.
+
+- **`page.accessibility.snapshot()` exists in the installed puppeteer**
+  (25.9.0): `Page.js:252` delegates to `frame.accessibility`, and
+  `cdp/Accessibility.js:132` is the method. Phase 5 decided 2's premise holds -
+  no new dependency, no second driver.
+- **The snapshot is stable and cheap.** Two consecutive captures of the same
+  arrival were byte-identical on all seven routes probed. Capture cost was
+  12-120 ms; the arrival around it is ~1.2 s on most routes and ~7 s on the
+  `#/tables*` family (60 rows of artwork, which `ready()` waits for).
+- **Three fields in the serialized node are poison and must be dropped**
+  (`cdp/Accessibility.js:444-505`): `elementHandle` (a function),
+  `backendNodeId` (a per-run id) and `loaderId` (a per-navigation UUID). A
+  golden that keeps any of them fails on its own second run.
+- **`url` is an absolute `file://` path** -
+  `file:///E:/dev/daggerheart-loot/dist/index.html#/tables` - which is one
+  machine's. It must be normalised, and normalised by locating the
+  `/dist/index.html` substring rather than by comparing against `driver.js`'s
+  `TARGETS.next`: that string is `'file://' + path.join(...)`, two slashes and
+  Windows separators, and never equals what the tree reports. CI is ubuntu.
+- **Sizes, after the normalisation this plan specifies** (nodes / bytes of
+  text): `#/tables` 164 / 25.9k, `#/tables/weapon` the same shape,
+  `#/search?q=` 90 / 6.5k, `#/roll/wondrous` 44 / 3.2k, `#/i/ci1` 39 / 2.6k,
+  `#/lists` 36 / 2.5k, the nine-card print sheet 173 / ~10k. Estimated total
+  over 105 states x 2 languages: **1.5-2.5 MB of text**. That is the one number
+  an owner might object to; the implementer records the real size and stops to
+  raise it if it lands over 4 MB.
+- **`VISUAL_DEBT` is 18 keys but *one* mechanism.** Three states -
+  `#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal`, `#/tables ~ a row opened` -
+  at 6 cells each, every one of them 0.02 / 0.03 / 0.07% and every reason "the
+  close button's own focus ring". `specs.js:1964-2022`.
+- **`ACCEPTED` is 10 keys in two groups**: eight `#/roll/alt*` controls entries
+  ("each die names its own field and steppers") and two `#/tables ~ grid`
+  controls entries (live's `list.map(tileHTML)` index-as-roll-number bug, which
+  the rewrite does not reproduce). `specs.js:2073-2106`.
+- **Two of the four "Recorded, not keyed" divergences are already carried into
+  `FEATURES.md`** and need no edit, only a verdict: the anchor re-play is
+  `FEATURES.md:47-52` ("The scroll and the outline re-play on a language switch.
+  A search keystroke, a tick or a view switch does not re-play them - the live
+  app re-renders and re-scrolls on each, a defect not reproduced"), and the
+  two-frame link is `FEATURES.md:61` ("a link naming two frames opens both").
+- **`STATES` is 105 entries, zero `pending`, 42 distinct routes**, 61 with an
+  `enter`, 24 with a `storage` seed, 7 `timed`, 5 `whole`. The module-level
+  constants `STATES` actually reads are the print routes (`specs.js:28-56`),
+  `PACKED` (:70), `NOTES_BOTH_KINDS`, `QTY_AND_PRICE`, `LOOT` and the storage
+  seeds (:1017-1067). `EQUIPMENT_ENTRY` is a **`SPECS`** constant, not a
+  `STATES` one, and does not travel.
+- **`tests/` is ignored by both Prettier and ESLint** (`.prettierignore`,
+  `eslint.config.mjs:10-16`), so nothing in this batch's new suite is read by
+  `npm run check`'s formatting or lint steps. It is verified by running it.
+- **CI picks the suite up for free.** `ci.yml:51` is
+  `node tests/run-all.js --exclude=parity`, after `npm run build`, so a new row
+  in `run-all.js`'s `SUITES` runs on every push with `dist/` already built.
+- **`tests/derived.js`'s `COUNTERS` does not read `docs/specs/`** (:397-398),
+  so the sweep's new bullets cannot trip the counter check.
+- **The tree is not as the dispatch describes it.** `git status` at planning
+  shows four *modified* tracked files - `.claude/README.md`,
+  `.claude/agents/planner.md`, `.claude/prompts/orchestrate.prompt.md` and
+  `issues/47/context.md` - the orchestrator's own edits this session, plus the
+  untracked `issues/tg-preview-refresh/`. Preserve all five. Never `git add -A`;
+  stage by path.
+
+#### Decided 1 - what a structural golden is, exactly
+
+One file per state, both languages inside it:
+`tests/app/snapshots/<slug>.txt`, where `slug` is the state id run through the
+same rule `parity.js:208` uses, `id.replace(/\W+/g, '_')`. 105 files.
+
+Text, not JSON - and that is the plan's own word for them, "structural **text**
+goldens". A line-per-node tree diffs in git as the shape of the screen; a JSON
+tree diffs as brace noise. Layout:
+
+```text
+# <state id>
+# route: <route>
+# why: <why>
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+
+## ru :: controls
+EN
+RU
+...
+
+## en :: tree
+...
+
+## en :: controls
+...
+```
+
+A tree line is `'  '.repeat(depth) + role + ' "' + name + '"'` plus, where any
+are present, ` [k=v k=v]` in one fixed order. The controls block is
+`d.controls()` verbatim - already deduped and sorted by the driver - one name
+per line.
+
+Both instruments are kept, because they answer different questions. The tree
+carries roles, nesting and state that a flat list cannot express; the inventory
+is computed by `NAME_FN` (`aria-label || title || textContent`, filtered to
+`offsetParent`-visible), which is what `ACCEPTED`'s keys are written against and
+what Phase 8 R1 needs as "everything a person can reach".
+
+**Normalisation, and every rule has a reason:**
+
+1. Keep only `role`, `name`, then, in this order, `value`, `description`,
+   `keyshortcuts`, `roledescription`, `valuetext`, `url`, `disabled`,
+   `expanded`, `focused`, `modal`, `multiline`, `multiselectable`, `readonly`,
+   `required`, `selected`, `checked`, `pressed`, `level`, `valuemin`,
+   `valuemax`, `autocomplete`, `haspopup`, `invalid`, `orientation`. **Drop
+   `elementHandle`, `backendNodeId` and `loaderId`** - measured above; they are
+   why a naive golden fails its own second run.
+2. `url`: cut everything up to and including the last `/dist/index.html`, so
+   only the hash survives (`#/tables`, `#main`). A url with no such substring -
+   a real outbound link like `daggerheart.com` - is written whole, because that
+   is content worth seeing change.
+3. Drop a `StaticText` child when it is the **only** child, has no children of
+   its own, and its `name` equals its parent's. Two or more `StaticText`
+   children are kept - that is the split-text-node signal `CLAUDE.md` requires
+   ("a split text node measures a different advance than a joined one") and the
+   exact shape of the `Сообщество <i>любое</i>` defect. Measured worth: about
+   40% of the lines on a typical page, with nothing lost.
+4. Collapse runs of whitespace inside every `name` to single spaces, the way
+   `NAME_FN` already does, so a template newline is not a diff.
+5. `interestingOnly` stays at its default, `true`.
+
+**Comparison.** Strict string equality per section. On a mismatch the suite
+prints the state id, the section (`ru :: tree`), the 1-based line number of the
+first differing line, and that line from each side with two lines of context -
+enough to read the regression in the run log without opening a file. One failure
+per section, not per line, so a renamed heading does not print four hundred
+lines.
+
+**Regeneration.** `node tests/app/golden.js --update` rewrites every selected
+file; `--only=<substring>` narrows to matching state ids. The commit that
+changes a screen carries the regenerated text and it is read as a diff, which is
+the whole point of the instrument.
+
+**Three ways it refuses to go quietly green** - this is the "a check quietly
+stops checking" class that has already cost this task two dropped nits, ten
+uncounted suites and a zero-match parity run:
+
+- a state in the inventory with **no** `.txt` fails (it is never silently
+  seeded; only `--update` writes);
+- a `.txt` in `snapshots/` with **no** state fails as stale - the same rule
+  `parity.js` already applies to an `ACCEPTED` key;
+- an `--only=` that selects **no** state fails, and the run prints the number of
+  states compared whether it passes or not. (`--only=` suppresses the first two
+  checks, and says so in its output.)
+
+#### Decided 2 - how the 105 states are carried, and how the copy is kept honest
+
+New module `tests/app/inventory.js`, exporting `STATES` and `LANGS`: a
+**verbatim copy** of `specs.js`'s `STATES` array together with exactly the
+module-level constants it reads (the print routes, `PACKED`, the storage seeds,
+and the `require`s of `docs/fixtures/lists/notes-both-kinds.json`,
+`docs/fixtures/lists/qty-and-price.json` and `data.json`). Not `SPECS`, not
+`ACCEPTED`, not `VISUAL_DEBT`, not `EQUIPMENT_ENTRY` - those retire with the
+harness. This module is the durable copy of the inventory the outline asks for:
+after R0c it is the only place "everything a person can reach" is written down.
+
+A copy risks drift in the window between R0a and R0c, so the module carries its
+own guard, and the guard retires itself:
+
+```js
+/* While tests/parity/specs.js still exists, the two inventories must agree.
+   R0c deletes that file and this check turns itself off - it is here for the
+   window in which both exist. */
+if (fs.existsSync(SPECS_PATH)) {
+  const theirs = require(SPECS_PATH).STATES.map((s) => s.id + ' :: ' + s.route);
+  const mine = STATES.map((s) => s.id + ' :: ' + s.route);
+  // ...a difference in either direction is a failure, naming the ids
+}
+```
+
+Ids and routes only. The `enter` closures are functions and cannot be compared;
+what a wrong `enter` produces is a wrong golden, and a wrong golden is caught by
+the seed-then-verify step in C1's acceptance rather than by a string compare.
+
+`tests/app/lib.js` already gives the suite everything else it needs -
+`fresh({ lang, storage })` seeds storage before the first paint, `prepare()` is
+the same stub parity uses, and `makeDriver(page, 'next')` is the same driver. It
+imports that driver from `../parity/driver.js`. **That import is R0b's problem,
+not R0a's, and it is worth writing down here because R0c's outline says it
+deletes `tests/parity/` whole**: `driver.js` is live code the `tests/app/`
+suites depend on and has to be re-homed, not deleted. R0a adds a fifth dependant
+to it; it does not move it.
+
+**Arrivals, and the `timed` exception.** One arrival per state: seed storage,
+`d.open(route)`, run `enter`, snapshot `ru`, press `EN`, snapshot `en`. That is
+exactly what `parity.js:353-363` compares as the English cell (arrive, enter,
+then press EN), minus a second arrival - a snapshot is a read and does not
+perturb the page.
+
+The seven `timed` states arrive **afresh per language**, using the flag
+`specs.js` already carries, because their toast lives 1600 ms and a 50-120 ms
+snapshot inserted before the `EN` press eats into that window for no gain. For a
+`timed` state the suite also **waits for the toast before snapshotting** - poll
+up to 2 s for a `.toast` whose computed `display` is not `none`
+(`Toast.svelte` is `popover="manual"` with `role` `alert`/`status`) - and fails
+with "the toast never appeared" if it does not. That turns the one genuinely
+racy thing in the set into an assertion instead of a coin flip.
+
+Estimated wall clock: ~112 arrivals at 1.2 s typical and ~7 s on the `#/tables*`
+family, plus 210 captures at well under a second each - **300-420 s**, one
+`run-all.js` row (`app/golden`), which is the size of one `app/sweep` width. If
+the implementer measures over ~420 s, split it into two rows by state index the
+way `app/sweep` splits by width, and record the figure either way.
+
+#### Decided 3 - the sweep, disposed entry by entry
+
+Every reason in `ACCEPTED`, every "Recorded, not keyed" paragraph and all 18
+`VISUAL_DEBT` entries, with its destination. This is the whole table; nothing is
+left for the implementer to decide, and nothing is left for a later batch.
+
+| what | keys | destination |
+|---|---|---|
+| `#/roll/alt*` controls, "each die names its own field and steppers" | 8 `ACCEPTED` | **`FEATURES.md`, "Rolling"**: a new bullet - on the alternate tables each number field and each stepper names its own die, where the live app named both fields the same string and all four steppers two more. A deliberate accessibility improvement. |
+| `#/tables ~ grid` controls, the `tileHTML` bug | 2 `ACCEPTED` | **`FEATURES.md`, "Tables and search"**: a grid tile shows that record's own roll number. The live app passed the array index as the number (`list.map(tileHTML)`), so every tile past the first in a plain table showed its position instead - a live defect the rewrite does not reproduce. Not a `DEBT.md` entry: section 1 there is for defects reproduced **on purpose**. |
+| `Chip`/`Seg` write `aria-pressed` where live writes nothing or `aria-current="true"` | "Recorded, not keyed" | **`FEATURES.md`, "Chrome"**: a bullet saying chips and segmented switches expose their on/off state as `aria-pressed`; the money chips and the two view switches (tables list/grid, print colour/black-and-white) gained it in the rewrite. |
+| `PrintCard` draws the card name as `<h2 class="pc-name">` where live writes `<h3>` | "Recorded, not keyed" | **`FEATURES.md`, "Print"**: a clause on the card bullet. A heading-level fix; `DEBT.md` D8 (the alternate-tables page jumping `<h1>` to `<h4>`) is a different screen and stays exactly as it is. |
+| the anchor re-play | "Recorded, not keyed" | **Already carried**, `FEATURES.md:47-52`. Verdict: verified, no edit - and the verdict goes in the commit message, because "no edit" is a disposition and has to be readable as one. |
+| the two-frame link | "Recorded, not keyed" | **Already carried**, `FEATURES.md:61`. Verdict: verified, no edit. The half that is not written down - that live's `fDecode` heuristic empties the table on the same address - is live's behaviour, not the app's, and retires with `app.js`. |
+| all 18 `VISUAL_DEBT` entries | 18 | **One `FEATURES.md`, "Records" bullet**, because they are one mechanism: the record modal is a native `<dialog>` opened with `showModal()`, so it is modal, the page behind it is inert, focus moves into it on open and returns to the opener on close - and the visible consequence, which is the whole of the 0.02-0.07%, is that its close button carries a focus ring the live app's does not. An improvement, not a defect: no `DEBT.md` entry. |
+
+Two corrections fall out of writing that table, and belong in the same commit:
+
+- **`VISUAL_DEBT`'s comment claims this is "the accessibility fix `ACCEPTED`
+  records". No `ACCEPTED` key records it** - the ten keys are the roll dice and
+  the grid tiles, nothing else. It is stale prose in `specs.js:1965-1972` and in
+  the two sibling comments below it; correct it to point at the new
+  `FEATURES.md` bullet, which after this batch is where the record actually
+  lives.
+- **B14's nit 4, re-placed into R0a from R0b/R0c.** `FEATURES.md:155-156` still
+  reads "starting-section pin (nine sections or any table by name)"; the
+  identical `ROUTES.md` claim was corrected in `af7fa17` to "eight pin as their
+  own hash; `#/tables` pins as whichever table is on screen". R0a is already
+  editing `FEATURES.md` in five places, so leaving the one wrong line in a file
+  this batch has open is exactly what `CLAUDE.md` forbids ("do not use 'out of
+  scope' to avoid local fixes"). It becomes one of R0a's acceptance lines and
+  leaves R0b/R0c's list.
+
+**Nothing is deleted from `specs.js`, and that is required rather than
+cautious.** Deleting a `VISUAL_DEBT` entry while the harness still runs makes
+its cell a nonzero diff with no debt, which `parity.js:551-575` fails; deleting
+an `ACCEPTED` key makes its spec differ with no excuse, which `parity.js:214`
+fails. The sweep is **additive**. The table dies with the file, in R0c.
+
+#### Decided 4 - no contract moves
+
+Checked clause by clause against `CLAUDE.md`, "Specs are the behaviour source of
+truth". R0a touches no route, id, link, generated artefact or asset path. It
+does not touch `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md`
+or `llms.txt`, and it must not - if the implementer finds a reason to, that is a
+different batch and a stop-and-raise. `FEATURES.md` and `COVERAGE.md` are
+behaviour and coverage specs, changed in the same commit as the behaviour they
+describe, which is what this batch does. `STATE.md` needs nothing: every
+disposition above is product behaviour or chrome, none of it URL, storage or
+two-tab merge.
+
+#### Decided 5 - the B1 fix, in code
+
+`tests/parity.js`, three edits and a comment:
+
+1. `let cells = 0;` beside `let fail = 0;` (`:53`).
+2. `cells++;` immediately after the per-cell line in the width loop (`:547`,
+   `console.log(...full...(why))`) - the one place that means "a cell was
+   actually compared".
+3. At the summary (`:667`), print the count on every run and fail an empty
+   filtered run:
+
+```js
+if (WANTED.length && !SHARD && !cells && !outstanding.length) {
+  fail++;
+  console.log('\nфильтр ничего не выбрал: ' + WANTED.join(', '));
+}
+console.log('сравнено ячеек: ' + String(cells));
+```
+
+`!SHARD` because a filter crossed with `--shard=n/4` legitimately selects
+nothing in three shards out of four, and CI - the only caller that shards -
+never filters. `!outstanding.length` because a `pending` state prints and pushes
+without comparing a cell; there are none today (measured: zero), and the guard
+should not start failing the day one is added back.
+
+`docs/parity.md` gains two sentences in the same commit: that a filtered run
+prints its cell count and fails at zero, and that **on a Git Bash host a filter
+containing `#/` needs `MSYS_NO_PATHCONV=1`** - the thing that produced the
+zero-match run B14 nearly took for a pass.
+
+#### The seeding warrant, and why C1 goes first
+
+R0a's own entry condition (Phase 5 decided 2): the tree the goldens are seeded
+from is green on the **full** workflow, parity included, and the seeding commit
+names that run.
+
+- The warrant is run **`34747570250` on `32926a0`** - HEAD's own run, all four
+  parity shards. It was in progress when this batch was dispatched. **Step 0 of
+  the batch is `gh run view 34747570250` and reading its conclusion.** Green:
+  proceed, and put the id in C1's commit message. Not green: **stop** - that is
+  a blocker to raise, not a clock to restart, and not a reason to fall back to
+  an older run.
+- Run `34721165294` on `37c5c2f` is green and full but **predates B14's three
+  code commits**, which changed what the app renders. It is not an adequate
+  warrant and must not be substituted.
+
+That warrant is for `32926a0` exactly, which is why **the goldens are seeded
+first**, from a tree whose `app/` is byte-identical to it. Seeding after the
+sweep and the fixes would seed from a tree no run has read. Putting C1 first
+buys a second thing for free: C3 deletes `isHome`, and the goldens - already
+committed - are then the instrument that proves the deletion changed nothing on
+screen. If they go red, the deletion was not dead code after all.
+
+#### The commits
+
+**C1 - the structural goldens** (the batch's substance).
+
+1. `gh run view 34747570250`. Green, or stop.
+2. `npm run build`, so `dist/` is the warranted tree.
+3. `tests/app/inventory.js` - the copied `STATES`/`LANGS` plus the constants
+   they read, and the self-retiring equality check against `specs.js`.
+4. `tests/app/golden.js` - the suite: arrival, normalisation, the text format,
+   strict comparison, `--update`, `--only=`, the missing/stale/zero-match
+   guards, the `timed` toast wait. It uses `fresh()`, `reporter()` and
+   `closeBrowser()` from `tests/app/lib.js` like its four siblings, and adds
+   nothing to `lib.js` unless a second suite needs it.
+5. `node tests/app/golden.js --update` to seed `tests/app/snapshots/` (105
+   files), then **`node tests/app/golden.js` on the same `dist/`, twice**, both
+   green and both reporting 105 states. That is the determinism proof, and it is
+   what makes the seed honest across the 61 states with an `enter` and the 7
+   with a toast.
+6. `run-all.js`: one row, `['app/golden', 'dist/: структурные образцы', <the
+   measured seconds>]`, placed by its cost the way that list is ordered.
+7. `.claude/hooks/edit-guard.mjs`: deny direct writes under
+   `tests/app/snapshots/`, message "regenerate with `node tests/app/golden.js
+   --update`" - the one file class in this repository whose whole value is that
+   nobody hand-edits it to make a test pass. One `denyCases` row and one
+   near-miss row in `.claude/hooks/selftest.mjs`, which `npm run check` runs.
+8. `docs/specs/COVERAGE.md`: an `app/golden` row in the `tests/app/*` table; the
+   legacy `states` row's "superseded by ... `tests/parity/specs.js`'s `STATES`"
+   updated to name `tests/app/inventory.js` as where that inventory now lives;
+   and, in "What is enforced", the honest limit - a golden says a control is
+   gone, a heading moved or a label changed, and says nothing about colour,
+   spacing, or which picture sits behind a correct `alt`.
+
+C1's commit message names run `34747570250` and says in one line where the
+seed's authority comes from: for every state the two apps matched at that
+commit, so a snapshot of `dist/` there is a snapshot of the shipped app.
+
+**C2 - the sweep** (documents only).
+
+`docs/specs/FEATURES.md` gains the five bullets in Decided 3 and loses the wrong
+pin line; `tests/parity/specs.js`'s three stale comments stop claiming
+`ACCEPTED` records the modal focus fix and point at `FEATURES.md` instead. No
+value in `ACCEPTED` or `VISUAL_DEBT` changes. The commit message carries the
+disposition table, the two "verified, no edit" verdicts included - a verdict
+that is not written down is the failure mode this phase exists to avoid.
+
+**C3 - the inherited checks and the harness fix.**
+
+- `tests/parity.js` + `docs/parity.md`: blocker B1, per Decided 5.
+- `app/src/state/app.svelte.ts:448-450`: delete the `isHome` getter. A grep over
+  `app/src/` finds it nowhere else; the only callers left are **four**
+  assertions in `app/src/state/app.test.ts` (:134, :137, :143, :170 - the
+  handoff says three), which go with it. If one of those assertions is the only
+  coverage of something real, it is rewritten against `app.home` rather than
+  deleted, and the built record says which.
+- `tests/app/states.js:369-372`: return whether the mark was applied and assert
+  it - `ok(marked, ...)` - so case 14 cannot pass on a renamed
+  `.results .card-media img`.
+- `tests/app/typo.js`: assert at start-up that `EXPECTED`'s keys and `PAGES` are
+  the same set, both directions, then drop the `?? []` at `:113` so a page with
+  no row is a failure rather than a silent nothing.
+
+#### Acceptance criteria
+
+R0a's own:
+
+1. `gh run view 34747570250`'s conclusion is recorded in the built record and
+   the id is named in C1's commit message. Not green -> the batch stops and
+   raises, with no older run substituted.
+2. `tests/app/snapshots/` holds exactly 105 `.txt` files, one per inventory
+   state, each with four sections; the total size is recorded in the built
+   record; over 4 MB stops to raise rather than commits.
+3. `node tests/app/golden.js` is run **twice** on the same unchanged `dist/`,
+   both green, both reporting 105 states compared. Recorded verbatim.
+4. The three refusals are demonstrated, not asserted: delete one `.txt` and the
+   run fails "missing"; add a `.txt` with no state and it fails "stale"; pass
+   `--only=no-such-state` and it fails "selected nothing". All three restored
+   before committing.
+5. `tests/app/inventory.js`'s equality check against `specs.js` passes, and is
+   demonstrated to fail by changing one id locally before restoring it.
+6. All five `FEATURES.md` bullets from Decided 3 are written, and the two
+   "verified, no edit" verdicts are in C2's commit message; `specs.js`'s three
+   stale comments no longer claim `ACCEPTED` records the modal focus fix.
+7. **No value in `ACCEPTED` or `VISUAL_DEBT` is changed or deleted**, and
+   `git diff` over `tests/parity/specs.js` shows comment lines only.
+8. `docs/specs/COVERAGE.md` names `app/golden` and `tests/app/inventory.js`, and
+   states what a golden cannot catch.
+9. `.claude/hooks/edit-guard.mjs` refuses a write under `tests/app/snapshots/`,
+   with a selftest case, and `node .claude/hooks/selftest.mjs` is green inside
+   `npm run check`.
+10. Nothing is deleted: `git show 9177f3b | git apply --reverse --check -` still
+    exits 0 on the final tree, and `index.html`, `app.js`, `style.css`,
+    `tests/parity/`, `docs/parity.md` and the fifteen legacy suites are all
+    still present.
+
+Inherited, each its own line with its own outcome - no cross-references:
+
+11. **Blocker B1** - `tests/parity.js` fails a filtered run that compared no
+    cell, and prints `сравнено ячеек: N` on every run. Proved both ways, one
+    call each: `MSYS_NO_PATHCONV=1 node tests/parity.js "no-such-state"` exits
+    **1**, and `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists ~ created"`
+    exits **0** printing 6 cells.
+12. **Nit 1** - `isHome` is deleted from `app/src/state/app.svelte.ts` with its
+    four `app.test.ts` assertions, **or** the built record states why it stays.
+13. **Nit 2** - `tests/app/states.js` case 14 asserts the image was marked, and
+    the assertion is demonstrated to fail by renaming the selector locally.
+14. **Nit 3** - `tests/app/typo.js` asserts `EXPECTED` covers `PAGES` in both
+    directions and no longer defaults to `[]`.
+15. **Nit 4 (re-placed here from R0b/R0c)** - `FEATURES.md`'s pin line matches
+    `ROUTES.md`'s corrected text: eight sections pin as their own hash,
+    `#/tables` pins as whichever table is on screen.
+16. **Nit 6** - `handoff.md`'s `## Verification` section carries a pointer line
+    to where each batch's evidence actually lives (written in this planning
+    pass), and R0a's own commands and results are appended under it.
+
+#### Gates, and what each costs
+
+One foreground call each. **No local full parity run** - CI's four shards are
+the read, per the outline.
+
+| gate | when | cost |
+|---|---|---|
+| `set -o pipefail; npm run check 2>&1 \| tail -n 120`, Bash timeout 600000 | once per commit (x3) | ~165 s idle, up to the 600 s cap loaded; a run that crosses it is re-run, not salvaged |
+| `npm run check:built` | once, in C1 (it builds `dist/` anyway) | a few minutes |
+| `node tests/app/golden.js` | twice in C1, once after C3 | 300-420 s estimated; record the real figure |
+| `node tests/run-all.js app/sweep` | once, after C3 | ~370 s |
+| `node tests/run-all.js app/contracts,app/states,app/typo,app/hues` | once, after C3 | ~5 min; kept apart from `app/sweep`, whose combined four-suite call crossed 600 s once under load (B13) |
+| `MSYS_NO_PATHCONV=1 node tests/parity.js "no-such-state"` | once, in C3 | seconds; **must exit 1** |
+| `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists ~ created"` | once, in C3 | one state, 6 cells, ~2 min; must exit 0 and print the count |
+| the push's full workflow | after the batch | CI |
+
+Before any parity call, check `test-output/parity.lock` and `git status`: a
+second interactive session shares this working tree.
+
+#### Risks, and what stops the batch
+
+- **The warrant run is not green.** Stop and raise. Do not seed, do not
+  substitute `34721165294`, do not wait for a new push.
+- **A golden is not reproducible** - the second `node tests/app/golden.js`
+  differs from the first. Do not paper over it with a regeneration: find which
+  state and which line, and say so. The likeliest candidates are the seven
+  `timed` states (the toast wait is the designed answer) and anything holding a
+  focus ring. If one state genuinely cannot be made deterministic, record it by
+  name, exclude it explicitly in the suite with the reason beside it, and say so
+  in the built record - an excluded state named in code is a check; a flaky
+  golden nobody trusts is not.
+- **The goldens are larger than expected.** Over 4 MB, stop and raise before
+  committing.
+- **Scope creep into R0b.** R0a does not re-home `driver.js`, does not touch the
+  fifteen legacy suites, does not port `print`'s geometry, and deletes nothing.
+- **The second session.** Four tracked files are modified in the working tree
+  and one directory is untracked, none of them this batch's. Stage by path.

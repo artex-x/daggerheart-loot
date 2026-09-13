@@ -6,10 +6,48 @@ depends on chat history.
 
 ## Status
 
-- Task status: **B14 is reviewed and APPROVED - the batch is closed. The next
-  cycle is a planning one: R0a is still only an outline** (reviewer, 2026-09-13,
-  on `f2dca3b`). **Verdict: approve**, and the batch's one remediation cycle is
-  **unused** - nothing in the diff was asked to change.
+- Task status: **in_progress. R0a is planned and implement-ready** (planner,
+  2026-09-13, on `32926a0`). Last agent: planner. NEEDS_HUMAN_CONFIRMATION:
+  **no**. Branch `main`, base `32926a0`, level with `origin/main`.
+  - **One batch, three commits**, sized by its gates rather than its diff: no
+    public contract moves and every commit is harness-reachable, so neither
+    reason to split applies. Design: `plan.md`, **"R0a planned: the evidence,
+    the sweep, and the structural goldens"**; the brief and the sixteen
+    acceptance lines: "Next batch", below.
+  - **The four hard design questions this pass owned are settled in the plan, not
+    left to the implementer**: what a structural golden file contains and how it
+    is compared and regenerated (Decided 1 - a line-per-node text tree plus the
+    controls inventory, per state, both languages, strict equality, `--update`,
+    three refusals so it cannot quietly stop checking); how the 105 `STATES` are
+    carried (Decided 2 - `tests/app/inventory.js`, a verbatim copy with a
+    self-retiring equality check against `specs.js`); how every `ACCEPTED`
+    reason, every "Recorded, not keyed" paragraph and all 18 `VISUAL_DEBT`
+    entries are dispositioned (Decided 3 - a seven-row table; the 18 are **one
+    mechanism**, `showModal()`'s focus ring, and become one `FEATURES.md`
+    bullet); and whether any of it is a contract change (Decided 4 - no).
+  - **Measured for the plan, so the implementer does not**: puppeteer 25.9.0 does
+    have `page.accessibility.snapshot()`; the snapshot is byte-stable across two
+    captures on all seven routes probed; three serialized fields
+    (`elementHandle`, `backendNodeId`, `loaderId`) are per-run and must be
+    dropped; `url` is an absolute `file://` path and must be cut at
+    `/dist/index.html`; a normalised tree is 2.5k-26k of text per page, so
+    1.5-2.5 MB estimated over 105 states x 2 languages.
+  - **Two things in the dispatch were stale and are corrected in place**: the
+    working tree is **not** clean - four tracked files are modified by the
+    orchestrator's own session edits - and `tests/parity/specs.js` has **zero**
+    `pending` states, which is what lets blocker B1's guard be written without a
+    `pending` escape hatch.
+  - **B14 nit 4 is re-placed from R0b/R0c into R0a**, because R0a already has
+    `FEATURES.md` open and `CLAUDE.md` forbids using "out of scope" to skip a
+    local fix. It is acceptance line 15. Nit 6 is **done in this planning pass**
+    (the `## Verification` pointer line) and remains acceptance line 16 so the
+    batch confirms it survived.
+  - Next action: **implement R0a** (implementer), starting at step 0 -
+    `gh run view 34747570250`, the seeding warrant. Not green: stop and raise.
+
+- Task status: **B14 is reviewed and APPROVED - the batch is closed** (reviewer,
+  2026-09-13, on `f2dca3b`). **Verdict: approve**, and the batch's one
+  remediation cycle is **unused** - nothing in the diff was asked to change.
   - **The three self-reported deviations were re-derived, not taken on trust,
     and all three hold.**
     - **C2's fallback was the right call because the plan was wrong.**
@@ -3232,6 +3270,24 @@ predate B3 (B1 for the search box, B1 for `.selbox`) and the third is B2's.
 
 ## Verification
 
+**Where each batch's evidence actually lives** (planner, 2026-09-13 - B14's
+review nit 6). This section is **not** the index of gate results and never
+became one: it holds one deep write-up, B11's, kept because its subject is why a
+backgrounded `npm run check` cannot arm the commit gate. Everything else is
+elsewhere, on purpose:
+
+- **A closed batch's exact commands and results**: `plan.md`, "B<n> built", one
+  section per batch - that is where an implementer writes them and where a
+  reviewer reads them.
+- **The batch that just closed**: the "Status" block at the top of this file,
+  which carries its gates inline.
+- **The next batch's required gates and their costs**: "Next batch", below.
+- **Standing cost figures and the foreground-call rule**: `docs/parity.md`,
+  "Batch size and the fixed cost of a run", and `context.md`, "`npm run check`,
+  settled".
+
+R0a appends its own commands and results under this heading when it closes.
+
 ### B11's evidence, and why it is not a gate (orchestrator, 2026-09-12)
 
 Four runs, all on the B11 working tree at base `9e3d19f`. Read them as
@@ -4578,14 +4634,139 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch
 
-**No implement-ready batch is queued.** B14 is closed (below). The next work
-is **R0a**, currently only an outline - `plan.md`, "R0a planned in outline:
-the evidence, the sweep, the goldens" - and needs its own planning pass
-(steps, file list, acceptance criteria) before an implementer opens it. R0a
-deletes nothing, so it needs Phase 7's conditions 1, 2, 3 and 5 only, all
-already satisfied. After R0a: **R0b -> R0c**, also outlined in `plan.md`,
-"The finishing plan"; **R0c needs the owner's go** and is where the one-file
-revert ends.
+### R0a - the evidence, the sweep, and the structural goldens (implement-ready)
+
+- **Name:** R0a - the evidence, the `ACCEPTED`/`VISUAL_DEBT` sweep, and the
+  structural goldens.
+- **Objective:** carry every recorded divergence out of `tests/parity/specs.js`
+  into the specs before R0c deletes that file, stand up the structural text
+  goldens that replace the parity harness as the rewrite's own regression net,
+  and close the five inherited items. **R0a deletes nothing** - the one-file
+  revert (`git revert 9177f3b`) survives it untouched.
+- **Full design, every decision, the disposition table and the normalisation
+  rules:** `plan.md`, **"R0a planned: the evidence, the sweep, and the
+  structural goldens"**. Read it before starting; it settles what a golden file
+  contains, how the 105 states are carried, how each of the 18 `VISUAL_DEBT`
+  entries and all 10 `ACCEPTED` reasons are dispositioned, and why no public
+  contract moves. Do not re-derive those.
+
+**Preflight** (measured by the orchestrator and the planner this session; do not
+re-measure, but do re-read `git log --oneline -3` and `git status` before
+writing):
+
+- HEAD `32926a0` on `main`, **level with `origin/main`** - B14's three code
+  commits are pushed, which corrects the older lines in this file saying nothing
+  was.
+- The working tree is **not clean**: four tracked files are modified
+  (`.claude/README.md`, `.claude/agents/planner.md`,
+  `.claude/prompts/orchestrate.prompt.md`, `issues/47/context.md`) and
+  `issues/tg-preview-refresh/` is untracked. None of them is this batch's.
+  **Preserve all five; never `git add -A`; stage by path.**
+- **A second interactive session shares this working tree.** This planning pass
+  was document-only and safe beside it. The implementer's gates are not: check
+  `test-output/parity.lock` and `git status` before any parity or vitest run,
+  and do not start a heavy run while that session has one alive.
+- Phase 7 conditions 1, 2, 3 and 5 - all R0a needs - are satisfied with run ids
+  in `context.md`, "State at the R0a planning kickoff". `6cb8293`'s cancelled
+  run is explained there and is not a blocker.
+
+**Step 0, before anything else:** `gh run view 34747570250` (HEAD's own run, all
+four parity shards). That run is the **seeding warrant** for the goldens.
+Green -> proceed and name the id in C1's commit message. Not green -> **stop and
+raise**. Run `34721165294` on `37c5c2f` is green and full but predates B14's
+three code commits and is **not** an adequate substitute.
+
+**In scope:** `tests/app/inventory.js` (new), `tests/app/golden.js` (new),
+`tests/app/snapshots/*.txt` (new, 105), `tests/run-all.js`,
+`.claude/hooks/edit-guard.mjs`, `.claude/hooks/selftest.mjs`,
+`docs/specs/COVERAGE.md`, `docs/specs/FEATURES.md`, `tests/parity/specs.js`
+(comments only), `tests/parity.js`, `docs/parity.md`,
+`app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
+`tests/app/states.js`, `tests/app/typo.js`.
+
+**Out of scope, and a stop-and-raise if it looks necessary:** any deletion;
+any value change in `ACCEPTED` or `VISUAL_DEBT`; `docs/fixtures/`,
+`tests/contracts.js`, `docs/specs/CONTRACTS.md`, `llms.txt`,
+`.github/workflows/ci.yml`, `index.html`, `app.js`, `style.css`; re-homing
+`tests/parity/driver.js` (R0b's); the fifteen legacy suites (R0b's); `print`'s
+geometry port (R0b's).
+
+**Steps:** three commits, in this order and for the reason the plan gives -
+C1 the goldens (seeded from the warranted tree, so C3's `isHome` deletion is
+then proved harmless by C1's own instrument), C2 the sweep, C3 the inherited
+checks and the B1 harness fix. The per-commit step list is `plan.md`, "The
+commits".
+
+**Acceptance criteria** - sixteen lines, and **the batch may not be recorded
+closed while any one of them has no outcome** (`plan.md`, "A placement has to be
+acceptance, not a footnote"). Numbers 11-16 are inherited items, each here as
+its own line rather than as a cross-reference:
+
+1. `gh run view 34747570250`'s conclusion recorded, and the id named in C1's
+   commit message.
+2. `tests/app/snapshots/` holds exactly 105 `.txt` files, one per inventory
+   state, four sections each; the total size is recorded; over 4 MB stops to
+   raise rather than commits.
+3. `node tests/app/golden.js` run twice on the same unchanged `dist/`, both
+   green, both reporting 105 states compared, recorded verbatim.
+4. The three refusals demonstrated and then restored: a deleted `.txt` fails
+   "missing", an orphan `.txt` fails "stale", `--only=no-such-state` fails
+   "selected nothing".
+5. `tests/app/inventory.js`'s equality check against `specs.js` passes, and is
+   demonstrated to fail by changing one id locally before restoring it.
+6. All five `FEATURES.md` bullets written, and the two "verified, no edit"
+   verdicts (the anchor re-play, the two-frame link) in C2's commit message.
+7. No value in `ACCEPTED` or `VISUAL_DEBT` changed or deleted; `git diff` over
+   `tests/parity/specs.js` shows comment lines only.
+8. `docs/specs/COVERAGE.md` names `app/golden` and `tests/app/inventory.js`, and
+   states what a golden cannot catch.
+9. `.claude/hooks/edit-guard.mjs` refuses a write under `tests/app/snapshots/`,
+   with a selftest case, and `selftest.mjs` is green inside `npm run check`.
+10. Nothing is deleted: `git show 9177f3b | git apply --reverse --check -` exits
+    0 on the final tree, and `index.html`, `app.js`, `style.css`,
+    `tests/parity/`, `docs/parity.md` and the fifteen legacy suites all remain.
+11. **Blocker B1** - `tests/parity.js` fails a filtered run that compared no
+    cell and prints `сравнено ячеек: N` on every run. Proved both ways:
+    `MSYS_NO_PATHCONV=1 node tests/parity.js "no-such-state"` exits **1**;
+    `MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists ~ created"` exits **0**
+    printing 6 cells.
+12. **B14 nit 1** - `isHome` deleted from `app/src/state/app.svelte.ts` with its
+    four `app.test.ts` assertions (:134, :137, :143, :170), **or** the built
+    record states why it stays.
+13. **B14 nit 2** - `tests/app/states.js` case 14 asserts the image was marked,
+    demonstrated to fail by renaming the selector locally.
+14. **B14 nit 3** - `tests/app/typo.js` asserts `EXPECTED` covers `PAGES` in
+    both directions and no longer defaults to `[]`.
+15. **B14 nit 4, re-placed into R0a from R0b/R0c** (the planner's call: R0a
+    already has `FEATURES.md` open, and `CLAUDE.md` forbids using "out of scope"
+    to skip a local fix) - `FEATURES.md`'s pin line matches `ROUTES.md`'s
+    corrected text: eight sections pin as their own hash, `#/tables` pins as
+    whichever table is on screen.
+16. **B14 nit 6** - this file's `## Verification` section carries the pointer
+    line (**written in this planning pass**; confirm it survived the batch's
+    edits) and R0a's own commands and results are appended under it.
+
+**Verification commands**, one foreground call each, with costs in `plan.md`,
+"Gates, and what each costs". **No local full parity run** - CI's four shards
+are the read:
+
+```text
+set -o pipefail; npm run check 2>&1 | tail -n 120     # once per commit, timeout 600000
+npm run check:built                                   # once, in C1
+node tests/app/golden.js                              # twice in C1, once after C3
+node tests/run-all.js app/sweep
+node tests/run-all.js app/contracts,app/states,app/typo,app/hues
+MSYS_NO_PATHCONV=1 node tests/parity.js "no-such-state"        # must exit 1
+MSYS_NO_PATHCONV=1 node tests/parity.js "#/lists ~ created"    # must exit 0, 6 cells
+```
+
+**Risks / do-nots:** do not seed the goldens from an unwarranted tree; do not
+substitute an older green run; do not regenerate a golden to make a
+non-reproducible state go quiet (name it and exclude it in code with the reason,
+or report it); do not delete anything; do not `git add -A`.
+
+After R0a: **R0b -> R0c**, outlined in `plan.md`, "The finishing plan"; **R0c
+needs the owner's go** and is where the one-file revert ends.
 
 ### Closed record: B14 (landed 2026-09-13)
 
@@ -5675,6 +5856,17 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **PLACED as acceptance lines of R0a (planner, 2026-09-13).** All five open
+  B14 nits below and blocker B1 are now **numbered acceptance criteria** in
+  "Next batch" above - B1 is line 11, nit 1 line 12, nit 2 line 13, nit 3 line
+  14, nit 4 line 15 (**re-placed from R0b/R0c**, because R0a already edits
+  `FEATURES.md`), nit 6 line 16. Nit 6's pointer line is **already written**, in
+  this file's `## Verification` section; line 16 exists so the batch confirms it
+  survived and appends R0a's own evidence under it. Per `plan.md`, "A placement
+  has to be acceptance, not a footnote", R0a may not be recorded closed while
+  any of those lines has no outcome. The entries below are kept verbatim as the
+  record of what was found.
 
 - **From B14's review (reviewer, 2026-09-13) - six nits, each with a batch.**
   None was fixed; none justifies a remediation cycle. Blocker B1 (a zero-match

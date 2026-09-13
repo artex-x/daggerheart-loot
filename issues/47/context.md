@@ -3418,3 +3418,127 @@ them change what a batch has to do.
 
 Six review nits are in `handoff.md`, "Deferred", each named to a batch - four
 of them R0a's.
+
+## State at the R0a planning kickoff (orchestrator, 2026-09-13)
+
+Measured this session, before any dispatch. All of it is status, not design -
+it exists so the R0a planning pass and its implementer do not measure it twice.
+
+- **HEAD is `32926a0`** (`docs(issue-47): record B14's review ...`), on `main`,
+  and **`main` is level with `origin/main`** - so B14's three code commits
+  (`6b18291`, `af7fa17`, `a7f8787`) and the three records **are pushed**, which
+  corrects the earlier handoff lines that say nothing was pushed.
+- **Working tree clean** but for `issues/tg-preview-refresh/` (untracked,
+  another task's - never `git add -A`).
+- **A second interactive session, `tg-preview-refresh-c1`, is live on this same
+  working tree** (started 2026-09-13, seen in `ListAgents`). Planning is
+  document-only and safe beside it; before any gate or commit, re-check
+  `git log --oneline -3` and `git status`, and do not start a heavy run if that
+  session has one alive.
+
+### Phase 7 condition 3, re-read and closed with run ids
+
+R0a's step 1 asks for the `deploy` conclusions of the runs on `515e257` and
+`6cb8293`, and for the id of the last **full** green workflow. Read via `gh`:
+
+| sha | run id | conclusion | `deploy` |
+|---|---|---|---|
+| `9177f3b` (the flip) | `34718569245` | success | success |
+| `515e257` | `34719879067` | success | **success** |
+| `6cb8293` | `34720031859` | **cancelled** | never ran |
+| `ecbd2f4` | `34720438881` | success | success |
+| `37c5c2f` | `34721165294` | success | success |
+| `32926a0` (HEAD) | `34747570250` | **in progress at 08:2x UTC** | pending |
+
+- **`6cb8293`'s cancellation is not a failed deploy and not a blocker.**
+  `ci.yml:13-15` sets `concurrency: group: pages, cancel-in-progress: false`,
+  which keeps the running job but drops superseded **pending** runs; `6cb8293`
+  was pushed at 21:27:58Z and `ecbd2f4` at 21:36:37Z, so its queued run was
+  superseded before it started. The publish path repeats on **four** green
+  `deploy` runs either side of it. Condition 3 is satisfied by evidence.
+- **`34721165294` on `37c5c2f` is the last confirmed full green workflow** -
+  `check`, `audit`, `secrets`, `parity (1..4)` and `deploy` all success. It is
+  an ancestor of HEAD but **predates B14's three code commits**, so it is
+  **not** an adequate seeding warrant for R0a's structural goldens: the goldens
+  must be seeded from a tree green on the full workflow, and B14 changed what
+  the app renders. **The warrant R0a should name is `34747570250` on `32926a0`
+  once it goes green** - it is HEAD's own run and carries all four parity
+  shards. If it is not green, that is a blocker to raise, not a clock to
+  restart.
+- **The live site check is green, taken fresh this session**:
+  `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/` ->
+  `сайт опубликован верно`. (The script requires the URL argument; with none it
+  exits `FAIL no base url`.) This is condition 2's independent read for R0a;
+  condition 2's *second* read still belongs to R0c, when that batch opens.
+- No `deploy` failure and no revert anywhere in the window, so condition 5
+  holds. Conditions 1, 2, 3 and 5 - everything R0a needs - are satisfied.
+
+### Model tiering for this cycle
+
+Fable is unavailable (owner, this session). `.claude/agents/planner.md` already
+carries `model: opus`, so the planner runs at its real documented tier with no
+per-dispatch override; the agent and orchestrator prose are corrected to stop
+naming Fable as the default.
+
+## R0a planning facts (planner, 2026-09-13) - durable, read before implementing
+
+Full design in `plan.md`, "R0a planned: the evidence, the sweep, and the
+structural goldens"; the brief and the sixteen acceptance lines in `handoff.md`,
+"Next batch". Read off the source or probed read-only against the `dist/` built
+at `32926a0` (one puppeteer page, the harness's own launch args, `prepare()`'s
+reduced motion, 1100x900). Do not re-derive.
+
+- **The goldens' instrument exists and is stable.**
+  `page.accessibility.snapshot()` is present in the installed puppeteer 25.9.0
+  (`Page.js:252` -> `cdp/Accessibility.js:132`), so Phase 5 decided 2's "no new
+  dependency" premise holds. Two consecutive captures of the same arrival were
+  byte-identical on all seven routes probed. Capture cost 12-120 ms; the arrival
+  around it is ~1.2 s typically and ~7 s on the `#/tables*` family.
+- **Three serialized fields are per-run poison** (`cdp/Accessibility.js:444-505`):
+  `elementHandle` (a function), `backendNodeId`, `loaderId`. A golden that keeps
+  any of them fails its own second run.
+- **`url` in the tree is an absolute `file:///E:/.../dist/index.html#/...`**,
+  three slashes, i.e. one machine's path - and it does **not** equal
+  `driver.js`'s `TARGETS.next` (`'file://' + path.join(...)`, two slashes,
+  Windows separators). Normalise by cutting at the last `/dist/index.html`
+  substring, never by prefix-comparing against `TARGETS.next`. CI is ubuntu.
+- **Normalised tree sizes** (nodes / bytes of text): `#/tables` 164 / 25.9k,
+  `#/search?q=` 90 / 6.5k, the nine-card print sheet 173 / ~10k,
+  `#/roll/wondrous` 44 / 3.2k, `#/i/ci1` 39 / 2.6k, `#/lists` 36 / 2.5k.
+  Estimated 1.5-2.5 MB over 105 states x 2 languages.
+- **`VISUAL_DEBT`'s 18 entries are one mechanism, not eighteen decisions.**
+  Three states (`#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal`,
+  `#/tables ~ a row opened`) x 6 cells, all 0.02 / 0.03 / 0.07%, every reason
+  "the close button's own focus ring" - the visible consequence of the rewrite's
+  `<dialog>` + `showModal()` moving focus where live leaves it on the page.
+  `specs.js:1964-2022`.
+- **That table's own comment is stale**: it says the fix is "the accessibility
+  fix `ACCEPTED` records", and no `ACCEPTED` key records it. The ten `ACCEPTED`
+  keys (`specs.js:2073-2106`) are eight `#/roll/alt*` controls entries and two
+  `#/tables ~ grid` controls entries, nothing else.
+- **Two of the four "Recorded, not keyed" divergences are already in
+  `FEATURES.md`** and need a verdict, not an edit: the anchor re-play at
+  `FEATURES.md:47-52`, the two-frame link at `FEATURES.md:61`. The other two -
+  `Chip`/`Seg`'s `aria-pressed` and `PrintCard`'s `<h2>` - are not, and become
+  bullets.
+- **`STATES` is 105 entries with zero `pending`**, 42 distinct routes, 61 with an
+  `enter`, 24 with a `storage` seed, 7 `timed`, 5 `whole`. The zero `pending`
+  count is what lets blocker B1's guard be written cleanly. The module-level
+  constants `STATES` reads are the print routes (`specs.js:28-56`), `PACKED`
+  (:70), `NOTES_BOTH_KINDS`, `QTY_AND_PRICE`, `LOOT` and the storage seeds
+  (:1017-1067); `EQUIPMENT_ENTRY` belongs to `SPECS` and does not travel.
+- **`tests/app/lib.js` imports `makeDriver`/`prepare` from
+  `../parity/driver.js`.** R0c's outline says it deletes `tests/parity/` whole;
+  `driver.js` is live code with four (soon five) dependants under `tests/app/`
+  and must be **re-homed by R0b**, not deleted. Nothing in R0a moves it.
+- **A new `run-all.js` row is picked up by CI for free**: `ci.yml:51` is
+  `node tests/run-all.js --exclude=parity`, run after `npm run build`.
+- **`tests/` is invisible to `npm run check`'s formatting and lint steps**
+  (`.prettierignore`, `eslint.config.mjs:10-16`); a new suite there is verified
+  only by running it. `tests/derived.js`'s `COUNTERS` (:397-398) does not read
+  `docs/specs/`, so the sweep's new bullets cannot trip the counter check.
+- **The working tree at planning was not clean**, contrary to the dispatch:
+  four tracked files modified (`.claude/README.md`, `.claude/agents/planner.md`,
+  `.claude/prompts/orchestrate.prompt.md`, `issues/47/context.md` - the
+  orchestrator's own session edits) plus the untracked
+  `issues/tg-preview-refresh/`. Preserve all five; stage by path.
