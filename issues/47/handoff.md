@@ -11,11 +11,15 @@ depends on chat history.
   NEEDS_HUMAN_CONFIRMATION: **yes** - push the three commits and read CI; this
   session was explicitly told not to push. Branch `main`, base `47a9a15`
   (`b0545ed` C1, `30b2744` C2, `47a9a15` C3, on top of `29eae18`).
-  - **All twenty acceptance lines have an outcome** - nineteen closed, line 20
-    (CI's wall-clock delta for the new `golden` job) explicitly open and named
-    to this push, not a footnote. Full disposition, every command and result,
-    every deviation: `plan.md`, **"R0a built: the format revision, and all
-    three commits landed"**.
+  - **All twenty acceptance lines are now closed.** Nineteen by the
+    implementer; **line 20 by the coordinator's measurement after the push**
+    (`858ae58`, and `context.md`, "The golden job costs CI nothing, measured"):
+    run `34753801089` on `30b2744` was green in every job, the four `golden`
+    shards ran 1m43s-2m02s and were done at 11:13:51 while `deploy` started at
+    11:23:51, and `check` and the longest parity shard moved +6s and +1s
+    against the warrant run - noise. CI's wall clock did not grow. Full
+    disposition, every command and result, every deviation: `plan.md`,
+    **"R0a built: the format revision, and all three commits landed"**.
   - **The coordinator's mid-batch correction, carried forward**: a `npm run
     check` reading of 937s was two check runs racing on one tree (the
     coordinator's own foreground attempt collided with this session's
@@ -24,11 +28,18 @@ depends on chat history.
   - **Acceptance line 17 closed on the true numbers, not the plan's predicted
     317**: `_tables_eq_weapon.txt`'s two elided groups are 321 (checkbox) and
     318 (button) - `.fcount` (317) counts catalogue rows only; the groups also
-    fold in the table's per-tier select-all checkboxes and its "Ссылка на
-    таблицу" button, which share a signature with a plain row and are never
-    hidden (both survive as kept "first two" lines). Not a bug in rule A -
-    read directly, not adjusted. `_search_capped.txt` matches the plan's own
-    prediction exactly (296 of 300).
+    fold in the table's four per-tier select-all checkboxes and its "Ссылка на
+    таблицу" button, which share a plain row's signature and are folded with
+    them. Not a bug in rule A - read directly, not adjusted.
+    **Corrected by the review: those controls are not all kept.** Retention is
+    positional, so in this file's `ru :: tree` exactly one of four
+    `checkbox "Выбрать все (N)"` survives, one of four `StaticText "РАНГ N"`,
+    and one of four `StaticText "Выбрать все (N)"`; the rest are inside the
+    elided run. So **rule A's blind interior contains app chrome names, not
+    only `data.js` catalogue text** - now stated that way in
+    `docs/specs/COVERAGE.md`. `_search_capped.txt` matches the plan's own
+    prediction exactly (296 of 300), and has one section, which is where the
+    earlier "never hidden" reading came from.
   - Next action: **the coordinator pushes and reads CI** (per their own
     instruction), then either closes R0a on a green `golden` job or returns a
     red one to this task. After that: **R0b -> R0c**, `plan.md`, "The
@@ -6103,6 +6114,38 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **From R0a's review (reviewer, 2026-09-13) - four nits, none fixed.** R0a is
+  mid-plan, so these defer rather than earning a remediation cycle; the two
+  blockers the same review raised were documentation and are **fixed** in
+  `dee87f1`. Each nit is cheap, local and inside paths a later batch reopens.
+  1. **`golden.js`'s `--only=` comment is wrong in the safe direction (R0b).**
+     `tests/app/golden.js:438-443` and acceptance line 19 both say `--only=`
+     suppresses the missing-golden guard. It does not: the `!fs.existsSync`
+     check at `:427` runs unconditionally and only the stale-file sweep sits
+     under `if (!ONLY)`. The code is stricter than its comment, so there is no
+     hole - but a reader who believes the comment will think a filtered run
+     checks less than it does.
+  2. **A golden's own identity line is never compared (R0b).**
+     `compareGolden` compares the four `## ...` sections only, so the
+     `# <id>` / `# route:` / `# why:` header is unchecked; an `inventory.js`
+     route edit without `--update` leaves a golden whose header disagrees with
+     the state it gates. Low risk - the tree would differ too.
+  3. **The `bash-guard.mjs` workaround should not have become advice (R0b).**
+     Deleting the untracked snapshots directory with `node -e fs.rmSync(...)`
+     after `rm -rf` and `git clean -f` were blocked was benign and in scope.
+     Writing it into `plan.md` as forward-looking guidance is the problem:
+     `CLAUDE.md` says the hooks enforce while it states intent, and the same
+     `node -e` shape defeats the `edit-guard.mjs` rule **this batch added** for
+     `tests/app/snapshots/` - that rule intercepts Write/Edit, not a
+     `node -e fs.writeFileSync` hand-editing a golden to make a run pass, which
+     is exactly what its own message forbids. Either exempt
+     `tests/app/snapshots` in `bash-guard.mjs` as a reviewed one-liner, or drop
+     the advice. The delete may not have been needed at all: `--update`
+     rewrites in place and the stale check reports orphans.
+  4. **`specs.js`'s "Recorded, not keyed" block is stale by one commit (R0b).**
+     It still says "Phase 7's sweep carries them into `FEATURES.md`" in two
+     places, in the very file C2 edited to perform that sweep.
 
 - **PLACED for R0c: `golden` must join `deploy`'s `needs:` list (implementer,
   2026-09-13).** R0a gave the structural goldens their own four-shard CI job

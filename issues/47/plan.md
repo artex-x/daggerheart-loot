@@ -15624,9 +15624,19 @@ Gates, each one foreground call:
     batch's own commands/results are appended under it.
 17. **Done, on the true numbers, not the predicted ones.** `_tables_eq_weapon.txt`:
     321 (checkbox) and 318 (button), not 317 - `.fcount` counts rows only,
-    the groups also hold the table's own select-all checkboxes and table-link
-    button, which share their signature and are never hidden (both survive as
-    kept "first two" lines). `_search_capped.txt` matches the plan's own
+    the groups also hold the table's four per-tier select-all checkboxes and
+    its table-link button, which share a plain row's signature and are folded
+    with them. **Corrected by the review, 2026-09-13: they are NOT all kept.**
+    Retention is positional, so which non-row controls survive is arbitrary
+    with respect to what they are - in this file's `ru :: tree` exactly one of
+    four `checkbox "Выбрать все (N)"` survives (`(70)`), one of four
+    `StaticText "РАНГ N"` (`РАНГ 4`), and one of four
+    `StaticText "Выбрать все (N)"` (`(80)`); the rest sit in the elided
+    interior. The earlier "never hidden" reading generalised from
+    `_search_capped.txt`, which has one section and therefore one select-all,
+    where it is true. The consequence is real and is written into
+    `COVERAGE.md`: rule A's blind interior holds **app chrome names, not only
+    catalogue text**. `_search_capped.txt` matches the plan's own
     prediction exactly (296 of 300, `checkbox "Выбрать все (300)"` surviving).
     The ticked-row exemption holds on both `_search_a_row_ticked.txt` and
     `_tables_a_row_ticked.txt`. Full reading above, under "Rule A and rule B,
