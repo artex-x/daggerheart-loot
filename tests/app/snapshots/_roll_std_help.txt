@@ -1,0 +1,223 @@
+# #/roll/std ~ help
+# route: #/roll/std
+# why: the help panel with bold lines inside a paragraph
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/roll/std]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Обычные правила" [level=1]
+    button "Открывается при запуске" [description=Открывается при запуске pressed=true]
+    button "Как это работает" [description=Как это работает expanded=true]
+    StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "Бросьте d12 и сложите результаты — сумма и есть номер в таблице...." [namelen=214 namehash=2e4c18f1]
+    ... StaticText x30 of 34 same-shape siblings elided
+    LineBreak " "
+    LineBreak " "
+    LineBreak " "
+    LineBreak " "
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Бросить 1d12 ОБЫЧНАЯ" [description=Бросить 1d12 — Обычная]
+    button "2d12 ОБЫЧНАЯ / НЕОБЫЧНАЯ" [description=Бросить 2d12 — Обычная / Необычная]
+    button "3d12 НЕОБЫЧНАЯ / РЕДКАЯ" [description=Бросить 3d12 — Необычная / Редкая]
+    button "4d12 РЕДКАЯ / ЛЕГЕНДАРНАЯ" [description=Бросить 4d12 — Редкая / Легендарная]
+    button "5d12 ЛЕГЕНДАРНАЯ" [description=Бросить 5d12 — Легендарная]
+    button "Core" [pressed=true]
+    button "Hope & Fear" [pressed=true]
+    button "Предметы" [pressed=true]
+    button "Расходники" [pressed=true]
+    button "Скопировать все варианты"
+    ... button x6 of 10 same-shape siblings elided
+    link "Первоклассный Спальный Мешок" [description=Страница url=#/i/ci1]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    link "Зелье Быстрого Шага" [description=Страница url=#/i/cc1]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    link "Шипы" [description=Страница url=#/i/hi1]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Оберегающая Свеча" [description=Страница url=#/i/hc1]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Core
+Dread
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Бросить 1d12 — Обычная
+Бросить 2d12 — Обычная / Необычная
+Бросить 3d12 — Необычная / Редкая
+Бросить 4d12 — Редкая / Легендарная
+Бросить 5d12 — Легендарная
+К содержимому
+Как это работает
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывается при запуске
+Отправить
+Поиск
+Предметы
+Расходники
+Результат броска
+Скопировать все варианты
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Сообщества
+Списки
+Страница
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/roll/std]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Standard rules" [level=1]
+    button "Opens on start" [description=Opens on start pressed=true]
+    button "How this works" [description=How this works expanded=true]
+    StaticText "A roll over the core book and the Hope & Fear tables."
+    StaticText "Roll d12 and add them up — the total is the row number. The same..." [namelen=182 namehash=9e997f9c]
+    ... StaticText x30 of 34 same-shape siblings elided
+    LineBreak " "
+    LineBreak " "
+    LineBreak " "
+    LineBreak " "
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Roll 1d12 COMMON" [description=Roll 1d12 — Common]
+    button "2d12 COMMON / UNCOMMON" [description=Roll 2d12 — Common / Uncommon]
+    button "3d12 UNCOMMON / RARE" [description=Roll 3d12 — Uncommon / Rare]
+    button "4d12 RARE / LEGENDARY" [description=Roll 4d12 — Rare / Legendary]
+    button "5d12 LEGENDARY" [description=Roll 5d12 — Legendary]
+    button "Core" [pressed=true]
+    button "Hope & Fear" [pressed=true]
+    button "Items" [pressed=true]
+    button "Consumables" [pressed=true]
+    button "Copy every option"
+    ... button x6 of 10 same-shape siblings elided
+    link "Premium Bedroll" [description=Page url=#/i/ci1]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    link "Stride Potion" [description=Page url=#/i/cc1]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    link "Caltrops" [description=Page url=#/i/hi1]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Warding Candle" [description=Page url=#/i/hc1]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Communities
+Consumables
+Copy every option
+Copy image
+Copy link
+Copy name
+Copy text
+Core
+Dread
+EN
+Hope & Fear
+How this works
+Items
+Lists
+One higher
+One lower
+Opens on start
+Page
+RU
+Roll 1d12 — Common
+Roll 2d12 — Common / Uncommon
+Roll 3d12 — Uncommon / Rare
+Roll 4d12 — Rare / Legendary
+Roll 5d12 — Legendary
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

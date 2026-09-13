@@ -1,0 +1,411 @@
+# #/tables/eq_secondary
+# route: #/tables/eq_secondary
+# why: a second kind, six facet groups
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_secondary]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Фреймы" [url=#/tables/frames]
+    link "Оружие" [url=#/tables/eq_weapon]
+    link "Вторичное" [url=#/tables/eq_secondary]
+    link "Броня" [url=#/tables/eq_armor]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "108"
+    ... StaticText x6 of 10 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (25)" [checked=false]
+    checkbox "Выбрано" [checked=false]
+    button "Короткий Меч Ранг 1 · Проворность · Вплотную · d8 физ · Одноручн..." [namelen=149 namehash=891fd0c7]
+    ... checkbox x108 of 112 same-shape siblings elided
+    ... button x105 of 109 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "РАНГ 4"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "Выбрать все (27)"
+    checkbox "Выбрано" [checked=false]
+    button "15 Рассекатель Завесы Ранг 4 · Влияние · Вплотную · d6+9 физ · О..." [namelen=388 namehash=9f8865c2]
+    checkbox "Выбрано" [checked=false]
+    button "23 Голодный Кулачный Клинок Ранг 4 · Искусность · Вплотную · d6+..." [namelen=419 namehash=0a74c7f7]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+15Рассекатель ЗавесыРанг 4 · Влияние · Вплотную · d6+9 физ · Одн... [namelen=381 namehash=fae3f03c]
+22Щит Охотника на ЖуковРанг 2 · Сила · Вплотную · d4 физ · Однор... [namelen=230 namehash=1e9e88ac]
+23Голодный Кулачный КлинокРанг 4 · Искусность · Вплотную · d6+7 ... [namelen=411 namehash=5d38bac7]
+26Большая ВилкаРанг 1 · Проворность · Вплотную · d8 физ · Однору... [namelen=163 namehash=2e2a18b6]
+27Щиток Крышки БочкиРанг 1 · Сила · Вплотную · d4 физ · Одноручн... [namelen=133 namehash=aaf82dbc]
+28Щит из СтолаРанг 1 · Сила · Вплотную · d6 физ · ОдноручноеБарь... [namelen=141 namehash=476a5e2f]
+29Нож для ОвощейРанг 1 · Искусность · Вплотную · d8 физ · Однору... [namelen=163 namehash=7a5f28f9]
+30Фестивальный КнутРанг 1 · Влияние · Близко · d6 физ · Одноручн... [namelen=242 namehash=c6b04413]
+31Крюк для БуксировкиРанг 1 · Искусность · Средне · d6 физ · Одн... [namelen=178 namehash=138517e7]
+32Сигнальная РакетаРанг 1 · Искусность · Далеко · d6+1 физ · Одн... [namelen=179 namehash=c739d908]
+49ЛассоРанг 1 · Проворность · Близко · d4 физ · ОдноручноеЗаарка... [namelen=395 namehash=2b457aca]
+50Улучшенное ЛассоРанг 2 · Проворность · Близко · d4+3 физ · Одн... [namelen=408 namehash=a0683c85]
+51Продвинутое ЛассоРанг 3 · Проворность · Близко · d4+6 физ · Од... [namelen=409 namehash=7034cb96]
+52Легендарное ЛассоРанг 4 · Проворность · Близко · d4+9 физ · Од... [namelen=409 namehash=0f2a46ea]
+53Малый РевольверРанг 1 · Искусность · Далеко · d6 физ · Одноруч... [namelen=187 namehash=c9518bf8]
+54Улучшенный Малый РевольверРанг 2 · Искусность · Далеко · d6+3 ... [namelen=200 namehash=1031d453]
+55Продвинутый Малый РевольверРанг 3 · Искусность · Далеко · d6+6... [namelen=201 namehash=61082633]
+56Легендарный Малый РевольверРанг 4 · Искусность · Далеко · d6+9... [namelen=201 namehash=64a8ead1]
+57Кандальные БоласРанг 2 · Искусность · Средне · d4+1 физ · Одно... [namelen=263 namehash=ed3ae9bd]
+69Деревянный КолРанг 1 · Сила · Вплотную · d8 физ · ОдноручноеПа... [namelen=199 namehash=81db52aa]
+6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
+6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
+70Улучшенный Деревянный КолРанг 2 · Сила · Вплотную · d8+2 физ ·... [namelen=212 namehash=44232ea1]
+71Продвинутый Деревянный КолРанг 3 · Сила · Вплотную · d8+4 физ ... [namelen=213 namehash=359e91c9]
+72Легендарный Деревянный КолРанг 4 · Сила · Вплотную · d8+6 физ ... [namelen=213 namehash=d9c5252b]
+73Священный ЩитРанг 1 · Инстинкт · Вплотную · d4 маг · Одноручно... [namelen=200 namehash=edeabf3a]
+74Улучшенный Священный ЩитРанг 2 · Инстинкт · Вплотную · d4+2 ма... [namelen=213 namehash=e9c93006]
+75Продвинутый Священный ЩитРанг 3 · Инстинкт · Вплотную · d4+4 м... [namelen=214 namehash=a1ba1816]
+76Легендарный Священный ЩитРанг 4 · Инстинкт · Вплотную · d4+6 м... [namelen=214 namehash=298ca8d4]
+77Цепной ХлыстРанг 1 · Влияние · Близко · d6+1 физ · ОдноручноеЦ... [namelen=172 namehash=584512f1]
+78Улучшенный Цепной ХлыстРанг 2 · Влияние · Близко · d6+3 физ · ... [namelen=183 namehash=f83bbec3]
+79Продвинутый Цепной ХлыстРанг 3 · Влияние · Близко · d6+5 физ ·... [namelen=184 namehash=cb382ac7]
+7Арканный СкальпельРанг 3 · Искусность · Далеко · d6+2 маг · Одн... [namelen=184 namehash=2bd082f4]
+7Щит ОтталкиванияРанг 3 · Сила · Вплотную · d4+4 физ · Одноручно... [namelen=352 namehash=56acab87]
+80Легендарный Цепной ХлыстРанг 4 · Влияние · Близко · d6+7 физ ·... [namelen=184 namehash=1bf00495]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+БаклерРанг 3 · Проворность · Вплотную · d4+4 физ · ОдноручноеОтк... [namelen=243 namehash=2a6db16f]
+Башенный ЩитРанг 1 · Сила · Вплотную · d6 физ · ОдноручноеБарьер... [namelen=123 namehash=c3475606]
+Боевой ДротикРанг 3 · Проворность · Далеко · d6+5 физ · Одноручн... [namelen=218 namehash=84639d28]
+Боевой ПлащРанг 1 · Влияние · Вплотную · d4 физ · ОдноручноеОбит... [namelen=113 namehash=ad8a351e]
+Броня
+Возвращающийся ТопорРанг 2 · Проворность · Средне · d6+4 физ · О... [namelen=212 namehash=a44e27dd]
+Вторичное
+Вторичный КастетРанг 1 · Сила · Вплотную · d8 физ · ОдноручноеПа... [namelen=148 namehash=f472a675]
+Выбрано
+Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=240 namehash=03f0f778]
+Игла ПустотыРанг 4 · Искусность · Вплотную · d4+6 физ · Одноручн... [namelen=182 namehash=192ac693]
+К содержимому
+Как это работает
+Клинок ЭхаРанг 4 · Влияние · Вплотную · d4+6 маг · ОдноручноеУдв... [namelen=203 namehash=68ff8d2f]
+Колючая ПроволокаРанг 2 · Искусность · Близко · d6+3 физ · Однор... [namelen=253 namehash=d2e290bd]
+Короткий МечРанг 1 · Проворность · Вплотную · d8 физ · Одноручно... [namelen=145 namehash=36b2e2fe]
+Круглый ЩитРанг 1 · Сила · Вплотную · d4 физ · ОдноручноеЗащитно... [namelen=108 namehash=c7100275]
+КрюкРанг 1 · Искусность · Средне · d6 физ · ОдноручноеЦепляющее:... [namelen=144 namehash=7869b9b1]
+Легендарные Метательные НожиРанг 4 · Искусность · Вплотную · d8+... [namelen=282 namehash=11cf065a]
+Легендарные Руны КонцентрацииРанг 4 · Инстинкт · Близко · d6+6 м... [namelen=188 namehash=787ba6da]
+Легендарный Башенный ЩитРанг 4 · Сила · Вплотную · d6+6 физ · Од... [namelen=137 namehash=e6c04193]
+Легендарный Боевой ПлащРанг 4 · Влияние · Вплотную · d4+6 физ · ... [namelen=127 namehash=fb40200a]
+Легендарный Вторичный КастетРанг 4 · Сила · Вплотную · d8+6 физ ... [namelen=162 namehash=27305278]
+Легендарный Короткий МечРанг 4 · Проворность · Вплотную · d8+6 ф... [namelen=158 namehash=cc27d283]
+Легендарный Круглый ЩитРанг 4 · Сила · Вплотную · d4+6 физ · Одн... [namelen=122 namehash=d6e02239]
+Легендарный КрюкРанг 4 · Искусность · Средне · d6+6 физ · Однору... [namelen=158 namehash=6e8cf83b]
+Легендарный Малый КинжалРанг 4 · Искусность · Вплотную · d8+6 фи... [namelen=157 namehash=5d36917e]
+Легендарный Рунный ЩитРанг 4 · Знание · Вплотную · d4+6 маг · Од... [namelen=130 namehash=bd8a2726]
+Легендарный Ручной АрбалетРанг 4 · Искусность · Далеко · d6+7 фи... [namelen=98 namehash=b809ba59]
+Легендарный ТомагавкРанг 4 · Проворность · Вплотную · d8+6 физ ·... [namelen=233 namehash=fa2a9d3d]
+Легендарный ХлыстРанг 4 · Влияние · Близко · d6+6 физ · Одноручн... [namelen=226 namehash=86f29b80]
+ЛутDaggerheart
+Малый КинжалРанг 1 · Искусность · Вплотную · d8 физ · Одноручное... [namelen=144 namehash=8602b65d]
+Метательные НожиРанг 1 · Искусность · Вплотную · d8 физ · Однору... [namelen=268 namehash=f03fb33d]
+Молоток МастераРанг 3 · Сила · Вплотную · d8+4 физ · ОдноручноеС... [namelen=150 namehash=d0647f0b]
+Наручные КогтиРанг 4 · Сила · Вплотную · d6+8 физ · ОдноручноеДв... [namelen=203 namehash=a7d9052d]
+Обычные правила
+Оружие
+Осколок ВорпалаРанг 3 · Знание · Вплотную · d4 маг · ОдноручноеН... [namelen=207 namehash=05ebd8c7]
+Осколок ОснованияРанг 4 · Инстинкт · Близко · d4 физ · Одноручно... [namelen=228 namehash=cedecb0a]
+Открывать этот раздел при запуске
+Парирующий КинжалРанг 2 · Искусность · Вплотную · d6+2 физ · Одн... [namelen=354 namehash=7d234f90]
+Плеть ДушРанг 3 · Влияние · Близко · d6+5 маг · ОдноручноеВытяги... [namelen=226 namehash=ac3773d8]
+Поиск
+Продвинутые Метательные НожиРанг 3 · Искусность · Вплотную · d8+... [namelen=282 namehash=262f311a]
+Продвинутые Руны КонцентрацииРанг 3 · Инстинкт · Близко · d6+4 м... [namelen=188 namehash=ef3b1b6c]
+Продвинутый Башенный ЩитРанг 3 · Сила · Вплотную · d6+4 физ · Од... [namelen=137 namehash=6d6e89ff]
+Продвинутый Боевой ПлащРанг 3 · Влияние · Вплотную · d4+4 физ · ... [namelen=127 namehash=1ca05de2]
+Продвинутый Вторичный КастетРанг 3 · Сила · Вплотную · d8+4 физ ... [namelen=162 namehash=48a04bd6]
+Продвинутый Короткий МечРанг 3 · Проворность · Вплотную · d8+4 ф... [namelen=158 namehash=1d530074]
+Продвинутый Круглый ЩитРанг 3 · Сила · Вплотную · d4+4 физ · Одн... [namelen=122 namehash=758c55d0]
+Продвинутый КрюкРанг 3 · Искусность · Средне · d6+4 физ · Однору... [namelen=158 namehash=b2037f8f]
+Продвинутый Малый КинжалРанг 3 · Искусность · Вплотную · d8+4 фи... [namelen=157 namehash=a79a33a7]
+Продвинутый Рунный ЩитРанг 3 · Знание · Вплотную · d4+4 маг · Од... [namelen=130 namehash=c8498c9d]
+Продвинутый Ручной АрбалетРанг 3 · Искусность · Далеко · d6+5 фи... [namelen=98 namehash=c3ae34fa]
+Продвинутый ТомагавкРанг 3 · Проворность · Вплотную · d8+4 физ ·... [namelen=233 namehash=6524116c]
+Продвинутый ХлыстРанг 3 · Влияние · Близко · d6+4 физ · Одноручн... [namelen=226 namehash=99e86973]
+Рунный ЩитРанг 1 · Знание · Вплотную · d4 маг · ОдноручноеЗащитн... [namelen=116 namehash=94e78804]
+Руны КонцентрацииРанг 1 · Инстинкт · Близко · d6 маг · Одноручно... [namelen=174 namehash=93311698]
+Ручная ПращаРанг 3 · Искусность · Очень далеко · d6+4 физ · Одно... [namelen=208 namehash=dc43c774]
+Ручной АрбалетРанг 1 · Искусность · Далеко · d6+1 физ · Одноручн... [namelen=86 namehash=59b56eba]
+Сеткой
+Складная ДубинкаРанг 2 · Сила · Вплотную · d8 физ · ОдноручноеНе... [namelen=237 namehash=5a04cba4]
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Сфера МёбиусаРанг 4 · Знание · Вплотную · d8+6 маг · ОдноручноеР... [namelen=271 namehash=f03dfbee]
+Таблицы
+ТомагавкРанг 1 · Проворность · Вплотную · d8 физ · ОдноручноеПос... [namelen=219 namehash=82603489]
+Тройной Цепной ПосохРанг 2 · Проворность · Близко · d6+4 физ · О... [namelen=196 namehash=a6c63fb1]
+Улучшенные Метательные НожиРанг 2 · Искусность · Вплотную · d8+2... [namelen=281 namehash=6da013a7]
+Улучшенные Руны КонцентрацииРанг 2 · Инстинкт · Близко · d6+2 ма... [namelen=187 namehash=cbce6540]
+Улучшенный Башенный ЩитРанг 2 · Сила · Вплотную · d6+2 физ · Одн... [namelen=136 namehash=466df74c]
+Улучшенный Боевой ПлащРанг 2 · Влияние · Вплотную · d4+2 физ · О... [namelen=126 namehash=e217db40]
+Улучшенный Вторичный КастетРанг 2 · Сила · Вплотную · d8+2 физ ·... [namelen=161 namehash=67d68a9b]
+Улучшенный Короткий МечРанг 2 · Проворность · Вплотную · d8+2 фи... [namelen=157 namehash=0ae9e503]
+Улучшенный Круглый ЩитРанг 2 · Сила · Вплотную · d4+2 физ · Одно... [namelen=121 namehash=10331a77]
+Улучшенный КрюкРанг 2 · Искусность · Средне · d6+2 физ · Одноруч... [namelen=157 namehash=7bc7df2e]
+Улучшенный Малый КинжалРанг 2 · Искусность · Вплотную · d8+2 физ... [namelen=156 namehash=605bbb0e]
+Улучшенный Рунный ЩитРанг 2 · Знание · Вплотную · d4+2 маг · Одн... [namelen=129 namehash=a414b421]
+Улучшенный Ручной АрбалетРанг 2 · Искусность · Далеко · d6+3 физ... [namelen=97 namehash=06763862]
+Улучшенный ТомагавкРанг 2 · Проворность · Вплотную · d8+2 физ · ... [namelen=232 namehash=29664a23]
+Улучшенный ХлыстРанг 2 · Влияние · Близко · d6+2 физ · Одноручно... [namelen=225 namehash=3034c365]
+Усиленная РукавицаРанг 3 · Знание · Средне · d6+4 физ · Одноручн... [namelen=189 namehash=a50c9126]
+Фильтры
+Фреймы
+ХлыстРанг 1 · Влияние · Близко · d6 физ · ОдноручноеОшеломляющее... [namelen=212 namehash=70a30992]
+Шипастый ЩитРанг 2 · Сила · Вплотную · d6+2 физ · ОдноручноеДвой... [namelen=180 namehash=3ace72ca]
+Щит ХрабрецаРанг 4 · Проворность · Вплотную · d4+6 физ · Одноруч... [namelen=233 namehash=346251af]
+Щупальце Черной КровиРанг 4 · Инстинкт · Средне · d6+8 маг · Одн... [namelen=227 namehash=97aeaaa5]
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_secondary]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Frames" [url=#/tables/frames]
+    link "Weapons" [url=#/tables/eq_weapon]
+    link "Secondary" [url=#/tables/eq_secondary]
+    link "Armor" [url=#/tables/eq_armor]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "108"
+    ... StaticText x6 of 10 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (25)" [checked=false]
+    checkbox "Selected" [checked=false]
+    button "Shortsword Tier 1 · Agility · Melee · d8 phy · One-Handed Paired..." [namelen=145 namehash=2547aef9]
+    ... checkbox x108 of 112 same-shape siblings elided
+    ... button x105 of 109 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "TIER 4"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "Select all (27)"
+    checkbox "Selected" [checked=false]
+    button "15 Veil Cutter Tier 4 · Presence · Melee · d6+9 phy · One-Handed..." [namelen=347 namehash=6fefb0f3]
+    checkbox "Selected" [checked=false]
+    button "23 Hungry Fist Blade Tier 4 · Finesse · Melee · d6+7 phy · One-H..." [namelen=407 namehash=6b0e532c]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+15Veil CutterTier 4 · Presence · Melee · d6+9 phy · One-HandedRe... [namelen=340 namehash=dd1477af]
+22Bug Hunter's AegisTier 2 · Strength · Melee · d4 phy · One-Han... [namelen=216 namehash=084561eb]
+23Hungry Fist BladeTier 4 · Finesse · Melee · d6+7 phy · One-Han... [namelen=399 namehash=c41e8e5f]
+26Large ForkTier 1 · Agility · Melee · d8 phy · One-HandedPaired... [namelen=156 namehash=7acd7b8f]
+27Barrel Lid ShieldTier 1 · Strength · Melee · d4 phy · One-Hand... [namelen=128 namehash=87d1588c]
+28Table ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBar... [namelen=135 namehash=0d599fc6]
+29Paring KnifeTier 1 · Finesse · Melee · d8 phy · One-HandedPair... [namelen=158 namehash=f1edc821]
+30Festival WhipTier 1 · Presence · Very Close · d6 phy · One-Han... [namelen=208 namehash=bc9ada01]
+31Towline HookTier 1 · Finesse · Close · d6 phy · One-HandedHook... [namelen=175 namehash=286d8d19]
+32Flare LauncherTier 1 · Finesse · Far · d6+1 phy · One-HandedBr... [namelen=165 namehash=d92adf10]
+49LassoTier 1 · Agility · Very Close · d4 phy · One-HandedRoped:... [namelen=415 namehash=0aae2eab]
+50Improved LassoTier 2 · Agility · Very Close · d4+3 phy · One-H... [namelen=426 namehash=cd8792b8]
+51Advanced LassoTier 3 · Agility · Very Close · d4+6 phy · One-H... [namelen=426 namehash=4d3eceea]
+52Legendary LassoTier 4 · Agility · Very Close · d4+9 phy · One-... [namelen=427 namehash=732df59a]
+53Small RevolverTier 1 · Finesse · Far · d6 phy · One-HandedQuic... [namelen=169 namehash=944ef6e1]
+54Improved Small RevolverTier 2 · Finesse · Far · d6+3 phy · One... [namelen=180 namehash=b5fe53d5]
+55Advanced Small RevolverTier 3 · Finesse · Far · d6+6 phy · One... [namelen=180 namehash=c3d46e1f]
+56Legendary Small RevolverTier 4 · Finesse · Far · d6+9 phy · On... [namelen=181 namehash=a00657b8]
+57Manacle BolasTier 2 · Finesse · Close · d4+1 phy · One-HandedR... [namelen=234 namehash=0c0e966d]
+69Wooden StakeTier 1 · Strength · Melee · d8 phy · One-HandedPai... [namelen=199 namehash=baf4f972]
+6Ritual Blade of SekhmetTier 3 · Finesse · Melee · d8+4 mag · On... [namelen=266 namehash=586550e2]
+6Shield of the SunTier 3 · Strength · Melee · d4+4 mag · One-Han... [namelen=185 namehash=3635a78d]
+70Improved Wooden StakeTier 2 · Strength · Melee · d8+2 phy · On... [namelen=210 namehash=a455f59b]
+71Advanced Wooden StakeTier 3 · Strength · Melee · d8+4 phy · On... [namelen=210 namehash=6ba24fd1]
+72Legendary Wooden StakeTier 4 · Strength · Melee · d8+6 phy · O... [namelen=211 namehash=207addf9]
+73Hallowed ShieldTier 1 · Instinct · Melee · d4 mag · One-Handed... [namelen=197 namehash=7fdc4080]
+74Improved Hallowed ShieldTier 2 · Instinct · Melee · d4+2 mag ·... [namelen=208 namehash=e0d6476d]
+75Advanced Hallowed ShieldTier 3 · Instinct · Melee · d4+4 mag ·... [namelen=208 namehash=12e6a349]
+76Legendary Hallowed ShieldTier 4 · Instinct · Melee · d4+6 mag ... [namelen=209 namehash=b4c25a8b]
+77Chain WhipTier 1 · Presence · Very Close · d6+1 phy · One-Hand... [namelen=178 namehash=7e5fbf6e]
+78Improved Chain WhipTier 2 · Presence · Very Close · d6+3 phy ·... [namelen=187 namehash=13c691d1]
+79Advanced Chain WhipTier 3 · Presence · Very Close · d6+5 phy ·... [namelen=187 namehash=81cca863]
+7Arcane ScalpelTier 3 · Finesse · Far · d6+2 mag · One-HandedInc... [namelen=188 namehash=bee7341d]
+7Shield of RepulsionTier 3 · Strength · Melee · d4+4 phy · One-H... [namelen=349 namehash=30f9feac]
+80Legendary Chain WhipTier 4 · Presence · Very Close · d6+7 phy ... [namelen=188 namehash=7d44a342]
+Advanced Fighting CloakTier 3 · Presence · Melee · d4+4 phy · On... [namelen=130 namehash=b12b5943]
+Advanced Focus RunesTier 3 · Instinct · Very Close · d6+4 mag · ... [namelen=172 namehash=f23bbe05]
+Advanced GrapplerTier 3 · Finesse · Close · d6+4 phy · One-Hande... [namelen=158 namehash=f4fae38c]
+Advanced Hand CrossbowTier 3 · Finesse · Far · d6+5 phy · One-Ha... [namelen=88 namehash=9772f61c]
+Advanced HatchetTier 3 · Agility · Melee · d8+4 phy · One-Handed... [namelen=247 namehash=2a55daad]
+Advanced Offhand Brass KnucklesTier 3 · Strength · Melee · d8+4 ... [namelen=172 namehash=a2eebb2d]
+Advanced Round ShieldTier 3 · Strength · Melee · d4+4 phy · One-... [namelen=119 namehash=f19f165a]
+Advanced Rune ShieldTier 3 · Knowledge · Melee · d4+4 mag · One-... [namelen=126 namehash=740d6152]
+Advanced ShortswordTier 3 · Agility · Melee · d8+4 phy · One-Han... [namelen=152 namehash=549f8bb1]
+Advanced Small DaggerTier 3 · Finesse · Melee · d8+4 phy · One-H... [namelen=154 namehash=4ed161ef]
+Advanced Throwing KnivesTier 3 · Finesse · Melee · d8+4 phy · On... [namelen=262 namehash=6cc4000c]
+Advanced Tower ShieldTier 3 · Strength · Melee · d6+4 phy · One-... [namelen=131 namehash=58638a65]
+Advanced WhipTier 3 · Presence · Very Close · d6+4 phy · One-Han... [namelen=195 namehash=be4c1394]
+Alt. tables
+Armor
+Blackblood TendrilTier 4 · Instinct · Close · d6+8 mag · One-Han... [namelen=229 namehash=3c3b4bea]
+BraveshieldTier 4 · Agility · Melee · d4+6 phy · One-HandedShelt... [namelen=218 namehash=f5fbca6a]
+BucklerTier 3 · Agility · Melee · d4+4 phy · One-HandedDeflectin... [namelen=230 namehash=fac14da2]
+Collapsible BatonTier 2 · Strength · Melee · d8 phy · One-Handed... [namelen=235 namehash=e1615b3f]
+Communities
+Copy a link to this section
+Core
+Dread
+Dread GM Toolbox
+EN
+Echo BladeTier 4 · Presence · Melee · d4+6 mag · One-HandedDoubl... [namelen=217 namehash=7d160854]
+Eldritch VambraceTier 2 · Instinct · Melee · d8 mag · One-Handed... [namelen=236 namehash=ed0297a3]
+Equipment
+Fighting CloakTier 1 · Presence · Melee · d4 phy · One-HandedPad... [namelen=119 namehash=dd3483f4]
+Filters
+Focus RunesTier 1 · Instinct · Very Close · d6 mag · One-HandedF... [namelen=161 namehash=e9f9b8bf]
+Frames
+GrapplerTier 1 · Finesse · Close · d6 phy · One-HandedHooked: On... [namelen=147 namehash=3f32c4a5]
+Grid
+Hand CrossbowTier 1 · Finesse · Far · d6+1 phy · One-HandedSecon... [namelen=79 namehash=d5fea7c4]
+Hand SlingTier 3 · Finesse · Very Far · d6+4 phy · One-HandedVer... [namelen=170 namehash=6677f40c]
+HatchetTier 1 · Agility · Melee · d8 phy · One-HandedFollow-Up: ... [namelen=236 namehash=0293004c]
+Hope & Fear
+How this works
+Improved Fighting CloakTier 2 · Presence · Melee · d4+2 phy · On... [namelen=130 namehash=352b4a1f]
+Improved Focus RunesTier 2 · Instinct · Very Close · d6+2 mag · ... [namelen=172 namehash=557d6e28]
+Improved GrapplerTier 2 · Finesse · Close · d6+2 phy · One-Hande... [namelen=158 namehash=68c03584]
+Improved Hand CrossbowTier 2 · Finesse · Far · d6+3 phy · One-Ha... [namelen=88 namehash=f0990008]
+Improved HatchetTier 2 · Agility · Melee · d8+2 phy · One-Handed... [namelen=247 namehash=49cef3ed]
+Improved Offhand Brass KnucklesTier 2 · Strength · Melee · d8+2 ... [namelen=172 namehash=72bd1f42]
+Improved Round ShieldTier 2 · Strength · Melee · d4+2 phy · One-... [namelen=119 namehash=845e5073]
+Improved Rune ShieldTier 2 · Knowledge · Melee · d4+2 mag · One-... [namelen=126 namehash=6aeda0e6]
+Improved ShortswordTier 2 · Agility · Melee · d8+2 phy · One-Han... [namelen=152 namehash=014ece8c]
+Improved Small DaggerTier 2 · Finesse · Melee · d8+2 phy · One-H... [namelen=154 namehash=3f5db082]
+Improved Throwing KnivesTier 2 · Finesse · Melee · d8+2 phy · On... [namelen=262 namehash=86ff750b]
+Improved Tower ShieldTier 2 · Strength · Melee · d6+2 phy · One-... [namelen=131 namehash=75ac7608]
+Improved WhipTier 2 · Presence · Very Close · d6+2 phy · One-Han... [namelen=195 namehash=9b3f8fb9]
+Knuckle ClawsTier 4 · Strength · Melee · d6+8 phy · One-HandedDo... [namelen=207 namehash=089ad9cd]
+Legendary Fighting CloakTier 4 · Presence · Melee · d4+6 phy · O... [namelen=131 namehash=4577cfca]
+Legendary Focus RunesTier 4 · Instinct · Very Close · d6+6 mag ·... [namelen=173 namehash=1ebcfd7a]
+Legendary GrapplerTier 4 · Finesse · Close · d6+6 phy · One-Hand... [namelen=159 namehash=37ba7a68]
+Legendary Hand CrossbowTier 4 · Finesse · Far · d6+7 phy · One-H... [namelen=89 namehash=3439c273]
+Legendary HatchetTier 4 · Agility · Melee · d8+6 phy · One-Hande... [namelen=248 namehash=c02fd8d8]
+Legendary Offhand Brass KnucklesTier 4 · Strength · Melee · d8+6... [namelen=173 namehash=39734f2b]
+Legendary Round ShieldTier 4 · Strength · Melee · d4+6 phy · One... [namelen=120 namehash=de1ecc54]
+Legendary Rune ShieldTier 4 · Knowledge · Melee · d4+6 mag · One... [namelen=127 namehash=39a22f87]
+Legendary ShortswordTier 4 · Agility · Melee · d8+6 phy · One-Ha... [namelen=153 namehash=c1c84829]
+Legendary Small DaggerTier 4 · Finesse · Melee · d8+6 phy · One-... [namelen=155 namehash=3ee687d1]
+Legendary Throwing KnivesTier 4 · Finesse · Melee · d8+6 phy · O... [namelen=263 namehash=48dcd0b8]
+Legendary Tower ShieldTier 4 · Strength · Melee · d6+6 phy · One... [namelen=132 namehash=f2206d16]
+Legendary WhipTier 4 · Presence · Very Close · d6+6 phy · One-Ha... [namelen=196 namehash=3970a835]
+Link to this table
+List
+Lists
+Möbius OrbTier 4 · Knowledge · Melee · d8+6 mag · One-HandedRecu... [namelen=259 namehash=011c1158]
+Offhand Brass KnucklesTier 1 · Strength · Melee · d8 phy · One-H... [namelen=161 namehash=7dfc08be]
+Open this section on start
+Parrying DaggerTier 2 · Finesse · Melee · d6+2 phy · One-HandedP... [namelen=329 namehash=35edd638]
+Powered GauntletTier 3 · Knowledge · Close · d6+4 phy · One-Hand... [namelen=181 namehash=1ade28b3]
+Primer ShardTier 4 · Instinct · Very Close · d4 phy · One-Handed... [namelen=214 namehash=6613d1a0]
+RU
+Razor WireTier 2 · Finesse · Very Close · d6+3 phy · One-HandedE... [namelen=261 namehash=bfc7faaf]
+Returning AxeTier 2 · Agility · Close · d6+4 phy · One-HandedRet... [namelen=196 namehash=d893805b]
+Round ShieldTier 1 · Strength · Melee · d4 phy · One-HandedProte... [namelen=108 namehash=3de4b5a6]
+Rune ShieldTier 1 · Knowledge · Melee · d4 mag · One-HandedProte... [namelen=115 namehash=cce204a6]
+Search
+Secondary
+Segmented StaffTier 2 · Agility · Very Close · d6+4 phy · One-Ha... [namelen=179 namehash=00e5c082]
+Selected
+ShortswordTier 1 · Agility · Melee · d8 phy · One-HandedPaired: ... [namelen=141 namehash=6504f618]
+Skip to content
+Small DaggerTier 1 · Finesse · Melee · d8 phy · One-HandedPaired... [namelen=143 namehash=0f68366b]
+Soul ChainTier 3 · Presence · Very Close · d6+5 mag · One-Handed... [namelen=221 namehash=3b87e5ae]
+Spiked ShieldTier 2 · Strength · Melee · d6+2 phy · One-HandedDo... [namelen=166 namehash=6bbfbc31]
+Standard rules
+Tables
+Throwing KnivesTier 1 · Finesse · Melee · d8 phy · One-HandedSto... [namelen=251 namehash=fdbdd7ec]
+Tinker’s HammerTier 3 · Strength · Melee · d8+4 phy · One-Handed... [namelen=153 namehash=117e0431]
+Tower ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBarri... [namelen=120 namehash=50b00261]
+Vault of Ages
+Void NeedleTier 4 · Finesse · Melee · d4+6 phy · One-HandedInver... [namelen=159 namehash=c74b88ff]
+Vorpal ShardTier 3 · Knowledge · Melee · d4 mag · One-HandedTarg... [namelen=193 namehash=e7c584dc]
+War DartTier 3 · Agility · Far · d6+5 phy · One-HandedVersatile:... [namelen=170 namehash=8c9bff53]
+Weapons
+WhipTier 1 · Presence · Very Close · d6 phy · One-HandedStartlin... [namelen=184 namehash=13f25358]
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

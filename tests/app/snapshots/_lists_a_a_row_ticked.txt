@@ -1,0 +1,233 @@
+# #/lists/a ~ a row ticked
+# route: #/lists/a
+# why: the bar on, "Выбрано 1", Цены with its caret, Удалить (1) - at 375 the 640px override drops the pair to its own full-width line
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
+    StaticText "7 позиций"
+    button "Ссылка игрокам"
+    button "Ссылка себе"
+    ... button x8 of 12 same-shape siblings elided
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее Скрыть" [expanded=false]
+      button "Скрыть" [description=Скрыть]
+    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
+    DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
+    checkbox "ВЫБРАНО 1" [checked=false]
+    button "Цены" [expanded=false]
+    checkbox "Выбрать позицию" [checked=true]
+    spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    StaticText "КОЛ-ВО"
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    ... StaticText x11 of 15 same-shape siblings elided
+    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    checkbox "Выбрать позицию" [checked=false]
+    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    ... checkbox x3 of 7 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
+    ... spinbutton x3 of 7 same-shape siblings elided
+    ... spinbutton x3 of 7 same-shape siblings elided
+    ... button x3 of 7 same-shape siblings elided
+    ... button x3 of 7 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
+    spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
+    checkbox "Выбрать позицию" [checked=false]
+    spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
+    button "Наручники Эта пара наручников с замком поставляется с ключом. ПР..." [namelen=74 namehash=9df2647c]
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    checkbox "Выбрать позицию" [checked=false]
+    spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
+    button "Мистический Плащ Существо с Характеристикой Заклинателя, носящее..." [namelen=150 namehash=e6d5f2f2]
+    StaticText "КОЛ-ВО"
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    StaticText "ЗОЛОТО"
+    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Выбрать позицию
+Заметка
+Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
+К содержимому
+ЛутDaggerheart
+Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
+На единицу больше
+На единицу меньше
+Название списка
+НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
+Обычные правила
+Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Позиция в списке
+Поиск
+Пронзительная СвирельЭта свирель ручной работы имеет характерный... [namelen=165 namehash=9d32035b]
+Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
+Результат броска
+Скопировать текст
+Скрыть
+Случайно 1–7
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Ссылка игрокам
+Ссылка себе
+Таблицы
+Убрать из списка
+Удалить
+Удалить (1)
+Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
+Цены
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
+    StaticText "7 items"
+    button "Players’ link"
+    button "Your own link"
+    ... button x8 of 12 same-shape siblings elided
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
+    DisclosureTriangle "Lists live in this browser only. more Dismiss" [expanded=false]
+      button "Dismiss" [description=Dismiss]
+    DisclosureTriangle "NOTES" [expanded=false]
+    DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
+    checkbox "SELECTED 1" [checked=false]
+    button "Prices" [expanded=false]
+    checkbox "Select entry" [checked=true]
+    spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    StaticText "QTY"
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    ... StaticText x11 of 15 same-shape siblings elided
+    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    checkbox "Select entry" [checked=false]
+    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    ... checkbox x3 of 7 same-shape siblings elided
+    spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
+    ... spinbutton x3 of 7 same-shape siblings elided
+    ... spinbutton x3 of 7 same-shape siblings elided
+    ... button x3 of 7 same-shape siblings elided
+    ... button x3 of 7 same-shape siblings elided
+    spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
+    spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
+    checkbox "Select entry" [checked=false]
+    spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
+    button "Manacles This pair of locking cuffs comes with a key. ITEM CORE"
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    checkbox "Select entry" [checked=false]
+    spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
+    button "Arcane Cloak A creature with a Spellcast trait wearing this cloa..." [namelen=124 namehash=e33646cf]
+    StaticText "QTY"
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    StaticText "GOLD"
+    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
+Alt. tables
+Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
+Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
+Communities
+Copy text
+Delete
+Delete (1)
+Dismiss
+Dread
+EN
+Lay these out for printing: nine to an A4 sheet
+List name
+Lists
+ManaclesThis pair of locking cuffs comes with a key.ItemCore
+Note
+One higher
+One lower
+Piper WhistleThis handcrafted whistle has a distinctive sound. W... [namelen=153 namehash=f3fe23c1]
+Players’ link
+Position in the list
+Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Prices
+RU
+Random 1–7
+Remove from the list
+Roll result
+Search
+Select entry
+Skip to content
+Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Your own link
+daggerheart.com
+ЛутDaggerheart

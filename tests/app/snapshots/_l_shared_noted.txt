@@ -1,0 +1,115 @@
+# #/l/ ~ shared, noted
+# route: #/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA
+# why: "Тайник": both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Тайник" [level=1]
+    StaticText "Список от другого игрока · 2 позиции"
+    button "Добавить в список" [expanded=false]
+    StaticText "ДЛЯ ИГРОКОВ"
+    ... StaticText x5 of 9 same-shape siblings elided
+    checkbox "Выбрано" [checked=false]
+    button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
+    StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
+    StaticText "Подделка"
+    checkbox "Выбрано" [checked=false]
+    button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=91 namehash=a16dcb39]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+1Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Пр... [namelen=87 namehash=9c48229a]
+1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=89 namehash=4fe26622]
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Выбрано
+Добавить в список
+К содержимому
+ЛутDaggerheart
+Обычные правила
+Поиск
+Сообщества
+Списки
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Тайник" [level=1]
+    StaticText "A list from another player · 2 items"
+    button "Add to list" [expanded=false]
+    StaticText "FOR PLAYERS"
+    ... StaticText x5 of 9 same-shape siblings elided
+    checkbox "Selected" [checked=false]
+    button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]
+    StaticText "GM ONLY"
+    StaticText "Подделка"
+    checkbox "Selected" [checked=false]
+    button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=78 namehash=9dbe7ab2]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=74 namehash=dc485a4a]
+1Stride PotionYou gain a +1 bonus to your next Agility Roll.Cons... [namelen=74 namehash=a70c8c55]
+Add to list
+Alt. tables
+Communities
+Dread
+EN
+Lists
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

@@ -1,0 +1,391 @@
+# #/tables/community ~ panel open
+# route: #/tables/community
+# why: the filter panel on a sectioned table - the screen the human reported the search-box and любое defects from
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/community]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Фреймы" [url=#/tables/frames]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=true]
+    StaticText "90"
+    ... StaticText x18 of 22 same-shape siblings elided
+    button "Великородное" [pressed=false]
+    ... button x6 of 10 same-shape siblings elided
+    button "Кочевое" [pressed=false]
+    button "Лесное" [pressed=false]
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (10)" [checked=false]
+    checkbox "Выбрано" [checked=false]
+    button "1 Королевская Брошь Пока вы открыто носите эту брошь во владения..." [namelen=228 namehash=dc147d0f]
+    ... checkbox x95 of 99 same-shape siblings elided
+    ... button x87 of 91 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    ... button x5 of 9 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "ЛЕСНОЕ"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "Выбрать все (10)"
+    checkbox "Выбрано" [checked=false]
+    button "9 Сердце Лесного Бога Один раз за кампанию вы можете посадить эт..." [namelen=286 namehash=06bdafb1]
+    checkbox "Выбрано" [checked=false]
+    button "10 Маленький Лесной Дух Игривый лесной дух следует за вами как б..." [namelen=282 namehash=61469f86]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+10Амулет СкарабеяОдин раз за сессию вы можете активировать этот ... [namelen=423 namehash=79415d3d]
+10Военный Барабан Павшего ВойскаСовершив Бросок Влияния (15) во ... [namelen=263 namehash=73430f9a]
+10Маленький Лесной ДухИгривый лесной дух следует за вами как без... [namelen=278 namehash=cdbae407]
+10Рог БлагородстваОдин раз за сессию вы можете протрубить в этот... [namelen=202 namehash=d49161b3]
+10Складной Воздушный ШарПереносное чудо, требующее около часа дл... [namelen=201 namehash=dee5411c]
+10Топор-Пила ЛесорубаЭтот массивный гибридный инструмент рубит д... [namelen=227 namehash=501f18ee]
+10Фальшивый Золотой ЗубПрикусите этот зуб, чтобы впасть в смерте... [namelen=225 namehash=42f65b41]
+10Флейта Зова КракенаЭту древнюю флейту можно использовать один ... [namelen=273 namehash=fd98e274]
+10Хрустальный Шар БуфонидусаПотратив 1 Надежду, вы можете бросит... [namelen=124 namehash=fac3211f]
+1Вечная СвечаКогда эта свеча горит, она создаёт ауру в пределах ... [namelen=233 namehash=861fdb51]
+1Вечный ТрутЭти деревянные палочки легко воспламеняются и никогд... [namelen=167 namehash=0303c9c8]
+1Древесная НастойкаОдин раз за продолжительный отдых вы можете в... [namelen=232 namehash=f8c6fe96]
+1Кодекс Догматичных УстановленийОдин раз до следующего отдыха вы... [namelen=239 namehash=f5143213]
+1Королевская БрошьПока вы открыто носите эту брошь во владениях ... [namelen=224 namehash=472a8b5e]
+1Крапленые Карты и КостиДают преимущество на Броски Искусности п... [namelen=122 namehash=afa48b22]
+1Оберег Удачного РогаОдин раз за сессию вы можете перебросить лю... [namelen=127 namehash=4dea256d]
+1Складная ЛодкаКомпактная лодка, которую можно сложить и носить ... [namelen=223 namehash=70f1e8aa]
+1Теневой МелВы можете писать послания или рисовать символы этим ... [namelen=143 namehash=6dd7d878]
+2Возвратная МонетаЭта монета всегда возвращается в карман владел... [namelen=127 namehash=56703d24]
+2Инструменты НавигатораВ качестве Хода Отдыха вы можете использо... [namelen=177 namehash=6cfc8528]
+2Кормовой Мешок ЗвероводаОдин раз за продолжительный отдых этот ... [namelen=158 namehash=568d425e]
+2Магические Сковывающие КандалыЭти зачарованные кандалы подстраи... [namelen=237 namehash=4a2c5de9]
+2Нежный СилокЭту магическую ловушку можно установить, чтобы схва... [namelen=185 namehash=4768d3bb]
+2Переносная АстролябияВ качестве Хода Отдыха вы можете изучить э... [namelen=206 namehash=c221b3ac]
+2Позолоченный Точильный Камень ДуэлянтаВ качестве Хода Отдыха вы... [namelen=203 namehash=dd3107b0]
+2Прутья Слепого ЛозоходцаВы получаете преимущество на броски для... [namelen=155 namehash=e40fd987]
+2Скальные КрючьяОдин раз за сессию, когда Мастер тратит Страх, ч... [namelen=217 namehash=6ae48c5f]
+3Банка Направляющего СветаЭта запечатанная банка содержит мерцаю... [namelen=174 namehash=eb8b221f]
+3Живые МарионеткиОдин раз за сессию эти ожившие куклы могут прон... [namelen=181 namehash=2a700871]
+3Зачарованные НожныПеред Броском Урона при атаке вы можете отмет... [namelen=156 namehash=2ed689c9]
+3Козьи СапогиПолучив Стресс, вы можете прыгнуть на Среднюю диста... [namelen=165 namehash=0ece5679]
+3Лист Исполинского ДереваОгромный лист, прочный как кожа и широк... [namelen=220 namehash=2072bd32]
+3Позолоченный МонокльПока вы носите этот монокль, вы можете виде... [namelen=150 namehash=0f40a28c]
+3Рыболовная УдочкаВ качестве Хода Отдыха «Подготовка» с этой удо... [namelen=202 namehash=f1161fa5]
+3Сумка ГрибникаОдин раз за продолжительный отдых эта сумка произ... [namelen=152 namehash=5b833a8c]
+3Чернила МудрецаВы можете записать один вопрос этими чернилами и... [namelen=166 namehash=f549e499]
+4Арбалет-ГарпунЭтот арбалет с пружинным механизмом выстреливает ... [namelen=195 namehash=82bf88c3]
+4Компас ВоробьяЭтот компас всегда указывает в направлении того, ... [namelen=234 namehash=ad8aecb9]
+4Маска ГлубинНося эту маску, вы получаете преимущество на Броски... [namelen=227 namehash=cf6e34de]
+4Обученная Посыльная ПтицаОбученный сокол, ястреб или иная изящн... [namelen=286 namehash=80ab68b9]
+4Подвеска Стеклянного ГлазаОдин раз за продолжительный отдых, ко... [namelen=175 namehash=bbd80a48]
+4Топор Лесного СтражаЭтот внешне обычный топор несёт в себе благ... [namelen=228 namehash=932d8976]
+4Угрожающее ЗнамяОдин раз за сессию, когда это знамя поднято в б... [namelen=161 namehash=930420e5]
+4Фолиант Тысячи ПредметовОткрытый, этот фолиант перелистывается ... [namelen=199 namehash=53620ffc]
+4Шепчущая СковородаВ качестве Хода Отдыха «Подготовка» эта зачар... [namelen=234 namehash=26627d6b]
+5Бутылка ВетраОдин раз за сессию вы можете откупорить эту бутылк... [namelen=225 namehash=55893f04]
+5Грибной ФакелЭтот биолюминесцентный гриб работает как обычный ф... [namelen=179 namehash=28430f49]
+5Кольцо Маленького ИсследователяОдин раз за сессию вы можете уме... [namelen=228 namehash=6f8c32d4]
+5Котомка СтранникаВо время путешествия, горного перехода или схо... [namelen=169 namehash=6c7d294a]
+5Магнит УчёногоПока вы держите этот камень, он тихо указывает в ... [namelen=121 namehash=c43d43b2]
+5Маска МаскарадаНа светском приёме вы можете потратить 1 Надежду... [namelen=172 namehash=130c58f1]
+5Предательский КастетВы можете отметить Стресс перед Броском Ата... [namelen=128 namehash=bf531987]
+5Седло УкротителяЭто зачарованное седло принимает форму почти по... [namelen=199 namehash=485c0c70]
+5Табард Догматичного СообществаОдин раз за продолжительный отдых... [namelen=262 namehash=2eb0b241]
+6Браслет Воровского ПерезвонаОдин раз за сессию совершите Бросок... [namelen=307 namehash=6cb8b1f4]
+6Гильдейский АмулетКогда вы должны получить магический урон, вы ... [namelen=202 namehash=39351cc3]
+6Кольцо Диких ЗверейОбщаясь с горным зверем через это кольцо, вы... [namelen=227 namehash=a7d4ccbd]
+6Лунносеменной ФонарьЭтот прозрачный плод содержит жидкий лунный... [namelen=276 namehash=e7b5cd2e]
+6Магитехническая БабочкаОдин раз за продолжительный отдых, настр... [namelen=196 namehash=57d69354]
+6Моток Паучьего ШёлкаВы можете совершить Бросок Искусности, чтоб... [namelen=243 namehash=19dc8840]
+6Подзорная Труба ДальнозоркогоОдин раз за продолжительный отдых ... [namelen=206 namehash=dce365df]
+6Совиный Амулет КараванаОдин раз за сессию, когда вы должны отме... [namelen=148 namehash=202ffa70]
+6Стрелы и Болты с Метеоритными НаконечникамиДо трёх раз до следу... [namelen=170 namehash=2a908897]
+7Венец Живых ЛозОдин раз за продолжительный отдых живые лозы про... [namelen=200 namehash=a9f9563e]
+7Магитехнический ЭкзоскелетНося этот экзоскелет, вы можете отмет... [namelen=137 namehash=d405e697]
+7Рогатый ШлемВы можете броситься на цель в пределах Далекой дист... [namelen=221 namehash=64cd4bce]
+7Сапоги ПервопроходцаОдин раз за продолжительный отдых, пробирая... [namelen=160 namehash=aebc5102]
+7Сапоги РеакцииОдин раз за сессию, когда союзник проваливает бро... [namelen=163 namehash=96334ed5]
+7Серьги ВлюблённыхОдин раз за сессию, нося одну из этих серёг, в... [namelen=278 namehash=e990f45b]
+7Теневой АмулетОдин раз за сессию создайте пузырь тьмы в предела... [namelen=213 namehash=ef7e2850]
+7Черепаший Панцирный НагрудникОдин раз за продолжительный отдых,... [namelen=190 namehash=3e300139]
+7Эхо-ТабличкаОдин раз за сессию эта каменная табличка может запи... [namelen=165 namehash=94b50181]
+8Клык Пещерного ПаукаВы можете использовать этот ядовитый клык в... [namelen=233 namehash=b60072f4]
+8Маскировочный ПлащНося этот плащ во владениях Горного сообществ... [namelen=307 namehash=a401a5c0]
+8Обученный Благородный СкакунОбученный наземный скакун, приспосо... [namelen=303 namehash=ae88aa96]
+8Переносной МостЭтот инженерный мост разворачивается, чтобы пере... [namelen=235 namehash=e3cad555]
+8Переулочная ОкаринаОдин раз за сессию, в городской обстановке и... [namelen=275 namehash=918a88e3]
+8Плащ Первобытного ХищникаПри первом надевании этого плаща выбер... [namelen=240 namehash=37528d8e]
+8Складные СанкиРазвёрнутые, эти санки вмещают до трёх существ Ср... [namelen=137 namehash=c15e6b32]
+8Фонарь ГлубинЭтот фонарь создаёт ровный свет, работающий под во... [namelen=141 namehash=539a1994]
+8Хронометрические ЧасыОдин раз за сессию вы можете активировать ... [namelen=175 namehash=c940c6fb]
+9Биолюминесцентные ПерчаткиПока вы находитесь в темноте или полу... [namelen=118 namehash=7c2a6452]
+9Мантия Алого БархатаОдин раз за сессию, обратившись к союзникам... [namelen=254 namehash=f2cc1bec]
+9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
+9Плащ ПереулковНося этот плащ в городской обстановке или во влад... [namelen=261 namehash=c77cea8b]
+9Семя ФаункорняПосаженное в природную почву, это легендарное сем... [namelen=141 namehash=7cf05743]
+9Сердце Лесного БогаОдин раз за кампанию вы можете посадить это ... [namelen=282 namehash=57da24a7]
+9Сфера Пространственной ТюрьмыВы можете заключить существо разме... [namelen=172 namehash=a3635eee]
+9Тотем Горного ЗверяОдин раз за продолжительный отдых вы можете ... [namelen=247 namehash=f5dc74b8]
+9Шахматы АрхивариусаВо время отдыха вы можете использовать этот ... [namelen=175 namehash=f834f89b]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Великородное
+Выбрано
+Горное
+Догматичное
+К содержимому
+Как это работает
+Кочевое
+Криминальное
+Лесное
+ЛутDaggerheart
+Морское
+Научное
+Обычные правила
+Открывать этот раздел при запуске
+Подземное
+Поиск
+Сеткой
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Таблицы
+Фильтры
+Фреймы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/community]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Frames" [url=#/tables/frames]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=true]
+    StaticText "90"
+    ... StaticText x18 of 22 same-shape siblings elided
+    button "Highborne" [pressed=false]
+    ... button x6 of 10 same-shape siblings elided
+    button "Wanderborne" [pressed=false]
+    button "Wildborne" [pressed=false]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (10)" [checked=false]
+    checkbox "Selected" [checked=false]
+    button "1 Royal Brooch Wearing this brooch openly while within a Highbor..." [namelen=185 namehash=c3de321a]
+    ... checkbox x95 of 99 same-shape siblings elided
+    ... button x87 of 91 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    ... button x5 of 9 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "WILDBORNE"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "Select all (10)"
+    checkbox "Selected" [checked=false]
+    button "9 Heart of the Forest God Once per campaign, you may plant this ..." [namelen=254 namehash=ad9cda5d]
+    checkbox "Selected" [checked=false]
+    button "10 Little Forest Spirit A playful forest spirit follows you as a..." [namelen=292 namehash=dd071f1f]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+10Bufonidus' Crystal SphereBy spending 1 Hope, you may roll a d2... [namelen=117 namehash=480cd2fd]
+10False Gold ToothBite down on this false golden tooth to enter ... [namelen=191 namehash=b93c0682]
+10Felling Axe-SawThis massive hybrid tool cuts through wood, roo... [namelen=230 namehash=a621d03c]
+10Foldable Sky-BalloonA portable marvel requiring about one hour... [namelen=213 namehash=3833a974]
+10Horn of NobilityOnce per session, you may sound this horn and ... [namelen=178 namehash=7fb29af5]
+10Kraken's Call FluteThis ancient flute can be played once per c... [namelen=253 namehash=e318042e]
+10Little Forest SpiritA playful forest spirit follows you as a s... [namelen=288 namehash=ed91f154]
+10Scarab AmuletOnce per session, you may activate this amulet to... [namelen=409 namehash=b7db1618]
+10War Drum of the Fallen HostBy making a Presence Roll (15) whil... [namelen=254 namehash=239274e8]
+1Codex of Orderborne DictaOnce per rest, you may read one dictum... [namelen=185 namehash=18f27cae]
+1Everflame KindlingThese wooden sticks ignite easily and never f... [namelen=162 namehash=5c6c21d3]
+1Everlasting CandleWhen lit, this candle creates an aura within ... [namelen=233 namehash=0d364f06]
+1Folding BoatA compact boat that can be folded and carried, then... [namelen=192 namehash=9b807ba1]
+1Loaded Cards and DiceGrant advantage on Finesse rolls when atte... [namelen=111 namehash=b95fdeed]
+1Lucky Horn CharmOnce per session, you may reroll any one die an... [namelen=106 namehash=b41d18a6]
+1Royal BroochWearing this brooch openly while within a Highborne... [namelen=181 namehash=363e7b86]
+1Sap LiquorOnce per long rest, you may drink this replenishing l... [namelen=173 namehash=b6dd6d48]
+1Shadowmark ChalkYou can write messages or symbols using this ma... [namelen=142 namehash=b5e0edb5]
+2Arcane Restraining ManaclesThese enchanted manacles can adjust ... [namelen=248 namehash=868e393c]
+2Beastkeeper's Feed SackOnce per long rest, this sack produces a... [namelen=123 namehash=e595eb66]
+2Blind Dowser's RodsYou have advantage on rolls made to locate u... [namelen=134 namehash=066d6c05]
+2Climbing PitonsOnce per session, when the GM spends a Fear to i... [namelen=210 namehash=87e04ee4]
+2Duelist's Gilded WhetstoneDuring any downtime, you may use a mo... [namelen=196 namehash=466071bd]
+2Gentle SnareThis magical trap can be set to restrain a creature... [namelen=164 namehash=210581f8]
+2Navigator's ToolsDuring downtime, you may use these tools as a ... [namelen=156 namehash=515c497d]
+2Portable AstrolabeDuring downtime, you may study this astrolabe... [namelen=196 namehash=65fbdf08]
+2Returning CoinThis coin always finds its way back into its owne... [namelen=122 namehash=0e1e5a83]
+3Enchanted Weapon SheathBefore rolling damage for an attack, you... [namelen=146 namehash=2c6a5ef3]
+3Fishing RodDuring downtime, when you use the Prepare move with ... [namelen=191 namehash=22049793]
+3Fungal Forager's PouchOnce per long rest, this pouch produces a... [namelen=151 namehash=e55e45fa]
+3Gilded MonocleWhile wearing this jeweled monocle, you can see o... [namelen=152 namehash=1420393e]
+3Goatstep BootsBy marking 1 Stress, you may leap up to Close ran... [namelen=166 namehash=52c8e396]
+3Guidelight JarThis sealed jar holds shifting fireflies. When da... [namelen=147 namehash=ba685a9b]
+3Leaf of the Giant TreeA massive leaf sturdy as leather and broa... [namelen=193 namehash=c89505d9]
+3Living PuppetsOnce per session, these animated puppets can slip... [namelen=152 namehash=f84242da]
+3Sage's InkYou may write one question with this ink and make a K... [namelen=171 namehash=d26c0c6d]
+4Forestwarden's AxeThis seemingly ordinary axe carries the bless... [namelen=196 namehash=5664cde5]
+4Glass Eye PendantOnce per long rest, when you are attacked, rol... [namelen=133 namehash=89c13761]
+4Harpoon CrossbowThis spring-loaded crossbow fires a grappling h... [namelen=203 namehash=18b773fa]
+4Mask of the DeepWhile wearing this mask, you have advantage on ... [namelen=217 namehash=deb1edba]
+4Menacing StandardOnce per session, when this banner is raised d... [namelen=147 namehash=90ff3a8d]
+4Sparrow's CompassThis compass always points toward what its bea... [namelen=190 namehash=64a8503b]
+4Tome of a Thousand SubjectsWhen opened, this tome turns to a us... [namelen=185 namehash=b328095c]
+4Trained Messenger BirdA trained falcon, hawk, or other elegant ... [namelen=263 namehash=b306021f]
+4Whispering SkilletDuring a Prepare downtime move, this enchante... [namelen=207 namehash=ffc6c161]
+5Bottle of WindOnce per session, you may uncork this bottle to r... [namelen=203 namehash=9c71372e]
+5Fungal TorchThis bioluminescent fungus functions as a normal to... [namelen=195 namehash=7255f2b4]
+5Masquerade MaskWhile attending a social gathering, you may spen... [namelen=185 namehash=d0053ccd]
+5Orderborne TabardOnce per long rest. while wearing this tabard,... [namelen=221 namehash=b13e767f]
+5Ring of the Small ExplorerOnce per session, you may shrink to r... [namelen=209 namehash=85cf72c2]
+5Scholar's LodestoneWhile held, this stone subtly points toward ... [namelen=109 namehash=4b6010c4]
+5Treacherous Knuckle-DusterYou may mark 1 Stress before an attac... [namelen=134 namehash=6c5d102e]
+5Wayfarer's PackWhile carrying this pack during a journey, mount... [namelen=185 namehash=127dae2e]
+5Waytamer SaddleThis enchanted saddle reshapes itself to fit alm... [namelen=167 namehash=2058fe47]
+6Caravan Owl AmuletOnce per session, when you would mark Stress,... [namelen=119 namehash=a3952133]
+6Far-Seer's SpyglassOnce per long rest, you may use this spyglas... [namelen=170 namehash=6abd5015]
+6Guild AmuletWhen you would take magical damage, you may reduce ... [namelen=182 namehash=b2ea6be5]
+6Magitech ButterflyOnce per long rest, by attuning to this small... [namelen=159 namehash=daf3d209]
+6Meteoric-Tipped Arrows and BoltsUp to three times per rest, whe... [namelen=149 namehash=c48f4d07]
+6Moonseed LanternThis translucent fruit holds liquid moonlight w... [namelen=231 namehash=a5f1226a]
+6Ring of Wild BeastsWhen you communicate with a mountain beast u... [namelen=247 namehash=bba7062e]
+6Spider Silk SpoolYou may make a Finesse Roll to throw the silk ... [namelen=200 namehash=e4f6e031]
+6Thief's Chime BraceletOnce per session, make a Finesse Roll (18... [namelen=221 namehash=cb0e66a9]
+7Crown of Living VinesOnce per long rest, the living vines awake... [namelen=176 namehash=fb1f90ee]
+7Echo TabletOnce per session, this stone tablet can record sound... [namelen=135 namehash=800acdd1]
+7Horned HelmYou may charge a target within Far range. After maki... [namelen=187 namehash=f91e2234]
+7Lover's EarringsOnce per session, while wearing one of these ea... [namelen=272 namehash=491cc119]
+7Magitech ExoskeletonWhile wearing this exoskeleton, you may mar... [namelen=153 namehash=153c3c4d]
+7Pathfinder's BootsOnce per long rest, when navigating uncertain... [namelen=142 namehash=d34de250]
+7Reaction BootsOnce per session, when an ally fails a roll or su... [namelen=153 namehash=92f9a1ba]
+7Shadow AmuletOnce per session, create a bubble of darkness with... [namelen=183 namehash=54e118aa]
+7Turtle Shell HarnessOnce per long rest, when you would take phy... [namelen=155 namehash=28abb802]
+8Alleyway OcarinaOnce per session, in an urban or Slyborne envir... [namelen=225 namehash=9af73a6d]
+8Camouflage MantleWhile wearing this mantle in Ridgeborne terrai... [namelen=287 namehash=d9122ff4]
+8Cave Spider FangYou can use this venomous fang in place of a we... [namelen=233 namehash=999922b8]
+8Chronometric TimepieceOnce per session, you may activate this w... [namelen=158 namehash=efe2e1f2]
+8Foldaway Trail SledWhen unfolded, this sled carries up to three... [namelen=142 namehash=fc871009]
+8Lantern of the DepthsThis lantern produces steady light that fu... [namelen=180 namehash=6f878d1e]
+8Mantle of the First PredatorThe first time you wear this mantle... [namelen=236 namehash=96a08f14]
+8Portable BridgeThis engineered bridge can be deployed to span g... [namelen=187 namehash=90e78b50]
+8Trained Noble MountA trained terrestrial mount suited for battl... [namelen=296 namehash=7b2bd5e6]
+9Archivist's Chess SetDuring downtime, you may use this enchante... [namelen=167 namehash=579749e1]
+9Bioluminescent GlovesWhile you are in darkness or partial darkn... [namelen=112 namehash=a371810e]
+9Dimensional Prison SphereYou may imprison a humanoid-sized crea... [namelen=147 namehash=3673d07f]
+9Faunroot SeedWhen planted in natural ground, this legendary see... [namelen=138 namehash=3151b3db]
+9Heart of the Forest GodOnce per campaign, you may plant this di... [namelen=250 namehash=6b4551ba]
+9Mantle of Crimson VelvetOnce per session, when you address alli... [namelen=225 namehash=9282caac]
+9Mantle of the BackstreetsWhile wearing this mantle in an urban ... [namelen=239 namehash=01e0f932]
+9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
+9Totem of the Ridge BeastOnce per long rest, you may activate th... [namelen=237 namehash=f5f8099c]
+Alt. tables
+Communities
+Copy a link to this section
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Filters
+Frames
+Grid
+Highborne
+Hope & Fear
+How this works
+Link to this table
+List
+Lists
+Loreborne
+Open this section on start
+Orderborne
+RU
+Ridgeborne
+Seaborne
+Search
+Selected
+Skip to content
+Slyborne
+Standard rules
+Tables
+Underborne
+Vault of Ages
+Wanderborne
+Wildborne
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

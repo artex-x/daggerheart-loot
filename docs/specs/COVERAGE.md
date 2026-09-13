@@ -42,7 +42,7 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 | `noart` | feature | re-homed: `record.test.ts`, `printPage.test.ts`, `tests/app/states.js` (a real broken art path) | records without artwork, and artwork that fails to load |
 | `behave` | journey | re-homed: `roll.test.ts`, `std.test.ts`, `alt.test.ts`, `searchPage.test.ts`, `shell.test.ts`, `state/app.test.ts`, `ports.test.ts` | rolls, search, language, remembered and corrupt settings, starting section, navigation, copy and share, storage disabled |
 | `qa` | regression | re-homed, one case at a time (see the fixture-fate list in `plan.md`, "B12 planned") | one case per defect from an external report: caret, focus, live regions, contrast, truncated link, two tabs, previews, keyboard |
-| `states` | journey | superseded by `tests/parity/specs.js`'s `STATES`, then by `tests/app/states.js` | states reachable only by clicking |
+| `states` | journey | superseded by `tests/parity/specs.js`'s `STATES`, then by `tests/app/states.js`; that inventory itself now lives in `tests/app/inventory.js` | states reachable only by clicking |
 | `audit2` | sweep | ported as is | every address, at four widths, in both languages |
 | `craftmob` | layout | re-homed: the sweep's overflow check at 360/390; `hover: none` stays a known thin spot | narrow screens, touch highlight, selection bar overflow |
 | `typo` | layout | ported as is | two fonts and one size scale, every page, both languages |
@@ -57,6 +57,7 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 | `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
 | `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, all 26 route fixtures, the stat line, filter group names |
 | `app/states` | journey | the fourteen states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two frames picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path, focus surviving a keystroke, the note textarea's height, a roll's card `<img>` node replaced |
+| `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (105 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - those stay `tests/app/sweep.js`'s and, until Phase 7 deletes it, `tests/parity.js`'s. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary - `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures - but any attribute value change, any node added/removed/reordered, or a name change inside the kept boundary still fails. |
 
 ## Features to suites
 

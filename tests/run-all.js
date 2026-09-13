@@ -31,12 +31,19 @@ const HERE = __dirname;
    друга не зависят, так что это четыре задачи, а не одна длинная. Имя набора
    для отбора остаётся прежним: `run-all.js audit2` запустит все четыре. То же
    для нового обхода собранного приложения: `run-all.js app/sweep` запускает
-   все его четыре ширины разом. */
+   все его четыре ширины разом, и для структурных образцов: `run-all.js
+   app/golden` запускает все четыре его шарда разом (issue 47, R0a - ~1000s
+   unsharded is why it is four rows, not one, same precedent as `parity`
+   below; never call `node tests/app/golden.js` bare in one foreground call). */
 const SUITES = [
   ['app/sweep', 'dist/: обход страниц 1180',        370, ['1180']],
   ['app/sweep', 'dist/: обход страниц 768',          320, ['768']],
   ['app/sweep', 'dist/: обход страниц 390',          320, ['390']],
   ['app/sweep', 'dist/: обход страниц 360',          320, ['360']],
+  ['app/golden', 'dist/: структурные образцы 1/4',   265, ['--shard=1/4']],
+  ['app/golden', 'dist/: структурные образцы 2/4',   260, ['--shard=2/4']],
+  ['app/golden', 'dist/: структурные образцы 3/4',   250, ['--shard=3/4']],
+  ['app/golden', 'dist/: структурные образцы 4/4',   250, ['--shard=4/4']],
   ['app/contracts', 'dist/: контракты и фикстуры',   120],
   ['app/states', 'dist/: реальный ввод',              90],
   ['audit2',   'обход страниц: 1180',              45, ['1180']],

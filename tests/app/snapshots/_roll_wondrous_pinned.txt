@@ -1,0 +1,153 @@
+# #/roll/wondrous ~ pinned
+# route: #/roll/wondrous
+# why: the section pinned as the one to open on
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Wondrous Loot" [level=1]
+    button "Открывается при запуске" [description=Открывается при запуске pressed=true]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Введите результат броска или получите случайную позицию."
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Случайно 1–119"
+    button "Страница"
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "WONDROUS"
+    link "Смола Бездны" [description=Страница url=#/i/w1]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
+    DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+  status ""
+    StaticText "Приложение будет открываться на этом разделе"
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+Как это работает
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывается при запуске
+Отправить
+Поиск
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–119
+Сообщества
+Списки
+Страница
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Wondrous Loot" [level=1]
+    button "Opens on start" [description=Opens on start pressed=true]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Enter your roll result, or pick a random entry."
+    StaticText "ROLL RESULT (1–119)"
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Random 1–119"
+    button "Page"
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "WONDROUS"
+    link "Abyssal Sap" [description=Page url=#/i/w1]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
+    DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+  status ""
+    StaticText "Приложение будет открываться на этом разделе"
+
+## en :: controls
+Alt. tables
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+How this works
+Lists
+One higher
+One lower
+Opens on start
+Page
+RU
+Random 1–119
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

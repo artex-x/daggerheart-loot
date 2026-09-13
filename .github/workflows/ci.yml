@@ -41,14 +41,16 @@ jobs:
       - name: Bundle size budget
         run: npm run budget
 
-      # parity is excluded here and run as its own sharded job below: at ~867s
-      # unfiltered it was the one suite long enough to hold this whole pool
-      # hostage regardless of how many others finished early, which is a
-      # large share of why CI stayed red for eight runs before anyone with a
-      # full run noticed - a filtered local run was the only one anybody
-      # could afford to wait for. See issue 47, B3.6 part 0.
+      # parity and app/golden are excluded here and run as their own sharded
+      # jobs below: at ~867s unfiltered, parity was the one suite long enough
+      # to hold this whole pool hostage regardless of how many others
+      # finished early, which is a large share of why CI stayed red for eight
+      # runs before anyone with a full run noticed - a filtered local run was
+      # the only one anybody could afford to wait for (issue 47, B3.6 part 0).
+      # app/golden follows the same precedent at ~1000s (issue 47, R0a): left
+      # in this job it would make `check` the workflow's critical path.
       - name: The legacy suites against the live app, and the built app in a browser
-        run: node tests/run-all.js --exclude=parity
+        run: node tests/run-all.js --exclude=parity,app/golden
 
       # A CI run is gone by the time anyone looks at it, and the summary prints
       # a dozen grepped lines. run-all.js writes every suite's whole output to
@@ -98,6 +100,42 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: failure-output-parity-${{ matrix.shard }}
+          path: |
+            test-output/
+            dist/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # The rewrite's own structural regression net, sharded the same way and for
+  # the same reason as parity above: ~1000s unfiltered would make it the
+  # workflow's critical path if it ran inside `check`. See issue 47, R0a.
+  golden:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: The structural goldens - shard ${{ matrix.shard }} of 4
+        run: node tests/app/golden.js --shard=${{ matrix.shard }}/4
+
+      - name: Everything a failed shard left behind
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: failure-output-golden-${{ matrix.shard }}
           path: |
             test-output/
             dist/

@@ -121,11 +121,14 @@ function setupScratch() {
   // Mixed case on purpose: the Stop hook's record->match chain has to survive
   // relPath()'s win32 case folding (case #60).
   writeFile('app/src/components/PageHead.svelte', '<h1>x</h1>\n');
+  writeFile('tests/app/snapshots/x_state.txt', '# x_state\n');
   // Near-misses for edit-guard's deny list, none of which may deny (#39a).
   writeFile('app/data.json', '{}\n');
   writeFile('docs/i/x.html', '<html></html>\n');
   writeFile('input/x.html', '<html></html>\n');
   writeFile('app/dist/x.html', '<html></html>\n');
+  writeFile('tests/app/snapshot.txt', '# not inside snapshots/\n');
+  writeFile('tests/app-snapshots/x.txt', '# not tests/app/snapshots/\n');
   writeFile('issues/65/context.md', '# context\n');
   writeFile('issues/65/plan.md', '# plan\n');
   writeFile('issues/65/handoff.md', '# handoff\n');
@@ -837,7 +840,7 @@ async function testParityLock() {
   }
 }
 
-// ---------- edit-guard.mjs (#31-39) ----------
+// ---------- edit-guard.mjs (#31-39, #35a) ----------
 
 function testEditGuard() {
   const denyCases = [
@@ -845,7 +848,12 @@ function testEditGuard() {
     ['#32 catalog.csv', path.join(scratchRoot, 'catalog.csv'), null],
     ['#33 i/cc1.html', path.join(scratchRoot, 'i', 'cc1.html'), null],
     ['#34 dist/index.html', path.join(scratchRoot, 'dist', 'index.html'), 'npm run build'],
-    ['#35 package-lock.json', path.join(scratchRoot, 'package-lock.json'), 'npm install']
+    ['#35 package-lock.json', path.join(scratchRoot, 'package-lock.json'), 'npm install'],
+    [
+      '#35a tests/app/snapshots/x_state.txt',
+      path.join(scratchRoot, 'tests', 'app', 'snapshots', 'x_state.txt'),
+      'node tests/app/golden.js --update'
+    ]
   ];
   for (const [label, filePath, fragment] of denyCases) {
     const result = runHook('edit-guard.mjs', editPayload(filePath));
@@ -889,7 +897,15 @@ function testEditGuard() {
     ['#39b app/data.json', path.join(scratchRoot, 'app', 'data.json')],
     ['#39c docs/i/x.html', path.join(scratchRoot, 'docs', 'i', 'x.html')],
     ['#39d input/x.html', path.join(scratchRoot, 'input', 'x.html')],
-    ['#39e app/dist/x.html', path.join(scratchRoot, 'app', 'dist', 'x.html')]
+    ['#39e app/dist/x.html', path.join(scratchRoot, 'app', 'dist', 'x.html')],
+    [
+      '#39f tests/app/snapshot.txt (no trailing slash)',
+      path.join(scratchRoot, 'tests', 'app', 'snapshot.txt')
+    ],
+    [
+      '#39g tests/app-snapshots/x.txt (near-miss dir name)',
+      path.join(scratchRoot, 'tests', 'app-snapshots', 'x.txt')
+    ]
   ];
   for (const [label, filePath] of silentCases) {
     const result = runHook('edit-guard.mjs', editPayload(filePath));

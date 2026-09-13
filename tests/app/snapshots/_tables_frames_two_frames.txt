@@ -1,0 +1,327 @@
+# #/tables/frames ~ two frames
+# route: #/tables/frames
+# why: two frames picked in one row: values OR, and the second pick keeps the first
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/frames/f_frame-beast_feast-colossus]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Фреймы" [url=#/tables/frames]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры (2)" [expanded=true]
+    button "Пир зверей ×" [description=Убрать из фильтра]
+    button "Колоссы Сухоземья ×" [description=Убрать из фильтра]
+    button "Сбросить всё"
+    button "Ссылка на фильтры" [description=Ссылка на фильтры]
+    StaticText "57 из 94"
+    ... StaticText x5 of 9 same-shape siblings elided
+    button "Расходники" [pressed=false]
+    button "Снаряжение" [pressed=false]
+    button "Пир зверей" [pressed=true]
+    button "Колоссы Сухоземья" [pressed=true]
+    button "Тёмное сердце Андалурии" [pressed=false]
+    button "Материнская Плата" [pressed=false]
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (36)" [checked=false]
+    checkbox "Выбрано" [checked=false]
+    ... button x55 of 59 same-shape siblings elided
+    ... checkbox x55 of 59 same-shape siblings elided
+    StaticText "КОЛОССЫ СУХОЗЕМЬЯ"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "Выбрать все (21)"
+    checkbox "Выбрано" [checked=false]
+    button "56 Легендарный Малый Револьвер Ранг 4 · Искусность · Далеко · d6..." [namelen=206 namehash=23e9c698]
+    checkbox "Выбрано" [checked=false]
+    button "93 Динамит Вы можете поджечь эту динамитную шашку и бросить её в..." [namelen=361 namehash=8d143050]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+10СерпРанг 1 · Физическое · Влияние · Вплотную · d8 физ · Однору... [namelen=228 namehash=065e2cc3]
+11Кованый КрюкРанг 1 · Физическое · Сила · Близко · d8+2 физ · Д... [namelen=107 namehash=7d14f260]
+12КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Дву... [namelen=105 namehash=d54ed3b1]
+13УдочкаРанг 1 · Физическое · Проворность · Далеко · d6+3 физ · ... [namelen=108 namehash=9171fffa]
+14РогаткаРанг 1 · Физическое · Искусность · Далеко · d6+3 физ · ... [namelen=108 namehash=676f7d03]
+15Установка для ФейерверковРанг 1 · Физическое · Проворность · О... [namelen=160 namehash=6eaa9a6e]
+16Зачарованный МолотРанг 1 · Магическое · Сила · Вплотную · d10+... [namelen=117 namehash=e3ea37c1]
+17Зачарованная ШвабраРанг 1 · Магическое · Сила · Вплотную · d10... [namelen=117 namehash=fc146ec1]
+18Зачарованные НожницыРанг 1 · Магическое · Искусность · Близко ... [namelen=121 namehash=5b58509e]
+19Зачарованная МетлаРанг 1 · Магическое · Инстинкт · Близко · d1... [namelen=118 namehash=ca2d3629]
+1ТесакРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Од... [namelen=135 namehash=751fabef]
+20Взрывные ЗельяРанг 1 · Магическое · Искусность · Средне · d8 м... [namelen=114 namehash=f931ebb7]
+21Зачарованная Кузнечная ЗажигалкаРанг 1 · Магическое · Инстинкт... [namelen=130 namehash=ca9eee96]
+22Зачарованный БумерангРанг 1 · Магическое · Инстинкт · Далеко ·... [namelen=120 namehash=0802ff38]
+23Зачарованный Воздушный ЗмейРанг 1 · Магическое · Влияние · Дал... [namelen=229 namehash=d7ea6819]
+24ВенчикРанг 1 · Магическое · Знание · Далеко · d6+1 маг · Однор... [namelen=104 namehash=4570d662]
+25Сверкающий ПосохРанг 1 · Магическое · Знание · Очень далеко · ... [namelen=224 namehash=fe5dae34]
+26Большая ВилкаРанг 1 · Проворность · Вплотную · d8 физ · Однору... [namelen=163 namehash=2e2a18b6]
+27Щиток Крышки БочкиРанг 1 · Сила · Вплотную · d4 физ · Одноручн... [namelen=133 namehash=aaf82dbc]
+28Щит из СтолаРанг 1 · Сила · Вплотную · d6 физ · ОдноручноеБарь... [namelen=141 namehash=476a5e2f]
+29Нож для ОвощейРанг 1 · Искусность · Вплотную · d8 физ · Однору... [namelen=163 namehash=7a5f28f9]
+2Заточенные ГраблиРанг 1 · Физическое · Проворность · Вплотную ·... [namelen=120 namehash=5b63509b]
+30Фестивальный КнутРанг 1 · Влияние · Близко · d6 физ · Одноручн... [namelen=242 namehash=c6b04413]
+31Крюк для БуксировкиРанг 1 · Искусность · Средне · d6 физ · Одн... [namelen=178 namehash=138517e7]
+32Сигнальная РакетаРанг 1 · Искусность · Далеко · d6+1 физ · Одн... [namelen=179 namehash=c739d908]
+33Стеганая ОдеждаРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Укло... [namelen=94 namehash=4504e302]
+34Кожаный ФартукРанг 1 · Пороги 6/13 · Броня 3БроняУникальноеПир... [namelen=71 namehash=f0eb79e7]
+35Доспехи из Коры ДереваРанг 1 · Пороги 7/15 · Броня 4Тяжелое: −... [namelen=102 namehash=a5d7668f]
+36Нагрудник из ПротивняРанг 1 · Пороги 8/17 · Броня 4Очень тяжел... [namelen=125 namehash=1facd2b5]
+37РевольверРанг 1 · Физическое · Искусность · Далеко · d6+1 физ ... [namelen=280 namehash=bdd00706]
+38Улучшенный РевольверРанг 2 · Физическое · Искусность · Далеко ... [namelen=291 namehash=0b463b22]
+39Продвинутый РевольверРанг 3 · Физическое · Искусность · Далеко... [namelen=292 namehash=4e74209f]
+3Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 фи... [namelen=135 namehash=fa700f07]
+40Легендарный РевольверРанг 4 · Физическое · Искусность · Далеко... [namelen=293 namehash=aceba92d]
+41ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+... [namelen=190 namehash=93cdcc10]
+42Улучшенная ВинтовкаРанг 2 · Физическое · Проворность · Очень д... [namelen=201 namehash=f2d42c3b]
+43Продвинутая ВинтовкаРанг 3 · Физическое · Проворность · Очень ... [namelen=202 namehash=50d7ca75]
+44Легендарная ВинтовкаРанг 4 · Физическое · Проворность · Очень ... [namelen=203 namehash=3cbc53d1]
+45ДробовикРанг 1 · Физическое · Сила · Близко · d6+2 физ · Двуру... [namelen=206 namehash=b4725a6c]
+46Улучшенный ДробовикРанг 2 · Физическое · Сила · Близко · d6+5 ... [namelen=217 namehash=aab322f6]
+47Продвинутый ДробовикРанг 3 · Физическое · Сила · Близко · d6+8... [namelen=218 namehash=d6a1c38f]
+48Легендарный ДробовикРанг 4 · Физическое · Сила · Близко · d6+1... [namelen=219 namehash=4cc72b29]
+49ЛассоРанг 1 · Проворность · Близко · d4 физ · ОдноручноеЗаарка... [namelen=395 namehash=2b457aca]
+4Железная СковородаРанг 1 · Физическое · Сила · Вплотную · d8+1 ... [namelen=115 namehash=27b472d2]
+50Улучшенное ЛассоРанг 2 · Проворность · Близко · d4+3 физ · Одн... [namelen=408 namehash=a0683c85]
+51Продвинутое ЛассоРанг 3 · Проворность · Близко · d4+6 физ · Од... [namelen=409 namehash=7034cb96]
+52Легендарное ЛассоРанг 4 · Проворность · Близко · d4+9 физ · Од... [namelen=409 namehash=0f2a46ea]
+53Малый РевольверРанг 1 · Искусность · Далеко · d6 физ · Одноруч... [namelen=187 namehash=c9518bf8]
+54Улучшенный Малый РевольверРанг 2 · Искусность · Далеко · d6+3 ... [namelen=200 namehash=1031d453]
+55Продвинутый Малый РевольверРанг 3 · Искусность · Далеко · d6+6... [namelen=201 namehash=61082633]
+56Легендарный Малый РевольверРанг 4 · Искусность · Далеко · d6+9... [namelen=201 namehash=64a8ead1]
+5ВилыРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуручн... [namelen=101 namehash=b9e06833]
+6КувалдаРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двур... [namelen=232 namehash=e7b6e173]
+7Кухонный НожРанг 1 · Физическое · Искусность · Вплотную · d8+1 ... [namelen=115 namehash=32de81e3]
+8Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3... [namelen=115 namehash=0b67fd84]
+93ДинамитВы можете поджечь эту динамитную шашку и бросить её в п... [namelen=357 namehash=8f94fab6]
+9СкалкаРанг 1 · Физическое · Влияние · Вплотную · d8+1 физ · Одн... [namelen=106 namehash=20b8c98b]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Выбрано
+К содержимому
+Как это работает
+Колоссы Сухоземья
+ЛутDaggerheart
+Материнская Плата
+Обычные правила
+Открывать этот раздел при запуске
+Пир зверей
+Поиск
+Расходники
+Сбросить всё
+Сеткой
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Ссылка на фильтры
+Таблицы
+Тёмное сердце Андалурии
+Убрать из фильтра
+Фильтры (2)
+Фреймы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/frames/f_frame-beast_feast-colossus]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Frames" [url=#/tables/frames]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters (2)" [expanded=true]
+    button "Beast Feast ×" [description=Remove from the filter]
+    button "Colossus of the Drylands ×" [description=Remove from the filter]
+    button "Reset all"
+    button "Filter link" [description=Filter link]
+    StaticText "57 of 94"
+    ... StaticText x5 of 9 same-shape siblings elided
+    button "Consumables" [pressed=false]
+    button "Equipment" [pressed=false]
+    button "Beast Feast" [pressed=true]
+    button "Colossus of the Drylands" [pressed=true]
+    button "Dark Heart of Andaluria" [pressed=false]
+    button "Motherboard" [pressed=false]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (36)" [checked=false]
+    checkbox "Selected" [checked=false]
+    ... button x55 of 59 same-shape siblings elided
+    ... checkbox x55 of 59 same-shape siblings elided
+    StaticText "COLOSSUS OF THE DRYLANDS"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "Select all (21)"
+    checkbox "Selected" [checked=false]
+    button "56 Legendary Small Revolver Tier 4 · Finesse · Far · d6+9 phy · ..." [namelen=186 namehash=3d3c1f89]
+    checkbox "Selected" [checked=false]
+    button "93 Dynamite You can light this dynamite and toss it within Close..." [namelen=356 namehash=8fba68dc]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+10SickleTier 1 · Physical · Presence · Melee · d8 phy · One-Hand... [namelen=191 namehash=288ec5be]
+11Forge PokerTier 1 · Physical · Strength · Very Close · d8+2 ph... [namelen=109 namehash=4b41ad1b]
+12Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy... [namelen=108 namehash=5614be6b]
+13Fishing RodTier 1 · Physical · Agility · Far · d6+3 phy · Two-... [namelen=101 namehash=6e401dcf]
+14SlingshotTier 1 · Physical · Finesse · Far · d6+3 phy · Two-Ha... [namelen=99 namehash=89ea55fc]
+15Firework LauncherTier 1 · Physical · Agility · Very Far · d6+3... [namelen=137 namehash=a0961ad1]
+16Enchanted HammerTier 1 · Magic · Strength · Melee · d10+1 mag ... [namelen=107 namehash=a5f405f7]
+17Enchanted MopTier 1 · Magic · Strength · Melee · d10+3 mag · T... [namelen=104 namehash=2ad1b59b]
+18Enchanted ScissorsTier 1 · Magic · Finesse · Very Close · d10 ... [namelen=111 namehash=c8572f77]
+19Enchanted BroomstickTier 1 · Magic · Instinct · Very Close · d... [namelen=116 namehash=357b2995]
+1CleaverTier 1 · Physical · Agility · Melee · d8 phy · One-Hande... [namelen=124 namehash=ccd38059]
+20Exploding PotionsTier 1 · Magic · Finesse · Close · d8 mag · O... [namelen=104 namehash=914b03f0]
+21Enchanted Forge LighterTier 1 · Magic · Instinct · Close · d8 ... [namelen=111 namehash=a5bc561e]
+22Enchanted BoomerangTier 1 · Magic · Instinct · Far · d6+3 mag ... [namelen=107 namehash=18525c80]
+23Enchanted KiteTier 1 · Magic · Presence · Far · d6 mag · Two-H... [namelen=183 namehash=7b21501f]
+24Whisk WandTier 1 · Magic · Knowledge · Far · d6+1 mag · One-Ha... [namelen=99 namehash=f19e4fe4]
+25Sparkling StaffTier 1 · Magic · Knowledge · Very Far · d6 mag ... [namelen=201 namehash=53e6014d]
+26Large ForkTier 1 · Agility · Melee · d8 phy · One-HandedPaired... [namelen=156 namehash=7acd7b8f]
+27Barrel Lid ShieldTier 1 · Strength · Melee · d4 phy · One-Hand... [namelen=128 namehash=87d1588c]
+28Table ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBar... [namelen=135 namehash=0d599fc6]
+29Paring KnifeTier 1 · Finesse · Melee · d8 phy · One-HandedPair... [namelen=158 namehash=f1edc821]
+2Sharpened RakeTier 1 · Physical · Agility · Melee · d8+3 phy · ... [namelen=105 namehash=62ab5d20]
+30Festival WhipTier 1 · Presence · Very Close · d6 phy · One-Han... [namelen=208 namehash=bc9ada01]
+31Towline HookTier 1 · Finesse · Close · d6 phy · One-HandedHook... [namelen=175 namehash=286d8d19]
+32Flare LauncherTier 1 · Finesse · Far · d6+1 phy · One-HandedBr... [namelen=165 namehash=d92adf10]
+33Quilted ClothingTier 1 · Thresholds 5/11 · Armor 3Flexible: +1... [namelen=97 namehash=9605591b]
+34Leather ApronTier 1 · Thresholds 6/13 · Armor 3ArmorUniqueBeas... [namelen=71 namehash=56802e52]
+35Tree Bark ArmorTier 1 · Thresholds 7/15 · Armor 4Heavy: −1 to ... [namelen=93 namehash=5ef03ec9]
+36Baking Tray BreastplateTier 1 · Thresholds 8/17 · Armor 4Very ... [namelen=121 namehash=8ea9c2bd]
+37RevolverTier 1 · Physical · Finesse · Far · d6+1 phy · One-Han... [namelen=248 namehash=347883f2]
+38Improved RevolverTier 2 · Physical · Finesse · Far · d6+4 phy ... [namelen=257 namehash=0ee73cf2]
+39Advanced RevolverTier 3 · Physical · Finesse · Far · d6+7 phy ... [namelen=257 namehash=bb10833f]
+3Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy ·... [namelen=126 namehash=43e47cb2]
+40Legendary RevolverTier 4 · Physical · Finesse · Far · d6+10 ph... [namelen=259 namehash=eef83cda]
+41RifleTier 1 · Physical · Agility · Very Far · d8+2 phy · Two-H... [namelen=167 namehash=43ac7f88]
+42Improved RifleTier 2 · Physical · Agility · Very Far · d8+5 ph... [namelen=176 namehash=76832cf6]
+43Advanced RifleTier 3 · Physical · Agility · Very Far · d8+8 ph... [namelen=176 namehash=6f46006d]
+44Legendary RifleTier 4 · Physical · Agility · Very Far · d8+11 ... [namelen=178 namehash=5736f48d]
+45ShotgunTier 1 · Physical · Strength · Very Close · d6+2 phy · ... [namelen=200 namehash=c6629e4d]
+46Improved ShotgunTier 2 · Physical · Strength · Very Close · d6... [namelen=209 namehash=7897f062]
+47Advanced ShotgunTier 3 · Physical · Strength · Very Close · d6... [namelen=209 namehash=0dcbe0c5]
+48Legendary ShotgunTier 4 · Physical · Strength · Very Close · d... [namelen=211 namehash=dde648f3]
+49LassoTier 1 · Agility · Very Close · d4 phy · One-HandedRoped:... [namelen=415 namehash=0aae2eab]
+4Iron SkilletTier 1 · Physical · Strength · Melee · d8+1 phy · O... [namelen=104 namehash=6c66ecb1]
+50Improved LassoTier 2 · Agility · Very Close · d4+3 phy · One-H... [namelen=426 namehash=cd8792b8]
+51Advanced LassoTier 3 · Agility · Very Close · d4+6 phy · One-H... [namelen=426 namehash=4d3eceea]
+52Legendary LassoTier 4 · Agility · Very Close · d4+9 phy · One-... [namelen=427 namehash=732df59a]
+53Small RevolverTier 1 · Finesse · Far · d6 phy · One-HandedQuic... [namelen=169 namehash=944ef6e1]
+54Improved Small RevolverTier 2 · Finesse · Far · d6+3 phy · One... [namelen=180 namehash=b5fe53d5]
+55Advanced Small RevolverTier 3 · Finesse · Far · d6+6 phy · One... [namelen=180 namehash=c3d46e1f]
+56Legendary Small RevolverTier 4 · Finesse · Far · d6+9 phy · On... [namelen=181 namehash=a00657b8]
+5PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two... [namelen=102 namehash=002370a4]
+6SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · ... [namelen=213 namehash=8504f330]
+7Cooking KnifeTier 1 · Physical · Finesse · Melee · d8+1 phy · O... [namelen=104 namehash=f8b768f0]
+8Walking StaffTier 1 · Physical · Instinct · Melee · d10+3 phy ·... [namelen=106 namehash=4ba5f672]
+93DynamiteYou can light this dynamite and toss it within Close r... [namelen=352 namehash=8fc7810f]
+9Rolling PinTier 1 · Physical · Presence · Melee · d8+1 phy · On... [namelen=103 namehash=5e9cf880]
+Alt. tables
+Beast Feast
+Colossus of the Drylands
+Communities
+Consumables
+Copy a link to this section
+Core
+Dark Heart of Andaluria
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Filter link
+Filters (2)
+Frames
+Grid
+Hope & Fear
+How this works
+Link to this table
+List
+Lists
+Motherboard
+Open this section on start
+RU
+Remove from the filter
+Reset all
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart
