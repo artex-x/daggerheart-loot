@@ -3344,3 +3344,34 @@ contains `6cb8293`'s tree. The practical consequence is that a burst of
 doc-only pushes will cancel the intermediate runs, so **a cancelled run is not
 evidence** and must not be counted toward condition 3. Space pushes out when a
 run's own result is the thing being collected.
+
+## State at the B14 kickoff (orchestrator, 2026-09-13)
+
+Measured, not remembered, before the dispatch:
+
+- **HEAD `37c5c2f`, equal to `origin/main`; tree clean** but for the untracked
+  `issues/tg-preview-refresh/`, which belongs to a different task and stays.
+- **Nothing is running anywhere on this host.** Every live `node.exe` is an MCP
+  stdio server (`@modelcontextprotocol/server-pdf`); no `vitest`, no
+  `tests/run-all.js`, no `tests/parity.js`, no `chrome.exe`. So a heavy gate
+  started now has the machine to itself, and a 5000ms timeout in this batch
+  would be a real finding rather than a stray browser.
+- **The orchestrator for this batch is pinned to another working tree.** Its
+  session was launched in `E:/dev/daggerheart-loot-wt/tg-preview-refresh`
+  (branch `automation/tg-preview-refresh`, 59 commits behind `main`), whose
+  `issues/47/` is a **stale copy frozen at "B7 planned"**. The owner directed
+  the work to `E:/dev/daggerheart-loot` instead. Two consequences worth
+  writing down, because the next session may inherit the same shape:
+  - **`issues/47/` exists on two branches and only `main`'s is true.** A cold
+    agent that reads the copy on `automation/tg-preview-refresh` will believe
+    the print slice is next and that Phase 6 has not happened. Check
+    `git branch --show-current` before trusting anything under `issues/47/`.
+  - **The Bash tool resets its cwd to the session's pinned directory between
+    calls.** Every command in this batch therefore carries an explicit
+    `cd /e/dev/daggerheart-loot &&` prefix; a command without one silently
+    runs against the other worktree.
+- **`.claude/agents/planner.md` already reads `model: opus`.** The owner asked
+  for Opus planning because Fable access has lapsed; the frontmatter had
+  already been changed, so nothing was edited and no per-dispatch model
+  argument was needed. B14 also needs no planning pass - it was left
+  implement-ready by the 2026-09-12 planner.
