@@ -6,11 +6,51 @@ depends on chat history.
 
 ## Status
 
-- Task status: **in_progress. R0a is built - three commits on `main`, none
-  pushed** (implementer, 2026-09-13, on `47a9a15`). Last agent: implementer.
-  NEEDS_HUMAN_CONFIRMATION: **yes** - push the three commits and read CI; this
-  session was explicitly told not to push. Branch `main`, base `47a9a15`
-  (`b0545ed` C1, `30b2744` C2, `47a9a15` C3, on top of `29eae18`).
+- Task status: **in_progress. R0a is CLOSED - built, reviewed, pushed, and
+  green on CI in every job** (orchestrator, 2026-09-13, on `f826bcd`). Last
+  agent: reviewer. **NEEDS_HUMAN_CONFIRMATION: no.** Branch `main`, level with
+  `origin/main`; R0a is `b0545ed` (C1), `30b2744` (C2), `47a9a15` (C3) on top
+  of `29eae18`, with `06658fd`, `858ae58`, `530aa10`, `6e1269b` and `f826bcd`
+  as its records and corrections.
+  - **The CI read: run `34755188652` on `6e1269b` is green in every job** -
+    `check`, `parity (1..4)`, `golden (1..4)`, `audit`, `secrets`, `deploy`.
+    The run before it, `34754984230` on `06658fd`, was red on one case and it
+    was a flake - evidence in `context.md`, "`app/states` case 7 flakes on a
+    loaded runner", and the case is PLACED for R0b in "Deferred".
+  - **Reviewed at Opus: verdict fix-then-continue, documentation only, no code
+    change requested.** Both blockers were corrected in `530aa10` and the one
+    remediation cycle is **spent**. Blocker 1 was the sharp one: the arithmetic
+    behind acceptance line 17 re-derived exactly, but the conclusion drawn from
+    it - that the folded non-row controls "are never hidden" - was false, and
+    `docs/specs/COVERAGE.md` had inherited it. Retention inside a same-shape
+    run is **positional**, so `_tables_eq_weapon.txt` keeps one of four
+    per-tier select-alls and one of four tier headings and elides the rest:
+    rule A's blind interior holds **app chrome names, not only `data.js`
+    catalogue text**, and nothing else will own those names once
+    `tests/parity.js` is deleted. The same row also claimed a reorder still
+    fails; it does not, when two same-signature siblings swap inside an elided
+    run the file is byte-identical. Both are now stated that way in
+    `COVERAGE.md`. Blocker 2 was the handoff disagreeing with `context.md` on
+    line 20; fixed in the same commit.
+  - **What the review verified rather than accepted** (it re-derived each from
+    the artefacts): `ci.yml`'s `deploy` job, its `needs:` and the assembly
+    guard are byte-identical, and `git show 9177f3b | git apply --reverse
+    --check -` still exits 0; B1's fix cannot regress to passing, because
+    `cells++` sits after the WANTED filter and the `!outstanding.length`
+    carve-out can only be tripped by a selected `pending` state; `isHome` has
+    no reader anywhere in `app/src/`, `tests/` or `docs/`; `ACCEPTED` is 10
+    keys and `VISUAL_DEBT` 18 entries with no value changed or deleted and the
+    `specs.js` diff entirely inside comments; the elision signature separates
+    a `checked=true` row from the `checked=false` majority and cannot group a
+    joined text node with a split one; `--shard` partitions disjointly and
+    exhaustively and throws on `0/4`, `5/4` and malformed input.
+  - **The suite's two real blind spots, stated so R0b and R0c can price them**:
+    it can go green on a changed app only through a **rename** of a node
+    positioned in the interior of a >5 same-signature group, or a **reorder**
+    of two same-signature siblings both in that interior. Everything else
+    fails - any add, remove, attribute-value change, role change, tree-shape
+    change, a rename in a kept position or in any group of five or fewer, and
+    via `namehash` any change to a name's tail past 64 code points.
   - **All twenty acceptance lines are now closed.** Nineteen by the
     implementer; **line 20 by the coordinator's measurement after the push**
     (`858ae58`, and `context.md`, "The golden job costs CI nothing, measured"):
@@ -4796,7 +4836,34 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch
 
-### R0a - the evidence, the sweep, and the structural goldens (implement-ready)
+**No implement-ready batch is queued. The next cycle is a planning one: R0b.**
+R0a is closed (its brief is kept below as the record). R0b is an outline only -
+`plan.md`, "R0b planned in outline: re-home what must survive" - and needs a
+planning pass before an implementer opens it.
+
+What that pass owes, from the outline and from what R0a learned:
+
+- **The ten legacy suites with no `tests/app/` counterpart** - `behave`,
+  `craftmob`, `eqtest`, `flows`, `lists2`, `noart`, `notes`, `print`, `qa`,
+  `select` - each get one of three verdicts with the reason in the commit:
+  *covered already* (by a named test, not "probably"), *ported*, or *dropped*.
+  `print` is named by Phase 7's own text: nine 63x88 mm cards per A4 with
+  browser-measured fitting is a product law in `CLAUDE.md` and no other
+  instrument measures it.
+- **`tests/parity/driver.js` has to be re-homed**, and R0a added a fifth
+  dependant to it. R0c's outline deletes `tests/parity/` whole, so the driver
+  five `tests/app/` suites import must move before that happens. R0a moved
+  nothing.
+- **`tests/app/states.js` case 7's swallowed 5000ms timeout** - PLACED in
+  "Deferred" above, with the evidence in `context.md`.
+- **The review's four nits** - also in "Deferred", all cheap and local.
+- Entry condition: R0a landed and `main` green on the full workflow. **Both are
+  satisfied**: run `34755188652` on `6e1269b`, green in every job.
+
+R0c still needs **the owner's go** (Phase 7 condition 6) and is where the
+one-file revert ends.
+
+### Closed record: R0a - the evidence, the sweep, and the structural goldens
 
 - **Name:** R0a - the evidence, the `ACCEPTED`/`VISUAL_DEBT` sweep, and the
   structural goldens.
