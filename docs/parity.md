@@ -86,6 +86,13 @@ A correct missing element can temporarily increase the diff. A made-up element
 can score better by displaying less wrong content. Reproduce the original; the
 metric is evidence, not the product specification.
 
+A filtered run prints `сравнено ячеек: N` on every call and fails if a filter
+selected no cell at all - a zero-match run used to print nothing and exit 0,
+indistinguishable from a filter that matched every state and found no
+difference (issue 47, B1). On a Git Bash host, a filter containing `#/` needs
+`MSYS_NO_PATHCONV=1 node tests/parity.js "..."` - without it, Git Bash rewrites
+the argument into a filesystem path and the run silently matches nothing.
+
 After focused cases pass, run the full required parity suite:
 
 ```text

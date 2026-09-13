@@ -445,11 +445,6 @@ export class AppState {
     return this.#home;
   }
 
-  /** Whether the address on screen is the pinned one - the button reads off this. */
-  get isHome(): boolean {
-    return this.#home === this.hash;
-  }
-
   /**
    * Pins the given address, or unpins it if it is already pinned; pins the
    * address on screen where none is given.

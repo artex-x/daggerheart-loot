@@ -92,6 +92,26 @@ const LABELS = {
 const rep = reporter();
 const { ok } = rep;
 
+/* EXPECTED and PAGES must name exactly the same set of routes - a page in
+ * PAGES with no EXPECTED row used to fall through `EXPECTED[hash] ?? []` and
+ * check nothing silently (B14 nit 3), and a stale EXPECTED row for a route
+ * PAGES no longer visits would be dead weight nobody reads. Asserted once, at
+ * start-up, both directions, so a route added to one and not the other fails
+ * loudly instead of quietly checking less than it looks like it does. */
+{
+  const pageSet = new Set(PAGES);
+  const expectedSet = new Set(Object.keys(EXPECTED));
+  const missing = PAGES.filter((p) => !expectedSet.has(p));
+  const extra = [...expectedSet].filter((p) => !pageSet.has(p));
+  if (missing.length || extra.length) {
+    throw new Error(
+      'EXPECTED и PAGES разошлись - ' +
+        (missing.length ? 'нет в EXPECTED: ' + missing.join(', ') + '. ' : '') +
+        (extra.length ? 'лишнее в EXPECTED: ' + extra.join(', ') + '.' : '')
+    );
+  }
+}
+
 /** Presses a control by name if the page has one, and reports whether it
  *  did - the live equivalent of `hit()`'s `querySelector` returning null,
  *  but reported rather than swallowed: a grip `EXPECTED` names for this page
@@ -126,7 +146,7 @@ async function softClick(d, name) {
       await new Promise((r) => setTimeout(r, 300));
 
       const where = hash + ' ' + lang;
-      for (const grip of EXPECTED[hash] ?? []) {
+      for (const grip of EXPECTED[hash]) {
         ok(found[grip], where + ': ожидаемый элемент управления не найден — ' + grip);
       }
 

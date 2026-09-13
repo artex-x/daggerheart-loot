@@ -368,10 +368,12 @@ async function noteTextareaHeight() {
 async function rollReplacesCardImg() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/roll/wondrous');
-  await page.evaluate(() => {
+  const marked = await page.evaluate(() => {
     const img = document.querySelector('.results .card-media img');
     if (img) img.setAttribute('data-mark', '1');
+    return !!img;
   });
+  ok(marked, '14 (карточка ролла): исходный <img> не найден - .results .card-media img переименован?');
   const rollName = await page.evaluate(() => {
     const btn = document.querySelector('.numrow button.primary');
     return btn ? (btn.textContent || '').replace(/\s+/g, ' ').trim() : '';

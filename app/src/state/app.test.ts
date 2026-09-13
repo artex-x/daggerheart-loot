@@ -129,18 +129,15 @@ describe('the address on the way in', () => {
 });
 
 describe('pinning', () => {
-  it('pins the current address and reports itself pinned', () => {
+  it('pins the current address', () => {
     const app = new AppState(at('#/roll/wondrous'));
-    expect(app.isHome).toBe(false);
     expect(app.toggleHome()).toBe(true);
     expect(app.home).toBe('#/roll/wondrous');
-    expect(app.isHome).toBe(true);
   });
 
   it('unpins back to the default, not to nothing', () => {
     const env = at('#/roll/wondrous', { storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) });
     const app = new AppState(env);
-    expect(app.isHome).toBe(true);
     expect(app.toggleHome()).toBe(true);
     expect(app.home).toBe('#/roll/std');
     expect(env.storage.get(HOME_KEY)).toBe(null);
@@ -164,10 +161,6 @@ describe('pinning', () => {
     expect(app.hash).toBe('#/tables');
     expect(app.toggleHome('#/tables/eq_weapon')).toBe(true);
     expect(app.home).toBe('#/tables/eq_weapon');
-    /* The bar itself is still bare, so the bar-based getter reads unpinned -
-       exactly why PageHead computes its own `on` against the same override
-       rather than reading `app.isHome`. */
-    expect(app.isHome).toBe(false);
   });
 
   it('unpins the address it is given, the same way', () => {
