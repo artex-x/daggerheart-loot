@@ -126,26 +126,35 @@
          that produced a name and nothing else would send the reader to another
          page to find out what they got. -->
     <div class="results">
-      <RecordCard
-        variant="compact"
-        it={shown.it}
-        index={shown.index}
-        lang={app.lang}
-        artBroken={app.artBroken(shown.it.id)}
-        onartfail={(bad: string) => {
-          app.markArtBroken(bad);
-        }}
-        onopen={(r: Record_) => {
-          open = r;
-        }}
-      >
-        {#snippet nameActions()}
-          <RecordActions {app} index={shown.index} it={shown.it} row="name" {say} />
-        {/snippet}
-        {#snippet actions()}
-          <RecordActions {app} index={shown.index} it={shown.it} row="card" {say} />
-        {/snippet}
-      </RecordCard>
+      <!-- Keyed on the record, not the panel: without this Svelte patches the
+           existing card in place on every roll, and the previous artwork sits
+           on screen until the new <img> decodes - live rebuilds #view.innerHTML
+           every time, so its <img> is always brand new (plan.md, "B14
+           planned"). Rolling the *same* record twice is the one case this
+           still keeps the node for; the image is identical, so nothing
+           visible differs. -->
+      {#key shown.it}
+        <RecordCard
+          variant="compact"
+          it={shown.it}
+          index={shown.index}
+          lang={app.lang}
+          artBroken={app.artBroken(shown.it.id)}
+          onartfail={(bad: string) => {
+            app.markArtBroken(bad);
+          }}
+          onopen={(r: Record_) => {
+            open = r;
+          }}
+        >
+          {#snippet nameActions()}
+            <RecordActions {app} index={shown.index} it={shown.it} row="name" {say} />
+          {/snippet}
+          {#snippet actions()}
+            <RecordActions {app} index={shown.index} it={shown.it} row="card" {say} />
+          {/snippet}
+        </RecordCard>
+      {/key}
     </div>
   {/if}
 {/if}

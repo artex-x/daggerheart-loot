@@ -56,7 +56,7 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 | `app/typo` | layout | `typo`, re-pointed at `dist/` |
 | `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
 | `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, all 26 route fixtures, the stat line, filter group names |
-| `app/states` | journey | the thirteen states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two frames picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path, focus surviving a keystroke, the note textarea's height |
+| `app/states` | journey | the fourteen states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two frames picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path, focus surviving a keystroke, the note textarea's height, a roll's card `<img>` node replaced |
 
 ## Features to suites
 

@@ -6,7 +6,7 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (B11's
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Thirteen cases, no ancestor. */
+ * real second tab to mean anything at all. Fourteen cases, no ancestor. */
 const fs = require('fs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 
@@ -355,6 +355,40 @@ async function noteTextareaHeight() {
   await ctx.close();
 }
 
+/** 14. A roll replaces its card's <img>, as the live app does - it rebuilds
+ *  #view.innerHTML on every render, so a new record's picture is always a
+ *  brand-new node that paints empty and fills; `RollPanel.svelte`'s
+ *  `{#key shown.it}` (issue 47, "B14 planned") reproduces that. Node identity
+ *  is the only instrument that can see a transient a settled screenshot never
+ *  catches, and `OrGrid.svelte`'s own `{#key cell.it}` - three of the four
+ *  call sites - is `OrGrid.test.ts`'s. Rolling the *same* record twice
+ *  legitimately keeps the node (the image is identical, so nothing visible
+ *  differs), which is why this presses in a loop rather than once - capped
+ *  well above what chance should ever need across 119 rows. */
+async function rollReplacesCardImg() {
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/roll/wondrous');
+  await page.evaluate(() => {
+    const img = document.querySelector('.results .card-media img');
+    if (img) img.setAttribute('data-mark', '1');
+  });
+  const rollName = await page.evaluate(() => {
+    const btn = document.querySelector('.numrow button.primary');
+    return btn ? (btn.textContent || '').replace(/\s+/g, ' ').trim() : '';
+  });
+  ok(!!rollName, '14 (карточка ролла): кнопка броска не найдена');
+
+  let replaced = false;
+  for (let i = 0; rollName && i < 20 && !replaced; i++) {
+    await d.press(rollName);
+    replaced = await page.evaluate(
+      () => !document.querySelector('.results .card-media img[data-mark]')
+    );
+  }
+  ok(replaced, '14 (карточка ролла): узел <img> выжил после броска на другую запись');
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (новый список с карточки)', newListFromCard],
   ['2 (панель выбора)', newListFromBar],
@@ -367,7 +401,8 @@ const CASES = [
   ['10 (копия картинки)', copyImage],
   ['11 (без картинки)', brokenArtPath],
   ['12 (фокус переживает ввод)', focusSurvivesKeystroke],
-  ['13 (высота заметки)', noteTextareaHeight]
+  ['13 (высота заметки)', noteTextareaHeight],
+  ['14 (карточка ролла)', rollReplacesCardImg]
 ];
 
 (async () => {
@@ -386,6 +421,6 @@ const CASES = [
   }
 
   await closeBrowser().catch(() => {});
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все тринадцать пройдены');
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все четырнадцать пройдены');
   process.exit(rep.failed ? 1 : 0);
 })();

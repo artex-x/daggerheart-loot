@@ -51,7 +51,21 @@
   <div class="orgrid" class:c2={items.length === 2} class:c4={items.length > 2}>
     {#each cells as cell, i (i)}
       {#if cell.kind === 'card'}
-        <div>{@render card(cell.it)}</div>
+        <!-- Keyed on the item itself, not the slot: the live app rebuilds
+             #view.innerHTML on every roll, so a new record's <img> always
+             paints empty and fills. Positional keying let Svelte patch the
+             existing node's src in place instead, and the previous artwork
+             sat on screen until the new one decoded - invisible to a settled
+             screenshot, which is why no parity state caught it (plan.md,
+             "B14 planned"). Object identity is the only key this generic
+             component has - AltPanel's AltPick wrappers are a new object per
+             roll, which matches. Rolling the *same* record twice is the one
+             case this still keeps the node for (the image is identical, so
+             nothing visible differs) - not a DEBT.md entry, since it is a
+             divergence from live that parity never measured. -->
+        <div>
+          {#key cell.it}{@render card(cell.it)}{/key}
+        </div>
       {:else if cell.kind === 'or'}
         <div class="ordiv"><i>{or}</i></div>
       {:else}
