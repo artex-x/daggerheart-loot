@@ -4,7 +4,7 @@ description: >
   Technical design and implement-ready batches for this repo.
   Use when planning a feature, refreshing the next batch, or designing
   source-ingest work. Does not implement production code.
-  Does not choose models for other agents. Default: Opus (Fable while access lasts).
+  Does not choose models for other agents. Default: Opus (Fable access lapsed 2026-09-13).
 model: opus
 ---
 

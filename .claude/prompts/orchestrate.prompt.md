@@ -205,10 +205,12 @@ single-`echo` probes cost roughly 68k tokens each at `high`, so dropping
 the session first is the one case that clearly pays.
 
 Frontmatter defaults (change the file, not your habit):
-- `planner`: fable - the plan decides whether a Sonnet implementer succeeds or
-  thrashes, and a bad plan costs an implement run, a review, and the single
-  remediation cycle. **Fable access may be temporary.** If it lapses, edit the one
-  frontmatter line in `.claude/agents/planner.md` to `opus` - do not paper over it
+- `planner`: **opus** - the plan decides whether a Sonnet implementer succeeds
+  or thrashes, and a bad plan costs an implement run, a review, and the single
+  remediation cycle. Fable was the default while access lasted; **access lapsed
+  (owner, 2026-09-13)** and `.claude/agents/planner.md` was moved to `opus`,
+  which is where it stays until the owner says otherwise. If a stronger tier
+  ever returns, edit that one frontmatter line - do not paper over a tier change
   with a per-dispatch model argument, or the file stops describing the real tier
 - `reviewer`: opus - review runs rarely and exists to catch what the implementer missed; a weak review manufactures confidence, which is worse than none
 - `implementer`: sonnet
@@ -216,10 +218,10 @@ Frontmatter defaults (change the file, not your habit):
 - `refresh-artwork`: sonnet
 
 Raise per dispatch when:
-- Plan: already fable; ask for the session at `high` when design/UI/
-  mechanics are non-trivial. On Fable, lower effort often beats a prior model's
-  highest, so reach for high because the design is hard - not out of habit.
-  Opus is the fallback floor, not a downgrade to choose per dispatch
+- Plan: already opus, which is now the floor and the ceiling; ask for the
+  session at `high` when design/UI/mechanics are non-trivial - reach for high
+  because the design is hard, not out of habit. There is no higher tier to
+  escalate to, so a hard design buys effort, not a model
 - Implement: opus only if a prior implement failed on this batch or risk is high; for a large careful batch ask for the session at high
 - Add-source: opus if new roll/table mechanics or hard ambiguity
 - Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; for large mechanical conversion batches ask for the session at high
@@ -231,7 +233,9 @@ Claude <-> Codex cheat-sheet:
 - strong-mid: Opus medium <-> GPT-5.6 Sol medium/high
 - strong-high: Opus high/xhigh <-> GPT-5.6 Sol high/xhigh/Ultra
 - frontier: Fable medium/high <-> no established Codex peer; on Codex, plan with
-  Sol at its highest tier and expect a weaker plan
+  Sol at its highest tier and expect a weaker plan. **Unavailable since
+  2026-09-13** - kept for the day it returns; today the top of the ladder is
+  strong-high
 Effort on the Claude side is the session's level, set by the human.
 
 Announce chosen tier in chat only. Never write model routing into plan.md or handoff.md.
