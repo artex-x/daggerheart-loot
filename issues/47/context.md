@@ -3542,3 +3542,17 @@ reduced motion, 1100x900). Do not re-derive.
   `.claude/prompts/orchestrate.prompt.md`, `issues/47/context.md` - the
   orchestrator's own session edits) plus the untracked
   `issues/tg-preview-refresh/`. Preserve all five; stage by path.
+
+### The seeding warrant, resolved (orchestrator, 2026-09-13)
+
+Run **`34747570250` on `32926a0` completed `success`** at 08:37 UTC - `check`,
+`audit`, `secrets`, `parity (1..4)` and `deploy`, every one green. It is the
+warrant R0a's structural goldens seed under, and the row above that calls it
+"in progress" is superseded by this.
+
+Two documentation commits landed on top of it while it ran - `fe4eba2` (the
+planner tier text) and `7288106` (R0a's plan) - **both `.md`-only**, so `dist/`
+built from this tree is byte-identical to `dist/` built from `32926a0` and the
+warrant covers what the goldens actually capture. If any non-document commit
+lands before the goldens are seeded, the warrant no longer covers the tree and
+a fresh green run is needed.
