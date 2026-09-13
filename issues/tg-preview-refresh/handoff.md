@@ -16,7 +16,7 @@ authorised on 2026-09-11:
 | Worktree | `E:/dev/daggerheart-loot-wt/tg-preview-refresh` |
 | Branch | `automation/tg-preview-refresh` |
 | Base | `8b96ff4`, the main checkout's local HEAD at the time |
-| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` |
+| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` |
 
 The task-directory copies **in that worktree** are authoritative. The copy
 under `E:/dev/daggerheart-loot` is a stale snapshot - do not read it as
@@ -66,27 +66,23 @@ batch". The owner's own O2 (the reindex) continues in parallel and is not
 blocked by it.
 
 ## Status
-- Task status: **in_progress - B4 shipped; pass 5 planned; B5 is
-  implement-ready. O2 (the owner's reindex) is in flight at 195/1062.**
-- Last agent: **planner (2026-09-13, pass 5).** No production code written.
-  Files written: `issues/tg-preview-refresh/{plan,handoff,context}.md`. No
-  Telegram contact; `.env` not read; `tools/tg-preview/state.json` not read,
-  edited or staged. One read-only `curl -sI` against the public site
-  (`og/_share.jpg`, `og/w76.jpg`, `og/cc19.jpg`) for the `Last-Modified` /
-  `ETag` measurement now in `context.md`.
-- NEEDS_HUMAN_CONFIRMATION: **no.** Pass 4's one question is closed - the
-  owner retired the untrustworthy state and restarted (`context.md`
-  decision 7), and the restart is in flight. Pass 5 raises none: B5
-  invalidates no recorded URL and needs no pause, restart or re-press. See
-  `plan.md` section 11.
+- Task status: **in_progress - B4 and B5 shipped. O2 (the owner's reindex)
+  is in flight in this same worktree, well past 195/1062 as of B5 (state.json
+  was 29.9K/untracked, still growing, at the time B5's gate ran).**
+- Last agent: **implementer (2026-09-13, B5).** Committed the planner's
+  pass-5 task-doc revision on its own (`df76f13`), then implemented and
+  committed B5 (`9694782`). No Telegram contact; `.env` not read;
+  `tools/tg-preview/state.json` not read, edited, staged or deleted at any
+  point - confirmed untracked before and after both commits.
+- NEEDS_HUMAN_CONFIRMATION: **no.** B5 needed no owner decision and
+  invalidated no recorded URL; `plan.md` section 11 stands closed.
 - Branch: `automation/tg-preview-refresh`, worktree
   `E:/dev/daggerheart-loot-wt/tg-preview-refresh`.
-- Base / starting commit for B5: **`0f33aa2`** (`git log -1` to confirm; HEAD
-  can move under this file).
+- Base / starting commit for the next batch: **`9694782`** (`git log -1` to
+  confirm; HEAD can move under this file - the owner's own O2 runs in this
+  worktree and does not commit, but another session might).
 - Working tree at the time of writing: clean apart from the owner's
-  untracked `tools/tg-preview/state.json` and this pass's own edits to the
-  task directory (`context.md` was already modified by the orchestrator;
-  pass 5 appended a "do not re-measure" block to it).
+  untracked, still-growing `tools/tg-preview/state.json`.
 
 ## Completed
 
@@ -121,8 +117,63 @@ blocked by it.
   the batch list, new section 10b, section 11 closed, sections 12 and 13),
   `handoff.md` (this file), `context.md` (one appended block of measured
   facts so they are not re-derived).
-- Commits: none by the planner. Pass 5's files are committed by whoever
-  commits B5, or by the orchestrator, staged by path.
+- Commits: none by the planner. Pass 5's task-doc files were committed by
+  the implementer as their own `docs(tg-preview): ...` commit (`df76f13`)
+  before B5, per section 10b's instruction.
+
+### B5 - say what the photo counter actually measures
+
+- **Status: shipped.** Docs commit `df76f13` (the planner's pass-5
+  `{context,plan,handoff}.md`, committed first and on its own, at a coherent
+  boundary); batch commit `9694782` (`fix(tg-preview): name the photo
+  counter after what it measures`).
+- What shipped, exactly per `plan.md` section 10b: `lib.mjs`'s `pressGroup`
+  classifier now returns four buckets - `newId`, `sameId`, `none`, `unseen`
+  (a pressed message `byIds` could not re-fetch, previously folded into
+  `same`) - with the confirmation rule unchanged in effect
+  (`p.answered || delta === 'newId'`); the same rename through
+  `baseResult()`, the local counter, `photoTotals`/`addPhoto`, and both log
+  lines (`phase 1: ...` and the per-batch line); `pressedCount` is now
+  derived as `budgetBefore - pressBudget` across the group, so a
+  throttle-refused press counts as an attempt (B4 review nit 2, now fixed);
+  `run.mjs`'s summary and `$GITHUB_STEP_SUMMARY` line follow suit.
+  `lib.test.mjs` carries the rename through the three shape assertions,
+  rewords the one test title that said "the photo changed", and adds two
+  cases: a phase-1-only `unseen` test (one unanswered, one answered press,
+  neither's message returned by `byIds`) proving `unseen` confirms nothing
+  on the unanswered side and does not un-confirm the answered one; and a
+  `result.pressed` assertion added to the existing throttle test proving
+  the refused press counts as an attempt while staying out of `confirmed`
+  and every `writeState` call. `docs/tg-preview.md` updates every literal
+  occurrence of the old wording (`grep -in "photo changed\|changed photo\|
+  photo\.changed"` over `docs/tg-preview.md` and `tools/tg-preview/*.mjs`
+  found four hits before the batch and none after): the summary bullet, a
+  new paragraph on what a new id does/does not prove, `unseen` named once,
+  step E.0's phrasing, step F.2's "Mostly `same`" bullet, step G.5 replaced
+  with the plan's revised wording, new step G.7 (the optional one-press
+  experiment) added after G.6, and the `BOT_RESPONSE_TIMEOUT` sentence
+  reworded.
+- No behaviour change, verified: the confirmation rule, press budget,
+  throttle rule, state schema and exit codes are untouched; every prior
+  `lib.test.mjs` assertion on `confirmed`/`pending`/`stopped`/`exitCode`
+  still passes unmodified, only the `photo` shape's keys changed.
+- Deviation from the plan: none. Section 10b's steps 1-8 were followed in
+  order; the two new test cases and the `pressed`-attempts assertion were
+  added as the acceptance criteria describe rather than as two brand-new,
+  otherwise-redundant `it()` blocks duplicating the existing throttle
+  scenario - both things the acceptance criteria ask to be provable are
+  provable after this batch.
+- **Concurrency, as it actually played out:** the owner's own
+  `run.mjs --limit 5 --press-limit 50` was live in this worktree at the
+  start of this batch and finished on its own partway through (never
+  touched by the implementer); a peer session's sharded
+  `tests/app/golden.js` (a Puppeteer/Chrome browser-test run) was live
+  during most of the batch and delayed `npm run check` until it fully
+  cleared (confirmed by process inspection, not by elapsed time alone - a
+  first wait fired on the gap between two shards and had to be redone
+  requiring several consecutive clean checks). `tools/tg-preview/state.json`
+  was read-adjacent only (dry-run reads it to compute stale counts) and
+  never staged, edited or deleted; it stayed untracked throughout.
 
 ### B4 - bound presses per run and stop on @WebpageBot's attempt throttle
 
@@ -159,8 +210,40 @@ blocked by it.
 - Gates for B5: `npm run check` (one foreground call) plus `node --test
   tools/tg-preview/lib.test.mjs`. Not `check:built`, not parity - confirmed,
   not assumed (`plan.md` section 8).
+- **B5, for the record - run in this order:**
+  1. `node --test tools/tg-preview/lib.test.mjs` - `tests 83, pass 83,
+     fail 0` (82 prior + the new `unseen` case).
+  2. `node tools/tg-preview/run.mjs --dry-run` - exit 0, ended
+     `... presses (press budget 50)`; state count had fallen to 857 stale
+     (from 1062) because O2's own reindex had confirmed the rest by then -
+     expected, not a regression. Wrote nothing;
+     `git status --porcelain -- tools/tg-preview/state.json` still showed
+     only `??` before and after.
+  3. `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+     600000) - green in one call, no flake hit this time: `lib.test.mjs`
+     83/83, then vitest `Test Files 39 passed (39)`, `Tests 947 passed
+     (947)`. Deferred until a peer session's sharded
+     `tests/app/golden.js` (Puppeteer/Chrome) fully cleared - confirmed by
+     process inspection (`Get-CimInstance Win32_Process`), not by guessing
+     from elapsed time, after an earlier premature "clear" reading turned
+     out to be the gap between two shards.
+  4. `grep -in "photo changed\|changed photo\|photo\.changed"
+     docs/tg-preview.md tools/tg-preview/*.mjs` - zero hits (four before the
+     batch). `grep -n "changed" tools/tg-preview/lib.mjs
+     tools/tg-preview/run.mjs` - two hits, both explanatory comments
+     ("unchanged og:image", "an unchanged id is not evidence..."), no
+     counter/key/log word.
+  5. `git status --porcelain` after the commit - only
+     `?? tools/tg-preview/state.json`, exactly as required.
 
 ## Next batch (implement-ready)
+
+- **None.** B5 was the last implement-ready batch on `plan.md`'s list. B2
+  (tuning from the first real run) stays an outline until O2 produces more
+  evidence - see "After B5" below and Deferred.
+
+<details>
+<summary>B5's original implement-ready spec, kept for the record</summary>
 
 - **Name: B5 - say what the photo counter actually measures.** Full text:
   `plan.md` section 10b. Read `plan.md` section 3.4's "What the photo counter
@@ -234,22 +317,21 @@ blocked by it.
 **After B5:** nothing implement-ready follows. B2 (tuning from the first
 real run) stays an outline until O2 produces evidence - F.1's counts,
 whether 50 presses complete cleanly, any throttle `N`, F.4's already-posted
-regression result, the per-chunk photo ratios, and now G.7's one-press
+regression result, the per-chunk photo-id ratios, and now G.7's one-press
 result. Do not start B2 speculatively.
 
+</details>
+
 ## Blockers
-- **None.** B5 is implement-ready and needs no owner decision.
-- **One coordination point, not a blocker:** the owner's reindex runs in
-  this worktree. Before B5's `npm run check` and commit, confirm no chunk is
-  in flight (see "Start here" fact 3). Nothing in B5 invalidates the 195
-  recorded URLs; the owner can pick the new code up at any chunk boundary or
-  not at all.
+- **None.** B5 shipped clean; no owner decision was needed and none is
+  pending. O2's reindex kept running through and after the batch, untouched.
 - Merging this branch into `main` still waits for issue 47's B7 to land in
   the main checkout (orchestrator's ordering, unchanged).
 
 ## Deferred
-- **B4 review nits, minus the one B5 takes.** Nit 2 (a throttled press is
-  excluded from `pressed P`) is **in B5**. Still deferred:
+- **B4 review nits, minus the one B5 fixed.** Nit 2 (a throttled press was
+  excluded from `pressed P`) **shipped in B5** - `pressedCount` is now
+  `budgetBefore - pressBudget`. Still deferred:
   1. `attempt()`'s transport retries can re-invoke `cx.press` inside one
      budget decrement, so attempts can undercount by up to 3 per press under
      network failure. Absorbed by the default under-shoot (50 vs an observed
@@ -312,3 +394,17 @@ result. Do not start B2 speculatively.
   any point in this pass.
 - Session end partial progress: none - pass 5 is a complete planning pass;
   `plan.md`, `handoff.md` and `context.md` are consistent with each other.
+
+### B5 (implementer, 2026-09-13) - session end notes
+
+- Cleanup performed / retained artifacts: none beyond the batch's own four
+  files plus this handoff/plan/context update. `.env` was not read; no
+  Telegram contact of any kind; `tools/tg-preview/state.json` was not read,
+  edited, staged or deleted - it grew on its own under O2 throughout (25438
+  -> 26438 -> 29900+ bytes across the session) and stayed untracked.
+- Session end partial progress: none - B5 is a complete, committed batch at
+  a coherent boundary (`9694782`, preceded by the docs boundary `df76f13`).
+  `plan.md`, `handoff.md` and `context.md` are consistent with each other and
+  with the shipped code.
+- Not pushed, per instruction - pushing and merging are the owner's, and
+  merging still waits on issue 47's B7 landing in the main checkout.
