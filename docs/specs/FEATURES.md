@@ -36,6 +36,12 @@ Six modes. Each keeps its own input in memory only.
 - The number field accepts digits only, clamps to the range, and keeps the caret
   where the person put it. On the list page an empty field means "no roll yet";
   on roll pages it waits for `change`.
+- On the alternate tables each number field and each stepper names its own
+  die - "Hope Die: Roll result" / "Hope Die: One lower" / "Hope Die: One
+  higher", and the same for Fear - where the live app names both fields the
+  same string and all four steppers the same two strings, so a screen reader
+  cannot tell which die is being changed. A deliberate accessibility
+  improvement, not a drift.
 
 ## Tables and search
 
@@ -61,6 +67,10 @@ Six modes. Each keeps its own input in memory only.
   Values in a row combine with *or*; a link naming two frames opens both.
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
   every change, and read back only when the segment actually changed.
+- A grid tile shows that record's own roll number. The live app passes the
+  array index as the number (`list.map(tileHTML)`), so every tile past the
+  first in a plain table showed its position instead of its roll - a live
+  defect the rewrite does not reproduce.
 
 ## Lists
 
@@ -134,6 +144,12 @@ Six modes. Each keeps its own input in memory only.
 - A record with no artwork falls back to `_none.webp` and hides the image
   button; so does a record whose file fails to load, and the app remembers that
   for the session.
+- The record modal is a native `<dialog>` opened with `showModal()`, so it is
+  modal, the page behind it is inert, and focus moves into it on open and
+  returns to the opener on close - a deliberate improvement over the live
+  app, whose card the keyboard never actually enters. The one visible
+  consequence is that the modal's close button carries a focus ring the live
+  app's does not.
 
 ## Print
 
@@ -150,11 +166,20 @@ Six modes. Each keeps its own input in memory only.
   did not make it onto a sheet, telling the reader to split the set in two.
 - `Назад` steps back in browser history; with nowhere to step back to it goes to
   `#/lists` instead.
+- A card's own name is drawn as `<h2 class="pc-name">`, a heading-level fix:
+  the live app's `printCardHTML` writes `<h3>` there. `docs/specs/DEBT.md` D8
+  (the alternate-tables page jumping `<h1>` to `<h4>`) is a different screen
+  and is unaffected.
 
 ## Chrome
 
-- Language switch, tab bar, skip link, starting-section pin (nine sections or
-  any table by name; not a record or a list).
+- Language switch, tab bar, skip link, starting-section pin (eight sections
+  pin as their own hash; `#/tables` pins as whichever table is on screen;
+  never a record or a list).
+- Chips and segmented switches expose their on/off state as `aria-pressed` -
+  the money chips and the two view switches (tables list/grid, print colour/
+  black-and-white) gained it in the rewrite, where the live app writes
+  nothing for the money chips and `aria-current="true"` for the menu chips.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
 - Toasts with an undo action for destructive things.

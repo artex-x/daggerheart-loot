@@ -1964,13 +1964,16 @@ const SPECS = [
 const VISUAL_DEBT = {
   /* The row landed (B5.1). What is left in all three modal states below is
      the residue B5 planning already named: showModal() moves the keyboard
-     into the dialog and the live app leaves it on the page behind it, which
-     is the accessibility fix ACCEPTED records - the close button's own focus
-     ring is the only thing still different, and a centred dialog reflows by
-     that ring's few pixels when the card's height settles. Measured on this
-     host (Windows, advisory - CI to confirm): 0.02% at 1100, 0.03% at 768,
-     0.07% at 375, the same in both languages, for all three states this
-     shape covers. Down from the pre-B5.1 debt by two orders of magnitude. */
+     into the dialog and the live app leaves it on the page behind it - a
+     deliberate accessibility improvement, written up in
+     docs/specs/FEATURES.md, "Records" (R0a), not in ACCEPTED, which only
+     ever held the roll-dice and grid-tile entries below. The close button's
+     own focus ring is the only thing still different, and a centred dialog
+     reflows by that ring's few pixels when the card's height settles.
+     Measured on this host (Windows, advisory - CI to confirm): 0.02% at
+     1100, 0.03% at 768, 0.07% at 375, the same in both languages, for all
+     three states this shape covers. Down from the pre-B5.1 debt by two
+     orders of magnitude. */
   '#/i/q1 ~ another tier @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
   '#/i/q1 ~ another tier @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
   '#/i/q1 ~ another tier @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
@@ -1980,8 +1983,9 @@ const VISUAL_DEBT = {
 
   /* The row landed. Same shape as #/i/q1 ~ another tier above: only the
      close button's own focus ring is left, off `showModal()`'s accessibility
-     fix (ACCEPTED). Measured on this host (Windows, advisory - CI to
-     confirm), the same three figures. */
+     improvement (docs/specs/FEATURES.md, "Records", not ACCEPTED). Measured
+     on this host (Windows, advisory - CI to confirm), the same three
+     figures. */
   '#/roll/wondrous ~ modal @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
   '#/roll/wondrous ~ modal @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
   '#/roll/wondrous ~ modal @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
@@ -1990,8 +1994,10 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ modal @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
   /* The row landed. Same shape as #/roll/wondrous ~ modal above - only the
-     close button's own focus ring is left. Measured on this host (Windows,
-     advisory - CI to confirm), the same three figures again. */
+     close button's own focus ring is left, off the same accessibility
+     improvement (docs/specs/FEATURES.md, "Records", not ACCEPTED). Measured
+     on this host (Windows, advisory - CI to confirm), the same three
+     figures again. */
   '#/tables ~ a row opened @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
   '#/tables ~ a row opened @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
   '#/tables ~ a row opened @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
