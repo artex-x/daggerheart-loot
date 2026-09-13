@@ -3637,3 +3637,27 @@ the real corpus or of the app, not an estimate. Full reasoning in `plan.md`,
   tracked, of which `img/` is 29.1 MB, `i/` 4.0 MB, and `data.js` + `data.json` +
   `catalog.csv` 1.87 MB. A 1.5 MB golden corpus is 2.4% of the tree and smaller
   than the generated `i/` directory.
+
+## The golden job costs CI nothing, measured (orchestrator, 2026-09-13)
+
+R0a's acceptance line 20 asked whether CI's wall clock grows once the structural
+goldens run there. It does not. Run **`34753801089` on `30b2744`** (C1 + C2),
+green in every job, against the warrant run `34747570250` on `32926a0`:
+
+| job | `34747570250` | `34753801089` | delta |
+|---|---|---|---|
+| `check` | 11m51s | 11m57s | +6s |
+| `parity (3)`, the longest shard | 10m32s | 10m33s | +1s |
+| `golden (1..4)` | - | **1m43s - 2m02s each** | new, off the critical path |
+
+The four `golden` shards start with everything else at 11:11:49 and are all done
+by 11:13:51, while `check` runs to 11:23:46 and `deploy` starts at 11:23:51. So
+the suite is finished nine minutes before the job that actually gates the
+publish, and both deltas above are inside run-to-run noise.
+
+**A shard costs ~2 minutes on CI against ~4m20s locally**, which is worth
+knowing before anyone reads a local shard time as the suite's real cost.
+
+The run on `06658fd` - the tip after C3 and the built record - is
+`34754984230`, queued at the time of writing; it is the first run that carries
+`tests/parity.js`'s B1 fix and the `isHome` deletion.
