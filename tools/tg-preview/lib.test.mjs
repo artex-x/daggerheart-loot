@@ -569,7 +569,7 @@ describe('runRefresh', () => {
       unmatched: [],
       pressed: 0,
       confirmed: [],
-      photo: { changed: 0, same: 0, none: 0 },
+      photo: { newId: 0, sameId: 0, none: 0, unseen: 0 },
       floodWaits: 0,
       stopped: null,
       exitCode: 0
@@ -748,7 +748,7 @@ describe('runRefresh', () => {
     assert.equal(result.confirmed.length, 1);
   });
 
-  it('an unanswered press is confirmed when the photo changed, and pending when it did not', async () => {
+  it('an unanswered press is confirmed when the photo id is new, and pending when it is not', async () => {
     class BotResponseTimeoutError extends Error {
       constructor() {
         super('timeout');
@@ -761,8 +761,8 @@ describe('runRefresh', () => {
       incoming: [[], repliesFor(urls, 1000, 'before')],
       press: urls.map(() => ({ throw: new BotResponseTimeoutError() })),
       photoAfter: new Map([
-        [1001, 'after'], // changed
-        [1002, 'before'], // same
+        [1001, 'after'], // newId
+        [1002, 'before'], // sameId
         [1003, null] // no photo at all
       ])
     });
@@ -770,27 +770,53 @@ describe('runRefresh', () => {
     const result = await runRefresh({ mode: 'full' }, deps);
     assert.equal(result.confirmed.length, 1);
     assert.equal(result.pending.length, urls.length - 1);
-    assert.deepEqual(result.photo, { changed: 1, same: 1, none: 1 });
+    assert.deepEqual(result.photo, { newId: 1, sameId: 1, none: 1, unseen: 0 });
   });
 
-  it('the photo telemetry is right, and an unchanged/absent photo is not failure when the press was answered', async () => {
+  it('the photo telemetry is right, and an unchanged/absent photo id is not failure when the press was answered', async () => {
     const manifest = fakeManifest(2); // 3 urls
     const urls = Object.keys(manifest.urls);
     const fake = fakeClient({
       incoming: [[], repliesFor(urls, 1000, 'before')],
       press: urls.map(() => ({ text: 'ok' })),
       photoAfter: new Map([
-        [1001, 'after'], // changed
-        [1002, 'before'], // same
+        [1001, 'after'], // newId
+        [1002, 'before'], // sameId
         [1003, null] // none
       ])
     });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
-    assert.deepEqual(result.photo, { changed: 1, same: 1, none: 1 });
+    assert.deepEqual(result.photo, { newId: 1, sameId: 1, none: 1, unseen: 0 });
     // Every press was answered, so all three are confirmed regardless of
-    // their photo delta - the photo-id trap (plan.md section 3.4).
+    // their photo-id delta - the photo-id trap (plan.md section 3.4).
     assert.equal(result.confirmed.length, 3);
+  });
+
+  it('a pressed message byIds cannot re-fetch is counted unseen: unconfirmed unanswered, confirmed answered', async () => {
+    class BotResponseTimeoutError extends Error {
+      constructor() {
+        super('timeout');
+        this.errorMessage = 'BOT_RESPONSE_TIMEOUT';
+      }
+    }
+    const manifest = fakeManifest(1); // 2 urls: root, r0
+    const urls = Object.keys(manifest.urls);
+    // photoAfter is left empty: byIds returns nothing for either message id,
+    // so the after-press fetch cannot see either one - `unseen`, not `same`.
+    const fake = fakeClient({
+      incoming: [[buttonMsg(9001, urls[0], 'before'), buttonMsg(9002, urls[1], 'before')]],
+      press: [{ throw: new BotResponseTimeoutError() }, { text: 'ok' }]
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.deepEqual(result.photo, { newId: 0, sameId: 0, none: 0, unseen: 2 });
+    // The unanswered press stays unconfirmed on an unseen delta; the
+    // answered one confirms regardless - the fourth bucket changes neither
+    // side of the confirmation rule.
+    assert.deepEqual(result.confirmed, [urls[1]]);
+    assert.equal(result.pending.length, 1);
+    assert.equal(fake.sent.length, 0); // both recovered in phase 1
   });
 
   it('fewer button messages than links leaves the unmatched ones pending and unrecorded', async () => {
@@ -972,6 +998,9 @@ describe('runRefresh', () => {
     assert.equal(result.pending.length, 1);
     assert.match(result.stopped, /bot throttled: retry in 3213s/);
     assert.equal(result.exitCode, 0);
+    // The refused press is still an attempt (B4 review nit 2): `pressed`
+    // counts all three, not just the two the bot answered normally.
+    assert.equal(result.pressed, 3);
     // The throttled URL never reaches any writeState call.
     const thirdUrl = urls[2];
     assert.ok(deps.written.every((s) => !(thirdUrl in s.urls)));

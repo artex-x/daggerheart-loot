@@ -137,12 +137,14 @@ async function main() {
     const pressedLine =
       'pressed ' +
       result.pressed +
-      ' (photo changed ' +
-      result.photo.changed +
+      ' (photo id new ' +
+      result.photo.newId +
       ', same ' +
-      result.photo.same +
+      result.photo.sameId +
       ', none ' +
       result.photo.none +
+      ', unseen ' +
+      result.photo.unseen +
       ')';
     log(summary);
     log(pressedLine);

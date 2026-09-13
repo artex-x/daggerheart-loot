@@ -117,7 +117,7 @@ the account is allowed to talk to it.
    earlier run that predates the press budget below -
    `issues/tg-preview-refresh/plan.md` section 3.4 ("What the 115 entries are
    worth") has the reasoning. Move it out of the repository rather than
-   deleting it, so its `photo changed` entries survive as evidence:
+   deleting it, so its `photo id new` entries survive as evidence:
    ```text
    mv tools/tg-preview/state.json ../state-backup.json.bak
    ```
@@ -160,9 +160,9 @@ the account is allowed to talk to it.
      plan guessing.
    - **Mostly `same` while `phase 1: pressed` is still nonzero** - expected,
      not a reason to distrust the chunk: those are re-presses of the
-     retired state's ~115 leftover URLs, so Telegram's cached photo is
-     often already current. `changed` only becomes the expected signal once
-     a run shows `phase 1: pressed 0` and `batch N/5` lines - i.e. it is
+     retired state's ~115 leftover URLs, so Telegram's cached photo id is
+     often already current. `new` only becomes the expected signal once a
+     run shows `phase 1: pressed 0` and `batch N/5` lines - i.e. it is
      actually sending and pressing this reindex's own stale URLs.
    - **Mostly `same` once `phase 1: pressed 0` and `batch N/5` lines are
      running** - this is the genuine signal: spot-check by pasting before
@@ -194,13 +194,41 @@ the account is allowed to talk to it.
    the reindex never advances - the tool warns when you try. `--mode full` is
    one deliberate pass for a state you do not trust, which is what step E.0
    already handles.
-5. Read the `photo changed` count each time; a chunk reporting mostly `same`
-   means spot-check a few of its links by pasting before trusting it, and
-   report it.
+5. Read the photo line each time, and read it for what it measures: a
+   **new photo id** proves the press made Telegram store a different image
+   than the button message was showing - i.e. the press did something -
+   **not** that the picture looks different. Telegram re-encodes what it
+   fetches, and a webpage that had no photo yet counts as new as well. So
+   `new 10, same 0, none 0, unseen 0` on every batch is the expected shape,
+   not a reason to distrust the run. What *is* worth reporting is the
+   opposite: a chunk reporting mostly `same` now means the presses are
+   probably not landing, or the bot reworded its refusal and the throttle
+   carve-out stopped matching. Spot-check a few of that chunk's links by
+   pasting, and report it.
 6. When `pending 0`:
    `git add tools/tg-preview/state.json && git commit -m "chore(tg-preview): record the first full reindex"`
    and push. From here, CI only ever sends and presses what changed, a
    handful of URLs at a time, well inside any quota.
+7. **Optional, one press: settle what a new photo id means.** Only worth
+   doing if the counter still bothers you; the reindex does not need it and
+   nothing downstream is blocked on it. Between chunks - **never while a
+   chunk is running**, two writers would fight over `state.json` - pick a
+   record id this reindex already confirmed in the most recent batch (so
+   its button message is certainly inside the recovery scan) and whose
+   `og/<id>.jpg` has not changed since, then:
+   ```text
+   node tools/tg-preview/run.mjs --mode full --only <id> --limit 0 --press-limit 1
+   ```
+   `--mode full` is needed because the URL is already in the state and
+   incremental mode would correctly say `nothing to refresh`; `--limit 0`
+   means no send; phase 1 finds the existing button message and presses it.
+   Total cost: **one press, zero sends.** Read the result:
+   - **`photo id new 1`** - a press mints a new id even though the bytes on
+     the site have not changed since the previous press. The counter
+     measures "Telegram re-fetched", not "the picture differs".
+   - **`same 1`** - the id moves only when the stored image really differs.
+     Then a reindex reporting mostly `new` is literal and true.
+   Report whichever it is.
 
 **H. Repository secrets.** GitHub -> the repository -> Settings -> Secrets
 and variables -> Actions -> New repository secret, three times, the same
@@ -238,12 +266,24 @@ the job then exits 0 with a notice.
   run stops rather than sending a batch it cannot afford to press.
 - The summary is two lines: `refreshed N, pending M` (`N` is how many URLs
   had their "Update with content" press acknowledged - not how many were
-  merely sent), followed by `pressed P (photo changed C, same S, none Z)`.
-  `pending` covers everything not confirmed this run - not yet live on the
-  CDN, past `--limit` or `--press-limit`, no button message ever arrived, the
-  press went unanswered with no photo change, the bot's attempt throttle, or
-  the run stopped early - and a GitHub Actions run additionally prints
+  merely sent), followed by `pressed P (photo id new C, same S, none Z,
+  unseen U)`. `P` counts presses **attempted**, not confirmations - a press
+  the bot refused with its own attempt throttle still counts here, since
+  that is the number the throttle actually binds on. `pending` covers
+  everything not confirmed this run - not yet live on the CDN, past
+  `--limit` or `--press-limit`, an unanswered press whose photo id did not
+  move, no button message ever arrived, the bot's attempt throttle, or the
+  run stopped early - and a GitHub Actions run additionally prints
   `::warning::` when it is above zero.
+
+  A new photo id proves Telegram is now holding a different image than the
+  button message showed before the press - the press did something. It does
+  **not** prove the rendered picture differs: Telegram re-encodes whatever
+  it fetches and mints a new id even for bytes it already had, and a
+  webpage that had no photo yet also counts as new. So `new 10, same 0,
+  none 0, unseen 0` on a run is the expected shape, not a broken counter.
+  `unseen` means the press went out but the message could not be re-read
+  afterwards, so the tool does not claim to know its photo id either way.
 - What turns the CI job red: a crash or a dead/missing credential (`Refresh`
   exiting 1 or 2), a failed `npm audit --audit-level=high`, or a failed state
   push after three retries. A Telegram-side stop (`PeerFloodError`, a budget
@@ -303,7 +343,7 @@ send and press, not once per batch, so a run never overshoots it by more
 than one wait. A `PeerFloodError` (the account is rate-limited for the day)
 also stops the run, cleanly, wherever it comes from. A press that Telegram
 never answers in time (`BOT_RESPONSE_TIMEOUT`) is neither of those: the tool
-re-fetches the button message and treats a changed photo as confirmation,
+re-fetches the button message and treats a new photo id as confirmation,
 since the press was still delivered.
 
 Either way the run exits green: the committed state is written after every

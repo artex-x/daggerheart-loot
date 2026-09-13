@@ -390,7 +390,7 @@ export async function runRefresh(opts, deps) {
       unmatched: [],
       pressed: 0,
       confirmed: [],
-      photo: { changed: 0, same: 0, none: 0 },
+      photo: { newId: 0, sameId: 0, none: 0, unseen: 0 },
       floodWaits: 0,
       stopped: null,
       exitCode: 0
@@ -513,11 +513,12 @@ export async function runRefresh(opts, deps) {
 
   // Presses `urlsInOrder`'s matches, in that order, paced by PRESS_PACE_MS
   // and never rested (presses are a different method from sends); re-fetches
-  // once by id afterwards for the photo delta, which gates confirmation only
-  // in the unanswered case and is telemetry otherwise - the photo-id trap:
-  // an unchanged photo is not evidence of failure when the press was
+  // once by id afterwards for the photo-id delta, which gates confirmation
+  // only in the unanswered case and is telemetry otherwise - the photo-id
+  // trap: an unchanged id is not evidence of failure when the press was
   // acknowledged (plan.md section 3.4).
   async function pressGroup(urlsInOrder, matched) {
+    const budgetBefore = pressBudget;
     const pressedList = [];
     let stop = null;
     let code = 0;
@@ -541,15 +542,23 @@ export async function runRefresh(opts, deps) {
     const photoAfter = new Map(refetched.map((m) => [m.id, m.photoId]));
 
     const confirmed = [];
-    const photo = { changed: 0, same: 0, none: 0 };
+    const photo = { newId: 0, sameId: 0, none: 0, unseen: 0 };
     for (const p of pressedList) {
       const after = photoAfter.has(p.id) ? photoAfter.get(p.id) : undefined;
-      const delta = after === undefined ? 'same' : after == null ? 'none' : after !== p.photoBefore ? 'changed' : 'same';
+      // A new id proves Telegram re-fetched and re-stored something - not
+      // that the rendered picture differs (plan.md 3.4, "What the photo
+      // counter measures"): Telegram's own re-encode, or a webpage that had
+      // no photo yet, mint a new id too.
+      const delta =
+        after === undefined ? 'unseen' : after == null ? 'none' : after !== p.photoBefore ? 'newId' : 'sameId';
       photo[delta]++;
-      if (p.answered || delta === 'changed') confirmed.push(p.url);
+      if (p.answered || delta === 'newId') confirmed.push(p.url);
     }
 
-    return { confirmed, photo, pressedCount: pressedList.length, stopped: stop, exitCode: code };
+    // Attempts, not confirmations: a press the bot refused still decremented
+    // pressBudget above and must count here too (B4 review nit 2), or a
+    // throttle stop under-reports the number B2 tunes the quota from.
+    return { confirmed, photo, pressedCount: budgetBefore - pressBudget, stopped: stop, exitCode: code };
   }
 
   // Carry-forward write of state and --result: everything the state already
@@ -568,13 +577,14 @@ export async function runRefresh(opts, deps) {
   const sent = [];
   const confirmedAll = [];
   const unmatchedAll = [];
-  const photoTotals = { changed: 0, same: 0, none: 0 };
+  const photoTotals = { newId: 0, sameId: 0, none: 0, unseen: 0 };
   let pressedTotal = 0;
 
   function addPhoto(p) {
-    photoTotals.changed += p.changed;
-    photoTotals.same += p.same;
+    photoTotals.newId += p.newId;
+    photoTotals.sameId += p.sameId;
     photoTotals.none += p.none;
+    photoTotals.unseen += p.unseen;
   }
 
   function finish() {
@@ -616,12 +626,14 @@ export async function runRefresh(opts, deps) {
         g.pressedCount +
         ', confirmed ' +
         g.confirmed.length +
-        ' (photo changed ' +
-        g.photo.changed +
+        ' (photo id new ' +
+        g.photo.newId +
         ', same ' +
-        g.photo.same +
+        g.photo.sameId +
         ', none ' +
         g.photo.none +
+        ', unseen ' +
+        g.photo.unseen +
         ')'
     );
     await record(confirmedAll);
@@ -710,12 +722,14 @@ export async function runRefresh(opts, deps) {
         g.pressedCount +
         ', confirmed ' +
         g.confirmed.length +
-        ' (photo changed ' +
-        g.photo.changed +
+        ' (photo id new ' +
+        g.photo.newId +
         ', same ' +
-        g.photo.same +
+        g.photo.sameId +
         ', none ' +
         g.photo.none +
+        ', unseen ' +
+        g.photo.unseen +
         ')'
     );
 
