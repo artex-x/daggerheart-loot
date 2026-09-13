@@ -6115,6 +6115,22 @@ cut-over, replanned".
 
 ## Deferred
 
+- **PLACED for R0b: `tests/app/states.js` case 7 flakes on a loaded runner
+  (orchestrator, 2026-09-13).** It failed CI run `34754984230` on `06658fd`
+  (`страница B не увидела список, созданный на A, без перехода`) and passed on
+  the identical code in run `34755188652`, and passed locally at 65.0s against
+  CI's 66.1s. Cause: `tests/app/states.js:190-192` waits for page B's repaint
+  with `waitForFunction(..., { timeout: 5000 }).catch(() => {})` - **the
+  timeout is swallowed** - and then asserts on whatever the page says, so a
+  runner that takes over five seconds to deliver the `storage` event and
+  repaint fails exactly this line. Not R0a's: C3 touches nothing near storage.
+  The fix is a design choice (a longer deadline, polling to one, or waiting on
+  the event rather than the repaint) and belongs to whoever opens that file
+  next. **Full evidence: `context.md`, "`app/states` case 7 flakes on a loaded
+  runner".** The hazard to name out loud: once a case is known to flake, the
+  next genuinely red `check` gets waved through as "that one again" without
+  anyone reading the diff.
+
 - **From R0a's review (reviewer, 2026-09-13) - four nits, none fixed.** R0a is
   mid-plan, so these defer rather than earning a remediation cycle; the two
   blockers the same review raised were documentation and are **fixed** in

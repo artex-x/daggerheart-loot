@@ -3661,3 +3661,41 @@ knowing before anyone reads a local shard time as the suite's real cost.
 The run on `06658fd` - the tip after C3 and the built record - is
 `34754984230`, queued at the time of writing; it is the first run that carries
 `tests/parity.js`'s B1 fix and the `isHome` deletion.
+
+## `app/states` case 7 flakes on a loaded runner, and it is not R0a's (orchestrator, 2026-09-13)
+
+CI run **`34754984230` on `06658fd`** - the first run carrying C3 - came back
+**`check: failure`**, on one case and one line:
+
+```
+FAIL  app/states dist/: реальный ввод              66.1s
+      FAIL 7 (два окна): страница B не увидела список, созданный на A, без перехода
+```
+
+Every other job in that run was green, all four `golden` shards included.
+
+**It is a flake, not a regression, on four independent readings:**
+
+1. **C3 cannot cause it.** `47a9a15` touches `app/src/state/app.svelte.ts` only
+   to delete the five-line dead `isHome` getter; the rest is `app.test.ts`,
+   `tests/parity.js`, `docs/parity.md`, and assertions added to
+   `tests/app/states.js` **case 14** and `typo.js`. Nothing in the diff goes
+   near storage, the `storage` event, or the lists page.
+2. **It passes locally on the same tree**: `node tests/run-all.js app/states`
+   -> `ok app/states dist/: реальный ввод 65.0s`, all fourteen cases. The 65.0s
+   against CI's 66.1s says the suite ran the same work both times.
+3. **A second CI sample on the same C3 code is green**: run `34755188652` on
+   `6e1269b`, `check: success`.
+4. **The case is written to flake.** `tests/app/states.js:190-192` waits for
+   page B to redraw with `waitForFunction(..., { timeout: 5000 }).catch(() => {})`
+   - the timeout is **swallowed** - and then asserts on whatever the page says.
+   So a runner slow enough to take over five seconds to deliver the `storage`
+   event and repaint produces exactly this failure text, and a fast one hides it.
+
+**Recorded as a Deferred item rather than fixed here**: it is a pre-existing
+case, R0a did not write it, and the fix is a design question (raise the timeout,
+poll to a deadline, or wait on the event itself rather than the repaint) that
+belongs to whoever owns `tests/app/states.js` next. What must not happen is the
+next red `check` being read as "that flaky two-window case again" without
+someone checking the diff first - which is how a real regression hides behind a
+known flake.
