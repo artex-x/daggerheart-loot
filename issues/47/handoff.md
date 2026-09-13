@@ -6,7 +6,67 @@ depends on chat history.
 
 ## Status
 
-- Task status: **THE WHOLE REMAINDER OF 47 IS PLANNED: B14 -> R0a -> R0b -> R0c
+- Task status: **B14 CLOSED - the roll re-render fix, the pinned bare
+  `#/tables`, and all six inherited checks are landed** (implementer,
+  2026-09-13). HEAD `a7f8787`, ahead of `origin/main` by three commits, none
+  pushed (this session's own instruction overrides `CLAUDE.md`'s "push once a
+  batch passes" - the owner did not ask for a push this time); tree clean but
+  for the untracked `issues/tg-preview-refresh/`, another task's, and
+  `issues/47/context.md`'s pre-existing unstaged edit from this session's
+  orchestrator (left alone, not this batch's to commit).
+  - **What landed.** Full design: `plan.md`, "B14 planned"; the built record,
+    every deviation and every gate result: `plan.md`, **"B14 built"**.
+    - `6b18291` (`fix(app): key a roll's card on the record, not the slot`) -
+      C1: `OrGrid.svelte`'s `{#key cell.it}`, `RollPanel.svelte`'s
+      `{#key shown.it}`, `OrGrid.test.ts` (new), `tests/app/states.js` case
+      14, `docs/specs/COVERAGE.md`.
+    - `af7fa17` (`fix(app): pin the table on screen, and read a bare
+      #/tables pin back`) - C2: `app.svelte.ts` (`readHome` widened,
+      `toggleHome(hash?)`, `canPinHome` deleted), `PageHead.svelte` (the
+      `home` override prop), `TablesPage.svelte` (passes it), `app.test.ts`,
+      `shell.test.ts`, `ROUTES.md`, `STATE.md`.
+    - `a7f8787` (`test(app): the checks that should have caught the roll and
+      pin defects`) - C3: `tests/app/typo.js` (the `EXPECTED` table, plus a
+      latent Russian-only grip label bug found and fixed while touching it),
+      `tests/app/states.js` (`d.press`), `.claude/hooks/edit-followup.mjs`,
+      `.claude/hooks/selftest.mjs`, `.claude/prompts/add-source.prompt.md`,
+      `package.json`, `tests/parity/driver.js`, `.claude/prompts/plan.prompt.md`,
+      `.claude/prompts/implement.prompt.md`.
+  - **The remount claim the plan flagged for verification did not hold** -
+    checked directly against `App.svelte`'s `{:else if}` chain and
+    demonstrated in `shell.test.ts` before the design was chosen: `TablesPage`
+    is not remounted between two `tables` addresses, so a bare `#/tables`
+    reached from a named one still shows that table underneath. Took the
+    plan's own named fallback (`toggleHome(hash?)` plus `PageHead`'s `home`
+    override) rather than the naive `route.table ?? 'core_item'`, which would
+    have silently pinned the wrong table in exactly that case.
+  - **All ten acceptance lines closed** - the two proof obligations
+    (removing each new C1 test's `{#key}` and watching it fail; renaming a
+    `typo.js` expectation and watching it fail) both done and recorded, not
+    asserted. Detail and disposition of each line: `plan.md`, "B14 built".
+  - **`canPinHome` deleted, not wired** - every real `PageHead` caller is
+    already a pinnable route, so wiring the check would have been a
+    permanently-true condition, not real gating.
+  - Gates: `npm run check` **x3** (once per commit, all green, 1013 then 1017
+    then 1017 tests), `npm run check:built` once after C2, the required
+    parity filter after C2 (first attempt silently matched nothing - Git
+    Bash's path rewriting without `MSYS_NO_PATHCONV=1`, caught by the run's
+    own "not a full run" banner reading zero cells; rerun correctly, 88 cells,
+    no discrepancies), `node tests/run-all.js app/sweep` and the other four
+    `tests/app/` suites after C3, both green. `git show 9177f3b | git apply
+    --reverse --check -` exits 0 on the final tree.
+  - Not touched, as planned: `.github/workflows/ci.yml`, `index.html`,
+    `app.js`, `style.css`, `tests/parity/specs.js`, `docs/fixtures/`,
+    `tests/contracts.js`, `llms.txt`, `docs/specs/DEBT.md`, `ACCEPTED`,
+    `VISUAL_DEBT`.
+  - Next action: **R0a** - `plan.md`, "R0a planned in outline: the evidence,
+    the sweep, the goldens" is an outline, not an implement-ready batch; it
+    needs its own planning pass (steps, acceptance criteria, file list)
+    before an implementer opens it. Nothing in R0a deletes anything, so it
+    needs Phase 7's conditions 1, 2, 3 and 5 only - already satisfied per the
+    previous status entry below.
+
+- Task status (previous): **THE WHOLE REMAINDER OF 47 IS PLANNED: B14 -> R0a -> R0b -> R0c
   -> (Phase 8 as its own task). B14 is implement-ready; the soak is gone**
   (planner, 2026-09-12, planning pass only - no production, test or config code
   written). HEAD `6cb8293`, equal to `origin/main`; tree clean but for the
@@ -4439,116 +4499,54 @@ is new, so inspect its diff image before writing any entry, and write no
   full run's redness on a Windows machine is the documented per-platform
   tolerance, cell by cell, in "Blockers".
 
-## Next batch (implement-ready)
+## Next batch
 
-- **Name**: **B14 - the roll surface, the pinned home, and the checks that
-  should have caught them.** Full design, with the measurements and every
-  rejected alternative: `plan.md`, **"B14 planned"**, inside "The finishing
-  plan - every batch from here to done". Read that section before starting;
-  this brief is its summary, not a substitute.
-- **Objective**: close the one behaviour divergence the owner found on the live
-  site (a roll keeps the previous artwork on screen until the new image
-  decodes), close the pinned-home gap that shipped with the flip, and repair the
-  six checks and documents that let these through - all under one set of gates,
-  because the owner's standing decision is that the roll fix never gets a batch
-  of its own.
-- **In scope**, as three commits:
-  - **C1 - the roll surface replaces its card, as live does.**
-    `OrGrid.svelte`: `{#key cell.it}` around `{@render card(cell.it)}`, in place
-    of the positional `(i)` key - this one edit covers `StdPanel.svelte:157`,
-    `AltPanel.svelte:228` and `ListPage.svelte:676`. `RollPanel.svelte:129`:
-    `{#key shown.it}` around its single `<RecordCard>`. Two tests: a vitest
-    component test asserting the captured `<img>` is `isConnected === false`
-    after the shown record changes, and a `tests/app/states.js` case that marks
-    the `.results .card-media img`, presses roll until the record changes, and
-    asserts the mark is gone. Record the one remaining deviation from live -
-    rolling the same record twice keeps the node - in the commit message.
-  - **C2 - the pinned home matches live on both sides.** `AppState`: the writer
-    pins `'#/tables/' + (route.table ?? 'core_item')` (live's `homeHash`,
-    `app.js:1133-1136`) and `readHome` accepts a bare `tables` as well as a
-    named table (live's `homeAllows`, `:1124-1130`). Verify first that
-    `App.svelte` remounts `TablesPage` on every route change, which is what
-    makes `'core_item'` exact; the fallback if it does not hold is
-    `toggleHome(hash?)` with `TablesPage` passing `tablesHash(table)` through
-    `PageHead`. Wire or delete `canPinHome` (it has no production consumer).
-    `docs/specs/ROUTES.md` (the "nine a person may pin" line and the
-    "navigating away and back" line) and `STATE.md` change in the same commit.
-  - **C3 - the checks**: `tests/app/typo.js`'s silent grips, `tests/app/states.js`'s
-    `twoFramesPicked` `d.click` -> `d.press`, the six-vs-seven counts list in
-    `.claude/hooks/edit-followup.mjs:20` and `.claude/prompts/add-source.prompt.md:145`
-    plus a `selftest.mjs` assertion on the reminder's content,
-    `node --check tools/check-site.mjs` added to the `check` npm script,
-    `tests/parity/driver.js:11`'s stale comment, and the placement rule into
-    `.claude/prompts/plan.prompt.md` and `implement.prompt.md`.
-- **Out of scope**: `.github/workflows/ci.yml` (the revert must stay one file
-  until R0c - N3, N4-in-CI, N5 and N6 are R0c's); `tests/derived.js`'s
-  `headFacts` (N2, N8 - R0c deletes their host); `docs/specs/DEBT.md`
-  renumbering and `vite.config.mts`'s exclusion comment (Phase 8);
-  `index.html`, `app.js`, `style.css`, `tests/parity/specs.js`,
-  `docs/fixtures/`, `tests/contracts.js`, `llms.txt`.
-- **Files expected**: `app/src/components/OrGrid.svelte`,
-  `app/src/components/RollPanel.svelte`, one component test under
-  `app/src/components/`, `app/src/state/app.svelte.ts`,
-  `app/src/state/app.test.ts` (and `shell.test.ts` if it asserts the pin),
-  `docs/specs/ROUTES.md`, `docs/specs/STATE.md`, `tests/app/states.js`,
-  `tests/app/typo.js`, `tests/parity/driver.js`, `package.json`,
-  `.claude/hooks/edit-followup.mjs`, `.claude/hooks/selftest.mjs`,
-  `.claude/prompts/add-source.prompt.md`, `.claude/prompts/plan.prompt.md`,
-  `.claude/prompts/implement.prompt.md`, plus `issues/47/` at close.
-- **Steps**: follow `plan.md`, "B14 planned", "The commits", in order C1, C2,
-  C3, with `npm run check` before each commit and the heavy gates after C2/C3 as
-  listed below. Re-read `git log --oneline -3` before each commit: peer sessions
-  share this tree.
-- **Acceptance criteria** - every line is checked before the batch is recorded
-  closed, and the closing record says what happened to each inherited line:
-  1. The four roll call sites replace the card's `<img>` node on a roll; prove
-     the two new tests fail with the `{#key}` removed, once, rather than
-     asserting that they would.
-  2. The same-record-twice deviation is written in the commit message and the
-     batch record.
-  3. A pinned bare `#/tables` survives a reboot; `ROUTES.md` and `STATE.md` say
-     so in the same commit; `canPinHome` is wired or gone.
-  4. **Inherited (B12 nit 1, dropped by B13)**: a missing grip in
-     `tests/app/typo.js` fails the suite; demonstrated by renaming one
-     expectation and watching it go red.
-  5. **Inherited (B12 nit 2b, dropped by B13)**: `twoFramesPicked` uses
-     `d.press`, or names the control and the reason it could not.
-  6. **Inherited (B13 review N1)**: both `.claude/` files say seven, and
-     `selftest.mjs` asserts the reminder's content.
-  7. **Inherited (B13 review N4)**: `npm run check` fails on a syntax error in
-     `tools/check-site.mjs`, and `ci.yml` is untouched by this batch.
-  8. **Inherited (B13 review N7)**: `tests/parity/driver.js:11` describes what
-     Pages serves now.
-  9. The placement rule is in both `.claude/prompts/` files.
-  10. `git show 9177f3b | git apply --reverse --check -` exits 0 on the final
-      tree - the one-file revert is intact.
-- **Verification commands** (each a single foreground call,
-  `set -o pipefail; ... 2>&1 | tail -n 120`, Bash timeout 600000):
-  - `npm run check` before C1, before C2, before C3;
-  - `npm run check:built` once, after C2;
-  - `node tests/parity.js "#/roll" "#/lists/a ~ roll panel" "#/lists/a ~ rolled"`
-    after C2 - 20 states, one call, and it is **not** optional: a rebuilt `<img>`
-    has to decode again and a settled capture could catch it unpainted. A cell
-    that moves is a finding, not a debt line;
-  - `node tests/run-all.js app/sweep`, then
-    `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` after C3;
-  - push; the four CI parity shards are the authoritative read.
-- **Risks / do-nots**: do not touch `ci.yml`; do not key `OrGrid` on
-  `cell.it.id` (it is generic - `AltPanel` passes `AltPick`); do not add a
-  roll counter unless a state measurably differs; do not write a `DEBT.md`,
-  `ACCEPTED` or `VISUAL_DEBT` entry for the roll fix - it is a divergence *from*
-  live, which is migration work, not a reproduced live defect.
-- **Fallback**: if `press` cannot reach a control in `twoFramesPicked`, keep
-  `d.click` for that control and write the reason in the case's comment and
-  here. If the `TablesPage` remount claim does not hold, take the
-  `toggleHome(hash?)` route described in C2.
-- **Review**: recommended (four rendering surfaces and a persisted-state
-  change), one remediation cycle, nits to "Deferred" with a batch named for
-  each.
+**No implement-ready batch is queued.** B14 is closed (below). The next work
+is **R0a**, currently only an outline - `plan.md`, "R0a planned in outline:
+the evidence, the sweep, the goldens" - and needs its own planning pass
+(steps, file list, acceptance criteria) before an implementer opens it. R0a
+deletes nothing, so it needs Phase 7's conditions 1, 2, 3 and 5 only, all
+already satisfied. After R0a: **R0b -> R0c**, also outlined in `plan.md`,
+"The finishing plan"; **R0c needs the owner's go** and is where the one-file
+revert ends.
 
-After B14: **R0a -> R0b -> R0c**, outlined in `plan.md`, "The finishing plan".
-R0a and R0b delete nothing and need only conditions 1, 2, 3 and 5; **R0c needs
-the owner's go** and is where the one-file revert ends.
+### Closed record: B14 (landed 2026-09-13)
+
+- Name: **B14 - the roll surface, the pinned home, and the checks that
+  should have caught them.** Full design: `plan.md`, **"B14 planned"**; the
+  built record, every deviation, every gate result, and the disposition of
+  all ten acceptance lines: `plan.md`, **"B14 built"**.
+- Landed as three commits on `main`, **none pushed** (this session's
+  instruction overrides `CLAUDE.md`'s "push once a batch passes"):
+  `6b18291` (C1, the roll re-render fix), `af7fa17` (C2, the pinned home),
+  `a7f8787` (C3, the six inherited checks).
+- **The remount claim did not hold**, checked directly rather than assumed:
+  `App.svelte` does not remount `TablesPage` between two `tables` addresses,
+  demonstrated in `shell.test.ts` before the fallback design was chosen. Took
+  the named fallback - `toggleHome(hash?)` plus `PageHead`'s `home` override,
+  fed by `TablesPage`'s own `table` - rather than the naive
+  `route.table ?? 'core_item'`, which would have pinned the wrong table
+  whenever a bare `#/tables` was reached from a named one (e.g. the "Таблицы"
+  tab).
+- `canPinHome` deleted, not wired: every real `PageHead` caller is already a
+  pinnable route, so wiring it would have been a permanently-true check.
+- One local fix found while touching `typo.js`, not designed for: its three
+  name-based grips were hardcoded to Russian regardless of `lang`, so every
+  English pass had been silently gripping nothing on those controls since the
+  suite was written - fixed with a small per-language label table.
+- Gates, all green, each one foreground call: `npm run check` **x3** (1013,
+  then 1017, then 1017 tests); `npm run check:built` once after C2;
+  `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll" "#/lists/a ~ roll panel"
+  "#/lists/a ~ rolled"` after C2 (the first attempt, without the env var, had
+  its arguments rewritten by Git Bash and matched zero cells - caught by the
+  run's own banner, not assumed passing; rerun correctly, 88 cells, no
+  discrepancies); `node tests/run-all.js app/sweep` and the other four
+  `tests/app/` suites after C3, both green. `git show 9177f3b | git apply
+  --reverse --check -` exits 0 on the final tree.
+- Not touched, as planned: `.github/workflows/ci.yml`, `index.html`,
+  `app.js`, `style.css`, `tests/parity/specs.js`, `docs/fixtures/`,
+  `tests/contracts.js`, `llms.txt`, `docs/specs/DEBT.md`, `ACCEPTED`,
+  `VISUAL_DEBT`.
 
 B13's, B12.1's, B12's, B11.1's and B11's briefs are kept below only as closed
 records.
@@ -5633,18 +5631,20 @@ cut-over, replanned".
 
 - **Every other item in this section now has a batch** (planner, 2026-09-12).
   The full reasoning for each placement is `plan.md`, "The finishing plan":
-  - **the roll re-render divergence** (item 1 below) - **B14 C1**, and it is
-    four call sites, not the two recorded below: `AltPanel.svelte:228` and
-    `ListPage.svelte:676` render through `OrGrid`, whose `{#each cells as cell,
-    i (i)}` keys by position, so they reuse the node for the same reason. No
-    `DEBT.md` entry: this is a divergence *from* live, which is migration work,
-    not a live defect reproduced on purpose.
-  - **B12.1's nit 1**, the pinned bare `#/tables` (item 2 below) - **B14 C2**,
-    together with B12.1 nits 3 (`canPinHome` with no consumer), 4 (`ROUTES.md`'s
-    "nine") and 5 (`ROUTES.md:125`'s over-narrow rule). B12.1 nit 2
+  - **the roll re-render divergence** (item 1 below) - **B14 C1, CLOSED**
+    (`6b18291`), and it was four call sites, not the two recorded below:
+    `AltPanel.svelte:228` and `ListPage.svelte:676` render through `OrGrid`,
+    whose `{#each cells as cell, i (i)}` keyed by position, so they reused the
+    node for the same reason - fixed with the rest by `OrGrid.svelte`'s
+    `{#key cell.it}`. No `DEBT.md` entry: this is a divergence *from* live,
+    which is migration work, not a live defect reproduced on purpose.
+  - **B12.1's nit 1**, the pinned bare `#/tables` (item 2 below) - **B14 C2,
+    CLOSED** (`af7fa17`), together with B12.1 nits 3 (`canPinHome` with no
+    consumer - deleted, not wired), 4 (`ROUTES.md`'s "nine") and 5
+    (`ROUTES.md:125`'s over-narrow rule). B12.1 nit 2
     (`go()`/`replace()` bypass `#fallback`) stays open and unreachable; it goes
     to Phase 8 R1 to verify or close.
-  - **N1, N4, N7** - **B14 C3** (acceptance lines 6, 7, 8).
+  - **N1, N4, N7** - **B14 C3, CLOSED** (`a7f8787`; acceptance lines 6, 7, 8).
   - **N2, N3, N5, N6, N8** - **R0c**. N2 and N8 live in `tests/derived.js`'s
     head-to-head comparison, which dies with `index.html`; N3, N5 and N6 are
     edits to `ci.yml`'s `deploy` job, which nothing may touch while
@@ -5655,7 +5655,9 @@ cut-over, replanned".
 - **B13's items, deferred by the coordinator's instruction (2026-09-12) -
   record only, do not fix, and for item 1 do not design the fix either.** B13
   is mid-plan: the soak, Phase 7 R0 and Phase 8 are queued behind it, and none
-  of this earns a cycle of its own.
+  of this earns a cycle of its own. **Both items 1 and 2 are CLOSED by B14**
+  (`6b18291`, `af7fa17`) - kept below verbatim as the record of what was found
+  and why it waited.
 
   1. **A real behaviour divergence from live, now in production: on a roll,
      the previous artwork stays on screen until the new image decodes.** Found
@@ -5732,8 +5734,11 @@ cut-over, replanned".
 
 - **B12.1 review nits, deferred by the coordinator's own instruction
   (2026-09-12) - record only, do not fix; B12.1 is mid-plan and B13 re-enters
-  these paths.** Recorded verbatim enough to pick up without re-reading the
-  review:
+  these paths.** **Items 1, 3, 4 and 5 are CLOSED by B14** (`af7fa17`):
+  the bare-`#/tables` pin now round-trips, `canPinHome` is deleted,
+  `ROUTES.md` and `STATE.md` describe the actual pin shape. Items 2 and 6
+  were outside B14's scope and remain open, recorded here. Recorded verbatim
+  enough to pick up without re-reading the review:
   1. **Highest - flag it to be settled before or with B13.** A pinned bare
      `#/tables` is accepted by the UI and silently dropped at the next boot.
      `TablesPage.svelte:444` renders `PageHead`, whose button calls
@@ -5772,7 +5777,11 @@ cut-over, replanned".
 
 - **PLACED by the planner (2026-09-12) - and two of these placements failed.
   Corrected 2026-09-12, later, by the planner: nit 1 and nit 2b were placed in
-  B13, B13 closed without them, and they are OPEN.** See the first entry of this
+  B13, B13 closed without them, and they were OPEN. CLOSED by B14 (`a7f8787`),
+  proven rather than asserted**: nit 1's `typo.js` `EXPECTED` table fails
+  loudly on a missing grip (demonstrated by renaming one expectation and
+  watching both languages go red), nit 2b's `twoFramesPicked` uses `d.press`
+  for all three controls. See the first entry of this
   section for both mechanisms in full and for where they now live (B14 C3, as
   acceptance lines). The rest of this paragraph stands as written.
   The B12 nits below are no longer an
@@ -5780,7 +5789,7 @@ cut-over, replanned".
   `plan.md`, "B12's deferred nits, placed". In short: ~~nit 1 (`typo.js`'s
   silent `softClick`) and nit 2b (`states.js` cases 4/5 using `d.click` where
   the plan says `press`) go to **B13**, which runs all five `tests/app/`
-  suites as its own gate~~ **- not done by B13; both open, now B14 C3**; nit 3 (`App.svelte`'s overclaiming `<h1>` comment)
+  suites as its own gate~~ **- not done by B13; both closed by B14 C3**; nit 3 (`App.svelte`'s overclaiming `<h1>` comment)
   is closed by **B12.1**, which deletes the branch, the comment and the
   `.todo` rule together; nit 4 (`DEBT.md`'s D10 out of sequence) goes to
   **Phase 8 R1**, which rewrites that file entry by entry anyway; nit 5

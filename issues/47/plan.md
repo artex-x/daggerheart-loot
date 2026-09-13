@@ -14467,6 +14467,147 @@ included, per the placement rule above.
 - `index.html`, `app.js`, `style.css`, `tests/parity/specs.js`,
   `docs/fixtures/`, `tests/contracts.js` and `llms.txt` are untouched.
 
+### B14 built (implementer, 2026-09-13)
+
+Built as designed, in three commits on `main`, none pushed (the task's own
+instruction overrides `CLAUDE.md`'s "push once a batch's commits pass" for
+this session): `6b18291` (C1), `af7fa17` (C2), `a7f8787` (C3).
+
+**C1, as designed**, with the two tests split across the two shared
+mechanisms rather than both landing on one call site: `OrGrid.test.ts` (new)
+mounts `OrGrid` standalone with a `createRawSnippet`-built card and asserts
+node identity across a record change at the same slot, and node reuse across
+the same record twice - this is the instrument for the three sites that
+share `OrGrid` (`StdPanel`, `AltPanel`, `ListPage`). `tests/app/states.js`
+case 14 opens `#/roll/wondrous` (`RollPanel`'s own single card, the fourth
+site), tags the `<img>`, presses the real roll button in a loop until the
+shown record changes, and asserts the tag is gone. Both proven to fail by
+removing their `{#key}` and rebuilding/rerunning, then restored and reproven
+green - `OrGrid.test.ts` failed with "gets a new node when a different
+record lands in the same slot" (the raw snippet's `render()` never re-ran at
+all without the key, which is exactly the defect: a component with no
+internal reactivity left the stale node in place); the `states.js` case
+failed with "узел `<img>` выжил после броска на другую запись".
+
+One test-writing deviation, found while writing `OrGrid.test.ts`'s
+same-record case: a fresh object literal per render (`{ id: 'a' }` twice)
+is a *different* object even with identical content, so it does not exercise
+"the same record" the way a real roll does (`rows[n-1]` returns the same
+`Record_` reference both times) - the test originally failed for the wrong
+reason (object identity, not the fix) until corrected to reuse one object
+across both renders.
+
+**C2, with the remount claim checked and found false, as the plan asked.**
+Read `App.svelte`'s `{:else if app.route.kind === 'tables'}` chain directly:
+Svelte tears a branch down only when the *matched branch* changes, not when
+the route object's contents do, so two `tables` addresses in a row - named to
+bare or the reverse - never remount `TablesPage`, and its `lastTable` (not
+`route.table`) is what is genuinely on screen. Demonstrated concretely in
+`shell.test.ts` before committing to the fallback: with `PageHead`'s `home`
+override removed, opening `#/tables/eq_weapon`, navigating to bare `#/tables`
+via `router.navigate` (what the "Таблицы" tab's real click does), and
+pressing pin wrote `'#/tables'` - the bare bar - not `'#/tables/eq_weapon'`;
+restoring the override made it pass. So the naive `route.table ?? 'core_item'`
+computed inside `AppState` was never implemented - it would have written
+`core_item` in this exact scenario, silently wrong, for the same reason. Took
+the plan's own named fallback: `toggleHome(hash?: string)` pins the given
+address (defaulting to `this.hash`), `PageHead` gained an optional `home`
+prop and computes its own `pinned`/`on` state from it rather than
+`app.isHome`, and `TablesPage` passes `home={tablesHash(table)}`.
+
+`canPinHome` was **deleted, not wired** - the plan's own choice point.
+Every actual `PageHead` caller (`AltPanel`, `ListsPage`, `RollPanel`,
+`SearchPage`, `StdPanel`, `TablesPage`) is a `'section'` or `'tables'` route;
+wiring `canPinHome` into the button's visibility would therefore always
+evaluate true at every real call site - a check with nothing to check,
+which `CLAUDE.md`'s "add no abstraction ahead of demonstrated need" rules
+out. `readHome` widened to accept a bare `#/tables` too, read off the raw
+string via `stripHash(v) === 'tables'` rather than off `parseHash`'s `Route`:
+`parseHash` cannot tell "no name" from "a name outside `TABLE_IDS`" - both
+come back `{ kind: 'tables', table: null }` - so the route alone cannot
+settle B12.1 nit 1's exact refusal case (`'#/tables/weapons'` must still be
+refused).
+
+`ROUTES.md` and `STATE.md` updated per B12.1 nit 4/5: the "nine a person may
+pin" line now says which eight pin as their own hash and which one pins as
+whichever table is on screen; "Reached by navigating away and back"
+generalised to "any subsequent navigation to a bare address", per nit 5's
+reading that the rule is not about one named route.
+
+**C3, all six items, each proven by breaking it once.** `typo.js`'s
+`softClick`/`hit` now report whether they found anything, and an `EXPECTED`
+table (read off the actual components - `FilterBar` renders nothing without
+facets, so only `eq_weapon`/`community` among the four table pages;
+`AddToList`'s trigger sits on `RecordPage` alone among these thirteen pages,
+not on a roll/tables card; the note controls are `ListPage`-only, so
+`#/lists` gets neither; every `PageHead` caller has help text except
+`SearchPage`) fails loudly when an expected grip is missing - demonstrated by
+adding `'addToList'` to `#/roll/std`'s row, watching both languages fail,
+then removing it. **One local fix found while wiring this, not designed for**:
+the three name-based grips (`Фильтры`, `Добавить в список`, `Заметка`) were
+hardcoded to Russian regardless of `lang`, so every English pass had been
+silently gripping nothing on those three controls since the suite was
+written - the identical failure class this batch exists to fix, caught by
+adding the assertions and fixed with a small `LABELS` table keyed by `lang`
+(`CLAUDE.md`, "fix cheap, local, safe bugs... found in a touched path").
+`twoFramesPicked`'s three `d.click` calls are `d.press`; no fallback needed -
+`press` reached all three controls on the first run. `edit-followup.mjs` and
+`add-source.prompt.md` now list seven files, `app/index.html` included;
+`selftest.mjs`'s new case `#40b` asserts the reminder's own text names it.
+`package.json`'s `check` script gained `node --check tools/check-site.mjs`,
+proven by appending a syntax error, confirming `node --check` exits 1, and
+removing it again - `ci.yml` untouched. `tests/parity/driver.js:11`'s header
+comment now says `dist/index.html` is what Pages serves and `index.html` is
+the pre-cutover fallback. The placement rule went into both
+`.claude/prompts/` files, close to where each already discusses acceptance
+criteria and the closing record.
+
+**Acceptance, all ten:**
+
+1. Done - proven per commit above (both C1 tests broken and restored).
+2. Done - the same-record-twice deviation is in `6b18291`'s commit message
+   and in this record.
+3. Done - `af7fa17`; `ROUTES.md`/`STATE.md` in the same commit; `canPinHome`
+   deleted (reasoning above), not wired.
+4. Done - `a7f8787`; demonstrated by adding a wrong expectation to
+   `#/roll/std` and watching both languages go red, then reverting.
+5. Done - `a7f8787`; no fallback needed, `press` reached all three controls.
+6. Done - `a7f8787`; both `.claude/` files say seven, `selftest.mjs`'s
+   `#40b` (313 cases now, was 312) asserts the reminder names
+   `app/index.html`.
+7. Done - `a7f8787`; proven by a temporary syntax error (`node --check`
+   exited 1), `ci.yml` untouched by any of the three commits.
+8. Done - `a7f8787`; the driver comment now describes the post-B13 world.
+9. Done - `a7f8787`; both `.claude/prompts/` files carry the rule.
+10. Held - `git show 9177f3b | git apply --reverse --check -` exits 0 on the
+    final tree (checked after each commit and again at close).
+
+**Gates, all green, each one foreground call:**
+
+- `npm run check` **x3** (before each commit): 1013, then 1017, then 1017
+  tests, all green; no coverage threshold moved past its floor in any run
+  (`RollPanel.svelte` 88.88% branches, `StdPanel.svelte` 80% - both above
+  their bucket's floor; `OrGrid.svelte` new at 100/90/100/100).
+- `npm run check:built` once, after C2: build, `file://` smoke and the
+  120 kB budget (88.5 kB actual) all green.
+- `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll" "#/lists/a ~ roll panel"
+  "#/lists/a ~ rolled"` after C2 - **the first attempt, without the env var,
+  had its arguments rewritten by Git Bash into filesystem paths and matched
+  nothing**; confirmed by the run itself only printing the "not a full run"
+  banner with zero cells read, then rerun correctly: 88 cells across 20
+  states read, `расхождений нет` (no discrepancies).
+- `node tests/run-all.js app/sweep` after C3: four widths, ~571s, all green.
+- `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` after
+  C3: all four green, ~254s slowest (`app/contracts`).
+
+Not touched, as planned: `.github/workflows/ci.yml`, `index.html`, `app.js`,
+`style.css`, `tests/parity/specs.js`, `docs/fixtures/`, `tests/contracts.js`,
+`llms.txt`, `docs/specs/DEBT.md`, `ACCEPTED`, `VISUAL_DEBT`.
+
+Next batch: **R0a**, outlined below in "R0a planned in outline" - not yet
+implement-ready, since an outline is not a batch with steps and acceptance
+criteria; a planning pass turns it into one before an implementer opens it.
+
 ### R0a planned in outline: the evidence, the sweep, the goldens
 
 Deletes nothing, so it needs conditions 1, 2, 3 and 5 only. Its own planning
