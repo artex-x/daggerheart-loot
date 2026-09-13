@@ -22,7 +22,10 @@ The implementation is `currentRoute()` in `app.js`, plus `ROUTES`,
 | `#/search` | Search |
 
 These nine are also the tab bar (`TAB_LIST`) and the nine a person may pin as
-their starting section.
+their starting section - eight pin as their own hash; `#/tables` pins as
+whichever table is on screen (`#/tables/<table>`), never as the bare tab
+address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
+stores and reads back.
 
 ## Legacy section names
 
@@ -122,5 +125,6 @@ answer it differently:
   it found it - unless a section other than the default is pinned, in which
   case it navigates there instead (a real history entry, so Back leaves the
   bare address behind rather than returning to it).
-- Reached by navigating away and back, it draws `#/roll/std` - the default,
-  never the pinned section - and writes nothing to the bar.
+- Any subsequent navigation to a bare address - away and back, or a typed
+  `#/` - draws `#/roll/std` - the default, never the pinned section - and
+  writes nothing to the bar.

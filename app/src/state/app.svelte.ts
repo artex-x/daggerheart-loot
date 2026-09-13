@@ -26,6 +26,7 @@ import {
   parseHash,
   recordUrl,
   sharedListHash,
+  stripHash,
   type Route,
   type Site
 } from '../lib/hash.js';
@@ -65,10 +66,19 @@ function readLang(env: Env): Lang {
 function readHome(env: Env): string {
   const v = env.storage.get(HOME_KEY);
   /* A pinned section has to still be a section. A record or a list is refused
-     because it is a snapshot that drifts away from the data. */
+     because it is a snapshot that drifts away from the data. A named table
+     survives the same way; a bare `#/tables` is accepted too - live's own
+     `homeAllows` (app.js 1124-1130) keeps that shape, for a pin written
+     before this fix as much as one typed by hand - but a name outside
+     TABLE_IDS is not, because there is nothing specific behind it to reopen.
+     `parseHash` cannot tell "no name" from "a name it did not recognise"
+     (both come back `table: null`), so the bare case is read off the string
+     itself rather than off the route. */
   if (!v) return DEFAULT_HOME;
   const r = parseHash(v);
-  return r.kind === 'section' || (r.kind === 'tables' && r.table) ? v : DEFAULT_HOME;
+  if (r.kind === 'section') return v;
+  if (r.kind === 'tables' && (r.table || stripHash(v) === 'tables')) return v;
+  return DEFAULT_HOME;
 }
 
 export class AppState {
@@ -440,9 +450,20 @@ export class AppState {
     return this.#home === this.hash;
   }
 
-  /** Pins the current address, or unpins it if it is already pinned. */
-  toggleHome(): boolean {
-    const next = this.isHome ? '' : this.hash;
+  /**
+   * Pins the given address, or unpins it if it is already pinned; pins the
+   * address on screen where none is given.
+   *
+   * The override is `TablesPage`'s: a bare `#/tables` still shows a real
+   * table underneath (`lastTable`, kept by that component alone - `App.svelte`
+   * does not remount it between two `tables` addresses, so `AppState` cannot
+   * see which one is genuinely on screen the way live's own `S.tables.t`
+   * can). `PageHead` passes it through from there; every other caller pins
+   * `this.hash` exactly as before.
+   */
+  toggleHome(hash?: string): boolean {
+    const current = hash ?? this.hash;
+    const next = this.#home === current ? '' : current;
     if (next) {
       if (!this.env.storage.set(HOME_KEY, next)) return false;
       this.#home = next;
@@ -451,12 +472,6 @@ export class AppState {
       this.#home = DEFAULT_HOME;
     }
     return true;
-  }
-
-  /** Only a section or a named table may be pinned, so the button hides elsewhere. */
-  get canPinHome(): boolean {
-    const r = this.route;
-    return r.kind === 'section' || (r.kind === 'tables' && !!r.table);
   }
 
   /** Whether the "lists live in this browser only" notice has been dismissed. */

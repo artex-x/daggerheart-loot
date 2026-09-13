@@ -21,11 +21,21 @@
     /** How the page says something that has no place on screen - the toast,
      *  off `toast`/`showToast` in app.js. */
     say: (msg: string, error?: boolean) => void;
+    /**
+     * The address this page is really showing, where it differs from the
+     * address bar - only `TablesPage` passes this: a bare `#/tables` still
+     * shows a named table underneath, which `AppState` cannot see on its own
+     * (`app.svelte.ts`'s `toggleHome`). Every other caller leaves this unset
+     * and pins the bar itself, exactly as before.
+     */
+    home?: string;
   }
 
-  const { app, title, sub, help, say }: Props = $props();
+  const { app, title, sub, help, say, home }: Props = $props();
 
   const t = $derived(app.t);
+  const pinned = $derived(home ?? app.hash);
+  const on = $derived(app.home === pinned);
 
   let helpOpen = $state(false);
 </script>
@@ -42,13 +52,13 @@
   <button
     type="button"
     class="homebtn"
-    class:on={app.isHome}
-    title={app.isHome ? t.homeOn : t.homeHint}
-    aria-label={app.isHome ? t.homeOn : t.homeHint}
-    aria-pressed={app.isHome}
+    class:on
+    title={on ? t.homeOn : t.homeHint}
+    aria-label={on ? t.homeOn : t.homeHint}
+    aria-pressed={on}
     onclick={() => {
-      const wasHome = app.isHome;
-      if (!app.toggleHome()) say(t.saveFailed, true);
+      const wasHome = on;
+      if (!app.toggleHome(home)) say(t.saveFailed, true);
       else say(wasHome ? t.homeReset : t.homeSet);
     }}
   >

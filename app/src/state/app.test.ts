@@ -62,6 +62,17 @@ describe('settings are read as untrusted data', () => {
       expect(app.home, good).toBe(good);
     }
   });
+
+  it('accepts a bare #/tables too, the one shape the app itself no longer writes', () => {
+    /* Live's own homeAllows (app.js 1124-1130) keeps this - `tables` is a
+       tab in TAB_LIST, not only a table name - so a pin written before this
+       fix, or by hand, still opens rather than silently falling back
+       (B12.1 nit 1/4: the rewrite used to refuse it and lose the pin at the
+       next boot). The writer below never produces this shape any more -
+       see 'pinning'. */
+    const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/tables' }) }));
+    expect(app.home).toBe('#/tables');
+  });
 });
 
 describe('the address on the way in', () => {
@@ -143,18 +154,34 @@ describe('pinning', () => {
     expect(app.home).toBe('#/roll/std');
   });
 
-  it('offers the pin only where it can be honoured', () => {
-    expect(new AppState(at('#/roll/std')).canPinHome).toBe(true);
-    expect(new AppState(at('#/tables/eq_weapon')).canPinHome).toBe(true);
-    /* A name outside TABLE_IDS leaves the table unset, so there is nothing
-       specific to pin - the bare tables address is the same case. */
-    expect(new AppState(at('#/tables')).canPinHome).toBe(false);
-    expect(new AppState(at('#/tables/weapons')).canPinHome).toBe(false);
-    expect(new AppState(at('#/i/w12')).canPinHome).toBe(false);
-    /* The lists tab is a section like any other and may be pinned; a single
-       stored list, below it, may not. */
-    expect(new AppState(at('#/lists')).canPinHome).toBe(true);
-    expect(new AppState(at('#/lists/abc')).canPinHome).toBe(false);
+  it('pins the address it is given, not just the one on the bar', () => {
+    /* PageHead's own override, for TablesPage: a bare #/tables can be
+       showing any table underneath (`lastTable`, which AppState cannot see -
+       `App.svelte` does not remount the page between two `tables`
+       addresses), so the caller hands over the address that is genuinely on
+       screen rather than letting toggleHome fall back to `this.hash`. */
+    const app = new AppState(at('#/tables'));
+    expect(app.hash).toBe('#/tables');
+    expect(app.toggleHome('#/tables/eq_weapon')).toBe(true);
+    expect(app.home).toBe('#/tables/eq_weapon');
+    /* The bar itself is still bare, so the bar-based getter reads unpinned -
+       exactly why PageHead computes its own `on` against the same override
+       rather than reading `app.isHome`. */
+    expect(app.isHome).toBe(false);
+  });
+
+  it('unpins the address it is given, the same way', () => {
+    const env = at('#/tables', { storage: stored({ [HOME_KEY]: '#/tables/eq_weapon' }) });
+    const app = new AppState(env);
+    expect(app.toggleHome('#/tables/eq_weapon')).toBe(true);
+    expect(app.home).toBe('#/roll/std');
+    expect(env.storage.get(HOME_KEY)).toBe(null);
+  });
+
+  it('takes the address on screen when it is not given one, exactly as before', () => {
+    const app = new AppState(at('#/tables/eq_weapon'));
+    expect(app.toggleHome()).toBe(true);
+    expect(app.home).toBe('#/tables/eq_weapon');
   });
 
   it('writes the language through to storage', () => {

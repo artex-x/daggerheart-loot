@@ -187,6 +187,34 @@ describe('an unreadable address', () => {
   });
 });
 
+describe('pinning the tables page', () => {
+  it('pins the table genuinely on screen, not the bare tab address', async () => {
+    /* App.svelte does not remount TablesPage between two `tables` addresses -
+       only a route-kind change does that - so the table it is actually
+       showing lives in that component's own `lastTable`, not in
+       `route.table`. Clicking the "Таблицы" tab from a named table (`router
+       .navigate`, exactly what that link's real click does) lands on a bare
+       `#/tables` that still shows the same table underneath. Pinning
+       `this.hash` there would have written '#/tables/core_item' regardless
+       of what was genuinely on screen (plan.md, "B14 planned": the App.svelte
+       remount its first design leaned on does not hold); PageHead's `home`
+       override, fed by TablesPage's own `table`, is what fixes it. */
+    const router = memoryRouter('#/tables/eq_weapon');
+    const storage = memoryStorage();
+    render(App, { env: fakeEnv({ router, storage }) });
+    router.navigate('#/tables');
+    await tick();
+
+    const pin = screen.getByRole('button', { name: 'Открывать этот раздел при запуске' });
+    await userEvent.click(pin);
+
+    expect(storage.get('dhloot.home.v1')).toBe('#/tables/eq_weapon');
+    /* The address bar itself is still bare - the pin is real state, not a
+       rewrite of what is on screen. */
+    expect(router.hash()).toBe('#/tables');
+  });
+});
+
 describe('the toast, through what a real page raises it with', () => {
   it('is a status message, polite, for a plain notice', async () => {
     /* Not #/roll/std - it is DEFAULT_HOME, so it starts pinned and the button

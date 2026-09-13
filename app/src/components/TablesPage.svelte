@@ -441,7 +441,7 @@
   });
 </script>
 
-<PageHead {app} title={t.tables} sub={t.subTables} {help} {say} />
+<PageHead {app} title={t.tables} sub={t.subTables} {help} {say} home={tablesHash(table)} />
 
 <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus this
      screen's own margin-free nav row. Svelte scopes this component's rule to
