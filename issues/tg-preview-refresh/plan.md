@@ -47,6 +47,36 @@ then `handoff.md`.
   is not mistaken for this one; the superseded pass-3 text is readable in
   full at commit `5b2a68e`.
 
+- **Pass 5, 2026-09-13 (this revision).** The owner, mid-restart at 195 of
+  1062 URLs, watched every batch report `photo changed 10, same 0, none 0`
+  and doubted it, because the artwork "was not changed much". They asked for
+  a lazier tool - press only where a press is actually needed - and named
+  Telegram's own resizing/re-encoding as the reason the counter might always
+  say `changed`. Everything measured for this pass is in `context.md`, "The
+  owner's question about `photo changed`"; nothing there is re-derived here.
+
+  Two answers, and they are answers to **different** questions:
+
+  (a) **The counter is arithmetically honest and its name is not.** It is a
+  photo-**id** delta, and *three* unrelated mechanisms set it: a genuine
+  re-download of different bytes; Telegram re-encoding what it fetched and
+  minting a new id for bytes that are identical (the owner's hypothesis, and
+  the balance of evidence favours it); and a pre-press webpage that had no
+  photo yet - `matchButtons` does not exclude a `WebPagePending` match, so
+  `photoBefore` is `null` and `null -> <id>` classifies as `changed`. The
+  name promises a picture delta and measures none. Section 3.4 gains "What
+  the photo counter measures"; **B5** (section 10b) changes the vocabulary
+  and nothing else.
+
+  (b) **No new pre-press staleness test.** The tool already has an exact one
+  - `stale()` over the content fingerprint - and it cannot help the run the
+  owner is watching, because a first reindex starts from an empty state by
+  construction. New section 3.9 records the rejection, the four candidates,
+  and the measurement that kills each.
+
+  Sections revised in pass 5 say **Revised (pass 5)**; the superseded pass-4
+  text is readable in full at commit `0f33aa2`.
+
 The six owner decisions in `context.md` stand and are not re-opened here.
 
 ## 1. Objective and current state
@@ -476,6 +506,75 @@ known stale; a chunk that reports mostly `same` is the signal to spot-check
 by pasting a link before trusting that chunk's state. The tool cannot make
 that judgement, and does not pretend to.
 
+#### What the photo counter measures, and what it is called (pass 5)
+
+**Revised (pass 5)** - the mechanism above stands exactly as written; its
+**vocabulary** does not, and the paragraph above about what the runbook
+should tell the owner to expect is narrowed below.
+
+The classifier is `after !== p.photoBefore` over `String(webpage.photo.id)`
+(`lib.mjs`, `pressGroup`; `client.mjs`, `plain()`). It compares **ids**, and
+an id is not a picture. Three mechanisms, only one of them about artwork,
+put a URL in the `changed` bucket:
+
+1. Telegram re-downloaded the image and the bytes really differ - the case
+   the name implies, and the case this whole task is about.
+2. Telegram re-downloaded the image, re-encoded it into its own stored
+   variants, and minted a new id for bytes that are byte-identical to the
+   ones it already held. This is the owner's resizing hypothesis. It is the
+   correct mechanism and it does not make the counter *wrong* - it makes the
+   **name** promise more than the measurement delivers.
+3. The pre-press webpage had **no photo at all**: `matchButtons` matches a
+   `WebPagePending` message like any other (it filters on `url` and the
+   button, never on `pending`), so `photoBefore` is `null`, and `null ->
+   <id>` is classified `changed`. On a fresh send this is entirely ordinary
+   - the bot can answer with a button message before Telegram has finished
+   fetching the picture.
+
+So `changed` means **"Telegram is holding a different photo id than the one
+the button message showed us before we pressed"**, i.e. *the press did
+something observable*. It is not evidence that the rendered image differs,
+and no amount of it can be.
+
+Which of 1-3 dominates is unmeasured, and two facts bear on it:
+
+- Under B4 a press the bot refuses **stops the run**, so every one of the
+  195 presses in the owner's live restart was accepted - and every one
+  reported `changed`, with `same 0`. Among 195 URLs on an obscure site,
+  some were certainly never unfurled by anyone before this reindex sent
+  them; Telegram fetched those fresh at send time, so their stored photo
+  was already current, and pressing re-downloaded identical bytes. The id
+  moved anyway. That points hard at mechanism 2 (and 3), not at 1.
+- It is an **inference, not a measurement**, and it rests on the
+  assumption that some of the 195 were previously uncached. Do not write it
+  into a spec as known. Section 9, step G.7 is the one-press experiment
+  that settles it; it costs a single press and no code.
+
+**Consequences taken in this pass:**
+
+- **B5 renames the vocabulary** to what is actually measured (`photo id new
+  / same / none / unseen`) and says in `docs/tg-preview.md`, once, what a
+  new id does and does not prove. Nothing about the mechanism changes: the
+  delta still gates confirmation only in the unanswered case and is
+  telemetry everywhere else.
+- **A fourth class, `unseen`.** Today a pressed message that `byIds` does
+  not return is classified `same` (`after === undefined ? 'same'`). Under
+  the honest name that becomes a false statement - we did not see the
+  message, so we do not know its id. It gets its own bucket. Confirmation is
+  unaffected: `unseen` is not `changed`, so an unanswered press whose
+  message vanished stays pending, exactly as today.
+- **The `pressed P` line counts attempts.** A press refused by the throttle
+  decrements the budget and is excluded from `pressedTotal` today (B4's
+  review nit 2), so `P` under-reports by one on a throttle stop. `P` is the
+  number B2 tunes the quota from; it must be attempts. One line.
+- **The runbook's "mostly `same`" guidance is re-pointed.** Under the
+  current best understanding an accepted press should essentially always
+  mint a new id, so a chunk reporting mostly `same` is no longer a mild
+  "spot-check this" - it is the symptom that presses are not landing, or
+  that the bot's refusal wording changed and the throttle carve-out stopped
+  matching (section 12's named canary). It stays worth reporting, and the
+  spot-check stays; what changes is how loud it is.
+
 #### What the 115 entries in `state.json` are worth, and what the owner does about them (pass 4)
 
 `context.md` fact 4 leaves this as a planning decision. Taken here.
@@ -682,6 +781,122 @@ stands in for the paste.
 ### 3.8 The owner's manual steps
 
 **Stands** as a pointer to section 9, which is revised.
+
+### 3.9 A pre-press staleness test - asked for, designed, and not taken (pass 5)
+
+The owner asked for a lazier tool: press only where the press is actually
+needed. "Press only when the photo changed" is circular - the delta is
+observable only *after* the press (section 3.4) - so the question is whether
+a test that runs **before** the press can be made to pay. **Answer: no new
+test.** The reasons, in the order that decides it.
+
+**1. The tool already has a pre-press staleness test, and it is exact.**
+`stale()` over the fingerprint - `sha256([og:title, og:description,
+og:image, sha256(image bytes)])` - runs before any send or press, costs
+nothing, needs no network beyond the live check the tool already performs,
+and is *precisely* "what Telegram would see, compared with what it saw when
+we last confirmed a press". In incremental mode a URL is neither sent nor
+pressed unless that changed. The laziness being asked for is already the
+steady-state design.
+
+What it cannot do is help the run the owner is watching. A **first reindex
+starts from an empty state by construction**: there is no record of what
+Telegram holds for any URL, so nothing can be compared, and the tool cannot
+learn it without asking Telegram. That is a property of the first run, not a
+defect, and it ends when the reindex ends.
+
+**2. The counter that prompted the doubt is not a press driver.** Nothing is
+pressed because of `photo changed`; confirmation is `answered || changed`
+and the delta gates only the `BOT_RESPONSE_TIMEOUT` case (section 3.4, and
+`context.md` fact 2). Fixing the name (B5) removes the reason to distrust a
+correct run without touching the mechanism - which is why B5 is the whole
+batch and this section is a rejection.
+
+**3. What a wrong verdict costs, which is what sizes the conservatism.** A
+false "already current" does not merely skip a press. The URL is left stale
+**and** recorded in `state.json` as refreshed, so every later incremental
+run skips it too - until some unrelated artwork commit re-fingerprints it by
+accident. That is exactly the class of lie pass 3 (a send is not a refresh)
+and pass 4 (a refused press is not a refresh) were written to remove, and it
+is worse than either, because those stopped a run loudly and this one is
+silent forever. Any pre-press test must therefore be **wrong only in the
+direction of pressing anyway**.
+
+**4. The candidates, each with the measurement that decides it.**
+`context.md`'s table has the raw findings; this is the verdict on each.
+
+- **`webpage.title` / `webpage.description`** - free and exact: they are on
+  the same TL object `plain()` already receives and discards. They test
+  **text** staleness. The root cause is image bytes under an unchanged
+  `og:image` URL, which is the one thing they cannot see. A URL with a
+  current title and a stale picture is the *typical* case here, so a test
+  built on them fails in the forbidden direction. Rejected on subject
+  matter, not on cost.
+- **Image dimensions** - dead. 846 of 847 `og/*.jpg` are 640x640.
+- **Image byte size** - Telegram stores its own re-encode, so its size never
+  matches ours; a mismatch is unconditional and carries no information.
+  Measured again on the origin this pass and confirmed from the other side:
+  GitHub Pages' `ETag` is `"<deploy-stamp>-<content-length>"`, so the only
+  per-file quantity the origin exposes cheaply is the size - the one
+  quantity that cannot be compared. Rejected.
+- **Telegram's cached photo `date`** - the shapeliest of the four and the
+  only one worth deferring rather than rejecting. `Api.Photo` carries
+  `date: int` (verified in the installed teleproto 1.229.0's generated
+  types, `tl/generated/api.d.ts` line 3072), so "skip the press when
+  Telegram's stored photo is newer than the bytes currently published" is a
+  free, exact, threshold-free rule that needs no download. It fails on the
+  **reference clock**: there is no per-file publication time to compare
+  against. Measured 2026-09-13 on the live site - `og/_share.jpg`,
+  `og/w76.jpg` and `og/cc19.jpg` all return the *identical*
+  `last-modified: Sun, 13 Sep 2026 08:36:03 GMT`, which is the deploy, not
+  the file. The only per-file alternative is a git commit date, which owner
+  constraint 4 rules out as a mechanism that must survive issue 47's
+  cut-over. Its failure mode is at least safe - a reference that is too new
+  means "press anyway" - so it degrades to today's behaviour rather than to
+  a lie, and it is recorded in section 13 as the candidate to revisit if a
+  per-image publication time ever exists. It would have saved **nothing** on
+  the first reindex, which is the run in question.
+- **Download Telegram's cached photo and compare perceptually** - the only
+  candidate that can see image staleness during a first reindex, and the
+  downloads do not spend the bot's attempt quota, so the economics look
+  favourable. Rejected on **error direction**, not on cost. The comparison
+  is Telegram's re-encode of our JPEG against our JPEG, so the threshold
+  must be loose enough to absorb re-encode noise; the change it must detect
+  is artwork **polish** - the owner's own words are "was not changed much".
+  A threshold loose enough for the noise is loose enough to miss the
+  signal, and the failure is the silent, permanent one from point 3. It
+  also buys a JPEG decoder dependency into a tool whose only dependency is
+  `teleproto`, and a threshold constant nothing in this repo can calibrate.
+- **Record the post-press photo id in the state (schema v2)** - already
+  deferred in section 13, and pass 5 sharpens *why* it is not this. It tells
+  you whether a press did anything; it does not tell you whether a press was
+  **needed**. "Was it needed" reduces to "have the bytes changed since we
+  last confirmed", which is the fingerprint comparison the tool already
+  performs. And if mechanism 2 of section 3.4 holds - a re-download mints a
+  new id unconditionally - then a recorded id can never be equal on a second
+  press and the rule degenerates to "always pressed, always confirmed".
+
+**5. The arithmetic of the saving, honestly.** The currency is the bot's
+attempt quota, not wall clock, so a test that removes presses is worth real
+complexity - that is the right test to apply and it is why this section
+exists rather than a one-line "no". But the size of the prize is
+**unmeasured and unmeasurable from here**: the population a test could skip
+is "URLs whose Telegram cache is already current", and nothing in the tool,
+the TL object or the origin can enumerate it before the press. Buying
+complexity with an unmeasured saving, and paying for it with the one failure
+mode two passes have been spent eliminating, is the wrong trade. If G.7's
+experiment says a press on already-current bytes reports `same`, then the
+195/195 `changed` the owner is reading is literal, the prize is near zero,
+and this section closes for good.
+
+**Named and not taken, for completeness:** a `messages.getWebPage(url, hash)`
+probe, which reads Telegram's cached webpage for any URL without messaging
+the bot and therefore spends no attempt quota. It is the only way to learn
+anything pre-**send**, it is one RPC per URL, and it dies on the same
+reference-clock problem as `photo.date` above - it returns an id and a date
+with nothing to compare them to on a first reindex. No agent may measure it
+either: it needs the owner's live session. Recorded here so the next reader
+does not rediscover it as new.
 
 ## 4. Architecture
 
@@ -935,9 +1150,35 @@ what follows is what B4 moves.
   applies in CI too and never binds there - an incremental run after a
   deploy is a handful of URLs - so no workflow input is added for it.
 
+**Added in pass 5, for B5.** Still no public contract change.
+
+- `docs/tg-preview.md` only: the summary vocabulary (`photo id new / same /
+  none / unseen`), one paragraph saying what a new id does and does not
+  prove, `pressed P` defined as attempts, step G.5's re-pointed guidance and
+  the new optional step G.7. That is the whole doc surface.
+- **`docs/specs/META.md` gains nothing.** The natural sentence -
+  "Telegram mints a new photo id whenever it re-downloads an image" - is an
+  **inference** from 195 accepted presses (section 3.4), not a measurement,
+  and section 12's standing rule is not to write an unmeasured number or
+  mechanism into a spec as if it were known. If G.7 measures it, that
+  sentence becomes a one-line META change in B2 and not before.
+- **`docs/specs/COVERAGE.md` gains nothing.** Its
+  `tools/tg-preview/lib.test.mjs` paragraph names behaviours, not counter
+  names, and B5 adds no new behaviour to the suite's ownership - only a
+  fourth bucket inside a classifier the paragraph already covers. Read it
+  and confirm rather than assuming; if a sentence there names `changed`, it
+  moves with the rest.
+
 ## 8. Parity and gates - confirmed, not assumed
 
-**Stands**, and is re-confirmed for B4: it touches `tools/tg-preview/lib.mjs`
+**Stands**, and is re-confirmed for **B5**: it touches
+`tools/tg-preview/{lib,lib.test,run}.mjs`, `docs/tg-preview.md` and this task
+directory - nothing under `app/src/**`, `data.js`, `i/`, `og/` or
+`tests/parity/**`, and nothing a screen draws. Gates: `npm run check` in one
+foreground call, plus `node --test tools/tg-preview/lib.test.mjs`. Not
+`check:built`, not parity.
+
+Re-confirmed for B4 before it: it touches `tools/tg-preview/lib.mjs`
 and `lib.test.mjs`, three docs and this task directory - nothing under
 `app/src/**`, `data.js`, `i/`, `og/` or `tests/parity/**`, and nothing a
 screen draws. Gate: `npm run check` only. Not `check:built`, not parity.
@@ -1048,13 +1289,48 @@ in the owner's `.env`).
    and the reindex never advances - the tool warns when you try. `--mode
    full` is one deliberate pass for a state you do not trust, which is what
    step E.0 has already handled.
-5. Read the `photo changed` count each time; a chunk reporting mostly
-   `same` means spot-check a few of its links by pasting before trusting
-   it, and report it.
+5. **Revised (pass 5).** Read the photo line each time, and read it for
+   what it measures: a **new photo id** proves the press made Telegram
+   store a different image than the button message was showing - i.e. the
+   press did something - **not** that the picture looks different. Telegram
+   re-encodes what it fetches, and a webpage that had no photo yet counts
+   as new as well (section 3.4, "What the photo counter measures"). So
+   `new 10, same 0` on every batch is the expected shape and is not a
+   reason to distrust the run. What *is* worth reporting is the opposite:
+   a chunk reporting mostly `same` now means the presses are probably not
+   landing - or the bot reworded its refusal and the throttle carve-out
+   stopped matching (section 12). Spot-check a few of that chunk's links by
+   pasting, and report it.
 6. When `pending 0`: `git add tools/tg-preview/state.json && git commit -m
    "chore(tg-preview): record the first full reindex"` and push. From here
    CI only ever sends and presses what changed, a handful of URLs at a
    time, well inside any quota.
+7. **Optional, one press, added in pass 5: settle what a new photo id
+   means.** Only worth doing if the counter still bothers you; the reindex
+   does not need it and nothing downstream is blocked on it. Between
+   chunks - **never while a chunk is running**, two writers would fight over
+   `state.json` - pick a record id this reindex already confirmed in the
+   **most recent** batch (so its button message is certainly inside
+   `RECOVER_SCAN`) and whose `og/<id>.jpg` has not changed since, then:
+   ```text
+   node tools/tg-preview/run.mjs --mode full --only <id> --limit 0 --press-limit 1
+   ```
+   `--mode full` is needed because the URL is already in the state and
+   incremental mode would correctly say `nothing to refresh`; `--limit 0`
+   means no send; phase 1 finds the existing button message and presses it.
+   Total cost: **one press, zero sends.** Read the result:
+   - **`photo id new 1`** - a press mints a new id even though the bytes on
+     the site have not changed since the previous press. Then the counter
+     measures "Telegram re-fetched", the resizing hypothesis is confirmed,
+     and no photo-id-based test can ever tell a needed press from a wasted
+     one (section 3.9 stays closed, and B2 may put one sentence in
+     `docs/specs/META.md`).
+   - **`same 1`** - the id moves only when the stored image really differs.
+     Then `new 195 / same 0` across the reindex is literal and true, the
+     original doubt is answered outright, and section 3.9's arithmetic
+     closes with the prize at near zero.
+   Report whichever it is; it is B2's input either way, and it is the only
+   thing in this task that would turn section 3.4's inference into a fact.
 
 **H-J.** Unchanged.
 
@@ -1284,6 +1560,14 @@ and exact commands.
 
 ### O2 - the owner's operations, restarted from step E.0
 
+**Status: in flight as of 2026-09-13** - the state was retired, the reindex
+restarted cold, and `tools/tg-preview/state.json` holds **195 of 1062**
+URLs, every batch reporting `pressed 10, confirmed 10`. That is what pass 5
+was asked about. Nothing in pass 5 interrupts it: B5 changes log wording
+only, writes no state, changes no schema and invalidates none of the 195.
+Step G.7 (one press, optional) is the only thing pass 5 adds to the owner's
+own work, and it waits for a gap between chunks.
+
 Not a code batch and no agent can perform it. Section 9 as revised in pass
 4: E.0 (retire the 115-entry state) -> E (dry runs) -> F (the calibration
 chunk, read carefully) -> G (~22 spaced chunks) -> H-J. Needs B4 present in
@@ -1291,6 +1575,14 @@ the tree the owner runs from. The orchestrator collects, because they are
 B2's only input: F.1's counts, whether 50 presses complete cleanly, the
 `N` of any throttle stop, F.4's already-posted regression result, and the
 per-chunk `photo changed`/`same` ratio.
+
+### B5 - say what the photo counter actually measures (one batch, one commit)
+
+**Status: implement-ready.** Full text in section 10b below. It is the whole
+of pass 5's code answer: a vocabulary fix, a fourth bucket, one honest
+count, and the documentation around them. Section 3.9 is why there is
+nothing else. Lands cleanly on top of the in-flight reindex - see section
+10b, "Concurrency with O2".
 
 ### B2 - tuning from the first real run (outline; may be empty)
 
@@ -1444,9 +1736,184 @@ draws changes (section 8).
 - Do not read, edit, commit or delete `tools/tg-preview/state.json`.
 - Do not trim a batch to fit the remaining press budget; stop instead.
 
-## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: yes, one, and it does not block B4
+## 10b. B5 - the implement-ready batch
 
-**Revised (pass 4).** Both pass-1 questions were answered by the owner
+**Objective.** Make the run's telemetry say what it measures, so a correct
+run stops reading like a broken one. The counter is a photo-**id** delta;
+it is renamed to that, it gains a bucket for the case it currently mislabels,
+and `pressed P` becomes attempts. **No behaviour changes**: the confirmation
+rule, the press budget, the throttle rule, the state schema and every exit
+code are untouched. Behaviour constraints are sections 3.4 (all of it, as
+revised in pass 5) and 3.9; do not reopen them, and do not add a pre-press
+test - section 3.9 is the decision, with the alternatives already named.
+
+**Concurrency with O2 (read before starting).** The owner's reindex is in
+flight in this same worktree and writes `tools/tg-preview/state.json` as it
+goes. Therefore:
+
+- **Do not read, edit, stage, commit or delete `tools/tg-preview/state.json`.**
+  It will very likely exist and be untracked; leave it exactly so. Stage by
+  path, never `git add -A`.
+- Ask before running the gates if a chunk may be in flight: `npm run check`
+  regenerates `i/*.html` and `data.json` through `npm run data`, and a
+  commit needs a clean, uncontended index. The regenerated bytes are
+  identical, so a concurrent run is not corrupted by it - the contention is
+  over git, not over content.
+- **Never run `run.mjs` without `--dry-run`.** Unchanged and unconditional.
+  `.env` holds the owner's live session; do not read, print or copy it.
+- Nothing in this batch invalidates a recorded URL. The owner may pick the
+  new code up at any chunk boundary, or not at all.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
+`tools/tg-preview/run.mjs`, `docs/tg-preview.md`,
+`issues/tg-preview-refresh/{context,plan,handoff}.md` (stage `context.md` as
+the orchestrator/planner left it).
+
+**Out of scope.** `tools/tg-preview/client.mjs` - deliberately: reading
+`webpage.title`, `description` or `photo.date` is free, and nothing uses
+them, so adding them now would be surface ahead of need (`CLAUDE.md`);
+section 3.9 records why nothing will. Also `manifest.mjs`, `live.mjs`,
+`login.mjs`, `package*.json`, `.github/workflows/**`, `docs/specs/META.md`
+and `docs/specs/COVERAGE.md` (section 7 says why neither moves), `README*`,
+`CLAUDE.md`, every public contract, and anything under `app/src/**`,
+`data.js`, `i/`, `og/`, `tests/parity/**`.
+
+**Steps.**
+
+1. `lib.mjs`, `pressGroup` - the classifier. Replace the three-way delta
+   with four buckets and rename the keys to what they measure:
+   ```text
+   after === undefined -> 'unseen'   the message was pressed but byIds did not return it
+   after == null       -> 'none'     the webpage has no photo (pending or imageless)
+   after !== photoBefore -> 'newId'  Telegram is holding a different photo id than before the press
+   otherwise           -> 'sameId'
+   ```
+   Confirmation is **unchanged in effect**: `if (p.answered || delta ===
+   'newId')`. `unseen` is not a confirmation, exactly as the old
+   `undefined -> 'same'` was not. Add one why-comment saying a new id proves
+   a re-download happened and not that the picture differs (section 3.4).
+2. `lib.mjs` - the same rename in `baseResult()`'s `photo` object, in
+   `pressGroup`'s local counter, and in `photoTotals` / `addPhoto`. Four
+   keys everywhere: `{ newId, sameId, none, unseen }`.
+3. `lib.mjs` - `pressedCount` becomes **attempts**. `pressGroup` currently
+   returns `pressedList.length`, which excludes a press the bot refused
+   (B4's review nit 2), so `pressed P` under-reports on a throttle stop and
+   `P` is the number B2 tunes the quota from. Derive it from the budget,
+   which B4 already decrements for every attempted press whether or not it
+   succeeded: capture `pressBudget` at the top of `pressGroup` and return
+   the difference as `pressedCount`. One comment naming what `P` means
+   (attempts, not confirmations) and the one known under-count that remains
+   (nit 1: `attempt()`'s transport retries can re-invoke `cx.press` inside a
+   single decrement - deferred, absorbed by the default under-shoot).
+4. `lib.mjs` - the two log lines (phase 1, and the per-batch line in phase
+   2) print the new vocabulary:
+   ```text
+   phase 1: pressed 50, confirmed 50 (photo id new 50, same 0, none 0, unseen 0)
+   batch 3/5: sent 10, buttons 10, pressed 10, confirmed 10 (photo id new 9, same 1, none 0, unseen 0)
+   ```
+5. `run.mjs` - the summary and `$GITHUB_STEP_SUMMARY` line becomes
+   `pressed P (photo id new C, same S, none Z, unseen U)`. No other change;
+   `refreshed N, pending M` and the `::warning::` rule stand.
+6. `lib.test.mjs` - carry the rename through the three places that assert on
+   the shape (`baseResult`'s deepEqual, and the two `assert.deepEqual(result.
+   photo, ...)` cases), and reword the one test title that says "the photo
+   changed" to "a new photo id". Add **two** cases:
+   - a pressed message that `byIds` does not return is counted `unseen`, is
+     **not** confirmed when the press was unanswered, and **is** confirmed
+     when the press was answered (the answered path never depended on the
+     photo, and this proves the fourth bucket did not change that);
+   - a press refused by the throttle is counted in `pressed P` (attempts)
+     while staying absent from `confirmed` and from every `writeState` call
+     - i.e. step 3's fix, asserted on both sides.
+7. `docs/tg-preview.md` - in place:
+   (a) the summary bullet: the second line's new wording, and `pressed P`
+   defined as **presses attempted**, not confirmations;
+   (b) one short paragraph next to it - what a new photo id proves (Telegram
+   stored a different image than the button message showed: the press did
+   something) and what it does not (that the picture looks different, since
+   Telegram re-encodes what it fetches and a webpage that had no photo yet
+   counts as new too), so a run of `new 10, same 0` reads as the expected
+   shape rather than as a broken counter;
+   (c) `unseen` named once, in a clause: the press went out but the message
+   could not be re-read, so the tool does not claim to know;
+   (d) setup step G.5 replaced by section 9's revised G.5, and section 9's
+   new **G.7** (the optional one-press experiment) added after G.6;
+   (e) the `BOT_RESPONSE_TIMEOUT` sentence in "Rate limiting and
+   resumability" - "treats a changed photo as confirmation" - reworded to
+   "a new photo id";
+   (f) afterwards `grep -in "photo changed\|changed photo\|photo\.changed"
+   docs/tg-preview.md tools/tg-preview/*.mjs` and read every hit; none may
+   remain outside a sentence that is explicitly about the old wording.
+8. Gates and commit. `node --test tools/tg-preview/lib.test.mjs`; then
+   `node tools/tg-preview/run.mjs --dry-run` (must still print the counts
+   line ending `(press budget 50)` and exit 0 with no credential); then
+   `set -o pipefail; npm run check 2>&1 | tail -n 120` with Bash timeout
+   600000. Stage by name: `tools/tg-preview/lib.mjs`,
+   `tools/tg-preview/lib.test.mjs`, `tools/tg-preview/run.mjs`,
+   `docs/tg-preview.md`, the three task files. Commit
+   `fix(tg-preview): name the photo counter after what it measures`.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs` passes without
+  `tools/tg-preview/node_modules` present, with the two new cases.
+- No test asserts a different `confirmed` set than before this batch: the
+  rename is provably behaviour-neutral on confirmation.
+- A `runRefresh` test proves a throttle-refused press is counted in
+  `result.pressed` and absent from `result.confirmed` and from every
+  `writeState` call.
+- A `runRefresh` test proves an `unseen` classification confirms nothing on
+  an unanswered press and does not un-confirm an answered one.
+- `grep -n "changed" tools/tg-preview/lib.mjs tools/tg-preview/run.mjs`
+  finds no counter, key or log word (comments explaining the rename are the
+  only permitted hits).
+- `node tools/tg-preview/run.mjs --dry-run` exits 0 and writes nothing.
+- `git status` after the batch shows no change to `client.mjs`,
+  `previews.yml`, `package*.json`, `i/`, `og/`, `data.js`, `docs/specs/**`;
+  `tools/tg-preview/state.json` untracked, unmodified and unstaged.
+- `npm run check` green in one foreground call.
+
+**Gates.** `npm run check` (one foreground call, `set -o pipefail; npm run
+check 2>&1 | tail -n 120`, Bash timeout 600000) plus `node --test
+tools/tg-preview/lib.test.mjs`. **Not** `check:built` and **not** parity:
+nothing under `app/src/**`, `data.js`, `i/`, `og/` or `tests/parity/**` is
+touched and nothing a screen draws changes (section 8). A
+`app/src/components/searchPage.test.ts` timeout is the known load flake on
+this host - re-run once; do not diagnose it.
+
+**Risks / do-nots.**
+
+- Do not change the confirmation rule while renaming it. `answered ||
+  newId` is the whole of it, and `unseen` must not become a confirmation.
+- Do not make `matchButtons` skip a `WebPagePending` message. It is *why*
+  `photoBefore` is often `null`, but pressing a pending webpage is exactly
+  what should happen; skipping it would leave the URL pending forever.
+- Do not add a pre-press test, a threshold, an image decoder, or a new TL
+  field. Section 3.9.
+- Do not touch `client.mjs`, `previews.yml` or the specs.
+- Do not read, edit, stage, commit or delete `tools/tg-preview/state.json`,
+  and never run `run.mjs` without `--dry-run`.
+
+## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: no
+
+**Revised (pass 5). Pass 4's one question is closed, and pass 5 raises
+none.** The owner answered it on 2026-09-12 (`context.md`, decision 7):
+retire the 115-entry `state.json` to a backup outside the repository and
+restart the reindex cold on the `--limit 5 --press-limit 50` cadence. They
+then did it - the restart is in flight and `state.json` holds 195 of 1062
+URLs (`context.md`, "The owner's question about `photo changed`").
+
+Pass 5 needs no decision. B5 changes log wording, adds a fourth telemetry
+bucket and counts attempts honestly; it writes no state, changes no schema,
+invalidates none of the 195 recorded URLs and requires no restart, pause or
+re-press. Section 9's new step G.7 is **optional** and costs one press; the
+reindex is complete without it.
+
+The pass-4 text is kept below because its reasoning is what a future
+ambiguous state file should be judged by.
+
+**Answered - pass 4's question, kept for its reasoning.** Both pass-1
+questions were answered by the owner
 (`context.md`, decisions 5 and 6). Pass 3 raised none. Pass 4 raises exactly
 one, and it is about the owner's own data rather than about the design:
 
@@ -1473,8 +1940,25 @@ this question is open.
 
 ## 12. Risks and assumptions
 
-**Revised (pass 4).** The pass-4 entries first; pass 3's list follows and
-still holds except where noted.
+**Revised (pass 5).** Two pass-5 entries first, then pass 4's, then pass 3's;
+all of them still hold except where noted.
+
+- **Nobody has measured whether a re-download mints a new photo id.** The
+  claim that it does - which is what makes `changed` uninformative about
+  artwork, and what closes section 3.9 - rests on 195 accepted presses that
+  all reported `changed`, plus the assumption that some of those URLs were
+  never cached by Telegram before this reindex sent them. Plausible, not
+  proven. Section 9's G.7 is one press and settles it. **Do not write it
+  into `docs/specs/META.md` until it is measured**, the same rule this plan
+  applies to the bot's quota.
+- **The rename makes one canary louder, and it is the only canary there
+  is.** Section 12's standing risk is that the bot rewords "too many
+  attempts", after which refused presses would again be recorded as
+  confirmed and nothing would alert anyone. The countervailing signal is a
+  chunk reporting mostly `same`, and pass 5 sharpens what that means (an
+  accepted press is expected to mint a new id, so `same` should be rare).
+  That is worth more than it looks - and it is still only a signal in the
+  log, read by a human who is looking. Nothing automated watches it.
 
 - **The quota is one data point.** 115 presses tripped it once, with a 3213
   s cooldown. Nobody knows the count, the window, whether sends and presses
@@ -1568,11 +2052,32 @@ Added in pass 4, all for B2 and all wanting O2's numbers first:
   from below, and consider deriving the chunk's `--limit` from it so the
   two flags cannot be paired wrongly.
 
+Added in pass 5:
+
+- **`photo.date` as a pre-press skip**, if a per-image publication time ever
+  exists. `Api.Photo.date` is on the TL object already; the origin is what
+  is missing - GitHub Pages' `Last-Modified` is per-deploy, identical across
+  files (measured 2026-09-13; section 3.9). Issue 47's cut-over is the point
+  at which `og/` generation might be made to carry one. Safe by
+  construction: a too-new reference means "press anyway".
+- **B4 review nit 1** (`attempt()`'s transport retries can re-invoke
+  `cx.press` inside one budget decrement, so attempts can still undercount
+  by up to 3 per press under network failure) stays deferred; B5 fixes the
+  throttle case (nit 2) because it is the same sentence being made honest,
+  and leaves nit 1 to B2, absorbed by the default under-shoot.
+- **B4 review nit 3** (the `--mode full` warning sits after `client()`, so
+  `--dry-run --mode full` never shows it) stays deferred: it is a real
+  papercut on the invocation the docs recommend, but it is a different
+  subject from B5's telemetry vocabulary and would need its own test. B2.
+
 Other deferrals:
 
 - **Photo id in the state (schema v2)** so incremental runs can demand a
   changed photo whenever the image sha changed - section 3.4, "Considered
-  and not taken". Revisit after O2 reports the `same`/`changed` ratio.
+  and not taken", **and narrowed by pass 5**: it is not a staleness test
+  (section 3.9), and if a re-download always mints a new id it degenerates
+  to "always confirmed". Its remaining value is as an evidence class for a
+  future ambiguous state file. Revisit after G.7.
 - A pointer line in `CLAUDE.md` and `.claude/prompts/refresh-artwork.prompt.md`
   - orchestrator's call, one line each.
 - Other messengers' caches. Not this task.

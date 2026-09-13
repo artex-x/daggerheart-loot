@@ -311,6 +311,83 @@ untracked and now holds **115 URLs** (the site root, `cc12`/`cc24`/`cc38`
 residue and `cc19` among them), up from `cc19` alone. `cc44`-`cc53` were
 sent but never got buttons and are correctly absent.
 
+## The owner's question about `photo changed` (orchestrator, 2026-09-13)
+
+The owner watched the restarted reindex report
+`batch 1/5: sent 10, buttons 10, pressed 10, confirmed 10 (photo changed 10,
+same 0, none 0)` on every batch and doubted it, because the artwork "was not
+changed much". They asked for a lazier tool: press only where the press is
+actually needed, and raised resizing as the explanation - Telegram may store
+its own re-encode, so the id moves even when the picture does not.
+
+Facts, so the planner does not re-derive them:
+
+1. **`changed` is a file-id delta, not a picture delta.** `lib.mjs`
+   classifies by `after !== p.photoBefore` where `photoId` is
+   `String(webpage.photo.id)` (`client.mjs`, `plain()`). Telegram mints a new
+   id when it re-downloads and re-encodes. So `changed` proves a re-fetch
+   visibly happened; it does not prove the rendered image differs. The
+   owner's resizing hypothesis is the correct mechanism and does not make the
+   counter wrong - it makes its **name** promise more than it measures.
+2. **The delta is not spending presses.** Confirmation is
+   `p.answered || delta === 'changed'`; an acknowledged press confirms on its
+   own and the delta gates only the `BOT_RESPONSE_TIMEOUT` case (section 3.4).
+   The counts are telemetry. Nothing is pressed twice because of them.
+3. **10/10 `changed` is the predicted shape, not an anomaly.** The root cause
+   is three artwork commits that rewrote `og/*.jpg` bytes under unchanged
+   URLs, so most of the 847 images genuinely differ from Telegram's cache.
+   `plan.md` section 3.4 says `changed` should dominate a first reindex and
+   names a mostly-`same` chunk as the thing to spot-check.
+4. **"Press only when the photo changed" is circular as stated.** The delta
+   is observable only after the press. A lazy tool needs a *pre-press* test.
+
+What a pre-press test could use, measured on this host 2026-09-13:
+
+| candidate | finding |
+|---|---|
+| `webpage.title` / `webpage.description` | present on the same TL object `plain()` already receives and **discarded today** (`client.mjs` keeps id/text/url/pending/photoId/buttons). Free, exact, no request - but it tests text staleness, and the root cause is image bytes |
+| image dimensions | **dead end.** 846 of 847 `og/*.jpg` are 640x640; one is 1200x630. Nothing to discriminate on |
+| image byte size | 15598 / 47153 / 142163 (min/median/max). Telegram's re-encode will not match ours, so at best a coarse mismatch hint |
+| download Telegram's cached photo and compare perceptually with `og/<id>.jpg` | the only pre-press test that can see image staleness. **File downloads do not spend @WebpageBot's attempt quota**, which is the scarce currency, so the economics are favourable. Costs a JPEG decoder dependency and a threshold |
+| record the post-press photo id in the state (schema v2) | already deferred in `plan.md` section 13. Exact and cheap, but cannot help the **first** reindex (no prior id) and inherits section 3.4's "Telegram may reuse a photo for bytes it has seen before" caveat |
+
+### Added by the planner, pass 5 (2026-09-13) - do not re-measure
+
+Three findings that bear on the candidate table above and are durable:
+
+1. **A third mechanism sets `changed`, and it is in our own code.**
+   `matchButtons` does not exclude a `WebPagePending` match (it filters on
+   `url` and the button text only), so `photoBefore` is `null` whenever the
+   bot's button message arrived before Telegram had fetched the picture, and
+   `null -> <id>` classifies as `changed`. So `changed` is over-determined:
+   genuine new bytes, Telegram's re-encode, *and* "there was no photo yet"
+   all land in the same bucket.
+2. **The origin exposes no per-file publication time**, which kills the
+   cheapest pre-press idea (compare `Api.Photo.date` - it exists,
+   `tl/generated/api.d.ts` line 3072 - against when the current bytes went
+   live). Measured with `curl -sI` on `og/_share.jpg`, `og/w76.jpg` and
+   `og/cc19.jpg`: all three return the **identical**
+   `last-modified: Sun, 13 Sep 2026 08:36:03 GMT` (the deploy, not the
+   file), and `etag` is `"<deploy-stamp>-<content-length>"` - `6aa66073`
+   shared, then `7c22`/`15333`/`6339`, which are the three file sizes in
+   hex. The only per-file quantity the origin gives up cheaply is the size,
+   which is the one quantity Telegram's re-encode makes incomparable.
+3. **195 accepted presses, 195 `changed`, 0 `same`.** Under B4 a press the
+   bot refuses stops the run, so every press in the live restart was
+   accepted. On an obscure site, some of those 195 URLs had certainly never
+   been unfurled before this reindex sent them - Telegram fetched those
+   fresh at send time, so their stored photo was already current, and the
+   press re-downloaded identical bytes. The id moved anyway. That is an
+   **inference, not a measurement** (it assumes some were previously
+   uncached); `plan.md` section 9 step G.7 is the one-press experiment that
+   settles it. Do not write it into a spec until it does.
+
+State of the world when the owner asked: the restart is mid-flight,
+`tools/tg-preview/state.json` untracked at **195 of 1062 URLs**, worktree HEAD
+`0f33aa2`, main checkout HEAD `b0545ed`. A peer interactive session
+(`tg-preview-refresh-59`) was live in this worktree; the owner confirmed it is
+theirs and authorised planning to proceed anyway.
+
 ## Scale, measured 2026-09-11 at `8b96ff4`
 
 | Thing | Count |
