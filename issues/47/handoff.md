@@ -7347,6 +7347,31 @@ cut-over, replanned".
   deliberately not reproduced; recorded in `ACCEPTED`.
 - **The shared `S.kind`.** Batch C's.
 
+## Cleanup performed / retained artifacts (R0a, orchestrator, 2026-09-13)
+
+- **Removed:** nothing from the repository. `app/coverage/` and `coverage/` were
+  checked and already absent - vitest had cleaned up after the two colliding
+  runs described below. `test-output/app-states.log` is left in place: it is
+  gitignored, it is the failure output the flaky case wrote, and it is evidence
+  for the "Deferred" entry that names it.
+- **Retained, deliberately:** `issues/tg-preview-refresh/` (three untracked
+  files) belongs to a different task and was never staged. Every commit in this
+  batch staged by path; `git add -A` was never used.
+- **The one incident worth carrying forward.** Mid-batch, the implementer's
+  `npm run check` was backgrounded, so the PostToolUse hook never observed it
+  and it armed no commit gate - 937 s spent for nothing. The orchestrator then
+  started its own foreground check to supply one, it crossed the 600 s cap and
+  was backgrounded too, and for roughly ninety seconds **two vitest coverage
+  passes ran on one tree**. Both were stopped; the tree was unharmed
+  (`git status` unchanged, `node tests/derived.js` green). The next clean run
+  failed at 346 s with vitest's `Something removed the coverage directory ...
+  Make sure you are not running multiple Vitests with the same
+  "coverage.reportsDirectory" at the same time`, which is pure residue, and the
+  run after that was **`EXIT=0` in 147 s**. So: `npm run check` costs ~147 s
+  alone on this host, the 937 s reading was contention, and the rule that
+  produced the mess is the one already written down - a check is run in the
+  foreground, in one call, beside nothing else.
+
 ## Notes
 
 - **Phase 5 planning pass (planner, 2026-09-12).** Mocks path: none (no
