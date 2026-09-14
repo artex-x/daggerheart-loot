@@ -191,7 +191,7 @@ jobs:
   # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, parity]
+    needs: [check, audit, secrets, parity, golden]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:

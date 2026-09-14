@@ -28,7 +28,7 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
 | `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
-| `derived` | data | kept | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in seven files; `noindex` on both entry documents (`index.html`, `app/index.html`) and their heads compared field by field with no exception list; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment) |
+| `derived` | data | kept | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in seven files; `noindex` on both entry documents (`index.html`, `app/index.html`) and their heads compared field by field with no exception list; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
 | `parity` | migration | kept until Phase 7 | the rewrite against the live app: the same script on both, differences reported |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 26 route shapes, the equipment stat line in both languages, filter group key names against the docs |
 | `i18n` | source | kept | dictionary parity in both directions, and no key the code asks for that is missing |

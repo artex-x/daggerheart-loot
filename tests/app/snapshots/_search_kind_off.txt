@@ -78,7 +78,6 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/search]
 5Стенающая Костяная ФлейтаСтоимость Призыва: 1Один раз за продол... [namelen=394 namehash=01e31635]
 6Пифийская ВилкаСтоимость Призыва: 3Выберите место для путешеств... [namelen=382 namehash=a467e3e4]
 71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
-93ДинамитВы можете поджечь эту динамитную шашку и бросить её в п... [namelen=357 namehash=8f94fab6]
 9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
 Dread
@@ -89,6 +88,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Выбрано
+ДинамитВы можете поджечь эту динамитную шашку и бросить её в пре... [namelen=355 namehash=25334e3b]
 К содержимому
 ЛутDaggerheart
 Обычные правила
@@ -177,13 +177,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/search]
 5Treacherous Knuckle-DusterYou may mark 1 Stress before an attac... [namelen=134 namehash=6c5d102e]
 6Pythian ForkRecall Cost: 3Choose a location to travel to on any... [namelen=340 namehash=716a8df7]
 71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
-93DynamiteYou can light this dynamite and toss it within Close r... [namelen=352 namehash=8fc7810f]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
 Alt. tables
 Communities
 Consumables
 Dread
+DynamiteYou can light this dynamite and toss it within Close ran... [namelen=350 namehash=3e0eb0f2]
 EN
 Equipment
 Items

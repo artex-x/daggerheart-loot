@@ -63,9 +63,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_weapo
     ... button x35 of 39 same-shape siblings elided
     ... checkbox x34 of 38 same-shape siblings elided
     checkbox "Выбрано" [checked=false]
-    button "61 Святой Дробовик Ранг 1 · Магическое · Проворность · Близко · ..." [namelen=231 namehash=ad1dfb2d]
+    button "Святой Дробовик Ранг 1 · Магическое · Проворность · Близко · d6+..." [namelen=228 namehash=d7ece941]
     checkbox "Выбрано" [checked=false]
-    button "65 Многозарядный Арбалет Ранг 1 · Физическое · Искусность · Дале..." [namelen=255 namehash=dafc9150]
+    button "Многозарядный Арбалет Ранг 1 · Физическое · Искусность · Далеко ..." [namelen=252 namehash=02123885]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -73,28 +73,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_weapo
 
 ## ru :: controls
 1
-11Кованый КрюкРанг 1 · Физическое · Сила · Близко · d8+2 физ · Д... [namelen=107 namehash=7d14f260]
-12КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Дву... [namelen=105 namehash=d54ed3b1]
-13УдочкаРанг 1 · Физическое · Проворность · Далеко · d6+3 физ · ... [namelen=108 namehash=9171fffa]
-14РогаткаРанг 1 · Физическое · Искусность · Далеко · d6+3 физ · ... [namelen=108 namehash=676f7d03]
-15Установка для ФейерверковРанг 1 · Физическое · Проворность · О... [namelen=160 namehash=6eaa9a6e]
-17Зачарованная ШвабраРанг 1 · Магическое · Сила · Вплотную · d10... [namelen=117 namehash=fc146ec1]
-19Зачарованная МетлаРанг 1 · Магическое · Инстинкт · Близко · d1... [namelen=118 namehash=ca2d3629]
 2
-22Зачарованный БумерангРанг 1 · Магическое · Инстинкт · Далеко ·... [namelen=120 namehash=0802ff38]
-23Зачарованный Воздушный ЗмейРанг 1 · Магическое · Влияние · Дал... [namelen=229 namehash=d7ea6819]
-25Сверкающий ПосохРанг 1 · Магическое · Знание · Очень далеко · ... [namelen=224 namehash=fe5dae34]
-2Заточенные ГраблиРанг 1 · Физическое · Проворность · Вплотную ·... [namelen=120 namehash=5b63509b]
 3
-3Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 фи... [namelen=135 namehash=fa700f07]
 4
-41ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+... [namelen=190 namehash=93cdcc10]
-45ДробовикРанг 1 · Физическое · Сила · Близко · d6+2 физ · Двуру... [namelen=206 namehash=b4725a6c]
-5ВилыРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуручн... [namelen=101 namehash=b9e06833]
-61Святой ДробовикРанг 1 · Магическое · Проворность · Близко · d6... [namelen=226 namehash=f0001cb7]
-65Многозарядный АрбалетРанг 1 · Физическое · Искусность · Далеко... [namelen=250 namehash=12ac5afe]
-6КувалдаРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двур... [namelen=232 namehash=e7b6e173]
-8Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3... [namelen=115 namehash=0b67fd84]
 Core
 Dread
 Dread GM Toolbox
@@ -111,6 +92,8 @@ daggerheart.com
 Боевой МолотРанг 1 · Физическое · Сила · Вплотную · d12+3 физ · ... [namelen=115 namehash=9de2a9e2]
 Боевой ПосохРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 фи... [namelen=96 namehash=dce1dc4b]
 Броня
+ВилыРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуручно... [namelen=100 namehash=1d4d5bb2]
+ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+2 ... [namelen=188 namehash=a46e5371]
 Влияние
 Вплотную
 Вторичное
@@ -122,6 +105,12 @@ daggerheart.com
 Двуручный ПосохРанг 1 · Магическое · Знание · Очень далеко · d6 ... [namelen=205 namehash=71a5dfa5]
 Длинный ЛукРанг 1 · Физическое · Проворность · Очень далеко · d8... [namelen=128 namehash=522ff51f]
 Длинный МечРанг 1 · Физическое · Проворность · Вплотную · d10+3 ... [namelen=98 namehash=adb86655]
+ДробовикРанг 1 · Физическое · Сила · Близко · d6+2 физ · Двуручн... [namelen=204 namehash=6d8ab543]
+Заточенные ГраблиРанг 1 · Физическое · Проворность · Вплотную · ... [namelen=119 namehash=6091128f]
+Зачарованная МетлаРанг 1 · Магическое · Инстинкт · Близко · d10+... [namelen=116 namehash=02b9236e]
+Зачарованная ШвабраРанг 1 · Магическое · Сила · Вплотную · d10+3... [namelen=115 namehash=b06eca54]
+Зачарованный БумерангРанг 1 · Магическое · Инстинкт · Далеко · d... [namelen=118 namehash=fe7b3b1a]
+Зачарованный Воздушный ЗмейРанг 1 · Магическое · Влияние · Далек... [namelen=227 namehash=071b0746]
 Знание
 Инстинкт
 Искусность
@@ -129,14 +118,19 @@ daggerheart.com
 Как это работает
 КатанаРанг 1 · Физическое · Проворность · Вплотную · d10+3 физ ·... [namelen=225 namehash=0118108b]
 Кинжал на ВеревкеРанг 1 · Физическое · Инстинкт · Средне · d6+1 ... [namelen=105 namehash=62b93649]
+Кованый КрюкРанг 1 · Физическое · Сила · Близко · d8+2 физ · Дву... [namelen=105 namehash=ad8a5907]
 Колоссы Сухоземья
 КопьёРанг 1 · Физическое · Искусность · Близко · d8+3 физ · Двур... [namelen=88 namehash=1aaad172]
 Короткий ЛукРанг 1 · Физическое · Проворность · Далеко · d6+3 фи... [namelen=96 namehash=86eb6e82]
+КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Двуру... [namelen=103 namehash=4652d252]
+КувалдаРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуру... [namelen=231 namehash=ba57fede]
 ЛутDaggerheart
 Магическая ВинтовкаРанг 1 · Магическое · Проворность · Очень дал... [namelen=300 namehash=c9066e07]
 Магические НаручиРанг 1 · Магическое · Сила · Вплотную · d10+3 м... [namelen=97 namehash=f39090e6]
 Магическое
 Меч СветаРанг 1 · Магическое · Сила · Вплотную · d10+3 маг · Дву... [namelen=96 namehash=52fcd087]
+Многозарядный АрбалетРанг 1 · Физическое · Искусность · Далеко ·... [namelen=248 namehash=90aafa8b]
+Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 физ... [namelen=134 namehash=9c5c02de]
 Обычные правила
 Одноручное
 Оружие
@@ -144,8 +138,12 @@ daggerheart.com
 Очень далеко
 Пир зверей
 Поиск
+Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 ... [namelen=114 namehash=71d486bb]
 Проворность
+РогаткаРанг 1 · Физическое · Искусность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=c74ce571]
 Сбросить всё
+Сверкающий ПосохРанг 1 · Магическое · Знание · Очень далеко · d6... [namelen=222 namehash=20f994f2]
+Святой ДробовикРанг 1 · Магическое · Проворность · Близко · d6+2... [namelen=224 namehash=bf4a90f7]
 СекираРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуруч... [namelen=86 namehash=6ad4211d]
 Сеткой
 Сила
@@ -162,8 +160,10 @@ daggerheart.com
 Таблицы
 Тёмное сердце Андалурии
 Убрать из фильтра
+УдочкаРанг 1 · Физическое · Проворность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=07683ec0]
 Улучшаемые
 Уникальные
+Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
 Физическое
 Фильтры (2)
 Фреймы
@@ -229,9 +229,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier-1.burden
     ... button x35 of 39 same-shape siblings elided
     ... checkbox x34 of 38 same-shape siblings elided
     checkbox "Selected" [checked=false]
-    button "61 Holy Shotgun Tier 1 · Magic · Agility · Very Close · d6+2 mag..." [namelen=205 namehash=51d5e372]
+    button "Holy Shotgun Tier 1 · Magic · Agility · Very Close · d6+2 mag · ..." [namelen=202 namehash=445d3662]
     checkbox "Selected" [checked=false]
-    button "65 Repeating Crossbow Tier 1 · Physical · Finesse · Far · d6+2 p..." [namelen=213 namehash=e93d9147]
+    button "Repeating Crossbow Tier 1 · Physical · Finesse · Far · d6+2 phy ..." [namelen=210 namehash=0b2a72a1]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -239,28 +239,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier-1.burden
 
 ## en :: controls
 1
-11Forge PokerTier 1 · Physical · Strength · Very Close · d8+2 ph... [namelen=109 namehash=4b41ad1b]
-12Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy... [namelen=108 namehash=5614be6b]
-13Fishing RodTier 1 · Physical · Agility · Far · d6+3 phy · Two-... [namelen=101 namehash=6e401dcf]
-14SlingshotTier 1 · Physical · Finesse · Far · d6+3 phy · Two-Ha... [namelen=99 namehash=89ea55fc]
-15Firework LauncherTier 1 · Physical · Agility · Very Far · d6+3... [namelen=137 namehash=a0961ad1]
-17Enchanted MopTier 1 · Magic · Strength · Melee · d10+3 mag · T... [namelen=104 namehash=2ad1b59b]
-19Enchanted BroomstickTier 1 · Magic · Instinct · Very Close · d... [namelen=116 namehash=357b2995]
 2
-22Enchanted BoomerangTier 1 · Magic · Instinct · Far · d6+3 mag ... [namelen=107 namehash=18525c80]
-23Enchanted KiteTier 1 · Magic · Presence · Far · d6 mag · Two-H... [namelen=183 namehash=7b21501f]
-25Sparkling StaffTier 1 · Magic · Knowledge · Very Far · d6 mag ... [namelen=201 namehash=53e6014d]
-2Sharpened RakeTier 1 · Physical · Agility · Melee · d8+3 phy · ... [namelen=105 namehash=62ab5d20]
 3
-3Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy ·... [namelen=126 namehash=43e47cb2]
 4
-41RifleTier 1 · Physical · Agility · Very Far · d8+2 phy · Two-H... [namelen=167 namehash=43ac7f88]
-45ShotgunTier 1 · Physical · Strength · Very Close · d6+2 phy · ... [namelen=200 namehash=c6629e4d]
-5PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two... [namelen=102 namehash=002370a4]
-61Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag ·... [namelen=200 namehash=efc2a3dc]
-65Repeating CrossbowTier 1 · Physical · Finesse · Far · d6+2 phy... [namelen=208 namehash=d0ad422e]
-6SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · ... [namelen=213 namehash=8504f330]
-8Walking StaffTier 1 · Physical · Instinct · Melee · d10+3 phy ·... [namelen=106 namehash=4ba5f672]
 Agility
 Alt. tables
 Arcane GauntletsTier 1 · Magic · Strength · Melee · d10+3 mag · ... [namelen=92 namehash=dccbeb9b]
@@ -269,27 +250,37 @@ Armor
 BattleaxeTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=88 namehash=f8180535]
 Beast Feast
 BrightswordTier 1 · Magic · Strength · Melee · d10+3 mag · Two-H... [namelen=94 namehash=45fe84c5]
+Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]
 Close
 Colossus of the Drylands
 Communities
 Copy a link to this section
 Core
+Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy ·... [namelen=106 namehash=b6a427df]
 Dark Heart of Andaluria
 Dread
 Dread GM Toolbox
 DualstaffTier 1 · Magic · Instinct · Far · d6+3 mag · Two-Handed... [namelen=82 namehash=c9686662]
 EN
+Enchanted BoomerangTier 1 · Magic · Instinct · Far · d6+3 mag · ... [namelen=105 namehash=a55885f8]
+Enchanted BroomstickTier 1 · Magic · Instinct · Very Close · d10... [namelen=114 namehash=b11eaea4]
+Enchanted KiteTier 1 · Magic · Presence · Far · d6 mag · Two-Han... [namelen=181 namehash=2919fe70]
+Enchanted MopTier 1 · Magic · Strength · Melee · d10+3 mag · Two... [namelen=102 namehash=0352faa3]
 Equipment
 Far
 Filter link
 Filters (2)
 Finesse
+Firework LauncherTier 1 · Physical · Agility · Very Far · d6+3 p... [namelen=135 namehash=3ce27f12]
+Fishing RodTier 1 · Physical · Agility · Far · d6+3 phy · Two-Ha... [namelen=99 namehash=14015ba9]
+Forge PokerTier 1 · Physical · Strength · Very Close · d8+2 phy ... [namelen=107 namehash=645396aa]
 Frames
 Glowing RingsTier 1 · Magic · Agility · Very Close · d10+2 mag ·... [namelen=93 namehash=1bac227d]
 GreatstaffTier 1 · Magic · Knowledge · Very Far · d6 mag · Two-H... [namelen=181 namehash=2652d99a]
 GreatswordTier 1 · Physical · Strength · Melee · d10+3 phy · Two... [namelen=197 namehash=e69e6487]
 Grid
 HalberdTier 1 · Physical · Strength · Very Close · d10+2 phy · T... [namelen=116 namehash=70b84997]
+Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag · T... [namelen=198 namehash=0e96bb1a]
 Hope & Fear
 How this works
 Instinct
@@ -305,18 +296,26 @@ Melee
 One-Handed
 Open this section on start
 Physical
+PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=101 namehash=17e33479]
 Presence
 QuarterstaffTier 1 · Physical · Instinct · Melee · d10+3 phy · T... [namelen=91 namehash=b6a19e52]
 RU
 Remove from the filter
+Repeating CrossbowTier 1 · Physical · Finesse · Far · d6+2 phy ·... [namelen=206 namehash=4715c425]
 Reset all
+RifleTier 1 · Physical · Agility · Very Far · d8+2 phy · Two-Han... [namelen=165 namehash=2c4085b8]
 Rope DartTier 1 · Physical · Instinct · Close · d6+1 phy · Two-H... [namelen=94 namehash=c7787d12]
 ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
 Search
 Secondary
 Selected
+Sharpened RakeTier 1 · Physical · Agility · Melee · d8+3 phy · T... [namelen=104 namehash=c08c7a46]
 ShortbowTier 1 · Physical · Agility · Far · d6+3 phy · Two-Hande... [namelen=83 namehash=cea9452f]
+ShotgunTier 1 · Physical · Strength · Very Close · d6+2 phy · Tw... [namelen=198 namehash=38c8e230]
 Skip to content
+SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · T... [namelen=212 namehash=975ae8b9]
+SlingshotTier 1 · Physical · Finesse · Far · d6+3 phy · Two-Hand... [namelen=97 namehash=e2ce210e]
+Sparkling StaffTier 1 · Magic · Knowledge · Very Far · d6 mag · ... [namelen=199 namehash=54c1d540]
 SpearTier 1 · Physical · Finesse · Very Close · d8+3 phy · Two-H... [namelen=87 namehash=f321c681]
 Standard rules
 Strength
@@ -327,6 +326,7 @@ Upgradable
 Vault of Ages
 Very Close
 Very Far
+Walking StaffTier 1 · Physical · Instinct · Melee · d10+3 phy · ... [namelen=105 namehash=94b13a2f]
 WarhammerTier 1 · Physical · Strength · Melee · d12+3 phy · Two-... [namelen=108 namehash=0f0f38af]
 Weapons
 Wondrous
