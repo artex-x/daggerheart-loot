@@ -32,8 +32,9 @@ at `4c61eac5300c7ae88db20221502f7bc8d5c94173`.
   output is `Frames · Tier 1` with the frame-table link unchanged. No new UI or
   layout is introduced, so no mock is needed.
 - `node tools/build.js` derives `data.json`, `catalog.csv`, and `i/*.html`.
-  JSON and 94 CSV roll cells change; frame stubs should not, because equipment
-  subtitles do not read `roll`.
+  JSON and 94 CSV roll cells change; frame stubs should not: equipment subtitles
+  do not read `roll`, and the generator preserves preview ordinals for the f93/f94
+  non-equipment frame consumables.
 - Both READMEs incorrectly make `roll` universal within `items` and say frames
   keep roll numbers.
 - Active orchestration docs mix Claude `Agent` mechanics with Codex dispatch
@@ -120,7 +121,7 @@ gates.
 |---|---|---|
 | B1 - Correct frame rolls and enforce pool invariants | completed | Data, routing, tests, docs, generated outputs, built evidence |
 | B1 review | completed | Approved independently with no remaining findings |
-| B2 - Publish host-aware Claude/Codex routing | ready | Replace obsolete active orchestration documentation |
+| B2 - Publish host-aware Claude/Codex routing | completed | Replaced active orchestration documentation with the settled host-aware policy |
 
 ## B1 - Correct frame rolls and enforce pool invariants
 

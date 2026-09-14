@@ -186,7 +186,7 @@ See `.claude/README.md`.
 
 Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code)
-- **implementer** -> next batch only; never `model: inherit` (see `.claude/README.md`)
+- **implementer** -> next batch only; the host-aware explicit routing policy is in `.claude/README.md`
 - **reviewer** (optional) -> high-risk batches; max one remediation cycle. Nits
   defer to handoff mid-plan and are fixed in that cycle on the terminal batch
 - **add-source** -> rare end-to-end content ingest

@@ -182,63 +182,29 @@ reply lands here, so two subagents cannot converse. Facts and evidence:
 
 ## Model selection (orchestrator only)
 Agents must not choose models or effort.
-Each agent's frontmatter carries its real default, so a dispatch that names no
-model still runs at the intended tier. **Do not use `model: inherit` for
-workers** - inherit means *the session model*, so an implementer dispatched
-from an Opus session silently runs on Opus, which is the opposite of its
-documented economy default and the fastest way to exhaust the 5-hour window.
-Escalation is an explicit `model` argument on the dispatch, never a side effect
-of what you happen to be running.
+Claude frontmatter remains the default on Claude hosts: planner and reviewer
+use `opus`; implementer, add-source, and refresh-artwork use `sonnet`. Claude
+effort is session-level and human-controlled.
 
-Effort has no dispatch argument - the `Agent` tool's schema is `description`,
-`prompt`, `subagent_type`, `model`, `isolation`, `run_in_background`,
-nothing more. Measured 2026-09-11, three probes against three controls:
-**session effort propagates to a dispatched worker** (`high`/`low`/`high`
-both directions) - an orchestrator on high silently runs every worker on
-high too, the `model: inherit` failure again. The frontmatter `effort:`
-key stays **unverified**: one probe still read the session's level while
-`implementer.md` carried `effort: low`, but agent files may load once
-at session start, so only a fresh-session repeat settles it - the same
-treatment README row 36 gives `disallowedTools`; do not add the key on
-this reading. A throwaway dispatch inherits the session's level too: three
-single-`echo` probes cost roughly 68k tokens each at `high`, so dropping
-the session first is the one case that clearly pays.
+On Codex, every worker dispatch must name `model` and `reasoning_effort`, and
+must use `fork_turns: "none"` or a bounded positive count. Do not use a
+full-history fork: it cannot accept those overrides. Use this mapping:
 
-Frontmatter defaults (change the file, not your habit):
-- `planner`: **opus** - the plan decides whether a Sonnet implementer succeeds
-  or thrashes, and a bad plan costs an implement run, a review, and the single
-  remediation cycle. Fable was the default while access lasted; **access lapsed
-  (owner, 2026-09-13)** and `.claude/agents/planner.md` was moved to `opus`,
-  which is where it stays until the owner says otherwise. If a stronger tier
-  ever returns, edit that one frontmatter line - do not paper over a tier change
-  with a per-dispatch model argument, or the file stops describing the real tier
-- `reviewer`: opus - review runs rarely and exists to catch what the implementer missed; a weak review manufactures confidence, which is worse than none
-- `implementer`: sonnet
-- `add-source`: sonnet
-- `refresh-artwork`: sonnet
+| Role | Codex model | Effort |
+|---|---|---|
+| planner | `gpt-5.6-sol` | `medium` |
+| reviewer | `gpt-5.6-sol` | `medium` |
+| implementer | `gpt-5.6-terra` | `medium` |
+| add-source | `gpt-5.6-terra` | `medium` |
+| refresh-artwork | `gpt-5.6-terra` | `medium` |
 
-Raise per dispatch when:
-- Plan: already opus, which is now the floor and the ceiling; ask for the
-  session at `high` when design/UI/mechanics are non-trivial - reach for high
-  because the design is hard, not out of habit. There is no higher tier to
-  escalate to, so a hard design buys effort, not a model
-- Implement: opus only if a prior implement failed on this batch or risk is high; for a large careful batch ask for the session at high
-- Add-source: opus if new roll/table mechanics or hard ambiguity
-- Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; for large mechanical conversion batches ask for the session at high
-- Review: already opus; lower to sonnet only for a small, low-risk batch
-
-Claude <-> Codex cheat-sheet:
-- economy-mid: Sonnet medium <-> GPT-5.6 Terra medium
-- economy-high: Sonnet high <-> GPT-5.6 Terra high
-- strong-mid: Opus medium <-> GPT-5.6 Sol medium/high
-- strong-high: Opus high/xhigh <-> GPT-5.6 Sol high/xhigh/Ultra
-- frontier: Fable medium/high <-> no established Codex peer; on Codex, plan with
-  Sol at its highest tier and expect a weaker plan. **Unavailable since
-  2026-09-13** - kept for the day it returns; today the top of the ladder is
-  strong-high
-Effort on the Claude side is the session's level, set by the human.
-
-Announce chosen tier in chat only. Never write model routing into plan.md or handoff.md.
+The only Codex ladder is `gpt-5.6-sol` -> `gpt-5.6-terra` ->
+`gpt-5.6-luna`. Use Luna only for an explicit, bounded, low-risk
+mechanical or read-only helper; it is never a named-role silent default or a
+choice for planning, ambiguous implementation, remediation, or risk-bearing
+review. `medium` is the default; `high` is the only escalation, justified by
+design complexity or implementation/review risk. Announce the chosen routing
+in chat only. Never write it into plan.md or handoff.md.
 
 ## When to run reviewer (do not skip these)
 Run reviewer after implement or add-source when ANY of:

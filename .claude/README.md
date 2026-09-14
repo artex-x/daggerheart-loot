@@ -2,7 +2,7 @@
 
 | Agent | Prompt | Default model frontmatter |
 |-------|--------|---------------------------|
-| planner | prompts/plan.prompt.md | opus (Fable access lapsed 2026-09-13) |
+| planner | prompts/plan.prompt.md | opus |
 | implementer | prompts/implement.prompt.md | sonnet |
 | reviewer | prompts/review.prompt.md | opus |
 | add-source | prompts/add-source.prompt.md | sonnet |
@@ -10,16 +10,14 @@
 
 Orchestrator: prompts/orchestrate.prompt.md
 
-Each agent's frontmatter carries its real default tier, so a dispatch that names
-no model still runs where it should. Never use `model: inherit` for a worker -
-inherit means the session model, so a worker dispatched from a strong session
-silently runs at that tier instead of its documented one. The orchestrator raises
-a tier with an explicit `model` argument per dispatch; see the model selection
-section of prompts/orchestrate.prompt.md.
-
-Effort: see the orchestrate prompt's model selection section - no dispatch
-carries an effort argument, and a worker runs at the session's own effort
-level, set by the human.
+Claude hosts use the frontmatter defaults above and human-controlled
+session-level effort. On Codex, the orchestrator explicitly passes `model` and
+`reasoning_effort` on every worker dispatch with `fork_turns: "none"` or a
+bounded positive count. The role defaults are Sol/medium for planner and
+reviewer, and Terra/medium for implementer, add-source, and refresh-artwork.
+The only Codex ladder is Sol -> Terra -> Luna; Luna is only for an explicit,
+bounded low-risk mechanical or read-only helper. `medium` is the default and
+`high` the only escalation. See prompts/orchestrate.prompt.md.
 
 The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
 

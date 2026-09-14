@@ -1,13 +1,30 @@
 # Handoff - TASK 59
 
 ## Status
-- Task status: in_progress
+- Task status: done
 - Last agent: implementer
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main`
 - Base / starting commit: `4c61eac5300c7ae88db20221502f7bc8d5c94173`
 
 ## Completed
+- Batch name/id: B2 - Publish host-aware Claude/Codex routing
+- What shipped: Replaced active orchestration routing with the settled
+  host-aware policy: Claude retains two Opus and three Sonnet frontmatter
+  defaults; Codex dispatches planner/reviewer on Sol and the other named roles
+  on Terra at medium effort, with Luna restricted to explicit bounded low-risk
+  helpers. Every Codex worker dispatch now requires explicit model,
+  reasoning_effort, and non-full-history fork context.
+- Files changed: `.claude/prompts/orchestrate.prompt.md`, `.claude/README.md`,
+  all five active `.claude/agents/*.md` descriptions, `CLAUDE.md`, and task
+  state documents.
+- Commit(s): `docs(agents): publish host-aware Codex routing` (hash recorded at
+  delivery because this handoff is part of the commit).
+- Deviations and rationale: No product files, hooks, runtime settings, or
+  historical evidence were changed. The inherited zero-stub explanation now
+  includes f93/f94; the `app/src/lib/data.ts` wording remains deferred because
+  B2 does not touch product code.
+
 - Batch name/id: B1 - Correct frame rolls and enforce pool invariants
 - What shipped: Removed exactly 94 artificial frame `roll` properties; made
   frame source routing win before generic roll-less equipment in both apps;
@@ -27,7 +44,20 @@
   because regeneration otherwise made f93/f94 stubs render an undefined roll.
 
 ## Verification
-- Commands run (exact): `node tools/build.js`; `node tests/run-all.js
+- Commands run (B2 exact): `rg -n -i "fable|gpt-6|astra|frontier|strong-high|xhigh|ultra"
+  .claude/prompts/orchestrate.prompt.md .claude/README.md .claude/agents
+  CLAUDE.md`; `rg -n "gpt-5\\.6-sol|gpt-5\\.6-terra|gpt-5\\.6-luna|reasoning_effort|fork_turns|medium.*default|high.*only escalation"
+  .claude/prompts/orchestrate.prompt.md .claude/README.md .claude/agents`;
+  frontmatter counts; `CLAUDE.md` line count; `git diff --check`; and status
+  audit. No product gate was run because B2 is Markdown-only.
+- Results (B2): Negative routing search is clean; the positive search confirms
+  Sol -> Terra -> Luna, explicit dispatch fields, and medium/high limits.
+  Frontmatter remains two Opus and three Sonnet entries; `CLAUDE.md` is 199
+  lines; `git diff --check` passes. Only the B2 documentation/task-state paths
+  are modified, alongside the preserved unrelated untracked paths.
+- Gates (B2): static routing searches, frontmatter/line counts, diff check, and
+  status audit passed; product gates intentionally not applicable.
+- Commands run (B1 exact): `node tools/build.js`; `node tests/run-all.js
   dataint,derived`; `npx vitest run app/src/lib/data.test.ts
   app/src/lib/label.test.ts --coverage=false`; `npm run build`; `node
   tests/app/golden.js "--only=#/i/f1" --update`; `node tests/app/golden.js
@@ -45,17 +75,15 @@
   `git diff --check`.
 
 ## Next batch (implement-ready)
-- Name: B2 - Publish host-aware Claude/Codex routing
-- Objective: Replace the settled active orchestration documentation after the
-  approved B1 review.
-- In scope: only the B2 files listed in `plan.md`. Out of scope: B1 product
-  code/data, generated artifacts, and unrelated paths.
-- Acceptance criteria: apply section 4.2's Sol -> Terra -> Luna policy without
-  changing Claude frontmatter or product behavior.
-- Verification commands: scoped `rg` checks, `git diff --check`, exact
-  frontmatter/line counts, and status audit.
-- Risks / do-nots: do not alter historical evidence, hooks, runtime settings,
-  or B1 production files.
+- Name: None - terminal batch complete
+- Objective: None.
+- In scope: None.
+- Out of scope: None.
+- Files expected: None.
+- Steps: Await a new human request.
+- Acceptance criteria: B1 and B2 are complete.
+- Verification commands: See B1 and B2 verification above.
+- Risks / do-nots: Do not push without explicit human approval.
 
 ## Blockers
 - None.
@@ -63,12 +91,11 @@
 ## Deferred
 - Reviewer nit: `app/src/lib/data.ts` still calls all embedded equipment
   roll-table members; correct its frame wording in a later appropriate batch.
-- Reviewer nit: `issues/59/context.md` and `issues/59/plan.md` still explain
-  zero stub churn as equipment-only, omitting the two non-equipment frame
+- Resolved in B2: `issues/59/context.md` and `issues/59/plan.md` now explain
+  zero stub churn for both equipment and the f93/f94 non-equipment frame
   consumables handled by the generator.
-- Reviewer nit: the pre-review handoff's next-batch fields were incomplete;
-  they are now completed for B2, but keep task-state template fidelity under
-  review in subsequent batches.
+- Resolved in B2: the handoff next-batch fields were already complete for B2;
+  the terminal handoff now carries every template field.
 
 ## Notes
 - Mocks path: none; no new UI or layout.
@@ -77,5 +104,6 @@
 - Cleanup performed / retained artifacts: No cleanup. Retained
   `.claude/settings.local.json`, `issues/tg-preview-refresh/`, and unrelated
   paths untouched.
-- Session end partial progress (if any): B1 review is approved and B2 is the
-  active next batch. No writer or background gate is active.
+- Session end partial progress (if any): B2 is complete. No writer or
+  background gate is active; B2 remains unpushed pending explicit human
+  approval.

@@ -3,8 +3,8 @@ name: reviewer
 description: >
   Read-only review of a completed batch for contracts, parity, data integrity,
   tests, and handoff quality. Use after high-risk batches when asked.
-  Defaults to Opus: review runs rarely and exists to catch what the implementer
-  missed, so a weak review is worse than none - it manufactures confidence.
+  Claude default: Opus. Codex default: gpt-5.6-sol at medium reasoning_effort
+  with fork_turns none or bounded.
 model: opus
 permissionMode: plan
 ---

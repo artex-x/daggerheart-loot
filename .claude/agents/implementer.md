@@ -3,8 +3,8 @@ name: implementer
 description: >
   Execute the next implement-ready batch from issues/<id>/handoff.md.
   Do not replan or redesign. Do not choose models.
-  Default tier: economy (Sonnet / Terra). The orchestrator raises it by passing an
-  explicit model argument per dispatch - never by relying on the session model.
+  Claude default: Sonnet. Codex default: gpt-5.6-terra at medium reasoning_effort
+  with fork_turns none or bounded; high is the only escalation.
   Only one implementer should run on this branch at a time.
 model: sonnet
 ---

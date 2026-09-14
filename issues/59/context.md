@@ -66,7 +66,8 @@
   table" link would incorrectly move from `#/tables/frames/f1` to equipment.
 - `node tools/build.js` is the required generator. `data.json` and the 94 frame
   rows' `roll` column in `catalog.csv` will change; `i/f*.html` should remain
-  byte-identical because equipment stub subtitles are derived from `eq`.
+  byte-identical because equipment subtitles derive from `eq`, while the f93/f94
+  non-equipment frame consumables retain their preview ordinals in the generator.
 
 ## Do not re-fetch unless
 - Human provides new info
