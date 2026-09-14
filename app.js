@@ -3180,11 +3180,11 @@ function tableIdOf(it){
      своей таблице, а не в общей по видам оружия - иначе ссылка «наверх, к
      таблице» с карточки уводила бы в чужой раздел. */
   if (it.src === 'voa') return 'voa';
+  if (it.src === 'frame') return 'frames';
   if (isEquip(it) && !it.roll)
     return { weapon:'eq_weapon', secondary:'eq_secondary', armor:'eq_armor' }[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
-  if (it.src === 'frame') return 'frames';
   if (it.src === 'community') return 'community';
   return TABLE_OF[it.src][it.kind];
 }

@@ -419,7 +419,7 @@ it deals. They usually agree, but the Shadowblade and the Ghostblade are
 
 Equipment is not only in `eq`. Eleven Wondrous Loot records, and every campaign
 frame entry, plus some of Vault of Ages and Dread, carry the same `eq` block
-while staying in `items` with their roll number. The three equipment tables
+while staying in `items`; campaign frames are not a roll table. The three equipment tables
 gather all of them: 317 weapons, 108 secondary weapons, 90 armour. The source
 filter is what narrows those to the two books (239 / 73 / 69).
 

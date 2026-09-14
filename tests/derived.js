@@ -341,7 +341,7 @@ console.log('снаряжение фреймов');
    остальных наборов расписаны все четыре. */
 const FR = L.items.frames;
 ok(FR.length === 94, 'снаряжения фреймов не 94, а ' + FR.length);
-ok(FR.every((x, i) => x.roll === i + 1), 'номера фреймов не идут подряд');
+ok(FR.every(x => x.roll == null), 'у снаряжения фреймов появился номер броска');
 ok(FR.every(x => x.src === 'frame' && x.frame), 'у записи фрейма нет источника или названия кампании');
 const byFrame = {};
 FR.forEach(x => { byFrame[x.frame] = (byFrame[x.frame] || 0) + 1; });

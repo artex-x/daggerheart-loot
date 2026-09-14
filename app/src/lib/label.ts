@@ -124,17 +124,17 @@ const EQ_TABLE = {
 /**
  * Which table a record is printed in, off `tableIdOf` in app.js.
  *
- * Vault of Ages is checked before equipment on purpose: two dozen of its pieces
- * carry a stat block but live in the Vault's own table, and sending the "show
- * in the table" link to the weapons table would land the reader in a section
- * their record is not in.
+ * Vault of Ages and campaign frames are checked before equipment on purpose:
+ * their pieces carry stat blocks but live in their source tables, and sending
+ * the "show in the table" link to a weapons table would land the reader in a
+ * section their record is not in.
  */
 export function tableOf(it: Record_): TableId | null {
   if (it.src === 'voa') return 'voa';
+  if (it.src === 'frame') return 'frames';
   if (it.eq && !it.roll) return EQ_TABLE[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
-  if (it.src === 'frame') return 'frames';
   if (it.src === 'community') return 'community';
 
   /* What is left is the roll tables, which are keyed by book and by kind. */

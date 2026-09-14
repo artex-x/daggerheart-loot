@@ -22,6 +22,45 @@ const LOOT = JSON.parse(
 
 const index = buildIndex(LOOT);
 
+type RollPool = readonly Record_[];
+
+function rowAt(rows: readonly Record_[] | undefined, index: number): Record_ {
+  if (!rows) throw new Error('real data is missing a table');
+  const row = rows[index];
+  if (!row) throw new Error(`real data is missing row ${String(index)}`);
+  return row;
+}
+
+function rollPools(loot: Loot): RollPool[] {
+  const pools: RollPool[] = [];
+  for (const [name, rows] of Object.entries(loot.items)) {
+    if (name === 'frames') continue;
+    if (name === 'voa') {
+      for (const tier of new Set(rows.map((row) => row.tier)))
+        pools.push(rows.filter((row) => row.tier === tier));
+    } else if (name === 'community') {
+      for (const community of new Set(rows.map((row) => row.community)))
+        pools.push(rows.filter((row) => row.community === community));
+    } else pools.push(rows);
+  }
+  return pools;
+}
+
+function expectRollPools(loot: Loot): void {
+  const pools = rollPools(loot);
+  const pooled = new Set(pools.flat());
+  for (const row of [...Object.values(loot.items).flat(), ...(loot.eq ?? [])])
+    expect(pooled.has(row), row.id).toBe(row.roll !== undefined);
+  for (const pool of pools) {
+    const rolls = pool.map((row) => row.roll);
+    expect(rolls.every((roll) => Number.isInteger(roll) && (roll as number) > 0)).toBe(true);
+    expect(new Set(rolls).size).toBe(pool.length);
+    expect([...rolls].sort((a, b) => (a as number) - (b as number))).toEqual(
+      Array.from({ length: pool.length }, (_, index) => index + 1)
+    );
+  }
+}
+
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
     expect(index.byId.size).toBe(1061);
@@ -33,8 +72,46 @@ describe('the index over the real dataset', () => {
     expect(LOOT.eq).toHaveLength(381);
   });
 
+  it('keeps roll numbers only in complete, independent roll pools', () => {
+    expectRollPools(LOOT);
+  });
+
+  it('rejects missing members, outside rolls, duplicates, and gaps', () => {
+    const missing = structuredClone(LOOT);
+    delete rowAt(missing.items['core_item'], 0).roll;
+    expect(() => {
+      expectRollPools(missing);
+    }).toThrow();
+    const outside = structuredClone(LOOT);
+    rowAt(outside.items['frames'], 0).roll = 1;
+    expect(() => {
+      expectRollPools(outside);
+    }).toThrow();
+    const standalone = structuredClone(LOOT);
+    const standaloneEq = standalone.eq;
+    if (!standaloneEq) throw new Error('real data must include standalone equipment');
+    rowAt(standaloneEq, 0).roll = 1;
+    expect(() => {
+      expectRollPools(standalone);
+    }).toThrow();
+    const duplicate = structuredClone(LOOT);
+    const wondrous = duplicate.items['wondrous'];
+    const sourceRoll = rowAt(wondrous, 0).roll;
+    if (sourceRoll == null || !Number.isInteger(sourceRoll))
+      throw new Error('real Wondrous data must include an integer roll');
+    rowAt(wondrous, 1).roll = sourceRoll;
+    expect(() => {
+      expectRollPools(duplicate);
+    }).toThrow();
+    const gap = structuredClone(LOOT);
+    rowAt(gap.items['dread'], 0).roll = 30;
+    expect(() => {
+      expectRollPools(gap);
+    }).toThrow();
+  });
+
   it('finds equipment wherever it lives, not only in eq', () => {
-    /* 381 in `eq`, and another 155 keeping their place in a roll table */
+    /* 381 in `eq`, and another 155 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
     expect(equipOfKind(index, 'weapon')).toHaveLength(317);
     expect(equipOfKind(index, 'secondary')).toHaveLength(108);

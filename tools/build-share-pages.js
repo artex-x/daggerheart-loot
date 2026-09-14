@@ -60,7 +60,10 @@ function subtitle(it){
   const src = it.src === 'community'
     ? (COMMUNITY_RU[it.community] || 'Сообщества')
     : SRC_LABEL[it.src];
-  return kind + ' · ' + src + ' · №' + it.roll;
+  /* Frames are browsable source records rather than a roll pool. The two
+     consumables without stat blocks retain the historical preview ordinal. */
+  const number = it.roll ?? (it.src === 'frame' ? DATA.frames.indexOf(it) + 1 : '');
+  return kind + ' · ' + src + ' · №' + number;
 }
 
 /* Crafting chains, resolved the same way the app does it: the target is stored

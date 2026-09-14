@@ -58,27 +58,34 @@ ALL.forEach(x => {
 });
 
 console.log('нумерация таблиц');
+const ROLL_POOLS = [];
 Object.keys(DATA).forEach(table => {
-  const rolls = DATA[table].map(x => x.roll);
+  if (table === 'frames') return;
   if (table === 'community') {
     const byC = {};
-    DATA[table].forEach(x => { (byC[x.community] = byC[x.community] || []).push(x.roll); });
-    Object.keys(byC).forEach(c => ok(byC[c].join() === [...Array(10).keys()].map(i => i + 1).join(),
-      table + '/' + c + ': номера не 1–10'));
+    DATA[table].forEach(x => { (byC[x.community] = byC[x.community] || []).push(x); });
     ok(Object.keys(byC).length === 9, 'сообществ не 9');
+    Object.entries(byC).forEach(([community, rows]) => ROLL_POOLS.push([table + '/' + community, rows]));
   } else if (table === 'voa') {
-    /* Своей таблицы броска у книги нет: она разложена по рангам, и артефакты с
-       проклятыми предметами стоят отдельно. Бросок идёт внутри раздела, так что
-       и номера свои в каждом - шесть последовательностей, а не одна. */
+    /* A Vault roll is within its printed section, so each section is its own
+       pool rather than a position in the whole book. */
     const byT = {};
-    DATA[table].forEach(x => { (byT[x.tier] = byT[x.tier] || []).push(x.roll); });
+    DATA[table].forEach(x => { (byT[x.tier] = byT[x.tier] || []).push(x); });
     ok(Object.keys(byT).length === 6, 'разделов Vault of Ages не 6, а ' + Object.keys(byT).length);
-    Object.keys(byT).forEach(k => ok(byT[k].join() === byT[k].map((_, i) => i + 1).join(),
-      table + '/' + k + ': номера идут не подряд с 1'));
+    Object.entries(byT).forEach(([tier, rows]) => ROLL_POOLS.push([table + '/' + tier, rows]));
   } else {
-    ok(rolls.join() === rolls.map((_, i) => i + 1).join(),
-      table + ': номера идут не подряд с 1 (' + rolls.length + ' позиций)');
+    ROLL_POOLS.push([table, DATA[table]]);
   }
+});
+const ROLLED = new Set(ROLL_POOLS.flatMap(([, rows]) => rows));
+ALL.forEach(x => ok(ROLLED.has(x) === (x.roll != null),
+  x.id + ': номер броска не совпадает с принадлежностью к пулу'));
+ROLL_POOLS.forEach(([name, rows]) => {
+  const rolls = rows.map(x => x.roll);
+  ok(rolls.every(n => Number.isInteger(n) && n > 0), name + ': номер броска не положительное целое');
+  ok(new Set(rolls).size === rolls.length, name + ': повторяющийся номер броска');
+  ok([...rolls].sort((a, b) => a - b).join() === rows.map((_, i) => i + 1).join(),
+    name + ': номера не покрывают 1–' + rows.length);
 });
 
 console.log('альтернативные таблицы');

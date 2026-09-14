@@ -110,6 +110,10 @@ describe('which table a record is printed in', () => {
     expect(tableOf(rec({ src: 'voa', eq: { t: 'weapon', tier: 1 } }))).toBe('voa');
   });
 
+  it('sends roll-less campaign-frame equipment to its own table', () => {
+    expect(tableOf(rec({ src: 'frame', eq: { t: 'weapon', tier: 1 } }))).toBe('frames');
+  });
+
   it('sends equipment to the table for its kind', () => {
     expect(tableOf(rec({ src: 'core', eq: { t: 'weapon', tier: 1 } }))).toBe('eq_weapon');
     expect(tableOf(rec({ src: 'core', eq: { t: 'secondary', tier: 1 } }))).toBe('eq_secondary');

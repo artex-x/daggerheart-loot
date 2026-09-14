@@ -23,6 +23,8 @@ Six modes. Each keeps its own input in memory only.
   each button is labelled with the count and the rarities it covers.
 - The roll button uses a real die where the range is one, and reads
   "Random 1-N" where it is not (119, 29, a list of arbitrary length).
+- Campaign frames are a browsable source table, not a rolling mode; their
+  equipment has no roll number.
 - A critical success in the alternate tables - the two dice showing the same
   face - hands over the whole rarity rather than a row: a link into each table
   that is switched on, at that rarity, plus a button that steps the rarity up
