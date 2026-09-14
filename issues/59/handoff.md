@@ -18,8 +18,7 @@
 - Files changed: `.claude/prompts/orchestrate.prompt.md`, `.claude/README.md`,
   all five active `.claude/agents/*.md` descriptions, `CLAUDE.md`, and task
   state documents.
-- Commit(s): `docs(agents): publish host-aware Codex routing` (hash recorded at
-  delivery because this handoff is part of the commit).
+- Commit(s): `3144379` (`docs(agents): publish host-aware Codex routing`).
 - Deviations and rationale: No product files, hooks, runtime settings, or
   historical evidence were changed. The inherited zero-stub explanation now
   includes f93/f94; the `app/src/lib/data.ts` wording remains deferred because
@@ -37,9 +36,8 @@
 - Files changed: canonical/generated data, both route helpers and their tests,
   real and legacy data checks, f1 golden, generator, READMEs, `FEATURES.md`,
   and task documents.
-- Commit(s): one local, unpushed, amendable B1 commit; it was
-  `c30e036d4ad22353e4e9a056cbb5447eaa971127` when this second remediation
-  started, so that pre-amend hash is evidence rather than a final identifier.
+- Commit(s): `f450082` (B1 final approved commit). The prior pre-amend hash
+  remains historical evidence only.
 - Deviations and rationale: `tools/build-share-pages.js` additionally changed
   because regeneration otherwise made f93/f94 stubs render an undefined roll.
 
@@ -91,9 +89,9 @@
 ## Deferred
 - Reviewer nit: `app/src/lib/data.ts` still calls all embedded equipment
   roll-table members; correct its frame wording in a later appropriate batch.
-- Resolved in B2: `issues/59/context.md` and `issues/59/plan.md` now explain
-  zero stub churn for both equipment and the f93/f94 non-equipment frame
-  consumables handled by the generator.
+- Resolved in B2: `issues/59/context.md` records zero stub churn for both
+  equipment and the f93/f94 non-equipment frame consumables handled by the
+  generator.
 - Resolved in B2: the handoff next-batch fields were already complete for B2;
   the terminal handoff now carries every template field.
 
@@ -101,9 +99,9 @@
 - Mocks path: none; no new UI or layout.
 - Screenshot findings: One 831x485 attachment could not be rendered; no detail
   was inferred from it.
-- Cleanup performed / retained artifacts: No cleanup. Retained
-  `.claude/settings.local.json`, `issues/tg-preview-refresh/`, and unrelated
-  paths untouched.
+- Cleanup performed / retained artifacts: Retired the completed `plan.md`;
+  retained `context.md` and this handoff for task evidence. Preserved unrelated
+  `.claude/settings.local.json` and `issues/tg-preview-refresh/` paths.
 - Session end partial progress (if any): B2 is complete. No writer or
   background gate is active; B2 remains unpushed pending explicit human
   approval.
