@@ -53,7 +53,8 @@ Six modes. Each keeps its own input in memory only.
   page's alone, a table's own box is not capped.
 - Starting inventory is searchable and opens on direct record pages, but it is
   held in the non-rollable `starting` collection. Its source and class context
-  belong in the record description rather than in a new roll table.
+  belong in the record description rather than in a new roll table. The accepted
+  source-image hashes are recorded in `docs/provenance/starting-items-artwork.json`.
 - Every heading has a copy-link button; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in
   table" link and a section's copy-link button produce) scrolls to its target
