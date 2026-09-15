@@ -34,6 +34,22 @@
   updates from the full four-shard regeneration. They are in scope for the
   final coherent B1 commit and still require final-batch inspection/gates.
 
+### Gate remediation follow-up (2026-09-15)
+- Fixed all four post-`33d0b26` Svelte-check blockers: `eqLine` now exposes
+  the already-implemented `noTier` option, the stat-line fixture assertion
+  passes `noTier` for frame records, `tables.test.ts` uses safe indexed access
+  for `starting`, and the underscore filter regression targets canonical
+  `other_frames` rather than legacy `frames`.
+- Added focused coverage that `eqLine(..., { noTier: true })` omits the frame
+  tier. This preserves the settled direct-frame presentation rule while making
+  the shared formatter type agree with its implementation.
+- Verification (exact): `rtk npx vitest run --coverage=false
+  app/src/lib/i18n.test.ts app/src/lib/hash.test.ts
+  app/src/components/tables.test.ts` — 3 files, 194 tests passed;
+  `rtk proxy npm run typecheck` — `svelte-check found 0 errors and 0 warnings`;
+  `rtk proxy npm run check` — completed successfully; `rtk git diff --check`
+  — clean.
+
 ## Completed
 - Batch name/id: Replan B1 - Split Other into real subtables.
 - What shipped: No production change in this planner pass. The next batch now

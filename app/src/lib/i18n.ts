@@ -141,7 +141,7 @@ export function eqLine(
   it: Record_,
   lang: Lang,
   labels: StatLabels,
-  opts: { noType?: boolean } = {}
+  opts: { noType?: boolean; noTier?: boolean } = {}
 ): string {
   return eqParts(it, lang, labels, opts).join(' · ');
 }

@@ -905,7 +905,7 @@ describe('a sectioned body: Other', () => {
       ru: 'Стартовая материнская плата'
     });
     const data = structuredClone(LOOT);
-    data.items.starting.push(motherboardStarter);
+    data.items['starting']!.push(motherboardStarter);
     render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/other_frames/f_frame-motherboard'),

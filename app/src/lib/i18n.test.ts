@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
 import { descOf, eqLine, eqParts, EQ_TRAIT, eqWord, itemsWord, nameOf } from './i18n.js';
+import { isFrameRecord } from './label.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -36,9 +37,10 @@ describe('the stat line matches the app it came from', () => {
       it(`${id} in ${lang}`, () => {
         const it_ = index.byId.get(id);
         expect(it_).toBeDefined();
-        expect(eqParts(it_ as Record_, lang, LABELS[lang], { noType: true })).toEqual(
-          FIXTURE[id]?.[lang]
-        );
+        const record = it_ as Record_;
+        expect(
+          eqParts(record, lang, LABELS[lang], { noType: true, noTier: isFrameRecord(record) })
+        ).toEqual(FIXTURE[id]?.[lang]);
       });
     }
   }
@@ -54,6 +56,13 @@ describe('the pieces of the line', () => {
 
   it('join with a middle dot', () => {
     expect(eqLine(katana(), 'ru', LABELS.ru, { noType: true })).toContain(' · ');
+  });
+
+  it('can omit a tier from a direct frame-record stat line', () => {
+    const frame = index.byId.get('f1') as Record_;
+    expect(eqLine(frame, 'ru', LABELS.ru, { noType: true, noTier: true })).not.toContain(
+      'Ранг'
+    );
   });
 
   it('always carry a tier, because every piece has one from a book', () => {

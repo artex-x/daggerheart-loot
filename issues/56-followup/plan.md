@@ -2,6 +2,12 @@
 
 ## Status
 
+- Gate remediation (2026-09-15): completed the final Svelte-check fixes after
+  `33d0b26`. `eqLine` now accepts the established `noTier` option, its
+  fixture coverage applies frame-tier suppression, the Other-frame test uses
+  safe indexed access, and the hash regression uses canonical `other_frames`.
+  Focused Vitest, standalone typecheck, and `npm run check` are green.
+
 - Contract-remediation follow-up (2026-09-15): the authoritative `f7` stat-line
   fixture now omits direct frame-equipment tier labels in both languages,
   matching the settled presentation policy. Focused `node tests/run-all.js

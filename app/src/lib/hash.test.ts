@@ -150,7 +150,7 @@ describe('the filter segment', () => {
   });
 
   it('an underscore inside a value does not split the group', () => {
-    expect(decodeFilter('f_frame-beast_feast', groupsFor('frames'))).toEqual({
+    expect(decodeFilter('f_frame-beast_feast', groupsFor('other_frames'))).toEqual({
       frame: ['beast_feast']
     });
   });
