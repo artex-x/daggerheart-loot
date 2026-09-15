@@ -219,7 +219,7 @@ this repo, so this plan records the mismatch and does not fix it.
 
 ### B1 - always-loaded prose: `CLAUDE.md` trim, dead references, three manual skills - implement-ready
 
-**Status: not started.** Markdown-only; commit-gate exempt (`isExempt`: every
+**Status: landed, `779fae6`.** Markdown-only; commit-gate exempt (`isExempt`: every
 path is `issues/`, `.md`, or `.claude/README.md`, which is not root
 `README.md`).
 
@@ -378,7 +378,7 @@ re-derives the mock before B1 continues.
 
 ### B2 - agent wrappers, reviewer allowlist, planner-tier policy, Finding 7 - outline
 
-**Status: not started.** Markdown-only; gate exempt. Independent of B3.
+**Status: landed, `d61aadb`.** Markdown-only; gate exempt. Independent of B3.
 
 **Objective.** Recommendations C, G, H. One `docs(agents)` commit.
 
@@ -528,7 +528,9 @@ wrappers, allowlist the reviewer, name the planner-tier policy`. Push.
 
 ### B3 - hooks: RTK-bypass deny and task-state size budget - outline
 
-**Status: not started.** Pays one `npm run check` (selftest runs inside it).
+**Status: not started, blocked on the tree going quiet** (see
+`issues/config-audit/handoff.md`, "Next batch"). Pays one `npm run check`
+(selftest runs inside it).
 Independent of B2; depends on B1 only for the `/handoff` file the message
 names.
 

@@ -88,7 +88,9 @@ radius - and it belongs in `bash-guard.mjs` as a deny, not in prose.
   None declare `tools:`. None set `disable-model-invocation:`.
 - Hooks: `.claude/hooks/` - 6 registered in `.claude/settings.json`, plus
   `lib.mjs` and `tree-key.mjs` (shared libraries) and `selftest.mjs`
-  (111 cases, run inside `npm run check` via `package.json`).
+  (111 named cases in its header comment; `node .claude/hooks/selftest.mjs`
+  prints 317 individual assertions passing at runtime - different units,
+  not a stale/fresh pair; run inside `npm run check` via `package.json`).
 - On-demand reference: `.claude/README.md` (35 KB), `.claude/improvements.md`
   (20 KB), `docs/parity.md` (14 KB), `docs/specs/*`.
 - Templates: `.claude/templates/{context,handoff}.template.md`.
@@ -207,7 +209,8 @@ is not a prose problem. Do not solve it by adding prose to this repository.
 
 `npm run check` is a nine-step chain ending in `vitest run --coverage`, and it
 includes `node .claude/hooks/selftest.mjs`. **Any change to a hook must pass
-selftest**, which has 111 numbered cases.
+selftest**, which has 111 named cases in its header comment and prints 317
+individual assertions passing at runtime (`config-audit` B2, 2026-09-16).
 
 This task changes no rendered screen, so `check:built` and parity are **not**
 required unless the plan touches app source. Say so explicitly in the handoff.
