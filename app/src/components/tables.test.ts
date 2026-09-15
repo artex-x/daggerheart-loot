@@ -5,7 +5,7 @@
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -975,17 +975,29 @@ describe('the row and section anchor', () => {
   it('the outline follows the record into the grid view', async () => {
     const scroll = vi.fn();
     Element.prototype.scrollIntoView = scroll;
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
-    });
-    await waitFor(() => {
+    vi.useFakeTimers();
+    try {
+      render(App, {
+        env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+      });
+      await tick();
+      await Promise.resolve();
       expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
-    });
-    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
-    const tile = document.querySelector('[data-row="ci2"]');
-    expect(tile).toHaveClass('tilewrap');
-    expect(tile).toHaveClass('flash');
-    expect(scroll).toHaveBeenCalledTimes(1);
+      await fireEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+      await tick();
+      const tile = document.querySelector('[data-row="ci2"]');
+      expect(tile).toHaveClass('tilewrap');
+      expect(tile).toHaveClass('flash');
+      expect(scroll).toHaveBeenCalledTimes(1);
+      vi.advanceTimersByTime(1599);
+      await tick();
+      expect(tile).toHaveClass('flash');
+      vi.advanceTimersByTime(1);
+      await tick();
+      expect(document.querySelector('[data-row="ci2"]')).not.toHaveClass('flash');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('re-plays the scroll and the outline on a language switch', async () => {

@@ -5,7 +5,7 @@
  * the cap, the kind filter shared with the roll pages) rather than any
  * particular record. */
 
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -162,16 +162,23 @@ describe('the cap', () => {
       eq: [],
       refs: {}
     };
-    render(App, { env: fakeEnv({ router: memoryRouter('#/search'), data: fakeData(many) }) });
-    /* Typed character by character, 305 rows would re-render on every
-       keystroke; a paste lands the whole query in one `input` event. */
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/search'), data: fakeData(many) })
+    });
+    /* One input event avoids re-rendering 305 rows once per character. */
     const box = screen.getByPlaceholderText('Поиск по названию или описанию…');
-    await userEvent.click(box);
-    await userEvent.paste('Много');
-    expect(screen.getAllByRole('button', { name: /Много/ })).toHaveLength(300);
-    expect(screen.getByRole('checkbox', { name: 'Выбрать все (300)' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (300)' }));
+    await fireEvent.input(box, { target: { value: 'Много' } });
+    await tick();
+    const shown = container.querySelectorAll<HTMLElement>('[data-row]');
+    expect(shown).toHaveLength(300);
+    expect(shown[0]).toHaveAttribute('data-row', 'm0');
+    expect(shown[299]).toHaveAttribute('data-row', 'm299');
+    expect(container.querySelector('[data-row="m300"]')).not.toBeInTheDocument();
+    expect(screen.getByText('Выбрать все (300)')).toBeInTheDocument();
+    await fireEvent.click(container.querySelector('.selall input') as HTMLInputElement);
+    await tick();
     expect(screen.getByText('Выбрано 300')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-row].sel')).toHaveLength(300);
   });
 });
 

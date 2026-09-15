@@ -15,7 +15,7 @@ const ALL = [].concat(...Object.values(DATA), EQ);
 console.log('идентификаторы');
 const byId = {};
 ALL.forEach(x => { ok(!byId[x.id], 'повторяющийся id: ' + x.id); byId[x.id] = x; });
-ok(ALL.length === 1061, 'записей не 1061, а ' + ALL.length);
+ok(ALL.length === 1091, 'записей не 1091, а ' + ALL.length);
 /* Vault of Ages нумерует карточки по тому и разделу книги, а не сплошняком:
    voa2_a1 - второй том, первый артефакт. Ссылки, имена файлов и коды списков
    держатся на id, так что схема у книги своя, но она тоже строгая. */
@@ -60,7 +60,7 @@ ALL.forEach(x => {
 console.log('нумерация таблиц');
 const ROLL_POOLS = [];
 Object.keys(DATA).forEach(table => {
-  if (table === 'frames') return;
+  if (table === 'frames' || table === 'starting') return;
   if (table === 'community') {
     const byC = {};
     DATA[table].forEach(x => { (byC[x.community] = byC[x.community] || []).push(x); });

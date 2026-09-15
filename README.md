@@ -9,7 +9,7 @@ cards.
 
 **Open it: https://artex-x.github.io/daggerheart-loot/**
 
-1061 records in all - 680 items and consumables plus 381 pieces of equipment -
+1091 records in all - 710 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
 illustration. No build step, no server, no account, no tracking.
 
@@ -47,7 +47,7 @@ next to rarities are a recommendation rather than a limit.
 
 **Tables** holds every table in full, including the alternate ones and the three
 equipment tables (weapons, secondary weapons, armour), each with its own search
-box and a list/grid switch. **Search** covers all 1061 records at once - names,
+box and a list/grid switch. **Search** covers all 1091 records at once - names,
 descriptions and stat lines, in both languages.
 
 Sections are addressable, and every heading has a copy-link button:
@@ -253,9 +253,9 @@ style.css                   styles
 app.js                      routing, roll modes, search, tables, lists, print
 data.js                     the data: window.LOOT
 card/*.svg                  36 vectors for the print cards, exported from Figma
-img/*.webp                  846 pictures, 640x640, ~31 MB
+img/*.webp                  876 pictures, 640x640, ~31 MB
 og/*.jpg                    the same pictures as JPEG for link previews, ~47 MB
-i/*.html                    1061 stub pages with Open Graph markup
+i/*.html                    1091 stub pages with Open Graph markup
 data.json                   the same data as plain JSON, for outside readers
 catalog.csv                 one row per record, with stat lines
 llms.txt                    what the site is, URL grammar, list-link format

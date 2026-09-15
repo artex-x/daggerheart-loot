@@ -34,7 +34,7 @@ function rowAt(rows: readonly Record_[] | undefined, index: number): Record_ {
 function rollPools(loot: Loot): RollPool[] {
   const pools: RollPool[] = [];
   for (const [name, rows] of Object.entries(loot.items)) {
-    if (name === 'frames') continue;
+    if (name === 'frames' || name === 'starting') continue;
     if (name === 'voa') {
       for (const tier of new Set(rows.map((row) => row.tier)))
         pools.push(rows.filter((row) => row.tier === tier));
@@ -63,12 +63,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1061);
-    expect(index.searchable).toHaveLength(1061);
+    expect(index.byId.size).toBe(1091);
+    expect(index.searchable).toHaveLength(1091);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(680);
+    expect(index.all).toHaveLength(710);
     expect(LOOT.eq).toHaveLength(381);
   });
 
