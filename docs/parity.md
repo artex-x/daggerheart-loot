@@ -93,7 +93,7 @@ difference (issue 47, B1). On a Git Bash host, a filter containing `#/` needs
 `MSYS_NO_PATHCONV=1 node tests/parity.js "..."` - without it, Git Bash rewrites
 the argument into a filesystem path and the run silently matches nothing.
 
-After focused cases pass, run the full required parity suite:
+After focused cases pass in a migration batch, run the full parity suite:
 
 ```text
 node tests/run-all.js parity
@@ -103,10 +103,11 @@ Record the command and result in the task handoff.
 
 ## Machine variance
 
-**CI is the baseline. A local run is advisory.** A `VISUAL_DEBT` figure is
-whatever the CI job measures, because CI is the gate that has to go green and
-it is the one machine every contributor shares. A number taken on a development
-machine may not be written into the table as though it were the baseline, even
+**The manually dispatched CI parity job is the baseline. A local run is advisory.**
+Parity no longer gates routine push, PR, or deployment runs. A `VISUAL_DEBT`
+figure is whatever the CI job measures, because it is the one machine every
+contributor shares. A number taken on a development machine may not be written
+into the table as though it were the baseline, even
 when that machine is the only one in front of you. Settled by the repository
 owner on 2026-09-09; per-platform pairs of numbers and a wider `JITTER` were
 both considered and rejected.

@@ -94,6 +94,7 @@ answers it without anybody having to remember what the old screen did.
 
 Use [`docs/parity.md`](../parity.md) for the operational loop. Current migration
 status and debt belong in `issues/47/plan.md` and `issues/47/handoff.md`.
+The parity CI job runs on manual dispatch and is not a deployment dependency.
 
 Every spec in `tests/parity/specs.js` observes a **state** - the controls on it,
 what a button puts on the clipboard, the label on the roll button, the title of
