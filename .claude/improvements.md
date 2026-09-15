@@ -1,6 +1,6 @@
 # Orchestration improvements
 
-Status, updated 2026-09-09. Finding 1 (long-running checks) shipped in the prompts at
+Status, updated 2026-09-15. Finding 1 (long-running checks) shipped in the prompts at
 60172d3 and is now also a hook (issue 65). Finding 2 (model defaults) shipped at
 60172d3. Finding 3 (shared context) shipped in the template at 60172d3. **Finding 4
 (the usage nudge) was built, measured, and withdrawn at 79e26c9: the five-hour window
@@ -10,7 +10,8 @@ Finding 1's "do not design around resumption being available" is withdrawn 2026-
 `SendMessage` resumes a subagent on this host - `.claude/README.md`,
 "Resuming a worker". Finding 4's hook-input `effort` is an object `{ level }`,
 and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`
-(`issues/agent-effort/`, 2026-09-11).
+(`issues/agent-effort/`, 2026-09-11). Finding 7 (the configuration audit
+baseline) is recorded for a same-command re-measure on 2026-10-15.
 
 Findings from the 2026-09-09 session (TASK 47, batches B3.5 and the B3.6
 planning), and an implement-ready plan. Written for whoever picks up the
@@ -348,6 +349,35 @@ Scoped into **B3.6 part 0**. Measure the slowest tests and set the value from
 what the work costs, rather than picking a round number; consider scoping the
 larger timeout to the a11y specs so a genuinely hung test still fails; and fix
 the axe lock so a single timeout stops taking the rest of the file with it.
+
+## Finding 7 - configuration audit baseline (2026-09-15), re-measure 2026-10-15
+
+The audit behind `issues/config-audit/` measured the configuration's cost
+once, so the next pass measures drift instead of re-deriving numbers. Same
+commands, same host (this Windows desktop), on 2026-10-15:
+
+| Measure | Command | 2026-09-15 |
+|---|---|---|
+| RTK savings, global | `rtk gain` | 424 commands, 563.0K saved, 60.5% |
+| RTK misses, 30 days | `rtk discover` | 178 sessions, 19,194 commands, 40.9% handled, ~179.7K missed; top: `grep -n` 160 / 61.2K, `tail -c` 144 / 35.2K, `git commit` 206 / 26.3K, `npm run` 51 / 20.4K, `npx vitest` 6 / 11.7K |
+| Always-loaded markdown | `wc -c CLAUDE.md ~/.claude/CLAUDE.md ~/.claude/RTK.md ~/.claude/projects/E--dev-daggerheart-loot/memory/MEMORY.md` | 13,308 B (~3,300 tokens); project `CLAUDE.md` 10,469 B / 199 lines |
+| Skill listing | count model-invocable skills and sum `description:` chars over `~/.claude/plugins`, `~/.claude/skills`, `.claude/skills` | 58 skills, 14,705 chars + ~7,700 built-in = ~22,400 chars (~5,600 tokens) against a ~8,000-char budget (`skillListingBudgetFraction` 0.01); per-skill cap 1,536 |
+| Task state | `wc -c issues/47/*.md` | plan 1,031,333 B / 16,012 lines; handoff 522,543 B / 7,671; context 227,406 B / 3,701 |
+
+What `config-audit` changed against that baseline (commits in its
+`handoff.md`): `bash-guard.mjs` denies `grep -n` and `tail -c` (96.4K of the
+miss, over half); `session-stop.mjs` warns past 150 KB and names the
+collapse past 300 KB; `CLAUDE.md` 199 -> 181 lines; three manual skills at
+zero listing cost; the agent wrappers lost their duplicated rules; the
+planner-tier policy is in the orchestrate prompt.
+
+What the re-measure decides: `grep -n` and `tail -c` should be near zero in
+`rtk discover`. The next-largest misses are `git commit` (the message body -
+not filterable without losing it) and `npm run` (the commit-gate trap - do
+not "fix" it), so the next rule may well be none. The 47 files must not have
+grown past their 2026-09-15 sizes once R0c marks them historical; `CLAUDE.md`
+should be under 181 after R0c, not over. Anything that moved the wrong way
+is a new finding in this file, not a second backlog.
 
 ## Suggested batching
 

@@ -12,6 +12,7 @@ Use `<TASK_ID>` as a variable. Never treat a sample id as hard-coded.
 
 This session is for investigation, technical design, and durable planning.
 Do not implement production application code for the feature itself.
+Write only under `<TASK_DIR>/` (`plan.md`, `handoff.md`, optional `mocks/`; refresh `context.md` with durable facts).
 
 This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.

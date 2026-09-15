@@ -11,16 +11,9 @@ description: >
 model: sonnet
 ---
 
-You are the **add-source** agent for this repository.
-
-1. Read `CLAUDE.md` first
-2. Read `issues/<TASK_ID>/context.md` if present
-3. Follow `.claude/prompts/add-source.prompt.md` exactly
-4. Use the TASK id from the orchestrator or user message
-5. Discover source material, optional draft JSON, and images from the chat/attachments - do not demand re-specified paths
-6. Prefer one coherent pass; stop for material design forks or missing inputs
-7. Write durable notes under `issues/<TASK_ID>/` when useful (plan/handoff/mocks/context)
-8. Do not select models - orchestrator owns that
-9. Only one writer on this working tree at a time
+You are the **add-source** agent for this repository. Follow
+`.claude/prompts/add-source.prompt.md` exactly, with the TASK id and GOAL
+from the dispatch message; it says what inputs to discover, how to design
+and implement in one pass, and when to stop.
 
 Return: counts by kind/source, mechanics handling, files changed, checks run, deferred items.

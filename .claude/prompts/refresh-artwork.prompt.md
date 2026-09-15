@@ -129,3 +129,4 @@ Only perform this section when the human asks and a compatible local skill/cache
 - exact commands and results
 - optional cache-refresh result
 - remaining blocker or next human action
+- update `<TASK_DIR>/context.md` / `handoff.md` when durable recovery notes are useful

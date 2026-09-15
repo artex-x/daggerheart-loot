@@ -187,6 +187,33 @@ Claude frontmatter remains the default on Claude hosts: planner and reviewer
 use `opus`; implementer, add-source, and refresh-artwork use `sonnet`. Claude
 effort is session-level and human-controlled.
 
+### Planner tier: `opus` by default, `fable` by named escalation
+
+`planner.md`'s frontmatter is `opus` and stays so; a routine planning
+dispatch names no `model`. One dispatch may name `model: fable` when the
+GOAL meets at least one test below, and the dispatch message in chat says
+which:
+
+1. The plan will settle a public contract, a product law, a hook that
+   denies, or configuration every later session runs under - and a wrong
+   call is not caught by `npm run check` or a reviewer, only by the next
+   failure.
+2. The design must reconcile three or more sources that can conflict (issue
+   evidence, specs, live behaviour, an in-flight plan, a design held outside
+   the repo), and the human has said the call is the planner's to make.
+3. A previous planning pass on this task came back not implement-ready, or a
+   batch of it failed review with `replan`.
+
+Not a test: the task is large, the diff is wide, the human is in a hurry, or
+Fable is available. Feature planning, a next-batch refresh and source-ingest
+design stay on `opus`. If no test is named in the dispatch, the tier is
+`opus`. Escalation is per dispatch and never edits the frontmatter; a resume
+carries no `model` ("Resume, do not replace"), so a tier change is a fresh
+dispatch. Fable's availability moves (unavailable 2026-09-12, available
+2026-09-15): when it is not there, plan on `opus` and say so - never wait.
+Announce the routing in chat only; never write it into `plan.md`,
+`handoff.md` or `context.md`.
+
 On Codex, every worker dispatch must name `model` and `reasoning_effort`, and
 must use `fork_turns: "none"` or a bounded positive count. Do not use a
 full-history fork: it cannot accept those overrides. Use this mapping:

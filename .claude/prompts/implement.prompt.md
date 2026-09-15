@@ -35,7 +35,7 @@ Before doing anything else:
 9. Inspect the source code, tests, fixtures, and public contracts for the next batch
 10. Preflight working tree:
    - Inspect `git status` and `git diff`
-   - If the tree has conflicting or unclear unrelated changes that make the batch unsafe, stop and report
+   - If the tree has conflicting or unclear unrelated changes that make the batch unsafe, or another implementation batch appears mid-flight on the same files, stop and report
    - Preserve unrelated changes; do not revert foreign work
 
 If `plan.md` or `handoff.md` does not exist, stop - planning must be completed first.
