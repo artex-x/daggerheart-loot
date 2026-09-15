@@ -87,13 +87,13 @@ async function newListFromModal() {
  *  state can hold this one. */
 async function twoFramesPicked() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
-  await d.open('#/tables/frames');
+  await d.open('#/tables/other_frames');
   await d.press('Фильтры');
   await d.press('Пир зверей');
   await d.press('Колоссы Сухоземья');
   const hash1 = await d.hash();
   ok(
-    hash1 === '#/tables/frames/f_frame-beast_feast-colossus',
+    hash1 === '#/tables/other_frames/f_frame-beast_feast-colossus',
     '4 (два фрейма): адрес ' + hash1 + ', ожидали f_frame-beast_feast-colossus'
   );
   const rows1 = await d.count('.rows .row[data-row]');
@@ -103,7 +103,7 @@ async function twoFramesPicked() {
   await ctx.close();
 
   const { ctx: ctx2, d: d2 } = await fresh({ width: 1180, height: 900 });
-  await d2.open('#/tables/frames/f_frame-beast_feast-colossus');
+  await d2.open('#/tables/other_frames/f_frame-beast_feast-colossus');
   const rows2 = await d2.count('.rows .row[data-row]');
   ok(rows2 === 57, '5 (ссылка с ходу): ' + rows2 + ' строк вместо 57');
   const pills2 = await d2.count('.fpill');

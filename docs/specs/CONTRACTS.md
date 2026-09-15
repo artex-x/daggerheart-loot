@@ -15,7 +15,8 @@ Checked by `tests/contracts.js`.
 Frozen as written in `ROUTES.md`. In particular:
 
 - the nine section names, and the three legacy ones that fold into `roll/std`
-- the table names in `#/tables/<table>`
+- the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash.
+  compatibility route
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
 - `#/i/<id>`, `#/print/<ids>`, `#/lists/<listId>`, `#/l/<payload>`

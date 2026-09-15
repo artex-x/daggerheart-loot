@@ -34,7 +34,13 @@
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
-  import { equipFacets, equipOfKind, plainFacets, type AltKind } from '../lib/data.js';
+  import {
+    equipFacets,
+    equipOfKind,
+    otherTableRows,
+    plainFacets,
+    type AltKind
+  } from '../lib/data.js';
   import { facetRows } from '../lib/facets.js';
   import {
     chosenCount,
@@ -172,7 +178,13 @@
   }
 
   const rows = $derived(
-    eqKind ? (index ? equipOfKind(index, eqKind) : []) : (index?.rows.get(table) ?? [])
+    eqKind
+      ? index
+        ? equipOfKind(index, eqKind)
+        : []
+      : (table === 'other_starting' || table === 'other_frames') && index
+        ? otherTableRows(index, table)
+        : (index?.rows.get(table) ?? [])
   );
   const facPassed = $derived.by(() => {
     if (!facetGroups.length) return rows;
@@ -220,14 +232,14 @@
      a plain list, or one split by tier, frame, community, the equipment
      tables' own tier sections, or the alternate tables' rarity/hope-fear
      columns. */
-  type BodyKind = 'plain' | 'tier' | 'frame' | 'comm' | 'eq' | 'alt';
+  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'eq' | 'alt';
   const bodyKind = $derived<BodyKind>(
     eqKind
       ? 'eq'
       : table === 'voa'
         ? 'tier'
-        : table === 'frames'
-          ? 'frame'
+        : table === 'other_frames'
+          ? 'other'
           : table === 'community'
             ? 'comm'
             : table === 'alt_item' || table === 'alt_consumable'
@@ -251,14 +263,21 @@
         })).filter((s) => s.entries.length > 0)
   );
 
-  const frameSections = $derived.by<Section[]>(() =>
-    bodyKind !== 'frame'
+  const otherSections = $derived.by<Section[]>(() =>
+    bodyKind !== 'other'
       ? []
-      : FRAME_ORDER.map((id) => ({
-          key: id,
-          label: frameName(id, app.lang),
-          entries: filtered.filter((it) => it.frame === id).map((it) => ({ it }))
-        })).filter((s) => s.entries.length > 0)
+      : [
+          {
+            key: 'starting',
+            label: t.starting,
+            entries: filtered.filter((it) => it.starting && !it.frame).map((it) => ({ it }))
+          },
+          ...FRAME_ORDER.map((id) => ({
+            key: id,
+            label: frameName(id, app.lang),
+            entries: filtered.filter((it) => it.frame === id).map((it) => ({ it }))
+          }))
+        ].filter((s) => s.entries.length > 0)
   );
 
   const commSections = $derived.by<Section[]>(() => {
@@ -295,8 +314,8 @@
   const activeSections = $derived<Section[]>(
     bodyKind === 'tier'
       ? tierSections
-      : bodyKind === 'frame'
-        ? frameSections
+      : bodyKind === 'other'
+        ? otherSections
         : bodyKind === 'comm'
           ? commSections
           : bodyKind === 'eq'
@@ -553,7 +572,7 @@
         <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
       {/if}
     </Empty>
-  {:else if bodyKind === 'tier' || bodyKind === 'frame' || bodyKind === 'comm' || bodyKind === 'eq'}
+  {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq'}
     {#each activeSections as s (s.key)}
       <div
         class="tsection"

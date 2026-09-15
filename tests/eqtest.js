@@ -253,7 +253,7 @@ const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
 
   /* Значение с подчёркиванием переживает ссылку: старый разделитель групп резал
      `beast_feast` пополам, и ссылка на фрейм приезжала фильтром по «beast». */
-  await go('#/tables/frames/f_frame-beast_feast');
+  await go('#/tables/other_frames/f_frame-beast_feast');
   ok((await page.$$eval('.tsection', e => e.length)) === 1,
      'ссылка на фрейм с подчёркиванием в имени не восстановила фильтр');
   const pill = await page.$eval('.fpill', e => e.textContent.replace('\u00d7', '').trim());

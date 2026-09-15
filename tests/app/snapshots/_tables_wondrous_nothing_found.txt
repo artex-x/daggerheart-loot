@@ -34,7 +34,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous
     link "Vault of Ages" [url=#/tables/voa]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Фреймы" [url=#/tables/frames]
+    link "Прочее" [url=#/tables/other_starting]
     searchbox "Поиск по названию или описанию…" [value=zzzqqqxx123 focused=true]
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -74,6 +74,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поиск
 Предметы
+Прочее
 Расходники
 Сбросить всё
 Сеткой
@@ -86,7 +87,6 @@ daggerheart.com
 Таблицы
 Убрать из фильтра
 Фильтры (1)
-Фреймы
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
@@ -120,7 +120,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
     link "Vault of Ages" [url=#/tables/voa]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
-    link "Frames" [url=#/tables/frames]
+    link "Other" [url=#/tables/other_starting]
     searchbox "Search by name or description…" [value=zzzqqqxx123 focused=true]
     button "Link to this table"
     button "List" [pressed=true]
@@ -152,7 +152,6 @@ EN
 Equipment
 Filter link
 Filters (1)
-Frames
 Grid
 Hope & Fear
 How this works
@@ -161,6 +160,7 @@ Link to this table
 List
 Lists
 Open this section on start
+Other
 RU
 Remove from the filter
 Reset all

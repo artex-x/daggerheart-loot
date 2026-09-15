@@ -86,7 +86,6 @@ export function buildIndex(loot: Loot): Index {
       byId.set(it.id, it);
     }
   }
-
   /* Weapons and armour are not loot rolled off a table: they have stats, so
      they are stored apart and carry an `eq` block instead of a roll number. */
   const eq = loot.eq ?? [];
@@ -156,6 +155,18 @@ export function buildIndex(loot: Loot): Index {
     },
     refs: loot.refs ?? {}
   };
+}
+
+/** The Other table's browse-only pool. It deliberately leaves canonical rows
+ * untouched, so neither source collection is counted twice by search or rolls. */
+export function otherTableRows(
+  index: Index,
+  table: 'other_starting' | 'other_frames'
+): readonly Record_[] {
+  const starting = index.rows.get('starting') ?? [];
+  return table === 'other_starting'
+    ? starting.filter((it) => !it.frame)
+    : [...(index.rows.get('frames') ?? []), ...starting.filter((it) => !!it.frame)];
 }
 
 /** What a record counts as when filtering by kind. */

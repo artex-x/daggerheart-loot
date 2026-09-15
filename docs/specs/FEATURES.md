@@ -23,8 +23,9 @@ Six modes. Each keeps its own input in memory only.
   each button is labelled with the count and the rarities it covers.
 - The roll button uses a real die where the range is one, and reads
   "Random 1-N" where it is not (119, 29, a list of arbitrary length).
-- Campaign frames are a browsable source table, not a rolling mode; their
-  equipment has no roll number.
+- Other is a browsable table, not a rolling mode: its starting inventory comes
+  first and remains non-rollable, followed by campaign-frame equipment with no
+  roll number.
 - A critical success in the alternate tables - the two dice showing the same
   face - hands over the whole rarity rather than a row: a link into each table
   that is switched on, at that rarity, plus a button that steps the rarity up
@@ -51,10 +52,11 @@ Six modes. Each keeps its own input in memory only.
 - Search covers all 1091 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped.
-- Starting inventory is searchable and opens on direct record pages, but it is
-  held in the non-rollable `starting` collection. Its source and class context
-  belong in the record description rather than in a new roll table. The accepted
-  source-image hashes are recorded in `docs/provenance/starting-items-artwork.json`.
+- Starting inventory is searchable, opens on direct record pages, and is
+  browsable first under Other; it remains held in the non-rollable `starting`
+  collection. Its source and class context belong in the record description
+  rather than in a new roll table. The accepted source-image hashes are
+  recorded in `docs/provenance/starting-items-artwork.json`.
 - Every heading has a copy-link button; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in
   table" link and a section's copy-link button produce) scrolls to its target

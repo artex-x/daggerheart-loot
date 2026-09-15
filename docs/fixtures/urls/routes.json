@@ -234,17 +234,41 @@
     }
   },
   {
-    "hash": "#/tables/frames/f_frame-beast_feast",
+    "hash": "#/tables/other_frames/f_frame-beast_feast",
     "why": "a value containing an underscore, which is why groups are separated by a dot",
     "resolves": {
-      "hash": "#/tables/frames/f_frame-beast_feast",
+      "hash": "#/tables/other_frames/f_frame-beast_feast",
       "tab": "#/tables",
       "rows": 36,
       "printCards": 0,
       "picked": [
         "frame:beast_feast"
       ],
-      "count": "36 из 94"
+      "count": "36 из 95"
+    }
+  },
+  {
+    "hash": "#/tables/other_starting",
+    "why": "Other starting-inventory section anchor",
+    "resolves": {
+      "hash": "#/tables/other_starting",
+      "tab": "#/tables",
+      "rows": 29,
+      "printCards": 0,
+      "picked": [],
+      "count": "29"
+    }
+  },
+  {
+    "hash": "#/tables/other_frames/dark_heart",
+    "why": "Other campaign-frame section anchor",
+    "resolves": {
+      "hash": "#/tables/other_frames/dark_heart",
+      "tab": "#/tables",
+      "rows": 95,
+      "printCards": 0,
+      "picked": [],
+      "count": "95"
     }
   },
   {

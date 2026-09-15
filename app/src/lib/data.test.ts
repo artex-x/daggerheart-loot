@@ -9,6 +9,7 @@ import {
   equipFacets,
   equipOfKind,
   kindOf,
+  otherTableRows,
   plainFacets,
   srcOf,
   upgradeLine,
@@ -70,6 +71,17 @@ describe('the index over the real dataset', () => {
   it('separates loot from equipment the way the data does', () => {
     expect(index.all).toHaveLength(710);
     expect(LOOT.eq).toHaveLength(381);
+  });
+
+  it('derives Other without double-counting its source collections', () => {
+    const starting = otherTableRows(index, 'other_starting');
+    const frames = otherTableRows(index, 'other_frames');
+    expect(starting).toHaveLength(29);
+    expect(frames).toHaveLength(95);
+    expect(new Set([...starting, ...frames]).size).toBe(124);
+    expect(index.rows.get('frames')).toHaveLength(94);
+    expect(index.all).toHaveLength(710);
+    expect(index.searchable).toHaveLength(1091);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {

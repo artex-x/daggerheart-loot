@@ -395,7 +395,8 @@ const COUNTERS = [
 /* app/index.html попало сюда вместе с портом головы: числа теперь выписаны и
    там. index.html и app.js уйдут отсюда в Phase 7, когда уйдут сами файлы. */
 ['index.html', 'app/index.html', 'README.md', 'README.ru.md', 'app.js',
- 'llms.txt', 'robots.txt']
+ 'llms.txt', 'robots.txt', 'app/src/lib/dict.ts', 'app/src/lib/i18n.ts',
+ 'app/src/lib/search.ts', 'tools/bundle-budget.mjs']
   .forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   COUNTERS.forEach(function ([re, want, what]) {

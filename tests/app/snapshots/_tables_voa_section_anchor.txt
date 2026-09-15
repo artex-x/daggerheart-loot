@@ -34,7 +34,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/voa/tA]
     link "Vault of Ages" [url=#/tables/voa]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Фреймы" [url=#/tables/frames]
+    link "Прочее" [url=#/tables/other_starting]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -190,6 +190,7 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
+Прочее
 Сеткой
 Скопировать ссылку на этот раздел
 Снаряжение
@@ -199,7 +200,6 @@ daggerheart.com
 Ссылка на таблицу
 Таблицы
 Фильтры
-Фреймы
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
@@ -233,7 +233,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
     link "Vault of Ages" [url=#/tables/voa]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
-    link "Frames" [url=#/tables/frames]
+    link "Other" [url=#/tables/other_starting]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
@@ -380,7 +380,6 @@ Dread GM Toolbox
 EN
 Equipment
 Filters
-Frames
 Grid
 Hope & Fear
 How this works
@@ -388,6 +387,7 @@ Link to this table
 List
 Lists
 Open this section on start
+Other
 RU
 Search
 Selected

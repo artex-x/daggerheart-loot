@@ -13,7 +13,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
-  import { cardBadges, srcLabel } from '../lib/label.js';
+  import { cardBadges, isFrameRecord, whereFrom } from '../lib/label.js';
   import { upgradeLine } from '../lib/data.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
@@ -83,7 +83,7 @@
       it,
       lang,
       { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
-      { noType: true }
+      { noType: true, noTier: isFrameRecord(it) }
     )
   );
   const parts = $derived(descParts(it, lang));
@@ -133,7 +133,7 @@
       {#each badges as b, i (i)}
         <span class="badge {b.cls}" title={b.title}>{b.text}</span>
       {/each}
-      <span class="badge src">{srcLabel(it, lang)}</span>
+      <span class="badge src">{whereFrom(it, lang)}</span>
     </div>
 
     <h2 class="card-name">
@@ -174,7 +174,7 @@
       {/each}
     </div>
 
-    {#if ladder.length}
+    {#if ladder.length && !isFrameRecord(it)}
       <!-- Улучшенный / Продвинутый / Легендарный are the same weapon four
            times over, so the card offers the ladder rather than making a
            person search for the next rung. The one they are on is a label

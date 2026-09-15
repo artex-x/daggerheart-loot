@@ -75,6 +75,7 @@ function readHome(env: Env): string {
      (both come back `table: null`), so the bare case is read off the string
      itself rather than off the route. */
   if (!v) return DEFAULT_HOME;
+  if (v === '#/tables/frames') return '#/tables/other_frames';
   const r = parseHash(v);
   if (r.kind === 'section') return v;
   if (r.kind === 'tables' && (r.table || stripHash(v) === 'tables')) return v;

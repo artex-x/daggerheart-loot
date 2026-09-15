@@ -36,6 +36,7 @@ const LEGACY: Record<string, { core: boolean; hnf: boolean }> = {
 };
 
 const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/;
+const TABLE_ALIASES: Record<string, TableId> = { frames: 'other_frames' };
 
 /** Strips `#` and the leading `/`: everything below works on a bare path. */
 export function stripHash(hash: string): string {
@@ -100,7 +101,7 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     const tail = m[2] ?? '';
     /* A name that is not in the list does not reset the table to a default: the
        caller keeps whichever is already open. Hence null, not 'core_item'. */
-    const table = name && isTableId(name) ? name : null;
+    const table = name ? (TABLE_ALIASES[name] ?? (isTableId(name) ? name : null)) : null;
     return tail.startsWith('f_')
       ? {
           kind: 'tables',

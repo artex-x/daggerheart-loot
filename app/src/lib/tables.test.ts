@@ -11,7 +11,7 @@ describe('the nine groups', () => {
   it('finds the group a table belongs to', () => {
     expect(groupOf('core_consumable').id).toBe('core');
     expect(groupOf('eq_armor').id).toBe('eq');
-    expect(groupOf('frames').id).toBe('frames');
+    expect(groupOf('other_frames').id).toBe('other');
   });
 
   it('shows a second row only where a book has more than one table', () => {
@@ -19,8 +19,7 @@ describe('the nine groups', () => {
       'wond',
       'dread',
       'voa',
-      'comm',
-      'frames'
+      'comm'
     ]);
   });
 

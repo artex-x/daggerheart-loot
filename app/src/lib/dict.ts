@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1061 pairs maintained with
+ * small, typed and reviewed, while record text is 1091 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -184,7 +184,11 @@ const ru = {
   /* The two groups the tab bar has no word for - both a slice through every
      book rather than a book of their own. */
   grpEquipment: 'Снаряжение',
-  grpFrames: 'Фреймы',
+  grpOther: 'Прочее',
+  frameItems: 'Предметы сеттингов',
+  starting: 'Стартовые предметы',
+  subStarting: 'Стартовые',
+  subFrames: 'Сеттинги',
   /* The three equipment tables' sub-caption, shorter than the book's own name
      for the kind of gear - "Основное оружие" on the badge, "Оружие" here. */
   subWeapon: 'Оружие',
@@ -195,7 +199,7 @@ const ru = {
     'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
   subSearch:
-    'Поиск по всем 1061 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -215,7 +219,7 @@ const ru = {
      hands the picked state to somebody else. */
   filters: 'Фильтры',
   kindF: 'Тип',
-  frameF: 'Фрейм',
+  frameF: 'Сеттинг',
   commF: 'Сообщество',
   anyValue: 'любое',
   outOf: 'из',
@@ -484,7 +488,11 @@ const en: Dict = {
   thSevere: 'Severe damage',
 
   grpEquipment: 'Equipment',
-  grpFrames: 'Frames',
+  grpOther: 'Other',
+  frameItems: 'Frame items',
+  starting: 'Starting items',
+  subStarting: 'Starting',
+  subFrames: 'Frames',
   subWeapon: 'Weapons',
   subSecondary: 'Secondary',
   subArmor: 'Armor',
@@ -492,7 +500,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1061 entries at once — loot, consumables and equipment, in Russian and English.',
+    'Search all 1091 entries at once — loot, consumables and equipment, in Russian and English.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',

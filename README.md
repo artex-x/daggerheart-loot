@@ -56,12 +56,13 @@ Sections are addressable, and every heading has a copy-link button:
 #/tables/alt_item            the alternate item table
 #/tables/alt_item/rare       the same, at the "Rare - Tier 2-3" block
 #/tables/community/Seaborne  Seaborne items
-#/tables/frames/dark_heart   equipment for the Dark Heart campaign frame
+#/tables/other_frames/dark_heart  Frame items: equipment for the Dark Heart setting
 ```
 
 Every table has a filter panel; where there is nothing to filter by, there is no
 panel. Equipment filters by tier, class, source, trait, range, burden and upgrade
-line; Vault of Ages by kind and tier; campaign frames by kind and frame;
+line; Vault of Ages by kind and tier; Other by kind and frame (starting inventory
+first, then campaign frames);
 communities by community. Nothing is selected by default and an empty row means
 "any", so "tier 2 only" is one click. Values within a row are OR'd, rows narrow
 each other.

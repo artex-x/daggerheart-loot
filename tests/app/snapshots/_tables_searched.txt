@@ -34,7 +34,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
     link "Vault of Ages" [url=#/tables/voa]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Фреймы" [url=#/tables/frames]
+    link "Прочее" [url=#/tables/other_starting]
     link "Предметы" [url=#/tables/core_item]
     link "Расходники" [url=#/tables/core_consumable]
     searchbox "Поиск по названию или описанию…" [value=кольцо focused=true]
@@ -44,20 +44,20 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
     checkbox "Выбрать все (3)" [checked=false]
     StaticText "Выбрать все (3)"
     checkbox "Выбрано" [checked=false]
-    button "28 Кольцо Тишины Потратьте Надежду, чтобы активировать это кольц..." [namelen=128 namehash=874fe506]
+    button "28 Кольцо Тишины Потратьте Надежду, чтобы активировать это кольц..." [namelen=139 namehash=19699140]
     checkbox "Выбрано" [checked=false]
-    button "32 Кольцо Сопротивления Один раз за продолжительный отдых вы мож..." [namelen=172 namehash=9b4bceb1]
+    button "32 Кольцо Сопротивления Один раз за продолжительный отдых вы мож..." [namelen=183 namehash=8a3e42aa]
     checkbox "Выбрано" [checked=false]
-    button "59 Кольцо Несокрушимой Решимости Один раз за сессию, когда Масте..." [namelen=166 namehash=5d88a8d7]
+    button "59 Кольцо Несокрушимой Решимости Один раз за сессию, когда Масте..." [namelen=177 namehash=ddb5a9b1]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
-28Кольцо ТишиныПотратьте Надежду, чтобы активировать это кольцо.... [namelen=124 namehash=1ece900e]
-32Кольцо СопротивленияОдин раз за продолжительный отдых вы может... [namelen=168 namehash=337f7771]
-59Кольцо Несокрушимой РешимостиОдин раз за сессию, когда Мастер ... [namelen=162 namehash=0915f512]
+28Кольцо ТишиныПотратьте Надежду, чтобы активировать это кольцо.... [namelen=135 namehash=cefd1d98]
+32Кольцо СопротивленияОдин раз за продолжительный отдых вы может... [namelen=179 namehash=43a64e08]
+59Кольцо Несокрушимой РешимостиОдин раз за сессию, когда Мастер ... [namelen=173 namehash=44f74954]
 Core
 Dread
 Dread GM Toolbox
@@ -77,6 +77,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поиск
 Предметы
+Прочее
 Расходники
 Сеткой
 Снаряжение
@@ -85,7 +86,6 @@ daggerheart.com
 Списком
 Ссылка на таблицу
 Таблицы
-Фреймы
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/tables]
@@ -119,7 +119,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables]
     link "Vault of Ages" [url=#/tables/voa]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
-    link "Frames" [url=#/tables/frames]
+    link "Other" [url=#/tables/other_starting]
     link "Items" [url=#/tables/core_item]
     link "Consumables" [url=#/tables/core_consumable]
     searchbox "Search by name or description…" [value=кольцо focused=true]
@@ -129,20 +129,20 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables]
     checkbox "Select all (3)" [checked=false]
     StaticText "Select all (3)"
     checkbox "Selected" [checked=false]
-    button "28 Ring of Silence Spend a Hope to activate this ring. Your foot..." [namelen=112 namehash=67e1ab83]
+    button "28 Ring of Silence Spend a Hope to activate this ring. Your foot..." [namelen=120 namehash=4b97df14]
     checkbox "Selected" [checked=false]
-    button "32 Ring of Resistance Once per long rest, you can activate this ..." [namelen=137 namehash=965173d2]
+    button "32 Ring of Resistance Once per long rest, you can activate this ..." [namelen=145 namehash=54a2d7e4]
     checkbox "Selected" [checked=false]
-    button "59 Ring of Unbreakable Resolve Once per session, when the GM spe..." [namelen=148 namehash=201f0c67]
+    button "59 Ring of Unbreakable Resolve Once per session, when the GM spe..." [namelen=156 namehash=79b97eef]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
-28Ring of SilenceSpend a Hope to activate this ring. Your footst... [namelen=108 namehash=b754d8c3]
-32Ring of ResistanceOnce per long rest, you can activate this ri... [namelen=133 namehash=e0f2b0e1]
-59Ring of Unbreakable ResolveOnce per session, when the GM spend... [namelen=144 namehash=7e147df4]
+28Ring of SilenceSpend a Hope to activate this ring. Your footst... [namelen=116 namehash=d3fed310]
+32Ring of ResistanceOnce per long rest, you can activate this ri... [namelen=141 namehash=07f4df9f]
+59Ring of Unbreakable ResolveOnce per session, when the GM spend... [namelen=152 namehash=94acdf56]
 Alt. tables
 Communities
 Consumables
@@ -151,7 +151,6 @@ Dread
 Dread GM Toolbox
 EN
 Equipment
-Frames
 Grid
 Hope & Fear
 How this works
@@ -160,6 +159,7 @@ Link to this table
 List
 Lists
 Open this section on start
+Other
 RU
 Search
 Selected

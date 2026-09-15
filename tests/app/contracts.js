@@ -187,7 +187,7 @@ function stampOf(parts) {
     ['eq_weapon', 'tier-2'], ['eq_weapon', 'src-core'], ['eq_weapon', 'cls-mag'],
     ['eq_weapon', 'trait-strength'], ['eq_weapon', 'range-melee'],
     ['eq_weapon', 'burden-2'], ['eq_weapon', 'line-uniq'],
-    ['eq_armor', 'tier-1'], ['voa', 'tier-A'], ['frames', 'frame-colossus'],
+    ['eq_armor', 'tier-1'], ['voa', 'tier-A'], ['other_frames', 'frame-colossus'],
     ['community', 'comm-Seaborne'],
     ['wondrous', 'kind-consumable']
   ];

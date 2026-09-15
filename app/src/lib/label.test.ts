@@ -111,7 +111,7 @@ describe('which table a record is printed in', () => {
   });
 
   it('sends roll-less campaign-frame equipment to its own table', () => {
-    expect(tableOf(rec({ src: 'frame', eq: { t: 'weapon', tier: 1 } }))).toBe('frames');
+    expect(tableOf(rec({ src: 'frame', eq: { t: 'weapon', tier: 1 } }))).toBe('other_frames');
   });
 
   it('sends equipment to the table for its kind', () => {
@@ -157,6 +157,14 @@ describe('the line under the heading', () => {
   it('gives a one-table book no second half', () => {
     expect(whereFrom(rec({ src: 'wondrous' }), 'ru')).toBe('Wondrous Loot');
     expect(whereFrom(rec({ src: 'dread' }), 'en')).toBe('Dread GM Toolbox');
+  });
+
+  it('uses the concise Other breadcrumb for starters and settings', () => {
+    expect(whereFrom(rec({ starting: true }), 'ru')).toBe('Прочее · Стартовые');
+    expect(whereFrom(rec({ starting: true }), 'en')).toBe('Other · Starting');
+    const frame = rec({ src: 'frame', frame: 'beast_feast' });
+    expect(whereFrom(frame, 'ru')).toBe('Прочее · Сеттинги · Пир зверей');
+    expect(whereFrom(frame, 'en')).toBe('Other · Frames · Beast Feast');
   });
 
   it('names the community instead of the book', () => {

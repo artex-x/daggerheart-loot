@@ -1498,10 +1498,11 @@ const STATES = [
     }
   },
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
-  { id: '#/tables/frames', route: '#/tables/frames', why: 'a sectioned body: campaign frames' },
+  { id: '#/tables/other_starting', route: '#/tables/other_starting', why: 'the plain starting-items subtable' },
+  { id: '#/tables/other_frames', route: '#/tables/other_frames', why: 'the sectioned frame-items subtable' },
   {
-    id: '#/tables/frames ~ two frames',
-    route: '#/tables/frames',
+    id: '#/tables/other_frames ~ two frames',
+    route: '#/tables/other_frames',
     why: 'two frames picked in one row: values OR, and the second pick keeps the first',
     enter: async (d) => {
       await d.click('Фильтры');
@@ -1509,6 +1510,12 @@ const STATES = [
       await d.click('Колоссы Сухоземья');
     }
   },
+  {
+    id: '#/tables/other_frames ~ dark heart anchor',
+    route: '#/tables/other_frames/dark_heart',
+    why: 'the campaign-frame section anchor'
+  },
+  { id: '#/tables/frames', route: '#/tables/frames', why: 'legacy frame-items compatibility route' },
   { id: '#/tables/community', route: '#/tables/community', why: 'a sectioned body: communities' },
   {
     id: '#/tables/community ~ panel open',

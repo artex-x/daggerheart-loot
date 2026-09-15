@@ -101,6 +101,9 @@ const LOOT: Loot = {
         ru: 'Перстень Рода'
       })
     ],
+    starting: [
+      row({ id: 's1', src: 'core', kind: 'item', starting: true, ru: 'Стартовый предмет' })
+    ],
     /* One more frame-sourced record, an armour, so the equipment `src` facet
        row has a frame to offer alongside the books - f1 and f2 stay as they
        were for the plain sectioned-body tests above. */
@@ -877,18 +880,41 @@ describe('a sectioned body: Vault of Ages by tier', () => {
   });
 });
 
-describe('a sectioned body: campaign frames', () => {
+describe('a sectioned body: Other', () => {
   it('lists every campaign that has a row, including one with a single row', () => {
     render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/frames'), data: fakeData(LOOT) })
+      env: fakeEnv({ router: memoryRouter('#/tables/other_frames'), data: fakeData(LOOT) })
     });
     /* The row's own source badge carries the same name (label.test.ts's own
        fix), so a section heading is not the only place the text appears. */
     expect(document.querySelectorAll('.tsec-head .lbl')).toHaveLength(2);
+    expect(document.querySelector('.tsection #sec-starting')).toBeNull();
     expect(screen.getAllByText('Пир зверей').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Материнская Плата').length).toBeGreaterThan(0);
     /* No row belongs to it in this fixture, so it draws no section at all. */
     expect(screen.queryByText('Колоссы Сухоземья')).not.toBeInTheDocument();
+  });
+
+  it('keeps a frame-selected starting item in its setting section', () => {
+    const motherboardStarter = row({
+      id: 's2',
+      src: 'core',
+      kind: 'item',
+      starting: true,
+      frame: 'motherboard',
+      ru: 'Стартовая материнская плата'
+    });
+    const data = structuredClone(LOOT);
+    data.items.starting.push(motherboardStarter);
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/other_frames/f_frame-motherboard'),
+        data: fakeData(data)
+      })
+    });
+    expect(document.getElementById('sec-starting')).toBeNull();
+    expect(document.getElementById('sec-motherboard')).not.toBeNull();
+    expect(document.querySelector('#sec-motherboard [data-row="s2"]')).not.toBeNull();
   });
 });
 
@@ -933,10 +959,10 @@ describe('the alternate tables', () => {
 
   it("reads the source badge as the frame's own name, not its raw id", () => {
     render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/frames'), data: fakeData(LOOT) })
+      env: fakeEnv({ router: memoryRouter('#/tables/other_frames'), data: fakeData(LOOT) })
     });
     const row = screen.getByRole('button', { name: /Пирог Зверя/ });
-    expect(within(row).getByText('Пир зверей')).toBeInTheDocument();
+    expect(within(row).getByText('Прочее · Сеттинги · Пир зверей')).toBeInTheDocument();
   });
 });
 

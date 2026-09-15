@@ -188,7 +188,7 @@ describe('the filter segment', () => {
     const hash = '#/tables/frames/f_frame-beast_feast-colossus';
     const route = parseHash(hash) as Extract<Route, { kind: 'tables' }>;
     expect(route.filter['frame']).toEqual(['beast_feast', 'colossus']);
-    expect(encodeFilter(route.filter, groupsFor('frames'))).toBe(
+    expect(encodeFilter(route.filter, groupsFor('other_frames'))).toBe(
       'f_frame-beast_feast-colossus'
     );
   });

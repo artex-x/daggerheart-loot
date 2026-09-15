@@ -13,7 +13,7 @@
   import RecordModal from './RecordModal.svelte';
   import { printHash, sectionHash, tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
-  import { tableOf, whereFrom } from '../lib/label.js';
+  import { isFrameRecord, tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
 
@@ -47,7 +47,7 @@
     if (!it) return '';
     const bits = [whereFrom(it, app.lang)];
     if (it.roll) bits.push(`${t.rollNo} ${String(it.roll)}`);
-    else if (it.eq) bits.push(`${t.tier} ${String(it.eq.tier)}`);
+    else if (it.eq && !isFrameRecord(it)) bits.push(`${t.tier} ${String(it.eq.tier)}`);
     return bits.join(' · ');
   });
 </script>

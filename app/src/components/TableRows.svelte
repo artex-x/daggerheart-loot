@@ -22,7 +22,7 @@
   import { artSrc } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { nameOf } from '../lib/i18n.js';
-  import { cardBadges } from '../lib/label.js';
+  import { cardBadges, isFrameRecord } from '../lib/label.js';
   import type { Index } from '../lib/data.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
@@ -81,7 +81,7 @@
    *  nothing at all. Off `tileTier()` in app.js. */
   function tileTier(it: Record_): string {
     if (it.tier === 'A' || it.tier === 'C') return it.tier;
-    if (it.eq?.tier) return `${t.tier} ${String(it.eq.tier)}`;
+    if (it.eq?.tier && !isFrameRecord(it)) return `${t.tier} ${String(it.eq.tier)}`;
     return '';
   }
 

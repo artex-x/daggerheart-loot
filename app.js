@@ -96,7 +96,7 @@ const T = {
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
-    filter:'Тип', kindF:'Тип', frameF:'Фрейм', commF:'Сообщество', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
+    filter:'Тип', kindF:'Тип', frameF:'Сеттинг', commF:'Сообщество', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение', starting:'Стартовые предметы', frameItems:'Предметы сеттингов',
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
@@ -238,7 +238,7 @@ const T = {
         'Источник: дополнение <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a>.'
       ],
       tables: [
-        'Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу.',
+        'Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, прочее, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. «Прочее» начинается со стартового инвентаря без бросков, затем идут фреймы кампаний. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу.',
         '<b>Снаряжение</b> собрано из всех источников, а не только из корника и Hope &amp; Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages и фреймах. Отобрать нужную книгу можно фильтром «Источник».',
         'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.',
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope &amp; Fear.',
@@ -282,7 +282,7 @@ const T = {
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
-    filter:'Type', kindF:'Type', frameF:'Frame', commF:'Community', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
+    filter:'Type', kindF:'Type', frameF:'Frame', commF:'Community', fItems:'Items', fCons:'Consumables', fEquip:'Equipment', starting:'Starting items', frameItems:'Frame items',
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
@@ -419,14 +419,14 @@ const T = {
         'Source: the <a href="https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit" target="_blank" rel="noopener">Community Magic Items</a> supplement.'
       ],
       tables: [
-        'Every table in full. The top row picks a book — the core set, Hope &amp; Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, frames, communities — and the row under it picks a section of that book, when there is more than one. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.',
+        'Every table in full. The top row picks a book — the core set, Hope &amp; Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.',
         '<b>Equipment</b> is gathered from every source, not only the core set and Hope &amp; Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages and the campaign frames too. Narrow it to one book with the "Source" filter.',
         'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.',
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope &amp; Fear.',
         'Every piece of equipment has a tier, Wondrous Loot included. The book does not print it next to the item, but it binds each piece of loot to a location in the "Loot items by environment" table, and every location has a tier: the Staff of the Whispering Archive comes from The Watcher\'s Grave, which is tier 2, so the staff is tier 2. This is not an estimate from the stats - it is the same book, one page earlier.',
         '<b>Class</b> is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.',
         'The "Line" filter splits equipment in two. <b>Upgradable</b> means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. <b>Unique</b> means it exists in one form only.',
-        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for the campaign frames, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
+        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.',
         'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.',
         'Sources: the Daggerheart Core Set and Hope &amp; Fear, with the errata applied.'
       ],
@@ -496,7 +496,8 @@ const TABLE_DEFS = [
   { id:'community',        ru:'Предметы сообществ',     en:'Community items' },
   { id:'dread',            ru:'Dread GM Toolbox',       en:'Dread GM Toolbox' },
   { id:'voa',              ru:'Vault of Ages',          en:'Vault of Ages' },
-  { id:'frames',           ru:'Снаряжение фреймов',     en:'Frame equipment' },
+  { id:'other_starting',   ru:'Стартовые предметы',      en:'Starting items' },
+  { id:'other_frames',     ru:'Предметы сеттингов',      en:'Frame items' },
   { id:'alt_item',         ru:'Альт. — предметы',       en:'Alt. — items' },
   { id:'alt_consumable',   ru:'Альт. — расходники',     en:'Alt. — consumables' },
   { id:'eq_weapon',        ru:'Оружие',                 en:'Weapons' },
@@ -593,6 +594,7 @@ function descOf(it){ return S.lang === 'ru' ? (it.rud || it.ende) : it.ende; }
    The book prints these as table columns. Out of the table they have to carry
    their own labels, so each value is rendered as a self-explanatory chunk and
    the pieces are joined with a middle dot wherever one line is enough. */
+function isFrameRecord(it){ return !!it.frame || it.src === 'frame'; }
 function eqParts(it, noType){
   if (!isEquip(it)) return [];
   const e = it.eq;
@@ -607,7 +609,7 @@ function eqParts(it, noType){
      items by environment», а у локации ранг указан. Догадка по характеристикам,
      что стояла здесь раньше, больше не нужна - и хорошо, потому что полосы
      урона у соседних рангов перекрываются и такая догадка врала. */
-  if (e.tier) out.push(t().tier + ' ' + e.tier);
+  if (e.tier && !isFrameRecord(it)) out.push(t().tier + ' ' + e.tier);
   if (e.t === 'armor') {
     if (e.th) out.push(t().eqTh + ' ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push(t().eqScore + ' ' + e.as);
@@ -851,7 +853,7 @@ Object.keys(BY_LINE).forEach(function (k) {
   BY_LINE[k].sort(function (a, b) { return a.eq.tier - b.eq.tier; });
 });
 function lineStepsHTML(it){
-  if (!isEquip(it) || !it.eq.line) return '';
+  if (!isEquip(it) || isFrameRecord(it) || !it.eq.line) return '';
   const all = BY_LINE[it.eq.line] || [];
   if (all.length < 2) return '';
   return '<div class="steps"><span class="steps-l">' + esc(t().tierLadder) + '</span>' +
@@ -926,7 +928,7 @@ function voaTierName(k){
    У добычи показываются только буквы; ранг снаряжения - как был. */
 function tileTier(it){
   if (it.tier) return (it.tier === 'A' || it.tier === 'C') ? it.tier : '';
-  return isEquip(it) && it.eq.tier ? t().tier + ' ' + it.eq.tier : '';
+  return isEquip(it) && it.eq.tier && !isFrameRecord(it) ? t().tier + ' ' + it.eq.tier : '';
 }
 function voaGroup(k){ return (DATA.voa || []).filter(x => String(x.tier) === String(k)); }
 
@@ -952,11 +954,13 @@ function srcName(k){
    уезжает на стол одна, и «Великородное» на ней не отвечает на вопрос, откуда
    вещь: сообщество - это раздел книги, а не книга. */
 function printSrc(it){
+  if (isFrameRecord(it)) return whereFrom(it);
   return it.src === 'community'
     ? t().srcComm + ' · ' + srcLabel(it)
     : srcLabel(it);
 }
 function srcLabel(it){
+  if (it.frame) return frameName(it.frame);
   if (it.src === 'core') return t().srcCore;
   if (it.src === 'hnf') return t().srcHnf;
   if (it.src === 'wondrous') return t().srcWond;
@@ -964,6 +968,11 @@ function srcLabel(it){
   if (it.src === 'voa') return t().srcVoa;
   if (it.src === 'frame') return frameName(it.frame);
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
+}
+function whereFrom(it){
+  if (isFrameRecord(it)) return t().grpOther + ' · ' + (S.lang === 'ru' ? 'Сеттинги' : 'Frames') + ' · ' + srcLabel(it);
+  if (it.starting) return t().grpOther + ' · ' + (S.lang === 'ru' ? 'Стартовые' : 'Starting');
+  return srcLabel(it);
 }
 
 function toast(msg, isError){
@@ -1116,7 +1125,7 @@ function autoSizeNotes(root){
    walk past the d12 roller every time. */
 const HOME_DEFAULT = '#/roll/std';
 function loadHome(){
-  try { const v = localStorage.getItem(HOME_KEY); return homeAllows(v) ? v : ''; }
+  try { const v = localStorage.getItem(HOME_KEY); return v === '#/tables/frames' ? '#/tables/other_frames' : (homeAllows(v) ? v : ''); }
   catch (e) { return ''; }
 }
 /* Only whole sections, and a table by name — an item page or a list payload
@@ -1126,7 +1135,7 @@ function homeAllows(hash){
   const h = hash.replace(/^#\/?/, '');
   if (TAB_LIST.some(function (x) { return x[0] === h; })) return true;
   const m = /^tables\/([a-z_]+)$/.exec(h);
-  return !!(m && TABLE_DEFS.some(function (d) { return d.id === m[1]; }));
+  return !!(m && (m[1] === 'frames' || TABLE_DEFS.some(function (d) { return d.id === m[1]; })));
 }
 /* The address of the section being looked at, or '' where pinning makes no
    sense (a single item, someone else's list). */
@@ -2009,7 +2018,7 @@ function cardHTML(it, opt){
     ((opt.rollLabel !== false && it.roll) ? '<span class="badge num">' + esc(opt.rollLabel || it.roll) + '</span>' : '') +
     (opt.col ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>' : '') +
     kindBadge(it) + uniqBadge(it) + tierBadge(it) +
-    '<span class="badge src">' + esc(srcLabel(it)) + '</span>';
+    '<span class="badge src">' + esc(whereFrom(it)) + '</span>';
 
   const nameEl = opt.full
     ? '<span>' + esc(nm) + '</span>'
@@ -2417,7 +2426,7 @@ const TABLE_GROUPS = [
   { id:'voa',    ru:'Vault of Ages',   en:'Vault of Ages',   subs:['voa'] },
   { id:'comm',   ru:'Сообщества',      en:'Communities',     subs:['community'] },
   { id:'eq',     ru:'Снаряжение',      en:'Equipment',       subs:['eq_weapon','eq_secondary','eq_armor'] },
-  { id:'frames', ru:'Фреймы',          en:'Frames',          subs:['frames'] }
+  { id:'other',  ru:'Прочее',          en:'Other',           subs:['other_starting','other_frames'] }
 ];
 /* Подпись раздела внутри книги короче названия таблицы: «Core — предметы» под
    заголовком «Core» повторяет книгу дважды. */
@@ -2425,7 +2434,8 @@ const SUB_LABEL = {
   core_item:['Предметы','Items'], core_consumable:['Расходники','Consumables'],
   hnf_item:['Предметы','Items'], hnf_consumable:['Расходники','Consumables'],
   alt_item:['Предметы','Items'], alt_consumable:['Расходники','Consumables'],
-  eq_weapon:['Оружие','Weapons'], eq_secondary:['Вторичное','Secondary'], eq_armor:['Броня','Armor']
+  eq_weapon:['Оружие','Weapons'], eq_secondary:['Вторичное','Secondary'], eq_armor:['Броня','Armor'],
+  other_starting:['Стартовые','Starting'], other_frames:['Сеттинги','Frames']
 };
 function groupOf(tableId){
   return TABLE_GROUPS.filter(function (g) { return g.subs.indexOf(tableId) >= 0; })[0] || TABLE_GROUPS[0];
@@ -2446,8 +2456,13 @@ function tableChipsHTML(cur){
 
 /* Какие виды записей вообще есть в таблице - в том порядке, в каком они
    перечислены в KINDS. */
+function tablePool(id){
+  if (id === 'other_starting') return DATA.starting.filter(x => !x.frame);
+  if (id === 'other_frames') return DATA.frames.concat(DATA.starting.filter(x => x.frame));
+  return DATA[id];
+}
 function tableKinds(id){
-  const a = DATA[id];
+  const a = tablePool(id);
   if (!a) return [];
   const seen = {};
   a.forEach(function (x) { seen[kindOf(x)] = true; });
@@ -2493,7 +2508,7 @@ function renderTables(){
       '</div>';
     }).join('') || '<div class="empty">' + esc(t().nothing) + '</div>';
   } else {
-    const pool = DATA[st.t];
+    const pool = tablePool(st.t);
     const q = st.q.trim().toLowerCase();
     let list = pool.filter(function (x) { return tblPasses(x, st.t); });
     if (q) list = list.filter(x => matches(x, q));
@@ -2508,14 +2523,16 @@ function renderTables(){
         return '<div class="tsection" id="' + sectionId('t' + k) + '" style="margin-top:22px">' +
           sectionHead(voaTierName(k), st.t, 't' + k) + renderList(sub) + '</div>';
       }).join('');
-    } else if (st.t === 'frames') {
-      /* Разбито по фреймам, как таблица сообществ: снаряжение из кампании имеет
-         смысл только рядом со своей, вперемешку оно читается как ошибка. */
+    } else if (st.t === 'other_frames') {
+      /* Starting inventory stays first and non-rollable. Frame membership wins
+         over source membership, so Network Tether stays with Motherboard. */
       body = FRAME_ORDER.map(f => {
-        const sub = list.filter(x => x.frame === f);
+        return [f, frameName(f), list.filter(x => x.frame === f)];
+      }).map(function (part) {
+        const f = part[0], label = part[1], sub = part[2];
         if (!sub.length) return '';
         return '<div class="tsection" id="' + sectionId(f) + '" style="margin-top:22px">' +
-          sectionHead(frameName(f), st.t, f) + renderList(sub) + '</div>';
+          sectionHead(label, st.t, f) + renderList(sub) + '</div>';
       }).join('');
     } else if (st.t === 'community') {
       body = COMMUNITIES.map(c => {
@@ -2633,7 +2650,7 @@ function tblFacets(tid){
     f.push(['kind', t().kindF, kinds.map(function (k) { return [k[0], t()[k[1]]]; })]);
   if (tid === 'voa')
     f.push(['tier', t().tier, VOA_TIERS.map(function (k) { return [String(k), voaTierName(k)]; })]);
-  if (tid === 'frames')
+  if (tid === 'other_frames')
     f.push(['frame', t().frameF, FRAME_ORDER.map(function (k) { return [k, frameName(k)]; })]);
   if (tid === 'community')
     f.push(['comm', t().commF, COMMUNITIES.map(function (c) {
@@ -2795,7 +2812,7 @@ function rowHTML(it, removeFrom, tail, num){
         (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it, true) + '</span>' : '') + rowCraft(it) + '</span>' +
         '<span class="rm">' + kindBadge(it) + uniqBadge(it) + tierBadge(it) +
-        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
+        '<span class="badge src">' + esc(whereFrom(it)) + '</span></span>' +
       '</button>' +
       (removeFrom
         ? '<button type="button" class="row-x" data-remove="' + esc(removeFrom + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>'
@@ -3067,7 +3084,7 @@ function listRowHTML(l, it, i){
         /* the same badges every other listing shows — without them a list is the
            one place you cannot tell an item from a weapon at a glance */
         '<span class="rm">' + kindBadge(it) + uniqBadge(it) + tierBadge(it) +
-        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
+        '<span class="badge src">' + esc(whereFrom(it)) + '</span></span>' +
       '</button>' +
       '<div class="lrow-meta">' +
         '<label><span>' + esc(t().qty) + '</span>' +
@@ -3179,8 +3196,10 @@ function tableIdOf(it){
   /* Vault of Ages стоит перед проверкой на снаряжение: 24 его единицы живут в
      своей таблице, а не в общей по видам оружия - иначе ссылка «наверх, к
      таблице» с карточки уводила бы в чужой раздел. */
+  if (it.frame) return 'other_frames';
+  if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
-  if (it.src === 'frame') return 'frames';
+  if (it.src === 'frame') return 'other_frames';
   if (isEquip(it) && !it.roll)
     return { weapon:'eq_weapon', secondary:'eq_secondary', armor:'eq_armor' }[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
@@ -3201,7 +3220,7 @@ function renderItemPage(id){
   const tid = tableIdOf(it);
   const grp = groupOf(tid);
   const sub = SUB_LABEL[tid];
-  const where = it.src === 'community'
+  const where = isFrameRecord(it) || it.starting ? whereFrom(it) : it.src === 'community'
     ? (S.lang === 'ru' ? (it.community_ru || it.community) : it.community)
     : (S.lang === 'ru' ? grp.ru : grp.en) + (sub ? ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) : '');
   /* Ссылка ведёт прямо на строку этой вещи, а не на раздел: «открыть таблицу» и
@@ -3211,7 +3230,7 @@ function renderItemPage(id){
     '<p class="page-sub">' + esc(where +
         (it.tier === 'A' || it.tier === 'C' ? ' · ' + voaTierOne(it.tier) : '') +
         (it.roll ? ' · ' + t().rollNo + ' ' + it.roll
-         : isEquip(it) && it.eq.tier ? ' · ' + t().tier + ' ' + it.eq.tier : '')) +
+         : isEquip(it) && it.eq.tier && !isFrameRecord(it) ? ' · ' + t().tier + ' ' + it.eq.tier : '')) +
       ' <a class="itemtable" href="' + esc(back) + '">' + esc(t().showInTable) + ICON_EXT + '</a></p>' +
     '<div class="itempage">' + cardHTML(it, { full: true }) + '</div>';
 }
@@ -3369,7 +3388,7 @@ function printCardHTML(it){
   const artifact = (it.tier === 'A' || it.tier === 'C') && !eq;
   const tag1 = artifact ? voaTierOne(it.tier) : kind;
   const tag2 = eq && eq.t !== 'armor' && eq.cls ? eqWord(EQ_CLS, eq.cls) : '';
-  const tier = eq && eq.tier ? String(eq.tier)
+  const tier = eq && eq.tier && !isFrameRecord(it) ? String(eq.tier)
              : (typeof it.tier === 'number' ? String(it.tier) : '');
   const armor = !!(eq && eq.t === 'armor');
   const burden = eq && !armor && eq.bu ? eq.bu : 0;
@@ -3616,7 +3635,7 @@ function currentRoute(){
   }
   const m = TABLES_RE.exec(h);
   if (m) {
-    const table = m[1] && TABLE_DEFS.some(d => d.id === m[1]) ? m[1] : '';
+    const table = m[1] === 'frames' ? 'other_frames' : (m[1] && TABLE_DEFS.some(d => d.id === m[1]) ? m[1] : '');
     // filters belong to the table you are looking at, so they fold and reset
     // whenever the address points somewhere else
     if (table && table !== S.tables.t) {

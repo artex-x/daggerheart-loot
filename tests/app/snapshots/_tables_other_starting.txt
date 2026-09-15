@@ -1,0 +1,229 @@
+# #/tables/other_starting
+# route: #/tables/other_starting
+# why: the plain starting-items subtable
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/other_starting]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    link "Стартовые" [url=#/tables/other_starting]
+    link "Сеттинги" [url=#/tables/other_frames]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    checkbox "Выбрать все (29)" [checked=false]
+    StaticText "Выбрать все (29)"
+    checkbox "Выбрано" [checked=false]
+    button "Факел Стартовый предмет Core. Полезен для освещения тёмной комна..." [namelen=94 namehash=4a290ab9]
+    ... checkbox x26 of 30 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
+    checkbox "Выбрано" [checked=false]
+    button "Маленький безобидный питомец Стартовый предмет Ведьмы. При созда..." [namelen=154 namehash=9c0d9a1a]
+    checkbox "Выбрано" [checked=false]
+    button "Камень для прорицания Стартовый предмет Ведьмы. При создании пер..." [namelen=147 namehash=9d40dd4a]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+15 метров верёвкиСтартовый предмет Core. Полезны, чтобы взобрать... [namelen=125 namehash=b538b293]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Базовые припасыСтартовый предмет Core. Палатка, спальный мешок, ... [namelen=135 namehash=a8a5e8ac]
+Бинты для рук от наставникаСтартовый предмет Бойца. При создании... [namelen=149 namehash=2eb37d77]
+Выбрано
+Вырезанный символ вашего покровителяСтартовый предмет Колдуна. П... [namelen=160 namehash=156828d3]
+К содержимому
+Как это работает
+Камень для прорицанияСтартовый предмет Ведьмы. При создании перс... [namelen=144 namehash=8ce403f0]
+Книга о вашем тайном увлеченииСтартовый предмет Бойца. При созда... [namelen=152 namehash=87c3314d]
+Книга, которую вы пытаетесь перевестиСтартовый предмет Волшебник... [namelen=164 namehash=bc04fcf4]
+Кольцо, которое нельзя снятьСтартовый предмет Колдуна. При созда... [namelen=152 namehash=e6a3b385]
+Крошечный безобидный элементаль-питомецСтартовый предмет Волшебн... [namelen=166 namehash=92587d9e]
+Крюк-кошкаСтартовый предмет Плута. При создании персонажа выбери... [namelen=132 namehash=b1850161]
+ЛутDaggerheart
+Любовный романСтартовый предмет Барда. При создании персонажа вы... [namelen=136 namehash=0fb90e23]
+Маленький безобидный питомецСтартовый предмет Ведьмы. При создан... [namelen=151 namehash=4d6d92fa]
+Маленький мешочек камней и костейСтартовый предмет Друида. При с... [namelen=156 namehash=e284c5d5]
+На вид сломанный компасСтартовый предмет Следопыта. При создании... [namelen=149 namehash=9a6da240]
+Набор инструментов для подделкиСтартовый предмет Плута. При созд... [namelen=153 namehash=3517c9c7]
+Неоткрытое письмоСтартовый предмет Барда. При создании персонажа... [namelen=139 namehash=987ff163]
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Прочее
+Ржавый клинок с выгравированным знакомСтартовый предмет Ассасина... [namelen=163 namehash=953b2294]
+Рисунок возлюбленногоСтартовый предмет Воина. При создании персо... [namelen=143 namehash=72bf222a]
+Связка подношенийСтартовый предмет Серафима. При создании персон... [namelen=142 namehash=6b09a5f2]
+Семейная реликвияСтартовый предмет Чародея. При создании персона... [namelen=141 namehash=661c4385]
+Сеткой
+Сеттинги
+Символ вашего богаСтартовый предмет Серафима. При создании персо... [namelen=143 namehash=f998f9b6]
+Снаряжение
+Сообщества
+Списки
+Списком
+Список имён с несколькими вычеркнутымиСтартовый предмет Ассасина... [namelen=163 namehash=8f42791f]
+Ссылка на таблицу
+Стартовые
+Странный кулон, найденный в землеСтартовый предмет Друида. При с... [namelen=156 namehash=c8573c0a]
+Таблицы
+Тайный ключСтартовый предмет Стража. При создании персонажа выбе... [namelen=134 namehash=d28e2854]
+Тотем от наставникаСтартовый предмет Стража. При создании персон... [namelen=142 namehash=2de5e113]
+Точильный каменьСтартовый предмет Воина. При создании персонажа ... [namelen=138 namehash=c1f4a349]
+Трофей вашего первого убийстваСтартовый предмет Следопыта. При с... [namelen=156 namehash=0bc494c7]
+ФакелСтартовый предмет Core. Полезен для освещения тёмной комнат... [namelen=91 namehash=62a6f216]
+Шепчущая сфераСтартовый предмет Чародея. При создании персонажа ... [namelen=138 namehash=913fd231]
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/other_starting]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    link "Starting" [url=#/tables/other_starting]
+    link "Frames" [url=#/tables/other_frames]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    checkbox "Select all (29)" [checked=false]
+    StaticText "Select all (29)"
+    checkbox "Selected" [checked=false]
+    button "Torch Core starting item. Useful for illuminating a dark room. I..." [namelen=84 namehash=6c0539e4]
+    ... checkbox x26 of 30 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
+    checkbox "Selected" [checked=false]
+    button "A small, harmless pet Witch starting item. Choose this or A scry..." [namelen=122 namehash=f7c5d4f5]
+    checkbox "Selected" [checked=false]
+    button "A scrying stone Witch starting item. Choose this or A small, har..." [namelen=122 namehash=aca503ac]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+50 feet of ropeCore starting item. Useful for climbing a wall or... [namelen=109 namehash=1a5f7d2d]
+A book about your secret hobbyBrawler starting item. Choose this... [namelen=139 namehash=3b6d0122]
+A book you are trying to translateWizard starting item. Choose t... [namelen=148 namehash=d6305484]
+A bundle of offeringsSeraph starting item. Choose this or A sigi... [namelen=124 namehash=e242f670]
+A carving that symbolizes your patronWarlock starting item. Choo... [namelen=146 namehash=3e6a0c74]
+A family heirloomSorcerer starting item. Choose this or A whispe... [namelen=119 namehash=e8bd159a]
+A grappling hookRogue starting item. Choose this or A set of for... [namelen=121 namehash=3e3f1ca6]
+A letter never openedBard starting item. Choose this or A romanc... [namelen=118 namehash=6a793072]
+A list of names with several marked offAssassin starting item. C... [namelen=166 namehash=f791c2ad]
+A ring you cannot removeWarlock starting item. Choose this or A ... [namelen=146 namehash=e81f69c1]
+A romance novelBard starting item. Choose this or A letter never... [namelen=118 namehash=2a8ff4b8]
+A rusted blade inscribed with an insigniaAssassin starting item.... [namelen=166 namehash=6375e7d6]
+A scrying stoneWitch starting item. Choose this or A small, harm... [namelen=119 namehash=9706e0da]
+A secret keyGuardian starting item. Choose this or A totem from ... [namelen=122 namehash=6270c9b0]
+A seemingly broken compassRanger starting item. Choose this or A... [namelen=139 namehash=3d8abc1d]
+A set of forgery toolsRogue starting item. Choose this or A grap... [namelen=121 namehash=c7d1f7b6]
+A sharpening stoneWarrior starting item. Choose this or The draw... [namelen=125 namehash=60eb4331]
+A sigil of your godSeraph starting item. Choose this or A bundle... [namelen=124 namehash=3a20e773]
+A small bag of rocks and bonesDruid starting item. Choose this o... [namelen=148 namehash=7e57745c]
+A small, harmless petWitch starting item. Choose this or A scryi... [namelen=119 namehash=fddb7943]
+A strange pendant found in the dirtDruid starting item. Choose t... [namelen=148 namehash=4b5912ca]
+A tiny, harmless elemental petWizard starting item. Choose this ... [namelen=148 namehash=ba7138a3]
+A totem from your mentorGuardian starting item. Choose this or A... [namelen=122 namehash=66780b82]
+A trophy from your first killRanger starting item. Choose this o... [namelen=139 namehash=6cbb6c6f]
+A whispering orbSorcerer starting item. Choose this or A family ... [namelen=119 namehash=f3aa50c4]
+Alt. tables
+Basic suppliesCore starting item. Tent, bedroll, tinderbox, rati... [namelen=113 namehash=c75b6c34]
+Communities
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Frames
+Grid
+Hand wraps from a mentorBrawler starting item. Choose this or A ... [namelen=139 namehash=039bbac9]
+Hope & Fear
+How this works
+Link to this table
+List
+Lists
+Open this section on start
+Other
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Starting
+Tables
+The drawing of a loverWarrior starting item. Choose this or A sh... [namelen=125 namehash=ee290fa2]
+TorchCore starting item. Useful for illuminating a dark room.Ite... [namelen=81 namehash=1f6e57d4]
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

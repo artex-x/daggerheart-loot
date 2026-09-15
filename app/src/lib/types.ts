@@ -34,7 +34,8 @@ export const TABLE_IDS = [
   'community',
   'dread',
   'voa',
-  'frames',
+  'other_starting',
+  'other_frames',
   'alt_item',
   'alt_consumable',
   'eq_weapon',
@@ -122,6 +123,7 @@ export interface Record_ {
   tier?: VoaTier;
   recall?: number;
   frame?: string;
+  starting?: boolean;
   community?: string;
   community_ru?: string;
 }

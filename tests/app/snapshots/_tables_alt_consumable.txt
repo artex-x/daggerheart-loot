@@ -34,7 +34,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/alt_cons
     link "Vault of Ages" [url=#/tables/voa]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Фреймы" [url=#/tables/frames]
+    link "Прочее" [url=#/tables/other_starting]
     link "Предметы" [url=#/tables/alt_item]
     link "Расходники" [url=#/tables/alt_consumable]
     searchbox "Поиск по названию или описанию…"
@@ -209,6 +209,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поиск
 Предметы
+Прочее
 Расходники
 Сеткой
 Скопировать ссылку на этот раздел
@@ -218,7 +219,6 @@ daggerheart.com
 Списком
 Ссылка на таблицу
 Таблицы
-Фреймы
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_consumable]
@@ -252,7 +252,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_consumable]
     link "Vault of Ages" [url=#/tables/voa]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
-    link "Frames" [url=#/tables/frames]
+    link "Other" [url=#/tables/other_starting]
     link "Items" [url=#/tables/alt_item]
     link "Consumables" [url=#/tables/alt_consumable]
     searchbox "Search by name or description…"
@@ -417,7 +417,6 @@ Dread
 Dread GM Toolbox
 EN
 Equipment
-Frames
 Grid
 Hope & Fear
 How this works
@@ -426,6 +425,7 @@ Link to this table
 List
 Lists
 Open this section on start
+Other
 RU
 Search
 Selected

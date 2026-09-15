@@ -45,7 +45,7 @@ working and keeps its own text.
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
 Table names (`TABLE_DEFS`): `core_item`, `core_consumable`, `hnf_item`,
-`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `frames`, `alt_item`,
+`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`.
 
 A name that is not in that list is ignored and the table already on screen is
@@ -77,7 +77,8 @@ Group keys, by table:
 | `eq_secondary` | `tier`, `src`, `cls`, `trait`, `range`, `line` |
 | `eq_armor` | `tier`, `src`, `line` |
 | `voa` | `kind`, `tier` |
-| `frames` | `kind`, `frame` |
+| `other_starting` | none |
+| `other_frames` | `kind`, `frame` |
 | `community` | `comm` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 
@@ -87,6 +88,10 @@ Values: `tier` `1`-`4` (and `A`, `C` on `voa`); `cls` `phy`/`mag`; `trait`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
 community name.
+
+`other_frames` has four setting anchors: `beast_feast`, `colossus`,
+`dark_heart`, and `motherboard`. It lists starting inventory first, then
+campaign frames in that order.
 
 An empty group means "any", so an untouched filter contributes nothing and a
 plain table link carries no `f_` part at all. Values inside a group are OR'd;

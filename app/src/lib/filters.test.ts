@@ -91,10 +91,10 @@ describe('reading the address', () => {
     /* `frame-beast_feast` is one group whose value has an underscore, and
        reading it the old way would produce two groups and lose the value. This
        is the case that made the separator a dot. */
-    expect(decodeFilter('f_frame-beast_feast', groupsFor('frames'))).toEqual({
+    expect(decodeFilter('f_frame-beast_feast', groupsFor('other_frames'))).toEqual({
       frame: ['beast_feast']
     });
-    expect(decodeFilter('f_kind-armor.frame-beast_feast', groupsFor('frames'))).toEqual({
+    expect(decodeFilter('f_kind-armor.frame-beast_feast', groupsFor('other_frames'))).toEqual({
       kind: ['armor'],
       frame: ['beast_feast']
     });
@@ -106,13 +106,13 @@ describe('reading the address', () => {
        and `feast-colossus` - both "look like a group" if the heuristic only
        checks shape. `feast` is nobody's group, so the heuristic must ask
        `groups` and fall through to the dot reading: one group, two values. */
-    expect(decodeFilter('f_frame-beast_feast-colossus', groupsFor('frames'))).toEqual({
+    expect(decodeFilter('f_frame-beast_feast-colossus', groupsFor('other_frames'))).toEqual({
       frame: ['beast_feast', 'colossus']
     });
   });
 
   it('reads the second pair the heuristic broke the same way', () => {
-    expect(decodeFilter('f_frame-dark_heart-motherboard', groupsFor('frames'))).toEqual({
+    expect(decodeFilter('f_frame-dark_heart-motherboard', groupsFor('other_frames'))).toEqual({
       frame: ['dark_heart', 'motherboard']
     });
   });
@@ -131,12 +131,12 @@ describe('reading the address', () => {
        `cls`, must not take the legacy reading - and must not throw. The exact
        shape of the foreign key is noise the table ignores; only that no
        `frame` key appears, and that a foreign group narrows nothing. */
-    const frames = groupsFor('frames');
-    const decoded = decodeFilter('f_tier-1_cls-phy', frames);
+    const other = groupsFor('other_frames');
+    const decoded = decodeFilter('f_tier-1_cls-phy', other);
     expect(decoded['frame']).toBeUndefined();
-    expect(() => decodeFilter('f_tier-1_cls-phy', frames)).not.toThrow();
+    expect(() => decodeFilter('f_tier-1_cls-phy', other)).not.toThrow();
     const of = (): string => 'beast';
-    expect(passes(decoded, frames, of)).toBe(true);
+    expect(passes(decoded, other, of)).toBe(true);
   });
 });
 
