@@ -62,7 +62,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/std]
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Страница"
-    StaticText "HOPE & FEAR"
+    StaticText "HOPE & FEAR · РАСХОДНИКИ"
     link "Оберегающая Свеча" [description=Страница url=#/i/hc1]
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -172,7 +172,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/std]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Page"
-    StaticText "HOPE & FEAR"
+    StaticText "HOPE & FEAR · CONSUMABLES"
     link "Warding Candle" [description=Page url=#/i/hc1]
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]

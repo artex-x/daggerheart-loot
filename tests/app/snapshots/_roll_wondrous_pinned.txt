@@ -33,7 +33,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
     button "Случайно 1–119"
     button "Страница"
     ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "WONDROUS"
+    StaticText "WONDROUS LOOT"
     link "Смола Бездны" [description=Страница url=#/i/w1]
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -108,7 +108,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
     button "Random 1–119"
     button "Page"
     ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "WONDROUS"
+    StaticText "WONDROUS LOOT"
     link "Abyssal Sap" [description=Page url=#/i/w1]
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]

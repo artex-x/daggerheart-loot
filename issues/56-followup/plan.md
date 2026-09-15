@@ -2,6 +2,12 @@
 
 ## Status
 
+- Contract-remediation follow-up (2026-09-15): the authoritative `f7` stat-line
+  fixture now omits direct frame-equipment tier labels in both languages,
+  matching the settled presentation policy. Focused `node tests/run-all.js
+  app/contracts` completed successfully (exit 0); the 38 pre-existing
+  generator-produced structural golden updates remain intentionally retained
+  for the final batch verification and review.
 - Task status: in_progress; B1 has a large interrupted, uncommitted
   implementation that must be adapted to the latest two-subtable direction.
 - Starting commit: `8dae1b9f7111034f4ee9a9d3841679acc8010cba` on `main`.

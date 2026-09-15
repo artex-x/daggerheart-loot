@@ -22,6 +22,18 @@
   command plus the required browser/golden shards before treating the batch as
   fully verified.
 
+### Contract-remediation follow-up (2026-09-15)
+- Corrected the authoritative `docs/fixtures/statlines/equipment.json` `f7`
+  expectation: direct frame presentations omit `Ранг 1` / `Tier 1`, while
+  retaining the equipment class, trait, range, damage, and burden fields.
+  This fixture is replayed in both Russian and English by the browser contract
+  suite, making it the focused regression coverage for the settled policy.
+- Verification: `node tests/run-all.js app/contracts` completed successfully
+  (exit 0). The runner produced no textual summary through the RTK wrapper.
+- Retained deliberately: 38 pre-existing generator-produced structural golden
+  updates from the full four-shard regeneration. They are in scope for the
+  final coherent B1 commit and still require final-batch inspection/gates.
+
 ## Completed
 - Batch name/id: Replan B1 - Split Other into real subtables.
 - What shipped: No production change in this planner pass. The next batch now

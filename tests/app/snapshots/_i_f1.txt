@@ -23,11 +23,11 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/i/f1]
       link "Поиск" [url=#/search]
   main ""
     heading "Тесак" [level=1]
-    StaticText "Прочее · Ранг 1 "
+    StaticText "Прочее · Сеттинги · Пир зверей "
     link "показать в таблице" [url=#/tables/other_frames/f1]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     StaticText "Надёжное:"
@@ -88,11 +88,11 @@ RootWebArea "Daggerheart Loot Generator" [url=#/i/f1]
       link "Search" [url=#/search]
   main ""
     heading "Cleaver" [level=1]
-    StaticText "Other · Tier 1 "
+    StaticText "Other · Frames · Beast Feast "
     link "show in the table" [url=#/tables/other_frames/f1]
     button "Page"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x8 of 12 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     StaticText "Reliable:"

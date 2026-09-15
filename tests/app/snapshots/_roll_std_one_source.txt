@@ -48,7 +48,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/std]
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Страница"
-    StaticText "CORE"
+    StaticText "CORE · РАСХОДНИКИ"
     link "Зелье Быстрого Шага" [description=Страница url=#/i/cc1]
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -144,7 +144,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/std]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Page"
-    StaticText "CORE"
+    StaticText "CORE · CONSUMABLES"
     link "Stride Potion" [description=Page url=#/i/cc1]
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]

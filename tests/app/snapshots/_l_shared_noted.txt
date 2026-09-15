@@ -28,19 +28,19 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
     StaticText "ДЛЯ ИГРОКОВ"
     ... StaticText x5 of 9 same-shape siblings elided
     checkbox "Выбрано" [checked=false]
-    button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
+    button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=104 namehash=b62abfd9]
     StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
     StaticText "Подделка"
     checkbox "Выбрано" [checked=false]
-    button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=91 namehash=a16dcb39]
+    button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=104 namehash=d27c5a99]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
-1Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Пр... [namelen=87 namehash=9c48229a]
-1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=89 namehash=4fe26622]
+1Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Пр... [namelen=100 namehash=53e497de]
+1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=100 namehash=6dcae138]
 Dread
 EN
 RU
@@ -84,19 +84,19 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
     StaticText "FOR PLAYERS"
     ... StaticText x5 of 9 same-shape siblings elided
     checkbox "Selected" [checked=false]
-    button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]
+    button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=86 namehash=b44447f5]
     StaticText "GM ONLY"
     StaticText "Подделка"
     checkbox "Selected" [checked=false]
-    button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=78 namehash=9dbe7ab2]
+    button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=92 namehash=e1c07013]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
-1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=74 namehash=dc485a4a]
-1Stride PotionYou gain a +1 bonus to your next Agility Roll.Cons... [namelen=74 namehash=a70c8c55]
+1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=82 namehash=ccbd8aba]
+1Stride PotionYou gain a +1 bonus to your next Agility Roll.Cons... [namelen=88 namehash=08540ebe]
 Add to list
 Alt. tables
 Communities
