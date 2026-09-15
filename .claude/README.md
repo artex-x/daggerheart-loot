@@ -10,6 +10,8 @@
 
 Orchestrator: prompts/orchestrate.prompt.md
 
+## Host-aware explicit routing policy
+
 Claude hosts use the frontmatter defaults above and human-controlled
 session-level effort. On Codex, the orchestrator explicitly passes `model` and
 `reasoning_effort` on every worker dispatch with `fork_turns: "none"` or a
@@ -30,6 +32,26 @@ Kickoff:
   Follow .claude/prompts/orchestrate.prompt.md
   TASK: <id>
   GOAL: <feature or add source items...>
+
+## Skills
+
+Three project skills, all manual (`disable-model-invocation: true`),
+so they cost nothing in the skill listing and are followed by reading
+the file when an agent needs them:
+
+| Skill | File | Owns |
+|---|---|---|
+| `/orchestrate` | `skills/orchestrate/SKILL.md` | one pointer to `prompts/orchestrate.prompt.md` |
+| `/handoff` | `skills/handoff/SKILL.md` | session closeout, the task-state size budget (150 KB warn, 300 KB collapse), the never-drop and always-drop lists, per-file collapse actions, retirement |
+| `/small-fix` | `skills/small-fix/SKILL.md` | a single-file visual bug pinned to a width: reproduce at that width first, then fix, every gate, commit; no planner, no `context.md`, no review |
+
+`.claude/skills/` is untracked as a directory because it also holds
+owner-local tools; the three files above are tracked by name.
+
+The `<!-- setup-claude-agents -->` markers around `CLAUDE.md`'s
+Orchestration section came from `29f8920`, this repository's own
+wiring commit; no generator on this host reads them. The block is
+hand-owned and edited in place.
 
 ## Resuming a worker
 
@@ -110,8 +132,10 @@ real environment prefix; merely naming it in a commit message does nothing.
 Use it only when `npm run check` genuinely cannot run - not because it is
 inconvenient.
 
-**Run a long check so the gate can see it pass, and so you can read
-the result.** `check-observer.mjs` reads the Bash tool's own captured
+### Run a long check
+
+So the gate can see it pass, and so you can read the result:
+`check-observer.mjs` reads the Bash tool's own captured
 stdout, and only trusts stdout it can attribute to the check: the
 command must start with the check invocation (a leading `cd <dir> &&`
 and a leading `set -o pipefail;` are fine - neither writes to stdout),
@@ -332,5 +356,5 @@ not changed.
 | 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. |
 | 37 | Warn on a second implementer dispatch for the same task while a completed one is listed | `PreToolUse(Agent)` | **reject** | The dispatch tool is `Agent` here and `Task` in the reference - the unverified matcher row 29 already rejects - and the hook cannot see the agent list. "Resume, do not replace" is a preference, and a wrong warning on a legitimate fresh dispatch (tier change, killed agent) is the one thing a guard must not do. |
 | 38 | Log effort from a hook | `PreToolUse(Bash)` | **reject** | The Bash tool's `$CLAUDE_EFFORT` is the same value with no edit (measured 2026-09-11); an observe-only hook would be the first here, guards no recorded mistake, and re-measurement is one echo from any worker. Fallback sketched in `issues/agent-effort/plan.md` 3.4, reverted if used. |
-| 39 | Stop names this session's own untracked writes | `Stop` | **adopt** | `closeout-hygiene`. The ten dead citations to `issues/65/plan.md` were found only by a human-initiated audit; the checklist step that would have caught the underlying pattern (an untracked scratch file left behind) can be skipped without anything noticing. Excludes `docs/` and the task-document set (`context.md`/`plan.md`/`handoff.md`/`mocks/` in any `issues/<id>/`) rather than the whole active issue directory, so the rule still catches a scratch script that lives inside one (`issues/dh-image-polish/refresh_artwork.py`, the one recorded instance). Considered and rejected: a second `Stop` script (re-parses the same `git status`, speaks in a second message the human has to reconcile with the first - `session-stop.mjs` already owns the moment and the input). |
-| 40 | Deny `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line | `PreToolUse(Bash)` | **adopt** | `closeout-hygiene`. A retirement looks complete on its own - nothing breaks, `npm run check` still passes - and the orphans are found months later by someone reading a citation that points at nothing; ten of them shipped this way for `issues/65/plan.md`. Deny, not warn: a `speak` at `PreToolUse` is acknowledged and stepped past, which is the thing being guarded against, and the escape (repair the citations first, or run the command in the human's own terminal) is the same shape every other block in this family offers. Considered and rejected: `edit-guard.mjs` never sees a deletion (no Edit-family tool fires for one); `session-stop.mjs` would fire on history rather than on the action, after the content is only recoverable from git history; `selftest.mjs` cannot be the rule, since it runs inside `npm run check` and a `.md`-only retirement commit is gate-exempt, so the check need never run between the deletion and the commit. `bash-guard.mjs` is the only site with both the input and the timing. Fallback if this proves too blunt: downgrade to `speak` at the one call site (trigger, lookup and message unchanged) - record the downgrade here rather than deleting the row. Retiring `issues/hooks-guardrails/plan.md` or `issues/agent-effort/plan.md` will need rows 31 and 38 above repaired first, or this rule denies the retirement - that is the rule working. |
+| 39 | Stop names this session's own untracked writes | `Stop` | **adopt** | `closeout-hygiene`. The ten dead citations to issue 65's retired `plan.md` were found only by a human-initiated audit; the checklist step that would have caught the underlying pattern (an untracked scratch file left behind) can be skipped without anything noticing. Excludes `docs/` and the task-document set (`context.md`/`plan.md`/`handoff.md`/`mocks/` in any `issues/<id>/`) rather than the whole active issue directory, so the rule still catches a scratch script that lives inside one (`issues/dh-image-polish/refresh_artwork.py`, the one recorded instance). Considered and rejected: a second `Stop` script (re-parses the same `git status`, speaks in a second message the human has to reconcile with the first - `session-stop.mjs` already owns the moment and the input). |
+| 40 | Deny `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line | `PreToolUse(Bash)` | **adopt** | `closeout-hygiene`. A retirement looks complete on its own - nothing breaks, `npm run check` still passes - and the orphans are found months later by someone reading a citation that points at nothing; ten of them shipped this way for issue 65's retired `plan.md`. Deny, not warn: a `speak` at `PreToolUse` is acknowledged and stepped past, which is the thing being guarded against, and the escape (repair the citations first, or run the command in the human's own terminal) is the same shape every other block in this family offers. Considered and rejected: `edit-guard.mjs` never sees a deletion (no Edit-family tool fires for one); `session-stop.mjs` would fire on history rather than on the action, after the content is only recoverable from git history; `selftest.mjs` cannot be the rule, since it runs inside `npm run check` and a `.md`-only retirement commit is gate-exempt, so the check need never run between the deletion and the commit. `bash-guard.mjs` is the only site with both the input and the timing. Fallback if this proves too blunt: downgrade to `speak` at the one call site (trigger, lookup and message unchanged) - record the downgrade here rather than deleting the row. Retiring `issues/hooks-guardrails/plan.md` or `issues/agent-effort/plan.md` will need rows 31 and 38 above repaired first, or this rule denies the retirement - that is the rule working. |

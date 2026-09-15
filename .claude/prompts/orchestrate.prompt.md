@@ -35,6 +35,7 @@ When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to pl
   - Do not also run a full planner pass for pure content ingest unless add-source stops and asks for multi-batch app design
   - If the source is huge or needs a multi-batch app surface, you may plan with **planner** first, then **implementer**
 - **App/feature/refactor work** (including issue-driven code changes): **planner** -> **implementer** -> optional **reviewer**
+- **Single-file visual bug pinned to a width**: the human runs `/small-fix` (`.claude/skills/small-fix/SKILL.md`) - no planner, no `context.md`, no review, every gate. Anything wider is the feature path.
 
 ## Do not do the planner's job
 
@@ -303,7 +304,7 @@ If the human says the session is ending (or usage is exhausted):
 ## Task closeout and cleanup
 Before reporting a batch or task complete:
 1. Wait for every dispatched worker to finish or report a blocker; collect each result. If the host exposes teammate lifecycle controls, request shutdown of any remaining teammates. Do not edit or delete host-managed agent/team state by hand.
-2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree.
+2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree. If the Stop hook named a task document over its size budget, compact it per `.claude/skills/handoff/SKILL.md` before reporting.
 3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
 4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and commit the coherent change; the reviewer stays read-only. The branch is pushed at each committed boundary; confirm the remote matches before reporting done.
 5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. The `Stop` hook names this session's own untracked writes (excluding `docs/` and the task-document set) as a candidate set, not a verdict - it states what is there, never what to do with it. The session that watched the files appear is the one that can tell scratch from evidence; a hook cannot. Record what was removed or deliberately retained in `handoff.md`.

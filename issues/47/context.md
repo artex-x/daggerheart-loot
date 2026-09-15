@@ -568,9 +568,8 @@ Measured at dispatch, not inferred:
   CI's authoritative word on both the selection bar and the lists index, and
   the condition B5.2 part 1 was waiting on. One job fails, `secrets`, on
   three gitleaks false positives over the localStorage key name
-  `dhloot.warn.v1`; `deploy` is skipped behind it. Another session is already
-  fixing that with an untracked `.gitleaks.toml` - see `handoff.md`,
-  "Blockers". Do not duplicate it.
+  `dhloot.warn.v1`; `deploy` is skipped behind it. Fixed by `.gitleaks.toml`
+  (tracked; landed `13bba19`).
 
 ## B5.3 planning facts (planner, 2026-09-10) - durable, read before implementing
 

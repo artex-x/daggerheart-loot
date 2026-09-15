@@ -5972,14 +5972,12 @@ cut-over, replanned".
   `plan.md:4343` quoting it: the string clears the rule's 3.5 entropy
   threshold by 0.02. These are localStorage key names, public by
   construction and already written down in `docs/specs/STATE.md`; the app
-  has no backend to authenticate against. **Already being handled outside
-  this session** - an untracked `.gitleaks.toml` sits in the working tree,
-  written by another session, extending the default ruleset with an
-  allowlist for the key-name shape and recording that `[allowlist]` must be
-  used rather than `[[allowlists]]`, which parses and is then silently
-  ignored in gitleaks 8.24.3. The orchestrator left it untouched and
-  uncommitted. **Do not duplicate that work**; check whether it has landed
-  before writing anything about gitleaks.
+  has no backend to authenticate against. **Handled outside this session** -
+  `.gitleaks.toml` (tracked; landed `13bba19`) extends the default ruleset
+  with an allowlist for the key-name shape and records that `[allowlist]`
+  must be used rather than `[[allowlists]]`, which parses and is then
+  silently ignored in gitleaks 8.24.3. **Do not duplicate that work**; it
+  has landed.
 
 - **Superseded, kept for the shape of it: "CI has not yet read this
   session's B5.2 part 1 commit."** Three filtered
