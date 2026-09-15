@@ -48,9 +48,12 @@ Six modes. Each keeps its own input in memory only.
 ## Tables and search
 
 - 14 tables (`TABLE_DEFS`), each with its own search box and a list/grid switch.
-- Search covers all 1061 records: names, descriptions and stat lines, both
+- Search covers all 1091 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped.
+- Starting inventory is searchable and opens on direct record pages, but it is
+  held in the non-rollable `starting` collection. Its source and class context
+  belong in the record description rather than in a new roll table.
 - Every heading has a copy-link button; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in
   table" link and a section's copy-link button produce) scrolls to its target

@@ -24,7 +24,7 @@
 - Canonical data: `data.js`; derived outputs: `data.json`, `catalog.csv`, `i/*.html`
 - UI hot paths: `app.js`, `app/`
 - Build/tests: `tools/build.js`, `tests/`
-- Task state: `issues/56/context.md`, `issues/56/plan.md`, `issues/56/handoff.md`
+- Task state: `issues/56/context.md` and `issues/56/handoff.md`
 
 ## Command costs
 
