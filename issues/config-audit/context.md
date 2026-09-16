@@ -37,6 +37,27 @@ drops descriptions starting with the least-invoked skills.
 - `rtk discover`: 178 sessions / 19,194 Bash commands / 30 days; 40.9% handled;
   ~179.7K missed. Top misses: `grep -n` 160 calls / 61.2K; `tail -c` 144 /
   35.2K; `git commit` 206 / 26.3K; `npm run` 51 / 20.4K; `npx vitest` 6 / 11.7K.
+- `rtk discover` re-measure 2026-09-16 (same 30-day window, one day later,
+  more history in scope): 198 sessions / 20,710 Bash commands; 40.2% handled
+  (8,317, of which ~7,585 is estimated from the current hook/config state -
+  measured data covers 2026-09-13 onward, so the handled share is soft and
+  the missed side is the reliable half). **~281.4K missed over 1,052
+  commands.** Top misses: `grep -n` 342 / ~117.6K; `tail -c` 159 / ~40.8K;
+  `git commit` 244 / 32.5K; `npm run` 62 / 22.5K; `curl -s` 25 / 17.2K;
+  `ls -la` 47 / 14.1K; `npx vitest` 9 / 12.7K; `gh run` 72 / 10.1K.
+  **`grep -n` + `tail -c` = 158.4K of 281.4K, 56.3%** - the same two
+  commands, now over half of a larger miss. B3's premise is strengthened,
+  not changed; B3's README row 43 cites this dated figure rather than the
+  2026-09-15 one.
+- Shapes with no RTK equivalent, from the same 2026-09-16 run (nothing for
+  these hooks to route to; RTK-side issues, not B3's scope): `node` 447,
+  `cat` 163, `python` 126, `tasklist` 66, `git rev-parse` 42, `powershell`
+  37, `git check-ignore` 21, `time node` 16, `git grep` 15. Three shapes are
+  bypass forms rather than unhandled commands - a `\`-line-continued `grep
+  -n` (18; the continuation is exactly why RTK's line-start rewrite misses
+  it), and the polling loops the global `CLAUDE.md` already forbids in prose,
+  `until grep` 26 and `until [` 13. Recorded as measurement only: whether any
+  rule should cover them is a design call, and none is in B3's named scope.
 - Always-loaded markdown: 13,308 bytes ~ 3,300 tokens.
   Project `CLAUDE.md` 10,469 B (199 lines) + global `CLAUDE.md` 1,738 +
   `RTK.md` 990 + `MEMORY.md` 111.
