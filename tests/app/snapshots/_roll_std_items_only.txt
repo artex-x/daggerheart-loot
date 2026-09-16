@@ -35,27 +35,33 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/std]
     button "3d12 НЕОБЫЧНАЯ / РЕДКАЯ" [description=Бросить 3d12 — Необычная / Редкая]
     button "4d12 РЕДКАЯ / ЛЕГЕНДАРНАЯ" [description=Бросить 4d12 — Редкая / Легендарная]
     button "5d12 ЛЕГЕНДАРНАЯ" [description=Бросить 5d12 — Легендарная]
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "ИСТОЧНИК"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
+    StaticText "ТИП"
     button "Предметы" [description=Нужен хотя бы один тип pressed=true]
     button "Расходники" [pressed=false]
     button "Скопировать все варианты"
-    ... button x2 of 6 same-shape siblings elided
-    link "Первоклассный Спальный Мешок" [description=Страница url=#/i/ci1]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Страница"
-    StaticText "HOPE & FEAR"
-    link "Шипы" [description=Страница url=#/i/hi1]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Вы можете рассыпать эти шипы в пределах Близкой дистанции вокруг..." [namelen=145 namehash=6bd36ff3]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ПРЕДМЕТ"
+      ... StaticText x5 of 9 same-shape siblings elided
+      link "Первоклассный Спальный Мешок" [description=Страница url=#/i/ci1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      button "Страница"
+      StaticText "HOPE & FEAR"
+      link "Шипы" [description=Страница url=#/i/hi1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Вы можете рассыпать эти шипы в пределах Близкой дистанции вокруг..." [namelen=145 namehash=6bd36ff3]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -131,27 +137,33 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/std]
     button "3d12 UNCOMMON / RARE" [description=Roll 3d12 — Uncommon / Rare]
     button "4d12 RARE / LEGENDARY" [description=Roll 4d12 — Rare / Legendary]
     button "5d12 LEGENDARY" [description=Roll 5d12 — Legendary]
-    ... StaticText x9 of 13 same-shape siblings elided
+    StaticText "SOURCE"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
+    StaticText "TYPE"
     button "Items" [description=At least one type has to stay on pressed=true]
     button "Consumables" [pressed=false]
     button "Copy every option"
-    ... button x2 of 6 same-shape siblings elided
-    link "Premium Bedroll" [description=Page url=#/i/ci1]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    button "Page"
-    StaticText "HOPE & FEAR"
-    link "Caltrops" [description=Page url=#/i/hi1]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "You can spread these caltrops in a Very Close area around you. A..." [namelen=121 namehash=eb3c4a75]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "ITEM"
+      ... StaticText x5 of 9 same-shape siblings elided
+      link "Premium Bedroll" [description=Page url=#/i/ci1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      button "Page"
+      StaticText "HOPE & FEAR"
+      link "Caltrops" [description=Page url=#/i/hi1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You can spread these caltrops in a Very Close area around you. A..." [namelen=121 namehash=eb3c4a75]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

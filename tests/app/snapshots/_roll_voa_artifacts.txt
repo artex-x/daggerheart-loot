@@ -33,20 +33,24 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/voa]
     button "Ранг 4" [pressed=false]
     button "Артефакты" [pressed=true]
     button "Проклятые предметы" [pressed=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–6)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     button "Бросить d6"
-    button "Страница"
-    link "Узы Души" [description=Страница url=#/i/voa2_a1]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Вы можете отметить 5 Стресса, чтобы поглотить душу, навсегда пол..." [namelen=177 namehash=4ff313da]
-    StaticText "Вы можете потратить Надежду, чтобы освободить душу. Она немедлен..." [namelen=158 namehash=808dbb15]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ПРЕДМЕТ"
+      ... StaticText x7 of 11 same-shape siblings elided
+      link "Узы Души" [description=Страница url=#/i/voa2_a1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Вы можете отметить 5 Стресса, чтобы поглотить душу, навсегда пол..." [namelen=177 namehash=4ff313da]
+      StaticText "Вы можете потратить Надежду, чтобы освободить душу. Она немедлен..." [namelen=158 namehash=808dbb15]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -117,20 +121,24 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/voa]
     button "Tier 4" [pressed=false]
     button "Artifacts" [pressed=true]
     button "Cursed objects" [pressed=false]
-    ... StaticText x10 of 14 same-shape siblings elided
+    StaticText "ROLL RESULT (1–6)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     button "Roll d6"
-    button "Page"
-    link "Anima Colligationem" [description=Page url=#/i/voa2_a1]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "You can mark 5 Stress to consume the soul, permanently gaining a..." [namelen=171 namehash=e92aa3dc]
-    StaticText "You can spend a Hope to free the soul. It returns to the owner i..." [namelen=136 namehash=5450f646]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "ITEM"
+      ... StaticText x7 of 11 same-shape siblings elided
+      link "Anima Colligationem" [description=Page url=#/i/voa2_a1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You can mark 5 Stress to consume the soul, permanently gaining a..." [namelen=171 namehash=e92aa3dc]
+      StaticText "You can spend a Hope to free the soul. It returns to the owner i..." [namelen=136 namehash=5450f646]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

@@ -33,20 +33,24 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/voa]
     button "Ранг 4" [pressed=false]
     button "Артефакты" [pressed=false]
     button "Проклятые предметы" [pressed=false]
-    ... StaticText x12 of 16 same-shape siblings elided
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–24)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     button "Случайно 1–24"
-    button "Страница"
-    link "Благословенный Нож Шеф-Повара" [description=Страница url=#/i/voa1_t1a]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText " 0"
-    StaticText "Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое ..." [namelen=186 namehash=62309a64]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ОСНОВНОЕ ОРУЖИЕ"
+      ... StaticText x9 of 13 same-shape siblings elided
+      link "Благословенный Нож Шеф-Повара" [description=Страница url=#/i/voa1_t1a]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText " 0"
+      StaticText "Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое ..." [namelen=186 namehash=62309a64]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -117,20 +121,24 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/voa]
     button "Tier 4" [pressed=false]
     button "Artifacts" [pressed=false]
     button "Cursed objects" [pressed=false]
-    ... StaticText x12 of 16 same-shape siblings elided
+    StaticText "ROLL RESULT (1–24)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     button "Random 1–24"
-    button "Page"
-    link "Blessed Chef's Knife" [description=Page url=#/i/voa1_t1a]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText " 0"
-    StaticText "Food prepared by this knife is always delicious and prepared at ..." [namelen=178 namehash=fceb0968]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "PRIMARY WEAPON"
+      ... StaticText x9 of 13 same-shape siblings elided
+      link "Blessed Chef's Knife" [description=Page url=#/i/voa1_t1a]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText " 0"
+      StaticText "Food prepared by this knife is always delicious and prepared at ..." [namelen=178 namehash=fceb0968]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

@@ -32,39 +32,50 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/alt]
     button "Редкая Ранг 2–3" [pressed=false]
     button "Очень редкая Ранг 3–4" [pressed=false]
     button "Легендарная Ранг 3–4" [pressed=false]
-    ... StaticText x25 of 29 same-shape siblings elided
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Кость Надежды: На единицу меньше" [disabled=true]
     textbox "Кость Надежды: Результат броска" [value=1 multiline=false readonly=false required=false]
     button "Кость Надежды: На единицу больше"
+    StaticText "КОСТЬ СТРАХА"
     button "Кость Страха: На единицу меньше"
     textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
-    ... button x9 of 13 same-shape siblings elided
+    button "Кость Страха: На единицу больше"
+    button "Бросить кости"
+    StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
-    link "Крюк-Кошка" [description=Страница url=#/i/hi2]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    link "Металлические Шарики" [description=Страница url=#/i/hi3]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    link "Зелье Быстрого Шага" [description=Страница url=#/i/cc1]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Страница"
-    StaticText "HOPE & FEAR"
-    link "Семя Вергласа" [description=Страница url=#/i/hc3]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    button "Скопировать все варианты"
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "НАДЕЖДА"
+      ... StaticText x19 of 23 same-shape siblings elided
+      link "Крюк-Кошка" [description=Страница url=#/i/hi2]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      ... button x4 of 8 same-shape siblings elided
+      link "Металлические Шарики" [description=Страница url=#/i/hi3]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      link "Зелье Быстрого Шага" [description=Страница url=#/i/cc1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      button "Страница"
+      StaticText "HOPE & FEAR"
+      link "Семя Вергласа" [description=Страница url=#/i/hc3]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Этим осколком льда можно мгновенно заморозить участок воды в пре..." [namelen=88 namehash=0c7b50a5]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -139,39 +150,50 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/alt]
     button "Rare Tier 2–3" [pressed=false]
     button "Very rare Tier 3–4" [pressed=false]
     button "Legendary Tier 3–4" [pressed=false]
-    ... StaticText x25 of 29 same-shape siblings elided
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Hope Die: One lower" [disabled=true]
     textbox "Hope Die: Roll result" [value=1 multiline=false readonly=false required=false]
     button "Hope Die: One higher"
+    StaticText "FEAR DIE"
     button "Fear Die: One lower"
     textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
-    ... button x9 of 13 same-shape siblings elided
+    button "Fear Die: One higher"
+    button "Roll the dice"
+    StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
-    link "Grapnel" [description=Page url=#/i/hi2]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    link "Ball Bearings" [description=Page url=#/i/hi3]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    link "Stride Potion" [description=Page url=#/i/cc1]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    button "Page"
-    StaticText "HOPE & FEAR"
-    link "Verglasian Seed" [description=Page url=#/i/hc3]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    button "Copy every option"
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "HOPE"
+      ... StaticText x19 of 23 same-shape siblings elided
+      link "Grapnel" [description=Page url=#/i/hi2]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      ... button x4 of 8 same-shape siblings elided
+      link "Ball Bearings" [description=Page url=#/i/hi3]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      link "Stride Potion" [description=Page url=#/i/cc1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      button "Page"
+      StaticText "HOPE & FEAR"
+      link "Verglasian Seed" [description=Page url=#/i/hc3]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You can use this ice shard to instantly freeze an area of water ..." [namelen=82 namehash=7b271c85]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

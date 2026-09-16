@@ -31,17 +31,19 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     button "Случайно 1–119"
-    button "Страница"
-    ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "WONDROUS"
-    link "Смола Бездны" [description=Страница url=#/i/w1]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
-    DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "РАСХОДНИК"
+      StaticText "WONDROUS"
+      link "Смола Бездны" [description=Страница url=#/i/w1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
+      DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -104,17 +106,19 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     button "Random 1–119"
-    button "Page"
-    ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "WONDROUS"
-    link "Abyssal Sap" [description=Page url=#/i/w1]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
-    DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "CONSUMABLE"
+      StaticText "WONDROUS"
+      link "Abyssal Sap" [description=Page url=#/i/w1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
+      DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

@@ -33,20 +33,23 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/community]
     ... button x4 of 8 same-shape siblings elided
     button "Кочевое" [pressed=false]
     button "Лесное" [pressed=false]
-    ... StaticText x3 of 7 same-shape siblings elided
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–10)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     button "Бросить d10"
-    button "Страница"
-    StaticText "НАУЧНОЕ"
-    link "Вечная Свеча" [description=Страница url=#/i/cm11]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Когда эта свеча горит, она создаёт ауру в пределах Средней диста..." [namelen=206 namehash=e8ef12ea]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ПРЕДМЕТ"
+      StaticText "НАУЧНОЕ"
+      link "Вечная Свеча" [description=Страница url=#/i/cm11]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Когда эта свеча горит, она создаёт ауру в пределах Средней диста..." [namelen=206 namehash=e8ef12ea]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -120,20 +123,23 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/community]
     ... button x4 of 8 same-shape siblings elided
     button "Wanderborne" [pressed=false]
     button "Wildborne" [pressed=false]
-    ... StaticText x3 of 7 same-shape siblings elided
+    StaticText "ROLL RESULT (1–10)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     button "Roll d10"
-    button "Page"
-    StaticText "LOREBORNE"
-    link "Everlasting Candle" [description=Page url=#/i/cm11]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "When lit, this candle creates an aura within Close range. Creatu..." [namelen=201 namehash=cc0855de]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "ITEM"
+      StaticText "LOREBORNE"
+      link "Everlasting Candle" [description=Page url=#/i/cm11]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "When lit, this candle creates an aura within Close range. Creatu..." [namelen=201 namehash=cc0855de]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

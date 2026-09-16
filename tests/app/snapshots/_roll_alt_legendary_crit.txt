@@ -32,40 +32,51 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/alt]
     button "Редкая Ранг 2–3" [pressed=false]
     button "Очень редкая Ранг 3–4" [pressed=false]
     button "Легендарная Ранг 3–4" [pressed=true]
-    ... StaticText x27 of 31 same-shape siblings elided
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Кость Надежды: На единицу меньше"
     textbox "Кость Надежды: Результат броска" [value=2 multiline=false readonly=false required=false]
     button "Кость Надежды: На единицу больше"
-    ... button x10 of 14 same-shape siblings elided
+    StaticText "КОСТЬ СТРАХА"
+    ... button x2 of 6 same-shape siblings elided
     textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
+    button "Бросить кости"
+    StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
-    link "Таблица предметов" [url=#/tables/alt_item/legendary]
-    link "Таблица расходников" [url=#/tables/alt_consumable/legendary]
-    link "Глиняный Спутник" [description=Страница url=#/i/ci50]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    link "Самоцвет Проворства" [description=Страница url=#/i/ci53]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    link "Усыпляющий Сок" [description=Страница url=#/i/cc50]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
-    button "Страница"
-    StaticText "HOPE & FEAR"
-    link "Квинтэссенциальный Разделитель" [description=Страница url=#/i/hc53]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Этим магическим клинком можно разрубить одну магическую или мета..." [namelen=162 namehash=9ca03761]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    button "Скопировать все варианты"
+    status ""
+      StaticText "Критический успех!"
+      StaticText "Игрок берёт любую позицию из таблицы этой редкости. Мастер может..." [namelen=101 namehash=dce9aa7a]
+      link "Таблица предметов" [url=#/tables/alt_item/legendary]
+      link "Таблица расходников" [url=#/tables/alt_consumable/legendary]
+      button "Страница"
+      ... StaticText x21 of 25 same-shape siblings elided
+      link "Глиняный Спутник" [description=Страница url=#/i/ci50]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      ... button x4 of 8 same-shape siblings elided
+      link "Самоцвет Проворства" [description=Страница url=#/i/ci53]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      link "Усыпляющий Сок" [description=Страница url=#/i/cc50]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      button "Страница"
+      StaticText "HOPE & FEAR"
+      link "Квинтэссенциальный Разделитель" [description=Страница url=#/i/hc53]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Этим магическим клинком можно разрубить одну магическую или мета..." [namelen=162 namehash=9ca03761]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -142,40 +153,51 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/alt]
     button "Rare Tier 2–3" [pressed=false]
     button "Very rare Tier 3–4" [pressed=false]
     button "Legendary Tier 3–4" [pressed=true]
-    ... StaticText x27 of 31 same-shape siblings elided
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Hope Die: One lower"
     textbox "Hope Die: Roll result" [value=2 multiline=false readonly=false required=false]
     button "Hope Die: One higher"
-    ... button x10 of 14 same-shape siblings elided
+    StaticText "FEAR DIE"
+    ... button x2 of 6 same-shape siblings elided
     textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
+    button "Roll the dice"
+    StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
-    link "Items table" [url=#/tables/alt_item/legendary]
-    link "Consumables table" [url=#/tables/alt_consumable/legendary]
-    link "Clay Companion" [description=Page url=#/i/ci50]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    link "Gem of Alacrity" [description=Page url=#/i/ci53]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    link "Sleeping Sap" [description=Page url=#/i/cc50]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
-    button "Page"
-    StaticText "HOPE & FEAR"
-    link "Quintessential Severant" [description=Page url=#/i/hc53]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "You can use this magic blade to cut one magical or metaphysical ..." [namelen=168 namehash=d436046a]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    button "Copy every option"
+    status ""
+      StaticText "Critical success!"
+      StaticText "The player takes any entry from this rarity table. The GM may al..." [namelen=90 namehash=b03eb0f9]
+      link "Items table" [url=#/tables/alt_item/legendary]
+      link "Consumables table" [url=#/tables/alt_consumable/legendary]
+      button "Page"
+      ... StaticText x21 of 25 same-shape siblings elided
+      link "Clay Companion" [description=Page url=#/i/ci50]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      ... button x4 of 8 same-shape siblings elided
+      link "Gem of Alacrity" [description=Page url=#/i/ci53]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      link "Sleeping Sap" [description=Page url=#/i/cc50]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      button "Page"
+      StaticText "HOPE & FEAR"
+      link "Quintessential Severant" [description=Page url=#/i/hc53]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You can use this magic blade to cut one magical or metaphysical ..." [namelen=168 namehash=d436046a]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

@@ -31,17 +31,20 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
     textbox "Результат броска" [value=3 multiline=false readonly=false required=false]
     button "На единицу больше"
     button "Случайно 1–119"
-    button "Страница"
-    ... StaticText x3 of 7 same-shape siblings elided
-    link "Эфироцвет" [description=Страница url=#/i/w3]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
-    StaticText "УЛУЧШАЕТСЯ ДО"
-    link "Чай Эфироцвета" [url=#/i/w2]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "3"
+      StaticText "ПРЕДМЕТ"
+      StaticText "WONDROUS"
+      link "Эфироцвет" [description=Страница url=#/i/w3]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
+      StaticText "УЛУЧШАЕТСЯ ДО"
+      link "Чай Эфироцвета" [url=#/i/w2]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -105,17 +108,20 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
     textbox "Roll result" [value=3 multiline=false readonly=false required=false]
     button "One higher"
     button "Random 1–119"
-    button "Page"
-    ... StaticText x3 of 7 same-shape siblings elided
-    link "Aetherflower" [description=Page url=#/i/w3]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
-    StaticText "UPGRADES TO"
-    link "Aetherflower Tea" [url=#/i/w2]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "3"
+      StaticText "ITEM"
+      StaticText "WONDROUS"
+      link "Aetherflower" [description=Page url=#/i/w3]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
+      StaticText "UPGRADES TO"
+      link "Aetherflower Tea" [url=#/i/w2]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

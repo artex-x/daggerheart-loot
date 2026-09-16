@@ -31,16 +31,19 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/dread]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
     button "Случайно 1–29"
-    button "Страница"
-    ... StaticText x10 of 14 same-shape siblings elided
-    link "Эфирная Винтовка" [description=Страница url=#/i/di1]
-    button "Скопировать название" [description=Скопировать название]
-    button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Неестественное:"
-    StaticText " Биологически живые стрелки должны отмечать Стресс каждый раз, к..." [namelen=171 namehash=1386cde3]
-    button "Отправить"
-    button "Скопировать изображение" [description=Скопировать изображение]
-    button "Скопировать текст" [description=Скопировать текст]
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ОСНОВНОЕ ОРУЖИЕ"
+      ... StaticText x8 of 12 same-shape siblings elided
+      link "Эфирная Винтовка" [description=Страница url=#/i/di1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Неестественное:"
+      StaticText " Биологически живые стрелки должны отмечать Стресс каждый раз, к..." [namelen=171 namehash=1386cde3]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -103,16 +106,19 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/dread]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
     button "Random 1–29"
-    button "Page"
-    ... StaticText x10 of 14 same-shape siblings elided
-    link "Aether Rifle" [description=Page url=#/i/di1]
-    button "Copy name" [description=Copy name]
-    button "Copy link" [description=Copy link]
-    StaticText "Uncanny:"
-    StaticText " Shooters who are biologically alive must mark a Stress each tim..." [namelen=164 namehash=b75ef83a]
-    button "Share"
-    button "Copy image" [description=Copy image]
-    button "Copy text" [description=Copy text]
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "PRIMARY WEAPON"
+      ... StaticText x8 of 12 same-shape siblings elided
+      link "Aether Rifle" [description=Page url=#/i/di1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "Uncanny:"
+      StaticText " Shooters who are biologically alive must mark a Stress each tim..." [namelen=164 namehash=b75ef83a]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
