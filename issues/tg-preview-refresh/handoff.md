@@ -17,7 +17,7 @@ authorised on 2026-09-11:
 | Worktree | `E:/dev/daggerheart-loot-wt/tg-preview-refresh` |
 | Branch | `automation/tg-preview-refresh` |
 | Base | `8b96ff4`; `origin/main` merged in at `1106355` by B6 (`3f6231c`) |
-| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` -> `72d8de0` -> `edde81b` -> B7's code commit |
+| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` -> `72d8de0` -> `edde81b` -> da2c8a2 |
 
 The task-directory copies **in that worktree** are authoritative. The copy
 under `E:/dev/daggerheart-loot` is a stale snapshot - do not read it as
@@ -60,7 +60,7 @@ damage getting them wrong does:
   batch this task planned is done; the only remaining step is O3, the
   owner's merge and first-run watch.**
 - Last agent: **implementer (2026-09-16, B7).** Two commits, `edde81b` (the
-  pass-7 task docs) and `PENDING_SHA` (the code). No Telegram contact of any
+  pass-7 task docs) and `da2c8a2` (the code). No Telegram contact of any
   kind; `.env` not read; `state.json` not staged, edited or written - its
   blob hash is `7c6e37eb...` before and after, both in the tree and at HEAD.
 - NEEDS_HUMAN_CONFIRMATION: **no.** One thing the owner should know, not
@@ -81,7 +81,7 @@ damage getting them wrong does:
   | # | sha | what |
   |---|---|---|
   | 1 | `edde81b` | `docs(tg-preview): pass 7 - the B6 review, and B7` - the three task files alone |
-  | 2 | `PENDING_SHA` | `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state` |
+  | 2 | `da2c8a2` | `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state` |
 
 - **R1, the false red.** A `read()` helper over the existing `attempt()`
   now wraps all four Telegram reads: the recovery scan (`stopped: recovery
