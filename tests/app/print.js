@@ -25,6 +25,14 @@
  * but this suite's `__dirname` is `tests/app/`, one level deeper, so the same
  * join would look for `tests/card/`. `readPNG` is inlined - one consumer, no
  * shared home earned, and `tests/lib.js` dies at R0c.
+ *
+ * `sheetCounts`, `cardFit`, `printMedia` and `copiedPrintLink` below (R0b.3
+ * C2) are `tests/parity/specs.js`'s own print specs, which die with the
+ * parity harness and are measured nowhere else. A parity spec only observes
+ * and compares against the live app; run standalone here, each becomes a real
+ * assertion against numbers read directly off `dist/` (and, for the sheet
+ * arithmetic, cross-checked against the live app on the same routes at batch
+ * open) rather than a diff.
  */
 const fs = require('fs');
 const path = require('path');
@@ -35,6 +43,47 @@ const CARD_DIR = path.join(__dirname, '..', '..', 'card');
 const LOOT = require('../../data.json');
 
 const svgFile = (src) => fs.readFileSync(path.join(CARD_DIR, src.replace(/^.*\//, '')), 'utf8');
+
+/* The print routes shared between the card-layout assertions above and the
+ * four ported specs below - `tests/parity/specs.js`'s own `NINE`/`LONG`/
+ * `TEN`/`TOO_MANY`, rebuilt off `data.json` the way it builds `TOO_MANY`. */
+const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
+const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
+const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + (i + 1)).join('-');
+const TOO_MANY =
+  '#/print/' +
+  Object.values(LOOT.items)
+    .flat()
+    .slice(0, 181)
+    .map((x) => x.id)
+    .join('-');
+
+/* The eight states that draw a sheet at all - `tests/parity/specs.js`'s
+ * `PRINT_CARD_STATES`, minus `#/print/nope`, which draws no sheet for
+ * `sheetCounts`/`cardFit` to read. `n` is each route's own id count, so the
+ * sheet arithmetic below is computed, not copied as a magic number: printed
+ * = min(n, 180), sheets = ceil(printed / 9). */
+const PRINT_CARD_STATES = [
+  { route: NINE, bw: false, label: 'NINE', n: 9 },
+  { route: NINE, bw: true, label: 'NINE ~ ч/б', n: 9 },
+  { route: LONG, bw: false, label: 'LONG', n: 9 },
+  { route: LONG, bw: true, label: 'LONG ~ ч/б', n: 9 },
+  { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1', n: 2 },
+  { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ ч/б', n: 2 },
+  { route: TEN, bw: false, label: 'TEN', n: 10 },
+  { route: TOO_MANY, bw: false, label: 'TOO_MANY', n: 181 }
+];
+
+/* style.css's own breakpoints, the same three widths `tests/parity/specs.js`
+ * sweeps every state at - not because the print card's own size depends on
+ * the viewport (it does not: 63x88 mm is absolute), but because its
+ * container query makes its size the one thing worth re-checking at every
+ * width regardless (`tests/app/driver.js`, `eachAt`'s own doc comment). */
+const WIDTHS = [
+  { w: 1100, h: 900 },
+  { w: 768, h: 900 },
+  { w: 375, h: 812 }
+];
 
 /**
  * PNG bytes to pixels, inlined from `tests/lib.js` (its only consumer).
@@ -900,6 +949,213 @@ const { ok } = rep;
   await d.open('#/print/nosuchid');
   ok(!(await page.$('.psheet')), 'из выдуманного адреса собрался лист');
   ok(/\S/.test(await page.$eval('.page-h', (e) => e.textContent)), 'пустая печать без заголовка');
+
+  /* ---------- the sheet, in counts (R0b.3 C2, `sheetCounts`) ----------
+     `renderPrint`'s own arithmetic, off six counts rather than pixels - the
+     fast, always-on half of what a print state checks. Every number below is
+     computed from each state's own id count, not copied as a constant: a
+     future ninth PRINT_CARD_STATES entry inherits the check for free. */
+  console.log('лист по числам');
+  for (const s of PRINT_CARD_STATES) {
+    await d.open(s.route);
+    if (s.bw) {
+      await bw();
+      await d.settle();
+    }
+    const counts = {
+      sheets: await d.count('.psheet'),
+      cards: await d.count('.pcard'),
+      blanks: await d.count('.pcard.blank'),
+      breaks: await d.count('.psheet[data-next]'),
+      bw: await d.count('.psheet.bw'),
+      warn: await d.count('.printnote.warnnote')
+    };
+    const printed = Math.min(s.n, 180);
+    const sheets = Math.ceil(printed / 9);
+    ok(counts.sheets === sheets, s.label + ': листов не ' + sheets + ': ' + counts.sheets);
+    ok(counts.cards === sheets * 9, s.label + ': мест не ' + sheets * 9 + ': ' + counts.cards);
+    ok(
+      counts.blanks === sheets * 9 - printed,
+      s.label + ': пустых мест не ' + (sheets * 9 - printed) + ': ' + counts.blanks
+    );
+    ok(counts.breaks === sheets - 1, s.label + ': разрывов страницы не ' + (sheets - 1) + ': ' + counts.breaks);
+    ok(counts.bw === (s.bw ? sheets : 0), s.label + ': число .psheet.bw не совпало: ' + counts.bw);
+    ok(counts.warn === (s.n > 180 ? 1 : 0), s.label + ': предупреждение об обрезке не совпало: ' + counts.warn);
+  }
+
+  /* ---------- the fit, as the numbers it wrote (R0b.3 C2, `cardFit`) ----------
+     What `fitPrintCards` actually wrote onto each card - the only instrument
+     that reads the *decision*, not its pixel consequence. Per width, unlike
+     the legacy suite's single 1180: the card's own container query makes its
+     size worth re-checking at every width even though the card is a fixed
+     63 mm regardless of the viewport around it. `.pc-art` renders only in
+     colour (`{#if !bw}` in `PrintCard.svelte`), and `.pc-head` only in
+     black-and-white (`{#if bw}`) - so their counts flip with `s.bw` rather
+     than both landing on `printed`. */
+  console.log('подгонка карты по числам');
+  for (const width of WIDTHS) {
+    await d.viewport(width.w, width.h);
+    for (const s of PRINT_CARD_STATES) {
+      await d.open(s.route);
+      if (s.bw) {
+        await bw();
+        await d.settle();
+      }
+      const printed = Math.min(s.n, 180);
+      const tag = s.label + ' @ ' + width.w + ': ';
+
+      const text = await d.eachAt('.pcard:not(.blank) .pc-text', ['font-size']);
+      ok(text.length === printed, tag + 'число карт с текстом не совпало: ' + text.length);
+      text.forEach((t) => {
+        if (!t.style['font-size']) return;
+        const v = parseFloat(t.style['font-size']);
+        ok(v >= 2.2 && v <= 3.5, tag + 'кегль текста вне лестницы: ' + t.style['font-size']);
+      });
+
+      const box2 = await d.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']);
+      ok(box2.length === printed, tag + 'число карт с отступом не совпало: ' + box2.length);
+      box2.forEach((b) => {
+        if (!b.style['--pcpad']) return;
+        const v = parseFloat(b.style['--pcpad']);
+        ok(v >= 3 && v <= 23, tag + 'отступ вне лестницы: ' + b.style['--pcpad']);
+      });
+
+      const art = await d.eachAt('.pc-art', ['height', '--artw', 'display']);
+      ok(
+        art.length === (s.bw ? 0 : printed),
+        tag + 'число снимков не совпало с цветным режимом: ' + art.length
+      );
+      art.forEach((a) => {
+        ok(
+          a.style.display === '' || a.style.display === 'none',
+          tag + 'display у снимка не пусто и не none: ' + a.style.display
+        );
+      });
+
+      const strip = await d.eachAt('.pc-strip .pc-box b', ['font-size']);
+      strip.forEach((v) => {
+        if (!v.style['font-size']) return;
+        const n = parseFloat(v.style['font-size']);
+        ok(n >= 2.2 && n <= 3, tag + 'кегль полосы вне лестницы: ' + v.style['font-size']);
+      });
+
+      const head = await d.eachAt('.pc-head', []);
+      if (s.bw) {
+        ok(head.length === printed, tag + 'не у каждой чёрно-белой карты своя pc-head: ' + head.length);
+        ok(
+          head.every((h) => h.w > 0 && h.h > 0),
+          tag + 'pc-head нулевого размера'
+        );
+      } else {
+        ok(head.length === 0, tag + 'в цвете завелась pc-head: ' + head.length);
+      }
+    }
+  }
+  await d.viewport(1180, 950);
+  await d.open('#/print/q1');
+  await colour();
+  await d.settle();
+
+  /* ---------- the sheet under print media (R0b.3 C2, `printMedia`) ----------
+     The chrome hidden, the page unshadowed and page-broken, the print
+     colours kept - `d.media('print')` is the only thing in the repository
+     that emulates print media, so it always restores the medium in a
+     `finally`, or leaving it on would photograph the wrong medium for
+     whatever runs next. */
+  console.log('лист под печатной медиа');
+  const MEDIA_STATES = [
+    { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1' },
+    { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ ч/б' },
+    { route: TEN, bw: false, label: 'TEN' },
+    { route: '#/print/nope', bw: false, label: 'nope' }
+  ];
+  for (const s of MEDIA_STATES) {
+    await d.open(s.route);
+    if (s.bw) {
+      await bw();
+      await d.settle();
+    }
+    await d.media('print');
+    try {
+      const chrome = {
+        header: await d.computed('header', ['display']),
+        nav: await d.computed('nav', ['display']),
+        footer: await d.computed('footer', ['display']),
+        skip: await d.computed('a.skip', ['display']),
+        bar: await d.computed('.printbar', ['display'])
+      };
+      for (const [name, val] of Object.entries(chrome)) {
+        ok(
+          !val || val.display === 'none',
+          s.label + ': ' + name + ' не спрятан под печать: ' + JSON.stringify(val)
+        );
+      }
+
+      if (s.route === '#/print/nope') {
+        ok(!(await d.computed('.psheet', ['display'])), s.label + ': у пустой печати всё равно завёлся лист');
+      } else {
+        const body = await d.computed('body', ['background-color', 'color']);
+        ok(
+          body['background-color'] === 'rgb(255, 255, 255)',
+          s.label + ': фон страницы не белый: ' + body['background-color']
+        );
+        ok(body.color === 'rgb(0, 0, 0)', s.label + ': текст страницы не чёрный: ' + body.color);
+
+        const main = await d.computed('main', ['max-width', 'padding-top', 'padding-left', 'margin-left']);
+        ok(main['max-width'] === 'none', s.label + ': у main осталось ограничение ширины: ' + main['max-width']);
+        ok(
+          main['padding-top'] === '0px' && main['padding-left'] === '0px' && main['margin-left'] === '0px',
+          s.label + ': у main остались отступы под печать: ' + JSON.stringify(main)
+        );
+
+        const psheet = await d.computed('.psheet', ['margin-top', 'margin-left', 'box-shadow', 'break-inside']);
+        ok(
+          psheet['margin-top'] === '0px' && psheet['margin-left'] === '0px',
+          s.label + ': у листа остались поля: ' + JSON.stringify(psheet)
+        );
+        ok(psheet['box-shadow'] === 'none', s.label + ': у листа осталась тень: ' + psheet['box-shadow']);
+        ok(
+          psheet['break-inside'] === 'avoid',
+          s.label + ': лист может разорваться посреди страницы: ' + psheet['break-inside']
+        );
+
+        const last = await d.computed('.psheet:last-child', ['height']);
+        const lastPx = parseFloat(last.height);
+        ok(Math.abs(lastPx / MM - 297) < 0.6, s.label + ': последний лист не A4 под печать: ' + (lastPx / MM).toFixed(1));
+
+        const card2 = await d.computed('.pcard', ['break-inside', 'print-color-adjust']);
+        ok(
+          card2['break-inside'] === 'avoid',
+          s.label + ': карта может разорваться посреди страницы: ' + card2['break-inside']
+        );
+        ok(
+          card2['print-color-adjust'] === 'exact',
+          s.label + ': печатные цвета карты не сохраняются: ' + card2['print-color-adjust']
+        );
+      }
+
+      if (s.route === TEN) {
+        const next = await d.computed('.psheet[data-next]', ['break-before']);
+        ok(
+          next['break-before'] === 'page',
+          s.label + ': второй лист не начинает новую страницу печати: ' + next['break-before']
+        );
+      }
+    } finally {
+      await d.media(undefined);
+    }
+  }
+
+  /* ---------- the print link, copied (R0b.3 C2, `copiedPrintLink`) ----------
+     The set-link button, copied - only the hash is compared, the way
+     `copiedPrintLink` reads it in `tests/parity/specs.js`. */
+  console.log('ссылка на набор, скопированная');
+  await d.open('#/print/ci1-q1');
+  await d.resetClipboard();
+  await d.click('Ссылка на набор');
+  const clip = await d.clipboard();
+  const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
+  ok(hash === '#/print/ci1-q1', 'скопированная ссылка на набор не та: ' + hash);
 
   await ctx.close();
   await closeBrowser();
