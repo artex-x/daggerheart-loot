@@ -84,6 +84,20 @@ function sortedMap(map) {
   return out;
 }
 
+// Deep equality of the flat url -> fingerprint maps state.json carries.
+// run.mjs's writeStateSync uses this to decide whether an apply (or a
+// record()) actually changed anything worth a fresh `updatedAt` - a
+// confirmation-free run merges an unchanged map, and minting a new timestamp
+// for that was the defect (issues/tg-preview-refresh, "the previews CI job
+// commits a state file in which only the updatedAt timestamp moved").
+export function sameUrls(a, b) {
+  const ak = Object.keys(a || {});
+  const bk = Object.keys(b || {});
+  if (ak.length !== bk.length) return false;
+  for (const key of ak) if (a[key] !== (b || {})[key]) return false;
+  return true;
+}
+
 function pick(map, keys) {
   const out = {};
   for (const key of keys) if (key in map) out[key] = map[key];

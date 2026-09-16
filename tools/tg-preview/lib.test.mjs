@@ -8,10 +8,12 @@
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import * as lib from './lib.mjs';
 import { runRefresh } from './lib.mjs';
 
@@ -1284,5 +1286,80 @@ describe('runRefresh', () => {
     const deps = baseDeps(manifest, {});
     await runRefresh({ mode: 'full', dryRun: true, pressLimit: 17 }, deps);
     assert.ok(deps.logs.some((l) => l.endsWith('(press budget 17)')));
+  });
+});
+
+describe('sameUrls', () => {
+  it('is true for two maps with the same keys and values, regardless of key order', () => {
+    const a = { 'https://x/i/a.html': 'A', 'https://x/i/b.html': 'B' };
+    const b = { 'https://x/i/b.html': 'B', 'https://x/i/a.html': 'A' };
+    assert.equal(lib.sameUrls(a, b), true);
+  });
+
+  it('is false when a value differs', () => {
+    const a = { 'https://x/i/a.html': 'A' };
+    const b = { 'https://x/i/a.html': 'A2' };
+    assert.equal(lib.sameUrls(a, b), false);
+  });
+
+  it('is false when a key was added or dropped', () => {
+    const a = { 'https://x/i/a.html': 'A' };
+    const b = { 'https://x/i/a.html': 'A', 'https://x/i/b.html': 'B' };
+    assert.equal(lib.sameUrls(a, b), false);
+    assert.equal(lib.sameUrls(b, a), false);
+  });
+
+  it('is true for two empty maps, and tolerates a missing argument', () => {
+    assert.equal(lib.sameUrls({}, {}), true);
+    assert.equal(lib.sameUrls(undefined, {}), true);
+    assert.equal(lib.sameUrls({}, undefined), true);
+  });
+});
+
+// run.mjs's writeStateSync is exercised through the real --apply CLI in a
+// scratch directory - never the committed tools/tg-preview/state.json, never
+// TG_* or .env (--apply never reads Telegram credentials, and the scratch
+// cwd below has no .env for run.mjs's loadEnvFile to find). This is the
+// exact scenario the defect was measured in: a run that confirms nothing
+// still merges an unchanged `urls` map, and previously minted a fresh
+// `updatedAt` for it anyway - the one line that made
+// `git diff --cached --quiet` never short-circuit in previews.yml's record
+// step (issues/tg-preview-refresh, commit 8850600).
+describe('writeStateSync updatedAt (via run.mjs --apply)', () => {
+  const RUN_MJS = join(HERE, 'run.mjs');
+
+  function apply(before, result) {
+    const dir = mkdtempSync(join(tmpdir(), 'tg-preview-apply-'));
+    try {
+      const statePath = join(dir, 'state.json');
+      const resultPath = join(dir, 'result.json');
+      writeFileSync(statePath, JSON.stringify(before, null, 2) + '\n');
+      writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+      execFileSync(process.execPath, [RUN_MJS, '--apply', resultPath, '--state', statePath], {
+        cwd: dir,
+        encoding: 'utf8'
+      });
+      return JSON.parse(readFileSync(statePath, 'utf8'));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  const before = {
+    version: 1,
+    site: 'https://x/',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+    urls: { 'https://x/i/a.html': 'A' }
+  };
+
+  it('an apply that confirms nothing leaves the file byte-identical, including updatedAt', () => {
+    const after = apply(before, { site: 'https://x/', urls: {} });
+    assert.deepEqual(after, before);
+  });
+
+  it('an apply that confirms a real change moves updatedAt', () => {
+    const after = apply(before, { site: 'https://x/', urls: { 'https://x/i/b.html': 'B' } });
+    assert.deepEqual(after.urls, { 'https://x/i/a.html': 'A', 'https://x/i/b.html': 'B' });
+    assert.notEqual(after.updatedAt, before.updatedAt);
   });
 });

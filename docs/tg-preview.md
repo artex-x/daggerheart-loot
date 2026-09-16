@@ -407,11 +407,20 @@ inputs). It checks out
 the commit `check` just verified, reads `tools/tg-preview/state.json` from
 the freshest `main` (not necessarily the checked-out commit - a refresh
 committed between two quick pushes must not be re-sent), runs the tool, and
-if anything was sent, commits the updated state back to `main` as
-`github-actions[bot]` with `[skip ci]` so the commit does not retrigger
+if anything was **confirmed** - not merely sent - commits the updated state
+back to `main` as `github-actions[bot]` with `[skip ci]` so the commit does not retrigger
 `check` or another `previews` run. It never blocks a deploy: `deploy`
 finished before `previews` started, and holds `contents: write` on no job but
 this one.
+
+**A run that sends but confirms nothing leaves `state.json` alone.** The
+record step's guard checks that `result.json` names at least one confirmed
+URL, not merely that the file is non-empty, and `writeStateSync` carries the
+previous `updatedAt` forward whenever the merged `urls` map comes out
+byte-identical to what is already committed - so an idle four-hourly run
+against a deploy that has not gone live yet, or one where every press was
+already recorded, produces no commit at all, not a commit that moves only
+the timestamp.
 
 **Why a schedule as well as a push.** A run that stops on the bot's attempt
 throttle or on the press budget leaves work pending, and `workflow_run` alone

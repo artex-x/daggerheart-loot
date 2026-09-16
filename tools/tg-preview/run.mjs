@@ -9,7 +9,7 @@
 import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { parseArgs, runRefresh, applyResult } from './lib.mjs';
+import { parseArgs, runRefresh, applyResult, sameUrls } from './lib.mjs';
 import { buildFromTree } from './manifest.mjs';
 
 try {
@@ -50,16 +50,39 @@ function readState(path) {
   }
 }
 
+// The file already on disk at `path`, or null when there is none to compare
+// against (absent, unreadable, or not valid JSON) - the same "absent is not
+// corrupt" split as readState, but a write must never let a bad read of the
+// old file crash the new one, so any failure here just means "no prior
+// updatedAt to carry forward".
+function previousState(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 // Atomic write, sorted keys, trailing newline - plan.md section 5.4.
+// `updatedAt` moves only when `urls` actually changes: a run (or an --apply)
+// that confirms nothing produces the same map already on disk, and minting a
+// fresh timestamp for it was the whole defect - a byte that always differs,
+// so `git diff --cached --quiet` in previews.yml's record step never
+// short-circuits and every idle run commits noise (issues/tg-preview-refresh
+// handoff.md, "the previews CI job commits a state file in which only the
+// updatedAt timestamp moved"). Comparing against the file already at `path`
+// (rather than threading a previous-state argument through both callers -
+// lib.mjs's record() and --apply above) keeps the fix in the one place that
+// already owns "what does this write actually change", for every writer.
 function writeStateSync(path, state) {
   const sortedUrls = {};
   for (const key of Object.keys(state.urls || {}).sort()) sortedUrls[key] = state.urls[key];
-  const body = {
-    version: 1,
-    site: state.site,
-    updatedAt: state.updatedAt || new Date().toISOString(),
-    urls: sortedUrls
-  };
+
+  const prev = previousState(path);
+  const unchanged = prev && prev.site === state.site && prev.urls && sameUrls(prev.urls, sortedUrls);
+  const updatedAt = unchanged && prev.updatedAt ? prev.updatedAt : new Date().toISOString();
+
+  const body = { version: 1, site: state.site, updatedAt, urls: sortedUrls };
   const tmp = path + '.tmp';
   writeFileSync(tmp, JSON.stringify(body, null, 2) + '\n');
   renameSync(tmp, path);
