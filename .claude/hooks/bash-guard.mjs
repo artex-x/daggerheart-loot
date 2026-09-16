@@ -1,4 +1,4 @@
-// PreToolUse(Bash): eight rule families evaluated in order, first deny wins.
+// PreToolUse(Bash): nine rule families evaluated in order, first deny wins.
 // See .claude/README.md, "Hooks", for what each family blocks and for the
 // sanitiser's known limits. Never blocks anything not listed there.
 // segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
@@ -75,7 +75,11 @@ const MSG = {
     const shown = hits.slice(0, 4).join(', ');
     const more = hits.length > 4 ? ', ...' : '';
     return `Blocked: ${target} is still cited by ${hits.length} tracked line(s): ${shown}${more}. Retiring a plan.md leaves those pointing at nothing. Closeout step 6: move the durable content to its permanent home (.claude/README.md for tooling rationale, docs/specs/ for behaviour), update every citation, and remove the file in that same commit.`;
-  }
+  },
+  grepLineNumber:
+    'Blocked: `grep -n` runs outside RTK and its output lands unfiltered in context. Use `rtk grep -n <pattern> <path>` as its own command (no pipe, no `$(...)`), or the Grep tool, which numbers lines by default. `git grep -n` is not affected.',
+  tailBytes:
+    'Blocked: `tail -c` runs outside RTK and its output lands unfiltered in context. Use `rtk read <file>`, or the Read tool with `offset`/`limit`. `tail -n` is not affected.'
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -475,6 +479,36 @@ function evaluateParityLock(segList) {
   return { id: 'parity-lock', message: MSG.parityLock(heavy, parityLock.describe(lock)) };
 }
 
+// ---------- 2j: readers that bypass RTK (deny) ----------
+//
+// `grep -n` and `tail -c` were 96.4K of the 179.7K tokens RTK missed over
+// thirty days (rtk discover, 2026-09-15): RTK's own hook rewrites only a
+// command at the start of a line, and these arrive piped, in `$(...)`, or
+// after a `cd`. READERS hides both programs from every other rule on
+// purpose (`echo git reset --hard` must stay silent), so this family
+// tokenises the segment itself and tests the program token only:
+// `echo grep -n`, `git grep -n` (closeout step 6) and `rtk grep -n` never
+// match. See .claude/README.md, "Hooks", row 43.
+
+const RTK_READERS = [
+  { program: 'grep', letter: 'n', long: '--line-number', message: MSG.grepLineNumber },
+  { program: 'tail', letter: 'c', long: '--bytes', message: MSG.tailBytes }
+];
+
+function evaluateRtkReaders(segList) {
+  for (const segment of segList) {
+    const tokens = unwrap(tokensOf(segment));
+    if (!tokens.length) continue;
+    for (const spec of RTK_READERS) {
+      if (tokens[0] !== spec.program) continue;
+      if (flagMatches(tokens, spec.letter) || tokens.some((t) => t.startsWith(spec.long))) {
+        return { id: `rtk-${spec.program}`, message: spec.message };
+      }
+    }
+  }
+  return null;
+}
+
 // ---------- 2f: long-check reminder (allow, not block) ----------
 
 function evaluateLongCheck(segList, sessionId) {
@@ -533,6 +567,9 @@ guard(() => {
 
   const parity = evaluateParityLock(segList);
   if (parity) return deny(event, parity.message);
+
+  const rtk = evaluateRtkReaders(segList);
+  if (rtk) return deny(event, rtk.message);
 
   const longCheck = evaluateLongCheck(segList, input.session_id);
   if (longCheck) return speak(event, longCheck.message);

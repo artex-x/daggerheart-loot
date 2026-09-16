@@ -1,6 +1,7 @@
 // Stop: warn (never block) when this session's own writes are still
 // uncommitted, or when the active task's handoff.md looks stale next to
-// what this session wrote. See .claude/README.md, "Hooks".
+// what this session wrote, or when a task document of the active task is
+// past its size budget. See .claude/README.md, "Hooks".
 
 import { createHash } from 'node:crypto';
 import { statSync } from 'node:fs';
@@ -26,6 +27,49 @@ function isTaskDocument(key) {
  * for this rule entirely, the same as a task document. */
 function isExcluded(key) {
   return key.startsWith('docs/') || isTaskDocument(key);
+}
+
+const BUDGET_WARN_BYTES = 150 * 1024;
+const BUDGET_COLLAPSE_BYTES = 300 * 1024;
+const TASK_DOCS = ['context.md', 'plan.md', 'handoff.md'];
+const COLLAPSE = {
+  'handoff.md':
+    'keep one Status (the current one), one line per shipped batch under Completed (outcome + commit), Verification for the latest batch only',
+  'plan.md':
+    "collapse every shipped batch's brief to its outcome and commit; keep the design, decisions, rejected alternatives and the next batch",
+  'context.md':
+    "keep facts, constraints, decisions and disproved reasons; move narrative to the plan's outcome lines"
+};
+
+/** Budget sentences for the active task's documents - only for a session
+ * that wrote into that task directory (the author is the one who can act),
+ * never for a bystander. Warn past 150 KB; past 300 KB name the collapse.
+ * Sizes from statSync; a missing file is skipped. Never a decision. */
+function budgetSentences(task, writtenPaths) {
+  if (!task) return [];
+  const prefix = pathKey(`issues/${task.id}/`);
+  if (!writtenPaths.some((p) => pathKey(p).startsWith(prefix))) return [];
+  const out = [];
+  for (const name of TASK_DOCS) {
+    let size;
+    try {
+      size = statSync(path.join(task.dir, name)).size;
+    } catch {
+      continue;
+    }
+    const kb = Math.round(size / 1024);
+    const file = `issues/${task.id}/${name}`;
+    if (size >= BUDGET_COLLAPSE_BYTES) {
+      out.push(
+        `${file} is ${kb} KB, past the 300 KB collapse line: ${COLLAPSE[name]} - .claude/skills/handoff/SKILL.md (/handoff). Never drop decisions and their reasons, rejected approaches, blockers, the next batch, or exact check results; history keeps the full text.`
+      );
+    } else if (size >= BUDGET_WARN_BYTES) {
+      out.push(
+        `${file} is ${kb} KB, past the 150 KB budget; compact it per .claude/skills/handoff/SKILL.md (/handoff) before it reaches 300 KB.`
+      );
+    }
+  }
+  return out;
 }
 
 guard(() => {
@@ -92,7 +136,11 @@ guard(() => {
     }
   }
 
-  if (!uncommitted.length && !candidates.length && !staleness) return undefined;
+  const budget = budgetSentences(task, writtenPaths);
+
+  if (!uncommitted.length && !candidates.length && !staleness && !budget.length) {
+    return undefined;
+  }
 
   const parts = [];
   if (uncommitted.length) {
@@ -110,9 +158,18 @@ guard(() => {
     );
   }
   if (staleness) parts.push(staleness);
+  if (budget.length) parts.push(...budget);
 
   const dedupeKey = `stop:${createHash('sha256')
-    .update(uncommitted.join('\n') + '|' + candidates.join('\n') + '|' + (staleness || ''))
+    .update(
+      uncommitted.join('\n') +
+        '|' +
+        candidates.join('\n') +
+        '|' +
+        (staleness || '') +
+        '|' +
+        budget.join('\n')
+    )
     .digest('hex')
     .slice(0, 16)}`;
   if (!once(input.session_id, dedupeKey)) return undefined;

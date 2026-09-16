@@ -5,7 +5,7 @@
 // built once and reused, removed in a finally.
 //
 // See .claude/README.md, "Hooks", and issues/hooks-guardrails/plan.md
-// section 5, for the case list this file implements (numbered #1-#111
+// section 5, for the case list this file implements (numbered #1-#130
 // in the comments below).
 
 import { spawnSync } from 'node:child_process';
@@ -317,7 +317,10 @@ function testBashDenyCases() {
 function testBashSilentCases() {
   const cases = [
     ['#18 echo quoting', 'echo "git reset --hard"'],
-    ['#19 grep quoting', "grep -rn 'git clean -fd' docs/"],
+    // `-n` moved to 2j's deny (#112); this case keeps `-r` only so it still
+    // proves the quoted-command shape stays silent under `grep -rn`'s parent
+    // rule (2b's git-clean detection reading inside a reader's argument).
+    ['#19 grep quoting', "grep -r 'git clean -fd' docs/"],
     ['#20 heredoc', "cat > x.md <<'EOF'\ngit reset --hard\nEOF"],
     ['#21 git clean -nd (dry-run)', 'git clean -nd'],
     ['#22 git push --dry-run', 'git push --dry-run'],
@@ -622,6 +625,60 @@ function testBackgroundCheck() {
         systemMessage(result).includes('600000'),
       systemMessage(result)
     );
+  }
+}
+
+// ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125) ----------
+
+function testRtkReaders() {
+  const denyCases = [
+    ['#112 grep -n', 'grep -n foo app/src/lib/x.ts', 'rtk grep'],
+    ['#113 grep -rn cluster', "grep -rn 'x' docs/", 'rtk grep'],
+    ['#114 grep --line-number', 'grep --line-number x f', 'rtk grep'],
+    ['#115 grep -n piped', 'cat f | grep -n x', 'rtk grep'],
+    ['#116 tail -c', 'tail -c 200 f', 'rtk read'],
+    ['#117 tail --bytes', 'tail --bytes=200 f', 'rtk read'],
+    ['#118 xargs grep -n', 'find . -name "*.ts" | xargs grep -n x', 'rtk grep']
+  ];
+  for (const [label, command, fragment] of denyCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`${label}: exit 0`, result.status === 0);
+    check(`${label}: denies`, isDeny(result), JSON.stringify(result.json));
+    check(
+      `${label}: reason mentions "${fragment}"`,
+      denyReason(result).includes(fragment),
+      denyReason(result)
+    );
+  }
+
+  // #119 - the canonical check invocation is never this rule's business.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('set -o pipefail; npm run check 2>&1 | tail -n 120')
+    );
+    check(
+      '#119 canonical check: not denied by 2j',
+      !isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+
+  const silentCases = [
+    ['#120 git grep -n', 'git grep -n "issues/65/plan\\.md"'],
+    ['#121 rtk grep -n', 'rtk grep -n x docs/'],
+    ['#122 tail -n', 'tail -n 120 f'],
+    ['#123 grep -r', 'grep -r x docs/'],
+    ['#124 echo', 'echo "grep -n x"'],
+    // A known limitation (README, "Known limitations"): a quoted `sh -c`
+    // span is erased with its quotes like every other quoted command, so
+    // this is silent rather than denied.
+    ['#125 quoted sh -c', 'sh -c "grep -n x f"']
+  ];
+  for (const [label, command] of silentCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`${label}: exit 0`, result.status === 0);
+    check(`${label}: silent`, isSilent(result), result.stdout);
   }
 }
 
@@ -1471,6 +1528,99 @@ async function testSessionStop() {
   fs.rmSync(path.join(scratchRoot, candMixedCase), { force: true });
 }
 
+// ---------- session-stop.mjs: task-document size budget (#126-#130) ----------
+
+async function testTaskBudget() {
+  const { recordWrite } = await import(pathToFileUrlHref('lib.mjs'));
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+
+  const session = 's-stop-budget';
+  const results = [];
+
+  // #126 - past the 150 KB warn line
+  writeFile('issues/98/handoff.md', 'x'.repeat(160 * 1024));
+  recordWrite(session, 'issues/98/handoff.md');
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: session,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    results.push(result);
+    check(
+      '#126 task document past 150 KB: names the file and the budget',
+      systemMessage(result).includes('issues/98/handoff.md') &&
+        systemMessage(result).includes('150 KB'),
+      systemMessage(result)
+    );
+  }
+
+  // #127 - past the 300 KB collapse line, names the skill
+  writeFile('issues/98/plan.md', 'x'.repeat(310 * 1024));
+  recordWrite(session, 'issues/98/plan.md');
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: session,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    results.push(result);
+    check(
+      '#127 task document past 300 KB: names the file, the budget, and the skill',
+      systemMessage(result).includes('issues/98/plan.md') &&
+        systemMessage(result).includes('300 KB') &&
+        systemMessage(result).includes('handoff/SKILL.md'),
+      systemMessage(result)
+    );
+  }
+
+  // #128 - same state again -> silent (once per dedupe key)
+  {
+    const result = runHook('session-stop.mjs', {
+      session_id: session,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    results.push(result);
+    check('#128 repeat with unchanged state: silent', isSilent(result), result.stdout);
+  }
+
+  // #129 - a bystander session that wrote outside the task directory never
+  // gets a budget sentence, even though the active task is now issues/98.
+  {
+    const bystander = 's-stop-bystander';
+    recordWrite(bystander, 'app/src/lib/x.ts');
+    const result = runHook('session-stop.mjs', {
+      session_id: bystander,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    results.push(result);
+    check(
+      '#129 bystander session: no KB mentioned',
+      !systemMessage(result).includes('KB'),
+      systemMessage(result)
+    );
+  }
+
+  // #130 - the Stop hook never emits a `decision` key.
+  check(
+    '#130 no result carries a decision key',
+    results.every((r) => !(r.json && Object.prototype.hasOwnProperty.call(r.json, 'decision'))),
+    JSON.stringify(results.map((r) => r.json))
+  );
+
+  // Clean up this block's own scratch so testFailOpen() sees the tree it
+  // expects - issues/99/ (still holding its context.md from
+  // testSessionStop) becomes the newest issues/<id>/ directory again.
+  fs.rmSync(path.join(scratchRoot, 'issues/98'), { recursive: true, force: true });
+}
+
 // ---------- fail-open contract, all eight scripts (#56-58) ----------
 
 function testFailOpen() {
@@ -1541,6 +1691,7 @@ async function main() {
     await testCommitGateAsync();
     testLongCheck();
     testBackgroundCheck();
+    testRtkReaders();
     await testParityLock();
     testEditGuard();
     testEditFollowup();
@@ -1548,6 +1699,7 @@ async function main() {
     await testPathKeyPortability();
     testSessionStart();
     await testSessionStop();
+    await testTaskBudget();
     testFailOpen();
   } finally {
     teardownScratch();
