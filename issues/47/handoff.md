@@ -7,28 +7,46 @@ depends on chat history.
 ## Status
 
 - Task status: **in_progress. R0a is CLOSED; R0b.1 is CLOSED and pushed,
-  including one review-remediation commit; R0b.2 is next and
-  **implement-ready**; R0b.3 and R0b.4 are designed and briefed behind it, each
-  with one named re-derivation at batch open; R0b.4 is an ordinary queued
-  batch of FOUR divergences, not three - a fourth surfaced during R0b.1's own
-  C3, was folded in, and the owner has answered it** (implementer,
-  2026-09-16; item 4 answered by the owner via the orchestrator, 2026-09-16;
-  the three briefs written by the planner, 2026-09-16).
-  Last agent: planner. **NEEDS_HUMAN_CONFIRMATION: no** for the whole of
-  R0b - R0b.2, R0b.3 and R0b.4 all have every answer they need. The one owner
-  gate still outstanding in TASK 47 is R0c's go (Phase 7 condition 6). Branch
-  `main`, pushed at merge commit `a2429bd` (R0b.1's four commits
-  `1402bea`/`1807334`/`4aa8252`/`92c239b` merged with fourteen unrelated peer
-  commits that landed on `origin/main` while R0b.1's real-browser gates ran -
-  tg-preview, art-tooling, hook-state-cap; no file overlap, merge was clean,
-  `npm run check` re-run green on the merged tree), then one review-fix
-  commit on top (documentation and one comment line only - see "Completed").
-  R0b.1's full record: "Completed", below, and "R0b.1's own commands and
-  results" under "Verification".
+  including one review-remediation commit; R0b.2 is CLOSED and pushed, all 20
+  acceptance lines Met, no fifth divergence found; R0b.3 is next - entry
+  condition now met (R0b.1 and R0b.2 both landed) but still needs its own
+  one-item re-derivation at batch open (`plan.md`, "R0b.3 designed",
+  "Honest readiness"); R0b.4 is behind it, an ordinary queued batch of FOUR
+  divergences, not three - a fourth surfaced during R0b.1's own C3, was
+  folded in, and the owner has answered it** (implementer, 2026-09-16 for
+  R0b.2; item 4 answered by the owner via the orchestrator, 2026-09-16; the
+  three briefs written by the planner, 2026-09-16).
+  Last agent: implementer (R0b.2). **NEEDS_HUMAN_CONFIRMATION: no** for the
+  whole of R0b - R0b.2 is done, R0b.3 and R0b.4 both have every answer they
+  need. The one owner gate still outstanding in TASK 47 is R0c's go (Phase 7
+  condition 6). Branch `main`, pushed at `28636fe` (R0b.2's three commits
+  `97083dd`/`c2f7931`/`28636fe` on top of C1 `37a1061`, which a previous,
+  interrupted implementer run had already committed and verified correct;
+  two unrelated peer doc commits `5066b23`/`a0c8313` landed on `origin/main`
+  mid-batch, touching only `issues/47/context.md`, no overlap). R0b.2's full
+  record: "Completed", below, and "R0b.2's own commands and results" under
+  "Verification". R0b.1's full record stays at `git show
+  28636fe:issues/47/handoff.md`, "R0b.1's own commands and results" (moved
+  out of this file per "Verification"'s own "latest batch only" rule).
   R0a is `b0545ed` (C1), `30b2744` (C2),
   `47a9a15` (C3) on top of `29eae18`, with `06658fd`, `858ae58`, `530aa10`,
   `6e1269b` and `f826bcd` as its records and corrections; it was built,
   reviewed, pushed and green on CI in every job (orchestrator, 2026-09-13).
+  - **R0b.2 closed clean, no remediation needed.** All 20 acceptance lines
+    Met on the first pass; the batch was picked up mid-way (C1 already
+    committed by a prior, interrupted run) and verified byte-for-byte against
+    the brief before continuing. Line 16 - the line R0b.1 failed review on -
+    was re-derived from scratch by opening each file: most of C1's
+    `tests/app/states.js` citations turned out **unchanged** (C1 appended
+    every new case after the existing content, before `CASES`, so lines
+    54-385 did not move), but `tests/app/sweep.js`'s C2 edits did shift six
+    citations (130->137, 289->316, 297->324, 304->332, 313->341, 328->356),
+    plus one the brief's own audit had not named: the `qa` row's "Dropped"
+    clause cited `sweep.js:289` a second time for the same address-echo
+    check, also re-pointed to 316. **The two overlapping-Chrome-runs stall
+    a previous attempt hit was contention, not a defect** - confirmed here
+    at ~7s/page with nothing else running: `sweep.js 1180` 554.8s, `768`
+    320.1s, `390` 342.2s, `360` 337.0s, all green, none near the 600s cap.
   - **What the R0b planning pass found, and why it flags.** Reading all ten
     counterpart-less suites in full against every test `COVERAGE.md` names as
     their fate shows the fates are honest about intent and silent about what
@@ -147,6 +165,23 @@ gate's own numbers and every rejected alternative is at `git show
 fc59ce4:issues/47/plan.md`**, the last pre-compaction commit. The code and its
 specs are the rest of the record.
 
+- **R0b.2 - every real-browser placement the ten-verdict audit found**
+  (implementer, 2026-09-16). Four commits: `37a1061` (C1, eight new
+  `tests/app/states.js` cases - real history Back/Forward, the narrow-width
+  selection bar, a real HTML5 drag reorder, a folded `<details>` surviving a
+  select-all re-render, tile geometry with art blocked, the storage notice
+  at 320, a button keeping focus, the money-help/pressed-picker read - plus
+  the note-field group folded into case 13 and R0b.1 review nit 6 closed;
+  landed by a prior, interrupted run and verified byte-for-byte against the
+  brief before this run continued), `97083dd` (C2, `tests/app/sweep.js`'s
+  four craft-heavy pages and craft-block reads, `tests/app/hues.js`'s
+  `.rstats` one-tone and selected-tile-fill reads), `c2f7931` (C3, new
+  `tests/stub.js` for the share stub's no-sideways-scroll and its
+  `run-all.js` row), `28636fe` (C4, `docs/specs/COVERAGE.md` re-pointed and
+  every "queued for R0b.2" clause flipped to landed). Pushed at `28636fe`.
+  All 20 acceptance lines Met; no deviation; no fifth divergence found.
+  Full command record: "R0b.2's own commands and results" under
+  "Verification".
 - **R0b.1 - the harness move, the case-7 flake, R0a's four nits, the jsdom
   placements, and the ten verdicts in `COVERAGE.md`** (implementer,
   2026-09-16). Four commits: `1402bea` (C1, `git mv tests/parity/driver.js
@@ -310,64 +345,92 @@ it and a reviewer reads it:
   "Batch size and the fixed cost of a run", and `context.md`, "`npm run
   check`, settled".
 
-### R0b.1's own commands and results (implementer, 2026-09-16)
+### R0b.2's own commands and results (implementer, 2026-09-16)
 
-Baseline (measured by the orchestrator, not repeated): `set -o pipefail;
-npm run check 2>&1 | tail -n 120` green on the pre-session tree at `37e4812` -
-42 files/1035 tests, 96.61/88.58/97.10/97.34, 95.64s.
+**R0b.1's own full command record moved out per this section's "latest batch
+only" rule: `git show 28636fe:issues/47/handoff.md`, "R0b.1's own commands
+and results".**
 
-- `npm run build` - once, at the start; `dist/index.html` present for every
-  `tests/app/` suite (`tests/app/lib.js:22`).
+Picked up mid-batch: C1 (`37a1061`) was already committed by a prior,
+interrupted run. Verified against the brief line by line before continuing
+(states.js: 22 `CASES` rows, header/success string both say "twenty-two",
+nit 6's `e.key === 'dhloot.lists.v2'` guard present at `:190`) rather than
+re-done.
+
+Preflight: `git status --short tools/build-share-pages.js i/` clean; host
+probe `npm run format:check` 6.4s (healthy, well under the ~11s/~55s split);
+`npm run build` 4.5s, deterministic (`git status --short i/ data.json
+catalog.csv` empty after). No `chrome.exe`, no `test-output/parity.lock`.
+
+Gates, foreground, one call each, nothing else running beside them:
+
+- `node tests/run-all.js app/states` - green, 104.5s.
+- `node tests/app/sweep.js 1180` - green, 554.8s.
+- `node tests/app/sweep.js 768` - green, 320.1s.
+- `node tests/app/sweep.js 390` - green, 342.2s.
+- `node tests/app/sweep.js 360` - green, 337.0s.
+- `node tests/run-all.js app/hues` - green, 69.1s.
+- `node tests/stub.js` - green, 2.7s.
 - `set -o pipefail; npm run check 2>&1 | tail -n 120` - once per commit, all
-  four green: after C1 (42/1035, coverage unmoved), after C2 (42/1035), after
-  C3 (42/1046 - the new `it()`s plus `share.test.ts`'s two new parameterised
-  cases for `w118`), after the `origin/main` merge (42/1046, coverage still
-  96.61/88.58/97.10/97.34).
-- `node tests/parity.js zzz-no-such-state` - the C1 driver-move proof. Output:
-  `фильтр ничего не выбрал: zzz-no-such-state` / `сравнено ячеек: 0` / `1
-  расхождений`, exit 1, no stack trace. Fast (resolves the `require` and the
-  cache-key `hashFile`, then exits on the zero-match guard before shooting a
-  state) - the PreToolUse hook's nine-minute estimate is for a real filter
-  match, not this zero-match case.
-- `node tests/run-all.js app/typo,app/hues,app/contracts,app/states` - all
-  four green: `app/contracts` 280.8s, `app/states` 72.5s (case 7's new
-  two-stage wait included), `app/typo` 85.2s, `app/hues` 49.1s; 281s wall
-  clock at 8 processes.
-- `node tests/app/sweep.js <width>` for 1180, 768, 390, 360 - all four print
-  `обход страниц (dist/): чисто на всех ширинах и языках` (green).
-- `node tests/app/golden.js --shard=n/4` for n in 1-4 - all four green, zero
-  header disagreements from nit 2's new `headerOf()` check (acceptance line
-  7's "finding to record" case did not occur): shard 1 113.3s/28 states,
-  shard 2 109.2s/28, shard 3 105.6s/27, shard 4 100.5s/27.
-- After merging 14 unrelated peer commits from `origin/main` (tg-preview,
-  art-tooling, hook-state-cap - no file overlap with this batch, clean merge):
-  rebuilt `dist/` and re-ran `npm run check` once more, green, same coverage
-  bars, 42/1046.
-- `node tools/smoke-file-url.mjs` - not part of `npm run check` and not
-  separately recorded when this batch first closed (acceptance line 16's new
-  `defer` assertion had no recorded execution at that point). Run by the
-  implementer during C3 (green, `the built page opens from a folder`) and
-  re-run by the review pass (2026-09-16, remediation): green again, same
-  message. `npm run check:built` was not run - the gate list correctly
-  excludes it, since this batch changes no screen (`docs/parity.md`).
-- Acceptance-line spot checks: `git log --follow --oneline
-  tests/app/driver.js` shows the file's prior history (line 1); `git show
-  HEAD~1:tests/parity/driver.js | git hash-object --stdin` equals `git
-  hash-object tests/app/driver.js` (line 2, byte-identical); a repository
-  search for `parity/driver` across `tests/`, `tools/`, `docs/`, `.claude/`
-  returns nothing (line 3); `git diff --stat 37e4812..HEAD -- .claude
-  .github/workflows/ci.yml tests/parity/lock.js VISUAL_DEBT ACCEPTED` is empty
-  (lines 8/20); no deleted path other than the driver's rename (line 19); the
-  five R0b.4 components (`StdPanel.svelte`, `RollPanel.svelte`,
-  `AltPanel.svelte`, `RecordCard.svelte`, `RecordActions.svelte`) do not
-  appear in `git diff --stat 37e4812..HEAD` for any of them (line 21). The
-  literal `git show 9177f3b | git apply --reverse --check -` (line 19's own
-  command) fails at `.github/workflows/ci.yml:129` - **pre-existing, not
-  caused by this batch**: three R0a-era commits (`b0545ed`, `99bbb7c`,
-  `8dae1b9`, all before this session's `37e4812` starting HEAD) already
-  changed `ci.yml` for the structural-golden CI job, which is expected,
-  intentional drift from the one-file-revert's original shape, not something
-  R0b touched or broke.
+  three green (C1's own check having already passed under the prior run):
+  after C2 150.1s, after C3 134.8s, after C4 147.9s; 42 files/1046 tests,
+  coverage steady at 96.61/88.58/97.10/97.34 throughout - unmoved by this
+  batch, as the brief predicted (no `app/src/` touched).
+- `git revert --no-commit 9177f3b` then `git revert --abort` (line 19) -
+  `Auto-merging .github/workflows/ci.yml`, exit 0, clean; aborted without
+  committing.
+
+**Acceptance lines 1-20, all Met:**
+
+1. Preflight above, recorded.
+2-9. Cases 15-22 in `tests/app/states.js` (`historyBackForward:483`,
+   `selectionBarGeometry:511`, `dragReorder:539`,
+   `foldedDetailsSurviveRerender:600`, `tileGeometryNoArt:644`,
+   `storageNoticeAt320:680`, `buttonFocusSurvivesRerender:704`,
+   `moneyHelpAndPressedPicker:729`), each verified against its source line
+   in the brief's table.
+10. Case 13's note group at `tests/app/states.js:397-440`.
+11. Nit 6 closed at `tests/app/states.js:190`.
+12. Header/success string both "twenty-two", 22 `CASES` rows; `app/states`
+    green (above).
+13. `sweep.js` PAGES `:54-57`, selector list `:282-285`, craft reads
+    `:295-303`; all four widths green (above).
+14. `hues.js` `.rstats` one-tone `:141`, tile fill `:159`; `app/hues` green
+    (above).
+15. `tests/stub.js` exists, requires `tests/app/lib.js:8`, asserts both
+    widths; `run-all.js`'s `stub` row added; green (above).
+16. Every citation into the three touched files re-verified by opening them
+    post-edit. Most of `states.js`'s pre-existing citations (54,68,86 /
+    161 / 178,348 / 330 / 385) turned out **unchanged** - C1 appends after
+    all existing content, before `CASES`, so nothing before it moved.
+    `sweep.js`'s six did move (130->137, 289->316, 297->324, 304->332,
+    313->341, 328->356) plus a seventh instance of the same address-echo
+    line cited a second time in the `qa` row's own "Dropped" clause
+    (289->316), which the brief's pre-batch audit had not named - caught by
+    verifying every hit of a `grep` for `sweep\.js:\d`, not only the ones
+    the brief listed.
+17. All seven rows carrying a "queued for R0b.2" clause flipped to landed
+    with a case/selector citation each: `notes`, `lists2`, `select`,
+    `eqtest`, `behave`, `qa`, `craftmob`. (The brief's own count of "four"
+    was already imprecise - seven rows carried the clause, not four; all
+    seven are landed regardless.)
+18. Suite counts re-derived by listing `tests/*.js` (23 files, 20 of them
+    old-app suites per `run-all.js`'s `SUITES` table) and `tests/app/*.js`
+    (9 files, 6 of them suites: `app/sweep`, `app/golden`, `app/contracts`,
+    `app/states`, `app/typo`, `app/hues` - "five" was already stale before
+    this batch, per `context.md`; now corrected to six). `tests/stub.js`
+    given its own line: tests neither app, only the generated `i/*.html`
+    stubs.
+19. `git diff --stat 8fe8d55..28636fe -- . ':(exclude)issues/47'` touches
+    exactly `docs/specs/COVERAGE.md`, `tests/app/hues.js`,
+    `tests/app/states.js`, `tests/app/sweep.js`, `tests/run-all.js`,
+    `tests/stub.js` - no `app/src/`, no `ci.yml`, no `tests/parity/specs.js`,
+    no deletion. `git revert --no-commit 9177f3b` still applies cleanly
+    (above).
+20. No fifth divergence found. Every change in this batch is an additive
+    real-browser assertion against existing rewrite behaviour; nothing
+    observed diverges from the live app beyond the four already-recorded,
+    already-answered divergences.
 
 ### R0a's result lines (implementer, 2026-09-13)
 
@@ -451,160 +514,23 @@ the same host conditions:
 
 ## Next batch (implement-ready)
 
-**R0b.1 is CLOSED, pushed, and green.** Its full record is "Completed" and
-"Verification", above. **All 22 acceptance lines are met; none is left open.**
-Three carry a caveat rather than a bare "Met", and those three are kept here:
+**R0b.1 and R0b.2 are both CLOSED, pushed, and green.** R0b.1's full record is
+"Completed" and `git show 28636fe:issues/47/handoff.md` (its own former
+"Verification" entry). R0b.2's full record is "Completed" and "Verification",
+above - **all 20 acceptance lines Met, no caveats, no fifth divergence.**
+R0b.1's one open caveat from its own close-out (**19 - met, and the standing
+guarantee independently re-checked**) still applies going forward: the
+line's literal command, `git show 9177f3b | git apply --reverse --check -`,
+is stale once `ci.yml` has moved past its own starting HEAD; **use `git
+revert --no-commit 9177f3b` (then `git revert --abort`) instead** - R0b.2
+re-confirmed this command still applies cleanly.
 
-- **11 - met for three of its four clauses** (review remediation,
-  2026-09-16). `tables.test.ts`'s "a fold survives a pick, and a pill dropped
-  while folded is not snapped back to the link" asserts the fold, the pill and
-  the address following the pick; it does **not** assert that reset clears the
-  address - no `.fclear` click appears in that test. See "Deferred", nit 2.
-- **18 - met only after review remediation** (2026-09-16); originally not met.
-  `COVERAGE.md` carries all ten verdicts with evidence and no "probably", but
-  six of its line citations were taken from the planner's pre-batch audit and
-  were invalidated by this same batch's own C2/C3 insertions - the exact
-  failure the line exists to prevent - plus two rows deferred to `plan.md` for
-  a line number, which the line does not allow. The remediation re-verified
-  and re-pointed **every** stale citation against the current file, not only
-  the six the review named, and replaced both `plan.md` deferrals with real
-  line numbers in `COVERAGE.md` itself.
-- **19 - met, and the standing guarantee independently re-checked.** Nothing
-  this batch touched is deleted. The line's *literal* command, `git show
-  9177f3b | git apply --reverse --check -`, is **stale**: it needs exact
-  surrounding context, and three R0a-era commits to `.github/workflows/ci.yml`
-  (`8dae1b9`, `99bbb7c`, `b0545ed`), all predating this session's starting HEAD
-  `37e4812`, moved that context. `apply --reverse` is the wrong tool once a
-  file has moved on; `git revert` uses a 3-way merge, which `git merge-tree
-  9177f3b HEAD 9177f3b^` simulates - **clean, zero conflict markers**
-  (verified 2026-09-16). The one-file revert's guarantee holds.
-  **Corrected command for this line going forward: `git revert --no-commit
-  9177f3b`** (then `git revert --abort` to discard the dry run without
-  committing it).
-
-### R0b.2 - IMPLEMENT-READY (planner, 2026-09-16)
-
-**Design, preflight, commits and rejected alternatives: `plan.md`, "R0b.2
-designed".** Entry condition met (R0b.1 landed and green). Nothing waits on the
-owner. The outline this supersedes is `plan.md`, "R0b.2 designed, in outline";
-where the two differ, the brief wins.
-
-**Acceptance criteria.** One line each; a batch is not closed while a line has
-no outcome (`plan.md`, "A placement has to be acceptance, not a footnote").
-
-1. Preflight run and recorded: `git log --oneline -3`, `git status --short`,
-   `git status --short tools/build-share-pages.js i/`, the host probe, and
-   `npm run build`. The stub generator and `i/` are clean, or the batch stopped.
-2. `tests/app/states.js` carries a case for real history Back/Forward that
-   asserts `.subchips .chip.on` reads `Броня` after `goBack()`, not only that
-   the hash changed, and `#sq` after `goForward()`.
-3. It carries a narrow-width selection-bar case: `|#selBar.bottom -
-   innerHeight| <= 2` at 1000x900, and at 360 every `#selBar .btn` has
-   `scrollWidth <= clientWidth + 1` and sits inside `[-1, width + 1]`.
-4. It carries a real HTML5 drag reorder driven by `DragEvent` with
-   `clientY = box.top + box.height - 2`, asserting `drop-after`, the resulting
-   id order, and that no `.lrow.dragging` survives.
-5. It carries a folded-`<details>` case: neither `[data-lsel-all]` nor
-   `[data-money][data-val="coin"]` reopens a closed `.lnote` or `.lroll`.
-6. It carries a tile-geometry case at 360 with `/img/*.webp` left unanswered by
-   request interception: one distinct rounded `.tile` width, `> 100`, and no
-   `.selbox`/`.tile-n` overlap.
-7. It carries a storage-notice case at 320: `.warn` height `< 140` and `.warn-x`
-   width `> 0` while folded.
-8. It carries a case in which a **button** keeps focus across a re-render
-   (`[data-act="roll"]` after Enter, and `[data-act="src"]`), distinct from case
-   12's input.
-9. It carries a case measuring `.money-help` against its `.wrap` (`< 2` px, and
-   the `helpbox` class) and the pressed `.cardpick .btn`'s computed colour
-   against the literal `rgb(99, 194, 148)`.
-10. Case 13 now covers the note group - the 3-line floor, growth to `>= 8`, the
-    neighbour staying at 3, the `<= 320` cap with `scrollHeight > clientHeight`,
-    and the shrink-back - plus `.note-x`'s computed `display` on an empty field
-    and on the filled one.
-11. R0b.1 review nit 6 is closed: case 7's stage-one counter is keyed on
-    `e.key === 'dhloot.lists.v2'`.
-12. The header comment's case count and the closing success string both match
-    the number of cases the file now runs, and `node tests/run-all.js
-    app/states` is green.
-13. `tests/app/sweep.js` walks `#/i/w65`, `#/i/w3`, `#/i/ci19`, `#/i/w2`, and
-    its clipped-text selector list includes `.craft, .rcraft, .dicebar,
-    .numrow` with the spill, the `< 60` px squeeze and the `< 12` px `.craft a`
-    tap-height reads. All four widths green as four separate calls.
-14. `tests/app/hues.js` asserts `.rows .row .rstats` is exactly one distinct
-    computed colour across the three equipment tables, and that
-    `.tilewrap.sel .tile` has its own fill read off the rendered page, not off
-    `style.css`.
-15. `tests/stub.js` exists, requires `tests/app/lib.js`, and asserts
-    `i/w3.html` does not scroll sideways at 320 or 390; `tests/run-all.js` has
-    its row; `node tests/stub.js` is green.
-16. **Every `COVERAGE.md` citation this batch moved is re-pointed against the
-    file as it stands at the end of the batch** - into `tests/app/states.js`,
-    `tests/app/sweep.js` and `tests/app/hues.js` alike - and each was verified
-    by opening the file, not copied from this handoff or from the audit.
-17. The four "queued for R0b.2" clauses in `COVERAGE.md` read as landed, naming
-    the case or selector each became.
-18. Every count sentence in `COVERAGE.md` is true of the tree at the end of the
-    batch, re-derived by listing `tests/*.js` and `tests/app/*.js` rather than
-    adjusted by one; `tests/stub.js` has its own line saying it tests neither
-    app but the generated `i/*.html` stubs.
-19. No file under `app/src/`, no `.github/workflows/ci.yml`, no
-    `tests/parity/specs.js` `VISUAL_DEBT`/`ACCEPTED` entry and no deletion of
-    anything appears in the diff. `git revert --no-commit 9177f3b` still applies
-    cleanly (then `git revert --abort`).
-20. No fifth divergence was found, or one was found, recorded beside the four,
-    and **the batch stopped**.
-
-**Gate set** (see `plan.md` for why it is narrower than R0b.1's): `npm run
-build` once; `set -o pipefail; npm run check 2>&1 | tail -n 120` once per
-commit, foreground, Bash timeout 600000; `node tests/run-all.js app/states`;
-`node tests/app/sweep.js <width>` for 1180, 768, 390, 360 as four calls;
-`node tests/run-all.js app/hues`; `node tests/stub.js`. **No parity run and no
-golden shards** - nothing this batch touches is read by `golden.js`,
-`app/contracts` or `app/typo`.
-
-- **Name:** R0b.2 - every real-browser placement the ten-verdict audit found.
-- **Entry:** R0b.1 landed and green (**now true**).
-- **Content**, from `plan.md`, "R0b.2 designed, in outline":
-  - `tests/app/states.js`: real history Back/Forward (`behave`); the
-    selection bar pinned to the viewport bottom **and** not spilling its
-    buttons at 360 (`select`, `craftmob`); a real HTML5 drag reorder
-    (`lists2`); a folded `<details>` surviving a select-all re-render
-    (`lists2`); the note-geometry group folded into case 13 - 3-line floor,
-    neighbour isolation, the real 320 cap with the text scrolling, shrink-back
-    - and the clear cross's `:has(:placeholder-shown)` visibility (`notes`);
-    tile geometry with `/img/*.webp` blocked at 360 (`qa`); the storage notice
-    under 140px at 320 (`qa`); a **button** keeping focus across a re-render
-    (`qa` - `states.js:311` today covers an *input* only); the money help's
-    measured width and the pressed picker button's computed colour (`lists2`).
-    Each new case is a `CASES` row; the file's header comment ("Fourteen
-    cases") and its closing string ("все четырнадцать пройдены") both move
-    with it, as does `COVERAGE.md`'s `app/states` row.
-  - `tests/app/sweep.js`: `#/i/w65`, `#/i/w3`, `#/i/ci19`, `#/i/w2` into
-    `PAGES`; `.craft, .rcraft, .dicebar, .numrow` into the clipped-text list
-    at `:272` with the spill/squeezed-under-60px/`.craft a` tap-height
-    assertions (`craftmob`).
-  - `tests/app/hues.js`: `.rstats` is one tone across weapon/secondary/armour
-    (`eqtest`); a selected tile has its own fill, read off `.tilewrap.sel
-    .tile` (`craftmob`).
-  - **new `tests/stub.js`**: `i/w3.html` does not scroll sideways at 320 and
-    390 (`craftmob`). A new file, not a block inside `sweep.js` - the stub is
-    neither `dist/` (`sweep.js`'s own header says it walks `dist/`) nor
-    width-sharded the same way. One `run-all.js` `SUITES` row, ~5s.
-    **Note**: `tools/build-share-pages.js`, which generates the stub, may
-    still be another task's in-flight file - re-check `git status` on it
-    before this batch starts.
-- **Gate set**: as stated under the acceptance criteria above, which supersedes
-  the earlier "same as R0b.1" line - the four golden shards and the
-  `app/contracts`/`app/typo` runs are dropped with a reason, not forgotten.
-- **Out of scope**: the print port (R0b.3); the four divergences (R0b.4);
-  anything under `app/src/` beyond what a real-browser case needs to observe
-  (it should assert, not fix).
-
-### R0b.3 - QUEUED, briefed, one re-derivation at batch open
+### R0b.3 - IMPLEMENT-READY, entry condition met, one re-derivation at batch open
 
 **Design: `plan.md`, "R0b.3 designed".** Entry: R0b.1 landed (the port needs
-the moved driver's `media`, `computed`, `eachAt` verbs) and R0b.2 landed (it
-moves the `COVERAGE.md` lines this batch edits). Nothing waits on the owner.
+the moved driver's `media`, `computed`, `eachAt` verbs) and R0b.2 landed
+(**now true, both** - it moves the `COVERAGE.md` lines this batch edits).
+Nothing waits on the owner.
 
 **Honest readiness.** Implement-ready except for one thing, which is why it is
 not promoted: **every `COVERAGE.md` line number this batch needs is moved by
@@ -858,13 +784,14 @@ expectation and watching both languages go red; B12.1's nits 1, 3, 4 and 5 and
 B13's N1, N4 and N7 were closed by B14 (`af7fa17`, `a7f8787`); B11's and
 B11.1's nits were closed by B11.1 and B12.
 
-- **Six nits from R0b.1's review, recorded and NOT fixed (review remediation,
-  2026-09-16). PLACED (planner, 2026-09-16): nit 6 is R0b.2's acceptance line
-  11 - it is one line in a file R0b.2 rewrites, so the campsite rule takes it
-  early; nits 1-5 are R0b.4's acceptance line 11, R0b being a plan and R0b.4
-  its terminal batch.** The reasoning for the rest was, and stays, that R0b.1
-  is mid-plan - R0b.2, R0b.3, R0b.4 remain - so they clear on the terminal
-  batch rather than costing a remediation cycle now:
+- **Five nits from R0b.1's review remain, recorded and NOT fixed (review
+  remediation, 2026-09-16). Nit 6 is CLOSED (R0b.2's acceptance line 11,
+  implementer, 2026-09-16): `tests/app/states.js:190` keys `__storageSeen` on
+  `e.key === 'dhloot.lists.v2'`. Nits 1-5 are PLACED as R0b.4's acceptance
+  line 11 (planner, 2026-09-16), R0b being a plan and R0b.4 its terminal
+  batch.** The reasoning for the rest was, and stays, that R0b.1 is mid-plan -
+  R0b.3, R0b.4 remain - so they clear on the terminal batch rather than
+  costing a remediation cycle now:
   1. `app/src/components/TablesPage.svelte:395` still reads "in
      `tests/parity/driver.js`" - the only stale `parity/driver` reference
      outside `issues/`. Acceptance line 3 scoped its search to `tests/`,
@@ -887,17 +814,14 @@ B11.1's nits were closed by B11.1 and B12.
   5. `handoff.md`'s "Completed" entry for R0b.1 and its Deferred entry for the
      fourth divergence narrate the same finding twice at some length. Left
      alone rather than trimmed mid-plan.
-  6. **Worth recording, not fixing:** case 7's stage one waits on
+  6. **CLOSED (R0b.2 C1, `37a1061`).** Case 7's stage one waited on
      `window.__storageSeen > 0`, but page A's `prepare()` clears
      `localStorage` on first navigation (`tests/app/lib.js:98`), and that
-     clear itself fires a `storage` event on page B before A ever writes the
-     list. Stage one is therefore an environment probe ("did Chrome deliver
-     *a* storage event"), not the sharper "did *this* write arrive" - which
-     matches the plan's stated intent, not a defect, but is worth naming.
-     Keying `__storageSeen` on `e.key === 'dhloot.lists.v2'` would cost one
-     line and make the two stages disjoint. Stage two still carries the
-     actual app claim (did the page redraw), so the diagnostic split works
-     as designed either way.
+     clear itself fired a `storage` event on page B before A ever wrote the
+     list - stage one was an environment probe ("did Chrome deliver *a*
+     storage event"), not the sharper "did *this* write arrive". Fixed by
+     keying `__storageSeen` on `e.key === 'dhloot.lists.v2'`
+     (`tests/app/states.js:190`), making the two stages disjoint.
 
 - **PLACED for R0b.4, now four items (planner, 2026-09-16, items 1-3;
   implementer, 2026-09-16, item 4; folded in by review remediation,
