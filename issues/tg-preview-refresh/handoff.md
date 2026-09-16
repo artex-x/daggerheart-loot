@@ -439,3 +439,114 @@ remains is the owner's own step.
 - Session end partial progress: none - B7 is complete and committed;
   `plan.md`, `handoff.md` and `context.md` are consistent with each other
   and with the tree at B7's code commit.
+
+## fix/tg-preview-timestamp - the record step's timestamp-only noise commit (2026-09-16)
+
+- **Status: shipped.** One small, self-contained defect fix on its own
+  branch (`fix/tg-preview-timestamp`, cut from `origin/main` at `a142ee9`),
+  dispatched directly by the orchestrator with the defect already measured -
+  no plan.md batch, per the dispatch.
+- **The defect.** `origin/main` commit `8850600`'s entire diff was one
+  `updatedAt` line. Cause: a run that finds stale urls but confirms none
+  still writes a well-formed `result.json` with an empty `urls` map;
+  `previews.yml`'s record step guarded on `[ -s result.json ]` (non-empty,
+  not non-trivial), so `--apply` ran, merged the empty map, and
+  `writeStateSync` (`run.mjs`) minted a fresh `updatedAt` unconditionally -
+  `git diff --cached --quiet` never short-circuited, so the job committed
+  every idle run. Live now because the 68 URLs from the prior reindex are
+  stale-but-not-yet-live after a deploy, so the four-hourly cron confirms
+  zero of them every time until the deploy catches up.
+- **The fix, two halves of the same bug:**
+  1. `tools/tg-preview/lib.mjs` gained `sameUrls(a, b)` - a pure, exported
+     deep-equality check over the flat url -> fingerprint map. Chosen over
+     extending `applyResult`'s return shape because the existing
+     `applyResult` tests assert on `.site`/`.urls` only and several call
+     sites construct the write body directly (`record()` in `runRefresh`
+     never goes through `applyResult` at all) - a single comparator both
+     writers can share was the smaller change.
+  2. `tools/tg-preview/run.mjs`'s `writeStateSync` is the one place both
+     writers (the live run's `record()` and the CI record step's `--apply`)
+     converge, and the one place that already does filesystem I/O (`lib.mjs`
+     stays fs-free by its own header contract) - so it, not the `--apply`
+     branch alone, is where the fix lives. It now reads whatever is already
+     at `path` (`previousState`, tolerant of absent/corrupt - falls back to
+     "mint fresh" rather than throwing, since a write must never crash on a
+     bad old file), compares its `urls` against the new sorted map with
+     `sameUrls` (also requiring `site` to match, mirroring the bootstrap rule
+     elsewhere in this file), and carries the previous `updatedAt` forward
+     when they're equal; otherwise it mints `new Date().toISOString()` as
+     before. Net effect: an apply (or a run) that changes nothing produces a
+     byte-identical file, so the git diff in the record step is empty.
+  3. `.github/workflows/previews.yml`'s record step guard tightened from
+     "the result file is non-empty" (`[ -s result.json ]`) to "the result
+     names at least one confirmed url" (a `node -e` one-liner checking
+     `Object.keys(result.urls).length`), checked *before* `git config`/the
+     fetch-checkout-apply-push loop - so the same defect from the CI-cost
+     side no longer spends a checkout, an `--apply` and a push discovering
+     there was nothing to do. `if: always()` and the three-attempt push loop
+     are untouched.
+  4. `docs/tg-preview.md`: the "What CI does after a deploy" paragraph now
+     says "confirmed" rather than "sent", plus a new paragraph spelling out
+     that a run which sends but confirms nothing leaves `state.json` alone.
+- **Tests**, all in `tools/tg-preview/lib.test.mjs` (the file the gate
+  names): a `describe('sameUrls', ...)` block (4 cases: key-order
+  insensitivity, a differing value, an added/dropped key each way, empty/
+  undefined maps) plus a `describe('writeStateSync updatedAt (via run.mjs
+  --apply)', ...)` block (2 cases) that spawns the real
+  `node tools/tg-preview/run.mjs --apply` CLI via `node:child_process` against
+  scratch files in `os.tmpdir()` - never the committed `state.json`, never
+  `.env` (the scratch `cwd` has none for `loadEnvFile` to find). One proves a
+  no-confirmation apply leaves the file byte-identical including `updatedAt`;
+  the other proves a real confirmation moves both `urls` and `updatedAt`. No
+  existing assertion was weakened.
+- **Verification, in order, this session:**
+  - `node --test tools/tg-preview/lib.test.mjs` before any edit -> **96
+    pass, 0 fail**, 13 suites (the dispatch's stated baseline of 104 did not
+    match the tree at dispatch; 96 is what this session measured and is the
+    honest before-number).
+  - Same command after the fix and the new tests -> **102 pass, 0 fail**, 15
+    suites (+4 `sameUrls`, +2 `writeStateSync`).
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`, one foreground call,
+    Bash timeout 600000 -> **green**: `node --test` 102/102; vitest 42 files
+    / 1035 tests; coverage 96.61 / 88.58 / 97.1 / 97.34 - unchanged from B7's
+    numbers, as expected (nothing under `app/**` changed).
+  - `npx prettier --check` on all five changed files -> formatted correctly;
+    `npm run lint` -> clean.
+  - Manual reproduction of the exact defect, in the session scratchpad
+    (never the repository): a `state.json` shaped like the pre-`8850600`
+    file (`updatedAt: 2026-09-16T10:55:14.425Z`, one url) and a
+    `result.json` with an empty `urls` map, applied via
+    `node tools/tg-preview/run.mjs --apply <result> --state <state>` ->
+    output file `diff`-identical to the input, byte for byte. A second run
+    with a `result.json` naming one real change moved `updatedAt` to the
+    apply's own wall-clock time and merged the new url in. Scratch files
+    deleted afterward.
+  - `git status --porcelain -- tools/tg-preview/state.json` empty throughout
+    and after; `git hash-object`/`git rev-parse HEAD:...state.json` both
+    `5b32ff7dae7ca3654c72cc01ca42b04c0468e551` before and after the commit -
+    the committed state was never read for more than comparison in tests
+    that only ever touched scratch copies, and never touched here at all.
+  - `npm run check:built` **not run**: the changed files are
+    `tools/tg-preview/{run,lib,lib.test}.mjs`, `.github/workflows/previews.yml`
+    and `docs/tg-preview.md` - nothing under `app/**`, `data.js`, `i/`, `og/`,
+    `tests/**` or `dist/`, nothing a screen draws (same reasoning B7 used).
+- **Commit:** `7b5ccfe fix(tg-preview): stop the previews job committing
+  timestamp-only noise` on `fix/tg-preview-timestamp`, one commit, all five
+  files staged explicitly (never `git add -A`).
+- **Push:** `git push -u origin fix/tg-preview-timestamp` ->
+  `origin/fix/tg-preview-timestamp` created at `7b5ccfe`. Confirmed
+  afterward that `origin/main` was untouched (`9926631`, the CI bot's own
+  periodic commit, unaffected by this push) - the local branch's upstream
+  had defaulted to `origin/main` (ahead 1 / behind 1) at session start, so
+  the explicit `origin fix/tg-preview-timestamp` destination mattered: a
+  bare `git push` here would have gone to `main`.
+- **Deviation from the dispatch:** none in substance. The dispatch offered
+  `writeStateSync` or "the `--apply` path" as alternative implementation
+  sites and asked which was cleaner; this session chose `writeStateSync`
+  (with the pure comparator lifted into `lib.mjs`) over touching only
+  `applyResult`, for the reason given above - `record()`'s writes during a
+  live run share the same writer and the same bug shape, even though only
+  the `--apply` write is what CI actually commits.
+- **Not touched:** `.claude/hooks/**`, `tools/artwork/**`,
+  `.claude/prompts/**`, `tools/tg-preview/state.json`, `.env`. No Telegram
+  contact of any kind.
