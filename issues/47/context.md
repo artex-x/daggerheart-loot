@@ -373,6 +373,23 @@ where a focus style on a row checkbox actually gets read.
 Causes a session wrote down and a later one refuted. Keeping the list stops the
 next session re-deriving them from the same evidence.
 
+- **"A referenced card is reachable by no registered state, so restoring the
+  link moves no golden and no parity cell."** False, and R0b.4's review
+  caught it after the batch shipped. The measurement was scoped to `#/i/*`
+  states (true: none of `ci1`, `q1`, `f1`, `cm1`, `voa2_a1`, `nope` carries
+  `refs`) and then generalised to *every* state, which does not follow: the
+  roll panels open on a table's first row with no press needed, `Wondrous`
+  roll 1 is `w1` - one of the five `refs`-carrying records - and both
+  `tests/app/snapshots/_roll_wondrous.txt` and `_roll_wondrous_pinned.txt`
+  render its refs `<details>` (`DisclosureTriangle "Неистовое опутывание
+  ..." [expanded=false]`), registered states both. This is exactly why the
+  batch's own bug - the restored link staying hit-testable in a real
+  Chrome with the card closed, `RecordCard.svelte` missing `style.css:400`'s
+  `.refs details:not([open])>*:not(summary){display:none}` rule - was found
+  by accident comparing a golden shard rather than predicted from this
+  entry: the entry said there was nothing there to find. Fixed in the same
+  batch (`acef2a8`); `docs/specs/COVERAGE.md`'s `flows` row carried the same
+  overgeneralisation and is corrected alongside this.
 - **"The CI failures are cross-platform machine drift."** No: they were stale
   baselines. The control is that `#/tables ~ a row opened` and `~ help`
   reproduce their recorded numbers *to the hundredth* on the Windows host, so
@@ -488,15 +505,14 @@ next session re-deriving them from the same evidence.
   a Svelte template with a newline between them would put a space in the
   inventory. `d.click(name, nth)` prefers an exact match and falls back to
   `includes` only at `nth` 0.
-- **A referenced card is reachable by no registered state.** `LOOT.refs` has
-  five entries and exactly five records carry a `refs` field - `w1`, `w8`,
-  `w68`, `w88`, `w118` - while every `#/i/*` state in `tests/app/inventory.js`
-  and `tests/parity/specs.js` is `ci1`, `q1`, `f1`, `cm1`, `voa2_a1` or `nope`.
-  So the refs `<details>` is outside both the goldens and parity, on top of
-  being closed by default. `#/i/w1` is in `tests/app/sweep.js`'s `PAGES`, so the
-  axe pass is the one instrument that reaches it at all. This is why divergence
-  2 was invisible, and why restoring the link moves no golden and no parity
-  cell. Measured 2026-09-16 (planner) off `data.js` and the two inventories.
+- **No `#/i/*` state renders a referenced card - but `#/roll/*` states do,
+  and two of them are registered.** `LOOT.refs` has five entries and exactly
+  five records carry a `refs` field - `w1`, `w8`, `w68`, `w88`, `w118` -
+  while every `#/i/*` state in `tests/app/inventory.js` and `tests/parity/
+  specs.js` is `ci1`, `q1`, `f1`, `cm1`, `voa2_a1` or `nope`, none of which
+  carries `refs`. That much still holds. **What does not**: "Reasons already
+  disproved" below - the wider claim that no registered state reaches a
+  referenced card at all was wrong, corrected in R0b.4 review remediation.
 - **The controls section and the accessibility tree disagree about the same row
   by design and must not be reconciled.** Matching one against the other matched
   462 of 12,829 entries: `NAME_FN` has no inter-element spaces, carries the roll
