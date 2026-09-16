@@ -397,6 +397,15 @@ next session re-deriving them from the same evidence.
   a Svelte template with a newline between them would put a space in the
   inventory. `d.click(name, nth)` prefers an exact match and falls back to
   `includes` only at `nth` 0.
+- **A referenced card is reachable by no registered state.** `LOOT.refs` has
+  five entries and exactly five records carry a `refs` field - `w1`, `w8`,
+  `w68`, `w88`, `w118` - while every `#/i/*` state in `tests/app/inventory.js`
+  and `tests/parity/specs.js` is `ci1`, `q1`, `f1`, `cm1`, `voa2_a1` or `nope`.
+  So the refs `<details>` is outside both the goldens and parity, on top of
+  being closed by default. `#/i/w1` is in `tests/app/sweep.js`'s `PAGES`, so the
+  axe pass is the one instrument that reaches it at all. This is why divergence
+  2 was invisible, and why restoring the link moves no golden and no parity
+  cell. Measured 2026-09-16 (planner) off `data.js` and the two inventories.
 - **The controls section and the accessibility tree disagree about the same row
   by design and must not be reconciled.** Matching one against the other matched
   462 of 12,829 entries: `NAME_FN` has no inter-element spaces, carries the roll
