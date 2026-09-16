@@ -1533,30 +1533,18 @@ async function testSessionStop() {
 async function testTaskBudget() {
   const { recordWrite, activeTask, getWrote } = await import(pathToFileUrlHref('lib.mjs'));
   process.env.LOOT_HOOK_ROOT = scratchRoot;
-  process.env.LOOT_HOOK_STATE_DIR = scratchState;
 
   // Force every issues/<id> directory that exists at this point to a fixed,
   // safely old mtime, so activeTask()'s "newest file wins" comparison for
   // the fresh issues/98 writes below is a strict inequality regardless of
   // filesystem mtime resolution or readdirSync() order - the same pattern
-  // setupScratch() already uses for issues/65/handoff.md.
-  //
-  // This is a confirmed fix, not a guess: a version that pinned only
-  // issues/99/context.md landed as 3504bf7 and CI stayed red (#126/#127
-  // failing exactly as budgetSentences() returning [] would produce);
-  // pinning every directory's files here landed as 743439c and CI went
-  // green, with no other behavioural change between the two commits. The
-  // competing directory was issues/65, not issues/99 - its context.md and
-  // plan.md are rewritten late in the suite by the orphan-plan cases
-  // (#102-#104), close in time to this function's own write to issues/98,
-  // and '65' both sorts and (on the runner) enumerates before '98'. Best-
-  // fitting explanation for why this never reproduced locally or in a
-  // Linux container (inferred, not measured - nothing here directly
-  // observed the runner's filesystem): the GitHub-hosted runner's mtime
-  // granularity is coarse enough for those two writes to land in the same
-  // tick, where NTFS on this host and the container's overlayfs were not.
-  // See .claude/README.md, "Known limitations", and the handoff's "B3 CI
-  // remediation" sections for the full red/green evidence.
+  // setupScratch() already uses for issues/65/handoff.md. A real code/
+  // comment discrepancy on its own (an earlier version of this pin covered
+  // only issues/99/context.md, not every directory as its comment claimed),
+  // worth keeping regardless, but NOT what caused CI's failures below - two
+  // remediation cycles chased an mtime-tie theory here and were wrong; see
+  // the handoff's "B3 CI remediation" for the corrected record and the
+  // actual cause, which is the session-state isolation just below.
   const old = new Date('2020-01-01T00:00:00Z');
   const issuesRoot = path.join(scratchRoot, 'issues');
   for (const dirEntry of fs.readdirSync(issuesRoot, { withFileTypes: true })) {
@@ -1568,132 +1556,186 @@ async function testTaskBudget() {
     }
   }
 
-  // Self-diagnosing detail for #126/#127/#128: when the budget sentence
-  // fails to appear, this says WHY instead of just showing the (empty)
-  // systemMessage - what activeTask() resolved to (id, dir, which docs it
-  // sees), what this session's own recorded writes are, and what
-  // budgetSentences()'s own statSync calls would see for each task
-  // document. Computed in this process, right after the hook subprocess
-  // returns, against the same LOOT_HOOK_ROOT/LOOT_HOOK_STATE_DIR. It did
-  // not find the issues/65 tie above - that run was green, so none of this
-  // ever printed, and the fix was confirmed by the red-to-green CI delta,
-  // not by this output. It stays as insurance for the next failure: kept
-  // permanently so a future red run says why on the first try.
-  const TASK_DOC_NAMES = ['context.md', 'plan.md', 'handoff.md'];
-  function budgetDiagnostics(sessionId, result) {
-    const task = activeTask();
-    const taskLine = task
-      ? `activeTask() -> id=${task.id} dir=${task.dir} hasContext=${task.hasContext} hasPlan=${task.hasPlan} hasHandoff=${task.hasHandoff}`
-      : 'activeTask() -> null (no issues/<id>/ directory found)';
-    const writtenPaths = Object.keys(getWrote(sessionId));
-    const sizeLines = TASK_DOC_NAMES.map((name) => {
-      if (!task) return `${name}: (no active task to look under)`;
-      try {
-        const stat = fs.statSync(path.join(task.dir, name));
-        return `${name}: found, ${stat.size} bytes`;
-      } catch (err) {
-        return `${name}: not found (${err.code || err.message})`;
-      }
-    });
-    return [
-      taskLine,
-      `writtenPaths(session=${sessionId}) = ${JSON.stringify(writtenPaths)}`,
-      `statSync per task document: ${sizeLines.join('; ')}`,
-      `systemMessage = ${JSON.stringify(systemMessage(result))}`
-    ].join('\n');
-  }
+  // This block's session gets its own state directory, isolated from every
+  // other test's sessions. saveState() (lib.mjs) prunes the shared state
+  // file to the 5 most recently active sessions, ranked by an `at`
+  // timestamp with SECOND granularity (nowSeconds()); when six or more
+  // sessions across the whole suite land in the same wall-clock second -
+  // routine on a fast CI runner running this file in a few seconds -
+  // Array.prototype.sort's comparator ties, the sort is stable, and the
+  // EARLIEST-created sessions (by object insertion order) survive, not the
+  // newest. That silently dropped this block's own `s-stop-budget` session
+  // on the GitHub-hosted runner (CI run on `e2ada3f`): recordWrite()'s
+  // entry for it was pruned before session-stop.mjs ever read it back,
+  // writtenPaths came back [], budgetSentences()'s prefix check failed, and
+  // no budget sentence fired - found via budgetDiagnostics() below, on its
+  // first real failure. A dedicated state directory removes the dependency
+  // on session count entirely (nothing else exists in this file to prune
+  // against), rather than making the tie merely less likely - a sleep
+  // would not fix this, since the failure is a count of concurrent
+  // sessions, not a delay. lib.mjs's saveState()/nowSeconds() themselves
+  // are left unchanged: that is production behaviour affecting every hook,
+  // and a design call for the human, not a test-remediation fix - see the
+  // handoff's Deferred section for the finding.
+  const taskBudgetState = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-budget-state-'));
+  const previousStateDir = process.env.LOOT_HOOK_STATE_DIR;
+  process.env.LOOT_HOOK_STATE_DIR = taskBudgetState;
 
-  const session = 's-stop-budget';
-  const results = [];
+  try {
+    // Self-diagnosing detail for #126/#127/#128: when the budget sentence
+    // fails to appear, this says WHY instead of just showing the (empty)
+    // systemMessage - what activeTask() resolved to (id, dir, which docs it
+    // sees), what this session's own recorded writes are, and what
+    // budgetSentences()'s own statSync calls would see for each task
+    // document. Computed in this process, right after the hook subprocess
+    // returns, against the same LOOT_HOOK_ROOT/LOOT_HOOK_STATE_DIR. This is
+    // what actually found the session-pruning bug above, on its first real
+    // CI failure: `writtenPaths(session=s-stop-budget) = []` against a
+    // correctly-resolved activeTask() and a found-on-disk handoff.md
+    // pointed straight at "the write was recorded, then lost" instead of
+    // leaving another guess. Kept permanently as insurance for whatever
+    // fails here next.
+    const TASK_DOC_NAMES = ['context.md', 'plan.md', 'handoff.md'];
+    function budgetDiagnostics(sessionId, result) {
+      const task = activeTask();
+      const taskLine = task
+        ? `activeTask() -> id=${task.id} dir=${task.dir} hasContext=${task.hasContext} hasPlan=${task.hasPlan} hasHandoff=${task.hasHandoff}`
+        : 'activeTask() -> null (no issues/<id>/ directory found)';
+      const writtenPaths = Object.keys(getWrote(sessionId));
+      const sizeLines = TASK_DOC_NAMES.map((name) => {
+        if (!task) return `${name}: (no active task to look under)`;
+        try {
+          const stat = fs.statSync(path.join(task.dir, name));
+          return `${name}: found, ${stat.size} bytes`;
+        } catch (err) {
+          return `${name}: not found (${err.code || err.message})`;
+        }
+      });
+      return [
+        taskLine,
+        `writtenPaths(session=${sessionId}) = ${JSON.stringify(writtenPaths)}`,
+        `statSync per task document: ${sizeLines.join('; ')}`,
+        `systemMessage = ${JSON.stringify(systemMessage(result))}`
+      ].join('\n');
+    }
 
-  // #126 - past the 150 KB warn line
-  writeFile('issues/98/handoff.md', 'x'.repeat(160 * 1024));
-  recordWrite(session, 'issues/98/handoff.md');
-  {
-    const result = runHook('session-stop.mjs', {
-      session_id: session,
-      cwd: scratchRoot,
-      hook_event_name: 'Stop',
-      stop_hook_active: false
-    });
-    results.push(result);
+    const session = 's-stop-budget';
+    const results = [];
+
+    // #126 - past the 150 KB warn line
+    writeFile('issues/98/handoff.md', 'x'.repeat(160 * 1024));
+    recordWrite(session, 'issues/98/handoff.md');
+    {
+      const result = runHook(
+        'session-stop.mjs',
+        {
+          session_id: session,
+          cwd: scratchRoot,
+          hook_event_name: 'Stop',
+          stop_hook_active: false
+        },
+        { state: taskBudgetState }
+      );
+      results.push(result);
+      check(
+        '#126 task document past 150 KB: names the file and the budget',
+        systemMessage(result).includes('issues/98/handoff.md') &&
+          systemMessage(result).includes('150 KB'),
+        budgetDiagnostics(session, result)
+      );
+    }
+
+    // #127 - past the 300 KB collapse line, names the skill
+    writeFile('issues/98/plan.md', 'x'.repeat(310 * 1024));
+    recordWrite(session, 'issues/98/plan.md');
+    {
+      const result = runHook(
+        'session-stop.mjs',
+        {
+          session_id: session,
+          cwd: scratchRoot,
+          hook_event_name: 'Stop',
+          stop_hook_active: false
+        },
+        { state: taskBudgetState }
+      );
+      results.push(result);
+      check(
+        '#127 task document past 300 KB: names the file, the budget, and the skill',
+        systemMessage(result).includes('issues/98/plan.md') &&
+          systemMessage(result).includes('300 KB') &&
+          systemMessage(result).includes('handoff/SKILL.md'),
+        budgetDiagnostics(session, result)
+      );
+    }
+
+    // #128 - same state again -> silent (once per dedupe key). Silence here
+    // only means something if the prior call (#127) actually fired: a
+    // completely dead budgetSentences() would make #128, #129 and #130 all
+    // pass vacuously (isSilent / no-"KB" / no-"decision" are all trivially
+    // true when nothing is ever emitted) - exactly how this block scored 3
+    // of 5 green during the CI regression above, with only #126/#127
+    // catching it. Assert the precondition explicitly rather than relying
+    // on that.
+    {
+      const prior = results[results.length - 1];
+      check(
+        '#128 precondition: #127 actually fired (not silent)',
+        !isSilent(prior),
+        `${prior.stdout}\n${budgetDiagnostics(session, prior)}`
+      );
+      const result = runHook(
+        'session-stop.mjs',
+        {
+          session_id: session,
+          cwd: scratchRoot,
+          hook_event_name: 'Stop',
+          stop_hook_active: false
+        },
+        { state: taskBudgetState }
+      );
+      results.push(result);
+      check('#128 repeat with unchanged state: silent', isSilent(result), result.stdout);
+    }
+
+    // #129 - a bystander session that wrote outside the task directory never
+    // gets a budget sentence, even though the active task is now issues/98.
+    {
+      const bystander = 's-stop-bystander';
+      recordWrite(bystander, 'app/src/lib/x.ts');
+      const result = runHook(
+        'session-stop.mjs',
+        {
+          session_id: bystander,
+          cwd: scratchRoot,
+          hook_event_name: 'Stop',
+          stop_hook_active: false
+        },
+        { state: taskBudgetState }
+      );
+      results.push(result);
+      check(
+        '#129 bystander session: no KB mentioned',
+        !systemMessage(result).includes('KB'),
+        systemMessage(result)
+      );
+    }
+
+    // #130 - the Stop hook never emits a `decision` key.
     check(
-      '#126 task document past 150 KB: names the file and the budget',
-      systemMessage(result).includes('issues/98/handoff.md') &&
-        systemMessage(result).includes('150 KB'),
-      budgetDiagnostics(session, result)
+      '#130 no result carries a decision key',
+      results.every(
+        (r) => !(r.json && Object.prototype.hasOwnProperty.call(r.json, 'decision'))
+      ),
+      JSON.stringify(results.map((r) => r.json))
     );
+  } finally {
+    // Restore the shared state dir for every later test, and discard this
+    // block's own isolated one - nothing after this point should ever read
+    // from it.
+    process.env.LOOT_HOOK_STATE_DIR = previousStateDir;
+    fs.rmSync(taskBudgetState, { recursive: true, force: true });
   }
-
-  // #127 - past the 300 KB collapse line, names the skill
-  writeFile('issues/98/plan.md', 'x'.repeat(310 * 1024));
-  recordWrite(session, 'issues/98/plan.md');
-  {
-    const result = runHook('session-stop.mjs', {
-      session_id: session,
-      cwd: scratchRoot,
-      hook_event_name: 'Stop',
-      stop_hook_active: false
-    });
-    results.push(result);
-    check(
-      '#127 task document past 300 KB: names the file, the budget, and the skill',
-      systemMessage(result).includes('issues/98/plan.md') &&
-        systemMessage(result).includes('300 KB') &&
-        systemMessage(result).includes('handoff/SKILL.md'),
-      budgetDiagnostics(session, result)
-    );
-  }
-
-  // #128 - same state again -> silent (once per dedupe key). Silence here
-  // only means something if the prior call (#127) actually fired: a
-  // completely dead budgetSentences() would make #128, #129 and #130 all
-  // pass vacuously (isSilent / no-"KB" / no-"decision" are all trivially
-  // true when nothing is ever emitted) - exactly how this block scored 3 of
-  // 5 green during the CI regression above, with only #126/#127 catching
-  // it. Assert the precondition explicitly rather than relying on that.
-  {
-    const prior = results[results.length - 1];
-    check(
-      '#128 precondition: #127 actually fired (not silent)',
-      !isSilent(prior),
-      `${prior.stdout}\n${budgetDiagnostics(session, prior)}`
-    );
-    const result = runHook('session-stop.mjs', {
-      session_id: session,
-      cwd: scratchRoot,
-      hook_event_name: 'Stop',
-      stop_hook_active: false
-    });
-    results.push(result);
-    check('#128 repeat with unchanged state: silent', isSilent(result), result.stdout);
-  }
-
-  // #129 - a bystander session that wrote outside the task directory never
-  // gets a budget sentence, even though the active task is now issues/98.
-  {
-    const bystander = 's-stop-bystander';
-    recordWrite(bystander, 'app/src/lib/x.ts');
-    const result = runHook('session-stop.mjs', {
-      session_id: bystander,
-      cwd: scratchRoot,
-      hook_event_name: 'Stop',
-      stop_hook_active: false
-    });
-    results.push(result);
-    check(
-      '#129 bystander session: no KB mentioned',
-      !systemMessage(result).includes('KB'),
-      systemMessage(result)
-    );
-  }
-
-  // #130 - the Stop hook never emits a `decision` key.
-  check(
-    '#130 no result carries a decision key',
-    results.every((r) => !(r.json && Object.prototype.hasOwnProperty.call(r.json, 'decision'))),
-    JSON.stringify(results.map((r) => r.json))
-  );
 
   // Clean up this block's own scratch so testFailOpen() sees the tree it
   // expects. issues/99/context.md is left in place (only its mtime was
