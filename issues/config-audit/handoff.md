@@ -195,10 +195,15 @@ it printed on a real failure took one.
   cycle 2's commit, `e2ada3f` before cycle 3/4's) - both peer merges from
   unrelated tasks (`tg-preview-refresh`, `art-to-fix`), confirmed each time
   to touch no hook file or README before rebasing/building on top.
-- Committed and pushed on top of `e2ada3f` (see the Status section above
-  for the exact commit hash). **Confirmed by CI, not just claimed**: see
-  the Status section for the run id and conclusion, recorded once the push
-  and CI result were both in hand.
+- Committed and pushed on top of `e2ada3f`: `2ce3b08`. **Confirmed by CI,
+  not just claimed**: run 35086285974, `conclusion: "success"` - `check`
+  (runs `.claude/hooks/selftest.mjs`), all four `golden` shards, `audit`,
+  `secrets`, and `deploy` all succeeded. This is one green run, not a
+  guarantee against a rarer timing than this run happened to exercise - the
+  fix's actual strength is that it removes the *dependency* on session
+  count entirely (nothing else exists in the isolated state file to prune
+  against), which is a stronger property than "passed once," but only
+  repeated runs build confidence in fact.
 
 ### Selftest count: 111 vs 317, not a stale/fresh pair
 
@@ -259,7 +264,7 @@ it printed on a real failure took one.
 - None implement-ready. All three planned batches (B1, B2, B3) are landed and pushed. B3's CI failure took four remediation cycles - see "B3 CI remediation" for the corrected record - and is now fixed at its actual cause (session-state pruning in `saveState()`, worked around in the test by giving `testTaskBudget()` its own state directory). **Confirmed: CI run 35086285974 on `2ce3b08` is green** - `check`, all four `golden` shards, `audit`, `secrets` and `deploy` all success (2026-09-16). Read that with the caution a flaky test earns: `743439c` was also green once, on a theory since disproven. What makes this different is not the green run but the fix being structural (the test's session is alone in its own state file, so the prune cannot reach it) plus the separately measured proof of the mechanism recorded under Deferred. Once confirmed green, this task's closeout becomes live: retarget README row 42's `issues/config-audit/plan.md` citation before that file can be retired (`bash-guard.mjs` rule 2i would deny the deletion otherwise), and delete `mocks/` once its content is confirmed copied.
 
 ## Blockers
-- **CI confirmation for cycle 4 is the live item** - see the Status section for the commit hash and CI run id/conclusion once both are recorded. Say plainly what is and is not proven: the fix removes the *dependency* on session count (nothing else exists in the isolated state file to prune against, so the prune cannot reach this session regardless of timing), which is a stronger claim than "less likely to flake" - but only a green CI run (and ideally more than one) confirms it in fact, the same way a green run on `743439c` was insufficient evidence for cycle 3's now-corrected claim.
+- None. **CI run 35086285974 on `2ce3b08` is green** (`check`, all four `golden` shards, `audit`, `secrets`, `deploy` all `success`), confirming the session-state-pruning fix. Said plainly, for what it is worth: the fix removes the *dependency* on session count (nothing else exists in the isolated state file to prune against, so the prune cannot reach this session regardless of timing), which is a stronger property than "less likely to flake" - but this is one green run, and only repeated runs build confidence in fact, the same caution that cycle 3's now-corrected claim skipped.
 - The tree-quiet check has been re-run before every foreground gate across all four remediation cycles, most recently before cycle 4's: `Get-CimInstance Win32_Process` filtered to `golden.js`/`parity.js`/`run-all.js`/`vitest` -> 0 matches each time; `git status --porcelain -uall` -> only this task's own edits. HEAD moved under this session twice mid-remediation (peer merges `0871b1a` then `e2ada3f`, from unrelated tasks `tg-preview-refresh` and `art-to-fix`) - confirmed each time to touch no hook file or README before rebasing/building on top.
 - ~~The reviewer `tools:` probe (B2 acceptance, README row 41)~~ **cleared 2026-09-16** by the orchestrator. A dispatched reviewer reported exactly `Read`, `Grep`, `Glob`, `Bash` and nothing else; `Edit`, `Write`, `NotebookEdit`, `Agent`, `ToolSearch`, `SendMessage` all absent. The frontmatter allowlist is enforced on this host, so row 36 is closed in fact. Recorded in README row 41 with two limits the probe surfaced: `permissionMode` is not observable from inside a subagent without performing an action (that half stays unverified), and `Bash` in the allowlist means read-only still rests on the prompt and permission settings rather than on the `tools:` line - a shell redirection writes.
 
