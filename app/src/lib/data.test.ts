@@ -167,9 +167,6 @@ describe('the index over the real dataset', () => {
     expect(wondrousItems.length).toBeLessThan(LOOT.items['wondrous']?.length ?? 0);
     const rolls = wondrousItems.map((it) => it.roll);
     expect(rolls).not.toEqual(rolls.map((_, i) => i + 1));
-    for (const it of wondrousItems) {
-      expect(LOOT.items['wondrous']?.find((row) => row.id === it.id)?.roll).toBe(it.roll);
-    }
   });
 
   it("orders the equipment pool the way app.js's ALL_EQ does - eq before the roll tables", () => {

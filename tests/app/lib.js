@@ -1,8 +1,8 @@
-/* The next-only half of the harness: everything the five tests/app/ suites
- * share, and nothing else. tests/app/driver.js already knows how to drive
- * either app; this file adds what only matters for driving dist/ alone in a
- * real browser - a guard that it was actually built, a page factory that
- * seeds storage before the first paint, and an axe runner.
+/* The next-only half of the harness: everything the tests/app/ suites share,
+ * and nothing else. driver.js, its sibling in this directory, already knows
+ * how to drive either app; this file adds what only matters for driving
+ * dist/ alone in a real browser - a guard that it was actually built, a page
+ * factory that seeds storage before the first paint, and an axe runner.
  *
  * These suites do not compare the rewrite against the live app - that is
  * tests/parity.js's job, and this file imports nothing from it. They check

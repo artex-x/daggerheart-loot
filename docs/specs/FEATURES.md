@@ -165,7 +165,9 @@ Six modes. Each keeps its own input in memory only.
   of one is not a ladder and is not drawn. Each rung is named for the piece it
   leads to, because its own content is a bare digit.
 - Referenced Core cards render as a collapsed block and travel with the item
-  into copies and shares.
+  into copies and shares. Each block links out to `daggerheart.su` for the
+  full card, the subdomain matching the language on screen (`ru.` in Russian,
+  `en.` in English), and its text keeps the source's own line breaks.
 - A record with no artwork falls back to `_none.webp` and hides the image
   button; so does a record whose file fails to load, and the app remembers that
   for the session.

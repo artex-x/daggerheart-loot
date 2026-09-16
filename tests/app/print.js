@@ -160,6 +160,12 @@ const { ok } = rep;
   const bw = () => d.click('Чёрно-белая');
   const colour = () => d.click('Цветная');
 
+  /* A page error would otherwise fail silently: every other tests/app/ suite
+     that drives a real page collects one (sweep.js is the pattern), and this
+     one - single shared page across the whole file - had none. */
+  const pageErrs = [];
+  page.on('pageerror', (e) => pageErrs.push(e.message));
+
   /* ---------- card size ----------
      63x88 mm is a playing-card size: sleeves and boxes are sold to it, so it
      is checked in millimetres, not "by eye off a picture". */
@@ -300,7 +306,7 @@ const { ok } = rep;
     'в подписи нет книги: ' + parts.bottom
   );
   /* A community item's caption names the book, not only the community: the
-     card leaves the table on its own, and "Высокородное" does not say where
+     card leaves the table on its own, and "Великородное" does not say where
      it came from. */
   await d.open('#/print/cm1');
   const commBottom = await page.$eval('.pc-bottom', (e) => e.textContent);
@@ -1140,8 +1146,19 @@ const { ok } = rep;
         );
         ok(body.color === 'rgb(0, 0, 0)', s.label + ': текст страницы не чёрный: ' + body.color);
 
-        const main = await d.computed('main', ['max-width', 'padding-top', 'padding-left', 'margin-left']);
+        const main = await d.computed('main', [
+          'max-width',
+          'width',
+          'padding-top',
+          'padding-left',
+          'margin-left'
+        ]);
         ok(main['max-width'] === 'none', s.label + ': у main осталось ограничение ширины: ' + main['max-width']);
+        /* `width: auto` (Shell.svelte's @media print, off style.css:1406's
+           `.wrap,#view{width:auto}`) resolves to the full viewport minus the
+           stable scrollbar gutter at this suite's fixed 1180 width - measured
+           live, not guessed: 1180 - 15px. */
+        ok(main.width === '1165px', s.label + ': у main ширина не во весь лист: ' + main.width);
         ok(
           main['padding-top'] === '0px' && main['padding-left'] === '0px' && main['margin-left'] === '0px',
           s.label + ': у main остались отступы под печать: ' + JSON.stringify(main)
@@ -1195,6 +1212,8 @@ const { ok } = rep;
   const clip = await d.clipboard();
   const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
   ok(hash === '#/print/ci1-q1', 'скопированная ссылка на набор не та: ' + hash);
+
+  ok(!pageErrs.length, 'ошибка на странице — ' + pageErrs.slice(0, 2).join(' | '));
 
   await ctx.close();
   await closeBrowser();

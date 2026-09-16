@@ -554,12 +554,18 @@ describe('the filter', () => {
   });
 
   it('resets from the strip once something is picked', async () => {
-    render(App, { env: wond() });
+    const env = wond();
+    render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    expect(env.router.hash()).not.toBe('#/tables/wondrous');
     await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
     expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
+    /* R0b.1 nit 2: the strip's reset clears the filter in memory (proven
+       above by the empty-state assertions) and must also clear the address a
+       reload or a shared link would read back - not just the panel state. */
+    expect(env.router.hash()).toBe('#/tables/wondrous');
   });
 
   it('hides reset and the copy-link button while the filter is empty, and keeps both reachable with the panel folded', async () => {

@@ -392,7 +392,7 @@
      and which side decides whether the browser's own scroll anchoring gets
      to adjust it, which is one machine giving two stable answers, 7.92% and
      8.47%, for `#/tables/core_item ~ row anchor @ en 375`. That is fixed
-     where it belongs, in `tests/parity/driver.js`: `ready()` now waits for
+     where it belongs, in `tests/app/driver.js`: `ready()` now waits for
      the same promise, so the sweep cannot start before this scroll has
      happened.
      `document.fonts` does not exist in jsdom, so component tests fall through
