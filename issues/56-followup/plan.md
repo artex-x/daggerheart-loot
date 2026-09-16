@@ -2,6 +2,23 @@
 
 ## Status
 
+- Task status: **reopened, in_progress**. B1 and B1r are done, committed and
+  pushed (`106e4dd`, `33d0b26`, `2d2e983`, `c92c8e8`, `bb55a2d`). The human
+  tested the published site on 2026-09-16 and rejected one half of B1's
+  provenance policy; **B2 below is the next batch**. See "B2 direction" for
+  which of B1's settled lines survive and which are void.
+- NEEDS_HUMAN_CONFIRMATION: no. The human settled the two ends of the rule
+  (a complete path at the top of a record page, a bare tag in a badge). The
+  open middle - what a badge shows for a frame and a starting record, whether
+  the print card and the share stubs are tags or paths, and what happens to
+  `whereFrom`'s community branch - is decided in "B2 direction" below.
+- HEAD moves under this task: a second session commits to the same `main`
+  working tree for `issues/config-audit` and `issues/47`. Re-read HEAD and
+  `git status` at the start of B2; do not assume the tree is what a document
+  here last recorded.
+- History below this line is the B1/B1r record. It stands except where the
+  "B2 direction" section marks a line void.
+
 - Gate remediation (2026-09-15): completed the final Svelte-check fixes after
   `33d0b26`. `eqLine` now accepts the established `noTier` option, its
   fixture coverage applies frame-tier suppression, the Other-frame test uses
@@ -14,15 +31,17 @@
   app/contracts` completed successfully (exit 0); the 38 pre-existing
   generator-produced structural golden updates remain intentionally retained
   for the final batch verification and review.
-- Task status: in_progress; B1 has a large interrupted, uncommitted
-  implementation that must be adapted to the latest two-subtable direction.
+- (historical, B1) Task status: in_progress; B1 has a large interrupted,
+  uncommitted implementation that must be adapted to the two-subtable
+  direction. **Superseded: B1 and B1r landed; the tree is clean of them.**
 - Starting commit: `8dae1b9f7111034f4ee9a9d3841679acc8010cba` on `main`.
-- NEEDS_HUMAN_CONFIRMATION: no. The human chose a real two-subtable Other
-  group and delegated exact ids, compatibility, contents, anchors, backlinks,
-  and filters to planning; those decisions are settled below.
-- Preserve the current working tree. It already contains useful counter,
-  combined-pool, translation, documentation, test, generated-data, and
-  snapshot work. Make targeted edits; do not reset or reconstruct the batch.
+- (historical, B1) NEEDS_HUMAN_CONFIRMATION: no. The human chose a real
+  two-subtable Other group and delegated ids, compatibility, contents,
+  anchors, backlinks, and filters to planning; those decisions are settled
+  below and are **not** reopened by B2.
+- (historical, B1) "Preserve the current working tree" applied to B1's
+  interrupted implementation only. **Void for B2**: B1/B1r are committed, and
+  the only tree state B2 must preserve is the concurrent session's.
 
 ## Current state and objective
 
@@ -163,6 +182,13 @@ indexes retain their existing totals and semantics.
 
 ### Record provenance and frame-tier presentation
 
+> **B1 policy. Partly void as of 2026-09-16** - read "B2 direction" below
+> before implementing anything from this subsection. In one sentence: every
+> line here that says *path* still holds for the record page, the print card
+> and the share stub; every line that extends the path to a **badge, row, tile
+> or Search reference** is void, and those surfaces go back to the leaf tag.
+> The frame-tier suppression rule in this subsection is untouched.
+
 - Use one exact breadcrumb separator everywhere provenance is rendered:
   space + U+00B7 MIDDLE DOT + space (` · `). The arrows and hyphen in the
   human's examples describe hierarchy; they are not additional UI separators.
@@ -260,7 +286,7 @@ Out of scope:
   for byte and pin the representative `ci61`, `f1`, and `f95` provenance/tier
   behavior.
 
-## Batch B1 - Split Other into real subtables (next, implement-ready)
+## Batch B1 - Split Other into real subtables (DONE, `106e4dd` + `c92c8e8`)
 
 ### Objective
 
@@ -510,9 +536,465 @@ never run update shards concurrently.
 No fallback is needed. The alias-plus-two-canonical-TableIds model directly
 matches the human's clarified information architecture and existing router.
 
+## B2 direction: a tag and a table path are two different things
+
+The human tested the published site after B1/B1r and split one idea into two.
+`context.md`, "New human direction, 2026-09-16", holds their words. This
+section is the design that follows from them, and it is the authority for B2
+wherever it contradicts the B1 subsection above.
+
+### The rule
+
+- A **table path** answers *where does this record live in the navigation*. It
+  is the group, its sub-table where the group has one, and the record's own
+  section inside that table where the table is sectioned by something the
+  record carries. It is drawn where the reader has no surrounding context: the
+  line under a record-page heading, the print card's source line, and a share
+  stub's subtitle. It must be **complete** there.
+- A **tag** answers *what is this record from*. It is one leaf: a book, a
+  community, or a campaign setting. It is drawn on the `.badge src` chip, which
+  always sits inside a listing or a card that already supplies the context. It
+  **never** carries a path.
+- In code these are exactly the two functions that already exist:
+  `whereFrom()` is the path, `srcLabel()` is the tag. `106e4dd`'s whole tag
+  regression was pointing five `.badge src` sites at `whereFrom`. B2 points
+  them back at `srcLabel` and repairs the path function.
+
+### What the badge shows (the human left this open; decided here)
+
+Reverting the five badge sites to `srcLabel` answers every open case at once,
+with no special-casing, and it is the vocabulary the equipment source facet
+already uses (`EQ_SRC`/`srcName`: the five books plus the four settings).
+
+| record | badge before B2 | badge after B2 |
+|---|---|---|
+| `ci1` Core loot | `Core · Предметы` | `Core` |
+| `ci61` generic starter (`src: core`) | `Прочее · Стартовые` | `Core` |
+| an `hnf` starter (8 of the 29) | `Прочее · Стартовые` | `Hope & Fear` |
+| `f1` frame equipment | `Прочее · Сеттинги · Пир зверей` | `Пир зверей` |
+| `f95` Network Tether | `Прочее · Сеттинги · Материнская Плата` | `Материнская Плата` |
+| `cm1` community | `Великородное` | `Великородное` (unchanged) |
+| a Wondrous record | `Wondrous Loot` | `Wondrous` |
+| a Dread record | `Dread GM Toolbox` | `Dread` |
+| a VoA record | `Vault of Ages` | `Vault of Ages` (unchanged) |
+| equipment in `eq_weapon` | `Снаряжение · Оружие` | its book or setting |
+
+- **A frame record's tag is its setting**, which is what `srcLabel` gave before
+  `106e4dd`. A setting is not a section of a book; beside a Core row it is the
+  thing that tells them apart, exactly as a community is.
+- **A generic starter's tag is its source book.** Verified in `data.json`: the
+  29 unframed starters are 21 `src: 'core'` and 8 `src: 'hnf'`, so the book is
+  real information and `Прочее` would be none. "Starting" is a property of the
+  table it is browsable in, not of where the record came from - it belongs in
+  the path, and it stays there.
+
+### What `whereFrom` becomes
+
+Two changes, and only two:
+
+1. **Delete the community early return.** `if (it.src === 'community') return
+   srcLabel(it, lang)` in `label.ts` is the whole reason `#/i/cm1` prints a
+   leaf where every other record prints a path. Deleting it makes `tableOf`
+   return `community`, whose `GROUPS` entry is already
+   `{ ru: 'Сообщества', en: 'Communities', subs: ['community'] }` with no
+   `SUBS` row - so the base is `Сообщества` / `Communities`, and the leaf
+   below appends the community. **`tableOf` needs no change at all**; the
+   table id, the group and the grouping already exist.
+2. **Generalise the third segment.** Today it is `isFrameRecord(it) ?
+   ' · ' + srcLabel(...)`. Make the condition `it.frame || it.community`:
+   append the record's own section leaf when the table is sectioned by a value
+   the record carries. That is true of exactly two tables - `other_frames` is
+   sectioned by `frame`, `community` by `community` (`sections.ts`,
+   `communityGroup`) - and of no others. **Do not generalise further**: Vault
+   of Ages is sectioned too, but by the book's own tiers, not by a property of
+   the record, and its path stays `Vault of Ages`.
+
+Everything else in `whereFrom` stands unchanged, including the
+`if (!table) return srcLabel(it, lang)` fallback that `label.test.ts:176`
+pins. The net effect is that **`whereFrom`'s output changes for the 90
+community records and for nobody else.**
+
+### `printSrc` and the share stubs (the human left these open; decided here)
+
+- **The print card is a path, and it does not change.** A card leaves the
+  table and goes to the table alone, which is the argument already recorded in
+  `label.ts`'s own comment and in the B1 subsection above; that argument
+  survives the split intact, because a print card has no surrounding listing to
+  supply context. Its current outputs are already correct under the new rule,
+  so B2 changes no rendered print text. What B2 *does* do is collapse the
+  duplication the two-abstraction rule exposes: `printSrc`'s hand-built
+  `` `${t.srcComm} · ${srcLabel(it, lang)}` `` is now character-for-character
+  what `whereFrom` returns for a community record, so `printSrc` becomes
+  `isFrameRecord(it) || it.src === 'community' ? whereFrom(...) : srcLabel(...)`
+  - byte-identical output for every record in the catalogue, one rule instead
+  of two. Mirror the same collapse in `app.js`.
+- **The generated share stubs are not touched.** `tools/build-share-pages.js`
+  is not a general path renderer: `provenance()` returns a breadcrumb for frame
+  and starting records and `''` for everything else, and `subtitle()` then
+  falls through to the historical `Предмет · Core · №12` form. Read under the
+  new rule that file is already right on both counts - the breadcrumb sits in
+  the headline position, which is a path, and the middle field of the fallback
+  form is a source leaf, which is a tag. So `i/*.html` does not move, and with
+  it `data.js`, `data.json`, `catalog.csv`, `docs/fixtures/`,
+  `tests/contracts.js`, `docs/specs/CONTRACTS.md` and `llms.txt` do not move
+  either. **This is a decision, not an omission**: if a future human wants the
+  unfurl to carry a full path for every record, that is its own batch with its
+  own 1091-stub regeneration and its own contract commit.
+
+### Which B1 acceptance lines are void, and which stand
+
+Void:
+
+- "The full provenance string must replace the current leaf-only source label
+  on every direct reference surface" - **void for the five `.badge src` sites**
+  (`RecordCard.svelte`, `RowMain.svelte`, and `cardHTML`/`rowHTML`/
+  `listRowHTML` in `app.js`). Those are tags. The same bullet's record-page,
+  print-card and share-stub clauses stand.
+- The B1 acceptance line beginning "All direct provenance uses ` · ` exactly"
+  is void **only** in its enumeration of card, row, tile, Search and modal
+  references. Its `ci61` / `f1` / `f95` strings remain correct for the record
+  page, the print card and the share stub, which is where B2 leaves them.
+- Anything in B1 that reads "do not fall back to leaf-only" **about a badge**.
+  A badge falling back to the leaf is now the requirement.
+
+Stand, unchanged:
+
+- The separator: one ` · ` (U+00B7 with a space either side), everywhere a path
+  is drawn, in both languages and in the Russian stubs.
+- The path vocabulary: the concise navigation words (`Стартовые`, `Сеттинги`,
+  `Starting`, `Frames`), never the descriptive page names.
+- "Setting section headings and the Equipment source-facet values remain leaf
+  labels ... because their parent context is already visible and they are
+  selectors, not record provenance." This is the same principle the human has
+  now extended to badges; it is the reason B2 is a small change and not a
+  redesign.
+- **The frame-tier suppression policy is untouched.** Verified rather than
+  assumed: it is driven entirely by `isFrameRecord()` in `eqParts`/`eqLine`,
+  `tileTier`, the tier ladder, `PrintCard` and the stub generator, none of
+  which reads `whereFrom` or `srcLabel`. Its pinned fixture
+  (`docs/fixtures/statlines/equipment.json`, `f7`) is a stat line, not a
+  badge. B2 must not touch it, and must not let a golden diff on a tier line
+  pass as expected fallout.
+- The whole of the route, filter, section, alias, home-normalisation, counter
+  and `f95` translation design. B2 reopens none of it.
+
+### Two divergences this design also closes
+
+Both were found in source while planning B2, both sit in the exact functions
+B2 rewrites, and both are one line. `CLAUDE.md`: in a touched path, fix cheap,
+local, safe bugs.
+
+1. **The badge diverges between the two renderers today.** `app.js`'s
+   `whereFrom` returns `srcLabel(it)` for every record that is neither a frame
+   nor a starter, so the fallback badge on a Core item reads `Core` while the
+   shipped Svelte badge reads `Core · Предметы`. That is a rendered-text
+   difference across most of the catalogue, and it went unnoticed because
+   `8dae1b9` had already dropped `parity` from `deploy.needs`. Pointing both
+   renderers' badges at `srcLabel` closes it exactly.
+2. **The record-page path drops the artifact segment in the rewrite.**
+   `app.js:3237` appends `' · ' + voaTierOne(it.tier)` for `tier === 'A'` or
+   `'C'`; `RecordPage.svelte`'s `where` does not. Eleven VoA records are
+   affected (`voa2_a1`..., all with a roll number), so the live app prints
+   `Vault of Ages · Артефакт · номер 1` and the rewrite prints
+   `Vault of Ages · номер 1`. No golden or parity state opens such a record,
+   which is why nothing caught it. It is the human's own complaint in another
+   costume - the path at the top of a record page is incomplete - so it is
+   fixed here, with its own acceptance line and its own state.
+
+## Batch B2 - Separate the tag from the table path (next, implement-ready)
+
+### Objective
+
+Make `.badge src` a leaf tag again in both renderers, complete the table path
+on a record page for the two record types where it is short (community, VoA
+artifact/cursed), and leave every other provenance surface byte-identical.
+
+### In scope / out of scope
+
+In scope: `label.ts`'s `whereFrom` and `printSrc`; the five `.badge src`
+sites; `RecordPage.svelte`'s subtitle; the same five-plus-two places in
+`app.js`; the unit and component tests that pin these strings; two new golden
+states; `FEATURES.md` and `COVERAGE.md`; regenerated goldens.
+
+Out of scope, and each is a decision recorded above, not an oversight:
+`tools/build-share-pages.js` and every `i/*.html`; `data.js` and its generated
+outputs; `CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`, `llms.txt`;
+`ROUTES.md`, `STATE.md`, `I18N.md`; routes, filters, sections, aliases, home
+normalisation, counters, the `f95` translation; the frame-tier suppression
+policy; `dict.ts` (no key is added or removed, so `tests/i18n.js` parity is
+unaffected); `PrintCard.svelte` and `TableRows.svelte` (tiles carry no source
+badge - verified).
+
+### Expected files
+
+Production:
+
+- `app/src/lib/label.ts` - `whereFrom` (community branch, leaf condition),
+  `printSrc` (collapse), and the module header comment, which still describes
+  the pre-B1 arrangement and must now state the tag/path split.
+- `app/src/components/RecordCard.svelte:136`,
+  `app/src/components/RowMain.svelte:98` - `whereFrom` -> `srcLabel`.
+- `app/src/components/RecordPage.svelte` - the artifact/cursed segment.
+- `app.js` - `whereFrom` (rewrite to the path form), `printSrc` (collapse),
+  the three badge sites at `2029`, `2821`, `3093` (`whereFrom` -> `srcLabel`),
+  and `renderItemPage` at `3226-3231` (drop the inline path, call `whereFrom`).
+
+Tests, docs, goldens:
+
+- `app/src/lib/label.test.ts`, `app/src/components/tables.test.ts`,
+  `app/src/components/record.test.ts`, `app/src/components/searchPage.test.ts`
+- `tests/app/inventory.js` and `tests/parity/specs.js` (two new states)
+- `docs/specs/FEATURES.md`, `docs/specs/COVERAGE.md`
+- `tests/app/snapshots/*.txt` (generator output only)
+- `issues/56-followup/plan.md`, `handoff.md`
+
+### Ordered implementation steps
+
+1. Re-read HEAD and `git status`. The concurrent session owns `.claude/`,
+   `CLAUDE.md`, `issues/config-audit/`, `issues/47/` and may have touched
+   `tests/parity/specs.js` for issue 47's R0b. Re-read `specs.js` and
+   `tests/app/inventory.js` before editing them rather than trusting the line
+   numbers in this plan. Preserve every unrelated path.
+2. `app/src/lib/label.ts`: delete the `if (it.src === 'community') return
+   srcLabel(it, lang)` first line of `whereFrom`. Change its last line from
+   `isFrameRecord(it) ? ...` to appending `srcLabel(it, lang)` when
+   `it.frame || it.community` is set. Keep `if (!table) return srcLabel(...)`.
+   Comment the *why* in one or two lines: the leaf is the record's own section
+   in a table that is sectioned by a value the record carries, which is
+   `other_frames` and `community` and nothing else.
+3. `label.ts`: collapse `printSrc` to
+   `isFrameRecord(it) || it.src === 'community' ? whereFrom(it, lang) :
+   srcLabel(it, lang)` and drop the now-unused `const t = dict(lang)` (the
+   `dict` import stays - `srcName` uses it). Keep the existing comment's
+   argument; it is still the reason the card names the book.
+4. `label.ts`: rewrite the module header comment. It currently explains
+   `srcLabel` and a community record as if that were the only rule. It must now
+   say plainly that `srcLabel` is the tag a badge carries and `whereFrom` is
+   the path a record page carries, and why a badge must not carry a path.
+5. Point `RecordCard.svelte:136` and `RowMain.svelte:98` at
+   `srcLabel(it, lang)`. Fix the imports: `whereFrom` is no longer used in
+   either file, `srcLabel` is; `isFrameRecord` stays in both (stat lines,
+   tier ladder).
+6. `RecordPage.svelte`: in `where`, after the `whereFrom` bit and before the
+   roll/tier bit, push `t.voaArtifact1` when `it.tier === 'A'` and
+   `t.voaCursed1` when `it.tier === 'C'`, matching `app.js:3237`'s
+   `voaTierOne`. Do not restructure the rest of the `$derived.by`.
+7. `app.js`: rewrite `whereFrom(it)` to the same path form the Svelte one now
+   has - `tableIdOf` -> `groupOf` -> `SUB_LABEL`, then append `srcLabel(it)`
+   when `it.frame || it.community`. It keeps reading `S.lang` as it does now.
+   Then collapse `printSrc` the same way as step 3, and point `2029`, `2821`
+   and `3093` at `srcLabel(it)`.
+8. `app.js` `renderItemPage`: replace the inline
+   `isFrameRecord(it) || it.starting ? whereFrom(it) : ...` ternary with
+   `whereFrom(it)`. `tid` stays (`tableHref(tid, it.id)` needs it); the now
+   unused `grp` and `sub` locals go. The surrounding comment about the
+   subtitle reading as a navigation path is still correct - keep it, and let it
+   now describe the whole function rather than a special case.
+9. Update the pinned strings:
+   - `label.test.ts:171-173` - `whereFrom` on a community record becomes
+     `Сообщества · Великородное` / `Communities · Highborne`.
+   - `tables.test.ts:965` - the frame row's badge becomes `Пир зверей`.
+     The comments at `tables.test.ts:888` and `:926` say the row badge carries
+     the same name as its section heading; after B2 both are true again, so
+     leave them, but re-read them for accuracy.
+   - `printSrc`'s existing assertions (`label.test.ts:77-83`) must pass
+     **unchanged** - that is the proof the collapse is output-identical.
+10. Add coverage, not only edits. At minimum: `whereFrom` and `srcLabel`
+    asserted side by side for one record of each shape (core loot, generic
+    starter, `hnf` starter, `f1`, `f95`, `cm1`, VoA artifact) in both
+    languages, so the two abstractions are pinned apart rather than one being
+    derived from the other; a component assertion that a Search result row and
+    a list row draw the leaf tag; and a `record.test.ts` case for `#/i/cm1`
+    and for a VoA artifact page's subtitle. End component tests with
+    `expectNoA11yViolations` per `COVERAGE.md`.
+11. Add two golden states, in **both** `tests/app/inventory.js` and
+    `tests/parity/specs.js` `STATES` (the guard at the foot of `inventory.js`
+    compares the two by id and route, so one without the other fails):
+    `{ id: '#/i/cm1', route: '#/i/cm1', why: 'a community record - the one
+    table path whose leaf is the record\'s own community' }` and
+    `{ id: '#/i/voa2_a1', route: '#/i/voa2_a1', why: 'an artifact - the tier
+    word belongs in the path line, and no state opened one' }`. Mirror the
+    shape of the existing `#/i/f1` entry. They need no `recordActions.only`
+    membership.
+12. `docs/specs/FEATURES.md`, "Records": add the rule in two bullets - the
+    line under the heading is the record's table path and is complete there,
+    including the community and the artifact/cursed word; the source badge is
+    one leaf naming the book, community or setting, because every place it is
+    drawn already shows the context around it.
+13. `docs/specs/COVERAGE.md`: `app/golden` says "108 states"; two new states
+    make it **110**. Check for any other count of the same set in that file
+    before committing.
+14. Regenerate the goldens with the generator only, one shard at a time, never
+    concurrently: `node tests/app/golden.js --update --shard=N/4` for N in
+    1..4. Then inspect the whole diff before running the comparison shards.
+    See "Expected golden fallout" below for what a surprise looks like.
+15. Run the gates in "Verification commands". Then update `handoff.md` with
+    exact commands and results, and commit the batch as one Conventional
+    Commit authored `artex-x <artex-x@users.noreply.github.com>` with no AI
+    attribution trailer. Push once the gates are green.
+
+### Expected golden fallout
+
+Say this out loud in the commit body too, so a reviewer can tell an expected
+diff from a surprise.
+
+- **Expect roughly 95 of the 108 existing snapshots to move, plus 2 new
+  files, for 110 in total.** The reason is mechanical: a listing row is a
+  `button` whose accessible name is the whole row text, badge included, and a
+  golden records that name as `namelen=` / `namehash=`. So *every* state that
+  draws a record row or a record card moves, in both languages, even though
+  only a few characters changed. The route families are tables 38, lists 20,
+  roll 18, `#/i/` 11, search 7, `#/l/` 5.
+- **Expect the 9 `#/print/` snapshots not to move at all.** `printSrc` is
+  output-identical by construction. A print snapshot that moves means the
+  `printSrc` collapse was not output-identical - stop and diff it.
+- **Expect no `Ранг N` / `Tier N` to appear or disappear anywhere.** A golden
+  diff that touches a tier line means the frame-tier policy was disturbed;
+  that is a defect, not fallout.
+- Path lines (`page-sub`) move on the 90 community records and the 11 VoA
+  artifact/cursed records only. In the existing snapshot set that is visible
+  in the two new files; `_i_ci1*`, `_i_f1` and `_i_q1*` move on their **card
+  badge**, not on their subtitle. `_i_f1.txt`'s `StaticText "Прочее · Сеттинги
+  · Пир зверей "` line is the subtitle and must stay exactly as it is.
+- `#/i/nope` (the not-found page) draws no record, so it should not move.
+
+### Acceptance criteria
+
+- `#/i/cm1` reads `Сообщества · Великородное` in Russian and
+  `Communities · Highborne` in English, in **both** renderers, and the same
+  holds for all 90 community records.
+- The `.badge src` chip carries exactly one leaf everywhere it is drawn - a
+  record card (full and compact), a table row, a Search result row, a list
+  row, a modal card - in both renderers: `Core`, `Hope & Fear`, `Wondrous`,
+  `Dread`, `Vault of Ages`, a community name, or a setting name. It contains
+  no ` · ` for any record in the catalogue.
+- `ci61` badges `Core`; an `hnf` starter badges `Hope & Fear`; `f1` badges
+  `Пир зверей` / `Beast Feast`; `f95` badges `Материнская Плата` /
+  `Motherboard`.
+- The record-page subtitle still reads `Прочее · Стартовые` / `Other ·
+  Starting` for `ci61`, `Прочее · Сеттинги · Пир зверей` / `Other · Frames ·
+  Beast Feast` for `f1`, and `Прочее · Сеттинги · Материнская Плата` /
+  `Other · Frames · Motherboard` for `f95`. B2 changes none of these.
+- `#/i/voa2_a1` reads `Vault of Ages · Артефакт · номер 1` /
+  `Vault of Ages · Artifact · roll 1` in both renderers; a `tier: 'C'` record
+  reads `Проклятый предмет` / `Cursed object` in the same position.
+- Every `printSrc` output is byte-identical to `c92c8e8`'s for every record;
+  no `#/print/` golden moves.
+- No `i/*.html` file, no generated data file, and no public contract file
+  changes. `git status` after `node tools/build.js` shows no `i/` diff.
+- Frame records still show no `Ранг` / `Tier` on any direct surface, and
+  aggregate Equipment tier sections, facets, ordering, pricing and counts are
+  unchanged.
+- The two renderers agree: `app.js` and the built app draw the same badge text
+  and the same record-page path for every record shape listed above. (This is
+  a defect B2 closes, so it is acceptance, not a background assumption.)
+- `tests/app/inventory.js` and `tests/parity/specs.js` both carry `#/i/cm1`
+  and `#/i/voa2_a1`; the inventory guard passes; `COVERAGE.md` says 110.
+- `FEATURES.md` states the tag/path rule.
+- All four golden comparison shards pass after regeneration, every changed
+  snapshot is generator-produced, and the diff matches "Expected golden
+  fallout" with no tier-line movement and no print movement.
+- `npm run check`, `npm run check:built` and `git diff --check` are green, or
+  the exact reason a gate could not run is recorded in the handoff before the
+  commit (see the blocker note below).
+
+### Verification commands
+
+Focused, fast, first:
+
+```text
+rtk npx vitest run --coverage=false app/src/lib/label.test.ts app/src/components/record.test.ts app/src/components/tables.test.ts app/src/components/searchPage.test.ts app/src/components/printPage.test.ts app/src/components/listPage.test.ts
+rtk node tests/run-all.js i18n,derived,dataint,eqtest,qa
+```
+
+Then the generator and the goldens, sequentially, never two at once:
+
+```text
+rtk npm run build
+rtk node tests/app/golden.js --update --shard=1/4
+rtk node tests/app/golden.js --update --shard=2/4
+rtk node tests/app/golden.js --update --shard=3/4
+rtk node tests/app/golden.js --update --shard=4/4
+rtk node tests/app/golden.js --shard=1/4
+rtk node tests/app/golden.js --shard=2/4
+rtk node tests/app/golden.js --shard=3/4
+rtk node tests/app/golden.js --shard=4/4
+rtk node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts,app/states
+```
+
+Then the two repository gates. `npm run check` is the one that must fit a
+single foreground call - `.claude/README.md`, "Run a long check":
+
+```text
+set -o pipefail; npm run check 2>&1 | tail -n 120      # Bash timeout 600000
+rtk npm run check:built
+rtk git diff --check
+```
+
+Advisory, because CI is the parity baseline and this host is not
+(`docs/parity.md`, "Machine variance"). Run it because B2 is the batch that
+closes a renderer divergence, and a nonzero cell here is information:
+
+```text
+MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/"
+```
+
+If a new `#/i/cm1` or `#/i/voa2_a1` cell measures nonzero, do **not** invent a
+`VISUAL_DEBT` number from a local reading. Record the figure in the handoff and
+say CI must confirm it.
+
+This is one batch, not three. It shares one component set (`label.ts` and its
+five call sites), one seed, one golden regeneration and one parity filter; the
+fixed cost of `check` + `check:built` + four shards is paid once whether it
+carries two files or twelve (`docs/parity.md`, "Batch size and the fixed cost
+of a run"). It crosses no public-contract boundary, which is the cut that would
+have forced it into its own commit.
+
+### Risks and do-nots
+
+- **Do not touch `tools/build-share-pages.js` or any `i/*.html`.** That is the
+  decision in "B2 direction", and it is what keeps this batch off the
+  contract path. A stub diff means something upstream changed that should not
+  have.
+- Do not change `tableOf`/`tableIdOf`. The community table id, group and
+  section grouping already exist; the bug was the early return above them.
+- Do not extend the third path segment beyond `it.frame || it.community`. VoA
+  sections are the book's tiers, not a property of the record.
+- Do not reintroduce a path into a badge "for consistency" on any one surface.
+  A tag is a tag on all five.
+- Do not touch the frame-tier suppression rule, `eqParts`/`eqLine`'s `noTier`
+  option, or `docs/fixtures/statlines/equipment.json`.
+- Do not hand-edit a snapshot or an `i/` page; `.claude/hooks/edit-guard.mjs`
+  refuses it, and it would hide the very drift the goldens exist to show.
+- Do not add or remove a `dict.ts` key. `srcFrame` is already unused and stays
+  that way; `tests/i18n.js` already reports it among seven pre-existing unused
+  names, and widening that list is a separate decision.
+- The concurrent session may be editing `tests/parity/specs.js` for issue 47's
+  R0b at the same time. Re-read it before editing, keep the edit to the two
+  `STATES` entries, and if it conflicts, add the entries and say so in the
+  handoff rather than reverting anything of theirs.
+- `npm run check` was red at B1r's close for a cause outside this task: the
+  other session's untracked `.agents/` and `.claude/skills/impeccable/` fail
+  `format:check` and `lint`. Check whether that is still true **before**
+  starting, and if it is, follow B1r's precedent exactly - run every stage of
+  the gate with the foreign paths excluded, record each stage's result in the
+  handoff, and name the exclusion in the commit rather than silently bypassing
+  the gate.
+
+No fallback is needed. The design is a revert of one half of `106e4dd` plus a
+two-line repair of `whereFrom`; there is no second approach worth carrying.
+
 ## Deferred
 
-- None.
+- The three unused `dict.ts` source strings the audit keeps reporting
+  (`srcFrame` and friends) - pre-existing, not this task's to decide.
+- `app.js`'s `tableIdOf` still tests `it.frame`, then `it.starting`, then
+  `it.src === 'frame'`; `label.ts`'s `tableOf` merged the two frame tests in
+  B1r finding 12. No record in the catalogue reaches the difference. Fold them
+  the next time either file is open for another reason.
+- Whether a share stub's subtitle should carry a full table path for every
+  record rather than only for Other. Decided *not* to do in B2 (reasons in "B2
+  direction"); it would cost a 1091-stub regeneration and a contract commit.
 
 ## Implementation checkpoint
 

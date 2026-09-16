@@ -83,6 +83,42 @@
 - `f95` must appear exactly once in the combined table, under Motherboard, even
   though it is granted at character creation.
 
+## New human direction, 2026-09-16: tags and table paths are two abstractions
+The human tested the published site after B1/B1r and rejected part of the
+settled provenance policy. This supersedes the "full breadcrumb everywhere"
+decision recorded in `plan.md`'s Evidence and settled design.
+
+- **A table path belongs at the top of a record page**, and must be complete
+  there. `https://artex-x.github.io/daggerheart-loot/#/i/cm1` shows `Highborne`;
+  the human wants `Communities · Highborne` / `Сообщества · Великородное`.
+- **A tag must not carry the path.** The source badge now reads
+  `Core · Items` where the human wants `Core`. Quoted: "I want at the top of
+  the page for path in tables [to] be displayed BUT I don't want tags to be
+  displayed this way ... we should distinct these two abstractions - tags and
+  table paths".
+
+Verified in source on 2026-09-16, not guessed:
+- `app/src/lib/label.ts` `whereFrom` opens with
+  `if (it.src === 'community') return srcLabel(it, lang)`, which is why the
+  community record page prints a leaf where every other record prints a path.
+  `app.js` `whereFrom` has no community branch at all and falls through to
+  `srcLabel` for the same result.
+- `106e4dd` switched the `.badge src` element from `srcLabel` to `whereFrom`
+  in `app/src/components/RecordCard.svelte` and `RowMain.svelte`, and in
+  `app.js` `cardHTML`, `rowHTML` and `listRowHTML`. That is the whole of the
+  tag regression; `RecordPage.svelte`'s own `where` line was already
+  `whereFrom` before that commit.
+- `printSrc` in both renderers, and `provenance()`/`subtitle()` in
+  `tools/build-share-pages.js`, also emit breadcrumbs and are open questions
+  for the planner, not settled by the quotes above.
+
+Unresolved for the planner, listed because they are not in what the human
+said: what a badge shows for a frame record (setting leaf such as
+`Пир зверей`, which is what `srcLabel` gave before `106e4dd`) and for a
+starting record (`Core`); whether the print card and the generated share
+stubs count as tags or as paths; and how far the golden and parity fallout
+reaches.
+
 ## Do not re-fetch unless
 - The human supplies new behavior or naming direction.
 - A source fact is missing or conflicts with live behavior.
