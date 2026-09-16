@@ -8,26 +8,24 @@ depends on chat history.
 
 - Task status: **in_progress. R0a is CLOSED; R0b.1 is CLOSED and pushed,
   including one review-remediation commit; R0b.2 is CLOSED and pushed, all 20
-  acceptance lines Met, no fifth divergence found; R0b.3 is next - entry
-  condition now met (R0b.1 and R0b.2 both landed) but still needs its own
-  one-item re-derivation at batch open (`plan.md`, "R0b.3 designed",
-  "Honest readiness"); R0b.4 is behind it, an ordinary queued batch of FOUR
-  divergences, not three - a fourth surfaced during R0b.1's own C3, was
-  folded in, and the owner has answered it** (implementer, 2026-09-16 for
-  R0b.2; item 4 answered by the owner via the orchestrator, 2026-09-16; the
-  three briefs written by the planner, 2026-09-16).
-  Last agent: implementer (R0b.2). **NEEDS_HUMAN_CONFIRMATION: no** for the
-  whole of R0b - R0b.2 is done, R0b.3 and R0b.4 both have every answer they
-  need. The one owner gate still outstanding in TASK 47 is R0c's go (Phase 7
-  condition 6). Branch `main`, pushed at `28636fe` (R0b.2's three commits
-  `97083dd`/`c2f7931`/`28636fe` on top of C1 `37a1061`, which a previous,
-  interrupted implementer run had already committed and verified correct;
-  two unrelated peer doc commits `5066b23`/`a0c8313` landed on `origin/main`
-  mid-batch, touching only `issues/47/context.md`, no overlap). R0b.2's full
-  record: "Completed", below, and "R0b.2's own commands and results" under
-  "Verification". R0b.1's full record stays at `git show
-  28636fe:issues/47/handoff.md`, "R0b.1's own commands and results" (moved
-  out of this file per "Verification"'s own "latest batch only" rule).
+  acceptance lines Met, no fifth divergence found; R0b.3 is CLOSED and
+  pushed, all 13 acceptance lines Met, no fifth divergence found; R0b.4 is
+  next - an ordinary queued batch, entry condition now met (R0b.1..R0b.3 all
+  landed), FOUR divergences, not three - a fourth surfaced during R0b.1's
+  own C3, was folded in, and the owner has answered it** (implementer,
+  2026-09-16 for R0b.2 and R0b.3; item 4 answered by the owner via the
+  orchestrator, 2026-09-16; the four briefs written by the planner,
+  2026-09-16).
+  Last agent: implementer (R0b.3). **NEEDS_HUMAN_CONFIRMATION: no** for the
+  whole of R0b - R0b.2 and R0b.3 are done, R0b.4 has every answer it needs.
+  The one owner gate still outstanding in TASK 47 is R0c's go (Phase 7
+  condition 6). Branch `main`, pushed at `1aa8720` (R0b.3's three commits
+  `1bb27b7`/`67c47a2`/`1aa8720` on top of R0b.2's close-out `98ddf52`).
+  R0b.3's full record: "Completed", below, and "R0b.3's own commands and
+  results" under "Verification". R0b.2's full record stays at `git show
+  98ddf52:issues/47/handoff.md`, "R0b.2's own commands and results" (moved
+  out of this file per "Verification"'s own "latest batch only" rule); R0b.1's
+  at `git show 28636fe:issues/47/handoff.md`, same section name.
   R0a is `b0545ed` (C1), `30b2744` (C2),
   `47a9a15` (C3) on top of `29eae18`, with `06658fd`, `858ae58`, `530aa10`,
   `6e1269b` and `f826bcd` as its records and corrections; it was built,
@@ -165,6 +163,27 @@ gate's own numbers and every rejected alternative is at `git show
 fc59ce4:issues/47/plan.md`**, the last pre-compaction commit. The code and its
 specs are the rest of the record.
 
+- **R0b.3 - the print sheet ported to `dist/`, plus the four print parity
+  specs** (implementer, 2026-09-16). Three commits: `1bb27b7` (C1,
+  `tests/print.js`'s thirty-one groups transposed onto `fresh()`/
+  `tests/app/driver.js` as `tests/app/print.js`, `run-all.js`'s `app/print`
+  row), `67c47a2` (C2, `sheetCounts`/`cardFit`/`printMedia`/`copiedPrintLink`
+  from `tests/parity/specs.js` folded in, `app/print`'s weight re-measured),
+  `1aa8720` (C3, `docs/specs/COVERAGE.md` re-derived and flipped to landed).
+  Pushed at `1aa8720`. All 13 acceptance lines Met; no fifth divergence.
+  **Preflight finding, not a divergence**: `dist/` renders no `[data-act]`
+  anywhere - checked live before transposing - so the colour/black-and-white
+  toggle and the "back" control are gripped by name (`d.click('Чёрно-белая'`
+  style)) instead, the same fallback `tests/parity/specs.js` already used for
+  the same buttons; `#selBar` is `.selbarwrap`, the substitution
+  `tests/app/states.js`'s case 16 already made. **One stale assertion fixed
+  in C1**: the longest-text print set no longer drives either app's fit
+  ladder as far as hiding a picture (verified directly against `index.html`
+  on the same route - both apps agree, `--pcpad` never leaves 23cqw on
+  today's catalogue); the check became "the font step engages" instead of
+  "art gets hidden", same intent, no longer asserting a state neither app
+  reaches. Full command record: "R0b.3's own commands and results" under
+  "Verification".
 - **R0b.2 - every real-browser placement the ten-verdict audit found**
   (implementer, 2026-09-16). Four commits: `37a1061` (C1, eight new
   `tests/app/states.js` cases - real history Back/Forward, the narrow-width
@@ -345,92 +364,88 @@ it and a reviewer reads it:
   "Batch size and the fixed cost of a run", and `context.md`, "`npm run
   check`, settled".
 
-### R0b.2's own commands and results (implementer, 2026-09-16)
+### R0b.3's own commands and results (implementer, 2026-09-16)
 
-**R0b.1's own full command record moved out per this section's "latest batch
-only" rule: `git show 28636fe:issues/47/handoff.md`, "R0b.1's own commands
+**R0b.2's own full command record moved out per this section's "latest batch
+only" rule: `git show 98ddf52:issues/47/handoff.md`, "R0b.2's own commands
 and results".**
 
-Picked up mid-batch: C1 (`37a1061`) was already committed by a prior,
-interrupted run. Verified against the brief line by line before continuing
-(states.js: 22 `CASES` rows, header/success string both say "twenty-two",
-nit 6's `e.key === 'dhloot.lists.v2'` guard present at `:190`) rather than
-re-done.
-
-Preflight: `git status --short tools/build-share-pages.js i/` clean; host
-probe `npm run format:check` 6.4s (healthy, well under the ~11s/~55s split);
-`npm run build` 4.5s, deterministic (`git status --short i/ data.json
-catalog.csv` empty after). No `chrome.exe`, no `test-output/parity.lock`.
+Preflight: re-derived all four `COVERAGE.md` print line numbers by grep at
+batch open (verdict row `:44`, features-map row `:85`, thin spot that stays
+`:388-390`, thin spot that retired `:427-429` - none matched the brief's or
+the handoff's own stale citations). Live-checked `dist/#/print/ci1-q1`:
+`document.querySelectorAll('[data-act]').length === 0` - the grip is gone,
+recorded as a design change (name-based `d.click`, the same fallback
+`tests/parity/specs.js` already used) rather than substituted silently.
+`dist/card` and the repository `card/` both hold 36 SVGs. No `chrome.exe`
+before any heavy run.
 
 Gates, foreground, one call each, nothing else running beside them:
 
-- `node tests/run-all.js app/states` - green, 104.5s.
-- `node tests/app/sweep.js 1180` - green, 554.8s.
-- `node tests/app/sweep.js 768` - green, 320.1s.
-- `node tests/app/sweep.js 390` - green, 342.2s.
-- `node tests/app/sweep.js 360` - green, 337.0s.
-- `node tests/run-all.js app/hues` - green, 69.1s.
-- `node tests/stub.js` - green, 2.7s.
-- `set -o pipefail; npm run check 2>&1 | tail -n 120` - once per commit, all
-  three green (C1's own check having already passed under the prior run):
-  after C2 150.1s, after C3 134.8s, after C4 147.9s; 42 files/1046 tests,
-  coverage steady at 96.61/88.58/97.10/97.34 throughout - unmoved by this
-  batch, as the brief predicted (no `app/src/` touched).
-- `git revert --no-commit 9177f3b` then `git revert --abort` (line 19) -
+- `npm run build` - green, ~2s, deterministic.
+- `node tests/app/print.js` (direct, ahead of the gate) - red once
+  (`ни одна длинная карта не отдала место под правило`), root-caused by
+  diffing the same route against `index.html` directly rather than guessed
+  at, then green.
+- `node tests/run-all.js app/print` - after C1, green, 138.1s; after C2,
+  green, 120.1s; post-commit re-run at the closed tree, green, 127.6s (the
+  three readings are why the recorded weight is a measurement, not the
+  first number seen - `run-all.js`'s row carries 122s, the C2 standalone
+  timing).
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - green after C1, green
+  after C2 (a stray dirty `docs/specs/COVERAGE.md` disarmed the commit gate
+  between edits twice, both times cleared by re-running this same command);
+  42 files/1046 tests, coverage steady at 96.61/88.58/97.10/97.34 throughout
+  - unmoved, as expected (no `app/src/` touched).
+- `git revert --no-commit 9177f3b` then `git revert --abort` (line 12) -
   `Auto-merging .github/workflows/ci.yml`, exit 0, clean; aborted without
   committing.
+- `node tests/parity.js print` - not run: no ported assertion failed against
+  `dist/` once the stale one was fixed, so the diagnostic's entry condition
+  never came up.
 
-**Acceptance lines 1-20, all Met:**
+**Acceptance lines 1-13, all Met:**
 
-1. Preflight above, recorded.
-2-9. Cases 15-22 in `tests/app/states.js` (`historyBackForward:483`,
-   `selectionBarGeometry:511`, `dragReorder:539`,
-   `foldedDetailsSurviveRerender:600`, `tileGeometryNoArt:644`,
-   `storageNoticeAt320:680`, `buttonFocusSurvivesRerender:704`,
-   `moneyHelpAndPressedPicker:729`), each verified against its source line
-   in the brief's table.
-10. Case 13's note group at `tests/app/states.js:397-440`.
-11. Nit 6 closed at `tests/app/states.js:190`.
-12. Header/success string both "twenty-two", 22 `CASES` rows; `app/states`
-    green (above).
-13. `sweep.js` PAGES `:54-57`, selector list `:282-285`, craft reads
-    `:295-303`; all four widths green (above).
-14. `hues.js` `.rstats` one-tone `:141`, tile fill `:159`; `app/hues` green
-    (above).
-15. `tests/stub.js` exists, requires `tests/app/lib.js:8`, asserts both
-    widths; `run-all.js`'s `stub` row added; green (above).
-16. Every citation into the three touched files re-verified by opening them
-    post-edit. Most of `states.js`'s pre-existing citations (54,68,86 /
-    161 / 178,348 / 330 / 385) turned out **unchanged** - C1 appends after
-    all existing content, before `CASES`, so nothing before it moved.
-    `sweep.js`'s six did move (130->137, 289->316, 297->324, 304->332,
-    313->341, 328->356) plus a seventh instance of the same address-echo
-    line cited a second time in the `qa` row's own "Dropped" clause
-    (289->316), which the brief's pre-batch audit had not named - caught by
-    verifying every hit of a `grep` for `sweep\.js:\d`, not only the ones
-    the brief listed.
-17. All seven rows carrying a "queued for R0b.2" clause flipped to landed
-    with a case/selector citation each: `notes`, `lists2`, `select`,
-    `eqtest`, `behave`, `qa`, `craftmob`. (The brief's own count of "four"
-    was already imprecise - seven rows carried the clause, not four; all
-    seven are landed regardless.)
-18. Suite counts re-derived by listing `tests/*.js` (23 files, 20 of them
-    old-app suites per `run-all.js`'s `SUITES` table) and `tests/app/*.js`
-    (9 files, 6 of them suites: `app/sweep`, `app/golden`, `app/contracts`,
-    `app/states`, `app/typo`, `app/hues` - "five" was already stale before
-    this batch, per `context.md`; now corrected to six). `tests/stub.js`
-    given its own line: tests neither app, only the generated `i/*.html`
-    stubs.
-19. `git diff --stat 8fe8d55..28636fe -- . ':(exclude)issues/47'` touches
-    exactly `docs/specs/COVERAGE.md`, `tests/app/hues.js`,
-    `tests/app/states.js`, `tests/app/sweep.js`, `tests/run-all.js`,
-    `tests/stub.js` - no `app/src/`, no `ci.yml`, no `tests/parity/specs.js`,
-    no deletion. `git revert --no-commit 9177f3b` still applies cleanly
-    (above).
-20. No fifth divergence found. Every change in this batch is an additive
-    real-browser assertion against existing rewrite behaviour; nothing
-    observed diverges from the live app beyond the four already-recorded,
-    already-answered divergences.
+1. Preflight above, recorded, including the `[data-act]` check.
+2. `tests/app/print.js` carries every `tests/print.js` group: the design
+   table's thirteen rows at the stated tolerances, the 63x88/210x297 mm
+   checks, the 30.8/63.7% partitions, the `hi-lo>8`/`>=3 edges>14` art-edge
+   thresholds - all transposed unchanged.
+3. All 23 `settle()` calls are `await d.settle()`; the `.pc-shield img`
+   `waitForFunction` survives verbatim.
+4. `window.LOOT` not read; `data.json`'s `items.wondrous`/`voa`/`community`
+   used instead. SVG reads resolve through `CARD_DIR` (basename +
+   `tests/../../card`), not a stale `__dirname/..` join.
+5. `readPNG` inlined (`tests/app/print.js:39-84`); `tests/lib.js` untouched
+   (`git diff --stat 98ddf52..HEAD -- tests/lib.js` empty).
+6. `.pc-name` gripped by class throughout, never by tag.
+7. `sheetCounts`/`cardFit`/`printMedia`/`copiedPrintLink` all four carried;
+   `cardFit` loops `WIDTHS` (1100/768/375); `printMedia` uses
+   `d.media('print')` with a `finally` reset.
+8. `run-all.js`'s `app/print` row weight is the measured 122s first-C2-green
+   run, placed between the golden shards and `app/contracts`; the legacy
+   `print` row untouched; `app/print` green after each commit (above).
+9. `COVERAGE.md`'s `print` row reads landed; `app/print` in the
+   `tests/app/*` table and the `| Print |` features row; the geometry thin
+   spot retired, the "measured, not image-compared" one kept (reworded for
+   both suites); the goldens' print-state count corrected to nine, verified
+   against `tests/app/inventory.js:996-1053`.
+10. All four `COVERAGE.md` citations this batch used were re-derived by grep
+    at batch open (preflight above), not trusted from the brief.
+11. Count sentences re-derived: the `tests/app/*` intro's "six" suites
+    corrected to "seven" (`app/print` added), not merely incremented.
+12. No deletion, no `ci.yml`, no `VISUAL_DEBT`/`ACCEPTED` edit
+    (`git diff --stat 98ddf52..HEAD -- .github/workflows/ci.yml
+    tests/parity/specs.js` empty); `git revert --no-commit 9177f3b` still
+    applies cleanly (above).
+13. `git diff --stat 98ddf52..HEAD -- app/src` empty - no `app/src/` change
+    at all, so the lighter half of the stop-and-raise condition applies; no
+    `check:built` or print parity filter needed as a gate.
+
+No fifth divergence found. The one behaviour difference from the legacy
+suite's assumptions (the long-text set no longer drives either app's fit
+ladder into hiding art) was verified identical on both apps before being
+treated as a stale assertion, not a divergence.
 
 ### R0a's result lines (implementer, 2026-09-13)
 
@@ -514,84 +529,19 @@ the same host conditions:
 
 ## Next batch (implement-ready)
 
-**R0b.1 and R0b.2 are both CLOSED, pushed, and green.** R0b.1's full record is
-"Completed" and `git show 28636fe:issues/47/handoff.md` (its own former
-"Verification" entry). R0b.2's full record is "Completed" and "Verification",
-above - **all 20 acceptance lines Met, no caveats, no fifth divergence.**
-R0b.1's one open caveat from its own close-out (**19 - met, and the standing
-guarantee independently re-checked**) still applies going forward: the
-line's literal command, `git show 9177f3b | git apply --reverse --check -`,
-is stale once `ci.yml` has moved past its own starting HEAD; **use `git
-revert --no-commit 9177f3b` (then `git revert --abort`) instead** - R0b.2
+**R0b.1, R0b.2 and R0b.3 are all CLOSED, pushed, and green.** R0b.1's full
+record is "Completed" and `git show 28636fe:issues/47/handoff.md` (its own
+former "Verification" entry). R0b.2's is "Completed" and `git show
+98ddf52:issues/47/handoff.md`. R0b.3's is "Completed" and "Verification",
+above - **all 13 acceptance lines Met, no fifth divergence.** R0b.1's one
+open caveat from its own close-out (**19 - met, and the standing guarantee
+independently re-checked**) still applies going forward: the line's literal
+command, `git show 9177f3b | git apply --reverse --check -`, is stale once
+`ci.yml` has moved past its own starting HEAD; **use `git revert --no-commit
+9177f3b` (then `git revert --abort`) instead** - R0b.2 and R0b.3 both
 re-confirmed this command still applies cleanly.
 
-### R0b.3 - IMPLEMENT-READY, entry condition met, one re-derivation at batch open
-
-**Design: `plan.md`, "R0b.3 designed".** Entry: R0b.1 landed (the port needs
-the moved driver's `media`, `computed`, `eachAt` verbs) and R0b.2 landed
-(**now true, both** - it moves the `COVERAGE.md` lines this batch edits).
-Nothing waits on the owner.
-
-**Honest readiness.** Implement-ready except for one thing, which is why it is
-not promoted: **every `COVERAGE.md` line number this batch needs is moved by
-R0b.2's own C4.** At `241d55f` they were the `print` verdict row `:41`, the
-features-map row `| Print | print |` `:82`, the thin spot that stays
-(`:385-387`, "measured, not compared to a reference image") and the thin spot
-that retires (`:424-426`, "print's geometry is `print`'s alone"). Re-derive all
-four with a grep for `print` over the file at batch open. Note the earlier plan
-text citing `COVERAGE.md:373-375` for the retiring thin spot was wrong before
-R0b.2 touched anything. Everything else the brief cites - `tests/print.js`,
-`tests/parity/specs.js`, `FEATURES.md`'s "Print" section, `app.js` - is stable
-through all of R0b.
-
-**Acceptance criteria.**
-
-1. Preflight run and recorded, including the check that `dist/` still renders
-   `[data-act="printArt"|"printBack"|"printLink"]`; if it does not, the grip
-   changed and that is recorded as a design change, not substituted silently.
-2. `tests/app/print.js` exists, uses `tests/app/lib.js`'s `fresh`/`reporter`/
-   `closeBrowser`, and carries every one of `tests/print.js`'s assertion groups
-   against `dist/`, with the design table's thirteen rows at +/-1.5 of 344
-   units over `q1` and `q313` in both modes, the 63x88 mm +/-0.4 card, the
-   210x297 mm +/-0.6 sheet, the 30.8/63.7 % cell partitions, and the art-edge
-   thresholds (`hi - lo > 8`, at least three edges `> 14`).
-3. Every legacy 250 ms `settle()` is `await d.settle()`; the explicit
-   `waitForFunction` on `.pc-shield img` width survives as an explicit wait.
-4. `window.LOOT` is not read; the id sets come from `data.json` the way
-   `tests/parity/specs.js` builds them. The three SVG-file reads resolve
-   against the repository's `card/` directory.
-5. `readPNG` is inlined into the new suite; `tests/lib.js` is not edited and
-   keeps its single remaining consumer, `tests/print.js`, until R0c.
-6. `.pc-name` is gripped by class, never by tag - `FEATURES.md` records the
-   rewrite's deliberate `<h3>` -> `<h2>` change.
-7. `sheetCounts`, `cardFit`, `printMedia` and `copiedPrintLink` are all four
-   carried, including `cardFit`'s per-width loop (the legacy suite is 1180
-   only) and `printMedia`'s `d.media('print')` with its `finally` reset -
-   nothing else in the repository emulates print media.
-8. `tests/run-all.js` has an `app/print` row whose weight is the **measured**
-   wall clock of the first green run, placed by it; the legacy `print` row is
-   untouched. `node tests/run-all.js app/print` is green after each commit.
-9. `COVERAGE.md`'s `print` row reads as landed; `app/print` appears in the
-   `tests/app/*` table and in the `| Print |` features row; the print-geometry
-   thin spot is retired and the "measured, not image-compared" one is kept; and
-   the row's claim about how many print states the structural goldens carry is
-   corrected to **nine**, verified against `tests/app/inventory.js`.
-10. Every `COVERAGE.md` line the batch cites was re-derived at batch open, and
-    every citation it writes was verified against the file as it then stood.
-11. Count sentences true again, re-derived not adjusted.
-12. No deletion, no `ci.yml`, no `VISUAL_DEBT`/`ACCEPTED` edit; `git revert
-    --no-commit 9177f3b` still applies cleanly.
-13. Either no `app/src/` change, or exactly one CSS property in
-    `PrintCard.svelte`/`PrintPage.svelte` with `npm run check:built` and a
-    `print` parity filter added to the gates - anything larger was recorded as
-    a fifth divergence and **the batch stopped**.
-
-**Gate set**: `npm run build`; `npm run check` per commit, one foreground call;
-`node tests/run-all.js app/print` after C1 and after C2. `node tests/parity.js
-print` is a diagnostic on failure only, not a gate. No `check:built` (no screen
-changes), no golden shards (no component, no `inventory.js` entry).
-
-### R0b.4 - QUEUED, briefed, two re-derivations at batch open
+### R0b.4 - IMPLEMENT-READY, entry condition met, two re-derivations at batch open
 
 **Design: `plan.md`, "R0b.4 designed".** Entry: R0b.1..R0b.3 landed. **All four
 divergences are answered restore** - items 1-3 (owner, 2026-09-16) and item 4
