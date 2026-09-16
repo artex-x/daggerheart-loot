@@ -9,23 +9,27 @@ depends on chat history.
 - Task status: **in_progress. R0a is CLOSED; R0b.1 is CLOSED and pushed,
   including one review-remediation commit; R0b.2 is CLOSED and pushed, all 20
   acceptance lines Met, no fifth divergence found; R0b.3 is CLOSED and
-  pushed, all 13 acceptance lines Met, no fifth divergence found; R0b.4 is
-  next - an ordinary queued batch, entry condition now met (R0b.1..R0b.3 all
-  landed), FOUR divergences, not three - a fourth surfaced during R0b.1's
-  own C3, was folded in, and the owner has answered it** (implementer,
-  2026-09-16 for R0b.2 and R0b.3; item 4 answered by the owner via the
-  orchestrator, 2026-09-16; the four briefs written by the planner,
-  2026-09-16).
-  Last agent: implementer (R0b.3). **NEEDS_HUMAN_CONFIRMATION: no** for the
-  whole of R0b - R0b.2 and R0b.3 are done, R0b.4 has every answer it needs.
-  The one owner gate still outstanding in TASK 47 is R0c's go (Phase 7
-  condition 6). Branch `main`, pushed at `1aa8720` (R0b.3's three commits
-  `1bb27b7`/`67c47a2`/`1aa8720` on top of R0b.2's close-out `98ddf52`).
-  R0b.3's full record: "Completed", below, and "R0b.3's own commands and
-  results" under "Verification". R0b.2's full record stays at `git show
-  98ddf52:issues/47/handoff.md`, "R0b.2's own commands and results" (moved
-  out of this file per "Verification"'s own "latest batch only" rule); R0b.1's
-  at `git show 28636fe:issues/47/handoff.md`, same section name.
+  pushed, all 13 acceptance lines Met, no fifth divergence found, including
+  one review-remediation commit; R0b.4 is next - an ordinary queued batch,
+  entry condition now met (R0b.1..R0b.3 all landed), FOUR divergences, not
+  three - a fourth surfaced during R0b.1's own C3, was folded in, and the
+  owner has answered it** (implementer, 2026-09-16 for R0b.2 and R0b.3; item
+  4 answered by the owner via the orchestrator, 2026-09-16; the four briefs
+  written by the planner, 2026-09-16).
+  Last agent: implementer (R0b.3 remediation). **NEEDS_HUMAN_CONFIRMATION:
+  no** for the whole of R0b - R0b.2 and R0b.3 are done, R0b.4 has every
+  answer it needs. The one owner gate still outstanding in TASK 47 is R0c's
+  go (Phase 7 condition 6). Branch `main`, pushed at `00eb465` (R0b.3's three
+  build commits `1bb27b7`/`67c47a2`/`1aa8720` on top of R0b.2's close-out
+  `98ddf52`, its own close-out `c625691`, then one remediation commit
+  `00eb465` after a fix-then-continue review found two blockers in the
+  batch's own art-rung finding - see "R0b.3 remediation" under
+  "Verification"). R0b.3's full record: "Completed", below, and "R0b.3's own
+  commands and results" plus "R0b.3 remediation" under "Verification". R0b.2's
+  full record stays at `git show 98ddf52:issues/47/handoff.md`, "R0b.2's own
+  commands and results" (moved out of this file per "Verification"'s own
+  "latest batch only" rule); R0b.1's at `git show
+  28636fe:issues/47/handoff.md`, same section name.
   R0a is `b0545ed` (C1), `30b2744` (C2),
   `47a9a15` (C3) on top of `29eae18`, with `06658fd`, `858ae58`, `530aa10`,
   `6e1269b` and `f826bcd` as its records and corrections; it was built,
@@ -169,20 +173,35 @@ specs are the rest of the record.
   `tests/app/driver.js` as `tests/app/print.js`, `run-all.js`'s `app/print`
   row), `67c47a2` (C2, `sheetCounts`/`cardFit`/`printMedia`/`copiedPrintLink`
   from `tests/parity/specs.js` folded in, `app/print`'s weight re-measured),
-  `1aa8720` (C3, `docs/specs/COVERAGE.md` re-derived and flipped to landed).
-  Pushed at `1aa8720`. All 13 acceptance lines Met; no fifth divergence.
+  `1aa8720` (C3, `docs/specs/COVERAGE.md` re-derived and flipped to landed),
+  plus one remediation commit `00eb465` (below). Pushed at `00eb465`. All 13
+  acceptance lines Met; no fifth divergence.
   **Preflight finding, not a divergence**: `dist/` renders no `[data-act]`
   anywhere - checked live before transposing - so the colour/black-and-white
   toggle and the "back" control are gripped by name (`d.click('Чёрно-белая'`
   style)) instead, the same fallback `tests/parity/specs.js` already used for
   the same buttons; `#selBar` is `.selbarwrap`, the substitution
-  `tests/app/states.js`'s case 16 already made. **One stale assertion fixed
-  in C1**: the longest-text print set no longer drives either app's fit
-  ladder as far as hiding a picture (verified directly against `index.html`
-  on the same route - both apps agree, `--pcpad` never leaves 23cqw on
-  today's catalogue); the check became "the font step engages" instead of
-  "art gets hidden", same intent, no longer asserting a state neither app
-  reaches. Full command record: "R0b.3's own commands and results" under
+  `tests/app/states.js`'s case 16 already made. **Reviewed at Opus: verdict
+  fix-then-continue, two blockers, one remediation cycle, both in the batch's
+  own art-rung finding.** Blocker 1: the C1 commit message and this file's
+  own prose over-generalised a host-local reading into a durable spec claim
+  - the longest-text set's fit ladder only fails to reach the art-hiding step
+  **on this Windows host, 2026-09-16**; ubuntu CI reaches it on the same
+  route (`print` suite, CI run `35130947774`, green on `98ddf52` before this
+  batch existed) - `CLAUDE.md`'s "a local run is advisory" rule applies
+  exactly here. `COVERAGE.md` and this file corrected to carry the host and
+  the CI run rather than a general claim; `tests/app/print.js` gained a
+  host-independent rung invariant beside the font-step check (if some card's
+  `--pcpad` sits at its own floor, some card's art must be hidden -
+  vacuously true where the floor is never reached, the real check where it
+  is). Blocker 2: `cardFit`'s `--pcpad` bound was `>= 3`, one step short of
+  the black-and-white ladder's real floor `2.8` (`PrintCard.svelte`'s
+  `pad -= 1.5` steps 5.8 -> 4.3 -> 2.8, pinned by `printPage.test.ts:581`) -
+  latent on the local run, would have fired once the ladder ran deeper on
+  ubuntu. Fixed to `>= 2.8`. Two nits rode along: the text font-size floor
+  `>= 2.2` tightened to the real `>= 2.6` (2.2 is the strip box's separate
+  floor), and the font-step check's message corrected to name what it now
+  asserts. Full command record: "R0b.3's own commands and results" under
   "Verification".
 - **R0b.2 - every real-browser placement the ten-verdict audit found**
   (implementer, 2026-09-16). Four commits: `37a1061` (C1, eight new
@@ -384,9 +403,10 @@ Gates, foreground, one call each, nothing else running beside them:
 
 - `npm run build` - green, ~2s, deterministic.
 - `node tests/app/print.js` (direct, ahead of the gate) - red once
-  (`ни одна длинная карта не отдала место под правило`), root-caused by
-  diffing the same route against `index.html` directly rather than guessed
-  at, then green.
+  (`ни одна длинная карта не отдала место под правило`), diffed against
+  `index.html` directly on the same route rather than guessed at, both apps
+  agreeing on this host at the time - then green. **This reading was later
+  shown to be host-local, not app behaviour**: see "Remediation" below.
 - `node tests/run-all.js app/print` - after C1, green, 138.1s; after C2,
   green, 120.1s; post-commit re-run at the closed tree, green, 127.6s (the
   three readings are why the recorded weight is a measurement, not the
@@ -443,9 +463,58 @@ Gates, foreground, one call each, nothing else running beside them:
     `check:built` or print parity filter needed as a gate.
 
 No fifth divergence found. The one behaviour difference from the legacy
-suite's assumptions (the long-text set no longer drives either app's fit
-ladder into hiding art) was verified identical on both apps before being
-treated as a stale assertion, not a divergence.
+suite's assumptions - this host never drives the long-text set's fit ladder
+into hiding art - was verified identical between `index.html` and `dist/`
+before being treated as host-local text-metric variance, not a divergence;
+see "Remediation" for the correction to how that reading was written down.
+
+### R0b.3 remediation (implementer, 2026-09-16, one cycle)
+
+**Reviewed at Opus: verdict fix-then-continue, two blockers, both in the
+batch's own art-rung finding; cycle spent.** Commit `00eb465`, pushed.
+
+- **Blocker 1 - a host-local reading became a durable spec claim.** The C1
+  commit message, `docs/specs/COVERAGE.md`'s `print` row and this file's own
+  "Completed" bullet all stated the longest-text ladder "no longer" reaches
+  the art-hiding step - a general claim, when the batch had only ever
+  measured it on one host. CI run `35130947774` on `98ddf52` (this batch's
+  base, green two hours before the batch) proves `tests/print.js`'s original
+  art-rung assertion passes on ubuntu; CI run `35136053221` on `1aa8720`
+  proves the ported `app/print` suite passes there too. `tests/app/
+  inventory.js:1028`'s own `why` ("the font, then the padding, then the art
+  gives way") was already correct and untouched. Fixed: `COVERAGE.md` and
+  this file's "Completed" bullet now carry the measurement with its host and
+  date plus the CI run that contradicts it as a general claim, instead of a
+  false generalisation. `tests/app/print.js`'s font-step check
+  (`shrunk > 0`) stayed - it is true everywhere - with its message corrected
+  to name the font rung rather than the art rung. A new host-independent
+  rung invariant rides beside it: if any card's `--pcpad` sits at its own
+  floor, some card's art must be `display:none` - vacuously true where the
+  floor is never reached (this host), the real check wherever it is (ubuntu
+  CI). Every print `<img>` in `PrintCard.svelte` is `alt=""`, so this rung is
+  invisible to the structural goldens in both directions - real numbers in a
+  real browser is what this suite exists for.
+- **Blocker 2 - a bound that contradicts the app's own floor.** `cardFit`'s
+  `--pcpad` check asserted `>= 3`; `PrintCard.svelte`'s own black-and-white
+  ladder (`pad -= 1.5` from 5.8, while `pad > 3`) bottoms at exactly `2.8`,
+  pinned by `printPage.test.ts:581`. Latent, not red - ubuntu was green on
+  `1aa8720` - and would have fired the moment the ladder ran deeper than this
+  host's own readings. Fixed to `>= 2.8`. Two nits rode along on the
+  reviewer's instruction: the text font-size floor `>= 2.2` tightened to the
+  real `>= 2.6` (2.2 belongs to the separate strip-box ladder), and the
+  `shrunk` check's message no longer names the art rung.
+
+**Deferred to R0b.4** (R0b's terminal batch; not fixed here, scope held):
+missing `pageerror` handler in `tests/app/print.js`; the vacuous `display`
+check at (then) `:1028-1033`; `printMedia`'s dropped `width` from `main`'s
+property list; the "Высокородное"/"Великородное" comment mismatch;
+`run-all.js`'s `app/print` weight (122) not matching any single recorded
+reading exactly; `COVERAGE.md`'s pre-existing `app/golden` "110 states"
+where `tests/app/inventory.js` says 105 (pre-existing, not this batch's).
+
+Gates: `npm run build` green (~1s); `node tests/run-all.js app/print` green,
+121.7s; `set -o pipefail; npm run check 2>&1 | tail -n 120` green, coverage
+unmoved (no `app/src/` touched).
 
 ### R0a's result lines (implementer, 2026-09-13)
 
@@ -800,6 +869,19 @@ B11.1's nits were closed by B11.1 and B12.
   session state and this entry, `plan.md`'s "The fourth verdict", and
   `tools/capture-share-fixture.mjs`'s own comment are what actually carry it
   forward.
+
+- **PLACED for R0b.4, six nits from R0b.3's review (reviewer, 2026-09-16).**
+  All deferred, not fixed in the remediation cycle: a missing `pageerror`
+  handler in `tests/app/print.js`; the vacuous `display === '' || 'none'`
+  check at (then) `:1028-1033` (true of any string, so it cannot fail);
+  `printMedia`'s property list for `main` dropping `width`, which
+  `tests/parity/specs.js`'s own spec carried; the "Высокородное"/
+  "Великородное" community-name mismatch in a code comment; `run-all.js`'s
+  `app/print` weight (122) not matching any single recorded wall clock
+  exactly (readings were 138.1s/120.1s/127.6s across the batch, 121.7s/127.1s
+  across the remediation); and `COVERAGE.md`'s pre-existing `app/golden` row
+  claiming "110 states" where `tests/app/inventory.js` says 105 - predates
+  this batch, not introduced by it.
 
 - **PLACED for R0c: `tests/parity/lock.js` is a live hook dependency R0c's
   outline does not name (planner, 2026-09-16).** It is imported by
