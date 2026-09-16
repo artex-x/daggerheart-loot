@@ -2,23 +2,25 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress
-- Last agent: implementer (B2)
+- Task status: done - B1, B2 and B3 are all shipped; `plan.md` defines no
+  further batch. B3b was not needed - the whole batch closed in one commit.
+- Last agent: implementer (B3)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `tooling/art-refresh` in worktree
   `E:/dev/daggerheart-loot-wt/tg-preview-refresh`
-- Base / starting commit for this batch: `db52655`, tree clean (plus the
-  planner's uncommitted r2 doc edits, committed as this batch's first commit,
-  `551380f`).
-- Commits made this batch: `551380f` (docs-only, gate-exempt, the planner's
-  r2 `issues/art-tooling/*.md` revision - B1's established pattern) and
-  `7698c95` (B2 code + docs). Branch tip is now `7698c95`.
-- `origin/main` moved twice more during this batch, as expected (a peer
-  session and a CI bot both push): `2ce3b08`/`80809c8`/`e2ada3f` at r2
-  dispatch -> `01a91bb`/`3f693a5`/`2ce3b08` at batch start ->
-  `618ad7c`/`8850600`/`7849e51` re-read just before the final commit. This
-  branch was deliberately **not** rebased onto any of them;
-  `.claude/hooks/**` is untouched by this batch.
+- Base / starting commit for this batch: `643df19` (B2's handoff record),
+  tree clean, branch already pushed (`origin/tooling/art-refresh` = `643df19`
+  at dispatch).
+- Commits made this batch: `a38cd60` (B3 code + docs: `planIngest`, the
+  `ingest` verb, the `og/` orphan check, both prompts, `docs/artwork.md`'s
+  ingest section, `docs/specs/COVERAGE.md`). This handoff update is the next
+  commit. The B3/B3b seam (plan.md 5.3 fallback) was **not** used - the full
+  batch, including both prompts, closed in one pass and one commit.
+- `origin/main` moved during this batch, as expected (a peer session and a
+  CI bot both push): `b3d0d1f`/`618ad7c`/`8850600` at dispatch ->
+  `a142ee9`/`37e4812`/`db01b92` re-read just before the code commit. This
+  branch was deliberately **not** rebased onto it; `.claude/hooks/**` is
+  untouched by this batch.
 
 ## Completed
 
@@ -122,6 +124,118 @@ Shipped in `7698c95`, per `plan.md` section 5.2, all eleven ordered steps.
   published-dimension fact in a stats table, not a re-derivation of the
   settings; not counted as the duplicate.
 
+### B3 - the ingest verb, both prompts, and the runbook's second half
+
+Shipped in `a38cd60`, per `plan.md` section 5.3, all nine ordered steps in
+one commit (the B3/B3b seam was not needed).
+
+- `tools/artwork/lib.mjs`: refactored the matching half of `planInstall`
+  (name/`map.assign` resolution, duplicate-bytes detection) into a shared
+  `matchSources` helper - a pure extraction, `planInstall`'s behavior and
+  return shape are unchanged - so `planIngest` reuses it rather than forking
+  the matching code, per the plan's explicit instruction.
+  `planIngest({ sources, records, missingAssets, map })` returns
+  `{ creates, shares, unarted, unsourced, unmatched, ambiguous, collisions,
+  duplicateSources, counts }`. **The interpretive decision the plan leaves
+  open, resolved and worth flagging for review**: `shares` (and `creates`)
+  are keyed off *matched candidates* (a source in `--uploads` resolving to a
+  record), not off every record in the full `records` array that happens to
+  share an asset. Reasoning: `planIngest` never infers which records are
+  "new," and the plan's own worked example ("one shared-with-existing
+  record") only makes sense if the anchor record that already owns the asset
+  is *not* also reported - which requires scoping `shares` to what a source
+  actually resolved to. Confirmed against the plan's own mixed-fixture counts
+  example (`shared: 1`, not 2) before committing to it. Documented in
+  `lib.mjs`'s comment above `planIngest` and in `docs/artwork.md`.
+- `tools/artwork/lib.test.mjs`: 7 new cases (19 -> 26 total) - the og/-trap
+  negative assertion (`JSON.stringify(result).includes('og/joiner.jpg') ===
+  false`), the two-new-records-one-new-asset case, `img: ''` -> `unarted`,
+  an unsourced missing asset, unmatched/ambiguous/duplicate-bytes reuse,
+  `map.assign` for ingest, and the mixed-fixture counts example from the
+  plan verbatim.
+- `tools/artwork/run.mjs`: added the `ingest` verb and `findMissingAssets`
+  (distinct `img` values in `data.js` for which `img/<value>` does not exist
+  - computed here, never inside `planIngest`). Extracted `installAndVerify`
+  (encode to `.tmp` siblings, decode-check, rename both, re-encode-and-
+  compare) as the one installer code path shared by `install` and `ingest` -
+  `install`'s own behavior is unchanged, verified by re-running B2's
+  fixture-install scratch case after the refactor (same log line format,
+  same exit codes). `ingest`'s hard stops: ambiguous/collisions/
+  duplicate-bytes (shared with `install`), non-square/non-opaque (via
+  `decodeAndCheck`), and the **inverted** precondition - refuses when a
+  destination `img/` or `og/` file **already exists**, naming it. Verified
+  against a scratch fixture (below) including the inverted-precondition
+  firing on a deliberately partial pre-existing `og/*.jpg`.
+- `tests/dataint.js`: added the `og/` orphan check immediately after the
+  existing `img/` orphan block, exempting `_none.jpg`/`_share.jpg`, reusing
+  the same `used` set (mapped `.webp` -> `.jpg`) rather than recomputing it.
+  Passes unchanged on the current tree (877 `og/*.jpg`, 875 claimed, exactly
+  the two exemptions - matches `context.md`'s measured precondition, re-
+  verified this session). **Negative test performed by hand**: copied
+  `og/_none.jpg` to `og/__b3-negative-test.jpg`, ran
+  `node tests/run-all.js dataint` - failed, naming
+  `картинка og/__b3-negative-test.jpg никому не принадлежит`; deleted the
+  file, re-ran - passed. `git status --porcelain -- img og` was empty both
+  before and after; the scratch file never touched git.
+- `docs/artwork.md`: added the `ingest` bullet to the verb list, "The ingest
+  path" section (inverted precondition and why, the three legal outcomes,
+  the `unsourced` blocker, the ordering constraint and why, the command
+  sequence), and extended "Risks" to name `ingest` alongside `install`/
+  `verify`. Did not restate the conversion settings.
+- `.claude/prompts/add-source.prompt.md`: the four edits in plan.md 3.8 -
+  the "Canonical data source of truth" block (asset-id/sharing/`img:''`
+  facts, linking `docs/artwork.md`), Phase 1 step D (the three ingest
+  decisions), Phase 2 step 5 (declare `img` then run `ingest`, states the
+  ordering constraint), and Phase 2 step 10 + Done criteria (names
+  `node tests/run-all.js dataint` explicitly). No settings, dimensions, or
+  encoder flags added - confirmed by grep (below).
+- `.claude/prompts/refresh-artwork.prompt.md`: applied the 3.2 table. The
+  Phase 1 stop paragraph survives **verbatim** with one appended sentence
+  citing the drop-is-the-ledger exception and linking `docs/artwork.md`.
+  Phase 1 steps 4 and 7 (hashing, decode/validate) now point at
+  `tools/artwork/run.mjs plan`/`install --dry-run` instead of describing the
+  mechanics by hand. Phase 2's contract bullets drop the `640x640 RGB`
+  specifics in favor of a `docs/artwork.md` pointer. Phase 3 keeps only the
+  genuine judgment call (reconciling shared-art policy under the duplicate-
+  byte invariant); the mechanical resolution/rejection/report steps now
+  point at `plan`'s output. Phase 4 replaced wholesale with the `install`
+  invocation and its refusal conditions, dropping the settings list. Phase 5
+  items 1-3 replaced with `verify`/`verify-previews` invocations; items 4-6
+  (git diff inspection, gates, `npm run check`/`check:built`, commit/push)
+  are unchanged. Renumbered the trailing two Phase 5 items after the
+  replacement (6/7 -> 5/6).
+- **Grep confirmation (B3's closing acceptance line)**: `640x640`,
+  `quality 85`, `quality 80` no longer appear in either prompt file. They
+  appear only in `docs/artwork.md` (the documented home),
+  `tools/artwork/run.mjs` (the implementation, not a restatement), and
+  `README.md`/`README.ru.md` (a published-dimension fact in a stats table,
+  per B2's handoff - not counted as the duplicate).
+- `docs/specs/COVERAGE.md`: extended the `dataint` table row with the new
+  `og/` orphan check, and extended the `tools/artwork/lib.test.mjs`
+  paragraph with the ingest planner's cases, naming the og/-trap case
+  explicitly.
+- `.claude/agents/add-source.md` and `.claude/agents/refresh-artwork.md`:
+  read both; neither's `description` promises a procedure its prompt no
+  longer carries (both just say "follow the prompt file" plus a short,
+  still-accurate summary), so **neither was edited**. No `model:` line
+  touched, per the plan's constraint.
+- `docs/specs/CONTRACTS.md`: **not touched this batch.** Re-checked section
+  5 first - B2 already added the asset-id/sharing sentence "in both
+  directions," including the ingest direction ("a new record that joins an
+  existing asset gets no `img/` or `og/` file of its own"). Per the
+  orchestrator's note that B2's CONTRACTS.md edit was reviewed and correct
+  (states the rule `tools/build-share-pages.js` already enforces, adds no
+  frozen path/id/URL), the same standard applies here: B3 adds no new
+  contract fact CONTRACTS.md doesn't already state, so `tests/contracts.js`,
+  `llms.txt`, and `docs/fixtures/` correctly did not move.
+
+All exercise of `install`/`ingest`/`verify` ran against scratch fixtures
+under the session scratchpad
+(`.../scratchpad/fixture-b3/`, `fixture-install3/`), built with `sharp`
+itself (solid-color synthetic images) since a real photo wasn't needed to
+prove the code paths. Never against this repository's own `img/`/`og/`/
+`data.js`.
+
 ## Verification
 
 Commands run, in order, with results:
@@ -151,53 +265,100 @@ All scratch fixtures lived under the session scratchpad
 under this repository's own `img/`/`og/`. `install`/`verify` were never run
 against the real repository tree.
 
-`npm run check:built` was **not** run - confirmed against the real file list
-(`tools/artwork/**`, `package.json`'s `check` script, `docs/**`,
+`npm run check:built` was **not** run in B2 - confirmed against B2's real
+file list (`tools/artwork/**`, `package.json`'s `check` script, `docs/**`,
 `issues/**`, `.claude/README.md`), none of which touches `app/`, `data.js`,
 `img/`, `og/`, `i/`, `style.css` or `dist/`.
 
+### B3 verification
+
+Commands run, in order, with results:
+
+```text
+node --test tools/artwork/lib.test.mjs                  # 26/26 (19 + 7 new)
+node --test tools/tg-preview/lib.test.mjs               # 104/104 (unaffected)
+node tests/run-all.js dataint                           # ok, unchanged tree (877 og/*.jpg, 875 claimed)
+node tests/run-all.js dataint,noart                     # both ok
+node tools/artwork/run.mjs ingest --repo <scratch> --uploads <scratch/uploads> --dry-run
+                                                          # accepted 1, new assets 1, record links 1, shared 1, unarted 1; dry run, nothing written
+node tools/artwork/run.mjs ingest --repo <scratch> --uploads <scratch/uploads> --report <f>
+                                                          # same counts; wrote img/newitem1.webp + og/newitem1.jpg; re-encode-verify line printed; exit 0
+node tools/artwork/run.mjs ingest <same, run again>     # newitem1.webp now on disk -> reported as `shares` (no-op), exit 0 (no error)
+node tools/artwork/run.mjs ingest <fixture with a pre-existing og/partial.jpg but missing img/partial.webp>
+                                                          # refused: ingest refuses: destination already exists: og/partial.jpg; exit 1; nothing written
+node tools/artwork/run.mjs install/verify/plan/verify-previews <scratch fixtures>
+                                                          # all four unaffected by the installAndVerify refactor - same output shapes as B2's record
+git status --porcelain -- img og tools/tg-preview/state.json .claude/hooks
+                                                          # empty every time it was checked
+# the og/ orphan negative test, run by hand (B3's required acceptance line):
+cp og/_none.jpg og/__b3-negative-test.jpg
+node tests/run-all.js dataint                            # FAIL: картинка og/__b3-negative-test.jpg никому не принадлежит
+rm og/__b3-negative-test.jpg
+node tests/run-all.js dataint                            # ok again; git status --porcelain -- img og empty throughout
+set -o pipefail; npm run check 2>&1 | tail -n 120        # green: vitest 1035/1035 (42 files), both node --test suites clean (26 + 104), format/lint/typecheck/data/derived/i18n/selftest all passed, no FAIL line
+```
+
+All scratch fixtures lived under the session scratchpad
+(`.../scratchpad/fixture-b3/`, `fixture-install3/`), built with `sharp`
+itself (synthetic solid-color images, real `.webp`/`.jpg`/`.png` bytes so the
+decode/geometry/opacity checks are real). Never against this repository's
+own `img/`/`og/`/`data.js`; the one exception - the negative-test file - was
+created and deleted within the verification, confirmed absent from
+`git status` before and after.
+
+**The `--report`-as-input-vs-output question B2 flagged, resolved**:
+`ingest --report <f>` is an **output**, exactly like `plan`/`install`'s
+`--report` - it writes the `planIngest` result JSON. `verify-previews
+--report <f>` stays an **input** (B2's decision, unchanged) - it reads a
+prior `plan`/`install --report` JSON for `pairs`. The two never collide
+because they belong to different verbs and are never both present on one
+command line; `verify-previews` has no use for `ingest`'s `creates`/`shares`
+shape (it needs `pairs` with `recordId`/`sharedWith`, which `ingest` does not
+produce), so there was no pressure to unify them. Documented in
+`run.mjs`'s comments and not otherwise called out in `docs/artwork.md`
+since each verb's own bullet already states which way its `--report` goes.
+
 ## Next batch
 
-- **Name:** B3 - the ingest verb, both prompts, and the runbook's second half
-- **Status:** implement-ready - `plan.md` section 5.3 has the objective,
-  scope, exact file list, nine ordered steps, per-line acceptance criteria
-  (including the required negative test for the new `og/` orphan check),
-  verification commands, risks/do-nots and a named intra-batch fallback
-  (stop after step 5 if the full batch will not close in one pass).
-- **Depends on** `tools/artwork/run.mjs`'s real verb names and
-  `docs/artwork.md` existing - both shipped in B2, so B3 can start
-  immediately.
-- **One thing for the next implementer to check first:** re-read B2's
-  `verify-previews`/`--report`-as-input interpretation above before adding
-  the `ingest` verb, since B3's `ingest --dry-run` per the CLI skeleton also
-  lists `--report` as (this time, plausibly) an output - confirm the two
-  uses do not collide if a single invocation ever needs both.
-- Re-read `git log --oneline -3 origin/main` before B3's commit; it has
-  moved on every check so far in this task and will keep moving.
+- **Name:** none - `plan.md` defines only B1, B2, B3, and all three are now
+  shipped (`fde756c`/`977b8a7`/`db52655`, `551380f`/`7698c95`, `643df19`/
+  `a38cd60`). This handoff update is the closing commit for the task as
+  planned.
+- Remaining work is recorded as **Deferred**, below, none of it blocking:
+  each item is either explicitly out of scope for this task (section 8) or
+  has no current producer/caller.
+- If the owner wants one of the Deferred items taken up, it is a new task
+  (or a plan revision), not a continuation of B3.
 
 ## Blockers
 - None.
 
 ## Deferred
-- **B3** - as above, `plan.md` section 5.3.
-- Moving `node tests/dataint.js` into `npm run check`: `plan.md` section 8.
+- Moving `node tests/dataint.js` into `npm run check`: `plan.md` section 8 -
+  deliberately not decided here; it changes what every commit in the
+  repository gates on, and `noart` (its documented sibling) needs puppeteer
+  and cannot follow it.
 - A `--stale-list` equivalent on the live send path: no caller.
 - Any acceptance-ledger schema: no producer; `--map`'s `assign` key is the
   escape hatch.
-- Closing the conversion-settings duplicate in
-  `.claude/prompts/refresh-artwork.prompt.md`: B3's acceptance criteria.
+- `.claude/agents/{add-source,refresh-artwork}.md`: read, not edited - their
+  descriptions already match the slimmed prompts (see "Completed", above).
+  Worth a second look only if a future prompt edit changes what either
+  agent's description claims.
 
 ## Notes
 - Mocks path: none. This task has no visual surface.
 - Screenshot findings: none.
-- Cleanup performed / retained artifacts: B2's verification fixtures
-  (`fixture-b2/`, `fixture-install/`, `fixture-install2/`, and the synthetic
-  `before.json`/`after.json`/`report.json` for `verify-previews`) lived only
-  in the session scratchpad and were never in the repository; not explicitly
-  deleted at session end since the scratchpad is session-scoped, but nothing
-  there is referenced by anything committed.
-- Session end partial progress: none. B2 is committed at a coherent boundary
-  (`551380f` docs, `7698c95` code) with `git status --porcelain` clean.
+- Cleanup performed / retained artifacts: B2's and B3's verification
+  fixtures (`fixture-b2/`, `fixture-install/`, `fixture-install2/`,
+  `fixture-b3/`, `fixture-install3/`, and assorted synthetic report JSON)
+  lived only in the session scratchpad and were never in the repository; not
+  explicitly deleted at session end since the scratchpad is session-scoped,
+  but nothing there is referenced by anything committed.
+- Session end partial progress: none. B3 is committed at a coherent boundary
+  (`a38cd60`, plus this handoff commit) with `git status --porcelain`
+  clean apart from `issues/art-tooling/handoff.md` itself before this
+  commit.
 - The facts most likely to be re-derived by a later session, so they are here
   as well as in `context.md`:
   - `tools/**` and `tests/**` are outside the vitest coverage thresholds
@@ -207,7 +368,14 @@ against the real repository tree.
     file is a `node --test` suite wired into `npm run check` plus a paragraph
     in `docs/specs/COVERAGE.md`, not a coverage percentage.
   - `npm run check` does **not** run `tests/dataint.js`. The artwork
-    invariants it holds are reached only by `node tests/run-all.js dataint`,
-    which is why B3 makes both prompts name that command.
+    invariants it holds, including B3's new `og/` orphan check, are reached
+    only by `node tests/run-all.js dataint`, which is why both prompts now
+    name that command explicitly.
   - A record may legitimately ship with `img: ''`; it renders `_none.webp`
-    and `tests/noart.js` pins that path. Ingest must report it, not fail on it.
+    and `tests/noart.js` pins that path. `planIngest` reports it as
+    `unarted`, never as an error.
+  - `planIngest`'s `shares`/`creates` buckets are scoped to what a source in
+    `--uploads` actually resolved to, not to every record in the catalog
+    that happens to share an asset - see the interpretive note under
+    "Completed (this pass)", above, since the plan's prose alone is
+    ambiguous between the two readings.

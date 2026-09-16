@@ -389,8 +389,8 @@ encoder.
 | # | Name | Status | Gates |
 |---|---|---|---|
 | B1 | Machine-readable stale list in `tools/tg-preview/` | **shipped** - `fde756c`, `977b8a7`, `db52655`; suite 96 -> 104 | done |
-| B2 | `tools/artwork/` - the replacement path, end to end | **next, implement-ready (5.2)** | `node --test` on both tool suites; one foreground `npm run check` |
-| B3 | The ingest verb, both prompts, and the runbook's second half | **implement-ready (5.3)** | `node --test tools/artwork/lib.test.mjs`; `node tests/run-all.js dataint`; one foreground `npm run check` |
+| B2 | `tools/artwork/` - the replacement path, end to end | **shipped** - `551380f`, `7698c95`, `643df19`; suite 0 -> 19 | done |
+| B3 | The ingest verb, both prompts, and the runbook's second half | **shipped** - `a38cd60`; suite 19 -> 26 | done |
 
 Ordering. B2 before B3 because B3's `ingest` verb, its runbook section and its
 prompt edits all need `tools/artwork/run.mjs` and `docs/artwork.md` to exist,
