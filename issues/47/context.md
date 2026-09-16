@@ -213,6 +213,35 @@ Related host facts, all measured:
    with the flip; B14 C2 is where the fix landed.
 9. **The four R0b.4 divergences: restore all four** (2026-09-16) - see "The
    owner's answer on R0b.4's four divergences" below.
+10. **Playwright: not now - decide it in Phase 8, against R1's findings**
+    (2026-09-16). The question had been parked as "worth a decision before
+    building anything; ask first" and had never been asked; it is now asked and
+    answered, so the item stops being an open question with no owner and
+    becomes a scheduled one. **Scope, so it is not re-opened as something
+    larger**: R0c does not reduce real-browser coverage. Nine `tests/app/`
+    suites survive it (`states`, `sweep`, `hues`, `typo`, `contracts`,
+    `golden`, `inventory`, plus `print` and `stub` from R0b.3 and R0b.2) and
+    keep running against `dist/`. What R0c ends is the *side-by-side pixel
+    comparison against the live app*, which is unavoidable - the live app is
+    what is being deleted. So the open question is only whether those surviving
+    suites keep their hand-rolled puppeteer stack (`tests/app/driver.js` ~29 KB,
+    `tests/app/lib.js`, a custom reporter, `run-all.js`'s own job scheduler and
+    per-suite weights) or move to Playwright. **Evidence to weigh when it is
+    decided, both already measured rather than supposed**: R0b.1 fixed a
+    `states.js` case-7 flake caused by hand-rolled event waiting, the class
+    Playwright's auto-waiting locators exist for; and two Chrome runs collided
+    on one tree because `run-all.js` has no lock against concurrent heavy runs.
+    Against: the driver's verbs (`media`, `computed`, `eachAt`, `settle`, drag,
+    click-by-name) are bespoke to this bilingual UI and its three-width sweeps,
+    and the goldens are accessibility-tree text rather than pixels, so
+    Playwright's screenshot tooling would replace nothing. **Why Phase 8 R1 and
+    not now**: R1 is already a full read-only pass over every state in a real
+    browser, so it is the pass that shows whether the harness's ergonomics
+    actually cost anything. Rejected on the record: deciding it now with no
+    data; a spike before R0c (informative, because the parity harness still
+    exists as a cross-check, but it adds work to the riskiest stretch of the
+    migration and delays the deletion); and committing to the migration
+    up front as its own post-Phase-8 task.
 
 ## The owner's answer on R0b.4's four divergences: restore all four
 
