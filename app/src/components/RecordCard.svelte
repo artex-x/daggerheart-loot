@@ -667,6 +667,16 @@
     background: rgb(255 255 255 / 2%);
   }
 
+  /* off style.css:400 - measured live, closed: offsetParent false, display
+     none. The `<a>` below sets its own `display: inline-block`, an author
+     rule that beats the browser's own closed-<details> default, so without
+     this line the link (and the referenced text) stayed hittable and in the
+     accessible-controls list with the panel visually closed - the same
+     reason live carries this rule rather than trusting the element alone. */
+  .refs details:not([open]) > *:not(summary) {
+    display: none;
+  }
+
   .refs summary {
     display: flex;
     align-items: center;
