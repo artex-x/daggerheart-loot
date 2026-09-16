@@ -3698,3 +3698,235 @@ belongs to whoever owns `tests/app/states.js` next. What must not happen is the
 next red `check` being read as "that flaky two-window case again" without
 someone checking the diff first - which is how a real regression hides behind a
 known flake.
+
+## State at the R0b planning kickoff (orchestrator, 2026-09-16)
+
+A measured snapshot only. Nothing here decides anything R0b owes.
+
+**HEAD has moved five commits past what R0a's record names, and none of it is
+task 47's.** `git log --oneline -5`:
+
+```
+df1bd57 docs(config-audit): record B2 completion, correct selftest baseline, hand off B3
+d61aadb docs(agents): thin the wrappers, allowlist the reviewer, name the planner-tier policy
+93d601c docs(config-audit): record B1 completion and hand off B2
+779fae6 docs(claude): trim CLAUDE.md, repair dead references, add manual skills
+2d2e983 fix(app): resolve task 56 typecheck regressions
+```
+
+R0a's last commit `f826bcd` is behind these. The four `docs(...)` commits belong
+to `issues/config-audit/` and to the agent wrappers; `2d2e983` is task 56's.
+None touches `tests/app/`, `tests/parity/`, `tests/run-all.js` or the legacy
+suites, so **R0b's working set is untouched by them** - but two of them edited
+`CLAUDE.md` and `.claude/agents/`, so a planner must read the current
+`CLAUDE.md` rather than trust a quotation of it from this file.
+
+**`origin/main` is four commits behind HEAD**: remote is `2d2e983`, HEAD is
+`df1bd57`. The four unpushed commits are the config-audit task's, not 47's.
+Recorded, not acted on - 47 does not push another task's boundary.
+
+**The working tree is not clean, and the dirt is another task's.** 76 tracked
+paths modified: `app.js`, `app/src/components/TablesPage.svelte`,
+`app/src/lib/{dict,label,tables}.ts`, four `docs/specs/*.md`, 57 `i/f*.html`,
+`tools/build-share-pages.js`, and `issues/56-followup/handoff.md`. Untracked:
+`.agents/`, `.codex/`, four `.claude/agents/impeccable-*.md`,
+`.claude/skills/impeccable/`, `issues/tg-preview-refresh/`. This is task
+56-followup / tg-preview-refresh work in flight. **Do not stage it, do not
+`git add -A`, do not run `npm run check` on it** - the check would be measuring
+half-finished edits that belong to someone else.
+
+**Three peer sessions share this working tree** (`ListAgents`, 2026-09-16):
+`claude-rewrite` (idle), `tg-preview-refresh` (idle), and
+`Code review for issues 59 & 56` (busy). No heavy run is alive: no
+`test-output/parity.lock`, no `chrome.exe`, and every live `node.exe` is a
+session host rather than a test runner.
+
+**Consequence for R0b's shape**: the planning pass is document-only and safe
+beside the above. **The implement pass is not**, and an implementer cannot take
+this tree as it stands - its gates (`npm run check`, `check:built`, a parity
+filter) would run over another task's uncommitted edits and report their
+failures as R0b's. R0b's plan must say so, and the batch waits for a clean tree.
+
+**Task-document size, stated as a fact for whoever prices the next read**:
+`plan.md` is 1007 KB, `handoff.md` 510 KB, `context.md` 222 KB (before this
+block). Every worker on this task pays that on entry. Compaction is
+`.claude/skills/handoff/SKILL.md`'s procedure and it has not been run.
+
+## R0b planning facts (planner, 2026-09-16) - durable, read before implementing
+
+Full design in `plan.md`, "R0b planned: re-home the live-app coverage that must
+survive"; the batch briefs in `handoff.md`, "Next batch". Measured read-only off
+the current tree at `df1bd57`. Do not re-derive.
+
+### The harness move is two edits, not five
+
+- **`tests/parity/driver.js` has exactly two importers**, and only one of them
+  is under `tests/app/`: `tests/app/lib.js:14` and `tests/parity.js:32`. The
+  five `tests/app/` suites reach the driver **through `tests/app/lib.js`**, not
+  directly (`contracts.js:9`, `golden.js:25`, `hues.js:13`, `states.js:11`,
+  `sweep.js:11`, `typo.js:23` all require `./lib.js`). "Five suites import it"
+  is true only transitively.
+- **`driver.js:17` is `const ROOT = path.join(__dirname, '..', '..')`.**
+  `tests/parity/` and `tests/app/` sit at the same depth, so a move between
+  them needs **no path edit inside the file**.
+- **`tests/parity.js:156` hashes the driver by literal path** -
+  `hashFile(h, path.join(__dirname, 'parity', 'driver.js'))` - into the legacy
+  screenshot cache key. It is a second, non-obvious edit the move requires, and
+  it is the exact "a check quietly stops checking" shape: the driver's
+  `ready()`/`settle()`/`shot()` decide the bytes of every cached legacy PNG.
+  `hashFile` on a missing path throws, so it fails loudly rather than silently -
+  but only when a parity run is next attempted, which CI does **not** do on a
+  push (`COVERAGE.md`: the parity job is manual dispatch).
+- **Cheap proof the move landed**: `node tests/parity.js zzz-no-such-state`
+  resolves both the `require` and the cache-key `hashFile`, then exits non-zero
+  on B1's zero-match guard (`tests/parity.js:683-687`) without shooting a single
+  state. It does acquire the lock and wipe `test-output/parity/` first
+  (`parity.js:311`, `:320`), so it is not free beside a peer session.
+- **Four prose references name the old path** and move with it:
+  `docs/specs/COVERAGE.md:367`, `docs/specs/DEBT.md:246`, `tools/probe.mjs:10`,
+  `tests/app/states.js:261`. (`COVERAGE.md:183` says bare `driver.js` and is
+  unaffected.)
+
+### `tests/parity/lock.js` is a live hook dependency R0c's outline does not name
+
+Imported by `tests/parity.js:33`, **`.claude/hooks/bash-guard.mjs:31`** and
+**`.claude/hooks/selftest.mjs:769`**. R0c's outline deletes `tests/parity/`
+whole while naming only `specs.js` and `driver.js`, so the directory delete
+would take two hooks with it. **Not moved in R0b**: after R0c nothing writes
+`test-output/parity.lock` (only `parity.js` does), so the whole parity-lock
+mechanism becomes dead, and re-homing it now is work R0c would undo. Recorded
+as an R0c step instead - delete the module with its `bash-guard.mjs` rule and
+its `selftest.mjs` case, or re-home it if heavy-run locking is still wanted for
+`run-all`/`golden`.
+
+### `tests/lib.js` holds one thing with no other home
+
+`readPNG` (`tests/lib.js:36`) has exactly one consumer, `tests/print.js:489`,
+and dies with `tests/lib.js` in R0c. `ready` and `ROOT` are live-app-only and
+die with it correctly.
+
+### Print's instrumentation is in two files, not one
+
+Beyond `tests/print.js` (647 lines), **four print-only specs in
+`tests/parity/specs.js`** also retire in R0c and are measured nowhere else:
+`sheetCounts` (`:880`), `cardFit` (`:903`), `printMedia` (`:924`),
+`copiedPrintLink` (`:962`). `printMedia`'s `d.media('print')` emulation - the
+chrome hidden, `break-inside`, `print-color-adjust`, the unshadowed sheet - and
+`cardFit`'s per-width fit numbers exist in no other instrument. A port that
+carries only `tests/print.js` loses them.
+
+The port itself is mechanically cheap: `dist/` renders the same class names as
+live - `.psheet`, `.pcard`, `.pcard.blank`, `.psheet[data-next]`, `.psheet.bw`,
+`[data-act="printArt"|"printBack"|"printLink"]`
+(`app/src/components/PrintPage.svelte`) - and `print.js` keys the card name off
+`.pc-name` by class, so `FEATURES.md:179`'s deliberate `<h3>`->`<h2>` change
+does not touch it. The driver already has every verb the port needs
+(`media`, `computed`, `eachAt`, `count`, `settle`, `clipboard`), which is why
+the driver move has to land first.
+
+### `app/states` case 7: the storage event is observable separately from the repaint
+
+`app/src/ports/storage.ts:61-71` adds a plain `window.addEventListener('storage')`.
+A test page can add its own independent listener via
+`page.evaluateOnNewDocument`, so "the browser delivered the event" and "the app
+redrew" are two separately waitable conditions rather than one 5000 ms guess.
+
+### Suite-coverage facts measured for the ten verdicts
+
+- **`tests/run-all.js` is the only thing that runs a browser suite.**
+  `npm run check` does not (`package.json`: format/lint/typecheck/check-site/
+  data/derived/i18n/selftest/vitest). `eslint.config.mjs:18` ignores `tests/**`
+  and `.prettierignore:13` ignores `tests/`, so a new suite under `tests/` is
+  neither linted nor formatted - only `node tests/run-all.js <name>` reads it.
+- **CI picks a new suite up with no `ci.yml` edit**: the `check` job runs
+  `node tests/run-all.js --exclude=parity,app/golden` (`ci.yml:47`). This is
+  what keeps `git show 9177f3b | git apply --reverse --check -` at 0 through
+  R0b - `9177f3b` touches `.github/workflows/ci.yml` and nothing else.
+- **`.claude/hooks/bash-guard.mjs:412` matches `node tests/run-all.js`
+  generically** and `edit-guard.mjs:36` only guards `tests/app/snapshots/`, so
+  a new suite needs no hook change.
+- **`tests/app/sweep.js`'s clipped-text selector list** is
+  `.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum`
+  (`sweep.js:272`). It does **not** include `.craft, .rcraft, .dicebar,
+  .numrow`, which is what `tests/craftmob.js:28` measures, and sweep never
+  ticks a row so `#selBar` is never drawn during its pass.
+- **Widths**: `craftmob` runs 320/360/390/430/768, `sweep` and `audit2` run
+  360/390/768/1180, parity runs 375/768/1100 (`specs.js:1011`). 320 is below
+  every other instrument's floor and below `style.css`'s narrowest breakpoint
+  (430).
+- **`#/tables ~ a row ticked` is already a registered state**
+  (`tests/app/inventory.js:560`), so a narrow-width selection-bar measurement
+  adds no `STATES`/inventory entry and forces no golden re-seed.
+- **`qa`'s fate list is at `plan.md:11749`**, under "Phase 5 - the testing
+  pyramid, planned" -> Decided 3, **not** under "B12 planned" (`plan.md:12478`),
+  which the handoff's pointer implied. It lists 20 entries against `qa.js`'s 22
+  assertion groups.
+
+### Cost, measured, that decides how the gates are called
+
+`node tests/run-all.js app/sweep` took **593.5s** on this host and crossed the
+600s foreground cap (`plan.md`, R0a's built record). So the five-suite
+`tests/app` line in `CLAUDE.md` is **not** one foreground call on this host:
+sweep goes on its own (four `node tests/app/sweep.js <width>` calls, or one
+backgrounded call), and `app/golden`'s four shards go separately again
+(~250-265s each).
+
+### The tree state, corrected mid-session (planner, 2026-09-16, later)
+
+The peer session committed while this plan was being written, so the 76-path
+dirty tree the kickoff block above records **is gone**. HEAD is now **`bb55a2d`**
+(`c92c8e8` "fix(app): repair Other provenance and the specs the split left
+stale" plus its record), two commits past `df1bd57`. `c92c8e8` touches
+`app.js`, `TablesPage.svelte`, `app/src/lib/{dict,label,tables}.ts`, four
+`docs/specs/*.md` - **including `COVERAGE.md`** - `tools/build-share-pages.js`
+and 57 `i/f*.html`. Nothing in it touches `tests/app/`, `tests/parity/`,
+`tests/run-all.js` or the legacy suites, so R0b's working set is still
+untouched. Working tree: only `issues/47/*.md`, plus the untracked paths below.
+
+**But `npm run check` does not pass on this tree, and it is nobody's task.**
+`bb55a2d`'s own message says the gate was bypassed because "a concurrent
+session's untracked skill install fails format:check and lint in files this
+commit does not touch". Measured for this plan, that is exact:
+
+- `.agents/skills/impeccable/scripts/*.js` - six vendored files including a UMD
+  bundle - are ignored by **neither** `.prettierignore` (it has no `.agents/`)
+  **nor** `eslint.config.mjs` (it ignores `.claude/**`, not `.agents/**`), so
+  they fail both `format:check` and `lint`.
+- `.claude/skills/impeccable/scripts/*.js` are eslint-ignored through
+  `.claude/**` but **not** prettier-ignored: `.prettierignore:23-25` names only
+  three specific `.claude/` files, and `*.md` at `:29` covers the
+  `.claude/agents/impeccable-*.md` wrappers but not these.
+
+So the failure is a third-party skill drop, not any task's code. **Do not fix
+it by editing `.prettierignore` or `eslint.config.mjs`** - repository gate
+configuration is `issues/config-audit/`'s surface, and widening a gate to
+accommodate an untracked vendor directory is the same move as routing around
+one. Either the install is removed or relocated by whoever made it, or the
+owner decides the ignore rule. Until then every batch in this repository pays a
+red `npm run check` for a reason that is not its own, which is precisely the
+condition that gets a real failure waved through.
+
+### Both R0b blockers verified independently (orchestrator, 2026-09-16)
+
+Re-measured after the planning pass, because a blocker that stops a batch is
+worth a second reading:
+
+- HEAD is **`bb55a2d`**, and `git show --stat bb55a2d` is one file,
+  `issues/56-followup/handoff.md`. The code commit under it is `c92c8e8`.
+  Working tree carries only `issues/47/*.md` and the untracked paths.
+- `npx prettier --check .` exits non-zero on **16 files**, every one of them
+  inside the skill install: eight under `.agents/skills/impeccable/`, seven
+  under `.claude/skills/impeccable/scripts/`, plus `.impeccable/hook.cache.json`.
+  `eslint.config.mjs:10-26` ignores `.claude/**` and does not name `.agents/**`;
+  `.prettierignore` names neither. The planner's reading is exact, including
+  which of the two tools misses which directory.
+- `npm run check` fails at its **first** step (`format:check`), so nothing
+  downstream of it has been exercised on this tree at all. That is the part
+  worth keeping in mind: the red is not "lint noise past a green suite", it is
+  a gate that never got to the tests.
+
+Left unfixed on purpose, and the routing is the point rather than the timidity:
+which glob lands in `.prettierignore` versus `eslint.config.mjs` is
+configuration every later session runs under, `issues/config-audit/` is the
+open task that owns that surface, and `CLAUDE.md`'s own posture is that an
+orchestrator measures a status and hands a design over. Recorded, not decided.

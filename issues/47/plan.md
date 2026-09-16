@@ -16010,3 +16010,382 @@ and re-seeding:
    named above.
 
 C2 and C3 are untouched by any of this.
+
+### R0b planned: re-home the live-app coverage that must survive
+
+Supersedes "R0b planned in outline: re-home what must survive" above wherever
+the two disagree. The outline's shape is corrected by measurement, not by
+opinion; everything it settled that measurement did not touch still stands.
+
+#### What the audit changed, and why the outline could not have known
+
+The outline's premise was that the ten counterpart-less suites split cleanly:
+`print` is ported, and the rest are mostly *covered already* by the fates
+`COVERAGE.md` records. Reading all ten in full against every test named in
+those fates says otherwise.
+
+**Every one of the ten has assertions that nothing else makes.** The fates in
+`COVERAGE.md` are honest about *intent* - "re-homed: `listPage.test.ts`,
+`state/lists.test.ts`, ..." - and each named test does exist and does cover the
+bulk of its suite. What they do not say is which assertions did **not** travel,
+and the residue is consistent in kind: it is almost entirely **computed layout,
+computed colour, real CSS, real input, and real-data counts** - exactly what a
+jsdom component test cannot answer and exactly what a legacy suite in a real
+browser was for. A fate line that names four vitest files reads as closure and
+is not.
+
+Three of those residues turn out not to be coverage gaps at all. See "The
+fourth verdict" below.
+
+**The consequence for the phase**: R0b is not one batch. The outline priced it
+as "ten verdicts plus a driver move"; the true content is a driver move, about
+twenty-five placements across four test homes, one new browser suite of ~650
+lines, one new tiny suite, and three shipped divergences that need a decision
+before any suite can be deleted. It is planned below as **three batches plus a
+blocked fourth**, ordered so the cheap and certain work lands first and the
+irreversible step (R0c) is not reached with anything unaccounted for.
+
+#### The ten verdicts
+
+Each suite gets one of the three verdicts the outline names. Where a suite is
+*ported*, the port is named down to the assertion and the file it lands in;
+where it is *covered already*, the covering test is named with a line number,
+never "probably". Where a part is *dropped*, the reason is the commit's and is
+carried into `COVERAGE.md`.
+
+| # | Suite | Verdict | Covered already by (the bulk) | What is ported, and where | Dropped, with the reason |
+|---|---|---|---|---|---|
+| 1 | `behave` | **covered already, one port** | `roll.test.ts:57,62,83,167`, `std.test.ts:51,87,94,100,110,120,130`, `alt.test.ts:143,150,165`, `searchPage.test.ts:140,186,213,223`, `shell.test.ts:39,49,69,76,83,191`, `state/app.test.ts:79,87,98,132,138,154,428,486,509`, `ports.test.ts:43,215`, `record.test.ts:168,296,303,311,334`, `share.test.ts:69,110`, `dice.test.ts:10,20,27`, `data.test.ts:87,91,212`, `sections.test.ts:125,137`, `lists.test.ts:231`, `listsPage.test.ts:107,190`, `tables.test.ts:214,629`, `tests/app/states.js:155` | **real history Back/Forward** across a table and a section (`behave.js:304-325` asserted the *sub-chip* came back, not just the hash) -> new case in `tests/app/states.js`. `ports.test.ts:694,701` drive a hand-built `fakeWin` and only prove `history.back()` was *called*. | the `dhloot.prefs.v1` group (`behave.js:187-254`: persisted grid view, the prefs blob, its corrupt-value fallbacks) - it guards a feature the rewrite deliberately removed; the only keys the rewrite writes are `dhloot.lang.v1`, `dhloot.home.v1`, `dhloot.warn.v1` (`app/src/state/app.svelte.ts:40-42`) and `dhloot.lists.v2`. Tab counters (`behave.js:257`) - `TabBar.svelte:32-40` draws no counter element. The die's literal `viewBox`/`fill:none` - `Die.svelte:21,62` hard-code both and `dice.test.ts:27` pins the viewBox shape. "no pin control on a record" - `app.test.ts:44` already refuses a pinned non-section, so the loss is cosmetic. "tables work with no storage" - `ports.test.ts:43` makes a throw structurally unable to reach the page. |
+| 2 | `craftmob` | **ported, in four places** | the page-level sideways-scroll class, at 360/390/768/1180, by `tests/app/sweep.js:246` | (a) the four craft-heavy worst-case records `#/i/w65`, `#/i/w3`, `#/i/ci19`, `#/i/w2` -> `sweep.js`'s `PAGES`, plus `.craft, .rcraft, .dicebar, .numrow` added to the clipped-text selector list at `sweep.js:272` with `craftmob.js:28-40`'s spill / clipped / squeezed-under-60px / `.craft a` tap-height assertions; (b) the selection-bar overflow at a narrow width -> new `tests/app/states.js` case (`#/tables ~ a row ticked` is already a registered state, `inventory.js:560`); (c) the standalone share stub `i/w3.html` at 320/390 -> **new `tests/stub.js`**; (e) "a selected tile has its own fill, not just a border" (`craftmob.js:69`) -> `tests/app/hues.js`, read off the rendered `.tilewrap.sel .tile` (`TableRows.svelte:337`) | (d) the `@media (hover:hover)` guard on `.tile:hover`/`.row:hover` (`craftmob.js:58-73`) - it is a **source-text assertion on `style.css`**, which R0c deletes. The rewrite carries the rule in three component `<style>` blocks (`ListPage.svelte:1415`, `RecordCard.svelte:315`, `TableRows.svelte:295,355`), but a grep over Svelte source asserts on text the compiler rewrites, so it is not the same instrument and headless Chrome still reports `hover: none`. Recorded as a thin spot naming those three locations. **The 320px width** - it is below every other instrument's floor (sweep 360, parity 375) and below `style.css`'s narrowest breakpoint (430); re-adding it costs a fifth `run-all` row and a fifth CI width. Recorded as a thin spot. |
+| 3 | `eqtest` | **covered already, four ports** | `data.test.ts:73,128,137,140,213,223`, `facets.test.ts:54,66,75,107,166,180,230`, `filters.test.ts:23,82,90,103,143,179,185,196,215`, `label.test.ts:126`, `i18n.test.ts:52,74,80`, `tables.test.ts:198,248,270,284,488,507,517,527,535,545,556,562,579,643,661,682,729,743,753,809,844,921,934,945,953,960,969`, `share.test.ts:67,93`, `tests/app/hues.js:99` | (a) the real-data guards that nothing else makes - the 73/69 secondary/armour split, 381 unique English names, the 11 Wondrous stat-blocked records, the `core:phy core:mag hnf:phy hnf:mag` book order, `firstT1[0] === 'Broadsword'`, `wondrous` = 119 rows (`eqtest.js:44-51,61`) -> one `it()` in `app/src/lib/data.test.ts`; (b) `.rstats` is **one tone** across weapon/secondary/armour (`eqtest.js:217`) -> `tests/app/hues.js`, which today reads `.badge.*` only (`hues.js:59-67`); (c) the filter<->address loop **after arriving by a filter link** - the panel does not reopen on every render, a chip click is not snapped back, the address follows the pick and is cleared by reset (`eqtest.js:174-184`) -> one `it()` in `tables.test.ts` (jsdom reaches all three through `memoryRouter`); (d) reset and link are hidden while the filter is empty and stay reachable with the panel folded (`eqtest.js:104,116-119`) -> one `it()` in `tables.test.ts` | the `scrollY > 100` smooth-scroll assertion (`eqtest.js:195-205`) - the app's own half (`scrollIntoView` + `.flash`) is covered at `tables.test.ts:809,969`; what remains is a test of Chrome. The old chip strip above the search (`eqtest.js:263`) - markup the rewrite never emitted. |
+| 4 | `flows` | **covered already, one port** | `tables.test.ts:479,629`, `record.test.ts:199,418,441`, `listPage.test.ts:112,118,198`, `state/app.test.ts:273,281`, `sharedListPage.test.ts:106,273`, `share.test.ts:69,93,127,145`, `std.test.ts:120,130`, `lists.test.ts:248`. The clipboard half is covered **more strictly** than the legacy suite: `share.test.ts:69` is a parameterised golden over `docs/fixtures/share/records.json`, captured from the running live app, char-for-char. | `w118`'s beastform shape - a 5+ line attached block with its stat line on its own line (`flows.js:107-120`) - is asserted by no fixture; the eight records in `docs/fixtures/share/records.json` are `ci1, cc1, w25, f33, ci18, w1, voa1_t1a, di1`. Port by **adding `w118` to that fixture** with `tools/capture-share-fixture.mjs`; no new suite. | nothing else. |
+| 5 | `lists2` | **covered already, seven ports** | `listPage.test.ts:112,150,198,221,233,249,253,264,290,304,318,333,348,359,384,397,409,422,435,450,464,478,505,517,526,544,560,565,581,586,603,614,655,669`, `listsPage.test.ts:93,101,171,178,190,217`, `sharedListPage.test.ts:106,166,186,213,232,257,272,305,335`, `state/lists.test.ts:305,325,333,341,351,370`, `lib/lists.test.ts:66,143,153,159`, `money.test.ts:20,29,55,105,168,222`, `numField.test.ts:56`, `share.test.ts:50,248,252,283`, `record.test.ts:186,372,382,391,398,412`, `tables.test.ts:198,248,284,535,545,556,565,782,921,934,945`, `facets.test.ts:54,66,230`, `tests/app/contracts.js:89,117,186`, `tests/derived.js:154` | to `tests/app/states.js` (real browser only): (a) a **real HTML5 drag** reorder - jsdom calls `drag.handlers.onDrop(0,2)` directly, so the `clientY`-vs-`getBoundingClientRect()` before/after decision and `.dragging` teardown are never exercised; (b) a folded `<details>` **survives a re-render** from select-all / a money-mode change (`lists2.js:574-587`); (c) the money help box measures as wide as `.wrap` (`lists2.js:346-354`) and the pressed picker button's computed colour is not the turquoise it regressed to (`lists2.js:155`). To `listPage.test.ts` (jsdom is enough - DOM shape, not layout): (d) `[data-goldhint]` is a `<span>` and mirrors itself into `title`; (e) the storage notice's `compareDocumentPosition` under the header and above the content, on both routes; (f) the batch bar holds **exactly two** buttons and no percentage widget; (g) the two negative halves of the modal copy - no GM note, no price, no `×qty`. | `[data-move]` and `.alttable` absence (markup the rewrite never had); the exact real-data counts 119/59/120 (`tests/app/contracts.js:186` pins the same invariant table-agnostically as `0 < n < whole`, and `derived.js` pins the dataset sizes); "row numbering is not recomputed under a filter" is folded into the `data.test.ts` real-data `it()` of row 3 rather than kept as a browser assertion. |
+| 6 | `noart` | **covered already, three ports** | `record.test.ts:248,253,256,303,334`, `printPage.test.ts:226`, `ports.test.ts:215,230`, `tests/app/states.js:293` | (a) no copy-image button for a record with no art at all (`noart.js:39`); (b) no copy-image button after a **real** image load failure (`noart.js:76`); (c) the failure is **remembered** across a re-render and a navigation (`noart.js:80-85`). (a) and (c) fit `record.test.ts` in jsdom; (b)'s real `<img>` error belongs on `tests/app/states.js` case 11, which already fires one. **(b) is a divergence, not only a gap - see "The fourth verdict".** | the `noart` class on the placeholder (`noart.js:37`) - `desc.ts:109-119` returns only `NO_ART` and no such class exists; the "share attaches no file" case (`noart.js:44-49`) - `RecordActions.svelte:68-75` never passes a file, so the concern is structurally impossible and `ports.test.ts:215` owns the port; the placeholder in a table row (`noart.js:54-58`) - `RowMain.svelte:60` calls the same `artSrc`, duplicative. |
+| 7 | `notes` | **covered already, two ports** | `listPage.test.ts:112,290,298,318,544,560,562,565,570,574,581,603,614,656`, `state/lists.test.ts:305,325,333`, `lib/lists.test.ts:46,54,58,66,143,153,159`, `listLink.test.ts:39,41,51,60,94`, `sharedListPage.test.ts:134,166,257,273,299,301,335`, `share.test.ts:239,283`, `tests/app/states.js:348`, and the two note fields frozen in `tests/app/snapshots/_lists_a_noted.txt:59` and `_lists_a_note_opened.txt:44-45` | (a) **the note-field geometry group** (`notes.js:257-309`) - the 3-line resting floor, the neighbour box **not** growing with its sibling, the real 320px ceiling with the text scrolling past it, and the shrink-back - into `tests/app/states.js` **case 13**, which today asserts only "it got taller" (`states.js:348`) and whose 320 branch (`:350-353`) can never fire on a five-line input; (b) the clear cross hidden on an empty field and shown on the filled one (`notes.js:232,235`) - real CSS `:has(:placeholder-shown)` (`ListPage.svelte:1149`), same case. Optional one-liners if cheap: typing into the GM box and reading `hnote` back at component level; "a saved GM link is not saved twice". | the toast's `display:none` after undo (`notes.js:251`) - `Toast.svelte:65` is `{#if app.toast}` over a popover, so the `.toast.act` specificity clash cannot recur; `noteH` in prefs (`notes.js:308`) - no such key exists. |
+| 8 | `print` | **ported, whole, and it is the largest single item** | nothing. The structural goldens carry `#/print/ci1-q1`, its black-and-white twin and `#/print/nope` as accessibility trees only (`inventory.js:983-1038`); a tree says nothing about millimetres. | `tests/print.js` entire, re-pointed at `dist/` through `tests/app/lib.js`'s `fresh()` and the moved driver, **plus** the four print-only parity specs that die with `specs.js`: `sheetCounts` (`:880`), `cardFit` (`:903`), `printMedia` (`:924`, the only `d.media('print')` reading anywhere), `copiedPrintLink` (`:962`). `readPNG` (`tests/lib.js:36`) has one consumer and is inlined into the new suite rather than given a shared home it does not earn. | nothing. |
+| 9 | `qa` | **covered already, six ports, one raise** | `sweep.js:130,289,297,304,313,328`, `numField.test.ts:12,22,36,48,101`, `roll.test.ts:115,132,139`, `shell.test.ts:31,39,49,174,218,233,249`, `std.test.ts:110`, `searchPage.test.ts:199`, `state/app.test.ts:485`, `tables.test.ts:488,565,643,782`, `listsPage.test.ts:171,190,217`, `lists.test.ts:147,236`, `listPage.test.ts:112,150,586`, `sharedListPage.test.ts:335`, `state/lists.test.ts:63,200,370`, `hash.test.ts:422`, `tests/app/contracts.js:75`, `tests/app/states.js:172,311` | real-browser: (a) tile geometry with **all `/img/*.webp` blocked** at 360 - uniform tile width, `.selbox` not overlapping `.tile-n` (`qa.js:269-282`); (b) the storage notice under 140px tall at 320 with its cross visible while folded (`qa.js:364-367`); (c) a **button** keeps focus across a re-render (roll `Enter`, a source toggle) - `states.js:311` covers an *input* only. Cheap: (d) `scrollbar-gutter: stable` -> one assertion on `app/src/styles/tokens.css:93`; (e) `defer` on both built script tags -> `tools/smoke-file-url.mjs`, beside its existing `type="module"` read; (f) the og head facts as **absolute** values - the image is not an item, 1200x630, the file is on disk, `twitter:image === og:image`, `og:locale`, the stub is `summary` with `og/<id>.jpg` -> `tests/derived.js`, which today only asserts the two heads **agree** (`:100-138`) and that each stub equals its generator's output (`:59-70`), so a change made in the generator passes silently. **The `.results` live region is a divergence, not a gap - see "The fourth verdict".** | the one-dash grep and the `baseUrl() + 'index.html'` grep (`qa.js:61,72`) - both are greps over `app.js`, which R0c deletes; every user-visible range string is pinned positively in `money.test.ts:168,182,196,210,222,251`, `roll.test.ts:136`, `alt.test.ts:131`, and `hash.test.ts:422` pins `appUrl`'s two shapes. The unreadable-address rewrite (`qa.js:234`) - **deliberately superseded** by B12.1 (`plan.md`, "B12.1 named"): the rewrite keeps `#/l/<garbage>` and draws the bad-link page, asserted at `sharedListPage.test.ts:335` and `sweep.js:289`. The "no Cyrillic in any EN `aria-label`/`title`" whole-document regex (`qa.js:167-172`) - `shell.test.ts:39-55` plus `sweep.js`'s per-page `en` run over 41 addresses is the substitute; recorded as a thin spot. |
+| 10 | `select` | **covered already, one port** | `tables.test.ts:285,294,303,313,340,346,373,384,390,400,410,426`, `searchPage.test.ts:109,150`, `lists.test.ts:77,90,105,212,221,248`, `record.test.ts:418,441`, `state/app.test.ts:405,428,442`, `share.test.ts:189`, and the two `elementFromPoint` hit-tests are covered **better** by `tests/app/states.js:48,62,80`, which reach the same controls with a trusted click through the same sticky stack rather than a synthetic probe | the selection bar is **pinned to the bottom of the viewport** (`select.js:54-57`: `|bar.bottom - innerHeight| <= 2`) -> `tests/app/states.js`, merged into row 2's narrow-width case. Nothing else measures it, and a settled screenshot of a short table looks identical whether the bar floats or sits in the flow. | `[data-act="collect"]` and `.row-add` absence - markup the rewrite never emitted. "pressing an existing-list chip from inside a modal adds the record" is covered by composition (`lists.test.ts:248` proves it is the same `AddToList`; `:90` proves that control adds) and is flagged rather than ported. |
+
+**No suite is dropped whole, and no suite's coverage is unaccounted for.** That
+was the outline's bar and it is met.
+
+#### The fourth verdict: three assertions that can take none of the three
+
+Three legacy assertions cannot be given any verdict, because the rewrite does
+not do what they assert. They are not *covered already* - nothing covers them.
+They cannot be *ported* - a port would land a suite that fails against `dist/`
+on its first run. They must not be *dropped* - dropping them deletes the only
+instrument in the repository that can see a shipped divergence, which is the
+exact failure the outline calls "the largest remaining risk in the phase".
+
+All three were verified against the source for this plan, not taken from the
+audit's report.
+
+1. **The roll results lost their live region.** `app.js:2243, 2300, 2333, 2349,
+   2376, 2399` all emit `<div class="results" role="status" aria-live="polite">`.
+   `StdPanel.svelte:150`, `RollPanel.svelte:128` and `AltPanel.svelte:192` emit
+   a bare `<div class="results">`. So a screen reader is told nothing when a
+   roll lands. `qa.js:138` is the only test in the repository that asserts it;
+   **axe does not report a *missing* live region**, so `sweep.js`'s axe pass
+   cannot see it either, and the structural goldens record the tree without the
+   attribute's absence being a line anyone reads.
+2. **A referenced card lost its line breaks and its outbound link.**
+   `app.js:886-896` (`refHTML`) writes `'<p>' + lines(r.text) + '</p>'` - and
+   `lines` is `esc(s).replace(/\n/g, '<br>')` (`app.js:590`) - followed by
+   `<a href="{r.url}" target="_blank" rel="noopener">daggerheart.su</a>`.
+   `RecordCard.svelte:238` writes `<p>{lang === 'ru' ? r.rud : r.ende}</p>`: a
+   plain text node, so `\n` collapses to a space and a multi-paragraph spell
+   renders as one wall of text, and **there is no link at all** - `url` appears
+   nowhere in `RecordCard.svelte`. The summary's `<i class="ref-s">` also
+   became a `<span>`. All of it sits inside a `<details>` that is **closed by
+   default** (`FEATURES.md:152`), which is why every instrument missed it: a
+   pixel diff photographs a closed disclosure, and
+   `page.accessibility.snapshot()` does not descend into one.
+   `flows.js:117` was the only guard.
+3. **The copy-image button no longer disappears when the art fails to load.**
+   Live gates it on `hasImage(it)` = `!!it.img && !brokenArt[it.id]`
+   (`app.js:1692`, used at `:2055`). `RecordActions.svelte:105` gates on
+   `{#if it.img}` alone - half the rule - and its own comment beside it states
+   only the half it kept. `app.artBroken(id)` is consulted for the `src`
+   (`RecordActions.svelte:57-61`) and not for the button. So a record whose
+   picture 404s offers to copy the placeholder. `noart.js:76` was the only
+   guard.
+
+**Why this is not the planner's call to make alone.** `CLAUDE.md`, "Migration
+and parity", says this is a refactor and the shipped app's behaviour, content
+and controls are reproduced; by that law all three are fixed, not recorded. But
+each is production code in deployed behaviour, none is in a path R0b otherwise
+touches, item 2 removes a link to a third-party site whose removal may have
+been intended, and item 1 is a live accessibility regression the owner should
+see now rather than at the cliff. The alternative to a fix is a
+`docs/specs/DEBT.md` entry, and `DEBT.md` is described in `CLAUDE.md` as
+holding "live decisions kept over its own" - which is an owner's decision, not
+a planner's. Hence **`NEEDS_HUMAN_CONFIRMATION: yes`**, on these three and
+nothing else.
+
+**What must not happen** is R0c deleting `app.js` and the ten suites while
+these three sit unrecorded, because after that the correct behaviour exists
+only in git history and the instrument that noticed is gone.
+
+#### The batches, and why three rather than one
+
+`CLAUDE.md` and `docs/parity.md` both say to prefer one coherent batch and to
+split only at a real seam. There are two here, and they are the ones the
+project already names.
+
+- **A different route and filter set.** The print port is `#/print/*` and
+  nothing else: its own routes, its own fixtures, its own instrument, and a
+  diagnostic (`node tests/parity.js print`) that no other work in R0b needs.
+- **A review that cannot be held in one pass.** The print port alone is ~650
+  lines of transposed geometry with design numbers in it. Merged with twenty
+  other placements it is not reviewable, and `docs/parity.md` names exactly
+  that as the "too big" failure.
+
+The jsdom placements and the real-browser placements are **not** split from
+each other by a seam - they share `npm run check`, one build, and one
+`tests/app` run - so they are merged. That leaves:
+
+| batch | content | gate set | reversible |
+|---|---|---|---|
+| **R0b.1** | the driver move, `app/states` case 7, R0a's four nits, every jsdom placement, `COVERAGE.md`'s verdict table | check, build, the `tests/app` set, the four golden shards | yes |
+| **R0b.2** | every real-browser placement: `tests/app/states.js`, `sweep.js`, `hues.js`, and the new `tests/stub.js` | the same set | yes |
+| **R0b.3** | the print port: `tests/app/print.js`, the `run-all` row, `COVERAGE.md` | check, build, `run-all app/print`; `node tests/parity.js print` as a diagnostic on failure only | yes |
+| **R0b.4** | the three divergences | check, check:built, a parity filter over `#/i/*` and `#/roll/*` | yes, but production code |
+
+R0b.1 first because everything else builds on the moved driver. R0b.4 is
+**blocked on the owner** and is the only batch that touches `app/src/`.
+**R0b deletes nothing in any of its batches**, so
+`git show 9177f3b | git apply --reverse --check -` exits 0 throughout - and it
+does so without needing care, because none of them touches
+`.github/workflows/ci.yml` at all (a new suite reaches CI through
+`run-all.js`'s own `SUITES` list, which `ci.yml:47` already runs whole).
+
+#### R0b.1 designed
+
+**Objective.** Move the one harness module the surviving suites depend on out
+of the directory R0c deletes; fix the one known flake; close R0a's four nits;
+land every placement jsdom can hold; and write the ten verdicts into
+`COVERAGE.md` so R0c reads a decision rather than re-deriving one.
+
+**C1 - the driver move.** `git mv tests/parity/driver.js tests/app/driver.js`.
+Three code edits and four prose edits, and no edit inside `driver.js` itself:
+
+1. `tests/app/lib.js:14` - `require('../parity/driver.js')` ->
+   `require('./driver.js')`.
+2. `tests/parity.js:32` - `require('./parity/driver.js')` ->
+   `require('./app/driver.js')`.
+3. `tests/parity.js:156` - `hashFile(h, path.join(__dirname, 'parity',
+   'driver.js'))` -> `path.join(__dirname, 'app', 'driver.js')`. **This one is
+   the whole reason the move needs a plan**: the driver's `ready()`, `settle()`
+   and `shot()` decide the bytes of every cached legacy screenshot, and a cache
+   key that silently stops covering the driver is the same class of defect as
+   everything else in this phase.
+4. Prose: `docs/specs/COVERAGE.md:367`, `docs/specs/DEBT.md:246`,
+   `tools/probe.mjs:10`, `tests/app/states.js:261`.
+
+`driver.js:17`'s `path.join(__dirname, '..', '..')` needs no change:
+`tests/app/` and `tests/parity/` are the same depth.
+
+*Home chosen, and the alternative rejected.* `tests/app/driver.js` is the
+driver's **final** home - after R0c its only consumers are the `tests/app/`
+suites - so R0c does not move it a second time. The cost is one batch of an
+odd-looking import direction, `tests/parity.js` reaching into `tests/app/`.
+`tests/driver.js` at the root was considered and rejected: it reads neutral
+today and misplaced the moment `tests/parity.js` is gone, which is one batch
+later.
+
+*`lock.js` is deliberately not moved.* It is imported by `tests/parity.js:33`,
+`.claude/hooks/bash-guard.mjs:31` and `.claude/hooks/selftest.mjs:769`, and
+R0c's outline deletes `tests/parity/` whole while naming only `specs.js` and
+`driver.js` - so the directory delete would take two hooks with it. Moving it
+here would be work R0c undoes: after R0c nothing writes
+`test-output/parity.lock` (only `parity.js` does), so the mechanism is dead and
+the right R0c action is to delete it with its `bash-guard.mjs` rule and its
+`selftest.mjs` case. Recorded as an R0c step, not done here.
+
+**C2 - `tests/app/states.js` case 7, and R0a's four nits.**
+
+*Case 7.* `states.js:190-192` waits for page B's repaint with
+`waitForFunction(..., { timeout: 5000 }).catch(() => {})` - the timeout is
+swallowed - and then asserts on whatever the page says, so a loaded runner
+produces a failure indistinguishable from a real regression. **The decision: a
+two-stage wait with its own message per stage, and no swallow.**
+
+1. Seed page B through `page.evaluateOnNewDocument` with an independent
+   counter: `window.addEventListener('storage', () => { window.__storageSeen =
+   (window.__storageSeen || 0) + 1; })`. This is the test's own listener, not
+   the app's (`app/src/ports/storage.ts:61-71` adds its own), so it answers
+   "did Chrome deliver the event" on its own.
+2. Stage one: wait for `window.__storageSeen > 0` against a module-level
+   `STORAGE_WAIT_MS = 30_000`. On timeout, `ok(false, '7 (два окна): страница B
+   не получила событие storage за Ns')`.
+3. Stage two, only if stage one passed: wait for the text, same deadline. On
+   timeout, `ok(false, '7 (два окна): событие storage пришло, но страница B не
+   перерисовалась')`.
+
+The point is not the larger number. It is that the two failures now read
+differently: stage one red is the environment, stage two red is the app, and
+neither can be waved through as "that flaky case again" - which the handoff
+names as the real hazard. 30 s is chosen against `tests/app/lib.js:37`'s
+`protocolTimeout: 300_000`, the file's own statement of how slow this tree gets.
+
+*Rejected:* raising the 5000 to 30000 and nothing else - it keeps the swallow,
+so a genuine "B never redraws" regression still prints the same sentence as a
+slow runner; the flake rate falls and the diagnosis does not improve.
+*Rejected:* polling in Node with a `page.evaluate` loop - identical semantics to
+`waitForFunction`, more code, and more CDP round trips, which is the thing that
+is slow under load. *Rejected:* reloading B - it destroys what the case tests.
+
+*Nit 1 (`golden.js`'s `--only=` comment).* `golden.js:435-443` says `--only=`
+suppresses both the missing-golden and the stale-file checks. The missing check
+at `:427` runs unconditionally; only the stale sweep sits under `if (!ONLY)`.
+The code is stricter than its comment. **Fix the comment**, not the code.
+
+*Nit 2 (a golden's identity line is never compared).* `render()` writes
+`# <id>`, `# route:` and `# why:` (`golden.js:316-318`); `compareGolden` reads
+`sectionsOf`, which only collects lines after a `## ` heading, so the header is
+unchecked and an `inventory.js` route edit without `--update` leaves a golden
+whose header disagrees with the state it gates. **Fix**: a `headerOf(text)`
+returning the lines before the first `## `, compared as one string, reported as
+its own `ok(false, ...)` before the four sections. All four shards must run
+afterwards: the comparison is per state, and only a full pass proves no
+existing snapshot header has already drifted.
+
+*Nit 3 (the `bash-guard.mjs` workaround became advice).* `plan.md:15679-15685`
+records the block and then tells the next batch to expect it - which normalises
+a `node -e fs.rmSync(...)` shape that also defeats `edit-guard.mjs:36`, the
+rule R0a itself added for `tests/app/snapshots/`. **Fix: delete the
+forward-looking sentence, keep the record of what happened, and state the
+correct guidance in its place** - the delete was not needed at all
+(`--update` rewrites in place and the stale sweep reports orphans), so the next
+batch needs no workaround; if a delete is ever genuinely needed, raise it
+rather than route around a guard, and never hand-edit a golden.
+*Rejected:* exempting `tests/app/snapshots/` in `bash-guard.mjs` as a
+one-liner. It widens a guard to make an unnecessary operation convenient, and
+it touches `.claude/hooks/` while `issues/config-audit/` is mid-flight in
+`.claude/`.
+
+*Nit 4 (`specs.js`'s "Recorded, not keyed" block is stale by one commit).* It
+still says "Phase 7's sweep carries them into `FEATURES.md`" in two places, in
+the file C2 edited to perform that sweep. **Fix**: both sentences read as done,
+naming the commit. Comment-only, so `inventory.js`'s self-retiring guard
+(`:1042-1057`, which compares `STATES` ids and routes) is untouched.
+
+**C3 - the jsdom placements.** Each is a named `it()` beside its neighbours; no
+new file, no new export.
+
+- `app/src/lib/data.test.ts`: one `it()` carrying `eqtest`'s real-data guards -
+  the 73/69 secondary/armour split, 381 unique English names, 11 Wondrous
+  stat-blocked records, the `core:phy core:mag hnf:phy hnf:mag` book order,
+  `firstT1[0] === 'Broadsword'`, `wondrous` = 119 rows - plus `lists2`'s "a row
+  number is a die roll and is not recomputed under a filter".
+- `app/src/components/tables.test.ts`: one `it()` for the filter<->address loop
+  after arriving by a filter link (panel does not reopen on every render, a
+  chip click is not snapped back, the address follows and reset clears it), and
+  one for reset/link hidden while empty and reachable with the panel folded.
+- `app/src/components/record.test.ts`: no copy-image button for an art-less
+  record; the broken-art memory survives a navigation away and back.
+  **The "after a real load failure" half is R0b.4's** - see the fourth verdict.
+- `app/src/components/listPage.test.ts`: `[data-goldhint]` is a `<span>` and
+  mirrors `title`; the storage notice's `compareDocumentPosition` on both
+  routes; the batch bar holds exactly two buttons; the modal copy carries
+  neither the GM note nor the price nor `×qty`.
+- `docs/fixtures/share/records.json`: add `w118` via
+  `tools/capture-share-fixture.mjs`, which makes `share.test.ts:69`'s
+  parameterised golden cover the multi-line beastform block.
+- `app/src/styles/tokens.css:93`'s `scrollbar-gutter: stable`: one assertion,
+  in whichever vitest file already reads tokens; if none does, in
+  `tests/derived.js` beside the other source pins rather than a new file.
+- `tools/smoke-file-url.mjs`: `defer` on both built script tags, beside its
+  existing `type="module"` read at `:48-59`.
+- `tests/derived.js`: the og head facts as absolute values rather than only as
+  "the two heads agree" (`:100-138`) and "each stub equals its generator"
+  (`:59-70`) - the image is not an item, 1200x630, the file is on disk,
+  `twitter:image === og:image`, `og:locale`, the stub is `summary` with
+  `og/<id>.jpg`.
+
+Adding `w118` to a fixture and editing `tests/derived.js`'s head checks are
+**not** public-contract changes: `docs/fixtures/share/` is not in
+`edit-followup.mjs:28`'s contract list and no route, id, link or generated
+artefact moves. If the implementer finds otherwise, that is a stop-and-raise.
+
+**C4 - `COVERAGE.md`.** The ten-suite table above, written into the `Fate`
+column as a decision with its evidence, plus the thin spots this plan creates:
+the `@media (hover:hover)` source check with the three component locations that
+carry the rule; the 320px width; the EN-Cyrillic sweep; and, until R0b.3 lands,
+the note that print geometry is still `tests/print.js`'s alone
+(`COVERAGE.md:373-375` already says so and gets a batch name). Rows whose port
+lands in R0b.2 or R0b.3 say so by batch; those batches flip their own rows.
+`COVERAGE.md`'s own header count ("What the 20 suites in `tests/` actually
+assert") moves only when a suite is added, so R0b.2's `tests/stub.js` and
+R0b.3's `app/print` each update it in their own commit.
+
+#### R0b.2 designed, in outline
+
+Every placement that needs a real browser, in the three suites that already
+have one plus one new file. Same gate set as R0b.1, so it is one batch.
+
+- `tests/app/states.js`: real history Back/Forward; the selection bar pinned to
+  the viewport bottom **and** its buttons not spilling at 360; a real HTML5
+  drag reorder; a folded `<details>` surviving a select-all re-render; the note
+  geometry group folded into case 13 (3-line floor, neighbour isolation, the
+  real 320 cap with the text scrolling, shrink-back) and the clear cross's
+  `:has(:placeholder-shown)` visibility; tile geometry with `/img/*.webp`
+  blocked at 360; the storage notice under 140px at 320; a **button** keeping
+  focus across a re-render; the money help's measured width and the pressed
+  picker button's computed colour.
+  Each new case is a `CASES` row; the file's header comment ("Fourteen cases")
+  and its closing string ("все четырнадцать пройдены") are both counts and move
+  with it, as does `COVERAGE.md`'s `app/states` row.
+- `tests/app/sweep.js`: `#/i/w65`, `#/i/w3`, `#/i/ci19`, `#/i/w2` into `PAGES`;
+  `.craft, .rcraft, .dicebar, .numrow` into the clipped-text list at `:272`
+  with the spill / squeezed-under-60px / `.craft a` tap-height assertions.
+- `tests/app/hues.js`: `.rstats` is one tone across the three equipment tables;
+  a selected tile has its own fill, read off `.tilewrap.sel .tile`.
+- **new `tests/stub.js`**: `i/w3.html` does not scroll sideways at 320 and 390.
+  A new file rather than a block inside `sweep.js`, because the stub is neither
+  app - `sweep.js`'s own header says it walks `dist/`, and it is width-sharded
+  one process per width, which a two-width check does not fit. One
+  `run-all.js` `SUITES` row, ~5s. Note the generator `tools/build-share-pages.js`
+  is another task's in-flight file; see the preflight.
+
+#### R0b.3 designed, in outline
+
+`tests/app/print.js`: `tests/print.js` transposed onto `fresh()` and the moved
+driver, plus `specs.js`'s `sheetCounts`, `cardFit`, `printMedia` and
+`copiedPrintLink`. `readPNG` is inlined - one consumer, no shared home earned.
+`page.click` becomes `d.click`/`d.press`, and the 250 ms `settle()` becomes
+`d.settle()`, which waits on `document.getAnimations()` rather than a timer.
+One `run-all.js` row (`['app/print', 'dist/: печать карточек', 25]`, placed by
+weight) and the `COVERAGE.md` rows, including retiring the thin spot at
+`:373-375`. `FEATURES.md`'s "Print" section (`:164-182`) is the authority the
+ported assertions are held to, and `CLAUDE.md`'s product law - nine 63x88 mm
+cards per A4 sheet, colour and black-and-white as distinct layouts,
+browser-measured fitting - is what makes the port non-negotiable.
+
+**Stop-and-raise, named**: if a ported assertion fails against `dist/`, run
+`node tests/parity.js print` to tell a bad transposition from a real
+divergence. A one-property CSS fix in `PrintCard.svelte`/`PrintPage.svelte` is
+in scope and rides the same batch with a parity filter. Anything larger is a
+fourth divergence and joins R0b.4 rather than being fixed here.
+
+#### Out of scope for all of R0b, with the stop-and-raise conditions
+
+- **Deleting anything.** Not one file, not one suite, not one assertion. R0c
+  owns every deletion and additionally needs Phase 7 condition 6.
+- **`.github/workflows/ci.yml`.** Nothing in R0b needs it; `ci.yml:47` already
+  runs `run-all.js` whole. If an implementer believes a `ci.yml` edit is
+  required, **stop and raise** - that file is the one-file revert.
+- **`tests/parity/specs.js` beyond nit 4's two stale sentences**, and
+  `VISUAL_DEBT`/`ACCEPTED` at all. R0a closed that sweep.
+- **`tests/parity/lock.js` and `.claude/hooks/`.** Recorded for R0c above.
+- **`app/src/` production code**, except R0b.3's named one-property print
+  exception. The three divergences are R0b.4 and wait on the owner.
+- **Compaction of `plan.md`, `handoff.md` or `context.md`.** All three are over
+  budget - 1007 KB, 510 KB, 222 KB before this session - and
+  `.claude/skills/handoff/SKILL.md` is the procedure. It is not R0b's, and this
+  section is appended rather than filed into the outline it supersedes.
+- **A fourth divergence.** If any batch finds one, record it beside the three
+  and **stop** rather than fixing it: the pattern is that each was invisible to
+  every instrument, so the next one is evidence about the instruments and not
+  just about one component.

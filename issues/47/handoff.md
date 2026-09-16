@@ -6,12 +6,40 @@ depends on chat history.
 
 ## Status
 
-- Task status: **in_progress. R0a is CLOSED - built, reviewed, pushed, and
-  green on CI in every job** (orchestrator, 2026-09-13, on `f826bcd`). Last
-  agent: reviewer. **NEEDS_HUMAN_CONFIRMATION: no.** Branch `main`, level with
-  `origin/main`; R0a is `b0545ed` (C1), `30b2744` (C2), `47a9a15` (C3) on top
-  of `29eae18`, with `06658fd`, `858ae58`, `530aa10`, `6e1269b` and `f826bcd`
-  as its records and corrections.
+- Task status: **in_progress. R0a is CLOSED; R0b is PLANNED and is three
+  batches plus a blocked fourth** (planner, 2026-09-16, at `df1bd57`). Last
+  agent: planner. **NEEDS_HUMAN_CONFIRMATION: yes** - three questions in
+  "Blockers", and they are the only thing holding R0b.1. Branch `main`;
+  `origin/main` was `2d2e983` with **four unpushed commits belonging to other
+  tasks**, which 47 does not push. R0a is `b0545ed` (C1), `30b2744` (C2),
+  `47a9a15` (C3) on top of `29eae18`, with `06658fd`, `858ae58`, `530aa10`,
+  `6e1269b` and `f826bcd` as its records and corrections; it was built,
+  reviewed, pushed and green on CI in every job (orchestrator, 2026-09-13).
+  - **What the R0b planning pass found, and why it flags.** Reading all ten
+    counterpart-less suites in full against every test `COVERAGE.md` names as
+    their fate shows the fates are honest about intent and silent about what
+    did **not** travel. All ten get a verdict and none is dropped unaccounted
+    for - but the residue is about twenty-five real placements, not one, and
+    **three legacy assertions can take none of the three verdicts because the
+    rewrite does not do what they assert**: the roll results lost
+    `role="status" aria-live="polite"`; a referenced card lost its line breaks
+    and its `daggerheart.su` link; the copy-image button no longer disappears
+    when the art fails to load. Each was verified against the source. Each was
+    invisible to every instrument - two of them sit inside a `<details>` that
+    is closed by default, and axe does not report a *missing* live region.
+    Full evidence: `plan.md`, "The fourth verdict".
+  - **The tree moved under the planning pass.** It held 76 of task
+    56-followup's modified paths - including `docs/specs/COVERAGE.md`, which
+    R0b.1 edits - and that session committed mid-pass (`c92c8e8`, `bb55a2d`),
+    so HEAD is `bb55a2d` and the tree is clean apart from `issues/47/`. Three
+    peer sessions still share it; the batch's preflight verifies rather than
+    assumes.
+  - **`npm run check` currently fails for a reason belonging to no task here** -
+    an untracked third-party skill install under `.agents/` and
+    `.claude/skills/impeccable/` that `.prettierignore` and
+    `eslint.config.mjs` do not cover. `bb55a2d` bypassed the gate over it.
+    Second entry in "Blockers"; measured in `context.md`, "The tree state,
+    corrected mid-session".
   - **The CI read: run `34755188652` on `6e1269b` is green in every job** -
     `check`, `parity (1..4)`, `golden (1..4)`, `audit`, `secrets`, `deploy`.
     The run before it, `34754984230` on `06658fd`, was red on one case and it
@@ -4836,32 +4864,311 @@ is new, so inspect its diff image before writing any entry, and write no
 
 ## Next batch
 
-**No implement-ready batch is queued. The next cycle is a planning one: R0b.**
-R0a is closed (its brief is kept below as the record). R0b is an outline only -
-`plan.md`, "R0b planned in outline: re-home what must survive" - and needs a
-planning pass before an implementer opens it.
+**R0b is planned. It is three batches plus a blocked fourth, not one** -
+`plan.md`, **"R0b planned: re-home the live-app coverage that must survive"**,
+which supersedes the outline. Read that section before starting; it holds the
+ten verdicts, the port-by-port destinations, the rejected alternatives, and the
+out-of-scope list. Do not re-derive any of it.
 
-What that pass owes, from the outline and from what R0a learned:
+**The session stops here until the owner answers three questions.** They are in
+"Blockers" below. **R0b.1, described next, does not depend on any of the three
+answers** and may open the moment the owner answers or explicitly defers them;
+nothing in it touches `app/src/`.
 
-- **The ten legacy suites with no `tests/app/` counterpart** - `behave`,
-  `craftmob`, `eqtest`, `flows`, `lists2`, `noart`, `notes`, `print`, `qa`,
-  `select` - each get one of three verdicts with the reason in the commit:
-  *covered already* (by a named test, not "probably"), *ported*, or *dropped*.
-  `print` is named by Phase 7's own text: nine 63x88 mm cards per A4 with
-  browser-measured fitting is a product law in `CLAUDE.md` and no other
-  instrument measures it.
-- **`tests/parity/driver.js` has to be re-homed**, and R0a added a fifth
-  dependant to it. R0c's outline deletes `tests/parity/` whole, so the driver
-  five `tests/app/` suites import must move before that happens. R0a moved
-  nothing.
-- **`tests/app/states.js` case 7's swallowed 5000ms timeout** - PLACED in
-  "Deferred" above, with the evidence in `context.md`.
-- **The review's four nits** - also in "Deferred", all cheap and local.
-- Entry condition: R0a landed and `main` green on the full workflow. **Both are
-  satisfied**: run `34755188652` on `6e1269b`, green in every job.
+### R0b.1 (implement-ready)
+
+- **Name:** R0b.1 - the harness move, the case-7 flake, R0a's four nits, the
+  jsdom placements, and the ten verdicts in `COVERAGE.md`.
+- **Objective:** move the one harness module the surviving suites depend on out
+  of the directory R0c deletes; make the known flake diagnose itself; close
+  R0a's four review nits; land every re-homed assertion that jsdom can hold;
+  and write the ten verdicts into `docs/specs/COVERAGE.md` so R0c reads a
+  decision rather than re-deriving one.
+- **In scope:** `tests/parity/driver.js` -> `tests/app/driver.js` with its
+  three code importers and four prose references; `tests/app/states.js` case 7;
+  `tests/app/golden.js` (nits 1 and 2); `issues/47/plan.md` (nit 3);
+  `tests/parity/specs.js` comments only (nit 4); named `it()` additions in
+  `app/src/lib/data.test.ts`, `app/src/components/tables.test.ts`,
+  `record.test.ts`, `listPage.test.ts`; `docs/fixtures/share/records.json`
+  (add `w118`); `tools/smoke-file-url.mjs`; `tests/derived.js`;
+  `docs/specs/COVERAGE.md`.
+- **Out of scope** (each is a **stop and raise**, not a judgement call):
+  deleting anything at all; `.github/workflows/ci.yml`;
+  `.claude/hooks/` including `bash-guard.mjs`; `tests/parity/lock.js`;
+  `VISUAL_DEBT`, `ACCEPTED`, or `specs.js` beyond nit 4's two sentences;
+  any `app/src/` production change; the three divergences (R0b.4); the
+  real-browser placements (R0b.2); the print port (R0b.3); compaction of any
+  `issues/47/` document.
+- **Files expected:** `tests/app/driver.js` (moved), `tests/app/lib.js`,
+  `tests/parity.js`, `tests/app/states.js`, `tests/app/golden.js`,
+  `tests/parity/specs.js`, `tests/derived.js`, `tools/probe.mjs`,
+  `tools/smoke-file-url.mjs`, `app/src/lib/data.test.ts`,
+  `app/src/components/{tables,record,listPage}.test.ts`,
+  `docs/fixtures/share/records.json`, `docs/specs/COVERAGE.md`,
+  `docs/specs/DEBT.md` (one prose line), `issues/47/plan.md`,
+  `issues/47/handoff.md`.
+
+#### Preflight - the tree condition this batch requires
+
+**Three peer sessions share this working tree.** It was dirty with 76 of task
+56-followup's paths while this plan was written; that session committed
+mid-pass (`c92c8e8`, `bb55a2d`), so the tree is clean again - but the same
+thing can happen during R0b.1, and one of those 76 paths was
+**`docs/specs/COVERAGE.md`, a file this batch edits**. Verify, do not assume.
+
+1. `git status --short` shows **no modified tracked path outside
+   `issues/47/`**. In particular `docs/specs/COVERAGE.md`, `app.js`,
+   `app/src/**`, `tools/build-share-pages.js` and `i/f*.html` are clean. If any
+   is modified, **stop**: do not stash, do not commit, do not `git add -A`.
+   They are not 47's to move (`CLAUDE.md`, "Preserve unrelated working-tree
+   changes").
+2. **`npm run check` is expected to fail on this tree for a reason that is not
+   R0b's, and must not be bypassed.** `bb55a2d`'s own message records the same
+   condition. Measured for this plan:
+   `.agents/skills/impeccable/scripts/*.js` are ignored by **neither**
+   `.prettierignore` (no `.agents/` entry) **nor** `eslint.config.mjs` (it
+   ignores `.claude/**`, not `.agents/**`), and
+   `.claude/skills/impeccable/scripts/*.js` are eslint-ignored but **not**
+   prettier-ignored (`.prettierignore:23-25` names three specific `.claude/`
+   files; `*.md` at `:29` covers the agent wrappers, not these). It is an
+   untracked third-party skill install belonging to no task here.
+   **Do not fix it by editing `.prettierignore` or `eslint.config.mjs`** -
+   repository gate configuration is `issues/config-audit/`'s surface, and
+   widening a gate for an untracked vendor drop is the same move as routing
+   around one. **Stop and raise**: the install is removed or relocated by
+   whoever made it, or the owner rules on the ignore. Until then a red
+   `npm run check` means nothing, which is exactly how a real failure gets
+   waved through.
+3. **Take a baseline before the first edit**, in one foreground call with the
+   Bash timeout at 600000:
+   `set -o pipefail; npm run check 2>&1 | tail -n 120`. Record the wall clock
+   and the result in this file. Green is the entry condition. Red **only** on
+   `.agents/**` or `.claude/skills/impeccable/**` is condition 2 above. Red
+   anywhere else on a clean tree is a different stop-and-raise, and either way
+   it must not later be diagnosed as R0b's.
+4. No heavy run is alive: `test-output/parity.lock` absent, no `chrome.exe`.
+5. Record `git log --oneline -1`. R0b was planned across `df1bd57`..`bb55a2d`;
+   nothing in any of those commits touches `tests/app/`, `tests/parity/`,
+   `tests/run-all.js` or the legacy suites, so R0b's working set is untouched
+   by them. `origin/main` was `2d2e983` with unpushed commits belonging to
+   other tasks - **47 does not push another task's boundary**; push only R0b's
+   own commits, and only after their gates.
+
+#### Steps
+
+**C1 - the driver move** (`refactor(tests): re-home the parity driver ...`)
+
+1. `git mv tests/parity/driver.js tests/app/driver.js`. **Change nothing
+   inside the file**: `driver.js:17`'s `path.join(__dirname, '..', '..')` is
+   correct at the new depth.
+2. `tests/app/lib.js:14`: `require('../parity/driver.js')` ->
+   `require('./driver.js')`.
+3. `tests/parity.js:32`: `require('./parity/driver.js')` ->
+   `require('./app/driver.js')`.
+4. `tests/parity.js:156`: `hashFile(h, path.join(__dirname, 'parity',
+   'driver.js'))` -> `path.join(__dirname, 'app', 'driver.js')`. **Do not skip
+   this.** It is the legacy screenshot cache's key; the driver's `ready()`,
+   `settle()` and `shot()` decide the bytes of every cached PNG, and a key that
+   silently stops covering the driver is the defect class this whole phase
+   exists to close.
+5. Prose only: `docs/specs/COVERAGE.md:367`, `docs/specs/DEBT.md:246`,
+   `tools/probe.mjs:10`, `tests/app/states.js:261`.
+6. Prove it: `node tests/parity.js zzz-no-such-state`. It resolves the
+   `require` and the cache-key `hashFile`, then exits non-zero on the
+   zero-match guard (`parity.js:683-687`) without shooting a state. It does
+   acquire the parity lock and wipe `test-output/parity/` first, so run it once
+   and not beside a peer's heavy run.
+
+**C2 - case 7 and R0a's four nits** (`fix(tests): ...`)
+
+7. `tests/app/states.js`, case 7: replace the swallowed 5000 ms wait
+   (`:190-192`) with the **two-stage wait** designed in `plan.md`. Seed page B
+   through `evaluateOnNewDocument` with its own `storage` listener incrementing
+   `window.__storageSeen`; wait for the event against a module constant
+   `STORAGE_WAIT_MS = 30_000` with its own failure message; then, only if that
+   passed, wait for the repaint with its own. **No `.catch(() => {})`.**
+8. Nit 1: `tests/app/golden.js:435-443` - correct the comment. `--only=`
+   suppresses only the stale-file sweep; the missing-golden check at `:427`
+   runs unconditionally. Code unchanged.
+9. Nit 2: add `headerOf(text)` (the lines before the first `## `) and compare
+   it in `compareGolden` as its own `ok(false, ...)` before the four sections.
+10. Nit 3: `issues/47/plan.md:15679-15685` - delete the forward-looking "the
+    next batch should expect the same block" sentence, keep the record of what
+    happened, and put the correct guidance in its place: the delete was never
+    needed (`--update` rewrites in place, the stale sweep reports orphans), so
+    raise a genuine need rather than route around a guard, and never hand-edit
+    a golden. **Do not touch `bash-guard.mjs`.**
+11. Nit 4: `tests/parity/specs.js` - both "Phase 7's sweep carries them into
+    `FEATURES.md`" sentences read as done, naming the commit. Comments only.
+
+**C3 - the jsdom placements** (`test(app): ...`) - the full list with its
+reasoning is `plan.md`, "C3 - the jsdom placements". One named `it()` per item,
+beside its neighbours, no new file and no new export.
+
+**C4 - the verdicts** (`docs(coverage): ...`)
+
+12. `docs/specs/COVERAGE.md`: the ten-suite verdict table from `plan.md`, in
+    the `Fate` column, every *covered already* claim naming a test and a line.
+    Add the thin spots this plan creates: the `@media (hover:hover)` source
+    check (naming `ListPage.svelte:1415`, `RecordCard.svelte:315`,
+    `TableRows.svelte:295,355`), the 320px width, and the EN-Cyrillic sweep.
+    Rows whose port lands in R0b.2 or R0b.3 say which batch owns them.
+
+#### Acceptance criteria
+
+Each line is closed by an observable outcome. Per `plan.md`, "A placement has
+to be acceptance, not a footnote", this batch may **not** be recorded closed
+while any line has no outcome.
+
+1. `tests/parity/driver.js` does not exist; `tests/app/driver.js` does; and
+   `git log --follow --oneline tests/app/driver.js` shows the file's prior
+   history - proving a move, not a copy.
+2. `driver.js`'s own content is byte-identical to its pre-move self:
+   `git show HEAD~1:tests/parity/driver.js | git hash-object --stdin` equals
+   `git hash-object tests/app/driver.js`.
+3. A repository-wide search for `parity/driver` returns nothing in `tests/`,
+   `tools/`, `docs/` or `.claude/`.
+4. `tests/parity.js:156`'s `hashFile` names `tests/app/driver.js`, and
+   `node tests/parity.js zzz-no-such-state` exits non-zero printing
+   `фильтр ничего не выбрал` with no stack trace. Output pasted into
+   `## Verification`.
+5. `tests/app/states.js` contains **no** `.catch(() => {})` on any
+   `waitForFunction`; case 7 carries two distinct failure messages, one naming
+   the `storage` event and one naming the repaint; `STORAGE_WAIT_MS` is a
+   module-level named constant with a comment tying it to `lib.js:37`'s
+   `protocolTimeout`.
+6. `tests/app/golden.js`'s `--only=` comment no longer claims the
+   missing-golden guard is suppressed.
+7. `compareGolden` compares the `# <id>` / `# route:` / `# why:` header, **and
+   all four golden shards pass with it**. If an existing snapshot header
+   disagrees with `inventory.js`, that is a finding to record in this file -
+   **not** a `--update` to paper over it.
+8. `issues/47/plan.md` no longer advises a future batch to expect the
+   `bash-guard.mjs` block, and `git diff --stat` for this batch shows **no
+   file under `.claude/`**.
+9. `tests/parity/specs.js`'s two "Phase 7's sweep carries them" sentences read
+   as done and name the commit; the diff in that file is comments only.
+10. `app/src/lib/data.test.ts` has a named `it()` asserting the 73/69
+    secondary/armour split, 381 unique English names, 11 Wondrous stat-blocked
+    records, the `core:phy core:mag hnf:phy hnf:mag` book order,
+    `firstT1[0] === 'Broadsword'`, `wondrous` = 119 rows, and that a row number
+    is not recomputed under a filter. Its name is quoted in `## Verification`.
+11. `app/src/components/tables.test.ts` has a named `it()` for the
+    filter<->address loop after arriving by a filter link (the panel does not
+    reopen on every render, a chip click is not snapped back, the address
+    follows the pick and reset clears it).
+12. `tables.test.ts` has a named `it()` asserting reset and link are absent
+    while the filter is empty and reachable while the panel is folded.
+13. `app/src/components/record.test.ts` has named `it()`s for "no copy-image
+    button when the record has no art" and "the broken-art memory survives a
+    navigation away and back". The *real-load-failure* half is **not** here -
+    it is R0b.4's, and line 21 below checks that it was left alone.
+14. `app/src/components/listPage.test.ts` has named `it()`s for:
+    `[data-goldhint]` is a `<span>` mirroring `title`; the storage notice's
+    document position on both routes; the batch bar holds exactly two buttons;
+    the modal copy carries neither the GM note nor the price nor `×qty`.
+15. `docs/fixtures/share/records.json` contains `w118`, captured with
+    `tools/capture-share-fixture.mjs`, and `share.test.ts`'s parameterised
+    golden names it in the vitest output.
+16. `app/src/styles/tokens.css`'s `scrollbar-gutter: stable` is asserted by a
+    named test, and `tools/smoke-file-url.mjs` asserts `defer` on both built
+    script tags.
+17. `tests/derived.js` asserts the og head facts as absolute values - the
+    image is not an item, 1200x630, the file exists on disk,
+    `twitter:image === og:image`, `og:locale`, and each stub is `summary` with
+    `og/<id>.jpg` - not only that the two heads agree.
+18. `docs/specs/COVERAGE.md` carries a verdict for **all ten** suites; every
+    *covered already* claim names a test file and a line number; the word
+    "probably" appears nowhere in the table; and the three new thin spots are
+    recorded.
+19. **Nothing is deleted.** `git show 9177f3b | git apply --reverse --check -`
+    exits 0, and `git diff --stat <base>..HEAD` shows no deleted path other
+    than the driver's rename.
+20. `.github/workflows/ci.yml` is untouched in this batch's diff.
+21. **The three divergences are not fixed here.** `StdPanel.svelte`,
+    `RollPanel.svelte`, `AltPanel.svelte`, `RecordCard.svelte` and
+    `RecordActions.svelte` appear in no commit of this batch, and the
+    "Deferred" entry PLACING them in R0b.4 is still present and still open.
+22. Every gate below ran, with its exact command and wall clock recorded under
+    `## Verification`.
+
+#### Verification commands
+
+One foreground call each, Bash timeout 600000. `node tests/run-all.js app/sweep`
+measured **593.5s** on this host and crossed the cap, so sweep is run by width
+rather than through `run-all` (`plan.md`, R0a's built record).
+
+```text
+set -o pipefail; npm run check 2>&1 | tail -n 120      # baseline, and once per commit
+npm run build                                           # dist/ for every tests/app suite
+node tests/parity.js zzz-no-such-state                  # the driver-move proof (C1)
+node tests/run-all.js app/typo,app/hues,app/contracts,app/states
+node tests/app/sweep.js 1180
+node tests/app/sweep.js 768
+node tests/app/sweep.js 390
+node tests/app/sweep.js 360
+node tests/app/golden.js --shard=1/4
+node tests/app/golden.js --shard=2/4
+node tests/app/golden.js --shard=3/4
+node tests/app/golden.js --shard=4/4
+```
+
+`npm run check:built` is **not** required: this batch changes no screen.
+`npm run build` is still needed, because every `tests/app/` suite refuses to
+start without `dist/index.html` (`tests/app/lib.js:22`). Build once, at the
+start; nothing here edits `app/src/` source.
+
+No parity run and no parity filter. The parity job is manual dispatch and is
+not a deploy dependency (`COVERAGE.md`); step 6's zero-match call is a resolver
+proof, not a parity run.
+
+#### Risks / do-nots
+
+- **Do not `git add -A`.** Peer sessions own most of what is in this tree.
+- **Do not hand-edit a golden**, with an editor or with `node -e`.
+  `edit-guard.mjs:36` intercepts Write/Edit and nothing intercepts the second.
+  If a golden disagrees after nit 2, that is acceptance line 7's finding.
+- **Do not widen `bash-guard.mjs`** to make anything convenient (nit 3's
+  rejected alternative).
+- **Do not fix the three divergences.** They are R0b.4 and they wait.
+- **Do not touch `ci.yml`.** A new suite reaches CI through `run-all.js`'s own
+  `SUITES` list, which `ci.yml:47` already runs whole; that is also what keeps
+  the one-file revert intact.
+- If the print port or any later batch turns up a **fourth** divergence,
+  record it beside the three and stop rather than fixing it.
+
+#### Fallback
+
+If the baseline `npm run check` is red on a clean tree, or a peer session
+re-dirties the tree mid-batch, land **C1 alone** as a complete commit - it is
+self-contained, its proof is one second-long call, and every later batch
+depends on it - and hand off from that boundary rather than carrying a
+half-batch.
+
+### R0b.2, R0b.3, R0b.4 - queued, not implement-ready
+
+- **R0b.2** - every real-browser placement: `tests/app/states.js` (Back/Forward,
+  the selection bar's bottom-pinning and its narrow-width overflow, a real
+  HTML5 drag, a folded `<details>` surviving a re-render, the note-geometry
+  group folded into case 13, the clear cross's `:has()` visibility, tile
+  geometry with images blocked at 360, the storage notice's height at 320, a
+  button keeping focus across a re-render, the money-help width and the pressed
+  picker button's colour); `sweep.js` (four craft-heavy routes plus the
+  `.craft/.rcraft/.dicebar/.numrow` assertions); `hues.js` (`.rstats` one tone,
+  a selected tile's own fill); and a new `tests/stub.js` for `i/w3.html` at
+  320/390. Entry: R0b.1 landed and green. Note `tools/build-share-pages.js`,
+  which generates the stub, is another task's in-flight file.
+- **R0b.3** - the print port: `tests/app/print.js` carrying `tests/print.js`
+  entire **plus** `specs.js`'s `sheetCounts`, `cardFit`, `printMedia` and
+  `copiedPrintLink`, which die with the harness and are measured nowhere else.
+  Entry: R0b.1 landed (the port needs the moved driver's `media`, `computed`,
+  `eachAt` verbs).
+- **R0b.4** - the three divergences. **Entry: the owner's answer.**
 
 R0c still needs **the owner's go** (Phase 7 condition 6) and is where the
-one-file revert ends.
+one-file revert ends. R0c also inherits two named items from this planning
+pass: `tests/parity/lock.js` (see "Deferred") and `golden` joining `deploy`'s
+`needs:`.
 
 ### Closed record: R0a - the evidence, the sweep, and the structural goldens
 
@@ -5460,6 +5767,83 @@ Phase 7, for the unchanged reason. The order is
 cut-over, replanned".
 
 ## Blockers
+
+- **OPEN - NEEDS_HUMAN_CONFIRMATION, three questions, one decision each
+  (planner, 2026-09-16).** The R0b planning pass found three places where the
+  rewrite does not do what the live app does. Each is verified against the
+  source, each was guarded by exactly one of the ten suites R0c is about to
+  delete, and each was invisible to every other instrument. They cannot be
+  given any of R0b's three verdicts: nothing covers them, a port would land a
+  suite that fails on its first run, and dropping them deletes the only thing
+  that can see a shipped regression. Full evidence and line numbers:
+  `plan.md`, **"The fourth verdict"**.
+
+  1. **The roll results lost their live region.** `app.js:2243, 2300, 2333,
+     2349, 2376, 2399` emit
+     `<div class="results" role="status" aria-live="polite">`;
+     `StdPanel.svelte:150`, `RollPanel.svelte:128` and `AltPanel.svelte:192`
+     emit a bare `<div class="results">`, so a screen reader is told nothing
+     when a roll lands. Guarded only by `qa.js:138`; axe cannot report a
+     *missing* live region.
+     **Question: restore the attributes, or record it in `docs/specs/DEBT.md`?**
+  2. **A referenced card lost its line breaks and its outbound link.**
+     `app.js:886-896` writes `<p>` + `lines(r.text)` (`\n` -> `<br>`,
+     `app.js:590`) followed by
+     `<a href="{r.url}" target="_blank" rel="noopener">daggerheart.su</a>`.
+     `RecordCard.svelte:238` writes a plain text node and **no link at all**.
+     Both sit inside a `<details>` closed by default, which is why a pixel diff
+     and an accessibility-tree golden both miss them. Guarded only by
+     `flows.js:117`.
+     **Question: restore both, or was dropping the third-party link
+     deliberate?** The line-break loss is a plain parity defect either way.
+  3. **The copy-image button no longer disappears when the art fails to
+     load.** Live gates it on `hasImage(it)` = `!!it.img && !brokenArt[it.id]`
+     (`app.js:1692`, used at `:2055`); `RecordActions.svelte:105` gates on
+     `{#if it.img}` alone, so a record whose picture 404s offers to copy the
+     placeholder. Guarded only by `noart.js:76`.
+     **Question: restore the second half of the rule, or record it?**
+
+  **The planner's recommendation on all three: restore.** `CLAUDE.md`,
+  "Migration and parity", says this is a refactor and the shipped app's
+  behaviour, content and controls are reproduced; `DEBT.md` is for a live
+  defect the rewrite reproduces on purpose, which is the opposite of these.
+  The reason this is asked rather than decided: all three are production code
+  in deployed behaviour, none is in a path R0b otherwise touches, question 2
+  removes a link to a third-party site, and question 1 is a live accessibility
+  regression the owner should see before the cliff rather than after it.
+
+  **What is blocked, and what is not.** The answers become **R0b.4**, a batch
+  of its own with `npm run check`, `check:built` and a parity filter over
+  `#/i/*` and `#/roll/*`. **R0b.1, R0b.2 and R0b.3 do not depend on any of the
+  three answers** - none of them touches `app/src/` - and R0b.1 is
+  implement-ready in "Next batch" above. A deferral is a valid answer: say so
+  and R0b.1 opens.
+
+  **What must not happen**: R0c deleting `app.js` and the ten suites while
+  these three are unrecorded. After that the correct behaviour exists only in
+  git history and the instrument that noticed is gone.
+
+- **OPEN - `npm run check` fails on this tree for a reason belonging to no task
+  in this repository (planner, 2026-09-16).** An untracked third-party skill
+  install fails `format:check` and `lint` in files no task touches:
+  `.agents/skills/impeccable/scripts/*.js` are covered by **neither**
+  `.prettierignore` (which has no `.agents/` entry) **nor**
+  `eslint.config.mjs` (which ignores `.claude/**`, not `.agents/**`), and
+  `.claude/skills/impeccable/scripts/*.js` are eslint-ignored but not
+  prettier-ignored - `.prettierignore:23-25` names three specific `.claude/`
+  files and `*.md` at `:29` covers the agent wrappers, not these.
+  `bb55a2d` (task 56-followup) already bypassed the gate over exactly this and
+  recorded the bypass rather than asserting it.
+
+  **This blocks R0b.1's baseline**, which is the batch's entry condition.
+  **The fix is not 47's**: repository gate configuration belongs to
+  `issues/config-audit/`, and widening an ignore list to accommodate an
+  untracked vendor directory is the same move as routing around a gate. Either
+  whoever installed the skill removes or relocates it, or the owner rules on
+  the ignore rule. Until one of those happens, every batch in this repository
+  pays a red `npm run check` for a reason that is not its own - which is
+  exactly the condition under which a real failure gets waved through.
+
 
 - **CLOSED by the planner (planner, 2026-09-13): "is 5.2 MB the accepted cost of
   a faithful structural golden of this catalogue?"** Answered **no**, and the
@@ -6179,6 +6563,42 @@ cut-over, replanned".
 - Owner-side, unchanged: Pages source is still not switched to `dist/`.
 
 ## Deferred
+
+- **PLACED for R0b.4, and OPEN on the owner: the three divergences the audit
+  found (planner, 2026-09-16).** The roll results' missing
+  `role="status" aria-live="polite"`; a referenced card's lost line breaks and
+  lost `daggerheart.su` link; the copy-image button that no longer disappears
+  when the art fails to load. Each was guarded by exactly one of the ten suites
+  R0c deletes (`qa.js:138`, `flows.js:117`, `noart.js:76`) and by nothing else.
+  Full evidence, with line numbers on both apps: `plan.md`, "The fourth
+  verdict". The three questions are in **"Blockers"** above and the answers are
+  the entry condition for R0b.4. **R0b.1 may not fix them** - that is
+  acceptance line 21 of the batch above - and R0c may not delete `app.js` or
+  those three suites while any of the three is unrecorded.
+
+- **PLACED for R0c: `tests/parity/lock.js` is a live hook dependency R0c's
+  outline does not name (planner, 2026-09-16).** It is imported by
+  `tests/parity.js:33`, **`.claude/hooks/bash-guard.mjs:31`** and
+  **`.claude/hooks/selftest.mjs:769`**, while R0c's outline deletes
+  `tests/parity/` whole naming only `specs.js` and `driver.js` - so the
+  directory delete takes two hooks with it. **Deliberately not moved in R0b**:
+  after R0c nothing writes `test-output/parity.lock` (only `parity.js` does),
+  so the mechanism is dead and re-homing it now is work R0c would undo. R0c's
+  step list needs the decision, not a rediscovery: delete the module with its
+  `bash-guard.mjs` parity-lock rule and its `selftest.mjs` case, or re-home it
+  if heavy-run locking is still wanted for `run-all`/`golden`.
+  Two smaller R0c inheritances from the same pass: `readPNG` (`tests/lib.js:36`,
+  one consumer) retires with `tests/lib.js` once R0b.3 inlines it; and
+  `COVERAGE.md`'s suite count moves as R0b.2 and R0b.3 each add a suite.
+
+- **PLACED as acceptance lines of R0b.1 (planner, 2026-09-16):** the case-7
+  flake below is **acceptance line 5**, and R0a's four review nits are
+  **lines 6, 7, 8 and 9** of "Next batch" above - each as its own line with its
+  own observable outcome, per `plan.md`, "A placement has to be acceptance, not
+  a footnote". R0b.1 may not be recorded closed while any of them has no
+  outcome. The two entries below are kept verbatim as the record of what was
+  found; the designs that close them (the two-stage storage wait, and the four
+  fixes with their rejected alternatives) are in `plan.md`, "R0b.1 designed".
 
 - **PLACED for R0b: `tests/app/states.js` case 7 flakes on a loaded runner
   (orchestrator, 2026-09-13).** It failed CI run `34754984230` on `06658fd`
@@ -7369,6 +7789,23 @@ cut-over, replanned".
   alone on this host, the 937 s reading was contention, and the rule that
   produced the mess is the one already written down - a check is run in the
   foreground, in one call, beside nothing else.
+
+## Cleanup performed / retained artifacts (R0b planning, orchestrator, 2026-09-16)
+
+- **Removed:** nothing. This cycle was a planning pass; it wrote three tracked
+  task documents and no scratch at all.
+- **Retained, deliberately, and none of it this session's to touch:** the
+  untracked `.agents/`, `.claude/skills/impeccable/`, the four
+  `.claude/agents/impeccable-*.md` wrappers, `.codex/`, and
+  `issues/tg-preview-refresh/`. The first five are a third-party skill install
+  made outside this session - they are also the cause of the red `npm run
+  check` recorded in "Blockers", so deleting them would have turned a visible
+  blocker into a silent one and destroyed another session's install. The last
+  is a different task's directory, retained for the same reason it was at R0a.
+- **Not staged, not pushed:** `origin/main` is behind HEAD by commits belonging
+  to `issues/config-audit/` and task 56-followup. Task 47 does not push another
+  task's boundary, so the remote was left as found.
+- Every commit staged by path; `git add -A` was never used.
 
 ## Notes
 
