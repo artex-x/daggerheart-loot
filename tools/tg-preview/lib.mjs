@@ -5,7 +5,9 @@
   writeState, writeResult, log) - see run.mjs and manifest.mjs for the wiring,
   and docs/tg-preview.md for the operator-facing behaviour this implements.
 
-  Design reference: issues/tg-preview-refresh/plan.md, sections 3-5.
+  Design reference: docs/tg-preview.md ("Operations", "Rate limiting and
+  resumability", "What CI does after a deploy", "Design alternatives
+  rejected").
 */
 import { createHash } from 'node:crypto';
 
@@ -82,6 +84,20 @@ function sortedMap(map) {
   const out = {};
   for (const key of Object.keys(map || {}).sort()) out[key] = map[key];
   return out;
+}
+
+// Deep equality of the flat url -> fingerprint maps state.json carries.
+// run.mjs's writeStateSync uses this to decide whether an apply (or a
+// record()) actually changed anything worth a fresh `updatedAt` - a
+// confirmation-free run merges an unchanged map, and minting a new timestamp
+// for that was the defect (issues/tg-preview-refresh, "the previews CI job
+// commits a state file in which only the updatedAt timestamp moved").
+export function sameUrls(a, b) {
+  const ak = Object.keys(a || {});
+  const bk = Object.keys(b || {});
+  if (ak.length !== bk.length) return false;
+  for (const key of ak) if (a[key] !== (b || {})[key]) return false;
+  return true;
 }
 
 function pick(map, keys) {
@@ -270,6 +286,7 @@ const FLAGS = {
   '--budget-minutes': 'budgetMinutes',
   '--state': 'statePath',
   '--result': 'resultPath',
+  '--stale-list': 'staleListPath',
   '--assets': 'assets',
   '--apply': 'apply'
 };
@@ -285,6 +302,7 @@ export function parseArgs(argv) {
     budgetMinutes: null,
     statePath: null,
     resultPath: null,
+    staleListPath: null,
     assets: null,
     noVerify: false,
     apply: null
@@ -318,6 +336,10 @@ export function parseArgs(argv) {
   }
   if (opts.mode !== 'incremental' && opts.mode !== 'full') {
     throw new Error('--mode must be incremental or full, got ' + opts.mode);
+  }
+  // Checked after the argv loop, so flag order never matters.
+  if (opts.staleListPath && !opts.dryRun) {
+    throw new Error('--stale-list requires --dry-run');
   }
   return opts;
 }
@@ -384,7 +406,7 @@ export async function runRefresh(opts, deps) {
   // default): a literal test object that omits pressLimit still gets the
   // real budget rather than an unbounded one.
   const pressLimit = opts.pressLimit == null ? PRESS_LIMIT : opts.pressLimit;
-  const { manifest, state, client, verify, sleep, now, random, writeState, writeResult, log } = deps;
+  const { manifest, state, client, verify, sleep, now, random, writeState, writeResult, writeStaleList, log } = deps;
 
   let todo = stale(manifest, state, mode);
   if (only && only.length) {
@@ -407,8 +429,23 @@ export async function runRefresh(opts, deps) {
     };
   }
 
+  // `--stale-list` (dry-run only, parseArgs enforces it): sorted arrays and no
+  // timestamp so two runs on one tree produce byte-identical files - a diff
+  // means a real change, not clock noise.
+  async function emitStaleList(urls, notLiveUrls) {
+    if (!writeStaleList) return;
+    await writeStaleList({
+      version: 1,
+      site: manifest.site,
+      mode,
+      stale: [...urls].sort(),
+      notLive: [...notLiveUrls].sort()
+    });
+  }
+
   if (todo.length === 0) {
     log('nothing to refresh');
+    await emitStaleList([], []);
     return baseResult();
   }
 
@@ -455,6 +492,7 @@ export async function runRefresh(opts, deps) {
     );
     batches.slice(0, 3).forEach((b, i) => log('batch ' + (i + 1) + ': ' + b.join(', ')));
     if (notLive.length) log('not live (' + notLive.length + '): ' + notLive.join(', '));
+    await emitStaleList(todo, notLive);
     const result = baseResult();
     result.pending = todo;
     result.notLive = notLive;

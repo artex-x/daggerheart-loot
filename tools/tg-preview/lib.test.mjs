@@ -8,10 +8,12 @@
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import * as lib from './lib.mjs';
 import { runRefresh } from './lib.mjs';
 
@@ -305,6 +307,12 @@ describe('applyResult', () => {
     const result = { urls: { 'https://x/i/b.html': 'B' } };
     assert.deepEqual(lib.applyResult(state, result, 'https://x/').urls, { 'https://x/i/b.html': 'B' });
   });
+
+  it('a --stale-list payload carries no urls key, so applying it by mistake is a no-op', () => {
+    const state = { site: 'https://x/', urls: { 'https://x/i/a.html': 'A' } };
+    const staleListPayload = { version: 1, site: 'https://x/', mode: 'incremental', stale: ['https://x/i/a.html'], notLive: [] };
+    assert.deepEqual(lib.applyResult(state, staleListPayload, 'https://x/').urls, { 'https://x/i/a.html': 'A' });
+  });
 });
 
 describe('botThrottle', () => {
@@ -399,6 +407,21 @@ describe('parseArgs', () => {
 
   it('throws on a negative --limit', () => {
     assert.throws(() => lib.parseArgs(['--limit', '-1']), /--limit must be a number, got -1/);
+  });
+
+  it('--stale-list sets staleListPath when --dry-run is also given', () => {
+    const o = lib.parseArgs(['--dry-run', '--stale-list', 'x.json']);
+    assert.equal(o.staleListPath, 'x.json');
+  });
+
+  it('--stale-list without --dry-run throws, naming --dry-run as the fix', () => {
+    assert.throws(() => lib.parseArgs(['--stale-list', 'x.json']), /--dry-run/);
+  });
+
+  it('--stale-list before --dry-run does not throw - flag order is irrelevant', () => {
+    const o = lib.parseArgs(['--stale-list', 'x.json', '--dry-run']);
+    assert.equal(o.staleListPath, 'x.json');
+    assert.equal(o.dryRun, true);
   });
 });
 
@@ -552,6 +575,7 @@ describe('runRefresh', () => {
   function baseDeps(manifest, extra = {}) {
     const written = [];
     const results = [];
+    const staleLists = [];
     const logs = [];
     let clock = 0;
     const deps = {
@@ -572,10 +596,16 @@ describe('runRefresh', () => {
             results.push(JSON.parse(JSON.stringify(r)));
           }
         : null,
+      writeStaleList: extra.withStaleList
+        ? async (p) => {
+            staleLists.push(JSON.parse(JSON.stringify(p)));
+          }
+        : null,
       log: (msg) => logs.push(msg)
     };
     deps.written = written;
     deps.results = results;
+    deps.staleLists = staleLists;
     deps.logs = logs;
     return deps;
   }
@@ -669,6 +699,51 @@ describe('runRefresh', () => {
     assert.equal(result.confirmed.length, 0);
     assert.equal(result.pending.length, Object.keys(manifest.urls).length);
     assert.equal(deps.written.length, 0);
+  });
+
+  it('a dry run with a stale set writes the stale list exactly once, sorted', async () => {
+    const manifest = fakeManifest(3);
+    const deps = baseDeps(manifest, { withStaleList: true });
+    const result = await runRefresh({ mode: 'full', dryRun: true }, deps);
+    assert.equal(deps.staleLists.length, 1);
+    assert.deepEqual(deps.staleLists[0], {
+      version: 1,
+      site: manifest.site,
+      mode: 'full',
+      stale: [...result.pending].sort(),
+      notLive: []
+    });
+  });
+
+  it('a dry run with --only writes only the narrowed stale set', async () => {
+    const manifest = fakeManifest(5);
+    const deps = baseDeps(manifest, { withStaleList: true });
+    await runRefresh({ mode: 'full', dryRun: true, only: ['r2', 'root'] }, deps);
+    assert.equal(deps.staleLists.length, 1);
+    assert.deepEqual(
+      deps.staleLists[0].stale,
+      [manifest.site, manifest.site + 'i/r2.html'].sort()
+    );
+  });
+
+  it('a dry run with nothing stale still writes, with empty arrays', async () => {
+    const manifest = fakeManifest(3);
+    const state = { site: manifest.site, urls: { ...manifest.urls } };
+    const deps = baseDeps(manifest, { state, withStaleList: true });
+    await runRefresh({ mode: 'incremental', dryRun: true }, deps);
+    assert.deepEqual(deps.staleLists, [{ version: 1, site: manifest.site, mode: 'incremental', stale: [], notLive: [] }]);
+  });
+
+  it('a non-dry run never calls writeStaleList, even when the dep is supplied', async () => {
+    const manifest = fakeManifest(3);
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(batches[0], 1000)],
+      press: batches[0].map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client, withStaleList: true });
+    await runRefresh({ mode: 'full' }, deps);
+    assert.equal(deps.staleLists.length, 0);
   });
 
   it('resends the same batch once after a small FLOOD_WAIT on a send', async () => {
@@ -1284,5 +1359,80 @@ describe('runRefresh', () => {
     const deps = baseDeps(manifest, {});
     await runRefresh({ mode: 'full', dryRun: true, pressLimit: 17 }, deps);
     assert.ok(deps.logs.some((l) => l.endsWith('(press budget 17)')));
+  });
+});
+
+describe('sameUrls', () => {
+  it('is true for two maps with the same keys and values, regardless of key order', () => {
+    const a = { 'https://x/i/a.html': 'A', 'https://x/i/b.html': 'B' };
+    const b = { 'https://x/i/b.html': 'B', 'https://x/i/a.html': 'A' };
+    assert.equal(lib.sameUrls(a, b), true);
+  });
+
+  it('is false when a value differs', () => {
+    const a = { 'https://x/i/a.html': 'A' };
+    const b = { 'https://x/i/a.html': 'A2' };
+    assert.equal(lib.sameUrls(a, b), false);
+  });
+
+  it('is false when a key was added or dropped', () => {
+    const a = { 'https://x/i/a.html': 'A' };
+    const b = { 'https://x/i/a.html': 'A', 'https://x/i/b.html': 'B' };
+    assert.equal(lib.sameUrls(a, b), false);
+    assert.equal(lib.sameUrls(b, a), false);
+  });
+
+  it('is true for two empty maps, and tolerates a missing argument', () => {
+    assert.equal(lib.sameUrls({}, {}), true);
+    assert.equal(lib.sameUrls(undefined, {}), true);
+    assert.equal(lib.sameUrls({}, undefined), true);
+  });
+});
+
+// run.mjs's writeStateSync is exercised through the real --apply CLI in a
+// scratch directory - never the committed tools/tg-preview/state.json, never
+// TG_* or .env (--apply never reads Telegram credentials, and the scratch
+// cwd below has no .env for run.mjs's loadEnvFile to find). This is the
+// exact scenario the defect was measured in: a run that confirms nothing
+// still merges an unchanged `urls` map, and previously minted a fresh
+// `updatedAt` for it anyway - the one line that made
+// `git diff --cached --quiet` never short-circuit in previews.yml's record
+// step (issues/tg-preview-refresh, commit 8850600).
+describe('writeStateSync updatedAt (via run.mjs --apply)', () => {
+  const RUN_MJS = join(HERE, 'run.mjs');
+
+  function apply(before, result) {
+    const dir = mkdtempSync(join(tmpdir(), 'tg-preview-apply-'));
+    try {
+      const statePath = join(dir, 'state.json');
+      const resultPath = join(dir, 'result.json');
+      writeFileSync(statePath, JSON.stringify(before, null, 2) + '\n');
+      writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+      execFileSync(process.execPath, [RUN_MJS, '--apply', resultPath, '--state', statePath], {
+        cwd: dir,
+        encoding: 'utf8'
+      });
+      return JSON.parse(readFileSync(statePath, 'utf8'));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  const before = {
+    version: 1,
+    site: 'https://x/',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+    urls: { 'https://x/i/a.html': 'A' }
+  };
+
+  it('an apply that confirms nothing leaves the file byte-identical, including updatedAt', () => {
+    const after = apply(before, { site: 'https://x/', urls: {} });
+    assert.deepEqual(after, before);
+  });
+
+  it('an apply that confirms a real change moves updatedAt', () => {
+    const after = apply(before, { site: 'https://x/', urls: { 'https://x/i/b.html': 'B' } });
+    assert.deepEqual(after.urls, { 'https://x/i/a.html': 'A', 'https://x/i/b.html': 'B' });
+    assert.notEqual(after.updatedAt, before.updatedAt);
   });
 });

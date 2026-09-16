@@ -104,7 +104,16 @@ jobs:
       - name: Record what was refreshed
         if: always() && env.DRY_RUN != 'true'
         run: |
-          [ -s "$RUNNER_TEMP/result.json" ] || { echo "nothing sent"; exit 0; }
+          # Non-empty is not enough: a run that finds stale urls but confirms
+          # none still writes a well-formed result.json with an empty `urls`
+          # map, and writeStateSync's own fix (run.mjs) makes that apply as a
+          # byte-identical no-op - so checking here too saves a checkout, an
+          # --apply and a push finding out the same thing the slow way.
+          check_confirmed='const r=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.exit(r.urls&&Object.keys(r.urls).length?0:1)'
+          if ! { [ -s "$RUNNER_TEMP/result.json" ] && node -e "$check_confirmed" "$RUNNER_TEMP/result.json"; }; then
+            echo "nothing confirmed"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do

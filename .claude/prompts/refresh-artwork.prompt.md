@@ -21,7 +21,7 @@ Derive these from the conversation, attachments, `TASK_DIR`, handoff documents, 
 - `ALLOWED_EXCLUSIONS`: collections or items the human explicitly says may be absent
 - `SKILL_ROOT`: optional local item-art/reference skill, only when the human asks to refresh it and it can be discovered safely
 
-If no authoritative approval source exists, or it is impossible to distinguish accepted files from rejected attempts, stop. A directory full of images is not by itself an acceptance ledger.
+If no authoritative approval source exists, or it is impossible to distinguish accepted files from rejected attempts, stop. A directory full of images is not by itself an acceptance ledger. The one exception: a drop with exactly one file per item and a `v<N>` suffix that is provenance rather than a choice **is** an unambiguous ledger - see `docs/artwork.md`, "The drop-is-the-ledger precondition", for the three checks that make it true before relying on it.
 
 Use symbolic paths in task documents and reusable instructions. Absolute paths may appear in a one-session handoff as observed environment facts, but never bake them into agents, prompts, repository scripts, or durable generic instructions.
 
@@ -34,14 +34,13 @@ Use symbolic paths in task documents and reusable instructions. Absolute paths m
    - never choose the highest version found in an arbitrary staging directory, because rejected attempts may have higher numbers;
    - retain the relationship from artwork to every represented catalog record.
 3. Apply `ALLOWED_EXCLUSIONS` exactly. Missing excluded collections are expected; do not silently widen exclusions.
-4. Inventory `UPLOAD_DIR` by SHA-256 and byte size. Match approved sources by full content hash first. Treat filenames as advisory only.
+4. Inventory `UPLOAD_DIR` with `node tools/artwork/run.mjs plan --uploads <dir> --report <f>` (`docs/artwork.md`), which hashes and byte-sizes every file. Match approved sources against `APPROVED_SOURCE` by full content hash first; treat filenames as advisory only.
 5. Report filename/version differences when bytes match. Unicode apostrophe and whitespace normalization may help reporting, but must not override a hash mismatch.
 6. Stop before repository writes if any required current accepted artifact is absent by hash. Historical superseded files are not blockers when the final accepted version is present.
-7. Decode every accepted input and validate:
-   - expected raster format;
-   - square aspect ratio;
-   - sane dimensions and RGB or opaque RGBA color;
-   - no corrupt files or unintended transparency.
+7. `node tools/artwork/run.mjs install --uploads <dir> --dry-run` decodes and
+   validates every accepted input the same way before writing anything -
+   raster format, square aspect ratio, opaque alpha only, no corruption. Do
+   not hand-validate; read its refusals instead.
 8. A non-square accepted input is a hard decision point. Do not stretch it. Inspect it and either stop for the human or, if authorized, crop, pad, or regenerate it deliberately. A regenerated replacement receives the next version, is visually QA'd, and is added to the authoritative delivery set before continuing.
 
 Record counts for historical accepted files, current accepted artworks, required matches, allowed exclusions, duplicates, and content-hash-resolved renames.
@@ -58,8 +57,7 @@ Read the current repository rather than relying on memory:
 Current daggerheart-loot image contract, unless repository documentation has changed:
 
 - canonical records live in `data.js`; `data.json`, `catalog.csv`, and `i/*.html` are derived;
-- catalog art lives at `img/<asset-id>.webp`, 640x640 RGB;
-- social previews live at `og/<asset-id>.jpg`, 640x640 RGB progressive JPEG;
+- catalog art lives at `img/<asset-id>.webp`; social previews live at `og/<asset-id>.jpg` - dimensions and encoding are `tools/artwork/`'s documented defaults, see `docs/artwork.md`;
 - built `dist/img` and `dist/og` may be links to the root asset directories;
 - image-only byte replacement does not require editing `data.js` or rebuilding `data.json`, `catalog.csv`, or `i/*.html` when every existing `img` mapping is unchanged.
 
@@ -67,45 +65,44 @@ Do not regenerate HTML merely because image bytes changed: stable stubs already 
 
 ## Phase 3: map approved art to asset targets
 
-Map through repository data, not through filenames alone.
+Map through repository data, not through filenames alone. `node tools/artwork/run.mjs plan` (`docs/artwork.md`) does this mechanically: it resolves each approved artwork's record by name (never assuming `record.id + '.webp'` - the destination is the record's actual `img` field, and several records may share one asset), requires every destination WebP/JPEG counterpart to already exist, rejects two sources mapping to one destination, and prints the accepted-artwork, asset-pair, and record-link counts to report. Read its output rather than deriving the mapping by hand.
 
-1. Resolve every approved artwork's represented record IDs against current canonical data.
-2. Use each record's actual `img` field as the destination asset filename. Do not assume `record.id + '.webp'`:
-   - several records may reference one shared asset;
-   - standard equipment tiers may intentionally share base art;
-   - one approved artwork may intentionally fan out to multiple existing asset filenames.
-3. Require every destination WebP and JPEG counterpart to exist for a replacement-only task.
-4. Reject two different approved byte sources mapping to the same destination asset.
-5. Reconcile intentional shared-art policy with repository duplicate-byte invariants. If an approved generic tier line is meant to share one image but current records still name separate assets, point the later records at the line's anchor asset, remove only the newly orphaned duplicate pairs, and rebuild derived data/stubs. Do not manufacture byte differences to evade the test.
-6. Report separately:
-   - accepted artwork count;
-   - unique destination asset-pair count;
-    - catalog record-link count.
+The one judgment call the tool cannot make: reconciling intentional shared-art policy with the repository's duplicate-byte invariant. If an approved generic tier line is meant to share one image but current records still name separate assets, point the later records at the line's anchor asset in `data.js`, remove only the newly orphaned duplicate pairs, and rebuild derived data/stubs. Do not manufacture byte differences to evade the test.
 
 ## Phase 4: convert and install
 
-Use repository-documented settings when present. For the current catalog convention:
+Run `node tools/artwork/run.mjs install --uploads <drop> --report install.json`
+(one-time setup: `cd tools/artwork && npm ci`). It applies the repository's
+documented conversion settings and encoder (`docs/artwork.md`, "Conversion
+settings" - not restated here) and refuses, writing nothing, if a name is
+ambiguous, two sources collide on one asset, two sources share bytes, an
+input is non-square, an input carries non-opaque alpha, or a destination
+does not already exist. It writes temporary siblings, decodes and verifies
+them, then atomically replaces the destinations, and re-encodes from the
+source a second time to confirm what it wrote. `--dry-run` runs every check
+without writing. Do not hand-convert, hand-install, or write a one-off local
+helper; the tool is what "ongoing maintenance" already justified.
 
-- apply EXIF orientation, flatten only opaque alpha, and convert to RGB;
-- resize square inputs to 640x640 with a high-quality downsampler such as Lanczos;
-- encode WebP at quality 85 with maximum practical encoder effort;
-- encode JPEG at quality 80, progressive, 4:2:0 subsampling;
-- omit source metadata and keep deterministic settings;
-- write temporary siblings, decode and verify them, then atomically replace the destinations.
-
-Do not distort aspect ratio, overwrite the approval sources, rename public asset IDs, or touch unrelated catalog art. A local helper may be used for a one-off run, but keep it parameterized and do not commit machine-specific paths. Add a repository script only if ongoing maintenance justifies it and the human requested that scope.
+Do not distort aspect ratio, overwrite the approval sources, rename public asset IDs, or touch unrelated catalog art.
 
 ## Phase 5: verify
 
-1. Re-encode every intended destination from its approved source with the same settings and compare exact output bytes to the installed WebP/JPEG files.
-2. Decode every changed asset; require WebP/JPEG, RGB, and 640x640.
-3. Confirm shared mappings contain identical bytes where policy requires them.
-4. Inspect the final git diff and verify that only intended `img/`, `og/`, and explicitly requested workflow documentation changed in this task. Keep pre-existing changes separate in the report.
-5. Run focused repository gates first:
+1. `node tools/artwork/run.mjs verify --uploads <drop>` re-encodes every
+   source and compares it byte-for-byte against what is installed,
+   decode-checking format/size on the installed file too - scoped to the
+   pairs this drop resolves to, never the whole `img/` tree (`docs/artwork.md`,
+   "Determinism is per-run"). Confirm shared mappings resolve to the one
+   asset policy intends; the tool's `sharedWith` report is the source of
+   truth for that, not a byte comparison across records.
+2. When a before/after `--stale-list` pair exists, run
+   `node tools/artwork/run.mjs verify-previews --before before.json --after after.json --report install.json`
+   (`docs/artwork.md` has the exact two-`--stale-list`-runs sequence).
+3. Inspect the final git diff and verify that only intended `img/`, `og/`, and explicitly requested workflow documentation changed in this task. Keep pre-existing changes separate in the report.
+4. Run focused repository gates first:
    - `node tests/run-all.js dataint,noart`
    - any image/stub checks identified by current docs
-6. Before a commit, run `npm run check` as required by `CLAUDE.md`. Because artwork changes what screens draw, also run `npm run check:built`; distinguish failures caused by pre-existing unrelated work.
-7. Do not commit unless requested or required by the active task protocol. When you do commit, push the branch; never force-push.
+5. Before a commit, run `npm run check` as required by `CLAUDE.md`. Because artwork changes what screens draw, also run `npm run check:built`; distinguish failures caused by pre-existing unrelated work.
+6. Do not commit unless requested or required by the active task protocol. When you do commit, push the branch; never force-push.
 
 ## Optional local reference-cache refresh
 

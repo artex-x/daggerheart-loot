@@ -27,7 +27,7 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
-| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
+| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one |
 | `derived` | data | kept | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in seven files; `noindex` on both entry documents (`index.html`, `app/index.html`) and their heads compared field by field with no exception list; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
 | `parity` | migration | kept until Phase 7 | the rewrite against the live app: the same script on both, differences reported |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 28 route shapes, the equipment stat line in both languages, filter group key names against the docs |
@@ -308,10 +308,47 @@ client, clock and live check), plus `@WebpageBot`'s own per-user attempt
 throttle: recognising its refusal text (`botThrottle`), the run-scoped press
 budget (`--press-limit`/`PRESS_LIMIT`) that spans both phases and stops a run
 before it overspends the bot's quota, and the warning when `--mode full`
-cannot finish the stale set on that budget. The real Telegram connection
+cannot finish the stale set on that budget. It also covers the
+`--stale-list` writer: `--stale-list` requires `--dry-run` and is rejected
+otherwise regardless of flag order, a dry run emits it exactly once whether
+or not anything is stale, `--only` narrows what it writes, a non-dry run
+never calls it even when the dependency is supplied, and an accidental
+`--apply` of its payload is a no-op because it carries no `urls` key. The
+real Telegram connection
 (`client.mjs`) and the real CDN fetch (`live.mjs`) are deliberately outside
 it - thin wrappers around a live network, where the only honest proof is
 Telegram and the CDN themselves. See `docs/tg-preview.md`.
+
+`tools/artwork/lib.test.mjs` is a separate suite again, run under `node
+--test` as its own step in `npm run check`, right after
+`tools/tg-preview/lib.test.mjs`: it covers the artwork refresh tool's pure
+logic - name normalisation (typographic apostrophes, NFC, the trailing
+`v<N>` provenance suffix, case and whitespace), record indexing (`byId`,
+`byName` as arrays so a shared name is representable, `byImg` for the
+shared-asset groups), destination resolution keyed by a record's `img`
+value rather than its id, shared-asset grouping (one pair for four records
+sharing one asset, its `og/` file named after the asset and never after a
+sharing record), collision and duplicate-source-bytes detection, the
+`--map`/`assign` override, the affected-stub-URL derivation (every matched
+record and every record it shares an asset with), and the stale-set algebra
+`verify-previews` runs on two `tools/tg-preview` `--stale-list` files.
+`tools/artwork/run.mjs` (hashing uploads, decoding geometry, the `sharp`
+encoder, atomic install, byte verification) is deliberately outside it - the
+same argument the tg-preview paragraph above makes for `client.mjs` and
+`live.mjs`: it is a thin wrapper around the filesystem and an encoder, where
+the only honest proof is a real image going in and a real file coming out.
+
+Since art-tooling B3 the same suite also covers `planIngest`, the ingest
+counterpart to `planInstall`: assets keyed by distinct asset in `missingAssets`
+so `og/<new-record-id>.jpg` cannot arise (the og/-trap case, asserted by
+grepping the whole returned object for that string), two brand-new records
+sharing one not-yet-installed asset producing one `creates` entry, a record
+joining an asset that already exists on disk landing in `shares` with no
+filenames, `img: ''` landing in `unarted`, a missing asset with no resolving
+source landing in `unsourced` by asset and waiting record ids, and the same
+unmatched/ambiguous/duplicate-bytes/`map.assign` handling `planInstall` uses
+via the matching helper the two planners share.
+See `docs/artwork.md`.
 
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code
