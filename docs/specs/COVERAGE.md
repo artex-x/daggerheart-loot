@@ -308,7 +308,13 @@ client, clock and live check), plus `@WebpageBot`'s own per-user attempt
 throttle: recognising its refusal text (`botThrottle`), the run-scoped press
 budget (`--press-limit`/`PRESS_LIMIT`) that spans both phases and stops a run
 before it overspends the bot's quota, and the warning when `--mode full`
-cannot finish the stale set on that budget. The real Telegram connection
+cannot finish the stale set on that budget. It also covers the
+`--stale-list` writer: `--stale-list` requires `--dry-run` and is rejected
+otherwise regardless of flag order, a dry run emits it exactly once whether
+or not anything is stale, `--only` narrows what it writes, a non-dry run
+never calls it even when the dependency is supplied, and an accidental
+`--apply` of its payload is a no-op because it carries no `urls` key. The
+real Telegram connection
 (`client.mjs`) and the real CDN fetch (`live.mjs`) are deliberately outside
 it - thin wrappers around a live network, where the only honest proof is
 Telegram and the CDN themselves. See `docs/tg-preview.md`.

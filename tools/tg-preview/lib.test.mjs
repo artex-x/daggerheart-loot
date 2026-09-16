@@ -305,6 +305,12 @@ describe('applyResult', () => {
     const result = { urls: { 'https://x/i/b.html': 'B' } };
     assert.deepEqual(lib.applyResult(state, result, 'https://x/').urls, { 'https://x/i/b.html': 'B' });
   });
+
+  it('a --stale-list payload carries no urls key, so applying it by mistake is a no-op', () => {
+    const state = { site: 'https://x/', urls: { 'https://x/i/a.html': 'A' } };
+    const staleListPayload = { version: 1, site: 'https://x/', mode: 'incremental', stale: ['https://x/i/a.html'], notLive: [] };
+    assert.deepEqual(lib.applyResult(state, staleListPayload, 'https://x/').urls, { 'https://x/i/a.html': 'A' });
+  });
 });
 
 describe('botThrottle', () => {
@@ -399,6 +405,21 @@ describe('parseArgs', () => {
 
   it('throws on a negative --limit', () => {
     assert.throws(() => lib.parseArgs(['--limit', '-1']), /--limit must be a number, got -1/);
+  });
+
+  it('--stale-list sets staleListPath when --dry-run is also given', () => {
+    const o = lib.parseArgs(['--dry-run', '--stale-list', 'x.json']);
+    assert.equal(o.staleListPath, 'x.json');
+  });
+
+  it('--stale-list without --dry-run throws, naming --dry-run as the fix', () => {
+    assert.throws(() => lib.parseArgs(['--stale-list', 'x.json']), /--dry-run/);
+  });
+
+  it('--stale-list before --dry-run does not throw - flag order is irrelevant', () => {
+    const o = lib.parseArgs(['--stale-list', 'x.json', '--dry-run']);
+    assert.equal(o.staleListPath, 'x.json');
+    assert.equal(o.dryRun, true);
   });
 });
 
@@ -552,6 +573,7 @@ describe('runRefresh', () => {
   function baseDeps(manifest, extra = {}) {
     const written = [];
     const results = [];
+    const staleLists = [];
     const logs = [];
     let clock = 0;
     const deps = {
@@ -572,10 +594,16 @@ describe('runRefresh', () => {
             results.push(JSON.parse(JSON.stringify(r)));
           }
         : null,
+      writeStaleList: extra.withStaleList
+        ? async (p) => {
+            staleLists.push(JSON.parse(JSON.stringify(p)));
+          }
+        : null,
       log: (msg) => logs.push(msg)
     };
     deps.written = written;
     deps.results = results;
+    deps.staleLists = staleLists;
     deps.logs = logs;
     return deps;
   }
@@ -669,6 +697,51 @@ describe('runRefresh', () => {
     assert.equal(result.confirmed.length, 0);
     assert.equal(result.pending.length, Object.keys(manifest.urls).length);
     assert.equal(deps.written.length, 0);
+  });
+
+  it('a dry run with a stale set writes the stale list exactly once, sorted', async () => {
+    const manifest = fakeManifest(3);
+    const deps = baseDeps(manifest, { withStaleList: true });
+    const result = await runRefresh({ mode: 'full', dryRun: true }, deps);
+    assert.equal(deps.staleLists.length, 1);
+    assert.deepEqual(deps.staleLists[0], {
+      version: 1,
+      site: manifest.site,
+      mode: 'full',
+      stale: [...result.pending].sort(),
+      notLive: []
+    });
+  });
+
+  it('a dry run with --only writes only the narrowed stale set', async () => {
+    const manifest = fakeManifest(5);
+    const deps = baseDeps(manifest, { withStaleList: true });
+    await runRefresh({ mode: 'full', dryRun: true, only: ['r2', 'root'] }, deps);
+    assert.equal(deps.staleLists.length, 1);
+    assert.deepEqual(
+      deps.staleLists[0].stale,
+      [manifest.site, manifest.site + 'i/r2.html'].sort()
+    );
+  });
+
+  it('a dry run with nothing stale still writes, with empty arrays', async () => {
+    const manifest = fakeManifest(3);
+    const state = { site: manifest.site, urls: { ...manifest.urls } };
+    const deps = baseDeps(manifest, { state, withStaleList: true });
+    await runRefresh({ mode: 'incremental', dryRun: true }, deps);
+    assert.deepEqual(deps.staleLists, [{ version: 1, site: manifest.site, mode: 'incremental', stale: [], notLive: [] }]);
+  });
+
+  it('a non-dry run never calls writeStaleList, even when the dep is supplied', async () => {
+    const manifest = fakeManifest(3);
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(batches[0], 1000)],
+      press: batches[0].map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client, withStaleList: true });
+    await runRefresh({ mode: 'full' }, deps);
+    assert.equal(deps.staleLists.length, 0);
   });
 
   it('resends the same batch once after a small FLOOD_WAIT on a send', async () => {
