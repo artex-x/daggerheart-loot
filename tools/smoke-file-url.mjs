@@ -47,7 +47,8 @@ const seen = await page.evaluate(() => ({
   data: typeof window.LOOT === 'object' && window.LOOT !== null,
   /* An absolute base would break exactly this: paths would start at the drive root */
   scripts: [...document.querySelectorAll('script[src]')].map((s) => s.getAttribute('src')),
-  modules: [...document.querySelectorAll('script[type="module"]')].length
+  modules: [...document.querySelectorAll('script[type="module"]')].length,
+  defers: [...document.querySelectorAll('script[src]')].map((s) => s.hasAttribute('defer'))
 }));
 
 ok(seen.mounted, 'the app did not render from a folder');
@@ -56,6 +57,14 @@ ok(seen.modules === 0, 'a script type="module" survived into the build - it will
 ok(
   seen.scripts.every((s) => s.startsWith('./') || s.startsWith('../')),
   'a script path is not relative: ' + seen.scripts.join(', ')
+);
+/* Without type="module" a plain script blocks the parser and runs in source
+   order regardless - defer is what keeps data.js and app.js off the
+   critical path and still guarantees that order, the same contract a
+   module script carries for free. */
+ok(
+  seen.defers.length === 2 && seen.defers.every(Boolean),
+  'a built script tag lost its defer: ' + JSON.stringify(seen.defers)
 );
 
 await browser.close();

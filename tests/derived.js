@@ -136,6 +136,52 @@ const icons = HEADS.map(([file]) =>
 ok(icons[0] && icons[1], 'пропала иконка вкладки на одной из входных страниц');
 ok(icons[0] === icons[1], 'иконка вкладки разошлась между входными страницами');
 
+console.log('раскладка не гуляет между короткой и длинной страницей');
+/* tokens.css:93. Reserves the scrollbar gutter whether or not the page needs
+   one, so a short route does not measure fifteen pixels wider than a long
+   one - nothing else in tests/app/ reads this file as source text. */
+ok(
+  /scrollbar-gutter:\s*stable/.test(
+    fs.readFileSync(path.join(ROOT, 'app', 'src', 'styles', 'tokens.css'), 'utf8')
+  ),
+  'html больше не резервирует scrollbar-gutter: stable'
+);
+
+console.log('og-факты — абсолютные значения, а не только совпадение между копиями');
+/* The check above only proves index.html and app/index.html agree with each
+   other - a generator change moving both the same wrong way would still
+   pass. This pins what they agree ON, so it cannot. */
+const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+const shareFacts = HEADS[0][1];
+ok(shareFacts['og:image'] === SITE + 'og/_share.jpg',
+   'og:image не общая картинка сайта, а что-то другое: ' + shareFacts['og:image']);
+ok(shareFacts['og:image:width'] === '1200' && shareFacts['og:image:height'] === '630',
+   'og:image не 1200x630: ' + shareFacts['og:image:width'] + 'x' + shareFacts['og:image:height']);
+ok(fs.existsSync(path.join(ROOT, 'og', '_share.jpg')), 'общей og-картинки нет на диске');
+ok(shareFacts['twitter:image'] === shareFacts['og:image'],
+   'twitter:image разошлась с og:image: ' + shareFacts['twitter:image']);
+ok(shareFacts['og:locale'] === 'ru_RU', 'og:locale не ru_RU: ' + shareFacts['og:locale']);
+
+/* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
+   own "summary_large_image" - one record with art, one built with its art
+   field stripped, so both branches of the img fallback are pinned, not only
+   that a stub matches its own generator (the check above this file already
+   proves that). Every real record carries art today, so the no-art branch
+   has no record of its own to read off - built rather than found. */
+const artless = Object.assign({}, ALL.find((x) => x.img && !x.eq && !x.craft));
+delete artless.img;
+[ALL.find((x) => x.img), artless].forEach(function (x) {
+  const html = page(x);
+  const twCard = /<meta name="twitter:card" content="([^"]*)">/.exec(html);
+  ok(twCard && twCard[1] === 'summary', 'заглушка ' + x.id + ': twitter:card не summary');
+  const ogImg = /<meta property="og:image" content="([^"]*)">/.exec(html);
+  const wantImg = SITE + 'og/' + (x.img ? x.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
+  ok(
+    ogImg && ogImg[1] === wantImg,
+    'заглушка ' + x.id + ': og:image не ' + wantImg + ', а ' + (ogImg && ogImg[1])
+  );
+});
+
 console.log('llms.txt');
 const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
 ['catalog.csv', 'data.json', '#/l/', 'stamp', '10 handfuls = 1 bag',

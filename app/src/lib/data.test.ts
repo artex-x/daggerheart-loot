@@ -137,6 +137,41 @@ describe('the index over the real dataset', () => {
     expect(books).toHaveLength(239);
   });
 
+  it('carries eqtest.js/lists2.js real-data guards nothing else makes', () => {
+    /* Ported from tests/eqtest.js:44-51,61 - the only place these ever ran,
+       and eqtest.js is one of the ten suites R0c deletes. */
+    const eq = LOOT.eq ?? [];
+    const byT = (t: string) => eq.filter((it) => it.eq?.t === t).length;
+    expect(byT('secondary')).toBe(73);
+    expect(byT('armor')).toBe(69);
+    expect(new Set(eq.map((it) => it.en)).size).toBe(381);
+    expect(LOOT.items['wondrous']?.filter((it) => it.eq).length).toBe(11);
+    expect(index.rows.get('wondrous')).toHaveLength(119);
+    /* The book prints Core physical, Core magic, then the same for H&F. */
+    const tier1Weapons = eq.filter((it) => it.eq?.t === 'weapon' && it.eq.tier === 1);
+    const seq = tier1Weapons
+      .map((it) => `${it.src}:${String(it.eq?.cls)}`)
+      .filter((v, i, a) => v !== a[i - 1]);
+    expect(seq.join(' ')).toBe('core:phy core:mag hnf:phy hnf:mag');
+    expect(tier1Weapons[0]?.en).toBe('Broadsword');
+
+    /* Ported from FEATURES.md, "Tables and search": a grid tile shows a
+       record's own roll number, not the position it happens to hold in
+       whatever subset is currently on screen - the live app's
+       `list.map(tileHTML)` passed the array index instead, so filtering a
+       roll pool renumbered every tile from 1. Wondrous split by `kind` is
+       real data that demonstrates this: the `item` subset's own rolls are
+       scattered, not 1..N, proving nothing here recomputes them. */
+    const wondrousItems = (LOOT.items['wondrous'] ?? []).filter((it) => it.kind === 'item');
+    expect(wondrousItems.length).toBeGreaterThan(0);
+    expect(wondrousItems.length).toBeLessThan(LOOT.items['wondrous']?.length ?? 0);
+    const rolls = wondrousItems.map((it) => it.roll);
+    expect(rolls).not.toEqual(rolls.map((_, i) => i + 1));
+    for (const it of wondrousItems) {
+      expect(LOOT.items['wondrous']?.find((row) => row.id === it.id)?.roll).toBe(it.roll);
+    }
+  });
+
   it("orders the equipment pool the way app.js's ALL_EQ does - eq before the roll tables", () => {
     /* `ALL_EQ = EQ.concat(...Object.values(DATA))` in app.js: `eq` first, then
        every roll table in its own order. `allEquip` used to read `all` (the

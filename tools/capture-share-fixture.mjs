@@ -51,7 +51,13 @@ function pickIds() {
     first((r) => r.craft),
     first((r) => r.refs?.length),
     first((r) => r.src === 'voa'),
-    first((r) => r.src === 'dread')
+    first((r) => r.src === 'dread'),
+    /* w118 (Yeti Coat) references a beastform card whose attached block is
+       5+ lines with its own stat line on its own line - a shape no other
+       picked id's reference carries, so its copy format needs its own
+       fixture entry rather than riding on the generic refs?.length pick
+       above. issue 47, R0b.1. */
+    'w118'
   ].filter(Boolean);
   return [...new Set(ids)];
 }

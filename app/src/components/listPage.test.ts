@@ -227,6 +227,35 @@ describe('the storage notice', () => {
     expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
     expect(storage.get('dhloot.warn.v1')).toBe('1');
   });
+
+  it('sits under the heading and above the rows, on both routes ListPage draws', () => {
+    /* ListPage.svelte handles both app.route.kind === 'storedList'
+       (#/lists/<id>) and 'sharedList' (#/l/<payload>) - App.svelte:73-74. */
+    const own = render(App, { env: withA('#/lists/a') });
+    const heading = own.container.querySelector('h1');
+    const notice = own.container.querySelector('.warn');
+    const rows = own.container.querySelector('.lrows');
+    expect(heading && notice && rows).toBeTruthy();
+    expect(
+      heading!.compareDocumentPosition(notice!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      notice!.compareDocumentPosition(rows!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    cleanup();
+
+    const shared = render(App, { env: withA('#/l/' + encodeList(listA, true)) });
+    const sHeading = shared.container.querySelector('h1');
+    const sNotice = shared.container.querySelector('.warn');
+    const sRows = shared.container.querySelector('.lrows');
+    expect(sHeading && sNotice && sRows).toBeTruthy();
+    expect(
+      sHeading!.compareDocumentPosition(sNotice!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      sNotice!.compareDocumentPosition(sRows!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
 });
 
 describe('the money picker', () => {
@@ -259,6 +288,17 @@ describe('the money picker', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Как в книге' }));
     expect(readLists(storage)[0]?.money).toBeUndefined();
+  });
+
+  it('draws the gold hint as a span mirroring itself into title, not a button', () => {
+    /* Ported from tests/lists2.js:322-330: the "?" is a visible cue that a
+       tooltip exists, not something to press. */
+    const { container } = render(App, { env: withA() });
+    const hint = container.querySelector('[data-goldhint]');
+    expect(hint?.tagName).toBe('SPAN');
+    const value = hint?.getAttribute('data-goldhint');
+    expect(value).toBe('7 мешков 5 горстей');
+    expect(hint).toHaveAttribute('title', value);
   });
 
   it('opens the help with five bold runs on its own "?"', async () => {
@@ -392,6 +432,18 @@ describe('the actions under a ticked selection', () => {
     await tickRow(0);
     expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Удалить \(/ })).not.toBeInTheDocument();
+  });
+
+  it('holds exactly two buttons in the batch bar, with no percentage widget', async () => {
+    /* Ported from tests/lists2.js's own batch-bar shape check: the reprice
+       percentage field lives in the separate .guess panel, not in
+       .batch-acts alongside Цены/Удалить. */
+    const { container } = render(App, { env: withA() });
+    await tickRow(0);
+    const bar = container.querySelector('.batch-acts');
+    expect(bar).toBeInTheDocument();
+    expect(within(bar as HTMLElement).getAllByRole('button')).toHaveLength(2);
+    expect((bar as HTMLElement).querySelector('input')).toBeNull();
   });
 
   it('opens the panel on Цены and flips aria-expanded', async () => {
@@ -663,6 +715,22 @@ describe('a row’s modal', () => {
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Скопировать текст' })
     );
     expect(clip.last.text ?? '').toContain('Светится в темноте');
+  });
+
+  it('carries neither the GM note, nor the price, nor ×qty', async () => {
+    /* entryNoteBlock (lib/share.test.ts) already proves this at the unit
+       level - this is the wiring proof, through the real modal, with cc1's
+       full meta (qty 2, gold 750, a GM note) in play. */
+    const clip = fakeClipboard();
+    render(App, { env: withA('#/lists/a', { clipboard: clip }) });
+    await userEvent.click(screen.getByRole('button', { name: /Зелье/ }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Скопировать текст' })
+    );
+    const text = clip.last.text ?? '';
+    expect(text).not.toContain('Проклят');
+    expect(text).not.toContain('750');
+    expect(text).not.toContain('×2');
   });
 });
 

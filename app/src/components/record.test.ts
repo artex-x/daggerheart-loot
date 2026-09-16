@@ -10,6 +10,7 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import {
@@ -300,6 +301,35 @@ describe('a record on its own page', () => {
 
     img?.dispatchEvent(new Event('error'));
     await Promise.resolve();
+    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+  });
+
+  it('offers no copy-image button for a record with no art at all', () => {
+    /* Ported from tests/noart.js:39. `odd` carries no `img` field at all -
+       distinct from ci1's real-load-failure case above, which is a
+       different record shape and RecordActions.svelte's own R0b.4 divergence
+       (`RecordActions.svelte:105` gates on `it.img` alone, not
+       `it.img && !brokenArt[it.id]`; that half stays untouched here). */
+    render(App, { env: at('odd') });
+    expect(
+      screen.queryByRole('button', { name: 'Скопировать изображение' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('remembers a broken image across a navigation away and back', async () => {
+    /* Ported from tests/noart.js:80-85. app.artBroken lives on the shared
+       AppState, not on RecordCard's own props, so it must outlive the
+       record page it was set on. */
+    const env = at('ci1');
+    const { container } = render(App, { env });
+    container.querySelector('img')?.dispatchEvent(new Event('error'));
+    await Promise.resolve();
+    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+
+    env.router.navigate('#/i/cc1');
+    await tick();
+    env.router.navigate('#/i/ci1');
+    await tick();
     expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
   });
 });

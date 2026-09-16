@@ -562,6 +562,26 @@ describe('the filter', () => {
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
   });
 
+  it('hides reset and the copy-link button while the filter is empty, and keeps both reachable with the panel folded', async () => {
+    render(App, { env: wond() });
+    expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ссылка на фильтры' })).not.toBeInTheDocument();
+
+    const toggle = screen.getByRole('button', { name: 'Фильтры' });
+    await userEvent.click(toggle);
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
+
+    /* Ported from tests/eqtest.js:104,116-119: the point of drawing .fclear
+       and .flink outside FilterBar's {#if open} block is that folding the
+       panel does not take them with it. */
+    await userEvent.click(toggle);
+    expect(screen.queryByRole('button', { name: 'Предметы' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
+  });
+
   it('grows its own reset button in the empty state', async () => {
     render(App, { env: wond() });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
@@ -766,6 +786,33 @@ describe('the equipment tables', () => {
       'aria-pressed',
       'true'
     );
+  });
+
+  it('a fold survives a pick, and a pill dropped while folded is not snapped back to the link', async () => {
+    /* Ported from tests/eqtest.js:167-184. The panel used to reopen on every
+       render because an address change caused by our own pick looked, from
+       the effect's point of view, exactly like a fresh filter link arriving
+       (TablesPage.svelte's seenSeg mirror is the fix). A pill stays drawn
+       outside FilterBar's {#if open} block, so dropping it while folded must
+       both leave the panel folded and actually narrow the filter - not
+       revert to what the link said. */
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/eq_weapon/f_tier-2.cls-mag'),
+      data: fakeData(LOOT)
+    });
+    const { container } = render(App, { env });
+    const toggle = screen.getByRole('button', { name: /Фильтры/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    const pill = container.querySelector('.fpill[data-val="cls:mag"]');
+    expect(pill).toBeInTheDocument();
+    await userEvent.click(pill as HTMLElement);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(env.router.hash()).toBe('#/tables/eq_weapon/f_tier-2');
+    expect(screen.getByRole('button', { name: /Фильтры \(1\)/ })).toBeInTheDocument();
   });
 
   it('a group the table does not offer leaves it whole - burden on armour', () => {

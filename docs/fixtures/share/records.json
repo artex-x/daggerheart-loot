@@ -182,5 +182,28 @@
         "text": "Aether Rifle\nPrimary weapon · Tier 3 · Magic · Instinct · Very Far · d8+8 mag · Two-Handed\n\nUncanny: Shooters who are biologically alive must mark a Stress each time they fire the weapon. Constructs, like Clanks, and undead, like Vampires, are immune to this cost."
       }
     }
+  },
+  "w118": {
+    "why": "item, references 1 card(s), src wondrous",
+    "ru": {
+      "name": {
+        "html": null,
+        "text": "Шкура Йети"
+      },
+      "full": {
+        "html": "<b>Шкура Йети</b><br><br>Пока вы носите эту шкуру, вы получаете половину урона от холода. В условиях замораживающих температур вы можете отметить 3 Стресса, чтобы превратиться в Йети, как при использовании свойства Друида «Звериная Форма» (используйте форму «Крупный зверь»).<br><br><i>Крупный зверь · Звериная Форма · Ранг 2</i><br>(Медведь, Бык, Лось и пр.)<br>Сила +3, Уклонение +1<br>Атака: Вплотную, Сила d10+4 физ<br>Преимущества при навигации, защите, устрашении<br>Буйство: когда вам выпадает 1 на кости урона, вы можете бросить d10 и добавить результат к броску урона. Также перед броском атаки можно отметить Стресс и получить +1 к Мастерству для этой атаки.<br>Толстая шкура: вы получаете +2 к порогам урона.",
+        "text": "Шкура Йети\n\nПока вы носите эту шкуру, вы получаете половину урона от холода. В условиях замораживающих температур вы можете отметить 3 Стресса, чтобы превратиться в Йети, как при использовании свойства Друида «Звериная Форма» (используйте форму «Крупный зверь»).\n\nКрупный зверь · Звериная Форма · Ранг 2\n(Медведь, Бык, Лось и пр.)\nСила +3, Уклонение +1\nАтака: Вплотную, Сила d10+4 физ\nПреимущества при навигации, защите, устрашении\nБуйство: когда вам выпадает 1 на кости урона, вы можете бросить d10 и добавить результат к броску урона. Также перед броском атаки можно отметить Стресс и получить +1 к Мастерству для этой атаки.\nТолстая шкура: вы получаете +2 к порогам урона."
+      }
+    },
+    "en": {
+      "name": {
+        "html": null,
+        "text": "Yeti Coat"
+      },
+      "full": {
+        "html": "<b>Yeti Coat</b><br><br>While wearing this coat you take half damage from exposure to cold. In freezing temperatures, you can mark 3 Stress to transform into a Yeti as if using a Druid's Beastform feature (use the Powerful Beast form).<br><br><i>Powerful Beast · Beastform · Tier 2</i><br>(Bear, Bull, Moose, etc.)<br>Strength +3, Evasion +1<br>Attack: Melee, Strength d10+4 phy<br>Advantage on: navigate, protect, scare<br>Rampage: when you roll a 1 on a damage die, you can roll a d10 and add the result to the damage roll. Before an attack roll you can mark a Stress to gain +1 to your Proficiency for that attack.<br>Thick Hide: you gain a +2 bonus to your damage thresholds.",
+        "text": "Yeti Coat\n\nWhile wearing this coat you take half damage from exposure to cold. In freezing temperatures, you can mark 3 Stress to transform into a Yeti as if using a Druid's Beastform feature (use the Powerful Beast form).\n\nPowerful Beast · Beastform · Tier 2\n(Bear, Bull, Moose, etc.)\nStrength +3, Evasion +1\nAttack: Melee, Strength d10+4 phy\nAdvantage on: navigate, protect, scare\nRampage: when you roll a 1 on a damage die, you can roll a d10 and add the result to the damage roll. Before an attack roll you can mark a Stress to gain +1 to your Proficiency for that attack.\nThick Hide: you gain a +2 bonus to your damage thresholds."
+      }
+    }
   }
 }
