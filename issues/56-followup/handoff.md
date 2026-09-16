@@ -1,15 +1,54 @@
 # Handoff - TASK 56-followup
 
 ## Status
-- Task status: blocked (B1r code changes complete and verified green;
-  commit withheld - see "Implementer follow-up (B1r remediation, 2026-09-15)"
-  below for why)
-- Last agent: implementer (B1r)
-- NEEDS_HUMAN_CONFIRMATION: yes - a second, actively-running session is
-  committing directly to this same `main` working tree while B1r ran. See
-  blocker below. Not a design question; a working-tree-safety question.
+- Task status: done (B1r committed and pushed on the human's instruction)
+- Last agent: orchestrator (commit and push)
+- NEEDS_HUMAN_CONFIRMATION: no - the human answered the concurrent-session
+  question on 2026-09-16 with "commit & push".
 - Branch: `main`
 - Base / starting commit: `8dae1b9f7111034f4ee9a9d3841679acc8010cba`
+- B1r commit: `c92c8e8 fix(app): repair Other provenance and the specs the
+  split left stale`, pushed to `origin/main` (68 files).
+
+### Closeout (2026-09-16)
+B1r landed on top of four commits from the concurrent `issues/config-audit`
+session (`779fae6`, `93d601c`, `d61aadb`, `df1bd57`), all preserved. The push
+carried those four to `origin/main` as ancestors; they had not been pushed.
+
+**The commit used `SKIP_CHECK_GATE=1`, and the reason must not be lost.**
+`npm run check` cannot pass on this tree, for a cause entirely outside this
+batch: the config-audit session's untracked skill install (`.agents/`,
+`.claude/skills/impeccable/`, `.impeccable/`) fails `format:check` in 16 files
+and fails `lint` outright - `live-browser-dom.js was not found by the project
+service`. None of those files is in this commit. Every stage of the gate was
+run instead with the foreign paths excluded, and all passed:
+
+- `npx prettier --check` over the twelve changed source/doc paths: clean.
+- `npx eslint app/src`: clean (`app.js` and `tools/build-share-pages.js` are
+  eslint-ignored by config, not by choice here).
+- `npm run typecheck`: 545 files, 0 errors, 0 warnings.
+- `node --check tools/check-site.mjs`, `npm run data`, `node tests/derived.js`:
+  derived files, catalogue, stubs, counters all match.
+- `node tests/i18n.js`: parity held, ru 251 / en 251, and both `grpOther`
+  failures gone. Remaining unused strings (`srcFrame`, `voaRecall`,
+  `guessPrice`, `pcTh`, `printFoot`, `money_coin`, `money_bag`) are
+  pre-existing and were left alone.
+- `node .claude/hooks/selftest.mjs`: 317 passed, 0 failed.
+- `npm run test`: 42 files, 1026 tests passed; coverage 96.59% statements.
+- `npm run check:built`: build, `file://` smoke, and 88.9 kB against the
+  120 kB budget.
+- All four `tests/app/golden.js` shards, `--update` then comparison
+  (implementer, 2026-09-15): zero diffs, as a pure refactor should give.
+
+Anyone re-running `npm run check` here will still see it red until the
+config-audit session's vendored files are formatted or added to
+`.prettierignore` / the eslint ignores. That fix belongs to that session -
+`.claude/` is its scope - and was deliberately not taken here.
+
+Cleanup performed / retained artifacts: nothing removed. Retained and left
+untouched: untracked `.agents/`, `.claude/agents/impeccable-*.md`,
+`.claude/skills/impeccable/`, `.codex/`, `issues/tg-preview-refresh/`, and
+the config-audit session's in-flight `issues/47/context.md`.
 - B1 commits on `origin/main`: `106e4dd feat(catalog): split other tables and
   clarify provenance`, `33d0b26 test(contracts): align frame tier fixture`,
   `2d2e983 fix(app): resolve task 56 typecheck regressions`
