@@ -271,6 +271,7 @@ robots.txt                  обход разрешён, сборщики для
 tools/build.js              пересобирает все производные файлы
 tools/build-share-pages.js  генератор i/ из data.js
 tools/derived.js            как собираются производные файлы
+tools/tg-preview/           обновление превью в Telegram; см. docs/tg-preview.md
 tests/                      19 наборов и запускалка
 docs/specs/                 поведение и замороженные контракты
 docs/fixtures/              золотые образцы, которые проигрывает набор contracts

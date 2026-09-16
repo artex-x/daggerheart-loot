@@ -1,0 +1,11 @@
+{
+  "name": "dhloot-tg-preview",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "teleproto": "^1.229.0"
+  }
+}

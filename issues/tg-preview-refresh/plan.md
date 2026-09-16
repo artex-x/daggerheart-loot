@@ -1,0 +1,3749 @@
+# Plan - TASK tg-preview-refresh
+
+Refresh Telegram's cached link previews for every share URL of the site: one
+full reindex, then incremental refreshes after each deployment, driven by what
+actually changed. One mechanism, two callers (CI and the owner's machine).
+Local-only task id; no GitHub issue. Read `context.md` first, then this file,
+then `handoff.md`.
+
+## Revision history - read this first
+
+- **Pass 1, 2026-09-11.** The original design (sections 1-13 below). Two
+  owner questions; both answered before dispatch (`context.md`, decisions
+  5 and 6). B1, R1 and R2 implemented it and were reviewed and approved.
+- **Pass 3, 2026-09-11 (this revision).** O1's first real run **disproved
+  the assumption under section 3.4 and 5.5 and under B1's send loop**: a
+  plain send to `@WebpageBot` refreshes a page's title and description and
+  **keeps the cached photo** when `og:image` still points at the same URL -
+  which is this site's exact case. Only pressing the bot's **"Update with
+  content"** inline button re-downloads the image. Everything measured is in
+  `context.md`, "Sending a link to @WebpageBot does NOT refresh the image";
+  nothing there is re-derived or re-tested here.
+
+  How to read the rest of this file: every section carries one of these
+  markers at its top. **Stands** - unchanged and still true. **Revised** -
+  rewritten in this pass; the superseded text is summarised in a
+  `> Superseded:` note and is readable in full at commit `0ab04eb`.
+  Sections without a marker are pass-3 additions.
+
+- **Pass 4, 2026-09-12 (this revision).** O1's **second** run - the first
+  chunked reindex attempt - disproved the assumption that **presses are
+  free**. `@WebpageBot` has its own attempt quota per user, below 115
+  presses in one run, and answers everything past it with
+  `"Sorry, too many attempts. Please try again in 3213 seconds."` -
+  including a subsequent send, for which it then emits **no button
+  messages at all**. Everything measured is in `context.md`, "The press
+  axis has its own throttle, and `--mode full` re-spends it"; nothing
+  there is re-derived or re-tested here.
+
+  What that invalidates, in the order it matters: (a) the "a button
+  message already in the chat is a **free** retry" framing under section
+  3.4 - free on the send axis, and the send axis was never the binding
+  one; (b) section 9 step G's `--mode full --limit 10` loop, which
+  re-presses the previous chunk's buttons every run; (c) the confirmation
+  rule's "answered is confirmed" clause, because an answer can be a
+  rejection; (d) section 2's blanket non-goal on parsing the bot's text.
+  Sections revised in pass 4 say **Revised (pass 4)** so a pass-3 revision
+  is not mistaken for this one; the superseded pass-3 text is readable in
+  full at commit `5b2a68e`.
+
+- **Pass 5, 2026-09-13 (this revision).** The owner, mid-restart at 195 of
+  1062 URLs, watched every batch report `photo changed 10, same 0, none 0`
+  and doubted it, because the artwork "was not changed much". They asked for
+  a lazier tool - press only where a press is actually needed - and named
+  Telegram's own resizing/re-encoding as the reason the counter might always
+  say `changed`. Everything measured for this pass is in `context.md`, "The
+  owner's question about `photo changed`"; nothing there is re-derived here.
+
+  Two answers, and they are answers to **different** questions:
+
+  (a) **The counter is arithmetically honest and its name is not.** It is a
+  photo-**id** delta, and *three* unrelated mechanisms set it: a genuine
+  re-download of different bytes; Telegram re-encoding what it fetched and
+  minting a new id for bytes that are identical (the owner's hypothesis, and
+  the balance of evidence favours it); and a pre-press webpage that had no
+  photo yet - `matchButtons` does not exclude a `WebPagePending` match, so
+  `photoBefore` is `null` and `null -> <id>` classifies as `changed`. The
+  name promises a picture delta and measures none. Section 3.4 gains "What
+  the photo counter measures"; **B5** (section 10b) changes the vocabulary
+  and nothing else.
+
+  (b) **No new pre-press staleness test.** The tool already has an exact one
+  - `stale()` over the content fingerprint - and it cannot help the run the
+  owner is watching, because a first reindex starts from an empty state by
+  construction. New section 3.9 records the rejection, the four candidates,
+  and the measurement that kills each.
+
+  Sections revised in pass 5 say **Revised (pass 5)**; the superseded pass-4
+  text is readable in full at commit `0f33aa2`.
+
+- **Pass 6, 2026-09-16 (this revision).** O2 is **done**: the owner's local
+  reindex finished on 2026-09-14 and `tools/tg-preview/state.json` holds all
+  1062 URLs, still untracked. The owner now wants the job **in CI**, made
+  **fail-safe** - "I'm OK with eventual consistency and these limits are
+  hitting hard, so e.g. if we timeout - I don't care much as long as it will
+  be picked up by the next CI run" - on top of an `origin/main` that moved
+  101 commits (issue 47's cut-over shipped), with the three repository
+  secrets already configured. Everything measured for this pass is in
+  `context.md`, "The local reindex finished; the goal is now CI" and "Added
+  by the planner, pass 6"; nothing there is re-derived here.
+
+  Five decisions, each in its own section: the merge onto `main` is its own
+  committed boundary before the code batch and has **exactly one** textual
+  conflict, measured (new section 3.10); "fail-safe" is defined as **a red
+  job means the next run cannot fix it** and is expressed in exit codes and
+  one `case`, not `continue-on-error` (section 3.5, revised); a 4-hourly
+  `schedule:` makes a backlog drain without a push, with a hard `timeout`
+  around the run so the state commit never depends on a cancelled job's
+  semantics (sections 3.5 and 6); the finished `state.json` is committed by
+  path, byte-for-byte untouched, in its own commit after the merge (section
+  3.10); and what can and cannot be verified before the owner merges, plus
+  the first-run procedure (sections 3.10 and 9, steps H-J). **B6** (section
+  10c) is the whole of the code answer; two cheap local fixes ride along
+  because they live on the same paths. Sections revised in pass 6 say
+  **Revised (pass 6)**; the superseded pass-5 text is readable in full at
+  commit `4a042c7`.
+
+- **Pass 7, 2026-09-16 (this revision).** B6 shipped (`97e0209` ->
+  `3f6231c` -> `54b84b3` -> `f5e5d69`, recorded at `72d8de0`) and was
+  reviewed **approve** with five risks and six nits. Two of the risks are
+  holes in the property the owner asked for: **R1**, three un-retried
+  Telegram reads (`incoming` for the recovery scan and the button polls,
+  `byIds` after a press) turn a resumable stop into exit 1 - a false red;
+  **R2**, `decide()`'s catch-all lets a banned, deleted, duplicated or
+  bot-blocked account stop green with a `::warning::` forever - a false
+  green - and a revoked session exits **1**, not 2, through `client.mjs`'s
+  own `isUserAuthorized()` guard. **R3**: `readState` returns `{}` for a
+  state file that exists and does not parse, and `--apply` would commit
+  that. **R4**: both `git fetch --depth=1 origin main` lines rely on the
+  checkout's wildcard refspec. **R5**: `manifest.mjs` fingerprints the
+  legacy root `index.html`, but `ci.yml` deploys `dist/index.html`, built
+  from `app/index.html`. Nothing in this pass touched Telegram; every fact
+  was read from the code, the installed teleproto and `ci.yml`, and is in
+  `context.md`, "Added by the planner, pass 7".
+
+  Decisions, each in its own section: which findings close now and which
+  stay deferred, by the owner's own test - does it change what red or green
+  means (new section 3.11); how reads become green stops without changing
+  what a stop means (3.4, 3.11, 5.2); the shape of R2's fix - names in
+  `FATAL_ERRORS`, not a run counter (3.4, 3.11); the exit-code table in 3.5
+  **corrected**, not redefined; the runbook's I.6 and J corrected without
+  reopening the procedure (9); and the ordering - **B7 lands before the
+  owner's merge** (3.11). **B7** (section 10d) is the whole of the code
+  answer: one batch, one commit, one check. Sections revised in pass 7 say
+  **Revised (pass 7)**; the superseded pass-6 text is readable in full at
+  commit `72d8de0`.
+
+The six owner decisions in `context.md` stand and are not re-opened here.
+
+## 1. Objective and current state
+
+**Stands**, with one addition at the end.
+
+`og/<id>.jpg` bytes were rewritten under unchanged URLs three times
+(`8e7fed1`, `ce0c414`, `37ecc8d`). Telegram keys its preview cache on the
+page URL, has no TTL, and ignores everything the origin serves, so every
+share link that was ever unfurled still shows the old picture. Nothing at the
+app level can fix that (`context.md`, "Reasons already disproved"); the
+refresh has to be pushed to `@WebpageBot`, and `@WebpageBot` is a bot, so the
+pusher has to be a user account over MTProto.
+
+Scale at `8b96ff4`: 1061 stubs `i/<id>.html` + the site root = **1062 URLs**,
+847 `og/*.jpg`. The bot's only published batch figure is 10 links per message.
+
+What exists today and is reused as-is:
+
+- `data.js` -> `window.LOOT` is the canonical id list; `tools/derived.js`
+  exports `everything(L)` (items + equipment, 1061 records) and `SITE`.
+- `tools/build-share-pages.js` exports `page(it)`, which renders one stub
+  into memory - the derived test already uses it that way. The stub's
+  `og:image` is `SITE + 'og/' + <img>.jpg` (or `og/_none.jpg`).
+- `index.html` carries the root's own OG block with `og/_share.jpg`.
+- `.github/workflows/ci.yml`: `deploy` is green on push to `main`, publishes
+  an explicit file list into `_site/`, and its `Nothing private slipped in`
+  guard refuses `package.json node_modules app tests tools docs .git`.
+- Node 24 (`.nvmrc`), which has `fetch`, `node:test`, `node --test` and
+  `process.loadEnvFile` built in - no new dependency for any of those.
+
+**Added in pass 3 - what the bot actually does (measured, `context.md`).**
+One outgoing message with N links makes the bot answer with **N + 1
+messages**: one plain summary (`"Link previews was updated successfully.
+Check them out!"`, text only, no `replyMarkup`, no webpage media) and then
+**one message per link**, each carrying that link as `media.webpage.url` and
+an inline keyboard of two callback buttons, `"Update preview again"` and
+`"Update with content"`. The send alone updates the page's metadata and keeps
+the cached photo; pressing `"Update with content"` (one
+`messages.getBotCallbackAnswer`, no new link) changed the webpage's photo id
+under an unchanged webpage id, and the owner saw the preview update. So the
+click axis scales with **URLs**, not messages: a full reindex is 107 sends
+**plus 1062 presses**.
+
+**Added in pass 7 - the root is no longer the file it was.** The bullet
+above, "`index.html` carries the root's own OG block", was true at `8b96ff4`.
+Since issue 47's cut-over `ci.yml`'s `deploy` publishes `dist/index.html`
+(built from `app/index.html`) plus `dist/assets` and `dist/data.js`, and
+copies `img og i card` from the repository; the root `index.html` is not
+deployed. The two files' three `og:` tags are byte-identical today
+(measured 2026-09-16), which is why nothing has gone wrong yet and also why
+nothing would have said so when it did. Section 3.11 (R5) and B7 point
+`manifest.mjs` at `app/index.html`.
+
+## 2. Scope and non-goals
+
+**Revised (pass 4)** - the fourth non-goal is narrowed. Pass 3's revision of
+the first paragraph stands.
+
+In scope: a repo tool under `tools/tg-preview/` that derives the URL set from
+`data.js`, fingerprints what Telegram would see, keeps a committed state file
+of what was last **confirmed refreshed**, sends the stale URLs to
+`@WebpageBot` in batches, **presses "Update with content" on every button
+message the bot produces**, records a URL only when that press is confirmed,
+paces both axes and handles flood limits on both, and resumes after a crash;
+a second workflow file that runs it after every successful deploy and on
+demand; the owner's runbook.
+
+Out of scope, on purpose:
+
+- Any change to `i/<id>.html`, `og/*.jpg`, `noindex`, `robots.txt`,
+  `llms.txt`, `docs/fixtures/` or `tests/contracts.js`. The public contract
+  does not move. See "Cache-busting the `og:image` URL - not taken" in
+  section 3.4 for why this stays true even now.
+- A hosted service, a webhook, a backend (`META.md` section 3).
+- Other messengers (Discord, WhatsApp, Slack). Their caches differ and none
+  has a refresh bot; not this task.
+- Parsing the bot's **text** for control flow, **with exactly one carve-out:
+  the throttle sentence** (below). Everything else the bot says is logged
+  verbatim and never branched on. What the tool otherwise reads is the bot's
+  message **structure** - `media.webpage.url` and the callback buttons -
+  which is typed TL data, not prose.
+
+> Superseded: pass 1 also excluded "refreshing previews of already-posted
+> messages if Telegram does not do that" - answered by owner decision 6: it
+> does. Pass 3 made the text non-goal absolute; pass 4 narrows it.
+
+**The carve-out, and why it is safe (pass 4).** `@WebpageBot` says
+`"Sorry, too many attempts. Please try again in <N> seconds."` and that
+sentence is the *only* signal that an attempt was refused - it arrives both
+as a callback answer to a press and as the bot's summary reply to a send.
+Refusing to read it is precisely what let the tool write 28 entries it could
+not justify (`context.md`, fact 3). So one case-insensitive match on
+`too many attempts`, plus the seconds figure, is read - and the rule around
+it is **asymmetric by construction**:
+
+- a recognised text can only **withhold** confirmation and **stop** the run;
+- **no text ever grants** confirmation, and no other text is matched.
+
+The failure modes are therefore bounded in the right direction. A false
+positive stops a run early, which is green with a recorded backlog and costs
+one run. A false negative (the bot invents a new wording) leaves the tool
+exactly where pass 3 left it, no worse. Nothing else about the bot's prose
+reaches control flow.
+
+## 3. The decisions
+
+### 3.1 The client: `teleproto` from a repo script, not `WebpageBot-api`
+
+**Stands.** `teleproto@1.229.0` in a nested package `tools/tg-preview/`,
+verified by introspection and by B1's install; `telegram@2.26.22` is the
+API-identical fallback. The rejections (`WebpageBot-api`, gramjs itself,
+`@mtcute/node`, `@mtproto/core`, TDLib) stand. Full text at `0ab04eb`.
+
+One pass-3 addition: the button press uses `client.invoke(new
+Api.messages.GetBotCallbackAnswer(...))`, not `Message.click()`. `click()`
+swallows `BOT_RESPONSE_TIMEOUT` into `null` (read in
+`tl/custom/messageButton.js`), and the loop must tell an answered press from
+an unanswered one (section 3.4).
+
+### 3.2 URL discovery: from `data.js`, through `tools/derived.js`
+
+**Stands.** 1062 URLs, root first, from `everything(L)` and `SITE`; stub
+content rendered in memory by `page(it)`; cut-over seams are the two
+`require()`s in `manifest.mjs` and `--assets`.
+
+### 3.3 Change detection: a committed fingerprint state, written by both callers
+
+**Stands**, with the meaning of one sentence sharpened.
+
+Fingerprint per URL: `sha256([og:title, og:description, og:image, sha256(image bytes)])`.
+State at `tools/tg-preview/state.json`, committed on `main`, schema
+`version: 1`, `{ site, updatedAt, urls: { url: fingerprint } }`. Bootstrap,
+loss, deleted-record and two-writer rules unchanged; the rejected
+alternatives (git diff, Actions cache, Pages-published manifest, orphan ref)
+unchanged.
+
+The sharpened sentence: the state records the fingerprint *as last
+**confirmed** refreshed*, where confirmed is defined in section 3.4 - a sent
+message with a reply is **no longer** sufficient evidence. The schema does
+not change (still a fingerprint string per URL), so the one honest entry
+that exists today (`cc19`, whose button the owner pressed by hand) stays
+valid without migration.
+
+### 3.4 Rate limiting, confirmation and resumability - three limits
+
+**Revised (pass 4).**
+
+> Superseded: pass 1 sized the run at 107 messages, ~12 minutes, with a
+> URL counted as refreshed once its message was sent and any reply arrived,
+> and treated the bot's reply as an opaque string to log. All of that is
+> replaced below. The error table survives with one added row.
+>
+> Superseded by pass 4: pass 3's two axes (sends, presses) each bounded only
+> by Telegram's own `FLOOD_WAIT`; presses described as costing "nothing"
+> once a button message exists; and confirmation granted by an answered
+> press alone. There is a **third** limit - the bot's own attempt quota -
+> and it is the binding one.
+
+#### Constants
+
+All in `lib.mjs`, one place. Values marked *kept* are pass 1's.
+
+| name | value | why |
+|---|---|---|
+| `PER_MESSAGE` | 10 (*kept*) | still the right batch: the press cost is per URL and is the same at any batch size, so batching earns its keep only on the send axis, and the largest documented batch is the fewest sends. Ten links measured fine (three did); nothing argues for changing it |
+| `PACE_MS` | 4000-6000 ms (*kept*) | between sends; doubles as the first wait for the bot's button messages |
+| `BUTTON_WAIT_ROUNDS` / `BUTTON_WAIT_MS` | 6 / 5000 ms | extra polls when fewer button messages than links have arrived yet - the bot fetches every page before it can answer for it |
+| `BUTTON_FETCH` | 50 | `limit` when reading replies newer than the sent message; 11 are expected per batch |
+| `PRESS_PACE_MS` | 1000-2000 ms | between callback presses. Official clients press with no pacing at all; this is insurance on a days-old account |
+| `RECOVER_SCAN` | 200 | how many recent chat messages are read at run start to find pressable button messages that need no new send (resumability, below). **Re-examined in pass 4 and kept at 200** - see "Why `RECOVER_SCAN` stays 200" |
+| `UPDATE_BUTTON` | `'Update with content'` | matched by exact button text |
+| **`PRESS_LIMIT`** | **50, `--press-limit`** | **pass 4.** The most presses one run will attempt, across **both** phases. The only measurement of the bot's quota is that 115 in one run tripped it; 50 is a deliberate under-estimate - see "The bot's own attempt quota" |
+| **`THROTTLE_MATCH`** | **`/too many attempts/i`** | **pass 4.** Module-private inside `botThrottle`, not an export - nothing else uses it. The one sentence of the bot's prose that reaches control flow (section 2's carve-out); the seconds figure is read from the same text |
+| `REST_EVERY` / `REST_MS` | 25 sends / 30 s (*kept*) | send axis only |
+| `MAX_WAIT_S` | 600, `--max-wait` (*kept*) | applies to a `FLOOD_WAIT` on either axis |
+| `NET_RETRIES` / `NET_RETRY_MS` | 3 / 10 s (*kept*) | transport errors on either axis |
+| `BUDGET_MIN` | none locally; 45 in CI (*kept*) | see "The deadline" below - its semantics tightened |
+
+#### Arithmetic
+
+**Revised in pass 4: wall clock was never the constraint.** Pass 3's sum -
+107 sends at ~5 s plus four rests (~11 min) and 1062 presses at ~1.5 s
+(~27 min), so ~40 minutes for a full reindex - is arithmetically still
+right and **operationally irrelevant**, because no account gets to spend
+1062 presses in forty minutes. The real unit of a reindex is now **runs,
+not minutes**:
+
+| | |
+|---|---|
+| presses a run will attempt | `PRESS_LIMIT`, default 50 |
+| URLs per run at `--limit 5 --press-limit 50` | 50 (5 sends, 50 presses) |
+| wall clock of such a run | ~2 minutes (5 sends at ~5 s, 50 presses at ~1.5 s) |
+| runs to clear 1062 URLs | **~22**, at a cadence the quota allows |
+| observed cooldown after tripping the quota | 3213 s (~54 min), one data point |
+
+So a first reindex is a **multi-day, spaced-out operation** the owner drives
+a chunk at a time, not a job that finishes in one sitting. The runbook
+(section 9, G) says that plainly rather than implying otherwise. CI's
+45-minute budget is untouched and still ample: an incremental run after a
+deploy is a handful of URLs.
+
+#### The pace and flood model per axis
+
+- **Sends** behave as in pass 1: pace, rest every 25, `decide()` on error,
+  retry the same message after a `FLOOD_WAIT` under `MAX_WAIT_S`.
+- **Presses** are paced by `PRESS_PACE_MS`, never rested (rests are a
+  send-axis guess and presses are a different method). A `FLOOD_WAIT` on
+  `messages.getBotCallbackAnswer` goes through the same `decide()` table:
+  sleep `seconds + 2` and **re-press the same button**; over `MAX_WAIT_S`
+  stops the run; `PEER_FLOOD` stops the run. Presses are not sends, so a
+  send-side `PEER_FLOOD` does not imply presses would fail - but the run
+  stops on the first `PEER_FLOOD` wherever it comes from; nothing is gained
+  by finding out.
+- **`BOT_RESPONSE_TIMEOUT`** (`BotResponseTimeoutError`, `errorMessage
+  'BOT_RESPONSE_TIMEOUT'`, present in teleproto's error list) is the one
+  press-only error: Telegram delivered the callback query but the bot did
+  not answer within Telegram's window. It is neither a retry nor a stop;
+  `decide()` returns `{ unanswered: true }` and confirmation falls back to
+  the photo check below.
+
+`decide(error, ctx)` table, pass 1's rows plus one:
+
+| error | outcome |
+|---|---|
+| `FloodWaitError`, `SlowModeWaitError` with `seconds <= MAX_WAIT_S` | retry the **same** send or press after `seconds + 2` |
+| the same with `seconds > MAX_WAIT_S` | stop; reason names the seconds |
+| `PeerFloodError` | stop: the account is limited; nothing more will go through today |
+| **`BotResponseTimeoutError`** | **`{ unanswered: true }` - the press was delivered; confirmation needs the photo check** |
+| `AuthKeyUnregisteredError`, `SessionRevokedError`, `SessionExpiredError`, `SessionPasswordNeededError`, `AuthKeyInvalidError` | fatal: the credential is dead, exit 2, do not retry |
+| any other `RPCError` | stop; reason is `errorMessage` |
+| non-RPC error (socket, DNS) | retry after 10 s, up to `NET_RETRIES`, then stop |
+
+`decide()` is unchanged in pass 4. The throttle below is **not** an error and
+never reaches it.
+
+**Revised (pass 7) - two changes to the table, none to its shape.**
+
+1. **The fatal row gains five names**: `AuthKeyDuplicatedError`,
+   `UserDeactivatedError`, `UserDeactivatedBanError`,
+   `PhoneNumberBannedError`, `YouBlockedUserError` - all present in the
+   installed teleproto 1.229.0's `errors/RPCErrorList.js` (`context.md`,
+   pass-7 facts). Each names a condition no later run can change: the
+   session was invalidated for concurrent use, the account was deleted or
+   banned, the number is banned, the account has blocked the bot. Before
+   pass 7 every one of them fell through to "any other `RPCError`" - a green
+   stop with a `::warning::`, on every run, forever (B6 review, R2). The
+   reason string becomes `<name>: the account or session is unusable; a
+   human must act` - "the credential is dead" was the wrong sentence for a
+   ban, and the runbook's I.6 now maps the name to the step to redo.
+2. **Reads go through the same table as sends and presses.** `incoming`
+   (the recovery scan and the button polls) and `byIds` (the post-press
+   refetch) were the only Telegram calls in `runRefresh` not wrapped in
+   `attempt()`; a `FloodWaitError` or a transport blip on any of them
+   reached `main().catch` - exit 1, red - on a stop the next run would
+   certainly fix (B6 review, R1). Section 3.11 says exactly what each read's
+   stop does to the result; section 5.2's pass-7 note carries it into the
+   step list. The connect call gets the same classification once, for the
+   fatal row only (3.11, R2).
+
+What the table still does **not** do, on purpose: an RPC error named
+nowhere still stops **green** with its `errorMessage` as the reason. Flipping
+that default to red is the taxonomy rewrite pass 7 declines (3.11); the
+residual is recorded in section 12.
+
+#### The bot's own attempt quota - the third limit (pass 4)
+
+Neither axis above is what stopped the owner's run. `@WebpageBot` keeps its
+own counter of update attempts per user, independent of Telegram's flood
+control, and refuses everything past it with
+`"Sorry, too many attempts. Please try again in <N> seconds."` The measured
+shape of it (`context.md`):
+
+- 115 presses in ~4 minutes tripped it; `N` was **3213** (~54 minutes).
+- The refusal then applied to a **send** too, and the bot emitted **no
+  button messages at all** for that send's ten links. So the quota governs
+  the bot's willingness to do any work, not one method.
+- The exact quota is unknown. One data point. It may have begun well before
+  press 115 - see "What the 28 are worth" below.
+
+Two mechanisms answer it, and they are deliberately different in kind:
+
+**1. A press budget bounds what a run spends (`PRESS_LIMIT`, `--press-limit`).**
+The tool cannot know the quota, so it does not model it; it simply refuses
+to spend more than a fixed number of presses per run and stops green with
+the rest pending. The budget covers **both phases** - phase 1 spends from
+the same allowance as phase 2, because the quota does not care which phase a
+press came from. Three rules make it useful rather than decorative:
+
+- checked before **every** press attempt, in both phases, exactly where the
+  deadline is checked;
+- **a batch is not sent when fewer than `PER_MESSAGE` presses remain in the
+  budget** (`stopped: 'press budget too low for another batch'`). The owner's
+  run ended by spending ten sends on links whose buttons it could not press;
+  a send whose presses are unaffordable is pure waste on the scarcer axis.
+  The batch is stopped, never trimmed - re-chunking mid-run would make
+  `--limit` mean something different on the last batch;
+- the default is **50**, well under the only observed failure point, because
+  the costs are asymmetric: under-shooting costs one extra two-minute run,
+  over-shooting costs a ~54-minute lockout **plus** the sends already spent
+  in the batch that earned it. `--press-limit` is how the owner raises it
+  once runs at 50 have gone through cleanly a few times; every run's
+  `pressed P` line is a lower bound on the quota, so the runbook has its own
+  measurement loop and B2 has its input.
+
+**2. Recognising the refusal stops the run cleanly.** `botThrottle(text)`
+(pure, in `lib.mjs`) matches `THROTTLE_MATCH` and pulls out the seconds.
+It is consulted in exactly two places:
+
+- the **callback answer** of a press. That press is **not confirmed** - it
+  was refused - and the run stops;
+- the bot's **summary reply** to a send, checked on each button-wait round
+  so the run does not burn `BUTTON_WAIT_ROUNDS x BUTTON_WAIT_MS` waiting for
+  buttons that are never coming. The batch's URLs stay pending; the send is
+  already spent and nothing recovers it.
+
+**The throttle always stops; it is never waited out.** Named and rejected:
+routing it through `decide()`'s wait-or-stop table, so that `N <= MAX_WAIT_S`
+sleeps and retries. Rejected because (a) the one observed `N` is 3213 s,
+five times `MAX_WAIT_S` and longer than CI's entire 45-minute budget; (b)
+unlike a Telegram `FLOOD_WAIT`, which suspends one method, this refusal
+applies to every attempt of either kind, so there is nothing useful to do on
+the other side of the sleep except what the next run would do anyway; and
+(c) a stop is resumable by construction here - the state is written per
+batch and per phase, and phase 1 re-presses whatever is still in the chat.
+`MAX_WAIT_S` and `--budget-minutes` are therefore both **unaffected** by the
+throttle path: nothing sleeps, so no wait can overshoot a deadline.
+
+**Exit code: green (0)**, the same as `PeerFloodError`, with the backlog
+recorded. This needs **no change to the CI-red rules** already in
+`docs/tg-preview.md` ("What turns the CI job red"): a Telegram-side stop is
+green because the site itself is live and a red job would say something
+false about it. The throttle is named there as an example, nothing more.
+
+**Rejected alternatives for bounding the press count**, each named because
+the next reader will think of it:
+
+- **Make phase 1 chunk-aware - bound it by `--limit`.** `--limit` counts
+  *messages* of ten URLs; phase 1 presses individual URLs. Conflating them
+  makes the number mean two things and destroys `--limit 0`, the press-only
+  run. A separate flag keeps both honest.
+- **Default the runbook to `--mode incremental` and stop there.** Necessary
+  (it is done - see below) but not sufficient: a run that stops with a
+  backlog of unpressed buttons leaves them in the scan window, so the next
+  run's phase 1 spends an unbounded number of presses before phase 2 gets a
+  look in. Taken *as well*, not instead.
+- **Make `stale()` respect the state under `--mode full`.** This is where
+  `context.md` fact 2 points, and it is the wrong repair: it deletes the
+  only meaning `--mode full` has - redo everything when the state is
+  distrusted - leaving no way to express that at all. The defect is the
+  runbook line that put `--mode full` in a loop, and `context.md` fact 2
+  says so in its own last sentence.
+- **Slow `PRESS_PACE_MS` down until the quota never fills** (say 20 s). The
+  cooldown's shape (a ~54-minute retry-after) reads as a count per window,
+  not a rate, so pacing multiplies wall clock without changing the count -
+  and 1062 presses at 20 s is six hours. No evidence supports it.
+- **Persist a press ledger across runs** (how many presses in the last hour,
+  in the state) so the tool refuses to start inside a cooldown. It is the
+  nicest version of this and it is guessing at a window we have one sample
+  of; it also needs a schema change to a committed file. Deferred to B2
+  (section 13), where the runbook's per-run `pressed P` numbers are the
+  evidence for it. Until then the protection is procedural: the runbook
+  spaces the chunks, and a throttle stop prints the seconds the bot named.
+
+**`--mode full` is not chunkable, and the tool now says so.** Under
+`--mode full` every URL is stale on every run, so phase 1 re-presses the same
+recovered buttons each time and the run never advances - a livelock the press
+budget bounds but does not cure. `runRefresh` logs one warning when
+`--mode full` is combined with a press budget smaller than the stale set,
+pointing at section 9 step G. `--mode full` remains what it always was: one
+deliberate pass for a state you do not trust, not the way to drive a reindex.
+
+#### Why `RECOVER_SCAN` stays 200 (pass 4)
+
+Re-examined because pass 3 justified the window by presses being free, and
+they are not. It still holds, for a different reason: **the press budget,
+not the scan window, is now what bounds phase 1.** The window only decides
+how far back recovery can *reach*, and a button older than it is not lost -
+it costs a re-send **plus** a press, strictly more than the press alone. In
+the chunked flow a run leaves at most one batch's worth of unconfirmed
+buttons behind, and 200 messages covers roughly eighteen batches of history,
+so the window is not the limiting factor in any case the runbook produces.
+Shrinking it would buy nothing the budget does not already buy and would
+spend sends. `RECOVER_SCAN = 0` keeps its separate, unrelated job: the named
+fallback if press-only recovery is ever shown not to update metadata.
+
+#### The deadline (`--budget-minutes`)
+
+Still meaningful - it is what keeps a CI run inside `timeout-minutes: 60`
+with room for the state commit - and tightened, folding in the reviewer's
+deferred item 1 (section 13):
+
+- The deadline is checked before **every send attempt and every press
+  attempt**, not once per batch. Pass 1 checked it per batch, so a
+  `FLOOD_WAIT` sleep followed by the retry could overshoot it by up to
+  `MAX_WAIT_S`; with ten presses per batch the per-batch check would have
+  been looser still.
+- A wait that would **end** past the deadline is not started: `stop` with
+  reason `flood wait of Ns would exceed the budget`. The run therefore ends
+  no later than the deadline plus one pace.
+- The clock starts after the live check, as before (the check has its own
+  five-round bound).
+
+When the deadline hits mid-batch, the presses already confirmed are
+recorded, the rest of the batch stays pending, and the next run recovers
+those without a new send (below).
+
+#### What counts as confirmed - the state's evidence rule
+
+The state must not assert what the tool cannot show. A URL's entry is
+written only when **all** of these hold:
+
+1. **A button message was matched to it exactly.** Among the bot's incoming
+   messages, a *button message* is one whose `media.webpage.url` is
+   non-null and whose inline keyboard contains a callback button with text
+   `UPDATE_BUTTON`. It is matched to a sent URL by **`media.webpage.url`
+   equality**, never by position or count. One permitted normalisation:
+   if exact equality fails, compare with a single trailing `/` stripped from
+   both sides - that covers the site root, the one URL Telegram could
+   plausibly canonicalise; nothing else is normalised. When the same URL
+   has several button messages, the newest (highest id) wins. The summary
+   message is excluded by construction: it has no webpage media and no
+   buttons.
+2. **The press was acknowledged and not refused, or its effect was
+   observed.** Either `messages.getBotCallbackAnswer` returned a
+   `BotCallbackAnswer` **whose text `botThrottle()` does not recognise as a
+   refusal** (answered - the bot handled the press), **or** it raised
+   `BOT_RESPONSE_TIMEOUT` *and* re-fetching the button message afterwards
+   shows a **different `photo.id`** than before the press (unanswered, but
+   the re-download visibly happened).
+
+   > Superseded (pass 4): pass 3 required only that an answer arrived.
+   > `context.md` fact 3 measured what that costs - a press the bot refused
+   > with "too many attempts" is answered, and was being written into the
+   > state as refreshed. This is the same defect B3 existed to remove, one
+   > axis over.
+
+Everything else leaves the URL **pending**: no button message arrived for it
+(logged as `no button message for <url>`), the press was stopped by the
+deadline, a flood stop, the press budget or the bot's throttle, or the press
+went unanswered and the photo did not change.
+
+**An answered press is still not corroborated against the photo, and must
+not be.** The temptation after pass 4 is to demand a *changed* photo before
+recording anything. Rejected, for the reason pass 3 already gave and pass 4
+does not weaken: `same` is the legitimate result for a URL whose cached
+picture is already current, so demanding `changed` would leave those URLs
+pending forever and hand the owner a `pending` count that never reaches
+zero. The refusal text, not the photo, is what distinguishes a rejected
+press - and unlike the photo it is unambiguous. The photo delta keeps
+exactly the job pass 3 gave it: a gate in the unanswered case, telemetry
+everywhere else.
+
+**The photo-id trap, handled.** A photo id that stays the same is **not**
+evidence of failure: an image whose bytes are genuinely unchanged on the
+site keeps its Telegram photo, and so does a URL whose cache was already
+current (the hand-pressed `cc19`, or a page first unfurled after the artwork
+commits). So the photo delta is a **gate only in the unanswered case**, where
+it is the sole signal, and **telemetry everywhere else**: after each batch's
+presses, the button messages are re-fetched once by id and each is classed
+`changed`, `same` or `none` (no photo on the webpage - a pending or
+imageless preview). The counts go into the log, the summary line and
+`$GITHUB_STEP_SUMMARY`. The runbook tells the owner what to expect: on the
+first full reindex `changed` should dominate, because most cached photos are
+known stale; a chunk that reports mostly `same` is the signal to spot-check
+by pasting a link before trusting that chunk's state. The tool cannot make
+that judgement, and does not pretend to.
+
+#### What the photo counter measures, and what it is called (pass 5)
+
+**Revised (pass 5)** - the mechanism above stands exactly as written; its
+**vocabulary** does not, and the paragraph above about what the runbook
+should tell the owner to expect is narrowed below.
+
+The classifier is `after !== p.photoBefore` over `String(webpage.photo.id)`
+(`lib.mjs`, `pressGroup`; `client.mjs`, `plain()`). It compares **ids**, and
+an id is not a picture. Three mechanisms, only one of them about artwork,
+put a URL in the `changed` bucket:
+
+1. Telegram re-downloaded the image and the bytes really differ - the case
+   the name implies, and the case this whole task is about.
+2. Telegram re-downloaded the image, re-encoded it into its own stored
+   variants, and minted a new id for bytes that are byte-identical to the
+   ones it already held. This is the owner's resizing hypothesis. It is the
+   correct mechanism and it does not make the counter *wrong* - it makes the
+   **name** promise more than the measurement delivers.
+3. The pre-press webpage had **no photo at all**: `matchButtons` matches a
+   `WebPagePending` message like any other (it filters on `url` and the
+   button, never on `pending`), so `photoBefore` is `null`, and `null ->
+   <id>` is classified `changed`. On a fresh send this is entirely ordinary
+   - the bot can answer with a button message before Telegram has finished
+   fetching the picture.
+
+So `changed` means **"Telegram is holding a different photo id than the one
+the button message showed us before we pressed"**, i.e. *the press did
+something observable*. It is not evidence that the rendered image differs,
+and no amount of it can be.
+
+Which of 1-3 dominates is unmeasured, and two facts bear on it:
+
+- Under B4 a press the bot refuses **stops the run**, so every one of the
+  195 presses in the owner's live restart was accepted - and every one
+  reported `changed`, with `same 0`. Among 195 URLs on an obscure site,
+  some were certainly never unfurled by anyone before this reindex sent
+  them; Telegram fetched those fresh at send time, so their stored photo
+  was already current, and pressing re-downloaded identical bytes. The id
+  moved anyway. That points hard at mechanism 2 (and 3), not at 1.
+- It is an **inference, not a measurement**, and it rests on the
+  assumption that some of the 195 were previously uncached. Do not write it
+  into a spec as known. Section 9, step G.7 is the one-press experiment
+  that settles it; it costs a single press and no code.
+
+**Consequences taken in this pass:**
+
+- **B5 renames the vocabulary** to what is actually measured (`photo id new
+  / same / none / unseen`) and says in `docs/tg-preview.md`, once, what a
+  new id does and does not prove. Nothing about the mechanism changes: the
+  delta still gates confirmation only in the unanswered case and is
+  telemetry everywhere else.
+- **A fourth class, `unseen`.** Today a pressed message that `byIds` does
+  not return is classified `same` (`after === undefined ? 'same'`). Under
+  the honest name that becomes a false statement - we did not see the
+  message, so we do not know its id. It gets its own bucket. Confirmation is
+  unaffected: `unseen` is not `changed`, so an unanswered press whose
+  message vanished stays pending, exactly as today.
+- **The `pressed P` line counts attempts.** A press refused by the throttle
+  decrements the budget and is excluded from `pressedTotal` today (B4's
+  review nit 2), so `P` under-reports by one on a throttle stop. `P` is the
+  number B2 tunes the quota from; it must be attempts. One line.
+- **The runbook's "mostly `same`" guidance is re-pointed.** Under the
+  current best understanding an accepted press should essentially always
+  mint a new id, so a chunk reporting mostly `same` is no longer a mild
+  "spot-check this" - it is the symptom that presses are not landing, or
+  that the bot's refusal wording changed and the throttle carve-out stopped
+  matching (section 12's named canary). It stays worth reporting, and the
+  spot-check stays; what changes is how loud it is.
+
+#### What the 115 entries in `state.json` are worth, and what the owner does about them (pass 4)
+
+`context.md` fact 4 leaves this as a planning decision. Taken here.
+
+The split is 87 `photo changed` and 28 `same`. The 87 carry their own
+positive evidence and are fine. The 28 are **indistinguishable** between
+"the cached photo was already current" (benign) and "the press was refused
+by the throttle at the tail of phase 1" (a false entry of exactly the kind
+this task exists to eliminate). Two facts make the ambiguity un-resolvable
+after the fact:
+
+- the run printed **aggregate counts only**, so nothing names *which* 28;
+- `state.json`'s schema is one fingerprint per URL, with no record of the
+  evidence class, so the file cannot be interrogated either.
+
+It is also plausible - and only plausible; nobody measured it - that the
+throttle began well before press 115 and that the `same` entries are
+clustered at the tail. If so the number of false entries is up to 28 and
+the quota is nearer 87 than 115. Neither claim is evidence; both are
+reasons not to keep the file.
+
+**Decision: the owner deletes `state.json` and restarts the reindex under
+the fixed tool, keeping the old file as a backup outside the repository.**
+Stated as a command in section 9, step E.0. Why this and not the
+alternatives:
+
+- **Keep all 115.** Rejected. Up to 28 URLs would be recorded as refreshed
+  while still showing the old picture, and an incremental run skips them
+  forever - until some future artwork commit re-fingerprints them by
+  accident. That is precisely the lie pass 3 was written to remove, and
+  keeping it for convenience would make the state file's guarantee
+  conditional on a footnote.
+- **Delete only the 28.** Not actionable: nothing names them. It is the
+  right answer to a question the tool cannot answer.
+- **Re-press the 115 with `--mode full --only <ids>`.** Same problem - the
+  ids are unknown - and it costs the same presses as restarting while
+  leaving the file's provenance mixed.
+- **Add an evidence class to the state (schema v2) and re-verify.** Cannot
+  label entries already written; the evidence is gone. Still worth doing
+  for future runs - deferred, section 13.
+
+The cost of restarting is **~115 presses re-spent**, about 11% of the 1062
+the reindex costs anyway, i.e. two to three extra chunked runs out of ~22.
+Re-pressing a URL that is already current is harmless: it answers, reports
+`same`, and is confirmed. What it buys is a state file where **every entry
+was written by a tool that can tell an accepted press from a refused one** -
+uniform provenance, no footnote, nothing for a later session to re-litigate.
+
+This is the owner's data and the owner's call; no agent touches
+`state.json`. B4 does not depend on the answer - it is a code and docs
+batch - so the confirmation gates O1/O2's first step only.
+
+**Considered and not taken: recording the photo id in the state** so an
+incremental run could demand a *changed* photo whenever the image sha
+changed since the last entry. It is the stronger rule, but it needs a
+schema `version: 2`, it cannot apply to the first reindex (no prior id), and
+Telegram may reuse a photo for bytes it has seen before (an artwork revert),
+which would leave a URL pending forever. Recorded in section 13 as a
+follow-up worth doing once the first reindex shows how often `same` really
+occurs.
+
+**Cache-busting the `og:image` URL - not taken.** Appending a content hash
+to the image URL would make even a plain send re-download, and would break a
+frozen contract: `og/<id>.jpg` is a published artefact (`CONTRACTS.md`), so
+`docs/fixtures/`, `tests/contracts.js`, `CONTRACTS.md` and `llms.txt` would
+move in the same commit, `tools/build-share-pages.js` would change, and
+every previously shared stub would still carry the *old* image URL in
+Telegram's cache until refreshed anyway - so it saves nothing on the first
+reindex and only helps future artwork refreshes, which the incremental path
+already handles. The press is measured to do the job without any of that.
+It stays the named escape hatch only if a later measurement shows the press
+stops working.
+
+#### Resumability - the state file plus the chat itself
+
+Pass 1's rule stands: the backlog is whatever the manifest says and the
+state does not; the state is written after every batch (and after the
+recovery phase), so a crash loses at most one batch of presses.
+
+New: **a button message already in the chat is a cheaper retry** - pass 3
+said *free*, and pass 4 corrects that: pressing it needs no new link, so it
+costs nothing on the **send** axis, and the send axis was never the binding
+one. It still costs a press, from the same `PRESS_LIMIT` allowance phase 2
+draws on, and presses are the scarce resource. Cheaper than a re-send (one
+attempt instead of two), never free. At run start,
+after the live check and before any send, the tool reads the last
+`RECOVER_SCAN` incoming messages and matches them against the stale, ready
+URLs exactly as above. Every match is pressed (**phase 1, recovery**)
+before any batch is sent (**phase 2**). This covers, with no extra send:
+
+- a run that died between the send and the presses;
+- a budget, flood, press-budget or throttle stop mid-batch;
+- a press that went unanswered with an unchanged photo;
+- ~~**the residue** from O1's probe - `cc12`, `cc24` and `cc38`.~~ **Done,
+  2026-09-12**: phase 1 of the owner's second run picked all three up and
+  they are among the 115 in `state.json`. Step F is therefore no longer a
+  residue check and is repurposed in section 9.
+
+A stale URL whose button message is older than the scan window is simply
+re-sent in phase 2 and pressed like any other. URLs matched in phase 1 but
+left unconfirmed are **not** re-sent in the same run - a fresh send would
+only produce another button message to press - they stay pending for the
+next run.
+
+The assumption under phase 1, stated so it can be checked: pressing "Update
+with content" on an **older** button message performs the whole update -
+page metadata and image - not only the image. Evidence for it: the measured
+`cc19` press changed the photo on a message created by an earlier send, and
+"with content" names the superset of "Update preview again". If the residue
+check (runbook F) ever shows a stale *title* after a press-only refresh,
+the fallback is one constant: `RECOVER_SCAN = 0` disables phase 1 and every
+stale URL is re-sent.
+
+**Exit codes stand:** green with a recorded backlog on any Telegram-side
+limit or a budget stop; red (2) only for a dead or missing credential; red
+(1) for a crash.
+
+### 3.5 Where it hangs in CI: a second workflow, `previews.yml`, made fail-safe
+
+**Revised (pass 6); pass 7 corrects three cells of the table - see "Revised
+(pass 7)" below the exit-code paragraph.**
+
+> Superseded: passes 3-5 left `previews.yml` exactly as R1 reviewed it -
+> `workflow_run` on `check` plus `workflow_dispatch`, a `Secrets present?`
+> guard that skipped the job green, `--budget-minutes 45` inside
+> `timeout-minutes: 60`, and a red job on any non-zero exit from `Refresh`.
+> The inputs, `permissions`, `concurrency`, the state read from the freshest
+> `main` and the `[skip ci]` record step all stand; the four things named
+> above move.
+
+The owner's brief has three parts: the tool works, so put it in CI; the bot's
+limits bite, so eventual consistency is the goal, not completeness per run;
+and a run that times out is fine **as long as the next run picks it up**.
+That last clause is a definition, and the design below is built on it.
+
+#### The definition: red means "the next run will not fix this"
+
+A red job the owner learns to ignore is worse than a green one that reports
+honestly. So the only conditions that may turn the job red are the ones
+where waiting for the next run changes nothing. Condition by condition:
+
+| condition | before pass 6 | pass 6 | why |
+|---|---|---|---|
+| Telegram-side stop: bot throttle, press budget, `--budget-minutes` deadline, `PEER_FLOOD`, a `FLOOD_WAIT` over `--max-wait` | green, backlog recorded (exit 0) | **green**, unchanged | resumable by construction: the state is written per batch and the next run's phase 1 presses whatever is still waiting in the chat |
+| the run hits the wall clock | the **job** is cancelled at `timeout-minutes: 60`; whether the `always()` record step then runs is a property of GitHub's cancellation semantics | **green**: coreutils `timeout 50m` wraps `node` *inside* the step; exit `124`/`137` is mapped to `0` with one honest line in `$GITHUB_STEP_SUMMARY`; the record step then runs as on any other run | the owner's exact sentence. Nothing is lost that the next run cannot recover, and the state commit no longer depends on a cancelled job |
+| a dead credential (`AuthKeyUnregistered`, `SessionRevoked`, ... - `decide()`'s fatal row, exit 2) | red | **red**, unchanged | only a new `login.mjs` fixes it, and a red job is the only notification path there is |
+| a secret missing | **green** with a `::notice::` - the `Secrets present?` step skipped the whole job | **red**: the guard goes; `run.mjs` already exits 2 naming the variable (never its value) | the secrets are configured now, so the skip path is dead in the intended case and *harmful* in the unintended one: a deleted or renamed secret would turn into a silent green forever - the lie this task keeps removing, moved into CI |
+| a crash (`main().catch`, exit 1): a bad `limit` input failing `parseArgs`, a manifest that will not build after a data change, a client that cannot connect | red | **red**, unchanged | a bug or an operator error. Transient, it costs one red run; persistent, red is the only thing that gets it fixed. Mapping it green would make a broken tool invisible for months |
+| `npm audit --audit-level=high` fails | red | red, unchanged | the same rule `ci.yml` applies |
+| the state push fails three times | red | red, unchanged | branch protection or a token problem; until it is fixed every run's presses are recoverable only through phase 1, which spends quota |
+
+**Expressed in exit codes and one `case`, not in `continue-on-error`.**
+`continue-on-error: true` on the Refresh step would erase the step's red for
+*every* code at once - 124 and 2 alike - and push the honest signal into a
+summary nobody is obliged to open. Instead the step captures the exit code
+(`code=0; timeout ... node ... || code=$?` - the step runs under `bash -e`,
+so `cmd; code=$?` would never reach the assignment), lets `0` through, maps
+`124`/`137` to a notice plus a summary line and exits `0`, and re-raises
+everything else. `lib.mjs`'s and `run.mjs`'s exit codes do not change: `0`
+for every Telegram-side stop, `2` for a dead or missing credential, `1` for a
+crash. The workflow adds exactly one meaning on top - "the wall clock" - and
+nothing else.
+
+**Revised (pass 7) - the table above was wrong in three cells, and B7 makes
+it true.** The B6 review's R1 and R2 are holes in the *definition*, not in
+the workflow: the `case` maps codes correctly, but the tool reported the
+wrong code in both directions. Corrected cell by cell:
+
+| condition | pass 6 said | what the code did before B7 | after B7 |
+|---|---|---|---|
+| a Telegram **read** fails after its retries - the recovery scan `incoming`, a button-poll `incoming`, the post-press `byIds`: a `FLOOD_WAIT` over `--max-wait`, or a transport error after `NET_RETRIES` | not listed; implicitly a Telegram-side stop, green | **exit 1, red**: none of the four calls was wrapped in `attempt()`, so the error reached `main().catch`. The recovery scan runs on every non-idle run; the batch loop makes up to seven `incoming` calls per batch | **green stop** through `attempt()`; `stopped` names the read; what was confirmed is recorded; the next run's phase 1 presses whatever is still waiting |
+| a banned, deleted, duplicated or bot-blocked account - `UserDeactivated[Ban]Error`, `PhoneNumberBannedError`, `AuthKeyDuplicatedError`, `YouBlockedUserError` | folded into "a dead credential", red | **exit 0, green, forever**: none of the names was in `FATAL_ERRORS`, so the catch-all stopped the run with a `::warning::` and the backlog never drained | **exit 2, red**, with `::error::` naming the class; the runbook says which of steps A-D to redo |
+| a **revoked or expired** session | red, exit 2 | red, but **exit 1**: `client.mjs` called `isUserAuthorized()`, which teleproto implements as `try { updates.getState() } catch { return false }` - it swallows the class name and turns a transport blip at connect into "not authorized" too - and then threw a plain `Error` outside `attempt()` | red, **exit 2** when Telegram names it (`AuthKeyUnregistered`, `SessionRevoked`, ...): the guard goes, the first RPC's real error is classified once by `decide()` in `runRefresh`. A transport failure at connect stays exit 1 (section 12, accepted in pass 6) |
+| `state.json` exists but does not parse | not listed | `readState` returned `{}`: a refresh run treats 1092 URLs as stale (50 presses a run for ~22 runs), and in the record step `--apply` rebases onto `{}` and **commits a state with every other entry dropped** | **exit 1, red** with the path in the message; only `ENOENT` is the bootstrap. The next run will not fix a corrupt committed file; `git revert` of the commit that broke it will |
+| the record step's `git fetch --depth=1 origin main` does not update `origin/main` | assumed | works today only because `actions/checkout` leaves the wildcard `remote.origin.fetch` in place; if it did not, `git checkout --detach origin/main` would abort under `set -e`, the run's confirmed presses would never be committed **and** every cron run would be red | explicit refspec `+refs/heads/main:refs/remotes/origin/main` in both `run:` blocks; nothing depends on the checkout's config |
+
+The rule itself does not move: red still means "the next run will not fix
+this", and B7 changes no meaning the workflow's `case` assigns. What changes
+is which conditions the **tool** reports under which code. The residual
+that stays by design: an RPC error not named anywhere is still a green stop
+(3.4, pass-7 note; section 12).
+
+#### Eventual consistency needs a clock, not only a push
+
+Today the only automatic trigger is `workflow_run` on `check` completing on
+`main`. A run that stops on the throttle or the press budget with work
+pending is then stranded until somebody pushes - which, after the merge, is
+precisely the situation: `main` changed `og:description` on the 94 frame
+stubs and the root and added 30 records since the state was written
+(`context.md`, pass-6 fact 2), so the first CI run inherits a backlog on the
+order of 130 URLs and a 50-press budget clears it in ~3 runs, not one.
+
+**Decision: add `schedule:` at `23 */4 * * *`** (every four hours, off the
+hour - GitHub's own advice to dodge the top-of-hour pile-up, and delays of
+minutes at busy times are normal for cron). Why this cadence and not another:
+
+- An idle scheduled run costs about a minute of runner time and **makes no
+  Telegram contact at all**: `runRefresh` returns `nothing to refresh` before
+  the live check and before the client is ever loaded (`lib.mjs`). Six a day
+  on a public repository is free.
+- Four hours is four times the one measured cooldown (3213 s). A run that
+  lands inside a cooldown anyway is not a failure: the throttle is recognised
+  on the first batch's summary, the run stops green, and at most one send of
+  ten links is wasted.
+- A 130-URL backlog drains in about half a day; a full 1062-URL re-fingerprint
+  (another artwork refresh) in ~22 runs, under four days. If that ever feels
+  slow, the cadence is one line, and the owner's own `pressed P` lines from
+  clean runs are the evidence to raise `PRESS_LIMIT` on (B2).
+- Hourly was rejected: it sits inside the measured cooldown, so every other
+  run would burn a send on a throttled bot for nothing.
+
+How it interacts with what is already there:
+
+- **The job `if:` must admit it.** Today's condition is
+  `github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'`;
+  on a `schedule` event `github.event.workflow_run` is null, so the job would
+  be skipped. It becomes
+  `github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'`.
+- **Checkout** falls through to `github.sha`, which on `schedule` is `main`'s
+  tip; the live check still guards against a tip that is not deployed yet.
+- **`concurrency: tg-previews`, `cancel-in-progress: false`** is unchanged
+  and is exactly right: a scheduled run arriving during a `workflow_run` run
+  queues behind it (at most one pending; a third arrival replaces the queued
+  one, which is equivalent), so two runs never press the same chat at once.
+- **`schedule` runs are disabled by GitHub after 60 days without repository
+  activity**, and re-enabled by any push. Named in the runbook so a silent
+  stop a year from now has a known cause.
+
+#### Three clocks, nested, and why the record step no longer needs `always()` to be clever
+
+```text
+--budget-minutes 40   <   timeout 50m (TERM, then KILL after 30 s)   <   timeout-minutes: 60
+   the tool's own deadline     the hard stop for a hang                  the job's backstop
+```
+
+- The tool's deadline is checked before every send and press, and a wait
+  that would end past it is refused (section 3.4). The live check runs
+  **before** the clock starts and is bounded at five rounds of 60 s. So a
+  healthy run ends by roughly 40 + 5 + one button-wait (~35 s) minutes -
+  under 46 - and never reaches the hard stop.
+- The hard stop exists for what the deadline cannot see: a stuck RPC, a
+  reconnect loop in the client, a `getMessages` that never returns. It sends
+  `TERM` at 50 minutes (`124`) and `KILL` 30 s later (`137`) if needed. Both
+  map to green.
+- The job's 60 minutes then has ~6 minutes to spare for setup (checkout,
+  `npm ci` from cache, audit: ~2 min) and the record step (fetch, `--apply`
+  over 1092 fingerprints, commit, up to three pushes: ~2 min). **The record
+  step keeps `if: always()`** so a red Refresh (exit 1 or 2 after some
+  batches) still commits what was confirmed - but nothing in the design any
+  longer depends on an `always()` step surviving a *cancelled* job. That
+  question is closed by never letting the job be cancelled on a run's
+  account, not by an answer about GitHub's semantics.
+- 45 -> 40 costs nothing: `PRESS_LIMIT = 50` bounds a run at two or three
+  minutes of work, so the deadline binds only through flood-wait sleeps and
+  the live check, and 40 minutes of those is still absurdly generous.
+
+**What a hard stop can lose, and the one code change it forces.** `result.json`
+is cumulative and rewritten after every batch by `record()`, so a `TERM` or
+`KILL` loses at most the presses since the last batch - phase 1 recovers
+those next run. But `run.mjs` writes `--result` with a bare `writeFileSync`,
+and a `KILL` that lands mid-write leaves a truncated file that `--apply`
+cannot parse: the record step would go red *and* every confirmed press of
+that run would be dropped from the state. The state write is already atomic
+(tmp + `renameSync`); B6 gives the result write the same three lines.
+
+**Rejected, each named because the next reader will think of it:**
+
+- `continue-on-error: true` on Refresh - above.
+- Mapping exit `1` to green as well - a persistent crash would be invisible
+  until someone noticed the previews were stale, which is how this task began.
+- A repository variable as a kill switch (`TG_PREVIEWS_ENABLED`) - GitHub's
+  Actions UI already has "Disable workflow", and a red run on a deleted
+  `TG_SESSION` is the *honest* off switch. No configuration surface ahead of
+  need.
+- A `press_limit` workflow input - nothing needs it; the default is the whole
+  point in CI, where 50 per run against a backlog *is* the design. B2, if the
+  owner's numbers ever move the default.
+- Waiting the throttle out inside the job when `N` fits the budget - rejected
+  in pass 4 for reasons that have not changed (section 3.4).
+- Keeping the `Secrets present?` guard "for forks" - a fork running the cron
+  would go red on exit 2 with the variable named; that is a fork's problem
+  and the correct message.
+
+### 3.6 Secret handling
+
+**Stands.**
+
+### 3.7 Verification, honestly
+
+**Revised (pass 4)** - the test list grew again; the port did not.
+
+Pass 4 adds to the pure suite in `tools/tg-preview/lib.test.mjs`:
+
+- **`botThrottle(text)`**: the measured sentence is recognised and yields
+  `3213`; case and surrounding words do not matter; a throttle sentence with
+  no seconds figure is still a throttle, with `seconds: null`; the bot's
+  normal summary (`"Link previews was updated successfully..."`), an empty
+  string and `null` are **not** throttles.
+- **`parseArgs`**: `--press-limit` parses, defaults to `PRESS_LIMIT`, and
+  throws on a non-numeric or negative value like the other three.
+- **`runRefresh`**, one case each: a press answered with the throttle text
+  is **not** recorded and stops the run green, with the presses before it
+  recorded; a throttle in the bot's **summary** after a send stops the run
+  without pressing that batch and without burning the remaining button-wait
+  rounds; the press budget stops a run mid-phase-1 with the confirmed ones
+  recorded; the press budget stops phase 2 *before* a send when fewer than
+  `PER_MESSAGE` presses remain, and no send is attempted (asserted against
+  the fake client's `sent` list, which is the whole point of the rule);
+  phase 1 and phase 2 draw on **one** budget; `--press-limit 0` sends
+  nothing and presses nothing and exits green; `--mode full` with a press
+  budget below the stale count logs the warning.
+
+The pass-3 list below stands in full.
+
+What a test can assert, all pure, under `node:test` in
+`tools/tg-preview/lib.test.mjs`, run by `npm run check` (pass 1's list is
+kept in full; additions are marked):
+
+- `urls`, `extractMeta`, `fingerprint`, `imageName`, `buildManifest`,
+  `stale`, `chunk`, `applyResult` - unchanged.
+- `decide`: every row of the table in 3.4, **plus** `BotResponseTimeoutError`
+  -> `{ unanswered: true }`.
+- `parseArgs`: unchanged, **plus** a non-numeric or negative `--limit`,
+  `--max-wait` or `--budget-minutes` throws (reviewer's item 3).
+- **`matchButtons(messages, urls)`**: exact `url` match; a message without
+  webpage media (the summary) is never a button message; a message with a
+  webpage but without the `UPDATE_BUTTON` button is not one either; the
+  newest of duplicate button messages wins; the trailing-slash fallback
+  matches the root and nothing else; unmatched URLs are reported in input
+  order; outgoing messages are ignored.
+- `runRefresh` with a fake client, fake clock and fake live check. Kept from
+  pass 1: sends in manifest order; `--limit` counts sends; `--only`
+  narrows; dry run sends and writes nothing and never loads the client;
+  small `FLOOD_WAIT` on a send resends the same message once; `PEER_FLOOD`
+  on a send stops green with the confirmed ones recorded; a dead credential
+  is exit 2; not-live URLs are excluded and reported; the summary numbers
+  add up. **Added:** a batch's button messages are pressed and only
+  confirmed URLs reach the state; fewer button messages than links leaves
+  the unmatched ones pending and unrecorded; button messages that arrive
+  late are found on a later wait round; a `FLOOD_WAIT` on a press re-presses
+  the same button; `PEER_FLOOD` on a press stops with earlier presses
+  recorded; an unanswered press with a changed photo is confirmed and with
+  an unchanged photo is pending; phase 1 presses a button message found in
+  the scan and sends nothing for that URL; `--limit 0` still runs phase 1;
+  the deadline stops between two presses with the confirmed ones recorded;
+  a flood wait that would end past the deadline is not started; the photo
+  telemetry counts are right.
+
+**What no test can assert:** that Telegram's cache changed. The network
+client is now a **five**-method port (section 4) in `client.mjs`, still the
+one file with no unit test; its surface is small enough to read, and every
+TL field it touches is named in section 5.5 against the installed
+teleproto's generated types. A green job proves messages were accepted and
+presses acknowledged, nothing more.
+
+**How the owner verifies a real refresh** (runbook steps F and G): paste
+the URL in any chat and compare the picture with the live `og/<id>.jpg`;
+find an already-posted message with that link and confirm it changed too;
+read the `photo changed` count in the summary. Nothing in the tool's output
+stands in for the paste.
+
+### 3.8 The owner's manual steps
+
+**Stands** as a pointer to section 9, which is revised.
+
+### 3.9 A pre-press staleness test - asked for, designed, and not taken (pass 5)
+
+The owner asked for a lazier tool: press only where the press is actually
+needed. "Press only when the photo changed" is circular - the delta is
+observable only *after* the press (section 3.4) - so the question is whether
+a test that runs **before** the press can be made to pay. **Answer: no new
+test.** The reasons, in the order that decides it.
+
+**1. The tool already has a pre-press staleness test, and it is exact.**
+`stale()` over the fingerprint - `sha256([og:title, og:description,
+og:image, sha256(image bytes)])` - runs before any send or press, costs
+nothing, needs no network beyond the live check the tool already performs,
+and is *precisely* "what Telegram would see, compared with what it saw when
+we last confirmed a press". In incremental mode a URL is neither sent nor
+pressed unless that changed. The laziness being asked for is already the
+steady-state design.
+
+What it cannot do is help the run the owner is watching. A **first reindex
+starts from an empty state by construction**: there is no record of what
+Telegram holds for any URL, so nothing can be compared, and the tool cannot
+learn it without asking Telegram. That is a property of the first run, not a
+defect, and it ends when the reindex ends.
+
+**2. The counter that prompted the doubt is not a press driver.** Nothing is
+pressed because of `photo changed`; confirmation is `answered || changed`
+and the delta gates only the `BOT_RESPONSE_TIMEOUT` case (section 3.4, and
+`context.md` fact 2). Fixing the name (B5) removes the reason to distrust a
+correct run without touching the mechanism - which is why B5 is the whole
+batch and this section is a rejection.
+
+**3. What a wrong verdict costs, which is what sizes the conservatism.** A
+false "already current" does not merely skip a press. The URL is left stale
+**and** recorded in `state.json` as refreshed, so every later incremental
+run skips it too - until some unrelated artwork commit re-fingerprints it by
+accident. That is exactly the class of lie pass 3 (a send is not a refresh)
+and pass 4 (a refused press is not a refresh) were written to remove, and it
+is worse than either, because those stopped a run loudly and this one is
+silent forever. Any pre-press test must therefore be **wrong only in the
+direction of pressing anyway**.
+
+**4. The candidates, each with the measurement that decides it.**
+`context.md`'s table has the raw findings; this is the verdict on each.
+
+- **`webpage.title` / `webpage.description`** - free and exact: they are on
+  the same TL object `plain()` already receives and discards. They test
+  **text** staleness. The root cause is image bytes under an unchanged
+  `og:image` URL, which is the one thing they cannot see. A URL with a
+  current title and a stale picture is the *typical* case here, so a test
+  built on them fails in the forbidden direction. Rejected on subject
+  matter, not on cost.
+- **Image dimensions** - dead. 846 of 847 `og/*.jpg` are 640x640.
+- **Image byte size** - Telegram stores its own re-encode, so its size never
+  matches ours; a mismatch is unconditional and carries no information.
+  Measured again on the origin this pass and confirmed from the other side:
+  GitHub Pages' `ETag` is `"<deploy-stamp>-<content-length>"`, so the only
+  per-file quantity the origin exposes cheaply is the size - the one
+  quantity that cannot be compared. Rejected.
+- **Telegram's cached photo `date`** - the shapeliest of the four and the
+  only one worth deferring rather than rejecting. `Api.Photo` carries
+  `date: int` (verified in the installed teleproto 1.229.0's generated
+  types, `tl/generated/api.d.ts` line 3072), so "skip the press when
+  Telegram's stored photo is newer than the bytes currently published" is a
+  free, exact, threshold-free rule that needs no download. It fails on the
+  **reference clock**: there is no per-file publication time to compare
+  against. Measured 2026-09-13 on the live site - `og/_share.jpg`,
+  `og/w76.jpg` and `og/cc19.jpg` all return the *identical*
+  `last-modified: Sun, 13 Sep 2026 08:36:03 GMT`, which is the deploy, not
+  the file. The only per-file alternative is a git commit date, which owner
+  constraint 4 rules out as a mechanism that must survive issue 47's
+  cut-over. Its failure mode is at least safe - a reference that is too new
+  means "press anyway" - so it degrades to today's behaviour rather than to
+  a lie, and it is recorded in section 13 as the candidate to revisit if a
+  per-image publication time ever exists. It would have saved **nothing** on
+  the first reindex, which is the run in question.
+- **Download Telegram's cached photo and compare perceptually** - the only
+  candidate that can see image staleness during a first reindex, and the
+  downloads do not spend the bot's attempt quota, so the economics look
+  favourable. Rejected on **error direction**, not on cost. The comparison
+  is Telegram's re-encode of our JPEG against our JPEG, so the threshold
+  must be loose enough to absorb re-encode noise; the change it must detect
+  is artwork **polish** - the owner's own words are "was not changed much".
+  A threshold loose enough for the noise is loose enough to miss the
+  signal, and the failure is the silent, permanent one from point 3. It
+  also buys a JPEG decoder dependency into a tool whose only dependency is
+  `teleproto`, and a threshold constant nothing in this repo can calibrate.
+- **Record the post-press photo id in the state (schema v2)** - already
+  deferred in section 13, and pass 5 sharpens *why* it is not this. It tells
+  you whether a press did anything; it does not tell you whether a press was
+  **needed**. "Was it needed" reduces to "have the bytes changed since we
+  last confirmed", which is the fingerprint comparison the tool already
+  performs. And if mechanism 2 of section 3.4 holds - a re-download mints a
+  new id unconditionally - then a recorded id can never be equal on a second
+  press and the rule degenerates to "always pressed, always confirmed".
+
+**5. The arithmetic of the saving, honestly.** The currency is the bot's
+attempt quota, not wall clock, so a test that removes presses is worth real
+complexity - that is the right test to apply and it is why this section
+exists rather than a one-line "no". But the size of the prize is
+**unmeasured and unmeasurable from here**: the population a test could skip
+is "URLs whose Telegram cache is already current", and nothing in the tool,
+the TL object or the origin can enumerate it before the press. Buying
+complexity with an unmeasured saving, and paying for it with the one failure
+mode two passes have been spent eliminating, is the wrong trade. If G.7's
+experiment says a press on already-current bytes reports `same`, then the
+195/195 `changed` the owner is reading is literal, the prize is near zero,
+and this section closes for good.
+
+**Named and not taken, for completeness:** a `messages.getWebPage(url, hash)`
+probe, which reads Telegram's cached webpage for any URL without messaging
+the bot and therefore spends no attempt quota. It is the only way to learn
+anything pre-**send**, it is one RPC per URL, and it dies on the same
+reference-clock problem as `photo.date` above - it returns an id and a date
+with nothing to compare them to on a first reindex. No agent may measure it
+either: it needs the owner's live session. Recorded here so the next reader
+does not rediscover it as new.
+
+### 3.10 Onto `main`: the merge, the finished state file, and what only `main` can prove (pass 6)
+
+Three of the five pass-6 questions are about getting this branch onto `main`
+in the right order, with the owner's data intact. They are decided here; B6
+(section 10c) executes them as separate commits.
+
+#### The merge is its own committed boundary, before the code, and it has one conflict
+
+`origin/main` is 101 commits ahead and five files were touched on both sides.
+Git 2.33 lacks `git merge-tree --write-tree`, but it has the **old
+three-argument `git merge-tree <base> <ours> <theirs>`**, which is read-only
+and prints the merged result with conflict markers. Run against
+`8b96ff4 HEAD origin/main` it reports (`context.md`, pass-6 fact 1):
+
+- `README.md`, `README.ru.md`, `docs/specs/COVERAGE.md`, `docs/specs/META.md`:
+  changed on both sides, **auto-merge cleanly** - our additions are one table
+  row each in the READMEs, one paragraph in COVERAGE (the `lib.test.mjs`
+  suite), and META section 7. The implementer reads each merged hunk once
+  (the row appears exactly once, the paragraph is intact, section 7 is
+  intact) and otherwise leaves them as git produced them.
+- `package.json`: **one conflict hunk**, the `"check"` script line. `main`
+  inserted `node --check tools/check-site.mjs &&` after `npm run typecheck`;
+  this branch inserted `node --test tools/tg-preview/lib.test.mjs &&` before
+  `npm run test`. The resolution is the union, in that order:
+
+  ```text
+  "check": "npm run format:check && npm run lint && npm run typecheck && node --check tools/check-site.mjs && npm run data && node tests/derived.js && node tests/i18n.js && node .claude/hooks/selftest.mjs && node --test tools/tg-preview/lib.test.mjs && npm run test",
+  ```
+
+  and the `"previews"` script stays. Nothing else in the file conflicts.
+- Everything else this branch touched is a new file; `main` has none of
+  `tools/tg-preview/`, `previews.yml` or `docs/tg-preview.md`.
+
+**Merge, not rebase.** Eleven commits on this branch are cited by sha across
+`plan.md`, `handoff.md` and `context.md` (`0ab04eb`, `5b2a68e`, `0f33aa2`,
+`4a042c7` are the "read the superseded text here" pointers). A rebase would
+rewrite every one of them; a merge commit preserves them and records the
+resolution once. The merge is committed **on its own**, before the workflow
+changes, so that the first `npm run check` on a tree carrying both issue 47's
+cut-over and this tool is a measurement of the merge and nothing else - if it
+fails, the cause is the merge, not B6.
+
+**Two gated checks, not four.** The commit gate's tree key already includes
+untracked files (`context.md`, pass-6 fact 4), and `issues/**` plus every
+`.md` except the two READMEs are exempt. So the commit order is: pass-6 docs
+(exempt) -> merge (**check #1**, the merged tree, with `state.json` sitting
+untracked and therefore already in the fingerprint) -> `state.json` commit
+(same key; the gate is already armed) -> B6 code (**check #2**). Committing
+the state *before* the merge would cost a third check for nothing.
+
+#### The finished `state.json` reaches `main` as its own commit, untouched
+
+It is the owner's live data: 1062 complete entries, written by the tool the
+owner ran, and it is what stops CI from re-sending everything - `previews.yml`
+reads `origin/main:tools/tg-preview/state.json` and treats a missing file as
+"every URL is stale". Decision, in order of what matters:
+
+1. **One commit, one file, by path**, message
+   `chore(tg-preview): record the first full reindex` - the runbook's own
+   step G.6 wording. Never `git add -A`; never `git commit -a`.
+2. **After the merge, before the code.** After, so it needs no check of its
+   own (above) and sits on the tree whose dry-run count is recorded beside
+   it; before the code, so a revert of B6 leaves the state in place and a
+   revert of the state leaves the workflow able to bootstrap.
+3. **Its content is never edited, regenerated or reformatted.** Not by hand,
+   not by `run.mjs` (every agent invocation is `--dry-run`, which writes
+   nothing), not by Prettier (`.prettierignore` excludes `tools/`). The proof
+   is one hash: `git hash-object tools/tg-preview/state.json` is
+   `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de` today (`context.md`, pass-6
+   fact 3); B6 records it again immediately before `git add` and after the
+   commit (`git rev-parse HEAD:tools/tg-preview/state.json`). Any other value
+   means stop and report.
+4. **What the implementer verifies before staging**, none of it printing an
+   entry: `git status --porcelain -- tools/tg-preview` shows exactly
+   `?? tools/tg-preview/state.json` and no `state.json.tmp`; a one-line
+   `node -e` reads `version` (1), `site`
+   (`https://artex-x.github.io/daggerheart-loot/`), the key count (1062),
+   `updatedAt` (`2026-09-14T20:04:16.406Z`) and that every value is a 64-hex
+   string; `git diff --cached --stat` after `git add` names one file of
+   ~135 KB; `git diff --cached --name-only` contains nothing that matches
+   `.env`.
+5. **The post-merge dry run is expected to be non-zero, and that is not a
+   defect.** On the pre-merge tree the file is complete (`nothing to
+   refresh`, measured by the orchestrator). On the merged tree `main`'s
+   content changes (`context.md`, pass-6 fact 2 - the 94 frame stubs and the
+   root gained a new `og:description`, 30 records were added) make on the
+   order of 125-135 of 1092 URLs stale. Those previews really are stale on
+   Telegram; the state must keep saying so. B6 records the exact count and
+   does nothing about it - it is the first CI run's job.
+
+#### What can be verified before the owner merges, and what cannot
+
+**Locally, and B6 does all of it:** the YAML parses and is formatted
+(`prettier --check .` inside `npm run check` covers `.github/**` -
+`context.md`, pass-6 fact 5; there is no `actionlint`, no PyYAML and no
+`yaml` package on this host, so Prettier is the parser); each `run:` block
+passes `bash -n` when copied into a scratch file; the exit-code mapping is
+exercised by hand in Git Bash (`timeout 1s sleep 5` returns `124` here as on
+ubuntu); `lib.test.mjs` proves the moved warning; `run.mjs --dry-run` on the
+merged tree proves the manifest still builds through `main`'s changed stub
+generator and reports the backlog; the state's hash proves it is untouched.
+
+**Only `main` can prove:** that `workflow_run` fires after `check` and that
+`schedule` fires at all (both read the default branch's copy of the file);
+that `inputs.*` default as written under each of the three events; that the
+secrets reach the step; that the `[skip ci]` push from the record step is
+accepted by `main`'s branch rules; how the summary renders. None of that is
+reachable from a branch, by an agent or by the owner, and the plan does not
+pretend otherwise: the first-run procedure in section 9 (step I) is how the
+owner watches it prove itself, and step J is the off switch if it does not.
+
+**The first real run is automatic.** Merging this branch into `main` is a
+push to `main`; `check` runs, `deploy` publishes, and `previews` fires on
+`workflow_run` - with the ~130-URL backlog and a 50-press budget, so it does
+one chunk and stops green. A dry run can be dispatched **while `check` is
+still running** (the file is on `main` the moment the push lands; a dispatch
+does not wait for `check`), which is the owner's window to read the stale
+count first. Both runs share the concurrency group and serialise. Section 9
+step I says this in the owner's order.
+
+### 3.11 The B6 review, and what closes before the owner merges (pass 7)
+
+Verdict **approve**; five risks (R1-R5), six nits. `handoff.md` files every
+one of them under B7 or Deferred. This section answers the five questions
+the pass was asked; B7 (section 10d) executes.
+
+#### What goes into B7 and what stays deferred - the owner's own test
+
+The test is the contract 3.5 states: **does the finding change what red or
+green means?** Applied:
+
+- **R1 (a false red) and R2 (a false green): in.** They are the definition's
+  two holes, the reviewer names them as the first code in any follow-up, and
+  the owner is about to start reading red and green by the runbook. A red
+  they learn to ignore, or a green that hides a dead account, undoes the
+  batch that just shipped.
+- **R3 (the silent wipe): in.** Not a red/green defect but the highest-cost
+  latent path, four lines on `run.mjs`, which is open anyway, and testable
+  without Telegram (`--dry-run --no-verify --state <scratch file>`).
+- **R4 (the fetch refspec): in.** Two lines in a file that is open; a miss in
+  the record step is red every four hours *plus* lost presses, and the
+  explicit refspec has no downside.
+- **R5 (the root fingerprint): in, as one path change - decided on its
+  merits.** It is a cut-over seam, not a fail-safety defect, but its failure
+  mode is exactly the one this task exists to remove - a stale preview
+  nobody is told about - on the one URL every `#/i/<id>` share resolves to.
+  `ci.yml` publishes `dist/index.html`, built from `app/index.html`; the
+  legacy root is not deployed; the three tags are byte-identical today, so
+  the fix changes no fingerprint and the dry-run count is its own proof.
+  **Rejected: `--assets dist` plus `npm run build` in `previews.yml`** - a
+  root `npm ci` and a Vite build six times a day to read three meta tags,
+  and a refresh job that then depends on the app building. Vite passes
+  `<meta>` through its HTML transform untouched (documented, not measured
+  here); if that ever stopped being true the live check would report the
+  root `not live` on every run - loud, not silent, which is the right
+  failure direction.
+- **Nits in:** the `else` message in `previews.yml` (it says "every url
+  counts as stale" while the branch actually keeps the checked-out - now
+  committed - copy); `state.json.tmp` in `.gitignore`; the exit-code wording
+  in `docs/tg-preview.md` and in 3.5; `--apply`'s `buildFromTree()`
+  (replaced by `site` carried in `result.json` - which also removes the
+  record step's dependence on `main`'s tree being *buildable* at commit
+  time, a small fail-safety hole of its own, and closes R1-deferred item
+  7); the handoff heading restored to the template's.
+- **Deferred, with the reason.** `npm audit --audit-level=high` on the cron:
+  a new high advisory turning the job red *is* the contract - a human must
+  bump the dependency, and the process holds a full account session, so
+  running it on a known-vulnerable tree is the wrong default; `ci.yml`
+  applies the same rule. Recorded in section 12 so the first such red has a
+  known cause. B4 nits 1, 4 and 6 and R1-deferred item 6 stay where they
+  were. The catch-all's "unknown RPC error stops green" stays (below).
+
+**Not a rewrite of the error taxonomy.** `decide()` keeps its shape - class
+name in, one outcome out, five rows plus two catch-alls. B7 adds names to
+one row and routes five more call sites (four reads and the connect) through
+the function that already exists. It adds no evidence model, no run counter
+and no exit code.
+
+#### How R1's fix must not change what a stop means
+
+`attempt(action)` already returns `{ value } | { unanswered } | { stopped,
+exitCode? }`, carries the transport retries, the flood-wait sleeps and the
+deadline check, and **touches no press budget** - `pressOne` decrements the
+budget before it calls `attempt`, so wrapping reads in it costs nothing on
+the press axis (B4 nit 1 is about `cx.press` being re-invoked inside one
+decrement and is unchanged by this). A helper `read(action)` calls `attempt`
+and normalises: `'value' in r` -> return `r`; otherwise
+`{ stopped: r.stopped || 'read unanswered', exitCode: r.exitCode || 0 }`
+(`unanswered` cannot come from a read - `BOT_RESPONSE_TIMEOUT` is
+press-only - but the helper does not assume it).
+
+What a retried-then-failed read does, site by site:
+
+| read | on stop | `confirmed` | `pending` | state write | exit |
+|---|---|---|---|---|---|
+| the recovery scan `incoming({ limit: RECOVER_SCAN })` | `stopped = 'recovery scan: <reason>'`, close, `finish()` - nothing was pressed | `[]` | `todo` | none: `record()` never runs, the state is untouched, `result.json` is not written, the record step logs `nothing sent` | 0, or 2 if the class is fatal |
+| a button poll `incoming({ afterId })`, first read or a later round | `stopped = 'button poll: <reason>'`, `break batchLoop` - the batch **was sent** and its button messages sit in the chat | unchanged since the previous batch | that batch's URLs stay pending | the previous batch's `record()` already ran; there is nothing new to write | 0 / 2 |
+| the post-press `byIds` | `pressGroup` keeps going with `refetched = []`, so every delta is `unseen`; confirmation is the **existing** rule `p.answered \|\| delta === 'newId'` - answered presses confirm, unanswered ones stay pending, which is precisely what `unseen` already means in the docs; `pressGroup` returns `stopped: pressStop \|\| 'refetch: <reason>'` (a press stop that came first keeps its own reason and code) | this group's answered presses | the rest | `record(confirmedAll)` runs after the group exactly as today | 0 / 2 |
+| `close()` | `try/catch` with one `warning: disconnect failed: ...` log line - a disconnect that fails after the work is done is not a failed run | - | - | - | unchanged |
+
+The next run's phase 1 finds every unconfirmed button message inside
+`RECOVER_SCAN` and presses it without a send - the same recovery every other
+stop already relies on. No new state, no new vocabulary beyond three
+`stopped` prefixes, no change to `finish()`'s arithmetic:
+`confirmed + pending = stale` still holds.
+
+`lib.test.mjs` assertions that **must remain untouched**, because they pin
+the meaning of a stop: "PEER_FLOOD on a press stops with earlier presses
+recorded"; "is fatal (exit 2) on a dead credential on a send" and "...
+mid-press"; "a FLOOD_WAIT on a press re-presses the same button"; "a pressed
+message byIds cannot re-fetch is counted unseen: unconfirmed unanswered,
+confirmed answered" - this is the semantics the `byIds` stop reuses, so the
+`photoAfter`-empty case must pass unchanged and the new case (a *throwing*
+`byIds`) sits beside it; "confirmed and pending always add up to the stale
+count"; "the deadline stops between two presses"; "a flood wait that would
+end past the deadline is not started"; all four press-budget cases; both
+throttle cases; "a dry run sends and writes nothing, and never loads the
+client". Every one of them runs against a fake whose `incoming` and `byIds`
+never throw, so B7 must not change the fake's default behaviour: it adds an
+opt-in `{ throw }` entry to the `incoming` queue, an opt-in `byIds` script,
+and an opt-in `closeThrows`.
+
+#### R2's shape: names in `FATAL_ERRORS`, not a run counter
+
+**Chosen:** five class names added to `FATAL_ERRORS` (the reviewer's four
+plus `UserDeactivatedError`, the un-banned sibling that means the same
+thing), and the connect-time error classified once. **Rejected:** "stopped
+with pending > 0 and zero confirmations, N runs in a row -> red". It needs a
+counter across runs - state the tool does not have, which means a schema
+change to the committed file, the same reason the press ledger was deferred
+in pass 4; it fires just as readily on a legitimate long throttle or a
+three-run Pages outage, i.e. it converts real Telegram-side stops into reds
+and re-opens the definition; and it names no cause, whereas a class name in
+the log tells the owner which runbook step to redo.
+
+**What the owner sees when it fires:** a red run. The step log ends
+`refreshed 0, pending N, stopped: UserDeactivatedBanError: the account or
+session is unusable; a human must act`, and `::error::` puts the same
+sentence on the run page as an annotation; the `::warning::` about pending
+URLs is **not** printed (it is gated on exit 0 today and stays so); the
+record step runs, finds no `result.json`, and logs `nothing sent`. Every four
+hours the same red, until a human acts - and the runbook's I.6 says which
+human action: an unregistered, revoked, expired or **duplicated** key ->
+`login.mjs` (step D.3) and a new `TG_SESSION`; a deactivated or banned
+account or number -> a new account (steps A-D); `YOU_BLOCKED_USER` -> unblock
+`@WebpageBot` from the throwaway account.
+
+**The revoked-session code.** `client.mjs` drops its `isUserAuthorized()`
+guard. Read in teleproto 1.229.0 (`client/users.js:281`): it is
+`try { await client.api.updates.getState(); return true } catch { return
+false }`, so it swallows the very class name `decide()` needs and reports a
+transport blip at connect as "not authorized" too. With the guard gone the
+first RPC (`getEntity('WebpageBot')`) throws the real error; `runRefresh`
+catches the `client()` rejection **once**, and if `decide(err).fatal` returns
+a result in the shape of the `ready.length === 0` branch with `stopped` and
+`exitCode 2` (`finish()` cannot be called there - its closures are declared
+later), otherwise rethrows. A transport failure at connect therefore stays
+exit 1, which section 12 accepted in pass 6; B7 adds no connect retry. What
+a *forgotten* auth key does (teleproto's sender re-keys on a `-404` and the
+next RPC fails with the 401 class) is read from `network/MTProtoSender.js`,
+not measured on a live dead session - the docs say "when Telegram names it".
+
+#### R3: `ENOENT` is the bootstrap; anything else is a stop
+
+`readState` becomes: no file (`ENOENT`) -> `{}`; a file that exists and does
+not parse -> throw `state file is not valid JSON: <path> (...) - refusing to
+treat it as empty`, which `main().catch` turns into exit 1 with that message.
+On the refresh path that is a red run before any Telegram contact; on the
+`--apply` path the record step goes red **without committing**, so the state
+on `main` is whatever the last good commit left, and the run's presses are
+re-found by phase 1. Not added: a shape check beyond parsing, because
+`stale()`'s bootstrap rule already handles a missing `urls` and a validity
+model is something nothing else here has.
+
+#### R4 and R5 are one line each; R5's proof is the dry-run count
+
+R4: `git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main`
+in both `run:` blocks; `git show origin/main:...` and `git checkout -q -f
+--detach origin/main` stay as they are. R5: `manifest.mjs` reads the root's
+HTML from `app/index.html` when `--assets` is not given; `og/` stays at the
+repository root (a tracked source directory that `deploy` copies verbatim);
+`--assets <dir>` keeps meaning "both live under `<dir>`" for a built tree.
+Acceptance: `run.mjs --dry-run` reports the **same** stale count before and
+after - the tags are byte-identical today, so a changed count would mean the
+change did something it should not.
+
+#### Does any of this reopen the runbook's H-J?
+
+**No procedure step changes.** Step I's points 1-5 are exactly what the owner
+will follow; only I.6 (the red list) and J gain the corrected codes and the
+three "which step to redo" mappings above, plus one new red: a state file
+that does not parse (exit 1; `git revert` the commit that broke it). The 3.5
+table is corrected in the same batch, because the docs and the plan attached
+exit 2 to a case the code exited 1 on, and a runbook that names the wrong
+code sends the owner to the wrong step.
+
+#### Ordering against O3: B7 lands before the merge
+
+Plainly: **B7 first, then the owner merges.** In order of weight: (1) B7
+changes what red and green mean in the two directions the owner cares
+about, and the first CI runs are the moment the owner learns to read them -
+evidence gathered with a tool whose codes are known-wrong both ways is
+evidence that has to be re-triaged; (2) nothing in B7 depends on evidence
+from `main` - every fix is read from the code, the installed client and
+`ci.yml`, and every gate runs locally without Telegram; (3) it is one batch,
+one `npm run check`, on files that are all this task's own, and it touches
+neither the merge nor the state; (4) the cost is one more local batch before
+the switch, against a switch that then runs every four hours unattended. If
+the owner merges first anyway, nothing in B7 is invalidated - it lands as a
+follow-up - but the first reds and greens must then be read against 3.5's
+corrected table, not the runbook's old list. `origin/main` moved one commit
+since B6 (`3504bf7`, a hooks fix touching none of this task's files;
+`context.md`, pass-7 facts); B7 does **not** re-merge - the owner's merge
+takes it.
+
+## 4. Architecture
+
+**Revised** - one port grew, one pure function was added.
+
+```text
+tools/tg-preview/
+  package.json        private, "type": "module", dependency: teleproto   (unchanged)
+  package-lock.json   pinned; installed only here                         (unchanged)
+  lib.mjs             pure: urls, extractMeta, fingerprint, imageName, buildManifest,
+                      stale, chunk, decide, matchButtons, runRefresh, applyResult,
+                      parseArgs, constants
+  lib.test.mjs        node:test over lib.mjs; imports nothing from node_modules
+  manifest.mjs        composes lib with the repo (pass 7: the root's HTML comes from
+                      app/index.html, the deployed root's source; og/ stays at the root)
+  live.mjs            fetch(url) -> fingerprint of the live page + its image
+  client.mjs          the port over teleproto:
+                      createClient(env) -> { send, incoming, byIds, press, close }
+                      (pass 7: no isUserAuthorized() guard - the first RPC's real
+                      error reaches decide())
+  run.mjs             the CLI: args, env, manifest, state, diff, live check, the two
+                      phases, summary
+  login.mjs           interactive, once (unchanged)
+  state.json          written by the owner's local reindex (complete 2026-09-14);
+                      committed by B6 as its own commit; appended by CI afterwards
+.github/workflows/previews.yml   revised in pass 6: schedule, hard timeout, exit-code map
+docs/tg-preview.md    the runbook (section 9 plus operations)
+```
+
+Boundaries unchanged: `lib.mjs` touches no network, filesystem, clock or
+process; the client is loaded lazily only when there is something to press
+or send and it is not a dry run.
+
+**The port, and why five methods is the smallest honest surface.** Pass 1's
+three (`send`, `lastReply`, `close`) described a one-way conversation. The
+loop now has to (a) anchor "the bot's answers to *this* message" on
+something exact, (b) read button messages both after a send and from recent
+history, (c) re-read messages by id after pressing, and (d) press. That is
+four reads and writes of genuinely different shape, and hiding them behind
+fewer methods would mean a union-typed selector argument or a method that
+does two things. `lastReply` goes away: its job (log the bot's text) is done
+by the summary message that `incoming` returns anyway, and its epoch-ms
+comparison - the reviewer's unfloored `sinceMs` - is replaced by the sent
+message's **id**, which needs no clock at all.
+
+```text
+send(text)                  -> { id }             the sent message's id
+incoming({ afterId, limit }) -> Msg[]             incoming (not `out`) messages, ascending by id;
+                                                 with afterId: only ids > afterId; always capped by limit
+byIds(ids)                  -> Msg[]             the current state of those messages (edited in place after a press)
+press(id, data)             -> { text }          messages.getBotCallbackAnswer; throws teleproto errors through
+close()
+```
+
+`Msg` is a plain object the port builds from teleproto's `Api.Message`, so
+`lib.mjs` and its tests never see a TL class:
+
+```text
+{ id: number, text: string, url: string | null, pending: boolean,
+  photoId: string | null, buttons: [{ text: string, data: Buffer }] }
+```
+
+## 5. Behaviour of `run.mjs`
+
+### 5.1 Arguments
+
+**Revised (pass 4)**: `--press-limit N` is added. It bounds the presses a
+single run attempts, across **both** phases, and defaults to `PRESS_LIMIT`
+(50). It parses under the same numeric rule as the three flags below.
+`--press-limit 0` is legal and degenerates safely: phase 1 presses nothing,
+and phase 2 never starts a batch it cannot press, so the run sends nothing
+either and exits green - no special case is needed to stop it creating
+unpressable residue.
+
+The pass-3 rule stands: `--limit`, `--max-wait` and `--budget-minutes`
+must parse to a finite, non-negative number (`--limit 0` is legal and means
+"phase 1 only, send nothing"); anything else throws `--limit must be a
+number, got <value>` from `parseArgs`. Pass 1 let `Number('ten')` through as
+`NaN`, which made `--limit` silently send nothing and `--budget-minutes`
+silently mean "no budget" - both exit 0, both lies of the kind this revision
+exists to remove. `--limit` still counts **sends** and never presses; phase
+1's presses are bounded by `--press-limit` (pass 4) and reachable only
+within `RECOVER_SCAN`.
+
+### 5.2 Steps
+
+**Revised (pass 4)** - steps 7, 11 and 12 amended; pass 3's replacement of
+steps 7-10 otherwise stands.
+
+Pass 4's amendments, in one place so the implementer does not have to diff
+the prose below:
+
+- **Step 7 (dry run)** additionally prints the press budget, so the pairing
+  of `--limit` and `--press-limit` can be sanity-checked before anything is
+  spent: `<todo> urls stale, <ready> ready, up to <batches> messages,
+  <ready> presses (press budget <N>)`.
+- **A new step 10a**, after the client is connected and before phase 1: if
+  `mode === 'full'` and the press budget is smaller than the stale set, log
+  one warning that `--mode full` cannot finish this set in one run and that
+  chunked reindexing uses the default incremental mode (section 3.4,
+  "`--mode full` is not chunkable").
+- **Step 11 (phase 1)** spends from the run's press budget and stops when
+  it is exhausted, exactly as it stops on the deadline.
+- **Step 12 (phase 2)** checks the budget **before the send**: fewer than
+  `PER_MESSAGE` presses remaining stops the run rather than sending a batch
+  whose buttons cannot be pressed. Each button-wait round checks the bot's
+  summary with `botThrottle()` and breaks out of the wait on a match instead
+  of exhausting `BUTTON_WAIT_ROUNDS`.
+- **Both phases**: a press whose callback answer `botThrottle()` recognises
+  is not recorded, and stops the run.
+- Stop reasons added, all green: `press budget reached`, `press budget too
+  low for another batch`, `bot throttled: retry in <N>s`.
+
+1. Load `.env` if present; parse args.
+2. Build the manifest (1062 fingerprints) from the tree. Report and exclude
+   any URL whose image is missing on disk.
+3. Read the state (`{}` when absent or `site` differs).
+4. `todo = stale(manifest, state, mode)` filtered by `--only`. Empty ->
+   `nothing to refresh`, exit 0, never load the client.
+5. Live check (5.3) unless `--no-verify` -> `ready`, `notLive`.
+6. `batches = chunk(ready, PER_MESSAGE)` cut by `--limit` (a provisional
+   count - phase 1 may shrink it).
+7. Dry run -> print `<todo> urls stale, <ready> ready, up to <batches>
+   messages, <ready> presses`, the first three batches in full, the
+   `notLive` list, exit 0. Nothing loaded, nothing written. A dry run cannot
+   show what phase 1 would recover: that needs the chat, which needs the
+   credential.
+8. Nothing ready -> `nothing ready to send (<n> not live)`, exit 0.
+9. Fail fast on config: all three env vars present or exit 2, names only.
+10. Connect (`createClient` still resolves the peer and sends `/start` on an
+    empty history).
+11. **Phase 1 - recovery.** `scan = incoming({ limit: RECOVER_SCAN })`;
+    `found = matchButtons(scan, ready)`. Press each match in manifest order
+    (deadline check, `PRESS_PACE_MS`, `decide()`); then `byIds` on the
+    pressed ids once for the photo delta; record the confirmed URLs; write
+    state and `--result`. Remove every URL matched in phase 1 - confirmed
+    or not - from `ready`; rebuild `batches` from what is left, cut by
+    `--limit`.
+12. **Phase 2 - send and press**, per batch: deadline check; send (with
+    `decide()` retries) -> `{ id }`; sleep one pace; `replies = incoming({
+    afterId: id, limit: BUTTON_FETCH })`; `m = matchButtons(replies, batch)`;
+    while `m.unmatched` is non-empty and rounds remain, sleep
+    `BUTTON_WAIT_MS` and re-read; log the summary text verbatim once; press
+    each match (deadline check per press); `byIds` once; record the
+    confirmed URLs; write state and `--result`; log one line per batch:
+    `batch 3/107: sent 10, buttons 10, pressed 10, confirmed 10 (photo
+    changed 9, same 1, none 0)`; rest every `REST_EVERY` sends.
+13. Summary to stdout and `$GITHUB_STEP_SUMMARY`: `refreshed N, pending M`
+    (N = confirmed), then `pressed P (photo changed C, same S, none Z)`,
+    then `not live L` / `no button message U` / `stopped: <reason>` when
+    non-zero; `::warning::` when pending > 0; `close()`; exit per section
+    3.4.
+
+**Revised (pass 7)** - four steps change what they do on an error, none
+changes what it does on success:
+
+- Step 3: the state is `{}` only when the file is **absent**. A file that
+  exists and does not parse throws (exit 1, path named) - on this path and
+  on `--apply`'s (3.11, R3).
+- Step 10: the connect is classified once by `decide()`: a fatal class is
+  `stopped`, exit 2, nothing written; anything else still throws (exit 1).
+- Step 11: the recovery scan is a `read()`; a failed scan is a green stop
+  with nothing pressed and nothing written.
+- Step 12: both button polls are `read()`s; a failed poll stops the run with
+  that batch's URLs pending and the previous batch's record intact. The
+  post-press `byIds` is a `read()`; a failed refetch counts the group
+  `unseen`, confirms its answered presses under the unchanged rule, records
+  them, and stops the run. `close()` cannot fail the run.
+- Step 13: on exit 2, one `::error::` line with the `stopped` reason. The
+  `--result` file carries `site` beside `urls`, and `--apply` reads it from
+  there instead of rebuilding the manifest.
+
+### 5.3 The live check
+
+**Stands**, plus one local fix folded in (reviewer's item 2): `live.mjs`
+caches the image-hash *promise* per name, so a fetch that fails in round 1
+(a **new** `og/<name>.jpg` returning 404 while Pages catches up - the exact
+case the rounds exist for) stays rejected for rounds 2-5 and the URL is
+reported not live for the whole run. Fix: drop the cache entry when the
+promise rejects, so the next round fetches again. Three lines; no unit test
+(the file is outside the pure suite by design).
+
+### 5.4 State writes
+
+**Revised.** `writeState` runs after phase 1 and after every batch,
+atomically, sorted, with only **confirmed** URLs added; the carry-forward of
+entries for records still in the manifest is unchanged. `--result` is
+written alongside with the same confirmed set. `updatedAt` is still the only
+timestamp.
+
+### 5.5 Talking to the bot
+
+**Revised.**
+
+> Superseded: pass 1's `lastReply(sinceDate)` (read the newest incoming
+> message newer than an epoch-ms timestamp and log it) and the sentence
+> "a message is the batch's URLs joined by `\n`" - the second stands, the
+> first is gone.
+
+Every TL name below was read from the installed
+`tools/tg-preview/node_modules/teleproto/tl/generated/api.d.ts` and
+`tl/custom/message.d.ts` on 2026-09-11; the implementer does not need to
+re-derive them, and should not guess alternatives.
+
+- `peer = await client.getEntity('WebpageBot')` once; `/start` on an empty
+  history - unchanged.
+- **`send(text)`**: `const m = await client.sendMessage(peer, { message:
+  text })` returns `Api.Message`; return `{ id: m.id }`.
+- **`incoming({ afterId, limit })`**: `client.getMessages(peer, { minId:
+  afterId || 0, limit })` - `minId` excludes ids `<=` the value, `limit`
+  caps the newest-first result and is always passed explicitly (gramjs's
+  `getMessages` changes its default when `limit` is the only key). Filter
+  `!m.out`, map to `Msg`, sort ascending by `id`.
+- **`byIds(ids)`**: `client.getMessages(peer, { ids })`; the result has
+  `undefined` in the place of a deleted message - filter those, map, sort.
+- **`press(id, data)`**: `client.invoke(new Api.messages.GetBotCallbackAnswer({
+  peer, msgId: id, data }))` -> `Api.messages.BotCallbackAnswer` with
+  optional `message`, `alert`, `url`; return `{ text: r.message || null }`.
+  Let every error propagate: `decide()` in `lib.mjs` owns the table, and
+  `BotResponseTimeoutError` must reach it. `Api` is exported from
+  `teleproto`'s index.
+- **`Msg` mapping**, with the TL shapes:
+  - `media` is `Api.MessageMediaWebPage { webpage }` for a button message;
+    `webpage` is `Api.WebPage { id, url, photo? }` or
+    `Api.WebPagePending { id, url?, date }`. `url = media?.webpage?.url ??
+    null`; `pending = media?.webpage?.className === 'WebPagePending'`.
+  - `photoId = String(media.webpage.photo.id)` when `webpage.photo` exists
+    and is an `Api.Photo` (its `id` is a `BigInteger` - stringify, never
+    compare as a number); else `null`.
+  - `replyMarkup` is `Api.ReplyInlineMarkup { rows: KeyboardInlineButtonRow[]
+    }`; each row's `buttons[]` is `Api.KeyboardInlineButton { text, type }`;
+    keep those whose `type.className === 'InlineButtonTypeCallback'` as
+    `{ text, data: type.data }` (`data` is a Buffer; pass it back to `press`
+    untouched). Every other button type is dropped. No `replyMarkup` ->
+    `buttons: []`.
+  - `text = m.message || ''`.
+- **`matchButtons(messages, urls)`** (pure, `lib.mjs`): a message qualifies
+  when `url !== null` and `buttons.some(b => b.text === UPDATE_BUTTON)`;
+  index qualifying messages by `url`, newest id winning; for each wanted
+  URL look up exact, then with one trailing `/` stripped from both sides;
+  return `{ matched: { [url]: { id, data, photoId } }, unmatched: [url],
+  summary: [text] }` where `summary` holds the texts of non-qualifying
+  messages that have text and no webpage (logged verbatim, never parsed).
+
+## 6. `previews.yml`
+
+**Revised (pass 6).** The design is section 3.5; this is the shape B6 writes,
+with the parts that do **not** change named first so nobody re-derives them.
+
+Unchanged from R1: `name: previews`; `workflow_run` on `check` completing on
+`main`; the three `workflow_dispatch` inputs `mode` / `dry_run` / `limit`;
+`permissions: contents: write` and nothing else; `concurrency: tg-previews`
+with `cancel-in-progress: false`; `timeout-minutes: 60`; the job-level `env`
+defaults; the checkout of `workflow_run.head_sha || github.sha`; `setup-node`
+on `.nvmrc` with the nested lockfile as cache key; `npm ci` and
+`npm audit --audit-level=high` in `tools/tg-preview`; the state read from
+`origin/main` through a temp file (R1's comment explains why); and the
+"Record what was refreshed" step - fetch, detach onto `origin/main`,
+`--apply`, `git add tools/tg-preview/state.json`, commit `[skip ci]`, push
+with three retries.
+
+What changes, top to bottom:
+
+1. **`on:` gains `schedule: - cron: '23 */4 * * *'`.** Why four-hourly:
+   section 3.5. One entry.
+2. **The job `if:` becomes
+   `github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'`**
+   so `schedule` and `workflow_dispatch` both pass and a failed `check`
+   still skips the job.
+3. **The `Secrets present?` step and every `if: steps.cfg.outputs.skip != 'true'`
+   go.** A missing secret is `run.mjs`'s exit 2, named and never valued, and
+   the job is red (section 3.5's table). The record step's condition becomes
+   `always() && env.DRY_RUN != 'true'`.
+4. **The Refresh step** builds its arguments as a bash array (R1's deferred
+   item 5 - `$LIMIT` was unquoted and `$args` relied on word-splitting),
+   passes `--budget-minutes 40`, wraps `node` in
+   `timeout --kill-after=30s 50m`, captures the exit code under `bash -e`
+   with `code=0; ... || code=$?`, and maps it: `0` passes; `124` and `137`
+   print a `::notice::` and append one line to `$GITHUB_STEP_SUMMARY`, then
+   exit `0`; anything else is re-raised with `exit "$code"`. Full text in
+   section 10c, step 4.
+5. **Two comment blocks** carry the why: one above `schedule` (eventual
+   consistency; idle runs make no Telegram contact; the 60-day rule), one
+   above the `case` (red means the next run cannot fix it; the three nested
+   clocks).
+
+The record step is otherwise byte-identical to R1's. Prettier formats the
+file (`npm run check` parses it), so the implementer runs
+`npx prettier --write .github/workflows/previews.yml` after editing and lets
+it settle the indentation of the new blocks.
+
+**Revised (pass 7)** - three lines move, nothing structural: both
+`git fetch --depth=1 origin main` lines become
+`git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main`
+(3.11, R4), and the Refresh step's `else` message becomes
+`state.json could not be read from origin/main; using the checked-out copy`
+- which is what the branch does now that the file is committed. Triggers,
+`if:`, inputs, permissions, concurrency, the three clocks, the `case` and
+the record step's loop are unchanged.
+
+## 7. Contracts, specs and docs that move
+
+**Revised (pass 4)** for B4. Pass 3's list is done and landed at `2a4b78b`;
+what follows is what B4 moves.
+
+- No public contract changes, still: `CONTRACTS.md`, `docs/fixtures/`,
+  `tests/contracts.js`, `llms.txt`, `robots.txt` untouched.
+- `docs/specs/META.md` section 7 gains **one sentence**, alongside pass 3's:
+  `@WebpageBot` also throttles update attempts per user, independently of
+  Telegram's flood control, and refuses further attempts of either kind -
+  presses and sends - with `"Sorry, too many attempts. Please try again in
+  <N> seconds."` That is a durable fact about the bot, not about this tool,
+  so it belongs in the spec next to the sentence about the button.
+- `docs/tg-preview.md`: "Operations" (the `--press-limit` flag, what
+  `--limit` does and does not bound, `--mode full` is a single deliberate
+  pass and not the way to chunk a reindex, the throttle named in the CI-red
+  paragraph as another green Telegram-side stop), "Rate limiting and
+  resumability" (the third limit and the press budget; phase 1 is cheaper,
+  not free), steps E, F and G per section 9 below, and "Coverage".
+- `docs/specs/COVERAGE.md`: the `tools/tg-preview/lib.test.mjs` paragraph
+  additionally names the throttle rule and the press budget; `client.mjs`
+  and `live.mjs` stay the deliberate gap.
+- `README.md` / `README.ru.md`, `package.json`, `.gitignore`, `CLAUDE.md`,
+  `.github/workflows/previews.yml`: untouched. The default press budget
+  applies in CI too and never binds there - an incremental run after a
+  deploy is a handful of URLs - so no workflow input is added for it.
+
+**Added in pass 5, for B5.** Still no public contract change.
+
+- `docs/tg-preview.md` only: the summary vocabulary (`photo id new / same /
+  none / unseen`), one paragraph saying what a new id does and does not
+  prove, `pressed P` defined as attempts, step G.5's re-pointed guidance and
+  the new optional step G.7. That is the whole doc surface.
+- **`docs/specs/META.md` gains nothing.** The natural sentence -
+  "Telegram mints a new photo id whenever it re-downloads an image" - is an
+  **inference** from 195 accepted presses (section 3.4), not a measurement,
+  and section 12's standing rule is not to write an unmeasured number or
+  mechanism into a spec as if it were known. If G.7 measures it, that
+  sentence becomes a one-line META change in B2 and not before.
+- **`docs/specs/COVERAGE.md` gains nothing.** Its
+  `tools/tg-preview/lib.test.mjs` paragraph names behaviours, not counter
+  names, and B5 adds no new behaviour to the suite's ownership - only a
+  fourth bucket inside a classifier the paragraph already covers. Read it
+  and confirm rather than assuming; if a sentence there names `changed`, it
+  moves with the rest.
+
+**Added in pass 6, for B6.** Still no public contract change: `i/`, `og/`,
+`CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`, `llms.txt`,
+`robots.txt` untouched.
+
+- `.github/workflows/previews.yml`: section 6.
+- `tools/tg-preview/lib.mjs`: the `--mode full` warning moves above the
+  dry-run branch (B4 review nit 3). `run.mjs`: the `--result` write becomes
+  atomic (section 3.5), and a dry run appends its counts line to
+  `$GITHUB_STEP_SUMMARY` - the runbook's step I tells the owner to "read the
+  job summary" of a dry run, and today that summary is empty, so the
+  sentence is false until this lands. `lib.test.mjs`: one assertion for the
+  moved warning, and the existing `l.includes('2')` assertion tightened to
+  the phrase it means (B4 review nit 5, same line).
+- `docs/tg-preview.md`: a one-paragraph status line at the top of "Setup"
+  (A-G are done, the state is committed, H-J are what remains); step H
+  marked done and kept for rotation; step I rewritten as the first-run
+  procedure of section 9; step J reworded (deleting the secrets now makes
+  the job red on purpose; "Disable workflow" is the quiet off switch); the
+  "What CI does after a deploy" section gains the schedule, the three clocks
+  and the red/green rule; the "What turns the CI job red" bullet in
+  Operations gains "a run that hits the 50-minute wall is green" and "a
+  missing secret is red"; the `--dry-run` bullet notes the summary line.
+- **`docs/specs/META.md` gains nothing.** The cadence, the timeout and the
+  exit-code rule are operations, and section 7 already points at the runbook
+  for the tool. **`docs/specs/COVERAGE.md` gains nothing**: the `lib.test.mjs`
+  paragraph already names "the warning when `--mode full` cannot finish";
+  where it is logged is not a coverage fact. `README*`: the table row is
+  already there. `CLAUDE.md`: no new standing rule.
+
+**Added in pass 7, for B7.** Still no public contract change: `i/`, `og/`,
+`CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`, `llms.txt`,
+`robots.txt` untouched.
+
+- `tools/tg-preview/lib.mjs`: five names in `FATAL_ERRORS` and the reason
+  string; `read()`; the five call sites; the connect classification; `close`
+  guarded; `record()` writes `site` into the result. `lib.test.mjs`: the
+  fake grows three opt-in scripts; the `decide` fatal loop gains the five
+  names; seven new `runRefresh` cases; two existing cases extended; the
+  `extractMeta` root test reads `app/index.html`. `client.mjs`: the guard
+  goes. `run.mjs`: `readState` throws on a corrupt file; `--apply` takes
+  `site` from the result; `::error::` on exit 2. `manifest.mjs`: the root's
+  HTML source. `.github/workflows/previews.yml`: section 6's pass-7 lines.
+  `.gitignore`: `tools/tg-preview/state.json.tmp`.
+- `docs/tg-preview.md`: step I.6 (the red list, corrected and mapped to
+  steps), step J (one sentence for a banned account), the Operations
+  "What turns the CI job red" bullet, the "What CI does after a deploy" red
+  paragraph, and the Coverage paragraph's one clause about reads. Nothing
+  in A-G, H, I.1-5 or the Rate-limiting section moves.
+- **`docs/specs/COVERAGE.md` gains nothing**: its `lib.test.mjs` paragraph
+  already names "the flood/fatal error table" and "the two-phase
+  send-and-press loop against a fake client"; new rows in the table and new
+  stops in the loop are inside that ownership. Read it and confirm rather
+  than assume. **`docs/specs/META.md` gains nothing**: section 7 states facts
+  about the bot, and pass 7 learned none - everything here is about our own
+  error handling. `README*`, `CLAUDE.md`: nothing.
+
+## 8. Parity and gates - confirmed, not assumed
+
+**Stands**, re-confirmed for **B7**: it touches `tools/tg-preview/{lib,
+lib.test,run,client,manifest}.mjs`, `.github/workflows/previews.yml`,
+`.gitignore`, `docs/tg-preview.md` and this task directory - nothing under
+`app/**` (it *reads* `app/index.html`; it does not change it), `data.js`,
+`i/`, `og/`, `tests/**`, `dist/`, and nothing a screen draws. Gates:
+`node --test tools/tg-preview/lib.test.mjs`, `node tools/tg-preview/run.mjs
+--dry-run`, the two scratch-file `--state`/`--apply` proofs in section 10d,
+and **one** `npm run check` in one foreground call. **Not** `check:built`,
+**not** parity, **not** `golden` - none of them can see a file this batch
+changes, and that is stated from the file list above, not assumed.
+
+Re-confirmed before it for **B6** on the merged tree, which was a
+new question because the tree now carries issue 47's cut-over: B6's own
+edits touch `.github/workflows/previews.yml`,
+`tools/tg-preview/{lib,lib.test,run}.mjs`, `tools/tg-preview/state.json`
+(staged, not edited), `docs/tg-preview.md`, `package.json` (the merge's one
+resolved line) and this task directory - nothing under `app/src/**`,
+`data.js`, `i/`, `og/`, `tests/parity/**`, `tests/app/**`, and nothing a
+screen draws. The merge brings `main`'s changes to `i/`, `og/`, `data.js`
+and `app/**` in, but those are `main`'s already-gated commits, not this
+batch's edits; `npm run check` on the merged tree (`npm run data` inside it
+regenerates `i/*.html` and `data.json` and must produce no diff) is what
+proves the merge, and `check:built` / parity / golden remain `main`'s CI's
+job on the merge push. Gates for B6: **`npm run check` twice** - once on the
+merged tree before the merge commit, once on the B6 tree before its commit -
+each in one foreground call, plus `node --test tools/tg-preview/lib.test.mjs`
+and `node tools/tg-preview/run.mjs --dry-run`. Not `check:built`, not
+parity.
+
+Re-confirmed for **B5** before it: it touched
+`tools/tg-preview/{lib,lib.test,run}.mjs`, `docs/tg-preview.md` and this task
+directory - nothing under `app/src/**`, `data.js`, `i/`, `og/` or
+`tests/parity/**`, and nothing a screen draws. Gates: `npm run check` in one
+foreground call, plus `node --test tools/tg-preview/lib.test.mjs`. Not
+`check:built`, not parity.
+
+Re-confirmed for B4 before it: it touches `tools/tg-preview/lib.mjs`
+and `lib.test.mjs`, three docs and this task directory - nothing under
+`app/src/**`, `data.js`, `i/`, `og/` or `tests/parity/**`, and nothing a
+screen draws. Gate: `npm run check` only. Not `check:built`, not parity.
+
+Pass 3's wording, for the record: files touched by the next batch:
+`tools/tg-preview/**` (not
+`package*.json`, `manifest.mjs`, `login.mjs`), `docs/tg-preview.md`,
+`docs/specs/META.md`, `docs/specs/COVERAGE.md`, this task directory. None of
+`index.html`, `app.js`, `style.css`, `app/src/**`, `data.js`, `og/`, `i/`,
+`tests/parity/**`. Nothing a screen draws changes. Gate: **`npm run check`
+only**, one foreground call. Not `check:built`, not parity.
+
+## 9. The owner's manual steps, start to finish
+
+**Revised (pass 4)** - steps E, F and G again. A-D, H-J stand (D.3's
+troubleshooting block from R2 stands). The runbook `docs/tg-preview.md`
+carries the same text.
+
+> Superseded (pass 4): pass 3's step F was a residue check on
+> `cc12,cc24,cc38` - **done**, those three are in the state file now. Pass
+> 3's step G told the owner to repeat `--mode full --limit 10`, which is
+> the loop that re-presses the previous chunk every run (`context.md`
+> fact 2). Both are replaced below.
+
+**A-D.** Unchanged; all done by the owner on 2026-09-11 (the session exists
+in the owner's `.env`).
+
+**E. Clear the untrustworthy state, then dry-run (no Telegram involved).**
+
+0. **Retire the 115-entry state file.** Section 3.4, "What the 115 entries
+   are worth", is the reasoning; this is the command. Move it out of the
+   repository rather than deleting it, so its 87 `photo changed` entries
+   survive as evidence for B2:
+   ```text
+   mv tools/tg-preview/state.json ../state-2026-09-12-115.json.bak
+   ```
+   Do not leave the backup inside the working tree - nothing there is
+   gitignored for it, and `git status` noise around this file is exactly
+   how a half-trusted state gets committed by accident.
+1. `node tools/tg-preview/run.mjs --dry-run` - **no `--mode full`.** With no
+   state file, incremental mode already means "everything": expect
+   `1062 urls stale, 1062 ready, up to 107 messages, 1062 presses (press
+   budget 50)` when the site is deployed at the commit you are on;
+   otherwise some are reported not live, which is the check working.
+2. `node tools/tg-preview/run.mjs --dry-run --only w76` - one URL, one
+   message, one press.
+
+**F. The calibration run - one chunk, read carefully.**
+
+1. `node tools/tg-preview/run.mjs --limit 5 --press-limit 50`. At full
+   scale this is 50 URLs: five sends, fifty presses, about two minutes -
+   but **not on the first two or three runs of this restart.** Step E.0
+   retired `state.json`, so every one of the 1062 URLs is stale, and the
+   chat still holds roughly 115 `Update with content` button messages left
+   over from the run that tripped the quota. Phase 1 presses those - in
+   manifest order, no new send needed - until the 50-press budget is
+   spent, so expect `phase 1: pressed 50`, **zero sends**, and
+   `stopped: press budget reached` instead of `refreshed 50, pending
+   1012`. Repeat the same command two or three more times; each run drains
+   more of the leftover ~115 buttons until a run reports `phase 1: pressed
+   0` and `batch 1/5` lines start appearing - that is the first run
+   actually sending this reindex's own links.
+2. What each outcome means, and what to do:
+   - **`phase 1: pressed 50`, zero sends, `stopped: press budget
+     reached`** - normal for the first two-to-three runs of this restart
+     (see above), not a problem to fix. Just repeat the command.
+   - **`stopped: bot throttled: retry in <N>s`** - the quota is *below* 50
+     on this account. Wait the full `N` the bot named, then retry with
+     `--limit 2 --press-limit 20` and report the numbers.
+   - **A run that completes 50 presses cleanly** - 50 is a safe floor. Two
+     or three more clean runs are grounds to try `--limit 10 --press-limit
+     100`; the point of the flag is that the owner tunes it on evidence
+     rather than the plan guessing.
+   - **Mostly `same` while `phase 1: pressed` is still nonzero** -
+     expected, not a reason to distrust the chunk: those are re-presses of
+     the retired state's ~115 leftover URLs, so Telegram's cached photo is
+     often already current. `changed` only becomes the expected signal
+     once a run shows `phase 1: pressed 0` and `batch N/5` lines - i.e. it
+     is actually sending and pressing this reindex's own stale URLs.
+   - **Mostly `same` once `phase 1: pressed 0` and `batch N/5` lines are
+     running** - this is the genuine signal: spot-check by pasting before
+     trusting the chunk, and report it.
+3. In Saved Messages (any account), paste one of the URLs this run
+   confirmed and compare the preview picture with the live `og/` image for
+   that record. Same picture = the press works through the tool.
+4. **Regression check, still owed and still cheap:** find an
+   already-posted message carrying one of those links and confirm its
+   preview changed too. If it did not, stop and report; the runbook's
+   opening claim would no longer hold. (Owner decision 6 says it does; this
+   is the regression check on that, not new evidence-gathering.)
+
+**G. The rest of the reindex - a multi-day, spaced operation.**
+
+1. Repeat step F.1's command - `--limit 5 --press-limit 50`, **incremental
+   mode, which is the default** - until it prints `pending 0`. About 22
+   runs for 1062 URLs. Each run is resumable: it sends only what is not yet
+   confirmed and presses anything already waiting in the chat.
+2. **Space them.** The one measured cooldown was 3213 s (~54 minutes), so
+   treat roughly an hour between chunks as the working assumption until the
+   numbers say otherwise. Nothing in the tool remembers a cooldown across
+   runs (section 13); the spacing is yours to keep.
+3. Stops, and what they mean - **all of them are green and all of them
+   leave the backlog recorded**: `bot throttled: retry in <N>s` (wait `N`,
+   then continue); `press budget reached` (normal end of a chunk);
+   `PeerFloodError` (Telegram, not the bot - stop for the day).
+4. Do **not** use `--mode full` to drive this. It marks every URL stale on
+   every run, so phase 1 re-presses the same recovered buttons each time
+   and the reindex never advances - the tool warns when you try. `--mode
+   full` is one deliberate pass for a state you do not trust, which is what
+   step E.0 has already handled.
+5. **Revised (pass 5).** Read the photo line each time, and read it for
+   what it measures: a **new photo id** proves the press made Telegram
+   store a different image than the button message was showing - i.e. the
+   press did something - **not** that the picture looks different. Telegram
+   re-encodes what it fetches, and a webpage that had no photo yet counts
+   as new as well (section 3.4, "What the photo counter measures"). So
+   `new 10, same 0` on every batch is the expected shape and is not a
+   reason to distrust the run. What *is* worth reporting is the opposite:
+   a chunk reporting mostly `same` now means the presses are probably not
+   landing - or the bot reworded its refusal and the throttle carve-out
+   stopped matching (section 12). Spot-check a few of that chunk's links by
+   pasting, and report it.
+6. When `pending 0`: `git add tools/tg-preview/state.json && git commit -m
+   "chore(tg-preview): record the first full reindex"` and push. From here
+   CI only ever sends and presses what changed, a handful of URLs at a
+   time, well inside any quota.
+7. **Optional, one press, added in pass 5: settle what a new photo id
+   means.** Only worth doing if the counter still bothers you; the reindex
+   does not need it and nothing downstream is blocked on it. Between
+   chunks - **never while a chunk is running**, two writers would fight over
+   `state.json` - pick a record id this reindex already confirmed in the
+   **most recent** batch (so its button message is certainly inside
+   `RECOVER_SCAN`) and whose `og/<id>.jpg` has not changed since, then:
+   ```text
+   node tools/tg-preview/run.mjs --mode full --only <id> --limit 0 --press-limit 1
+   ```
+   `--mode full` is needed because the URL is already in the state and
+   incremental mode would correctly say `nothing to refresh`; `--limit 0`
+   means no send; phase 1 finds the existing button message and presses it.
+   Total cost: **one press, zero sends.** Read the result:
+   - **`photo id new 1`** - a press mints a new id even though the bytes on
+     the site have not changed since the previous press. Then the counter
+     measures "Telegram re-fetched", the resizing hypothesis is confirmed,
+     and no photo-id-based test can ever tell a needed press from a wasted
+     one (section 3.9 stays closed, and B2 may put one sentence in
+     `docs/specs/META.md`).
+   - **`same 1`** - the id moves only when the stored image really differs.
+     Then `new 195 / same 0` across the reindex is literal and true, the
+     original doubt is answered outright, and section 3.9's arithmetic
+     closes with the prize at near zero.
+   Report whichever it is; it is B2's input either way, and it is the only
+   thing in this task that would turn section 3.4's inference into a fact.
+
+**H-J. Revised (pass 6)** - A-G are **done** (the owner, 2026-09-11 to
+2026-09-14; the state file is complete and B6 commits it). What remains is
+the CI side, and its first run is watched, not driven.
+
+> Superseded: pass 1's step I ("Run workflow -> dry run on, read the job
+> summary, then the next push to `main` runs it for real") assumed a
+> controlled first run and an empty summary on a dry run; pass 1's step J
+> said deleting the secrets makes the job exit 0 with a notice. Neither
+> holds after pass 6.
+
+**H. Repository secrets - done.** `TG_API_ID`, `TG_API_HASH`, `TG_SESSION`
+exist as repository secrets (owner, before 2026-09-16). Kept here for
+rotation: the same three names, the same values as `.env`; the job reads
+nothing else.
+
+**I. The first CI run - what happens, and what to do while it happens.**
+
+1. **Merge the branch into `main` and push.** That push is the trigger:
+   `check` runs (~15 minutes with goldens), `deploy` publishes, and
+   `previews` fires on `workflow_run` **by itself**. There is no separate
+   "turn it on"; the merge is the switch.
+2. **While `check` is still running, dispatch a dry run:** Actions ->
+   `previews` -> Run workflow -> `mode: incremental`, `dry_run: on`,
+   `limit` empty. It starts immediately (a dispatch does not wait for
+   `check`), makes no Telegram contact, and its job summary carries one
+   line: `dry run: N url(s) stale ...`. Expect `N` on the order of 125-135:
+   the 94 frame stubs and the root whose `og:description` changed on `main`
+   after the local reindex, plus the 30 records added since. That number is
+   the backlog CI is about to work through; it is not a sign the state was
+   lost (a lost state reads `1092 urls stale`).
+3. **Read the automatic run's summary** when it finishes: expect
+   `refreshed 50, pending ~80, stopped: press budget reached` and a second
+   line `pressed 50 (photo id new ..., same ..., none ..., unseen ...)`,
+   a `::warning::` about the pending count, and within a minute a commit
+   `chore(tg-preview): record refreshed previews [skip ci]` on `main` by
+   `github-actions[bot]`. If phase 1 pressed anything (`phase 1: pressed N`
+   in the step log with `N > 0`), the run found the local reindex's old
+   button messages for now-stale URLs and pressed them without a send -
+   that is the design working, and it is also the moment to do step 5.
+4. **Then leave it alone.** The schedule (every four hours at :23) runs the
+   next chunk until a run reports `pending 0`; after that every scheduled
+   run is `nothing to refresh` and costs a minute of runner time. Nothing
+   needs a push to keep going.
+5. **Spot-check - and this time the text tells you.** Paste
+   `https://artex-x.github.io/daggerheart-loot/i/f1.html` (or any `f<n>`
+   the summary confirmed) into Saved Messages: the description should start
+   with `Прочее · Сеттинги · Пир зверей.` - the change `main` made. Old text
+   with the URL recorded as refreshed would mean a press-only recovery does
+   **not** refresh metadata (the phase-1 assumption in section 3.4); report
+   it, and the fallback is `RECOVER_SCAN = 0`. This is a cheaper, less
+   ambiguous check than comparing pictures, because the change this time is
+   in the words.
+6. **What a red run means from now on - and only these:** a missing or dead
+   credential (`missing required env var: TG_SESSION`, or `decide()`'s
+   fatal row - redo step D.3 and update the secret), a crash (`tg-preview
+   run failed: ...` in the log - report it), a failed `npm audit`, or a
+   state push refused three times (branch protection). A run that hit the
+   50-minute wall is **green** with `timed out after 50 minutes; pending
+   urls are picked up by the next run` in its summary, and so is every
+   Telegram-side stop. If a red run's cause is not on this list, that is
+   itself worth reporting.
+
+**J. Rotation and shutdown.** To rotate: Telegram -> Settings -> Devices ->
+terminate the tool's session; redo D.3; update the `TG_SESSION` secret and
+the `.env` line. To **pause** the automation quietly: Actions -> `previews`
+-> "..." -> Disable workflow (re-enable the same way; nothing else to undo).
+To **stop it loudly**: delete the `TG_SESSION` secret - every run is then
+red with the variable named, on purpose, so a forgotten stop cannot pass for
+a healthy one. Deleting the state file is neither: it makes the next run
+treat all 1092 URLs as stale and start the whole reindex over, 50 presses
+per run.
+
+Two things GitHub does on its own, so a silent stop has a known cause:
+scheduled workflows are **disabled after 60 days without a push** to the
+repository (any push re-enables them), and a scheduled run can be delayed
+by minutes at busy times.
+
+**Revised (pass 7) - I.6 and J only; I.1-5 and H stand as written.** The
+red list in I.6 named "a revoked session" under exit 2 while the code exited
+1 on it, and named no account-level condition at all. After B7 it reads:
+
+> 6. **What a red run means from now on - and only these.** Read the last
+>    `stopped:` line of the step log (it is also the `::error::` annotation
+>    on the run page) and act on the name:
+>    - `missing required env var: TG_SESSION` (or `TG_API_ID`,
+>      `TG_API_HASH`) - exit 2: the secret is gone or renamed; step H.
+>    - `AuthKeyUnregisteredError`, `SessionRevokedError`,
+>      `SessionExpiredError`, `AuthKeyInvalidError`,
+>      `AuthKeyDuplicatedError`, `SessionPasswordNeededError` - exit 2: the
+>      **session** is dead (terminated, expired, or used from two places at
+>      once); redo step D.3 and update the `TG_SESSION` secret.
+>    - `UserDeactivatedError`, `UserDeactivatedBanError`,
+>      `PhoneNumberBannedError` - exit 2: the **account** is gone; a new
+>      throwaway, steps A-D, then H.
+>    - `YouBlockedUserError` - exit 2: the throwaway has blocked
+>      `@WebpageBot`; unblock it in the app and re-run.
+>    - `tg-preview run failed: state file is not valid JSON: ...` - exit 1:
+>      `tools/tg-preview/state.json` on `main` is corrupt; `git revert` the
+>      commit that broke it (the record step did **not** commit on top of
+>      it).
+>    - any other `tg-preview run failed: ...` - exit 1: a crash, including a
+>      connection that could not be made at all; one such run is noise, the
+>      same message on consecutive runs is a report.
+>    - a failed `npm audit --audit-level=high` - a new advisory in
+>      `tools/tg-preview`'s dependency tree; bump and re-run. Red on purpose:
+>      the process holds a full account session.
+>    - a state push refused three times - branch protection or a token
+>      problem; every run's presses are recoverable only through phase 1
+>      until it is fixed.
+>
+>    A run that hit the 50-minute wall is **green** with `timed out after 50
+>    minutes; pending urls are picked up by the next run` in its summary; so
+>    is every Telegram-side stop, and - from B7 on - so is a Telegram read
+>    that failed after its retries (`stopped: recovery scan: ...`, `button
+>    poll: ...`, `refetch: ...` in the log). A red run whose cause is not on
+>    this list is itself worth reporting.
+
+Step J gains one sentence after the rotation instructions: "If the red run
+names the **account** rather than the session (`UserDeactivated`,
+`PhoneNumberBanned`), rotation does not help - it is steps A-D again with a
+new number." Nothing else in J moves.
+
+## 10. Batches
+
+### B1 - the refresh tool, its workflow and its runbook
+
+**Status: implemented, committed (`cce10cb`), reviewed and approved.** Full
+implement-ready text at `0ab04eb`, section 10. Its send loop is what B3
+replaces; everything else it built stands.
+
+### R1 - review remediation, blockers only
+
+**Status: done (`5a959ca`).** Four workflow/.gitignore fixes; see
+`handoff.md`.
+
+### R2 - login.mjs diagnostics
+
+**Status: done (`a4c9066`).** See `handoff.md`.
+
+### O1 (first attempt) - the owner's operations
+
+**Status: partially done, and the reason for this revision.** Steps A-D
+complete; the first real send (`cc19`) proved the plain send does not
+refresh the image; the owner pressed the button by hand and probed a
+three-link message. Residue: `cc12`, `cc24`, `cc38` sent, not pressed.
+`state.json` holds `cc19` only, honestly. O1 resumes at step E after B3.
+
+### B3 - the two-phase refresh: press "Update with content", record only confirmed presses (one batch, one commit)
+
+**Status: implemented, committed.** `lib.mjs`'s `runRefresh` is now the
+two-phase loop (recovery then send-and-press); `client.mjs` is the
+five-method port with the `Msg` mapper; `live.mjs`'s cached-rejection fix,
+`decide()`'s `BotResponseTimeoutError` row, `parseArgs`'s numeric guards, and
+`matchButtons` all landed as specified. 68 `lib.test.mjs` cases pass (up from
+23), all three doc/spec files corrected. Full record in `handoff.md`.
+Next, as of pass 4: **B4** (section 10a), then O2.
+
+**Objective.** Replace B1's send-and-trust loop with the send-and-press loop
+of sections 3.4, 4 and 5, so that `state.json` records a URL only when its
+"Update with content" press was confirmed; correct every document that says
+a send refreshes the preview; fold in the four reviewer items that live on
+the same paths.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `lib.test.mjs`, `client.mjs`,
+`run.mjs`, `live.mjs` (item 2 only); `docs/tg-preview.md`;
+`docs/specs/META.md` section 7 (one sentence); `docs/specs/COVERAGE.md`
+(one paragraph); `issues/tg-preview-refresh/{context,plan,handoff}.md`
+(stage the orchestrator's unstaged `context.md` - it is the evidence this
+batch acts on).
+
+**Out of scope.** `.github/workflows/previews.yml`, `ci.yml`,
+`tools/tg-preview/package.json` and lockfile (no new dependency),
+`manifest.mjs`, `login.mjs`, `README*.md`, `package.json`, any public
+contract, `CLAUDE.md`. `tools/tg-preview/state.json` is the owner's
+untracked file: **do not commit it, do not delete it, do not edit it.** Any
+Telegram contact of any kind: the owner's live session is in `.env`; the
+implementer never runs `run.mjs` without `--dry-run`.
+
+**Behaviour constraints (settled; do not reopen).** Sections 3.4, 4, 5.1,
+5.2, 5.4, 5.5 as written. `PER_MESSAGE` stays 10. The state schema stays
+`version: 1`. The five-method port and the `Msg` shape are fixed. The
+confirmation rule is fixed. Phase 1 runs before phase 2 and is not limited
+by `--limit`.
+
+**Steps.**
+
+1. `lib.mjs` - constants: add `PRESS_PACE_MS = [1000, 2000]`,
+   `BUTTON_WAIT_ROUNDS = 6`, `BUTTON_WAIT_MS = 5000`, `BUTTON_FETCH = 50`,
+   `RECOVER_SCAN = 200`, `UPDATE_BUTTON = 'Update with content'`, each with
+   a one-line why-comment from the table in 3.4. Keep every existing
+   constant and its value.
+2. `lib.mjs` - `decide()`: add the `BotResponseTimeoutError` row before the
+   generic `errorMessage` branch: match `name === 'BotResponseTimeoutError'
+   || err.errorMessage === 'BOT_RESPONSE_TIMEOUT'` -> `{ unanswered: true }`.
+3. `lib.mjs` - `parseArgs()`: after `Number(value)` for `limit`, `maxWaitS`,
+   `budgetMinutes`, throw `<flag> must be a number, got <value>` unless
+   `Number.isFinite(n) && n >= 0`. Keep `--limit 0` legal.
+4. `lib.mjs` - export `matchButtons(messages, urls)` per 5.5. Pure; takes
+   `Msg[]` and `string[]`; returns `{ matched, unmatched, summary }`.
+5. `lib.mjs` - `runRefresh(opts, deps)`: rewrite the send loop as steps
+   10-13 of section 5.2. Structure it as three inner helpers so a reader can
+   hold each in one screen: `pressOne(url, entry)` (deadline check, one
+   press with `decide()` retries, pace, returns `{ answered, text } |
+   { unanswered } | { stopped, reason, exitCode }`), `pressGroup(matched)`
+   (presses in manifest order, then one `byIds`, classifies the photo delta,
+   returns `{ confirmed: [url], photo: { changed, same, none }, stopped }`),
+   and `record(confirmedUrls)` (the carry-forward write of state and
+   `--result`, unchanged in spirit from B1). The deadline is checked inside
+   `pressOne` and before each send attempt; a `retry` whose `waitMs` would
+   end past the deadline becomes `stopped: 'flood wait of Ns would exceed
+   the budget'`. Return `{ sent, pressed, confirmed, pending, notLive,
+   unmatched, photo, floodWaits, stopped, exitCode }` where `pending = todo
+   - confirmed` (so the summary's numbers still add up to the stale count).
+   The dry-run branch prints the new counts line from 5.2 step 7 and still
+   returns before `client()` is called.
+6. `client.mjs` - replace `lastReply` with `incoming`, add `byIds` and
+   `press`, make `send` return `{ id }`; add `Api` to the lazy `import`;
+   add the `Msg` mapper as a module-private `plain(m)` exactly per 5.5.
+   Keep the header comment's promise: nothing prints `apiId`, `apiHash`,
+   `session`; the logger stays at error level. Add one comment line saying
+   why `invoke(GetBotCallbackAnswer)` is used instead of `Message.click()`.
+7. `run.mjs` - summary block per 5.2 step 13; `result.confirmed` feeds
+   `refreshed N`; append the `pressed P (photo changed C, same S, none Z)`
+   line to stdout and `$GITHUB_STEP_SUMMARY`; keep the `::warning::` on
+   pending. No other wiring changes (the deps object is unchanged - the
+   client factory already returns whatever `createClient` returns).
+8. `live.mjs` - in `imageSha(name)`, attach `.catch` that deletes the cache
+   entry and rethrows, so a failed image fetch is retried on the next round.
+   One why-comment.
+9. `lib.test.mjs` - the fake client gains scripted `send` (returns
+   incrementing ids), `incoming` (a queue of canned `Msg[]` answers, one per
+   call, so a test can make button messages arrive on the second wait
+   round), `byIds` (returns from a mutable `photoAfter` map so a test can
+   flip a photo id after a press) and `press` (a script of `{ ok, text } |
+   { throw }` per call). Add small builders `buttonMsg(id, url, photoId)`
+   and `summaryMsg(id)`. Add every test named in section 3.7; keep every
+   existing test, adapting the B1 loop tests to the new result shape
+   (`confirmed` where they asserted `sent`). Fake presses must count
+   against the same `sleep` recorder so the pace is observable.
+10. `docs/specs/META.md` section 7: the one sentence from section 7 of this
+    plan. `docs/specs/COVERAGE.md`: extend the `tools/tg-preview/lib.test.mjs`
+    paragraph with "button matching and the two-phase send-and-press loop".
+11. `docs/tg-preview.md` - correct, in place, in this order: (a) paragraph 1,
+    "the only way to change it is to ask `@WebpageBot` to refresh the URL"
+    -> send the URL **and press its "Update with content" button**, with
+    the measured reason (a plain send updates title and description and
+    keeps the cached picture when `og:image` still points at the same
+    address - this site's exact case); (b) paragraph 2, define "a refresh"
+    as send + press; (c) paragraph 3, the tool description: "sends only
+    what changed" -> sends, waits for the bot's one-message-per-link
+    replies, presses each, and records a URL only after the press is
+    acknowledged; (d) step E counts line; (e) step F replaced by section
+    9's F; (f) step G replaced by section 9's G; (g) "Operations": the
+    summary vocabulary (`refreshed` = confirmed presses; `pressed`/`photo`
+    line; `pending` now also covers "no button message" and "unconfirmed
+    press"; `--limit` counts sends and does not cap phase 1; `--limit 0`
+    is the press-only run), and fix the sentence about what turns the CI
+    job red so it matches `previews.yml`'s actual `if:` conditions
+    (reviewer's item 9: the job is red on exit 1/2 from `Refresh` or on a
+    failed `npm audit`/state push; a Telegram-side stop is green); (h)
+    "Rate limiting and resumability": the two axes, the constants, the
+    deadline rule, phase 1 as the free retry, the ~40-minute figure; (i)
+    "Coverage": name `matchButtons` and the loop; (j) grep the file for
+    "reply" and "refresh" afterwards and make sure no remaining sentence
+    implies a send is enough.
+12. `node --test tools/tg-preview/lib.test.mjs`; then
+    `node tools/tg-preview/run.mjs --dry-run --mode full` and `--dry-run
+    --only cc12,cc24,cc38` (needs no credential; must print the new counts
+    line and load no client); then `set -o pipefail; npm run check 2>&1 |
+    tail -n 120` with Bash timeout 600000. Stage by name: the five
+    `tools/tg-preview/*.mjs`, the three docs, the three task files. Commit
+    `fix(tg-preview): press "Update with content" and record only confirmed
+    presses`.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs` passes without
+  `tools/tg-preview/node_modules` present.
+- `node tools/tg-preview/run.mjs --dry-run --mode full` prints `1062 urls
+  stale, ... up to 107 messages, ... presses`, sends nothing, writes nothing,
+  exits 0, without the three env vars. (The `ready` count depends on the
+  live site; record it, do not fix it.)
+- `node tools/tg-preview/run.mjs --limit ten --dry-run` exits non-zero with
+  `--limit must be a number, got ten`.
+- A `runRefresh` test proves a URL whose button message never arrives is
+  absent from every `writeState` call; another proves an unanswered press
+  with an unchanged photo is absent and with a changed photo is present.
+- `grep -n "lastReply" tools/tg-preview/*.mjs` finds nothing;
+  `grep -n "sinceMs" tools/tg-preview/*.mjs` finds nothing.
+- `grep -in "send.*refresh\|refresh.*send" docs/tg-preview.md` shows no
+  sentence claiming a send refreshes the preview (the implementer reads
+  each hit).
+- `git status` after the batch shows no change to `previews.yml`,
+  `package*.json`, `i/`, `og/`, `data.js`; `state.json` remains untracked.
+- `npm run check` green in one foreground call.
+
+**Verification commands.**
+
+```text
+node --test tools/tg-preview/lib.test.mjs
+node tools/tg-preview/run.mjs --dry-run --mode full
+node tools/tg-preview/run.mjs --dry-run --only cc12,cc24,cc38
+node tools/tg-preview/run.mjs --limit ten --dry-run        # expect a thrown parse error, non-zero exit
+set -o pipefail; npm run check 2>&1 | tail -n 120          # Bash timeout 600000
+```
+
+**Risks / do-nots.**
+
+- Never run `run.mjs` without `--dry-run`. The owner's session is live in
+  `.env`; every send and press costs a young account's flood budget. No
+  agent presses anything.
+- Do not "improve" `matchButtons` with fuzzy URL matching beyond the
+  trailing-slash rule; do not match by order or by count.
+- Do not treat an unchanged photo id as failure in the answered case, and
+  do not treat it as success in the unanswered case.
+- Do not touch `previews.yml`; it is correct as is and R1 was reviewed.
+- Do not add a dependency; teleproto already exports `Api`.
+- Do not `git add -A`; stage by path.
+- The `Msg` shape and the TL field names in 5.5 were verified against the
+  installed package; if the implementer finds a mismatch at runtime of the
+  tests (they cannot at runtime of the client - no agent runs it), record
+  it in the handoff rather than guessing a new name.
+
+**Fallback.** None needed for the design. If the implementer cannot make
+`getMessages(peer, { ids })` return holes as `undefined` in a way the mapper
+tolerates, filter with `Array.isArray(list) ? list.filter(Boolean) : []` -
+that is the documented behaviour, not a workaround.
+
+### O1 (resumed) - the owner's operations, from step E
+
+**Status: attempted 2026-09-12, stopped by the bot's attempt quota, and
+this is the reason for pass 4.** What it produced: the residue
+(`cc12`/`cc24`/`cc38`) pressed, 115 entries in `state.json` of which 87
+carry photo evidence and 28 do not, and the first measurement of the press
+axis. What it did not produce: a completed reindex, or a state file whose
+entries all mean the same thing. Superseded by O2.
+
+### B4 - make the reindex completable against the bot's attempt quota (one batch, one commit)
+
+**Status: implemented 2026-09-12.** Full text in section 10a below. Shipped
+exactly as specified: `PRESS_LIMIT = 50`, `botThrottle()`, `--press-limit`,
+the run-scoped press budget spanning both phases, the pre-send and
+button-wait-round throttle checks, the `--mode full` warning, and the docs
+and specs it names. `npm run check` green. See `handoff.md` for the commit
+and exact commands.
+
+### O2 - the owner's operations, restarted from step E.0
+
+**Status: done, 2026-09-14** (pass 6). `tools/tg-preview/state.json` is
+complete - `version 1`, 1062 URLs, `updatedAt 2026-09-14T20:04:16.406Z`,
+`nothing to refresh` on the tree it was written against - and still
+untracked; B6 commits it. The per-chunk numbers the orchestrator was to
+collect for B2 (`pressed P`, any throttle `N`, F.4's regression result,
+G.7's one-press answer) were not captured in this task directory; B2 stays
+an outline until someone supplies them, and nothing in B6 needs them.
+
+Pass-5 wording, for the record: in flight as of 2026-09-13 at 195 of 1062,
+every batch reporting `pressed 10, confirmed 10`; B5 changed log wording
+only and invalidated none of them.
+
+Not a code batch and no agent can perform it. Section 9 as revised in pass
+4: E.0 (retire the 115-entry state) -> E (dry runs) -> F (the calibration
+chunk, read carefully) -> G (~22 spaced chunks) -> H-J. Needs B4 present in
+the tree the owner runs from. The orchestrator collects, because they are
+B2's only input: F.1's counts, whether 50 presses complete cleanly, the
+`N` of any throttle stop, F.4's already-posted regression result, and the
+per-chunk `photo changed`/`same` ratio.
+
+### B5 - say what the photo counter actually measures (one batch, one commit)
+
+**Status: shipped (`9694782`)**, docs at `df76f13` and `4a042c7`. Full text
+in section 10b below; record in `handoff.md`.
+
+### B6 - onto `main`, and the fail-safe CI job (one batch, four commits)
+
+**Status: shipped 2026-09-16 and reviewed approve** - `97e0209` (docs),
+`3f6231c` (merge, `origin/main` at `1106355`), `54b84b3` (the state file,
+hash `7c6e37eb...`), `f5e5d69` (the workflow, the two fixes, the runbook),
+recorded at `72d8de0`. Both checks green; the post-merge backlog measured at
+`125 urls stale` of 1092. Full text in section 10c; the record in
+`handoff.md`. The review's five risks and six nits are the reason for pass 7
+and B7.
+
+### B7 - make the exit codes true in both directions (one batch, one commit)
+
+**Status: implement-ready.** Full text in section 10d below. Closes the B6
+review's R1-R5 and the nits on the same files: Telegram reads become green
+stops through `attempt()`; five account-level error classes become exit 2
+and the revoked-session case stops exiting 1; a corrupt `state.json` is a
+stop, not an empty state; the record step's fetch names its refspec; the
+root URL is fingerprinted from `app/index.html`. Design: sections 3.4
+(pass-7 rows), 3.5 (pass-7 table), 3.11, 5.2 (pass-7 note), 6 (pass-7), 7,
+8, 9 (I.6, J). **Lands before O3** - 3.11 says why.
+
+### O3 - the owner merges, and watches the first run
+
+Not a code batch, and **after B7**. Section 9, steps I and J, in that order: merge the branch
+into `main` and push; dispatch a dry run while `check` is still running and
+read the stale count; read the automatic run's summary and the
+`[skip ci]` state commit; leave the schedule to drain the backlog; paste
+one `f<n>` link and read its description. Report back: the dry-run count,
+the first run's two summary lines, `phase 1: pressed N` from its log, and
+whether the pasted description carries the new prefix. Those numbers, plus
+any red run and its cause, are B2's input.
+
+### B2 - tuning from the first real run (outline; may be empty)
+
+After O2: fold in what Telegram and the bot actually did on all three
+limits - whether ten links per message are honoured, the real `FLOOD_WAIT` /
+`PEER_FLOOD` behaviour of presses versus sends, how often presses go
+unanswered, the `same`/`changed` ratio, **what the bot's attempt quota and
+its window really are** (so `PRESS_LIMIT`'s default can stop being a
+deliberate under-estimate), and the remaining deferred items in section 13
+that O2's evidence makes worth doing. Gate: `npm run check`. If nothing
+needs changing, close the task without it.
+
+## 10a. B4 - the implement-ready batch
+
+**Objective.** Make a chunked reindex completable against `@WebpageBot`'s
+attempt quota: bound what one run presses, recognise the bot's refusal
+instead of recording it as success, and correct the runbook loop that
+re-presses the previous chunk. Behaviour constraints are sections 2
+(carve-out), 3.4 (all of it), 5.1 and 5.2 as revised in pass 4; do not
+reopen them.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`;
+`docs/tg-preview.md`; `docs/specs/META.md` section 7 (one sentence);
+`docs/specs/COVERAGE.md` (one paragraph);
+`issues/tg-preview-refresh/{context,plan,handoff}.md` (stage the
+orchestrator's already-modified `context.md` as-is - it is the evidence this
+batch acts on, and this batch changes nothing in it).
+
+**Out of scope.** `tools/tg-preview/run.mjs`, `client.mjs`, `live.mjs`,
+`manifest.mjs`, `login.mjs`, `package*.json` (no new dependency - the
+throttle match is a regex);`.github/workflows/previews.yml` and `ci.yml`;
+`README*.md`; `.gitignore`; `CLAUDE.md`; every public contract. Nothing
+under `app/src/**`, `data.js`, `i/`, `og/`, `tests/parity/**`.
+`tools/tg-preview/state.json` is the owner's untracked file: **do not read
+it, do not commit it, do not delete it, do not edit it.** Retiring it is
+step E.0, the owner's own action. **No Telegram contact of any kind:** the
+owner's live session is in `.env`; every `run.mjs` invocation uses
+`--dry-run`.
+
+**Steps.**
+
+1. `lib.mjs` - constants: `export const PRESS_LIMIT = 50;` with a
+   why-comment carrying the one data point (115 presses tripped the quota;
+   the cost of over-shooting is a ~54-minute lockout plus the sends already
+   spent, so the default under-shoots on purpose and `--press-limit`
+   raises it on evidence). Keep every existing constant and value.
+2. `lib.mjs` - `export function botThrottle(text)`: returns `null` when
+   `text` is falsy or does not match `/too many attempts/i`; otherwise
+   `{ seconds }`, where `seconds` is the first integer followed by
+   `second`/`seconds` in the text, or `null` when there is none. Pure, no
+   other matching, one comment pointing at section 2's carve-out and its
+   asymmetry rule.
+3. `lib.mjs` - `parseArgs()`: add `'--press-limit': 'pressLimit'` to
+   `FLAGS`, default `opts.pressLimit = PRESS_LIMIT`, and include
+   `pressLimit` in the existing numeric-guard branch alongside `limit`,
+   `maxWaitS` and `budgetMinutes` (so `--press-limit ten` throws
+   `--press-limit must be a number, got ten` and `--press-limit 0` is
+   legal).
+4. `lib.mjs` - `runRefresh`: one run-scoped counter of presses attempted,
+   seeded from `opts.pressLimit`.
+   - `pressOne` refuses to press when the budget is exhausted and returns
+     `{ stopped: 'press budget reached' }`; a press that is attempted
+     decrements it whether or not it succeeded (a refused attempt still
+     counts against the bot's quota).
+   - `pressOne` inspects the answer: `botThrottle(text)` non-null means the
+     press was **refused** - return `{ stopped: 'bot throttled: retry in
+     <N>s' }` (or `'bot throttled'` when `seconds` is null) and do **not**
+     report it as answered. `pressGroup` must not push a refused press onto
+     `pressedList`, so it reaches neither `confirmed` nor the photo
+     telemetry.
+   - Phase 2, before each send: stop with `press budget too low for another
+     batch` when fewer than `PER_MESSAGE` presses remain. Stop, never trim
+     the batch.
+   - Phase 2, each button-wait round: if any `m.summary` entry is a
+     throttle, log it, stop the run with the same reason, and press nothing
+     from that batch - do not exhaust the remaining `BUTTON_WAIT_ROUNDS`.
+   - New step 10a after `client()` and before phase 1: when `mode ===
+     'full'` and `opts.pressLimit < todo.length`, log one warning naming
+     `--mode full`, the budget, and `docs/tg-preview.md` step G.
+   - Dry-run counts line gains ` (press budget <N>)`.
+   - Every new stop is green: `exitCode` stays 0.
+5. `lib.test.mjs` - every case named in section 3.7's pass-4 list, plus keep
+   all 68 existing cases passing (the fake client already scripts `press`
+   answers by text, so a throttle case is `{ text: 'Sorry, too many
+   attempts. Please try again in 3213 seconds.' }`). The "no send is
+   attempted" assertions read the fake client's `sent` array.
+6. `docs/specs/META.md` section 7: the one sentence from section 7 of this
+   plan, after the existing "Update with content" sentence.
+   `docs/specs/COVERAGE.md`: extend the `tools/tg-preview/lib.test.mjs`
+   paragraph with the throttle rule and the press budget.
+7. `docs/tg-preview.md` - in place, in this order: (a) "Operations" gains
+   `--press-limit` next to `--limit`, says plainly that `--limit` counts
+   sends and `--press-limit` counts presses across both phases, and that a
+   batch is not sent when its presses are unaffordable; (b) the
+   `--mode full` bullet in "Operations" says it is a single deliberate pass
+   and **not** how to chunk a reindex, and that the tool warns; (c) the
+   CI-red bullet names the bot throttle as another green Telegram-side stop
+   (the red list itself does not change); (d) "Rate limiting and
+   resumability" gains the third limit - the bot's own attempt quota, the
+   measured 115/3213 s data point, the press budget and why the throttle
+   stops rather than waits - and corrects "free retry" to "cheaper retry"
+   in the phase-1 paragraph; (e) steps E, F and G replaced by section 9's;
+   (f) "Coverage" names `botThrottle` and the press budget; (g) afterwards
+   `grep -in "free\|--limit\|mode full" docs/tg-preview.md` and read every
+   hit - no sentence may still imply presses are free or that `--mode full`
+   is the chunking mode.
+8. `node --test tools/tg-preview/lib.test.mjs`; then
+   `node tools/tg-preview/run.mjs --dry-run` and
+   `node tools/tg-preview/run.mjs --dry-run --press-limit ten`; then
+   `set -o pipefail; npm run check 2>&1 | tail -n 120` with Bash timeout
+   600000. Stage by name: `tools/tg-preview/lib.mjs`,
+   `tools/tg-preview/lib.test.mjs`, the three docs, the three task files.
+   Never `git add -A`. Commit `fix(tg-preview): bound presses per run and
+   stop on @WebpageBot's attempt throttle`.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs` passes without
+  `tools/tg-preview/node_modules` present.
+- `node tools/tg-preview/run.mjs --dry-run` prints the counts line ending
+  `(press budget 50)`, sends nothing, writes nothing, exits 0, without the
+  three env vars.
+- `node tools/tg-preview/run.mjs --dry-run --press-limit ten` exits non-zero
+  with `--press-limit must be a number, got ten`.
+- A `runRefresh` test proves a press answered with the throttle sentence is
+  in **no** `writeState` call and that the run's `exitCode` is 0.
+- A `runRefresh` test proves that with a press budget below `PER_MESSAGE`,
+  the fake client's `sent` array is empty.
+- A `runRefresh` test proves phase 1 and phase 2 draw on one budget.
+- `git status` after the batch shows no change to `previews.yml`,
+  `package*.json`, `run.mjs`, `client.mjs`, `i/`, `og/`, `data.js`;
+  `tools/tg-preview/state.json` still untracked and unmodified.
+- `npm run check` green in one foreground call.
+
+**Gates.** `npm run check` only, one foreground call,
+`set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000.
+**Not** `check:built` and **not** parity: nothing under `app/src/**`,
+`data.js`, `i/`, `og/` or `tests/parity/**` is touched and nothing a screen
+draws changes (section 8).
+
+**Risks / do-nots.**
+
+- Never run `run.mjs` without `--dry-run`. Every press spends the quota the
+  owner needs, and the quota is the whole subject of this batch.
+- Do not widen the text match beyond `too many attempts` + the seconds
+  figure, and do not let any text **grant** confirmation. Section 2's
+  carve-out is safe only because it is one-directional.
+- Do not demand a changed photo before recording an answered press
+  (section 3.4) - that is the trap pass 3 already documented.
+- Do not change `stale()`, and do not touch `previews.yml` or `client.mjs`.
+- Do not read, edit, commit or delete `tools/tg-preview/state.json`.
+- Do not trim a batch to fit the remaining press budget; stop instead.
+
+## 10b. B5 - the implement-ready batch
+
+**Objective.** Make the run's telemetry say what it measures, so a correct
+run stops reading like a broken one. The counter is a photo-**id** delta;
+it is renamed to that, it gains a bucket for the case it currently mislabels,
+and `pressed P` becomes attempts. **No behaviour changes**: the confirmation
+rule, the press budget, the throttle rule, the state schema and every exit
+code are untouched. Behaviour constraints are sections 3.4 (all of it, as
+revised in pass 5) and 3.9; do not reopen them, and do not add a pre-press
+test - section 3.9 is the decision, with the alternatives already named.
+
+**Concurrency with O2 (read before starting).** The owner's reindex is in
+flight in this same worktree and writes `tools/tg-preview/state.json` as it
+goes. Therefore:
+
+- **Do not read, edit, stage, commit or delete `tools/tg-preview/state.json`.**
+  It will very likely exist and be untracked; leave it exactly so. Stage by
+  path, never `git add -A`.
+- Ask before running the gates if a chunk may be in flight: `npm run check`
+  regenerates `i/*.html` and `data.json` through `npm run data`, and a
+  commit needs a clean, uncontended index. The regenerated bytes are
+  identical, so a concurrent run is not corrupted by it - the contention is
+  over git, not over content.
+- **Never run `run.mjs` without `--dry-run`.** Unchanged and unconditional.
+  `.env` holds the owner's live session; do not read, print or copy it.
+- Nothing in this batch invalidates a recorded URL. The owner may pick the
+  new code up at any chunk boundary, or not at all.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
+`tools/tg-preview/run.mjs`, `docs/tg-preview.md`,
+`issues/tg-preview-refresh/{context,plan,handoff}.md` (stage `context.md` as
+the orchestrator/planner left it).
+
+**Out of scope.** `tools/tg-preview/client.mjs` - deliberately: reading
+`webpage.title`, `description` or `photo.date` is free, and nothing uses
+them, so adding them now would be surface ahead of need (`CLAUDE.md`);
+section 3.9 records why nothing will. Also `manifest.mjs`, `live.mjs`,
+`login.mjs`, `package*.json`, `.github/workflows/**`, `docs/specs/META.md`
+and `docs/specs/COVERAGE.md` (section 7 says why neither moves), `README*`,
+`CLAUDE.md`, every public contract, and anything under `app/src/**`,
+`data.js`, `i/`, `og/`, `tests/parity/**`.
+
+**Steps.**
+
+1. `lib.mjs`, `pressGroup` - the classifier. Replace the three-way delta
+   with four buckets and rename the keys to what they measure:
+   ```text
+   after === undefined -> 'unseen'   the message was pressed but byIds did not return it
+   after == null       -> 'none'     the webpage has no photo (pending or imageless)
+   after !== photoBefore -> 'newId'  Telegram is holding a different photo id than before the press
+   otherwise           -> 'sameId'
+   ```
+   Confirmation is **unchanged in effect**: `if (p.answered || delta ===
+   'newId')`. `unseen` is not a confirmation, exactly as the old
+   `undefined -> 'same'` was not. Add one why-comment saying a new id proves
+   a re-download happened and not that the picture differs (section 3.4).
+2. `lib.mjs` - the same rename in `baseResult()`'s `photo` object, in
+   `pressGroup`'s local counter, and in `photoTotals` / `addPhoto`. Four
+   keys everywhere: `{ newId, sameId, none, unseen }`.
+3. `lib.mjs` - `pressedCount` becomes **attempts**. `pressGroup` currently
+   returns `pressedList.length`, which excludes a press the bot refused
+   (B4's review nit 2), so `pressed P` under-reports on a throttle stop and
+   `P` is the number B2 tunes the quota from. Derive it from the budget,
+   which B4 already decrements for every attempted press whether or not it
+   succeeded: capture `pressBudget` at the top of `pressGroup` and return
+   the difference as `pressedCount`. One comment naming what `P` means
+   (attempts, not confirmations) and the one known under-count that remains
+   (nit 1: `attempt()`'s transport retries can re-invoke `cx.press` inside a
+   single decrement - deferred, absorbed by the default under-shoot).
+4. `lib.mjs` - the two log lines (phase 1, and the per-batch line in phase
+   2) print the new vocabulary:
+   ```text
+   phase 1: pressed 50, confirmed 50 (photo id new 50, same 0, none 0, unseen 0)
+   batch 3/5: sent 10, buttons 10, pressed 10, confirmed 10 (photo id new 9, same 1, none 0, unseen 0)
+   ```
+5. `run.mjs` - the summary and `$GITHUB_STEP_SUMMARY` line becomes
+   `pressed P (photo id new C, same S, none Z, unseen U)`. No other change;
+   `refreshed N, pending M` and the `::warning::` rule stand.
+6. `lib.test.mjs` - carry the rename through the three places that assert on
+   the shape (`baseResult`'s deepEqual, and the two `assert.deepEqual(result.
+   photo, ...)` cases), and reword the one test title that says "the photo
+   changed" to "a new photo id". Add **two** cases:
+   - a pressed message that `byIds` does not return is counted `unseen`, is
+     **not** confirmed when the press was unanswered, and **is** confirmed
+     when the press was answered (the answered path never depended on the
+     photo, and this proves the fourth bucket did not change that);
+   - a press refused by the throttle is counted in `pressed P` (attempts)
+     while staying absent from `confirmed` and from every `writeState` call
+     - i.e. step 3's fix, asserted on both sides.
+7. `docs/tg-preview.md` - in place:
+   (a) the summary bullet: the second line's new wording, and `pressed P`
+   defined as **presses attempted**, not confirmations;
+   (b) one short paragraph next to it - what a new photo id proves (Telegram
+   stored a different image than the button message showed: the press did
+   something) and what it does not (that the picture looks different, since
+   Telegram re-encodes what it fetches and a webpage that had no photo yet
+   counts as new too), so a run of `new 10, same 0` reads as the expected
+   shape rather than as a broken counter;
+   (c) `unseen` named once, in a clause: the press went out but the message
+   could not be re-read, so the tool does not claim to know;
+   (d) setup step G.5 replaced by section 9's revised G.5, and section 9's
+   new **G.7** (the optional one-press experiment) added after G.6;
+   (e) the `BOT_RESPONSE_TIMEOUT` sentence in "Rate limiting and
+   resumability" - "treats a changed photo as confirmation" - reworded to
+   "a new photo id";
+   (f) afterwards `grep -in "photo changed\|changed photo\|photo\.changed"
+   docs/tg-preview.md tools/tg-preview/*.mjs` and read every hit; none may
+   remain outside a sentence that is explicitly about the old wording.
+8. Gates and commit. `node --test tools/tg-preview/lib.test.mjs`; then
+   `node tools/tg-preview/run.mjs --dry-run` (must still print the counts
+   line ending `(press budget 50)` and exit 0 with no credential); then
+   `set -o pipefail; npm run check 2>&1 | tail -n 120` with Bash timeout
+   600000. Stage by name: `tools/tg-preview/lib.mjs`,
+   `tools/tg-preview/lib.test.mjs`, `tools/tg-preview/run.mjs`,
+   `docs/tg-preview.md`, the three task files. Commit
+   `fix(tg-preview): name the photo counter after what it measures`.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs` passes without
+  `tools/tg-preview/node_modules` present, with the two new cases.
+- No test asserts a different `confirmed` set than before this batch: the
+  rename is provably behaviour-neutral on confirmation.
+- A `runRefresh` test proves a throttle-refused press is counted in
+  `result.pressed` and absent from `result.confirmed` and from every
+  `writeState` call.
+- A `runRefresh` test proves an `unseen` classification confirms nothing on
+  an unanswered press and does not un-confirm an answered one.
+- `grep -n "changed" tools/tg-preview/lib.mjs tools/tg-preview/run.mjs`
+  finds no counter, key or log word (comments explaining the rename are the
+  only permitted hits).
+- `node tools/tg-preview/run.mjs --dry-run` exits 0 and writes nothing.
+- `git status` after the batch shows no change to `client.mjs`,
+  `previews.yml`, `package*.json`, `i/`, `og/`, `data.js`, `docs/specs/**`;
+  `tools/tg-preview/state.json` untracked, unmodified and unstaged.
+- `npm run check` green in one foreground call.
+
+**Gates.** `npm run check` (one foreground call, `set -o pipefail; npm run
+check 2>&1 | tail -n 120`, Bash timeout 600000) plus `node --test
+tools/tg-preview/lib.test.mjs`. **Not** `check:built` and **not** parity:
+nothing under `app/src/**`, `data.js`, `i/`, `og/` or `tests/parity/**` is
+touched and nothing a screen draws changes (section 8). A
+`app/src/components/searchPage.test.ts` timeout is the known load flake on
+this host - re-run once; do not diagnose it.
+
+**Risks / do-nots.**
+
+- Do not change the confirmation rule while renaming it. `answered ||
+  newId` is the whole of it, and `unseen` must not become a confirmation.
+- Do not make `matchButtons` skip a `WebPagePending` message. It is *why*
+  `photoBefore` is often `null`, but pressing a pending webpage is exactly
+  what should happen; skipping it would leave the URL pending forever.
+- Do not add a pre-press test, a threshold, an image decoder, or a new TL
+  field. Section 3.9.
+- Do not touch `client.mjs`, `previews.yml` or the specs.
+- Do not read, edit, stage, commit or delete `tools/tg-preview/state.json`,
+  and never run `run.mjs` without `--dry-run`.
+
+## 10c. B6 - the implement-ready batch
+
+**Objective.** Put this branch onto the current `origin/main`, commit the
+owner's finished `state.json` unchanged, and turn `previews.yml` into the
+fail-safe, self-rescheduling job of sections 3.5 and 6: red only when the
+next run cannot fix it, a hard timeout that never depends on a cancelled job,
+a four-hourly schedule that drains a backlog without a push. Two local fixes
+ride along on paths that are open anyway. Behaviour constraints are sections
+3.5, 3.10, 6, 7 (pass-6 paragraph) and 9 (H-J) as written; do not reopen
+them. `lib.mjs`'s exit codes, confirmation rule, press budget, throttle rule
+and state schema do not change.
+
+**Read before starting.** `context.md`, "The local reindex finished" and
+"Added by the planner, pass 6" - the merge measurement, `main`'s content
+changes, the state file's hash and the tree-key fact are there and are not
+re-derived below.
+
+**Standing rules, unchanged and unconditional.** Never run `run.mjs` without
+`--dry-run`. Do not read, print or copy `.env`. `tools/tg-preview/state.json`
+is staged and committed by path and is never edited, regenerated, formatted
+or deleted. Never `git add -A`, never `git commit -a`. One session per tree:
+confirm with `ListAgents` (or the orchestrator) that nothing else is writing
+this worktree before the merge and before each check.
+
+**In scope.** `.github/workflows/previews.yml`; `tools/tg-preview/lib.mjs`,
+`lib.test.mjs`, `run.mjs`; `tools/tg-preview/state.json` (staged only);
+`docs/tg-preview.md`; `package.json` (the one conflict line, union
+resolution); the four auto-merged files as git produces them;
+`issues/tg-preview-refresh/{context,plan,handoff}.md`.
+
+**Out of scope.** `client.mjs`, `live.mjs`, `manifest.mjs`, `login.mjs`,
+`tools/tg-preview/package*.json` (no new dependency); `ci.yml`;
+`docs/specs/META.md` and `docs/specs/COVERAGE.md` beyond what the merge
+brings (section 7 says why neither moves); `README*` beyond the merge;
+`CLAUDE.md`; every public contract; anything under `app/**`, `data.js`,
+`i/`, `og/`, `tests/**` - the merge brings `main`'s changes to those in, and
+this batch does not touch them. No new workflow input, no kill-switch
+variable, no `continue-on-error`.
+
+**Files expected.** `.github/workflows/previews.yml`,
+`tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
+`tools/tg-preview/run.mjs`, `tools/tg-preview/state.json` (new, tracked),
+`docs/tg-preview.md`, `package.json`, and the merge's own changes.
+
+**Four commits, in this order** (why four: section 3.10 - the merge, the
+data and the code each revert alone, and the tree key makes it two checks
+rather than four).
+
+**Commit 1 - the pass-6 task docs.**
+
+1. `git status --porcelain` - expect exactly `M issues/tg-preview-refresh/context.md`
+   plus whatever this planning pass wrote under `issues/tg-preview-refresh/`,
+   and `?? tools/tg-preview/state.json`. Nothing else; if there is, stop.
+2. Stage the three task files by path; commit
+   `docs(tg-preview): pass 6 - CI fail-safety, the merge, and the committed state`.
+   These paths are gate-exempt; no check.
+
+**Commit 2 - the merge.**
+
+3. `git fetch origin main`, then `git log --oneline -1 origin/main`. If it is
+   not `5a36c4a`, the conflict measurement is stale: re-run
+   `git merge-tree 8b96ff46ca81a61c2c7143afd7c66f4b3acfcd2a HEAD origin/main`
+   into a scratchpad file and `grep -c "^+<<<<<<<"` it; if the count is not
+   1 or the hunk is not `package.json`'s `"check"` line, record what it is
+   and resolve on the same principle (keep both sides' additions), but say
+   so in the handoff.
+4. `git merge --no-edit origin/main`. Expect
+   `CONFLICT (content): Merge conflict in package.json` and nothing else.
+5. Resolve `package.json`'s `"check"` line to the union in section 3.10 -
+   `main`'s `node --check tools/check-site.mjs &&` after `typecheck`, our
+   `node --test tools/tg-preview/lib.test.mjs &&` before `npm run test`; keep
+   `"previews"`. Remove the markers. `git add package.json`.
+6. Read the merged hunks once: `git diff --cached -- README.md README.ru.md docs/specs/COVERAGE.md docs/specs/META.md`
+   is empty (git resolved them into the index already), so instead grep the
+   working files: `tools/tg-preview/` appears exactly once in each README's
+   layout table; `docs/specs/COVERAGE.md` still has the
+   `tools/tg-preview/lib.test.mjs` paragraph once; `docs/specs/META.md`
+   section 7 is intact. Fix nothing unless a sentence is duplicated or
+   truncated; if it is, record the fix in the handoff.
+7. The root `package-lock.json` did not change between the base and
+   `5a36c4a` (measured), so no `npm ci`. If step 3 found `main` moved and
+   `git diff --cached --stat -- package-lock.json` is non-empty, run
+   `npm ci` once before the check.
+8. `node --test tools/tg-preview/lib.test.mjs` (83 pass), then
+   `node tools/tg-preview/run.mjs --dry-run`. Expect the manifest to build
+   through `main`'s changed `tools/build-share-pages.js` and the counts line
+   to report on the order of **125-135 urls stale** of 1092 (`context.md`,
+   pass-6 fact 2), all `ready` if `main`'s tip is deployed. **Record the
+   exact line in the handoff.** A non-zero count is expected and is not
+   fixed by touching the state. If the manifest fails to build (a changed
+   export or a `window.LOOT` shape), stop and report - that is the issue-47
+   seam in `manifest.mjs` and needs a planning decision, not a guess. Also
+   record `node -e` over `buildFromTree()`: `Object.keys(m.urls).length`
+   (expect 1092) and `m.missing.length` (expect 0).
+9. **Check #1**, one foreground call:
+   `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout
+   600000. `npm run data` inside it must leave `git status` unchanged for
+   `i/`, `data.json`, `catalog.csv` (main's generated files are current).
+   The `searchPage.test.ts` timeout is the known load flake - re-run once.
+10. `git commit --no-edit` (the default merge message). `git log --oneline -3`
+    shows the merge on top of commit 1.
+
+**Commit 3 - the state file.**
+
+11. `git status --porcelain -- tools/tg-preview` shows exactly
+    `?? tools/tg-preview/state.json`; `ls tools/tg-preview` shows no
+    `state.json.tmp`.
+12. `git hash-object tools/tg-preview/state.json` ->
+    `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`. Any other value: stop.
+13. One structural read, printing no entry:
+    ```text
+    node -e "const s=require('./tools/tg-preview/state.json');const v=Object.values(s.urls);console.log(s.version,s.site,Object.keys(s.urls).length,s.updatedAt,v.every(x=>/^[0-9a-f]{64}$/.test(x)))"
+    ```
+    Expect `1 https://artex-x.github.io/daggerheart-loot/ 1062 2026-09-14T20:04:16.406Z true`.
+14. `git add tools/tg-preview/state.json`; `git diff --cached --stat` names
+    that one file (~135 KB, ~1066 lines) and nothing else;
+    `git diff --cached --name-only` contains no `.env`.
+15. Commit `chore(tg-preview): record the first full reindex`. The gate is
+    already armed (the tree key included the untracked file during check
+    #1). Then `git rev-parse HEAD:tools/tg-preview/state.json` ->
+    `7c6e37eb...` again.
+
+**Commit 4 - the workflow, the two fixes, the docs.**
+
+16. `lib.mjs` - **move** the `--mode full` warning block (the
+    `if (mode === 'full' && pressLimit < todo.length) { log(...) }` and its
+    comment) from after `const cx = await client();` to directly after the
+    `if (todo.length === 0) { ... return baseResult(); }` early return, so a
+    dry run logs it too. Text unchanged; comment gains half a sentence: "logged
+    before the dry-run branch so `--dry-run --mode full` - the invocation the
+    runbook recommends - shows it (B4 review nit 3)".
+17. `lib.test.mjs` - in the existing case `'--mode full with a press budget
+    below the stale count logs the warning'`, replace `l.includes('2')` with
+    `l.includes('press budget of 2')`. Add one case after it, mirroring the
+    existing dry-run test's shape (`baseDeps(manifest, {})`, no client
+    factory): `runRefresh({ mode: 'full', dryRun: true, pressLimit: 2 }, deps)`
+    with `fakeManifest(4)` logs a line containing `--mode full cannot finish`
+    **and** the client was never loaded (assert the same way the dry-run
+    test at "a dry run sends and writes nothing, and never loads the client"
+    does). Expect 84 passing.
+18. `run.mjs` - two changes, nothing else:
+    (a) `writeResult` becomes atomic like `writeStateSync`: write to
+    `opts.resultPath + '.tmp'` then `renameSync` onto `opts.resultPath`
+    (`renameSync` is already imported). One why-comment: CI now hard-kills a
+    hung run, and a truncated `result.json` would make `--apply` drop every
+    press the run confirmed.
+    (b) In the summary block, add an `else` to `if (!opts.dryRun)`: when
+    `process.env.GITHUB_STEP_SUMMARY` is set, append one line
+    `dry run: <result.pending.length> url(s) stale<, N not live if any>, nothing sent`.
+    The stdout counts line is already logged by `runRefresh`; this only
+    mirrors it into the summary so step I.2's "read the job summary" is true.
+19. `.github/workflows/previews.yml` - per section 6, in place:
+    (a) under `on:`, after `workflow_run`, add
+    ```yaml
+      # Eventual consistency needs a clock, not only a push: a run that
+      # stops on the bot's throttle or the press budget leaves work pending,
+      # and nothing else would retry it until the next deploy. An idle run
+      # is `nothing to refresh` - no Telegram contact, about a minute.
+      # GitHub disables this after 60 days without a push; any push re-arms it.
+      schedule:
+        - cron: '23 */4 * * *'
+    ```
+    (b) the job `if:` becomes
+    `github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'`;
+    (c) delete the `Secrets present?` step and every
+    `if: steps.cfg.outputs.skip != 'true'`; the record step's `if:` becomes
+    `always() && env.DRY_RUN != 'true'`;
+    (d) the Refresh step's `run:` becomes (the state-read block and R1's
+    temp-file comment stay exactly as they are above it):
+    ```bash
+    args=(--mode "$MODE" --budget-minutes 40 --result "$RUNNER_TEMP/result.json")
+    [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+    [ -n "$LIMIT" ] && args+=(--limit "$LIMIT")
+    # Red means "the next run will not fix this": exit 2 (dead or missing
+    # credential) and 1 (a crash) stay red. Every Telegram-side stop already
+    # exits 0 with the backlog recorded, and the wall clock is mapped to 0
+    # here - eventual consistency is the contract. Three nested clocks:
+    # --budget-minutes 40 (the tool's deadline, checked before every send and
+    # press) < timeout 50m (a hang the deadline cannot see) < the job's 60,
+    # which leaves the record step below its own room. `bash -e` runs this
+    # block, so the exit code is captured with `|| code=$?`, not `; code=$?`.
+    code=0
+    timeout --kill-after=30s 50m node tools/tg-preview/run.mjs "${args[@]}" || code=$?
+    case "$code" in
+      0) ;;
+      124 | 137)
+        echo "::notice::the refresh hit the 50-minute wall; what it confirmed is recorded and the rest is picked up by the next run"
+        echo "timed out after 50 minutes; pending urls are picked up by the next run" >> "$GITHUB_STEP_SUMMARY"
+        ;;
+      *) exit "$code" ;;
+    esac
+    ```
+    (e) `npx prettier --write .github/workflows/previews.yml`, then
+    `npx prettier --check .github/workflows/previews.yml` - this is the local
+    YAML parse. Then copy each `run:` block into a scratchpad file and
+    `bash -n` it. Then, in Git Bash, prove the mapping shape once:
+    `code=0; timeout 1s sleep 5 || code=$?; echo "$code"` prints `124`.
+20. `docs/tg-preview.md` - in place, in this order:
+    (a) a short paragraph at the top of "Setup, start to finish": steps A-G
+    were completed 2026-09-11 to 2026-09-14, `state.json` is committed, and
+    H-J are the CI side; the A-G text stays as the procedure for a future
+    cold reindex;
+    (b) step H marked done (owner, before 2026-09-16), kept for rotation;
+    (c) step I replaced by section 9's step I (six numbered points);
+    (d) step J replaced by section 9's step J;
+    (e) "What CI does after a deploy": add the schedule (every four hours at
+    :23, why, the 60-day rule), the three clocks, and the sentence "a red
+    run means the next run will not fix it" with the list; remove the
+    sentence about the job skipping when secrets are absent if any remains;
+    (f) "Operations", the CI-red bullet: add that a run hitting the
+    50-minute wall is green with the summary line, and that a missing secret
+    is red with the variable named; the `--dry-run` bullet gains "in CI the
+    counts line is also in the job summary";
+    (g) afterwards `grep -in "notice\|skip\|45\|secrets are not\|exits 0" docs/tg-preview.md`
+    and read each hit - no sentence may still describe the skip guard, the
+    45-minute budget or "exits 0 with a notice".
+21. Gates: `node --test tools/tg-preview/lib.test.mjs` (84 pass);
+    `node tools/tg-preview/run.mjs --dry-run` (same count as step 8, exit
+    0, writes nothing - `git status --porcelain -- tools/tg-preview` is
+    clean); `node tools/tg-preview/run.mjs --dry-run --mode full` now
+    prints the `--mode full cannot finish` warning before the counts line;
+    **check #2**, `set -o pipefail; npm run check 2>&1 | tail -n 120`,
+    timeout 600000.
+22. Stage by path: `.github/workflows/previews.yml`, the three `.mjs`
+    files, `docs/tg-preview.md`, the three task files (with the handoff
+    updated per "Definition of done"). Commit
+    `ci(tg-preview): make the previews job fail-safe and schedule it`.
+    `git status --porcelain` afterwards is empty. Do not push.
+
+**Acceptance criteria.**
+
+- `git log --oneline -5` shows, newest first: the `ci(tg-preview)` commit,
+  `chore(tg-preview): record the first full reindex`, the merge commit, the
+  pass-6 docs commit, `4a042c7`.
+- `git rev-parse HEAD:tools/tg-preview/state.json` is
+  `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`.
+- `git show --stat HEAD~1` (the state commit) names exactly one file.
+- `git diff 4a042c7 HEAD -- package.json` shows the `"check"` line carrying
+  both `node --check tools/check-site.mjs` and
+  `node --test tools/tg-preview/lib.test.mjs`, and `"previews"` present.
+- `grep -c "cron:" .github/workflows/previews.yml` is 1;
+  `grep -c "Secrets present" .github/workflows/previews.yml` is 0;
+  `grep -c "continue-on-error" .github/workflows/previews.yml` is 0;
+  `grep -c "budget-minutes 40" .github/workflows/previews.yml` is 1;
+  `grep -c "timeout --kill-after=30s 50m" .github/workflows/previews.yml` is 1;
+  `grep -c 'event_name != ' .github/workflows/previews.yml` is 1.
+- `npx prettier --check .github/workflows/previews.yml` passes.
+- `node --test tools/tg-preview/lib.test.mjs`: 84 pass, including a case
+  proving `--dry-run --mode full` logs the warning without loading the
+  client.
+- `node tools/tg-preview/run.mjs --dry-run` on the final tree exits 0, writes
+  nothing, and reports the same stale count as step 8 (recorded in the
+  handoff next to the pre-merge `nothing to refresh`).
+- `grep -n "renameSync" tools/tg-preview/run.mjs` shows two call sites (state
+  and result).
+- `grep -in "notice\|45-minute\|45 minutes\|exits 0 with" docs/tg-preview.md`
+  has no hit describing the old skip guard or budget.
+- `git status --porcelain` is empty after commit 4; `.env` never appears in
+  any `git diff --cached --name-only`.
+- Both `npm run check` calls green in one foreground call each.
+
+**Verification commands.**
+
+```text
+git merge-tree 8b96ff46ca81a61c2c7143afd7c66f4b3acfcd2a HEAD origin/main > <scratchpad>/merge-tree.txt   # only if origin/main moved
+node --test tools/tg-preview/lib.test.mjs
+node tools/tg-preview/run.mjs --dry-run
+node tools/tg-preview/run.mjs --dry-run --mode full
+node -e "const s=require('./tools/tg-preview/state.json');const v=Object.values(s.urls);console.log(s.version,s.site,Object.keys(s.urls).length,s.updatedAt,v.every(x=>/^[0-9a-f]{64}$/.test(x)))"
+git hash-object tools/tg-preview/state.json
+npx prettier --check .github/workflows/previews.yml
+code=0; timeout 1s sleep 5 || code=$?; echo "$code"           # 124
+set -o pipefail; npm run check 2>&1 | tail -n 120             # Bash timeout 600000, twice: after the merge, after the code
+git status --porcelain
+```
+
+**Risks / do-nots.**
+
+- Never run `run.mjs` without `--dry-run`; never read `.env`.
+- Never edit, regenerate, reformat or delete `tools/tg-preview/state.json`;
+  the hash before and after is the proof, and a mismatch is a stop.
+- Do not rebase; do not squash the four commits; do not put the state file
+  in the merge commit or the code commit.
+- Do not "fix" the post-merge stale count. It is `main`'s content change and
+  the first CI run's job.
+- Do not add `continue-on-error`, a new input, a kill-switch variable, a
+  connect retry, or a schedule shorter than four hours.
+- Do not change `lib.mjs` beyond moving the warning; do not change any exit
+  code; do not touch `client.mjs`.
+- Do not `npm ci` in the root unless the merged lockfile changed (step 7);
+  another session's `npm ci` in this tree is the failure CLAUDE.md warns
+  about.
+- If `npm run check` fails on the merged tree in a file this task never
+  touched, that is `main`'s tree meeting this host: record the failure
+  verbatim, do not patch `app/**` or `tests/**` here, and stop before the
+  merge commit so the boundary is clean.
+
+**Fallback.** If `run.mjs --dry-run` cannot build the manifest on the
+merged tree because `tools/build-share-pages.js` no longer exports `page`
+in a `require()`-able shape, stop after step 8 with the merge uncommitted
+(`git merge --abort` is the clean exit) and report; the fix is
+`manifest.mjs`'s seam and belongs to a planning pass, not to this batch.
+
+## 10d. B7 - the implement-ready batch
+
+**Objective.** Close the B6 review's five risks and the nits that live on
+the same files, so that the exit-code table in section 3.5 is true in both
+directions before the first CI run: a Telegram read that fails after its
+retries is a green, resumable stop; a banned, deleted, duplicated or
+bot-blocked account is red, and a revoked session is exit 2 as documented;
+a `state.json` that exists but does not parse is a stop, never an empty
+state; the record step's fetch names its refspec; the root URL is
+fingerprinted from the file that is deployed. One batch, one code commit,
+one `npm run check`. Behaviour constraints are sections 3.4 (pass-7 note),
+3.5 (pass-7 table), 3.11, 5.2 (pass-7 note), 6 (pass-7), 7 (pass-7 list), 8
+and 9 (I.6, J) as written; do not reopen them. Exit codes keep their three
+meanings - `0` a Telegram-side stop, `1` a crash, `2` a credential or
+account a human must act on; B7 moves conditions between them and adds
+none. The confirmation rule, the press budget, the throttle rule, the state
+schema, the triggers and the `case` in `previews.yml` do not change.
+
+**Read before starting.** `context.md`, "Added by the planner, pass 7" (the
+teleproto class names and where they live, what `isUserAuthorized()` does,
+the identical root tags, `origin/main`'s position) and section 3.11 - none
+of it is re-derived below.
+
+**Standing rules, unchanged and unconditional.** Never run `run.mjs` without
+`--dry-run`, and never point a non-dry invocation at the committed state:
+the two `--apply` proofs below run against a **scratch copy** under
+`--state`. Do not read, print or copy `.env`. `tools/tg-preview/state.json`
+is committed and is never edited, regenerated, reformatted, staged or
+deleted by this batch - `git hash-object` before and after is
+`7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`, any other value is a stop. Never
+`git add -A`, never `git commit -a`. Do not merge `origin/main` (it moved one
+commit, `3504bf7`, touching none of this task's files; the owner's merge
+takes it). One session per tree: confirm with `ListAgents` (or the
+orchestrator) before the check.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `lib.test.mjs`, `run.mjs`,
+`client.mjs` (the guard only), `manifest.mjs` (the root HTML source only);
+`.github/workflows/previews.yml` (two fetch lines, one message);
+`.gitignore` (one line); `docs/tg-preview.md` (I.6, J, two Operations
+paragraphs, one Coverage clause); `issues/tg-preview-refresh/{context,plan,handoff}.md`.
+
+**Out of scope.** `live.mjs` (its fetch errors are already caught into
+`not live` - read, not assumed), `login.mjs`, `tools/tg-preview/package*.json`
+(no new dependency), `ci.yml`, `state.json`, `README*`, `docs/specs/*`
+(section 7 says why neither COVERAGE nor META moves), `CLAUDE.md`, `app/**`
+(read only), the legacy root `index.html`, every public contract; `npm
+audit` on the cron (accepted, section 12); a connect retry; a run counter;
+a shape check on the state beyond parsing; `continue-on-error`; any new
+flag, input or exit code; the merge.
+
+**Files expected.** `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
+`tools/tg-preview/run.mjs`, `tools/tg-preview/client.mjs`,
+`tools/tg-preview/manifest.mjs`, `.github/workflows/previews.yml`,
+`.gitignore`, `docs/tg-preview.md`, the three task files.
+
+**Two commits, in this order** (the docs are gate-exempt; the code is not).
+
+**Commit 1 - the pass-7 task docs.**
+
+1. `git status --porcelain` - expect only paths under
+   `issues/tg-preview-refresh/`. Anything else: stop.
+2. Stage the three task files by path; commit
+   `docs(tg-preview): pass 7 - the B6 review, and B7`.
+
+**Commit 2 - the code, the workflow lines, the runbook.**
+
+3. `lib.mjs` - `FATAL_ERRORS`: append `'AuthKeyDuplicatedError'`,
+   `'UserDeactivatedError'`, `'UserDeactivatedBanError'`,
+   `'PhoneNumberBannedError'`, `'YouBlockedUserError'` with one why-comment:
+   the account, not only the session - a ban, a deletion, a banned number, a
+   duplicated key or a blocked bot are conditions no later run can change
+   (B6 review R2); before pass 7 they fell to the catch-all below and
+   stopped green forever. In `decide()`, the fatal reason becomes
+   `name + ': the account or session is unusable; a human must act'`.
+4. `lib.mjs` - `runRefresh`, the connect. Replace `const cx = await client();`
+   with a `let cx;` and a `try { cx = await client(); } catch (err) { ... }`
+   whose catch calls `decide(err, { maxWaitS })` once; if `!d.fatal`,
+   `throw err` (a crash stays a crash - section 12's accepted connect
+   failure; no retry); otherwise `log('stopped: ' + d.reason)`, build
+   `baseResult()` with `pending = todo`, `notLive = notLive`,
+   `stopped = d.reason`, `exitCode = 2`, and return it (the shape of the
+   `ready.length === 0` branch; `finish()` cannot be used here because its
+   closures are declared below). One why-comment: connect-time errors never
+   passed through `decide()`, so a dead session surfaced as exit 1 and a
+   banned account as whatever its first RPC threw.
+5. `lib.mjs` - after `attempt()`, add
+   ```js
+   // Reads share the sends' and presses' table: a FLOOD_WAIT or a transport
+   // blip on incoming()/byIds() is a resumable stop, not a crash (B6 review
+   // R1). A read never yields `unanswered` (that is press-only), but this
+   // does not assume it.
+   async function read(action) {
+     const r = await attempt(action);
+     if ('value' in r) return r;
+     return { stopped: r.stopped || 'read unanswered', exitCode: r.exitCode || 0 };
+   }
+   ```
+6. `lib.mjs` - the five call sites, exactly:
+   (a) the recovery scan: `const scanR = await read(() => cx.incoming({ limit: RECOVER_SCAN }));`
+   then `if (scanR.stopped) { stopped = 'recovery scan: ' + scanR.stopped; exitCode = scanR.exitCode; await closeQuietly(); return finish(); }`
+   and `const scan = scanR.value;`. No `record()` on this path.
+   (b) and (c) the two button polls (`replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH })`,
+   first read and inside the `while`): each becomes a `read(...)`; on
+   `stopped`, set `stopped = 'button poll: ' + r.stopped; exitCode = r.exitCode; break batchLoop;`
+   (the label reaches out of the `while`). The batch was already sent and
+   pushed onto `sent`; its URLs stay pending; no `record()` here - the
+   previous batch's already ran.
+   (d) `pressGroup`'s refetch: replace `const refetched = ids.length ? await cx.byIds(ids) : [];`
+   with `let refetched = []; let readStop = null; let readCode = 0; if (ids.length) { const r = await read(() => cx.byIds(ids)); if (r.stopped) { readStop = 'refetch: ' + r.stopped; readCode = r.exitCode; } else refetched = r.value; }`.
+   The classification loop below is unchanged (an empty `refetched` makes
+   every delta `unseen`, and `p.answered` still confirms). The return
+   becomes `stopped: stop || readStop, exitCode: stop ? code : readCode`.
+   One why-comment: an answered press is confirmed by the existing rule
+   whether or not the message could be re-read - `unseen` already means
+   exactly that - so a failed refetch costs telemetry, not evidence, and
+   the run stops because the transport is not healthy.
+   (e) `close()`: add `async function closeQuietly() { try { await cx.close(); } catch (err) { log('warning: disconnect failed: ' + ((err && err.message) || String(err))); } }`
+   next to `finish()` and use it at both existing `await cx.close()` sites
+   and in (a). A disconnect that fails after the work is done is not a
+   failed run.
+7. `lib.mjs` - `record()`: `writeResult({ site: manifest.site, urls: pick(manifest.urls, confirmedSoFar) })`.
+   One why-comment: `--apply` reads `site` from here so the record step no
+   longer rebuilds the manifest from whatever tree `main` is at commit time
+   (R1-deferred item 7).
+8. `client.mjs` - delete the `if (!(await client.isUserAuthorized())) { throw new Error(...) }`
+   block. Replace it with a comment: teleproto's `isUserAuthorized()` is
+   `try { updates.getState() } catch { return false }` (`client/users.js`),
+   which swallows the class name `decide()` classifies on and reports a
+   transport blip as "not authorized"; the first RPC below throws the real
+   error instead, and `runRefresh` classifies it. Nothing else in the file
+   changes; the header's promise (nothing prints `apiId`, `apiHash`,
+   `session`) holds.
+9. `manifest.mjs` - add `const ROOT_HTML = join(ROOT, 'app', 'index.html');`
+   with a why-comment: since issue 47's cut-over `ci.yml` deploys
+   `dist/index.html`, built from `app/index.html`; the legacy root
+   `index.html` is not published, and fingerprinting it would leave the
+   root URL silently unrefreshed the first time `app/index.html`'s
+   `og:description` moves alone (B6 review R5). `rootHtml` becomes
+   `readFileSync(assets ? join(dir, 'index.html') : ROOT_HTML, 'utf8')`;
+   `readImage: readImageFrom(dir)` stays (`og/` is a tracked source
+   directory that `deploy` copies verbatim). Update the header comment's
+   "the root index.html" to name `app/index.html`. `--assets <dir>` keeps
+   meaning "both live under `<dir>`".
+10. `run.mjs` - three changes:
+    (a) `readState(path)`: read with `readFileSync` inside `try`; on an error
+    with `err.code === 'ENOENT'` return `{}`, otherwise rethrow; then
+    `JSON.parse` inside its own `try`, and on failure throw
+    `new Error('state file is not valid JSON: ' + path + ' (' + err.message + ') - refusing to treat it as empty')`.
+    Drop `existsSync` from the import. One why-comment: a file that exists
+    and does not parse is corrupt, not absent - returning `{}` made a
+    refresh re-send the catalogue and, under `--apply`, committed a state
+    with every other entry dropped (B6 review R3).
+    (b) the `--apply` branch: remove its `buildFromTree(...)` call;
+    `const result = JSON.parse(readFileSync(opts.apply, 'utf8'));`
+    `if (!result.site) throw new Error('result file carries no site: ' + opts.apply);`
+    `applyResult(state, result, result.site)`. The `buildFromTree` import
+    stays for the refresh path.
+    (c) after the two summary `log` calls, before the `::warning::`:
+    `if (result.exitCode === 2) console.log('::error::' + result.stopped + ' - see docs/tg-preview.md, step I.6');`
+    (`result.stopped` is always set when `exitCode` is 2).
+11. `lib.test.mjs`:
+    (a) the `decide` suite: declare the five new classes beside the existing
+    five and add them to the `for (const Cls of [...])` fatal loop (five
+    more `is fatal for ...` cases).
+    (b) `fakeClient`: an `incoming` queue entry of the shape `{ throw: err }`
+    throws `err` instead of returning; a new option `byIds = []`, a script
+    consumed one entry per `cx.byIds()` call where `{ throw: err }` throws
+    and anything else (or exhaustion) answers from `photoAfter` as today; a
+    new option `closeThrows = false`. Defaults unchanged, so every existing
+    case runs exactly as before.
+    (c) seven new `runRefresh` cases, after "a pressed message byIds cannot
+    re-fetch is counted unseen ...":
+    1. `a transport error on the recovery scan stops the run green after NET_RETRIES, with nothing pressed or written`:
+       `incoming: Array(NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })`;
+       expect `exitCode 0`, `stopped` matching `/^recovery scan: /`,
+       `confirmed []`, `pending.length` = the stale count, `deps.written.length 0`,
+       `fake.sent.length 0`, `fake.closed.value true`.
+    2. `a FLOOD_WAIT on the recovery scan is slept through and the scan re-read`:
+       `incoming: [{ throw: new FloodWaitError(5) }, [], repliesFor(urls, 1000)]`
+       with presses `ok`; expect `floodWaits 1`, `confirmed.length` = all,
+       `fake.incomingCalls.count >= 3`.
+    3. `a failed button poll stops the run with the sent batch pending and the previous batch recorded`:
+       `fakeManifest(15)` (16 URLs, two batches); `incoming: [[], repliesFor(batch1, 1000), ...Array(NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })]`;
+       expect `fake.sent.length 2`, `confirmed.length 10`, `pending.length 6`,
+       `deps.written.length 1`, `stopped` matching `/^button poll: /`,
+       `exitCode 0`.
+    4. `a failed post-press refetch counts the group unseen, confirms its answered presses, records them and stops`:
+       four URLs recovered in phase 1 (`incoming: [[buttonMsg(...) x4]]`),
+       `press: [{ text: 'ok' }, { throw: new BotResponseTimeoutError() }, { text: 'ok' }, { text: 'ok' }]`,
+       `byIds: Array(NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })`;
+       expect `photo` = `{ newId: 0, sameId: 0, none: 0, unseen: 4 }`,
+       `confirmed.length 3`, `pending.length 1`, `deps.written.length 1`,
+       `stopped` matching `/^refetch: /`, `fake.sent.length 0`.
+    5. `a fatal class on a read is exit 2`: `incoming: [{ throw: new AuthKeyUnregisteredError() }]`;
+       expect `exitCode 2`, `deps.written.length 0`.
+    6. `a dead credential at connect is exit 2 with nothing written; a transport error at connect still rejects`:
+       `clientFactory: async () => { throw new SessionRevokedError(); }` ->
+       `exitCode 2`, `stopped` matching `/SessionRevokedError/`,
+       `pending.length` = the stale count, `deps.written.length 0`; then
+       `clientFactory: async () => { throw new Error('ECONNRESET'); }` ->
+       `await assert.rejects(runRefresh(...), /ECONNRESET/)`.
+    7. `a disconnect that fails does not fail the run`: `closeThrows: true`
+       with a clean one-batch run; expect `exitCode 0`, `confirmed.length` =
+       all, a log line matching `/disconnect failed/`.
+    (d) extend "writes a --result entry alongside state after each batch"
+    with `assert.equal(deps.results[0].site, manifest.site)`.
+    (e) the `extractMeta` case "reads the root index.html" reads
+    `join(ROOT, 'app', 'index.html')` and is renamed "reads the deployed
+    root's source, app/index.html"; the assertions stay.
+    Expect **96 passing** (84 + 5 + 7); if the count differs, the number of
+    new cases is what to check, not the existing ones.
+12. `.github/workflows/previews.yml`: both `git fetch --depth=1 origin main`
+    lines become `git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main`
+    (one in Refresh, one inside the record step's `for`); the Refresh
+    step's `else` echo becomes
+    `state.json could not be read from origin/main; using the checked-out copy`.
+    Then `npx prettier --write .github/workflows/previews.yml` and
+    `npx prettier --check .github/workflows/previews.yml`; copy each `run:`
+    block to the scratchpad and `bash -n` it.
+13. `.gitignore`: inside the existing `tools/tg-preview` block, add
+    `tools/tg-preview/state.json.tmp` with the comment "the atomic state
+    write's temp file, left behind only if a run is killed between write and
+    rename".
+14. `docs/tg-preview.md`, in place: (a) step I.6 replaced by section 9's
+    pass-7 text (the quoted block, minus the `>`); (b) step J gains the one
+    sentence in section 9; (c) Operations, the "What turns the CI job red"
+    bullet: "(`Refresh` exiting 1 or 2 ...)" becomes a pointer - "exit 2 is
+    a credential or account a human must act on, exit 1 a crash or a corrupt
+    state file; step I.6 maps each message to the step that fixes it" - and
+    gains "a Telegram read that fails after its retries (recovery scan,
+    button poll, refetch) is a green stop like any other"; (d) "What CI does
+    after a deploy", the red paragraph: same correction, one sentence; (e)
+    Coverage: after "the error-handling table (including an unanswered
+    press)" add ", which every Telegram read goes through as well"; (f)
+    afterwards `grep -n "exit 1\|exit 2\|revoked\|dead" docs/tg-preview.md`
+    and read each hit - no sentence may still say a revoked session is exit
+    2 without the "when Telegram names it" sense, or list "dead credential"
+    as the only exit-2 case.
+15. Gates and proofs, all without Telegram:
+    - `node --test tools/tg-preview/lib.test.mjs` -> 96 pass.
+    - `node tools/tg-preview/run.mjs --dry-run` -> the **same** counts line
+      as B6 recorded (`125 urls stale, 125 ready, up to 13 messages, 125
+      presses (press budget 50)` if the site has not moved; if `ready`
+      differs, that is the live check, not this batch - record it), exit 0,
+      `git status --porcelain -- tools/tg-preview` clean. A different
+      **stale** count means R5's change altered a fingerprint - stop and
+      report.
+    - R3, refresh path: `printf '{' > "$SCRATCH/corrupt.json"`;
+      `node tools/tg-preview/run.mjs --dry-run --no-verify --state "$SCRATCH/corrupt.json"`
+      -> exit 1, stderr `tg-preview run failed: state file is not valid
+      JSON: ...`. Then `--state "$SCRATCH/absent.json"` -> `1092 urls
+      stale ...`, exit 0 (the bootstrap, unchanged). Neither writes anything.
+    - R3, apply path, and the `site` change: `cp tools/tg-preview/state.json "$SCRATCH/s.json"`;
+      write `$SCRATCH/r.json` as `{"site":"https://artex-x.github.io/daggerheart-loot/","urls":{}}`;
+      `node tools/tg-preview/run.mjs --apply "$SCRATCH/r.json" --state "$SCRATCH/s.json"`
+      -> `state updated from ...`, exit 0, and `$SCRATCH/s.json` still has
+      1062 keys (one `node -e` count). Then the same with
+      `--state "$SCRATCH/corrupt.json"` -> exit 1 and `corrupt.json`
+      unchanged. Then with an `r.json` lacking `site` -> exit 1,
+      `result file carries no site`. `git hash-object tools/tg-preview/state.json`
+      afterwards is still `7c6e37eb...`.
+    - `npx prettier --check .github/workflows/previews.yml`; `bash -n` on
+      both blocks.
+    - **The check**, one foreground call:
+      `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout
+      600000. The `searchPage.test.ts` load flake is re-run once, not
+      diagnosed.
+16. Stage by path: the five `.mjs` files, `previews.yml`, `.gitignore`,
+    `docs/tg-preview.md`, the three task files (handoff updated per
+    "Definition of done"). Commit
+    `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state`.
+    `git status --porcelain` afterwards is empty. Do not push.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs`: 96 pass, including the seven
+  cases in step 11c and the five new fatal names.
+- `grep -n "cx\.incoming\|cx\.byIds" tools/tg-preview/lib.mjs` shows exactly
+  four lines, every one inside `read(() => ...)`; `grep -c "cx\.close()"`
+  is 1 (inside `closeQuietly`).
+- `grep -c "UserDeactivatedBanError\|AuthKeyDuplicatedError\|PhoneNumberBannedError\|YouBlockedUserError\|UserDeactivatedError" tools/tg-preview/lib.mjs`
+  is 5; `grep -c "credential is dead" tools/tg-preview/lib.mjs` is 0.
+- `grep -c "isUserAuthorized" tools/tg-preview/client.mjs` is 0.
+- `grep -c "existsSync" tools/tg-preview/run.mjs` is 0;
+  `grep -c "buildFromTree" tools/tg-preview/run.mjs` is 2 (import and the
+  refresh path); `grep -c "::error::" tools/tg-preview/run.mjs` is 1.
+- `grep -c "'app', 'index.html'" tools/tg-preview/manifest.mjs` is 1.
+- `grep -c "refs/heads/main:refs/remotes/origin/main" .github/workflows/previews.yml`
+  is 2; `grep -c "every url counts as stale"` is 0; `prettier --check`
+  passes; `grep -c "cron:"` is still 1 and `grep -c "continue-on-error"`
+  still 0.
+- `grep -c "state.json.tmp" .gitignore` is 1.
+- `node tools/tg-preview/run.mjs --dry-run` reports the same stale count as
+  B6 (recorded in the handoff beside B6's line), exits 0, writes nothing.
+- The four scratch-file proofs in step 15 behave as written, and
+  `git rev-parse HEAD:tools/tg-preview/state.json` and
+  `git hash-object tools/tg-preview/state.json` are both `7c6e37eb...`.
+- `docs/tg-preview.md` step I.6 lists the four exit-2 groups and the
+  corrupt-state exit 1; `grep -c "recovery scan" docs/tg-preview.md` >= 1.
+- The deferred items this plan placed in B7 are done as their own lines:
+  R1-deferred item 7 (`--apply`'s `buildFromTree()`) - `run.mjs` no longer
+  calls it on that path; the B6 nit "every url counts as stale" - gone; the
+  B6 nit `state.json.tmp` - ignored; the B6 nit "exit 2 for a dead
+  credential" - the docs and 3.5 corrected; the B6 nit "Next action"
+  heading - `handoff.md` uses the template's "Next batch (implement-ready)".
+- `git status --porcelain` is empty after commit 2; `.env` never appears in
+  any `git diff --cached --name-only`; `state.json` appears in none either.
+- `npm run check` green in one foreground call.
+
+**Verification commands.**
+
+```text
+node --test tools/tg-preview/lib.test.mjs
+node tools/tg-preview/run.mjs --dry-run
+printf '{' > "$SCRATCH/corrupt.json"
+node tools/tg-preview/run.mjs --dry-run --no-verify --state "$SCRATCH/corrupt.json"    # exit 1, "state file is not valid JSON"
+node tools/tg-preview/run.mjs --dry-run --no-verify --state "$SCRATCH/absent.json"     # 1092 urls stale, exit 0
+cp tools/tg-preview/state.json "$SCRATCH/s.json"
+node tools/tg-preview/run.mjs --apply "$SCRATCH/r.json" --state "$SCRATCH/s.json"      # state updated; 1062 keys remain
+node tools/tg-preview/run.mjs --apply "$SCRATCH/r.json" --state "$SCRATCH/corrupt.json" # exit 1
+git hash-object tools/tg-preview/state.json                                             # 7c6e37eb...
+npx prettier --check .github/workflows/previews.yml
+set -o pipefail; npm run check 2>&1 | tail -n 120                                       # Bash timeout 600000, once
+git status --porcelain
+```
+
+**Risks / do-nots.**
+
+- Never run `run.mjs` without `--dry-run` except the two `--apply`
+  invocations above, and those only against `--state` files in the
+  scratchpad. Never read `.env`.
+- Never stage, edit or regenerate `tools/tg-preview/state.json`; the hash
+  is the proof.
+- Do not change the fake client's default behaviour in `lib.test.mjs`; the
+  named existing cases in 3.11 must pass without edits.
+- Do not add a connect retry, a run counter, a state shape check, a new
+  flag, a new workflow input, `continue-on-error`, or a new exit code.
+- Do not flip `decide()`'s catch-all to red; do not remove any existing
+  fatal name.
+- Do not touch `og/`, `index.html`, `app/index.html`, `ci.yml`, or merge
+  `origin/main`.
+- If the dry run's **stale** count differs from B6's after the
+  `manifest.mjs` change, stop: it means `app/index.html` and `index.html`
+  no longer agree on a tag, which is a fact to record, not a reason to
+  touch either file.
+
+**Fallback.** If deleting `client.mjs`'s guard leaves no RPC before
+`getEntity` that would surface the session error in the shape `decide()`
+expects (it does today: `getEntity('WebpageBot')` is `contacts.ResolveUsername`),
+replace the guard with a bare `await client.invoke(new Api.updates.GetState())`
+- the same call teleproto's guard makes, without the `catch` that swallows
+it. Do not reintroduce a plain `Error`.
+
+## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: no
+
+**Revised (pass 7). Pass 7 raises none.** Every fork has a repository- or
+evidence-picked winner, recorded with its rejected alternative in 3.11:
+names in `FATAL_ERRORS` over a run counter; reads through `attempt()` over
+a wider `try/catch`; a thrown parse error over a shape model; `app/index.html`
+over `--assets dist` plus a CI build; B7 before the merge over after it.
+None changes UX, architecture or a public contract, and the owner's own
+sentence - red means the next run will not fix it - is the specification
+each of them implements. One thing the owner should know, not decide: the
+recommended order is now **B7, then merge**; if they merge first, B7 still
+lands unchanged as a follow-up.
+
+**Revised (pass 6). Pass 6 raises none.** Every fork in this pass has a
+repository- or evidence-picked winner, recorded with its rejected
+alternatives: merge over rebase (section 3.10), red-means-unfixable over
+`continue-on-error` (3.5), four-hourly cron over hourly or none (3.5), the
+state as its own post-merge commit (3.10), no new workflow input or kill
+switch (3.5). None changes UX, architecture or a public contract, and the
+owner's own words ("I'm OK with eventual consistency ... if we timeout I
+don't care") are the specification the exit-code table implements.
+
+Two things the owner should know before merging, neither of which needs a
+decision now: **the first real CI run fires automatically on the merge push**
+(section 3.10; the dry-run window is while `check` runs, step I.2), and the
+first backlog is ~130 URLs because `main`'s own content changed after the
+local reindex, not because anything was lost. Both are written into step I.
+
+**Pass 5's text, kept for the record.** Pass 4's one question is closed, and
+pass 5 raised none. The owner answered it on 2026-09-12 (`context.md`, decision 7):
+retire the 115-entry `state.json` to a backup outside the repository and
+restart the reindex cold on the `--limit 5 --press-limit 50` cadence. They
+then did it - the restart is in flight and `state.json` holds 195 of 1062
+URLs (`context.md`, "The owner's question about `photo changed`").
+
+Pass 5 needs no decision. B5 changes log wording, adds a fourth telemetry
+bucket and counts attempts honestly; it writes no state, changes no schema,
+invalidates none of the 195 recorded URLs and requires no restart, pause or
+re-press. Section 9's new step G.7 is **optional** and costs one press; the
+reindex is complete without it.
+
+The pass-4 text is kept below because its reasoning is what a future
+ambiguous state file should be judged by.
+
+**Answered - pass 4's question, kept for its reasoning.** Both pass-1
+questions were answered by the owner
+(`context.md`, decisions 5 and 6). Pass 3 raised none. Pass 4 raises exactly
+one, and it is about the owner's own data rather than about the design:
+
+**Q: retire the 115-entry `state.json` and restart the reindex?** The plan's
+answer is yes - section 3.4, "What the 115 entries are worth", with the
+command in section 9 step E.0 (move it to a backup outside the repository,
+do not delete it). 28 of the 115 cannot be distinguished from
+throttle-refused presses, nothing names which 28, and the schema cannot be
+interrogated for it. The cost of restarting is ~115 presses, two or three
+extra chunked runs out of ~22. The owner may reasonably decide the residual
+risk is acceptable and keep the file; in that case up to 28 URLs keep a
+stale preview until some future artwork commit re-fingerprints them, and
+that should be written down rather than forgotten.
+
+**This blocks O2's first step only.** B4 is a code-and-docs batch that never
+touches `state.json`; it can be implemented, reviewed and committed while
+this question is open.
+
+> Superseded (pass 3's answer to a narrower question): "no entry written by
+> the unfixed tool can be trusted on its own, and there is exactly one such
+> entry - `cc19`... the file as it stands is correct and should be kept."
+> True when the file held one hand-pressed entry. It now holds 115 written
+> by a tool that could not tell a refused press from an accepted one.
+
+## 12. Risks and assumptions
+
+**Revised (pass 7).** Pass-7 entries first, then pass 6's, pass 5's, pass
+4's and pass 3's; all of them still hold except where noted.
+
+- **An RPC error named nowhere still stops green.** `decide()`'s catch-all
+  is unchanged by design (3.4, 3.11): the alternative turns every unknown
+  Telegram-side condition into a red the owner has to triage. The residual
+  is a class the list does not name that is nevertheless permanent - the
+  symptom would be the same `stopped: <ERROR_MESSAGE>` with `pending > 0`
+  on consecutive scheduled runs, visible in the `::warning::` line. Nothing
+  automated watches for it; the owner's I.3/I.4 reads are the watch. If it
+  happens, the fix is one more name in `FATAL_ERRORS`, not a counter.
+- **`npm audit --audit-level=high` runs six times a day and a new advisory
+  is red until someone bumps the dependency.** Accepted (3.11): the process
+  holds a full account session and `ci.yml` applies the same rule. The
+  first such red has a known cause and a known fix (`npm audit fix` or a
+  pinned bump in `tools/tg-preview/package-lock.json`, its own commit).
+- **The dead-session exit code is read from teleproto, not measured.** A
+  terminated session's first RPC failing with the 401 class
+  (`AuthKeyUnregisteredError`), and a forgotten key being re-keyed by the
+  sender before that, are read from `client/users.js` and
+  `network/MTProtoSender.js`. If a live dead session surfaces as something
+  else - `InvalidBufferError`, a plain `Error` from the sender - it is exit
+  1, still red, with the message in the log; the docs say "when Telegram
+  names it" for this reason. Rotation day (step J) is when this gets
+  measured for free.
+- **Vite is assumed to pass `<meta>` through unchanged.** Documented
+  behaviour, not measured on this tree (`dist/` is not built here). If it
+  did rewrite a tag, the root URL would read `not live` on every run - loud
+  - and the fix would be `--assets dist` after all.
+- **A `button poll` stop leaves a sent batch's buttons unpressed until the
+  next run's phase 1**, which finds them only inside `RECOVER_SCAN = 200`
+  messages. Ten links produce eleven bot messages, so a stop there is
+  recoverable for roughly the next eighteen batches' worth of chat; a
+  four-hourly cron reaches it long before that.
+
+- **The phase-1 assumption gets its first real test on the first CI run,
+  and the test is in the words.** `main` changed `og:description` on the 94
+  frame stubs; if any of their old button messages are still inside
+  `RECOVER_SCAN`, phase 1 presses them without a send and records the URL
+  with the *new* fingerprint. If a press-only recovery refreshes the image
+  but not the metadata, that entry is a lie of the kind this task removes.
+  Step I.5 is the check (paste `i/f1.html`, read the prefix); the fallback
+  is `RECOVER_SCAN = 0`, one constant.
+- **A transient connect failure is a red run.** Exit 1 stays red by design
+  (section 3.5). A DC hiccup at connect time therefore costs one red run
+  that the next scheduled run quietly fixes. Accepted: the alternative hides
+  a persistent crash for as long as nobody looks. If it happens more than
+  rarely, B2 adds a retry around `client()` connect, not a green mapping.
+- **The bot's quota under a four-hourly clock is still one data point.**
+  Six runs a day of up to 50 presses each is far below anything measured to
+  fail, but the window is unknown; a throttled run is green and wastes at
+  most one send. The runbook's `pressed P` lines from CI are now the
+  measurement loop B2 wanted.
+- **`workflow_run` and `schedule` are unverifiable until merged**, and the
+  first real run is automatic (section 3.10). Off switches: "Disable
+  workflow" (quiet) and deleting `TG_SESSION` (loud, red).
+- **GitHub disables the cron after 60 days of no pushes.** A silent stop
+  months from now; step J names the cause and the cure (any push).
+- **The merge measurement was taken against `5a36c4a`.** If `origin/main`
+  moves before B6 runs, the implementer re-runs the read-only
+  `git merge-tree <base> HEAD origin/main` and reads the conflict count
+  again rather than trusting the number here.
+- **`npm run check` on the merged tree is a new measurement.** It now
+  includes issue 47's cut-over, `node --check tools/check-site.mjs`, and a
+  vitest suite that grew; the ~165 s figure is stale and the 600 s cap is
+  reachable. One foreground call, timeout 600000, and the known
+  `searchPage.test.ts` load flake is re-run once, not diagnosed.
+
+- **Nobody has measured whether a re-download mints a new photo id.** The
+  claim that it does - which is what makes `changed` uninformative about
+  artwork, and what closes section 3.9 - rests on 195 accepted presses that
+  all reported `changed`, plus the assumption that some of those URLs were
+  never cached by Telegram before this reindex sent them. Plausible, not
+  proven. Section 9's G.7 is one press and settles it. **Do not write it
+  into `docs/specs/META.md` until it is measured**, the same rule this plan
+  applies to the bot's quota.
+- **The rename makes one canary louder, and it is the only canary there
+  is.** Section 12's standing risk is that the bot rewords "too many
+  attempts", after which refused presses would again be recorded as
+  confirmed and nothing would alert anyone. The countervailing signal is a
+  chunk reporting mostly `same`, and pass 5 sharpens what that means (an
+  accepted press is expected to mint a new id, so `same` should be rare).
+  That is worth more than it looks - and it is still only a signal in the
+  log, read by a human who is looking. Nothing automated watches it.
+
+- **The quota is one data point.** 115 presses tripped it once, with a 3213
+  s cooldown. Nobody knows the count, the window, whether sends and presses
+  share a counter, or whether the limit is per account, per day or per
+  hour. `PRESS_LIMIT = 50` is an under-estimate chosen for asymmetric cost,
+  not a measurement; the runbook's calibration step (section 9, F.2) and
+  every run's `pressed P` line are how it stops being a guess. **Do not
+  write the quota into a doc as if it were known.**
+- **The throttle sentence could change.** The carve-out matches
+  `too many attempts`, case-insensitively, and nothing else. If the bot
+  rewords it, the tool silently returns to pass-3 behaviour - refused
+  presses recorded as confirmed - and nothing alerts anyone. The
+  countervailing signal is the photo telemetry: a run that suddenly reports
+  mostly `same` is the symptom, and the runbook already tells the owner to
+  spot-check on exactly that. A stronger fix (an evidence class in the
+  state) is deferred, section 13.
+- **The reindex is now a multi-day operation.** ~22 spaced chunks. The risk
+  is not technical: it is that a partly-done reindex sits for weeks and
+  nobody remembers where it stopped. The state file *is* the record, and
+  `pending N` is the progress bar; the handoff carries the count.
+- **Fresh-account limits, now on two axes** (pass 3, and the third limit
+  above is the one that actually bit). Presses are a different method
+  from sends and may have their own limits; the account is days old. The
+  run stops green on the first `PEER_FLOOD` from either. Chunked local
+  runs (section 9, G) are the mitigation.
+- **Unanswered presses.** If `@WebpageBot` never answers callback queries,
+  every press waits out Telegram's bot-response window before
+  `BOT_RESPONSE_TIMEOUT` arrives, and confirmation rests entirely on the
+  photo delta - a URL whose image really is unchanged would then stay
+  pending. The measured press on `cc19` produced an answer, so this is not
+  the expected case; if F.1 shows `unanswered` on all three, B2 tunes (a
+  shorter effective pace and treating "unanswered and pending is false"
+  as confirmed are the candidates - not decided now, no evidence).
+- **Press-only recovery updates metadata too** (the phase-1 assumption in
+  3.4). Fallback: `RECOVER_SCAN = 0`.
+- **`media.webpage.url` equality for the root.** The one URL Telegram might
+  canonicalise; the trailing-slash rule covers the plausible form. The
+  `--only root` dry run cannot see this; the first real send that includes
+  the root will, and an unmatched root shows up in the log as `no button
+  message for <url>` next to the bot's actual `url`, which is enough to
+  fix in B2.
+- **The 45-minute CI budget** now fits roughly one full reindex, not four.
+  Incremental runs are small; a full CI reindex is two runs at most, and
+  the state is written per batch.
+- **Pages edge caching**, `workflow_run` semantics, branch protection, two
+  writers, the session's IP, cut-over: unchanged from pass 1 (`0ab04eb`).
+
+## 13. Deferred
+
+**Revised** - the reviewer's nine deferred items from R1, decided:
+
+Folded into B3 (they live on the paths B3 rewrites, and each is a few
+lines):
+
+1. **Flood-wait deadline check** - the loop is rewritten and presses make
+   the per-batch check materially looser; section 3.4, "The deadline".
+2. **`live.mjs` cached rejected promises** - a real bug in the deploy-lag
+   case the rounds exist for; three lines; section 5.3.
+3. **`NaN` guards on `--limit`/`--budget-minutes`** - a silent exit-0
+   no-op is the same species of lie as the success accounting; section 5.1.
+4. **`sinceMs` not floored** - resolved by construction: the anchor is now
+   the sent message id, and `lastReply` is gone.
+8. **Dry-run counts wording** - the dry-run line is rewritten anyway
+   (section 5.2, step 7).
+9. **The doc sentence about what turns the CI job red** - the doc is
+   rewritten anyway (B3 step 11g).
+
+Left deferred, with the reason:
+
+5. ~~**Unquoted `$args`/`$LIMIT` in the workflow**~~ - **folded into B6
+   (pass 6)**: the Refresh step builds a bash array, which quotes `$LIMIT`
+   and removes the word-splitting dependency in one move.
+6. **The unused `urls()` export** - test-only surface in `lib.mjs`; removing
+   it churns the 1062-count test for no behaviour change. B2, or never.
+7. ~~**`--apply`'s needless `buildFromTree()`** - it exists only to obtain
+   `site`; cosmetic cost on a path B3 does not touch. B2.~~ **Folded into
+   B7 (pass 7)**: `result.json` carries `site`, and the record step no
+   longer depends on `main`'s tree being buildable at commit time.
+
+**Pass 7 - the B6 review's items, decided.** Into B7: R1, R2 (both parts),
+R3, R4, R5, and the nits on `previews.yml`'s `else` message, `.gitignore`,
+the exit-code wording, `--apply`'s `buildFromTree()`, and the handoff
+heading - section 3.11 gives the test each passed. Left deferred:
+
+- **`npm audit` on the cron** - accepted as the contract (3.11, section 12);
+  no change.
+- **The catch-all's green default** - unchanged; one more name in
+  `FATAL_ERRORS` if a permanent class ever shows up (section 12).
+- **B4 nits 1, 4, 6** and **R1-deferred item 6** - unchanged from pass 6.
+- **A connect retry around `client()`** - still only if connect failures
+  turn out to be frequent; B7's connect classification is about the exit
+  code, not about retrying.
+
+Folded into B6 in pass 6, and why: **B4 review nit 3** (the `--mode full`
+warning sits after `client()`, so `--dry-run --mode full` never shows it) -
+`lib.mjs` is open for nothing else, the move is eight lines and one test,
+and it is the invocation the runbook recommends; **nit 5** (the warning test
+asserts `l.includes('2')`) - it is the same assertion line. Nits 1, 4 and 6
+stay where pass 5 left them.
+
+Added in pass 6, deferred:
+
+- **A `press_limit` workflow input**, or deriving `--limit` from the press
+  budget - when the owner's CI `pressed P` lines justify moving the default
+  (section 3.5, rejected for now).
+- **A connect retry around `client()`** - only if transient connect
+  failures turn out to produce red runs more than rarely (section 12).
+- **Capturing O2's per-chunk numbers** - they were not recorded in this
+  task directory; if the owner still has the terminal output, B2 wants
+  `pressed P` per run, any throttle `N`, and G.7's answer.
+
+Added in pass 4, all for B2 and all wanting O2's numbers first:
+
+- **A persisted press ledger** - remember when the last presses were spent
+  (and any cooldown the bot named) so a run refuses to start inside it,
+  instead of the runbook asking the owner to keep the spacing by hand.
+  Needs a schema change to a committed file and a model of a window we have
+  one sample of; section 3.4 names it as the rejected-for-now option.
+- **An evidence class per URL in the state** (`answered` / `photo-changed`)
+  so a future 28 can be named and re-verified without deleting everything.
+  This is the schema-v2 item below, widened: it is what would have made
+  pass 4's owner decision a two-line command instead of a judgement call.
+- **Tune `PRESS_LIMIT`'s default** once several clean runs bound the quota
+  from below, and consider deriving the chunk's `--limit` from it so the
+  two flags cannot be paired wrongly.
+
+Added in pass 5:
+
+- **`photo.date` as a pre-press skip**, if a per-image publication time ever
+  exists. `Api.Photo.date` is on the TL object already; the origin is what
+  is missing - GitHub Pages' `Last-Modified` is per-deploy, identical across
+  files (measured 2026-09-13; section 3.9). Issue 47's cut-over is the point
+  at which `og/` generation might be made to carry one. Safe by
+  construction: a too-new reference means "press anyway".
+- **B4 review nit 1** (`attempt()`'s transport retries can re-invoke
+  `cx.press` inside one budget decrement, so attempts can still undercount
+  by up to 3 per press under network failure) stays deferred; B5 fixes the
+  throttle case (nit 2) because it is the same sentence being made honest,
+  and leaves nit 1 to B2, absorbed by the default under-shoot.
+- ~~**B4 review nit 3** (the `--mode full` warning sits after `client()`, so
+  `--dry-run --mode full` never shows it) stays deferred: it is a real
+  papercut on the invocation the docs recommend, but it is a different
+  subject from B5's telemetry vocabulary and would need its own test. B2.~~
+  **Superseded in pass 6: folded into B6** (above), since `lib.mjs` is open
+  and the batch already runs the suite.
+
+Other deferrals:
+
+- **Photo id in the state (schema v2)** so incremental runs can demand a
+  changed photo whenever the image sha changed - section 3.4, "Considered
+  and not taken", **and narrowed by pass 5**: it is not a staleness test
+  (section 3.9), and if a re-download always mints a new id it degenerates
+  to "always confirmed". Its remaining value is as an evidence class for a
+  future ambiguous state file. Revisit after G.7.
+- A pointer line in `CLAUDE.md` and `.claude/prompts/refresh-artwork.prompt.md`
+  - orchestrator's call, one line each.
+- Other messengers' caches. Not this task.
+- Issue 47 cut-over checklist item: keep `page()` importable, or point
+  `manifest.mjs` at the new generator; decide whether `og/` stays a source
+  asset.

@@ -33,3 +33,13 @@ coverage/
 
 # Per-suite logs from tests/run-all.js: the CI artifact, not source.
 test-output/
+
+# tools/tg-preview/'s local credentials (docs/tg-preview.md, step D.2): a
+# TG_SESSION value is a full Telegram account and must never be tracked.
+# *.env also catches local.env, a bare name with no leading dot.
+.env
+.env.*
+*.env
+# The atomic state write's temp file, left behind only if a run is killed
+# between write and rename.
+tools/tg-preview/state.json.tmp

@@ -299,6 +299,20 @@ exercises the clipboard's rich-text and image writes and the packed link's real
 path stays a thin spot below, since no headless browser offers one to drive.
 The fallbacks, which is where the logic actually lives, are covered here.
 
+`tools/tg-preview/lib.test.mjs` is a separate suite again, run under
+`node --test` as its own step in `npm run check` rather than through vitest:
+it covers the Telegram preview refresher's pure logic (URL derivation,
+fingerprinting, what counts as stale, batching, the flood/fatal error table,
+button matching, and the two-phase send-and-press loop against a fake
+client, clock and live check), plus `@WebpageBot`'s own per-user attempt
+throttle: recognising its refusal text (`botThrottle`), the run-scoped press
+budget (`--press-limit`/`PRESS_LIMIT`) that spans both phases and stops a run
+before it overspends the bot's quota, and the warning when `--mode full`
+cannot finish the stale set on that budget. The real Telegram connection
+(`client.mjs`) and the real CDN fetch (`live.mjs`) are deliberately outside
+it - thin wrappers around a live network, where the only honest proof is
+Telegram and the CDN themselves. See `docs/tg-preview.md`.
+
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code
 happens to do.

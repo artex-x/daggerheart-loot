@@ -1,0 +1,120 @@
+name: previews
+
+on:
+  workflow_run:
+    workflows: [check]
+    types: [completed]
+    branches: [main]
+  # Eventual consistency needs a clock, not only a push: a run that
+  # stops on the bot's throttle or the press budget leaves work pending,
+  # and nothing else would retry it until the next deploy. An idle run
+  # is `nothing to refresh` - no Telegram contact, about a minute.
+  # GitHub disables this after 60 days without a push; any push re-arms it.
+  schedule:
+    - cron: '23 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [incremental, full]
+        default: incremental
+      dry_run:
+        type: boolean
+        default: false
+      limit:
+        type: string
+        default: ''
+
+permissions:
+  contents: write # the state commit; nothing else
+
+concurrency:
+  group: tg-previews
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      MODE: ${{ inputs.mode || 'incremental' }}
+      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+      LIMIT: ${{ inputs.limit || '' }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: tools/tg-preview/package-lock.json
+
+      - name: Install the client
+        working-directory: tools/tg-preview
+        run: npm ci
+
+      - name: Vulnerabilities we will not wave through
+        working-directory: tools/tg-preview
+        run: npm audit --audit-level=high
+
+      # The state is read from the freshest main, not from the deployed sha:
+      # a refresh committed between two quick pushes must not be re-sent.
+      - name: Refresh
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION: ${{ secrets.TG_SESSION }}
+        run: |
+          git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+          # Read through a temp file, not a direct redirect onto state.json: a
+          # redirect truncates the checked-out file before `git show` runs, so
+          # any failure here (missing path on a fresh main, network hiccup)
+          # would leave state.json empty rather than unchanged. An empty file
+          # makes every URL look stale - a full re-send, not a bootstrap.
+          if git show origin/main:tools/tg-preview/state.json > "$RUNNER_TEMP/state.json" 2>/dev/null; then
+            mv "$RUNNER_TEMP/state.json" tools/tg-preview/state.json
+          else
+            echo "state.json could not be read from origin/main; using the checked-out copy"
+          fi
+          args=(--mode "$MODE" --budget-minutes 40 --result "$RUNNER_TEMP/result.json")
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          [ -n "$LIMIT" ] && args+=(--limit "$LIMIT")
+          # Red means "the next run will not fix this": exit 2 (dead or missing
+          # credential) and 1 (a crash) stay red. Every Telegram-side stop already
+          # exits 0 with the backlog recorded, and the wall clock is mapped to 0
+          # here - eventual consistency is the contract. Three nested clocks:
+          # --budget-minutes 40 (the tool's deadline, checked before every send and
+          # press) < timeout 50m (a hang the deadline cannot see) < the job's 60,
+          # which leaves the record step below its own room. `bash -e` runs this
+          # block, so the exit code is captured with `|| code=$?`, not `; code=$?`.
+          code=0
+          timeout --kill-after=30s 50m node tools/tg-preview/run.mjs "${args[@]}" || code=$?
+          case "$code" in
+            0) ;;
+            124 | 137)
+              echo "::notice::the refresh hit the 50-minute wall; what it confirmed is recorded and the rest is picked up by the next run"
+              echo "timed out after 50 minutes; pending urls are picked up by the next run" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *) exit "$code" ;;
+          esac
+
+      - name: Record what was refreshed
+        if: always() && env.DRY_RUN != 'true'
+        run: |
+          [ -s "$RUNNER_TEMP/result.json" ] || { echo "nothing sent"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+            git checkout -q -f --detach origin/main
+            node tools/tg-preview/run.mjs --apply "$RUNNER_TEMP/result.json"
+            git add tools/tg-preview/state.json
+            git diff --cached --quiet && exit 0
+            git commit -q -m "chore(tg-preview): record refreshed previews [skip ci]"
+            git push origin HEAD:main && exit 0
+            echo "push rejected, retrying"; sleep 10
+          done
+          exit 1
