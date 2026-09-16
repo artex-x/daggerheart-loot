@@ -12,10 +12,12 @@ no dependency and root `npm ci` never installs an image encoder. Only
 need no encoder still run on a machine where `tools/artwork/node_modules/`
 does not exist.
 
-This page covers the **replacement** path - installing new bytes over an
-already-cataloged item's picture. `.claude/prompts/refresh-artwork.prompt.md`
-is the agent-facing procedure that cites this page for the command sequence
-and the settings below; this page is where those settings live, once.
+This page covers both callers: the **replacement** path (installing new bytes
+over an already-cataloged item's picture) and the **ingest** path (installing
+art for a record a source ingest just added). `.claude/prompts/refresh-artwork.prompt.md`
+and `.claude/prompts/add-source.prompt.md` are the agent-facing procedures
+that cite this page for the command sequence and the settings below; this
+page is where those settings live, once.
 
 ## One-time setup
 
@@ -30,6 +32,7 @@ node tools/artwork/run.mjs plan            --uploads <dir> [--repo <dir>] [--map
 node tools/artwork/run.mjs install         --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>] [--dry-run]
 node tools/artwork/run.mjs verify          --uploads <dir> [--repo <dir>] [--map <f>]
 node tools/artwork/run.mjs verify-previews --before <f> --after <f> --report <f>
+node tools/artwork/run.mjs ingest          --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>] [--dry-run]
 ```
 
 `--repo <dir>` defaults to the repository root; point it at a scratch tree
@@ -71,6 +74,9 @@ and `og/` to "try it out" (Risks, below).
   `disappeared` entry (stale before, not stale after, not expected) is
   reported but is not itself a failure. Exits non-zero unless both `missing`
   and `extra` are empty. Needs no encoder.
+- **`ingest`** - the counterpart to `install` for a **new-source ingest**: it
+  *creates* art for a record a source ingest just added; it never replaces.
+  See "The ingest path" below for what it does and the command sequence.
 
 ## The drop-is-the-ledger precondition
 
@@ -129,12 +135,69 @@ node tools/artwork/run.mjs verify-previews --before before.json --after after.js
 `install` just wrote) rather than re-deriving the match a third time, so the
 proof is over exactly what was installed.
 
+## The ingest path
+
+`ingest` is the counterpart to `install` for a **new-source ingest**
+(`.claude/prompts/add-source.prompt.md`): it installs art for a record a
+source ingest just declared, and it never touches an existing asset.
+
+**The inverted precondition.** `install` replaces, so it refuses when a
+destination does not already exist. `ingest` creates, so it refuses when a
+destination `img/<asset>.webp` or `og/<asset>.jpg` **already exists** -
+writing over it would silently destroy another record's art. This is the
+same existence check as `install`'s, with the sense flipped.
+
+**Three legal outcomes**, all reported, none of them an error on their own:
+
+- **`creates`** - a source resolves to an asset that is missing from disk.
+  Keyed by distinct asset, never by record, exactly like `install`'s `pairs`
+  - two brand-new records sharing one not-yet-installed asset still produce
+  one file pair. This is what makes `og/<new-record-id>.jpg` structurally
+  unreachable: the destination name only ever comes from the asset, never
+  from a record id.
+- **`shares`** - a source was matched to a record whose asset already exists
+  on disk. No new file is needed; the record is joining an already-arted
+  line (legal only inside one `eq.line` - `tests/dataint.js` enforces that
+  separately). A `shares` entry carries no filenames at all.
+- **`unarted`** - a record with `img: ''`. Legal (`tests/noart.js` pins the
+  `_none.webp` render path); reported so the ingest report is honest about
+  which records still need art.
+
+**The blocker an ingest most often hits: `unsourced`.** An asset that is
+missing from disk and that no delivered source resolves to, named by asset
+and by the record ids waiting on it. Like `unarted`, it does not stop the
+run - a partially-arted ingest is normal - but unlike `unarted` it usually
+means the ingest is not finished yet.
+
+**Ordering.** A record's `img` value must already be in `data.js` before or
+in the same change as running `ingest`, because `ingest` reads `data.js` to
+know what to create; running it against files without the records to match
+leaves everything `unmatched`. Running `tests/run-all.js dataint` before the
+records exist would also fail its new `og/` orphan check on any file
+`ingest` had already written. The command sequence, in order:
+
+```text
+# 1. declare each new record's img in data.js
+node tools/artwork/run.mjs ingest --uploads <drop> --dry-run
+node tools/artwork/run.mjs ingest --uploads <drop> --report ingest.json
+node tools/build.js
+node tests/run-all.js dataint
+```
+
+`--dry-run` still decodes every input and runs every hard stop (ambiguous
+names, collisions, duplicate bytes, non-square, non-opaque alpha, the
+inverted precondition) before writing anything, because geometry and opacity
+must be provable before a write, not only before a decision to write.
+
+The conversion settings are exactly `install`'s, above - not restated here.
+
 ## Risks
 
-- Never run `install` or `verify` against this repository's own `img/` and
-  `og/` to "try the tool out." Point `--repo` at a scratch tree. `sharp`'s
-  output differs from the currently committed Pillow-encoded bytes (see
-  above); a real install here would rewrite committed assets for no reason.
-- `plan` and `verify-previews` need no encoder; `install` and `verify` do.
-  If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt binary on a
-  given machine, the first two verbs are still useful there.
+- Never run `install`, `ingest` or `verify` against this repository's own
+  `img/` and `og/` to "try the tool out." Point `--repo` at a scratch tree.
+  `sharp`'s output differs from the currently committed Pillow-encoded bytes
+  (see above); a real run here would rewrite or create committed assets for
+  no reason.
+- `plan` and `verify-previews` need no encoder; `install`, `ingest` and
+  `verify` do. If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt
+  binary on a given machine, the first two verbs are still useful there.

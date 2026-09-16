@@ -27,7 +27,7 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
-| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
+| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one |
 | `derived` | data | kept | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in seven files; `noindex` on both entry documents (`index.html`, `app/index.html`) and their heads compared field by field with no exception list; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
 | `parity` | migration | kept until Phase 7 | the rewrite against the live app: the same script on both, differences reported |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 28 route shapes, the equipment stat line in both languages, filter group key names against the docs |
@@ -337,6 +337,17 @@ encoder, atomic install, byte verification) is deliberately outside it - the
 same argument the tg-preview paragraph above makes for `client.mjs` and
 `live.mjs`: it is a thin wrapper around the filesystem and an encoder, where
 the only honest proof is a real image going in and a real file coming out.
+
+Since art-tooling B3 the same suite also covers `planIngest`, the ingest
+counterpart to `planInstall`: assets keyed by distinct asset in `missingAssets`
+so `og/<new-record-id>.jpg` cannot arise (the og/-trap case, asserted by
+grepping the whole returned object for that string), two brand-new records
+sharing one not-yet-installed asset producing one `creates` entry, a record
+joining an asset that already exists on disk landing in `shares` with no
+filenames, `img: ''` landing in `unarted`, a missing asset with no resolving
+source landing in `unsourced` by asset and waiting record ids, and the same
+unmatched/ambiguous/duplicate-bytes/`map.assign` handling `planInstall` uses
+via the matching helper the two planners share.
 See `docs/artwork.md`.
 
 Three of those fixtures are replayed by `contracts` as well, against the live

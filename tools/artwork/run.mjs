@@ -8,7 +8,7 @@
   each verb does and the runbook that drives this by hand.
 
   `sharp` is imported lazily, only by the verbs that encode (`install`,
-  `verify`), so `plan` and `verify-previews` run on a machine where
+  `verify`, `ingest`), so `plan` and `verify-previews` run on a machine where
   `tools/artwork/node_modules/` does not exist.
 */
 import { createHash } from 'node:crypto';
@@ -16,13 +16,13 @@ import { readFileSync, writeFileSync, renameSync, readdirSync, existsSync } from
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { planInstall, affectedStubUrls, staleDelta } from './lib.mjs';
+import { planInstall, planIngest, affectedStubUrls, staleDelta } from './lib.mjs';
 
 const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '..', '..');
 
-const VERBS = ['plan', 'install', 'verify', 'verify-previews'];
+const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest'];
 
 // The settings measured across three refreshes (issues/art-tooling/context.md,
 // "Conversion settings, established across three refreshes") and documented
@@ -196,6 +196,35 @@ async function verbPlan(flags) {
   return blocked ? 1 : 0;
 }
 
+// The one installer code path shared by `install` and `ingest` (plan.md 5.3
+// acceptance: "grep for the temp-sibling rename and find one implementation").
+// `entries` is [{ source, asset, webp, jpeg, label }] - `label` is what a
+// progress line and a verification-failure message name (the record id for
+// `install`, the asset for `ingest`, which has no single record to blame).
+async function installAndVerify(sharpFn, repo, entries, bytesByName) {
+  for (const e of entries) {
+    const buf = bytesByName.get(e.source);
+    const { webp, jpeg } = await encodePair(sharpFn, buf);
+    await validateEncoded(sharpFn, webp, 'webp');
+    await validateEncoded(sharpFn, jpeg, 'jpeg');
+    atomicWrite(join(repo, e.webp), webp);
+    atomicWrite(join(repo, e.jpeg), jpeg);
+  }
+
+  // Re-encode from source and compare against what was just installed - the
+  // per-run determinism proof (plan.md 3.1: never a comparison against
+  // bytes committed by a different encoder or a different run).
+  for (const e of entries) {
+    const buf = bytesByName.get(e.source);
+    const { webp, jpeg } = await encodePair(sharpFn, buf);
+    const installedWebp = readFileSync(join(repo, e.webp));
+    const installedJpeg = readFileSync(join(repo, e.jpeg));
+    if (!installedWebp.equals(webp)) throw new Error(e.label + ': WebP re-encode verification failed');
+    if (!installedJpeg.equals(jpeg)) throw new Error(e.label + ': JPEG re-encode verification failed');
+    log(e.label + '|' + e.source + '|' + e.asset + '|' + sha256(webp).slice(0, 16) + '|' + sha256(jpeg).slice(0, 16));
+  }
+}
+
 async function verbInstall(flags) {
   if (!flags.uploads) throw new Error('install needs --uploads <dir>');
   const repo = flags.repo || REPO_ROOT;
@@ -213,18 +242,17 @@ async function verbInstall(flags) {
   }
 
   const sharpFn = await loadSharp();
-  const decoded = new Map(); // pair.asset -> oriented meta, for the geometry/opacity checks below
   for (const pair of result.pairs) {
     const buf = bytesByName.get(pair.source);
     try {
-      decoded.set(pair.asset, await decodeAndCheck(sharpFn, buf, pair.source));
+      await decodeAndCheck(sharpFn, buf, pair.source);
     } catch (err) {
       hardStops.push(err.message);
     }
     const webpPath = join(repo, pair.webp);
     const jpegPath = join(repo, pair.jpeg);
     // `install` replaces; it never creates - the inverted precondition
-    // belongs to `ingest` (B3).
+    // belongs to `ingest`, below.
     if (!existsSync(webpPath)) hardStops.push('install refuses: destination does not exist: ' + pair.webp);
     if (!existsSync(jpegPath)) hardStops.push('install refuses: destination does not exist: ' + pair.jpeg);
   }
@@ -239,29 +267,104 @@ async function verbInstall(flags) {
     return 0;
   }
 
-  for (const pair of result.pairs) {
-    const buf = bytesByName.get(pair.source);
-    const { webp, jpeg } = await encodePair(sharpFn, buf);
-    await validateEncoded(sharpFn, webp, 'webp');
-    await validateEncoded(sharpFn, jpeg, 'jpeg');
-    atomicWrite(join(repo, pair.webp), webp);
-    atomicWrite(join(repo, pair.jpeg), jpeg);
-  }
-
-  // Re-encode from source and compare against what was just installed - the
-  // per-run determinism proof (plan.md 3.1: never a comparison against
-  // bytes committed by a different encoder or a different run).
-  for (const pair of result.pairs) {
-    const buf = bytesByName.get(pair.source);
-    const { webp, jpeg } = await encodePair(sharpFn, buf);
-    const installedWebp = readFileSync(join(repo, pair.webp));
-    const installedJpeg = readFileSync(join(repo, pair.jpeg));
-    if (!installedWebp.equals(webp)) throw new Error(pair.recordId + ': WebP re-encode verification failed');
-    if (!installedJpeg.equals(jpeg)) throw new Error(pair.recordId + ': JPEG re-encode verification failed');
-    log(pair.recordId + '|' + pair.source + '|' + pair.asset + '|' + sha256(webp).slice(0, 16) + '|' + sha256(jpeg).slice(0, 16));
-  }
+  await installAndVerify(
+    sharpFn,
+    repo,
+    result.pairs.map((p) => ({ source: p.source, asset: p.asset, webp: p.webp, jpeg: p.jpeg, label: p.recordId })),
+    bytesByName
+  );
 
   writeReport(flags.report, result);
+  return 0;
+}
+
+function printIngest(result) {
+  const { counts, creates, shares, unarted, unsourced, unmatched, ambiguous, collisions, duplicateSources } = result;
+  log(
+    'accepted ' +
+      counts.acceptedArtwork +
+      ', new assets ' +
+      counts.newAssets +
+      ', record links ' +
+      counts.recordLinks +
+      ', shared ' +
+      counts.shared +
+      ', unarted ' +
+      counts.unarted
+  );
+  for (const c of creates) log('creates: ' + c.asset + ' <- ' + c.source + ' (records: ' + c.recordIds.join(', ') + ')');
+  for (const s of shares) log('shares: ' + s.recordId + ' -> ' + s.asset + ' (also claimed by: ' + s.alsoClaimedBy.join(', ') + ')');
+  for (const u of unarted) log('unarted: ' + u.recordId);
+  for (const u of unsourced) log('unsourced: ' + u.asset + ' (waiting: ' + u.recordIds.join(', ') + ')');
+  for (const u of unmatched) log('unmatched: ' + u.source + ' (' + u.reason + ')');
+  for (const a of ambiguous) log('ambiguous: ' + a.source + ' -> ' + a.recordIds.join(', '));
+  for (const c of collisions) log('collision: ' + c.asset + ' <- ' + c.sources.join(', '));
+  for (const d of duplicateSources) log('duplicate bytes: ' + d.sources.join(' == '));
+}
+
+// The distinct `img` values data.js declares for which `img/<value>` does not
+// exist on disk yet - the definition of "new art needed" (plan.md 5.3 step
+// 3). run.mjs computes this; planIngest never touches the filesystem.
+function findMissingAssets(repo, records) {
+  const assets = new Set();
+  for (const r of records) if (r.img) assets.add(r.img);
+  return Array.from(assets).filter((asset) => !existsSync(join(repo, 'img', asset)));
+}
+
+async function verbIngest(flags) {
+  if (!flags.uploads) throw new Error('ingest needs --uploads <dir>');
+  const repo = flags.repo || REPO_ROOT;
+  const { records } = loadRecords(repo);
+  const { sources, bytesByName } = readUploads(flags.uploads);
+  const map = readMap(flags.map);
+  const missingAssets = findMissingAssets(repo, records);
+  const result = planIngest({ sources, records, missingAssets, map });
+  printIngest(result);
+
+  const hardStops = [];
+  if (result.ambiguous.length) hardStops.push('ambiguous names: ' + result.ambiguous.map((a) => a.source).join(', '));
+  if (result.collisions.length) hardStops.push('collisions: ' + result.collisions.map((c) => c.asset).join(', '));
+  if (result.duplicateSources.length) {
+    hardStops.push('duplicate source bytes: ' + result.duplicateSources.map((d) => d.sources.join('==')).join(', '));
+  }
+
+  // `unsourced` and `unarted` are reported above and never stop the run: a
+  // partially-arted ingest is normal (plan.md 5.3 step 3).
+  const sharpFn = await loadSharp();
+  for (const c of result.creates) {
+    const buf = bytesByName.get(c.source);
+    try {
+      await decodeAndCheck(sharpFn, buf, c.source);
+    } catch (err) {
+      hardStops.push(err.message);
+    }
+    const webpPath = join(repo, c.webp);
+    const jpegPath = join(repo, c.jpeg);
+    // The inverted precondition: `ingest` creates, it never replaces. This is
+    // `install`'s existence check with the sense flipped.
+    if (existsSync(webpPath)) hardStops.push('ingest refuses: destination already exists: ' + c.webp);
+    if (existsSync(jpegPath)) hardStops.push('ingest refuses: destination already exists: ' + c.jpeg);
+  }
+
+  if (hardStops.length) {
+    for (const h of hardStops) log('refused: ' + h);
+    return 1;
+  }
+
+  if (flags.dryRun) {
+    log('dry run: ' + result.creates.length + ' asset(s) would be created, nothing written');
+    return 0;
+  }
+
+  await installAndVerify(
+    sharpFn,
+    repo,
+    result.creates.map((c) => ({ source: c.source, asset: c.asset, webp: c.webp, jpeg: c.jpeg, label: c.asset })),
+    bytesByName
+  );
+
+  writeReport(flags.report, result);
+  log('next: node tools/build.js, then node tests/run-all.js dataint');
   return 0;
 }
 
@@ -330,6 +433,7 @@ async function main() {
   else if (verb === 'install') process.exitCode = await verbInstall(flags);
   else if (verb === 'verify') process.exitCode = await verbVerify(flags);
   else if (verb === 'verify-previews') process.exitCode = await verbVerifyPreviews(flags);
+  else if (verb === 'ingest') process.exitCode = await verbIngest(flags);
 }
 
 main().catch((err) => {

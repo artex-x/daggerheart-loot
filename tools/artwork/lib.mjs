@@ -83,32 +83,19 @@ function findDuplicateSources(sources) {
   return out;
 }
 
-// { pairs, unmatched, ambiguous, collisions, duplicateSources, counts }.
-//
-// - `sources` is [{ name, sha256, bytes }] - metadata only; run.mjs reads
-//   the files and never passes raw bytes in here.
-// - `map` is the parsed --map object or null; only its `assign` key is read:
-//   { "<source filename>": "<record id>" }. An assign entry naming an
-//   unknown record id is reported in `unmatched`, never thrown.
-// - The pair list is keyed by distinct **asset** (a record's `img` value),
-//   never by record: two matched records sharing one asset and one source
-//   produce one pair, whose `jpeg` is the shared asset's own `.jpg` and never
-//   `og/<other-record-id>.jpg` (plan.md 3.4, the structural form of the
-//   og/-naming trap).
-// - `collisions`: two different sources resolving to the same asset - a hard
-//   error, because it would mean two different files racing to become one
-//   destination.
-export function planInstall({ sources, records, map }) {
-  const index = indexRecords(records);
-  const assign = (map && map.assign) || {};
-
+// Resolves each source to a candidate record via `map.assign` first, then by
+// normalized name - the matching half shared by `planInstall` and
+// `planIngest` (plan.md 5.3 step 1: "reusing the same helpers - do not fork
+// the matching code"). Returns { candidates, unmatched, ambiguous,
+// duplicateSources }; `candidates` is [{ source, record }].
+function matchSources({ sources, index, assign }) {
   const duplicateSources = findDuplicateSources(sources);
   const duplicateNames = new Set();
   for (const d of duplicateSources) for (const name of d.sources) duplicateNames.add(name);
 
   const unmatched = [];
   const ambiguous = [];
-  const candidates = []; // { source, record }
+  const candidates = [];
 
   for (const source of sources) {
     // A duplicate-bytes source is reported once, above; matching it further
@@ -136,6 +123,29 @@ export function planInstall({ sources, records, map }) {
       candidates.push({ source, record: matches[0] });
     }
   }
+
+  return { candidates, unmatched, ambiguous, duplicateSources };
+}
+
+// { pairs, unmatched, ambiguous, collisions, duplicateSources, counts }.
+//
+// - `sources` is [{ name, sha256, bytes }] - metadata only; run.mjs reads
+//   the files and never passes raw bytes in here.
+// - `map` is the parsed --map object or null; only its `assign` key is read:
+//   { "<source filename>": "<record id>" }. An assign entry naming an
+//   unknown record id is reported in `unmatched`, never thrown.
+// - The pair list is keyed by distinct **asset** (a record's `img` value),
+//   never by record: two matched records sharing one asset and one source
+//   produce one pair, whose `jpeg` is the shared asset's own `.jpg` and never
+//   `og/<other-record-id>.jpg` (plan.md 3.4, the structural form of the
+//   og/-naming trap).
+// - `collisions`: two different sources resolving to the same asset - a hard
+//   error, because it would mean two different files racing to become one
+//   destination.
+export function planInstall({ sources, records, map }) {
+  const index = indexRecords(records);
+  const assign = (map && map.assign) || {};
+  const { candidates, unmatched, ambiguous, duplicateSources } = matchSources({ sources, index, assign });
 
   const byAsset = new Map();
   for (const c of candidates) {
@@ -223,5 +233,103 @@ export function staleDelta({ before, after, expected }) {
     extra: extra.slice().sort(),
     disappeared: disappeared.slice().sort(),
     ok: missing.length === 0 && extra.length === 0
+  };
+}
+
+// { creates, shares, unarted, unsourced, unmatched, ambiguous, collisions,
+// duplicateSources, counts } - the ingest planner (plan.md 5.3 step 1).
+//
+// - `missingAssets` is supplied by run.mjs: the distinct `img` values in
+//   data.js for which `img/<value>` does not exist on disk yet. planIngest
+//   never touches the filesystem itself and never infers which records are
+//   "new" - it only knows an asset is missing because the caller told it so.
+// - `creates` is keyed by distinct **asset**, never by record, exactly like
+//   `planInstall`'s `pairs`: one entry per source that resolves to a missing
+//   asset, `recordIds` is every record in `records` claiming that asset (so
+//   two brand-new records sharing one not-yet-installed asset still produce
+//   one entry). This is what makes `og/<new-record-id>.jpg` structurally
+//   unreachable - the destination name only ever comes from `asset`.
+// - `shares` covers the opposite case: a source was matched to a record
+//   whose asset turns out to already exist on disk (not in `missingAssets`).
+//   No new file is needed - the record is simply joining an already-arted
+//   line - so a `shares` entry carries no filenames at all, only
+//   `{ recordId, asset, alsoClaimedBy }`. A record nobody uploaded a source
+//   for is not reported here: if it needs no art, there is nothing to plan.
+// - `unarted`: every record with a falsy `img` - `img: ''` rendering
+//   `_none.webp` is a legal ingest outcome (tests/noart.js), reported, not
+//   an error.
+// - `unsourced`: every asset in `missingAssets` that no source resolved to -
+//   the blocker an ingest most often hits - named by asset and by the
+//   record ids waiting on it.
+// - `unmatched`, `ambiguous`, `duplicateSources`, and the collision rule are
+//   the same helpers `planInstall` uses; the matching code is not forked.
+export function planIngest({ sources, records, missingAssets, map }) {
+  const index = indexRecords(records);
+  const assign = (map && map.assign) || {};
+  const missingSet = new Set(missingAssets);
+  const { candidates, unmatched, ambiguous, duplicateSources } = matchSources({ sources, index, assign });
+
+  const byAsset = new Map();
+  for (const c of candidates) {
+    const asset = c.record.img;
+    if (!byAsset.has(asset)) byAsset.set(asset, []);
+    byAsset.get(asset).push(c);
+  }
+
+  const collisions = [];
+  const creates = [];
+  const shares = [];
+  for (const [asset, list] of byAsset) {
+    if (list.length > 1) {
+      collisions.push({ asset, sources: list.map((c) => c.source.name) });
+      continue;
+    }
+    const { source, record } = list[0];
+    if (missingSet.has(asset)) {
+      const recordIds = (index.byImg[asset] || [record]).map((r) => r.id);
+      creates.push({
+        source: source.name,
+        sourceSha256: source.sha256,
+        asset,
+        webp: 'img/' + asset,
+        jpeg: 'og/' + asset.replace(/\.webp$/, '.jpg'),
+        recordIds
+      });
+    } else {
+      const alsoClaimedBy = (index.byImg[asset] || [])
+        .filter((r) => r.id !== record.id)
+        .map((r) => r.id);
+      shares.push({ recordId: record.id, asset, alsoClaimedBy });
+    }
+  }
+
+  const unarted = records.filter((r) => !r.img).map((r) => ({ recordId: r.id }));
+
+  const resolvedAssets = new Set(creates.map((c) => c.asset));
+  const unsourced = [];
+  for (const asset of missingSet) {
+    if (resolvedAssets.has(asset)) continue;
+    const recordIds = (index.byImg[asset] || []).map((r) => r.id);
+    unsourced.push({ asset, recordIds });
+  }
+
+  const recordLinks = creates.reduce((n, c) => n + c.recordIds.length, 0);
+
+  return {
+    creates,
+    shares,
+    unarted,
+    unsourced,
+    unmatched,
+    ambiguous,
+    collisions,
+    duplicateSources,
+    counts: {
+      acceptedArtwork: creates.length,
+      newAssets: creates.length,
+      recordLinks,
+      shared: shares.length,
+      unarted: unarted.length
+    }
   };
 }
