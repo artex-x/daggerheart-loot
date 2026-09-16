@@ -104,6 +104,20 @@ body {
   min-height: 100vh;
 }
 
+/* off `html,body{background:#fff;color:#000}` in style.css's `@media print`
+   (1403). It lives here rather than in `Shell.svelte` because `:global(html)`
+   and `:global(body)` are specificity (0,0,1), identical to the `body` above,
+   and the bundle emits component styles *before* this file - so the same rule
+   written in the component lost the cascade and printed the dark ground under
+   `print-color-adjust: exact`. In this file it is simply the later rule. */
+@media print {
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+}
+
 /* Off style.css, and load-bearing: without it a button falls back to
    `line-height: normal` and comes out six pixels shorter than the same button
    in the live app. That is the language pill in the header, so every route was
@@ -139,14 +153,9 @@ textarea::placeholder {
   border-radius: var(--r-sm);
 }
 
-/* Anyone who has asked their system for less movement gets none of ours. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* No blanket reduced-motion rule here, on purpose: the live app has none
+   either, only two named animations killed per component
+   (`RecordCard.svelte`, `TablesPage.svelte`). A blanket `transition-duration`
+   of any value differs from the live app at `#/tables/core_item ~ row anchor
+   @ 375` (B8) and a non-zero one breaks `PrintCard.svelte`'s `fit()` (B7).
+   Owed a real policy after the migration - `docs/specs/DEBT.md`, D1. */

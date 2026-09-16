@@ -1,0 +1,103 @@
+# #/roll/wondrous ~ modal
+# route: #/roll/wondrous
+# why: the card opened over the roll
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
+  dialog "Закрыть" [modal=true]
+    button "Закрыть" [description=Закрыть focused=true]
+    button "Страница"
+    StaticText "1"
+    StaticText "РАСХОДНИК"
+    StaticText "WONDROUS"
+    StaticText "Смола Бездны"
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
+    DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/w1]
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Добавить в список
+Закрыть
+К содержимому
+Как это работает
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать этот раздел при запуске
+Отправить
+Поиск
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–119
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Страница
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
+  dialog "Close" [modal=true]
+    button "Close" [description=Close focused=true]
+    button "Page"
+    StaticText "1"
+    StaticText "CONSUMABLE"
+    StaticText "WONDROUS"
+    StaticText "Abyssal Sap"
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
+    DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/w1]
+
+## en :: controls
+Add to list
+Alt. tables
+Close
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+How this works
+Lay these out for printing: nine to an A4 sheet
+Lists
+One higher
+One lower
+Open this section on start
+Page
+RU
+Random 1–119
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

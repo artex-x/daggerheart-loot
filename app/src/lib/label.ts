@@ -1,8 +1,17 @@
-/* The words a badge carries, off app.js.
+/* A tag and a path are two different things, off app.js.
  *
- * `srcLabel` names the book a record comes from, and a community record names
- * the community instead - beside other communities the book is obvious, and the
- * community is the thing that tells them apart.
+ * `srcLabel` is the tag: one leaf naming the book, community, or setting a
+ * record comes from. It goes on the `.badge src` chip, which always sits
+ * inside a listing or a card that already supplies the surrounding context -
+ * a community record names the community instead of the book, because beside
+ * other communities the book is obvious and the community is what tells them
+ * apart. A tag never carries a path.
+ *
+ * `whereFrom` is the path: where the record lives in the navigation - the
+ * group, its sub-table, and (for the two tables sectioned by a value the
+ * record carries) the record's own section leaf. It goes where the reader has
+ * no surrounding context: the line under a record-page heading, a print
+ * card's source line, and a share stub's subtitle. A path must be complete.
  *
  * `badgeKind` is the class the badge takes, which is not the same vocabulary as
  * `kindOf` in data.ts: that answers "what does this count as when filtering",
@@ -17,6 +26,12 @@ import type { Lang, Record_, TableId } from './types.js';
 
 export function badgeKind(it: Record_): 'item' | 'cons' {
   return it.kind === 'consumable' ? 'cons' : 'item';
+}
+
+/** Campaign-frame records are presented as setting material even when a
+ * starter (notably f95) carries ordinary equipment metadata too. */
+export function isFrameRecord(it: Record_): boolean {
+  return !!it.frame || it.src === 'frame';
 }
 
 export interface Badge {
@@ -85,8 +100,20 @@ export function srcName(key: string, lang: Lang): string {
   return named[key] ?? frameName(key, lang);
 }
 
+/**
+ * The source line on a print card, off app.js:954.
+ *
+ * A table row's badge names the community, because other communities sit
+ * beside it and the book is obvious. A card leaves the table and goes to the
+ * table alone, so a community record also names the book it came from.
+ */
+export function printSrc(it: Record_, lang: Lang): string {
+  return isFrameRecord(it) || it.src === 'community' ? whereFrom(it, lang) : srcLabel(it, lang);
+}
+
 export function srcLabel(it: Record_, lang: Lang): string {
   const t = dict(lang);
+  if (it.frame) return frameName(it.frame, lang);
   switch (it.src) {
     case 'core':
     case 'hnf':
@@ -112,17 +139,18 @@ const EQ_TABLE = {
 /**
  * Which table a record is printed in, off `tableIdOf` in app.js.
  *
- * Vault of Ages is checked before equipment on purpose: two dozen of its pieces
- * carry a stat block but live in the Vault's own table, and sending the "show
- * in the table" link to the weapons table would land the reader in a section
- * their record is not in.
+ * Starting inventory, Vault of Ages and campaign frames are checked before equipment on purpose:
+ * their pieces carry stat blocks but live in their source tables, and sending
+ * the "show in the table" link to a weapons table would land the reader in a
+ * section their record is not in.
  */
 export function tableOf(it: Record_): TableId | null {
+  if (it.frame || it.src === 'frame') return 'other_frames';
+  if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
   if (it.eq && !it.roll) return EQ_TABLE[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
-  if (it.src === 'frame') return 'frames';
   if (it.src === 'community') return 'community';
 
   /* What is left is the roll tables, which are keyed by book and by kind. */
@@ -147,7 +175,7 @@ const GROUPS: { ru: string; en: string; subs: readonly TableId[] }[] = [
   { ru: 'Vault of Ages', en: 'Vault of Ages', subs: ['voa'] },
   { ru: 'Сообщества', en: 'Communities', subs: ['community'] },
   { ru: 'Снаряжение', en: 'Equipment', subs: ['eq_weapon', 'eq_secondary', 'eq_armor'] },
-  { ru: 'Фреймы', en: 'Frames', subs: ['frames'] }
+  { ru: 'Прочее', en: 'Other', subs: ['other_starting', 'other_frames'] }
 ];
 
 const SUBS: Partial<Record<TableId, { ru: string; en: string }>> = {
@@ -159,23 +187,26 @@ const SUBS: Partial<Record<TableId, { ru: string; en: string }>> = {
   alt_consumable: { ru: 'Расходники', en: 'Consumables' },
   eq_weapon: { ru: 'Оружие', en: 'Weapons' },
   eq_secondary: { ru: 'Вторичное', en: 'Secondary' },
-  eq_armor: { ru: 'Броня', en: 'Armor' }
+  eq_armor: { ru: 'Броня', en: 'Armor' },
+  other_starting: { ru: 'Стартовые', en: 'Starting' },
+  other_frames: { ru: 'Сеттинги', en: 'Frames' }
 };
 
 /**
- * Where a record sits, as the line under the heading says it.
- *
- * A community record names its community instead: beside other communities the
- * book is obvious, and the community is what tells them apart.
+ * Where a record sits, as the line under the heading says it: the group, its
+ * sub-table, and - for the two tables sectioned by a value the record itself
+ * carries, `other_frames` by `frame` and `community` by `community` - the
+ * record's own section leaf. No other table is sectioned by a record
+ * property, so no other table appends one.
  */
 export function whereFrom(it: Record_, lang: Lang): string {
-  if (it.src === 'community') return srcLabel(it, lang);
-
   const table = tableOf(it);
   if (!table) return srcLabel(it, lang);
 
   const group = GROUPS.find((g) => g.subs.includes(table));
   const sub = SUBS[table];
   const head = group ? group[lang] : srcLabel(it, lang);
-  return sub ? `${head} · ${sub[lang]}` : head;
+  const base = sub ? `${head} · ${sub[lang]}` : head;
+
+  return it.frame || it.community ? `${base} · ${srcLabel(it, lang)}` : base;
 }

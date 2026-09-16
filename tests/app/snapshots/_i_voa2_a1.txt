@@ -1,0 +1,133 @@
+# #/i/voa2_a1
+# route: #/i/voa2_a1
+# why: an artifact - the tier word belongs in the path line, and no state opened one
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/i/voa2_a1]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Узы Души" [level=1]
+    StaticText "Vault of Ages · Артефакт · номер 1 "
+    link "показать в таблице" [url=#/tables/voa/voa2_a1]
+    button "Страница"
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Вы можете отметить 5 Стресса, чтобы поглотить душу, навсегда пол..." [namelen=177 namehash=4ff313da]
+    StaticText "Вы можете потратить Надежду, чтобы освободить душу. Она немедлен..." [namelen=158 namehash=808dbb15]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/voa2_a1]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Добавить в список
+К содержимому
+ЛутDaggerheart
+Обычные правила
+Отправить
+Поиск
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Страница
+Таблицы
+показать в таблице
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/i/voa2_a1]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Anima Colligationem" [level=1]
+    StaticText "Vault of Ages · Artifact · roll 1 "
+    link "show in the table" [url=#/tables/voa/voa2_a1]
+    button "Page"
+    StaticText "1"
+    ... StaticText x9 of 13 same-shape siblings elided
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "You can mark 5 Stress to consume the soul, permanently gaining a..." [namelen=171 namehash=e92aa3dc]
+    StaticText "You can spend a Hope to free the soul. It returns to the owner i..." [namelen=136 namehash=5450f646]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/voa2_a1]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Add to list
+Alt. tables
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+Lay these out for printing: nine to an A4 sheet
+Lists
+Page
+RU
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+show in the table
+ЛутDaggerheart

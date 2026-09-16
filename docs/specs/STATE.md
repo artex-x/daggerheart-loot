@@ -25,7 +25,7 @@ instead - that is what the `f_` segment is for.
 | `dhloot.lists.v2` | lists, with contents, per-entry meta and both notes |
 | `dhloot.lists.v1` | the pre-split shape. Read once and migrated into v2, then **left untouched** so a rollback loses nothing. Never delete it. |
 | `dhloot.lang.v1` | `ru` or `en` |
-| `dhloot.home.v1` | the pinned starting section, as a full hash |
+| `dhloot.home.v1` | the pinned starting section, as a full hash - a section, or a named table (`#/tables/<table>`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form |
 | `dhloot.prefs.v1` | `{ view: 'list' \| 'grid' }` |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |

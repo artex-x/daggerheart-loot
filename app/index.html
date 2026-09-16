@@ -2,16 +2,67 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- A personal tool: kept out of search results on purpose, docs/specs/META.md -->
+<!-- viewport-fit=cover is load-bearing, not decoration: without it
+     env(safe-area-inset-*) resolves to 0 on a notched phone, and SelBar.svelte
+     positions the selection bar with all three insets. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Генератор лута — Daggerheart</title>
+<!-- A personal tool: kept out of search results on purpose. Crawling is allowed
+     so that this tag is actually read - a blocked page never is, and can still
+     be listed as a bare URL. Messenger previews need the fetch too.
+     docs/specs/META.md sections 1 and 2. -->
 <meta name="robots" content="noindex, nofollow">
-<title>Генератор лута для Daggerheart</title>
+<meta name="description" content="Генератор добычи для Daggerheart: 710 предметов и расходников, 381 единица оружия и брони. Core, Hope &amp; Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, предметы сообществ и альтернативные таблицы. Русский и английский.">
+<!-- The pre-stylesheet paint only; tokens.css sets the CSS property too. -->
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Генератор лута Daggerheart">
+<meta property="og:title" content="Генератор лута — Daggerheart">
+<meta property="og:description" content="1091 позиции с картинками: добыча, расходники, оружие и броня из Core, Hope &amp; Fear, Wondrous Loot и предметов сообществ. Русский и английский.">
+<meta property="og:url" content="https://artex-x.github.io/daggerheart-loot/">
+<!-- The site's own card, not an item's artwork. og/ci17.jpg used to sit here,
+     so every link to a table or a filter unfurled in Telegram with a picture of
+     one particular artefact, which read as "here is this item". 1200x630 is
+     what summary_large_image expects; the square item images were letterboxed. -->
+<meta property="og:image" content="https://artex-x.github.io/daggerheart-loot/og/_share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Генератор лута — Daggerheart">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Генератор лута — Daggerheart">
+<meta name="twitter:description" content="1091 позиции с картинками: добыча, расходники, оружие и броня. Русский и английский.">
+<meta name="twitter:image" content="https://artex-x.github.io/daggerheart-loot/og/_share.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
+<!-- No stylesheet link: the rewrite's CSS ships inside the bundle. -->
 <!-- The data arrives as a classic script rather than by fetch: from a folder
      (file://) a request for a local json is blocked. CONTRACTS.md section 4. -->
 <script defer src="./data.js"></script>
 </head>
 <body>
 <div id="app"></div>
+<!-- A reader without JS used to land on an empty page and leave with nothing -
+     which is how a model handed a link to a list decided the site was
+     unreadable. What it came for now lies in the same place. The class is
+     dropped and the padding kept inline: `wrap` lives inside Svelte-scoped
+     components and would resolve to nothing here. -->
+<noscript>
+  <div style="padding:24px 0">
+    <h1>Лут Daggerheart</h1>
+    <p>Приложению нужен JavaScript. Данные лежат отдельными файлами и читаются без него:</p>
+    <ul>
+      <li><a href="catalog.csv">catalog.csv</a> — 1091 записи, по строке на каждую</li>
+      <li><a href="data.json">data.json</a> — то же целиком</li>
+      <li><a href="llms.txt">llms.txt</a> — что это за сайт, грамматика адресов, формат ссылки на список</li>
+    </ul>
+    <p>The app needs JavaScript. Machine-readable data:
+      <a href="catalog.csv">catalog.csv</a>, <a href="data.json">data.json</a>,
+      <a href="llms.txt">llms.txt</a>. Note that a list link keeps its contents
+      after the <code>#</code>, so it never reaches any server — see llms.txt.</p>
+  </div>
+</noscript>
 <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

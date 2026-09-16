@@ -20,6 +20,39 @@ const EQUIPMENT_ENTRY = require('../../docs/fixtures/lists/equipment-entry.json'
 const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
 /** Quantity and price on the shared page's rows - all three tail shapes. */
 const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
+/** The real catalogue, for the print states that need a route built rather
+ *  than typed by hand (the 181-id cap) - generated from `data.js`,
+ *  `tests/derived.js` keeps the two equal. */
+const LOOT = require('../../data.json');
+
+/* The print routes, built once and shared between the states below and the
+ * specs that key off their ids by name - `tests/print.js`'s own long-text
+ * set for LONG. */
+const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
+const LONG =
+  '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
+const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + String(i + 1)).join('-');
+const TOO_MANY =
+  '#/print/' +
+  Object.values(LOOT.items)
+    .flat()
+    .slice(0, 181)
+    .map((x) => x.id)
+    .join('-');
+const TOO_MANY_ID = '#/print/<181 ids> ~ too many';
+
+/** The eight states that draw a sheet at all - every print state but the
+ *  empty one, `#/print/nope`. */
+const PRINT_CARD_STATES = [
+  NINE,
+  NINE + ' ~ black and white',
+  LONG,
+  LONG + ' ~ black and white',
+  '#/print/ci1-q1',
+  '#/print/ci1-q1 ~ black and white',
+  TEN,
+  TOO_MANY_ID
+];
 
 /**
  * The packed form of `NOTES_BOTH_KINDS.gm.raw`, pasted rather than computed at
@@ -89,6 +122,7 @@ const NAME = {
     position: 'Позиция в списке',
     whatIsThis: 'Как это работает',
     printHint: 'Собрать карточки для печати: девять на лист A4',
+    printLink: 'Ссылка на набор',
     pickRow: 'Выбрать позицию',
     prices: 'Цены',
     /* Exact, not the default fuzzy match: the action row's own delete-list
@@ -138,6 +172,7 @@ const NAME = {
     position: 'Position in the list',
     whatIsThis: 'How this works',
     printHint: 'Lay these out for printing: nine to an A4 sheet',
+    printLink: 'Link to this set',
     pickRow: 'Select entry',
     prices: 'Prices',
     delOne: 'Delete (1)',
@@ -791,7 +826,9 @@ const foundRows = {
     '#/search ~ capped'
   ],
   async run(d) {
-    return { rows: await d.count('.rows [data-row]') };
+    const rows = await d.count('.rows [data-row]');
+    console.log(`       foundRows ${d.target}: ${rows}`);
+    return { rows };
   }
 };
 
@@ -829,6 +866,109 @@ const geometry = {
   only: ['#/i/ci1 ~ whole'],
   async run(d) {
     return await d.rectsAt({ card: '.card', pick: '.cardpick', foot: '.foot' });
+  }
+};
+
+/**
+ * The sheet's own arithmetic, as counts rather than pixels - the fast,
+ * always-on half of what a print state checks. Off `renderPrint`
+ * (app.js 3510-3558): how many sheets, how many cards, how many blanks pad
+ * the last one, which sheets are marked as a page break, whether the
+ * black-and-white class reached the sheet as well as every card, and
+ * whether the too-many note is on screen.
+ */
+const sheetCounts = {
+  name: 'the print sheet, in counts',
+  only: PRINT_CARD_STATES,
+  async run(d) {
+    return {
+      sheets: await d.count('.psheet'),
+      cards: await d.count('.pcard'),
+      blanks: await d.count('.pcard.blank'),
+      breaks: await d.count('.psheet[data-next]'),
+      bw: await d.count('.psheet.bw'),
+      warn: await d.count('.printnote.warnnote')
+    };
+  }
+};
+
+/**
+ * The fit, as the numbers `fitPrintCards` actually wrote onto each card -
+ * what tells a noisy `whole` capture from a card that fitted differently
+ * before anyone opens a diff image (`docs/parity.md`, "Two unstable
+ * classes"). `perWidth` because the card's own container query makes its
+ * size the one thing worth re-checking at every width, even though the
+ * card itself is a fixed 63mm regardless of the viewport around it.
+ */
+const cardFit = {
+  perWidth: true,
+  name: 'the fit, as the numbers it wrote onto each card',
+  only: PRINT_CARD_STATES,
+  async run(d) {
+    return {
+      text: await d.eachAt('.pcard:not(.blank) .pc-text', ['font-size']),
+      box: await d.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']),
+      art: await d.eachAt('.pc-art', ['height', '--artw', 'display']),
+      strip: await d.eachAt('.pc-strip .pc-box b', ['font-size']),
+      head: await d.eachAt('.pc-head', [])
+    };
+  }
+};
+
+/**
+ * The sheet under print media - the chrome hidden, the page unshadowed and
+ * page-broken, the print colours kept. Runs before the shots on the same
+ * page (leaving print media on would photograph the wrong medium), so it
+ * always restores the medium in a `finally`.
+ */
+const printMedia = {
+  name: 'the sheet under print media',
+  only: ['#/print/ci1-q1', '#/print/ci1-q1 ~ black and white', TEN, '#/print/nope'],
+  async run(d) {
+    await d.media('print');
+    try {
+      return {
+        header: await d.computed('header', ['display']),
+        nav: await d.computed('nav', ['display']),
+        footer: await d.computed('footer', ['display']),
+        skip: await d.computed('a.skip', ['display']),
+        bar: await d.computed('.printbar', ['display']),
+        body: await d.computed('body', ['background-color', 'color']),
+        main: await d.computed('main', [
+          'max-width',
+          'width',
+          'padding-top',
+          'padding-left',
+          'margin-left'
+        ]),
+        sheet: await d.computed('.psheet', [
+          'margin-top',
+          'margin-left',
+          'box-shadow',
+          'break-inside'
+        ]),
+        last: await d.computed('.psheet:last-child', ['height']),
+        next: await d.computed('.psheet[data-next]', ['break-before']),
+        card: await d.computed('.pcard', ['break-inside', 'print-color-adjust'])
+      };
+    } finally {
+      await d.media(undefined);
+    }
+  }
+};
+
+/** The set-link button, copied - the `copiedFilterLink` shape. Only the hash
+ *  is compared: the two apps live at different paths. */
+const copiedPrintLink = {
+  presses: true,
+  name: 'the print link, copied',
+  only: ['#/print/ci1-q1'],
+  async run(d, lang) {
+    await d.resetClipboard();
+    await d.click(NAME[lang].printLink);
+    const clip = await d.clipboard();
+    const hash = clip.text?.slice(clip.text.indexOf('#')) ?? null;
+    return { hash };
   }
 };
 
@@ -929,6 +1069,11 @@ const oneEmpty = { 'dhloot.lists.v2': JSON.stringify([LISTS[1]]) };
 const STATES = [
   { id: '#/i/ci1', route: '#/i/ci1', why: 'a loot record' },
   { id: '#/i/q1', route: '#/i/q1', why: 'an equipment record' },
+  {
+    id: '#/i/nope',
+    route: '#/i/nope',
+    why: 'the not-found record page: "Предмет не найден", the sub line, the "На главную" button'
+  },
   { id: '#/roll/wondrous', route: '#/roll/wondrous', why: 'a roll on a table with a real die' },
   { id: '#/roll/dread', route: '#/roll/dread', why: 'a roll on a table with no die of its own' },
 
@@ -1235,6 +1380,30 @@ const STATES = [
     }
   },
   {
+    id: '#/tables ~ a row opened, list menu',
+    route: '#/tables',
+    why: 'the add-to-list menu inside the modal, and which side of the button it opens on',
+    storage: two,
+    enter: async (d) => {
+      await d.click('Кольцо Тишины');
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/tables ~ a row opened, new list',
+    route: '#/tables',
+    // No `storage`: with the `two` seed every card opens up and the
+    // divergence is never reached. With no lists seeded, Самоцвет Чутья
+    // sits inside the 17px band at 1100 where the rewrite re-measures the
+    // menu from its already-flipped side and sends it under the card's edge.
+    why: 'the new-list form inside the modal, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card\'s edge',
+    enter: async (d) => {
+      await d.click('Самоцвет Чутья');
+      await d.click('Добавить в список');
+      await d.click('+ Новый список');
+    }
+  },
+  {
     id: '#/tables ~ a row ticked',
     route: '#/tables',
     why: 'the bar, one row ticked',
@@ -1329,7 +1498,24 @@ const STATES = [
     }
   },
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
-  { id: '#/tables/frames', route: '#/tables/frames', why: 'a sectioned body: campaign frames' },
+  { id: '#/tables/other_starting', route: '#/tables/other_starting', why: 'the plain starting-items subtable' },
+  { id: '#/tables/other_frames', route: '#/tables/other_frames', why: 'the sectioned frame-items subtable' },
+  {
+    id: '#/tables/other_frames ~ two frames',
+    route: '#/tables/other_frames',
+    why: 'two frames picked in one row: values OR, and the second pick keeps the first',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Пир зверей');
+      await d.click('Колоссы Сухоземья');
+    }
+  },
+  {
+    id: '#/tables/other_frames ~ dark heart anchor',
+    route: '#/tables/other_frames/dark_heart',
+    why: 'the campaign-frame section anchor'
+  },
+  { id: '#/tables/frames', route: '#/tables/frames', why: 'legacy frame-items compatibility route' },
   { id: '#/tables/community', route: '#/tables/community', why: 'a sectioned body: communities' },
   {
     id: '#/tables/community ~ panel open',
@@ -1366,6 +1552,20 @@ const STATES = [
      name until this batch - `#/i/f1` is the first state to open a frame
      record at all, which is why nothing had caught it. */
   { id: '#/i/f1', route: '#/i/f1', why: 'a frame-equipment record, catching the source-badge fix' },
+
+  /* B2: a tag and a table path are two different things. Neither shape had a
+     state before, which is why the human found both defects on the published
+     site rather than in a golden. */
+  {
+    id: '#/i/cm1',
+    route: '#/i/cm1',
+    why: "a community record - the one table path whose leaf is the record's own community"
+  },
+  {
+    id: '#/i/voa2_a1',
+    route: '#/i/voa2_a1',
+    why: 'an artifact - the tier word belongs in the path line, and no state opened one'
+  },
 
   /* The lists index, off `renderLists`/`storageWarning` in app.js. */
   {
@@ -1640,7 +1840,64 @@ const STATES = [
       await d.click('Выбрано');
     }
   },
-  { id: '#/print/ci1-q1', route: '#/print/ci1-q1', why: 'a print sheet', pending: 'print slice' }
+  {
+    id: '#/print/ci1-q1',
+    route: '#/print/ci1-q1',
+    why: 'a print sheet: a loot card with its art beside a weapon card, seven blank places'
+  },
+  {
+    id: '#/print/ci1-q1 ~ black and white',
+    route: '#/print/ci1-q1',
+    why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: NINE,
+    route: NINE,
+    whole: true,
+    why: 'every card shape on one sheet: item, weapon, armour, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule'
+  },
+  {
+    id: NINE + ' ~ black and white',
+    route: NINE,
+    whole: true,
+    why: 'the same nine, the other layout',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: LONG,
+    route: LONG,
+    whole: true,
+    why: 'the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalogue'
+  },
+  {
+    id: LONG + ' ~ black and white',
+    route: LONG,
+    whole: true,
+    why: 'the same, with the black-and-white padding floor',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: TEN,
+    route: TEN,
+    why: 'a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"'
+  },
+  {
+    id: TOO_MANY_ID,
+    route: TOO_MANY,
+    why: 'the cap: 180 cards on twenty sheets and the red note about the one left out'
+  },
+  {
+    id: '#/print/nope',
+    route: '#/print/nope',
+    why: 'nothing to print: the heading, the note and the way to the lists'
+  }
 ];
 
 const SPECS = [
@@ -1681,7 +1938,11 @@ const SPECS = [
   typeRuns,
   foundRows,
   packedExpanded,
-  geometry
+  geometry,
+  sheetCounts,
+  cardFit,
+  printMedia,
+  copiedPrintLink
 ];
 
 /**
@@ -1724,13 +1985,16 @@ const SPECS = [
 const VISUAL_DEBT = {
   /* The row landed (B5.1). What is left in all three modal states below is
      the residue B5 planning already named: showModal() moves the keyboard
-     into the dialog and the live app leaves it on the page behind it, which
-     is the accessibility fix ACCEPTED records - the close button's own focus
-     ring is the only thing still different, and a centred dialog reflows by
-     that ring's few pixels when the card's height settles. Measured on this
-     host (Windows, advisory - CI to confirm): 0.02% at 1100, 0.03% at 768,
-     0.07% at 375, the same in both languages, for all three states this
-     shape covers. Down from the pre-B5.1 debt by two orders of magnitude. */
+     into the dialog and the live app leaves it on the page behind it - a
+     deliberate accessibility improvement, written up in
+     docs/specs/FEATURES.md, "Records" (R0a), not in ACCEPTED, which only
+     ever held the roll-dice and grid-tile entries below. The close button's
+     own focus ring is the only thing still different, and a centred dialog
+     reflows by that ring's few pixels when the card's height settles.
+     Measured on this host (Windows, advisory - CI to confirm): 0.02% at
+     1100, 0.03% at 768, 0.07% at 375, the same in both languages, for all
+     three states this shape covers. Down from the pre-B5.1 debt by two
+     orders of magnitude. */
   '#/i/q1 ~ another tier @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
   '#/i/q1 ~ another tier @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
   '#/i/q1 ~ another tier @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
@@ -1740,8 +2004,9 @@ const VISUAL_DEBT = {
 
   /* The row landed. Same shape as #/i/q1 ~ another tier above: only the
      close button's own focus ring is left, off `showModal()`'s accessibility
-     fix (ACCEPTED). Measured on this host (Windows, advisory - CI to
-     confirm), the same three figures. */
+     improvement (docs/specs/FEATURES.md, "Records", not ACCEPTED). Measured
+     on this host (Windows, advisory - CI to confirm), the same three
+     figures. */
   '#/roll/wondrous ~ modal @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
   '#/roll/wondrous ~ modal @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
   '#/roll/wondrous ~ modal @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
@@ -1750,8 +2015,10 @@ const VISUAL_DEBT = {
   '#/roll/wondrous ~ modal @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
   /* The row landed. Same shape as #/roll/wondrous ~ modal above - only the
-     close button's own focus ring is left. Measured on this host (Windows,
-     advisory - CI to confirm), the same three figures again. */
+     close button's own focus ring is left, off the same accessibility
+     improvement (docs/specs/FEATURES.md, "Records", not ACCEPTED). Measured
+     on this host (Windows, advisory - CI to confirm), the same three
+     figures again. */
   '#/tables ~ a row opened @ ru 1100': { pct: 0.02, why: "the close button's own focus ring" },
   '#/tables ~ a row opened @ ru 768': { pct: 0.03, why: 'the same ring, mid width' },
   '#/tables ~ a row opened @ ru 375': { pct: 0.07, why: 'the same ring, on a phone' },
@@ -1759,116 +2026,25 @@ const VISUAL_DEBT = {
   '#/tables ~ a row opened @ en 768': { pct: 0.03, why: 'the same ring, in English, mid width' },
   '#/tables ~ a row opened @ en 375': { pct: 0.07, why: 'the same ring, in English, on a phone' },
 
-  /* The row and section anchors, at 1100 and 768. The reason here used to be
-     "the flash outline's own antialiasing", and it is wrong: the ring is not
-     rasterised differently, **the rewrite does not draw it at all.**
-
-     Cropped out of the run's own screenshots, `@ en 1100` is the live app's
-     2px gold ring around the row against nothing at all in the rewrite -
-     everything inside the ring is identical, which is why the number is a
-     ring's worth of pixels and no more. Confirmed off the pixels with a probe
-     that asks each app for `.flash` directly:
-
-       legacy   on arrival: yes  |  after 1.6s: no  |  after the EN click: yes
-       next     on arrival: no   |  after 1.6s: no  |  after the EN click: no
-
-     Two separate things, both real. `TablesPage.svelte`'s anchor effect adds
-     the class with `target.classList.add('flash')`, and the rows are drawn by
-     a keyed `{#each}` in `TableRows.svelte`, so the next render replaces the
-     element and the class goes with it - the rewrite's anchor highlight has
-     never been visible, on any route, since it was wired up. And the live app
-     re-plays the flash when the language is switched, because switching
-     re-enters `render()` with the anchor still in the address, while the
-     rewrite's effect is guarded on `app.navigations` and does not fire again.
-     That second one is why only the `@ en` cells carry a number: at `@ ru`
-     the harness never clicks anything, so the live app's flash has expired by
-     the time the screenshot is taken and the two apps agree by accident.
-
-     Not fixed here, deliberately. The fix is to make `flash` reactive state
-     rather than a class added behind Svelte's back, and it will move the
-     `@ ru` cells that currently pass - they pass because both apps show no
-     ring, and one that draws its ring correctly will differ from one whose
-     ring has expired. That needs the whole anchor set re-measured in one go,
-     which is a batch, not a footnote. */
-  '#/tables/core_item ~ row anchor @ en 1100': {
-    pct: 0.42,
-    why: "the anchor's gold ring, which the live app re-plays on the language switch and the rewrite never draws at all - see the note above VISUAL_DEBT"
-  },
-  '#/tables/core_item ~ row anchor @ en 768': {
-    pct: 0.43,
-    why: 'the same missing ring, mid width'
-  },
-  '#/tables/voa ~ section anchor @ en 1100': {
-    pct: 0.63,
-    why: "the same missing ring, around a section instead of a row - the section's own content measures pixel-identical"
-  },
-  '#/tables/voa ~ section anchor @ en 768': {
-    pct: 0.42,
-    why: 'the same, mid width'
-  },
-
-  /* Both anchors, on a phone, are one mechanism and it lives in the harness.
-
-     What was measured, replicating the run's own sequence - arrive at 1100,
-     then resize through 768 to 375 with no further navigation, reduced motion
-     applied throughout - and reading `window.scrollY`, the document height and
-     the target's rect at each step:
-
-       legacy  1100 sy 368  |  768 sy 368  |  375 sy 374
-       next    1100 sy 368  |  768 sy 368  |  375 sy 387
-
-     Both apps scroll exactly once, at 1100, against the same 118px
-     `scroll-margin-top`, and land on the same pixel; they are still on the
-     same pixel at 768. They part only when the viewport narrows to 375, and
-     neither of them is where it was put: Chrome moves a scrolled document on
-     reflow to keep the reading position, and it chooses what to hold still
-     from the DOM. The two apps have different DOM, so it holds different
-     things and they end 13px apart. Everything the diff shows is that offset
-     - the same rows, the same text, one page a few pixels lower than the
-     other.
-
-     That number is a browser heuristic answering two DOM trees, and it is only
-     reachable because the harness sweeps widths on one document instead of
-     arriving at each. Nobody resizes their phone to 375 mid-read.
-
-     This corrects two earlier readings of the same states, both written here
-     as fact and both wrong. It is not `TablesPage.svelte` scrolling a second
-     time against the 132px phone margin: the probe above shows one scroll, at
-     1100, at 118px, in both apps. And it is not rows reflowing differently
-     above the target: at 375 the two documents are the same 10065px tall and
-     `#/tables/voa` and `#/tables/core_item` are pixel-exact at that width.
-
-     The 7.92%/8.47% flip that made `@ en 375` look like a coin toss was this
-     too, and it is closed: `tests/parity/driver.js` now waits for the same
-     promise the anchor effect defers behind, so the scroll always happens
-     before the sweep. Three runs since have reproduced these four numbers
-     exactly.
-
-     What is left is the harness's to fix, by re-arriving at each width rather
-     than resizing - which is a change to how every state is measured and does
-     not belong in a batch about reading the numbers honestly. Turning
-     `overflow-anchor` off for both apps was tried and is not the whole answer:
-     it moves the two 375 figures around (8.84/7.92 becomes 7.92/8.47) without
-     removing them, so something else is in there as well and has not been
-     found yet. Recorded as the debt it is, with the part that is understood
-     named and the part that is not admitted. */
-  '#/tables/core_item ~ row anchor @ ru 375': {
-    pct: 10.52,
-    why: "RAISED from 8.85, which was a development machine's figure: the width sweep, where both apps scroll once at 1100 to the same pixel and Chrome's own scroll anchoring moves them 13px apart as the viewport narrows to 375 - see the note above VISUAL_DEBT. 10.52 is what CI measures, reproduced by three CI runs and the ubuntu container"
-  },
-  '#/tables/core_item ~ row anchor @ en 375': {
-    pct: 9.92,
-    why: 'RAISED from 7.92 to what CI measures: the same mechanism, in English, where a shorter fold at this width shifts less of the page. Three CI runs and the container all read 9.92'
-  },
-
-  '#/tables/voa ~ section anchor @ ru 375': {
-    pct: 11.55,
-    why: 'RAISED from 10.05 to what CI measures: the same width sweep, on a section deep in Vault of Ages, where the page is twice as tall again by 375 - see the note above VISUAL_DEBT'
-  },
-  '#/tables/voa ~ section anchor @ en 375': {
-    pct: 10.31,
-    why: 'RAISED from 8.84 to what CI measures: the same cause, in English, where less text wraps differently and the compounded drift is smaller'
-  }
+  /* The row and section anchors - all seven remaining entries, deleted by B9.
+     Two mechanisms, both closed: the flash was a class written straight onto
+     the DOM node (`target.classList.add('flash')`), which a keyed
+     `{#each}`/`{#if}` re-render (a view switch, a language switch) discards
+     along with the node, so the ring never drew on any route since it was
+     wired up - that was the `@ en 1100|768` residue. And the 375 cells'
+     residue was `tokens.css`'s blanket reduced-motion kill: the live app
+     leaves every declared `transition` alive under `prefers-reduced-motion:
+     reduce` (style.css 311/544 kill only two named animations), so Chrome's
+     scroll anchoring adjusts the live document across the width sweep's
+     transitions and the rewrite, with every transition dead, was not
+     adjusted. B9 makes the flash reactive state (`flashKey` on
+     `TablesPage`/`TableRows`, keyed on `${navigations}|${lang}` so it also
+     re-plays on a language switch, as the live app does) and deletes the
+     blanket kill outright - a real policy is owed after the migration,
+     `docs/specs/DEBT.md`, D1. Measured 0.00% on every one of the seven
+     entries, locally, after both fixes. The full diagnostic history - the
+     `.flash` probe, the scroll-position readings, the transition-policy
+     injection proof - is in git at `274aa99`, not repeated here. */
 };
 
 
@@ -1892,6 +2068,26 @@ const JITTER = 0.1;
  * `aria-current="true"` (app.js 2944). `d.controls()` reads names only, so no
  * key differs - an entry here would fail every run as stale, per `parity.js`'s
  * own rule that a stale `ACCEPTED` key is a failure, not a silent pass.
+ * `Seg.svelte` writes `aria-pressed` on every segment, so the tables view
+ * switch (app.js:2553) and the print page's colour / black-and-white switch
+ * (3534-3537), which write none live, differ the same way; and
+ * `PrintCard.svelte` draws the card's name as `<h2 class="pc-name">` where
+ * `printCardHTML` writes `<h3>` (app.js:3419) - a heading level
+ * `d.controls()` does not read. Both are B7's deliberate improvements;
+ * Phase 7's sweep carries them into `FEATURES.md`.
+ *
+ * The live app also re-plays the anchor scroll-and-flash on every `render()`,
+ * a tables search keystroke included (app.js:4435: `S.tables.q = el.value;
+ * render()`); the rewrite re-plays it on a navigation and a language switch
+ * only. No parity state types or ticks with an anchor in the address, so
+ * nothing keys this either (`docs/specs/FEATURES.md`, "Tables and search").
+ *
+ * A two-frame link (`#/tables/frames/f_frame-beast_feast-colossus`) opens both
+ * frames in the rewrite and empties the table in the live app, whose `fDecode`
+ * (app.js:2718-2726, the heuristic at 2725-2726) reads it as the old `_` form
+ * on arrival; no state holds this
+ * because the difference is the whole table, not a control. Phase 7's sweep
+ * carries it into `FEATURES.md`.
  */
 
 /**

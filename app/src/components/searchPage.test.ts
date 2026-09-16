@@ -5,7 +5,7 @@
  * the cap, the kind filter shared with the roll pages) rather than any
  * particular record. */
 
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -68,7 +68,19 @@ const LOOT: Loot = {
     core_consumable: [
       row({ id: 'cc1', kind: 'consumable', roll: 1, ru: 'Зелье', en: 'Potion' })
     ],
-    hnf_item: [row({ id: 'hi1', src: 'hnf', roll: 1, ru: 'Предмет H&F', en: 'H&F Thing' })]
+    hnf_item: [row({ id: 'hi1', src: 'hnf', roll: 1, ru: 'Предмет H&F', en: 'H&F Thing' })],
+    /* A community record, so a result row can be checked for the leaf tag its
+       badge must carry rather than the full table path. */
+    community: [
+      row({
+        id: 'cm1',
+        src: 'community',
+        community: 'Highborne',
+        community_ru: 'Великородное',
+        ru: 'Перстень Рода',
+        en: 'Ancestral Signet'
+      })
+    ]
   },
   eq: [],
   refs: {}
@@ -84,7 +96,7 @@ describe('arrival', () => {
   it('draws the head, the focused box and the hint - no results, no help button', () => {
     render(App, { env: at() });
     expect(screen.getByRole('heading', { name: 'Поиск' })).toBeInTheDocument();
-    expect(screen.getByText(/Поиск по всем 1061 позиции сразу/)).toBeInTheDocument();
+    expect(screen.getByText(/Поиск по всем 1091 позиции сразу/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Открывать этот раздел/ })).toBeInTheDocument();
 
@@ -127,6 +139,16 @@ describe('both languages at once', () => {
   });
 });
 
+describe('the source badge on a result row', () => {
+  it('names the community alone, with no path folded into it', async () => {
+    render(App, { env: at() });
+    await type('Перстень');
+    const result = screen.getByRole('button', { name: /Перстень/ });
+    expect(within(result).getByText('Великородное')).toBeInTheDocument();
+    expect(within(result).queryByText(/Сообщества · /)).not.toBeInTheDocument();
+  });
+});
+
 describe('the stat line', () => {
   it('finds the equipment record by its assembled range word, and nothing else', async () => {
     render(App, { env: at() });
@@ -162,16 +184,23 @@ describe('the cap', () => {
       eq: [],
       refs: {}
     };
-    render(App, { env: fakeEnv({ router: memoryRouter('#/search'), data: fakeData(many) }) });
-    /* Typed character by character, 305 rows would re-render on every
-       keystroke; a paste lands the whole query in one `input` event. */
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/search'), data: fakeData(many) })
+    });
+    /* One input event avoids re-rendering 305 rows once per character. */
     const box = screen.getByPlaceholderText('Поиск по названию или описанию…');
-    await userEvent.click(box);
-    await userEvent.paste('Много');
-    expect(screen.getAllByRole('button', { name: /Много/ })).toHaveLength(300);
-    expect(screen.getByRole('checkbox', { name: 'Выбрать все (300)' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (300)' }));
+    await fireEvent.input(box, { target: { value: 'Много' } });
+    await tick();
+    const shown = container.querySelectorAll<HTMLElement>('[data-row]');
+    expect(shown).toHaveLength(300);
+    expect(shown[0]).toHaveAttribute('data-row', 'm0');
+    expect(shown[299]).toHaveAttribute('data-row', 'm299');
+    expect(container.querySelector('[data-row="m300"]')).not.toBeInTheDocument();
+    expect(screen.getByText('Выбрать все (300)')).toBeInTheDocument();
+    await fireEvent.click(container.querySelector('.selall input') as HTMLInputElement);
+    await tick();
     expect(screen.getByText('Выбрано 300')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-row].sel')).toHaveLength(300);
   });
 });
 
@@ -274,7 +303,7 @@ describe('English', () => {
     render(App, { env: at() });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
-    expect(screen.getByText(/Search all 1061 entries at once/)).toBeInTheDocument();
+    expect(screen.getByText(/Search all 1091 entries at once/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search by name or description…')).toBeInTheDocument();
     expect(screen.getByText('Start typing')).toBeInTheDocument();
     for (const label of ['Items', 'Consumables', 'Equipment']) {

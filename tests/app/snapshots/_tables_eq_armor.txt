@@ -1,0 +1,375 @@
+# #/tables/eq_armor
+# route: #/tables/eq_armor
+# why: the third kind, three facet groups, the shortest
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_armor]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    link "Оружие" [url=#/tables/eq_weapon]
+    link "Вторичное" [url=#/tables/eq_secondary]
+    link "Броня" [url=#/tables/eq_armor]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "90"
+    ... StaticText x6 of 10 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (16)" [checked=false]
+    checkbox "Выбрано" [checked=false]
+    button "Стеганый Доспех Ранг 1 · Пороги 5/11 · Броня 3 Гибкое: +1 к Укло..." [namelen=80 namehash=1a6d1d56]
+    ... checkbox x90 of 94 same-shape siblings elided
+    ... button x87 of 91 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "РАНГ 4"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "Выбрать все (24)"
+    checkbox "Выбрано" [checked=false]
+    button "Легендарная Среброшелковая Броня Пороги 11/32 · Броня 6 Защищающ..." [namelen=233 namehash=94b5a9a9]
+    checkbox "Выбрано" [checked=false]
+    button "19 Латный Доспех Демоностража Ранг 4 · Пороги 17/44 · Броня 7 Ст..." [namelen=333 namehash=7fbb54c1]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+12Одеяние ПосланникаРанг 2 · Пороги 11/24 · Броня 5Стоимость При... [namelen=286 namehash=3d407477]
+17Одеяния Повелителя ТруповРанг 2 · Пороги 9/19 · Броня 3Стоимос... [namelen=410 namehash=b0da6c4d]
+19Латный Доспех ДемоностражаРанг 4 · Пороги 17/44 · Броня 7Стоим... [namelen=326 namehash=973b56c2]
+24Панцирь Подземного ОбитателяРанг 2 · Пороги 10/22 · Броня 4Сто... [namelen=260 namehash=a24f855b]
+3Доспех Морозного ПоцелуяРанг 1 · Пороги 7/14 · Броня 3Стоимость... [namelen=219 namehash=b4f7e7ce]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Астральное ОдеяниеРанг 3 · Пороги 11/27 · Броня 5Звездное: Отмет... [namelen=151 namehash=f8c29499]
+Божественный Пластинчатый ДоспехРанг 4 · Пороги 13/36 · Броня 6С... [namelen=150 namehash=ab790a62]
+Бригантный ДоспехРанг 1 · Пороги 6/12 · Броня 3Облицованное: Отм... [namelen=124 namehash=8a291d1a]
+Броня
+Вторичное
+Выбрано
+Глубинный Коралловый ДоспехРанг 3 · Пороги 13/35 · Броня 6Водное... [namelen=182 namehash=1b3c357a]
+Доспех Дикой РозыРанг 2 · Пороги 11/23 · Броня 5Надежда: Когда в... [namelen=156 namehash=2671ab38]
+Доспех ДуэлянтаРанг 3 · Пороги 16/39 · Броня 6Физическое: Вы не ... [namelen=145 namehash=044d5d9e]
+Доспех Железного ДереваРанг 2 · Пороги 9/20 · Броня 4Усиленное: ... [namelen=200 namehash=4308fbf5]
+Доспех Измученных КостейРанг 2 · Пороги 9/21 · Броня 4Устойчивое... [namelen=213 namehash=75e589eb]
+Доспех из Гробового ДереваПороги 4/10 · Броня 3Расщепляющее: Вы ... [namelen=163 namehash=5a9d33bf]
+Доспех из Драконей ЧешуиРанг 3 · Пороги 11/27 · Броня 5Непробива... [namelen=202 namehash=c9db1cc8]
+Доспехи из Коры ДереваПороги 7/15 · Броня 4Тяжелое: −1 к Уклонен... [namelen=91 namehash=f6bb731c]
+К содержимому
+Как это работает
+Кираса из Трольей ШкурыРанг 2 · Пороги 11/23 · Броня 5Регенериру... [namelen=138 namehash=c4ab3874]
+Кожаный Длинный ПлащПороги 5/12 · Броня 3Тихое: Вы получаете бон... [namelen=134 namehash=83d615ce]
+Кожаный ДоспехРанг 1 · Пороги 6/13 · Броня 3БроняCore
+Кожаный ФартукПороги 6/13 · Броня 3БроняУникальноеПир зверей
+Кольчуга СпасителяРанг 4 · Пороги 18/48 · Броня 8Сложное: −1 ко ... [namelen=115 namehash=cb6d3929]
+Кольчужный ДоспехРанг 1 · Пороги 7/15 · Броня 4Тяжелое: −1 к Укл... [namelen=79 namehash=7872a65d]
+Латный ДоспехРанг 1 · Пороги 8/17 · Броня 4Очень тяжелое: −2 к У... [namelen=99 namehash=45d3a871]
+Латы КровокамняРанг 3 · Пороги 13/35 · Броня 6Кровожадное: Когда... [namelen=166 namehash=aebc2e7a]
+Латы УжасаРанг 4 · Пороги 14/38 · Броня 6Проклятое: Когда вы отм... [namelen=202 namehash=fec7b8b6]
+Легендарная Мантия МагаРанг 4 · Пороги 10/31 · Броня 5Зачарованн... [namelen=160 namehash=d67b0ccc]
+Легендарная Среброшелковая БроняПороги 11/32 · Броня 6Защищающее... [namelen=229 namehash=496795e4]
+Легендарный Бригантный ДоспехРанг 4 · Пороги 13/35 · Броня 6Обли... [namelen=137 namehash=24661c2a]
+Легендарный Доспех из Гробового ДереваПороги 10/31 · Броня 6Расщ... [namelen=176 namehash=73095fae]
+Легендарный Кожаный Длинный ПлащПороги 12/34 · Броня 6Тихое: Вы ... [namelen=147 namehash=2132ce6d]
+Легендарный Кожаный ДоспехРанг 4 · Пороги 13/36 · Броня 6БроняCo... [namelen=66 namehash=7e68e856]
+Легендарный Кольчужный ДоспехРанг 4 · Пороги 15/40 · Броня 7Тяже... [namelen=92 namehash=928df68b]
+Легендарный Латный ДоспехРанг 4 · Пороги 17/44 · Броня 7Очень тя... [namelen=112 namehash=c6c70847]
+Легендарный Опоясанный ДоспехРанг 4 · Пороги 17/43 · Броня 7Неук... [namelen=158 namehash=8eed7423]
+Легендарный Стеганый ДоспехРанг 4 · Пороги 11/32 · Броня 6Гибкое... [namelen=89 namehash=118d3d62]
+Легендарный Чешуйчатый ДоспехРанг 4 · Пороги 15/39 · Броня 6Гром... [namelen=103 namehash=e8d447dc]
+ЛутDaggerheart
+Магодревовый Сплинтовый ДоспехРанг 2 · Пороги 10/21 · Броня 5Быс... [namelen=200 namehash=059abe59]
+Мантия МагаРанг 1 · Пороги 4/10 · Броня 2Зачарованное: Вы получа... [namelen=147 namehash=aa19be6e]
+Мантия ЧародеяРанг 2 · Пороги 9/20 · Броня 4Помнящее: Один раз з... [namelen=158 namehash=85107e94]
+Мантия ЯстребаРанг 2 · Пороги 9/20 · Броня 4Планирующее: Вы може... [namelen=177 namehash=8f1223ac]
+Мягкий Доспех ТайрисаРанг 2 · Пороги 8/18 · Броня 5Тихое: Вы пол... [namelen=135 namehash=a1239829]
+Нагрудник из ПротивняПороги 8/17 · Броня 4Очень тяжелое: −2 к Ук... [namelen=114 namehash=e6698572]
+Наряд ГрандминстраРанг 3 · Пороги 11/27 · Броня 2Превосходное: В... [namelen=150 namehash=1ffa25f1]
+Обычные правила
+Опаловый Доспех ВеритасаРанг 4 · Пороги 13/36 · Броня 6Ищущее Ис... [namelen=165 namehash=9d8f2be7]
+Опоясанный ДоспехРанг 1 · Пороги 8/16 · Броня 4Неуклюжее: −1 к У... [namelen=145 namehash=22046c2e]
+Оружие
+Открывать этот раздел при запуске
+Парадный Доспех БелламуаРанг 3 · Пороги 11/27 · Броня 5Позолочен... [namelen=100 namehash=99628e1b]
+Пластинчатый Доспех Стража НебаРанг 3 · Пороги 11/27 · Броня 5Бд... [namelen=114 namehash=aac1b5c4]
+Плащ КлевераРанг 3 · Пороги 11/27 · Броня 5Удачливое: Один раз з... [namelen=155 namehash=eefd980f]
+Плащ МонэттаРанг 3 · Пороги 16/39 · Броня 6Магическое: Вы не мож... [namelen=142 namehash=475fc948]
+Плетённый Углями ДоспехРанг 4 · Пороги 13/36 · Броня 6Горящее: К... [namelen=144 namehash=6c4823f3]
+Позолоченные СолнцелатыРанг 2 · Пороги 12/26 · Броня 5Блистатель... [namelen=172 namehash=e84c7b6e]
+Поиск
+Покров ТьмыРанг 4 · Пороги 13/36 · Броня 5Призрачное: Один раз д... [namelen=195 namehash=c52c4054]
+Проводящий ДоспехРанг 4 · Пороги 13/36 · Броня 5Проводящее: +1 к... [namelen=102 namehash=fdeeeb69]
+Продвинутая Мантия МагаРанг 3 · Пороги 8/22 · Броня 4Зачарованно... [namelen=159 namehash=fd73db8f]
+Продвинутая Среброшелковая БроняПороги 9/23 · Броня 5Защищающее:... [namelen=228 namehash=72c08494]
+Продвинутый Бригантный ДоспехРанг 3 · Пороги 11/26 · Броня 5Обли... [namelen=137 namehash=560b6386]
+Продвинутый Доспех из Гробового ДереваПороги 8/22 · Броня 5Расще... [namelen=175 namehash=4d31b584]
+Продвинутый Кожаный Длинный ПлащПороги 10/25 · Броня 5Тихое: Вы ... [namelen=147 namehash=929d57dd]
+Продвинутый Кожаный ДоспехРанг 3 · Пороги 11/27 · Броня 5БроняCo... [namelen=66 namehash=38ac5aa5]
+Продвинутый Кольчужный ДоспехРанг 3 · Пороги 13/31 · Броня 6Тяже... [namelen=92 namehash=961ca6a8]
+Продвинутый Латный ДоспехРанг 3 · Пороги 15/35 · Броня 6Очень тя... [namelen=112 namehash=10df6695]
+Продвинутый Опоясанный ДоспехРанг 3 · Пороги 15/34 · Броня 6Неук... [namelen=158 namehash=2f75295c]
+Продвинутый Стеганый ДоспехРанг 3 · Пороги 9/23 · Броня 5Гибкое:... [namelen=88 namehash=7080b6a3]
+Продвинутый Чешуйчатый ДоспехРанг 3 · Пороги 13/30 · Броня 5Гром... [namelen=103 namehash=f2542bac]
+Прочее
+Рунетанский Парящий ДоспехРанг 2 · Пороги 9/20 · Броня 4Изменяющ... [namelen=198 namehash=ac91053f]
+Рунный ЭкзоскелетРанг 4 · Пороги 12/39 · Броня 7Настроенное: Мак... [namelen=211 namehash=2a6bfac0]
+Руны УкрепленияРанг 3 · Пороги 17/43 · Броня 6Мучительное: Кажды... [namelen=149 namehash=330658dc]
+Сбруя РезонансаРанг 4 · Пороги 15/40 · Броня 7Стеклянное: Если в... [namelen=299 namehash=73694b17]
+Священные Латы ГерояРанг 4 · Пороги 13/35 · Броня 7Благословленн... [namelen=302 namehash=be9a0a59]
+Сеткой
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Среброшелковая БроняПороги 5/11 · Броня 3Защищающее: Вы уменьшае... [namelen=216 namehash=a6f3cf55]
+Ссылка на таблицу
+Стеганая ОдеждаПороги 5/11 · Броня 3Гибкое: +1 к УклонениюБроняУ... [namelen=83 namehash=ec01112b]
+Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
+Таблицы
+Туника из Паучьего ШелкаРанг 2 · Пороги 9/20 · Броня 4Карабкающе... [namelen=165 namehash=1b03af51]
+Укреплённый Полный ДоспехРанг 4 · Пороги 15/40 · Броня 4Укреплен... [namelen=177 namehash=f44b17b9]
+Улучшенная Мантия МагаРанг 2 · Пороги 6/15 · Броня 3Зачарованное... [namelen=158 namehash=baa1635e]
+Улучшенная Среброшелковая БроняПороги 7/16 · Броня 4Защищающее: ... [namelen=227 namehash=82690dbb]
+Улучшенный Бригантный ДоспехРанг 2 · Пороги 9/19 · Броня 4Облицо... [namelen=135 namehash=45cc628b]
+Улучшенный Доспех из Гробового ДереваПороги 6/15 · Броня 4Расщеп... [namelen=174 namehash=2f6956a7]
+Улучшенный Кожаный Длинный ПлащПороги 8/18 · Броня 4Тихое: Вы по... [namelen=145 namehash=f5dffe4f]
+Улучшенный Кожаный ДоспехРанг 2 · Пороги 9/20 · Броня 4БроняCore
+Улучшенный Кольчужный ДоспехРанг 2 · Пороги 11/24 · Броня 5Тяжел... [namelen=91 namehash=afb732f5]
+Улучшенный Латный ДоспехРанг 2 · Пороги 13/28 · Броня 5Очень тяж... [namelen=111 namehash=30015ea8]
+Улучшенный Опоясанный ДоспехРанг 2 · Пороги 13/27 · Броня 5Неукл... [namelen=157 namehash=b85319c2]
+Улучшенный Стеганый ДоспехРанг 2 · Пороги 7/16 · Броня 4Гибкое: ... [namelen=87 namehash=f73ae836]
+Улучшенный Чешуйчатый ДоспехРанг 2 · Пороги 11/23 · Броня 4Громо... [namelen=102 namehash=29ad9830]
+Фильтры
+Хабит ШтормаРанг 2 · Пороги 9/20 · Броня 4Поглощающее: Один раз ... [namelen=168 namehash=5a540b00]
+Чешуйчатый ДоспехРанг 1 · Пороги 7/14 · Броня 3Громоздкое: −1 к ... [namelen=90 namehash=c5278236]
+Шипованный Латный ДоспехРанг 3 · Пороги 10/25 · Броня 5Острое: П... [namelen=146 namehash=15cb0803]
+Шёлковая Кольчуга ДунамисаРанг 4 · Пороги 13/36 · Броня 7Замедля... [namelen=218 namehash=5ccedf2b]
+Элундрианский Кольчужный ДоспехРанг 2 · Пороги 9/21 · Броня 4Защ... [namelen=227 namehash=e5113c92]
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_armor]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    link "Weapons" [url=#/tables/eq_weapon]
+    link "Secondary" [url=#/tables/eq_secondary]
+    link "Armor" [url=#/tables/eq_armor]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "90"
+    ... StaticText x6 of 10 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (16)" [checked=false]
+    checkbox "Selected" [checked=false]
+    button "Gambeson Armor Tier 1 · Thresholds 5/11 · Armor 3 Flexible: +1 t..." [namelen=84 namehash=86e0c136]
+    ... checkbox x90 of 94 same-shape siblings elided
+    ... button x87 of 91 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "TIER 4"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "Select all (24)"
+    checkbox "Selected" [checked=false]
+    button "Legendary Silverweave Armor Thresholds 11/32 · Armor 6 Warded: Y..." [namelen=191 namehash=2f3bdadb]
+    checkbox "Selected" [checked=false]
+    button "19 Demonguard Platemail Tier 4 · Thresholds 17/44 · Armor 7 Reca..." [namelen=308 namehash=11715abd]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+12Envoy's AttireTier 2 · Thresholds 11/24 · Armor 5Recall Cost: ... [namelen=251 namehash=4ba6f07f]
+17Corpse Lord's RaimentsTier 2 · Thresholds 9/19 · Armor 3Recall... [namelen=360 namehash=2789c1d4]
+19Demonguard PlatemailTier 4 · Thresholds 17/44 · Armor 7Recall ... [namelen=301 namehash=916e1970]
+24Underdweller CarapaceTier 2 · Thresholds 10/22 · Armor 4Recall... [namelen=239 namehash=2e95d7fb]
+3Frost-Kissed ArmorTier 1 · Thresholds 7/14 · Armor 3Recall Cost... [namelen=197 namehash=54905261]
+Advanced Banded ArmorTier 3 · Thresholds 15/34 · Armor 6Bulky: −... [namelen=146 namehash=5c24eac4]
+Advanced Brigandine ArmorTier 3 · Thresholds 11/26 · Armor 5Line... [namelen=120 namehash=4cfda4e4]
+Advanced Chainmail ArmorTier 3 · Thresholds 13/31 · Armor 6Heavy... [namelen=88 namehash=3d18cf3f]
+Advanced Coffinwood ArmorThresholds 8/22 · Armor 5Splintering: G... [namelen=165 namehash=4b5a3b8d]
+Advanced Full Plate ArmorTier 3 · Thresholds 15/35 · Armor 6Very... [namelen=109 namehash=9e36ef04]
+Advanced Gambeson ArmorTier 3 · Thresholds 9/23 · Armor 5Flexibl... [namelen=89 namehash=0f889d9a]
+Advanced Leather ArmorTier 3 · Thresholds 11/27 · Armor 5ArmorCo... [namelen=66 namehash=06c31913]
+Advanced Leather LongcoatThresholds 10/25 · Armor 5Quiet: Gain a... [namelen=137 namehash=3ba09c15]
+Advanced Mage RobesTier 3 · Thresholds 8/22 · Armor 4Enchanted: ... [namelen=149 namehash=51d71cbe]
+Advanced Scale Mail ArmorTier 3 · Thresholds 13/30 · Armor 5Cumb... [namelen=101 namehash=dc1c8786]
+Advanced Silverweave ArmorThresholds 9/23 · Armor 5Warded: You r... [namelen=185 namehash=8c5eab8a]
+Alt. tables
+Armor
+Astral RaimentTier 3 · Thresholds 11/27 · Armor 5Stellar: Mark a... [namelen=132 namehash=e22386f6]
+Baking Tray BreastplateThresholds 8/17 · Armor 4Very Heavy: −2 t... [namelen=110 namehash=9df7b7a8]
+Banded ArmorTier 1 · Thresholds 8/16 · Armor 4Bulky: −1 to Evasi... [namelen=136 namehash=cfdaf794]
+Bellamoi Fine ArmorTier 3 · Thresholds 11/27 · Armor 5Gilded: +1... [namelen=91 namehash=8d024e2a]
+Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=8d83ba06]
+Bloodstone Plate ArmorTier 3 · Thresholds 13/35 · Armor 6Bloodth... [namelen=178 namehash=05963aa5]
+Brigandine ArmorTier 1 · Thresholds 6/12 · Armor 3Lined: Mark a ... [namelen=110 namehash=e7349cbe]
+Chainmail ArmorTier 1 · Thresholds 7/15 · Armor 4Heavy: −1 to Ev... [namelen=78 namehash=5e3d4d3e]
+Channeling ArmorTier 4 · Thresholds 13/36 · Armor 5Channeling: +... [namelen=99 namehash=326c7706]
+Circle-Forged DreadplateTier 4 · Thresholds 14/38 · Armor 6Accur... [namelen=224 namehash=7e650623]
+Cloverweave CloakTier 3 · Thresholds 11/27 · Armor 5Fortune-Favo... [namelen=167 namehash=485d5e73]
+Coffinwood ArmorThresholds 4/10 · Armor 3Splintering: Gain a bon... [namelen=156 namehash=d195a02e]
+Communities
+Copy a link to this section
+Core
+Darkweave ShroudTier 4 · Thresholds 13/36 · Armor 5Ghostwalker: ... [namelen=163 namehash=1eceb68f]
+Deep-Forged Coral ArmorTier 3 · Thresholds 13/35 · Armor 6Aquati... [namelen=168 namehash=4a208610]
+Dragonscale ArmorTier 3 · Thresholds 11/27 · Armor 5Impenetrable... [namelen=173 namehash=f25fd3a8]
+Dread
+Dread GM Toolbox
+Dunamis SilkchainTier 4 · Thresholds 13/36 · Armor 7Timeslowing:... [namelen=185 namehash=6c09309f]
+EN
+Elundrian Chain ArmorTier 2 · Thresholds 9/21 · Armor 4Warded: Y... [namelen=176 namehash=0e312300]
+Emberwoven ArmorTier 4 · Thresholds 13/36 · Armor 6Burning: When... [namelen=144 namehash=36cdcc39]
+Enchanter’s RobesTier 2 · Thresholds 9/20 · Armor 4Mnemonic: Onc... [namelen=175 namehash=c1ae5f28]
+Equipment
+Filters
+Full Fortified ArmorTier 4 · Thresholds 15/40 · Armor 4Fortified... [namelen=180 namehash=1278cafb]
+Full Plate ArmorTier 1 · Thresholds 8/17 · Armor 4Very Heavy: −2... [namelen=99 namehash=a4922bf3]
+Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
+Gilded SunplateTier 2 · Thresholds 12/26 · Armor 5Resplendent: O... [namelen=149 namehash=acab8609]
+Godbound LaminarTier 4 · Thresholds 13/36 · Armor 6Divine: When ... [namelen=122 namehash=585aded7]
+Granminster’s FineryTier 3 · Thresholds 11/27 · Armor 2Magnifice... [namelen=146 namehash=9bc98ab9]
+Grid
+Hallowed HeroplateTier 4 · Thresholds 13/35 · Armor 7Blessed: On... [namelen=263 namehash=7b8ecc89]
+Harrowbone ArmorTier 2 · Thresholds 9/21 · Armor 4Resilient: Bef... [namelen=210 namehash=388e4dac]
+Hawkguard’s MantleTier 2 · Thresholds 9/20 · Armor 4Gliding: You... [namelen=151 namehash=d4ee7ddd]
+Hope & Fear
+How this works
+Improved Banded ArmorTier 2 · Thresholds 13/27 · Armor 5Bulky: −... [namelen=146 namehash=1660110e]
+Improved Brigandine ArmorTier 2 · Thresholds 9/19 · Armor 4Lined... [namelen=119 namehash=9fa634de]
+Improved Chainmail ArmorTier 2 · Thresholds 11/24 · Armor 5Heavy... [namelen=88 namehash=2260fb53]
+Improved Coffinwood ArmorThresholds 6/15 · Armor 4Splintering: G... [namelen=165 namehash=43073071]
+Improved Full Plate ArmorTier 2 · Thresholds 13/28 · Armor 5Very... [namelen=109 namehash=614eb54f]
+Improved Gambeson ArmorTier 2 · Thresholds 7/16 · Armor 4Flexibl... [namelen=89 namehash=f2ea323d]
+Improved Leather ArmorTier 2 · Thresholds 9/20 · Armor 4ArmorCor... [namelen=65 namehash=45a434ad]
+Improved Leather LongcoatThresholds 8/18 · Armor 4Quiet: Gain a ... [namelen=136 namehash=7778a0d5]
+Improved Mage RobesTier 2 · Thresholds 6/15 · Armor 3Enchanted: ... [namelen=149 namehash=4b7e245f]
+Improved Scale Mail ArmorTier 2 · Thresholds 11/23 · Armor 4Cumb... [namelen=101 namehash=7197161d]
+Improved Silverweave ArmorThresholds 7/16 · Armor 4Warded: You r... [namelen=185 namehash=33d5cffd]
+Irontree Breastplate ArmorTier 2 · Thresholds 9/20 · Armor 4Rein... [namelen=199 namehash=1768c922]
+Leather ApronThresholds 6/13 · Armor 3ArmorUniqueBeast Feast
+Leather ArmorTier 1 · Thresholds 6/13 · Armor 3ArmorCore
+Leather LongcoatThresholds 5/12 · Armor 3Quiet: Gain a +2 bonus ... [namelen=127 namehash=e6836010]
+Legendary Banded ArmorTier 4 · Thresholds 17/43 · Armor 7Bulky: ... [namelen=147 namehash=97430a1b]
+Legendary Brigandine ArmorTier 4 · Thresholds 13/35 · Armor 6Lin... [namelen=121 namehash=3c6c8307]
+Legendary Chainmail ArmorTier 4 · Thresholds 15/40 · Armor 7Heav... [namelen=89 namehash=8c8b9b83]
+Legendary Coffinwood ArmorThresholds 10/31 · Armor 6Splintering:... [namelen=167 namehash=597667b9]
+Legendary Full Plate ArmorTier 4 · Thresholds 17/44 · Armor 7Ver... [namelen=110 namehash=0394a0e0]
+Legendary Gambeson ArmorTier 4 · Thresholds 11/32 · Armor 6Flexi... [namelen=91 namehash=1cecf20c]
+Legendary Leather ArmorTier 4 · Thresholds 13/36 · Armor 6ArmorC... [namelen=67 namehash=6744a912]
+Legendary Leather LongcoatThresholds 12/34 · Armor 6Quiet: Gain ... [namelen=138 namehash=bb42e5c9]
+Legendary Mage RobesTier 4 · Thresholds 10/31 · Armor 5Enchanted... [namelen=151 namehash=22eca1b1]
+Legendary Scale Mail ArmorTier 4 · Thresholds 15/39 · Armor 6Cum... [namelen=102 namehash=049e354a]
+Legendary Silverweave ArmorThresholds 11/32 · Armor 6Warded: You... [namelen=187 namehash=2c2f30c0]
+Link to this table
+List
+Lists
+Mage RobesTier 1 · Thresholds 4/10 · Armor 2Enchanted: Gain a bo... [namelen=140 namehash=66dcf68d]
+Monett’s CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can’... [namelen=126 namehash=bf49cbf1]
+Open this section on start
+Other
+Quilted ClothingThresholds 5/11 · Armor 3Flexible: +1 to Evasion... [namelen=86 namehash=641531de]
+RU
+Resonant HarnessTier 4 · Thresholds 15/40 · Armor 7Vitreous: Whe... [namelen=295 namehash=8c57513c]
+Rosewild ArmorTier 2 · Thresholds 11/23 · Armor 5Hopeful: When y... [namelen=137 namehash=cd71bf8a]
+Rune-Forged ExosuitTier 4 · Thresholds 12/39 · Armor 7Attuned: T... [namelen=221 namehash=c23707f5]
+Runes of FortificationTier 3 · Thresholds 17/43 · Armor 6Painful... [namelen=138 namehash=438b299e]
+Runetan Floating ArmorTier 2 · Thresholds 9/20 · Armor 4Shifting... [namelen=194 namehash=a000073c]
+Savior ChainmailTier 4 · Thresholds 18/48 · Armor 8Difficult: −1... [namelen=115 namehash=7e943c13]
+Scale Mail ArmorTier 1 · Thresholds 7/14 · Armor 3Cumbersome: −1... [namelen=91 namehash=33e2248a]
+Search
+Secondary
+Selected
+Silverweave ArmorThresholds 5/11 · Armor 3Warded: You reduce inc... [namelen=176 namehash=1de8bb69]
+Skip to content
+Skywarden’s LamellarTier 3 · Thresholds 11/27 · Armor 5Vigilant:... [namelen=100 namehash=af02e01e]
+Spidersilk TunicTier 2 · Thresholds 9/20 · Armor 4Wall-Crawling:... [namelen=148 namehash=319e3625]
+Spiked Plate ArmorTier 3 · Thresholds 10/25 · Armor 5Sharp: On a... [namelen=163 namehash=c5ee3e88]
+Standard rules
+Stormthread HabitTier 2 · Thresholds 9/20 · Armor 4Absorbing: On... [namelen=155 namehash=c3b1b4d3]
+Tables
+Tree Bark ArmorThresholds 7/15 · Armor 4Heavy: −1 to EvasionArmo... [namelen=82 namehash=ce467f79]
+Trollhide CuirassTier 2 · Thresholds 11/23 · Armor 5Self-Healing... [namelen=130 namehash=af59084b]
+Tyris Soft ArmorTier 2 · Thresholds 8/18 · Armor 5Quiet: You gai... [namelen=127 namehash=127abd7a]
+Vault of Ages
+Veritas Opal ArmorTier 4 · Thresholds 13/36 · Armor 6Truthseekin... [namelen=152 namehash=459303b3]
+Weapons
+Wondrous
+Wondrous Loot
+Wyrdwood Splint ArmorTier 2 · Thresholds 10/21 · Armor 5Quick-St... [namelen=173 namehash=c6b501c8]
+daggerheart.com
+ЛутDaggerheart

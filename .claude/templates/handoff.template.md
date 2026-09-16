@@ -1,4 +1,5 @@
 # Handoff - TASK <id>
+<!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
 - Task status: in_progress | blocked | done

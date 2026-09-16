@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
 import { descOf, eqLine, eqParts, EQ_TRAIT, eqWord, itemsWord, nameOf } from './i18n.js';
+import { isFrameRecord } from './label.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -36,9 +37,10 @@ describe('the stat line matches the app it came from', () => {
       it(`${id} in ${lang}`, () => {
         const it_ = index.byId.get(id);
         expect(it_).toBeDefined();
-        expect(eqParts(it_ as Record_, lang, LABELS[lang], { noType: true })).toEqual(
-          FIXTURE[id]?.[lang]
-        );
+        const record = it_ as Record_;
+        expect(
+          eqParts(record, lang, LABELS[lang], { noType: true, noTier: isFrameRecord(record) })
+        ).toEqual(FIXTURE[id]?.[lang]);
       });
     }
   }
@@ -54,6 +56,13 @@ describe('the pieces of the line', () => {
 
   it('join with a middle dot', () => {
     expect(eqLine(katana(), 'ru', LABELS.ru, { noType: true })).toContain(' · ');
+  });
+
+  it('can omit a tier from a direct frame-record stat line', () => {
+    const frame = index.byId.get('f1') as Record_;
+    expect(eqLine(frame, 'ru', LABELS.ru, { noType: true, noTier: true })).not.toContain(
+      'Ранг'
+    );
   });
 
   it('always carry a tier, because every piece has one from a book', () => {
@@ -164,11 +173,14 @@ describe('a stat block with gaps in it', () => {
     expect(parts.join(' ')).not.toContain('undefined');
   });
 
-  it('prints a half-filled threshold pair without inventing the other half', () => {
-    const parts = eqParts(gear({ t: 'armor', tier: 1, th: '5' }), 'ru', LABELS.ru, {
+  it('prints a threshold pair, minor and major separated by a slash', () => {
+    /* The data always carries both halves of the pair or neither - `th` is
+       typed as the pair it is - so there is no half-filled case to defend
+       against, unlike `as`, which is a lone number and can be zero alone. */
+    const parts = eqParts(gear({ t: 'armor', tier: 1, th: [5, 11] }), 'ru', LABELS.ru, {
       noType: true
     });
-    expect(parts.join(' ')).toContain(`${LABELS.ru.thresholds} 5/`);
+    expect(parts.join(' ')).toContain(`${LABELS.ru.thresholds} 5/11`);
     expect(parts.join(' ')).not.toContain('undefined');
   });
 

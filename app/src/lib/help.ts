@@ -446,7 +446,7 @@ const TABLES: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, frames, communities — and the row under it picks a section of that book, when there is more than one. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.'
+        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.'
       ),
       {
         lead: 'Equipment',
@@ -479,7 +479,7 @@ const TABLES: Record<Lang, Help> = {
         ]
       },
       p(
-        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for the campaign frames, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
+        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
       ),
       p(
         'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.'

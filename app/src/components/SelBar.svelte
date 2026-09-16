@@ -161,4 +161,11 @@
       overflow: hidden;
     }
   }
+
+  /* off `#selBar` in the live `@media print` block (style.css:1409) */
+  @media print {
+    .selbarwrap {
+      display: none;
+    }
+  }
 </style>

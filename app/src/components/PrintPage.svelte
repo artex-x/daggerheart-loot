@@ -1,0 +1,199 @@
+<script lang="ts">
+  /* `#/print/<ids>` - off `renderPrint` (app.js 3510-3558) and the print
+   * handlers (`printBack`/`doPrint`/`printArt`/`printLink`, app.js
+   * 4236-4245). No `PageHead`: the live markup writes a bare `h1`+`p`, no
+   * pin, no help. */
+  import Actions from './Actions.svelte';
+  import Button from './Button.svelte';
+  import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
+  import PageTitle from './PageTitle.svelte';
+  import PrintCard from './PrintCard.svelte';
+  import Seg from './Seg.svelte';
+  import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
+  import { pages } from '../lib/print.js';
+  import type { AppState } from '../state/app.svelte.js';
+
+  interface Props {
+    app: AppState;
+    ids: string[];
+    dropped: number;
+  }
+
+  const { app, ids, dropped }: Props = $props();
+
+  const t = $derived(app.t);
+  const index = $derived(app.index);
+  const items = $derived(
+    index
+      ? ids.flatMap((id) => {
+          const it = index.byId.get(id);
+          return it ? [it] : [];
+        })
+      : []
+  );
+  const sheet = $derived(pages(items));
+  /** Just the keys `{#each}` needs for the blank places after the last
+   *  card - an index array, built here so the template needs no unused
+   *  item binding of its own. */
+  const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
+
+  /* The live app's own memory - `S.printBW` (app.js:49) - survives leaving
+     the page; this page remounts on every navigation and forgets it, the
+     same intentional divergence B6 recorded for search's `q` and
+     TablesPage's `q`: nothing else can observe a page's own memory, and a
+     per-page value on `AppState` for one caller is the shape this migration
+     keeps declining. */
+  let bw = $state(false);
+
+  const ART = $derived([
+    { value: 'color', label: t.printColor },
+    { value: 'bw', label: t.printBW }
+  ] as const);
+
+  const sub = $derived(
+    t.printSub
+      .replace('%n', String(items.length))
+      .replace('%p', String(Math.ceil(items.length / 9)))
+  );
+  const tooMany = $derived(
+    t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(dropped))
+  );
+
+  const say = (msg: string, error?: boolean): void => {
+    app.say(msg, { error });
+  };
+
+  function back(): void {
+    if (app.env.router.canGoBack()) app.env.router.back();
+    else app.go(sectionHash('lists'));
+  }
+
+  function print(): void {
+    app.env.dialog.print();
+  }
+
+  async function copyLink(): Promise<void> {
+    const ok = await app.env.clipboard.writeText(app.linkTo(printHash(ids)));
+    say(ok ? t.linkCopied : t.copyFailed, !ok);
+  }
+</script>
+
+{#if !index}
+  <NoData>{t.noData}</NoData>
+{:else if !items.length}
+  <PageTitle title={t.printTitle} sub={t.printEmpty} />
+  <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+{:else}
+  <div class="printbar">
+    <PageTitle title={t.printTitle} {sub} />
+    <Actions>
+      <Button onclick={back}><Icon name="back" />{t.back}</Button>
+      <Button variant="primary" onclick={print}><Icon name="print" />{t.printNow}</Button>
+      <Seg
+        small
+        options={ART}
+        value={bw ? 'bw' : 'color'}
+        label={t.printTitle}
+        onchange={(v: 'color' | 'bw') => {
+          bw = v === 'bw';
+        }}
+      />
+      <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
+    </Actions>
+    {#if dropped}
+      <p class="printnote warnnote">{tooMany}</p>
+    {/if}
+    <p class="printnote">{t.printNote}</p>
+  </div>
+  {#each sheet.pages as page, i (i)}
+    <div class="psheet" class:bw data-next={i ? '1' : undefined}>
+      {#each page as it (it.id)}
+        <PrintCard {it} lang={app.lang} {bw} artBroken={app.artBroken(it.id)} />
+      {/each}
+      {#if i === sheet.pages.length - 1}
+        {#each blankKeys as k (k)}
+          <div class="pcard blank"></div>
+        {/each}
+      {/if}
+    </div>
+  {/each}
+{/if}
+
+<style>
+  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
+     `NoData.svelte`, `.card-acts` to `Actions.svelte` (B10, though this
+     component's own `.miss` read `--muted2` where `NoData`'s reads
+     `--muted` - never photographed either way).
+
+     off `.printbar`, `.printnote`, `.printnote.warnnote` (style.css:1112-1116) */
+  .printbar {
+    margin-bottom: 18px;
+  }
+
+  .printnote {
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--muted2);
+    max-width: 62ch;
+  }
+
+  .printnote.warnnote {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
+  /* off `.psheet` (style.css:1118-1126) */
+  .psheet {
+    box-sizing: border-box;
+    width: 210mm;
+    height: 297mm;
+    padding: 14.5mm 8.5mm;
+    margin: 0 auto 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 63mm);
+    grid-template-rows: repeat(3, 88mm);
+    gap: 2mm;
+    background: #fff;
+    color: #000;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 50%),
+      0 14px 40px rgb(0 0 0 / 45%);
+  }
+
+  /* off `.pcard.blank` (style.css:1139) - this component's own element, so
+     `PrintCard`'s `.pcard` rules cannot reach it; the grid sizes the box. */
+  .pcard.blank {
+    box-sizing: border-box;
+    background: #fff;
+    border: 0;
+  }
+
+  @media print {
+    .printbar {
+      display: none !important;
+    }
+
+    .psheet {
+      margin: 0;
+      box-shadow: none;
+      break-inside: avoid;
+    }
+
+    .psheet[data-next] {
+      break-before: page;
+    }
+
+    /* Chrome sometimes adds an empty page after the last block, exactly one
+       sheet tall - the extra millimetre below is that page. */
+    .psheet:last-child {
+      height: 296.9mm;
+    }
+
+    :global(*) {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>

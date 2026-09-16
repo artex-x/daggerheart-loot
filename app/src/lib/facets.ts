@@ -161,7 +161,7 @@ export function facetRows(index: Index, table: TableId, t: Dict, lang: Lang): Fa
       label: t.tier,
       values: VOA_SECTIONS.map((k) => ({ value: String(k), label: voaSectionName(k, t) }))
     });
-  } else if (table === 'frames') {
+  } else if (table === 'other_frames') {
     rows.push({
       group: 'frame',
       label: t.frameF,

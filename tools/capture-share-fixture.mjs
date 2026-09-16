@@ -25,9 +25,9 @@ const PAGE = 'file://' + join(ROOT, 'index.html');
 const OUT = join(ROOT, 'docs', 'fixtures', 'share', 'records.json');
 
 const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8'));
-/* Same walk as buildIndex in app/src/lib/data.ts: the roll tables live under
-   `items` keyed by table, the alternative tables under `alt`, and equipment in
-   its own array because it has stats instead of a roll number. */
+/* Same walk as buildIndex in app/src/lib/data.ts: source tables (including the
+   non-roll campaign frames) live under `items`, alternative tables under
+   `alt`, and standalone equipment in its own array. */
 const byId = new Map();
 const walk = (node) => {
   if (Array.isArray(node)) for (const r of node) byId.set(r.id, r);

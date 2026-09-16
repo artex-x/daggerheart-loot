@@ -1,7 +1,7 @@
 // PostToolUse(Bash): observes a real, successful `npm run check` and
 // records its tree key, so bash-guard.mjs's commit gate has something to
 // check against. Never blocks, never speaks - its only side effect is
-// writing .check-cache.json. See issues/65/plan.md section 4, hook 3.
+// writing .check-cache.json. See .claude/README.md, "Hooks".
 //
 // The exit-code field name was confirmed against the official Claude Code
 // hooks reference (docs.claude.com/en/docs/claude-code/hooks): `exit_code`.

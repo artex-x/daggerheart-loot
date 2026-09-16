@@ -120,16 +120,20 @@ export default defineConfig({
       include: ['src/**/*.ts', 'src/**/*.svelte'],
       exclude: [
         'src/**/*.test.ts',
-        /* Test-only helpers, the entry point, and the one file that is types
-           and nothing else - it emits no code, so a percentage of it is noise. */
+        /* Test-only helpers, and the one file that is types and nothing else
+           - it emits no code, so a percentage of it is noise. */
         'src/test/**',
         'src/ports/types.ts',
         /* The canvas conversion cannot run in jsdom at all - no Image, no
            canvas, no toBlob - so a percentage of this file would measure the
            two test doubles and nothing else. It is exercised for real by
-           tests/parity.js, which drives the built app in Chrome. */
+           tests/app/states.js's copy-image case, which drives the built app
+           in Chrome. */
         'src/ports/image.ts',
         'src/vite-env.d.ts',
+        /* The entry point that mounts the app onto a real DOM - exercised for
+           real by tools/smoke-file-url.mjs, which opens the built page from a
+           folder the way file:// requires. */
         'src/main.ts'
       ],
       reporter: ['text', 'text-summary'],
@@ -142,8 +146,8 @@ export default defineConfig({
          demanding a test file per source file. */
       thresholds: {
         perFile: true,
-        'src/lib/**': { lines: 90, functions: 90, branches: 85, statements: 90 },
-        'src/ports/**': { lines: 70, functions: 70, branches: 55, statements: 70 },
+        'src/lib/**': { lines: 95, functions: 95, branches: 85, statements: 90 },
+        'src/ports/**': { lines: 70, functions: 80, branches: 55, statements: 70 },
         /* Every component except the one named below. A threshold glob does
            not override a wider one - both are applied - so the exception has to
            be carved out of the pattern rather than layered on top of it. */
@@ -172,10 +176,10 @@ export default defineConfig({
         'src/components/Button.svelte': {
           lines: 85,
           functions: 80,
-          branches: 50,
+          branches: 60,
           statements: 85
         },
-        'src/state/**': { lines: 90, functions: 90, branches: 80, statements: 90 }
+        'src/state/**': { lines: 95, functions: 95, branches: 85, statements: 90 }
       }
     }
   }

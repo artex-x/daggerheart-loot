@@ -41,14 +41,10 @@ jobs:
       - name: Bundle size budget
         run: npm run budget
 
-      # parity is excluded here and run as its own sharded job below: at ~867s
-      # unfiltered it was the one suite long enough to hold this whole pool
-      # hostage regardless of how many others finished early, which is a
-      # large share of why CI stayed red for eight runs before anyone with a
-      # full run noticed - a filtered local run was the only one anybody
-      # could afford to wait for. See issue 47, B3.6 part 0.
-      - name: The legacy suites against the live app
-        run: node tests/run-all.js --exclude=parity
+      # Parity runs only on manual dispatch below. Structural goldens stay in
+      # their own sharded job so they do not make `check` the critical path.
+      - name: The legacy suites against the live app, and the built app in a browser
+        run: node tests/run-all.js --exclude=parity,app/golden
 
       # A CI run is gone by the time anyone looks at it, and the summary prints
       # a dozen grepped lines. run-all.js writes every suite's whole output to
@@ -65,13 +61,10 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-  # The rewrite against the live app, sharded four ways so the gate stops
-  # costing 867s of serial wall clock on every push. Caching (tests/parity.js
-  # `--no-cache`) does not help here on its own - a fresh runner has nothing
-  # cached - so this is what actually buys CI its speed; the cache is for a
-  # person re-running the same states from their own machine repeatedly, which
-  # is what the batch that reads red states one at a time is about to do.
+  # The rewrite against the live app remains available on manual dispatch.
+  # Skipping this job on push and PR keeps parity out of routine CI and deploy.
   parity:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -104,6 +97,42 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+  # The rewrite's own structural regression net, sharded the same way and for
+  # the same reason as parity above: ~1000s unfiltered would make it the
+  # workflow's critical path if it ran inside `check`. See issue 47, R0a.
+  golden:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: The structural goldens - shard ${{ matrix.shard }} of 4
+        run: node tests/app/golden.js --shard=${{ matrix.shard }}/4
+
+      - name: Everything a failed shard left behind
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: failure-output-golden-${{ matrix.shard }}
+          path: |
+            test-output/
+            dist/
+          retention-days: 14
+          if-no-files-found: ignore
+
   audit:
     runs-on: ubuntu-latest
     steps:
@@ -127,19 +156,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
-  # Publishing, gated on the checks above.
+  # Publishing, gated on check, audit, secrets and structural goldens.
   #
-  # This job does nothing until Pages is switched from "Deploy from a branch" to
-  # "GitHub Actions" in the repository settings. Until then GitHub's own
-  # pages-build-deployment publishes the branch on every push, whether the
-  # checks passed or not - which is how a red run still went live.
+  # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
+  # dist/data.js, assembled here with the generated data, the stub pages and the
+  # artwork that live in the repository. The old app - index.html, style.css,
+  # app.js - stays in the repository, stays tested by every suite above, and is
+  # the fallback. It is the only thing that left the published set.
   #
-  # What is published is the repository root, exactly what Pages serves today.
-  # The new app in dist/ takes over at the cut-over (docs/REFACTOR_PLAN.md,
-  # phase 6); until then it is built and tested but not shown to anyone.
+  # HOW TO UNDO A BAD DEPLOY
+  #
+  #     git revert <the commit that changed this file>   # then push
+  #
+  # That is the whole procedure. The cut-over was made as one commit touching
+  # this file and nothing else, precisely so the revert cannot conflict: the
+  # next run of this job republishes the root files, which never left the
+  # repository and are still passing their own gates. Nothing else needs
+  # reverting - the ported entry document, the derived checks and
+  # tools/check-site.mjs are inert while the root is published.
+  #
+  # Revert first and diagnose after. The old app being present is what makes
+  # that cheap; see issue 47, plan.md, "B13 planned".
+  #
+  # Pages is already set to "GitHub Actions" (build_type: workflow), so this
+  # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, parity]
+    needs: [check, audit, secrets, golden]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -151,21 +194,70 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # The published bytes are built here rather than handed over from the
+      # check job: the job then reads on its own, and the revert above stays a
+      # one-file change. The build is deterministic from the commit, and deploy
+      # already needs the jobs that proved it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
       # An explicit list rather than "everything": the repository also holds the
-      # sources, the specs and the new app, and none of that belongs on a public
+      # sources, the specs and the old app, and none of that belongs on a public
       # site. A new top-level asset has to be added here on purpose.
+      #
+      # Note `dist/assets` and `dist/data.js` by name, and never `cp -r dist/.`:
+      # the build makes dist/img, dist/og and dist/card as symlinks into the
+      # repository root (vite.config.mts, the artwork() plugin), and a symlink is
+      # not what should reach the artifact. Those three folders are copied from
+      # the repository below, like the rest of the static assets.
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
-          cp -r index.html style.css app.js data.js data.json catalog.csv \
-                llms.txt robots.txt .nojekyll LICENSE \
+          cp -r dist/index.html dist/assets dist/data.js _site/
+          cp -r data.json catalog.csv llms.txt robots.txt .nojekyll LICENSE \
                 img og i card _site/
 
-      - name: Nothing private slipped in
+      - name: Nothing private slipped in, and nothing public left out
         run: |
-          for f in package.json node_modules app tests tools docs .git; do
+          # app.js and style.css are the old app's: if either is here, the
+          # collect step has published a mixture of the two apps, which is the
+          # one failure mode a half-finished edit produces.
+          for f in package.json node_modules app tests tools docs .git app.js style.css; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
+          # The other half, and the deterministic detector for a dangling
+          # symlink: [ -e ] is false for one, and [ -s ] / a non-empty listing
+          # catches a link that resolved to nothing.
+          for f in index.html assets/app.js data.js data.json catalog.csv \
+                   llms.txt robots.txt LICENSE; do
+            if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
+          done
+          # .nojekyll is empty by design - its presence is the whole signal.
+          if [ ! -e "_site/.nojekyll" ]; then echo "::error::.nojekyll is missing"; exit 1; fi
+          for d in img og i card; do
+            if [ ! -d "_site/$d" ] || [ -z "$(ls -A "_site/$d")" ]; then
+              echo "::error::$d is missing or empty"; exit 1
+            fi
+          done
+          # META.md section 1 is about what is published, so it is checked on
+          # the published file - as is the assertion that the flip took.
+          if ! grep -q 'name="robots" content="noindex' _site/index.html; then
+            echo "::error::the published index.html has no noindex"; exit 1
+          fi
+          if ! grep -q 'assets/app.js' _site/index.html; then
+            echo "::error::the published index.html does not load assets/app.js"; exit 1
+          fi
+          if grep -q 'src="app.js"' _site/index.html; then
+            echo "::error::the published index.html still loads the old app"; exit 1
+          fi
+          echo "published:"; ls -A _site
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
@@ -173,3 +265,10 @@ jobs:
           path: _site
       - id: pages
         uses: actions/deploy-pages@v4
+
+      # The first thing in this repository that reads the live URL. It cannot
+      # un-publish anything and is not meant to: it is what turns the run red so
+      # a person knows the revert above is needed. Runnable by hand against the
+      # same URL.
+      - name: The published site answers correctly
+        run: node tools/check-site.mjs "${{ steps.pages.outputs.page_url }}"

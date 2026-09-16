@@ -25,14 +25,22 @@
   import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
   import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import RecordModal from './RecordModal.svelte';
   import SearchBox from './SearchBox.svelte';
   import SectionHead from './SectionHead.svelte';
+  import Seg from './Seg.svelte';
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
-  import { equipFacets, equipOfKind, plainFacets, type AltKind } from '../lib/data.js';
+  import {
+    equipFacets,
+    equipOfKind,
+    otherTableRows,
+    plainFacets,
+    type AltKind
+  } from '../lib/data.js';
   import { facetRows } from '../lib/facets.js';
   import {
     chosenCount,
@@ -81,6 +89,10 @@
      remembered, and neither touches the address. */
   let q = $state('');
   let view = $state<'list' | 'grid'>('list');
+  const VIEWS = $derived([
+    { value: 'list', label: t.viewList },
+    { value: 'grid', label: t.viewGrid }
+  ] as const);
 
   /* An open modal belongs to the page it was opened on, the same as the
      selection - but the selection now lives on `app` (the bar that draws it
@@ -166,7 +178,13 @@
   }
 
   const rows = $derived(
-    eqKind ? (index ? equipOfKind(index, eqKind) : []) : (index?.rows.get(table) ?? [])
+    eqKind
+      ? index
+        ? equipOfKind(index, eqKind)
+        : []
+      : (table === 'other_starting' || table === 'other_frames') && index
+        ? otherTableRows(index, table)
+        : (index?.rows.get(table) ?? [])
   );
   const facPassed = $derived.by(() => {
     if (!facetGroups.length) return rows;
@@ -214,14 +232,14 @@
      a plain list, or one split by tier, frame, community, the equipment
      tables' own tier sections, or the alternate tables' rarity/hope-fear
      columns. */
-  type BodyKind = 'plain' | 'tier' | 'frame' | 'comm' | 'eq' | 'alt';
+  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'eq' | 'alt';
   const bodyKind = $derived<BodyKind>(
     eqKind
       ? 'eq'
       : table === 'voa'
         ? 'tier'
-        : table === 'frames'
-          ? 'frame'
+        : table === 'other_frames'
+          ? 'other'
           : table === 'community'
             ? 'comm'
             : table === 'alt_item' || table === 'alt_consumable'
@@ -245,8 +263,8 @@
         })).filter((s) => s.entries.length > 0)
   );
 
-  const frameSections = $derived.by<Section[]>(() =>
-    bodyKind !== 'frame'
+  const otherSections = $derived.by<Section[]>(() =>
+    bodyKind !== 'other'
       ? []
       : FRAME_ORDER.map((id) => ({
           key: id,
@@ -289,8 +307,8 @@
   const activeSections = $derived<Section[]>(
     bodyKind === 'tier'
       ? tierSections
-      : bodyKind === 'frame'
-        ? frameSections
+      : bodyKind === 'other'
+        ? otherSections
         : bodyKind === 'comm'
           ? commSections
           : bodyKind === 'eq'
@@ -333,11 +351,24 @@
   /* The row/section anchor - `#/tables/<table>/<key>` - off the scroll-and-
      flash block at the end of `render()` in app.js. One mechanism for both: a
      row anchor names a record id, a section anchor names a section's own key.
-     Guarded on `app.navigations` rather than firing on every re-render - a
-     search or a filter pick must not re-trigger the scroll a link already
-     played once.
+     Guarded on a `${navigations}|${lang}` stamp rather than firing on every
+     re-render - a search or a filter pick must not re-trigger the scroll a
+     link already played once, but the live app *does* re-play the scroll and
+     the flash on a language switch (`render()` re-parses the anchor and runs
+     the scroll-and-flash block on every call, `app.js:3632-3634`/`3832-3845`),
+     so this is keyed on `app.lang` as well as `app.navigations`. The live app
+     also re-plays on every other `render()` with the anchor still in the
+     address - a tables search keystroke included (`app.js:4435`: `S.tables.q
+     = el.value; render()`) - which would drag the reader back to the anchor
+     on every keystroke. That is a live defect, not reproduced here: no parity
+     state types or ticks with an anchor in the address, so nothing keys it
+     (`docs/specs/FEATURES.md`, "Tables and search").
 
-     The flash starts immediately, same as the live app's own synchronous
+     The flash is state (`flashKey`), not a class written straight onto the
+     element: a view switch (list <-> grid) replaces the row's DOM node
+     outright, and only a keyed re-render survives that - a plain
+     `element.classList.add` would flash a node about to be discarded. It
+     still *starts* immediately, same as the live app's own synchronous
      `render()` call - it is a decorative outline and does not depend on
      layout. The *scroll* waits, and the reason is not the one this comment
      used to give. It said the wait was for a font face to swap in. Measured:
@@ -366,37 +397,68 @@
      happened.
      `document.fonts` does not exist in jsdom, so component tests fall through
      to an already-resolved promise. */
-  let anchoredAt = $state(-1);
+  let flashKey = $state('');
+  let played = '';
+  let flashTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
     const route = app.route;
     const anchor = route.kind === 'tables' ? route.anchor : '';
     const nav = app.navigations;
+    const lang = app.lang;
     const ready = !!index;
-    if (!anchor || !ready) return;
-    if (anchoredAt === nav) return;
-    anchoredAt = nav;
+    if (!anchor || !ready) {
+      /* A route change that drops the anchor - to the same table with none,
+         or to a different one entirely - has to clear a flash already in
+         flight. The live app's render() rebuilds the DOM from scratch on
+         every call and cannot carry a stale highlight forward; this effect
+         reuses whatever row is already on screen, and the alternate tables
+         reuse `ci*`/`q*` ids across tables, so a flash left running would
+         light an unrelated row on the next table over. No parity state
+         keys this - none navigates away from an anchor inside the 1.6s
+         window - so it is a campsite fix, not a measured one. */
+      untrack(() => {
+        clearTimeout(flashTimer);
+        flashKey = '';
+      });
+      return;
+    }
+    const stamp = `${String(nav)}|${lang}`;
+    if (played === stamp) return;
+    played = stamp;
     untrack(() => {
-      const target =
-        document.getElementById('sec-' + anchor) ??
-        document.querySelector<HTMLElement>(`[data-row="${anchor}"]`);
-      if (!target) return;
-      target.classList.add('flash');
-      setTimeout(() => {
-        target.classList.remove('flash');
+      clearTimeout(flashTimer);
+      flashKey = anchor;
+      flashTimer = setTimeout(() => {
+        flashKey = '';
       }, 1600);
       /* `document.fonts` is declared non-optional in lib.dom, but jsdom does
          not implement it - the cast is what lets a component test run this
          effect without FontFaceSet existing at all. */
       const fonts = (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts;
       void (fonts?.ready ?? Promise.resolve()).then(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        /* The lookup happens here, not above: the element the effect saw at
+           trigger time can be replaced by a keyed re-render (a language
+           switch swaps the row's text nodes; a view switch swaps list rows
+           for grid tiles) before this promise resolves, and it is the
+           element live *now* that has to scroll into view. */
+        const target =
+          document.getElementById('sec-' + anchor) ??
+          document.querySelector<HTMLElement>(`[data-row="${anchor}"]`);
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
   });
+  $effect(() => () => {
+    clearTimeout(flashTimer);
+  });
 </script>
 
-<PageHead {app} title={t.tables} sub={t.subTables} {help} {say} />
+<PageHead {app} title={t.tables} sub={t.subTables} {help} {say} home={tablesHash(table)} />
 
+<!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus this
+     screen's own margin-free nav row. Svelte scopes this component's rule to
+     its own elements, so a `class` prop on `Panel` would have to be
+     `:global()` here - kept inline (plan.md, "B10 planned", decided 1). -->
 <div class="panel tablenav">
   <ChipRow>
     {#each TABLE_GROUPS as g (g.id)}
@@ -413,7 +475,7 @@
 </div>
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else}
   <div class="toolbar">
     <div class="grow">
@@ -428,22 +490,15 @@
     <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
       <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
     </Button>
-    <div class="seg small" role="group" aria-label={t.view}>
-      <button
-        type="button"
-        class:on={view === 'list'}
-        onclick={() => {
-          view = 'list';
-        }}>{t.viewList}</button
-      >
-      <button
-        type="button"
-        class:on={view === 'grid'}
-        onclick={() => {
-          view = 'grid';
-        }}>{t.viewGrid}</button
-      >
-    </div>
+    <Seg
+      small
+      options={VIEWS}
+      value={view}
+      label={t.view}
+      onchange={(v: 'list' | 'grid') => {
+        view = v;
+      }}
+    />
   </div>
 
   <FilterBar
@@ -466,7 +521,12 @@
       <Empty>{t.nothing}</Empty>
     {:else}
       {#each altSections as s (s.key)}
-        <div class="tsection" id={'sec-' + s.key} style="margin-top:20px">
+        <div
+          class="tsection"
+          class:flash={flashKey === s.key}
+          id={'sec-' + s.key}
+          style="margin-top:20px"
+        >
           <SectionHead
             label={s.label}
             title={t.copySection}
@@ -481,6 +541,7 @@
               {view}
               {index}
               lang={app.lang}
+              flash={flashKey}
               selected={(id: string) => app.sel.has(id)}
               artBroken={(id: string) => app.artBroken(id)}
               ontoggle={(id: string) => {
@@ -504,9 +565,14 @@
         <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
       {/if}
     </Empty>
-  {:else if bodyKind === 'tier' || bodyKind === 'frame' || bodyKind === 'comm' || bodyKind === 'eq'}
+  {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq'}
     {#each activeSections as s (s.key)}
-      <div class="tsection" id={'sec-' + s.key} style="margin-top:22px">
+      <div
+        class="tsection"
+        class:flash={flashKey === s.key}
+        id={'sec-' + s.key}
+        style="margin-top:22px"
+      >
         <SectionHead
           label={s.label}
           title={t.copySection}
@@ -519,6 +585,7 @@
           {view}
           {index}
           lang={app.lang}
+          flash={flashKey}
           selected={(id: string) => app.sel.has(id)}
           artBroken={(id: string) => app.artBroken(id)}
           ontoggle={(id: string) => {
@@ -542,6 +609,7 @@
       {view}
       {index}
       lang={app.lang}
+      flash={flashKey}
       selected={(id: string) => app.sel.has(id)}
       artBroken={(id: string) => app.artBroken(id)}
       ontoggle={(id: string) => {
@@ -576,11 +644,8 @@
 
 <style>
   /* off `.page-h`, `.itemtable` and friends were already covered; what
-     follows is the tables screen's own furniture. */
-  .miss {
-    margin: 0;
-    color: var(--muted);
-  }
+     follows is the tables screen's own furniture. `.miss` moved to
+     `NoData.svelte` (B10). */
 
   /* off `.panel` in style.css */
   .tablenav {
@@ -621,52 +686,6 @@
 
     .toolbar :global(.btn) {
       padding: 0 13px;
-    }
-  }
-
-  /* off `.seg` and `.seg.small` in style.css - LangSwitch draws the same rule
-     for the language pair; this is the segmented control's second shape and
-     not yet worth extracting on its own. */
-  .seg {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 3px;
-  }
-
-  .seg button {
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    border-radius: 999px;
-    font-weight: 650;
-    letter-spacing: 0.05em;
-    transition: 0.16s;
-  }
-
-  .seg.small {
-    align-self: stretch;
-  }
-
-  .seg.small button {
-    padding: 4px 12px;
-    font-size: 12px;
-  }
-
-  .seg button.on {
-    background: var(--gold);
-    color: #1a1206;
-  }
-
-  .seg button:not(.on):hover {
-    color: var(--txt);
-  }
-
-  @media (max-width: 600px) {
-    .seg button,
-    .seg.small button {
-      padding: 8px 14px;
     }
   }
 

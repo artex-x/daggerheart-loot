@@ -496,7 +496,8 @@ describe('the actions under a ticked selection', () => {
     await tickRow(0);
     await tickRow(1);
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
-    await expectNoA11yViolations(container);
+    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
+    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
   });
 });
 
@@ -732,13 +733,15 @@ describe('the textarea seed', () => {
 describe('accessibility', () => {
   it('has no violations on the page as it stands, priced and noted', async () => {
     const { container } = render(App, { env: withA() });
-    await expectNoA11yViolations(container);
+    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
+    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
   });
 
   it('has no violations with the roll panel open and a hit shown', async () => {
     const { container } = render(App, { env: withA() });
     await userEvent.click(screen.getByText('Бросок по списку'));
     await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
-    await expectNoA11yViolations(container);
+    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
+    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
   });
 });

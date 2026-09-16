@@ -1,0 +1,227 @@
+# #/tables/dread
+# route: #/tables/dread
+# why: the second table with a kind row, and the smallest
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/dread]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "29"
+    checkbox "Выбрать все (29)" [checked=false]
+    StaticText "Выбрать все (29)"
+    checkbox "Выбрано" [checked=false]
+    button "1 Эфирная Винтовка Ранг 3 · Магическое · Инстинкт · Очень далеко..." [namelen=307 namehash=14db50b3]
+    ... checkbox x26 of 30 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
+    checkbox "Выбрано" [checked=false]
+    button "28 Тиара Разговора Пока вы носите эту декоративную тиару, вы мож..." [namelen=304 namehash=c514fa47]
+    checkbox "Выбрано" [checked=false]
+    button "29 Склянка Святой Воды Обжигает демонов, дьяволов и нежить. Чтоб..." [namelen=412 namehash=290cb8b2]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+10Мистическая СмолаМаленькая баночка воска для тетивы, которая м... [namelen=256 namehash=d4f34091]
+11Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная бро... [namelen=612 namehash=094e189a]
+12Проклятая БрошюраЭта бесплатная брошюра, «Моральный призыв сод... [namelen=543 namehash=3a545713]
+13Одеяния ДьяволаАметистовые одеяния, которые делают владельца н... [namelen=278 namehash=46816439]
+14Эспайрская ШестерёнкаВы начинаете каждую сессию с +1 Надеждой,... [namelen=113 namehash=c24c05c1]
+15Зеркало ФейРаскрывает истинные облики и делает невидимое видим... [namelen=208 namehash=d1449736]
+16Колчан ФейПри находке содержит 1d6 стрел, отмеченных магией фе... [namelen=371 namehash=626f3adb]
+17Ледяная ГранатаПри броске взрывается, нанося 3d8 магического л... [namelen=136 namehash=68dc5b5d]
+18Ледяное МаслоПокрывает предмет размером не больше двуручного м... [namelen=198 namehash=c58847b3]
+19Стекло из ЛенгаБольшое круглое окно из мутного стекла. Тот, кт... [namelen=327 namehash=06badebb]
+1Эфирная ВинтовкаРанг 3 · Магическое · Инстинкт · Очень далеко ·... [namelen=301 namehash=b7bacd80]
+20Масло Зелёной СлизиПокрывает предмет размером не больше двуруч... [namelen=297 namehash=85a15405]
+21Банка Зелёной СлизиХрупкая банка размером с кулак, наполненная... [namelen=216 namehash=13db6a46]
+22Сыворотка Протокола ЛазаряПосле инъекции получите 5 Жетонов Сы... [namelen=586 namehash=884b53be]
+23Цилиндр для Мозга Ми-ГоСпособен поддерживать жизнь мозга. В ко... [namelen=246 namehash=e3a2b7f2]
+24Лунный ШарфШарф из лунного света, приносящий покой. Один раз з... [namelen=104 namehash=5e7d11e2]
+25Ручка ДрузейКогда вы используете эту ручку, чтобы написать чел... [namelen=140 namehash=cb37feb0]
+26Пурпурный ПрицелПрикрепите эту аметистовую линзу к дистанционн... [namelen=161 namehash=04fa754d]
+27Серебряный КлючОгромный ключ из потускневшего серебра, покрыты... [namelen=212 namehash=12fa7a92]
+28Тиара РазговораПока вы носите эту декоративную тиару, вы может... [namelen=300 namehash=2606bf71]
+29Склянка Святой ВодыОбжигает демонов, дьяволов и нежить. Чтобы ... [namelen=408 namehash=a468fc54]
+2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=216 namehash=cf0225f3]
+3Длинный Лук ФираРанг 3 · Магическое · Проворность · Далеко · d6... [namelen=187 namehash=c4e64a35]
+4Туманный Проектор Ми-ГоРанг 3 · Магическое · Знание · Средне · ... [namelen=405 namehash=0153d0d5]
+5Посох Тайного ПламениРанг 3 · Магическое · Инстинкт · Далеко · ... [namelen=243 namehash=d3394cc0]
+6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
+7Молниевая Пушка ЙитианцевРанг 4 · Магическое · Знание · Очень д... [namelen=485 namehash=832190f9]
+8Амулет ЗариПосле успешной атаки против нежити или цели, поражён... [namelen=195 namehash=8f1413ac]
+9Амулет ЖизнестойкостиВы получаете преимущество на Броски Реакци... [namelen=111 namehash=f9c2369c]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Выбрано
+К содержимому
+Как это работает
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Прочее
+Сеткой
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Таблицы
+Фильтры
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/dread]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "29"
+    checkbox "Select all (29)" [checked=false]
+    StaticText "Select all (29)"
+    checkbox "Selected" [checked=false]
+    button "1 Aether Rifle Tier 3 · Magic · Instinct · Very Far · d8+8 mag ·..." [namelen=276 namehash=d997edc8]
+    ... checkbox x26 of 30 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
+    checkbox "Selected" [checked=false]
+    button "28 Tiara of Talking While wearing this decorative tiara, you can..." [namelen=289 namehash=56771242]
+    checkbox "Selected" [checked=false]
+    button "29 Vial of Holy Water Burns demons, devils, and undead. To use i..." [namelen=362 namehash=f889b517]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+10Arcane ResinA tiny jar of bowstring wax that changes the damag... [namelen=248 namehash=711fd626]
+11Art History BookletThis is a finely illustrated booklet (donat... [namelen=534 namehash=84c3b132]
+12Cursed BookletThis free booklet, 'The Moral Call to Promote Th... [namelen=483 namehash=26365da0]
+13Devil's VestmentsAmethyst robes which make the wearer invisibl... [namelen=222 namehash=4ba821f1]
+14Espairian CogYou start each session with +1 Hope while you hav... [namelen=99 namehash=a95dafde]
+15Fey MirrorReveals true forms and makes the invisible visible. ... [namelen=171 namehash=6c0664a6]
+16Fey QuiverContains 1d6 fey-touched arrows when found. You can ... [namelen=295 namehash=bd336f1f]
+17Frost GrenadeIf thrown, explodes for 3d8 magical frost damage ... [namelen=120 namehash=bf1a6a12]
+18Frost OilCoats an item no bigger than a greatsword and turns i... [namelen=165 namehash=e58b4ccc]
+19Glass from LengA great round window of clouded glass. Anyone p... [namelen=312 namehash=93e07a55]
+1Aether RifleTier 3 · Magic · Instinct · Very Far · d8+8 mag · T... [namelen=270 namehash=91af9cef]
+20Green Ooze OilCoats an item no bigger than a greatsword with G... [namelen=248 namehash=562e981d]
+21Jar of Green Ooze SlimeA fist-sized breakable jar of green sli... [namelen=178 namehash=c61af4a5]
+22Lazarus Protocol SerumAfter injection, gain 5 Serum Tokens. Sp... [namelen=536 namehash=98f6f109]
+23Mi-Go Brain CylinderCapable of keeping a brain alive. Comes wi... [namelen=199 namehash=aa21e63e]
+24Moon ScarfA scarf made of moonlight, bringing calm. Recover 1d... [namelen=96 namehash=766428f9]
+25Pen of PalsWhen you use this pen to write to a person you beli... [namelen=118 namehash=7d44073a]
+26Purple AimAttach this amethyst lens to a ranged weapon as a do... [namelen=145 namehash=8518867e]
+27Silver KeyA huge key of tarnished silver covered with strange ... [namelen=193 namehash=3d09e2eb]
+28Tiara of TalkingWhile wearing this decorative tiara, you can m... [namelen=285 namehash=d1f22e0f]
+29Vial of Holy WaterBurns demons, devils, and undead. To use in ... [namelen=358 namehash=34b56227]
+2Blade of the LivingTier 3 · Magic · Strength · Melee · d10+11 m... [namelen=223 namehash=1352e44d]
+3Longbow of FyrTier 3 · Magic · Agility · Far · d6+10 mag · Two-... [namelen=171 namehash=0f27ca11]
+4Mi-Go Mist ProjectorTier 3 · Magic · Knowledge · Close · d8+10 ... [namelen=368 namehash=e95117be]
+5Staff of the Secret FlameTier 3 · Magic · Instinct · Far · d6+7... [namelen=240 namehash=b27d6e59]
+6Shield of the SunTier 3 · Strength · Melee · d4+4 mag · One-Han... [namelen=185 namehash=3635a78d]
+7Yithian Lightning GunTier 4 · Magic · Knowledge · Very Far · d1... [namelen=462 namehash=b2e77451]
+8Amulet of the DawnAfter a successful attack against an undead o... [namelen=189 namehash=3c392b5d]
+9Amulet of VitalityYou gain advantage on Strength Reaction rolls... [namelen=100 namehash=25fb5771]
+Alt. tables
+Communities
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Filters
+Grid
+Hope & Fear
+How this works
+Link to this table
+List
+Lists
+Open this section on start
+Other
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

@@ -102,7 +102,7 @@ describe('the frame row', () => {
     const index = buildIndex({
       items: { frames: [row({ id: 'f1', frame: 'motherboard', kind: 'consumable' })] }
     });
-    const [frameRow] = facetRows(index, 'frames', t, 'ru');
+    const [frameRow] = facetRows(index, 'other_frames', t, 'ru');
     expect(frameRow?.values.map((v) => v.value)).toEqual(FRAME_ORDER);
     expect(frameRow?.values.find((v) => v.value === 'beast_feast')?.label).toBe('Пир зверей');
   });

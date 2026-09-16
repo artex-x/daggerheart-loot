@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1061 pairs maintained with
+ * small, typed and reviewed, while record text is 1091 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -171,10 +171,22 @@ const ru = {
   eqBurden: 'Хват',
   eqLineF: 'Линейка',
 
+  /* The print card's own stat-strip labels: shorter than the interface's,
+     because 63mm has no room for "Характеристика" - the layout says "Черта". */
+  pcDmg: 'Урон',
+  pcTrait: 'Черта',
+  pcRange: 'Дистанция',
+  pcArmor: 'Броня',
+  thLight: 'Лёгкий урон',
+  thMajor: 'Ощутимый урон',
+  thSevere: 'Тяжёлый урон',
+
   /* The two groups the tab bar has no word for - both a slice through every
      book rather than a book of their own. */
   grpEquipment: 'Снаряжение',
-  grpFrames: 'Фреймы',
+  grpOther: 'Прочее',
+  subStarting: 'Стартовые',
+  subFrames: 'Сеттинги',
   /* The three equipment tables' sub-caption, shorter than the book's own name
      for the kind of gear - "Основное оружие" on the badge, "Оружие" here. */
   subWeapon: 'Оружие',
@@ -185,7 +197,7 @@ const ru = {
     'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
   subSearch:
-    'Поиск по всем 1061 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -205,7 +217,7 @@ const ru = {
      hands the picked state to somebody else. */
   filters: 'Фильтры',
   kindF: 'Тип',
-  frameF: 'Фрейм',
+  frameF: 'Сеттинг',
   commF: 'Сообщество',
   anyValue: 'любое',
   outOf: 'из',
@@ -240,6 +252,18 @@ const ru = {
   toStart: 'На главную',
   print: 'Печать',
   printHint: 'Собрать карточки для печати: девять на лист A4',
+  printColor: 'Цветная',
+  printBW: 'Чёрно-белая',
+  printNow: 'Отправить на печать',
+  printLink: 'Ссылка на набор',
+  printTitle: 'Печать карточек',
+  printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
+  printNote:
+    'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
+  printEmpty: 'Печатать нечего: в адресе не нашлось ни одной вещи.',
+  back: 'Назад',
+  printTooMany:
+    'За один раз печатается %n карточек, остальные %d в лист не попали. Разделите набор на части.',
   homeSet: 'Приложение будет открываться на этом разделе',
   homeReset: 'Приложение снова будет открываться на обычных правилах',
 
@@ -453,8 +477,18 @@ const en: Dict = {
   eqBurden: 'Burden',
   eqLineF: 'Line',
 
+  pcDmg: 'Damage',
+  pcTrait: 'Trait',
+  pcRange: 'Range',
+  pcArmor: 'Armor',
+  thLight: 'Minor damage',
+  thMajor: 'Major damage',
+  thSevere: 'Severe damage',
+
   grpEquipment: 'Equipment',
-  grpFrames: 'Frames',
+  grpOther: 'Other',
+  subStarting: 'Starting',
+  subFrames: 'Frames',
   subWeapon: 'Weapons',
   subSecondary: 'Secondary',
   subArmor: 'Armor',
@@ -462,7 +496,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1061 entries at once — loot, consumables and equipment, in Russian and English.',
+    'Search all 1091 entries at once — loot, consumables and equipment, in Russian and English.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',
@@ -509,6 +543,18 @@ const en: Dict = {
   toStart: 'Home',
   print: 'Print',
   printHint: 'Lay these out for printing: nine to an A4 sheet',
+  printColor: 'Colour',
+  printBW: 'Black and white',
+  printNow: 'Send to printer',
+  printLink: 'Link to this set',
+  printTitle: 'Printing cards',
+  printSub: 'Cards: %n. A4 sheets: %p. Card size 63×88 mm - the size of a playing card.',
+  printNote:
+    'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
+  printEmpty: 'Nothing to print: the address holds no items.',
+  back: 'Back',
+  printTooMany:
+    'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
   homeSet: 'The app will open on this section',
   homeReset: 'The app will open on the standard rules again',
 

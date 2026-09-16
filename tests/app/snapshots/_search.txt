@@ -1,0 +1,111 @@
+# #/search
+# route: #/search
+# why: the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/search]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Поиск" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    StaticText "Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжен..." [namelen=95 namehash=e544e3d9]
+    searchbox "Поиск по названию или описанию…" [focused=true]
+    StaticText "ТИП"
+    button "Предметы" [pressed=true]
+    button "Расходники" [pressed=true]
+    button "Снаряжение" [pressed=true]
+    StaticText "Начните вводить запрос"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Предметы
+Расходники
+Снаряжение
+Сообщества
+Списки
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/search]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Search" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    StaticText "Search all 1091 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=9837439f]
+    searchbox "Search by name or description…" [focused=true]
+    StaticText "TYPE"
+    button "Items" [pressed=true]
+    button "Consumables" [pressed=true]
+    button "Equipment" [pressed=true]
+    StaticText "Start typing"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Communities
+Consumables
+Dread
+EN
+Equipment
+Items
+Lists
+Open this section on start
+RU
+Search
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

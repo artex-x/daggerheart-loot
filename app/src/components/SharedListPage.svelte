@@ -5,9 +5,11 @@
      !own}` branch, which only reaches this once `app.index` is confirmed
      non-null. */
   import { onDestroy } from 'svelte';
+  import Actions from './Actions.svelte';
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import HitNote from './HitNote.svelte';
+  import PageTitle from './PageTitle.svelte';
   import RecordModal from './RecordModal.svelte';
   import TableRows from './TableRows.svelte';
   import type { Index } from '../lib/data.js';
@@ -78,15 +80,13 @@
 </script>
 
 {#if !shared}
-  <h1 class="page-h">{t.notFound}</h1>
-  <p class="page-sub">{t.badShare}</p>
+  <PageTitle title={t.notFound} sub={t.badShare} />
   <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
 {:else}
-  <h1 class="page-h">{shared.name || t.untitled}</h1>
-  <p class="page-sub">{sub}</p>
-  <div class="card-acts">
+  <PageTitle title={shared.name || t.untitled} {sub} />
+  <Actions style="margin-bottom:18px">
     <AddToList {app} key={N_SHARED} ids={shared.ids} primary />
-  </div>
+  </Actions>
   {#if shared.note || shared.hnote}
     <div class="notes">
       <HitNote icon="eye" label={t.notePub} text={shared.note} />
@@ -132,38 +132,10 @@
 {/if}
 
 <style>
-  /* off `.page-h` (style.css:105), the tokens `ListPage.svelte` already uses */
-  .page-h {
-    margin: 0 0 4px;
-    font-size: var(--h-page-size);
-    font-weight: var(--h-page-weight);
-    letter-spacing: var(--h-page-spacing);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  /* off `.page-sub` (style.css:140) */
-  .page-sub {
-    margin: 0 0 18px;
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 70ch;
-  }
-
-  /* off `.card-acts` (style.css:405), the live inline style
-     ("margin-bottom:18px") folded in */
-  .card-acts {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 3px;
-    margin-bottom: 18px;
-  }
-
+  /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.card-acts` to
+     `Actions.svelte` (B10) - `margin-bottom:18px` is the live inline style
+     on this specific block, now passed as `style` rather than folded into a
+     rule of this component's own. */
   .notes {
     margin-bottom: 18px;
   }

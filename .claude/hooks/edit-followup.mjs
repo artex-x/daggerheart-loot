@@ -1,7 +1,7 @@
 // PostToolUse(Edit|MultiEdit|Write|NotebookEdit): record the write (so the
 // Stop hook can tell what this session actually touched), then remind at
 // most once per session per group about derived artefacts, contracts, and
-// the parity baseline. Never blocks. See issues/65/plan.md section 4, hook 5.
+// the parity baseline. Never blocks. See .claude/README.md, "Hooks".
 
 import { readInput, guard, speak, relPath, pathKey, recordWrite, once } from './lib.mjs';
 
@@ -17,7 +17,7 @@ const GROUPS = [
     id: 'remind:data',
     test: (p) => p === 'data.js',
     message:
-      'data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, index.html, README.md, README.ru.md, app.js, llms.txt and robots.txt change with it.'
+      'data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, index.html, app/index.html, README.md, README.ru.md, app.js, llms.txt and robots.txt change with it.'
   },
   {
     id: 'remind:contract',

@@ -35,6 +35,7 @@ When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to pl
   - Do not also run a full planner pass for pure content ingest unless add-source stops and asks for multi-batch app design
   - If the source is huge or needs a multi-batch app surface, you may plan with **planner** first, then **implementer**
 - **App/feature/refactor work** (including issue-driven code changes): **planner** -> **implementer** -> optional **reviewer**
+- **Single-file visual bug pinned to a width**: the human runs `/small-fix` (`.claude/skills/small-fix/SKILL.md`) - no planner, no `context.md`, no review, every gate. Anything wider is the feature path.
 
 ## Do not do the planner's job
 
@@ -54,20 +55,16 @@ The test, and it is a sharp one:
 
 A GOAL of the shape "figure out what to do about X" is a planning dispatch,
 not an invitation to settle X inline. Happened 2026-09-10 with the
-`npm run check` question: the orchestrator timed every stage, read vitest's
-internals, decided against a config change and wrote the verdict into
-`context.md` and `handoff.md` itself. The verdict held up - and that is the
-trap. Nothing reviews the orchestrator's reasoning, no `plan.md` section
-carries it, and the strongest coordination context in the session gets spent
-on analysis instead of on dispatching. Measure the symptom if a cheap
-measurement is what routing needs, then let the planner own the answer.
+`npm run check` question: the orchestrator measured, decided and wrote the
+verdict itself. It held up - that is the trap: nothing reviews the
+orchestrator's reasoning and no `plan.md` carries it. Measure the symptom
+if routing needs it; let the planner answer.
 
 ## Long-running checks (the most expensive mistake this setup makes)
 
-A worker that ends its turn with a check still running loses it: the shell dies with the agent
-and the result is gone even though the command finished. The replacement may
-be a cold agent that re-reads everything - that happened twice in one session and cost
-more than the batch itself.
+A worker that ends its turn with a check still running loses it: the shell
+dies with the agent and the result with it. A cold replacement re-reads
+everything - twice in one session, costing more than the batch itself.
 
 ### A worker waiting on a background check: wait with it
 
@@ -80,28 +77,16 @@ for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
   it, and do not start a heavy run of your own alongside it - two heavy runs on
   one tree corrupt each other's results. Say so to the human and hold.
 - **Nothing is running: the result is gone**, whether or not the command
-  finished. The worker has to re-run it in the foreground, one call, unchained
-  and unredirected, or the commit gate can never see it. Resume the worker -
-  it holds the context a fresh one would re-derive at full cost.
-- **If this host cannot resume it, ask the human.** Measured 2026-09-10 on the
-  Windows desktop app: `SendMessage` is disabled for the main session and for
-  subagents alike, so a stopped worker is resumable only from the human's side.
-  One question is cheaper than a cold replacement, and far cheaper than two
-  writers on one tree.
+  finished. Resume the worker - `SendMessage` to its name, see "Resume, do
+  not replace" - with one instruction: re-run the check in the foreground,
+  one call, `set -o pipefail; npm run check 2>&1 | tail -n 120` with the
+  Bash timeout at 600000, then commit or report. It holds the context a
+  fresh agent would re-derive at full cost.
 
-Third occurrence of this shape on one task, 2026-09-10. The instruction that
-prevents it belongs in the dispatch: name the checks, say they fit one
-foreground call, and say plainly that a backgrounded or file-redirected run
-cannot satisfy the gate however honestly it passes.
-
-**And that did not work.** The third occurrence had all of it - three
-paragraphs of it, in the dispatch, naming the two implementers it had already
-cost - and the worker backgrounded the check anyway. So do not answer a fourth
-occurrence with a fourth paragraph. Prose failed at this three times;
-`bash-guard.mjs` now blocks a backgrounded `npm run check` (candidate 27) and
-any heavy run beside a live parity run (candidate 28). The foreground check is
-`set -o pipefail; npm run check 2>&1 | tail -n 120` with `timeout: 600000`;
-`.claude/README.md` says why each part matters.
+Prose failed at this three times; `bash-guard.mjs` now denies a backgrounded
+`npm run check` (rule 2g) and a heavy run beside a live parity run (2h) -
+`.claude/README.md`, "Run a long check". Name the checks in the dispatch,
+say they fit one foreground call, and do not write a fourth paragraph.
 
 While nothing is running, a foreground `npm run check` of your own is worth
 the few minutes: it is a status, so it is yours to take, it arms the commit
@@ -157,75 +142,97 @@ So treat HEAD as something that moves under you:
 
 ### A worker that went quiet is not a worker that died
 
-A task notification fires when an agent **ends a turn**, not when it exits. Its
-`completed` status describes that turn. An agent that stopped mid-work is still
-listed, still holds its context, and the human can resume it from their side -
-the orchestrator cannot, because `SendMessage` is not exposed on every host.
-Measured on the Windows desktop app, 2026-09-10: it is disabled there for the
-main session and for subagents alike, so on that host resuming is always the
-human's to do.
-
-Happened once, 2026-09-09, and cost a duplicate agent: a worker ended its turn
-waiting on a parity run, the orchestrator read the notification as termination,
-killed the run's processes, dispatched a cold replacement, and only then found
-both agents `running` against the same tree. Verify, then act:
+A task notification fires when an agent **ends a turn**, not when it exits.
+Its `completed` status describes that turn. The agent is still listed,
+still holds its context, and `SendMessage` to its name resumes it from its
+transcript (measured 2026-09-11; `.claude/README.md`, "Resuming a worker").
+Once, 2026-09-09, the orchestrator read such a notification as termination,
+killed the worker's parity run, dispatched a cold replacement, and found
+both agents `running` on one tree. Verify, then act:
 
 1. **`ListAgents` before you conclude anything.** It prints `running`, `killed`
    or `completed` per subagent. Assumption is not a status.
-2. **Never dispatch a replacement for an agent that shows `running`.** That is
-   two writers on one tree, which the rule above forbids.
+2. **Never dispatch a replacement - or resume a finished writer - while
+   another writer shows `running`.** Either is two writers on one tree,
+   which the rule above forbids.
 3. **If it genuinely has to be replaced: `TaskStop` it first, confirm it shows
    `killed`, then look at `git status` and `git diff` for a half-applied edit,
    then dispatch.** Order matters - killing a worker's background run while the
    worker is still alive makes its next turn reason from a corpse.
-4. **Prefer resuming to replacing.** A live agent holds the context a cold one
-   re-derives at full cost. If only the human can resume it, ask - do not spend
-   a fresh agent to avoid one question.
+4. **Resume, do not replace** - the subsection below says when each is
+   right. Do not spend a fresh agent to avoid one message.
 5. Say "it stopped" until you have checked. "It died" is a claim about a status
    you have not read.
 
+### Resume, do not replace
+
+A resume is a dispatch: it makes the agent live again, so it gets the
+spawn's preflight - `ListAgents` shows no other writer `running`, HEAD
+re-read and named. Only the orchestrator resumes a writer; the reviewer
+returns findings and sends nothing. Within a batch, resume its own
+implementer for a lost check, the review's blockers, an uncommitted change
+at closeout, or a question you can answer - one message per occasion: the
+next action, HEAD, what is settled, the gates. Spawn instead when the agent
+shows `killed` or the send fails, when its transcript is the problem (it
+reasoned from a corpse or holds a refuted belief), or when the tier must
+change - a resume carries no `model`. A new batch is a new worker: the
+handoff is the memory between batches by design, and every resume replays
+the whole transcript. Sibling sends are unmeasured and unused; a subagent's
+reply lands here, so two subagents cannot converse. Facts and evidence:
+`.claude/README.md`, "Resuming a worker".
+
 ## Model selection (orchestrator only)
-Agents must not choose models.
-Each agent's frontmatter carries its real default, so a dispatch that names no
-model still runs at the intended tier. **Do not use `model: inherit` for
-workers** - inherit means *the session model*, so an implementer dispatched
-from an Opus session silently runs on Opus, which is the opposite of its
-documented economy default and the fastest way to exhaust the 5-hour window.
-Escalation is an explicit `model` argument on the dispatch, never a side effect
-of what you happen to be running.
+Agents must not choose models or effort.
+Claude frontmatter remains the default on Claude hosts: planner and reviewer
+use `opus`; implementer, add-source, and refresh-artwork use `sonnet`. Claude
+effort is session-level and human-controlled.
 
-Effort/high reasoning is controlled by the session UI - set effort explicitly when you need "high".
+### Planner tier: `opus` by default, `fable` by named escalation
 
-Frontmatter defaults (change the file, not your habit):
-- `planner`: fable - the plan decides whether a Sonnet implementer succeeds or
-  thrashes, and a bad plan costs an implement run, a review, and the single
-  remediation cycle. **Fable access may be temporary.** If it lapses, edit the one
-  frontmatter line in `.claude/agents/planner.md` to `opus` - do not paper over it
-  with a per-dispatch model argument, or the file stops describing the real tier
-- `reviewer`: opus - review runs rarely and exists to catch what the implementer missed; a weak review manufactures confidence, which is worse than none
-- `implementer`: sonnet
-- `add-source`: sonnet
-- `refresh-artwork`: sonnet
+`planner.md`'s frontmatter is `opus` and stays so; a routine planning
+dispatch names no `model`. One dispatch may name `model: fable` when the
+GOAL meets at least one test below, and the dispatch message in chat says
+which:
 
-Raise per dispatch when:
-- Plan: already fable; medium effort suits routine batches, high when design/UI/
-  mechanics are non-trivial. On Fable, lower effort often beats a prior model's
-  highest, so reach for high because the design is hard - not out of habit.
-  Opus is the fallback floor, not a downgrade to choose per dispatch
-- Implement: opus only if a prior implement failed on this batch or risk is high; sonnet + high for large careful batches
-- Add-source: opus if new roll/table mechanics or hard ambiguity
-- Refresh-artwork: opus only for unresolved many-to-many mapping or acceptance ambiguity; large mechanical conversion batches use sonnet + high
-- Review: already opus; lower to sonnet only for a small, low-risk batch
+1. The plan will settle a public contract, a product law, a hook that
+   denies, or configuration every later session runs under - and a wrong
+   call is not caught by `npm run check` or a reviewer, only by the next
+   failure.
+2. The design must reconcile three or more sources that can conflict (issue
+   evidence, specs, live behaviour, an in-flight plan, a design held outside
+   the repo), and the human has said the call is the planner's to make.
+3. A previous planning pass on this task came back not implement-ready, or a
+   batch of it failed review with `replan`.
 
-Claude <-> Codex cheat-sheet:
-- economy-mid: Sonnet medium <-> GPT-5.6 Terra medium
-- economy-high: Sonnet high <-> GPT-5.6 Terra high
-- strong-mid: Opus medium <-> GPT-5.6 Sol medium/high
-- strong-high: Opus high/xhigh <-> GPT-5.6 Sol high/xhigh/Ultra
-- frontier: Fable medium/high <-> no established Codex peer; on Codex, plan with
-  Sol at its highest tier and expect a weaker plan
+Not a test: the task is large, the diff is wide, the human is in a hurry, or
+Fable is available. Feature planning, a next-batch refresh and source-ingest
+design stay on `opus`. If no test is named in the dispatch, the tier is
+`opus`. Escalation is per dispatch and never edits the frontmatter; a resume
+carries no `model` ("Resume, do not replace"), so a tier change is a fresh
+dispatch. Fable's availability moves (unavailable 2026-09-12, available
+2026-09-15): when it is not there, plan on `opus` and say so - never wait.
+Announce the routing in chat only; never write it into `plan.md`,
+`handoff.md` or `context.md`.
 
-Announce chosen tier in chat only. Never write model routing into plan.md or handoff.md.
+On Codex, every worker dispatch must name `model` and `reasoning_effort`, and
+must use `fork_turns: "none"` or a bounded positive count. Do not use a
+full-history fork: it cannot accept those overrides. Use this mapping:
+
+| Role | Codex model | Effort |
+|---|---|---|
+| planner | `gpt-5.6-sol` | `medium` |
+| reviewer | `gpt-5.6-sol` | `medium` |
+| implementer | `gpt-5.6-terra` | `medium` |
+| add-source | `gpt-5.6-terra` | `medium` |
+| refresh-artwork | `gpt-5.6-terra` | `medium` |
+
+The only Codex ladder is `gpt-5.6-sol` -> `gpt-5.6-terra` ->
+`gpt-5.6-luna`. Use Luna only for an explicit, bounded, low-risk
+mechanical or read-only helper; it is never a named-role silent default or a
+choice for planning, ambiguous implementation, remediation, or risk-bearing
+review. `medium` is the default; `high` is the only escalation, justified by
+design complexity or implementation/review risk. Announce the chosen routing
+in chat only. Never write it into plan.md or handoff.md.
 
 ## When to run reviewer (do not skip these)
 Run reviewer after implement or add-source when ANY of:
@@ -264,14 +271,43 @@ Otherwise skip review.
 7. Stop when done, blocked, or human stops
 
 ## After review (max one remediation cycle)
-Review returns to the orchestrator only - do not chain review -> planner -> review loops.
+Review returns to the orchestrator only: the reviewer messages nobody, and
+you count the one cycle.
 
-- **approve** -> continue to next batch or finish
-- **fix-then-continue** -> dispatch implementer, add-source, or refresh-artwork ONCE for blockers only; do not replan; do not send nits through a full cycle
-- **replan** -> dispatch planner ONCE to revise the affected batch, then the appropriate writer ONCE
-- After that single remediation, do not auto-review again unless contracts/UI still changed and risk rules still match
+- **approve** -> continue to next batch or finish; on a terminal batch
+  (below) carrying local nits, resume the writer ONCE for the nits first
+- **fix-then-continue** -> resume the batch's writer ONCE with the blockers
+  only - quoted, with what is already settled, HEAD and the gates; a cold
+  fix-pass is the fallback when "Resume, do not replace" says spawn. Do not
+  replan; send nits only on a terminal batch, and then in the same message
+- **replan** -> resume the planner ONCE (dispatch it if not listed) to
+  revise the affected batch, then the writer ONCE
+- After that single remediation, do not auto-review again unless
+  contracts/UI still changed and risk rules still match; when a second
+  look is due, resume the same reviewer - it holds the batch
 - If still blocked after one remediation cycle -> stop and ask the human
-- Record nits in handoff Deferred; do not burn a cycle on nits alone
+
+### Nits: defer mid-plan, clear on the terminal batch
+
+A batch is **terminal** when, after it lands, `plan.md` lists no further batch
+and the human has named no further phase or goal for TASK. A batch with work
+queued behind it is mid-plan, whatever its size.
+
+- **Mid-plan** -> record nits in handoff Deferred and continue; do not burn a
+  cycle on nits alone. A later batch re-enters those paths, and one pass over
+  the finished area beats a pass per batch.
+- **Terminal** -> the one remediation cycle carries blockers *and* nits, and a
+  review that returns only nits is worth that cycle, because nothing after it
+  will pick them up. One message, one cycle.
+- Send only nits that are cheap, local and safe inside the paths the batch
+  already touched (`CLAUDE.md`, campsite). A nit wanting a redesign, a
+  public-contract change, a new spec, or work outside those paths goes to
+  Deferred even on a terminal batch - record that it was seen and why it was
+  left.
+- Gates do not move. The fix-pass reruns the batch's checks and commits, or it
+  reverts its own nit fixes and reports. A nit never justifies a red gate.
+- Unsure whether a batch is terminal - ask. It is one question, where a wrong
+  guess either burns the cycle or drops the nits on the floor.
 
 ## Session ending
 
@@ -295,12 +331,12 @@ If the human says the session is ending (or usage is exhausted):
 ## Task closeout and cleanup
 Before reporting a batch or task complete:
 1. Wait for every dispatched worker to finish or report a blocker; collect each result. If the host exposes teammate lifecycle controls, request shutdown of any remaining teammates. Do not edit or delete host-managed agent/team state by hand.
-2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree.
+2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree. If the Stop hook named a task document over its size budget, compact it per `.claude/skills/handoff/SKILL.md` before reporting.
 3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
-4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, send exactly one writer to verify and commit the coherent change; the reviewer stays read-only. Never push.
-5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. Record what was removed or deliberately retained in `handoff.md`.
-6. Retire the task directory. Durable knowledge earns a permanent home first - behaviour to `docs/specs/`, tooling and rationale to the README that owns that area - because a rejected-options list or a measured fact is worth exactly as much as the next person's ability to find it. Once nothing in `plan.md` is still referenced, delete it; keep `context.md` and `handoff.md`, and mark the handoff status **done**. Never retire a directory the human still calls active - issue 47 holds the live migration backlog by `CLAUDE.md`'s own instruction.
-7. A completed task directory is history, not instructions. Do not read one for a new task unless the human names that id, and never treat a done task's `handoff.md` as the next batch.
+4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and commit the coherent change; the reviewer stays read-only. The branch is pushed at each committed boundary; confirm the remote matches before reporting done.
+5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. The `Stop` hook names this session's own untracked writes (excluding `docs/` and the task-document set) as a candidate set, not a verdict - it states what is there, never what to do with it. The session that watched the files appear is the one that can tell scratch from evidence; a hook cannot. Record what was removed or deliberately retained in `handoff.md`.
+6. Retire the task directory. Durable knowledge earns a permanent home first - behaviour to `docs/specs/`, tooling and rationale to the README that owns that area - because a rejected-options list or a measured fact is worth exactly as much as the next person's ability to find it. Before deleting `plan.md`, run `git grep -n "issues/<id>/plan\.md"`; move the durable content, then retarget or delete every tracked citation the grep finds, and remove the file in that same commit - `bash-guard.mjs` denies the deletion while a citation still stands, so the order is not optional. Watch the trap this very task walked into: the retirement itself is `.md`-only and gate-exempt, but a citation repair that touches a non-exempt file (`.claude/hooks/*.mjs`, `README.md`, `README.ru.md`, or any code) puts the whole commit behind a passing `npm run check`. Once nothing in `plan.md` is still referenced, delete it; keep `context.md` and `handoff.md`, and mark the handoff status **done**. Never retire a directory the human still calls active - issue 47 holds the live migration backlog by `CLAUDE.md`'s own instruction.
+7. A completed task directory is history, not instructions. Do not read one for a new task unless the human names that id, and never treat a done task's `handoff.md` as the next batch. Closeout is not finished until what steps 5 and 6 did is written into the handoff's `Cleanup performed / retained artifacts` field - the only durable record of a decision to keep something.
 8. Finish with a concise summary: outcome, commits, checks, cleanup, retained artifacts, deferred work, and whether human action is required.
 
 ## Rules

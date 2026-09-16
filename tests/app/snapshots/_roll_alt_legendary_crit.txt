@@ -1,0 +1,223 @@
+# #/roll/alt ~ legendary crit
+# route: #/roll/alt
+# why: a critical success with no rarity above it
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/roll/alt]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Альтернативные таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
+    StaticText "РЕДКОСТЬ"
+    button "Обычная Ранг 1–2" [pressed=false]
+    button "Необычная Ранг 1–2" [pressed=false]
+    button "Редкая Ранг 2–3" [pressed=false]
+    button "Очень редкая Ранг 3–4" [pressed=false]
+    button "Легендарная Ранг 3–4" [pressed=true]
+    ... StaticText x27 of 31 same-shape siblings elided
+    button "Кость Надежды: На единицу меньше"
+    textbox "Кость Надежды: Результат броска" [value=2 multiline=false readonly=false required=false]
+    button "Кость Надежды: На единицу больше"
+    ... button x10 of 14 same-shape siblings elided
+    textbox "Кость Страха: Результат броска" [value=2 multiline=false readonly=false required=false]
+    button "Предметы" [pressed=true]
+    button "Расходники" [pressed=true]
+    link "Таблица предметов" [url=#/tables/alt_item/legendary]
+    link "Таблица расходников" [url=#/tables/alt_consumable/legendary]
+    link "Глиняный Спутник" [description=Страница url=#/i/ci50]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    link "Самоцвет Проворства" [description=Страница url=#/i/ci53]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    link "Усыпляющий Сок" [description=Страница url=#/i/cc50]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Страница"
+    StaticText "HOPE & FEAR"
+    link "Квинтэссенциальный Разделитель" [description=Страница url=#/i/hc53]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Этим магическим клинком можно разрубить одну магическую или мета..." [namelen=162 namehash=9ca03761]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Бросить кости
+К содержимому
+Как это работает
+Кость Надежды: На единицу больше
+Кость Надежды: На единицу меньше
+Кость Надежды: Результат броска
+Кость Страха: На единицу больше
+Кость Страха: На единицу меньше
+Кость Страха: Результат броска
+ЛегендарнаяРанг 3–4
+ЛутDaggerheart
+НеобычнаяРанг 1–2
+ОбычнаяРанг 1–2
+Обычные правила
+Открывать этот раздел при запуске
+Отправить
+Очень редкаяРанг 3–4
+Поиск
+Предметы
+Расходники
+РедкаяРанг 2–3
+Скопировать все варианты
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Сообщества
+Списки
+Страница
+Таблица предметов
+Таблица расходников
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/roll/alt]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Alternate tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
+    StaticText "RARITY"
+    button "Common Tier 1–2" [pressed=false]
+    button "Uncommon Tier 1–2" [pressed=false]
+    button "Rare Tier 2–3" [pressed=false]
+    button "Very rare Tier 3–4" [pressed=false]
+    button "Legendary Tier 3–4" [pressed=true]
+    ... StaticText x27 of 31 same-shape siblings elided
+    button "Hope Die: One lower"
+    textbox "Hope Die: Roll result" [value=2 multiline=false readonly=false required=false]
+    button "Hope Die: One higher"
+    ... button x10 of 14 same-shape siblings elided
+    textbox "Fear Die: Roll result" [value=2 multiline=false readonly=false required=false]
+    button "Items" [pressed=true]
+    button "Consumables" [pressed=true]
+    link "Items table" [url=#/tables/alt_item/legendary]
+    link "Consumables table" [url=#/tables/alt_consumable/legendary]
+    link "Clay Companion" [description=Page url=#/i/ci50]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    link "Gem of Alacrity" [description=Page url=#/i/ci53]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    link "Sleeping Sap" [description=Page url=#/i/cc50]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Page"
+    StaticText "HOPE & FEAR"
+    link "Quintessential Severant" [description=Page url=#/i/hc53]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "You can use this magic blade to cut one magical or metaphysical ..." [namelen=168 namehash=d436046a]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+CommonTier 1–2
+Communities
+Consumables
+Consumables table
+Copy every option
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+Fear Die: One higher
+Fear Die: One lower
+Fear Die: Roll result
+Hope Die: One higher
+Hope Die: One lower
+Hope Die: Roll result
+How this works
+Items
+Items table
+LegendaryTier 3–4
+Lists
+Open this section on start
+Page
+RU
+RareTier 2–3
+Roll the dice
+Search
+Share
+Skip to content
+Standard rules
+Tables
+UncommonTier 1–2
+Vault of Ages
+Very rareTier 3–4
+Wondrous
+daggerheart.com
+ЛутDaggerheart

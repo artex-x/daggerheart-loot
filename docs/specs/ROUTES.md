@@ -22,7 +22,10 @@ The implementation is `currentRoute()` in `app.js`, plus `ROUTES`,
 | `#/search` | Search |
 
 These nine are also the tab bar (`TAB_LIST`) and the nine a person may pin as
-their starting section.
+their starting section - eight pin as their own hash; `#/tables` pins as
+whichever table is on screen (`#/tables/<table>`), never as the bare tab
+address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
+stores and reads back.
 
 ## Legacy section names
 
@@ -42,7 +45,7 @@ working and keeps its own text.
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
 Table names (`TABLE_DEFS`): `core_item`, `core_consumable`, `hnf_item`,
-`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `frames`, `alt_item`,
+`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`.
 
 A name that is not in that list is ignored and the table already on screen is
@@ -61,8 +64,10 @@ f_<group>-<value>[-<value>...][.<group>-<value>...]
 Groups are separated by `.`, values inside a group by `-`. A `.` was chosen
 because values may contain `_` (`frame-beast_feast`). Links written with the
 older `_` group separator are still read, but only when the segment has no `.`
-and every piece looks like a group; anything else is treated as the current
-format.
+and every piece names a group the table offers; anything else is treated as
+the current format. A retired group name ahead of a live one makes the whole
+body one unknown group, so the live narrowing is dropped and the table stays
+whole: unknown groups fail open, never empty.
 
 Group keys, by table:
 
@@ -72,7 +77,8 @@ Group keys, by table:
 | `eq_secondary` | `tier`, `src`, `cls`, `trait`, `range`, `line` |
 | `eq_armor` | `tier`, `src`, `line` |
 | `voa` | `kind`, `tier` |
-| `frames` | `kind`, `frame` |
+| `other_starting` | none |
+| `other_frames` | `kind`, `frame` |
 | `community` | `comm` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 
@@ -82,6 +88,11 @@ Values: `tier` `1`-`4` (and `A`, `C` on `voa`); `cls` `phy`/`mag`; `trait`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
 community name.
+
+`other_frames` has four setting anchors, in order: `beast_feast`, `colossus`,
+`dark_heart`, and `motherboard`. Each canonical frame record and any framed
+starting item (`f95`, under Motherboard) appears once, under its own setting.
+Unframed starting inventory is not part of this table - it is `other_starting`.
 
 An empty group means "any", so an untouched filter contributes nothing and a
 plain table link carries no `f_` part at all. Values inside a group are OR'd;
@@ -107,7 +118,19 @@ being handed to another GM.
 
 ## Fallback
 
-An address that matches nothing readable is replaced - via `replaceState`, so
-it does not accumulate in history - with the pinned starting section, or
-`#/roll/std`. An address that resolved to something is left alone, so a link
-someone shared still reads back as they wrote it.
+An address that matches nothing readable - at boot or on navigation - is
+replaced, via `replaceState`, so it does not accumulate in history, with the
+pinned starting section, or `#/roll/std` if none is pinned. An address that
+resolved to something is left alone, so a link someone shared still reads back
+as they wrote it.
+
+A bare address (`''`, `#` or `#/`) is a third case, and boot and navigation
+answer it differently:
+
+- At boot, it draws the pinned starting section and leaves the address bar as
+  it found it - unless a section other than the default is pinned, in which
+  case it navigates there instead (a real history entry, so Back leaves the
+  bare address behind rather than returning to it).
+- Any subsequent navigation to a bare address - away and back, or a typed
+  `#/` - draws `#/roll/std` - the default, never the pinned section - and
+  writes nothing to the bar.

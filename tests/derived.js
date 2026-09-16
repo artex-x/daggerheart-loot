@@ -74,8 +74,14 @@ console.log('не индексируется');
    в паре — обход разрешён, чтобы noindex вообще прочитали, а закрытая роботсом
    страница может попасть в выдачу голой ссылкой, так и не прочитав тег. */
 const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
-ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')),
-   'на index.html нет noindex');
+/* Обе входные страницы: корневая — пока её отдаёт Pages, app/index.html — то,
+   из чего собирается dist/index.html. Проверяется исходник, а не сборка:
+   `npm run check` ничего не собирает, и тест, читающий вчерашний dist/, хуже,
+   чем отсутствие теста. */
+['index.html', 'app/index.html'].forEach(function (file) {
+  ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, file), 'utf8')),
+     'на ' + file + ' нет noindex');
+});
 ok(NOINDEX.test(page(ALL[0])), 'генератор заглушек перестал ставить noindex');
 const rob = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
 ok(/^User-agent: \*\s*\nAllow: \//m.test(rob),
@@ -84,6 +90,51 @@ ok(/GPTBot|CCBot/.test(rob) && /Disallow: \//.test(rob),
    'robots.txt не отсекает сборщиков для обучения');
 ok(!fs.existsSync(path.join(ROOT, 'sitemap.xml')),
    'карта сайта вернулась, а она нужна ровно для индексации');
+
+console.log('две входные страницы не разошлись');
+/* Пока старое приложение и переписанное лежат рядом, у них две входные
+   страницы — index.html и app/index.html, — и голова у них обязана совпадать:
+   карточка для мессенджеров, иконка, noindex и safe-area берутся из того файла,
+   который опубликован, а правят обычно один. Список исключений пуст намеренно:
+   расхождение, которое нужно, вписывается сюда с причиной. Проверка уходит в
+   Phase 7 вместе с корневым index.html. */
+const HEAD_META = ['description', 'robots', 'color-scheme', 'viewport'];
+function headFacts(file) {
+  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const out = {};
+  const title = /<title>([\s\S]*?)<\/title>/i.exec(html);
+  if (title) out['<title>'] = title[1];
+  (html.match(/<meta\s[^>]*>/gi) || []).forEach(function (tag) {
+    const attr = {};
+    const re = /([\w:-]+)\s*=\s*"([^"]*)"/g;
+    let m;
+    while ((m = re.exec(tag))) attr[m[1].toLowerCase()] = m[2];
+    const key = attr.property || attr.name;
+    if (!key) return;
+    if (HEAD_META.indexOf(key) >= 0 || /^(og|twitter):/.test(key)) out[key] = attr.content;
+  });
+  return out;
+}
+const HEADS = [['index.html', headFacts('index.html')],
+               ['app/index.html', headFacts('app/index.html')]];
+const keys = {};
+HEADS.forEach(([, facts]) => Object.keys(facts).forEach(k => { keys[k] = true; }));
+ok(Object.keys(keys).length >= 20,
+   'из головы прочиталось всего ' + Object.keys(keys).length + ' полей — сломался разбор');
+Object.keys(keys).sort().forEach(function (k) {
+  const [a, b] = HEADS.map(pair => pair[1][k]);
+  ok(a !== undefined, 'index.html: пропало ' + k);
+  ok(b !== undefined, 'app/index.html: нет ' + k + ' — карточка ссылки соберётся без него');
+  if (a !== undefined && b !== undefined) {
+    ok(a === b, k + ' разошлось: index.html «' + a + '», app/index.html «' + b + '»');
+  }
+});
+/* Иконка — тоже часть головы, но это <link>, а не <meta>. */
+const ICON = /<link\s+rel="icon"\s+href="([^"]*)"/i;
+const icons = HEADS.map(([file]) =>
+  (ICON.exec(fs.readFileSync(path.join(ROOT, file), 'utf8')) || [])[1]);
+ok(icons[0] && icons[1], 'пропала иконка вкладки на одной из входных страниц');
+ok(icons[0] === icons[1], 'иконка вкладки разошлась между входными страницами');
 
 console.log('llms.txt');
 const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
@@ -290,7 +341,7 @@ console.log('снаряжение фреймов');
    остальных наборов расписаны все четыре. */
 const FR = L.items.frames;
 ok(FR.length === 94, 'снаряжения фреймов не 94, а ' + FR.length);
-ok(FR.every((x, i) => x.roll === i + 1), 'номера фреймов не идут подряд');
+ok(FR.every(x => x.roll == null), 'у снаряжения фреймов появился номер броска');
 ok(FR.every(x => x.src === 'frame' && x.frame), 'у записи фрейма нет источника или названия кампании');
 const byFrame = {};
 FR.forEach(x => { byFrame[x.frame] = (byFrame[x.frame] || 0) + 1; });
@@ -316,7 +367,7 @@ Object.keys(lines).forEach(k => ok(lines[k].sort().join() === '1,2,3,4',
 console.log('счётчики в текстах');
 /* Число записей выписано словами в мета-описаниях, в README и в подсказке
    поиска. Данные меняются редко, но каждый раз эти числа приходится править
-   руками в четырёх файлах — и промах ничем не виден: страница выглядит
+   руками в семи файлах — и промах ничем не виден: страница выглядит
    исправной и врёт. Поэтому каждое число из трёх и более цифр рядом со «своим»
    словом сверяется с тем, что на самом деле лежит в data.js. Три цифры было
    мало: на 1061 записи проверка читала «061» и ругалась на верное число. */
@@ -341,7 +392,11 @@ const COUNTERS = [
   [/(\d{3,})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g,    [N.all, N.wondrous], 'entries']
 ];
-['index.html', 'README.md', 'README.ru.md', 'app.js', 'llms.txt', 'robots.txt']
+/* app/index.html попало сюда вместе с портом головы: числа теперь выписаны и
+   там. index.html и app.js уйдут отсюда в Phase 7, когда уйдут сами файлы. */
+['index.html', 'app/index.html', 'README.md', 'README.ru.md', 'app.js',
+ 'llms.txt', 'robots.txt', 'app/src/lib/dict.ts', 'app/src/lib/i18n.ts',
+ 'app/src/lib/search.ts', 'tools/bundle-budget.mjs']
   .forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   COUNTERS.forEach(function ([re, want, what]) {
@@ -414,6 +469,19 @@ const OUTSIDE = ['Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages',
     ok(clause.indexOf(name) >= 0, file + ': ' + name + ' пропал из списка вне лицензии');
   });
 });
+
+/* Pages must wait for every quality matrix. Keep this dependency-free: the
+   workflow is deliberately small here, and accepting a stray `golden` mention
+   elsewhere would let deploy bypass a failing structural baseline. */
+const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
+const deploy = /^  deploy:\s*\r?\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(workflow);
+ok(deploy, 'deploy.needs: deploy job is missing');
+const deployNeeds = deploy && /^    needs:\s*\[([^\]\r\n]*)\]\s*$/m.exec(deploy[1]);
+ok(deployNeeds, 'deploy.needs: inline needs list is missing or unparseable');
+if (deployNeeds) {
+  const names = deployNeeds[1].split(',').map(function (name) { return name.trim(); });
+  ok(names.includes('golden'), 'deploy.needs: golden is missing');
+}
 
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
 process.exit(fail ? 1 : 0);

@@ -21,6 +21,7 @@
   import CommunityPanel from './components/CommunityPanel.svelte';
   import ListPage from './components/ListPage.svelte';
   import ListsPage from './components/ListsPage.svelte';
+  import PrintPage from './components/PrintPage.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
   import SearchPage from './components/SearchPage.svelte';
@@ -71,17 +72,7 @@
     <TablesPage {app} />
   {:else if app.route.kind === 'storedList' || app.route.kind === 'sharedList'}
     <ListPage {app} />
-  {:else}
-    <p class="todo">{app.hash}</p>
+  {:else if app.route.kind === 'print'}
+    <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} />
   {/if}
 </Shell>
-
-<style>
-  /* Every route the rewrite has not reached yet says so, rather than rendering
-     an empty page that looks broken. */
-  .todo {
-    color: var(--muted2);
-    font-family: var(--mono);
-    font-size: var(--step--1);
-  }
-</style>

@@ -15,7 +15,7 @@ Checked by `tests/contracts.js`.
 Frozen as written in `ROUTES.md`. In particular:
 
 - the nine section names, and the three legacy ones that fold into `roll/std`
-- the table names in `#/tables/<table>`
+- the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
 - `#/i/<id>`, `#/print/<ids>`, `#/lists/<listId>`, `#/l/<payload>`
@@ -106,3 +106,9 @@ read it through one typed adapter rather than importing it.
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`. Referenced from
 outside (link previews, other people's bookmarks), so the layout is public.
+
+Those four are committed and published as they are. The entry document and
+`assets/` are not: they are what the build emits (`app/index.html` and the
+bundle become `dist/index.html` and `dist/assets/app.js`), and the deploy job
+publishes them from the build rather than from a committed file. Nothing about
+the frozen paths above changes with them.

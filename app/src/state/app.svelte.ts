@@ -26,6 +26,7 @@ import {
   parseHash,
   recordUrl,
   sharedListHash,
+  stripHash,
   type Route,
   type Site
 } from '../lib/hash.js';
@@ -65,10 +66,20 @@ function readLang(env: Env): Lang {
 function readHome(env: Env): string {
   const v = env.storage.get(HOME_KEY);
   /* A pinned section has to still be a section. A record or a list is refused
-     because it is a snapshot that drifts away from the data. */
+     because it is a snapshot that drifts away from the data. A named table
+     survives the same way; a bare `#/tables` is accepted too - live's own
+     `homeAllows` (app.js 1124-1130) keeps that shape, for a pin written
+     before this fix as much as one typed by hand - but a name outside
+     TABLE_IDS is not, because there is nothing specific behind it to reopen.
+     `parseHash` cannot tell "no name" from "a name it did not recognise"
+     (both come back `table: null`), so the bare case is read off the string
+     itself rather than off the route. */
   if (!v) return DEFAULT_HOME;
+  if (v === '#/tables/frames') return '#/tables/other_frames';
   const r = parseHash(v);
-  return r.kind === 'section' || (r.kind === 'tables' && r.table) ? v : DEFAULT_HOME;
+  if (r.kind === 'section') return v;
+  if (r.kind === 'tables' && (r.table || stripHash(v) === 'tables')) return v;
+  return DEFAULT_HOME;
 }
 
 export class AppState {
@@ -84,6 +95,14 @@ export class AppState {
   readonly index: Index | null;
 
   lang = $state<Lang>('ru');
+  /**
+   * The address as the app reads it - not always what is in the bar. Live
+   * keeps the two independent the same way: `currentRoute` (app.js
+   * 3638-3647) returns a route that need not equal `location.hash`. A bare
+   * or unreadable address can draw a section while the bar is left as it
+   * was, rewritten, or a step behind - see `#fallback`, the constructor, and
+   * `docs/specs/ROUTES.md`, "Fallback".
+   */
   hash = $state('');
   /** Which sources the Core roll draws from. An old section name sets it. */
   source = $state<{ core: boolean; hnf: boolean }>({ core: true, hnf: true });
@@ -181,19 +200,43 @@ export class AppState {
       () => this.t
     );
 
-    /* An empty address opens the pinned section - but only an empty one. A link
-       to a record or a shared list must not be overridden by a preference. */
+    /* A bare address opens the pinned section - but only at boot, and only a
+       bare one: a link to a record or a shared list must not be overridden by
+       a preference. Live's own boot check, app.js 4610-4614: an assignment,
+       not a replaceState, so a non-default pin still pushes a history entry
+       (Back leaves the bare address rather than returning to it); a default
+       pin - nothing to add - writes nothing and leaves the bar bare. An
+       unreadable address at boot is rule 2, below, same as on navigation. */
     const first = env.router.hash();
-    this.hash = first === '' || first === '#' || first === '#/' ? this.#home : first;
-    if (this.hash !== first) env.router.replace(this.hash);
+    if (first === '' || first === '#' || first === '#/') {
+      this.hash = this.#home;
+      if (this.#home !== DEFAULT_HOME) env.router.navigate(this.hash);
+    } else {
+      this.hash = this.#fallback(first);
+    }
     this.#applySource();
     this.#expand();
+  }
+
+  /**
+   * What a non-boot address resolves to, and what it does to the bar -
+   * live's `currentRoute` fallback (app.js 3638-3647), reused by the
+   * constructor for its own non-bare branch since an unreadable address is
+   * answered the same way at boot or on navigation. A bare address here is
+   * navigation's own rule, distinct from boot's above: it draws the default
+   * section, never the pinned one, and touches nothing.
+   */
+  #fallback(h: string): string {
+    if (h === '' || h === '#' || h === '#/') return DEFAULT_HOME;
+    if (parseHash(h).kind !== 'unknown') return h;
+    this.env.router.replace(this.#home);
+    return this.#home;
   }
 
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
   start(): () => void {
     this.#stopRouter = this.env.router.onChange((h) => {
-      this.hash = h;
+      this.hash = this.#fallback(h);
       this.navigations++;
       this.menuFor = '';
       this.sel.clear();
@@ -277,8 +320,10 @@ export class AppState {
     return dict(this.lang);
   }
 
+  /** The one route kind that reads the data at all: print needs to know
+   *  which ids the cap threw away versus which were simply unknown. */
   get route(): Route {
-    return parseHash(this.hash);
+    return parseHash(this.hash, (id) => this.index?.byId.has(id) ?? false);
   }
 
   /** Which tab is lit. Nothing is lit on a record, a list page or a print
@@ -401,14 +446,20 @@ export class AppState {
     return this.#home;
   }
 
-  /** Whether the address on screen is the pinned one - the button reads off this. */
-  get isHome(): boolean {
-    return this.#home === this.hash;
-  }
-
-  /** Pins the current address, or unpins it if it is already pinned. */
-  toggleHome(): boolean {
-    const next = this.isHome ? '' : this.hash;
+  /**
+   * Pins the given address, or unpins it if it is already pinned; pins the
+   * address on screen where none is given.
+   *
+   * The override is `TablesPage`'s: a bare `#/tables` still shows a real
+   * table underneath (`lastTable`, kept by that component alone - `App.svelte`
+   * does not remount it between two `tables` addresses, so `AppState` cannot
+   * see which one is genuinely on screen the way live's own `S.tables.t`
+   * can). `PageHead` passes it through from there; every other caller pins
+   * `this.hash` exactly as before.
+   */
+  toggleHome(hash?: string): boolean {
+    const current = hash ?? this.hash;
+    const next = this.#home === current ? '' : current;
     if (next) {
       if (!this.env.storage.set(HOME_KEY, next)) return false;
       this.#home = next;
@@ -417,12 +468,6 @@ export class AppState {
       this.#home = DEFAULT_HOME;
     }
     return true;
-  }
-
-  /** Only a section or a named table may be pinned, so the button hides elsewhere. */
-  get canPinHome(): boolean {
-    const r = this.route;
-    return r.kind === 'section' || (r.kind === 'tables' && !!r.table);
   }
 
   /** Whether the "lists live in this browser only" notice has been dismissed. */

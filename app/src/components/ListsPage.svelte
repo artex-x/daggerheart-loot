@@ -7,7 +7,9 @@
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
+  import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
+  import Panel from './Panel.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import { artSrc } from '../lib/desc.js';
   import { sharedListHash } from '../lib/hash.js';
@@ -103,9 +105,9 @@
 <StorageNotice {app} />
 
 {#if !index}
-  <p class="miss">{t.noData}</p>
+  <NoData>{t.noData}</NoData>
 {:else}
-  <div class="panel">
+  <Panel style="margin-top:16px">
     <Field label={t.newList}>
       <div class="numrow">
         <div class="grow">
@@ -127,7 +129,7 @@
         <Button onclick={restore}>{t.importBtn}</Button>
       </div>
     </Field>
-  </div>
+  </Panel>
   {#if lists.length}
     <div class="listgrid">
       {#each lists as l (l.id)}
@@ -180,22 +182,8 @@
 {/if}
 
 <style>
-  .miss {
-    margin: 0;
-    color: var(--muted);
-  }
-
-  /* off `.panel` in style.css, plus the 16px margin-top the live markup
-     writes inline on this specific panel. */
-  .panel {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 18px;
-    box-shadow: var(--shadow);
-    margin-top: 16px;
-  }
-
+  /* `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` - the 16px
+     margin-top is the live inline attribute, passed as `style` (B10). */
   .numrow {
     display: flex;
     gap: 10px;

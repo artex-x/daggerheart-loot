@@ -1,0 +1,127 @@
+# #/print/<181 ids> ~ too many
+# route: #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10-ci11-ci12-ci13-ci14-ci15-ci16-ci17-ci18-ci19-ci20-ci21-ci22-ci23-ci24-ci25-ci26-ci27-ci28-ci29-ci30-ci31-ci32-ci33-ci34-ci35-ci36-ci37-ci38-ci39-ci40-ci41-ci42-ci43-ci44-ci45-ci46-ci47-ci48-ci49-ci50-ci51-ci52-ci53-ci54-ci55-ci56-ci57-ci58-ci59-ci60-cc1-cc2-cc3-cc4-cc5-cc6-cc7-cc8-cc9-cc10-cc11-cc12-cc13-cc14-cc15-cc16-cc17-cc18-cc19-cc20-cc21-cc22-cc23-cc24-cc25-cc26-cc27-cc28-cc29-cc30-cc31-cc32-cc33-cc34-cc35-cc36-cc37-cc38-cc39-cc40-cc41-cc42-cc43-cc44-cc45-cc46-cc47-cc48-cc49-cc50-cc51-cc52-cc53-cc54-cc55-cc56-cc57-cc58-cc59-cc60-hi1-hi2-hi3-hi4-hi5-hi6-hi7-hi8-hi9-hi10-hi11-hi12-hi13-hi14-hi15-hi16-hi17-hi18-hi19-hi20-hi21-hi22-hi23-hi24-hi25-hi26-hi27-hi28-hi29-hi30-hi31-hi32-hi33-hi34-hi35-hi36-hi37-hi38-hi39-hi40-hi41-hi42-hi43-hi44-hi45-hi46-hi47-hi48-hi49-hi50-hi51-hi52-hi53-hi54-hi55-hi56-hi57-hi58-hi59-hi60-hc1
+# why: the cap: 180 cards on twenty sheets and the red note about the one left out
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10-ci11-ci12-ci13-ci14-ci15-ci16-ci17-ci18-ci19-ci20-ci21-ci22-ci23-ci24-ci25-ci26-ci27-ci28-ci29-ci30-ci31-ci32-ci33-ci34-ci35-ci36-ci37-ci38-ci39-ci40-ci41-ci42-ci43-ci44-ci45-ci46-ci47-ci48-ci49-ci50-ci51-ci52-ci53-ci54-ci55-ci56-ci57-ci58-ci59-ci60-cc1-cc2-cc3-cc4-cc5-cc6-cc7-cc8-cc9-cc10-cc11-cc12-cc13-cc14-cc15-cc16-cc17-cc18-cc19-cc20-cc21-cc22-cc23-cc24-cc25-cc26-cc27-cc28-cc29-cc30-cc31-cc32-cc33-cc34-cc35-cc36-cc37-cc38-cc39-cc40-cc41-cc42-cc43-cc44-cc45-cc46-cc47-cc48-cc49-cc50-cc51-cc52-cc53-cc54-cc55-cc56-cc57-cc58-cc59-cc60-hi1-hi2-hi3-hi4-hi5-hi6-hi7-hi8-hi9-hi10-hi11-hi12-hi13-hi14-hi15-hi16-hi17-hi18-hi19-hi20-hi21-hi22-hi23-hi24-hi25-hi26-hi27-hi28-hi29-hi30-hi31-hi32-hi33-hi34-hi35-hi36-hi37-hi38-hi39-hi40-hi41-hi42-hi43-hi44-hi45-hi46-hi47-hi48-hi49-hi50-hi51-hi52-hi53-hi54-hi55-hi56-hi57-hi58-hi59-hi60-hc1]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Печать карточек" [level=1]
+    StaticText "Карточек: 180. Листов A4: 20. Размер карты 63×88 мм - как у обыч..." [namelen=78 namehash=84d1bab3]
+    button "Назад"
+    button "Отправить на печать"
+    button "Цветная" [pressed=true]
+    button "Чёрно-белая" [pressed=false]
+    button "Ссылка на набор"
+    StaticText "За один раз печатается 180 карточек, остальные 1 в лист не попал..." [namelen=92 namehash=34eda716]
+    ... StaticText x719 of 723 same-shape siblings elided
+    heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
+    heading "ПРОНЗИТЕЛЬНАЯ СВИРЕЛЬ" [level=2]
+    ... heading x176 of 180 same-shape siblings elided
+    heading "РЕЛИКВИЯ ЕДИНЕНИЯ" [level=2]
+    heading "РЕЛИКВИЯ АВГУРА" [level=2]
+    StaticText "Daggerheart"
+    StaticText "Hope & Fear"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+ЛутDaggerheart
+Назад
+Обычные правила
+Отправить на печать
+Поиск
+Сообщества
+Списки
+Ссылка на набор
+Таблицы
+Цветная
+Чёрно-белая
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10-ci11-ci12-ci13-ci14-ci15-ci16-ci17-ci18-ci19-ci20-ci21-ci22-ci23-ci24-ci25-ci26-ci27-ci28-ci29-ci30-ci31-ci32-ci33-ci34-ci35-ci36-ci37-ci38-ci39-ci40-ci41-ci42-ci43-ci44-ci45-ci46-ci47-ci48-ci49-ci50-ci51-ci52-ci53-ci54-ci55-ci56-ci57-ci58-ci59-ci60-cc1-cc2-cc3-cc4-cc5-cc6-cc7-cc8-cc9-cc10-cc11-cc12-cc13-cc14-cc15-cc16-cc17-cc18-cc19-cc20-cc21-cc22-cc23-cc24-cc25-cc26-cc27-cc28-cc29-cc30-cc31-cc32-cc33-cc34-cc35-cc36-cc37-cc38-cc39-cc40-cc41-cc42-cc43-cc44-cc45-cc46-cc47-cc48-cc49-cc50-cc51-cc52-cc53-cc54-cc55-cc56-cc57-cc58-cc59-cc60-hi1-hi2-hi3-hi4-hi5-hi6-hi7-hi8-hi9-hi10-hi11-hi12-hi13-hi14-hi15-hi16-hi17-hi18-hi19-hi20-hi21-hi22-hi23-hi24-hi25-hi26-hi27-hi28-hi29-hi30-hi31-hi32-hi33-hi34-hi35-hi36-hi37-hi38-hi39-hi40-hi41-hi42-hi43-hi44-hi45-hi46-hi47-hi48-hi49-hi50-hi51-hi52-hi53-hi54-hi55-hi56-hi57-hi58-hi59-hi60-hc1]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Printing cards" [level=1]
+    StaticText "Cards: 180. A4 sheets: 20. Card size 63×88 mm - the size of a pl..." [namelen=75 namehash=6d787de7]
+    button "Back"
+    button "Send to printer"
+    button "Colour" [pressed=true]
+    button "Black and white" [pressed=false]
+    button "Link to this set"
+    StaticText "One run prints 180 cards; the remaining 1 did not make it onto a..." [namelen=93 namehash=b632966e]
+    ... StaticText x719 of 723 same-shape siblings elided
+    heading "PREMIUM BEDROLL" [level=2]
+    heading "PIPER WHISTLE" [level=2]
+    ... heading x176 of 180 same-shape siblings elided
+    heading "COMMUNION RELIC" [level=2]
+    heading "AUGUR'S RELIC" [level=2]
+    StaticText "Daggerheart"
+    StaticText "Hope & Fear"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Back
+Black and white
+Colour
+Communities
+Dread
+EN
+Link to this set
+Lists
+RU
+Search
+Send to printer
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

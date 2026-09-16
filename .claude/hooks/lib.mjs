@@ -1,6 +1,6 @@
 // Shared helpers for every .claude/hooks/*.mjs script.
 //
-// Contract every hook script follows (see issues/65/plan.md section 4):
+// Contract every hook script follows (see .claude/README.md, "Hooks"):
 //   1. Parse stdin JSON inside a try; failure yields {}.
 //   2. Do all work inside a single try; catch prints nothing and exits 0.
 //   3. Exit 0 always. There is no exit-2 path. The decision lives in the
@@ -128,9 +128,8 @@ export function pathKey(p) {
 //
 // Shared by bash-guard.mjs (which rule family sees which segment) and
 // check-observer.mjs (is the FIRST segment really the check invocation).
-// See issues/65/plan.md section 4, hook 2a. This is a guard against habit
-// and haste, not against an adversary - the known gaps are listed in
-// .claude/README.md.
+// This is a guard against habit and haste, not against an adversary - the
+// known gaps are listed in .claude/README.md.
 
 /** Drop heredoc *bodies* only. Truncating at the first `<<` also hid every
  * command after the terminator, so `cat <<EOF ... EOF; git reset --hard`

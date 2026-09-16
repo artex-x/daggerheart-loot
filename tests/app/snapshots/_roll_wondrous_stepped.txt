@@ -1,0 +1,151 @@
+# #/roll/wondrous ~ stepped
+# route: #/roll/wondrous
+# why: the roll stepped up twice
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Wondrous Loot" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Введите результат броска или получите случайную позицию."
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
+    button "На единицу меньше"
+    textbox "Результат броска" [value=3 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Случайно 1–119"
+    button "Страница"
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "Эфироцвет" [description=Страница url=#/i/w3]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
+    StaticText "УЛУЧШАЕТСЯ ДО"
+    link "Чай Эфироцвета" [url=#/i/w2]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+Как это работает
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать этот раздел при запуске
+Отправить
+Поиск
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–119
+Сообщества
+Списки
+Страница
+Таблицы
+Чай Эфироцвета
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Wondrous Loot" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Enter your roll result, or pick a random entry."
+    StaticText "ROLL RESULT (1–119)"
+    button "One lower"
+    textbox "Roll result" [value=3 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Random 1–119"
+    button "Page"
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "Aetherflower" [description=Page url=#/i/w3]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
+    StaticText "UPGRADES TO"
+    link "Aetherflower Tea" [url=#/i/w2]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Aetherflower Tea
+Alt. tables
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+How this works
+Lists
+One higher
+One lower
+Open this section on start
+Page
+RU
+Random 1–119
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

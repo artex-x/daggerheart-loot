@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import {
   legacySource,
   parseHash,
+  printAsked,
   printHash,
   printIds,
   PRINT_MAX,
@@ -123,24 +124,48 @@ describe('tables', () => {
     const r = parseHash('#/tables/eq_weapon/f_tier-2');
     expect((r as Extract<Route, { kind: 'tables' }>).anchor).toBe('');
   });
+
+  it('an unknown table takes no legacy reading', () => {
+    /* With no table there are no groups to check a legacy piece's head
+       against, so the underscore form is never read as the old separator -
+       the safe side, per hash.ts:103 (table goes null) and :109 (`[]` groups
+       for a null table). */
+    const r = parseHash('#/tables/nope/f_tier-1_cls-phy');
+    expect((r as Extract<Route, { kind: 'tables' }>).table).toBeNull();
+    expect(r.kind).toBe('tables');
+    const filter = (r as Extract<Route, { kind: 'tables' }>).filter;
+    expect(filter).not.toHaveProperty('cls');
+    /* With `[]` groups, decodeFilter's legacy `_` reading never fires, so the
+       whole tail is read as one value under its own head rather than split. */
+    expect(filter['tier']).toEqual(['1_cls', 'phy']);
+  });
 });
 
 describe('the filter segment', () => {
   it('a dot splits groups, a dash splits values', () => {
-    expect(decodeFilter('f_tier-1-2.cls-mag')).toEqual({ tier: ['1', '2'], cls: ['mag'] });
+    expect(decodeFilter('f_tier-1-2.cls-mag', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1', '2'],
+      cls: ['mag']
+    });
   });
 
   it('an underscore inside a value does not split the group', () => {
-    expect(decodeFilter('f_frame-beast_feast')).toEqual({ frame: ['beast_feast'] });
+    expect(decodeFilter('f_frame-beast_feast', groupsFor('other_frames'))).toEqual({
+      frame: ['beast_feast']
+    });
   });
 
   it('the older separator is still read', () => {
-    expect(decodeFilter('f_tier-1_cls-phy')).toEqual({ tier: ['1'], cls: ['phy'] });
+    expect(decodeFilter('f_tier-1_cls-phy', groupsFor('eq_weapon'))).toEqual({
+      tier: ['1'],
+      cls: ['phy']
+    });
   });
 
   it('builds back into the same segment', () => {
+    const groups = groupsFor('eq_weapon');
     for (const seg of ['f_tier-1-2.cls-mag', 'f_range-melee', 'f_burden-2.line-uniq']) {
-      expect(encodeFilter(decodeFilter(seg), groupsFor('eq_weapon'))).toBe(seg);
+      expect(encodeFilter(decodeFilter(seg, groups), groups)).toBe(seg);
     }
   });
 
@@ -153,6 +178,19 @@ describe('the filter segment', () => {
   it('a group the table does not offer never reaches the address', () => {
     /* The other side of a foreign group being ignored silently on read */
     expect(encodeFilter({ burden: ['2'] }, groupsFor('eq_armor'))).toBe('');
+  });
+
+  it('reads a two-frame link without mistaking a value-head for a group', () => {
+    /* The interim pin for the routes.json entry Phase 7 adds: a link naming
+       two frames must decode both, not fall into the legacy underscore
+       reading because `frame-beast` and `feast-colossus` both "look like a
+       group" - `feast` is nobody's group. */
+    const hash = '#/tables/frames/f_frame-beast_feast-colossus';
+    const route = parseHash(hash) as Extract<Route, { kind: 'tables' }>;
+    expect(route.filter['frame']).toEqual(['beast_feast', 'colossus']);
+    expect(encodeFilter(route.filter, groupsFor('other_frames'))).toBe(
+      'f_frame-beast_feast-colossus'
+    );
   });
 
   it('the group names are the ones written in the spec', () => {
@@ -215,6 +253,32 @@ describe('print', () => {
       '-'
     );
     expect(printIds(many, knows)).toHaveLength(PRINT_MAX);
+  });
+
+  it('printAsked keeps every known, deduplicated id - uncapped', () => {
+    const many = Array.from({ length: PRINT_MAX + 20 }, (_, i) => 'ci' + String(i + 1)).join(
+      '-'
+    );
+    expect(printAsked('ci1-zzz-q26-ci1', knows)).toEqual(['ci1', 'q26']);
+    expect(printAsked(many, knows)).toHaveLength(PRINT_MAX + 20);
+  });
+
+  it('a print route counts what the cap dropped', () => {
+    const asked181 = Array.from({ length: 181 }, (_, i) => 'ci' + String(i + 1)).join('-');
+    const r181 = parseHash('#/print/' + asked181, knows);
+    expect(r181.kind).toBe('print');
+    if (r181.kind === 'print') {
+      expect(r181.ids).toHaveLength(180);
+      expect(r181.dropped).toBe(1);
+    }
+
+    const asked180 = Array.from({ length: 180 }, (_, i) => 'ci' + String(i + 1)).join('-');
+    const r180 = parseHash('#/print/' + asked180, knows);
+    expect(r180.kind).toBe('print');
+    if (r180.kind === 'print') {
+      expect(r180.ids).toHaveLength(180);
+      expect(r180.dropped).toBe(0);
+    }
   });
 });
 

@@ -1,0 +1,291 @@
+# #/tables ~ grid
+# route: #/tables
+# why: the grid view, a different body entirely
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    link "Предметы" [url=#/tables/core_item]
+    link "Расходники" [url=#/tables/core_consumable]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=false]
+    button "Сеткой" [pressed=true]
+    checkbox "Выбрать все (60)" [checked=false]
+    StaticText "Выбрать все (60)"
+    checkbox "Выбрано" [checked=false]
+    button "1 Первоклассный Спальный Мешок Premium Bedroll"
+    ... checkbox x57 of 61 same-shape siblings elided
+    ... button x57 of 61 same-shape siblings elided
+    checkbox "Выбрано" [checked=false]
+    button "59 Кольцо Несокрушимой Решимости Ring of Unbreakable Resolve"
+    checkbox "Выбрано" [checked=false]
+    button "60 Пояс Единства Belt of Unity"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+10Подвешенный ЖезлSuspended Rod
+11Камень ОбликаGlamour Stone
+12Пустой СундукEmpty Chest
+13Футляр для КомпаньонаCompanion Case
+14Пронзающие СтрелыPiercing Arrows
+15Камень ДоблестиValorstone
+16Скелетный КлючSkeleton Key
+17Магическая ПризмаArcane Prism
+18Рецепт Малого Зелья ВыносливостиMinor Stamina Potion Recipe
+19Рецепт Малого Зелья ЛеченияMinor Health Potion Recipe
+1Первоклассный Спальный МешокPremium Bedroll
+20Компасы СвязиHoming Compasses
+21Исправляющий ДухCorrector Sprite
+22Перчатки ГекконаGecko Gloves
+23Хранитель ЗнанийLorekeeper
+24Рецепт Флакона с Чёрным ДымомVial of Darksmoke Recipe
+25Кровавый КаменьBloodstone
+26Самоцвет ВеликанаGreatstone
+27ПарашютGlider
+28Кольцо ТишиныRing of Silence
+29Успокаивающий КулонCalming Pendant
+2Пронзительная СвирельPiper Whistle
+30Двойная ФлягаDual Flask
+31Мешочек Своенравного ПескаBag of Ficklesand
+32Кольцо СопротивленияRing of Resistance
+33Перо ФениксаPhoenix Feather
+34Коробка Многих ВещейBox of Many Goods
+35Амулет Воздушного КлинкаAirblade Charm
+36Семя ПорталаPortal Seed
+37Цепь ПарагонаParagon's Chain
+38Амулет СкрытностиElusive Amulet
+39Медальон Хранения НадеждHopekeeper Locket
+3Заряжающий КолчанCharging Quiver
+40Бездонная СумкаInfinite Bag
+41Реликвия Быстрого ШагаStride Relic
+42Реликвия УсиленияBolster Relic
+43Реликвия БалансаControl Relic
+44Реликвия ГармонииAttune Relic
+45Реликвия ОчарованияCharm Relic
+46Реликвия ПрозренияEnlighten Relic
+47Реликвия НаставленияHoning Relic
+48Кулон СветлячкаFlickerfly Pendant
+49Ботинки Хождения по ВодеLakestrider Boots
+4Факел АлистераAlistair's Torch
+50Глиняный СпутникClay Companion
+51Рецепт Мифической ПылиMythic Dust Recipe
+52Осколок ПамятиShard of Memory
+53Самоцвет ПроворстваGem of Alacrity
+54Самоцвет МощиGem of Might
+55Самоцвет ТочностиGem of Precision
+56Самоцвет ЧутьяGem of Insight
+57Самоцвет ДерзостиGem of Audacity
+58Самоцвет РассудительностиGem of Sagacity
+59Кольцо Несокрушимой РешимостиRing of Unbreakable Resolve
+5Разговаривающие СферыSpeaking Orbs
+60Пояс ЕдинстваBelt of Unity
+6НаручникиManacles
+7Мистический ПлащArcane Cloak
+8Плетёная СетьWoven Net
+9Банка с ОгнёмFire Jar
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Выбрано
+К содержимому
+Как это работает
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Предметы
+Прочее
+Расходники
+Сеткой
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    link "Items" [url=#/tables/core_item]
+    link "Consumables" [url=#/tables/core_consumable]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=false]
+    button "Grid" [pressed=true]
+    checkbox "Select all (60)" [checked=false]
+    StaticText "Select all (60)"
+    checkbox "Selected" [checked=false]
+    button "1 Premium Bedroll Первоклассный Спальный Мешок"
+    ... checkbox x57 of 61 same-shape siblings elided
+    ... button x57 of 61 same-shape siblings elided
+    checkbox "Selected" [checked=false]
+    button "59 Ring of Unbreakable Resolve Кольцо Несокрушимой Решимости"
+    checkbox "Selected" [checked=false]
+    button "60 Belt of Unity Пояс Единства"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+10Suspended RodПодвешенный Жезл
+11Glamour StoneКамень Облика
+12Empty ChestПустой Сундук
+13Companion CaseФутляр для Компаньона
+14Piercing ArrowsПронзающие Стрелы
+15ValorstoneКамень Доблести
+16Skeleton KeyСкелетный Ключ
+17Arcane PrismМагическая Призма
+18Minor Stamina Potion RecipeРецепт Малого Зелья Выносливости
+19Minor Health Potion RecipeРецепт Малого Зелья Лечения
+1Premium BedrollПервоклассный Спальный Мешок
+20Homing CompassesКомпасы Связи
+21Corrector SpriteИсправляющий Дух
+22Gecko GlovesПерчатки Геккона
+23LorekeeperХранитель Знаний
+24Vial of Darksmoke RecipeРецепт Флакона с Чёрным Дымом
+25BloodstoneКровавый Камень
+26GreatstoneСамоцвет Великана
+27GliderПарашют
+28Ring of SilenceКольцо Тишины
+29Calming PendantУспокаивающий Кулон
+2Piper WhistleПронзительная Свирель
+30Dual FlaskДвойная Фляга
+31Bag of FicklesandМешочек Своенравного Песка
+32Ring of ResistanceКольцо Сопротивления
+33Phoenix FeatherПеро Феникса
+34Box of Many GoodsКоробка Многих Вещей
+35Airblade CharmАмулет Воздушного Клинка
+36Portal SeedСемя Портала
+37Paragon's ChainЦепь Парагона
+38Elusive AmuletАмулет Скрытности
+39Hopekeeper LocketМедальон Хранения Надежд
+3Charging QuiverЗаряжающий Колчан
+40Infinite BagБездонная Сумка
+41Stride RelicРеликвия Быстрого Шага
+42Bolster RelicРеликвия Усиления
+43Control RelicРеликвия Баланса
+44Attune RelicРеликвия Гармонии
+45Charm RelicРеликвия Очарования
+46Enlighten RelicРеликвия Прозрения
+47Honing RelicРеликвия Наставления
+48Flickerfly PendantКулон Светлячка
+49Lakestrider BootsБотинки Хождения по Воде
+4Alistair's TorchФакел Алистера
+50Clay CompanionГлиняный Спутник
+51Mythic Dust RecipeРецепт Мифической Пыли
+52Shard of MemoryОсколок Памяти
+53Gem of AlacrityСамоцвет Проворства
+54Gem of MightСамоцвет Мощи
+55Gem of PrecisionСамоцвет Точности
+56Gem of InsightСамоцвет Чутья
+57Gem of AudacityСамоцвет Дерзости
+58Gem of SagacityСамоцвет Рассудительности
+59Ring of Unbreakable ResolveКольцо Несокрушимой Решимости
+5Speaking OrbsРазговаривающие Сферы
+60Belt of UnityПояс Единства
+6ManaclesНаручники
+7Arcane CloakМистический Плащ
+8Woven NetПлетёная Сеть
+9Fire JarБанка с Огнём
+Alt. tables
+Communities
+Consumables
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Grid
+Hope & Fear
+How this works
+Items
+Link to this table
+List
+Lists
+Open this section on start
+Other
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

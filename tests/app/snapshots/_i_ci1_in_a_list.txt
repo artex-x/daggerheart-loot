@@ -1,0 +1,139 @@
+# #/i/ci1 ~ in a list
+# route: #/i/ci1
+# why: the chip lit for a list the record is already in
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/i/ci1]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Первоклассный Спальный Мешок" [level=1]
+    StaticText "Core · Предметы · номер 1 "
+    link "показать в таблице" [url=#/tables/core_item/ci1]
+    button "Страница"
+    StaticText "1"
+    ... StaticText x3 of 7 same-shape siblings elided
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Во время отдыха вы автоматически очищаете Стресс."
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    StaticText "ЛЕЖИТ В СПИСКАХ"
+    button "Лавка в порту" [pressed=false]
+    button "✓ Клад дракона" [pressed=true]
+    button "+ Новый список" [pressed=false]
+    button "Добавить в список" [expanded=true]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
++ Новый список
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Добавить в список
+К содержимому
+Лавка в порту
+ЛутDaggerheart
+Обычные правила
+Отправить
+Поиск
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Страница
+Таблицы
+показать в таблице
+✓ Клад дракона
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/i/ci1]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Premium Bedroll" [level=1]
+    StaticText "Core · Items · roll 1 "
+    link "show in the table" [url=#/tables/core_item/ci1]
+    button "Page"
+    StaticText "1"
+    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Premium Bedroll"
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "During downtime, you automatically clear a Stress."
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Add to list
+Alt. tables
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+Lay these out for printing: nine to an A4 sheet
+Lists
+Page
+RU
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+show in the table
+ЛутDaggerheart

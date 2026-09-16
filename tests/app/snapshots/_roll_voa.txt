@@ -1,0 +1,171 @@
+# #/roll/voa
+# route: #/roll/voa
+# why: Vault of Ages
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/roll/voa]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Vault of Ages" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Выберите раздел книги и бросьте кость по нему."
+    StaticText "РАЗДЕЛ КНИГИ"
+    button "Ранг 1" [pressed=true]
+    button "Ранг 2" [pressed=false]
+    button "Ранг 3" [pressed=false]
+    button "Ранг 4" [pressed=false]
+    button "Артефакты" [pressed=false]
+    button "Проклятые предметы" [pressed=false]
+    ... StaticText x12 of 16 same-shape siblings elided
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Случайно 1–24"
+    button "Страница"
+    link "Благословенный Нож Шеф-Повара" [description=Страница url=#/i/voa1_t1a]
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText " 0"
+    StaticText "Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое ..." [namelen=186 namehash=62309a64]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Артефакты
+К содержимому
+Как это работает
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать этот раздел при запуске
+Отправить
+Поиск
+Проклятые предметы
+Ранг 1
+Ранг 2
+Ранг 3
+Ранг 4
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–24
+Сообщества
+Списки
+Страница
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/roll/voa]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Vault of Ages" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Pick a section of the book and roll within it."
+    StaticText "SECTION"
+    button "Tier 1" [pressed=true]
+    button "Tier 2" [pressed=false]
+    button "Tier 3" [pressed=false]
+    button "Tier 4" [pressed=false]
+    button "Artifacts" [pressed=false]
+    button "Cursed objects" [pressed=false]
+    ... StaticText x12 of 16 same-shape siblings elided
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Random 1–24"
+    button "Page"
+    link "Blessed Chef's Knife" [description=Page url=#/i/voa1_t1a]
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText " 0"
+    StaticText "Food prepared by this knife is always delicious and prepared at ..." [namelen=178 namehash=fceb0968]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Artifacts
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Cursed objects
+Dread
+EN
+How this works
+Lists
+One higher
+One lower
+Open this section on start
+Page
+RU
+Random 1–24
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Tier 1
+Tier 2
+Tier 3
+Tier 4
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

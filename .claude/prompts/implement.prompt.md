@@ -35,7 +35,7 @@ Before doing anything else:
 9. Inspect the source code, tests, fixtures, and public contracts for the next batch
 10. Preflight working tree:
    - Inspect `git status` and `git diff`
-   - If the tree has conflicting or unclear unrelated changes that make the batch unsafe, stop and report
+   - If the tree has conflicting or unclear unrelated changes that make the batch unsafe, or another implementation batch appears mid-flight on the same files, stop and report
    - Preserve unrelated changes; do not revert foreign work
 
 If `plan.md` or `handoff.md` does not exist, stop - planning must be completed first.
@@ -53,6 +53,10 @@ Session rules:
 * Do not expand beyond the batch to make it "bigger"
 * Follow settled decisions; do not reopen without concrete conflict evidence
 * Update affected docs/specs/tests/fixtures in the same batch when required
+* A placement is acceptance, not a footnote: an inherited item (a deferred
+  review nit, a nit carried from an earlier batch) is only done when its own
+  acceptance-criteria line is checked, not when it is merely mentioned in a
+  commit or a comment - a plan has already lost items this way
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
 
@@ -71,10 +75,13 @@ For the current batch:
    `set -o pipefail; npm run check 2>&1 | tail -n 120` with the Bash timeout set to
    600000 and stay in the turn until it finishes - do not redirect it to a file, which
    hides the result from the commit gate and blocks the commit. See `.claude/README.md`.
-   If you must stop first, name the command and its task id in your final message.
+   If you must stop first, name the command and its task id in your final message - the
+   orchestrator can resume you with your context intact, so say exactly
+   where you stopped.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
-10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers)
+10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own
 11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - commit the coherent batch, not unrelated foreign changes
+12. Push the current branch once the batch is committed. If the push is rejected, report it - do not force, do not rebase someone else's work away
 
-Finish with a concise summary of the batch, verification, commit, and next batch.
+Finish with a concise summary of the batch, verification, commit, push, and next batch.

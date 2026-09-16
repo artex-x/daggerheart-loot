@@ -215,7 +215,7 @@ const N_REC = '\x1e', N_SEP = '\x1f';
     ['eq_weapon', 'tier-2'], ['eq_weapon', 'src-core'], ['eq_weapon', 'cls-mag'],
     ['eq_weapon', 'trait-strength'], ['eq_weapon', 'range-melee'],
     ['eq_weapon', 'burden-2'], ['eq_weapon', 'line-uniq'],
-    ['eq_armor', 'tier-1'], ['voa', 'tier-A'], ['frames', 'frame-colossus'],
+    ['eq_armor', 'tier-1'], ['voa', 'tier-A'], ['other_frames', 'frame-colossus'],
     ['community', 'comm-Seaborne'],
     /* `kind` exists only where there really is more than one kind: on core_item
        the kind is the table, and the group is not in the panel at all */

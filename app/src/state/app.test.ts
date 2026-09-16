@@ -9,6 +9,7 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
+import type { Loot } from '../lib/data.js';
 import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
@@ -46,7 +47,7 @@ describe('settings are read as untrusted data', () => {
     for (const bad of [
       '#/i/w12',
       '#/lists/abc',
-      '#/print/w1,w2',
+      '#/print/w1-w2',
       '#/tables/weapons',
       'nonsense'
     ]) {
@@ -61,6 +62,17 @@ describe('settings are read as untrusted data', () => {
       expect(app.home, good).toBe(good);
     }
   });
+
+  it('accepts a bare #/tables too, the one shape the app itself no longer writes', () => {
+    /* Live's own homeAllows (app.js 1124-1130) keeps this - `tables` is a
+       tab in TAB_LIST, not only a table name - so a pin written before this
+       fix, or by hand, still opens rather than silently falling back
+       (B12.1 nit 1/4: the rewrite used to refuse it and lose the pin at the
+       next boot). The writer below never produces this shape any more -
+       see 'pinning'. */
+    const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/tables' }) }));
+    expect(app.home).toBe('#/tables');
+  });
 });
 
 describe('the address on the way in', () => {
@@ -72,11 +84,38 @@ describe('the address on the way in', () => {
     }
   });
 
-  it('rewrites the address rather than pushing, so back still leaves', () => {
+  it('opens the default at boot and leaves the bare bar untouched when nothing is pinned', () => {
+    /* Row 1 of plan.md's B12.1 table: live's own boot check (app.js
+       4610-4614) never assigns `location.hash` when the pinned home is
+       already the default - there is nothing to add - so a bare address
+       stays bare while the default section draws. */
+    const router = memoryRouter('#/');
+    const app = new AppState(fakeEnv({ router }));
+    expect(app.hash).toBe('#/roll/std');
+    expect(router.stack).toEqual(['#/']);
+  });
+
+  it('pushes a pinned section at boot, so Back leaves the bare address behind', () => {
+    /* Row 2: live's boot check is a plain assignment, not a replaceState
+       (app.js 4610-4614), so a non-default pin is a real history entry -
+       unlike the unreadable-address case below, which replaces. */
     const router = memoryRouter('');
-    new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/dread' }) }));
-    expect(router.stack).toEqual(['#/roll/dread']);
-    expect(router.canGoBack()).toBe(false);
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    expect(app.hash).toBe('#/search');
+    expect(router.stack).toEqual(['', '#/search']);
+    expect(router.canGoBack()).toBe(true);
+  });
+
+  it('replaces an unreadable address at boot with the pinned section', () => {
+    /* Row 3, boot half - the live `currentRoute` fallback (app.js 3638-3647)
+       answers an unknown address the same way whether it is met at boot or
+       on navigation; see 'navigation' below for the navigation half. */
+    const router = memoryRouter('#/nonsense');
+    const app = new AppState(
+      fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) })
+    );
+    expect(app.hash).toBe('#/roll/wondrous');
+    expect(router.stack).toEqual(['#/roll/wondrous']);
   });
 
   it('never overrides a real address with a preference', () => {
@@ -90,18 +129,15 @@ describe('the address on the way in', () => {
 });
 
 describe('pinning', () => {
-  it('pins the current address and reports itself pinned', () => {
+  it('pins the current address', () => {
     const app = new AppState(at('#/roll/wondrous'));
-    expect(app.isHome).toBe(false);
     expect(app.toggleHome()).toBe(true);
     expect(app.home).toBe('#/roll/wondrous');
-    expect(app.isHome).toBe(true);
   });
 
   it('unpins back to the default, not to nothing', () => {
     const env = at('#/roll/wondrous', { storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) });
     const app = new AppState(env);
-    expect(app.isHome).toBe(true);
     expect(app.toggleHome()).toBe(true);
     expect(app.home).toBe('#/roll/std');
     expect(env.storage.get(HOME_KEY)).toBe(null);
@@ -115,18 +151,30 @@ describe('pinning', () => {
     expect(app.home).toBe('#/roll/std');
   });
 
-  it('offers the pin only where it can be honoured', () => {
-    expect(new AppState(at('#/roll/std')).canPinHome).toBe(true);
-    expect(new AppState(at('#/tables/eq_weapon')).canPinHome).toBe(true);
-    /* A name outside TABLE_IDS leaves the table unset, so there is nothing
-       specific to pin - the bare tables address is the same case. */
-    expect(new AppState(at('#/tables')).canPinHome).toBe(false);
-    expect(new AppState(at('#/tables/weapons')).canPinHome).toBe(false);
-    expect(new AppState(at('#/i/w12')).canPinHome).toBe(false);
-    /* The lists tab is a section like any other and may be pinned; a single
-       stored list, below it, may not. */
-    expect(new AppState(at('#/lists')).canPinHome).toBe(true);
-    expect(new AppState(at('#/lists/abc')).canPinHome).toBe(false);
+  it('pins the address it is given, not just the one on the bar', () => {
+    /* PageHead's own override, for TablesPage: a bare #/tables can be
+       showing any table underneath (`lastTable`, which AppState cannot see -
+       `App.svelte` does not remount the page between two `tables`
+       addresses), so the caller hands over the address that is genuinely on
+       screen rather than letting toggleHome fall back to `this.hash`. */
+    const app = new AppState(at('#/tables'));
+    expect(app.hash).toBe('#/tables');
+    expect(app.toggleHome('#/tables/eq_weapon')).toBe(true);
+    expect(app.home).toBe('#/tables/eq_weapon');
+  });
+
+  it('unpins the address it is given, the same way', () => {
+    const env = at('#/tables', { storage: stored({ [HOME_KEY]: '#/tables/eq_weapon' }) });
+    const app = new AppState(env);
+    expect(app.toggleHome('#/tables/eq_weapon')).toBe(true);
+    expect(app.home).toBe('#/roll/std');
+    expect(env.storage.get(HOME_KEY)).toBe(null);
+  });
+
+  it('takes the address on screen when it is not given one, exactly as before', () => {
+    const app = new AppState(at('#/tables/eq_weapon'));
+    expect(app.toggleHome()).toBe(true);
+    expect(app.home).toBe('#/tables/eq_weapon');
   });
 
   it('writes the language through to storage', () => {
@@ -177,9 +225,36 @@ describe('which tab is lit', () => {
        string, and a list route - `l/…` or `lists/…` - is never that string,
        so no tab is lit there either, Lists included. */
     expect(new AppState(at('#/i/w12')).section).toBe(null);
-    expect(new AppState(at('#/print/w1,w2')).section).toBe(null);
+    expect(new AppState(at('#/print/w1-w2')).section).toBe(null);
     expect(new AppState(at('#/lists/abc')).section).toBe(null);
     expect(new AppState(at('#/l/eyJ')).section).toBe(null);
+  });
+});
+
+describe('the print route', () => {
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 }
+      ]
+    }
+  };
+
+  it('resolves the ids the data knows, and counts nothing dropped', () => {
+    const app = new AppState(at('#/print/ci1-zzz', { data: { load: () => loot } }));
+    const r = app.route;
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') {
+      expect(r.ids).toEqual(['ci1']);
+      expect(r.dropped).toBe(0);
+    }
+  });
+
+  it('carries no ids when the data never loaded', () => {
+    const app = new AppState(at('#/print/ci1', { data: { load: () => null } }));
+    const r = app.route;
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') expect(r.ids).toEqual([]);
   });
 });
 
@@ -269,6 +344,30 @@ describe('navigation', () => {
     app.start();
     app.go('#/tables/eq_weapon');
     expect(app.source).toEqual({ core: true, hnf: false });
+  });
+
+  it('reaching a bare address by navigating draws the default, not the pinned section, and leaves the bar bare', () => {
+    /* Row 4 of plan.md's B12.1 table: unlike boot (row 1/2 above), a bare
+       address met after the app is already running never consults the
+       pinned home - live's own home check runs once at boot only, app.js
+       4610-4614 - so it always lands on `#/roll/std`. */
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    app.start();
+    router.navigate('#/');
+    expect(app.hash).toBe('#/roll/std');
+    expect(router.stack).toEqual(['#/tables', '#/']);
+  });
+
+  it('reaching an unreadable address by navigating replaces it with the pinned section', () => {
+    /* Row 3, navigation half - the same fallback rule the boot branch above
+       uses for an unknown kind. */
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    app.start();
+    router.navigate('#/nonsense');
+    expect(app.hash).toBe('#/search');
+    expect(router.stack).toEqual(['#/tables', '#/search']);
   });
 });
 

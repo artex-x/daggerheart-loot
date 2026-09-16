@@ -1,0 +1,127 @@
+# #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10
+# route: #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10
+# why: a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Печать карточек" [level=1]
+    StaticText "Карточек: 10. Листов A4: 2. Размер карты 63×88 мм - как у обычно..." [namelen=76 namehash=0d7019f1]
+    button "Назад"
+    button "Отправить на печать"
+    button "Цветная" [pressed=true]
+    button "Чёрно-белая" [pressed=false]
+    button "Ссылка на набор"
+    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
+    ... StaticText x38 of 42 same-shape siblings elided
+    heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
+    heading "ПРОНЗИТЕЛЬНАЯ СВИРЕЛЬ" [level=2]
+    ... heading x6 of 10 same-shape siblings elided
+    heading "БАНКА С ОГНЁМ" [level=2]
+    heading "ПОДВЕШЕННЫЙ ЖЕЗЛ" [level=2]
+    StaticText "Daggerheart"
+    StaticText "Core"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+ЛутDaggerheart
+Назад
+Обычные правила
+Отправить на печать
+Поиск
+Сообщества
+Списки
+Ссылка на набор
+Таблицы
+Цветная
+Чёрно-белая
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Printing cards" [level=1]
+    StaticText "Cards: 10. A4 sheets: 2. Card size 63×88 mm - the size of a play..." [namelen=73 namehash=56be6a9b]
+    button "Back"
+    button "Send to printer"
+    button "Colour" [pressed=true]
+    button "Black and white" [pressed=false]
+    button "Link to this set"
+    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
+    ... StaticText x38 of 42 same-shape siblings elided
+    heading "PREMIUM BEDROLL" [level=2]
+    heading "PIPER WHISTLE" [level=2]
+    ... heading x6 of 10 same-shape siblings elided
+    heading "FIRE JAR" [level=2]
+    heading "SUSPENDED ROD" [level=2]
+    StaticText "Daggerheart"
+    StaticText "Core"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Back
+Black and white
+Colour
+Communities
+Dread
+EN
+Link to this set
+Lists
+RU
+Search
+Send to printer
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

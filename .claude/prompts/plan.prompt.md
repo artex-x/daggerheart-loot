@@ -12,6 +12,7 @@ Use `<TASK_ID>` as a variable. Never treat a sample id as hard-coded.
 
 This session is for investigation, technical design, and durable planning.
 Do not implement production application code for the feature itself.
+Write only under `<TASK_DIR>/` (`plan.md`, `handoff.md`, optional `mocks/`; refresh `context.md` with durable facts).
 
 This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
@@ -78,7 +79,7 @@ Design decisions - ask sparingly:
 UI / visual design - grounded mockups, not detached redesigns and not full implementation:
 - If the work introduces a new UI element, changes layout/interaction, or leaves visual structure under-specified, produce lightweight mockups before finalizing that part of the plan
 - Ground every mockup in the current app:
-  - reuse existing spacing, type, controls, tokens, and patterns from the live UI / `style.css` / `styles/tokens.css` / existing components
+  - reuse existing spacing, type, controls, tokens, and patterns from the live UI / `style.css` / `app/src/styles/tokens.css` / existing components
   - show the change in a real screen context, not a blank generic wireframe world
   - prefer annotating or composing from current screenshots / current structure over inventing a new visual language
 - Good mockups:
@@ -103,6 +104,14 @@ Each implement-ready batch must include:
 - Verification commands (see gate matrix below)
 - Risks / do-nots / settled decisions not to reopen
 - Fallback alternatives only when a meaningful secondary approach was considered
+
+A placement has to be acceptance, not a footnote: an item this plan places in a
+future batch (a deferred review nit, a nit from an earlier batch, anything not
+done now) is written into that batch's own acceptance criteria as its own
+line - not only as a cross-reference to where it was mentioned. A table that
+records an intention is not a mechanism, because nothing reads it at the
+moment a batch closes; a plan has already lost inherited items this way by
+recording them only as prose.
 
 Verification gate matrix (pick what applies per batch):
 - Data-only (`data.js`, art mapping): data/image/stub checks + `node tools/build.js` + relevant tests

@@ -30,6 +30,10 @@ const COMMUNITY_RU = {
   Underborne: 'Подземное', Wanderborne: 'Кочевое', Wildborne: 'Лесное'
 };
 const SRC_LABEL = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot' };
+const FRAME_LABEL = {
+  beast_feast: 'Пир зверей', colossus: 'Колоссы Сухоземья',
+  dark_heart: 'Тёмное сердце Андалурии', motherboard: 'Материнская Плата'
+};
 
 /* Kept in step with the app's own vocabulary (app.js, EQ_* tables) */
 const EQ_TYPE   = { weapon:'Основное оружие', secondary:'Вторичное оружие', armor:'Броня' };
@@ -42,7 +46,8 @@ const EQ_CLS    = { phy:'Физическое', mag:'Магическое' };
 const EQ_BURDEN = { 1:'Одноручное', 2:'Двуручное' };
 
 function eqLine(it){
-  const e = it.eq, out = [EQ_TYPE[e.t], e.tier ? 'Ранг ' + e.tier : 'Wondrous'];
+  const e = it.eq, out = [EQ_TYPE[e.t]];
+  if (!isFrame(it)) out.push(e.tier ? 'Ранг ' + e.tier : 'Wondrous');
   if (e.t === 'armor') {
     if (e.th) out.push('Пороги ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push('Броня ' + e.as);
@@ -54,13 +59,25 @@ function eqLine(it){
   return out.filter(Boolean).join(' · ');
 }
 
+function isFrame(it){ return !!it.frame || it.src === 'frame'; }
+function provenance(it){
+  if (isFrame(it)) return 'Прочее · Сеттинги · ' + (FRAME_LABEL[it.frame] || it.frame);
+  if (it.starting) return 'Прочее · Стартовые';
+  return '';
+}
+
 function subtitle(it){
+  const from = provenance(it);
+  if (from) return from + (it.eq ? ' · ' + eqLine(it) : '');
   if (it.eq) return eqLine(it);
   const kind = it.kind === 'consumable' ? 'Расходник' : 'Предмет';
   const src = it.src === 'community'
     ? (COMMUNITY_RU[it.community] || 'Сообщества')
     : SRC_LABEL[it.src];
-  return kind + ' · ' + src + ' · №' + it.roll;
+  /* Frames are browsable source records rather than a roll pool. The two
+     consumables without stat blocks retain the historical preview ordinal. */
+  const number = it.roll ?? (it.src === 'frame' ? DATA.frames.indexOf(it) + 1 : '');
+  return kind + ' · ' + src + ' · №' + number;
 }
 
 /* Crafting chains, resolved the same way the app does it: the target is stored
@@ -87,7 +104,8 @@ function page(it){
   const craft = craftLines(it);
   // the unfurl preview is one flat string, so the chain joins the description
   // предпросмотр в мессенджере - одна плоская строка, переносы в ней ни к чему
-  const desc = (it.eq ? eqLine(it) + '. ' : '') + (it.rud || it.ende).replace(/\s*\n\s*/g, ' ') +
+  const from = provenance(it);
+  const desc = (from ? from + '. ' : '') + (it.eq ? eqLine(it) + '. ' : '') + (it.rud || it.ende).replace(/\s*\n\s*/g, ' ') +
     (craft.length ? ' ' + craft.join(' ') + '.' : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.

@@ -51,6 +51,12 @@ const SHOTS = path.join(ROOT, 'test-output', 'parity');
 const CACHE_DIR = path.join(ROOT, 'test-output', '.parity-cache');
 
 let fail = 0;
+/* Blocker B1: the one thing that means "a cell was actually compared" - a
+ * filter that matched nothing used to print nothing and exit 0, which is
+ * indistinguishable from a filter that matched everything and found no
+ * difference. B14 nearly took a zero-match run for a pass this way; see
+ * docs/parity.md, "Focused loop". */
+let cells = 0;
 const outstanding = [];
 const stale = [];
 
@@ -550,6 +556,7 @@ function pixelDiff(aBuf, bBuf, outPath) {
         const full = `${id} @ ${lang} ${String(size.w)}`;
         if (WANTED.length && !WANTED.some((w) => full.includes(w))) continue;
         console.log(`${full}  (${why})`);
+        cells++;
 
         if (broke) {
           /* Not reaching the state at all is the loudest kind of difference,
@@ -664,6 +671,20 @@ function pixelDiff(aBuf, bBuf, outPath) {
       for (const [route, left] of missed) console.log(`  ${route}: ${left.join(', ')}`);
     }
   }
+
+  /* Blocker B1: a filtered run that matched no state printed nothing and
+   * exited 0 - indistinguishable from a filter that matched everything and
+   * found no difference. `!SHARD` because a filter crossed with
+   * `--shard=n/4` legitimately selects nothing in three shards out of four,
+   * and CI - the only caller that shards - never filters. `!outstanding.length`
+   * because a `pending` state prints and pushes without comparing a cell;
+   * there are none today (measured: zero), and this must not start failing
+   * the day one is added back. */
+  if (WANTED.length && !SHARD && !cells && !outstanding.length) {
+    fail++;
+    console.log(`\nфильтр ничего не выбрал: ${WANTED.join(', ')}`);
+  }
+  console.log(`сравнено ячеек: ${String(cells)}`);
 
   if (WANTED.length) console.log(`\nтолько состояния: ${WANTED.join(', ')} - это не полный прогон`);
   if (SHARD) console.log(`шард ${String(SHARD.n + 1)}/${String(SHARD.of)} - это не полный прогон`);

@@ -2,7 +2,7 @@
  *
  * Two separate things live here, and docs/specs/I18N.md says why they must stay
  * separate: the interface dictionary is small, typed and reviewed, while record
- * text is 1061 pairs maintained with the data. This module only handles the
+ * text is 1091 pairs maintained with the data. This module only handles the
  * second kind - picking the right field off a record, and turning a stat block
  * into words.
  *
@@ -114,16 +114,16 @@ export function eqParts(
   it: Record_,
   lang: Lang,
   labels: StatLabels,
-  opts: { noType?: boolean } = {}
+  opts: { noType?: boolean; noTier?: boolean } = {}
 ): string[] {
   const e = it.eq;
   if (!e) return [];
 
   const out: string[] = opts.noType ? [] : [pick(EQ_TYPE[e.t], lang)];
-  out.push(`${labels.tier} ${String(e.tier)}`);
+  if (!opts.noTier) out.push(`${labels.tier} ${String(e.tier)}`);
 
   if (e.t === 'armor') {
-    if (e.th) out.push(`${labels.thresholds} ${e.th[0] ?? ''}/${e.th[1] ?? ''}`);
+    if (e.th) out.push(`${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}`);
     if (e.as != null) out.push(`${labels.armorScore} ${String(e.as)}`);
   } else {
     /* A magic weapon stays a magic weapon even when its damage can be physical,
@@ -141,7 +141,7 @@ export function eqLine(
   it: Record_,
   lang: Lang,
   labels: StatLabels,
-  opts: { noType?: boolean } = {}
+  opts: { noType?: boolean; noTier?: boolean } = {}
 ): string {
   return eqParts(it, lang, labels, opts).join(' · ');
 }

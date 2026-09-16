@@ -35,13 +35,14 @@ export type AltKind = 'item' | 'consumable';
 export interface Index {
   /** Every record by id: loot and equipment together, one lookup for both. */
   byId: ReadonlyMap<string, Record_>;
-  /** Loot, in the order the tables print it. */
+  /** Table records, in the order their source tables print them. */
   all: readonly Record_[];
   /**
-   * The roll tables, each in its own order.
+   * The source tables, each in its own order.
    *
    * `all` flattens them, which is right for search and wrong for a roll: a roll
-   * is a number within one table, and the number is the record's place in it.
+   * is a number within one roll pool. Campaign frames are source tables, not
+   * roll pools.
    */
   rows: ReadonlyMap<string, readonly Record_[]>;
   /** Loot and equipment - what search covers. */
@@ -85,7 +86,6 @@ export function buildIndex(loot: Loot): Index {
       byId.set(it.id, it);
     }
   }
-
   /* Weapons and armour are not loot rolled off a table: they have stats, so
      they are stored apart and carry an `eq` block instead of a roll number. */
   const eq = loot.eq ?? [];
@@ -155,6 +155,18 @@ export function buildIndex(loot: Loot): Index {
     },
     refs: loot.refs ?? {}
   };
+}
+
+/** The Other table's browse-only pool. It deliberately leaves canonical rows
+ * untouched, so neither source collection is counted twice by search or rolls. */
+export function otherTableRows(
+  index: Index,
+  table: 'other_starting' | 'other_frames'
+): readonly Record_[] {
+  const starting = index.rows.get('starting') ?? [];
+  return table === 'other_starting'
+    ? starting.filter((it) => !it.frame)
+    : [...(index.rows.get('frames') ?? []), ...starting.filter((it) => !!it.frame)];
 }
 
 /** What a record counts as when filtering by kind. */

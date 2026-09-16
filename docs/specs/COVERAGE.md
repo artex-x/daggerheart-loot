@@ -10,28 +10,54 @@ the first dozen failing lines. CI uploads that directory when a job fails.
 
 ## Suites
 
+Twenty suites test the old app (`index.html`). Since B13 it is no longer what
+Pages serves - the built rewrite is - but it stays in the repository as the
+parity expectation and as the target of the one-commit revert, so all twenty
+still run until Phase 7 deletes it. Five more, under `tests/app/`, test the
+built rewrite (`dist/`) - what Pages now serves - in the same real Chrome, the
+layer B12 added because nothing before it drove `dist/` with a trusted click, a
+real network, or a real clipboard. Each old-app suite below carries its
+**fate**: `kept` (stays through Phase 7, node-only), `ported as is`
+(re-pointed at `dist/`, same
+assertions), `rewritten` (same intent, new implementation), or `re-homed`
+(its assertions now live in vitest component/state tests, or in a
+`tests/app/` case) - decided in `plan.md`, "Phase 5 - the testing pyramid,
+planned", decided 3. A suite is deleted only in the Phase 7 batch that
+deletes `index.html` itself; until then every one of the twenty still runs.
+
+| Suite | Kind | Fate | Responsible for |
+|---|---|---|---|
+| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
+| `derived` | data | kept | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in seven files; `noindex` on both entry documents (`index.html`, `app/index.html`) and their heads compared field by field with no exception list; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
+| `parity` | migration | kept until Phase 7 | the rewrite against the live app: the same script on both, differences reported |
+| `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 28 route shapes, the equipment stat line in both languages, filter group key names against the docs |
+| `i18n` | source | kept | dictionary parity in both directions, and no key the code asks for that is missing |
+| `craft` | feature | re-homed: `record.test.ts`, `share.test.ts`, `derived` | upgrade chains: data, rendering, copying, stubs |
+| `notes` | feature | re-homed: `listPage.test.ts`, `state/lists.test.ts`, `listLink.test.ts`, `tests/app/states.js` (note field height) | two notes: writing, copying, both links, migrating a v1 list, a v1 link, note field height |
+| `lists2` | feature | re-homed: `listPage.test.ts`, `sharedListPage.test.ts`, `state/lists.test.ts`, `tests/app/contracts.js` (the llms.txt-described link) | list page: reorder, position entry, list search, storage warning, batch actions, upgrade steps, price modes, price suggestion, empty roll field, taking a shared list, per-list roll, kind filter |
+| `select` | feature | re-homed: `tables.test.ts`, `tests/app/states.js` (the bar's real-click new-list case) | selection, batch add and copy, select all, reset on navigation, card and modal |
+| `flows` | feature | re-homed: `tests/app/states.js` (`<dialog>` semantics, clipboard), `listPage.test.ts`, `record.test.ts` | modal, list address, clipboard, copying a whole roll |
+| `eqtest` | feature | re-homed: `tables.test.ts`, `facets.test.ts`, `filters.test.ts`, `label.test.ts`, `tests/app/hues.js` (colours) | equipment: class, order, filters, filter links, anchors, colours, copying, all sources |
+| `print` | feature | ported in Phase 7's deletion batch | sheet grid, card size against the design, versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, entry points |
+| `noart` | feature | re-homed: `record.test.ts`, `printPage.test.ts`, `tests/app/states.js` (a real broken art path) | records without artwork, and artwork that fails to load |
+| `behave` | journey | re-homed: `roll.test.ts`, `std.test.ts`, `alt.test.ts`, `searchPage.test.ts`, `shell.test.ts`, `state/app.test.ts`, `ports.test.ts` | rolls, search, language, remembered and corrupt settings, starting section, navigation, copy and share, storage disabled |
+| `qa` | regression | re-homed, one case at a time (see the fixture-fate list in `plan.md`, "B12 planned") | one case per defect from an external report: caret, focus, live regions, contrast, truncated link, two tabs, previews, keyboard |
+| `states` | journey | superseded by `tests/parity/specs.js`'s `STATES`, then by `tests/app/states.js`; that inventory itself now lives in `tests/app/inventory.js` | states reachable only by clicking |
+| `audit2` | sweep | ported as is | every address, at four widths, in both languages |
+| `craftmob` | layout | re-homed: the sweep's overflow check at 360/390; `hover: none` stays a known thin spot | narrow screens, touch highlight, selection bar overflow |
+| `typo` | layout | ported as is | two fonts and one size scale, every page, both languages |
+| `hues` | layout | rewritten (reads rendered badges, not injected spans) | badges that can share a list are told apart by hue |
+
+### `tests/app/*` - the same real Chrome, against `dist/` (B12)
+
 | Suite | Kind | Responsible for |
 |---|---|---|
-| `dataint` | data | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files |
-| `derived` | data | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in six files; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment) |
-| `parity` | migration | the rewrite against the live app: the same script on both, differences reported |
-| `contracts` | contract | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 26 route shapes, the equipment stat line in both languages, filter group key names against the docs |
-| `i18n` | source | dictionary parity in both directions, and no key the code asks for that is missing |
-| `craft` | feature | upgrade chains: data, rendering, copying, stubs |
-| `notes` | feature | two notes: writing, copying, both links, migrating a v1 list, a v1 link, note field height |
-| `lists2` | feature | list page: reorder, position entry, list search, storage warning, batch actions, upgrade steps, price modes, price suggestion, empty roll field, taking a shared list, per-list roll, kind filter |
-| `select` | feature | selection, batch add and copy, select all, reset on navigation, card and modal |
-| `flows` | feature | modal, list address, clipboard, copying a whole roll |
-| `eqtest` | feature | equipment: class, order, filters, filter links, anchors, colours, copying, all sources |
-| `print` | feature | sheet grid, card size against the design, versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, entry points |
-| `noart` | feature | records without artwork, and artwork that fails to load |
-| `behave` | journey | rolls, search, language, remembered and corrupt settings, starting section, navigation, copy and share, storage disabled |
-| `qa` | regression | one case per defect from an external report: caret, focus, live regions, contrast, truncated link, two tabs, previews, keyboard |
-| `states` | journey | states reachable only by clicking |
-| `audit2` | sweep | every address, at four widths, in both languages |
-| `craftmob` | layout | narrow screens, touch highlight, selection bar overflow |
-| `typo` | layout | two fonts and one size scale, every page, both languages |
-| `hues` | layout | badges that can share a list are told apart by hue |
+| `app/sweep` | sweep | every address `audit2` covers plus the routes only `app/states` reaches, at four widths, both languages; axe with `color-contrast` on every cell (RU only at 360/390/768, both languages at 1180); a focus-ring walk over six named addresses at 1180 |
+| `app/typo` | layout | `typo`, re-pointed at `dist/` |
+| `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
+| `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, all 28 route fixtures, the stat line, filter group names |
+| `app/states` | journey | the fourteen states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path, focus surviving a keystroke, the note textarea's height, a roll's card `<img>` node replaced |
+| `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (110 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - those stay `tests/app/sweep.js`'s and, until Phase 7 deletes it, `tests/parity.js`'s. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` one of four per-tier `checkbox "Выбрать все (N)"` and one of four `StaticText "РАНГ N"` survive; the other six are elided, and a rename of one of those is not owned by any other suite once `tests/parity.js` is gone. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
 
 ## Features to suites
 
@@ -68,6 +94,7 @@ answers it without anybody having to remember what the old screen did.
 
 Use [`docs/parity.md`](../parity.md) for the operational loop. Current migration
 status and debt belong in `issues/47/plan.md` and `issues/47/handoff.md`.
+The parity CI job runs on manual dispatch and is not a deployment dependency.
 
 Every spec in `tests/parity/specs.js` observes a **state** - the controls on it,
 what a button puts on the clipboard, the label on the roll button, the title of
@@ -108,6 +135,10 @@ Three kinds of finding:
   in `ACCEPTED` with a reason - printed on every run so the list stays visible
 - **stale** is an `ACCEPTED` entry that is no longer a difference. It fails, so
   an excuse has to be deleted by the slice that makes it untrue
+
+A fourth thing is never a finding: a live defect the rewrite reproduces on
+purpose is identical on both sides, so it is written in `docs/specs/DEBT.md`
+rather than keyed here.
 
 It found four things on its first run, all of which a component test had missed
 because a component test only checks what somebody remembered to write:
@@ -192,19 +223,28 @@ enforce it, and they catch different mistakes:
 | `expectNoA11yViolations` in every component test | markup a screen reader cannot follow | `app/src/test/a11y.ts` |
 | Layer rules in ESLint | logic that reaches for the DOM and stops being testable | `eslint.config.mjs` |
 
+`color-contrast` is off in `a11y.ts` for every call - jsdom lays nothing out,
+so it can only see declared colours; `tests/app/sweep.js` measures contrast
+for real, over a rendered page (B12). `nested-interactive` is on by default
+and disabled only per call, via `expectNoA11yViolations(container, { allow })`,
+for the handful of states that render the storage notice's live-ported markup
+(`docs/specs/DEBT.md` D3) - every other component is still checked against it.
+
 The bars differ because the obligations do. `src/lib` is pure and has no
-excuse: 90 lines, 90 functions, 85 branches. `src/ports` wraps browser APIs
-whose success paths jsdom cannot run at all, so it sits at 70/70/55 and the
-difference is covered by the browser suites and, from Phase 5, by e2e.
-Components and state are at 85 and 90.
+excuse: 95 lines, 95 functions, 85 branches, 90 statements. `src/ports` wraps
+browser APIs whose success paths jsdom cannot run at all, so it sits at
+70 lines, 80 functions, 55 branches, 70 statements, and the difference is
+covered by `tests/app/` driving the built app in a real browser (B12).
+Components are at 85 lines, 80 functions, 75 branches, 85 statements; state is
+at 95 lines, 95 functions, 85 branches, 90 statements.
 
 **A per-file rule is not a per-file *test* rule.** Nothing requires a
 `Foo.test.ts` beside every `Foo.svelte`, and a rule that did would be answered
 with tests asserting that a button renders a button. What is required is that
 every file is *reached* by some test - `perFile` fails at 0% whether the file
 has a test of its own or is exercised through a parent. `TabBar` and
-`LangSwitch` have no test files and are at 100% because `shell.test.ts` drives
-them through `App`. That is the intended shape.
+`Seg` have no test files and are at 100% because `shell.test.ts` drives them
+through `App`. That is the intended shape.
 
 What this found the day it was turned on, all of it invisible to the previous
 global number:
@@ -250,11 +290,14 @@ people use, these test the one that will replace it.
 | `components/listPage.test.ts` | `#/lists/<id>` and `#/l/<own payload>` - off `renderOneList` and everything it draws (app.js 2933-3128, the address at 1537-1607, the handlers at 3944-4571): the address rewrite and its address-only edge cases, the title input and the actions row, the storage notice, the money picker and its help, the list note, the roll panel (folded/absent/rolled/reset), select-all, a row's position/qty/gold/note/remove with undo, copying and sharing, deleting, a row's own modal, the drag port's `onDrop`, `noData`, and the branch into the shared page (drawn for a payload that is nobody's, nothing drawn while a packed address expands, the bad-link page when the port cannot expand one) |
 | `components/sharedListPage.test.ts` | `#/l/<payload>` for a payload that is nobody's own list - off `renderSharedList` (app.js 3130-3170): the heading and the one-text-node sub, the add-to-list control and taking the whole list into a new one or an existing one (with its qty/gold/note, never the GM's own note), both list hitnotes and each entry's own after its row, the tails (`×qty`, `×qty · price`, bare price, coin mode), selection and the bar it raises, a row's own modal, the bad-link page, and English |
 | `components/searchPage.test.ts` | `#/search` - off `renderSearch`, `kindChips` and the `#sq`/kind handlers (app.js 2841-2859, 2114-2132, 4160-4164, 4333): the head with no help button, the box focused on arrival, both languages at once, the assembled stat line, the 300 cap, the kind filter narrowing and refusing its last chip, equipment obeying the equipment chip regardless of its own `kind`, the filter shared with the roll pages, selection, a row's own modal, `noData`, and English |
+| `components/printPage.test.ts` | `#/print/<ids>` - off `renderPrint`, `printCardHTML` and its helpers, and `fitPrintCards` (app.js 3235-3558), and the four handlers (`doPrint`/`printBack`/`printArt`/`printLink`, 4236-4245): the bar and its controls in order, a sheet's card/blank counts and page breaks, every card shape (loot with and without art, a broken image swapped for the glyph, a weapon's tier/tags/burden/die/ribbon/cells, a versatile weapon's second stat block, a damage bonus, an armoured card's shield and threshold strip, an artifact's list markup, a community record's source line), the black-and-white layout, the second-sheet and 180-id cap arithmetic, the empty address, `Назад`/print/link handlers, the fit ladder driven end to end under a faked layout, `noData`, and English |
 
 The browser adapters' happy paths are the one thing these cannot reach - a real
-clipboard write, a real share sheet - because jsdom has neither. That is what
-the e2e layer in Phase 5 is for; the fallbacks, which is where the logic
-actually lives, are covered here.
+clipboard write, a real share sheet - because jsdom has neither. `tests/app/states.js`
+exercises the clipboard's rich-text and image writes and the packed link's real
+`CompressionStream` for exactly this reason (B12); the share sheet's success
+path stays a thin spot below, since no headless browser offers one to drive.
+The fallbacks, which is where the logic actually lives, are covered here.
 
 `tools/tg-preview/lib.test.mjs` is a separate suite again, run under
 `node --test` as its own step in `npm run check` rather than through vitest:
@@ -289,7 +332,7 @@ happens to do.
   re-derives base64url and the checksum with its own implementation.
 - **Route resolution had no fixture either.** `audit2` walks addresses to check
   they render, not that they resolve to the state they used to.
-  `docs/fixtures/urls/routes.json` pins 26 shapes, including the three legacy
+  `docs/fixtures/urls/routes.json` pins 28 shapes, including the three legacy
   section names and the source switch each one sets.
 - **`robots.txt` was not in the count check** and still advertised 830 records.
   It is now checked with the other five files.
@@ -312,15 +355,35 @@ Not blocking, recorded so they are not mistaken for coverage:
   `@media (hover:hover)` branch cannot be rendered in a test.
 - The success paths of `clipboard`, `share` and `compress` cannot run in jsdom:
   there is no real clipboard, no share sheet and no `CompressionStream`. Their
-  fallbacks - where the logic is - are covered; the happy paths are why the
-  `src/ports/**` bar is lower than the others, and they wait for Phase 5.
+  fallbacks - where the logic is - are covered in jsdom; `clipboard`'s and
+  `compress`'s happy paths run for real in `tests/app/states.js` (B12), which
+  is why the `src/ports/**` bar could move; the share sheet's success path is
+  the one still without an answer - no headless browser exposes one to drive,
+  so the fallback stays what is tested.
 - Colour contrast is switched off in the axe pass, because jsdom lays nothing
-  out and resolves no cascade. Contrast stays a real measurement in `qa` and
-  `typo`, on a real page.
+  out and resolves no cascade. Contrast is a real measurement in `qa` and
+  `typo`, on the live app, and now also on the rewrite: `tests/app/sweep.js`
+  runs axe with `color-contrast` on over every address (B12) - the first gate
+  that has ever measured it on `dist/` rather than only on `index.html`.
 - `tests/parity.js` compares behaviour and screenshots only for registered
   states the rewrite has reached. Missing states remain invisible, so each new
   interaction surface must be registered in `STATES` in the same change.
 - A native `<dialog>` cannot be opened in jsdom - there is no `showModal` - so
-  `app/vitest-setup.ts` shims presence and open/closed. The focus trap, Escape
-  and the page behind going inert are the browser's, and are checked in one:
-  `flows` today, `parity` and the Phase 5 e2e layer as they grow.
+  `app/vitest-setup.ts` shims presence and open/closed. The focus trap, Escape,
+  the return of focus and the page behind going inert are the browser's;
+  `tests/app/states.js`'s dialog-semantics case checks all four for real
+  (B12), where `flows` used to on the live app alone.
+- A trusted click runs a microtask checkpoint between listeners on the same
+  event that neither jsdom's `userEvent` nor `parity`'s `el.click()`
+  reproduces - both dispatch on a non-empty call stack, so Svelte 5's flush
+  (a microtask) waits until the stack unwinds. `AddToList.svelte`'s
+  new-list-form defect was invisible to both for exactly this reason;
+  `press`, a real CDP mouse click in `tests/parity/driver.js` (B12), is the
+  instrument that sees it, and `tests/app/states.js` is what uses it.
+- `hover: none` in headless Chrome still cannot render a `@media (hover:hover)`
+  branch, in `craftmob` or in `tests/app/sweep.js` alike - no environment
+  answers this without real touch/pointer hardware, so it stays a thin spot
+  with no batch waiting to close it.
+- Print's geometry - the 63x88 mm card, nine to a sheet, the fit ladder, the
+  art edge - is `print`'s alone until Phase 7 ports it into `tests/app/print.js`;
+  `dist/`'s own print layout is untested until then.

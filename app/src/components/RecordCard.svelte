@@ -8,11 +8,12 @@
 
      Nothing here injects HTML. The description arrives parsed - see
      lib/desc.ts - so a label is an <i> element and a list is a real <ul>. */
+  import Actions from './Actions.svelte';
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
-  import { cardBadges, srcLabel } from '../lib/label.js';
+  import { cardBadges, isFrameRecord, srcLabel } from '../lib/label.js';
   import { upgradeLine } from '../lib/data.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
@@ -82,7 +83,7 @@
       it,
       lang,
       { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
-      { noType: true }
+      { noType: true, noTier: isFrameRecord(it) }
     )
   );
   const parts = $derived(descParts(it, lang));
@@ -173,7 +174,7 @@
       {/each}
     </div>
 
-    {#if ladder.length}
+    {#if ladder.length && !isFrameRecord(it)}
       <!-- Улучшенный / Продвинутый / Легендарный are the same weapon four
            times over, so the card offers the ladder rather than making a
            person search for the next rung. The one they are on is a label
@@ -241,7 +242,7 @@
     {/if}
 
     {#if actions}
-      <div class="card-acts">{@render actions()}</div>
+      <Actions>{@render actions()}</Actions>
     {/if}
 
     {#if pick}
@@ -610,14 +611,9 @@
     border-bottom-style: solid;
   }
 
-  .card-acts {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 3px;
-  }
+  /* `.card-acts` moved to `Actions.svelte` (B10); its two 600px descendant
+     rules below are re-anchored on this component's own root, `.card`,
+     since a scoped rule cannot otherwise reach inside a child component. */
 
   /* off `.cardpick` in style.css - the add-to-list control and the print
      link, under `.card-acts`. */
@@ -745,7 +741,7 @@
     /* Room is tight, so the wording goes and the icons stay - the button
        keeps its name through aria-label. `:has` rather than a blanket rule
        because the list toolbar sits in the same row and keeps its words. */
-    .card-acts :global(.btn-lbl) {
+    .card :global(.card-acts .btn-lbl) {
       position: absolute;
       width: 1px;
       height: 1px;
@@ -754,7 +750,7 @@
       white-space: nowrap;
     }
 
-    .card-acts :global(.btn.sm:has(.btn-lbl)) {
+    .card :global(.card-acts .btn.sm:has(.btn-lbl)) {
       padding: 0 10px;
       gap: 0;
     }

@@ -39,8 +39,10 @@ const CORE_GROUP: TableGroup = {
 };
 
 /* Order matches the tabs above: rolling first, then browsing. Equipment and
-   frames have no tab of their own - both are a slice through every book at
-   once rather than a book - so they go last. */
+   Other have no tab of their own, for different reasons: Equipment is a slice
+   through every book at once rather than a book, while Other groups starting
+   inventory and campaign-frame equipment, neither of which is rollable
+   content from a book. Both go last. */
 export const TABLE_GROUPS: readonly TableGroup[] = [
   CORE_GROUP,
   { id: 'hnf', label: 'srcHnf', top: 'hnf_item', subs: ['hnf_item', 'hnf_consumable'] },
@@ -55,7 +57,12 @@ export const TABLE_GROUPS: readonly TableGroup[] = [
     top: 'eq_weapon',
     subs: ['eq_weapon', 'eq_secondary', 'eq_armor']
   },
-  { id: 'frames', label: 'grpFrames', top: 'frames', subs: ['frames'] }
+  {
+    id: 'other',
+    label: 'grpOther',
+    top: 'other_starting',
+    subs: ['other_starting', 'other_frames']
+  }
 ];
 
 /**
@@ -72,7 +79,9 @@ export const SUB_LABEL: Partial<Record<TableId, keyof Dict>> = {
   alt_consumable: 'fCons',
   eq_weapon: 'subWeapon',
   eq_secondary: 'subSecondary',
-  eq_armor: 'subArmor'
+  eq_armor: 'subArmor',
+  other_starting: 'subStarting',
+  other_frames: 'subFrames'
 };
 
 /** Which group a table belongs to. Falls back to the first group rather than

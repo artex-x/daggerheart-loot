@@ -17,6 +17,14 @@
     /** Why pressing it will be refused, where it will be. */
     title?: string | undefined;
     /**
+     * The live app's own `data-val` on this control - `app.js:2217`'s source
+     * chips carry `"core"`/`"hnf"`, and nothing else in this component's
+     * three callers does. Optional because most chips are gripped by their
+     * Russian label alone; `StdPanel`'s source row is the one place a test
+     * needs to tell them apart without reading the language-dependent text.
+     */
+    value?: string | undefined;
+    /**
      * A second line under the label, smaller and quieter.
      *
      * The rarity chips carry the tiers each rarity is a recommendation for.
@@ -34,7 +42,7 @@
   type Props = Base &
     ({ href: string; onclick?: never } | { href?: never; onclick: () => void });
 
-  const { label, on, title, sub, size = 'md', href, onclick }: Props = $props();
+  const { label, on, title, sub, size = 'md', href, onclick, value }: Props = $props();
 </script>
 
 {#if href}
@@ -43,6 +51,7 @@
     class:on
     class:sm={size === 'sm'}
     aria-current={on ? 'page' : undefined}
+    data-val={value}
     {title}
     {href}
     >{label}{#if sub}<small>{sub}</small>{/if}</a
@@ -54,6 +63,7 @@
     class:on
     class:sm={size === 'sm'}
     aria-pressed={on}
+    data-val={value}
     {title}
     {onclick}
     >{label}{#if sub}<small>{sub}</small>{/if}</button

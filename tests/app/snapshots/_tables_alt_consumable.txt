@@ -1,0 +1,439 @@
+# #/tables/alt_consumable
+# route: #/tables/alt_consumable
+# why: the alternate consumables table
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/alt_consumable]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    link "Предметы" [url=#/tables/alt_item]
+    link "Расходники" [url=#/tables/alt_consumable]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    StaticText "ОБЫЧНАЯ · РАНГ 1–2"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    heading "НАДЕЖДА" [level=4]
+    checkbox "Выбрано" [checked=false]
+    button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=91 namehash=a16dcb39]
+    checkbox "Выбрано" [checked=false]
+    ... button x117 of 121 same-shape siblings elided
+    ... checkbox x116 of 120 same-shape siblings elided
+    heading "СТРАХ" [level=4]
+    ... StaticText x2 of 6 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    ... heading x6 of 10 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "ОЧЕНЬ РЕДКАЯ · РАНГ 3–4"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "ЛЕГЕНДАРНАЯ · РАНГ 3–4"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    heading "НАДЕЖДА" [level=4]
+    heading "СТРАХ" [level=4]
+    checkbox "Выбрано" [checked=false]
+    button "11 Слёзы Бессмертного Героя Выпив это зелье, вы недосягаемы для ..." [namelen=368 namehash=675826a3]
+    checkbox "Выбрано" [checked=false]
+    button "12 Зеркало Златоцвета Когда вы получаете урон, вы можете потрати..." [namelen=148 namehash=f1d96a23]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+10Доспешный СшивательВы можете использовать этот швейный аппарат... [namelen=154 namehash=8141daa9]
+10Жетон ПодменыПроглотите этот жетон, чтобы создать двух своих и... [namelen=208 namehash=922296a1]
+10Малое Зелье ВыносливостиОчистите 1d4 Стресса.Получается из: Ре... [namelen=107 namehash=0798bc11]
+10Пузырёк Глубинных ЧернилВыпейте чернила из этого пузырька, что... [namelen=266 namehash=f3d33674]
+10Сладкий МохВы можете съесть этот мох во время отдыха, чтобы оч... [namelen=110 namehash=90a6c783]
+10Сфера Лунного СветаРазбейте эту сферу, и целые сутки область в... [namelen=163 namehash=2e810c00]
+10Сфера Солнечного СветаРазбейте эту сферу, и целые сутки област... [namelen=169 namehash=e8d545ab]
+10Тоник МесмераВыпейте этот тоник, и до следующего отдыха вы не ... [namelen=171 namehash=3613ec01]
+10Флакон с Лунной КаплейВыпив содержимое этого флакона, вы сможе... [namelen=125 namehash=f2ead437]
+10Чай СмертиПосле того как вы выпьете этот чай, вы мгновенно уби... [namelen=244 namehash=bf53baab]
+11Зелье Легкой ПоступиВыпейте это зелье, и у вас на лодыжках выр... [namelen=181 namehash=e5b0ab9e]
+11Зелье НевидимостиВы Скрыты, пока не нанесёте урон другому суще... [namelen=114 namehash=3e0f3a13]
+11Осколок ЭмберитаВыберите точку в пределах Далекой дистанции. В... [namelen=391 namehash=8c6ffc67]
+11Пергамент КопированияПрикоснувшись этим пергаментом к другому,... [namelen=202 namehash=7db8ca80]
+11Проводящий КаменьВы можете использовать этот камень, чтобы взя... [namelen=172 namehash=585a71c3]
+11Пыль Ночной КаргиСдуйте эту пыль в лицо противнику, чтобы он н... [namelen=151 namehash=2e265e23]
+11Слёзы Бессмертного ГерояВыпив это зелье, вы недосягаемы для см... [namelen=364 namehash=d5d13d34]
+11Соль ИстребителяНасыпьте эту соль линией по подоконникам или п... [namelen=175 namehash=b6398850]
+11Флакон Мягкого ПаденияВыпейте это зелье, чтобы до конца сцены ... [namelen=112 namehash=1ba9c8ec]
+11Формоидная СывороткаВыпейте это зелье, чтобы до конца сцены ст... [namelen=180 namehash=ecd5fd2c]
+12Жаберная МазьВы можете нанести эту мазь на шею, чтобы дышать п... [namelen=124 namehash=cd4b8285]
+12Звёздная КапляВы можете использовать эту звездную каплю, чтобы... [namelen=183 namehash=190272b7]
+12Зеркало ЗлатоцветаКогда вы получаете урон, вы можете потратить... [namelen=144 namehash=81f31a2f]
+12Листья ВарикаВы можете съесть эти спаренные листья, чтобы сраз... [namelen=98 namehash=d9f22030]
+12Нестабильный Мистический ОсколокВы можете совершить Бросок Иск... [namelen=231 namehash=b4eb76a6]
+12Осколок АрктицитаВыберите точку в пределах Далекой дистанции. ... [namelen=241 namehash=657d1f0a]
+12Сосуд Потерянных ГолосовВы можете открыть этот сосуд, чтобы вы... [namelen=248 namehash=9d45da8e]
+12Улучшенный Мистический ОсколокВы можете совершить Бросок Искус... [namelen=226 namehash=5ab54f79]
+12Фляга МидасаВылейте на обыденный предмет алхимическую жидкость... [namelen=153 namehash=58fe4889]
+12Чай Драконьего ЦветкаВы можете выпить этот чай, чтобы совершит... [namelen=296 namehash=a88679b4]
+1Большое Зелье Быстрого ШагаВы получаете бонус +1 к Проворности ... [namelen=98 namehash=c88a0bf6]
+1Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Пр... [namelen=87 namehash=9c48229a]
+1Мазь СаламандрыНанесите эту мазь на кожу, чтобы до следующего о... [namelen=116 namehash=2113d668]
+1Молоко ЯкамеляВыпейте это молоко. В следующий раз, когда вы очи... [namelen=141 namehash=9e936d65]
+1Осколок ФульгуритаВыберите точку в пределах Далекой дистанции. ... [namelen=257 namehash=cbcaac35]
+1Пламя НадеждыПри использовании союзники в пределах Средней дист... [namelen=208 namehash=4328eb5f]
+1Проклятие ЗаклинателяОсвободив заточённую душу заклинателя, вы ... [namelen=215 namehash=e5397a69]
+1Радужная ПыльЭтот разноцветный порошок липнет ко всему, и сущес... [namelen=132 namehash=ccfc1aa4]
+1Семя Крепкого МостаТолстые лианы растут от вашего местоположени... [namelen=255 namehash=0bb4af54]
+1Улучшенный Яд СкрежетозубаВы можете нанести этот яд на оружие, ... [namelen=169 namehash=8885f2e7]
+2Большое Зелье УсиленияВы получаете бонус +1 к Силе до следующег... [namelen=86 namehash=6eeb40a5]
+2Большой Мистический ОсколокВы можете совершить Бросок Искусност... [namelen=222 namehash=d4f2987d]
+2Глина ПеревоплощенияВы можете потратить Надежду, чтобы использо... [namelen=161 namehash=be66ecb0]
+2Зелье СтойкостиВы можете выпить это зелье, чтобы выбрать одно д... [namelen=108 namehash=08f86eb8]
+2Зелье УсиленияВы получаете бонус +1 к следующему Броску Силы.Ра... [namelen=75 namehash=74f05f88]
+2Квинтэссенциальный РазделительЭтим магическим клинком можно раз... [namelen=213 namehash=1c3dbf3f]
+2Кровь ЙоргиВы можете выпить эту кровь, чтобы исчезнуть с того м... [namelen=192 namehash=fd5f60ac]
+2Семя ВергласаЭтим осколком льда можно мгновенно заморозить учас... [namelen=122 namehash=a8657a16]
+2Усыпляющий СокВы можете выпить это зелье, чтобы заснуть и хорош... [namelen=136 namehash=ba1fe0ff]
+2Чай из Петушиного КогтяВыпейте этот чай, чтобы обновить свои св... [namelen=137 namehash=80d37a1f]
+3Большое Зелье СосредоточенностиВы получаете бонус +1 к Искуснос... [namelen=101 namehash=c2370cac]
+3Гриб Светящегося МхаРазломите этот гриб, и он будет ярко светит... [namelen=132 namehash=96c44e4b]
+3Зелье Мохового ПокроваВыпейте этот чай, чтобы до следующего отд... [namelen=130 namehash=c6a34367]
+3Зелье СосредоточенностиВы получаете бонус +1 к следующему Броск... [namelen=90 namehash=92e8c05d]
+3Мазь Стальной КожиНанесите эту мазь на кожу, чтобы до конца сце... [namelen=139 namehash=ec17340c]
+3Маска Отражённого «Я»Наденьте эту маску во время следующего пов... [namelen=206 namehash=8512cc4b]
+3Масло Алой СлизиСмажьте этим маслом оружие. При следующей успеш... [namelen=260 namehash=35dc2214]
+3Масло Зелёной СлизиСмажьте этим маслом оружие. При следующей ус... [namelen=245 namehash=476feb87]
+3Настой ДемиургаВыпейте этот настой, чтобы получить +1 к Мастерс... [namelen=126 namehash=bb50c8a1]
+3Пуховая КостьИспользуйте, чтобы замедлить своё падение на колич... [namelen=111 namehash=c5df7221]
+4Большое Зелье ГармонииВы получаете бонус +1 к Инстинкту до след... [namelen=91 namehash=c773e682]
+4Зелье ГармонииВы получаете бонус +1 к следующему Броску Инстинк... [namelen=80 namehash=6902039c]
+4Колокол НекроплясунаРазбейте о землю этот ржавый колокол без яз... [namelen=188 namehash=2f12d612]
+4Круг ПустотыОтметьте Стресс, чтобы создать пустоту, которая рас... [namelen=222 namehash=fd36ad6c]
+4Пастилка ЛирохвостаРассосите эту пастилку, чтобы до конца сцены... [namelen=132 namehash=47666fa1]
+4Помело БожкаСъешьте этот плод, чтобы очистить все Раны и Стресс... [namelen=85 namehash=ad35bc6c]
+4Прыгающий КореньСъешьте этот корень, чтобы один раз прыгнуть на... [namelen=128 namehash=17e9c878]
+4Секретное Зелье ХометаПосле выпивания этого зелья следующий усп... [namelen=136 namehash=1477c17e]
+4Сок Солнечного ДреваУпотребите этот сок, чтобы бросить 1d6. При... [namelen=239 namehash=3b816590]
+4Флакон с Чёрным ДымомКогда противник атакует вас, используйте э... [namelen=249 namehash=4c2f4ec1]
+5Большое Зелье ОбаянияВы получаете бонус +1 к Влиянию до следующ... [namelen=88 namehash=153c95b5]
+5Зелье БдительностиВыпейте это зелье, чтобы получить +1 к Уклоне... [namelen=111 namehash=3f614227]
+5Зелье ОчарованияВы получаете бонус +1 к следующему Броску Влиян... [namelen=80 namehash=92bcab74]
+5Какофоническая МикстураВыпейте это зелье, и на час всё, что вы ... [namelen=254 namehash=ddfb6994]
+5Камень ЗнанийЕсли вы погибаете, держа при себе этот камень, сою... [namelen=215 namehash=abf5baec]
+5Мгновенный ЛагерьЭта небольшая механическая коробка раскладывае... [namelen=205 namehash=1855249b]
+5Пир КсурииВы можете съесть эту еду, чтобы исцелить все Раны и С... [namelen=106 namehash=8136f2fc]
+5Связка Паучьих ЛапокСъешьте эти лапки, чтобы до следующего отды... [namelen=104 namehash=b73f7814]
+5Слюна КрасношипаВы можете нанести эту слюну на оружие, наносяще... [namelen=162 namehash=83cac850]
+5Яд СкрежетозубаВы можете нанести этот яд на оружие, наносящее ф... [namelen=158 namehash=327ffa74]
+6Большое Зелье ЛеченияИзлечите 1d4+2 Ран.РасходникCore
+6Большое Зелье ПросветленияВы получаете бонус +1 к Знаниям до сл... [namelen=93 namehash=4b04f29e]
+6Бутыль Цисканского ТуманаРазбейте этот сосуд, чтобы заполнить о... [namelen=204 namehash=2ae30a76]
+6Зелье ПросветленияВы получаете бонус +1 к следующему Броску Зна... [namelen=81 namehash=c8489bf0]
+6Медовуха КошмаровВыпейте это зелье, чтобы узнать глубочайший ст... [namelen=185 namehash=e84c0af7]
+6Мифическая ПыльВы можете нанести эту пыль на оружие, наносящее ... [namelen=196 namehash=9b78b7d5]
+6Настойка Змеиной КожиВыпейте это зелье, чтобы сбросить внешний ... [namelen=110 namehash=24340a48]
+6Ослепляющая СфераВы можете активировать эту сферу, чтобы создат... [namelen=182 namehash=544bb211]
+6Порошок ВстряскиОтметьте Стресс, чтобы очистить Рану.РасходникC... [namelen=67 namehash=6ab5940a]
+6Слюна ХимерыСмажьте этой слюной физическое оружие, и до следующ... [namelen=122 namehash=3bb8deb4]
+7Большое Зелье ВыносливостиОчистите 1d4+2 Стресса.РасходникCore
+7Драконья МантияЭта зачарованная шкура древнего дракона даёт вам... [namelen=224 namehash=6cbfc221]
+7Зелье ЛеченияИзлечите 1d4+1 Ран.РасходникCore
+7Кислотная ПастаПаста прожигает стены и другие поверхности ярким... [namelen=89 namehash=a479da24]
+7Оберегающая СвечаЗажгите эту свечу, и в пределах Средней дистан... [namelen=224 namehash=1317fb3b]
+7Пакетик Космической ПылиВсё, что покрыто этой пылью, становится... [namelen=179 namehash=668755f3]
+7Самошьющая НитьЭтой нитью можно очистить либо Рану, либо 2 Ячей... [namelen=93 namehash=30647c29]
+7Семя Хваткого ТернаБросьте это семя в точку, которую вы видите.... [namelen=212 namehash=83eb2e20]
+7Склеивающий МёдЭтот мёд можно использовать для постоянного скле... [namelen=99 namehash=d1367abf]
+7Яд КаплезубаСущество, которое употребляет этот яд, получает 8d1... [namelen=105 namehash=1c091e14]
+8Безоар ВиночерпияПроглотив этот безоар, вы получаете иммунитет ... [namelen=129 namehash=fb3f938d]
+8Гравитационная БомбаБросьте этот механический шар размером с пе... [namelen=244 namehash=62e217e3]
+8Зелье ВыносливостиОчистите 1d4+1 Стресса.РасходникCore
+8Зелье УменьшенияВы можете выпить это зелье, чтобы уменьшить сво... [namelen=239 namehash=dbd6e494]
+8КрылокореньВы получаете волшебные крылья, которые позволяют вам... [namelen=123 namehash=159c365f]
+8Мускус ОграВы можете использовать этот мускус, чтобы никто не с... [namelen=159 namehash=96ac45a2]
+8Ошибка ИгрокаОпустите в эту керамическую копилку в форме свиньи... [namelen=321 namehash=2ff79d17]
+8Посох ОбращенияСломайте этот посох о землю, чтобы обратить одно... [namelen=148 namehash=e1bee320]
+8Трубочное ЗельеКогда во время короткого отдыха вы выбираете Ход... [namelen=220 namehash=82232942]
+8Удача КаменщикаБросьте этот серый кирпич на землю, и он мгновен... [namelen=179 namehash=1d86f4f5]
+9Бутыль с ДухомКогда вы отмечаете последнюю Рану, эта бутыль раз... [namelen=195 namehash=04a79536]
+9Варево БерсеркаВыпив это варево, вы получаете бонус к Силе и шт... [namelen=225 namehash=3580c611]
+9Зелье УвеличенияВы можете выпить это зелье, чтобы удвоить свой ... [namelen=218 namehash=efdc40e5]
+9Кол ЗапретаВбейте этот кол в землю и объявите запрет. До следую... [namelen=215 namehash=56743ef2]
+9Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=92 namehash=2b020cfa]
+9Мнемоническое ЗельеВыпейте это зелье, чтобы использовать Опыт, ... [namelen=101 namehash=6c19209b]
+9Порошок Провидца СмертиПосыпьте этим порошком тело недавно умер... [namelen=162 namehash=84148ff7]
+9Саван Проводника ДушНакройте этим саваном тело недавно умершего... [namelen=246 namehash=13e76894]
+9Тоник Львиного СердцаВыпейте этот тоник, чтобы получить +1 к Ма... [namelen=130 namehash=2fb59c06]
+9Цветок СплетенПосадите это семя в землю. Оно мгновенно вырастае... [namelen=216 namehash=a96ded46]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Выбрано
+К содержимому
+Как это работает
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Предметы
+Прочее
+Расходники
+Сеткой
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_consumable]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    link "Items" [url=#/tables/alt_item]
+    link "Consumables" [url=#/tables/alt_consumable]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    StaticText "COMMON · TIER 1–2"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    heading "HOPE" [level=4]
+    checkbox "Selected" [checked=false]
+    button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=78 namehash=9dbe7ab2]
+    checkbox "Selected" [checked=false]
+    ... button x117 of 121 same-shape siblings elided
+    ... checkbox x116 of 120 same-shape siblings elided
+    heading "FEAR" [level=4]
+    ... StaticText x2 of 6 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    ... heading x6 of 10 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "VERY RARE · TIER 3–4"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "LEGENDARY · TIER 3–4"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    heading "HOPE" [level=4]
+    heading "FEAR" [level=4]
+    checkbox "Selected" [checked=false]
+    button "11 Tears of the Undying Hero When you drink this potion, death c..." [namelen=353 namehash=636d8eca]
+    checkbox "Selected" [checked=false]
+    button "12 Mirror of Marigold When you take damage, you can spend a Hope..." [namelen=136 namehash=b2150af9]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+10Armor StitcherYou can use this stitcher to spend any number of... [namelen=116 namehash=61221ff1]
+10Death TeaAfter you drink this tea, you instantly kill your tar... [namelen=205 namehash=9cf6949a]
+10Displacement TokenYou can swallow this token to conjure two il... [namelen=193 namehash=8fc5b00f]
+10Mesmer's TonicWhen you drink this tonic, the only thing you ca... [namelen=175 namehash=4984e73d]
+10Minor Stamina PotionClear 1d4 Stress.Made from: Minor Stamina ... [namelen=91 namehash=65d73c25]
+10Moonlight OrbYou can shatter this orb to make the area within ... [namelen=162 namehash=91acb67e]
+10Phial of Deep InkYou can drink this bottle of ink to transform... [namelen=255 namehash=5be90abb]
+10Sunlight OrbYou can shatter this orb to make the area within V... [namelen=158 namehash=6e2ca09c]
+10Sweet MossYou can consume this moss during a rest to clear 1d1... [namelen=98 namehash=33fa003c]
+10Vial of MoondripWhen you drink the contents of this vial, you ... [namelen=125 namehash=0ba41d31]
+11ChannelstoneYou can use this stone to take a spell or grimoire... [namelen=137 namehash=8a3ae536]
+11Emberite ShardChoose a point within Far range. All targets wit... [namelen=374 namehash=21214849]
+11Featherstep PotionYou can drink this potion to sprout small wi... [namelen=184 namehash=57b2080f]
+11Formoid SerumYou can drink this potion to become a swarm of 16... [namelen=189 namehash=0bc1fdf8]
+11Invisibility PotionYou are Hidden until you deal damage to ano... [namelen=123 namehash=0029c78c]
+11Night Hag's DustYou can blow this dust in an adversary's face ... [namelen=148 namehash=25e5e4e1]
+11Replication ParchmentBy touching this piece of parchment to an... [namelen=189 namehash=b76c56ce]
+11Slayer's SaltYou can spread this salt in a line along windowsi... [namelen=190 namehash=2aaacba4]
+11Tears of the Undying HeroWhen you drink this potion, death can... [namelen=349 namehash=871e969c]
+11Vial of FeatherfallYou can drink this potion to ignore damage ... [namelen=122 namehash=520ce451]
+12Arcticite ShardChoose a point within Far range. All targets wi... [namelen=219 namehash=c98abc4c]
+12Dragonbloom TeaYou can drink this tea to unleash a fiery breat... [namelen=246 namehash=c97e0a95]
+12Gill SalveYou can apply this salve to your neck to breathe und... [namelen=130 namehash=f71c2214]
+12Improved Arcane ShardYou can make a Finesse Roll to throw this... [namelen=180 namehash=4da3f1c7]
+12Jar of Lost VoicesYou can open this jar to release a deafening... [namelen=216 namehash=b674dcf0]
+12Midas FlaskYou can pour this small flask of alchemical liquid ... [namelen=154 namehash=f50c77da]
+12Mirror of MarigoldWhen you take damage, you can spend a Hope t... [namelen=132 namehash=1c1edc04]
+12StardropYou can use this stardrop to summon a hailstorm of com... [namelen=151 namehash=8fb1f336]
+12Unstable Arcane ShardYou can make a Finesse Roll to throw this... [namelen=180 namehash=fdad0143]
+12Varik LeavesYou can eat these paired leaves to immediately gai... [namelen=87 namehash=52e04a76]
+1Bridge SeedThick vines grow from your location to a point of yo... [namelen=191 namehash=a41c5f23]
+1Fulgurite ShardChoose a point within Far range. All targets wit... [namelen=236 namehash=d88a248f]
+1Hopehold FlareWhen you use this flare, allies within Close rang... [namelen=230 namehash=d98fe41c]
+1Improved Grindletooth VenomYou can apply this venom to a weapon... [namelen=160 namehash=389e5547]
+1Iridian DustThis multicolored powder sticks to everything and p... [namelen=138 namehash=57bc5407]
+1Magic-User's MalisonWhen you release this spellcaster's trapped... [namelen=220 namehash=a1fe7b8e]
+1Major Stride PotionYou gain a +1 bonus to your Agility until yo... [namelen=91 namehash=c19bb450]
+1Salamander SalveYou can apply this salve to your skin to make y... [namelen=129 namehash=c14f8689]
+1Stride PotionYou gain a +1 bonus to your next Agility Roll.Cons... [namelen=74 namehash=a70c8c55]
+1Yakamel MilkAfter consuming this milk, the next time you clear ... [namelen=141 namehash=b8bee488]
+2Blood of the YorgiYou can drink this blood to disappear from wh... [namelen=160 namehash=94490f86]
+2Bolster PotionYou gain a +1 bonus to your next Strength Roll.Co... [namelen=76 namehash=81d509b8]
+2Cockerel Claw TeaYou can drink this tea to refresh your feature... [namelen=119 namehash=94188c71]
+2Major Arcane ShardYou can make a Finesse Roll to throw this sha... [namelen=176 namehash=34c2d52f]
+2Major Bolster PotionYou gain a +1 bonus to your Strength until ... [namelen=93 namehash=f4565fdb]
+2Morphing ClayYou can spend a Hope to use this clay, altering yo... [namelen=141 namehash=63a71671]
+2Potion of StabilityYou can drink this potion to choose one addi... [namelen=99 namehash=8faa327f]
+2Quintessential SeverantYou can use this magic blade to cut one ... [namelen=213 namehash=e7b284d6]
+2Sleeping SapYou can drink this potion to fall asleep for a full... [namelen=126 namehash=8d37ec6b]
+2Verglasian SeedYou can use this ice shard to instantly freeze a... [namelen=119 namehash=e1ea6a3f]
+3Control PotionYou gain a +1 bonus to your next Finesse Roll.Con... [namelen=75 namehash=387cc7fa]
+3Demiurge's DraughtYou can drink this draught to gain a +1 bonus... [namelen=143 namehash=b808aafd]
+3FeatherboneYou can use this bone to control your falling speed ... [namelen=122 namehash=3f30b67d]
+3Glowmoss MushroomYou can break this mushroom into pieces, causi... [namelen=137 namehash=677df8f6]
+3Green Ooze OilYou can coat your weapon in this oil. The next su... [namelen=269 namehash=871133fc]
+3Major Control PotionYou gain a +1 bonus to your Finesse until y... [namelen=92 namehash=e2f8af7c]
+3Mask of the Echoed SelfYou can wear this mask during your next ... [namelen=186 namehash=032fa994]
+3Mossmantle PotionYou can drink this tea to perfectly blend into... [namelen=128 namehash=6b7cd11d]
+3Red Ooze OilYou can coat your weapon in this oil. The next succ... [namelen=271 namehash=d82f9ab1]
+3Steelskin SalveYou can apply this salve to your skin to gain a ... [namelen=163 namehash=87542f7b]
+4Attune PotionYou gain a +1 bonus to your next Instinct Roll.Con... [namelen=75 namehash=bc28c067]
+4Circle of the VoidMark a Stress to create a void that extends u... [namelen=189 namehash=ad8c4d5f]
+4Godling's PomeloYou can eat this citrus fruit to clear all Hit ... [namelen=103 namehash=92eac059]
+4Homet's Secret PotionAfter drinking this potion, the next succe... [namelen=120 namehash=888ffb51]
+4Jumping RootEat this root to leap up to Far range once without ... [namelen=94 namehash=4335aef4]
+4Lyrebird LozengeYou can dissolve this lozenge in your mouth to ... [namelen=151 namehash=0c5fb5eb]
+4Major Attune PotionYou gain a +1 bonus to your Instinct until y... [namelen=92 namehash=4b7eb2c0]
+4Necroprancer's BellYou can break this rusted, clapperless bell ... [namelen=198 namehash=61dfa459]
+4Sun Tree SapConsume this sap to roll a d6. On a result of 5-6, ... [namelen=211 namehash=1a20d5f0]
+4Vial of DarksmokeWhen an adversary attacks you, use this vial a... [namelen=218 namehash=3d490041]
+5Bundle of SpiderlegsYou can eat these spiderlegs to walk on wal... [namelen=109 namehash=65ef6cf4]
+5Cacophonous ConcoctionWhen you drink this potion, anything you ... [namelen=270 namehash=637028e0]
+5Charm PotionYou gain a +1 bonus to your next Presence Roll.Cons... [namelen=74 namehash=1cc7b26d]
+5Feast of XuriaYou can eat this meal to clear all HP and Stress ... [namelen=96 namehash=fbcb1521]
+5Grindletooth VenomYou can apply this venom to a weapon that dea... [namelen=151 namehash=ea3624cd]
+5Instant CampYou can unfold this small mechanical box into a cam... [namelen=189 namehash=ad943119]
+5Knowledge StoneIf you die while holding this stone, an ally can... [namelen=196 namehash=3accc350]
+5Major Charm PotionYou gain a +1 bonus to your Presence until yo... [namelen=91 namehash=f4a4a387]
+5Potion of VigilanceYou can drink this potion to gain a +1 bonus... [namelen=129 namehash=cd0b3ed2]
+5Redthorn SalivaYou can apply this saliva to a weapon that deals... [namelen=150 namehash=b80a5bcb]
+6Blinding OrbYou can activate this orb to create a flash of brig... [namelen=156 namehash=72eeb288]
+6Chimeric SalivaYou can apply this saliva to a weapon that deals... [namelen=158 namehash=683dac6a]
+6Ciscan Fog BottleYou can break this jar to fill the area within... [namelen=183 namehash=fc8a524d]
+6Enlighten PotionYou gain a +1 bonus to your next Knowledge Roll... [namelen=79 namehash=d4bd9edb]
+6Major Enlighten PotionYou gain a +1 bonus to your Knowledge unt... [namelen=96 namehash=039fa6fe]
+6Major Health PotionClear 1d4+2 HP.ConsumableCore
+6Mythic DustYou can apply this dust to a weapon that deals magic... [namelen=170 namehash=5559f1fb]
+6Nightmare MeadYou can drink this potion to discover the deepest... [namelen=170 namehash=8c2e3962]
+6Snakeskin SpiritYou can drink this potion to slough off your ou... [namelen=119 namehash=67db9a15]
+6Snap PowderMark a Stress and clear a HP.ConsumableCore
+7AcidpasteThis paste eats away walls and other surfaces in brigh... [namelen=88 namehash=c86c10be]
+7Bonding HoneyThis honey can be used to glue two objects togethe... [namelen=92 namehash=d811be18]
+7DrakemantleYou can use this enchanted ancient dragon hide to ga... [namelen=284 namehash=3e22aa2a]
+7Dripfang PoisonA creature who consumes this poison takes 8d10 d... [namelen=97 namehash=64593b43]
+7Health PotionClear 1d4+1 HP.ConsumableCore
+7Major Stamina PotionClear 1d4+2 Stress.ConsumableCore
+7Packet of Space DustThis dust causes anything it covers to beco... [namelen=213 namehash=77ef03f9]
+7Self-Sewing ThreadYou can use this thread to clear either a Hit... [namelen=109 namehash=46bc0ec7]
+7Snapthorn SeedYou can throw this seed at a point you can see. I... [namelen=201 namehash=850a963f]
+7Warding CandleYou can light this candle to fill an area within ... [namelen=244 namehash=02e8658d]
+8Cupbearer's BezoarYou can swallow this bezoar to become immune ... [namelen=122 namehash=c3099b0d]
+8Gambler's FallacyYou can spend any number of handfuls of gold b... [namelen=360 namehash=e302fe5d]
+8Gravity BombYou can throw this peach-sized mechanical orb at a ... [namelen=215 namehash=a23b2e08]
+8Ogre MuskYou can use this musk to prevent anyone from tracking ... [namelen=131 namehash=eb4fb106]
+8PipeweedWhen you choose the Clear Stress downtime move during a... [namelen=248 namehash=22760056]
+8Shrinking PotionYou can drink this potion to halve your size un... [namelen=218 namehash=d2bdbabe]
+8Staff of ReversalYou can break this staff against the ground to... [namelen=148 namehash=c31ffba7]
+8Stamina PotionClear 1d4+1 Stress.ConsumableCore
+8Stonemason's FortuneWhen you throw this gray brick on the groun... [namelen=179 namehash=123c0efd]
+8WingsproutYou gain magic wings that allow you to fly for a numb... [namelen=112 namehash=85dc25e2]
+9Berserker's BrewWhen you drink this dram of liquid, you gain a ... [namelen=258 namehash=4b2300a8]
+9Deathseer's PowderYou can sprinkle this powder over a recently ... [namelen=161 namehash=456d7b9a]
+9Gossip FlowerYou can plant this seed in soil. It instantly grow... [namelen=237 namehash=67f24dd7]
+9Growing PotionYou can drink this potion to double your size unt... [namelen=216 namehash=3fb49ea0]
+9Lionheart TonicYou can drink this tonic to gain a +1 bonus to y... [namelen=126 namehash=898937ec]
+9Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=84 namehash=a4dca6b9]
+9Mnemonic PotionYou can drink this potion to Utilize an Experien... [namelen=112 namehash=d10d3fb5]
+9Psychopomp's ShroudYou can place this shroud over the corpse of... [namelen=287 namehash=dac93088]
+9Sprite BottleWhen you mark your last Hit Point, this bottle sha... [namelen=195 namehash=387cf153]
+9Stake of AbjurationYou can hammer this stake into the ground an... [namelen=281 namehash=1ea2e560]
+Alt. tables
+Communities
+Consumables
+Copy a link to this section
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Grid
+Hope & Fear
+How this works
+Items
+Link to this table
+List
+Lists
+Open this section on start
+Other
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

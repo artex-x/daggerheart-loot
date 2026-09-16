@@ -5,7 +5,17 @@ Read this before `plan.md` and `handoff.md`.
 
 ## Goal
 
-**Current: B5 - the lists slice** (`#/lists`). B4 is built and committed
+**Current, 2026-09-12: the testing-pyramid pass (the owner's "Phase 5") and
+the P6/P7 ordering call.** Phase 4 is closed through B10. Read
+"State at the Phase 5 kickoff", at the end of this file, first - it carries
+the owner's GOAL verbatim, the tree, the two reported defects, and the one
+fact that reshapes the request: **this repository has no Playwright tests.**
+Everything between here and there is history of B3.5 through B10, built and
+committed; read it for the standing rules and settled owner decisions, not
+as work to do.
+
+**Superseded (kept for its reasoning): B5 - the lists slice** (`#/lists`).
+B4 is built and committed
 (`fde9cdc`, reviewed, approve/no blockers), so every table in `TABLE_DEFS`
 draws a real body and the tables surface is finished. Of the three slices left
 in Phase 4 - lists, search, print - the orchestrator picked lists on
@@ -558,9 +568,8 @@ Measured at dispatch, not inferred:
   CI's authoritative word on both the selection bar and the lists index, and
   the condition B5.2 part 1 was waiting on. One job fails, `secrets`, on
   three gitleaks false positives over the localStorage key name
-  `dhloot.warn.v1`; `deploy` is skipped behind it. Another session is already
-  fixing that with an untracked `.gitleaks.toml` - see `handoff.md`,
-  "Blockers". Do not duplicate it.
+  `dhloot.warn.v1`; `deploy` is skipped behind it. Fixed by `.gitleaks.toml`
+  (tracked; landed `13bba19`).
 
 ## B5.3 planning facts (planner, 2026-09-10) - durable, read before implementing
 
@@ -1696,3 +1705,2228 @@ motion, `ready()`'s waits, 250ms after each press) of
 - Wall clock: group A `"#/print"` is 9 states / 54 cells, 24 `whole`;
   group B is 5 states / 30 cells. Each fits one foreground call; do not
   merge them.
+
+## State at the B7 implement kickoff (orchestrator, 2026-09-11)
+
+- HEAD `8b96ff4` (`docs(issue-47): B7 planned - the print slice, one batch`),
+  working tree **clean** - verified at kickoff, and it matches what
+  `handoff.md` records. `d696675` below it is B6's review close-out. No
+  foreign commit moved HEAD since the planning pass.
+- Nothing heavy is running on this tree: no `chrome.exe`, no parity run, no
+  vitest. The node processes present are the desktop app's own MCP servers.
+- **Next action: one implementer dispatch for B7** - the batch is
+  implement-ready (`handoff.md`, "Next batch"; `plan.md`, "B7 planned"),
+  `NEEDS_HUMAN_CONFIRMATION: no`, blockers none. Tier: economy default
+  (sonnet) - no prior implement failed on this batch, and B5.x/B6 all
+  landed at that tier.
+- **Figma stays unauthenticated in this session** and stays a non-blocker:
+  the planner settled that the port needs no export ("B7 planning facts"
+  above). Do not wait on the connector.
+- No check was run at kickoff: clean tree at a committed boundary, and the
+  implementer's own `npm run check` is what arms the commit gate for the
+  tree it actually builds.
+- Review is expected after this batch: new UI, nine new parity states, and
+  `tests/parity/specs.js` changes all match the risk rules.
+
+## B7 built, then remediated (implementer, 2026-09-11) - one durable fact
+
+**`0.01ms` is not zero, and the popular reduced-motion snippet ships it.**
+`app/src/styles/tokens.css`'s `@media (prefers-reduced-motion: reduce)` block
+carried `transition-duration: 0.01ms !important` on `*`. A non-zero duration
+starts a real `CSSTransition` on every inline style write, and a transition's
+value at t=0 is the **old** one - so any code that writes an inline style and
+reads the layout back synchronously reads the pre-write layout. That is exactly
+what `PrintCard.svelte`'s `fit()` does, so `tight()` never turned false, all
+three ladders ran to their floors, the first cards on each sheet lost their
+art, and 50 of 54 group-A parity cells went red at `4776243`. The live app's
+reduced-motion rules (`style.css:311`, `:544`) kill two named animations only
+and leave `transition-duration` at its initial `0s`, which is why the live app
+reads correctly. The parity harness runs every cell under
+`prefers-reduced-motion: reduce` (`tests/parity/driver.js:649`), so this
+surfaces in parity and nowhere else - CI would have read it red too. Fixed to
+`transition-duration: 0s !important`; nothing in `app/src` listens for
+`transitionend`/`animationend`, so the transition bought nothing.
+
+**The first pass's "`cqw` instability class" was a false diagnosis and is
+deleted everywhere, not softened.** It is not in `docs/parity.md`'s "Two
+unstable classes" and must not be added: the staleness reproduces on a
+non-container element with px units, `document.getAnimations()` returns a
+`CSSTransition` on the rewrite and `[]` on the live app, and with
+`transition-duration: 0s` injected the live `fitPrintCards` run verbatim over
+the rewrite's DOM reproduces the legacy numbers exactly. **The standing lesson,
+which this task has now paid for three times: a "measured" fact written into a
+durable doc outlives the session that wrote it and is read as settled. Measure
+the mechanism, not the correlation, before writing one down.**
+
+The remaining group-A residue after the fix - 4 image cells, a different
+non-overlapping 3 on a re-run of the same build, every `cardFit`/`sheetCounts`
+cell agreeing - is the already-documented `whole:true` full-page capture class
+and is CI's to adjudicate: `handoff.md`, "Blockers", first entry.
+
+## The print image residue, measured a third time (orchestrator, 2026-09-11)
+
+A status, recorded so CI's reader does not re-derive it. After `ee73d2e`, on a
+quiet host with nothing else running, `MSYS_NO_PATHCONV=1 node tests/parity.js
+"voa2_a3-voa2_a1" "ci1-q1-q313"` read **4 расхождений** - a third set, again
+not the same one:
+
+- run 1 (implementer): `NINE @ en 1100`, `NINE @ en 768`, `LONG @ en 768`,
+  `LONG @ ru 1100`
+- run 2 (implementer): `NINE @ ru 1100`, `NINE @ ru 768`, `NINE @ en 1100`;
+  both `LONG` states clean
+- run 3 (orchestrator): `LONG @ en 1100` (3.10%), `LONG @ en 768` (3.53%), and
+  two `NINE` cells; the `LONG` pair clean in run 2 is red here
+
+Three runs, three non-overlapping sets, one unchanged build. The diff image for
+`LONG @ en 1100` was opened rather than inferred: all nine cards carry their
+art on both sides and no text differs - the red is an edge outline over
+**every** element on the page, the topbar, the tab row and the footer legal
+text included, none of which B7 touched. That is a whole-page one-pixel shift,
+i.e. `docs/parity.md`'s existing "Full-page captures" class, whose recipe is
+re-run, write nothing, let CI decide. No `VISUAL_DEBT` entry was written, and
+`docs/parity.md` gains no third class.
+
+The `cardFit` numbers - the thing that actually broke and was actually fixed -
+agree on both apps at every width in every one of these runs.
+
+## The CI read on `9fd3000`: print is clean, four table-anchor debts moved down (orchestrator, 2026-09-11)
+
+Run [`34616445556`](https://github.com/artex-x/daggerheart-loot/actions/runs/34616445556),
+push of `9fd3000`, four parity shards. `check`, `audit` and `secrets` green.
+Shards 1 and 4 green; **shards 2 and 3 red, on three cells, all of them
+`VISUAL_DEBT` ratchet failures** - "стало лучше - опусти число в VISUAL_DEBT".
+No other cell failed anywhere in the run.
+
+**The print blocker is closed by this read.** All **54** `#/print` cells -
+every one of the nine states, both languages, all three widths, the 24
+`whole:true` ones included - read `совпадает`. The 4-cell image residue this
+host measured three times, in three non-overlapping sets, was this machine's
+paint, exactly as `docs/parity.md`'s "Full-page captures" class predicts. No
+`VISUAL_DEBT` entry was ever written for it and none is needed; `handoff.md`,
+"Blockers", first entry can be marked resolved.
+
+**What is red.** The four `375` anchor cells, which had been dead stable at
+their recorded figures across the two preceding CI runs (`34588378763` and
+`34591864170`, identical to the hundredth), all moved **down** on `9fd3000`:
+
+| cell | recorded | prior two CI runs | this run |
+|---|---|---|---|
+| `#/tables/core_item ~ row anchor @ ru 375` | 10.52 | 10.51 | **9.35** FAIL |
+| `#/tables/core_item ~ row anchor @ en 375` | 9.92 | 9.92 | **8.85** FAIL |
+| `#/tables/voa ~ section anchor @ ru 375` | 11.55 | 11.55 | **0.00** FAIL |
+| `#/tables/voa ~ section anchor @ en 375` | 10.31 | 10.31 | 9.86 (passes, 0.45 under a `DEBT_SLACK` of 0.5) |
+
+The `@ 1100` and `@ 768` members of those states are unmoved (`0.42%`/`0.43%`
+of their own debts). Two facts the next reader should not re-derive: the move
+is **caused, not noise** - three consecutive CI runs agreed to the hundredth
+before it, and the only global change in between is B7's
+`transition-duration: 0.01ms` -> `0s` in `tokens.css`, which is the one edit
+that could touch a state whose subject is a re-played flash; and the `ru`/`en`
+split on `voa ~ section anchor` (**0.00 against 9.86** on the same state) is
+not explained by that, and is the reason this is a planning question rather
+than a mechanical edit.
+
+**Not settled here, by design:** what numbers to write, whether a cell reading
+`0.00` once has its entry deleted or waits for a second reading (the existing
+reasons in `specs.js` cite "three CI runs and the ubuntu container", and
+`tools/parity-ubuntu/` reproduces CI), and whether this rides alone to get
+`main` green or merges with the next batch. Planner's.
+
+**Tree at this read:** HEAD `9fd3000` == `origin/main`, working tree clean but
+for untracked `issues/tg-preview-refresh/`, which belongs to another task and
+is preserved.
+
+## B8 planning facts - the anchor debts after B7, measured (planner, 2026-09-11) - durable, read before implementing
+
+Read off the source at HEAD `9fd3000` and measured with two read-only
+puppeteer probes that drive the harness's own `tests/parity/driver.js`
+(`prepare`, `open`, `click('EN')`, `viewport`, `settle` - the run's exact
+arrival and sweep) against `index.html` and a fresh `npm run build` of
+`dist/index.html`, on `#/tables/voa/tA` and `#/tables/core_item/ci1`, both
+languages, reading `scrollY`, `scrollHeight`, the target's viewport top and
+whether `.flash` is on it at the moment the shot would be taken. The scripts
+are disposable and were not kept. Windows host: **the scroll positions are
+mechanism evidence, not `VISUAL_DEBT` figures** (owner decision 1). Design and
+steps: `plan.md`, "B8 planned".
+
+- **The sweep, as the harness runs it today (arrive at 1100, resize through
+  768 to 375 on one document):**
+
+  | state | lang | app | 1100 | 768 | 375 | `.flash` at shot |
+  |---|---|---|---|---|---|---|
+  | `voa ~ section anchor` | ru | legacy / next | 9642 / 9642 | 9642 / 9642 | 9642 / 9642 | no / no |
+  | `voa ~ section anchor` | en | legacy / next | 9616 / 9616 | 9616 / 9616 | 9616 / 9616 | **yes / no** |
+  | `core_item ~ row anchor` | ru | legacy / next | 368 / 368 | 368 / 368 | **374 / 368** | no / no |
+  | `core_item ~ row anchor` | en | legacy / next | 346 / 346 | 346 / 346 | **352 / 346** | **yes / no** |
+
+  Document heights agree on both apps at every width (voa 11061 / 11523 /
+  19332 ru, 11035 / 11477 / 18630 en; core_item 5890 / 6129 / 10065 ru, 5850 /
+  6041 / 9696 en). On `voa` neither app is adjusted by the resize at all: the
+  section's top sits 531px then 7423px below the viewport at 768 and 375 -
+  the 375 shot of the section-anchor state is a slab of the Vault of Ages
+  table thousands of pixels above its subject, in both apps.
+- **`core_item @ 375` is the reduced-motion transition policy, measured, not
+  correlated.** The live app leaves every declared `transition` alive under
+  `prefers-reduced-motion: reduce` (`style.css:311` and `:544` kill two
+  named animations and nothing else), so when the viewport crosses 600px its
+  mobile overrides animate over ~150ms and Chrome's scroll anchoring adjusts
+  the scrolled document by 6px across those frames. The rewrite's
+  `tokens.css` reduced-motion block writes `transition-duration: 0s
+  !important` on `*` (B7; it was `0.01ms` before, a two-frame transition that
+  yielded a different adjustment - the old 368 -> 387 reading in the
+  `specs.js` note), so it gets no adjustment. Proof: the live app with
+  `*{transition-duration:0s!important}` injected lands at **368** at 375 in
+  both languages - exactly where the rewrite lands. The converse was tried
+  with `.selbox{transition-duration:.15s!important}` alone injected into the
+  rewrite and it did **not** reproduce the 6px, so the transitioning element
+  is another of the live rules with a mobile override, not `.selbox` alone;
+  which one is B9's to measure, not B8's. This closes the "something else is
+  in there as well and has not been found yet" sentence in the `specs.js`
+  note: the something else was the transitions.
+- **The `ru`/`en` split on `voa ~ section anchor` is not a scroll
+  difference on this host.** After the `EN` press the two apps sit at the same
+  `scrollY` at every width; the one measured difference is the `.flash` class,
+  which the live app re-plays on the language switch (`render()` re-parses the
+  hash into `S.tables.anchor` every time and runs the scroll-and-flash block,
+  app.js 3832-3845) and the rewrite never re-plays (`TablesPage.svelte`'s
+  effect is guarded on `app.navigations`, which `setLang()` does not bump). At
+  375 the flashed section is 6918px below the fold, so on this host the `en
+  375` cell would be near zero; CI's 9.86 is therefore made of something this
+  host does not reproduce - see the CI diff-image reading below.
+- **Fresh arrival at each width (what `timed: true` does), for the record:**
+  ru identical on both apps at every width (voa 9642 / 10064 / 16955;
+  core_item 368 / 458 / 567); en `core_item` identical (346 / 436 / 545); en
+  `voa` **1px apart at 768** (10018 / 10017) and **8px at 375** (16428 /
+  16436) because the live app re-scrolls to the English anchor on the `EN`
+  press and the rewrite is left where scroll anchoring put it. So flagging
+  the anchor states `timed` would zero the four ru cells and the core_item en
+  cells but make `voa @ en 768` worse than its recorded 0.42 and leave `voa @
+  en 375` several percent - and the container is not evidence for a timed
+  state, so every en number would wait on CI. Rejected for B8; the re-play
+  on language switch is the real fix and is B9's.
+- **`docker` on this host cannot run the ubuntu container today:** `docker
+  --version` answers (20.10.8) but `docker info` panics in the client
+  (`reflect: indirection through nil pointer`), so the daemon is unreachable.
+  The container step in B8 is optional and falls back to CI as the second
+  reading.
+- **Shard map for the two anchor states** (`tests/parity.js:350`,
+  `stateIdx % 4`, shard names 1-based): `voa ~ section anchor` is state 57
+  -> shard 2; `core_item ~ row anchor` is state 58 -> shard 3. Run
+  `34616445556`'s artifacts: `failure-output-parity-2` (134 MB) and `-3`
+  (142 MB), unexpired at planning time.
+- **`RecordPage.svelte:59` draws `notFoundSub` as `<p class="miss">` where
+  the live app draws `<p class="page-sub">`** (app.js:3195) - a real
+  divergence on an unphotographed state (`#/i/<unknown id>` has no parity
+  state). Noticed while inventorying the furniture copies; it is B10's (the
+  furniture pass) and is recorded there, not fixed here.
+- **`toggleAllIn` stays at two copies.** `ListPage.svelte` ticks its own
+  `lsel`, not `app.sel` (lines 340-345), so the "third caller moves it to
+  `AppState`" rule in the handoff has not triggered; B10 leaves it.
+- **CI's own diff image for `voa ~ section anchor @ en 375`, read (artifact
+  `failure-output-parity-2` of run `34616445556`, downloaded to the session
+  scratchpad, outside the repository):** rows 10-13 of the Vault of Ages
+  table (Shaman's Blade, Mastery Bell, Mossblossom Staff, Harrowcleave) with
+  every line doubled - no content difference. Aligning CI's `-legacy.png`
+  against its `-next.png` at every vertical shift from -60 to +60: the best
+  fit is **22px, 2.52% residual** (the fixed topbar and the ring), against
+  20.77% at 0px; the same for `@ ru 375` is **0px, 0.00%**, and for `@ en
+  768` **0px, 0.43%** (the ring). So on ubuntu the two apps are 22px apart
+  in scroll position in English at 375 and coincide in Russian - the
+  English-only divergence is the live app's re-scroll on the `EN` press,
+  which this host happens to converge on and CI does not. A deterministic
+  mechanism, not an unstable one: three runs at 10.31 to the hundredth,
+  then 9.86 once the transition policy changed. The alignment script is
+  disposable and was not kept; the artifact is outside the tree and expires
+  with the run's retention.
+
+## The CI read on `435a5ac`: B8's second reading, parity green (orchestrator, 2026-09-11)
+
+Run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995), the owner's push of `274aa99` + `435a5ac`, four parity
+shards. This is the reading B8 was designed to wait for, and it agrees.
+
+**All four parity shards green**, `audit` and `secrets` green. Shards 2 and 3 -
+the two that failed on `9fd3000` - now pass:
+
+| cell | recorded by B8 | on `9fd3000` | on `435a5ac` |
+|---|---|---|---|
+| `#/tables/core_item ~ row anchor @ ru 375` | 9.35 | 9.35 FAIL vs 10.52 | pass |
+| `#/tables/core_item ~ row anchor @ en 375` | 8.85 | 8.85 FAIL vs 9.92 | pass |
+| `#/tables/voa ~ section anchor @ ru 375` | entry deleted | 0.00 FAIL vs 11.55 | no cell to fail |
+| `#/tables/voa ~ section anchor @ en 375` | 9.86 | 9.86 (0.45 of slack) | pass |
+
+Two facts the next reader should not re-derive. **The deleted `voa @ ru 375`
+entry is now safe**: a second independent run with no cell to fail is what the
+ratchet's rule wanted before a `0.00` could lose its entry, so the deletion
+stands on evidence rather than on one reading. And **the 54 `#/print` cells are
+`совпадает` for the second consecutive run**, which closes the print residue
+question for good - the four-cell image residue measured three times on the
+Windows host was that machine's paint, and no `VISUAL_DEBT` entry exists or is
+needed.
+
+**The one red in the run is not parity and not B8's.** The `check` job failed
+on the legacy `behave` suite against the **live** app - `FAIL приложение
+открылось не на поиске`, `failed to find element matching selector ".subchips
+.chip.on"`, 18.8s - with all 20 other legacy suites green. B8's five paths are
+`tests/parity/specs.js`, `tools/parity-ubuntu/README.md` and three
+`issues/47/*.md`; none can reach the live app. `behave` was green on `9fd3000`
+an hour earlier and on `37ecc8d` before that. The owner identified it as flaky
+and re-ran the failed jobs (attempt 2; a re-run of failed jobs leaves the four
+green parity shards alone). **Attempt 2 passed** - `check` in 3m47s, all 21
+legacy suites - so the flake is confirmed rather than asserted, and the run is
+green end to end including `deploy`, which had been skipped behind the red
+`check` here and on the two runs before it. `main` is green for the first time
+since `37ecc8d`. If `behave` recurs on a clean tree it is a real live-app
+regression and belongs to its own task, not to issue 47.
+
+**Tree at this read:** HEAD `435a5ac` == `origin/main`, working tree clean but
+for untracked `issues/tg-preview-refresh/`, which belongs to another task and
+is preserved.
+
+**One cheap correction made in the same pass:** `plan.md` had no `### B9
+outlined` heading - the section's text ran straight on from "B8 built", while
+`plan.md`'s own Phase 4 summary and `handoff.md`'s "Next batch" both send
+readers to "B9 outlined" by name. The heading is restored; no content changed.
+
+## The owner's answer on B9, and a post-migration review step (orchestrator, 2026-09-11)
+
+Two decisions from the repository owner, given at the B9 kickoff. Both are
+durable; neither is the orchestrator's to reinterpret.
+
+**1. The reduced-motion policy: option (a), port the live app.** The B9 outline
+put two options to the owner (`plan.md`, "B9 outlined", item 2 and "Questions
+for the owner before B9 is planned"): (a) delete `tokens.css`'s blanket
+`transition-duration: 0s !important` and let the rewrite transition exactly
+where the live app does, or (b) keep the blanket kill as a deliberate
+accessibility improvement and carry the `375` anchor cells as ~9% debt. **The
+owner chose (a): full parity.** The parity law - reproduce the shipped app -
+wins over an improvement the rewrite invented, and a pixel cell cannot be
+parked in `ACCEPTED`. `NEEDS_HUMAN_CONFIRMATION` for B9 is therefore **no** on
+this question; B9's planning pass proceeds without a second ask.
+
+**2. Parity-over-improvement is not "never fix it" - it is "fix it after the
+migration", and it needs somewhere to be written down.** The owner's
+instruction, verbatim in substance: achieve full parity, but *document* items
+like this one so they are handled post-migration, and add a separate step to
+the plan where the migrated app's state is reviewed, its issues identified, and
+those issues addressed **together with everything already recorded as deferred
+or ported-not-fixed**.
+
+So the rewrite now carries a third category alongside `VISUAL_DEBT` and
+`ACCEPTED`: a defect or a regression that the port **reproduced on purpose**
+because the live app has it. The reduced-motion kill is the first entry -
+deleting it is a real accessibility regression against the rewrite's own
+behaviour, accepted because parity demands it, and owed a fix once parity stops
+being the measure. Known candidates already scattered through `handoff.md`'s
+"Deferred": `Button.svelte`'s missing `:focus-visible` ring (`style.css:1002`
+has none either - the same shape of decision), `ListPage.svelte:103`'s stale
+`$effect` comment, and whatever `RecordPage.svelte:59`'s `.miss`-vs-`.page-sub`
+divergence turns out to be. The register's shape, its permanent home (a task
+directory is retired; `docs/specs/` and the READMEs are not - `CLAUDE.md`,
+"Task closeout and cleanup", step 6), and the review step's own gates are a
+**design question and therefore the planner's**, not something to be settled
+here.
+
+## B9 planning facts (planner, 2026-09-11) - durable, read before implementing
+
+Read off `bb61db0` and measured with three read-only puppeteer probes
+(scratchpad, not kept; harness launch args, `file://`, 1100 px) against
+`index.html` and the `dist/` built at 18:09 from `ee73d2e`, the last
+production change. Design and steps: `plan.md`, "B9 planned"; the review
+phase and the register: `plan.md`, "Phase 8".
+
+- **The parity filter for the print states is `"#/print/ci1-q1"`, not
+  `"#/print/ci1-q1-q313"`.** `WANTED` (`tests/parity.js:83-85`) filters on
+  the expanded state id, and the two print ids are `#/print/ci1-q1` and
+  `#/print/ci1-q1 ~ black and white` (`specs.js:1784, 1789`); no id carries
+  the route's full tail. Multiple filters are OR-ed (`parity.js:353`,
+  `WANTED.some`), so `"anchor" "#/print/ci1-q1"` is one 24-cell call.
+- **The flash target is `TablesPage`'s own `.tsection` div, not
+  `SectionHead`.** Both section bodies (`alt` at ~line 464 and
+  tier/frame/comm/eq at ~line 502) draw `<div class="tsection" id={'sec-'
+  + s.key}>` around `<SectionHead>`; the rows and tiles carry
+  `data-row={it.id}` on `.row` (`TableRows.svelte:105`) and `.tilewrap`
+  (`:131`), which is what the live `querySelector('[data-row=...]')`
+  finds in either view. `SearchPage` and `SharedListPage` also render
+  `TableRows` and pass no `flash`.
+- **The live app re-plays the anchor scroll-and-flash on every
+  `render()`, not only on a language switch.** `currentRoute()` writes
+  `S.tables.anchor = tail` on every call (`app.js:3632-3634`) and
+  `render()` ends with the scroll-and-flash block (3832-3845) that clears
+  it; `render()` is called 56 times in `app.js`, including from the
+  tables search box's input handler (`app.js:4435`: `if (el.id === 'tq')
+  { S.tables.q = el.value; render(); }`). So with an anchor in the
+  address, every keystroke in the live search box scrolls back to the
+  anchor and re-flashes it. No parity state types or ticks with an
+  anchor in the address. B9 ports the language-switch re-play only and
+  records the rest (`FEATURES.md`; `specs.js`, "Recorded, not keyed").
+- **Every rewrite animation has a live twin, so deleting the whole
+  `tokens.css` reduced-motion block leaves the live policy exactly:**
+  `.card` pop (`RecordCard.svelte:262`/`:278` = `style.css:308`/`311`),
+  `.modal-card` pop and `.modal-card .card{animation:none}`
+  (`RecordModal.svelte:159`/`:165` = 591/593), `.helpbox` pop
+  (`HelpBox.svelte:53` = 134, no reduced-motion rule on either side),
+  `.dropmenu` pop (`AddToList.svelte:291` = 435), `toastIn`
+  (`Toast.svelte:96` = 606), `.tsection.flash` (`TablesPage.svelte:635`/
+  `:655` = 538/544). None loops. The live stylesheet has no
+  `scroll-behavior` rule and both apps scroll with an explicit
+  `scrollIntoView({ behavior: 'smooth' })`, which the CSS property does
+  not override - the `scroll-behavior: auto !important` line is inert.
+  `tokens.css` declares no `transition` of its own; every transition in
+  the rewrite is a per-component port of a live one.
+- **The "missing `Button.svelte` focus ring" is a stale claim.**
+  `tokens.css:148-154` has a global `:focus-visible { outline: 2px solid
+  var(--gold); outline-offset: 2px; border-radius: var(--r-sm) }` since
+  `ae28b23` (Phase 4's first slice). Measured on a keyboard-focused `.btn`
+  ("Ссылка на таблицу", `#/tables`, reduced motion emulated so the
+  rewrite's transitions were off): rewrite `solid 2px rgb(216,171,94)`,
+  offset `2px`, radius `9px`; live, read at t=0 of its still-alive 150 ms
+  `.btn{transition:.15s}`, `solid 3px rgb(236,232,246)` (currentColor,
+  `--txt`), offset `0px`, radius `9px` - the pre-transition values, not
+  the browser's default ring (the UA ring reads `auto 1px`, seen on the
+  skip link). The live target is `style.css:1002-1005`: gold 2 px, 2 px
+  offset, `border-radius:8px`. So both apps draw the gold ring on a
+  button; the one difference is the focused radius, 9 px (`--r-sm`)
+  against 8. **Rule for anyone probing focus styles: read them after
+  `document.getAnimations()` is empty**, or every transitioning control
+  reports its old value. Also seen in the same walk and left for Phase 8
+  R1's keyboard pass, unmeasured beyond the raw read: the rewrite's skip
+  link and brand get the gold ring where the live app leaves the UA ring
+  (`auto 1px rgb(238,238,238)`), the search input's `outline-offset`
+  differs (0 against 2 px, with the same gold box-shadow), and the
+  rewrite's row checkbox draws its own gold ring where the live app rings
+  the `.selbox` label via `:has()`.
+- **`document.styleSheets[n].cssRules` throws over `file://`** (the sheet
+  is cross-origin to the page), so a probe cannot read which rule matched;
+  read computed values and reason from the source.
+- **`docs/specs/DEBT.md` is the register's home** (decided; reasons and
+  rejected homes in `plan.md`, "Phase 8"). `CLAUDE.md` is 191 lines; B9's
+  row and half-line take it to 193.
+- **The brief cited `CLAUDE.md`, "Task closeout and cleanup", step 6 for
+  the task directory's retirement; no such section exists at `bb61db0`.**
+  The nearest text is `plan.md`'s own line 8 ("Historical once ...") and
+  `CLAUDE.md`, "Orchestration" (the orchestrator "removes only clearly
+  disposable task-scoped scratch artifacts"). The conclusion the brief
+  drew - the register must not live in `issues/47/` - holds either way.
+
+## State at the B10 kickoff (orchestrator, 2026-09-11)
+
+Measured, not inferred. `git log --oneline` at kickoff: HEAD `b967481`,
+`origin/main` == HEAD, so **B9's three commits (`ad46dac`, `dba79ee`,
+`84ca6df`) have been pushed** - the condition "Blockers" records as open was
+satisfied by the owner between sessions. HEAD moved past where the B9
+implementer left it by four docs-only commits, three of them another task's
+(`02bd1af`, `fb4c7db`, `88ef6fb`, `b967481` - the agent-messaging task's
+closeout, which retired `issues/agent-messaging/`); none touches `app/`,
+`tests/` or `docs/specs/`. Working tree clean but for the untracked
+`issues/tg-preview-refresh/`, another task's, preserved and never staged.
+
+CI reads, from `gh run list`:
+
+| run | head | verdict |
+|---|---|---|
+| [`34638174347`](https://github.com/artex-x/daggerheart-loot/actions/runs/34638174347) | `dba79ee` (B9 as first built) | **green end to end** - `check`, all four parity shards, `audit`, `secrets`, `deploy` |
+| `34640328352` | `55f2fa2` (carries the remediation `84ca6df`) | `check`, `audit`, `secrets` green; four parity shards in progress at kickoff |
+| `34640746872` | `b967481` | pending at kickoff |
+
+So **B9's anchor question is answered**: run `34638174347` read all four
+shards green with all seven anchor `VISUAL_DEBT` entries deleted, including
+`#/tables/voa ~ section anchor @ en 375`, the single cell the handoff flagged
+as unable to be corroborated from this host. The remediation's own read is
+`34640328352`; it changed component code, so B9 closes on that run's shards,
+not on `34638174347` alone.
+
+No local check was run at kickoff and nothing was running on this host.
+
+## B10 planning facts (planner, 2026-09-11) - durable, read before implementing
+
+Full design in `plan.md`, "B10 planned"; the brief in `handoff.md`, "Next
+batch". Read off `b967481` (`app.js`/`style.css` unchanged since B9) or
+measured, not assumed:
+
+- **Git Bash rewrites parity filters on this host.** `node tests/parity.js
+  "#/i/ci1 @"` arrived as `#I:/ci1 @` (MSYS path conversion reads `/i/` as
+  a drive), matched nothing, and printed `расхождений нет` for zero cells.
+  `MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/ci1 @"` ran the six cells.
+  Earlier sessions avoided it by accident (`"i/ci1"`, `"anchor"` - no
+  leading slash). Any filter beginning `#/` needs the variable under Git
+  Bash; PowerShell does not convert. A run that prints no cell lines is
+  not a result.
+- **`WANTED` matches the cell label, not only the id** (`tests/parity.js:
+  374`, `full.includes(w)` over `<id> @ <lang> <width>`), so `"<id> @"`
+  selects exactly the plain state - `"#/lists @"` is six cells, not the
+  twenty states `"#/lists"` prefixes; `"#/print/ci1-q1 @"` is the one
+  plain print state, not the four B9's prefix filter drew. The outline's
+  ` @` filters were right for that reason.
+- **`#/i/ci1 @` reads `совпадает` on all six cells with every spec silent**
+  (this host, the `dist/` present in the tree - built 20:44, older than
+  the remediation `84ca6df` at 21:24, so advisory twice over; the
+  implementer's `check:built` rebuilds it).
+- **The live tab title on `#/i/<id>` is the plain app title, by a live
+  defect.** `render()` writes `document.title = (it ? nameOf(it) + ' — '
+  : '') + t().docTitle` (app.js:3795) and then calls `syncChrome()`
+  (3822), whose last line is `document.title = t().docTitle` (3658). The
+  rewrite's only title write is `Shell.svelte:28`, `app.t.docTitle`. That
+  is why the `title` spec is green on every record state - and why it is
+  register material (`DEBT.md` D5, written by B10), not a port defect.
+- **`RecordPage`'s not-found branch is short by a button as well as a
+  class.** Live `renderItemPage` (app.js:3194-3196): `h1.page-h`,
+  `p.page-sub`, `<a class="btn primary" href="#/roll/std">toStart</a>`.
+  Rewrite (`RecordPage.svelte:56-59`): `h1.page-h`, `p.miss`, nothing
+  else. `SharedListPage.svelte:83` already has the exact `Button` line.
+  `t.toStart` exists (`dict.ts:250/539`). No parity state and no
+  component test reaches `#/i/<unknown>` today (`record.test.ts` has the
+  no-data case at `:274`, nothing for an unknown id).
+- **All four inventory margins are live inline `style=` attributes**, none
+  a rule: `#/search`'s panel `margin-bottom:16px` (app.js:2854), the lists
+  index's panel `margin-top:16px` (2912), the list page's `.card-acts`
+  `margin-bottom:16px` (2972), the shared page's `.card-acts`
+  `margin-bottom:18px` (3154). `PageHead`'s `margin:0` is the live rule
+  `.page-head .page-h{margin:0}` (style.css:104). `SharedListPage.svelte`
+  today folds its 18px into the rule; `ListsPage`/`SearchPage` fold theirs
+  into `.panel` - all three are the rewrite's own liberty, reversed by
+  B10.
+- **No `@media` override exists for `.panel` (145), `.page-h` (105),
+  `.page-sub` (140) or `.card-acts` (405)** in style.css: the 600px
+  blocks (800-1000) and the print block (1397-1414) name none of them.
+  The only descendant rules are `.card-acts .btn-lbl` and `.card-acts
+  .btn.sm:has(.btn-lbl)` (477-481, inside the 600px block), ported in
+  `RecordCard.svelte:748/757` as `:global()` children of its own
+  `.card-acts` - the one place the extraction has to re-anchor a selector
+  (`.card :global(.card-acts .btn-lbl)`). `.btn-lbl` is emitted only by
+  `RecordActions.svelte` (103-113) and `TablesPage.svelte:474` (whose own
+  `.toolbar :global(.btn-lbl)` rule is untouched).
+- **`.miss` has no live rule** (`style.css` and `index.html` grepped) and
+  no live screen: `app.js:7` is `const DATA = window.LOOT.items;`, so a
+  missing `data.js` throws before anything renders. Seven rewrite copies,
+  two colours (`--muted2` in `ListPage`/`PrintPage`, `--muted` in the
+  other five); never photographed.
+- **The furniture callers, counted:** `.panel` div x5 (`AltPanel:100`,
+  `StdPanel:90`, `RollPanel:100`, `ListsPage:108`, `SearchPage:82`) plus
+  three composed variants (`TablesPage:445` `.tablenav`, `FilterBar:107`
+  `.ffilter`, `ListPage:642` `<details class="panel lroll">`); `.page-h`/
+  `.page-sub` pairs x8 in four files (`ListPage:574/589`, `PrintPage:82/
+  87`, `RecordPage:58/61`, `SharedListPage:81/85`) plus `PageHead:34/62`
+  in its own `.page-head` row; `.card-acts` x4 (`RecordCard:244`,
+  `ListPage:599`, `PrintPage:89`, `SharedListPage:87`); `.miss` x7.
+  `RecordCard` is drawn by `AltPanel`, `ListPage`, `RecordModal`,
+  `RecordPage`, `RollPanel`, `StdPanel`; `PageHead` by the six
+  `PageHead`-using pages and is untouched.
+- **Svelte 5 facts the design leans on:** a snippet declared as a child of
+  a component (`{#snippet title()}...{/snippet}` inside `<PageTitle>`) is
+  passed as the prop of that name, so `title: string | Snippet` takes
+  either form; elements rendered inside a caller's snippet keep the
+  caller's style scope (`ListPage`'s `.titleinput` and `RecordPage`'s
+  `.itemtable` rules still apply); a parent's scoped rule does not reach a
+  child component's root without `:global()`, which is why the composed
+  `.panel` variants stay inline. `exactOptionalPropertyTypes` is on:
+  `style?: string` is passed as a literal or omitted, never as
+  `undefined`.
+- **The remaining `VISUAL_DEBT` keys** are the six `#/i/q1 ~ another
+  tier`, six `#/roll/wondrous ~ modal` and six `#/tables ~ a row opened`
+  cells (all the modal's close-button ring); of B10's sixteen states only
+  `~ modal` carries debt. `ACCEPTED` names no record state's `title`.
+- **The a11y guard** (`a11y.test.ts:392`) compares the sorted keys of
+  `COVERED` to `import.meta.glob('./*.svelte')`; a new component without
+  an entry fails `npm run check`. `Empty.svelte`'s entry is the model.
+- Wall clock: 16 states in three calls (5 / 5 / 6 states, 30 / 30 / 36
+  cells) at the measured ~23 s per state; each call two to three minutes.
+  `#/i/ci1 ~ whole` is `fullPage` and `~ modal` opens a dialog; neither
+  is `timed`.
+
+## The CI read that closed B9 (orchestrator, 2026-09-11)
+
+Run [`34640328352`](https://github.com/artex-x/daggerheart-loot/actions/runs/34640328352) on `55f2fa2`, the first head carrying the remediation
+`84ca6df`, completed **green on every job**: `check`, parity shards 1-4,
+`audit`, `secrets`, `deploy`. With run `34638174347` (`dba79ee`) also green,
+B9 has the two independent readings its design asked for, and all seven
+anchor `VISUAL_DEBT` deletions stand - `#/tables/voa ~ section anchor @ en
+375` included, the one cell this host could not corroborate before or after.
+No `VISUAL_DEBT` number was written from this host. B9 is closed.
+
+## B10 reviewed and approved; the furniture slice is closed (orchestrator, 2026-09-11)
+
+Verdict **approve**, no blockers, six nits (`handoff.md`, "Deferred").
+Durable findings worth carrying past this task:
+
+- **A Svelte 5 `{#if}` inside an element is not free.** The compiler marks
+  the live branch with an anchor comment, which lands inside that element -
+  invisible to a pixel diff, visible to a `childNodes` assertion, and the
+  reason B10's `PageTitle` wraps whole `<h1>`/`<p>` branches instead of
+  branching inside them. A render-tag anchor is a *comment*, so it
+  generates no box and does not split a text run; `CLAUDE.md`'s text-node
+  rule is about split text nodes, not about comments. The faithful form is
+  still one text node per live `esc(...)` concatenation.
+- **`.card :global(.card-acts ...)` raises specificity, it does not lose
+  it**: 0,3,0 -> 0,4,0, so `RecordCard`'s two 600px rules still outrank
+  `Button`'s own. Confirmed empirically by the 375px cells.
+- **`vite.config.mts:150`'s coverage glob (`src/**/!(Button|DiceBar).svelte`)
+  reaches new component files automatically** - a new component needs no
+  coverage-config edit, only a test that reaches it.
+- **Authored template comments do not reach the DOM**: `app/svelte.config.mjs`
+  sets no `preserveComments`.
+
+## State at the Phase 5 kickoff (orchestrator, 2026-09-12, scheduled run)
+
+The owner's GOAL for this session, verbatim from the scheduled task:
+
+> finish Phase 5 (or at least break to adequate batches and implement first
+> batch, but I would prefer to minimize amount of batches as described in
+> claude.md). I want to retire existing playwright tests - they are flaky,
+> coverage is incosnstient, they are groupped strangely etc and rewrite to
+> fit existing infrastrucutre. we should also challange existing quality
+> gates such as coverage limits, coverage exceptions, a11y rules disabled
+> and do broader review of all tests in pyramid to see where we have gaps
+> in coverage, especially component tests one and if additional layers of
+> testing are required. if we're ready, we can run existing playwright
+> tests against the refactored application to make sure there are no
+> regressions and delete them all together or at least we can plan to do so
+>
+> regarding p6/7 ordering I'm open to your recommendation. I am OK with
+> doing 6 and then doing 7 on clean codebase to make sure there are no
+> leftovers of an old code not to hallucinate much, maybe this way we can
+> even unify phases 7 and 8
+
+Plus two defects reported by the owner, quoted verbatim below under
+"Two owner-reported defects".
+
+### The tree
+
+- HEAD `9e3d19f`, branch `main`, clean but for the untracked
+  `issues/tg-preview-refresh/` (another task's, preserved, never staged).
+- **`origin/main` is `daa2166`.** B10's three commits - `8b0c3ce`,
+  `60047d4`, `9e3d19f` - are committed and **not pushed**, so CI has not
+  read B10. Newest run is `34643510887` on `daa2166`, success. The B10
+  blocker in `handoff.md`, "Blockers", is still open and still the owner's
+  to clear; pushing is never this session's (`CLAUDE.md`, "Never push").
+
+### There are no Playwright tests. Measured, not inferred
+
+`find` over the tree matches no `*playwright*`, no `*.spec.js`, no
+`*.spec.ts`; `package.json` has no `@playwright/*` dependency. What the
+GOAL calls "existing playwright tests" is the **legacy browser suite set**:
+20 suites under `tests/`, driven by **puppeteer** through
+`tests/run-all.js`, 8.7k lines in all. Phase 5's Playwright layer was
+planned by the issue and **never built** (`plan.md`, "Phase 5 - what
+already exists"). So "retire the Playwright tests" is, in this repository,
+"retire the puppeteer legacy suites" - and that is a different and larger
+question, because those suites are the only coverage several features have
+at all (`docs/specs/COVERAGE.md`, "Features to suites").
+
+Measured facts about them, for the planner:
+
+- **They target the live static root, hardcoded.** 15 suites define
+  `ROOT = 'file://' + path.join(__dirname, '..', 'index.html')`, either
+  their own copy or `tests/lib.js`'s. None can be pointed at `dist/`
+  without a change. Whether a re-pointed suite *passes* against the
+  rewrite is unmeasured and is the planner's first probe.
+- **Sizes** (lines): `lists2` 697, `print` 647, `derived` 419, `qa` 373,
+  `behave` 368, `notes` 316, `eqtest` 293, `contracts` 259, `craft` 242,
+  `dataint` 235, `select` 200, `audit2` 195, `flows` 154, `states` 145,
+  `craftmob` 115, `hues` 106, `noart` 102, `typo` 77, `i18n` 47.
+  Plus `tests/lib.js` 85 (shared), and the harness that is **not** legacy:
+  `parity.js` 672, `parity/driver.js` 686, `parity/specs.js` 2067,
+  `parity/lock.js` 92.
+- **Three of the 20 are not browser suites and are already load-bearing in
+  `npm run check`**: `derived`, `i18n` (both run directly by the `check`
+  script) and `dataint` (data invariants, node-only). Retiring "the legacy
+  suites" cannot mean retiring these.
+- **CI runs them as one job**, `node tests/run-all.js --exclude=parity`,
+  beside four sharded `parity` jobs (`.github/workflows/ci.yml`).
+- **`tests/contracts.js` is the contract gate** named by `CLAUDE.md`
+  ("An unavoidable change updates `docs/fixtures/`, `tests/contracts.js`,
+  ...") and by `docs/specs/CONTRACTS.md`. It runs against the live app.
+  Retiring it without a replacement drops a frozen-contract gate.
+
+### The vitest pyramid today
+
+- 41 test files: 20 in `app/src/lib`, 16 in `app/src/components`, 2 in
+  `app/src/state`, 1 in `app/src/ports`, 1 in `app/src/test`. 998 tests at
+  B10's close. 46 components, 46 lib modules.
+- Coverage config and every threshold: `vite.config.mts`, `test.coverage`.
+  `perFile: true`. Bars: `src/lib/**` 90/90/85/90, `src/ports/**`
+  70/70/55/70, `src/state/**` 90/90/80/90, components 85/80/75/85.
+  **Named exceptions, two**: `DiceBar.svelte` (branches 55) and
+  `Button.svelte` (branches 50), both carved out of the component glob.
+  **Coverage `exclude`, five**: `src/test/**`, `src/ports/types.ts`,
+  `src/ports/image.ts`, `src/vite-env.d.ts`, `src/main.ts`.
+- **axe rules switched off, two**, in `app/src/test/a11y.ts`'s `OFF`:
+  `color-contrast` (jsdom resolves no cascade; covered by `qa`/`typo` on a
+  real page - both **legacy suites**, so retiring them without a
+  replacement drops contrast coverage entirely) and `nested-interactive`
+  (D3, a live shape ported on purpose - `docs/specs/DEBT.md`).
+- `docs/specs/COVERAGE.md`, "Known thin spots", is the existing honest gap
+  list: the short link form has no fixture, print fitting has no reference
+  image, `states` asserts little, touch-only behaviour is static-only, the
+  success paths of `clipboard`/`share`/`compress` cannot run in jsdom (the
+  stated reason `src/ports/**` sits at 70/70/55), contrast is off in axe,
+  unregistered parity states are invisible, and `<dialog>` is shimmed.
+  Four of those thin spots end with "waits for Phase 5" or "the Phase 5
+  e2e layer". This session is where that promise comes due.
+- Parity inventory at kickoff: 102 `STATES`, 42 `SPECS`, 10 `ACCEPTED`,
+  18 `VISUAL_DEBT` (`node -e` over `tests/parity/specs.js`).
+
+### The GOAL and Phase 7's open question are the same question
+
+`plan.md`, "Phase 8", "Where the phase sits", entry condition 3 already
+names this: *"A regression net that does not need the live app exists -
+the load-bearing one ... Phase 7's planning pass decides the net's shape;
+the two candidates are the Playwright layer the issue's Phase 5 planned,
+and the parity driver re-pointed at committed goldens of `dist/`."* And
+`plan.md`, "Phase 5 - what already exists", defers the Playwright question
+to exactly that pass. The owner has now asked for it directly, one phase
+early. The planner should treat these as one decision, not two, and say so
+in the plan - including whether "Phase 5" survives as a phase label at all
+or is absorbed into the cut-over.
+
+### Two owner-reported defects
+
+Reported by the owner against `http://localhost:4173` (the built `dist/`
+under `vite preview`), verbatim:
+
+> - http://localhost:4173/#/tables/frames. open filters -> select beast
+>   feast, then collossus. filters reset, page says Nothing found instead
+>   of them working as 'OR'
+> - http://localhost:4173/#/tables. select premium bedroll, click add to
+>   list -> new list, nothing happens (checked and confirmed - it is the
+>   same from any view). also on embedded modal (not sure how it is
+>   called, e.g. when you don't redirected to the new page but it opens in
+>   a pop-up) it opens list to the top on legacy app, but to the bottom on
+>   the new app, maybe we didn't have parity check for that state
+
+Unmeasured by this session on purpose - the first question for each is
+**does the live app do it too**, which decides `DEBT.md` entry versus
+rewrite regression, and that is a planning finding, not a status. Neither
+is in `DEBT.md` today (D1-D5 are transitions under reduced motion, the
+stale packed-link expansion, the notice's nested dismiss button, the
+shared kind filter, and the record tab title). The owner asks for them
+either as an intermediate batch or folded into the coverage-extension
+work, and expects more of the same class to surface as coverage grows.
+
+## Phase 5 planning facts (planner, 2026-09-12) - durable, read before implementing
+
+Measured on `9e3d19f` (HEAD unchanged at the end of the pass; `origin/main`
+still `daa2166`, B10 unpushed). Full design: `plan.md`, "Phase 5 - the
+testing pyramid, planned".
+
+### The legacy suites against `dist/`, measured
+
+- Scratch copies with exactly two edits - `ROOT` -> `dist/index.html`,
+  `ready()`'s `#view` -> `#app` - **`typo` passes** (13 pages, both
+  languages: two fonts, one scale) and **`audit2` at 1180 passes** (41
+  addresses, both languages, all eight checks). **`hues` fails 16
+  assertions** for harness reasons: it injects bare `<span class="badge
+  item">` and reads their colour (Svelte-scoped `.badge` rules give an
+  injected span nothing) and greps `[data-act="roll"]`.
+- The rewrite emits **one id, `#app`**; the live app has `#view`,
+  `#modal`, `#modalBody`, `#selBar`, `#toast`, `#tabs`, `#langSeg`,
+  `#skip`, `#footText`. No `data-act`/`data-open`/`data-copy-*` anywhere
+  in the rewrite. Live-hook selector counts per suite: `behave` 35,
+  `lists2` 29, `select` 28, `print` 24, `flows` 23, `states` 21, `qa` 18,
+  `notes` 12, `eqtest` 9, `noart` 6, `contracts`/`craftmob`/`hues`/`typo`
+  1 each (the `ready()` in `lib.js`), `audit2` 0.
+- CI, run `34643510887` (`daa2166`): `check` job 3m40s of which "The same
+  gate a person has to pass locally" 1m24s and "The legacy suites against
+  the live app" **1m57s**; the four parity shards 8m01s-9m55s each.
+- `tests/parity/driver.js:245`: `click()` presses with `el.click()` inside
+  `page.evaluate` - a synthetic dispatch. Trusted input exists nowhere in
+  the harness today.
+
+### The two defects, measured on both apps (real CDP clicks and `el.click()`)
+
+Probe: scratchpad `probe-defects.mjs`, 1100x900 unless stated, fresh
+document per step (`about:blank` first - a hash-only move keeps
+`S.fOpen` and the menu).
+
+- **Frames, two picks.** Live in-page: after "Пир зверей" then "Колоссы
+  Сухоземья" the hash is `#/tables/frames/f_frame-beast_feast-colossus`,
+  two pills, "57 из 94", 57 rows - both click kinds. **Live arriving at
+  that link fresh: no pills, count "94", 0 rows.** Rewrite: 0 rows and no
+  pills after the second pick, both click kinds, and the same on arrival.
+- **The decoder**, replicated in node: `f_frame-beast_feast-colossus` ->
+  `{frame:['beast'], feast:['colossus']}`; `f_frame-dark_heart-motherboard`
+  breaks the same way; `f_frame-colossus-dark_heart`,
+  `f_frame-beast_feast-dark_heart`, `f_kind-item.frame-beast_feast-colossus`
+  and any three-frame pick decode correctly. Rule: the legacy `_` reading
+  fires iff the body has no `.` and every `_`-split piece contains a `-`
+  after position 0 (`filters.ts:69`, `app.js:2724`). The live app meets it
+  only on arrival because `S.fSeg` (`app.js:3627`) stops it re-reading its
+  own write; the rewrite's `TablesPage` reads `app.route.filter` after
+  every `replace()`.
+- **New list.** Rewrite, trusted click on "+ Новый список" on `#/i/ci1`:
+  `.dropmenu` gone, no `.picker-new`, focus on `<body>`; `el.click()`:
+  form open, focus in the input, "Создать" saves. From the `#/tables`
+  selection bar, trusted: menu gone. Live: fine both ways. Mechanism:
+  Svelte 5 flushes in a microtask (`node_modules/svelte/src/internal/client/dom/task.js:19`
+  `queueMicrotask`); a trusted event runs a microtask checkpoint after
+  each listener, so between the app root's delegated `onclick` and
+  `AddToList.svelte:202`'s `<svelte:document onclick>` the `{#if
+  newListFor}` block has replaced the chip, `e.target.isConnected` is
+  false, `root.contains(e.target)` is false, `app.menuFor = ''`.
+  `userEvent.click` (jsdom) and `el.click()` (parity) dispatch on a
+  non-empty stack: no checkpoint until they return, so both pass.
+- **Menu side in the modal.** Not reproduced: on `#/roll/wondrous ~
+  modal` both apps add `up` and draw the menu above the button at
+  1100x900 (card unscrolled), 1100x700 (card scrolled 114 px by
+  `scrollIntoView`) and 375x667 (98 px). The 43 px height difference in
+  the probe's numbers is one more list chip on the rewrite's side -
+  `file://` pages share one `localStorage` in Chrome, so the legacy pass's
+  created lists leaked into the next pass; not a rendering difference.
+
+### Coverage on `9e3d19f` (vitest, `--coverage.reporter=json-summary`, `app/coverage/`, ignored)
+
+Total 97.25 lines / 88.4 branches / 97.02 functions / 96.5 statements;
+37 of 83 measured files at 100 on all four. Per-directory minima (file):
+`lib` L100 F100 B88.46 (`data.ts`) S93.33 (`lists.ts`); `ports` L71.42
+F87.5 (`share.ts`) B57.14 S70.58 (`compress.ts`); `state` L98.27 F100
+B88.46 S95.89 (`lists.svelte.ts`); components L88.15 F88 S88.79
+(`StdPanel`) B60 (`DiceBar`), then `Button` B66.66, `Icon` B75, `SelBar`
+B75 (both exactly on the bar), `ListPage` B77.39, `RowMain` B79.54.
+`router.ts` B66.66, `clipboard.ts` L78.72 B75, `storage.ts` L86.95.
+
+### Host load
+
+vitest alone took **378 s** (01:48, one timeout on `searchPage.test.ts`'s
+300-cap case at 93 s) and **393 s** (01:56, green with `--testTimeout=120000`)
+on this host tonight, against a ~165 s whole `npm run check` idle. A
+`check` run now may cross the 600 s foreground cap; the rule stands - a
+crossed run is re-run idle, not salvaged, not backgrounded.
+`coverage.reportOnFailure` is off by default, so a red vitest writes no
+summary.
+
+**2026-09-12, 13:25-14:05 local - the slowdown is I/O, not the peer
+sessions** (orchestrator, measured). The earlier reading that named "host
+contention from a concurrent session" does not survive measurement:
+
+- `npm run format:check` (documented 11 s idle) took **55.6 s and 54.9 s**
+  on two consecutive runs - not a cold cache, and `user 0m0.883s /
+  sys 0m1.9s` both times. Wall clock 5x, CPU near zero: the stage is
+  **I/O-bound** - *this inference was wrong; see the section at the end of
+  this file. Git Bash `time` does not aggregate Windows child-process CPU,
+  so those `user`/`sys` figures measured nothing. The wall-clock numbers
+  stand.*
+- Whole-host CPU sat at **20-25% of 8 cores** while measured idle.
+  `ngenuity2helper` holds ~1 core continuously (31,965 CPU-s over 17.9 h
+  of uptime); the six peer Claude sessions together moved ~0.2 cores.
+  **Peer sessions are not the cause** - they cannot be, at that share.
+- Projected `npm run check` at this factor: ~165 s x 5 = **~825 s**,
+  which cannot fit the 600 s foreground cap. Confirmed the hard way: one
+  run reached vitest only after ~10 min of stages that cost 77 s idle,
+  and vitest itself then took **521.8 s** (transform 315.9 s, import
+  498.1 s, environment 849.7 s - every one of them a load figure).
+- Windows Defender real-time protection is **on**; its exclusion list
+  needs an administrator to read, so whether this tree or `node_modules`
+  is excluded is **unverified**. It is a candidate for the I/O factor,
+  named here with its evidence shape rather than asserted - what to do
+  about it is a design question, not a measurement.
+
+**What a crossed run still buys, in the main session only.** A check moved
+to the background loses the *gate* (`check-observer.mjs` reads the Bash
+tool's captured stdout, which a backgrounded call never returns) but not
+the *result*: the orchestrator's own shell survives the turn and the
+output file is readable. A subagent's does not - that asymmetry is why
+the rule still reads "never backgrounded" for workers.
+
+## Q3 planning facts - the modal menu, measured on both apps (planner, 2026-09-12) - durable
+
+Read-only probe (scratchpad, disposable, not kept): puppeteer with the
+harness's launch args and `prepare()` (reduced motion, cleared storage),
+`makeDriver` for both targets, a fresh page per cell. The modal is opened
+by pressing a table row (`#/tables`; `#/tables/core_consumable` for the
+consumable), then "Добавить в список", measured, then "+ Новый список",
+measured again. Presses were `el.click()` (the harness's own) and, for the
+regression cell, a trusted CDP click - same numbers. Tree `64f9a27`,
+`dist/` built from it. Design and placement: `plan.md`, decided 7,
+"Defect 2b"; fix: B11.1; live half: `DEBT.md` D6 (written by B11.1).
+
+Records, chosen by Russian description length: Малое Зелье Лечения (cc7,
+17 chars), Кольцо Тишины (ci28, 98 - the B11 state's row), Самоцвет
+Чутья (ci56, 118), Медальон Хранения Надежд (ci39, 338). Windows:
+1913x981 (the owner's) and 1100x900 (the harness's). Lists seeded: 0, 1,
+2 (`LISTS.slice(0, n)` from `specs.js`). `below` = `innerHeight -
+firstBtn.bottom`, `need` = `menu.height + 16`, both as the two apps
+compute them; "first `.btn`" is `.seldrop`'s first `.btn` in DOM order -
+the toggle while the menu shows chips, the form's "Создать" once the form
+is open (the menu precedes the toggle, `addToListBtn` 1879-1891 and
+`AddToList.svelte:213-270` alike).
+
+**On open - both apps agree in all 24 cells.** `up` iff `below < need`:
+
+| window | lists | need | Малое (below / side) | Кольцо | Самоцвет | Медальон |
+|---|---|---|---|---|---|---|
+| 1913x981 | 0 | 131.2 | 278.2 down | 280.4 down | 269.0 down | 114.7 up |
+| 1913x981 | 1 | 144.0 | 291.2 down | 293.4 down | 282.0 down | 114.7 up |
+| 1913x981 | 2 | 186.8 | 169.2 up | 171.4 up | 160.0 up | 114.7 up |
+| 1100x900 | 0 | 131.2 | 128.7 up | 239.9 down | 119.5 up | 74.2 up |
+| 1100x900 | 1 | 144.0 | 128.7 up | 130.9 up | 119.5 up | 74.2 up |
+| 1100x900 | 2 | 186.8 | 128.7 up | 130.9 up | 119.5 up | 74.2 up |
+
+(The four cards are 673 / 668 / 691 / 782 px tall, centred in the
+window; the toggle's `bottom` follows the card's height, so read the
+numbers, not the pattern.) The side is decided by the card's height and
+the list count, identically on both apps; the owner's "legacy opens up"
+is consistent with a different list count on the Pages origin (every
+chip adds ~33 px to `need`), which was not verified and does not matter.
+
+**What a downward open does, both apps**: the menu overflows the `.card`
+article (`overflow: hidden` - style.css:306, `RecordCard.svelte:260`),
+and `scrollIntoView({ block: 'nearest' })` scrolls **that** element:
+Кольцо, 0 lists, 1913x981 - `.card.scrollTop` 109, `scrollHeight` 775
+vs `clientHeight` 666, `card-media` at y 48-468 inside a `.modal-card`
+at 156-825 (top 109 px of the picture hidden, no scrollbar); the
+`.modal-card` (`overflow: auto`) itself reads `scrollTop` 0 and
+`scrollHeight === clientHeight` - it never scrolls, the article does. The
+same on `next`. The live app's `refreshModal()` rebuilds the article on
+the next render, which resets it to 0 - that is why "+ Новый список"
+appears to heal it.
+
+**After "+ Новый список" - live `up` in 24/24; the rewrite diverges in
+7/24.** Live: the redraw puts the menu back at its default side and
+`placeMenu` reads "Создать" (first `.btn`) from there - under the fold,
+`below` negative or small - so `up`. Rewrite: the `$effect` re-runs on
+`newListFor` and reads "Создать" from wherever the menu already is. With
+the menu already up, "Создать" sits ~51 px above the toggle's bottom
+(trusted cell: toggle 739.3-771.3, Создать 688.3-720.3 at 1100x900), so
+`below` reads ~51 px larger while `need` grows by 33 (`+33.2` measured,
+e.g. 131.2 -> 164.4); the sign flips when `below >= need - 18`. The
+seven rewrite cells that flip down and end `clipped` (the menu's box
+below `.modal-card`'s bottom; `.modal-card` `scrollTop` 0; the article
+`scrollHeight` 813 vs `clientHeight` 671 in the trusted cell):
+
+| window | lists | record | open | after "+ Новый список" (rewrite) | live |
+|---|---|---|---|---|---|
+| 1913x981 | 0 | Медальон | up | **down**, menu 874-1023, clipped | up |
+| 1913x981 | 2 | Малое | up | **down**, menu 820-1024, clipped | up |
+| 1913x981 | 2 | Кольцо | up | **down**, menu 818-1022, clipped | up |
+| 1100x900 | 0 | Малое | up | **down**, menu 779-928, clipped | up |
+| 1100x900 | 0 | Самоцвет | up | **down**, menu 789-937, clipped | up |
+| 1100x900 | 1 | Малое | up | **down**, menu 779-941, clipped | up |
+| 1100x900 | 1 | Кольцо | up | **down**, menu 777-938, clipped | up |
+
+Every other rewrite cell matches live after the press (both up, or the
+menu that opened down flips up on both). The cells that opened *down*
+never flip wrong: from the default side the two apps read the same
+number.
+
+**Consequences the batches rest on**:
+
+- No new harness width is needed. 1100x900 with **no** seed reaches the
+  rewrite's regression on two records (Самоцвет, Малое) and the live chop
+  on a third (Кольцо). B11's `#/tables ~ a row opened, list menu` misses
+  both because its `two` seed makes every card open up.
+- A fourth `WIDTHS` entry would be global (`parity.js:174` hashes
+  `WIDTHS` into every cache key): +204 cells, roughly +3 min per shard,
+  and every existing legacy PNG re-captured. Not planned.
+- `.card` is a scroll container only for scripts; `overflow: clip` is
+  the candidate Phase 8 fix for the chop, alongside measuring the toggle
+  (`:scope > .btn`) against `.modal-card`. Both diverge from live and are
+  D6's, not B11.1's.
+- The trusted-click and `el.click()` readings agree in every cell tried;
+  the microtask class from decided 7 (defect 2) is not involved here.
+
+## State at the B12 kickoff (orchestrator, 2026-09-12)
+
+The owner's GOAL for this session: finish the next batch. B11.1 is closed,
+reviewed and approved, so the next batch is **B12 - the real-browser layer on
+`dist/`, and the gates** (`plan.md`, "B12", outline with decided points).
+B12 is outline-only, so this cycle is **planner first, then implementer,
+then reviewer** - review is required by the risk rules because B12 changes
+what CI enforces and touches the coverage/a11y gate configuration.
+
+### The tree
+
+- HEAD `6e05a11` on `main`, and `origin/main` is the same commit: every
+  committed boundary through B11.1 is pushed. Nothing of TASK 47's is
+  uncommitted.
+- Working tree carries one untracked directory that is **not** this task's:
+  `issues/tg-preview-refresh/` (context/plan/handoff for another task).
+  Leave it alone; never `git add -A`.
+- Two other interactive sessions are live on this machine and share this
+  working tree, so HEAD can move under a worker. Re-read `git log --oneline -3`
+  before committing.
+- Nothing heavy was running at kickoff: no `chrome.exe`, so no parity or
+  puppeteer run is alive, and no subagent of this session is listed.
+
+### The three commits after B11.1's fix, and what they mean for B12
+
+`e94a90e` is B11.1's fix. Above it sit three commits that touch **no**
+application code, so B12 plans against the same `app/`, `tests/` and live
+files B11.1 closed on:
+
+- `64e094d`, `e8bb37f` - `issues/47/` only: B11.1's commit hash filled in,
+  then the review verdict and its six nits recorded.
+- `6e05a11` - agent wiring only (`.claude/`, `CLAUDE.md`). Two standing rules
+  changed and both bind B12's workers: **agents now push the branch** once a
+  batch's commits pass their gates (`bash-guard` still denies only a bare
+  `git push --force`; `--force-with-lease` passes), and a **terminal batch**
+  (no further batch in `plan.md`, no further phase or goal from the human)
+  spends its one remediation cycle on blockers *and* local nits, where a
+  mid-plan batch still defers nits to the handoff. B12 is not terminal for
+  TASK 47 - Phases 6, 7 and 8 remain - so its nits defer unless they are the
+  cheap local kind B12's own paths already touch.
+
+### B11.1's review, and what it hands the B12 planning pass
+
+Verdict: **approve, no blockers**; six nits, none acted on, all recorded in
+`handoff.md`, "Deferred", with the reviewer's positive findings beside them.
+Two of them are inputs to this planning pass rather than backlog:
+
+- **Nit 1 is explicitly the planner's call.** The live app re-inserts the
+  `.dropmenu` markup on every render, so `animation: pop .16s ... both`
+  restarts and `placeMenu` measures a menu still at `translateY(10px)
+  scale(.985)`; in the port the menu element persists across the
+  "+ Новый список" re-measurement, so that second measurement is taken at
+  rest. Same side basis, possibly not the same transform state, ~10 px against
+  a measured 17 px band. Unsettled empirically. The planner either records it
+  in D6's "Where" or lets Phase 8's `.modal-card` measurement retire the
+  question; nobody has seen a defect from it.
+- **Nits 2, 3 and 5 are one-line edits the reviewer marked "can ride along
+  with B12's first commit"**: `hash.test.ts`'s citation should name
+  `hash.ts:103` and `:109`, not `:105`; the new `[]`-groups case should assert
+  `filter.tier` rather than only `not.toHaveProperty('cls')`; `FEATURES.md`'s
+  appended clause should say "the menu opens on the side..." so "it" does not
+  attach to the search box. Nit 4 (D6 pointing at `tests/app/states.js`)
+  resolves itself when B12 creates that file. Nit 6 records a known gap - the
+  placement has no unit-level pin and the parity state is RU-only - and is the
+  reason B12 homes the assertion in `states.js`.
+
+### Costs the planner should size batches against (unchanged)
+
+`npm run check` ~165 s idle, `npm run check:built` a few minutes, a single
+parity filter up to ~9 min, the full parity suite ~867 s on CI and **not** one
+foreground call. B12's own gate estimate from its outline is 3-4 min for the
+five new suites.
+
+## B12 planning facts (planner, 2026-09-12) - durable, read before implementing
+
+Read off the tree at HEAD `d0963d9` (no application code above B11.1's
+`e94a90e`). Full design: `plan.md`, "B12 planned". These are the facts that
+would otherwise be re-derived; none of them is a decision.
+
+### The harness, as it already is
+
+- `tests/parity/driver.js:25-27` - `ready()` already accepts `#app` as well
+  as `#view`. B12's outline asked "if it does not already"; it does.
+- `tests/run-all.js` spawns `path.join(HERE, name + '.js')` and names its
+  log `keyOf(...).replace(/[^\w.-]+/g, '-')`, so a suite named `app/sweep`
+  resolves to `tests/app/sweep.js` and writes `test-output/app-sweep.log`
+  with no runner change. The name filter and `--exclude=` both compare
+  `s[0]`.
+- `tests/**` is outside both formatting gates: `.prettierignore` lists
+  `tests/`, and `eslint.config.mjs:18` ignores `tests/**`. New suites keep
+  the legacy shape and nothing reformats them.
+- `npm run check` **never builds** (`package.json`): `format:check`, `lint`,
+  `typecheck`, `data`, `derived`, `i18n`, the hook selftest, vitest. Any
+  `tests/app/` run needs `npm run build` (or `check:built`) first. CI is
+  already safe - its "legacy suites" step runs after `Build`.
+- `axe-core/axe.min.js` resolves from the repository root; neither
+  `index.html` nor `app/index.html` carries a CSP, so
+  `page.addScriptTag({ path })` works over `file://`.
+
+### The parity cache, and what editing `driver.js` actually costs
+
+- `tests/parity.js:150` hashes `tests/parity/driver.js` into `rootHash()`,
+  beside `index.html`, `app.js`, `style.css`, `data.js`, `img/`, `og/`,
+  `card/` and `parity.js`. Any edit invalidates every cached legacy
+  screenshot once.
+- **CI pays nothing for that.** `.github/workflows/ci.yml` caches npm and
+  nothing else; `test-output/.parity-cache` is never persisted, so every
+  parity shard already runs cold.
+- **Locally it is moot as well**, because `tests/run-all.js` does
+  `fs.rmSync(OUT_DIR, { recursive: true, force: true })` on `test-output/`
+  at the start of *every* invocation - and `CACHE_DIR` is
+  `test-output/.parity-cache`. Any `run-all` run destroys the cache anyway.
+- Filters match with `id.includes(w)` (`tests/parity.js:353`). `"~ filtered"`
+  is 2 states / 12 cells; `"#/roll/std"` is 4 states / 24 cells. Whole-suite
+  arithmetic: 582 cells in ~867 s, so ~1.5 s a cell with both sides shot.
+
+### Selectors and markup the ports need
+
+- Rows `.rows .row[data-row]` (`TableRows.svelte:113`) - same on both apps.
+- The lit tab: `#tabs a.on` live; `nav.tabs a[aria-current="page"]`
+  (`TabBar.svelte:38`) here, whose `href` is `sectionHash(section)` -
+  `hash.test.ts:295` already replays the fixture's `tab` through it.
+- Print cards `.pcard:not(.blank)`; stat line `.eqstats span`
+  (`RecordCard.svelte:152`) - same on both.
+- Filter pills: live writes `data-val="group:value"` (`app.js:2671`); the
+  rewrite's `FilterBar.svelte:83` writes none. B12 adds it.
+- Source chips: live writes `data-act="src" data-val="core"` plus
+  `aria-pressed` (`app.js:2217`); the rewrite's `Chip.svelte` writes
+  `aria-pressed` and `.on` but **no value of any kind**, and `StdPanel`'s
+  source, kind and rarity rows are all `Field` + `ChipRow` + `Chip`, so
+  nothing but position or a Russian label distinguishes them. B12 ports the
+  live `data-val` through an optional `Chip` prop; `StdPanel` is its only
+  caller.
+- Roll buttons: `button.btn.primary:has(.dieicon)` (`DiceBar.svelte:30`,
+  `Die.svelte:20`) replaces the live `[data-act="roll"]` grep.
+- Badges are real and token-driven in the rewrite (`RowMain.svelte:96-98`,
+  `.badge.item/.cons/.eq-weapon/.eq-secondary/.eq-armor/.src`), so `hues`
+  reads rendered rows instead of injected spans.
+- `typo`'s click-expansion grips: `.helpbtn` (`HelpButton.svelte:28`),
+  `.cardpick` and `.lnote summary` (`ListPage.svelte:640`) survive as ported
+  classes; `[data-act="fOpen"]` and `[data-note-toggle]` do not and must be
+  pressed by accessible name instead - otherwise half of each page is
+  silently unchecked.
+
+### The route fixtures still replay after B11's decoder fix
+
+Checked entry by entry (`docs/fixtures/urls/routes.json`, seven `f_` shapes):
+`f_tier-2.cls-mag`, `f_range-melee`, `f_burden-2`, `f_tier-1-2` unaffected;
+`f_tier-1_cls-phy` still takes the legacy `_` reading (both heads name groups
+`eq_weapon` offers) and reads `["tier:1","cls:phy"]`; `f_frame-beast_feast`
+never took it (`feast` carries no `-`) and stays one value;
+`f_nosuch-1` fails open to the whole table, 317 rows. The two-frame link B11
+fixed is deliberately absent - it waits for Phase 7.
+
+### The uncovered branches, named
+
+- `Icon.svelte:21` - the `'opacity' in icon` **true** arm. `external` is the
+  only icon with one (`lib/icons.ts:44`, `opacity: 0.7`); it renders in
+  `AltPanel.svelte:205` (the crit row's table links) and
+  `RecordPage.svelte:67` ("показать в таблице").
+- `SelBar.svelte:33-41` `copySel` - the reachable arm is
+  `if (!items.length) return`, not `if (!index) return`.
+  `app.toggleSel(id)` (`state/app.svelte.ts:319`) takes any id, so a
+  selection holding an id the index does not carry reaches it.
+
+### Not measured against `dist/`, and B12 measures it first
+
+`audit2` re-pointed passes at **1180 only**. 360, 390 and 768 have never
+been run against the rewrite, and axe with `color-contrast` on has never
+been run against it at any width. B12's step 1 is a scratch probe for both,
+before a line of the suite is written.
+
+## B12's commit block is host contention, measured (orchestrator, 2026-09-12)
+
+B12's C1 landed as `a52c17d` and is on `origin/main`. C2 and C3 are written
+and each suite verified alone, but **uncommitted**, because `npm run check`
+crossed the 600 s foreground cap twice. The cause is not the batch:
+
+- At the implementer's close, a **peer session was running `npm run check`
+  (pid 52124) and `npm run test` (vitest `run --coverage`, pid 64020 with four
+  workers) against this same working tree**, CPU at 100 %, 2.2 GB free of 16.
+  `CLAUDE.md`'s "one session at a time per working tree" is being broken by a
+  second session, not by this task's workers, and the symptom is exactly the
+  one that rule predicts: a check that cannot finish, and a coverage run whose
+  numbers describe a tree holding another task's unfinished work.
+- HEAD moved twice under this task while B12 was being built: `58dbd70`
+  (`docs(agents)`) and `3a80456` (`docs(closeout-hygiene)`), both a peer's,
+  both preserved.
+
+**The tree now mixes two tasks' uncommitted work.** B12's are `tests/app/`,
+`app/src/App.svelte`, `app/src/components/{Chip,FilterBar,StdPanel}.svelte`,
+`app/src/components/shell.test.ts`, `tests/run-all.js`,
+`.github/workflows/ci.yml`, `CLAUDE.md`, `docs/specs/{DEBT,COVERAGE}.md`,
+`issues/47/`. The peer's are `.claude/hooks/*` (ten files) and
+`.claude/README.md` - **do not stage them**, and never `git add -A`.
+
+Two consequences for whoever finishes C2/C3:
+
+1. The commit gate fingerprints the **whole tree**, so the passing
+   `npm run check` has to be taken on a tree that still contains the peer's
+   half-finished hook edits, and it is invalidated again the moment the peer
+   touches another file. The check is worth taking only once the peer's runs
+   are done, and the commit should follow it immediately.
+2. `npm run check` lints and self-tests `.claude/hooks/`, so a red result may
+   belong to the peer's work rather than to B12. Read the failure before
+   attributing it.
+
+## The slow host is a runaway desktop process, not the project (orchestrator, 2026-09-12)
+
+> **Superseded by "The host is throttled to ~20% of nominal" below.** The
+> wall-clock measurements here are sound and still worth reading; the
+> *attribution* to `explorer.exe` is not - a percentage of a throttled core
+> is not a share of the machine.
+
+Correcting the entry above, and the diagnosis both the B12 implementer and
+the peer session wrote: **`npm run check` crosses 600 s on an idle tree too.**
+Taken on this tree with no peer run alive, the whole check needed roughly 20
+minutes against its recorded ~165 s baseline:
+
+| Step | This run | Baseline (2026-09-10) |
+|---|---|---|
+| everything up to `selftest` | ~8 min | ~58 s |
+| `selftest` | ~3 min | 19 s |
+| vitest `run --coverage` | 491 s wall, 1464 s of test time | ~90 s |
+
+**What is eating the machine**, sampled over 6 s with no npm run alive, on 8
+logical processors: `explorer.exe` at **62 %** and `NGenuity2Helper.exe` at
+**20 %** - together about four fifths of the host, with 3.6 GB free of 16.
+`NGenuity2Helper` had accumulated 513 CPU-minutes and `explorer` 274. Neither
+is this project's, and no amount of scheduling around peer sessions fixes it.
+
+**Consequence for any batch, not just B12**: while those two spin, no
+`npm run check` fits one foreground call, so the commit gate cannot be armed
+and nothing can be committed that touches a checked path. The honest next step
+is to fix the host (restart `explorer.exe`, and `NGenuity2Helper` with it),
+then re-take the check - not to re-run the gate hoping for a quiet minute, and
+not to reach for `SKIP_CHECK_GATE=1`, which would commit code no check has
+read.
+
+**The red check itself, for whoever re-runs it** - two failures, both with the
+shape of starvation rather than defect, neither yet judged:
+
+- `searchPage.test.ts` "shows the first 300 matches, and select-all ticks all
+  300": timed out at its 30 s limit after **99.6 s** of wall clock in a single
+  test. A test that needs 100 s on a host this starved says nothing about the
+  code.
+- `tables.test.ts` "the outline follows the record into the grid view":
+  `[data-row="ci2"]` has `tilewrap` but not `flash`. The flash class is
+  time-bounded, so a starved run can miss its window - but this one is a real
+  candidate for a B12 regression and must be judged on a healthy host before
+  it is dismissed. It is in the anchor family the plan already calls
+  half-solved (`plan.md`, "The anchor states").
+
+`npm run check` also reaches the peer's uncommitted `.claude/hooks/` edits;
+`selftest.mjs` reported 312 passed, 0 failed, so their work is not the red.
+
+## The host is throttled to ~20% of nominal, and that explains every earlier reading (orchestrator, 2026-09-12)
+
+One counter settles what three sessions guessed at:
+
+```
+Get-Counter '\Processor Information(_Total)\% Processor Performance'
+```
+
+It read **20, 20, 20, 20** over four consecutive samples. The CPU is an
+Intel i7-8565U (nominal 1.8 GHz, a 15 W ultrabook part) and it is running at
+about a fifth of that. Every other number on this page is a consequence:
+
+- **The 5x wall clock is the throttle, exactly.** `format:check` 11 s -> 55 s;
+  `npm run check` ~165 s -> ~825 s projected, ~19-20 min observed. One fifth
+  the clock, five times the wall.
+- **"Total CPU 75-95%" and "`explorer.exe` at 62%" are the same illusion.**
+  Both are percentages of *current* capacity, and capacity is one fifth of
+  normal. Sampled during a real `format:check` run, the top consumers were
+  prettier's own two node processes (114-223% each, i.e. 1.1-2.2 cores);
+  `explorer.exe` did not appear at all. Its earlier burst was real and
+  transient, not the standing state, and never "four fifths of the host".
+- **So nothing on the software side is starving the build.** Not the peer
+  Claude sessions (~0.2 cores), not `explorer.exe`, not this project.
+  `NGenuity2Helper` does hold a core continuously, which on a 15 W chip is
+  worth reclaiming as *heat*, but it is not what makes the check slow.
+
+**Not power policy:** on AC, 99% charge, Balanced scheme. That leaves
+thermal or a stuck embedded-controller/DPTF state (`dptf_helper` is running)
+as the cause; `MSAcpi_ThermalZoneTemperature` is unavailable on this host, so
+the temperature itself was not read. Fixing it is the owner's call and needs
+a human at the machine - airflow, ambient, or a reboot to clear a stuck
+policy.
+
+**The one-minute probe before any gated batch.** Read the counter above, or
+time `npm run format:check`: **~11 s means the machine is healthy and the
+full gate sequence will fit one foreground call; ~55 s means it will not**,
+and no amount of waiting for a quiet minute will change it. This is cheaper
+than discovering it 19 minutes into a check, which is what three sessions
+did.
+
+## The throttle has lifted, and B12 is closed (orchestrator, 2026-09-12, later)
+
+The probe above, run at the top of this session: **`npm run format:check` in
+9.4 s**, and the same counter read **139-171%**, not 20. The machine is
+healthy again; nothing was done to it from here, so treat the throttle as a
+state that comes and goes and keep running the one-minute probe.
+
+What that bought, in one session:
+
+- `npm run check` in one foreground call, **exit 0**: selftest 312/312,
+  typecheck 544 files 0/0, vitest **1007 passed / 1007 across 41 files in
+  78.2 s** - against 521.8 s and an *unstable* failing set (2, then 3, with
+  nothing edited) under the throttle. The phantom failures were the throttle
+  and are gone.
+- **The gate arms once for a whole batch.** `tree-key.mjs` fingerprints
+  *content* (staged + unstaged + untracked, HEAD excluded), so committing
+  changes nothing about the key. One passing `npm run check` covered both
+  C2's and C3's commits; the plan's steps 12 and 15 do not each need their
+  own run when no file changes between them. Two runs saved, ~6 minutes.
+  The corollary is the trap: **any edit to any non-gitignored file disarms
+  it**, which is why a remediation cycle that touches one test file pays for
+  a fresh check.
+- B12 landed as `9a4f8db` (C2), `4adc5a5` (C3), `9ced2b3` (the review
+  remediation), plus docs. All pushed; `origin/main` is `fde4da4`.
+
+## GitHub Pages is already served by Actions - the "Pages flip" gate does not exist (orchestrator, 2026-09-12)
+
+Measured, not assumed - `gh api repos/:owner/:repo/pages`:
+
+```
+"build_type": "workflow",  "status": "built",  "source": {"branch":"main","path":"/"}
+"html_url": "https://artex-x.github.io/daggerheart-loot/"
+```
+
+**`build_type: workflow` means the owner has already switched Pages to
+"GitHub Actions".** Two places in `plan.md` are therefore stale and must not
+be planned around any longer:
+
+- the Phases table's Phase 6 row, "Owner-gated on the Pages flip";
+- Phase 8, "Where the phase sits", entry condition 2, "the owner has
+  switched Pages to 'GitHub Actions'" - already satisfied.
+
+**What actually publishes the old app is one step in
+`.github/workflows/ci.yml`'s `deploy` job**, "Collect what the site is made
+of", which copies `index.html style.css app.js data.js data.json catalog.csv
+llms.txt robots.txt .nojekyll LICENSE img og i card` into `_site` by an
+explicit list. The rewrite goes live when that list names the built output
+instead of the root files.
+
+**Hazard for whoever writes that step: `dist/` carries symlinks into the
+repo root** (`dist/card -> /e/dev/daggerheart-loot/card`, absolute). An
+absolute symlink does not survive `upload-pages-artifact` as a directory
+would, so "copy `dist/` instead" is not a one-line change: the step still
+assembles `img/`, `og/`, `i/`, `card/`, `robots.txt`, `llms.txt` and
+`.nojekyll` explicitly alongside the build. The existing "Nothing private
+slipped in" guard (which refuses `app`, `tests`, `tools`, `docs`,
+`node_modules`, `package.json`, `.git` in `_site`) should still hold, but
+re-check it against the new list rather than assuming.
+
+### Owner decision, 2026-09-12: publish early, delete later
+
+Asked directly, given that the cut-over is one workflow step rather than a
+Pages setting. The owner chose **a reversible cut-over**: point the deploy
+step at the built output and go live while `index.html`/`app.js`/`style.css`
+stay in the repository and the parity harness keeps running against them as
+its expectation. A bad deploy is then reverted by one step, with the old app
+still present. Phase 7's deletions - the three live files, the legacy
+browser suites, `tests/parity.js`, `VISUAL_DEBT`/`ACCEPTED` - move *behind*
+that flip and get their own entry condition, instead of landing the same day
+the site goes live.
+
+Sequencing consequence already agreed: **B12.1 lands before the flip.** It
+is a defect on the public entry point - a bare `#/` has its address bar
+wrongly rewritten - so it is fixed while the old app is still the fallback.
+
+## The entry document was never ported (planner, 2026-09-12) - durable, read before the cut-over
+
+Measured by reading `index.html` against `app/index.html` on `aac1453`, not
+inferred. Nothing in the tree compares the two documents' heads: parity shoots
+pixels after the app has booted, and its `title` spec reads `page.title()`
+after `Shell.svelte:28` has overwritten the static title with
+`app.t.docTitle`. So this has been invisible since Phase 1.
+
+`app/index.html` - and therefore `dist/index.html`, which the build emits from
+it with only the script tags rewritten - is missing all of this, which
+`index.html` has:
+
+- `viewport-fit=cover` on the viewport meta. `SelBar.svelte:77,98,99` uses
+  `env(safe-area-inset-*)` (ported from `style.css:53-54`), and without
+  `viewport-fit=cover` those resolve to 0 on a notched phone.
+- `<title>` "Генератор лута — Daggerheart". The rewrite's static title reads
+  "Генератор лута для Daggerheart"; `dict.ts:22` already carries live's string
+  for the runtime write, so only the static one is wrong.
+- `<meta name="description">` (which is where the 680 / 381 counts live).
+- `<meta name="color-scheme" content="dark">` (`tokens.css:13` sets the CSS
+  property; the meta covers the paint before the bundle runs).
+- The whole Open Graph and Twitter block: `og:title`, `og:description`,
+  `og:url`, `og:locale` + alternate, and `og/_share.jpg` at 1200x630. This is
+  **the site's own link preview**, chosen deliberately over an item's artwork
+  - `index.html`'s own comment explains why - and `META.md` section 2 is about
+  messenger previews mattering here.
+- `<link rel="icon">`, a data: SVG.
+- The `<noscript>` block: what the site is and links to `catalog.csv`,
+  `data.json` and `llms.txt`, in both languages. Its comment says it exists
+  because a reader without JS "saw an empty page and left with nothing", which
+  is exactly what `llms.txt` and `robots.txt` promise against.
+
+Consequence: "point the deploy step at `dist/`" is not a complete cut-over.
+Whoever performs it ports the entry document in the same batch - see
+`plan.md`, "B13 planned". Two mechanical traps found with it: `app/index.html`
+is **not** in `.prettierignore` (the root `index.html` is), so the ported
+markup is reformatted and will never be byte-identical to its source - compare
+parsed values; and the `<noscript>` block's `class="wrap"` resolves to nothing
+in the rewrite, where that class lives inside Svelte-scoped components.
+
+Two related readings taken at the same time, both durable:
+
+- **The rewrite states no record count anywhere** (no "запис", "позици",
+  "records" or "entries" count string in `app/src`). So `tests/derived.js`'s
+  `COUNTERS` check has nothing in the built app to re-point at; the counts
+  reach the published site only through the entry document's meta description
+  and `<noscript>` block, and through `llms.txt`, `robots.txt` and the
+  READMEs.
+- **The stub pages need no edit at the cut-over.** `tools/build-share-pages.js:96`
+  sends every stub to `SITE + '#/i/' + id` - the site root - which is exactly
+  the document that changes hands.
+
+## State at the B12.1 kickoff (orchestrator, 2026-09-12)
+
+Preflight, measured not assumed:
+
+- HEAD `5f6fded` ("replan Phase 6 as a reversible cut-over, and plan B12.1"),
+  and `git fetch origin main` puts `origin/main` on the same sha. Nothing moved
+  under the planner's commit.
+- Working tree clean except the untracked `issues/tg-preview-refresh/` - a
+  different task's documents. Leave them alone; they are not evidence for 47.
+- No subagent of this session is running. `ListAgents` lists three *interactive*
+  peer sessions on this machine, so HEAD can still move under a writer: the
+  implementer re-reads `git log --oneline -3` before it commits.
+- Host is idle for our purposes: no `chrome.exe`, and every live `node.exe` is
+  an MCP server of the desktop app, not a test run. The B12 throttle
+  (see "The host is throttled to ~20% of nominal") is not in evidence; treat
+  the plan's stated costs as the expectation and a 3x overrun as a symptom.
+- Planner tier: Fable access has lapsed, and `.claude/agents/planner.md` was
+  already corrected to `model: opus` - the frontmatter describes the real tier,
+  so no per-dispatch model argument is needed for a planning run.
+
+Next batch dispatched: **B12.1**, design in `plan.md`, "B12.1 planned".
+Not terminal - B13 (the reversible cut-over) is designed and queued behind it.
+
+## The CI read that closed B12.1 (orchestrator, 2026-09-12)
+
+Run `34715233810` on `7a729bd` - the commit carrying the router change - is
+**green in every job**, and this is the read B12.1's design deliberately left
+to CI instead of a local parity call:
+
+```
+check       success  11m41s
+parity (1)  success   9m34s
+parity (2)  success   8m04s
+parity (3)  success  10m36s
+parity (4)  success   9m15s
+audit       success     17s
+secrets     success      7s
+deploy      success     22s
+```
+
+So the rule change moved no parity cell: the four shards pass against the
+unchanged `VISUAL_DEBT`/`ACCEPTED` tables, which is what "no `STATES` entry
+covers a bare or unreadable address" predicted. The `deploy` job ran and
+succeeded as always - it is still publishing the **old** app, by the explicit
+file list in `ci.yml`. That step is exactly what B13's F2 commit rewrites.
+
+Two annotations, both pre-existing and unrelated: `gitleaks-action@v2` and the
+three Pages actions target Node 20 and are forced onto Node 24. Not this
+task's; worth an issue of its own if it ever starts failing rather than warning.
+
+The remediation commit `cd71897` is documentation only and its own run is of no
+consequence to the batch.
+
+## State at the B13 kickoff (orchestrator, 2026-09-12)
+
+- HEAD `cd71897`, equal to `origin/main`. Tree clean but for the untracked
+  `issues/tg-preview-refresh/`, which is a different task's and stays.
+- B12.1 is closed: reviewed (verdict fix-then-continue), one remediation cycle
+  spent on two documentation blockers, both fixed in `cd71897`. No blocker
+  remains open, and `NEEDS_HUMAN_CONFIRMATION` is no.
+- Six review nits are recorded in `handoff.md`, "Deferred". **Nit 1 is the one
+  B13 must not walk past**: a pinned bare `#/tables` is accepted by the pin
+  button and silently dropped at the next boot, where live always pins a named
+  table. Pre-existing and untouched by B12.1 - but B12.1 makes the pinned home
+  the value written to the address bar, and B13 is what puts it in front of
+  real users. Read-verified only; nobody has driven the built app at it.
+- Next batch: **B13 - the reversible cut-over**, `plan.md`, "B13 planned".
+  Three commits (F1 the entry document and its checks, F2 `ci.yml` alone so a
+  revert is one file, F3 the documents), and it is the batch that changes what
+  the public URL serves.
+
+## State at the B13 dispatch (orchestrator, 2026-09-12)
+
+- HEAD `33c7467`, equal to `origin/main` - the kickoff section above was
+  written at `cd71897` and is that commit's own successor; nothing else moved.
+  Tree clean but for the untracked `issues/tg-preview-refresh/`.
+- Owner GOAL for this session: **finish the next batch**, with Opus as the
+  planning tier because Fable access has lapsed. No planning run is needed -
+  B13 is already implement-ready - and `.claude/agents/planner.md` already
+  carries `model: opus`, so the frontmatter describes the real tier.
+- Host preflight: no `chrome.exe`; every live `node.exe` is a desktop-app MCP
+  server, not a test run. No subagent of this session is running. Four
+  interactive peer sessions share this tree, so HEAD can still move under the
+  writer - it re-reads `git log --oneline -3` before each commit.
+- Implementer tier for B13: **opus**, by the orchestrate prompt's "risk is
+  high" clause. F2 changes what the public URL serves, and its one failure
+  mode - a half-applied edit that publishes a mixture of the two apps - is
+  public before it is visible.
+- Division of labour inside the batch, so no turn ends waiting on a run the
+  shell will lose: the implementer does steps 1-10 (F1, F2, push) and reports;
+  the orchestrator reads the CI run and `deploy`'s log, including the guard's
+  output and `check-site.mjs`'s, because a run conclusion is a status; the
+  owner walks the live site (step 11); the implementer is resumed once for F3
+  carrying the run id, both outputs and the walk.
+- Deferred nit 1 - a pinned bare `#/tables` accepted by the pin button and
+  silently dropped at the next boot - is **not** in B13's design and is not
+  fixed by it. It goes live with the flip. Recorded here so the decision to
+  leave it is deliberate rather than overlooked; the fix belongs to a planned
+  batch, not to this one.
+
+## B13 closed - the site serves the rewrite (orchestrator, 2026-09-12)
+
+The cut-over landed and is live. `https://artex-x.github.io/daggerheart-loot/`
+serves the built rewrite; `index.html`, `app.js` and `style.css` remain in the
+repository, still gated, and `git revert 9177f3b` is still the whole revert -
+that commit is one file, 82+/12-, and nothing since has touched it.
+
+Commits: `0819a73` (F1, the entry document and its checks), `9177f3b` (F2, the
+flip, `ci.yml` alone), `a004764` (the two review blockers), `515e257` (F3).
+Run `34718569245` on `9177f3b` was green in every job including `deploy`; the
+guard printed 13 published entries with no `app.js` or `style.css`, and
+`tools/check-site.mjs` passed against the live URL from inside the job and
+again on an independent read from this session.
+
+### Settled owner decisions, 2026-09-12 - do not re-decide
+
+1. **The roll re-render keeps the previous artwork on screen until the new
+   image decodes** (`RollPanel.svelte:129`, `StdPanel.svelte:157` render a
+   single `<RecordCard>` with no `{#key}`, so the `<img>` node is reused).
+   Full mechanism, measurements and the reasoning that rules out a
+   loading-strategy cause: `handoff.md`, "Deferred", item 1. **The owner has
+   decided it is not fixed as a batch of its own - it is bundled into a batch
+   that already has other work in those paths.** What remains open is the
+   content of the fix, which is the planner's: which call sites, whether
+   `{#key}` is the right instrument, and whether it is a `DEBT.md` entry or
+   work inside a batch.
+2. **B12.1's deferred nit 1 stays deferred** - a pinned bare `#/tables` is
+   accepted and silently dropped at the next boot. It shipped with the flip
+   and is still open, read-verified only.
+
+### One measured fact worth knowing before the next batch
+
+`CLAUDE.md` is at **199 lines against its own "keep this file under 200" rule**
+- one line of headroom. The B1 fix hit exactly 200 and was compressed to fit by
+dropping a clause the Architecture boundaries section already states. The next
+standing rule added to that file forces a move-out into `docs/specs/*`, and
+that is cheaper to know now than to discover mid-batch.
+
+## The finishing plan, and the facts it measured (planner, 2026-09-12) - durable, read before implementing
+
+The whole remainder of task 47 is planned in `plan.md`, **"The finishing plan -
+every batch from here to done"** (the last section of that file): `B14 -> R0a ->
+R0b -> R0c -> Phase 8 under a new task id`. The brief for B14 is `handoff.md`,
+"Next batch (implement-ready)". Facts below were read off the source or measured
+this session; do not re-derive them.
+
+### Owner decisions, 2026-09-12 - settled input
+
+1. **The soak is dropped.** "I'm ok to get rid of soak, we can revert to
+   previous commit if needed, I would not block all the work." Phase 7's
+   condition 4 (seven days) is removed; condition 2 is reworded (the second
+   `check-site.mjs` read is taken when R0c opens); condition 3 is met by
+   evidence - `9177f3b`, `515e257`, `6cb8293` are three pushes, and R0a records
+   the two run conclusions rather than waiting on a clock; **condition 6 ("the
+   owner says go") now gates R0c alone**, because R0a and R0b delete nothing.
+2. Unchanged from the B13 close-out: the roll fix is never a batch of its own
+   (B14 is its host), and B12.1's nit 1 stays deferred (B14 C2 is where it
+   lands).
+
+### The revert cliff
+
+`git revert 9177f3b` is one command over one file today and stays so through
+B14, R0a and R0b. **R0c ends it**: after the deletions, recovery is restoring
+paths out of git history plus rebuilding the workflow's collect step - a batch,
+not a command. This is why condition 6 hangs on R0c only.
+
+### The roll re-render divergence is four call sites, not two
+
+Measured by reading the components. The handoff named `RollPanel.svelte:129`
+(one `<RecordCard>`, no `{#key}`) and `StdPanel.svelte:157`. The mechanism
+behind the second is **`OrGrid.svelte`'s `{#each cells as cell, i (i)}`, which
+keys by position**, so every caller that draws its card through `OrGrid`'s
+snippet reuses the node:
+
+- `StdPanel.svelte:157` (`items={pool}`)
+- `AltPanel.svelte:228` (`items={picks}`, `AltPick` wrappers)
+- `ListPage.svelte:676` - the **list page's own roll** (`.lroll`, `hit`),
+  `OrGrid or={t.or} items={[h]}`
+
+Keyed and unaffected: `TableRows.svelte:108` `(entry.it.id)`,
+`ListPage.svelte:782` `(it.id)`. Remounted by navigation and unaffected:
+`RecordPage.svelte:74`, `RecordModal.svelte:99`.
+
+`OrGrid` is generic (`items: T[]`), so `cell.it.id` is not available to it -
+object identity (`{#key cell.it}`) is, and it is the right key.
+
+**Classification, and it settles the open half of the owner's decision:** this
+is a divergence *from* live, not a live defect reproduced on purpose, so it is
+**not** a `docs/specs/DEBT.md` entry and not Phase 8's. It is migration work and
+belongs while the live app is still readable as the expectation.
+
+### The pinned bare `#/tables`, both halves
+
+Live does two things the port copied neither of: `homeHash()`
+(`app.js:1133-1136`) **writes** `'#/tables/' + S.tables.t`, always a named
+table; `homeAllows()` (`:1124-1130`) **accepts** any `TAB_LIST` entry - a bare
+`tables` included - as well as a named table. The rewrite's `toggleHome()`
+(`app/src/state/app.svelte.ts:444-454`) stores `this.hash` and `readHome`
+(`:65-72`) refuses a bare `#/tables` next boot.
+
+The writer needs "the table on screen", which lives in
+`TablesPage.svelte:65-75`'s `lastTable`, not in `AppState`. Measured:
+`App.svelte` remounts the page component on every route change and every
+interaction writes a named address, so `route.table ?? 'core_item'` inside
+`AppState` is exact. **Verify the remount before relying on it**; the fallback
+is `toggleHome(hash?)` with `TablesPage` passing `tablesHash(table)` through
+`PageHead`.
+
+### "Delete the legacy browser suites" is fifteen suites, ten with no counterpart
+
+Measured by requiring `tests/lib.js`, whose `ROOT` is
+`file://<repo>/index.html`. Dies with the live app: `audit2`, `behave`,
+`contracts`, `craftmob`, `eqtest`, `flows`, `hues`, `lists2`, `noart`, `notes`,
+`print`, `qa`, `select`, `states`, `typo`. Data-only and unaffected: `craft`,
+`dataint`, `derived`, `i18n`.
+
+`tests/app/` counterparts already exist for `contracts`, `hues`, `states`,
+`typo`, plus `sweep` for `audit2`'s page walk. **Ten have none**: `behave`,
+`craftmob`, `eqtest`, `flows`, `lists2`, `noart`, `notes`, `print`, `qa`,
+`select`. R0b gives each one of *covered already* (named specifically), *ported*
+or *dropped with a reason*; `print`'s geometry is named by Phase 7's own text
+and is a product law in `CLAUDE.md`. A suite whose coverage cannot be accounted
+for is not deleted.
+
+### Costs measured or read this session
+
+- Parity states: **105**. `"#/roll"` matches 18, plus `"#/lists/a ~ roll panel"`
+  and `"#/lists/a ~ rolled"` - 20 states, one foreground call.
+- `CLAUDE.md` is **199 lines** against its own 200-line cap. B14 therefore puts
+  the new standing rule in `.claude/prompts/` only; R0c, which deletes the
+  twenty-line "Migration and parity" section, puts it into `CLAUDE.md`.
+- `npm run check` runs `node .claude/hooks/selftest.mjs`, so a hook-message
+  assertion is gated by a call every batch already makes. `tools/` is ignored by
+  both `.prettierignore` and `eslint.config.mjs`, which is why
+  `tools/check-site.mjs` is reached by nothing until it runs post-deploy;
+  `node --check` in the `check` script closes it without touching `ci.yml`.
+- The counts rule is **seven** files (`tests/derived.js:397`), five after R0c
+  deletes `index.html` and `app.js`.
+
+### The standing rule this session earned
+
+**A placement has to be acceptance, not a footnote.** An item the plan places in
+a batch is written into that batch's acceptance criteria in `handoff.md` as its
+own line, and the closing record says what happened to each: done, or re-placed
+with a reason. A batch is not recorded closed while an inherited line has no
+outcome. Written because B12's nit 1 and nit 2b were placed in B13, B13 closed
+without them, and both documents went on saying they were handled. B14 puts the
+rule into `.claude/prompts/plan.prompt.md` and `implement.prompt.md`; R0c puts
+the one-line version into `CLAUDE.md`.
+
+### Task 47's end
+
+47 closes at **R0c**, not at Phase 8: Phase 8's own design gives R1 a new task
+directory "so this file can retire with issue 47". `plan.md`'s opening line,
+which says the file is historical once Phase 8 closes, is corrected by R0c's
+documentation commit. What happens to `issues/47/` itself is the owner's call;
+the recommendation is to keep it, since it is the only place the migration's
+measurements live.
+
+### One more thing R0a must not walk past (same session)
+
+`tests/parity/specs.js` has **no `pending` state and no `pending` spec** (so
+Phase 4's row in the Phases table was stale and is corrected), and
+**`VISUAL_DEBT` holds 18 entries**. Those 18 are known, measured places where
+the rewrite draws something different from the live app. R0c deletes the table.
+R0a therefore decides each of the 18 - paid off, or carried into a
+`FEATURES.md`/`STATE.md` bullet or a `DEBT.md` section-2 entry - because
+otherwise eighteen recorded divergences disappear with the file, which is the
+same class of loss as the two dropped nits and the ten uncounted legacy suites.
+
+## Phase 7 condition 3, satisfied by evidence (orchestrator, 2026-09-12)
+
+With the soak dropped, condition 3 - "the publish path has been exercised, not
+just opened: at least three pushes to `main`, each with `deploy` green" - is
+the one that still had to be *earned*. It is now met, and these are the runs
+that prove it:
+
+| push | run | result |
+|---|---|---|
+| `9177f3b` (the flip itself) | `34718569245` | green in every job, `deploy` included |
+| `515e257` (B13's F3) | `34719879067` | green in every job, `deploy` included |
+| `ecbd2f4` (the finishing plan) | `34720438881` | green in every job, `deploy` included |
+
+Each `deploy` re-assembled `_site` from `dist/` and re-ran
+`tools/check-site.mjs` against the live URL, so the published state has been
+verified three times by CI plus once by an independent read from this session.
+
+**One thing to know before reading a run list and drawing conclusions:
+`6cb8293`'s run was `cancelled`, and that is not a failure.** The workflow's
+top-level `concurrency` is `group: pages` with `cancel-in-progress: false`,
+which protects a run already executing but allows only one run *pending* per
+group: `ecbd2f4` arrived while `6cb8293` was still queued and superseded it.
+Nothing was lost - `ecbd2f4` is the later commit on the same branch and
+contains `6cb8293`'s tree. The practical consequence is that a burst of
+doc-only pushes will cancel the intermediate runs, so **a cancelled run is not
+evidence** and must not be counted toward condition 3. Space pushes out when a
+run's own result is the thing being collected.
+
+## State at the B14 kickoff (orchestrator, 2026-09-13)
+
+Measured, not remembered, before the dispatch:
+
+- **HEAD `37c5c2f`, equal to `origin/main`; tree clean** but for the untracked
+  `issues/tg-preview-refresh/`, which belongs to a different task and stays.
+- **Nothing is running anywhere on this host.** Every live `node.exe` is an MCP
+  stdio server (`@modelcontextprotocol/server-pdf`); no `vitest`, no
+  `tests/run-all.js`, no `tests/parity.js`, no `chrome.exe`. So a heavy gate
+  started now has the machine to itself, and a 5000ms timeout in this batch
+  would be a real finding rather than a stray browser.
+- **The orchestrator for this batch is pinned to another working tree.** Its
+  session was launched in `E:/dev/daggerheart-loot-wt/tg-preview-refresh`
+  (branch `automation/tg-preview-refresh`, 59 commits behind `main`), whose
+  `issues/47/` is a **stale copy frozen at "B7 planned"**. The owner directed
+  the work to `E:/dev/daggerheart-loot` instead. Two consequences worth
+  writing down, because the next session may inherit the same shape:
+  - **`issues/47/` exists on two branches and only `main`'s is true.** A cold
+    agent that reads the copy on `automation/tg-preview-refresh` will believe
+    the print slice is next and that Phase 6 has not happened. Check
+    `git branch --show-current` before trusting anything under `issues/47/`.
+  - **The Bash tool resets its cwd to the session's pinned directory between
+    calls.** Every command in this batch therefore carries an explicit
+    `cd /e/dev/daggerheart-loot &&` prefix; a command without one silently
+    runs against the other worktree.
+- **`.claude/agents/planner.md` already reads `model: opus`.** The owner asked
+  for Opus planning because Fable access has lapsed; the frontmatter had
+  already been changed, so nothing was edited and no per-dispatch model
+  argument was needed. B14 also needs no planning pass - it was left
+  implement-ready by the 2026-09-12 planner.
+
+
+## B14 closed and approved, and the three durable facts it produced (orchestrator, 2026-09-13)
+
+B14 landed as `6b18291` (C1, the roll surface), `af7fa17` (C2, the pinned home)
+and `a7f8787` (C3, the inherited checks), with `b86dffd` and `f2dca3b` as the
+records. Reviewed at Opus: **approve, no blockers in the diff, the remediation
+cycle unused.** Nothing here is pushed - the owner pushes.
+
+Three facts are worth carrying forward. Read them before planning R0a; two of
+them change what a batch has to do.
+
+1. **A parity filter that matches nothing is indistinguishable from a passing
+   run, and this is a live hazard for every remaining batch.**
+   `tests/parity.js` uses `WANTED` only to `continue` past non-matching cells
+   (`:353`, `:374`, `:551`); the summary prints the filter names (`:668`), then
+   `расхождений нет` and `process.exit(0)` (`:670-671`). **No cell count is
+   printed anywhere.** B14's first parity call had its `#/roll` arguments
+   rewritten into filesystem paths by Git Bash, matched zero cells, and looked
+   exactly like a clean pass - it was noticed only because no per-cell lines
+   scrolled past. Two consequences:
+   - **On this host, a parity filter containing `#/...` needs
+     `MSYS_NO_PATHCONV=1`** in front of the command.
+   - **R0a carries the fix as its own acceptance line**: if `WANTED.length` and
+     no cell was compared, fail the run. One line at the summary.
+2. **Svelte does not remount a page component between two addresses of the same
+   route kind.** `App.svelte:71` dispatches through a single `{#if}`/`{:else if}`
+   chain with one `{:else if app.route.kind === 'tables'}` arm, and a branch is
+   torn down only when the *matched branch* changes. So `TablesPage`'s
+   `lastTable` (`TablesPage.svelte:68-74`) survives a move between two `tables`
+   addresses and is what is genuinely on screen. B14's plan assumed the
+   opposite and its primary design would have pinned the wrong table; the
+   fallback shipped instead. **Any future design that reasons about mount
+   lifecycle across routes has to check the branch, not the address.**
+3. **`RecordCard` holds no DOM state that live restores**, so keying it is
+   safe. `RecordCard.svelte:232` has a refs `<details>`, but live's equivalent
+   (`app.js:887-888`) carries no `data-keep`, so `restoreOpen()`
+   (`app.js:3769-3775`) never restores it and live closes it on every rebuild.
+   C1's `{#key}` therefore removed a second, unmeasured divergence rather than
+   creating one.
+
+Six review nits are in `handoff.md`, "Deferred", each named to a batch - four
+of them R0a's.
+
+## State at the R0a planning kickoff (orchestrator, 2026-09-13)
+
+Measured this session, before any dispatch. All of it is status, not design -
+it exists so the R0a planning pass and its implementer do not measure it twice.
+
+- **HEAD is `32926a0`** (`docs(issue-47): record B14's review ...`), on `main`,
+  and **`main` is level with `origin/main`** - so B14's three code commits
+  (`6b18291`, `af7fa17`, `a7f8787`) and the three records **are pushed**, which
+  corrects the earlier handoff lines that say nothing was pushed.
+- **Working tree clean** but for `issues/tg-preview-refresh/` (untracked,
+  another task's - never `git add -A`).
+- **A second interactive session, `tg-preview-refresh-c1`, is live on this same
+  working tree** (started 2026-09-13, seen in `ListAgents`). Planning is
+  document-only and safe beside it; before any gate or commit, re-check
+  `git log --oneline -3` and `git status`, and do not start a heavy run if that
+  session has one alive.
+
+### Phase 7 condition 3, re-read and closed with run ids
+
+R0a's step 1 asks for the `deploy` conclusions of the runs on `515e257` and
+`6cb8293`, and for the id of the last **full** green workflow. Read via `gh`:
+
+| sha | run id | conclusion | `deploy` |
+|---|---|---|---|
+| `9177f3b` (the flip) | `34718569245` | success | success |
+| `515e257` | `34719879067` | success | **success** |
+| `6cb8293` | `34720031859` | **cancelled** | never ran |
+| `ecbd2f4` | `34720438881` | success | success |
+| `37c5c2f` | `34721165294` | success | success |
+| `32926a0` (HEAD) | `34747570250` | **in progress at 08:2x UTC** | pending |
+
+- **`6cb8293`'s cancellation is not a failed deploy and not a blocker.**
+  `ci.yml:13-15` sets `concurrency: group: pages, cancel-in-progress: false`,
+  which keeps the running job but drops superseded **pending** runs; `6cb8293`
+  was pushed at 21:27:58Z and `ecbd2f4` at 21:36:37Z, so its queued run was
+  superseded before it started. The publish path repeats on **four** green
+  `deploy` runs either side of it. Condition 3 is satisfied by evidence.
+- **`34721165294` on `37c5c2f` is the last confirmed full green workflow** -
+  `check`, `audit`, `secrets`, `parity (1..4)` and `deploy` all success. It is
+  an ancestor of HEAD but **predates B14's three code commits**, so it is
+  **not** an adequate seeding warrant for R0a's structural goldens: the goldens
+  must be seeded from a tree green on the full workflow, and B14 changed what
+  the app renders. **The warrant R0a should name is `34747570250` on `32926a0`
+  once it goes green** - it is HEAD's own run and carries all four parity
+  shards. If it is not green, that is a blocker to raise, not a clock to
+  restart.
+- **The live site check is green, taken fresh this session**:
+  `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/` ->
+  `сайт опубликован верно`. (The script requires the URL argument; with none it
+  exits `FAIL no base url`.) This is condition 2's independent read for R0a;
+  condition 2's *second* read still belongs to R0c, when that batch opens.
+- No `deploy` failure and no revert anywhere in the window, so condition 5
+  holds. Conditions 1, 2, 3 and 5 - everything R0a needs - are satisfied.
+
+### Model tiering for this cycle
+
+Fable is unavailable (owner, this session). `.claude/agents/planner.md` already
+carries `model: opus`, so the planner runs at its real documented tier with no
+per-dispatch override; the agent and orchestrator prose are corrected to stop
+naming Fable as the default.
+
+## R0a planning facts (planner, 2026-09-13) - durable, read before implementing
+
+Full design in `plan.md`, "R0a planned: the evidence, the sweep, and the
+structural goldens"; the brief and the sixteen acceptance lines in `handoff.md`,
+"Next batch". Read off the source or probed read-only against the `dist/` built
+at `32926a0` (one puppeteer page, the harness's own launch args, `prepare()`'s
+reduced motion, 1100x900). Do not re-derive.
+
+- **The goldens' instrument exists and is stable.**
+  `page.accessibility.snapshot()` is present in the installed puppeteer 25.9.0
+  (`Page.js:252` -> `cdp/Accessibility.js:132`), so Phase 5 decided 2's "no new
+  dependency" premise holds. Two consecutive captures of the same arrival were
+  byte-identical on all seven routes probed. Capture cost 12-120 ms; the arrival
+  around it is ~1.2 s typically and ~7 s on the `#/tables*` family.
+- **Three serialized fields are per-run poison** (`cdp/Accessibility.js:444-505`):
+  `elementHandle` (a function), `backendNodeId`, `loaderId`. A golden that keeps
+  any of them fails its own second run.
+- **`url` in the tree is an absolute `file:///E:/.../dist/index.html#/...`**,
+  three slashes, i.e. one machine's path - and it does **not** equal
+  `driver.js`'s `TARGETS.next` (`'file://' + path.join(...)`, two slashes,
+  Windows separators). Normalise by cutting at the last `/dist/index.html`
+  substring, never by prefix-comparing against `TARGETS.next`. CI is ubuntu.
+- **Normalised tree sizes** (nodes / bytes of text): `#/tables` 164 / 25.9k,
+  `#/search?q=` 90 / 6.5k, the nine-card print sheet 173 / ~10k,
+  `#/roll/wondrous` 44 / 3.2k, `#/i/ci1` 39 / 2.6k, `#/lists` 36 / 2.5k.
+  Estimated 1.5-2.5 MB over 105 states x 2 languages. **SUPERSEDED: the real
+  seed is 5,204,669 bytes; the seven routes here miss `eq_weapon` (317), `voa`
+  and the 300-match search cap. See "R0a's golden format, measured and revised",
+  at the end of this file.**
+- **`VISUAL_DEBT`'s 18 entries are one mechanism, not eighteen decisions.**
+  Three states (`#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal`,
+  `#/tables ~ a row opened`) x 6 cells, all 0.02 / 0.03 / 0.07%, every reason
+  "the close button's own focus ring" - the visible consequence of the rewrite's
+  `<dialog>` + `showModal()` moving focus where live leaves it on the page.
+  `specs.js:1964-2022`.
+- **That table's own comment is stale**: it says the fix is "the accessibility
+  fix `ACCEPTED` records", and no `ACCEPTED` key records it. The ten `ACCEPTED`
+  keys (`specs.js:2073-2106`) are eight `#/roll/alt*` controls entries and two
+  `#/tables ~ grid` controls entries, nothing else.
+- **Two of the four "Recorded, not keyed" divergences are already in
+  `FEATURES.md`** and need a verdict, not an edit: the anchor re-play at
+  `FEATURES.md:47-52`, the two-frame link at `FEATURES.md:61`. The other two -
+  `Chip`/`Seg`'s `aria-pressed` and `PrintCard`'s `<h2>` - are not, and become
+  bullets.
+- **`STATES` is 105 entries with zero `pending`**, 42 distinct routes, 61 with an
+  `enter`, 24 with a `storage` seed, 7 `timed`, 5 `whole`. The zero `pending`
+  count is what lets blocker B1's guard be written cleanly. The module-level
+  constants `STATES` reads are the print routes (`specs.js:28-56`), `PACKED`
+  (:70), `NOTES_BOTH_KINDS`, `QTY_AND_PRICE`, `LOOT` and the storage seeds
+  (:1017-1067); `EQUIPMENT_ENTRY` belongs to `SPECS` and does not travel.
+  **This list is one short: `NAME` (:91-185) travels too** - sixteen `enter`
+  closures call it. Measured and verified; see the revision section at the end.
+- **`tests/app/lib.js` imports `makeDriver`/`prepare` from
+  `../parity/driver.js`.** R0c's outline says it deletes `tests/parity/` whole;
+  `driver.js` is live code with four (soon five) dependants under `tests/app/`
+  and must be **re-homed by R0b**, not deleted. Nothing in R0a moves it.
+- **A new `run-all.js` row is picked up by CI for free**: `ci.yml:51` is
+  `node tests/run-all.js --exclude=parity`, run after `npm run build`.
+- **`tests/` is invisible to `npm run check`'s formatting and lint steps**
+  (`.prettierignore`, `eslint.config.mjs:10-16`); a new suite there is verified
+  only by running it. `tests/derived.js`'s `COUNTERS` (:397-398) does not read
+  `docs/specs/`, so the sweep's new bullets cannot trip the counter check.
+- **The working tree at planning was not clean**, contrary to the dispatch:
+  four tracked files modified (`.claude/README.md`, `.claude/agents/planner.md`,
+  `.claude/prompts/orchestrate.prompt.md`, `issues/47/context.md` - the
+  orchestrator's own session edits) plus the untracked
+  `issues/tg-preview-refresh/`. Preserve all five; stage by path.
+
+### The seeding warrant, resolved (orchestrator, 2026-09-13)
+
+Run **`34747570250` on `32926a0` completed `success`** at 08:37 UTC - `check`,
+`audit`, `secrets`, `parity (1..4)` and `deploy`, every one green. It is the
+warrant R0a's structural goldens seed under, and the row above that calls it
+"in progress" is superseded by this.
+
+Two documentation commits landed on top of it while it ran - `fe4eba2` (the
+planner tier text) and `7288106` (R0a's plan) - **both `.md`-only**, so `dist/`
+built from this tree is byte-identical to `dist/` built from `32926a0` and the
+warrant covers what the goldens actually capture. If any non-document commit
+lands before the goldens are seeded, the warrant no longer covers the tree and
+a fresh green run is needed.
+
+## R0a's golden format, measured and revised (planner, 2026-09-13) - durable, supersedes the size estimate above
+
+The seed was built to Decided 1 and measured. Everything here is a measurement of
+the real corpus or of the app, not an estimate. Full reasoning in `plan.md`,
+**"Decided 1, revised: what a golden captures for the largest states"**.
+
+- **The 1.5-2.5 MB estimate in "R0a planning facts" is wrong and is superseded.**
+  The seed is **5,204,669 bytes over 105 files, 40,361 section lines**. The seven
+  routes that estimate sampled did not include `eq_weapon` (317 records), `voa`,
+  or the 300-match search cap. Mean 50 KB; five files hold ~1.5 MB.
+- **The bytes are catalogue text, not structure.** A table row is a `checkbox`
+  and a `button` at the same depth with **no wrapper element**, and the button's
+  accessible name is that record's whole stat line - up to 1023 characters.
+  **14,720 of the 40,361 lines carry a name over 64 characters**, and every one
+  of the 105 files has at least one (the footer's "Данные: Daggerheart Core
+  Set, ..." is 444).
+- **The revised format is two local rules, applying to all 105 states with no
+  hand-listed set**: same-shape sibling elision (signature = role + attribute
+  *values* + child shape, names excluded; groups of more than five keep the first
+  two and last two and write one `... role xN of M same-shape siblings elided`
+  line) and a 64-code-point cap on every name with `namelen`/`namehash`
+  appended. Replayed over the seeded corpus: **5.20 MB -> ~1.50 MB, 40,361 ->
+  24,346 lines**; largest file 372 KB -> 89 KB.
+- **The controls section and the accessibility tree disagree about the same row,
+  by design, and must not be reconciled.** Matching one against the other to
+  elide the controls list was tried and **matches 462 of 12,829 entries**:
+  `NAME_FN` (`driver.js:105`) is `aria-label || title || textContent`, so a row's
+  control name has no inter-element spaces, carries the roll-number cell, and
+  keeps the DOM's letter case, while the accessibility name inserts boundary
+  spaces, omits the number, and reflects `text-transform: uppercase`. That
+  disagreement is the `Сообщество <i>любое</i>` class the two instruments exist
+  to keep apart. The controls section therefore gets the cap only, and keeps its
+  12,829 lines.
+- **The capture is reproducible; the format was never the problem.** Two
+  independent full captures on an unchanged `dist/` were byte-identical across
+  all 105 states, both languages - exit 0, zero differences. Decided 1's three
+  dropped fields and the `file://` url normalisation really were the whole
+  non-determinism.
+- **Costs, measured on this host**: seeding (`--update`) **414.6 s**; comparison
+  **1005 s**. The 2.4x gap is **not** explained by the compare path - the extra
+  work is one `readFileSync`, one `split`/`join` per section over 5.2 MB, order
+  of a second. Host contention was partly present but is not established, so the
+  suite prints `съёмка: Xs из Ys` on every run and the next log settles it.
+  A comparison at 1005 s cannot fit the 600 s foreground cap at any capture size,
+  so the suite carries `--shard=n/of` (`parity.js:63-76`'s grammar and interleave)
+  and a shard is ~250 s.
+- **`--shard` suppresses neither the missing-golden nor the stale-file guard.**
+  The missing check is per state and runs naturally; the stale check compares the
+  directory against the **whole** inventory, which every shard knows in full.
+  Only `--only=` suppresses them.
+- **`tests/app/inventory.js` carries `specs.js`'s `NAME` too** (`specs.js:91-185`,
+  the two-language button-name dictionary): sixteen `STATES` `enter` closures call
+  `NAME.ru.*` / `NAME[lang]`. The five-name list in "R0a planning facts" above is
+  short by one; the rule it states ("exactly the module-level constants it reads")
+  always covered it. **R0b and R0c must carry `NAME` with the rest.** The copy is
+  verified by reproducing this file's own seven numbers exactly - 105 states, 0
+  pending, 61 `enter`, 24 `storage`, 7 `timed`, 5 `whole`.
+- **A capture loop in this repository must `return await`, not `return`.**
+  `return captureLang(page, d)` inside `try { ... } finally { await ctx.close() }`
+  closes the puppeteer browser context out from under an in-flight CDP call and
+  throws `TargetCloseError` from `Accessibility.snapshot()`. The fix is
+  `return await captureLang(page, d)`. It crashed loudly on the `timed` states,
+  which was luck; a version that only sometimes lost the race would have seeded a
+  golden nobody could trust. This is the general shape, not a `golden.js` detail:
+  the next capture loop written here will hit it.
+- **The suite is not free to CI, contrary to "a new `run-all.js` row is picked up
+  for free".** At 7-17 minutes it would make `check` (11m51s) the workflow's
+  critical path, past the parity shards' ~10 minutes. It goes in `ci.yml` as its
+  own 4-shard job beside `parity`'s, with `ci.yml:51` becoming
+  `--exclude=parity,app/golden` - the precedent `run-all.js:73-76` documents and
+  `ci.yml:44-50` already implements.
+- **Repository size, for perspective on any future artefact question**: 63.4 MB
+  tracked, of which `img/` is 29.1 MB, `i/` 4.0 MB, and `data.js` + `data.json` +
+  `catalog.csv` 1.87 MB. A 1.5 MB golden corpus is 2.4% of the tree and smaller
+  than the generated `i/` directory.
+
+## The golden job costs CI nothing, measured (orchestrator, 2026-09-13)
+
+R0a's acceptance line 20 asked whether CI's wall clock grows once the structural
+goldens run there. It does not. Run **`34753801089` on `30b2744`** (C1 + C2),
+green in every job, against the warrant run `34747570250` on `32926a0`:
+
+| job | `34747570250` | `34753801089` | delta |
+|---|---|---|---|
+| `check` | 11m51s | 11m57s | +6s |
+| `parity (3)`, the longest shard | 10m32s | 10m33s | +1s |
+| `golden (1..4)` | - | **1m43s - 2m02s each** | new, off the critical path |
+
+The four `golden` shards start with everything else at 11:11:49 and are all done
+by 11:13:51, while `check` runs to 11:23:46 and `deploy` starts at 11:23:51. So
+the suite is finished nine minutes before the job that actually gates the
+publish, and both deltas above are inside run-to-run noise.
+
+**A shard costs ~2 minutes on CI against ~4m20s locally**, which is worth
+knowing before anyone reads a local shard time as the suite's real cost.
+
+The run on `06658fd` - the tip after C3 and the built record - is
+`34754984230`, queued at the time of writing; it is the first run that carries
+`tests/parity.js`'s B1 fix and the `isHome` deletion.
+
+## `app/states` case 7 flakes on a loaded runner, and it is not R0a's (orchestrator, 2026-09-13)
+
+CI run **`34754984230` on `06658fd`** - the first run carrying C3 - came back
+**`check: failure`**, on one case and one line:
+
+```
+FAIL  app/states dist/: реальный ввод              66.1s
+      FAIL 7 (два окна): страница B не увидела список, созданный на A, без перехода
+```
+
+Every other job in that run was green, all four `golden` shards included.
+
+**It is a flake, not a regression, on four independent readings:**
+
+1. **C3 cannot cause it.** `47a9a15` touches `app/src/state/app.svelte.ts` only
+   to delete the five-line dead `isHome` getter; the rest is `app.test.ts`,
+   `tests/parity.js`, `docs/parity.md`, and assertions added to
+   `tests/app/states.js` **case 14** and `typo.js`. Nothing in the diff goes
+   near storage, the `storage` event, or the lists page.
+2. **It passes locally on the same tree**: `node tests/run-all.js app/states`
+   -> `ok app/states dist/: реальный ввод 65.0s`, all fourteen cases. The 65.0s
+   against CI's 66.1s says the suite ran the same work both times.
+3. **A second CI sample on the same C3 code is green**: run `34755188652` on
+   `6e1269b`, `check: success`.
+4. **The case is written to flake.** `tests/app/states.js:190-192` waits for
+   page B to redraw with `waitForFunction(..., { timeout: 5000 }).catch(() => {})`
+   - the timeout is **swallowed** - and then asserts on whatever the page says.
+   So a runner slow enough to take over five seconds to deliver the `storage`
+   event and repaint produces exactly this failure text, and a fast one hides it.
+
+**Recorded as a Deferred item rather than fixed here**: it is a pre-existing
+case, R0a did not write it, and the fix is a design question (raise the timeout,
+poll to a deadline, or wait on the event itself rather than the repaint) that
+belongs to whoever owns `tests/app/states.js` next. What must not happen is the
+next red `check` being read as "that flaky two-window case again" without
+someone checking the diff first - which is how a real regression hides behind a
+known flake.
+
+## State at the R0b planning kickoff (orchestrator, 2026-09-16)
+
+A measured snapshot only. Nothing here decides anything R0b owes.
+
+**HEAD has moved five commits past what R0a's record names, and none of it is
+task 47's.** `git log --oneline -5`:
+
+```
+df1bd57 docs(config-audit): record B2 completion, correct selftest baseline, hand off B3
+d61aadb docs(agents): thin the wrappers, allowlist the reviewer, name the planner-tier policy
+93d601c docs(config-audit): record B1 completion and hand off B2
+779fae6 docs(claude): trim CLAUDE.md, repair dead references, add manual skills
+2d2e983 fix(app): resolve task 56 typecheck regressions
+```
+
+R0a's last commit `f826bcd` is behind these. The four `docs(...)` commits belong
+to `issues/config-audit/` and to the agent wrappers; `2d2e983` is task 56's.
+None touches `tests/app/`, `tests/parity/`, `tests/run-all.js` or the legacy
+suites, so **R0b's working set is untouched by them** - but two of them edited
+`CLAUDE.md` and `.claude/agents/`, so a planner must read the current
+`CLAUDE.md` rather than trust a quotation of it from this file.
+
+**`origin/main` is four commits behind HEAD**: remote is `2d2e983`, HEAD is
+`df1bd57`. The four unpushed commits are the config-audit task's, not 47's.
+Recorded, not acted on - 47 does not push another task's boundary.
+
+**The working tree is not clean, and the dirt is another task's.** 76 tracked
+paths modified: `app.js`, `app/src/components/TablesPage.svelte`,
+`app/src/lib/{dict,label,tables}.ts`, four `docs/specs/*.md`, 57 `i/f*.html`,
+`tools/build-share-pages.js`, and `issues/56-followup/handoff.md`. Untracked:
+`.agents/`, `.codex/`, four `.claude/agents/impeccable-*.md`,
+`.claude/skills/impeccable/`, `issues/tg-preview-refresh/`. This is task
+56-followup / tg-preview-refresh work in flight. **Do not stage it, do not
+`git add -A`, do not run `npm run check` on it** - the check would be measuring
+half-finished edits that belong to someone else.
+
+**Three peer sessions share this working tree** (`ListAgents`, 2026-09-16):
+`claude-rewrite` (idle), `tg-preview-refresh` (idle), and
+`Code review for issues 59 & 56` (busy). No heavy run is alive: no
+`test-output/parity.lock`, no `chrome.exe`, and every live `node.exe` is a
+session host rather than a test runner.
+
+**Consequence for R0b's shape**: the planning pass is document-only and safe
+beside the above. **The implement pass is not**, and an implementer cannot take
+this tree as it stands - its gates (`npm run check`, `check:built`, a parity
+filter) would run over another task's uncommitted edits and report their
+failures as R0b's. R0b's plan must say so, and the batch waits for a clean tree.
+
+**Task-document size, stated as a fact for whoever prices the next read**:
+`plan.md` is 1007 KB, `handoff.md` 510 KB, `context.md` 222 KB (before this
+block). Every worker on this task pays that on entry. Compaction is
+`.claude/skills/handoff/SKILL.md`'s procedure and it has not been run.
+
+## R0b planning facts (planner, 2026-09-16) - durable, read before implementing
+
+Full design in `plan.md`, "R0b planned: re-home the live-app coverage that must
+survive"; the batch briefs in `handoff.md`, "Next batch". Measured read-only off
+the current tree at `df1bd57`. Do not re-derive.
+
+### The harness move is two edits, not five
+
+- **`tests/parity/driver.js` has exactly two importers**, and only one of them
+  is under `tests/app/`: `tests/app/lib.js:14` and `tests/parity.js:32`. The
+  five `tests/app/` suites reach the driver **through `tests/app/lib.js`**, not
+  directly (`contracts.js:9`, `golden.js:25`, `hues.js:13`, `states.js:11`,
+  `sweep.js:11`, `typo.js:23` all require `./lib.js`). "Five suites import it"
+  is true only transitively.
+- **`driver.js:17` is `const ROOT = path.join(__dirname, '..', '..')`.**
+  `tests/parity/` and `tests/app/` sit at the same depth, so a move between
+  them needs **no path edit inside the file**.
+- **`tests/parity.js:156` hashes the driver by literal path** -
+  `hashFile(h, path.join(__dirname, 'parity', 'driver.js'))` - into the legacy
+  screenshot cache key. It is a second, non-obvious edit the move requires, and
+  it is the exact "a check quietly stops checking" shape: the driver's
+  `ready()`/`settle()`/`shot()` decide the bytes of every cached legacy PNG.
+  `hashFile` on a missing path throws, so it fails loudly rather than silently -
+  but only when a parity run is next attempted, which CI does **not** do on a
+  push (`COVERAGE.md`: the parity job is manual dispatch).
+- **Cheap proof the move landed**: `node tests/parity.js zzz-no-such-state`
+  resolves both the `require` and the cache-key `hashFile`, then exits non-zero
+  on B1's zero-match guard (`tests/parity.js:683-687`) without shooting a single
+  state. It does acquire the lock and wipe `test-output/parity/` first
+  (`parity.js:311`, `:320`), so it is not free beside a peer session.
+- **Four prose references name the old path** and move with it:
+  `docs/specs/COVERAGE.md:367`, `docs/specs/DEBT.md:246`, `tools/probe.mjs:10`,
+  `tests/app/states.js:261`. (`COVERAGE.md:183` says bare `driver.js` and is
+  unaffected.)
+
+### `tests/parity/lock.js` is a live hook dependency R0c's outline does not name
+
+Imported by `tests/parity.js:33`, **`.claude/hooks/bash-guard.mjs:31`** and
+**`.claude/hooks/selftest.mjs:769`**. R0c's outline deletes `tests/parity/`
+whole while naming only `specs.js` and `driver.js`, so the directory delete
+would take two hooks with it. **Not moved in R0b**: after R0c nothing writes
+`test-output/parity.lock` (only `parity.js` does), so the whole parity-lock
+mechanism becomes dead, and re-homing it now is work R0c would undo. Recorded
+as an R0c step instead - delete the module with its `bash-guard.mjs` rule and
+its `selftest.mjs` case, or re-home it if heavy-run locking is still wanted for
+`run-all`/`golden`.
+
+### `tests/lib.js` holds one thing with no other home
+
+`readPNG` (`tests/lib.js:36`) has exactly one consumer, `tests/print.js:489`,
+and dies with `tests/lib.js` in R0c. `ready` and `ROOT` are live-app-only and
+die with it correctly.
+
+### Print's instrumentation is in two files, not one
+
+Beyond `tests/print.js` (647 lines), **four print-only specs in
+`tests/parity/specs.js`** also retire in R0c and are measured nowhere else:
+`sheetCounts` (`:880`), `cardFit` (`:903`), `printMedia` (`:924`),
+`copiedPrintLink` (`:962`). `printMedia`'s `d.media('print')` emulation - the
+chrome hidden, `break-inside`, `print-color-adjust`, the unshadowed sheet - and
+`cardFit`'s per-width fit numbers exist in no other instrument. A port that
+carries only `tests/print.js` loses them.
+
+The port itself is mechanically cheap: `dist/` renders the same class names as
+live - `.psheet`, `.pcard`, `.pcard.blank`, `.psheet[data-next]`, `.psheet.bw`,
+`[data-act="printArt"|"printBack"|"printLink"]`
+(`app/src/components/PrintPage.svelte`) - and `print.js` keys the card name off
+`.pc-name` by class, so `FEATURES.md:179`'s deliberate `<h3>`->`<h2>` change
+does not touch it. The driver already has every verb the port needs
+(`media`, `computed`, `eachAt`, `count`, `settle`, `clipboard`), which is why
+the driver move has to land first.
+
+### `app/states` case 7: the storage event is observable separately from the repaint
+
+`app/src/ports/storage.ts:61-71` adds a plain `window.addEventListener('storage')`.
+A test page can add its own independent listener via
+`page.evaluateOnNewDocument`, so "the browser delivered the event" and "the app
+redrew" are two separately waitable conditions rather than one 5000 ms guess.
+
+### Suite-coverage facts measured for the ten verdicts
+
+- **`tests/run-all.js` is the only thing that runs a browser suite.**
+  `npm run check` does not (`package.json`: format/lint/typecheck/check-site/
+  data/derived/i18n/selftest/vitest). `eslint.config.mjs:18` ignores `tests/**`
+  and `.prettierignore:13` ignores `tests/`, so a new suite under `tests/` is
+  neither linted nor formatted - only `node tests/run-all.js <name>` reads it.
+- **CI picks a new suite up with no `ci.yml` edit**: the `check` job runs
+  `node tests/run-all.js --exclude=parity,app/golden` (`ci.yml:47`). This is
+  what keeps `git show 9177f3b | git apply --reverse --check -` at 0 through
+  R0b - `9177f3b` touches `.github/workflows/ci.yml` and nothing else.
+- **`.claude/hooks/bash-guard.mjs:412` matches `node tests/run-all.js`
+  generically** and `edit-guard.mjs:36` only guards `tests/app/snapshots/`, so
+  a new suite needs no hook change.
+- **`tests/app/sweep.js`'s clipped-text selector list** is
+  `.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum`
+  (`sweep.js:272`). It does **not** include `.craft, .rcraft, .dicebar,
+  .numrow`, which is what `tests/craftmob.js:28` measures, and sweep never
+  ticks a row so `#selBar` is never drawn during its pass.
+- **Widths**: `craftmob` runs 320/360/390/430/768, `sweep` and `audit2` run
+  360/390/768/1180, parity runs 375/768/1100 (`specs.js:1011`). 320 is below
+  every other instrument's floor and below `style.css`'s narrowest breakpoint
+  (430).
+- **`#/tables ~ a row ticked` is already a registered state**
+  (`tests/app/inventory.js:560`), so a narrow-width selection-bar measurement
+  adds no `STATES`/inventory entry and forces no golden re-seed.
+- **`qa`'s fate list is at `plan.md:11749`**, under "Phase 5 - the testing
+  pyramid, planned" -> Decided 3, **not** under "B12 planned" (`plan.md:12478`),
+  which the handoff's pointer implied. It lists 20 entries against `qa.js`'s 22
+  assertion groups.
+
+### Cost, measured, that decides how the gates are called
+
+`node tests/run-all.js app/sweep` took **593.5s** on this host and crossed the
+600s foreground cap (`plan.md`, R0a's built record). So the five-suite
+`tests/app` line in `CLAUDE.md` is **not** one foreground call on this host:
+sweep goes on its own (four `node tests/app/sweep.js <width>` calls, or one
+backgrounded call), and `app/golden`'s four shards go separately again
+(~250-265s each).
+
+### The tree state, corrected mid-session (planner, 2026-09-16, later)
+
+The peer session committed while this plan was being written, so the 76-path
+dirty tree the kickoff block above records **is gone**. HEAD is now **`bb55a2d`**
+(`c92c8e8` "fix(app): repair Other provenance and the specs the split left
+stale" plus its record), two commits past `df1bd57`. `c92c8e8` touches
+`app.js`, `TablesPage.svelte`, `app/src/lib/{dict,label,tables}.ts`, four
+`docs/specs/*.md` - **including `COVERAGE.md`** - `tools/build-share-pages.js`
+and 57 `i/f*.html`. Nothing in it touches `tests/app/`, `tests/parity/`,
+`tests/run-all.js` or the legacy suites, so R0b's working set is still
+untouched. Working tree: only `issues/47/*.md`, plus the untracked paths below.
+
+**But `npm run check` does not pass on this tree, and it is nobody's task.**
+`bb55a2d`'s own message says the gate was bypassed because "a concurrent
+session's untracked skill install fails format:check and lint in files this
+commit does not touch". Measured for this plan, that is exact:
+
+- `.agents/skills/impeccable/scripts/*.js` - six vendored files including a UMD
+  bundle - are ignored by **neither** `.prettierignore` (it has no `.agents/`)
+  **nor** `eslint.config.mjs` (it ignores `.claude/**`, not `.agents/**`), so
+  they fail both `format:check` and `lint`.
+- `.claude/skills/impeccable/scripts/*.js` are eslint-ignored through
+  `.claude/**` but **not** prettier-ignored: `.prettierignore:23-25` names only
+  three specific `.claude/` files, and `*.md` at `:29` covers the
+  `.claude/agents/impeccable-*.md` wrappers but not these.
+
+So the failure is a third-party skill drop, not any task's code. **Do not fix
+it by editing `.prettierignore` or `eslint.config.mjs`** - repository gate
+configuration is `issues/config-audit/`'s surface, and widening a gate to
+accommodate an untracked vendor directory is the same move as routing around
+one. Either the install is removed or relocated by whoever made it, or the
+owner decides the ignore rule. Until then every batch in this repository pays a
+red `npm run check` for a reason that is not its own, which is precisely the
+condition that gets a real failure waved through.
+
+### Both R0b blockers verified independently (orchestrator, 2026-09-16)
+
+Re-measured after the planning pass, because a blocker that stops a batch is
+worth a second reading:
+
+- HEAD is **`bb55a2d`**, and `git show --stat bb55a2d` is one file,
+  `issues/56-followup/handoff.md`. The code commit under it is `c92c8e8`.
+  Working tree carries only `issues/47/*.md` and the untracked paths.
+- `npx prettier --check .` exits non-zero on **16 files**, every one of them
+  inside the skill install: eight under `.agents/skills/impeccable/`, seven
+  under `.claude/skills/impeccable/scripts/`, plus `.impeccable/hook.cache.json`.
+  `eslint.config.mjs:10-26` ignores `.claude/**` and does not name `.agents/**`;
+  `.prettierignore` names neither. The planner's reading is exact, including
+  which of the two tools misses which directory.
+- `npm run check` fails at its **first** step (`format:check`), so nothing
+  downstream of it has been exercised on this tree at all. That is the part
+  worth keeping in mind: the red is not "lint noise past a green suite", it is
+  a gate that never got to the tests.
+
+Left unfixed on purpose, and the routing is the point rather than the timidity:
+which glob lands in `.prettierignore` versus `eslint.config.mjs` is
+configuration every later session runs under, `issues/config-audit/` is the
+open task that owns that surface, and `CLAUDE.md`'s own posture is that an
+orchestrator measures a status and hands a design over. Recorded, not decided.

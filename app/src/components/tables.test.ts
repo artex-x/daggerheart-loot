@@ -5,11 +5,12 @@
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import SelBar from './SelBar.svelte';
 import TablesPage from './TablesPage.svelte';
 import {
   fakeClipboard,
@@ -99,6 +100,9 @@ const LOOT: Loot = {
         community_ru: 'Великородное',
         ru: 'Перстень Рода'
       })
+    ],
+    starting: [
+      row({ id: 's1', src: 'core', kind: 'item', starting: true, ru: 'Стартовый предмет' })
     ],
     /* One more frame-sourced record, an armour, so the equipment `src` facet
        row has a frame to offer alongside the books - f1 and f2 stay as they
@@ -247,6 +251,10 @@ describe('the view switch', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
     expect(screen.getByText('Кольцо Тишины')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Списком' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сеткой' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
   });
 
   it("carries a tile's own tier where there is no roll and no stat block", async () => {
@@ -437,6 +445,21 @@ describe('the selection bar', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Не удалось скопировать');
+  });
+
+  it('copies nothing and says nothing when a selection outlives the row it named', async () => {
+    /* `app.toggleSel(id)` (state/app.svelte.ts) accepts any id, so a selection
+       holding one the index does not carry is a real shape - a row removed
+       from under a ticked selection, say - and reaches `copySel`'s early
+       return that a chosen-and-present id never does. */
+    const clip = fakeClipboard();
+    const app = new AppState(at({ clipboard: clip }));
+    app.toggleSel('nope');
+    render(SelBar, { app });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+    expect(clip.last.rich).toBeUndefined();
+    expect(clip.last.text).toBeUndefined();
+    expect(app.toast).toBeNull();
   });
 
   it('has no axe violations with the bar up and its menu open', async () => {
@@ -857,18 +880,41 @@ describe('a sectioned body: Vault of Ages by tier', () => {
   });
 });
 
-describe('a sectioned body: campaign frames', () => {
+describe('a sectioned body: Other', () => {
   it('lists every campaign that has a row, including one with a single row', () => {
     render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/frames'), data: fakeData(LOOT) })
+      env: fakeEnv({ router: memoryRouter('#/tables/other_frames'), data: fakeData(LOOT) })
     });
     /* The row's own source badge carries the same name (label.test.ts's own
        fix), so a section heading is not the only place the text appears. */
     expect(document.querySelectorAll('.tsec-head .lbl')).toHaveLength(2);
+    expect(document.querySelector('.tsection #sec-starting')).toBeNull();
     expect(screen.getAllByText('Пир зверей').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Материнская Плата').length).toBeGreaterThan(0);
     /* No row belongs to it in this fixture, so it draws no section at all. */
     expect(screen.queryByText('Колоссы Сухоземья')).not.toBeInTheDocument();
+  });
+
+  it('keeps a frame-selected starting item in its setting section', () => {
+    const motherboardStarter = row({
+      id: 's2',
+      src: 'core',
+      kind: 'item',
+      starting: true,
+      frame: 'motherboard',
+      ru: 'Стартовая материнская плата'
+    });
+    const data = structuredClone(LOOT);
+    data.items['starting']!.push(motherboardStarter);
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/other_frames/f_frame-motherboard'),
+        data: fakeData(data)
+      })
+    });
+    expect(document.getElementById('sec-starting')).toBeNull();
+    expect(document.getElementById('sec-motherboard')).not.toBeNull();
+    expect(document.querySelector('#sec-motherboard [data-row="s2"]')).not.toBeNull();
   });
 });
 
@@ -913,9 +959,11 @@ describe('the alternate tables', () => {
 
   it("reads the source badge as the frame's own name, not its raw id", () => {
     render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/frames'), data: fakeData(LOOT) })
+      env: fakeEnv({ router: memoryRouter('#/tables/other_frames'), data: fakeData(LOOT) })
     });
     const row = screen.getByRole('button', { name: /Пирог Зверя/ });
+    /* A tag never carries a path: the badge names the setting alone, the same
+       leaf the section heading above the row already carries. */
     expect(within(row).getByText('Пир зверей')).toBeInTheDocument();
   });
 });
@@ -949,6 +997,87 @@ describe('the row and section anchor', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/core_item/nope'), data: fakeData(LOOT) })
     });
+    expect(document.querySelector('.flash')).not.toBeInTheDocument();
+  });
+
+  it('the outline follows the record into the grid view', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    vi.useFakeTimers();
+    try {
+      render(App, {
+        env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+      });
+      await tick();
+      await Promise.resolve();
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+      await fireEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+      await tick();
+      const tile = document.querySelector('[data-row="ci2"]');
+      expect(tile).toHaveClass('tilewrap');
+      expect(tile).toHaveClass('flash');
+      expect(scroll).toHaveBeenCalledTimes(1);
+      vi.advanceTimersByTime(1599);
+      await tick();
+      expect(tile).toHaveClass('flash');
+      vi.advanceTimersByTime(1);
+      await tick();
+      expect(document.querySelector('[data-row="ci2"]')).not.toHaveClass('flash');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('re-plays the scroll and the outline on a language switch', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+      expect(scroll).toHaveBeenCalledTimes(1);
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await waitFor(() => {
+      expect(scroll).toHaveBeenCalledTimes(2);
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+    });
+  });
+
+  it('a search keystroke does not re-play it', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(scroll).toHaveBeenCalledTimes(1);
+    });
+    await userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию…'), 'а');
+    expect(scroll).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a flash in flight when a route change drops the anchor', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/core_item/ci2'),
+      data: fakeData(LOOT)
+    });
+    render(App, { env });
+    await waitFor(() => {
+      expect(document.querySelector('[data-row="ci2"]')).toHaveClass('flash');
+    });
+    /* A different table under 1.6s carries no anchor of its own, and the
+       alternate tables share ids across tables (`ci*`/`q*`): without the
+       clear, the stale class would light whatever row on the new table
+       happens to carry the same id. A real address-bar click cannot be
+       used here - `Chip`'s `<a href>` relies on a browser's own
+       hashchange, which `memoryRouter` does not fire - so the fake
+       router is driven directly, the file's own pattern (see "belongs
+       to the table it was made on: a hash change drops it"). */
+    env.router.navigate('#/tables/hnf_item');
+    await tick();
     expect(document.querySelector('.flash')).not.toBeInTheDocument();
   });
 });

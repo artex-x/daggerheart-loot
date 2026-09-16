@@ -81,6 +81,7 @@
       <button
         type="button"
         class="fpill"
+        data-val={c.group + ':' + c.value}
         title={t.dropValue}
         onclick={() => {
           onpick(c.group, c.value);
@@ -104,6 +105,9 @@
     >
   </div>
   {#if open}
+    <!-- `.ffilter` is a `Panel.svelte` variant: the base `.panel` rule plus
+         this component's own margin-top, kept inline for the same reason
+         `TablesPage`'s `.tablenav` is (plan.md, "B10 planned", decided 1). -->
     <div class="panel ffilter">
       {#each rows as row (row.group)}
         <div class="field">

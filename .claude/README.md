@@ -2,7 +2,7 @@
 
 | Agent | Prompt | Default model frontmatter |
 |-------|--------|---------------------------|
-| planner | prompts/plan.prompt.md | fable (opus when Fable access is unavailable) |
+| planner | prompts/plan.prompt.md | opus |
 | implementer | prompts/implement.prompt.md | sonnet |
 | reviewer | prompts/review.prompt.md | opus |
 | add-source | prompts/add-source.prompt.md | sonnet |
@@ -10,12 +10,19 @@
 
 Orchestrator: prompts/orchestrate.prompt.md
 
-Each agent's frontmatter carries its real default tier, so a dispatch that names
-no model still runs where it should. Never use `model: inherit` for a worker -
-inherit means the session model, so a worker dispatched from a strong session
-silently runs at that tier instead of its documented one. The orchestrator raises
-a tier with an explicit `model` argument per dispatch; see the model selection
-section of prompts/orchestrate.prompt.md.
+## Host-aware explicit routing policy
+
+Claude hosts use the frontmatter defaults above and human-controlled
+session-level effort. On Codex, the orchestrator explicitly passes `model` and
+`reasoning_effort` on every worker dispatch with `fork_turns: "none"` or a
+bounded positive count. The role defaults are Sol/medium for planner and
+reviewer, and Terra/medium for implementer, add-source, and refresh-artwork.
+The only Codex ladder is Sol -> Terra -> Luna; Luna is only for an explicit,
+bounded low-risk mechanical or read-only helper. `medium` is the default and
+`high` the only escalation. See prompts/orchestrate.prompt.md. The planner's
+tier can be escalated to `fable` for one dispatch under the named tests in
+prompts/orchestrate.prompt.md, "Planner tier"; the frontmatter stays `opus`,
+and a resume keeps its tier.
 
 The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
 
@@ -29,6 +36,66 @@ Kickoff:
   TASK: <id>
   GOAL: <feature or add source items...>
 
+## Skills
+
+Three project skills, all manual (`disable-model-invocation: true`),
+so they cost nothing in the skill listing and are followed by reading
+the file when an agent needs them:
+
+| Skill | File | Owns |
+|---|---|---|
+| `/orchestrate` | `skills/orchestrate/SKILL.md` | one pointer to `prompts/orchestrate.prompt.md` |
+| `/handoff` | `skills/handoff/SKILL.md` | session closeout, the task-state size budget (150 KB warn, 300 KB collapse), the never-drop and always-drop lists, per-file collapse actions, retirement |
+| `/small-fix` | `skills/small-fix/SKILL.md` | a single-file visual bug pinned to a width: reproduce at that width first, then fix, every gate, commit; no planner, no `context.md`, no review |
+
+`.claude/skills/` is untracked as a directory because it also holds
+owner-local tools; the three files above are tracked by name.
+
+The `<!-- setup-claude-agents -->` markers around `CLAUDE.md`'s
+Orchestration section came from `29f8920`, this repository's own
+wiring commit; no generator on this host reads them. The block is
+hand-owned and edited in place.
+
+## Resuming a worker
+
+A subagent that ended its turn is still listed and still holds its
+context; `SendMessage` to its name resumes it from its transcript, and
+its reply arrives as an ordinary task notification. Measured 2026-09-11
+on the Windows desktop app - the host `improvements.md` Finding 1 and
+the orchestrate prompt (until this change) recorded as unable to do it:
+
+| Direction | Status | Evidence |
+|---|---|---|
+| main session -> its own subagent | works, context intact | the issue 47 B9 implementer, resumed with the review's blocker after its turn had ended, kept every fact and produced `84ca6df` |
+| subagent -> main session | works | a probe loaded `SendMessage` via `ToolSearch` and delivered a line that arrived as `<agent-message from="...">` |
+| subagent -> sibling subagent | **unproven** | only one subagent was alive; the probe's reported sibling id was its own. Settle it with two live subagents before designing on it |
+
+A send carries no model; a resumed agent keeps its tier.
+
+Facts that bound the rules in `prompts/orchestrate.prompt.md`, "Resume,
+do not replace":
+
+- `SendMessage` is not in a subagent's default tool list here; a subagent
+  must `ToolSearch select:SendMessage` first. No prompt currently tells a
+  subagent to send; one that does must say this. `ListAgents` is built in
+  and lists the parent, the subagent itself and every peer session.
+- A send carries no `model`; a resumed agent keeps its tier. Escalation is
+  a fresh dispatch.
+- A subagent's send goes out under its parent session's address and any
+  reply lands in the parent's conversation, so two subagents cannot hold a
+  conversation on this host; one-way dispatch is what exists.
+- Direct reviewer -> implementer routing was proposed and declined
+  2026-09-11: it drops the orchestrator's blocker/nit filter without
+  dropping a hop (the reply still lands in the parent's conversation, not
+  the reviewer's), and the filter has a measured save - the B9
+  remediation, where the implementer was told the reviewer's
+  third-deviation concern was already resolved and not to re-litigate it.
+- Resuming a finished writer while another writer is live is two writers
+  on one tree - the same violation as spawning one. The orchestrator does
+  the `ListAgents` and HEAD preflight before a resume as before a spawn.
+- Whether the reviewer's `permissionMode: plan` blocks `SendMessage` is
+  unknown; the review prompt forbids the send in prose (candidate 36).
+
 ## Hooks
 
 Deterministic enforcement lives in `.claude/hooks/*.mjs`, registered in
@@ -39,11 +106,11 @@ ones listed below; everything else is silent or a message.
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. | warn (informational) |
-| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, `git push`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and a heavy run (`npm run check`, `check:built`, `check:fast`, `npm test`/vitest, `npm run build`, parity, run-all) while `test-output/parity.lock` is live. Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
+| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, a bare `git push --force`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line elsewhere, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, a heavy run (`npm run check`, `check:built`, `check:fast`, `npm test`/vitest, `npm run build`, parity, run-all) while `test-output/parity.lock` is live, and `grep -n` / `tail -c` (readers that bypass RTK; use `rtk grep`, `rtk read`, or the Grep/Read tools). Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
 | `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`. | **block** |
 | `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` and `set -o pipefail;`. | never (silent) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and the parity baseline. | warn |
-| `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. | warn, never block |
+| `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
 **Hook config may be snapshotted at session start.** Editing a hook script or
 `settings.json` may have no effect on the session that made the edit - restart
@@ -68,8 +135,10 @@ real environment prefix; merely naming it in a commit message does nothing.
 Use it only when `npm run check` genuinely cannot run - not because it is
 inconvenient.
 
-**Run a long check so the gate can see it pass, and so you can read
-the result.** `check-observer.mjs` reads the Bash tool's own captured
+### Run a long check
+
+So the gate can see it pass, and so you can read the result:
+`check-observer.mjs` reads the Bash tool's own captured
 stdout, and only trusts stdout it can attribute to the check: the
 command must start with the check invocation (a leading `cd <dir> &&`
 and a leading `set -o pipefail;` are fine - neither writes to stdout),
@@ -185,6 +254,15 @@ adversary:
 - On Windows a crashed run's pid can be reused inside the fifteen-minute TTL
   and reads as alive until the heartbeat expires - the deny message says to
   delete the lock.
+- The orphan-`plan.md` rule (row 40) is invisible to a deletion through
+  `git clean`, through `node -e "fs.rmSync(...)"`, through an unexpanded glob
+  (`rm issues/65/*` reaches the hook as the literal token), or from the
+  human's own terminal.
+- It is also invisible to a citation living only in an untracked file:
+  `git grep` searches tracked files.
+- The RTK-bypass deny (row 43) sees the program token only: `sh -c "grep -n
+  ..."` is erased with its quotes like every other quoted command, and `rg -n`
+  is not covered (not in the measured miss).
 
 Facts settled during implementation (issue 65):
 
@@ -215,6 +293,28 @@ Facts settled during implementation (`hooks-guardrails`, 2026-09-10):
 - A result over about 30,000 characters is persisted to
   `tool-results/<id>.txt`, largest shown 29,787, smallest persisted 29.8 KB.
 
+Facts settled during measurement (`agent-effort`, 2026-09-11):
+
+- `$CLAUDE_EFFORT` in a worker's Bash tool reports the level it runs under;
+  the PowerShell tool does not carry it on this host.
+- Hook input's `effort` field is `{ level }` (docs; not measured here - the
+  fallback instrument that would read it was not needed).
+- **Propagation, measured**: three probes against three controls read
+  `high` / `low` / `high` in lockstep with the session (W1=E0, W2=E1,
+  W3=E0) - session effort propagates to a dispatched worker.
+- **Frontmatter `effort:` key, unverified**: one probe under a session at
+  `high` still read `high` while `implementer.md` carried a scratch
+  `effort: low` line. Agent definitions may be read once at session start,
+  so a mid-session edit could simply not have been seen; a fresh-session
+  repeat, not yet run, would settle it - the same standing as
+  `disallowedTools` at candidate row 36.
+- Model default effort is `high` on every model that supports effort, which
+  is why a single `high` reading under a `high` session proves nothing;
+  contrast levels must be `low` vs `high`.
+- `set_session_effort` refuses the calling session and targets sessions, not
+  subagents - the orchestrator has no lever to set a worker's effort per
+  dispatch, only the human's own session control or `/effort`.
+
 ## Candidates considered (issue 65)
 
 The full list evaluated when the hooks were designed, kept so nobody re-derives
@@ -230,7 +330,7 @@ not changed.
 | 4 | Generated-file write block | `PreToolUse(Edit\|Write)` | **adopt** | Ticket. Purely mechanical; a wrong edit here is silently overwritten by the next build. |
 | 5 | Derived-artefact / contract reminder | `PostToolUse(Edit\|Write)` | **adopt** | Ticket. Once per session per group, or it is wallpaper. |
 | 6 | Uncommitted work / stale handoff | `Stop` | **adopt** | Ticket. Warn only, scoped to this session's writes. |
-| 7 | **+** Block every `git push`, not only forced | `PreToolUse(Bash)` | **adopt** | CLAUDE.md's never-push rule is already absolute; the narrower rule would leave the broader one unenforced for nothing. |
+| 7 | Block a bare `git push --force` | `PreToolUse(Bash)` | **adopt** | Narrowed 2026-09-12 from "block every push": agents now push at each committed boundary, so the blanket block was the thing keeping committed work off the remote. `--force-with-lease` refuses a ref that moved under it and is allowed; a bare `--force` is the only push that destroys history, and belongs with the other irreversible-git blocks. |
 | 8 | **+** Block blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths | `PreToolUse(Bash)` | **adopt** | CLAUDE.md's preserve-unrelated-changes rule and `issues/65/context.md` both flag the in-flight issue-47 files; blanket staging is exactly how they get swept into someone else's commit. |
 | 9 | **+** Block AI attribution in a commit message | `PreToolUse(Bash)` | **adopt** | An explicit standing user rule ("no Co-Authored-By trailer, ever") against a well-known default agent behaviour. Zero false positives; fires never once respected. |
 | 10 | **+** Long-check reminder | `PreToolUse(Bash)` | **adopt** | `improvements.md` Finding 1: three of five workers made this exact mistake in one session. Fires on four command shapes, once per session each. |
@@ -258,3 +358,13 @@ not changed.
 | 32 | The observer speaks its verdict (armed / not armed and why) | `PostToolUse(Bash)` | **reject** | Tempting and cheap. But the only recorded reads of `.check-cache.json` are issue 65 verifying its own hook, and once the exit code is the check's (row 30) the worker has the status. No evidence; the observer stays silent by design. |
 | 33 | Speak on `echo $?` as the first command of a call | `PreToolUse(Bash)` | **reject** | Two occurrences, both inside R1; row 30 removes the reason to ask. One README sentence instead. |
 | 34 | A hook for a result over the output cap | any | **reject** | The size is unknowable before the run, and the tool already persists the full output and names the file. The failure is re-running instead of reading it: the reminder gains one clause and the README one sentence. Parity's one-line-per-page diff text is the producer; shortening it is a `tests/` change with diagnostic cost, not this task's. |
+| 35 | Deny `SendMessage` to a writer while another writer is live | `PreToolUse(SendMessage)` | **reject** | The input does not exist in a hook: liveness and role come from `ListAgents`, which a hook cannot call - it gets stdin JSON and nothing else. The matcher is unverified on this host (`tool_name` for `SendMessage` has never reached a hook here; #19/#29-shaped). Zero recorded failures; the standing bar is a repeated one. The prompt's "a resume is a dispatch" sentence owns it. |
+| 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. |
+| 37 | Warn on a second implementer dispatch for the same task while a completed one is listed | `PreToolUse(Agent)` | **reject** | The dispatch tool is `Agent` here and `Task` in the reference - the unverified matcher row 29 already rejects - and the hook cannot see the agent list. "Resume, do not replace" is a preference, and a wrong warning on a legitimate fresh dispatch (tier change, killed agent) is the one thing a guard must not do. |
+| 38 | Log effort from a hook | `PreToolUse(Bash)` | **reject** | The Bash tool's `$CLAUDE_EFFORT` is the same value with no edit (measured 2026-09-11); an observe-only hook would be the first here, guards no recorded mistake, and re-measurement is one echo from any worker. Fallback sketched in `issues/agent-effort/plan.md` 3.4, reverted if used. |
+| 39 | Stop names this session's own untracked writes | `Stop` | **adopt** | `closeout-hygiene`. The ten dead citations to issue 65's retired `plan.md` were found only by a human-initiated audit; the checklist step that would have caught the underlying pattern (an untracked scratch file left behind) can be skipped without anything noticing. Excludes `docs/` and the task-document set (`context.md`/`plan.md`/`handoff.md`/`mocks/` in any `issues/<id>/`) rather than the whole active issue directory, so the rule still catches a scratch script that lives inside one (`issues/dh-image-polish/refresh_artwork.py`, the one recorded instance). Considered and rejected: a second `Stop` script (re-parses the same `git status`, speaks in a second message the human has to reconcile with the first - `session-stop.mjs` already owns the moment and the input). |
+| 40 | Deny `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line | `PreToolUse(Bash)` | **adopt** | `closeout-hygiene`. A retirement looks complete on its own - nothing breaks, `npm run check` still passes - and the orphans are found months later by someone reading a citation that points at nothing; ten of them shipped this way for issue 65's retired `plan.md`. Deny, not warn: a `speak` at `PreToolUse` is acknowledged and stepped past, which is the thing being guarded against, and the escape (repair the citations first, or run the command in the human's own terminal) is the same shape every other block in this family offers. Considered and rejected: `edit-guard.mjs` never sees a deletion (no Edit-family tool fires for one); `session-stop.mjs` would fire on history rather than on the action, after the content is only recoverable from git history; `selftest.mjs` cannot be the rule, since it runs inside `npm run check` and a `.md`-only retirement commit is gate-exempt, so the check need never run between the deletion and the commit. `bash-guard.mjs` is the only site with both the input and the timing. Fallback if this proves too blunt: downgrade to `speak` at the one call site (trigger, lookup and message unchanged) - record the downgrade here rather than deleting the row. Retiring `issues/hooks-guardrails/plan.md` or `issues/agent-effort/plan.md` will need rows 31 and 38 above repaired first, or this rule denies the retirement - that is the rule working. |
+| 41 | Reviewer `tools:` allowlist (`Read, Grep, Glob, Bash`) | agent frontmatter | **adopt** (`config-audit` B2) | Read-only posture becomes deterministic instead of prose plus `permissionMode: plan`; Edit/Write/NotebookEdit/Agent/ToolSearch drop out, which also closes row 36 (no `ToolSearch`, no `SendMessage`). Bash stays for `git status`/`diff`/`log` and focused checks. **Probed 2026-09-16 on this host: enforced.** A dispatched reviewer reported exactly `Read`, `Grep`, `Glob`, `Bash` and no others; `Edit`, `Write`, `NotebookEdit`, `Agent`, `ToolSearch` and `SendMessage` were all absent, which closes row 36 in fact and not only on paper. Two limits on what the probe establishes: it covers the tool allowlist only - `permissionMode` is not observable from inside a subagent without performing an action the probe forbade, so that half stays unverified; and `Bash` in the allowlist means the read-only posture still rests on the reviewer prompt and the permission settings, since a shell redirection writes. The allowlist is not by itself a read-only guarantee. |
+| 42 | Persistence-era guards: RLS gate, migration-reversibility gate, applied-migration `edit-guard.mjs` rule, gitleaks-on-commit, one session per shared database | gates, `edit-guard.mjs`, `bash-guard.mjs`, `CLAUDE.md` | **decided, not installed** | Trigger: persistence Phase 0, after issue 47 closes at R0c; design in `issues/config-audit/plan.md` section 5 until that directory retires, then the persistence task's own plan. A dormant gate guards nothing and a skill installed early spends listing budget until it is needed. |
+| 43 | Deny `grep -n` and `tail -c` (readers that bypass RTK) | `PreToolUse(Bash)` | **adopt** (`config-audit` B3) | Measured 2026-09-16: 198 sessions / 20,710 Bash commands over thirty days; ~281.4K tokens missed over 1,052 commands; `grep -n` 342 calls / ~117.6K and `tail -c` 159 / ~40.8K, together 158.4K of 281.4K = 56.3%, over half, in two commands. RTK's hook rewrites only at line start, so the miss is the piped, `$(...)` and `cd`-prefixed shapes prose has not moved. Matches the program token only, so `echo`, `git grep -n` and `rtk grep -n` are untouched; a line-start `grep -n` that RTK would have rewritten now costs one retry, the accepted price. Not `npm run check` and never `rtk npm run check`: the commit-gate trap (`issues/config-audit/context.md`; `check-observer.mjs` arms only on the bare invocation with the coverage table in stdout). Fallback if the retry proves noisy: exempt a single-segment, single-line shape - record here, do not delete the row. |
+| 44 | Warn when a task document is past its size budget | `Stop` | **adopt** (`config-audit` B3) | Measured 2026-09-15: issue 47's `plan.md` 1,031 KB (57.7% shipped-batch briefs), `handoff.md` 523 KB (96% of Status superseded snapshots), `context.md` 227 KB, growing 350-1,400 lines per working day, read by every worker at dispatch. Warn, never block: a Stop hook that blocks session-end is worse than a large file. Scoped to the session that wrote into the directory, deduped per state. The procedure and the never-drop / always-drop lists live in `.claude/skills/handoff/SKILL.md`. Rejected: a `PreToolUse(Write)` size deny (blocks the closeout write that fixes it); a `SessionStart` notice (the writer is who needs it). |

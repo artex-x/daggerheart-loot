@@ -157,12 +157,61 @@ describe('the address on the way in', () => {
 
   it('refuses a pinned address that is a snapshot rather than a section', () => {
     /* A record or a list drifts away from the data; only a section or a named
-       table may be pinned */
+       table may be pinned. The refused pin falls back to the default, and
+       under B12.1's rule 1 a default pin writes nothing at boot - so what is
+       drawn is what proves the fallback, not the bar. */
     const router = memoryRouter('');
     render(App, {
       env: fakeEnv({ router, storage: memoryStorage({ 'dhloot.home.v1': '#/i/ci1' }) })
     });
+    expect(screen.getByRole('link', { name: 'Обычные правила' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+});
+
+describe('an unreadable address', () => {
+  it('draws the home section and rewrites the bar', () => {
+    /* Every route kind lib/hash.ts can parse draws a real page; a genuinely
+       unparseable one now normalises to the pinned home before App.svelte
+       ever sees it (plan.md, "B12.1 planned"), so no fallback heading is
+       reachable any more - see docs/specs/ROUTES.md, "Fallback". */
+    const router = memoryRouter('#/nowhere');
+    render(App, { env: fakeEnv({ router }) });
+    expect(screen.getByRole('link', { name: 'Обычные правила' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
     expect(router.hash()).toBe('#/roll/std');
+  });
+});
+
+describe('pinning the tables page', () => {
+  it('pins the table genuinely on screen, not the bare tab address', async () => {
+    /* App.svelte does not remount TablesPage between two `tables` addresses -
+       only a route-kind change does that - so the table it is actually
+       showing lives in that component's own `lastTable`, not in
+       `route.table`. Clicking the "Таблицы" tab from a named table (`router
+       .navigate`, exactly what that link's real click does) lands on a bare
+       `#/tables` that still shows the same table underneath. Pinning
+       `this.hash` there would have written '#/tables/core_item' regardless
+       of what was genuinely on screen (plan.md, "B14 planned": the App.svelte
+       remount its first design leaned on does not hold); PageHead's `home`
+       override, fed by TablesPage's own `table`, is what fixes it. */
+    const router = memoryRouter('#/tables/eq_weapon');
+    const storage = memoryStorage();
+    render(App, { env: fakeEnv({ router, storage }) });
+    router.navigate('#/tables');
+    await tick();
+
+    const pin = screen.getByRole('button', { name: 'Открывать этот раздел при запуске' });
+    await userEvent.click(pin);
+
+    expect(storage.get('dhloot.home.v1')).toBe('#/tables/eq_weapon');
+    /* The address bar itself is still bare - the pin is real state, not a
+       rewrite of what is on screen. */
+    expect(router.hash()).toBe('#/tables');
   });
 });
 

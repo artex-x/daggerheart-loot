@@ -1,0 +1,117 @@
+# #/lists/b
+# route: #/lists/b
+# why: the empty page: no print link, no money, the note folded, no roll panel, no bar, the hint
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    textbox "Название списка" [value=Лавка в порту multiline=false readonly=false required=false]
+    StaticText "0 позиций"
+    button "Ссылка игрокам"
+    button "Ссылка себе"
+    button "Скопировать текст"
+    button "Удалить"
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее Скрыть" [expanded=false]
+      button "Скрыть" [description=Скрыть]
+    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
+    StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=145 namehash=3bed4bc8]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+ЛутDaggerheart
+Название списка
+Обычные правила
+Поиск
+Скопировать текст
+Скрыть
+Сообщества
+Списки
+Ссылка игрокам
+Ссылка себе
+Таблицы
+Удалить
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    textbox "List name" [value=Лавка в порту multiline=false readonly=false required=false]
+    StaticText "0 items"
+    button "Players’ link"
+    button "Your own link"
+    button "Copy text"
+    button "Delete"
+    DisclosureTriangle "Lists live in this browser only. more Dismiss" [expanded=false]
+      button "Dismiss" [description=Dismiss]
+    DisclosureTriangle "NOTES" [expanded=false]
+    StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=bf7041e3]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Communities
+Copy text
+Delete
+Dismiss
+Dread
+EN
+List name
+Lists
+Players’ link
+RU
+Search
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Your own link
+daggerheart.com
+ЛутDaggerheart

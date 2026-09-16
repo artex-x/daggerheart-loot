@@ -91,6 +91,11 @@ export const ICONS = {
   die: {
     d: 'M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.3 7.1 3.5-7.1 3.6-7.1-3.6L12 4.3zM4 9.2l7 3.5v7.1l-7-3.5V9.2zm9 10.6v-7.1l7-3.5v7.1l-7 3.5z',
     size: 16
+  },
+  /* The print bar's "back" button, off ICON_BACK (app.js:1039). */
+  back: {
+    d: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
+    size: 15
   }
 } as const satisfies Record<string, IconDef>;
 

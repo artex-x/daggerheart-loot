@@ -1,0 +1,105 @@
+# #/i/q1 ~ another tier
+# route: #/i/q1
+# why: the card a rung of the tier ladder opens
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/i/q1]
+  dialog "Закрыть" [modal=true]
+    button "Закрыть" [description=Закрыть focused=true]
+    button "Страница"
+    StaticText "ОСНОВНОЕ ОРУЖИЕ"
+    StaticText "CORE"
+    ... StaticText x9 of 13 same-shape siblings elided
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "РАНГ"
+    button "Палаш" [description=Палаш]
+    StaticText "2"
+    button "Продвинутый Палаш" [description=Продвинутый Палаш]
+    button "Легендарный Палаш" [description=Легендарный Палаш]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/q38]
+
+## ru :: controls
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Добавить в список
+Закрыть
+К содержимому
+Легендарный Палаш
+ЛутDaggerheart
+Обычные правила
+Отправить
+Палаш
+Поиск
+Продвинутый Палаш
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Страница
+Таблицы
+Улучшенный Палаш
+показать в таблице
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/i/q1]
+  dialog "Close" [modal=true]
+    button "Close" [description=Close focused=true]
+    button "Page"
+    StaticText "PRIMARY WEAPON"
+    StaticText "CORE"
+    ... StaticText x9 of 13 same-shape siblings elided
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "TIER"
+    button "Broadsword" [description=Broadsword]
+    StaticText "2"
+    button "Advanced Broadsword" [description=Advanced Broadsword]
+    button "Legendary Broadsword" [description=Legendary Broadsword]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/q38]
+
+## en :: controls
+Add to list
+Advanced Broadsword
+Alt. tables
+Broadsword
+Close
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dread
+EN
+Improved Broadsword
+Lay these out for printing: nine to an A4 sheet
+Legendary Broadsword
+Lists
+Page
+RU
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+show in the table
+ЛутDaggerheart

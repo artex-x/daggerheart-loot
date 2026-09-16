@@ -1,0 +1,320 @@
+# #/tables ~ bar menu
+# route: #/tables
+# why: the bar's own add-to-list menu, above it, right-aligned
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    link "Предметы" [url=#/tables/core_item]
+    link "Расходники" [url=#/tables/core_consumable]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    checkbox "Выбрать все (60)" [checked=false]
+    StaticText "Выбрать все (60)"
+    checkbox "Выбрано" [checked=true]
+    button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
+    checkbox "Выбрано" [checked=true]
+    ... button x57 of 61 same-shape siblings elided
+    checkbox "Выбрано" [checked=false]
+    ... checkbox x55 of 59 same-shape siblings elided
+    checkbox "Выбрано" [checked=false]
+    button "59 Кольцо Несокрушимой Решимости Один раз за сессию, когда Масте..." [namelen=166 namehash=5d88a8d7]
+    checkbox "Выбрано" [checked=false]
+    button "60 Пояс Единства Один раз за сессию вы можете потратить 5 Надежд..." [namelen=144 namehash=5ce27726]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+  StaticText "Выбрано 2"
+  button "Снять выделение" [description=Снять выделение]
+  StaticText "ДОБАВИТЬ В"
+  button "Лавка в порту" [pressed=false]
+  button "Клад дракона" [pressed=false]
+  button "+ Новый список" [pressed=false]
+  button "Добавить в список" [expanded=true]
+  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2]
+  button "Скопировать"
+
+## ru :: controls
++ Новый список
+10Подвешенный ЖезлЭтот плоский жезл исписан рунами. Когда вы акт... [namelen=223 namehash=d393152c]
+11Камень ОбликаАктивируйте этот камень размером с гальку, чтобы ... [namelen=209 namehash=558b8f56]
+12Пустой СундукЭтот магический сундук кажется пустым. Скажите кл... [namelen=155 namehash=8d550dc0]
+13Футляр для КомпаньонаВ этот футляр можно поместить маленького ... [namelen=158 namehash=f49e9cb7]
+14Пронзающие СтрелыТри раза за отдых, когда вы успешно наносите ... [namelen=151 namehash=dbee16c1]
+15Камень ДоблестиВы можете прикрепить этот камень к доспеху, кот... [namelen=290 namehash=6a450524]
+16Скелетный КлючКогда вы используете этот ключ, чтобы открыть за... [namelen=136 namehash=88176258]
+17Магическая ПризмаПоместите эту призму в выбранное вами место и... [namelen=331 namehash=28a2f72f]
+18Рецепт Малого Зелья ВыносливостиВ качестве Хода Отдыха вы може... [namelen=184 namehash=64eaa32c]
+19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=170 namehash=963ee2dd]
+1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=89 namehash=4fe26622]
+20Компасы СвязиЭти два компаса указывают друг на друга, независи... [namelen=126 namehash=3c60842f]
+21Исправляющий ДухЭтот крошечный дух сидит в изгибе вашего ушног... [namelen=198 namehash=f7da454e]
+22Перчатки ГекконаВы можете лазать по вертикальным поверхностям ... [namelen=86 namehash=52480fe5]
+23Хранитель ЗнанийВы можете сохранить в этой книге имена и подро... [namelen=179 namehash=519ddce3]
+24Рецепт Флакона с Чёрным ДымомВ качестве Хода Отдыха вы можете ... [namelen=167 namehash=ec56a9fe]
+25Кровавый КаменьВы можете прикрепить этот камень к оружию, кото... [namelen=243 namehash=5e414e4f]
+26Самоцвет ВеликанаВы можете прикрепить этот камень к оружию, ко... [namelen=235 namehash=bca13056]
+27ПарашютВо время падения вы можете отметить Стресс, чтобы разве... [namelen=138 namehash=53119317]
+28Кольцо ТишиныПотратьте Надежду, чтобы активировать это кольцо.... [namelen=124 namehash=1ece900e]
+29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
+2Пронзительная СвирельЭта свирель ручной работы имеет характерны... [namelen=166 namehash=5f66b1f7]
+30Двойная ФлягаВ эту флягу можно налить две разные жидкости. Пер... [namelen=163 namehash=2e5b5dd9]
+31Мешочек Своенравного ПескаВы можете убедить этот маленький меш... [namelen=285 namehash=3fcfe2fb]
+32Кольцо СопротивленияОдин раз за продолжительный отдых вы может... [namelen=168 namehash=337f7771]
+33Перо ФениксаЕсли у вас есть хотя бы одно Перо Феникса, когда в... [namelen=188 namehash=c042ed93]
+34Коробка Многих ВещейОдин раз за продолжительный отдых вы может... [namelen=287 namehash=2cf1a813]
+35Амулет Воздушного КлинкаВы можете прикрепить этот амулет к ору... [namelen=196 namehash=1bfd7e64]
+36Семя ПорталаВы можете посадить это семя в землю, чтобы вырасти... [namelen=330 namehash=4226acbf]
+37Цепь ПарагонаВ качестве Хода Отдыха вы можете помедитировать н... [namelen=321 namehash=92f47d23]
+38Амулет СкрытностиОдин раз за продолжительный отдых вы можете а... [namelen=283 namehash=8bdbb887]
+39Медальон Хранения НадеждВо время продолжительного отдыха, если... [namelen=375 namehash=47df53c3]
+3Заряжающий КолчанКогда вы успешно наносите удар стрелой из этог... [namelen=146 namehash=69972707]
+40Бездонная СумкаКогда вы храните предметы в этом мешке, они нах... [namelen=181 namehash=5ce30242]
+41Реликвия Быстрого ШагаВы получаете бонус +1 к Проворности. Вы ... [namelen=110 namehash=4ee91369]
+42Реликвия УсиленияВы получаете бонус +1 к Силе. Вы можете носит... [namelen=98 namehash=8174afe3]
+43Реликвия БалансаВы получаете бонус +1 к Искусности. Вы можете ... [namelen=103 namehash=a687f778]
+44Реликвия ГармонииВы получаете бонус +1 к Инстинкту. Вы можете ... [namelen=103 namehash=eb2e566d]
+45Реликвия ОчарованияВы получаете бонус +1 к Влиянию. Вы можете ... [namelen=103 namehash=85d15891]
+46Реликвия ПрозренияВы получаете бонус +1 к Знаниям. Вы можете н... [namelen=102 namehash=155f3012]
+47Реликвия НаставленияВы получаете бонус +1 к Опыту по вашему вы... [namelen=119 namehash=a480bacb]
+48Кулон СветлячкаПока вы носите этот кулон, ваше оружие с дистан... [namelen=194 namehash=348e67e4]
+49Ботинки Хождения по ВодеВы можете ходить по поверхности воды, ... [namelen=95 namehash=a935a99f]
+4Факел АлистераВы можете зажигать этот магический факел по желан... [namelen=194 namehash=229bb5e0]
+50Глиняный СпутникКогда вы лепите из этого шарика глины глиняног... [namelen=338 namehash=bca532dc]
+51Рецепт Мифической ПылиВ качестве Хода Отдыха вы можете использ... [namelen=167 namehash=a52f4ac9]
+52Осколок ПамятиОдин раз за продолжительный отдых вы можете потр... [namelen=188 namehash=23ad0283]
+53Самоцвет ПроворстваВы можете прикрепить этот самоцвет к оружию... [namelen=153 namehash=58c2a0a4]
+54Самоцвет МощиВы можете прикрепить этот самоцвет к оружию, что ... [namelen=140 namehash=35705010]
+55Самоцвет ТочностиВы можете прикрепить этот самоцвет к оружию, ... [namelen=150 namehash=292ff85d]
+56Самоцвет ЧутьяВы можете прикрепить этот самоцвет к оружию, что... [namelen=145 namehash=ec23a1a7]
+57Самоцвет ДерзостиВы можете прикрепить этот самоцвет к оружию, ... [namelen=147 namehash=88ea50a7]
+58Самоцвет РассудительностиВы можете прикрепить этот самоцвет к ... [namelen=154 namehash=44a4e302]
+59Кольцо Несокрушимой РешимостиОдин раз за сессию, когда Мастер ... [namelen=162 namehash=0915f512]
+5Разговаривающие СферыЭта пара сфер позволяет существам, которые... [namelen=130 namehash=6227658c]
+60Пояс ЕдинстваОдин раз за сессию вы можете потратить 5 Надежды,... [namelen=140 namehash=af7eef65]
+6НаручникиЭта пара наручников с замком поставляется с ключом.Пре... [namelen=72 namehash=5cda988c]
+7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=148 namehash=b4e130c4]
+8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
+9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Выбрано
+Добавить в список
+К содержимому
+Как это работает
+Клад дракона
+Лавка в порту
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Предметы
+Прочее
+Расходники
+Сеткой
+Скопировать
+Снаряжение
+Снять выделение
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    link "Items" [url=#/tables/core_item]
+    link "Consumables" [url=#/tables/core_consumable]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    checkbox "Select all (60)" [checked=false]
+    StaticText "Select all (60)"
+    checkbox "Selected" [checked=true]
+    button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]
+    checkbox "Selected" [checked=true]
+    ... button x57 of 61 same-shape siblings elided
+    checkbox "Selected" [checked=false]
+    ... checkbox x55 of 59 same-shape siblings elided
+    checkbox "Selected" [checked=false]
+    button "59 Ring of Unbreakable Resolve Once per session, when the GM spe..." [namelen=148 namehash=201f0c67]
+    checkbox "Selected" [checked=false]
+    button "60 Belt of Unity Once per session, you can spend 5 Hope to lead ..." [namelen=120 namehash=2cbc5f0e]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+  StaticText "Selected 2"
+  button "Clear selection" [description=Clear selection]
+  button "Add to list" [expanded=false]
+  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2]
+  button "Copy"
+
+## en :: controls
+10Suspended RodThis flat rod is inscribed with runes. When you a... [namelen=232 namehash=4f5a3fd9]
+11Glamour StoneActivate this pebble-sized stone to memorize the ... [namelen=180 namehash=719b722e]
+12Empty ChestThis magical chest appears empty. When you speak a ... [namelen=163 namehash=b9a23a9d]
+13Companion CaseThis case can fit a small animal companion. Whil... [namelen=164 namehash=c0302a64]
+14Piercing ArrowsThree times per rest when you succeed on an att... [namelen=150 namehash=57a96db3]
+15ValorstoneYou can attach this stone to armor that doesn't alre... [namelen=276 namehash=6f224513]
+16Skeleton KeyWhen you use this key to open a locked door, you g... [namelen=106 namehash=b4e39c13]
+17Arcane PrismPosition this prism in a location of your choosing... [namelen=296 namehash=89136d4c]
+18Minor Stamina Potion RecipeAs a downtime move, you can use the... [namelen=157 namehash=aab38b92]
+19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=147 namehash=ae04911f]
+1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=74 namehash=dc485a4a]
+20Homing CompassesThese two compasses point toward each other no... [namelen=103 namehash=a4bc122b]
+21Corrector SpriteThis tiny sprite sits in the curve of your ear... [namelen=184 namehash=8257a075]
+22Gecko GlovesYou can climb up vertical surfaces and across ceil... [namelen=77 namehash=ac62d299]
+23LorekeeperYou can store the name and details of up to three ho... [namelen=166 namehash=b75ae390]
+24Vial of Darksmoke RecipeAs a downtime move, you can mark a Str... [namelen=135 namehash=5b965d0b]
+25BloodstoneYou can attach this stone to a weapon that doesn't a... [namelen=222 namehash=974afdd7]
+26GreatstoneYou can attach this stone to a weapon that doesn't a... [namelen=229 namehash=bb6bcef6]
+27GliderWhile falling, you can mark a Stress to deploy this smal... [namelen=115 namehash=5a0396a2]
+28Ring of SilenceSpend a Hope to activate this ring. Your footst... [namelen=108 namehash=b754d8c3]
+29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=116 namehash=ab3edc19]
+2Piper WhistleThis handcrafted whistle has a distinctive sound. ... [namelen=154 namehash=b382f653]
+30Dual FlaskThis flask can hold two different liquids. You can s... [namelen=136 namehash=4d2fcbf7]
+31Bag of FicklesandYou can convince this small bag of sand to be... [namelen=268 namehash=f7e3495b]
+32Ring of ResistanceOnce per long rest, you can activate this ri... [namelen=133 namehash=e0f2b0e1]
+33Phoenix FeatherIf you have at least one Phoenix Feather on you... [namelen=178 namehash=8e2ee511]
+34Box of Many GoodsOnce per long rest, you can open this small b... [namelen=250 namehash=a51a09bc]
+35Airblade CharmYou can attach this charm to a weapon with a Mel... [namelen=170 namehash=e13f1e04]
+36Portal SeedYou can plant this seed in the ground to grow a por... [namelen=289 namehash=a87404f5]
+37Paragon's ChainAs a downtime move, you can meditate on an idea... [namelen=260 namehash=1beaf5cc]
+38Elusive AmuletOnce per long rest, you can activate this amulet... [namelen=214 namehash=296600fa]
+39Hopekeeper LocketDuring a long rest, if you have 6 Hope, you c... [namelen=277 namehash=2b5b1eef]
+3Charging QuiverWhen you succeed on an attack with an arrow stor... [namelen=150 namehash=80045e39]
+40Infinite BagWhen you store items in this bag, they are kept in... [namelen=159 namehash=4bca02fb]
+41Stride RelicYou gain a +1 bonus to your Agility. You can only ... [namelen=88 namehash=5cfda7d7]
+42Bolster RelicYou gain a +1 bonus to your Strength. You can onl... [namelen=90 namehash=ded3827a]
+43Control RelicYou gain a +1 bonus to your Finesse. You can only... [namelen=89 namehash=72ab6c9a]
+44Attune RelicYou gain a +1 bonus to your Instinct. You can only... [namelen=89 namehash=9aff1426]
+45Charm RelicYou gain a +1 bonus to your Presence. You can only ... [namelen=88 namehash=2d6ece7d]
+46Enlighten RelicYou gain a +1 bonus to your Knowledge. You can ... [namelen=93 namehash=69aa1555]
+47Honing RelicYou gain a +1 bonus to an Experience of your choic... [namelen=104 namehash=7ecb37c7]
+48Flickerfly PendantWhile you carry this pendant, your weapons w... [namelen=185 namehash=fcb21da1]
+49Lakestrider BootsYou can walk on the surface of water as if it... [namelen=90 namehash=e3dd77b5]
+4Alistair's TorchYou can light this magic torch at will. The fla... [namelen=167 namehash=8a47c9f3]
+50Clay CompanionWhen you sculpt this ball of clay into a clay an... [namelen=310 namehash=1531faea]
+51Mythic Dust RecipeAs a downtime move, you can use a handful of... [namelen=133 namehash=f61e6860]
+52Shard of MemoryOnce per long rest, you can spend 2 Hope to rec... [namelen=140 namehash=3b5b3364]
+53Gem of AlacrityYou can attach this gem to a weapon, allowing y... [namelen=134 namehash=8848f55f]
+54Gem of MightYou can attach this gem to a weapon, allowing you ... [namelen=132 namehash=d03fc5ee]
+55Gem of PrecisionYou can attach this gem to a weapon, allowing ... [namelen=135 namehash=2546cf3d]
+56Gem of InsightYou can attach this gem to a weapon, allowing yo... [namelen=134 namehash=2110c7f3]
+57Gem of AudacityYou can attach this gem to a weapon, allowing y... [namelen=135 namehash=728e9754]
+58Gem of SagacityYou can attach this gem to a weapon, allowing y... [namelen=136 namehash=d710d11a]
+59Ring of Unbreakable ResolveOnce per session, when the GM spend... [namelen=144 namehash=7e147df4]
+5Speaking OrbsThis pair of orbs allows any creatures holding the... [namelen=125 namehash=b52514a2]
+60Belt of UnityOnce per session, you can spend 5 Hope to lead a ... [namelen=116 namehash=dde6c397]
+6ManaclesThis pair of locking cuffs comes with a key.ItemCore
+7Arcane CloakA creature with a Spellcast trait wearing this cloa... [namelen=122 namehash=12599eee]
+8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=154 namehash=33eb11a6]
+9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=151 namehash=0841cf34]
+Add to list
+Alt. tables
+Clear selection
+Communities
+Consumables
+Copy
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Grid
+Hope & Fear
+How this works
+Items
+Lay these out for printing: nine to an A4 sheet
+Link to this table
+List
+Lists
+Open this section on start
+Other
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

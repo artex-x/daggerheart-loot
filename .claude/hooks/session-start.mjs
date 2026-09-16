@@ -1,5 +1,5 @@
 // SessionStart: branch, HEAD, dirty-file summary, most recently touched
-// issues/<id>/. Never blocks - see issues/65/plan.md section 4, hook 1.
+// issues/<id>/. Never blocks - see .claude/README.md, "Hooks".
 
 import { readInput, guard, speak, git, activeTask } from './lib.mjs';
 

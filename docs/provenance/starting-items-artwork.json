@@ -1,0 +1,192 @@
+{
+  "status": "complete",
+  "accepted_count": 30,
+  "remaining_count": 0,
+  "source_root": "issue-56-supplied-starting-items",
+  "batches": [
+    {
+      "items": [
+        {
+          "id": "ci61",
+          "accepted_file": "Torch v1.png",
+          "source_sha256": "061e178e63c5cd15fb411e4c404054600a069f4a3cb6efc73c30c1c0b0e28071",
+          "source_bytes": 1614358
+        },
+        {
+          "id": "ci62",
+          "accepted_file": "50 feet of rope v1.png",
+          "source_sha256": "4a528bbd597da91811b8bcd07d5433f258ea4d4b2b7315b1155eb07f70024007",
+          "source_bytes": 1843144
+        },
+        {
+          "id": "ci63",
+          "accepted_file": "Basic supplies v1.png",
+          "source_sha256": "72de922931e6394f9cb1198c230bef1238fd30a35bf56654f37ed048001fd3eb",
+          "source_bytes": 2502055
+        },
+        {
+          "id": "ci64",
+          "accepted_file": "A romance novel v1.png",
+          "source_sha256": "18c0a19551a216e7d4710d7f606c1242f8292b482d0126cf9749b1a9858f61d7",
+          "source_bytes": 2171250
+        },
+        {
+          "id": "ci65",
+          "accepted_file": "A letter never opened v1.png",
+          "source_sha256": "45a2d470a455bd96188dbbd1a18158a864e65be059f1e9512a2a525c5302cbaa",
+          "source_bytes": 2066222
+        },
+        {
+          "id": "ci66",
+          "accepted_file": "A small bag of rocks and bones v1.png",
+          "source_sha256": "d2e45a6215b500a871f704371a3da56d2042d4126e1f3f2e3c1bcea325ffdd2a",
+          "source_bytes": 2267305
+        },
+        {
+          "id": "ci67",
+          "accepted_file": "A strange pendant found in the dirt v1.png",
+          "source_sha256": "91fe68697ca40e85e8b0a765af9252b9fa79698f22e714c3e4dfdaa906bee880",
+          "source_bytes": 2033026
+        },
+        {
+          "id": "ci68",
+          "accepted_file": "A totem from your mentor v1.png",
+          "source_sha256": "5180955ed163e44bb97ec42d32cc23c1b900a512f0678adf678fe1332cb94902",
+          "source_bytes": 1885462
+        },
+        {
+          "id": "ci69",
+          "accepted_file": "A secret key v1.png",
+          "source_sha256": "4ef2327280bf14856c0f0a26f85b2875171cc7258936bb3b2691c303f46492e0",
+          "source_bytes": 2006338
+        },
+        {
+          "id": "ci70",
+          "accepted_file": "A trophy from your first kill v1.png",
+          "source_sha256": "5004ea577a1d2e2567bc529b7226d3de31d3eacde0bbf645ba72235bcc8c960e",
+          "source_bytes": 1830942
+        },
+        {
+          "id": "ci71",
+          "accepted_file": "A seemingly broken compass v1.png",
+          "source_sha256": "02dd21e455006401bef0355b4b5b5ee72d475ce9cef5e8ecc8b5c1ac17c834f5",
+          "source_bytes": 1969117
+        },
+        {
+          "id": "ci72",
+          "accepted_file": "A set of forgery tools v1.png",
+          "source_sha256": "128b9b9bf8e800076f3b76458447e7b556831773ce2a20946cf73dcc0d4f6569",
+          "source_bytes": 2336822
+        },
+        {
+          "id": "ci73",
+          "accepted_file": "A grappling hook v1.png",
+          "source_sha256": "13e8b449ee9c546b9d8e7da920f1a88d0f33c3ebd14aeab5a540383c94bf4977",
+          "source_bytes": 2023247
+        },
+        {
+          "id": "ci74",
+          "accepted_file": "A bundle of offerings v1.png",
+          "source_sha256": "da3da1b3e615b9c2466eb65250c923ba037c3b5a4314c9cb86853aa94ac69189",
+          "source_bytes": 2243472
+        },
+        {
+          "id": "ci75",
+          "accepted_file": "A sigil of your god v1.png",
+          "source_sha256": "716a7fb042b6256cb4dba1273895f970942bbf16c12dbad5e319eacbca50ac3b",
+          "source_bytes": 2154812
+        },
+        {
+          "id": "ci76",
+          "accepted_file": "A whispering orb v1.png",
+          "source_sha256": "1a9221953a97c80bacc583eeccc1d12da88e78637221265f168b6cbb3020aa45",
+          "source_bytes": 1784098
+        },
+        {
+          "id": "ci77",
+          "accepted_file": "A family heirloom v1.png",
+          "source_sha256": "8b587d562a25d9d84fc0f62e25619c6107659c19ceb2a9073f1f0ebb221430a4",
+          "source_bytes": 1967232
+        },
+        {
+          "id": "ci78",
+          "accepted_file": "The drawing of a lover v1.png",
+          "source_sha256": "90aaacf6b551247df6f188bbc382bf7ea4a886ef5667f8f026ccb5897e8dd1ca",
+          "source_bytes": 2588791
+        },
+        {
+          "id": "ci79",
+          "accepted_file": "A sharpening stone v1.png",
+          "source_sha256": "8131ba517ab3675523ee9cffdb51b0e95185adf191dbe7aaafd9b1340befe671",
+          "source_bytes": 2072231
+        },
+        {
+          "id": "ci80",
+          "accepted_file": "A book you're trying to translate v1.png",
+          "source_sha256": "683cf9868588f16542f4bb585aa5b24315403c5800d7c8f3177a0bea66405fd9",
+          "source_bytes": 2281598
+        },
+        {
+          "id": "ci81",
+          "accepted_file": "A tiny, harmless elemental pet v1.png",
+          "source_sha256": "928f5ab560122104684794e369c85697f2dfa75cef512a2d2213833446b52cbb",
+          "source_bytes": 1793501
+        },
+        {
+          "id": "hi61",
+          "accepted_file": "A list of names with several marked off v1.png",
+          "source_sha256": "3cd9498bdfb08bae815734d86d56c11ba717b4adb7245702e5ab62607370b26a",
+          "source_bytes": 2360203
+        },
+        {
+          "id": "hi62",
+          "accepted_file": "A rusted blade inscribed with an insignia v1.png",
+          "source_sha256": "7ad3c416513a67fc88f72219ba014903c7d97411ca3750ef6dd6e7d88f592513",
+          "source_bytes": 1920938
+        },
+        {
+          "id": "hi63",
+          "accepted_file": "Hand wraps from a mentor v1.png",
+          "source_sha256": "c08eda7f0c57036f483fd5a2fa962129404840a56b5d41e70b835d014e1cc454",
+          "source_bytes": 2178953
+        },
+        {
+          "id": "hi64",
+          "accepted_file": "A book about your secret hobby v1.png",
+          "source_sha256": "0996817b41a5dfbca36af304609d7f4851d612ef4930f52092fee26d10d5659a",
+          "source_bytes": 2415363
+        },
+        {
+          "id": "hi65",
+          "accepted_file": "A carving that symbolizes your patron v1.png",
+          "source_sha256": "a228f36a1c228e89c4f35ea2540c051652361937eac9581e30b75ed68e27f1df",
+          "source_bytes": 1884331
+        },
+        {
+          "id": "hi66",
+          "accepted_file": "A ring you can't remove v1.png",
+          "source_sha256": "840a33d872ee7efe08854590494ca2234d1c658d7979e226b6c2f615fd67043b",
+          "source_bytes": 1916945
+        },
+        {
+          "id": "hi67",
+          "accepted_file": "A small, harmless pet v1.png",
+          "source_sha256": "b62e139d0e2f7598f6f55588fd2afc4803f24265f3b7a614334fdd0dfbb1ef16",
+          "source_bytes": 2174396
+        },
+        {
+          "id": "hi68",
+          "accepted_file": "A scrying stone v1.png",
+          "source_sha256": "b03a365b874363f0ba22d405a1faf056938ba27e19897aa9503eb941e60b8ab9",
+          "source_bytes": 1782871
+        },
+        {
+          "id": "f95",
+          "accepted_file": "Network Tether v2.png",
+          "source_sha256": "2c0dcb19615abc302c32b0185c7b19e6fb621f6794081524746dae0c4cd4b4b1",
+          "source_bytes": 2768640
+        }
+      ]
+    }
+  ]
+}

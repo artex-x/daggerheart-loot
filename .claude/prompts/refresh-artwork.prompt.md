@@ -105,7 +105,7 @@ Do not distort aspect ratio, overwrite the approval sources, rename public asset
    - `node tests/run-all.js dataint,noart`
    - any image/stub checks identified by current docs
 6. Before a commit, run `npm run check` as required by `CLAUDE.md`. Because artwork changes what screens draw, also run `npm run check:built`; distinguish failures caused by pre-existing unrelated work.
-7. Do not commit unless requested or required by the active task protocol. Never push.
+7. Do not commit unless requested or required by the active task protocol. When you do commit, push the branch; never force-push.
 
 ## Optional local reference-cache refresh
 
@@ -129,3 +129,4 @@ Only perform this section when the human asks and a compatible local skill/cache
 - exact commands and results
 - optional cache-refresh result
 - remaining blocker or next human action
+- update `<TASK_DIR>/context.md` / `handoff.md` when durable recovery notes are useful

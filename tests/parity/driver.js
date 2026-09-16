@@ -8,8 +8,9 @@
  * depend on somebody remembering.
  *
  * The two targets are separate files, so they never clash:
- *   legacy -> index.html at the repository root, what Pages serves today
- *   next   -> dist/index.html, the built rewrite
+ *   legacy -> index.html at the repository root, the pre-cutover fallback -
+ *             not what Pages serves since B13's flip
+ *   next   -> dist/index.html, the built rewrite, what Pages serves now
  */
 const path = require('path');
 
@@ -76,9 +77,11 @@ async function ready(page) {
  * Waits for whatever a press started to finish moving.
  *
  * A fixed pause is the wrong instrument here: the modal opens with a 0.22s
- * animation in the live app and none at all in the rewrite, so a screenshot
- * taken on a timer catches one of them mid-flight and the number moves with how
- * busy the machine is. Asking the browser which animations are running answers
+ * `pop` animation in both apps (style.css:591, RecordModal.svelte:159 - B9
+ * deleted the rewrite's blanket reduced-motion kill, so this now runs under
+ * reduced motion too, on both sides), and a screenshot taken on a timer
+ * catches either app mid-flight, with the number moving with how busy the
+ * machine is. Asking the browser which animations are running answers
  * exactly the question. The cap is for anything that loops forever.
  */
 async function settle(page) {
@@ -248,6 +251,68 @@ function makeDriver(page, target) {
         NAME_FN
       );
       if (!ok) throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
+      d.pressed.add(name);
+      await settle(page);
+      return true;
+    },
+
+    /**
+     * Presses the control a person would click, by what it says - the same
+     * lookup as `click`, a different dispatch.
+     *
+     * `click()` runs `el.click()` inside `page.evaluate`, a synthetic event on
+     * an empty call stack: nothing checkpoints between it and whatever else is
+     * listening. A real click is a Chrome `Input.dispatchMouseEvent`, and
+     * Chrome runs a microtask checkpoint between listeners on the same event -
+     * which is exactly when Svelte 5 flushes state
+     * (`node_modules/svelte/src/internal/client/dom/task.js`, `queueMicrotask`).
+     * Between the app root's delegated handler and a `<svelte:document
+     * onclick>` listener, a block the first handler opened or closed can
+     * already have replaced its target by the time the second one runs - the
+     * class `el.click()` and jsdom's `userEvent` cannot reach by construction
+     * (`plan.md`, "Phase 5 planned", decided 6; the defect it caught was B11's
+     * `isConnected` guard). `tests/app/` is what needs this; no parity state
+     * does, so `click`'s synthetic dispatch - and every debt figure measured
+     * against it - is untouched.
+     *
+     * Resolving to a puppeteer `ElementHandle` and calling its own `.click()`
+     * is what makes the click trusted: puppeteer scrolls the element into view
+     * first (where `click()` does not) and throws its own error when the
+     * element cannot actually be clicked (zero box, covered, detached) rather
+     * than succeeding on a target nothing could reach. Recorded into the same
+     * `d.pressed` set as `click`, so the coverage report does not split one
+     * control into two entries.
+     */
+    async press(name, nth = 0) {
+      const handle = await page.evaluateHandle(
+        (n, idx, nameSrc) => {
+          const nameOf = eval(nameSrc);
+          const els = [
+            ...document.querySelectorAll(
+              'button, a[href], [role="button"], input, summary'
+            )
+          ];
+          const exact = els.filter((e) => nameOf(e) === n);
+          return exact[idx] ?? (idx === 0 ? els.find((e) => nameOf(e).includes(n)) : undefined);
+        },
+        name,
+        nth,
+        NAME_FN
+      );
+      const el = handle.asElement();
+      if (!el) {
+        await handle.dispose();
+        throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
+      }
+      try {
+        await el.click();
+      } catch (e) {
+        await handle.dispose();
+        throw new Error(
+          `${target}: "${name}"${nth ? ` (nth ${nth})` : ''} is not clickable - ${e.message}`
+        );
+      }
+      await handle.dispose();
       d.pressed.add(name);
       await settle(page);
       return true;
@@ -582,6 +647,57 @@ function makeDriver(page, target) {
         out.docHeight = round1(document.documentElement.scrollHeight);
         return out;
       }, probes);
+    },
+
+    /** Switches the emulated media type - `'print'` to see the sheet as a
+     *  printer would, `undefined` to switch back before the next shot. Runs
+     *  before the shots on the same page: leaving print media on would
+     *  photograph the wrong medium. */
+    media(type) {
+      return page.emulateMediaType(type);
+    },
+
+    /**
+     * The first match's computed style, for the named properties - `null`
+     * when nothing matches, the same policy `typeAt`/`rectsAt` document: a
+     * class the rewrite renamed reports `null` against a real value and
+     * fails loudly rather than silently comparing nothing to nothing.
+     */
+    computed(selector, props) {
+      return page.evaluate(
+        (sel, keys) => {
+          const el = document.querySelector(sel);
+          if (!el) return null;
+          const c = getComputedStyle(el);
+          const out = {};
+          for (const k of keys) out[k] = c.getPropertyValue(k);
+          return out;
+        },
+        selector,
+        props
+      );
+    },
+
+    /**
+     * Every match's rect and its own inline style properties - what the
+     * print fit sets and nothing else records: `fitPrintCards` writes its
+     * decision straight onto `style`, never into a class, so the inline
+     * value is the only place a divergent fit shows up.
+     */
+    eachAt(selector, props) {
+      return page.$$eval(
+        selector,
+        (els, keys) => {
+          const round1 = (n) => Math.round(n * 10) / 10;
+          return els.map((el) => {
+            const r = el.getBoundingClientRect();
+            const style = {};
+            for (const k of keys) style[k] = el.style.getPropertyValue(k);
+            return { x: round1(r.x), y: round1(r.y), w: round1(r.width), h: round1(r.height), style };
+          });
+        },
+        props
+      );
     }
   };
   return d;

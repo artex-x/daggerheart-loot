@@ -1,9 +1,8 @@
-// PreToolUse(Bash): seven rule families evaluated in order, first deny wins.
-// See issues/65/plan.md section 4, hook 2, for the full specification -
-// this file follows it literally, including the sanitiser/segmenter and
-// the exact trap table. Never blocks anything not listed there. segmentInfo
-// already skips READERS and unwraps env/command/nohup/time/xargs, so
-// `echo npm run check` never matches and `nohup npm run check` does.
+// PreToolUse(Bash): nine rule families evaluated in order, first deny wins.
+// See .claude/README.md, "Hooks", for what each family blocks and for the
+// sanitiser's known limits. Never blocks anything not listed there.
+// segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
+// so `echo npm run check` never matches and `nohup npm run check` does.
 
 import { spawnSync } from 'node:child_process';
 import {
@@ -14,6 +13,8 @@ import {
   once,
   repoRoot,
   relPath,
+  pathKey,
+  git,
   sanitize,
   segments,
   tokensOf,
@@ -54,8 +55,8 @@ const MSG = {
     'Blocked: `git reset --hard` discards every uncommitted change in this tree, including work that belongs to another task. Park your own changes with `git stash push -- <paths>`, unstage with `git restore --staged <path>`, or ask the human to run the reset themselves.',
   gitCleanForce:
     'Blocked: `git clean` with -f deletes untracked files permanently. Run it with -n first and act on the list, or delete the specific paths you meant.',
-  gitPush:
-    "Blocked: pushing is the repository owner's job (CLAUDE.md). Commit locally and say in your summary that a push is pending.",
+  gitPushForce:
+    'Blocked: a bare `git push --force` overwrites whatever the remote has, including commits this tree never saw. Push normally, or use `git push --force-with-lease`, which refuses when the remote ref moved under you.',
   gitDiscard:
     'Blocked: this overwrites working-tree changes, and this tree carries in-flight work from other tasks. If you only meant to unstage, use `git restore --staged <path>`. Otherwise name the exact file and confirm with the human.',
   gitStashDestroy:
@@ -69,7 +70,16 @@ const MSG = {
   backgroundCheck:
     "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `set -o pipefail; npm run check 2>&1 | tail -n 120` (the prefix makes the exit code the check's).",
   parityLock: (cmd, holder) =>
-    `Blocked: a parity run is alive on this tree (${holder}), and \`${cmd}\` beside it corrupts both - test-output/parity/ is wiped per run, and vitest next to a live parity run throws spurious 5000ms timeouts. Wait for it to finish; if no parity run is actually alive (a crashed run whose pid was reused), delete test-output/parity.lock.`
+    `Blocked: a parity run is alive on this tree (${holder}), and \`${cmd}\` beside it corrupts both - test-output/parity/ is wiped per run, and vitest next to a live parity run throws spurious 5000ms timeouts. Wait for it to finish; if no parity run is actually alive (a crashed run whose pid was reused), delete test-output/parity.lock.`,
+  orphanPlan: (target, hits) => {
+    const shown = hits.slice(0, 4).join(', ');
+    const more = hits.length > 4 ? ', ...' : '';
+    return `Blocked: ${target} is still cited by ${hits.length} tracked line(s): ${shown}${more}. Retiring a plan.md leaves those pointing at nothing. Closeout step 6: move the durable content to its permanent home (.claude/README.md for tooling rationale, docs/specs/ for behaviour), update every citation, and remove the file in that same commit.`;
+  },
+  grepLineNumber:
+    'Blocked: `grep -n` runs outside RTK and its output lands unfiltered in context. Use `rtk grep -n <pattern> <path>` as its own command (no pipe, no `$(...)`), or the Grep tool, which numbers lines by default. `git grep -n` is not affected.',
+  tailBytes:
+    'Blocked: `tail -c` runs outside RTK and its output lands unfiltered in context. Use `rtk read <file>`, or the Read tool with `offset`/`limit`. `tail -n` is not affected.'
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -153,7 +163,13 @@ function evaluateBlocklist(segList, cwd) {
         }
       }
       if (subcommand === 'push') {
-        if (!tokens.includes('--dry-run')) return { id: 'git-push', message: MSG.gitPush };
+        // Pushing itself is allowed. Only the force that ignores the remote's
+        // state is not: --force-with-lease still refuses to clobber a ref that
+        // moved, so it is a normal push here.
+        const hasForce = tokens.includes('--force') || flagMatches(tokens, 'f');
+        if (hasForce && !tokens.includes('--dry-run')) {
+          return { id: 'git-push-force', message: MSG.gitPushForce };
+        }
       }
       if (subcommand === 'checkout') {
         if (tokens.includes('--') || tokens.includes('.')) {
@@ -175,6 +191,74 @@ function evaluateBlocklist(segList, cwd) {
         return { id: 'rm-rf-repo', message: MSG.rmRfRepo };
       }
     }
+  }
+  return null;
+}
+
+// ---------- 2i: deny removing a still-cited issues/<id>/plan.md ----------
+//
+// bash-guard.mjs is the only site with both the input (the rm/git-rm
+// target, before the file is gone) and the timing (before the retirement
+// commit). edit-guard.mjs never sees a deletion; session-stop.mjs would
+// fire on history rather than on the action, after the content is only
+// recoverable from git history; selftest.mjs cannot be the rule, since it
+// runs inside npm run check and a .md-only retirement commit is gate-exempt.
+// See .claude/README.md, "Hooks", row 40, for the rejected sites and the
+// fallback (a speak instead of a deny) if this proves too blunt in use.
+
+const PLAN_MD_RE = /^issues\/[^/]+\/plan\.md$/;
+
+function orphanPlanTargets(segList, cwd) {
+  const targets = new Set();
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    const { tokens, program } = info;
+    let candidateTokens = null;
+    if (program === 'rm') {
+      candidateTokens = tokens.slice(1);
+    } else if (program === 'git') {
+      const { subcommand, rest } = gitSubcommand(tokens);
+      if (subcommand === 'rm') candidateTokens = rest;
+    }
+    if (!candidateTokens) continue;
+    for (const token of candidateTokens.filter((t) => !t.startsWith('-'))) {
+      const rel = relPath(token, cwd);
+      if (!rel) continue;
+      const key = pathKey(rel);
+      if (PLAN_MD_RE.test(key)) targets.add(key);
+    }
+  }
+  return [...targets];
+}
+
+/** Tracked lines citing `target` (a repo-relative, folded path), as
+ * "file:line" strings. `git()` returns null on a non-zero exit, which
+ * covers both "no matches" and "git unavailable" - both mean no deny, and
+ * this function must not try to tell them apart. Drops any hit inside the
+ * target file itself. */
+function citingLines(target) {
+  const out = git(['grep', '-n', '--fixed-strings', '--', target]);
+  if (out === null) return [];
+  const hits = [];
+  for (const row of out.split('\n')) {
+    if (!row) continue;
+    const first = row.indexOf(':');
+    if (first === -1) continue;
+    const file = row.slice(0, first);
+    const rest = row.slice(first + 1);
+    const second = rest.indexOf(':');
+    const line = second === -1 ? rest : rest.slice(0, second);
+    if (pathKey(file) === target) continue;
+    hits.push(`${file}:${line}`);
+  }
+  return hits;
+}
+
+function evaluateOrphanPlan(segList, cwd) {
+  for (const target of orphanPlanTargets(segList, cwd)) {
+    const hits = citingLines(target);
+    if (hits.length) return { id: 'orphan-plan', message: MSG.orphanPlan(target, hits) };
   }
   return null;
 }
@@ -395,6 +479,36 @@ function evaluateParityLock(segList) {
   return { id: 'parity-lock', message: MSG.parityLock(heavy, parityLock.describe(lock)) };
 }
 
+// ---------- 2j: readers that bypass RTK (deny) ----------
+//
+// `grep -n` and `tail -c` were 96.4K of the 179.7K tokens RTK missed over
+// thirty days (rtk discover, 2026-09-15): RTK's own hook rewrites only a
+// command at the start of a line, and these arrive piped, in `$(...)`, or
+// after a `cd`. READERS hides both programs from every other rule on
+// purpose (`echo git reset --hard` must stay silent), so this family
+// tokenises the segment itself and tests the program token only:
+// `echo grep -n`, `git grep -n` (closeout step 6) and `rtk grep -n` never
+// match. See .claude/README.md, "Hooks", row 43.
+
+const RTK_READERS = [
+  { program: 'grep', letter: 'n', long: '--line-number', message: MSG.grepLineNumber },
+  { program: 'tail', letter: 'c', long: '--bytes', message: MSG.tailBytes }
+];
+
+function evaluateRtkReaders(segList) {
+  for (const segment of segList) {
+    const tokens = unwrap(tokensOf(segment));
+    if (!tokens.length) continue;
+    for (const spec of RTK_READERS) {
+      if (tokens[0] !== spec.program) continue;
+      if (flagMatches(tokens, spec.letter) || tokens.some((t) => t.startsWith(spec.long))) {
+        return { id: `rtk-${spec.program}`, message: spec.message };
+      }
+    }
+  }
+  return null;
+}
+
 // ---------- 2f: long-check reminder (allow, not block) ----------
 
 function evaluateLongCheck(segList, sessionId) {
@@ -434,6 +548,9 @@ guard(() => {
   const blocked = evaluateBlocklist(segList, cwd);
   if (blocked) return deny(event, blocked.message);
 
+  const orphanPlan = evaluateOrphanPlan(segList, cwd);
+  if (orphanPlan) return deny(event, orphanPlan.message);
+
   const blanket = evaluateBlanketStage(segList, cwd);
   if (blanket) return deny(event, blanket.message);
 
@@ -450,6 +567,9 @@ guard(() => {
 
   const parity = evaluateParityLock(segList);
   if (parity) return deny(event, parity.message);
+
+  const rtk = evaluateRtkReaders(segList);
+  if (rtk) return deny(event, rtk.message);
 
   const longCheck = evaluateLongCheck(segList, input.session_id);
   if (longCheck) return speak(event, longCheck.message);

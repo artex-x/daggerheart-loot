@@ -1,0 +1,401 @@
+# #/tables/voa ~ section anchor
+# route: #/tables/voa/tA
+# why: arriving at a section link scrolls to and flashes it
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/tables/voa/tA]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "108"
+    ... StaticText x10 of 14 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (24)" [checked=false]
+    checkbox "Выбрано" [checked=false]
+    button "1 Благословенный Нож Шеф-Повара Ранг 1 · Физическое · Искусность..." [namelen=348 namehash=6752c1d5]
+    ... checkbox x110 of 114 same-shape siblings elided
+    ... button x105 of 109 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    ... button x2 of 6 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "ПРОКЛЯТЫЕ ПРЕДМЕТЫ"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    StaticText "Выбрать все (5)"
+    checkbox "Выбрано" [checked=false]
+    button "4 Горжет Синтры Когда надет, ваш разум открыт демоническому суще..." [namelen=825 namehash=2049097e]
+    checkbox "Выбрано" [checked=false]
+    button "5 Маска Фаибоса Как только вы надеваете эту маску, она срастаетс..." [namelen=662 namehash=b2488aad]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+10Камень ПсионаВы можете прикрепить этот камень к оружию, которо... [namelen=342 namehash=b7f01a24]
+10Клинок ШаманаРанг 3 · Магическое · Инстинкт · Вплотную · d8+5 ... [namelen=283 namehash=ced9d3fb]
+10Мистер МякишСтоимость Призыва: 0Когда вы совершаете продолжите... [namelen=174 namehash=3ec97801]
+10НимойрасРанг 4 · Физическое · Искусность · Близко · d10+6 физ ... [namelen=382 namehash=ffd4f90a]
+11Воля ГлашатаяРанг 4 · Магическое · Знание · Далеко · d6+9 маг ... [namelen=558 namehash=65c8f0a4]
+11Жестокий КаменьВы можете прикрепить этот камень к оружию, кото... [namelen=256 namehash=a4029584]
+11Жилет ФазированияСтоимость Призыва: 1Один раз за продолжительн... [namelen=229 namehash=84b166a4]
+11Пояс МастерстваСтоимость Призыва: 1Один раз за продолжительный... [namelen=270 namehash=abcd6eb7]
+12Наручи МощиСтоимость Призыва: 1Вы получаете +1 к Силе и преиму... [namelen=395 namehash=4ef9e807]
+12Оберег ДемонаСтоимость Призыва: 2Вы можете отметить Стресс, чт... [namelen=331 namehash=a4e94b88]
+12Одеяние ПосланникаРанг 2 · Пороги 11/24 · Броня 5Стоимость При... [namelen=286 namehash=3d407477]
+12Посох Мохового ЦветкаРанг 3 · Магическое · Инстинкт · Вплотную... [namelen=354 namehash=29641108]
+13Временной ФитильСтоимость Призыва: 2В качестве Хода Отдыха вы ... [namelen=484 namehash=5cae729d]
+13Кольцо Кровавой МатроныСтоимость Призыва: 2Кровавый Шип: Совер... [namelen=730 namehash=5a643486]
+13Кольцо ФормСтоимость Призыва: 1Вы можете потратить Надежду, чт... [namelen=410 namehash=7810aeb8]
+13ХаррокливРанг 3 · Физическое · Сила · Вплотную · d12+7 физ · Д... [namelen=315 namehash=ef4478d5]
+14Драконья ЧешуяЕсли выковать из неё броню, добавьте +5/+2 к пор... [namelen=278 namehash=d4057e4b]
+14Плащ ЗащитыСтоимость Призыва: 1Пока надет, этот магический пла... [namelen=166 namehash=49e1c87b]
+14Сфера БезумияСтоимость Призыва: 3Выберите знакомое существо на... [namelen=782 namehash=65f47e10]
+14Шлем Белого КогтяСтоимость Призыва: 1Этот шлем даёт вам кругов... [namelen=364 namehash=5b764708]
+15Альт СказочникаСтоимость Призыва: 1Играя на этом инструменте, ... [namelen=348 namehash=ba8f5877]
+15Ошейник РезакаСтоимость Призыва: 1Когда вы попадаете по против... [namelen=157 namehash=f27da911]
+15Пылающий БезоарСтоимость Призыва: 2Когда вы проглатываете безо... [namelen=331 namehash=fa864fa8]
+15Рассекатель ЗавесыРанг 4 · Влияние · Вплотную · d6+9 физ · Одн... [namelen=381 namehash=fae3f03c]
+16Повязка КрасотыСтоимость Призыва: 0После продолжительного отды... [namelen=190 namehash=e3eecfe9]
+16Сумка ЗачарователяСтоимость Призыва: 1Когда вы помещаете обычн... [namelen=372 namehash=39075633]
+16Эфирный ПерпетуаторСтоимость Призыва: 1После отдыха вы можете ... [namelen=369 namehash=df642c8a]
+16Ящик ВельцманаСтоимость Призыва: 1Когда объект помещён в ящик,... [namelen=423 namehash=5da901a4]
+17Амулет ВацитосаСтоимость Призыва: 1Один раз за продолжительный... [namelen=194 namehash=05004c5d]
+17Клинок БраксусаРанг 3 · Физическое · Сила · Вплотную · d10+9 ф... [namelen=395 namehash=f9d03c4f]
+17Одеяния Повелителя ТруповРанг 2 · Пороги 9/19 · Броня 3Стоимос... [namelen=410 namehash=b0da6c4d]
+17Церебральный ШипРанг 4 · Магическое · Инстинкт · Вплотную · d8... [namelen=448 namehash=20df9889]
+18Камея НемедленностиСтоимость Призыва: 2Вы можете потратить 2 Н... [namelen=204 namehash=cd389ca5]
+18Лорнет Пыльных ВсадниковСтоимость Призыва: 0Вы можете проециро... [namelen=287 namehash=d093d461]
+18Перо КорвусаСтоимость Призыва: 1Пока связаны с этим предметом,... [namelen=325 namehash=a5feeca0]
+18Шлем ПереносаСтоимость Призыва: 1Один раз за продолжительный о... [namelen=389 namehash=03862792]
+19Латный Доспех ДемоностражаРанг 4 · Пороги 17/44 · Броня 7Стоим... [namelen=326 namehash=973b56c2]
+19Медаль ГарраксаСтоимость Призыва: 0Вы можете игнорировать перв... [namelen=131 namehash=885d2603]
+19Мясницкий ТесакРанг 3 · Физическое · Влияние · Близко · d8+7 ф... [namelen=491 namehash=f7f4f0bc]
+19Наручи РазрядаСтоимость Призыва: 1Один раз за продолжительный ... [namelen=399 namehash=3b5126be]
+1Благословенный Нож Шеф-ПовараРанг 1 · Физическое · Искусность ·... [namelen=341 namehash=e119584c]
+1Знамя Храброго СердцаСтоимость Призыва: 1Вы можете вонзить это ... [namelen=250 namehash=fd69e7f3]
+1Книга КровиСтоимость Призыва: 2Этот ужасный том содержит секрет... [namelen=412 namehash=2d56222e]
+1Печать КавитПосле того как вы пролили кровь, нося этот предмет,... [namelen=722 namehash=d779b901]
+1Узы ДушиСтоимость Призыва: 3Выберите существо в пределах Средне... [namelen=829 namehash=bb0d594e]
+1Фетиш СтарухиКогда вы проваливаете Бросок Заклинания, вы получа... [namelen=149 namehash=19c78039]
+20Железный КонстебльРанг 2 · Физическое · Сила · Вплотную · d8+5... [namelen=308 namehash=325982b4]
+20Идеальный ВинтажКогда вы выпиваете это мистическое вино, вы по... [namelen=206 namehash=1b04f21d]
+20Монета ПалачаСтоимость Призыва: 1Совершите Бросок Заклинания (... [namelen=373 namehash=1770234c]
+20Ртутный ФамильярВы можете разбить это, чтобы создать ртутного ... [namelen=377 namehash=51f1d97a]
+21Бледное СтеклоСтоимость Призыва: 1Вы можете зажечь этот фонарь... [namelen=294 namehash=88cb51fd]
+21Мемуары Генерала ДуртаСтоимость Призыва: 1Во время продолжител... [namelen=333 namehash=ee211459]
+21Перчатки СкорбиСтоимость Призыва: 2Вдова может потратить 3 Над... [namelen=451 namehash=ac47cfb1]
+21Саквояж МастерстваСтоимость Призыва: 0Во время продолжительног... [namelen=376 namehash=20054da8]
+22Ридикюль АрахнидаСтоимость Призыва: 2Вы можете отметить Стресс... [namelen=408 namehash=dbd1373e]
+22Серебряный Святой СимволСтоимость Призыва: 1Поднимите символ и... [namelen=437 namehash=72cf7edb]
+22Уменьшенная Голова УвагекиСтоимость Призыва: 2Один раз за прод... [namelen=431 namehash=478ae5f2]
+22Чешуя ЛевиафанаПри использовании в качестве компонента при соз... [namelen=485 namehash=1e7e40b1]
+23Всадник ВолнРанг 3 · Магическое · Инстинкт · Вплотную · d8+7 м... [namelen=436 namehash=1706da4e]
+23Голодный Кулачный КлинокРанг 4 · Искусность · Вплотную · d6+7 ... [namelen=411 namehash=5d38bac7]
+23Карманные Часы Странника ВремениСтоимость Призыва: 1Один раз з... [namelen=392 namehash=990dcc8a]
+23Настойка ПрыгучестиВы можете прыгать куда угодно в пределах Ср... [namelen=200 namehash=4e2283fa]
+24Виски Ведьмовского ДухаВыпейте жидкость, чтобы получить 3 жето... [namelen=423 namehash=6fbd1776]
+24Диск АннулированияВы можете потратить 3 Надежды, чтобы размест... [namelen=500 namehash=d729b25b]
+24Панцирь Подземного ОбитателяРанг 2 · Пороги 10/22 · Броня 4Сто... [namelen=260 namehash=a24f855b]
+24Свисток Каменного КороляСтоимость Призыва: 2Вы можете отметить... [namelen=343 namehash=c65c1b16]
+25Ключ Повелителя ЧереповСтоимость Призыва: 2Один раз за продолж... [namelen=457 namehash=53e8fa31]
+2Дестабилизирующий КубСтоимость Призыва: 2Поместите этот объект ... [namelen=328 namehash=dde3f232]
+2Корона СудаСтоимость Призыва: 1Вы можете потратить Надежду пере... [namelen=151 namehash=6fe80070]
+2Проклятая ГоловаСтоимость Призыва: 2Один раз за продолжительный... [namelen=348 namehash=40505bb8]
+2Семя ЧудаСтоимость Призыва: 4По слухам, источник всей магии, эт... [namelen=368 namehash=240ed353]
+2Стекло Разбитой СудьбыСущество, заглянувшее в это зеркало, види... [namelen=720 namehash=1079953f]
+2ЭктоплазмаЭта банка духовной энергии может быть выпита или разб... [namelen=293 namehash=4081c46f]
+3Доспех Морозного ПоцелуяРанг 1 · Пороги 7/14 · Броня 3Стоимость... [namelen=219 namehash=b4f7e7ce]
+3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
+3Кулаки РазорителяРанг 4 · Магическое · Сила · Вплотную · d10+15... [namelen=243 namehash=518b4a38]
+3Ноктюрнный ЗамокЕсли вы пытаетесь вскрыть этот замок, вы привяз... [namelen=821 namehash=2e9cdf4d]
+3Сыворотка ХелгастаПри выпитии эта жидкость даёт Мастеру Страх. ... [namelen=270 namehash=71f109c6]
+3Усиленные СерьгиСтоимость Призыва: 1Вы добавляете +1 к Броскам ... [namelen=213 namehash=51377676]
+4Брошь Нефритового КрылаСтоимость Призыва: 2Один раз за продолжи... [namelen=305 namehash=661d2603]
+4Взгляд ВаэтСтоимость Призыва: 3Один раз за продолжительный отды... [namelen=357 namehash=c6da99d1]
+4Горжет СинтрыКогда надет, ваш разум открыт демоническому сущест... [namelen=819 namehash=d4671440]
+4Таинство МудрецовСтоимость Призыва: 3Вы можете призвать мудрост... [namelen=429 namehash=1b21acc7]
+4Талисман Железной КровиКогда вас поражает атака, вы можете потр... [namelen=257 namehash=4e29c513]
+4Чудесная ФеррожидкостьПри разбитии любые металлические объекты ... [namelen=325 namehash=28964042]
+5ИнееметательРанг 1 · Магическое · Знание · Далеко · d6+1 маг · ... [namelen=287 namehash=4396ebb1]
+5Маска ФаибосаКак только вы надеваете эту маску, она срастается ... [namelen=656 namehash=f6df1b2d]
+5Митра ВотаСтоимость Призыва: 2Один раз за продолжительный отдых... [namelen=492 namehash=30a31188]
+5Призыв УльратаЭтот свиток даёт постоянное зачарование броне или... [namelen=149 namehash=96a8d25f]
+5Пылающие Кулаки СатуракаСтоимость Призыва: 2Мастер Кузни: Когда... [namelen=499 namehash=c3312d4a]
+5Стенающая Костяная ФлейтаСтоимость Призыва: 1Один раз за продол... [namelen=394 namehash=01e31635]
+6Зелье Каменной КожиПри выпитии получите +1 Ячейку Брони до след... [namelen=117 namehash=616e1314]
+6Пифийская ВилкаСтоимость Призыва: 3Выберите место для путешеств... [namelen=382 namehash=a467e3e4]
+6Последний РубежРанг 2 · Физическое · Искусность · Близко · d10+... [namelen=258 namehash=c42440cb]
+6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
+6Слёзы ДжеллСтоимость Призыва: 3После полнолуния поместите 6 жет... [namelen=699 namehash=5261345a]
+7Монокль ПамятиОдин раз за продолжительный отдых вы можете отмет... [namelen=193 namehash=ed2fbee9]
+7Пара Камней СвязиСтоимость Призыва: 0Держа один из этих камней ... [namelen=300 namehash=ee2e1b2c]
+7Талисман РахвекаСтоимость Призыва: 2Один раз за продолжительный... [namelen=314 namehash=6e513ce9]
+7Щит ОтталкиванияРанг 3 · Сила · Вплотную · d4+4 физ · Одноручно... [namelen=352 namehash=56acab87]
+8Вуаль Земной ДушиСтоимость Призыва: 1Нося эту вуаль, вы можете ... [namelen=325 namehash=ceb7f2b3]
+8Гримуар Охотника на МонстровВы можете сохранить имена и подробн... [namelen=229 namehash=4b3a2ef4]
+8Пояс из СухожилийСтоимость Призыва: 1Вы можете отметить Стресс,... [namelen=254 namehash=849baf07]
+8ТемпрусРанг 4 · Физическое · Сила · Вплотную · d8+9 физ · Однор... [namelen=357 namehash=3ada561b]
+9Бессмертное СердцеСтоимость Призыва: 2Потратьте 3 Надежды, чтоб... [namelen=292 namehash=e66a476c]
+9Седло Благословения ВетраЭто зачарованное седло подстраивается ... [namelen=183 namehash=0a962bca]
+9Сфера ОбнаруженияСовершите Бросок Заклинания (13). При успехе н... [namelen=266 namehash=eccc35f1]
+9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
+Core
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Выбрано
+К содержимому
+Как это работает
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Прочее
+Сеткой
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Таблицы
+Фильтры
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "108"
+    ... StaticText x10 of 14 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (24)" [checked=false]
+    checkbox "Selected" [checked=false]
+    button "1 Blessed Chef's Knife Tier 1 · Physical · Finesse · Melee · d8+..." [namelen=312 namehash=e6980787]
+    ... checkbox x110 of 114 same-shape siblings elided
+    ... button x105 of 109 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    ... button x2 of 6 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "CURSED OBJECTS"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    StaticText "Select all (5)"
+    checkbox "Selected" [checked=false]
+    button "4 Synthra's Gorget When worn, your mind is open to the demonic b..." [namelen=777 namehash=b5040608]
+    checkbox "Selected" [checked=false]
+    button "5 Phaibos Mask Once you don this mask, it fuses to your flesh ma..." [namelen=657 namehash=cd28bafe]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+10Mr.MushyRecall Cost: 0When you take a long rest with this squi... [namelen=133 namehash=45385ebb]
+10NimoirasTier 4 · Physical · Finesse · Very Close · d10+6 phy ·... [namelen=351 namehash=96b4f253]
+10Psion StoneYou can attach this stone to a weapon that doesn't ... [namelen=332 namehash=35cd7c7f]
+10Shaman's BladeTier 3 · Magic · Instinct · Melee · d8+5 mag · O... [namelen=265 namehash=6a9a7089]
+11CruelstoneYou can attach this stone to a weapon that doesn't a... [namelen=240 namehash=f8c8e568]
+11Herald's WillTier 4 · Magic · Knowledge · Far · d6+9 mag · Two... [namelen=507 namehash=33ea6e7b]
+11Mastery BeltRecall Cost: 1Once per long rest, you can spend 2 ... [namelen=216 namehash=88fcb759]
+11Vest of PhasingRecall Cost: 1Once per long rest, you may spend... [namelen=194 namehash=ea057e77]
+12Bracers of PowerRecall Cost: 1You gain +1 Strength and advanta... [namelen=343 namehash=fb753419]
+12Demon's CharmRecall Cost: 2You can mark a Stress to invoke the... [namelen=331 namehash=76962858]
+12Envoy's AttireTier 2 · Thresholds 11/24 · Armor 5Recall Cost: ... [namelen=251 namehash=4ba6f07f]
+12Mossblossom StaffTier 3 · Magic · Instinct · Melee · d10+9 mag... [namelen=339 namehash=bfb9d104]
+13HarrowcleaveTier 3 · Physical · Strength · Melee · d12+7 phy ·... [namelen=294 namehash=e28d778a]
+13Ring of ShapesRecall Cost: 1You can spend a Hope to create a s... [namelen=379 namehash=0743d3fe]
+13Ring of the Blood MatronRecall Cost: 2Blood Spike: Make a Spel... [namelen=614 namehash=4f876560]
+13Temporal TaperRecall Cost: 2As a downtime move you can light t... [namelen=481 namehash=0c258fa4]
+14Cloak of ProtectionRecall Cost: 1While worn, this magical cloa... [namelen=158 namehash=4b468507]
+14DragonscaleWhen forged into armor, add +5/+2 to its damage thr... [namelen=274 namehash=07c01898]
+14Sphere of InsanityRecall Cost: 3Pick a creature with whom you ... [namelen=743 namehash=490efa98]
+14White Talon HelmRecall Cost: 1This helm grants you 360-degree ... [namelen=304 namehash=68450ec7]
+15Blazing BezoarRecall Cost: 2When you consume the bezoar, cross... [namelen=307 namehash=9238987c]
+15Cutter's CollarRecall Cost: 1When you hit an adversary, you ca... [namelen=131 namehash=3d64e2b2]
+15Taleswapper's ViolaRecall Cost: 1While playing this instrument... [namelen=335 namehash=314b38b5]
+15Veil CutterTier 4 · Presence · Melee · d6+9 phy · One-HandedRe... [namelen=340 namehash=dd1477af]
+16Aetheric PerpetuatorRecall Cost: 1After a rest, you can mark a... [namelen=313 namehash=ec04c115]
+16Blindfold of BeautyRecall Cost: 0After a long rest, you gain +... [namelen=150 namehash=2c752998]
+16Enchanter's PackRecall Cost: 1When you place a mundane item in... [namelen=329 namehash=6ec2c644]
+16Weltzman BoxRecall Cost: 1When an object is placed within the ... [namelen=406 namehash=6d124603]
+17Blade of BraxusTier 3 · Physical · Strength · Melee · d10+9 ph... [namelen=373 namehash=ca6b4827]
+17Cerebral SpikeTier 4 · Magic · Instinct · Melee · d8+10 mag · ... [namelen=409 namehash=778df038]
+17Charm of VacitosRecall Cost: 1Once per long rest, when you mar... [namelen=143 namehash=e0d632e2]
+17Corpse Lord's RaimentsTier 2 · Thresholds 9/19 · Armor 3Recall... [namelen=360 namehash=2789c1d4]
+18Cameo of ImmediacyRecall Cost: 2You can spend 2 Hope to increa... [namelen=170 namehash=c8e1228a]
+18Corvus QuillRecall Cost: 1While bonded to this item, you have ... [namelen=304 namehash=b9c274e8]
+18Dustriders LorgnetteRecall Cost: 0You can project an illusion ... [namelen=236 namehash=2bc849d0]
+18Helm of TransferenceRecall Cost: 1Once per long rest you can s... [namelen=350 namehash=95252d97]
+19Demonguard PlatemailTier 4 · Thresholds 17/44 · Armor 7Recall ... [namelen=301 namehash=916e1970]
+19Garrax's MedalRecall Cost: 0You may ignore the first Minor dam... [namelen=107 namehash=20e820bd]
+19Jolt BracersRecall Cost: 1Once per long rest, when you take da... [namelen=323 namehash=3039f606]
+19Meat CleaverTier 3 · Physical · Presence · Very Close · d8+7 p... [namelen=449 namehash=dd1efb1c]
+1Anima ColligationemRecall Cost: 3Choose a creature in Close ran... [namelen=805 namehash=0bd8fe1c]
+1Blessed Chef's KnifeTier 1 · Physical · Finesse · Melee · d8+1 ... [namelen=305 namehash=ce1aa63f]
+1Book of BloodRecall Cost: 2This horrid tome contains secrets be... [namelen=321 namehash=c5e80d4e]
+1Braveheart BannerRecall Cost: 1You can plant this banner during... [namelen=239 namehash=6f210155]
+1Crone's FetishWhen you fail a Spellcast Roll, you gain advantag... [namelen=127 namehash=07d508e8]
+1Seal of KavithAfter you spill blood while carrying this item, i... [namelen=698 namehash=fa2a11d6]
+20Executioner's CoinRecall Cost: 1Make a Spellcast Roll (17) and... [namelen=340 namehash=96c1078d]
+20Iron ConstableTier 2 · Physical · Strength · Melee · d8+5 phy ... [namelen=292 namehash=d8467a8d]
+20Mercurial FamiliarYou can smash this to create a mercury dupli... [namelen=372 namehash=99f1e743]
+20Perfect VintageWhen you ingest this mystical wine, you gain ad... [namelen=200 namehash=1a4223f9]
+21Gloves of BereavementRecall Cost: 2A widow can spend 3 Hope an... [namelen=450 namehash=12531ebc]
+21Memoirs of General DurthRecall Cost: 1During a long rest, you ... [namelen=274 namehash=31208db5]
+21Portmanteau of ProficiencyRecall Cost: 0During a long rest, yo... [namelen=325 namehash=87aa756d]
+21The Pale GlassRecall Cost: 1You can light this lantern to reve... [namelen=249 namehash=5f07e7fa]
+22Leviathan ScaleWhen used as a component in the creation of equ... [namelen=427 namehash=1c8694a2]
+22Reticule ArachnidaRecall Cost: 2You can mark a Stress to open ... [namelen=371 namehash=3b73d480]
+22Shrunken Head of UvagekiRecall Cost: 2Once per long rest, as a... [namelen=368 namehash=3e15cbea]
+22Silvered Holy SymbolRecall Cost: 1Hold the symbol aloft and ma... [namelen=396 namehash=20976791]
+23Hungry Fist BladeTier 4 · Finesse · Melee · d6+7 phy · One-Han... [namelen=399 namehash=c41e8e5f]
+23Timewalker PocketwatchRecall Cost: 1Once per long rest, when y... [namelen=337 namehash=b7140399]
+23Tincture of LeapingYou can jump anywhere in Close range, or Fa... [namelen=195 namehash=976d878d]
+23WaveriderTier 3 · Magic · Instinct · Melee · d8+7 mag · One-Ha... [namelen=386 namehash=f073c18d]
+24Nullification DiscYou can spend 3 Hope to place and activate t... [namelen=443 namehash=4b9006e5]
+24Underdweller CarapaceTier 2 · Thresholds 10/22 · Armor 4Recall... [namelen=239 namehash=2e95d7fb]
+24Whistle of the Stone KingRecall Cost: 2You can mark a Stress t... [namelen=329 namehash=0f52d02d]
+24Witchspirit WhiskeyDrink the liquid to gain 3 Witchfire tokens... [namelen=350 namehash=a79a2e4f]
+25Skull Lord's KeyRecall Cost: 2Once per long rest, you can mark... [namelen=357 namehash=eea7282c]
+2Crown of JudgementRecall Cost: 1You can spend a Hope before you... [namelen=149 namehash=8fc5502f]
+2Cursed HeadRecall Cost: 2Once per long rest, you allow the head... [namelen=293 namehash=99e6b3dd]
+2Destabilizing CubeRecall Cost: 2Place this object and activate ... [namelen=318 namehash=de1546e5]
+2EctoplasmThis jar of spiritual energy can be ingested or smashe... [namelen=290 namehash=c1568ab8]
+2Glass of Shattered FateA creature peering into this mirror sees... [namelen=693 namehash=1fd2ef5f]
+2Seed of WonderRecall Cost: 4Rumored to be the source of all mag... [namelen=383 namehash=c27cb7fc]
+3Empowered EarringsRecall Cost: 1You add +1 to your Spellcast Ro... [namelen=177 namehash=49f643c2]
+3Fists of the RavagerTier 4 · Magic · Strength · Melee · d10+15 ... [namelen=239 namehash=da7bcff5]
+3Frost-Kissed ArmorTier 1 · Thresholds 7/14 · Armor 3Recall Cost... [namelen=197 namehash=54905261]
+3Helghast SerumWhen ingested, this fluid grants the GM a Fear. F... [namelen=256 namehash=87ef7dbd]
+3Nocturne PadlockIf you try to tamper with this lock, you are bo... [namelen=789 namehash=89c001e9]
+3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
+4Gaze of VaethRecall Cost: 3Once per long rest you can spend a H... [namelen=342 namehash=3a3c8d90]
+4Ironblood TalismanWhen you are hit by an attack, you can spend ... [namelen=227 namehash=941a62b7]
+4Jadewing BroochRecall Cost: 2Once per long rest you can mark a ... [namelen=259 namehash=5c7ae85e]
+4Marvellous FerrofluidWhen smashed, any metallic objects within ... [namelen=287 namehash=b04ad8c5]
+4Sacrament of SagesRecall Cost: 3You can call on the wisdom of a... [namelen=366 namehash=a97664fd]
+4Synthra's GorgetWhen worn, your mind is open to the demonic bei... [namelen=771 namehash=0fe0f8a1]
+5Invocation of UlratThis scroll provides a permanent enchantment... [namelen=162 namehash=ce9af809]
+5Keening Bone FluteRecall Cost: 1Once per long rest, you can pla... [namelen=302 namehash=c2058871]
+5Mitre of VothRecall Cost: 2Once per long rest you can spend 3 H... [namelen=425 namehash=96d4ef2c]
+5Phaibos MaskOnce you don this mask, it fuses to your flesh maki... [namelen=651 namehash=fa9b72a4]
+5RimecasterTier 1 · Magic · Knowledge · Far · d6+1 mag · One-Han... [namelen=272 namehash=35ca6e7d]
+5Saturak's Flaming FistsRecall Cost: 2Forgemaster: When you craf... [namelen=453 namehash=0a0bf79f]
+6Last StandTier 2 · Physical · Finesse · Very Close · d10+5 phy ... [namelen=231 namehash=3382489a]
+6Pythian ForkRecall Cost: 3Choose a location to travel to on any... [namelen=340 namehash=716a8df7]
+6Ritual Blade of SekhmetTier 3 · Finesse · Melee · d8+4 mag · On... [namelen=266 namehash=586550e2]
+6Stoneskin PotionWhen ingested, gain +1 Armor Slot until your ne... [namelen=100 namehash=f1f3aa97]
+6Tears of JhellRecall Cost: 3After a full moon, place 6 tokens o... [namelen=712 namehash=5fcea032]
+7Monocle of MemoryOnce per long rest, you can mark a Stress to g... [namelen=161 namehash=f62e2f93]
+7Shield of RepulsionTier 3 · Strength · Melee · d4+4 phy · One-H... [namelen=349 namehash=30f9feac]
+7Talisman of RahvekRecall Cost: 2Once per long rest you can mark... [namelen=276 namehash=88f2bd01]
+7Tetherstone DuoRecall Cost: 0When holding one of these stones i... [namelen=304 namehash=7c1fefcf]
+8Monster Hunter's GrimoireYou can store the name and details of ... [namelen=221 namehash=7bf966fe]
+8TemprusTier 4 · Physical · Strength · Melee · d8+9 phy · One-Ha... [namelen=360 namehash=e0a894a2]
+8Tendon GirdleRecall Cost: 1You can mark a Stress to constrict t... [namelen=227 namehash=c0d907b8]
+8Veil of Earthen SoulRecall Cost: 1When wearing this veil, you c... [namelen=296 namehash=62404f98]
+9Sphere of DetectionMake a Spellcast Roll (13). On a success, sp... [namelen=262 namehash=379e89c5]
+9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
+9Undying HeartRecall Cost: 2Spend 3 Hope to start the beating of... [namelen=284 namehash=fa126882]
+9Windblessed SaddleThis enchanted saddle will adjust its size to... [namelen=184 namehash=4455c13c]
+Alt. tables
+Communities
+Copy a link to this section
+Core
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Filters
+Grid
+Hope & Fear
+How this works
+Link to this table
+List
+Lists
+Open this section on start
+Other
+RU
+Search
+Selected
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart
