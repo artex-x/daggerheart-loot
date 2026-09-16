@@ -3982,3 +3982,87 @@ commit.
   files / 1035 tests; statements 96.61, branches 88.58, functions 97.10, lines
   97.34; vitest 95.64s. R0b.1's entry condition met.
 - No heavy run alive: `test-output/parity.lock` absent, zero `chrome.exe`.
+
+## A fourth divergence, found by R0b.1 and folded into R0b.4 (orchestrator, 2026-09-16)
+
+Supersedes the count in "The owner's answer on the three divergences" above -
+**R0b.4 carries four items, not three.** The section above still states the
+owner's three answers correctly; only the count changed.
+
+The fourth was found by R0b.1's C3 while regenerating
+`docs/fixtures/share/records.json` to add `w118`, and it is the same shape and
+class as the other three: a frame-armour record's copy text keeps a tier word
+the live app now drops. `app.js:612` guards with
+`if (e.tier && !isFrameRecord(it))` (commit `106e4dd`, pre-session);
+`app/src/lib/share.ts:85` calls `eqLine(...)` with no `noTier`. The rewrite
+already has the option (`app/src/lib/i18n.ts:117,123`) and already uses it
+elsewhere (`i18n.test.ts:42,63`), so the fix is `noTier: isFrameRecord(it)`
+plus a fixture regeneration.
+
+**It was not implemented.** R0b.1's acceptance line 21 forbade touching
+`app/src/`, so only `w118` was added and the other eight fixture entries were
+kept byte-identical. Design is R0b.4's, and the planner's.
+
+**Why this needed doing rather than leaving:** it was first routed out of the
+task through a background-task chip, which is session state. R0c's stop
+condition named three, so nothing would have held the deletion of `app.js` on
+account of the fourth - and `app.js` is the only place the correct behaviour
+is written down. It is now recorded in `plan.md` ("The fourth verdict", item
+4), in the R0b.4 batch row, in `docs/specs/COVERAGE.md`'s `flows` row, and as
+a note in `tools/capture-share-fixture.mjs` so the next person to run that
+tool does not read the resulting `f33` diff as a fresh regression. The stop
+condition now reads four everywhere. The chip was withdrawn.
+
+**Divergence 2 had the same problem** and is fixed the same way: the lost
+`<br>` line breaks and the lost `daggerheart.su` link were recorded in issue
+documents only - grepping `docs/specs/` for `refHTML`, `daggerheart.su` or
+`RecordCard.svelte:238` returned nothing. Both notes are now in
+`COVERAGE.md`'s `flows` row.
+
+## R0b.1 closed (orchestrator, 2026-09-16)
+
+Four work commits plus a peer merge and two documentation commits, all pushed;
+`main` == `origin/main` == `6b4c838`. Reviewed on `opus`: **fix-then-continue**,
+two blockers, both documentation-only - no code change was requested, and the
+one remediation cycle is spent.
+
+Durable facts worth carrying forward:
+
+- **`tests/parity/driver.js` is now `tests/app/driver.js`**, byte-identical
+  (0 insertions / 0 deletions on the rename). `tests/parity.js:156`'s
+  `hashFile` re-pointed with it, so the legacy screenshot cache key still
+  covers the driver - the defect class the phase exists to close. No
+  `parity/driver` string survives in `tests/`, `tools/`, `docs/` or
+  `.claude/`; one stale comment remains at
+  `app/src/components/TablesPage.svelte:395` (Deferred nit 1).
+- **The one-file revert guarantee holds, and the acceptance line that doubted
+  it was wrong.** `git show 9177f3b | git apply --reverse --check -` fails at
+  `.github/workflows/ci.yml:129`, but only because `--reverse` needs exact
+  context; the three intervening commits to that file all precede R0b.1's
+  base, and `git merge-tree 9177f3b HEAD 9177f3b^` is clean with no conflict
+  markers. The acceptance command is now `git revert --no-commit 9177f3b`.
+  **Do not re-litigate this** - it was measured twice.
+- **`COVERAGE.md`'s ten-suite verdict table cites line numbers, and line
+  numbers rot.** R0b.1's own C2/C3 invalidated six rows of the table C4 wrote
+  in the same batch, because the citations came from an audit taken against
+  the pre-batch tree. All were re-pointed and verified content-identical
+  against `37e4812`. **R0b.2 adds cases to `tests/app/states.js` and will
+  shift them again**; re-pointing is a required step of R0b.2's own
+  `COVERAGE.md` edit, recorded in its handoff entry.
+- **`plan.md`'s audit table (`:16068`, `:16071` and neighbours) deliberately
+  keeps the *pre-batch* line numbers**, because it is the record of an audit
+  as taken. `COVERAGE.md` is the live citation surface; when the two disagree,
+  `COVERAGE.md` is the one to trust and the one to fix.
+- **`docs/fixtures/share/records.json` is not a public-contract surface.**
+  `CONTRACTS.md:10` enumerates only `docs/fixtures/lists/*.json` and
+  `docs/fixtures/urls/routes.json`, and `tests/contracts.js` never opens
+  `docs/fixtures/share/`, so adding an entry needs no `tests/contracts.js` /
+  `CONTRACTS.md` / `llms.txt` update. **But `.claude/hooks/edit-followup.mjs:26`
+  tests `p.startsWith('docs/fixtures/')` and so does fire on it** - the
+  reminder is not evidence that a contract moved. An earlier note in `plan.md`
+  claimed the hook did not match; that premise was false and has been
+  corrected.
+
+**Next:** R0b.2 is promoted but **not implement-ready** - no preflight, no
+numbered steps, no acceptance criteria. A planner pass must precede any
+implementer on it.
