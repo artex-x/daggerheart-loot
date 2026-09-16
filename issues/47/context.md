@@ -243,6 +243,23 @@ Related host facts, all measured:
     migration and delays the deletion); and committing to the migration
     up front as its own post-Phase-8 task.
 
+11. **Condition 6 is satisfied: the owner said go for R0c** (2026-09-16),
+    verbatim: "finish R0c, give it additional pass of review of code we're
+    deleting to make sure there is no divergence with new code. if there is
+    devergence, do not block, plan reviewing/addressing it for the next
+    phase." That was the last owner gate anywhere in TASK 47. Two rulings
+    ride with it, and neither is the planner's or an implementer's to
+    re-open: **(a)** R0c carries an additional divergence sweep over
+    everything it deletes - `index.html`, `app.js`, `style.css`, the legacy
+    browser suites, `tests/parity.js` and `tests/parity/` - read against
+    `app/src/` for behaviour the rewrite does not reproduce and no surviving
+    instrument would notice, the class R0b.4's "fourth verdict" found five
+    of; **(b)** what that sweep finds **does not block R0c**. A divergence is
+    recorded - `docs/specs/DEBT.md`, a spec bullet, or the Phase 8 opening
+    handoff - with its evidence quoted against a commit hash so the record
+    outlives the deleted file, and reviewing or addressing it is Phase 8
+    work. Not a restore-first batch, not a reason to hold the deletions.
+
 ## The owner's answer on R0b.4's four divergences: restore all four
 
 Settled input for R0b.4 (orchestrator, 2026-09-16). Do not re-open, and do not
@@ -999,6 +1016,14 @@ expires. Local Windows figures are advisory by owner decision 1.
 `check` 11m51s -> 11m57s, longest parity shard 10m32s -> 10m33s, and the four
 new `golden` shards **1m43s-2m02s each**, finishing nine minutes before the job
 that gates the publish. A shard costs ~2 min on CI against ~4m20s locally.
+
+**Phase 7 condition 2's second read, taken at R0c's open** (orchestrator,
+2026-09-16): `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/`
+against the live URL printed `сайт опубликован верно` and exited 0, on a tree at
+`a6b4a94`. Condition 2 asked for this read to be taken when R0c opens rather
+than earlier; it is taken, and it is green. The other half of condition 2 - the
+guard's published list carrying no file the old app owned - was read inside run
+`34718569245` and is in the row above.
 
 Two standing CI annotations, pre-existing and unrelated: `gitleaks-action@v2`
 and the three Pages actions target Node 20 and are forced onto Node 24. Worth an

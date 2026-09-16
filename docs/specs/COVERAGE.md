@@ -443,3 +443,59 @@ Not blocking, recorded so they are not mistaken for coverage:
   `tests/app/sweep.js`'s per-page `en` run over 41 addresses is the substitute,
   narrower than a whole-document grep but real rather than a grep over
   `app.js` (R0b planned, "R0b.1 designed").
+
+**The R0c sweep's class-(b) findings** (`issues/47/sweep.md`, read at
+`7a33c22`) - a question a deleted instrument asked that nothing surviving
+asks, with **no known divergence** between the two apps (unlike `DEBT.md`
+section 3, which is where a divergence *was* found). Full detail, row by row,
+is in `sweep.md`; grouped here so the list stays readable:
+
+- The list page's roll panel (`<details class="panel lroll">`) opens itself
+  live whenever a roll result already exists (`app.js:3026`); no reachable
+  path was found that needs the rewrite's equivalent to auto-open, so this is
+  a lost question, not a known gap (sweep Part A).
+- Three behaviours ported byte-for-byte with no instrument watching either
+  side any more: the capture-phase `dragover` edge-auto-scroll while
+  dragging a list row near a viewport edge, and the `pointerdown`/`pointerup`
+  pair that marks a note box `data-manual` once the person has resized it by
+  hand (sweep Part D - all three read `same`, all three lose their last
+  watcher at R0c).
+- The exact text of a multi-row selection export (`selCopied`) is asserted
+  only for its two names and the absent `-` separator, never the whole
+  string (sweep Part E(i), `copiedSelection`).
+- Heading typography (weight, line-height, letter-spacing, colour) and the
+  page background are read by nothing surviving; `tests/app/typo.js` checks
+  only font family and the size scale, only at 1180px, and never a measured
+  text advance - the two things B3.6 added specifically because a
+  whole-page pixel percentage could not see a control-sized defect (sweep
+  Part E(i), `visuals` and `typeRuns`).
+- No surviving instrument measures the geometry (position and size) of
+  `.card`, `.cardpick` or `.foot` at more than one width on any state;
+  `tests/app/sweep.js` checks only for sideways overflow (sweep Part E(i),
+  `geometry`).
+- The craft-chain relationship (a record that upgrades into or comes from
+  another) is exercised on one synthetic pair (`record.test.ts`), never
+  across the full set of real chained records the way `tests/craft.js`
+  sections 2-5 did: the card's forward/reverse captions ("Улучшается до" /
+  "Получается из" and their English forms) are rendered by no golden state
+  at all, and no assertion says a chainless item's card or list export
+  carries *no* craft line (sweep Part E(ii-a), 13 rows).
+- Three legacy suites carried an implicit "the page never threw" tripwire
+  (a `pageerror` listener failing the run) that `tests/app/contracts.js`,
+  `tests/app/hues.js` and `tests/app/typo.js` do not attach; `contracts.js`
+  also dropped its floor of "at least twenty route fixtures" and "at least
+  ten stat-line fixtures" exist at all, so a fixture file emptied to a
+  couple of entries would still pass every surviving check (sweep Part
+  E(ii-c), E(ii-d), E(ii-f)).
+- `tests/app/states.js`'s per-case assertions are narrower than
+  `tests/states.js`'s blanket sweep over 24 click-reached states at two
+  widths: only 22 of the legacy 24 states have any arrival assertion at all;
+  nothing checks for a console/page error or the literal word "undefined"
+  in a click-reached state; sideways-scroll and tap-target-size checks cover
+  only the selection bar and phone width respectively rather than every
+  state; and only one of six overlay classes (`.dropmenu`, `.modal-box`,
+  the modal `.card`, `.helpbox`, `.ffilter`, `#selBar`) is checked for
+  staying inside the viewport, at one width (sweep Part E(ii-e), 7 rows).
+- `tests/i18n.js`'s dead-key report (a dictionary key with no `t().key`
+  reader anywhere) has no surviving replacement; `svelte-check` does not
+  flag an unused object property (sweep Part E(iii)).

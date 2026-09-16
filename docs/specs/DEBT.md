@@ -355,6 +355,334 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   orchestrator's own wrong explanation, which claimed tier was suppressed
   because frames are not rollable.
 
+## Divergences found at the deletion (R0c sweep), owed a decision at Phase 8
+
+Commissioned by the repository owner before R0c's deletions (`issues/47/
+context.md`, decision 11, 2026-09-16): one more deliberate pass over
+everything the migration deletes, read against `app/src/` for behaviour no
+surviving instrument would notice. Full record: `issues/47/sweep.md`, read at
+`7a33c22`. **None of these blocked the deletion** - the owner's ruling was
+that a finding here is recorded, not fixed, in R0c; reviewing and addressing
+each is Phase 8 work. Unlike section 1, these are not known to be *deliberate*
+parity choices - they are accidental losses or additions the sweep caught
+because no instrument (pixel diff, axe, a registered state) could see them,
+the same shape R0b.4's five divergences had.
+
+### D12 - the money picker's current chip loses `aria-current`, gains `aria-pressed`
+
+- **Where**: `app.js:2959` (`7a33c22`): `'<button type="button" class="chip' +
+  (m === cur ? ' on' : '') + '"' + ' data-money="' + esc(l.id) + '" data-val="'
+  + m + '"' + (m === cur ? ' aria-current="true"' : '') + '>'`. Rewrite:
+  `app/src/components/Chip.svelte:65` `aria-pressed={on}` on every chip
+  button, including the money picker's.
+- **Live behaviour**: the selected money mode carries `aria-current="true"`;
+  the other modes carry no state attribute at all.
+- **What the rewrite does instead**: every chip, money picker included,
+  carries `aria-pressed="true"`/`"false"` on both the selected and
+  unselected buttons - the same attribute the rest of the app's chips use.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** No
+  registered state, golden or unit test reads either attribute
+  (`docs/specs/COVERAGE.md`, "The harness" - `d.controls()` never reads
+  `aria-pressed`/`aria-current`), so nothing measured the money picker as a
+  special case before the sweep.
+- **How to verify the fix**: decide whether the money picker should read as a
+  `radiogroup`-like "current" control (`aria-current`) or a togglable set
+  (`aria-pressed`, what `Chip.svelte` already gives every other chip); a
+  `listPage.test.ts` assertion on the attribute the decision picks.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part A).
+
+### D13 - copying a set of roll options toasts the generic text-copied message, not its own
+
+- **Where**: `app.js:4142` (`7a33c22`): `if (items.length) copyRich(rollHtml(items),
+  rollText(items), t().rollCopied);` - `T.ru.rollCopied` = `Варианты
+  скопированы` / `T.en.rollCopied` = `Options copied`, distinct from
+  `textCopied`. Rewrite: `app/src/components/StdPanel.svelte:65-69` and
+  `AltPanel.svelte:92-96` both toast `t.textCopied` (`Текст скопирован`) after
+  the same copy.
+- **Live behaviour**: copying a set of roll options (the "Скопировать все
+  варианты" button) shows a toast worded for that specific action.
+- **What the rewrite does instead**: shows the same toast every other
+  copy-text action uses. The button still copies the right content; only the
+  confirmation wording is generic.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** No test
+  asserts the toast's exact wording after this button (`std.test.ts` and
+  `alt.test.ts` check that a toast fires, not which one), so nothing caught
+  the substitution.
+- **How to verify the fix**: add `rollCopied` to `app/src/lib/dict.ts` and
+  call it from both panels; `std.test.ts`/`alt.test.ts` assert the toast text
+  after the copy-roll button.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part B).
+
+### D14 - the copy-image download fallback does not exist
+
+- **Where**: `app.js:1717-1726` (`7a33c22`): `function downloadImage(it){
+  imageBlob(it).then(function (blob) { const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = safeFileName(it); ...
+  toast(t().imgSaved); }).catch(function () { toast(t().imgFailed, true); });
+  }` - `copyImage`'s `catch`/unsupported branch calls it
+  (`app.js:1731-1739`). Rewrite: `app/src/components/RecordActions.svelte:57-61`
+  calls `copyFailed` and stops; `app/src/ports/image.ts` and `dict.ts` carry
+  no `imgSaved`/`imgFailed` keys and no `<a download>` path.
+- **Live behaviour**: a browser that cannot (or refuses to) write an image to
+  the clipboard still lets the person save the record's picture as a PNG
+  file, with its own success/failure toast.
+- **What the rewrite does instead**: reports a generic copy failure and
+  offers no way to get the picture at all.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** The whole
+  fallback path is missing rather than differently worded, so no instrument
+  that only checks "a toast fired" could have found it; it surfaced only by
+  reading `app.js`'s function bodies against the port.
+- **How to verify the fix**: `app/src/ports/image.ts` gains a
+  download-to-file path (`<a download>` or the File System Access API where
+  available) wired to `RecordActions.svelte`'s unsupported/failed branch,
+  with its own toast pair; a component test drives the fallback and asserts
+  a download was triggered.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part B).
+
+### D15 - the picture-unavailable toast is the same generic failure as every other copy error
+
+- **Where**: `app.js:1725` (`7a33c22`): `downloadImage`'s own `.catch`
+  toasts `t().imgFailed` (`Не удалось получить картинку` / `Could not load
+  the image`), distinct from `copyFailed`. Rewrite:
+  `app/src/components/RecordActions.svelte:60` toasts `t.copyFailed` for
+  every failure mode.
+- **Live behaviour**: "the clipboard refused the image" and "the picture
+  itself could not be read" are two different toasts.
+- **What the rewrite does instead**: one generic `copyFailed` message for
+  every image-copy failure.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** Rides with
+  D14 - the same missing fallback path is where this distinction would live;
+  recorded separately because it is a wording loss even if D14's fallback is
+  never restored.
+- **How to verify the fix**: settled together with D14 - if the fallback is
+  restored, its failure branch gets its own `imgFailed`-equivalent toast,
+  distinct from `copyFailed`.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part B).
+
+### D16 - the toast's live region exists only while a toast is showing
+
+- **Where**: `index.html:92` (`7a33c22`): `<div class="toast" id="toast"
+  role="status" aria-live="polite" hidden>` - `role` and `aria-live` are on
+  the element from first paint and `showToast` (`app.js:993-995`) only
+  rewrites them to `alert`/`assertive` for an error; they are never removed.
+  Rewrite: `app/src/components/Toast.svelte:61-62`
+  `role={app.toast ? (...) : undefined} aria-live={app.toast ? (...) :
+  undefined}` - both attributes disappear when `app.toast` is `null`, by
+  design (`Toast.svelte:13-16`: otherwise a component test's
+  `getByRole('status')` would match the idle toast).
+- **Live behaviour**: the live region is always present, so a screen reader
+  has already registered it before the first toast fires.
+- **What the rewrite does instead**: creates the live region at the same
+  moment the text arrives, which some assistive technology announces less
+  reliably than a region that pre-exists.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** Exactly the
+  R0b.4 shape: an axe run cannot report a live region as *missing* only while
+  idle, and the goldens photograph an empty toast either way, so nothing
+  short of reading the two sources side by side could catch it.
+- **How to verify the fix**: keep `role="status" aria-live="polite"` on
+  `Toast.svelte`'s wrapper unconditionally and switch only `aria-live` to
+  `assertive`/`role="alert"` for an error, then adjust the component tests
+  that relied on the idle element being absent from the accessibility tree.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part F).
+
+### D17 - the card image's hover zoom is unconditional on live, guarded and narrowed on the rewrite
+
+- **Where**: `style.css:321,326` (`7a33c22`): `.card-media:hover
+  img{transform:scale(1.05)}` and `.card.full .card-media:hover
+  img{transform:none}` - no `hover:hover` media guard, and every card
+  (`.compact` and `.full` alike) zooms on hover; `.full` cancels it
+  explicitly. Rewrite: `app/src/components/RecordCard.svelte:323-327` wraps
+  the zoom in `@media (hover:hover)` **and** narrows it to `.card.compact`
+  only.
+- **Live behaviour**: on a touchscreen with no real hover, a tapped `.full`
+  card still leaves its art visibly scaled (the touch counts as a
+  hover-and-hold); on any pointer, a `.full` card's zoom is explicitly
+  cancelled.
+- **What the rewrite does instead**: no touch device ever scales any card's
+  art (the `hover:hover` guard live lacks here, though it uses the guard
+  elsewhere for `.tile`), and a `.full` card never has zoom to cancel in the
+  first place because only `.compact` opts in.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** A resting-state
+  pixel diff cannot see a `:hover` rule at all, and no golden or parity state
+  hovers or long-presses a card image.
+- **How to verify the fix**: decide whether the guard and the `.full`
+  narrowing are wanted (they read as an improvement, not a bug) or should
+  match live exactly; either way, a `record.test.ts`/CSS assertion pins the
+  chosen behaviour and `FEATURES.md` states it.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
+
+### D18 - the keyboard focus ring reaches more elements, and at a different radius, than the live list
+
+- **Where**: `style.css:999-1005` (`7a33c22`): a closed list of 18 selectors
+  (`.btn`, `.chip`, `.tabs a`, `.helpbtn`, `.homebtn`, `.fpill`, `.fclear`,
+  `.flink`, `.row-main`, `.tile`, `.lrow-acts button`, `.row-x`, `.warn-x`,
+  `.toast-act`, `.seg button`, `.tsec-link`, `.card-name-acts button`,
+  `.lrow-grip`) each get `outline:2px solid var(--gold);outline-offset:2px;
+  border-radius:8px`. Rewrite: `app/src/styles/tokens.css:150-154` is a
+  **global** `:focus-visible` rule at `border-radius: var(--r-sm)` (9px), plus
+  five components that re-declare it at 8px for their own controls
+  (`RowMain.svelte:120`, `Seg.svelte:83`, `ListPage.svelte:1650-1656`,
+  `StorageNotice.svelte:129`, `RecordCard.svelte:337`).
+- **Live behaviour**: only the 18 named controls get a gold keyboard ring;
+  everything else (card links, `.craft a`, `.itemtable`, `.listcard-main`,
+  the four `<summary>` elements, `.selall`, inputs, `main`) falls back to the
+  browser's own outline. The 18 named controls' ring has an 8px radius.
+- **What the rewrite does instead**: every focusable element gets a gold
+  ring (a broader, arguably more consistent, keyboard experience), and the
+  ring's radius is 9px except on the five components that override it back
+  to 8px.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** `context.md`,
+  "Reasons already disproved" already measured the 9-vs-8 radius difference
+  and never gave it a spec home; no registered state reaches a keyboard focus
+  ring at all (parity and the goldens both photograph a resting page).
+- **How to verify the fix**: decide whether the global ring (broader
+  coverage) or the closed live list is the wanted policy, and whether 8px or
+  `--r-sm` is the intended radius; a `tokens.css` assertion or a per-component
+  test pins whichever is chosen, and `FEATURES.md` states it.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
+
+### D19 - the focused skip link is a different colour, box and layout effect
+
+- **Where**: `style.css:1018-1022` (`7a33c22`): `.skip{position:absolute;
+  left:-9999px;top:0;z-index:300;background:var(--gold);color:#1a1206;
+  font-weight:700;padding:10px 16px;border-radius:0 0 10px 0}
+  .skip:focus{left:0}` - a focused skip link becomes a gold plate pinned over
+  the page's top-left corner, out of flow. Rewrite:
+  `app/src/components/Shell.svelte:80-93`: `.skip{position:absolute;
+  left:-9999px}.skip:focus{position:static;display:inline-block;
+  margin:var(--gap-sm);padding:8px 12px;background:var(--surface2);
+  color:var(--txt);border-radius:var(--r-sm)}` - a grey chip that returns to
+  the normal flow when focused, pushing the rest of the page down, with no
+  `z-index`.
+- **Live behaviour**: pressing Tab once reveals a bright gold plate fixed at
+  the corner, layered over whatever else is there.
+- **What the rewrite does instead**: reveals a muted grey chip inline at the
+  top of the page, which shifts the header down while it is focused.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** Only a real
+  keyboard walk (Tab from a fresh load) would show this; no golden, parity
+  state or axe run presses Tab before capturing.
+- **How to verify the fix**: decide the wanted skip-link presentation and
+  match it; a `states.js`-style real-Tab test (or a documented deliberate
+  choice in `FEATURES.md`) pins it.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
+
+### D20 - two `@media print` gaps: an open record dialog prints over the page, and an action toast prints
+
+- **Where**: `style.css:1397-1415` (`7a33c22`): `.topbar,.tabs,.foot,#selBar,
+  #toast,.noprint,#modal,.skip{display:none !important}` - `#modal` and
+  `#toast` are both hidden unconditionally under print media. Rewrite: (i)
+  `app/src/components/RecordModal.svelte` carries no print rule, so
+  `dialog::backdrop`/the open dialog is not hidden by anything under
+  `PrintPage.svelte:173-198`'s print block; (ii) `Toast.svelte:142` hides the
+  toast without `!important`, and `.toast{display:none}` (specificity 0,1,0)
+  loses under print to `.toast.act{display:inline-flex}` (0,2,0) at
+  `Toast.svelte:105`.
+- **Live behaviour**: printing a page always hides the record dialog and the
+  toast, an action toast included, because the rules carry `!important` and
+  cover both ids unconditionally.
+- **What the rewrite does instead**: printing while the record dialog
+  (`RecordModal`) is open prints the dialog over the page; printing while an
+  *action* toast (one with a button, e.g. an undo prompt) is showing prints
+  that toast, because its own higher-specificity rule beats the print-hide
+  rule with no `!important` to outrank it.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.**
+  `tests/app/print.js`'s `printMedia` (`:1125-1135`) reads only `header`,
+  `nav`, `footer`, `a.skip` and `.printbar` - neither `#modal`'s nor
+  `.toast`'s print display was ever in its selector list, so no gate could
+  have failed on this.
+- **How to verify the fix**: `RecordModal.svelte` gains a print rule hiding
+  the `<dialog>`; `Toast.svelte`'s print rule gains `!important` (or enough
+  specificity to beat `.toast.act`); `tests/app/print.js`'s `printMedia`
+  gains both selectors to its read list so a regression fails loudly.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
+
+### D21 - the print page's black-and-white choice is session memory on live, page-local on the rewrite
+
+- **Where**: `app.js:4257` (`7a33c22`): `if (a === 'printArt') { S.printBW =
+  val === 'bw'; render(); return; }` - `S.printBW` is a field on the
+  in-memory state object, so it survives leaving `#/print/...` and coming
+  back. Rewrite: `app/src/components/PrintPage.svelte:47` `let bw =
+  $state(false)` - component-local, reset to colour every time the page is
+  entered fresh. The rewrite's own comment at `:41-46` names this a
+  deliberate divergence, the same shape as search's `q` and `TablesPage`'s
+  `q` (B6).
+- **Live behaviour**: choosing black-and-white, leaving the print page, and
+  coming back keeps the black-and-white choice.
+- **What the rewrite does instead**: the choice resets to colour every time
+  the print page is (re-)entered.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.** The
+  rewrite's own code names this a deliberate choice, but no spec records
+  it: `docs/specs/STATE.md:72` still lists `printBW` as live in-memory
+  state with no note that the rewrite drops it, and no `DEBT.md` entry
+  existed until now.
+- **How to verify the fix**: whichever way Phase 8 decides (session memory
+  on `AppState`, or keep the page-local reset and document it as a
+  deliberate improvement), `STATE.md` and this entry are updated together -
+  if kept, this entry moves to "Live decisions kept over the rewrite's own"
+  with the reason a reader can check; a `printPage.test.ts` case pins
+  whichever is chosen.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part D).
+
+### D22 - the record "send" button never attaches a picture and sends a bare name, not the full share text
+
+- **Where**: `app.js:1746-1768` (`7a33c22`) `sendItem`: three levels - (1)
+  with `navigator.canShare`/`File` support, a record with art gets its PNG
+  attached via `navigator.share({files:[file], text: shareText(it)})`; (2)
+  with a share sheet but no file support,
+  `navigator.share({title: nameForShare(it), text: shareText(it), url:
+  itemUrl(it.id)})`; (3) with no `navigator.share` at all, the link goes to
+  the clipboard. Rewrite: `app/src/components/RecordActions.svelte:68-75`
+  calls `app.env.share.share({ title: name, text: name, url: link })` -
+  `name` is the record's bare name, not `shareText(it)`'s full stat block -
+  and falls back to `copyLink()`.
+- **Live behaviour**: sharing a record with art attaches the picture and the
+  full stat text; without art, the share sheet still carries the full text.
+- **What the rewrite does instead**: never attaches a file (the port's
+  `ports/share.ts:34-41` implements the whole `canShare({files})` dance, but
+  `RecordActions.svelte:70` is the only caller and never passes a `file`, so
+  that branch is unreachable code) and sends only the bare name as the share
+  body, never the full share text.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.**
+  `record.test.ts:493-524` drives the button through a fake share for the
+  unsupported/dismissed/failed *paths* and asserts nothing about the
+  *payload*, so the missing file and the shortened text were invisible to
+  the one test that exercises this button; `docs/specs/COVERAGE.md:300-302,
+  399-404` already records that no headless browser exposes a real share
+  sheet to drive.
+- **How to verify the fix**: `RecordActions.svelte`'s `send()` builds the
+  same three-level payload `sendItem` does (full share text always, a file
+  when art exists and the environment supports it) and `record.test.ts`
+  asserts the payload passed to `app.env.share.share`, not just that a call
+  happened.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part D).
+
+### D23 - a list's ticked selection survives Back/Forward to a different list
+
+- **Where**: `app.js:4640-4648` (`7a33c22`) `window.addEventListener
+  ('hashchange', function () { closeModal(); S.sel = {}; S.lsel = {};
+  S.menuFor = ''; S.newListFor = ''; ...})` - every hash change clears the
+  list-page selection (`S.lsel`) along with the tables selection. Rewrite:
+  `app/src/state/app.svelte.ts`'s router handler clears `menuFor` and `sel`
+  and bumps `navigations` (watched by `TablesPage.svelte:108` and
+  `SearchPage.svelte:40`); `app/src/components/ListPage.svelte:133` holds
+  `lsel` in a component-local `SvelteSet` that watches neither `navigations`
+  nor the hash, and Svelte does not remount a page component between two
+  addresses of the same route kind.
+- **Live behaviour**: using Back/Forward between two different lists' pages
+  always lands with no rows ticked and the batch bar closed.
+- **What the rewrite does instead**: moving by history between two list
+  addresses leaves the previous list's ticks and open batch bar standing,
+  because `ListPage` is never told the address changed.
+- **Why it was recorded, not restored: owner ruling 2026-09-16.**
+  `tests/app/states.js` case 15 covers Back/Forward history in general, but
+  nothing in the surviving suite moves between two *list* addresses by
+  history and checks the selection.
+- **How to verify the fix**: `ListPage.svelte` watches `app.navigations` (or
+  the list id derived from the route) and clears `lsel` when it changes; a
+  `listPage.test.ts` case navigates history between two lists with rows
+  ticked on the first and asserts the second opens with none.
+- **Recorded by**: the R0c sweep, 2026-09-17 (Part D).
+
 ## Live decisions kept over the rewrite's own
 
 Not a defect; a design the rewrite argued against and lost to parity.
