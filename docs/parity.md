@@ -267,5 +267,6 @@ cut a batch, at any of these:
   (`CLAUDE.md`, "never commit a half-batch").
 
 A batch may hold more than one commit; each commit is green on its own.
-Aim for one parity filter group and one green check per batch; the
-first application is `issues/47/plan.md`, "B5 remainder planned".
+Aim for one parity filter group and one green check per batch; a worked
+application is `issues/47/plan.md`, "The batches, and why three rather
+than one", which cuts R0b at two of the seams above and says which.

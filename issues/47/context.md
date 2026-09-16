@@ -3,226 +3,998 @@
 Orchestrator maintains this file so later steps do not re-fetch the same sources.
 Read this before `plan.md` and `handoff.md`.
 
+Facts, constraints, decisions and disproved reasons only. Narrative, batch
+design and status live in `plan.md` and `handoff.md`. Cite the siblings by
+heading name: both were rewritten end to end on 2026-09-16 and every line
+number into them is stale.
+
+**Compacted 2026-09-16** (243 KB -> this), with `plan.md` (1031 KB -> 117 KB)
+and `handoff.md` (556 KB -> 73 KB) in the same pass. The last pre-compaction
+commit is `fc59ce4`; `git show fc59ce4:issues/47/context.md` is the full prior
+text. What was dropped and why is at the end, under "What this compaction
+dropped".
+
 ## Goal
 
-**Current, 2026-09-12: the testing-pyramid pass (the owner's "Phase 5") and
-the P6/P7 ordering call.** Phase 4 is closed through B10. Read
-"State at the Phase 5 kickoff", at the end of this file, first - it carries
-the owner's GOAL verbatim, the tree, the two reported defects, and the one
-fact that reshapes the request: **this repository has no Playwright tests.**
-Everything between here and there is history of B3.5 through B10, built and
-committed; read it for the standing rules and settled owner decisions, not
-as work to do.
+**Current, 2026-09-16: R0b - re-home the live-app coverage that must survive,
+then R0c's deletions.** Phases 4, 5 and 6 are closed; the site serves the
+rewrite. The remaining order is `R0b.2 -> R0b.3 -> R0b.4 -> R0c`, then Phase 8
+under a new task id. Design: `plan.md`, "R0b planned: re-home the live-app
+coverage that must survive" and "The finishing plan - every batch from here to
+done". Next batch and its gates: `handoff.md`, "Next batch (implement-ready)".
 
-**Superseded (kept for its reasoning): B5 - the lists slice** (`#/lists`).
-B4 is built and committed
-(`fde9cdc`, reviewed, approve/no blockers), so every table in `TABLE_DEFS`
-draws a real body and the tables surface is finished. Of the three slices left
-in Phase 4 - lists, search, print - the orchestrator picked lists on
-2026-09-10 because it is the one the other deferred work waits on: the 600px
-overrides for `.selx`/`.selacts`/`.seldrop`/`.dropmenu`/`.lrow*`/`.npair`/
-`.batch-acts`, `noData`/`storageOff`, and the add-to-list row that several
-`ACCEPTED` parity entries currently excuse. Search reuses the row wholesale
-and is cheaper after lists, not before. Everything below the "History" heading
-is the record of B3.5/B3.6/B4, which are **built and committed**; read it for
-the standing rules and the settled owner decisions, not as work to do.
+**Task 47 closes at R0c**, not at Phase 8 - Phase 8's own design gives R1 a new
+task directory so this one can retire. What happens to `issues/47/` is the
+owner's call; the recommendation is to keep it, since it is the only place the
+migration's measurements live.
 
-## `npm run check`, settled (orchestrator, 2026-09-10) - do not re-derive
-
-The B4 handoff's claim that the check "no longer fits one foreground tool
-call" is **withdrawn**. Measured at `720266d` on a loaded host (1.0 GB free of
-16 GB, 383 processes): 165s in total - `format:check` 11s, `lint` 30s,
-`typecheck` 12s, `data` 4s, `derived` 1s, `i18n` 0s, `selftest` 19s, vitest
-with coverage 88s - exit 0, 683 tests, thresholds met, and the commit gate
-armed itself from that one foreground call. What the B4 session hit was
-vitest's fork pool failing to boot workers within its hardcoded 60s
-`START_TIMEOUT`; the signature is zeros down the whole coverage table with
-`Errors N` equal to the file count, which means no test ran, not that anything
-regressed. Re-run it. Fallback if it repeats on a loaded host,
-`npx vitest run --coverage --maxWorkers=4`, costs 171s against 88s. Nothing in
-`vite.config.mts`, `package.json` or the hooks is changed. Full write-up:
-`handoff.md`, "Verification".
-
-**Corrected the same day: 165s is not a constant, it is one host's idle
-moment.** B5.1's implementer, hours later on this same machine, had its first
-`npm run check` **exceed the 600s foreground cap** and get moved to the
-background; its later calls, including the gate-arming one, finished in the
-foreground. So the standing instruction is unchanged - run it in the
-foreground, one call, `timeout: 600000` - but a worker must expect the cap to
-be reachable under load and must not read "165s" as a guarantee. What does not
-change: a backgrounded run cannot arm the gate however honestly it passes, so
-a run that goes over is re-run, not salvaged.
-
-## State at B4 kickoff (2026-09-09, orchestrator)
-
-- Working tree clean at `ccb80cb`. B3.6 is complete in all three parts:
-  part 0 `f7308a9`, part 1 `38cfbbb`, part 2 `958f182`; the ubuntu container
-  tooling is `1d368e2`.
-- **CI is green, measured. B3.6 part 1's open blocker is closed.** Run
-  `34404013490` on `958f182` (B3.6 part 2) completed `success` on every job:
-  `check`, `audit`, `secrets`, all four `parity` shards, and `deploy`. That is
-  the first green run on `main` since 2026-09-03, and it is the criterion part
-  1 said could only be reached by a push. The 4-way shard also did what part 0
-  claimed: each parity shard finished in 4-5 minutes against the old 867s
-  single job. The `bc91e63` run was still in flight when this was read; it is
-  docs-only on top of a green tree.
-- Owner decision 1 stands unchanged: CI (ubuntu) is authoritative for
-  `VISUAL_DEBT` numbers, a local Windows run is advisory, and no number is
-  re-baselined off a local run.
-- `#/tables/voa ~ section anchor @ en 375` was left at 8.84 pending a CI
-  measurement (handoff, "Deferred"). Run `34404013490` is that measurement -
-  reconcile it off that run's artifact rather than off a local figure.
-- `ccb80cb` (issue 65 docs) is local-only and unpushed. Not this task's.
-- The parity harness now carries a third instrument, `typeRuns` (computed type
-  plus a measured advance on four controls, per width), and a `DEBT_SLACK`
-  ratchet that fails a paid-off entry instead of passing in silence.
-  Extending the probes to the equipment tables is explicitly **deferred**, not
-  B4's.
-- Standing rules earned by the previous batches, already written down where
-  they belong - do not re-derive them:
-  - `CLAUDE.md`: port a rule with every `@media` override it has.
-  - `docs/parity.md`: a whole-page percentage cannot see a control-sized
-    defect; measure the control before writing a rendering-noise reason.
-  - Handoff: a literal leading space at the start of a Svelte block is dropped
-    by the compiler; emit it as an expression, inside one text node.
-    **A second instance in B4 promotes this rule to `CLAUDE.md`.**
-
-## GitHub issue (if any)
+## GitHub issue
 
 - URL: https://github.com/artex-x/daggerheart-loot/issues/47
-- Captured or last verified: already summarized in `plan.md`; not re-fetched this
-  session and not needed for this batch.
-- Decisions already settled: see `plan.md`. Phase 4 batches B1-B3 are built; B4
-  (the three equipment tables) was the next batch before this audit.
-
-## History - B3.5/B3.6 (built). Human report (2026-09-09, two screenshots of `#/tables/community` at ~1100px)
-
-1. The search box "is using a different font" in the rewrite.
-2. The `любое` hint next to a filter row's label "is too close to the main text".
-
-Both are real. Both were being absorbed by `VISUAL_DEBT` entries whose stated
-reason is antialiasing. Measured, not guessed - see below.
-
-## Measured findings (orchestrator, this session)
-
-Method: Puppeteer, `args: ['--no-sandbox', '--disable-dev-shm-usage',
-'--disable-gpu']` (the harness's own args), both `index.html` and
-`dist/index.html` at the same route, reading computed styles and
-`getBoundingClientRect()` via `page.evaluate`. `dist/` was the build at
-`4976cb4`, working tree clean.
-
-### Defect 1 - the toolbar search box is 14px, not 15.5px
-
-- Live: `input[type=search]` inherits the body font. Computed `font-size:
-  15.5px`, `line-height: 24.8px`. Placeholder measures **259.59px** wide.
-- Rewrite: `app/src/components/TablesPage.svelte` `.toolbar input[type='search']`
-  writes `font: inherit` and then `font-size: 14px`. Computed `14px / 22.4px`.
-  Same placeholder measures **234.47px**.
-- `style.css:254` has no font-size at all - only `font:inherit`. The 14px is
-  invented, and it is the whole of the "search-box placeholder antialiasing"
-  debt. The debt's reason claims the placeholder "measured pixel-identical";
-  it is 25px narrower.
-- Fix: delete the `font-size: 14px` line.
-
-### Defect 2 - Svelte trimmed the space before the `любое` hint
-
-- Live (`app.js:2692`): `Сообщество <i>любое</i>` - `textContent` is
-  `"Сообщество любое"`.
-- Rewrite (`app/src/components/FilterBar.svelte:96`): the space sits at the
-  start of the `{#if}` block, so Svelte's whitespace normalisation drops it.
-  Rendered HTML is `Сообщество<i>любое</i>`, `textContent`
-  `"Сообществолюбое"`. The `<i>` starts 4.3px to the left.
-- Fix: emit the space as an expression - `{' '}` - so it is a text node the
-  compiler cannot trim. Do not put the space inside the `<i>`: an italic space
-  is not the same glyph advance.
-- Standing rule worth carrying: **a literal leading space at the start of a
-  Svelte block is not preserved.** Any ported markup with `' <tag>'` inside an
-  `{#if}`/`{#each}` has the same bug.
-
-### Defect 3 - `.selbox` is missing its mobile width override
-
-- `style.css:820`, inside `@media (max-width:600px)`: `.selbox{width:38px}`.
-  `TableRows.svelte` ported the base `width: 42px` (line ~220) but not the
-  override, so at 375px every row's checkbox column is 4px too wide.
-- Consequence: `.row-main` starts at x=59 instead of 55 and is 284px instead of
-  288, so `.rt` is 196px instead of 200. Rows whose title or description sits
-  near the wrap point gain a whole extra line - e.g. row 5
-  ("Разговаривающие Сферы") is 158.95px tall against the live app's 136.56px,
-  and row 41 likewise. The page ends up ~78px taller.
-- This is the entire "description line-wrap at 375px" debt. It is the **fourth**
-  instance of the pattern the B3 handoff already names: a mobile-only override
-  ported for the base width only, whose constant offset reads as growing drift.
-- Fix: add `@media (max-width: 600px) { .selbox { width: 38px } }` to
-  `TableRows.svelte`.
-
-### What the three fixes are worth, simulated
-
-`#/tables @ ru`, whole-page pixelmatch (`threshold: 0.1, includeAA: false`,
-the harness's own settings), fixes injected as a stylesheet rather than edited
-into source:
-
-| width | as-is | + search font-size | + `.selbox` 38px |
-|---|---|---|---|
-| 1100 | 0.092% | 0.000% | 0.000% |
-| 768 | 0.131% | 0.000% | 0.000% |
-| 375 | 1.749% | 1.494% | 0.145% |
-
-So both the 1100 and 768 states go to an exact match, and 375 loses 92% of its
-difference. Every "search-box placeholder antialiasing" entry in `VISUAL_DEBT`
-is expected to be deleted, not lowered.
-
-### Why the harness did not catch this
-
-Not a bug in the harness, a limit of its metric, and worth writing down:
-
-- The verdict is a percentage of the **whole page**. A wrong font size on one
-  line of a 1100x900 screen is ~0.09% - under `JITTER` (0.1), so
-  `#/tables @ ru 1100` had **no `VISUAL_DEBT` entry at all** and was reported
-  as `вид: совпадает`. A control-sized defect cannot outvote a page-sized
-  denominator.
-- `includeAA: false` is not the main culprit here - rescoring the same pair
-  with `includeAA: true` moved 1100 from 0.092% to 0.127% and 768 from 0.131%
-  to 0.181%. Do not "fix" the harness by flipping that flag and calling it
-  done.
-- The word "antialiasing" in a `VISUAL_DEBT` reason has become an absorbing
-  excuse - exactly what the note above `VISUAL_DEBT` warns about for the
-  add-to-list row ("Do not let this reason absorb anything else: it did once").
-  Three of the six documented noise causes were written against measurements
-  that were not actually taken at the level of the glyph run.
-- The durable countermeasure is a **nonvisual spec**, not a smaller `JITTER`:
-  the harness already compares non-pixel fields between the two apps, and
-  computed typography (`font-size`, `line-height`, `font-family`) plus a
-  measured text advance for the toolbar search box, a row title, a row
-  description and a filter label is deterministic across machines and would
-  have failed loudly on all three defects.
+- Summarized in `plan.md`; not re-fetched since Phase 4 and not needed.
 
 ## Key paths
 
 - Specs: `docs/specs/CONTRACTS.md`, `ROUTES.md`, `STATE.md`, `FEATURES.md`,
-  `COVERAGE.md`, `I18N.md`, `META.md`; workflow in `docs/parity.md`
-- Harness: `tests/parity.js` (verdict logic ~line 288-325, pixelmatch ~line 115),
-  `tests/parity/specs.js` (`SPECS`, `STATES`, `VISUAL_DEBT` ~line 668,
-  `DEBT_SLACK`, `JITTER` ~line 903)
-- Code hot paths for this audit:
-  - `app/src/components/TablesPage.svelte` - `.toolbar input[type='search']`
-  - `app/src/components/FilterBar.svelte` - the `.lbl` line
-  - `app/src/components/TableRows.svelte` - `.selbox`
-  - Originals: `style.css:254`, `style.css:408-420`, `style.css:820`,
-    `app.js:2686-2699`
-- Scratch probes used for the measurements are disposable and were not kept.
+  `COVERAGE.md`, `I18N.md`, `META.md`, `DEBT.md`; workflow in `docs/parity.md`.
+- Parity harness: `tests/parity.js`, `tests/parity/specs.js` (`SPECS`,
+  `STATES`, `ACCEPTED`, `VISUAL_DEBT`, `DEBT_SLACK`, `JITTER`).
+- Real-browser suites on `dist/`: `tests/app/` (`contracts`, `golden`, `hues`,
+  `states`, `sweep`, `typo`), all reaching the driver through
+  `tests/app/lib.js`.
+- **The driver is `tests/app/driver.js`** since R0b.1 (moved from
+  `tests/parity/driver.js`, byte-identical). `tests/parity.js`'s `hashFile`
+  was re-pointed with it.
+- Legacy live-app suites: `tests/*.js` through `tests/run-all.js`; shared
+  `tests/lib.js`.
+- Live app (the fallback, deleted by R0c): `index.html`, `style.css`, `app.js`.
+- Rewrite: `app/src/{lib,ports,state,components,styles}`, built to `dist/`.
+- `tools/probe.mjs` - the only sanctioned way to compare a computed style or
+  rect between the two apps; it uses the harness's own launch args, so a number
+  taken any other way is not comparable.
+
+## Command costs
+
+Wall clock, and whether it fits one foreground Bash call (the tool caps at
+600000 ms). **Every figure here is a load figure, not a constant** - see "The
+host throttles, and it is the first thing to measure".
+
+| Command | Wall clock | Fits one call? |
+|---|---|---|
+| `npm run check` | ~165 s idle; 78-96 s for vitest alone; has exceeded 600 s under load | yes when the host is healthy |
+| `npm run check:built` | a few minutes | yes |
+| `npm run format:check` | ~9-11 s healthy, ~55 s throttled | yes (the health probe) |
+| `node tests/parity.js "<filter>"` | ~1.5 s per cell, both sides shot; ~9 min for a large filter | filter-dependent |
+| full parity suite | ~1826-1849 s local, 8 workers; ~867 s single-job on CI; 8-10 min per shard on CI's 4-way split | **no** |
+| `node tests/run-all.js app/sweep` | **593.5 s** | only just; treat as no |
+| `node tests/run-all.js app/golden` shard | ~250-265 s local, ~2 min on CI | yes |
+| `node tests/run-all.js app/contracts,app/sweep` | 574.5 s (B12.1) | only just |
+| golden seeding `--update` / full comparison | 414.6 s / 1005 s | seeding yes, comparison **no** (hence `--shard=n/of`) |
+
+Corollaries:
+
+- **The five-suite `tests/app` line in `CLAUDE.md` is not one foreground call
+  on this host.** `sweep` goes alone (four `node tests/app/sweep.js <width>`
+  calls), and `app/golden`'s four shards go separately again.
+- A run that crosses the cap is **re-run**, never salvaged and never
+  deliberately backgrounded: `check-observer.mjs` arms the commit gate from a
+  foreground call's own stdout, and a backgrounded call returns none.
+  `bash-guard.mjs` refuses a deliberately backgrounded check for that reason.
+- In the **main** session only, a crossed run still leaves a readable output
+  file - the shell survives the turn. A subagent's does not. That asymmetry is
+  why the rule reads "never backgrounded" for workers.
+- Never let two heavy runs overlap; check `test-output/parity.lock` and
+  `chrome.exe` first.
+
+## The host throttles, and it is the first thing to measure
+
+**One counter settles what three sessions guessed at:**
+
+```
+Get-Counter '\Processor Information(_Total)\% Processor Performance'
+```
+
+It read **20, 20, 20, 20** over four samples on 2026-09-12. The CPU is an
+Intel i7-8565U (nominal 1.8 GHz, 15 W) running at a fifth of nominal. Every
+slow reading that session is a consequence: `format:check` 11 s -> 55 s,
+`npm run check` ~165 s -> ~825 s projected and ~19-20 min observed.
+
+- **"Total CPU 75-95%" and "`explorer.exe` at 62%" were the same illusion** -
+  percentages of a throttled capacity. Sampled during a real run, the top
+  consumers were prettier's own node processes; `explorer.exe` did not appear.
+  **Nothing on the software side starves the build**: not peer Claude sessions
+  (~0.2 cores together), not `explorer.exe`, not this project.
+  `NGenuity2Helper` does hold a core continuously - worth reclaiming as heat on
+  a 15 W part, not the cause.
+- **Not power policy** (AC, 99%, Balanced). Thermal or a stuck EC/DPTF state is
+  what is left; `MSAcpi_ThermalZoneTemperature` is unavailable here, so the
+  temperature was never read. Fixing it needs a human at the machine.
+- **The throttle comes and goes.** It lifted on its own later the same day
+  (`format:check` 9.4 s, counter 139-171%) with nothing done to the host.
+- **The one-minute probe before any gated batch**: read the counter, or time
+  `npm run format:check`. **~11 s means the full gate sequence fits one
+  foreground call; ~55 s means it will not**, and waiting will not change it.
+  This is cheaper than discovering it 19 minutes into a check.
+
+Related host facts, all measured:
+
+- **vitest's fork pool fails to boot workers under memory pressure.** The
+  signature is zeros down the coverage table with `Errors N` equal to the file
+  count - no test ran, nothing regressed. Re-run when idle; do not read it as a
+  regression. At 0.35 GB free of 15.82 with the CPU pegged, 11-13 files lost
+  the hardcoded 60 s `START_TIMEOUT`. The README's caution that free memory
+  does not predict this holds for the 1-3 GB range; 0.35 GB is a different
+  regime, recorded as a measurement, not promoted to a rule.
+- **`--maxWorkers=4` made it worse, not better**, under memory starvation:
+  1067 s against 437 s, 13 failed starts against 11. The README's fallback was
+  measured on a host with memory to spare; the cost here is per-fork
+  allocation, not scheduling.
+- **A doc edit disarms the commit gate.** `tree-key.mjs` fingerprints tracked
+  and untracked *content* (`issues/**` and `*.md` included); the gate exempts
+  those paths from what it *counts*, not from the fingerprint. A batch whose
+  last step writes `plan.md`/`handoff.md` runs one more foreground check
+  immediately before `git commit`.
+- **The gate arms once for a whole batch.** The key is content, not HEAD, so
+  committing changes nothing: one passing check covers several commits when no
+  file changes between them. The trap is the converse - any edit to any
+  non-gitignored file disarms it, so a remediation cycle that touches one test
+  file pays for a fresh check.
+- **`npm run check` never builds.** Any `tests/app/` run needs `npm run build`
+  (or `check:built`) first. CI is safe: its legacy-suite step runs after Build.
+- **`--reporter=basic` no longer exists** in this vitest. The default reporter
+  with a `tail` filter is how the output stays under the tool's ~30000-char cap.
+
+### Shell and worktree hazards on this host
+
+- **Git Bash rewrites parity filters.** `node tests/parity.js "#/i/ci1 @"`
+  arrives as `#I:/ci1 @`, matches nothing, and prints `расхождений нет` for
+  zero cells. **Any filter beginning `#/` needs `MSYS_NO_PATHCONV=1`** in front
+  of the command; PowerShell does not convert.
+- **`kill -0 <pid>` in Git Bash answers in the MSYS pid namespace**, not the
+  Windows one, and reports a live `node` as dead. Use `tasklist //FI "PID eq
+  <pid>"` or PowerShell `Get-Process -Id`. `tests/parity/lock.js` uses Node's
+  `process.kill(pid, 0)` and is right where the shell builtin is wrong.
+- **A background run's `.output` file reads 0 bytes until the run flushes.** An
+  empty file is not a lost result while the pid is alive; `parity.lock` tells
+  the difference - an absent lock means a clean exit, a lock left behind with a
+  dead pid means the run was killed.
+- **`issues/47/` exists on more than one branch and only `main`'s is true.** A
+  session pinned to `E:/dev/daggerheart-loot-wt/tg-preview-refresh` reads a copy
+  frozen at "B7 planned". Check `git branch --show-current` before trusting
+  anything under `issues/47/`, and note that **the Bash tool resets its cwd to
+  the session's pinned directory between calls** - carry an explicit
+  `cd /e/dev/daggerheart-loot &&` prefix when the session is pinned elsewhere.
+- **Peer sessions share this working tree.** HEAD moves under this task; a peer
+  can leave dozens of tracked paths dirty. Re-read `git log --oneline -3` before
+  any writer and again at closeout, stage by path, and **never `git add -A`**.
+  `issues/tg-preview-refresh/` and similar untracked directories belong to other
+  tasks and are preserved, never staged.
+- **`docker` on this host cannot run the ubuntu container**: `docker --version`
+  answers (20.10.8) but `docker info` panics in the client (`reflect:
+  indirection through nil pointer`). See `handoff.md`, "Blockers", for
+  `tools/parity-ubuntu`'s own build-command defect.
+
+## Decisions taken by the repository owner - settled input, do not re-open
+
+1. **CI (ubuntu) is authoritative for `VISUAL_DEBT` numbers** (2026-09-09). A
+   debt figure must make CI green; a local Windows run is advisory and gets a
+   documented per-platform tolerance. **Do not write a recorded number off a
+   local run.** Rejected on the record: per-platform pairs of numbers (doubles
+   the bookkeeping), and widening `JITTER`/`DEBT_SLACK` (loosens the exact
+   mechanism that let three defects hide).
+2. **Diagnose every failing state and fix root causes; re-baseline only genuine
+   machine variance** (2026-09-09). Explicitly *not* "re-baseline to green now,
+   diagnose later" - the owner's reason is that it risks writing another
+   absorbing excuse of the kind a whole batch was spent removing.
+3. **Reduced motion: port the live app, option (a)** (2026-09-11). Delete the
+   rewrite's blanket `transition-duration: 0s !important` and transition exactly
+   where the live app does. Parity wins over an improvement the rewrite
+   invented, and a pixel cell cannot be parked in `ACCEPTED`.
+4. **Parity-over-improvement means "fix it after the migration", not "never"**
+   (2026-09-11). A defect the port reproduces *on purpose* is a third category
+   beside `VISUAL_DEBT` and `ACCEPTED`, is written down, and is addressed in a
+   post-migration review step together with everything recorded as deferred or
+   ported-not-fixed. **Its home is `docs/specs/DEBT.md`** (decided; rejected
+   homes in `plan.md`, "Phase 8 - the post-migration review"). A task directory
+   retires; `docs/specs/` does not.
+5. **Publish early, delete later** (2026-09-12). The cut-over is a reversible
+   one: point the deploy step at the built output and go live while
+   `index.html`/`app.js`/`style.css` stay in the repository and parity keeps
+   running against them. Phase 7's deletions move *behind* the flip and get
+   their own entry condition.
+6. **The soak is dropped** (2026-09-12): "I'm ok to get rid of soak, we can
+   revert to previous commit if needed, I would not block all the work."
+   Phase 7's condition 4 (seven days) is removed; **condition 6 ("the owner says
+   go") now gates R0c alone**, because R0a and R0b delete nothing.
+7. **The roll re-render fix is never a batch of its own** (2026-09-12) - it is
+   bundled into a batch that already has work in those paths. B14 hosted it.
+8. **B12.1's nit 1 stays deferred** (2026-09-12): a pinned bare `#/tables` is
+   accepted by the pin button and silently dropped at the next boot. It shipped
+   with the flip; B14 C2 is where the fix landed.
+9. **The four R0b.4 divergences: restore all four** (2026-09-16) - see "The
+   owner's answer on R0b.4's four divergences" below.
+
+## The owner's answer on R0b.4's four divergences: restore all four
+
+Settled input for R0b.4 (orchestrator, 2026-09-16). Do not re-open, and do not
+re-derive the evidence - it is `plan.md`, **"The fourth verdict"**, with file
+and line numbers on both apps and why each was invisible to every other
+instrument.
+
+The R0b planning pass found three behaviours the rewrite does not reproduce,
+each guarded by exactly one of the ten suites R0c deletes; **a fourth was found
+during R0b.1's C3** and folded in by review remediation. The owner was asked one
+question per item and answered **restore** to all four. **None goes to
+`docs/specs/DEBT.md`**: `DEBT.md` is for a live defect the rewrite reproduces
+*on purpose*, and these are the opposite - accidental losses.
+
+1. **The roll results' live region.** Restore `role="status"
+   aria-live="polite"` on the results container in `StdPanel.svelte`,
+   `RollPanel.svelte` and `AltPanel.svelte`, matching the six `app.js` sites.
+   `qa.js` is the only test that asserts it; **axe does not report a *missing*
+   live region**, so the axe sweep cannot see it either.
+2. **The referenced card.** Restore **both** halves in `RecordCard.svelte`: the
+   `\n` -> `<br>` line breaks, and the
+   `<a href="{r.url}" target="_blank" rel="noopener">daggerheart.su</a>`
+   outbound link. **Dropping the third-party link was not deliberate** - that
+   was the open half of the question and it is now answered. Invisible to every
+   instrument because it sits inside a `<details>` closed by default: a pixel
+   diff photographs a closed disclosure and
+   `page.accessibility.snapshot()` does not descend into one.
+3. **The copy-image button.** Restore the second half of the gate in
+   `RecordActions.svelte`: `it.img && !brokenArt[it.id]`, not `it.img` alone.
+   Live gates on `hasImage(it)`; a record whose picture 404s currently offers to
+   copy the placeholder.
+4. **The frame-armour tier word.** A frame-armour record's copy text keeps a
+   tier word the live app now drops: `app.js:612` guards with
+   `if (e.tier && !isFrameRecord(it))` (commit `106e4dd`, pre-session) and
+   `app/src/lib/share.ts:85` calls `eqLine(...)` with no `noTier`. The rewrite
+   already has the option (`app/src/lib/i18n.ts:117,123`) and uses it elsewhere.
+   **The fix is `noTier: isFrameRecord(it)` at `app/src/lib/share.ts:85`, plus
+   regenerating `docs/fixtures/share/records.json` with
+   `tools/capture-share-fixture.mjs`.**
+
+**Procedural consequences.** `NEEDS_HUMAN_CONFIRMATION` is **clear for all of
+R0b** - R0b.2, R0b.3 and R0b.4 have every answer they need. R0b.4 is an ordinary
+queued batch; its entry condition is R0b.1..R0b.3 landing, not an answer, and
+its gates are unchanged (`npm run check`, `npm run check:built`, a parity filter
+over `#/i/*` and `#/roll/*`). **The only owner gate still outstanding anywhere in
+TASK 47 is R0c's go** (Phase 7 condition 6), which is a separate thing and stays
+outstanding. R0b.1 implemented none of the four - its acceptance line 21 stands
+and the five named components appear in no R0b.1 commit.
+
+**Why item 4 had to be recorded rather than left.** It was first routed out of
+the task through a background-task chip, which is session state. R0c's stop
+condition named three, so nothing would have held the deletion of `app.js` on
+account of the fourth - and `app.js` is the only place the correct behaviour is
+written down. It is now in `plan.md` ("The fourth verdict", item 4), the R0b.4
+batch row, `docs/specs/COVERAGE.md`'s `flows` row, and a note in
+`tools/capture-share-fixture.mjs` so the next person to run that tool does not
+read the resulting `f33` diff as a fresh regression. The stop condition reads
+four everywhere; the chip was withdrawn. **Divergence 2 had the same problem**:
+the lost `<br>`s and the lost `daggerheart.su` link lived in issue documents
+only - grepping `docs/specs/` for `refHTML`, `daggerheart.su` or
+`RecordCard.svelte:238` returned nothing. Both notes are now in `COVERAGE.md`'s
+`flows` row.
+
+## Reasons already disproved
+
+Causes a session wrote down and a later one refuted. Keeping the list stops the
+next session re-deriving them from the same evidence.
+
+- **"The CI failures are cross-platform machine drift."** No: they were stale
+  baselines. The control is that `#/tables ~ a row opened` and `~ help`
+  reproduce their recorded numbers *to the hundredth* on the Windows host, so
+  the machine does not render differently. The failing entries were recorded and
+  then the components they render were changed with no re-baseline (`117af2e`
+  wrote the specs; `9fa9ad5` and `e5985ff` changed the components and touched no
+  entry). `#/i/f1` was simpler still - added with no `ACCEPTED` and no debt
+  entry, so it had never passed. Cross-platform variance is real at the
+  tenth-of-a-percent level and is not what those failures were.
+- **"`cqw` units are unstable."** False diagnosis, deleted everywhere rather
+  than softened; it is **not** in `docs/parity.md`'s "Two unstable classes" and
+  must not be added. The real cause was `transition-duration: 0.01ms` (below).
+  The staleness reproduces on a non-container element with px units,
+  `document.getAnimations()` returns a `CSSTransition` on the rewrite and `[]`
+  on live, and with `0s` injected the live `fitPrintCards` run verbatim over the
+  rewrite's DOM reproduces the legacy numbers exactly.
+- **"The print image residue is a real defect."** Three runs on one unchanged
+  build produced three non-overlapping four-cell sets; the opened diff image
+  showed a one-pixel edge outline over *every* element on the page, topbar and
+  footer included, none of which the batch touched. It is `docs/parity.md`'s
+  existing "Full-page captures" class. CI read all 54 `#/print` cells
+  `совпадает` on two consecutive runs. No `VISUAL_DEBT` entry was ever written
+  and none is needed.
+- **"The slow host is peer sessions / `explorer.exe` / I/O."** All three were
+  wrong; it is a CPU throttle to ~20% of nominal (above). The Git Bash `time`
+  `user`/`sys` figures that supported the I/O reading measured nothing - Git
+  Bash does not aggregate Windows child-process CPU. The wall-clock numbers
+  stand.
+- **"`Button.svelte` is missing its focus ring."** Stale.
+  `tokens.css:148-154` has a global `:focus-visible` gold ring since `ae28b23`.
+  Measured on a keyboard-focused `.btn`: rewrite `solid 2px rgb(216,171,94)`,
+  offset 2 px, radius 9 px; live `style.css:1002-1005` gold 2 px, 2 px offset,
+  radius 8 px. Both draw the ring; the one difference is the focused radius,
+  9 px (`--r-sm`) against 8. **Rule: read focus styles only after
+  `document.getAnimations()` is empty**, or a transitioning control reports its
+  old value - the live read at t=0 of its 150 ms transition showed
+  `solid 3px rgb(236,232,246)`, which is the pre-transition value, not a UA
+  ring.
+- **"`document.fonts` swapping a face is what moves the anchor."** Disproved by
+  B3.6 part 1's probes - see the migrated measurements at the end of this file.
+- **"`app/states` case 7 is an R0a regression."** It is a flake, on four
+  readings - see "Known flakes" below.
+- **"A parity group reading `расхождений нет` proves the rows drew."** It does
+  not: an empty match on both apps reads green too. Print the figures.
+- **"A parity filter that matches nothing looks like a failing run."** It looks
+  exactly like a *passing* one - see "The harness" below.
+- **"B14's parity run was 88 cells."** It was 20 states = 120 cells; "88" was a
+  `tail -n 120` artifact. See the migrated measurements.
+
+## The harness, and what it can and cannot see
+
+- **The pixel verdict is a percentage of the whole page.** A wrong font size on
+  one line of a 1100x900 screen is ~0.09%, under `JITTER` (0.1) - so a
+  control-sized defect cannot outvote a page-sized denominator, and the state
+  reports `вид: совпадает` with no `VISUAL_DEBT` entry at all. The durable
+  countermeasure is a **nonvisual spec**, not a smaller `JITTER`: computed
+  typography plus a measured text advance is deterministic across machines.
+  `includeAA: false` is not the culprit - rescoring with `includeAA: true` moved
+  0.092% to 0.127% and 0.131% to 0.181%. Do not "fix" the harness by flipping it.
+- **The word "antialiasing" in a `VISUAL_DEBT` reason became an absorbing
+  excuse.** Three of the six documented noise causes were written against
+  measurements never taken at the level of the glyph run. `docs/parity.md` now
+  says a whole-page percentage cannot see a control-sized defect.
+- **`VISUAL_DEBT` is enforced from both sides but only outside `DEBT_SLACK`
+  (0.5).** The check is `pct < debt.pct - DEBT_SLACK`, so an entry recorded at
+  0.13 that now measures 0.00 sits inside the slack and passes **silently**.
+  Paid-off entries are deleted by reading the run output, not by waiting for a
+  failure - and still in the same change, not a follow-up.
+- **`ACCEPTED` never reaches a pixel cell.** It is read only by the spec
+  `diff()`, keyed `<state> @ <lang> :: <spec> :: <field>`; the pixel verdict
+  consults `VISUAL_DEBT` alone. So "accept a visual difference" means writing a
+  `VISUAL_DEBT` figure, which owner decision 1 forbids off this host. **A stale
+  `ACCEPTED` key fails the run** (`различий больше нет, убери из ACCEPTED`), so
+  an entry for an unmeasured difference is red from its first run.
+- **`WANTED` matches the cell label, not only the id** (`<id> @ <lang> <width>`),
+  and multiple filters are OR-ed. So `"<id> @"` selects exactly the plain state:
+  `"#/lists @"` is six cells, not the twenty states `"#/lists"` prefixes.
+- **A filter that matches nothing is indistinguishable from a passing run.**
+  `WANTED` only `continue`s past non-matching cells; the summary prints the
+  filter names, then `расхождений нет` and `exit 0`. **No cell count is printed
+  anywhere.** B14's first parity call had its `#/roll` arguments rewritten by Git
+  Bash, matched zero cells, and looked like a clean pass. R0a added the guard:
+  if `WANTED.length` and no cell was compared, fail the run.
+- **`arrive()` runs `enter(d)` with no `lang`, then presses `EN`** - deliberate,
+  so every `enter` grips Russian names. Any state whose `enter` leaves DOM-only
+  state that the live `render()` discards shows an English-only divergence unless
+  the port re-creates the element on `app.lang`. Component state that must
+  survive that press has to sit outside any `{#key app.lang}` block.
+- **The width sweep is one document resized, not three arrivals** - and a browser
+  moves a scrolled document on reflow to hold the reading position by picking an
+  element out of the DOM, which the two apps do not share. This is an open
+  blocker (`handoff.md`, "Blockers"); `overflow-anchor: none` on both sides was
+  tried and shuffles the figures without removing them. `timed: true` makes the
+  runner arrive afresh at every width; the whole-page class is handled by
+  `shot(whole)` capturing until two consecutive captures are byte-equal (cap
+  four) plus a `geometry` `perWidth` spec.
+- **The legacy screenshot cache is turned off for `measured` states only, never
+  for `timed` ones** - fixed by `&& !timed` on the three guards after a stale
+  cache hit produced a phantom 0.74% toast cell. CI never caches (fresh
+  runners), and locally `tests/run-all.js` wipes `test-output/` (which holds
+  `.parity-cache`) at the start of every invocation, so a `driver.js` edit
+  invalidating the cache key costs nothing in practice.
+- **`d.controls()` reads `button, a[href], input, select, textarea` and dedupes**;
+  it never reads `aria-pressed` or `aria-current`, so the money chips'
+  `aria-pressed` against live's `aria-current="true"` is not a measured
+  difference. A row count is not in the inventory - hence the `count` verb.
+- **`NAME_FN` is `aria-label || title || textContent`.** Consequences that keep
+  recurring: the print link is gripped by its long `title`, not "Печать";
+  select-all cannot be gripped at all (no `aria-label`/`title` on the label);
+  every row box is named "Выбрано", so a second row needs `d.click(name, nth)`;
+  a card's accessible name is its text with **no** spaces, because the live
+  markup has no whitespace between `<b>`, the badge and the empty-state `<p>` -
+  a Svelte template with a newline between them would put a space in the
+  inventory. `d.click(name, nth)` prefers an exact match and falls back to
+  `includes` only at `nth` 0.
+- **The controls section and the accessibility tree disagree about the same row
+  by design and must not be reconciled.** Matching one against the other matched
+  462 of 12,829 entries: `NAME_FN` has no inter-element spaces, carries the roll
+  number and keeps the DOM's letter case, while the accessibility name inserts
+  boundary spaces, omits the number and reflects `text-transform: uppercase`.
+  That disagreement is the `Сообщество <i>любое</i>` class the two instruments
+  exist to keep apart.
+- **`d.click` is `el.click()` inside `page.evaluate`** - a synthetic dispatch.
+  Trusted input exists nowhere in the parity harness; `tests/app/states.js` is
+  where a real CDP click lives. The two agree in every cell tried except the
+  microtask class (below).
+- **`confirm()` blocks puppeteer** unless something accepts it; the driver has a
+  dialog auto-accept that records the message, so delete is compared as data.
+- **`tests/` is invisible to `npm run check`'s formatting and lint steps**
+  (`.prettierignore` lists `tests/`, `eslint.config.mjs` ignores `tests/**`), so
+  a suite there is verified only by running it. **CI picks a new
+  `tests/app/` suite up with no `ci.yml` edit** - the `check` job runs
+  `node tests/run-all.js --exclude=parity,app/golden` after `npm run build`. A
+  suite named `app/sweep` resolves to `tests/app/sweep.js` and logs to
+  `test-output/app-sweep.log` with no runner change.
+- **Language leaks between states through `localStorage`**: `file://` is one
+  origin, so a state that ran at `en` can leave the next state's `@ ru`
+  screenshots in English. Both apps read the same storage, so no verdict is
+  wrong; a human reading a `_ru_` screenshot will find English in it.
+
+### The structural goldens (R0a)
+
+- `page.accessibility.snapshot()` is present in the installed puppeteer 25.9.0,
+  so Phase 5's "no new dependency" premise holds. Two consecutive captures of
+  the same arrival were byte-identical on all seven routes probed. Capture cost
+  12-120 ms; the arrival around it ~1.2 s, ~7 s on `#/tables*`.
+- **Three serialized fields are per-run poison**: `elementHandle` (a function),
+  `backendNodeId`, `loaderId`. A golden that keeps any of them fails its own
+  second run.
+- **`url` in the tree is an absolute `file:///E:/.../dist/index.html#/...`** -
+  three slashes, one machine's path - and does **not** equal `driver.js`'s
+  `TARGETS.next` (two slashes, Windows separators). Normalise by cutting at the
+  last `/dist/index.html` substring, never by prefix-comparing. CI is ubuntu.
+- **The corpus is 5,204,669 bytes over 105 files, 40,361 section lines**
+  (superseding an earlier 1.5-2.5 MB estimate taken from seven routes that
+  missed `eq_weapon`, `voa` and the 300-match search cap). Mean 50 KB; five
+  files hold ~1.5 MB. The bytes are catalogue text, not structure: a table row
+  is a `checkbox` and a `button` at the same depth with no wrapper, and the
+  button's name is the whole stat line - up to 1023 characters. 14,720 of the
+  40,361 lines carry a name over 64 characters, and every one of the 105 files
+  has at least one.
+- **The format is two local rules applying to all 105 states with no hand-listed
+  set**: same-shape sibling elision (signature = role + attribute *values* +
+  child shape, names excluded) and a 64-code-point cap with `namelen`/`namehash`
+  appended. Replayed: **5.20 MB -> ~1.50 MB, 40,361 -> 24,346 lines**; largest
+  file 372 KB -> 89 KB. The controls section gets the cap only and keeps its
+  12,829 lines.
+- **`--shard` suppresses neither the missing-golden nor the stale-file guard**;
+  the missing check is per state, and the stale check compares the directory
+  against the whole inventory, which every shard knows. Only `--only=`
+  suppresses them.
+- **`tests/app/inventory.js` carries exactly the module-level constants
+  `specs.js`'s `STATES` reads** - the print routes, `PACKED`,
+  `NOTES_BOTH_KINDS`, `QTY_AND_PRICE`, `LOOT`, the storage seeds, **and `NAME`**
+  (the two-language button-name dictionary; sixteen `enter` closures call it).
+  `EQUIPMENT_ENTRY` belongs to `SPECS` and does not travel. **R0c must carry
+  `NAME` with the rest.** The copy is verified by reproducing seven numbers
+  exactly: **105 states, 0 pending, 61 `enter`, 24 `storage`, 7 `timed`,
+  5 `whole`**, 42 distinct routes.
+- **A capture loop in this repository must `return await`, not `return`.**
+  `return captureLang(page, d)` inside `try { ... } finally { await ctx.close() }`
+  closes the browser context out from under an in-flight CDP call and throws
+  `TargetCloseError` from `Accessibility.snapshot()`. It crashed loudly on the
+  `timed` states, which was luck; a version that only sometimes lost the race
+  would have seeded a golden nobody could trust. This is the general shape, not
+  a `golden.js` detail.
+- **Repository size, for perspective on any future artefact question**: 63.4 MB
+  tracked, of which `img/` 29.1 MB, `i/` 4.0 MB, and
+  `data.js` + `data.json` + `catalog.csv` 1.87 MB. A 1.5 MB golden corpus is
+  2.4% of the tree and smaller than the generated `i/` directory.
+
+### Known flakes
+
+- **`app/states` case 7 (two windows) flakes on a loaded runner, and it is not
+  R0a's.** CI run `34754984230` on `06658fd` came back `check: failure` on that
+  one case; every other job including all four golden shards was green. Four
+  readings: C3's diff goes nowhere near storage or the lists page; the same tree
+  passes locally (65.0 s against CI's 66.1 s - the same work); a second CI
+  sample on the same code is green (`34755188652` on `6e1269b`); and **the case
+  is written to flake** - `tests/app/states.js` waits for page B with
+  `waitForFunction(..., { timeout: 5000 }).catch(() => {})`, the timeout
+  swallowed, then asserts on whatever the page says. Deferred rather than fixed;
+  the design question is raise the timeout, poll to a deadline, or wait on the
+  event itself. **`app/src/ports/storage.ts:61-71` adds a plain
+  `window.addEventListener('storage')`, so a test page can add its own listener
+  via `page.evaluateOnNewDocument`**: "the browser delivered the event" and "the
+  app redrew" are two separately waitable conditions, not one 5000 ms guess.
+  What must not happen is the next red `check` being waved through as "that
+  flaky case again" without someone reading the diff first.
+- **`behave` flaked once on the live app** (`FAIL приложение открылось не на
+  поиске`) with all 20 other legacy suites green, and passed on re-run. If it
+  recurs on a clean tree it is a real live-app regression and belongs to its own
+  task, not to issue 47.
+
+## Framework and tooling traps, earned the hard way
+
+Svelte:
+
+- **A literal leading space at the start of a `{#if}`/`{#each}` block is dropped
+  by the compiler.** Emit it as an expression - `{' '}` - so it is a text node
+  the compiler cannot trim. Do not put the space inside an `<i>`: an italic
+  space is not the same glyph advance. (This is now a `CLAUDE.md` rule.)
+- **Svelte prunes a scoped rule no template element can match**, and
+  `npm run check` fails it as dead CSS. So drag classes must be `class:`
+  bindings driven by port callbacks, not classes the port toggles; and a
+  sibling rule a single instance cannot match (`.hitnote + .hitnote`) is carried
+  as `:global(...)` after the base rule (equal specificity, source order
+  decides - the live cascade decides by specificity, same result).
+- **An `{#if}` inside an element is not free**: the compiler marks the live
+  branch with an anchor comment, which lands inside that element - invisible to
+  a pixel diff, visible to a `childNodes` assertion. A render-tag anchor is a
+  *comment*, so it generates no box and does not split a text run;
+  `CLAUDE.md`'s text-node rule is about split text nodes. The faithful form is
+  still one text node per live `esc(...)` concatenation. **Authored template
+  comments do not reach the DOM** (`app/svelte.config.mjs` sets no
+  `preserveComments`).
+- **`<textarea>{x}</textarea>` and `bind:value` both compile to a `.value`
+  assignment** and leave `textContent` empty - so the harness's `NAME_FN` sees
+  no name. Seed the text child with an action.
+- **`.card :global(.card-acts ...)` raises specificity, it does not lose it**:
+  0,3,0 -> 0,4,0.
+- **A snippet declared as a child of a component is passed as the prop of that
+  name**, and elements rendered inside a caller's snippet keep the caller's
+  style scope. A parent's scoped rule does not reach a child component's root
+  without `:global()`.
+- **Svelte 5 flushes in a microtask** (`queueMicrotask`). A **trusted** event
+  runs a microtask checkpoint after each listener, so between a delegated
+  `onclick` and a `<svelte:document onclick>` the `{#if}` block can already have
+  replaced the target: `e.target.isConnected` is false and an outside-click
+  handler closes the menu. `userEvent.click` (jsdom) and `el.click()` (parity)
+  dispatch on a non-empty stack - no checkpoint until they return - so **both
+  test instruments pass while the real browser fails**. This was defect 2 of the
+  two the owner reported.
+- **Svelte does not remount a page component between two addresses of the same
+  route kind.** `App.svelte` dispatches through one `{#if}`/`{:else if}` chain;
+  a branch is torn down only when the *matched branch* changes. So
+  `TablesPage`'s `lastTable` survives a move between two `tables` addresses and
+  is what is genuinely on screen. B14's plan assumed the opposite and its
+  primary design would have pinned the wrong table. **Any design reasoning about
+  mount lifecycle across routes has to check the branch, not the address.**
+- **`AppState.setLang()` does not bump `navigations`**; `go()` and the router's
+  `onChange` do.
+
+TypeScript / `svelte-check`:
+
+- **Narrowing a `$derived.by` nullable across an `{#if}/{:else if}/{:else}`
+  chain needs the terminating negative check to be bare.** A compound
+  `{:else if route.kind === 'sharedList' && !own}` in that position breaks it;
+  nest the route-kind branch *inside* a bare `{:else if !own}`.
+- **`exactOptionalPropertyTypes: true` rejects `{ tail: undefined }` for
+  `tail?: string`**, and rejects re-reading `m.qty` after only a
+  `(m.qty ?? 0) > 1` check (the coercion does not narrow the property access).
+  Neither surfaces in `vitest`; only `svelte-check`/`tsc` catch them, so a batch
+  that skips the typecheck step before the full `npm run check` finds both at
+  once inside the slow gate instead of a fast one.
+- **An inline arrow's parameter is not contextually typed through a component
+  prop**: `oninput={(v) => ...}` is flagged
+  `@typescript-eslint/no-unsafe-assignment` even when the prop is typed. Write
+  `(v: string) =>` at the call site.
+
+CSS and reduced motion:
+
+- **`0.01ms` is not zero, and the popular reduced-motion snippet ships it.** A
+  non-zero duration starts a real `CSSTransition` on every inline style write,
+  and a transition's value at t=0 is the **old** one - so code that writes an
+  inline style and reads the layout back synchronously reads the pre-write
+  layout. That is exactly what print-card fitting does: `tight()` never turned
+  false, every ladder ran to its floor, the first card on each sheet lost its
+  art, and 50 of 54 group-A parity cells went red. The live app's reduced-motion
+  rules kill two named animations only and leave `transition-duration` at `0s`.
+  The parity harness runs every cell under `prefers-reduced-motion: reduce`, so
+  this surfaces in parity and nowhere else. Fixed to `0s !important`; nothing in
+  `app/src` listens for `transitionend`/`animationend`.
+- **Then owner decision 3 deleted the blanket kill entirely** so the rewrite
+  transitions exactly where live does. Every rewrite animation has a live twin,
+  none loops, and the live stylesheet has no `scroll-behavior` rule (both apps
+  scroll with an explicit `scrollIntoView({ behavior: 'smooth' })`, which the
+  CSS property does not override, so the `scroll-behavior: auto !important` line
+  was inert). `tokens.css` declares no `transition` of its own.
+- **Port a rule with every `@media` override it has.** A mobile-only override
+  ported for the base width reads as growing drift, not a constant offset. This
+  bit four times before it became a `CLAUDE.md` rule.
+- **`document.styleSheets[n].cssRules` throws over `file://`** (the sheet is
+  cross-origin to the page), so a probe cannot read which rule matched - read
+  computed values and reason from the source.
+
+vitest / puppeteer / node:
+
+- **A component test that renders 300+ rows must not be typed into character by
+  character.** `userEvent.type` fires one `input` per keystroke, each
+  re-rendering every row; under coverage that alone crossed the 30 s default
+  timeout. `userEvent.click` then `userEvent.paste(text)` lands the whole value
+  in one event.
+- **`page.$eval` queries only the first match; `page.$$eval` queries all.** Any
+  driver verb that counts or reduces over several elements needs `$$eval`.
+- **Node's `zlib.deflateRawSync` bytes differ from Chrome's `CompressionStream`
+  output**, but both are raw deflate and `DecompressionStream('deflate-raw')`
+  reads either.
+- **`a11y.test.ts`'s guard compares `COVERED` against every `*.svelte` on
+  disk**, so a new component fails `npm run check` until it is named there with
+  a state that renders it under axe. `vite.config.mts`'s coverage glob reaches
+  new component files automatically, so a new component needs no coverage-config
+  edit - only a test that reaches it.
+- **`coverage.reportOnFailure` is off by default**, so a red vitest writes no
+  summary.
+- **`.claude/hooks/edit-followup.mjs` tests `p.startsWith('docs/fixtures/')`**
+  and fires on `docs/fixtures/share/` - but that directory is **not** a
+  public-contract surface (`CONTRACTS.md` enumerates only
+  `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`, and
+  `tests/contracts.js` never opens it). The reminder is not evidence that a
+  contract moved. An earlier `plan.md` note claimed the hook did not match; that
+  premise was false and is corrected.
+
+## Live-app facts the port depends on, and live defects
+
+These are read off `app.js`/`style.css` and survive until R0c deletes them.
+`docs/specs/DEBT.md` D1-D6 hold the live defects the rewrite reproduces on
+purpose; the entries below are the facts behind them plus the behaviours that
+have no `DEBT.md` row.
+
+- **The live app has an opt-in for DOM state that survives `render()`**:
+  `restoreOpen()` re-applies `S.keepOpen[...]` to every `[data-keep]` element,
+  fed by a capturing `toggle` listener. Three elements opt in - the roll panel,
+  the note box, the list note. `storageWarning()` writes no `data-keep`, so the
+  notice folds on every re-render, a language switch included, by the live app's
+  own rule. **`RecordCard`'s refs `<details>` carries no `data-keep` either**,
+  so live closes it on every rebuild and keying the rewrite's card is safe.
+- **The live app re-plays the anchor scroll-and-flash on every `render()`**, not
+  only on a language switch: `currentRoute()` rewrites `S.tables.anchor` on
+  every call and `render()` ends with the scroll-and-flash block. `render()` is
+  called 56 times in `app.js`, including from the tables search box's input
+  handler - so with an anchor in the address, every keystroke scrolls back and
+  re-flashes. The port carries the language-switch re-play only; the rest is
+  recorded in `FEATURES.md`.
+- **The list card renders the GM payload, not the players' - a live defect.**
+  `listCardHTML` calls `listHash(l)` with one argument, so `forPlayers` is
+  `undefined` and any `hnote` records stay on the card's own link. The two
+  flavours are byte-identical whenever no record carries an `hnote`, which is
+  why it went unnoticed. `syncListUrl` rewrites the address bar to the players'
+  form after navigation regardless; what the bug affects is the rendered `href`
+  - copy link address, the hover status bar, the pushed history entry. The port
+  matches it. **Nothing in the harness could have caught this**: no parity spec
+  reads an `href`, and the seeds carry no `hnote`, so 36/36 green cells and a
+  full unit suite were silent. It was found by reading `app.js` against the port
+  - and a false "measured" fact about it had already been written into two
+  durable documents.
+- **"Восстановить из ссылки" refuses the very link "Поделиться" copies**: the
+  import regex has no `~` and `decodeList` `atob`s the payload, so a packed
+  short link is rejected with `badShare`. The rewrite fixes it
+  (`env.compress.unpack` before decode).
+- **The record page's tab title is the plain app title, by a live defect**:
+  `render()` writes the record name into `document.title` and then calls
+  `syncChrome()`, whose last line overwrites it. `DEBT.md` D5.
+- **The two-frame filter link.** `f_frame-beast_feast-colossus` decodes to
+  `{frame:['beast'], feast:['colossus']}`. The legacy `_` reading fires iff the
+  body has no `.` and every `_`-split piece contains a `-` after position 0.
+  **The live app meets that condition only on arrival**, because `S.fSeg` stops
+  it re-reading its own write; the rewrite re-read `app.route.filter` after
+  every `replace()` and so broke in-page too. Arriving at that link fresh, live
+  shows no pills, count 94, 0 rows - so the live app has the same defect on
+  arrival. This was defect 1 of the two the owner reported; fixed in B11.
+- **`.miss` has no live rule and no live screen**: `app.js:7` is
+  `const DATA = window.LOOT.items;`, so a missing `data.js` throws before
+  anything renders. The rewrite's `noData` screens are its own state, kept
+  deliberately; `storageOff` replaced a real live warning and was deleted.
+- **The storage warning is not chrome**: live draws it on the two lists pages
+  only, in two forms, and only the `<details>` form is dismissible.
+- **The add-to-list menu is drawn before its button in the DOM**, and the
+  document click handler closes any open menu *first* - so the harness's `EN`
+  press after `enter` folds the menu, and every menu state's English cells
+  compare the folded row. Not a defect on either side. `placeMenu` adds `up`
+  when `innerHeight - button.bottom < menu.height + 16` and then
+  `scrollIntoView({ block: 'nearest' })`, so a menu state is a scrolled state.
+  **style.css has no base `.dropmenu.up` rule** - only `.cardpick .dropmenu.up`
+  - so the bar's menu opening above the bar at every width is live behaviour;
+  the rewrite's invented `.dropmenu.up { bottom: auto; top: calc(100% + 8px) }`
+  was deleted.
+- **The modal menu's side (D6).** On open the two apps agree in all 24 probed
+  cells: `up` iff `below < need`, decided by the card's height and the list
+  count. **After "+ Новый список" live is `up` in 24/24 and the rewrite diverges
+  in 7/24**: live's redraw puts the menu back at its default side and
+  `placeMenu` reads "Создать" from there, while the rewrite's `$effect` reads it
+  from wherever the menu already is - ~51 px higher, so `below` reads ~51 px
+  larger while `need` grows by 33, and the sign flips when
+  `below >= need - 18`. A downward open also overflows the `.card` article
+  (`overflow: hidden`) and `scrollIntoView` scrolls *that* element, not the
+  `.modal-card`; live's `refreshModal()` rebuilds the article and resets it,
+  which is why "+ Новый список" appears to heal it. `overflow: clip` plus
+  measuring the toggle against `.modal-card` is the candidate Phase 8 fix.
+  **No fourth harness width is needed**: 1100x900 with no seed reaches the
+  rewrite's regression on two records and the live chop on a third. A fourth
+  `WIDTHS` entry would be global (+204 cells, ~+3 min per shard, every legacy
+  PNG re-captured) and is not planned.
+- **`file://` pages share one `localStorage` in Chrome**, so a previous pass's
+  created lists leak into the next. A 43 px menu height difference in one probe
+  was one extra list chip, not a rendering difference.
+- **Copy selection has no skip set** (unlike a copied roll): each record's
+  `shareText`/`shareHtml` joined by `\n\n` / `<br><br>`.
+- **`S.kind` is genuinely one object** shared by Core rules, the alternate
+  tables and search - which is why `AppState.kinds` is app-wide and the old
+  "the kind filter is per panel" decision is retired.
+- **Print fitting.** Every `.pc-strip .pc-box b` ends at `font-size: 2.2cqw`:
+  `over()` never turns false (a block `b` in a shrink-to-fit box is never
+  narrower than its text minus 2 px) and the loop exits at
+  2.1999999999999993 after eight `-= 0.1` steps from 3. Under always-tight
+  conditions the font ladders stop at `3.0cqw` then `2.6cqw`; the pad floor is
+  `8cqw` in colour and **`2.8cqw`** in black-and-white. Sheets: 2 cards -> 1
+  sheet / 9 places / 7 blank; 9 -> 1/9/0; 10 -> 2 sheets, 18 places, 8 blank;
+  181 known ids -> 180 cards (`PRINT_MAX`), 20 sheets. **Figma is not needed**:
+  `card/` holds 35 SVGs and `cardArt()` builds exactly those names; `CONTRACTS.md`
+  section 5 freezes `card/*.svg`.
+- **`dist/` renders the same print class names as live** - `.psheet`, `.pcard`,
+  `.pcard.blank`, `.psheet[data-next]`, `.psheet.bw`,
+  `[data-act="printArt"|"printBack"|"printLink"]` - and `print.js` keys the card
+  name off `.pc-name` by class, so `FEATURES.md`'s deliberate `<h3>`->`<h2>`
+  change does not touch it.
+
+## The cut-over, and what still holds it together
+
+- **GitHub Pages is already served by Actions** (`gh api
+  repos/:owner/:repo/pages`: `"build_type": "workflow"`). There is no "Pages
+  flip" gate and never was one after 2026-09-12. What publishes the site is one
+  step in `ci.yml`'s `deploy` job, "Collect what the site is made of".
+- **`dist/` carries absolute symlinks into the repo root** (`dist/card ->
+  /e/dev/daggerheart-loot/card`), which do not survive `upload-pages-artifact`.
+  So "copy `dist/` instead" is not a one-line change: the step still assembles
+  `img/`, `og/`, `i/`, `card/`, `robots.txt`, `llms.txt` and `.nojekyll`
+  explicitly. The "Nothing private slipped in" guard still applies and is
+  re-checked against the new list rather than assumed.
+- **The revert is one command over one file**: `git revert --no-commit 9177f3b`
+  (82+/12-, `ci.yml` alone). `git show 9177f3b | git apply --reverse --check -`
+  fails on context only - `--reverse` needs exact context and three intervening
+  commits touched that file - while `git merge-tree 9177f3b HEAD 9177f3b^` is
+  clean. **Measured twice; do not re-litigate.** **R0c ends the guarantee**:
+  after the deletions, recovery is restoring paths out of history plus
+  rebuilding the collect step. That is why owner condition 6 hangs on R0c alone.
+- **The entry document was never ported** until B13. `app/index.html` - and so
+  `dist/index.html` - was missing `viewport-fit=cover` (without which
+  `SelBar`'s `env(safe-area-inset-*)` resolve to 0 on a notched phone), the live
+  `<title>`, the meta description (which is where the record counts live),
+  `color-scheme`, the whole Open Graph/Twitter block including `og/_share.jpg`
+  at 1200x630, the icon link, and the bilingual `<noscript>` block. **Nothing in
+  the tree compares the two documents' heads** - parity shoots pixels after
+  boot, and its `title` spec reads `page.title()` after `Shell.svelte` has
+  overwritten the static title - so this was invisible from Phase 1. Two
+  mechanical traps found with it: `app/index.html` is **not** in
+  `.prettierignore` (the root `index.html` is), so the ported markup is
+  reformatted and can never be byte-identical - compare parsed values; and the
+  `<noscript>` block's `class="wrap"` resolves to nothing in the rewrite, where
+  that class lives inside Svelte-scoped components.
+- **The rewrite states no record count anywhere**, so `tests/derived.js`'s
+  `COUNTERS` check has nothing in the built app to re-point at; the counts reach
+  the published site only through the entry document's meta description and
+  `<noscript>`, and through `llms.txt`, `robots.txt` and the READMEs. The
+  counts rule is **seven** files, five after R0c deletes `index.html` and
+  `app.js`. **The stub pages need no edit at the cut-over** -
+  `tools/build-share-pages.js` sends every stub to `SITE + '#/i/' + id`.
+- **Phase 7 condition 3 is satisfied by evidence** (four green `deploy` runs,
+  table below). **A cancelled run is not evidence**: `ci.yml`'s top-level
+  `concurrency` is `group: pages` with `cancel-in-progress: false`, which
+  protects a run already executing but allows only one *pending* run per group,
+  so a burst of doc-only pushes cancels the intermediate ones. Space pushes out
+  when a run's own result is the thing being collected.
+- **The live site check**: `node tools/check-site.mjs
+  https://artex-x.github.io/daggerheart-loot/` -> `сайт опубликован верно`. The
+  script requires the URL argument (with none it exits `FAIL no base url`).
+  Condition 2's *second* read belongs to R0c.
+
+## What R0b and R0c must not walk past
+
+- **`tests/parity/lock.js` is a live hook dependency R0c's outline does not
+  name.** It is imported by `tests/parity.js`, `.claude/hooks/bash-guard.mjs`
+  and `.claude/hooks/selftest.mjs`, so deleting `tests/parity/` whole would take
+  two hooks with it. Deliberately **not** moved in R0b: after R0c nothing writes
+  `test-output/parity.lock`, so the whole mechanism becomes dead and re-homing
+  it now is work R0c would undo. Recorded as an R0c step - delete the module
+  with its `bash-guard.mjs` rule and its `selftest.mjs` case, or re-home it if
+  heavy-run locking is still wanted for `run-all`/`golden`.
+- **`tests/lib.js`'s `readPNG` has exactly one consumer**, `tests/print.js`, and
+  dies with it in R0c. `ready` and `ROOT` are live-app-only and die correctly.
+- **Print's instrumentation is in two files, not one.** Beyond
+  `tests/print.js`, four print-only specs in `tests/parity/specs.js` also retire
+  in R0c and are measured nowhere else: `sheetCounts`, `cardFit`, `printMedia`,
+  `copiedPrintLink`. `printMedia`'s `d.media('print')` emulation (chrome hidden,
+  `break-inside`, `print-color-adjust`, the unshadowed sheet) and `cardFit`'s
+  per-width fit numbers exist in no other instrument. A port carrying only
+  `tests/print.js` loses them. The driver already has every verb the port needs
+  (`media`, `computed`, `eachAt`, `count`, `settle`, `clipboard`), which is why
+  the driver move had to land first.
+- **"Delete the legacy browser suites" is fifteen suites, ten with no
+  counterpart.** Dies with the live app: `audit2`, `behave`, `contracts`,
+  `craftmob`, `eqtest`, `flows`, `hues`, `lists2`, `noart`, `notes`, `print`,
+  `qa`, `select`, `states`, `typo`. Data-only and unaffected: `craft`,
+  `dataint`, `derived`, `i18n` - and three of those (`derived`, `i18n`,
+  `dataint`) are already load-bearing inside `npm run check`, so "retire the
+  legacy suites" cannot mean retiring them. `tests/app/` counterparts already
+  exist for `contracts`, `hues`, `states`, `typo`, plus `sweep` for `audit2`'s
+  page walk. **Ten have none**: `behave`, `craftmob`, `eqtest`, `flows`,
+  `lists2`, `noart`, `notes`, `print`, `qa`, `select`. **A suite whose coverage
+  cannot be accounted for is not deleted.**
+- **The ten verdicts live in `docs/specs/COVERAGE.md`'s `Fate` column**, written
+  by R0b.1's C4, with the covering tests named to the line and every drop
+  carrying its reason. `plan.md`, "The ten verdicts", keeps the one-line
+  summaries plus the full `lists2` and `eqtest` line maps, which two
+  `COVERAGE.md` rows cite back to rather than repeating. **Where the two
+  disagree, `COVERAGE.md` carries the later reading and is the one to fix**; the
+  maps in `plan.md` are the audit as it was taken.
+- **`COVERAGE.md`'s verdict table cites line numbers, and line numbers rot.**
+  R0b.1's own C2/C3 invalidated six rows of the table C4 wrote in the same
+  batch, because the citations came from an audit against the pre-batch tree.
+  All were re-pointed and verified content-identical against `37e4812`. **R0b.2
+  adds cases to `tests/app/states.js` and will shift them again**; re-pointing
+  is a required step of R0b.2's own `COVERAGE.md` edit.
+- **`VISUAL_DEBT`'s 18 entries are one mechanism, not eighteen decisions.**
+  Three states (`#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal`,
+  `#/tables ~ a row opened`) x 6 cells, all 0.02/0.03/0.07%, every reason "the
+  close button's own focus ring" - the consequence of the rewrite's `<dialog>` +
+  `showModal()` moving focus where live leaves it on the page. The table's own
+  comment is **stale**: it says the fix is what `ACCEPTED` records, and no
+  `ACCEPTED` key records it. The ten `ACCEPTED` keys are eight `#/roll/alt*`
+  controls entries and two `#/tables ~ grid` controls entries, nothing else.
+  R0c deletes the table, so **R0a decided each of the 18** - paid off, or
+  carried into a `FEATURES.md`/`STATE.md` bullet or a `DEBT.md` section-2 entry
+  - because otherwise eighteen recorded divergences disappear with the file.
+- **Two of the four "Recorded, not keyed" divergences are already in
+  `FEATURES.md`** and need a verdict, not an edit: the anchor re-play and the
+  two-frame link. The other two - `Chip`/`Seg`'s `aria-pressed` and
+  `PrintCard`'s `<h2>` - are not, and become bullets.
+- **Suite widths do not line up**: `craftmob` runs 320/360/390/430/768, `sweep`
+  and `audit2` run 360/390/768/1180, parity runs 375/768/1100. **320 is below
+  every other instrument's floor and below `style.css`'s narrowest breakpoint
+  (430)** - which is why the 320 assertion was dropped with a recorded reason.
+- **`tests/app/sweep.js`'s clipped-text selector list** is
+  `.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum`. It
+  does **not** include `.craft, .rcraft, .dicebar, .numrow`, which is what
+  `tests/craftmob.js` measures, and sweep never ticks a row so `#selBar` is
+  never drawn during its pass.
+- **`#/tables ~ a row ticked` is already a registered state**, so a
+  narrow-width selection-bar measurement adds no `STATES`/inventory entry and
+  forces no golden re-seed.
+- **`.claude/hooks/bash-guard.mjs` matches `node tests/run-all.js` generically**
+  and `edit-guard.mjs` guards only `tests/app/snapshots/`, so a new suite needs
+  no hook change.
+- **`CLAUDE.md` sits at its own 200-line cap.** Any new standing rule forces a
+  move-out into `docs/specs/*` or a skill. R0c, which deletes the twenty-line
+  "Migration and parity" section, is where the one-line versions land.
+- **A placement has to be acceptance, not a footnote.** An item the plan places
+  in a batch is written into that batch's acceptance criteria in `handoff.md` as
+  its own line, and the closing record says what happened to each: done, or
+  re-placed with a reason. A batch is not recorded closed while an inherited
+  line has no outcome. Written because two of B12's nits were placed in B13, B13
+  closed without them, and both documents went on saying they were handled.
+
+## CI and parity measurement record
+
+Run ids and conclusions, because they cannot be re-derived once retention
+expires. Local Windows figures are advisory by owner decision 1.
+
+| run | head | verdict |
+|---|---|---|
+| `34019148841` | `4976cb4` | the first full red list read off CI (12 grepped lines; the run actually failed **22** cells) |
+| `34404013490` | `958f182` | first green run on `main` since 2026-09-03; the 4-way shard's first proof (4-5 min per shard against 867 s single-job) |
+| `34482875625` / `34485537392` | `a404a52` / `b6a2fcd` | the same five `#/i/ci1` cells, identical figures, two commits - ratchet firing in the *improvement* direction, so not flake |
+| `34521343531` | `e82cd24` | `check`, `audit`, all four parity shards green; `secrets` red on three gitleaks false positives over the key name `dhloot.warn.v1`, fixed by `.gitleaks.toml` (`13bba19`) |
+| `34616445556` | `9fd3000` | **all 54 `#/print` cells `совпадает`** - closes the print residue; three anchor cells red as ratchet improvements |
+| `34628983995` | `435a5ac` | all four parity shards green; `#/print` clean a second consecutive run; the one red was a `behave` flake, green on attempt 2 |
+| `34638174347` / `34640328352` | `dba79ee` / `55f2fa2` | two independent green readings closing B9 and all seven anchor debt deletions |
+| `34715233810` | `7a729bd` | green in every job - B12.1's router change moved no parity cell |
+| `34718569245` | `9177f3b` | the flip itself, green including `deploy`; the guard printed 13 published entries with no `app.js`/`style.css` |
+| `34719879067` | `515e257` | green including `deploy` |
+| `34720031859` | `6cb8293` | **cancelled** - superseded while pending, not a failure, not evidence |
+| `34720438881` / `34721165294` | `ecbd2f4` / `37c5c2f` | green including `deploy` |
+| `34747570250` | `32926a0` | green in every job - **R0a's seeding warrant** |
+| `34753801089` | `30b2744` | green; the golden job costs CI nothing (table below) |
+| `34754984230` | `06658fd` | `check: failure` on `app/states` case 7 only - a flake, four readings |
+| `34755188652` | `6e1269b` | green - the second sample that proved it |
+
+**The golden job costs CI nothing** (`34753801089` against `34747570250`):
+`check` 11m51s -> 11m57s, longest parity shard 10m32s -> 10m33s, and the four
+new `golden` shards **1m43s-2m02s each**, finishing nine minutes before the job
+that gates the publish. A shard costs ~2 min on CI against ~4m20s locally.
+
+Two standing CI annotations, pre-existing and unrelated: `gitleaks-action@v2`
+and the three Pages actions target Node 20 and are forced onto Node 24. Worth an
+issue of its own if they ever start failing rather than warning.
+
+## Measurements migrated here during the 2026-09-16 compaction
+
+Recorded measurements moved out of `plan.md` and `handoff.md`, whose home is
+this file. Attributed to the batch that took them. **Not re-verified** - several
+cannot be re-derived.
+
+### The parity cache, proved (B3.6 part 0)
+
+- `node tests/parity.js tables --no-cache` on an empty cache **12m39s**;
+  `node tests/parity.js tables` **12m22s**; the same again warm, 44 cache keys,
+  **11m22s**. `diff` of all three logs is byte-identical.
+- Invalidation: appending a comment to `style.css` moved the key count
+  **44 -> 48**. `node tests/parity.js dread --no-cache` left 48 keys before and
+  after, proving the flag writes nothing.
+
+### Full unfiltered parity suite, two readings
+
+- On `e82cd24`: **five failing cells, 1848.8 s, 8 workers**, none of them a
+  `#/lists` cell (B5.3's six states clean at 36/36, measured three times).
+- On `fe0043b`: **12 failing cells, 1826 s, 8 workers**.
+
+### B3.6 part 1's standalone probes (harness launch args, `prefers-reduced-motion: reduce`, both apps)
+
+- `document.fonts`: `size` **0**, `status` **`loaded`** before the first paint,
+  `ready` settling ~400 ms in. **This disproved the face-swap reason the anchor
+  effect's comment carried.**
+- Width sweep `window.scrollY`: live **368 / 368 / 374** against rewrite
+  **368 / 368 / 387** at 1100 / 768 / 375, one `scrollIntoView` each at 1100,
+  against the same 118 px `scroll-margin-top`.
+- `.flash` presence: live **yes** on arrival, **no** after 1.6 s, **yes** again
+  after the EN click; rewrite **no** at every step.
+
+### Pixel decomposition of the CI screenshots (pixelmatch, harness settings, `diffMask`, banded by row)
+
+`#/i/ci1 ~ whole @ ru 1100` is **0.49%** the missing row, **~1.7%** the footer
+it holds down and **3.62%** the 38 px band the shorter page runs out at.
+Reinserting those 38 px leaves **zero** changed pixels below the row.
+
+### The live site's roll re-render, measured under throttling (B13 item 1)
+
+One mutation batch at **4.3 ms**, handler **0.9 ms**, four image requests
+starting at **5 ms**, and the same four `<img>` elements already present at
+**t=26 ms** with three still loading. Both apps ship identical
+`loading="lazy" decoding="async"` and **neither ships `srcset`/`sizes`**.
+
+### Gate and run-size corrections
+
+- **B14's parity run was 20 states = 120 cells, not 88.** The "88 cells" in
+  B14's built record was a `tail -n 120` artifact, corrected at closeout. The
+  harness prints no counts - blocker B1's origin.
+- **B12.1's gate cost**: `node tests/run-all.js app/contracts,app/sweep` -
+  **574.5 s** slowest entry, `app/contracts` with no `skipped` line, all 26
+  route fixtures read field by field.
+
+### Where the complete CI failing list came from
+
+The complete list came off the **`failure-output` artifact of run
+`34361836525`** (commit `79e26c9`), not off `gh run view --log-failed`: the log
+shows about a dozen grepped lines and the run actually failed **22** cells. The
+artifact carries `test-output/parity.log` in full plus every screenshot and diff
+image the ubuntu run produced.
+
+### Build-output facts (R0b audit)
+
+- **`dist/assets/*.css` does not exist**; `grep -c "@page" dist/assets/app.js`
+  is **1**. Vite's build for this project (iife format, no code splitting,
+  `base: './'`) inlines component styles into the JS bundle rather than emitting
+  a separate stylesheet.
+- `ls dist/card | wc -l` is **36**, not 35.
+
+### The focus-walk replay (reviewer)
+
+The verdict was computed twice per real Tab stop - once genuinely focused, once
+with the element forcibly blurred a settle later. The OR-combined
+`outline || box || border` check **still passed while blurred on over a third of
+`#/roll/std`'s stops alone**, and the same shape held on all six `FOCUS_WALK`
+addresses, **894 stops** total.
+
+### Run `34747570250`, job by job
+
+`secrets` 7 s, `parity (1)` 9m31s, `parity (2)` 8m10s, `parity (3)` 10m32s,
+`parity (4)` 8m55s, `audit` 15 s, `check` 11m51s, `deploy` 31 s - every job
+green. **The four parity shard times are the cost baseline for R0c's "what does
+the workflow look like without a parity job" read.**
+
+### The legacy suites re-pointed at `dist/` (Phase 5 probe)
+
+With exactly two edits - `ROOT` -> `dist/index.html` and `ready()`'s `#view` ->
+`#app`:
+
+- **`typo` passes** (two fonts, one scale, 13 pages, both languages).
+- **`audit2` at 1180 passes** (41 addresses, both languages).
+- **`hues` fails 16 assertions** because it injects bare
+  `<span class="badge item">` elements and reads their colour, and the
+  rewrite's `.badge` rules are Svelte-scoped, so an injected span gets none.
 
 ## Constraints
 
-- Contracts, routes and generated artefacts are untouched by these fixes.
-- All three are style/markup parity fixes: `npm run check:built` is required.
-- `VISUAL_DEBT` is enforced from both sides, but only outside `DEBT_SLACK`
-  (0.5). The check is `pct < debt.pct - DEBT_SLACK`, so an entry recorded at
-  0.13 that now measures 0.00 sits inside the slack and passes **silently** -
-  which is true of most entries this audit is about. Corrected by the planner
-  against an earlier claim here that any improvement fails. Practically: paid
-  off entries have to be deleted by reading the run output, not by waiting for
-  a failure. Still part of the same change, not a follow-up.
-- A full parity run is ~9 minutes; filter while working.
+- Public contracts default to no change; an unavoidable change updates
+  `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md` and
+  `llms.txt` in the same commit.
+- All style/markup parity fixes require `npm run check:built`.
+- A full parity run is not one foreground call; filter while working.
+- Never write a `VISUAL_DEBT` number from this host.
+- Repository gate configuration (`.prettierignore`, `eslint.config.mjs`) is
+  `issues/config-audit/`'s surface, not this task's. Widening a gate to
+  accommodate a third-party drop is the same move as routing around one.
 
 ## Do not re-fetch unless
 
@@ -230,3839 +1002,30 @@ Not a bug in the harness, a limit of its metric, and worth writing down:
 - context.md is missing a fact you need
 - You suspect drift vs issue or plan
 
-## CI is red, and has been since B1 (added 2026-09-09)
-
-`.github/workflows/ci.yml` runs `npm run test:legacy`, which is
-`node tests/run-all.js` with **no filter**, so the full parity suite runs on
-every push and pull request. Every run on `main` since
-"Batch B1 planned and written down" (2026-09-03) has failed. Sessions recorded
-parity as passing while only ever running the filtered `tables` subset locally.
-
-Latest red run at `4976cb4` (`gh run view 34019148841 --log-failed`), on
-ubuntu:
-
-```
-#/roll/wondrous ~ help  @ ru 768   0.98% vs debt 0.73%
-#/roll/wondrous ~ help  @ ru 375   0.68% vs debt 0.52%
-#/roll/wondrous ~ help  @ en 768   0.40% vs debt 0.29%
-#/roll/wondrous ~ help  @ en 375   1.08% vs debt 0.79%
-#/i/ci1 ~ whole         @ ru 1100  5.87% vs debt 5.29%
-#/i/ci1 ~ whole         @ ru 768   6.14% vs debt 5.39%
-#/i/ci1 ~ whole         @ ru 375   8.49% vs debt 7.28%
-#/i/ci1 ~ whole         @ en 1100  5.70% vs debt 5.17%
-#/i/ci1 ~ whole         @ en 768   5.91% vs debt 5.22%
-#/i/ci1 ~ whole         @ en 375   8.37% vs debt 7.01%
-#/tables/wondrous       @ en 768   0.12%, expected zero
-#/tables/wondrous       @ en 375   1.64% vs debt 1.51%
-```
-
-**That list may be incomplete.** `run-all.js` prints only about a dozen grepped
-lines per suite on CI - the workflow's own comment says so. The complete list
-needs an unfiltered local run or the uploaded `failure-output` artifact.
-
-Two facts to keep apart:
-
-- The last two entries are **already fixed** by B3.5 - `#/tables/wondrous` was
-  the search-box defect.
-- The CI list and the local Windows list **overlap but differ**. Locally
-  `#/roll/wondrous ~ modal` and `#/i/f1` fail and `~ help @ en 768` passes; on
-  ubuntu the reverse. So there are two causes tangled together: a consistent
-  overshoot on both machines (`~ help` and `#/i/ci1 ~ whole` are over debt
-  everywhere, `~ whole` by up to 1.4pp - too large to be hinting noise), plus
-  genuine cross-platform variance of a tenth or two on top.
-
-### Decisions taken by the repository owner, 2026-09-09
-
-Do not re-open these; they are settled input, not options.
-
-1. **CI (ubuntu) is the authoritative machine for `VISUAL_DEBT` numbers.** A
-   debt figure must make CI green. A local Windows run is advisory and gets a
-   documented per-platform tolerance; local drift may not be written into the
-   table as if it were the baseline, which is what `docs/parity.md`'s
-   "Machine variance" section already says. Rejected alternatives, on the
-   record: per-platform pairs of numbers (doubles bookkeeping this migration
-   already struggles with) and simply widening `JITTER`/`DEBT_SLACK` (loosens
-   the exact mechanism that let three defects hide this session).
-2. **Diagnose every failing state and fix root causes; re-baseline only what is
-   genuinely machine variance.** Explicitly *not* "re-baseline everything to
-   green now, diagnose later" - the owner's reason is that it risks writing
-   another absorbing excuse of the kind this session just spent a batch
-   removing. `#/i/ci1 ~ whole` overshooting by ~1.4pp is expected to be a real
-   defect, not drift.
-
-## Correction: the CI failures are stale baselines, not machine drift (2026-09-09)
-
-Found by the B3.5 reviewer and verified by the orchestrator against `git show`.
-**This supersedes the "genuine cross-platform variance" branch offered in the
-section above.** Do not start B3.6 part 1 from the drift hypothesis.
-
-The control that rules drift out is in the reviewer's own run, on the Windows
-machine: `#/tables ~ a row opened` - the same "card short by the add-to-list
-row inside a modal" shape as `#/roll/wondrous ~ modal` - reproduces all six of
-its recorded numbers **to the hundredth**, as does `#/tables ~ help`. This
-machine reproduces recorded numbers exactly. So the failing entries are not
-failing because the machine renders differently.
-
-What actually happened is that the numbers were recorded, and then the
-components those states render were changed without anyone re-baselining them:
-
-| Commit | Date | What it changed | Re-baselined? |
-|---|---|---|---|
-| `117af2e` | 2026-09-02 | rewrote `tests/parity/specs.js`; every failing entry dates from here | n/a |
-| `9fa9ad5` | 2026-09-03 | `RecordCard`, `RecordModal`, `AltPanel`, `RollPanel`, `StdPanel` - the components `#/i/ci1 ~ whole` and `#/roll/wondrous ~ modal` draw | **no** - the commit touches no specs file |
-| `e5985ff` | 2026-09-03 | `PageHead`, `help.ts` - the components `~ help` draws | touched `specs.js`, but not these entries |
-
-The entries that *do* reproduce exactly were recorded in `64e79a0`/`9fa9ad5`,
-i.e. after those component changes. That is the whole pattern.
-
-`#/i/f1` is a separate and simpler case: `2970c03` (B3) added the state with
-**no `ACCEPTED` entry and no debt entry**, so it has never passed. Every other
-record-card route has the add-to-list `ACCEPTED` entry; this one was missed.
-
-Practical consequence for B3.6 part 1: the branch to expect is "the debt was
-recorded before a change to the component and nobody re-ran it", which is
-re-baselining with a reason that names the commit and the change - not
-"rendering noise" and not "another machine". Cross-platform variance is still
-real at the tenth-of-a-percent level (the CI and Windows failing lists differ
-slightly) but it is not what these failures are.
-
-## B4 planning facts (planner, 2026-09-09) - durable, read before implementing
-
-Full design in `plan.md`, "B4 planned"; the brief in `handoff.md`, "Next
-batch". Facts that were read off the source rather than assumed:
-
-- `renderEquipTable` (app.js 2735-2761) draws **tier sections as well as
-  facets**: `[1,2,3,4]` off `it.eq.tier`, keys `t1`-`t4`, labels
-  `t().tier + ' ' + n`, `.tsection#sec-t<n>` at `margin-top:22px`,
-  `sectionHead` + `renderList` (select-all per tier), empty tiers skipped.
-  `.fcount` reads the whole pool: 317 / 108 / 90 (`data.json`, counted).
-- `fChosen` tests the pill's **label** for `/^\d+$/`; `FilterBar.svelte`
-  tests the **value**. They differ on the weapons' `burden` row (values
-  `'1'`/`'2'`, labels Одноручное/Двуручное): the port would print "Хват 2".
-  Fix is `v.label`.
-- `dict.ts` lacks `eqClass`, `eqDmg`, `eqTrait`, `eqRange`, `eqBurden`,
-  `eqLineF` (app.js 101-103 / 287-289). `source` exists.
-- app.js `matches` searches `eqLine(it)` **with the type word**;
-  `TablesPage.svelte`'s two `matches` callbacks pass `noType: true`. B4 fixes
-  both; the row's display keeps `noType`.
-- The `src` facet offers only sources with a record of that kind: weapon and
-  secondary eight (no `motherboard` equipment exists), armor five (`core`,
-  `hnf`, `voa`, `beast_feast`, `dark_heart`).
-- `EQ_TRAIT`/`EQ_RANGE` key order in `lib/i18n.ts` matches app.js.
-- `equipOfKind` and `equipFacets` in `lib/data.ts` exist and are uncalled; B4
-  calls them. `frameName(id, lang)` falls back to the id, which is what
-  `srcName`'s fallback needs.
-- Wall clock: `node tests/parity.js "eq_"` (8 states) fits one 600s call;
-  `node tests/parity.js "tables"` no longer does after B4 (was ~9 min for 26
-  states, gains 8).
-
-## B5 planning facts (planner, 2026-09-10) - durable, read before implementing
-
-Full design in `plan.md`, "B5 planned" and "B5.1 planned"; the brief in
-`handoff.md`, "Next batch". Facts read off the source rather than assumed:
-
-- **The add-to-list menu is drawn before its button** in the DOM
-  (`addToListBtn`, app.js 1879-1891), and the live document click handler
-  closes any open menu *first*, on any click outside `.seldrop`/`.dropmenu` -
-  so the harness's `EN` press after `enter` folds the menu, and every menu
-  state's English cells compare the folded row. Not a defect on either side.
-- **The menu sorts lists by `created` descending** (newest first,
-  `listMenuHTML` 1834) while the lists index shows `S.lists` order (newest
-  first because `createList` `unshift`s). A single record's menu label is
-  `inLists` ("Лежит в списках") even when it lies in none; several ids read
-  `addTo`. The search box appears at **eight** lists (`PICKER_SEARCH_AT`).
-- **`+ Новый список` carries `class="chip ghost"` but draws plain**: the only
-  `.chip.ghost` rule is `.picker .chip.ghost` and the menu is not inside
-  `.picker`.
-- **`placeMenu` (3695-3704) is part of every menu state**: `up` when
-  `innerHeight - button.bottom < menu.height + 16`, then
-  `scrollIntoView({ block: 'nearest' })` - on `#/i/ci1` at 1100x900 the row is
-  below the fold, so a menu state is a scrolled state.
-- **Toast timings**: 1600ms plain, 2600ms error (`role=alert`, assertive),
-  7000ms with an undo action (`.toast.act`, `.toast-act`). `[hidden]{display:
-  none !important}` hides it; `toastIn` replays on each show.
-- **A `storage` event replaces the lists outright**: `mergeLists(loadLists())`
-  has empty `theirs`, so it is a plain take of what storage holds.
-- **The storage warning is not chrome**: the live app draws `storageWarning()`
-  on the two lists pages only; `Shell.svelte`'s `storageOff` paragraph is the
-  rewrite's invention and is reconciled in B5.3, not B5.1.
-- **`dict.ts` keys are named differently from app.js in places** (`helpHint`
-  for `whatIsThis`, `homeHint` for `setHome`); B5.1 adds seventeen keys under
-  the live names listed in the plan. `lib/lists.ts` (`keepLists`, `liftNotes`,
-  `mergeLists`) and `lib/money.ts` have had no caller since Phase 2.
-- **The harness reaches list states by seeding**: `tests/select.js` and
-  `tests/lists2.js` already write `dhloot.lists.v2` through
-  `evaluateOnNewDocument` on the live app under `file://`; `dist/` is the
-  same origin. B5.1 adds `d.seed(entries)` and `d.storage(key)` to the driver
-  and a `storage` field on a state, hashed into the cache key.
-- **`RecordModal` is a native `<dialog>`**, so a fixed toast in `Shell` sits
-  under its backdrop and is inert while it is open; the design puts the toast
-  in the top layer with `popover="manual"`, with a recorded fallback.
-- Wall clock for B5.1's filters: `"i/ci1"` is 7 states, the second filter 6;
-  each is about a third of the pre-B4 "tables" run (~9 min for 26 states).
-
-## CI is red again, and the five cells are stable (orchestrator, 2026-09-10)
-
-Measured, not guessed. Two consecutive runs on `main`, different commits, the
-same five failing cells with the same figures - so this is not CI flake:
-
-| run | commit | failing cells |
-|---|---|---|
-| `34482875625` | `a404a52` | the five below |
-| `34485537392` | `b6a2fcd` | the five below, identically |
-
-```text
-shard 1  FAIL #/i/ci1 ~ whole @ ru 1100 :: вид :: 0.00%, долг записан как 5.53%
-shard 1  FAIL #/i/ci1 ~ whole @ ru 768  :: вид :: 0.00%, долг записан как 7.31%
-shard 1  FAIL #/i/ci1 ~ whole @ en 1100 :: вид :: 0.00%, долг записан как 4.88%
-shard 3  FAIL #/i/ci1 ~ toast @ en 768  :: вид :: 0.00%, долг записан как 0.86%
-shard 3  FAIL #/i/ci1 ~ toast @ en 375  :: вид :: 0.00%, долг записан как 2.78%
-```
-
-Every one is the ratchet firing in the *improvement* direction - `стало лучше -
-опусти число в VISUAL_DEBT`. Every other cell in all four shards passes, and
-`check`, `audit` and `secrets` are green; `deploy` is skipped because `parity`
-failed.
-
-Facts that follow from that, and that nobody needs to re-derive:
-
-- **All five entries are B5.1's and its fix-pass's**, `specs.js` 863-892, and
-  every one of them was written with a Windows figure and the words "CI to
-  confirm" or "This class is B5.2's to solve" in its `why`. CI has now
-  confirmed, twice: on the authoritative machine all five are an exact match.
-- **The `~ whole` trio is the "paint noise" class** the handoff names
-  ("A second unstable class, distinct from the toast"); the two `~ toast`
-  cells are the "timed state" class. Both classes were already recorded as
-  B5.2's research by owner decision, 2026-09-10.
-- **`#/i/ci1 ~ whole @ ru 375`, `@ en 768`, `@ en 375` pass** (`совпадает`),
-  as does every one of the twenty-four new B5.1 list-menu/`in a list`/
-  `many lists`/`new list` cells. B5.1's actual work is CI-clean.
-- Owner decision 1 (`CI (ubuntu) is authoritative for VISUAL_DEBT numbers`)
-  decides the direction. What it does not decide is how a local Windows run
-  stops re-introducing a Windows figure the next time somebody reads a red
-  cell - that is the class question, and it is the planner's.
-- The failing-shard artifacts (`failure-output-parity-1`, `-3`) hold
-  `test-output/` and `dist/` for 14 days if a diff image is wanted.
-
-`dc31460` (local HEAD) is one docs-only commit ahead of `b6a2fcd`, so it
-changes nothing the harness photographs; the run at `b6a2fcd` reads for the
-current tree.
-
-## B5.2 planning facts (planner, 2026-09-10) - durable, read before implementing
-
-Full design in `plan.md`, "B5.2 planned, part 0" (CI green, the two unstable
-classes - tests and docs only) and "part 1" (the selection bar); the brief for
-part 0 is `handoff.md`, "Next batch". Facts read off the source or measured,
-not assumed:
-
-- **Local HEAD moved to `252e0a6`** during planning (hooks-guardrails docs,
-  another task's); still docs-only over `d1c1367`, so the CI run at `b6a2fcd`
-  reads for the tree. Re-read `git log --oneline -3` before starting.
-- **The five red cells are decided: deleted.** Owner decision 1 leaves no
-  figure but 0.00, and 0.00 is deletion by the ratchet's own rule
-  (`parity.js` 532-543). They were already red on a local Windows run under
-  their Windows figures (1.43 vs 5.53 fails as `стало лучше`), so deletion
-  does not turn a green local run red.
-- **The timed class is the width sweep** (`parity.js` 352-450: one arrival,
-  three viewports, a `settle()` of up to 680ms each, an `EN` press in between
-  for English) against a 1600ms toast, with the legacy PNG possibly from a
-  cache written on another clock. Chosen fix: `timed: true` on a state makes
-  the runner arrive afresh at every width. The slack class is rejected (a
-  tolerance as wide as the toast). Two states carry the flag; part 1's
-  `~ selection copied` is the third.
-- **The whole-page class is the capture**: `fullPage: true` rasterises a
-  3000px document in one go; geometry was byte-identical in every reading
-  while pixels swung 0.00-7.31% under load; CI reads 0.00. Chosen fix:
-  `shot(whole)` captures until two consecutive captures are byte-equal (cap
-  four), plus a `geometry` `perWidth` spec on `#/i/ci1 ~ whole` (which, like
-  `typeRuns`, turns the legacy cache off for that state).
-- **`.prettierignore` and `eslint.config.mjs` both skip `tests/`**, so runner
-  and driver edits are verified only by running the harness; `npm run check`
-  does not read them.
-- **The live selection bar, measured** (read-only puppeteer probe on
-  `index.html#/tables`, two lists seeded, reduced motion): 53px tall at 1100
-  and 768, **137px at 375** (count row, the add-to-list control alone on a
-  328px row, print and copy at 160px each below); `.selacts` children 176.7 /
-  86.6 / 121.9px wide at 1100; `#/tables` has 60 rows and "Выбрано 60" when
-  all are ticked. The bar's `innerHTML` is transcribed in `plan.md`, part 1.
-- **The bar's menu opens above the bar at every width, with `up` set and
-  inert.** `placeMenu` (app.js 3695-3704) always adds `up` at the bottom of
-  the window, and **style.css has no base `.dropmenu.up` rule** - only
-  `.cardpick .dropmenu.up` (443). `AddToList.svelte`'s `.dropmenu.up {
-  bottom: auto; top: calc(100% + 8px) }` is invented; harmless on the card,
-  it would push the bar's menu off-screen. Part 1 deletes it. Measured menu:
-  230x171 with two lists, y=679 against the bar at y=847, right-aligned at
-  x=614 at 1100; x=16-344 at 375; `scrollY` 0.
-- **The print link's accessible name is its `title`** ("Собрать карточки для
-  печати: девять на лист A4"): the driver's `NAME_FN` prefers `title` over
-  text, so the inventory compares the long string and `d.click('Печать')`
-  finds nothing. The bar's four control names, live: "Снять выделение",
-  "Добавить в список", the title above, "Скопировать".
-- **Select-all cannot be gripped by the harness**: `<label class="selall">`
-  wraps an input with no `aria-label`/`title`, and `NAME_FN` reads none of
-  the label. Every row box is named "Выбрано", so a second row needs
-  `d.click(name, nth)` - part 1 adds the index; it does not name select-all
-  (the inventory would differ).
-- **The count is one text node** (`t.selected + ' ' + n`) followed by the
-  cross inside `.selcount`; `selIds()` is `Object.keys(S.sel)` in tick order
-  (existing keys keep position on select-all), which `SvelteSet` matches.
-- **Copy selection** is each record's `shareText`/`shareHtml` with **no skip
-  set**, joined by `\n\n` / `<br><br>` (app.js 1961-1966) - no OR, unlike a
-  copied roll; the rewrite's `share()` per record joined the same way is
-  `shareSelection` in `lib/share.ts`.
-- **Three dictionary keys are missing**: `clearSel`, `copySel`, `selCopied`
-  (app.js 113-114 / 299-300). `selected`, `print`, `printHint`, `copyFailed`
-  exist. `lib/icons.ts` `copy` is `ICON_COPY`'s path.
-- Wall clock for part 1's filters: `"a row ticked" "bar menu" "selection
-  copied"` is 3 states (one timed); `"#/tables ~"` is 8; `"i/ci1 ~"` is 6.
-  Each fits one foreground call; do not merge them.
-
-## State at B5.3 kickoff (orchestrator, 2026-09-10)
-
-Measured at dispatch, not inferred:
-
-- HEAD is `afa82f3` (`docs(issue-47): CI is green - B5.2 part 0 closed by run
-  34492619641`); `git status` clean; no `test-output/parity.lock`; no heavy
-  run alive on this host.
-- **Re-measured at the implement dispatch (2026-09-10, later session):** HEAD
-  is `91d7899` (`docs(issue-47): plan B5.3 ...`), the planning commit; tree
-  clean; still no `test-output/parity.lock` and no vitest or parity process
-  alive (26 `node.exe` are peer Claude sessions, none running a check). 19
-  peer sessions now share the tree. The line below about this cycle being
-  "planner first" is spent - B5.3 is planned and implement-ready as of
-  `91d7899`, and this cycle dispatches the implementer only.
-- `origin/main` is `4210ee3`, so **three commits are unpushed**: `ff741ad`
-  (B5.2 part 1, the selection bar), `6084846` and `afa82f3` (both docs). CI
-  has therefore still not read the selection bar - that is the owner's push
-  to make, and the only thing outstanding on B5.2. It does not block B5.3.
-- 18 peer sessions share this working tree (9 interactive). Re-read
-  `git log --oneline -3` before writing, and never `git add -A`.
-- B5.3 is the next batch and is **outline-only** in `plan.md` ("B5 planned"),
-  so this cycle is planner first, then implementer.
-
-## B5.3 closed, and the full suite on it (orchestrator, 2026-09-10)
-
-- B5.3 is built, reviewed, remediated and committed: `ba8f4b1`
-  (`feat(lists): the lists index`, 30 files) and `e82cd24`
-  (`fix(lists): match live's GM-payload list card link`, the review's one
-  blocker). Review was opus against `ba8f4b1`: fix-then-continue, one
-  blocker, five nits - the nits are in `handoff.md`, "Deferred".
-- The blocker is worth remembering as a class, not as an incident: the card
-  link's payload flavour was wrong, and **nothing in the harness could have
-  caught it**. No parity spec reads an `href`, and the `seven` seed carries
-  no `hnote`, so the two flavours are byte-identical for every seeded list.
-  36/36 green cells and a full unit suite were silent on it. It was found by
-  reading `app.js` against the port. The false fact had also been written
-  into this file and into `plan.md` as measured, where B5.4 would have
-  inherited it; both are corrected with verified line numbers
-  (app.js:2894 for the call, 1534 for the signature).
-- **The full unfiltered suite was run on `e82cd24`**: 1848.8s, 8 workers,
-  five failing cells, none of them `#/lists`. Four are the documented
-  Windows-vs-CI machine-variance class and need no action; the fifth,
-  `#/tables ~ selection copied @ en 1100` at 0.74%, is new, reproduces
-  identically alone, and is left for the planner. Full numbers and what
-  bounds them: `handoff.md`, "Blockers", first entry. Do not re-measure it.
-- **Pushed and read by CI, during this session and not by the orchestrator**
-  (`git reflog show origin/main`: "update by push" to `e82cd24`). Run
-  `34521343531`: `check`, `audit` and **all four `parity` shards succeed** -
-  CI's authoritative word on both the selection bar and the lists index, and
-  the condition B5.2 part 1 was waiting on. One job fails, `secrets`, on
-  three gitleaks false positives over the localStorage key name
-  `dhloot.warn.v1`; `deploy` is skipped behind it. Fixed by `.gitleaks.toml`
-  (tracked; landed `13bba19`).
-
-## B5.3 planning facts (planner, 2026-09-10) - durable, read before implementing
-
-Full design in `plan.md`, "B5.3 planned"; the brief in `handoff.md`, "Next
-batch". Facts read off the source or measured on the live app (a read-only
-puppeteer probe on `index.html#/lists`, reduced motion, the harness's own
-launch args, three widths), not assumed:
-
-- **The live index is one function, `renderLists` (app.js 2909-2931)**:
-  `pageHead('lists')`, `storageWarning()` (2872-2886), a `.panel` with inline
-  `margin-top:16px` holding two `.field`s (`.lbl` + `.numrow` with a `.grow`
-  input and a button: "Новый список"/`#lname`/"Создать" primary, "Восстановить
-  из ссылки"/`#limport`/"Восстановить" plain), then either `.listgrid` of
-  `listCardHTML` (2888-2907) in `S.lists` order (newest first) or
-  `<div class="empty">` with `noLists`. No "storage off" chrome anywhere else:
-  `Shell.svelte`'s `storageOff` paragraph and its dictionary key are the
-  rewrite's invention.
-- **The warning has two forms and only one is dismissible.** `storageWorks()`
-  false: `<div class="warn"><b>noStorageTitle</b> noStorage</div>` - one text
-  node after the `<b>`, starting with a space - and it cannot be dismissed
-  (nothing would remember it). Storage working and `dhloot.warn.v1 !== '1'`:
-  `<details class="warn"><summary><b>localOnlyTitle</b><i>readMore</i><button
-  class="warn-x" data-act="hideWarn" title=aria-label=dismiss>×</button>
-  </summary><p>localOnly</p></details>`, no whitespace between the three
-  children of the summary. `hideWarn` (4175) calls `e.preventDefault()` - the
-  cross sits inside the summary and a plain click would also toggle it - then
-  writes `'1'` and re-renders. `.warn` is declared twice in style.css (855-861
-  the box; 963 `position:relative; margin-bottom:16px`), then `summary`,
-  `::-webkit-details-marker`, `summary i`, `[open] summary i{visibility:
-  hidden}`, `p`, `.warn-x` and `:hover` (964-975), plus `.warn-x:focus-visible`
-  in the keyboard block (1002-1005).
-- **Measured, 1100x900**: folded warning 1053x43.5 at y=212.78 (18px under
-  the page-sub, `.warn-x` 26x26 at top/right 6); unfolded 150px tall (the
-  `<p>` 97.5px); the storage-off div 1053x64.5 at 768 / 121.5 at 375; panel
-  198.78 tall (254.78 at 375, where the import row wraps its button under the
-  input because `.numrow .grow{flex:1 1 170px}` cannot fit 170+10+127.56 in
-  290px while the create row's 92.42px button fits); inputs 46px, `font-size`
-  15.5px inherited; `.listgrid` `repeat(auto-fill, minmax(280px, 1fr))` gives
-  three 341.66px columns at 1100, two 353.5 at 768, one at 375; a card with
-  six thumbs is 149.59 tall, an empty one 129.59; `.empty` 104.8 tall. Unfolded
-  at 375 the warning is 429.5px - the reason the live app folds it.
-- **A card's accessible name is its text with no spaces**: `a.listcard-main`
-  reads "Клад дракона7" / "Лавка в порту0Список пуст" through `NAME_FN`, because
-  `<b>`, the `.badge.num` and the empty-state `<p>` are adjacent with no
-  whitespace. A Svelte template with a newline between them would put a space
-  in the inventory. The badge counts **known** records (`listItems`), not
-  `l.ids.length`; thumbs are the first six known records, `imgTag(it,
-  'thumb')` = `<img src alt="" loading="lazy" decoding="async">`.
-- **The card link renders the GM payload, not the players' - a bug in the
-  live app, not a deliberate choice.** `listCardHTML` (app.js:2894) calls
-  `listHash(l)` with **one argument**; `listHash(l, forPlayers)` (app.js:1534)
-  is `'#/l/' + encodeList(l, forPlayers)`, so `forPlayers` is `undefined`,
-  falsy, and `encodeListRaw(l, false)` keeps any `hnote` records on the card's
-  own link. Only `goToList` (app.js:1539-1540) calls `listHash(l, true)`. The
-  two payload flavours are byte-identical whenever no record in the list
-  carries an `hnote`, which is why this went unnoticed - deterministic from
-  name and ids either way, so a list created inside a parity state still
-  links identically on both apps in the common case. After navigation,
-  `syncListUrl` (app.js:1599-1606) `replaceState`s the address bar to the
-  players' form regardless, so the address bar converges; what the bug
-  affects is the rendered `href` attribute itself - "copy link address", the
-  hover status bar, and the history entry pushed on click - for any list
-  carrying a GM-only note. The port matches this: `ListsPage.svelte`'s card
-  link calls `encodeList(l, false)`.
-- **Controls on the live index** (NAME_FN, chrome removed): "Как это
-  работает", "Открывать этот раздел при запуске" (`homeHash()` returns
-  `#/lists`, so the pin draws), "Скрыть", "Создать", "Восстановить", and per
-  card "Поделиться", "Удалить" and the link name above. Both text inputs have
-  no name (no label, aria-label or title) and are gripped by placeholder:
-  "Например: клад дракона" / "Ссылка на список".
-- **Share** (3971-3976): an empty list toasts `listEmpty` (plain) and stops;
-  otherwise `listShareUrlShort(l, true)` = `appUrl('#/l/' + packPayload(
-  encodeListRaw(l, true)))` - packed only when shorter - copied with
-  `playersLinkCopied`. **Delete** (4136-4150): `confirm(deleteConfirm % name)`,
-  then `deleteList` (1332-1336: `S.deleted[id] = true`, filter, `saveLists`);
-  on the index it re-renders, on a list page it goes to `#/lists`.
-  **Create** (4195-4203): blank → `nameFirst` error and focus; else
-  `createList`, draft cleared, `listCreated % name` only if `createList.saved`.
-  **Import** (4257-4270): `/#\/l\/([A-Za-z0-9_-]+)/` on the trimmed field,
-  `decodeList` of the capture or the raw text, `badShare` error on null, else
-  `createList(name)` + ids + meta, save, `goToList` (navigates to the players'
-  hash).
-- **Live defect, found by reading**: that regex has no `~`, and `decodeList`
-  `atob`s the payload, so a packed short link - the very link "Поделиться"
-  copies - is refused by "Восстановить" with `badShare`. The rewrite fixes it
-  (`env.compress.unpack` before decode); see `plan.md`, "Decided".
-- **`confirm()` blocks puppeteer**: an `el.click()` inside `page.evaluate`
-  that opens a dialog never returns unless something accepts it - no state can
-  press "Удалить" today. The batch gives the driver a dialog auto-accept that
-  records the message, so delete is compared as data (`deletedList` press
-  spec). `<summary>` is not in `click()`'s selector list either, so the
-  unfolded warning needs `summary` added there (not to `has`/`controls`).
-- **Missing from the rewrite**: 18 dictionary keys (`importList`, `importBtn`,
-  `importPh`, `dismiss`, `readMore`, `listCreated`, `noLists`, `share`, `del`,
-  `listEmpty`, `noStorageTitle`, `noStorage`, `localOnlyTitle`, `localOnly`,
-  `deleteConfirm`, `playersLinkCopied`, `badShare`, `subLists`); the `lists`
-  help (`help.ts` has no entry; app.js 252-257 / 433-438, four paragraphs,
-  two with `<b>` parts); a `danger` button variant (`.btn.danger`, style.css
-  795-796); a dialog port (`window.confirm` is a browser API and belongs
-  behind `ports/`); `ListStore.remove` (the `#deleted` writer) and a
-  `create` that takes ids/meta for import. `icons.ts` already has `link`
-  (`ICON_LINK`, app.js 1054). No `::placeholder` rule exists anywhere under
-  `app/` while style.css:727 sets one - see the plan for what that means.
-- **`noData` is the rewrite's own state, kept.** The live app has no
-  "data did not load" screen: `app.js:7` throws on a missing `window.LOOT`
-  and index.html's static shell is all that draws. Every rewrite page draws
-  `t.noData` in a `.miss` paragraph when `app.index` is null, per the
-  `AppState.index` comment (FEATURES.md, "Records"); the lists page does the
-  same. `storageOff`, by contrast, replaces a real live warning and goes.
-- **Nothing in `VISUAL_DEBT` or `ACCEPTED` names `#/lists`**: the route was
-  `pending`, so the batch deletes only the `pending: 'lists slice'` marker
-  and the `outstanding` line it prints. `#/tables ~ nothing found` and its two
-  siblings are the states that guard the `Empty.svelte` extraction.
-- Wall clock for the filters: `"#/lists"` is 6 states (one timed) and does
-  not match `#/i/ci1 ~ many lists`; `"nothing found"` is 3; `"#/tables ~"` is
-  8. Each fits one foreground call; do not merge them.
-
-## B5.3 close-out facts (planner, 2026-09-10) - durable
-
-Read off the source while deciding the `~ notice unfolded @ en` blocker; the
-decision itself is `plan.md`, "B5.3 built", "Close-out decision", and the
-brief is `handoff.md`, "Next batch".
-
-- **The live app has an opt-in for DOM state that survives `render()`.**
-  `restoreOpen()` (app.js 3769-3775) re-applies `S.keepOpen[...]` to every
-  `[data-keep]` element (`open` on a `<details>`, `hidden` otherwise), fed by
-  a capturing `toggle` listener (3780-3783). Three elements opt in: the roll
-  panel `roll:<id>` (3011), the note box `rnote:<key>` (3047), the list note
-  `note:<id>` (3095) - all on B5.4's list page. `storageWarning()` writes no
-  `data-keep`, so the notice folds on every re-render, a language switch
-  included, by the live app's own rule.
-- **`ACCEPTED` never reaches a pixel cell.** It is read only by the spec
-  `diff()` (`tests/parity.js` 214), keyed `<state> @ <lang> :: <spec> ::
-  <field>`; the pixel verdict (538-575) consults `VISUAL_DEBT` alone.
-  "Accept a visual difference" therefore means a `VISUAL_DEBT` figure, which
-  owner decision 1 forbids off this host.
-- **`arrive()` runs `enter(d)` with no `lang`, then presses `EN`**
-  (`parity.js` 353-363), deliberately - every `enter` grips Russian names.
-  Any state whose `enter` leaves DOM-only state that the live `render()`
-  discards shows the same English-only divergence unless the port
-  re-creates the element on `app.lang`.
-- **`AppState.setLang()` does not bump `navigations`** (`app.svelte.ts`
-  252-255); `go()` and the router's `onChange` do. `App.svelte` (62-85)
-  remounts the page component on every route change, so `ListsPage` never
-  survives a navigation and a `navigations` key there would be a no-op.
-- Wall clock unchanged: `"#/lists"` is 6 states / 36 cells, one foreground
-  call. The other two B5.3 filters are banked by the implementer's run and
-  are not re-run at close-out.
-
-## State at B5.4 kickoff (orchestrator, 2026-09-10)
-
-- HEAD `543222d` (docs), on top of `4b23f44` (docs) and `e82cd24` (B5.3's
-  fix-then-continue). Working tree clean except one untracked path,
-  `.gitleaks.toml`, written by another session and deliberately left alone -
-  see `handoff.md`, "Blockers", the `secrets` bullet. Do not stage it, do not
-  rewrite it, and check whether it has landed before writing anything about
-  gitleaks.
-- `set -o pipefail; npm run check 2>&1 | tail -n 120` on this exact tree:
-  **exit 0**, thresholds met (statements 96.89, branches 90.09, functions
-  96.93, lines 97.15), vitest 67s, one foreground call, no worker-fork crash.
-  The commit gate is armed for `543222d`.
-- `ListAgents` shows no subagent of this session running; the twenty-one peers
-  are other sessions on the same tree. HEAD moves under this task - re-read
-  `git log --oneline -3` before and after any writer.
-- B5.1, B5.2 (both parts) and B5.3 are built, committed and read by CI
-  (run `34521343531`: `check`, `audit` and all four `parity` shards green;
-  `secrets` red on three localStorage-key-name false positives; `deploy`
-  skipped behind it). **B5.4 is the next batch and is an outline only** -
-  `plan.md`, "B5 planned", the batch table row - so it is planned before it
-  is implemented.
-- Open, and handed to B5.4's planning rather than re-measured:
-  `#/tables ~ selection copied @ en 1100` reads 0.74% against an expected
-  zero, twice (full suite and an isolated six-cell run), all five sibling
-  cells clean. The diff image has not been opened and no `VISUAL_DEBT` line
-  has been written; the measurements are in `handoff.md`, "Blockers", first
-  bullet. Root-causing it is the planner's, not the orchestrator's.
-
-## B5.4 planning facts (planner, 2026-09-10) - durable, read before implementing
-
-Full design in `plan.md`, "B5.4 planned" (4a implement-ready, 4b outlined);
-the brief in `handoff.md`, "Next batch". Facts read off the source or
-measured on the live app (a read-only puppeteer probe with the harness's own
-launch args and reduced motion, `index.html#/lists/<id>` seeded with `a` =
-seven Core items + `meta.ci2 = {qty 2, gold 750, note, hnote}` + a list
-note, `b` empty, `c` two entries; three widths), not assumed. HEAD at
-planning: `13bba19` (the gitleaks allowlist landed); `app.js` unchanged since
-B5.3, so every line below is current.
-
-- **`#/tables ~ selection copied @ en 1100` is a stale cache hit.** The
-  diff image is red only over the toast: the legacy shot has none, the
-  rewrite's shows "Выбранное скопировано" (Russian - the toast is raised
-  before the `EN` press in both apps). The legacy PNG is byte-identical to
-  `test-output/.parity-cache/a6515261…/1100.png`, written 21:50:41 inside the
-  full suite's 21:33-22:03 window; in the "isolated" 22:04-22:05 run all
-  three English legacy files were written within 35ms of each other (cache
-  copies - a fresh arrival is ~7s apart, which is the spacing of the `next`
-  files). The two measurements share one legacy capture, taken under load
-  after the 1600ms toast had gone. `tests/parity.js` turns the legacy cache
-  off for `measured` states only (lines 414, 459-460, 476-477), never for
-  `timed` ones. CI never caches (fresh runners). Decision: `&& !timed` on the
-  three guards, no debt line - `plan.md`, "Decided", first bullet.
-- **No tab is lit on a list page.** `renderTabs` (app.js 3667-3673) lights
-  `tab[0] === currentRoute()` and the route string is `l/…` or `lists/…`;
-  measured `#tabs a.on` empty at every width. `AppState.section` (rewrite)
-  returns `'lists'` for both list route kinds and `shell.test.ts` asserts it -
-  both wrong; B5.4a corrects them. `homeHash()` is `''` there and the page
-  writes its own `<h1>`: no pin, no `?`, `document.title` plain.
-- **The title input is the ordinary text field, not a dashed underline.**
-  `.titleinput` (style.css 848-853, specificity 0,1,0) loses to the global
-  `input[type=text]` (254-258, 0,1,1): computed 46px tall, `padding 0 14px`,
-  `background rgb(20,17,29)`, `1px solid` border on all sides, `radius 9px`,
-  the global gold `:focus` border and `0 0 0 3px rgba(216,171,94,.14)`
-  shadow; only `max-width 560px`, `font-size 23px`, `font-weight 680`,
-  `letter-spacing -0.23px` survive from the class. 560 wide at 1100/768, 328
-  at 375. Port the cascade, not the intent.
-- **The address.** Opening `#/lists/a` rewrites to `#/l/<encodeList(l,
-  true)>` at once (`syncListUrl` 1599-1606 via `render` 3799-3803); remove,
-  undo, position, rename, the money mode each rewrite it
-  (`freshenListUrl` 1596-1598 after every writer); reopening that hash draws
-  the own page (`findListByPayload` 1551-1574, or the `S.urlPayload`
-  short-circuit 3805-3808); `#/lists/nope` stays as typed and draws "Список
-  не найден" / `listNotFoundSub` / a `btn primary` "Списки" link (87.42x46).
-- **Measured, 1100 (768 / 375 where different):** `h1.page-h` 46 tall;
-  `.page-sub` "7 позиций" 22.39, margin-bottom 18; `.card-acts` 35 (73 at 375),
-  margin-bottom 16; `.warn` 43.5 (69.5 at 375); `.money` 36.8 (65.8 at 375 -
-  the `?` wraps), chips 98.97 wide, `.helpbtn.sm` 22x22 at every width, help
-  open 235.95 (394.52 at 375), `.money-help p` 567.53 wide; `.lnote` folded
-  36 (summary 34, padding 10/10), open 153 (172 / 285 - `.npair` stacks under
-  640px), `[open] summary` padding-bottom 6, textareas 506.5 / 340.5 / 300
-  wide, 83 tall auto-sized for one line; `.lroll` folded 43 (summary 41, svg
-  15x15), open with no result 138.39 (numbox 156x48, primary button
-  157.53x46, `.rollhint` 20), with result 2: 452.08 (field 74.39 with inline
-  `margin-bottom:14px`, card 178.19, each `.hitnote` 59.25, ghost "Сбросить"
-  100.23x46); at 375 the numrow wraps (button under the numbox, 214.39
-  without a result, 600.98 with); `.batch` 36 unticked ("Выбрать все"), 49
-  with acts at 1100, 80 at 375; `.lrow` 78 (102.03 / 202.63: three bands -
-  grip+pick+position 19px tall, body 116.44, meta+acts 65.19); `.lrow-grip`
-  26 wide, `.lrow-pick` 32, `.lrow-n` 40 (font 650 12px mono), `.row-main`
-  753 wide, `.lrow-meta` 161 (238 at 375 with `padding-left 44`), qty input
-  70x30, gold 64x30, `.goldhint` 13x13 at 9.5px, `.lrow-acts` 39 wide
-  (88 at 375: two 44px buttons in a row), `.lrow-note` 37.5 tall, `.row-x`
-  38.5; a row with one-line notes 202.64 (its `.rnote` 123, `.npair` 104,
-  `.nlbl` 20 - 39 at 768/375, `.note-x` 20x20, textareas 509.5 / 343.5 / 304
-  wide, 79 tall auto-sized); an opened empty box 116 (row 194); `.empty`
-  129.59; `.toast.act` after a remove 313.42x50 with `.toast-act` 73.78x30,
-  text "«Заряжающий Колчан» убранВернуть"; the plain copy toast 152.55x41.59.
-- **Behaviour measured:** `.lnote` opens when a note exists, `.lroll` starts
-  folded; the note box of a noted row is visible and the row `has-note`;
-  `Сбросить` empties `#n` and leaves the panel open; the note toggle shows
-  the box and focuses its first textarea; a typed gold sets the field's
-  `title` at once ("2 мешка 3 горсти") but the `?` appears only after the
-  next render (`had !== has`, 4346-4370); the coin mode removes every title
-  and `?` and marks the chip `on` + `aria-current="true"`; `.note-x` is
-  `display:none` on an empty box (`:has(textarea:placeholder-shown)`, 1096);
-  remove → 6 rows and the address rewritten, undo → 7 in the original order;
-  position "1" typed on row 5 and committed → that entry first, storage and
-  address updated; rename → storage and address updated, the `h1` text stays
-  `''`; the roll card's "Скопировать текст" ends `\n\nЗаметка\nСветится в
-  темноте` (the players' note; the GM's does not travel) - `contextNote`
-  568-573.
-- **The inventory names a textarea by its text content** (NAME_FN falls
-  through `aria-label`, `title`, `textContent`): "Лавка закрыта до утра",
-  "Светится в темноте", "Проклят" are in the live inventory; empty boxes
-  and unpriced number inputs are not; the priced gold input is named by its
-  `title` "7 мешков 5 горстей". Svelte's `<textarea>{x}</textarea>` and
-  `bind:value` both compile to a `.value` assignment (verified with
-  `svelte/compiler`) and leave `textContent` empty - the port seeds the text
-  child with an action.
-- **Live controls on the page** (Russian, NAME_FN): "Название списка",
-  "Ссылка игрокам", "Ссылка себе", "Скопировать текст", the print link by its
-  title, "Удалить", "Скрыть", "Как в книге", "Монетами", "Как это работает"
-  (the money `?`), "Очистить заметку" (x4), "Бросок по списку" (a `summary`),
-  "Результат броска", "На единицу меньше"/"больше", "Случайно 1–7",
-  "Выбрать позицию", "Позиция в списке", "Заметка", "Убрать из списка", one
-  whole-row name per entry. English: "List name", "Players’ link" (curly
-  apostrophe), "Your own link", "Copy text", "Delete", "Dismiss", "As in the
-  book", "In coins", "How this works", "Clear the note", "Roll on this list",
-  "Roll result", "One lower"/"One higher", "Random 1–7", "Select entry",
-  "Position in the list", "Note", "Remove from the list"; the sub "7 items",
-  the bar "Select all", captions "Qty"/"Gold".
-- **Forty dictionary keys are missing from the rewrite** (list in `plan.md`);
-  `helpHint` already equals `whatIsThis`; `moneyHelp` carries five `<b>`
-  runs per language and goes into `help.ts` structured, not the dictionary.
-- **`Field`'s margin is set inline on the roll panel** (`margin-bottom:14px`
-  with a hit, `0` without), which beats `.lroll>:last-child{margin-bottom:
-  13px}`; `NumberField` shows `String(value)` where the live `numBox` shows
-  `''` below `min` (#16) and steps from `(parseInt('') || 0)`.
-- **Wall clock:** `"#/lists/a @"` 1 state + 6 press specs; `"~ noted" "~
-  money help"` 2 + 4; `"~ roll panel" "~ rolled" "~ removed" "~ note opened"`
-  4 (one timed); `"#/lists/b" "#/lists/nope" "own list"` 3; regressions `"~
-  help"` 4, `"#/tables ~" "#/tables/eq_weapon"` 11, `"#/lists @" "#/lists ~"`
-  6, `"i/ci1 ~"` 6. Each fits one foreground call; do not merge them. A bare
-  `"#/lists"` now matches sixteen states.
-- **4b inherits:** the live drag model (app.js 4443-4530): `data-drag` on the
-  grip, `dragging` on the row, `setDragImage(row, 24, 24)`, `drop-before`/
-  `drop-after` by the row's vertical midpoint, `EDGE = 120` / `EDGE_MAX = 22`
-  autoscroll on `requestAnimationFrame`, `to` adjusted by the mark; the
-  rewrite's `nativeDrag` is index-on-drop only and 4a binds it as is.
-
-## B5.4a step 6's parity result, and how it was nearly lost (orchestrator, 2026-09-10)
-
-- `MSYS_NO_PATHCONV=1 node tests/parity.js "#/tables ~" "#/tables/eq_weapon"`
-  (11 states, 66 cells, both languages, three widths) finished **clean at
-  23:36:43**: `расхождений нет`, 60 cells `совпадает` and six reading exactly
-  their recorded debt (0.02/0.02/0.03/0.03/0.07/0.07% `из ... долга`). No
-  `FAIL`. That is step 6's acceptance - `RowMain.svelte`'s extraction from
-  `TableRows.svelte` is proved, and the batch is clear to continue at step 7.
-  The run also carries the harness's own advisory notes (the two `#/tables ~
-  grid` `controls` lines are the known legacy `tileHTML` index bug, not this
-  batch's).
-- **The near-loss, worth one line so the next session does not repeat it.**
-  The implementer backgrounded that run and ended its turn on it. Two
-  false readings followed, both the orchestrator's:
-  1. Git Bash's `kill -0 <pid>` answers in the **MSYS pid namespace**, not the
-     Windows one, so it reported the live `node` as dead. Use `tasklist //FI
-     "PID eq <pid>"`, or PowerShell `Get-Process -Id`, to ask about a Windows
-     pid. `.claude/hooks/bash-guard.mjs` reads the lock through
-     `tests/parity/lock.js`, which uses Node's `process.kill(pid, 0)` - it was
-     right and the shell check was wrong, which is what the block was saying.
-  2. A background run's `.output` file **reads 0 bytes until the run flushes**.
-     An empty file is not a lost result while the pid is alive; `parity.lock`
-     tells the difference - a released (absent) lock means a clean exit, a lock
-     left behind with a dead pid means the run was killed.
-  So the standing rule is unchanged and now has a test: a backgrounded check
-  is not to be started at all. But if one is found running, wait on the
-  Windows pid and read the lock, rather than concluding from a shell builtin
-  and an unflushed file.
-
-## The commit gate cannot arm on this host tonight (orchestrator, 2026-09-11)
-
-**Measured, three runs, no edits between the last two - so this is the gate
-mechanism, not a failing batch.** B5.4a's code is written (43 uncommitted
-paths on top of `f38b900`) and the implementer spent roughly two hours
-re-running `npm run check` without being able to commit.
-
-| run | pid | duration | gate armed? |
-|---|---|---|---|
-| 02:37:50 - 03:01:47 | 258284 | ~1437s | no |
-| ~03:14 - 03:24:51 | 261096 | ~630s | no |
-| ~03:38 - 03:52:22 | 262164 | >=813s | no |
-
-`.claude/.check-cache.json` still holds `388cd5e9e1099e7a`, written by the
-orchestrator's own 23:00 run on the `543222d` tree - no run since has been
-observed.
-
-**Why, exactly.** `check-observer.mjs` is a PostToolUse(Bash) hook: it arms
-the gate only from a **foreground** call whose own stdout it can read. The
-Bash tool's ceiling is 600000ms and it moves a call that outlives its timeout
-into the background, where there is no stdout to attribute. So once
-`npm run check` exceeds ten minutes on this host, **every** attempt is
-unobservable by construction, and retrying cannot help. `bash-guard.mjs`
-(line 70) correctly refuses a deliberately backgrounded check for the same
-reason, so that is not a way round it either.
-
-**It is load, not a regression.** The same check took ~165s at `720266d` and
-~3 minutes at `543222d` tonight (orchestrator, 23:00, exit 0). `ListAgents`
-showed twenty-one peer sessions on this machine, ten of them interactive, for
-the whole window above. The figure is this host's load at this hour, and the
-"165s is not a constant" correction earlier in this file now has its third
-data point.
-
-**The sanctioned escape is in the gate's own message:** run the commit again
-with `SKIP_CHECK_GATE=1` in front of it and say why in the summary. That is
-only honest if the last full check actually passed - a fact only the worker
-that read the output holds, which is why this was put to the owner rather
-than decided here.
-
-## The host block lifted, and the check is green (orchestrator, 2026-09-11, 08:25-08:30)
-
-The two sections above - "The commit gate cannot arm on this host tonight" and
-"The B5.4a tree passes; the host cannot prove it" - are **closed**. They
-described a loaded host, not a defect, and the diagnosis held exactly.
-
-One reading before anything heavy, which is the whole procedure the amended
-brief asks for: `Get-CimInstance Win32_OperatingSystem` gave **RAM free
-7.44 GB of 15.82 GB**, 251 processes, no `chrome.exe`, no
-`test-output/parity.lock`. Against 0.35 GB free and 424 processes at 06:25,
-that is the difference between a fork pool that boots its children and one
-that loses 11-13 files to its hardcoded 60s `START_TIMEOUT`.
-
-On that host, one foreground call, unchained and unredirected:
-
-```text
-set -o pipefail; npm run check 2>&1 | tail -n 120
-```
-
-exit 0, well inside the 600000ms ceiling. 37 test files, 854 tests, 0
-failures; coverage 96.24 stmts / 88.87 branch / 96.86 funcs / 96.86 lines,
-every threshold met; vitest with coverage 78.8s. No zero rows, no `Errors N`,
-no worker-fork crash. `check-observer.mjs` armed `.claude/.check-cache.json`
-at tree key `2ab9c1a7...` from that one call, which is what five previous
-attempts could never reach.
-
-Three durable things follow, and none of them should be re-derived:
-
-1. **Nothing in B5.4a's code was ever wrong.** The 469-test run and the
-   isolated 35/35 `listPage.test.ts` pass recorded at 06:25 were right; the
-   854-test run confirms it with every file present.
-2. **The rule is the reading, not the retry.** Do not re-run a heavy check on
-   a loaded host hoping for a different answer, and do not treat a zeroed
-   coverage table as a regression - take the RAM reading first and wait. The
-   same command that burned roughly two hours across two sessions cost 165s
-   on an idle host.
-3. **A doc edit disarms the gate.** `tree-key.mjs` fingerprints tracked and
-   untracked content alike, `issues/**` and `*.md` included; the gate exempts
-   those paths from *what it counts* but not from *the fingerprint*. So a
-   batch whose last step writes `plan.md` and `handoff.md` must run one more
-   foreground `npm run check` after those writes and immediately before
-   `git commit`, or the gate blocks a commit whose code has genuinely passed.
-
-## The B5.4a tree passes; the host cannot prove it (orchestrator, 2026-09-11, scheduled run)
-
-**The batch is not the problem, and that is now measured rather than hoped.**
-Picking up the tree the previous session left (43 uncommitted paths on
-`f38b900`, B5.4a steps 1-9 written, stalled at step 10), three runs:
-
-| run | command | wall clock | result |
-|---|---|---|---|
-| 05:28-05:42 | `npm run check` | >600s, backgrounded | exit 1, coverage thresholds only |
-| 05:49-05:57 | `npx vitest run` | 437s | **26 files passed, 469 tests passed, 0 failures, 11 files failed to start** |
-| 06:0x | `npx vitest run --coverage --maxWorkers=4` | see below | the README's documented fallback |
-
-**Every coverage ERROR in run 1 is a file that never ran.** The eleven files
-that died on `Failed to start forks worker ... Timeout waiting for worker to
-respond` include `record`, `roll`, `listsPage`, `std`, `shell`, `ports` and
-`hash` - and those are precisely the components reading 0-50% in run 1's
-table (`AltPanel` 0%, `SectionHead` 0%, `SelBar` 9.3%, `FilterBar` 34%,
-`TablesPage` 50%, `RecordCard` 46%). Files this batch never touched do not
-regress from 100% to 0%; they regress to 0% when nothing imports them.
-So run 1's exit 1 is the fork-pool failure mode `.claude/README.md` already
-documents, reading as a coverage regression. **No test failed anywhere in
-this batch.**
-
-**Do not re-run `npm run check` on this host at this hour hoping for a
-different answer.** That is now five attempts across two sessions (three
-last night at 1437s/630s/813s, two this morning) and the ceiling is
-structural, not statistical: the Bash tool caps at 600000ms and moves a
-longer call to the background, where `check-observer.mjs` has no stdout to
-attribute, so the commit gate cannot arm however well the run goes. The
-run above took 437s for vitest *alone*, without coverage and without the
-seven stages that precede it.
-
-**`--reporter=basic` no longer exists** in this vitest (`Failed to load
-custom Reporter from basic`). The default reporter with a `grep`/`tail`
-filter is the way to keep the output under the tool's ~30000-char cap.
-
-### Why, measured rather than inferred (06:25)
-
-`RAM free 0.35 GB of 15.82 GB; CPU 100%; 424 processes, 26 of them node; 8
-cores.` That is the cause of every number above. A fork pool that must boot
-one child per test file inside a hardcoded 60s `START_TIMEOUT` cannot do it
-with ~350 MB free, and the files that lose the race read 0% coverage.
-
-Note against the README's own caution ("free memory does not predict this -
-the failing session had 2.9 GB free and the passing one 1.0 GB"): that
-caution stands for the 1-3 GB range and is not contradicted here. 0.35 GB
-with the CPU pegged is a different regime, not a counter-example. Do not
-promote this into a rule off one reading - it is recorded as a measurement.
-
-### What was proved about the batch anyway
-
-| run | what it proves |
-|---|---|
-| `npx vitest run` (437s) | 26 files, 469 tests, **0 failures** |
-| `npx vitest run --coverage --maxWorkers=4` (1067s) | 23 files pass, 13 fail to start, **1 test fails**: `listPage.test.ts > a row's note > clears the box on the cross...` at 14745ms |
-| `npx vitest run app/src/components/listPage.test.ts` (211s) | **35 tests, all pass** |
-
-The one failure is a load-induced timeout, not a defect: the same file passes
-alone. Between the first two runs every component test file and most of `lib`
-has been observed passing at least once. **No genuine test failure has been
-found in B5.4a.** What has *not* been achieved is a single complete run, so
-the coverage thresholds - the thing the gate actually needs - remain
-unevaluated.
-
-**`--maxWorkers=4` made it worse here, not better** (1067s against 437s, 13
-failed starts against 11). The README's fallback was measured on a host with
-memory to spare; under memory starvation, reducing worker count does not help
-because the cost is per-fork allocation, not scheduling. Recorded as a
-measurement, not a rule change.
-
-### A peer session is on this batch too (06:31)
-
-`test-output/parity.lock` appeared mid-session: pid 276576, `argv
-["#/lists/a @"]`, started 06:20:21, confirmed alive. That is B5.4a step 11's
-first filter, so a second session is already verifying this tree. This
-session therefore committed nothing, dispatched nobody, and left the lock
-alone. Anyone reading this must re-read `git log --oneline -3` and the lock
-before assuming the batch is still at step 10 - see `handoff.md`, Status.
-
-Note for the record: this session's 06:19 single-file vitest run (211s for 35
-tests) overlapped that parity run's start, so its wall clock is contended and
-should not be quoted as a baseline.
-
-## B5.4a closed: step 11 needed no fix (implementer, 2026-09-11)
-
-Resuming at step 11 exactly as directed, on the tree the prior sessions left
-(HEAD `f38b900`, step 10 already green): all six parity filter groups - ten
-new states across 96 cells, plus the two regression filters at 72 cells -
-read `совпадает` on the first pass, in both languages, at all three widths.
-No diff image was ever opened, because no cell ever went non-zero. This is
-the strongest confirmation available that steps 1-9's port matches the
-measurements `plan.md`'s "B5.4 planned" recorded: every number in that
-section (the title input's cascade, the auto-size heights, the folded/open
-panel heights, the row bands) was ported correctly the first time, with no
-iteration needed. `npm run check:built` also exited 0 on the first attempt
-(77.3 kB gzip against the 120 kB budget). One commit, `feat(lists): the list
-page`, on top of `f38b900`. B5.4b (drag), B5.5 (batch actions) and B5.6 (the
-shared page) remain unplanned - see `handoff.md`, "Next batch".
-
-## State at the B5-remainder kickoff (orchestrator, 2026-09-11)
-
-- HEAD `3cb2bd0` (`docs(issue-47): B5.4a closed - the three commits that carry
-  it`), working tree **clean**, no `test-output/parity.lock`. B5.4a is closed
-  by three commits: `f38b900`, `8873473`, `fe38973`.
-- Host reading before anything heavy: RAM free 6.84 GB of 15.82 GB, 271
-  processes, **no `chrome.exe`**, 13 `node` processes (editor/tooling). This is
-  the idle-enough shape in which `npm run check` has fit one foreground call.
-- `ListAgents` shows one **interactive peer session** (`daggerheart-loot-ce`,
-  started ~46 min before this reading) on the same tree; every other peer is
-  offline. The tree was clean and unlocked throughout this reading, but HEAD
-  can move under this task - re-read `git log --oneline -3` before dispatching
-  a writer and again at closeout.
-- Human GOAL for this session, recorded verbatim in intent: finish the next
-  batch; **merge the remaining lists batches into fewer, larger batches** if
-  they are individually small; and **write down a standing rule for choosing
-  larger batches**, because the per-batch fixed cost (`npm run check`,
-  `npm run check:built`, the parity loop) is paid once per batch whatever the
-  batch's size. Deciding the merge and authoring the rule are the planner's,
-  not the orchestrator's.
-- What is left of the lists slice, all three unplanned as of this reading:
-  **B5.4b** (drag as the live app does it - outlined, `plan.md` line ~6060),
-  **B5.5** (batch actions, the money panel, delete selected, undo),
-  **B5.6** (the shared list page, packed-link expansion, taking a shared list).
-- Fixed per-batch check costs, measured in this repo and unchanged:
-  `npm run check` a few minutes (165s on an idle host; has exceeded the 600s
-  foreground cap under load), `npm run check:built` a few minutes,
-  `node tests/parity.js "<filter>"` ~9 min for a large filter, the full parity
-  suite ~867s single-job / 4-5 min per shard on CI's 4-way split.
-
-## B5-remainder planning facts (planner, 2026-09-11) - durable, read before implementing
-
-Decision: two batches remain, not three - **B5.5 absorbs B5.4b** (same file,
-same seeds, same parity filter `"#/lists/a"`), **B5.6 stays separate** (its
-own route, filter `"#/l/"`, component, and a routing change). Reasoning and
-the rejected splits: `plan.md`, "B5 remainder planned". The standing rule:
-`CLAUDE.md`, "Task and session protocol"; costs and the test:
-`docs/parity.md`, "Batch size and the fixed cost of a run".
-
-Harness facts that shaped the plan (`tests/parity/driver.js`,
-`tests/parity.js` at `3cb2bd0`):
-
-- `NAME_FN` (driver.js 102-107) names a control by `aria-label`, then
-  `title`, then `textContent`. **`d.controls()` never reads `aria-pressed`
-  or `aria-current`**, so the money chips' `aria-pressed` (rewrite) against
-  `aria-current="true"` (live, app.js 2944) is not a measured difference.
-- **A stale `ACCEPTED` key fails the run** (parity.js ~615: `fail +=
-  stale.length`, printed as `различий больше нет, убери из ACCEPTED`). An
-  entry for an unmeasured difference would therefore be red from its first
-  run. This is why B5.4a nit 2 is recorded as prose, not as an entry.
-- `d.click(name, nth)` prefers an **exact** name match and falls back to
-  `includes` only at `nth` 0. The list page's action row has a delete-list
-  button named exactly `Удалить`, so the batch delete must be pressed as
-  `Удалить (1)`; `Удалить` would delete the list.
-- The driver has no drag verb (B5.4a's review found the inert grip because
-  of it). B5.5 adds `drag(from, to, after)` by `.lrow` index, dispatching
-  synthetic `DragEvent`s with one `DataTransfer` - Chrome constructs both.
-- `enter` runs in Russian; `arrive()` presses `EN` afterwards. Component
-  state that must survive that press (`lsel`, `guess`, `rp`) has to sit
-  outside any `{#key app.lang}` block.
-
-Live-app facts (`app.js`/`style.css` at `3cb2bd0`, unchanged since
-`d5d63c1`):
-
-- Batch bar and money panel: `batchBarHTML` 724-745, `moneyPanelHTML`
-  750-782, `guessBand`/`guessPrice` 811-829, `guessWhy` 831-842, `RAR_KEY`
-  463, `voaTierName` 920, `numBox` 2096, the `#rp` input handler 4336-4344,
-  the four handlers 3986-4083 (`data-guess`, `data-guess-apply`,
-  `data-reprice`, `data-batch-clearprice`, `data-batch-del`). `S.rp` defaults
-  to `-20`, `S.guess` to `false`; `hashchange` (4629-4636) clears `S.lsel`
-  but neither of those.
-- `.batch-price` and its three rules (style.css 1064, 1078-1080) are dead:
-  nothing writes the class. Do not port.
-- Drag: 4443-4530; `EDGE = 120`, `EDGE_MAX = 22`; the edge loop runs off a
-  **capturing** `document` `dragover` because the pointer spends most of a
-  drag between rows; the `to` adjustment is `after && to < from → +1`,
-  `!after && to > from → -1`.
-- Shared page: `renderSharedList` 3130-3170 (rows through `rowHTML(it, '',
-  tail)` - so they carry `selBox` and the selection bar works there; no
-  `.selall`), `expandHash` 3589-3603 (a failed unpack rewrites to
-  `#/l/zzzz`; `currentRoute` reports `l/zzzz` while unpacking), the
-  `N_SHARED` (`'@'`) branch of `createFor` 4213-4224 (a new list takes name,
-  meta, note and hnote; an existing list takes ids only), `lines()` 589.
-- Dictionary strings for everything above: ru 116-188, en 302-372. Product
-  text carries U+2013 (band range), U+2014 (no price), U+00D7 (quantity),
-  U+00B7 (separators); port the bytes.
-
-Rewrite facts (`app/src` at `3cb2bd0`):
-
-- `ListStore` already has `setMeta`, `removeEntry`, `restoreEntry(id,
-  entryId, at, meta)`, `create(name, init)` - B5.5 needs no new method;
-  B5.6's "take into a new list" is `create(name, init)`'s second caller.
-- `lib/money.ts` has `guessBand`, `guessPrice(it, rarityOf)`, `reprice`,
-  `priceText`, `moneyMode`; `index.rarityOf` exists (`lib/data.ts:147`).
-  `guessWhy` does not exist yet.
-- `DragHandlers` is `onDrop(from, to)` only; `nativeDrag` is index-based on
-  `[data-index]`; `fakeDrag` exposes the bound handlers for tests.
-- Svelte drops a scoped rule no template element can match and `npm run
-  check` fails it as dead CSS (`ListPage.svelte` ~1246) - so the drag
-  classes must be `class:` bindings driven by port callbacks, not classes
-  the port toggles.
-- `Chip.svelte`'s button form writes `aria-pressed={on}`; its link form
-  `aria-current="page"`.
-- `browserCompress.unpack` exists, is tested, and has one caller
-  (`ListsPage`'s restore). `AppState` does not expand `#/l/~` yet: `hash.ts`
-  parses it as `{ kind: 'sharedList', packed: true }` and `ListPage` shows
-  the `todo` paragraph.
-- `TableRows.svelte`'s `TableEntry` is `{ it, n? }`; it draws `.selall`
-  only when `ontoggleall` is passed. `RowMain`'s `tail`/`.rtail` has no
-  caller (B5.4a nit 1). `ListPage.svelte` ~434 draws the rolled entry's
-  hitnotes inline - `HitNote.svelte`'s first copy; the shared page is the
-  second.
-- `docs/fixtures/lists/` has no packed (`~`) payload; `notes-both-kinds.json`'s
-  `gm.payload` carries all four notes and is contract-tested. A packed
-  parity state computes its payload once with Node's `zlib.deflateRawSync`
-  and records the command beside it.
-
-## B5.5 built: durable facts for B5.6 (implementer, 2026-09-11)
-
-- **The drag verb needed no fallback.** `tests/parity/driver.js`'s
-  `drag(from, to, after)` (a synthetic `DataTransfer` and three `DragEvent`s
-  on `.lrow`/`[data-drag]`) drove the **live** app's own 4443-4530 handlers
-  correctly on the first attempt in puppeteer's Chrome - `reorderedByDrag`
-  observed the same id order on both apps with no re-run.
-- **`NumberField`/`lib/numField.ts` now supports a negative `min`.**
-  `typed(raw, caret, max, min = 0)` and `committed(raw, min, max)` keep a
-  single leading minus when `min < 0` (a `digitsOf` helper); every existing
-  call passes no fourth argument and is byte-for-byte unchanged. Needed
-  because the reprice field's default is `-20` and the old code stripped
-  every non-digit, minus included. Any future field with a negative range
-  (there is only the one today) needs no further change here.
-- **A loot record's `guessBand` never returns `null`** - only equipment can
-  (`GUESS_EQ[t]?.[tier-1] ?? null`), and every other kind falls back to
-  `GUESS_RAR[kind].uncommon`. `ci1` (a plain core item, no `eq`, no `tier`)
-  always gets a band; the "confirm ci1 gets one" caveat in `plan.md`'s "B5.5
-  planned" never applied and needed no substitution.
-- **`Button.svelte` needed no change.** `on`, `caret` and `expanded` already
-  existed from B5.1 and are exactly what the `.batch-acts` pair needed
-  (`caret` flips via `expanded`, `on` draws the pushed-in look) - confirm
-  this before adding anything to `Button` for B5.6's own controls.
-
-## State at the B5.6 kickoff (orchestrator, 2026-09-11)
-
-- HEAD `d6c951f` (`fix(lists): start a drag only from the grip`), working tree
-  **clean**, no `test-output/parity.lock`. B5.5 is closed by four commits:
-  `36fd2f1` (planning docs), `a006792` (drag), `ba0a92d` (batch actions),
-  `d6c951f` (the one allowed review remediation).
-- Host reading before anything heavy: RAM free 4.44 GB of 15.82 GB, **no
-  `chrome.exe`**, 12 `node` processes (editor/tooling). Less headroom than the
-  B5-remainder kickoff's 6.84 GB; `npm run check` has exceeded the 600s
-  foreground cap under load before, so treat a timeout here as host load, not
-  as a suite regression.
-- `ListAgents` shows **two interactive peer sessions** on this tree
-  (`daggerheart-loot-96` ~1h old, `daggerheart-loot-ce` ~2h old); every other
-  peer is offline. HEAD can move under this task - re-read `git log --oneline
-  -3` before dispatching a writer and again at closeout.
-- Human GOAL this session: finish the next batch. **B5.6 is the last lists
-  batch** and the only one left in the slice. It is outlined in `plan.md`,
-  "B5.6 outlined", but the handoff records it as not implement-ready: the
-  outline names the pieces, not ordered steps, exact test cases, or acceptance
-  criteria. Planner first, then implementer.
-
-## B5.6 planning facts (planner, 2026-09-11) - durable, read before implementing
-
-Read alongside "B5-remainder planning facts" and "B5.5 built" above; this
-adds only what B5.6's own reading found. Line numbers are `app.js` at
-`d6c951f` (unchanged since `d5d63c1`).
-
-- **The outline's "adding to an existing list copies ids only" was wrong.**
-  `applyAddTo` (1907-1920) sends `'@'` to `addIdsTo(l, ids, S.shared.meta)`
-  *before* the single-record toggle, and every other key goes through
-  `metaForKey(key)` (1874-1877), which returns `S.shared.meta` whenever the
-  route is `l/` with no `S.openList` - so the bar's `sel` key and a card's
-  own key copy meta on the shared page too. `addIdsTo` (1924-1940) writes
-  `qty` (`> 1`), `gold` (`> 0`), `note` - in that order, for fresh ids only,
-  never `hnote`. Only the GM's note stays behind. The rewrite ports this as
-  `ListStore.addIds(list, ids, knows, meta?)` plus `AppState.shared`
-  (`DecodedList | null`, set while `SharedListPage` is mounted).
-- **`contextNote` (568-578) is empty on a shared page** - `onListPage()`
-  needs `S.openList`. The shared page's modal passes no `extra`.
-- **The live app renders nothing while a packed link expands**: `if
-  (!expandHash()) render()` (4636), and `expandHash` returns true the
-  moment it sees `l/~`. The harness's `ready()` waits for `#view`/`#app`
-  children, which on the live side therefore already implies the expansion
-  landed; the rewrite's `Shell` mounts at once, so the packed state needs
-  the `expanded()` verb (waits on `location.hash` leaving `#/l/~`).
-- **`plainCompress.unpack` returns a packed payload unchanged** (it has no
-  decompressor), so an expansion that `replace`s whatever `unpack` returns
-  would loop under the test env. `#expand` treats a result still starting
-  with `~` as the failure it is (`#/l/zzzz`), which is also what a browser
-  without `DecompressionStream` gets from the live `catch`.
-- **Fixture ids are all in `data.js`**: `ci1`, `cc1`, `cc21`, `q337`,
-  `voa2_a1`, `q26`, `q33` (checked with `window.LOOT` - items are nested
-  under `LOOT.items.<table>` and `LOOT.eq`). `qty-and-price.json`'s payload
-  carries the three tail shapes (`×2`, `×5 · price`, bare price);
-  `notes-both-kinds.json`'s `gm` payload carries all four notes and no
-  meta; `player === gm` for both equipment-entry and qty-and-price.
-- **The packed form of `notes-both-kinds.json`'s `gm.raw`**, computed with
-  `zlib.deflateRawSync` and round-tripped through `inflateRawSync` back to
-  `gm.payload`: `~JY2hDsIwFAD9PqKrH5AUwwfVMIXCLqNIBAkWQUKCL6xkpdB-w70_IgN5d-K44nmRiaRquVhttuvOtmZmralU09Wc8TxIeM2IJ0kvB3ETBoqWvTjp8aqruVEY5Ugk67kmUcj_yh1PJhBlJ041tjU1JyKBTNFEBukp04WP-tULhUDgyXvSXw`
-  (179 chars against 223 plain). Node's deflate bytes differ from Chrome's
-  `CompressionStream` output, but both are raw deflate and
-  `DecompressionStream('deflate-raw')` reads either. The command is in
-  `plan.md`, "B5.6 planned", "Parity states".
-- **Svelte prunes a scoped sibling rule a single instance cannot match.**
-  `HitNote.svelte` cannot carry `.hitnote + .hitnote` scoped; it carries
-  `:global(.hitnote + .hitnote)` after the base rule (equal specificity,
-  source order decides - the live cascade decides by specificity, same
-  result).
-- **`a11y.test.ts`'s guard compares `COVERED` against every `*.svelte` on
-  disk** - a new component fails the suite until it is named there with a
-  state that renders it under axe. `HitNote` and `SharedListPage` both need
-  entries and the shared-list state.
-- **`specs.js` already `require`s a fixture** (`EQUIPMENT_ENTRY`, line 17);
-  the new states read `notes-both-kinds.json` and `qty-and-price.json` the
-  same way rather than pasting plain payloads. A spec has no `storage` of
-  its own - only a state seeds (parity.js 367) - so `#/l/ ~ shared` seeds
-  `two` for `addedSharedToList`, and `~ shared, noted` seeds nothing for
-  `tookSharedList`.
-- **`TablesPage`'s local `toggleSel` (197-200) was the first copy**; the
-  shared page is the second, so it moves to `AppState.toggleSel`.
-
-## B5.6 built: the lists slice is closed, and a `svelte-check` narrowing trap (implementer, 2026-09-11)
-
-- **The lists slice (`#/lists*`, `#/l/*`) is done as of `feat(lists): the
-  shared list page`.** `plan.md`'s "Not built" list under "Phase 4" now
-  names only `#/search` and `#/print/ci1-q1` as `pending` in
-  `tests/parity/specs.js`. Whoever plans next picks one of those two, or
-  scopes a first batch of one - there is no third `#/lists` follow-up.
-- **`svelte-check`'s narrowing of a `$derived.by` nullable across an
-  `{#if}/{:else if}/{:else}` chain needs the terminating negative check to
-  be bare.** `ListPage.svelte`'s `own: StoredList | null` narrowed to
-  non-null in the final `{:else}` only because the branch directly above it
-  was `{:else if !own}` - a compound condition like `{:else if route.kind
-  === 'sharedList' && !own}` sitting in that same position breaks it: TS
-  cannot prove `own` is non-null from a chain of conjunctions it cannot
-  fully enumerate (the component's own `Route` type has cases besides
-  `storedList`/`sharedList`, even though `App.svelte` never actually mounts
-  `ListPage` for one). Fixed by nesting the route-kind branch *inside* a
-  bare `{:else if !own}`, keeping the outer chain's narrowing intact. Worth
-  knowing before the next component that branches on both a route kind and
-  a derived nullable in the same `{#if}` chain.
-- **`exactOptionalPropertyTypes: true` (already on in `tsconfig.json`)
-  rejects `{ tail: undefined }` for a `tail?: string` field, and rejects
-  re-reading `m.qty` after only a `(m.qty ?? 0) > 1` check** (the boolean
-  coercion does not narrow the property access). Two instances hit in this
-  batch: `SharedListPage.svelte`'s `entries` now omits the `tail` key
-  entirely rather than setting it `undefined`; `state/lists.svelte.ts`'s
-  `addIds` meta-copy uses `typeof m.qty === 'number' && m.qty > 1` (and the
-  same shape for `gold`) instead of the `??`-coerced comparison. Neither
-  surfaced in `npx vitest run` - only `svelte-check`/`tsc` catch them, so a
-  batch that skips the typecheck step before the full `npm run check` risks
-  finding both at once inside the slow gate instead of a fast one.
-
-## B5.6 reviewed and approved; the lists slice is closed (orchestrator, 2026-09-11)
-
-- HEAD `ccbf345` (`feat(lists): the shared list page`) on top of `3324039`
-  (the planning commit). Working tree clean; no peer commit landed during
-  either dispatch - `git log` read the same two commits at closeout as at
-  dispatch, with two interactive peer sessions live throughout.
-- **Review verdict: approve, no blockers** (reviewer, against `ccbf345`).
-  The three things this slice's reviews kept catching were all checked and
-  all clean here: no affordance drawn but inert (every new interactive
-  element is reached by a real event on at least one of the two proofs, not
-  through a directly-invoked handler), no divergence from `app.js` in the
-  ported behaviour or its product-text bytes, no contract file moved. Four
-  risks and five nits recorded in `handoff.md`, "Deferred", not fixed - the
-  batch's one remediation cycle went unused and there is no second review.
-- **The `~ packed` cell's blind spot is the one worth acting on later**, and
-  it is recorded rather than fixed: the driver's `expanded()` returns as soon
-  as the hash leaves `#/l/~`, so two apps that both fail to decompress land
-  on identical `#/l/zzzz` pages and the cell reads green. Same app-to-app
-  shape `reorderedByDrag` closed with a throw; the close is one spec with
-  `only: ['#/l/ ~ packed']`.
-- **What is left of the migration: the search slice (`#/search`) and the
-  print slice (`#/print/ci1-q1`)**, both still `pending` in
-  `tests/parity/specs.js`, neither planned. The next session starts with a
-  planner pass, not an implement dispatch. Print carries the heavier
-  evidence requirement - the Figma nodes named in `CLAUDE.md` must be opened
-  before any visual work.
-
-## State at the search-slice kickoff (orchestrator, 2026-09-11)
-
-- HEAD `16bc32e` (`docs(issue-47): B5.6 reviewed and approved - the lists slice
-  is closed`), working tree **clean**, no `test-output/parity.lock`. HEAD is
-  unchanged from this session's `SessionStart` reading.
-- Host reading before anything heavy: RAM free 3.63 GB of 15.82 GB, **no
-  `chrome.exe`**, 8 `node` processes (editor/tooling), 312 processes. Less
-  headroom than the B5.6 kickoff's 4.44 GB; `npm run check` has exceeded the
-  600s foreground cap under load before, so treat a timeout here as host load,
-  not as a suite regression.
-- `ListAgents` shows **three interactive peer sessions** on this tree
-  (`daggerheart-loot-96` ~3h, `daggerheart-loot-ce` ~3h, `daggerheart-loot-15`
-  ~1h); every other peer is offline. HEAD can move under this task - re-read
-  `git log --oneline -3` before dispatching a writer and again at closeout.
-- Human GOAL this session: finish the next batch. **The lists slice is closed**
-  (B5.1-B5.6), so the two remaining Phase 4 slices are search (`#/search`) and
-  print (`#/print/ci1-q1`); both are still `pending` in
-  `tests/parity/specs.js:1540-1541` and neither has planning notes. The
-  handoff's "Next batch" says the next step is a planning pass, not
-  implementation.
-- **Orchestrator picks search over print**, on the same sequencing grounds
-  `plan.md`, "B5 planned" recorded when it picked lists: search reuses the row
-  and the selection bar wholesale and is cheaper after lists, whereas print is
-  a from-scratch visual surface whose evidence is the Figma nodes
-  (`88Hhc89oY9Orcbvd2ok1Hx`, `714-42387`/`3773-90792`), and the Figma connector
-  is **unauthenticated in this session**. That is a routing call; how the
-  search slice is scoped and split is the planner's.
-- Measured, so the planner need not: `renderSearch` is `app.js:2841-2859` -
-  `pageHead('search')`, one `.panel` holding a `.field` with
-  `input[type=search]#sq` (`autofocus`) and `kindChips()`, then a body that is
-  one of three shapes: the no-query hint (`Начните вводить запрос` / `Start
-  typing`), `selectAllHTML(res) + '<div class="rows">' + rowHTML(it) ...` over
-  `SEARCHABLE.filter(kindAllows(kindOf(x)) && matches(x, q)).slice(0, 300)`, or
-  the `t().nothing` empty. It is dispatched from the route table at
-  `app.js:3574`. Every part named there already has a rewrite counterpart
-  (`PageHead`, the kind chips, `RowMain`, the select-all row), so this looks
-  like a small slice - but sizing it is the planner's call, not this reading.
-
-## B6 planning facts - the search slice (planner, 2026-09-11) - durable, read before implementing
-
-Read off `app.js`/`style.css` at HEAD `16bc32e` and measured with a
-headless-Chrome probe of `file:///E:/dev/daggerheart-loot/index.html#/search`
-at 1100x900 (puppeteer, 700ms after `domcontentloaded`; the script is not
-kept). Design and steps: `plan.md`, "B6 planned".
-
-- **Live code map.** `renderSearch` 2841-2859 (routed 3574, tab 3580);
-  `matches` 2834-2840; `S.search.q` 58; `S.kind` 60 (one object for Core
-  rules, the alternate tables and search; not cleared on `hashchange`
-  4628-4636, never persisted - `tests/behave.js` 262-267); `KINDS`/
-  `LOOT_KINDS` 2110-2112; `kindChips(list)` 2114-2127 (`data-last` +
-  `title=keepOneKind` on the last one on, `aria-pressed`); `kindOf`/
-  `kindAllows` 2131-2132 (anything with `eq` is `equip` - the Wondrous
-  weapons stored as items obey the equipment chip); the kind handler
-  4160-4164 (error toast when `data-last`); the `#sq` input handler 4333
-  (`S.search.q = el.value; render()`); `keepFocus`/`restoreFocus`
-  3740-3762; `selectAllHTML` 2763-2773; `rowHTML` 2785-2803; `selBox`
-  2810-2815; `SEARCHABLE = ALL.concat(EQ)` 23 - the rewrite's
-  `index.searchable` is `[...all, ...eq]` (`lib/data.ts` 144), same order;
-  the cap `.slice(0, 300)` 2847; the hint strings inline at 2845 (`Начните
-  вводить запрос` / `Start typing` - **not** dictionary keys); `pageHead`
-  2145-2168; the sub lines `t().pages.search` 268 / 449; **no `help.search`
-  key** (201-263, 382-445), so no help button. CSS: `.panel` 145-149,
-  `.field` 150-151, `.lbl` 152, `.chips`/`.chip` 155-163, `input[type=
-  search]` 254-257 and `:focus` 258, `.empty` 524-525, `.rows` 547.
-- **Measured on arrival at `#/search` (ru, 1100).** `document.activeElement.id`
-  = `sq` - the box **is** focused on a fresh open, `autofocus` attribute
-  present, border `rgb(216, 171, 94)` (the `:focus` rule is in the first
-  paint). Input computed: `15.5px Inter`, height `46px`, padding `0 14px`.
-  `.panel` margin-bottom `16px` (inline style); the input's `.field`
-  margin-bottom `16px`; the chips' `.field:last-child` `0px`. `.empty`
-  reads `Начните вводить запрос`; no `.selall`, no rows; `.helpbtn` absent;
-  `.homebtn` present. `#view` text starts `Поиск / Поиск по всем 1061
-  позиции сразу — добыча, расходники и снаряжение, на русском и на
-  английском. / ТИП / Предметы / Рас...`.
-- **Measured row counts (all three kinds on).** `кольцо` 12, `зелье` 40,
-  `меч` 87, `а` 300 (`Выбрать все (300)`), `о` 300, `zzzqqqxx123` 0 with
-  `.empty` `Ничего не найдено`. `меч` with `Снаряжение` pressed off: 34
-  rows, `Выбрать все (34)`, no `eq-*` badge left, `activeElement` is the
-  chip `BUTTON` (the live `restoreFocus` re-focuses it after the redraw).
-  `tests/behave.js` 136-162 additionally proves `катана`/`katana`/`КаТаНа`
-  >= 4, `стресс` > 20, `двуручное` > 20 (assembled from `bu`, on no
-  record as text), `снежный` 1 with equipment on and 0 with it off.
-- **Focus mechanics the harness will see.** `d.type` calls `el.focus()`
-  before dispatching `input`; `d.click` is `el.click()` (moves no focus);
-  `arrive()`'s `EN` press is a `d.click`. So on every search state the box
-  is focused on both apps, ru and en alike, provided the rewrite focuses it
-  on mount. A chip press leaves the chip focused on the live app
-  (`restoreFocus`) and naturally on the rewrite (no redraw); no
-  `:focus-visible` ring is painted for a script click on either - the
-  existing `#/roll/std ~ items only` cells already match under the same
-  mechanics.
-- **Rewrite facts that shape the batch.** `AppState.sel` is app-wide since
-  B5.2 and its doc comment already names search as the second owner.
-  `StdPanel`/`AltPanel` each hold a local `kinds` `$state` and `toggleKind`
-  (StdPanel 51/91-97, AltPanel 49/98-104) over `LOOT_KINDS`; `isLastOn`
-  (`lib/std.ts` 87-93) is generic and needs no change to judge `KINDS`.
-  `Chip.svelte`'s button form writes `aria-pressed` and takes `title`;
-  `Field.svelte` requires `label` today; `ChipRow`, `Empty`, `PageHead`
-  (`help={null}` draws no button), `TableRows` (`ontoggleall` draws
-  `.selall`; `view` prop), `RowMain`, `RecordModal` (`app, index, it,
-  onclose, onopen?`), `SelBar` (mounted by `Shell`) need no change.
-  `TablesPage.svelte` holds the only `input[type='search']` rules
-  (`.toolbar input[type='search']` and `:focus`) and an inline `statLine`
-  builder whose comment records that the live `matches` searches
-  `eqLine(it)` *with* the type word. `App.svelte` still has a generic
-  section fallback (`h1` + `.todo`) that search is the last user of.
-  `lib/search.ts` has `matches(it, q, statLine)` and `search()`; its
-  `search.test.ts` runs against the real `data.json`.
-- **Harness facts.** `d.controls()` reads names off `button, a[href],
-  input, select, textarea` and dedupes them, so a row count is not in the
-  inventory - hence the `count` verb. `typeRuns`'s `search` probe is
-  `.toolbar input[type=search]`; on every tables state `input[type=search]`
-  resolves to the same element (the menu's own search box only exists
-  from the eighth list, inside an open menu). `copiedSelection` ticks a
-  second `Выбрано` then presses `Скопировать` - needs at least two rows.
-  `#/print/ci1-q1` stays `pending` after B6.
-- **Not a fact, a decision, recorded in `plan.md` "Decisions"**: the kind
-  filter moves to `AppState` (live shape); the query stays with the page
-  (`TablesPage` precedent, `STATE.md`).
-
-## B6 built: durable facts for print (implementer, 2026-09-11)
-
-- **`tests/parity/driver.js`'s `count(selector)` is `page.$$eval`, not
-  `page.$eval`.** Puppeteer's `$eval` queries only the first match
-  (`querySelector`) and hands one element to the callback; `$$eval` queries
-  every match (`querySelectorAll`) and hands the array. Any future driver
-  verb that counts or reduces over several elements needs `$$eval` - `has()`
-  beside it is a single-match lookup and is not a template for this.
-- **A component test that renders 300+ rows must not be typed into
-  character by character.** `userEvent.type` fires one `input` event per
-  keystroke, each re-rendering every row; under `vitest run --coverage`
-  that alone pushed one case past the 30s default timeout. `userEvent.click`
-  the field, then `userEvent.paste(text)`, lands the whole value in one
-  `input` event. `tests/derived.js`'s own counts (1061 records) are far
-  larger than anything a component test builds, so this only bites a
-  fixture built for one test's own reason - the cap test here, and likely
-  the only place in the app a screen ever draws hundreds of rows at once.
-- **`SearchBox.svelte`'s `oninput` callback parameter needs an explicit
-  type annotation at the call site.** `oninput={(v) => { q = v; }}` was
-  flagged `@typescript-eslint/no-unsafe-assignment` in both callers
-  (`SearchPage.svelte`, `TablesPage.svelte`) even though `SearchBox`'s own
-  prop is typed `oninput: (value: string) => void` - the inline arrow
-  function's parameter is not contextually typed through a component prop
-  the way `AltPanel.svelte`'s `onchange={(n: number) => {...}}` already
-  showed for `NumberField`. Write `(v: string) =>` at the call site, the
-  same way the roll panels already do for their own callbacks.
-- **`app.js`'s "основное оружие" (the primary-weapon type word) is not
-  unique to weapon stat lines - it is ordinary prose in at least one
-  record's own description** (`hi20`, "Кольцо Возвращения"). A test that
-  asserts "every hit for this query is equipment" against the real
-  catalogue is not safe; assert on one record's own built stat line
-  instead (`statLineFor(...)`  called directly), not on `search()`'s
-  output over the whole corpus.
-- **`#/print/ci1-q1` is still `pending`** in `tests/parity/specs.js` after
-  B6 - it is now the only Phase 4 slice left, and this session's Figma
-  connector was unauthenticated, so the print batch's surface is
-  unmeasured. A planning pass is needed before it is implement-ready.
-
-## B6 reviewed and approved; the search slice is closed (orchestrator, 2026-09-11)
-
-- HEAD `9d5ca02` (`feat(search): the search page`), working tree clean apart
-  from this closeout's doc edits. The batch sits on `37ecc8d`
-  (`feat(artwork): refresh audited polish batch`), a peer session's
-  images-only commit that landed mid-batch and was preserved, not fought.
-- **Review verdict: approve, no blockers; the batch's one remediation cycle is
-  unspent.** Three risks and eight nits are in `handoff.md`, "Deferred". Two
-  are worth carrying into any later session as facts rather than as chores:
-  1. **B6 widened the `typeRuns` `search` probe** from `.toolbar
-     input[type=search]` to `input[type=search]` (`tests/parity/specs.js:768`),
-     which touches seven existing tables states, and **neither parity group B6
-     ran exercises them**. The selector was verified by inspection only (the
-     only other `input[type=search]` is `AddToList.svelte:210`, in the DOM
-     only with the menu open, and no `typeRuns` state opens it). **CI is the
-     proof - read those seven cells and the plain `#/tables` cells on the next
-     run.** CI's five standing red cells are all `#/i/ci1`, so a tables
-     regression would stand out.
-  2. **A parity group reading `расхождений нет` does not by itself prove rows
-     drew.** `foundRows`' figures (87 / 34 / stat line / 300) were compared but
-     not printed, and an empty match on both apps would read green too. The
-     reviewer closed it by other means this time; print the figures next run.
-- Durable, and the reason no `ACCEPTED` or `VISUAL_DEBT` entry was written:
-  `style.css:254-258` (the search box) is top-level with **no `@media`
-  override**, so `SearchBox.svelte` is a complete port; and `app.js:60`'s
-  `S.kind` is genuinely one object shared by Core rules, the alternate tables
-  and search, which is why `AppState.kinds` is right and `plan.md`'s old
-  decision heading "The kind filter is per panel, not per app" is now
-  retired by its own body.
-- **Cleanup:** the stray gitignored vitest cache at
-  `app/src/components/app/node_modules/.vite/vitest/` (6.1 MB) and its
-  otherwise-empty parent `app/src/components/app/` were deleted. Nothing
-  tracked was touched.
-- **Phase 4 has one slice left: print (`#/print/ci1-q1`).** It needs a planner
-  pass, and its design evidence needs the Figma connector authorized by the
-  owner - see `handoff.md`, "Next batch".
-
-## State at the print-slice kickoff (orchestrator, 2026-09-11)
-
-- HEAD `d696675` (`docs(issue-47): B6 reviewed and approved - the search slice
-  is closed`), working tree **clean** - verified at kickoff, and it matches
-  what `handoff.md` records. `9d5ca02` is the search code commit; `37ecc8d`
-  below it is the peer session's images-only artwork commit, preserved.
-- **B6 is closed** (built, verified, reviewed `approve`, no blockers, its one
-  remediation cycle unspent). `#/print/ci1-q1` is the single remaining
-  `pending` entry in `tests/parity/specs.js:1643` and the last Phase 4 slice.
-- **Next action: a planner dispatch, not an implementer one.** Print has no
-  measured surface and no planning notes anywhere in `plan.md`; the
-  `handoff.md` "Next batch" section is a brief for planning, not for building.
-- **The Figma connector is unauthenticated in this session too** (2026-09-11,
-  Windows desktop app; `plugin:design:figma` is listed among the servers
-  needing authorization, and a non-interactive session cannot run the OAuth
-  flow). `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (colour) and `3773-90792`
-  (black-and-white) therefore cannot be opened from here. This is owner action
-  - claude.ai connector settings, or `claude mcp` / `/mcp` in an interactive
-  session. Whether the port actually *needs* a vector export, or whether the
-  live `app.js`/`style.css`/`img/` already carry everything the sheet draws,
-  is a planning question and is not settled here.
-- No check was run at kickoff: the tree is clean at a committed boundary and a
-  planning pass writes only `issues/47/*.md`, which `bash-guard.mjs`'s commit
-  gate exempts (`isExempt`: anything under `issues/`).
-
-## B7 planning facts - the print slice (planner, 2026-09-11) - durable, read before implementing
-
-Read off `app.js`/`style.css` at HEAD `d696675` and measured with a
-headless-Chrome probe (puppeteer, the harness's launch args, reduced
-motion, `ready()`'s waits, 250ms after each press) of
-`file:///E:/dev/daggerheart-loot/index.html` on `#/print/ci1-q1`,
-`#/print/nope`, `#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11` and
-`#/print/ci1-...-ci10` at 1100x900 / 768x900 / 375x812, in colour, after the
-`Чёрно-белая` press, after `EN`, and once per route under
-`page.emulateMediaType('print')`. The script is not kept. Design and steps:
-`plan.md`, "B7 planned".
-
-- **Figma is not needed.** `card/` holds 35 SVGs (2026-08-20..26):
-  `banner`, `shield`, `burden-1`, `burden-2`, `ribbon`, `ribbon-mag`,
-  `thbox`, `die-d{4,6,8,10,12,20}-{phy,mag}`, each with a `-bw` twin (the
-  dice one `die-d<n>-bw`), plus `dots1`-`dots3` and `arrow` (no `-bw`).
-  `app.js:3257` `CARD_ART = 'card/'`; `cardArt()` 3282-3291 builds exactly
-  those names (in bw `die-d<n>-(phy|mag)` collapses to `die-d<n>`, then
-  `-bw`); `PRINT_GLYPH` 3259-3266 (five inline paths) and the die hexagon
-  (`clip-path`) are the only other shapes. `vite.config.mts` junctions
-  `card/` into `dist/`; `CONTRACTS.md` section 5 freezes `card/*.svg`.
-- **Live code map.** `PRINT_MAX = 180` 3235; `printAsked` 3237-3240
-  (known, first occurrence), `printIds` 3241 (capped), `printHref` 3242,
-  `printBtn` 3245-3249; `statBox` 3273; `cardArt` 3282-3291; `dmgStripHTML`
-  3298-3320; `dieHTML` 3323-3331 (`DIE_ART` d4-d20); `thStripHTML`
-  3333-3356; `printCardHTML` 3364-3425; `eqClassFor` 3430-3432 (`pk-*`,
-  read by no rule); `fitPrintCards` 3438-3508; `renderPrint` 3510-3558;
-  route 3610; `render()` calls the fit at 3829 on every print render;
-  handlers 4236-4245 (`doPrint` = `window.print()`, `printBack` =
-  `history.length > 1 ? history.back() : #/lists`, `printArt` sets
-  `S.printBW` (49, app memory, never stored), `printLink` =
-  `copyText(appUrl(printHref(printIds(S.printIds))), linkCopied)`);
-  `descHtml` 661-690 (non-plain: `<br>` between consecutive plain lines,
-  `<ul class="dlist">` lists, `<i>label:</i>` + the rest of the line with
-  its leading space, never `<p>`); `printSrc` 954-958; `hasImage` 1675 (a
-  print image has no `data-art` and never marks itself broken, 4597);
-  `ICON_BACK` 1039. CSS: `.printbar`/`.printnote`/`.warnnote` 1112-1116,
-  `.psheet` 1118-1126, `.pcard`...`.pc-bottom` 1128-1395 (no `@media`
-  inside), `@media print` 1397-1414, `.seg`/`.seg.small` 72-81 + mobile
-  880-881 + focus 1002-1005, `.card-acts` 405, `.dlist` 724-725.
-- **Measured, 1100 (ru).** `h1.page-h` 36.8 tall at y=131.59 (23px/680,
-  margin-bottom 4); `.page-sub` 528.28x22.39 (14px, `--muted`, 70ch,
-  margin-bottom 18); `.card-acts` 1053x49 at y=212.78 (gap 6, padding-top
-  3): `Назад` 100.48x46, `Отправить на печать` 203.81x46 (primary), the
-  segment 192.67x46 (`align-self:stretch`; buttons 77.58x38 / 107.09x38,
-  `padding 4px 12px`, 12px/650, letter-spacing 0.6px, **no
-  `aria-pressed`**), `Ссылка на набор` 173.39x46; `.printnote` 417.77x58.13
-  (12.5px/19.375, `--muted2`, 62ch, margin-top 12); `.printbar` 200.31;
-  `.psheet` 793.69x1122.52 at (145.66, 349.91), padding 54.8/32.13,
-  gap 7.56, columns 238.109 x3, shadow `0 0 0 1px rgba(0,0,0,.5), 0 14px
-  40px rgba(0,0,0,.45)`; cards 238.11x332.59, the first at (177.78,
-  404.7); document 1085x1681. English: `Back` 90.7, `Send to printer`
-  160.53, segment 195.34 (`Colour` 65.22 / `Black and white` 122.13), `Link
-  to this set` 153.34. `document.title` `Генератор лута — Daggerheart` /
-  `Daggerheart Loot Generator`; no tab lit; `activeElement` `body`.
-- **768 / 375.** The sheet keeps its 793.69px and sits at x=16 (`margin
-  auto` cannot go negative): `scrollWidth` 810 at both. 768: everything
-  else as at 1100. 375: `.page-sub` 44.78 (two lines); `.card-acts` wraps
-  to three rows - `Назад` + `Отправить` (16..326.29), the segment alone
-  200.67x43.19 (mobile `padding 8px 14px`, buttons 35.19 tall), the link
-  alone - 150.19 tall; `.printbar` 323.89; sheet at y=479.48; document
-  810x1951 (10 cards: 3092).
-- **The empty page** (`#/print/nope`): `h1` + `.page-sub` `Печатать
-  нечего...` + `a.btn.primary[href="#/lists"]` `Списки` 87.42x46 at
-  y=212.78; no `.printbar`; document 900 tall.
-- **Sheets.** 2 cards -> 1 sheet, 9 places, 7 blank; 9 -> 1/9/0; 10 -> 2
-  sheets (second at y=1490.42, `data-next="1"`), 18 places, 8 blank,
-  `Карточек: 10. Листов A4: 2.`; 181 known ids -> 180 cards, 20 sheets, the
-  red note (`tests/print.js` proves the shape; not probed).
-- **The fit, measured.** Every `.pc-strip .pc-box b` ends at inline
-  `font-size: 2.2cqw` - `over()` never turns false (a block `b` in a
-  shrink-to-fit box is never narrower than its text minus 2px) and the loop
-  exits when `sz` reaches 2.1999999999999993 after eight `-= 0.1` steps
-  from 3. Colour: `ci1` art `height 104cqw`, `--artw 97cqw`; `q1`
-  `97.2203cqw` / `90.22033898305084cqw`; `q313` `101.881cqw` / `94.88...`;
-  `cc1` `110.356cqw` / `100cqw`; `q23`, `q35` `71.3729cqw` / `64.37...`;
-  `w51` `79.8475cqw` / `72.85...`; `di11` `51.4576cqw` / `44.46...`;
-  `voa2_a3` text `3.3cqw`, `--pcpad` untouched, art `32.8136cqw` /
-  `25.81...cqw`, no card `display:none`. Identical at 375. Black-and-white:
-  no card of the nine needed a step (`.pc-text` 150-245px for texts up to
-  145); the `-bw` head vectors read `complete` with real heights
-  (`burden-*-bw` 24.66, `shield-bw` 24.7, `banner-bw` 37.31) by the time
-  the probe looked, but the live fit had already run synchronously at
-  render, before any load. Under always-tight conditions (computed): the
-  font ladders stop at `3.0cqw` then `2.6cqw`; the pad floor is `8cqw` in
-  colour and **`2.8cqw`** in bw (`5.8 - 1.5 - 1.5`; the loop stops when
-  `pad > 3` fails).
-- **Card facts.** `.pc-tier` text `1Ранг`, `.pc-bottom` `DaggerheartCore`,
-  `.pc-cells` `УронфизЧертаПроворностьДистанцияВплотную` - no whitespace
-  between siblings; `q1` `.pc-text` `innerHTML` `<i>Надёжное:</i> +1 к
-  Броскам Атаки`; `voa2_a3` `<i>Стоимость Призыва:</i> 2<br>Эта колода...`
-  (and it carries a list: `voa2_a3`, `voa2_a1`, `voa2_a6` have `- ` lines
-  in both languages); `q23` bw: `ribbon-mag-bw.svg`, `die-d6-bw.svg`,
-  `burden-2-bw.svg`; `q313` colour: `banner`, `shield`, `dots1`, `thbox`,
-  `arrow`, `dots2`, `thbox`, `arrow`, `dots3`; `w51` `.pc-c1.wbonus` with
-  `+3` and `d8`; `eq.th` is `[5, 11]` in the data while `lib/types.ts`
-  says `string | null` (fixed in B7). The bw `.pc-head` is 18.09 tall on a
-  loot card, 32.75 with hands, 31.78 with the shield.
-- **Print media, live.** `header.topbar`, `nav.tabs`, `footer.foot`,
-  `a.skip`, `.printbar` `display:none`; `body` `#fff`/`#000`; `main`
-  `max-width:none; width:1085px; padding:0; margin:0`; `.psheet` `margin:0;
-  box-shadow:none; break-inside:avoid`, `:last-child` `height 1122.14px`
-  (296.9mm) against 1122.52 otherwise; `[data-next]` `break-before:page`;
-  `.pcard` `break-inside:avoid`, `-webkit-print-color-adjust:exact`.
-- **Rewrite facts that shape the batch.** `AppState.route` calls
-  `parseHash(hash)` with the default `knows = () => true`, so the print
-  route today keeps unknown ids; `router.canGoBack()`/`back()` already
-  exist ("so a print page knows whether to offer one"); `DialogPort` has
-  `confirm` only; `.seg` is already copied twice (`LangSwitch.svelte`,
-  `TablesPage.svelte` 627-670, "not yet worth extracting on its own") and
-  neither copy ports `.seg button:focus-visible`; `Button.svelte` ports no
-  `.btn:focus-visible` either; `OrGrid.svelte` is the `generics=`
-  precedent; `RecordCard` uses `<h2 class="card-name">` where the live
-  writes `h2`, and the print card's live `<h3>` would fail axe's
-  `heading-order` under the page's `h1`; `test/a11y.ts` switches off only
-  `color-contrast` and `nested-interactive`; `ListPage.svelte` 905-926 and
-  984-991 hold the `.page-h`/`.page-sub`/`.card-acts` copies to reuse;
-  `data.json` is `{ items: { core_item: 60, core_consumable: 60, hnf_item:
-  60, hnf_consumable: 60, wondrous: 119, community: 90, dread: 29, frames:
-  94, voa: 108 }, alt, refs, eq: 381 }` - the first 181 item ids make an
-  884-character route; puppeteer is 25.9.0 (`emulateMediaType(type?:
-  string)`, `undefined` disables).
-- Wall clock: group A `"#/print"` is 9 states / 54 cells, 24 `whole`;
-  group B is 5 states / 30 cells. Each fits one foreground call; do not
-  merge them.
-
-## State at the B7 implement kickoff (orchestrator, 2026-09-11)
-
-- HEAD `8b96ff4` (`docs(issue-47): B7 planned - the print slice, one batch`),
-  working tree **clean** - verified at kickoff, and it matches what
-  `handoff.md` records. `d696675` below it is B6's review close-out. No
-  foreign commit moved HEAD since the planning pass.
-- Nothing heavy is running on this tree: no `chrome.exe`, no parity run, no
-  vitest. The node processes present are the desktop app's own MCP servers.
-- **Next action: one implementer dispatch for B7** - the batch is
-  implement-ready (`handoff.md`, "Next batch"; `plan.md`, "B7 planned"),
-  `NEEDS_HUMAN_CONFIRMATION: no`, blockers none. Tier: economy default
-  (sonnet) - no prior implement failed on this batch, and B5.x/B6 all
-  landed at that tier.
-- **Figma stays unauthenticated in this session** and stays a non-blocker:
-  the planner settled that the port needs no export ("B7 planning facts"
-  above). Do not wait on the connector.
-- No check was run at kickoff: clean tree at a committed boundary, and the
-  implementer's own `npm run check` is what arms the commit gate for the
-  tree it actually builds.
-- Review is expected after this batch: new UI, nine new parity states, and
-  `tests/parity/specs.js` changes all match the risk rules.
-
-## B7 built, then remediated (implementer, 2026-09-11) - one durable fact
-
-**`0.01ms` is not zero, and the popular reduced-motion snippet ships it.**
-`app/src/styles/tokens.css`'s `@media (prefers-reduced-motion: reduce)` block
-carried `transition-duration: 0.01ms !important` on `*`. A non-zero duration
-starts a real `CSSTransition` on every inline style write, and a transition's
-value at t=0 is the **old** one - so any code that writes an inline style and
-reads the layout back synchronously reads the pre-write layout. That is exactly
-what `PrintCard.svelte`'s `fit()` does, so `tight()` never turned false, all
-three ladders ran to their floors, the first cards on each sheet lost their
-art, and 50 of 54 group-A parity cells went red at `4776243`. The live app's
-reduced-motion rules (`style.css:311`, `:544`) kill two named animations only
-and leave `transition-duration` at its initial `0s`, which is why the live app
-reads correctly. The parity harness runs every cell under
-`prefers-reduced-motion: reduce` (`tests/parity/driver.js:649`), so this
-surfaces in parity and nowhere else - CI would have read it red too. Fixed to
-`transition-duration: 0s !important`; nothing in `app/src` listens for
-`transitionend`/`animationend`, so the transition bought nothing.
-
-**The first pass's "`cqw` instability class" was a false diagnosis and is
-deleted everywhere, not softened.** It is not in `docs/parity.md`'s "Two
-unstable classes" and must not be added: the staleness reproduces on a
-non-container element with px units, `document.getAnimations()` returns a
-`CSSTransition` on the rewrite and `[]` on the live app, and with
-`transition-duration: 0s` injected the live `fitPrintCards` run verbatim over
-the rewrite's DOM reproduces the legacy numbers exactly. **The standing lesson,
-which this task has now paid for three times: a "measured" fact written into a
-durable doc outlives the session that wrote it and is read as settled. Measure
-the mechanism, not the correlation, before writing one down.**
-
-The remaining group-A residue after the fix - 4 image cells, a different
-non-overlapping 3 on a re-run of the same build, every `cardFit`/`sheetCounts`
-cell agreeing - is the already-documented `whole:true` full-page capture class
-and is CI's to adjudicate: `handoff.md`, "Blockers", first entry.
-
-## The print image residue, measured a third time (orchestrator, 2026-09-11)
-
-A status, recorded so CI's reader does not re-derive it. After `ee73d2e`, on a
-quiet host with nothing else running, `MSYS_NO_PATHCONV=1 node tests/parity.js
-"voa2_a3-voa2_a1" "ci1-q1-q313"` read **4 расхождений** - a third set, again
-not the same one:
-
-- run 1 (implementer): `NINE @ en 1100`, `NINE @ en 768`, `LONG @ en 768`,
-  `LONG @ ru 1100`
-- run 2 (implementer): `NINE @ ru 1100`, `NINE @ ru 768`, `NINE @ en 1100`;
-  both `LONG` states clean
-- run 3 (orchestrator): `LONG @ en 1100` (3.10%), `LONG @ en 768` (3.53%), and
-  two `NINE` cells; the `LONG` pair clean in run 2 is red here
-
-Three runs, three non-overlapping sets, one unchanged build. The diff image for
-`LONG @ en 1100` was opened rather than inferred: all nine cards carry their
-art on both sides and no text differs - the red is an edge outline over
-**every** element on the page, the topbar, the tab row and the footer legal
-text included, none of which B7 touched. That is a whole-page one-pixel shift,
-i.e. `docs/parity.md`'s existing "Full-page captures" class, whose recipe is
-re-run, write nothing, let CI decide. No `VISUAL_DEBT` entry was written, and
-`docs/parity.md` gains no third class.
-
-The `cardFit` numbers - the thing that actually broke and was actually fixed -
-agree on both apps at every width in every one of these runs.
-
-## The CI read on `9fd3000`: print is clean, four table-anchor debts moved down (orchestrator, 2026-09-11)
-
-Run [`34616445556`](https://github.com/artex-x/daggerheart-loot/actions/runs/34616445556),
-push of `9fd3000`, four parity shards. `check`, `audit` and `secrets` green.
-Shards 1 and 4 green; **shards 2 and 3 red, on three cells, all of them
-`VISUAL_DEBT` ratchet failures** - "стало лучше - опусти число в VISUAL_DEBT".
-No other cell failed anywhere in the run.
-
-**The print blocker is closed by this read.** All **54** `#/print` cells -
-every one of the nine states, both languages, all three widths, the 24
-`whole:true` ones included - read `совпадает`. The 4-cell image residue this
-host measured three times, in three non-overlapping sets, was this machine's
-paint, exactly as `docs/parity.md`'s "Full-page captures" class predicts. No
-`VISUAL_DEBT` entry was ever written for it and none is needed; `handoff.md`,
-"Blockers", first entry can be marked resolved.
-
-**What is red.** The four `375` anchor cells, which had been dead stable at
-their recorded figures across the two preceding CI runs (`34588378763` and
-`34591864170`, identical to the hundredth), all moved **down** on `9fd3000`:
-
-| cell | recorded | prior two CI runs | this run |
-|---|---|---|---|
-| `#/tables/core_item ~ row anchor @ ru 375` | 10.52 | 10.51 | **9.35** FAIL |
-| `#/tables/core_item ~ row anchor @ en 375` | 9.92 | 9.92 | **8.85** FAIL |
-| `#/tables/voa ~ section anchor @ ru 375` | 11.55 | 11.55 | **0.00** FAIL |
-| `#/tables/voa ~ section anchor @ en 375` | 10.31 | 10.31 | 9.86 (passes, 0.45 under a `DEBT_SLACK` of 0.5) |
-
-The `@ 1100` and `@ 768` members of those states are unmoved (`0.42%`/`0.43%`
-of their own debts). Two facts the next reader should not re-derive: the move
-is **caused, not noise** - three consecutive CI runs agreed to the hundredth
-before it, and the only global change in between is B7's
-`transition-duration: 0.01ms` -> `0s` in `tokens.css`, which is the one edit
-that could touch a state whose subject is a re-played flash; and the `ru`/`en`
-split on `voa ~ section anchor` (**0.00 against 9.86** on the same state) is
-not explained by that, and is the reason this is a planning question rather
-than a mechanical edit.
-
-**Not settled here, by design:** what numbers to write, whether a cell reading
-`0.00` once has its entry deleted or waits for a second reading (the existing
-reasons in `specs.js` cite "three CI runs and the ubuntu container", and
-`tools/parity-ubuntu/` reproduces CI), and whether this rides alone to get
-`main` green or merges with the next batch. Planner's.
-
-**Tree at this read:** HEAD `9fd3000` == `origin/main`, working tree clean but
-for untracked `issues/tg-preview-refresh/`, which belongs to another task and
-is preserved.
-
-## B8 planning facts - the anchor debts after B7, measured (planner, 2026-09-11) - durable, read before implementing
-
-Read off the source at HEAD `9fd3000` and measured with two read-only
-puppeteer probes that drive the harness's own `tests/parity/driver.js`
-(`prepare`, `open`, `click('EN')`, `viewport`, `settle` - the run's exact
-arrival and sweep) against `index.html` and a fresh `npm run build` of
-`dist/index.html`, on `#/tables/voa/tA` and `#/tables/core_item/ci1`, both
-languages, reading `scrollY`, `scrollHeight`, the target's viewport top and
-whether `.flash` is on it at the moment the shot would be taken. The scripts
-are disposable and were not kept. Windows host: **the scroll positions are
-mechanism evidence, not `VISUAL_DEBT` figures** (owner decision 1). Design and
-steps: `plan.md`, "B8 planned".
-
-- **The sweep, as the harness runs it today (arrive at 1100, resize through
-  768 to 375 on one document):**
-
-  | state | lang | app | 1100 | 768 | 375 | `.flash` at shot |
-  |---|---|---|---|---|---|---|
-  | `voa ~ section anchor` | ru | legacy / next | 9642 / 9642 | 9642 / 9642 | 9642 / 9642 | no / no |
-  | `voa ~ section anchor` | en | legacy / next | 9616 / 9616 | 9616 / 9616 | 9616 / 9616 | **yes / no** |
-  | `core_item ~ row anchor` | ru | legacy / next | 368 / 368 | 368 / 368 | **374 / 368** | no / no |
-  | `core_item ~ row anchor` | en | legacy / next | 346 / 346 | 346 / 346 | **352 / 346** | **yes / no** |
-
-  Document heights agree on both apps at every width (voa 11061 / 11523 /
-  19332 ru, 11035 / 11477 / 18630 en; core_item 5890 / 6129 / 10065 ru, 5850 /
-  6041 / 9696 en). On `voa` neither app is adjusted by the resize at all: the
-  section's top sits 531px then 7423px below the viewport at 768 and 375 -
-  the 375 shot of the section-anchor state is a slab of the Vault of Ages
-  table thousands of pixels above its subject, in both apps.
-- **`core_item @ 375` is the reduced-motion transition policy, measured, not
-  correlated.** The live app leaves every declared `transition` alive under
-  `prefers-reduced-motion: reduce` (`style.css:311` and `:544` kill two
-  named animations and nothing else), so when the viewport crosses 600px its
-  mobile overrides animate over ~150ms and Chrome's scroll anchoring adjusts
-  the scrolled document by 6px across those frames. The rewrite's
-  `tokens.css` reduced-motion block writes `transition-duration: 0s
-  !important` on `*` (B7; it was `0.01ms` before, a two-frame transition that
-  yielded a different adjustment - the old 368 -> 387 reading in the
-  `specs.js` note), so it gets no adjustment. Proof: the live app with
-  `*{transition-duration:0s!important}` injected lands at **368** at 375 in
-  both languages - exactly where the rewrite lands. The converse was tried
-  with `.selbox{transition-duration:.15s!important}` alone injected into the
-  rewrite and it did **not** reproduce the 6px, so the transitioning element
-  is another of the live rules with a mobile override, not `.selbox` alone;
-  which one is B9's to measure, not B8's. This closes the "something else is
-  in there as well and has not been found yet" sentence in the `specs.js`
-  note: the something else was the transitions.
-- **The `ru`/`en` split on `voa ~ section anchor` is not a scroll
-  difference on this host.** After the `EN` press the two apps sit at the same
-  `scrollY` at every width; the one measured difference is the `.flash` class,
-  which the live app re-plays on the language switch (`render()` re-parses the
-  hash into `S.tables.anchor` every time and runs the scroll-and-flash block,
-  app.js 3832-3845) and the rewrite never re-plays (`TablesPage.svelte`'s
-  effect is guarded on `app.navigations`, which `setLang()` does not bump). At
-  375 the flashed section is 6918px below the fold, so on this host the `en
-  375` cell would be near zero; CI's 9.86 is therefore made of something this
-  host does not reproduce - see the CI diff-image reading below.
-- **Fresh arrival at each width (what `timed: true` does), for the record:**
-  ru identical on both apps at every width (voa 9642 / 10064 / 16955;
-  core_item 368 / 458 / 567); en `core_item` identical (346 / 436 / 545); en
-  `voa` **1px apart at 768** (10018 / 10017) and **8px at 375** (16428 /
-  16436) because the live app re-scrolls to the English anchor on the `EN`
-  press and the rewrite is left where scroll anchoring put it. So flagging
-  the anchor states `timed` would zero the four ru cells and the core_item en
-  cells but make `voa @ en 768` worse than its recorded 0.42 and leave `voa @
-  en 375` several percent - and the container is not evidence for a timed
-  state, so every en number would wait on CI. Rejected for B8; the re-play
-  on language switch is the real fix and is B9's.
-- **`docker` on this host cannot run the ubuntu container today:** `docker
-  --version` answers (20.10.8) but `docker info` panics in the client
-  (`reflect: indirection through nil pointer`), so the daemon is unreachable.
-  The container step in B8 is optional and falls back to CI as the second
-  reading.
-- **Shard map for the two anchor states** (`tests/parity.js:350`,
-  `stateIdx % 4`, shard names 1-based): `voa ~ section anchor` is state 57
-  -> shard 2; `core_item ~ row anchor` is state 58 -> shard 3. Run
-  `34616445556`'s artifacts: `failure-output-parity-2` (134 MB) and `-3`
-  (142 MB), unexpired at planning time.
-- **`RecordPage.svelte:59` draws `notFoundSub` as `<p class="miss">` where
-  the live app draws `<p class="page-sub">`** (app.js:3195) - a real
-  divergence on an unphotographed state (`#/i/<unknown id>` has no parity
-  state). Noticed while inventorying the furniture copies; it is B10's (the
-  furniture pass) and is recorded there, not fixed here.
-- **`toggleAllIn` stays at two copies.** `ListPage.svelte` ticks its own
-  `lsel`, not `app.sel` (lines 340-345), so the "third caller moves it to
-  `AppState`" rule in the handoff has not triggered; B10 leaves it.
-- **CI's own diff image for `voa ~ section anchor @ en 375`, read (artifact
-  `failure-output-parity-2` of run `34616445556`, downloaded to the session
-  scratchpad, outside the repository):** rows 10-13 of the Vault of Ages
-  table (Shaman's Blade, Mastery Bell, Mossblossom Staff, Harrowcleave) with
-  every line doubled - no content difference. Aligning CI's `-legacy.png`
-  against its `-next.png` at every vertical shift from -60 to +60: the best
-  fit is **22px, 2.52% residual** (the fixed topbar and the ring), against
-  20.77% at 0px; the same for `@ ru 375` is **0px, 0.00%**, and for `@ en
-  768` **0px, 0.43%** (the ring). So on ubuntu the two apps are 22px apart
-  in scroll position in English at 375 and coincide in Russian - the
-  English-only divergence is the live app's re-scroll on the `EN` press,
-  which this host happens to converge on and CI does not. A deterministic
-  mechanism, not an unstable one: three runs at 10.31 to the hundredth,
-  then 9.86 once the transition policy changed. The alignment script is
-  disposable and was not kept; the artifact is outside the tree and expires
-  with the run's retention.
-
-## The CI read on `435a5ac`: B8's second reading, parity green (orchestrator, 2026-09-11)
-
-Run [`34628983995`](https://github.com/artex-x/daggerheart-loot/actions/runs/34628983995), the owner's push of `274aa99` + `435a5ac`, four parity
-shards. This is the reading B8 was designed to wait for, and it agrees.
-
-**All four parity shards green**, `audit` and `secrets` green. Shards 2 and 3 -
-the two that failed on `9fd3000` - now pass:
-
-| cell | recorded by B8 | on `9fd3000` | on `435a5ac` |
-|---|---|---|---|
-| `#/tables/core_item ~ row anchor @ ru 375` | 9.35 | 9.35 FAIL vs 10.52 | pass |
-| `#/tables/core_item ~ row anchor @ en 375` | 8.85 | 8.85 FAIL vs 9.92 | pass |
-| `#/tables/voa ~ section anchor @ ru 375` | entry deleted | 0.00 FAIL vs 11.55 | no cell to fail |
-| `#/tables/voa ~ section anchor @ en 375` | 9.86 | 9.86 (0.45 of slack) | pass |
-
-Two facts the next reader should not re-derive. **The deleted `voa @ ru 375`
-entry is now safe**: a second independent run with no cell to fail is what the
-ratchet's rule wanted before a `0.00` could lose its entry, so the deletion
-stands on evidence rather than on one reading. And **the 54 `#/print` cells are
-`совпадает` for the second consecutive run**, which closes the print residue
-question for good - the four-cell image residue measured three times on the
-Windows host was that machine's paint, and no `VISUAL_DEBT` entry exists or is
-needed.
-
-**The one red in the run is not parity and not B8's.** The `check` job failed
-on the legacy `behave` suite against the **live** app - `FAIL приложение
-открылось не на поиске`, `failed to find element matching selector ".subchips
-.chip.on"`, 18.8s - with all 20 other legacy suites green. B8's five paths are
-`tests/parity/specs.js`, `tools/parity-ubuntu/README.md` and three
-`issues/47/*.md`; none can reach the live app. `behave` was green on `9fd3000`
-an hour earlier and on `37ecc8d` before that. The owner identified it as flaky
-and re-ran the failed jobs (attempt 2; a re-run of failed jobs leaves the four
-green parity shards alone). **Attempt 2 passed** - `check` in 3m47s, all 21
-legacy suites - so the flake is confirmed rather than asserted, and the run is
-green end to end including `deploy`, which had been skipped behind the red
-`check` here and on the two runs before it. `main` is green for the first time
-since `37ecc8d`. If `behave` recurs on a clean tree it is a real live-app
-regression and belongs to its own task, not to issue 47.
-
-**Tree at this read:** HEAD `435a5ac` == `origin/main`, working tree clean but
-for untracked `issues/tg-preview-refresh/`, which belongs to another task and
-is preserved.
-
-**One cheap correction made in the same pass:** `plan.md` had no `### B9
-outlined` heading - the section's text ran straight on from "B8 built", while
-`plan.md`'s own Phase 4 summary and `handoff.md`'s "Next batch" both send
-readers to "B9 outlined" by name. The heading is restored; no content changed.
-
-## The owner's answer on B9, and a post-migration review step (orchestrator, 2026-09-11)
-
-Two decisions from the repository owner, given at the B9 kickoff. Both are
-durable; neither is the orchestrator's to reinterpret.
-
-**1. The reduced-motion policy: option (a), port the live app.** The B9 outline
-put two options to the owner (`plan.md`, "B9 outlined", item 2 and "Questions
-for the owner before B9 is planned"): (a) delete `tokens.css`'s blanket
-`transition-duration: 0s !important` and let the rewrite transition exactly
-where the live app does, or (b) keep the blanket kill as a deliberate
-accessibility improvement and carry the `375` anchor cells as ~9% debt. **The
-owner chose (a): full parity.** The parity law - reproduce the shipped app -
-wins over an improvement the rewrite invented, and a pixel cell cannot be
-parked in `ACCEPTED`. `NEEDS_HUMAN_CONFIRMATION` for B9 is therefore **no** on
-this question; B9's planning pass proceeds without a second ask.
-
-**2. Parity-over-improvement is not "never fix it" - it is "fix it after the
-migration", and it needs somewhere to be written down.** The owner's
-instruction, verbatim in substance: achieve full parity, but *document* items
-like this one so they are handled post-migration, and add a separate step to
-the plan where the migrated app's state is reviewed, its issues identified, and
-those issues addressed **together with everything already recorded as deferred
-or ported-not-fixed**.
-
-So the rewrite now carries a third category alongside `VISUAL_DEBT` and
-`ACCEPTED`: a defect or a regression that the port **reproduced on purpose**
-because the live app has it. The reduced-motion kill is the first entry -
-deleting it is a real accessibility regression against the rewrite's own
-behaviour, accepted because parity demands it, and owed a fix once parity stops
-being the measure. Known candidates already scattered through `handoff.md`'s
-"Deferred": `Button.svelte`'s missing `:focus-visible` ring (`style.css:1002`
-has none either - the same shape of decision), `ListPage.svelte:103`'s stale
-`$effect` comment, and whatever `RecordPage.svelte:59`'s `.miss`-vs-`.page-sub`
-divergence turns out to be. The register's shape, its permanent home (a task
-directory is retired; `docs/specs/` and the READMEs are not - `CLAUDE.md`,
-"Task closeout and cleanup", step 6), and the review step's own gates are a
-**design question and therefore the planner's**, not something to be settled
-here.
-
-## B9 planning facts (planner, 2026-09-11) - durable, read before implementing
-
-Read off `bb61db0` and measured with three read-only puppeteer probes
-(scratchpad, not kept; harness launch args, `file://`, 1100 px) against
-`index.html` and the `dist/` built at 18:09 from `ee73d2e`, the last
-production change. Design and steps: `plan.md`, "B9 planned"; the review
-phase and the register: `plan.md`, "Phase 8".
-
-- **The parity filter for the print states is `"#/print/ci1-q1"`, not
-  `"#/print/ci1-q1-q313"`.** `WANTED` (`tests/parity.js:83-85`) filters on
-  the expanded state id, and the two print ids are `#/print/ci1-q1` and
-  `#/print/ci1-q1 ~ black and white` (`specs.js:1784, 1789`); no id carries
-  the route's full tail. Multiple filters are OR-ed (`parity.js:353`,
-  `WANTED.some`), so `"anchor" "#/print/ci1-q1"` is one 24-cell call.
-- **The flash target is `TablesPage`'s own `.tsection` div, not
-  `SectionHead`.** Both section bodies (`alt` at ~line 464 and
-  tier/frame/comm/eq at ~line 502) draw `<div class="tsection" id={'sec-'
-  + s.key}>` around `<SectionHead>`; the rows and tiles carry
-  `data-row={it.id}` on `.row` (`TableRows.svelte:105`) and `.tilewrap`
-  (`:131`), which is what the live `querySelector('[data-row=...]')`
-  finds in either view. `SearchPage` and `SharedListPage` also render
-  `TableRows` and pass no `flash`.
-- **The live app re-plays the anchor scroll-and-flash on every
-  `render()`, not only on a language switch.** `currentRoute()` writes
-  `S.tables.anchor = tail` on every call (`app.js:3632-3634`) and
-  `render()` ends with the scroll-and-flash block (3832-3845) that clears
-  it; `render()` is called 56 times in `app.js`, including from the
-  tables search box's input handler (`app.js:4435`: `if (el.id === 'tq')
-  { S.tables.q = el.value; render(); }`). So with an anchor in the
-  address, every keystroke in the live search box scrolls back to the
-  anchor and re-flashes it. No parity state types or ticks with an
-  anchor in the address. B9 ports the language-switch re-play only and
-  records the rest (`FEATURES.md`; `specs.js`, "Recorded, not keyed").
-- **Every rewrite animation has a live twin, so deleting the whole
-  `tokens.css` reduced-motion block leaves the live policy exactly:**
-  `.card` pop (`RecordCard.svelte:262`/`:278` = `style.css:308`/`311`),
-  `.modal-card` pop and `.modal-card .card{animation:none}`
-  (`RecordModal.svelte:159`/`:165` = 591/593), `.helpbox` pop
-  (`HelpBox.svelte:53` = 134, no reduced-motion rule on either side),
-  `.dropmenu` pop (`AddToList.svelte:291` = 435), `toastIn`
-  (`Toast.svelte:96` = 606), `.tsection.flash` (`TablesPage.svelte:635`/
-  `:655` = 538/544). None loops. The live stylesheet has no
-  `scroll-behavior` rule and both apps scroll with an explicit
-  `scrollIntoView({ behavior: 'smooth' })`, which the CSS property does
-  not override - the `scroll-behavior: auto !important` line is inert.
-  `tokens.css` declares no `transition` of its own; every transition in
-  the rewrite is a per-component port of a live one.
-- **The "missing `Button.svelte` focus ring" is a stale claim.**
-  `tokens.css:148-154` has a global `:focus-visible { outline: 2px solid
-  var(--gold); outline-offset: 2px; border-radius: var(--r-sm) }` since
-  `ae28b23` (Phase 4's first slice). Measured on a keyboard-focused `.btn`
-  ("Ссылка на таблицу", `#/tables`, reduced motion emulated so the
-  rewrite's transitions were off): rewrite `solid 2px rgb(216,171,94)`,
-  offset `2px`, radius `9px`; live, read at t=0 of its still-alive 150 ms
-  `.btn{transition:.15s}`, `solid 3px rgb(236,232,246)` (currentColor,
-  `--txt`), offset `0px`, radius `9px` - the pre-transition values, not
-  the browser's default ring (the UA ring reads `auto 1px`, seen on the
-  skip link). The live target is `style.css:1002-1005`: gold 2 px, 2 px
-  offset, `border-radius:8px`. So both apps draw the gold ring on a
-  button; the one difference is the focused radius, 9 px (`--r-sm`)
-  against 8. **Rule for anyone probing focus styles: read them after
-  `document.getAnimations()` is empty**, or every transitioning control
-  reports its old value. Also seen in the same walk and left for Phase 8
-  R1's keyboard pass, unmeasured beyond the raw read: the rewrite's skip
-  link and brand get the gold ring where the live app leaves the UA ring
-  (`auto 1px rgb(238,238,238)`), the search input's `outline-offset`
-  differs (0 against 2 px, with the same gold box-shadow), and the
-  rewrite's row checkbox draws its own gold ring where the live app rings
-  the `.selbox` label via `:has()`.
-- **`document.styleSheets[n].cssRules` throws over `file://`** (the sheet
-  is cross-origin to the page), so a probe cannot read which rule matched;
-  read computed values and reason from the source.
-- **`docs/specs/DEBT.md` is the register's home** (decided; reasons and
-  rejected homes in `plan.md`, "Phase 8"). `CLAUDE.md` is 191 lines; B9's
-  row and half-line take it to 193.
-- **The brief cited `CLAUDE.md`, "Task closeout and cleanup", step 6 for
-  the task directory's retirement; no such section exists at `bb61db0`.**
-  The nearest text is `plan.md`'s own line 8 ("Historical once ...") and
-  `CLAUDE.md`, "Orchestration" (the orchestrator "removes only clearly
-  disposable task-scoped scratch artifacts"). The conclusion the brief
-  drew - the register must not live in `issues/47/` - holds either way.
-
-## State at the B10 kickoff (orchestrator, 2026-09-11)
-
-Measured, not inferred. `git log --oneline` at kickoff: HEAD `b967481`,
-`origin/main` == HEAD, so **B9's three commits (`ad46dac`, `dba79ee`,
-`84ca6df`) have been pushed** - the condition "Blockers" records as open was
-satisfied by the owner between sessions. HEAD moved past where the B9
-implementer left it by four docs-only commits, three of them another task's
-(`02bd1af`, `fb4c7db`, `88ef6fb`, `b967481` - the agent-messaging task's
-closeout, which retired `issues/agent-messaging/`); none touches `app/`,
-`tests/` or `docs/specs/`. Working tree clean but for the untracked
-`issues/tg-preview-refresh/`, another task's, preserved and never staged.
-
-CI reads, from `gh run list`:
-
-| run | head | verdict |
-|---|---|---|
-| [`34638174347`](https://github.com/artex-x/daggerheart-loot/actions/runs/34638174347) | `dba79ee` (B9 as first built) | **green end to end** - `check`, all four parity shards, `audit`, `secrets`, `deploy` |
-| `34640328352` | `55f2fa2` (carries the remediation `84ca6df`) | `check`, `audit`, `secrets` green; four parity shards in progress at kickoff |
-| `34640746872` | `b967481` | pending at kickoff |
-
-So **B9's anchor question is answered**: run `34638174347` read all four
-shards green with all seven anchor `VISUAL_DEBT` entries deleted, including
-`#/tables/voa ~ section anchor @ en 375`, the single cell the handoff flagged
-as unable to be corroborated from this host. The remediation's own read is
-`34640328352`; it changed component code, so B9 closes on that run's shards,
-not on `34638174347` alone.
-
-No local check was run at kickoff and nothing was running on this host.
-
-## B10 planning facts (planner, 2026-09-11) - durable, read before implementing
-
-Full design in `plan.md`, "B10 planned"; the brief in `handoff.md`, "Next
-batch". Read off `b967481` (`app.js`/`style.css` unchanged since B9) or
-measured, not assumed:
-
-- **Git Bash rewrites parity filters on this host.** `node tests/parity.js
-  "#/i/ci1 @"` arrived as `#I:/ci1 @` (MSYS path conversion reads `/i/` as
-  a drive), matched nothing, and printed `расхождений нет` for zero cells.
-  `MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/ci1 @"` ran the six cells.
-  Earlier sessions avoided it by accident (`"i/ci1"`, `"anchor"` - no
-  leading slash). Any filter beginning `#/` needs the variable under Git
-  Bash; PowerShell does not convert. A run that prints no cell lines is
-  not a result.
-- **`WANTED` matches the cell label, not only the id** (`tests/parity.js:
-  374`, `full.includes(w)` over `<id> @ <lang> <width>`), so `"<id> @"`
-  selects exactly the plain state - `"#/lists @"` is six cells, not the
-  twenty states `"#/lists"` prefixes; `"#/print/ci1-q1 @"` is the one
-  plain print state, not the four B9's prefix filter drew. The outline's
-  ` @` filters were right for that reason.
-- **`#/i/ci1 @` reads `совпадает` on all six cells with every spec silent**
-  (this host, the `dist/` present in the tree - built 20:44, older than
-  the remediation `84ca6df` at 21:24, so advisory twice over; the
-  implementer's `check:built` rebuilds it).
-- **The live tab title on `#/i/<id>` is the plain app title, by a live
-  defect.** `render()` writes `document.title = (it ? nameOf(it) + ' — '
-  : '') + t().docTitle` (app.js:3795) and then calls `syncChrome()`
-  (3822), whose last line is `document.title = t().docTitle` (3658). The
-  rewrite's only title write is `Shell.svelte:28`, `app.t.docTitle`. That
-  is why the `title` spec is green on every record state - and why it is
-  register material (`DEBT.md` D5, written by B10), not a port defect.
-- **`RecordPage`'s not-found branch is short by a button as well as a
-  class.** Live `renderItemPage` (app.js:3194-3196): `h1.page-h`,
-  `p.page-sub`, `<a class="btn primary" href="#/roll/std">toStart</a>`.
-  Rewrite (`RecordPage.svelte:56-59`): `h1.page-h`, `p.miss`, nothing
-  else. `SharedListPage.svelte:83` already has the exact `Button` line.
-  `t.toStart` exists (`dict.ts:250/539`). No parity state and no
-  component test reaches `#/i/<unknown>` today (`record.test.ts` has the
-  no-data case at `:274`, nothing for an unknown id).
-- **All four inventory margins are live inline `style=` attributes**, none
-  a rule: `#/search`'s panel `margin-bottom:16px` (app.js:2854), the lists
-  index's panel `margin-top:16px` (2912), the list page's `.card-acts`
-  `margin-bottom:16px` (2972), the shared page's `.card-acts`
-  `margin-bottom:18px` (3154). `PageHead`'s `margin:0` is the live rule
-  `.page-head .page-h{margin:0}` (style.css:104). `SharedListPage.svelte`
-  today folds its 18px into the rule; `ListsPage`/`SearchPage` fold theirs
-  into `.panel` - all three are the rewrite's own liberty, reversed by
-  B10.
-- **No `@media` override exists for `.panel` (145), `.page-h` (105),
-  `.page-sub` (140) or `.card-acts` (405)** in style.css: the 600px
-  blocks (800-1000) and the print block (1397-1414) name none of them.
-  The only descendant rules are `.card-acts .btn-lbl` and `.card-acts
-  .btn.sm:has(.btn-lbl)` (477-481, inside the 600px block), ported in
-  `RecordCard.svelte:748/757` as `:global()` children of its own
-  `.card-acts` - the one place the extraction has to re-anchor a selector
-  (`.card :global(.card-acts .btn-lbl)`). `.btn-lbl` is emitted only by
-  `RecordActions.svelte` (103-113) and `TablesPage.svelte:474` (whose own
-  `.toolbar :global(.btn-lbl)` rule is untouched).
-- **`.miss` has no live rule** (`style.css` and `index.html` grepped) and
-  no live screen: `app.js:7` is `const DATA = window.LOOT.items;`, so a
-  missing `data.js` throws before anything renders. Seven rewrite copies,
-  two colours (`--muted2` in `ListPage`/`PrintPage`, `--muted` in the
-  other five); never photographed.
-- **The furniture callers, counted:** `.panel` div x5 (`AltPanel:100`,
-  `StdPanel:90`, `RollPanel:100`, `ListsPage:108`, `SearchPage:82`) plus
-  three composed variants (`TablesPage:445` `.tablenav`, `FilterBar:107`
-  `.ffilter`, `ListPage:642` `<details class="panel lroll">`); `.page-h`/
-  `.page-sub` pairs x8 in four files (`ListPage:574/589`, `PrintPage:82/
-  87`, `RecordPage:58/61`, `SharedListPage:81/85`) plus `PageHead:34/62`
-  in its own `.page-head` row; `.card-acts` x4 (`RecordCard:244`,
-  `ListPage:599`, `PrintPage:89`, `SharedListPage:87`); `.miss` x7.
-  `RecordCard` is drawn by `AltPanel`, `ListPage`, `RecordModal`,
-  `RecordPage`, `RollPanel`, `StdPanel`; `PageHead` by the six
-  `PageHead`-using pages and is untouched.
-- **Svelte 5 facts the design leans on:** a snippet declared as a child of
-  a component (`{#snippet title()}...{/snippet}` inside `<PageTitle>`) is
-  passed as the prop of that name, so `title: string | Snippet` takes
-  either form; elements rendered inside a caller's snippet keep the
-  caller's style scope (`ListPage`'s `.titleinput` and `RecordPage`'s
-  `.itemtable` rules still apply); a parent's scoped rule does not reach a
-  child component's root without `:global()`, which is why the composed
-  `.panel` variants stay inline. `exactOptionalPropertyTypes` is on:
-  `style?: string` is passed as a literal or omitted, never as
-  `undefined`.
-- **The remaining `VISUAL_DEBT` keys** are the six `#/i/q1 ~ another
-  tier`, six `#/roll/wondrous ~ modal` and six `#/tables ~ a row opened`
-  cells (all the modal's close-button ring); of B10's sixteen states only
-  `~ modal` carries debt. `ACCEPTED` names no record state's `title`.
-- **The a11y guard** (`a11y.test.ts:392`) compares the sorted keys of
-  `COVERED` to `import.meta.glob('./*.svelte')`; a new component without
-  an entry fails `npm run check`. `Empty.svelte`'s entry is the model.
-- Wall clock: 16 states in three calls (5 / 5 / 6 states, 30 / 30 / 36
-  cells) at the measured ~23 s per state; each call two to three minutes.
-  `#/i/ci1 ~ whole` is `fullPage` and `~ modal` opens a dialog; neither
-  is `timed`.
-
-## The CI read that closed B9 (orchestrator, 2026-09-11)
-
-Run [`34640328352`](https://github.com/artex-x/daggerheart-loot/actions/runs/34640328352) on `55f2fa2`, the first head carrying the remediation
-`84ca6df`, completed **green on every job**: `check`, parity shards 1-4,
-`audit`, `secrets`, `deploy`. With run `34638174347` (`dba79ee`) also green,
-B9 has the two independent readings its design asked for, and all seven
-anchor `VISUAL_DEBT` deletions stand - `#/tables/voa ~ section anchor @ en
-375` included, the one cell this host could not corroborate before or after.
-No `VISUAL_DEBT` number was written from this host. B9 is closed.
-
-## B10 reviewed and approved; the furniture slice is closed (orchestrator, 2026-09-11)
-
-Verdict **approve**, no blockers, six nits (`handoff.md`, "Deferred").
-Durable findings worth carrying past this task:
-
-- **A Svelte 5 `{#if}` inside an element is not free.** The compiler marks
-  the live branch with an anchor comment, which lands inside that element -
-  invisible to a pixel diff, visible to a `childNodes` assertion, and the
-  reason B10's `PageTitle` wraps whole `<h1>`/`<p>` branches instead of
-  branching inside them. A render-tag anchor is a *comment*, so it
-  generates no box and does not split a text run; `CLAUDE.md`'s text-node
-  rule is about split text nodes, not about comments. The faithful form is
-  still one text node per live `esc(...)` concatenation.
-- **`.card :global(.card-acts ...)` raises specificity, it does not lose
-  it**: 0,3,0 -> 0,4,0, so `RecordCard`'s two 600px rules still outrank
-  `Button`'s own. Confirmed empirically by the 375px cells.
-- **`vite.config.mts:150`'s coverage glob (`src/**/!(Button|DiceBar).svelte`)
-  reaches new component files automatically** - a new component needs no
-  coverage-config edit, only a test that reaches it.
-- **Authored template comments do not reach the DOM**: `app/svelte.config.mjs`
-  sets no `preserveComments`.
-
-## State at the Phase 5 kickoff (orchestrator, 2026-09-12, scheduled run)
-
-The owner's GOAL for this session, verbatim from the scheduled task:
-
-> finish Phase 5 (or at least break to adequate batches and implement first
-> batch, but I would prefer to minimize amount of batches as described in
-> claude.md). I want to retire existing playwright tests - they are flaky,
-> coverage is incosnstient, they are groupped strangely etc and rewrite to
-> fit existing infrastrucutre. we should also challange existing quality
-> gates such as coverage limits, coverage exceptions, a11y rules disabled
-> and do broader review of all tests in pyramid to see where we have gaps
-> in coverage, especially component tests one and if additional layers of
-> testing are required. if we're ready, we can run existing playwright
-> tests against the refactored application to make sure there are no
-> regressions and delete them all together or at least we can plan to do so
->
-> regarding p6/7 ordering I'm open to your recommendation. I am OK with
-> doing 6 and then doing 7 on clean codebase to make sure there are no
-> leftovers of an old code not to hallucinate much, maybe this way we can
-> even unify phases 7 and 8
-
-Plus two defects reported by the owner, quoted verbatim below under
-"Two owner-reported defects".
-
-### The tree
-
-- HEAD `9e3d19f`, branch `main`, clean but for the untracked
-  `issues/tg-preview-refresh/` (another task's, preserved, never staged).
-- **`origin/main` is `daa2166`.** B10's three commits - `8b0c3ce`,
-  `60047d4`, `9e3d19f` - are committed and **not pushed**, so CI has not
-  read B10. Newest run is `34643510887` on `daa2166`, success. The B10
-  blocker in `handoff.md`, "Blockers", is still open and still the owner's
-  to clear; pushing is never this session's (`CLAUDE.md`, "Never push").
-
-### There are no Playwright tests. Measured, not inferred
-
-`find` over the tree matches no `*playwright*`, no `*.spec.js`, no
-`*.spec.ts`; `package.json` has no `@playwright/*` dependency. What the
-GOAL calls "existing playwright tests" is the **legacy browser suite set**:
-20 suites under `tests/`, driven by **puppeteer** through
-`tests/run-all.js`, 8.7k lines in all. Phase 5's Playwright layer was
-planned by the issue and **never built** (`plan.md`, "Phase 5 - what
-already exists"). So "retire the Playwright tests" is, in this repository,
-"retire the puppeteer legacy suites" - and that is a different and larger
-question, because those suites are the only coverage several features have
-at all (`docs/specs/COVERAGE.md`, "Features to suites").
-
-Measured facts about them, for the planner:
-
-- **They target the live static root, hardcoded.** 15 suites define
-  `ROOT = 'file://' + path.join(__dirname, '..', 'index.html')`, either
-  their own copy or `tests/lib.js`'s. None can be pointed at `dist/`
-  without a change. Whether a re-pointed suite *passes* against the
-  rewrite is unmeasured and is the planner's first probe.
-- **Sizes** (lines): `lists2` 697, `print` 647, `derived` 419, `qa` 373,
-  `behave` 368, `notes` 316, `eqtest` 293, `contracts` 259, `craft` 242,
-  `dataint` 235, `select` 200, `audit2` 195, `flows` 154, `states` 145,
-  `craftmob` 115, `hues` 106, `noart` 102, `typo` 77, `i18n` 47.
-  Plus `tests/lib.js` 85 (shared), and the harness that is **not** legacy:
-  `parity.js` 672, `parity/driver.js` 686, `parity/specs.js` 2067,
-  `parity/lock.js` 92.
-- **Three of the 20 are not browser suites and are already load-bearing in
-  `npm run check`**: `derived`, `i18n` (both run directly by the `check`
-  script) and `dataint` (data invariants, node-only). Retiring "the legacy
-  suites" cannot mean retiring these.
-- **CI runs them as one job**, `node tests/run-all.js --exclude=parity`,
-  beside four sharded `parity` jobs (`.github/workflows/ci.yml`).
-- **`tests/contracts.js` is the contract gate** named by `CLAUDE.md`
-  ("An unavoidable change updates `docs/fixtures/`, `tests/contracts.js`,
-  ...") and by `docs/specs/CONTRACTS.md`. It runs against the live app.
-  Retiring it without a replacement drops a frozen-contract gate.
-
-### The vitest pyramid today
-
-- 41 test files: 20 in `app/src/lib`, 16 in `app/src/components`, 2 in
-  `app/src/state`, 1 in `app/src/ports`, 1 in `app/src/test`. 998 tests at
-  B10's close. 46 components, 46 lib modules.
-- Coverage config and every threshold: `vite.config.mts`, `test.coverage`.
-  `perFile: true`. Bars: `src/lib/**` 90/90/85/90, `src/ports/**`
-  70/70/55/70, `src/state/**` 90/90/80/90, components 85/80/75/85.
-  **Named exceptions, two**: `DiceBar.svelte` (branches 55) and
-  `Button.svelte` (branches 50), both carved out of the component glob.
-  **Coverage `exclude`, five**: `src/test/**`, `src/ports/types.ts`,
-  `src/ports/image.ts`, `src/vite-env.d.ts`, `src/main.ts`.
-- **axe rules switched off, two**, in `app/src/test/a11y.ts`'s `OFF`:
-  `color-contrast` (jsdom resolves no cascade; covered by `qa`/`typo` on a
-  real page - both **legacy suites**, so retiring them without a
-  replacement drops contrast coverage entirely) and `nested-interactive`
-  (D3, a live shape ported on purpose - `docs/specs/DEBT.md`).
-- `docs/specs/COVERAGE.md`, "Known thin spots", is the existing honest gap
-  list: the short link form has no fixture, print fitting has no reference
-  image, `states` asserts little, touch-only behaviour is static-only, the
-  success paths of `clipboard`/`share`/`compress` cannot run in jsdom (the
-  stated reason `src/ports/**` sits at 70/70/55), contrast is off in axe,
-  unregistered parity states are invisible, and `<dialog>` is shimmed.
-  Four of those thin spots end with "waits for Phase 5" or "the Phase 5
-  e2e layer". This session is where that promise comes due.
-- Parity inventory at kickoff: 102 `STATES`, 42 `SPECS`, 10 `ACCEPTED`,
-  18 `VISUAL_DEBT` (`node -e` over `tests/parity/specs.js`).
-
-### The GOAL and Phase 7's open question are the same question
-
-`plan.md`, "Phase 8", "Where the phase sits", entry condition 3 already
-names this: *"A regression net that does not need the live app exists -
-the load-bearing one ... Phase 7's planning pass decides the net's shape;
-the two candidates are the Playwright layer the issue's Phase 5 planned,
-and the parity driver re-pointed at committed goldens of `dist/`."* And
-`plan.md`, "Phase 5 - what already exists", defers the Playwright question
-to exactly that pass. The owner has now asked for it directly, one phase
-early. The planner should treat these as one decision, not two, and say so
-in the plan - including whether "Phase 5" survives as a phase label at all
-or is absorbed into the cut-over.
-
-### Two owner-reported defects
-
-Reported by the owner against `http://localhost:4173` (the built `dist/`
-under `vite preview`), verbatim:
-
-> - http://localhost:4173/#/tables/frames. open filters -> select beast
->   feast, then collossus. filters reset, page says Nothing found instead
->   of them working as 'OR'
-> - http://localhost:4173/#/tables. select premium bedroll, click add to
->   list -> new list, nothing happens (checked and confirmed - it is the
->   same from any view). also on embedded modal (not sure how it is
->   called, e.g. when you don't redirected to the new page but it opens in
->   a pop-up) it opens list to the top on legacy app, but to the bottom on
->   the new app, maybe we didn't have parity check for that state
-
-Unmeasured by this session on purpose - the first question for each is
-**does the live app do it too**, which decides `DEBT.md` entry versus
-rewrite regression, and that is a planning finding, not a status. Neither
-is in `DEBT.md` today (D1-D5 are transitions under reduced motion, the
-stale packed-link expansion, the notice's nested dismiss button, the
-shared kind filter, and the record tab title). The owner asks for them
-either as an intermediate batch or folded into the coverage-extension
-work, and expects more of the same class to surface as coverage grows.
-
-## Phase 5 planning facts (planner, 2026-09-12) - durable, read before implementing
-
-Measured on `9e3d19f` (HEAD unchanged at the end of the pass; `origin/main`
-still `daa2166`, B10 unpushed). Full design: `plan.md`, "Phase 5 - the
-testing pyramid, planned".
-
-### The legacy suites against `dist/`, measured
-
-- Scratch copies with exactly two edits - `ROOT` -> `dist/index.html`,
-  `ready()`'s `#view` -> `#app` - **`typo` passes** (13 pages, both
-  languages: two fonts, one scale) and **`audit2` at 1180 passes** (41
-  addresses, both languages, all eight checks). **`hues` fails 16
-  assertions** for harness reasons: it injects bare `<span class="badge
-  item">` and reads their colour (Svelte-scoped `.badge` rules give an
-  injected span nothing) and greps `[data-act="roll"]`.
-- The rewrite emits **one id, `#app`**; the live app has `#view`,
-  `#modal`, `#modalBody`, `#selBar`, `#toast`, `#tabs`, `#langSeg`,
-  `#skip`, `#footText`. No `data-act`/`data-open`/`data-copy-*` anywhere
-  in the rewrite. Live-hook selector counts per suite: `behave` 35,
-  `lists2` 29, `select` 28, `print` 24, `flows` 23, `states` 21, `qa` 18,
-  `notes` 12, `eqtest` 9, `noart` 6, `contracts`/`craftmob`/`hues`/`typo`
-  1 each (the `ready()` in `lib.js`), `audit2` 0.
-- CI, run `34643510887` (`daa2166`): `check` job 3m40s of which "The same
-  gate a person has to pass locally" 1m24s and "The legacy suites against
-  the live app" **1m57s**; the four parity shards 8m01s-9m55s each.
-- `tests/parity/driver.js:245`: `click()` presses with `el.click()` inside
-  `page.evaluate` - a synthetic dispatch. Trusted input exists nowhere in
-  the harness today.
-
-### The two defects, measured on both apps (real CDP clicks and `el.click()`)
-
-Probe: scratchpad `probe-defects.mjs`, 1100x900 unless stated, fresh
-document per step (`about:blank` first - a hash-only move keeps
-`S.fOpen` and the menu).
-
-- **Frames, two picks.** Live in-page: after "Пир зверей" then "Колоссы
-  Сухоземья" the hash is `#/tables/frames/f_frame-beast_feast-colossus`,
-  two pills, "57 из 94", 57 rows - both click kinds. **Live arriving at
-  that link fresh: no pills, count "94", 0 rows.** Rewrite: 0 rows and no
-  pills after the second pick, both click kinds, and the same on arrival.
-- **The decoder**, replicated in node: `f_frame-beast_feast-colossus` ->
-  `{frame:['beast'], feast:['colossus']}`; `f_frame-dark_heart-motherboard`
-  breaks the same way; `f_frame-colossus-dark_heart`,
-  `f_frame-beast_feast-dark_heart`, `f_kind-item.frame-beast_feast-colossus`
-  and any three-frame pick decode correctly. Rule: the legacy `_` reading
-  fires iff the body has no `.` and every `_`-split piece contains a `-`
-  after position 0 (`filters.ts:69`, `app.js:2724`). The live app meets it
-  only on arrival because `S.fSeg` (`app.js:3627`) stops it re-reading its
-  own write; the rewrite's `TablesPage` reads `app.route.filter` after
-  every `replace()`.
-- **New list.** Rewrite, trusted click on "+ Новый список" on `#/i/ci1`:
-  `.dropmenu` gone, no `.picker-new`, focus on `<body>`; `el.click()`:
-  form open, focus in the input, "Создать" saves. From the `#/tables`
-  selection bar, trusted: menu gone. Live: fine both ways. Mechanism:
-  Svelte 5 flushes in a microtask (`node_modules/svelte/src/internal/client/dom/task.js:19`
-  `queueMicrotask`); a trusted event runs a microtask checkpoint after
-  each listener, so between the app root's delegated `onclick` and
-  `AddToList.svelte:202`'s `<svelte:document onclick>` the `{#if
-  newListFor}` block has replaced the chip, `e.target.isConnected` is
-  false, `root.contains(e.target)` is false, `app.menuFor = ''`.
-  `userEvent.click` (jsdom) and `el.click()` (parity) dispatch on a
-  non-empty stack: no checkpoint until they return, so both pass.
-- **Menu side in the modal.** Not reproduced: on `#/roll/wondrous ~
-  modal` both apps add `up` and draw the menu above the button at
-  1100x900 (card unscrolled), 1100x700 (card scrolled 114 px by
-  `scrollIntoView`) and 375x667 (98 px). The 43 px height difference in
-  the probe's numbers is one more list chip on the rewrite's side -
-  `file://` pages share one `localStorage` in Chrome, so the legacy pass's
-  created lists leaked into the next pass; not a rendering difference.
-
-### Coverage on `9e3d19f` (vitest, `--coverage.reporter=json-summary`, `app/coverage/`, ignored)
-
-Total 97.25 lines / 88.4 branches / 97.02 functions / 96.5 statements;
-37 of 83 measured files at 100 on all four. Per-directory minima (file):
-`lib` L100 F100 B88.46 (`data.ts`) S93.33 (`lists.ts`); `ports` L71.42
-F87.5 (`share.ts`) B57.14 S70.58 (`compress.ts`); `state` L98.27 F100
-B88.46 S95.89 (`lists.svelte.ts`); components L88.15 F88 S88.79
-(`StdPanel`) B60 (`DiceBar`), then `Button` B66.66, `Icon` B75, `SelBar`
-B75 (both exactly on the bar), `ListPage` B77.39, `RowMain` B79.54.
-`router.ts` B66.66, `clipboard.ts` L78.72 B75, `storage.ts` L86.95.
-
-### Host load
-
-vitest alone took **378 s** (01:48, one timeout on `searchPage.test.ts`'s
-300-cap case at 93 s) and **393 s** (01:56, green with `--testTimeout=120000`)
-on this host tonight, against a ~165 s whole `npm run check` idle. A
-`check` run now may cross the 600 s foreground cap; the rule stands - a
-crossed run is re-run idle, not salvaged, not backgrounded.
-`coverage.reportOnFailure` is off by default, so a red vitest writes no
-summary.
-
-**2026-09-12, 13:25-14:05 local - the slowdown is I/O, not the peer
-sessions** (orchestrator, measured). The earlier reading that named "host
-contention from a concurrent session" does not survive measurement:
-
-- `npm run format:check` (documented 11 s idle) took **55.6 s and 54.9 s**
-  on two consecutive runs - not a cold cache, and `user 0m0.883s /
-  sys 0m1.9s` both times. Wall clock 5x, CPU near zero: the stage is
-  **I/O-bound** - *this inference was wrong; see the section at the end of
-  this file. Git Bash `time` does not aggregate Windows child-process CPU,
-  so those `user`/`sys` figures measured nothing. The wall-clock numbers
-  stand.*
-- Whole-host CPU sat at **20-25% of 8 cores** while measured idle.
-  `ngenuity2helper` holds ~1 core continuously (31,965 CPU-s over 17.9 h
-  of uptime); the six peer Claude sessions together moved ~0.2 cores.
-  **Peer sessions are not the cause** - they cannot be, at that share.
-- Projected `npm run check` at this factor: ~165 s x 5 = **~825 s**,
-  which cannot fit the 600 s foreground cap. Confirmed the hard way: one
-  run reached vitest only after ~10 min of stages that cost 77 s idle,
-  and vitest itself then took **521.8 s** (transform 315.9 s, import
-  498.1 s, environment 849.7 s - every one of them a load figure).
-- Windows Defender real-time protection is **on**; its exclusion list
-  needs an administrator to read, so whether this tree or `node_modules`
-  is excluded is **unverified**. It is a candidate for the I/O factor,
-  named here with its evidence shape rather than asserted - what to do
-  about it is a design question, not a measurement.
-
-**What a crossed run still buys, in the main session only.** A check moved
-to the background loses the *gate* (`check-observer.mjs` reads the Bash
-tool's captured stdout, which a backgrounded call never returns) but not
-the *result*: the orchestrator's own shell survives the turn and the
-output file is readable. A subagent's does not - that asymmetry is why
-the rule still reads "never backgrounded" for workers.
-
-## Q3 planning facts - the modal menu, measured on both apps (planner, 2026-09-12) - durable
-
-Read-only probe (scratchpad, disposable, not kept): puppeteer with the
-harness's launch args and `prepare()` (reduced motion, cleared storage),
-`makeDriver` for both targets, a fresh page per cell. The modal is opened
-by pressing a table row (`#/tables`; `#/tables/core_consumable` for the
-consumable), then "Добавить в список", measured, then "+ Новый список",
-measured again. Presses were `el.click()` (the harness's own) and, for the
-regression cell, a trusted CDP click - same numbers. Tree `64f9a27`,
-`dist/` built from it. Design and placement: `plan.md`, decided 7,
-"Defect 2b"; fix: B11.1; live half: `DEBT.md` D6 (written by B11.1).
-
-Records, chosen by Russian description length: Малое Зелье Лечения (cc7,
-17 chars), Кольцо Тишины (ci28, 98 - the B11 state's row), Самоцвет
-Чутья (ci56, 118), Медальон Хранения Надежд (ci39, 338). Windows:
-1913x981 (the owner's) and 1100x900 (the harness's). Lists seeded: 0, 1,
-2 (`LISTS.slice(0, n)` from `specs.js`). `below` = `innerHeight -
-firstBtn.bottom`, `need` = `menu.height + 16`, both as the two apps
-compute them; "first `.btn`" is `.seldrop`'s first `.btn` in DOM order -
-the toggle while the menu shows chips, the form's "Создать" once the form
-is open (the menu precedes the toggle, `addToListBtn` 1879-1891 and
-`AddToList.svelte:213-270` alike).
-
-**On open - both apps agree in all 24 cells.** `up` iff `below < need`:
-
-| window | lists | need | Малое (below / side) | Кольцо | Самоцвет | Медальон |
-|---|---|---|---|---|---|---|
-| 1913x981 | 0 | 131.2 | 278.2 down | 280.4 down | 269.0 down | 114.7 up |
-| 1913x981 | 1 | 144.0 | 291.2 down | 293.4 down | 282.0 down | 114.7 up |
-| 1913x981 | 2 | 186.8 | 169.2 up | 171.4 up | 160.0 up | 114.7 up |
-| 1100x900 | 0 | 131.2 | 128.7 up | 239.9 down | 119.5 up | 74.2 up |
-| 1100x900 | 1 | 144.0 | 128.7 up | 130.9 up | 119.5 up | 74.2 up |
-| 1100x900 | 2 | 186.8 | 128.7 up | 130.9 up | 119.5 up | 74.2 up |
-
-(The four cards are 673 / 668 / 691 / 782 px tall, centred in the
-window; the toggle's `bottom` follows the card's height, so read the
-numbers, not the pattern.) The side is decided by the card's height and
-the list count, identically on both apps; the owner's "legacy opens up"
-is consistent with a different list count on the Pages origin (every
-chip adds ~33 px to `need`), which was not verified and does not matter.
-
-**What a downward open does, both apps**: the menu overflows the `.card`
-article (`overflow: hidden` - style.css:306, `RecordCard.svelte:260`),
-and `scrollIntoView({ block: 'nearest' })` scrolls **that** element:
-Кольцо, 0 lists, 1913x981 - `.card.scrollTop` 109, `scrollHeight` 775
-vs `clientHeight` 666, `card-media` at y 48-468 inside a `.modal-card`
-at 156-825 (top 109 px of the picture hidden, no scrollbar); the
-`.modal-card` (`overflow: auto`) itself reads `scrollTop` 0 and
-`scrollHeight === clientHeight` - it never scrolls, the article does. The
-same on `next`. The live app's `refreshModal()` rebuilds the article on
-the next render, which resets it to 0 - that is why "+ Новый список"
-appears to heal it.
-
-**After "+ Новый список" - live `up` in 24/24; the rewrite diverges in
-7/24.** Live: the redraw puts the menu back at its default side and
-`placeMenu` reads "Создать" (first `.btn`) from there - under the fold,
-`below` negative or small - so `up`. Rewrite: the `$effect` re-runs on
-`newListFor` and reads "Создать" from wherever the menu already is. With
-the menu already up, "Создать" sits ~51 px above the toggle's bottom
-(trusted cell: toggle 739.3-771.3, Создать 688.3-720.3 at 1100x900), so
-`below` reads ~51 px larger while `need` grows by 33 (`+33.2` measured,
-e.g. 131.2 -> 164.4); the sign flips when `below >= need - 18`. The
-seven rewrite cells that flip down and end `clipped` (the menu's box
-below `.modal-card`'s bottom; `.modal-card` `scrollTop` 0; the article
-`scrollHeight` 813 vs `clientHeight` 671 in the trusted cell):
-
-| window | lists | record | open | after "+ Новый список" (rewrite) | live |
-|---|---|---|---|---|---|
-| 1913x981 | 0 | Медальон | up | **down**, menu 874-1023, clipped | up |
-| 1913x981 | 2 | Малое | up | **down**, menu 820-1024, clipped | up |
-| 1913x981 | 2 | Кольцо | up | **down**, menu 818-1022, clipped | up |
-| 1100x900 | 0 | Малое | up | **down**, menu 779-928, clipped | up |
-| 1100x900 | 0 | Самоцвет | up | **down**, menu 789-937, clipped | up |
-| 1100x900 | 1 | Малое | up | **down**, menu 779-941, clipped | up |
-| 1100x900 | 1 | Кольцо | up | **down**, menu 777-938, clipped | up |
-
-Every other rewrite cell matches live after the press (both up, or the
-menu that opened down flips up on both). The cells that opened *down*
-never flip wrong: from the default side the two apps read the same
-number.
-
-**Consequences the batches rest on**:
-
-- No new harness width is needed. 1100x900 with **no** seed reaches the
-  rewrite's regression on two records (Самоцвет, Малое) and the live chop
-  on a third (Кольцо). B11's `#/tables ~ a row opened, list menu` misses
-  both because its `two` seed makes every card open up.
-- A fourth `WIDTHS` entry would be global (`parity.js:174` hashes
-  `WIDTHS` into every cache key): +204 cells, roughly +3 min per shard,
-  and every existing legacy PNG re-captured. Not planned.
-- `.card` is a scroll container only for scripts; `overflow: clip` is
-  the candidate Phase 8 fix for the chop, alongside measuring the toggle
-  (`:scope > .btn`) against `.modal-card`. Both diverge from live and are
-  D6's, not B11.1's.
-- The trusted-click and `el.click()` readings agree in every cell tried;
-  the microtask class from decided 7 (defect 2) is not involved here.
-
-## State at the B12 kickoff (orchestrator, 2026-09-12)
-
-The owner's GOAL for this session: finish the next batch. B11.1 is closed,
-reviewed and approved, so the next batch is **B12 - the real-browser layer on
-`dist/`, and the gates** (`plan.md`, "B12", outline with decided points).
-B12 is outline-only, so this cycle is **planner first, then implementer,
-then reviewer** - review is required by the risk rules because B12 changes
-what CI enforces and touches the coverage/a11y gate configuration.
-
-### The tree
-
-- HEAD `6e05a11` on `main`, and `origin/main` is the same commit: every
-  committed boundary through B11.1 is pushed. Nothing of TASK 47's is
-  uncommitted.
-- Working tree carries one untracked directory that is **not** this task's:
-  `issues/tg-preview-refresh/` (context/plan/handoff for another task).
-  Leave it alone; never `git add -A`.
-- Two other interactive sessions are live on this machine and share this
-  working tree, so HEAD can move under a worker. Re-read `git log --oneline -3`
-  before committing.
-- Nothing heavy was running at kickoff: no `chrome.exe`, so no parity or
-  puppeteer run is alive, and no subagent of this session is listed.
-
-### The three commits after B11.1's fix, and what they mean for B12
-
-`e94a90e` is B11.1's fix. Above it sit three commits that touch **no**
-application code, so B12 plans against the same `app/`, `tests/` and live
-files B11.1 closed on:
-
-- `64e094d`, `e8bb37f` - `issues/47/` only: B11.1's commit hash filled in,
-  then the review verdict and its six nits recorded.
-- `6e05a11` - agent wiring only (`.claude/`, `CLAUDE.md`). Two standing rules
-  changed and both bind B12's workers: **agents now push the branch** once a
-  batch's commits pass their gates (`bash-guard` still denies only a bare
-  `git push --force`; `--force-with-lease` passes), and a **terminal batch**
-  (no further batch in `plan.md`, no further phase or goal from the human)
-  spends its one remediation cycle on blockers *and* local nits, where a
-  mid-plan batch still defers nits to the handoff. B12 is not terminal for
-  TASK 47 - Phases 6, 7 and 8 remain - so its nits defer unless they are the
-  cheap local kind B12's own paths already touch.
-
-### B11.1's review, and what it hands the B12 planning pass
-
-Verdict: **approve, no blockers**; six nits, none acted on, all recorded in
-`handoff.md`, "Deferred", with the reviewer's positive findings beside them.
-Two of them are inputs to this planning pass rather than backlog:
-
-- **Nit 1 is explicitly the planner's call.** The live app re-inserts the
-  `.dropmenu` markup on every render, so `animation: pop .16s ... both`
-  restarts and `placeMenu` measures a menu still at `translateY(10px)
-  scale(.985)`; in the port the menu element persists across the
-  "+ Новый список" re-measurement, so that second measurement is taken at
-  rest. Same side basis, possibly not the same transform state, ~10 px against
-  a measured 17 px band. Unsettled empirically. The planner either records it
-  in D6's "Where" or lets Phase 8's `.modal-card` measurement retire the
-  question; nobody has seen a defect from it.
-- **Nits 2, 3 and 5 are one-line edits the reviewer marked "can ride along
-  with B12's first commit"**: `hash.test.ts`'s citation should name
-  `hash.ts:103` and `:109`, not `:105`; the new `[]`-groups case should assert
-  `filter.tier` rather than only `not.toHaveProperty('cls')`; `FEATURES.md`'s
-  appended clause should say "the menu opens on the side..." so "it" does not
-  attach to the search box. Nit 4 (D6 pointing at `tests/app/states.js`)
-  resolves itself when B12 creates that file. Nit 6 records a known gap - the
-  placement has no unit-level pin and the parity state is RU-only - and is the
-  reason B12 homes the assertion in `states.js`.
-
-### Costs the planner should size batches against (unchanged)
-
-`npm run check` ~165 s idle, `npm run check:built` a few minutes, a single
-parity filter up to ~9 min, the full parity suite ~867 s on CI and **not** one
-foreground call. B12's own gate estimate from its outline is 3-4 min for the
-five new suites.
-
-## B12 planning facts (planner, 2026-09-12) - durable, read before implementing
-
-Read off the tree at HEAD `d0963d9` (no application code above B11.1's
-`e94a90e`). Full design: `plan.md`, "B12 planned". These are the facts that
-would otherwise be re-derived; none of them is a decision.
-
-### The harness, as it already is
-
-- `tests/parity/driver.js:25-27` - `ready()` already accepts `#app` as well
-  as `#view`. B12's outline asked "if it does not already"; it does.
-- `tests/run-all.js` spawns `path.join(HERE, name + '.js')` and names its
-  log `keyOf(...).replace(/[^\w.-]+/g, '-')`, so a suite named `app/sweep`
-  resolves to `tests/app/sweep.js` and writes `test-output/app-sweep.log`
-  with no runner change. The name filter and `--exclude=` both compare
-  `s[0]`.
-- `tests/**` is outside both formatting gates: `.prettierignore` lists
-  `tests/`, and `eslint.config.mjs:18` ignores `tests/**`. New suites keep
-  the legacy shape and nothing reformats them.
-- `npm run check` **never builds** (`package.json`): `format:check`, `lint`,
-  `typecheck`, `data`, `derived`, `i18n`, the hook selftest, vitest. Any
-  `tests/app/` run needs `npm run build` (or `check:built`) first. CI is
-  already safe - its "legacy suites" step runs after `Build`.
-- `axe-core/axe.min.js` resolves from the repository root; neither
-  `index.html` nor `app/index.html` carries a CSP, so
-  `page.addScriptTag({ path })` works over `file://`.
-
-### The parity cache, and what editing `driver.js` actually costs
-
-- `tests/parity.js:150` hashes `tests/parity/driver.js` into `rootHash()`,
-  beside `index.html`, `app.js`, `style.css`, `data.js`, `img/`, `og/`,
-  `card/` and `parity.js`. Any edit invalidates every cached legacy
-  screenshot once.
-- **CI pays nothing for that.** `.github/workflows/ci.yml` caches npm and
-  nothing else; `test-output/.parity-cache` is never persisted, so every
-  parity shard already runs cold.
-- **Locally it is moot as well**, because `tests/run-all.js` does
-  `fs.rmSync(OUT_DIR, { recursive: true, force: true })` on `test-output/`
-  at the start of *every* invocation - and `CACHE_DIR` is
-  `test-output/.parity-cache`. Any `run-all` run destroys the cache anyway.
-- Filters match with `id.includes(w)` (`tests/parity.js:353`). `"~ filtered"`
-  is 2 states / 12 cells; `"#/roll/std"` is 4 states / 24 cells. Whole-suite
-  arithmetic: 582 cells in ~867 s, so ~1.5 s a cell with both sides shot.
-
-### Selectors and markup the ports need
-
-- Rows `.rows .row[data-row]` (`TableRows.svelte:113`) - same on both apps.
-- The lit tab: `#tabs a.on` live; `nav.tabs a[aria-current="page"]`
-  (`TabBar.svelte:38`) here, whose `href` is `sectionHash(section)` -
-  `hash.test.ts:295` already replays the fixture's `tab` through it.
-- Print cards `.pcard:not(.blank)`; stat line `.eqstats span`
-  (`RecordCard.svelte:152`) - same on both.
-- Filter pills: live writes `data-val="group:value"` (`app.js:2671`); the
-  rewrite's `FilterBar.svelte:83` writes none. B12 adds it.
-- Source chips: live writes `data-act="src" data-val="core"` plus
-  `aria-pressed` (`app.js:2217`); the rewrite's `Chip.svelte` writes
-  `aria-pressed` and `.on` but **no value of any kind**, and `StdPanel`'s
-  source, kind and rarity rows are all `Field` + `ChipRow` + `Chip`, so
-  nothing but position or a Russian label distinguishes them. B12 ports the
-  live `data-val` through an optional `Chip` prop; `StdPanel` is its only
-  caller.
-- Roll buttons: `button.btn.primary:has(.dieicon)` (`DiceBar.svelte:30`,
-  `Die.svelte:20`) replaces the live `[data-act="roll"]` grep.
-- Badges are real and token-driven in the rewrite (`RowMain.svelte:96-98`,
-  `.badge.item/.cons/.eq-weapon/.eq-secondary/.eq-armor/.src`), so `hues`
-  reads rendered rows instead of injected spans.
-- `typo`'s click-expansion grips: `.helpbtn` (`HelpButton.svelte:28`),
-  `.cardpick` and `.lnote summary` (`ListPage.svelte:640`) survive as ported
-  classes; `[data-act="fOpen"]` and `[data-note-toggle]` do not and must be
-  pressed by accessible name instead - otherwise half of each page is
-  silently unchecked.
-
-### The route fixtures still replay after B11's decoder fix
-
-Checked entry by entry (`docs/fixtures/urls/routes.json`, seven `f_` shapes):
-`f_tier-2.cls-mag`, `f_range-melee`, `f_burden-2`, `f_tier-1-2` unaffected;
-`f_tier-1_cls-phy` still takes the legacy `_` reading (both heads name groups
-`eq_weapon` offers) and reads `["tier:1","cls:phy"]`; `f_frame-beast_feast`
-never took it (`feast` carries no `-`) and stays one value;
-`f_nosuch-1` fails open to the whole table, 317 rows. The two-frame link B11
-fixed is deliberately absent - it waits for Phase 7.
-
-### The uncovered branches, named
-
-- `Icon.svelte:21` - the `'opacity' in icon` **true** arm. `external` is the
-  only icon with one (`lib/icons.ts:44`, `opacity: 0.7`); it renders in
-  `AltPanel.svelte:205` (the crit row's table links) and
-  `RecordPage.svelte:67` ("показать в таблице").
-- `SelBar.svelte:33-41` `copySel` - the reachable arm is
-  `if (!items.length) return`, not `if (!index) return`.
-  `app.toggleSel(id)` (`state/app.svelte.ts:319`) takes any id, so a
-  selection holding an id the index does not carry reaches it.
-
-### Not measured against `dist/`, and B12 measures it first
-
-`audit2` re-pointed passes at **1180 only**. 360, 390 and 768 have never
-been run against the rewrite, and axe with `color-contrast` on has never
-been run against it at any width. B12's step 1 is a scratch probe for both,
-before a line of the suite is written.
-
-## B12's commit block is host contention, measured (orchestrator, 2026-09-12)
-
-B12's C1 landed as `a52c17d` and is on `origin/main`. C2 and C3 are written
-and each suite verified alone, but **uncommitted**, because `npm run check`
-crossed the 600 s foreground cap twice. The cause is not the batch:
-
-- At the implementer's close, a **peer session was running `npm run check`
-  (pid 52124) and `npm run test` (vitest `run --coverage`, pid 64020 with four
-  workers) against this same working tree**, CPU at 100 %, 2.2 GB free of 16.
-  `CLAUDE.md`'s "one session at a time per working tree" is being broken by a
-  second session, not by this task's workers, and the symptom is exactly the
-  one that rule predicts: a check that cannot finish, and a coverage run whose
-  numbers describe a tree holding another task's unfinished work.
-- HEAD moved twice under this task while B12 was being built: `58dbd70`
-  (`docs(agents)`) and `3a80456` (`docs(closeout-hygiene)`), both a peer's,
-  both preserved.
-
-**The tree now mixes two tasks' uncommitted work.** B12's are `tests/app/`,
-`app/src/App.svelte`, `app/src/components/{Chip,FilterBar,StdPanel}.svelte`,
-`app/src/components/shell.test.ts`, `tests/run-all.js`,
-`.github/workflows/ci.yml`, `CLAUDE.md`, `docs/specs/{DEBT,COVERAGE}.md`,
-`issues/47/`. The peer's are `.claude/hooks/*` (ten files) and
-`.claude/README.md` - **do not stage them**, and never `git add -A`.
-
-Two consequences for whoever finishes C2/C3:
-
-1. The commit gate fingerprints the **whole tree**, so the passing
-   `npm run check` has to be taken on a tree that still contains the peer's
-   half-finished hook edits, and it is invalidated again the moment the peer
-   touches another file. The check is worth taking only once the peer's runs
-   are done, and the commit should follow it immediately.
-2. `npm run check` lints and self-tests `.claude/hooks/`, so a red result may
-   belong to the peer's work rather than to B12. Read the failure before
-   attributing it.
-
-## The slow host is a runaway desktop process, not the project (orchestrator, 2026-09-12)
-
-> **Superseded by "The host is throttled to ~20% of nominal" below.** The
-> wall-clock measurements here are sound and still worth reading; the
-> *attribution* to `explorer.exe` is not - a percentage of a throttled core
-> is not a share of the machine.
-
-Correcting the entry above, and the diagnosis both the B12 implementer and
-the peer session wrote: **`npm run check` crosses 600 s on an idle tree too.**
-Taken on this tree with no peer run alive, the whole check needed roughly 20
-minutes against its recorded ~165 s baseline:
-
-| Step | This run | Baseline (2026-09-10) |
-|---|---|---|
-| everything up to `selftest` | ~8 min | ~58 s |
-| `selftest` | ~3 min | 19 s |
-| vitest `run --coverage` | 491 s wall, 1464 s of test time | ~90 s |
-
-**What is eating the machine**, sampled over 6 s with no npm run alive, on 8
-logical processors: `explorer.exe` at **62 %** and `NGenuity2Helper.exe` at
-**20 %** - together about four fifths of the host, with 3.6 GB free of 16.
-`NGenuity2Helper` had accumulated 513 CPU-minutes and `explorer` 274. Neither
-is this project's, and no amount of scheduling around peer sessions fixes it.
-
-**Consequence for any batch, not just B12**: while those two spin, no
-`npm run check` fits one foreground call, so the commit gate cannot be armed
-and nothing can be committed that touches a checked path. The honest next step
-is to fix the host (restart `explorer.exe`, and `NGenuity2Helper` with it),
-then re-take the check - not to re-run the gate hoping for a quiet minute, and
-not to reach for `SKIP_CHECK_GATE=1`, which would commit code no check has
-read.
-
-**The red check itself, for whoever re-runs it** - two failures, both with the
-shape of starvation rather than defect, neither yet judged:
-
-- `searchPage.test.ts` "shows the first 300 matches, and select-all ticks all
-  300": timed out at its 30 s limit after **99.6 s** of wall clock in a single
-  test. A test that needs 100 s on a host this starved says nothing about the
-  code.
-- `tables.test.ts` "the outline follows the record into the grid view":
-  `[data-row="ci2"]` has `tilewrap` but not `flash`. The flash class is
-  time-bounded, so a starved run can miss its window - but this one is a real
-  candidate for a B12 regression and must be judged on a healthy host before
-  it is dismissed. It is in the anchor family the plan already calls
-  half-solved (`plan.md`, "The anchor states").
-
-`npm run check` also reaches the peer's uncommitted `.claude/hooks/` edits;
-`selftest.mjs` reported 312 passed, 0 failed, so their work is not the red.
-
-## The host is throttled to ~20% of nominal, and that explains every earlier reading (orchestrator, 2026-09-12)
-
-One counter settles what three sessions guessed at:
-
-```
-Get-Counter '\Processor Information(_Total)\% Processor Performance'
-```
-
-It read **20, 20, 20, 20** over four consecutive samples. The CPU is an
-Intel i7-8565U (nominal 1.8 GHz, a 15 W ultrabook part) and it is running at
-about a fifth of that. Every other number on this page is a consequence:
-
-- **The 5x wall clock is the throttle, exactly.** `format:check` 11 s -> 55 s;
-  `npm run check` ~165 s -> ~825 s projected, ~19-20 min observed. One fifth
-  the clock, five times the wall.
-- **"Total CPU 75-95%" and "`explorer.exe` at 62%" are the same illusion.**
-  Both are percentages of *current* capacity, and capacity is one fifth of
-  normal. Sampled during a real `format:check` run, the top consumers were
-  prettier's own two node processes (114-223% each, i.e. 1.1-2.2 cores);
-  `explorer.exe` did not appear at all. Its earlier burst was real and
-  transient, not the standing state, and never "four fifths of the host".
-- **So nothing on the software side is starving the build.** Not the peer
-  Claude sessions (~0.2 cores), not `explorer.exe`, not this project.
-  `NGenuity2Helper` does hold a core continuously, which on a 15 W chip is
-  worth reclaiming as *heat*, but it is not what makes the check slow.
-
-**Not power policy:** on AC, 99% charge, Balanced scheme. That leaves
-thermal or a stuck embedded-controller/DPTF state (`dptf_helper` is running)
-as the cause; `MSAcpi_ThermalZoneTemperature` is unavailable on this host, so
-the temperature itself was not read. Fixing it is the owner's call and needs
-a human at the machine - airflow, ambient, or a reboot to clear a stuck
-policy.
-
-**The one-minute probe before any gated batch.** Read the counter above, or
-time `npm run format:check`: **~11 s means the machine is healthy and the
-full gate sequence will fit one foreground call; ~55 s means it will not**,
-and no amount of waiting for a quiet minute will change it. This is cheaper
-than discovering it 19 minutes into a check, which is what three sessions
-did.
-
-## The throttle has lifted, and B12 is closed (orchestrator, 2026-09-12, later)
-
-The probe above, run at the top of this session: **`npm run format:check` in
-9.4 s**, and the same counter read **139-171%**, not 20. The machine is
-healthy again; nothing was done to it from here, so treat the throttle as a
-state that comes and goes and keep running the one-minute probe.
-
-What that bought, in one session:
-
-- `npm run check` in one foreground call, **exit 0**: selftest 312/312,
-  typecheck 544 files 0/0, vitest **1007 passed / 1007 across 41 files in
-  78.2 s** - against 521.8 s and an *unstable* failing set (2, then 3, with
-  nothing edited) under the throttle. The phantom failures were the throttle
-  and are gone.
-- **The gate arms once for a whole batch.** `tree-key.mjs` fingerprints
-  *content* (staged + unstaged + untracked, HEAD excluded), so committing
-  changes nothing about the key. One passing `npm run check` covered both
-  C2's and C3's commits; the plan's steps 12 and 15 do not each need their
-  own run when no file changes between them. Two runs saved, ~6 minutes.
-  The corollary is the trap: **any edit to any non-gitignored file disarms
-  it**, which is why a remediation cycle that touches one test file pays for
-  a fresh check.
-- B12 landed as `9a4f8db` (C2), `4adc5a5` (C3), `9ced2b3` (the review
-  remediation), plus docs. All pushed; `origin/main` is `fde4da4`.
-
-## GitHub Pages is already served by Actions - the "Pages flip" gate does not exist (orchestrator, 2026-09-12)
-
-Measured, not assumed - `gh api repos/:owner/:repo/pages`:
-
-```
-"build_type": "workflow",  "status": "built",  "source": {"branch":"main","path":"/"}
-"html_url": "https://artex-x.github.io/daggerheart-loot/"
-```
-
-**`build_type: workflow` means the owner has already switched Pages to
-"GitHub Actions".** Two places in `plan.md` are therefore stale and must not
-be planned around any longer:
-
-- the Phases table's Phase 6 row, "Owner-gated on the Pages flip";
-- Phase 8, "Where the phase sits", entry condition 2, "the owner has
-  switched Pages to 'GitHub Actions'" - already satisfied.
-
-**What actually publishes the old app is one step in
-`.github/workflows/ci.yml`'s `deploy` job**, "Collect what the site is made
-of", which copies `index.html style.css app.js data.js data.json catalog.csv
-llms.txt robots.txt .nojekyll LICENSE img og i card` into `_site` by an
-explicit list. The rewrite goes live when that list names the built output
-instead of the root files.
-
-**Hazard for whoever writes that step: `dist/` carries symlinks into the
-repo root** (`dist/card -> /e/dev/daggerheart-loot/card`, absolute). An
-absolute symlink does not survive `upload-pages-artifact` as a directory
-would, so "copy `dist/` instead" is not a one-line change: the step still
-assembles `img/`, `og/`, `i/`, `card/`, `robots.txt`, `llms.txt` and
-`.nojekyll` explicitly alongside the build. The existing "Nothing private
-slipped in" guard (which refuses `app`, `tests`, `tools`, `docs`,
-`node_modules`, `package.json`, `.git` in `_site`) should still hold, but
-re-check it against the new list rather than assuming.
-
-### Owner decision, 2026-09-12: publish early, delete later
-
-Asked directly, given that the cut-over is one workflow step rather than a
-Pages setting. The owner chose **a reversible cut-over**: point the deploy
-step at the built output and go live while `index.html`/`app.js`/`style.css`
-stay in the repository and the parity harness keeps running against them as
-its expectation. A bad deploy is then reverted by one step, with the old app
-still present. Phase 7's deletions - the three live files, the legacy
-browser suites, `tests/parity.js`, `VISUAL_DEBT`/`ACCEPTED` - move *behind*
-that flip and get their own entry condition, instead of landing the same day
-the site goes live.
-
-Sequencing consequence already agreed: **B12.1 lands before the flip.** It
-is a defect on the public entry point - a bare `#/` has its address bar
-wrongly rewritten - so it is fixed while the old app is still the fallback.
-
-## The entry document was never ported (planner, 2026-09-12) - durable, read before the cut-over
-
-Measured by reading `index.html` against `app/index.html` on `aac1453`, not
-inferred. Nothing in the tree compares the two documents' heads: parity shoots
-pixels after the app has booted, and its `title` spec reads `page.title()`
-after `Shell.svelte:28` has overwritten the static title with
-`app.t.docTitle`. So this has been invisible since Phase 1.
-
-`app/index.html` - and therefore `dist/index.html`, which the build emits from
-it with only the script tags rewritten - is missing all of this, which
-`index.html` has:
-
-- `viewport-fit=cover` on the viewport meta. `SelBar.svelte:77,98,99` uses
-  `env(safe-area-inset-*)` (ported from `style.css:53-54`), and without
-  `viewport-fit=cover` those resolve to 0 on a notched phone.
-- `<title>` "Генератор лута — Daggerheart". The rewrite's static title reads
-  "Генератор лута для Daggerheart"; `dict.ts:22` already carries live's string
-  for the runtime write, so only the static one is wrong.
-- `<meta name="description">` (which is where the 680 / 381 counts live).
-- `<meta name="color-scheme" content="dark">` (`tokens.css:13` sets the CSS
-  property; the meta covers the paint before the bundle runs).
-- The whole Open Graph and Twitter block: `og:title`, `og:description`,
-  `og:url`, `og:locale` + alternate, and `og/_share.jpg` at 1200x630. This is
-  **the site's own link preview**, chosen deliberately over an item's artwork
-  - `index.html`'s own comment explains why - and `META.md` section 2 is about
-  messenger previews mattering here.
-- `<link rel="icon">`, a data: SVG.
-- The `<noscript>` block: what the site is and links to `catalog.csv`,
-  `data.json` and `llms.txt`, in both languages. Its comment says it exists
-  because a reader without JS "saw an empty page and left with nothing", which
-  is exactly what `llms.txt` and `robots.txt` promise against.
-
-Consequence: "point the deploy step at `dist/`" is not a complete cut-over.
-Whoever performs it ports the entry document in the same batch - see
-`plan.md`, "B13 planned". Two mechanical traps found with it: `app/index.html`
-is **not** in `.prettierignore` (the root `index.html` is), so the ported
-markup is reformatted and will never be byte-identical to its source - compare
-parsed values; and the `<noscript>` block's `class="wrap"` resolves to nothing
-in the rewrite, where that class lives inside Svelte-scoped components.
-
-Two related readings taken at the same time, both durable:
-
-- **The rewrite states no record count anywhere** (no "запис", "позици",
-  "records" or "entries" count string in `app/src`). So `tests/derived.js`'s
-  `COUNTERS` check has nothing in the built app to re-point at; the counts
-  reach the published site only through the entry document's meta description
-  and `<noscript>` block, and through `llms.txt`, `robots.txt` and the
-  READMEs.
-- **The stub pages need no edit at the cut-over.** `tools/build-share-pages.js:96`
-  sends every stub to `SITE + '#/i/' + id` - the site root - which is exactly
-  the document that changes hands.
-
-## State at the B12.1 kickoff (orchestrator, 2026-09-12)
-
-Preflight, measured not assumed:
-
-- HEAD `5f6fded` ("replan Phase 6 as a reversible cut-over, and plan B12.1"),
-  and `git fetch origin main` puts `origin/main` on the same sha. Nothing moved
-  under the planner's commit.
-- Working tree clean except the untracked `issues/tg-preview-refresh/` - a
-  different task's documents. Leave them alone; they are not evidence for 47.
-- No subagent of this session is running. `ListAgents` lists three *interactive*
-  peer sessions on this machine, so HEAD can still move under a writer: the
-  implementer re-reads `git log --oneline -3` before it commits.
-- Host is idle for our purposes: no `chrome.exe`, and every live `node.exe` is
-  an MCP server of the desktop app, not a test run. The B12 throttle
-  (see "The host is throttled to ~20% of nominal") is not in evidence; treat
-  the plan's stated costs as the expectation and a 3x overrun as a symptom.
-- Planner tier: Fable access has lapsed, and `.claude/agents/planner.md` was
-  already corrected to `model: opus` - the frontmatter describes the real tier,
-  so no per-dispatch model argument is needed for a planning run.
-
-Next batch dispatched: **B12.1**, design in `plan.md`, "B12.1 planned".
-Not terminal - B13 (the reversible cut-over) is designed and queued behind it.
-
-## The CI read that closed B12.1 (orchestrator, 2026-09-12)
-
-Run `34715233810` on `7a729bd` - the commit carrying the router change - is
-**green in every job**, and this is the read B12.1's design deliberately left
-to CI instead of a local parity call:
-
-```
-check       success  11m41s
-parity (1)  success   9m34s
-parity (2)  success   8m04s
-parity (3)  success  10m36s
-parity (4)  success   9m15s
-audit       success     17s
-secrets     success      7s
-deploy      success     22s
-```
-
-So the rule change moved no parity cell: the four shards pass against the
-unchanged `VISUAL_DEBT`/`ACCEPTED` tables, which is what "no `STATES` entry
-covers a bare or unreadable address" predicted. The `deploy` job ran and
-succeeded as always - it is still publishing the **old** app, by the explicit
-file list in `ci.yml`. That step is exactly what B13's F2 commit rewrites.
-
-Two annotations, both pre-existing and unrelated: `gitleaks-action@v2` and the
-three Pages actions target Node 20 and are forced onto Node 24. Not this
-task's; worth an issue of its own if it ever starts failing rather than warning.
-
-The remediation commit `cd71897` is documentation only and its own run is of no
-consequence to the batch.
-
-## State at the B13 kickoff (orchestrator, 2026-09-12)
-
-- HEAD `cd71897`, equal to `origin/main`. Tree clean but for the untracked
-  `issues/tg-preview-refresh/`, which is a different task's and stays.
-- B12.1 is closed: reviewed (verdict fix-then-continue), one remediation cycle
-  spent on two documentation blockers, both fixed in `cd71897`. No blocker
-  remains open, and `NEEDS_HUMAN_CONFIRMATION` is no.
-- Six review nits are recorded in `handoff.md`, "Deferred". **Nit 1 is the one
-  B13 must not walk past**: a pinned bare `#/tables` is accepted by the pin
-  button and silently dropped at the next boot, where live always pins a named
-  table. Pre-existing and untouched by B12.1 - but B12.1 makes the pinned home
-  the value written to the address bar, and B13 is what puts it in front of
-  real users. Read-verified only; nobody has driven the built app at it.
-- Next batch: **B13 - the reversible cut-over**, `plan.md`, "B13 planned".
-  Three commits (F1 the entry document and its checks, F2 `ci.yml` alone so a
-  revert is one file, F3 the documents), and it is the batch that changes what
-  the public URL serves.
-
-## State at the B13 dispatch (orchestrator, 2026-09-12)
-
-- HEAD `33c7467`, equal to `origin/main` - the kickoff section above was
-  written at `cd71897` and is that commit's own successor; nothing else moved.
-  Tree clean but for the untracked `issues/tg-preview-refresh/`.
-- Owner GOAL for this session: **finish the next batch**, with Opus as the
-  planning tier because Fable access has lapsed. No planning run is needed -
-  B13 is already implement-ready - and `.claude/agents/planner.md` already
-  carries `model: opus`, so the frontmatter describes the real tier.
-- Host preflight: no `chrome.exe`; every live `node.exe` is a desktop-app MCP
-  server, not a test run. No subagent of this session is running. Four
-  interactive peer sessions share this tree, so HEAD can still move under the
-  writer - it re-reads `git log --oneline -3` before each commit.
-- Implementer tier for B13: **opus**, by the orchestrate prompt's "risk is
-  high" clause. F2 changes what the public URL serves, and its one failure
-  mode - a half-applied edit that publishes a mixture of the two apps - is
-  public before it is visible.
-- Division of labour inside the batch, so no turn ends waiting on a run the
-  shell will lose: the implementer does steps 1-10 (F1, F2, push) and reports;
-  the orchestrator reads the CI run and `deploy`'s log, including the guard's
-  output and `check-site.mjs`'s, because a run conclusion is a status; the
-  owner walks the live site (step 11); the implementer is resumed once for F3
-  carrying the run id, both outputs and the walk.
-- Deferred nit 1 - a pinned bare `#/tables` accepted by the pin button and
-  silently dropped at the next boot - is **not** in B13's design and is not
-  fixed by it. It goes live with the flip. Recorded here so the decision to
-  leave it is deliberate rather than overlooked; the fix belongs to a planned
-  batch, not to this one.
-
-## B13 closed - the site serves the rewrite (orchestrator, 2026-09-12)
-
-The cut-over landed and is live. `https://artex-x.github.io/daggerheart-loot/`
-serves the built rewrite; `index.html`, `app.js` and `style.css` remain in the
-repository, still gated, and `git revert 9177f3b` is still the whole revert -
-that commit is one file, 82+/12-, and nothing since has touched it.
-
-Commits: `0819a73` (F1, the entry document and its checks), `9177f3b` (F2, the
-flip, `ci.yml` alone), `a004764` (the two review blockers), `515e257` (F3).
-Run `34718569245` on `9177f3b` was green in every job including `deploy`; the
-guard printed 13 published entries with no `app.js` or `style.css`, and
-`tools/check-site.mjs` passed against the live URL from inside the job and
-again on an independent read from this session.
-
-### Settled owner decisions, 2026-09-12 - do not re-decide
-
-1. **The roll re-render keeps the previous artwork on screen until the new
-   image decodes** (`RollPanel.svelte:129`, `StdPanel.svelte:157` render a
-   single `<RecordCard>` with no `{#key}`, so the `<img>` node is reused).
-   Full mechanism, measurements and the reasoning that rules out a
-   loading-strategy cause: `handoff.md`, "Deferred", item 1. **The owner has
-   decided it is not fixed as a batch of its own - it is bundled into a batch
-   that already has other work in those paths.** What remains open is the
-   content of the fix, which is the planner's: which call sites, whether
-   `{#key}` is the right instrument, and whether it is a `DEBT.md` entry or
-   work inside a batch.
-2. **B12.1's deferred nit 1 stays deferred** - a pinned bare `#/tables` is
-   accepted and silently dropped at the next boot. It shipped with the flip
-   and is still open, read-verified only.
-
-### One measured fact worth knowing before the next batch
-
-`CLAUDE.md` is at **199 lines against its own "keep this file under 200" rule**
-- one line of headroom. The B1 fix hit exactly 200 and was compressed to fit by
-dropping a clause the Architecture boundaries section already states. The next
-standing rule added to that file forces a move-out into `docs/specs/*`, and
-that is cheaper to know now than to discover mid-batch.
-
-## The finishing plan, and the facts it measured (planner, 2026-09-12) - durable, read before implementing
-
-The whole remainder of task 47 is planned in `plan.md`, **"The finishing plan -
-every batch from here to done"** (the last section of that file): `B14 -> R0a ->
-R0b -> R0c -> Phase 8 under a new task id`. The brief for B14 is `handoff.md`,
-"Next batch (implement-ready)". Facts below were read off the source or measured
-this session; do not re-derive them.
-
-### Owner decisions, 2026-09-12 - settled input
-
-1. **The soak is dropped.** "I'm ok to get rid of soak, we can revert to
-   previous commit if needed, I would not block all the work." Phase 7's
-   condition 4 (seven days) is removed; condition 2 is reworded (the second
-   `check-site.mjs` read is taken when R0c opens); condition 3 is met by
-   evidence - `9177f3b`, `515e257`, `6cb8293` are three pushes, and R0a records
-   the two run conclusions rather than waiting on a clock; **condition 6 ("the
-   owner says go") now gates R0c alone**, because R0a and R0b delete nothing.
-2. Unchanged from the B13 close-out: the roll fix is never a batch of its own
-   (B14 is its host), and B12.1's nit 1 stays deferred (B14 C2 is where it
-   lands).
-
-### The revert cliff
-
-`git revert 9177f3b` is one command over one file today and stays so through
-B14, R0a and R0b. **R0c ends it**: after the deletions, recovery is restoring
-paths out of git history plus rebuilding the workflow's collect step - a batch,
-not a command. This is why condition 6 hangs on R0c only.
-
-### The roll re-render divergence is four call sites, not two
-
-Measured by reading the components. The handoff named `RollPanel.svelte:129`
-(one `<RecordCard>`, no `{#key}`) and `StdPanel.svelte:157`. The mechanism
-behind the second is **`OrGrid.svelte`'s `{#each cells as cell, i (i)}`, which
-keys by position**, so every caller that draws its card through `OrGrid`'s
-snippet reuses the node:
-
-- `StdPanel.svelte:157` (`items={pool}`)
-- `AltPanel.svelte:228` (`items={picks}`, `AltPick` wrappers)
-- `ListPage.svelte:676` - the **list page's own roll** (`.lroll`, `hit`),
-  `OrGrid or={t.or} items={[h]}`
-
-Keyed and unaffected: `TableRows.svelte:108` `(entry.it.id)`,
-`ListPage.svelte:782` `(it.id)`. Remounted by navigation and unaffected:
-`RecordPage.svelte:74`, `RecordModal.svelte:99`.
-
-`OrGrid` is generic (`items: T[]`), so `cell.it.id` is not available to it -
-object identity (`{#key cell.it}`) is, and it is the right key.
-
-**Classification, and it settles the open half of the owner's decision:** this
-is a divergence *from* live, not a live defect reproduced on purpose, so it is
-**not** a `docs/specs/DEBT.md` entry and not Phase 8's. It is migration work and
-belongs while the live app is still readable as the expectation.
-
-### The pinned bare `#/tables`, both halves
-
-Live does two things the port copied neither of: `homeHash()`
-(`app.js:1133-1136`) **writes** `'#/tables/' + S.tables.t`, always a named
-table; `homeAllows()` (`:1124-1130`) **accepts** any `TAB_LIST` entry - a bare
-`tables` included - as well as a named table. The rewrite's `toggleHome()`
-(`app/src/state/app.svelte.ts:444-454`) stores `this.hash` and `readHome`
-(`:65-72`) refuses a bare `#/tables` next boot.
-
-The writer needs "the table on screen", which lives in
-`TablesPage.svelte:65-75`'s `lastTable`, not in `AppState`. Measured:
-`App.svelte` remounts the page component on every route change and every
-interaction writes a named address, so `route.table ?? 'core_item'` inside
-`AppState` is exact. **Verify the remount before relying on it**; the fallback
-is `toggleHome(hash?)` with `TablesPage` passing `tablesHash(table)` through
-`PageHead`.
-
-### "Delete the legacy browser suites" is fifteen suites, ten with no counterpart
-
-Measured by requiring `tests/lib.js`, whose `ROOT` is
-`file://<repo>/index.html`. Dies with the live app: `audit2`, `behave`,
-`contracts`, `craftmob`, `eqtest`, `flows`, `hues`, `lists2`, `noart`, `notes`,
-`print`, `qa`, `select`, `states`, `typo`. Data-only and unaffected: `craft`,
-`dataint`, `derived`, `i18n`.
-
-`tests/app/` counterparts already exist for `contracts`, `hues`, `states`,
-`typo`, plus `sweep` for `audit2`'s page walk. **Ten have none**: `behave`,
-`craftmob`, `eqtest`, `flows`, `lists2`, `noart`, `notes`, `print`, `qa`,
-`select`. R0b gives each one of *covered already* (named specifically), *ported*
-or *dropped with a reason*; `print`'s geometry is named by Phase 7's own text
-and is a product law in `CLAUDE.md`. A suite whose coverage cannot be accounted
-for is not deleted.
-
-### Costs measured or read this session
-
-- Parity states: **105**. `"#/roll"` matches 18, plus `"#/lists/a ~ roll panel"`
-  and `"#/lists/a ~ rolled"` - 20 states, one foreground call.
-- `CLAUDE.md` is **199 lines** against its own 200-line cap. B14 therefore puts
-  the new standing rule in `.claude/prompts/` only; R0c, which deletes the
-  twenty-line "Migration and parity" section, puts it into `CLAUDE.md`.
-- `npm run check` runs `node .claude/hooks/selftest.mjs`, so a hook-message
-  assertion is gated by a call every batch already makes. `tools/` is ignored by
-  both `.prettierignore` and `eslint.config.mjs`, which is why
-  `tools/check-site.mjs` is reached by nothing until it runs post-deploy;
-  `node --check` in the `check` script closes it without touching `ci.yml`.
-- The counts rule is **seven** files (`tests/derived.js:397`), five after R0c
-  deletes `index.html` and `app.js`.
-
-### The standing rule this session earned
-
-**A placement has to be acceptance, not a footnote.** An item the plan places in
-a batch is written into that batch's acceptance criteria in `handoff.md` as its
-own line, and the closing record says what happened to each: done, or re-placed
-with a reason. A batch is not recorded closed while an inherited line has no
-outcome. Written because B12's nit 1 and nit 2b were placed in B13, B13 closed
-without them, and both documents went on saying they were handled. B14 puts the
-rule into `.claude/prompts/plan.prompt.md` and `implement.prompt.md`; R0c puts
-the one-line version into `CLAUDE.md`.
-
-### Task 47's end
-
-47 closes at **R0c**, not at Phase 8: Phase 8's own design gives R1 a new task
-directory "so this file can retire with issue 47". `plan.md`'s opening line,
-which says the file is historical once Phase 8 closes, is corrected by R0c's
-documentation commit. What happens to `issues/47/` itself is the owner's call;
-the recommendation is to keep it, since it is the only place the migration's
-measurements live.
-
-### One more thing R0a must not walk past (same session)
-
-`tests/parity/specs.js` has **no `pending` state and no `pending` spec** (so
-Phase 4's row in the Phases table was stale and is corrected), and
-**`VISUAL_DEBT` holds 18 entries**. Those 18 are known, measured places where
-the rewrite draws something different from the live app. R0c deletes the table.
-R0a therefore decides each of the 18 - paid off, or carried into a
-`FEATURES.md`/`STATE.md` bullet or a `DEBT.md` section-2 entry - because
-otherwise eighteen recorded divergences disappear with the file, which is the
-same class of loss as the two dropped nits and the ten uncounted legacy suites.
-
-## Phase 7 condition 3, satisfied by evidence (orchestrator, 2026-09-12)
-
-With the soak dropped, condition 3 - "the publish path has been exercised, not
-just opened: at least three pushes to `main`, each with `deploy` green" - is
-the one that still had to be *earned*. It is now met, and these are the runs
-that prove it:
-
-| push | run | result |
-|---|---|---|
-| `9177f3b` (the flip itself) | `34718569245` | green in every job, `deploy` included |
-| `515e257` (B13's F3) | `34719879067` | green in every job, `deploy` included |
-| `ecbd2f4` (the finishing plan) | `34720438881` | green in every job, `deploy` included |
-
-Each `deploy` re-assembled `_site` from `dist/` and re-ran
-`tools/check-site.mjs` against the live URL, so the published state has been
-verified three times by CI plus once by an independent read from this session.
-
-**One thing to know before reading a run list and drawing conclusions:
-`6cb8293`'s run was `cancelled`, and that is not a failure.** The workflow's
-top-level `concurrency` is `group: pages` with `cancel-in-progress: false`,
-which protects a run already executing but allows only one run *pending* per
-group: `ecbd2f4` arrived while `6cb8293` was still queued and superseded it.
-Nothing was lost - `ecbd2f4` is the later commit on the same branch and
-contains `6cb8293`'s tree. The practical consequence is that a burst of
-doc-only pushes will cancel the intermediate runs, so **a cancelled run is not
-evidence** and must not be counted toward condition 3. Space pushes out when a
-run's own result is the thing being collected.
-
-## State at the B14 kickoff (orchestrator, 2026-09-13)
-
-Measured, not remembered, before the dispatch:
-
-- **HEAD `37c5c2f`, equal to `origin/main`; tree clean** but for the untracked
-  `issues/tg-preview-refresh/`, which belongs to a different task and stays.
-- **Nothing is running anywhere on this host.** Every live `node.exe` is an MCP
-  stdio server (`@modelcontextprotocol/server-pdf`); no `vitest`, no
-  `tests/run-all.js`, no `tests/parity.js`, no `chrome.exe`. So a heavy gate
-  started now has the machine to itself, and a 5000ms timeout in this batch
-  would be a real finding rather than a stray browser.
-- **The orchestrator for this batch is pinned to another working tree.** Its
-  session was launched in `E:/dev/daggerheart-loot-wt/tg-preview-refresh`
-  (branch `automation/tg-preview-refresh`, 59 commits behind `main`), whose
-  `issues/47/` is a **stale copy frozen at "B7 planned"**. The owner directed
-  the work to `E:/dev/daggerheart-loot` instead. Two consequences worth
-  writing down, because the next session may inherit the same shape:
-  - **`issues/47/` exists on two branches and only `main`'s is true.** A cold
-    agent that reads the copy on `automation/tg-preview-refresh` will believe
-    the print slice is next and that Phase 6 has not happened. Check
-    `git branch --show-current` before trusting anything under `issues/47/`.
-  - **The Bash tool resets its cwd to the session's pinned directory between
-    calls.** Every command in this batch therefore carries an explicit
-    `cd /e/dev/daggerheart-loot &&` prefix; a command without one silently
-    runs against the other worktree.
-- **`.claude/agents/planner.md` already reads `model: opus`.** The owner asked
-  for Opus planning because Fable access has lapsed; the frontmatter had
-  already been changed, so nothing was edited and no per-dispatch model
-  argument was needed. B14 also needs no planning pass - it was left
-  implement-ready by the 2026-09-12 planner.
-
-
-## B14 closed and approved, and the three durable facts it produced (orchestrator, 2026-09-13)
-
-B14 landed as `6b18291` (C1, the roll surface), `af7fa17` (C2, the pinned home)
-and `a7f8787` (C3, the inherited checks), with `b86dffd` and `f2dca3b` as the
-records. Reviewed at Opus: **approve, no blockers in the diff, the remediation
-cycle unused.** Nothing here is pushed - the owner pushes.
-
-Three facts are worth carrying forward. Read them before planning R0a; two of
-them change what a batch has to do.
-
-1. **A parity filter that matches nothing is indistinguishable from a passing
-   run, and this is a live hazard for every remaining batch.**
-   `tests/parity.js` uses `WANTED` only to `continue` past non-matching cells
-   (`:353`, `:374`, `:551`); the summary prints the filter names (`:668`), then
-   `расхождений нет` and `process.exit(0)` (`:670-671`). **No cell count is
-   printed anywhere.** B14's first parity call had its `#/roll` arguments
-   rewritten into filesystem paths by Git Bash, matched zero cells, and looked
-   exactly like a clean pass - it was noticed only because no per-cell lines
-   scrolled past. Two consequences:
-   - **On this host, a parity filter containing `#/...` needs
-     `MSYS_NO_PATHCONV=1`** in front of the command.
-   - **R0a carries the fix as its own acceptance line**: if `WANTED.length` and
-     no cell was compared, fail the run. One line at the summary.
-2. **Svelte does not remount a page component between two addresses of the same
-   route kind.** `App.svelte:71` dispatches through a single `{#if}`/`{:else if}`
-   chain with one `{:else if app.route.kind === 'tables'}` arm, and a branch is
-   torn down only when the *matched branch* changes. So `TablesPage`'s
-   `lastTable` (`TablesPage.svelte:68-74`) survives a move between two `tables`
-   addresses and is what is genuinely on screen. B14's plan assumed the
-   opposite and its primary design would have pinned the wrong table; the
-   fallback shipped instead. **Any future design that reasons about mount
-   lifecycle across routes has to check the branch, not the address.**
-3. **`RecordCard` holds no DOM state that live restores**, so keying it is
-   safe. `RecordCard.svelte:232` has a refs `<details>`, but live's equivalent
-   (`app.js:887-888`) carries no `data-keep`, so `restoreOpen()`
-   (`app.js:3769-3775`) never restores it and live closes it on every rebuild.
-   C1's `{#key}` therefore removed a second, unmeasured divergence rather than
-   creating one.
-
-Six review nits are in `handoff.md`, "Deferred", each named to a batch - four
-of them R0a's.
-
-## State at the R0a planning kickoff (orchestrator, 2026-09-13)
-
-Measured this session, before any dispatch. All of it is status, not design -
-it exists so the R0a planning pass and its implementer do not measure it twice.
-
-- **HEAD is `32926a0`** (`docs(issue-47): record B14's review ...`), on `main`,
-  and **`main` is level with `origin/main`** - so B14's three code commits
-  (`6b18291`, `af7fa17`, `a7f8787`) and the three records **are pushed**, which
-  corrects the earlier handoff lines that say nothing was pushed.
-- **Working tree clean** but for `issues/tg-preview-refresh/` (untracked,
-  another task's - never `git add -A`).
-- **A second interactive session, `tg-preview-refresh-c1`, is live on this same
-  working tree** (started 2026-09-13, seen in `ListAgents`). Planning is
-  document-only and safe beside it; before any gate or commit, re-check
-  `git log --oneline -3` and `git status`, and do not start a heavy run if that
-  session has one alive.
-
-### Phase 7 condition 3, re-read and closed with run ids
-
-R0a's step 1 asks for the `deploy` conclusions of the runs on `515e257` and
-`6cb8293`, and for the id of the last **full** green workflow. Read via `gh`:
-
-| sha | run id | conclusion | `deploy` |
-|---|---|---|---|
-| `9177f3b` (the flip) | `34718569245` | success | success |
-| `515e257` | `34719879067` | success | **success** |
-| `6cb8293` | `34720031859` | **cancelled** | never ran |
-| `ecbd2f4` | `34720438881` | success | success |
-| `37c5c2f` | `34721165294` | success | success |
-| `32926a0` (HEAD) | `34747570250` | **in progress at 08:2x UTC** | pending |
-
-- **`6cb8293`'s cancellation is not a failed deploy and not a blocker.**
-  `ci.yml:13-15` sets `concurrency: group: pages, cancel-in-progress: false`,
-  which keeps the running job but drops superseded **pending** runs; `6cb8293`
-  was pushed at 21:27:58Z and `ecbd2f4` at 21:36:37Z, so its queued run was
-  superseded before it started. The publish path repeats on **four** green
-  `deploy` runs either side of it. Condition 3 is satisfied by evidence.
-- **`34721165294` on `37c5c2f` is the last confirmed full green workflow** -
-  `check`, `audit`, `secrets`, `parity (1..4)` and `deploy` all success. It is
-  an ancestor of HEAD but **predates B14's three code commits**, so it is
-  **not** an adequate seeding warrant for R0a's structural goldens: the goldens
-  must be seeded from a tree green on the full workflow, and B14 changed what
-  the app renders. **The warrant R0a should name is `34747570250` on `32926a0`
-  once it goes green** - it is HEAD's own run and carries all four parity
-  shards. If it is not green, that is a blocker to raise, not a clock to
-  restart.
-- **The live site check is green, taken fresh this session**:
-  `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/` ->
-  `сайт опубликован верно`. (The script requires the URL argument; with none it
-  exits `FAIL no base url`.) This is condition 2's independent read for R0a;
-  condition 2's *second* read still belongs to R0c, when that batch opens.
-- No `deploy` failure and no revert anywhere in the window, so condition 5
-  holds. Conditions 1, 2, 3 and 5 - everything R0a needs - are satisfied.
-
-### Model tiering for this cycle
-
-Fable is unavailable (owner, this session). `.claude/agents/planner.md` already
-carries `model: opus`, so the planner runs at its real documented tier with no
-per-dispatch override; the agent and orchestrator prose are corrected to stop
-naming Fable as the default.
-
-## R0a planning facts (planner, 2026-09-13) - durable, read before implementing
-
-Full design in `plan.md`, "R0a planned: the evidence, the sweep, and the
-structural goldens"; the brief and the sixteen acceptance lines in `handoff.md`,
-"Next batch". Read off the source or probed read-only against the `dist/` built
-at `32926a0` (one puppeteer page, the harness's own launch args, `prepare()`'s
-reduced motion, 1100x900). Do not re-derive.
-
-- **The goldens' instrument exists and is stable.**
-  `page.accessibility.snapshot()` is present in the installed puppeteer 25.9.0
-  (`Page.js:252` -> `cdp/Accessibility.js:132`), so Phase 5 decided 2's "no new
-  dependency" premise holds. Two consecutive captures of the same arrival were
-  byte-identical on all seven routes probed. Capture cost 12-120 ms; the arrival
-  around it is ~1.2 s typically and ~7 s on the `#/tables*` family.
-- **Three serialized fields are per-run poison** (`cdp/Accessibility.js:444-505`):
-  `elementHandle` (a function), `backendNodeId`, `loaderId`. A golden that keeps
-  any of them fails its own second run.
-- **`url` in the tree is an absolute `file:///E:/.../dist/index.html#/...`**,
-  three slashes, i.e. one machine's path - and it does **not** equal
-  `driver.js`'s `TARGETS.next` (`'file://' + path.join(...)`, two slashes,
-  Windows separators). Normalise by cutting at the last `/dist/index.html`
-  substring, never by prefix-comparing against `TARGETS.next`. CI is ubuntu.
-- **Normalised tree sizes** (nodes / bytes of text): `#/tables` 164 / 25.9k,
-  `#/search?q=` 90 / 6.5k, the nine-card print sheet 173 / ~10k,
-  `#/roll/wondrous` 44 / 3.2k, `#/i/ci1` 39 / 2.6k, `#/lists` 36 / 2.5k.
-  Estimated 1.5-2.5 MB over 105 states x 2 languages. **SUPERSEDED: the real
-  seed is 5,204,669 bytes; the seven routes here miss `eq_weapon` (317), `voa`
-  and the 300-match search cap. See "R0a's golden format, measured and revised",
-  at the end of this file.**
-- **`VISUAL_DEBT`'s 18 entries are one mechanism, not eighteen decisions.**
-  Three states (`#/i/q1 ~ another tier`, `#/roll/wondrous ~ modal`,
-  `#/tables ~ a row opened`) x 6 cells, all 0.02 / 0.03 / 0.07%, every reason
-  "the close button's own focus ring" - the visible consequence of the rewrite's
-  `<dialog>` + `showModal()` moving focus where live leaves it on the page.
-  `specs.js:1964-2022`.
-- **That table's own comment is stale**: it says the fix is "the accessibility
-  fix `ACCEPTED` records", and no `ACCEPTED` key records it. The ten `ACCEPTED`
-  keys (`specs.js:2073-2106`) are eight `#/roll/alt*` controls entries and two
-  `#/tables ~ grid` controls entries, nothing else.
-- **Two of the four "Recorded, not keyed" divergences are already in
-  `FEATURES.md`** and need a verdict, not an edit: the anchor re-play at
-  `FEATURES.md:47-52`, the two-frame link at `FEATURES.md:61`. The other two -
-  `Chip`/`Seg`'s `aria-pressed` and `PrintCard`'s `<h2>` - are not, and become
-  bullets.
-- **`STATES` is 105 entries with zero `pending`**, 42 distinct routes, 61 with an
-  `enter`, 24 with a `storage` seed, 7 `timed`, 5 `whole`. The zero `pending`
-  count is what lets blocker B1's guard be written cleanly. The module-level
-  constants `STATES` reads are the print routes (`specs.js:28-56`), `PACKED`
-  (:70), `NOTES_BOTH_KINDS`, `QTY_AND_PRICE`, `LOOT` and the storage seeds
-  (:1017-1067); `EQUIPMENT_ENTRY` belongs to `SPECS` and does not travel.
-  **This list is one short: `NAME` (:91-185) travels too** - sixteen `enter`
-  closures call it. Measured and verified; see the revision section at the end.
-- **`tests/app/lib.js` imports `makeDriver`/`prepare` from
-  `../parity/driver.js`.** R0c's outline says it deletes `tests/parity/` whole;
-  `driver.js` is live code with four (soon five) dependants under `tests/app/`
-  and must be **re-homed by R0b**, not deleted. Nothing in R0a moves it.
-- **A new `run-all.js` row is picked up by CI for free**: `ci.yml:51` is
-  `node tests/run-all.js --exclude=parity`, run after `npm run build`.
-- **`tests/` is invisible to `npm run check`'s formatting and lint steps**
-  (`.prettierignore`, `eslint.config.mjs:10-16`); a new suite there is verified
-  only by running it. `tests/derived.js`'s `COUNTERS` (:397-398) does not read
-  `docs/specs/`, so the sweep's new bullets cannot trip the counter check.
-- **The working tree at planning was not clean**, contrary to the dispatch:
-  four tracked files modified (`.claude/README.md`, `.claude/agents/planner.md`,
-  `.claude/prompts/orchestrate.prompt.md`, `issues/47/context.md` - the
-  orchestrator's own session edits) plus the untracked
-  `issues/tg-preview-refresh/`. Preserve all five; stage by path.
-
-### The seeding warrant, resolved (orchestrator, 2026-09-13)
-
-Run **`34747570250` on `32926a0` completed `success`** at 08:37 UTC - `check`,
-`audit`, `secrets`, `parity (1..4)` and `deploy`, every one green. It is the
-warrant R0a's structural goldens seed under, and the row above that calls it
-"in progress" is superseded by this.
-
-Two documentation commits landed on top of it while it ran - `fe4eba2` (the
-planner tier text) and `7288106` (R0a's plan) - **both `.md`-only**, so `dist/`
-built from this tree is byte-identical to `dist/` built from `32926a0` and the
-warrant covers what the goldens actually capture. If any non-document commit
-lands before the goldens are seeded, the warrant no longer covers the tree and
-a fresh green run is needed.
-
-## R0a's golden format, measured and revised (planner, 2026-09-13) - durable, supersedes the size estimate above
-
-The seed was built to Decided 1 and measured. Everything here is a measurement of
-the real corpus or of the app, not an estimate. Full reasoning in `plan.md`,
-**"Decided 1, revised: what a golden captures for the largest states"**.
-
-- **The 1.5-2.5 MB estimate in "R0a planning facts" is wrong and is superseded.**
-  The seed is **5,204,669 bytes over 105 files, 40,361 section lines**. The seven
-  routes that estimate sampled did not include `eq_weapon` (317 records), `voa`,
-  or the 300-match search cap. Mean 50 KB; five files hold ~1.5 MB.
-- **The bytes are catalogue text, not structure.** A table row is a `checkbox`
-  and a `button` at the same depth with **no wrapper element**, and the button's
-  accessible name is that record's whole stat line - up to 1023 characters.
-  **14,720 of the 40,361 lines carry a name over 64 characters**, and every one
-  of the 105 files has at least one (the footer's "Данные: Daggerheart Core
-  Set, ..." is 444).
-- **The revised format is two local rules, applying to all 105 states with no
-  hand-listed set**: same-shape sibling elision (signature = role + attribute
-  *values* + child shape, names excluded; groups of more than five keep the first
-  two and last two and write one `... role xN of M same-shape siblings elided`
-  line) and a 64-code-point cap on every name with `namelen`/`namehash`
-  appended. Replayed over the seeded corpus: **5.20 MB -> ~1.50 MB, 40,361 ->
-  24,346 lines**; largest file 372 KB -> 89 KB.
-- **The controls section and the accessibility tree disagree about the same row,
-  by design, and must not be reconciled.** Matching one against the other to
-  elide the controls list was tried and **matches 462 of 12,829 entries**:
-  `NAME_FN` (`driver.js:105`) is `aria-label || title || textContent`, so a row's
-  control name has no inter-element spaces, carries the roll-number cell, and
-  keeps the DOM's letter case, while the accessibility name inserts boundary
-  spaces, omits the number, and reflects `text-transform: uppercase`. That
-  disagreement is the `Сообщество <i>любое</i>` class the two instruments exist
-  to keep apart. The controls section therefore gets the cap only, and keeps its
-  12,829 lines.
-- **The capture is reproducible; the format was never the problem.** Two
-  independent full captures on an unchanged `dist/` were byte-identical across
-  all 105 states, both languages - exit 0, zero differences. Decided 1's three
-  dropped fields and the `file://` url normalisation really were the whole
-  non-determinism.
-- **Costs, measured on this host**: seeding (`--update`) **414.6 s**; comparison
-  **1005 s**. The 2.4x gap is **not** explained by the compare path - the extra
-  work is one `readFileSync`, one `split`/`join` per section over 5.2 MB, order
-  of a second. Host contention was partly present but is not established, so the
-  suite prints `съёмка: Xs из Ys` on every run and the next log settles it.
-  A comparison at 1005 s cannot fit the 600 s foreground cap at any capture size,
-  so the suite carries `--shard=n/of` (`parity.js:63-76`'s grammar and interleave)
-  and a shard is ~250 s.
-- **`--shard` suppresses neither the missing-golden nor the stale-file guard.**
-  The missing check is per state and runs naturally; the stale check compares the
-  directory against the **whole** inventory, which every shard knows in full.
-  Only `--only=` suppresses them.
-- **`tests/app/inventory.js` carries `specs.js`'s `NAME` too** (`specs.js:91-185`,
-  the two-language button-name dictionary): sixteen `STATES` `enter` closures call
-  `NAME.ru.*` / `NAME[lang]`. The five-name list in "R0a planning facts" above is
-  short by one; the rule it states ("exactly the module-level constants it reads")
-  always covered it. **R0b and R0c must carry `NAME` with the rest.** The copy is
-  verified by reproducing this file's own seven numbers exactly - 105 states, 0
-  pending, 61 `enter`, 24 `storage`, 7 `timed`, 5 `whole`.
-- **A capture loop in this repository must `return await`, not `return`.**
-  `return captureLang(page, d)` inside `try { ... } finally { await ctx.close() }`
-  closes the puppeteer browser context out from under an in-flight CDP call and
-  throws `TargetCloseError` from `Accessibility.snapshot()`. The fix is
-  `return await captureLang(page, d)`. It crashed loudly on the `timed` states,
-  which was luck; a version that only sometimes lost the race would have seeded a
-  golden nobody could trust. This is the general shape, not a `golden.js` detail:
-  the next capture loop written here will hit it.
-- **The suite is not free to CI, contrary to "a new `run-all.js` row is picked up
-  for free".** At 7-17 minutes it would make `check` (11m51s) the workflow's
-  critical path, past the parity shards' ~10 minutes. It goes in `ci.yml` as its
-  own 4-shard job beside `parity`'s, with `ci.yml:51` becoming
-  `--exclude=parity,app/golden` - the precedent `run-all.js:73-76` documents and
-  `ci.yml:44-50` already implements.
-- **Repository size, for perspective on any future artefact question**: 63.4 MB
-  tracked, of which `img/` is 29.1 MB, `i/` 4.0 MB, and `data.js` + `data.json` +
-  `catalog.csv` 1.87 MB. A 1.5 MB golden corpus is 2.4% of the tree and smaller
-  than the generated `i/` directory.
-
-## The golden job costs CI nothing, measured (orchestrator, 2026-09-13)
-
-R0a's acceptance line 20 asked whether CI's wall clock grows once the structural
-goldens run there. It does not. Run **`34753801089` on `30b2744`** (C1 + C2),
-green in every job, against the warrant run `34747570250` on `32926a0`:
-
-| job | `34747570250` | `34753801089` | delta |
-|---|---|---|---|
-| `check` | 11m51s | 11m57s | +6s |
-| `parity (3)`, the longest shard | 10m32s | 10m33s | +1s |
-| `golden (1..4)` | - | **1m43s - 2m02s each** | new, off the critical path |
-
-The four `golden` shards start with everything else at 11:11:49 and are all done
-by 11:13:51, while `check` runs to 11:23:46 and `deploy` starts at 11:23:51. So
-the suite is finished nine minutes before the job that actually gates the
-publish, and both deltas above are inside run-to-run noise.
-
-**A shard costs ~2 minutes on CI against ~4m20s locally**, which is worth
-knowing before anyone reads a local shard time as the suite's real cost.
-
-The run on `06658fd` - the tip after C3 and the built record - is
-`34754984230`, queued at the time of writing; it is the first run that carries
-`tests/parity.js`'s B1 fix and the `isHome` deletion.
-
-## `app/states` case 7 flakes on a loaded runner, and it is not R0a's (orchestrator, 2026-09-13)
-
-CI run **`34754984230` on `06658fd`** - the first run carrying C3 - came back
-**`check: failure`**, on one case and one line:
-
-```
-FAIL  app/states dist/: реальный ввод              66.1s
-      FAIL 7 (два окна): страница B не увидела список, созданный на A, без перехода
-```
-
-Every other job in that run was green, all four `golden` shards included.
-
-**It is a flake, not a regression, on four independent readings:**
-
-1. **C3 cannot cause it.** `47a9a15` touches `app/src/state/app.svelte.ts` only
-   to delete the five-line dead `isHome` getter; the rest is `app.test.ts`,
-   `tests/parity.js`, `docs/parity.md`, and assertions added to
-   `tests/app/states.js` **case 14** and `typo.js`. Nothing in the diff goes
-   near storage, the `storage` event, or the lists page.
-2. **It passes locally on the same tree**: `node tests/run-all.js app/states`
-   -> `ok app/states dist/: реальный ввод 65.0s`, all fourteen cases. The 65.0s
-   against CI's 66.1s says the suite ran the same work both times.
-3. **A second CI sample on the same C3 code is green**: run `34755188652` on
-   `6e1269b`, `check: success`.
-4. **The case is written to flake.** `tests/app/states.js:190-192` waits for
-   page B to redraw with `waitForFunction(..., { timeout: 5000 }).catch(() => {})`
-   - the timeout is **swallowed** - and then asserts on whatever the page says.
-   So a runner slow enough to take over five seconds to deliver the `storage`
-   event and repaint produces exactly this failure text, and a fast one hides it.
-
-**Recorded as a Deferred item rather than fixed here**: it is a pre-existing
-case, R0a did not write it, and the fix is a design question (raise the timeout,
-poll to a deadline, or wait on the event itself rather than the repaint) that
-belongs to whoever owns `tests/app/states.js` next. What must not happen is the
-next red `check` being read as "that flaky two-window case again" without
-someone checking the diff first - which is how a real regression hides behind a
-known flake.
-
-## State at the R0b planning kickoff (orchestrator, 2026-09-16)
-
-A measured snapshot only. Nothing here decides anything R0b owes.
-
-**HEAD has moved five commits past what R0a's record names, and none of it is
-task 47's.** `git log --oneline -5`:
-
-```
-df1bd57 docs(config-audit): record B2 completion, correct selftest baseline, hand off B3
-d61aadb docs(agents): thin the wrappers, allowlist the reviewer, name the planner-tier policy
-93d601c docs(config-audit): record B1 completion and hand off B2
-779fae6 docs(claude): trim CLAUDE.md, repair dead references, add manual skills
-2d2e983 fix(app): resolve task 56 typecheck regressions
-```
-
-R0a's last commit `f826bcd` is behind these. The four `docs(...)` commits belong
-to `issues/config-audit/` and to the agent wrappers; `2d2e983` is task 56's.
-None touches `tests/app/`, `tests/parity/`, `tests/run-all.js` or the legacy
-suites, so **R0b's working set is untouched by them** - but two of them edited
-`CLAUDE.md` and `.claude/agents/`, so a planner must read the current
-`CLAUDE.md` rather than trust a quotation of it from this file.
-
-**`origin/main` is four commits behind HEAD**: remote is `2d2e983`, HEAD is
-`df1bd57`. The four unpushed commits are the config-audit task's, not 47's.
-Recorded, not acted on - 47 does not push another task's boundary.
-
-**The working tree is not clean, and the dirt is another task's.** 76 tracked
-paths modified: `app.js`, `app/src/components/TablesPage.svelte`,
-`app/src/lib/{dict,label,tables}.ts`, four `docs/specs/*.md`, 57 `i/f*.html`,
-`tools/build-share-pages.js`, and `issues/56-followup/handoff.md`. Untracked:
-`.agents/`, `.codex/`, four `.claude/agents/impeccable-*.md`,
-`.claude/skills/impeccable/`, `issues/tg-preview-refresh/`. This is task
-56-followup / tg-preview-refresh work in flight. **Do not stage it, do not
-`git add -A`, do not run `npm run check` on it** - the check would be measuring
-half-finished edits that belong to someone else.
-
-**Three peer sessions share this working tree** (`ListAgents`, 2026-09-16):
-`claude-rewrite` (idle), `tg-preview-refresh` (idle), and
-`Code review for issues 59 & 56` (busy). No heavy run is alive: no
-`test-output/parity.lock`, no `chrome.exe`, and every live `node.exe` is a
-session host rather than a test runner.
-
-**Consequence for R0b's shape**: the planning pass is document-only and safe
-beside the above. **The implement pass is not**, and an implementer cannot take
-this tree as it stands - its gates (`npm run check`, `check:built`, a parity
-filter) would run over another task's uncommitted edits and report their
-failures as R0b's. R0b's plan must say so, and the batch waits for a clean tree.
-
-**Task-document size, stated as a fact for whoever prices the next read**:
-`plan.md` is 1007 KB, `handoff.md` 510 KB, `context.md` 222 KB (before this
-block). Every worker on this task pays that on entry. Compaction is
-`.claude/skills/handoff/SKILL.md`'s procedure and it has not been run.
-
-## R0b planning facts (planner, 2026-09-16) - durable, read before implementing
-
-Full design in `plan.md`, "R0b planned: re-home the live-app coverage that must
-survive"; the batch briefs in `handoff.md`, "Next batch". Measured read-only off
-the current tree at `df1bd57`. Do not re-derive.
-
-### The harness move is two edits, not five
-
-- **`tests/parity/driver.js` has exactly two importers**, and only one of them
-  is under `tests/app/`: `tests/app/lib.js:14` and `tests/parity.js:32`. The
-  five `tests/app/` suites reach the driver **through `tests/app/lib.js`**, not
-  directly (`contracts.js:9`, `golden.js:25`, `hues.js:13`, `states.js:11`,
-  `sweep.js:11`, `typo.js:23` all require `./lib.js`). "Five suites import it"
-  is true only transitively.
-- **`driver.js:17` is `const ROOT = path.join(__dirname, '..', '..')`.**
-  `tests/parity/` and `tests/app/` sit at the same depth, so a move between
-  them needs **no path edit inside the file**.
-- **`tests/parity.js:156` hashes the driver by literal path** -
-  `hashFile(h, path.join(__dirname, 'parity', 'driver.js'))` - into the legacy
-  screenshot cache key. It is a second, non-obvious edit the move requires, and
-  it is the exact "a check quietly stops checking" shape: the driver's
-  `ready()`/`settle()`/`shot()` decide the bytes of every cached legacy PNG.
-  `hashFile` on a missing path throws, so it fails loudly rather than silently -
-  but only when a parity run is next attempted, which CI does **not** do on a
-  push (`COVERAGE.md`: the parity job is manual dispatch).
-- **Cheap proof the move landed**: `node tests/parity.js zzz-no-such-state`
-  resolves both the `require` and the cache-key `hashFile`, then exits non-zero
-  on B1's zero-match guard (`tests/parity.js:683-687`) without shooting a single
-  state. It does acquire the lock and wipe `test-output/parity/` first
-  (`parity.js:311`, `:320`), so it is not free beside a peer session.
-- **Four prose references name the old path** and move with it:
-  `docs/specs/COVERAGE.md:367`, `docs/specs/DEBT.md:246`, `tools/probe.mjs:10`,
-  `tests/app/states.js:261`. (`COVERAGE.md:183` says bare `driver.js` and is
-  unaffected.)
-
-### `tests/parity/lock.js` is a live hook dependency R0c's outline does not name
-
-Imported by `tests/parity.js:33`, **`.claude/hooks/bash-guard.mjs:31`** and
-**`.claude/hooks/selftest.mjs:769`**. R0c's outline deletes `tests/parity/`
-whole while naming only `specs.js` and `driver.js`, so the directory delete
-would take two hooks with it. **Not moved in R0b**: after R0c nothing writes
-`test-output/parity.lock` (only `parity.js` does), so the whole parity-lock
-mechanism becomes dead, and re-homing it now is work R0c would undo. Recorded
-as an R0c step instead - delete the module with its `bash-guard.mjs` rule and
-its `selftest.mjs` case, or re-home it if heavy-run locking is still wanted for
-`run-all`/`golden`.
-
-### `tests/lib.js` holds one thing with no other home
-
-`readPNG` (`tests/lib.js:36`) has exactly one consumer, `tests/print.js:489`,
-and dies with `tests/lib.js` in R0c. `ready` and `ROOT` are live-app-only and
-die with it correctly.
-
-### Print's instrumentation is in two files, not one
-
-Beyond `tests/print.js` (647 lines), **four print-only specs in
-`tests/parity/specs.js`** also retire in R0c and are measured nowhere else:
-`sheetCounts` (`:880`), `cardFit` (`:903`), `printMedia` (`:924`),
-`copiedPrintLink` (`:962`). `printMedia`'s `d.media('print')` emulation - the
-chrome hidden, `break-inside`, `print-color-adjust`, the unshadowed sheet - and
-`cardFit`'s per-width fit numbers exist in no other instrument. A port that
-carries only `tests/print.js` loses them.
-
-The port itself is mechanically cheap: `dist/` renders the same class names as
-live - `.psheet`, `.pcard`, `.pcard.blank`, `.psheet[data-next]`, `.psheet.bw`,
-`[data-act="printArt"|"printBack"|"printLink"]`
-(`app/src/components/PrintPage.svelte`) - and `print.js` keys the card name off
-`.pc-name` by class, so `FEATURES.md:179`'s deliberate `<h3>`->`<h2>` change
-does not touch it. The driver already has every verb the port needs
-(`media`, `computed`, `eachAt`, `count`, `settle`, `clipboard`), which is why
-the driver move has to land first.
-
-### `app/states` case 7: the storage event is observable separately from the repaint
-
-`app/src/ports/storage.ts:61-71` adds a plain `window.addEventListener('storage')`.
-A test page can add its own independent listener via
-`page.evaluateOnNewDocument`, so "the browser delivered the event" and "the app
-redrew" are two separately waitable conditions rather than one 5000 ms guess.
-
-### Suite-coverage facts measured for the ten verdicts
-
-- **`tests/run-all.js` is the only thing that runs a browser suite.**
-  `npm run check` does not (`package.json`: format/lint/typecheck/check-site/
-  data/derived/i18n/selftest/vitest). `eslint.config.mjs:18` ignores `tests/**`
-  and `.prettierignore:13` ignores `tests/`, so a new suite under `tests/` is
-  neither linted nor formatted - only `node tests/run-all.js <name>` reads it.
-- **CI picks a new suite up with no `ci.yml` edit**: the `check` job runs
-  `node tests/run-all.js --exclude=parity,app/golden` (`ci.yml:47`). This is
-  what keeps `git show 9177f3b | git apply --reverse --check -` at 0 through
-  R0b - `9177f3b` touches `.github/workflows/ci.yml` and nothing else.
-- **`.claude/hooks/bash-guard.mjs:412` matches `node tests/run-all.js`
-  generically** and `edit-guard.mjs:36` only guards `tests/app/snapshots/`, so
-  a new suite needs no hook change.
-- **`tests/app/sweep.js`'s clipped-text selector list** is
-  `.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum`
-  (`sweep.js:272`). It does **not** include `.craft, .rcraft, .dicebar,
-  .numrow`, which is what `tests/craftmob.js:28` measures, and sweep never
-  ticks a row so `#selBar` is never drawn during its pass.
-- **Widths**: `craftmob` runs 320/360/390/430/768, `sweep` and `audit2` run
-  360/390/768/1180, parity runs 375/768/1100 (`specs.js:1011`). 320 is below
-  every other instrument's floor and below `style.css`'s narrowest breakpoint
-  (430).
-- **`#/tables ~ a row ticked` is already a registered state**
-  (`tests/app/inventory.js:560`), so a narrow-width selection-bar measurement
-  adds no `STATES`/inventory entry and forces no golden re-seed.
-- **`qa`'s fate list is at `plan.md:11749`**, under "Phase 5 - the testing
-  pyramid, planned" -> Decided 3, **not** under "B12 planned" (`plan.md:12478`),
-  which the handoff's pointer implied. It lists 20 entries against `qa.js`'s 22
-  assertion groups.
-
-### Cost, measured, that decides how the gates are called
-
-`node tests/run-all.js app/sweep` took **593.5s** on this host and crossed the
-600s foreground cap (`plan.md`, R0a's built record). So the five-suite
-`tests/app` line in `CLAUDE.md` is **not** one foreground call on this host:
-sweep goes on its own (four `node tests/app/sweep.js <width>` calls, or one
-backgrounded call), and `app/golden`'s four shards go separately again
-(~250-265s each).
-
-### The tree state, corrected mid-session (planner, 2026-09-16, later)
-
-The peer session committed while this plan was being written, so the 76-path
-dirty tree the kickoff block above records **is gone**. HEAD is now **`bb55a2d`**
-(`c92c8e8` "fix(app): repair Other provenance and the specs the split left
-stale" plus its record), two commits past `df1bd57`. `c92c8e8` touches
-`app.js`, `TablesPage.svelte`, `app/src/lib/{dict,label,tables}.ts`, four
-`docs/specs/*.md` - **including `COVERAGE.md`** - `tools/build-share-pages.js`
-and 57 `i/f*.html`. Nothing in it touches `tests/app/`, `tests/parity/`,
-`tests/run-all.js` or the legacy suites, so R0b's working set is still
-untouched. Working tree: only `issues/47/*.md`, plus the untracked paths below.
-
-**But `npm run check` does not pass on this tree, and it is nobody's task.**
-`bb55a2d`'s own message says the gate was bypassed because "a concurrent
-session's untracked skill install fails format:check and lint in files this
-commit does not touch". Measured for this plan, that is exact:
-
-- `.agents/skills/impeccable/scripts/*.js` - six vendored files including a UMD
-  bundle - are ignored by **neither** `.prettierignore` (it has no `.agents/`)
-  **nor** `eslint.config.mjs` (it ignores `.claude/**`, not `.agents/**`), so
-  they fail both `format:check` and `lint`.
-- `.claude/skills/impeccable/scripts/*.js` are eslint-ignored through
-  `.claude/**` but **not** prettier-ignored: `.prettierignore:23-25` names only
-  three specific `.claude/` files, and `*.md` at `:29` covers the
-  `.claude/agents/impeccable-*.md` wrappers but not these.
-
-So the failure is a third-party skill drop, not any task's code. **Do not fix
-it by editing `.prettierignore` or `eslint.config.mjs`** - repository gate
-configuration is `issues/config-audit/`'s surface, and widening a gate to
-accommodate an untracked vendor directory is the same move as routing around
-one. Either the install is removed or relocated by whoever made it, or the
-owner decides the ignore rule. Until then every batch in this repository pays a
-red `npm run check` for a reason that is not its own, which is precisely the
-condition that gets a real failure waved through.
-
-### Both R0b blockers verified independently (orchestrator, 2026-09-16)
-
-Re-measured after the planning pass, because a blocker that stops a batch is
-worth a second reading:
-
-- HEAD is **`bb55a2d`**, and `git show --stat bb55a2d` is one file,
-  `issues/56-followup/handoff.md`. The code commit under it is `c92c8e8`.
-  Working tree carries only `issues/47/*.md` and the untracked paths.
-- `npx prettier --check .` exits non-zero on **16 files**, every one of them
-  inside the skill install: eight under `.agents/skills/impeccable/`, seven
-  under `.claude/skills/impeccable/scripts/`, plus `.impeccable/hook.cache.json`.
-  `eslint.config.mjs:10-26` ignores `.claude/**` and does not name `.agents/**`;
-  `.prettierignore` names neither. The planner's reading is exact, including
-  which of the two tools misses which directory.
-- `npm run check` fails at its **first** step (`format:check`), so nothing
-  downstream of it has been exercised on this tree at all. That is the part
-  worth keeping in mind: the red is not "lint noise past a green suite", it is
-  a gate that never got to the tests.
-
-Left unfixed on purpose, and the routing is the point rather than the timidity:
-which glob lands in `.prettierignore` versus `eslint.config.mjs` is
-configuration every later session runs under, `issues/config-audit/` is the
-open task that owns that surface, and `CLAUDE.md`'s own posture is that an
-orchestrator measures a status and hands a design over. Recorded, not decided.
-
-## The owner's answer on the three divergences: restore all three (orchestrator, 2026-09-16)
-
-Settled input for R0b.4. Do not re-open, and do not re-derive the evidence -
-it is `plan.md`, "The fourth verdict", with file and line numbers.
-
-The R0b planning pass found three behaviours the rewrite does not reproduce,
-each guarded by exactly one of the ten suites R0c deletes and invisible to
-every other instrument. The owner was asked one question each and answered
-**restore** to all three. None goes to `docs/specs/DEBT.md`; `DEBT.md` is for a
-live defect the rewrite reproduces *on purpose*, which is the opposite of
-these.
-
-1. **The roll results' live region.** Restore `role="status"
-   aria-live="polite"` on the results container in `StdPanel.svelte`,
-   `RollPanel.svelte` and `AltPanel.svelte`, matching the six `app.js` sites.
-2. **The referenced card.** Restore **both** halves in `RecordCard.svelte`: the
-   `\n` -> `<br>` line breaks, and the
-   `<a href="{r.url}" target="_blank" rel="noopener">daggerheart.su</a>`
-   outbound link. **Dropping the third-party link was not deliberate** - that
-   was the open half of the question and it is now answered.
-3. **The copy-image button.** Restore the second half of the gate in
-   `RecordActions.svelte`: `it.img && !brokenArt[it.id]`, not `it.img` alone.
-
-**What this changes procedurally:** `NEEDS_HUMAN_CONFIRMATION` is cleared for
-TASK 47. R0b.4 stops being a blocked batch and becomes an ordinary queued one;
-its entry condition is now R0b.1..R0b.3 landing, not an answer. Its gates are
-unchanged: `npm run check`, `npm run check:built`, and a parity filter over
-`#/i/*` and `#/roll/*`.
-
-**What it does not change:** R0b.1 still implements none of them. Its
-acceptance line 21 stands - the five named components appear in no R0b.1
-commit.
-
-## The tree at the R0b.1 implement kickoff (orchestrator, 2026-09-16)
-
-- HEAD `37e4812`, branch `main`, working tree clean, and **`origin/main`
-  equals HEAD**. The handoff's R0b.1 preflight step 5 (`origin/main` at
-  `2d2e983` with four unpushed peer commits) is **stale**; nothing foreign is
-  unpushed. 46 commits landed between the planning pass at `df1bd57` and this
-  kickoff, all from peer tasks, none touching R0b's working set.
-- **The `impeccable` blocker is gone, not worked around.** Neither
-  `.agents/skills/impeccable/` nor `.claude/skills/impeccable/` exists any
-  more; whoever installed it removed it. No ignore list was widened, so
-  `.prettierignore` and `eslint.config.mjs` stay `issues/config-audit/`'s
-  surface. **A red `npm run check` on this tree is now a real failure**, which
-  is the condition the planner said was worth waiting for.
-- Baseline, one foreground call on the clean tree:
-  `set -o pipefail; npm run check 2>&1 | tail -n 120` - **green**. 42 test
-  files / 1035 tests; statements 96.61, branches 88.58, functions 97.10, lines
-  97.34; vitest 95.64s. R0b.1's entry condition met.
-- No heavy run alive: `test-output/parity.lock` absent, zero `chrome.exe`.
-
-## A fourth divergence, found by R0b.1 and folded into R0b.4 (orchestrator, 2026-09-16)
-
-Supersedes the count in "The owner's answer on the three divergences" above -
-**R0b.4 carries four items, not three.** The section above still states the
-owner's three answers correctly; only the count changed.
-
-The fourth was found by R0b.1's C3 while regenerating
-`docs/fixtures/share/records.json` to add `w118`, and it is the same shape and
-class as the other three: a frame-armour record's copy text keeps a tier word
-the live app now drops. `app.js:612` guards with
-`if (e.tier && !isFrameRecord(it))` (commit `106e4dd`, pre-session);
-`app/src/lib/share.ts:85` calls `eqLine(...)` with no `noTier`. The rewrite
-already has the option (`app/src/lib/i18n.ts:117,123`) and already uses it
-elsewhere (`i18n.test.ts:42,63`), so the fix is `noTier: isFrameRecord(it)`
-plus a fixture regeneration.
-
-**It was not implemented.** R0b.1's acceptance line 21 forbade touching
-`app/src/`, so only `w118` was added and the other eight fixture entries were
-kept byte-identical. Design is R0b.4's, and the planner's.
-
-**Why this needed doing rather than leaving:** it was first routed out of the
-task through a background-task chip, which is session state. R0c's stop
-condition named three, so nothing would have held the deletion of `app.js` on
-account of the fourth - and `app.js` is the only place the correct behaviour
-is written down. It is now recorded in `plan.md` ("The fourth verdict", item
-4), in the R0b.4 batch row, in `docs/specs/COVERAGE.md`'s `flows` row, and as
-a note in `tools/capture-share-fixture.mjs` so the next person to run that
-tool does not read the resulting `f33` diff as a fresh regression. The stop
-condition now reads four everywhere. The chip was withdrawn.
-
-**Divergence 2 had the same problem** and is fixed the same way: the lost
-`<br>` line breaks and the lost `daggerheart.su` link were recorded in issue
-documents only - grepping `docs/specs/` for `refHTML`, `daggerheart.su` or
-`RecordCard.svelte:238` returned nothing. Both notes are now in
-`COVERAGE.md`'s `flows` row.
-
-## R0b.1 closed (orchestrator, 2026-09-16)
-
-Four work commits plus a peer merge and two documentation commits, all pushed;
-`main` == `origin/main` == `6b4c838`. Reviewed on `opus`: **fix-then-continue**,
-two blockers, both documentation-only - no code change was requested, and the
-one remediation cycle is spent.
-
-Durable facts worth carrying forward:
-
-- **`tests/parity/driver.js` is now `tests/app/driver.js`**, byte-identical
-  (0 insertions / 0 deletions on the rename). `tests/parity.js:156`'s
-  `hashFile` re-pointed with it, so the legacy screenshot cache key still
-  covers the driver - the defect class the phase exists to close. No
-  `parity/driver` string survives in `tests/`, `tools/`, `docs/` or
-  `.claude/`; one stale comment remains at
-  `app/src/components/TablesPage.svelte:395` (Deferred nit 1).
-- **The one-file revert guarantee holds, and the acceptance line that doubted
-  it was wrong.** `git show 9177f3b | git apply --reverse --check -` fails at
-  `.github/workflows/ci.yml:129`, but only because `--reverse` needs exact
-  context; the three intervening commits to that file all precede R0b.1's
-  base, and `git merge-tree 9177f3b HEAD 9177f3b^` is clean with no conflict
-  markers. The acceptance command is now `git revert --no-commit 9177f3b`.
-  **Do not re-litigate this** - it was measured twice.
-- **`COVERAGE.md`'s ten-suite verdict table cites line numbers, and line
-  numbers rot.** R0b.1's own C2/C3 invalidated six rows of the table C4 wrote
-  in the same batch, because the citations came from an audit taken against
-  the pre-batch tree. All were re-pointed and verified content-identical
-  against `37e4812`. **R0b.2 adds cases to `tests/app/states.js` and will
-  shift them again**; re-pointing is a required step of R0b.2's own
-  `COVERAGE.md` edit, recorded in its handoff entry.
-- **`plan.md`'s audit table (`:16068`, `:16071` and neighbours) deliberately
-  keeps the *pre-batch* line numbers**, because it is the record of an audit
-  as taken. `COVERAGE.md` is the live citation surface; when the two disagree,
-  `COVERAGE.md` is the one to trust and the one to fix.
-- **`docs/fixtures/share/records.json` is not a public-contract surface.**
-  `CONTRACTS.md:10` enumerates only `docs/fixtures/lists/*.json` and
-  `docs/fixtures/urls/routes.json`, and `tests/contracts.js` never opens
-  `docs/fixtures/share/`, so adding an entry needs no `tests/contracts.js` /
-  `CONTRACTS.md` / `llms.txt` update. **But `.claude/hooks/edit-followup.mjs:26`
-  tests `p.startsWith('docs/fixtures/')` and so does fire on it** - the
-  reminder is not evidence that a contract moved. An earlier note in `plan.md`
-  claimed the hook did not match; that premise was false and has been
-  corrected.
-
-**Next:** R0b.2 is promoted but **not implement-ready** - no preflight, no
-numbered steps, no acceptance criteria. A planner pass must precede any
-implementer on it.
+## What this compaction dropped
+
+So a reader knows where something went rather than re-measuring it.
+`git show fc59ce4:issues/47/context.md` is the full prior text.
+
+- **Every "State at the \<batch\> kickoff" section** (B4, B5.3, B5.4, B5.6,
+  search, print, B7, B10, Phase 5, B12, B12.1, B13, B14, R0a, R0b): superseded
+  status snapshots. Their durable content - host readings, shell hazards, tree
+  hazards, owner decisions - is consolidated above.
+- **The per-batch "planning facts" geometry tables for B4-B10** (live-app
+  computed styles, rects and heights at 1100/768/375 for the tables, lists,
+  list-page, search and print surfaces): the ports shipped, CI reads the cells
+  green, `tools/probe.mjs` re-derives any single number with the harness's own
+  args, and the parity suite enforces them continuously. What those sections
+  *earned* - the traps, the live defects, the disproved reasons - is kept above.
+- **The `app.js`/`style.css` line-number code maps** (`renderLists`,
+  `renderSearch`, `renderPrint`, `printCardHTML`, `fitPrintCards`, the handler
+  tables, the dictionary key inventories): re-derivable, and rotting. Specific
+  line citations survive only where a decision hangs on one.
+- **Per-batch "built" narratives and close-out prose** for B4 through B14: the
+  code, its specs and `plan.md`'s outcome lines are the record.
+- **Host-block incident sections of 2026-09-11 and 2026-09-12** (the commit gate
+  that could not arm, the three-run table, the `explorer.exe` attribution): the
+  mechanism is in "The host throttles" and "Command costs"; the attribution was
+  wrong and is in "Reasons already disproved".
+- **The B5.6 packed payload string**: it lives in `tests/parity/specs.js` and
+  `docs/fixtures/`, with the generating command in `plan.md`.
