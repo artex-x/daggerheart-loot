@@ -196,7 +196,17 @@ const FATAL_ERRORS = new Set([
   'SessionRevokedError',
   'SessionExpiredError',
   'SessionPasswordNeededError',
-  'AuthKeyInvalidError'
+  'AuthKeyInvalidError',
+  // The account, not only the session: a ban, a deletion, a banned number, a
+  // duplicated key or a blocked bot are conditions no later run can change
+  // (B6 review R2). Before pass 7 they fell to the catch-all below and
+  // stopped the run green forever, so the backlog never drained and nothing
+  // ever told the owner why.
+  'AuthKeyDuplicatedError',
+  'UserDeactivatedError',
+  'UserDeactivatedBanError',
+  'PhoneNumberBannedError',
+  'YouBlockedUserError'
 ]);
 
 // One outcome per teleproto error, matched by class name / `.errorMessage` /
@@ -222,7 +232,7 @@ export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
     return { unanswered: true };
   }
   if (FATAL_ERRORS.has(name)) {
-    return { fatal: true, reason: name + ': the credential is dead' };
+    return { fatal: true, reason: name + ': the account or session is unusable; a human must act' };
   }
   // Any other RPCError: teleproto's specific error subclasses all carry
   // `errorMessage`, which is what lets this branch match without importing
@@ -459,7 +469,25 @@ export async function runRefresh(opts, deps) {
     return result;
   }
 
-  const cx = await client();
+  // Connect-time errors never passed through decide() before pass 7, so a
+  // dead session surfaced as exit 1 (a crash) and a banned account as
+  // whatever its first RPC happened to throw. Classified once here: the
+  // fatal row becomes exit 2, everything else stays a crash - there is no
+  // connect retry (plan.md section 12's accepted failure).
+  let cx;
+  try {
+    cx = await client();
+  } catch (err) {
+    const d = decide(err, { maxWaitS });
+    if (!d.fatal) throw err;
+    log('stopped: ' + d.reason);
+    const result = baseResult();
+    result.pending = todo;
+    result.notLive = notLive;
+    result.stopped = d.reason;
+    result.exitCode = 2;
+    return result;
+  }
 
   const deadline = budgetMinutes != null ? now() + budgetMinutes * 60000 : null;
   let floodWaits = 0;
@@ -497,6 +525,16 @@ export async function runRefresh(opts, deps) {
         return { stopped: d.reason };
       }
     }
+  }
+
+  // Reads share the sends' and presses' table: a FLOOD_WAIT or a transport
+  // blip on incoming()/byIds() is a resumable stop, not a crash (B6 review
+  // R1). A read never yields `unanswered` (that is press-only), but this
+  // does not assume it.
+  async function read(action) {
+    const r = await attempt(action);
+    if ('value' in r) return r;
+    return { stopped: r.stopped || 'read unanswered', exitCode: r.exitCode || 0 };
   }
 
   async function pressOne(entry) {
@@ -540,7 +578,22 @@ export async function runRefresh(opts, deps) {
     }
 
     const ids = pressedList.map((p) => p.id);
-    const refetched = ids.length ? await cx.byIds(ids) : [];
+    // An answered press is confirmed by the existing rule whether or not the
+    // message could be re-read afterwards - `unseen` already means exactly
+    // that - so a failed refetch costs telemetry, not evidence. The run still
+    // stops, because the transport is not healthy (B6 review R1).
+    let refetched = [];
+    let readStop = null;
+    let readCode = 0;
+    if (ids.length) {
+      const r = await read(() => cx.byIds(ids));
+      if (r.stopped) {
+        readStop = 'refetch: ' + r.stopped;
+        readCode = r.exitCode;
+      } else {
+        refetched = r.value;
+      }
+    }
     const photoAfter = new Map(refetched.map((m) => [m.id, m.photoId]));
 
     const confirmed = [];
@@ -560,7 +613,13 @@ export async function runRefresh(opts, deps) {
     // Attempts, not confirmations: a press the bot refused still decremented
     // pressBudget above and must count here too (B4 review nit 2), or a
     // throttle stop under-reports the number B2 tunes the quota from.
-    return { confirmed, photo, pressedCount: budgetBefore - pressBudget, stopped: stop, exitCode: code };
+    return {
+      confirmed,
+      photo,
+      pressedCount: budgetBefore - pressBudget,
+      stopped: stop || readStop,
+      exitCode: stop ? code : readCode
+    };
   }
 
   // Carry-forward write of state and --result: everything the state already
@@ -573,7 +632,10 @@ export async function runRefresh(opts, deps) {
     }
     const nextUrls = sortedMap({ ...carried, ...pick(manifest.urls, confirmedSoFar) });
     await writeState({ version: 1, site: manifest.site, urls: nextUrls });
-    if (writeResult) await writeResult({ urls: pick(manifest.urls, confirmedSoFar) });
+    // `site` travels with the result so CI's `--apply` no longer rebuilds the
+    // manifest from whatever tree `main` is at commit time - the record step
+    // must not depend on that tree being buildable (B6 review, R1 item 7).
+    if (writeResult) await writeResult({ site: manifest.site, urls: pick(manifest.urls, confirmedSoFar) });
   }
 
   const sent = [];
@@ -607,11 +669,27 @@ export async function runRefresh(opts, deps) {
     };
   }
 
+  // A disconnect that fails after the work is done is not a failed run.
+  async function closeQuietly() {
+    try {
+      await cx.close();
+    } catch (err) {
+      log('warning: disconnect failed: ' + ((err && err.message) || String(err)));
+    }
+  }
+
   // Phase 1 - recovery: a button message already in the chat is a cheaper
   // retry - no new send, but still a press from the same budget (plan.md
   // section 3.4). Every URL matched here - confirmed or not - is removed
   // from `ready` so phase 2 never re-sends it in the same run.
-  const scan = await cx.incoming({ limit: RECOVER_SCAN });
+  const scanR = await read(() => cx.incoming({ limit: RECOVER_SCAN }));
+  if (scanR.stopped) {
+    stopped = 'recovery scan: ' + scanR.stopped;
+    exitCode = scanR.exitCode;
+    await closeQuietly();
+    return finish();
+  }
+  const scan = scanR.value;
   const recovery = matchButtons(scan, ready);
   const recoveredUrls = Object.keys(recovery.matched);
   if (recoveredUrls.length) {
@@ -644,7 +722,7 @@ export async function runRefresh(opts, deps) {
   ready = ready.filter((u) => !recoveredSet.has(u));
 
   if (stopped) {
-    await cx.close();
+    await closeQuietly();
     return finish();
   }
 
@@ -678,7 +756,16 @@ export async function runRefresh(opts, deps) {
     // The reply wait is folded into the pace, not added on top of it.
     await sleep(paceMs);
 
-    let replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH });
+    // The batch is already sent and its button messages are in the chat, so a
+    // failed poll leaves those URLs pending and the next run's phase 1
+    // presses them without a new send - a green, resumable stop.
+    let pollR = await read(() => cx.incoming({ afterId: sentId, limit: BUTTON_FETCH }));
+    if (pollR.stopped) {
+      stopped = 'button poll: ' + pollR.stopped;
+      exitCode = pollR.exitCode;
+      break batchLoop;
+    }
+    let replies = pollR.value;
     let m = matchButtons(replies, batch);
     // The bot's summary can itself be a throttle refusal - checked on every
     // round so the run does not burn BUTTON_WAIT_ROUNDS x BUTTON_WAIT_MS
@@ -688,7 +775,13 @@ export async function runRefresh(opts, deps) {
     while (!summaryThrottle && m.unmatched.length && rounds < BUTTON_WAIT_ROUNDS) {
       rounds++;
       await sleep(BUTTON_WAIT_MS);
-      replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH });
+      pollR = await read(() => cx.incoming({ afterId: sentId, limit: BUTTON_FETCH }));
+      if (pollR.stopped) {
+        stopped = 'button poll: ' + pollR.stopped;
+        exitCode = pollR.exitCode;
+        break batchLoop;
+      }
+      replies = pollR.value;
       m = matchButtons(replies, batch);
       summaryThrottle = m.summary.map(botThrottle).find(Boolean) || null;
     }
@@ -748,6 +841,6 @@ export async function runRefresh(opts, deps) {
     }
   }
 
-  await cx.close();
+  await closeQuietly();
   return finish();
 }

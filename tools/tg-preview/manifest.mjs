@@ -1,7 +1,8 @@
 /*
   Composes lib.mjs's pure buildManifest with the real repository tree:
   data.js -> derived.js's everything()/SITE, build-share-pages.js's page(),
-  the root index.html, and og/<name> bytes read from disk. This is the one
+  app/index.html (the deployed root's source), and og/<name> bytes read from
+  disk. This is the one
   seam issue 47's cut-over touches (plan.md section 3.2, section 13): if the
   stub generator moves into the Vite build, the two `require()`s below move
   with it and nothing else here changes.
@@ -15,6 +16,12 @@ import { buildManifest } from './lib.mjs';
 const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
+// Since issue 47's cut-over ci.yml deploys dist/index.html, built from
+// app/index.html; the legacy root index.html is not published. Fingerprinting
+// it would leave the root URL - the one every #/i/<id> share resolves to -
+// silently unrefreshed the first time app/index.html's og:description moves
+// alone (B6 review R5). The two files' og: tags are identical today.
+const ROOT_HTML = join(ROOT, 'app', 'index.html');
 
 function readImageFrom(dir) {
   return (name) => {
@@ -26,9 +33,10 @@ function readImageFrom(dir) {
   };
 }
 
-// `assets` is where og/ and index.html live: the repository root today, or a
-// build output directory (e.g. `dist`) once issue 47 makes them one - see
-// `--assets` in run.mjs.
+// `assets` means "the root's index.html and og/ both live under <dir>" - a
+// built tree such as `dist`. Without it, og/ is read from the repository root
+// (a tracked source directory that deploy copies verbatim) and the root's
+// HTML from ROOT_HTML above - see `--assets` in run.mjs.
 export function buildFromTree({ assets } = {}) {
   const dir = assets || ROOT;
 
@@ -47,7 +55,7 @@ export function buildFromTree({ assets } = {}) {
     site: SITE,
     L: everything(L),
     renderStub: page,
-    rootHtml: readFileSync(join(dir, 'index.html'), 'utf8'),
+    rootHtml: readFileSync(assets ? join(dir, 'index.html') : ROOT_HTML, 'utf8'),
     readImage: readImageFrom(dir)
   });
 }

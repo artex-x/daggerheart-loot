@@ -63,8 +63,8 @@ describe('extractMeta', () => {
     assert.ok(meta.description.length > 0);
   });
 
-  it('reads the root index.html', () => {
-    const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  it("reads the deployed root's source, app/index.html", () => {
+    const html = readFileSync(join(ROOT, 'app', 'index.html'), 'utf8');
     const meta = lib.extractMeta(html);
     assert.ok(meta.title.length > 0);
     assert.equal(meta.image, derived.SITE + 'og/_share.jpg');
@@ -214,6 +214,11 @@ describe('decide', () => {
   class SessionExpiredError extends Error {}
   class SessionPasswordNeededError extends Error {}
   class AuthKeyInvalidError extends Error {}
+  class AuthKeyDuplicatedError extends Error {}
+  class UserDeactivatedError extends Error {}
+  class UserDeactivatedBanError extends Error {}
+  class PhoneNumberBannedError extends Error {}
+  class YouBlockedUserError extends Error {}
   class SomeOtherRPCError extends Error {
     constructor(msg) {
       super(msg);
@@ -256,7 +261,13 @@ describe('decide', () => {
     SessionRevokedError,
     SessionExpiredError,
     SessionPasswordNeededError,
-    AuthKeyInvalidError
+    AuthKeyInvalidError,
+    // The account, not only the session (B6 review R2).
+    AuthKeyDuplicatedError,
+    UserDeactivatedError,
+    UserDeactivatedBanError,
+    PhoneNumberBannedError,
+    YouBlockedUserError
   ]) {
     it('is fatal for ' + Cls.name, () => {
       assert.equal(lib.decide(new Cls(), {}).fatal, true);
@@ -465,12 +476,24 @@ describe('runRefresh', () => {
 
   // `send` is consumed one entry per cx.send() call ({ok:true} succeeds,
   // {throw:err} throws); `incoming` is a queue of canned Msg[] answers, one
-  // per call (the first call is always phase 1's recovery scan); `press` is
-  // consumed one entry per cx.press() call; `photoAfter` backs byIds's photo
-  // lookup by message id.
-  function fakeClient({ send = [], incoming = [], press = [], photoAfter = new Map() } = {}) {
+  // per call (the first call is always phase 1's recovery scan), where an
+  // entry of the shape {throw:err} throws instead; `press` is consumed one
+  // entry per cx.press() call; `photoAfter` backs byIds's photo lookup by
+  // message id; `byIds` is an opt-in script consumed one entry per
+  // cx.byIds() call where {throw:err} throws and anything else (or an
+  // exhausted script) answers from photoAfter as usual; `closeThrows` makes
+  // the disconnect fail. Every option defaults to the pre-pass-7 behaviour.
+  function fakeClient({
+    send = [],
+    incoming = [],
+    press = [],
+    photoAfter = new Map(),
+    byIds = [],
+    closeThrows = false
+  } = {}) {
     let sendIdx = 0;
     let pressIdx = 0;
+    let byIdsIdx = 0;
     let nextId = 9000;
     const queue = incoming.slice();
     const sent = [];
@@ -489,9 +512,13 @@ describe('runRefresh', () => {
           },
           async incoming() {
             incomingCalls.count++;
-            return queue.length ? queue.shift() : [];
+            const step = queue.length ? queue.shift() : [];
+            if (step && !Array.isArray(step) && step.throw) throw step.throw;
+            return step;
           },
           async byIds(ids) {
+            const step = byIds[byIdsIdx++];
+            if (step && step.throw) throw step.throw;
             return ids
               .filter((id) => photoAfter.has(id))
               .map((id) => ({
@@ -511,6 +538,7 @@ describe('runRefresh', () => {
           },
           async close() {
             closed.value = true;
+            if (closeThrows) throw new Error('disconnect exploded');
           }
         };
       },
@@ -819,6 +847,137 @@ describe('runRefresh', () => {
     assert.equal(fake.sent.length, 0); // both recovered in phase 1
   });
 
+  // Pass 7 - a Telegram read that fails after its retries is a green,
+  // resumable stop, not a crash (plan.md 3.5's pass-7 table, B6 review R1).
+
+  it('a transport error on the recovery scan stops the run green after NET_RETRIES, with nothing pressed or written', async () => {
+    const manifest = fakeManifest(3); // 4 urls
+    const fake = fakeClient({
+      incoming: Array(lib.NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.exitCode, 0);
+    assert.match(result.stopped, /^recovery scan: /);
+    assert.deepEqual(result.confirmed, []);
+    assert.equal(result.pending.length, Object.keys(manifest.urls).length);
+    assert.equal(deps.written.length, 0);
+    assert.equal(fake.sent.length, 0);
+    assert.ok(fake.closed.value);
+  });
+
+  it('a FLOOD_WAIT on the recovery scan is slept through and the scan re-read', async () => {
+    class FloodWaitError extends Error {
+      constructor(s) {
+        super('flood');
+        this.seconds = s;
+      }
+    }
+    const manifest = fakeManifest(3); // 4 urls, 1 batch
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [{ throw: new FloodWaitError(5) }, [], repliesFor(urls, 1000)],
+      press: urls.map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.floodWaits, 1);
+    assert.equal(result.confirmed.length, urls.length);
+    assert.ok(fake.incomingCalls.count >= 3);
+  });
+
+  it('a failed button poll stops the run with the sent batch pending and the previous batch recorded', async () => {
+    const manifest = fakeManifest(15); // 16 urls -> batches of 10, 6
+    const batches = lib.chunk(Object.keys(manifest.urls), 10);
+    const fake = fakeClient({
+      incoming: [
+        [],
+        repliesFor(batches[0], 1000),
+        ...Array(lib.NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })
+      ],
+      press: batches[0].map(() => ({ text: 'ok' }))
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(fake.sent.length, 2); // the second batch went out; its buttons wait in the chat
+    assert.equal(result.confirmed.length, 10);
+    assert.equal(result.pending.length, 6);
+    assert.equal(deps.written.length, 1);
+    assert.match(result.stopped, /^button poll: /);
+    assert.equal(result.exitCode, 0);
+  });
+
+  it('a failed post-press refetch counts the group unseen, confirms its answered presses, records them and stops', async () => {
+    class BotResponseTimeoutError extends Error {
+      constructor() {
+        super('timeout');
+        this.errorMessage = 'BOT_RESPONSE_TIMEOUT';
+      }
+    }
+    const manifest = fakeManifest(3); // 4 urls, all recovered in phase 1
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [urls.map((u, i) => buttonMsg(9001 + i, u, 'before'))],
+      press: [{ text: 'ok' }, { throw: new BotResponseTimeoutError() }, { text: 'ok' }, { text: 'ok' }],
+      byIds: Array(lib.NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.deepEqual(result.photo, { newId: 0, sameId: 0, none: 0, unseen: 4 });
+    assert.equal(result.confirmed.length, 3);
+    assert.equal(result.pending.length, 1);
+    assert.equal(deps.written.length, 1);
+    assert.match(result.stopped, /^refetch: /);
+    assert.equal(fake.sent.length, 0);
+  });
+
+  it('a fatal class on a read is exit 2', async () => {
+    class AuthKeyUnregisteredError extends Error {}
+    const manifest = fakeManifest(3);
+    const fake = fakeClient({ incoming: [{ throw: new AuthKeyUnregisteredError() }] });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.exitCode, 2);
+    assert.equal(deps.written.length, 0);
+  });
+
+  it('a dead credential at connect is exit 2 with nothing written; a transport error at connect still rejects', async () => {
+    class SessionRevokedError extends Error {}
+    const manifest = fakeManifest(3);
+    const deps = baseDeps(manifest, {
+      clientFactory: async () => {
+        throw new SessionRevokedError();
+      }
+    });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.exitCode, 2);
+    assert.match(result.stopped, /SessionRevokedError/);
+    assert.equal(result.pending.length, Object.keys(manifest.urls).length);
+    assert.equal(deps.written.length, 0);
+
+    const deps2 = baseDeps(manifest, {
+      clientFactory: async () => {
+        throw new Error('ECONNRESET');
+      }
+    });
+    await assert.rejects(runRefresh({ mode: 'full' }, deps2), /ECONNRESET/);
+  });
+
+  it('a disconnect that fails does not fail the run', async () => {
+    const manifest = fakeManifest(3); // 4 urls, 1 batch
+    const urls = Object.keys(manifest.urls);
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: urls.map(() => ({ text: 'ok' })),
+      closeThrows: true
+    });
+    const deps = baseDeps(manifest, { clientFactory: fake.client });
+    const result = await runRefresh({ mode: 'full' }, deps);
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.confirmed.length, urls.length);
+    assert.ok(deps.logs.some((l) => /disconnect failed/.test(l)));
+  });
+
   it('fewer button messages than links leaves the unmatched ones pending and unrecorded', async () => {
     const manifest = fakeManifest(2); // 3 urls
     const urls = Object.keys(manifest.urls);
@@ -964,6 +1123,8 @@ describe('runRefresh', () => {
     await runRefresh({ mode: 'full' }, deps);
     assert.equal(deps.results.length, 1);
     assert.equal(Object.keys(deps.results[0].urls).length, urls.length);
+    // `--apply` reads the site from here, not from a rebuilt manifest.
+    assert.equal(deps.results[0].site, manifest.site);
   });
 
   it('confirmed and pending always add up to the stale count', async () => {

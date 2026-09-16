@@ -277,18 +277,46 @@ nothing else.
    the URL recorded as refreshed would mean a press-only recovery does **not**
    refresh metadata; report it. This is cheaper and less ambiguous than
    comparing pictures, because the change this time is in the words.
-6. **What a red run means from now on - and only these:** a missing or dead
-   credential (`missing required env var: TG_SESSION`, or a revoked session -
-   redo step D.3 and update the secret), a crash (`tg-preview run failed: ...`
-   in the log - report it), a failed `npm audit`, or a state push refused
-   three times (branch protection). A run that hit the 50-minute wall is
-   **green** with `timed out after 50 minutes; pending urls are picked up by
-   the next run` in its summary, and so is every Telegram-side stop. A red run
-   whose cause is not on this list is itself worth reporting.
+6. **What a red run means from now on - and only these.** Read the last
+   `stopped:` line of the step log (it is also the `::error::` annotation on
+   the run page) and act on the name:
+   - `missing required env var: TG_SESSION` (or `TG_API_ID`, `TG_API_HASH`) -
+     exit 2: the secret is gone or renamed; step H.
+   - `AuthKeyUnregisteredError`, `SessionRevokedError`, `SessionExpiredError`,
+     `AuthKeyInvalidError`, `AuthKeyDuplicatedError`,
+     `SessionPasswordNeededError` - exit 2: the **session** is dead
+     (terminated, expired, or used from two places at once); redo step D.3 and
+     update the `TG_SESSION` secret.
+   - `UserDeactivatedError`, `UserDeactivatedBanError`,
+     `PhoneNumberBannedError` - exit 2: the **account** is gone; a new
+     throwaway, steps A-D, then H.
+   - `YouBlockedUserError` - exit 2: the throwaway has blocked `@WebpageBot`;
+     unblock it in the app and re-run.
+   - `tg-preview run failed: state file is not valid JSON: ...` - exit 1:
+     `tools/tg-preview/state.json` on `main` is corrupt; `git revert` the
+     commit that broke it (the record step did **not** commit on top of it).
+   - any other `tg-preview run failed: ...` - exit 1: a crash, including a
+     connection that could not be made at all; one such run is noise, the same
+     message on consecutive runs is a report.
+   - a failed `npm audit --audit-level=high` - a new advisory in
+     `tools/tg-preview`'s dependency tree; bump and re-run. Red on purpose:
+     the process holds a full account session.
+   - a state push refused three times - branch protection or a token problem;
+     every run's presses are recoverable only through phase 1 until it is
+     fixed.
+
+   A run that hit the 50-minute wall is **green** with `timed out after 50
+   minutes; pending urls are picked up by the next run` in its summary; so is
+   every Telegram-side stop, and so is a Telegram read that failed after its
+   retries (`stopped: recovery scan: ...`, `button poll: ...`, `refetch: ...`
+   in the log). A red run whose cause is not on this list is itself worth
+   reporting.
 
 **J. Rotation and shutdown.** To rotate: Telegram -> Settings -> Devices ->
 terminate the tool's session; redo step D.3; update the `TG_SESSION` secret
-and the `.env` line. To **pause** the automation quietly: Actions ->
+and the `.env` line. If the red run names the **account** rather than the
+session (`UserDeactivated`, `PhoneNumberBanned`), rotation does not help - it
+is steps A-D again with a new number. To **pause** the automation quietly: Actions ->
 `previews` -> "..." -> Disable workflow (re-enable the same way; nothing else
 to undo). To **stop it loudly**: delete the `TG_SESSION` secret - every run is
 then red with the variable named, on purpose, so a forgotten stop cannot pass
@@ -342,11 +370,14 @@ minutes at busy times.
   none 0, unseen 0` on a run is the expected shape, not a broken counter.
   `unseen` means the press went out but the message could not be re-read
   afterwards, so the tool does not claim to know its photo id either way.
-- What turns the CI job red: a crash or a dead/missing credential (`Refresh`
-  exiting 1 or 2 - a missing secret is red, with the variable named and never
-  valued), a failed `npm audit --audit-level=high`, or a failed state push
-  after three retries. A Telegram-side stop (`PeerFloodError`, a budget stop,
-  `@WebpageBot`'s own attempt throttle) is green with a recorded backlog,
+- What turns the CI job red: exit 2 is a credential or account a human must
+  act on, exit 1 a crash or a corrupt state file; step I.6 maps each message
+  to the step that fixes it. A missing secret is red, with the variable named
+  and never valued. So are a failed `npm audit --audit-level=high` and a
+  failed state push after three retries. A Telegram-side stop
+  (`PeerFloodError`, a budget stop, `@WebpageBot`'s own attempt throttle) is
+  green with a recorded backlog, and so is a Telegram read that fails after
+  its retries (the recovery scan, a button poll, the post-press refetch),
   because the site itself is already live and a red job would say something
   false about it - and so is a run that hit the 50-minute wall, which is green
   with `timed out after 50 minutes; pending urls are picked up by the next
@@ -401,11 +432,14 @@ record step runs `if: always()`, so what a failed run confirmed is still
 committed.
 
 **A red run means the next run will not fix it.** Only these turn the job
-red: a dead or missing credential (exit 2, the variable named and never
-valued), a crash (exit 1), a failed `npm audit --audit-level=high`, or a
-state push refused three times. Every Telegram-side stop - `PeerFloodError`,
-a flood wait past `--max-wait`, the press budget, the deadline,
-`@WebpageBot`'s attempt throttle - is green with the backlog recorded, and so
+red: a credential or account a human must act on (exit 2 - a dead session, a
+deactivated, banned or duplicated account, `@WebpageBot` blocked, or a missing
+secret, the variable named and never valued), a crash or a corrupt state file
+(exit 1), a failed `npm audit --audit-level=high`, or a state push refused
+three times; step I.6 maps each message to the step that fixes it. Every
+Telegram-side stop - `PeerFloodError`, a flood wait past `--max-wait`, the
+press budget, the deadline, `@WebpageBot`'s attempt throttle, and a Telegram
+read that fails after its retries - is green with the backlog recorded, and so
 is a run killed at the 50-minute wall: exit `124`/`137` is mapped to green
 with `timed out after 50 minutes; pending urls are picked up by the next run`
 in the job summary. There is no `continue-on-error` anywhere, because it
@@ -488,7 +522,8 @@ refuses it.
 `tools/tg-preview/lib.test.mjs` runs under `node --test` inside `npm run
 check` and covers every pure function: URL derivation, fingerprinting, what
 counts as stale, batching, the error-handling table (including an
-unanswered press), `matchButtons` (exact and trailing-slash matching, the
+unanswered press), which every Telegram read goes through as well,
+`matchButtons` (exact and trailing-slash matching, the
 bot's plain summary, duplicate button messages), `botThrottle` (the bot's
 attempt-throttle sentence, with and without a seconds figure), the
 `--press-limit` press budget (spent across both phases, a batch refused

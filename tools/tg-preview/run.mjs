@@ -6,7 +6,7 @@
   what each flag does and the runbook that drives this by hand; see
   .github/workflows/previews.yml for how CI drives it.
 */
-import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { parseArgs, runRefresh, applyResult } from './lib.mjs';
@@ -29,12 +29,24 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// A file that exists and does not parse is corrupt, not absent. Returning {}
+// for it made a refresh re-send the whole catalogue and, under `--apply`,
+// committed a state with every other entry dropped (B6 review R3). Only
+// ENOENT is the bootstrap.
 function readState(path) {
-  if (!existsSync(path)) return {};
+  let text;
   try {
-    return JSON.parse(readFileSync(path, 'utf8'));
-  } catch {
-    return {};
+    text = readFileSync(path, 'utf8');
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return {};
+    throw err;
+  }
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error(
+      'state file is not valid JSON: ' + path + ' (' + err.message + ') - refusing to treat it as empty'
+    );
   }
 }
 
@@ -75,10 +87,12 @@ async function main() {
   const statePath = opts.statePath || STATE_DEFAULT;
 
   if (opts.apply) {
-    const manifest = buildFromTree({ assets: opts.assets || undefined });
     const state = readState(statePath);
+    // `site` travels in the result, so the record step does not need `main`'s
+    // tree to be buildable at commit time (B6 review, R1 item 7).
     const result = JSON.parse(readFileSync(opts.apply, 'utf8'));
-    const next = applyResult(state, result, manifest.site);
+    if (!result.site) throw new Error('result file carries no site: ' + opts.apply);
+    const next = applyResult(state, result, result.site);
     writeStateSync(statePath, next);
     log('state updated from ' + opts.apply);
     return;
@@ -154,6 +168,11 @@ async function main() {
       ')';
     log(summary);
     log(pressedLine);
+    // Exit 2 is the one condition no later run can fix, so it gets an
+    // annotation on the run page, not just a line in the step log.
+    if (result.exitCode === 2) {
+      console.log('::error::' + result.stopped + ' - see docs/tg-preview.md, step I.6');
+    }
     if (process.env.GITHUB_STEP_SUMMARY) {
       writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n' + pressedLine + '\n', { flag: 'a' });
     }

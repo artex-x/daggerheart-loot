@@ -5,7 +5,7 @@ Recovery state for the next session. Read `CLAUDE.md`, then
 finished; the goal is now CI", "Added by the planner, pass 6" and "Added by
 the planner, pass 7"), then `plan.md` (its "Revision history" block first -
 there are now **seven** passes; section 3.11 is pass 7's reasoning and
-section 10d is the batch), then this file.
+section 10d is B7, which is now shipped), then this file.
 
 ## Start here - a session that has none of this in context
 
@@ -17,7 +17,7 @@ authorised on 2026-09-11:
 | Worktree | `E:/dev/daggerheart-loot-wt/tg-preview-refresh` |
 | Branch | `automation/tg-preview-refresh` |
 | Base | `8b96ff4`; `origin/main` merged in at `1106355` by B6 (`3f6231c`) |
-| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` -> `72d8de0` |
+| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` -> `72d8de0` -> `edde81b` -> B7's code commit |
 
 The task-directory copies **in that worktree** are authoritative. The copy
 under `E:/dev/daggerheart-loot` is a stale snapshot - do not read it as
@@ -43,39 +43,94 @@ damage getting them wrong does:
    is the owner's finished reindex: 1062 entries, blob hash
    `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`. It is never edited,
    regenerated, reformatted, staged or deleted; never `git add -A`.
-3. **B6 is shipped and reviewed approve; the review found five risks.** Two
-   of them are holes in the exit-code contract the owner asked for (a false
-   red on failed Telegram reads, a false green on a dead account). **B7**
-   closes them and is implement-ready below. It is the next batch.
-4. **B7 lands before the owner merges.** The recommended order is B7 ->
-   O3, not the other way round (`plan.md` 3.11, last subsection). If the
-   owner has already merged, B7 still lands unchanged as a follow-up.
+3. **B6 and B7 are both shipped.** B7 closed the B6 review's five risks, so
+   the tool's exit codes now match the contract in both directions: a failed
+   Telegram read is a green resumable stop, a dead account is exit 2.
+4. **The next action is O3, the owner's merge** - no agent batch is open.
+   B7 landed before the merge, as `plan.md` 3.11 recommended.
 5. **`origin/main` moved one commit since B6**, to `3504bf7` (a hooks fix,
-   none of this task's files). B7 does **not** re-merge; the owner's merge
+   none of this task's files). B7 did **not** re-merge; the owner's merge
    takes it.
 6. **Pushing and merging into `main` are the owner's** (`CLAUDE.md`).
    Nothing on this branch is pushed. The owner's merge push is what turns
    the CI job on, and it fires the first real run automatically.
 
 ## Status
-- Task status: **in_progress - B6 shipped and reviewed approve
-  (2026-09-16); pass-7 planning done; B7 implement-ready and not started.**
-  O3 (the owner's merge and first-run watch) follows B7.
-- Last agent: **planner (2026-09-16, pass 7).** No production code touched;
-  no gates run; no Telegram contact; `.env` not read; `state.json` not
-  touched (tree clean before and after; only `git fetch origin main` was
-  run, which is read-only).
+- Task status: **in_progress - B6 and B7 shipped (2026-09-16). Every agent
+  batch this task planned is done; the only remaining step is O3, the
+  owner's merge and first-run watch.**
+- Last agent: **implementer (2026-09-16, B7).** Two commits, `edde81b` (the
+  pass-7 task docs) and `PENDING_SHA` (the code). No Telegram contact of any
+  kind; `.env` not read; `state.json` not staged, edited or written - its
+  blob hash is `7c6e37eb...` before and after, both in the tree and at HEAD.
 - NEEDS_HUMAN_CONFIRMATION: **no.** One thing the owner should know, not
-  decide: the recommended order is now B7, then merge. Nothing in B7 needs
-  their input.
+  decide: B7 landed first, as recommended, so the first CI runs can be read
+  against `plan.md` 3.5's corrected table and the runbook's new I.6.
 - Branch: `automation/tg-preview-refresh`, worktree
   `E:/dev/daggerheart-loot-wt/tg-preview-refresh`. **Not pushed.**
-- Base / starting commit for B7: `72d8de0` (the branch tip), which is B6's
-  record commit on top of `f5e5d69`.
-- Working tree after pass 7: the three task files modified, nothing else
-  (`git status --porcelain` shows only `issues/tg-preview-refresh/`).
+- Base / starting commit for B7: `72d8de0` (B6's record commit).
+- Working tree after B7: **clean** (`git status --porcelain` empty).
 
 ## Completed
+
+### B7 - make the exit codes true in both directions
+
+- **Status: shipped 2026-09-16.** Two commits on top of `72d8de0`, in the
+  order section 10d requires:
+
+  | # | sha | what |
+  |---|---|---|
+  | 1 | `edde81b` | `docs(tg-preview): pass 7 - the B6 review, and B7` - the three task files alone |
+  | 2 | `PENDING_SHA` | `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state` |
+
+- **R1, the false red.** A `read()` helper over the existing `attempt()`
+  now wraps all four Telegram reads: the recovery scan (`stopped: recovery
+  scan: ...`, nothing pressed, nothing written, `record()` never runs), both
+  button polls (`button poll: ...`, `break batchLoop`, the sent batch stays
+  pending, the previous batch's record intact) and `pressGroup`'s post-press
+  `byIds` (`refetch: ...`, every delta `unseen`, answered presses still
+  confirm under the unchanged rule and are recorded). `close()` became
+  `closeQuietly()` - a failed disconnect logs `warning: disconnect failed:
+  ...` and does not fail the run. `read()` touches no press budget, and
+  `confirmed + pending = stale` still holds (the existing case asserting it
+  passes untouched).
+- **R2, the false green.** Five names appended to `FATAL_ERRORS`
+  (`AuthKeyDuplicatedError`, `UserDeactivatedError`, `UserDeactivatedBanError`,
+  `PhoneNumberBannedError`, `YouBlockedUserError`); the fatal reason is now
+  `<Class>: the account or session is unusable; a human must act`. The
+  connect is classified once by `decide()` - fatal returns the
+  `ready.length === 0` shape with `exitCode 2`, anything else rethrows, so a
+  transport failure at connect is still exit 1 and there is no connect
+  retry. `client.mjs` lost its authorization guard, so the first RPC's real
+  error class reaches `decide()`. `run.mjs` prints `::error::<stopped> - see
+  docs/tg-preview.md, step I.6` on exit 2.
+- **R3.** `readState` returns `{}` only for `ENOENT`; a file that exists and
+  does not parse throws `state file is not valid JSON: <path> (...) -
+  refusing to treat it as empty`, which `main().catch` turns into exit 1.
+- **R4.** Both `git fetch --depth=1 origin main` lines in `previews.yml`
+  now name `+refs/heads/main:refs/remotes/origin/main`.
+- **R5.** `manifest.mjs` fingerprints the root from `app/index.html`
+  (`ROOT_HTML`) when `--assets` is absent; `og/` still comes from the
+  repository root. The dry-run stale count is unchanged at 125, which is the
+  proof the two roots' `og:` tags still agree.
+- **Nits closed:** `--apply` no longer calls `buildFromTree()` - `record()`
+  writes `site` into `result.json` and `--apply` reads it (and refuses a
+  result without one), so the record step no longer needs `main`'s tree to
+  be buildable at commit time; the workflow's `else` message now says
+  `state.json could not be read from origin/main; using the checked-out
+  copy`; `.gitignore` ignores `tools/tg-preview/state.json.tmp`; the docs
+  and `plan.md` 3.5 no longer attach exit 2 to "a dead credential" alone;
+  this file uses the template's "Next batch (implement-ready)" heading.
+- **One deviation from section 10d, recorded.** Step 8 asks the replacement
+  comment in `client.mjs` to name teleproto's `isUserAuthorized()`, while
+  the acceptance criteria require `grep -c "isUserAuthorized"
+  tools/tg-preview/client.mjs` to be **0**. Those cannot both hold
+  literally. Resolved in favour of the mechanical criterion: the comment
+  carries every fact the step asks for (the implementation
+  `try { updates.getState() } catch { return false }`, the file
+  `client/users.js`, why it swallows the class name, and that the first RPC
+  throws the real error) without the identifier itself. Count is 0.
+- Everything else in 10d was implemented as written; no other deviation.
 
 ### Pass 7 (planner, 2026-09-16) - the B6 review, filed and answered
 
@@ -194,6 +249,60 @@ B1 (`cce10cb`), R1 (`5a959ca`), R2 (`a4c9066`), B3 (`2a4b78b`), O1 - see
 `plan.md` section 10 and the git log.
 
 ## Verification
+- **B7 (implementer, 2026-09-16)** - every command below was run in this
+  worktree, in this order, and none of them contacted Telegram:
+  - `node --test tools/tg-preview/lib.test.mjs` -> **96 pass, 0 fail**, 13
+    suites (84 before B7: +5 fatal-class cases, +7 `runRefresh` cases -
+    exactly section 10d's prediction).
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`, one foreground
+    call, Bash timeout 600000 -> **green**. `node --test` 96/96; vitest 42
+    files / 1035 tests; coverage 96.61 / 88.58 / 97.1 / 97.34 - the same
+    vitest and coverage numbers B6 recorded. No flake, no re-run.
+  - `node tools/tg-preview/run.mjs --dry-run` -> `125 urls stale, 125
+    ready, up to 13 messages, 125 presses (press budget 50)`, exit 0 -
+    **identical to B6's line**, so `manifest.mjs`'s switch to
+    `app/index.html` changed no fingerprint. `git status --porcelain --
+    tools/tg-preview` afterwards showed only the five modified `.mjs`
+    files; nothing was written.
+  - R3, refresh path: `printf '{' > "$SCRATCH/corrupt.json"`;
+    `--dry-run --no-verify --state "$SCRATCH/corrupt.json"` -> **exit 1**,
+    `tg-preview run failed: state file is not valid JSON: ... - refusing to
+    treat it as empty`. `--state "$SCRATCH/absent.json"` -> `1092 urls
+    stale, 1092 ready, up to 110 messages, 1092 presses (press budget 50)`,
+    **exit 0**, and no `absent.json` was created.
+  - R3, apply path and the `site` change: `--apply "$SCRATCH/r.json"
+    --state "$SCRATCH/s.json"` (a scratch copy of the committed state) ->
+    `state updated from ...`, exit 0, `s.json` still **1062 keys**. The same
+    against `corrupt.json` -> **exit 1**, `corrupt.json` unchanged (still
+    one byte). A result without `site` -> **exit 1**, `result file carries
+    no site: ...`.
+  - `npx prettier --write` then `--check
+    .github/workflows/previews.yml` -> formatted correctly, and the file's
+    diff is exactly 3 lines changed (the two refspecs and the `else`
+    message). Both `run:` blocks extracted to the scratchpad and `bash -n`
+    clean.
+  - Acceptance greps, all as specified: `cx.incoming`/`cx.byIds` in
+    `lib.mjs` = **4**, all four inside `read(() => ...)`; `cx.close()` = 1
+    (inside `closeQuietly`); the five new class names = 5; `credential is
+    dead` = 0; `isUserAuthorized` in `client.mjs` = 0; `existsSync` in
+    `run.mjs` = 0; `buildFromTree` in `run.mjs` = 2 (import + refresh path);
+    `::error::` = 1; `'app', 'index.html'` in `manifest.mjs` = 1; the
+    refspec in the workflow = 2; `every url counts as stale` = 0; `cron:`
+    still 1; `continue-on-error` still 0; `state.json.tmp` in `.gitignore`
+    = 1; `recovery scan` in `docs/tg-preview.md` = 3.
+  - **`state.json` untouched:** `git hash-object tools/tg-preview/state.json`
+    and `git rev-parse HEAD:tools/tg-preview/state.json` are both
+    `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`, before the batch and after
+    the commit. It appears in neither commit's
+    `git diff --cached --name-only`, and nor does `.env`.
+  - `docs/specs/COVERAGE.md` re-read and confirmed to need nothing: its
+    `lib.test.mjs` paragraph already owns "the flood/fatal error table" and
+    "the two-phase send-and-press loop against a fake client".
+  - **Not run, from the actual file list:** `npm run check:built`, parity
+    and `golden`. B7 touched five `tools/tg-preview/*.mjs`, `previews.yml`,
+    `.gitignore`, `docs/tg-preview.md` and this directory; it *reads*
+    `app/index.html` and changed nothing under `app/**`, `data.js`, `i/`,
+    `og/`, `tests/**` or `dist/`, and nothing a screen draws.
 - **Pass 7 (planner)** - no gates run; no production code touched.
   Read-only measurements, all in `context.md` "Added by the planner, pass 7":
   - `git fetch origin main` (read-only) -> `origin/main` = `3504bf7`;
@@ -232,92 +341,42 @@ B1 (`cce10cb`), R1 (`5a959ca`), R2 (`a4c9066`), B3 (`2a4b78b`), O1 - see
   workflow passes; both `run:` blocks `bash -n` clean; the `timeout`
   mapping proven by hand (`124` -> step exit 0; a child's 2 re-raised).
   Exact lines in the `72d8de0` version of this file.
-- **Not run for B7, and why - stated from the file list, not assumed:**
-  `npm run check:built`, parity and `golden` are **not required**. B7
-  touches five `tools/tg-preview/*.mjs`, `previews.yml`, `.gitignore`,
-  `docs/tg-preview.md` and this directory; it *reads* `app/index.html` and
-  changes nothing under `app/**`, `data.js`, `i/`, `og/`, `tests/**` or
-  `dist/`, and nothing a screen draws. Gates for B7: `node --test
-  tools/tg-preview/lib.test.mjs`, `node tools/tg-preview/run.mjs --dry-run`,
-  the four scratch-file proofs in 10d step 15, and **one** `npm run check`
-  in one foreground call.
-
 ## Next batch (implement-ready)
-- Name: **B7 - make the exit codes true in both directions** (`plan.md`
-  section 10d; design in 3.4 pass-7 note, 3.5 pass-7 table, 3.11, 5.2
-  pass-7 note, 6 pass-7, 7, 8, 9 I.6/J).
-- Objective: close the B6 review's R1-R5 and the nits on the same files so
-  that before the first CI run a failed Telegram read is a green resumable
-  stop, a dead account (five more classes) is exit 2 and a revoked session
-  is exit 2 as documented, a corrupt `state.json` is a stop and never an
-  empty state, the record step's fetch names its refspec, and the root URL
-  is fingerprinted from `app/index.html`. One code commit, one check.
-- In scope: `tools/tg-preview/lib.mjs`, `lib.test.mjs`, `run.mjs`,
-  `client.mjs` (the guard only), `manifest.mjs` (root HTML source only);
-  `.github/workflows/previews.yml` (two fetch lines, one message);
-  `.gitignore` (one line); `docs/tg-preview.md` (I.6, J, two Operations
-  paragraphs, one Coverage clause); the three task files.
-- Out of scope: `live.mjs`, `login.mjs`, `tools/tg-preview/package*.json`,
-  `ci.yml`, `state.json`, `README*`, `docs/specs/*`, `CLAUDE.md`, `app/**`
-  (read only), `index.html`, public contracts; `npm audit` on the cron; a
-  connect retry; a run counter; a state shape check; `continue-on-error`;
-  any new flag, input or exit code; the merge of `origin/main`.
-- Files expected: the five `.mjs` files above, `previews.yml`, `.gitignore`,
-  `docs/tg-preview.md`, `issues/tg-preview-refresh/{context,plan,handoff}.md`.
-- Steps: section 10d, steps 1-16 - commit 1 is the pass-7 task docs
-  (gate-exempt); commit 2 is: `FATAL_ERRORS` + the reason string (3); the
-  connect classified once (4); `read()` (5); the five call sites with their
-  `stopped` prefixes `recovery scan: ` / `button poll: ` / `refetch: ` and
-  `closeQuietly()` (6); `record()` writes `site` (7); `client.mjs` loses
-  `isUserAuthorized()` (8); `manifest.mjs` reads `app/index.html` (9);
-  `run.mjs`: `readState` throws on a corrupt file, `--apply` takes `site`
-  from the result, `::error::` on exit 2 (10); the tests - five fatal
-  names, three opt-in fake scripts, seven new cases, two extended, the root
-  test on `app/index.html`, 96 passing (11); the workflow's two refspecs and
-  the `else` message, Prettier, `bash -n` (12); `.gitignore` (13); the
-  runbook (14); the gates and the four scratch-file proofs (15); stage by
-  path and commit
-  `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state`
-  (16).
-- Acceptance criteria: section 10d's list - 96 tests; the four `cx.incoming`
-  / `cx.byIds` sites all inside `read(...)`; the five names present and
-  "credential is dead" gone; `isUserAuthorized` gone; `existsSync` gone and
-  `buildFromTree` called once in `run.mjs`; `'app', 'index.html'` in
-  `manifest.mjs`; two explicit refspecs and no "every url counts as stale"
-  in the workflow; `state.json.tmp` ignored; the dry run's stale count equal
-  to B6's; the scratch-file proofs (corrupt -> exit 1, absent -> 1092,
-  `--apply` on a scratch copy keeps 1062 keys, on a corrupt copy exits 1,
-  without `site` exits 1); the state hash unchanged; I.6 rewritten; the
-  deferred items placed here (R1 item 7, the four nits) each done; tree
-  clean; `npm run check` green once.
-- Verification commands: section 10d's block - `node --test
-  tools/tg-preview/lib.test.mjs`; `node tools/tg-preview/run.mjs --dry-run`;
-  the `--state "$SCRATCH/corrupt.json"` / `absent.json` dry runs with
-  `--no-verify`; the two `--apply` runs against `"$SCRATCH/s.json"`;
-  `git hash-object tools/tg-preview/state.json`; `npx prettier --check
-  .github/workflows/previews.yml`; `set -o pipefail; npm run check 2>&1 |
-  tail -n 120` (Bash timeout 600000, once); `git status --porcelain`.
-- Risks / do-nots: never run `run.mjs` without `--dry-run` except the two
-  `--apply` proofs, and those only with `--state` in the scratchpad; never
-  read `.env`; never stage or touch `state.json` (hash is the proof); do not
-  change the fake client's defaults; do not add a retry, counter, shape
-  check, flag, input, exit code or `continue-on-error`; do not flip the
-  catch-all to red; do not touch `og/`, `index.html`, `app/index.html`,
-  `ci.yml`; do not merge `origin/main`; a changed **stale** count after the
-  `manifest.mjs` change is a stop, not a reason to edit either HTML file.
-- Fallback (optional): if removing the guard leaves no RPC before
-  `getEntity` that surfaces the session error (it does today), replace it
-  with a bare `await client.invoke(new Api.updates.GetState())` - never a
-  plain `Error`.
+
+**No agent batch is open.** Every batch this plan defined is shipped; what
+remains is the owner's own step.
+
+- Name: **O3 - the owner merges, and watches the first run** (`plan.md`
+  section 10, "O3", with the procedure in section 9, steps H-J and the
+  corrected I.6).
+- Objective: merge `automation/tg-preview-refresh` into `main` and push.
+  That push is what turns the CI job on and fires the first real run; the
+  committed `state.json` (1062 entries) is what stops that run redoing the
+  whole reindex.
+- Preconditions, all met: the branch is at a committed boundary with a green
+  `npm run check`; the three repository secrets are configured; `state.json`
+  is committed and byte-identical to the owner's finished reindex.
+- What the owner does: fetch and merge `origin/main` (it has moved to
+  `3504bf7` plus whatever landed since - B6's merge resolved the one known
+  conflict, `package.json`'s `"check"` line, as the union, so expect the
+  same shape), push, then follow `docs/tg-preview.md` steps I.1-I.5 on the
+  first run.
+- What to expect on the first run: a backlog of ~125 URLs (the frame stubs'
+  new `og:description` provenance prefix, the 30 new records and the root),
+  drained at 50 presses a run over roughly three runs, i.e. about half a day
+  on the four-hourly schedule.
+- How to read red and green: `plan.md` 3.5's **corrected** table and the
+  runbook's new I.6. A red run whose `stopped:` line is not on I.6's list is
+  itself worth reporting.
+- Pushing and merging are the owner's; no agent does either.
 
 ## Blockers
-- **None.** B7 needs no owner decision, no Telegram contact and no merge;
-  every gate runs locally. The worktree was quiet during planning (the
-  tree was clean; only task files are modified now).
-- **O3 (the owner's merge) is after B7 by recommendation, not by
-  dependency.** If the owner merges first, B7 lands unchanged as a
-  follow-up; the first reds and greens must then be read against `plan.md`
-  3.5's corrected table.
+- **None for any agent.** Every gate B7 needed ran locally and green; no
+  owner decision is outstanding.
+- **O3 is blocked only on the owner**, because pushing and merging into
+  `main` are theirs by `CLAUDE.md`. Nothing on this branch is pushed, so
+  until they merge, the CI job does not exist on `main` and no automatic
+  run can fire.
 
 ## Deferred
 - **From the B6 review, deferred with reason:** `npm audit
@@ -332,10 +391,11 @@ B1 (`cce10cb`), R1 (`5a959ca`), R2 (`a4c9066`), B3 (`2a4b78b`), O1 - see
   (`incoming` applies `limit` before `!m.out`, ~185 not 200), 6
   (`m.url === null` strict; unreachable through `plain()`).
 - **Reviewer's remaining R1 item:** 6 (unused `urls()` export). Item 7
-  (`--apply`'s `buildFromTree()`) is **in B7**.
+  (`--apply`'s `buildFromTree()`) is **done in B7**.
 - **A connect retry around `client()`** - only if transient connect
-  failures produce red runs more than rarely. B7 classifies the connect
-  error's exit code; it does not retry.
+  failures produce red runs more than rarely. B7 classified the connect
+  error's exit code; it does not retry, so a transport failure at connect is
+  still exit 1 (a crash), as section 12 accepted.
 - **A `press_limit` workflow input**, or deriving `--limit` from the press
   budget - when CI's `pressed P` lines justify moving the default.
 - **O2's per-chunk numbers** - not captured here; B2 wants `pressed P` per
@@ -371,9 +431,11 @@ B1 (`cce10cb`), R1 (`5a959ca`), R2 (`a4c9066`), B3 (`2a4b78b`), O1 - see
   `i/f1.html` description (`plan.md` 9, I.3 and I.5). Pass 7 adds one: the
   first red run's `stopped:` line, read against I.6's list - if it is not
   on the list, that is the report.
-- Cleanup performed / retained artifacts: none created; the planner wrote
-  only the three task files. `.env` was not read. `state.json` was not
-  touched (`git status` clean for `tools/`).
-- Session end partial progress: none - pass 7 is complete; `plan.md`,
-  `handoff.md` and `context.md` are consistent with each other and with the
-  tree at `72d8de0`.
+- Cleanup performed / retained artifacts: B7's proofs wrote only scratchpad
+  files (`corrupt.json`, `absent.json` - never created, `s.json`, `r.json`,
+  `r-nosite.json`, the two extracted `run:` blocks) outside the repository;
+  nothing was added to the tree. `.env` was not read. `state.json` was not
+  touched.
+- Session end partial progress: none - B7 is complete and committed;
+  `plan.md`, `handoff.md` and `context.md` are consistent with each other
+  and with the tree at B7's code commit.

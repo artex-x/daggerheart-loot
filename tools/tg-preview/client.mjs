@@ -56,12 +56,13 @@ export async function createClient({ apiId, apiHash, session, log }) {
   });
 
   await client.connect();
-  if (!(await client.isUserAuthorized())) {
-    throw new Error(
-      'the Telegram session is not authorized - TG_SESSION may be dead; see docs/tg-preview.md, step J'
-    );
-  }
 
+  // No "is this session authorized?" guard here on purpose: teleproto
+  // implements that helper as `try { updates.getState() } catch { return
+  // false }` (client/users.js), so it swallows the very class name decide()
+  // classifies on and reports a transport blip as "not authorized" too. The
+  // first RPC below throws the real error instead - a dead session, a banned
+  // account - and runRefresh classifies it once (B6 review R2).
   const peer = await client.getEntity('WebpageBot');
 
   // Idempotent: only sends /start the first time this account talks to the
