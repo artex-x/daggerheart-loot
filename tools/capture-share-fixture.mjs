@@ -13,6 +13,12 @@
  *
  * Run: node tools/capture-share-fixture.mjs
  * Output: docs/fixtures/share/records.json
+ *
+ * A re-run will show `f33` (Quilted Clothing, a frame-armour record) losing
+ * its "Ранг 1"/"Tier 1" word - that is a known, recorded divergence between
+ * the live app and app/src/lib/share.ts (R0b.4's fourth item; plan.md, "The
+ * fourth verdict"), not a new regression. Everything else changing is worth
+ * a second look.
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';

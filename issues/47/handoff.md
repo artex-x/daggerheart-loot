@@ -6,16 +6,22 @@ depends on chat history.
 
 ## Status
 
-- Task status: **in_progress. R0a is CLOSED; R0b.1 is CLOSED and pushed;
-  R0b.2 is next (queued, needs a preflight before it opens); R0b.3 is queued;
-  R0b.4 is an ordinary queued batch** (implementer, 2026-09-16). Last agent:
-  implementer. **NEEDS_HUMAN_CONFIRMATION: no.** Branch `main`, pushed at
-  merge commit `a2429bd` (R0b.1's four commits `1402bea`/`1807334`/`4aa8252`/
-  `92c239b` merged with fourteen unrelated peer commits that landed on
-  `origin/main` while R0b.1's real-browser gates ran - tg-preview, art-tooling,
-  hook-state-cap; no file overlap, merge was clean, `npm run check` re-run
-  green on the merged tree). R0b.1's full record: "Completed", below, and
-  "R0b.1's own commands and results" under "Verification".
+- Task status: **in_progress. R0a is CLOSED; R0b.1 is CLOSED and pushed,
+  including one review-remediation commit; R0b.2 is next (queued, needs a
+  preflight before it opens); R0b.3 is queued; R0b.4 is an ordinary queued
+  batch of FOUR divergences, not three - a fourth surfaced during R0b.1's own
+  C3 and is folded in, still awaiting the owner's confirmation** (implementer,
+  2026-09-16). Last agent: implementer. **NEEDS_HUMAN_CONFIRMATION: no** for
+  R0b.2/R0b.3; R0b.4's item 4 wants a quick owner confirmation before it is
+  implemented, but does not block anything ahead of R0b.4 itself. Branch
+  `main`, pushed at merge commit `a2429bd` (R0b.1's four commits
+  `1402bea`/`1807334`/`4aa8252`/`92c239b` merged with fourteen unrelated peer
+  commits that landed on `origin/main` while R0b.1's real-browser gates ran -
+  tg-preview, art-tooling, hook-state-cap; no file overlap, merge was clean,
+  `npm run check` re-run green on the merged tree), then one review-fix
+  commit on top (documentation and one comment line only - see "Completed").
+  R0b.1's full record: "Completed", below, and "R0b.1's own commands and
+  results" under "Verification".
   R0a is `b0545ed` (C1), `30b2744` (C2),
   `47a9a15` (C3) on top of `29eae18`, with `06658fd`, `858ae58`, `530aa10`,
   `6e1269b` and `f826bcd` as its records and corrections; it was built,
@@ -39,12 +45,16 @@ depends on chat history.
     so HEAD is `bb55a2d` and the tree is clean apart from `issues/47/`. Three
     peer sessions still share it; the batch's preflight verifies rather than
     assumes.
-  - **`npm run check` currently fails for a reason belonging to no task here** -
-    an untracked third-party skill install under `.agents/` and
-    `.claude/skills/impeccable/` that `.prettierignore` and
-    `eslint.config.mjs` do not cover. `bb55a2d` bypassed the gate over it.
-    Second entry in "Blockers"; measured in `context.md`, "The tree state,
-    corrected mid-session".
+  - **`npm run check` failed on the planning-era tree for a reason belonging
+    to no task here, and this is now RESOLVED** - an untracked third-party
+    skill install under `.agents/` and `.claude/skills/impeccable/` that
+    `.prettierignore` and `eslint.config.mjs` did not cover; `bb55a2d`
+    bypassed the gate over it at the time. The install is gone as of
+    `37e4812` (this session's starting HEAD) and the baseline `npm run check`
+    is green - see "Blockers", "RESOLVED - the untracked skill install is
+    gone", and `context.md`, "The tree state, corrected mid-session", for the
+    full record. A cold session reading Status first should not read this as
+    still open.
   - **The CI read: run `34755188652` on `6e1269b` is green in every job** -
     `check`, `parity (1..4)`, `golden (1..4)`, `audit`, `secrets`, `deploy`.
     The run before it, `34754984230` on `06658fd`, was red on one case and it
@@ -3612,6 +3622,13 @@ npm run check 2>&1 | tail -n 120` green on the pre-session tree at `37e4812` -
   art-tooling, hook-state-cap - no file overlap with this batch, clean merge):
   rebuilt `dist/` and re-ran `npm run check` once more, green, same coverage
   bars, 42/1046.
+- `node tools/smoke-file-url.mjs` - not part of `npm run check` and not
+  separately recorded when this batch first closed (acceptance line 16's new
+  `defer` assertion had no recorded execution at that point). Run by the
+  implementer during C3 (green, `the built page opens from a folder`) and
+  re-run by the review pass (2026-09-16, remediation): green again, same
+  message. `npm run check:built` was not run - the gate list correctly
+  excludes it, since this batch changes no screen (`docs/parity.md`).
 - Acceptance-line spot checks: `git log --follow --oneline
   tests/app/driver.js` shows the file's prior history (line 1); `git show
   HEAD~1:tests/parity/driver.js | git hash-object --stdin` equals `git
@@ -5026,8 +5043,13 @@ is new, so inspect its diff image before writing any entry, and write no
     guards nothing else makes', ...)` asserts the split, the unique-name count,
     the Wondrous count, the book order, `firstT1[0]`, the 119-row table, and
     the not-recomputed-under-a-filter claim (via a Wondrous `kind` subset).
-11. Met - `tables.test.ts:791`'s `it('a fold survives a pick, and a pill
-    dropped while folded is not snapped back to the link', ...)`.
+11. **Met for three of its four clauses, not a bare "Met" (review
+    remediation, 2026-09-16).** `tables.test.ts:791`'s `it('a fold survives a
+    pick, and a pill dropped while folded is not snapped back to the link',
+    ...)` asserts the fold survives a pick, the pill is not snapped back, and
+    the address follows the pick (`:813`). It does **not** assert that reset
+    clears the address - no `.fclear` click appears in this test. See
+    "Deferred", nit 2, below.
 12. Met - `tables.test.ts:565`'s `it('hides reset and the copy-link button
     while the filter is empty, and keeps both reachable with the panel
     folded', ...)`.
@@ -5052,13 +5074,37 @@ is new, so inspect its diff image before writing any entry, and write no
     the site's own (not a per-item photo), 1200x630, on disk,
     `twitter:image === og:image`, `og:locale`, and each stub is `summary`
     with `og/<id>.jpg`.
-18. Met - `COVERAGE.md` carries all ten verdicts with evidence; "probably"
-    appears nowhere (checked by script); the three thin spots are recorded.
-19. Met, with a pre-existing caveat named in "Verification": nothing this
-    batch touched is deleted (`git diff --stat 37e4812..HEAD` shows only the
-    driver's rename); the literal `git show 9177f3b | git apply --reverse
-    --check -` fails, but at `.github/workflows/ci.yml:129`, from three R0a-era
-    commits that predate this session's starting HEAD - not from R0b.1.
+18. **Met only after review remediation (2026-09-16) - originally not met.**
+    `COVERAGE.md` carries all ten verdicts with evidence; "probably" appears
+    nowhere (checked by script); the three thin spots are recorded. But six
+    of its line citations were taken from the planner's pre-batch audit and
+    were invalidated by this same batch's own C2/C3 insertions - the exact
+    failure this line exists to prevent - plus two rows deferred to `plan.md`
+    for a line number instead of giving one in `COVERAGE.md` itself, which
+    the line does not allow. Both classes of error are corrected in the
+    remediation commit: every stale citation re-verified against the current
+    file and re-pointed (`tests/app/states.js` x5 across four rows,
+    `tests/derived.js` x1, `record.test.ts` across five rows, `tables.test.ts`
+    across three rows, `listPage.test.ts` across two rows, `data.test.ts`,
+    `app.js`, `searchPage.test.ts`, `tests/app/inventory.js` - the full set
+    the remediation pass found, not only the six the review named); the two
+    bare `plan.md` deferrals replaced with real line numbers in `COVERAGE.md`
+    itself.
+19. **Met, and the standing guarantee is independently re-checked and holds -
+    stronger than a bare "Met".** Nothing this batch touched is deleted
+    (`git diff --stat 37e4812..HEAD` shows only the driver's rename).
+    The line's *literal* command, `git show 9177f3b | git apply --reverse
+    --check -`, is stale: it needs exact surrounding context, and three R0a-era
+    commits to `.github/workflows/ci.yml` (`8dae1b9`, `99bbb7c`, `b0545ed`),
+    all predating this session's starting HEAD `37e4812`, moved that context.
+    `apply --reverse` is the wrong tool for re-checking a revert once a file
+    has moved on; `git revert` uses a 3-way merge instead, which is exactly
+    what `git merge-tree 9177f3b HEAD 9177f3b^` simulates - **clean, zero
+    conflict markers** (verified during review remediation, 2026-09-16). The
+    one-file-revert's guarantee holds: `git revert --no-commit 9177f3b` would
+    apply cleanly today. Corrected command for this line going forward:
+    `git revert --no-commit 9177f3b` (then `git revert --abort` to discard the
+    dry run without committing it).
 20. Met - `git diff --stat 37e4812..HEAD -- .github/workflows/ci.yml` is empty.
 21. Met - `StdPanel.svelte`, `RollPanel.svelte`, `AltPanel.svelte`,
     `RecordCard.svelte`, `RecordActions.svelte` appear in no commit of this
@@ -5072,7 +5118,23 @@ it is not yet written up implement-ready (no preflight, no numbered steps, no
 commit-by-commit acceptance criteria) - a planner pass or the next
 implementer's own preflight should do that before code moves. In outline:
 
-### R0b.2 (queued - needs a preflight/implement-ready write-up first)
+### R0b.2 (queued - NOT implement-ready; a planner pass must precede any
+implementer on it)
+
+**Say this plainly rather than let it be assumed: R0b.2 is promoted to
+"next batch" in the sense that nothing else is ahead of it, but it is
+explicitly not implement-ready.** It has no preflight, no numbered steps, and
+no per-line acceptance criteria - only the outline below, carried over from
+`plan.md`, "R0b.2 designed, in outline". R0b.1's own remediation is the
+concrete lesson for whoever writes that preflight: `tests/app/states.js` line
+citations drift with every case R0b.2 itself adds, so R0b.2's own
+`COVERAGE.md` edit must include, as a required step and not an afterthought,
+**re-pointing every `tests/app/states.js` citation across all ten suite rows**
+(currently: behave `:161`, select `:54,68,86`, noart `:330`, notes `:385`,
+qa `:178,348` - see `docs/specs/COVERAGE.md` itself for the exact set at the
+time R0b.2 opens) to whatever they become after R0b.2's own cases are
+inserted. Do not inherit R0b.1's mistake of citing them from memory or from
+an earlier audit.
 
 - **Name:** R0b.2 - every real-browser placement the ten-verdict audit found.
 - **Entry:** R0b.1 landed and green (**now true**).
@@ -5390,11 +5452,17 @@ half-batch.
   `copiedPrintLink`, which die with the harness and are measured nowhere else.
   Entry: R0b.1 landed (the port needs the moved driver's `media`, `computed`,
   `eachAt` verbs).
-- **R0b.4** - the three divergences. **Entry was the owner's answer; answered
-  restore on all three (2026-09-16, `issues/47/context.md`).** Now an ordinary
-  queued batch behind R0b.2/R0b.3, not a blocked one. Its own scope is
-  unchanged: `app/src/` production code, `npm run check`/`check:built`, and a
-  parity filter over `#/i/*` and `#/roll/*`.
+- **R0b.4** - now **four** divergences, not three. **Entry for items 1-3 was
+  the owner's answer; answered restore on all three (2026-09-16,
+  `issues/47/context.md`).** Item 4 (a frame-armour record's copy text
+  keeping a tier word the live app drops - `share.ts:85` vs `app.js:612`,
+  found during R0b.1's own C3) joined after that answer and still needs its
+  own confirmation - same class, same likely direction, not yet asked. Now an
+  ordinary queued batch behind R0b.2/R0b.3 for items 1-3; item 4 waits on a
+  short confirmation, not a full re-block. Its own scope is unchanged:
+  `app/src/` production code, `npm run check`/`check:built`, and a parity
+  filter over `#/i/*` and `#/roll/*` - item 4's fix touches `app/src/lib/share.ts`
+  only and needs no new filter.
 
 R0c still needs **the owner's go** (Phase 7 condition 6) and is where the
 one-file revert ends. R0c also inherits two named items from this planning
@@ -6001,7 +6069,8 @@ cut-over, replanned".
 
 - **ANSWERED - the owner ruled restore on all three (owner, via orchestrator,
   2026-09-16). NEEDS_HUMAN_CONFIRMATION is cleared; R0b.4 is unblocked and is
-  now an ordinary queued batch.** The answers, one per question below:
+  now an ordinary queued batch, for these three.** The answers, one per
+  question below:
   1. **Restore** `role="status" aria-live="polite"` on the results container in
      `StdPanel.svelte`, `RollPanel.svelte` and `AltPanel.svelte`.
   2. **Restore both** - the `\n` -> `<br>` line breaks *and* the
@@ -6015,6 +6084,18 @@ cut-over, replanned".
   condition is now R0b.1..R0b.3, not an answer. **R0b.1 does not implement any
   of them** - acceptance line 21 still holds and the five named components
   still appear in no R0b.1 commit.
+
+  **A fourth item joined R0b.4 after this answer, and has NOT itself been put
+  to the owner (implementer, 2026-09-16, found during R0b.1's C3; folded in by
+  review remediation).** A frame-armour record's copy text keeps a tier word
+  the live app now drops - `app.js:612`'s `isFrameRecord` guard has no
+  counterpart in `app/src/lib/share.ts:85`'s `eqLine(...)` call. Same class as
+  items 1-3 (an accidental loss, not a deliberate product change) and the same
+  restore direction is the obvious answer (`noTier: isFrameRecord(it)`, the
+  option `i18n.ts:117,123` already defines), but it surfaced after this
+  three-question round closed, so R0b.4's implementer should get it confirmed
+  rather than assume it. Full evidence: `plan.md`, "The fourth verdict", item
+  4.
 
   The question as it was asked, kept as the record:
 
@@ -6827,37 +6908,69 @@ cut-over, replanned".
 
 ## Deferred
 
-- **A fourth, previously-invisible divergence, found and NOT fixed
-  (implementer, 2026-09-16, during R0b.1's C3).** Regenerating
-  `docs/fixtures/share/records.json` in full (to add `w118`) showed `f33`
-  (a frame-armour record) losing "Ранг 1"/"Tier 1" from its live-app stat
-  line: app.js's `eqLine()` gained an `isFrameRecord` guard in commit
-  `106e4dd` (pre-session), which `app/src/lib/share.ts` was never given.
-  `share.test.ts`'s existing golden and `share.ts`'s own output still agree
-  with each other, both now disagreeing with the live app. **Not one of the
-  three "fourth verdict" divergences above** - it is a new one this session's
-  own fixture regeneration surfaced, per `plan.md`'s own warning that "the
-  pattern is that each was invisible to every instrument, so the next one is
-  evidence about the instruments and not just about one component." Recorded
-  rather than fixed: `app/src/` production code is out of R0b.1's scope.
-  Flagged with `spawn_task` as `task_62e359c8`, "Fix share.ts frame-armour
-  tier text divergence" - a small, well-scoped follow-up (one function, one
-  test, one fixture regen), not a redesign. The fixture itself was **not**
-  regenerated for the other eight entries to avoid shipping this regression
-  silently through a test-data update; only `w118` was added.
+- **Six nits from R0b.1's review, recorded and NOT fixed (review remediation,
+  2026-09-16).** R0b.1 is mid-plan - R0b.2, R0b.3, R0b.4 remain - so these
+  clear on the terminal batch rather than costing a remediation cycle now:
+  1. `app/src/components/TablesPage.svelte:395` still reads "in
+     `tests/parity/driver.js`" - the only stale `parity/driver` reference
+     outside `issues/`. Acceptance line 3 scoped its search to `tests/`,
+     `tools/`, `docs/`, `.claude/`, so the line is still met; the comment
+     itself is wrong.
+  2. Acceptance line 11's fourth clause is unasserted: `tables.test.ts:791`
+     proves the fold survives, the pill is not snapped back, and the address
+     follows (`:813`), but nothing asserts that reset clears the address.
+     Recorded as three of four clauses (see the corrected line 11 above), not
+     a plain "Met".
+  3. `app/src/lib/data.test.ts:170-172` is a vacuous assertion: it looks up
+     each `wondrousItems` element inside the very array it was filtered from
+     and compares the found row's `.roll` to itself, so it cannot fail. No
+     real coverage is lost - the preceding `expect(rolls).not.toEqual(...)`
+     line carries the actual claim - but a test that cannot fail belongs on
+     the record in a batch whose purpose is preserving coverage.
+  4. `tests/app/lib.js:2` is self-referential since C1's move: "`tests/app/
+     driver.js` already knows..." now sits inside `tests/app/lib.js` itself.
+     Cosmetic.
+  5. `handoff.md`'s "Completed" entry for R0b.1 and its Deferred entry for the
+     fourth divergence narrate the same finding twice at some length. Left
+     alone rather than trimmed mid-plan.
+  6. **Worth recording, not fixing:** case 7's stage one waits on
+     `window.__storageSeen > 0`, but page A's `prepare()` clears
+     `localStorage` on first navigation (`tests/app/lib.js:98`), and that
+     clear itself fires a `storage` event on page B before A ever writes the
+     list. Stage one is therefore an environment probe ("did Chrome deliver
+     *a* storage event"), not the sharper "did *this* write arrive" - which
+     matches the plan's stated intent, not a defect, but is worth naming.
+     Keying `__storageSeen` on `e.key === 'dhloot.lists.v2'` would cost one
+     line and make the two stages disjoint. Stage two still carries the
+     actual app claim (did the page redraw), so the diagnostic split works
+     as designed either way.
 
-- **PLACED for R0b.4 (planner, 2026-09-16; answered, see "Blockers"): the
-  three divergences the audit found.** The roll results' missing
-  `role="status" aria-live="polite"`; a referenced card's lost line breaks and
-  lost `daggerheart.su` link; the copy-image button that no longer disappears
-  when the art fails to load. Each was guarded by exactly one of the ten suites
-  R0c deletes (`qa.js:138`, `flows.js:117`, `noart.js:76`) and by nothing else.
-  Full evidence, with line numbers on both apps: `plan.md`, "The fourth
-  verdict". **The owner answered restore on all three (2026-09-16)** - R0b.4
-  is now an ordinary queued batch, not blocked; see "Blockers" for the
-  per-item answers. **R0b.1 did not fix them** - acceptance line 21 confirms
-  the five named components appear in no R0b.1 commit - and R0c may still not
-  delete `app.js` or those three suites while any of the three is unrecorded.
+- **PLACED for R0b.4, now four items (planner, 2026-09-16, items 1-3;
+  implementer, 2026-09-16, item 4; folded in by review remediation,
+  2026-09-16).** The roll results' missing `role="status" aria-live="polite"`;
+  a referenced card's lost line breaks and lost `daggerheart.su` link; the
+  copy-image button that no longer disappears when the art fails to load;
+  and (item 4, found during R0b.1's own C3) a frame-armour record's copy text
+  keeping a tier word the live app now drops - `app.js:612`'s `isFrameRecord`
+  guard (commit `106e4dd`) has no counterpart in `app/src/lib/share.ts:85`'s
+  `eqLine(...)` call. Each was guarded by exactly one of the ten suites R0c
+  deletes (`qa.js:138`, `flows.js:117`, `noart.js:76`) or, for item 4, by
+  nothing at all until a fixture regeneration surfaced it. Full evidence,
+  with line numbers on both apps: `plan.md`, "The fourth verdict" (now four
+  items, not three). **The owner answered restore on items 1-3
+  (2026-09-16)** - R0b.4 is now an ordinary queued batch for those three, not
+  blocked; see "Blockers" for the per-item answers. **Item 4 has not itself
+  been put to the owner** - it surfaced after that round, is the same class
+  and the obvious same restore direction, but R0b.4's implementer should
+  confirm rather than assume. **R0b.1 did not fix any of the four** -
+  acceptance line 21 confirms the five named components appear in no R0b.1
+  commit, and `app/src/lib/share.ts` was likewise untouched - and R0c may
+  still not delete `app.js` or those three suites while any of the four is
+  unrecorded. A session-only `spawn_task` chip (`task_62e359c8`) briefly held
+  item 4's finding before this fold-in; it has been withdrawn, since a chip is
+  session state and this entry, `plan.md`'s "The fourth verdict", and
+  `tools/capture-share-fixture.mjs`'s own comment are what actually carry it
+  forward.
 
 - **PLACED for R0c: `tests/parity/lock.js` is a live hook dependency R0c's
   outline does not name (planner, 2026-09-16).** It is imported by

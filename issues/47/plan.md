@@ -16074,17 +16074,23 @@ carried into `COVERAGE.md`.
 **No suite is dropped whole, and no suite's coverage is unaccounted for.** That
 was the outline's bar and it is met.
 
-#### The fourth verdict: three assertions that can take none of the three
+#### The fourth verdict: four assertions that can take none of the three
 
-Three legacy assertions cannot be given any verdict, because the rewrite does
+Four legacy assertions cannot be given any verdict, because the rewrite does
 not do what they assert. They are not *covered already* - nothing covers them.
 They cannot be *ported* - a port would land a suite that fails against `dist/`
 on its first run. They must not be *dropped* - dropping them deletes the only
 instrument in the repository that can see a shipped divergence, which is the
 exact failure the outline calls "the largest remaining risk in the phase".
 
-All three were verified against the source for this plan, not taken from the
-audit's report.
+The first three were verified against the source for this plan, not taken
+from the audit's report. **The fourth was found later, during R0b.1's own
+implementation (implementer, 2026-09-16), not by this planning pass** - see
+item 4 below for how it surfaced. `plan.md`'s own out-of-scope clause below
+says a batch that finds one should "record it beside the three and stop
+rather than fixing it"; the finding was recorded in C3, but the batch ran on
+to C4 and closeout rather than stopping, which review remediation is what
+caught and is now correcting.
 
 1. **The roll results lost their live region.** `app.js:2243, 2300, 2333, 2349,
    2376, 2399` all emit `<div class="results" role="status" aria-live="polite">`.
@@ -16115,22 +16121,46 @@ audit's report.
    (`RecordActions.svelte:57-61`) and not for the button. So a record whose
    picture 404s offers to copy the placeholder. `noart.js:76` was the only
    guard.
+4. **A frame-armour record's copy text keeps its tier word where the live app
+   now drops it.** `app.js:612` reads `if (e.tier && !isFrameRecord(it))
+   out.push(t().tier + ' ' + e.tier);` (added by commit `106e4dd`, itself
+   after this planning pass first wrote items 1-3): a weapon or armour record
+   whose table is a campaign frame (`src === 'frame'`, e.g. `f33`, Quilted
+   Clothing) prints no rank/tier word in its stat line, matching
+   `RecordCard.svelte`'s own `noTier: isFrameRecord(it)`. `app/src/lib/share.ts:85`
+   calls the equivalent `eqLine(...)` with no `noTier` argument, so the
+   rewrite's copy-to-clipboard text still prints "Ранг 1"/"Tier 1" for a frame
+   armour record - the opposite direction from items 1-3 (there the rewrite
+   dropped something; here the live app dropped something and the rewrite
+   never caught up), but the same shape: one guard the fix needs
+   (`noTier: isFrameRecord(it)`, the same option `i18n.ts:117,123` already
+   defines and `i18n.test.ts:42,63` already exercises elsewhere), invisible to
+   every instrument until a fixture was regenerated against the live app and
+   diffed. Found regenerating `docs/fixtures/share/records.json` for `w118`
+   during R0b.1's C3 (implementer, 2026-09-16) - `share.test.ts`'s existing
+   golden and `share.ts`'s own output agree with each other and both disagree
+   with the live app.
 
 **Why this is not the planner's call to make alone.** `CLAUDE.md`, "Migration
 and parity", says this is a refactor and the shipped app's behaviour, content
-and controls are reproduced; by that law all three are fixed, not recorded. But
+and controls are reproduced; by that law all four are fixed, not recorded. But
 each is production code in deployed behaviour, none is in a path R0b otherwise
 touches, item 2 removes a link to a third-party site whose removal may have
 been intended, and item 1 is a live accessibility regression the owner should
 see now rather than at the cliff. The alternative to a fix is a
 `docs/specs/DEBT.md` entry, and `DEBT.md` is described in `CLAUDE.md` as
 holding "live decisions kept over its own" - which is an owner's decision, not
-a planner's. Hence **`NEEDS_HUMAN_CONFIRMATION: yes`**, on these three and
-nothing else.
+a planner's. Items 1-3 carried `NEEDS_HUMAN_CONFIRMATION: yes` and the owner
+answered **restore** on all three (2026-09-16). **Item 4 is the same class and
+the same restore direction is the obvious call** - it undoes an accidental
+loss the same way items 1-3 do, not a deliberate product change - but it
+surfaced after the owner's three-question round, so it has not itself been
+put to the owner; R0b.4's own implementer should confirm the same restore
+answer applies rather than assuming it silently.
 
 **What must not happen** is R0c deleting `app.js` and the ten suites while
-these three sit unrecorded, because after that the correct behaviour exists
-only in git history and the instrument that noticed is gone.
+any of these four sit unrecorded, because after that the correct behaviour
+exists only in git history and the instrument that noticed is gone.
 
 #### The batches, and why three rather than one
 
@@ -16155,15 +16185,22 @@ each other by a seam - they share `npm run check`, one build, and one
 | **R0b.1** | the driver move, `app/states` case 7, R0a's four nits, every jsdom placement, `COVERAGE.md`'s verdict table | check, build, the `tests/app` set, the four golden shards | yes |
 | **R0b.2** | every real-browser placement: `tests/app/states.js`, `sweep.js`, `hues.js`, and the new `tests/stub.js` | the same set | yes |
 | **R0b.3** | the print port: `tests/app/print.js`, the `run-all` row, `COVERAGE.md` | check, build, `run-all app/print`; `node tests/parity.js print` as a diagnostic on failure only | yes |
-| **R0b.4** | the three divergences | check, check:built, a parity filter over `#/i/*` and `#/roll/*` | yes, but production code |
+| **R0b.4** | the four divergences | check, check:built, a parity filter over `#/i/*` and `#/roll/*` | yes, but production code |
 
-R0b.1 first because everything else builds on the moved driver. R0b.4 is
-**blocked on the owner** and is the only batch that touches `app/src/`.
-**R0b deletes nothing in any of its batches**, so
-`git show 9177f3b | git apply --reverse --check -` exits 0 throughout - and it
-does so without needing care, because none of them touches
-`.github/workflows/ci.yml` at all (a new suite reaches CI through
-`run-all.js`'s own `SUITES` list, which `ci.yml:47` already runs whole).
+R0b.1 first because everything else builds on the moved driver. R0b.4's first
+three items were **blocked on the owner**; the owner answered restore on all
+three (2026-09-16), so it is now an ordinary queued batch, not blocked, and
+the only batch that touches `app/src/`. Its fourth item (the frame-armour
+tier text in `share.ts`, "The fourth verdict" above) surfaced after that
+answer and still needs the owner's confirmation that the same restore
+direction applies. **R0b deletes nothing in any of its batches**, so the
+one-file revert's guarantee holds throughout - `git revert --no-commit
+9177f3b` is the way to check it (not `git apply --reverse --check -`, which
+needs exact context that later commits to `ci.yml` move; see
+`issues/47/handoff.md`'s corrected acceptance line 19) - and it holds without
+needing care, because none of R0b's batches touches `.github/workflows/ci.yml`
+at all (a new suite reaches CI through `run-all.js`'s own `SUITES` list, which
+`ci.yml:47` already runs whole).
 
 #### R0b.1 designed
 
@@ -16310,9 +16347,15 @@ new file, no new export.
   `og/<id>.jpg`.
 
 Adding `w118` to a fixture and editing `tests/derived.js`'s head checks are
-**not** public-contract changes: `docs/fixtures/share/` is not in
-`edit-followup.mjs:28`'s contract list and no route, id, link or generated
-artefact moves. If the implementer finds otherwise, that is a stop-and-raise.
+**not** public-contract changes. `.claude/hooks/edit-followup.mjs:26`'s
+`p.startsWith('docs/fixtures/')` test does match `docs/fixtures/share/`, so
+the hook's reminder fires on this change - that is not itself a sign of a
+contract change, only a prompt to check. The reason it is not one: `CONTRACTS.md:10`
+enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`
+as frozen fixtures, `docs/fixtures/share/` is not among them, and
+`tests/contracts.js` never opens `docs/fixtures/share/` at all - so nothing
+that file checks moves, and no route, id, link or generated artefact moves
+either. If the implementer finds otherwise, that is a stop-and-raise.
 
 **C4 - `COVERAGE.md`.** The ten-suite table above, written into the `Fate`
 column as a decision with its evidence, plus the thin spots this plan creates:
@@ -16371,8 +16414,9 @@ browser-measured fitting - is what makes the port non-negotiable.
 **Stop-and-raise, named**: if a ported assertion fails against `dist/`, run
 `node tests/parity.js print` to tell a bad transposition from a real
 divergence. A one-property CSS fix in `PrintCard.svelte`/`PrintPage.svelte` is
-in scope and rides the same batch with a parity filter. Anything larger is a
-fourth divergence and joins R0b.4 rather than being fixed here.
+in scope and rides the same batch with a parity filter. Anything larger is
+another divergence (a fifth, now that R0b.1's own C3 found a fourth - see "The
+fourth verdict") and joins R0b.4 rather than being fixed here.
 
 #### Out of scope for all of R0b, with the stop-and-raise conditions
 
@@ -16385,12 +16429,18 @@ fourth divergence and joins R0b.4 rather than being fixed here.
   `VISUAL_DEBT`/`ACCEPTED` at all. R0a closed that sweep.
 - **`tests/parity/lock.js` and `.claude/hooks/`.** Recorded for R0c above.
 - **`app/src/` production code**, except R0b.3's named one-property print
-  exception. The three divergences are R0b.4 and wait on the owner.
+  exception. The four divergences are R0b.4's; the first three wait on nothing
+  further (the owner answered restore, 2026-09-16), the fourth still needs
+  that same confirmation before R0b.4 implements it.
 - **Compaction of `plan.md`, `handoff.md` or `context.md`.** All three are over
   budget - 1007 KB, 510 KB, 222 KB before this session - and
   `.claude/skills/handoff/SKILL.md` is the procedure. It is not R0b's, and this
   section is appended rather than filed into the outline it supersedes.
-- **A fourth divergence.** If any batch finds one, record it beside the three
-  and **stop** rather than fixing it: the pattern is that each was invisible to
-  every instrument, so the next one is evidence about the instruments and not
-  just about one component.
+- **A further divergence** (a fifth, now that R0b.1's own C3 found the fourth
+  - "The fourth verdict" above). If any batch finds one, record it beside the
+  others and **stop** rather than fixing it: the pattern is that each was
+  invisible to every instrument, so the next one is evidence about the
+  instruments and not just about one component. **R0b.1 did not stop when its
+  own C3 found the fourth** - it was recorded but the batch ran on to C4 and
+  closeout; review remediation caught this and folded the finding into R0b.4
+  rather than reopening R0b.1.
