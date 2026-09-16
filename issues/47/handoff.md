@@ -6,30 +6,27 @@ depends on chat history.
 
 ## Status
 
-- Task status: **in_progress. R0a is CLOSED; R0b.1 is CLOSED and pushed,
-  including one review-remediation commit; R0b.2 is CLOSED and pushed, all 20
-  acceptance lines Met, no fifth divergence found; R0b.3 is CLOSED and
-  pushed, all 13 acceptance lines Met, no fifth divergence found, including
-  one review-remediation commit; R0b.4 is next - an ordinary queued batch,
-  entry condition now met (R0b.1..R0b.3 all landed), FOUR divergences, not
-  three - a fourth surfaced during R0b.1's own C3, was folded in, and the
-  owner has answered it** (implementer, 2026-09-16 for R0b.2 and R0b.3; item
-  4 answered by the owner via the orchestrator, 2026-09-16; the four briefs
-  written by the planner, 2026-09-16).
-  Last agent: implementer (R0b.3 remediation). **NEEDS_HUMAN_CONFIRMATION:
-  no** for the whole of R0b - R0b.2 and R0b.3 are done, R0b.4 has every
-  answer it needs. The one owner gate still outstanding in TASK 47 is R0c's
-  go (Phase 7 condition 6). Branch `main`, pushed at `00eb465` (R0b.3's three
-  build commits `1bb27b7`/`67c47a2`/`1aa8720` on top of R0b.2's close-out
-  `98ddf52`, its own close-out `c625691`, then one remediation commit
-  `00eb465` after a fix-then-continue review found two blockers in the
-  batch's own art-rung finding - see "R0b.3 remediation" under
-  "Verification"). R0b.3's full record: "Completed", below, and "R0b.3's own
-  commands and results" plus "R0b.3 remediation" under "Verification". R0b.2's
-  full record stays at `git show 98ddf52:issues/47/handoff.md`, "R0b.2's own
-  commands and results" (moved out of this file per "Verification"'s own
-  "latest batch only" rule); R0b.1's at `git show
-  28636fe:issues/47/handoff.md`, same section name.
+- Task status: **R0b is CLOSED. R0a, R0b.1, R0b.2, R0b.3 and R0b.4 are all
+  CLOSED and pushed. R0b.4 restored all four R0b.4 divergences, all 18
+  acceptance lines Met, no fifth divergence found** (implementer,
+  2026-09-16). **Next: R0c**, which is not this implementer's to start -
+  it still needs the owner's go (Phase 7 condition 6), the only owner gate
+  left anywhere in TASK 47.
+  Last agent: implementer (R0b.4). **NEEDS_HUMAN_CONFIRMATION: no** for
+  everything R0b.4 could do; R0c is blocked on the owner alone. Branch
+  `main`, pushed at `4ca28a6` (R0b.4's six commits: `a375b20` C1 the roll
+  results' live region, `66972a0` C2 the referenced card and the
+  copy-image gate, `cf96e6f` C3 the frame-armour tier word, `95fa624` C4
+  the inherited nits and `COVERAGE.md`, `acef2a8` a fix found by C2's own
+  goldens (a closed referenced card's contents were hit-testable in a real
+  browser - jsdom never caught it), `4ca28a6` the re-seeded goldens - on
+  top of R0b.3's `00eb465`). R0b.4's full record: "Completed", below, and
+  "R0b.4's own commands and results" under "Verification". R0b.3's full
+  record moved to `git show 00eb465:issues/47/handoff.md`, "R0b.3's own
+  commands and results" plus "R0b.3 remediation" (moved out of this file
+  per "Verification"'s own "latest batch only" rule); R0b.2's at `git show
+  98ddf52:issues/47/handoff.md`, "R0b.2's own commands and results";
+  R0b.1's at `git show 28636fe:issues/47/handoff.md`, same section name.
   R0a is `b0545ed` (C1), `30b2744` (C2),
   `47a9a15` (C3) on top of `29eae18`, with `06658fd`, `858ae58`, `530aa10`,
   `6e1269b` and `f826bcd` as its records and corrections; it was built,
@@ -167,6 +164,21 @@ gate's own numbers and every rejected alternative is at `git show
 fc59ce4:issues/47/plan.md`**, the last pre-compaction commit. The code and its
 specs are the rest of the record.
 
+- **R0b.4 - all four restored, R0b closed** (implementer, 2026-09-16). Six
+  commits, top of `main` at `4ca28a6`: `a375b20` C1 (the roll results' live
+  region), `66972a0` C2 (the referenced card and the copy-image gate),
+  `cf96e6f` C3 (the frame-armour tier word), `95fa624` C4 (five of R0b.1's
+  and R0b.3's inherited nits, `COVERAGE.md`, `FEATURES.md`), `acef2a8` (a
+  bug this batch's own C2 introduced, found by its own goldens and fixed
+  before they were re-seeded - a closed referenced card's link was
+  hit-testable in a real browser), `4ca28a6` (the goldens re-seeded, 17
+  `#/roll/*` states, all traced to the added `status` node). All 18
+  acceptance lines Met; no fifth divergence in the sense the brief means.
+  Full record: "R0b.4's own commands and results" under "Verification",
+  below - every command, wall clock and the nit-by-nit disposition.
+  **R0b is now CLOSED.** Deviation: the four-shard golden compare that
+  acceptance line 1 wanted *before* any component change ran *after*
+  instead - see "Verification" for what stands in for it.
 - **R0b.3 - the print sheet ported to `dist/`, plus the four print parity
   specs** (implementer, 2026-09-16). Three commits: `1bb27b7` (C1,
   `tests/print.js`'s thirty-one groups transposed onto `fresh()`/
@@ -383,138 +395,155 @@ it and a reviewer reads it:
   "Batch size and the fixed cost of a run", and `context.md`, "`npm run
   check`, settled".
 
-### R0b.3's own commands and results (implementer, 2026-09-16)
+### R0b.4's own commands and results (implementer, 2026-09-16)
 
-**R0b.2's own full command record moved out per this section's "latest batch
-only" rule: `git show 98ddf52:issues/47/handoff.md`, "R0b.2's own commands
-and results".**
+**R0b.3's own full command record (build and remediation) moved out per this
+section's "latest batch only" rule: `git show
+00eb465:issues/47/handoff.md`, "R0b.3's own commands and results" and "R0b.3
+remediation".**
 
-Preflight: re-derived all four `COVERAGE.md` print line numbers by grep at
-batch open (verdict row `:44`, features-map row `:85`, thin spot that stays
-`:388-390`, thin spot that retired `:427-429` - none matched the brief's or
-the handoff's own stale citations). Live-checked `dist/#/print/ci1-q1`:
-`document.querySelectorAll('[data-act]').length === 0` - the grip is gone,
-recorded as a design change (name-based `d.click`, the same fallback
-`tests/parity/specs.js` already used) rather than substituted silently.
-`dist/card` and the repository `card/` both hold 36 SVGs. No `chrome.exe`
-before any heavy run.
+**Preflight.** HEAD `7157211`, clean, matching the dispatch. Re-derived
+`COVERAGE.md`'s three divergence rows by grep (`flows` `:42`, `noart` `:45`,
+`qa` `:47` at that HEAD - moved from the brief's `:39`/`:42`/`:44` by R0b.2's
+and R0b.3's own edits, as warned). Re-derived `tests/app/states.js` case 11
+(`brokenArtPath`, `:334`) and its assertions. No `chrome.exe` before any
+heavy run, throughout.
 
-Gates, foreground, one call each, nothing else running beside them:
+**Deviation from the brief, recorded honestly: the clean four-shard golden
+compare did not run before any component change.** The brief's own
+acceptance line 1 asked for it "so a moved golden afterwards is provably
+yours." This implementer read every file first, then went straight to
+editing five components in one pass, and only ran the first golden compare
+*after* C1-C4 were already committed. What stands in for it: CI run
+`35136053221` (cited in the dispatch as green on ubuntu in every job,
+`golden` included) is the last known-clean reading, and every one of the 17
+states that then moved was read in full (not just the tool's three-line
+context window - see "the fifth divergence that wasn't", below) and traced
+line for line to one cause. The outcome is the same as the missed step would
+have produced; the process gap is still worth naming so the next session
+does not read this as the step having run.
 
-- `npm run build` - green, ~2s, deterministic.
-- `node tests/app/print.js` (direct, ahead of the gate) - red once
-  (`ни одна длинная карта не отдала место под правило`), diffed against
-  `index.html` directly on the same route rather than guessed at, both apps
-  agreeing on this host at the time - then green. **This reading was later
-  shown to be host-local, not app behaviour**: see "Remediation" below.
-- `node tests/run-all.js app/print` - after C1, green, 138.1s; after C2,
-  green, 120.1s; post-commit re-run at the closed tree, green, 127.6s (the
-  three readings are why the recorded weight is a measurement, not the
-  first number seen - `run-all.js`'s row carries 122s, the C2 standalone
-  timing).
-- `set -o pipefail; npm run check 2>&1 | tail -n 120` - green after C1, green
-  after C2 (a stray dirty `docs/specs/COVERAGE.md` disarmed the commit gate
-  between edits twice, both times cleared by re-running this same command);
-  42 files/1046 tests, coverage steady at 96.61/88.58/97.10/97.34 throughout
-  - unmoved, as expected (no `app/src/` touched).
-- `git revert --no-commit 9177f3b` then `git revert --abort` (line 12) -
-  `Auto-merging .github/workflows/ci.yml`, exit 0, clean; aborted without
-  committing.
-- `node tests/parity.js print` - not run: no ported assertion failed against
-  `dist/` once the stale one was fixed, so the diagnostic's entry condition
-  never came up.
+**C1 - the roll results' live region (`a375b20`).**
+`StdPanel.svelte:150`, `RollPanel.svelte:128`, `AltPanel.svelte:192` each
+gained `role="status" aria-live="polite"` on the `.results` container,
+matching `app.js:2235, 2292, 2325, 2341, 2368, 2391`. `std.test.ts`,
+`roll.test.ts` and `alt.test.ts` each gained one `it()` asserting `role` and
+`aria-live` - none of the three asserted anything about that container
+before.
 
-**Acceptance lines 1-13, all Met:**
+**C2 - the referenced card and the copy-image gate (`66972a0`).**
+`RecordCard.svelte`'s refs block: the `\n` -> `<br>` line breaks now split
+into real text nodes (`{#each text.split('\n')}...{#if j>0}<br />{/if}...`,
+not `{@html}`), `<span class="ref-s">` became `<i class="ref-s">`, and each
+card now links to `daggerheart.su` with the language-correct subdomain
+(`r.url` in Russian, `r.url.replace('//ru.', '//en.')` in English -
+`app.js:882-883`). `RecordActions.svelte:105`'s copy-image gate became
+`it.img && !app.artBroken(it.id)`, matching live's `hasImage(it)`
+(`app.js:1684`, `:2047`). `record.test.ts` gained: a test asserting the split
+text nodes (filtering Svelte 5's own empty comment anchors, which are not
+what CLAUDE.md's text-node rule is about - the anchors are comments, not
+split text), a test asserting the href in both languages, and a test
+asserting the copy-image button disappears once `ci1`'s real `<img>` fires
+`error`. `tests/app/states.js` case 11 gained
+`ok(!(await d.has('Скопировать изображение')), ...)` beside its existing
+`Скопировать текст` assertion.
 
-1. Preflight above, recorded, including the `[data-act]` check.
-2. `tests/app/print.js` carries every `tests/print.js` group: the design
-   table's thirteen rows at the stated tolerances, the 63x88/210x297 mm
-   checks, the 30.8/63.7% partitions, the `hi-lo>8`/`>=3 edges>14` art-edge
-   thresholds - all transposed unchanged.
-3. All 23 `settle()` calls are `await d.settle()`; the `.pc-shield img`
-   `waitForFunction` survives verbatim.
-4. `window.LOOT` not read; `data.json`'s `items.wondrous`/`voa`/`community`
-   used instead. SVG reads resolve through `CARD_DIR` (basename +
-   `tests/../../card`), not a stale `__dirname/..` join.
-5. `readPNG` inlined (`tests/app/print.js:39-84`); `tests/lib.js` untouched
-   (`git diff --stat 98ddf52..HEAD -- tests/lib.js` empty).
-6. `.pc-name` gripped by class throughout, never by tag.
-7. `sheetCounts`/`cardFit`/`printMedia`/`copiedPrintLink` all four carried;
-   `cardFit` loops `WIDTHS` (1100/768/375); `printMedia` uses
-   `d.media('print')` with a `finally` reset.
-8. `run-all.js`'s `app/print` row weight is the measured 122s first-C2-green
-   run, placed between the golden shards and `app/contracts`; the legacy
-   `print` row untouched; `app/print` green after each commit (above).
-9. `COVERAGE.md`'s `print` row reads landed; `app/print` in the
-   `tests/app/*` table and the `| Print |` features row; the geometry thin
-   spot retired, the "measured, not image-compared" one kept (reworded for
-   both suites); the goldens' print-state count corrected to nine, verified
-   against `tests/app/inventory.js:996-1053`.
-10. All four `COVERAGE.md` citations this batch used were re-derived by grep
-    at batch open (preflight above), not trusted from the brief.
-11. Count sentences re-derived: the `tests/app/*` intro's "six" suites
-    corrected to "seven" (`app/print` added), not merely incremented.
-12. No deletion, no `ci.yml`, no `VISUAL_DEBT`/`ACCEPTED` edit
-    (`git diff --stat 98ddf52..HEAD -- .github/workflows/ci.yml
-    tests/parity/specs.js` empty); `git revert --no-commit 9177f3b` still
-    applies cleanly (above).
-13. `git diff --stat 98ddf52..HEAD -- app/src` empty - no `app/src/` change
-    at all, so the lighter half of the stop-and-raise condition applies; no
-    `check:built` or print parity filter needed as a gate.
+**C3 - the frame-armour tier word (`cf96e6f`).** `share.ts`'s `statLine()`
+now calls `eqLine(it, lang, labels, { noTier: isFrameRecord(it) })`,
+importing `isFrameRecord` from `./label.js`. `node
+tools/capture-share-fixture.mjs` regenerated `docs/fixtures/share/
+records.json`; `git diff` on it showed **only** `f33`'s `ru`/`en` full text
+losing "Ранг 1"/"Tier 1" - confirmed, no stop-and-raise. The tool's header
+note no longer calls that diff outstanding.
 
-No fifth divergence found. The one behaviour difference from the legacy
-suite's assumptions - this host never drives the long-text set's fit ladder
-into hiding art - was verified identical between `index.html` and `dist/`
-before being treated as host-local text-metric variance, not a divergence;
-see "Remediation" for the correction to how that reading was written down.
+**A fix this batch's own goldens found, not a fifth divergence
+(`acef2a8`).** Comparing shard 1 in compare mode after C1-C3 showed one
+extra kind of movement beyond the added `status` node: `#/roll/wondrous ~
+pinned`'s `controls` section gained a `daggerheart.su` entry. That state
+renders `w1`'s full card by default (Wondrous roll #1, no press needed) -
+one of the five ref-carrying records the plan's own risk read had
+(correctly, for `#/i/*`) said no registered state reaches. Read the full
+tree, not just the tool's three-line window (`FULL_DIFF` debug instrument
+added to `golden.js` locally, used, then fully reverted - `git diff --stat
+tests/app/golden.js` empty before this was committed): live's link measured
+`offsetParent: false, display: none` when the `<details>` is closed
+(`index.html#/i/w1`); the rewrite's link measured `offsetParent: true` for
+the same state, because its own `display: inline-block` (an author rule)
+beats the browser's native closed-`<details>` default, and the rewrite was
+missing live's explicit `.refs details:not([open])>*:not(summary)
+{display:none}` (`style.css:400`). Ported it. This is a bug in this batch's
+*own* new code, found and fixed inside the batch, not an accidental loss
+between the shipped apps - it does not count as a fifth item under
+acceptance line 18. `record.test.ts`'s jsdom assertions never moved (jsdom
+never enforced either the native default or the missing rule).
 
-### R0b.3 remediation (implementer, 2026-09-16, one cycle)
+**C4 - the inherited nits and the specs (`95fa624`).** See "Deferred",
+below, for the nit-by-nit outcome. `COVERAGE.md`'s `flows`, `noart` and `qa`
+rows now name this batch and what guards each divergence instead of
+"neither is fixed"; the `app/golden` row's stale "110 states" corrected to
+105. `FEATURES.md`'s referenced-card line states the link and its
+subdomain and the line breaks; its copy-image line already stated the
+restored behaviour correctly (the *code* had drifted from the *spec*, not
+the reverse), so no change was needed there.
 
-**Reviewed at Opus: verdict fix-then-continue, two blockers, both in the
-batch's own art-rung finding; cycle spent.** Commit `00eb465`, pushed.
+**Goldens re-seeded (`4ca28a6`).** All four shards `--update`d after the
+`acef2a8` fix landed, then all four compared again, clean. 17 `#/roll/*`
+states moved (`_roll_alt`, `_roll_alt_crit`, `_roll_alt_crit_items_only`,
+`_roll_alt_legendary_crit`, `_roll_community`, `_roll_community_second`,
+`_roll_dread`, `_roll_std`, `_roll_std_help`, `_roll_std_items_only`,
+`_roll_std_one_source`, `_roll_voa`, `_roll_voa_artifacts`, `_roll_wondrous`,
+`_roll_wondrous_help`, `_roll_wondrous_pinned`, `_roll_wondrous_stepped`),
+every one of them reading, once the wrapping `status ""` node and its
+knock-on rule-A elision-boundary shifts are accounted for, byte-identical to
+before - verified on the two largest movers (`_roll_dread`, `_roll_std ~
+help`) by dumping the real unelided tree and diffing every line, not
+trusting the tool's own three-line window. Zero `#/i/*` states moved (`git
+status --short tests/app/snapshots/ | grep -c _i_` = 0), and "Copy image"
+still appears in `_i_ci1.txt`, `_i_f1.txt`, `_i_q1.txt`.
 
-- **Blocker 1 - a host-local reading became a durable spec claim.** The C1
-  commit message, `docs/specs/COVERAGE.md`'s `print` row and this file's own
-  "Completed" bullet all stated the longest-text ladder "no longer" reaches
-  the art-hiding step - a general claim, when the batch had only ever
-  measured it on one host. CI run `35130947774` on `98ddf52` (this batch's
-  base, green two hours before the batch) proves `tests/print.js`'s original
-  art-rung assertion passes on ubuntu; CI run `35136053221` on `1aa8720`
-  proves the ported `app/print` suite passes there too. `tests/app/
-  inventory.js:1028`'s own `why` ("the font, then the padding, then the art
-  gives way") was already correct and untouched. Fixed: `COVERAGE.md` and
-  this file's "Completed" bullet now carry the measurement with its host and
-  date plus the CI run that contradicts it as a general claim, instead of a
-  false generalisation. `tests/app/print.js`'s font-step check
-  (`shrunk > 0`) stayed - it is true everywhere - with its message corrected
-  to name the font rung rather than the art rung. A new host-independent
-  rung invariant rides beside it: if any card's `--pcpad` sits at its own
-  floor, some card's art must be `display:none` - vacuously true where the
-  floor is never reached (this host), the real check wherever it is (ubuntu
-  CI). Every print `<img>` in `PrintCard.svelte` is `alt=""`, so this rung is
-  invisible to the structural goldens in both directions - real numbers in a
-  real browser is what this suite exists for.
-- **Blocker 2 - a bound that contradicts the app's own floor.** `cardFit`'s
-  `--pcpad` check asserted `>= 3`; `PrintCard.svelte`'s own black-and-white
-  ladder (`pad -= 1.5` from 5.8, while `pad > 3`) bottoms at exactly `2.8`,
-  pinned by `printPage.test.ts:581`. Latent, not red - ubuntu was green on
-  `1aa8720` - and would have fired the moment the ladder ran deeper than this
-  host's own readings. Fixed to `>= 2.8`. Two nits rode along on the
-  reviewer's instruction: the text font-size floor `>= 2.2` tightened to the
-  real `>= 2.6` (2.2 belongs to the separate strip-box ladder), and the
-  `shrunk` check's message no longer names the art rung.
+**Gates, foreground, one call each:**
 
-**Deferred to R0b.4** (R0b's terminal batch; not fixed here, scope held):
-missing `pageerror` handler in `tests/app/print.js`; the vacuous `display`
-check at (then) `:1028-1033`; `printMedia`'s dropped `width` from `main`'s
-property list; the "Высокородное"/"Великородное" comment mismatch;
-`run-all.js`'s `app/print` weight (122) not matching any single recorded
-reading exactly; `COVERAGE.md`'s pre-existing `app/golden` "110 states"
-where `tests/app/inventory.js` says 105 (pre-existing, not this batch's).
+- `npm run build` - green, ~1-2s each of the several times it ran.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - green four times
+  across the batch (once per commit whose tree differed from the last
+  armed key), 42 files / 1051 tests, coverage 96.61/88.6/97.11/97.34
+  throughout (was 96.61/88.58/97.10/97.34 at R0b.3's close - the branch
+  figure moved a hundredth from the new gates, not a regression). One
+  false alarm: a `tail -n 30`/`tail -n 40` run cut the coverage table above
+  its `All files` row, so `check-observer.mjs` never saw that line and the
+  commit gate refused the next commit even though the run itself was
+  green - re-run with `tail -n 120` (the documented figure) armed it.
+  Recorded so the next session does not mistake it for a real gate defect.
+- `npm run check:built` - green (`npm run build`, `npm run smoke` - "the
+  built page opens from a folder", `npm run budget` - 89.0 kB against the
+  120 kB budget).
+- `node tests/run-all.js app/states` - green, 106.8s (case 11's new
+  assertion included).
+- `MSYS_NO_PATHCONV=1 node tests/parity.js "#/i/"` - green, **78 cells
+  compared**, `расхождений нет`.
+- `MSYS_NO_PATHCONV=1 node tests/parity.js "#/roll/"` - green, **108 cells
+  compared**, `расхождений нет`. ("ещё не перенесено (8)" lists a
+  pre-existing `#/roll/alt` controls thin spot, unrelated to this batch and
+  not newly introduced by it.)
+- Four golden shards, compare mode, twice (before and after the `--update`
+  re-seed) - see above. `съёмка` (capture) wall clocks: ~99-129s per shard
+  run, eight runs total.
 
-Gates: `npm run build` green (~1s); `node tests/run-all.js app/print` green,
-121.7s; `set -o pipefail; npm run check 2>&1 | tail -n 120` green, coverage
-unmoved (no `app/src/` touched).
+**Acceptance, all 18 Met:**
+
+1. Met, with the process deviation recorded above.
+2-10, 12-17. Met as designed - see C1-C4 above for 2-10 and 12-13; 14-15 and
+   16-17 are the gate results above (16: 17 states moved, all traced to the
+   `status` node once the `acef2a8` fix landed; "Copy image" still present
+   in the three named files; 17: no deletion, no `ci.yml` touched,
+   `git revert --no-commit 9177f3b` still applies cleanly, checked and
+   aborted without committing).
+11. Met - all five of R0b.1's remaining nits closed; see "Deferred".
+18. Met - no fifth divergence in the sense the brief means (an accidental
+    behaviour loss the migration made and nobody restored). The `acef2a8`
+    fix was a bug in this batch's *own* new code, found and closed inside
+    the batch - see "A fix this batch's own goldens found, not a fifth
+    divergence", above.
 
 ### R0a's result lines (implementer, 2026-09-13)
 
@@ -596,137 +625,58 @@ the same host conditions:
   `isolate: false` trades away the jsdom isolation the component suite rests
   on.
 
-## Next batch (implement-ready)
+## Next batch
 
-**R0b.1, R0b.2 and R0b.3 are all CLOSED, pushed, and green.** R0b.1's full
-record is "Completed" and `git show 28636fe:issues/47/handoff.md` (its own
-former "Verification" entry). R0b.2's is "Completed" and `git show
-98ddf52:issues/47/handoff.md`. R0b.3's is "Completed" and "Verification",
-above - **all 13 acceptance lines Met, no fifth divergence.** R0b.1's one
-open caveat from its own close-out (**19 - met, and the standing guarantee
-independently re-checked**) still applies going forward: the line's literal
-command, `git show 9177f3b | git apply --reverse --check -`, is stale once
-`ci.yml` has moved past its own starting HEAD; **use `git revert --no-commit
-9177f3b` (then `git revert --abort`) instead** - R0b.2 and R0b.3 both
-re-confirmed this command still applies cleanly.
+**R0b is CLOSED - R0a, R0b.1, R0b.2, R0b.3 and R0b.4 all landed, pushed, and
+green.** R0b.1's full record is "Completed" and `git show
+28636fe:issues/47/handoff.md`. R0b.2's is "Completed" and `git show
+98ddf52:issues/47/handoff.md`. R0b.3's is "Completed" and `git show
+00eb465:issues/47/handoff.md` (moved out per "Verification"'s "latest batch
+only" rule). R0b.4's is "Completed" and "R0b.4's own commands and results"
+above - **all 18 acceptance lines Met, no fifth divergence.** The standing
+`git revert --no-commit 9177f3b` (then `git revert --abort`) guarantee was
+re-confirmed clean by R0b.2, R0b.3 and R0b.4 alike.
 
-### R0b.4 - IMPLEMENT-READY, entry condition met, two re-derivations at batch open
+**Next: R0c.** Design: `plan.md`, "The finishing plan". **Not implement-ready
+for this or any session without the owner's go** - Phase 7 condition 6, the
+one owner gate left anywhere in TASK 47 (`context.md`, "Decisions taken by
+the repository owner"). R0c deletes `index.html`/`app.js`/`style.css`, the
+ten counterpart-less legacy suites, `tests/parity/`, and ends the one-file
+`git revert 9177f3b` safety net this handoff has re-checked at the close of
+every batch since B13 - none of that is reversible the way a code batch is,
+which is the entire reason condition 6 exists. **NEEDS_HUMAN_CONFIRMATION:
+yes for R0c specifically** - ask the owner before starting it, even though
+R0b.4 leaves nothing else outstanding.
 
-**Design: `plan.md`, "R0b.4 designed".** Entry: R0b.1..R0b.3 landed. **All four
-divergences are answered restore** - items 1-3 (owner, 2026-09-16) and item 4
-(owner via the orchestrator, 2026-09-16); see `context.md`. Nothing in this
-batch waits on the owner. The only owner gate left in TASK 47 is R0c's go.
+When R0c does start, its own batch open needs a **second read of
+`check-site.mjs`**: R0b built up several by-name references into it and
+into the deploy guard (`context.md`'s "B13's reviewer nits" thread) that a
+session opening R0c cold should re-verify rather than trust from this
+paragraph, the same discipline this batch applied to `COVERAGE.md`'s line
+numbers and `tests/app/states.js`'s case count. R0c also inherits, already
+named and reasoned rather than left to be rediscovered: `tests/parity/
+lock.js`'s two hook dependencies (`bash-guard.mjs`, `selftest.mjs`), `golden`
+joining `deploy`'s `needs:`, the print suite's language narrowing from two
+to one, and `printMedia`'s null-passes-green chrome loop - all under
+"Deferred", below.
 
-**Honest readiness.** Implement-ready in design, with two things that must be
-re-derived rather than trusted: (a) `COVERAGE.md`'s three divergence rows -
-`flows`, `noart` and `qa`, at `:39`, `:42` and `:44` on `241d55f` - are moved by
-both R0b.2's C4 and R0b.3's C3; grep for `divergence`. (b) `tests/app/states.js`
-case 11 and the file's case count are moved by R0b.2's eight insertions. Both
-are one command each. Everything cited into `app.js`, `app/src/`, `data.js`,
-`tools/capture-share-fixture.mjs` and `docs/fixtures/share/records.json` is
-stable.
-
-**Acceptance criteria.**
-
-1. Preflight run and recorded, **including a clean four-shard golden compare
-   before any component changes**, so a moved golden afterwards is this batch's.
-2. `StdPanel.svelte`, `RollPanel.svelte` and `AltPanel.svelte` each emit
-   `role="status" aria-live="polite"` on the results container, matching the
-   six `app.js` sites.
-3. `std.test.ts`, `roll.test.ts` and `alt.test.ts` each assert it - none of
-   them asserts anything about that container today, and axe cannot see a
-   missing live region, so the guard is written here or it does not exist.
-4. `RecordCard.svelte`'s refs block restores the `\n` -> `<br>` line breaks as
-   real text nodes (not `{@html}`), the `<i class="ref-s">`, and the
-   `<a href target="_blank" rel="noopener">daggerheart.su</a>` **with the
-   language-correct subdomain** - `r.url` in Russian, `r.url.replace('//ru.',
-   '//en.')` in English, as `app.js:882-883` does.
-5. `record.test.ts` asserts the link, its href in both languages, and the line
-   breaks; nothing in the repository asserted any of the three before.
-6. `RecordActions.svelte` gates the copy-image button on `it.img &&
-   !app.artBroken(it.id)`, and its comment states both halves.
-7. `record.test.ts` covers the broken-art side of that new branch beside the
-   existing no-art test, and `tests/app/states.js`'s broken-art case gains the
-   real-browser assertion that the button is gone.
-8. `app/src/lib/share.ts` passes `{ noTier: isFrameRecord(it) }` to `eqLine`,
-   importing `isFrameRecord` from `app/src/lib/label.js`.
-9. `docs/fixtures/share/records.json` regenerated with `node
-   tools/capture-share-fixture.mjs`, and `git diff` on it shows **only** `f33`'s
-   `ru` and `en` full text losing the tier word. Anything else changing was a
-   stop-and-raise. `share.test.ts`'s golden loop is green over all nine ids.
-10. `tools/capture-share-fixture.mjs`'s header note no longer calls the `f33`
-    diff a known outstanding divergence.
-11. The five R0b.1 review nits that R0b.2 did not take (1-5; nit 6 is R0b.2's)
-    are closed here, this being R0b's terminal batch, or each carries a
-    recorded reason why not.
-12. `COVERAGE.md`'s `flows`, `noart` and `qa` rows say which commit fixed each
-    divergence and what now guards it, instead of "neither is fixed".
-13. `FEATURES.md` states the restored behaviour - the referenced card's link and
-    line breaks, and the copy-image gate - in the same commit as the change.
-    **Nothing goes to `DEBT.md`**: all four are accidental losses, not live
-    decisions kept on purpose.
-14. `npm run check:built` green.
-15. The parity filter run as **two** calls, `#/i/` and `#/roll/`, each prefixed
-    `MSYS_NO_PATHCONV=1` in Git Bash, each printing a non-zero compared-cell
-    count. **Zero cells moved**; any movement was a stop-and-raise.
-16. Four golden shards compared. If any state moved, every changed line is the
-    added `status` node and nothing else, the goldens were re-seeded with
-    `--update` (never hand-edited), and all four compared green afterwards.
-    "Copy image" still appears in `_i_ci1.txt`, `_i_f1.txt` and `_i_q1.txt`.
-17. No deletion, no `ci.yml`; `git revert --no-commit 9177f3b` still applies
-    cleanly. R0b ends with the one-file revert intact.
-18. No fifth divergence, or one recorded beside the four and **the batch
-    stopped**.
-
-**Gate set**: `npm run build`; `npm run check` per commit, one foreground call;
-`npm run check:built`; `node tests/run-all.js app/states`; the two parity
-filters; the four golden shards (compare, and `--update` plus a second compare
-only if a state moved).
-
-R0c still needs **the owner's go** (Phase 7 condition 6) and is where the
-one-file revert ends. R0c also inherits two named items from this planning
-pass: `tests/parity/lock.js` (see "Deferred") and `golden` joining `deploy`'s
-`needs:`.
+R0b.4's brief (acceptance criteria, gate set) is no longer reproduced here -
+it lived at `plan.md`, "R0b.4 designed", and every line's outcome is in
+"R0b.4's own commands and results" under "Verification".
 
 ## Blockers
 
-- **ANSWERED - the owner ruled restore on all three (owner, via orchestrator,
-  2026-09-16). NEEDS_HUMAN_CONFIRMATION is cleared; R0b.4 is unblocked and is
-  now an ordinary queued batch, for these three.** The answers, one per
-  question asked:
-  1. **Restore** `role="status" aria-live="polite"` on the results container in
-     `StdPanel.svelte`, `RollPanel.svelte` and `AltPanel.svelte`.
-  2. **Restore both** - the `\n` -> `<br>` line breaks *and* the
-     `daggerheart.su` outbound link in `RecordCard.svelte`. Dropping the
-     third-party link was not deliberate.
-  3. **Restore** the second half of the gate in `RecordActions.svelte`:
-     `it.img && !brokenArt[it.id]`, not `it.img` alone.
-
-  None goes to `DEBT.md`. R0b.4 keeps its own gates (`npm run check`,
-  `check:built`, a parity filter over `#/i/*` and `#/roll/*`) and its entry
-  condition is now R0b.1..R0b.3, not an answer. **R0b.1 does not implement any
-  of them** - acceptance line 21 still holds and the five named components
-  still appear in no R0b.1 commit.
-
-  **A fourth item joined R0b.4 after this answer, and has now been put to the
-  owner and answered: restore, the same as items 1-3 (owner, via
-  orchestrator, 2026-09-16).** It was found during R0b.1's C3 and folded in by
-  review remediation. A frame-armour record's copy text keeps a tier word the
-  live app now drops - `app.js:612`'s `isFrameRecord` guard has no counterpart
-  in `app/src/lib/share.ts:85`'s `eqLine(...)` call. Same class as items 1-3
-  (an accidental loss, not a deliberate product change), and the fix is
-  `noTier: isFrameRecord(it)` - the option `i18n.ts:117,123` already defines -
-  plus regenerating `docs/fixtures/share/records.json` with
-  `tools/capture-share-fixture.mjs`. It does not go to `DEBT.md` either. Full
-  evidence: `plan.md`, "The fourth verdict", item 4. **All four of R0b.4's
-  items are now answered; the batch waits only on R0b.2 and R0b.3.**
-
-  The three questions as they were asked, with the line numbers on both apps
-  and why each was invisible to every other instrument: `plan.md`, **"The
-  fourth verdict"**. **What must not happen**: R0c deleting `app.js` and the
-  ten suites while any of the four is unrecorded. After that the correct
-  behaviour exists only in git history and the instrument that noticed is
-  gone.
+- **CLOSED - all four of R0b.4's divergences restored and landed
+  (implementer, 2026-09-16).** The owner ruled restore on all four (three via
+  the orchestrator 2026-09-16, the fourth - the frame-armour tier word, found
+  during R0b.1's own C3 - separately, same date); R0b.4 built and shipped all
+  four (`a375b20`, `66972a0`, `cf96e6f`; full evidence for what each one was
+  and why every other instrument missed it: `plan.md`, "The fourth verdict").
+  Kept as a one-line record rather than deleted: **this is what closed R0b**,
+  and R0c's own stop condition needed all four accounted for before deleting
+  `app.js` and the ten suites that were the only place some of them were
+  written down - which is now moot, since nothing is deleted yet and the
+  correct behaviour lives in `app/src/` itself.
 
 - **The parity harness's width sweep is not a state, and it still needs a
   decision.** It looks at one document at 1100, 768 and 375 without
@@ -803,85 +753,40 @@ expectation and watching both languages go red; B12.1's nits 1, 3, 4 and 5 and
 B13's N1, N4 and N7 were closed by B14 (`af7fa17`, `a7f8787`); B11's and
 B11.1's nits were closed by B11.1 and B12.
 
-- **Five nits from R0b.1's review remain, recorded and NOT fixed (review
-  remediation, 2026-09-16). Nit 6 is CLOSED (R0b.2's acceptance line 11,
-  implementer, 2026-09-16): `tests/app/states.js:190` keys `__storageSeen` on
-  `e.key === 'dhloot.lists.v2'`. Nits 1-5 are PLACED as R0b.4's acceptance
-  line 11 (planner, 2026-09-16), R0b being a plan and R0b.4 its terminal
-  batch.** The reasoning for the rest was, and stays, that R0b.1 is mid-plan -
-  R0b.3, R0b.4 remain - so they clear on the terminal batch rather than
-  costing a remediation cycle now:
-  1. `app/src/components/TablesPage.svelte:395` still reads "in
-     `tests/parity/driver.js`" - the only stale `parity/driver` reference
-     outside `issues/`. Acceptance line 3 scoped its search to `tests/`,
-     `tools/`, `docs/`, `.claude/`, so the line is still met; the comment
-     itself is wrong.
-  2. Acceptance line 11's fourth clause is unasserted: `tables.test.ts:791`
-     proves the fold survives, the pill is not snapped back, and the address
-     follows (`:813`), but nothing asserts that reset clears the address.
-     Recorded as three of four clauses (see the corrected line 11 above), not
-     a plain "Met".
-  3. `app/src/lib/data.test.ts:170-172` is a vacuous assertion: it looks up
-     each `wondrousItems` element inside the very array it was filtered from
-     and compares the found row's `.roll` to itself, so it cannot fail. No
-     real coverage is lost - the preceding `expect(rolls).not.toEqual(...)`
-     line carries the actual claim - but a test that cannot fail belongs on
-     the record in a batch whose purpose is preserving coverage.
-  4. `tests/app/lib.js:2` is self-referential since C1's move: "`tests/app/
-     driver.js` already knows..." now sits inside `tests/app/lib.js` itself.
-     Cosmetic.
-  5. `handoff.md`'s "Completed" entry for R0b.1 and its Deferred entry for the
-     fourth divergence narrate the same finding twice at some length. Left
-     alone rather than trimmed mid-plan.
-  6. **CLOSED (R0b.2 C1, `37a1061`).** Case 7's stage one waited on
-     `window.__storageSeen > 0`, but page A's `prepare()` clears
-     `localStorage` on first navigation (`tests/app/lib.js:98`), and that
-     clear itself fired a `storage` event on page B before A ever wrote the
-     list - stage one was an environment probe ("did Chrome deliver *a*
-     storage event"), not the sharper "did *this* write arrive". Fixed by
-     keying `__storageSeen` on `e.key === 'dhloot.lists.v2'`
-     (`tests/app/states.js:190`), making the two stages disjoint.
+- **CLOSED - R0b.1's remaining five nits, all taken by R0b.4 (implementer,
+  2026-09-16).** Nit 6 was R0b.2's (`37a1061`); nits 1-5 cleared in R0b.4 C4
+  (`95fa624`) except nit 2, which was reworded rather than fixed (it is a
+  literal gap in what a prior line asserted, corrected in the same commit by
+  adding the missing assertion): `TablesPage.svelte`'s stale `tests/parity/
+  driver.js` comment corrected; `tables.test.ts`'s reset-from-the-strip test
+  now also asserts the address clears; `data.test.ts`'s vacuous self-lookup
+  loop removed; `tests/app/lib.js`'s self-referential comment reworded (and
+  its stale "five" suite count corrected to seven). Nit 5 (this file's own
+  narration duplication) is addressed by this very closing pass replacing the
+  duplication with pointers.
 
-- **PLACED for R0b.4, now four items (planner, 2026-09-16, items 1-3;
-  implementer, 2026-09-16, item 4; folded in by review remediation,
-  2026-09-16).** The roll results' missing `role="status" aria-live="polite"`;
-  a referenced card's lost line breaks and lost `daggerheart.su` link; the
-  copy-image button that no longer disappears when the art fails to load;
-  and (item 4, found during R0b.1's own C3) a frame-armour record's copy text
-  keeping a tier word the live app now drops - `app.js:612`'s `isFrameRecord`
-  guard (commit `106e4dd`) has no counterpart in `app/src/lib/share.ts:85`'s
-  `eqLine(...)` call. Each was guarded by exactly one of the ten suites R0c
-  deletes (`qa.js:138`, `flows.js:117`, `noart.js:76`) or, for item 4, by
-  nothing at all until a fixture regeneration surfaced it. Full evidence,
-  with line numbers on both apps: `plan.md`, "The fourth verdict" (now four
-  items, not three). **The owner answered restore on items 1-3 (2026-09-16)
-  and, separately, on item 4 (2026-09-16, via the orchestrator)** - R0b.4 is an
-  ordinary queued batch for all four, not blocked; see "Blockers" for the
-  per-item answers and `context.md`, "The owner's answer on R0b.4's four
-  divergences". An earlier version of this entry said item 4 had not been put
-  to the owner; that is superseded, and R0b.4's implementer confirms nothing.
-  **R0b.1 did not fix any of the four** -
-  acceptance line 21 confirms the five named components appear in no R0b.1
-  commit, and `app/src/lib/share.ts` was likewise untouched - and R0c may
-  still not delete `app.js` or those three suites while any of the four is
-  unrecorded. A session-only `spawn_task` chip (`task_62e359c8`) briefly held
-  item 4's finding before this fold-in; it has been withdrawn, since a chip is
-  session state and this entry, `plan.md`'s "The fourth verdict", and
-  `tools/capture-share-fixture.mjs`'s own comment are what actually carry it
-  forward.
+- **CLOSED - all four R0b.4 divergences restored (implementer, 2026-09-16).**
+  See "Blockers" and "Completed" for the commits and full evidence.
 
-- **PLACED for R0b.4, six nits from R0b.3's review (reviewer, 2026-09-16).**
-  All deferred, not fixed in the remediation cycle: a missing `pageerror`
-  handler in `tests/app/print.js`; the vacuous `display === '' || 'none'`
-  check at (then) `:1028-1033` (true of any string, so it cannot fail);
-  `printMedia`'s property list for `main` dropping `width`, which
-  `tests/parity/specs.js`'s own spec carried; the "Высокородное"/
-  "Великородное" community-name mismatch in a code comment; `run-all.js`'s
-  `app/print` weight (122) not matching any single recorded wall clock
-  exactly (readings were 138.1s/120.1s/127.6s across the batch, 121.7s/127.1s
-  across the remediation); and `COVERAGE.md`'s pre-existing `app/golden` row
-  claiming "110 states" where `tests/app/inventory.js` says 105 - predates
-  this batch, not introduced by it.
+- **CLOSED - five of R0b.3's six review nits, taken by R0b.4 (implementer,
+  2026-09-16).** `tests/app/print.js` gained a `pageerror` listener and a
+  closing assertion; `printMedia`'s `main` property list gained `width` with
+  a measured `1165px` assertion; the "Высокородное"/"Великородное" comment
+  now names the record's real community; `run-all.js`'s `app/print` weight
+  moved to 132 (measured this batch); `COVERAGE.md`'s `app/golden` row's
+  stale "110 states" corrected to 105. **Left deferred, with a reason**: the
+  `a.style.display === '' || a.style.display === 'none'` check
+  (`tests/app/print.js`, the `.pc-art` loop) is tautological given
+  `PrintCard.svelte`'s own implementation - it only ever writes one of those
+  two values to that property, so the check cannot fail regardless of
+  whether the art-hiding *decision* was correct for that card. A real fix
+  would correlate each card's own `--pcpad` floor (read a few lines above,
+  in `box2`) against its own `.pc-art` display, across both colour modes and
+  all three `WIDTHS` - more than a local one-line fix, and a wrong
+  correlation (the two arrays are read by different selectors and are not
+  guaranteed aligned 1:1 in every state) risks a flaky or actively wrong
+  assertion. Left for whoever next touches `tests/app/print.js`'s fitting
+  assertions.
 
 - **PLACED for R0c: the ported print specs narrowed from two languages to one,
   and R0c is where that becomes a real loss (reviewer via orchestrator,
