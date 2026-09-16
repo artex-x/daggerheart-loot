@@ -184,13 +184,15 @@ const LOOT: Loot = {
     }
   ],
   refs: {
+    /* Two lines, so the port's `\n` -> real text nodes (not {@html}) has
+       something to split. */
     'vicious-entangle': {
       en: 'Vicious Entangle',
       ensub: 'Sage · Level 1 · Spell',
-      ende: 'Roots reach out.',
+      ende: 'Roots reach out.\nThey grab at ankles.',
       ru: 'Неистовое опутывание',
       rusub: 'Мудрость · Уровень 1 · Заклинание',
-      rud: 'Корни вырываются из-под земли.',
+      rud: 'Корни вырываются из-под земли.\nОни хватают за лодыжки.',
       url: 'https://ru.daggerheart.su/domain/vicious-entangle'
     }
   }
@@ -254,12 +256,42 @@ describe('a record on its own page', () => {
     );
   });
 
-  it('brings the text of a referenced card, collapsed', () => {
+  it('brings the text of a referenced card, collapsed, as real text nodes split on the line break', () => {
+    /* Ported from app.js's refHTML/lines(): a \n becomes a <br> between two
+       text nodes, not one joined run injected via {@html}. Svelte 5 leaves an
+       empty comment anchor beside each {#if}/{#each} item, so the real
+       assertion filters those out rather than reading raw innerHTML/childNodes. */
     render(App, { env: at('ci2') });
     const card = screen.getByText('Неистовое опутывание');
     expect(card).toBeInTheDocument();
-    expect(screen.getByText('Корни вырываются из-под земли.')).toBeInTheDocument();
     expect(card.closest('details')?.open).toBe(false);
+
+    const p = card.closest('details')?.querySelector('p');
+    expect(p?.textContent).toBe('Корни вырываются из-под земли.Они хватают за лодыжки.');
+    const real = Array.from(p?.childNodes ?? []).filter(
+      (n) =>
+        n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent)
+    );
+    expect(real.map((n) => n.nodeName)).toEqual(['#text', 'BR', '#text']);
+    expect(real.map((n) => n.textContent)).toEqual([
+      'Корни вырываются из-под земли.',
+      '',
+      'Они хватают за лодыжки.'
+    ]);
+  });
+
+  it('links a referenced card out to daggerheart.su, subdomain matching the language on screen', async () => {
+    render(App, { env: at('ci2') });
+    expect(screen.getByRole('link', { name: 'daggerheart.su' })).toHaveAttribute(
+      'href',
+      'https://ru.daggerheart.su/domain/vicious-entangle'
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('link', { name: 'daggerheart.su' })).toHaveAttribute(
+      'href',
+      'https://en.daggerheart.su/domain/vicious-entangle'
+    );
   });
 
   it('gives a referenced card in the language on screen', async () => {
@@ -268,7 +300,8 @@ describe('a record on its own page', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByText('Sage · Level 1 · Spell')).toBeInTheDocument();
-    expect(screen.getByText('Roots reach out.')).toBeInTheDocument();
+    const p = screen.getByText('Sage · Level 1 · Spell').closest('details')?.querySelector('p');
+    expect(p?.textContent).toBe('Roots reach out.They grab at ankles.');
   });
 
   it('offers no way into a table for a record that is in none', () => {
@@ -306,11 +339,24 @@ describe('a record on its own page', () => {
 
   it('offers no copy-image button for a record with no art at all', () => {
     /* Ported from tests/noart.js:39. `odd` carries no `img` field at all -
-       distinct from ci1's real-load-failure case above, which is a
-       different record shape and RecordActions.svelte's own R0b.4 divergence
-       (`RecordActions.svelte:105` gates on `it.img` alone, not
-       `it.img && !brokenArt[it.id]`; that half stays untouched here). */
+       distinct from ci1's real-load-failure case below, which is a
+       different record shape. */
     render(App, { env: at('odd') });
+    expect(
+      screen.queryByRole('button', { name: 'Скопировать изображение' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('drops the copy-image button once the picture fails to load, restoring the live gate', async () => {
+    /* R0b.4's divergence 3: RecordActions.svelte:105 gated on `it.img` alone;
+       live gates on hasImage(it) = !!it.img && !brokenArt[it.id] (app.js:1684,
+       used at :2047). `ci1` carries an `img` field, so the button starts
+       present and only the load failure should take it away. */
+    const { container } = render(App, { env: at('ci1') });
+    expect(screen.getByRole('button', { name: 'Скопировать изображение' })).toBeInTheDocument();
+
+    container.querySelector('img')?.dispatchEvent(new Event('error'));
+    await Promise.resolve();
     expect(
       screen.queryByRole('button', { name: 'Скопировать изображение' })
     ).not.toBeInTheDocument();

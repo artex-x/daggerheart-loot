@@ -102,9 +102,10 @@
   >
     <Icon name="share" /><span class="btn-lbl">{t.sendAll}</span>
   </Button>
-  {#if it.img}
+  {#if it.img && !app.artBroken(it.id)}
     <!-- A record with no art has nothing to copy, so the live app leaves the
-         button out rather than offering a placeholder. -->
+         button out rather than offering a placeholder - and it drops the
+         button again once that art fails to load (app.js hasImage). -->
     <Button size="sm" title={t.copyImg} label={t.copyImg} onclick={() => void copyImage()}>
       <Icon name="image" /><span class="btn-lbl">{t.sImg}</span>
     </Button>

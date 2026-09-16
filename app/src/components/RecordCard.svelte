@@ -233,9 +233,17 @@
             <summary>
               <Icon name="ref" />
               <span class="ref-n">{lang === 'ru' ? r.ru : r.en}</span>
-              <span class="ref-s">{lang === 'ru' ? r.rusub : r.ensub}</span>
+              <i class="ref-s">{lang === 'ru' ? r.rusub : r.ensub}</i>
             </summary>
-            <p>{lang === 'ru' ? r.rud : r.ende}</p>
+            <p>
+              {#each (lang === 'ru' ? r.rud : r.ende).split('\n') as line, j (j)}{#if j > 0}<br
+                  />{/if}{line}{/each}
+            </p>
+            <a
+              href={lang === 'ru' ? r.url : r.url.replace('//ru.', '//en.')}
+              target="_blank"
+              rel="noopener">daggerheart.su</a
+            >
           </details>
         {/each}
       </div>
@@ -708,6 +716,13 @@
     color: var(--muted);
     font-size: 12.5px;
     line-height: 1.5;
+  }
+
+  .refs details > a {
+    display: inline-block;
+    padding: 0 9px 8px;
+    font-size: 11px;
+    color: var(--gold-soft);
   }
 
   /* ---------- the phone, off the two 600px blocks in style.css ----------

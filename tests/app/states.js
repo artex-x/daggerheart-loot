@@ -343,6 +343,10 @@ async function brokenArtPath() {
   const src = await page.evaluate(() => document.querySelector('.card-media img')?.getAttribute('src'));
   ok(/_none\.webp$/.test(src || ''), '11 (без картинки): вместо заглушки — ' + src);
   ok(await d.has('Скопировать текст'), '11 (без картинки): кнопка текста пропала вместе с картинкой');
+  /* R0b.4's divergence 3: the copy-image button must go with the picture,
+   * not just switch to offering the placeholder (RecordActions.svelte:105,
+   * restored to it.img && !app.artBroken(it.id) - app.js:1684's hasImage). */
+  ok(!(await d.has('Скопировать изображение')), '11 (без картинки): кнопка копирования картинки должна пропасть вместе с картинкой');
   page.off('request', onReq);
   await ctx.close();
 }
