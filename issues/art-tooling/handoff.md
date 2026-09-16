@@ -3,88 +3,116 @@
 
 ## Status
 - Task status: in_progress
-- Last agent: planner
+- Last agent: implementer (B1)
 - NEEDS_HUMAN_CONFIRMATION: no
-- Branch: `art/to-fix-refresh` in worktree
+- Branch: `tooling/art-refresh` in worktree
   `E:/dev/daggerheart-loot-wt/tg-preview-refresh`
-- Base / starting commit: `e2ada3f` (tree clean at dispatch). Re-read
-  `git log --oneline -3 origin/main` before committing: a peer session and a
-  CI bot both push there. At planning time `origin/main` was
-  `e2ada3f` / `c3b2b88` / `7672f50`.
+- Base / starting commit: `e2ada3f` (tree clean at dispatch, orchestrator-
+  verified). `origin/main` moved during this batch: re-read at commit time it
+  was `2ce3b08` / `80809c8` / `e2ada3f` - the two new commits are the peer
+  session's hook fix for the Linux `check` failure named in the dispatch
+  (`.claude/hooks/selftest.mjs` #126-128). Not adopted, not touched, per the
+  dispatch's instruction; this branch was not rebased onto them.
 
 ## Completed
-- Batch name/id: planning pass (no implementation batch has run)
-- What shipped: `issues/art-tooling/context.md` and
-  `issues/art-tooling/plan.md`, plus this file. No production code.
-- Files changed: `issues/art-tooling/{context,plan,handoff}.md` only
-- Commit(s): none yet
-- Deviations and rationale: none
+- Batch name/id: B1 - machine-readable stale list (`plan.md` section 5.1)
+- What shipped:
+  - `tools/tg-preview/lib.mjs`: `--stale-list` in `FLAGS`/defaults; a
+    post-loop `parseArgs` check that it requires `--dry-run`; an
+    `emitStaleList(urls, notLiveUrls)` helper beside `baseResult()`, called
+    from both dry-run-reachable exits (`todo.length === 0` and the `dryRun`
+    branch) with sorted `stale`/`notLive` arrays and no timestamp.
+  - `tools/tg-preview/run.mjs`: a `writeStaleList` dep, wired only when
+    `opts.staleListPath` is set, using the same tmp-then-rename atomic write
+    as `writeResult`.
+  - `tools/tg-preview/lib.test.mjs`: 8 new cases (3 `parseArgs` flag-order
+    cases, 1 `applyResult` no-op-payload case, 4 `runRefresh` cases for
+    emit-once/`--only`/empty/non-dry-run), plus `baseDeps`'s `staleLists`
+    plumbing.
+  - `docs/tg-preview.md`: one bullet in "Operations" after `--no-verify`,
+    naming the flag, its `--dry-run` requirement, the payload keys, and its
+    purpose.
+  - `docs/specs/COVERAGE.md`: extended the `tools/tg-preview/lib.test.mjs`
+    paragraph with the stale-list writer's coverage.
+  - Planning docs from the dispatch: `issues/art-tooling/{context,plan,
+    handoff}.md` (committed first, per the dispatch's stated pattern).
+- Files changed: `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
+  `tools/tg-preview/run.mjs`, `docs/tg-preview.md`,
+  `docs/specs/COVERAGE.md`, plus the three `issues/art-tooling/*.md` files.
+- Commit(s):
+  - `fde756c` - `docs(art-tooling): record planning pass for the
+    artwork-tooling task` (the three issue docs, gate-exempt)
+  - `977b8a7` - `feat(tg-preview): add --stale-list, a machine-readable
+    dry-run stale set` (the B1 code + docs)
+- Deviations and rationale: none from section 5.1's steps. Confirmed against
+  the actual file list that `npm run check:built` is not required: no batch
+  file touches `app/`, `data.js`, `img/`, `og/`, `i/` or `dist/`.
 
 ## Verification
-- Commands run (exact): `git log --oneline -3 origin/main`;
-  `git ls-files tools/tg-preview`; `git ls-files issues/dh-image-polish`;
-  `git show --stat --oneline 8e7fed1 ce0c414 37ecc8d`. Read-only throughout;
-  `tools/tg-preview/run.mjs` was never invoked, with or without `--dry-run`.
-- Results: the facts in `context.md`, "Measured by the planner". Nothing in
-  the working tree was modified outside `issues/art-tooling/`.
-- Gates: none applicable to a planning pass. For the batches below the gates
-  are `node --test` on the touched tool suite plus one foreground
-  `npm run check`; **`npm run check:built` is not required by any batch** -
-  nothing in this task alters what a screen draws.
+- Commands run (exact), in order:
+  - `node --test tools/tg-preview/lib.test.mjs` -> `tests 104`, `pass 104`,
+    `fail 0` (96 existing + 8 new, matching the plan's acceptance criterion).
+  - `node tools/tg-preview/run.mjs --dry-run --no-verify --stale-list
+    <scratchpad>/stale-b1.json` -> logged `143 urls stale, 143 ready, ...`;
+    the written file's `stale.length` is `143` (checked by parsing the JSON),
+    matching the logged count exactly. `notLive.length` is `0`.
+  - Ran the same command again to `<scratchpad>/stale-b1-run2.json`; `diff`
+    against the first file reports the files identical - byte-identical
+    repeat runs confirmed.
+  - `git diff --stat tools/tg-preview/lib.mjs` / full diff, inspected: every
+    hunk is in `FLAGS`, the `parseArgs` defaults/validation, the
+    `runRefresh` deps destructure, or the two dry-run-reachable exits -
+    nothing else changed, and no reformatting occurred (`tools/` stayed
+    untouched by prettier/eslint, which don't run over it anyway).
+  - `git status --porcelain tools/tg-preview/state.json` -> empty; the file
+    is unchanged and was never staged.
+  - Checked for a live peer run before the heavy gate: `tasklist | grep -i
+    chrome.exe` -> none; no other project-specific heavy process found.
+  - One foreground call: `set -o pipefail; npm run check 2>&1 | tail -n
+    120` (Bash `timeout: 600000`) -> ran `format:check`, `lint`,
+    `typecheck`, `node --check tools/check-site.mjs`, `npm run data`,
+    `tests/derived.js`, `tests/i18n.js`, `.claude/hooks/selftest.mjs`,
+    `node --test tools/tg-preview/lib.test.mjs` (104/104), then `npm run
+    test` (vitest): `Test Files 42 passed (42)`, `Tests 1035 passed (1035)`,
+    coverage summary printed with no threshold failures. The call completed
+    with no error signalled by the tool (contrast: a later unrelated `grep`
+    pipe in this session was rejected by the RTK hook and did surface an
+    "Exit code 1" annotation, so the check call's silence is meaningful).
+    This is the Windows worktree the dispatch says the hook issue does not
+    reproduce on; consistent with that, nothing here touched
+    `.claude/hooks/**`.
+- Results: acceptance criteria in `plan.md` section 5.1 all met - test
+  count, logged-count match, byte-identical repeat runs, confined `lib.mjs`
+  diff, untouched `state.json`, both docs updated, no dependency added to
+  any `package.json`.
+- Gates: `node --test tools/tg-preview/lib.test.mjs` green (104/104); one
+  foreground `npm run check` green. `npm run check:built` was not run - not
+  required, confirmed above.
 
-## Next batch (implement-ready)
+## Next batch
 
-- **Name:** B1 - Machine-readable stale list in `tools/tg-preview/`
-- **Objective:** `node tools/tg-preview/run.mjs --dry-run --stale-list <path>`
-  writes the exact stale stub-URL set as sorted JSON, so proving which
-  previews a change invalidated becomes a diff of two files instead of a
-  scratch program.
-- **In scope:** `parseArgs`; stale-list emission on `runRefresh`'s two
-  dry-run-reachable exits; the `run.mjs` writer; eight tests; two
-  documentation edits.
-- **Out of scope:** the live send path, `--apply`, `state.json`,
-  `previews.yml`, and anything under `tools/art-refresh/` (B2 creates it).
-- **Files expected:** `tools/tg-preview/lib.mjs`,
-  `tools/tg-preview/lib.test.mjs`, `tools/tg-preview/run.mjs`,
-  `docs/tg-preview.md`, `docs/specs/COVERAGE.md`.
-- **Steps:** `plan.md` section 5.1, steps 1-8. They are written to be followed
-  literally; the two load-bearing subtleties are that `parseArgs` validates
-  `--stale-list` *after* the argv loop (so flag order does not matter), and
-  that the emission happens at **both** the `todo.length === 0` early return
-  and the `if (dryRun)` branch (so an empty stale list is written rather than
-  being ambiguous by absence).
-- **Acceptance criteria:** `plan.md` section 5.1, "Acceptance criteria" - the
-  test count, the logged-count match, byte-identical repeat runs, a `lib.mjs`
-  diff confined to three sites, `state.json` untouched, both docs updated, and
-  no dependency added anywhere.
-- **Verification commands:**
-  ```text
-  node --test tools/tg-preview/lib.test.mjs
-  node tools/tg-preview/run.mjs --dry-run --no-verify --stale-list <scratchpad>/stale-b1.json
-  set -o pipefail; npm run check 2>&1 | tail -n 120
-  ```
-  The check is one foreground call with the Bash tool's `timeout` at 600000
-  (`.claude/README.md`, "Run a long check"). `npm run check:built` is not
-  required.
-- **Risks / do-nots:** never invoke `run.mjs` without `--dry-run`; write the
-  stale list only into the session scratchpad, never into the repository; do
-  not read or add anything touching `.env`; do not reuse `--result` for this
-  payload (its shape belongs to `--apply`); do not reformat `lib.mjs`, since
-  `tools/` is both prettier-ignored and eslint-ignored and a stray reformat
-  produces a diff no gate asked for.
-- **Fallback (optional):** if a reviewer objects to emitting from two sites,
-  the single-site alternative is to drop the `todo.length === 0` early return's
-  call and document that an absent file means "nothing stale". Rejected in the
-  plan because absence would then be ambiguous with a failed run, but it is a
-  one-line retreat if needed.
+- **Name:** B2 - `tools/art-refresh/` (the mapping/convert/install/verify
+  tool)
+- **Status:** outline only, in `plan.md` section 5.2 - **not yet
+  implement-ready**. Per this repo's protocol, report status and this next
+  batch, then wait for confirmation before expanding it or starting it.
+- **Objective:** one tested tool performing everything `art-to-fix`
+  re-derived from prose: inventory, mapping, conversion, atomic install,
+  byte verification, and the preview-staleness proof - the last of which
+  consumes the `--stale-list` file format B1 just landed.
+- **Outline location:** `plan.md` section 5.2 has the settled `lib.mjs` /
+  `run.mjs` API surface, file list, and acceptance criteria; it needs
+  expansion to step-by-step form (as section 5.1 had) before an implementer
+  starts it.
 
 ## Blockers
-- None. The three owner-visible calls are decided in `plan.md` section 3 with
-  their reasons; an implementer can start B1 immediately.
+- None on B1, which is complete. B2 needs its outline expanded to
+  implement-ready detail (planner work) before an implementer starts it -
+  see `plan.md` section 5.2 and the "Next batch" note above.
 
 ## Deferred
 - B2 - `tools/art-refresh/`: outline and settled API surface in `plan.md`
-  section 5.2. Expand to implement-ready detail when B1 lands.
+  section 5.2. Expand to implement-ready detail now that B1 has landed.
 - B3 - prompt slimming, runbook cross-links and the `.claude/README.md`
   record: outline in `plan.md` section 5.3. Last, because the prompt must name
   the tool's final flags.
@@ -99,9 +127,10 @@
 - Mocks path: none. This task has no visual surface.
 - Screenshot findings: none.
 - Cleanup performed / retained artifacts: nothing created outside
-  `issues/art-tooling/`. No scratchpad artefacts from this pass are worth
-  retaining.
-- Session end partial progress (if any): none - the planning pass is complete.
+  `issues/art-tooling/` and the code B1 shipped. The two `stale-b1*.json`
+  proof files live only in the session scratchpad, never in the repository.
+- Session end partial progress (if any): none - B1 is complete and committed
+  at a coherent boundary (`fde756c`, `977b8a7`).
 - The one fact most likely to be re-derived by a later session, so it is here
   as well as in `context.md`: `tools/**` is outside the vitest coverage
   thresholds (`vite.config.mts` has `root: 'app'`, `coverage.include: src/**`),
