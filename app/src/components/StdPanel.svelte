@@ -147,7 +147,7 @@
 {/if}
 
 {#if index && pool.length}
-  <div class="results">
+  <div class="results" role="status" aria-live="polite">
     <OrGrid or={t.or} items={pool} card={cardOf} />
   </div>
 {/if}

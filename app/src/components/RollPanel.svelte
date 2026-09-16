@@ -125,7 +125,7 @@
     <!-- The result is the record card itself, as the live app draws it: a roll
          that produced a name and nothing else would send the reader to another
          page to find out what they got. -->
-    <div class="results">
+    <div class="results" role="status" aria-live="polite">
       <!-- Keyed on the record, not the panel: without this Svelte patches the
            existing card in place on every roll, and the previous artwork sits
            on screen until the new <img> decodes - live rebuilds #view.innerHTML

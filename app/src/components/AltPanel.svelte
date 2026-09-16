@@ -189,7 +189,7 @@
 {/if}
 
 {#if index && picks.length}
-  <div class="results">
+  <div class="results" role="status" aria-live="polite">
     {#if crit}
       <!-- Both tables, because the player may take any entry of this rarity
            from either one. A single link into the items table used to be the

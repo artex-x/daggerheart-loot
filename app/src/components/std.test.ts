@@ -175,3 +175,13 @@ describe('the help', () => {
     expect(within(main).getAllByText(/d12/).length).toBeGreaterThan(0);
   });
 });
+
+describe('accessibility', () => {
+  it('marks the results as a live region, so a re-roll is announced without moving focus', () => {
+    /* The rewrite dropped this - app.js draws role="status" aria-live="polite"
+       on every .results container it writes, and nothing but the deleted
+       qa.js asserted it (docs/specs/COVERAGE.md, the `qa` row). */
+    render(App, { env: at() });
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  });
+});
