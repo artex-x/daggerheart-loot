@@ -263,6 +263,21 @@ adversary:
 - The RTK-bypass deny (row 43) sees the program token only: `sh -c "grep -n
   ..."` is erased with its quotes like every other quoted command, and `rg -n`
   is not covered (not in the measured miss).
+- Not `bash-guard.mjs`, but worth recording beside it: `activeTask()`
+  (`lib.mjs`, shared by `session-stop.mjs` and other hooks) picks the
+  `issues/<id>/` directory with the newest file mtime, and on an exact tie
+  keeps whichever directory `readdirSync()` returns first - filesystem-
+  dependent, not alphabetical on every platform. A test (or any script) that
+  depends on which task is "active" must pin the mtimes of every other
+  `issues/<id>/` directory to something safely old, not just the one
+  directory it expects to compete with. Traced from a CI-only failure
+  (`config-audit` B3, 2026-09-16): `.claude/hooks/selftest.mjs`'s
+  `testTaskBudget()` pinned only one competing directory, passed on this
+  host and in a Linux container, and still failed on the GitHub runner -
+  the real competing directory was a different one, rewritten later in the
+  same test run, that neither local environment's filesystem happened to
+  tie against. Pinning every directory's files, not just the one suspected,
+  fixed it.
 
 Facts settled during implementation (issue 65):
 

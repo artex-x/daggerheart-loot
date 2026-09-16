@@ -1539,13 +1539,24 @@ async function testTaskBudget() {
   // safely old mtime, so activeTask()'s "newest file wins" comparison for
   // the fresh issues/98 writes below is a strict inequality regardless of
   // filesystem mtime resolution or readdirSync() order - the same pattern
-  // setupScratch() already uses for issues/65/handoff.md. (A prior version
-  // of this fix pinned only issues/99/context.md, which did not match this
-  // comment's own claim and left issues/65/context.md and .../plan.md
-  // unpinned - corrected here to actually cover every directory, not one
-  // file.) This did not turn out to be CI's root cause (a Linux container
-  // reproduction with the single-file pin already passed consistently -
-  // see the handoff), but the code should match what it claims regardless.
+  // setupScratch() already uses for issues/65/handoff.md.
+  //
+  // This is a confirmed fix, not a guess: a version that pinned only
+  // issues/99/context.md landed as 3504bf7 and CI stayed red (#126/#127
+  // failing exactly as budgetSentences() returning [] would produce);
+  // pinning every directory's files here landed as 743439c and CI went
+  // green, with no other behavioural change between the two commits. The
+  // competing directory was issues/65, not issues/99 - its context.md and
+  // plan.md are rewritten late in the suite by the orphan-plan cases
+  // (#102-#104), close in time to this function's own write to issues/98,
+  // and '65' both sorts and (on the runner) enumerates before '98'. Best-
+  // fitting explanation for why this never reproduced locally or in a
+  // Linux container (inferred, not measured - nothing here directly
+  // observed the runner's filesystem): the GitHub-hosted runner's mtime
+  // granularity is coarse enough for those two writes to land in the same
+  // tick, where NTFS on this host and the container's overlayfs were not.
+  // See .claude/README.md, "Known limitations", and the handoff's "B3 CI
+  // remediation" sections for the full red/green evidence.
   const old = new Date('2020-01-01T00:00:00Z');
   const issuesRoot = path.join(scratchRoot, 'issues');
   for (const dirEntry of fs.readdirSync(issuesRoot, { withFileTypes: true })) {
@@ -1563,9 +1574,11 @@ async function testTaskBudget() {
   // sees), what this session's own recorded writes are, and what
   // budgetSentences()'s own statSync calls would see for each task
   // document. Computed in this process, right after the hook subprocess
-  // returns, against the same LOOT_HOOK_ROOT/LOOT_HOOK_STATE_DIR - not a
-  // temporary hack, kept permanently: a failing assertion that does not say
-  // why is what turned one bug into three remediation cycles.
+  // returns, against the same LOOT_HOOK_ROOT/LOOT_HOOK_STATE_DIR. It did
+  // not find the issues/65 tie above - that run was green, so none of this
+  // ever printed, and the fix was confirmed by the red-to-green CI delta,
+  // not by this output. It stays as insurance for the next failure: kept
+  // permanently so a future red run says why on the first try.
   const TASK_DOC_NAMES = ['context.md', 'plan.md', 'handoff.md'];
   function budgetDiagnostics(sessionId, result) {
     const task = activeTask();
