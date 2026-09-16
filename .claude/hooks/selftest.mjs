@@ -1531,24 +1531,64 @@ async function testSessionStop() {
 // ---------- session-stop.mjs: task-document size budget (#126-#130) ----------
 
 async function testTaskBudget() {
-  const { recordWrite } = await import(pathToFileUrlHref('lib.mjs'));
+  const { recordWrite, activeTask, getWrote } = await import(pathToFileUrlHref('lib.mjs'));
   process.env.LOOT_HOOK_ROOT = scratchRoot;
   process.env.LOOT_HOOK_STATE_DIR = scratchState;
 
-  // activeTask() (lib.mjs) picks the issues/<id>/ directory with the newest
-  // file mtime; on an exact tie it keeps whichever directory readdirSync()
-  // yielded first. NTFS enumerates alphabetically ('98' before '99'), so
-  // this stayed hidden here, but ext4's directory order is not alphabetical
-  // - a Linux CI run had issues/99/context.md (left over from
-  // testSessionStop, written moments earlier) tie issues/98/handoff.md's
-  // mtime and win, which made activeTask() resolve to 99, budgetSentences()'s
-  // issues/98/ prefix check fail, and #126/#127 see no budget sentence at
-  // all. Force every other issues/<id> directory's files to a fixed, safely
-  // old mtime first, so the comparison below is a strict inequality
-  // regardless of filesystem mtime resolution or readdir order - the same
-  // pattern setupScratch() already uses for issues/65/handoff.md.
+  // Force every issues/<id> directory that exists at this point to a fixed,
+  // safely old mtime, so activeTask()'s "newest file wins" comparison for
+  // the fresh issues/98 writes below is a strict inequality regardless of
+  // filesystem mtime resolution or readdirSync() order - the same pattern
+  // setupScratch() already uses for issues/65/handoff.md. (A prior version
+  // of this fix pinned only issues/99/context.md, which did not match this
+  // comment's own claim and left issues/65/context.md and .../plan.md
+  // unpinned - corrected here to actually cover every directory, not one
+  // file.) This did not turn out to be CI's root cause (a Linux container
+  // reproduction with the single-file pin already passed consistently -
+  // see the handoff), but the code should match what it claims regardless.
   const old = new Date('2020-01-01T00:00:00Z');
-  fs.utimesSync(path.join(scratchRoot, 'issues/99/context.md'), old, old);
+  const issuesRoot = path.join(scratchRoot, 'issues');
+  for (const dirEntry of fs.readdirSync(issuesRoot, { withFileTypes: true })) {
+    if (!dirEntry.isDirectory()) continue;
+    const dirPath = path.join(issuesRoot, dirEntry.name);
+    for (const fileEntry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+      if (!fileEntry.isFile()) continue;
+      fs.utimesSync(path.join(dirPath, fileEntry.name), old, old);
+    }
+  }
+
+  // Self-diagnosing detail for #126/#127/#128: when the budget sentence
+  // fails to appear, this says WHY instead of just showing the (empty)
+  // systemMessage - what activeTask() resolved to (id, dir, which docs it
+  // sees), what this session's own recorded writes are, and what
+  // budgetSentences()'s own statSync calls would see for each task
+  // document. Computed in this process, right after the hook subprocess
+  // returns, against the same LOOT_HOOK_ROOT/LOOT_HOOK_STATE_DIR - not a
+  // temporary hack, kept permanently: a failing assertion that does not say
+  // why is what turned one bug into three remediation cycles.
+  const TASK_DOC_NAMES = ['context.md', 'plan.md', 'handoff.md'];
+  function budgetDiagnostics(sessionId, result) {
+    const task = activeTask();
+    const taskLine = task
+      ? `activeTask() -> id=${task.id} dir=${task.dir} hasContext=${task.hasContext} hasPlan=${task.hasPlan} hasHandoff=${task.hasHandoff}`
+      : 'activeTask() -> null (no issues/<id>/ directory found)';
+    const writtenPaths = Object.keys(getWrote(sessionId));
+    const sizeLines = TASK_DOC_NAMES.map((name) => {
+      if (!task) return `${name}: (no active task to look under)`;
+      try {
+        const stat = fs.statSync(path.join(task.dir, name));
+        return `${name}: found, ${stat.size} bytes`;
+      } catch (err) {
+        return `${name}: not found (${err.code || err.message})`;
+      }
+    });
+    return [
+      taskLine,
+      `writtenPaths(session=${sessionId}) = ${JSON.stringify(writtenPaths)}`,
+      `statSync per task document: ${sizeLines.join('; ')}`,
+      `systemMessage = ${JSON.stringify(systemMessage(result))}`
+    ].join('\n');
+  }
 
   const session = 's-stop-budget';
   const results = [];
@@ -1568,7 +1608,7 @@ async function testTaskBudget() {
       '#126 task document past 150 KB: names the file and the budget',
       systemMessage(result).includes('issues/98/handoff.md') &&
         systemMessage(result).includes('150 KB'),
-      systemMessage(result)
+      budgetDiagnostics(session, result)
     );
   }
 
@@ -1588,7 +1628,7 @@ async function testTaskBudget() {
       systemMessage(result).includes('issues/98/plan.md') &&
         systemMessage(result).includes('300 KB') &&
         systemMessage(result).includes('handoff/SKILL.md'),
-      systemMessage(result)
+      budgetDiagnostics(session, result)
     );
   }
 
@@ -1604,7 +1644,7 @@ async function testTaskBudget() {
     check(
       '#128 precondition: #127 actually fired (not silent)',
       !isSilent(prior),
-      prior.stdout
+      `${prior.stdout}\n${budgetDiagnostics(session, prior)}`
     );
     const result = runHook('session-stop.mjs', {
       session_id: session,
