@@ -1,5 +1,5 @@
 /* The next-only half of the harness: everything the five tests/app/ suites
- * share, and nothing else. tests/parity/driver.js already knows how to drive
+ * share, and nothing else. tests/app/driver.js already knows how to drive
  * either app; this file adds what only matters for driving dist/ alone in a
  * real browser - a guard that it was actually built, a page factory that
  * seeds storage before the first paint, and an axe runner.
@@ -11,7 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const { makeDriver, prepare } = require('../parity/driver.js');
+const { makeDriver, prepare } = require('./driver.js');
 
 const DIST_HTML = path.join(__dirname, '..', '..', 'dist', 'index.html');
 

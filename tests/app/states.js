@@ -258,7 +258,7 @@ async function copyTextThroughClipboard() {
  *  `canvas.toDataURL()` throws "Tainted canvases may not be exported" on
  *  both apps for the identical picture; `toBlob()` does not throw in this
  *  Chromium build, it simply never calls back, which is what made this
- *  invisible before B12 (`tests/parity/driver.js`'s `clipboardImage()`
+ *  invisible before B12 (`tests/app/driver.js`'s `clipboardImage()`
  *  reads a *pending promise*'s absent `.arrayBuffer` as `null` on both
  *  sides, so parity's own `copiedImage` spec has been comparing two
  *  identical nulls). What this case can honestly assert today is the shape

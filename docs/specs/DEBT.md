@@ -243,7 +243,7 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   exported"` on both, for the identical image, with and without
   `--disable-gpu`. `canvas.toBlob('image/png')` does not throw at all in this
   Chromium build - it never calls its callback, which is what made this
-  invisible before: `tests/parity/driver.js`'s `clipboardImage()` reads
+  invisible before: `tests/app/driver.js`'s `clipboardImage()` reads
   `m[key].arrayBuffer ? m[key] : null` and a *pending promise* has no
   `.arrayBuffer`, so it always resolved `{ empty: null }` on both apps -
   parity's own `copiedImage` spec has been comparing two identical `null`s,

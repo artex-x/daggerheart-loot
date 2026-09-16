@@ -7,7 +7,7 @@
  * Written because three sessions in a row wrote this script from scratch, and
  * two of them got a different answer than the parity harness because they
  * launched Chrome differently. The launch args below are the harness's own
- * (tests/parity/driver.js): without them Chrome takes the GPU rendering path
+ * (tests/app/driver.js): without them Chrome takes the GPU rendering path
  * and results stop being comparable to a parity run - or reproducible at all.
  *
  * Reads computed styles and geometry, never pixels. A pixel percentage is what

@@ -378,7 +378,7 @@ Not blocking, recorded so they are not mistaken for coverage:
   reproduces - both dispatch on a non-empty call stack, so Svelte 5's flush
   (a microtask) waits until the stack unwinds. `AddToList.svelte`'s
   new-list-form defect was invisible to both for exactly this reason;
-  `press`, a real CDP mouse click in `tests/parity/driver.js` (B12), is the
+  `press`, a real CDP mouse click in `tests/app/driver.js` (B12), is the
   instrument that sees it, and `tests/app/states.js` is what uses it.
 - `hover: none` in headless Chrome still cannot render a `@media (hover:hover)`
   branch, in `craftmob` or in `tests/app/sweep.js` alike - no environment

@@ -29,7 +29,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const puppeteer = require('puppeteer');
-const { makeDriver, prepare } = require('./parity/driver.js');
+const { makeDriver, prepare } = require('./app/driver.js');
 const lock = require('./parity/lock.js');
 const {
   SPECS,
@@ -153,7 +153,7 @@ const CACHE = (() => {
       hashFile(h, path.join(ROOT, f));
     }
     for (const dir of ['img', 'og', 'card']) hashDir(h, path.join(ROOT, dir));
-    hashFile(h, path.join(__dirname, 'parity', 'driver.js'));
+    hashFile(h, path.join(__dirname, 'app', 'driver.js'));
     hashFile(h, path.join(__dirname, 'parity.js'));
     return h.digest('hex');
   };
