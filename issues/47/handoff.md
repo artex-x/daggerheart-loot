@@ -7,24 +7,29 @@ depends on chat history.
 ## Status
 
 - Task status: **R0b is CLOSED. R0a, R0b.1, R0b.2, R0b.3 and R0b.4 are all
-  CLOSED and pushed. R0b.4 restored all four R0b.4 divergences, all 18
-  acceptance lines Met, no fifth divergence found** (implementer,
-  2026-09-16). **Next: R0c**, which is not this implementer's to start -
-  it still needs the owner's go (Phase 7 condition 6), the only owner gate
-  left anywhere in TASK 47.
-  Last agent: implementer (R0b.4). **NEEDS_HUMAN_CONFIRMATION: no** for
-  everything R0b.4 could do; R0c is blocked on the owner alone. Branch
-  `main`, pushed at `4ca28a6` (R0b.4's six commits: `a375b20` C1 the roll
-  results' live region, `66972a0` C2 the referenced card and the
-  copy-image gate, `cf96e6f` C3 the frame-armour tier word, `95fa624` C4
-  the inherited nits and `COVERAGE.md`, `acef2a8` a fix found by C2's own
-  goldens (a closed referenced card's contents were hit-testable in a real
-  browser - jsdom never caught it), `4ca28a6` the re-seeded goldens - on
-  top of R0b.3's `00eb465`). R0b.4's full record: "Completed", below, and
-  "R0b.4's own commands and results" under "Verification". R0b.3's full
-  record moved to `git show 00eb465:issues/47/handoff.md`, "R0b.3's own
-  commands and results" plus "R0b.3 remediation" (moved out of this file
-  per "Verification"'s own "latest batch only" rule); R0b.2's at `git show
+  CLOSED and pushed. R0b.4 restored all four of its own divergences plus a
+  fifth the review found - `search.ts`'s own missing `noTier` - all 18
+  acceptance lines Met** (implementer, 2026-09-16). **Reviewed: verdict
+  fix-then-continue, two blockers and seven nits, one remediation cycle,
+  cycle spent** (reviewer via orchestrator, 2026-09-16). **Next: R0c**,
+  which is not this implementer's to start - it still needs the owner's go
+  (Phase 7 condition 6), the only owner gate left anywhere in TASK 47.
+  Last agent: implementer (R0b.4 remediation). **NEEDS_HUMAN_CONFIRMATION:
+  no** for everything R0b.4 could do; R0c is blocked on the owner alone.
+  Branch `main`, pushed at `17bb75f` (three remediation commits -
+  `676629d` B1, `ed557de` B2, `17bb75f` nits - on top of R0b.4's own six:
+  `a375b20` C1 the roll results' live region, `66972a0` C2 the referenced
+  card and the copy-image gate, `cf96e6f` C3 the frame-armour tier word,
+  `95fa624` C4 the inherited nits and `COVERAGE.md`, `acef2a8` a fix found
+  by C2's own goldens (a closed referenced card's contents were
+  hit-testable in a real browser - jsdom never caught it), `4ca28a6` the
+  re-seeded goldens). R0b.4's full record:
+  "Completed", below, "R0b.4's own commands and results" under
+  "Verification", and "R0b.4 review remediation" under "Verification" for
+  this cycle. R0b.3's full record moved to `git show
+  00eb465:issues/47/handoff.md`, "R0b.3's own commands and results" plus
+  "R0b.3 remediation" (moved out of this file per "Verification"'s own
+  "latest batch only" rule); R0b.2's at `git show
   98ddf52:issues/47/handoff.md`, "R0b.2's own commands and results";
   R0b.1's at `git show 28636fe:issues/47/handoff.md`, same section name.
   R0a is `b0545ed` (C1), `30b2744` (C2),
@@ -164,21 +169,25 @@ gate's own numbers and every rejected alternative is at `git show
 fc59ce4:issues/47/plan.md`**, the last pre-compaction commit. The code and its
 specs are the rest of the record.
 
-- **R0b.4 - all four restored, R0b closed** (implementer, 2026-09-16). Six
-  commits, top of `main` at `4ca28a6`: `a375b20` C1 (the roll results' live
-  region), `66972a0` C2 (the referenced card and the copy-image gate),
-  `cf96e6f` C3 (the frame-armour tier word), `95fa624` C4 (five of R0b.1's
-  and R0b.3's inherited nits, `COVERAGE.md`, `FEATURES.md`), `acef2a8` (a
-  bug this batch's own C2 introduced, found by its own goldens and fixed
-  before they were re-seeded - a closed referenced card's link was
-  hit-testable in a real browser), `4ca28a6` (the goldens re-seeded, 17
-  `#/roll/*` states, all traced to the added `status` node). All 18
-  acceptance lines Met; no fifth divergence in the sense the brief means.
-  Full record: "R0b.4's own commands and results" under "Verification",
-  below - every command, wall clock and the nit-by-nit disposition.
-  **R0b is now CLOSED.** Deviation: the four-shard golden compare that
-  acceptance line 1 wanted *before* any component change ran *after*
-  instead - see "Verification" for what stands in for it.
+- **R0b.4 - all five restored (a fifth found on review), R0b closed**
+  (implementer, 2026-09-16, remediated same date). Six build commits, then
+  one remediation cycle after a fix-then-continue review found two blockers
+  and seven nits. Build: `a375b20` C1 (the roll results' live region),
+  `66972a0` C2 (the referenced card and the copy-image gate), `cf96e6f` C3
+  (the frame-armour tier word), `95fa624` C4 (five of R0b.1's and R0b.3's
+  inherited nits, `COVERAGE.md`, `FEATURES.md`), `acef2a8` (a bug this
+  batch's own C2 introduced, found by its own goldens and fixed before they
+  were re-seeded - a closed referenced card's link was hit-testable in a
+  real browser), `4ca28a6` (the goldens re-seeded, 17 `#/roll/*` states, all
+  traced to the added `status` node). **Blocker 1 - a genuine fifth
+  divergence, `app/src/lib/search.ts` missing the same `noTier` C3 gave
+  three other production call sites; owner answered restore, same
+  reasoning as items 1-4.** Full record: "R0b.4's own commands and results"
+  and "R0b.4 review remediation" under "Verification", below. All 18
+  acceptance lines Met. **R0b is now CLOSED.** Deviation: the four-shard
+  golden compare that acceptance line 1 wanted *before* any component
+  change ran *after* instead - see "Verification" for what stands in for
+  it.
 - **R0b.3 - the print sheet ported to `dist/`, plus the four print parity
   specs** (implementer, 2026-09-16). Three commits: `1bb27b7` (C1,
   `tests/print.js`'s thirty-one groups transposed onto `fresh()`/
@@ -539,11 +548,93 @@ still appears in `_i_ci1.txt`, `_i_f1.txt`, `_i_q1.txt`.
    `git revert --no-commit 9177f3b` still applies cleanly, checked and
    aborted without committing).
 11. Met - all five of R0b.1's remaining nits closed; see "Deferred".
-18. Met - no fifth divergence in the sense the brief means (an accidental
-    behaviour loss the migration made and nobody restored). The `acef2a8`
-    fix was a bug in this batch's *own* new code, found and closed inside
-    the batch - see "A fix this batch's own goldens found, not a fifth
-    divergence", above.
+18. **Corrected in review remediation: a fifth divergence was found and is
+    now fixed.** `app/src/lib/search.ts:31-33`'s `statLineFor` called
+    `eqLine(it, lang, labels)` with no `noTier` - the fourth production
+    call site missing the guard C3 gave `RecordCard.svelte`, `RowMain.svelte`
+    and `share.ts`, and the one `plan.md`'s own C3 enumeration never named
+    (it named two sites, `PrintCard.svelte:34` and `TableRows.svelte:84`,
+    that apply `isFrameRecord` inline and never called `eqLine` at all - see
+    "R0b.4 review remediation" for the correction). A search for "ранг 1" /
+    "tier 1" returned 92 frame-armour records in the rewrite and none in the
+    live app (`app.js:2854`'s `matches()` searches `eqLine(it)`, and
+    `app.js:612`'s guard is baked into `eqParts` itself, so every live
+    consumer drops the word). **The owner answered restore** (via the
+    orchestrator, 2026-09-16), the same reasoning as items 1-4 - an
+    accidental loss, not a deliberate product change, so it does not go to
+    `docs/specs/DEBT.md` either. Fixed in the remediation cycle; see "R0b.4
+    review remediation" for the commit. The `acef2a8` fix (the closed
+    referenced-card link staying hit-testable) is a separate thing and does
+    **not** count as this line's item - it was a bug in this batch's own
+    new code, found and closed inside the same batch that introduced it,
+    not an accidental loss the original migration made.
+
+### R0b.4 review remediation (implementer, 2026-09-16, one cycle)
+
+**Reviewed: verdict fix-then-continue, two blockers and seven nits, cycle
+spent.** Three commits, top of `main` at `17bb75f`: `676629d` (B1),
+`ed557de` (B2), `17bb75f` (nits 1-6; nit 7 folded into B1). CI run
+`35148554330` (cited by the review) was green in every job at `4f6cab3` -
+`check`, all four `golden` shards, `audit`, `secrets` - which also retired
+a risk the review raised: `tests/app/print.js`'s `1165px` assertion
+(the R0b.4 nit that added `main`'s `width` to `printMedia`'s property list)
+holds on ubuntu, so the constant is portable, not host-local.
+
+- **Blocker 1 - a real fifth divergence, `app/src/lib/search.ts:31-33`
+  missing `noTier`.** Fixed in `676629d`: see "R0b.4's own commands and
+  results", acceptance line 18, above, for the full account (what it broke,
+  the owner's answer, the fix, the test, and `plan.md`'s corrected C3
+  enumeration - the wrong site list that let it through in the first
+  place).
+- **Blocker 2 - `context.md` and `COVERAGE.md`'s `flows` row both carried a
+  false "no instrument can see this" claim, and the batch's own
+  hittable-link bug is the proof.** Fixed in `ed557de`: `context.md`'s
+  refs-card claim was scoped to `#/i/*` states (true) and wrongly
+  generalised to every state (false - `#/roll/wondrous` and `#/roll/
+  wondrous ~ pinned` both render `w1`'s refs card by default), moved to
+  "Reasons already disproved" with the correction. `COVERAGE.md`'s `flows`
+  row corrected to say the goldens' `controls` section *is* a guard for the
+  closed-`<details>` hiding rule (`d.controls()` filters on `offsetParent`
+  - that is how `acef2a8` was actually found), while the `<br>` breaks and
+  the link's own text remain a real blind spot.
+- **Nits 1-6, all taken (`17bb75f`).** "the deleted qa.js" -> "the qa.js
+  R0c deletes" in the three panel test files' comments (`qa.js` still
+  exists; only R0c removes it); `tests/app/lib.js`'s missing-`dist/` guard
+  comment still read "five suites", missed by C4's own fix to a different
+  sentence in the same file - corrected to seven; `std.test.ts` gained its
+  own `expectNoA11yViolations` call (it was the only one of the three panel
+  files with none, and `a11y.test.ts` names it as `StdPanel.svelte`'s axe
+  home); all three panels' live-region tests now grip `.results` via
+  `container.querySelector` rather than `screen.getByRole('status')`
+  (`Toast.svelte` can carry that role too), and `roll.test.ts`/
+  `alt.test.ts` reordered so their own axe test(s) stay last; the
+  referenced-card link test gained `target="_blank"`/`rel="noopener"` and
+  an `<i>`-not-`<span>` check for the sub-text; `FEATURES.md` gained the
+  roll results' live-region line and a campaign-frame tier-suppression
+  line naming `isFrameRecord` and pointing at `docs/specs/DEBT.md` as an
+  open question - **not** written as deliberate, per the orchestrator's
+  correction mid-cycle (the owner's counter-example: `f33` and `q313` are
+  statistically identical armour, tier 1, one table prints the tier and
+  the other hides it - the mechanism is documented, no reason is). Nit 7
+  (the wrong `plan.md` enumeration) is B1's own fix.
+
+**Gates, foreground, one call each:**
+
+- `npm run build` - green, ~1-5s each of several runs.
+- `set -o pipefail; npm run check 2>&1 | tail -n 150` - green three times
+  (once per commit), 42 files, 1053 tests (up from 1051: the new
+  `search.test.ts` case and `std.test.ts`'s new axe test), coverage
+  unmoved at 96.61/88.6/97.11/97.34 throughout.
+- Four golden shards, compare mode: **zero movement**, all four read
+  `структурные образцы (dist/): без изменений` - `git status --short
+  tests/app/snapshots/` empty afterwards. Wall clocks: 132.9s, 128.1s,
+  119.7s, 122.7s (28, 28, 27, 27 states).
+- No parity run: `#/i/` and `#/roll/` were both clean at `4f6cab3` and B1
+  touches search text only, which no parity state types (the brief's own
+  reasoning, confirmed - search is reached through `#/search`, outside
+  both filters).
+
+Pushed at `17bb75f`.
 
 ### R0a's result lines (implementer, 2026-09-13)
 
@@ -760,9 +851,13 @@ B11.1's nits were closed by B11.1 and B12.
   adding the missing assertion): `TablesPage.svelte`'s stale `tests/parity/
   driver.js` comment corrected; `tables.test.ts`'s reset-from-the-strip test
   now also asserts the address clears; `data.test.ts`'s vacuous self-lookup
-  loop removed; `tests/app/lib.js`'s self-referential comment reworded (and
-  its stale "five" suite count corrected to seven). Nit 5 (this file's own
-  narration duplication) is addressed by this very closing pass replacing the
+  loop removed; `tests/app/lib.js`'s self-referential comment reworded. **C4's
+  own fix was incomplete and review remediation finished it**: C4 dropped
+  the stale "five" from the file's opening paragraph but missed a second
+  "five" fourteen lines down (`tests/app/lib.js`, the missing-`dist/` guard's
+  own comment) - fixed to "seven" in the remediation commit. Nit 5 (this
+  file's own narration duplication) is addressed by this very closing pass
+  replacing the
   duplication with pointers.
 
 - **CLOSED - all four R0b.4 divergences restored (implementer, 2026-09-16).**
