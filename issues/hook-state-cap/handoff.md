@@ -2,7 +2,7 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B1 implemented, gated and committed; B2 closeout remains)
+- Task status: **done** (B1 implemented, gated, committed as `db01b92` and CI-confirmed green; B2 closeout completed 2026-09-16)
 - Last agent: implementer (2026-09-16, B1) - terminated early by a session rate limit after writing and self-testing the change; the orchestrator ran the required old-behaviour proof, the foreground gate, and the commit. See B1 Verification.
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `main` (this repo has no feature branches)
@@ -10,8 +10,8 @@
 
 ## Completed
 - Batch name/id: P0 - planning
-- What shipped: `issues/hook-state-cap/plan.md` (design, decisions with rejected alternatives, B1 implement-ready, B2 closeout outline, Deferred) and this handoff. No production code.
-- Files changed: `issues/hook-state-cap/plan.md`, `issues/hook-state-cap/handoff.md`
+- What shipped: this task's `plan.md` (design, decisions with rejected alternatives, B1 implement-ready, B2 closeout outline, Deferred) - retired at closeout, see Cleanup - and this handoff. No production code.
+- Files changed: this task's `plan.md` and `handoff.md`.
 - Commit(s): none yet - the implementer commits the task documents with B1.
 - Deviations and rationale: none. `context.md` needed no refresh; every fact it holds was confirmed against the code at `618ad7c` (`saveState()` at `lib.mjs:312-326`, consumers at `session-stop.mjs:79,175`, `edit-followup.mjs:49,53`, `bash-guard.mjs:521`).
 
@@ -32,20 +32,8 @@
 - **B1 gate.** No peer heavy run alive (`Get-CimInstance Win32_Process` filtered to `golden.js`/`parity.js`/`run-all.js`/`vitest`/`npm-cli.js run` -> 0) immediately before starting. `set -o pipefail; npm run check 2>&1 | tail -n 40`, one foreground call: **passed**, ending with the coverage summary (statements 96.61%, branches 88.58%, functions 97.10%, lines 97.34%) - the table `check-observer.mjs` requires to arm the commit gate.
 - `npm run check:built` and parity: not required; no app source changed.
 
-## Next batch (implement-ready)
-- Name: B1 - reserve the writer, cap 64, pin it in the selftest
-- Objective: `saveState()` always keeps the session being written and prunes the rest to the 64 most recently active; selftest cases `#131-#134` pin the reservation, the recency ranking and the exact cap; `.claude/README.md` records the cap and its loss condition.
-- In scope: `.claude/hooks/lib.mjs` (`export const MAX_SESSIONS = 64`, `saveState(state, keepId)` per plan 3.2, three call sites in `once()`/`recordWrite()`, corrected catch comment); `.claude/hooks/selftest.mjs` (new `testStateCap()` called after `testTaskBudget()` and before `testFailOpen()`; header `#1-#134`; `testTaskBudget()` comment at `:1559-1579` rewritten per plan 4.5); `.claude/README.md` (`.hook-state.json` row at line 130; one "Known limitations" bullet after the `activeTask()` note ending line 280). Exact text for both README edits is in plan 7, step 4.
-- Out of scope: `at`'s unit, the comparator and tie-break, `loadState()`, `getWrote()`, any hook message, atomic writes or race handling, `testTaskBudget()`'s isolation, `issues/config-audit/*`, `CLAUDE.md`.
-- Files expected: `.claude/hooks/lib.mjs`, `.claude/hooks/selftest.mjs`, `.claude/README.md`, plus `issues/hook-state-cap/{plan,handoff}.md` in the same commit.
-- Steps: plan 7, "Steps" 1-7. Summary: (1) `lib.mjs` per plan 3.2; (2) `testStateCap()` with `#131` writer survives at saturation (`MAX_SESSIONS + 8` tied `other-*` writes then `s-cap-writer`; assert its `getWrote`, the exact count, its presence - never which `other-*` survived), `#132` hand-seeded `e-1..e-N` with distinct old `at`, new write evicts `e-1` only and count stays exact, `#133` `once()` returns `true` then `false` for a writer against a tail of `MAX_SESSIONS` entries tied at the current second, `#134` `runHook('session-stop.mjs', ..., { state: capState })` names `app/src/lib/x.ts` after `#133`'s saturation, with a `git status --porcelain` precondition that `x.ts` is dirty; private `mkdtemp` state dir swapped into `LOOT_HOOK_STATE_DIR` in `try`/restored in `finally`, the `testTaskBudget()` shape; every `check()` with a `detail`; (3) `testTaskBudget()` comment and header; (4) README; (5) `node .claude/hooks/selftest.mjs` three times; (6) pre-flight then one foreground `npm run check`; (7) stage by name, commit, push.
-- Acceptance criteria: plan 7, "Acceptance criteria" - in particular: `#131-#134` green with the count recorded here; restoring the old `saveState()` body once, locally, makes `#131`, `#133` and `#134` fail (recorded here, then reverted); `#44` and `#126-#130` untouched and green; README row and bullet present; `npm run check` passes in one foreground call; commit pushed.
-- Verification commands:
-  - `node .claude/hooks/selftest.mjs` (expect `N passed, 0 failed`, N > 357; run three times)
-  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout 600000, one foreground call, after pre-flight: no `golden.js`/`parity.js`/`run-all.js`/`vitest` process alive; `git status --porcelain -uall` shows only this task's files)
-  - `git log --oneline -1`; `git status --porcelain -uall`
-- Risks / do-nots: plan 7, "Risks / do-nots". Do not pin which tied entries survive in `#131`; do not add a warn, counter or TTL; do not touch `at`'s unit; do not weaken `testTaskBudget()`'s isolation; one session per working tree while the gate runs; verification is the selftest, not the live hook (hook config may be snapshotted at session start).
-- Fallback (optional): none. `MAX_SESSIONS` is a single exported constant if the human wants a different number; every case reads it from the export.
+## Next batch
+- None. B1 is the only implementation batch and it is landed, pushed and green on CI (run 35094798905 on `db01b92`: `check`, all four `golden` shards, `audit`, `secrets`, `deploy` all success). B2 was closeout and is done - see Cleanup performed / retained artifacts.
 
 ## Blockers
 - None.
@@ -56,7 +44,9 @@
 - B2 closeout after B1 is pushed: plan 8 - `git grep -n "issues/hook-state-cap/plan\.md"` must come back empty (B1 introduces no citation; the `lib.mjs` comments are self-contained), then `/handoff`, status `done`.
 
 ## Notes
-- Mocks path: none (no UI).
+- Cleanup performed / retained artifacts (closeout, 2026-09-16):
+  - **Removed** this task's `plan.md`. Its durable content was rehoused first, in the same commit, because rule 2i denies the deletion while any tracked line still cites the path: the four rejected alternatives (tie-break fix, TTL, millisecond `at`, warn-on-drop) now live in `.claude/README.md` beside the `saveState()` limitation bullet, each with the reason it lost. B1 had already put the behaviour there (cap of 64, writer always kept, and what the old cap of 5 cost). Two citations in this file were rephrased; `git grep` outside the plan itself came back empty before the removal.
+  - **Kept** `context.md` and this `handoff.md`. `context.md` holds the measurements - the deterministic prune probe, the live state file's 5 saturated entries spanning 71 hours, the consumer list - that any future change to this area should be checked against rather than re-measured.
+  - **No mocks or scratch artifacts** were created in the repo by this task. The orchestrator's temporary copy of `lib.mjs` (taken so the old-behaviour proof could be reverted safely) lived in the session scratchpad outside the repository and is gone with it.
 - Screenshot findings: none (no UI).
-- Cleanup performed / retained artifacts: nothing created outside `issues/hook-state-cap/`. The standalone probe referenced in `context.md` was a throwaway; it is reproduced as selftest `#131`, not kept as a file.
-- Session end partial progress (if any): none. Design decisions (plan 4.1-4.7): writer always reserved (adopted); cap 5 -> 64, no TTL (adopted; TTL rejected as adding a resume-after-TTL loss path and nothing to correctness under recency ranking); `at` stays seconds and the tie-break is untouched (moot once the writer is reserved; unit change would break `session-stop.mjs:130` without a migration); no warn on drop (no reliable signal; answered by margin, tests and the README record); fail-open kept with its comment corrected to name the missing-Stop-sentence cost.
+- Session end partial progress: none. The B1 implementer was terminated mid-batch by a session rate limit; the orchestrator completed the proof, gate and commit, and this handoff records that division of work under B1's Deviations.

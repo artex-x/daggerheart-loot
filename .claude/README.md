@@ -284,6 +284,26 @@ adversary:
   hook call. Before `hook-state-cap` (2026-09-16) the cap was 5 and a tie at
   second granularity evicted the writer itself; the loss was silent and cost
   `config-audit` B3 four remediation cycles.
+  Four alternatives were considered and rejected when that fix was designed
+  (`hook-state-cap`, 2026-09-16); they are recorded here so nobody re-derives
+  them after the task directory retires:
+  - **Fixing the tie-break instead of reserving the writer.** Moot once the
+    writer is reserved: after a reload, key order is the previous save's
+    ranking rather than creation order, so a tie-break carries no reliable
+    recency information in either direction.
+  - **A TTL instead of, or alongside, the count cap.** Under recency ranking
+    dead sessions already leave before live ones, so a TTL adds nothing to
+    correctness and introduces a new silent-loss path: a session resumed after
+    the TTL expires Stops with its writes forgotten.
+  - **Millisecond granularity for `at`.** `session-stop.mjs` scales
+    `wrote[p] * 1000` against `mtimeMs`; changing the unit breaks the
+    staleness sentence for new entries until a migration runs, and buys
+    nothing once the writer is reserved.
+  - **Warning when an entry is dropped.** At save time a live entry is
+    indistinguishable from a dead one, and at Stop the hook cannot tell
+    "never wrote" from "evicted", because entries are created lazily and a
+    read-only session has none. The answer to silence here is margin plus
+    tests that fail loudly on regression, not a sentence nobody can trust.
 
 Facts settled during implementation (issue 65):
 
