@@ -865,15 +865,47 @@ const { ok } = rep;
     'длинный текст вылез за карту: ' + over.join(',')
   );
   /* The fit hands over space rule by rule: font, then padding, then the
-     picture itself. Verified directly against the live app on this same
-     route: today's longest texts in the catalogue (these nine, still the
-     longest by character count) never push either app's ladder as far as
-     hiding a picture - `--pcpad` stays at its unshrunk 23cqw on both. That is
-     catalogue content, not a fit regression, so the check here is that the
-     ladder actually ran rather than sitting idle: the font step engages on
-     the longest texts. */
+     picture itself. On this Windows host, 2026-09-16, this nine-card set
+     never pushes the ladder past the font step - measured directly against
+     `index.html` on the same route, so it is text-metric variance between
+     hosts, not catalogue content or a fit regression: ubuntu CI reaches the
+     art rung on the same route (`tests/print.js`'s own `print` suite, CI run
+     35130947774, green on `98ddf52` before this batch existed). A local
+     result is advisory and may legitimately fail a cell CI passes
+     (`CLAUDE.md`, "Decisions taken by the repository owner"). So this first
+     check only pins what is true on every host - the font step engages - and
+     the rung invariant right below it is what still holds end-to-end
+     wherever the ladder is actually reached. */
   const shrunk = await page.$$eval('.pc-text', (e) => e.filter((x) => x.style.fontSize !== '').length);
-  ok(shrunk > 0, 'ни одна длинная карта не отдала место под правило');
+  ok(shrunk > 0, 'ни одна длинная карта не ужала текст');
+
+  /* The rung invariant, host-independent: the padding step only ever runs
+     after the font step has already failed to fit, and the art step only
+     ever runs after the padding step has bottomed out - so wherever a card's
+     `--pcpad` sits at its own floor, some card's picture must be hidden.
+     Vacuously true when the floor is never reached (this host, above);
+     the real check wherever it is (ubuntu CI, run 35130947774). Read as
+     computed style, not `eachAt`'s inline-only view: the floor is a written
+     value, but "at the floor" has to be compared against the actual ladder
+     constant, not just "is something set". */
+  const floors = await page.$$eval('.pcard:not(.blank)', (cards) =>
+    cards.map((c) => {
+      const box = c.querySelector('.pc-content');
+      const art = c.querySelector('.pc-art');
+      const isBw = c.classList.contains('bw');
+      const padStr = box ? box.style.getPropertyValue('--pcpad') : '';
+      const pad = padStr ? parseFloat(padStr) : null;
+      const floor = isBw ? 2.8 : 8;
+      return {
+        atFloor: pad !== null && pad <= floor + 0.05,
+        artHidden: !art || art.style.display === 'none'
+      };
+    })
+  );
+  ok(
+    !floors.some((c) => c.atFloor) || floors.some((c) => c.artHidden),
+    'подгонка дошла до пола отступа, но снимок ни у одной карты не спрятан'
+  );
 
   /* The picture either takes a visible band or is gone entirely. There must
      be no middle: the white block is pinned to the card's bottom, and a long
@@ -1009,7 +1041,10 @@ const { ok } = rep;
       text.forEach((t) => {
         if (!t.style['font-size']) return;
         const v = parseFloat(t.style['font-size']);
-        ok(v >= 2.2 && v <= 3.5, tag + 'кегль текста вне лестницы: ' + t.style['font-size']);
+        /* The text ladder's own floor (PrintCard.svelte's second `while (tight()
+           && pct > 2.6)`), not the strip box's 2.2 - the two ladders are
+           separate and this one never goes lower. */
+        ok(v >= 2.6 && v <= 3.5, tag + 'кегль текста вне лестницы: ' + t.style['font-size']);
       });
 
       const box2 = await d.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']);
@@ -1017,7 +1052,11 @@ const { ok } = rep;
       box2.forEach((b) => {
         if (!b.style['--pcpad']) return;
         const v = parseFloat(b.style['--pcpad']);
-        ok(v >= 3 && v <= 23, tag + 'отступ вне лестницы: ' + b.style['--pcpad']);
+        /* The floor is 2.8, not 3: `let pad = bw ? 5.8 : 23; while (tight() &&
+           pad > (bw ? 3 : 8)) pad -= 1.5;` steps 5.8 -> 4.3 -> 2.8 in
+           black-and-white, one step past the loop's own `> 3` guard -
+           `printPage.test.ts:581` pins the same 2.8 floor. */
+        ok(v >= 2.8 && v <= 23, tag + 'отступ вне лестницы: ' + b.style['--pcpad']);
       });
 
       const art = await d.eachAt('.pc-art', ['height', '--artw', 'display']);
