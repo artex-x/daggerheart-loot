@@ -302,6 +302,59 @@ The live app is wrong; the rewrite copies it; parity was the reason.
   with no `allow` naming it.
 - **Recorded by**: B12, 2026-09-12.
 
+### D11 - campaign-frame equipment hides a tier the identical Core item prints
+
+- **Where**: live `app.js:597` `isFrameRecord(it)` guards six sites - `:612`
+  (the stat line's tier word), `:856` (`lineStepsHTML`, the tier ladder),
+  `:931` (the tier label), `:957` (the source label, which switches to
+  `whereFrom`), `:3227` (the ` · Ранг N` suffix) and `:3385` (the print
+  card's tier). The rewrite reproduces all six: `app/src/lib/label.ts:33`
+  and `:111`, `RecordCard.svelte:86,177`, `RowMain.svelte:78`,
+  `TableRows.svelte:84`, `RecordPage.svelte:52`, `PrintCard.svelte:34`,
+  `share.ts:90`, `search.ts:34`. Read at `dc99f21`.
+- **Live behaviour**: a record with `frame` set or `src === 'frame'` never
+  shows its tier anywhere, even when `eq.tier` is present in `data.js`. 95
+  records are frame records; **92 of them carry an `eq.tier` that is never
+  drawn**.
+- **Why this is filed as a defect rather than a presentation rule**: the two
+  populations are not distinguishable by anything the reader can see.
+  `f33` "Quilted Clothing" (`items.frames`) is `tier 1, armorScore 3,
+  thresholds 5/11`. `q313` "Gambeson Armor" (`L.eq`, the equipment tables) is
+  `tier 1, armorScore 3, thresholds 5/11`. **Identical armour, identical
+  tier; one prints it and one hides it**, and the only difference is which
+  table catalogues the record. The rule is also not "tier belongs to rollable
+  loot": `#/tables/eq_weapon` is a browse surface, not a roll table, and it
+  prints tiers throughout.
+- **What the rewrite would do instead**: not settled, which is the point of
+  the entry. Either print the tier for frame equipment as for any other
+  equipment, or keep suppressing it and state a reason a reader can check.
+- **Why parity won**: R0b.4 (2026-09-16). The batch's own subject was the
+  opposite defect - the rewrite *keeping* a tier word the live app drops in
+  four `eqLine` consumers (`share.ts`, then `search.ts` as a fifth
+  divergence found in review) - and the owner answered **restore** on all
+  five, matching live. Whether live is right was a separate question, raised
+  by the owner in the same session and deliberately not answered inside a
+  parity batch.
+- **What is NOT known, and must not be re-asserted as if it were**: the
+  reason. The repository records the mechanism at seven sites and no
+  justification anywhere. `label.ts:33`'s comment ("presented as setting
+  material even when a starter (notably `f95`) carries ordinary equipment
+  metadata too") asserts intent without evidence, and was mistaken for an
+  explanation once already in this session. `docs/specs/CONTRACTS.md:36`
+  records only that the `f` prefix means "Campaign frame equipment".
+- **How to verify the fix**: whichever way it goes, `f33` and `q313` must
+  stop disagreeing without a stated reason. If the tier is printed:
+  `record.test.ts` asserts a frame record's stat line carries the tier word,
+  `search.test.ts`'s D11 case (added in `676629d` for the opposite claim) is
+  inverted, and the six live sites' rewrite counterparts drop the guard
+  together - a partial fix reintroduces exactly the inconsistency R0b.4
+  closed. If suppression is kept: `FEATURES.md`'s campaign-frame line gains
+  the reason, and this entry is deleted in that commit.
+- **Recorded by**: the repository owner, via the orchestrator, R0b.4's
+  review remediation, 2026-09-16. Raised by the owner against the
+  orchestrator's own wrong explanation, which claimed tier was suppressed
+  because frames are not rollable.
+
 ## Live decisions kept over the rewrite's own
 
 Not a defect; a design the rewrite argued against and lost to parity.

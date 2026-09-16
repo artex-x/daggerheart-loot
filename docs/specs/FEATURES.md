@@ -172,7 +172,9 @@ Six modes. Each keeps its own input in memory only.
   rather than its book - even when the record carries ordinary equipment
   metadata (a tier, thresholds, armour score) that an equivalent record in
   the equipment tables does print. Whether that is correct is an open
-  question, not a settled one: see `docs/specs/DEBT.md`.
+  question, not a settled one: `DEBT.md` D11, which carries the `f33`/`q313`
+  comparison and records that no reason for the suppression is written down
+  anywhere.
 - Referenced Core cards render as a collapsed block and travel with the item
   into copies and shares. Each block links out to `daggerheart.su` for the
   full card, the subdomain matching the language on screen (`ru.` in Russian,
