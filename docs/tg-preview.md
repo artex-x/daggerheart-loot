@@ -397,6 +397,14 @@ minutes at busy times.
   network path to Pages from where the tool is running, or right after
   confirming by hand that a deploy has landed; skipping it risks refreshing
   a URL into the *old* preview if Pages has not caught up yet.
+- `--stale-list <path>` requires `--dry-run` and writes the exact set of
+  stale stub URLs to `<path>` as JSON: `{ version, site, mode, stale,
+  notLive }`. `stale` and `notLive` are sorted with no timestamp anywhere in
+  the file, so two runs against an unchanged tree produce byte-identical
+  files and a diff between them means a real change. Its purpose is proving
+  which stub URLs a byte change invalidated, before and after: run it once
+  before the change and once after, then diff the two files instead of
+  re-deriving the set by hand.
 
 ## What CI does after a deploy
 

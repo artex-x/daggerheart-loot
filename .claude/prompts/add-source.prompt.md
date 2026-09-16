@@ -42,7 +42,13 @@ Orientation
 
 Canonical data source of truth: `data.js` (`window.LOOT`).
 Derived: run `node tools/build.js` for `data.json`, `catalog.csv`, `i/*.html`.
-Art: `img/<id>.webp` and `og/<id>.jpg` are outside the JS build but required when records have art.
+Art: `img/<asset-id>.webp` and `og/<asset-id>.jpg` are outside the JS build but
+required when records have art. The asset id is the basename of a record's
+`img` field, not necessarily the record id: several records may share one
+asset, and a record joining one gets no `img/` or `og/` file of its own. A
+record may legitimately ship with `img: ''`, which renders `_none.webp`. Use
+`node tools/artwork/run.mjs ingest` to install and validate art - never
+hand-convert; see `docs/artwork.md` for the tool and its settings.
 
 ----------------------------------------
 How data is organized today (do not reinvent this)
@@ -124,7 +130,11 @@ Phase 1 - Analyze and decide
 A) Inventory the source: every entry, kind, roll/tier/rarity, equipment stats, recipes/upgrades, sets, specials
 B) Reconcile optional draft JSON vs book; prefer the book; list mismatches
 C) Design records: stable ids, fields, bilingual text, `craft` chains, `refs`, equipment blocks, set membership if any
-D) Map images to ids; note missing/duplicate/wrong art
+D) Decide, per new record: which source image belongs to it; whether it
+   joins an existing upgrade line and takes the line's existing asset rather
+   than getting its own (a source-book judgment - the only legal reason two
+   records may share one picture); and which records ship without art for
+   now. Note missing/duplicate/wrong art.
 E) Product surface: existing roll mode/table vs new ones; roll page; table page + filters; i18n/help; extra records needed
 F) Explicit "new mechanics" notes: each mechanic -> text-only / structured / first-class -> decision
 
@@ -139,13 +149,16 @@ Do:
 2. Add/reuse `refs` entries where item text depends on referenced cards
 3. Wire `craft` links and verify reverse "crafted from" behaviour
 4. Implement any approved structured/first-class mechanics with the smallest fitting design
-5. Place/convert art to `img/` and `og/` naming expected by the project
+5. Declare each new record's `img` in `data.js`, then run
+   `node tools/artwork/run.mjs ingest` per `docs/artwork.md`; never
+   hand-convert. Records must be in `data.js` before or in the same change
+   as running `ingest`, or its `og/` orphan gate fails
 6. Run `node tools/build.js` and fix derived drift
 7. Wire roll mode / table / filters / i18n only if required
 8. Update docs and copy that publish counts or source lists when they change (`index.html`, `app/index.html`, `README.md`, `README.ru.md`, `app.js`, `llms.txt`, and `robots.txt`)
 9. Update tests/fixtures/specs only if behaviour or public contracts change
 10. Run verification:
-    - data/image/stub checks the repo expects
+    - `node tests/run-all.js dataint` - ids, images, `og/` orphans, stubs
     - `npm run check` when code/app surface changed
     - `npm run check:built` when screen/dist output may change (per CLAUDE.md)
     - focused tests for new routes/filters/mechanics
@@ -167,7 +180,8 @@ Done criteria
 - Every source entry is represented (or explicitly deferred with reason)
 - Draft JSON mismatches resolved against the book
 - `craft` / `refs` / equipment / set-or-new-mechanic relationships correct for what was approved
-- Images mapped; missing art called out if any remain
+- Images installed via `node tools/artwork/run.mjs ingest`; missing art
+  called out if any remain; `node tests/run-all.js dataint` passes
 - Derived files rebuilt
 - Roll/table/filter/mechanic UI defined and implemented when this source needs it
 - Counts/docs/tests updated as required

@@ -159,6 +159,16 @@ async function main() {
           renameSync(tmp, opts.resultPath);
         }
       : null,
+    writeStaleList: opts.staleListPath
+      ? async (payload) => {
+          // Same atomic temp-sibling-then-rename shape as writeResult, and
+          // the same reason: a killed run must not leave a truncated file
+          // that reads as an answer.
+          const tmp = opts.staleListPath + '.tmp';
+          writeFileSync(tmp, JSON.stringify(payload, null, 2) + '\n');
+          renameSync(tmp, opts.staleListPath);
+        }
+      : null,
     log
   };
 

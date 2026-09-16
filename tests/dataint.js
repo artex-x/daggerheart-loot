@@ -168,6 +168,14 @@ fs.readdirSync(path.join(ROOT, 'img')).forEach(f => {
   if (f === '_none.webp' || !f.endsWith('.webp')) return;
   ok(used.has(f), 'картинка img/' + f + ' никому не принадлежит');
 });
+/* Same trap, ingest side: a stray og/<id>.jpg with no claiming record passes
+   every other gate. og/ is named after the asset (img/<asset>.webp), not the
+   record id, so this is the same `used` set, just re-suffixed. */
+const usedJpg = new Set(Array.from(used).map(f => f.replace(/\.webp$/, '.jpg')));
+fs.readdirSync(path.join(ROOT, 'og')).forEach(f => {
+  if (f === '_none.jpg' || f === '_share.jpg' || !f.endsWith('.jpg')) return;
+  ok(usedJpg.has(f), 'картинка og/' + f + ' никому не принадлежит');
+});
 ALL.forEach(x => ok(fs.existsSync(path.join(ROOT, 'i', x.id + '.html')),
                     x.id + ': нет страницы-заглушки'));
 ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length === ALL.length,
