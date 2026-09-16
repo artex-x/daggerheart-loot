@@ -15,9 +15,10 @@ URLs. Only the button forces Telegram to re-download the image - see
 **A refresh repairs the existing backlog.** Sending a URL to `@WebpageBot` and
 pressing "Update with content" on its reply updates the preview in every
 message that already carries that link, not only in links shared afterwards -
-the owner has done this by hand and watched already-posted messages change.
-Some published write-ups claim a refresh only helps future shares; that claim
-does not hold for this site and is not repeated here.
+the owner directly observed this on 2026-09-11, having refreshed links by
+hand and watched already-posted messages change. Some published write-ups
+claim a refresh only helps future shares; that claim does not hold for this
+site and is not repeated here.
 
 `tools/tg-preview/` is the tool that does this at scale: it derives every
 share URL from `data.js`, fingerprints what Telegram would see for each one,
@@ -553,6 +554,13 @@ still sitting in the chat before spending a single new send.
   anyway, so it saves nothing on a first reindex and only helps future
   refreshes, which the incremental design already covers. Not taken; the
   press is measured to do the job without any of that.
+- **A Telegram bot token (`TELEGRAM_BOT_TOKEN`).** `@WebpageBot` is a
+  Telegram bot, and bots cannot message other bots, so the Bot API cannot
+  reach it and a bot token is the wrong credential no matter its scope.
+  Every automation route here has to act as a Telegram **user** via
+  MTProto instead - the reason the tool carries a full account session (a
+  dedicated throwaway account, not the owner's own) rather than a scoped
+  bot credential. Not taken; there is no bot-token path to take.
 - **A fix at the app level** (any header, any `og:image` naming scheme,
   anything served from this site). Ruled out by the same fact: the cache
   ignores everything the origin serves. The only lever that moves it is
