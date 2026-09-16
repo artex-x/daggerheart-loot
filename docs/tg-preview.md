@@ -121,10 +121,21 @@ the account is allowed to talk to it.
 **E. Clear the untrustworthy state, then dry-run (no Telegram involved).**
 
 0. **Retire the 115-entry state file**, if one is sitting in the tree from an
-   earlier run that predates the press budget below -
-   `issues/tg-preview-refresh/plan.md` section 3.4 ("What the 115 entries are
-   worth") has the reasoning. Move it out of the repository rather than
-   deleting it, so its `photo id new` entries survive as evidence:
+   earlier run that predates the press budget below. That file (measured
+   2026-09-12) split 87 `photo changed` / 28 `same`; the 87 carry their own
+   positive evidence, but the 28 are indistinguishable between "the cached
+   photo was already current" and "the press was refused by the attempt
+   throttle at the tail of a 115-press run" - the run logged aggregate counts
+   only, so nothing names which 28, and the state schema has no evidence
+   field to interrogate either. Keeping all 115 risks up to 28 URLs recorded
+   as refreshed while still showing the old picture, skipped forever by an
+   incremental run; re-pressing only the 28 or only the known ids is not
+   actionable, since none are named. Restarting the reindex cold re-spends
+   ~115 presses (about 11% of a full 1062-URL run, two to three extra chunked
+   runs) and buys a state file where every entry was written by a tool that
+   can tell an accepted press from a refused one. Move the old file out of
+   the repository rather than deleting it, so its `photo id new` entries
+   survive as evidence:
    ```text
    mv tools/tg-preview/state.json ../state-backup.json.bak
    ```
@@ -465,8 +476,12 @@ would erase the honest reds along with the noisy ones.
 ## Rate limiting and resumability
 
 The bot answers one send with one summary message plus **one button message
-per link**, so the run has two axes with independent pacing: sends and
-presses. `tools/tg-preview/lib.mjs` sends `PER_MESSAGE` (10, the bot's
+per link** (measured 2026-09-11: three links in one message produced four
+replies). The summary message has text and no `replyMarkup`, so it is never
+mistaken for a button message; each button message carries
+`media.webpage.url`, so a press maps back to its URL exactly, with no
+ordering assumption. So the run has two axes with independent pacing: sends
+and presses. `tools/tg-preview/lib.mjs` sends `PER_MESSAGE` (10, the bot's
 documented bulk figure) URLs per message, paced 4-6 seconds apart with the
 wait for the bot's button messages folded into that pace, and rests 30
 seconds every 25 messages as insurance against limits Telegram has not
@@ -524,6 +539,63 @@ presses every one of them before sending anything new.
 This is what makes a crash mid-run, a budget stop, a press-budget stop, or an
 unanswered press cheap to recover from: the next run presses whatever is
 still sitting in the chat before spending a single new send.
+
+## Design alternatives rejected
+
+- **Cache headers, or a cache-busted `og:image` URL.** Telegram's cache has
+  no TTL and is keyed on the page URL; nothing the origin serves invalidates
+  it (see the opening paragraph). Appending a content hash to `og:image`
+  would force even a plain send to re-download, but it would break the
+  frozen `og/<id>.jpg` contract (`docs/specs/CONTRACTS.md`) -
+  `tools/build-share-pages.js`, `docs/fixtures/`, `tests/contracts.js` and
+  `llms.txt` would all have to move - and every already-shared stub would
+  still carry the *old* image URL in Telegram's cache until refreshed
+  anyway, so it saves nothing on a first reindex and only helps future
+  refreshes, which the incremental design already covers. Not taken; the
+  press is measured to do the job without any of that.
+- **A fix at the app level** (any header, any `og:image` naming scheme,
+  anything served from this site). Ruled out by the same fact: the cache
+  ignores everything the origin serves. The only lever that moves it is
+  Telegram itself, via `@WebpageBot`.
+- **A pre-press staleness test**, so the tool presses only where a press is
+  actually needed (asked for and evaluated 2026-09-13). The tool already has
+  an exact pre-press test - `stale()` over the fingerprint, which is exactly
+  "what Telegram would see, compared with what it saw when we last confirmed
+  a press", and is what makes incremental mode skip a URL that has not
+  changed. What no test can do is help a **first** reindex: it starts from
+  an empty state, so nothing exists yet to compare against, and that is a
+  property of the first run, not a defect. Every other pre-press candidate
+  considered failed on subject matter or on the failure direction, not on
+  cost - and the failure direction matters more here than usual, because a
+  false "already current" does not just skip a press, it gets recorded in
+  `state.json` as refreshed, so every later incremental run skips that URL
+  too until an unrelated artwork commit re-fingerprints it by accident:
+  - `webpage.title` / `webpage.description` (free, exact, already on the TL
+    object) test text staleness, not the image bytes that are the actual
+    root cause.
+  - Image dimensions: 846 of 847 `og/*.jpg` are 640x640 - nothing to
+    discriminate on.
+  - Image byte size: Telegram stores its own re-encode, so its size never
+    matches ours. Confirmed from the origin side too: GitHub Pages' `ETag`
+    is `"<deploy-stamp>-<content-length>"` and `Last-Modified` is the
+    deploy time, not the file's - `curl -sI` against `og/_share.jpg`,
+    `og/w76.jpg` and `og/cc19.jpg` (2026-09-13) returned the identical
+    `last-modified`, differing only in the `ETag` suffix that encodes each
+    file's size. The origin exposes no per-file publication time at all.
+  - Telegram's cached photo `date` (on `Api.Photo`) would be free and exact
+    against a real reference clock, but the previous point removes the only
+    candidate for that clock; a git commit date is ruled out because the URL
+    set and change detection must survive issue 47's cut-over, when `i/` and
+    `og/` may no longer be tracked files.
+  - Downloading Telegram's cached photo and comparing it perceptually is the
+    only candidate that can see image staleness during a first reindex, and
+    it would not spend the bot's attempt quota - but the comparison is
+    against Telegram's own re-encode, so the threshold has to be loose
+    enough to absorb re-encode noise and tight enough to catch an artwork
+    "polish" the owner described as subtle; no single threshold does both,
+    and missing in the unsafe direction is exactly the silent, permanent lie
+    above. Also adds a JPEG-decoder dependency to a tool that otherwise
+    depends only on the Telegram client library.
 
 ## Secrets
 

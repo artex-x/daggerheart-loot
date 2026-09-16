@@ -5,7 +5,9 @@
   writeState, writeResult, log) - see run.mjs and manifest.mjs for the wiring,
   and docs/tg-preview.md for the operator-facing behaviour this implements.
 
-  Design reference: issues/tg-preview-refresh/plan.md, sections 3-5.
+  Design reference: docs/tg-preview.md ("Operations", "Rate limiting and
+  resumability", "What CI does after a deploy", "Design alternatives
+  rejected").
 */
 import { createHash } from 'node:crypto';
 
