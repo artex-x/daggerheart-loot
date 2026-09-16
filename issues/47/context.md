@@ -3930,3 +3930,55 @@ which glob lands in `.prettierignore` versus `eslint.config.mjs` is
 configuration every later session runs under, `issues/config-audit/` is the
 open task that owns that surface, and `CLAUDE.md`'s own posture is that an
 orchestrator measures a status and hands a design over. Recorded, not decided.
+
+## The owner's answer on the three divergences: restore all three (orchestrator, 2026-09-16)
+
+Settled input for R0b.4. Do not re-open, and do not re-derive the evidence -
+it is `plan.md`, "The fourth verdict", with file and line numbers.
+
+The R0b planning pass found three behaviours the rewrite does not reproduce,
+each guarded by exactly one of the ten suites R0c deletes and invisible to
+every other instrument. The owner was asked one question each and answered
+**restore** to all three. None goes to `docs/specs/DEBT.md`; `DEBT.md` is for a
+live defect the rewrite reproduces *on purpose*, which is the opposite of
+these.
+
+1. **The roll results' live region.** Restore `role="status"
+   aria-live="polite"` on the results container in `StdPanel.svelte`,
+   `RollPanel.svelte` and `AltPanel.svelte`, matching the six `app.js` sites.
+2. **The referenced card.** Restore **both** halves in `RecordCard.svelte`: the
+   `\n` -> `<br>` line breaks, and the
+   `<a href="{r.url}" target="_blank" rel="noopener">daggerheart.su</a>`
+   outbound link. **Dropping the third-party link was not deliberate** - that
+   was the open half of the question and it is now answered.
+3. **The copy-image button.** Restore the second half of the gate in
+   `RecordActions.svelte`: `it.img && !brokenArt[it.id]`, not `it.img` alone.
+
+**What this changes procedurally:** `NEEDS_HUMAN_CONFIRMATION` is cleared for
+TASK 47. R0b.4 stops being a blocked batch and becomes an ordinary queued one;
+its entry condition is now R0b.1..R0b.3 landing, not an answer. Its gates are
+unchanged: `npm run check`, `npm run check:built`, and a parity filter over
+`#/i/*` and `#/roll/*`.
+
+**What it does not change:** R0b.1 still implements none of them. Its
+acceptance line 21 stands - the five named components appear in no R0b.1
+commit.
+
+## The tree at the R0b.1 implement kickoff (orchestrator, 2026-09-16)
+
+- HEAD `37e4812`, branch `main`, working tree clean, and **`origin/main`
+  equals HEAD**. The handoff's R0b.1 preflight step 5 (`origin/main` at
+  `2d2e983` with four unpushed peer commits) is **stale**; nothing foreign is
+  unpushed. 46 commits landed between the planning pass at `df1bd57` and this
+  kickoff, all from peer tasks, none touching R0b's working set.
+- **The `impeccable` blocker is gone, not worked around.** Neither
+  `.agents/skills/impeccable/` nor `.claude/skills/impeccable/` exists any
+  more; whoever installed it removed it. No ignore list was widened, so
+  `.prettierignore` and `eslint.config.mjs` stay `issues/config-audit/`'s
+  surface. **A red `npm run check` on this tree is now a real failure**, which
+  is the condition the planner said was worth waiting for.
+- Baseline, one foreground call on the clean tree:
+  `set -o pipefail; npm run check 2>&1 | tail -n 120` - **green**. 42 test
+  files / 1035 tests; statements 96.61, branches 88.58, functions 97.10, lines
+  97.34; vitest 95.64s. R0b.1's entry condition met.
+- No heavy run alive: `test-output/parity.lock` absent, zero `chrome.exe`.
