@@ -1535,6 +1535,21 @@ async function testTaskBudget() {
   process.env.LOOT_HOOK_ROOT = scratchRoot;
   process.env.LOOT_HOOK_STATE_DIR = scratchState;
 
+  // activeTask() (lib.mjs) picks the issues/<id>/ directory with the newest
+  // file mtime; on an exact tie it keeps whichever directory readdirSync()
+  // yielded first. NTFS enumerates alphabetically ('98' before '99'), so
+  // this stayed hidden here, but ext4's directory order is not alphabetical
+  // - a Linux CI run had issues/99/context.md (left over from
+  // testSessionStop, written moments earlier) tie issues/98/handoff.md's
+  // mtime and win, which made activeTask() resolve to 99, budgetSentences()'s
+  // issues/98/ prefix check fail, and #126/#127 see no budget sentence at
+  // all. Force every other issues/<id> directory's files to a fixed, safely
+  // old mtime first, so the comparison below is a strict inequality
+  // regardless of filesystem mtime resolution or readdir order - the same
+  // pattern setupScratch() already uses for issues/65/handoff.md.
+  const old = new Date('2020-01-01T00:00:00Z');
+  fs.utimesSync(path.join(scratchRoot, 'issues/99/context.md'), old, old);
+
   const session = 's-stop-budget';
   const results = [];
 
@@ -1577,8 +1592,20 @@ async function testTaskBudget() {
     );
   }
 
-  // #128 - same state again -> silent (once per dedupe key)
+  // #128 - same state again -> silent (once per dedupe key). Silence here
+  // only means something if the prior call (#127) actually fired: a
+  // completely dead budgetSentences() would make #128, #129 and #130 all
+  // pass vacuously (isSilent / no-"KB" / no-"decision" are all trivially
+  // true when nothing is ever emitted) - exactly how this block scored 3 of
+  // 5 green during the CI regression above, with only #126/#127 catching
+  // it. Assert the precondition explicitly rather than relying on that.
   {
+    const prior = results[results.length - 1];
+    check(
+      '#128 precondition: #127 actually fired (not silent)',
+      !isSilent(prior),
+      prior.stdout
+    );
     const result = runHook('session-stop.mjs', {
       session_id: session,
       cwd: scratchRoot,
@@ -1616,8 +1643,11 @@ async function testTaskBudget() {
   );
 
   // Clean up this block's own scratch so testFailOpen() sees the tree it
-  // expects - issues/99/ (still holding its context.md from
-  // testSessionStop) becomes the newest issues/<id>/ directory again.
+  // expects. issues/99/context.md is left in place (only its mtime was
+  // changed above, to a fixed 2020 date); nothing from here on depends on
+  // which issues/<id>/ directory activeTask() resolves to - testFailOpen()
+  // feeds malformed input that every script (including session-stop.mjs)
+  // must reject before ever reaching activeTask().
   fs.rmSync(path.join(scratchRoot, 'issues/98'), { recursive: true, force: true });
 }
 
