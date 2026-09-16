@@ -2074,7 +2074,7 @@ const JITTER = 0.1;
  * `PrintCard.svelte` draws the card's name as `<h2 class="pc-name">` where
  * `printCardHTML` writes `<h3>` (app.js:3419) - a heading level
  * `d.controls()` does not read. Both are B7's deliberate improvements;
- * Phase 7's sweep carries them into `FEATURES.md`.
+ * carried into `FEATURES.md`, "Chrome" and "Print" by 30b2744.
  *
  * The live app also re-plays the anchor scroll-and-flash on every `render()`,
  * a tables search keystroke included (app.js:4435: `S.tables.q = el.value;
@@ -2086,8 +2086,8 @@ const JITTER = 0.1;
  * frames in the rewrite and empties the table in the live app, whose `fDecode`
  * (app.js:2718-2726, the heuristic at 2725-2726) reads it as the old `_` form
  * on arrival; no state holds this
- * because the difference is the whole table, not a control. Phase 7's sweep
- * carries it into `FEATURES.md`.
+ * because the difference is the whole table, not a control. Carried into
+ * `FEATURES.md`, "Tables and search" by 73facda.
  */
 
 /**

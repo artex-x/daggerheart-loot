@@ -13,6 +13,12 @@ const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const rep = reporter();
 const { ok } = rep;
 
+/** Case 7's two-stage wait budget. Set against tests/app/lib.js:37's own
+ *  protocolTimeout (300_000) - this tree is shared with peer sessions and a
+ *  loaded host makes CDP round trips slower, so the wait has to outlast
+ *  ordinary contention without outlasting a genuine hang. */
+const STORAGE_WAIT_MS = 30_000;
+
 /** The new-list form's input, wherever the caller's markup put it -
  *  `.picker-new input[type=text]`, the only text input the add-to-list menu
  *  ever draws. */
@@ -171,6 +177,15 @@ async function dialogSemantics() {
  *  navigation of its own. */
 async function twoTabsShareStorage() {
   const b = await sharedPage({ width: 1180, height: 900 });
+  /* The test's own listener, independent of app/src/ports/storage.ts's -
+   * it answers "did Chrome deliver the event at all" on its own, so a
+   * timeout below can say which half failed instead of one sentence
+   * covering both. */
+  await b.page.evaluateOnNewDocument(() => {
+    window.addEventListener('storage', () => {
+      window.__storageSeen = (window.__storageSeen || 0) + 1;
+    });
+  });
   await b.d.open('#/lists');
   ok(
     (await b.page.evaluate(() => document.body.innerText)).includes('Списков пока нет'),
@@ -186,10 +201,32 @@ async function twoTabsShareStorage() {
     '7 (два окна): страница A не создала список'
   );
 
-  /* No navigation on B - the storage event alone must redraw it. */
-  await b.page.waitForFunction(() => document.body.innerText.includes('Общий клад'), { timeout: 5000 }).catch(() => {});
-  const bSees = (await b.page.evaluate(() => document.body.innerText)).includes('Общий клад');
-  ok(bSees, '7 (два окна): страница B не увидела список, созданный на A, без перехода');
+  /* No navigation on B - the storage event alone must redraw it. Two
+   * stages, no swallow: stage one says whether Chrome delivered the event
+   * at all (environment), stage two says whether the page redrew once it
+   * had the event (app) - a loaded runner and a real regression must not
+   * print the same sentence. */
+  let storageDelivered = true;
+  try {
+    await b.page.waitForFunction(() => window.__storageSeen > 0, { timeout: STORAGE_WAIT_MS });
+  } catch (e) {
+    void e;
+    storageDelivered = false;
+  }
+  ok(storageDelivered, `7 (два окна): страница B не получила событие storage за ${STORAGE_WAIT_MS / 1000}с`);
+
+  if (storageDelivered) {
+    let repainted = true;
+    try {
+      await b.page.waitForFunction(() => document.body.innerText.includes('Общий клад'), {
+        timeout: STORAGE_WAIT_MS
+      });
+    } catch (e) {
+      void e;
+      repainted = false;
+    }
+    ok(repainted, '7 (два окна): событие storage пришло, но страница B не перерисовалась');
+  }
 
   await a.page.close();
   await b.page.close();

@@ -335,6 +335,21 @@ function render(state, ru, en) {
 
 /* ---------- comparison ---------- */
 
+/** The lines before the first `## ` heading - `render()`'s `# <id>`,
+ *  `# route:` and `# why:` lines. `sectionsOf` only ever collects lines
+ *  after a `## ` heading, so without this the header is never compared and
+ *  an `inventory.js` route/why edit made without `--update` leaves a golden
+ *  whose header silently disagrees with the state it gates. */
+function headerOf(text) {
+  const out = [];
+  for (const line of text.split('\n')) {
+    if (/^## /.test(line)) break;
+    out.push(line);
+  }
+  while (out.length && out[out.length - 1] === '') out.pop();
+  return out;
+}
+
 function sectionsOf(text) {
   const out = {};
   let cur = null;
@@ -361,6 +376,16 @@ const SECTIONS = ['ru :: tree', 'ru :: controls', 'en :: tree', 'en :: controls'
  *  each side, which is what a session actually needs to find the
  *  regression without opening the file. */
 function compareGolden(id, wantText, gotText) {
+  const wantHeader = headerOf(wantText);
+  const gotHeader = headerOf(gotText);
+  if (wantHeader.join('\n') !== gotHeader.join('\n')) {
+    ok(
+      false,
+      `${id} :: header: расходится\n` +
+        `       было:  ${JSON.stringify(wantHeader)}\n` +
+        `       стало: ${JSON.stringify(gotHeader)}`
+    );
+  }
   const want = sectionsOf(wantText);
   const got = sectionsOf(gotText);
   for (const name of SECTIONS) {
@@ -432,10 +457,13 @@ function compareGolden(id, wantText, gotText) {
     compared++;
   }
 
-  /* Missing and stale are both read against the *whole* inventory - a
-   * filtered run cannot tell "no golden for this state" apart from "this
-   * state was not selected", so --only= suppresses both, the same
-   * contract `tests/parity.js`'s own filter carries for a `pending` state.
+  /* Only the stale-file sweep below is suppressed by --only=: it walks the
+   * whole snapshots directory against the whole inventory, and a filtered
+   * run would flag every file outside the filter as an orphan it is not.
+   * The missing-golden check above (:427) runs unconditionally - it is not
+   * suppressed by --only= at all, and simply sees fewer states because
+   * `wanted` is already filtered; a golden absent for a state this call
+   * did process still fails.
    * --shard suppresses neither: the missing check is per state and only
    * ever sees the states this shard actually processed, and the stale check
    * below reads the *whole* inventory regardless of --shard, which every
