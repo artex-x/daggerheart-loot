@@ -2065,9 +2065,18 @@ existing `expectNoA11yViolations` call still closes it.
 calls `eqLine(it, lang, labels)` with no fourth argument;
 `app.js:612` reads `if (e.tier && !isFrameRecord(it))`. The fix is
 `{ noTier: isFrameRecord(it) }`, the option `i18n.ts:117,123` already defines
-and `RecordCard.svelte:86`, `RowMain.svelte:78`, `PrintCard.svelte:34` and
-`TableRows.svelte:84` already pass; `isFrameRecord` comes from
-`app/src/lib/label.ts:33` and is not yet imported by `share.ts`.
+and `RecordCard.svelte:86` and `RowMain.svelte:78` already pass to
+`eqParts`/`eqLine`; `isFrameRecord` comes from `app/src/lib/label.ts:33` and
+is not yet imported by `share.ts`. **Corrected (R0b.4 review remediation,
+2026-09-16): `PrintCard.svelte:34` and `TableRows.svelte:84` do not call
+`eqLine`/`eqParts` at all - they apply `isFrameRecord` inline
+(`eq?.tier && !isFrameRecord(it)`) to build a bare tier string, not a stat
+line - so they were never a third and fourth example of the `{ noTier }`
+option. Listing them as though they were is what let `app/src/lib/
+search.ts:31-33`'s own missing `eqLine(it, lang, labels)` call - the actual
+fourth production site, absent from this enumeration entirely - through as
+a fifth divergence found only after R0b.4 shipped. See `issues/47/
+handoff.md`, "R0b.4 review remediation", for the fix and its commit.
 
 **The fixture regeneration is a step, not a consequence.**
 `docs/fixtures/share/records.json` holds nine ids - `ci1, cc1, w25, f33, ci18,

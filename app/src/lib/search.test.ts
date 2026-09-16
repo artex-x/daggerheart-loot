@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
 import { dict } from './dict.js';
 import { eqLine } from './i18n.js';
+import { isFrameRecord } from './label.js';
 import { matches, search, statLineFor } from './search.js';
 import type { Record_ } from './types.js';
 
@@ -149,5 +150,23 @@ describe('the stat line the pages search with', () => {
     expect(ru).toContain('Основное оружие');
     expect(en).toContain('Primary weapon');
     expect(ru).not.toBe(en);
+  });
+
+  it('drops the tier word for a frame record, matching the live app', () => {
+    /* R0b.4's fifth divergence: statLineFor called eqLine with no `noTier`,
+       so a frame record's search text kept "Ранг N" where live's matches()
+       (app.js:2854) never can - app.js:612's `if (e.tier &&
+       !isFrameRecord(it))` is baked into eqParts itself, so every live
+       consumer of the stat line drops the word for a frame record. Built
+       through statLineFor itself (not a call that mirrors production, the
+       way this file's own top-level `statLine` helper does), so removing
+       the `noTier` argument in search.ts fails this test. */
+    const frame = index.searchable.find((r) => isFrameRecord(r) && r.eq?.tier === 1) as Record_;
+    expect(frame).toBeDefined();
+    const line = statLineFor('ru', dict('ru'))(frame);
+    expect(line).not.toContain('Ранг');
+    expect(
+      search(index.searchable, 'ранг 1', statLineFor('ru', dict('ru'))).map((r) => r.id)
+    ).not.toContain(frame.id);
   });
 });
