@@ -402,6 +402,24 @@ export async function runRefresh(opts, deps) {
     return baseResult();
   }
 
+  // `--mode full` treats every URL as stale on every run, so a press budget
+  // smaller than the stale set cannot finish it in one run and the next run
+  // re-presses the same recovered buttons - a livelock the budget bounds but
+  // does not cure (plan.md 3.4, "`--mode full` is not chunkable"). This is
+  // advice for the owner, not a stop: the run still makes whatever progress
+  // the budget allows. Logged before the dry-run branch so
+  // `--dry-run --mode full` - the invocation the runbook recommends - shows
+  // it (B4 review nit 3).
+  if (mode === 'full' && pressLimit < todo.length) {
+    log(
+      'warning: --mode full cannot finish ' +
+        todo.length +
+        ' stale url(s) with a press budget of ' +
+        pressLimit +
+        ' in one run; chunked reindexing uses the default incremental mode - see docs/tg-preview.md step G'
+    );
+  }
+
   let ready = todo;
   let notLive = [];
   if (!noVerify) {
@@ -442,22 +460,6 @@ export async function runRefresh(opts, deps) {
   }
 
   const cx = await client();
-
-  // `--mode full` treats every URL as stale on every run, so a press budget
-  // smaller than the stale set cannot finish it in one run and the next run
-  // re-presses the same recovered buttons - a livelock the budget bounds but
-  // does not cure (plan.md 3.4, "`--mode full` is not chunkable"). This is
-  // advice for the owner, not a stop: the run still makes whatever progress
-  // the budget allows.
-  if (mode === 'full' && pressLimit < todo.length) {
-    log(
-      'warning: --mode full cannot finish ' +
-        todo.length +
-        ' stale url(s) with a press budget of ' +
-        pressLimit +
-        ' in one run; chunked reindexing uses the default incremental mode - see docs/tg-preview.md step G'
-    );
-  }
 
   const deadline = budgetMinutes != null ? now() + budgetMinutes * 60000 : null;
   let floodWaits = 0;

@@ -5,6 +5,13 @@ on:
     workflows: [check]
     types: [completed]
     branches: [main]
+  # Eventual consistency needs a clock, not only a push: a run that
+  # stops on the bot's throttle or the press budget leaves work pending,
+  # and nothing else would retry it until the next deploy. An idle run
+  # is `nothing to refresh` - no Telegram contact, about a minute.
+  # GitHub disables this after 60 days without a push; any push re-arms it.
+  schedule:
+    - cron: '23 */4 * * *'
   workflow_dispatch:
     inputs:
       mode:
@@ -27,7 +34,7 @@ concurrency:
 
 jobs:
   refresh:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -39,39 +46,23 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Secrets present?
-        id: cfg
-        env:
-          TG_API_ID: ${{ secrets.TG_API_ID }}
-          TG_API_HASH: ${{ secrets.TG_API_HASH }}
-          TG_SESSION: ${{ secrets.TG_SESSION }}
-        run: |
-          if [ -z "$TG_SESSION" ] || [ -z "$TG_API_ID" ] || [ -z "$TG_API_HASH" ]; then
-            echo "::notice::Telegram secrets are not configured; nothing to do"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/setup-node@v5
-        if: steps.cfg.outputs.skip != 'true'
         with:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: tools/tg-preview/package-lock.json
 
       - name: Install the client
-        if: steps.cfg.outputs.skip != 'true'
         working-directory: tools/tg-preview
         run: npm ci
 
       - name: Vulnerabilities we will not wave through
-        if: steps.cfg.outputs.skip != 'true'
         working-directory: tools/tg-preview
         run: npm audit --audit-level=high
 
       # The state is read from the freshest main, not from the deployed sha:
       # a refresh committed between two quick pushes must not be re-sent.
       - name: Refresh
-        if: steps.cfg.outputs.skip != 'true'
         env:
           TG_API_ID: ${{ secrets.TG_API_ID }}
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
@@ -88,13 +79,30 @@ jobs:
           else
             echo "no state on main yet; every url counts as stale"
           fi
-          args="--mode $MODE --budget-minutes 45 --result $RUNNER_TEMP/result.json"
-          [ "$DRY_RUN" = "true" ] && args="$args --dry-run"
-          [ -n "$LIMIT" ] && args="$args --limit $LIMIT"
-          node tools/tg-preview/run.mjs $args
+          args=(--mode "$MODE" --budget-minutes 40 --result "$RUNNER_TEMP/result.json")
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          [ -n "$LIMIT" ] && args+=(--limit "$LIMIT")
+          # Red means "the next run will not fix this": exit 2 (dead or missing
+          # credential) and 1 (a crash) stay red. Every Telegram-side stop already
+          # exits 0 with the backlog recorded, and the wall clock is mapped to 0
+          # here - eventual consistency is the contract. Three nested clocks:
+          # --budget-minutes 40 (the tool's deadline, checked before every send and
+          # press) < timeout 50m (a hang the deadline cannot see) < the job's 60,
+          # which leaves the record step below its own room. `bash -e` runs this
+          # block, so the exit code is captured with `|| code=$?`, not `; code=$?`.
+          code=0
+          timeout --kill-after=30s 50m node tools/tg-preview/run.mjs "${args[@]}" || code=$?
+          case "$code" in
+            0) ;;
+            124 | 137)
+              echo "::notice::the refresh hit the 50-minute wall; what it confirmed is recorded and the rest is picked up by the next run"
+              echo "timed out after 50 minutes; pending urls are picked up by the next run" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *) exit "$code" ;;
+          esac
 
       - name: Record what was refreshed
-        if: always() && steps.cfg.outputs.skip != 'true' && env.DRY_RUN != 'true'
+        if: always() && env.DRY_RUN != 'true'
         run: |
           [ -s "$RUNNER_TEMP/result.json" ] || { echo "nothing sent"; exit 0; }
           git config user.name "github-actions[bot]"

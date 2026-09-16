@@ -38,6 +38,13 @@ account - hence the dedicated throwaway account below, not the owner's own.
 Everything in this section is the owner's to do by hand; no agent can perform
 any of it (it needs a phone, a Telegram login, and repository settings).
 
+**Steps A-G are done** (2026-09-11 to 2026-09-14): the throwaway account and
+its credentials exist, the first full reindex finished, and its result -
+`tools/tg-preview/state.json`, 1062 URLs - is committed. They are kept here
+as the procedure for a future cold reindex (a new account, a rotated session,
+or a state file nobody trusts any more). **H-J are the CI side**, and that is
+what is live now.
+
 **A. The throwaway account.**
 
 1. Get a phone number that is not the one on the owner's own Telegram
@@ -230,26 +237,77 @@ the account is allowed to talk to it.
      Then a reindex reporting mostly `new` is literal and true.
    Report whichever it is.
 
-**H. Repository secrets.** GitHub -> the repository -> Settings -> Secrets
-and variables -> Actions -> New repository secret, three times, the same
-values as `.env`: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION`.
+**H. Repository secrets - done.** `TG_API_ID`, `TG_API_HASH` and `TG_SESSION`
+exist as repository secrets. Kept here for rotation: GitHub -> the repository
+-> Settings -> Secrets and variables -> Actions -> New repository secret,
+three times, the same names and the same values as `.env`. The job reads
+nothing else.
 
-**I. First CI run.** Actions -> `previews` -> Run workflow -> mode
-`incremental`, dry run **on**. Read the job summary. Then the next push to
-`main` runs it for real: `deploy` first, then `previews`, then a commit
-`chore(tg-preview): record refreshed previews [skip ci]` appears on `main`
-whenever something was sent.
+**I. The first CI run - what happens, and what to do while it happens.**
 
-**J. Rotation and shutdown.** Telegram -> Settings -> Devices -> terminate
-the tool's session; delete the `TG_SESSION` secret and the `.env` line. To
-stop the automation without touching the account, delete the three secrets:
-the job then exits 0 with a notice.
+1. **Merge the branch into `main` and push.** That push is the trigger:
+   `check` runs, `deploy` publishes, and `previews` fires on `workflow_run`
+   **by itself**. There is no separate "turn it on"; the merge is the switch.
+2. **While `check` is still running, dispatch a dry run:** Actions ->
+   `previews` -> Run workflow -> `mode: incremental`, `dry_run: on`, `limit`
+   empty. It starts immediately (a dispatch does not wait for `check`), makes
+   no Telegram contact, and its job summary carries one line:
+   `dry run: N url(s) stale ...`. Expect `N` on the order of 125-135: the 94
+   frame stubs and the root whose `og:description` changed on `main` after the
+   local reindex, plus the 30 records added since. That number is the backlog
+   CI is about to work through; it is not a sign the state was lost (a lost
+   state reads `1092 urls stale`).
+3. **Read the automatic run's summary** when it finishes: expect
+   `refreshed 50, pending ~80, stopped: press budget reached` and a second
+   line `pressed 50 (photo id new ..., same ..., none ..., unseen ...)`, a
+   `::warning::` about the pending count, and within a minute a commit
+   `chore(tg-preview): record refreshed previews [skip ci]` on `main` by
+   `github-actions[bot]`. If `phase 1: pressed N` with `N > 0` appears in the
+   step log, the run found the local reindex's old button messages for
+   now-stale URLs and pressed them without a send - the design working, and
+   the moment to do point 5.
+4. **Then leave it alone.** The schedule (every four hours at :23) runs the
+   next chunk until a run reports `pending 0`; after that every scheduled run
+   is `nothing to refresh` and costs a minute of runner time. Nothing needs a
+   push to keep going.
+5. **Spot-check - and this time the text tells you.** Paste
+   `https://artex-x.github.io/daggerheart-loot/i/f1.html` (or any `f<n>` the
+   summary confirmed) into Saved Messages: the description should start with
+   `Прочее · Сеттинги · Пир зверей.` - the change `main` made. Old text with
+   the URL recorded as refreshed would mean a press-only recovery does **not**
+   refresh metadata; report it. This is cheaper and less ambiguous than
+   comparing pictures, because the change this time is in the words.
+6. **What a red run means from now on - and only these:** a missing or dead
+   credential (`missing required env var: TG_SESSION`, or a revoked session -
+   redo step D.3 and update the secret), a crash (`tg-preview run failed: ...`
+   in the log - report it), a failed `npm audit`, or a state push refused
+   three times (branch protection). A run that hit the 50-minute wall is
+   **green** with `timed out after 50 minutes; pending urls are picked up by
+   the next run` in its summary, and so is every Telegram-side stop. A red run
+   whose cause is not on this list is itself worth reporting.
+
+**J. Rotation and shutdown.** To rotate: Telegram -> Settings -> Devices ->
+terminate the tool's session; redo step D.3; update the `TG_SESSION` secret
+and the `.env` line. To **pause** the automation quietly: Actions ->
+`previews` -> "..." -> Disable workflow (re-enable the same way; nothing else
+to undo). To **stop it loudly**: delete the `TG_SESSION` secret - every run is
+then red with the variable named, on purpose, so a forgotten stop cannot pass
+for a healthy one. Deleting the state file is neither: it makes the next run
+treat all 1092 URLs as stale and start the whole reindex over, 50 presses per
+run.
+
+Two things GitHub does on its own, so a silent stop has a known cause:
+scheduled workflows are **disabled after 60 days without a push** to the
+repository (any push re-enables them), and a scheduled run can be delayed by
+minutes at busy times.
 
 ## Operations
 
 - `node tools/tg-preview/run.mjs --dry-run --mode full` previews the full
   reindex: counts, the first three batches, and anything the live check
   found not yet caught up - sends and writes nothing, needs no credentials.
+  In CI the counts line is also written to the job summary, so a dispatched
+  dry run answers "how big is the backlog?" without opening the step log.
 - `--only id1,id2` narrows to specific record ids; `root` means the site
   root. Combine with `--dry-run` for a one-URL preview, or without it to
   refresh one thing by hand.
@@ -285,11 +343,14 @@ the job then exits 0 with a notice.
   `unseen` means the press went out but the message could not be re-read
   afterwards, so the tool does not claim to know its photo id either way.
 - What turns the CI job red: a crash or a dead/missing credential (`Refresh`
-  exiting 1 or 2), a failed `npm audit --audit-level=high`, or a failed state
-  push after three retries. A Telegram-side stop (`PeerFloodError`, a budget
-  stop, `@WebpageBot`'s own attempt throttle) is green with a recorded
-  backlog, because the site itself is already live and a red job would say
-  something false about it.
+  exiting 1 or 2 - a missing secret is red, with the variable named and never
+  valued), a failed `npm audit --audit-level=high`, or a failed state push
+  after three retries. A Telegram-side stop (`PeerFloodError`, a budget stop,
+  `@WebpageBot`'s own attempt throttle) is green with a recorded backlog,
+  because the site itself is already live and a red job would say something
+  false about it - and so is a run that hit the 50-minute wall, which is green
+  with `timed out after 50 minutes; pending urls are picked up by the next
+  run` in the job summary.
 - `--mode full` ignores the committed state when deciding what is stale (it
   still records into it). It is a single deliberate pass for a state you do
   not trust, **not** how to chunk a reindex: every URL is stale on every
@@ -309,8 +370,9 @@ the job then exits 0 with a notice.
 ## What CI does after a deploy
 
 `.github/workflows/previews.yml` runs on `workflow_run` of `check` (only
-when it succeeded, only on `main`) and on demand
-(`workflow_dispatch`, with `mode`/`dry_run`/`limit` inputs). It checks out
+when it succeeded, only on `main`), **every four hours at :23** on a
+`schedule`, and on demand (`workflow_dispatch`, with `mode`/`dry_run`/`limit`
+inputs). It checks out
 the commit `check` just verified, reads `tools/tg-preview/state.json` from
 the freshest `main` (not necessarily the checked-out commit - a refresh
 committed between two quick pushes must not be re-sent), runs the tool, and
@@ -319,6 +381,35 @@ if anything was sent, commits the updated state back to `main` as
 `check` or another `previews` run. It never blocks a deploy: `deploy`
 finished before `previews` started, and holds `contents: write` on no job but
 this one.
+
+**Why a schedule as well as a push.** A run that stops on the bot's attempt
+throttle or on the press budget leaves work pending, and `workflow_run` alone
+would strand it until somebody pushed again. Every four hours is four times
+the one measured cooldown (3213 s), so a backlog of ~130 URLs drains in about
+half a day and a full 1062-URL re-fingerprint in under four days, with no
+push at all. An idle scheduled run makes **no Telegram contact** - it prints
+`nothing to refresh` before the live check and before the client is ever
+loaded - and costs about a minute of runner time. GitHub disables a scheduled
+workflow after 60 days without a push to the repository; any push re-arms it,
+and runs can be delayed by minutes at busy times.
+
+**Three clocks, nested**: `--budget-minutes 40` (the tool's own deadline,
+checked before every send and press) inside `timeout --kill-after=30s 50m`
+around `node` (the hard stop for a hang the deadline cannot see) inside the
+job's `timeout-minutes: 60` (which leaves the record step its room). The
+record step runs `if: always()`, so what a failed run confirmed is still
+committed.
+
+**A red run means the next run will not fix it.** Only these turn the job
+red: a dead or missing credential (exit 2, the variable named and never
+valued), a crash (exit 1), a failed `npm audit --audit-level=high`, or a
+state push refused three times. Every Telegram-side stop - `PeerFloodError`,
+a flood wait past `--max-wait`, the press budget, the deadline,
+`@WebpageBot`'s attempt throttle - is green with the backlog recorded, and so
+is a run killed at the 50-minute wall: exit `124`/`137` is mapped to green
+with `timed out after 50 minutes; pending urls are picked up by the next run`
+in the job summary. There is no `continue-on-error` anywhere, because it
+would erase the honest reds along with the noisy ones.
 
 ## Rate limiting and resumability
 

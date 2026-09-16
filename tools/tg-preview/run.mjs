@@ -113,7 +113,13 @@ async function main() {
     },
     writeResult: opts.resultPath
       ? async (result) => {
-          writeFileSync(opts.resultPath, JSON.stringify(result, null, 2) + '\n');
+          // Atomic like the state write: CI now hard-kills a hung run
+          // (previews.yml's `timeout --kill-after`), and a KILL landing
+          // mid-write would leave a truncated result.json that `--apply`
+          // cannot parse - dropping every press the run confirmed.
+          const tmp = opts.resultPath + '.tmp';
+          writeFileSync(tmp, JSON.stringify(result, null, 2) + '\n');
+          renameSync(tmp, opts.resultPath);
         }
       : null,
     log
@@ -154,6 +160,17 @@ async function main() {
     if (result.pending.length > 0 && result.exitCode === 0) {
       console.log('::warning::' + result.pending.length + ' url(s) still pending a refresh');
     }
+  } else if (process.env.GITHUB_STEP_SUMMARY) {
+    // runRefresh already logged the counts to stdout; mirror them into the
+    // job summary so a dispatched dry run answers "how big is the backlog?"
+    // without opening the step log (docs/tg-preview.md step I.2).
+    const dryLine =
+      'dry run: ' +
+      result.pending.length +
+      ' url(s) stale' +
+      (result.notLive.length ? ', ' + result.notLive.length + ' not live' : '') +
+      ', nothing sent';
+    writeFileSync(process.env.GITHUB_STEP_SUMMARY, dryLine + '\n', { flag: 'a' });
   }
   process.exitCode = result.exitCode;
 }

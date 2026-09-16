@@ -1091,7 +1091,19 @@ describe('runRefresh', () => {
     const fake = fakeClient({ incoming: [[]], send: [], press: [] });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     await runRefresh({ mode: 'full', pressLimit: 2 }, deps);
-    assert.ok(deps.logs.some((l) => l.includes('--mode full') && l.includes('2')));
+    assert.ok(deps.logs.some((l) => l.includes('--mode full') && l.includes('press budget of 2')));
+  });
+
+  it('a dry run under --mode full logs the warning without loading the client', async () => {
+    const manifest = fakeManifest(4); // 5 urls
+    const deps = baseDeps(manifest, {
+      clientFactory: async () => {
+        throw new Error('must not connect');
+      }
+    });
+    await runRefresh({ mode: 'full', dryRun: true, pressLimit: 2 }, deps);
+    assert.ok(deps.logs.some((l) => l.includes('--mode full cannot finish')));
+    assert.equal(deps.written.length, 0);
   });
 
   it('does not warn under --mode full when the press budget covers the stale count', async () => {
