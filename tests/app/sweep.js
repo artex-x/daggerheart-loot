@@ -48,6 +48,13 @@ const PAGES = [
   ['#/i/cc1', 'карточка сообщества'],
   ['#/i/f1', 'карточка фрейма'],
   ['#/i/nope', 'предмета нет'],
+  /* The four craft-heavy worst cases craftmob.js:7 swept - the mobile craft
+   * block and the dice bar overflow checks below need a page that actually
+   * draws `.craft`/`.rcraft`/`.dicebar`/`.numrow`. */
+  ['#/i/w65', 'карточка с крафтом (худший случай 1)'],
+  ['#/i/w3', 'карточка с крафтом (худший случай 2)'],
+  ['#/i/ci19', 'карточка с крафтом (худший случай 3)'],
+  ['#/i/w2', 'карточка с крафтом (худший случай 4)'],
   ['#/search', 'поиск'],
   ['#/roll/core', 'старая ссылка'],
   ['#/nowhere', 'неизвестный адрес -> раздел по умолчанию'],
@@ -241,8 +248,10 @@ async function focusWalk(page, where) {
         }
         await page.evaluate(() => window.scrollTo(0, 0));
 
-        const rep2 = await page.evaluate(() => {
-          const out = { ids: [], noName: [], clipped: [], badLinks: [], undef: false, overflow: 0 };
+        const rep2 = await page.evaluate((w) => {
+          const out = {
+            ids: [], noName: [], clipped: [], badLinks: [], undef: false, overflow: 0, craftBad: []
+          };
           out.overflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
           out.undef = /\bundefined\b/.test(document.body.innerText);
 
@@ -270,11 +279,29 @@ async function focusWalk(page, where) {
           });
 
           document
-            .querySelectorAll('.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum')
+            .querySelectorAll(
+              '.card-name a, .card-name span, .badge, .chip, .fpill, .btn, .lbl, .rnum, ' +
+                '.craft, .rcraft, .dicebar, .numrow'
+            )
             .forEach((e) => {
               if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflow !== 'visible')
                 out.clipped.push((e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 28));
             });
+
+          /* craftmob.js:22-42's three extra reads on the craft block, ported
+           * onto the same walk rather than a second one: a spill past either
+           * edge, a caption squeezed under 60px, and a craft link under the
+           * 12px tap-height floor. */
+          document.querySelectorAll('.craft, .rcraft, .dicebar, .numrow').forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (r.right > w + 1) out.craftBad.push(el.className + ' вылезает за правый край (' + Math.round(r.right) + ')');
+            if (r.left < -1) out.craftBad.push(el.className + ' вылезает за левый край');
+            if (r.height > 0 && r.width < 60) out.craftBad.push(el.className + ' сжат до ' + Math.round(r.width) + 'px');
+          });
+          document.querySelectorAll('.craft a').forEach((a) => {
+            const r = a.getBoundingClientRect();
+            if (r.height < 12) out.craftBad.push('ссылка крафта высотой всего ' + Math.round(r.height) + 'px');
+          });
 
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
@@ -283,7 +310,7 @@ async function focusWalk(page, where) {
             if (!known) out.badLinks.push(h);
           });
           return out;
-        });
+        }, width);
 
         const landed = await page.evaluate(() => location.hash);
         if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(asked))
@@ -300,6 +327,7 @@ async function focusWalk(page, where) {
         ok(!rep2.noName.length, where + ': элемент без имени — ' + rep2.noName.slice(0, 3).join(', '));
         ok(!rep2.clipped.length, where + ': текст обрезан — ' + rep2.clipped.slice(0, 3).join(' | '));
         ok(!rep2.badLinks.length, where + ': ссылка в никуда — ' + rep2.badLinks.slice(0, 3).join(', '));
+        ok(!rep2.craftBad.length, where + ': крафт — ' + rep2.craftBad.slice(0, 3).join(' | '));
 
         if (/^таблица/.test(label)) {
           const strip = await page.evaluate(() => {

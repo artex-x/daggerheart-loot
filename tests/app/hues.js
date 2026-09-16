@@ -132,6 +132,43 @@ const gap = (a, b) => {
     ok(one[0]?.look === std[0]?.look, h + ': кнопка броска выглядит иначе, чем на обычных таблицах');
   }
 
+  /* Equipment's stat line keeps one tone everywhere across the three
+   * equipment tables - the kind is told by the badge, not by a second colour
+   * on the numbers (`eqtest.js:207-218`). */
+  console.log('характеристики снаряжения одного тона');
+  const statColour = async (hash) => {
+    await d.open(hash);
+    return page.$$eval('.rows .row .rstats', (els) => [...new Set(els.map((x) => getComputedStyle(x).color))]);
+  };
+  const csw = await statColour('#/tables/eq_weapon');
+  const css = await statColour('#/tables/eq_secondary');
+  const csa = await statColour('#/tables/eq_armor');
+  ok(
+    new Set([].concat(csw, css, csa)).size === 1,
+    'характеристики снаряжения окрашены по-разному: ' + [csw, css, csa].join(' | ')
+  );
+
+  /* A selected tile has its own fill, read off the rendered page rather than
+   * grepped out of style.css (craftmob.js:68-71) - the same claim, made
+   * against the app R0c keeps. */
+  console.log('заливка выбранной плитки');
+  await d.open('#/tables/eq_weapon');
+  await d.press('Сеткой');
+  await d.click('Выбрано');
+  const selFill = await page.evaluate(() => {
+    const el = document.querySelector('.tilewrap.sel .tile');
+    return el ? getComputedStyle(el).backgroundColor : null;
+  });
+  const plainFill = await page.evaluate(() => {
+    const el = document.querySelector('.tilewrap:not(.sel) .tile');
+    return el ? getComputedStyle(el).backgroundColor : null;
+  });
+  ok(!!selFill, 'выбранная плитка: .tilewrap.sel .tile не найден');
+  ok(
+    !!plainFill && selFill !== plainFill,
+    'выбранная плитка не отличается своей заливкой: ' + selFill + ' vs ' + plainFill
+  );
+
   await ctx.close();
   await closeBrowser();
   console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nцвета ярлыков (dist/): все различимы по тону');
