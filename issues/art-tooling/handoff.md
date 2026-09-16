@@ -3,139 +3,132 @@
 
 ## Status
 - Task status: in_progress
-- Last agent: implementer (B1)
+- Last agent: planner (plan revision r2 - ingest scope)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `tooling/art-refresh` in worktree
   `E:/dev/daggerheart-loot-wt/tg-preview-refresh`
-- Base / starting commit: `e2ada3f` (tree clean at dispatch, orchestrator-
-  verified). `origin/main` moved during this batch: re-read at commit time it
-  was `2ce3b08` / `80809c8` / `e2ada3f` - the two new commits are the peer
-  session's hook fix for the Linux `check` failure named in the dispatch
-  (`.claude/hooks/selftest.mjs` #126-128). Not adopted, not touched, per the
-  dispatch's instruction; this branch was not rebased onto them.
+- Base / starting commit for the next batch: `db52655`, tree clean.
+  `origin/main` re-read by the planner at r2: `2ce3b08` / `80809c8` /
+  `e2ada3f`. The two commits ahead of the merge base are a peer session's fix
+  for the Linux-only `.claude/hooks/selftest.mjs` failure. This branch was
+  deliberately **not** rebased onto them and `.claude/hooks/**` is not touched
+  by any batch here. A peer session and a CI bot both push to `main`; re-read
+  `git log --oneline -3 origin/main` before committing.
 
 ## Completed
-- Batch name/id: B1 - machine-readable stale list (`plan.md` section 5.1)
-- What shipped:
-  - `tools/tg-preview/lib.mjs`: `--stale-list` in `FLAGS`/defaults; a
-    post-loop `parseArgs` check that it requires `--dry-run`; an
-    `emitStaleList(urls, notLiveUrls)` helper beside `baseResult()`, called
-    from both dry-run-reachable exits (`todo.length === 0` and the `dryRun`
-    branch) with sorted `stale`/`notLive` arrays and no timestamp.
-  - `tools/tg-preview/run.mjs`: a `writeStaleList` dep, wired only when
-    `opts.staleListPath` is set, using the same tmp-then-rename atomic write
-    as `writeResult`.
-  - `tools/tg-preview/lib.test.mjs`: 8 new cases (3 `parseArgs` flag-order
-    cases, 1 `applyResult` no-op-payload case, 4 `runRefresh` cases for
-    emit-once/`--only`/empty/non-dry-run), plus `baseDeps`'s `staleLists`
-    plumbing.
-  - `docs/tg-preview.md`: one bullet in "Operations" after `--no-verify`,
-    naming the flag, its `--dry-run` requirement, the payload keys, and its
-    purpose.
-  - `docs/specs/COVERAGE.md`: extended the `tools/tg-preview/lib.test.mjs`
-    paragraph with the stale-list writer's coverage.
-  - Planning docs from the dispatch: `issues/art-tooling/{context,plan,
-    handoff}.md` (committed first, per the dispatch's stated pattern).
-- Files changed: `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
-  `tools/tg-preview/run.mjs`, `docs/tg-preview.md`,
-  `docs/specs/COVERAGE.md`, plus the three `issues/art-tooling/*.md` files.
-- Commit(s):
-  - `fde756c` - `docs(art-tooling): record planning pass for the
-    artwork-tooling task` (the three issue docs, gate-exempt)
-  - `977b8a7` - `feat(tg-preview): add --stale-list, a machine-readable
-    dry-run stale set` (the B1 code + docs)
-- Deviations and rationale: none from section 5.1's steps. Confirmed against
-  the actual file list that `npm run check:built` is not required: no batch
-  file touches `app/`, `data.js`, `img/`, `og/`, `i/` or `dist/`.
+
+### B1 - machine-readable stale list (shipped)
+- `tools/tg-preview/lib.mjs` / `run.mjs` / `lib.test.mjs`: `--stale-list
+  <path>`, dry-run only, emitted from both dry-run-reachable exits, sorted
+  `stale`/`notLive`, no `urls` key, no timestamp. `docs/tg-preview.md` and
+  `docs/specs/COVERAGE.md` document it.
+- Commits: `fde756c` (planning docs), `977b8a7` (B1 code + docs),
+  `db52655` (B1 handoff record).
+- Verified: `node --test tools/tg-preview/lib.test.mjs` -> 104/104 (96 + 8);
+  a real `--dry-run --no-verify --stale-list` run wrote `stale.length === 143`
+  matching the logged `143 urls stale`; a repeat run produced a byte-identical
+  file; the `lib.mjs` diff is confined to `FLAGS`, `parseArgs`, the `deps`
+  destructure and the two dry-run exits; `state.json` unchanged and unstaged;
+  one foreground `npm run check` green (vitest 1035/1035, 42 files, no
+  threshold failures). `npm run check:built` not required, confirmed against
+  the file list.
+
+### Planner pass r2 - the ingest question (this pass, no code)
+- The owner asked whether the artwork tooling should serve new-item ingest as
+  well as replacement. **Yes.** `plan.md` section 0 carries the revision
+  history; the five decisions are settled in sections 3.4, 3.6, 3.7 and 3.8.
+- Renames made now, before the directory exists and at zero cost:
+  `tools/art-refresh/` -> **`tools/artwork/`**, `docs/art-refresh.md` ->
+  **`docs/artwork.md`**. Agent and prompt filenames are unchanged.
+- B2 and B3 are both rewritten to implement-ready form (`plan.md` 5.2, 5.3).
+- Files written this pass: `issues/art-tooling/plan.md`,
+  `issues/art-tooling/handoff.md`, `issues/art-tooling/context.md`.
 
 ## Verification
-- Commands run (exact), in order:
-  - `node --test tools/tg-preview/lib.test.mjs` -> `tests 104`, `pass 104`,
-    `fail 0` (96 existing + 8 new, matching the plan's acceptance criterion).
-  - `node tools/tg-preview/run.mjs --dry-run --no-verify --stale-list
-    <scratchpad>/stale-b1.json` -> logged `143 urls stale, 143 ready, ...`;
-    the written file's `stale.length` is `143` (checked by parsing the JSON),
-    matching the logged count exactly. `notLive.length` is `0`.
-  - Ran the same command again to `<scratchpad>/stale-b1-run2.json`; `diff`
-    against the first file reports the files identical - byte-identical
-    repeat runs confirmed.
-  - `git diff --stat tools/tg-preview/lib.mjs` / full diff, inspected: every
-    hunk is in `FLAGS`, the `parseArgs` defaults/validation, the
-    `runRefresh` deps destructure, or the two dry-run-reachable exits -
-    nothing else changed, and no reformatting occurred (`tools/` stayed
-    untouched by prettier/eslint, which don't run over it anyway).
-  - `git status --porcelain tools/tg-preview/state.json` -> empty; the file
-    is unchanged and was never staged.
-  - Checked for a live peer run before the heavy gate: `tasklist | grep -i
-    chrome.exe` -> none; no other project-specific heavy process found.
-  - One foreground call: `set -o pipefail; npm run check 2>&1 | tail -n
-    120` (Bash `timeout: 600000`) -> ran `format:check`, `lint`,
-    `typecheck`, `node --check tools/check-site.mjs`, `npm run data`,
-    `tests/derived.js`, `tests/i18n.js`, `.claude/hooks/selftest.mjs`,
-    `node --test tools/tg-preview/lib.test.mjs` (104/104), then `npm run
-    test` (vitest): `Test Files 42 passed (42)`, `Tests 1035 passed (1035)`,
-    coverage summary printed with no threshold failures. The call completed
-    with no error signalled by the tool (contrast: a later unrelated `grep`
-    pipe in this session was rejected by the RTK hook and did surface an
-    "Exit code 1" annotation, so the check call's silence is meaningful).
-    This is the Windows worktree the dispatch says the hook issue does not
-    reproduce on; consistent with that, nothing here touched
-    `.claude/hooks/**`.
-- Results: acceptance criteria in `plan.md` section 5.1 all met - test
-  count, logged-count match, byte-identical repeat runs, confined `lib.mjs`
-  diff, untouched `state.json`, both docs updated, no dependency added to
-  any `package.json`.
-- Gates: `node --test tools/tg-preview/lib.test.mjs` green (104/104); one
-  foreground `npm run check` green. `npm run check:built` was not run - not
-  required, confirmed above.
+- Planner pass r2 ran no gates: it wrote only `issues/art-tooling/*.md`.
+- Measurements taken this pass and recorded in `context.md` so nobody
+  re-derives them: 1091 records all carrying `img`; 875 distinct assets; 72
+  shared assets; 876 `img/*.webp` (875 used + `_none.webp`); 877 `og/*.jpg`
+  (875 + `_none.jpg` + `_share.jpg`); `q24.webp` serves `q24`/`q70`/`q138`/
+  `q205`, all four with `eq.line === 'q24'`. `tests/dataint.js` guards `img/`
+  orphans, duplicate bytes and one-line-only sharing, and has **no `og/`
+  orphan check**. `npm run check` does not run `tests/dataint.js`. `tests/`
+  and `tools/` are both prettier-ignored and eslint-ignored.
+- B1's gate results are above and stand.
 
 ## Next batch
 
-- **Name:** B2 - `tools/art-refresh/` (the mapping/convert/install/verify
-  tool)
-- **Status:** outline only, in `plan.md` section 5.2 - **not yet
-  implement-ready**. Per this repo's protocol, report status and this next
-  batch, then wait for confirmation before expanding it or starting it.
-- **Objective:** one tested tool performing everything `art-to-fix`
-  re-derived from prose: inventory, mapping, conversion, atomic install,
-  byte verification, and the preview-staleness proof - the last of which
-  consumes the `--stale-list` file format B1 just landed.
-- **Outline location:** `plan.md` section 5.2 has the settled `lib.mjs` /
-  `run.mjs` API surface, file list, and acceptance criteria; it needs
-  expansion to step-by-step form (as section 5.1 had) before an implementer
-  starts it.
+- **Name:** B2 - `tools/artwork/`, the replacement path end to end
+- **Status:** **implement-ready** - `plan.md` section 5.2 has the objective,
+  scope, exact file list, eleven ordered steps, per-line acceptance criteria,
+  verification commands, risks/do-nots and a named fallback.
+- **Objective:** one tested tool performing everything `art-to-fix` re-derived
+  by hand for a replacement - inventory, mapping, conversion, atomic install,
+  byte verification, and the preview-staleness proof over B1's `--stale-list`
+  files.
+- **Shape:** a sibling npm project modelled on `tools/tg-preview/` - its own
+  `package.json` + lockfile carrying `sharp`, root `package.json` gaining one
+  `check` step and **no dependency**. Pure `lib.mjs` (`normalizeName`,
+  `indexRecords`, `planInstall`, `affectedStubUrls`, `staleDelta`) with a
+  `node --test` suite; impure `run.mjs` with the verbs `plan`, `install`,
+  `verify`, `verify-previews` and the only `await import('sharp')` in the
+  repository.
+- **Gates:** `node --test tools/artwork/lib.test.mjs`;
+  `node --test tools/tg-preview/lib.test.mjs`; one foreground
+  `set -o pipefail; npm run check 2>&1 | tail -n 120` with Bash
+  `timeout: 600000`. **`npm run check:built` is not required** - no file this
+  batch touches alters what a screen draws.
+- **Hard do-nots:** never run `install`/`verify` against the repository's own
+  `img/`/`og/` (use a scratch tree); never invoke
+  `tools/tg-preview/run.mjs` without `--dry-run`; do not touch
+  `.claude/hooks/**`; do not edit either prompt or `tests/dataint.js` (B3);
+  do not reformat anything under `tools/` or `tests/`.
+- **Fallback if `sharp` will not install:** land `lib.mjs`, its suite, the
+  `plan` and `verify-previews` verbs, the `check` step and every
+  documentation change; defer `install`/`verify` with the exact `npm install`
+  failure recorded. Do not switch toolchains.
 
 ## Blockers
-- None on B1, which is complete. B2 needs its outline expanded to
-  implement-ready detail (planner work) before an implementer starts it -
-  see `plan.md` section 5.2 and the "Next batch" note above.
+- None. Nothing here needs an owner decision before an implementer starts.
+  The one judgment deliberately left to a future task - whether
+  `tests/dataint.js` should join `npm run check` - is recorded in `plan.md`
+  section 8 with its measured cost, and B2/B3 do not depend on it.
 
 ## Deferred
-- B2 - `tools/art-refresh/`: outline and settled API surface in `plan.md`
-  section 5.2. Expand to implement-ready detail now that B1 has landed.
-- B3 - prompt slimming, runbook cross-links and the `.claude/README.md`
-  record: outline in `plan.md` section 5.3. Last, because the prompt must name
-  the tool's final flags.
+- **B3** - the ingest verb (`planIngest`, the `ingest` verb with its inverted
+  destination precondition), the missing `og/` orphan check in
+  `tests/dataint.js` and its negative test, `docs/artwork.md`'s ingest
+  section, the art edits to `add-source.prompt.md`, and the Phase 4/5
+  slimming of `refresh-artwork.prompt.md`. Implement-ready in `plan.md`
+  section 5.3, with an intra-batch seam named (stop after the runbook's
+  ingest section; take the two prompts as B3b) if it will not close in one
+  pass.
+- Moving `node tests/dataint.js` into `npm run check`: `plan.md` section 8.
 - A `--stale-list` equivalent on the live send path: no caller.
-- Any acceptance-ledger schema: no producer. `--map <file>` is the escape
-  hatch instead.
-- `issues/dh-image-polish/refresh_artwork.py` is deleted by **B2**, not by
-  this pass, and B2's acceptance criteria carry that deletion and the
-  `.claude/README.md` candidate-39 amendment as their own lines.
+- Any acceptance-ledger schema: no producer; `--map`'s `assign` key is the
+  escape hatch.
+- `issues/dh-image-polish/refresh_artwork.py` is deleted by **B2**, whose
+  acceptance criteria carry that deletion and the `.claude/README.md`
+  candidate-39 amendment as their own lines.
 
 ## Notes
 - Mocks path: none. This task has no visual surface.
 - Screenshot findings: none.
-- Cleanup performed / retained artifacts: nothing created outside
-  `issues/art-tooling/` and the code B1 shipped. The two `stale-b1*.json`
-  proof files live only in the session scratchpad, never in the repository.
-- Session end partial progress (if any): none - B1 is complete and committed
-  at a coherent boundary (`fde756c`, `977b8a7`).
-- The one fact most likely to be re-derived by a later session, so it is here
-  as well as in `context.md`: `tools/**` is outside the vitest coverage
-  thresholds (`vite.config.mts` has `root: 'app'`, `coverage.include: src/**`),
-  outside `eslint .` (`eslint.config.mjs` ignores `tools/**`) and outside
-  `prettier --check` (`.prettierignore` lists `tools/`). The house obligation
-  for a new `tools/` file is a `node --test` suite wired into
-  `npm run check` and a paragraph in `docs/specs/COVERAGE.md`, not a coverage
-  percentage.
+- Cleanup performed / retained artifacts: this pass wrote only the three
+  `issues/art-tooling/*.md` files. B1's `stale-b1*.json` proof files lived
+  only in the session scratchpad and were never in the repository.
+- Session end partial progress: none. B1 is committed at a coherent boundary;
+  r2 is a documents-only pass.
+- The facts most likely to be re-derived by a later session, so they are here
+  as well as in `context.md`:
+  - `tools/**` and `tests/**` are outside the vitest coverage thresholds
+    (`vite.config.mts` has `root: 'app'`), outside `eslint .`
+    (`eslint.config.mjs` ignores both) and outside `prettier --check`
+    (`.prettierignore` lists both). The house obligation for a new `tools/`
+    file is a `node --test` suite wired into `npm run check` plus a paragraph
+    in `docs/specs/COVERAGE.md`, not a coverage percentage.
+  - `npm run check` does **not** run `tests/dataint.js`. The artwork
+    invariants it holds are reached only by `node tests/run-all.js dataint`,
+    which is why B3 makes both prompts name that command.
+  - A record may legitimately ship with `img: ''`; it renders `_none.webp`
+    and `tests/noart.js` pins that path. Ingest must report it, not fail on it.

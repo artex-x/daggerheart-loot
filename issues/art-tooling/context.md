@@ -11,7 +11,16 @@ that just finished (`art-to-fix`). The owner's question: "should we update that
 prompt / convert to skills / introduce new items in tools given insights
 retrieved by that agent to simplify art update work in future?"
 
-This task produces `issues/art-tooling/{context,plan,handoff}.md` only. No
+**Scope widened at r2, 2026-09-16.** The owner then asked: "should we also
+write it to add source so it knows how to transform images etc when adding new
+items, not only refreshing existing?" Answer: yes. The tooling serves both
+callers - `.claude/prompts/refresh-artwork.prompt.md` (replacement) and
+`.claude/prompts/add-source.prompt.md` (ingest) - from one library, one entry
+point and one runbook. The tool is `tools/artwork/`, the runbook
+`docs/artwork.md`; `tools/art-refresh/` / `docs/art-refresh.md` were r1 names
+and were never created.
+
+The planner writes `issues/art-tooling/{context,plan,handoff}.md` only. No
 production code is written by the planner.
 
 ## GitHub issue (if any)
@@ -35,6 +44,9 @@ production code is written by the planner.
 | `docs/specs/COVERAGE.md` (the `tools/tg-preview/lib.test.mjs` paragraph, ~line 302) | how a `tools/` suite is documented |
 | `issues/art-to-fix/{context,handoff}.md` | the measured delivery this task reacts to |
 | `issues/dh-image-polish/refresh_artwork.py` | a **tracked** 161-line Pillow installer left in an issue directory by the third refresh |
+| `.claude/prompts/add-source.prompt.md` | the second caller, added to scope at r2; its art guidance is three sentences (line 45, Phase 1 step D, Phase 2 step 5) |
+| `tests/dataint.js` | holds every executable artwork invariant: `img/` orphans (~167), one-line-only sharing (~180), duplicate bytes (~231), per-record `img`/`og` existence (~157). No `og/` orphan check. |
+| `tests/noart.js` | pins the `img: ''` -> `_none.webp` render path, so "record now, art later" is a legal ingest outcome |
 
 ## Measured by the planner, 2026-09-16 (do not re-measure)
 
@@ -113,6 +125,78 @@ otherwise raise; resize to 640x640 Lanczos; WebP quality 85 / method (effort)
 6 / lossy; JPEG quality 80 / progressive / 4:2:0 / optimize; no metadata.
 `art-to-fix` measured them byte-deterministic across repeated runs.
 
+## Measured by the planner at r2, 2026-09-16 (do not re-measure)
+
+Added when the owner asked whether the tooling should serve **new-item ingest**
+as well as replacement.
+
+### Catalog asset census
+
+`node -e` over `data.js` + `tools/derived.js` + the two asset directories, this
+worktree, commit `db52655`:
+
+| Quantity | Value |
+|---|---|
+| records (`everything(L)`) | 1091 |
+| records carrying a non-empty `img` | 1091 (all of them, today) |
+| distinct assets referenced | **875** |
+| assets referenced by more than one record | **72** |
+| `img/*.webp` files | 876 (875 used + the unreferenced `_none.webp`) |
+| `og/*.jpg` files | 877 (875 + `_none.jpg` + `_share.jpg`) |
+
+`q24.webp` serves `q24`, `q70`, `q138`, `q205`; all four carry
+`eq.line === 'q24'`. Same pattern at `f37.webp` -> `f37..f40`, and so on.
+
+### Which artwork rules are already executable, and which are not
+
+All of these live in `tests/dataint.js`:
+
+| Rule | Enforced? | Where |
+|---|---|---|
+| every record's `img/<img>` exists | yes | ~line 157 |
+| every record's `og/<img -> .jpg>` exists | yes | ~line 159 |
+| every `img/*.webp` is claimed by some record (`_none.webp` exempt) | yes | ~line 167 |
+| **every `og/*.jpg` is claimed** | **NO - the gap** | nothing checks it; a stray `og/<id>.jpg` passes every gate |
+| records sharing one asset are all in one `eq.line` (or are one record) | yes | ~line 180 |
+| no two `img/*.webp` hold identical bytes | yes | ~line 231 (md5) |
+| a record may ship with `img: ''` and render `_none.webp` | yes | `tests/dataint.js` skips falsy `img`; `tests/noart.js` pins the render |
+
+`tools/build-share-pages.js:112` derives the OG tag as
+`SITE + 'og/' + it.img.replace(/\.webp$/, '.jpg')` - from `img`, never from
+`id` - so the naming rule itself is executable. Only the **documentation**
+(`CONTRACTS.md` section 5) and the **`og/` orphan direction** are gaps.
+
+### `npm run check` does not run `tests/dataint.js`
+
+Measured against root `package.json`. `check` =
+`format:check` -> `lint` -> `typecheck` -> `node --check tools/check-site.mjs`
+-> `npm run data` -> `tests/derived.js` -> `tests/i18n.js` ->
+`.claude/hooks/selftest.mjs` -> `node --test tools/tg-preview/lib.test.mjs` ->
+`npm run test` (vitest). `dataint` and `noart` are reached only through
+`node tests/run-all.js <names>` (`npm run test:legacy`). So every artwork
+invariant above binds only when a prompt names that command.
+
+`dataint` is plain Node - no puppeteer - reads `data.js` and md5s 876 files, so
+adding it to `check` would cost a second or two. Its documented sibling `noart`
+does need puppeteer. See `plan.md` section 8.
+
+### `tests/**` is ignored by the same gates as `tools/**`
+
+`.prettierignore` lists both `tests/` and `tools/`; `eslint.config.mjs`'s
+`ignores` lists `tests/**`, `tools/**`, `.claude/**`, `app.js`, `data.js`,
+`i/**`. `tests/dataint.js` is CommonJS with Russian assertion messages. A file
+edited in either tree must match its neighbours by hand; a reformat produces a
+large diff no gate asked for.
+
+### What ingest needs that replacement does not
+
+Settled in `plan.md` 3.6 and not repeated here, except the one fact that drove
+it: the tool must **validate** the `img` value the agent wrote into `data.js`,
+not choose an asset id or infer sharing. That removes the whole "assign a
+filename" API surface and makes `og/<new-record-id>.jpg` structurally
+unreachable, because both planners key their write set by distinct asset value
+rather than by record.
+
 ## Command costs
 
 | Command | Wall clock | Fits one call? |
@@ -120,7 +204,8 @@ otherwise raise; resize to 640x640 Lanczos; WebP quality 85 / method (effort)
 | `npm run check` | ~165 s (see `.claude/README.md`, "Run a long check") | yes, with Bash `timeout: 600000` |
 | `npm run check:built` | not required by any batch here - nothing this task proposes alters what a screen draws | n/a |
 | `node --test tools/tg-preview/lib.test.mjs` | seconds; already a step inside `npm run check` | yes |
-| `node --test tools/art-refresh/lib.test.mjs` | seconds once it exists; pure, no image work | yes |
+| `node --test tools/artwork/lib.test.mjs` | seconds once it exists; pure, no image work | yes |
+| `node tests/run-all.js dataint` | seconds; md5s 876 files, no browser | yes |
 
 ## Which machine is authoritative
 
@@ -159,13 +244,18 @@ otherwise raise; resize to 640x640 Lanczos; WebP quality 85 / method (effort)
 - No model routing in any task document.
 - Never push; the owner pushes.
 
-## Repository state at dispatch
+## Repository state
 
 - Worktree `E:/dev/daggerheart-loot-wt/tg-preview-refresh`, branch
-  `art/to-fix-refresh`, tree clean.
-- `git log --oneline -3 origin/main` re-read by the planner, 2026-09-16:
-  `e2ada3f` (merge), `c3b2b88`, `7672f50` - the branch tip is already on
-  `main`. A peer session and a CI bot both push there; re-read before writing.
+  `tooling/art-refresh`, tree clean. Branch tip at r2: `db52655`.
+- At r1 dispatch the branch was `art/to-fix-refresh` and `origin/main` was
+  `e2ada3f` / `c3b2b88` / `7672f50`.
+- `git log --oneline -3 origin/main` re-read by the planner at r2, 2026-09-16:
+  `2ce3b08`, `80809c8`, `e2ada3f`. The two new commits are a peer session's
+  fix for the Linux-only `.claude/hooks/selftest.mjs` failure. This branch was
+  deliberately **not** rebased onto them, and no batch in this task touches
+  `.claude/hooks/**` - the peer session owns it. A peer session and a CI bot
+  both push to `main`; re-read before writing or committing.
 
 ## Do not re-fetch unless
 
