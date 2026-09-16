@@ -883,6 +883,32 @@ B11.1's nits were closed by B11.1 and B12.
   claiming "110 states" where `tests/app/inventory.js` says 105 - predates
   this batch, not introduced by it.
 
+- **PLACED for R0c: the ported print specs narrowed from two languages to one,
+  and R0c is where that becomes a real loss (reviewer via orchestrator,
+  2026-09-16).** `tests/parity/specs.js` ran `sheetCounts`, `cardFit`,
+  `printMedia` and `copiedPrintLink` at **`ru` and `en`** - `arrive()` presses
+  EN - and `copiedPrintLink` gripped the button through `NAME[lang].printLink`.
+  R0b.3's ported forms run **Russian only**, gripping `d.click('Ссылка на
+  набор')`. **Print fitting is text-length dependent** - it is the one surface
+  where a language changes the geometry - so after R0c an English-only fit
+  regression would be measured nowhere. The structural goldens cannot stand in:
+  every print `<img>` in `PrintCard.svelte` is `alt=""` (`:153,161,167,186,202,
+  251`), so a hidden `.pc-art` is invisible to `page.accessibility.snapshot()`,
+  and the goldens never read inline styles. **Nothing is lost yet** - the
+  legacy specs still run both languages until R0c deletes them, which is why
+  this is R0c's decision and not R0b.4's: it is outside every path R0b.4 opens
+  (`.claude/prompts/orchestrate.prompt.md`, "Nits: defer mid-plan, clear on the
+  terminal batch"). R0c's step list needs the choice made, not rediscovered:
+  give `tests/app/print.js` an English pass over at least `cardFit` and
+  `copiedPrintLink` before the deletion, or accept the narrowing with a
+  recorded reason in `COVERAGE.md`'s thin spots.
+  A second, smaller one from the same review: `printMedia`'s chrome loop is
+  `ok(!val || val.display === 'none', ...)` and `d.computed()` returns `null`
+  for no match (`tests/app/driver.js:660-679`, whose own comment says null
+  exists to "fail loudly rather than silently compare nothing to nothing"). As
+  a parity spec a `null` against a real value was a diff; standalone, a renamed
+  or deleted `.printbar`/`a.skip`/`header`/`nav`/`footer` now passes green.
+
 - **PLACED for R0c: `tests/parity/lock.js` is a live hook dependency R0c's
   outline does not name (planner, 2026-09-16).** It is imported by
   `tests/parity.js:33`, **`.claude/hooks/bash-guard.mjs:31`** and
