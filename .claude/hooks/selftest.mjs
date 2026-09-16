@@ -5,7 +5,7 @@
 // built once and reused, removed in a finally.
 //
 // See .claude/README.md, "Hooks", and issues/hooks-guardrails/plan.md
-// section 5, for the case list this file implements (numbered #1-#130
+// section 5, for the case list this file implements (numbered #1-#134
 // in the comments below).
 
 import { spawnSync } from 'node:child_process';
@@ -1557,26 +1557,17 @@ async function testTaskBudget() {
   }
 
   // This block's session gets its own state directory, isolated from every
-  // other test's sessions. saveState() (lib.mjs) prunes the shared state
-  // file to the 5 most recently active sessions, ranked by an `at`
-  // timestamp with SECOND granularity (nowSeconds()); when six or more
-  // sessions across the whole suite land in the same wall-clock second -
-  // routine on a fast CI runner running this file in a few seconds -
-  // Array.prototype.sort's comparator ties, the sort is stable, and the
-  // EARLIEST-created sessions (by object insertion order) survive, not the
-  // newest. That silently dropped this block's own `s-stop-budget` session
-  // on the GitHub-hosted runner (CI run on `e2ada3f`): recordWrite()'s
-  // entry for it was pruned before session-stop.mjs ever read it back,
-  // writtenPaths came back [], budgetSentences()'s prefix check failed, and
-  // no budget sentence fired - found via budgetDiagnostics() below, on its
-  // first real failure. A dedicated state directory removes the dependency
-  // on session count entirely (nothing else exists in this file to prune
-  // against), rather than making the tie merely less likely - a sleep
-  // would not fix this, since the failure is a count of concurrent
-  // sessions, not a delay. lib.mjs's saveState()/nowSeconds() themselves
-  // are left unchanged: that is production behaviour affecting every hook,
-  // and a design call for the human, not a test-remediation fix - see the
-  // handoff's Deferred section for the finding.
+  // other test's sessions, so #126-#130 depend on nothing the rest of the
+  // suite does to the shared state - not on session count, not on ordering.
+  // The production prune that once evicted this block's own `s-stop-budget`
+  // session on CI (GitHub-hosted runner, `e2ada3f`: recordWrite()'s entry
+  // was pruned before session-stop.mjs ever read it back, writtenPaths came
+  // back [], budgetSentences()'s prefix check failed, no budget sentence
+  // fired - found via budgetDiagnostics() below, on its first real failure)
+  // is fixed in lib.mjs's saveState() (the session being written is
+  // reserved before the rest are ranked; cap raised to MAX_SESSIONS) and
+  // pinned directly by #131-#134 below (task `hook-state-cap`). This
+  // block's isolation stays regardless, per that task's plan section 4.5.
   const taskBudgetState = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-budget-state-'));
   const previousStateDir = process.env.LOOT_HOOK_STATE_DIR;
   process.env.LOOT_HOOK_STATE_DIR = taskBudgetState;
@@ -1746,6 +1737,139 @@ async function testTaskBudget() {
   fs.rmSync(path.join(scratchRoot, 'issues/98'), { recursive: true, force: true });
 }
 
+// ---------- session-state cap and writer reservation (#131-#134) ----------
+// Task `hook-state-cap`: saveState() (lib.mjs) reserves the session being
+// written before ranking the rest, so it always survives its own save, and
+// raises the cap from 5 to MAX_SESSIONS. These cases pin that reservation,
+// the recency ranking, and the exact cap - all against a private state
+// directory, the same `testTaskBudget()` isolation shape, since these cases
+// deliberately saturate the file and must not disturb any other block's
+// sessions.
+
+async function testStateCap() {
+  const { recordWrite, getWrote, once, MAX_SESSIONS } = await import(
+    pathToFileUrlHref('lib.mjs')
+  );
+
+  const capState = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-cap-state-'));
+  const previousStateDir = process.env.LOOT_HOOK_STATE_DIR;
+  process.env.LOOT_HOOK_STATE_DIR = capState;
+
+  function readCapState() {
+    return JSON.parse(fs.readFileSync(path.join(capState, '.hook-state.json'), 'utf8'));
+  }
+
+  try {
+    // #131 - the writer survives its own write at saturation: this is the
+    // standalone probe from context.md (eight `other-*` writers then one
+    // writer, all inside one second), run at MAX_SESSIONS scale. Under the
+    // pre-fix prune (no reservation, cap 5) this is exactly the shape that
+    // silently dropped `s-stop-budget` on CI (config-audit B3, 2026-09-16).
+    // Which `other-*` ids survive alongside the writer is unspecified under
+    // a full tie (plan 4.3) and is not asserted.
+    for (let i = 1; i <= MAX_SESSIONS + 8; i++) {
+      recordWrite(`other-${i}`, 'app/src/lib/x.ts');
+    }
+    recordWrite('s-cap-writer', 'app/src/lib/x.ts');
+    {
+      const wrote = getWrote('s-cap-writer');
+      check(
+        '#131 writer survives its own write at saturation: its write is intact',
+        Object.keys(wrote).length === 1 && wrote['app/src/lib/x.ts'] !== undefined,
+        JSON.stringify(wrote)
+      );
+      const ids = Object.keys(readCapState().sessions);
+      check(
+        '#131 writer survives its own write at saturation: capped at MAX_SESSIONS, writer present',
+        ids.length === MAX_SESSIONS && ids.includes('s-cap-writer'),
+        `count=${ids.length} (MAX_SESSIONS=${MAX_SESSIONS}) ids=${JSON.stringify(ids)}`
+      );
+    }
+
+    // #132 - eviction is by least-recent `at`, and the cap is exact. Seed
+    // MAX_SESSIONS hand-made entries with distinct, ascending `at` (e-1
+    // oldest), all far in the past; one more write must evict exactly e-1.
+    {
+      const sessions = {};
+      for (let i = 1; i <= MAX_SESSIONS; i++) {
+        sessions[`e-${i}`] = { at: 1000000 + i, seen: [], wrote: {} };
+      }
+      fs.writeFileSync(path.join(capState, '.hook-state.json'), JSON.stringify({ sessions }));
+      recordWrite('s-cap-new', 'app/src/lib/x.ts');
+      const ids = Object.keys(readCapState().sessions);
+      check(
+        '#132 eviction is by least-recent at, and the cap is exact',
+        !ids.includes('e-1') &&
+          ids.includes('e-2') &&
+          ids.includes(`e-${MAX_SESSIONS}`) &&
+          ids.includes('s-cap-new') &&
+          ids.length === MAX_SESSIONS,
+        `count=${ids.length} (MAX_SESSIONS=${MAX_SESSIONS}) ids=${JSON.stringify(ids)}`
+      );
+    }
+
+    // #133 - once() keeps the writer at a tied saturation: this is the Stop
+    // hook's actual dedupe path (session-stop.mjs's `once()` calls), which
+    // is what really lost `s-stop-budget` on CI. Seed MAX_SESSIONS entries
+    // all tied at the current second, so the writer's own save ties with
+    // every one of them.
+    {
+      const now = Math.floor(Date.now() / 1000);
+      const sessions = {};
+      for (let i = 1; i <= MAX_SESSIONS; i++) {
+        sessions[`t-${i}`] = { at: now, seen: [], wrote: {} };
+      }
+      fs.writeFileSync(path.join(capState, '.hook-state.json'), JSON.stringify({ sessions }));
+      const first = once('s-cap-once', 'k');
+      const second = once('s-cap-once', 'k');
+      check(
+        '#133 once() keeps the writer at a tied saturation: seen once, not twice',
+        first === true && second === false,
+        `first=${first} second=${second}`
+      );
+    }
+
+    // #134 - end to end: session-stop.mjs reads the retained entry, with the
+    // file still saturated by #133's tied entries. Precondition asserted
+    // first (the #128 pattern): app/src/lib/x.ts is left dirty by
+    // dirtyBaseline() at the end of testCommitGateAsync() and nothing
+    // between there and here commits it; if that ever changes, this names
+    // the precondition instead of #134 failing mutely.
+    {
+      const porcelain = gitSh(['status', '--porcelain']);
+      check(
+        '#134 precondition: app/src/lib/x.ts is dirty in the scratch tree',
+        porcelain.includes('app/src/lib/x.ts'),
+        porcelain
+      );
+      recordWrite('s-cap-stop', 'app/src/lib/x.ts');
+      const result = runHook(
+        'session-stop.mjs',
+        {
+          session_id: 's-cap-stop',
+          cwd: scratchRoot,
+          hook_event_name: 'Stop',
+          stop_hook_active: false
+        },
+        { state: capState }
+      );
+      check(
+        '#134 end to end: session-stop.mjs reads the retained entry',
+        systemMessage(result).includes('app/src/lib/x.ts'),
+        systemMessage(result)
+      );
+      check(
+        '#134 end to end: no decision key',
+        !(result.json && Object.prototype.hasOwnProperty.call(result.json, 'decision')),
+        JSON.stringify(result.json)
+      );
+    }
+  } finally {
+    process.env.LOOT_HOOK_STATE_DIR = previousStateDir;
+    fs.rmSync(capState, { recursive: true, force: true });
+  }
+}
+
 // ---------- fail-open contract, all eight scripts (#56-58) ----------
 
 function testFailOpen() {
@@ -1825,6 +1949,7 @@ async function main() {
     testSessionStart();
     await testSessionStop();
     await testTaskBudget();
+    await testStateCap();
     testFailOpen();
   } finally {
     teardownScratch();

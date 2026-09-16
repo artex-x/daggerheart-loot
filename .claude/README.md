@@ -127,7 +127,7 @@ Three runtime files live under `.claude/` and are gitignored
 |---|---|---|
 | `.check-cache.json` | `check-observer.mjs` | `{ key, at, command }` for the last observed passing `npm run check`. |
 | `.check-index` | `tree-key.mjs` | A throwaway copy of `.git/index`, never the real one. |
-| `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. |
+| `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. |
 
 **Escape hatch:** `SKIP_CHECK_GATE=1 git commit -m "..."` bypasses the commit
 gate and announces the bypass to the human via `systemMessage`. It must be a
@@ -278,6 +278,12 @@ adversary:
   same test run, that neither local environment's filesystem happened to
   tie against. Pinning every directory's files, not just the one suspected,
   fixed it.
+- `saveState()` (`lib.mjs`) keeps the 64 most recently active sessions and
+  always the one being written. A session loses its record - and its Stop
+  hook goes silent - only when 63 other sessions have written after its last
+  hook call. Before `hook-state-cap` (2026-09-16) the cap was 5 and a tie at
+  second granularity evicted the writer itself; the loss was silent and cost
+  `config-audit` B3 four remediation cycles.
 
 Facts settled during implementation (issue 65):
 

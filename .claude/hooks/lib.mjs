@@ -309,19 +309,36 @@ function loadState() {
   }
 }
 
-function saveState(state) {
+// The MAX_SESSIONS most recently active sessions survive a save, and the
+// session being written always does: it is reserved first and the rest
+// are ranked after it. Without the reservation, a tail of sessions tied at
+// second granularity evicted the writer itself (config-audit B3, 2026-09-16).
+// 64: this host has run 15 concurrent sessions on one tree
+// (orchestrate.prompt.md, 2026-09-10); an entry is lost only when 63 other
+// sessions write between this session's last hook call and its Stop.
+export const MAX_SESSIONS = 64;
+
+function saveState(state, keepId) {
   try {
     const sessions = state.sessions || {};
-    const ids = Object.keys(sessions).sort(
-      (a, b) => (sessions[b].at || 0) - (sessions[a].at || 0)
-    );
+    const kept = keepId && sessions[keepId] ? [keepId] : [];
+    const others = Object.keys(sessions)
+      .filter((id) => id !== keepId)
+      .sort((a, b) => (sessions[b].at || 0) - (sessions[a].at || 0));
+    for (const id of others) {
+      if (kept.length >= MAX_SESSIONS) break;
+      kept.push(id);
+    }
     const pruned = {};
-    for (const id of ids.slice(0, 5)) pruned[id] = sessions[id];
+    for (const id of kept) pruned[id] = sessions[id];
     const dir = stateDir();
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
     writeFileSync(statePath(), JSON.stringify({ sessions: pruned }));
   } catch {
-    // fail open: a lost write costs one duplicate reminder, never more
+    // fail open: a lost write costs one duplicate reminder or one missing
+    // Stop sentence, never a block. guard() swallows a throw anyway, and
+    // speaking on a failed save would fire on every edit of every session
+    // whenever the file is unwritable - the noisy guard nobody reads.
   }
 }
 
@@ -344,11 +361,11 @@ export function once(sessionId, key) {
   const entry = sessionEntry(state, sessionId);
   entry.at = nowSeconds();
   if (entry.seen.includes(key)) {
-    saveState(state);
+    saveState(state, sessionId);
     return false;
   }
   entry.seen.push(key);
-  saveState(state);
+  saveState(state, sessionId);
   return true;
 }
 
@@ -359,7 +376,7 @@ export function recordWrite(sessionId, relativePath) {
   const entry = sessionEntry(state, sessionId);
   entry.at = nowSeconds();
   entry.wrote[relativePath] = entry.at;
-  saveState(state);
+  saveState(state, sessionId);
 }
 
 /** The set of repo-relative paths this session has written, as returned by
