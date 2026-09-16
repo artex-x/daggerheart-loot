@@ -658,3 +658,70 @@ batch. Worktree HEAD `4a042c7`, `origin/main` `5a36c4a`, merge base `8b96ff4`.
    `[skip ci]` in the record commit is belt and braces); a `run:` step with
    no `shell:` executes under `bash -e`, so `cmd; code=$?` is wrong and
    `code=0; cmd || code=$?` is the shape that captures a non-zero exit.
+
+### Added by the planner, pass 7 (2026-09-16) - do not re-measure
+
+Read-only facts gathered while filing the B6 review (approve; risks R1-R5,
+six nits - verbatim in the pass-7 dispatch and summarised in `plan.md`
+3.11). Worktree HEAD `72d8de0`, tree clean; nothing here touched Telegram
+or `.env`.
+
+1. **`origin/main` moved one commit since B6**, to `3504bf7 fix(hooks): pin
+   issues/99's mtime in testTaskBudget ...`. `git rev-list --count
+   HEAD..origin/main` = 1; `git diff --stat HEAD...origin/main` over
+   `tools/tg-preview`, `previews.yml`, `docs/tg-preview.md`, `package.json`,
+   `.gitignore`, `tools/build-share-pages.js`, `tools/derived.js`,
+   `app/index.html`, `index.html`, `data.js`, `og`, `i` is **empty**. No
+   re-merge is needed for B7; the owner's merge takes it.
+2. **The five error classes R2 needs exist in the installed teleproto
+   1.229.0**, `tools/tg-preview/node_modules/teleproto/errors/RPCErrorList.js`:
+   `PhoneNumberBannedError` (line 3529, `PHONE_NUMBER_BANNED`),
+   `YouBlockedUserError` (6143, `YOU_BLOCKED_USER`), `UserDeactivatedError`
+   (6375), `UserDeactivatedBanError` (6385, `USER_DEACTIVATED_BAN`),
+   `AuthKeyDuplicatedError` (6977, `AUTH_KEY_DUPLICATED`, extends
+   `AuthKeyError`). `decide()` matches on `constructor.name`, so the names
+   are what matter.
+3. **`client.isUserAuthorized()` swallows the error it is asked about.**
+   `teleproto/client/users.js:281`:
+   `try { await client.api.updates.getState(); return true; } catch (e) { return false; }`.
+   So `client.mjs`'s guard (lines 59-63) cannot tell a revoked session from
+   a transport blip, and throws a plain `Error` for both - which is why the
+   reviewer saw exit 1 where the docs said 2. Removing the guard lets the
+   first RPC (`getEntity('WebpageBot')`, a `contacts.ResolveUsername`)
+   throw the real class.
+4. **What a dead key does at the transport level is read, not measured.**
+   `teleproto/network/MTProtoSender.js:557-560` and `613-617`: a `-404`
+   from the server calls `_handleBadAuthKey()` (line 660), which resets the
+   key and re-keys; the RPC then fails with the 401 class
+   (`AuthKeyUnregisteredError`). A *terminated* session (Telegram ->
+   Devices -> terminate) normally surfaces directly as
+   `AUTH_KEY_UNREGISTERED`. Neither was exercised on a live dead session;
+   rotation day (runbook step J) is when that measurement is free.
+5. **The deployed root is `dist/index.html`, built from `app/index.html`.**
+   `ci.yml` lines 222-225: `cp -r dist/index.html dist/assets dist/data.js
+   _site/` then `img og i card` from the repository. The legacy root
+   `index.html` is not published. Its three `og:` tags (`title`,
+   `description`, `image`; lines 16-23) and `app/index.html`'s (lines 21-28)
+   are **byte-identical today**, including the `1091 позиции` count and the
+   `&amp;` entity - so `manifest.mjs` switching its root source to
+   `app/index.html` changes no fingerprint and the dry-run count must stay
+   at B6's 125. `og/` is still a tracked repository directory copied
+   verbatim.
+6. **`live.mjs` is not an R1-class hole.** `verify()` wraps
+   `liveFingerprint(url)` in `try { } catch { live = null }` (lines 67-76),
+   so a CDN fetch failure is `not live`, never a thrown error.
+7. **`lib.test.mjs` today:** 84 cases. The fake client (lines 471-522) has
+   `incoming` as a queue of canned `Msg[]` and `byIds` answering from a
+   `photoAfter` map - neither can throw, so R1's tests need opt-in `{ throw }`
+   entries and a `byIds` script, with defaults unchanged. The `decide` fatal
+   loop (254-260) lists five classes. The `--result` test (959-967) asserts
+   `.urls` only, so adding `site` to the result breaks nothing. The
+   `extractMeta` root test (66-71) reads `ROOT/index.html`.
+8. **`.prettierignore` excludes `tools/` and `*.md`** and does not exclude
+   `.github/`, unchanged from pass 6; `.gitignore`'s `tools/tg-preview`
+   block (lines 37-42) ignores `.env` patterns only - no `state.json.tmp`.
+9. **`git remote add` sets `remote.origin.fetch = +refs/heads/*:refs/remotes/origin/*`**,
+   and `actions/checkout` builds its repository with `git init` + `git
+   remote add`; that is why `git fetch --depth=1 origin main` updates
+   `origin/main` in the job today. Documented git/checkout behaviour, not
+   measured in a runner; R4's explicit refspec removes the dependence.

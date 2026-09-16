@@ -104,6 +104,36 @@ then `handoff.md`.
   **Revised (pass 6)**; the superseded pass-5 text is readable in full at
   commit `4a042c7`.
 
+- **Pass 7, 2026-09-16 (this revision).** B6 shipped (`97e0209` ->
+  `3f6231c` -> `54b84b3` -> `f5e5d69`, recorded at `72d8de0`) and was
+  reviewed **approve** with five risks and six nits. Two of the risks are
+  holes in the property the owner asked for: **R1**, three un-retried
+  Telegram reads (`incoming` for the recovery scan and the button polls,
+  `byIds` after a press) turn a resumable stop into exit 1 - a false red;
+  **R2**, `decide()`'s catch-all lets a banned, deleted, duplicated or
+  bot-blocked account stop green with a `::warning::` forever - a false
+  green - and a revoked session exits **1**, not 2, through `client.mjs`'s
+  own `isUserAuthorized()` guard. **R3**: `readState` returns `{}` for a
+  state file that exists and does not parse, and `--apply` would commit
+  that. **R4**: both `git fetch --depth=1 origin main` lines rely on the
+  checkout's wildcard refspec. **R5**: `manifest.mjs` fingerprints the
+  legacy root `index.html`, but `ci.yml` deploys `dist/index.html`, built
+  from `app/index.html`. Nothing in this pass touched Telegram; every fact
+  was read from the code, the installed teleproto and `ci.yml`, and is in
+  `context.md`, "Added by the planner, pass 7".
+
+  Decisions, each in its own section: which findings close now and which
+  stay deferred, by the owner's own test - does it change what red or green
+  means (new section 3.11); how reads become green stops without changing
+  what a stop means (3.4, 3.11, 5.2); the shape of R2's fix - names in
+  `FATAL_ERRORS`, not a run counter (3.4, 3.11); the exit-code table in 3.5
+  **corrected**, not redefined; the runbook's I.6 and J corrected without
+  reopening the procedure (9); and the ordering - **B7 lands before the
+  owner's merge** (3.11). **B7** (section 10d) is the whole of the code
+  answer: one batch, one commit, one check. Sections revised in pass 7 say
+  **Revised (pass 7)**; the superseded pass-6 text is readable in full at
+  commit `72d8de0`.
+
 The six owner decisions in `context.md` stand and are not re-opened here.
 
 ## 1. Objective and current state
@@ -147,6 +177,16 @@ the cached photo; pressing `"Update with content"` (one
 under an unchanged webpage id, and the owner saw the preview update. So the
 click axis scales with **URLs**, not messages: a full reindex is 107 sends
 **plus 1062 presses**.
+
+**Added in pass 7 - the root is no longer the file it was.** The bullet
+above, "`index.html` carries the root's own OG block", was true at `8b96ff4`.
+Since issue 47's cut-over `ci.yml`'s `deploy` publishes `dist/index.html`
+(built from `app/index.html`) plus `dist/assets` and `dist/data.js`, and
+copies `img og i card` from the repository; the root `index.html` is not
+deployed. The two files' three `og:` tags are byte-identical today
+(measured 2026-09-16), which is why nothing has gone wrong yet and also why
+nothing would have said so when it did. Section 3.11 (R5) and B7 point
+`manifest.mjs` at `app/index.html`.
 
 ## 2. Scope and non-goals
 
@@ -329,6 +369,35 @@ deploy is a handful of URLs.
 
 `decide()` is unchanged in pass 4. The throttle below is **not** an error and
 never reaches it.
+
+**Revised (pass 7) - two changes to the table, none to its shape.**
+
+1. **The fatal row gains five names**: `AuthKeyDuplicatedError`,
+   `UserDeactivatedError`, `UserDeactivatedBanError`,
+   `PhoneNumberBannedError`, `YouBlockedUserError` - all present in the
+   installed teleproto 1.229.0's `errors/RPCErrorList.js` (`context.md`,
+   pass-7 facts). Each names a condition no later run can change: the
+   session was invalidated for concurrent use, the account was deleted or
+   banned, the number is banned, the account has blocked the bot. Before
+   pass 7 every one of them fell through to "any other `RPCError`" - a green
+   stop with a `::warning::`, on every run, forever (B6 review, R2). The
+   reason string becomes `<name>: the account or session is unusable; a
+   human must act` - "the credential is dead" was the wrong sentence for a
+   ban, and the runbook's I.6 now maps the name to the step to redo.
+2. **Reads go through the same table as sends and presses.** `incoming`
+   (the recovery scan and the button polls) and `byIds` (the post-press
+   refetch) were the only Telegram calls in `runRefresh` not wrapped in
+   `attempt()`; a `FloodWaitError` or a transport blip on any of them
+   reached `main().catch` - exit 1, red - on a stop the next run would
+   certainly fix (B6 review, R1). Section 3.11 says exactly what each read's
+   stop does to the result; section 5.2's pass-7 note carries it into the
+   step list. The connect call gets the same classification once, for the
+   fatal row only (3.11, R2).
+
+What the table still does **not** do, on purpose: an RPC error named
+nowhere still stops **green** with its `errorMessage` as the reason. Flipping
+that default to red is the taxonomy rewrite pass 7 declines (3.11); the
+residual is recorded in section 12.
 
 #### The bot's own attempt quota - the third limit (pass 4)
 
@@ -721,7 +790,8 @@ limit or a budget stop; red (2) only for a dead or missing credential; red
 
 ### 3.5 Where it hangs in CI: a second workflow, `previews.yml`, made fail-safe
 
-**Revised (pass 6).**
+**Revised (pass 6); pass 7 corrects three cells of the table - see "Revised
+(pass 7)" below the exit-code paragraph.**
 
 > Superseded: passes 3-5 left `previews.yml` exactly as R1 reviewed it -
 > `workflow_run` on `check` plus `workflow_dispatch`, a `Secrets present?`
@@ -763,6 +833,25 @@ everything else. `lib.mjs`'s and `run.mjs`'s exit codes do not change: `0`
 for every Telegram-side stop, `2` for a dead or missing credential, `1` for a
 crash. The workflow adds exactly one meaning on top - "the wall clock" - and
 nothing else.
+
+**Revised (pass 7) - the table above was wrong in three cells, and B7 makes
+it true.** The B6 review's R1 and R2 are holes in the *definition*, not in
+the workflow: the `case` maps codes correctly, but the tool reported the
+wrong code in both directions. Corrected cell by cell:
+
+| condition | pass 6 said | what the code did before B7 | after B7 |
+|---|---|---|---|
+| a Telegram **read** fails after its retries - the recovery scan `incoming`, a button-poll `incoming`, the post-press `byIds`: a `FLOOD_WAIT` over `--max-wait`, or a transport error after `NET_RETRIES` | not listed; implicitly a Telegram-side stop, green | **exit 1, red**: none of the four calls was wrapped in `attempt()`, so the error reached `main().catch`. The recovery scan runs on every non-idle run; the batch loop makes up to seven `incoming` calls per batch | **green stop** through `attempt()`; `stopped` names the read; what was confirmed is recorded; the next run's phase 1 presses whatever is still waiting |
+| a banned, deleted, duplicated or bot-blocked account - `UserDeactivated[Ban]Error`, `PhoneNumberBannedError`, `AuthKeyDuplicatedError`, `YouBlockedUserError` | folded into "a dead credential", red | **exit 0, green, forever**: none of the names was in `FATAL_ERRORS`, so the catch-all stopped the run with a `::warning::` and the backlog never drained | **exit 2, red**, with `::error::` naming the class; the runbook says which of steps A-D to redo |
+| a **revoked or expired** session | red, exit 2 | red, but **exit 1**: `client.mjs` called `isUserAuthorized()`, which teleproto implements as `try { updates.getState() } catch { return false }` - it swallows the class name and turns a transport blip at connect into "not authorized" too - and then threw a plain `Error` outside `attempt()` | red, **exit 2** when Telegram names it (`AuthKeyUnregistered`, `SessionRevoked`, ...): the guard goes, the first RPC's real error is classified once by `decide()` in `runRefresh`. A transport failure at connect stays exit 1 (section 12, accepted in pass 6) |
+| `state.json` exists but does not parse | not listed | `readState` returned `{}`: a refresh run treats 1092 URLs as stale (50 presses a run for ~22 runs), and in the record step `--apply` rebases onto `{}` and **commits a state with every other entry dropped** | **exit 1, red** with the path in the message; only `ENOENT` is the bootstrap. The next run will not fix a corrupt committed file; `git revert` of the commit that broke it will |
+| the record step's `git fetch --depth=1 origin main` does not update `origin/main` | assumed | works today only because `actions/checkout` leaves the wildcard `remote.origin.fetch` in place; if it did not, `git checkout --detach origin/main` would abort under `set -e`, the run's confirmed presses would never be committed **and** every cron run would be red | explicit refspec `+refs/heads/main:refs/remotes/origin/main` in both `run:` blocks; nothing depends on the checkout's config |
+
+The rule itself does not move: red still means "the next run will not fix
+this", and B7 changes no meaning the workflow's `case` assigns. What changes
+is which conditions the **tool** reports under which code. The residual
+that stays by design: an RPC error not named anywhere is still a green stop
+(3.4, pass-7 note; section 12).
 
 #### Eventual consistency needs a clock, not only a push
 
@@ -1183,6 +1272,201 @@ does not wait for `check`), which is the owner's window to read the stale
 count first. Both runs share the concurrency group and serialise. Section 9
 step I says this in the owner's order.
 
+### 3.11 The B6 review, and what closes before the owner merges (pass 7)
+
+Verdict **approve**; five risks (R1-R5), six nits. `handoff.md` files every
+one of them under B7 or Deferred. This section answers the five questions
+the pass was asked; B7 (section 10d) executes.
+
+#### What goes into B7 and what stays deferred - the owner's own test
+
+The test is the contract 3.5 states: **does the finding change what red or
+green means?** Applied:
+
+- **R1 (a false red) and R2 (a false green): in.** They are the definition's
+  two holes, the reviewer names them as the first code in any follow-up, and
+  the owner is about to start reading red and green by the runbook. A red
+  they learn to ignore, or a green that hides a dead account, undoes the
+  batch that just shipped.
+- **R3 (the silent wipe): in.** Not a red/green defect but the highest-cost
+  latent path, four lines on `run.mjs`, which is open anyway, and testable
+  without Telegram (`--dry-run --no-verify --state <scratch file>`).
+- **R4 (the fetch refspec): in.** Two lines in a file that is open; a miss in
+  the record step is red every four hours *plus* lost presses, and the
+  explicit refspec has no downside.
+- **R5 (the root fingerprint): in, as one path change - decided on its
+  merits.** It is a cut-over seam, not a fail-safety defect, but its failure
+  mode is exactly the one this task exists to remove - a stale preview
+  nobody is told about - on the one URL every `#/i/<id>` share resolves to.
+  `ci.yml` publishes `dist/index.html`, built from `app/index.html`; the
+  legacy root is not deployed; the three tags are byte-identical today, so
+  the fix changes no fingerprint and the dry-run count is its own proof.
+  **Rejected: `--assets dist` plus `npm run build` in `previews.yml`** - a
+  root `npm ci` and a Vite build six times a day to read three meta tags,
+  and a refresh job that then depends on the app building. Vite passes
+  `<meta>` through its HTML transform untouched (documented, not measured
+  here); if that ever stopped being true the live check would report the
+  root `not live` on every run - loud, not silent, which is the right
+  failure direction.
+- **Nits in:** the `else` message in `previews.yml` (it says "every url
+  counts as stale" while the branch actually keeps the checked-out - now
+  committed - copy); `state.json.tmp` in `.gitignore`; the exit-code wording
+  in `docs/tg-preview.md` and in 3.5; `--apply`'s `buildFromTree()`
+  (replaced by `site` carried in `result.json` - which also removes the
+  record step's dependence on `main`'s tree being *buildable* at commit
+  time, a small fail-safety hole of its own, and closes R1-deferred item
+  7); the handoff heading restored to the template's.
+- **Deferred, with the reason.** `npm audit --audit-level=high` on the cron:
+  a new high advisory turning the job red *is* the contract - a human must
+  bump the dependency, and the process holds a full account session, so
+  running it on a known-vulnerable tree is the wrong default; `ci.yml`
+  applies the same rule. Recorded in section 12 so the first such red has a
+  known cause. B4 nits 1, 4 and 6 and R1-deferred item 6 stay where they
+  were. The catch-all's "unknown RPC error stops green" stays (below).
+
+**Not a rewrite of the error taxonomy.** `decide()` keeps its shape - class
+name in, one outcome out, five rows plus two catch-alls. B7 adds names to
+one row and routes five more call sites (four reads and the connect) through
+the function that already exists. It adds no evidence model, no run counter
+and no exit code.
+
+#### How R1's fix must not change what a stop means
+
+`attempt(action)` already returns `{ value } | { unanswered } | { stopped,
+exitCode? }`, carries the transport retries, the flood-wait sleeps and the
+deadline check, and **touches no press budget** - `pressOne` decrements the
+budget before it calls `attempt`, so wrapping reads in it costs nothing on
+the press axis (B4 nit 1 is about `cx.press` being re-invoked inside one
+decrement and is unchanged by this). A helper `read(action)` calls `attempt`
+and normalises: `'value' in r` -> return `r`; otherwise
+`{ stopped: r.stopped || 'read unanswered', exitCode: r.exitCode || 0 }`
+(`unanswered` cannot come from a read - `BOT_RESPONSE_TIMEOUT` is
+press-only - but the helper does not assume it).
+
+What a retried-then-failed read does, site by site:
+
+| read | on stop | `confirmed` | `pending` | state write | exit |
+|---|---|---|---|---|---|
+| the recovery scan `incoming({ limit: RECOVER_SCAN })` | `stopped = 'recovery scan: <reason>'`, close, `finish()` - nothing was pressed | `[]` | `todo` | none: `record()` never runs, the state is untouched, `result.json` is not written, the record step logs `nothing sent` | 0, or 2 if the class is fatal |
+| a button poll `incoming({ afterId })`, first read or a later round | `stopped = 'button poll: <reason>'`, `break batchLoop` - the batch **was sent** and its button messages sit in the chat | unchanged since the previous batch | that batch's URLs stay pending | the previous batch's `record()` already ran; there is nothing new to write | 0 / 2 |
+| the post-press `byIds` | `pressGroup` keeps going with `refetched = []`, so every delta is `unseen`; confirmation is the **existing** rule `p.answered \|\| delta === 'newId'` - answered presses confirm, unanswered ones stay pending, which is precisely what `unseen` already means in the docs; `pressGroup` returns `stopped: pressStop \|\| 'refetch: <reason>'` (a press stop that came first keeps its own reason and code) | this group's answered presses | the rest | `record(confirmedAll)` runs after the group exactly as today | 0 / 2 |
+| `close()` | `try/catch` with one `warning: disconnect failed: ...` log line - a disconnect that fails after the work is done is not a failed run | - | - | - | unchanged |
+
+The next run's phase 1 finds every unconfirmed button message inside
+`RECOVER_SCAN` and presses it without a send - the same recovery every other
+stop already relies on. No new state, no new vocabulary beyond three
+`stopped` prefixes, no change to `finish()`'s arithmetic:
+`confirmed + pending = stale` still holds.
+
+`lib.test.mjs` assertions that **must remain untouched**, because they pin
+the meaning of a stop: "PEER_FLOOD on a press stops with earlier presses
+recorded"; "is fatal (exit 2) on a dead credential on a send" and "...
+mid-press"; "a FLOOD_WAIT on a press re-presses the same button"; "a pressed
+message byIds cannot re-fetch is counted unseen: unconfirmed unanswered,
+confirmed answered" - this is the semantics the `byIds` stop reuses, so the
+`photoAfter`-empty case must pass unchanged and the new case (a *throwing*
+`byIds`) sits beside it; "confirmed and pending always add up to the stale
+count"; "the deadline stops between two presses"; "a flood wait that would
+end past the deadline is not started"; all four press-budget cases; both
+throttle cases; "a dry run sends and writes nothing, and never loads the
+client". Every one of them runs against a fake whose `incoming` and `byIds`
+never throw, so B7 must not change the fake's default behaviour: it adds an
+opt-in `{ throw }` entry to the `incoming` queue, an opt-in `byIds` script,
+and an opt-in `closeThrows`.
+
+#### R2's shape: names in `FATAL_ERRORS`, not a run counter
+
+**Chosen:** five class names added to `FATAL_ERRORS` (the reviewer's four
+plus `UserDeactivatedError`, the un-banned sibling that means the same
+thing), and the connect-time error classified once. **Rejected:** "stopped
+with pending > 0 and zero confirmations, N runs in a row -> red". It needs a
+counter across runs - state the tool does not have, which means a schema
+change to the committed file, the same reason the press ledger was deferred
+in pass 4; it fires just as readily on a legitimate long throttle or a
+three-run Pages outage, i.e. it converts real Telegram-side stops into reds
+and re-opens the definition; and it names no cause, whereas a class name in
+the log tells the owner which runbook step to redo.
+
+**What the owner sees when it fires:** a red run. The step log ends
+`refreshed 0, pending N, stopped: UserDeactivatedBanError: the account or
+session is unusable; a human must act`, and `::error::` puts the same
+sentence on the run page as an annotation; the `::warning::` about pending
+URLs is **not** printed (it is gated on exit 0 today and stays so); the
+record step runs, finds no `result.json`, and logs `nothing sent`. Every four
+hours the same red, until a human acts - and the runbook's I.6 says which
+human action: an unregistered, revoked, expired or **duplicated** key ->
+`login.mjs` (step D.3) and a new `TG_SESSION`; a deactivated or banned
+account or number -> a new account (steps A-D); `YOU_BLOCKED_USER` -> unblock
+`@WebpageBot` from the throwaway account.
+
+**The revoked-session code.** `client.mjs` drops its `isUserAuthorized()`
+guard. Read in teleproto 1.229.0 (`client/users.js:281`): it is
+`try { await client.api.updates.getState(); return true } catch { return
+false }`, so it swallows the very class name `decide()` needs and reports a
+transport blip at connect as "not authorized" too. With the guard gone the
+first RPC (`getEntity('WebpageBot')`) throws the real error; `runRefresh`
+catches the `client()` rejection **once**, and if `decide(err).fatal` returns
+a result in the shape of the `ready.length === 0` branch with `stopped` and
+`exitCode 2` (`finish()` cannot be called there - its closures are declared
+later), otherwise rethrows. A transport failure at connect therefore stays
+exit 1, which section 12 accepted in pass 6; B7 adds no connect retry. What
+a *forgotten* auth key does (teleproto's sender re-keys on a `-404` and the
+next RPC fails with the 401 class) is read from `network/MTProtoSender.js`,
+not measured on a live dead session - the docs say "when Telegram names it".
+
+#### R3: `ENOENT` is the bootstrap; anything else is a stop
+
+`readState` becomes: no file (`ENOENT`) -> `{}`; a file that exists and does
+not parse -> throw `state file is not valid JSON: <path> (...) - refusing to
+treat it as empty`, which `main().catch` turns into exit 1 with that message.
+On the refresh path that is a red run before any Telegram contact; on the
+`--apply` path the record step goes red **without committing**, so the state
+on `main` is whatever the last good commit left, and the run's presses are
+re-found by phase 1. Not added: a shape check beyond parsing, because
+`stale()`'s bootstrap rule already handles a missing `urls` and a validity
+model is something nothing else here has.
+
+#### R4 and R5 are one line each; R5's proof is the dry-run count
+
+R4: `git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main`
+in both `run:` blocks; `git show origin/main:...` and `git checkout -q -f
+--detach origin/main` stay as they are. R5: `manifest.mjs` reads the root's
+HTML from `app/index.html` when `--assets` is not given; `og/` stays at the
+repository root (a tracked source directory that `deploy` copies verbatim);
+`--assets <dir>` keeps meaning "both live under `<dir>`" for a built tree.
+Acceptance: `run.mjs --dry-run` reports the **same** stale count before and
+after - the tags are byte-identical today, so a changed count would mean the
+change did something it should not.
+
+#### Does any of this reopen the runbook's H-J?
+
+**No procedure step changes.** Step I's points 1-5 are exactly what the owner
+will follow; only I.6 (the red list) and J gain the corrected codes and the
+three "which step to redo" mappings above, plus one new red: a state file
+that does not parse (exit 1; `git revert` the commit that broke it). The 3.5
+table is corrected in the same batch, because the docs and the plan attached
+exit 2 to a case the code exited 1 on, and a runbook that names the wrong
+code sends the owner to the wrong step.
+
+#### Ordering against O3: B7 lands before the merge
+
+Plainly: **B7 first, then the owner merges.** In order of weight: (1) B7
+changes what red and green mean in the two directions the owner cares
+about, and the first CI runs are the moment the owner learns to read them -
+evidence gathered with a tool whose codes are known-wrong both ways is
+evidence that has to be re-triaged; (2) nothing in B7 depends on evidence
+from `main` - every fix is read from the code, the installed client and
+`ci.yml`, and every gate runs locally without Telegram; (3) it is one batch,
+one `npm run check`, on files that are all this task's own, and it touches
+neither the merge nor the state; (4) the cost is one more local batch before
+the switch, against a switch that then runs every four hours unattended. If
+the owner merges first anyway, nothing in B7 is invalidated - it lands as a
+follow-up - but the first reds and greens must then be read against 3.5's
+corrected table, not the runbook's old list. `origin/main` moved one commit
+since B6 (`3504bf7`, a hooks fix touching none of this task's files;
+`context.md`, pass-7 facts); B7 does **not** re-merge - the owner's merge
+takes it.
+
 ## 4. Architecture
 
 **Revised** - one port grew, one pure function was added.
@@ -1195,10 +1479,13 @@ tools/tg-preview/
                       stale, chunk, decide, matchButtons, runRefresh, applyResult,
                       parseArgs, constants
   lib.test.mjs        node:test over lib.mjs; imports nothing from node_modules
-  manifest.mjs        composes lib with the repo (unchanged)
+  manifest.mjs        composes lib with the repo (pass 7: the root's HTML comes from
+                      app/index.html, the deployed root's source; og/ stays at the root)
   live.mjs            fetch(url) -> fingerprint of the live page + its image
   client.mjs          the port over teleproto:
                       createClient(env) -> { send, incoming, byIds, press, close }
+                      (pass 7: no isUserAuthorized() guard - the first RPC's real
+                      error reaches decide())
   run.mjs             the CLI: args, env, manifest, state, diff, live check, the two
                       phases, summary
   login.mjs           interactive, once (unchanged)
@@ -1332,6 +1619,25 @@ the prose below:
     non-zero; `::warning::` when pending > 0; `close()`; exit per section
     3.4.
 
+**Revised (pass 7)** - four steps change what they do on an error, none
+changes what it does on success:
+
+- Step 3: the state is `{}` only when the file is **absent**. A file that
+  exists and does not parse throws (exit 1, path named) - on this path and
+  on `--apply`'s (3.11, R3).
+- Step 10: the connect is classified once by `decide()`: a fatal class is
+  `stopped`, exit 2, nothing written; anything else still throws (exit 1).
+- Step 11: the recovery scan is a `read()`; a failed scan is a green stop
+  with nothing pressed and nothing written.
+- Step 12: both button polls are `read()`s; a failed poll stops the run with
+  that batch's URLs pending and the previous batch's record intact. The
+  post-press `byIds` is a `read()`; a failed refetch counts the group
+  `unseen`, confirms its answered presses under the unchanged rule, records
+  them, and stops the run. `close()` cannot fail the run.
+- Step 13: on exit 2, one `::error::` line with the `stopped` reason. The
+  `--result` file carries `site` beside `urls`, and `--apply` reads it from
+  there instead of rebuilding the manifest.
+
 ### 5.3 The live check
 
 **Stands**, plus one local fix folded in (reviewer's item 2): `live.mjs`
@@ -1451,6 +1757,15 @@ file (`npm run check` parses it), so the implementer runs
 `npx prettier --write .github/workflows/previews.yml` after editing and lets
 it settle the indentation of the new blocks.
 
+**Revised (pass 7)** - three lines move, nothing structural: both
+`git fetch --depth=1 origin main` lines become
+`git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main`
+(3.11, R4), and the Refresh step's `else` message becomes
+`state.json could not be read from origin/main; using the checked-out copy`
+- which is what the branch does now that the file is committed. Triggers,
+`if:`, inputs, permissions, concurrency, the three clocks, the `case` and
+the record step's loop are unchanged.
+
 ## 7. Contracts, specs and docs that move
 
 **Revised (pass 4)** for B4. Pass 3's list is done and landed at `2a4b78b`;
@@ -1526,9 +1841,47 @@ what follows is what B4 moves.
   where it is logged is not a coverage fact. `README*`: the table row is
   already there. `CLAUDE.md`: no new standing rule.
 
+**Added in pass 7, for B7.** Still no public contract change: `i/`, `og/`,
+`CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js`, `llms.txt`,
+`robots.txt` untouched.
+
+- `tools/tg-preview/lib.mjs`: five names in `FATAL_ERRORS` and the reason
+  string; `read()`; the five call sites; the connect classification; `close`
+  guarded; `record()` writes `site` into the result. `lib.test.mjs`: the
+  fake grows three opt-in scripts; the `decide` fatal loop gains the five
+  names; seven new `runRefresh` cases; two existing cases extended; the
+  `extractMeta` root test reads `app/index.html`. `client.mjs`: the guard
+  goes. `run.mjs`: `readState` throws on a corrupt file; `--apply` takes
+  `site` from the result; `::error::` on exit 2. `manifest.mjs`: the root's
+  HTML source. `.github/workflows/previews.yml`: section 6's pass-7 lines.
+  `.gitignore`: `tools/tg-preview/state.json.tmp`.
+- `docs/tg-preview.md`: step I.6 (the red list, corrected and mapped to
+  steps), step J (one sentence for a banned account), the Operations
+  "What turns the CI job red" bullet, the "What CI does after a deploy" red
+  paragraph, and the Coverage paragraph's one clause about reads. Nothing
+  in A-G, H, I.1-5 or the Rate-limiting section moves.
+- **`docs/specs/COVERAGE.md` gains nothing**: its `lib.test.mjs` paragraph
+  already names "the flood/fatal error table" and "the two-phase
+  send-and-press loop against a fake client"; new rows in the table and new
+  stops in the loop are inside that ownership. Read it and confirm rather
+  than assume. **`docs/specs/META.md` gains nothing**: section 7 states facts
+  about the bot, and pass 7 learned none - everything here is about our own
+  error handling. `README*`, `CLAUDE.md`: nothing.
+
 ## 8. Parity and gates - confirmed, not assumed
 
-**Stands**, and is re-confirmed for **B6** on the merged tree, which is a
+**Stands**, re-confirmed for **B7**: it touches `tools/tg-preview/{lib,
+lib.test,run,client,manifest}.mjs`, `.github/workflows/previews.yml`,
+`.gitignore`, `docs/tg-preview.md` and this task directory - nothing under
+`app/**` (it *reads* `app/index.html`; it does not change it), `data.js`,
+`i/`, `og/`, `tests/**`, `dist/`, and nothing a screen draws. Gates:
+`node --test tools/tg-preview/lib.test.mjs`, `node tools/tg-preview/run.mjs
+--dry-run`, the two scratch-file `--state`/`--apply` proofs in section 10d,
+and **one** `npm run check` in one foreground call. **Not** `check:built`,
+**not** parity, **not** `golden` - none of them can see a file this batch
+changes, and that is stated from the file list above, not assumed.
+
+Re-confirmed before it for **B6** on the merged tree, which was a
 new question because the tree now carries issue 47's cut-over: B6's own
 edits touch `.github/workflows/previews.yml`,
 `tools/tg-preview/{lib,lib.test,run}.mjs`, `tools/tg-preview/state.json`
@@ -1784,6 +2137,51 @@ scheduled workflows are **disabled after 60 days without a push** to the
 repository (any push re-enables them), and a scheduled run can be delayed
 by minutes at busy times.
 
+**Revised (pass 7) - I.6 and J only; I.1-5 and H stand as written.** The
+red list in I.6 named "a revoked session" under exit 2 while the code exited
+1 on it, and named no account-level condition at all. After B7 it reads:
+
+> 6. **What a red run means from now on - and only these.** Read the last
+>    `stopped:` line of the step log (it is also the `::error::` annotation
+>    on the run page) and act on the name:
+>    - `missing required env var: TG_SESSION` (or `TG_API_ID`,
+>      `TG_API_HASH`) - exit 2: the secret is gone or renamed; step H.
+>    - `AuthKeyUnregisteredError`, `SessionRevokedError`,
+>      `SessionExpiredError`, `AuthKeyInvalidError`,
+>      `AuthKeyDuplicatedError`, `SessionPasswordNeededError` - exit 2: the
+>      **session** is dead (terminated, expired, or used from two places at
+>      once); redo step D.3 and update the `TG_SESSION` secret.
+>    - `UserDeactivatedError`, `UserDeactivatedBanError`,
+>      `PhoneNumberBannedError` - exit 2: the **account** is gone; a new
+>      throwaway, steps A-D, then H.
+>    - `YouBlockedUserError` - exit 2: the throwaway has blocked
+>      `@WebpageBot`; unblock it in the app and re-run.
+>    - `tg-preview run failed: state file is not valid JSON: ...` - exit 1:
+>      `tools/tg-preview/state.json` on `main` is corrupt; `git revert` the
+>      commit that broke it (the record step did **not** commit on top of
+>      it).
+>    - any other `tg-preview run failed: ...` - exit 1: a crash, including a
+>      connection that could not be made at all; one such run is noise, the
+>      same message on consecutive runs is a report.
+>    - a failed `npm audit --audit-level=high` - a new advisory in
+>      `tools/tg-preview`'s dependency tree; bump and re-run. Red on purpose:
+>      the process holds a full account session.
+>    - a state push refused three times - branch protection or a token
+>      problem; every run's presses are recoverable only through phase 1
+>      until it is fixed.
+>
+>    A run that hit the 50-minute wall is **green** with `timed out after 50
+>    minutes; pending urls are picked up by the next run` in its summary; so
+>    is every Telegram-side stop, and - from B7 on - so is a Telegram read
+>    that failed after its retries (`stopped: recovery scan: ...`, `button
+>    poll: ...`, `refetch: ...` in the log). A red run whose cause is not on
+>    this list is itself worth reporting.
+
+Step J gains one sentence after the rotation instructions: "If the red run
+names the **account** rather than the session (`UserDeactivated`,
+`PhoneNumberBanned`), rotation does not help - it is steps A-D again with a
+new number." Nothing else in J moves.
+
 ## 10. Batches
 
 ### B1 - the refresh tool, its workflow and its runbook
@@ -2037,16 +2435,28 @@ in section 10b below; record in `handoff.md`.
 
 ### B6 - onto `main`, and the fail-safe CI job (one batch, four commits)
 
-**Status: implement-ready.** Full text in section 10c below. In order: the
-pass-6 task docs; the merge of `origin/main` (one conflict, resolved as
-section 3.10 says; **check #1** on the merged tree); the owner's finished
-`state.json` as its own commit, byte-for-byte; then the workflow (section
-6), the two local fixes and the docs (**check #2**). Design: sections 3.5,
-3.10, 6, 7, 9 (H-J).
+**Status: shipped 2026-09-16 and reviewed approve** - `97e0209` (docs),
+`3f6231c` (merge, `origin/main` at `1106355`), `54b84b3` (the state file,
+hash `7c6e37eb...`), `f5e5d69` (the workflow, the two fixes, the runbook),
+recorded at `72d8de0`. Both checks green; the post-merge backlog measured at
+`125 urls stale` of 1092. Full text in section 10c; the record in
+`handoff.md`. The review's five risks and six nits are the reason for pass 7
+and B7.
+
+### B7 - make the exit codes true in both directions (one batch, one commit)
+
+**Status: implement-ready.** Full text in section 10d below. Closes the B6
+review's R1-R5 and the nits on the same files: Telegram reads become green
+stops through `attempt()`; five account-level error classes become exit 2
+and the revoked-session case stops exiting 1; a corrupt `state.json` is a
+stop, not an empty state; the record step's fetch names its refspec; the
+root URL is fingerprinted from `app/index.html`. Design: sections 3.4
+(pass-7 rows), 3.5 (pass-7 table), 3.11, 5.2 (pass-7 note), 6 (pass-7), 7,
+8, 9 (I.6, J). **Lands before O3** - 3.11 says why.
 
 ### O3 - the owner merges, and watches the first run
 
-Not a code batch. Section 9, steps I and J, in that order: merge the branch
+Not a code batch, and **after B7**. Section 9, steps I and J, in that order: merge the branch
 into `main` and push; dispatch a dry run while `check` is still running and
 read the stale count; read the automatic run's summary and the
 `[skip ci]` state commit; leave the schedule to drain the backlog; paste
@@ -2668,7 +3078,371 @@ in a `require()`-able shape, stop after step 8 with the merge uncommitted
 (`git merge --abort` is the clean exit) and report; the fix is
 `manifest.mjs`'s seam and belongs to a planning pass, not to this batch.
 
+## 10d. B7 - the implement-ready batch
+
+**Objective.** Close the B6 review's five risks and the nits that live on
+the same files, so that the exit-code table in section 3.5 is true in both
+directions before the first CI run: a Telegram read that fails after its
+retries is a green, resumable stop; a banned, deleted, duplicated or
+bot-blocked account is red, and a revoked session is exit 2 as documented;
+a `state.json` that exists but does not parse is a stop, never an empty
+state; the record step's fetch names its refspec; the root URL is
+fingerprinted from the file that is deployed. One batch, one code commit,
+one `npm run check`. Behaviour constraints are sections 3.4 (pass-7 note),
+3.5 (pass-7 table), 3.11, 5.2 (pass-7 note), 6 (pass-7), 7 (pass-7 list), 8
+and 9 (I.6, J) as written; do not reopen them. Exit codes keep their three
+meanings - `0` a Telegram-side stop, `1` a crash, `2` a credential or
+account a human must act on; B7 moves conditions between them and adds
+none. The confirmation rule, the press budget, the throttle rule, the state
+schema, the triggers and the `case` in `previews.yml` do not change.
+
+**Read before starting.** `context.md`, "Added by the planner, pass 7" (the
+teleproto class names and where they live, what `isUserAuthorized()` does,
+the identical root tags, `origin/main`'s position) and section 3.11 - none
+of it is re-derived below.
+
+**Standing rules, unchanged and unconditional.** Never run `run.mjs` without
+`--dry-run`, and never point a non-dry invocation at the committed state:
+the two `--apply` proofs below run against a **scratch copy** under
+`--state`. Do not read, print or copy `.env`. `tools/tg-preview/state.json`
+is committed and is never edited, regenerated, reformatted, staged or
+deleted by this batch - `git hash-object` before and after is
+`7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`, any other value is a stop. Never
+`git add -A`, never `git commit -a`. Do not merge `origin/main` (it moved one
+commit, `3504bf7`, touching none of this task's files; the owner's merge
+takes it). One session per tree: confirm with `ListAgents` (or the
+orchestrator) before the check.
+
+**In scope.** `tools/tg-preview/lib.mjs`, `lib.test.mjs`, `run.mjs`,
+`client.mjs` (the guard only), `manifest.mjs` (the root HTML source only);
+`.github/workflows/previews.yml` (two fetch lines, one message);
+`.gitignore` (one line); `docs/tg-preview.md` (I.6, J, two Operations
+paragraphs, one Coverage clause); `issues/tg-preview-refresh/{context,plan,handoff}.md`.
+
+**Out of scope.** `live.mjs` (its fetch errors are already caught into
+`not live` - read, not assumed), `login.mjs`, `tools/tg-preview/package*.json`
+(no new dependency), `ci.yml`, `state.json`, `README*`, `docs/specs/*`
+(section 7 says why neither COVERAGE nor META moves), `CLAUDE.md`, `app/**`
+(read only), the legacy root `index.html`, every public contract; `npm
+audit` on the cron (accepted, section 12); a connect retry; a run counter;
+a shape check on the state beyond parsing; `continue-on-error`; any new
+flag, input or exit code; the merge.
+
+**Files expected.** `tools/tg-preview/lib.mjs`, `tools/tg-preview/lib.test.mjs`,
+`tools/tg-preview/run.mjs`, `tools/tg-preview/client.mjs`,
+`tools/tg-preview/manifest.mjs`, `.github/workflows/previews.yml`,
+`.gitignore`, `docs/tg-preview.md`, the three task files.
+
+**Two commits, in this order** (the docs are gate-exempt; the code is not).
+
+**Commit 1 - the pass-7 task docs.**
+
+1. `git status --porcelain` - expect only paths under
+   `issues/tg-preview-refresh/`. Anything else: stop.
+2. Stage the three task files by path; commit
+   `docs(tg-preview): pass 7 - the B6 review, and B7`.
+
+**Commit 2 - the code, the workflow lines, the runbook.**
+
+3. `lib.mjs` - `FATAL_ERRORS`: append `'AuthKeyDuplicatedError'`,
+   `'UserDeactivatedError'`, `'UserDeactivatedBanError'`,
+   `'PhoneNumberBannedError'`, `'YouBlockedUserError'` with one why-comment:
+   the account, not only the session - a ban, a deletion, a banned number, a
+   duplicated key or a blocked bot are conditions no later run can change
+   (B6 review R2); before pass 7 they fell to the catch-all below and
+   stopped green forever. In `decide()`, the fatal reason becomes
+   `name + ': the account or session is unusable; a human must act'`.
+4. `lib.mjs` - `runRefresh`, the connect. Replace `const cx = await client();`
+   with a `let cx;` and a `try { cx = await client(); } catch (err) { ... }`
+   whose catch calls `decide(err, { maxWaitS })` once; if `!d.fatal`,
+   `throw err` (a crash stays a crash - section 12's accepted connect
+   failure; no retry); otherwise `log('stopped: ' + d.reason)`, build
+   `baseResult()` with `pending = todo`, `notLive = notLive`,
+   `stopped = d.reason`, `exitCode = 2`, and return it (the shape of the
+   `ready.length === 0` branch; `finish()` cannot be used here because its
+   closures are declared below). One why-comment: connect-time errors never
+   passed through `decide()`, so a dead session surfaced as exit 1 and a
+   banned account as whatever its first RPC threw.
+5. `lib.mjs` - after `attempt()`, add
+   ```js
+   // Reads share the sends' and presses' table: a FLOOD_WAIT or a transport
+   // blip on incoming()/byIds() is a resumable stop, not a crash (B6 review
+   // R1). A read never yields `unanswered` (that is press-only), but this
+   // does not assume it.
+   async function read(action) {
+     const r = await attempt(action);
+     if ('value' in r) return r;
+     return { stopped: r.stopped || 'read unanswered', exitCode: r.exitCode || 0 };
+   }
+   ```
+6. `lib.mjs` - the five call sites, exactly:
+   (a) the recovery scan: `const scanR = await read(() => cx.incoming({ limit: RECOVER_SCAN }));`
+   then `if (scanR.stopped) { stopped = 'recovery scan: ' + scanR.stopped; exitCode = scanR.exitCode; await closeQuietly(); return finish(); }`
+   and `const scan = scanR.value;`. No `record()` on this path.
+   (b) and (c) the two button polls (`replies = await cx.incoming({ afterId: sentId, limit: BUTTON_FETCH })`,
+   first read and inside the `while`): each becomes a `read(...)`; on
+   `stopped`, set `stopped = 'button poll: ' + r.stopped; exitCode = r.exitCode; break batchLoop;`
+   (the label reaches out of the `while`). The batch was already sent and
+   pushed onto `sent`; its URLs stay pending; no `record()` here - the
+   previous batch's already ran.
+   (d) `pressGroup`'s refetch: replace `const refetched = ids.length ? await cx.byIds(ids) : [];`
+   with `let refetched = []; let readStop = null; let readCode = 0; if (ids.length) { const r = await read(() => cx.byIds(ids)); if (r.stopped) { readStop = 'refetch: ' + r.stopped; readCode = r.exitCode; } else refetched = r.value; }`.
+   The classification loop below is unchanged (an empty `refetched` makes
+   every delta `unseen`, and `p.answered` still confirms). The return
+   becomes `stopped: stop || readStop, exitCode: stop ? code : readCode`.
+   One why-comment: an answered press is confirmed by the existing rule
+   whether or not the message could be re-read - `unseen` already means
+   exactly that - so a failed refetch costs telemetry, not evidence, and
+   the run stops because the transport is not healthy.
+   (e) `close()`: add `async function closeQuietly() { try { await cx.close(); } catch (err) { log('warning: disconnect failed: ' + ((err && err.message) || String(err))); } }`
+   next to `finish()` and use it at both existing `await cx.close()` sites
+   and in (a). A disconnect that fails after the work is done is not a
+   failed run.
+7. `lib.mjs` - `record()`: `writeResult({ site: manifest.site, urls: pick(manifest.urls, confirmedSoFar) })`.
+   One why-comment: `--apply` reads `site` from here so the record step no
+   longer rebuilds the manifest from whatever tree `main` is at commit time
+   (R1-deferred item 7).
+8. `client.mjs` - delete the `if (!(await client.isUserAuthorized())) { throw new Error(...) }`
+   block. Replace it with a comment: teleproto's `isUserAuthorized()` is
+   `try { updates.getState() } catch { return false }` (`client/users.js`),
+   which swallows the class name `decide()` classifies on and reports a
+   transport blip as "not authorized"; the first RPC below throws the real
+   error instead, and `runRefresh` classifies it. Nothing else in the file
+   changes; the header's promise (nothing prints `apiId`, `apiHash`,
+   `session`) holds.
+9. `manifest.mjs` - add `const ROOT_HTML = join(ROOT, 'app', 'index.html');`
+   with a why-comment: since issue 47's cut-over `ci.yml` deploys
+   `dist/index.html`, built from `app/index.html`; the legacy root
+   `index.html` is not published, and fingerprinting it would leave the
+   root URL silently unrefreshed the first time `app/index.html`'s
+   `og:description` moves alone (B6 review R5). `rootHtml` becomes
+   `readFileSync(assets ? join(dir, 'index.html') : ROOT_HTML, 'utf8')`;
+   `readImage: readImageFrom(dir)` stays (`og/` is a tracked source
+   directory that `deploy` copies verbatim). Update the header comment's
+   "the root index.html" to name `app/index.html`. `--assets <dir>` keeps
+   meaning "both live under `<dir>`".
+10. `run.mjs` - three changes:
+    (a) `readState(path)`: read with `readFileSync` inside `try`; on an error
+    with `err.code === 'ENOENT'` return `{}`, otherwise rethrow; then
+    `JSON.parse` inside its own `try`, and on failure throw
+    `new Error('state file is not valid JSON: ' + path + ' (' + err.message + ') - refusing to treat it as empty')`.
+    Drop `existsSync` from the import. One why-comment: a file that exists
+    and does not parse is corrupt, not absent - returning `{}` made a
+    refresh re-send the catalogue and, under `--apply`, committed a state
+    with every other entry dropped (B6 review R3).
+    (b) the `--apply` branch: remove its `buildFromTree(...)` call;
+    `const result = JSON.parse(readFileSync(opts.apply, 'utf8'));`
+    `if (!result.site) throw new Error('result file carries no site: ' + opts.apply);`
+    `applyResult(state, result, result.site)`. The `buildFromTree` import
+    stays for the refresh path.
+    (c) after the two summary `log` calls, before the `::warning::`:
+    `if (result.exitCode === 2) console.log('::error::' + result.stopped + ' - see docs/tg-preview.md, step I.6');`
+    (`result.stopped` is always set when `exitCode` is 2).
+11. `lib.test.mjs`:
+    (a) the `decide` suite: declare the five new classes beside the existing
+    five and add them to the `for (const Cls of [...])` fatal loop (five
+    more `is fatal for ...` cases).
+    (b) `fakeClient`: an `incoming` queue entry of the shape `{ throw: err }`
+    throws `err` instead of returning; a new option `byIds = []`, a script
+    consumed one entry per `cx.byIds()` call where `{ throw: err }` throws
+    and anything else (or exhaustion) answers from `photoAfter` as today; a
+    new option `closeThrows = false`. Defaults unchanged, so every existing
+    case runs exactly as before.
+    (c) seven new `runRefresh` cases, after "a pressed message byIds cannot
+    re-fetch is counted unseen ...":
+    1. `a transport error on the recovery scan stops the run green after NET_RETRIES, with nothing pressed or written`:
+       `incoming: Array(NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })`;
+       expect `exitCode 0`, `stopped` matching `/^recovery scan: /`,
+       `confirmed []`, `pending.length` = the stale count, `deps.written.length 0`,
+       `fake.sent.length 0`, `fake.closed.value true`.
+    2. `a FLOOD_WAIT on the recovery scan is slept through and the scan re-read`:
+       `incoming: [{ throw: new FloodWaitError(5) }, [], repliesFor(urls, 1000)]`
+       with presses `ok`; expect `floodWaits 1`, `confirmed.length` = all,
+       `fake.incomingCalls.count >= 3`.
+    3. `a failed button poll stops the run with the sent batch pending and the previous batch recorded`:
+       `fakeManifest(15)` (16 URLs, two batches); `incoming: [[], repliesFor(batch1, 1000), ...Array(NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })]`;
+       expect `fake.sent.length 2`, `confirmed.length 10`, `pending.length 6`,
+       `deps.written.length 1`, `stopped` matching `/^button poll: /`,
+       `exitCode 0`.
+    4. `a failed post-press refetch counts the group unseen, confirms its answered presses, records them and stops`:
+       four URLs recovered in phase 1 (`incoming: [[buttonMsg(...) x4]]`),
+       `press: [{ text: 'ok' }, { throw: new BotResponseTimeoutError() }, { text: 'ok' }, { text: 'ok' }]`,
+       `byIds: Array(NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })`;
+       expect `photo` = `{ newId: 0, sameId: 0, none: 0, unseen: 4 }`,
+       `confirmed.length 3`, `pending.length 1`, `deps.written.length 1`,
+       `stopped` matching `/^refetch: /`, `fake.sent.length 0`.
+    5. `a fatal class on a read is exit 2`: `incoming: [{ throw: new AuthKeyUnregisteredError() }]`;
+       expect `exitCode 2`, `deps.written.length 0`.
+    6. `a dead credential at connect is exit 2 with nothing written; a transport error at connect still rejects`:
+       `clientFactory: async () => { throw new SessionRevokedError(); }` ->
+       `exitCode 2`, `stopped` matching `/SessionRevokedError/`,
+       `pending.length` = the stale count, `deps.written.length 0`; then
+       `clientFactory: async () => { throw new Error('ECONNRESET'); }` ->
+       `await assert.rejects(runRefresh(...), /ECONNRESET/)`.
+    7. `a disconnect that fails does not fail the run`: `closeThrows: true`
+       with a clean one-batch run; expect `exitCode 0`, `confirmed.length` =
+       all, a log line matching `/disconnect failed/`.
+    (d) extend "writes a --result entry alongside state after each batch"
+    with `assert.equal(deps.results[0].site, manifest.site)`.
+    (e) the `extractMeta` case "reads the root index.html" reads
+    `join(ROOT, 'app', 'index.html')` and is renamed "reads the deployed
+    root's source, app/index.html"; the assertions stay.
+    Expect **96 passing** (84 + 5 + 7); if the count differs, the number of
+    new cases is what to check, not the existing ones.
+12. `.github/workflows/previews.yml`: both `git fetch --depth=1 origin main`
+    lines become `git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main`
+    (one in Refresh, one inside the record step's `for`); the Refresh
+    step's `else` echo becomes
+    `state.json could not be read from origin/main; using the checked-out copy`.
+    Then `npx prettier --write .github/workflows/previews.yml` and
+    `npx prettier --check .github/workflows/previews.yml`; copy each `run:`
+    block to the scratchpad and `bash -n` it.
+13. `.gitignore`: inside the existing `tools/tg-preview` block, add
+    `tools/tg-preview/state.json.tmp` with the comment "the atomic state
+    write's temp file, left behind only if a run is killed between write and
+    rename".
+14. `docs/tg-preview.md`, in place: (a) step I.6 replaced by section 9's
+    pass-7 text (the quoted block, minus the `>`); (b) step J gains the one
+    sentence in section 9; (c) Operations, the "What turns the CI job red"
+    bullet: "(`Refresh` exiting 1 or 2 ...)" becomes a pointer - "exit 2 is
+    a credential or account a human must act on, exit 1 a crash or a corrupt
+    state file; step I.6 maps each message to the step that fixes it" - and
+    gains "a Telegram read that fails after its retries (recovery scan,
+    button poll, refetch) is a green stop like any other"; (d) "What CI does
+    after a deploy", the red paragraph: same correction, one sentence; (e)
+    Coverage: after "the error-handling table (including an unanswered
+    press)" add ", which every Telegram read goes through as well"; (f)
+    afterwards `grep -n "exit 1\|exit 2\|revoked\|dead" docs/tg-preview.md`
+    and read each hit - no sentence may still say a revoked session is exit
+    2 without the "when Telegram names it" sense, or list "dead credential"
+    as the only exit-2 case.
+15. Gates and proofs, all without Telegram:
+    - `node --test tools/tg-preview/lib.test.mjs` -> 96 pass.
+    - `node tools/tg-preview/run.mjs --dry-run` -> the **same** counts line
+      as B6 recorded (`125 urls stale, 125 ready, up to 13 messages, 125
+      presses (press budget 50)` if the site has not moved; if `ready`
+      differs, that is the live check, not this batch - record it), exit 0,
+      `git status --porcelain -- tools/tg-preview` clean. A different
+      **stale** count means R5's change altered a fingerprint - stop and
+      report.
+    - R3, refresh path: `printf '{' > "$SCRATCH/corrupt.json"`;
+      `node tools/tg-preview/run.mjs --dry-run --no-verify --state "$SCRATCH/corrupt.json"`
+      -> exit 1, stderr `tg-preview run failed: state file is not valid
+      JSON: ...`. Then `--state "$SCRATCH/absent.json"` -> `1092 urls
+      stale ...`, exit 0 (the bootstrap, unchanged). Neither writes anything.
+    - R3, apply path, and the `site` change: `cp tools/tg-preview/state.json "$SCRATCH/s.json"`;
+      write `$SCRATCH/r.json` as `{"site":"https://artex-x.github.io/daggerheart-loot/","urls":{}}`;
+      `node tools/tg-preview/run.mjs --apply "$SCRATCH/r.json" --state "$SCRATCH/s.json"`
+      -> `state updated from ...`, exit 0, and `$SCRATCH/s.json` still has
+      1062 keys (one `node -e` count). Then the same with
+      `--state "$SCRATCH/corrupt.json"` -> exit 1 and `corrupt.json`
+      unchanged. Then with an `r.json` lacking `site` -> exit 1,
+      `result file carries no site`. `git hash-object tools/tg-preview/state.json`
+      afterwards is still `7c6e37eb...`.
+    - `npx prettier --check .github/workflows/previews.yml`; `bash -n` on
+      both blocks.
+    - **The check**, one foreground call:
+      `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout
+      600000. The `searchPage.test.ts` load flake is re-run once, not
+      diagnosed.
+16. Stage by path: the five `.mjs` files, `previews.yml`, `.gitignore`,
+    `docs/tg-preview.md`, the three task files (handoff updated per
+    "Definition of done"). Commit
+    `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state`.
+    `git status --porcelain` afterwards is empty. Do not push.
+
+**Acceptance criteria.**
+
+- `node --test tools/tg-preview/lib.test.mjs`: 96 pass, including the seven
+  cases in step 11c and the five new fatal names.
+- `grep -n "cx\.incoming\|cx\.byIds" tools/tg-preview/lib.mjs` shows exactly
+  four lines, every one inside `read(() => ...)`; `grep -c "cx\.close()"`
+  is 1 (inside `closeQuietly`).
+- `grep -c "UserDeactivatedBanError\|AuthKeyDuplicatedError\|PhoneNumberBannedError\|YouBlockedUserError\|UserDeactivatedError" tools/tg-preview/lib.mjs`
+  is 5; `grep -c "credential is dead" tools/tg-preview/lib.mjs` is 0.
+- `grep -c "isUserAuthorized" tools/tg-preview/client.mjs` is 0.
+- `grep -c "existsSync" tools/tg-preview/run.mjs` is 0;
+  `grep -c "buildFromTree" tools/tg-preview/run.mjs` is 2 (import and the
+  refresh path); `grep -c "::error::" tools/tg-preview/run.mjs` is 1.
+- `grep -c "'app', 'index.html'" tools/tg-preview/manifest.mjs` is 1.
+- `grep -c "refs/heads/main:refs/remotes/origin/main" .github/workflows/previews.yml`
+  is 2; `grep -c "every url counts as stale"` is 0; `prettier --check`
+  passes; `grep -c "cron:"` is still 1 and `grep -c "continue-on-error"`
+  still 0.
+- `grep -c "state.json.tmp" .gitignore` is 1.
+- `node tools/tg-preview/run.mjs --dry-run` reports the same stale count as
+  B6 (recorded in the handoff beside B6's line), exits 0, writes nothing.
+- The four scratch-file proofs in step 15 behave as written, and
+  `git rev-parse HEAD:tools/tg-preview/state.json` and
+  `git hash-object tools/tg-preview/state.json` are both `7c6e37eb...`.
+- `docs/tg-preview.md` step I.6 lists the four exit-2 groups and the
+  corrupt-state exit 1; `grep -c "recovery scan" docs/tg-preview.md` >= 1.
+- The deferred items this plan placed in B7 are done as their own lines:
+  R1-deferred item 7 (`--apply`'s `buildFromTree()`) - `run.mjs` no longer
+  calls it on that path; the B6 nit "every url counts as stale" - gone; the
+  B6 nit `state.json.tmp` - ignored; the B6 nit "exit 2 for a dead
+  credential" - the docs and 3.5 corrected; the B6 nit "Next action"
+  heading - `handoff.md` uses the template's "Next batch (implement-ready)".
+- `git status --porcelain` is empty after commit 2; `.env` never appears in
+  any `git diff --cached --name-only`; `state.json` appears in none either.
+- `npm run check` green in one foreground call.
+
+**Verification commands.**
+
+```text
+node --test tools/tg-preview/lib.test.mjs
+node tools/tg-preview/run.mjs --dry-run
+printf '{' > "$SCRATCH/corrupt.json"
+node tools/tg-preview/run.mjs --dry-run --no-verify --state "$SCRATCH/corrupt.json"    # exit 1, "state file is not valid JSON"
+node tools/tg-preview/run.mjs --dry-run --no-verify --state "$SCRATCH/absent.json"     # 1092 urls stale, exit 0
+cp tools/tg-preview/state.json "$SCRATCH/s.json"
+node tools/tg-preview/run.mjs --apply "$SCRATCH/r.json" --state "$SCRATCH/s.json"      # state updated; 1062 keys remain
+node tools/tg-preview/run.mjs --apply "$SCRATCH/r.json" --state "$SCRATCH/corrupt.json" # exit 1
+git hash-object tools/tg-preview/state.json                                             # 7c6e37eb...
+npx prettier --check .github/workflows/previews.yml
+set -o pipefail; npm run check 2>&1 | tail -n 120                                       # Bash timeout 600000, once
+git status --porcelain
+```
+
+**Risks / do-nots.**
+
+- Never run `run.mjs` without `--dry-run` except the two `--apply`
+  invocations above, and those only against `--state` files in the
+  scratchpad. Never read `.env`.
+- Never stage, edit or regenerate `tools/tg-preview/state.json`; the hash
+  is the proof.
+- Do not change the fake client's default behaviour in `lib.test.mjs`; the
+  named existing cases in 3.11 must pass without edits.
+- Do not add a connect retry, a run counter, a state shape check, a new
+  flag, a new workflow input, `continue-on-error`, or a new exit code.
+- Do not flip `decide()`'s catch-all to red; do not remove any existing
+  fatal name.
+- Do not touch `og/`, `index.html`, `app/index.html`, `ci.yml`, or merge
+  `origin/main`.
+- If the dry run's **stale** count differs from B6's after the
+  `manifest.mjs` change, stop: it means `app/index.html` and `index.html`
+  no longer agree on a tag, which is a fact to record, not a reason to
+  touch either file.
+
+**Fallback.** If deleting `client.mjs`'s guard leaves no RPC before
+`getEntity` that would surface the session error in the shape `decide()`
+expects (it does today: `getEntity('WebpageBot')` is `contacts.ResolveUsername`),
+replace the guard with a bare `await client.invoke(new Api.updates.GetState())`
+- the same call teleproto's guard makes, without the `catch` that swallows
+it. Do not reintroduce a plain `Error`.
+
 ## 11. Open questions - NEEDS_HUMAN_CONFIRMATION: no
+
+**Revised (pass 7). Pass 7 raises none.** Every fork has a repository- or
+evidence-picked winner, recorded with its rejected alternative in 3.11:
+names in `FATAL_ERRORS` over a run counter; reads through `attempt()` over
+a wider `try/catch`; a thrown parse error over a shape model; `app/index.html`
+over `--assets dist` plus a CI build; B7 before the merge over after it.
+None changes UX, architecture or a public contract, and the owner's own
+sentence - red means the next run will not fix it - is the specification
+each of them implements. One thing the owner should know, not decide: the
+recommended order is now **B7, then merge**; if they merge first, B7 still
+lands unchanged as a follow-up.
 
 **Revised (pass 6). Pass 6 raises none.** Every fork in this pass has a
 repository- or evidence-picked winner, recorded with its rejected
@@ -2729,8 +3503,40 @@ this question is open.
 
 ## 12. Risks and assumptions
 
-**Revised (pass 6).** Pass-6 entries first, then pass 5's, pass 4's and pass
-3's; all of them still hold except where noted.
+**Revised (pass 7).** Pass-7 entries first, then pass 6's, pass 5's, pass
+4's and pass 3's; all of them still hold except where noted.
+
+- **An RPC error named nowhere still stops green.** `decide()`'s catch-all
+  is unchanged by design (3.4, 3.11): the alternative turns every unknown
+  Telegram-side condition into a red the owner has to triage. The residual
+  is a class the list does not name that is nevertheless permanent - the
+  symptom would be the same `stopped: <ERROR_MESSAGE>` with `pending > 0`
+  on consecutive scheduled runs, visible in the `::warning::` line. Nothing
+  automated watches for it; the owner's I.3/I.4 reads are the watch. If it
+  happens, the fix is one more name in `FATAL_ERRORS`, not a counter.
+- **`npm audit --audit-level=high` runs six times a day and a new advisory
+  is red until someone bumps the dependency.** Accepted (3.11): the process
+  holds a full account session and `ci.yml` applies the same rule. The
+  first such red has a known cause and a known fix (`npm audit fix` or a
+  pinned bump in `tools/tg-preview/package-lock.json`, its own commit).
+- **The dead-session exit code is read from teleproto, not measured.** A
+  terminated session's first RPC failing with the 401 class
+  (`AuthKeyUnregisteredError`), and a forgotten key being re-keyed by the
+  sender before that, are read from `client/users.js` and
+  `network/MTProtoSender.js`. If a live dead session surfaces as something
+  else - `InvalidBufferError`, a plain `Error` from the sender - it is exit
+  1, still red, with the message in the log; the docs say "when Telegram
+  names it" for this reason. Rotation day (step J) is when this gets
+  measured for free.
+- **Vite is assumed to pass `<meta>` through unchanged.** Documented
+  behaviour, not measured on this tree (`dist/` is not built here). If it
+  did rewrite a tag, the root URL would read `not live` on every run - loud
+  - and the fix would be `--assets dist` after all.
+- **A `button poll` stop leaves a sent batch's buttons unpressed until the
+  next run's phase 1**, which finds them only inside `RECOVER_SCAN = 200`
+  messages. Ten links produce eleven bot messages, so a stop there is
+  recoverable for roughly the next eighteen batches' worth of chat; a
+  four-hourly cron reaches it long before that.
 
 - **The phase-1 assumption gets its first real test on the first CI run,
   and the test is in the words.** `main` changed `og:description` on the 94
@@ -2855,8 +3661,24 @@ Left deferred, with the reason:
    and removes the word-splitting dependency in one move.
 6. **The unused `urls()` export** - test-only surface in `lib.mjs`; removing
    it churns the 1062-count test for no behaviour change. B2, or never.
-7. **`--apply`'s needless `buildFromTree()`** - it exists only to obtain
-   `site`; cosmetic cost on a path B3 does not touch. B2.
+7. ~~**`--apply`'s needless `buildFromTree()`** - it exists only to obtain
+   `site`; cosmetic cost on a path B3 does not touch. B2.~~ **Folded into
+   B7 (pass 7)**: `result.json` carries `site`, and the record step no
+   longer depends on `main`'s tree being buildable at commit time.
+
+**Pass 7 - the B6 review's items, decided.** Into B7: R1, R2 (both parts),
+R3, R4, R5, and the nits on `previews.yml`'s `else` message, `.gitignore`,
+the exit-code wording, `--apply`'s `buildFromTree()`, and the handoff
+heading - section 3.11 gives the test each passed. Left deferred:
+
+- **`npm audit` on the cron** - accepted as the contract (3.11, section 12);
+  no change.
+- **The catch-all's green default** - unchanged; one more name in
+  `FATAL_ERRORS` if a permanent class ever shows up (section 12).
+- **B4 nits 1, 4, 6** and **R1-deferred item 6** - unchanged from pass 6.
+- **A connect retry around `client()`** - still only if connect failures
+  turn out to be frequent; B7's connect classification is about the exit
+  code, not about retrying.
 
 Folded into B6 in pass 6, and why: **B4 review nit 3** (the `--mode full`
 warning sits after `client()`, so `--dry-run --mode full` never shows it) -

@@ -2,10 +2,10 @@
 
 Recovery state for the next session. Read `CLAUDE.md`, then
 `issues/tg-preview-refresh/context.md` (in full - end with "The local reindex
-finished; the goal is now CI" and "Added by the planner, pass 6", which carry
-everything pass 6 was given and everything it measured), then `plan.md` (its
-"Revision history" block first - there are now **six** passes), then this
-file.
+finished; the goal is now CI", "Added by the planner, pass 6" and "Added by
+the planner, pass 7"), then `plan.md` (its "Revision history" block first -
+there are now **seven** passes; section 3.11 is pass 7's reasoning and
+section 10d is the batch), then this file.
 
 ## Start here - a session that has none of this in context
 
@@ -16,8 +16,8 @@ authorised on 2026-09-11:
 |---|---|
 | Worktree | `E:/dev/daggerheart-loot-wt/tg-preview-refresh` |
 | Branch | `automation/tg-preview-refresh` |
-| Base | `8b96ff4`; **`origin/main` is merged in** as of B6 (`1106355`, merged 2026-09-16) |
-| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` |
+| Base | `8b96ff4`; `origin/main` merged in at `1106355` by B6 (`3f6231c`) |
+| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` -> `72d8de0` |
 
 The task-directory copies **in that worktree** are authoritative. The copy
 under `E:/dev/daggerheart-loot` is a stale snapshot - do not read it as
@@ -36,207 +36,157 @@ Six facts a fresh session will not infer, in descending order of how much
 damage getting them wrong does:
 
 1. **`.env` in this worktree holds a live Telegram user session.**
-   **No agent runs `run.mjs` without `--dry-run`, ever.** Do not read,
-   print or copy `.env`; `bash-guard` denies it and that is correct.
-2. **`tools/tg-preview/state.json` is the owner's finished reindex** - 1062
-   complete entries, `updatedAt 2026-09-14T20:04:16.406Z`, blob hash
-   `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`. **B6 committed it unchanged**
-   (`54b84b3`, one file); `git rev-parse HEAD:tools/tg-preview/state.json`
-   still returns that hash. It is never edited, regenerated, reformatted or
-   deleted; never `git add -A`.
-3. **The merge is done** (`3f6231c`, `origin/main` at `1106355`), with the
-   one predicted conflict - `package.json`'s `"check"` line - resolved as the
-   union.
-4. **The dry run on the merged tree is *not* `nothing to refresh`, and that
-   is correct.** Measured: `125 urls stale, 125 ready, up to 13 messages,
-   125 presses (press budget 50)` of 1092. That is CI's first backlog, not a
-   lost state.
-5. **The CI job is live the moment `main` has it.** `previews.yml` now has a
-   four-hourly `schedule:`, so the owner's merge push both fires the first
-   `workflow_run` run and arms the cron.
-6. **Pushing and merging into `main` are the owner's** (`CLAUDE.md`). B6 ended
-   with four local commits and no push; the owner's merge push is what turns
-   the CI job on (`plan.md` section 3.10 - the first real run is automatic).
-
-**B6 is shipped. The next action is O3, the owner's** - see "Next batch".
-Nothing else is in flight in this worktree.
+   **No agent runs `run.mjs` without `--dry-run`, ever** - the two `--apply`
+   proofs in B7 run only against scratch-file copies under `--state`. Do not
+   read, print or copy `.env`; `bash-guard` denies it and that is correct.
+2. **`tools/tg-preview/state.json` is committed** (`54b84b3`, one file) and
+   is the owner's finished reindex: 1062 entries, blob hash
+   `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`. It is never edited,
+   regenerated, reformatted, staged or deleted; never `git add -A`.
+3. **B6 is shipped and reviewed approve; the review found five risks.** Two
+   of them are holes in the exit-code contract the owner asked for (a false
+   red on failed Telegram reads, a false green on a dead account). **B7**
+   closes them and is implement-ready below. It is the next batch.
+4. **B7 lands before the owner merges.** The recommended order is B7 ->
+   O3, not the other way round (`plan.md` 3.11, last subsection). If the
+   owner has already merged, B7 still lands unchanged as a follow-up.
+5. **`origin/main` moved one commit since B6**, to `3504bf7` (a hooks fix,
+   none of this task's files). B7 does **not** re-merge; the owner's merge
+   takes it.
+6. **Pushing and merging into `main` are the owner's** (`CLAUDE.md`).
+   Nothing on this branch is pushed. The owner's merge push is what turns
+   the CI job on, and it fires the first real run automatically.
 
 ## Status
-- Task status: **in_progress - B6 shipped 2026-09-16 (four commits, both
-  gates green, nothing pushed). Waiting on O3, the owner's merge into `main`
-  and first-run watch (`plan.md` section 9, steps I-J).**
-- Last agent: **implementer (2026-09-16, B6).** No Telegram contact of any
-  kind; every `run.mjs` invocation carried `--dry-run`; `.env` not read;
-  `state.json` committed byte-for-byte and never edited.
-- NEEDS_HUMAN_CONFIRMATION: **no.** Two things the owner should know, neither
-  a decision: the first real CI run fires automatically on the merge push,
-  and its first backlog is 125 URLs because `main`'s content changed after
-  the local reindex.
+- Task status: **in_progress - B6 shipped and reviewed approve
+  (2026-09-16); pass-7 planning done; B7 implement-ready and not started.**
+  O3 (the owner's merge and first-run watch) follows B7.
+- Last agent: **planner (2026-09-16, pass 7).** No production code touched;
+  no gates run; no Telegram contact; `.env` not read; `state.json` not
+  touched (tree clean before and after; only `git fetch origin main` was
+  run, which is read-only).
+- NEEDS_HUMAN_CONFIRMATION: **no.** One thing the owner should know, not
+  decide: the recommended order is now B7, then merge. Nothing in B7 needs
+  their input.
 - Branch: `automation/tg-preview-refresh`, worktree
   `E:/dev/daggerheart-loot-wt/tg-preview-refresh`. **Not pushed.**
-- Base / starting commit for the next batch: the `ci(tg-preview)` commit at
-  the tip of this branch (`git log -1`), on top of `origin/main` `1106355`.
-- Working tree after B6: **clean** (`git status --porcelain` empty).
+- Base / starting commit for B7: `72d8de0` (the branch tip), which is B6's
+  record commit on top of `f5e5d69`.
+- Working tree after pass 7: the three task files modified, nothing else
+  (`git status --porcelain` shows only `issues/tg-preview-refresh/`).
 
 ## Completed
 
+### Pass 7 (planner, 2026-09-16) - the B6 review, filed and answered
+
+- **Verdict recorded: approve**, five risks R1-R5, six nits. Every item is
+  either in B7 (below) or under Deferred with its reason; `plan.md` 3.11
+  gives the test each one passed - the owner's own contract, "red means the
+  next run will not fix it".
+- **Q1 - what goes into B7.** R1 (false red) and R2 (false green, both the
+  `FATAL_ERRORS` gap and the revoked session exiting 1) because they are
+  the definition's holes; R3 because it is the highest-cost latent path
+  and four lines on an open file; R4 because it is two lines with no
+  downside; R5 on its merits - the failure mode is the silent stale preview
+  this task exists to remove, on the URL every `#/i/<id>` share resolves to,
+  and the fix is one path (`--assets dist` plus a CI build rejected: a root
+  `npm ci` and a Vite build six times a day to read three tags). Nits in:
+  the `else` message, `state.json.tmp`, the exit-code wording, `--apply`'s
+  `buildFromTree()` (result carries `site`), this file's heading. Deferred:
+  `npm audit` on the cron (it *is* the contract), the catch-all's green
+  default, B4 nits 1/4/6, R1 item 6, a connect retry.
+- **Q2 - R1 without changing what a stop means.** A `read()` helper over
+  the existing `attempt()`; it touches no press budget. Recovery scan fails
+  -> green stop, nothing pressed, nothing written. Button poll fails -> the
+  sent batch stays pending, previous record intact, run stops. Post-press
+  `byIds` fails -> every delta `unseen`, answered presses confirm under the
+  **unchanged** rule and are recorded, run stops. `close()` cannot fail the
+  run. `confirmed + pending = stale` still holds. The `lib.test.mjs` cases
+  that must not change are named in 3.11; the fake's defaults do not change.
+- **Q3 - R2's shape.** Five names in `FATAL_ERRORS` (reviewer's four plus
+  `UserDeactivatedError`), all verified present in teleproto 1.229.0; the
+  connect classified once by `decide()` for the fatal row only;
+  `client.mjs`'s `isUserAuthorized()` guard removed because teleproto
+  implements it as `try { getState } catch { return false }` and it
+  swallows the class name. Run counter rejected: needs state the tool does
+  not have, fires on legitimate long stops, names no cause. The owner sees
+  a red run, `stopped: <Class>: the account or session is unusable; a human
+  must act` in the log and as `::error::`, and I.6 maps the class to the
+  step (D.3 for a session, A-D for an account, unblock for
+  `YOU_BLOCKED_USER`).
+- **Q4 - the runbook.** No procedure step changes; I.6 and J are corrected
+  (the code exited 1, not 2, on a revoked session; account-level classes
+  were not listed; a corrupt state is a new exit-1 red). The 3.5 table is
+  corrected in the same batch.
+- **Q5 - ordering.** B7 before the merge: it changes what red and green
+  mean in the two directions that matter, depends on no evidence from
+  `main`, is one batch and one check on this task's own files, and costs
+  one local batch before a switch that then runs unattended every four
+  hours. If the owner merges first, nothing in B7 is invalidated.
+- **Files written:** `plan.md` (pass-7 revision: revision history, section
+  1's cut-over note, 3.4's pass-7 rows, 3.5's corrected table, new 3.11,
+  section 4's tree notes, 5.2's pass-7 note, 6's pass-7 lines, 7's pass-7
+  list, 8 re-confirmed for B7, 9's I.6/J revision, the batch list with B6
+  shipped and B7 added, new **10d**, 11-13), `handoff.md` (this file),
+  `context.md` (one appended block, "Added by the planner, pass 7").
+- **Commits:** none by the planner. The implementer commits the pass-7 task
+  docs first, on their own (section 10d, commit 1).
+
 ### B6 - onto `main`, and the fail-safe CI job
 
-- **Status: shipped 2026-09-16.** Four commits, in the order section 10c
-  requires, on top of `4a042c7`:
+- **Status: shipped 2026-09-16, reviewed approve.** Four commits on top of
+  `4a042c7`, in the order section 10c requires:
 
   | # | sha | what |
   |---|---|---|
-  | 1 | `97e0209` | `docs(tg-preview): pass 6 - CI fail-safety, the merge, and the committed state` - the three task files, gate-exempt |
-  | 2 | `3f6231c` | `Merge remote-tracking branch 'origin/main'` - **`origin/main` = `1106355`**, not the `5a36c4a` the plan named |
-  | 3 | `54b84b3` | `chore(tg-preview): record the first full reindex` - `tools/tg-preview/state.json` alone, 1069 insertions |
-  | 4 | `f5e5d69` | `ci(tg-preview): make the previews job fail-safe and schedule it` - the workflow, the two folded-in fixes, the atomic `--result` write, the dry-run summary line, the runbook, and this file |
+  | 1 | `97e0209` | `docs(tg-preview): pass 6 - CI fail-safety, the merge, and the committed state` |
+  | 2 | `3f6231c` | `Merge remote-tracking branch 'origin/main'` - `origin/main` = `1106355` |
+  | 3 | `54b84b3` | `chore(tg-preview): record the first full reindex` - `state.json` alone, 1069 insertions |
+  | 4 | `f5e5d69` | `ci(tg-preview): make the previews job fail-safe and schedule it` |
 
-  A fifth, docs-only commit on this gate-exempt file records commit 4's own
-  sha, the way `4a042c7` recorded B5's - section 10c could not name a sha
-  that did not exist when its commit was written.
-
-- **`origin/main` had moved** two commits past the plan's `5a36c4a`, to
-  `1106355 docs(config-audit): record B3 completion, gates, and the pending
-  closeout` (via `7cc259d feat(hooks): deny RTK-bypassing readers, warn past
-  the task-state budget`). Step 3's re-measurement was therefore run:
-  `git merge-tree 8b96ff4 HEAD origin/main` reported the same five
-  `changed in both` files and **exactly one** conflict hunk, still
-  `package.json`'s `"check"` line. Resolved as the union the plan specifies
-  (`node --check tools/check-site.mjs` after `typecheck`, `node --test
-  tools/tg-preview/lib.test.mjs` before `npm run test`, `"previews"` kept).
-  The real merge produced that one conflict and nothing else.
-- **The four auto-merged files were read and left as git produced them:**
-  `tools/tg-preview` appears once in each README's layout table, the
-  `lib.test.mjs` paragraph in `docs/specs/COVERAGE.md` is intact and
-  unduplicated, `docs/specs/META.md` section 7 is intact. No fix needed.
-- **No `npm ci`**: `git diff --cached --stat -- package-lock.json .nvmrc` was
-  empty after the merge.
-- **`state.json` is byte-identical to the owner's file.**
-  `git hash-object` = `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de` before
-  staging and after the commit (`git rev-parse HEAD:tools/tg-preview/state.json`
-  returns the same). Structural read:
-  `1 https://artex-x.github.io/daggerheart-loot/ 1062
-  2026-09-14T20:04:16.406Z true`. No `state.json.tmp` sibling at any point;
-  `git diff --cached --name-only` named one file and never `.env`.
-- **The post-merge backlog, recorded, not fixed:**
-  `125 urls stale, 125 ready, up to 13 messages, 125 presses (press budget
-  50)`, with `buildFromTree()` reporting **1092 urls, 0 missing**. Inside the
-  plan's predicted 125-135 of 1092. All 125 are `ready`, so `main`'s tip was
-  already deployed. The same count came back on the final tree.
-  Pre-merge the same command read `nothing to refresh`.
-- **The manifest still builds through `main`'s changed
-  `tools/build-share-pages.js`** - the issue-47 seam in `manifest.mjs` holds;
-  the fallback in section 10c was not needed.
-- **Code changes, exactly the four the batch allows:** the `--mode full`
-  warning moved above the dry-run branch in `lib.mjs` (so
-  `--dry-run --mode full` now prints it first - verified live); its test
-  assertion tightened to `press budget of 2` and one new case added (a dry
-  run under `--mode full` logs the warning with a client factory that throws
-  if loaded); `writeResult` made atomic (tmp + `renameSync`); a dry-run job
-  summary line in `run.mjs` behind `GITHUB_STEP_SUMMARY`.
-- **`previews.yml`:** `schedule: - cron: '23 */4 * * *'` with its why-comment;
-  the job `if:` now `github.event_name != 'workflow_run' || ...`; the
-  `Secrets present?` step and all four `steps.cfg.outputs.skip` conditions
-  deleted (the record step is `always() && env.DRY_RUN != 'true'`); the
-  argument list is a bash array; `--budget-minutes 45` -> `40`; `node` wrapped
-  in `timeout --kill-after=30s 50m` with the `code=0; ... || code=$?` capture
-  and the `case` mapping `124`/`137` to a notice, a summary line and green.
-  No `continue-on-error`, no new input, no kill switch, no exit-code change.
-- **`docs/tg-preview.md`:** the A-G "already done" paragraph, H marked done,
-  I replaced by section 9's six-point first-run procedure, J replaced
-  (pause/stop/rotate, plus GitHub's 60-day rule), "What CI does after a
-  deploy" gained the schedule, the three clocks and the red-means list, and
-  the Operations bullets now say a missing secret is red, a 50-minute wall is
-  green, and a CI dry run writes its counts to the job summary. The
-  `notice|skip|45|secrets are not|exits 0` sweep leaves no sentence
-  describing the skip guard, the 45-minute budget or "exits 0 with a notice".
-
-### Pass 6 (planner, 2026-09-16) - the five questions answered
-
-- **Q1 - merge ordering.** Its own committed boundary, after the pass-6
-  docs commit and before the code. Merge, not rebase (eleven shas are cited
-  across the task docs). One textual conflict, measured: `package.json`'s
-  `"check"` line, resolved as the union (`main`'s
-  `node --check tools/check-site.mjs` after `typecheck`, ours
-  `node --test tools/tg-preview/lib.test.mjs` before `npm run test`). The
-  other four shared files auto-merge; the implementer reads the merged
-  hunks once. The root lockfile did not change on `main`, so no `npm ci`.
-  `plan.md` section 3.10.
-- **Q2 - what "fail-safe" means.** **Red means the next run will not fix
-  it.** Exit codes in `lib.mjs`/`run.mjs` do not change (0 for every
-  Telegram-side stop, 2 dead/missing credential, 1 crash). The workflow
-  wraps `node` in coreutils `timeout --kill-after=30s 50m`, captures the
-  code under `bash -e` with `|| code=$?`, maps `124`/`137` to green with a
-  `::notice::` and one `$GITHUB_STEP_SUMMARY` line, re-raises everything
-  else. No `continue-on-error` (it would erase exit 2's red too). The
-  `Secrets present?` skip guard goes: the secrets are configured, and a
-  missing one is now an honest red with the variable named. `plan.md`
-  section 3.5, the table.
-- **Q3 - eventual consistency without a push.** `schedule: '23 */4 * * *'`.
-  An idle run makes no Telegram contact (`nothing to refresh` returns before
-  the live check and the client) and costs about a minute; four hours is
-  four times the one measured cooldown; a 130-URL backlog drains in ~3 runs.
-  The job `if:` must admit it (`github.event_name != 'workflow_run' || ...
-  conclusion == 'success'`). `concurrency` unchanged. Three nested clocks:
-  `--budget-minutes 40` < `timeout 50m` < `timeout-minutes: 60`, so the
-  record step keeps `always()` but never depends on surviving a cancelled
-  job. One forced code change: the `--result` write becomes atomic, because
-  a `KILL` can now land mid-write. `plan.md` section 3.5.
-- **Q4 - the finished `state.json`.** Its own commit, after the merge and
-  before the code, message `chore(tg-preview): record the first full
-  reindex`, staged by path. Verified before staging by hash
-  (`7c6e37eb...`), a header/count read that prints no entry, no `.tmp`
-  sibling, one file in `--cached --stat`. The post-merge stale count is
-  recorded, not "fixed". The tree key already includes untracked files, so
-  the commit needs no check of its own. `plan.md` section 3.10.
-- **Q5 - what can be verified before `main`.** Locally: Prettier parses the
-  YAML inside `npm run check` (`.prettierignore` does not exclude
-  `.github/`; no `actionlint`/PyYAML/`yaml` on this host); `bash -n` per
-  `run:` block; the `timeout` exit mapping by hand; the moved warning by
-  test; the manifest and backlog by dry run; the state by hash. Only
-  `main` proves the triggers, the input defaults per event, the secrets,
-  the push and the summary rendering. The first-run procedure is
-  `plan.md` section 9, steps I and J, and the first real run is automatic
-  on the merge push - the dry-run window is while `check` runs. `plan.md`
-  sections 3.10 and 9.
-- **Folded in:** R1 deferred item 5 (`$LIMIT` quoting - a bash array), B4
-  review nit 3 (the `--mode full` warning moves above the dry-run branch)
-  and nit 5 (the `includes('2')` assertion, same line). Also the dry-run
-  summary line in `run.mjs`, because step I tells the owner to read a
-  summary that is empty today.
-- **Files written:** `issues/tg-preview-refresh/plan.md` (pass-6 revision:
-  revision history, 3.5 revised, new 3.10, section 4's tree, section 6
-  revised, section 7's pass-6 paragraph, section 8 re-confirmed on the
-  merged tree, section 9 H-J revised, the batch list with O2 done and B6/O3
-  added, new section 10c, sections 11-13), `handoff.md` (this file),
-  `context.md` (one appended block of measured facts).
-- **Commits:** none by the planner. The implementer commits the pass-6 task
-  docs first, on their own (section 10c, commit 1).
+  plus `72d8de0`, the docs-only record of commit 4's sha and the gate
+  results.
+- The merge had exactly one conflict (`package.json`'s `"check"` line),
+  resolved as the union; the four auto-merged files were read and left as
+  git produced them; no `npm ci` (lockfile unchanged); `state.json`
+  byte-identical before staging and after the commit; the post-merge dry
+  run `125 urls stale, 125 ready, up to 13 messages, 125 presses (press
+  budget 50)` of 1092, recorded not fixed; the manifest still builds through
+  `main`'s changed stub generator.
+- Code: the `--mode full` warning moved above the dry-run branch; its test
+  tightened plus one case; `writeResult` atomic; a dry-run summary line
+  behind `GITHUB_STEP_SUMMARY`. Workflow: `schedule: '23 */4 * * *'`, the
+  job `if:` admits it, the `Secrets present?` guard deleted, a bash array,
+  `--budget-minutes 40`, `timeout --kill-after=30s 50m` with the
+  `code=0; ... || code=$?` capture and `124`/`137` mapped green. Runbook:
+  A-G marked done, H done, I and J replaced by section 9's text, the
+  schedule, the three clocks, the red-means list.
+- **The review (approve) found:** R1 - `incoming` x3 and `byIds` not in
+  `attempt()`, a resumable stop exits 1; R2 - `FATAL_ERRORS` omits
+  `AuthKeyDuplicated`/`UserDeactivatedBan`/`PhoneNumberBanned`/
+  `YouBlockedUser`, so a dead account stops green forever, and a revoked
+  session exits 1 via `client.mjs`'s guard; R3 - `readState` returns `{}`
+  on a parse error and `--apply` would commit the wipe; R4 - both
+  `git fetch --depth=1 origin main` lines rely on the checkout's refspec;
+  R5 - `manifest.mjs` fingerprints the unpublished root `index.html`. Nits:
+  the `else` message contradicts the branch; `state.json.tmp` not ignored;
+  docs and 3.5 attach exit 2 to a dead credential; `npm audit` six times a
+  day; `--apply` calls `buildFromTree()` for `site` alone; this file's
+  "Next batch" heading was renamed. All filed: B7 or Deferred.
 
 ### B5 - say what the photo counter actually measures
 
-- **Status: shipped.** Docs commit `df76f13`; batch commit `9694782`
-  (`fix(tg-preview): name the photo counter after what it measures`); the
-  handoff/gate record at `4a042c7`. Four photo buckets
-  (`newId`/`sameId`/`none`/`unseen`), `pressed P` as attempts, the same
-  vocabulary through `run.mjs` and `docs/tg-preview.md`. 83/83
-  `lib.test.mjs`; `npm run check` green (vitest 947/947). Full spec in
-  `plan.md` section 10b; the exact gate lines are in that commit's handoff
-  and are not repeated here.
+- **Status: shipped.** Docs `df76f13`; batch `9694782`; record `4a042c7`.
+  Four photo buckets, `pressed P` as attempts. Full spec `plan.md` 10b.
 
 ### B4 - bound presses per run and stop on @WebpageBot's attempt throttle
 
 - **Status: shipped, reviewed, remediated.** `359e0d4` and `0f33aa2`.
-  `PRESS_LIMIT = 50`, `botThrottle()`, `--press-limit`, the run-scoped press
-  budget, the throttle checks, the `--mode full` warning. 82/82 then.
 
 ### O2 - the owner's local reindex
 
-- **Status: done, 2026-09-14.** `state.json` complete at 1062; `nothing to
-  refresh` on the tree it was written against (`4a042c7`, measured by the
-  orchestrator 2026-09-16). Per-chunk numbers were not captured in this
-  directory (Deferred).
+- **Status: done, 2026-09-14.** `state.json` complete at 1062. Per-chunk
+  numbers not captured here (Deferred).
 
 ### Earlier
 
@@ -244,183 +194,186 @@ B1 (`cce10cb`), R1 (`5a959ca`), R2 (`a4c9066`), B3 (`2a4b78b`), O1 - see
 `plan.md` section 10 and the git log.
 
 ## Verification
-- **Pass 6 (planner)** - no gates run; no production code touched. Read-only
-  measurements, all recorded in `context.md` "Added by the planner, pass 6":
-  - `git merge-tree 8b96ff4 HEAD origin/main` -> 5 `changed in both`,
-    **1** conflict hunk (`package.json`, `"check"`).
-  - `git diff --stat HEAD...origin/main -- data.js og i index.html
-    tools/build-share-pages.js` -> 157 files: 30 new records with new
-    `og/*.jpg`, `f1`-`f94` and `index.html` with a changed
-    `og:description`, `tools/build-share-pages.js` with a provenance prefix
-    for frame and `starting` records. `package-lock.json`, `.nvmrc`,
-    `tools/derived.js` unchanged; `tests/derived.js` changed on `main` only.
-  - `git hash-object tools/tg-preview/state.json` ->
-    `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`; header read -> `1
-    https://artex-x.github.io/daggerheart-loot/ 1062
-    2026-09-14T20:04:16.406Z true`; no `state.json.tmp`.
-  - `timeout 1s sleep 5` -> exit 124 in Git Bash; `python -c "import yaml"`
-    fails; no `actionlint`; no `yaml`/`js-yaml` in `node_modules/`;
-    `format:check` is `prettier --check .` and `.prettierignore` does not
-    list `.github/`.
-  - `.claude/hooks/tree-key.mjs` fingerprints with `git add -A` into a
-    throwaway index (untracked files included); `bash-guard.mjs` `isExempt`
-    covers `issues/**` and non-README `.md`.
-- **B6 (implementer, 2026-09-16) - commands run and their real results:**
-  - `git fetch origin main`; `git log --oneline -1 origin/main` ->
-    **`1106355`** (moved past the plan's `5a36c4a`).
-  - `git merge-tree 8b96ff4 HEAD origin/main` -> 5 `changed in both`,
-    `grep -c "^+<<<<<<<"` = **1**, the hunk being `package.json`'s `"check"`.
-  - `git merge --no-edit origin/main` -> `CONFLICT (content): Merge conflict
-    in package.json` and nothing else; resolved, `git add package.json`, no
-    remaining `UU`/`AA` entries.
-  - `git diff --cached --stat -- package-lock.json .nvmrc` -> empty, so no
-    `npm ci`.
-  - `node --test tools/tg-preview/lib.test.mjs` on the merged tree ->
-    **83 pass, 0 fail**.
-  - `node tools/tg-preview/run.mjs --dry-run` on the merged tree ->
-    `125 urls stale, 125 ready, up to 13 messages, 125 presses (press budget
-    50)`, exit 0, nothing written.
-  - `node -e` over `buildFromTree()` -> **`1092 0`** (urls, missing).
-  - **Check #1** (merged tree, before the merge commit), one foreground call,
-    `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000
-    -> **green**: `node --test` 83/83, vitest **42 files / 1035 tests
-    passed**, coverage 96.61 / 88.58 / 97.1 / 97.34. No flake, no re-run
-    needed. `npm run data` inside it left no unstaged drift in `i/`,
-    `data.json` or `catalog.csv` (`git status --porcelain` showed only the
-    staged merge plus the untracked `state.json`).
-  - `git hash-object tools/tg-preview/state.json` ->
-    `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de` before staging;
-    `git rev-parse HEAD:tools/tg-preview/state.json` -> the same after the
-    commit. `git diff --cached --stat` named one file, 1069 insertions.
-  - `npx prettier --write` then `--check .github/workflows/previews.yml` ->
-    `All files formatted correctly` (this is the local YAML parse; there is
-    no actionlint/PyYAML/`yaml` on this host).
-  - Both `run:` blocks copied to the scratchpad and `bash -n`'d -> clean.
-  - The exit mapping exercised by hand in Git Bash under `bash -e`:
-    `timeout --kill-after=30s 1s sleep 5` -> code **124**, mapped to a notice
-    and **step exit 0**; a child exiting 2 -> re-raised, **step exit 2**; the
-    `[ ... ] && args+=(...)` lines do **not** abort under `-e` and the array
-    expands to `--mode full --budget-minutes 40 --dry-run --limit 7` with the
-    inputs set. Bare `timeout 1s sleep 5` -> 124.
-  - `node --test tools/tg-preview/lib.test.mjs` after the code ->
-    **84 pass, 0 fail**.
-  - `node tools/tg-preview/run.mjs --dry-run` on the final tree -> the same
-    `125 urls stale, ...` line, exit 0, `state.json` untouched.
-  - `node tools/tg-preview/run.mjs --dry-run --mode full` -> the
-    `--mode full cannot finish 1092 stale url(s) with a press budget of 50`
-    warning **before** the counts line.
-  - **Check #2** (final tree), same single foreground form -> **green**:
-    `node --test` 84/84, vitest **42 files / 1035 tests passed**, identical
-    coverage numbers.
-  - `git status --porcelain` after commit 4 -> empty.
-- **Not run, and why - re-confirmed on the merged tree, not assumed:**
-  `npm run check:built`, parity and the new `golden` job are **not required**.
-  B6's own edits are `.github/workflows/previews.yml`, three
-  `tools/tg-preview/*.mjs`, `docs/tg-preview.md`, `package.json`'s `"check"`
-  line and `state.json` - none of them is loaded by the app, reaches `dist/`,
-  or changes what any screen draws (`app/**`, `data.js`, `styles`, `i/`,
-  `og/` are untouched by this batch). `main`'s own changes ride in through
-  the merge already gated on `main`, and get `check:built`/`golden` again on
-  the owner's merge push.
+- **Pass 7 (planner)** - no gates run; no production code touched.
+  Read-only measurements, all in `context.md` "Added by the planner, pass 7":
+  - `git fetch origin main` (read-only) -> `origin/main` = `3504bf7`;
+    `git rev-list --count HEAD..origin/main` = **1**;
+    `git diff --stat HEAD...origin/main -- tools/tg-preview .github/workflows/previews.yml docs/tg-preview.md package.json .gitignore tools/build-share-pages.js tools/derived.js app/index.html index.html data.js og i`
+    -> **empty**.
+  - `git status --porcelain` -> empty before planning; `git log --oneline -3`
+    -> `72d8de0`, `f5e5d69`, `54b84b3`.
+  - The five error classes exist in
+    `tools/tg-preview/node_modules/teleproto/errors/RPCErrorList.js`
+    (`PhoneNumberBannedError` line 3529, `YouBlockedUserError` 6143,
+    `UserDeactivatedError` 6375, `UserDeactivatedBanError` 6385,
+    `AuthKeyDuplicatedError` 6977).
+  - `teleproto/client/users.js:281` - `isUserAuthorized` is
+    `try { await client.api.updates.getState(); return true } catch { return false }`.
+  - `teleproto/network/MTProtoSender.js:557-560, 613-617, 660-690` - a
+    `-404` from the server resets the auth key (`_handleBadAuthKey`) and
+    re-keys; the RPC then fails with the 401 class. Read, not measured.
+  - `index.html` lines 16-23 and `app/index.html` lines 21-28: the three
+    `og:` tags (`title`, `description`, `image`) are byte-identical.
+  - `ci.yml` lines 222-225: `cp -r dist/index.html dist/assets dist/data.js _site/`
+    then `img og i card` from the repository - the root `index.html` is not
+    deployed.
+  - `tools/tg-preview/live.mjs:67-76` - `liveFingerprint` errors are caught
+    into `not live`; not an R1-class hole.
+  - `lib.test.mjs`: 84 cases today; the fake client's `incoming` queue and
+    `byIds` never throw (lines 490-505); the `decide` fatal loop lists five
+    classes (254-260); the `--result` test asserts `.urls` only (966).
+- **B6 (implementer, 2026-09-16)** - both `npm run check` calls green in one
+  foreground call each (check #1 on the merged tree: `node --test` 83/83,
+  vitest 42 files / 1035 tests, coverage 96.61 / 88.58 / 97.1 / 97.34;
+  check #2 on the final tree: 84/84, the same vitest and coverage numbers);
+  `run.mjs --dry-run` -> `125 urls stale, 125 ready, up to 13 messages, 125
+  presses (press budget 50)` before and after the code; `--dry-run --mode
+  full` prints the warning before the counts; `prettier --check` on the
+  workflow passes; both `run:` blocks `bash -n` clean; the `timeout`
+  mapping proven by hand (`124` -> step exit 0; a child's 2 re-raised).
+  Exact lines in the `72d8de0` version of this file.
+- **Not run for B7, and why - stated from the file list, not assumed:**
+  `npm run check:built`, parity and `golden` are **not required**. B7
+  touches five `tools/tg-preview/*.mjs`, `previews.yml`, `.gitignore`,
+  `docs/tg-preview.md` and this directory; it *reads* `app/index.html` and
+  changes nothing under `app/**`, `data.js`, `i/`, `og/`, `tests/**` or
+  `dist/`, and nothing a screen draws. Gates for B7: `node --test
+  tools/tg-preview/lib.test.mjs`, `node tools/tg-preview/run.mjs --dry-run`,
+  the four scratch-file proofs in 10d step 15, and **one** `npm run check`
+  in one foreground call.
 
-## Next action (the owner's, not an agent's)
-
-- **Name: O3 - merge into `main` and watch the first run.** Full text:
-  `plan.md` section 9, steps I and J; the same words are in
-  `docs/tg-preview.md` so the owner needs no task directory.
-- **Why it cannot be an agent's:** pushing and merging into `main` are the
-  owner's (`CLAUDE.md`), and merging is also the only way to exercise
-  `workflow_run`, `schedule`, the input defaults per event, the secrets, the
-  `[skip ci]` push and the summary rendering - none of it reachable from a
-  branch (`plan.md` section 3.10, "What can be verified before the owner
-  merges").
-- **What happens, in order:** the merge push runs `check`, `deploy`
-  publishes, and `previews` fires on `workflow_run` **by itself**; while
-  `check` is still running the owner can dispatch a dry run and read
-  `dry run: N url(s) stale ...` in its job summary - expect **125**; the
-  automatic run then does one chunk (50 presses) and stops green with a
-  `[skip ci]` state commit by `github-actions[bot]`; the four-hourly schedule
-  drains the rest in about three runs.
-- **The one spot-check worth doing:** paste
-  `https://artex-x.github.io/daggerheart-loot/i/f1.html` into Saved Messages
-  after a run confirms it - the description should now start with
-  `Прочее · Сеттинги · Пир зверей.` Old text on a URL the run recorded as
-  refreshed would mean a press-only phase-1 recovery does **not** refresh
-  metadata; report it (the fallback is `RECOVER_SCAN = 0`).
-- **What the owner's report feeds:** B2. `phase 1: pressed N` with `N > 0`,
-  the `pressed P (photo id ...)` lines from clean CI runs, any throttle `N`,
-  and step F.4's regression result are the numbers that would move
-  `PRESS_LIMIT`, the cron cadence, or section 3.9's closed question. Do not
-  start B2 speculatively.
+## Next batch (implement-ready)
+- Name: **B7 - make the exit codes true in both directions** (`plan.md`
+  section 10d; design in 3.4 pass-7 note, 3.5 pass-7 table, 3.11, 5.2
+  pass-7 note, 6 pass-7, 7, 8, 9 I.6/J).
+- Objective: close the B6 review's R1-R5 and the nits on the same files so
+  that before the first CI run a failed Telegram read is a green resumable
+  stop, a dead account (five more classes) is exit 2 and a revoked session
+  is exit 2 as documented, a corrupt `state.json` is a stop and never an
+  empty state, the record step's fetch names its refspec, and the root URL
+  is fingerprinted from `app/index.html`. One code commit, one check.
+- In scope: `tools/tg-preview/lib.mjs`, `lib.test.mjs`, `run.mjs`,
+  `client.mjs` (the guard only), `manifest.mjs` (root HTML source only);
+  `.github/workflows/previews.yml` (two fetch lines, one message);
+  `.gitignore` (one line); `docs/tg-preview.md` (I.6, J, two Operations
+  paragraphs, one Coverage clause); the three task files.
+- Out of scope: `live.mjs`, `login.mjs`, `tools/tg-preview/package*.json`,
+  `ci.yml`, `state.json`, `README*`, `docs/specs/*`, `CLAUDE.md`, `app/**`
+  (read only), `index.html`, public contracts; `npm audit` on the cron; a
+  connect retry; a run counter; a state shape check; `continue-on-error`;
+  any new flag, input or exit code; the merge of `origin/main`.
+- Files expected: the five `.mjs` files above, `previews.yml`, `.gitignore`,
+  `docs/tg-preview.md`, `issues/tg-preview-refresh/{context,plan,handoff}.md`.
+- Steps: section 10d, steps 1-16 - commit 1 is the pass-7 task docs
+  (gate-exempt); commit 2 is: `FATAL_ERRORS` + the reason string (3); the
+  connect classified once (4); `read()` (5); the five call sites with their
+  `stopped` prefixes `recovery scan: ` / `button poll: ` / `refetch: ` and
+  `closeQuietly()` (6); `record()` writes `site` (7); `client.mjs` loses
+  `isUserAuthorized()` (8); `manifest.mjs` reads `app/index.html` (9);
+  `run.mjs`: `readState` throws on a corrupt file, `--apply` takes `site`
+  from the result, `::error::` on exit 2 (10); the tests - five fatal
+  names, three opt-in fake scripts, seven new cases, two extended, the root
+  test on `app/index.html`, 96 passing (11); the workflow's two refspecs and
+  the `else` message, Prettier, `bash -n` (12); `.gitignore` (13); the
+  runbook (14); the gates and the four scratch-file proofs (15); stage by
+  path and commit
+  `fix(tg-preview): resumable reads, red on a dead account, stop on a corrupt state`
+  (16).
+- Acceptance criteria: section 10d's list - 96 tests; the four `cx.incoming`
+  / `cx.byIds` sites all inside `read(...)`; the five names present and
+  "credential is dead" gone; `isUserAuthorized` gone; `existsSync` gone and
+  `buildFromTree` called once in `run.mjs`; `'app', 'index.html'` in
+  `manifest.mjs`; two explicit refspecs and no "every url counts as stale"
+  in the workflow; `state.json.tmp` ignored; the dry run's stale count equal
+  to B6's; the scratch-file proofs (corrupt -> exit 1, absent -> 1092,
+  `--apply` on a scratch copy keeps 1062 keys, on a corrupt copy exits 1,
+  without `site` exits 1); the state hash unchanged; I.6 rewritten; the
+  deferred items placed here (R1 item 7, the four nits) each done; tree
+  clean; `npm run check` green once.
+- Verification commands: section 10d's block - `node --test
+  tools/tg-preview/lib.test.mjs`; `node tools/tg-preview/run.mjs --dry-run`;
+  the `--state "$SCRATCH/corrupt.json"` / `absent.json` dry runs with
+  `--no-verify`; the two `--apply` runs against `"$SCRATCH/s.json"`;
+  `git hash-object tools/tg-preview/state.json`; `npx prettier --check
+  .github/workflows/previews.yml`; `set -o pipefail; npm run check 2>&1 |
+  tail -n 120` (Bash timeout 600000, once); `git status --porcelain`.
+- Risks / do-nots: never run `run.mjs` without `--dry-run` except the two
+  `--apply` proofs, and those only with `--state` in the scratchpad; never
+  read `.env`; never stage or touch `state.json` (hash is the proof); do not
+  change the fake client's defaults; do not add a retry, counter, shape
+  check, flag, input, exit code or `continue-on-error`; do not flip the
+  catch-all to red; do not touch `og/`, `index.html`, `app/index.html`,
+  `ci.yml`; do not merge `origin/main`; a changed **stale** count after the
+  `manifest.mjs` change is a stop, not a reason to edit either HTML file.
+- Fallback (optional): if removing the guard leaves no RPC before
+  `getEntity` that surfaces the session error (it does today), replace it
+  with a bare `await client.invoke(new Api.updates.GetState())` - never a
+  plain `Error`.
 
 ## Blockers
-- **None.** B6 shipped with both gates green; no owner decision is pending;
-  the secrets exist; the worktree was quiet throughout (`ListAgents` before
-  the merge: one idle peer in the main checkout, no writer here).
-- **Merging into `main` is the owner's**, and it is also the only way to
-  exercise `workflow_run`/`schedule`; nothing before that can prove them.
-  That is O3, not a blocker on any agent's work.
+- **None.** B7 needs no owner decision, no Telegram contact and no merge;
+  every gate runs locally. The worktree was quiet during planning (the
+  tree was clean; only task files are modified now).
+- **O3 (the owner's merge) is after B7 by recommendation, not by
+  dependency.** If the owner merges first, B7 lands unchanged as a
+  follow-up; the first reds and greens must then be read against `plan.md`
+  3.5's corrected table.
 
 ## Deferred
+- **From the B6 review, deferred with reason:** `npm audit
+  --audit-level=high` on the cron - a new advisory red *is* the contract
+  (the process holds a full account session; `ci.yml` applies the same
+  rule); recorded in `plan.md` section 12. `decide()`'s catch-all keeps its
+  green default - one more `FATAL_ERRORS` name if a permanent class ever
+  shows up, never a run counter.
 - **B4 review nits still open:** 1 (`attempt()` transport retries can
   re-invoke `cx.press` inside one budget decrement - absorbed by the
-  under-shoot), 4 (`incoming` applies `limit` before `!m.out`, ~185 not
-  200), 6 (`m.url === null` strict; unreachable through `plain()`). Nits 2
-  (B5), 3 and 5 (B6) are **done**.
-- **Reviewer's remaining R1 items:** 6 (unused `urls()` export), 7
-  (`--apply`'s needless `buildFromTree()`). Item 5 landed in B6.
+  under-shoot; unchanged by B7's `read()`, which touches no budget), 4
+  (`incoming` applies `limit` before `!m.out`, ~185 not 200), 6
+  (`m.url === null` strict; unreachable through `plain()`).
+- **Reviewer's remaining R1 item:** 6 (unused `urls()` export). Item 7
+  (`--apply`'s `buildFromTree()`) is **in B7**.
+- **A connect retry around `client()`** - only if transient connect
+  failures produce red runs more than rarely. B7 classifies the connect
+  error's exit code; it does not retry.
 - **A `press_limit` workflow input**, or deriving `--limit` from the press
   budget - when CI's `pressed P` lines justify moving the default.
-- **A connect retry around `client()`** - only if transient connect
-  failures produce red runs more than rarely.
-- **O2's per-chunk numbers** - not captured here; if the owner still has
-  the terminal output, B2 wants `pressed P` per run, any throttle `N`, F.4's
-  regression result and G.7's one-press answer.
+- **O2's per-chunk numbers** - not captured here; B2 wants `pressed P` per
+  run, any throttle `N`, F.4's regression result and G.7's one-press answer.
 - **A persisted press ledger**, **an evidence class per URL (schema v2)**,
   **`photo.date` as a pre-press skip**, **tuning `PRESS_LIMIT`'s default** -
   unchanged from pass 5, all B2 and all wanting numbers first.
+- **Measuring what a live dead session actually throws** - free on
+  rotation day (step J); until then the docs say "when Telegram names it".
 - One pointer line in `CLAUDE.md` and
   `.claude/prompts/refresh-artwork.prompt.md` - orchestrator's call.
-- Issue 47 cut-over checklist: `page()` stays `require()`-able on `main`
-  today (measured); if the stub generator ever moves into the Vite build,
-  `manifest.mjs`'s two `require()`s move with it.
+- The legacy root `index.html` is no longer deployed but is still tracked
+  and still read by `tests/` and the parity harness; whether it stays is
+  issue 47's closeout, not this task's.
 - Other messengers: not this task.
 
 ## Notes
 - Mocks path: none (tooling and CI; no UI).
 - Screenshot findings: none.
 - **What changed in the model of the problem this pass, in one paragraph:**
-  the local reindex is finished, so the tool's remaining job is to keep
-  Telegram current after each deploy without anyone watching. That turns
-  "did the run finish?" into the wrong question and "will the next run pick
-  it up?" into the right one - which is what the owner said in their own
-  words. So the workflow stops treating the wall clock as a failure, stops
-  waiting for a push to retry, and stops skipping quietly when a secret is
-  missing; the only reds left are the ones a human must act on. The state
-  file the owner produced is the thing that makes CI incremental, and
-  `main`'s own content changes since it was written are the first backlog
-  the design gets to prove itself on - **125 URLs** as measured on the merged
-  tree, three runs, half a day.
-- **The measurement that would sharpen this next** is the first automatic
-  run's log: `phase 1: pressed N` with `N > 0` means the local reindex's old
-  button messages for now-stale frame URLs were pressed without a send, and
-  the pasted `i/f1.html` description then tells whether a press-only
-  recovery refreshes metadata (the phase-1 assumption, `plan.md` section
-  3.4). It is the one place the design could still be wrong in a way that
-  writes a false entry, and the check costs one paste.
-- Cleanup performed / retained artifacts: the implementer's scratchpad holds
-  a read-only `merge-tree.txt` and three throwaway shell files used for
-  `bash -n` and the `timeout` proof, all outside the repository; nothing was
-  left in the tree (`git status --porcelain` empty). `.env` was not read.
-  `tools/tg-preview/state.json` was committed unchanged and never edited,
-  regenerated or deleted; no `state.json.tmp` was created.
-- **Deviations from `plan.md` section 10c, both recorded above:** (1)
-  `origin/main` had moved to `1106355`, so step 3's re-measurement path was
-  taken - the conflict was still exactly one, still `package.json`'s
-  `"check"` line, so the resolution is the one the plan specifies; (2) the
-  acceptance criterion `grep -c "budget-minutes 40"` reads **2**, not 1,
-  because the comment block the plan dictates verbatim also names
-  `--budget-minutes 40`. Everything else matched the plan as written.
-- Session end partial progress: none - B6 is complete and committed;
-  `plan.md`, `handoff.md` and `context.md` are consistent with each other and
-  with the tree at the branch tip.
+  B6 made the workflow's `case` honest, and the review showed the *tool*
+  underneath it was not - it reported exit 1 for stops the next run would
+  fix, and exit 0 for accounts no run could ever fix. The contract the
+  owner wrote ("red means the next run will not fix it") is therefore only
+  half implemented until the tool's own codes match it, and the first CI
+  runs are the worst moment to discover that, because they are when the
+  owner learns what red and green mean. B7 is small - names in a set, one
+  helper over an existing retry loop, a thrown parse error, two refspecs,
+  one path - and it is small precisely because B3-B6 already built the
+  machinery; it just was not wired to four reads and one connect.
+- **The measurement that would sharpen this next** is unchanged from pass
+  6: the first automatic run's `phase 1: pressed N` and the pasted
+  `i/f1.html` description (`plan.md` 9, I.3 and I.5). Pass 7 adds one: the
+  first red run's `stopped:` line, read against I.6's list - if it is not
+  on the list, that is the report.
+- Cleanup performed / retained artifacts: none created; the planner wrote
+  only the three task files. `.env` was not read. `state.json` was not
+  touched (`git status` clean for `tools/`).
+- Session end partial progress: none - pass 7 is complete; `plan.md`,
+  `handoff.md` and `context.md` are consistent with each other and with the
+  tree at `72d8de0`.
