@@ -306,6 +306,68 @@ only - grepping `docs/specs/` for `refHTML`, `daggerheart.su` or
 `RecordCard.svelte:238` returned nothing. Both notes are now in `COVERAGE.md`'s
 `flows` row.
 
+## What Phase 8 inherits, and what closed instead (orchestrator, 2026-09-16)
+
+R0c's acceptance hands Phase 8 "the register, the structural goldens, the
+backlog and the open-items list". This is that open-items list, settled at the
+point R0b.2 was in flight, so Phase 8 does not re-derive it. Issue 47 closes on
+every open item having a home outside `issues/47/`; these are the ones whose
+home is Phase 8 rather than a batch of R0.
+
+**Handed to Phase 8, undecided - Phase 8 decides what to do with it:**
+
+- **`Panel.svelte` and whether `.ffilter`/`.tablenav` justify an extraction.**
+  Today those class names live in `Panel.svelte`, `FilterBar.svelte` and
+  `TablesPage.svelte`. The original note recorded that `TableRows`/`SectionHead`
+  are **not** `.panel` copies, so the obvious extraction is narrower than it
+  looks. `CLAUDE.md`'s campsite rule ("extract shared UI on its second real
+  use") is the test to apply, and nothing in R0 opens these paths, so there is
+  no batch that could take it under that rule.
+  **Deliberately NOT written into `docs/specs/DEBT.md`**, and the reason is
+  worth keeping: `DEBT.md` holds live defects the rewrite reproduces on purpose
+  and live decisions kept over its own (`CLAUDE.md`'s spec table; owner
+  decision 4). This is a refactor question about the rewrite's *own* code with
+  no live-app counterpart, so it cannot fill the register's entry shape
+  (`Where` / `Live behaviour` / `Why parity won` / `How to verify the fix`) and
+  would be the one entry R1 could not walk. R0c also verifies `DEBT.md`'s
+  live-code citations against a commit hash; an entry with no such citation
+  weakens that check. The open-items list is the sanctioned home for exactly
+  this.
+- **Playwright** - owner decision 10 above: decided in Phase 8 against R1's
+  findings, with the evidence and the rejected alternatives already recorded
+  there so the pass does not re-derive them.
+- **B12.1's review nits 2 and 6**, and **B12's nits 4 and 5** - already placed
+  for Phase 8 by their own reviews; listed here so the inheritance is one list.
+- **Every `docs/specs/DEBT.md` entry** - eight in section 1 (D1, D2, D3, D5,
+  D6, D7, D8, D10) and D4 in section 2. This is R1's designed work, not an
+  extra.
+
+**Closed on inspection rather than handed on** (2026-09-16) - each was an open
+line in the handoff's `Deferred` whose premise no longer held:
+
+- **"The shared `S.kind`. Batch C's."** - already homed: it *is*
+  `DEBT.md`'s **D4**, with the live sites, the rewrite's shape, why parity won
+  and how to verify a fix. "Batch C" names no batch in the current plan, so the
+  line was an orphan pointer to an entry that already exists. Nothing to file.
+- **B3.5's two documentation nits.** The first is settled: the section it
+  complained about ("What every remaining `VISUAL_DEBT` entry is", which still
+  called the anchor debt "cause 6" *and* promised a rewrite that landed
+  elsewhere) went in the 2026-09-16 compaction. Its successor, "What the
+  `VISUAL_DEBT` entries turned out to be, and the correction that cost four
+  batches", still uses the label `cause 6` - but now only as the original filed
+  reason it is refuting, which is the correct use, and the promised-rewrite
+  half is gone. Re-read and closed. The second nit is a paragraph in
+  `docs/parity.md`, which **R0c deletes**, so it closes by deletion.
+
+**Closes by deletion at R0c** - four parked items are artefacts of the parity
+harness and cease to exist with it, and should be recorded closed rather than
+left looking abandoned: an equipment anchor parity state; extending B3.6's
+probes past the tables states; the `.selbox:has(:focus-visible)` gap (no parity
+state reaches a row checkbox by keyboard); and `docs/parity.md`'s "whole-page
+percentage" formatting nit. **The accessibility question behind the third
+survives the instrument** - Phase 8 R1's keyboard walk over every route is
+where a focus style on a row checkbox actually gets read.
+
 ## Reasons already disproved
 
 Causes a session wrote down and a later one refuted. Keeping the list stops the
