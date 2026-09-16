@@ -379,3 +379,97 @@ since each verb's own bullet already states which way its `--report` goes.
     that happens to share an asset - see the interpretive note under
     "Completed (this pass)", above, since the plan's prose alone is
     ambiguous between the two readings.
+
+## Integration into `fix/tg-preview-timestamp` (2026-09-16)
+
+Dispatched directly by the orchestrator as an integration batch (no `plan.md`
+batch on either side): merge `origin/tooling/art-refresh` (this task, `2dce463`,
+B1-B3 all shipped and gated) and `origin/main` (`9926631`) into
+`fix/tg-preview-timestamp` (the `tg-preview-refresh` task's timestamp-noise
+fix, `857828f`), resolve the overlap, and prove the combined tree. Done in
+the `tg-preview-refresh` worktree, on `fix/tg-preview-timestamp`, not here -
+recorded in this file per the dispatch, since this task's branch is one of
+the two being combined and this is where a future reader of `art-tooling`
+will look for what happened to it.
+
+- **Merges, in the order the dispatch required:**
+  - `0ba1011` - `origin/main` into `fix/tg-preview-timestamp`. Clean, no
+    conflicts (`origin/main`'s one commit since the branch's base,
+    `9926631`, touches only `tools/tg-preview/state.json`).
+  - `9280e0b` - `origin/tooling/art-refresh` into `fix/tg-preview-timestamp`.
+- **The four measured overlapping files** (`tools/tg-preview/lib.mjs`,
+  `lib.test.mjs`, `run.mjs`, `docs/tg-preview.md`) **all auto-merged cleanly**
+  under git's recursive strategy - no conflict markers, both sides' hunks
+  landed as a union (confirmed by reading each file afterward: `--stale-list`/
+  `emitStaleList`/`FLAGS['--stale-list']` from this task sit alongside
+  `sameUrls`/`writeStateSync`'s carried-forward `updatedAt` from the other
+  task, wired correctly - `deps.writeStaleList` still gated on
+  `opts.staleListPath`, `writeStateSync` still calls `sameUrls` against
+  `previousState`). `docs/tg-preview.md` reads as one coherent document: the
+  "What CI does after a deploy" section states both the confirmed-not-sent
+  record-step guard and the carried-forward-`updatedAt` behaviour without
+  contradiction, and the `--stale-list` bullet under "Flags" is untouched by
+  the timestamp fix.
+- **One conflict not named in the dispatch's four-file list**:
+  `.claude/README.md`. Both branches independently appended a new `##`
+  section in the same location (this task's "Artwork tooling" section vs. a
+  `hook-state-cap`-retirement "Persistence era" section carried over on
+  `main`/the other branch's history). Resolved as a union - both `##`
+  sections kept, one after the other, conflict markers removed, no prose
+  edited on either side. Not a defect in either branch; a hazard of two
+  branches both appending to the same free-form log file.
+- **Combined test counts**, measured directly by running the suites (not
+  inferred from either handoff):
+  - `node --test tools/tg-preview/lib.test.mjs` -> **110 pass, 0 fail**, 15
+    suites - exactly the dispatch's predicted 96 + 8 + 6.
+  - `node --test tools/artwork/lib.test.mjs` -> **26 pass, 0 fail**, 6
+    suites - matches this task's B3 record.
+- **Gate commands and results, in order:**
+  - `node --test tools/tg-preview/lib.test.mjs` -> 110/110 (above).
+  - `node --test tools/artwork/lib.test.mjs` -> 26/26 (above).
+  - `node tests/run-all.js dataint,noart` -> both `ok`.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120`, one foreground call,
+    Bash timeout 600000 -> **green**: format/lint/typecheck/data/derived/
+    i18n/selftest all passed, `node --test tools/tg-preview/lib.test.mjs`
+    (110/110) and `node --test tools/artwork/lib.test.mjs` (26/26) both
+    clean, vitest 42 files / 1035 tests, coverage 96.61 / 88.58 / 97.1 /
+    97.34 - unchanged from both branches' own last recorded numbers, as
+    expected (nothing under `app/**` changed by either branch or the merge).
+  - `npm run check:built` **not run**: the combined file list (the 22 files
+    in the two merge commits' diffstat) is `tools/tg-preview/**`,
+    `tools/artwork/**`, `docs/**`, `issues/**`, `.claude/README.md`,
+    `.claude/prompts/**`, `package.json`, `tests/dataint.js` - nothing under
+    `app/**`, `data.js`, `img/`, `og/`, `i/`, `style.css` or `dist/`, nothing
+    a screen draws. Same reasoning both branches used individually.
+  - Runtime coexistence proof: `node tools/tg-preview/run.mjs --dry-run
+    --no-verify --stale-list <scratchpad path>` -> `nothing to refresh`
+    (the merged-in `main` commit's `state.json` is already fully current),
+    and the stale-list file was written anyway -
+    `{"version":1,"site":"...","mode":"incremental","stale":[],"notLive":[]}`
+    - proving `emitStaleList`'s empty-exit path (from this task) still fires
+    correctly on top of the other task's `writeStateSync`/`sameUrls` changes.
+  - `git status --porcelain -- img og data.js tools/tg-preview/state.json`
+    empty before, during and after every command above.
+- **Push:** `git push origin fix/tg-preview-timestamp` (destination named
+  explicitly, per the dispatch's warning that a bare push on this branch
+  defaults to `main`) -> `857828f..9280e0b  fix/tg-preview-timestamp ->
+  fix/tg-preview-timestamp`, accepted. `origin/main` re-fetched immediately
+  after and confirmed unchanged at `9926631` - the push did not touch it.
+- **Not touched:** `.claude/hooks/**` (confirmed by diffstat across both
+  merge commits - it does not appear), `tools/tg-preview/state.json` beyond
+  what `origin/main`'s own commit carried in, `.env`. No Telegram contact;
+  no `install`/`ingest` run against the real tree - all artwork-tooling
+  exercise here was the pre-existing `--dry-run` check above, run against
+  the real repo's own `data.js`/`img/`/`og/` read-only (the `plan`/`install`/
+  `ingest` verbs were not invoked in this session at all).
+- **Nothing surprising in substance** - both branches' code merged as a true
+  union, matching the dispatch's prediction exactly (test count, disjoint
+  file list, clean auto-merge on all four named files). The only deviation
+  from the dispatch was the fifth conflicting file (`.claude/README.md`),
+  caused by both branches appending to the same log-style file, resolved by
+  keeping both sections without editing either.
+- **Next step:** none for this task - `art-tooling` was already done before
+  this batch (B1-B3 shipped, `plan.md` defines no further batch); this
+  section only records what happened to its branch during integration. The
+  orchestrator's own next step is to verify `fix/tg-preview-timestamp` at
+  `9280e0b` and decide whether to merge it to `main`.
