@@ -282,10 +282,18 @@ describe('a record on its own page', () => {
 
   it('links a referenced card out to daggerheart.su, subdomain matching the language on screen', async () => {
     render(App, { env: at('ci2') });
-    expect(screen.getByRole('link', { name: 'daggerheart.su' })).toHaveAttribute(
-      'href',
-      'https://ru.daggerheart.su/domain/vicious-entangle'
-    );
+    const link = screen.getByRole('link', { name: 'daggerheart.su' });
+    expect(link).toHaveAttribute('href', 'https://ru.daggerheart.su/domain/vicious-entangle');
+    /* A third-party site: opened in its own tab, and without handing it
+       window.opener (app.js's own refHTML markup). Invisible to a pixel diff
+       or an accessibility snapshot either way - a golden never reads these
+       two attributes - so this is the only place either is pinned. */
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener');
+    /* <i class="ref-s">, not <span> - .ref-s sets font-style: normal, so the
+       tag itself is invisible to every pixel instrument and, after R0c,
+       has no record outside this file and the source. */
+    expect(screen.getByText('Мудрость · Уровень 1 · Заклинание').tagName).toBe('I');
 
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'daggerheart.su' })).toHaveAttribute(

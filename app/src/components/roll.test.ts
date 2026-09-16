@@ -292,6 +292,18 @@ describe('the record over the page', () => {
 });
 
 describe('accessibility', () => {
+  it('marks the results as a live region, so a re-roll is announced without moving focus', () => {
+    /* The rewrite dropped this - app.js draws role="status" aria-live="polite"
+       on every .results container it writes, and nothing but the qa.js R0c
+       deletes asserted it (docs/specs/COVERAGE.md, the `qa` row). Gripped by
+       .results rather than the role alone - Toast.svelte can carry
+       role="status" too. */
+    const { container } = render(App, { env: at('#/roll/wondrous') });
+    const results = container.querySelector('.results');
+    expect(results).toHaveAttribute('role', 'status');
+    expect(results).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('has no axe violations on an untouched roll page', async () => {
     const { container } = render(App, { env: at('#/roll/wondrous') });
     await expectNoA11yViolations(container);
@@ -301,13 +313,5 @@ describe('accessibility', () => {
     const { container } = render(App, { env: at('#/roll/dread', { random: lands(2, 29) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Случайно 1–29' }));
     await expectNoA11yViolations(container);
-  });
-
-  it('marks the results as a live region, so a re-roll is announced without moving focus', () => {
-    /* The rewrite dropped this - app.js draws role="status" aria-live="polite"
-       on every .results container it writes, and nothing but the deleted
-       qa.js asserted it (docs/specs/COVERAGE.md, the `qa` row). */
-    render(App, { env: at('#/roll/wondrous') });
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
   });
 });

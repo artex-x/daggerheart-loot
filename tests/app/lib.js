@@ -17,7 +17,7 @@ const DIST_HTML = path.join(__dirname, '..', '..', 'dist', 'index.html');
 
 /* Every suite requires this file before it does anything else, so the guard
    belongs at the top: a missing dist/ should say so once, in one sentence,
-   rather than have all five suites fail every address with a stack trace
+   rather than have all seven suites fail every address with a stack trace
    that is really just "the page never opened". */
 if (!fs.existsSync(DIST_HTML)) {
   console.log('dist/index.html не собран - сначала npm run build');

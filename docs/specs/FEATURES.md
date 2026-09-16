@@ -46,6 +46,9 @@ Six modes. Each keeps its own input in memory only.
   same string and all four steppers the same two strings, so a screen reader
   cannot tell which die is being changed. A deliberate accessibility
   improvement, not a drift.
+- The results container on every roll mode is an announced live region
+  (`role="status" aria-live="polite"`), so a re-roll is read out without
+  moving focus off the controls.
 
 ## Tables and search
 
@@ -164,6 +167,12 @@ Six modes. Each keeps its own input in memory only.
   and the others opening that tier's record over whatever is on screen. A line
   of one is not a ladder and is not drawn. Each rung is named for the piece it
   leads to, because its own content is a bare digit.
+- A campaign-frame record (`isFrameRecord`) prints no tier word and no tier
+  ladder anywhere it appears, and its source label gives where it comes from
+  rather than its book - even when the record carries ordinary equipment
+  metadata (a tier, thresholds, armour score) that an equivalent record in
+  the equipment tables does print. Whether that is correct is an open
+  question, not a settled one: see `docs/specs/DEBT.md`.
 - Referenced Core cards render as a collapsed block and travel with the item
   into copies and shares. Each block links out to `daggerheart.su` for the
   full card, the subdomain matching the language on screen (`ru.` in Russian,
