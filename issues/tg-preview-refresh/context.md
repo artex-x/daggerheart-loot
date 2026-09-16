@@ -538,3 +538,123 @@ what a screen draws. Confirm that rather than assuming it.
 - The owner provides new info
 - context.md is missing a fact you need
 - You suspect drift vs the plan
+
+## The local reindex finished; the goal is now CI (owner, 2026-09-16)
+
+Owner's words: the tool "was successfully run locally", so embed it in CI;
+pull the latest `main` first because it "significantly advanced"; make the CI
+job **fail-safe** - "I'm OK with eventual consistency and these limits are
+hitting hard, so e.g. if we timeout - I don't care much as long as it will be
+picked up by the next CI run"; and the **GitHub repository secrets/variables
+are already configured** on the owner's side (so `TG_API_ID`, `TG_API_HASH`,
+`TG_SESSION` should be assumed present - the `Secrets present?` skip guard in
+`previews.yml` is no longer the expected path).
+
+Measured by the orchestrator, 2026-09-16, in this worktree at `4a042c7`:
+
+| Fact | Value |
+|---|---|
+| `tools/tg-preview/state.json` | **complete**: `version 1`, 1062 urls, `updatedAt 2026-09-14T20:04:16.406Z`, 135 KB, still **untracked** |
+| `node tools/tg-preview/run.mjs --dry-run` | `nothing to refresh` (exit 0) on this tree |
+| Branch vs `origin/main` | **11 ahead, 101 behind**. `origin/main` is `5a36c4a docs(56-followup): record the B2 commit, real gate results, and next action` |
+| `origin/main` contains none of this task's files | `git ls-tree origin/main -- tools/tg-preview .github/workflows docs/tg-preview.md` returns only `.github/workflows/ci.yml` |
+| Files this branch changed that `main` also changed since the base | `README.md`, `README.ru.md`, `docs/specs/COVERAGE.md`, `docs/specs/META.md`, `package.json`. `.gitignore` is ours alone. Everything else is a new file |
+| Local `git --version` | 2.33.0.windows.1 - **no `git merge-tree --write-tree`**, so a conflict dry-run needs a real trial merge |
+| Peers at dispatch | `ListAgents`: 3 peer sessions, one busy (`daggerheart-loot-8b`, the main checkout), none writing this worktree |
+
+So O2 is **done**, and the 1062-entry `state.json` is the artefact CI must
+inherit: `previews.yml`'s Refresh step reads
+`origin/main:tools/tg-preview/state.json` and treats a missing file as "every
+url is stale", i.e. a 1062-URL re-send. Committing the owner's finished state
+in the same change that turns the workflow on is therefore not a convenience,
+it is the thing that stops CI redoing the whole reindex.
+
+### What `main` changed that bears on this workflow
+
+`.github/workflows/ci.yml` on `origin/main` (read 2026-09-16):
+
+- The workflow is still named **`check`**, so `previews.yml`'s
+  `workflow_run: workflows: [check]` still names a real workflow.
+- Issue 47's **cut-over shipped**: `deploy` publishes the built rewrite
+  (`dist/index.html`, `dist/assets`, `dist/data.js`) plus `data.json`,
+  `catalog.csv`, `llms.txt`, `robots.txt`, `.nojekyll`, `LICENSE` and the
+  `img og i card` directories copied from the repository. **`i/` and `og/`
+  are still tracked repository directories**, so `manifest.mjs`'s
+  `buildFromTree` still works - the cut-over risk `context.md` flagged
+  earlier has not materialised.
+- New `golden` job (4 shards); `parity` now runs on `workflow_dispatch` only;
+  `deploy` is `needs: [check, audit, secrets, golden]`.
+- `deploy` runs inside the `check` workflow, so `workflow_run` on `check`
+  completing still fires **after** publication.
+
+### Added by the planner, pass 6 (2026-09-16) - do not re-measure
+
+Read-only measurements made while planning B6, in the order they bear on the
+batch. Worktree HEAD `4a042c7`, `origin/main` `5a36c4a`, merge base `8b96ff4`.
+
+1. **The merge has exactly one textual conflict, in `package.json`.** Git
+   2.33 has the old three-argument `git merge-tree <base> <ours> <theirs>`
+   (read-only, prints the merged result with conflict markers); run against
+   `8b96ff4 HEAD origin/main` it reports `changed in both` for the five
+   shared files and **one** `<<<<<<<` hunk: the `"check"` script line, where
+   `main` inserted `node --check tools/check-site.mjs &&` after `typecheck`
+   and this branch inserted `node --test tools/tg-preview/lib.test.mjs &&`
+   before `npm run test`. `README.md`, `README.ru.md`, `docs/specs/COVERAGE.md`
+   and `docs/specs/META.md` auto-merge cleanly (our additions are one table
+   row, one table row, one paragraph at COVERAGE line 259, and META section
+   7). The `"previews"` script and the `.gitignore` `.env` block are ours
+   alone and merge without conflict.
+2. **`main` changed what the manifest fingerprints, so the merged tree is
+   *not* `nothing to refresh`.** Since the base, `main` added 30 records
+   (`ci61`-`ci81`, `f95`, `hi61`-`hi68`, each with a new `og/*.jpg`),
+   changed `tools/build-share-pages.js` so frame records (`f1`-`f94`) and
+   `starting` records carry a provenance prefix in `og:description`
+   ("Прочее · Сеттинги · Пир зверей. ..."), and changed the root's
+   `og:description` count (`1061` -> `1091` позиции). `og:image` URLs and
+   existing image bytes did not change. So after the merge the 1062-entry
+   `state.json` is complete for everything it names and the dry run should
+   report on the order of **125-135 stale of 1092 URLs** (root + 94 frames
+   + 30 new + any `starting` records) - the exact number is B6's to record.
+   That backlog is real (those previews are stale on Telegram) and is the
+   first thing CI should refresh; **do not regenerate or edit the state to
+   make it zero.** `page` is still exported from `build-share-pages.js` on
+   `main` and it still reads `global.window.LOOT`, so `manifest.mjs`'s two
+   `require()` seams should keep working; the post-merge dry run is the test.
+3. **`state.json` facts, taken without printing an entry:** blob
+   `git hash-object` = `7c6e37ebec07ef8482f8208c1da2e4b7ca0441de`; `version
+   1`, `site https://artex-x.github.io/daggerheart-loot/`, 1062 keys,
+   `updatedAt 2026-09-14T20:04:16.406Z`, every value a 64-hex sha256; no
+   `state.json.tmp` sibling in `tools/tg-preview/`. Any later `hash-object`
+   that differs means the file was touched.
+4. **The commit gate's tree key already includes untracked files**
+   (`.claude/hooks/tree-key.mjs` runs `git add -A` into a throwaway index),
+   so a passing `npm run check` taken while `state.json` sits untracked
+   still arms the gate for the commit that stages it. `issues/**` and every
+   `.md` except the two READMEs are exempt (`bash-guard.mjs`, `isExempt`).
+   B6 therefore needs **two** gated checks, not four: one on the merged tree,
+   one on the B6 tree.
+5. **`npm run check` already parses `previews.yml`.** `format:check` is
+   `prettier --check .` and `.prettierignore` does not exclude `.github/`,
+   so a malformed or unformatted workflow file fails the gate. No
+   `actionlint` on this host, no PyYAML (`import yaml` fails), no `yaml`/
+   `js-yaml` under `node_modules/`; Prettier is the local YAML parse.
+6. **coreutils `timeout` is available** on ubuntu-latest and in this host's
+   Git Bash (`timeout 1s sleep 5` -> exit `124`). `--kill-after` makes a
+   stuck process exit `137`.
+7. **`ci.yml` on `main`** (also in the orchestrator's section above): the
+   workflow name is still `check`; `deploy` runs inside it on every push to
+   `main` (`5a36c4a`, a docs commit, was deployed too), so the live site is
+   `main`'s tip and the post-merge live check should pass in round 1 if
+   `origin/main` was fetched immediately before merging.
+8. **GitHub Actions facts relied on by the design** (documented behaviour,
+   not measured here): `workflow_run` and `schedule` only fire from the
+   default branch's copy of the workflow; a `schedule` run checks out the
+   default branch's tip and `github.event.workflow_run` is null in it, so a
+   job `if:` written for `workflow_run` alone skips it; `concurrency` with
+   `cancel-in-progress: false` keeps at most one pending run per group (a
+   third arrival cancels the queued one, which is equivalent); a workflow on
+   `schedule` is disabled automatically after 60 days without repository
+   activity; pushes made with `GITHUB_TOKEN` do not trigger workflows (the
+   `[skip ci]` in the record commit is belt and braces); a `run:` step with
+   no `shell:` executes under `bash -e`, so `cmd; code=$?` is wrong and
+   `code=0; cmd || code=$?` is the shape that captures a non-zero exit.
