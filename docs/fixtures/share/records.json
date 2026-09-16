@@ -76,8 +76,8 @@
         "text": "Стеганая Одежда"
       },
       "full": {
-        "html": "<b>Стеганая Одежда</b><br>Броня · Ранг 1 · Пороги 5/11 · Броня 3<br><br><i>Гибкое:</i> +1 к Уклонению",
-        "text": "Стеганая Одежда\nБроня · Ранг 1 · Пороги 5/11 · Броня 3\n\nГибкое: +1 к Уклонению"
+        "html": "<b>Стеганая Одежда</b><br>Броня · Пороги 5/11 · Броня 3<br><br><i>Гибкое:</i> +1 к Уклонению",
+        "text": "Стеганая Одежда\nБроня · Пороги 5/11 · Броня 3\n\nГибкое: +1 к Уклонению"
       }
     },
     "en": {
@@ -86,8 +86,8 @@
         "text": "Quilted Clothing"
       },
       "full": {
-        "html": "<b>Quilted Clothing</b><br>Armor · Tier 1 · Thresholds 5/11 · Armor 3<br><br><i>Flexible:</i> +1 to Evasion",
-        "text": "Quilted Clothing\nArmor · Tier 1 · Thresholds 5/11 · Armor 3\n\nFlexible: +1 to Evasion"
+        "html": "<b>Quilted Clothing</b><br>Armor · Thresholds 5/11 · Armor 3<br><br><i>Flexible:</i> +1 to Evasion",
+        "text": "Quilted Clothing\nArmor · Thresholds 5/11 · Armor 3\n\nFlexible: +1 to Evasion"
       }
     }
   },
