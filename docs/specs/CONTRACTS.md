@@ -112,3 +112,11 @@ Those four are committed and published as they are. The entry document and
 bundle become `dist/index.html` and `dist/assets/app.js`), and the deploy job
 publishes them from the build rather than from a committed file. Nothing about
 the frozen paths above changes with them.
+
+`<id>` in `img/<id>.webp` and `og/<id>.jpg` is the **asset id**, not
+necessarily the record id: it is the basename of a record's `img` field, and
+several records may share one asset (`tools/build-share-pages.js` derives the
+`og:image` tag from `img`, never from `id`, so this is already the rule the
+code enforces, not a new one). In both directions: replacing a shared asset
+never creates `og/<some-other-sharing-record's-id>.jpg`, and a new record
+that joins an existing asset gets no `img/` or `og/` file of its own.

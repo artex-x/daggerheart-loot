@@ -319,6 +319,26 @@ real Telegram connection
 it - thin wrappers around a live network, where the only honest proof is
 Telegram and the CDN themselves. See `docs/tg-preview.md`.
 
+`tools/artwork/lib.test.mjs` is a separate suite again, run under `node
+--test` as its own step in `npm run check`, right after
+`tools/tg-preview/lib.test.mjs`: it covers the artwork refresh tool's pure
+logic - name normalisation (typographic apostrophes, NFC, the trailing
+`v<N>` provenance suffix, case and whitespace), record indexing (`byId`,
+`byName` as arrays so a shared name is representable, `byImg` for the
+shared-asset groups), destination resolution keyed by a record's `img`
+value rather than its id, shared-asset grouping (one pair for four records
+sharing one asset, its `og/` file named after the asset and never after a
+sharing record), collision and duplicate-source-bytes detection, the
+`--map`/`assign` override, the affected-stub-URL derivation (every matched
+record and every record it shares an asset with), and the stale-set algebra
+`verify-previews` runs on two `tools/tg-preview` `--stale-list` files.
+`tools/artwork/run.mjs` (hashing uploads, decoding geometry, the `sharp`
+encoder, atomic install, byte verification) is deliberately outside it - the
+same argument the tg-preview paragraph above makes for `client.mjs` and
+`live.mjs`: it is a thin wrapper around the filesystem and an encoder, where
+the only honest proof is a real image going in and a real file coming out.
+See `docs/artwork.md`.
+
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code
 happens to do.
