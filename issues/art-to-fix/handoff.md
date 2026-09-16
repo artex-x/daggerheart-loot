@@ -153,6 +153,12 @@ Pre-existing unrelated scratchpad files from earlier sessions
 (`main-checkout-stale-tg-docs/`, `corrupt.json`, `emap.sh`, etc.) were left
 untouched.
 
+## Commit
+
+`7672f50cb3e22985e39651ba7645a90c344ef1ea` on `art/to-fix-refresh`, cut from
+`origin/main` at `0871b1a` - 132 files (65 `img/*.webp`, 65 `og/*.jpg`, this
+handoff, and `context.md`). Not pushed; the owner pushes.
+
 ## Next human action
 
 None required for this task's scope. Ordering fact carried over from
