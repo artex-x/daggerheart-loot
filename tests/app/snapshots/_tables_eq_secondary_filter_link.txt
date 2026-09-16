@@ -64,9 +64,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_secon
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "Выбрать все (6)"
     checkbox "Выбрано" [checked=false]
-    button "Щупальце Черной Крови Ранг 4 · Инстинкт · Средне · d6+8 маг · Од..." [namelen=243 namehash=d5a3c0a7]
+    button "Щупальце Черной Крови Ранг 4 · Инстинкт · Средне · d6+8 маг · Од..." [namelen=232 namehash=221d1f62]
     checkbox "Выбрано" [checked=false]
-    button "Легендарный Священный Щит Инстинкт · Вплотную · d4+6 маг · Однор..." [namelen=227 namehash=e065ccd3]
+    button "Легендарный Священный Щит Инстинкт · Вплотную · d4+6 маг · Однор..." [namelen=207 namehash=0c43ae57]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -78,8 +78,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_secon
 3
 4
 6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
-6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=201 namehash=b5e595f0]
-7Арканный СкальпельРанг 3 · Искусность · Далеко · d6+2 маг · Одн... [namelen=189 namehash=e17cd694]
+6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
+7Арканный СкальпельРанг 3 · Искусность · Далеко · d6+2 маг · Одн... [namelen=184 namehash=2bd082f4]
 Core
 Dread
 Dread GM Toolbox
@@ -98,36 +98,36 @@ daggerheart.com
 Вторичное
 Выбрано
 Далеко
-Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=251 namehash=e8f72421]
+Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=240 namehash=03f0f778]
 Знание
 Инстинкт
 Искусность
 К содержимому
 Как это работает
-Клинок ЭхаРанг 4 · Влияние · Вплотную · d4+6 маг · ОдноручноеУдв... [namelen=214 namehash=ef5e236f]
+Клинок ЭхаРанг 4 · Влияние · Вплотную · d4+6 маг · ОдноручноеУдв... [namelen=203 namehash=68ff8d2f]
 Колоссы Сухоземья
-Легендарные Руны КонцентрацииРанг 4 · Инстинкт · Близко · d6+6 м... [namelen=199 namehash=b413722e]
-Легендарный Рунный ЩитРанг 4 · Знание · Вплотную · d4+6 маг · Од... [namelen=141 namehash=f4a68632]
-Легендарный Священный ЩитИнстинкт · Вплотную · d4+6 маг · Однору... [namelen=223 namehash=54b718ee]
+Легендарные Руны КонцентрацииРанг 4 · Инстинкт · Близко · d6+6 м... [namelen=188 namehash=787ba6da]
+Легендарный Рунный ЩитРанг 4 · Знание · Вплотную · d4+6 маг · Од... [namelen=130 namehash=bd8a2726]
+Легендарный Священный ЩитИнстинкт · Вплотную · d4+6 маг · Однору... [namelen=203 namehash=f339082d]
 ЛутDaggerheart
 Магическое
 Обычные правила
 Оружие
-Осколок ВорпалаРанг 3 · Знание · Вплотную · d4 маг · ОдноручноеН... [namelen=218 namehash=653a57a5]
+Осколок ВорпалаРанг 3 · Знание · Вплотную · d4 маг · ОдноручноеН... [namelen=207 namehash=05ebd8c7]
 Открывать этот раздел при запуске
 Очень далеко
 Пир зверей
-Плеть ДушРанг 3 · Влияние · Близко · d6+5 маг · ОдноручноеВытяги... [namelen=237 namehash=bd84fd5c]
+Плеть ДушРанг 3 · Влияние · Близко · d6+5 маг · ОдноручноеВытяги... [namelen=226 namehash=ac3773d8]
 Поиск
 Проворность
-Продвинутые Руны КонцентрацииРанг 3 · Инстинкт · Близко · d6+4 м... [namelen=199 namehash=bf37f47d]
-Продвинутый Рунный ЩитРанг 3 · Знание · Вплотную · d4+4 маг · Од... [namelen=141 namehash=9a88ded7]
-Продвинутый Священный ЩитИнстинкт · Вплотную · d4+4 маг · Однору... [namelen=223 namehash=d2728008]
+Продвинутые Руны КонцентрацииРанг 3 · Инстинкт · Близко · d6+4 м... [namelen=188 namehash=ef3b1b6c]
+Продвинутый Рунный ЩитРанг 3 · Знание · Вплотную · d4+4 маг · Од... [namelen=130 namehash=c8498c9d]
+Продвинутый Священный ЩитИнстинкт · Вплотную · d4+4 маг · Однору... [namelen=203 namehash=a9422bca]
 Прочее
-Рунный ЩитРанг 1 · Знание · Вплотную · d4 маг · ОдноручноеЗащитн... [namelen=127 namehash=d3cbc452]
-Руны КонцентрацииРанг 1 · Инстинкт · Близко · d6 маг · Одноручно... [namelen=185 namehash=412f1405]
+Рунный ЩитРанг 1 · Знание · Вплотную · d4 маг · ОдноручноеЗащитн... [namelen=116 namehash=94e78804]
+Руны КонцентрацииРанг 1 · Инстинкт · Близко · d6 маг · Одноручно... [namelen=174 namehash=93311698]
 Сбросить всё
-Священный ЩитИнстинкт · Вплотную · d4 маг · ОдноручноеРезонирующ... [namelen=209 namehash=ebd5b699]
+Священный ЩитИнстинкт · Вплотную · d4 маг · ОдноручноеРезонирующ... [namelen=189 namehash=a98b2059]
 Сеткой
 Сила
 Скопировать ссылку на этот раздел
@@ -138,18 +138,18 @@ daggerheart.com
 Средне
 Ссылка на таблицу
 Ссылка на фильтры
-Сфера МёбиусаРанг 4 · Знание · Вплотную · d8+6 маг · ОдноручноеР... [namelen=282 namehash=1ff1e667]
+Сфера МёбиусаРанг 4 · Знание · Вплотную · d8+6 маг · ОдноручноеР... [namelen=271 namehash=f03dfbee]
 Таблицы
 Тёмное сердце Андалурии
 Убрать из фильтра
 Улучшаемые
-Улучшенные Руны КонцентрацииРанг 2 · Инстинкт · Близко · d6+2 ма... [namelen=198 namehash=4dc89087]
-Улучшенный Рунный ЩитРанг 2 · Знание · Вплотную · d4+2 маг · Одн... [namelen=140 namehash=bccdac5d]
-Улучшенный Священный ЩитИнстинкт · Вплотную · d4+2 маг · Одноруч... [namelen=222 namehash=b2f770c2]
+Улучшенные Руны КонцентрацииРанг 2 · Инстинкт · Близко · d6+2 ма... [namelen=187 namehash=cbce6540]
+Улучшенный Рунный ЩитРанг 2 · Знание · Вплотную · d4+2 маг · Одн... [namelen=129 namehash=a414b421]
+Улучшенный Священный ЩитИнстинкт · Вплотную · d4+2 маг · Одноруч... [namelen=202 namehash=f03b3410]
 Уникальные
 Физическое
 Фильтры (1)
-Щупальце Черной КровиРанг 4 · Инстинкт · Средне · d6+8 маг · Одн... [namelen=238 namehash=576f52a3]
+Щупальце Черной КровиРанг 4 · Инстинкт · Средне · d6+8 маг · Одн... [namelen=227 namehash=97aeaaa5]
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_secondary/f_cls-mag]
@@ -213,9 +213,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_secondary/f_cls-mag]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "Select all (6)"
     checkbox "Selected" [checked=false]
-    button "Blackblood Tendril Tier 4 · Instinct · Close · d6+8 mag · One-Ha..." [namelen=244 namehash=71ace3f3]
+    button "Blackblood Tendril Tier 4 · Instinct · Close · d6+8 mag · One-Ha..." [namelen=234 namehash=532b7986]
     checkbox "Selected" [checked=false]
-    button "Legendary Hallowed Shield Instinct · Melee · d4+6 mag · One-Hand..." [namelen=219 namehash=0e09795e]
+    button "Legendary Hallowed Shield Instinct · Melee · d4+6 mag · One-Hand..." [namelen=202 namehash=a25ba478]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -227,16 +227,16 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_secondary/f_cls-mag]
 3
 4
 6Ritual Blade of SekhmetTier 3 · Finesse · Melee · d8+4 mag · On... [namelen=266 namehash=586550e2]
-6Shield of the SunTier 3 · Strength · Melee · d4+4 mag · One-Han... [namelen=196 namehash=f79b121b]
-7Arcane ScalpelTier 3 · Finesse · Far · d6+2 mag · One-HandedInc... [namelen=193 namehash=13b53355]
-Advanced Focus RunesTier 3 · Instinct · Very Close · d6+4 mag · ... [namelen=182 namehash=c0f75acb]
-Advanced Hallowed ShieldInstinct · Melee · d4+4 mag · One-Handed... [namelen=214 namehash=b550d243]
-Advanced Rune ShieldTier 3 · Knowledge · Melee · d4+4 mag · One-... [namelen=136 namehash=8982c966]
+6Shield of the SunTier 3 · Strength · Melee · d4+4 mag · One-Han... [namelen=185 namehash=3635a78d]
+7Arcane ScalpelTier 3 · Finesse · Far · d6+2 mag · One-HandedInc... [namelen=188 namehash=bee7341d]
+Advanced Focus RunesTier 3 · Instinct · Very Close · d6+4 mag · ... [namelen=172 namehash=f23bbe05]
+Advanced Hallowed ShieldInstinct · Melee · d4+4 mag · One-Handed... [namelen=197 namehash=eb151809]
+Advanced Rune ShieldTier 3 · Knowledge · Melee · d4+4 mag · One-... [namelen=126 namehash=740d6152]
 Agility
 Alt. tables
 Armor
 Beast Feast
-Blackblood TendrilTier 4 · Instinct · Close · d6+8 mag · One-Han... [namelen=239 namehash=f0fa9786]
+Blackblood TendrilTier 4 · Instinct · Close · d6+8 mag · One-Han... [namelen=229 namehash=3c3b4bea]
 Close
 Colossus of the Drylands
 Communities
@@ -246,32 +246,32 @@ Dark Heart of Andaluria
 Dread
 Dread GM Toolbox
 EN
-Echo BladeTier 4 · Presence · Melee · d4+6 mag · One-HandedDoubl... [namelen=227 namehash=467f68e6]
-Eldritch VambraceTier 2 · Instinct · Melee · d8 mag · One-Handed... [namelen=246 namehash=f3972994]
+Echo BladeTier 4 · Presence · Melee · d4+6 mag · One-HandedDoubl... [namelen=217 namehash=7d160854]
+Eldritch VambraceTier 2 · Instinct · Melee · d8 mag · One-Handed... [namelen=236 namehash=ed0297a3]
 Equipment
 Far
 Filter link
 Filters (1)
 Finesse
-Focus RunesTier 1 · Instinct · Very Close · d6 mag · One-HandedF... [namelen=171 namehash=409d0617]
+Focus RunesTier 1 · Instinct · Very Close · d6 mag · One-HandedF... [namelen=161 namehash=e9f9b8bf]
 Grid
-Hallowed ShieldInstinct · Melee · d4 mag · One-HandedResonant: W... [namelen=203 namehash=746f9add]
+Hallowed ShieldInstinct · Melee · d4 mag · One-HandedResonant: W... [namelen=186 namehash=d9319c15]
 Hope & Fear
 How this works
-Improved Focus RunesTier 2 · Instinct · Very Close · d6+2 mag · ... [namelen=182 namehash=803a3fbc]
-Improved Hallowed ShieldInstinct · Melee · d4+2 mag · One-Handed... [namelen=214 namehash=39450adb]
-Improved Rune ShieldTier 2 · Knowledge · Melee · d4+2 mag · One-... [namelen=136 namehash=569c89a6]
+Improved Focus RunesTier 2 · Instinct · Very Close · d6+2 mag · ... [namelen=172 namehash=557d6e28]
+Improved Hallowed ShieldInstinct · Melee · d4+2 mag · One-Handed... [namelen=197 namehash=29080590]
+Improved Rune ShieldTier 2 · Knowledge · Melee · d4+2 mag · One-... [namelen=126 namehash=6aeda0e6]
 Instinct
 Knowledge
-Legendary Focus RunesTier 4 · Instinct · Very Close · d6+6 mag ·... [namelen=183 namehash=ecae53e2]
-Legendary Hallowed ShieldInstinct · Melee · d4+6 mag · One-Hande... [namelen=215 namehash=e02451fd]
-Legendary Rune ShieldTier 4 · Knowledge · Melee · d4+6 mag · One... [namelen=137 namehash=0ef43b59]
+Legendary Focus RunesTier 4 · Instinct · Very Close · d6+6 mag ·... [namelen=173 namehash=1ebcfd7a]
+Legendary Hallowed ShieldInstinct · Melee · d4+6 mag · One-Hande... [namelen=198 namehash=8a315850]
+Legendary Rune ShieldTier 4 · Knowledge · Melee · d4+6 mag · One... [namelen=127 namehash=39a22f87]
 Link to this table
 List
 Lists
 Magic
 Melee
-Möbius OrbTier 4 · Knowledge · Melee · d8+6 mag · One-HandedRecu... [namelen=269 namehash=d8f9cab8]
+Möbius OrbTier 4 · Knowledge · Melee · d8+6 mag · One-HandedRecu... [namelen=259 namehash=011c1158]
 Open this section on start
 Other
 Physical
@@ -279,12 +279,12 @@ Presence
 RU
 Remove from the filter
 Reset all
-Rune ShieldTier 1 · Knowledge · Melee · d4 mag · One-HandedProte... [namelen=125 namehash=e2beef6e]
+Rune ShieldTier 1 · Knowledge · Melee · d4 mag · One-HandedProte... [namelen=115 namehash=cce204a6]
 Search
 Secondary
 Selected
 Skip to content
-Soul ChainTier 3 · Presence · Very Close · d6+5 mag · One-Handed... [namelen=231 namehash=f54473f8]
+Soul ChainTier 3 · Presence · Very Close · d6+5 mag · One-Handed... [namelen=221 namehash=3b87e5ae]
 Standard rules
 Strength
 Tables
@@ -293,7 +293,7 @@ Upgradable
 Vault of Ages
 Very Close
 Very Far
-Vorpal ShardTier 3 · Knowledge · Melee · d4 mag · One-HandedTarg... [namelen=203 namehash=7b2895e0]
+Vorpal ShardTier 3 · Knowledge · Melee · d4 mag · One-HandedTarg... [namelen=193 namehash=e7c584dc]
 Weapons
 Wondrous
 Wondrous Loot

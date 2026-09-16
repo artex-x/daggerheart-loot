@@ -1,9 +1,9 @@
-# #/roll/wondrous
-# route: #/roll/wondrous
-# why: a roll on a table with a real die
+# #/i/cm1
+# route: #/i/cm1
+# why: a community record - the one table path whose leaf is the record's own community
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
+RootWebArea "Генератор лута — Daggerheart" [url=#/i/cm1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,26 +22,21 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
-    heading "Wondrous Loot" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
-    StaticText "Введите результат броска или получите случайную позицию."
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
-    button "На единицу меньше" [disabled=true]
-    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
-    button "На единицу больше"
-    button "Случайно 1–119"
+    heading "Королевская Брошь" [level=1]
+    StaticText "Сообщества · Великородное · номер 1 "
+    link "показать в таблице" [url=#/tables/community/cm1]
     button "Страница"
+    StaticText "1"
     ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "WONDROUS"
-    link "Смола Бездны" [description=Страница url=#/i/w1]
+    StaticText "Королевская Брошь"
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
-    DisclosureTriangle "Неистовое опутывание МУДРОСТЬ · УРОВЕНЬ 1 · ЗАКЛИНАНИЕ" [expanded=false]
+    StaticText "Пока вы открыто носите эту брошь во владениях или поселении Вели..." [namelen=187 namehash=d75660e2]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/cm1]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -55,28 +50,25 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Добавить в список
 К содержимому
-Как это работает
 ЛутDaggerheart
-На единицу больше
-На единицу меньше
 Обычные правила
-Открывать этот раздел при запуске
 Отправить
 Поиск
-Результат броска
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Случайно 1–119
+Собрать карточки для печати: девять на лист A4
 Сообщества
 Списки
 Страница
 Таблицы
+показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
+RootWebArea "Daggerheart Loot Generator" [url=#/i/cm1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -95,32 +87,28 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
-    heading "Wondrous Loot" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
-    StaticText "Enter your roll result, or pick a random entry."
-    StaticText "ROLL RESULT (1–119)"
-    button "One lower" [disabled=true]
-    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
-    button "One higher"
-    button "Random 1–119"
+    heading "Royal Brooch" [level=1]
+    StaticText "Communities · Highborne · roll 1 "
+    link "show in the table" [url=#/tables/community/cm1]
     button "Page"
+    StaticText "1"
     ... StaticText x2 of 6 same-shape siblings elided
-    StaticText "WONDROUS"
-    link "Abyssal Sap" [description=Page url=#/i/w1]
+    StaticText "Royal Brooch"
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
-    DisclosureTriangle "Vicious Entangle SAGE · LEVEL 1 · SPELL" [expanded=false]
+    StaticText "Wearing this brooch openly while within a Highborne domain or se..." [namelen=155 namehash=642af9c6]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/cm1]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
+Add to list
 Alt. tables
 Communities
 Copy image
@@ -129,15 +117,10 @@ Copy name
 Copy text
 Dread
 EN
-How this works
+Lay these out for printing: nine to an A4 sheet
 Lists
-One higher
-One lower
-Open this section on start
 Page
 RU
-Random 1–119
-Roll result
 Search
 Share
 Skip to content
@@ -146,4 +129,5 @@ Tables
 Vault of Ages
 Wondrous
 daggerheart.com
+show in the table
 ЛутDaggerheart

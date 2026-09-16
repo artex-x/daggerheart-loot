@@ -9,7 +9,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
     button "Страница"
     StaticText "1"
     StaticText "РАСХОДНИК"
-    StaticText "WONDROUS LOOT"
+    StaticText "WONDROUS"
     StaticText "Смола Бездны"
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -59,7 +59,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
     button "Page"
     StaticText "1"
     StaticText "CONSUMABLE"
-    StaticText "WONDROUS LOOT"
+    StaticText "WONDROUS"
     StaticText "Abyssal Sap"
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]

@@ -58,7 +58,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/roll/alt]
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Страница"
-    StaticText "HOPE & FEAR · РАСХОДНИКИ"
+    StaticText "HOPE & FEAR"
     link "Семя Вергласа" [description=Страница url=#/i/hc3]
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -169,7 +169,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/roll/alt]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Page"
-    StaticText "HOPE & FEAR · CONSUMABLES"
+    StaticText "HOPE & FEAR"
     link "Verglasian Seed" [description=Page url=#/i/hc3]
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]

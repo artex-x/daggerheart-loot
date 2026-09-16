@@ -129,6 +129,21 @@ Six modes. Each keeps its own input in memory only.
 ## Records
 
 - Card in a modal from a table row, or a full page at `#/i/<id>`.
+- A tag and a table path are two different things, and a record draws each in
+  its own place. The line under a record page's heading is the record's
+  complete table path - the group, its sub-table, and, for the two tables
+  sectioned by a value the record itself carries (`other_frames` by `frame`,
+  `community` by `community`), the record's own section leaf: a community
+  record reads `Сообщества · Великородное` / `Communities · Highborne`, and a
+  Vault of Ages artifact or cursed object carries that word in the same line
+  (`Vault of Ages · Артефакт` / `Vault of Ages · Artifact`, `· Проклятый
+  предмет` / `· Cursed object`). The print card's source line and a generated
+  share stub's subtitle are paths too, and are held to the same rule.
+- The `.badge src` chip on a record card, a table row, a Search result, a list
+  row, or a modal card is a tag, not a path: one leaf naming the book, the
+  community, or the setting - never a breadcrumb. It carries no path segment
+  because every place it is drawn already shows the surrounding context (a
+  table, a section, a list of results).
 - `#/i/<id>` for an id the data does not know draws "Предмет не найден", the
   sub line and a "На главную" button to `#/roll/std` (the live
   `renderItemPage` shape). The tab title on a record page is the app's name

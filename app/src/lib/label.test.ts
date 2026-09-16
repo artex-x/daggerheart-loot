@@ -167,9 +167,10 @@ describe('the line under the heading', () => {
     expect(whereFrom(frame, 'en')).toBe('Other · Frames · Beast Feast');
   });
 
-  it('names the community instead of the book', () => {
+  it('completes the path with the community, the leaf it is sectioned by', () => {
     const c = rec({ src: 'community', community: 'Highborne', community_ru: 'Великородное' });
-    expect(whereFrom(c, 'ru')).toBe('Великородное');
+    expect(whereFrom(c, 'ru')).toBe('Сообщества · Великородное');
+    expect(whereFrom(c, 'en')).toBe('Communities · Highborne');
   });
 
   it('falls back to the source where there is no table', () => {
@@ -178,5 +179,47 @@ describe('the line under the heading', () => {
 
   it('says something for every record in the data', () => {
     for (const it of index.searchable) expect(whereFrom(it, 'ru'), it.id).not.toBe('');
+  });
+});
+
+describe('a tag and a path, pinned apart', () => {
+  /* One record of each shape the rule names, real data rather than invented
+     records: `srcLabel` (the badge tag) and `whereFrom` (the record-page path)
+     asserted side by side, so the two abstractions are pinned apart rather
+     than one being derived from the other. */
+  const shapes = ['ci61', 'hi61', 'f1', 'f95', 'cm1', 'voa2_a1'];
+
+  it('never puts a path in a tag', () => {
+    for (const id of shapes) {
+      const it = index.byId.get(id);
+      expect(it, id).toBeDefined();
+      if (!it) continue;
+      expect(srcLabel(it, 'ru')).not.toContain(' · ');
+      expect(srcLabel(it, 'en')).not.toContain(' · ');
+    }
+  });
+
+  it('pins the exact tag for each shape', () => {
+    const byId = (id: string) => index.byId.get(id)!;
+    expect(srcLabel(byId('ci61'), 'en')).toBe('Core');
+    expect(srcLabel(byId('hi61'), 'en')).toBe('Hope & Fear');
+    expect(srcLabel(byId('f1'), 'ru')).toBe('Пир зверей');
+    expect(srcLabel(byId('f1'), 'en')).toBe('Beast Feast');
+    expect(srcLabel(byId('f95'), 'ru')).toBe('Материнская Плата');
+    expect(srcLabel(byId('f95'), 'en')).toBe('Motherboard');
+    expect(srcLabel(byId('cm1'), 'ru')).toBe('Великородное');
+    expect(srcLabel(byId('cm1'), 'en')).toBe('Highborne');
+    expect(srcLabel(byId('voa2_a1'), 'en')).toBe('Vault of Ages');
+  });
+
+  it('pins the exact path for each shape', () => {
+    const byId = (id: string) => index.byId.get(id)!;
+    expect(whereFrom(byId('ci61'), 'ru')).toBe('Прочее · Стартовые');
+    expect(whereFrom(byId('hi61'), 'en')).toBe('Other · Starting');
+    expect(whereFrom(byId('f1'), 'ru')).toBe('Прочее · Сеттинги · Пир зверей');
+    expect(whereFrom(byId('f95'), 'ru')).toBe('Прочее · Сеттинги · Материнская Плата');
+    expect(whereFrom(byId('cm1'), 'ru')).toBe('Сообщества · Великородное');
+    expect(whereFrom(byId('cm1'), 'en')).toBe('Communities · Highborne');
+    expect(whereFrom(byId('voa2_a1'), 'en')).toBe('Vault of Ages');
   });
 });

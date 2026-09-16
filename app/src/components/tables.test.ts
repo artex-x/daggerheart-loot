@@ -962,7 +962,9 @@ describe('the alternate tables', () => {
       env: fakeEnv({ router: memoryRouter('#/tables/other_frames'), data: fakeData(LOOT) })
     });
     const row = screen.getByRole('button', { name: /Пирог Зверя/ });
-    expect(within(row).getByText('Прочее · Сеттинги · Пир зверей')).toBeInTheDocument();
+    /* A tag never carries a path: the badge names the setting alone, the same
+       leaf the section heading above the row already carries. */
+    expect(within(row).getByText('Пир зверей')).toBeInTheDocument();
   });
 });
 

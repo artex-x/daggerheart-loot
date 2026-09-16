@@ -78,6 +78,47 @@ const LOOT: Loot = {
         ru: 'Зелье выносливости',
         rud: 'Очистите 1d4 Стресса.'
       }
+    ],
+    /* One community record: the one table sectioned by a value the record
+       itself carries besides `other_frames`, so its path completes with the
+       community and its badge names the community alone. */
+    community: [
+      {
+        id: 'cm1',
+        src: 'community',
+        kind: 'item',
+        community: 'Highborne',
+        community_ru: 'Великородное',
+        en: 'Signet',
+        ende: 'A mark of blood.',
+        ru: 'Перстень',
+        rud: 'Знак крови.'
+      }
+    ],
+    /* Vault of Ages carries the tier word `app.js:3237` prints but the
+       Svelte rewrite dropped - an artifact and a cursed object, the two
+       shapes the word takes. */
+    voa: [
+      {
+        id: 'voa_a1',
+        src: 'voa',
+        kind: 'item',
+        tier: 'A',
+        en: 'Sunstone',
+        ende: 'Warm to the touch.',
+        ru: 'Солнечный камень',
+        rud: 'Тёплый на ощупь.'
+      },
+      {
+        id: 'voa_c1',
+        src: 'voa',
+        kind: 'item',
+        tier: 'C',
+        en: 'Blighted Coin',
+        ende: 'Whispers at night.',
+        ru: 'Проклятая монета',
+        rud: 'Шепчет по ночам.'
+      }
     ]
   },
   eq: [
@@ -260,6 +301,40 @@ describe('a record on its own page', () => {
     img?.dispatchEvent(new Event('error'));
     await Promise.resolve();
     expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+  });
+});
+
+describe('the path at the top of the page, and the tag on the badge', () => {
+  it('completes the path with the community, the leaf the table is sectioned by', () => {
+    const { container } = render(App, { env: at('cm1') });
+    const sub = container.querySelector('p.page-sub');
+    expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Сообщества · Великородное');
+  });
+
+  it('names the community alone on the badge, with no path in it', () => {
+    render(App, { env: at('cm1') });
+    expect(screen.getByText('Великородное').closest('.badge')).toHaveClass('src');
+  });
+
+  it('carries the artifact word in the path line, not only on a badge', () => {
+    const { container } = render(App, { env: at('voa_a1') });
+    const sub = container.querySelector('p.page-sub');
+    expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Артефакт');
+  });
+
+  it('carries the cursed-object word in the path line', () => {
+    const { container } = render(App, { env: at('voa_c1') });
+    const sub = container.querySelector('p.page-sub');
+    expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Проклятый предмет');
+  });
+
+  it('has no axe violations on a community record or a Vault of Ages artifact', async () => {
+    const { container, unmount } = render(App, { env: at('cm1') });
+    await expectNoA11yViolations(container);
+    unmount();
+
+    const voa = render(App, { env: at('voa_a1') });
+    await expectNoA11yViolations(voa.container);
   });
 });
 

@@ -9,7 +9,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { descOf, eqLine, nameOf } from '../lib/i18n.js';
-  import { cardBadges, isFrameRecord, whereFrom } from '../lib/label.js';
+  import { cardBadges, isFrameRecord, srcLabel } from '../lib/label.js';
   import type { Index } from '../lib/data.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
@@ -95,7 +95,7 @@
   ><span class="rm"
     >{#each cardBadges(it, lang, t) as b, i (i)}<span class="badge {b.cls}" title={b.title}
         >{b.text}</span
-      >{/each}<span class="badge src">{whereFrom(it, lang)}</span></span
+      >{/each}<span class="badge src">{srcLabel(it, lang)}</span></span
   >
 </button>
 

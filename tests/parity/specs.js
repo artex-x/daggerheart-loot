@@ -1553,6 +1553,20 @@ const STATES = [
      record at all, which is why nothing had caught it. */
   { id: '#/i/f1', route: '#/i/f1', why: 'a frame-equipment record, catching the source-badge fix' },
 
+  /* B2: a tag and a table path are two different things. Neither shape had a
+     state before, which is why the human found both defects on the published
+     site rather than in a golden. */
+  {
+    id: '#/i/cm1',
+    route: '#/i/cm1',
+    why: "a community record - the one table path whose leaf is the record's own community"
+  },
+  {
+    id: '#/i/voa2_a1',
+    route: '#/i/voa2_a1',
+    why: 'an artifact - the tier word belongs in the path line, and no state opened one'
+  },
+
   /* The lists index, off `renderLists`/`storageWarning` in app.js. */
   {
     id: '#/lists',

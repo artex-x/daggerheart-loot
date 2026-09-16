@@ -26,19 +26,19 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     StaticText "Список от другого игрока · 3 позиции"
     button "Добавить в список" [expanded=false]
     checkbox "Выбрано" [checked=false]
-    button "1 Первоклассный Спальный Мешок ×2 Во время отдыха вы автоматичес..." [namelen=107 namehash=dcb9ff2c]
+    button "1 Первоклассный Спальный Мешок ×2 Во время отдыха вы автоматичес..." [namelen=96 namehash=57957f25]
     checkbox "Выбрано" [checked=false]
-    button "21 Доспешный Сшиватель ×5 · 5 горстей Вы можете использовать это..." [namelen=186 namehash=6946a672]
+    button "21 Доспешный Сшиватель ×5 · 5 горстей Вы можете использовать это..." [namelen=173 namehash=33e9d882]
     checkbox "Выбрано" [checked=false]
-    button "Туника из Паучьего Шелка 1 горсть Ранг 2 · Пороги 9/20 · Броня 4..." [namelen=186 namehash=bfdbcad1]
+    button "Туника из Паучьего Шелка 1 горсть Ранг 2 · Пороги 9/20 · Броня 4..." [namelen=179 namehash=3cf5fc1d]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
-1Первоклассный Спальный Мешок×2Во время отдыха вы автоматически ... [namelen=102 namehash=7aed36cd]
-21Доспешный Сшиватель×5 · 5 горстейВы можете использовать этот ш... [namelen=181 namehash=40d21422]
+1Первоклассный Спальный Мешок×2Во время отдыха вы автоматически ... [namelen=91 namehash=7ebe99fa]
+21Доспешный Сшиватель×5 · 5 горстейВы можете использовать этот ш... [namelen=168 namehash=d72d6026]
 Dread
 EN
 RU
@@ -55,7 +55,7 @@ daggerheart.com
 Сообщества
 Списки
 Таблицы
-Туника из Паучьего Шелка1 горстьРанг 2 · Пороги 9/20 · Броня 4Ка... [namelen=180 namehash=6f761c1a]
+Туника из Паучьего Шелка1 горстьРанг 2 · Пороги 9/20 · Броня 4Ка... [namelen=173 namehash=7617ed27]
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
@@ -81,19 +81,19 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
     StaticText "A list from another player · 3 items"
     button "Add to list" [expanded=false]
     checkbox "Selected" [checked=false]
-    button "1 Premium Bedroll ×2 During downtime, you automatically clear a ..." [namelen=89 namehash=6a981e77]
+    button "1 Premium Bedroll ×2 During downtime, you automatically clear a ..." [namelen=81 namehash=69caf8d4]
     checkbox "Selected" [checked=false]
-    button "21 Armor Stitcher ×5 · 5 handfuls You can use this stitcher to s..." [namelen=150 namehash=531312c5]
+    button "21 Armor Stitcher ×5 · 5 handfuls You can use this stitcher to s..." [namelen=136 namehash=7813561e]
     checkbox "Selected" [checked=false]
-    button "Spidersilk Tunic 1 handful Tier 2 · Thresholds 9/20 · Armor 4 Wa..." [namelen=169 namehash=8bb9e9d4]
+    button "Spidersilk Tunic 1 handful Tier 2 · Thresholds 9/20 · Armor 4 Wa..." [namelen=163 namehash=c645fc16]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
-1Premium Bedroll×2During downtime, you automatically clear a Str... [namelen=84 namehash=8402450c]
-21Armor Stitcher×5 · 5 handfulsYou can use this stitcher to spen... [namelen=145 namehash=d68a1dc9]
+1Premium Bedroll×2During downtime, you automatically clear a Str... [namelen=76 namehash=6f2fe0c6]
+21Armor Stitcher×5 · 5 handfulsYou can use this stitcher to spen... [namelen=131 namehash=fb0e945f]
 Add to list
 Alt. tables
 Communities
@@ -104,7 +104,7 @@ RU
 Search
 Selected
 Skip to content
-Spidersilk Tunic1 handfulTier 2 · Thresholds 9/20 · Armor 4Wall-... [namelen=163 namehash=cd310b1b]
+Spidersilk Tunic1 handfulTier 2 · Thresholds 9/20 · Armor 4Wall-... [namelen=157 namehash=d6f04d1b]
 Standard rules
 Tables
 Vault of Ages

@@ -68,7 +68,19 @@ const LOOT: Loot = {
     core_consumable: [
       row({ id: 'cc1', kind: 'consumable', roll: 1, ru: 'Зелье', en: 'Potion' })
     ],
-    hnf_item: [row({ id: 'hi1', src: 'hnf', roll: 1, ru: 'Предмет H&F', en: 'H&F Thing' })]
+    hnf_item: [row({ id: 'hi1', src: 'hnf', roll: 1, ru: 'Предмет H&F', en: 'H&F Thing' })],
+    /* A community record, so a result row can be checked for the leaf tag its
+       badge must carry rather than the full table path. */
+    community: [
+      row({
+        id: 'cm1',
+        src: 'community',
+        community: 'Highborne',
+        community_ru: 'Великородное',
+        ru: 'Перстень Рода',
+        en: 'Ancestral Signet'
+      })
+    ]
   },
   eq: [],
   refs: {}
@@ -124,6 +136,16 @@ describe('both languages at once', () => {
     render(App, { env: at() });
     await type('Wind');
     expect(screen.getAllByRole('button', { name: /Ветра/ })).toHaveLength(2);
+  });
+});
+
+describe('the source badge on a result row', () => {
+  it('names the community alone, with no path folded into it', async () => {
+    render(App, { env: at() });
+    await type('Перстень');
+    const result = screen.getByRole('button', { name: /Перстень/ });
+    expect(within(result).getByText('Великородное')).toBeInTheDocument();
+    expect(within(result).queryByText(/Сообщества · /)).not.toBeInTheDocument();
   });
 });
 

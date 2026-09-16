@@ -62,14 +62,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Выбрать позицию" [checked=false]
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
-    button "Наручники Эта пара наручников с замком поставляется с ключом. ПР..." [namelen=85 namehash=d99356d1]
+    button "Наручники Эта пара наручников с замком поставляется с ключом. ПР..." [namelen=74 namehash=9df2647c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Выбрать позицию" [checked=false]
     spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
-    button "Мистический Плащ Существо с Характеристикой Заклинателя, носящее..." [namelen=161 namehash=c2ae159a]
+    button "Мистический Плащ Существо с Характеристикой Заклинателя, носящее..." [namelen=150 namehash=e6d5f2f2]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЗОЛОТО"
@@ -96,23 +96,23 @@ daggerheart.com
 Вернуть
 Выбрать позицию
 Заметка
-Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=156 namehash=8e5c57e4]
+Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
 К содержимому
 Как в книге
 Как это работает
 ЛутDaggerheart
-Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=158 namehash=22eb0518]
+Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
 Монетами
 На единицу больше
 На единицу меньше
 Название списка
-НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=82 namehash=0d405857]
+НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
 Обычные правила
-Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=99 namehash=1bd612ab]
+Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
 Позиция в списке
 Поиск
-Пронзительная СвирельЭта свирель ручной работы имеет характерный... [namelen=176 namehash=264c0b91]
-Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=140 namehash=08f3fd31]
+Пронзительная СвирельЭта свирель ручной работы имеет характерный... [namelen=165 namehash=9d32035b]
+Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
 Результат броска
 Скопировать текст
 Скрыть
@@ -126,7 +126,7 @@ daggerheart.com
 Убрать из списка
 Удалить
 Удалить (1)
-Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=204 namehash=1f796ae1]
+Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
 Цены
 
 ## en :: tree
@@ -189,14 +189,14 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90L
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Select entry" [checked=false]
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
-    button "Manacles This pair of locking cuffs comes with a key. ITEM CORE ..." [namelen=71 namehash=32ed3d88]
+    button "Manacles This pair of locking cuffs comes with a key. ITEM CORE"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Select entry" [checked=false]
     spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
-    button "Arcane Cloak A creature with a Spellcast trait wearing this cloa..." [namelen=132 namehash=1ffae88a]
+    button "Arcane Cloak A creature with a Spellcast trait wearing this cloa..." [namelen=124 namehash=e33646cf]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "GOLD"
@@ -213,11 +213,11 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90L
 
 ## en :: controls
 1 bag
-Alistair's TorchYou can light this magic torch at will. The flam... [namelen=174 namehash=f8ba7412]
+Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
-Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=129 namehash=95493b59]
+Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 As in the book
-Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=157 namehash=11823c49]
+Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
 Communities
 Copy text
 Delete
@@ -230,14 +230,14 @@ In coins
 Lay these out for printing: nine to an A4 sheet
 List name
 Lists
-ManaclesThis pair of locking cuffs comes with a key.ItemCore · I... [namelen=68 namehash=aa5955b6]
+ManaclesThis pair of locking cuffs comes with a key.ItemCore
 Note
 One higher
 One lower
-Piper WhistleThis handcrafted whistle has a distinctive sound. W... [namelen=161 namehash=1fae2fe7]
+Piper WhistleThis handcrafted whistle has a distinctive sound. W... [namelen=153 namehash=f3fe23c1]
 Players’ link
 Position in the list
-Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=81 namehash=20f5c531]
+Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
 Prices
 RU
 Random 1–7
@@ -246,7 +246,7 @@ Roll result
 Search
 Select entry
 Skip to content
-Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=132 namehash=2f9a901c]
+Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
 Tables
 Vault of Ages

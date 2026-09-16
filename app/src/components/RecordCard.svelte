@@ -13,7 +13,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
-  import { cardBadges, isFrameRecord, whereFrom } from '../lib/label.js';
+  import { cardBadges, isFrameRecord, srcLabel } from '../lib/label.js';
   import { upgradeLine } from '../lib/data.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
@@ -133,7 +133,7 @@
       {#each badges as b, i (i)}
         <span class="badge {b.cls}" title={b.title}>{b.text}</span>
       {/each}
-      <span class="badge src">{whereFrom(it, lang)}</span>
+      <span class="badge src">{srcLabel(it, lang)}</span>
     </div>
 
     <h2 class="card-name">

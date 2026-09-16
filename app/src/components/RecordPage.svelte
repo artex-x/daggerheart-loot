@@ -46,6 +46,8 @@
   const where = $derived.by(() => {
     if (!it) return '';
     const bits = [whereFrom(it, app.lang)];
+    if (it.tier === 'A') bits.push(t.voaArtifact1);
+    else if (it.tier === 'C') bits.push(t.voaCursed1);
     if (it.roll) bits.push(`${t.rollNo} ${String(it.roll)}`);
     else if (it.eq && !isFrameRecord(it)) bits.push(`${t.tier} ${String(it.eq.tier)}`);
     return bits.join(' · ');

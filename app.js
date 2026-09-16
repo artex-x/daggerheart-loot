@@ -954,10 +954,7 @@ function srcName(k){
    уезжает на стол одна, и «Великородное» на ней не отвечает на вопрос, откуда
    вещь: сообщество - это раздел книги, а не книга. */
 function printSrc(it){
-  if (isFrameRecord(it)) return whereFrom(it);
-  return it.src === 'community'
-    ? t().srcComm + ' · ' + srcLabel(it)
-    : srcLabel(it);
+  return isFrameRecord(it) || it.src === 'community' ? whereFrom(it) : srcLabel(it);
 }
 function srcLabel(it){
   if (it.frame) return frameName(it.frame);
@@ -970,17 +967,12 @@ function srcLabel(it){
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
 function whereFrom(it){
-  const grp = groupOf('other_starting');
-  const grpName = S.lang === 'ru' ? grp.ru : grp.en;
-  if (isFrameRecord(it)) {
-    const sub = SUB_LABEL.other_frames;
-    return grpName + ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) + ' · ' + srcLabel(it);
-  }
-  if (it.starting) {
-    const sub = SUB_LABEL.other_starting;
-    return grpName + ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]);
-  }
-  return srcLabel(it);
+  const tid = tableIdOf(it);
+  const grp = groupOf(tid);
+  const sub = SUB_LABEL[tid];
+  const head = S.lang === 'ru' ? grp.ru : grp.en;
+  const base = sub ? head + ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) : head;
+  return (it.frame || it.community) ? base + ' · ' + srcLabel(it) : base;
 }
 
 function toast(msg, isError){
@@ -2026,7 +2018,7 @@ function cardHTML(it, opt){
     ((opt.rollLabel !== false && it.roll) ? '<span class="badge num">' + esc(opt.rollLabel || it.roll) + '</span>' : '') +
     (opt.col ? '<span class="badge ' + opt.col + '">' + esc(opt.col === 'hope' ? t().hope : t().fear) + '</span>' : '') +
     kindBadge(it) + uniqBadge(it) + tierBadge(it) +
-    '<span class="badge src">' + esc(whereFrom(it)) + '</span>';
+    '<span class="badge src">' + esc(srcLabel(it)) + '</span>';
 
   const nameEl = opt.full
     ? '<span>' + esc(nm) + '</span>'
@@ -2818,7 +2810,7 @@ function rowHTML(it, removeFrom, tail, num){
         (isEquip(it) ? '<span class="rstats ' + eqClass(it) + '">' + esc(eqLine(it, true)) + '</span>' : '') +
         (descOf(it) ? '<span>' + descHtml(it, true) + '</span>' : '') + rowCraft(it) + '</span>' +
         '<span class="rm">' + kindBadge(it) + uniqBadge(it) + tierBadge(it) +
-        '<span class="badge src">' + esc(whereFrom(it)) + '</span></span>' +
+        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       (removeFrom
         ? '<button type="button" class="row-x" data-remove="' + esc(removeFrom + ':' + it.id) + '" title="' + esc(t().removeItem) + '" aria-label="' + esc(t().removeItem) + '">&times;</button>'
@@ -3090,7 +3082,7 @@ function listRowHTML(l, it, i){
         /* the same badges every other listing shows — without them a list is the
            one place you cannot tell an item from a weapon at a glance */
         '<span class="rm">' + kindBadge(it) + uniqBadge(it) + tierBadge(it) +
-        '<span class="badge src">' + esc(whereFrom(it)) + '</span></span>' +
+        '<span class="badge src">' + esc(srcLabel(it)) + '</span></span>' +
       '</button>' +
       '<div class="lrow-meta">' +
         '<label><span>' + esc(t().qty) + '</span>' +
@@ -3224,11 +3216,7 @@ function renderItemPage(id){
      имя таблицы («H&F — предметы») повторяло книгу внутри себя и расходилось с
      тем, что написано на чипах. */
   const tid = tableIdOf(it);
-  const grp = groupOf(tid);
-  const sub = SUB_LABEL[tid];
-  const where = isFrameRecord(it) || it.starting ? whereFrom(it) : it.src === 'community'
-    ? (S.lang === 'ru' ? (it.community_ru || it.community) : it.community)
-    : (S.lang === 'ru' ? grp.ru : grp.en) + (sub ? ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) : '');
+  const where = whereFrom(it);
   /* Ссылка ведёт прямо на строку этой вещи, а не на раздел: «открыть таблицу» и
      потом искать её глазами среди сотни - это не ответ на вопрос «где она». */
   const back = tableHref(tid, it.id);

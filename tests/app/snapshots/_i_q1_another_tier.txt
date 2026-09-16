@@ -8,7 +8,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/i/q1]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    StaticText "СНАРЯЖЕНИЕ · ОРУЖИЕ"
+    StaticText "CORE"
     ... StaticText x9 of 13 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -59,7 +59,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/i/q1]
     button "Close" [description=Close focused=true]
     button "Page"
     StaticText "PRIMARY WEAPON"
-    StaticText "EQUIPMENT · WEAPONS"
+    StaticText "CORE"
     ... StaticText x9 of 13 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]

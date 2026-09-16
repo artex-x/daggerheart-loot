@@ -1,8 +1,17 @@
-/* The words a badge carries, off app.js.
+/* A tag and a path are two different things, off app.js.
  *
- * `srcLabel` names the book a record comes from, and a community record names
- * the community instead - beside other communities the book is obvious, and the
- * community is the thing that tells them apart.
+ * `srcLabel` is the tag: one leaf naming the book, community, or setting a
+ * record comes from. It goes on the `.badge src` chip, which always sits
+ * inside a listing or a card that already supplies the surrounding context -
+ * a community record names the community instead of the book, because beside
+ * other communities the book is obvious and the community is what tells them
+ * apart. A tag never carries a path.
+ *
+ * `whereFrom` is the path: where the record lives in the navigation - the
+ * group, its sub-table, and (for the two tables sectioned by a value the
+ * record carries) the record's own section leaf. It goes where the reader has
+ * no surrounding context: the line under a record-page heading, a print
+ * card's source line, and a share stub's subtitle. A path must be complete.
  *
  * `badgeKind` is the class the badge takes, which is not the same vocabulary as
  * `kindOf` in data.ts: that answers "what does this count as when filtering",
@@ -99,9 +108,7 @@ export function srcName(key: string, lang: Lang): string {
  * table alone, so a community record also names the book it came from.
  */
 export function printSrc(it: Record_, lang: Lang): string {
-  const t = dict(lang);
-  if (isFrameRecord(it)) return whereFrom(it, lang);
-  return it.src === 'community' ? `${t.srcComm} · ${srcLabel(it, lang)}` : srcLabel(it, lang);
+  return isFrameRecord(it) || it.src === 'community' ? whereFrom(it, lang) : srcLabel(it, lang);
 }
 
 export function srcLabel(it: Record_, lang: Lang): string {
@@ -186,14 +193,13 @@ const SUBS: Partial<Record<TableId, { ru: string; en: string }>> = {
 };
 
 /**
- * Where a record sits, as the line under the heading says it.
- *
- * A community record names its community instead: beside other communities the
- * book is obvious, and the community is what tells them apart.
+ * Where a record sits, as the line under the heading says it: the group, its
+ * sub-table, and - for the two tables sectioned by a value the record itself
+ * carries, `other_frames` by `frame` and `community` by `community` - the
+ * record's own section leaf. No other table is sectioned by a record
+ * property, so no other table appends one.
  */
 export function whereFrom(it: Record_, lang: Lang): string {
-  if (it.src === 'community') return srcLabel(it, lang);
-
   const table = tableOf(it);
   if (!table) return srcLabel(it, lang);
 
@@ -202,5 +208,5 @@ export function whereFrom(it: Record_, lang: Lang): string {
   const head = group ? group[lang] : srcLabel(it, lang);
   const base = sub ? `${head} · ${sub[lang]}` : head;
 
-  return isFrameRecord(it) ? `${base} · ${srcLabel(it, lang)}` : base;
+  return it.frame || it.community ? `${base} · ${srcLabel(it, lang)}` : base;
 }
