@@ -17,7 +17,7 @@ authorised on 2026-09-11:
 | Worktree | `E:/dev/daggerheart-loot-wt/tg-preview-refresh` |
 | Branch | `automation/tg-preview-refresh` |
 | Base | `8b96ff4`; **`origin/main` is merged in** as of B6 (`1106355`, merged 2026-09-16) |
-| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> the `ci(tg-preview)` commit that carries this file (`git log --oneline -1`) |
+| Commits | `cce10cb` -> `5a959ca` -> `a4c9066` -> `0ab04eb` -> `2a4b78b` -> `5b2a68e` -> `359e0d4` -> `0f33aa2` -> `df76f13` -> `9694782` -> `4a042c7` -> `97e0209` -> `3f6231c` (merge) -> `54b84b3` -> `f5e5d69` |
 
 The task-directory copies **in that worktree** are authoritative. The copy
 under `E:/dev/daggerheart-loot` is a stale snapshot - do not read it as
@@ -90,7 +90,11 @@ Nothing else is in flight in this worktree.
   | 1 | `97e0209` | `docs(tg-preview): pass 6 - CI fail-safety, the merge, and the committed state` - the three task files, gate-exempt |
   | 2 | `3f6231c` | `Merge remote-tracking branch 'origin/main'` - **`origin/main` = `1106355`**, not the `5a36c4a` the plan named |
   | 3 | `54b84b3` | `chore(tg-preview): record the first full reindex` - `tools/tg-preview/state.json` alone, 1069 insertions |
-  | 4 | tip | `ci(tg-preview): make the previews job fail-safe and schedule it` - the workflow, the two folded-in fixes, the atomic `--result` write, the dry-run summary line, the runbook, and this file |
+  | 4 | `f5e5d69` | `ci(tg-preview): make the previews job fail-safe and schedule it` - the workflow, the two folded-in fixes, the atomic `--result` write, the dry-run summary line, the runbook, and this file |
+
+  A fifth, docs-only commit on this gate-exempt file records commit 4's own
+  sha, the way `4a042c7` recorded B5's - section 10c could not name a sha
+  that did not exist when its commit was written.
 
 - **`origin/main` had moved** two commits past the plan's `5a36c4a`, to
   `1106355 docs(config-audit): record B3 completion, gates, and the pending
