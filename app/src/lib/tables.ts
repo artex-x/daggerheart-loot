@@ -39,8 +39,10 @@ const CORE_GROUP: TableGroup = {
 };
 
 /* Order matches the tabs above: rolling first, then browsing. Equipment and
-   Other has no tab of its own - it is a slice through every book at
-   once rather than a book - so they go last. */
+   Other have no tab of their own, for different reasons: Equipment is a slice
+   through every book at once rather than a book, while Other groups starting
+   inventory and campaign-frame equipment, neither of which is rollable
+   content from a book. Both go last. */
 export const TABLE_GROUPS: readonly TableGroup[] = [
   CORE_GROUP,
   { id: 'hnf', label: 'srcHnf', top: 'hnf_item', subs: ['hnf_item', 'hnf_consumable'] },

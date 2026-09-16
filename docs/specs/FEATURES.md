@@ -23,9 +23,10 @@ Six modes. Each keeps its own input in memory only.
   each button is labelled with the count and the rarities it covers.
 - The roll button uses a real die where the range is one, and reads
   "Random 1-N" where it is not (119, 29, a list of arbitrary length).
-- Other is a browsable table, not a rolling mode: its starting inventory comes
-  first and remains non-rollable, followed by campaign-frame equipment with no
-  roll number.
+- Other is two browsable tables, not a rolling mode: Starting items
+  (`other_starting`) holds the non-rollable starting inventory as a plain
+  list, and Frame items (`other_frames`) holds campaign-frame equipment
+  sectioned by setting, with no roll number.
 - A critical success in the alternate tables - the two dice showing the same
   face - hands over the whole rarity rather than a row: a link into each table
   that is switched on, at that rarity, plus a button that steps the rarity up
@@ -48,14 +49,15 @@ Six modes. Each keeps its own input in memory only.
 
 ## Tables and search
 
-- 14 tables (`TABLE_DEFS`), each with its own search box and a list/grid switch.
+- 15 tables (`TABLE_DEFS`), each with its own search box and a list/grid switch.
 - Search covers all 1091 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped.
 - Starting inventory is searchable, opens on direct record pages, and is
-  browsable first under Other; it remains held in the non-rollable `starting`
-  collection. Its source and class context belong in the record description
-  rather than in a new roll table. The accepted source-image hashes are
+  browsable under Other's Starting items table (`other_starting`); it remains
+  held in the non-rollable `starting` collection. Its source and class context
+  belong in the record description rather than in a new roll table. The
+  accepted source-image hashes are
   recorded in `docs/provenance/starting-items-artwork.json`.
 - Every heading has a copy-link button; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in

@@ -31,7 +31,8 @@ const COMMUNITY_RU = {
 };
 const SRC_LABEL = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot' };
 const FRAME_LABEL = {
-  beast_feast: 'Пир зверей', colossus: 'Колосс', dark_heart: 'Тёмное сердце', motherboard: 'Материнская Плата'
+  beast_feast: 'Пир зверей', colossus: 'Колоссы Сухоземья',
+  dark_heart: 'Тёмное сердце Андалурии', motherboard: 'Материнская Плата'
 };
 
 /* Kept in step with the app's own vocabulary (app.js, EQ_* tables) */
@@ -60,7 +61,7 @@ function eqLine(it){
 
 function isFrame(it){ return !!it.frame || it.src === 'frame'; }
 function provenance(it){
-  if (isFrame(it)) return 'Прочее · Сеттинги · ' + (FRAME_LABEL[it.frame] || 'Сеттинги');
+  if (isFrame(it)) return 'Прочее · Сеттинги · ' + (FRAME_LABEL[it.frame] || it.frame);
   if (it.starting) return 'Прочее · Стартовые';
   return '';
 }

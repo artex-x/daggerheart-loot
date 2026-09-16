@@ -89,9 +89,10 @@ Values: `tier` `1`-`4` (and `A`, `C` on `voa`); `cls` `phy`/`mag`; `trait`
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
 community name.
 
-`other_frames` has four setting anchors: `beast_feast`, `colossus`,
-`dark_heart`, and `motherboard`. It lists starting inventory first, then
-campaign frames in that order.
+`other_frames` has four setting anchors, in order: `beast_feast`, `colossus`,
+`dark_heart`, and `motherboard`. Each canonical frame record and any framed
+starting item (`f95`, under Motherboard) appears once, under its own setting.
+Unframed starting inventory is not part of this table - it is `other_starting`.
 
 An empty group means "any", so an untouched filter contributes nothing and a
 plain table link carries no `f_` part at all. Values inside a group are OR'd;

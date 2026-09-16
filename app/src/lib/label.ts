@@ -138,10 +138,9 @@ const EQ_TABLE = {
  * section their record is not in.
  */
 export function tableOf(it: Record_): TableId | null {
-  if (it.frame) return 'other_frames';
+  if (it.frame || it.src === 'frame') return 'other_frames';
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
-  if (it.src === 'frame') return 'other_frames';
   if (it.eq && !it.roll) return EQ_TABLE[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
@@ -181,7 +180,9 @@ const SUBS: Partial<Record<TableId, { ru: string; en: string }>> = {
   alt_consumable: { ru: 'Расходники', en: 'Consumables' },
   eq_weapon: { ru: 'Оружие', en: 'Weapons' },
   eq_secondary: { ru: 'Вторичное', en: 'Secondary' },
-  eq_armor: { ru: 'Броня', en: 'Armor' }
+  eq_armor: { ru: 'Броня', en: 'Armor' },
+  other_starting: { ru: 'Стартовые', en: 'Starting' },
+  other_frames: { ru: 'Сеттинги', en: 'Frames' }
 };
 
 /**
@@ -193,16 +194,13 @@ const SUBS: Partial<Record<TableId, { ru: string; en: string }>> = {
 export function whereFrom(it: Record_, lang: Lang): string {
   if (it.src === 'community') return srcLabel(it, lang);
 
-  if (isFrameRecord(it)) {
-    const t = dict(lang);
-    return `${t.grpOther} · ${lang === 'ru' ? 'Сеттинги' : 'Frames'} · ${srcLabel(it, lang)}`;
-  }
-
   const table = tableOf(it);
   if (!table) return srcLabel(it, lang);
 
   const group = GROUPS.find((g) => g.subs.includes(table));
-  const sub = table === 'other_starting' ? { ru: 'Стартовые', en: 'Starting' } : SUBS[table];
+  const sub = SUBS[table];
   const head = group ? group[lang] : srcLabel(it, lang);
-  return sub ? `${head} · ${sub[lang]}` : head;
+  const base = sub ? `${head} · ${sub[lang]}` : head;
+
+  return isFrameRecord(it) ? `${base} · ${srcLabel(it, lang)}` : base;
 }

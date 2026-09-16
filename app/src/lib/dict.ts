@@ -185,8 +185,6 @@ const ru = {
      book rather than a book of their own. */
   grpEquipment: 'Снаряжение',
   grpOther: 'Прочее',
-  frameItems: 'Предметы сеттингов',
-  starting: 'Стартовые предметы',
   subStarting: 'Стартовые',
   subFrames: 'Сеттинги',
   /* The three equipment tables' sub-caption, shorter than the book's own name
@@ -489,8 +487,6 @@ const en: Dict = {
 
   grpEquipment: 'Equipment',
   grpOther: 'Other',
-  frameItems: 'Frame items',
-  starting: 'Starting items',
   subStarting: 'Starting',
   subFrames: 'Frames',
   subWeapon: 'Weapons',

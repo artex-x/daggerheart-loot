@@ -266,18 +266,11 @@
   const otherSections = $derived.by<Section[]>(() =>
     bodyKind !== 'other'
       ? []
-      : [
-          {
-            key: 'starting',
-            label: t.starting,
-            entries: filtered.filter((it) => it.starting && !it.frame).map((it) => ({ it }))
-          },
-          ...FRAME_ORDER.map((id) => ({
-            key: id,
-            label: frameName(id, app.lang),
-            entries: filtered.filter((it) => it.frame === id).map((it) => ({ it }))
-          }))
-        ].filter((s) => s.entries.length > 0)
+      : FRAME_ORDER.map((id) => ({
+          key: id,
+          label: frameName(id, app.lang),
+          entries: filtered.filter((it) => it.frame === id).map((it) => ({ it }))
+        })).filter((s) => s.entries.length > 0)
   );
 
   const commSections = $derived.by<Section[]>(() => {

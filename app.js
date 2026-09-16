@@ -96,7 +96,7 @@ const T = {
     hopeDie:'Кость Надежды', fearDie:'Кость Страха',
     crit:'Критический успех!', critSub:'Игрок берёт любую позицию из таблицы этой редкости. Мастер может разрешить подняться на ступень выше.',
     bumpTo:'Поднять до',
-    filter:'Тип', kindF:'Тип', frameF:'Сеттинг', commF:'Сообщество', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение', starting:'Стартовые предметы', frameItems:'Предметы сеттингов',
+    filter:'Тип', kindF:'Тип', frameF:'Сеттинг', commF:'Сообщество', fItems:'Предметы', fCons:'Расходники', fEquip:'Снаряжение',
     keepOneKind:'Нужен хотя бы один тип',
     eqTrait:'Характеристика', eqRange:'Дистанция', eqDmg:'Тип урона',
     eqBurden:'Хват', eqLineF:'Линейка', eqTh:'Пороги', eqScore:'Броня', filters:'Фильтры',
@@ -282,7 +282,7 @@ const T = {
     hopeDie:'Hope Die', fearDie:'Fear Die',
     crit:'Critical success!', critSub:'The player takes any entry from this rarity table. The GM may allow bumping up one rarity.',
     bumpTo:'Bump to',
-    filter:'Type', kindF:'Type', frameF:'Frame', commF:'Community', fItems:'Items', fCons:'Consumables', fEquip:'Equipment', starting:'Starting items', frameItems:'Frame items',
+    filter:'Type', kindF:'Type', frameF:'Frame', commF:'Community', fItems:'Items', fCons:'Consumables', fEquip:'Equipment',
     keepOneKind:'At least one type has to stay on',
     eqTrait:'Trait', eqRange:'Range', eqDmg:'Damage type',
     eqBurden:'Burden', eqLineF:'Line', eqTh:'Thresholds', eqScore:'Armor', filters:'Filters',
@@ -970,8 +970,16 @@ function srcLabel(it){
   return S.lang === 'ru' ? (it.community_ru || t().srcComm) : (it.community || t().srcComm);
 }
 function whereFrom(it){
-  if (isFrameRecord(it)) return t().grpOther + ' · ' + (S.lang === 'ru' ? 'Сеттинги' : 'Frames') + ' · ' + srcLabel(it);
-  if (it.starting) return t().grpOther + ' · ' + (S.lang === 'ru' ? 'Стартовые' : 'Starting');
+  const grp = groupOf('other_starting');
+  const grpName = S.lang === 'ru' ? grp.ru : grp.en;
+  if (isFrameRecord(it)) {
+    const sub = SUB_LABEL.other_frames;
+    return grpName + ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]) + ' · ' + srcLabel(it);
+  }
+  if (it.starting) {
+    const sub = SUB_LABEL.other_starting;
+    return grpName + ' · ' + (S.lang === 'ru' ? sub[0] : sub[1]);
+  }
   return srcLabel(it);
 }
 
@@ -1135,7 +1143,7 @@ function homeAllows(hash){
   const h = hash.replace(/^#\/?/, '');
   if (TAB_LIST.some(function (x) { return x[0] === h; })) return true;
   const m = /^tables\/([a-z_]+)$/.exec(h);
-  return !!(m && (m[1] === 'frames' || TABLE_DEFS.some(function (d) { return d.id === m[1]; })));
+  return !!(m && TABLE_DEFS.some(function (d) { return d.id === m[1]; }));
 }
 /* The address of the section being looked at, or '' where pinning makes no
    sense (a single item, someone else's list). */
@@ -2524,15 +2532,13 @@ function renderTables(){
           sectionHead(voaTierName(k), st.t, 't' + k) + renderList(sub) + '</div>';
       }).join('');
     } else if (st.t === 'other_frames') {
-      /* Starting inventory stays first and non-rollable. Frame membership wins
-         over source membership, so Network Tether stays with Motherboard. */
+      /* Разбито по фреймам, как таблица сообществ: снаряжение из кампании имеет
+         смысл только рядом со своей, вперемешку оно читается как ошибка. */
       body = FRAME_ORDER.map(f => {
-        return [f, frameName(f), list.filter(x => x.frame === f)];
-      }).map(function (part) {
-        const f = part[0], label = part[1], sub = part[2];
+        const sub = list.filter(x => x.frame === f);
         if (!sub.length) return '';
         return '<div class="tsection" id="' + sectionId(f) + '" style="margin-top:22px">' +
-          sectionHead(label, st.t, f) + renderList(sub) + '</div>';
+          sectionHead(frameName(f), st.t, f) + renderList(sub) + '</div>';
       }).join('');
     } else if (st.t === 'community') {
       body = COMMUNITIES.map(c => {
