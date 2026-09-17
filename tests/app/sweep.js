@@ -7,11 +7,19 @@
  *
  * Ported from tests/audit2.js; not a fork of it kept in sync by hand. The
  * width is one argument, the way `run-all.js` already splits audit2 into
- * four entries - `node sweep.js 1180` runs one width alone. */
+ * four entries - `node sweep.js 1180` runs one width alone. A trailing
+ * `ru`/`en` narrows the languages too - `node sweep.js 1180 ru` runs 1180
+ * alone in Russian, with the focus walk (issues/phase-8, T2: 1180 axe'd both
+ * languages and ran the focus walk, which made it 1.7x its siblings; the
+ * language split is what `run-all.js`'s two 1180 rows pass). No language
+ * argument means both, the original shape. */
 const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
 
-const ONLY = process.argv.slice(2).map(Number).filter(Boolean);
+const argv = process.argv.slice(2);
+const ONLY = argv.map(Number).filter(Boolean);
 const WIDTHS = ONLY.length ? ONLY : [360, 390, 768, 1180];
+const langArg = argv.find((a) => a === 'ru' || a === 'en');
+const LANGS = langArg ? [langArg] : ['ru', 'en'];
 
 const rep = reporter();
 const { ok } = rep;
@@ -228,7 +236,7 @@ async function focusWalk(page, where) {
   await boot.ctx.close();
 
   for (const width of WIDTHS) {
-    for (const lang of ['ru', 'en']) {
+    for (const lang of LANGS) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang, storage: STORAGE });
       const errs = [];
       page.on('pageerror', (e) => errs.push(e.message));
@@ -377,7 +385,7 @@ async function focusWalk(page, where) {
      * fallback as axe's language split, for the same reason: round trips,
      * not page loads, and a stray tabindex does not appear or vanish with
      * the viewport. */
-    if (width === 1180) {
+    if (width === 1180 && LANGS.includes('ru')) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang: 'ru', storage: STORAGE });
       for (const { hash, label, filterOpen } of FOCUS_WALK) {
         const where = label + ' @' + width + ' ru, фокус';

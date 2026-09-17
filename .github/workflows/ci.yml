@@ -41,30 +41,30 @@ jobs:
       - name: Bundle size budget
         run: npm run budget
 
-      # Structural goldens stay in their own sharded job so they do not make
-      # `check` the critical path.
-      - name: The built app's suites, in a real browser
-        run: node tests/run-all.js --exclude=app/golden
-
       # A CI run is gone by the time anyone looks at it, and the summary prints
       # a dozen grepped lines. run-all.js writes every suite's whole output to
-      # test-output/, which is what makes a red build reproducible.
+      # test-output/, which is what makes a red build reproducible - but this
+      # job no longer runs run-all.js itself (see `browser`, below), so this
+      # is only ever coverage/ from a failed `npm run check`.
       - name: Everything a failed run left behind
         if: failure()
         uses: actions/upload-artifact@v5
         with:
           name: failure-output
           path: |
-            test-output/
             dist/
             coverage/
           retention-days: 14
           if-no-files-found: ignore
 
-  # The rewrite's own structural regression net, sharded the same way `check`'s
-  # legacy parity job used to be: ~1000s unfiltered would make it the
-  # workflow's critical path if it ran inside `check`. See issue 47, R0a.
-  golden:
+  # The built app's real-Chrome suites - page sweeps, structural goldens,
+  # contracts, print, everything tests/run-all.js knows about - spread over
+  # four runners by CI-measured weight instead of one `check`-job step owning
+  # 84% of that job plus a separate `golden` matrix that then sat idle for
+  # 9m21s waiting on it. `--shard=n/4` packs the whole pool, goldens
+  # included; see tests/run-all.js's weight comment and
+  # issues/phase-8/plan.md, "B3".
+  browser:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -83,14 +83,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: The structural goldens - shard ${{ matrix.shard }} of 4
-        run: node tests/app/golden.js --shard=${{ matrix.shard }}/4
+      - name: The built app's suites - shard ${{ matrix.shard }} of 4
+        run: node tests/run-all.js --shard=${{ matrix.shard }}/4
 
       - name: Everything a failed shard left behind
         if: failure()
         uses: actions/upload-artifact@v5
         with:
-          name: failure-output-golden-${{ matrix.shard }}
+          name: failure-output-browser-${{ matrix.shard }}
           path: |
             test-output/
             dist/
@@ -151,7 +151,7 @@ jobs:
   # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, golden]
+    needs: [check, audit, secrets, browser]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:

@@ -17,8 +17,9 @@ R0c (issue 47, `23c00a6`) deleted the static root (`index.html`, `app.js`,
 `style.css`), the fourteen browser suites that drove it, `tests/i18n.js`, and
 the parity harness that compared the two apps - "The rewrite against the app
 it replaces", below, is what survives of that comparison, as history. Twelve
-suite files remain, eighteen `run-all.js` rows (`app/sweep` and `app/golden`
-each split four ways, one per width/shard):
+suite files remain, nineteen `run-all.js` rows (`app/golden` split four ways,
+one per shard; `app/sweep` split five ways, one per width plus a second
+language row at 1180 - issues/phase-8, T2):
 
 - Five `tests/*.js` files, fs/node-only: `contracts` (trimmed to its pure
   half - the list-encoding fixtures and the docs-name check), `craft`

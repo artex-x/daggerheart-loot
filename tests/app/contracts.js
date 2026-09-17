@@ -125,10 +125,16 @@ function stampOf(parts) {
 
   console.log('the address grammar');
   const routes = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
+  /* One context reused across all 28 fixtures rather than one per fixture
+   * (issues/phase-8, T3) - none of them seed storage, so `d.open`'s full
+   * navigation (driver.js:151-153) and `prepare()`'s per-navigation
+   * localStorage.clear() (lib.js/driver.js) already give every fixture the
+   * same clean slate a fresh context would, without paying puppeteer's
+   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 28 times. */
+  const { ctx: rCtx, page: rPage, d: rD } = await fresh({ width: 1280, height: 900 });
   for (const fx of routes) {
-    const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
-    await d.open(fx.hash);
-    const seen = await page.evaluate(() => {
+    await rD.open(fx.hash);
+    const seen = await rPage.evaluate(() => {
       const on = document.querySelector('nav.tabs a[aria-current="page"]');
       /* `.chip[data-val]` is StdPanel's source row and only it - the `value`
          prop on Chip.svelte has no other caller (plan.md, "B12 planned"). */
@@ -160,8 +166,8 @@ function stampOf(parts) {
       JSON.stringify(seen.source) === JSON.stringify(want.source),
       fx.hash + ': sources ' + JSON.stringify(seen.source) + ', the fixture says ' + JSON.stringify(want.source)
     );
-    await ctx.close();
   }
+  await rCtx.close();
 
   console.log('the stat line');
   const lines = JSON.parse(fs.readFileSync(path.join(FIX, 'statlines', 'equipment.json'), 'utf8'));
@@ -191,12 +197,13 @@ function stampOf(parts) {
     ['community', 'comm-Seaborne'],
     ['wondrous', 'kind-consumable']
   ];
+  /* One context reused across all 18 opens (issues/phase-8, T3) - same
+   * reasoning as the address-grammar loop above: no probe here seeds
+   * storage, so a full `d.open` navigation already starts each one clean. */
+  const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });
   const rowsAt = async (hash) => {
-    const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
-    await d.open(hash);
-    const n = await page.evaluate(() => document.querySelectorAll('.rows .row[data-row]').length);
-    await ctx.close();
-    return n;
+    await pD.open(hash);
+    return pPage.evaluate(() => document.querySelectorAll('.rows .row[data-row]').length);
   };
   const whole = {};
   for (const [tid] of PROBE) if (!(tid in whole)) whole[tid] = await rowsAt('#/tables/' + tid);
@@ -207,6 +214,7 @@ function stampOf(parts) {
       tid + '/f_' + seg + ': the group selects nothing (' + n + ' of ' + whole[tid] + ')'
     );
   }
+  await pCtx.close();
 
   await closeBrowser();
   console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\ncontracts (dist/): match the fixtures');

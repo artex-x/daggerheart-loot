@@ -532,8 +532,11 @@ const OUTSIDE = ['Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages',
 });
 
 /* Pages must wait for every quality matrix. Keep this dependency-free: the
-   workflow is deliberately small here, and accepting a stray `golden` mention
-   elsewhere would let deploy bypass a failing structural baseline. */
+   workflow is deliberately small here, and accepting a stray `browser`
+   mention elsewhere would let deploy bypass a failing structural baseline -
+   `browser` is the sharded matrix that runs tests/run-all.js, structural
+   goldens included (issues/phase-8, B3; it replaced a separate `golden`
+   job, which this assertion named until then). */
 const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
 const deploy = /^  deploy:\s*\r?\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(workflow);
 ok(deploy, 'deploy.needs: deploy job is missing');
@@ -541,7 +544,7 @@ const deployNeeds = deploy && /^    needs:\s*\[([^\]\r\n]*)\]\s*$/m.exec(deploy[
 ok(deployNeeds, 'deploy.needs: inline needs list is missing or unparseable');
 if (deployNeeds) {
   const names = deployNeeds[1].split(',').map(function (name) { return name.trim(); });
-  ok(names.includes('golden'), 'deploy.needs: golden is missing');
+  ok(names.includes('browser'), 'deploy.needs: browser is missing');
 }
 
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');

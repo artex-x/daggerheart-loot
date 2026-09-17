@@ -2,15 +2,15 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B1 committed at `e7c7b50`; B2 committed this
-  pass; B3 next)
+- Task status: in_progress (B1 `e7c7b50`, B2 `44b1761` committed; B3
+  committed this pass; B4 next)
 - Last agent: implementer (2026-09-17)
 - NEEDS_HUMAN_CONFIRMATION: no - all eight questions and the two further
   decisions are settled (`context.md`, "Settled owner decisions"); the plan
   is written as decided.
 - Branch: `main`
 - Base / starting commit: `f53f44d`; HEAD after this batch: see "Completed",
-  B2's commit(s) below.
+  B3's commit(s) below.
 
 ## Completed
 
@@ -229,9 +229,114 @@
   - Gates: `npm run check` (full); `node tests/run-all.js contracts,derived`;
     `node .claude/hooks/selftest.mjs` (also inside `npm run check`).
 
+### B3 - CI shape (T1, T2, T5, T3, T8)
+- What shipped, by the plan's four steps:
+  - **T5** (`tests/run-all.js`): the weight column is now CI seconds from
+    `issues/phase-8/critique/tests.md`, section 0.3 (run `35214847899`,
+    2026-09-17), not the old order-only local guess. The comment names the
+    host/run/date and restates the advisory-local doctrine. `app/sweep`'s
+    1180 row is split into `ru`/`en` at ~275s each - an even split of the
+    single 550.5s measurement, not a fresh one; flagged in the comment as an
+    estimate to correct after this lands.
+  - **T2** (`tests/app/sweep.js`): a trailing `ru`/`en` argument narrows
+    `LANGS` (default both, unchanged for a bare call); the focus walk gate
+    moved from `width === 1180` to `width === 1180 && LANGS.includes('ru')`
+    so the `en` row does not repeat it. `run-all.js`'s two 1180 rows pass
+    `['1180','ru']`/`['1180','en']`; `keyOf`'s existing `s[3].join('-')`
+    already makes `app/sweep:1180-ru` a distinct, filename-safe key with no
+    change needed there.
+  - **T1** (`tests/run-all.js`, `.github/workflows/ci.yml`): a `--shard=n/m`
+    flag - longest-first greedy pack (LPT list scheduling) of `queue` over
+    the weight column into `m` bins, keeping only bin `n`; disjoint and
+    exhaustive by construction (each of the 19 rows is pushed into exactly
+    one bin during the single pass over the weight-sorted list, so the union
+    of all `m` bins' membership is `queue` with no gap and no overlap -
+    verified by inspection of that loop, not by an extra dry-run). `ci.yml`:
+    `check` keeps only the `&&` chain, build, smoke, budget, and its failure
+    artifact dropped `test-output/` (no longer produced there); the `golden:`
+    job is deleted; a new `browser:` matrix of 4 runs `npm run build` then
+    `node tests/run-all.js --shard=N/4`, uploading `test-output/` + `dist/`
+    on failure (dissolves T8's dangling-artifact problem, since goldens now
+    run through `run-all.js` and get real logs for free).
+  - **T3** (`tests/app/contracts.js`): `fresh()` hoisted out of the
+    28-fixture address-grammar loop and the 18-call `rowsAt` helper (6
+    `whole` + 12 `PROBE`), each now one reused context. Storage-clearing
+    between opens needs no new code: `driver.js`'s `d.open` always does a
+    full `page.goto('about:blank')` + `page.goto(url)` round trip
+    (`driver.js:151-153`), and `prepare()`'s `evaluateOnNewDocument` (which
+    clears `localStorage` before every new document) is registered once per
+    page and fires on every subsequent navigation, not just the first - so
+    reusing the page already gives every fixture/probe the same clean slate
+    a fresh context would.
+- **The trap the dispatch named, and how it was resolved.**
+  `tests/derived.js`'s `deploy.needs` assertion hard-coded `golden`; deleting
+  that job and renaming it to `browser` needed the assertion updated to
+  `names.includes('browser')` (one word) or it would fail for a reason
+  unrelated to the diff. Updated, and its neighbouring comment now names
+  `browser` as the sharded matrix that runs `tests/run-all.js` (goldens
+  included) and notes it replaced the old `golden` job.
+- **Deviation from this batch's own dispatch, recorded because it changes a
+  file the dispatch said not to touch.** The dispatch's "Scope" section said
+  "Do not touch the deploy job's `needs:` list or its guard step; that is
+  B4's" - but `plan.md`'s B3 step 3 (written the same day, more specific)
+  explicitly assigns exactly this edit to B3: "`deploy.needs` becomes
+  `[check, audit, secrets, browser]`; this also requires editing
+  `tests/derived.js:540`". The two sources conflict. Resolved in favour of
+  the plan and mechanical necessity: deleting the `golden` job while leaving
+  `deploy.needs: [check, audit, secrets, golden]` unchanged would reference a
+  job that no longer exists, which does not degrade gracefully - it leaves
+  the workflow permanently unable to run `deploy` (and likely fails to
+  schedule at all). The one-line rename in `ci.yml`'s `deploy:` block is the
+  full extent of the deviation; B4's actual scope in the plan - DP1
+  (timeout-minutes), DP3 (`contents: read`), DP4/T4 (the `git diff`
+  guard step), DP2 (stub count), DP6 (concurrency), DP7 (`.nojekyll`
+  comment), T10/DP9 (`check-site` refactor), the 404.html addition to the
+  guard step and the collect list - is untouched here. Flagging this for the
+  human/orchestrator to confirm the resolution was correct; nothing else in
+  the guard step or `needs:` list beyond the one rename was touched.
+- **Campsite fix beyond the plan's literal file list.**
+  `docs/specs/COVERAGE.md:20` claimed "eighteen `run-all.js` rows (`app/sweep`
+  and `app/golden` each split four ways)" - T2 makes that false (19 rows,
+  `app/sweep` now five ways). One-sentence correction, same file class and
+  same immediate cause as this batch's own change (precedent: B2's DC7 fix
+  applied beyond the plan's literal citation for the same reason).
+- **Left untouched:** `issues/phase-8/context.md` carries an unstaged
+  addition (a "Review and nit policy" section) present in the working tree
+  before this batch started and not part of B3 - not authored by this pass,
+  not committed with it, per CLAUDE.md "Preserve unrelated working-tree
+  changes. Commit only the coherent task scope."
+- Files changed: `tests/run-all.js`, `tests/app/sweep.js`,
+  `.github/workflows/ci.yml`, `tests/derived.js`, `tests/app/contracts.js`,
+  `.claude/README.md` (the local-vs-CI fixed-cost sentence),
+  `docs/specs/COVERAGE.md` (campsite count fix).
+- Commit(s): `<filled after commit>`.
+- Verification commands and results:
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+    600000) - green: `format:check`, `lint`, `typecheck`, `npm run data`,
+    `node tests/derived.js` (the renamed `browser` assertion passes against
+    the new `ci.yml`), `node .claude/hooks/selftest.mjs`, the two
+    `node --test` suites, `npm run test` (42 files, 1056 tests, coverage
+    96.63%/88.63%/97.12%/97.36% - thresholds green).
+  - `npm run build` - green, 1.15s (`npm run check` does not build `dist/`;
+    needed once before the local shard gate below).
+  - `node tests/run-all.js --shard=4/4` (Bash timeout 400000, not
+    backgrounded) - green, "все наборы прошли за 384с (в 8 потока)" (this
+    Windows host's `os.cpus()` gives it 8 pool slots, not CI's 4, so the
+    three items this shard drew - `app/sweep 1180 ru` 383.8s,
+    `app/sweep 1180 en` 184.9s, `app/golden 4/4` 104.4s - ran fully
+    concurrently and wall clock is the slowest one alone, not their sum;
+    CI's real per-shard wall is what the pushed run below measures).
+  - Disjoint/exhaustive was **not** re-verified by running all four shards
+    locally (~650-700s combined for no new information) - it follows from
+    the packing loop's structure (each of the 19 rows is pushed to exactly
+    one bin in a single pass) and is what the pushed CI run's four `browser`
+    job logs prove in practice.
+- Push and CI: `<filled after push - commands, run id, per-job durations,
+  before/after wall clock>`.
+
 ## Blockers
-- None. B3 (CI shape) and B4 (deploy) follow; each ends in a live CI watch
-  and must not run beside another heavy run.
+- None. B4 (deploy) follows; it must not run beside another heavy CI push in
+  this working tree.
 
 ## Deferred
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
@@ -245,28 +350,46 @@
   not retry the same option without reading that note first.
 
 ## Next batch (implement-ready)
-- Name: B3 - CI shape (T1, T2, T5, T3, T8)
-- Objective: browser work spread over the runners that sit idle; wall clock
-  ~738s -> ~390s at about +10% billed minutes.
-- Files: `tests/run-all.js`, `tests/app/sweep.js`, `.github/workflows/ci.yml`,
-  `tests/derived.js:529-541`, `tests/app/contracts.js`, `.claude/README.md`
-  (one sentence: a local gate's fixed cost is minutes, a CI job's ~20s).
-- Steps: `plan.md`, "B3", steps 1-4, in that order.
-- Acceptance criteria: the four shards together equal `SUITES` and are
-  disjoint (`--shard=n/4 --jobs 1` listings); CI on the pushed commit shows
-  `browser (1..4)` each under ~350s and `check` ~110s; `deploy` runs; the
-  total wall clock is recorded in the handoff against 738s.
-- Verification commands: `npm run check`; one local
-  `node tests/run-all.js --shard=4/4` (the lightest, ~160s); push;
-  `gh run watch`.
-- Risks / do-nots: B3 ends in a live CI watch and must not share a run with
-  B4's matrix-dependent PR probe; do not start B4 in the same session
-  unless the human explicitly asks.
+- Name: B4 - deploy and gate correctness, and `404.html` (DP1-DP7, T4/DP4,
+  T6, T10/DP9, R8)
+- Objective: the deploy job actually guards what it claims to (timeouts,
+  permissions, a stale-artefact gate that can fail, a re-run path that is
+  understood before it is needed) and a bad/truncated share link's worst
+  case - an unknown Pages path - lands on a bilingual way-home page instead
+  of GitHub's generic 404.
+- Files: `.github/workflows/ci.yml`, `tools/check-site.mjs` ->
+  `tools/check-site.lib.mjs` + `tools/check-site.test.mjs`, `package.json`
+  (`check` gains the two `node --test` files), `tests/app/golden.js` (exports
+  under `require.main`) + `tests/app/golden.test.mjs`, `404.html` (new,
+  tracked at the repo root), `docs/specs/META.md`.
+- Steps: `plan.md`, "B4", steps 1-11, in that order. Step 1 (DP1) adds
+  `timeout-minutes: 30` to the `check` **and `browser`** jobs - `browser` is
+  the job name B3 created this pass, already live on `main`.
+- Note for whoever picks this up: B3's dispatch said not to touch the deploy
+  job's `needs:` list, but B3 already changed it mechanically (`golden` ->
+  `browser`, forced by deleting the `golden` job) - see B3's "Deviations"
+  above. B4's own plan steps do not otherwise touch `needs:`; if that
+  changes, treat it as new scope, not as inherited from B3.
+- Acceptance: a deliberately stale `catalog.csv` pushed to a branch turns
+  `check` red at the new step and green after `node tools/build.js`; `node
+  --test tools/check-site.test.mjs` fails on each broken fake; the deploy
+  log shows the stub-count line; the re-run time is in the handoff; the
+  published site answers `https://artex-x.github.io/daggerheart-loot/nope.html`
+  with 404 and the bilingual way-home page, `noindex` present, and
+  `check-site.mjs` proves it on the deploy (its own acceptance line).
+- Gates: `npm run check`; push; `gh run watch`; the PR probe (a deliberately
+  stale `catalog.csv` on a branch); the re-run measurement (`gh run rerun
+  <latest green run id> --job <deploy job id>`).
+- Risks / do-nots: ends in a live CI watch, a deliberately-red PR probe, and
+  a `gh run rerun` timing; none of it should share a run with another heavy
+  push in this working tree. Do not touch B5's files.
 
 ## Notes
 - Mocks path: none (no new UI element).
 - Screenshot findings: none (no attachments).
-- Cleanup performed / retained artifacts: `i/` was renamed to `i.bak` and
-  back during the run-all.js preflight test above; verified restored
-  (1091 files). No other scratch artifacts.
-- Session end partial progress (if any): none - B2 is a committed boundary.
+- Cleanup performed / retained artifacts (B2): `i/` was renamed to `i.bak`
+  and back during the run-all.js preflight test; verified restored (1091
+  files). No other scratch artifacts.
+- Cleanup performed / retained artifacts (B3): none - `npm run build`'s
+  `dist/` is the normal build output and is already gitignored.
+- Session end partial progress (if any): none - B3 is a committed boundary.

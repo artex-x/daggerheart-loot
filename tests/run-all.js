@@ -4,6 +4,7 @@
      node tests/run-all.js derived,craft   just those two
      node tests/run-all.js --jobs 1        one at a time, for debugging
      node tests/run-all.js --exclude=app/golden   everything but that one suite
+     node tests/run-all.js --shard=2/4     one balanced quarter of the pool
 
    Needs NODE_PATH and LD_LIBRARY_PATH for puppeteer.
 
@@ -19,43 +20,58 @@
    (`index.html`/`app.js`/`style.css`) and the parity harness that compared it
    against `dist/`; `docs/specs/COVERAGE.md`'s per-suite table says where each
    one's assertions went. What is left runs against `dist/` alone, plus a
-   handful of fs-only data/contract checks. */
+   handful of fs-only data/contract checks.
+
+   `--shard` (added issues/phase-8, B3) is what ci.yml's `browser` matrix
+   uses instead of a single `check`-job step plus a separate `golden` job -
+   see the weight comment below and issues/phase-8/plan.md, "B3". */
 const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const HERE = __dirname;
 
-/* Секунды - прошлые замеры, только для порядка запуска: точность тут не важна,
-   важно, чтобы длинные наборы стартовали раньше коротких.
+/* Weight column: CI seconds, not a local guess. Measured on GitHub's
+   ubuntu-latest runners, run 35214847899, 2026-09-17
+   (issues/phase-8/critique/tests.md, section 0.3) - a local run is advisory,
+   the same doctrine `.claude/README.md` states for every other cost table in
+   this repository. These numbers are the input to `--shard`'s bin packer
+   below, so an entry that is off by multiples mis-packs a shard, not just a
+   sort order (issues/phase-8/critique/tests.md, "T5").
 
-   Обход страниц разбит по ширинам: он в одиночку занимал столько же, сколько
-   все остальные наборы вместе, и держал пул до конца прогона. Ширины друг от
-   друга не зависят, так что это четыре задачи, а не одна длинная. Имя набора
-   для отбора остаётся прежним: `run-all.js app/sweep` запускает все его
-   четыре ширины разом, и для структурных образцов: `run-all.js app/golden`
-   запускает все четыре его шарда разом (issue 47, R0a - ~1000s unsharded is
-   why it is four rows, not one; never call `node tests/app/golden.js` bare in
-   one foreground call). */
+   `app/sweep`'s 1180 row is split into a `ru` and an `en` row: at 550.5s
+   measured it was 25% of all browser work and 1.7x its narrower siblings -
+   axe running both languages there, plus the RU-only focus walk, account
+   for the whole excess (`tests.md`, "T2"). The two halves below are ~275s
+   each, an even split of that one measurement rather than a fresh one -
+   re-measure and correct after this lands.
+
+   `app/golden`'s four rows keep their own weight and continue to mean "every
+   fourth state" (`tests/app/golden.js`'s own `--shard=n/4`); they used to be
+   excluded from every CI run of this file and driven by a separate `golden`
+   job instead (`--exclude=app/golden`, still supported below for a local run
+   that wants to skip them) - under `--shard` they join the pool like any
+   other row, which is the first time their granularity earns anything in CI. */
 const SUITES = [
-  ['app/sweep', 'dist/: обход страниц 1180',        370, ['1180']],
-  ['app/sweep', 'dist/: обход страниц 768',          320, ['768']],
-  ['app/sweep', 'dist/: обход страниц 390',          320, ['390']],
-  ['app/sweep', 'dist/: обход страниц 360',          320, ['360']],
-  ['app/golden', 'dist/: структурные образцы 1/4',   265, ['--shard=1/4']],
-  ['app/golden', 'dist/: структурные образцы 2/4',   260, ['--shard=2/4']],
-  ['app/golden', 'dist/: структурные образцы 3/4',   250, ['--shard=3/4']],
-  ['app/golden', 'dist/: структурные образцы 4/4',   250, ['--shard=4/4']],
-  ['app/print', 'dist/: печать карточек',           176],
-  ['app/contracts', 'dist/: контракты и фикстуры',   120],
-  ['app/states', 'dist/: реальный ввод',              90],
-  ['app/typo', 'dist/: шрифты и шкала',             40],
-  ['contracts','контракты и золотые образцы',       30],
-  ['dataint',  'инварианты data.js',               14],
-  ['derived',  'производные файлы и каталог',       8],
-  ['craft',    'цепочки улучшений',                 7],
-  ['app/hues', 'dist/: цвета ярлыков',              12],
-  ['stub',     'страницы-заглушки i/',               5]
+  ['app/sweep', 'dist/: page sweep 390',            326.6, ['390']],
+  ['app/sweep', 'dist/: page sweep 360',            325.0, ['360']],
+  ['app/sweep', 'dist/: page sweep 768',            318.8, ['768']],
+  ['app/sweep', 'dist/: page sweep 1180 ru',        275,   ['1180', 'ru']],
+  ['app/sweep', 'dist/: page sweep 1180 en',        275,   ['1180', 'en']],
+  ['app/contracts', 'dist/: contracts and fixtures', 256.4],
+  ['app/print', 'dist/: card printing',             159.7],
+  ['app/golden', 'dist/: structural snapshots 1/4', 106,  ['--shard=1/4']],
+  ['app/states', 'dist/: real input',               102.7],
+  ['app/golden', 'dist/: structural snapshots 2/4', 102,  ['--shard=2/4']],
+  ['app/golden', 'dist/: structural snapshots 3/4',  98,  ['--shard=3/4']],
+  ['app/golden', 'dist/: structural snapshots 4/4',  94,  ['--shard=4/4']],
+  ['app/typo', 'dist/: fonts and scale',             78.1],
+  ['app/hues', 'dist/: label colours',               66.9],
+  ['stub',     'stub pages i/',                       1.6],
+  ['dataint',  'data.js invariants',                  0.3],
+  ['derived',  'derived files and catalog',           0.3],
+  ['craft',    'upgrade chains',                      0.1],
+  ['contracts','contracts and golden fixtures',       0]
 ];
 
 const args = process.argv.slice(2);
@@ -66,6 +82,7 @@ if (args.includes('--help') || args.includes('-h')) {
   node tests/run-all.js derived,craft          just those two
   node tests/run-all.js --jobs 1               one at a time, for debugging
   node tests/run-all.js --exclude=app/golden   everything but that one suite
+  node tests/run-all.js --shard=2/4            one balanced quarter of the pool
   node tests/run-all.js --help, -h             this message
 
 Suites: ${SUITES.map(s => s[0]).filter((v, i, a) => a.indexOf(v) === i).join(', ')}
@@ -74,22 +91,53 @@ app/golden and app/sweep are unsharded/all-widths when named bare and each
 takes past the Bash tool's 600s foreground cap - see .claude/README.md,
 "Batch size and the fixed cost of a run". Run app/golden with
 node tests/app/golden.js --shard=n/4 and app/sweep with
-node tests/app/sweep.js <width>, one call each.`);
+node tests/app/sweep.js <width> [ru|en], one call each.
+
+--shard=n/m (1-indexed) packs the whole queue longest-first over the weight
+column into m bins and runs only bin n - disjoint and exhaustive across
+n=1..m, the same contract tests/app/golden.js's own --shard=n/of promises for
+its states. This is what ci.yml's browser matrix runs, four times.`);
   process.exit(0);
 }
 const jobsArg = args.indexOf('--jobs');
 const JOBS = jobsArg >= 0 ? Math.max(1, +args[jobsArg + 1] || 1)
                           : Math.max(1, Math.min(os.cpus().length, 8));
-/* `--exclude=app/golden` pulls that suite out of this run without touching
-   the include list - CI's `check` job passes it, because `golden` runs as
-   its own sharded job matrix instead (`tests/app/golden.js --shard=n/4`, see
-   ci.yml), and the pooled run here would otherwise gate every push on the
-   same ~867s a second time, serialised behind everything else in the pool. */
+/* `--exclude=<suite>` pulls a suite out of this run without touching the
+   include list. CI no longer passes this for `app/golden` - its four rows
+   sit in SUITES like every other suite now and ride the --shard pool below
+   (see the weight comment above); the flag stays for a local run that wants
+   to skip something slow on this host. */
 const excludeArg = args.find(a => a.startsWith('--exclude='));
 const exclude = excludeArg ? excludeArg.slice('--exclude='.length).split(',').filter(Boolean) : [];
 const only = args.filter((a, i) => a[0] !== '-' && !(jobsArg >= 0 && i === jobsArg + 1))
                  .join(',').split(',').filter(Boolean);
-const queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && exclude.indexOf(s[0]) < 0);
+let queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && exclude.indexOf(s[0]) < 0);
+
+/* `--shard=n/m`: a longest-first greedy pack (LPT list scheduling) of `queue`
+   over the weight column into `m` bins, keeping only bin `n`. Disjoint and
+   exhaustive by construction - every suite lands in exactly one bin - the
+   same promise tests/app/golden.js's own --shard=n/of makes for its states,
+   generalised here from one suite's states to the whole pool. ci.yml's
+   `browser` matrix is four calls of this (issues/phase-8/plan.md, "B3"). */
+const shardArg = args.find(a => a.startsWith('--shard='));
+if (shardArg) {
+  const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
+  const n = m && Number(m[1]);
+  const of = m && Number(m[2]);
+  if (!n || !of || n < 1 || n > of) {
+    throw new Error(`--shard must look like --shard=1/4 (got "${shardArg}")`);
+  }
+  const bins = Array.from({ length: of }, () => ({ items: [], total: 0 }));
+  const byWeight = queue.slice().sort((a, b) => b[2] - a[2]);
+  for (const suite of byWeight) {
+    let lightest = 0;
+    for (let i = 1; i < bins.length; i++) if (bins[i].total < bins[lightest].total) lightest = i;
+    bins[lightest].items.push(suite);
+    bins[lightest].total += suite[2];
+  }
+  const mine = new Set(bins[n - 1].items);
+  queue = queue.filter(s => mine.has(s));
+}
 /* derived/dataint/craft/stub all read i/*.html, which f53f44d untracked: a
    cold clone that has not run `node tools/build.js` (or `npm run build`) has
    no i/ directory at all, and each of those four suites used to fail with a
@@ -100,7 +148,7 @@ if (queue.some(s => NEEDS_I.indexOf(s[0]) >= 0) && !fs.existsSync(path.join(HERE
   console.log('i/ is missing - it is generated, not committed. Run `node tools/build.js` (or `npm run build`) first.');
   process.exit(1);
 }
-/* Ключ для отчёта: у обхода страниц наборов четыре под одним именем */
+/* Report key: several rows share one suite name (app/sweep, app/golden) */
 const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
 /* The key tells two runs of one suite apart with a colon, which is fine on
    screen and not fine in a file name: GitHub's artifact upload refuses a colon

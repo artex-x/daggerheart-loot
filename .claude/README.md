@@ -242,6 +242,14 @@ documented; the parity rows below are replaced by the gates that survive.
 check` is paid once per commit inside it. None of these scale with the
 diff: eight paths and forty paths cost the same minutes.
 
+This table is about a **local** foreground call. A CI job's fixed cost is
+about twenty seconds (checkout, setup-node, `npm ci`, `npm run build`), not
+minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
+split the real-Chrome suites across four such jobs for exactly that reason
+(issues/phase-8/plan.md, "B3"). Merging work to share a CI job's fixed cost
+follows the opposite logic from merging a batch to share this table's local
+one.
+
 **The two ways to get it wrong.**
 
 1. *Too small.* A batch that adds one port and one component test still pays
