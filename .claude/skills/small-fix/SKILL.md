@@ -30,7 +30,7 @@ change. Anything else is the orchestrate path (`/orchestrate`). Read
    `context.md`.
 4. **Fix the one file**, and extend its test with the reproduced state
    (component tests end with `expectNoA11yViolations`).
-5. **Gates, none skipped**: `set -o pipefail; npm run check 2>&1 | tail -n 120`
+5. **Gates, none skipped**: `rtk npm run check`
    with the Bash timeout at 600000; `npm run check:built`, because a screen
    changed; and the golden shard(s) whose states render the touched
    component (`node tests/app/golden.js --shard=n/4`, compare mode -

@@ -211,8 +211,19 @@ export function tokensOf(segment) {
 
 /** `npm run check` and nothing else: `check:built` never runs the suite
  * and `check:fast` skips half of it, so neither may satisfy the gate, and
- * neither is the backgrounded run bash-guard blocks. */
-export const CHECK_INVOCATION_RE = /^npm\s+run\s+(?:-s\s+)?check(?![:\w-])/;
+ * neither is the backgrounded run bash-guard blocks. The optional leading
+ * `rtk ` is tolerated because RTK's own PreToolUse hook rewrites a bare
+ * `npm run check` into `rtk npm run check` before any of these hooks ever
+ * see it (verified live: a probe on `check-observer.mjs` logged `cat
+ * package.json` as `rtk read package.json`) - without this, the gate could
+ * only ever arm on the piped form RTK cannot rewrite, `set -o pipefail;
+ * npm run check 2>&1 | tail -n 120`, which is exactly what was observed
+ * happening in every recorded check invocation. Accepting the prefix
+ * cannot weaken the gate: `rtk npm ...` propagates the child's exit code
+ * directly (verified: a script exiting 3 came back `exit=3`) and shows
+ * both stdout and stderr, so the non-zero test below still refuses to
+ * arm on a real failure. */
+export const CHECK_INVOCATION_RE = /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?check(?![:\w-])/;
 
 export function dropAssignments(tokens) {
   const t = tokens.slice();

@@ -106,9 +106,9 @@ ones listed below; everything else is silent or a message.
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. | warn (informational) |
-| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, a bare `git push --force`, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line elsewhere (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and `grep -n` / `tail -c` (readers that bypass RTK; use `rtk grep`, `rtk read`, or the Grep/Read tools). Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call. | **block** (+ one allow-and-remind case) |
+| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, a bare `git push --force`, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line elsewhere (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check` (plain or `rtk`-prefixed), and a piped, `$(...)`-substituted, or chained `grep -n` / `tail -c` (a bare leading one passes through for RTK's own hook to rewrite - restructure into `rtk grep`/`rtk read`). Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call. | **block** (+ one allow-and-remind case) |
 | `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`, `tests/app/snapshots/**`. | **block** |
-| `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` and `set -o pipefail;`. | never (silent) |
+| `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&`, `set -o pipefail;`, and `rtk `. | never (silent) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js` and public-contract fixtures. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
@@ -151,30 +151,32 @@ inconvenient.
 So the gate can see it pass, and so you can read the result:
 `check-observer.mjs` reads the Bash tool's own captured
 stdout, and only trusts stdout it can attribute to the check: the
-command must start with the check invocation (a leading `cd <dir> &&`
-and a leading `set -o pipefail;` are fine - neither writes to stdout),
-must not chain anything after it (`&&`, `;`, `||`), and must not
-redirect stdout to a file. A pipe is fine and is the way to keep a
-huge log out of the transcript, but `All files` sits near the *top*
-of the coverage table, so size the tail generously. The one
+command must start with the check invocation (a leading `cd <dir> &&`,
+a leading `set -o pipefail;`, and a leading `rtk ` are all fine - none
+of them writes to stdout), must not chain anything after it (`&&`,
+`;`, `||`), and must not redirect stdout to a file. The one
 invocation, in one foreground call with the Bash tool's `timeout` set
 to 600000:
 
 ```text
-set -o pipefail; npm run check 2>&1 | tail -n 120
+rtk npm run check
 ```
 
-Each part is load-bearing (all measured 2026-09-10 on this host):
+Each part is load-bearing:
 
-- **The prefix is how you learn whether it passed.** A pipeline's
-  status is its last command's, so without the prefix a failed check
-  exits 0 through `tail`, the tool prints no exit line, and the
-  result reads as a pass. With it the tool prints `Exit code 1` as
-  the first line of a failed run, and the hook sees `exit_code: 1`
-  and refuses to arm. Twelve check runs across five sessions were
-  spent re-running the check to learn its status a second way. Do
-  not ask a later call for `$?`: each call is a fresh shell, and
-  `$?` there is always 0.
+- **No pipe needed to learn whether it passed.** `rtk` propagates the
+  child process's own exit code directly (verified: a script exiting 3
+  came back `exit=3`) and prints both stdout and stderr, so the tool's
+  own exit line already carries the check's status. This used to need
+  `set -o pipefail; npm run check 2>&1 | tail -n 120`, because RTK's
+  hook rewrites only a command it can match at the start of a line and
+  a piped `npm run check` is exactly the shape it cannot rewrite - so
+  that piped form was, until this rule accepted a leading `rtk `, the
+  *only* invocation that reliably armed the gate at all (`CHECK_INVOCATION_RE`
+  was anchored at `^npm`, and RTK silently turns a bare `npm run check`
+  into `rtk npm run check` before any hook sees it - live-probed,
+  `rtk-coverage` B1). The piped form still works and `check-observer.mjs`
+  still accepts its prefix, but there is no reason to build one now.
 - **The timeout is how the call survives.** The tool never kills a
   command; when it outlives its `timeout` it is moved to the
   background (`Command did not complete within its 120s timeout and
@@ -185,24 +187,23 @@ Each part is load-bearing (all measured 2026-09-10 on this host):
   timeout cannot finish in the foreground. 600000 is the tool's
   maximum; a check that outlives even that is the fork-pool stall
   below, not a timeout problem.
-- **The tail keeps the result under the tool's cap.** A result over
-  about 30,000 characters is not shown; the tool saves it to
-  `tool-results/<id>.txt` and names the path. `npm run check` piped
-  to `tail -n 120` stays under. The deleted parity harness did not:
-  its diff lines carried a page's whole text, so `tail -n` could not
-  bound the bytes, and the fix was to grep the file the tool named
-  instead of running it again. Nothing that survives R0c produces a
-  single line that large, but the technique still applies if
-  something ever does.
+- **If the result comes back persisted as too large** (over about
+  30,000 characters, saved to `tool-results/<id>.txt` with the path
+  named), grep that file for `All files` rather than running the check
+  again - `rtk npm run check` prints considerably more than the old
+  piped-and-tailed form did, and this is how to read it without paying
+  for a second run. The deleted parity harness hit the same cap from
+  its diff lines carrying a page's whole text; nothing that survives
+  R0c produces a single line that large, but the technique still
+  applies if something ever does.
 
 `npm run check > out.txt 2>&1` then reading the file does **not**
 satisfy the gate, however genuinely the run passed - the hook never
-saw the output - and after the prefix there is no status a file gets
-you that the pipe does not. Nor does a run started with
+saw the output. Nor does a run started with
 `run_in_background`: `check-observer.mjs` returns early on it by
 design, because there is no stdout to attribute yet. Backgrounding
 cost three worker runs on issue 47 and is now blocked at
-`PreToolUse` (candidate 27).
+`PreToolUse` (candidate 27), for a plain or `rtk`-prefixed check alike.
 
 **What the check does not cover: markdown.** `.prettierignore` has
 carried `*.md` since `5ab5880` (2026-08-30), with its reasoning beside
@@ -551,5 +552,6 @@ not changed.
 | 40 | Deny `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line | `PreToolUse(Bash)` | **adopt** | `closeout-hygiene`. A retirement looks complete on its own - nothing breaks, `npm run check` still passes - and the orphans are found months later by someone reading a citation that points at nothing; ten of them shipped this way for issue 65's retired `plan.md`. Deny, not warn: a `speak` at `PreToolUse` is acknowledged and stepped past, which is the thing being guarded against, and the escape (repair the citations first, or run the command in the human's own terminal) is the same shape every other block in this family offers. Considered and rejected: `edit-guard.mjs` never sees a deletion (no Edit-family tool fires for one); `session-stop.mjs` would fire on history rather than on the action, after the content is only recoverable from git history; `selftest.mjs` cannot be the rule, since it runs inside `npm run check` and a `.md`-only retirement commit is gate-exempt, so the check need never run between the deletion and the commit. `bash-guard.mjs` is the only site with both the input and the timing. Fallback if this proves too blunt: downgrade to `speak` at the one call site (trigger, lookup and message unchanged) - record the downgrade here rather than deleting the row. Retiring `issues/hooks-guardrails/plan.md` or `issues/agent-effort/plan.md` will need rows 31 and 38 above repaired first, or this rule denies the retirement - that is the rule working. |
 | 41 | Reviewer `tools:` allowlist (`Read, Grep, Glob, Bash`) | agent frontmatter | **adopt** (`config-audit` B2) | Read-only posture becomes deterministic instead of prose plus `permissionMode: plan`; Edit/Write/NotebookEdit/Agent/ToolSearch drop out, which also closes row 36 (no `ToolSearch`, no `SendMessage`). Bash stays for `git status`/`diff`/`log` and focused checks. **Probed 2026-09-16 on this host: enforced.** A dispatched reviewer reported exactly `Read`, `Grep`, `Glob`, `Bash` and no others; `Edit`, `Write`, `NotebookEdit`, `Agent`, `ToolSearch` and `SendMessage` were all absent, which closes row 36 in fact and not only on paper. Two limits on what the probe establishes: it covers the tool allowlist only - `permissionMode` is not observable from inside a subagent without performing an action the probe forbade, so that half stays unverified; and `Bash` in the allowlist means the read-only posture still rests on the reviewer prompt and the permission settings, since a shell redirection writes. The allowlist is not by itself a read-only guarantee. |
 | 42 | Persistence-era guards: RLS gate, migration-reversibility gate, applied-migration `edit-guard.mjs` rule, gitleaks-on-commit, one session per shared database | gates, `edit-guard.mjs`, `bash-guard.mjs`, `CLAUDE.md` | **decided, not installed** | Trigger: persistence Phase 0, after issue 47 closes at R0c; design in this file's "Persistence era: decided now, activated at Phase 0" section, moved here when `config-audit` retired; it transfers to the persistence task's own plan when that task opens. A dormant gate guards nothing and a skill installed early spends listing budget until it is needed. |
-| 43 | Deny `grep -n` and `tail -c` (readers that bypass RTK) | `PreToolUse(Bash)` | **adopt** (`config-audit` B3) | Measured 2026-09-16: 198 sessions / 20,710 Bash commands over thirty days; ~281.4K tokens missed over 1,052 commands; `grep -n` 342 calls / ~117.6K and `tail -c` 159 / ~40.8K, together 158.4K of 281.4K = 56.3%, over half, in two commands. RTK's hook rewrites only at line start, so the miss is the piped, `$(...)` and `cd`-prefixed shapes prose has not moved. Matches the program token only, so `echo`, `git grep -n` and `rtk grep -n` are untouched; a line-start `grep -n` that RTK would have rewritten now costs one retry, the accepted price. Not `npm run check` and never `rtk npm run check`: the commit-gate trap (`issues/config-audit/context.md`; `check-observer.mjs` arms only on the bare invocation with the coverage table in stdout). Fallback if the retry proves noisy: exempt a single-segment, single-line shape - record here, do not delete the row. |
+| 43 | Deny `grep -n` and `tail -c` (readers that bypass RTK) | `PreToolUse(Bash)` | **adopt** (`config-audit` B3) | Measured 2026-09-16: 198 sessions / 20,710 Bash commands over thirty days; ~281.4K tokens missed over 1,052 commands; `grep -n` 342 calls / ~117.6K and `tail -c` 159 / ~40.8K, together 158.4K of 281.4K = 56.3%, over half, in two commands. RTK's hook rewrites only at line start, so the miss is the piped, `$(...)` and `cd`-prefixed shapes prose has not moved. Matches the program token only, so `echo`, `git grep -n` and `rtk grep -n` are untouched; a line-start `grep -n` that RTK would have rewritten now costs one retry, the accepted price. Not `npm run check` and never `rtk npm run check`: the commit-gate trap (`issues/config-audit/context.md`; `check-observer.mjs` arms only on the bare invocation with the coverage table in stdout). Fallback if the retry proves noisy: exempt a single-segment, single-line shape - record here, do not delete the row. **Narrowed (`rtk-coverage` B1):** live-probed both ways - `rtk hook claude` rewrites a bare leading `grep -n foo path` to `rtk grep -n foo path` cleanly, while this rule denied that exact shape too, so denying it earned nothing but a wasted round trip before the model took the offered escape to the Grep tool (103 such calls across the sampled transcripts) - net effect strictly worse than no rule. The rule now matches only the shapes RTK genuinely cannot rewrite: inside a `$(...)`/backtick substitution anywhere, or downstream of a pipe/`&&`/`;`/`cd`. A bare leading `grep -n`/`tail -c` passes through for RTK to rewrite. The deny message no longer offers the Grep/Read tool as the escape - it points at restructuring into a standalone `rtk grep -n` / `rtk read`. |
 | 44 | Warn when a task document is past its size budget | `Stop` | **adopt** (`config-audit` B3) | Measured 2026-09-15: issue 47's `plan.md` 1,031 KB (57.7% shipped-batch briefs), `handoff.md` 523 KB (96% of Status superseded snapshots), `context.md` 227 KB, growing 350-1,400 lines per working day, read by every worker at dispatch. Warn, never block: a Stop hook that blocks session-end is worse than a large file. Scoped to the session that wrote into the directory, deduped per state. The procedure and the never-drop / always-drop lists live in `.claude/skills/handoff/SKILL.md`. Rejected: a `PreToolUse(Write)` size deny (blocks the closeout write that fixes it); a `SessionStart` notice (the writer is who needs it). |
+| 45 | Accept a leading `rtk ` in the commit gate's check-invocation regex, `check-observer.mjs`'s normalizer, and the two `LONG_CHECKS` regexes for `check`/`check:built`; retire the piped canonical form in favour of `rtk npm run check` | `PreToolUse(Bash)` (gate + reminder), `PostToolUse(Bash)` (observer) | **adopt** (`rtk-coverage` B1) | Live probe (this task): a `PostToolUse` hook receives RTK's already-rewritten command, not what the model typed - `cat package.json` logged as `rtk read package.json`. Since RTK silently rewrites a bare `npm run check` to `rtk npm run check`, and `CHECK_INVOCATION_RE` was anchored at `^npm`, the gate could never arm on a bare invocation; only the piped form (`set -o pipefail; npm run check 2>&1 | tail -n 120`, which RTK cannot rewrite) ever worked, in all 200 recorded check invocations sampled. A live latent bug, not a defect kept on purpose. Cannot weaken the gate: `rtk npm ...` propagates the child's exit code directly (verified: a script exiting 3 came back `exit=3`) and shows both stdout and stderr, so the non-zero test still refuses to arm on a real failure. |

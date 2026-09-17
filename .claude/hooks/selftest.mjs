@@ -5,7 +5,7 @@
 // built once and reused, removed in a finally.
 //
 // See .claude/README.md, "Hooks", and issues/hooks-guardrails/plan.md
-// section 5, for the case list this file implements (numbered #1-#134
+// section 5, for the case list this file implements (numbered #1-#143
 // in the comments below).
 
 import { spawnSync } from 'node:child_process';
@@ -501,7 +501,7 @@ function testLongCheck() {
     check('#29 long-check: message includes 600000', systemMessage(result).includes('600000'));
     check(
       '#29 long-check: message includes the canonical invocation',
-      systemMessage(result).includes('set -o pipefail; npm run check 2>&1 | tail -n 120'),
+      systemMessage(result).includes('rtk npm run check'),
       systemMessage(result)
     );
   }
@@ -542,7 +542,13 @@ function testBackgroundCheck() {
     [
       '#67 background check: recorded shape, chained',
       'npm run check 2>&1 | grep -E "Test Files|Tests |FAIL" ; echo CHECK_EXIT=$?\nnpm run check:built 2>&1 | tail -15'
-    ]
+    ],
+    // #140-#141 (rtk-coverage B1) - RTK rewrites a bare `npm run check`
+    // into `rtk npm run check` before this hook sees it, so the same
+    // backgrounding deny has to fire on the rewritten shape too, plain and
+    // wrapped in `nohup`.
+    ['#140 background check: rtk-prefixed', 'rtk npm run check'],
+    ['#141 background check: nohup rtk-prefixed', 'nohup rtk npm run check']
   ];
   for (const [label, command] of cases) {
     const result = runHook(
@@ -553,7 +559,7 @@ function testBackgroundCheck() {
     check(`${label}: denies`, isDeny(result), JSON.stringify(result.json));
     check(
       `${label}: reason includes the canonical invocation`,
-      denyReason(result).includes('set -o pipefail; npm run check 2>&1 | tail -n 120'),
+      denyReason(result).includes('rtk npm run check'),
       denyReason(result)
     );
     check(`${label}: reason includes 600000`, denyReason(result).includes('600000'));
@@ -664,17 +670,38 @@ function testBackgroundCheck() {
   }
 }
 
-// ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125) ----------
+// ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125, narrowed
+// and extended at rtk-coverage B1: #135-#139) ----------
+//
+// Narrowed because RTK's own hook rewrites a bare, leading `grep -n`/
+// `tail -c` cleanly (live-probed both ways) - so only a shape it genuinely
+// cannot rewrite (piped, `$(...)`/backtick-substituted, or downstream of a
+// `cd`/`&&`/`;`) may still deny. #112-#114 and #116-#117 moved from
+// denyCases to allowedCases for exactly that reason; #115 and #118 stay
+// denied because they are not the leading segment.
 
 function testRtkReaders() {
+  const allowedCases = [
+    ['#112 grep -n bare leading', 'grep -n foo app/src/lib/x.ts'],
+    ['#113 grep -rn cluster bare leading', "grep -rn 'x' docs/"],
+    ['#114 grep --line-number bare leading', 'grep --line-number x f'],
+    ['#116 tail -c bare leading', 'tail -c 200 f'],
+    ['#117 tail --bytes bare leading', 'tail --bytes=200 f']
+  ];
+  for (const [label, command] of allowedCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`${label}: exit 0`, result.status === 0);
+    check(`${label}: not denied`, !isDeny(result), JSON.stringify(result.json));
+  }
+
   const denyCases = [
-    ['#112 grep -n', 'grep -n foo app/src/lib/x.ts', 'rtk grep'],
-    ['#113 grep -rn cluster', "grep -rn 'x' docs/", 'rtk grep'],
-    ['#114 grep --line-number', 'grep --line-number x f', 'rtk grep'],
     ['#115 grep -n piped', 'cat f | grep -n x', 'rtk grep'],
-    ['#116 tail -c', 'tail -c 200 f', 'rtk read'],
-    ['#117 tail --bytes', 'tail --bytes=200 f', 'rtk read'],
-    ['#118 xargs grep -n', 'find . -name "*.ts" | xargs grep -n x', 'rtk grep']
+    ['#118 xargs grep -n', 'find . -name "*.ts" | xargs grep -n x', 'rtk grep'],
+    ['#135 grep -n inside $(...)', 'echo $(grep -n x f)', 'rtk grep'],
+    ['#136 grep -n after cd &&', 'cd docs && grep -n x f', 'rtk grep'],
+    ['#137 tail -c inside $(...)', 'echo $(tail -c 5 f)', 'rtk read'],
+    ['#138 tail -c after cd &&', 'cd docs && tail -c 5 f', 'rtk read'],
+    ['#139 grep -n inside backtick substitution', 'echo `grep -n x f`', 'rtk grep']
   ];
   for (const [label, command, fragment] of denyCases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
@@ -1083,6 +1110,16 @@ async function testCheckObserver() {
     [
       '#101 pipefail carries the status',
       'set -o pipefail; npm run check 2>&1 | tail -n 120',
+      { exit_code: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
+      false
+    ],
+    // #142-#143 (rtk-coverage B1) - the gate has to arm on the shape RTK's
+    // own hook actually produces, `rtk npm run check`, not only on the
+    // bare invocation a human types by hand.
+    ['#142 rtk-prefixed check arms the gate', 'rtk npm run check', passingResponse, true],
+    [
+      '#143 rtk-prefixed check still refuses on failure',
+      'rtk npm run check',
       { exit_code: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
       false
     ]

@@ -72,8 +72,9 @@ For the current batch:
 6. Do not commit if required checks fail
 7. Never end a turn with a check still running: its output dies with your shell, and
    from outside a stopped turn is indistinguishable from a dead agent. Run it as
-   `set -o pipefail; npm run check 2>&1 | tail -n 120` with the Bash timeout set to
-   600000 and stay in the turn until it finishes - do not redirect it to a file, which
+   `rtk npm run check` with the Bash timeout set to 600000 (no pipe, no
+   `set -o pipefail`; `rtk` propagates the exit code directly) and stay in the turn
+   until it finishes - do not redirect it to a file, which
    hides the result from the commit gate and blocks the commit. See `.claude/README.md`.
    If you must stop first, name the command and its task id in your final message - the
    orchestrator can resume you with your context intact, so say exactly

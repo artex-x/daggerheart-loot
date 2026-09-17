@@ -79,7 +79,7 @@ for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
 - **Nothing is running: the result is gone**, whether or not the command
   finished. Resume the worker - `SendMessage` to its name, see "Resume, do
   not replace" - with one instruction: re-run the check in the foreground,
-  one call, `set -o pipefail; npm run check 2>&1 | tail -n 120` with the
+  one call, `rtk npm run check` with the
   Bash timeout at 600000, then commit or report. It holds the context a
   fresh agent would re-derive at full cost.
 

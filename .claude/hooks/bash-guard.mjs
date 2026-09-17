@@ -58,16 +58,16 @@ const MSG = {
   gateBypassed:
     'Commit gate bypassed with SKIP_CHECK_GATE=1 - npm run check has not passed for this tree.',
   backgroundCheck:
-    "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `set -o pipefail; npm run check 2>&1 | tail -n 120` (the prefix makes the exit code the check's).",
+    "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `rtk npm run check` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
   orphanPlan: (target, hits) => {
     const shown = hits.slice(0, 4).join(', ');
     const more = hits.length > 4 ? ', ...' : '';
     return `Blocked: ${target} is still cited by ${hits.length} tracked line(s): ${shown}${more}. Retiring a plan.md leaves those pointing at nothing. Closeout step 6: move the durable content to its permanent home (.claude/README.md for tooling rationale, docs/specs/ for behaviour), update every citation, and remove the file in that same commit. The way out for a citation that only needs the file's content as of a past commit, not the file itself: rewrite it as \`git show <sha>:${target}\` - that form resolves through history and does not count as a live citation here.`;
   },
   grepLineNumber:
-    'Blocked: `grep -n` runs outside RTK and its output lands unfiltered in context. Use `rtk grep -n <pattern> <path>` as its own command (no pipe, no `$(...)`), or the Grep tool, which numbers lines by default. `git grep -n` is not affected.',
+    'Blocked: this `grep -n` runs downstream of a pipe, a `$(...)`, or a chained command - a shape RTK cannot rewrite - so its output lands unfiltered in context. Restructure it into its own command, `rtk grep -n <pattern> <path>` (no pipe, no `$(...)`, no chaining). `git grep -n` is not affected.',
   tailBytes:
-    'Blocked: `tail -c` runs outside RTK and its output lands unfiltered in context. Use `rtk read <file>`, or the Read tool with `offset`/`limit`. `tail -n` is not affected.'
+    'Blocked: this `tail -c` runs downstream of a pipe, a `$(...)`, or a chained command - a shape RTK cannot rewrite - so its output lands unfiltered in context. Restructure it into its own command, `rtk read <file>` (no pipe, no `$(...)`, no chaining). `tail -n` is not affected.'
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -413,8 +413,11 @@ function evaluateCommitGate(segList, cwd) {
 // match only the *unsharded* / all-widths shape - a filtered or sharded call
 // is the normal, one-call-sized way to run either and gets no reminder.
 const LONG_CHECKS = [
-  { re: /^npm run check:built\b/, family: 'check:built', cost: 'a few minutes' },
-  { re: /^npm run check\b/, family: 'check', cost: '~165s on an idle host' },
+  // Optional leading `rtk `: RTK's own hook rewrites a bare `npm run
+  // check[:built]` into this shape before any hook sees it - see
+  // CHECK_INVOCATION_RE in lib.mjs for the live probe that established it.
+  { re: /^(?:rtk\s+)?npm run check:built\b/, family: 'check:built', cost: 'a few minutes' },
+  { re: /^(?:rtk\s+)?npm run check\b/, family: 'check', cost: '~165s on an idle host' },
   {
     // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
     // shard packs a whole `browser` matrix row of suites, not one small
@@ -469,28 +472,69 @@ function evaluateBackgroundCheck(segList, toolInput) {
 //
 // `grep -n` and `tail -c` were 96.4K of the 179.7K tokens RTK missed over
 // thirty days (rtk discover, 2026-09-15): RTK's own hook rewrites only a
-// command at the start of a line, and these arrive piped, in `$(...)`, or
-// after a `cd`. READERS hides both programs from every other rule on
-// purpose (`echo git reset --hard` must stay silent), so this family
-// tokenises the segment itself and tests the program token only:
-// `echo grep -n`, `git grep -n` (closeout step 6) and `rtk grep -n` never
-// match. See .claude/README.md, "Hooks", row 43.
+// command it can match at the start of a line, and these arrive piped, in
+// `$(...)`, or after a `cd`. A bare, leading `grep -n`/`tail -c` is exactly
+// the shape RTK rewrites cleanly (live-probed both ways, `rtk-coverage`
+// B1: `rtk hook claude` turns `grep -n foo path` into `rtk grep -n foo
+// path`), so denying it earned nothing but a wasted round trip before the
+// model took the offered escape to the Grep tool - 103 such calls across
+// the sampled transcripts. This family now denies only the shapes RTK
+// genuinely cannot rewrite: inside a `$(...)` (or `` `...` ``) substitution
+// anywhere, or in any segment after the first at the top level (downstream
+// of a pipe, `&&`, `;`, a leading `cd`, ...). READERS hides both programs
+// from every other rule on purpose (`echo git reset --hard` must stay
+// silent), so this family tokenises the segment itself and tests the
+// program token only: `echo grep -n`, `git grep -n` (closeout step 6) and
+// `rtk grep -n` never match, at any position. See .claude/README.md,
+// "Hooks", row 43.
 
 const RTK_READERS = [
   { program: 'grep', letter: 'n', long: '--line-number', message: MSG.grepLineNumber },
   { program: 'tail', letter: 'c', long: '--bytes', message: MSG.tailBytes }
 ];
 
-function evaluateRtkReaders(segList) {
-  for (const segment of segList) {
-    const tokens = unwrap(tokensOf(segment));
-    if (!tokens.length) continue;
-    for (const spec of RTK_READERS) {
-      if (tokens[0] !== spec.program) continue;
-      if (flagMatches(tokens, spec.letter) || tokens.some((t) => t.startsWith(spec.long))) {
-        return { id: `rtk-${spec.program}`, message: spec.message };
-      }
+// Non-nested `$(...)` and `` `...` `` spans - the same shapes SPLIT_RE's
+// `$(` / `)` / backtick delimiters already treat as segment boundaries,
+// kept grouped here so their content can be tested regardless of where the
+// substitution sits in the outer command: content inside one is never the
+// leading segment of the whole line, so RTK cannot rewrite it either way.
+const SUBSTITUTION_RE = /\$\(([^()]*)\)|`([^`]*)`/g;
+
+function readerSpec(tokens) {
+  for (const spec of RTK_READERS) {
+    if (tokens[0] !== spec.program) continue;
+    if (flagMatches(tokens, spec.letter) || tokens.some((t) => t.startsWith(spec.long))) {
+      return spec;
     }
+  }
+  return null;
+}
+
+function evaluateRtkReaders(sanitized) {
+  // Inside a substitution, position does not matter - test every segment
+  // of its content, not only the one that opens it.
+  SUBSTITUTION_RE.lastIndex = 0;
+  let m;
+  while ((m = SUBSTITUTION_RE.exec(sanitized))) {
+    const inner = m[1] !== undefined ? m[1] : m[2];
+    for (const innerSegment of segments(inner)) {
+      const tokens = unwrap(tokensOf(innerSegment));
+      if (!tokens.length) continue;
+      const spec = readerSpec(tokens);
+      if (spec) return { id: `rtk-${spec.program}`, message: spec.message };
+    }
+  }
+
+  // Outside any substitution, only a segment after the first one runs
+  // downstream of something RTK cannot see past. Substitutions are
+  // stripped first so a leading `$(...)` cannot masquerade as segment 0.
+  const outer = sanitized.replace(SUBSTITUTION_RE, ' ');
+  const outerSegments = segments(outer);
+  for (let i = 1; i < outerSegments.length; i++) {
+    const tokens = unwrap(tokensOf(outerSegments[i]));
+    if (!tokens.length) continue;
+    const spec = readerSpec(tokens);
+    if (spec) return { id: `rtk-${spec.program}`, message: spec.message };
   }
   return null;
 }
@@ -506,9 +550,13 @@ function evaluateLongCheck(segList, sessionId) {
       const matches = spec.match ? spec.match(joined) : spec.re.test(joined);
       if (matches) {
         if (!once(sessionId, `long-check:${spec.family}`)) return null;
+        // joined may already carry a leading `rtk ` (RTK rewrote it, or the
+        // model typed it directly) - strip before re-adding so the
+        // suggestion never doubles up as `rtk rtk npm run check`.
+        const suggested = joined.replace(/^rtk\s+/, '');
         return {
           type: 'speak',
-          message: `\`${joined}\` takes ${spec.cost} here. Run it as \`set -o pipefail; ${joined} 2>&1 | tail -n 120\` with the Bash timeout set to 600000 - the default 120000 is shorter than the run, and the tool moves a call that outlives its timeout to the background - and stay in this turn until it finishes: a turn that ends with a check still running loses the result. Do not redirect it to a file; the commit gate only trusts output it can see. If the result comes back persisted as too large, grep the file it names rather than running it again.`
+          message: `\`${joined}\` takes ${spec.cost} here. Run it as \`rtk ${suggested}\` with the Bash timeout set to 600000 - the default 120000 is shorter than the run, and the tool moves a call that outlives its timeout to the background - and stay in this turn until it finishes: a turn that ends with a check still running loses the result. No pipe and no \`set -o pipefail\` needed: \`rtk\` propagates the child's exit code directly and shows both stdout and stderr, so there is nothing to recover through a pipe. Do not redirect it to a file; the commit gate only trusts output it can see. If the result comes back persisted as too large, grep the file it names rather than running it again.`
         };
       }
     }
@@ -552,7 +600,7 @@ guard(() => {
   const background = evaluateBackgroundCheck(segList, input.tool_input);
   if (background) return deny(event, background.message);
 
-  const rtk = evaluateRtkReaders(segList);
+  const rtk = evaluateRtkReaders(sanitized);
   if (rtk) return deny(event, rtk.message);
 
   const longCheck = evaluateLongCheck(segList, input.session_id);

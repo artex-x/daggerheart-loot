@@ -108,7 +108,7 @@ Before every commit:
 ```text
 npm run check
 ```
-Agents: one foreground call, `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
+Agents: one foreground call, `rtk npm run check`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
 
 If a change alters what a screen draws, also run `npm run check:built`.
 Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`.

@@ -59,18 +59,30 @@ const EXIT_CODE_FIELDS = [
  * section 2d. With it `exit_code` is the check's and the non-zero test
  * below refuses to arm. Accepting the prefix cannot weaken the gate: a
  * forger who omits it is where the gate stood before.
+ *
+ * A leading `rtk ` is stripped the same way, for the same reason: RTK's
+ * own PreToolUse hook rewrites a bare `npm run check` into `rtk npm run
+ * check` before this hook (or any other) ever sees the command - verified
+ * live by a probe that logged `cat package.json` arriving here as `rtk
+ * read package.json`. `rtk npm ...` writes nothing of its own to stdout
+ * beyond the child's own output, so it is exactly as inert as `cd ... &&`
+ * and `set -o pipefail;` are, and `CHECK_INVOCATION_RE` already tolerates
+ * it on the final segment regardless - stripping it here too keeps this
+ * normalizer's shape symmetric with the other two accepted prefixes.
  */
 function isCheckInvocation(rawCommand) {
   let s = sanitize(rawCommand).replace(/\d?>&\d/g, ' ');
-  // `cd <dir> &&` and `set -o pipefail;` are habit and hygiene, not output
-  // producers: neither writes to stdout, so the check is still the only
+  // `cd <dir> &&`, `set -o pipefail;` and `rtk ` are habit, hygiene, and a
+  // rewrite RTK applies before this hook runs - none of them are output
+  // producers: none writes to stdout, so the check is still the only
   // thing that can have produced what this hook reads. Exactly those
-  // tokens, at the start, in either order; `set -eo pipefail`, `set -x` or
+  // tokens, at the start, in any order; `set -eo pipefail`, `set -x` or
   // anything else between them and the check leaves a separator behind
   // and is refused by the test below.
   for (let i = 0; i < 3; i++) {
     s = s.replace(/^cd(\s+[^\s;&|]+)?\s*&&\s*/i, '');
     s = s.replace(/^set -o pipefail\s*(?:;|&&)\s*/, '');
+    s = s.replace(/^rtk\s+/, '');
   }
   if (/&&|\|\||;|&|\n|\$\(|`/.test(s)) return false;
   const first = segments(s)[0];
