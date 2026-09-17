@@ -14,6 +14,26 @@ An entry is written in the batch that makes the decision, never later. The
 batch that pays an entry off deletes it - the same ratchet culture as
 `VISUAL_DEBT`.
 
+**Why here, not somewhere else** (planner, 2026-09-11, migrated from
+`issues/47/plan.md` at that file's retirement): `docs/specs/` is what every
+agent reads for a touched path, and it is the one place `CLAUDE.md` says
+durable behaviour belongs; a spec file survives a task directory's
+retirement, unlike the harness that used to describe the same defects. An
+entry *is* a behaviour statement ("the app does X; X is wrong; here is why
+it does it anyway"), which is what a spec is for. Rejected: `ACCEPTED`
+(nothing keys an identical behaviour - both apps are the same on purpose,
+so there is no difference to key); the runbook that used to be
+`docs/parity.md` (retired with the harness); a section inside
+`docs/specs/FEATURES.md` (that file says what the app does; "and this is
+wrong, fix it later" in the middle of it would be read as behaviour or
+skipped - this file cross-references `FEATURES.md` bullets instead, never
+the reverse); a task directory (retires with the task, and Phase 8 needs
+this register as its *input*, not as something that retires alongside it);
+one GitHub issue per entry (outlives the task but not in the tree, needs
+`gh` and a network, and cannot carry a rule or a measurement verbatim - the
+post-migration review files issues *from* this register instead); the
+READMEs (a reader's document, not a maintainer's).
+
 **The live sources were deleted at R0c (`23c00a6`)**; `git show
 23c00a6^:app.js` (or `:style.css`, `:index.html`) reads them at their final
 state. A line citation below with no other hash refers to that state; a

@@ -1,8 +1,11 @@
 # Handoff - TASK 47
 
 Recovery state for the next session. Read `CLAUDE.md`, then
-`issues/47/context.md`, then `issues/47/plan.md`, then this file. Nothing here
-depends on chat history.
+`issues/47/context.md`, then this file. Nothing here depends on chat history.
+`plan.md` retired with the task's closeout - its durable content moved to
+`docs/specs/DEBT.md`, `docs/specs/COVERAGE.md`, `docs/REFACTOR_PLAN.md` and
+`.claude/README.md`; `git show fdd015f:issues/47/plan.md` (the last commit
+that has it) recovers the rest.
 
 ## Status
 
@@ -1541,8 +1544,9 @@ the C1-C3 review's findings, per the orchestrator's own instruction.
     `docs/tg-preview.md`, `.claude/README.md` (batch-size section),
     `.claude/prompts/{orchestrate,plan,add-source}.prompt.md`,
     `.claude/templates/context.template.md`,
-    `.claude/skills/small-fix/SKILL.md`, `issues/47/plan.md`,
-    `issues/47/handoff.md`.
+    `.claude/skills/small-fix/SKILL.md`, `issues/47/plan.md` (retired whole
+    at closeout, not merely edited - its durable content moved to the specs
+    and READMEs listed above), `issues/47/handoff.md`.
 - Steps:
   1. Preflight: `npm run format:check` (~11 s means the gates fit; ~55 s
      means wait); `git log --oneline -3`; `git status --short` (expect
@@ -1862,17 +1866,61 @@ the C1-C3 review's findings, per the orchestrator's own instruction.
   crosses the 600 s cap, the host is throttled: wait for the probe to read
   ~11 s and re-run; never salvage a backgrounded run.
 
-## Phase 8 opening inputs (started at C0; C4 completes the rest)
+## Phase 8 opening inputs (started at C0; closeout completes the rest)
 
-C0 writes the sweep's class-(c) findings here - "anything else": a refactor
+C0 wrote the sweep's class-(c) findings below - "anything else": a refactor
 observation, a doubt about whether *live* was right, a harness-ergonomics
 note, or a C2 implementation note. Full detail: `issues/47/sweep.md`, read at
-`7a33c22`. C4 folds in the rest per `plan.md`, "Closeout, and what Phase 8 is
-handed": the register's final count, the goldens, the backlog, the Playwright
-decision plus the lost heavy-run lock, `context.md`'s open-items list, and the
-recommendation to keep `issues/47/`.
+`7a33c22`. This section, completed at closeout:
 
-**The sweep's class-(c) findings (34 rows, three groups):**
+- **The register**: `docs/specs/DEBT.md`, 22 entries (D1-D8, D10-D23 - D9 is
+  a numbering gap, a paid-off entry deleted before this closeout; gaps are
+  fine, the same convention `selftest.mjs` uses), 21 in section 1 (defects
+  reproduced on purpose) plus D4 in section 2 (a live decision kept). Design
+  rationale for the register itself - why here, rejected homes - is now in
+  `DEBT.md`'s own header, migrated from `plan.md` at that file's retirement.
+- **The structural goldens**: 110 states in `tests/app/inventory.js`, four
+  shards, `tests/app/snapshots/*.txt`. Seeded at R0a under the last green
+  parity run's warrant; the only rendering-correctness net that survives the
+  harness.
+- **The R1/R2-Rn review design**: below, migrated in full from `plan.md`'s
+  "Phase 8" section.
+- **The backlog** (nits and open questions with no batch of their own):
+  B12.1's review nits 2 and 6, B12's nits 4 and 5 (both already placed for
+  Phase 8 by their own reviews); `Panel.svelte` and whether `.ffilter`/
+  `.tablenav` justify an extraction (`CLAUDE.md`'s "extract shared UI on its
+  second real use" is the test to apply; deliberately not a `DEBT.md` entry -
+  it is a refactor question about the rewrite's own code with no live-app
+  counterpart, so it does not fit the register's six-field shape); the
+  focused-button radius (9px against the live rule's 8px, `--r-sm`); the
+  `.selbox:has(:focus-visible)` keyboard question (no parity state ever
+  reached a row checkbox by keyboard, and neither does any surviving
+  instrument); the `tests/app/print.js` `.pc-art` tautology (`a.style.display
+  === '' || 'none'` cannot fail given `PrintCard.svelte`'s own
+  implementation - a real fix needs to correlate each card's `--pcpad` floor
+  against its own `.pc-art` display, across colour modes and all three
+  `WIDTHS`); `context.md`'s "What Phase 8 inherits" list (`Panel.svelte`
+  again, the Playwright decision, B12.1/B12's nits - same items, indexed
+  from the context side).
+- **The Playwright decision** (owner decision 10, `context.md`): not decided
+  now, decided in Phase 8 against R1's findings. Scope holds: R0c did not
+  reduce real-browser coverage - the nine `tests/app/` suites (`sweep`,
+  `golden`, `contracts`, `states`, `typo`, `hues`, `print`, plus `stub`) all
+  survive and keep running against `dist/`. The open question is only
+  whether they keep the hand-rolled puppeteer stack or move to Playwright.
+  **Sharpened by this closeout**: the parity harness's own heavy-run lock
+  (`test-output/parity.lock`, written by the deleted `tests/parity.js`) died
+  with it, and nothing replaced it - `run-all.js`'s pool and the four
+  `golden.js` shards now have no collision guard beyond "one session at a
+  time per working tree" (`.claude/README.md`, "One heavy run at a time").
+  Weigh this against the Playwright decision: a real second driver would
+  need its own guard too, or would need to reuse whatever guard R1 decides
+  the surviving suites are owed.
+- **Recommendation: keep `issues/47/`.** It is the only place the
+  migration's measurements live - the sweep, the goldens' seeding record,
+  every batch's exact commands and results. Do not retire the directory.
+
+**Class-(c) findings from the sweep** (34 rows, three groups):
 
 1. **Part A's 19 rows collapse to two repeated observations, not 19 findings**
    (`sweep.md`, "Part A - attributes, links, breaks", the closing note). The
@@ -1917,6 +1965,77 @@ recommendation to keep `issues/47/`.
    `docs/fixtures/share/records.json` - a non-empty diff is a *fresh*
    divergence, not the already-known `f33` one, and is a stop-and-raise, not
    a regeneration.
+
+**The R1/R2-Rn review design** (planner, 2026-09-11, revised 2026-09-12,
+migrated here in full from `plan.md`'s "Phase 8" section at that file's
+retirement - Phase 8 needs this to open without re-deriving it, and the
+file it lived in is gone). Not implement-ready until the owner files the
+Phase 8 issue; everything else about it - entry condition, batches, gates,
+register - was decided while task 47 still ran, so that the register
+(`docs/specs/DEBT.md`) could open before the migration closed.
+
+*Entry condition, all four now satisfied (task 47 is closing):* Phase 4
+closed with no pending parity state (closed at Phase 4); Phase 7 done -
+`deploy` publishes `dist/`, the static root is gone; a regression net that
+needs no live app exists - the structural goldens plus `tests/app/*`,
+seeded at R0a under the last green parity run's warrant; the `ACCEPTED`
+sweep is done (R0a's C2, `30b2744` - every accepted divergence became a
+`FEATURES.md`/`STATE.md` bullet before the harness that enforced it
+retired).
+
+**R1 - the review, read-only, one artefact, in Phase 8's own new task
+directory** (not this one - `issues/47/` retires from active work once this
+closeout lands, though the directory itself is kept per the note below).
+
+- *Surfaces*: every state in `tests/app/inventory.js` (110 at this writing),
+  both languages, 1100/768/375, on the deployed `dist/`.
+- *Against*: (a) `docs/specs/DEBT.md` - each entry (D1-D11 plus the sweep's
+  D12+) re-verified as still true and given a decision: fix in R2-Rn, keep
+  and delete the entry with a spec bullet, or file as a redesign; (b)
+  `FEATURES.md`, `STATE.md`, `I18N.md`, `META.md` - each bullet observed on
+  the built app in both languages, and a bullet that is not observable is a
+  finding; (c) accessibility in a real browser, not jsdom: axe over every
+  state with `color-contrast` **on**; a keyboard walk of every route,
+  **reading focus styles only after `document.getAnimations()` is empty**
+  (D1's rings transition for 150 ms, and a t=0 read shows the pre-transition
+  value); a screen-reader pass by hand of three flows (the toast over the
+  record modal, the storage notice/D3, ticking rows and using the selection
+  bar); a reduced-motion pass against D1's fix design; (d) this file's own
+  backlog (below), each line marked open or closed against the tree.
+- *Output*: `issues/<phase-8-id>/review.md` - a findings table (id, surface,
+  evidence, class, decision), the register updated, one GitHub issue per
+  item filed rather than fixed. No production code.
+- *Fix in the phase versus file*: fixed in R2-Rn - every `DEBT.md`
+  section-1 entry, every a11y finding, every defect with a local fix and a
+  test, every nit in a file a fix batch opens anyway. Filed - a redesign, a
+  feature, a harness rewrite, anything the owner has to design (D1's real
+  reduced-motion policy is proposed by R1 and confirmed by the owner at the
+  next planning pass, expected to carry `NEEDS_HUMAN_CONFIRMATION: yes`).
+
+**R2..Rn - the fixes**, grouped by surface and gate, sized by `CLAUDE.md`'s
+"size a batch by its gates": one component family, one seed, one
+`tests/app/` filter per batch. The expected grouping, to be revised by what
+R1 actually finds: *R2 - motion and focus* (D1's policy, the focused-button
+radius - 9px against the live rule's 8px, `--r-sm` - the `.toast.act`
+display-guard test, whatever the a11y sweep finds in `tokens.css`,
+`Button`, `Chip`, `Seg`); *R3 - lists and storage* (D2, D3 with
+`nested-interactive` back on, D6 - the modal menu's side, re-measuring the
+toggle instead of the first `.btn` - the `works()` re-probe,
+`AppState.stop()`'s timer, `ListStore.load()`, the `AddToList` nits, the
+shared-list spec bullet); *R4 - rolling and search* (D4's outcome, and
+whatever the sweep's Part D/E rows turn up for the roll surfaces); *R5 - the
+rest*, or folded into R2-R4 by surface. Each fix batch: a test per fixed
+defect, the spec bullet in the same commit, `npm run check`,
+`npm run check:built`, the golden shard(s)/`tests/app/` filter for its
+surface, and the register entry deleted in the commit that pays it.
+
+**Exit.** `DEBT.md` section 1 (defects reproduced on purpose) is empty or
+every remaining entry names the filed issue; section 2 (live decisions kept)
+is decided; section 3 (the R0c sweep's divergences) is decided the same way;
+`review.md` has no row without an outcome; the phase's own handoff records
+exact commands and results. After that the register stays as the place a
+*future* "kept on purpose" decision is written - it does not retire with
+Phase 8.
 
 ## Blockers
 
@@ -2538,6 +2657,18 @@ Merged from the three per-cycle sections this file used to carry (R0a
   `flows` row and a note in `tools/capture-share-fixture.mjs`. The chip was
   session state; the records that replaced it are not. Order mattered: record
   first, withdraw second.
+- **Closeout, 2026-09-17: `issues/47/evidence/b9/` deleted, owner-approved.**
+  Eight PNGs (1.1 MB): `_tables_core_item_row_anchor_en_{1100,768}-{diff,next}.png`
+  and `_tables_voa_section_anchor_en_{1100,768}-{diff,next}.png`, produced by
+  the parity harness during B9 and orphaned when it died at `23c00a6`. The
+  owner's condition ("OK to delete if not used anymore") was checked, not
+  assumed: `git grep` for both the directory and every one of the eight
+  filenames returned zero citations anywhere in the tree before deletion -
+  not in this task's own documents, not in specs, not in `.claude/`. They
+  stay in history permanently, which is what makes this safe rather than
+  merely tidy: `git show 5b2e693:issues/47/evidence/b9/<name>.png` recovers
+  any of the eight (verified against the first one before committing). No
+  other content in `issues/47/` was touched by this deletion.
 - **The one incident worth carrying forward** (R0a): an implementer's
   backgrounded `npm run check` armed no commit gate - 937s spent for nothing -
   the orchestrator started its own foreground check to supply one, that

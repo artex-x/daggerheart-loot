@@ -112,6 +112,16 @@ ones listed below; everything else is silent or a message.
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js` and public-contract fixtures. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
+**There is no git pre-commit hook** - not to be confused with the Claude
+Code hooks above, which run in this harness, not in `git` itself. One
+existed early in issue 47 and was removed (migrated here from
+`issues/47/plan.md` at that file's retirement): it ran `eslint --fix` over
+staged files, over 150 seconds for three of them on a mounted working copy
+against 3.5 seconds for prettier - the cost was reading `node_modules`, not
+linting - and it was a strict subset of `npm run check`, which CI runs on
+every push, so the only thing it added was a reason to pass `--no-verify`. A
+guard that gets waved through is worse than no guard.
+
 **Hook config may be snapshotted at session start.** Editing a hook script or
 `settings.json` may have no effect on the session that made the edit - restart
 the session, or run `/hooks`, to pick it up. On this Windows desktop build the
@@ -264,8 +274,9 @@ or cut a batch, at any of these:
 
 A batch may hold more than one commit; each commit is green on its own.
 Aim for one `tests/app/` filter group and one green check per batch; a
-worked application is `issues/47/plan.md`, "The batches, and why three
-rather than one", which cuts R0b at two of the seams above and says which.
+worked application, from before `plan.md` retired with task 47: `git show
+fdd015f:issues/47/plan.md`, "The batches, and why three rather than one",
+which cuts R0b at two of the seams above and says which.
 
 **"One heavy run at a time" retired with the parity harness (R0c,
 2026-09-17).** `tests/parity.js` used to write `test-output/parity.lock`
