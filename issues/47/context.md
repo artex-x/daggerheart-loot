@@ -16,17 +16,19 @@ dropped".
 
 ## Goal
 
-**Current, 2026-09-16: R0b - re-home the live-app coverage that must survive,
-then R0c's deletions.** Phases 4, 5 and 6 are closed; the site serves the
-rewrite. The remaining order is `R0b.2 -> R0b.3 -> R0b.4 -> R0c`, then Phase 8
-under a new task id. Design: `plan.md`, "R0b planned: re-home the live-app
-coverage that must survive" and "The finishing plan - every batch from here to
-done". Next batch and its gates: `handoff.md`, "Next batch (implement-ready)".
+**Done, 2026-09-17: task 47 closed at R0c.** R0b (all four batches) and R0c
+(C0-C4 plus one review-remediation cycle) both shipped, reviewed and
+CI-confirmed green; the static root and the parity harness are deleted; the
+site serves the rewrite and every document was rewritten to match. Status,
+commands and results: `handoff.md`. Design history: `plan.md` (kept
+permanently rather than retired - see `handoff.md`, "Blockers", for why).
 
-**Task 47 closes at R0c**, not at Phase 8 - Phase 8's own design gives R1 a new
-task directory so this one can retire. What happens to `issues/47/` is the
-owner's call; the recommendation is to keep it, since it is the only place the
-migration's measurements live.
+**Task 47 closed at R0c**, not at Phase 8 - Phase 8's own design gives R1 a
+new task directory. `issues/47/` is kept, per the owner's standing
+recommendation and `CLAUDE.md`'s own instruction naming it the live
+migration backlog: it is the only place the migration's measurements live.
+Phase 8 opens under its own task id once the owner files it, against the
+inputs `handoff.md`'s "Phase 8 opening inputs" hands it.
 
 ## GitHub issue
 

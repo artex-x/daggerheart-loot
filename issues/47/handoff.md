@@ -10,55 +10,27 @@ onward has the fullest surviving version if it is ever gone.
 
 ## Status
 
-- Task status: **R0b is CLOSED; R0c is implement-ready and its owner gate is
-  satisfied** (planner, 2026-09-16). The owner said go for R0c on 2026-09-16
-  (`context.md`, decision 11, verbatim) with two rulings: R0c carries a
-  divergence sweep over everything it deletes, and what the sweep finds
-  **does not block** the deletion - it is recorded and becomes Phase 8 work.
-  That was the last owner gate anywhere in TASK 47.
-- Last agent: planner (R0c design). Design: `plan.md`, **"R0c designed: the
-  sweep, the deletions, and the cliff"** (the last section). Brief with
-  numbered acceptance: "Next batch", below.
-- NEEDS_HUMAN_CONFIRMATION: **no**. Every fork was decided from the tree;
-  the one owner action left is filing the Phase 8 issue at closeout, which
-  nothing in R0c waits on.
-- Branch `main`, HEAD `a6b4a94`, `origin/main` at the same commit, nothing
-  unpushed. HEAD is two commits above what R0b.4 recorded (`17bb75f`) and
-  both are foreign to this task and preserved: `0969ae9` (D11 filed into
-  `docs/specs/DEBT.md`, `FEATURES.md` +4) and `a6b4a94` (`img/q244.webp`,
-  `og/q244.jpg`, image bytes only - no golden reads image bytes, so nothing
-  in R0c's gates sees it). Working tree: ` M issues/47/context.md`
-  (the orchestrator's uncommitted decision 11 and the condition-2 read -
-  commit it with C0, do not overwrite it) and the untracked `issues/56/`
-  and `work/`, which belong to other tasks.
-- **What this planning pass found that the R0c outline did not know**, each
-  verified from the files (full list with line numbers: `plan.md`, "What the
-  tree says now, and where the outline was already stale"):
-  - `ci.yml` was rewritten by issue 56 during R0b (`99bbb7c`, `8dae1b9`):
-    `golden` is already in `deploy.needs`, `parity` is already out of it and
-    gated on `workflow_dispatch`, and `tests/derived.js:522-532` asserts
-    `golden`. Two inherited R0c lines close as done-by-peer.
-  - Four suites the outline called "data-only and unaffected" read the files
-    R0c deletes and run inside `npm run check` or `run-all`: `tests/i18n.js`
-    (parses `app.js`'s `T`), `tests/derived.js` (three `app.js` reads, two
-    `index.html` reads), `tests/craft.js` (JSDOM-renders `index.html` +
-    `app.js`), `tests/contracts.js` (requires `tests/lib.js`). Deleting
-    without re-pointing them reddens the gate.
-  - `tools/capture-share-fixture.mjs` drives the root `index.html` with
-    `data-copy-*` grips; `tools/probe.mjs` and `tools/parity-ubuntu/` exist
-    only to compare the two apps.
-  - `app/src/lib/dice.ts`'s claim that `derived` checks `DIE_ART` against
-    `card/*.svg` is false today - `derived.js` parses `app.js`'s shape only.
-  - `CLAUDE.md`'s counts sentence enumerates seven files; `derived.js`'s
-    `COUNTERS` list now has eleven (peers added four) and nine after R0c.
-  - Phase 7 condition 2's second `check-site.mjs` read is taken and green on
-    `a6b4a94` (orchestrator, `context.md`); the by-name references are listed
-    in `plan.md`, fact 11, for the implementer to re-derive from the file.
-- Next action: **the orchestrator dispatches the sweep (C0, read-only,
-  reviewer role, output `issues/47/sweep.md`)**, then the implementer for
-  C0's records and C1-C4 in order. Whether R0c is reviewed is the
-  orchestrator's call; the plan recommends a review of C1+C3 (the deletion
-  and the workflow) in one pass.
+- **Task status: done, 2026-09-17. TASK 47 is closed; R0c is complete.**
+  Every acceptance line (1-56) is Met, recorded batch by batch under
+  "Completed" and "Verification" below. `main` is green on CI in every job
+  (`check`, `golden` ×4, `audit`, `secrets`, `deploy`) for both closing
+  pushes, and the deployed site was verified by hand
+  (`node tools/check-site.mjs`, `сайт опубликован верно`).
+- Last agent: implementer (R0c C0-C4, review remediation, and this
+  closeout). NEEDS_HUMAN_CONFIRMATION: **no** - the one open fork (whether
+  to delete `plan.md`) was put to the owner and answered: keep it
+  permanently (see "Blockers").
+- Branch `main`, HEAD `d78b60f` before this closeout's own compaction
+  commit; `origin/main` at the same commit, nothing unpushed at any point.
+- **Phase 8**: not yet opened. The owner assigns its task id when ready;
+  everything it needs to start is in "Phase 8 opening inputs" below - the
+  register (`docs/specs/DEBT.md`), the structural goldens, the R1/R2-Rn
+  review design, and the backlog. Nothing in task 47 waits on Phase 8
+  opening.
+- **`issues/47/` is kept**, per `CLAUDE.md`'s own instruction (it names
+  this directory as the live migration backlog) and per the standing
+  recommendation in this file and in `plan.md`: it is the only place the
+  migration's measurements live.
 
 ## Completed
 
@@ -69,7 +41,7 @@ batch's **outcome, deviations and commits** in its per-phase tables - "Phase
 built", and R0a's under "R0a built: three commits, nineteen acceptance lines
 closed". It no longer carries a batch's full built record: **every step, every
 gate's own numbers and every rejected alternative is at `git show
-fc59ce4 for this task's pre-compaction plan.md`**, the last pre-compaction commit. The code and its
+fc59ce4:issues/47/plan.md`**, the last pre-compaction commit. The code and its
 specs are the rest of the record.
 
 - **R0b.4 - all five restored (a fifth found on review), R0b closed**
@@ -271,7 +243,7 @@ specs are the rest of the record.
   `tests/parity/specs.js`). **Deviation:** a defect the design's own
   acceptance criteria surfaced rather than the plan predicting it - the
   outcome row is `plan.md`, "Phase 4's batches, as built"; the full accounting
-  is at `git show fc59ce4 for this task's pre-compaction plan.md`, "B5.1 built".
+  is at `git show fc59ce4:issues/47/plan.md`, "B5.1 built".
 - **B4 - the equipment tables, their facets and tier sections** (2026-09-09).
   `fde9cdc`. Reviewed: approve, no blockers. **Deviation:** two things found
   and fixed inside the touched path that the brief's line list did not name.
@@ -289,7 +261,7 @@ specs are the rest of the record.
   below `DEBT_SLACK` rather than real debt.
 - **B3 - sectioned bodies and section anchors** (2026-09-08). See `git log`
   for B3. B1, B2 and the Phase 1-2 scaffolding predate this file's own record
-  and live in `git log` and, in full, at `git show fc59ce4 for this task's pre-compaction plan.md`.
+  and live in `git log` and, in full, at `git show fc59ce4:issues/47/plan.md`.
 
 ## Verification
 
@@ -302,7 +274,7 @@ it and a reviewer reads it:
   tables - "Phase 4's batches, as built", "Phase 5's batches, as built",
   "Phase 6's batches, as built". Its **exact commands and results** did not
   survive that file's own 2026-09-16 compaction; they are at
-  `git show fc59ce4 for this task's pre-compaction plan.md`, one section per batch.
+  `git show fc59ce4:issues/47/plan.md`, one section per batch.
 - **Standing cost figures and the foreground-call rule**: `docs/parity.md`,
   "Batch size and the fixed cost of a run", and `context.md`, "`npm run
   check`, settled".
@@ -892,72 +864,13 @@ still appears in `_i_ci1.txt`, `_i_f1.txt`, `_i_q1.txt`.
     new code, found and closed inside the same batch that introduced it,
     not an accidental loss the original migration made.
 
-### R0b.4 review remediation (implementer, 2026-09-16, one cycle)
+### R0b.4 review remediation - collapsed (2026-09-17)
 
-**Reviewed: verdict fix-then-continue, two blockers and seven nits, cycle
-spent.** Three commits, top of `main` at `17bb75f`: `676629d` (B1),
-`ed557de` (B2), `17bb75f` (nits 1-6; nit 7 folded into B1). CI run
-`35148554330` (cited by the review) was green in every job at `4f6cab3` -
-`check`, all four `golden` shards, `audit`, `secrets` - which also retired
-a risk the review raised: `tests/app/print.js`'s `1165px` assertion
-(the R0b.4 nit that added `main`'s `width` to `printMedia`'s property list)
-holds on ubuntu, so the constant is portable, not host-local.
-
-- **Blocker 1 - a real fifth divergence, `app/src/lib/search.ts:31-33`
-  missing `noTier`.** Fixed in `676629d`: see "R0b.4's own commands and
-  results", acceptance line 18, above, for the full account (what it broke,
-  the owner's answer, the fix, the test, and `plan.md`'s corrected C3
-  enumeration - the wrong site list that let it through in the first
-  place).
-- **Blocker 2 - `context.md` and `COVERAGE.md`'s `flows` row both carried a
-  false "no instrument can see this" claim, and the batch's own
-  hittable-link bug is the proof.** Fixed in `ed557de`: `context.md`'s
-  refs-card claim was scoped to `#/i/*` states (true) and wrongly
-  generalised to every state (false - `#/roll/wondrous` and `#/roll/
-  wondrous ~ pinned` both render `w1`'s refs card by default), moved to
-  "Reasons already disproved" with the correction. `COVERAGE.md`'s `flows`
-  row corrected to say the goldens' `controls` section *is* a guard for the
-  closed-`<details>` hiding rule (`d.controls()` filters on `offsetParent`
-  - that is how `acef2a8` was actually found), while the `<br>` breaks and
-  the link's own text remain a real blind spot.
-- **Nits 1-6, all taken (`17bb75f`).** "the deleted qa.js" -> "the qa.js
-  R0c deletes" in the three panel test files' comments (`qa.js` still
-  exists; only R0c removes it); `tests/app/lib.js`'s missing-`dist/` guard
-  comment still read "five suites", missed by C4's own fix to a different
-  sentence in the same file - corrected to seven; `std.test.ts` gained its
-  own `expectNoA11yViolations` call (it was the only one of the three panel
-  files with none, and `a11y.test.ts` names it as `StdPanel.svelte`'s axe
-  home); all three panels' live-region tests now grip `.results` via
-  `container.querySelector` rather than `screen.getByRole('status')`
-  (`Toast.svelte` can carry that role too), and `roll.test.ts`/
-  `alt.test.ts` reordered so their own axe test(s) stay last; the
-  referenced-card link test gained `target="_blank"`/`rel="noopener"` and
-  an `<i>`-not-`<span>` check for the sub-text; `FEATURES.md` gained the
-  roll results' live-region line and a campaign-frame tier-suppression
-  line naming `isFrameRecord` and pointing at `docs/specs/DEBT.md` as an
-  open question - **not** written as deliberate, per the orchestrator's
-  correction mid-cycle (the owner's counter-example: `f33` and `q313` are
-  statistically identical armour, tier 1, one table prints the tier and
-  the other hides it - the mechanism is documented, no reason is). Nit 7
-  (the wrong `plan.md` enumeration) is B1's own fix.
-
-**Gates, foreground, one call each:**
-
-- `npm run build` - green, ~1-5s each of several runs.
-- `set -o pipefail; npm run check 2>&1 | tail -n 150` - green three times
-  (once per commit), 42 files, 1053 tests (up from 1051: the new
-  `search.test.ts` case and `std.test.ts`'s new axe test), coverage
-  unmoved at 96.61/88.6/97.11/97.34 throughout.
-- Four golden shards, compare mode: **zero movement**, all four read
-  `структурные образцы (dist/): без изменений` - `git status --short
-  tests/app/snapshots/` empty afterwards. Wall clocks: 132.9s, 128.1s,
-  119.7s, 122.7s (28, 28, 27, 27 states).
-- No parity run: `#/i/` and `#/roll/` were both clean at `4f6cab3` and B1
-  touches search text only, which no parity state types (the brief's own
-  reasoning, confirmed - search is reached through `#/search`, outside
-  both filters).
-
-Pushed at `17bb75f`.
+Fix-then-continue, two blockers and seven nits, one cycle, spent. Three
+commits (`676629d`, `ed557de`, `17bb75f`), pushed, CI green
+(`35148554330`). Outcome already in "Completed" above, under "R0b.4 - all
+five restored". Full command-by-command record: `git show
+d78b60f:issues/47/handoff.md`, same heading.
 
 ### R0a's result lines (implementer, 2026-09-13)
 
@@ -1482,392 +1395,22 @@ itself was not edited this pass - only its citation in `ROUTES.md`/
 `check-site.mjs` call, and the `/handoff` size-budget check. These wait for
 the C1-C3 review's findings, per the orchestrator's own instruction.
 
-## Next batch
+## Next batch - none; task 47 is closed
 
-- Name: **R0c - the divergence sweep, the deletions, CI's parity job, the
-  documents; task 47 closes.**
-- Objective: one more deliberate read of everything the migration deletes
-  (`index.html`, `app.js`, `style.css`, the legacy browser suites,
-  `tests/parity.js`, `tests/parity/`) against `app/src/` for behaviour no
-  surviving instrument would notice, with every finding **recorded, not
-  fixed** (owner ruling 2026-09-16); then delete the static root, fourteen
-  browser suites plus `tests/i18n.js`, `tests/lib.js`, the parity harness,
-  `docs/parity.md`, `tools/probe.mjs` and `tools/parity-ubuntu/`; keep
-  `npm run check` and every `tests/app/` suite green without them; drop the
-  `parity` job and harden the deploy guard; rewrite the documents so no
-  present-tense instruction names a deleted file and `CLAUDE.md` has no
-  migration section; close task 47 and hand Phase 8 its inputs. Design and
-  every decision with its rejected alternative: `plan.md`, "R0c designed".
-- In scope: `C0` the sweep (read-only dispatch) and the homes for its
-  findings; `C1` the deletions and every re-point `npm run check` needs;
-  `C2` the surviving instruments (print's English pass, the `printMedia`
-  null fix, N6 in the build and smoke, the share-fixture tool on `dist/`,
-  `.prettierignore`/`eslint.config.mjs`, stale comments); `C3` `ci.yml`
-  alone; `C4` `CLAUDE.md`, `docs/specs/*`, both READMEs, `llms.txt`/
-  `robots.txt` (read), `docs/REFACTOR_PLAN.md`, `.claude/README.md`,
-  prompts, templates, the small-fix skill, and the closeout of `plan.md`/
-  `handoff.md`.
-- Out of scope: **any template, `<style>` or statement change under
-  `app/src/`** (comment re-points only - the goldens must stay
-  byte-identical); `app/index.html`; fixing anything the sweep finds;
-  regenerating `docs/fixtures/share/records.json` if the tool's first
-  `dist/` run diffs it; a `CLAUDE.md` rule beyond the two named lines;
-  Phase 8's task directory (the owner assigns the id); deleting `issues/47/`;
-  renumbering `selftest.mjs`'s cases; any change to a public contract
-  (`CONTRACTS.md`, `docs/fixtures/`, `llms.txt` grammar) - none is needed.
-- Files expected (by commit; the full per-file detail is `plan.md`, "The
-  batch: commits, files, gates"):
-  - C0: `issues/47/sweep.md` (new), `docs/specs/DEBT.md` (section 3),
-    `docs/specs/COVERAGE.md` (thin spots), `issues/47/handoff.md` (Phase 8
-    list), `issues/47/context.md` (the orchestrator's pending edit, committed).
-  - C1 deletes: `index.html`, `app.js`, `style.css`, `tests/lib.js`,
-    `tests/{audit2,behave,craftmob,eqtest,flows,hues,lists2,noart,notes,print,qa,select,states,typo}.js`,
-    `tests/i18n.js`, `tests/parity.js`, `tests/parity/specs.js`,
-    `tests/parity/lock.js`, `docs/parity.md`, `tools/probe.mjs`,
-    `tools/parity-ubuntu/` (3 files). C1 edits: `tests/contracts.js`,
-    `tests/craft.js`, `tests/derived.js`, `tests/run-all.js`, `package.json`,
-    `.claude/hooks/bash-guard.mjs`, `.claude/hooks/selftest.mjs`,
-    `.claude/hooks/edit-followup.mjs`, `.claude/README.md` (hook rows),
-    `tests/app/inventory.js`, `tests/app/driver.js`.
-  - C2: `tests/app/print.js`, `tests/run-all.js` (weight), `vite.config.mts`,
-    `tools/smoke-file-url.mjs`, `tools/capture-share-fixture.mjs`,
-    `.prettierignore`, `eslint.config.mjs`, comment re-points in
-    `tests/app/{lib,golden,sweep,hues,typo,states,contracts}.js`,
-    `app/vitest-setup.ts`, `tools/artwork/lib.mjs`,
-    `tools/build-share-pages.js`, and the `app/src/**` files the acceptance
-    grep lists (`AltPanel`, `RecordCard`, `RecordModal`, `RowMain`,
-    `a11y.test.ts`, `record.test.ts`, `roll.test.ts`, `data.test.ts`,
-    `filters.test.ts`, `hash.test.ts`, `icons.ts`, `listLink.test.ts`,
-    `listLink.ts`, `numField.ts`, `roll.ts`, `tokens.css`).
-  - C3: `.github/workflows/ci.yml` only.
-  - C4: `CLAUDE.md`, `docs/specs/{COVERAGE,DEBT,FEATURES,META,ROUTES,STATE,I18N,CONTRACTS}.md`,
-    `README.md`, `README.ru.md`, `docs/REFACTOR_PLAN.md`, `docs/artwork.md`,
-    `docs/tg-preview.md`, `.claude/README.md` (batch-size section),
-    `.claude/prompts/{orchestrate,plan,add-source}.prompt.md`,
-    `.claude/templates/context.template.md`,
-    `.claude/skills/small-fix/SKILL.md`, this task's `plan.md` (durable
-    content moved to the specs and READMEs listed above; the file itself
-    kept rather than deleted - see "Blockers"), `issues/47/handoff.md`.
-- Steps:
-  1. Preflight: `npm run format:check` (~11 s means the gates fit; ~55 s
-     means wait); `git log --oneline -3`; `git status --short` (expect
-     ` M issues/47/context.md` and the two foreign untracked directories;
-     stage by path, never `git add -A`); no `chrome.exe`; `npm run build`;
-     read `tools/check-site.mjs` and write its by-name references into this
-     file's "Verification" (acceptance 9).
-  2. C0: the orchestrator dispatches the sweep per `plan.md`, "The sweep";
-     it writes `issues/47/sweep.md` and nothing else. The implementer then
-     homes every non-`same` row (acceptance 5-8) and commits C0 together
-     with the pending `context.md` edit.
-  3. C1: the deletions and re-points (acceptance 10-20), one commit, the
-     recovery paragraph from `plan.md` in its message; `npm run check`;
-     `node tests/run-all.js contracts,craft,dataint,derived,stub`; four
-     golden shards, compare mode.
-  4. C2: the surviving instruments (acceptance 21-27); `npm run check`;
-     `npm run check:built`; `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`;
-     `node tests/app/sweep.js 360`.
-  5. C3: `ci.yml` (acceptance 28-31); `npm run check`.
-  6. C4: the documents (acceptance 32-40); the acceptance grep; `npm run
-     check`; the closeout (acceptance 41-45); push; read CI; by-hand
-     `check-site.mjs`; `/handoff` compaction if any task document passes
-     150 KB.
-  7. Inherited items (acceptance 46-56) are closed in whichever commit their
-     line names; the closing record here says what happened to each.
-- Acceptance criteria (each observable; "Met" needs the evidence named):
-  1. `issues/47/sweep.md` exists with a header naming the sha it read at,
-     the date and the runner; sections A-F; every row's verdict is one of
-     `same` / `differs` / `absent` / `n.a.`; every `n.a.` cites a
-     `FEATURES.md` bullet, `DEBT.md` entry or `COVERAGE.md` drop reason;
-     a counts line per part and in total.
-  2. Part A is complete: the grep in `plan.md`, "The sweep", Part A, run
-     over `app.js` at the recorded sha, yields **216** lines (at `a6b4a94`)
-     and every one of those line numbers appears in a Part A row's `where`
-     column - checked by diffing the two lists, not by reading.
-  3. Part C accounts for all **83** `style.css` lines its grep matches; Part
-     D has a row for each of the **29** `data-act` names and the **14**
-     `addEventListener` registrations, and names the surviving instrument
-     (a `tests/app/states.js` case, a golden state, a component test) or
-     `none` for each.
-  4. Part E has a row for each of the **42** `SPECS` entries and for every
-     `ok(` call in `tests/craft.js` sections 2-5 and in `tests/{audit2,
-     contracts (browser half),hues,states,typo}.js`; Part B carries the
-     three counts (live keys absent, plain values differing, HTML values
-     listed for rendered comparison); Part F covers `index.html:40-81`
-     including `<html lang>` on a language switch.
-  5. Every `differs`/`absent` row has a home written **in C0's commit**:
-     class (a) a `docs/specs/DEBT.md` section-3 entry (`D12+`, six fields,
-     "Why it was recorded, not restored: owner ruling 2026-09-16", the live
-     code quoted with `git show <sha>:app.js` / `:style.css` / `:index.html`
-     and its line); class (b) a `docs/specs/COVERAGE.md` "Known thin spots"
-     bullet; class (c) a line in this file's "Phase 8 opening inputs". No
-     finding's only record is `sweep.md`.
-  6. `docs/specs/DEBT.md` has a third section, "Divergences found at the
-     deletion (R0c sweep), owed a decision at Phase 8", even if empty (then
-     one sentence saying the sweep found nothing of class (a), with the row
-     counts), and its header no longer names `VISUAL_DEBT`, `ACCEPTED`,
-     `tests/parity/specs.js` or `docs/parity.md` as living things.
-  7. C0's `git diff --stat -- app/src tests tools` is empty.
-  8. The sweep ran a legacy suite or opened a page only to settle a single
-     row, never `npm run check`, a parity filter or a golden shard; the
-     `sweep.md` header says which, if any, were run.
-  9. `tools/check-site.mjs`'s by-name references are listed in
-     "Verification" from the file (not from `plan.md`, fact 11), and
-     acceptance 30's guard list is checked against them.
-  10. After C1, `git ls-files` returns nothing for each of the 24 deleted
-      paths (the list under "Files expected", C1), and `tests/parity/` and
-      `tools/parity-ubuntu/` do not exist.
-  11. `tests/contracts.js` keeps the list-encoding pure half (every
-      `docs/fixtures/lists/*.json`, including `equipment-entry.json`) and
-      the docs-name check, requires neither puppeteer nor `./lib.js`, runs
-      green under `node tests/contracts.js`, and keeps its `run-all.js` row.
-  12. `tests/craft.js` keeps sections 1 and 6 only, requires no jsdom, runs
-      green; `COVERAGE.md`'s `craft` row (C4) names where each section 2-5
-      assertion went, per sweep Part E.
-  13. `tests/i18n.js` is deleted; `package.json`'s `check` no longer runs
-      it; `run-all.js` has no `i18n` row; `I18N.md` (C4) says key parity is
-      a compile error in `app/src/lib/dict.ts` (`Dict`).
-  14. `tests/derived.js`: `noindex` asserted on `app/index.html` only; the
-      head-to-head loop and the `>= 20` floor are gone (N2); `headFacts`
-      scans `<head>` only (N8); the absolute og facts and the icon are still
-      asserted on `app/index.html`; `COUNTERS`' file list drops `index.html`
-      and `app.js`; the `tierBand`/`srcWond` guard reads every
-      `app/src/lib/*.ts`; the die check parses `app/src/lib/dice.ts`'s
-      `DIE_ART` (`viewBox`, `body`, `faces`) for all six dice against
-      `card/die-dN-bw.svg` and was **proven to fail** by a scratch edit of
-      one path (recorded here); the footer citation reads `dict.ts`'s
-      `footBefore`+`footLink`+`footAfter` for `ru` and `en`;
-      `dice.ts:8-10`'s comment is now true.
-  15. `tests/run-all.js`'s `SUITES` has exactly fifteen rows (`app/sweep` x4,
-      `app/golden` x4, `app/print`, `app/contracts`, `app/states`,
-      `app/typo`, `app/hues`, `contracts`, `dataint`, `derived`, `craft`,
-      `stub`); its header comment no longer names parity or the live app;
-      `node tests/run-all.js nosuch` exits 1.
-  16. `.claude/hooks/bash-guard.mjs` has no `parityLock` import, no
-      `MSG.parityLock`, no `parity` `LONG_CHECKS` family and no rule 2h;
-      rule 2g (a backgrounded `npm run check`) is untouched; `selftest.mjs`
-      is green with #76-#91, the lock-module import, #72's two parity lines
-      and #43 removed (numbering gaps allowed); `edit-followup.mjs` has no
-      `remind:baseline` group and its `remind:data` message names
-      `tests/derived.js`'s `COUNTERS` list instead of enumerating files;
-      `.claude/README.md`'s hook-table rows for both hooks, the "One heavy
-      run at a time" paragraph and the two limitation bullets are updated,
-      and decisions-table rows 11, 15 and 28 are annotated "retired at R0c
-      `<C1 sha>`" rather than deleted.
-  17. `tests/app/inventory.js`: the self-retiring guard and its header
-      sentences are gone; the `timed` flag is explained in the header in at
-      most twelve lines (from `docs/parity.md`'s "Timed states" / "Two
-      unstable classes"); the seven `docs/parity.md, 'Timed states'`
-      comments point at that header.
-  18. `tests/app/driver.js`: `TARGETS` has only `next`; the header describes
-      the driver as `tests/app/`'s, not parity's; no comment in the file
-      speaks of "both apps" or `ACCEPTED` in the present tense.
-  19. C1's commit message carries the recovery paragraph from `plan.md`,
-      "The batch", verbatim apart from the sha.
-  20. After C1: `set -o pipefail; npm run check 2>&1 | tail -n 120` exit 0
-      (one foreground call, timeout 600000); `node tests/run-all.js
-      contracts,craft,dataint,derived,stub` green; four golden shards
-      (`node tests/app/golden.js --shard=n/4`, compare mode) read
-      `без изменений`.
-  21. `tests/app/print.js` runs `cardFit` (every width, the eight
-      card-drawing states) and `copiedPrintLink` (`'Link to this set'`)
-      in English via `fresh({ lang: 'en' })` as well as Russian; a comment
-      says why `sheetCounts` and `printMedia` stay Russian-only;
-      `printMedia`'s chrome loop is `ok(val && val.display === 'none', ...)`
-      and a `null` read fails it (proven once by pointing one selector at
-      nothing); `run-all.js`'s `app/print` weight is the new measured wall
-      clock.
-  22. N6: `vite.config.mts`'s `closeBundle` copies `catalog.csv`,
-      `data.json` and `llms.txt` into `dist/`; `tools/smoke-file-url.mjs`
-      asserts every `noscript a[href]` in `dist/index.html` resolves to a
-      file under `dist/`, and was proven to fail before the copy landed;
-      `npm run check:built` green; the deploy collect step's explicit list
-      is unchanged (read in C3), so nothing extra is published.
-  23. `tools/capture-share-fixture.mjs` drives `dist/index.html`, grips the
-      two copy buttons by the accessible names `dict.ts` gives them, has a
-      header saying the fixture is the rewrite's own golden last matched
-      against the live app at `cf96e6f`; **its first run produces zero
-      diff** (`git diff --stat docs/fixtures/share/records.json` empty),
-      recorded as sweep Part E's row (iv). A non-empty diff is a
-      stop-and-raise, not a regeneration.
-  24. `.prettierignore` no longer lists `app.js`, `style.css`, `index.html`
-      or their comment; `eslint.config.mjs` no longer lists `'app.js'` and
-      its comment says what the `tests/`/`tools/` ignores mean now;
-      `npm run check` green.
-  25. Every hit of acceptance-grep 1 (`plan.md`, "The acceptance grep,
-      defined") under `app/src/**`, `tests/**`, `tools/**`,
-      `app/vitest-setup.ts` is re-pointed (to a `FEATURES.md` bullet, a
-      `COVERAGE.md` row, `tests/app/<x>.js`, or `git show <C1 sha>^:<path>`)
-      or deleted; lines of the form "Ported from tests/<x>.js" /
-      "transposed from" / "lifted from" may stay.
-  26. `tests/app/golden.js`'s and `tests/app/lib.js`'s headers describe the
-      goldens and the suites on their own terms (no "this is not parity in
-      miniature" framing that needs parity to exist to be read).
-  27. After C2: `npm run check` and `npm run check:built` exit 0;
-      `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`
-      green; `node tests/app/sweep.js 360` green; golden shards re-run only
-      if anything but comments changed under `app/src` or in
-      `inventory.js` - and if run, `без изменений`.
-  28. `ci.yml`: the `parity` job is gone; the `check` job's step runs
-      `node tests/run-all.js --exclude=app/golden` under a name that does
-      not say "legacy" or "live app"; `deploy.needs` is
-      `[check, audit, secrets, golden]`; `tests/derived.js:522-532` still
-      passes.
-  29. The deploy comment block says what is published, that a bad deploy of
-      the rewrite is fixed by `git revert` of the offending commit, and that
-      the old app is restorable only from history (`git show <C1 sha>^ --
-      index.html app.js style.css`) as a batch, not a command.
-  30. The guard (N3, N5): greps `src="\.?/?app\.js"` (the regex
-      `check-site.mjs` uses); `cmp dist/index.html _site/index.html` and
-      `cmp dist/assets/app.js _site/assets/app.js`; `og/_share.jpg`,
-      `img/_none.webp`, `card/die-d12-bw.svg` and `i/w1.html` required
-      non-empty by name; `_site/data.js`'s first line starts `window.LOOT`;
-      the "must not be published" loop keeps `app.js style.css` with a
-      comment saying a stray root file must never reach `_site`. A reviewer
-      can tick every static check `check-site.mjs` makes (acceptance 9)
-      against a guard line.
-  31. C3 is one file; `npm run check` green after it.
-  32. `CLAUDE.md`: no "Migration and parity" section; "Project shape" says
-      the static root was deleted at R0c and how to read it from history;
-      "Quality gates" lists the surviving `tests/app` suites and says
-      `app/sweep` and `app/golden` are not one foreground call; the spec
-      table has no `docs/parity.md` row; the counts sentence names
-      `tests/derived.js`'s `COUNTERS` list rather than enumerating files;
-      the batch-size cite points at `.claude/README.md`, "Batch size and the
-      fixed cost of a run"; one line under "Task and session protocol"
-      carries the placement rule (a placed item is its own acceptance line
-      in the batch that receives it; a batch is not closed while an
-      inherited line has no outcome); one line carries the golden/DEBT rule
-      (a new state gets an `inventory.js` entry and a re-seeded golden in
-      the same change; a defect kept on purpose gets a `DEBT.md` entry in
-      the same change); `wc -l CLAUDE.md` <= 170.
-  33. `docs/specs/COVERAGE.md`: the intro's counts re-derived by listing
-      `tests/*.js` and `tests/app/*.js`; the old-app suite table kept as a
-      record under a heading naming `<C1 sha>`; "Features to suites"
-      re-pointed to surviving homes; "The rewrite against the app it
-      replaces" and "The look" replaced by at most twenty lines of history
-      and pointers (`30b2744`, `DEBT.md`, the goldens, how to resurrect the
-      harness from history); "What is enforced" edited; "Known thin spots"
-      loses the `tests/parity.js` bullets, gains the sweep's class-(b)
-      findings; the `craft`, `contracts`, `i18n`, `derived` and `parity`
-      rows updated; the one resolving sentence for `app.js:N` citations is
-      in the history paragraph.
-  34. `docs/specs/DEBT.md`'s header carries the resolving sentence ("the
-      live sources were deleted at R0c (`<C1 sha>`); `git show <C1
-      sha>^:app.js` reads them at their final state; a line citation with no
-      other hash refers to that state"), and one existing citation was
-      verified before commit: `git show bb61db0:app.js` around lines
-      3589-3603 matches D2's quote (the command and result recorded here).
-  35. `FEATURES.md` (seven lines), `META.md` (sections 1 and 4),
-      `ROUTES.md:7`, `STATE.md:62`, `I18N.md:8-11`, `CONTRACTS.md:11` point
-      at `app/src/...` (or `tests/contracts.js`'s pure half) as the
-      implementation, and "the live app" appears only in past tense or as a
-      `DEBT.md` cross-reference.
-  36. `README.md` and `README.ru.md`: "Running and developing" says the
-      site is the built rewrite (`npm run build`, `file://` still works),
-      the tree listing has no root code files and lists `app/`, the `tests/`
-      line's count is re-derived, the suites table lists the surviving
-      suites and `tests/app/*`, the licence line reads `app/`, `tools/`,
-      `tests/`; both READMEs say the same; `tests/derived.js`'s counts and
-      licence-cite checks pass.
-  37. `llms.txt` and `robots.txt` were re-read; the read is recorded here
-      with "no change" or the change made.
-  38. `docs/REFACTOR_PLAN.md` says the migration closed at R0c (`<C4 sha>`,
-      date) and points at `DEBT.md`, `COVERAGE.md` and "the Phase 8 issue";
-      `docs/artwork.md:162` and `docs/tg-preview.md:551` re-pointed.
-  39. `.claude/README.md` gains "Batch size and the fixed cost of a run"
-      (the parity rows replaced by `run-all app/*`, the golden shards and
-      `sweep` per width); `.claude/prompts/orchestrate.prompt.md`'s cost
-      table, `plan.prompt.md:82`, `add-source.prompt.md:39,84,158`,
-      `.claude/templates/context.template.md:34-39` and
-      `.claude/skills/small-fix/SKILL.md` steps 1 and 5 (the gate becomes
-      `check`, `check:built`, the golden shard(s) whose states render the
-      touched component, `--update` only when the change is intended) no
-      longer name a deleted path.
-  40. Acceptance-grep 1 and 2 (`plan.md`, "The acceptance grep, defined")
-      return only the allowed residue; their output is pasted under
-      "Verification".
-  41. Pushed; the CI run is green in `check`, `golden (1..4)`, `audit`,
-      `secrets`, `deploy`, and its `check-site.mjs` step passed; run id, job
-      wall clocks and the guard's `published:` listing recorded here, with
-      one sentence on what the run proves less than the runs before it.
-  42. `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/`
-      run by hand after the deploy: `сайт опубликован верно`, recorded.
-  43. `plan.md`: "What 'task 47 is done' means" points 1-6 each carry their
-      evidence; Phases table row 7 reads done; `plan.md` line 8 already
-      corrected by the planner (verify it still reads "closes at R0c").
-  44. `handoff.md`: Status `done` with the date; a "Phase 8 opening inputs"
-      section (the register with its entry count, the goldens, the backlog,
-      `context.md`'s open-items list, the sweep's class-(c) lines, the
-      Playwright decision plus the lost heavy-run lock, the recommendation to
-      keep `issues/47/`); "Deferred" ends with no item whose only record is
-      this file; the four "closes by deletion at R0c" items from
-      `context.md`, "What Phase 8 inherits" are recorded closed.
-  45. `/handoff` compaction run if any of the three task documents passes
-      150 KB after the closeout; sizes recorded.
-  46. Inherited - **`golden` in `deploy.needs`** (R0a, 2026-09-13): closed
-      by peer `99bbb7c`, verified by reading `ci.yml` and
-      `tests/derived.js:522-532`; recorded as done-by-peer.
-  47. Inherited - **`parity` out of `deploy.needs`**: closed by peer
-      `8dae1b9`; the job itself deleted by acceptance 28.
-  48. Inherited - **`tests/parity/lock.js` and its two hook dependents**
-      (planner, 2026-09-16): deleted, not re-homed (acceptance 16); the
-      lost collision guard named in the Phase 8 inputs (acceptance 44).
-  49. Inherited - **the print specs narrowed to one language** (R0b.3
-      review): closed by the English pass (acceptance 21).
-  50. Inherited - **`printMedia`'s null-passes-green chrome loop** (R0b.3
-      review): closed (acceptance 21).
-  51. Inherited - **B13 nits N2 and N8** (`tests/derived.js`): N2 closed by
-      deletion of the head-to-head, N8 by the `<head>` slice (acceptance 14).
-  52. Inherited - **B13 nits N3, N5, N6**: N3 and N5 by acceptance 30, N6 by
-      acceptance 22.
-  53. Inherited - **`readPNG` retires with `tests/lib.js`** (R0b.1): closed
-      by acceptance 10 (`tests/app/print.js` inlined it in R0b.3).
-  54. Inherited - **`COVERAGE.md`'s suite count moves**: closed by
-      acceptance 33's re-derived counts.
-  55. Inherited - **`plan.md` line 8 correction** ("What 'task 47 is done'
-      means"): done by the planner in this pass; acceptance 43 verifies.
-  56. Inherited - **the second read of `check-site.mjs`**: acceptance 9.
-- Verification commands (each one foreground call, in this order per
-  commit; costs from `context.md`, "Command costs"):
-  - probe: `npm run format:check` (~11 s healthy).
-  - `npm run build` (before any `tests/app/` run; `npm run check` never builds).
-  - `set -o pipefail; npm run check 2>&1 | tail -n 120` - Bash timeout
-    600000; ~147-165 s idle. Once per commit whose tree differs from the
-    last armed key (a `.md`-only commit needs none).
-  - C1: `node tests/run-all.js contracts,craft,dataint,derived,stub`;
-    `node tests/app/golden.js --shard=1/4` .. `4/4` (compare; ~250 s each).
-  - C2: `npm run check:built` (a few minutes);
-    `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`
-    (~260 s pooled); `node tests/app/sweep.js 360` (~337 s; not `run-all
-    app/sweep`, which is 593.5 s and past the cap).
-  - C4: the two acceptance greps; then push, `gh run view <id>`, and
-    `node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/`.
-  - Never: `node tests/parity.js` (deleted after C1); a backgrounded check;
-    two heavy runs at once.
-- Risks / do-nots:
-  - A finding is homed, never fixed; `app/src` changes are comments only;
-    a moved golden in C1/C2 is this batch's mistake - find it, never
-    `--update`.
-  - A non-empty share-fixture diff on the tool's first `dist/` run is a
-    divergence: record it (home (a)) and leave the fixture.
-  - Do not delete `tests/contracts.js` or `tests/craft.js` whole; do not
-    rename `tests/contracts.js`.
-  - Do not touch `deploy.needs` (already right) or the collect step's list.
-  - Do not renumber `selftest.mjs` cases; do not widen a hook to make a
-    delete convenient.
-  - `derived.js`'s die check failing on real data is a shipped-art defect:
-    stop and raise, do not loosen the check.
-  - The first CI run after R0c proves less than the runs before it (no
-    parity); read the job list before calling it green.
-  - Stage by path; `issues/56/` and `work/` are not this task's; commit the
-    orchestrator's pending `context.md` edit with C0, unchanged.
-- Fallback: if the sweep cannot finish Parts A-F in one dispatch, split it
-  A+B+F / C+D / E and merge under one header - the pre-committed row counts
-  (216 / 83 / 29+14 / 42) make a partial merge visible. If `npm run check`
-  crosses the 600 s cap, the host is throttled: wait for the probe to read
-  ~11 s and re-run; never salvage a backgrounded run.
+R0c (named "the divergence sweep, the deletions, CI's parity job, the
+documents; task 47 closes") was the last batch, and it shipped in full: all
+56 acceptance lines (32-45 the documents and closeout, 46-56 inherited items)
+Met, recorded batch by batch in "Verification" above. The full implement-ready
+brief - objective, in/out of scope, the per-commit file list, all 56
+acceptance lines verbatim, the verification-command list, risks and the
+fallback plan - is superseded by what actually shipped and is collapsed here;
+`git show d78b60f:issues/47/plan.md`, "R0c designed", carries the design side
+of the same brief in full, and this file's "R0c's own commands and results"
+through "R0c C4" carry the executed side. There is no next batch: Phase 8
+opens under its own task id once the owner files it, against the inputs
+below.
 
-## Phase 8 opening inputs (started at C0; closeout completes the rest)
+## Phase 8 opening inputs (complete)
 
 C0 wrote the sweep's class-(c) findings below - "anything else": a refactor
 observation, a doubt about whether *live* was right, a harness-ergonomics
@@ -2040,356 +1583,61 @@ Phase 8.
 
 ## Blockers
 
-- **OPEN - this task's `plan.md` cannot be deleted without either violating
-  another task's protected content or leaving a dangling reference the
-  guard is designed to prevent (implementer, 2026-09-17).** The owner
-  approved running task 47's closeout, which calls for retiring `plan.md`
-  once its durable content has a permanent home. That content has moved -
+- **CLOSED - `plan.md`'s retirement is not done, by owner decision: keep it
+  permanently (implementer, 2026-09-17; owner decision via the orchestrator,
+  2026-09-17).** This is a decision with a reason, not a failure to finish.
+  Durable content was moved to a permanent home regardless -
   `docs/specs/DEBT.md` (the register's rationale), `.claude/README.md` (the
-  pre-commit-hook history and the batch-size worked example), `docs/
-  REFACTOR_PLAN.md` (a pointer to where everything now lives), and this
-  file's "Phase 8 opening inputs" (the full R1/R2-Rn review design) - and
-  every citation inside this task's own files was rephrased to avoid
-  `bash-guard.mjs`'s literal-path guard rather than left broken. But the
-  guard (`citingLines()` in `bash-guard.mjs`) runs an unscoped `git grep`
-  across the **whole tracked repository**, not just this task's directory,
-  and found seven citations this session must not touch:
-  `issues/closeout-hygiene/handoff.md` (two, describing a concurrent-session
-  root-cause finding - evidence of what changed mid-session, not a design
-  pointer) and `issues/closeout-hygiene/plan.md:50` (whose own "Live
-  citations that must not be touched" list names this task's plan document
-  by its full path - a different, apparently in-progress task's own plan
-  naming this exact file as protected evidence), plus
-  `issues/config-audit/context.md`
-  (three, line-numbered citations used as measured evidence in that task's
-  own now-closed audit) and `issues/config-audit/handoff.md` (one). None of
-  the four is this task's to edit: two are frozen records of a different,
-  completed task (`config-audit`, itself the task that built this exact
-  guard - `7849e51`, "docs(config-audit): retire the plan, rehome the
-  persistence-era decisions", is the precedent this session followed for
-  its own citation-rephrasing technique), and two belong to a task
-  (`closeout-hygiene`) whose own plan explicitly forbids touching this
-  citation. There is no bypass for this rule the way `SKIP_CHECK_GATE=1`
-  bypasses the check gate - `evaluateOrphanPlan()` is unconditional, no env
-  var, no override token, checked by reading the hook source directly and
-  confirmed by an actual `git rm` attempt on this task's plan document,
-  denied with "still cited by 26 tracked line(s)" before this session's own
-  citations were fixed, and denied again with 7 after. **Left in place rather than
-  forced**: this file, `docs/REFACTOR_PLAN.md` and `.claude/README.md` all
-  say the file is "kept for now" rather than claiming it is gone. Needs an
-  owner/orchestrator decision: edit the other tasks' citations anyway (with
-  their owning session's knowledge), decide the guard itself should ignore
-  historical/cross-task hits, or accept `plan.md` as permanently kept
-  (already fully stripped of anything not already duplicated elsewhere,
-  so keeping it costs little).
+  pre-commit-hook history and the batch-size worked example),
+  `docs/REFACTOR_PLAN.md` (a pointer to where everything now lives), and
+  this file's "Phase 8 opening inputs" (the full R1/R2-Rn review design) -
+  so nothing depends on the file itself surviving. But `bash-guard.mjs`'s
+  `evaluateOrphanPlan()` denies its deletion while any tracked line in the
+  **whole repository** cites the path, with no bypass token, and seven such
+  citations belong to two other tasks this session must not edit:
+  `issues/closeout-hygiene/handoff.md` (×2, a concurrent-session root-cause
+  finding) and `issues/closeout-hygiene/plan.md:50`, confirmed by the
+  orchestrator to literally read "Live citations that must **not** be
+  touched: `issues/47/plan.md` from..." - editing an in-progress task's own
+  evidence to satisfy this task's cleanup would have been the worse
+  failure; plus `issues/config-audit/context.md` (×3) and `handoff.md`
+  (×1), a different, already-closed task's measured audit evidence
+  (`config-audit` is itself the task that built this guard, `7849e51`).
+  **Every one of the seven is a historical measurement, not a live
+  pointer** - `:11534`, `:14711-14714`, `:14784`, and
+  `config-audit/context.md:70` recording the file at "1,031,333 B / 16,012
+  lines" when it is a different size today - and each already resolves only
+  through `git show <sha>:issues/47/plan.md`, which keeps working whether
+  or not the file exists. Confirmed by an actual `git rm` attempt: denied
+  with "still cited by 26 tracked line(s)" before this session rephrased
+  its own 19; denied again with the same 7 after. **Worth recording for
+  later**: the guard blocked a deletion that would have cost those seven
+  citations nothing, which is the case for narrowing the guard to live
+  pointers only, if anyone ever wants to. **Decision: keep `plan.md`
+  permanently.** Cost: one ~134 KB file (post-closeout-compaction) that
+  duplicates nothing load-bearing. This file, `docs/REFACTOR_PLAN.md` and
+  `plan.md`'s own opening Status line all say so.
 
 - **CLOSED - all four of R0b.4's divergences restored and landed
-  (implementer, 2026-09-16).** The owner ruled restore on all four (three via
-  the orchestrator 2026-09-16, the fourth - the frame-armour tier word, found
-  during R0b.1's own C3 - separately, same date); R0b.4 built and shipped all
-  four (`a375b20`, `66972a0`, `cf96e6f`; full evidence for what each one was
-  and why every other instrument missed it: `plan.md`, "The fourth verdict").
-  Kept as a one-line record rather than deleted: **this is what closed R0b**,
-  and R0c's own stop condition needed all four accounted for before deleting
-  `app.js` and the ten suites that were the only place some of them were
-  written down - which is now moot, since nothing is deleted yet and the
-  correct behaviour lives in `app/src/` itself.
+  (implementer, 2026-09-16).** Outcome already in "Completed" above, under
+  "R0b.4 - all five restored".
 
-- **Every remaining entry below describes the parity harness and closes by
-  deletion at R0c** (acceptance 10) - the width sweep, the Windows-vs-CI
-  cell disagreement, `tools/parity-ubuntu`'s build command, and the
-  language leak between states. Kept until the deletion lands, then removed
-  by the closeout (acceptance 44).
+- **CLOSED by deletion - every remaining blocker described the parity
+  harness R0c deleted at `23c00a6`** (the width sweep not being a state,
+  the Windows-vs-CI cell disagreement, `tools/parity-ubuntu`'s build
+  command, the `localStorage` language leak between states, a list of
+  already-resolved blockers kept only so nobody re-opened them). None of
+  it can recur - the instrument they were about no longer exists. Full
+  pre-collapse text: `git show d78b60f:issues/47/handoff.md`, same heading.
 
-- **The parity harness's width sweep is not a state, and it still needs a
-  decision.** It looks at one document at 1100, 768 and 375 without
-  re-arriving, and a browser moves a scrolled document on reflow to hold the
-  reading position - by picking an element out of the DOM, which the two apps
-  do not share. That is what the four 375 anchor cells were, measured rather
-  than assumed - the `document.fonts`, `window.scrollY` and `.flash` probe
-  numbers behind that finding moved to `context.md` in the 2026-09-16
-  compaction (its section of measurements migrated during that pass), and the
-  full B3.6 part 1 write-up is at `git show fc59ce4 for this task's pre-compaction plan.md`,
-  "B3.6 built, part 1". Fixing it means re-arriving
-  per width, which changes how every state in the suite is measured;
-  `overflow-anchor: none` on both sides was tried and shuffles the figures
-  without removing them. It is also why B4 added no equipment anchor state
-  (see "Deferred").
+## Deferred - none; task 47 is closed
 
-- **A local Windows run fails cells that CI passes, by design.** Owner
-  decision 1 makes ubuntu authoritative; a development host disagrees with the
-  table on a handful of cells, and a full local run reports them as improved
-  and fails them. Written into `docs/parity.md`, "Machine variance". **Do not
-  edit a recorded number off a local run.** `tools/parity-ubuntu/` reproduces
-  CI to the hundredth on layout states and **not** on timed ones - it reported
-  a fading toast as 0.00%, which looks exactly like a defect that got fixed.
-
-- **`tools/parity-ubuntu`'s documented build command does not work as
-  committed.** `docker build -t dh-parity:ubuntu24 tools/parity-ubuntu` fails
-  on `COPY package.json package-lock.json ./`: that build context holds
-  neither file, they are at the repository root. Copying both in (untracked)
-  lets the image build cleanly. The real fix - a Dockerfile that copies from a
-  repo-root build context, which changes the README's own command - has never
-  been attempted. Separately, once the image did build, `docker run --rm -v
-  "$PWD:/work:ro" ...` did not finish copying `/work` into `/app` inside a 60s
-  wait on this host and was killed rather than pursued; possibly
-  Windows/Docker-Desktop volume-mount performance on a repository this size
-  (`img/`, `og/`, 1061 share pages), not diagnosed further.
-
-- **Language leaks between states through `localStorage`.** `file://` is one
-  origin, so a state that ran at `en` can leave the next state's `@ ru`
-  screenshots in English. Both apps read the same storage so no verdict is
-  wrong, but a person reading a `_ru_` screenshot will find English in it.
-  Noted, not fixed.
-
-- **Resolved blockers, kept only as one line each so nobody re-opens them.**
-  The untracked third-party skill install that reddened `npm run check` is
-  gone as of `37e4812` and the baseline is green (42 files / 1035 tests,
-  96.61/88.58/97.10/97.34, 95.64s). The 2026-09-11 and 2026-09-12 host blocks
-  both lifted on their own and every gate then ran green. B8's, B9's, B10's
-  and B12.1's "committed but CI has not read them" entries are all satisfied:
-  `8b0c3ce`, `60047d4` and `84ca6df` are ancestors of the pushed `main` and
-  later runs (`34640328352`, `34718569245`, `34753801089`, `34755188652`) read
-  heads above them green in every job. B7's print-parity break was
-  `transition-duration: 0.01ms`; B5.3's `~ notice unfolded @ en` and B5.4a's
-  inert grip were fixed in their own remediation passes; B5.2 part 0 closed
-  the five CI-red `#/i/ci1` cells and gave both unstable classes a mechanism
-  (`timed: true` per-width re-arrival, and a whole-page capture that waits for
-  two consecutive agreeing shots plus a `geometry` probe); B9 drew the
-  rewrite's anchor flash and deleted all seven anchor debt entries. The
-  reasoning behind each decision, and the alternatives rejected on the way,
-  is in `docs/parity.md`, "Two unstable classes" / "Machine variance", with
-  the batch's outcome row under `plan.md`'s "Phase 4's batches, as built" -
-  and, for the full argument that `plan.md`'s own compaction dropped, at
-  `git show fc59ce4 for this task's pre-compaction plan.md`.
-
-## Deferred
-
-Open items only. An item placed in a batch becomes one of that batch's
-acceptance criteria and the batch cannot be recorded closed while an inherited
-line has no outcome - `plan.md`, "A placement has to be acceptance, not a
-footnote". Closed placements are not repeated here: the case-7 flake and R0a's
-four review nits were R0b.1's acceptance lines 5-9 and are all `Met`; B14's
-six review nits and blocker B1 were R0a's lines 11-16 and are all closed; B12's
-nits 1 and 2b were closed by B14 C3 (`a7f8787`), proven by renaming an
-expectation and watching both languages go red; B12.1's nits 1, 3, 4 and 5 and
-B13's N1, N4 and N7 were closed by B14 (`af7fa17`, `a7f8787`); B11's and
-B11.1's nits were closed by B11.1 and B12.
-
-- **CLOSED - R0b.1's remaining five nits, all taken by R0b.4 (implementer,
-  2026-09-16).** Nit 6 was R0b.2's (`37a1061`); nits 1-5 cleared in R0b.4 C4
-  (`95fa624`) except nit 2, which was reworded rather than fixed (it is a
-  literal gap in what a prior line asserted, corrected in the same commit by
-  adding the missing assertion): `TablesPage.svelte`'s stale `tests/parity/
-  driver.js` comment corrected; `tables.test.ts`'s reset-from-the-strip test
-  now also asserts the address clears; `data.test.ts`'s vacuous self-lookup
-  loop removed; `tests/app/lib.js`'s self-referential comment reworded. **C4's
-  own fix was incomplete and review remediation finished it**: C4 dropped
-  the stale "five" from the file's opening paragraph but missed a second
-  "five" fourteen lines down (`tests/app/lib.js`, the missing-`dist/` guard's
-  own comment) - fixed to "seven" in the remediation commit. Nit 5 (this
-  file's own narration duplication) is addressed by this very closing pass
-  replacing the
-  duplication with pointers.
-
-- **CLOSED - all four R0b.4 divergences restored (implementer, 2026-09-16).**
-  See "Blockers" and "Completed" for the commits and full evidence.
-
-- **CLOSED - five of R0b.3's six review nits, taken by R0b.4 (implementer,
-  2026-09-16).** `tests/app/print.js` gained a `pageerror` listener and a
-  closing assertion; `printMedia`'s `main` property list gained `width` with
-  a measured `1165px` assertion; the "Высокородное"/"Великородное" comment
-  now names the record's real community; `run-all.js`'s `app/print` weight
-  moved to 132 (measured this batch); `COVERAGE.md`'s `app/golden` row's
-  stale "110 states" corrected to 105. **Left deferred, with a reason**: the
-  `a.style.display === '' || a.style.display === 'none'` check
-  (`tests/app/print.js`, the `.pc-art` loop) is tautological given
-  `PrintCard.svelte`'s own implementation - it only ever writes one of those
-  two values to that property, so the check cannot fail regardless of
-  whether the art-hiding *decision* was correct for that card. A real fix
-  would correlate each card's own `--pcpad` floor (read a few lines above,
-  in `box2`) against its own `.pc-art` display, across both colour modes and
-  all three `WIDTHS` - more than a local one-line fix, and a wrong
-  correlation (the two arrays are read by different selectors and are not
-  guaranteed aligned 1:1 in every state) risks a flaky or actively wrong
-  assertion. Left for whoever next touches `tests/app/print.js`'s fitting
-  assertions.
-
-- **PLACED for R0c -> acceptance lines 49 (the English pass) and 50 (the
-  `printMedia` null): the ported print specs narrowed from two languages to one,
-  and R0c is where that becomes a real loss (reviewer via orchestrator,
-  2026-09-16).** Decided by the planner 2026-09-16: add the English pass, do
-  not accept the narrowing (`plan.md`, "R0c designed", "Decisions"). `tests/parity/specs.js` ran `sheetCounts`, `cardFit`,
-  `printMedia` and `copiedPrintLink` at **`ru` and `en`** - `arrive()` presses
-  EN - and `copiedPrintLink` gripped the button through `NAME[lang].printLink`.
-  R0b.3's ported forms run **Russian only**, gripping `d.click('Ссылка на
-  набор')`. **Print fitting is text-length dependent** - it is the one surface
-  where a language changes the geometry - so after R0c an English-only fit
-  regression would be measured nowhere. The structural goldens cannot stand in:
-  every print `<img>` in `PrintCard.svelte` is `alt=""` (`:153,161,167,186,202,
-  251`), so a hidden `.pc-art` is invisible to `page.accessibility.snapshot()`,
-  and the goldens never read inline styles. **Nothing is lost yet** - the
-  legacy specs still run both languages until R0c deletes them, which is why
-  this is R0c's decision and not R0b.4's: it is outside every path R0b.4 opens
-  (`.claude/prompts/orchestrate.prompt.md`, "Nits: defer mid-plan, clear on the
-  terminal batch"). R0c's step list needs the choice made, not rediscovered:
-  give `tests/app/print.js` an English pass over at least `cardFit` and
-  `copiedPrintLink` before the deletion, or accept the narrowing with a
-  recorded reason in `COVERAGE.md`'s thin spots.
-  A second, smaller one from the same review: `printMedia`'s chrome loop is
-  `ok(!val || val.display === 'none', ...)` and `d.computed()` returns `null`
-  for no match (`tests/app/driver.js:660-679`, whose own comment says null
-  exists to "fail loudly rather than silently compare nothing to nothing"). As
-  a parity spec a `null` against a real value was a diff; standalone, a renamed
-  or deleted `.printbar`/`a.skip`/`header`/`nav`/`footer` now passes green.
-
-- **PLACED for R0c -> acceptance lines 48 (delete, not re-home), 53
-  (`readPNG`), 54 (the suite count): `tests/parity/lock.js` is a live hook
-  dependency R0c's outline does not name (planner, 2026-09-16).** It is imported by
-  `tests/parity.js:33`, **`.claude/hooks/bash-guard.mjs:31`** and
-  **`.claude/hooks/selftest.mjs:769`**, while R0c's outline deletes
-  `tests/parity/` whole naming only `specs.js` and `driver.js` - so the
-  directory delete takes two hooks with it. **Deliberately not moved in R0b**:
-  after R0c nothing writes `test-output/parity.lock` (only `parity.js` does),
-  so the mechanism is dead and re-homing it now is work R0c would undo. R0c's
-  step list needs the decision, not a rediscovery: delete the module with its
-  `bash-guard.mjs` parity-lock rule and its `selftest.mjs` case, or re-home it
-  if heavy-run locking is still wanted for `run-all`/`golden`.
-  Two smaller R0c inheritances from the same pass: `readPNG` (`tests/lib.js:36`,
-  one consumer) retires with `tests/lib.js` once R0b.3 inlines it; and
-  `COVERAGE.md`'s suite count moves as R0b.2 and R0b.3 each add a suite.
-
-- **CLOSED BY A PEER, recorded by R0c acceptance line 46: `golden` must join
-  `deploy`'s `needs:` list (implementer, 2026-09-13).** Done by issue 59's
-  `99bbb7c` ("ci: gate Pages on structural goldens") and pinned by
-  `tests/derived.js:522-532`; issue 56's `8dae1b9` then removed `parity`
-  from `needs:` (acceptance 47). Both verified by the planner reading
-  `ci.yml` at `a6b4a94`, 2026-09-16. The rest of this entry is history: R0a gave the structural goldens their own four-shard CI job
-  (`ci.yml`, `golden`, mirroring `parity`), but `deploy`'s `needs:` -
-  `[check, audit, secrets, parity]` - is untouched, on the coordinator's own
-  instruction: B13 fenced `deploy` off while `git revert 9177f3b` is the
-  safety net, and R0c already owns that job's rewrite (N3, N5, dropping
-  `parity`). Until R0c adds `golden` there, a red `golden` job does **not**
-  block a publish - the same "a check quietly stops checking" class R0a exists
-  to close, now open on the other side of the workflow. R0c's own step list
-  needs this line, not a rediscovery.
-
-- **PLACED for R0c -> acceptance lines 51 (N2, N8) and 52 (N3, N5, N6):
-  B13's reviewer nits N2, N3, N5, N6 and N8** (reviewer, 2026-09-12; N1, N4
-  and N7 were closed by B14 `a7f8787`). N2 and N8 live in
-  `tests/derived.js`'s head-to-head comparison, which dies with `index.html`;
-  N3, N5 and N6 are edits to `ci.yml`'s `deploy` job, which nothing may touch
-  while `git revert 9177f3b` is the safety net.
-     - **N2** - the `>= 20` floor in `headFacts`'s sanity check is exactly the
-       current field count with zero headroom, so it really asserts "no field
-       may leave both documents" while its message says the parse broke.
-     - **N3** - the deploy guard greps literal `src="app.js"` while
-       `check-site.mjs` uses `/src="\.?\/?app\.js"/`; the guard is the earlier
-       gate and should be the stricter of the two.
-     - **N5** - what the guard still cannot catch: no proof `_site/index.html`
-       came from this commit's build; `img og i card` required non-empty but
-       `og/_share.jpg` not by name; no check that `_site/data.js` assigns
-       `window.LOOT`.
-     - **N6** - the ported `<noscript>` links resolve on Pages but not from
-       `dist/` over `file://`; becomes real at Phase 7.
-     - **N8** - `headFacts()` scans the whole document rather than `<head>` and
-       parses double-quoted attributes only; it fails closed, which is why it
-       is a nit.
-
-- **OPEN from B12.1's review - items 2 and 6** (reviewer, 2026-09-12; items 1,
-  3, 4 and 5 were closed by B14, `af7fa17`). Both were outside B14's scope;
-  item 2 goes to Phase 8 R1 to verify or close.
-  2. `go()` and `replace()` bypass `#fallback`, so with `{:else}` gone an
-     unparseable hash reaching either would render an empty content area with
-     no `<h1>` rather than the old debug heading. Unreachable with today's
-     callers; live's `currentRoute` fallback runs on every render and would
-     catch it regardless of caller.
-  6. The boot push is uncovered: in a real browser `navigate` sets
-     `location.hash` -> `hashchange` -> `onChange`, so `navigations` reaches 1
-     at boot with `sel.clear()`/`menuFor=''`. Harmless today (both consumers
-     only do `open = null` - `SearchPage.svelte:39-44`, `TablesPage.svelte:
-     100-105`) and it mirrors live's own assignment, but the row-2 unit test
-     never calls `start()`, and `memoryRouter.replace` deliberately does not
-     announce, so no test exercises this path.
-
-- **OPEN from B12's review - nits 4 and 5** (reviewer, 2026-09-12). Nit 4 goes
-  to **Phase 8 R1**, which rewrites `DEBT.md` entry by entry anyway; nit 5
-  goes to **Phase 8 with D10**, since the wording depends on what D10's fix
-  turns out to be.
-  4. `docs/specs/DEBT.md` now reads D7, D10, D8, D4 in file order - D10 was
-     inserted mid-sequence rather than appended, so the numbering no
-     longer reads in order top to bottom.
-  5. `vite.config.mts:127-131`'s exclusion comment says
-     `src/ports/image.ts` "is exercised for real by states.js's copy-image
-     case" - the case does drive it, but D10 establishes the path cannot
-     actually complete under `file://` on either app, so the exclusion's
-     warrant is thinner than the comment reads; worth tightening once
-     D10 itself is picked up.
-  Also fixed while in the handoff, not deferred: the plain factual slip in
-
-- **Unscheduled, no batch yet** - each recorded once, with the reason it is
-  not simply picked up. **Disposition settled 2026-09-16** (`context.md`,
-  "What Phase 8 inherits, and what closed instead"): `Panel.svelte` and
-  Playwright go to Phase 8 (R0c acceptance 44 writes them into the handover);
-  the shared `S.kind` is `DEBT.md` D4 and the two B3.5 nits are closed; the
-  equipment anchor state, the probes past tables and `.selbox:has(...)` close
-  by deletion at R0c (acceptance 44); the grid-numbering bug has been in
-  `FEATURES.md` since `30b2744`. The list stays as written until the closeout
-  removes it:
-  - **An equipment anchor parity state** (`#/tables/eq_weapon/t2`, or the
-    `#/tables/eq_weapon/q1` row anchor that `#/i/q1`'s "show in table" link
-    produces). It can only add 375 cells whose difference is the harness's own
-    width sweep - a known, unfixed cause that would need `VISUAL_DEBT` entries
-    taken from CI. The equipment-specific facts (section ids `sec-t1`-`sec-t4`,
-    a `q*` row target) are pinned by component tests and the anchor mechanism
-    already has two states. Revisit once the width-sweep decision lands.
-  - **Extending B3.6's probes past the tables states** - `#/i/*`, `#/roll/*`
-    and the equipment tables. Deliberately not attempted: a spec that starts
-    reporting on every surface at once is a batch whose size nobody can
-    predict.
-  - **Playwright.** Still worth a decision before building anything; the
-    parity harness already drives both apps in a real browser. Ask first.
-  - **`Panel.svelte`** - `.ffilter` and `.tablenav`. `TableRows`/`SectionHead`
-    are not `.panel` copies.
-  - **The legacy grid-numbering bug** (`list.map(tileHTML)` passing the array
-    index as the tile's number) - worth reporting to the repository owner,
-    still deliberately not reproduced; recorded in `ACCEPTED`.
-  - **The shared `S.kind`.** Batch C's.
-  - **Two documentation nits from B3.5's review.** As recorded, `plan.md`'s
-    "What every remaining `VISUAL_DEBT` entry is" still called the 375px
-    row/section anchor debt "cause 6" and still promised a rewrite of that
-    section, which landed as "B3.5 built" instead - two places describing the
-    same debt with different framing. **That section is gone as of the
-    2026-09-16 compaction**; its successor is `plan.md`, "What the
-    `VISUAL_DEBT` entries turned out to be, and the correction that cost four
-    batches". Whether the "cause 6" framing survived into it has not been
-    re-checked - read it before acting, and close this nit if the compaction
-    already settled it. And `docs/parity.md`'s "whole-page percentage" rule is
-    a seven-line paragraph among one-line bullets, worth trimming or moving to
-    its own subsection.
-  - **`.selbox:has(:focus-visible)` cannot be pixel-verified** - closed into
-    B4 on the reasoning that the live app has it, but no parity state reaches
-    a row checkbox by keyboard and the driver has no key press. That
-    instrument gap is recorded rather than invented around.
-
-- **`.prettierignore` has no `.claude/worktrees/` entry (found R0c C3,
-  implementer, 2026-09-17).** A nested agent worktree under this tree's own
-  `.claude/` directory reddens `npm run format:check` (hence `npm run
-  check`) because `prettier --check .` walks into it. It blocked C3's commit
-  gate once already (resolved by removing that specific worktree, not by
-  this fix). The durable fix is adding a `.claude/worktrees/` line to
-  `.prettierignore`, with a comment saying why (an agent worktree is host
-  infrastructure, not source, and can land inside this tree unpredictably).
-  Left for whoever next touches `.prettierignore` - out of scope for a
-  `ci.yml`-only C3.
-- **PLACED for R0c C4 - `docs/specs/COVERAGE.md` still describes twenty
-  legacy suites and `index.html` (found by a planner working
-  `issues/untrack-stubs/`, an unrelated task, 2026-09-17, surfaced to this
-  session because it is issue 47's, not theirs).** Not checked further by
-  this session - C3 was `ci.yml` alone - but acceptance 33 already covers
-  re-deriving `COVERAGE.md`'s counts and old-app table, so this is not a new
-  acceptance line, just a pointer for whoever runs C4 to verify against
-  before closing that acceptance.
+Every item ever recorded here was closed - by a shipped batch, by R0c's
+acceptance lines, or by being carried into "Phase 8 opening inputs" above
+as one of that phase's own inputs (the register, the backlog, the Playwright
+decision). Nothing is deferred that has nowhere to land. Full pre-collapse
+text, entry by entry with its closing commit or its Phase 8 destination:
+`git show d78b60f:issues/47/handoff.md`, same heading.
 
 ## Notes
 
@@ -2397,7 +1645,7 @@ B11.1's nits were closed by B11.1 and B12.
   transcribed from `app.js`/`style.css` line by line (the line-by-line
   references were in `plan.md`'s per-batch planning briefs, which its
   2026-09-16 compaction dropped - they are at
-  `git show fc59ce4 for this task's pre-compaction plan.md`, "B<n> planned") and measured in
+  `git show fc59ce4:issues/47/plan.md`, "B<n> planned") and measured in
   headless Chrome; the live app at the state
   in question is the mock. The probe scripts lived in session scratchpads and
   were not kept; their numbers are in `context.md` under each batch's
@@ -2411,7 +1659,7 @@ B11.1's nits were closed by B11.1 and B12.
   found while confirming those two (`.selbox`'s missing mobile override) makes
   three, **all fixed in B3.5**. The original measurements are in `context.md`;
   the real post-fix numbers did not survive `plan.md`'s 2026-09-16 compaction
-  and are at `git show fc59ce4 for this task's pre-compaction plan.md`, "B3.5 built" - do not
+  and are at `git show fc59ce4:issues/47/plan.md`, "B3.5 built" - do not
   re-take either.
 
 - **What not to start yet**, carried forward and still true:
@@ -2591,7 +1839,7 @@ B11.1's nits were closed by B11.1 and B12.
     harness-specific mismatch at narrow widths that has nothing to do with
     word-wrap - the frozen scrollY from the wide layout lands on a different
     stretch of a much taller narrow-layout document. Root-caused, not
-    guessed, in B3.5 - see `git show fc59ce4 for this task's pre-compaction plan.md`, "B3.5 built"
+    guessed, in B3.5 - see `git show fc59ce4:issues/47/plan.md`, "B3.5 built"
     (that section did not survive `plan.md`'s own compaction). Distinct from the
     font-loading race B3 already fixed: that one was about *when* the scroll
     fires within one width, this one is about screenshotting three widths off
@@ -2688,7 +1936,7 @@ Merged from the three per-cycle sections this file used to carry (R0a
   sweep was run over `issues/47/*.md`, `docs/` and `.claude/`: citations whose
   fact survived were re-pointed at the surviving heading, citations whose fact
   moved to `context.md` were re-pointed there, and the rest now name
-  `git show fc59ce4 for this task's pre-compaction plan.md` with the old heading, which is honest
+  `git show fc59ce4:issues/47/plan.md` with the old heading, which is honest
   and re-derivable. One tracked file outside the task directory was repaired
   the same way - `docs/parity.md`'s batch-splitting rule cited "B5 remainder
   planned" and now cites "The batches, and why three rather than one", a
@@ -2713,6 +1961,23 @@ Merged from the three per-cycle sections this file used to carry (R0a
   merely tidy: `git show 5b2e693:issues/47/evidence/b9/<name>.png` recovers
   any of the eight (verified against the first one before committing). No
   other content in `issues/47/` was touched by this deletion.
+- **Closeout, 2026-09-17: `issues/47/plan.md` deliberately RETAINED, not
+  deleted - owner decision.** The closeout procedure calls for retiring
+  `plan.md` once its durable content has a permanent home; that content
+  moved regardless (`docs/specs/DEBT.md`, `.claude/README.md`,
+  `docs/REFACTOR_PLAN.md`, this file's "Phase 8 opening inputs"), but the
+  file itself stays because `bash-guard.mjs` denies its deletion while any
+  tracked line in the whole repository cites the path, and seven such
+  citations belong to two other tasks (`issues/closeout-hygiene/`,
+  `issues/config-audit/`) this session must not edit - one of them
+  (`closeout-hygiene/plan.md:50`) explicitly forbids touching its own
+  citation as protected evidence. Full account: "Blockers", above. This is
+  a decision with a reason, not a failure to finish: every citation the
+  guard counted is a historical measurement (a byte count, a line number)
+  that already resolves only through `git show <sha>:issues/47/plan.md`,
+  which keeps working with or without the file, so nothing was actually at
+  risk of the deletion - the guard is simply blunter than that. Cost of
+  keeping it: one ~134 KB file after this closeout's own compaction.
 - **The one incident worth carrying forward** (R0a): an implementer's
   backgrounded `npm run check` armed no commit gate - 937s spent for nothing -
   the orchestrator started its own foreground check to supply one, that

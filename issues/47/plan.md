@@ -1,22 +1,34 @@
 # Issue #47 - vanilla JS to Svelte + TypeScript
 
+**Status: historical - done, 2026-09-17.** Task 47 (the migration) closed at
+R0c. This file is a record, not instructions: read it for design rationale
+and rejected alternatives, not as a live plan. It was scheduled for
+retirement at this point (see "What 'task 47 is done' means" below, point
+6) but the owner decided to **keep it permanently** instead - `bash-guard.mjs`
+denies its deletion while a tracked citation stands, and that citation
+belongs to a different, in-progress task whose own plan forbids touching it
+(`issues/47/handoff.md`, "Blockers", has the full account). Every durable
+fact this file held has a permanent home regardless -
+`docs/specs/DEBT.md`, `docs/specs/COVERAGE.md`, `.claude/README.md`,
+`docs/REFACTOR_PLAN.md`, and `issues/47/handoff.md`'s "Phase 8 opening
+inputs" - so keeping this file costs a few dozen KB and loses nothing.
+Phase 8, the post-migration review, runs under its own issue once the owner
+files it.
+
 Source: [issue #47](https://github.com/artex-x/daggerheart-loot/issues/47). That
 issue is the agreed plan; this file is the working copy, plus the decisions
 taken while carrying it out. Where the two differ, the difference is written
 down here with a reason.
 
-Historical once **R0c** closes (corrected 2026-09-16, per "What 'task 47 is
-done' means": task 47 is the migration and it closes at R0c; the review after
-it, "Phase 8" below, runs under a task id of its own). After that, work is
-driven by `CLAUDE.md`, `docs/specs/*` and the tests.
-
-**Compacted 2026-09-16** per `.claude/skills/handoff/SKILL.md`, "The budget".
-Every shipped batch's implement-ready brief, steps, file-by-file build notes
-and command output collapsed to an outcome line plus its commits; the code, the
-specs and `git show` are the record, and the full pre-collapse text is in
-history at `fc59ce4`. Kept: the design, the decisions and the alternatives
-rejected on the way, blockers, and every measurement that cannot be re-derived
-from the repository.
+**Compacted 2026-09-16 and again at closeout, 2026-09-17** per
+`.claude/skills/handoff/SKILL.md`, "The budget". Every shipped batch's
+implement-ready brief, steps, file-by-file build notes and command output
+collapsed to an outcome line plus its commits; the code, the specs and `git
+show` are the record. Full pre-2026-09-16 text: `fc59ce4`. Full text as it
+stood right before the closeout compaction: `git show
+d78b60f:issues/47/plan.md`. Kept: the design, the decisions and the
+alternatives rejected on the way, blockers, and every measurement that
+cannot be re-derived from the repository.
 
 ## What must survive
 
@@ -35,7 +47,7 @@ two languages, GitHub Pages, `file://`. These are in `docs/specs/META.md` and
 | 4 | Svelte component architecture, styling, i18n, the rewrite itself | **done (closed through B10; row corrected 2026-09-12)** - measured against Phase 8's own entry condition 1: `tests/parity/specs.js` has **no `pending` state and no `pending` spec**, and `VISUAL_DEBT` is 18 entries, every one a CI figure. Phases 5 and 6 both closed after it. See below for the slice-by-slice record |
 | 5 | Testing pyramid: unit, component, a11y, the real-browser net | **done (2026-09-12)** - B11 (`73facda`+`64f9a27`), B11.1 (`e94a90e`), B12 (`a52c17d`, `9a4f8db`, `4adc5a5`, `9ced2b3`). The net is `tests/app/` driving `dist/` in a real browser. No Playwright exists or was built; the puppeteer legacy suites are re-homed and are deleted in R0c. The one production defect the net found, B12.1, opens Phase 6 |
 | 6 | Build, artefacts, deployment | **done (2026-09-12)** - B12.1 (`bc96b59`) then B13 (`0819a73`, `9177f3b`, `a004764`, `515e257`). The site serves the built rewrite; run `34718569245` green in every job, the owner walked it. **Not owner-gated**: `gh api repos/:owner/:repo/pages` reads `build_type: workflow`, so the "Pages flip" this row was written around was already done - what published the old app was one step in `ci.yml`'s `deploy` job. See "Phase 6 - the cut-over, replanned" |
-| 7 | Cut-over, cleanup, README, standing agent guidance | **B14, R0a, R0b shipped; R0c implement-ready (planner, 2026-09-16) and its owner gate, condition 6, is satisfied (owner, 2026-09-16, `context.md` decision 11)** - see **"R0c designed: the sweep, the deletions, and the cliff"** at the end of this file. Planned in full 2026-09-12 as B14 -> R0a -> R0b -> R0c with the soak dropped by the owner; re-sequenced 2026-09-12 (publish early, delete later) so the deletions land *behind* the flip |
+| 7 | Cut-over, cleanup, README, standing agent guidance | **done, 2026-09-17.** B14, R0a, R0b and R0c all shipped - R0c in five commits plus one review-remediation cycle (`5b2e693`, `23c00a6`, `5d2ddf9`, `b9d84ce`, `d6371e7`, `fdd015f`), CI green in every job, the deployed site verified by hand. See **"R0c designed: the sweep, the deletions, and the cliff"** at the end of this file for the design; `issues/47/handoff.md` for the exact commands and results |
 | 8 | Post-migration review: the app on its own terms | designed (2026-09-11), **confirmed with four revisions (2026-09-12)**; it runs under a **new task id**, so task 47 closes at R0c. Design: "Phase 8" below; runs after the cut-over, on the register B9 opens (`docs/specs/DEBT.md`) |
 
 ## Phase 4 - where the rewrite is
@@ -1210,7 +1222,9 @@ message, because that message is where a future reader will look.
 5. **Phase 8 is opened as its own task**, with the register, the structural
    goldens, the backlog and the open-items list handed to it as inputs.
 6. `issues/47/plan.md` and `handoff.md` are marked historical - Status `done`,
-   the date, and the pointer to the Phase 8 task id.
+   the date, and the pointer to the Phase 8 task id. **Done, 2026-09-17** -
+   see this file's own opening Status line and `handoff.md`'s. The Phase 8
+   task id is still "to be filed by the owner"; nothing here waits on it.
 
 **This revises the opening of this file**, which says it becomes historical
 "once Phase 8 closes". Phase 8's own design gives R1 a new task directory "so
@@ -1703,103 +1717,21 @@ that pass finds does not block the deletion** - it is recorded and becomes
 Phase 8 work. Every decision below follows from the tree as it stands at
 `a6b4a94`, read for this pass, not from the outline.
 
-#### What the tree says now, and where the outline was already stale
+#### What the tree says now, and where the outline was already stale - collapsed (2026-09-17)
 
-Read from the files, each with the consequence for the batch:
-
-1. **`ci.yml` was rewritten by issue 56 while R0b ran** - `99bbb7c` ("ci:
-   gate Pages on structural goldens") added `golden` to `deploy.needs` and
-   `tests/derived.js:522-532` now asserts it; `8dae1b9` ("test(issue-56):
-   remove parity from deploy requirements") dropped `parity` from `needs:`
-   and gated the `parity` job on `workflow_dispatch`. So the two inherited
-   R0c lines "golden must join `deploy.needs`" and "drop `deploy`'s `needs:`
-   on parity" are **already closed by a peer**, and are recorded closed with
-   those hashes rather than re-done. What remains for R0c in that file: the
-   `parity` job itself (its step runs `node tests/parity.js`, a file that
-   will not exist), the `check` job's `--exclude=parity,app/golden`, the
-   deploy comment block (which still says the old app "stays in the
-   repository, stays tested by every suite above, and is the fallback" and
-   that the revert is one file), the guard (N3, N5) and N6.
-2. **Four "kept" node suites read the files R0c deletes.** `tests/i18n.js`
-   parses `app.js`'s `T` dictionary and runs inside `npm run check`;
-   `tests/derived.js` reads `app.js` three times (the `tierBand` guard at
-   `:343`, the die silhouettes at `:462-470`, the footer citation at
-   `:494`) and `index.html` twice (`noindex` at `:81`, the head-to-head at
-   `:118`), and lists both in `COUNTERS`' file list at `:443`;
-   `tests/craft.js` sections 2-5 (`:65-210`) render `index.html` + `app.js`
-   in JSDOM; `tests/contracts.js` requires `tests/lib.js` for its browser
-   half while its pure half (`:39-70`, the second implementation of the
-   codec) is the one `CLAUDE.md`, `CONTRACTS.md:11`, `ROUTES.md:5` and
-   `edit-followup.mjs` all name. "Delete the fifteen browser suites and
-   `tests/lib.js`" therefore breaks `npm run check` unless these four are
-   re-pointed or trimmed in the same commit - the outline's "data-only and
-   unaffected" was wrong for `craft` and `i18n`.
-3. **`tools/capture-share-fixture.mjs` drives the root `index.html`** and
-   grips `[data-copy-name]`/`[data-copy-full]`, which `dist/` does not
-   render. After the deletion the share golden
-   (`docs/fixtures/share/records.json`, nine ids, replayed by
-   `share.test.ts:69`) could never be regenerated. `tools/probe.mjs` and
-   `tools/parity-ubuntu/` exist only to compare the two apps.
-4. **`app/src/lib/dice.ts:8-10` claims `derived` checks `DIE_ART` against
-   `card/die-dN-bw.svg`. It does not** - `derived.js:462-470` parses
-   `app.js`'s `d4: ['viewBox','path','path']` shape only, and
-   `dice.test.ts:28-33` checks shape, not equality with the files. Re-pointing
-   the check at `dice.ts` makes the comment true for the first time.
-5. **`tests/parity/lock.js` has three importers** (`tests/parity.js:33`,
-   `.claude/hooks/bash-guard.mjs:31`, `.claude/hooks/selftest.mjs:826`) and
-   `selftest.mjs` runs inside `npm run check`; rule 2h, `MSG.parityLock`,
-   the `parity` `LONG_CHECKS` family, selftest cases #76-#91 and the parity
-   lines of #72, and `edit-followup.mjs`'s `remind:baseline` group (selftest
-   #43) all become dead the moment nothing writes `test-output/parity.lock`.
-6. **`docs/parity.md` carries one section that outlives the harness**:
-   "Batch size and the fixed cost of a run", cited by `CLAUDE.md:52`. The
-   rest ("Contract", "Focused loop", "Machine variance", "Two unstable
-   classes", "Harness invariants") is the harness's. The `timed` flag the
-   goldens still honour is explained only there ("Timed states"), and seven
-   `tests/app/inventory.js` comments cite it.
-7. **`CLAUDE.md` is 181 lines**; "Migration and parity" is lines 120-139
-   (twenty). The counts sentence (`:92-93`) enumerates seven files while
-   `tests/derived.js:443-445`'s `COUNTERS` list has grown to eleven (peers
-   added `dict.ts`, `i18n.ts`, `search.ts`, `bundle-budget.mjs`); after
-   R0c it is nine. Enumerating it in prose rots; the list's owner is
-   `derived.js`.
-8. **The provenance citations are everywhere and are not the problem.**
-   `app/src/**` carries ~400 comment lines citing `app.js:N` / `style.css:N`
-   / "the live app" (`git grep -c` per file: `ListPage.svelte` 43,
-   `app.svelte.ts` 19, `TablesPage.svelte` 16, `RecordCard.svelte` 15 ...),
-   `docs/specs/COVERAGE.md`'s unit-suite table cites `app.js` line ranges
-   for every vitest file, and `DEBT.md` quotes live code by line. These are
-   *why* notes, and the outline's acceptance ("no reference to `app.js`
-   survives anywhere") would have cost a batch of comment surgery for no
-   behaviour. What is broken after the deletion is a **present-tense
-   instruction** - a path to run, a table to edit, "the live app" as the
-   authority to read - not a past-tense citation. The acceptance grep below
-   is written to that line.
-9. **`tests/app/inventory.js:1056-1075` is a self-retiring guard** against
-   `tests/parity/specs.js`'s `STATES` (it checks `existsSync` first, so the
-   deletion does not break it, and it becomes dead code to remove).
-   `tests/app/driver.js:19-21` still exports `TARGETS.legacy` pointing at
-   the root `index.html`; only `next` has a reader (`tests/app/states.js:659`).
-10. **`docs/fixtures/lists/equipment-entry.json` has one importer**,
-    `tests/parity/specs.js:17` - but `tests/contracts.js`'s pure half
-    replays every `docs/fixtures/lists/*.json` by `readdirSync`, so the
-    fixture stays exercised once the pure half survives. Nothing to move.
-11. **Phase 7 condition 2's second read is taken**: `node tools/check-site.mjs
-    https://artex-x.github.io/daggerheart-loot/` printed
-    `сайт опубликован верно` on `a6b4a94` (orchestrator, 2026-09-16,
-    `context.md`, "CI and parity measurement record"). The by-name references
-    that script makes, re-read from the file for this pass, are: the root
-    answers 200 as html with `noindex`, contains `assets/app.js` and
-    `<div id="app"`, and no `src="app.js"` (regex `src="\.?\/?app\.js"`);
-    `assets/app.js` 200 and over 20,000 bytes; `data.js` 200 and starts
-    `window.LOOT`; `data.json`, `catalog.csv`, `llms.txt`, `robots.txt` 200;
-    `i/w1.html` 200 with `og:image`; `img/_none.webp`, `og/_share.jpg`,
-    `card/die-d12-bw.svg` 200. The deploy guard (N3/N5) is held to that list.
-12. **`app/index.html`'s `<noscript>` links** (`catalog.csv`, `data.json`,
-    `llms.txt`, `:51-65`) resolve on Pages, where the collect step copies them
-    beside `index.html`, and to nothing under `dist/` over `file://`, where
-    the build links only `img/`, `og/`, `card/` (`vite.config.mts:22-29`).
-    That is N6, and it is closed in the build, not in the markup.
+Twelve findings from reading the tree fresh at `a6b4a94` before the batch
+started (two lines already closed by a peer's `ci.yml` edit; four "kept"
+suites that actually read files R0c deletes; the share-fixture tool's
+`index.html` dependency; a false claim in `dice.ts`'s own comment;
+`tests/parity/lock.js`'s three hook importers; `docs/parity.md`'s one
+surviving section; `CLAUDE.md`'s stale counts sentence; the provenance
+citations that are not the problem; `tests/app/inventory.js`'s self-retiring
+guard; `docs/fixtures/lists/equipment-entry.json`'s one importer;
+`check-site.mjs`'s second green read; `app/index.html`'s `<noscript>` links).
+All twelve are now facts about a shipped batch, not open findings - each
+became a step in "The batch" (collapsed below) and its outcome is in the
+commits themselves. Full text: `git show d78b60f:issues/47/plan.md`, same
+heading.
 
 #### Decisions, each with the alternative rejected
 
@@ -1939,212 +1871,22 @@ Read from the files, each with the consequence for the batch:
   `issues/47/` is kept (context.md's standing recommendation; the owner has
   not said otherwise).
 
-#### The sweep: what is read, in what order, against what, and what comes out
+#### The sweep and the batch's commits, files and gates - collapsed (2026-09-17)
 
-**The risk it is shaped for.** R0b.4's five divergences were each invisible
-to every instrument: an attribute axe cannot report as *missing*
-(`role="status" aria-live="polite"`), markup inside a default-closed
-`<details>` (line breaks, an outbound link with `rel`/`target`), a gate on a
-runtime condition no registered state reaches (`brokenArt`), a copy-text
-guard visible only in a regenerated fixture (`noTier`). None was a rendered
-pixel on a registered state. So the sweep does **not** read `app.js`'s 241
-functions against the components - the parity harness, the goldens and the
-unit suite have already compared what those draw. It reads the six classes
-of thing those instruments cannot see, each with a grep that fixes its row
-count in advance, so "I read `app.js`" is not a passing answer.
-
-**Inputs**, at the sha the sweep records in its header: `index.html`,
-`app.js`, `style.css`, `tests/parity/specs.js`, `tests/craft.js`,
-`tests/{audit2,contracts,hues,states,typo}.js`, against `app/src/**`,
-`app/index.html`, `tests/app/**`, `docs/specs/FEATURES.md`, `docs/specs/DEBT.md`.
-
-**Parts, in order** (cheapest and most mechanical first):
-
-- **A - attributes, links, breaks.** Every `app.js` line matching
-  `(aria-[a-z]+|role|title|rel|target|tabindex|hidden|data-keep|autocomplete|inputmode|lang|dir|download|loading|decoding|spellcheck|enterkeyhint|translate|for|type|name|placeholder|maxlength|min|max|step|pattern|inert|popover|autofocus|readonly|disabled|required|open|href|alt)=|<details|<br>|lines\(|confirm\(|document\.title`
-  - **216 lines at `a6b4a94`** (`type=` 86, `title=` 27, `href=` 27,
-  `aria-label=` 26, `target=` 22, `rel=` 21, `aria-hidden=` 12, `alt=` 11,
-  `<br>` 14, `placeholder=` 9, `role=` 8, `aria-live=` 6, `<details` 6,
-  `open=` 5, `aria-expanded=` 5, `document.title` 5, `min=`/`max=`/
-  `inputmode=`/`aria-pressed=`/`lines(` 4 each, `data-keep=` 3, `step=`/
-  `for=`/`aria-current=` 2 each, `pattern=`/`name=`/`loading=`/`decoding=`/
-  `autocomplete=`/`confirm(` 1 each). One row per line: the element and
-  attribute values live emits, the rewrite's emitting site (`file:line`),
-  verdict. A row may cover several attributes on one line.
-- **B - the dictionary.** `app.js`'s `T.ru`/`T.en` (251 keys each,
-  `I18N.md:9`; `tests/i18n.js:9-17` shows how to extract them) against
-  `app/src/lib/dict.ts` (about 250 per language). Mechanical: keys on the
-  live side absent from `dict.ts`, keys present on both whose plain-string
-  value differs, and HTML-valued keys (help panels) listed for a rendered
-  comparison rather than a string one. One row per key that is not
-  identical; a summary line with the three counts.
-- **C - conditional and interactive style.** Every `style.css` line matching
-  `@media|:hover|:focus-visible|:active|prefers-reduced-motion|hover: ?hover|@page|:focus`
-  - **83 at `a6b4a94`**. These are the rules no golden reads and a pixel
-  diff photographed only at three widths in a resting state. One row per
-  rule: its declarations, the rewrite's counterpart (component `<style>` or
-  `tokens.css`), verdict. `@media print` rows cite `tests/app/print.js`'s
-  `printMedia` where it already reads the property.
-- **D - behaviour behind an event no state fires.** The **29** `data-act`
-  names `app.js` emits (`cancelNew clearRoll clearSel comm copySel createFor
-  createList doPrint fLink fOpen flt help hideWarn home importList kind menu
-  moneyHelp newListFor printArt printBack printLink rarity roll rollDuality
-  rollList src view voa`) and the **14** `addEventListener` registrations
-  (`change click dragend dragover x2 dragstart drop error hashchange input
-  keydown pointerdown pointerup storage toggle`), plus each key `keydown`
-  handles. One row each: the live handler's observable effect, the rewrite's
-  handler, and **which surviving instrument exercises it** (a
-  `tests/app/states.js` case, a golden state, a component test) or `none`.
-- **E - the deleted instruments' own questions.** (i) The **42** `SPECS` in
-  `tests/parity/specs.js:1903-1946` (`inventory` .. `copiedPrintLink`): one
-  row each naming the surviving instrument that asks the same question, or
-  `none` -> home (b). (ii) `tests/craft.js` sections 2-5 (the JSDOM render:
-  **48** `ok(` calls in the file, the subset in those sections), and the five
-  suites with `tests/app/` counterparts - `audit2` (11 `ok(`), `contracts`
-  (24, browser half only), `hues` (10), `states` (7), `typo` (2) -
-  assertion by assertion against the port, because B12 ported them as
-  suites and nobody has yet checked assertion by assertion that each `ok(`
-  travelled. (iii) `tests/i18n.js`'s dead-key report, run once and recorded.
-  (iv) `tools/capture-share-fixture.mjs` re-run against `dist/` (C2 does
-  this; the sweep records the outcome as a row).
-- **F - the entry document's body.** `index.html:40-81` (the `<html lang>`,
-  topbar, tabs `nav`, `main tabindex="-1"`, `<noscript>`, `footer`, the
-  hidden `selbarwrap`) against `app/index.html` and `Shell.svelte`. In
-  particular whether the rewrite updates `<html lang>` on a language switch
-  the way the live app does or does not - a screen-reader-only fact no
-  instrument reads.
-
-**Verdicts**: `same` / `differs` (both do it, differently) / `absent` (live
-does it, the rewrite does not) / `n.a.` (a difference already decided and
-recorded - cite the `FEATURES.md` bullet, `DEBT.md` entry or `COVERAGE.md`
-drop reason; a row may not be `n.a.` without a citation). A `differs` or
-`absent` row carries its home, (a)/(b)/(c) above.
-
-**The artefact**: `issues/47/sweep.md` - a header with the sha read at, the
-date and the runner; one table per part, columns `where | live | rewrite |
-verdict | home`; a closing counts line per part and in total. It is the
-migration's last measurement and stays with the directory; every non-`same`
-row's *durable* record is written by C0 into its home in the same commit, so
-the sweep file is never the only place a finding lives.
-
-**Cost and the fallback.** Parts A-D are grep-driven and fit one dispatch
-with the counts above (216 + ~30 + 83 + 43 rows); Part E is ~150 rows of
-reading; Part F is forty lines. If one dispatch cannot finish, split
-**A+B+F / C+D / E** and merge the three tables under one header - the row
-counts make a partial merge visible.
-
-**What the sweep must not do**: change any file but `sweep.md`; run
-`npm run check`, a parity filter or a golden shard (it may run one legacy
-suite or open both apps in the Browser pane to settle a single row); argue a
-row into `same` because a fix would be easy - the fix is Phase 8's.
-
-#### The batch: commits, files, gates
-
-**Preflight** (commands, before any edit): the one-minute host probe
-(`npm run format:check`, ~11 s means the gates fit); `git log --oneline -3`
-and `git status --short` (peers; stage by path, never `git add -A`; the
-untracked `issues/56/` and `work/` belong to other tasks); no `chrome.exe`;
-`npm run build`; re-read `tools/check-site.mjs` and list its by-name
-references in the handoff (fact 11 above is the planner's read - the
-implementer re-derives it from the file, per the standing rule).
-
-**C0 - the sweep and its records** (`docs(issue-47): R0c sweep - <rows>
-rows, <n> divergences homed`). Dispatch the sweep; then write every
-non-`same` row's home: `DEBT.md` section 3 entries, `COVERAGE.md` thin
-spots, the Phase 8 list in `handoff.md`. No code. Gate: none beyond reading
-(markdown is gate-exempt); `git diff --stat -- app/src tests` is empty.
-
-**C1 - green without the old app** (`chore(issue-47): R0c - delete the
-static root, the legacy suites and the parity harness`; message carries the
-recovery paragraph below). `git rm`: `index.html`, `app.js`, `style.css`,
-`tests/lib.js`, `tests/{audit2,behave,craftmob,eqtest,flows,hues,lists2,
-noart,notes,print,qa,select,states,typo}.js`, `tests/i18n.js`,
-`tests/parity.js`, `tests/parity/` (`specs.js`, `lock.js`), `docs/parity.md`,
-`tools/probe.mjs`, `tools/parity-ubuntu/` (three files). Trim:
-`tests/contracts.js` (pure half + docs-name check), `tests/craft.js`
-(sections 1 and 6). Edit so `npm run check` is green: `tests/derived.js`
-(per the decision above), `tests/run-all.js` (fifteen rows: `app/sweep` x4,
-`app/golden` x4, `app/print`, `app/contracts`, `app/states`, `app/typo`,
-`app/hues`, `contracts`, `dataint`, `derived`, `craft`, `stub`; header
-comment), `package.json` (`check` drops `node tests/i18n.js`),
-`.claude/hooks/bash-guard.mjs` (the `import()` at `:26-31`, `MSG.parityLock`,
-the `parity` `LONG_CHECKS` family, rule 2h and its call at `:568-569`),
-`.claude/hooks/selftest.mjs` (#76-#91 and the lock-module import, the two
-parity lines of #72, #43; gaps in numbering are fine - renumbering churns a
-72 KB file), `.claude/hooks/edit-followup.mjs` (`remind:baseline` deleted;
-`remind:data`'s message names `tests/derived.js`'s `COUNTERS` list instead
-of enumerating files), `.claude/README.md` (hook-table rows for
-`bash-guard.mjs` and `edit-followup.mjs`, the "One heavy run at a time"
-paragraph, the two limitation bullets, rows 11/15/28 annotated),
-`tests/app/inventory.js` (guard and header; the `timed` explanation moved
-in), `tests/app/driver.js` (`TARGETS` = `next` only; header). Gate:
-`set -o pipefail; npm run check 2>&1 | tail -n 120` (600000 ms), then
-`node tests/run-all.js contracts,craft,dataint,derived,stub` and the four
-golden shards in compare mode (the driver and `inventory.js` moved; every
-suite imports them).
-
-**C2 - the surviving instruments** (`test(issue-47): R0c - the print
-suite's English pass, N6, the share-fixture tool on dist/, stale pointers`).
-`tests/app/print.js` (English pass; `printMedia` null; comments `:5-89`,
-`:878`, `:1027`, `:1207`); `tests/run-all.js` (`app/print` weight
-re-measured); `vite.config.mts` + `tools/smoke-file-url.mjs` (N6);
-`tools/capture-share-fixture.mjs` (dist, name grips, header; run it, diff
-must be empty); `.prettierignore` (`app.js`, `style.css`, `index.html` and
-their comment) and `eslint.config.mjs` (`'app.js'` and the comment);
-comment re-points in `tests/app/{lib,golden,sweep,hues,typo,states,
-contracts}.js`, `app/src/**` (the files `git grep -l` lists in the
-acceptance grep), `app/vitest-setup.ts:13`, `tools/artwork/lib.mjs:259`,
-`tools/build-share-pages.js:38`. Gate: `npm run check`; `npm run
-check:built` (N6 changes what `dist/` holds and what the smoke asserts);
-`node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,
-stub` (one call, ~260 s pooled); `node tests/app/sweep.js 360` as the
-driver-smoke at one width (~337 s alone; the other three widths are CI's -
-nothing the sweep reads changed, and 1180 measured 554.8 s, too close to
-the cap to run as a worker); the four golden shards again only if
-`app/src` or `inventory.js` changed beyond comments.
-
-**C3 - `ci.yml` alone** (`ci(issue-47): R0c - drop the parity job, harden
-the deploy guard`). The `parity` job deleted; `check` runs
-`node tests/run-all.js --exclude=app/golden` under a renamed step; the
-deploy comment block rewritten (what is published; recovery is `git revert`
-of the offending commit, and the old app is restorable only from history,
-which is a batch and not a command); N3 (`grep -qE 'src="\.?/?app\.js"'`);
-N5 (`cmp dist/index.html _site/index.html`, `cmp dist/assets/app.js
-_site/assets/app.js`, `og/_share.jpg` / `img/_none.webp` /
-`card/die-d12-bw.svg` / `i/w1.html` non-empty by name, `_site/data.js`'s
-first line starts `window.LOOT`); the "must not be published" loop keeps
-`app.js style.css` with a comment saying a stray root file must never reach
-`_site`. `deploy.needs` is already `[check, audit, secrets, golden]`. Gate:
-`npm run check` (`derived.js:522` reads the file); the push.
-
-**C4 - the documents and the closeout** (`docs(issue-47): R0c - the specs,
-the READMEs and CLAUDE.md after the deletion; task 47 closed`). `CLAUDE.md`,
-`docs/specs/COVERAGE.md`, `docs/specs/DEBT.md` header, `FEATURES.md`
-(seven lines), `META.md` (sections 1 and 4), `ROUTES.md:7`, `STATE.md:62`,
-`I18N.md:8-11`, `CONTRACTS.md:11`, `README.md`, `README.ru.md`, `llms.txt`
-and `robots.txt` (re-read; edit only if the read finds something),
-`docs/REFACTOR_PLAN.md`, `.claude/README.md` (the batch-size section),
-`.claude/prompts/orchestrate.prompt.md:103`, `plan.prompt.md:82`,
-`add-source.prompt.md:39,84,158`, `.claude/templates/context.template.md:
-34-39`, `.claude/skills/small-fix/SKILL.md` (steps 1 and 5), `docs/artwork.md:
-162`, `docs/tg-preview.md:551`; then `plan.md`/`handoff.md` closeout. Gate:
-`npm run check` (`derived.js` pins README counts and the licence cite), the
-push, and the CI read; then `node tools/check-site.mjs` by hand against the
-live URL after `deploy` (done, point 2).
-
-**The recovery paragraph for C1's message** (verbatim, because that message
-is where a future reader will look):
-
-> Before this commit the old app could be republished by reverting one
-> file. After it, recovery from a bad rewrite is a batch, not a command:
-> `git checkout <this sha>^ -- index.html app.js style.css tests/lib.js
-> tests/parity.js tests/parity docs/parity.md tools/probe.mjs
-> tools/parity-ubuntu` plus the fourteen `tests/*.js` browser suites and
-> `tests/i18n.js`, then restore ci.yml's collect step and its needs: from
-> `git show 9177f3b^:.github/workflows/ci.yml`, re-point tests/derived.js,
-> tests/craft.js and tests/contracts.js at the root files, and re-run the
-> gates. A bad deploy of the rewrite itself is fixed by reverting the
-> offending commit, as CLAUDE.md says.
+Both fully executed; the design brief (the sweep's six read parts and their
+row-count targets, the per-commit file lists, the recovery paragraph, the
+gate commands) is superseded by what actually shipped. **The sweep**: run
+as designed, output `issues/47/sweep.md` (519 rows, 82 homed into
+`docs/specs/DEBT.md` section 3 and `docs/specs/COVERAGE.md`'s thin spots),
+committed in `5b2e693`. **The batch**: five commits plus one remediation
+cycle, all on `main` and pushed - `5b2e693` (C0), `23c00a6` (C1, the
+deletions and re-points, with the recovery paragraph in its message
+verbatim), `5d2ddf9` (C2), `b9d84ce` (C3), `d6371e7` (C4), `fdd015f`
+(review remediation: the check-site guard gap, the `>= 20` floor, four
+nits). Full command-by-command record, including every gate run and its
+exact result: `issues/47/handoff.md`, "R0c's own commands and results"
+through "R0c C1-C3 review remediation". Full pre-collapse design text: `git
+show d78b60f:issues/47/plan.md`, same two headings.
 
 #### The acceptance grep, defined
 
@@ -2175,44 +1917,27 @@ refers to that state.* `DEBT.md`'s own citations name `bb61db0`, `b967481`,
 `a52c17d` or `dc99f21` explicitly and are verified once (`git show
 bb61db0:app.js` around `:3589-3603` matches D2's quote) before C4 commits.
 
-#### Stop-and-raise
+#### Stop-and-raise - closed, none fired uncaught (2026-09-17)
 
-- `npm run check` crossing the 600 s cap: the host, not the batch - re-run
-  when the probe reads ~11 s; never background it.
-- A golden shard moving in C1 or C2: nothing in `app/src` may change but
-  comments, so a moved golden is a mistake in this batch - find it, do not
-  `--update`.
-- `tools/capture-share-fixture.mjs` producing a diff on its first `dist/`
-  run: the rewrite's share text has drifted from the last live capture.
-  **Do not regenerate**; record the diff as a sweep Part E row with home (a)
-  and leave the fixture as it is.
-- `tests/derived.js`'s re-pointed die check failing on real data: `dice.ts`
-  disagrees with `card/*.svg` - a shipped-art defect, not R0c's; record and
-  raise.
-- CI red on the first push: read the job before anything else - it is the
-  first run whose `deploy` is gated without parity, and a red `golden` or
-  `check` here blocks the publish by design (`derived.js:522`).
-- Any urge to edit `app/src` beyond a comment: the owner's ruling says no.
+None of the five named conditions blocked the batch: the `npm run check` cap
+was crossed and re-run per the rule (`issues/47/handoff.md`'s C1 record);
+no golden shard moved outside the `status`-node fix, found and closed inside
+R0b.4 rather than here; the share-fixture tool's first `dist/` run produced
+zero diff (C2, acceptance 23); the re-pointed die check was proven to fail
+once on a scratch edit, then reverted, never on real data; CI was read job
+by job on every push and stayed green. Full text: `git show
+d78b60f:issues/47/plan.md`, same heading.
 
-#### Closeout, and what Phase 8 is handed
+#### Closeout, and what Phase 8 is handed - done (2026-09-17)
 
-"What 'task 47 is done' means" above, each point with evidence in the
-handoff: (1) the CI run id and its job list; (2) the by-hand `check-site.mjs`
-line and the guard's `published:` listing from the deploy log; (3) the
-"Deferred" section ending with no item whose only record is `handoff.md`;
-(4) the acceptance grep's output pasted; (5) the handover section below;
-(6) Status `done`, the date, "Phase 8: the issue to be filed by the owner".
-
-**Phase 8 opening inputs** (a section of `handoff.md`, written by C4): the
-register - `docs/specs/DEBT.md`, D1-D11 plus the sweep's D12+, with the
-count; the structural goldens - 105 states in `tests/app/inventory.js`, four
-shards, `tests/app/snapshots/`; the backlog - B12.1's nits 2 and 6, B12's
-nits 4 and 5, `Panel.svelte`/`.ffilter`/`.tablenav`, the focused-button
-radius (9 px against 8), the `.selbox:has(:focus-visible)` keyboard
-question, D1's real reduced-motion policy (expected to carry
-`NEEDS_HUMAN_CONFIRMATION`), the `tests/app/print.js` `.pc-art` tautology
-left by R0b.3's review; the Playwright decision (`context.md`, decision 10)
-**plus the fact that the parity lock died with the harness and `run-all`/
-`golden`/vitest now have no collision guard**; the sweep's class-(c) lines;
-`context.md`, "What Phase 8 inherits"; and the recommendation to keep
-`issues/47/` as the migration's measurement record.
+Superseded by the closeout itself: `issues/47/handoff.md`'s Status section
+records points 1-5 of "What 'task 47 is done' means" above with their
+evidence (the CI run ids and job lists, the by-hand `check-site.mjs` line,
+the acceptance-grep output, Phase 8's opening inputs). Point 6 - this file
+and `handoff.md` marked historical - is this section and `handoff.md`'s
+Status line. The Phase 8 handover itself - the register, the goldens, the
+backlog, the Playwright decision, the sweep's class-(c) findings - was
+migrated **in full**, not summarised, into `issues/47/handoff.md`, "Phase 8
+opening inputs", at this same closeout: that is now the canonical copy, not
+this file. Full pre-collapse text: `git show d78b60f:issues/47/plan.md`,
+same heading.
