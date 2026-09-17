@@ -10,7 +10,7 @@ cached picture whenever `og:image` still points at the same address, which is
 exactly this site's case, because three artwork commits
 (`8e7fed1`, `ce0c414`, `37ecc8d`) rewrote `og/<id>.jpg` bytes under unchanged
 URLs. Only the button forces Telegram to re-download the image - see
-`docs/specs/META.md` section 7 for the durable rule.
+`docs/specs/META.md` section 8 for the durable rule.
 
 **A refresh repairs the existing backlog.** Sending a URL to `@WebpageBot` and
 pressing "Update with content" on its reply updates the preview in every

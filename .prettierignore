@@ -17,6 +17,7 @@ card/
 # same reasoning as the generated files above even though this one is not
 # generated.
 app/index.html
+404.html
 tests/
 tools/
 dist/

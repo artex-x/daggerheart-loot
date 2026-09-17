@@ -313,6 +313,36 @@ unmatched/ambiguous/duplicate-bytes/`map.assign` handling `planInstall` uses
 via the matching helper the two planners share.
 See `docs/artwork.md`.
 
+`tools/check-site.test.mjs` (issues/phase-8, B4) is the same pattern again:
+`tools/check-site.lib.mjs`'s `checks()`/`runChecks()` covers the assertion
+list itself - a good in-memory site producing no failures, three broken ones
+(a missing root falling through to the 404 fallback, a truncated
+`assets/app.js`, a share stub with no `og:image`) each producing exactly the
+expected failure message, and the 404-fallback probe both when it works and
+when no fallback exists at all - plus `dirReader`'s GitHub-Pages-missing-path
+emulation against a real temporary directory. `fetchReader` (the live-URL
+transport `tools/check-site.mjs` actually runs post-deploy) is deliberately
+outside it, the same argument as `client.mjs`/`live.mjs`/`run.mjs` above: a
+thin wrapper around a real network call, where the only honest proof is a
+real deploy.
+
+`tests/app/golden.test.mjs` (issues/phase-8, B4, T6) covers `tests/app/
+golden.js`'s pure half the same way - the DOM-adjacent normalisation and
+comparison logic that needs neither `dist/` nor puppeteer, exported under a
+`require.main` guard so requiring the file for its exports never trips
+either: `collapse`, `normUrl` on both a `dist/index.html` url and a real
+outbound link, `clean`'s joined-versus-split text-node rule, rule A's
+same-shape-sibling elision at the 5/6 boundary, rule B's name cap at the
+63/64/65-code-point boundary (including that two names differing only past
+the cut do not hash the same), a `headerOf`/`sectionsOf` round trip through
+`render()`'s own line format, and `compareGolden` reporting nothing on
+identical text and the right section/line on a real difference. Capturing a
+state from a real page (`captureLang`, `captureState`, the toast wait, the
+top-level walk over `STATES`) stays inside the `require.main` guard,
+puppeteer-only, and is what the CI `browser` matrix's golden shards actually
+exercise - this suite is not a substitute for that, only for the arithmetic
+around it that a golden run was proving by accident.
+
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code
 happens to do.

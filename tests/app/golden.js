@@ -21,7 +21,6 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { fresh, reporter, closeBrowser } = require('./lib.js');
 const { STATES } = require('./inventory.js');
 
 const DIR = path.join(__dirname, 'snapshots');
@@ -48,9 +47,6 @@ const SHARD = shardArg
       return { n: n - 1, of };
     })()
   : null;
-
-const rep = reporter();
-const { ok } = rep;
 
 /** The file name a state's golden is written under - `parity.js:208`'s own
  *  rule, so a state id and its golden's basename always agree by eye. */
@@ -241,97 +237,6 @@ function serializeTree(n, depth, out) {
   });
 }
 
-/* ---------- arrival (plan.md, "R0a planned", Decided 2) ---------- */
-
-async function captureLang(page, d) {
-  const snap = await page.accessibility.snapshot();
-  const tree = [];
-  serializeTree(clean(snap), 0, tree);
-  const controls = (await d.controls()).map(controlLine);
-  return { tree, controls };
-}
-
-/** Polls for the toast a `timed` state's `enter` raised - the toast's own
- *  entrance transition is not one of the two reduced-motion stays this app
- *  turns off (`docs/specs/FEATURES.md`, "Chrome"), so by the time the click
- *  that raised it has settled (every driver press already waits on that)
- *  the toast should already be visible; this is the assertion in place of
- *  the coin flip a fixed pause would be. */
-async function waitForToast(page, id, lang) {
-  const start = Date.now();
-  for (;;) {
-    const up = await page.evaluate(() => {
-      const t = document.querySelector('.toast');
-      return !!t && getComputedStyle(t).display !== 'none';
-    });
-    if (up) return;
-    if (Date.now() - start > 2000) {
-      throw new Error(`${id} @ ${lang}: тост так и не появился`);
-    }
-    await new Promise((r) => setTimeout(r, 40));
-  }
-}
-
-/** One state, both languages. Ordinary states: one arrival, seed, open,
- *  enter, snapshot ru, press EN, snapshot en - a snapshot is a read and does
- *  not perturb the page, so nothing forces a second arrival. `timed` states
- *  arrive fresh per language instead: their toast lives 1600ms and a
- *  50-120ms snapshot ahead of the EN press would eat into that window for a
- *  state that already has to press one control more to reach English. */
-async function captureState(state) {
-  if (!state.timed) {
-    const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
-    try {
-      await d.open(state.route);
-      if (state.enter) await state.enter(d);
-      const ru = await captureLang(page, d);
-      await d.click('EN');
-      const en = await captureLang(page, d);
-      return render(state, ru, en);
-    } finally {
-      await ctx.close();
-    }
-  }
-
-  const oneLang = async (lang) => {
-    const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
-    try {
-      await d.open(state.route);
-      if (state.enter) await state.enter(d);
-      if (lang !== 'ru') await d.click('EN');
-      await waitForToast(page, state.id, lang);
-      return await captureLang(page, d);
-    } finally {
-      await ctx.close();
-    }
-  };
-  const ru = await oneLang('ru');
-  const en = await oneLang('en');
-  return render(state, ru, en);
-}
-
-function render(state, ru, en) {
-  const lines = [
-    '# ' + state.id,
-    '# route: ' + state.route,
-    '# why: ' + state.why,
-    '',
-    '## ru :: tree',
-    ...ru.tree,
-    '',
-    '## ru :: controls',
-    ...ru.controls,
-    '',
-    '## en :: tree',
-    ...en.tree,
-    '',
-    '## en :: controls',
-    ...en.controls,
-    ''
-  ];
-  return lines.join('\n');
-}
-
 /* ---------- comparison ---------- */
 
 /** The lines before the first `## ` heading - `render()`'s `# <id>`,
@@ -373,8 +278,10 @@ const SECTIONS = ['ru :: tree', 'ru :: controls', 'en :: tree', 'en :: controls'
  *  line - a renamed heading must not print four hundred lines - naming the
  *  1-based line number of the first difference and two lines of context on
  *  each side, which is what a session actually needs to find the
- *  regression without opening the file. */
-function compareGolden(id, wantText, gotText) {
+ *  regression without opening the file. `ok` is taken as a parameter (not a
+ *  module-level closure) so this function has no dependency on lib.js/
+ *  puppeteer and can run under `node --test` against plain strings. */
+function compareGolden(id, wantText, gotText, ok) {
   const wantHeader = headerOf(wantText);
   const gotHeader = headerOf(gotText);
   if (wantHeader.join('\n') !== gotHeader.join('\n')) {
@@ -409,81 +316,202 @@ function compareGolden(id, wantText, gotText) {
   }
 }
 
-/* ---------- main ---------- */
+/* ---------- exports ----------
+ * Only the pure, DOM/browser-free half: normalisation, rule A/B, the
+ * header/section split and the comparison itself. `golden.test.mjs` runs
+ * these under `node --test` against plain strings - no dist/, no puppeteer.
+ * `require('./lib.js')` (which checks dist/ exists and requires puppeteer)
+ * is deliberately kept out of this module's top level so requiring golden.js
+ * for its pure half never trips either. */
+module.exports = {
+  KEEP_KEYS,
+  collapse,
+  normUrl,
+  clean,
+  sigOf,
+  elisionOf,
+  capName,
+  lineFor,
+  controlLine,
+  serializeTree,
+  headerOf,
+  sectionsOf,
+  compareGolden,
+  slugOf
+};
 
-(async () => {
-  fs.mkdirSync(DIR, { recursive: true });
+/* ---------- main (require.main only - this is where lib.js/puppeteer come in) ---------- */
 
-  /* --shard partitions the *whole* inventory by index, disjointly and
-   * exhaustively (parity.js's own contract); --only= then narrows further,
-   * within whichever slice --shard already picked. Combining both is legal -
-   * CI never does, local debugging might. */
-  const wanted = STATES.filter(
-    (s, i) => (!SHARD || i % SHARD.of === SHARD.n) && (!ONLY || s.id.includes(ONLY))
-  );
-  if (ONLY && !wanted.length) {
-    console.log(`--only=${ONLY} выбрал ничего`);
-    process.exit(1);
-  }
+if (require.main === module) {
+  const { fresh, reporter, closeBrowser } = require('./lib.js');
+  const rep = reporter();
+  const { ok } = rep;
 
-  const runStart = Date.now();
-  let captureMs = 0;
-  let compared = 0;
-  for (const state of wanted) {
-    const file = path.join(DIR, slugOf(state.id) + '.txt');
-    const t0 = Date.now();
-    let text;
-    try {
-      text = await captureState(state);
-    } catch (e) {
+  /* ---------- arrival (plan.md, "R0a planned", Decided 2) ---------- */
+
+  const captureLang = async (page, d) => {
+    const snap = await page.accessibility.snapshot();
+    const tree = [];
+    serializeTree(clean(snap), 0, tree);
+    const controls = (await d.controls()).map(controlLine);
+    return { tree, controls };
+  };
+
+  /** Polls for the toast a `timed` state's `enter` raised - the toast's own
+   *  entrance transition is not one of the two reduced-motion stays this app
+   *  turns off (`docs/specs/FEATURES.md`, "Chrome"), so by the time the click
+   *  that raised it has settled (every driver press already waits on that)
+   *  the toast should already be visible; this is the assertion in place of
+   *  the coin flip a fixed pause would be. */
+  const waitForToast = async (page, id, lang) => {
+    const start = Date.now();
+    for (;;) {
+      const up = await page.evaluate(() => {
+        const t = document.querySelector('.toast');
+        return !!t && getComputedStyle(t).display !== 'none';
+      });
+      if (up) return;
+      if (Date.now() - start > 2000) {
+        throw new Error(`${id} @ ${lang}: тост так и не появился`);
+      }
+      await new Promise((r) => setTimeout(r, 40));
+    }
+  };
+
+  const render = (state, ru, en) => {
+    const lines = [
+      '# ' + state.id,
+      '# route: ' + state.route,
+      '# why: ' + state.why,
+      '',
+      '## ru :: tree',
+      ...ru.tree,
+      '',
+      '## ru :: controls',
+      ...ru.controls,
+      '',
+      '## en :: tree',
+      ...en.tree,
+      '',
+      '## en :: controls',
+      ...en.controls,
+      ''
+    ];
+    return lines.join('\n');
+  };
+
+  /** One state, both languages. Ordinary states: one arrival, seed, open,
+   *  enter, snapshot ru, press EN, snapshot en - a snapshot is a read and does
+   *  not perturb the page, so nothing forces a second arrival. `timed` states
+   *  arrive fresh per language instead: their toast lives 1600ms and a
+   *  50-120ms snapshot ahead of the EN press would eat into that window for a
+   *  state that already has to press one control more to reach English. */
+  const captureState = async (state) => {
+    if (!state.timed) {
+      const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
+      try {
+        await d.open(state.route);
+        if (state.enter) await state.enter(d);
+        const ru = await captureLang(page, d);
+        await d.click('EN');
+        const en = await captureLang(page, d);
+        return render(state, ru, en);
+      } finally {
+        await ctx.close();
+      }
+    }
+
+    const oneLang = async (lang) => {
+      const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
+      try {
+        await d.open(state.route);
+        if (state.enter) await state.enter(d);
+        if (lang !== 'ru') await d.click('EN');
+        await waitForToast(page, state.id, lang);
+        return await captureLang(page, d);
+      } finally {
+        await ctx.close();
+      }
+    };
+    const ru = await oneLang('ru');
+    const en = await oneLang('en');
+    return render(state, ru, en);
+  };
+
+  (async () => {
+    fs.mkdirSync(DIR, { recursive: true });
+
+    /* --shard partitions the *whole* inventory by index, disjointly and
+     * exhaustively (parity.js's own contract); --only= then narrows further,
+     * within whichever slice --shard already picked. Combining both is legal -
+     * CI never does, local debugging might. */
+    const wanted = STATES.filter(
+      (s, i) => (!SHARD || i % SHARD.of === SHARD.n) && (!ONLY || s.id.includes(ONLY))
+    );
+    if (ONLY && !wanted.length) {
+      console.log(`--only=${ONLY} выбрал ничего`);
+      process.exit(1);
+    }
+
+    const runStart = Date.now();
+    let captureMs = 0;
+    let compared = 0;
+    for (const state of wanted) {
+      const file = path.join(DIR, slugOf(state.id) + '.txt');
+      const t0 = Date.now();
+      let text;
+      try {
+        text = await captureState(state);
+      } catch (e) {
+        captureMs += Date.now() - t0;
+        ok(false, `${state.id}: не удалось снять срез - ${e.message || e}`);
+        continue;
+      }
       captureMs += Date.now() - t0;
-      ok(false, `${state.id}: не удалось снять срез - ${e.message || e}`);
-      continue;
-    }
-    captureMs += Date.now() - t0;
 
-    if (UPDATE) {
-      fs.writeFileSync(file, text);
+      if (UPDATE) {
+        fs.writeFileSync(file, text);
+        compared++;
+        continue;
+      }
+
+      if (!fs.existsSync(file)) {
+        ok(false, `${state.id}: нет golden-файла (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`);
+        continue;
+      }
+      compareGolden(state.id, fs.readFileSync(file, 'utf8'), text, ok);
       compared++;
-      continue;
     }
 
-    if (!fs.existsSync(file)) {
-      ok(false, `${state.id}: нет golden-файла (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`);
-      continue;
+    /* Only the stale-file sweep below is suppressed by --only=: it walks the
+     * whole snapshots directory against the whole inventory, and a filtered
+     * run would flag every file outside the filter as an orphan it is not.
+     * The missing-golden check above (:427) runs unconditionally - it is not
+     * suppressed by --only= at all, and simply sees fewer states because
+     * `wanted` is already filtered; a golden absent for a state this call
+     * did process still fails.
+     * --shard suppresses neither: the missing check is per state and only
+     * ever sees the states this shard actually processed, and the stale check
+     * below reads the *whole* inventory regardless of --shard, which every
+     * shard knows in full - so a stale file is caught no matter which shard
+     * happens to run. */
+    if (!ONLY) {
+      const haveFiles = new Set(fs.readdirSync(DIR).filter((f) => f.endsWith('.txt')));
+      const wantFiles = new Set(STATES.map((s) => slugOf(s.id) + '.txt'));
+      for (const f of haveFiles) {
+        if (!wantFiles.has(f)) ok(false, `${f}: устаревший golden - такого состояния больше нет в inventory.js`);
+      }
     }
-    compareGolden(state.id, fs.readFileSync(file, 'utf8'), text);
-    compared++;
-  }
 
-  /* Only the stale-file sweep below is suppressed by --only=: it walks the
-   * whole snapshots directory against the whole inventory, and a filtered
-   * run would flag every file outside the filter as an orphan it is not.
-   * The missing-golden check above (:427) runs unconditionally - it is not
-   * suppressed by --only= at all, and simply sees fewer states because
-   * `wanted` is already filtered; a golden absent for a state this call
-   * did process still fails.
-   * --shard suppresses neither: the missing check is per state and only
-   * ever sees the states this shard actually processed, and the stale check
-   * below reads the *whole* inventory regardless of --shard, which every
-   * shard knows in full - so a stale file is caught no matter which shard
-   * happens to run. */
-  if (!ONLY) {
-    const haveFiles = new Set(fs.readdirSync(DIR).filter((f) => f.endsWith('.txt')));
-    const wantFiles = new Set(STATES.map((s) => slugOf(s.id) + '.txt'));
-    for (const f of haveFiles) {
-      if (!wantFiles.has(f)) ok(false, `${f}: устаревший golden - такого состояния больше нет в inventory.js`);
-    }
-  }
-
-  await closeBrowser();
-  const totalS = (Date.now() - runStart) / 1000;
-  console.log(`съёмка: ${(captureMs / 1000).toFixed(1)}s из ${totalS.toFixed(1)}s`);
-  console.log(
-    `сравнено состояний: ${String(compared)}` +
-      (ONLY ? ` (не полный прогон - --only=${ONLY})` : '') +
-      (SHARD ? ` (шард ${String(SHARD.n + 1)}/${String(SHARD.of)})` : '')
-  );
-  console.log(rep.failed ? `${rep.failed} FAILED` : 'структурные образцы (dist/): без изменений');
-  process.exit(rep.failed ? 1 : 0);
-})();
+    await closeBrowser();
+    const totalS = (Date.now() - runStart) / 1000;
+    console.log(`съёмка: ${(captureMs / 1000).toFixed(1)}s из ${totalS.toFixed(1)}s`);
+    console.log(
+      `сравнено состояний: ${String(compared)}` +
+        (ONLY ? ` (не полный прогон - --only=${ONLY})` : '') +
+        (SHARD ? ` (шард ${String(SHARD.n + 1)}/${String(SHARD.of)})` : '')
+    );
+    console.log(rep.failed ? `${rep.failed} FAILED` : 'структурные образцы (dist/): без изменений');
+    process.exit(rep.failed ? 1 : 0);
+  })();
+}

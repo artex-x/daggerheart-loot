@@ -87,7 +87,34 @@ else - tests, tools, comments, developer docs - is English (`CLAUDE.md`).
 print Russian messages and comments, which predates this rule, while
 `app/src/**/*.test.ts` is already English throughout.
 
-## 7. Link previews are cached by Telegram until pushed
+## 7. The 404 fallback page (issues/phase-8, B4, owner override of R8's "skip it")
+
+`404.html` is authored and tracked at the repository root (it carries no
+data, so nothing generates it) and published by `.github/workflows/ci.yml`'s
+collect step alongside `llms.txt`/`robots.txt`. GitHub Pages serves it
+verbatim, with a 404 status, for any request under this site that does not
+match a real path - a share link truncated by a chat client, a hand-typed
+record id, a stub whose record a data change dropped
+(`issues/phase-8/critique/resilience.md`, R8). Before this page existed,
+every one of those landed on GitHub's own generic 404, with no route back to
+the app in either language.
+
+It carries `noindex, nofollow` like every other page (section 1) and both
+languages on the one page at once (`docs/specs/I18N.md`) rather than
+switching on a stored preference, since there is no script here to read one.
+Its two links are root-anchored (`/daggerheart-loot/#/roll/std` and
+`/daggerheart-loot/#/search`) rather than relative, unlike every other page
+in this repository: it can be served while
+the browser still shows an arbitrary, possibly nested bad path, and a
+relative link would resolve against that path's own directory, not against
+this file's real location. It is never opened over `file://` - nothing links
+to it locally, it exists only as a Pages serving fallback - so section 4's
+relative-path rule does not apply to it. `tools/check-site.lib.mjs`'s
+`checks()` proves the fallback on every deploy, against the local `_site/`
+build before publishing and against the live URL after
+(`tools/check-site.mjs --dir _site` / `tools/check-site.mjs <url>`).
+
+## 8. Link previews are cached by Telegram until pushed
 
 Telegram keys a link's unfurl preview on the URL, with no TTL, and ignores
 everything the origin serves - a changed `Cache-Control`, a changed

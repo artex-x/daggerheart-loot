@@ -547,5 +547,34 @@ if (deployNeeds) {
   ok(names.includes('browser'), 'deploy.needs: browser is missing');
 }
 
+/* R1 (issues/phase-8, B3 review -> routed into B4): the browser matrix and
+   the divisor tests/run-all.js's own --shard flag divides by have to agree,
+   and three ways of breaking that are loud - a divisor above the matrix
+   throws inside run-all.js, a deleted browser: job fails the assertion
+   above, a renamed job fails it too. One way is silent: shrinking
+   `shard: [1, 2, 3]` while leaving `--shard=${{ matrix.shard }}/4` drops
+   shard 4's suites (including sweep1180-ru and golden4) from the matrix
+   entirely, and CI stays green - the three jobs that do run all pass. This
+   is the assertion that catches that: the matrix list's length has to equal
+   the divisor, and the list has to be exactly 1..m. */
+const browserJob = /^  browser:\s*\r?\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(workflow);
+ok(browserJob, 'browser job: missing from ci.yml');
+const shardList = browserJob && /^\s*shard:\s*\[([^\]]*)\]\s*$/m.exec(browserJob[1]);
+ok(shardList, 'browser.strategy.matrix.shard: missing or unparseable');
+const shardRun = browserJob && /--shard=\$\{\{\s*matrix\.shard\s*\}\}\/(\d+)/.exec(browserJob[1]);
+ok(shardRun, 'browser job: no "--shard=${{ matrix.shard }}/<m>" run line');
+if (shardList && shardRun) {
+  const list = shardList[1].split(',').map(function (s) { return Number(s.trim()); });
+  const divisor = Number(shardRun[1]);
+  ok(list.length === divisor,
+     'browser matrix/divisor mismatch: the shard list has ' + list.length +
+     ' entries but the run line divides by ' + divisor +
+     ' - shortening the matrix without the divisor silently drops coverage');
+  const want = [];
+  for (let i = 1; i <= divisor; i++) want.push(i);
+  ok(list.length === want.length && list.every(function (n, i) { return n === want[i]; }),
+     'browser matrix: shard list is ' + JSON.stringify(list) + ', expected exactly 1..' + divisor);
+}
+
 console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
 process.exit(fail ? 1 : 0);
