@@ -356,5 +356,31 @@
         "hnf:on"
       ]
     }
+  },
+  {
+    "hash": "#/tables/nosuch",
+    "why": "a named table that resolves to nothing falls back home, like any other unreadable address (R9/Q3)",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  },
+  {
+    "hash": "#/l/ABC.",
+    "why": "a shared-list payload with a stray trailing character opens the shared-list page instead of falling back home (R5)",
+    "resolves": {
+      "hash": "#/l/ABC.",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
   }
 ]

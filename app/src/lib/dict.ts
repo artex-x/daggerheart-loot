@@ -158,6 +158,10 @@ const ru = {
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
   noData: 'Данные не загрузились. Обновите страницу.',
+  /* The smallest error boundary (S2/R7): a page that throws mid-render draws
+     this instead of leaving a blank middle under a working tab bar. */
+  pageError: 'Что-то пошло не так на этой странице.',
+  reloadPage: 'Обновить страницу',
 
   /* The stat line needs three words the vocabulary maps do not carry */
   tier: 'Ранг',
@@ -466,6 +470,8 @@ const en: Dict = {
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',
   noData: 'The data did not load. Reload the page.',
+  pageError: 'Something went wrong on this page.',
+  reloadPage: 'Reload the page',
 
   tier: 'Tier',
   eqTh: 'Thresholds',

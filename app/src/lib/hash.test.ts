@@ -109,10 +109,19 @@ describe('old section names', () => {
 });
 
 describe('tables', () => {
-  it('a name that does not exist is not swapped for a default', () => {
-    const r = parseHash('#/tables/not_a_table');
-    expect(r.kind).toBe('tables');
-    expect((r as Extract<Route, { kind: 'tables' }>).table).toBeNull();
+  it('a name that does not exist falls to unknown, home-bound like any other unreadable address (R9/Q3)', () => {
+    /* Was "not swapped for a default" - kept the table already on screen.
+       Q3 settled one rule for every unreadable address instead. */
+    expect(parseHash('#/tables/not_a_table').kind).toBe('unknown');
+    expect(parseHash('#/tables/nope/f_tier-1_cls-phy').kind).toBe('unknown');
+  });
+
+  it('a bare #/tables carries no name and is unaffected', () => {
+    /* The R9 rule is about a *named* table that does not resolve - a bare
+       address has no name to fail against and keeps whichever table (or
+       filter tail) is already open, exactly as before. */
+    const r = parseHash('#/tables/f_kind-item');
+    expect(r).toEqual({ kind: 'tables', table: null, anchor: '', filter: { kind: ['item'] } });
   });
 
   it('a tail without f_ is an anchor', () => {
@@ -123,21 +132,6 @@ describe('tables', () => {
   it('anchor and filter never appear together', () => {
     const r = parseHash('#/tables/eq_weapon/f_tier-2');
     expect((r as Extract<Route, { kind: 'tables' }>).anchor).toBe('');
-  });
-
-  it('an unknown table takes no legacy reading', () => {
-    /* With no table there are no groups to check a legacy piece's head
-       against, so the underscore form is never read as the old separator -
-       the safe side, per hash.ts:103 (table goes null) and :109 (`[]` groups
-       for a null table). */
-    const r = parseHash('#/tables/nope/f_tier-1_cls-phy');
-    expect((r as Extract<Route, { kind: 'tables' }>).table).toBeNull();
-    expect(r.kind).toBe('tables');
-    const filter = (r as Extract<Route, { kind: 'tables' }>).filter;
-    expect(filter).not.toHaveProperty('cls');
-    /* With `[]` groups, decodeFilter's legacy `_` reading never fires, so the
-       whole tail is read as one value under its own head rather than split. */
-    expect(filter['tier']).toEqual(['1_cls', 'phy']);
   });
 });
 
@@ -287,6 +281,24 @@ describe('an unreadable address', () => {
     for (const h of ['#/nonsense', '#/roll/nope', '#/i/', '']) {
       expect(parseHash(h).kind).toBe('unknown');
     }
+  });
+
+  it('a named table that resolves to nothing is unreadable too (R9/Q3)', () => {
+    expect(parseHash('#/tables/nosuch').kind).toBe('unknown');
+  });
+});
+
+describe('a shared-list payload with a stray trailing character (R5)', () => {
+  it('still routes to the shared-list page rather than falling to unknown', () => {
+    /* A chat client swallowing a trailing full stop is the reachable case:
+       the old character-class regex rejected the whole address and sent it
+       home; the payload is read as written and decoding it is decodeList's
+       job, not the router's. */
+    expect(parseHash('#/l/ABC.')).toEqual({
+      kind: 'sharedList',
+      payload: 'ABC.',
+      packed: false
+    });
   });
 });
 

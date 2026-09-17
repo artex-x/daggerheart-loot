@@ -91,30 +91,6 @@ The live app was wrong; the rewrite copied it; parity was the reason.
   their art; `FEATURES.md`, "Chrome", reduced-motion bullet rewritten.
 - **Recorded by**: B9, 2026-09-11.
 
-### D2 - a stale packed-link expansion rewrites the address after the reader has left
-
-- **Where**: `app/src/state/app.svelte.ts`, `#expand()` - the `.then`
-  replaces the address unconditionally. Live: `app.js:3589-3603`
-  `expandHash()`: `unpackPayload(h.slice(2)).then(function (plain) {
-  if (history.replaceState) history.replaceState(null, '',
-  appUrl('#/l/' + plain)); else location.hash = '#/l/' + plain;
-  render(); })`. Read at `bb61db0`.
-- **Live behaviour**: open a `#/l/~...` link, navigate away before it has
-  unpacked (a slow device, a large list), and the unpack, resolving late,
-  sends you back to the shared list.
-- **What the rewrite would do instead**: drop the result when the route
-  is no longer the packed address it was unpacking (compare the payload
-  captured at start with `this.route` at resolve time).
-- **Why parity won**: B5.6 (2026-09-11) ported the live shape; its review
-  named the flaw and said it must not be fixed without recording the
-  divergence. Nothing pins it: the harness's `ready()` blocks until the
-  expansion is done, so no state can observe the window.
-- **How to verify the fix**: `app.test.ts` - a `compress` port whose
-  `unpack` resolves on demand; `go()` elsewhere before it resolves; the
-  hash stays where the person went. `STATE.md`, "The list migration" or
-  `FEATURES.md`, "Lists", one clause.
-- **Recorded by**: B9, 2026-09-11 (found by the B5.6 review).
-
 ### D3 - the storage notice's dismiss button lives inside its `<summary>`
 
 - **Where**: `app/src/components/StorageNotice.svelte:43-50`, a
@@ -178,6 +154,19 @@ The live app was wrong; the rewrite copied it; parity was the reason.
   harness is still alive, the four record states' `title` cells get
   `ACCEPTED` keys; after the cut-over, nothing. `FEATURES.md`, "Records",
   the tab-title clause rewritten.
+- **B6, 2026-09-17: implemented and reverted.** The fix itself was correct
+  and covered (`shell.test.ts`) - the blocker is `tests/app/golden.js`'s own
+  capture: `page.accessibility.snapshot()` reports `document.title` as the
+  RootWebArea node's own accessible name, which every structural golden
+  records on its first tree line. Verified directly: `node tests/app/
+  golden.js --only="i/ci1"` moved 14 cells the instant the title stopped
+  being constant across every route, none of them one of B6's two
+  authorised new states. `issues/phase-8/handoff.md`'s B6 report carries the
+  full evidence and the three options it left for a human to pick between
+  (normalise the title out of the captured tree, accept the golden
+  re-record as this entry's own payoff, or land this in B7 - the batch that
+  already re-records). Left un-restored pending that decision, so this
+  entry stays open rather than being marked paid off.
 - **Recorded by**: B10, 2026-09-11.
 
 ### D6 - the add-to-list menu's flip measures the window, not the card, and re-measures against the wrong button
@@ -476,31 +465,6 @@ the same shape R0b.4's five divergences had.
   coverage) or the closed live list is the wanted policy, and whether 8px or
   `--r-sm` is the intended radius; a `tokens.css` assertion or a per-component
   test pins whichever is chosen, and `FEATURES.md` states it.
-- **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
-
-### D19 - the focused skip link is a different colour, box and layout effect
-
-- **Where**: `style.css:1018-1022` (`7a33c22`): `.skip{position:absolute;
-  left:-9999px;top:0;z-index:300;background:var(--gold);color:#1a1206;
-  font-weight:700;padding:10px 16px;border-radius:0 0 10px 0}
-  .skip:focus{left:0}` - a focused skip link becomes a gold plate pinned over
-  the page's top-left corner, out of flow. Rewrite:
-  `app/src/components/Shell.svelte:80-93`: `.skip{position:absolute;
-  left:-9999px}.skip:focus{position:static;display:inline-block;
-  margin:var(--gap-sm);padding:8px 12px;background:var(--surface2);
-  color:var(--txt);border-radius:var(--r-sm)}` - a grey chip that returns to
-  the normal flow when focused, pushing the rest of the page down, with no
-  `z-index`.
-- **Live behaviour**: pressing Tab once reveals a bright gold plate fixed at
-  the corner, layered over whatever else is there.
-- **What the rewrite does instead**: reveals a muted grey chip inline at the
-  top of the page, which shifts the header down while it is focused.
-- **Why it was recorded, not restored: owner ruling 2026-09-16.** Only a real
-  keyboard walk (Tab from a fresh load) would show this; no golden, parity
-  state or axe run presses Tab before capturing.
-- **How to verify the fix**: decide the wanted skip-link presentation and
-  match it; a `states.js`-style real-Tab test (or a documented deliberate
-  choice in `FEATURES.md`) pins it.
 - **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
 
 ### D20 - two `@media print` gaps: an open record dialog prints over the page, and an action toast prints

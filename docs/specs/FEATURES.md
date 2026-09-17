@@ -127,7 +127,11 @@ Six modes. Each keeps its own input in memory only.
   list (quantity, price and a row's public note travel; the GM's note never
   does), the list's own notes, and the rows; a payload that cannot be decoded
   draws "Предмет не найден", the bad-link line and a "На главную" button to
-  `#/roll/std`.
+  `#/roll/std`. A **packed** link (`#/l/~<payload>`) that cannot be expanded
+  draws the same bad-link page without replacing the address - the live
+  shape sent the reader to `#/l/zzzz` instead, which cost a slow unpack
+  resolving after the reader had already moved on the shared list they had
+  since left for (`DEBT.md` D2, paid off; R10/Q4 settled).
 - Two open tabs merge rather than overwrite (`STATE.md`).
 - A storage notice at the top of the index and of a list page: when storage
   refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
@@ -227,6 +231,13 @@ Six modes. Each keeps its own input in memory only.
 - Language switch, tab bar, skip link, starting-section pin (eight sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   never a record or a list).
+- Focusing the skip link moves focus straight to `#main` and never touches
+  the address bar - the browser's own fragment jump would also route the
+  hash through the app's own parser, which reads `#main` as unknown and
+  would clear the person's selection navigating them home (P1). While
+  focused it is a gold plate pinned over the page's top-left corner, matching
+  the live app rather than a grey chip that pushed the header down while
+  focused (`DEBT.md` D19, paid off).
 - Chips and segmented switches expose their on/off state as `aria-pressed` -
   the money chips and the two view switches (tables list/grid, print colour/
   black-and-white) gained it in the rewrite, where the live app wrote

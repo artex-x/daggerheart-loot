@@ -40,8 +40,24 @@ import { ListStore } from './lists.svelte.js';
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
 const WARN_KEY = 'dhloot.warn.v1';
+const PREFS_KEY = 'dhloot.prefs.v1';
 
 const DEFAULT_HOME = '#/roll/std';
+
+/** Read as untrusted data, the same as every other stored setting: a bad or
+ *  missing value falls back to `'list'` rather than breaking the page. */
+function readTablesView(env: Env): 'list' | 'grid' {
+  const raw = env.storage.get(PREFS_KEY);
+  if (!raw) return 'list';
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    const view =
+      parsed && typeof parsed === 'object' ? (parsed as { view?: unknown }).view : undefined;
+    return view === 'grid' ? 'grid' : 'list';
+  } catch {
+    return 'list';
+  }
+}
 
 /** What one action can undo, carried on a toast for the 7000ms it lasts. */
 export interface ToastAction {
@@ -182,8 +198,27 @@ export class AppState {
    *  for good - the live app's `dhloot.warn.v1`. App-level because the list
    *  page (B5.4) reads the same flag, not only the index. */
   #warnHidden = $state(false);
+  /** The tables page's list/grid switch (DC1/Q1 - restored). `dhloot.prefs.v1`
+   *  held `{ view }` on live and nothing else; app-level, the way `#home` and
+   *  `#warnHidden` are, rather than component-local, because how a page looks
+   *  is remembered (`STATE.md`) and `TablesPage` is never destroyed between
+   *  two `tables` addresses, so a component-local field would survive a
+   *  session but not explain where the persisted value lives. */
+  #tablesView = $state<'list' | 'grid'>('list');
+  /** The packed payload a failed expansion is stuck on, or `''` - R10/S3/D2.
+   *  Compared against `route.payload` by whoever draws the bad-link state, so
+   *  a later navigation to a *different* packed link is not mistaken for the
+   *  same failure. */
+  expandFailed = $state('');
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
+  /** The hash `go()` itself just wrote, so the router's own change handler
+   *  can tell "the app just navigated" apart from "the address changed
+   *  underneath it" and not process the same navigation twice (S1). Real
+   *  browsers fire `hashchange` asynchronously, after `go()` has already
+   *  returned, so this has to survive until then rather than being read and
+   *  cleared inline. */
+  #expectHash: string | null = null;
 
   constructor(env: Env) {
     this.env = env;
@@ -192,6 +227,7 @@ export class AppState {
     this.lang = readLang(env);
     this.#home = readHome(env);
     this.#warnHidden = env.storage.get(WARN_KEY) === '1';
+    this.#tablesView = readTablesView(env);
     this.lists = new ListStore(
       env,
       (msg, error) => {
@@ -236,6 +272,15 @@ export class AppState {
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
   start(): () => void {
     this.#stopRouter = this.env.router.onChange((h) => {
+      /* S1: `go()` already did all of this synchronously for the hash it
+         just wrote - a real browser's `hashchange` for that same write still
+         fires, only asynchronously, and without this guard it was processed
+         a second time, double-counting `navigations` for anyone who had
+         called `start()`. */
+      if (h === this.#expectHash) {
+        this.#expectHash = null;
+        return;
+      }
       this.hash = this.#fallback(h);
       this.navigations++;
       this.menuFor = '';
@@ -254,6 +299,10 @@ export class AppState {
     this.#stopRouter = null;
     this.#stopListWatch?.();
     this.#stopListWatch = null;
+    /* A timer left running past the listeners it would otherwise update is a
+       leak of the same kind `#stopRouter`/`#stopListWatch` already guard
+       against - S6. */
+    this.hideToast();
   }
 
   /**
@@ -333,29 +382,54 @@ export class AppState {
   }
 
   /** The one route kind that reads the data at all: print needs to know
-   *  which ids the cap threw away versus which were simply unknown. */
-  get route(): Route {
-    return parseHash(this.hash, (id) => this.index?.byId.has(id) ?? false);
-  }
+   *  which ids the cap threw away versus which were simply unknown.
+   *  `$derived` rather than a getter (S6) - `Shell`, `App` and every page
+   *  read this several times per render, and a getter re-parses the hash on
+   *  each one. */
+  route: Route = $derived.by(() =>
+    parseHash(this.hash, (id) => this.index?.byId.has(id) ?? false)
+  );
 
   /** Which tab is lit. Nothing is lit on a record, a list page or a print
    *  sheet - the live `renderTabs` (app.js 3667-3673) compares against the
    *  raw route string, and a list route is never that string. */
-  get section(): Section | null {
+  section: Section | null = $derived.by(() => {
     const r = this.route;
     if (r.kind === 'section') return r.section;
     if (r.kind === 'tables') return 'tables';
     return null;
-  }
+  });
 
   setLang(lang: Lang): void {
     this.lang = lang;
     this.env.storage.set(LANG_KEY, lang);
   }
 
+  /** DC1/Q1 - restored: the tables page's list/grid switch, remembered the
+   *  way the live app's `dhloot.prefs.v1 { view }` did. */
+  get tablesView(): 'list' | 'grid' {
+    return this.#tablesView;
+  }
+
+  setTablesView(view: 'list' | 'grid'): void {
+    this.#tablesView = view;
+    this.env.storage.set(PREFS_KEY, JSON.stringify({ view }));
+  }
+
   go(hash: string): void {
+    /* S1: set before `navigate()`, which for a fake/in-memory router fires
+       the change handler synchronously, inline in this same call - the
+       handler reads it back before this method's own processing below runs,
+       so the two do not double-count one navigation. */
+    this.#expectHash = hash;
     this.env.router.navigate(hash);
-    this.hash = hash;
+    /* S2/R7: `go()`'s callers all build a hash from this file's own writers,
+       so this is defence rather than a reachable bug - but the router's own
+       `onChange` handler already resolves a bad hash through `#fallback`
+       (below), and this method deserved the same guarantee for the same
+       reason: a route kind `App.svelte` cannot yet draw must not be the
+       result of a call this class itself made. */
+    this.hash = this.#fallback(hash);
     this.navigations++;
     this.menuFor = '';
     this.sel.clear();
@@ -399,23 +473,42 @@ export class AppState {
    * router announces, and every `go()`. Never from `replace()` - the
    * expansion's own `replace` below would re-enter this.
    *
+   * D2/R10 (Q4 settled): the live shape replaced the address unconditionally,
+   * which meant a slow unpack resolving after the reader had already moved on
+   * sent them back to the shared list. `stillHere()` re-reads `this.route`
+   * at resolve time and both branches below drop the result unless the route
+   * is still the exact packed payload this call started from.
+   *
    * `unpack` hands back a payload still starting with `PACK_MARK` when the
    * port cannot decompress at all (the test env's `plainCompress`, and a
    * browser without `DecompressionStream` inside the real port's own catch) -
-   * that is the same failure as a rejected promise, and both land on
-   * `#/l/zzzz`. Without this guard a port that cannot unpack would replace
-   * the same packed hash forever.
+   * that is the same failure as a rejected promise. Both used to land on
+   * `#/l/zzzz`, replacing the address the reader actually has; now both keep
+   * it and record the failure in `expandFailed` instead, so `ListPage` can
+   * draw the bad-link state without the address itself moving.
    */
   #expand(): void {
     const r = this.route;
     if (r.kind !== 'sharedList' || !r.packed) return;
+    const { payload } = r;
+    const stillHere = (): boolean => {
+      const cur = this.route;
+      return cur.kind === 'sharedList' && cur.packed && cur.payload === payload;
+    };
     void this.env.compress
-      .unpack(r.payload)
+      .unpack(payload)
       .then((plain) => {
-        this.replace(sharedListHash(plain.startsWith(PACK_MARK) ? 'zzzz' : plain));
+        if (!stillHere()) return;
+        if (plain.startsWith(PACK_MARK)) {
+          this.expandFailed = payload;
+        } else {
+          this.expandFailed = '';
+          this.replace(sharedListHash(plain));
+        }
       })
       .catch(() => {
-        this.replace(sharedListHash('zzzz'));
+        if (!stillHere()) return;
+        this.expandFailed = payload;
       });
   }
 

@@ -52,9 +52,13 @@ Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
 `#/tables/frames` resolves the same as `#/tables/other_frames`, not to being
 ignored.
 
-A name that is neither in that list nor an alias is ignored and the table
-already on screen is kept. Changing to a different table folds the filter
-panel and clears the filter.
+A *named* table that is neither in that list nor an alias falls to `unknown` -
+R9/Q3 settled one rule for every unreadable address, rather than the table
+already on screen being ignored and kept as it was before. A **bare**
+`#/tables` (no name segment at all) is not affected: it carries nothing to
+fail against and keeps whichever table is already open, the same as always.
+Changing to a different, valid table folds the filter panel and clears the
+filter.
 
 A tail that does not start with `f_` is an anchor - a block to scroll to, such
 as `rare` on `alt_item` or `Seaborne` on `community`.
@@ -115,6 +119,13 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | `#/lists/<listId>` | a locally stored list, by its local id |
 | `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`) |
 | `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open |
+
+The payload after `l/` is read as written, whatever it contains - R5. A stray
+character a chat client left behind (a truncated link's trailing full stop is
+the reachable case) used to fail a stricter character class and fall to
+`unknown`, sending the reader home; now it still reaches the shared-list page,
+which draws its own "not found" state for a payload that will not decode
+rather than silently leaving for a different page.
 
 `#/print/...` reads its ids from the address rather than from memory, because
 printing is reached from three places and the set has to survive a reload and

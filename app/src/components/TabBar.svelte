@@ -27,9 +27,30 @@
     ['lists', 'lists'],
     ['search', 'search']
   ];
+
+  let nav = $state<HTMLElement | undefined>(undefined);
+
+  /**
+   * Keeps the lit tab in view inside the narrow-viewport horizontal scroller
+   * (`@media (max-width: 640px)`, above) - P11. `scrollIntoView` was rejected
+   * in planning: it can carry an ancestor along with it too, and its own
+   * `block`/`inline` options answer "is it visible at all", not "is it
+   * centred", which is what a bar with a tab list either side of the middle
+   * one wants. Plain `offsetLeft` arithmetic against the nav's own width
+   * answers that directly, and needs nothing from the browser a test cannot
+   * hand it by hand.
+   */
+  $effect(() => {
+    void current;
+    const el = nav;
+    const tab = el?.querySelector<HTMLElement>('a.on');
+    if (!el || !tab) return;
+    const target = tab.offsetLeft - (el.clientWidth - tab.offsetWidth) / 2;
+    el.scrollLeft = Math.max(0, target);
+  });
 </script>
 
-<nav class="tabs" aria-label={label}>
+<nav class="tabs" aria-label={label} bind:this={nav}>
   {#each TABS as [section, key] (section)}
     <a
       href={sectionHash(section)}

@@ -147,9 +147,10 @@ describe('the address', () => {
     });
   });
 
-  it('lands on the bad-link page when the port cannot expand a packed address', async () => {
+  it('draws the bad-link page and leaves the address alone when the port cannot expand a packed address (R10/D2)', async () => {
     const payload = encodeList({ name: 'Другой', ids: ['ci1'] }, true);
-    render(App, { env: withA('#/l/~' + payload) });
+    const router = memoryRouter('#/l/~' + payload);
+    render(App, { env: withA('#/l/~' + payload, { router }) });
 
     await waitFor(() => {
       expect(
@@ -161,6 +162,9 @@ describe('the address', () => {
     ).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'На главную' });
     expect(link).toHaveAttribute('href', '#/roll/std');
+    /* R10: the address itself is left where it was, unlike a plain #/l/zzzz
+       link, which has nowhere to keep and never had one to keep it from. */
+    expect(router.hash()).toBe('#/l/~' + payload);
   });
 
   it('draws "Список не найден" for an unknown id, and never rewrites', () => {

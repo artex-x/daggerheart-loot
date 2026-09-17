@@ -21,15 +21,32 @@
     { value: 'en', label: 'EN' }
   ];
 
-  /* Screen readers and hyphenation both read this, and it has to follow the
-     switch rather than the page it was loaded with. */
+  /* D5/O3 (the per-route tab title) was implemented and then backed out of
+     this batch: `tests/app/golden.js`'s accessibility snapshot captures
+     `document.title` as the RootWebArea's own name (verified: every golden
+     with a record/section/list route shows it), so a per-route title moves
+     dozens of existing goldens beyond the two this batch is allowed to
+     move. Left as the plain title, unchanged, pending a decision - see
+     `issues/phase-8/handoff.md`, B6's own report. */
   $effect(() => {
     document.documentElement.lang = app.lang;
     document.title = app.t.docTitle;
   });
+
+  /** The skip link's own activation, off `#skip` in the live stylesheet's
+   *  overlay shape (D19) - `href="#main"` stays for a client with no script,
+   *  but the SPA's own hash means a browser fragment jump would also route
+   *  the app itself: `parseHash('#main')` reads as `unknown` and the app
+   *  would replace it with the home section, clearing whatever the person
+   *  had selected (P1). Handled here instead: move focus to `#main` directly
+   *  and never let the browser touch the address bar at all. */
+  function skip(e: MouseEvent): void {
+    e.preventDefault();
+    document.getElementById('main')?.focus();
+  }
 </script>
 
-<a class="skip" href="#main">{app.t.skipToContent}</a>
+<a class="skip" href="#main" onclick={skip}>{app.t.skipToContent}</a>
 
 <header class="topbar">
   <div class="topbar-in">
@@ -77,19 +94,24 @@
 <Toast {app} />
 
 <style>
+  /* off `.skip`/`.skip:focus` in style.css - D19, paid off: a focused skip
+     link is a gold plate pinned over the page's top-left corner, out of
+     flow, the same as the live app - not a grey chip that pushes the header
+     down while it is focused. */
   .skip {
     position: absolute;
     left: -9999px;
   }
 
   .skip:focus {
-    position: static;
-    display: inline-block;
-    margin: var(--gap-sm);
-    padding: 8px 12px;
-    background: var(--surface2);
-    color: var(--txt);
-    border-radius: var(--r-sm);
+    left: 0;
+    top: 0;
+    z-index: 300;
+    background: var(--gold);
+    color: var(--ink-on-gold);
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 0 0 10px 0;
   }
 
   /* off `.topbar` in style.css. Sticky and translucent: the tabs stay reachable

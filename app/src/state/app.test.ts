@@ -185,6 +185,36 @@ describe('pinning', () => {
   });
 });
 
+describe('the tables view preference (DC1/Q1 - restored)', () => {
+  const PREFS_KEY = 'dhloot.prefs.v1';
+
+  it('defaults to list with nothing stored', () => {
+    expect(new AppState(at('#/tables')).tablesView).toBe('list');
+  });
+
+  it('reads a stored grid preference', () => {
+    const app = new AppState(
+      at('#/tables', { storage: stored({ [PREFS_KEY]: '{"view":"grid"}' }) })
+    );
+    expect(app.tablesView).toBe('grid');
+  });
+
+  it('falls back to list for a value that is not a recognised view', () => {
+    for (const bad of ['{not json', '{"view":"tiles"}', 'null', '[]']) {
+      const app = new AppState(at('#/tables', { storage: stored({ [PREFS_KEY]: bad }) }));
+      expect(app.tablesView, bad).toBe('list');
+    }
+  });
+
+  it('writes the choice through to storage', () => {
+    const env = at('#/tables');
+    const app = new AppState(env);
+    app.setTablesView('grid');
+    expect(app.tablesView).toBe('grid');
+    expect(env.storage.get(PREFS_KEY)).toBe('{"view":"grid"}');
+  });
+});
+
 describe('the storage notice', () => {
   const WARN_KEY = 'dhloot.warn.v1';
 
@@ -317,6 +347,37 @@ describe('navigation', () => {
     expect(() => {
       app.stop();
     }).not.toThrow();
+  });
+
+  it('stop() also hides a standing toast (S6)', () => {
+    vi.useFakeTimers();
+    const app = new AppState(at('#/roll/std'));
+    app.start();
+    app.say('one');
+    expect(app.toast).not.toBeNull();
+    app.stop();
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('does not double-count a navigation go() itself just wrote, once start() is listening (S1)', () => {
+    /* Without the guard, a fake router's synchronous announce meant go()'s
+       own bookkeeping and the router handler it triggered both counted the
+       same navigation - reachable only once both start() and go() are used
+       together, which no prior test did. */
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.go('#/lists');
+    expect(app.navigations).toBe(1);
+    expect(app.hash).toBe('#/lists');
+  });
+
+  it('falls back home when go() itself is handed an unreadable hash (S2/R7)', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
+    app.go('#/nonsense');
+    expect(app.hash).toBe('#/search');
   });
 
   it('moving by hand pushes and updates in one step', () => {
@@ -540,24 +601,43 @@ describe('a packed address', () => {
     expect(app.navigations).toBe(0);
   });
 
-  it('lands on #/l/zzzz when the port cannot unpack, and does not loop', async () => {
+  it('keeps the address and remembers the failure when the port cannot unpack, and does not loop (R10/D2)', async () => {
+    /* Was "lands on #/l/zzzz" - the live shape D2 recorded and R10 replaced:
+       the address itself is left alone; `expandFailed` is what a page reads
+       to draw the bad-link state instead. */
     const router = memoryRouter('#/l/~abc');
     const unpack = vi.fn((p: string) => Promise.resolve(p));
     const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
     await vi.waitFor(() => {
-      expect(app.hash).toBe('#/l/zzzz');
+      expect(app.expandFailed).toBe('~abc');
     });
-    expect(router.hash()).toBe('#/l/zzzz');
+    expect(app.hash).toBe('#/l/~abc');
+    expect(router.hash()).toBe('#/l/~abc');
     expect(unpack).toHaveBeenCalledTimes(1);
   });
 
-  it('lands on #/l/zzzz when unpack rejects', async () => {
+  it('keeps the address and remembers the failure when unpack rejects (R10/D2)', async () => {
     const router = memoryRouter('#/l/~abc');
     const unpack = () => Promise.reject(new Error('no DecompressionStream'));
     const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
     await vi.waitFor(() => {
-      expect(app.hash).toBe('#/l/zzzz');
+      expect(app.expandFailed).toBe('~abc');
     });
+    expect(app.hash).toBe('#/l/~abc');
+  });
+
+  it('drops a stale failure once the reader has moved to a different route, so an old payload cannot be mistaken for the new one (D2)', async () => {
+    const router = memoryRouter('#/l/~abc');
+    const unpack = () => Promise.reject(new Error('no DecompressionStream'));
+    const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
+    await vi.waitFor(() => {
+      expect(app.expandFailed).toBe('~abc');
+    });
+    app.go('#/tables');
+    expect(app.expandFailed).toBe('~abc');
+    /* Stale, but harmless: the bad-link check also requires `route.packed`
+       and a matching payload, neither of which `#/tables` has. */
+    expect(app.route.kind).toBe('tables');
   });
 
   it('expands a packed hash the router announces after start()', async () => {

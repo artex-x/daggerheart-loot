@@ -36,6 +36,18 @@ describe('the frame', () => {
     );
   });
 
+  it('moves focus straight to the content without touching the address (P1)', async () => {
+    /* The live browser's own fragment jump would route `#main` through the
+       SPA's address bar too - `parseHash('#main')` is unknown, and the app
+       would replace it with the home section, clearing the selection. */
+    const router = memoryRouter('#/tables/eq_weapon');
+    render(App, { env: fakeEnv({ router }) });
+    const before = router.hash();
+    await userEvent.click(screen.getByRole('link', { name: 'К содержимому' }));
+    expect(router.hash()).toBe(before);
+    expect(screen.getByRole('main')).toHaveFocus();
+  });
+
   it('follows the language on the document itself', async () => {
     render(App, { env: at('#/roll/std') });
     expect(document.documentElement.lang).toBe('ru');

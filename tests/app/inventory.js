@@ -773,6 +773,15 @@ const STATES = [
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
+  {
+    id: '#/lists ~ unreadable storage',
+    route: '#/lists',
+    why:
+      'R1: a corrupt dhloot.lists.v2 value draws the unreadable-storage notice in place of ' +
+      'the folded "lists live only here" disclosure - no lists on screen, the value backed up ' +
+      'under its own key rather than lost',
+    storage: { 'dhloot.lists.v2': '{' }
+  },
 
   /* The list page, off `renderOneList` and everything it draws - app.js
      2933-3128. `plan.md`, "B5.4 planned". */
@@ -940,6 +949,15 @@ const STATES = [
     id: '#/l/zzzz',
     route: '#/l/zzzz',
     why: 'the bad-link page: "Предмет не найден", the badShare line, the "На главную" button'
+  },
+  {
+    /* Valid base64url, invalid deflate - R10/D2 (Q4 settled): a failed
+       expansion now keeps the address exactly where it was rather than
+       replacing it with #/l/zzzz, and draws the same bad-link page in place. */
+    id: '#/l/~AAAA',
+    route: '#/l/~AAAA',
+    enter: (d) => d.expandFailed(),
+    why: 'a packed link that cannot be unpacked: the same bad-link page as #/l/zzzz, address kept'
   },
 
   {

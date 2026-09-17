@@ -84,11 +84,13 @@
   /* The equipment tables draw a second body shape - see the header comment. */
   const eqKind = $derived(EQ_TABLE[table]);
 
-  /* View and the search box are memory only, same as the live app -
-     docs/specs/STATE.md is explicit that what was asked on a page is not
-     remembered, and neither touches the address. */
+  /* The search box is memory only - docs/specs/STATE.md is explicit that
+     what was asked on a page is not remembered, and it does not touch the
+     address. The view switch is the one exception: how a page looks is
+     remembered (`dhloot.prefs.v1`, `AppState.tablesView`) - DC1/Q1, restored
+     after the rewrite briefly dropped it. */
   let q = $state('');
-  let view = $state<'list' | 'grid'>('list');
+  const view = $derived(app.tablesView);
   const VIEWS = $derived([
     { value: 'list', label: t.viewList },
     { value: 'grid', label: t.viewGrid }
@@ -494,7 +496,7 @@
       value={view}
       label={t.view}
       onchange={(v: 'list' | 'grid') => {
-        view = v;
+        app.setTablesView(v);
       }}
     />
   </div>

@@ -577,9 +577,18 @@
   <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
 {:else if !own}
   {#if route.kind === 'sharedList' && route.packed}
-    <!-- A packed link: `AppState` is expanding it and will rewrite the
-         address to the plain form or to `#/l/zzzz`; the live app draws
-         nothing until then either, app.js 4636. -->
+    {#if app.expandFailed === route.payload}
+      <!-- R10/D2 (Q4 settled): the expansion failed and the address is left
+           exactly as it was - the same bad-link page a plain payload that
+           will not decode draws, without replacing what is on the bar. -->
+      <PageTitle title={t.notFound} sub={t.badShare} />
+      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+    {:else}
+      <!-- A packed link still expanding: `AppState` is unpacking it and will
+           rewrite the address to the plain form, or draw the block above in
+           its place if it cannot - the live app draws nothing until then
+           either, app.js 4636. -->
+    {/if}
   {:else if route.kind === 'sharedList'}
     <SharedListPage {app} {index} payload={route.payload} />
   {/if}

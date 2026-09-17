@@ -338,6 +338,19 @@ function makeDriver(page, target) {
     },
 
     /**
+     * Waits for a packed address that will never finish expanding (R10/D2):
+     * the hash itself does not change any more once expansion fails, so
+     * `expanded()`'s own wait would spin until its timeout. The bad-link
+     * page's own heading is the first thing `ListPage` draws while the route
+     * stays packed, so waiting for any heading to exist is the general
+     * signal that the async unpack has settled one way or the other.
+     */
+    async expandFailed() {
+      await page.waitForFunction(() => !!document.querySelector('main h1'));
+      await settle(page);
+    },
+
+    /**
      * Reordering a row by dragging it, the way a pointer does: the page
      * renders `.lrow` in list order, so this grips row `from`'s own handle and
      * drops it above or below row `to`'s midpoint - a name-based lookup would

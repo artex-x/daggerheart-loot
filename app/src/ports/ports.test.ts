@@ -675,6 +675,17 @@ describe('the address bar', () => {
     expect(calls).toEqual([]);
   });
 
+  it('falls back to assigning the hash when replaceState throws (R4/PF3)', () => {
+    /* WebKit throws past 100 replaceState calls in a 30s window - the
+       debounced list-URL sync (PF3) is the caller most likely to hit it. */
+    const { win, history } = fakeWin();
+    history.replaceState = () => {
+      throw new DOMException('rate limited', 'SecurityError');
+    };
+    hashRouter(win).replace('#/lists');
+    expect(win.location.hash).toBe('#/lists');
+  });
+
   it('reports the new address on a hashchange, and stops when told', () => {
     const { win, fire, listeners } = fakeWin();
     const seen: string[] = [];

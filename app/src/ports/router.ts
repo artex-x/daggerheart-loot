@@ -35,12 +35,24 @@ export function hashRouter(win: RouterWin = window): RouterPort {
       /* The filter segment is rewritten on every click. Through `navigate` that
          would bury the page the person came from under a hundred entries, so
          the address is swapped in place and the file:// case - where
-         replaceState is unavailable - falls back to assigning it. */
+         replaceState is unavailable - falls back to assigning it. WebKit also
+         throws past 100 `replaceState` calls in a 30s window (R4/PF3) - the
+         debounced list-URL sync is the caller most likely to hit that limit -
+         so a throw here falls back the same way a missing method does, rather
+         than losing the navigation outright. */
       if (win.history.replaceState) {
-        win.history.replaceState(null, '', win.location.pathname + win.location.search + hash);
-      } else {
-        win.location.hash = hash;
+        try {
+          win.history.replaceState(
+            null,
+            '',
+            win.location.pathname + win.location.search + hash
+          );
+          return;
+        } catch {
+          /* fall through to the assignment below */
+        }
       }
+      win.location.hash = hash;
     },
 
     onChange(fn) {

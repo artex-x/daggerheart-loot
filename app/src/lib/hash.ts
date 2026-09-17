@@ -88,7 +88,13 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'print', ids, dropped: asked.length - ids.length };
   }
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
-  if (/^l\/[A-Za-z0-9_-]+$/.test(h)) {
+  /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
+     client swallowing a trailing full stop is the reachable case (R5) - used
+     to fail the character class and fall through to `unknown`, which sent the
+     whole address home instead of to the shared-list page's own "not found"
+     screen. The payload itself is read as written, valid or not; decoding it
+     is `decodeList`'s job, not the router's. */
+  if (/^l\//.test(h)) {
     return { kind: 'sharedList', payload: h.slice(2), packed: false };
   }
 
@@ -99,8 +105,14 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
   if (m) {
     const name = m[1] ?? '';
     const tail = m[2] ?? '';
-    /* A name that is not in the list does not reset the table to a default: the
-       caller keeps whichever is already open. Hence null, not 'core_item'. */
+    /* A bare `#/tables` carries no name at all and keeps whichever table is
+       already open - that case is untouched, hence null rather than
+       'core_item'. A *named* table that is neither an alias nor a TableId
+       used to be treated the same way (silently ignored, table kept); R9/Q3
+       settled it the other way - one unreadable-address rule for every case,
+       so it falls to `unknown` and the caller replaces it with the home
+       section, the same as any other address nothing here can parse. */
+    if (name && !TABLE_ALIASES[name] && !isTableId(name)) return { kind: 'unknown' };
     const table = name ? (TABLE_ALIASES[name] ?? (isTableId(name) ? name : null)) : null;
     return tail.startsWith('f_')
       ? {

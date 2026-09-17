@@ -489,10 +489,21 @@ implementer for a field-boundary false match - correct); `SearchPage` and
      top: 0; z-index: 300; background: var(--gold); color:
      var(--ink-on-gold); font-weight: 700; padding: 10px 16px;
      border-radius: 0 0 10px 0`); `FEATURES.md` "Chrome" clause; D19 deleted.
-  3. D5/O3: `document.title` = `<name> — <docTitle>` on a record, `<section
-     label> — <docTitle>` on a section, `<list name> — <docTitle>` on a
-     list, plain elsewhere; `shell.test.ts` covers record, section, language
-     switch, `#/i/nope`; `FEATURES.md:153` rewritten; D5 deleted.
+  3. D5/O3: **implemented in B6, 2026-09-17, then reverted** - see
+     `issues/phase-8/handoff.md`, B6's own report for the full evidence.
+     `document.title` = `<name> — <docTitle>` on a record, `<section label>
+     — <docTitle>` on a section, `<list name> — <docTitle>` on a list, plain
+     elsewhere; `shell.test.ts` covered record, section, language switch,
+     `#/i/nope` - all green. The blocker: `tests/app/golden.js`'s
+     accessibility snapshot captures `document.title` as the RootWebArea
+     node's own name, which every structural golden with a record, section
+     or list route records on its first tree line. `node tests/app/
+     golden.js --only="i/ci1"` moved 14 cells the instant the title stopped
+     being the same constant on every route - none of them B6's two
+     authorised new states - directly against this batch's own "nothing
+     else moves" gate. Left un-restored; `DEBT.md` D5 stays open with the
+     three options the handoff records. `FEATURES.md:153` untouched; D5 not
+     deleted.
   4. P11: `TabBar` effect on `current` sets the nav's `scrollLeft` from
      `offsetLeft` arithmetic (not `scrollIntoView`); test with mocked
      geometry.
@@ -960,3 +971,51 @@ sweep widths - roughly 5.5-6 h before counting review passes. The merge
 removes nine batch boundaries, three `check` runs and four shard runs; the
 remaining `check` count is set by the commit boundaries reviewability
 demands (B6, B7, B9), not by batch count.
+
+## B12 - clear the nit register
+
+Added 2026-09-17 on the owner's instruction, after nits slipped twice:
+B3's review nits were dispatched with B4, which shipped without them; they
+were re-routed to B5, which did them; B4's own nits were then folded into B7,
+repeating the move that had just failed. The owner: "it's already second time
+we ask to fix nits but they are not being fixed, let's instead plan b12 to fix
+ALL nits."
+
+- **Objective**: `issues/phase-8/nits.md` has no `outstanding` or `verify`
+  rows left. The nits **are** the acceptance criteria, not an addendum to
+  another scope - that is the whole point of the batch existing.
+- **Scope**: every row in that register's "Outstanding" and "Carried,
+  needing confirmation" tables. The `verify` rows are confirmed against the
+  tree first and then either actioned or marked `done <sha>` with the commit
+  that actually did them.
+- **Out of scope**: the "Deferred out of phase-8" table. Each row there has a
+  reason; a row may only move out of it by the owner's decision, not by an
+  implementer's convenience.
+- **Position**: last, after B11. It collects the nits from B5-B11's reviews
+  too, which do not exist yet - so B12 is dispatched only once every other
+  batch has been reviewed, and the register is complete.
+- **Files**: whatever the register names. At the time of writing that is
+  `tools/check-site.lib.mjs`, `tools/check-site.test.mjs`, `tests/app/golden.js`,
+  `tests/app/golden.test.mjs`, `tests/derived.js`, `.github/workflows/ci.yml`,
+  `.prettierignore`, `docs/specs/META.md`, `.claude/README.md`,
+  `app/src/lib/{search,frames}.ts`, `issues/phase-8/handoff.md`.
+- **Gates**: `npm run check`. Add `npm run check:built` and a targeted
+  `node tests/app/golden.js --only=<sub>` only if a row turns out to move
+  rendered output - none currently should, and a row that does is a
+  stop-and-report, because a nit that changes what a screen draws was
+  mis-classified as a nit.
+- **Acceptance**:
+  1. Every "Outstanding" row is `done <sha>` or has moved to "Deferred" with
+     a reason the owner has seen.
+  2. Every `verify` row names the commit that actually did it, or is done.
+  3. `B4-3` specifically: the previously-unmet acceptance line is recorded as
+     having been unmet, not quietly satisfied - the phase has twice found
+     records claiming verification that did not happen, and this is the fix
+     for one of them.
+  4. The register file ends the batch with an empty "Outstanding" table.
+
+**Standing rule this batch establishes**: a review's nits are appended to
+`nits.md` when the review lands, not when somebody gets to them. The findings
+otherwise live only in an orchestrator's context and are lost with the
+session - which was true of four reviews' findings until this file was
+written.
