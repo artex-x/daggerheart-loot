@@ -1015,7 +1015,10 @@
   (gated on all four `browser` jobs). Second run `35256262165`, after the
   `craft.js` fix: `check`, all four `browser` shards, `audit`, `secrets` and
   `deploy` all green (`browser` jobs 5m35s-6m34s each); the live site's own
-  post-deploy check ("The published site answers correctly") passed.
+  post-deploy check ("The published site answers correctly") passed. This
+  handoff's own docs commit (`571b041..17ac157`) triggered a third run,
+  `35257445596`, also fully green including `deploy` - the code boundary
+  this batch leaves is CI-verified twice over.
 
 ## Blockers
 - None. B6 follows.
