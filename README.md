@@ -259,7 +259,7 @@ data.js               the data: window.LOOT
 card/*.svg            36 vectors for the print cards, exported from Figma
 img/*.webp            876 pictures, 640x640, ~31 MB
 og/*.jpg              the same pictures as JPEG for link previews, ~47 MB
-i/*.html              1091 stub pages with Open Graph markup
+i/*.html              1091 stub pages with Open Graph markup, generated, not committed
 data.json             the same data as plain JSON, for outside readers
 catalog.csv           one row per record, with stat lines
 llms.txt              what the site is, URL grammar, list-link format
@@ -287,6 +287,11 @@ change to the data, run `node tools/build.js`. Forgetting is not fatal:
 committed, so a mismatch fails a test. Artwork and previews are outside that
 script - they are made from the source files by hand, and `tests/dataint.js`
 checks that both files exist for every record that has a picture.
+
+`i/` itself is not in the repository - only `data.json` and `catalog.csv` are
+committed. On a fresh clone, run `node tools/build.js` (or any `npm run check`,
+which runs it first) before `node tests/run-all.js`; otherwise `derived`,
+`dataint`, `craft` and `stub` fail on a missing folder.
 
 ### Tests
 

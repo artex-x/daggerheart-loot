@@ -24,7 +24,11 @@ each split four ways, one per width/shard):
   half - the list-encoding fixtures and the docs-name check), `craft`
   (trimmed to two sections - data invariants and the share stubs), `dataint`,
   `derived`, `stub` (the generated `i/*.html` share stubs do not scroll
-  sideways - never tested either app).
+  sideways - never tested either app). `craft`, `dataint`, `derived`, and
+  `stub` read `i/` off disk; `i/` is generated, not committed
+  (`docs/specs/CONTRACTS.md` section 5), so a clean checkout needs a build
+  (`node tools/build.js`, or `npm run check`, which runs it) before any of
+  these four run outside `npm run check`.
 - Seven `tests/app/*.js` suites test the built rewrite (`dist/`) - what Pages
   serves - in a real Chrome: `app/sweep`, `app/golden`, `app/contracts`,
   `app/states`, `app/typo`, `app/hues`, `app/print`. This is the layer B12

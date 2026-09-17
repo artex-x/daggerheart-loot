@@ -187,6 +187,11 @@ jobs:
       # repository root (vite.config.mts, the artwork() plugin), and a symlink is
       # not what should reach the artifact. Those three folders are copied from
       # the repository below, like the rest of the static assets.
+      #
+      # `i/` is not in the repository (issues/untrack-stubs) - the Build step
+      # above regenerates it (npm run build -> npm run data ->
+      # tools/build-share-pages.js) immediately before this step copies it, so
+      # Collect must never be reordered ahead of Build.
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
