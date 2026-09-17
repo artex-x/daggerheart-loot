@@ -169,7 +169,7 @@ Each part is load-bearing (all measured 2026-09-10 on this host):
   background (`Command did not complete within its 120s timeout and
   was moved to the background`), and for a subagent that is a lost
   run. The default is 120 s and the check is ~165 s (stage by stage:
-  format 11s, lint 30s, typecheck 12s, data 4s, derived 1s, i18n 0s,
+  format 11s, lint 30s, typecheck 12s, data 4s, derived 1s,
   selftest 19s, vitest with coverage 88s), so a check call without a
   timeout cannot finish in the foreground. 600000 is the tool's
   maximum; a check that outlives even that is the fork-pool stall
@@ -177,9 +177,12 @@ Each part is load-bearing (all measured 2026-09-10 on this host):
 - **The tail keeps the result under the tool's cap.** A result over
   about 30,000 characters is not shown; the tool saves it to
   `tool-results/<id>.txt` and names the path. `npm run check` piped
-  to `tail -n 120` stays under. Parity does not: its diff lines carry
-  a page's whole text, so `tail -n` cannot bound the bytes - grep the
-  file the tool names instead of running it again.
+  to `tail -n 120` stays under. The deleted parity harness did not:
+  its diff lines carried a page's whole text, so `tail -n` could not
+  bound the bytes, and the fix was to grep the file the tool named
+  instead of running it again. Nothing that survives R0c produces a
+  single line that large, but the technique still applies if
+  something ever does.
 
 `npm run check > out.txt 2>&1` then reading the file does **not**
 satisfy the gate, however genuinely the run passed - the hook never

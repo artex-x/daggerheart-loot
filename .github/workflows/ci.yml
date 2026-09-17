@@ -164,9 +164,10 @@ jobs:
       - uses: actions/checkout@v5
 
       # The published bytes are built here rather than handed over from the
-      # check job: the job then reads on its own, and the revert above stays a
-      # one-file change. The build is deterministic from the commit, and deploy
-      # already needs the jobs that proved it.
+      # check job, so this job reads on its own. The build is deterministic
+      # from the commit, and deploy already needs the jobs that proved it -
+      # so reverting the offending commit (see the revert note above) is
+      # still the whole recovery procedure, not a multi-file patch.
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
@@ -222,6 +223,14 @@ jobs:
           for f in og/_share.jpg img/_none.webp card/die-d12-bw.svg i/w1.html; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
+          # tools/check-site.mjs's own checks, made here first against the local
+          # copy rather than only against the live URL after the deploy.
+          if ! grep -q 'og:image' _site/i/w1.html; then
+            echo "::error::_site/i/w1.html has no og:image"; exit 1
+          fi
+          if [ "$(wc -c < _site/assets/app.js)" -le 20000 ]; then
+            echo "::error::_site/assets/app.js is not a real build (20000 bytes or fewer)"; exit 1
+          fi
           # The collect step above only copies - byte-for-byte, not "a file of
           # the same name showed up".
           if ! cmp -s dist/index.html _site/index.html; then
@@ -237,6 +246,9 @@ jobs:
           fi
           if ! grep -q 'assets/app.js' _site/index.html; then
             echo "::error::the published index.html does not load assets/app.js"; exit 1
+          fi
+          if ! grep -q '<div id="app"' _site/index.html; then
+            echo "::error::the published index.html has no div id=app"; exit 1
           fi
           # The exact regex tools/check-site.mjs uses against the live URL: the
           # old app's entry script must be gone, not merely joined by the new one.

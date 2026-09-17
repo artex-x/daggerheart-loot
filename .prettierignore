@@ -29,6 +29,14 @@ docs/fixtures/
 .claude/.check-index
 .claude/.hook-state.json
 
+# A dispatched agent's isolated worktree is host infrastructure, not source,
+# and can land nested under this tree's own .claude/ directory unpredictably
+# (a host placement choice, not this repository's). A repo-root
+# `prettier --check .` walks into one if it is there, reddening format:check
+# (hence npm run check) for a reason no diff in this tree explains - it
+# blocked R0c C3's commit gate once already (issues/47/handoff.md, "R0c C3").
+.claude/worktrees/
+
 # Markdown is wrapped by hand: in the READMEs and specs a line break carries
 # meaning, and the licence notice has to stay on one line (tests/derived.js pins it).
 *.md

@@ -115,9 +115,16 @@ function headFacts(file) {
   return out;
 }
 const shareFacts = headFacts('app/index.html');
-ok(Object.keys(shareFacts).length >= 20,
-   'из головы app/index.html прочиталось всего ' + Object.keys(shareFacts).length +
-   ' полей — сломался разбор');
+/* Раньше здесь стоял голый порог `>= 20` - "сломался разбор". На живых данных
+   он читал ровно 20 (19 <meta> плюс <title>), то есть был не полом, а точным
+   числом без запаса: убери любой одиночный <meta> - сообщение соврёт, что
+   разбор сломался, хотя разбор был бы прав, просто поле исчезло. Вместо
+   порога - поимённая проверка того, что разбор обязан найти: каждый ключ из
+   HEAD_META и заголовок. У og: и twitter: своя проверка по значению ниже. */
+HEAD_META.forEach(function (key) {
+  ok(key in shareFacts, 'из головы app/index.html пропал ' + key);
+});
+ok('<title>' in shareFacts, 'из головы app/index.html пропал <title>');
 /* Иконка — тоже часть головы, но это <link>, а не <meta>. */
 const ICON = /<link\s+rel="icon"\s+href="([^"]*)"/i;
 const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')) || [])[1];
@@ -336,6 +343,12 @@ fs.readdirSync(libDir).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))
     ok(text.indexOf('tierBand') < 0,
        'app/src/lib/' + f + ': догадка о ранге по характеристикам (tierBand) вернулась');
   });
+/* `srcWond`-style guessing (deriving a tier by source when one is not stated)
+   has no matching grep here: it cannot recur by construction, not just by
+   absence. `i18n.ts`'s `eqLine()` pushes `labels.tier`/`e.tier` unconditionally
+   whenever `!opts.noTier` (no ternary, no source check), so there is no branch
+   left where a rewrite author could slip a guess back in without touching this
+   one line, which every other equipment-line test already pins byte for byte. */
 
 /* «Универсальное» - это второй набор характеристик, спрятанный в прозе
    свойства. Он разобран в `eq.alt` один раз и дальше читается как данные:
