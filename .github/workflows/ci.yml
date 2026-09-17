@@ -41,10 +41,10 @@ jobs:
       - name: Bundle size budget
         run: npm run budget
 
-      # Parity runs only on manual dispatch below. Structural goldens stay in
-      # their own sharded job so they do not make `check` the critical path.
-      - name: The legacy suites against the live app, and the built app in a browser
-        run: node tests/run-all.js --exclude=parity,app/golden
+      # Structural goldens stay in their own sharded job so they do not make
+      # `check` the critical path.
+      - name: The built app's suites, in a real browser
+        run: node tests/run-all.js --exclude=app/golden
 
       # A CI run is gone by the time anyone looks at it, and the summary prints
       # a dozen grepped lines. run-all.js writes every suite's whole output to
@@ -61,44 +61,8 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-  # The rewrite against the live app remains available on manual dispatch.
-  # Skipping this job on push and PR keeps parity out of routine CI and deploy.
-  parity:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4]
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: The rewrite against the live app - shard ${{ matrix.shard }} of 4
-        run: node tests/parity.js --shard=${{ matrix.shard }}/4
-
-      - name: Everything a failed shard left behind
-        if: failure()
-        uses: actions/upload-artifact@v5
-        with:
-          name: failure-output-parity-${{ matrix.shard }}
-          path: |
-            test-output/
-            dist/
-          retention-days: 14
-          if-no-files-found: ignore
-
-  # The rewrite's own structural regression net, sharded the same way and for
-  # the same reason as parity above: ~1000s unfiltered would make it the
+  # The rewrite's own structural regression net, sharded the same way `check`'s
+  # legacy parity job used to be: ~1000s unfiltered would make it the
   # workflow's critical path if it ran inside `check`. See issue 47, R0a.
   golden:
     runs-on: ubuntu-latest
@@ -160,23 +124,28 @@ jobs:
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
   # dist/data.js, assembled here with the generated data, the stub pages and the
-  # artwork that live in the repository. The old app - index.html, style.css,
-  # app.js - stays in the repository, stays tested by every suite above, and is
-  # the fallback. It is the only thing that left the published set.
+  # artwork that live in the repository.
   #
-  # HOW TO UNDO A BAD DEPLOY
+  # HOW TO UNDO A BAD DEPLOY OF THE REWRITE
   #
-  #     git revert <the commit that changed this file>   # then push
+  #     git revert <the commit that broke it>   # then push
   #
-  # That is the whole procedure. The cut-over was made as one commit touching
-  # this file and nothing else, precisely so the revert cannot conflict: the
-  # next run of this job republishes the root files, which never left the
-  # repository and are still passing their own gates. Nothing else needs
-  # reverting - the ported entry document, the derived checks and
-  # tools/check-site.mjs are inert while the root is published.
+  # The next run of this job republishes whatever the tree looks like after the
+  # revert, so reverting the offending commit is the whole procedure.
   #
-  # Revert first and diagnose after. The old app being present is what makes
-  # that cheap; see issue 47, plan.md, "B13 planned".
+  # THE OLD APP IS GONE FROM THE REPOSITORY, NOT JUST FROM THE PUBLISHED SET
+  #
+  # index.html, app.js and style.css were deleted at R0c (issue 47, `23c00a6`)
+  # once the rewrite had full parity - they are not a fallback sitting in the
+  # tree, and there is no single command that brings them back as the served
+  # site. They exist only in history:
+  #
+  #     git show 23c00a6^ -- index.html app.js style.css
+  #
+  # reads their content at the last commit before the deletion; restoring them
+  # as the live site means reversing back through the cut-over as a deliberate
+  # batch (re-adding the files, re-pointing this workflow's collect step,
+  # reviving the suites that tested them), not a single revert.
   #
   # Pages is already set to "GitHub Actions" (build_type: workflow), so this
   # job is what publishes - nothing else does.
@@ -209,8 +178,8 @@ jobs:
         run: npm run build
 
       # An explicit list rather than "everything": the repository also holds the
-      # sources, the specs and the old app, and none of that belongs on a public
-      # site. A new top-level asset has to be added here on purpose.
+      # sources and the specs, and none of that belongs on a public site. A new
+      # top-level asset has to be added here on purpose.
       #
       # Note `dist/assets` and `dist/data.js` by name, and never `cp -r dist/.`:
       # the build makes dist/img, dist/og and dist/card as symlinks into the
@@ -226,9 +195,10 @@ jobs:
 
       - name: Nothing private slipped in, and nothing public left out
         run: |
-          # app.js and style.css are the old app's: if either is here, the
-          # collect step has published a mixture of the two apps, which is the
-          # one failure mode a half-finished edit produces.
+          # app.js and style.css do not exist in the repository any more (the
+          # old app was deleted at R0c, issue 47, 23c00a6) - if either turns up
+          # in _site anyway, some other step re-created it, and a stray root
+          # file like that must never reach _site.
           for f in package.json node_modules app tests tools docs .git app.js style.css; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
@@ -246,6 +216,20 @@ jobs:
               echo "::error::$d is missing or empty"; exit 1
             fi
           done
+          # One named file per symlinked or generated folder, not just "the
+          # directory is non-empty" - the same by-name checks tools/check-site.mjs
+          # makes against the live URL, made here first against the local copy.
+          for f in og/_share.jpg img/_none.webp card/die-d12-bw.svg i/w1.html; do
+            if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
+          done
+          # The collect step above only copies - byte-for-byte, not "a file of
+          # the same name showed up".
+          if ! cmp -s dist/index.html _site/index.html; then
+            echo "::error::_site/index.html does not match dist/index.html"; exit 1
+          fi
+          if ! cmp -s dist/assets/app.js _site/assets/app.js; then
+            echo "::error::_site/assets/app.js does not match dist/assets/app.js"; exit 1
+          fi
           # META.md section 1 is about what is published, so it is checked on
           # the published file - as is the assertion that the flip took.
           if ! grep -q 'name="robots" content="noindex' _site/index.html; then
@@ -254,8 +238,13 @@ jobs:
           if ! grep -q 'assets/app.js' _site/index.html; then
             echo "::error::the published index.html does not load assets/app.js"; exit 1
           fi
-          if grep -q 'src="app.js"' _site/index.html; then
-            echo "::error::the published index.html still loads the old app"; exit 1
+          # The exact regex tools/check-site.mjs uses against the live URL: the
+          # old app's entry script must be gone, not merely joined by the new one.
+          if grep -qE 'src="\.?/?app\.js"' _site/index.html; then
+            echo "::error::published index.html still loads the old app.js"; exit 1
+          fi
+          if [ "$(head -c 11 _site/data.js)" != "window.LOOT" ]; then
+            echo "::error::_site/data.js does not start with window.LOOT"; exit 1
           fi
           echo "published:"; ls -A _site
 
