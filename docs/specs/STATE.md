@@ -29,6 +29,7 @@ instead - that is what the `f_` segment is for.
 | `dhloot.prefs.v1` | `{ view: 'list' \| 'grid' }` |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |
+| `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1) |
 
 Every read is defensive: a value that does not parse, or does not pass its own
 validity check, is replaced by the default and the rest is kept. Broken JSON is
@@ -48,6 +49,16 @@ storage and merges by `id`:
 The `storage` event redraws the other tab. Before this existed, two open tabs
 destroyed each other's lists silently, with no server and no export to recover
 from, so the merge is not an optimisation.
+
+The `storage` event alone only covers a tab that is in the foreground the
+whole time - a backgrounded tab is not guaranteed a `storage` event at all in
+most browsers, so a phone put away mid-edit and brought back could otherwise
+overwrite whatever a desktop tab wrote while it was away, or resurrect a list
+the desktop tab had since deleted (R2). `browserStorage` also reloads on
+`visibilitychange` (becoming visible again) and `pageshow` (a back-forward-
+cache restore), neither of which names a key, so both are treated the same
+as a `storage` event with none - `localStorage.clear()`'s own shape, also
+now redrawn rather than silently ignored.
 
 ## The list migration
 

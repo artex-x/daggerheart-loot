@@ -102,9 +102,15 @@ describe('the row under a full card', () => {
     expect(readLists(storage)[0]?.ids).toEqual(['ci1']);
   });
 
-  it('removes on a second press and toasts the removal', async () => {
+  it('removes on a second press, toasts the removal, and undoes back into place with its meta (P5)', async () => {
     const inList = JSON.stringify([
-      { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 },
+      {
+        id: 'a',
+        name: 'Клад дракона',
+        ids: ['w1', 'ci1'],
+        created: 1,
+        meta: { ci1: { qty: 3 } }
+      },
       { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
     ]);
     const storage = memoryStorage({ 'dhloot.lists.v2': inList });
@@ -114,7 +120,11 @@ describe('the row under a full card', () => {
     await userEvent.click(screen.getByRole('button', { name: '✓ Клад дракона' }));
     expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
     expect(screen.getByText('Убрано из «Клад дракона»')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.ids).toEqual([]);
+    expect(readLists(storage)[0]?.ids).toEqual(['w1']);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.ids).toEqual(['w1', 'ci1']);
+    expect(readLists(storage)[0]?.meta).toEqual({ ci1: { qty: 3 } });
   });
 
   it('grows a search box past eight lists, and narrows by typing', async () => {

@@ -76,6 +76,18 @@
     app.shared = null;
   });
 
+  /* P9: toasted once per distinct payload, not once per component instance -
+     this page is never remounted between two plain shared-list addresses,
+     so a component-lifetime flag would miss every payload after the first. */
+  let toldFor = $state('');
+  $effect(() => {
+    const s = shared;
+    if (s && s.dropped > 0 && toldFor !== payload) {
+      toldFor = payload;
+      app.say(t.droppedItems.replace('%n', String(s.dropped)));
+    }
+  });
+
   let open = $state<Record_ | null>(null);
 </script>
 

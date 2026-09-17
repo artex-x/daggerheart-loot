@@ -6,7 +6,6 @@
    *
    * Extracted here on its second use - the lists index and the list page
    * (B5.4) both draw it in the same slot, and nowhere else. */
-  import { untrack } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -17,10 +16,6 @@
 
   const t = $derived(app.t);
 
-  /* Read once: whether storage works does not change while the page is open,
-     and asking on every render costs a write and a delete each time. */
-  const works = untrack(() => app.env.storage.works());
-
   function dismiss(e: MouseEvent): void {
     /* The cross sits inside the summary, so a plain click would also toggle
        the disclosure - the live `hideWarn` calls this first for the same
@@ -30,9 +25,16 @@
   }
 </script>
 
-{#if !works}
+{#if !app.storageWorks}
   <!-- Nothing dismisses this one - there is nothing to remember it with. -->
   <div class="warn"><b>{t.noStorageTitle}</b>{' ' + t.noStorage}</div>
+{:else if app.lists.unreadable}
+  <!-- R1: storage itself works, but the lists key held something that would
+       not parse. Not dismissable either - the notice has to keep saying so
+       until a write actually clears it, and there is no state to remember a
+       dismissal against that would survive the next reload finding the same
+       bad value again. -->
+  <div class="warn"><b>{t.badStorageTitle}</b>{' ' + t.badStorage}</div>
 {:else if !app.warnHidden}
   <!-- The live `render()` builds this notice fresh on a language switch, and
        `restoreOpen` (app.js 3769) only re-applies a person's fold/unfold to

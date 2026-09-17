@@ -13,7 +13,7 @@
   import Icon from './Icon.svelte';
   import { sharedListHash } from '../lib/hash.js';
   import { encodeList } from '../lib/listLink.js';
-  import { N_SHARED, type StoredList } from '../lib/lists.js';
+  import { itemMeta, N_SHARED, type StoredList } from '../lib/lists.js';
   import type { AppState } from '../state/app.svelte.js';
 
   /** `S.lists.length >= PICKER_SEARCH_AT` in app.js - the picker grows a
@@ -79,8 +79,23 @@
        `applyAddTo` (1911) sends '@' straight to `addIdsTo`, before the
        single-record toggle every other key gets. */
     if (key !== N_SHARED && one !== undefined && l.ids.includes(one)) {
-      app.lists.removeId(l, one);
-      if (app.lists.save()) app.say(t.removedFrom.replace('%s', l.name));
+      const entryId = one;
+      const at = l.ids.indexOf(entryId);
+      const meta = { ...itemMeta(l, entryId) };
+      app.lists.removeId(l, entryId);
+      if (app.lists.save()) {
+        /* P5: every other destructive action here offers an undo -
+           `restoreEntry` is the same one the list page's own row-remove
+           cross already uses. */
+        app.say(t.removedFrom.replace('%s', l.name), {
+          action: {
+            label: t.undo,
+            run: () => {
+              app.lists.restoreEntry(l.id, entryId, at, meta);
+            }
+          }
+        });
+      }
       return;
     }
     const knows = (id: string): boolean => !!app.index?.byId.has(id);

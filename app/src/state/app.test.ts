@@ -215,6 +215,13 @@ describe('the tables view preference (DC1/Q1 - restored)', () => {
   });
 });
 
+describe('whether storage works, read once at construction', () => {
+  it('is true for storage that works, false for storage that refuses', () => {
+    expect(new AppState(at('#/lists')).storageWorks).toBe(true);
+    expect(new AppState(at('#/lists', { storage: brokenStorage() })).storageWorks).toBe(false);
+  });
+});
+
 describe('the storage notice', () => {
   const WARN_KEY = 'dhloot.warn.v1';
 

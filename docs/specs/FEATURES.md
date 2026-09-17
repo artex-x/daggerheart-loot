@@ -97,7 +97,7 @@ Six modes. Each keeps its own input in memory only.
 ## Lists
 
 - Create, rename, reorder (drag handle or by typing a position), remove with
-  undo, delete.
+  undo, delete with undo (P5).
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel; a search box appears from the eighth list; the menu opens on

@@ -23,6 +23,9 @@ import type { Env } from '../ports/index.js';
 
 const LISTS_KEY = 'dhloot.lists.v2';
 const LISTS_KEY_V1 = 'dhloot.lists.v1';
+/** Where a `dhloot.lists.v2` value that will not parse is copied before this
+ *  tab's own next write would otherwise silently overwrite it - R1. */
+const LISTS_KEY_BAD = 'dhloot.lists.v2.bad';
 
 /** Four base-36 digits off `env.random`, the same shape `Math.random()
  *  .toString(36).slice(2, 6)` produces but not tied to the global. */
@@ -37,6 +40,19 @@ export class ListStore {
    *  a refused write has already toasted `saveFailed`, and a caller must not
    *  follow it with a cheerful "created". */
   saved = $state(true);
+  /**
+   * Whether `dhloot.lists.v2` held something that would not parse, the last
+   * time it was read - R1. A bare `catch { return [] }` here used to be the
+   * whole story: `load()` and `save()` each caught the same failure
+   * independently, both treated storage as empty, and `save()` then wrote
+   * this tab's own lists straight over whatever the corrupt value actually
+   * was - the eleven-line-older migration comment above `load()` is careful
+   * to leave a rollback's old key untouched "so nothing is lost", and the
+   * very same file then lost data on the next line down. `#readCurrent`
+   * below is now the one place either method reads the key, and it backs
+   * the raw value up under `.bad` before either can overwrite it.
+   */
+  unreadable = $state(false);
 
   readonly #env: Env;
   /** What the app's own `say` needs, without this module knowing `AppState`. */
@@ -55,16 +71,43 @@ export class ListStore {
     this.lists = this.load();
   }
 
+  /**
+   * Parses `dhloot.lists.v2` as it stands right now - `null` when the key is
+   * simply absent, `[]` (with `unreadable` set) when it holds something that
+   * will not parse. The one place either `load()` or `save()` reads the key,
+   * so the R1 backup below runs exactly once per bad read regardless of
+   * which caller hit it, and `unreadable` clears itself the moment the key
+   * is readable again - this tab's own next successful write included.
+   *
+   * `#deleted` is filtered here too (S5): a list this tab has already
+   * deleted must not come back from a stored snapshot another tab wrote
+   * before it heard about the deletion - the same rule `save()`'s own merge
+   * already applies, now applied to a plain read as well, since `watch()`
+   * calls this directly on another tab's write.
+   */
+  #readCurrent(): StoredList[] | null {
+    const raw = this.#env.storage.get(LISTS_KEY);
+    if (raw === null) return null;
+    try {
+      const parsed = keepLists(JSON.parse(raw)).filter((l) => !this.#deleted[l.id]);
+      this.unreadable = false;
+      return parsed;
+    } catch {
+      this.unreadable = true;
+      /* Backed up once: a second bad read (this tab's own next save,
+         another tab writing something else unreadable) must not overwrite
+         the first thing that was actually lost. */
+      if (this.#env.storage.get(LISTS_KEY_BAD) === null) {
+        this.#env.storage.set(LISTS_KEY_BAD, raw);
+      }
+      return [];
+    }
+  }
+
   /** Reads storage fresh. Used at construction and again on another tab's write. */
   load(): StoredList[] {
-    const raw = this.#env.storage.get(LISTS_KEY);
-    if (raw !== null) {
-      try {
-        return keepLists(JSON.parse(raw));
-      } catch {
-        return [];
-      }
-    }
+    const current = this.#readCurrent();
+    if (current !== null) return current;
     /* First run on the new shape: bring the old lists across and leave the
        old key untouched, so nothing is lost if this version is rolled back. */
     const old = this.#env.storage.get(LISTS_KEY_V1);
@@ -92,12 +135,7 @@ export class ListStore {
    * next `load()` folds another tab's lists in.
    */
   save(): boolean {
-    let storedNow: StoredList[];
-    try {
-      storedNow = keepLists(JSON.parse(this.#env.storage.get(LISTS_KEY) ?? '[]'));
-    } catch {
-      storedNow = [];
-    }
+    const storedNow = this.#readCurrent() ?? [];
     const merged = mergeLists(this.lists, storedNow, this.#deleted);
     const ok = this.#env.storage.set(LISTS_KEY, JSON.stringify(merged));
     this.saved = ok;
@@ -133,15 +171,44 @@ export class ListStore {
     };
     this.lists = [l, ...this.lists];
     this.save();
-    return l;
+    /* Not `l`: `this.lists` is `$state`, and Svelte wraps a stored object in
+       a reactive proxy - the array's own [0] is what a caller actually
+       shares identity with the store on, `l` itself never being written to
+       again. The `?? l` fallback is never actually reached - `this.lists`
+       was just unshifted with `l` at the front - it only satisfies the
+       indexed-access type without a non-null assertion. */
+    return this.lists[0] ?? l;
   }
 
-  /** Drops the list for good - the live `deleteList`. Remembered in
-   *  `#deleted` so a later merge cannot bring it back from another tab's
-   *  still-unmerged copy. */
-  remove(id: string): void {
+  /**
+   * Drops the list for good - the live `deleteList`. Remembered in
+   * `#deleted` so a later merge cannot bring it back from another tab's
+   * still-unmerged copy.
+   *
+   * Returns the removed list and its old index, so a caller can offer an
+   * undo (P5, matching every other destructive action) through
+   * `restoreList` below - `undefined` for an id already gone, the same
+   * "already handled, nothing to undo" shape `restoreEntry` gives a second
+   * undo of one row.
+   */
+  remove(id: string): { list: StoredList; index: number } | undefined {
+    const list = this.lists.find((l) => l.id === id);
+    if (!list) return undefined;
+    const index = this.lists.indexOf(list);
     this.#deleted[id] = true;
     this.lists = this.lists.filter((l) => l.id !== id);
+    this.save();
+    return { list, index };
+  }
+
+  /** Undoes `remove()`: splices the list back at its old index and forgets
+   *  it was ever deleted, so a later merge can see it again - the list-level
+   *  counterpart of `restoreEntry` below, for one row. */
+  restoreList(list: StoredList, index: number): void {
+    Reflect.deleteProperty(this.#deleted, list.id);
+    const next = [...this.lists];
+    next.splice(Math.min(index, next.length), 0, list);
+    this.lists = next;
     this.save();
   }
 
@@ -191,11 +258,14 @@ export class ListStore {
     );
   }
 
-  /** Another tab wrote the key: take theirs, the way the live app's `storage`
-   *  listener does (`mergeLists(loadLists())` with an empty `theirs`). */
+  /** Another tab wrote the key, or this tab has reason to think it might
+   *  have missed such a write (R2 - `null`, off a `storage` event with no
+   *  key, becoming visible again, or a bfcache restore): take theirs, the
+   *  way the live app's `storage` listener does (`mergeLists(loadLists())`
+   *  with an empty `theirs`). */
   watch(): () => void {
     return this.#env.storage.onExternalChange((key) => {
-      if (key === LISTS_KEY) this.lists = this.load();
+      if (key === LISTS_KEY || key === null) this.lists = this.load();
     });
   }
 

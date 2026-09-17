@@ -38,10 +38,16 @@ export interface StoragePort {
   /** Whether storage works at all - what the warning in the lists section asks. */
   works(): boolean;
   /**
-   * Another tab wrote to a key. The whole two-tab merge hangs off this, so it
-   * is part of the port rather than something a component wires up itself.
+   * Another tab wrote to a key, or - `null` - this tab has reason to believe
+   * it might have missed one (R2). The whole two-tab merge hangs off this,
+   * so it is part of the port rather than something a component wires up
+   * itself. `null` covers `localStorage.clear()`, which fires a `storage`
+   * event with no key at all, and the two moments a backgrounded tab is
+   * given no `storage` event for anyway - becoming visible again, and a
+   * back-forward-cache restore - both of which a caller answers the same
+   * way it answers a named key: reload and merge.
    */
-  onExternalChange(fn: (key: string) => void): () => void;
+  onExternalChange(fn: (key: string | null) => void): () => void;
 }
 
 /* ---------- clipboard ---------- */

@@ -122,6 +122,17 @@ describe('heading and sub', () => {
   });
 });
 
+describe('a dropped entry (P9)', () => {
+  it('toasts the count once, without hiding the rows that did survive', () => {
+    const payload = encodeList({ name: 'X', ids: ['ci1', 'nope999'] }, true);
+    render(App, { env: at('#/l/' + payload) });
+    expect(
+      screen.getByText('Пропущено позиций: 1 — их больше нет в данных')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Спальный мешок')).toBeInTheDocument();
+  });
+});
+
 describe('untitled', () => {
   it('falls back to "Без названия" for a nameless list', () => {
     const payload = encodeList({ name: '', ids: ['ci1'] }, true);

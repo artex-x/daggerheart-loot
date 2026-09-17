@@ -25,6 +25,7 @@ export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { hashRouter, memoryRouter } from './router.js';
 export { browserShare, fakeShare } from './share.js';
 export { brokenStorage, browserStorage, memoryStorage } from './storage.js';
+export type { FakeStoragePort } from './storage.js';
 
 export function browserEnv(): Env {
   return {

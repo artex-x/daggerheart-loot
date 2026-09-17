@@ -4,7 +4,7 @@
  * as the frame's own invention; it lives here now, where the live app draws
  * it. */
 
-import { cleanup, render, screen } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
@@ -109,6 +109,16 @@ describe('the head and the panel', () => {
     expect(screen.getByText('Браузер блокирует локальное хранилище.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Скрыть' })).not.toBeInTheDocument();
     expect(screen.queryByText('подробнее')).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the unreadable-storage warning in place of the fold-open notice, undismissable (R1)', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': '{' }) })
+    });
+    expect(screen.getByText('Сохранённые списки не удалось прочитать.')).toBeInTheDocument();
+    expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Скрыть' })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -254,13 +264,18 @@ describe('deleting a list', () => {
     expect(readLists(storage)).toHaveLength(2);
   });
 
-  it('removes the card and the stored list on confirmation', async () => {
+  it('removes the card and the stored list on confirmation, and toasts with an undo (P5)', async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
     render(App, { env: at({ storage, dialog: fakeDialog(true) }) });
     await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
 
     expect(screen.queryByRole('link', { name: /Клад дракона/ })).not.toBeInTheDocument();
     expect(readLists(storage).map((l) => l.id)).toEqual(['b']);
+    expect(screen.getByText('Список «Клад дракона» удалён')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage).map((l) => l.id)).toEqual(['a', 'b']);
+    expect(screen.getByRole('link', { name: /Клад дракона/ })).toBeInTheDocument();
   });
 });
 
@@ -323,6 +338,35 @@ describe('restoring a list', () => {
     expect(readLists(storage)[0]?.ids).toEqual(['ci1']);
   });
 
+  it('passes money, note and hnote through instead of dropping them, and toasts the dropped-id count (R3/P9)', async () => {
+    const withNotes: StoredList = {
+      id: 'x',
+      name: 'Оружейная',
+      ids: ['ci1', 'zzz999'],
+      created: 1,
+      money: 'coin',
+      note: 'Для игроков',
+      hnote: 'Только для мастера'
+    };
+    const router = memoryRouter('#/lists');
+    const storage = memoryStorage();
+    /* The players' link, off which restore() is meant to work too - it never
+       carries hnote, so that field's absence below is that shape, not a bug. */
+    const payload = encodeList(withNotes, true);
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage }) });
+
+    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), '#/l/' + payload);
+    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
+
+    const stored = readLists(storage)[0];
+    expect(stored?.money).toBe('coin');
+    expect(stored?.note).toBe('Для игроков');
+    expect(stored?.hnote).toBeUndefined();
+    expect(
+      screen.getByText('Пропущено позиций: 1 — их больше нет в данных')
+    ).toBeInTheDocument();
+  });
+
   it('toasts badShare as an alert for garbage', async () => {
     render(App, { env: at() });
     await userEvent.type(
@@ -333,6 +377,27 @@ describe('restoring a list', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Ссылка повреждена или собрана в другой версии данных.'
     );
+  });
+});
+
+describe("another tab's write while the index is mounted (S7/R2)", () => {
+  /* The gap the dispatch named: no test fired a storage event into a mounted
+     page. `listPage.test.ts` closes it for S4's own note-field symptom;
+     this closes it for R2's general reload trigger, on a second page type,
+     through the `null`-key path a `storage` event with no key (or this
+     tab becoming visible again) uses. */
+  it('redraws with another tab’s list on a null-key external change', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
+    render(App, { env: at({ storage }) });
+    expect(screen.queryByRole('link', { name: /Клад дракона/ })).toBeInTheDocument();
+
+    const third: StoredList = { id: 'c', name: 'Третий список', ids: [], created: 3 };
+    storage.set('dhloot.lists.v2', JSON.stringify([listA, listB, third]));
+    storage.fireExternalChange(null);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Третий список/ })).toBeInTheDocument();
+    });
   });
 });
 

@@ -109,13 +109,77 @@
    * `onDestroy` fires exactly once, when
    * `App.svelte` remounts a different page component - the live app's own
    * "every other route" moment.
+   *
+   * R4-1/PF3: this used to call `app.syncListUrl(l)` straight away, so one
+   * `history.replaceState` landed per keystroke in a note - WebKit throws
+   * past 100 of those in 30s. `scheduleUrlSync` below debounces the actual
+   * call 150ms trailing (`router.ts`'s own try/catch, R4-2, is the other
+   * half - the fallback for whichever browser is hit anyway); the read that
+   * subscribes this effect to every edit still happens synchronously, right
+   * here, so no edit is ever missed even though the write it causes lands
+   * later. `own`'s own short-circuit above still resolves the list by id
+   * while the address lags behind an edit not yet flushed, because neither
+   * `route.payload` nor `app.urlPayload` change until the debounced call
+   * actually runs - they stay equal, stale together, the whole time.
    */
-  $effect(() => {
+  let syncTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Cancels a pending sync outright, with no flush - `del()`'s own case:
+   *  the list a timer is still waiting to write into the address is the
+   *  same one that just stopped existing, and `own` reading stale during
+   *  teardown (see `flushUrlSync` below) means a flush there would put a
+   *  deleted list's payload back in the bar right after `go('#/lists')`
+   *  left it. Nothing else needs this - a plain navigation away from a
+   *  list that still exists is exactly the case `flushUrlSync` is for. */
+  function cancelUrlSync(): void {
+    if (syncTimer === null) return;
+    clearTimeout(syncTimer);
+    syncTimer = null;
+  }
+
+  function scheduleUrlSync(l: StoredList): void {
+    if (syncTimer !== null) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => {
+      syncTimer = null;
+      app.syncListUrl(l);
+    }, 150);
+  }
+
+  /**
+   * Runs a pending sync immediately instead of losing it - on unmount, and
+   * on `pagehide`, since a timer already running does not survive the page
+   * actually going away.
+   *
+   * Reads `own` fresh rather than the list `scheduleUrlSync` last captured:
+   * Svelte does not re-run a dying component's own `$derived`s on the way
+   * out, so during teardown `own` can still read as whatever it was before
+   * whatever triggered the teardown - correct for an ordinary navigation
+   * away from a list that still exists, which is what this path is for.
+   * `del()` cancels outright instead of reaching this at all, for the one
+   * case where that staleness would be wrong.
+   */
+  function flushUrlSync(): void {
+    if (syncTimer === null) return;
+    clearTimeout(syncTimer);
+    syncTimer = null;
     const l = own;
     if (l) app.syncListUrl(l);
+  }
+
+  $effect(() => {
+    const l = own;
+    if (l) scheduleUrlSync(l);
+  });
+
+  $effect(() => {
+    window.addEventListener('pagehide', flushUrlSync);
+    return () => {
+      window.removeEventListener('pagehide', flushUrlSync);
+    };
   });
 
   onDestroy(() => {
+    flushUrlSync();
     app.clearOpenList();
   });
 
@@ -132,6 +196,18 @@
      drops a scoped rule no template element can match and `npm run check`
      fails it as dead CSS if the port toggled them itself. */
   const lsel = new SvelteSet<string>();
+
+  /* D23: Back/Forward between two different list addresses does not remount
+     this component - Svelte only remounts between two different *route
+     kinds* - so `lsel` and the open batch bar used to survive a history move
+     onto a different list entirely, showing the previous list's ticks over
+     rows that were never ticked. `app.navigations` is the same signal
+     `TablesPage`/`SearchPage` already watch for the equivalent case. */
+  $effect(() => {
+    void app.navigations;
+    lsel.clear();
+  });
+
   let roll = $state(0);
   let moneyHelp = $state(false);
   let guess = $state(false);
@@ -209,8 +285,23 @@
     const l = own;
     if (!l) return;
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
-    store.remove(l.id);
+    /* Before removing it: a pending debounced sync (R4-1/PF3) still names
+       this list, and must not flush into the address bar after it is gone -
+       see `cancelUrlSync`. */
+    cancelUrlSync();
+    const removed = store.remove(l.id);
     app.go('#/lists');
+    /* P5: delete gets an undo, like every other destructive action here. */
+    if (removed) {
+      app.say(t.listDeleted.replace('%s', l.name), {
+        action: {
+          label: t.undo,
+          run: () => {
+            store.restoreList(removed.list, removed.index);
+          }
+        }
+      });
+    }
   }
 
   function pickMoney(mode2: MoneyMode): void {
@@ -353,83 +444,83 @@
     guess = !guess;
   }
 
-  /** The live `data-guess-apply` handler (3989-4010): every ticked row a band
-   *  can be guessed for gets its gold set to the guessed price. */
-  function applyGuess(): void {
+  /**
+   * The shape all three batch price actions below repeated (A6): for every
+   * ticked row, ask `next(id)` for a new gold value - `undefined` skips the
+   * row (no eligible price, or nothing to change) - remember what it was,
+   * write it, and if anything actually changed, toast `msg(n)` with an undo
+   * that puts every touched row's old value back. Returns how many rows
+   * changed, since `applyGuess` alone has a further thing to do only on
+   * success (fold its own panel).
+   */
+  function goldEdit(
+    next: (id: string) => number | undefined,
+    msg: (n: number) => string
+  ): number {
     const l = own;
-    if (!l || !index) return;
+    if (!l) return 0;
     const before: Record<string, number> = {};
     let n = 0;
     for (const id of ticked) {
-      const it = byId(id);
-      if (!it) continue;
-      const v = guessPrice(it, index.rarityOf);
-      if (!v) continue;
+      const v = next(id);
+      if (v === undefined) continue;
       before[id] = metaOf(id).gold ?? 0;
       store.setMeta(l.id, id, 'gold', v);
       n++;
     }
-    if (!n) return;
-    guess = false;
-    app.say(`${t.guessDone} (${String(n)})`, {
-      action: {
-        label: t.repriceUndo,
-        run: () => {
-          for (const [id, gold] of Object.entries(before))
-            store.setMeta(l.id, id, 'gold', gold);
+    if (n) {
+      app.say(msg(n), {
+        action: {
+          label: t.repriceUndo,
+          run: () => {
+            for (const [id, gold] of Object.entries(before))
+              store.setMeta(l.id, id, 'gold', gold);
+          }
         }
-      }
-    });
+      });
+    }
+    return n;
+  }
+
+  /** The live `data-guess-apply` handler (3989-4010): every ticked row a band
+   *  can be guessed for gets its gold set to the guessed price. */
+  function applyGuess(): void {
+    if (!index) return;
+    const idx = index;
+    const n = goldEdit(
+      (id) => {
+        const it = byId(id);
+        const v = it ? guessPrice(it, idx.rarityOf) : 0;
+        return v || undefined;
+      },
+      (count) => `${t.guessDone} (${String(count)})`
+    );
+    if (n) guess = false;
   }
 
   /** The live `data-reprice` handler (4012-4040): every ticked, priced row
    *  shifts by `rp` percent. */
   function repriceTicked(): void {
-    const l = own;
-    if (!l || !rp) return;
-    const before: Record<string, number> = {};
-    let n = 0;
-    for (const id of ticked) {
-      const gold = metaOf(id).gold ?? 0;
-      if (!(gold > 0)) continue;
-      before[id] = gold;
-      store.setMeta(l.id, id, 'gold', reprice(gold, rp));
-      n++;
-    }
-    if (!n) return;
-    app.say(`${t.repriceDone} (${rp > 0 ? '+' : ''}${String(rp)}%, ${String(n)})`, {
-      action: {
-        label: t.repriceUndo,
-        run: () => {
-          for (const [id, gold] of Object.entries(before))
-            store.setMeta(l.id, id, 'gold', gold);
-        }
-      }
-    });
+    if (!rp) return;
+    goldEdit(
+      (id) => {
+        const gold = metaOf(id).gold ?? 0;
+        return gold > 0 ? reprice(gold, rp) : undefined;
+      },
+      (n) => `${t.repriceDone} (${rp > 0 ? '+' : ''}${String(rp)}%, ${String(n)})`
+    );
   }
 
   /** The live `data-batch-clearprice` handler (4042-4059): every ticked,
    *  priced row loses its price. */
   function clearPrices(): void {
-    const l = own;
-    if (!l) return;
-    const before: Record<string, number> = {};
-    for (const id of ticked) {
-      const gold = metaOf(id).gold ?? 0;
-      if (!(gold > 0)) continue;
-      before[id] = gold;
-      store.setMeta(l.id, id, 'gold', 0);
-    }
-    if (!Object.keys(before).length) return;
-    app.say(t.batchNoPrice, {
-      action: {
-        label: t.repriceUndo,
-        run: () => {
-          for (const [id, gold] of Object.entries(before))
-            store.setMeta(l.id, id, 'gold', gold);
-        }
-      }
-    });
+    goldEdit(
+      (id) => {
+        const gold = metaOf(id).gold ?? 0;
+        return gold > 0 ? 0 : undefined;
+      },
+      () => t.batchNoPrice
+    );
   }
 
   /** The live `data-batch-del` handler (4061-4083): remembers every ticked
@@ -519,13 +610,34 @@
     };
   });
 
-  /** Seeds a textarea's text child once, at mount - the live `<textarea>
-   *  {esc(value)}</textarea>`. Never re-applied: the component reads edits
-   *  through `oninput` rather than binding `value`, exactly as the live
-   *  uncontrolled field does, which is what gives the inventory the live
-   *  names (a bound value leaves `textContent` empty). */
-  function seedText(node: HTMLTextAreaElement, value: string): void {
+  /**
+   * Seeds a textarea's text child at mount - the live `<textarea>
+   * {esc(value)}</textarea>`. The component reads edits through `oninput`
+   * rather than binding `value`, exactly as the live uncontrolled field
+   * does, which is what gives the inventory the live names (a bound value
+   * leaves `textContent` empty) - the mount write stays `textContent` for
+   * exactly that reason.
+   *
+   * S4: past mount, an uncontrolled field ignores whatever this component's
+   * own state does next - so a note that changed underneath it (another
+   * tab's edit, landed through `watch()`) stayed on screen showing the old
+   * text until the next keystroke silently overwrote the new one with it.
+   * `update` re-seeds through `.value` instead - `textContent` no longer
+   * reaches a field's live value once the browser's own "dirty value" flag
+   * is set, which happens the moment anyone (a person or a script) has ever
+   * written to `.value` - but only when the field is not focused (a person
+   * mid-edit here wins) and only when the incoming text actually differs
+   * (an edit this same tab just made already matches, and touching `.value`
+   * unconditionally would reset the caret on every keystroke).
+   */
+  function seedText(node: HTMLTextAreaElement, value: string): { update(v: string): void } {
     node.textContent = value;
+    return {
+      update(v: string) {
+        if (document.activeElement === node) return;
+        if (node.value !== v) node.value = v;
+      }
+    };
   }
 </script>
 

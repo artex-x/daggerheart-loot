@@ -286,12 +286,21 @@ const ru = {
   noStorageTitle: 'Браузер блокирует локальное хранилище.',
   noStorage:
     'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
+  badStorageTitle: 'Сохранённые списки не удалось прочитать.',
+  badStorage:
+    'Похоже, их записала другая версия приложения, расширение браузера или другая вкладка на этом сайте. Исходное содержимое сохранено под отдельным ключом и не потеряно; дальнейшие изменения будут сохраняться заново, начиная с чистого списка.',
   localOnlyTitle: 'Списки живут только в этом браузере.',
   localOnly:
     'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
   deleteConfirm: 'Удалить список «%s»? Это действие необратимо.',
+  /* P5: delete gets an undo, like every other destructive action. */
+  listDeleted: 'Список «%s» удалён',
   playersLinkCopied: 'Ссылка для игроков скопирована — заметок мастера в ней нет',
   badShare: 'Ссылка повреждена или собрана в другой версии данных.',
+  /* P9: an old link naming a renumbered or deleted record used to lose those
+     entries with no sign anything was missing - toasted once, on the shared
+     page and after restoring a copy. */
+  droppedItems: 'Пропущено позиций: %n — их больше нет в данных',
 
   /* The list page - app.js 114-195, the address, the actions, the notes,
      the roll panel and a row's own controls. */
@@ -577,12 +586,17 @@ const en: Dict = {
   noStorageTitle: 'The browser is blocking local storage.',
   noStorage:
     'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
+  badStorageTitle: 'The saved lists could not be read.',
+  badStorage:
+    'Something else on this site - another build, a browser extension, or another tab - seems to have written them. The original content was kept under a separate key rather than lost; further changes save again from a clean list.',
   localOnlyTitle: 'Lists live in this browser only.',
   localOnly:
     'The app has no server. Clearing site data, a private window or another device, and the lists are gone. To keep one, press “Your own link”: the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under “GM only”. Send players the “Players’ link” or the result of “Copy text”: only what is written under “For players” goes there. The browser’s own address bar holds the players’ link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
   deleteConfirm: 'Delete the list "%s"? This cannot be undone.',
+  listDeleted: 'List "%s" deleted',
   playersLinkCopied: 'Players’ link copied — it carries no GM notes',
   badShare: 'The link is damaged or was built from a different data version.',
+  droppedItems: 'Skipped %n items - no longer in the data',
 
   rename: 'List name',
   sharePlayers: 'Players’ link',

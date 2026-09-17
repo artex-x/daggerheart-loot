@@ -52,10 +52,62 @@ describe('reading what is stored', () => {
     expect(store.lists).toEqual([{ id: 'a', name: 'Клад', ids: [], hnote: 'только мастеру' }]);
   });
 
-  it('is empty with neither key, and empty on broken JSON', () => {
-    expect(new ListStore(at(), say, t).lists).toEqual([]);
+  it('is empty with neither key, and is not marked unreadable', () => {
+    const store = new ListStore(at(), say, t);
+    expect(store.lists).toEqual([]);
+    expect(store.unreadable).toBe(false);
+  });
+
+  it('is empty on broken JSON, marks itself unreadable, and backs the raw value up once (R1)', () => {
     const env = at({ storage: memoryStorage({ 'dhloot.lists.v2': '{not json' }) });
-    expect(new ListStore(env, say, t).lists).toEqual([]);
+    const store = new ListStore(env, say, t);
+    expect(store.lists).toEqual([]);
+    expect(store.unreadable).toBe(true);
+    expect(env.storage.get('dhloot.lists.v2.bad')).toBe('{not json');
+  });
+
+  it('does not overwrite an existing backup with a second bad read', () => {
+    const env = at({
+      storage: memoryStorage({
+        'dhloot.lists.v2': '{not json',
+        'dhloot.lists.v2.bad': 'already backed up'
+      })
+    });
+    new ListStore(env, say, t);
+    expect(env.storage.get('dhloot.lists.v2.bad')).toBe('already backed up');
+  });
+
+  it('backs up a value that turns corrupt between construction and a later save, rather than silently overwriting it (R1)', () => {
+    /* The exact defect this finding named: `load()` and `save()` used to
+       catch the same parse failure independently, both treating storage as
+       `[]`, so the second one's write replaced the corrupt value with no
+       trace of what it had been. */
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    store.lists = [{ id: 'a', name: 'A', ids: ['w1'], created: 1 }];
+
+    // another tab, or an extension, writes something this tab cannot read
+    storage.set('dhloot.lists.v2', 'not json at all');
+    store.save();
+
+    expect(store.unreadable).toBe(true);
+    expect(storage.get('dhloot.lists.v2.bad')).toBe('not json at all');
+    // this tab's own edit is not lost either - the merge still proceeded
+    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([
+      { id: 'a', name: 'A', ids: ['w1'], created: 1 }
+    ]);
+  });
+
+  it('clears unreadable once the key is readable again', () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': '{not json' });
+    const store = new ListStore(at({ storage }), say, t);
+    expect(store.unreadable).toBe(true);
+
+    storage.set('dhloot.lists.v2', JSON.stringify([]));
+    expect(store.load()).toEqual([]);
+    expect(store.unreadable).toBe(false);
   });
 });
 
@@ -91,10 +143,12 @@ describe('creating a list', () => {
     const l = store.create('  Клад дракона  ');
     expect(l.name).toBe('Клад дракона');
     expect(l.created).toBe(1000);
-    /* `toEqual`, not `toBe`: `lists` is `$state`, and Svelte 5 wraps a stored
-       object in a reactive proxy, so what comes back is not the same
-       reference `create()` handed out - only the same content. */
-    expect(store.lists[0]).toEqual(l);
+    /* `toBe`, not `toEqual` (ride-along, B6): `create()` used to hand back
+       the plain object built before `this.lists` wrapped it in `$state`'s
+       own reactive proxy - a different reference from what the store
+       actually holds. It now returns `this.lists[0]` instead, so the two
+       are the same object. */
+    expect(store.lists[0]).toBe(l);
     expect(store.lists[1]).toEqual(existing);
     vi.restoreAllMocks();
   });
@@ -187,14 +241,45 @@ describe('adding and removing ids', () => {
 });
 
 describe('removing a list', () => {
-  it('drops it from memory and storage', () => {
+  it('drops it from memory and storage, and returns it with its old index (P5)', () => {
     const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
+    const other = { id: 'b', name: 'Другой', ids: [], created: 2 };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([other, l]) });
     const store = new ListStore(at({ storage }), say, t);
 
-    store.remove('a');
-    expect(store.lists).toEqual([]);
-    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([]);
+    const removed = store.remove('a');
+    expect(removed).toEqual({ list: l, index: 1 });
+    expect(store.lists).toEqual([other]);
+    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([other]);
+  });
+
+  it('reports undefined for an id already gone', () => {
+    const store = new ListStore(at(), say, t);
+    expect(store.remove('ghost')).toBeUndefined();
+  });
+
+  describe('restoreList - the undo', () => {
+    it('splices the list back at its old index and saves', () => {
+      const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+      const other = { id: 'b', name: 'Другой', ids: [], created: 2 };
+      const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([other, l]) });
+      const store = new ListStore(at({ storage }), say, t);
+      const removed = store.remove('a')!;
+
+      store.restoreList(removed.list, removed.index);
+      expect(store.lists).toEqual([other, l]);
+      expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([other, l]);
+    });
+
+    it('unsets #deleted too, so a plain reload does not filter the list back out (S5)', () => {
+      const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+      const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
+      const store = new ListStore(at({ storage }), say, t);
+      const removed = store.remove('a')!;
+      store.restoreList(removed.list, removed.index);
+
+      expect(store.load()).toEqual([l]);
+    });
   });
 
   it('does not come back through a merge with another tab that still has it', () => {
@@ -211,36 +296,31 @@ describe('removing a list', () => {
     store.save();
     expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([]);
   });
+
+  it('does not come back through a reload either (S5)', () => {
+    /* save()'s own merge already filtered #deleted (the test above) - this
+       is the same guard on the plain-read side, reachable through watch()'s
+       reload rather than a write. */
+    const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
+    const store = new ListStore(at({ storage }), say, t);
+    store.remove('a');
+
+    // another tab's still-unmerged copy lands in storage and this tab reloads
+    storage.set('dhloot.lists.v2', JSON.stringify([l]));
+    expect(store.load()).toEqual([]);
+  });
 });
 
 describe('watching for another tab', () => {
-  /** `memoryStorage` never fires its own listeners on `set` - nothing here
-   *  simulates two tabs sharing one `Storage` object. This captures the
-   *  callback `watch()` registers so the test can fire it directly, the way
-   *  the browser's own `storage` event would. */
-  const withCapturedListener = (
-    base: ReturnType<typeof memoryStorage>
-  ): { storage: Env['storage']; fire: (key: string) => void } => {
-    let fn: ((key: string) => void) | null = null;
-    return {
-      storage: {
-        ...base,
-        onExternalChange(f) {
-          fn = f;
-          return () => {
-            fn = null;
-          };
-        }
-      },
-      fire: (key) => fn?.(key)
-    };
-  };
+  /* `memoryStorage` never fires its own listeners on `set` - nothing here
+     simulates two tabs sharing one `Storage` object - so `fireExternalChange`
+     stands in for the browser's own `storage` event (R2's own test hook). */
 
   it('reloads on the lists key', () => {
-    const base = memoryStorage({
+    const storage = memoryStorage({
       'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
     });
-    const { storage, fire } = withCapturedListener(base);
     const store = new ListStore(at({ storage }), say, t);
     store.watch();
 
@@ -249,26 +329,39 @@ describe('watching for another tab', () => {
       'dhloot.lists.v2',
       JSON.stringify([{ id: 'b', name: 'B', ids: [], created: 2 }])
     );
-    fire('dhloot.lists.v2');
+    storage.fireExternalChange('dhloot.lists.v2');
     expect(store.lists).toEqual([{ id: 'b', name: 'B', ids: [], created: 2 }]);
   });
 
   it('ignores every other key', () => {
-    const base = memoryStorage({
+    const storage = memoryStorage({
       'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
     });
-    const { storage, fire } = withCapturedListener(base);
     const store = new ListStore(at({ storage }), say, t);
     store.watch();
 
     storage.set('dhloot.lang.v1', 'en');
-    fire('dhloot.lang.v1');
+    storage.fireExternalChange('dhloot.lang.v1');
     expect(store.lists).toEqual([{ id: 'a', name: 'A', ids: [], created: 1 }]);
   });
 
+  it('also reloads on a null key - a cleared storage, or this tab catching up after being backgrounded (R2)', () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    store.watch();
+
+    storage.set(
+      'dhloot.lists.v2',
+      JSON.stringify([{ id: 'b', name: 'B', ids: [], created: 2 }])
+    );
+    storage.fireExternalChange(null);
+    expect(store.lists).toEqual([{ id: 'b', name: 'B', ids: [], created: 2 }]);
+  });
+
   it('stops on unsubscribe', () => {
-    const base = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([]) });
-    const { storage, fire } = withCapturedListener(base);
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([]) });
     const store = new ListStore(at({ storage }), say, t);
     const stop = store.watch();
     stop();
@@ -277,7 +370,7 @@ describe('watching for another tab', () => {
       'dhloot.lists.v2',
       JSON.stringify([{ id: 'b', name: 'B', ids: [], created: 2 }])
     );
-    fire('dhloot.lists.v2');
+    storage.fireExternalChange('dhloot.lists.v2');
     expect(store.lists).toEqual([]);
   });
 });

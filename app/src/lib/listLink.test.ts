@@ -99,18 +99,34 @@ describe('links written earlier', () => {
 });
 
 describe('unknown ids', () => {
-  it('are dropped rather than breaking the list', () => {
+  it('are dropped rather than breaking the list, and counted (P9)', () => {
     /* The checksum covers what the link says, so it has to be rebuilt - or the
        truncation guard fires instead of the branch under test. */
     const parts = ['ci1', 'zzz999'];
     const raw = `Mixed\n${stamp(parts)}${parts.join(',')}`;
-    expect(decodeList(toBase64Url(raw), knows)?.ids).toEqual(['ci1']);
+    const back = decodeList(toBase64Url(raw), knows);
+    expect(back?.ids).toEqual(['ci1']);
+    expect(back?.dropped).toBe(1);
   });
 
   it('a list of only unknown ids does not open', () => {
     const parts = ['zzz999'];
     const raw = `Empty\n${stamp(parts)}${parts.join(',')}`;
     expect(decodeList(toBase64Url(raw), knows)).toBeNull();
+  });
+
+  it('reports zero dropped for a link where nothing was lost', () => {
+    const fx = FIXTURES[0]!;
+    expect(decodeList(fx.gm.payload, knows)?.dropped).toBe(0);
+  });
+});
+
+describe('qty and gold, clamped to the field maxima', () => {
+  it('clamps a qty or gold past what the field itself could ever hold', () => {
+    const parts = ['ci1*500*999999'];
+    const raw = `X\n${stamp(parts)}${parts.join(',')}`;
+    const back = decodeList(toBase64Url(raw), knows);
+    expect(back?.meta?.['ci1']).toEqual({ qty: 99, gold: 99999 });
   });
 });
 

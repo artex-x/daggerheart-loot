@@ -73,27 +73,78 @@ describe('storage that does not', () => {
   });
 });
 
-describe('another tab writing', () => {
-  it('is what the merge listens to', () => {
-    const seen: string[] = [];
-    const listeners: ((e: StorageEvent) => void)[] = [];
+describe('another tab writing, or this tab catching up on one it might have missed (R2)', () => {
+  /** A `win` with just enough of `window` and `window.document` for
+   *  `browserStorage`'s three listeners - the `storage` event plus
+   *  `visibilitychange` and `pageshow`, neither of which exists in jsdom
+   *  driving a fake this thin. */
+  const fakeWin = (visibilityState: 'visible' | 'hidden' = 'visible') => {
+    const storageListeners = new Set<(e: StorageEvent) => void>();
+    const winListeners = new Map<string, Set<() => void>>();
+    const docListeners = new Map<string, Set<() => void>>();
     const win = {
       localStorage: {
         getItem: () => null,
         setItem: () => undefined,
         removeItem: () => undefined
       },
-      addEventListener: (_t: string, fn: (e: StorageEvent) => void) => {
-        listeners.push(fn);
+      document: {
+        visibilityState,
+        addEventListener: (t: string, fn: () => void) => {
+          (docListeners.get(t) ?? docListeners.set(t, new Set()).get(t)!).add(fn);
+        },
+        removeEventListener: (t: string, fn: () => void) => {
+          docListeners.get(t)?.delete(fn);
+        }
       },
-      removeEventListener: () => undefined
+      addEventListener: (t: string, fn: (e?: StorageEvent) => void) => {
+        if (t === 'storage') storageListeners.add(fn);
+        else (winListeners.get(t) ?? winListeners.set(t, new Set()).get(t)!).add(fn);
+      },
+      removeEventListener: (t: string, fn: (e?: StorageEvent) => void) => {
+        if (t === 'storage') storageListeners.delete(fn);
+        else winListeners.get(t)?.delete(fn);
+      }
     } as unknown as Window;
+    return { win, storageListeners, winListeners, docListeners };
+  };
 
+  it('is what the merge listens to, a cleared key (null) included', () => {
+    const { win, storageListeners } = fakeWin();
+    const seen: (string | null)[] = [];
     browserStorage(win).onExternalChange((k) => seen.push(k));
-    listeners[0]?.({ key: 'dhloot.lists.v2' } as StorageEvent);
-    /* A cleared storage fires with a null key and means nothing to the merge */
-    listeners[0]?.({ key: null } as StorageEvent);
-    expect(seen).toEqual(['dhloot.lists.v2']);
+    for (const fn of storageListeners) fn({ key: 'dhloot.lists.v2' } as StorageEvent);
+    /* A cleared storage fires with a null key - R2 now redraws on it too. */
+    for (const fn of storageListeners) fn({ key: null } as StorageEvent);
+    expect(seen).toEqual(['dhloot.lists.v2', null]);
+  });
+
+  it('also fires null on becoming visible again, and on pageshow (a bfcache restore)', () => {
+    const { win, docListeners, winListeners } = fakeWin('visible');
+    const seen: (string | null)[] = [];
+    browserStorage(win).onExternalChange((k) => seen.push(k));
+    for (const fn of docListeners.get('visibilitychange') ?? []) fn();
+    for (const fn of winListeners.get('pageshow') ?? []) fn();
+    expect(seen).toEqual([null, null]);
+  });
+
+  it('ignores becoming hidden', () => {
+    const { win, docListeners } = fakeWin('hidden');
+    const seen: (string | null)[] = [];
+    browserStorage(win).onExternalChange((k) => seen.push(k));
+    for (const fn of docListeners.get('visibilitychange') ?? []) fn();
+    expect(seen).toEqual([]);
+  });
+
+  it('stops listening to all three once unsubscribed', () => {
+    const { win, storageListeners, docListeners, winListeners } = fakeWin();
+    const seen: (string | null)[] = [];
+    const off = browserStorage(win).onExternalChange((k) => seen.push(k));
+    off();
+    for (const fn of storageListeners) fn({ key: 'x' } as StorageEvent);
+    expect(docListeners.get('visibilitychange')?.size ?? 0).toBe(0);
+    expect(winListeners.get('pageshow')?.size ?? 0).toBe(0);
+    expect(seen).toEqual([]);
   });
 
   it('can be unsubscribed', () => {
@@ -101,6 +152,15 @@ describe('another tab writing', () => {
     const fn = vi.fn();
     s.onExternalChange(fn)();
     expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("memoryStorage's own test hook fires whatever is registered, standing in for all three", () => {
+    const s = memoryStorage();
+    const seen: (string | null)[] = [];
+    s.onExternalChange((k) => seen.push(k));
+    s.fireExternalChange('dhloot.lists.v2');
+    s.fireExternalChange(null);
+    expect(seen).toEqual(['dhloot.lists.v2', null]);
   });
 });
 

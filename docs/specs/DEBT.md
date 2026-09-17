@@ -346,29 +346,6 @@ parity choices - they are accidental losses or additions the sweep caught
 because no instrument (pixel diff, axe, a registered state) could see them,
 the same shape R0b.4's five divergences had.
 
-### D12 - the money picker's current chip loses `aria-current`, gains `aria-pressed`
-
-- **Where**: `app.js:2959` (`7a33c22`): `'<button type="button" class="chip' +
-  (m === cur ? ' on' : '') + '"' + ' data-money="' + esc(l.id) + '" data-val="'
-  + m + '"' + (m === cur ? ' aria-current="true"' : '') + '>'`. Rewrite:
-  `app/src/components/Chip.svelte:65` `aria-pressed={on}` on every chip
-  button, including the money picker's.
-- **Live behaviour**: the selected money mode carries `aria-current="true"`;
-  the other modes carry no state attribute at all.
-- **What the rewrite does instead**: every chip, money picker included,
-  carries `aria-pressed="true"`/`"false"` on both the selected and
-  unselected buttons - the same attribute the rest of the app's chips use.
-- **Why it was recorded, not restored: owner ruling 2026-09-16.** No
-  registered state, golden or unit test reads either attribute
-  (`docs/specs/COVERAGE.md`, the `app/golden` row - `d.controls()` never
-  reads `aria-pressed`/`aria-current`), so nothing measured the money picker
-  as a special case before the sweep.
-- **How to verify the fix**: decide whether the money picker should read as a
-  `radiogroup`-like "current" control (`aria-current`) or a togglable set
-  (`aria-pressed`, what `Chip.svelte` already gives every other chip); a
-  `listPage.test.ts` assertion on the attribute the decision picks.
-- **Recorded by**: the R0c sweep, 2026-09-17 (Part A).
-
 ### D13 - copying a set of roll options toasts the generic text-copied message, not its own
 
 - **Where**: `app.js:4142` (`7a33c22`): `if (items.length) copyRich(rollHtml(items),
@@ -555,33 +532,6 @@ the same shape R0b.4's five divergences had.
   when art exists and the environment supports it) and `record.test.ts`
   asserts the payload passed to `app.env.share.share`, not just that a call
   happened.
-- **Recorded by**: the R0c sweep, 2026-09-17 (Part D).
-
-### D23 - a list's ticked selection survives Back/Forward to a different list
-
-- **Where**: `app.js:4640-4648` (`7a33c22`) `window.addEventListener
-  ('hashchange', function () { closeModal(); S.sel = {}; S.lsel = {};
-  S.menuFor = ''; S.newListFor = ''; ...})` - every hash change clears the
-  list-page selection (`S.lsel`) along with the tables selection. Rewrite:
-  `app/src/state/app.svelte.ts`'s router handler clears `menuFor` and `sel`
-  and bumps `navigations` (watched by `TablesPage.svelte:108` and
-  `SearchPage.svelte:40`); `app/src/components/ListPage.svelte:133` holds
-  `lsel` in a component-local `SvelteSet` that watches neither `navigations`
-  nor the hash, and Svelte does not remount a page component between two
-  addresses of the same route kind.
-- **Live behaviour**: using Back/Forward between two different lists' pages
-  always lands with no rows ticked and the batch bar closed.
-- **What the rewrite does instead**: moving by history between two list
-  addresses leaves the previous list's ticks and open batch bar standing,
-  because `ListPage` is never told the address changed.
-- **Why it was recorded, not restored: owner ruling 2026-09-16.**
-  `tests/app/states.js` case 15 covers Back/Forward history in general, but
-  nothing in the surviving suite moves between two *list* addresses by
-  history and checks the selection.
-- **How to verify the fix**: `ListPage.svelte` watches `app.navigations` (or
-  the list id derived from the route) and clears `lsel` when it changes; a
-  `listPage.test.ts` case navigates history between two lists with rows
-  ticked on the first and asserts the second opens with none.
 - **Recorded by**: the R0c sweep, 2026-09-17 (Part D).
 
 ## Live decisions kept over the rewrite's own

@@ -127,6 +127,10 @@ export interface DecodedList {
   note?: string;
   hnote?: string;
   meta?: Record<string, ListEntryMeta>;
+  /** How many entries the payload named that `knows` rejected - P9. An old
+   *  share link naming a renumbered or deleted record used to lose them with
+   *  no sign anything was missing; this is what a caller toasts. */
+  dropped: number;
 }
 
 /** Whether the data knows this id. Unknown entries are dropped. */
@@ -135,7 +139,7 @@ export type KnowsId = (id: string) => boolean;
 function parseItems(
   itemsLine: string,
   knows: KnowsId
-): { ids: string[]; meta: Record<string, ListEntryMeta> } | null {
+): { ids: string[]; meta: Record<string, ListEntryMeta>; dropped: number } | null {
   /* Links written before the checksum existed carry none - there is nothing to
      check them against, and they are read as they always were. */
   const cut = itemsLine.indexOf('~');
@@ -148,19 +152,31 @@ function parseItems(
 
   const ids: string[] = [];
   const meta: Record<string, ListEntryMeta> = {};
+  /* P9: an id the data no longer knows - a renumbered or deleted record on an
+     old share link - used to vanish with no sign of it; the checksum above
+     protects against truncation, which is a different failure than this one. */
+  let dropped = 0;
   for (const part of parts) {
     const bits = part.split('*');
     const id = bits[0];
-    if (!id || !knows(id)) continue;
+    if (!id) continue;
+    if (!knows(id)) {
+      dropped++;
+      continue;
+    }
     ids.push(id);
     const qty = parseInt(bits[1] ?? '', 10);
     const gold = parseInt(bits[2] ?? '', 10);
     const m: ListEntryMeta = {};
-    if (qty > 1) m.qty = qty;
-    if (gold > 0) m.gold = gold;
+    /* Clamped to the same maxima the field itself carries
+       (`ListPage.svelte`'s qty/gold inputs, `max="99"`/`max="99999"`) - a
+       crafted or hand-edited link is otherwise a way to write a value past
+       what typing into the field could ever produce. */
+    if (qty > 1) m.qty = Math.min(qty, 99);
+    if (gold > 0) m.gold = Math.min(gold, 99999);
     if (Object.keys(m).length) meta[id] = m;
   }
-  return ids.length ? { ids, meta } : null;
+  return ids.length ? { ids, meta, dropped } : null;
 }
 
 export function decodeList(payload: string, knows: KnowsId): DecodedList | null {
@@ -180,7 +196,7 @@ export function decodeList(payload: string, knows: KnowsId): DecodedList | null 
 
   const items = parseItems(itemsLine, knows);
   if (!items) return null;
-  const { ids, meta } = items;
+  const { ids, meta, dropped } = items;
 
   let note = '';
   let hnote = '';
@@ -218,7 +234,7 @@ export function decodeList(payload: string, knows: KnowsId): DecodedList | null 
     }
   }
 
-  const out: DecodedList = { name, ids };
+  const out: DecodedList = { name, ids, dropped };
   if (money) out.money = money;
   if (note) out.note = note;
   if (hnote) out.hnote = hnote;

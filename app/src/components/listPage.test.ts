@@ -6,7 +6,7 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
@@ -109,10 +109,14 @@ const readLists = (storage: { get: (k: string) => string | null }): StoredList[]
   JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
 describe('the address', () => {
-  it('rewrites #/lists/<id> to the players’ payload on mount', () => {
+  it('rewrites #/lists/<id> to the players’ payload on mount', async () => {
+    /* R4-1/PF3: the rewrite is debounced 150ms trailing, so this now waits
+       for it rather than reading `router.hash()` straight away. */
     const router = memoryRouter('#/lists/a');
     render(App, { env: withA('#/lists/a', { router }) });
-    expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
+    });
   });
 
   it('draws the same page for #/l/<payload of a>', () => {
@@ -263,6 +267,21 @@ describe('the storage notice', () => {
 });
 
 describe('the money picker', () => {
+  it('marks the selected mode with aria-pressed, like every other chip (D12)', () => {
+    /* Owner ruling, 2026-09-16: kept as aria-pressed on both modes rather
+       than restored to the live app's own aria-current on the selected one
+       alone - nothing measured the money picker as a special case. */
+    render(App, { env: withA() });
+    expect(screen.getByRole('button', { name: 'Как в книге' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: 'Монетами' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+  });
+
   it('draws only when some entry has a price', () => {
     render(App, { env: withA() });
     expect(screen.getByRole('button', { name: 'Как в книге' })).toBeInTheDocument();
@@ -287,7 +306,10 @@ describe('the money picker', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
     expect(readLists(storage)[0]?.money).toBe('coin');
-    expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, money: 'coin' }, true));
+    // R4-1/PF3: the address rewrite is now debounced 150ms trailing.
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, money: 'coin' }, true));
+    });
     expect(screen.queryAllByTitle('7 мешков 5 горстей')).toHaveLength(0);
 
     await userEvent.click(screen.getByRole('button', { name: 'Как в книге' }));
@@ -341,6 +363,31 @@ describe('the list note', () => {
 
     await userEvent.clear(pub);
     expect(readLists(storage)[0]?.note).toBeUndefined();
+  });
+
+  it('debounces twenty rapid keystrokes into one address rewrite (R4-1/PF3)', async () => {
+    const router = memoryRouter('#/lists/a');
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { router, storage }) });
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
+    });
+    const replaceSpy = vi.spyOn(router, 'replace');
+
+    const pub = screen.getByPlaceholderText('Например: лавка закрыта до утра');
+    await userEvent.clear(pub);
+    await userEvent.type(pub, '12345678901234567890', { delay: null });
+
+    // the storage side stays synchronous, on every keystroke
+    expect(readLists(storage)[0]?.note).toBe('12345678901234567890');
+    expect(replaceSpy).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(replaceSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(router.hash()).toBe(
+      '#/l/' + encodeList({ ...listA, note: '12345678901234567890' }, true)
+    );
   });
 });
 
@@ -415,6 +462,27 @@ describe('select-all', () => {
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     expect(screen.getByText('Выбрано 3')).toBeInTheDocument();
+  });
+
+  it('clears when history moves to a different list, not just a different page (D23)', async () => {
+    const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
+    const router = memoryRouter('#/lists/a');
+    render(App, {
+      env: at('#/lists/a', {
+        router,
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA, listB]) })
+      })
+    });
+
+    await userEvent.click(screen.getAllByRole('checkbox', { name: 'Выбрать позицию' })[0]!);
+    expect(screen.getByText('Выбрано 1')).toBeInTheDocument();
+
+    router.navigate('#/lists/b');
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/Выбрано/)).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
   });
 });
 
@@ -696,7 +764,7 @@ describe('copying and sharing', () => {
 });
 
 describe('deleting', () => {
-  it('asks, and on accept removes the list and goes to #/lists', async () => {
+  it('asks, and on accept removes the list, goes to #/lists, and toasts with an undo (P5)', async () => {
     const router = memoryRouter('#/lists/a');
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     const dialog = fakeDialog(true);
@@ -705,6 +773,66 @@ describe('deleting', () => {
     expect(dialog.asked[0]).toBe('Удалить список «Тайник»? Это действие необратимо.');
     expect(router.stack[router.stack.length - 1]).toBe('#/lists');
     expect(readLists(storage)).toEqual([]);
+    expect(screen.getByText('Список «Тайник» удалён')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)).toEqual([listA]);
+  });
+
+  it('declines without asking again, and removes nothing', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const dialog = fakeDialog(false);
+    render(App, { env: at('#/lists/a', { storage, dialog }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    expect(readLists(storage)).toEqual([listA]);
+    expect(screen.queryByText('Список «Тайник» удалён')).not.toBeInTheDocument();
+  });
+});
+
+describe("another tab's write, while this page is mounted (S7)", () => {
+  /* The gap the dispatch named: no test fired a storage event into a mounted
+     page, though the harness (`memoryStorage`'s own `fireExternalChange`)
+     already existed for `state/lists.test.ts`. Closes it for S4 directly;
+     `listsPage.test.ts` closes it for R2's own general reload trigger. */
+  it('re-seeds an unfocused note field with another tab’s edit (S4)', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+
+    const rowMain = screen.getByRole('button', { name: /Зелье/ });
+    const row = rowMain.closest('.lrow') as HTMLElement;
+    const pubField = within(row).getByPlaceholderText('Как предмет выглядит, что о нём знают');
+    expect(pubField).toHaveValue('Светится в темноте');
+
+    const other: StoredList = {
+      ...listA,
+      meta: { ...listA.meta, cc1: { ...listA.meta!['cc1'], note: 'Правка из другой вкладки' } }
+    };
+    storage.set('dhloot.lists.v2', JSON.stringify([other]));
+    storage.fireExternalChange('dhloot.lists.v2');
+
+    await waitFor(() => {
+      expect(pubField).toHaveValue('Правка из другой вкладки');
+    });
+  });
+
+  it('leaves a focused field alone even though the store changed under it', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+
+    const rowMain = screen.getByRole('button', { name: /Зелье/ });
+    const row = rowMain.closest('.lrow') as HTMLElement;
+    const pubField = within(row).getByPlaceholderText('Как предмет выглядит, что о нём знают');
+    pubField.focus();
+
+    const other: StoredList = {
+      ...listA,
+      meta: { ...listA.meta, cc1: { ...listA.meta!['cc1'], note: 'Правка из другой вкладки' } }
+    };
+    storage.set('dhloot.lists.v2', JSON.stringify([other]));
+    storage.fireExternalChange('dhloot.lists.v2');
+    await tick();
+
+    expect(pubField).toHaveValue('Светится в темноте');
   });
 });
 

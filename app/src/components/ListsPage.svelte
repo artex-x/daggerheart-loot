@@ -71,7 +71,18 @@
 
   function del(l: StoredList): void {
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
-    app.lists.remove(l.id);
+    const removed = app.lists.remove(l.id);
+    /* P5: delete gets an undo, like every other destructive action here. */
+    if (removed) {
+      app.say(t.listDeleted.replace('%s', l.name), {
+        action: {
+          label: t.undo,
+          run: () => {
+            app.lists.restoreList(removed.list, removed.index);
+          }
+        }
+      });
+    }
   }
 
   async function restore(): Promise<void> {
@@ -91,12 +102,22 @@
       app.say(t.badShare, { error: true });
       return;
     }
+    /* R3: the list's own two notes and its money mode used to be dropped
+       here - decodeList returns all three and ListStore.create's own init
+       already accepts them, so passing them through is the whole fix. */
     const l = app.lists.create(data.name, {
       ids: data.ids,
+      ...(data.money ? { money: data.money } : {}),
+      ...(data.note ? { note: data.note } : {}),
+      ...(data.hnote ? { hnote: data.hnote } : {}),
       ...(data.meta ? { meta: data.meta } : {})
     });
     importDraft = '';
     app.go(sharedListHash(encodeList(l, true)));
+    /* P9: this call site is the one R3 named that must not proceed silently
+       - once created, a dropped entry is gone from the copy for good even
+       if the data later knows it again. */
+    if (data.dropped) app.say(t.droppedItems.replace('%n', String(data.dropped)));
   }
 </script>
 
