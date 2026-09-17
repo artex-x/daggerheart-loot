@@ -1,21 +1,29 @@
 # DEBT.md - live defects and decisions kept over the rewrite's own
 
-The third category beside `VISUAL_DEBT` and `ACCEPTED` (`tests/parity/specs.js`,
-`docs/parity.md`). A `VISUAL_DEBT` entry is a pixel difference not yet
-reproduced; an `ACCEPTED` entry is a difference kept on purpose, keyed and
-enforced. Neither can hold a defect the rewrite reproduced *because the live
-app has it*: there is no difference to key, both apps are identical by
-construction, and the harness will never mention it. This file holds that -
-and it is the one of the three that outlives the migration; the other two are
-deleted with the harness.
+The third category beside `VISUAL_DEBT` and `ACCEPTED`, which lived in
+`tests/parity/specs.js` and `docs/parity.md` until R0c deleted them along with
+the rest of the parity harness (issue 47, `23c00a6`). A `VISUAL_DEBT` entry was
+a pixel difference not yet reproduced; an `ACCEPTED` entry was a difference
+kept on purpose, keyed and enforced. Neither could hold a defect the rewrite
+reproduced *because the live app had it*: there was no difference to key, both
+apps were identical by construction, and the harness never mentioned it. This
+file holds that - it is the one of the three that outlives the migration; the
+other two were deleted with the harness.
 
 An entry is written in the batch that makes the decision, never later. The
 batch that pays an entry off deletes it - the same ratchet culture as
 `VISUAL_DEBT`.
 
+**The live sources were deleted at R0c (`23c00a6`)**; `git show
+23c00a6^:app.js` (or `:style.css`, `:index.html`) reads them at their final
+state. A line citation below with no other hash refers to that state; a
+citation naming its own hash (`bb61db0`, `b967481`, `a52c17d`, `dc99f21`) was
+read at that commit specifically. Verified before this sentence was added:
+`git show bb61db0:app.js` around lines 3589-3603 matches D2's quote below.
+
 ## Defects reproduced on purpose
 
-The live app is wrong; the rewrite copies it; parity was the reason.
+The live app was wrong; the rewrite copied it; parity was the reason.
 
 ### D1 - transitions run under `prefers-reduced-motion: reduce`
 

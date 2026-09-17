@@ -5,20 +5,21 @@ any of them without the owner saying so.
 
 ## 1. `noindex` on every page
 
-`<meta name="robots" content="noindex, nofollow">` is in `index.html`, in
-`app/index.html` - the rewrite's entry document, which is what `dist/index.html`
-is built from - and in every generated stub (`tools/build-share-pages.js`). This
-is a personal tool and is meant to stay out of search results. Do not remove it
-to improve SEO.
+`<meta name="robots" content="noindex, nofollow">` is in `app/index.html` -
+the rewrite's entry document, which is what `dist/index.html` is built from -
+and in every generated stub (`tools/build-share-pages.js`). This is a personal
+tool and is meant to stay out of search results. Do not remove it to improve
+SEO.
 
-`tests/derived.js` asserts the tag on both entry documents, on the **source**
+`tests/derived.js` asserts the tag on `app/index.html`, on the **source**
 rather than on a build: `npm run check` does not build, so a check that read
 `dist/index.html` would be reading whatever was built last. The same suite
-compares the two documents' heads field by field - title, description, robots,
-colour scheme, viewport, every `og:*` and `twitter:*`, and the icon - with no
-exception list, so the published preview card cannot drift while both files
-exist. The published page is checked again after a deploy by
-`tools/check-site.mjs`.
+reads that document's `<head>` (`headFacts`) and asserts it carries every field
+the preview card needs - title, description, robots, colour scheme, viewport,
+every `og:*` and `twitter:*`, and the icon. Before R0c (issue 47) this compared
+`app/index.html`'s head against the now-deleted root `index.html`'s; that
+second document is gone, so the check is a single-document read now. The
+published page is checked again after a deploy by `tools/check-site.mjs`.
 
 ## 2. Crawling is allowed on purpose
 
@@ -48,9 +49,10 @@ Do not invent server-side list storage, an upload endpoint or a paste service.
 
 ## 4. `file://` must keep working
 
-Opening `index.html` from a folder works today, and it is a real property for
-this audience: a GM at a table with no connection can use the tool from a copy
-of the repo.
+Opening `dist/index.html` from a folder works today, and it is a real property
+for this audience: a GM at a table with no connection can use the tool from a
+copy of the repo (`npm run build`, then open the built file - no server, no
+network).
 
 This constrains any future build:
 

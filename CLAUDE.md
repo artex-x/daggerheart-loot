@@ -13,9 +13,9 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 
 - The shipped app is the Svelte + TypeScript rewrite: `app/` builds to `dist/`,
   which `ci.yml`'s `deploy` job publishes to Pages. It runs from `file://` too.
-- The static root (`index.html`, `style.css`, `app.js`) is now the **fallback**:
-  committed, gated, the parity expectation, the one-commit revert target until
-  Phase 7 deletes it.
+- The static root (`index.html`, `style.css`, `app.js`) was deleted at R0c
+  (`23c00a6`); read it from history with `git show 23c00a6^ -- index.html
+  app.js style.css`, never from the working tree.
 - `data.js` (`window.LOOT`) is canonical. `data.json`, `catalog.csv`, and
   `i/*.html` are generated; `img/` and `og/` are managed separately.
 
@@ -43,14 +43,19 @@ warns past it, and `.claude/skills/handoff/SKILL.md` (`/handoff`) is the
 compaction and closeout procedure.
 
 When asked to continue, report status and the next batch, then wait for confirmation. Implement only that batch unless the human changes scope.
+A placed item is its own acceptance line in the batch that receives it; a
+batch is not closed while an inherited line has no outcome.
+A new state gets a `tests/app/inventory.js` entry and a re-seeded golden in
+the same change; a defect kept on purpose gets a `docs/specs/DEBT.md` entry in
+the same change.
 
 Size a batch by its gates, not its diff: `npm run check`, `check:built` and a
-parity filter cost the same minutes for eight paths as for forty, so merge work
-that shares a component, seed and parity filter. Split only at a public-contract
-change, a different route and filter set, or a commit the harness cannot reach;
-never plan a batch whose check cannot finish one foreground call or whose review
-cannot be held in one pass. Costs and the test: `docs/parity.md`, "Batch size
-and the fixed cost of a run".
+golden shard or `tests/app/` filter cost the same minutes for eight paths as
+for forty, so merge work that shares a component, seed and filter. Split only
+at a public-contract change, a different route and filter set, or a commit the
+harness cannot reach; never plan a batch whose check cannot finish one
+foreground call or whose review cannot be held in one pass. Costs and the
+test: `.claude/README.md`, "Batch size and the fixed cost of a run".
 
 When the human says stop, handoff, or the session is ending: start no new work,
 leave code at a committed boundary (never a half-batch), and run `/handoff`.
@@ -71,7 +76,6 @@ Read the files the change touches:
 | `docs/specs/I18N.md` | bilingual behaviour |
 | `docs/specs/META.md` | `noindex`, crawling, URL-only lists, `file://`, tiers |
 | `docs/specs/DEBT.md` | live defects the rewrite reproduces on purpose, and live decisions kept over its own; owed a fix after the migration |
-| `docs/parity.md` | operational parity workflow |
 
 Public contracts default to no change. An unavoidable change updates
 `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md`, and `llms.txt`
@@ -89,9 +93,9 @@ in the same commit. Behaviour changes update their specs in the same commit.
 ## Data and published artefacts
 
 After changing `data.js`, run `node tools/build.js`; the hooks block writes to
-its generated outputs. When counts or source lists change, update `index.html`,
-`app/index.html`, both READMEs, `app.js`, `llms.txt`, and `robots.txt`; keep the
-READMEs aligned, reuse identical image bytes, and never renumber a shipped record id.
+its generated outputs. When counts or source lists change, update every file
+`tests/derived.js`'s `COUNTERS` list names; keep the READMEs aligned, reuse
+identical image bytes, and never renumber a shipped record id.
 
 ## Quality gates
 
@@ -103,8 +107,11 @@ npm run check
 Agents: one foreground call, `set -o pipefail; npm run check 2>&1 | tail -n 120`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
 
 If a change alters what a screen draws, also run `npm run check:built`.
-Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js eqtest,qa`.
-The built app in a real browser (after `npm run build`): `node tests/run-all.js app/sweep,app/typo,app/hues,app/contracts,app/states`.
+Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`.
+The built app in a real browser (after `npm run build`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
+`app/sweep` and `app/golden` are each too slow for one foreground call; run
+them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of
+a run".
 
 Definition of done: checks pass, fixed defects and changed behaviour have
 meaningful coverage, specs and fixtures match, and the handoff records exact
@@ -116,27 +123,6 @@ test, not by a matching filename). End component tests with
 
 Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 `.claude/README.md`, "Hooks"). They enforce; this file states intent.
-
-## Migration and parity
-
-- This is a refactor, not a redesign. Reproduce the shipped app's rendered
-  behaviour, geometry, content, controls, and states.
-- Compare computed/rendered results, not apparent source intent. Take visual
-  values from the live styles or design, not from screenshot guesses.
-- A state is a route plus interactions. New panels, dialogs, pickers, filters,
-  and empty states add `STATES` entries in the same change.
-- Every state is exercised in both languages at three widths. Pixel difference
-  is zero unless recorded as explicit `VISUAL_DEBT`; debt must ratchet down.
-- Record intentional accessibility differences in `ACCEPTED` with a reason; a
-  live defect reproduced on purpose goes in `docs/specs/DEBT.md`.
-- Inspect diff images before changing debt. Use `docs/parity.md`; migration
-  backlog stays in issue 47 plan/handoff.
-- Port the live app's text-node structure, not only its rendered string: a
-  split text node measures a different advance than a joined one.
-- A `VISUAL_DEBT` number is whatever CI measures. A local run is advisory and
-  may legitimately fail a cell CI passes; see `docs/parity.md`.
-- Port a rule with every `@media` override it has; a base-width-only port
-  reads as growing drift, not as a constant offset.
 
 ## Product laws that look negotiable but are not
 

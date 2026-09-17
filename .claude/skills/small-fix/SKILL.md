@@ -15,10 +15,11 @@ change. Anything else is the orchestrate path (`/orchestrate`). Read
 1. **Reproduce before proposing.** `npm run build`, then open the built app at
    the reported route, width and language - the Browser pane resized to that
    width, or `dist/index.html` from `file://`. Record the element, its
-   computed value, and the expected value taken from the live styles or the
-   design node (`CLAUDE.md`, "Migration and parity", while that section
-   stands). If it does not reproduce at that width, stop and report; a fix
-   for a bug you cannot see is a guess.
+   computed value, and the expected value taken from the design node or
+   Figma reference (`CLAUDE.md`, "Source and commit conventions" - open
+   issue screenshots and design nodes before visual work). If it does not
+   reproduce at that width, stop and report; a fix for a bug you cannot see
+   is a guess.
 2. **Write `issues/<id>/plan.md`, 3-10 lines**: symptom; reproduction (route,
    width, language, what was measured); root cause; the one-file fix; gates.
    It exists because `implement.prompt.md` refuses to run without one and
@@ -31,9 +32,10 @@ change. Anything else is the orchestrate path (`/orchestrate`). Read
    (component tests end with `expectNoA11yViolations`).
 5. **Gates, none skipped**: `set -o pipefail; npm run check 2>&1 | tail -n 120`
    with the Bash timeout at 600000; `npm run check:built`, because a screen
-   changed; and, while `docs/parity.md` exists, the parity filter for the
-   touched state (`node tests/parity.js "<filter>"`) with the diff images
-   inspected before any `VISUAL_DEBT` change.
+   changed; and the golden shard(s) whose states render the touched
+   component (`node tests/app/golden.js --shard=n/4`, compare mode -
+   `--update` only when the change is intended, per `.claude/README.md`,
+   "Batch size and the fixed cost of a run").
 6. **Commit** the coherent change (Conventional Commits, author per
    `CLAUDE.md`), push, then close out per `/handoff`: status `done`, and
    retire `plan.md` in the closing commit (nothing cites it).

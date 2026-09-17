@@ -36,7 +36,7 @@ Orientation
 2. Read `<TASK_DIR>/context.md` if it exists. Prefer captured facts over re-reading the same source material; refresh only when facts are missing, stale, or superseded by new human input.
 3. Read relevant `docs/specs/` (CONTRACTS, FEATURES, ROUTES, I18N, and anything else this source may touch)
 4. Inspect existing similar sources in `data.js` / `data.json` / `catalog.csv`
-5. Inspect roll/table/filter patterns in `app.js` (and `app/` if needed)
+5. Inspect roll/table/filter patterns in `app/src/lib/` and `app/src/components/`
 6. Inspect id prefixes, `craft`, `refs`, equipment (`eq`) fields, image and `i/` stub conventions
 7. Inspect `tools/build.js` and tests that pin counts, images, stubs, routes, i18n
 
@@ -81,7 +81,7 @@ How data is organized today (do not reinvent this)
    - add a ref when the item text depends on another card's rules text; do not dump unrelated book chapters into `refs`
    - reuse an existing ref when the same card is already stored; do not duplicate the same card under a new key
    - bilingual handling must match how existing refs are stored and rendered
-   - inspect real `refs` entries and the render path in `app.js` before adding new ones
+   - inspect real `refs` entries and the render path in `app/src/components/RecordCard.svelte` before adding new ones
 
 5) `craft` relationships:
    - on a record, `craft: "<id>"` means "this thing crafts/produces that id"
@@ -155,7 +155,7 @@ Do:
    as running `ingest`, or its `og/` orphan gate fails
 6. Run `node tools/build.js` and fix derived drift
 7. Wire roll mode / table / filters / i18n only if required
-8. Update docs and copy that publish counts or source lists when they change (`index.html`, `app/index.html`, `README.md`, `README.ru.md`, `app.js`, `llms.txt`, and `robots.txt`)
+8. Update docs and copy that publish counts or source lists when they change - every file `tests/derived.js`'s `COUNTERS` list names (`app/index.html`, `README.md`, `README.ru.md`, `llms.txt`, `robots.txt`, and the `app/src/lib/*.ts` count sources)
 9. Update tests/fixtures/specs only if behaviour or public contracts change
 10. Run verification:
     - `node tests/run-all.js dataint` - ids, images, `og/` orphans, stubs

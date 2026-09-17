@@ -59,7 +59,12 @@ every entry's meta.
 
 ## The in-memory state object
 
-`S` in `app.js`. Grouped by what it is for:
+`S` in the live app (`app.js`, deleted at R0c - read it at `git show
+23c00a6^:app.js`). The rewrite has no single `S` object: each group below
+lives in its own store or page component (`AppState` in
+`app/src/state/app.svelte.ts`, plus per-page `$state` in the components that
+own a group). The grouping below is still the useful map of what memory-only
+state exists, by what it was for:
 
 | Group | Fields |
 |---|---|

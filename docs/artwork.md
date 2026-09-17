@@ -159,7 +159,7 @@ same existence check as `install`'s, with the sense flipped.
   on disk. No new file is needed; the record is joining an already-arted
   line (legal only inside one `eq.line` - `tests/dataint.js` enforces that
   separately). A `shares` entry carries no filenames at all.
-- **`unarted`** - a record with `img: ''`. Legal (`tests/noart.js` pins the
+- **`unarted`** - a record with `img: ''`. Legal (`record.test.ts` pins the
   `_none.webp` render path); reported so the ingest report is honest about
   which records still need art.
 

@@ -232,42 +232,46 @@ pinned - it is a snapshot that drifts away from the data.
 
 ## Running and developing
 
-The site as it runs today needs no build and no runtime dependencies: open
-`index.html` in a browser, `file://` included.
-
-A rewrite to Svelte and TypeScript is under way in `app/`
-([issue #47](https://github.com/artex-x/daggerheart-loot/issues/47),
-[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)). It does not serve the site yet.
+The site is a Svelte + TypeScript app (`app/`) built with Vite. `npm run build`
+produces `dist/`, which needs no server: open `dist/index.html` in a browser,
+`file://` included, the same way the old plain-JS `index.html` used to. The
+migration is [issue #47](https://github.com/artex-x/daggerheart-loot/issues/47);
+[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md) closed at R0c, with the
+post-migration review tracked under its own issue.
 To work on it you need Node 22 (`.nvmrc`):
 
 ```
 npm ci
-npm run dev      # the new app
+npm run dev      # dev server with hot reload
 npm run check    # format, lint, types, data, unit tests - before every commit
 npm run build    # -> dist/, opens from file:// as well as from Pages
-npm run test:legacy   # the 19 puppeteer suites against the live site
+npm run test:legacy   # the surviving suites, mostly a real browser against dist/
 ```
 
 ```
-index.html                  markup
-style.css                   styles
-app.js                      routing, roll modes, search, tables, lists, print
-data.js                     the data: window.LOOT
-card/*.svg                  36 vectors for the print cards, exported from Figma
-img/*.webp                  876 pictures, 640x640, ~31 MB
-og/*.jpg                    the same pictures as JPEG for link previews, ~47 MB
-i/*.html                    1091 stub pages with Open Graph markup
-data.json                   the same data as plain JSON, for outside readers
-catalog.csv                 one row per record, with stat lines
-llms.txt                    what the site is, URL grammar, list-link format
-robots.txt                  crawling allowed, training scrapers excluded
+app/src/lib/         pure logic: roll modes, filters, hash grammar, i18n
+app/src/ports/        browser adapters: storage, clipboard, compression, drag
+app/src/state/        app-wide state (AppState, ListStore)
+app/src/components/   Svelte components
+app/src/styles/       tokens.css and shared styles
+app/index.html        entry document, built into dist/index.html
+data.js               the data: window.LOOT
+card/*.svg            36 vectors for the print cards, exported from Figma
+img/*.webp            876 pictures, 640x640, ~31 MB
+og/*.jpg              the same pictures as JPEG for link previews, ~47 MB
+i/*.html              1091 stub pages with Open Graph markup
+data.json             the same data as plain JSON, for outside readers
+catalog.csv           one row per record, with stat lines
+llms.txt              what the site is, URL grammar, list-link format
+robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/ from data.js
 tools/derived.js            how the derived files are assembled
 tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
-tests/                      19 suites plus the runner
-docs/specs/                 behaviour and frozen contracts, for maintainers
-docs/fixtures/              golden fixtures the contract suite replays
+tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
+                      (7 real-Chrome suites against dist/) and the runner
+docs/specs/           behaviour and frozen contracts, for maintainers
+docs/fixtures/        golden fixtures the contract suite replays
 ```
 
 `docs/specs/CONTRACTS.md` is the one to read before changing anything public -
@@ -287,36 +291,35 @@ checks that both files exist for every record that has a picture.
 ### Tests
 
 ```
-node tests/run-all.js            # everything, in parallel
-node tests/run-all.js eqtest     # one suite
-node tests/run-all.js --jobs 1   # one at a time, for debugging
+node tests/run-all.js               # everything, in parallel
+node tests/run-all.js dataint       # one suite
+node tests/run-all.js --jobs 1      # one at a time, for debugging
 ```
 
-Needs `puppeteer` and `jsdom`: `npm i puppeteer jsdom`.
+Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
+(`npm run check` does not build).
 
 | Suite | Checks |
 |---|---|
 | `dataint` | `data.js` invariants: ids, numbering, references, equipment fields, image and stub files |
 | `derived` | derived files match the generator, and the counts written into the docs match the data |
-| `i18n` | translation parity, and no string the code asks for that is missing |
-| `typo` | two fonts and one size scale across every page and both languages |
-| `hues` | badges that can appear in one list are told apart by hue |
-| `qa` | regressions from an external report: caret, focus, live regions, contrast, truncated links, two tabs, previews |
-| `craft` | upgrade chains: data, rendering, copying, stubs |
-| `flows` | modal, list address, clipboard, copying a whole roll |
-| `select` | selection, batch add and copy, the list menu |
-| `notes` | the two notes: copying, both links, migrating older lists, field height |
-| `noart` | records without a picture, and pictures that fail to load |
-| `eqtest` | equipment: class, order, filters, filter links, anchors, copying |
-| `lists2` | the list page: dragging, position entry, list search, warning |
-| `print` | print sheet: grid, card size against the design, black and white, art edges |
-| `behave` | rolls, search, language, back and forward, copying, storage disabled |
-| `craftmob` | layout on narrow screens |
-| `audit2` | a walk over every address, at four widths and in both languages |
-| `states` | states reachable only by clicking |
+| `contracts` | list encoding and route-grammar fixtures, decoded and re-derived by a second implementation |
+| `craft` | data invariants for upgrade chains, and the share stubs |
+| `stub` | the generated `i/*.html` share stubs do not scroll sideways |
+| `app/sweep` | every address the app has, at four widths and in both languages, over `dist/` |
+| `app/states` | states reachable only by a trusted click, a real clipboard, or a real second tab |
+| `app/golden` | one accessibility-tree-plus-controls snapshot per state; a control gone, moved or renamed is a line in `git diff` |
+| `app/contracts` | the browser half of `contracts`: the link the app writes and reads, filter group names |
+| `app/typo` | two fonts and one size scale, every page, both languages |
+| `app/hues` | badges that can appear in one list are told apart by hue |
+| `app/print` | print sheet: grid, card size against the design, black and white, art edges, text fitting |
 
-Browser suites use puppeteer, each on its own context: pages of one browser share
-`localStorage`, and without that the chosen language leaks between suites.
+Translation parity (`app/src/lib/dict.ts`'s `Dict` type) and tier sourcing
+(never inferred from stats) are compile-time and unit-test checks rather than
+a `tests/` suite - see `docs/specs/I18N.md` and `docs/specs/META.md`.
+`tests/app/*` suites use puppeteer against the built `dist/`, each on its own
+context: pages of one browser share `localStorage`, and without that the
+chosen language leaks between suites.
 
 ### Machine readability and search
 
@@ -325,8 +328,8 @@ lives separately: `catalog.csv` for selection, `data.json` for full parsing,
 `llms.txt` for the URL grammar, the list-link format, the two kinds of note and
 price guidance. Those files are in English - models read them, and it is cheaper
 that way. The list-link format is documented well enough to build a working
-address from without touching the site, and `tests/lists2.js` verifies it with an
-implementation of its own.
+address from without touching the site, and `tests/contracts.js` verifies it
+with an implementation of its own.
 
 The site is kept out of search results by a `noindex` tag on every page. Crawling
 itself is **not** blocked, deliberately: a crawler that is turned away never
@@ -475,8 +478,7 @@ the time and the extremes about 0.7% each.
 
 ## Rights
 
-The code (`index.html`, `style.css`, `app.js`, `tools/`, `tests/`) is MIT - see
-[LICENSE](LICENSE).
+The code (`app/`, `tools/`, `tests/`) is MIT - see [LICENSE](LICENSE).
 
 **The artwork** in `img/` and `og/` was generated by the project's author and is
 fan content. It has nothing to do with the original books.

@@ -84,9 +84,11 @@ for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
   fresh agent would re-derive at full cost.
 
 Prose failed at this three times; `bash-guard.mjs` now denies a backgrounded
-`npm run check` (rule 2g) and a heavy run beside a live parity run (2h) -
-`.claude/README.md`, "Run a long check". Name the checks in the dispatch,
-say they fit one foreground call, and do not write a fourth paragraph.
+`npm run check` (rule 2g) - `.claude/README.md`, "Run a long check". Name the
+checks in the dispatch, say they fit one foreground call, and do not write a
+fourth paragraph. The parity harness's own heavy-run lock (rule 2h) retired
+with it at R0c (issue 47, `23c00a6`); `.claude/README.md`, "One heavy run at a
+time", names what is unguarded now.
 
 While nothing is running, a foreground `npm run check` of your own is worth
 the few minutes: it is a status, so it is yours to take, it arms the commit
@@ -100,17 +102,19 @@ Known costs in this repo:
 |---|---|---|
 | `npm run check` | a few minutes | yes |
 | `npm run check:built` | a few minutes | yes |
-| `node tests/parity.js "<filter>"` | ~9 min for `tables` | barely |
-| `node tests/run-all.js parity` (full) | ~867s on CI | **no** |
+| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
+| `node tests/app/sweep.js <width>` | ~320-590s per width | barely, one width at a time |
+| `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | yes, one shard at a time |
 
 So, before dispatching:
 
 - Name the checks the batch needs and say which fit one foreground call.
-- If the full parity suite is required, expect to run it yourself after the
-  worker commits, rather than asking a worker to babysit it.
+- If a full `app/sweep` (all four widths) or `app/golden` (all four shards) is
+  required, expect to run it yourself width by width or shard by shard after
+  the worker commits, rather than asking a worker to babysit it in one call.
 - Never let two heavy runs overlap - a vitest coverage pass started while a
-  parity run's browsers are alive produces spurious 5000ms timeouts. Check for
-  stray `chrome.exe` before trusting a timeout.
+  `tests/app/` run's browsers are alive produces spurious 5000ms timeouts.
+  Check for stray `chrome.exe` before trusting a timeout.
 
 ## Concurrency
 - Only one writer on this branch at a time (implementer, add-source, or refresh-artwork)

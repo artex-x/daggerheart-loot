@@ -205,6 +205,65 @@ opposite error too: `npx prettier --check <some>.md` prints "All
 matched files use Prettier code style!" while matching zero files, so
 a success message there is not evidence of anything.
 
+### Batch size and the fixed cost of a run
+
+The rule is in `CLAUDE.md`, "Task and session protocol": size a batch by
+its gates, not its diff. This section holds the numbers behind it and the
+test for where the line is. Moved here from `docs/parity.md` at R0c
+(2026-09-17), which deleted that file along with the parity harness it
+documented; the parity rows below are replaced by the gates that survive.
+
+**What a batch pays whatever its size**, measured in this repository
+(2026-09-10/11 and 2026-09-17, one host, recorded in `issues/47/context.md`):
+
+| gate | idle host | loaded host |
+|---|---|---|
+| `npm run check` | ~165s | past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded, cannot arm the commit gate, and must be re-run - not salvaged |
+| `npm run check:built` | a few minutes | longer |
+| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer |
+| `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
+| `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; the four shards must run separately, never as one bare `node tests/app/golden.js` call |
+
+`check:built` and the `tests/app/` filters are paid once per batch; `npm run
+check` is paid once per commit inside it. None of these scale with the
+diff: eight paths and forty paths cost the same minutes.
+
+**The two ways to get it wrong.**
+
+1. *Too small.* A batch that adds one port and one component test still pays
+   a check, a `check:built` and a `tests/app/` filter run - most of an hour
+   on an idle host for a change a reviewer reads in five minutes. Three such
+   batches pay three times what one would.
+2. *Too big.* A batch whose `npm run check` cannot finish inside one
+   foreground call on the host as it is, or whose review cannot be held in
+   one pass, forfeits everything when the host stalls: B5.3 (26 paths)
+   needed six check attempts under load; B5.4a (43 paths) lost two sessions
+   to a loaded host between "written" and "step 10 green". The cost of a
+   stall is the whole run again, plus the review and the one remediation
+   cycle the protocol allows.
+
+**The test.** Merge two pieces of work when they share a component, a seed
+and a `tests/app/` filter - then the filter run for the merged batch costs
+what it would for either alone, and nothing is paid twice. Keep them apart,
+or cut a batch, at any of these:
+
+- a public-contract change (`CONTRACTS.md`, `docs/fixtures/`,
+  `tests/contracts.js`, `llms.txt` in the same commit) - it needs its own
+  commit and its own review;
+- a different route and filter set - the cost is not shared, only
+  serialised, so merging saves a `check` and nothing else;
+- a commit boundary the harness cannot reach (a state that needs a driver
+  verb or a seed that does not exist yet) - the piece that adds the
+  reach lands first, on its own commit, so a later red bisects;
+- a batch that could not end on a coherent committed boundary - half a
+  surface on screen with faked controls is never a stopping point
+  (`CLAUDE.md`, "never commit a half-batch").
+
+A batch may hold more than one commit; each commit is green on its own.
+Aim for one `tests/app/` filter group and one green check per batch; a
+worked application is `issues/47/plan.md`, "The batches, and why three
+rather than one", which cuts R0b at two of the seams above and says which.
+
 **"One heavy run at a time" retired with the parity harness (R0c,
 2026-09-17).** `tests/parity.js` used to write `test-output/parity.lock`
 (`pid`, `startedAt`, heartbeat `at`, `argv`) while it ran, and
@@ -424,11 +483,11 @@ not changed.
 | 8 | **+** Block blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths | `PreToolUse(Bash)` | **adopt** | CLAUDE.md's preserve-unrelated-changes rule and `issues/65/context.md` both flag the in-flight issue-47 files; blanket staging is exactly how they get swept into someone else's commit. |
 | 9 | **+** Block AI attribution in a commit message | `PreToolUse(Bash)` | **adopt** | An explicit standing user rule ("no Co-Authored-By trailer, ever") against a well-known default agent behaviour. Zero false positives; fires never once respected. |
 | 10 | **+** Long-check reminder | `PreToolUse(Bash)` | **adopt** | `improvements.md` Finding 1: three of five workers made this exact mistake in one session. Fires on four command shapes, once per session each. |
-| 11 | **+** Parity-baseline warning on `index.html` / `app.js` / `style.css` | `PostToolUse(Edit\|Write)` | **adopt** | `improvements.md` Finding 5 calls the static root frozen because it *is* the parity expectation; a block would be wrong because count updates legitimately touch it. **Retired at R0c `<C1 sha>`**: the static root and the `remind:baseline` group that watched it are both deleted. |
+| 11 | **+** Parity-baseline warning on `index.html` / `app.js` / `style.css` | `PostToolUse(Edit\|Write)` | **adopt** | `improvements.md` Finding 5 called the static root frozen because it *was* the parity expectation; a block would have been wrong because count updates legitimately touched it. **Retired at R0c `23c00a6`**: the static root and the `remind:baseline` group that watched it are both deleted. |
 | 12 | **+** Block writes to `dist/` and `package-lock.json` | `PreToolUse(Edit\|Write)` | **adopt** | Two array entries in a list that already exists; both catch real mistakes; neither can fire on a legitimate edit. |
 | 13 | Warn when a worker is dispatched with no explicit `model` | `PreToolUse(Task)` | **reject** | Fixed structurally at `60172d3` by putting real defaults in agent frontmatter. A hook would re-litigate a solved problem. |
 | 14 | Warn before `TaskStop` ("run ListAgents first") | `PreToolUse(TaskStop)` | **reject** | The recorded failure (`001aa43`) was a misread status, which is judgment. `orchestrate.prompt.md`'s "a worker that went quiet" section owns it and are the right owner. |
-| 15 | Block a heavy run while another is alive | `PreToolUse(Bash)` | **reject** | Needs process enumeration; `tasklist` on Windows costs 200-500 ms and cannot distinguish a headless harness Chromium from the human's browser. Unreliable input, tool-path cost. Deferred alternative: have `tests/parity.js` write a lockfile the hook can stat in microseconds - a change to `tests/`, out of scope for issue 65. **Retired at R0c `<C1 sha>`** along with row 28, which built that deferred alternative; see "One heavy run at a time" above for what is unguarded now. |
+| 15 | Block a heavy run while another is alive | `PreToolUse(Bash)` | **reject** | Needs process enumeration; `tasklist` on Windows costs 200-500 ms and cannot distinguish a headless harness Chromium from the human's browser. Unreliable input, tool-path cost. Deferred alternative: have `tests/parity.js` write a lockfile the hook can stat in microseconds - a change to `tests/`, out of scope for issue 65. **Retired at R0c `23c00a6`** along with row 28, which built that deferred alternative; see "One heavy run at a time" above for what is unguarded now. |
 | 16 | Report the last CI conclusion at session start | `SessionStart` | **reject** | Needs `gh` over the network. Network in a hook can hang the session start, and the rule is that no hook path touches the network - even the one that is not a tool path. |
 | 17 | Enforce Conventional Commits subject format | `PreToolUse(Bash)` | **reject** | Never a recorded failure here - every commit in the log conforms - and extracting a subject from an arbitrary `git commit` invocation (`-F`, two `-m` flags, `$'...'`) is exactly where a false block would land on a legitimate commit. The attribution check (#9) gets the value without the parsing risk, because it scans the raw string for a literal. |
 | 18 | Verify `git config user.email` matches the required author | `SessionStart` | **reject** | Already configured globally on this host and has never failed. A rule that has never fired and can never fire is clutter. |
@@ -441,7 +500,7 @@ not changed.
 | 25 | Block edits to `docs/fixtures/**` as "generated" | `PreToolUse(Edit\|Write)` | **reject** | They look generated but CLAUDE.md requires updating them by hand in the same commit as a contract change. Blocking them would block the correct fix. Listed here because it is the tempting mistake in hook 4. |
 | 26 | `SessionEnd` bookkeeping | `SessionEnd` | **reject** | Cannot influence the model or the human in time. `Stop` already covers the moment that matters. |
 | 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **adopt** | Three workers on issue 47 backgrounded the check, the third with three paragraphs of dispatch warning against it; prose is exhausted. False-positive-free: `check-observer.mjs` refuses a backgrounded run by design, so one can never satisfy the gate, and blocking it forbids nothing that works. Scoped to the gate-feeding check only - `check:built`, parity and run-all can legitimately run detached from a main session, and the reminder already covers them. Matched per segment, because the recorded shapes were piped, chained, `cd`-prefixed and file-redirected. The message names the replacement in one line, including the Bash timeout. Measured 2026-09-10: `PreToolUse(Bash)` fires for a backgrounded call and denies it (probe A); `tool_input.run_in_background` reaches the hook as `true`. |
-| 28 | Block a heavy run while a parity run is alive, via a lockfile `tests/parity.js` writes | `PreToolUse(Bash)` | **adopt** (bundled with #27 by owner decision, 2026-09-10) | #15's deferred alternative. The input problem #15 rejected on is gone: the run itself writes the lock, so the hook stats one file instead of enumerating processes, and a human's terminal run is seen too. The stale-lock false positive is closed by liveness (`process.kill(pid, 0)`, no `tasklist`) plus a heartbeat TTL - a dead pid or a stale heartbeat is ignored, so the rule can only fire on a run that is actually alive, and a second heavy run beside it produces garbage, so the block forbids nothing that works. `parity.js` also refuses to start over a live lock, which covers parity-vs-parity with no hook in the loop. Fifteen peers on one tree make the overlap a matter of when. Known gaps, recorded above: the vitest-alive side is invisible; a container run is invisible; on Windows a crashed run's pid can be reused inside the TTL, which the message answers with "delete the lock". Measured 2026-09-10 (probe B): a live lock denies, a dead-pid lock does not. **Retired at R0c `<C1 sha>`**: `tests/parity.js` and `tests/parity/lock.js` are both deleted, and nothing replaced the writer - see "One heavy run at a time" above. |
+| 28 | Block a heavy run while a parity run is alive, via a lockfile `tests/parity.js` writes | `PreToolUse(Bash)` | **adopt** (bundled with #27 by owner decision, 2026-09-10) | #15's deferred alternative. The input problem #15 rejected on is gone: the run itself writes the lock, so the hook stats one file instead of enumerating processes, and a human's terminal run is seen too. The stale-lock false positive is closed by liveness (`process.kill(pid, 0)`, no `tasklist`) plus a heartbeat TTL - a dead pid or a stale heartbeat is ignored, so the rule can only fire on a run that is actually alive, and a second heavy run beside it produces garbage, so the block forbids nothing that works. `parity.js` also refuses to start over a live lock, which covers parity-vs-parity with no hook in the loop. Fifteen peers on one tree make the overlap a matter of when. Known gaps, recorded above: the vitest-alive side is invisible; a container run is invisible; on Windows a crashed run's pid can be reused inside the TTL, which the message answers with "delete the lock". Measured 2026-09-10 (probe B): a live lock denies, a dead-pid lock does not. **Retired at R0c `23c00a6`**: `tests/parity.js` and `tests/parity/lock.js` are both deleted, and nothing replaced the writer - see "One heavy run at a time" above. |
 | 29 | Report HEAD moving under a session | `PreToolUse(Bash)` on `git commit`, or `Stop` | **reject for now** | Nothing collided in the recorded case; the prose that owns it ("Your writers are not the only writers", `3541a23`/`e5a26a2`) is one day old and has not been given a chance to fail, and the standing bar is a repeated mistake. Not `PreToolUse(Task)`: the dispatch tool is `Agent` on this host and `Task` in the reference, an unverified matcher (#19-shaped). Not `UserPromptSubmit`: #22. If the prose fails once, the cheapest deterministic form needs no unverified input: `session-start.mjs` records the HEAD sha in the session's `.hook-state.json` entry; `bash-guard.mjs`, on a `git commit` segment it already parses, compares `git rev-parse HEAD` against it and speaks (never denies) "HEAD moved since this session started: X -> Y, N commits not yours - `git log --oneline X..Y`; your commit lands on top, record Y as the base in the handoff"; `check-observer.mjs` refreshes the stored sha after the session's own commit. |
 | 30 | Accept a leading `set -o pipefail` in the observer's attribution rule, and make the canonical invocation carry it | `PostToolUse(Bash)` (attribution only) | **adopt** (owner decision, 2026-09-10) | The recommended pipe reports `tail`'s status, so a failed check comes back with no exit line and reads as a pass; twelve check runs across five sessions were spent learning the status a second way. With the prefix the tool prints `Exit code 1` on a failed check, `check-observer.mjs` sees `exit_code: 1` and refuses to arm, and the worker reads one line. Forgery: `set -o pipefail` writes nothing to stdout, so the check stays the only stdout producer; the strip removes exactly the tokens `set -o pipefail` plus one `;` or `&&` at the start, on either side of the `cd` strip, and nothing else, after which every existing refusal applies unchanged. `set -o pipefail; echo "All files"`, `set -o pipefail; npm run check > o.txt 2>&1; grep "All files" o.txt`, `set -o pipefail; true; npm run check ...`, `set -eo pipefail; ...` and `set -x; ...` are all still refused. A forger gains nothing: omitting the prefix is today's state, and with it the exit code only tightens the gate. Measured 2026-09-10 on the Bash tool. |
 | 31 | Deny a foreground `npm run check` with no `timeout` (rule 2g, second trigger) | `PreToolUse(Bash)` | **reject for now**, sketched | The tool moves a call that outlives its timeout to the background instead of killing it, the default is 120 s, and the check is ~165 s healthy, so a check call without a `timeout` cannot finish in the foreground on this host and is lost exactly as a backgrounded one is - measured once (`8ba57351` afff seq 57). But the number was undocumented until now: B1 puts it in the 2g deny message, the 2f reminder, the README, `CLAUDE.md` and the implement prompt, and the deny message arrives at the exact moment a worker retries in the foreground. That prose has not been given a chance to fail, which is the standing bar (row 29). And the deny has a failure mode of its own: it must fire on an *absent* field, so a host that stops passing `tool_input.timeout` to hooks would deny every foreground check - loud and diagnosable, but the one thing a guard must not do. Sketched verbatim in `issues/hooks-guardrails/plan.md` section 5, "Row 31, when it is needed"; probe A0 measured the field's shape on 2026-09-10 so the decision is a copy-paste later. |

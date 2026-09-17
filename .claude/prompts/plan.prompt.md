@@ -79,7 +79,7 @@ Design decisions - ask sparingly:
 UI / visual design - grounded mockups, not detached redesigns and not full implementation:
 - If the work introduces a new UI element, changes layout/interaction, or leaves visual structure under-specified, produce lightweight mockups before finalizing that part of the plan
 - Ground every mockup in the current app:
-  - reuse existing spacing, type, controls, tokens, and patterns from the live UI / `style.css` / `app/src/styles/tokens.css` / existing components
+  - reuse existing spacing, type, controls, tokens, and patterns from the running app / `app/src/styles/tokens.css` / existing components
   - show the change in a real screen context, not a blank generic wireframe world
   - prefer annotating or composing from current screenshots / current structure over inventing a new visual language
 - Good mockups:

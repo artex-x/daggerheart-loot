@@ -1,45 +1,62 @@
 # Coverage matrix
 
-What the 20 suites in `tests/` actually assert, mapped onto the features in
-`FEATURES.md`. Update this file whenever the shape of the coverage changes -
-adding a suite, moving what a suite is responsible for, or filling a gap.
+What the suites in `tests/` and `tests/app/` actually assert, mapped onto the
+features in `FEATURES.md`. Update this file whenever the shape of the
+coverage changes - adding a suite, moving what a suite is responsible for, or
+filling a gap.
 
-Run: `node tests/run-all.js`, or one suite by name. Every suite's full output is
+Run: `node tests/run-all.js`, or one suite by name (`node tests/run-all.js
+nosuch` lists none and exits 1 - `tests/run-all.js`'s own `SUITES` array is
+the source of truth for the current list). Every suite's full output is
 written to `test-output/<name>.log` whatever the result; the summary only prints
 the first dozen failing lines. CI uploads that directory when a job fails.
 
 ## Suites
 
-Twenty suites test the old app (`index.html`). Since B13 it is no longer what
-Pages serves - the built rewrite is - but it stays in the repository as the
-parity expectation and as the target of the one-commit revert, so all twenty
-still run until Phase 7 deletes it. Seven more, under `tests/app/` (`app/sweep`,
-`app/golden`, `app/contracts`, `app/states`, `app/typo`, `app/hues`,
-`app/print`), test the built rewrite (`dist/`) - what Pages now serves - in
-the same real Chrome, the layer B12 added because nothing before it drove
-`dist/` with a trusted click, a real network, or a real clipboard. One more
-again, `tests/stub.js`, tests neither app: it asserts the generated `i/*.html`
-share stubs do not scroll sideways. Each old-app suite below carries its
-**fate**: `kept` (stays through Phase 7, node-only), `ported as is`
-(re-pointed at `dist/`, same
-assertions), `rewritten` (same intent, new implementation), or `re-homed`
-(its assertions now live in vitest component/state tests, or in a
-`tests/app/` case) - decided in `plan.md`, "Phase 5 - the testing pyramid,
-planned", decided 3. A suite is deleted only in the Phase 7 batch that
-deletes `index.html` itself; until then every one of the twenty still runs.
+R0c (issue 47, `23c00a6`) deleted the static root (`index.html`, `app.js`,
+`style.css`), the fourteen browser suites that drove it, `tests/i18n.js`, and
+the parity harness that compared the two apps - "The rewrite against the app
+it replaces", below, is what survives of that comparison, as history. Twelve
+suite files remain, eighteen `run-all.js` rows (`app/sweep` and `app/golden`
+each split four ways, one per width/shard):
+
+- Five `tests/*.js` files, fs/node-only: `contracts` (trimmed to its pure
+  half - the list-encoding fixtures and the docs-name check), `craft`
+  (trimmed to two sections - data invariants and the share stubs), `dataint`,
+  `derived`, `stub` (the generated `i/*.html` share stubs do not scroll
+  sideways - never tested either app).
+- Seven `tests/app/*.js` suites test the built rewrite (`dist/`) - what Pages
+  serves - in a real Chrome: `app/sweep`, `app/golden`, `app/contracts`,
+  `app/states`, `app/typo`, `app/hues`, `app/print`. This is the layer B12
+  added because nothing before it drove `dist/` with a trusted click, a real
+  network, or a real clipboard; see "`tests/app/*`" below.
+
+The table immediately below is kept as a **record**, not a current list: it
+describes the twenty suites that tested the deleted static root, and each
+one's **fate** - `kept` (fs/node-only, survives as is or trimmed), `ported as
+is` (re-pointed at `dist/`, same assertions), `rewritten` (same intent, new
+implementation), or `re-homed` (its assertions now live in vitest
+component/state tests, or in a `tests/app/` case) - decided in `plan.md`,
+"Phase 5 - the testing pyramid, planned", decided 3, and settled by R0b's
+audit and R0c's deletion. Every citation of `app.js:N` or `style.css:N` in
+this file (here and below) refers to the file's state at its last commit
+before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
+`:index.html`) reads it.
+
+### The old-app suites (deleted at R0c, `23c00a6`) - kept as a record
 
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
 | `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one |
-| `derived` | data | kept | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in seven files; `noindex` on both entry documents (`index.html`, `app/index.html`) and their heads compared field by field with no exception list; the licence notice; die vectors; per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
-| `parity` | migration | kept until Phase 7 | the rewrite against the live app: the same script on both, differences reported |
+| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in the nine files `COUNTERS` names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
+| `parity` | migration | **deleted at R0c** (`23c00a6`) | was: the rewrite against the live app, the same script on both, differences reported - see "The rewrite against the app it replaces" below |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 28 route shapes, the equipment stat line in both languages, filter group key names against the docs |
-| `i18n` | source | kept | dictionary parity in both directions, and no key the code asks for that is missing |
-| `craft` | feature | re-homed: `record.test.ts`, `share.test.ts`, `derived` | upgrade chains: data, rendering, copying, stubs |
+| `i18n` | source | **deleted at R0c**; superseded by a compile-time check | before R0c: dictionary parity in both directions, and no key the code asks for that is missing (`tests/i18n.js`, parsed out of `app.js`). Now: `app/src/lib/dict.ts`'s `Dict` type makes the same parity a `tsc`/`svelte-check` error in both directions - part of `npm run check`, not a separate suite. The one thing lost: the informational dead-key report (`I18N.md`) |
+| `craft` | feature | trimmed to sections 1 and 6; sections 2-5 re-homed: `record.test.ts`, `share.test.ts`, `derived` | data invariants and the share stubs (kept); upgrade chains rendering and copying (re-homed) |
 | `notes` | feature | **audited (R0b.1).** Covered already: `listPage.test.ts:112,290,298,318,544,560,562,565,570,574,581,603,614,656`, `state/lists.test.ts:305,325,333`, `lib/lists.test.ts:46,54,58,66,143,153,159`, `listLink.test.ts:39,41,51,60,94`, `sharedListPage.test.ts:134,166,257,273,299,301,335`, `share.test.ts:239,283`, `tests/app/states.js:385`, and the note text frozen in `tests/app/snapshots/_lists_a_noted.txt:59`/`_lists_a_note_opened.txt:44-45`. Ported (R0b.2, landed): the note-field group - the 3-line resting floor, a neighbour box not growing with its sibling, the real 320px ceiling with the text scrolling past it, and the shrink-back - plus the clear cross's `:has(:placeholder-shown)` visibility, both folded into `tests/app/states.js` case 13 (`noteTextareaHeight`, `tests/app/states.js:397-440`). Dropped: the toast's stale `display:none` rule (`Toast.svelte:65` is a popover now, the specificity clash it guarded cannot recur); `noteH` in prefs (no such key exists) | two notes: writing, copying, both links, migrating a v1 list, a v1 link, note field height |
 | `lists2` | feature | **audited (R0b.1).** Covered already: `listPage.test.ts:222,388,424,449,487,557` (storage warning, empty roll field, batch actions, price modes/suggestion, reorder; full line map: `plan.md`, "R0b planned"), `listsPage.test.ts:93,101,171,178,190,217`, `sharedListPage.test.ts:106,166,186,213,232,257,272,305,335`, `state/lists.test.ts:305,325,333,341,351,370`, `lib/lists.test.ts:66,143,153,159`, `money.test.ts:20,29,55,105,168,222`, `numField.test.ts:56`, `share.test.ts:50,248,252,283`, `record.test.ts:187,402,412,421,428,442`, `tables.test.ts:182,284,556,920` (row carries its own roll number, selection, filter reset, per-section select-all; full map: `plan.md`), `facets.test.ts:54,66,230`, `tests/app/contracts.js:89,117,186`, `tests/derived.js:200`. Ported this batch (jsdom): `[data-goldhint]` is a `<span>` mirroring `title`, not a button (`listPage.test.ts:293`); the storage notice sits under the heading and above the rows on both `storedList`/`sharedList` routes (`listPage.test.ts:231`); the batch bar holds exactly two buttons with no percentage widget (`listPage.test.ts:437`). Ported (R0b.2, landed): a real HTML5 drag reorder (`tests/app/states.js:539`, case 17 `dragReorder`), a folded `<details>` surviving a select-all re-render (`tests/app/states.js:600`, case 18 `foldedDetailsSurviveRerender`), and the money-help box's measured width plus the pressed picker button's computed colour (`tests/app/states.js:729`, case 22 `moneyHelpAndPressedPicker`). Dropped: `[data-move]`/`.alttable` (markup the rewrite never had); the exact real-data counts 119/59/120 (`tests/app/contracts.js:186` pins the same invariant table-agnostically; `tests/derived.js` pins the dataset sizes); "row numbering is not recomputed under a filter" folded into `data.test.ts`'s real-data guard instead (see `eqtest` below) | list page: reorder, position entry, list search, storage warning, batch actions, upgrade steps, price modes, price suggestion, empty roll field, taking a shared list, per-list roll, kind filter |
 | `select` | feature | **audited (R0b.1).** Covered already: `tables.test.ts:285,294,303,313,340,346,373,384,390,400,410,426`, `searchPage.test.ts:121,172`, `lists.test.ts:77,90,105,212,221,248`, `record.test.ts:448,471`, `state/app.test.ts:405,428,442`, `share.test.ts:189`; the two `elementFromPoint` hit-tests are covered *better* by `tests/app/states.js:54,68,86` (a trusted click through the real sticky stack, not a synthetic probe). Ported (R0b.2, landed): the selection bar pinned to the bottom of the viewport at 1000x900, and its buttons not spilling at 360, in `tests/app/states.js:511` (case 16 `selectionBarGeometry`). Dropped: `[data-act="collect"]`/`.row-add` (markup the rewrite never emitted); "an existing-list chip from inside a modal adds the record" (covered by composition - `lists.test.ts:248` proves it is the same `AddToList`, `:90` proves that control adds) | selection, batch add and copy, select all, reset on navigation, card and modal |
-| `flows` | feature | **audited (R0b.1).** Covered already: `tables.test.ts:479,649`, `record.test.ts:200,448,471`, `listPage.test.ts:112,118,198`, `state/app.test.ts:273,281`, `sharedListPage.test.ts:106,273`, `share.test.ts:69,93,127,145` - the clipboard half stricter than the legacy suite: `share.test.ts:69` is a parameterised golden over `docs/fixtures/share/records.json`, captured from the live app char-for-char - `std.test.ts:120,130`, `lists.test.ts:248`. Ported this batch: `w118`'s beastform shape (a 5+ line attached block with its own stat line) added to `docs/fixtures/share/records.json` via `tools/capture-share-fixture.mjs`, which `share.test.ts:69`'s golden now names alongside the original eight. **Two divergences lived here; both fixed in R0b.4, and both now guarded again.** (1) A referenced card's `\n` -> `<br>` line breaks and its `daggerheart.su` outbound link - `app.js:886-896`'s `refHTML` writes both - are restored in `RecordCard.svelte`'s refs block as real text nodes (not `{@html}`) split on the line break, plus an `<a>` whose subdomain follows the language on screen (`r.url` in Russian, `r.url.replace('//ru.', '//en.')` in English, `app.js:882-883`). `record.test.ts` now asserts both: the split text nodes around the `<br>`, and the link's href in each language. Both still sit inside a `<details>` closed by default (`FEATURES.md`, "Records"), so a pixel diff cannot see them, but the structural goldens are not blind to both: `d.controls()` (`tests/app/driver.js:171-182`) filters on `offsetParent`, which does distinguish a properly-hidden closed panel from one that only looks closed - that is how a rendering bug in this very batch (the restored link staying hit-testable with the card closed until `RecordCard.svelte` gained style.css:400's own `.refs details:not([open])>*:not(summary){display:none}` rule) was found comparing `_roll_wondrous_pinned.txt`'s `controls` section, corrected in `acef2a8`. The `<br>` line breaks and the link's own text are still a golden blind spot (`d.controls()` reads only `button, a[href], input, select, textarea`, and the accessibility tree's own snapshot never opens a closed `<details>` to read its `<p>`) - `record.test.ts` is the only guard for those two. (2) A frame-armour record's copy text keeps a tier word the live app now drops - `app.js:612`'s `isFrameRecord` guard (commit `106e4dd`) - is restored: `app/src/lib/share.ts`'s `eqLine(...)` call now passes `noTier: isFrameRecord(it)`. `docs/fixtures/share/records.json` was recaptured with `tools/capture-share-fixture.mjs` (only `f33`'s `ru`/`en` full text changed, losing the tier word) and `share.test.ts`'s golden loop covers all nine ids including it. Dropped: nothing else | modal, list address, clipboard, copying a whole roll |
+| `flows` | feature | **audited (R0b.1).** Covered already: `tables.test.ts:479,649`, `record.test.ts:200,448,471`, `listPage.test.ts:112,118,198`, `state/app.test.ts:273,281`, `sharedListPage.test.ts:106,273`, `share.test.ts:69,93,127,145` - the clipboard half stricter than the legacy suite: `share.test.ts:69` is a parameterised golden over `docs/fixtures/share/records.json`, captured from the live app char-for-char - `std.test.ts:120,130`, `lists.test.ts:248`. Ported this batch: `w118`'s beastform shape (a 5+ line attached block with its own stat line) added to `docs/fixtures/share/records.json` via `tools/capture-share-fixture.mjs`, which `share.test.ts:69`'s golden now names alongside the original eight. **Two divergences lived here; both fixed in R0b.4, and both now guarded again.** (1) A referenced card's `\n` -> `<br>` line breaks and its `daggerheart.su` outbound link - `app.js:886-896`'s `refHTML` writes both - are restored in `RecordCard.svelte`'s refs block as real text nodes (not `{@html}`) split on the line break, plus an `<a>` whose subdomain follows the language on screen (`r.url` in Russian, `r.url.replace('//ru.', '//en.')` in English, `app.js:882-883`). `record.test.ts` now asserts both: the split text nodes around the `<br>`, and the link's href in each language. Both still sit inside a `<details>` closed by default (`FEATURES.md`, "Records"), so a pixel diff cannot see them, but the structural goldens are not blind to both: `d.controls()` (`tests/app/driver.js:171-182`) filters on `offsetParent`, which does distinguish a properly-hidden closed panel from one that only looks closed - that is how a rendering bug in this very batch (the restored link staying hit-testable with the card closed until `RecordCard.svelte` gained style.css:400's own `.refs details:not([open])>*:not(summary){display:none}` rule) was found comparing `_roll_wondrous_pinned.txt`'s `controls` section, corrected in `acef2a8`. The `<br>` line breaks and the link's own text are still a golden blind spot (`d.controls()` reads only `button, a[href], input, select, textarea`, and the accessibility tree's own snapshot never opens a closed `<details>` to read its `<p>`) - `record.test.ts` is the only guard for those two. (2) A frame-armour record's copy text keeps a tier word the live app dropped - `app.js:612`'s `isFrameRecord` guard (commit `106e4dd`) - is restored: `app/src/lib/share.ts`'s `eqLine(...)` call now passes `noTier: isFrameRecord(it)`. `docs/fixtures/share/records.json` was recaptured with `tools/capture-share-fixture.mjs` (only `f33`'s `ru`/`en` full text changed, losing the tier word) and `share.test.ts`'s golden loop covers all nine ids including it. Dropped: nothing else | modal, list address, clipboard, copying a whole roll |
 | `eqtest` | feature | **audited (R0b.1).** Covered already: `data.test.ts:140` (the same real-data `it()` named under "Ported" below - eqtest has no pre-existing data.test.ts coverage of its own, only this batch's), `facets.test.ts:54,66,75,107,166,180,230`, `filters.test.ts:23,82,90,103,143,179,185,196,215`, `label.test.ts:126`, `i18n.test.ts:52,74,80`, `tables.test.ts:507,535,556,681,712` (filter panel draws, narrows on a chip, resets, equipment-table grouping, facet fields; full map: `plan.md`), `share.test.ts:67,93`, `tests/app/hues.js:99`. Ported this batch (jsdom): the real-data guards nothing else made - the 73/69 secondary/armour split, 381 unique English names, 11 Wondrous stat-blocked records, the `core:phy core:mag hnf:phy hnf:mag` book order, `firstT1[0] === 'Broadsword'`, Wondrous = 119 rows, and a filtered Wondrous subset's roll numbers are scattered rather than recomputed to 1..N (`FEATURES.md`, "Tables and search") - one `it()` in `data.test.ts:140`; the filter<->address loop after arriving by a filter link - a further pick does not reopen a folded panel, and a pill dropped while folded is not snapped back to what the link said (`tables.test.ts:791`); reset and the copy-link button hidden while the filter is empty, reachable with the panel folded (`tables.test.ts:565`). Ported (R0b.2, landed): `.rstats` is one tone across weapon/secondary/armour (`tests/app/hues.js:141`). Dropped: the `scrollY > 100` smooth-scroll assertion (the app's own half is covered at `tables.test.ts:856,1018`; the rest is a test of Chrome); the old chip strip above search (markup the rewrite never emitted) | equipment: class, order, filters, filter links, anchors, colours, copying, all sources |
 | `print` | feature | **audited (R0b.1), ported whole - landed (R0b.3).** `tests/print.js` entire, transposed onto `fresh()` and the moved driver (`tests/app/driver.js`) as `tests/app/print.js`, plus `tests/parity/specs.js`'s `sheetCounts`/`cardFit`/`printMedia`/`copiedPrintLink`, which die with the harness and are measured nowhere else. `dist/` renders no `[data-act]` anywhere (checked live before the port); the colour/black-and-white and "back" controls are gripped by name instead, the fallback `tests/parity/specs.js` already used for the same buttons. On this Windows host, 2026-09-16, the longest-text set's ladder never reaches past the font step - ubuntu CI reaches the art rung on the same route (`print` suite, CI run 35130947774, green on `98ddf52`); a local result is advisory and may legitimately fail a cell CI passes (`CLAUDE.md`). The font-step check stayed; a host-independent rung invariant (if some card's `--pcpad` sits at its own floor, some card's art is hidden) was added beside it so the end of the ladder is still checked wherever it is actually reached. The structural goldens carry nine print states - `#/print/ci1-q1` and its black-and-white twin, the nine-card sheet and its twin, the long-text sheet and its twin, the ten-id two-sheet state, the 181-id cap state, and `#/print/nope` - as accessibility trees only (`tests/app/inventory.js:996-1053`) - a tree says nothing about millimetres | sheet grid, card size against the design, versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, entry points |
 | `noart` | feature | **audited (R0b.1).** Covered already: `record.test.ts:249,254,257,304,364`, `printPage.test.ts:226`, `ports.test.ts:215,230`, `tests/app/states.js:330`. Ported this batch (jsdom): no copy-image button for a record with no art at all (`record.test.ts:307`); the broken-art memory survives a navigation away and back (`record.test.ts:319`). **The real-load-failure half was a divergence; fixed in R0b.4.** `RecordActions.svelte:105` now gates the copy-image button on `it.img && !app.artBroken(it.id)`, matching the live app's `hasImage(it)` (`app.js:1684`, used at `:2047`). `record.test.ts` covers the broken-art side beside the existing no-art test, and `tests/app/states.js` case 11 (`brokenArtPath`) gained the real-browser assertion that the button is gone once the picture's own request is aborted. Dropped: the `noart` placeholder class (`desc.ts:109-119` returns only `NO_ART`, no such class exists); the impossible "share attaches no file" case (`RecordActions.svelte:68-75` never passes a file; `ports.test.ts:215` owns the port); the table-row placeholder (`RowMain.svelte:60` calls the same `artSrc`, duplicative of `record.test.ts`) | records without artwork, and artwork that fails to load |
@@ -59,160 +76,66 @@ deletes `index.html` itself; until then every one of the twenty still runs.
 | `app/typo` | layout | `typo`, re-pointed at `dist/` |
 | `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
 | `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, all 28 route fixtures, the stat line, filter group names |
-| `app/print` | feature | `print`, transposed onto `dist/` and the moved driver: sheet grid, card size against the design (millimetres, not a tree), versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, entry points; plus the four `tests/parity/specs.js` print specs the harness would otherwise take with it - the sheet's counts, the fit ladder's own written numbers at every width, the sheet under print media, and the copied set link |
+| `app/print` | feature | the deleted `tests/print.js`, transposed onto `dist/` and the moved driver: sheet grid, card size against the design (millimetres, not a tree), versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, entry points; plus the four print specs the deleted parity harness used to run (`sheetCounts`, `cardFit`, `printMedia`, `copiedPrintLink`) - the sheet's counts, the fit ladder's own written numbers at every width, the sheet under print media, and the copied set link; an English pass added at R0c (`sheetCounts`/`printMedia` stay Russian-only, a comment in the file says why) |
 | `app/states` | journey | the twenty-two states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path, focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder, a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, and the money-help box plus the pressed picker's colour |
-| `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (105 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - those stay `tests/app/sweep.js`'s and, until Phase 7 deletes it, `tests/parity.js`'s. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` one of four per-tier `checkbox "Выбрать все (N)"` and one of four `StaticText "РАНГ N"` survive; the other six are elided, and a rename of one of those is not owned by any other suite once `tests/parity.js` is gone. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
+| `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (110 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - that stays `tests/app/sweep.js`'s alone since R0c deleted the pixel harness that used to also watch it. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` one of four per-tier `checkbox "Выбрать все (N)"` and one of four `StaticText "РАНГ N"` survive; the other six are elided, and a rename of one of those is owned by no other suite now that `tests/parity.js` is deleted. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
 
 ## Features to suites
 
+Re-pointed at R0c from the old-app suite names above to the surviving homes
+their fate column names (each old suite name still appears there for anyone
+tracing a feature back through history).
+
 | Feature | Covered by |
 |---|---|
-| Six roll modes | `behave`, `audit2`, `lists2` (empty field) |
-| Source switch, cannot be emptied | `behave`, `contracts` (legacy routes set it) |
-| Crit jump to the table | `qa`, `audit2` |
-| Tables, list/grid, search | `behave`, `eqtest`, `audit2` |
-| Filter panel, pills, reset, link | `eqtest`, `contracts` |
+| Six roll modes | `std.test.ts`, `roll.test.ts`, `alt.test.ts`, `tests/app/sweep.js` |
+| Source switch, cannot be emptied | `state/app.test.ts`, `contracts` (legacy routes set it) |
+| Crit jump to the table | `tests/app/states.js`, `tests/app/sweep.js` |
+| Tables, list/grid, search | `tables.test.ts`, `searchPage.test.ts`, `tests/app/sweep.js` |
+| Filter panel, pills, reset, link | `facets.test.ts`, `filters.test.ts`, `tables.test.ts`, `contracts` |
 | Filter group key names | `contracts` |
-| Anchors | `eqtest`, `contracts` |
-| Lists: create, reorder, remove, undo | `lists2`, `qa` |
-| Add to list, menu, search from the eighth | `select`, `lists2` |
-| Quantity, price, price modes, batch prices | `lists2` |
-| Two notes | `notes`, `contracts` |
-| List link, checksum, short link | `contracts`, `lists2`, `notes`, `qa` |
-| Two tabs merge | `qa` |
-| v1 storage and v1 links migrate | `notes` |
-| Record card, modal, copy, share, image | `flows`, `select`, `noart` |
-| Craft chains, referenced cards | `craft` |
-| Print | `print`, `app/print` |
-| Language switch | `behave`, `i18n`, `audit2`, `typo` |
-| Starting section | `behave` |
-| Storage unavailable | `behave`, `lists2` |
+| Anchors | `tables.test.ts`, `contracts` |
+| Lists: create, reorder, remove, undo | `listPage.test.ts`, `listsPage.test.ts`, `tests/app/states.js` |
+| Add to list, menu, search from the eighth | `components/lists.test.ts`, `listPage.test.ts` |
+| Quantity, price, price modes, batch prices | `money.test.ts`, `listPage.test.ts` |
+| Two notes | `listPage.test.ts`, `share.test.ts`, `contracts` |
+| List link, checksum, short link | `contracts`, `listLink.test.ts`, `state/lists.test.ts` |
+| Two tabs merge | `state/lists.test.ts` |
+| v1 storage and v1 links migrate | `state/lists.test.ts` |
+| Record card, modal, copy, share, image | `record.test.ts`, `share.test.ts`, `tests/app/states.js` |
+| Craft chains, referenced cards | `record.test.ts`, `share.test.ts`, `derived` |
+| Print | `app/print` |
+| Language switch | `i18n.test.ts`, `app/src/lib/dict.ts`'s compile-time check, `tests/app/sweep.js`, `tests/app/typo.js` |
+| Starting section | `state/app.test.ts`, `tests/app/states.js` |
+| Storage unavailable | `ports.test.ts`, `state/app.test.ts` |
 | `noindex`, robots | `derived` |
 | Data generation | `derived`, `dataint` |
-| `file://` | every browser suite loads the app from `file://` |
+| `file://` | every `tests/app/` suite loads the app from `file://` |
 
-## The rewrite against the app it replaces
+## The rewrite against the app it replaces (history)
 
-`tests/parity.js` is the answer to "is anything missing from the port?", and it
-answers it without anybody having to remember what the old screen did.
+Before R0c (issue 47, `23c00a6`), `tests/parity.js` ran every spec against
+both `index.html` and the built `dist/`, in both languages at three widths,
+failing on any difference not recorded in `VISUAL_DEBT`/`ACCEPTED` - "is
+anything missing from the port?" without remembering what the old screen did.
+It found a four-times-too-wide modal, a mistranslated tab, a missing
+copy-image button, and, in B3.6, three real layout defects a whole-page pixel
+percentage had been hiding.
 
-Use [`docs/parity.md`](../parity.md) for the operational loop. Current migration
-status and debt belong in `issues/47/plan.md` and `issues/47/handoff.md`.
-The parity CI job runs on manual dispatch and is not a deployment dependency.
+What survives it: `docs/specs/DEBT.md` (defects kept on purpose); the
+`ACCEPTED`/`VISUAL_DEBT` sweep that turned every accepted divergence into a
+`FEATURES.md`/`STATE.md` bullet first (`30b2744`); the structural goldens
+(`tests/app/golden.js`, `inventory.js`, `snapshots/`), seeded at R0a under the
+last green parity run's warrant; and the R0c sweep (`issues/47/sweep.md`), one
+more read for what a pixel diff and a static tree could never see - homed in
+`DEBT.md` section 3 and "Known thin spots" below.
 
-Every spec in `tests/parity/specs.js` observes a **state** - the controls on it,
-what a button puts on the clipboard, the label on the roll button, the title of
-the document - and returns what it saw. The harness runs each spec twice,
-against `index.html` at the root and against the built `dist/`, and compares.
-**Nothing is written down as the expected value: the live app is the
-expectation**, re-read on every run, so it cannot go stale.
-
-A state is a route plus what was pressed to reach it (`STATES` in the same
-file), and every state is compared **in both languages at three widths** -
-`LANGS` × `WIDTHS`, so the id a debt is keyed by is `"<id> @ <lang> <width>"`.
-Routes alone were not enough: they only ever reach the first paint, in the
-default language, at one width, above the fold.
-
-What that has found so far: a modal four times too wide with none of the card's
-buttons; an English tab reading "Core rules" where the live app says "Standard
-rules"; two English subtitles and *every* English help paragraph rewritten
-rather than copied; a Russian document title that had drifted; a wordmark being
-translated to "Loot" when the live app never translates it; the pin toggle not
-renaming itself when it is on; and focus moved into a field whose outline is
-suppressed instead of left on the stepper.
-
-Two of those came from pressing something for the first time, which is what the
-coverage line at the end of a run is for: it counts the control names the run
-pressed against the names it merely saw. A control nobody presses is compared
-as a name in a list and in no other way. Not all of them can be states - the
-roll button is random, and the live app's randomness cannot be seeded from the
-harness - but the number is the honest measure of how much of the app the
-states actually exercise.
-
-The two targets are separate files and never clash. `dist/` has to be built
-first; without it the suite says so and stops.
-
-Three kinds of finding:
-
-- **a difference** fails the run, and names the state, the spec and the field
-- **outstanding** is a state the rewrite has not reached, or a difference listed
-  in `ACCEPTED` with a reason - printed on every run so the list stays visible
-- **stale** is an `ACCEPTED` entry that is no longer a difference. It fails, so
-  an excuse has to be deleted by the slice that makes it untrue
-
-A fourth thing is never a finding: a live defect the rewrite reproduces on
-purpose is identical on both sides, so it is written in `docs/specs/DEBT.md`
-rather than keyed here.
-
-It found four things on its first run, all of which a component test had missed
-because a component test only checks what somebody remembered to write:
-
-- the record page had no **copy image** button at all
-- **send** was hidden when the browser had no share sheet; the live app shows it
-  and falls back to copying the link
-- the roll label used a hyphen where the live app prints an en dash
-- the card's metadata line and the page footer were missing, which is now
-  written down as outstanding rather than unnoticed
-
-This is also where the canvas conversion behind `ImagePort` is exercised: it
-cannot run in jsdom, and here it runs in a real Chrome on both apps.
-
-Five conditions the harness controls, each of which had produced a false
-reading before it did: every state is opened from a fresh document, because a
-hash-only navigation keeps the previous state's variables; the screenshot waits
-for the artwork, because `loading="lazy"` keeps images out of `networkidle0` and
-a blank card scores five percent; and a press waits on `document.getAnimations()`
-rather than a timer, because the modal animates in one app and not the other.
-The screenshot is also taken before the clipboard specs press anything - the
-live app raises a toast after a copy, and taking the picture afterwards was
-quietly inflating the debt on both record routes by about seven tenths of a
-percent. A `timed` state is arrived at afresh at every width rather than swept
-on one page, because a width sweep photographs a fading toast at whatever
-distance from the press host load happened to leave it. A full-page capture is
-retaken until two in a row agree, because `page.screenshot({ fullPage: true })`
-can hand back a raster that has not finished, geometry unchanged and pixels
-swinging by several percent on an unchanged build.
-
-### The look
-
-Three instruments, because they answer different questions.
-
-**Measured** - typography and colour of the landmarks both apps certainly share,
-compared strictly. These name something to go and change: "the heading is 800 at
-24px and was 680 at 23px" is a fix, where "40% of pixels differ" is not.
-Position and size are not measured this way: two layouts mid-port disagree about
-them by definition, and a metric that always differs teaches everyone to ignore
-the report.
-
-**A per-control probe** (`driver.js`'s `typeAt`, `specs.js`'s `typeRuns`) -
-computed type, text content and a measured text advance for a handful of named
-controls, run at every width rather than once. It exists because a whole-page
-percentage cannot see a control-sized defect: a wrong font-size on one line of
-a 1100x900 screen scores about 0.09%, under `JITTER`, so the pixel diff below
-reported the state as matching while three real defects sat inside it (B3.6).
-This is where geometry *is* measured, as the exception to the paragraph above:
-on a named handful of controls, on screens that are already built, where a
-width is the consequence of a rule that was ported wrong rather than of a
-layout that has not settled yet.
-
-**A pixel diff, against zero.** `pixelmatch` compares the two screenshots and
-writes a diff image next to them in `test-output/parity/`. The expectation is
-that a state matches exactly: a state with no entry in `VISUAL_DEBT` fails on
-any difference at all.
-
-An entry in `VISUAL_DEBT` is a debt rather than a tolerance. It records what has
-not been reproduced yet, with the reason, and it is enforced from both sides:
-
-- the screen drifts worse than the number - it regressed, and the run fails
-- the screen gets better than the number - the run fails too, asking for the
-  number to come down
-- the screen reaches `JITTER` or below - the run fails too, asking for the
-  entry to be deleted rather than left to sit inside `DEBT_SLACK` unnoticed
-
-So it can only ratchet towards zero, and the slice that finishes a screen
-deletes its entry. `JITTER` is a tenth of a percent for machine-to-machine text
-rendering; pixelmatch already discards antialiasing, so a real difference is
-worth whole percents rather than hundredths.
+To resurrect it from history: `git show 23c00a6^ -- index.html app.js
+style.css tests/lib.js tests/parity.js tests/parity docs/parity.md
+tools/probe.mjs tools/parity-ubuntu` plus the fourteen deleted browser suites
+and `tests/i18n.js`, re-point `derived.js`/`craft.js`/`contracts.js` at the
+root files, and restore `ci.yml`'s `parity` job from `git show
+b9d84ce^:.github/workflows/ci.yml`.
 
 ## What is enforced, and by what
 
@@ -272,8 +195,9 @@ global number:
 
 `npm run test` runs the ported modules in `app/src/lib` and `app/src/ports`, and
 the components, under vitest with coverage thresholds. It is a separate pyramid
-from the nineteen browser suites and does not replace them: those test the app
-people use, these test the one that will replace it.
+from the `tests/app/*` real-Chrome suites and does not replace them: those
+drive the built app people use in a real browser; these test its logic and
+components in isolation.
 
 | File | Held to |
 |---|---|
@@ -283,7 +207,7 @@ people use, these test the one that will replace it.
 | `data.test.ts` | the real `data.json`, and the counts the README publishes |
 | `money.test.ts` | the worked examples in the app's own help panel |
 | `search.test.ts`, `lib/lists.test.ts`, `roll.test.ts` | stated behaviour |
-| `state/lists.test.ts` | the live app's own list-store rules - `loadLists`..`storageWorks` and `createList` (app.js 1149-1330): the v1-to-v2 migration runs once and leaves v1 alone, a save merges with whatever another tab wrote, a refused write keeps the session working |
+| `state/lists.test.ts` | the live app's list-store rules, ported - `loadLists`..`storageWorks` and `createList` (app.js 1149-1330): the v1-to-v2 migration runs once and leaves v1 alone, a save merges with whatever another tab wrote, a refused write keeps the session working |
 | `components/lists.test.ts` | the add-to-list row itself - `listMenuHTML`/`addToListBtn` and `listMemberFor(item)`'s live behaviour: the button, the menu, a chip's tick, the new-list form, and the toast each raises |
 | `components/tables.test.ts` | the plain table's own behaviour - chip nav, the toolbar, selection, sectioned bodies, the row/section anchor - and, off `renderSelBar` (app.js 3706-3721), the selection bar it raises once a row is ticked: the count, the cross, its own add-to-list menu, and copying the whole selection |
 | `filters.test.ts` | the facet grammar both ways, and the predicate and counters the panel is built from |
@@ -371,10 +295,11 @@ happens to do.
   only a change of behaviour. `docs/fixtures/lists/*.json` now hold the raw
   string and payload for both link variants of six lists, and `contracts`
   re-derives base64url and the checksum with its own implementation.
-- **Route resolution had no fixture either.** `audit2` walks addresses to check
-  they render, not that they resolve to the state they used to.
-  `docs/fixtures/urls/routes.json` pins 28 shapes, including the three legacy
-  section names and the source switch each one sets.
+- **Route resolution had no fixture either.** The address-walking sweeps
+  (`audit2`, now `tests/app/sweep.js`) check that an address renders, not that
+  it resolves to the state it used to. `docs/fixtures/urls/routes.json` pins
+  28 shapes, including the three legacy section names and the source switch
+  each one sets.
 - **`robots.txt` was not in the count check** and still advertised 830 records.
   It is now checked with the other five files.
 
@@ -403,13 +328,14 @@ Not blocking, recorded so they are not mistaken for coverage:
   the one still without an answer - no headless browser exposes one to drive,
   so the fallback stays what is tested.
 - Colour contrast is switched off in the axe pass, because jsdom lays nothing
-  out and resolves no cascade. Contrast is a real measurement in `qa` and
-  `typo`, on the live app, and now also on the rewrite: `tests/app/sweep.js`
-  runs axe with `color-contrast` on over every address (B12) - the first gate
-  that has ever measured it on `dist/` rather than only on `index.html`.
-- `tests/parity.js` compares behaviour and screenshots only for registered
-  states the rewrite has reached. Missing states remain invisible, so each new
-  interaction surface must be registered in `STATES` in the same change.
+  out and resolves no cascade. Before R0c, contrast was measured for real only
+  on the live app (the deleted `qa` and `typo` suites); `tests/app/sweep.js`
+  runs axe with `color-contrast` on over every address (B12) - the first and,
+  since R0c, only gate that measures it, on `dist/`.
+- The structural goldens compare only registered states. Missing states
+  remain invisible, so each new interaction surface needs a
+  `tests/app/inventory.js` entry and a re-seeded golden in the same change
+  (`CLAUDE.md`, "Task and session protocol").
 - A native `<dialog>` cannot be opened in jsdom - there is no `showModal` - so
   `app/vitest-setup.ts` shims presence and open/closed. The focus trap, Escape,
   the return of focus and the page behind going inert are the browser's;

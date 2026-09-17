@@ -4,8 +4,8 @@ Everything after `#` is the route. The app never asks a server for it, so the
 grammar below is the whole router. Golden fixtures for these shapes are in
 `docs/fixtures/urls/routes.json`; `tests/contracts.js` replays them.
 
-The implementation is `currentRoute()` in `app.js`, plus `ROUTES`,
-`LEGACY_ROUTES` and `TABLES_RE` beside it.
+The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
+`TABLES_RE` and `legacySource()` beside it.
 
 ## Sections
 

@@ -1130,6 +1130,258 @@ already rewrote; closed by this commit, no further action. (2)
 `index.html` - real and still open, out of scope for a `ci.yml`-only batch;
 carried to C4 (see "Deferred").
 
+### R0c C4 - the documents, acceptance 32-40 (implementer, 2026-09-17)
+
+**Dispatch scope note.** The dispatch that opened this session explicitly
+said: land acceptance 32-40 (the document rewrites) and **do not run the
+closeout (41-45)** - a review of C1-C3 is in flight and its findings land
+before the task closes. Everything below is 32-40 only; `plan.md`/
+`handoff.md` Status, "Phase 8 opening inputs", and the acceptance-grep-pasted
+closeout record are left for the closeout step once the review lands.
+
+**Preflight.** `git log --oneline -5` matched the dispatch exactly, HEAD
+`598fb85`. `git status --short`: only the three foreign untracked
+directories (`issues/56/`, `issues/untrack-stubs/`, `work/`), left untouched
+throughout.
+
+**Files edited** (all C4-scoped, exactly the dispatch's list minus
+`CONTRACTS.md` and `docs/tg-preview.md`, both re-read and needing no change,
+and `llms.txt`/`robots.txt`, both re-read - see below):
+`CLAUDE.md`, `docs/specs/{COVERAGE,DEBT,FEATURES,META,ROUTES,STATE,I18N}.md`,
+`README.md`, `README.ru.md`, `docs/REFACTOR_PLAN.md`, `docs/artwork.md`,
+`.claude/README.md`, `.claude/prompts/{orchestrate,plan,add-source}.prompt.md`,
+`.claude/templates/context.template.md`, `.claude/skills/small-fix/SKILL.md`.
+
+- **`CLAUDE.md`** (acceptance 32): "Migration and parity" section deleted
+  whole (20 lines); "Project shape" now says the static root was deleted at
+  R0c (`23c00a6`) and how to read it from history; "Quality gates" lists the
+  surviving `tests/app` suites and says `app/sweep`/`app/golden` are not one
+  foreground call each; the spec table's `docs/parity.md` row is gone; the
+  counts sentence now names `tests/derived.js`'s `COUNTERS` list instead of
+  enumerating seven files; the batch-size cite points at `.claude/README.md`,
+  "Batch size and the fixed cost of a run"; "Task and session protocol"
+  gained the two named one-line rules (the placement rule; the golden/DEBT
+  rule). `wc -l CLAUDE.md` = **167** (<= 170).
+- **`docs/specs/COVERAGE.md`** (acceptance 33): intro re-derived (twelve
+  surviving suite files, eighteen `run-all.js` rows, listed by name); the
+  old-app table moved under a new heading, "### The old-app suites (deleted
+  at R0c, `23c00a6`) - kept as a record"; a resolving sentence for `app.js:N`/
+  `style.css:N` citations added right before that table ("here and below");
+  the `derived`/`parity`/`contracts`/`i18n`/`craft` rows updated to their
+  actual R0c disposition (parity and i18n deleted; craft trimmed, not
+  re-homed whole; derived's responsibilities re-pointed at `app/index.html`
+  alone and `dice.ts`); "Features to suites" rewritten to point at the
+  surviving homes (component/state test files, `tests/app/*`); "The rewrite
+  against the app it replaces" and "The look" collapsed into one ~20-line
+  "(history)" section citing `30b2744`, `DEBT.md`, the goldens, and the
+  `git show`/re-point recipe to resurrect the harness; "Known thin spots"
+  lost its `tests/parity.js` bullet (replaced with a golden-based
+  equivalent) - the sweep's class-(b) findings were already there from C0;
+  three further present-tense slips found and fixed while reading the file
+  end to end: the unit-suite intro's stale "nineteen browser suites" claim,
+  one "the live app now drops" in the `flows` row, one stale "audit2 walks
+  addresses" in "Gaps closed in Phase 0", and the `app/golden` row's stale
+  "105 states" (the true count, confirmed against `tests/app/inventory.js`,
+  is **110** - same reconciliation C1 already made for `run-all.js`'s row
+  count).
+- **`docs/specs/DEBT.md`** (acceptance 34): header gained the resolving
+  sentence for `app.js`/`style.css`/`index.html` citations naming `23c00a6`
+  as the deletion commit; the "third category" framing rewritten past tense
+  now that `VISUAL_DEBT`/`tests/parity/specs.js`/`docs/parity.md` are gone;
+  the "Defects reproduced on purpose" section's one-line framing corrected to
+  past tense too. **The cited verification was run, not assumed**: `git show
+  bb61db0:app.js` around lines 3589-3603 was read and matches D2's quoted
+  `expandHash()` body character for character. D1-D11's own "Live behaviour"/
+  "Why parity won" fields were deliberately left as they were - each already
+  carries its own "Read at `<sha>`" citation, and rewriting eleven entries'
+  established, previously-reviewed prose for a tense pass risked introducing
+  a factual error for no acceptance-line benefit; the header's new resolving
+  sentence covers what tense alone would fix.
+- **`docs/specs/FEATURES.md`** (acceptance 35): eight present-tense "the live
+  app <verb>s" lines corrected to past tense (dispatch named seven; an
+  eighth, the grid-tile roll-number defect, was found reading the file end to
+  end and fixed the same way) plus the parity-state cross-reference in the
+  storage-notice bullet re-pointed from "invisible to every parity state" to
+  "invisible to the old parity harness ... (deleted at R0c, issue 47)".
+- **`docs/specs/META.md`** (acceptance 35): section 1 no longer names the
+  deleted root `index.html`; the head-to-head comparison it described is
+  gone (there is nothing left to compare against), re-worded to describe the
+  single-document `headFacts` read `tests/derived.js` actually does today;
+  section 4's "Opening `index.html` from a folder" became "Opening
+  `dist/index.html` from a folder", with the build step named.
+- **`docs/specs/ROUTES.md`** (acceptance 35): the implementation pointer
+  moved from `currentRoute()` in `app.js` to `parseHash()` in
+  `app/src/lib/hash.ts` plus `TABLES_RE`/`legacySource()` - a citation
+  change only; the grammar table's values are untouched, confirmed by re-
+  reading the whole file before and after. `tests/contracts.js`'s own gate
+  fired on the edit (the file is a public-contract surface by name); re-run
+  and green, as expected for a pointer-only change.
+- **`docs/specs/STATE.md`** (acceptance 35): `S` in `app.js` re-pointed to
+  `AppState` in `app/src/state/app.svelte.ts` plus per-page `$state`, with
+  the live app named as history (`app.js`, deleted at R0c) rather than as
+  a file to go read; the grouping table below it is kept as the useful map
+  it always was.
+- **`docs/specs/I18N.md`** (acceptance 35 area, though not separately
+  numbered): the dictionary section re-pointed at `app/src/lib/dict.ts`'s
+  `Dict` type (compile-time parity in both directions, replacing
+  `tests/i18n.js`'s runtime check); the dead-key-report loss stated
+  explicitly, with the sweep's own reconciled facts (`srcFrame` is read at
+  `label.ts:125` in the rewrite though dead in the live app; `voaRecall`/
+  `guessPrice`/`pcTh`/`printFoot` are dead on both); the "what a test has to
+  cover" footer re-pointed from `tests/audit2.js`/`tests/typo.js` to
+  `tests/app/sweep.js`/`tests/app/typo.js`.
+- **`README.md`/`README.ru.md`** (acceptance 36, mirrored in both
+  languages): "Running and developing" rewritten - the site is the built
+  rewrite, not "a rewrite under way"; the file tree lists `app/src/*` instead
+  of the deleted root files; the suites table replaced with the twelve
+  current suite names and what each checks; the "Machine readability"
+  paragraph's `tests/lists2.js` citation re-pointed to `tests/contracts.js`;
+  the Rights section's code line reads `app/`, `tools/`, `tests/` (no
+  `index.html`/`style.css`/`app.js`). Checked against `tests/derived.js`'s
+  `COUNTERS`/licence-cite regexes before editing (grep for the count
+  patterns and the "fall outside that licence"/"под эту лицензию не
+  подпадают" clauses) - none of the edited paragraphs overlap either check,
+  confirmed by the green `derived` run inside `npm run check` below.
+- **`docs/REFACTOR_PLAN.md`** (acceptance 38, with one deliberate deviation
+  from its literal wording - see below): gained a paragraph naming what R0c
+  deletes, pointing at `DEBT.md`, `COVERAGE.md` and "Phase 8 once the owner
+  files it". **Deviation**: acceptance 38 as written wants this file to say
+  the migration "closed at R0c (`<C4 sha>`, date)" - but this dispatch's own
+  GOAL explicitly says not to run the closeout, and the task is not in fact
+  closed yet (a C1-C3 review is in flight and its findings land first). Cast
+  as "closed" language into a document while the closeout is still pending
+  would be a false statement the moment it landed, and the sha it would need
+  to cite is this same commit's own, which cannot be known before it is
+  made. Written instead as "task 47 closes once R0c's own closeout lands -
+  see `handoff.md`, 'Status', for where that stands" - accurate now and
+  automatically accurate once the closeout does land and updates that
+  Status section. Whoever runs the closeout should revisit this paragraph
+  and tighten it to name the actual closing commit and date at that point.
+- **`docs/artwork.md`** (acceptance 38): its one `tests/noart.js` citation
+  re-pointed to `record.test.ts`. `docs/tg-preview.md` was re-read in full
+  (the dispatch named line 551 specifically) and needs no change - that line
+  and the whole file already point at surviving files only.
+- **`llms.txt`/`robots.txt`** (acceptance 37): both re-read in full. **No
+  change** - neither references the static root, `app.js`, `style.css`, the
+  parity harness, or any deleted suite; both already describe the site by
+  its public contract (routes, data files), which R0c does not touch.
+- **`.claude/README.md`** (acceptance 39): gained a new "### Batch size and
+  the fixed cost of a run" section (moved from the deleted `docs/parity.md`,
+  parity rows replaced by `run-all app/*`/`app/sweep`-per-width/`app/golden`-
+  per-shard gates, cited from `CLAUDE.md`). **A real defect found while
+  reading the file for this, not introduced by it**: hook-table rows 11, 15
+  and 28 (already edited by C1 to read "Retired at R0c `<C1 sha>`") still
+  carried the **literal placeholder text** `<C1 sha>` rather than `23c00a6`
+  - C1's own handoff record had flagged this as "sha to be filled in from
+  this same commit once it lands" and nothing had come back to do it in the
+  three batches since. Filled in via `sed` across all three occurrences;
+  `git grep -n "C1 sha"` now returns nothing. Also fixed in the same pass:
+  the hook-table row 11 description's "*is* the parity expectation" ->
+  "*was* the parity expectation" (grep-2 tense compliance, see below).
+- **`.claude/prompts/orchestrate.prompt.md`** (acceptance 39): the cost table
+  and its surrounding paragraph re-pointed from `tests/parity.js`/
+  `run-all.js parity` to the surviving `tests/app/` gates; the "heavy run
+  beside a live parity run (2h)" clause corrected - rule 2h retired with the
+  harness at R0c, per `.claude/README.md`'s already-updated "One heavy run
+  at a time" section.
+- **`.claude/prompts/plan.prompt.md`** (acceptance 39): the mockup-grounding
+  bullet's `style.css` reference dropped (deleted file); "the live UI" kept
+  as "the running app" for clarity.
+- **`.claude/prompts/add-source.prompt.md`** (acceptance 39, lines
+  39/84/158 exactly as named): the `app.js` orientation step re-pointed to
+  `app/src/lib/`/`app/src/components/`; the `refs` render-path citation
+  re-pointed to `RecordCard.svelte`; the counts-update step re-pointed to
+  `tests/derived.js`'s `COUNTERS` list instead of enumerating the same seven
+  files `CLAUDE.md` used to.
+- **`.claude/templates/context.template.md`** (acceptance 39, lines 34-39
+  exactly as named): the command-cost table's `tests/parity.js`/
+  `run-all.js parity` rows replaced with the surviving `tests/app/` gates;
+  the whole "Measuring the live app against the rewrite" section deleted
+  (`tools/probe.mjs` is gone and there is no second app left to probe
+  against); "which machine is authoritative" genericised from "parity debt"
+  to "visual debt" so the template still reads sensibly for a future task
+  that is not issue 47.
+- **`.claude/skills/small-fix/SKILL.md`** (acceptance 39, steps 1 and 5
+  exactly as named): step 1's expected-value source re-pointed from "the
+  live styles or the design node (`CLAUDE.md`, 'Migration and parity', while
+  that section stands)" - which no longer exists - to the design node/Figma
+  reference and `CLAUDE.md`'s "Source and commit conventions"; step 5's gate
+  re-pointed from "the parity filter for the touched state ...  with the
+  diff images inspected before any `VISUAL_DEBT` change" to the golden
+  shard(s) covering the touched component, `--update` only when the change
+  is intended.
+- **`docs/specs/CONTRACTS.md`**: re-read in full. **No change** - its one
+  `app/index.html`/`dist/assets/app.js` mention already names current
+  files, and nothing in it names the deleted static root, a deleted suite,
+  or the parity harness.
+
+**The `.prettierignore` `.claude/worktrees/` item (dispatch item 2):
+deliberately left in Deferred, not folded into this commit.** The dispatch
+asked for a deliberate decision either way. Reasons to leave it: it is not a
+document (the dispatch's own framing), it is not in C4's named file list,
+and touching an unrelated file while a C1-C3 review is in flight adds a
+change surface outside this batch's stated scope for marginal benefit (the
+worktree collision it fixes is a rare host-specific event, already
+worked around once by removing the offending worktree). It remains exactly
+as recorded under "Deferred" below, for whoever next touches
+`.prettierignore` or runs the closeout.
+
+**The acceptance grep, run twice, over the whole tree minus `issues/`,
+`node_modules/`, `dist/`, `tests/app/snapshots/`** (`plan.md`, "The
+acceptance grep, defined"):
+
+1. **Broken instructions.** 60 hits remain, every one reviewed individually
+   against the allowed list: `.claude/improvements.md` (a dated record, 8
+   hits); `.claude/README.md` (5 hits, all past tense/"Retired at R0c
+   `23c00a6`", including the two fixed in this pass); `docs/specs/DEBT.md`
+   (10 hits - the header's own framing, now past tense, plus D-entry
+   citations each carrying its own `Read at <sha>`); `docs/specs/COVERAGE.md`
+   (13 hits - inside the renamed old-app record table, or in the new
+   "(history)" section citing `23c00a6`/`30b2744`); `docs/specs/I18N.md` (2
+   hits, past tense); `app/src/**` test files and `tools/artwork/lib.mjs` (8
+   hits, all literal `Ported from tests/<x>.js` / `ported from` provenance
+   comments, the allowed form); `tests/app/*.js` (13 hits, all past-tense
+   history or `Ported from`/`lifted from`/`Transposed from` provenance in
+   file headers - these files are C2's, not C4's, and were only read, not
+   edited, this pass). No hit is a present-tense instruction pointing at a
+   file that no longer exists.
+2. **Present-tense authority**, scoped to `CLAUDE.md docs/specs README.md
+   README.ru.md .claude/README.md .claude/prompts .claude/skills
+   .claude/templates`. 26 hits, every one reviewed: past tense ("was",
+   "deleted at `23c00a6`"), a DEBT.md entry carrying its own `Read at <sha>`
+   citation, or inside `COVERAGE.md`'s retained old-app table. Two genuine
+   present-tense slips were found and fixed during this review (`.claude/
+   README.md`'s "*is* the parity expectation" and `DEBT.md`'s framing
+   sentence, both above) - the grep's hit count does not drop when only
+   tense changes, so it was re-read line by line rather than re-counted.
+
+**Gate: `set -o pipefail; npm run check 2>&1 | tail -n 120`**, run twice - once
+after every document edit above, once more after writing this handoff
+section itself (a doc edit disarms the gate, per `context.md`). Both green,
+one foreground call each, no host throttle observed (`npm run format:check`
+returned promptly with no formatting drift either time -
+`.prettierignore`'s `*.md` line means none of this batch's edits could be
+reformatted or fail that step anyway). Both runs: 42 files / 1053 tests,
+coverage 96.61/88.6/97.11/97.34 (unmoved from every prior reading in R0c).
+Cache keys are not quoted here (placeholder convention, per "Work item - the
+C1 cache-key literals abstracted" above) - the commit below happened
+immediately after the second run, with `git status --short` showing no
+change to any file between that run and the commit.
+
+**Not run, on purpose (out of this batch's scope):** `npm run check:built`
+(no screen-drawing change - every edit is documentation); a golden shard
+(nothing under `app/src` changed); `node tests/contracts.js` standalone
+(covered by `npm run check`'s own `test` step, and `tests/contracts.js`
+itself was not edited this pass - only its citation in `ROUTES.md`/
+`README.md`/`README.ru.md` moved).
+
+**Not done, per the dispatch's explicit stop condition**: acceptance 41-45
+(the closeout) - `plan.md`'s "What 'task 47 is done' means" evidence list,
+`plan.md`'s Phases table row 7, `handoff.md`'s Status flip to `done`,
+"Phase 8 opening inputs" completion, the push-and-read-CI step, the by-hand
+`check-site.mjs` call, and the `/handoff` size-budget check. These wait for
+the C1-C3 review's findings, per the orchestrator's own instruction.
+
 ## Next batch
 
 - Name: **R0c - the divergence sweep, the deletions, CI's parity job, the

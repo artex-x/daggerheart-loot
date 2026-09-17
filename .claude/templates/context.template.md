@@ -31,18 +31,12 @@ otherwise rediscovers it. Never let two heavy runs overlap.
 |---|---|---|
 | `npm run check` | | |
 | `npm run check:built` | | |
-| `node tests/parity.js "<filter>"` | | |
-| `node tests/run-all.js parity` | | |
-
-## Measuring the live app against the rewrite
-
-Use `node tools/probe.mjs <route> <selector>` rather than writing the script
-again. It launches with the parity harness's own args, loads both `index.html`
-and `dist/index.html`, and prints computed styles and rects side by side. A
-number taken any other way is not comparable to the harness's.
+| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | | |
+| `node tests/app/sweep.js <width>` | | |
+| `node tests/app/golden.js --shard=n/4` | | |
 
 ## Which machine is authoritative
-- For recorded numbers (parity debt, timings):
+- For recorded numbers (visual debt, timings):
 - What a difference on another machine means:
 
 ## Reasons already disproved

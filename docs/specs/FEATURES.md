@@ -42,9 +42,9 @@ Six modes. Each keeps its own input in memory only.
   on roll pages it waits for `change`.
 - On the alternate tables each number field and each stepper names its own
   die - "Hope Die: Roll result" / "Hope Die: One lower" / "Hope Die: One
-  higher", and the same for Fear - where the live app names both fields the
+  higher", and the same for Fear - where the live app named both fields the
   same string and all four steppers the same two strings, so a screen reader
-  cannot tell which die is being changed. A deliberate accessibility
+  could not tell which die was being changed. A deliberate accessibility
   improvement, not a drift.
 - The results container on every roll mode is an announced live region
   (`role="status" aria-live="polite"`), so a re-roll is read out without
@@ -67,8 +67,8 @@ Six modes. Each keeps its own input in memory only.
   table" link and a section's copy-link button produce) scrolls to its target
   and outlines it in gold for 1.6 s. The scroll and the outline re-play on a
   language switch. A search keystroke, a tick or a view switch does not
-  re-play them - the live app re-renders and re-scrolls on each, a defect not
-  reproduced.
+  re-play them - the live app re-rendered and re-scrolled on each, a defect
+  not reproduced.
 - **The three equipment tables hold equipment from every source, not only the
   two books**: 317 weapons, 108 secondary, 90 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages, Wondrous
@@ -80,7 +80,7 @@ Six modes. Each keeps its own input in memory only.
   Values in a row combine with *or*; a link naming two frames opens both.
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
   every change, and read back only when the segment actually changed.
-- A grid tile shows that record's own roll number. The live app passes the
+- A grid tile shows that record's own roll number. The live app passed the
   array index as the number (`list.map(tileHTML)`), so every tile past the
   first in a plain table showed its position instead of its roll - a live
   defect the rewrite does not reproduce.
@@ -124,10 +124,11 @@ Six modes. Each keeps its own input in memory only.
   refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
   live in this browser only" disclosure whose cross is remembered in
   `dhloot.warn.v1`; unfolding is not remembered - the notice comes back folded
-  after a language switch, as the live re-render leaves it; on the index it
-  survives a create and a delete, where the live whole-page re-render re-folds
-  it - the rewrite's deliberate deviation, invisible to every parity state
-  because each starts folded.
+  after a language switch, as the live re-render left it; on the index it
+  survives a create and a delete, where the live whole-page re-render
+  re-folded it - the rewrite's deliberate deviation, invisible to the old
+  parity harness because every one of its states started folded (deleted at
+  R0c, issue 47).
 
 ## Records
 
@@ -152,8 +153,8 @@ Six modes. Each keeps its own input in memory only.
   `renderItemPage` shape). The tab title on a record page is the app's name
   alone, on both apps - `DEBT.md` D5. When `data.js` itself did not load,
   every page draws the "data did not load" line in place of its content
-  (`NoData.svelte`) - the rewrite's own state; the live app throws on a
-  missing `window.LOOT` and draws nothing.
+  (`NoData.svelte`) - the rewrite's own state; the live app threw on a
+  missing `window.LOOT` and drew nothing.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used.
@@ -205,7 +206,7 @@ Six modes. Each keeps its own input in memory only.
 - `Назад` steps back in browser history; with nowhere to step back to it goes to
   `#/lists` instead.
 - A card's own name is drawn as `<h2 class="pc-name">`, a heading-level fix:
-  the live app's `printCardHTML` writes `<h3>` there. `docs/specs/DEBT.md` D8
+  the live app's `printCardHTML` wrote `<h3>` there. `docs/specs/DEBT.md` D8
   (the alternate-tables page jumping `<h1>` to `<h4>`) is a different screen
   and is unaffected.
 
@@ -216,14 +217,14 @@ Six modes. Each keeps its own input in memory only.
   never a record or a list).
 - Chips and segmented switches expose their on/off state as `aria-pressed` -
   the money chips and the two view switches (tables list/grid, print colour/
-  black-and-white) gained it in the rewrite, where the live app writes
+  black-and-white) gained it in the rewrite, where the live app wrote
   nothing for the money chips and `aria-current="true"` for the menu chips.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
 - Toasts with an undo action for destructive things.
 - No tab is lit on a record, a list page or a print sheet - the live
-  `renderTabs` compares against the raw route string, and none of those three
-  route kinds is ever that string.
+  `renderTabs` compared against the raw route string, and none of those three
+  route kinds was ever that string.
 - Under `prefers-reduced-motion: reduce` the card's entrance and the section
   outline's fade are off (the outline is static); every other transition and
   animation runs. Ported from the live app and owed a real policy:
