@@ -75,6 +75,24 @@ standing rule below.
 | B5-N10/11/12 | `roll.ts:14-16`, `alt.ts:25`, `listLink.ts:14-17` | *(taste)* a re-export justified by "any future caller"; `RARITIES` as a pure alias of `RARITY_ORDER` in the batch about single sources; a re-export comment overstating the rule it defends. |
 | B5-N15 | `tests/run-all.js:177-178` | The new empty-shard message is a **new Russian string** in a file B9 is scheduled to translate. Cheaper in English now than rewritten in B9. Mark `deferred-scope` if B9 owns that file wholesale. |
 
+### From B6's review (router, state, lists)
+
+Verdict **fix-then-continue**; the two blockers go to B6's implementer as the
+one remediation cycle, not to B12. R-2/N6 rides that same pass. The rows
+below are B12's.
+
+| id | where | what |
+|---|---|---|
+| B6-R1 | `app/src/state/lists.svelte.ts` (`#readCurrent`) | A **second** corruption is never backed up, and nothing cleans `.bad` up. The `get(LISTS_KEY_BAD) === null` guard is deliberate and its rationale is sound (do not overwrite the first loss), but the consequence is concrete: corruption #1 backs up; the key later becomes valid; `unreadable` clears and the notice disappears; `.bad` is orphaned forever with no UI to reach it; corruption #2 is **not** backed up and `save()` overwrites it, while the notice still claims preservation. Key the backup by timestamp, or drop `.bad` once a read succeeds. This is the defect one level down, not eliminated. |
+| B6-R3 | `app/src/state/app.svelte.ts` (`#expectHash`) | Never cleared on a non-matching navigation. `go(X)` sets it before `navigate(X)`; if `X` equals the current hash a real browser fires no `hashchange` and the value goes stale indefinitely (`memoryRouter` announces unconditionally, so no test can see it). A later Back/Forward landing on `X` is then swallowed and `this.hash` desyncs from the address bar. Unreachable from today's four `go()` call sites, all of which navigate elsewhere. A `hash !== router.hash()` guard removes the trap. |
+| B6-R4 | `app/src/components/ListPage.svelte` | `pagehide` alone for the pending URL flush. On mobile Safari a tab can be discarded from hidden without `pagehide`; `visibilitychange`->hidden is the more reliable last callback. Bounded (the address lags, the storage write is already synchronous), but on a bfcache restore the component is not remounted and the effect does not re-run, so the address can stay stale until the next edit. |
+| B6-R5 | `app/src/lib/listLink.ts` (`parseItems`/`decodeList`) | When **every** id is dropped, `parseItems` returns `null`, so the user gets `badShare` ("the link is damaged") rather than `droppedItems`. The link is not damaged; its items are all gone. Pre-existing shape, but it is the worst case of the defect R3/P9 was fixing. |
+| B6-N1 | `tests/app/contracts.js:128` | Comment says "One context reused across all **28** fixtures"; `routes.json` now has 30 - a count used as evidence, made stale by this batch's own two rows. |
+| B6-N2 | `tests/app/golden.js:53` | `slugOf = id.replace(/\W+/g, '_')` has no uniqueness assertion and `wantFiles` is a `Set`, so two ids sharing a slug would silently share one golden and the stale-file sweep would not notice. B6 shipped the first id whose distinguishing character is stripped (`#/l/~AAAA` -> `_l_AAAA`, colliding with a hypothetical `#/l/AAAA`). One assertion over `STATES` closes it; verified no collision today (112/112). |
+| B6-N3 | `app/src/state/lists.svelte.ts` / `StorageNotice.svelte` comment | Says the notice keeps showing "until a write actually clears it"; it takes **two** writes - the first `save()` reads the still-corrupt key (setting `unreadable` again) before overwriting it. |
+| B6-N4 | `app/src/lib/dict.ts` `badStorage` (ru + en) | *(taste)* "under a separate key" is unactionable for a non-technical reader - there is no way to reach it without devtools. Name the key or drop the reassurance. Interacts with the BL-2 remediation. |
+| B6-N5 | `app/src/ports/storage.ts` (the `storage` handler comment) | *(prose)* Claims "the merge's own `mergeLists(mine, [])` already answers 'storage came back empty' correctly" - but `watch()` performs no merge. This comment is the justification BL-1 rests on; correct it whichever way BL-1 is resolved. |
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |
