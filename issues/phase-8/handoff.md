@@ -2,15 +2,21 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B1 `e7c7b50`, B2 `44b1761`, B3 `3bc605d`, and the
-  B2-review remediation batch below all committed; B4 next)
-- Last agent: implementer (2026-09-17, B2-review remediation batch)
+- Task status: in_progress (B1 `e7c7b50`, B2 `44b1761`, B3 `3bc605d`, the
+  B2-review remediation batch, and now B4 `0a3d9fb`/`446e45b` all committed
+  and pushed; B5 next)
+- Last agent: implementer (2026-09-17, B4 - deploy and gate correctness,
+  plus the owner-approved `404.html`)
 - NEEDS_HUMAN_CONFIRMATION: no - all eight questions and the two further
   decisions are settled (`context.md`, "Settled owner decisions"); the plan
   is written as decided.
 - Branch: `main`
-- Base / starting commit: `f53f44d`; HEAD after this batch: see "Completed",
-  the remediation batch's commit(s) below.
+- Base / starting commit: `f53f44d`; HEAD after this batch: `446e45b`.
+- Review: required (trigger: worker deviation from plan - see B4's
+  "Deviations" below - and the deploy job's own guard/publish surface
+  changed, which is this task's generated-artefacts/asset-path trigger;
+  separately, `context.md`'s task-level policy mandates a reviewer on every
+  phase-8 batch regardless of the standard triggers).
 
 ## Completed
 
@@ -571,9 +577,185 @@
   - Gates: `npm run check` (full); `node tests/app/golden.js --only=search`;
     `node tests/app/golden.js --only=searched`.
 
+### B4 - deploy and gate correctness, and `404.html` (DP1-DP7, T4/DP4, T6, T10/DP9, R8, R1)
+- What shipped, by finding:
+  - **DP1**: `timeout-minutes: 30` on `check` and `browser`, `10` on `audit`,
+    `secrets` and `deploy`. `tools/check-site.lib.mjs`'s `fetchReader` passes
+    `signal: AbortSignal.timeout(15_000)` to every `fetch`; the existing
+    catch already treats an abort as a retry.
+  - **DP3**: `contents: read` added to the `deploy` job's own `permissions:`
+    block, which otherwise fully replaces the workflow-level one.
+  - **DP4/T4**: a new `check`-job step, `git diff --exit-code -- data.json
+    catalog.csv`, right after `npm run check`. Without it, `npm run check`'s
+    own `npm run data` regenerates those files and `tests/derived.js` then
+    compares the generator against the copy it just wrote - a data.js edit
+    committed without its generated output was green forever.
+    `README.md`/`README.ru.md`/`.claude/hooks/edit-followup.mjs` already
+    described this step (added ahead of it existing); verified their prose
+    against the landed step and none needed editing.
+  - **DP2**: a stub-count check in the deploy guard - `ls _site/i | wc -l`
+    against `wc -l catalog.csv` minus its header row - between the existing
+    non-empty checks and the `cmp` checks.
+  - **DP6**: `concurrency.group` is `pages` (never cancelled) only for a push
+    to `main`; any other run (PR, `workflow_dispatch`, a push to another
+    branch) gets `ci-${{ github.ref }}` with `cancel-in-progress: true`.
+  - **DP7**: `.nojekyll` still copied and still guarded; the guard's comment
+    now says why the check can only ever fail for a reason that does not
+    matter (`upload-pages-artifact@v4` excludes dotfiles; Pages is
+    `build_type: workflow`, which never ran Jekyll regardless).
+  - **DP5**: the rollback comment block gained the re-run path, its
+    measured cost, and an explicit warning that it republishes stale content
+    if reached for as a retry rather than a rollback. Measured on this
+    batch's own pushed run (`35241351714`): push-to-live 7m21s, `deploy`
+    itself 37s; `gh run rerun 35241351714 --job 105272696870` (that same
+    run's `deploy` job) measured 31s, confirmed via `gh run view --json
+    jobs` before/after. The comment originally landed with the dispatch's
+    carried-over `12m11s` estimate (pre-B3-sharding) and was corrected in a
+    follow-up commit (`446e45b`) once the real number was in hand.
+  - gitleaks pinned: `git ls-remote https://github.com/gitleaks/gitleaks-action.git
+    refs/tags/v2 'refs/tags/v2^{}'` resolved the tag to commit
+    `ff98106e4c7b2bc287b24eaf42907196329070c7`; pinned with `# v2` alongside.
+  - **T10/DP9**: `tools/check-site.mjs` split into `tools/check-site.lib.mjs`
+    (`checks()` - the assertion list, `{path, test(body, meta), message}`;
+    `runChecks(read, list)` - runs it over an injected reader, caching one
+    read per path; `fetchReader(root)` - the live-URL transport;
+    `dirReader(dir)` - a local-`_site/`-build transport that emulates GitHub
+    Pages' own missing-path rule: a path not on disk is served as
+    `404.html`'s content with status 404, which is what makes the 404
+    checks below meaningful pre-deploy, not only post-deploy) and
+    `tools/check-site.mjs` (the CLI: `<url>` keeps the six-try/10s-wait retry
+    loop against `fetchReader`; `--dir <path>` runs once against `dirReader`,
+    no retry). `tools/check-site.test.mjs` (`node --test`) covers `checks()`
+    against an in-memory good site and three broken ones (no root/falls
+    through to 404, a truncated `assets/app.js`, a stub with no `og:image`),
+    the two 404-fallback checks against a good and a fallback-less site, and
+    `dirReader` against a real temp directory. The deploy guard's seven
+    hand-written `grep`/`wc` content-assertion lines (the ones that had
+    already drifted from `check-site.mjs` once) are now one step, `node
+    tools/check-site.mjs --dir _site`; the two `cmp` byte-identical checks
+    stayed in bash per the plan.
+  - **T6**: `tests/app/golden.js` exports its DOM-free half (`KEEP_KEYS`,
+    `collapse`, `normUrl`, `clean`, `sigOf`, `elisionOf`, `capName`,
+    `lineFor`, `controlLine`, `serializeTree`, `headerOf`, `sectionsOf`,
+    `compareGolden`, `slugOf`) at module scope; `require('./lib.js')`
+    (puppeteer + the `dist/` existence check) and everything that calls it
+    (`captureLang`, `waitForToast`, `captureState`, `render`, the top-level
+    IIFE) moved inside `if (require.main === module)`. `compareGolden` took
+    `ok` as an explicit parameter instead of a module-level closure, so it
+    has no dependency on `lib.js` at all. `tests/app/golden.test.mjs` (`node
+    --test`, 16 cases) covers rule A at 5 vs 6 siblings, rule B at 63/64/65
+    code points (including that two names differing only past the cut do
+    not hash the same), joined-vs-split text nodes, `normUrl` on both a
+    `dist/index.html` url and a real outbound link, a `headerOf`/`sectionsOf`
+    round trip, and `compareGolden` on identical and differing text.
+  - **R1** (routed here from the B3 review, `context.md`): `tests/derived.js`
+    now parses the `browser:` job's own block and asserts
+    `strategy.matrix.shard`'s length equals the divisor in `--shard=${{
+    matrix.shard }}/<m>`, and that the list is exactly `1..m`. Verified it
+    actually catches the silent break: temporarily shortened the matrix to
+    `[1, 2, 3]` locally, reran `node tests/derived.js`, got the two expected
+    `FAIL` lines, then restored the file (`git diff` clean afterwards -
+    confirmed with `rtk grep -n "shard: \["`).
+  - **`404.html`** (owner override of R8, `context.md` "Two further owner
+    decisions"): authored and tracked at the repository root, no data in it.
+    Bilingual on one page (Russian then English, not switched), `noindex,
+    nofollow`, the same dark palette/font stack `tools/build-share-pages.js`
+    already uses for the share stubs. Marker `id="app-404"` on its content
+    div, matching `index.html`'s `id="app"` convention - what both
+    `check-site.lib.mjs`'s probe and `docs/specs/META.md`'s new section
+    check for. Added to the collect `cp` list and the existence-guard loop
+    in `ci.yml`; `docs/specs/META.md` gained section 7 (old section 7,
+    "Link previews...", renumbered to 8 - the one cross-reference to the old
+    number, `docs/tg-preview.md:13`, was updated in the same commit).
+    `docs/specs/COVERAGE.md` gained two paragraphs describing the new
+    `node --test` suites, next to the existing `tg-preview`/`artwork`
+    ones they follow the same pattern as.
+- **Deviation from the plan's literal example, campsite fix for
+  correctness**: plan step 11 says "a link to `./#/roll/std`" - a relative
+  href. `404.html` can be served by GitHub Pages while the browser still
+  shows an arbitrary, possibly nested bad path (e.g. `/daggerheart-loot/i/
+  <bad-id>.html`), and a relative `./` link resolves against *that* path's
+  own directory, not against `404.html`'s real location - `./#/roll/std`
+  from `/i/<bad-id>.html` would resolve to `/daggerheart-loot/i/#/roll/std`,
+  which is wrong. Used root-anchored paths instead
+  (`/daggerheart-loot/#/roll/std`, `/daggerheart-loot/#/search`), which are
+  correct from any depth. `file://` is not a constraint here - nothing links
+  to `404.html` locally, it exists only as a Pages serving fallback -
+  so `docs/specs/META.md`'s section 4 rule does not apply to it; recorded as
+  such in the new section 7. Verified live (below), not just reasoned about.
+- Files changed: `.github/workflows/ci.yml`, `.prettierignore`,
+  `docs/specs/COVERAGE.md`, `docs/specs/META.md`, `docs/tg-preview.md`,
+  `package.json`, `tests/app/golden.js`, `tests/derived.js`,
+  `tools/check-site.mjs` (rewritten). New: `404.html`,
+  `tests/app/golden.test.mjs`, `tools/check-site.lib.mjs`,
+  `tools/check-site.test.mjs`.
+- Commit(s): `0a3d9fb fix(phase-8): B4 - deploy and gate correctness, plus
+  the owner-approved 404.html`, `446e45b docs(phase-8): correct B4's
+  rollback comment with the real measured numbers` - both pushed.
+- Verification commands and results:
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+    600000, foreground) - green, twice (once per commit): `format:check`,
+    `lint`, `typecheck`, `node --check tools/check-site.mjs`, `npm run
+    data`, `node tests/derived.js` (R1 included), `node
+    .claude/hooks/selftest.mjs`, `node --test tools/tg-preview/lib.test.mjs`,
+    `node --test tools/artwork/lib.test.mjs`, `node --test
+    tools/check-site.test.mjs` (10 cases), `node --test
+    tests/app/golden.test.mjs` (16 cases), `npm run test` (42 files, 1059
+    tests, coverage 96.63/88.61/97.13/97.36 - thresholds green).
+  - `npm run check:built` - green (`build`, `smoke`, `budget` - 89.3 kB
+    gzip within the 120 kB budget).
+  - Manual guard-step replay against a real `_site/` (mirroring the deploy
+    job's own `cp`/checks by hand): all bash checks green, `stub_count=1091
+    csv_rows=1091`, `node tools/check-site.mjs --dir _site` green; then
+    broke `i/w1.html`'s `og:image` on purpose and confirmed `--dir _site`
+    failed with exactly that message before restoring it.
+- Push and CI (main): `git push origin main` (`ddbfe90..0a3d9fb`, then
+  `0a3d9fb..446e45b`). First run `35241351714`: `check`, `browser (1-4)`,
+  `audit`, `secrets`, `deploy` all green, including the new "Generated data
+  actually matches what is committed" and "The published content is what
+  tools/check-site.mjs expects" steps, and the live "The published site
+  answers correctly" step (the 404 probes included). Second run
+  `35242988241` (the rollback-comment fixup): green the same way, `deploy`
+  in 30s.
+- **The PR probe (DP4/T4 acceptance line)**: branch `probe/dp4-stale-data`,
+  one appended stray line to `catalog.csv` with no `data.js` change, PR #66
+  against `main`. Run `35243815863`: `check` job failed at exactly
+  "Generated data actually matches what is committed" (`git diff
+  --exit-code`), everything before it green, `deploy` correctly did not run
+  (not a push to `main`, and `check` had failed anyway). Ran `node
+  tools/build.js` on the branch (reverted the stray line), pushed again; run
+  `35244848051`'s `check` job went green. Confirmed the PR run used its own
+  `ci-refs/pull/66/merge` concurrency group, not `pages` (DP6). Closed PR #66
+  without merging (`gh pr close 66 --delete-branch`) and confirmed via `git
+  ls-remote --heads origin probe/dp4-stale-data` that the remote branch is
+  gone.
+- **The live `404.html` (B4's own acceptance line)**: `curl -s -o - -w
+  "status=%{http_code}" https://artex-x.github.io/daggerheart-loot/
+  nope-does-not-exist.html` - `status=404`, `content-type: text/html;
+  charset=utf-8`, body contains `id="app-404"`, `noindex, nofollow`, and
+  both `<h1>Страница не найдена</h1>` and `<h1>Page not found</h1>`. Proven
+  twice: once by `tools/check-site.mjs`'s own live run inside the `deploy`
+  job (both pushes), once by hand against the same URL from outside CI.
+- Deferred/left alone: `app/src/lib/frames.ts`'s stale `TAB_LIST` identifier
+  (routed to B5 by the dispatch); `docs/specs/COVERAGE.md`'s "fifth CI
+  width" count (Deferred, per the dispatch). B3's review nits N2-N8 (the
+  `run-all.js` weight comment, `ci.yml:48`'s artifact comment, `ci.yml:123`'s
+  stale gating description, `sweep.js`'s completion message, the `--shard`
+  stability comment, the empty-shard error message, `bash-guard.mjs`'s
+  `--shard=` exemption) were **not** picked up in this batch - the dispatch
+  listed them under B4's scope, but B4's own file list and step list
+  (`plan.md`, "B4") do not touch any of `tests/run-all.js`, `tests/app/
+  sweep.js`, or `.claude/hooks/bash-guard.mjs`, and the batch was already at
+  its natural gate boundary (one `npm run check` plus one CI watch) before
+  reaching them. Flagging this explicitly rather than silently dropping it:
+  the next batch (or a small dedicated pass) should pick up N2-N8 before the
+  terminal batch turns them into a pile, per this task's "nits are processed
+  immediately" policy.
+
 ## Blockers
-- None. B4 (deploy) follows; it must not run beside another heavy CI push in
-  this working tree.
+- None. B5 follows; it must not run beside another heavy CI push or another
+  golden-shard run in this working tree (four full golden shards is its own
+  proof, per its "Gates").
 
 ## Deferred
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
@@ -587,39 +769,58 @@
   not retry the same option without reading that note first.
 
 ## Next batch (implement-ready)
-- Name: B4 - deploy and gate correctness, and `404.html` (DP1-DP7, T4/DP4,
-  T6, T10/DP9, R8)
-- Objective: the deploy job actually guards what it claims to (timeouts,
-  permissions, a stale-artefact gate that can fail, a re-run path that is
-  understood before it is needed) and a bad/truncated share link's worst
-  case - an unknown Pages path - lands on a bilingual way-home page instead
-  of GitHub's generic 404.
-- Files: `.github/workflows/ci.yml`, `tools/check-site.mjs` ->
-  `tools/check-site.lib.mjs` + `tools/check-site.test.mjs`, `package.json`
-  (`check` gains the two `node --test` files), `tests/app/golden.js` (exports
-  under `require.main`) + `tests/app/golden.test.mjs`, `404.html` (new,
-  tracked at the repo root), `docs/specs/META.md`.
-- Steps: `plan.md`, "B4", steps 1-11, in that order. Step 1 (DP1) adds
-  `timeout-minutes: 30` to the `check` **and `browser`** jobs - `browser` is
-  the job name B3 created this pass, already live on `main`.
-- Note for whoever picks this up: B3's dispatch said not to touch the deploy
-  job's `needs:` list, but B3 already changed it mechanically (`golden` ->
-  `browser`, forced by deleting the `golden` job) - see B3's "Deviations"
-  above. B4's own plan steps do not otherwise touch `needs:`; if that
-  changes, treat it as new scope, not as inherited from B3.
-- Acceptance: a deliberately stale `catalog.csv` pushed to a branch turns
-  `check` red at the new step and green after `node tools/build.js`; `node
-  --test tools/check-site.test.mjs` fails on each broken fake; the deploy
-  log shows the stub-count line; the re-run time is in the handoff; the
-  published site answers `https://artex-x.github.io/daggerheart-loot/nope.html`
-  with 404 and the bilingual way-home page, `noindex` present, and
-  `check-site.mjs` proves it on the deploy (its own acceptance line).
-- Gates: `npm run check`; push; `gh run watch`; the PR probe (a deliberately
-  stale `catalog.csv` on a branch); the re-run measurement (`gh run rerun
-  <latest green run id> --job <deploy job id>`).
-- Risks / do-nots: ends in a live CI watch, a deliberately-red PR probe, and
-  a `gh run rerun` timing; none of it should share a run with another heavy
-  push in this working tree. Do not touch B5's files.
+- Name: B5 - single sources: lib, generator and components (A1, A3, A4, A5,
+  A7, A9, A11, O5, O6, H5, C1/A2, C5, H6, H7, C2, C7, C8, D7)
+- Objective: one definition each for the group/sub-label lookup, the
+  cross-module `Rarity`/`MoneyMode`/`clamp` imports, the share-page
+  generator's description flattening and `EQ_*` export, the `say`/clipboard
+  toast plumbing, the ink-on-gold/dead-token cleanup, and two new shared
+  components (`Badge.svelte`, `NumRow.svelte`) replacing three and five
+  inline copies respectively - proved by "identical DOM everywhere" across
+  all four golden shards.
+- Files: `plan.md`, "B5", "Files" (full list) -
+  `app/src/lib/{label,tables,listLink,money,roll,alt,std,frames,types,
+  numField,print}.ts` and tests, `tools/build-share-pages.js`,
+  `app/src/lib/i18n.test.ts`, `app/src/state/app.svelte.ts`,
+  `PageHead.svelte`, `RecordActions.svelte`, the ten page components,
+  `Badge.svelte` (new), `NumRow.svelte` (new), `RecordCard.svelte`,
+  `RowMain.svelte`, `ListsPage.svelte`, `AltPanel.svelte`, `RollPanel.svelte`,
+  `StdPanel.svelte`, `ListPage.svelte`, `Chip.svelte`, `tokens.css`,
+  `App.svelte`, `a11y.test.ts`, `tests/app/sweep.js:363`,
+  `docs/specs/DEBT.md` (D7 deleted). Also carries the nit routed here by
+  B4's own dispatch: `app/src/lib/frames.ts`'s stale `TAB_LIST` identifier.
+- Steps: `plan.md`, "B5", "Steps - lib and generator" (1-4) then "Steps -
+  components" (5-12), in that order - see the plan for the full text; brief
+  summary: A1 (delete `GROUPS`/`SUBS`, resolve through `dict(lang)`), A3/A4/
+  A5/A7/A9/A11 (cross-module type/const imports instead of duplicated ones),
+  O5/O6 (`build-share-pages.js` description flattening, 830->1091, export
+  `EQ_*`), H5 (a guard test that the generator's `EQ_*` match `i18n.ts`), A2/
+  C1 (`AppState.copied()` replaces the 14 `env.clipboard` call sites and the
+  ten `say` shims), C5/H6/H7 (`--ink-on-gold` token, delete six dead tokens),
+  D7 (delete the two `opacity` declarations and the `color-contrast` allow -
+  this task's D7 planner finding: the fix is the tokens, not a palette
+  change), C2 (`Badge.svelte`, whitespace-critical single-line template,
+  replaces three inline copies), C7 (`NumRow.svelte`, replaces five copies),
+  C8 (`App.svelte:49-56` `{#if}`/`{@const}` restructure).
+- Acceptance: `plan.md`, "B5", "Acceptance" - `label.test.ts`/`money.test.ts`/
+  `alt.test.ts`/`roll.test.ts` unchanged; `node tests/run-all.js
+  derived,dataint,stub` green with the O6 stub shape; `git grep -n
+  '#1a1206' -- app/src` returns only `tokens.css`; `git grep -c 'const say ='
+  -- app/src/components` is 0; all 14 clipboard sites read `app.copied(...)`;
+  all four golden shards green without `--update`; `node tests/app/sweep.js
+  768` shows no `color-contrast` violation on `#/roll/alt`/`#/lists/a` with
+  the allow removed; `app/typo` and `app/hues` green.
+- Gates: `npm run check`; `npm run check:built`; `node tests/run-all.js
+  derived,dataint,stub,app/typo,app/hues`; `node tests/app/sweep.js 768`; the
+  four golden shards, one foreground call each (`node tests/app/golden.js
+  --shard=n/4` for `n` in 1..4, or `--only=` subsets while iterating, full
+  shards before calling the batch done).
+- Risks / do-nots: touches ten page components and three tokens.css rule
+  groups in one batch - size it by the shared golden proof, not by file
+  count (`CLAUDE.md`, "Size a batch by its gates"). Do not fold in N2-N8
+  (below) unless they land in files this batch already opens for another
+  reason - `run-all.js`/`sweep.js`'s own nits do not overlap B5's file list,
+  so they likely still need their own small pass first or alongside.
 
 ## Notes
 - Mocks path: none (no new UI element).
@@ -629,4 +830,15 @@
   files). No other scratch artifacts.
 - Cleanup performed / retained artifacts (B3): none - `npm run build`'s
   `dist/` is the normal build output and is already gitignored.
-- Session end partial progress (if any): none - B3 is a committed boundary.
+- Cleanup performed / retained artifacts (B4): a manually-collected `_site/`
+  (mirroring the deploy job's `cp` step, used to prove the guard/check-site
+  refactor locally before pushing) - `_site/` is **not** gitignored, so it
+  was deleted with `find _site -delete` (the repo's `rm -r` guard blocks a
+  direct `rm -rf` on a non-exempt directory) and confirmed gone from `git
+  status`. The PR probe's branch and PR (`probe/dp4-stale-data`, PR #66) were
+  closed/deleted (`gh pr close 66 --delete-branch`) and confirmed removed
+  from the remote (`git ls-remote --heads origin probe/dp4-stale-data` -
+  empty). No other scratch artifacts; `dist/` from local builds is
+  gitignored as usual.
+- Session end partial progress (if any): none - B4 is a committed, pushed,
+  and CI-verified boundary.
