@@ -525,9 +525,10 @@
   `issues/phase-8/handoff.md`, `issues/phase-8/context.md` (the orchestrator's
   unstaged "Review and nit policy" section, present before this batch
   started - committed with this batch per its own instruction, not reverted).
-- Commit(s): see `git log` after this section is written - recorded in a
-  short follow-up line per B2's own precedent (editing `handoff.md` after a
-  commit does not require re-running `npm run check`).
+- Commit(s): `c8cc38e fix(phase-8): B2 review remediation - blockers, nits,
+  diacritic fold, guide` - pushed. (This line added in a second, doc-only
+  commit after `git log` revealed the hash, per B2's own precedent: editing
+  `handoff.md` after `c8cc38e` does not require re-running `npm run check`.)
 - Review: not required (no trigger fired) - this batch is a documentation,
   hook-comment and test-nit remediation; it does not change a public
   contract, route, or list link (the `CONTRACTS.md`/`COVERAGE.md` edits
