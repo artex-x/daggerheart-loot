@@ -14,8 +14,8 @@ An entry is written in the batch that makes the decision, never later. The
 batch that pays an entry off deletes it - the same ratchet culture as
 `VISUAL_DEBT`.
 
-**Why here, not somewhere else** (planner, 2026-09-11, migrated from
-`issues/47/plan.md` at that file's retirement): `docs/specs/` is what every
+**Why here, not somewhere else** (planner, 2026-09-11, migrated from issue
+47's `plan.md` at closeout): `docs/specs/` is what every
 agent reads for a touched path, and it is the one place `CLAUDE.md` says
 durable behaviour belongs; a spec file survives a task directory's
 retirement, unlike the harness that used to describe the same defects. An

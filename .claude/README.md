@@ -114,8 +114,9 @@ ones listed below; everything else is silent or a message.
 
 **There is no git pre-commit hook** - not to be confused with the Claude
 Code hooks above, which run in this harness, not in `git` itself. One
-existed early in issue 47 and was removed (migrated here from
-`issues/47/plan.md` at that file's retirement): it ran `eslint --fix` over
+existed early in issue 47 and was removed (migrated here from that task's
+`plan.md`, kept for now - see `issues/47/handoff.md`, "Blockers"): it ran
+`eslint --fix` over
 staged files, over 150 seconds for three of them on a mounted working copy
 against 3.5 seconds for prettier - the cost was reading `node_modules`, not
 linting - and it was a strict subset of `npm run check`, which CI runs on
@@ -274,9 +275,9 @@ or cut a batch, at any of these:
 
 A batch may hold more than one commit; each commit is green on its own.
 Aim for one `tests/app/` filter group and one green check per batch; a
-worked application, from before `plan.md` retired with task 47: `git show
-fdd015f:issues/47/plan.md`, "The batches, and why three rather than one",
-which cuts R0b at two of the seams above and says which.
+worked application is issue 47's `plan.md` (commit `fdd015f` onward),
+"The batches, and why three rather than one", which cuts R0b at two of the
+seams above and says which.
 
 **"One heavy run at a time" retired with the parity harness (R0c,
 2026-09-17).** `tests/parity.js` used to write `test-output/parity.lock`

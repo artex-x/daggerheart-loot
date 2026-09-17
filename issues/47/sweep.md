@@ -70,8 +70,7 @@ the only place a finding lives; reviewing and addressing them is Phase 8 work.
 - **Date**: 2026-09-17
 - **Runner**: `sweep A+B+F` - one of the three-way split the plan's "Cost and
   the fallback" paragraph allows (A+B+F / C+D / E).
-- **Spec**: `git show fdd015f:issues/47/plan.md` (the last commit before
-  `plan.md` retired with the task), "R0c designed: the sweep, the deletions,
+- **Spec**: this task's `plan.md`, "R0c designed: the sweep, the deletions,
   and the cliff" -> "The sweep: what is read, in what order, against what,
   and what comes out". Owner ruling: `issues/47/context.md`, decision 11.
 - **Nothing else in the tree was changed by this pass.** No `npm run check`, no
