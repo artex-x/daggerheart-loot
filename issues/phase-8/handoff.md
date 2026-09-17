@@ -309,7 +309,8 @@
   `.github/workflows/ci.yml`, `tests/derived.js`, `tests/app/contracts.js`,
   `.claude/README.md` (the local-vs-CI fixed-cost sentence),
   `docs/specs/COVERAGE.md` (campsite count fix).
-- Commit(s): `<filled after commit>`.
+- Commit(s): `3bc605d fix(phase-8): shard the browser suites across CI runners
+  instead of one job (B3)` - pushed.
 - Verification commands and results:
   - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
     600000) - green: `format:check`, `lint`, `typecheck`, `npm run data`,
@@ -331,8 +332,64 @@
     the packing loop's structure (each of the 19 rows is pushed to exactly
     one bin in a single pass) and is what the pushed CI run's four `browser`
     job logs prove in practice.
-- Push and CI: `<filled after push - commands, run id, per-job durations,
-  before/after wall clock>`.
+- Push and CI: `git push origin main` (`1b5bd19..3bc605d`); `gh run list
+  --branch main --limit 3` found run `35232880507`; watched with `gh run
+  watch 35232880507 --exit-status` (green); per-job durations read with
+  `gh run view 35232880507 --json jobs --jq '.jobs[] | {name, startedAt,
+  completedAt}'`; each shard's own suite membership and per-suite seconds
+  read from its job log (`gh run view 35232880507 --job <id> --log`,
+  grepped for the `run-all.js` summary lines).
+
+  **Measured job durations** (`createdAt` 14:20:17Z, `deploy` `completedAt`
+  14:27:33Z):
+
+  | job | wall | contents (CI seconds, this run) |
+  |---|---|---|
+  | `check` | 1m47s | the `&&` chain + build/smoke/budget only |
+  | `browser (1)` | 5m45s | sweep390 325.1, golden1 109.7, states 102.5, golden3 103.6, stub 2.2, dataint 0.3, derived 0.3, craft 0.1, contracts 0.0 |
+  | `browser (2)` | 5m46s | sweep360 321.4, print 155.6, golden2 105.2, hues 69.8 |
+  | `browser (3)` | 5m31s | sweep768 312.3, contracts(app) 246.5, typo 78.8 |
+  | `browser (4)` | 6m31s | sweep1180-ru 371.9, sweep1180-en 172.7, golden4 95.6 |
+  | `audit` | 20s | |
+  | `secrets` | 7s | |
+  | `deploy` | 36s | (started 5s after `browser (4)`, the last dependency) |
+
+  All 19 rows are accounted for exactly once across the four shards (9 + 4 +
+  3 + 3 = 19), confirming disjoint-and-exhaustive on the real pool, not just
+  by construction.
+
+  **Wall clock: 738s -> 436s, -41%** (push at 14:20:17Z, `deploy` done
+  14:27:33Z) - a real win, but **short of the ~390s projection, by about
+  12%**, for a traceable reason: `tests.md`'s packing table assumed the
+  split 1180 row would land near ~275s per language (an even halving of the
+  single 550.5s measurement). It did not - `sweep1180-ru` measured 371.9s
+  here, `sweep1180-en` 172.7s (they still sum close to the original 550.5s,
+  544.6s), because axe's English pass and the RU-only focus walk are not
+  actually half the excess each; the RU side is the heavier one. Since RU
+  also carries the focus walk, `sweep1180-ru` (371.9s) is now the single
+  longest row in the whole suite, ahead of `sweep390` (325.1s) - it is the
+  new critical-path floor, not the item `tests.md` designed the packing
+  around. `run-all.js`'s weight table already says the split is "an even
+  split of that one measurement rather than a fresh one - re-measure and
+  correct after this lands"; this run is that re-measurement, and the two
+  numbers to put in that comment on a future pass are 371.9/172.7, not
+  275/275.
+  - **Billed runner-seconds: 1244 -> 1583, +27%**, not the projected +10%
+    (~1382s). Sum: old `check 689 + golden 128+126+121+115 + audit 17 +
+    secrets 8 + deploy 40` from `tests.md`'s baseline run vs new `check 107 +
+    browser 345+346+331+391 + audit 20 + secrets 7 + deploy 36` here. The
+    gap is that each `browser` shard now pays a full `npm run build` (~2s)
+    plus its own ~20s fixed cost against far more assigned work per shard
+    (325-391s, vs the old `golden` shards' 115-128s) - four jobs doing what
+    was one `check` step's 582s of work plus four small `golden` jobs, not
+    four jobs sized like the old `golden` ones. This is the honest number,
+    not the projected one: more billed time than `tests.md` estimated, for
+    less wall-clock-per-billed-second improvement than hoped, but still a
+    real 41% wall-clock cut on a public repo where billed minutes are free.
+  - `check`'s own `npm run check` step passed inside this same run, which is
+    the live proof that `tests/derived.js`'s renamed `browser` assertion
+    holds against the real `ci.yml` - `deploy` would not have run otherwise
+    (`deploy.needs` includes `check`).
 
 ## Blockers
 - None. B4 (deploy) follows; it must not run beside another heavy CI push in
