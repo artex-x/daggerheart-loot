@@ -2,10 +2,9 @@
  * both languages inside it, an accessibility-tree snapshot plus the control
  * inventory `tests/app/lib.js`'s driver already knows how to read.
  *
- * This is not tests/parity.js again in miniature: it never opens index.html
- * and it compares dist/ against nothing but its own last committed shape.
- * "Is anything missing or renamed since the commit that seeded this file?"
- * is a question a pixel diff answers by accident and a text diff answers on
+ * It compares dist/ against nothing but its own last committed shape. "Is
+ * anything missing or renamed since the commit that seeded this file?" is a
+ * question a pixel diff answers by accident and a text diff answers on
  * purpose - a renamed button or a dropped landmark is a line in `git diff`,
  * not a percentage. See issue 47, plan.md, "R0a planned: the evidence, the
  * sweep, and the structural goldens", Decided 1-2, for the format and the
@@ -33,9 +32,9 @@ const UPDATE = process.argv.includes('--update');
 const onlyArg = process.argv.find((a) => a.startsWith('--only='));
 const ONLY = onlyArg ? onlyArg.slice('--only='.length) : null;
 
-/* `--shard=2/4` runs every fourth state starting at the second -
- * tests/parity.js:63-76 verbatim, including the `stateIdx % of !== n`
- * interleave, which spreads the ~7s `#/tables*` arrivals evenly instead of
+/* `--shard=2/4` runs every fourth state starting at the second - the
+ * `stateIdx % of !== n` interleave (ported from the deleted parity harness,
+ * issue 47), which spreads the ~7s `#/tables*` arrivals evenly instead of
  * piling them into one shard. */
 const shardArg = process.argv.find((a) => a.startsWith('--shard='));
 const SHARD = shardArg

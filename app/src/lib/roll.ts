@@ -87,8 +87,8 @@ export function hasRealDie(count: number): boolean {
  * The roll button's own label: a real die where the range has one, "Random
  * 1-N" where it does not - 119 and 29 are not dice anybody owns. Moved here
  * on its second use (the list page's roll panel, alongside `RollPanel`'s) -
- * an en dash in the range, as the live app prints it; tests/parity.js
- * compares this string character for character, and it is read aloud.
+ * an en dash in the range, as the live app printed it; `roll.test.ts` checks
+ * this string character for character, and it is read aloud.
  */
 export function rollLabel(max: number, t: Dict): string {
   return hasRealDie(max) ? `${t.roll} d${String(max)}` : `${t.randomIn} 1–${String(max)}`;

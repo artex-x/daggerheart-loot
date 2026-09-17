@@ -1,13 +1,11 @@
-/* The next-only half of the harness: everything the tests/app/ suites share,
- * and nothing else. driver.js, its sibling in this directory, already knows
- * how to drive either app; this file adds what only matters for driving
- * dist/ alone in a real browser - a guard that it was actually built, a page
+/* What every tests/app/ suite shares, and nothing else. driver.js, its
+ * sibling in this directory, drives dist/ in a real browser; this file adds
+ * what only matters for that - a guard that it was actually built, a page
  * factory that seeds storage before the first paint, and an axe runner.
  *
- * These suites do not compare the rewrite against the live app - that is
- * tests/parity.js's job, and this file imports nothing from it. They check
- * the rewrite against itself: does it draw every address, is every control
- * named, does axe find anything, is the typography on the agreed scale. */
+ * These suites check the rewrite against itself, with real input: does it
+ * draw every address, is every control named, does axe find anything, is the
+ * typography on the agreed scale. */
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
@@ -57,11 +55,11 @@ async function closeBrowser() {
  * needs two contexts that do not. Every other suite gets one context per
  * call and simply never opens a second.
  *
- * `prepare()` is the same stub `tests/parity.js` uses on both apps - reduced
- * motion, the clipboard double, a cleared localStorage - so a page opened
- * here behaves exactly like one opened by a parity spec. `lang` and
- * `storage` are seeded *after* prepare() clears storage and *before* the
- * first navigation, the same ordering `d.seed()` documents on the driver.
+ * `prepare()` (driver.js) stubs reduced motion, the clipboard, and clears
+ * localStorage, so every page opened here starts from the same known state.
+ * `lang` and `storage` are seeded *after* prepare() clears storage and
+ * *before* the first navigation, the same ordering `d.seed()` documents on
+ * the driver.
  */
 async function fresh({ width = 1180, height = 900, lang, storage } = {}) {
   const b = await browser();

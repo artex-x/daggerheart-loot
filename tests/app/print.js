@@ -7,13 +7,13 @@
  * not exist here - the rewrite loads `data.js` into its own module graph, not
  * onto `window` - so the one set built from it (all of Wondrous, for the
  * "does not silently drop a big set" case) comes from `data.json` instead,
- * the way `tests/parity/specs.js` already builds its own print sets. Every
- * `[data-act="printArt"][data-val=...]` click becomes a name-based
- * `d.click()`: `dist/` renders no `data-act` attribute anywhere (R0b.3
- * preflight, checked live against a built tree) - `PrintPage.svelte` wires
- * its colour/black-and-white switch and its "back" control through Svelte
- * `onclick` handlers on plain buttons, not through attributes a CSS selector
- * can grip. This is the same fallback `tests/parity/specs.js` already uses
+ * the way the deleted parity harness's own `tests/parity/specs.js` built its
+ * print sets. Every `[data-act="printArt"][data-val=...]` click becomes a
+ * name-based `d.click()`: `dist/` renders no `data-act` attribute anywhere
+ * (R0b.3 preflight, checked live against a built tree) - `PrintPage.svelte`
+ * wires its colour/black-and-white switch and its "back" control through
+ * Svelte `onclick` handlers on plain buttons, not through attributes a CSS
+ * selector can grip. This is the same fallback `tests/parity/specs.js` used
  * for the same buttons (`d.click('Чёрно-белая')`, `NAME[lang].printLink`),
  * recorded here as a design change rather than substituted silently. The one
  * other id the rewrite dropped, `#selBar`, is `.selbarwrap` here - the same
@@ -24,15 +24,15 @@
  * repository root, from `tests/`) to a `src` already shaped `card/x.svg`,
  * but this suite's `__dirname` is `tests/app/`, one level deeper, so the same
  * join would look for `tests/card/`. `readPNG` is inlined - one consumer, no
- * shared home earned, and `tests/lib.js` dies at R0c.
+ * shared home earned, and `tests/lib.js` (its former home) died at R0c.
  *
  * `sheetCounts`, `cardFit`, `printMedia` and `copiedPrintLink` below (R0b.3
- * C2) are `tests/parity/specs.js`'s own print specs, which die with the
- * parity harness and are measured nowhere else. A parity spec only observes
- * and compares against the live app; run standalone here, each becomes a real
- * assertion against numbers read directly off `dist/` (and, for the sheet
- * arithmetic, cross-checked against the live app on the same routes at batch
- * open) rather than a diff.
+ * C2) are ported from `tests/parity/specs.js`'s own print specs, which died
+ * with the parity harness and are measured nowhere else. A parity spec only
+ * observed and compared against the live app; run standalone here, each
+ * becomes a real assertion against numbers read directly off `dist/` (and,
+ * for the sheet arithmetic, cross-checked against the live app on the same
+ * routes at batch open) rather than a diff.
  */
 const fs = require('fs');
 const path = require('path');
@@ -46,7 +46,7 @@ const svgFile = (src) => fs.readFileSync(path.join(CARD_DIR, src.replace(/^.*\//
 
 /* The print routes shared between the card-layout assertions above and the
  * four ported specs below - `tests/parity/specs.js`'s own `NINE`/`LONG`/
- * `TEN`/`TOO_MANY`, rebuilt off `data.json` the way it builds `TOO_MANY`. */
+ * `TEN`/`TOO_MANY`, rebuilt off `data.json` the way it built `TOO_MANY`. */
 const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
 const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
 const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + (i + 1)).join('-');
@@ -75,7 +75,7 @@ const PRINT_CARD_STATES = [
 ];
 
 /* style.css's own breakpoints, the same three widths `tests/parity/specs.js`
- * sweeps every state at - not because the print card's own size depends on
+ * swept every state at - not because the print card's own size depends on
  * the viewport (it does not: 63x88 mm is absolute), but because its
  * container query makes its size the one thing worth re-checking at every
  * width regardless (`tests/app/driver.js`, `eachAt`'s own doc comment). */
@@ -873,15 +873,15 @@ const { ok } = rep;
   /* The fit hands over space rule by rule: font, then padding, then the
      picture itself. On this Windows host, 2026-09-16, this nine-card set
      never pushes the ladder past the font step - measured directly against
-     `index.html` on the same route, so it is text-metric variance between
-     hosts, not catalogue content or a fit regression: ubuntu CI reaches the
-     art rung on the same route (`tests/print.js`'s own `print` suite, CI run
-     35130947774, green on `98ddf52` before this batch existed). A local
-     result is advisory and may legitimately fail a cell CI passes
-     (`CLAUDE.md`, "Decisions taken by the repository owner"). So this first
-     check only pins what is true on every host - the font step engages - and
-     the rung invariant right below it is what still holds end-to-end
-     wherever the ladder is actually reached. */
+     the live app's own `index.html` on the same route (deleted at R0c, issue
+     47), so it is text-metric variance between hosts, not catalogue content
+     or a fit regression: ubuntu CI reaches the art rung on the same route
+     (this suite's `print` job, CI run 35130947774, green on `98ddf52` before
+     R0c existed). A local result is advisory and may legitimately fail a
+     cell CI passes (`CLAUDE.md`, "Decisions taken by the repository owner").
+     So this first check only pins what is true on every host - the font step
+     engages - and the rung invariant right below it is what still holds
+     end-to-end wherever the ladder is actually reached. */
   const shrunk = await page.$$eval('.pc-text', (e) => e.filter((x) => x.style.fontSize !== '').length);
   ok(shrunk > 0, 'ни одна длинная карта не ужала текст');
 
@@ -1029,77 +1029,95 @@ const { ok } = rep;
      63 mm regardless of the viewport around it. `.pc-art` renders only in
      colour (`{#if !bw}` in `PrintCard.svelte`), and `.pc-head` only in
      black-and-white (`{#if bw}`) - so their counts flip with `s.bw` rather
-     than both landing on `printed`. */
+     than both landing on `printed`.
+     Run twice (R0c C2): once in Russian on the shared page above, once in
+     English on a second page opened `lang: 'en'`, over the same eight
+     card-drawing states and all three widths - the one surface where a
+     longer or shorter word can change what the fitting ladder decides.
+     `sheetCounts` and `printMedia` below stay Russian-only: sheet counts and
+     the print-media rules are arithmetic and CSS, neither of which depends
+     on text length in either language. */
   console.log('подгонка карты по числам');
-  for (const width of WIDTHS) {
-    await d.viewport(width.w, width.h);
-    for (const s of PRINT_CARD_STATES) {
-      await d.open(s.route);
-      if (s.bw) {
-        await bw();
-        await d.settle();
-      }
-      const printed = Math.min(s.n, 180);
-      const tag = s.label + ' @ ' + width.w + ': ';
+  async function cardFit(d2, bwFn, colourFn, langTag) {
+    for (const width of WIDTHS) {
+      await d2.viewport(width.w, width.h);
+      for (const s of PRINT_CARD_STATES) {
+        await d2.open(s.route);
+        if (s.bw) {
+          await bwFn();
+          await d2.settle();
+        }
+        const printed = Math.min(s.n, 180);
+        const tag = s.label + ' @ ' + width.w + langTag + ': ';
 
-      const text = await d.eachAt('.pcard:not(.blank) .pc-text', ['font-size']);
-      ok(text.length === printed, tag + 'число карт с текстом не совпало: ' + text.length);
-      text.forEach((t) => {
-        if (!t.style['font-size']) return;
-        const v = parseFloat(t.style['font-size']);
-        /* The text ladder's own floor (PrintCard.svelte's second `while (tight()
-           && pct > 2.6)`), not the strip box's 2.2 - the two ladders are
-           separate and this one never goes lower. */
-        ok(v >= 2.6 && v <= 3.5, tag + 'кегль текста вне лестницы: ' + t.style['font-size']);
-      });
+        const text = await d2.eachAt('.pcard:not(.blank) .pc-text', ['font-size']);
+        ok(text.length === printed, tag + 'число карт с текстом не совпало: ' + text.length);
+        text.forEach((t) => {
+          if (!t.style['font-size']) return;
+          const v = parseFloat(t.style['font-size']);
+          /* The text ladder's own floor (PrintCard.svelte's second `while (tight()
+             && pct > 2.6)`), not the strip box's 2.2 - the two ladders are
+             separate and this one never goes lower. */
+          ok(v >= 2.6 && v <= 3.5, tag + 'кегль текста вне лестницы: ' + t.style['font-size']);
+        });
 
-      const box2 = await d.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']);
-      ok(box2.length === printed, tag + 'число карт с отступом не совпало: ' + box2.length);
-      box2.forEach((b) => {
-        if (!b.style['--pcpad']) return;
-        const v = parseFloat(b.style['--pcpad']);
-        /* The floor is 2.8, not 3: `let pad = bw ? 5.8 : 23; while (tight() &&
-           pad > (bw ? 3 : 8)) pad -= 1.5;` steps 5.8 -> 4.3 -> 2.8 in
-           black-and-white, one step past the loop's own `> 3` guard -
-           `printPage.test.ts:581` pins the same 2.8 floor. */
-        ok(v >= 2.8 && v <= 23, tag + 'отступ вне лестницы: ' + b.style['--pcpad']);
-      });
+        const box2 = await d2.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']);
+        ok(box2.length === printed, tag + 'число карт с отступом не совпало: ' + box2.length);
+        box2.forEach((b) => {
+          if (!b.style['--pcpad']) return;
+          const v = parseFloat(b.style['--pcpad']);
+          /* The floor is 2.8, not 3: `let pad = bw ? 5.8 : 23; while (tight() &&
+             pad > (bw ? 3 : 8)) pad -= 1.5;` steps 5.8 -> 4.3 -> 2.8 in
+             black-and-white, one step past the loop's own `> 3` guard -
+             `printPage.test.ts:581` pins the same 2.8 floor. */
+          ok(v >= 2.8 && v <= 23, tag + 'отступ вне лестницы: ' + b.style['--pcpad']);
+        });
 
-      const art = await d.eachAt('.pc-art', ['height', '--artw', 'display']);
-      ok(
-        art.length === (s.bw ? 0 : printed),
-        tag + 'число снимков не совпало с цветным режимом: ' + art.length
-      );
-      art.forEach((a) => {
+        const art = await d2.eachAt('.pc-art', ['height', '--artw', 'display']);
         ok(
-          a.style.display === '' || a.style.display === 'none',
-          tag + 'display у снимка не пусто и не none: ' + a.style.display
+          art.length === (s.bw ? 0 : printed),
+          tag + 'число снимков не совпало с цветным режимом: ' + art.length
         );
-      });
+        art.forEach((a) => {
+          ok(
+            a.style.display === '' || a.style.display === 'none',
+            tag + 'display у снимка не пусто и не none: ' + a.style.display
+          );
+        });
 
-      const strip = await d.eachAt('.pc-strip .pc-box b', ['font-size']);
-      strip.forEach((v) => {
-        if (!v.style['font-size']) return;
-        const n = parseFloat(v.style['font-size']);
-        ok(n >= 2.2 && n <= 3, tag + 'кегль полосы вне лестницы: ' + v.style['font-size']);
-      });
+        const strip = await d2.eachAt('.pc-strip .pc-box b', ['font-size']);
+        strip.forEach((v) => {
+          if (!v.style['font-size']) return;
+          const n = parseFloat(v.style['font-size']);
+          ok(n >= 2.2 && n <= 3, tag + 'кегль полосы вне лестницы: ' + v.style['font-size']);
+        });
 
-      const head = await d.eachAt('.pc-head', []);
-      if (s.bw) {
-        ok(head.length === printed, tag + 'не у каждой чёрно-белой карты своя pc-head: ' + head.length);
-        ok(
-          head.every((h) => h.w > 0 && h.h > 0),
-          tag + 'pc-head нулевого размера'
-        );
-      } else {
-        ok(head.length === 0, tag + 'в цвете завелась pc-head: ' + head.length);
+        const head = await d2.eachAt('.pc-head', []);
+        if (s.bw) {
+          ok(head.length === printed, tag + 'не у каждой чёрно-белой карты своя pc-head: ' + head.length);
+          ok(
+            head.every((h) => h.w > 0 && h.h > 0),
+            tag + 'pc-head нулевого размера'
+          );
+        } else {
+          ok(head.length === 0, tag + 'в цвете завелась pc-head: ' + head.length);
+        }
       }
     }
+    await d2.viewport(1180, 950);
+    await d2.open('#/print/q1');
+    await colourFn();
+    await d2.settle();
   }
-  await d.viewport(1180, 950);
-  await d.open('#/print/q1');
-  await colour();
-  await d.settle();
+  await cardFit(d, bw, colour, '');
+
+  console.log('подгонка карты по числам (en)');
+  const { ctx: ctxEn, page: pageEn, d: dEn } = await fresh({ width: 1180, height: 950, lang: 'en' });
+  const bwEn = () => dEn.click('Black and white');
+  const colourEn = () => dEn.click('Colour');
+  const pageErrsEn = [];
+  pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
+  await cardFit(dEn, bwEn, colourEn, ' en');
 
   /* ---------- the sheet under print media (R0b.3 C2, `printMedia`) ----------
      The chrome hidden, the page unshadowed and page-broken, the print
@@ -1127,11 +1145,19 @@ const { ok } = rep;
         nav: await d.computed('nav', ['display']),
         footer: await d.computed('footer', ['display']),
         skip: await d.computed('a.skip', ['display']),
-        bar: await d.computed('.printbar', ['display'])
+        /* `.printbar` does not render at all when there is nothing to print
+           (`printPage.test.ts`, "nothing to print") - a route fact, not a
+           print-media rule, so `nope` carries no `bar` key rather than
+           reading its absence as "hidden". */
+        ...(s.route === '#/print/nope' ? {} : { bar: await d.computed('.printbar', ['display']) })
       };
+      /* `val && ...`, not `!val || ...`: a `null` read (the selector matched
+         nothing) must fail, not pass - proven once by pointing `header` at a
+         nonexistent selector and watching this loop catch it, reverted
+         before commit. The old form let a renamed `.printbar` pass silently. */
       for (const [name, val] of Object.entries(chrome)) {
         ok(
-          !val || val.display === 'none',
+          val && val.display === 'none',
           s.label + ': ' + name + ' не спрятан под печать: ' + JSON.stringify(val)
         );
       }
@@ -1203,8 +1229,10 @@ const { ok } = rep;
   }
 
   /* ---------- the print link, copied (R0b.3 C2, `copiedPrintLink`) ----------
-     The set-link button, copied - only the hash is compared, the way
-     `copiedPrintLink` reads it in `tests/parity/specs.js`. */
+     The set-link button, copied - only the hash is compared, the way the
+     deleted parity harness's `copiedPrintLink` spec read it. Russian-only
+     above, English added below (R0c C2) - the link text changes, the hash
+     it carries does not. */
   console.log('ссылка на набор, скопированная');
   await d.open('#/print/ci1-q1');
   await d.resetClipboard();
@@ -1213,8 +1241,18 @@ const { ok } = rep;
   const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
   ok(hash === '#/print/ci1-q1', 'скопированная ссылка на набор не та: ' + hash);
 
-  ok(!pageErrs.length, 'ошибка на странице — ' + pageErrs.slice(0, 2).join(' | '));
+  console.log('ссылка на набор, скопированная (en)');
+  await dEn.open('#/print/ci1-q1');
+  await dEn.resetClipboard();
+  await dEn.click('Link to this set');
+  const clipEn = await dEn.clipboard();
+  const hashEn = clipEn.text ? clipEn.text.slice(clipEn.text.indexOf('#')) : null;
+  ok(hashEn === '#/print/ci1-q1', 'copied set link (en) is wrong: ' + hashEn);
 
+  ok(!pageErrs.length, 'ошибка на странице — ' + pageErrs.slice(0, 2).join(' | '));
+  ok(!pageErrsEn.length, 'page error (en) - ' + pageErrsEn.slice(0, 2).join(' | '));
+
+  await ctxEn.close();
   await ctx.close();
   await closeBrowser();
   console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nпечать (dist/): все проверки прошли');

@@ -5,14 +5,14 @@
      `.modal-back`, `.modal-card` and `.modal-x` in style.css. What is inside is
      `cardHTML(it, {full:true})` - the same card the record page draws, actions
      and all. The rewrite drew a bare card here for a while, at four times the
-     width, and no route-level parity spec could see it: a modal is a state, not
-     a URL. tests/parity/specs.js now visits it.
+     width, and no route-level check could see it: a modal is a state, not a
+     URL. `tests/app/states.js` and `tests/app/golden.js` both visit it now.
 
-     The one deliberate deviation is the element. The live app is a div with
-     role="dialog" and hand-written Escape handling, which leaves the page
+     The one deliberate deviation is the element. The live app was a div with
+     role="dialog" and hand-written Escape handling, which left the page
      behind it reachable by Tab and by a screen reader; a native <dialog> opened
      with showModal() gets the focus trap, the inert background and Escape from
-     the browser. It is recorded in ACCEPTED as an accessibility fix, and it
+     the browser. An accessibility improvement, not a regression, and it
      changes nothing about how the thing looks. */
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';

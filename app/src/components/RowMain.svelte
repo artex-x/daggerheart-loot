@@ -45,10 +45,10 @@
   const madeFrom = $derived(madeFromOf(it));
 </script>
 
-<!-- No aria-label: the live app leaves this button's name to its content, so
+<!-- No aria-label: the live app left this button's name to its content, so
      the row's accessible name is the whole row - name, stat line, description
-     and badges. Verbose, but a divergence here is a divergence the inventory
-     spec would have to carry as an ACCEPTED entry forever. -->
+     and badges. Verbose, but faithful - matching it is what the structural
+     goldens (tests/app/inventory.js) check byte for byte. -->
 <button
   type="button"
   class="row-main"

@@ -1,7 +1,7 @@
 /* Typography, measured against the built app rather than the live one -
  * ported from tests/typo.js. Two faces are allowed - the interface one and
  * the monospace one for numbers - and sizes have to come from an agreed
- * scale, the same rule the live-app suite enforces.
+ * scale, the same rule the live-app suite enforced.
  *
  * Five grips reach the parts that only exist after a click on the live app -
  * `[data-act="fOpen"]`, `.cardpick [data-act="menu"]`, `.helpbtn`,

@@ -1,7 +1,7 @@
 /* Walks every page and state of the built app, in a real browser, looking
- * for what tests/audit2.js already looks for against the live app - script
- * errors, sideways scroll, text clipped by its own box, controls without a
- * name, dead links, pictures that never arrived, repeated ids, and stray
+ * for what tests/audit2.js looked for against the live app - script errors,
+ * sideways scroll, text clipped by its own box, controls without a name,
+ * dead links, pictures that never arrived, repeated ids, and stray
  * "undefined" in the copy - plus two things audit2 never had: axe with
  * `color-contrast` on, and a focus-ring walk over a named subset.
  *

@@ -67,6 +67,23 @@ ok(
   'a built script tag lost its defer: ' + JSON.stringify(seen.defers)
 );
 
+/* The <noscript> block's own links (issue 47, R0c N6): with scripting on,
+   the browser never parses its content into real DOM, so it is read back as
+   text and parsed by hand. Each href has to resolve to a file dist/ actually
+   holds - Vite's build does not copy catalog.csv, data.json or llms.txt on
+   its own, so this failed before vite.config.mts's closeBundle copy landed. */
+const noscriptHrefs = await page.evaluate(() =>
+  [...document.querySelectorAll('noscript')].flatMap((n) => {
+    const div = document.createElement('div');
+    div.innerHTML = n.textContent ?? '';
+    return [...div.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'));
+  })
+);
+ok(noscriptHrefs.length > 0, 'no noscript link found to check at all');
+for (const href of noscriptHrefs) {
+  ok(existsSync(join(DIST, href)), 'noscript link resolves to nothing under dist/: ' + href);
+}
+
 await browser.close();
 console.log(fail ? '\n' + fail + ' FAILED' : 'the built page opens from a folder');
 process.exit(fail ? 1 : 0);

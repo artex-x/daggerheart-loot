@@ -491,9 +491,9 @@ describe('taking a record somewhere else', () => {
   });
 
   it('offers the share sheet whether or not the browser has one', async () => {
-    /* As the live app does - tests/parity.js compares the two. Where there is
-       no share sheet the link goes to the clipboard, which is what the person
-       was reaching for; hiding the control would just lose the action. */
+    /* As the live app did. Where there is no share sheet the link goes to the
+       clipboard, which is what the person was reaching for; hiding the
+       control would just lose the action. */
     const clip = fakeClipboard();
     render(App, {
       env: at('cc1', { share: fakeShare({ available: false }), clipboard: clip })

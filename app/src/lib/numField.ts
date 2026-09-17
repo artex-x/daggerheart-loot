@@ -4,8 +4,8 @@
  * because a number input refuses `setSelectionRange`: after the re-render every
  * keystroke triggered, the caret could not be put back, so the second digit of
  * a two-digit roll landed in front of the first - 47 was typed and 74 arrived,
- * then clamped to 60. That is defect #64, and `tests/qa.js` still guards it on
- * the live app.
+ * then clamped to 60. That is defect #64, and `numField.test.ts`'s "keeps the
+ * caret where the person put it" guards it here.
  *
  * Svelte does not rebuild the field on every keystroke, so the caret is not
  * yanked for that reason any more. It still moves when characters are removed,

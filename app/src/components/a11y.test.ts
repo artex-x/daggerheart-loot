@@ -2,9 +2,10 @@
  *
  * The other component tests each end with an axe assertion, and every one of
  * them ran on a screen nobody had pressed anything on - the same blind spot
- * tests/parity.js had before it compared states. The modal is the sharpest
- * example: a focus trap, `aria-modal`, and a close button, none of which any
- * axe run had ever seen, because opening it takes two presses.
+ * the parity harness (deleted at R0c, issue 47) had before it compared
+ * states. The modal is the sharpest example: a focus trap, `aria-modal`, and
+ * a close button, none of which any axe run had ever seen, because opening
+ * it takes two presses.
  *
  * This file holds the states reached by pressing, and the guard below, which
  * is what keeps the coverage from quietly lapsing when a component is added. */
@@ -120,7 +121,7 @@ const press = (name: string | RegExp): Promise<void> =>
  *
  * Each is reached the way a person reaches it. A state that is not here is not
  * checked, so adding a way into a screen means adding it - the same rule
- * STATES follows in tests/parity/specs.js.
+ * `STATES` follows in tests/app/inventory.js.
  */
 const STATES: {
   what: string;

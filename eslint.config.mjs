@@ -11,9 +11,10 @@ export default ts.config(
       'dist/**',
       'coverage/**',
       'node_modules/**',
-      /* The live site and its tooling: an older style, its own rules, a life of
-         its own until the cut-over (issue #47). tests/ is what holds them. */
-      'app.js',
+      /* Generated data and the standalone node scripts/tests that ignore it:
+         an older style, no lint config of their own to satisfy. `app.js`, the
+         live site's own entry, was the same kind of entry until R0c deleted
+         it (issue #47). */
       'data.js',
       'tests/**',
       'tools/**',

@@ -3,8 +3,9 @@
      The markup mirrors `cardHTML(it, {full:true})` in app.js and the styles are
      copied out of style.css - `.card`, `.card-media`, `.card-body`,
      `.card-meta`, `.badge`, `.card-name`, `.card-desc`, `.craft`, `.refs`,
-     `.card-acts`. This is a refactor: tests/parity.js compares the two apps
-     pixel for pixel, so a value that is nearly right is a value that fails.
+     `.card-acts`. This was a refactor: the parity harness (deleted at R0c,
+     issue 47) compared the two apps pixel for pixel, so a value that was
+     nearly right was a value that failed.
 
      Nothing here injects HTML. The description arrives parsed - see
      lib/desc.ts - so a label is an <i> element and a list is a real <ul>. */

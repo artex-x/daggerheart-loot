@@ -1,11 +1,11 @@
 /* Badges that can share a screen have to be told apart by colour, not by
- * reading them - the same rule tests/hues.js enforces against the live app.
- * Distance in Lab was the wrong measure there; hue is what the eye sorts by,
- * so hue is what is checked.
+ * reading them - the same rule the live app's own suite (deleted at R0c,
+ * issue 47) enforced there. Distance in Lab was the wrong measure there; hue
+ * is what the eye sorts by, so hue is what is checked.
  *
- * Rewritten, not ported: the original injects a bare `<span class="badge
- * item">` into the document and reads its colour, which gives Svelte's
- * scoped `.badge` rules nothing to match, and greps `[data-act="roll"]`,
+ * Rewritten, not ported: the original injected a bare `<span class="badge
+ * item">` into the document and read its colour, which gave Svelte's
+ * scoped `.badge` rules nothing to match, and grepped `[data-act="roll"]`,
  * which does not exist here. This reads the computed colour off *rendered*
  * badges instead - one table route per badge class, taking the first
  * `.badge.<cls>` each draws - and finds the roll button by the real markup

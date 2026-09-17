@@ -10,8 +10,9 @@ import '@testing-library/jest-dom/vitest';
    What this shim gives is presence and open/closed, which is what a component
    test can honestly assert. The behaviour it does not reproduce - focus moving
    into the dialog, the page behind going inert, Escape - belongs to the browser
-   and is checked in a browser: tests/flows.js today, the e2e layer in Phase 5.
-   See docs/specs/COVERAGE.md, "Known thin spots". */
+   and is checked in a browser: `tests/app/states.js`'s case 6
+   (`dialogSemantics`), against `dist/`. See docs/specs/COVERAGE.md, "Known
+   thin spots". */
 const proto = globalThis.HTMLDialogElement.prototype;
 
 if (typeof proto.showModal !== 'function') {

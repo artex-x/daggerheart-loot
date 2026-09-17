@@ -1,4 +1,4 @@
-/* "Everything a person can reach" - the 105 states tests/app/golden.js
+/* "Everything a person can reach" - the 110 states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47,
  * "R0a planned: the evidence, the sweep, and the structural goldens") as an
  * independent copy of tests/parity/specs.js's STATES array plus the

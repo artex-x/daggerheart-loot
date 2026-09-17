@@ -47,9 +47,10 @@ const lands =
 
 describe('rolling on a table', () => {
   it('opens on the first row rather than on an empty panel', () => {
-    /* What the live app does. A page that shows nothing until it is pressed
-       reads as one that failed to load - and tests/parity.js caught the
-       invitation-first version as a difference from the original. */
+    /* What the live app did. A page that shows nothing until it is pressed
+       reads as one that failed to load - and the parity harness (deleted at
+       R0c, issue 47) caught the invitation-first version as a difference
+       from the original. */
     render(App, { env: at('#/roll/wondrous') });
     expect(screen.getByRole('heading', { level: 2, name: 'w вещь 1' })).toBeInTheDocument();
   });
@@ -61,8 +62,9 @@ describe('rolling on a table', () => {
 
   it('says "random" where the range is not a die', () => {
     /* 29 is not a die, and calling it one would be a lie a player acts on.
-       The dash is an en dash, as the live app prints it: tests/parity.js
-       compares the two apps character for character and caught a hyphen here. */
+       The dash is an en dash, as the live app printed it: the parity harness
+       compared the two apps character for character and caught a hyphen
+       here. */
     render(App, { env: at('#/roll/dread') });
     expect(screen.getByRole('button', { name: 'Случайно 1–29' })).toBeInTheDocument();
   });
@@ -277,7 +279,8 @@ describe('the record over the page', () => {
   it('offers the same actions on the card as the record page does', async () => {
     /* The rewrite drew this card with no actions at all for a while. No
        route-level parity spec could see it, because a modal is a state and not
-       a URL - tests/parity/specs.js now visits it too. */
+       a URL - `tests/app/states.js` and `tests/app/golden.js` both visit it
+       now. */
     await openFirst();
     const dialog = screen.getByRole('dialog');
     for (const name of [

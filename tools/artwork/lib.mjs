@@ -256,8 +256,8 @@ export function staleDelta({ before, after, expected }) {
 //   `{ recordId, asset, alsoClaimedBy }`. A record nobody uploaded a source
 //   for is not reported here: if it needs no art, there is nothing to plan.
 // - `unarted`: every record with a falsy `img` - `img: ''` rendering
-//   `_none.webp` is a legal ingest outcome (tests/noart.js), reported, not
-//   an error.
+//   `_none.webp` is a legal ingest outcome (app/src/components/record.test.ts,
+//   ported from the live app's tests/noart.js), reported, not an error.
 // - `unsourced`: every asset in `missingAssets` that no source resolved to -
 //   the blocker an ingest most often hits - named by asset and by the
 //   record ids waiting on it.

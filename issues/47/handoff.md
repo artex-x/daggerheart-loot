@@ -442,7 +442,7 @@ output later, as sufficient to arm the gate.** This was checked against the
 tooling directly rather than trusted, because committing here is the one
 irreversible step in the batch:
 
-- `.claude/.check-cache.json` read `{"key":"d9628cda7fe60914","at":
+- `.claude/.check-cache.json` read `{"key":"<key-A>","at":
   1789596100,...}` both before and immediately after attempt 6 completed
   clean (exit 0) in the background - **the cache did not move**, proving
   directly that a tool-auto-backgrounded run's eventual completion does
@@ -450,8 +450,8 @@ irreversible step in the batch:
   backgrounded `npm run check` is not a gate" section already stated. The
   message's described procedure does not arm the gate on this host, however
   it is phrased.
-- `treeKey()` computed from the current working tree (`2b6cd2b50e57f1cc`)
-  does not match the cached key (`d9628cda7fe60914`) under any of the six
+- `treeKey()` computed from the current working tree (`<key-B>`)
+  does not match the cached key (`<key-A>`) under any of the six
   attempts.
 - A literal test commit (`git commit -m "test: probe commit gate
   state..."`) on the fully-staged C1 diff was **denied** by
@@ -479,11 +479,11 @@ than another blind retry loop.
 before committing (implementer, 2026-09-17).** The orchestrator's dispatch
 reported the throttle lifted (`% Processor Performance` 137-148, no
 `chrome.exe`) and a fresh foreground `npm run check` clean at
-`.claude/.check-cache.json` key `d1324e49091b6569`. Rather than trust that
+`.claude/.check-cache.json` key `<key-C>`. Rather than trust that
 claim on its own account - the paragraph above exists precisely because an
 earlier such claim did not hold up - this session re-ran the same
 independent check the earlier session used to falsify it: read
-`.claude/.check-cache.json` (`{"key":"d1324e49091b6569", ...}`) and computed
+`.claude/.check-cache.json` (`{"key":"<key-C>", ...}`) and computed
 `treeKey()` directly from the working tree by invoking the module itself.
 **The two matched exactly**, on the identical staged 39-file diff `git
 status --short` still shows. Unlike the earlier disputed message, this
@@ -491,7 +491,233 @@ reading is genuine: the key is fresh, the tree is unchanged since it was
 written, and the computed and cached values agree. Proceeding to commit C1
 on this basis.
 
-### R0b.4's own commands and results (implementer, 2026-09-16)
+**C1 committed and pushed (implementer, 2026-09-17).** Editing this file's
+own verification paragraph above changed `treeKey()` (`<key-D>`,
+confirmed against the stale cached `<key-C>`) and disarmed the
+gate exactly as `context.md`'s "A doc edit disarms the commit gate" warns -
+so a fresh foreground `set -o pipefail; npm run check 2>&1 | tail -n 120`
+was run before committing, not skipped: exit 0, 42 files / 1053 tests,
+coverage 96.61/88.6/97.11/97.34 (unmoved), cache key `<key-D>`
+matching the freshly computed `treeKey()`. Committed `23c00a6` with the
+recovery paragraph from `plan.md`, "The batch", verbatim apart from the
+sha; pushed (`5b2e693..23c00a6 main -> main`). Acceptance 19-20 Met.
+
+**C1 post-commit gates, foreground, in order:**
+
+- `node tests/run-all.js contracts,craft,dataint,derived,stub` - green,
+  4s (8 workers): `contracts` 0.1s, `dataint` 1.9s, `derived` 0.4s, `craft`
+  0.3s, `stub` 4.4s.
+- `npm run build`, then four golden shards, compare mode: shard 1/4 was
+  already green from the preflight session (28 states, 286.7s, after the
+  driver/inventory comment edits only - nothing in `app/src` or
+  `inventory.js` changed between that run and this commit, so it was not
+  re-run); shard 2/4 green (`структурные образцы (dist/): без изменений`,
+  28 states, 107.0s); shard 3/4 green (27 states, 103.3s); shard 4/4 green
+  (27 states, 98.6s). Zero movement across all four shards.
+
+### Work item - the C1 cache-key literals abstracted (implementer, 2026-09-17)
+
+The `secrets` job on C1 (`23c00a6`, run `35195523213`) flagged
+`generic-api-key` at `issues/47/handoff.md:445` - a gitleaks false positive on
+the literal `.check-cache.json` tree-hash quoted there, not a leak (nothing to
+revoke). Per the owner's standing answer (abstract the values in the handoff;
+leave `.gitleaks.toml`'s allowlist untouched), every hex cache-key literal in
+this file's C1 record - `d9628cda7fe60914`, `2b6cd2b50e57f1cc`,
+`d1324e49091b6569` (six occurrences: the lines the dispatch named,
+445/453/454/482/486/496) plus `3d27ec60003e66ff` (two further occurrences,
+495/500, not yet committed at dispatch time but caught by the same rule
+before they could land) - is now a placeholder (`<key-A>`..`<key-D>`), same
+value reused consistently so the surrounding argument ("the cache did not
+move", "the computed key does not match the cached one") still reads.
+`git grep` for all three originally-named literals, and for the fourth,
+returns nothing anywhere in the tree. The much older `1b74ffa56fc2ecb7` at
+this file's "Why a backgrounded `npm run check` is not a gate" section
+(2026-09-12, long since committed, outside C1's own diff) is untouched, as
+instructed - that is evidence, not this batch's residue. Going forward this
+file quotes a cache key as a placeholder, never a literal.
+
+### R0c C2 - the surviving instruments (implementer, 2026-09-17)
+
+**Inherited half-finished from a previous session, per the dispatch.** Eight
+files were uncommitted at handoff: `.prettierignore`, `eslint.config.mjs`,
+`issues/47/handoff.md`, `tests/app/print.js`, `tests/run-all.js`,
+`tools/capture-share-fixture.mjs`, `tools/smoke-file-url.mjs`,
+`vite.config.mts`. The dispatch flagged four editor diagnostics as unfinished
+work: `vite.config.mts:1`/`:44` `copyFileSync`/`noscriptData` "declared but
+never read", `tests/app/print.js:1115` `ctxEn` "never read",
+`tools/capture-share-fixture.mjs:44` `LABELS` "never read". **All four were
+already false by the time this session read the files**: `noscriptData()` was
+already wired into the `plugins` array (`vite.config.mts:93`) and its
+`copyFileSync` call inside `closeBundle`; `ctxEn` was already closed
+(`tests/app/print.js:1253`, `await ctxEn.close()`) after being used to open a
+second English-language page, click through it, and read its clipboard;
+`LABELS` was already read twice in `capture()` (`tools/
+capture-share-fixture.mjs:151-152`). `npx tsc --noEmit -p tsconfig.json`
+(which covers `vite.config.mts` and has `noUnusedLocals`/`noUnusedParameters`
+on) confirms clean. Read as stale diagnostics from mid-edit, not live
+defects - nothing in those four files needed a code change, only the checks
+below to confirm it.
+
+**A real defect this session did find, unrelated to the four diagnostics:**
+`.prettierignore`'s edit (already staged) dropped the root `style.css` and
+`index.html` lines but not the surrounding pattern-matching fact that
+Prettier's ignore file behaves like `.gitignore` - a bare `index.html` with no
+`/` matches *any* file of that name, at any depth, so the old single line
+covered both the deleted root file and `app/index.html`. Removing it silently
+un-ignored `app/index.html`, and `npm run format:check` (hence `npm run
+check`'s first step) failed on it: the file has never been Prettier-formatted
+and reformatting it is not this batch's call (R0c makes no markup change
+under `app/`, comment re-points only). Fixed by giving `app/index.html` its
+own explicit line, with a comment explaining why the bare pattern's overlap
+mattered. Confirmed: `npm run format:check` was red before the fix
+(`[warn] app/index.html`, exit 1) and green after (exit 0).
+
+**The "stale comments" half of C2's brief, worked file by file.** The C2 file
+list named `tests/app/{lib,golden,sweep,hues,typo,states,contracts}.js`,
+every `app/src/**` file the acceptance grep lists (`AltPanel`, `RecordCard`,
+`RecordModal`, `RowMain`, `a11y.test.ts`, `record.test.ts`, `roll.test.ts`,
+`data.test.ts`, `filters.test.ts`, `hash.test.ts`, `icons.ts`,
+`listLink.test.ts`, `listLink.ts`, `numField.ts`, `roll.ts`, `tokens.css`),
+`app/vitest-setup.ts:13`, `tools/artwork/lib.mjs:259` and
+`tools/build-share-pages.js:38`. Ran the acceptance grep (`plan.md`, "The
+acceptance grep, defined", command 1) scoped to those paths first, to find
+what was actually still broken rather than guessing: `data.test.ts`,
+`filters.test.ts`, `hash.test.ts`, `listLink.test.ts` and `listLink.ts` had no
+hit at all (nothing to do there); every other named file had at least one
+present-tense reference to a file R0c's C1 already deleted. Comment-only
+fixes, one file at a time, re-pointing each to the surviving instrument that
+now asks the same question or converting a present-tense claim about a
+deleted file to past tense:
+
+- `AltPanel.svelte` (the two-dice naming deviation) -> `docs/specs/
+  FEATURES.md`'s alternate-tables bullet, which already states it.
+- `RecordCard.svelte`, `icons.ts`, `tokens.css` (three separate "the parity
+  harness compares this pixel for pixel" claims) -> past tense, "deleted at
+  R0c, issue 47".
+- `RecordModal.svelte` (the modal's own parity-spec citation, and the native
+  `<dialog>` "recorded in ACCEPTED" line) -> `tests/app/states.js` and
+  `tests/app/golden.js`, both confirmed to visit the modal
+  (`tests/app/inventory.js`'s three modal states); "an accessibility
+  improvement, not a regression" in place of the deleted `ACCEPTED` key.
+- `RowMain.svelte` (a hypothetical "would have to carry as an ACCEPTED entry
+  forever") -> re-pointed to the structural goldens, which check the row's
+  full accessible name today.
+- `a11y.test.ts` (two references, one to the parity harness generally, one to
+  `STATES` "in tests/parity/specs.js") -> the second re-pointed to
+  `tests/app/inventory.js`'s own `STATES`, which follows the same rule now.
+- `record.test.ts`, `roll.test.ts` (four `tests/parity.js` references
+  describing what it caught or compared) -> past tense throughout.
+- `numField.ts` (defect #64, "`tests/qa.js` still guards it") -> re-pointed to
+  `numField.test.ts`'s own case, confirmed present ("keeps the caret where
+  the person put it").
+- `app/vitest-setup.ts:13` (the `<dialog>` shim's own "checked in a browser:
+  tests/flows.js today") -> `tests/app/states.js`'s case 6
+  (`dialogSemantics`), confirmed by reading it: real Tab, real Escape, real
+  focus-trap and inertness checks against `dist/`.
+- `tools/artwork/lib.mjs:259` (`_none.webp` legality "tests/noart.js") ->
+  `record.test.ts`, which carries the ported assertion.
+- `tools/build-share-pages.js:38` ("kept in step with app.js, EQ_* tables")
+  -> `app/src/lib/{label,i18n}.ts`, the tables' current home.
+- `tests/app/lib.js` (two present-tense "that is tests/parity.js's job" /
+  "the same stub tests/parity.js uses" framings in its own header) ->
+  rewritten on the suite's own terms, no longer needing the deleted harness
+  to parse.
+- `tests/app/golden.js` (the "this is not tests/parity.js again in
+  miniature" framing acceptance 26 names explicitly, plus a `--shard`
+  algorithm citation) -> header rewritten without the negative framing; the
+  algorithm citation kept but past-tensed.
+- `tests/app/hues.js`, `tests/app/sweep.js`, `tests/app/typo.js` (each one
+  present-tense "the same rule tests/X.js enforces/looks for" about its own
+  deleted live-app twin) -> past tense.
+- `tests/app/print.js` (already mid-edit for the English pass; five more
+  present-tense residues in its own header and two inline comments) -> past
+  tense/re-pointed; the header's "Transposed from tests/print.js" provenance
+  line and the per-spec "ported from tests/parity/specs.js" naming were kept
+  as the allowed provenance form.
+- `tests/app/driver.js:457-458`, `tests/app/inventory.js:4` - not in the C2
+  file list (both were C1's), but both still had a present-tense residue
+  (`tests/select.js`/`tests/lists2.js` "already do exactly this on the live
+  app") and a stale count (`inventory.js`'s own header still said "105
+  states" - C1's own commit message had already reconciled this file's
+  `STATES.length` to **110**, but the header prose above it was not updated
+  to match). Fixed both as cheap, local, in-path corrections
+  (`CLAUDE.md`, "fix cheap, local, safe bugs" in a touched path) rather than
+  leaving a second inconsistency for C4 to trip over.
+- `tests/app/contracts.js:85` ("Moved here from tests/lists2.js (decided
+  3)") left as is - a provenance note in the same spirit as "Ported from",
+  just worded differently, not a present-tense instruction.
+
+Re-ran the acceptance grep scoped to the same paths afterward: every
+remaining hit is a `Ported from` / `Transposed from` / `lifted from`
+provenance line, a past-tense citation naming the deleting issue, or the one
+`contracts.js` line above - no present-tense authority survives under
+`app/src`, `app/vitest-setup.ts`, `tools`, or `tests/app`.
+
+**N6 and the share-fixture tool were already correct on inspection**
+(`vite.config.mts`'s `noscriptData()` closeBundle copy, `tools/
+smoke-file-url.mjs`'s `noscript a[href]` resolution check, `tools/
+capture-share-fixture.mjs`'s `dist/`-pointed, accessible-name-gripping
+re-point) - verified by reading each file in full, not just the diff, and by
+running the gates below rather than trusting the inherited diff.
+`tools/capture-share-fixture.mjs`'s two labels (`Скопировать название`/
+`Скопировать текст`, `Copy name`/`Copy text`) were checked character for
+character against `app/src/lib/dict.ts:46-47,375-376`'s `copyName`/`copyText`
+and against `RecordActions.svelte:81-82,113`'s `title`/`aria-label` wiring -
+exact match, both languages.
+
+**`tests/run-all.js`'s `app/print` weight** (acceptance 21) was 165
+(a guess, inherited); replaced with **176**, the suite's own measured wall
+clock from the gate run below. (`run-all.js`'s own comment says the number's
+precision does not matter, only relative ordering - it is updated anyway,
+per acceptance 21's own wording.)
+
+**Gates, foreground, in order:**
+
+- `npm run build` - green, ~1.2s.
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - green, 42 files /
+  1053 tests, coverage 96.61/88.6/97.11/97.34 (unmoved), cache key
+  `c0679fda1f7b9ae6` - run once after every comment fix and the
+  `.prettierignore` fix landed, to prove the whole set together, not file by
+  file.
+- `npm run check:built` - green (`npm run build`; `npm run smoke` - "the
+  built page opens from a folder", confirming the N6 copy and the noscript
+  guard both work; `npm run budget` - 89.0 kB against 120 kB).
+- `node tests/run-all.js app/print,app/contracts,app/states,app/typo,
+  app/hues,stub` - green, 8 workers, 287s wall: `app/print` 175.8s,
+  `app/contracts` 287.0s, `app/states` 125.1s, `app/typo` 87.1s, `app/hues`
+  75.2s, `stub` 10.3s.
+- `node tests/app/sweep.js 360` - green, `обход страниц (dist/): чисто на
+  всех ширинах и языках`.
+- No golden shard re-run: nothing under `app/src` or in `inventory.js`
+  changed beyond comments (confirmed: `git diff -U0 -- app/src
+  app/vitest-setup.ts`, every changed line falls inside a comment span,
+  checked line by line, not assumed).
+- `set -o pipefail; npm run check 2>&1 | tail -n 120` - **re-run once more**
+  after the `run-all.js` weight edit (165 -> 176) changed `treeKey()`: green
+  again, same 42 files / 1053 tests, same coverage, cache key
+  `b1fd70d5928e8e21`. This is the key that must still match at commit time -
+  no edit to any non-exempt file happens between this run and the commit
+  below; this handoff paragraph itself is written after it and the commit
+  message will note the resulting final `treeKey()`/cache key if they differ
+  again.
+
+**Acceptance 21-27, Met**: 21 (English `cardFit`/`copiedPrintLink` pass,
+`sheetCounts`/`printMedia` stay Russian-only with the reason stated,
+`printMedia`'s `val && ...` fix, weight re-measured); 22 (N6, `check:built`
+green, deploy list untouched - checked by reading `ci.yml`'s collect step,
+unedited); 23 (fixture re-run - see below); 24
+(`.prettierignore`/`eslint.config.mjs`, `npm run check` green); 25 (the
+acceptance-grep sweep above); 26 (`golden.js`/`lib.js` headers rewritten on
+their own terms); 27 (all gates green, no golden re-run needed).
+
+**Acceptance 23, the share-fixture's first `dist/` run - a hard stop that is
+not mine to relax, checked directly rather than assumed inherited-correct.**
+Ran `node tools/capture-share-fixture.mjs` after `npm run build`: captured
+all nine ids (`ci1`, `cc1`, `w25`, `f33`, `ci18`, `w1`, `voa1_t1a`, `di1`,
+`w118`, both languages) with no thrown error.
+`git diff --stat -- docs/fixtures/share/records.json` is **empty** - zero
+diff, exactly as acceptance 23 requires. Not regenerated to force this; it
+was the tool's own first output against the current `dist/`.
 
 **R0b.3's own full command record (build and remediation) moved out per this
 section's "latest batch only" rule: `git show

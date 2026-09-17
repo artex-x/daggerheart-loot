@@ -454,8 +454,8 @@ function makeDriver(page, target) {
      * cannot be *entered*, it has to be *seeded*. Registered with
      * `evaluateOnNewDocument`, the same way `prepare()` clears storage, and
      * called after it (from `arrive()`, before `open()`) so this write
-     * survives the clear rather than racing it. `tests/select.js` and
-     * `tests/lists2.js` already do exactly this on the live app.
+     * survives the clear rather than racing it. The live app's own suites
+     * (deleted at R0c, issue 47) did exactly this.
      */
     async seed(entries) {
       await page.evaluateOnNewDocument((kv) => {

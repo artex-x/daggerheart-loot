@@ -64,11 +64,12 @@
   const KIND_LABEL: Record<LootKind, keyof Dict> = { item: 'fItems', consumable: 'fCons' };
 
   /* The names each field and its two steppers answer to, built once per die.
-     In the live app both fields are called "Roll result" and all four steppers
-     "One lower" / "One higher", so a screen reader hears the same two controls
-     twice over and nothing says which die is being changed - on the one screen
-     where that is the whole point. The deviation is recorded in ACCEPTED in
-     tests/parity/specs.js. */
+     The live app named both fields "Roll result" and all four steppers
+     "One lower" / "One higher", so a screen reader heard the same two controls
+     twice over and nothing said which die was being changed - on the one
+     screen where that is the whole point. A deliberate accessibility
+     improvement, not a drift: docs/specs/FEATURES.md, the alternate-tables
+     bullet naming each die. */
   const names = (die: string): { label: string; down: string; up: string } => ({
     label: `${die}: ${t.rollResult}`,
     down: `${die}: ${t.stepDown}`,

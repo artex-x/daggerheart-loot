@@ -1,37 +1,50 @@
-/* Captures what the live app actually puts on the clipboard for a record.
- *
- * app.js is a closed IIFE, so its share formatter cannot be called directly.
- * It can be observed: stub `navigator.clipboard`, open a record page, press the
- * copy button, and read both flavours back. That is the format as a person
- * receives it, which is what has to survive the rewrite - not a function
- * signature.
+/* Captures what the built rewrite actually puts on the clipboard for a
+ * record - the rewrite's own golden, last matched against the live app at
+ * `cf96e6f` (R0b.4 C3, before R0c deleted `app.js`/`index.html`). It is
+ * observed rather than called directly: stub `navigator.clipboard`, open a
+ * record page in `dist/`, press each copy button by its accessible name
+ * (`dict.ts`'s `copyName`/`copyText`, hardcoded here in both languages the
+ * way `tests/app/inventory.js`'s own `NAME` dictionary is - neither file
+ * imports the other), and read both flavours back.
  *
  * The records below are chosen to cover the shape of the format rather than the
  * catalogue: a plain item, a consumable (which gains a suffix outside the app),
  * equipment (whose stat line is part of the heading), an upgrade chain (which
  * travels forward only), and a record with referenced Core cards.
  *
- * Run: node tools/capture-share-fixture.mjs
+ * Run: npm run build, then node tools/capture-share-fixture.mjs
  * Output: docs/fixtures/share/records.json
  *
- * `f33` (Quilted Clothing, a frame-armour record) lost its "Ранг 1"/"Tier 1"
- * word in a re-run before R0b.4 - the fixture had gone stale against the live
- * app's own `isFrameRecord` guard (app.js:612, commit 106e4dd), which predates
- * that capture. R0b.4 fixed both sides: `app/src/lib/share.ts` now passes
- * `noTier: isFrameRecord(it)` to match, and this fixture was recaptured to
- * match the live app's current output (plan.md, "The fourth verdict", item 4).
- * A further re-run should change nothing; if it does, that is worth a second
- * look.
+ * A non-empty diff on this run is a divergence between the rewrite and the
+ * last live-app capture - record it, do not regenerate to make it go away
+ * (issue 47, R0c, `plan.md`'s stop-and-raise list). Before R0c the tool drove
+ * the live app's own `index.html` and gripped `[data-copy-name]`/
+ * `[data-copy-full]`, which `dist/` never rendered; `git show
+ * a6b4a94:tools/capture-share-fixture.mjs` is that version.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PAGE = 'file://' + join(ROOT, 'index.html');
+const PAGE = 'file://' + join(ROOT, 'dist', 'index.html');
 const OUT = join(ROOT, 'docs', 'fixtures', 'share', 'records.json');
+
+if (!existsSync(join(ROOT, 'dist', 'index.html'))) {
+  console.log('no dist/index.html - run `npm run build` first');
+  process.exit(1);
+}
+
+/* `dict.ts`'s own two labels, both languages - the accessible name
+ * `RecordActions.svelte` gives each copy button (`aria-label`/`title`, both
+ * set to the same string; `textContent` would work too but the driver's own
+ * `NAME_FN` reads aria-label/title first, so this matches what it would find). */
+const LABELS = {
+  ru: { name: 'Скопировать название', full: 'Скопировать текст' },
+  en: { name: 'Copy name', full: 'Copy text' }
+};
 
 const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8'));
 /* Same walk as buildIndex in app/src/lib/data.ts: source tables (including the
@@ -102,11 +115,27 @@ await page.evaluateOnNewDocument(() => {
 
 const ready = () =>
   page.waitForFunction(() => {
-    const v = document.querySelector('#view');
-    return !!v && v.children.length > 0;
+    const root = document.querySelector('#app');
+    return !!root && root.children.length > 0;
   });
 
 const settle = () => new Promise((r) => setTimeout(r, 150));
+
+/* Clicks a button or link by its accessible name - the same read
+ * `tests/app/driver.js`'s `NAME_FN` uses (aria-label, then title, then
+ * textContent), because `dist/` renders no `data-copy-*` attribute for a
+ * CSS-selector grip to find. */
+async function clickByName(name) {
+  return page.evaluate((label) => {
+    const nameOf = (el) =>
+      (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const el = [...document.querySelectorAll('button, a[href]')].find((e) => nameOf(e) === label);
+    if (el) el.click();
+    return !!el;
+  }, name);
+}
 
 async function capture(id, lang) {
   await page.goto(PAGE + '#/i/' + id, { waitUntil: 'networkidle0' });
@@ -118,19 +147,15 @@ async function capture(id, lang) {
   await ready();
 
   const out = {};
-  for (const [key, sel] of [
-    ['name', '[data-copy-name]'],
-    ['full', '[data-copy-full]']
+  for (const [key, label] of [
+    ['name', LABELS[lang].name],
+    ['full', LABELS[lang].full]
   ]) {
     await page.evaluate(() => {
       window.__clip = null;
     });
-    const found = await page.evaluate((s) => {
-      const el = document.querySelector(s);
-      if (el) el.click();
-      return !!el;
-    }, sel);
-    if (!found) throw new Error(`no ${sel} on #/i/${id}`);
+    const found = await clickByName(label);
+    if (!found) throw new Error(`no button named "${label}" on #/i/${id} (${lang})`);
     await settle();
     out[key] = await page.evaluate(async () => {
       if (!window.__clip) return null;

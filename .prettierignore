@@ -1,15 +1,20 @@
-# The live site: its formatting predates Prettier, and reformatting it now would
-# mean an unreadable diff across the one file that actually works.
-app.js
+# Generated data, not authored: node tools/build.js writes these, and
+# reformatting a machine-written file produces an unreadable diff for no
+# behaviour change. `app.js`, `style.css` and the root `index.html` (the
+# pre-rewrite live app) were the same kind of entry until R0c deleted them
+# (issue 47) - the bare `index.html` pattern below matched both that file and
+# app/index.html, so deleting the root file's own entries left app/index.html
+# newly unignored. It gets its own line instead: R0c makes no template or
+# markup change under app/ (comment re-points only), so this is not the batch
+# that decides its formatting.
 data.js
 data.json
 catalog.csv
-style.css
-index.html
 i/
 img/
 og/
 card/
+app/index.html
 tests/
 tools/
 dist/
