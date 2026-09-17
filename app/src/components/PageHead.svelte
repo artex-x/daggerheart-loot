@@ -18,9 +18,6 @@
     sub: string;
     /** What this section explains about itself, where anything is written. */
     help: Help | null;
-    /** How the page says something that has no place on screen - the toast,
-     *  off `toast`/`showToast` in app.js. */
-    say: (msg: string, error?: boolean) => void;
     /**
      * The address this page is really showing, where it differs from the
      * address bar - only `TablesPage` passes this: a bare `#/tables` still
@@ -31,7 +28,7 @@
     home?: string;
   }
 
-  const { app, title, sub, help, say, home }: Props = $props();
+  const { app, title, sub, help, home }: Props = $props();
 
   const t = $derived(app.t);
   const pinned = $derived(home ?? app.hash);
@@ -58,8 +55,8 @@
     aria-pressed={on}
     onclick={() => {
       const wasHome = on;
-      if (!app.toggleHome(home)) say(t.saveFailed, true);
-      else say(wasHome ? t.homeReset : t.homeSet);
+      if (!app.toggleHome(home)) app.say(t.saveFailed, { error: true });
+      else app.say(wasHome ? t.homeReset : t.homeSet);
     }}
   >
     <Icon name="home" />
@@ -124,7 +121,7 @@
   .homebtn.on {
     background: var(--gold);
     border-color: var(--gold);
-    color: #1a1206;
+    color: var(--ink-on-gold);
   }
 
   .homebtn :global(svg) {

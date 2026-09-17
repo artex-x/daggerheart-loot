@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FRAME_ORDER, frameName } from './frames.js';
+import type { FrameId } from './frames.js';
 
 describe('frameName', () => {
   it('names all four campaigns in both languages', () => {
@@ -15,6 +16,8 @@ describe('frameName', () => {
   });
 
   it('falls back to the raw id for a frame it does not know', () => {
-    expect(frameName('unknown_frame', 'en')).toBe('unknown_frame');
+    /* Cast: this deliberately exercises the fallback for an id outside the
+       closed set - untrusted data, not a case a caller can construct. */
+    expect(frameName('unknown_frame' as FrameId, 'en')).toBe('unknown_frame');
   });
 });

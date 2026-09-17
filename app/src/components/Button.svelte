@@ -148,7 +148,7 @@
   .btn.primary {
     background: linear-gradient(180deg, #e2b76c, var(--gold));
     border-color: #e8c27c;
-    color: #1a1206;
+    color: var(--ink-on-gold);
     font-weight: 700;
   }
 
@@ -195,7 +195,7 @@
   .btn.primary.on {
     background: linear-gradient(180deg, #c99b52, #b8873f);
     border-color: #c99b52;
-    color: #1a1206;
+    color: var(--ink-on-gold);
     box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%);
   }
 

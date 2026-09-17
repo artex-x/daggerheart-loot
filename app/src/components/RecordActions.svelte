@@ -28,9 +28,6 @@
     index: Index;
     it: Record_;
     row: ActionRow;
-    /** Says what happened, off `toast` in app.js - `error` is what makes a
-     *  refused copy `role="alert"` rather than a plain notice. */
-    say: (msg: string, error?: boolean) => void;
     /** The live `contextNote` (app.js 568-573): while a list is open, copying
      *  one of its entries appends the players' note it carries there. Passed
      *  in rather than looked up here - this component does not know what a
@@ -38,31 +35,30 @@
     extra?: readonly ShareBlock[] | undefined;
   }
 
-  const { app, index, it, row, say, extra }: Props = $props();
+  const { app, index, it, row, extra }: Props = $props();
 
   const t = $derived(app.t);
   const link = $derived(app.linkToRecord(it.id));
 
   async function copyName(): Promise<void> {
-    const ok = await app.env.clipboard.writeText(shareName(it, app.lang));
-    say(ok ? t.nameCopied : t.copyFailed, !ok);
+    await app.copied(() => app.env.clipboard.writeText(shareName(it, app.lang)), t.nameCopied);
   }
 
   async function copyText(): Promise<void> {
     const { text, html } = share(it, index, app.lang, { extra });
-    const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    say(ok ? t.textCopied : t.copyFailed, !ok);
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.textCopied);
   }
 
   async function copyImage(): Promise<void> {
     const src = artSrc(it.img, app.artBroken(it.id));
-    const ok = await app.env.clipboard.writeImage(() => app.env.image.pngOf(src));
-    say(ok ? t.imgCopied : t.copyFailed, !ok);
+    await app.copied(
+      () => app.env.clipboard.writeImage(() => app.env.image.pngOf(src)),
+      t.imgCopied
+    );
   }
 
   async function copyLink(): Promise<void> {
-    const ok = await app.env.clipboard.writeText(link);
-    say(ok ? t.linkCopied : t.copyFailed, !ok);
+    await app.copied(() => app.env.clipboard.writeText(link), t.linkCopied);
   }
 
   async function send(): Promise<void> {

@@ -91,7 +91,6 @@
   .chip small {
     display: block;
     font-size: 10.5px;
-    opacity: 0.72;
     font-weight: 500;
     letter-spacing: 0.02em;
   }
@@ -104,7 +103,7 @@
   .chip.on {
     background: var(--gold);
     border-color: var(--gold);
-    color: #1a1206;
+    color: var(--ink-on-gold);
     font-weight: 650;
   }
 

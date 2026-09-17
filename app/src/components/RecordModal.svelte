@@ -46,12 +46,6 @@
 
   let dialog = $state<HTMLDialogElement | null>(null);
 
-  /** Says what the last action did - the toast, in the top layer above this
-   *  dialog's own inertness, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   /* Opened as a modal rather than shown: that is what makes the rest of the
      page inert to a screen reader as well as to the mouse. */
   $effect(() => {
@@ -107,10 +101,10 @@
       }}
     >
       {#snippet nameActions()}
-        <RecordActions {app} {index} {it} row="name" {say} />
+        <RecordActions {app} {index} {it} row="name" />
       {/snippet}
       {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" {say} {extra} />
+        <RecordActions {app} {index} {it} row="card" {extra} />
       {/snippet}
       {#snippet pick()}
         <AddToList {app} key={it.id} ids={[it.id]} primary />

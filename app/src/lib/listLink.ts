@@ -8,6 +8,14 @@
  * Pure module: no DOM, no storage, no data. Which ids exist is the caller's
  * business - the decoder asks through a predicate. */
 
+import { MONEY_DEFAULT, MONEY_MODES } from './money.js';
+import type { MoneyMode } from './money.js';
+
+/* Re-exported so every caller that reads a list's own money mode - `lists.ts`,
+   `ListPage.svelte`, `state/lists.svelte.ts` - keeps importing it from here
+   rather than reaching into `money.ts` for one type. */
+export type { MoneyMode };
+
 /** One entry: everything optional, older lists knew none of these fields. */
 export interface ListEntryMeta {
   qty?: number;
@@ -17,8 +25,6 @@ export interface ListEntryMeta {
   /** The note that stays with the GM. */
   hnote?: string;
 }
-
-export type MoneyMode = 'bag' | 'coin';
 
 export interface ListShape {
   name: string;
@@ -39,9 +45,6 @@ const N_LIST = '~';
 const N_MONEY = '$';
 /** A leading "+" on the id marks the note as meant for players. */
 const N_SHOW = '+';
-
-const MONEY_MODES: readonly MoneyMode[] = ['bag', 'coin'];
-const MONEY_DEFAULT: MoneyMode = 'bag';
 
 /* ---------- base64url ---------- */
 

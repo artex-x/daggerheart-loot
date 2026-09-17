@@ -416,9 +416,13 @@ const LONG_CHECKS = [
   { re: /^npm run check:built\b/, family: 'check:built', cost: 'a few minutes' },
   { re: /^npm run check\b/, family: 'check', cost: '~165s on an idle host' },
   {
-    match: (joined) => /^node tests\/run-all\.js\b/.test(joined) && !/--shard=/.test(joined),
+    // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
+    // shard packs a whole `browser` matrix row of suites, not one small
+    // slice - a local `--shard=4/4` measured 384s, so this is exactly the
+    // shape the reminder exists for, not an exception to it.
+    match: (joined) => /^node tests\/run-all\.js\b/.test(joined),
     family: 'run-all',
-    cost: '~260-290s pooled when filtered to one route/filter set; an unfiltered run cannot finish in one call'
+    cost: '~260-290s pooled when filtered to one route/filter set, up to ~380s for one --shard=n/4 row; an unfiltered, unsharded run cannot finish in one call'
   },
   {
     match: (joined) =>

@@ -13,6 +13,7 @@
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
   import NumberField from './NumberField.svelte';
+  import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
@@ -49,11 +50,6 @@
   let roll = $state({ hope: 1, fear: 2 });
 
   let open = $state<Record_ | null>(null);
-
-  /** Says what the last action did - the toast, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
 
   const picks = $derived(index ? altPicks(index, rarity, roll, app.kinds) : []);
   const crit = $derived(isCrit(roll));
@@ -92,12 +88,11 @@
 
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
-    const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    say(ok ? t.textCopied : t.copyFailed, !ok);
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.textCopied);
   }
 </script>
 
-<PageHead {app} title={t.pageAlt} sub={t.subAlt} {help} {say} />
+<PageHead {app} title={t.pageAlt} sub={t.subAlt} {help} />
 
 <Panel>
   <Field label={t.rarity}>
@@ -116,7 +111,7 @@
   </Field>
 
   <Field label={t.rollResult}>
-    <div class="numrow">
+    <NumRow>
       <!-- Each die is labelled, because which one found a card is half of what
            the card says. The label is above the field rather than beside it:
            two named fields side by side need the names to line up. -->
@@ -162,7 +157,7 @@
           <Die faces={12} />{t.rollDuality}
         </Button>
       </div>
-    </div>
+    </NumRow>
   </Field>
 
   <Field label={t.filter}>
@@ -242,10 +237,10 @@
       }}
     >
       {#snippet nameActions()}
-        <RecordActions {app} {index} it={pick.it} row="name" {say} />
+        <RecordActions {app} {index} it={pick.it} row="name" />
       {/snippet}
       {#snippet actions()}
-        <RecordActions {app} {index} it={pick.it} row="card" {say} />
+        <RecordActions {app} {index} it={pick.it} row="card" />
       {/snippet}
     </RecordCard>
   {/if}
@@ -266,15 +261,8 @@
 {/if}
 
 <style>
-  /* off `.numrow`, `.dieblock`, `.dielbl`, `.crit` and `.results` in
-     style.css - `.panel` moved to `Panel.svelte` (B10) */
-  .numrow {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-    flex-wrap: wrap;
-  }
-
+  /* off `.dieblock`, `.dielbl`, `.crit` and `.results` in style.css -
+     `.numrow` moved to `NumRow.svelte`, `.panel` to `Panel.svelte` (B10) */
   .dieblock {
     flex: 0 0 auto;
   }
@@ -302,6 +290,8 @@
     align-items: flex-end;
   }
 
+  /* Three lines, duplicated in `RollPanel.svelte`/`StdPanel.svelte` - too
+     small to be worth a component of its own (components.md, C7). */
   .results {
     margin-top: 26px;
   }

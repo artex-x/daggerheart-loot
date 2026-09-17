@@ -366,9 +366,6 @@ async function focusWalk(page, where) {
           /* D3 - the storage notice's dismiss button lives inside its own
            * <summary>, drawn on both lists routes. */
           if (/^#\/lists(\/|$)/.test(asked)) allow.push('nested-interactive');
-          /* D7 - the muted-text tokens under WCAG AA: the alternate tables'
-           * rank subtitle, and the money-help captions on a priced list. */
-          if (asked === '#/roll/alt' || asked === '#/lists/a') allow.push('color-contrast');
           /* D8 - the alternate tables' column headers skip from <h1> to <h4>. */
           if (asked === '#/tables/alt_item' || asked === '#/tables/alt_consumable')
             allow.push('heading-order');
@@ -398,6 +395,12 @@ async function focusWalk(page, where) {
   }
 
   await closeBrowser();
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nобход страниц (dist/): чисто на всех ширинах и языках');
+  /* Names only what this run actually covered: a narrowed call (a width, or
+     a width plus a language) is not "all widths and languages", and the
+     completion line used to claim that regardless. */
+  const scope = ONLY.length || langArg
+    ? 'на ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
+    : 'на всех ширинах и языках';
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nобход страниц (dist/): чисто ' + scope);
   process.exit(rep.failed ? 1 : 0);
 })();

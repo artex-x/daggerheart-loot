@@ -3,11 +3,13 @@
    * `storageWarning`/`hideWarn` (2865-2886, 4175) and `listCardHTML`
    * (2888-2907). The storage notice lives here and on the list page (B5.4),
    * nowhere else - `Shell.svelte`'s own copy was the rewrite's invention. */
+  import Badge from './Badge.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
   import NoData from './NoData.svelte';
+  import NumRow from './NumRow.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
   import StorageNotice from './StorageNotice.svelte';
@@ -29,10 +31,6 @@
   const index = $derived(app.index);
   const lists = $derived(app.lists.lists);
 
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   let draft = $state('');
   let importDraft = $state('');
   let nameInput = $state<HTMLInputElement | undefined>(undefined);
@@ -48,7 +46,7 @@
 
   function create(): void {
     if (!draft.trim()) {
-      say(t.nameFirst, true);
+      app.say(t.nameFirst, { error: true });
       nameInput?.focus();
       return;
     }
@@ -56,17 +54,19 @@
     draft = '';
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal - a
        "created" on top of it would bury the one message that matters. */
-    if (app.lists.saved) say(t.listCreated.replace('%s', l.name));
+    if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
   }
 
   async function share(l: StoredList): Promise<void> {
     if (!l.ids.length) {
-      say(t.listEmpty);
+      app.say(t.listEmpty);
       return;
     }
     const payload = await app.env.compress.pack(encodeListRaw(l, true));
-    const ok = await app.env.clipboard.writeText(app.linkTo(sharedListHash(payload)));
-    say(ok ? t.playersLinkCopied : t.copyFailed, !ok);
+    await app.copied(
+      () => app.env.clipboard.writeText(app.linkTo(sharedListHash(payload))),
+      t.playersLinkCopied
+    );
   }
 
   function del(l: StoredList): void {
@@ -88,7 +88,7 @@
     }
     const data = decodeList(pay, (id) => index?.byId.has(id) ?? false);
     if (!data) {
-      say(t.badShare, true);
+      app.say(t.badShare, { error: true });
       return;
     }
     const l = app.lists.create(data.name, {
@@ -100,7 +100,7 @@
   }
 </script>
 
-<PageHead {app} title={t.lists} sub={t.subLists} help={helpFor('lists', app.lang)} {say} />
+<PageHead {app} title={t.lists} sub={t.subLists} help={helpFor('lists', app.lang)} />
 
 <StorageNotice {app} />
 
@@ -109,7 +109,7 @@
 {:else}
   <Panel style="margin-top:16px">
     <Field label={t.newList}>
-      <div class="numrow">
+      <NumRow>
         <div class="grow">
           <input
             type="text"
@@ -119,15 +119,15 @@
           />
         </div>
         <Button variant="primary" onclick={create}>{t.create}</Button>
-      </div>
+      </NumRow>
     </Field>
     <Field label={t.importList}>
-      <div class="numrow">
+      <NumRow>
         <div class="grow">
           <input type="text" bind:value={importDraft} placeholder={t.importPh} />
         </div>
         <Button onclick={restore}>{t.importBtn}</Button>
-      </div>
+      </NumRow>
     </Field>
   </Panel>
   {#if lists.length}
@@ -139,8 +139,8 @@
                docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
           <!-- prettier-ignore -->
           <a class="listcard-main" href={sharedListHash(encodeList(l, false))}
-            ><div class="listcard-top"><b>{l.name}</b><span class="badge num"
-                >{items.length}</span
+            ><div class="listcard-top"><b>{l.name}</b><Badge cls="num"
+                >{items.length}</Badge
               ></div
             >{#if items.length}<div class="listcard-thumbs"
                 >{#each items.slice(0, 6) as it (it.id)}<img
@@ -175,16 +175,15 @@
 {/if}
 
 <style>
-  /* `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` - the 16px
-     margin-top is the live inline attribute, passed as `style` (B10). */
-  .numrow {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-    flex-wrap: wrap;
-  }
-
-  .numrow .grow {
+  /* `.miss` moved to `NoData.svelte`, `.numrow` to `NumRow.svelte`, `.panel`
+     to `Panel.svelte` - the 16px margin-top is the live inline attribute,
+     passed as `style` (B10). */
+  /* Was `.numrow .grow`: `.numrow` now belongs to `NumRow.svelte`, a
+     different component, so a descendant selector naming it here would match
+     nothing - `.grow` only ever appears inside this file's own two `NumRow`
+     children anyway, so the ancestor is not needed to disambiguate it
+     (components.md, C7). */
+  .grow {
     flex: 1 1 170px;
     min-width: 0;
   }
@@ -282,28 +281,5 @@
     gap: 6px;
     flex-wrap: wrap;
     padding: 0 15px 14px;
-  }
-
-  /* off `.badge` and `.badge.num` in style.css - the card and the table row
-     already carry their own copies; this is the third, recorded rather than
-     extracted (plan.md, "B5.3 planned", "Decided in planning"). */
-  .badge {
-    font-size: 10.5px;
-    font-weight: 650;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    padding: 3px 7px;
-    border-radius: 6px;
-    background: rgb(10 8 16 / 50%);
-    border: 1px solid var(--line2);
-    color: var(--muted);
-  }
-
-  .badge.num {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0;
-    color: var(--gold-soft);
-    border-color: rgb(216 171 94 / 50%);
   }
 </style>

@@ -275,6 +275,18 @@ export class AppState {
     }, ms);
   }
 
+  /**
+   * Runs a clipboard/share action and toasts the result - the pattern every
+   * copy button on the page repeats: run the port call, then say `ok` on
+   * success or the shared `copyFailed` word on failure, `role="alert"` only
+   * on failure. One method instead of fourteen call sites each writing the
+   * same three lines.
+   */
+  async copied(run: () => Promise<boolean>, ok: string): Promise<void> {
+    const success = await run();
+    this.say(success ? ok : this.t.copyFailed, { error: !success });
+  }
+
   hideToast(): void {
     this.toast = null;
     if (this.#toastTimer) {

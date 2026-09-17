@@ -4,11 +4,25 @@
  * languages, across every equipment kind and four sources. Tests written
  * alongside the code only prove it is self-consistent; this proves the port is
  * faithful, which is the whole point of Phase 2. */
+import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
-import { descOf, eqLine, eqParts, EQ_TRAIT, eqWord, itemsWord, nameOf } from './i18n.js';
+import {
+  descOf,
+  eqLine,
+  eqParts,
+  EQ_BURDEN,
+  EQ_CLS,
+  EQ_DT,
+  EQ_RANGE,
+  EQ_TRAIT,
+  EQ_TYPE,
+  eqWord,
+  itemsWord,
+  nameOf
+} from './i18n.js';
 import { isFrameRecord } from './label.js';
 import type { Lang, Record_ } from './types.js';
 
@@ -233,5 +247,39 @@ describe('itemsWord', () => {
     expect(itemsWord(2, 'en')).toBe('items');
     expect(itemsWord(11, 'en')).toBe('items');
     expect(itemsWord(21, 'en')).toBe('items');
+  });
+});
+
+/**
+ * `tools/build-share-pages.js` hand-copies these six maps into its own
+ * Russian-only `EQ_*` constants for the share stubs (this file's own header
+ * comment says so, and says nothing pins the two equal). This is that pin:
+ * a CJS `require` of the generator, checked key-for-key against the `ru` half
+ * of each `Pair` here. Without it, editing a word in one place and not the
+ * other is a silent divergence no test catches.
+ */
+describe('the share-stub generator quotes the same words', () => {
+  const require_ = createRequire(import.meta.url);
+  const stubs = require_('../../../tools/build-share-pages.js') as {
+    EQ_TYPE: Record<string, string>;
+    EQ_TRAIT: Record<string, string>;
+    EQ_RANGE: Record<string, string>;
+    EQ_DT: Record<string, string>;
+    EQ_CLS: Record<string, string>;
+    EQ_BURDEN: Record<string, string>;
+  };
+
+  const ru = (map: Record<string, readonly [string, string]>): Record<string, string> =>
+    Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v[0]]));
+
+  it.each([
+    ['EQ_TYPE', EQ_TYPE, stubs.EQ_TYPE],
+    ['EQ_TRAIT', EQ_TRAIT, stubs.EQ_TRAIT],
+    ['EQ_RANGE', EQ_RANGE, stubs.EQ_RANGE],
+    ['EQ_DT', EQ_DT, stubs.EQ_DT],
+    ['EQ_CLS', EQ_CLS, stubs.EQ_CLS],
+    ['EQ_BURDEN', EQ_BURDEN, stubs.EQ_BURDEN]
+  ] as const)('%s matches the generator word for word', (_name, dictMap, stubMap) => {
+    expect(stubMap).toEqual(ru(dictMap));
   });
 });

@@ -85,7 +85,7 @@
   .btn {
     border: 1px solid #e8c27c;
     background: linear-gradient(180deg, #e2b76c, var(--gold));
-    color: #1a1206;
+    color: var(--ink-on-gold);
     border-radius: var(--r-sm);
     font-size: 14px;
     font-weight: 700;

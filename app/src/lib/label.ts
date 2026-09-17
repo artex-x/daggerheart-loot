@@ -20,7 +20,9 @@
 
 import { dict } from './dict.js';
 import { frameName } from './frames.js';
+import type { FrameId } from './frames.js';
 import { EQ_TYPE, eqWord } from './i18n.js';
+import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
 import type { Lang, Record_, TableId } from './types.js';
 
@@ -97,7 +99,9 @@ export function srcName(key: string, lang: Lang): string {
     dread: t.srcDread,
     voa: t.srcVoa
   };
-  return named[key] ?? frameName(key, lang);
+  /* Anything not one of the five books above is assumed to be a frame id -
+     the same assumption `EQ_SRC` bakes into the facet's own value list. */
+  return named[key] ?? frameName(key as FrameId, lang);
 }
 
 /**
@@ -122,7 +126,11 @@ export function srcLabel(it: Record_, lang: Lang): string {
     case 'voa':
       return srcName(it.src, lang);
     case 'frame':
-      return it.frame ? frameName(it.frame, lang) : t.srcFrame;
+      /* `it.frame` is checked, and returned on, above - reachable here only
+         without one (a campaign-frame record with a frame id never falls
+         through to this line; `FrameId`, an A9 tightening, is what lets the
+         type checker prove it). */
+      return t.srcFrame;
     case 'community':
       return (lang === 'ru' ? it.community_ru : it.community) ?? t.srcComm;
     default:
@@ -130,7 +138,7 @@ export function srcLabel(it: Record_, lang: Lang): string {
   }
 }
 
-const EQ_TABLE = {
+const EQ_TABLE_OF = {
   weapon: 'eq_weapon',
   secondary: 'eq_secondary',
   armor: 'eq_armor'
@@ -148,7 +156,7 @@ export function tableOf(it: Record_): TableId | null {
   if (it.frame || it.src === 'frame') return 'other_frames';
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
-  if (it.eq && !it.roll) return EQ_TABLE[it.eq.t];
+  if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
   if (it.src === 'community') return 'community';
@@ -160,53 +168,26 @@ export function tableOf(it: Record_): TableId | null {
 }
 
 /**
- * The tables, grouped as the table page groups them.
- *
- * The group names the book and the sub names the section inside it - "Core"
- * over "Предметы", because "Core - предметы" under a heading that already says
- * "Core" prints the book twice.
- */
-const GROUPS: { ru: string; en: string; subs: readonly TableId[] }[] = [
-  { ru: 'Core', en: 'Core', subs: ['core_item', 'core_consumable'] },
-  { ru: 'Hope & Fear', en: 'Hope & Fear', subs: ['hnf_item', 'hnf_consumable'] },
-  { ru: 'Альт. таблицы', en: 'Alt. tables', subs: ['alt_item', 'alt_consumable'] },
-  { ru: 'Wondrous Loot', en: 'Wondrous Loot', subs: ['wondrous'] },
-  { ru: 'Dread GM Toolbox', en: 'Dread GM Toolbox', subs: ['dread'] },
-  { ru: 'Vault of Ages', en: 'Vault of Ages', subs: ['voa'] },
-  { ru: 'Сообщества', en: 'Communities', subs: ['community'] },
-  { ru: 'Снаряжение', en: 'Equipment', subs: ['eq_weapon', 'eq_secondary', 'eq_armor'] },
-  { ru: 'Прочее', en: 'Other', subs: ['other_starting', 'other_frames'] }
-];
-
-const SUBS: Partial<Record<TableId, { ru: string; en: string }>> = {
-  core_item: { ru: 'Предметы', en: 'Items' },
-  core_consumable: { ru: 'Расходники', en: 'Consumables' },
-  hnf_item: { ru: 'Предметы', en: 'Items' },
-  hnf_consumable: { ru: 'Расходники', en: 'Consumables' },
-  alt_item: { ru: 'Предметы', en: 'Items' },
-  alt_consumable: { ru: 'Расходники', en: 'Consumables' },
-  eq_weapon: { ru: 'Оружие', en: 'Weapons' },
-  eq_secondary: { ru: 'Вторичное', en: 'Secondary' },
-  eq_armor: { ru: 'Броня', en: 'Armor' },
-  other_starting: { ru: 'Стартовые', en: 'Starting' },
-  other_frames: { ru: 'Сеттинги', en: 'Frames' }
-};
-
-/**
  * Where a record sits, as the line under the heading says it: the group, its
  * sub-table, and - for the two tables sectioned by a value the record itself
  * carries, `other_frames` by `frame` and `community` by `community` - the
  * record's own section leaf. No other table is sectioned by a record
  * property, so no other table appends one.
+ *
+ * The group and sub names are the same ones the table page's own chips read,
+ * off `tables.ts`'s `groupOf`/`SUB_LABEL` - not a second copy of the taxonomy.
+ * A group's sub only prints where the book actually has more than one table:
+ * `SUB_LABEL` has no entry for a single-table group's own id, which is what
+ * `groupOf`/`SUB_LABEL`'s own shape already encodes.
  */
 export function whereFrom(it: Record_, lang: Lang): string {
   const table = tableOf(it);
   if (!table) return srcLabel(it, lang);
 
-  const group = GROUPS.find((g) => g.subs.includes(table));
-  const sub = SUBS[table];
-  const head = group ? group[lang] : srcLabel(it, lang);
-  const base = sub ? `${head} · ${sub[lang]}` : head;
+  const t = dict(lang);
+  const head = t[groupOf(table).label];
+  const subKey = SUB_LABEL[table];
+  const base = subKey ? `${head} · ${t[subKey]}` : head;
 
   return it.frame || it.community ? `${base} · ${srcLabel(it, lang)}` : base;
 }

@@ -512,6 +512,20 @@ function testLongCheck() {
     );
     check('#30 long-check: once per session', isSilent(result), result.stdout);
   }
+  // #31 - a run-all shard is not exempt: it packs a whole `browser` matrix
+  // row (up to ~380s measured), not a small slice like golden/sweep's own
+  // --shard/width arguments, so it must still get the reminder.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('node tests/run-all.js --shard=1/4', { session_id: 's-longcheck-shard' })
+    );
+    check(
+      '#31 long-check: run-all --shard is not exempt',
+      systemMessage(result).includes('stay in this turn'),
+      systemMessage(result)
+    );
+  }
 }
 
 // ---------- bash-guard.mjs: rule 2g, backgrounded check (#64-#75) ----------

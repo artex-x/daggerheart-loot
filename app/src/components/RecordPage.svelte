@@ -28,11 +28,6 @@
   const index = $derived(app.index);
   const it = $derived(index?.byId.get(id));
 
-  /** Says what the last action did - the toast, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   /* A record opened over this page: a rung of the tier ladder, or the picture,
      both of which the live app answers with the modal rather than a
      navigation. */
@@ -86,10 +81,10 @@
       }}
     >
       {#snippet nameActions()}
-        <RecordActions {app} {index} {it} row="name" {say} />
+        <RecordActions {app} {index} {it} row="name" />
       {/snippet}
       {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" {say} />
+        <RecordActions {app} {index} {it} row="card" />
       {/snippet}
       {#snippet pick()}
         <AddToList {app} key={it.id} ids={[it.id]} primary />

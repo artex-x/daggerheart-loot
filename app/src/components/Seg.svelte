@@ -70,7 +70,7 @@
 
   .seg button.on {
     background: var(--gold);
-    color: #1a1206;
+    color: var(--ink-on-gold);
   }
 
   .seg button:not(.on):hover {

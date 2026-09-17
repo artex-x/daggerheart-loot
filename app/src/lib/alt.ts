@@ -13,21 +13,16 @@ import type { AltCol, Index } from './data.js';
 import type { Dict } from './dict.js';
 import { rarityKey } from './label.js';
 import type { Rarity } from './money.js';
-import { nextRarity } from './roll.js';
+import { RARITY_ORDER, nextRarity } from './roll.js';
 import type { Duality } from './roll.js';
 import { LOOT_KINDS, allows } from './std.js';
 import type { Chosen, LootKind } from './std.js';
 import { kindOf } from './data.js';
 import type { Record_ } from './types.js';
 
-/** The five rarities, in the order the chips show them. */
-export const RARITIES: readonly Rarity[] = [
-  'common',
-  'uncommon',
-  'rare',
-  'very_rare',
-  'legendary'
-];
+/** The five rarities, in the order the chips show them - `roll.ts`'s own
+ *  order, which `nextRarity` (used below by `bumpUp`) already walks. */
+export const RARITIES: readonly Rarity[] = RARITY_ORDER;
 
 /**
  * The tiers each rarity is a recommendation for, as the chip captions read

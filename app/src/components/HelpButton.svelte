@@ -58,7 +58,7 @@
   .helpbtn.on {
     background: var(--gold);
     border-color: var(--gold);
-    color: #1a1206;
+    color: var(--ink-on-gold);
   }
 
   .helpbtn::after {

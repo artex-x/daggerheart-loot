@@ -5,6 +5,7 @@
      `num` (`rnum` - only the alternate tables' columns override the roll
      number) or `tail` (`rtail` - the shared page's decoration, threaded
      through `TableRows`'s own `TableEntry.tail`). */
+  import Badge from './Badge.svelte';
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -93,9 +94,9 @@
           )}{/if}</span
       >{/if}</span
   ><span class="rm"
-    >{#each cardBadges(it, lang, t) as b, i (i)}<span class="badge {b.cls}" title={b.title}
-        >{b.text}</span
-      >{/each}<span class="badge src">{srcLabel(it, lang)}</span></span
+    >{#each cardBadges(it, lang, t) as b, i (i)}<Badge cls={b.cls} title={b.title}
+        >{b.text}</Badge
+      >{/each}<Badge cls="src">{srcLabel(it, lang)}</Badge></span
   >
 </button>
 
@@ -198,59 +199,6 @@
     display: flex;
     gap: 5px;
     align-items: center;
-  }
-
-  /* off `.badge` in style.css - the row shares the card's badge palette. */
-  .badge {
-    font-size: 10.5px;
-    font-weight: 650;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    padding: 3px 7px;
-    border-radius: 6px;
-    background: rgb(10 8 16 / 50%);
-    border: 1px solid var(--line2);
-    color: var(--muted);
-  }
-
-  .badge.item {
-    color: var(--item);
-    border-color: #7a8ee073;
-  }
-
-  .badge.cons {
-    color: var(--cons);
-    border-color: #9ec96a73;
-  }
-
-  .badge.eq-weapon {
-    color: var(--eq-weapon);
-    border-color: #d48e6a73;
-  }
-
-  .badge.eq-secondary {
-    color: var(--eq-secondary);
-    border-color: #cf7fa673;
-  }
-
-  .badge.eq-armor {
-    color: var(--eq-armor);
-    border-color: #5ec9c473;
-  }
-
-  .badge.uniq {
-    color: var(--gold-soft);
-    border-color: rgb(216 171 94 / 45%);
-    border-style: dashed;
-  }
-
-  .badge.tier {
-    color: var(--muted);
-    border-color: var(--line2);
-  }
-
-  .badge.src {
-    color: #9a9aa6;
   }
 
   /* off the `.rtail` rule, style.css:785 - the shared page's decoration. */

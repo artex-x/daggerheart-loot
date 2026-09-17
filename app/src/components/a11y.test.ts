@@ -366,6 +366,7 @@ const COVERED: Record<string, string> = {
   'Button.svelte': 'the roll button and the card actions, on every roll page',
   'Chip.svelte': 'the Vault of Ages and community pickers - sections.test.ts and above',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
+  'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
   'ChipRow.svelte': 'the same two pickers',
   'CommunityPanel.svelte': 'sections.test.ts, and in English above',
   'Die.svelte': 'the roll button on every roll page',
@@ -375,6 +376,7 @@ const COVERED: Record<string, string> = {
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'NoData.svelte': "record.test.ts's no-data case, and every page test's own",
   'NumberField.svelte': 'the number row on every roll page',
+  'NumRow.svelte': 'the number row on every roll page, and the lists index above',
   'PageHead.svelte': 'the heading of every roll page, with both help states above',
   'PageTitle.svelte':
     "record.test.ts's record and not-found pages, listPage/printPage/sharedListPage.test.ts",

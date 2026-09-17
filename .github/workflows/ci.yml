@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # gitleaks reads history, not just a snapshot
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -70,10 +70,10 @@ jobs:
         run: npm run budget
 
       # A CI run is gone by the time anyone looks at it, and the summary prints
-      # a dozen grepped lines. run-all.js writes every suite's whole output to
-      # test-output/, which is what makes a red build reproducible - but this
-      # job no longer runs run-all.js itself (see `browser`, below), so this
-      # is only ever coverage/ from a failed `npm run check`.
+      # a dozen grepped lines. This job no longer runs run-all.js itself (see
+      # `browser`, below), so `coverage/` is what a failed `npm run check`
+      # leaves; `dist/` is what a failed Build, smoke or budget step - all
+      # three run after it in this same job - leaves instead.
       - name: Everything a failed run left behind
         if: failure()
         uses: actions/upload-artifact@v5
@@ -158,7 +158,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
-  # Publishing, gated on check, audit, secrets and structural goldens.
+  # Publishing, gated on check, audit, secrets and browser (the sharded suite
+  # that carries the structural goldens, among everything else run-all.js
+  # knows about).
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
   # dist/data.js, assembled here with the generated data, the stub pages and the

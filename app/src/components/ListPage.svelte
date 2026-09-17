@@ -22,6 +22,7 @@
   import Icon from './Icon.svelte';
   import NoData from './NoData.svelte';
   import NumberField from './NumberField.svelte';
+  import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
   import PageTitle from './PageTitle.svelte';
   import RecordActions from './RecordActions.svelte';
@@ -170,10 +171,6 @@
     return coins > 0 && mode !== 'coin' ? priceText(coins, mode, app.lang) : '';
   }
 
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   /* ---------- handlers, each the live one by line ---------- */
 
   function rename(e: Event): void {
@@ -185,12 +182,14 @@
     const l = own;
     if (!l) return;
     if (!l.ids.length) {
-      say(t.listEmpty);
+      app.say(t.listEmpty);
       return;
     }
     const payload = await app.env.compress.pack(encodeListRaw(l, forPlayers));
-    const ok = await app.env.clipboard.writeText(app.linkTo(sharedListHash(payload)));
-    say(ok ? (forPlayers ? t.playersLinkCopied : t.gmLinkCopied) : t.copyFailed, !ok);
+    await app.copied(
+      () => app.env.clipboard.writeText(app.linkTo(sharedListHash(payload))),
+      forPlayers ? t.playersLinkCopied : t.gmLinkCopied
+    );
   }
   async function sharePlayers(): Promise<void> {
     await shareLink(true);
@@ -203,8 +202,7 @@
     const l = own;
     if (!l || !index) return;
     const { text, html } = shareList(l, index, app.lang, t);
-    const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    say(ok ? t.listCopied : t.copyFailed, !ok);
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.listCopied);
   }
 
   function del(): void {
@@ -651,7 +649,7 @@
     <details class="panel lroll">
       <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
       <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
-        <div class="numrow">
+        <NumRow>
           <NumberField
             value={roll}
             min={1}
@@ -666,7 +664,7 @@
             ><Die faces={items.length} />{rollLabel}</Button
           >
           {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
-        </div>
+        </NumRow>
         {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
       </Field>
       {#if hit}
@@ -688,7 +686,7 @@
               }}
             >
               {#snippet nameActions()}
-                <RecordActions {app} {index} {it} row="name" {say} />
+                <RecordActions {app} {index} {it} row="name" />
               {/snippet}
               {#snippet actions()}
                 <RecordActions
@@ -696,7 +694,6 @@
                   {index}
                   {it}
                   row="card"
-                  {say}
                   extra={entryNoteBlock(metaOf(it.id), t)}
                 />
               {/snippet}
@@ -1108,7 +1105,6 @@
     letter-spacing: 0.02em;
     text-transform: none;
     color: var(--muted2);
-    opacity: 0.75;
     font-weight: 400;
   }
 
@@ -1215,14 +1211,6 @@
     margin: 10px 0 0;
     font-size: 12.5px;
     color: var(--muted2);
-  }
-
-  /* off `.numrow` (style.css:181) */
-  .numrow {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-    flex-wrap: wrap;
   }
 
   /* off `.batch`, `.batch.on`, `.batch-all`, `.batch.on .batch-all`

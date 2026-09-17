@@ -43,11 +43,6 @@
     });
   });
 
-  /** Says what the last action did - the toast, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   const query = $derived(foldQuery(q.trim()));
   const statLine = $derived(statLineFor(app.lang, t));
   const hay = $derived(hayFor(statLine));
@@ -77,7 +72,7 @@
   }
 </script>
 
-<PageHead {app} title={t.search} sub={t.subSearch} help={null} {say} />
+<PageHead {app} title={t.search} sub={t.subSearch} help={null} />
 
 {#if !index}
   <NoData>{t.noData}</NoData>

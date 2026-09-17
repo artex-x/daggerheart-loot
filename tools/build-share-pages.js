@@ -100,13 +100,21 @@ function craftLines(it){
   return out;
 }
 
+// The visible paragraph keeps the line breaks the meta description above
+// flattens: a multi-line body (98 records use "- " list lines) renders as one
+// <p> per source line instead of a run-on paragraph once the newlines are gone.
+function descHtml(raw){
+  return raw.split('\n').map(line => `<p>${esc(line)}</p>`).join('\n');
+}
+
 function page(it){
   const name = it.ru || it.en;
   const craft = craftLines(it);
+  const rawDesc = it.rud || it.ende || '';
   // the unfurl preview is one flat string, so the chain joins the description
   // предпросмотр в мессенджере - одна плоская строка, переносы в ней ни к чему
   const from = provenance(it);
-  const desc = (from ? from + '. ' : '') + (it.eq ? eqLine(it) + '. ' : '') + (it.rud || it.ende).replace(/\s*\n\s*/g, ' ') +
+  const desc = (from ? from + '. ' : '') + (it.eq ? eqLine(it) + '. ' : '') + rawDesc.replace(/\s*\n\s*/g, ' ') +
     (craft.length ? ' ' + craft.join(' ') + '.' : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.
@@ -157,7 +165,7 @@ function page(it){
     <img src="../img/${esc(it.img || '_none.webp')}" alt="${esc(name)}">
     <h1>${esc(name)}</h1>
     <p class="s">${esc(subtitle(it))}</p>
-    <p>${esc(it.rud || it.ende)}</p>
+    ${descHtml(rawDesc)}
 ${craft.map(c => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc(app)}">Открыть в генераторе лута</a>
   </div>
   <script>location.replace(${JSON.stringify(app)});</script>
@@ -166,10 +174,10 @@ ${craft.map(c => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc
 `;
 }
 
-/* Exported so the test can render all 830 into memory and compare with what is
+/* Exported so the test can render all 1091 into memory and compare with what is
    on disk: that catches a change to this generator that was never rebuilt, not
    just data that moved on. */
-module.exports = { page };
+module.exports = { page, EQ_TYPE, EQ_TRAIT, EQ_RANGE, EQ_DT, EQ_CLS, EQ_BURDEN };
 
 if (require.main === module) {
   fs.mkdirSync(OUT, { recursive: true });

@@ -168,10 +168,10 @@ export default defineConfig({
         perFile: true,
         'src/lib/**': { lines: 95, functions: 95, branches: 85, statements: 90 },
         'src/ports/**': { lines: 70, functions: 80, branches: 55, statements: 70 },
-        /* Every component except the one named below. A threshold glob does
+        /* Every component except the ones named below. A threshold glob does
            not override a wider one - both are applied - so the exception has to
            be carved out of the pattern rather than layered on top of it. */
-        'src/**/!(Button|DiceBar).svelte': {
+        'src/**/!(Button|DiceBar|Badge).svelte': {
           lines: 85,
           functions: 80,
           branches: 75,
@@ -197,6 +197,17 @@ export default defineConfig({
           lines: 85,
           functions: 80,
           branches: 60,
+          statements: 85
+        },
+        /* One attribute (`title`) and one class interpolation (`cls`): the
+           whole component is a single optional-attribute update path,
+           present-vs-absent, plus a class-value update path - badge.test.ts
+           covers both directions of each, including a rerender that swaps
+           both, and 50% branch is still the ceiling (issues/phase-8, B5). */
+        'src/components/Badge.svelte': {
+          lines: 85,
+          functions: 80,
+          branches: 50,
           statements: 85
         },
         'src/state/**': { lines: 95, functions: 95, branches: 85, statements: 90 }

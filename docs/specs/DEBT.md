@@ -219,45 +219,6 @@ The live app was wrong; the rewrite copied it; parity was the reason.
   `#/i/ci1 ~ new list` is re-read by the same instrument.
 - **Recorded by**: B11.1, 2026-09-12.
 
-### D7 - the muted-text tokens fail WCAG AA contrast on their dark backgrounds
-
-- **Where**: `style.css` `--muted` (`#77708c` on `--surface` `#1a1626`,
-  measured 3.77:1) and `--muted2` (`#6e6884`/`#6d6782` on `--surface`/
-  `--surface2` `#1a1626`/`#14111d`, measured 3.35:1 and 3.46:1) - both need
-  4.5:1 at their font sizes (10.5px, under the 18.66px/14pt-bold large-text
-  threshold). Ported: `AltPanel.svelte`'s rank subtitle (`Chip.svelte`'s
-  optional `sub` prop, a `<small>` after the label - off `.chip small` in
-  style.css, `opacity:.72`) and `ListPage.svelte`'s note-pair hints
-  (`notePubHint`/`noteHidHint`, `app/src/lib/dict.ts:309-310`; rendered as
-  `<i>{t.notePubHint}</i>`/`<i>{t.noteHidHint}</i>` at `ListPage.svelte:538`
-  and `:556`, inside `.lnote > .npair > .nfield.n-pub > .nlbl > i` and its
-  `.n-hid` sibling). Read at `a52c17d`, `tests/app/sweep.js`'s axe pass
-  (B12).
-- **Live behaviour**: `axe.run()` with `color-contrast` on reports the
-  identical node, at the identical measured ratio, against `index.html` and
-  `dist/index.html` alike - the two muted tokens have always read below AA on
-  a dark background, on both apps, at every width (contrast is not a function
-  of layout).
-- **What the rewrite would do instead**: lighten `--muted`/`--muted2` (or the
-  two surfaces they sit on) until both combinations clear 4.5:1, checked
-  against every other place the tokens are used - a global colour change, not
-  a per-component one.
-- **Why parity won**: B12 (2026-09-12) - the tokens are shared globally
-  (`styles/tokens.css`), so changing either for these two call sites alone
-  would either diverge from the live app's exact colours (parity's whole
-  reason to exist) or require a value the live app itself never uses. Not
-  found earlier because no gate ever ran real contrast measurement against
-  either app before B12's sweep.
-- **How to verify the fix**: `tests/app/sweep.js`'s axe pass finds no
-  `color-contrast` violation on `#/roll/alt` (checked - `#/roll/wondrous`,
-  `#/roll/community`, `#/roll/voa` and `#/roll/std` carry no such subtitle
-  and read clean already) or `#/lists/<id>` with a note open on some entry -
-  the trigger is a NOTE, not a price: `#/lists/b` and `#/lists/empty` read
-  clean because they carry no note, not because they carry no price - with
-  no `allow` naming it; the `--muted`/`--muted2` values in `docs/specs/*` (if
-  any cite them) updated to match.
-- **Recorded by**: B12, 2026-09-12.
-
 ### D10 - copying an image taints the canvas under `file://`, on both apps
 
 - **Where**: `app/src/ports/image.ts`'s `pngOf` (`<img>` -> `<canvas>` ->

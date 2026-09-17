@@ -16,6 +16,7 @@
   import Field from './Field.svelte';
   import NoData from './NoData.svelte';
   import NumberField from './NumberField.svelte';
+  import NumRow from './NumRow.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
   import RecordActions from './RecordActions.svelte';
@@ -64,10 +65,6 @@
   });
 
   let open = $state<Record_ | null>(null);
-  /** Says what the last action did - the toast, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
 
   /* The record for whatever number is in the field, from the first paint. The
      live app opens on row one rather than on an empty panel, and a page that
@@ -94,7 +91,7 @@
   }
 </script>
 
-<PageHead {app} {title} {sub} {help} {say} />
+<PageHead {app} {title} {sub} {help} />
 
 {#if max === 0}
   <NoData>{t.noData}</NoData>
@@ -104,7 +101,7 @@
          Vault of Ages the range is the chosen section's length, not the book's. -->
     {@render picker?.()}
     <Field label="{t.rollLabelFor} (1–{max})">
-      <div class="numrow">
+      <NumRow>
         <NumberField
           value={n}
           min={1}
@@ -117,7 +114,7 @@
         <Button variant="primary" onclick={roll}>
           <Die faces={max} />{rollLabel}
         </Button>
-      </div>
+      </NumRow>
     </Field>
   </Panel>
 
@@ -148,10 +145,10 @@
           }}
         >
           {#snippet nameActions()}
-            <RecordActions {app} index={shown.index} it={shown.it} row="name" {say} />
+            <RecordActions {app} index={shown.index} it={shown.it} row="name" />
           {/snippet}
           {#snippet actions()}
-            <RecordActions {app} index={shown.index} it={shown.it} row="card" {say} />
+            <RecordActions {app} index={shown.index} it={shown.it} row="card" />
           {/snippet}
         </RecordCard>
       {/key}
@@ -174,16 +171,12 @@
 {/if}
 
 <style>
-  /* off `.field`, `.lbl`, `.numrow` and `.btn` in style.css - `.panel` moved
-     to `Panel.svelte`, `.miss` to `NoData.svelte` (B10) */
-  .numrow {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-    flex-wrap: wrap;
-  }
-
-  /* off `.results` in style.css */
+  /* off `.field`, `.lbl` and `.btn` in style.css - `.numrow` moved to
+     `NumRow.svelte`, `.panel` to `Panel.svelte`, `.miss` to `NoData.svelte`
+     (B10) */
+  /* off `.results` in style.css - three lines, duplicated in
+     `AltPanel.svelte`/`StdPanel.svelte`, too small to be worth a component
+     of its own (components.md, C7). */
   .results {
     margin-top: 26px;
   }

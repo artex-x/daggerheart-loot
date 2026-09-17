@@ -46,26 +46,29 @@
 </script>
 
 <Shell {app}>
-  {#if app.route.kind === 'section' && ROLL_TABLE[app.route.section]}
-    <RollPanel
-      {app}
-      section={ROLL_TABLE[app.route.section]?.table ?? ''}
-      title={app.t[ROLL_TABLE[app.route.section]?.title ?? 'pageWondrous']}
-      sub={app.t.subWondrous}
-      rows={app.index?.rows.get(ROLL_TABLE[app.route.section]?.table ?? '') ?? []}
-    />
-  {:else if app.route.kind === 'section' && app.route.section === 'roll/std'}
-    <StdPanel {app} />
-  {:else if app.route.kind === 'section' && app.route.section === 'roll/alt'}
-    <AltPanel {app} />
-  {:else if app.route.kind === 'section' && app.route.section === 'roll/voa'}
-    <VoaPanel {app} />
-  {:else if app.route.kind === 'section' && app.route.section === 'roll/community'}
-    <CommunityPanel {app} />
-  {:else if app.route.kind === 'section' && app.route.section === 'lists'}
-    <ListsPage {app} />
-  {:else if app.route.kind === 'section' && app.route.section === 'search'}
-    <SearchPage {app} />
+  {#if app.route.kind === 'section'}
+    {@const cfg = ROLL_TABLE[app.route.section]}
+    {#if cfg}
+      <RollPanel
+        {app}
+        section={cfg.table}
+        title={app.t[cfg.title]}
+        sub={app.t.subWondrous}
+        rows={app.index?.rows.get(cfg.table) ?? []}
+      />
+    {:else if app.route.section === 'roll/std'}
+      <StdPanel {app} />
+    {:else if app.route.section === 'roll/alt'}
+      <AltPanel {app} />
+    {:else if app.route.section === 'roll/voa'}
+      <VoaPanel {app} />
+    {:else if app.route.section === 'roll/community'}
+      <CommunityPanel {app} />
+    {:else if app.route.section === 'lists'}
+      <ListsPage {app} />
+    {:else if app.route.section === 'search'}
+      <SearchPage {app} />
+    {/if}
   {:else if app.route.kind === 'record'}
     <RecordPage {app} id={app.route.id} />
   {:else if app.route.kind === 'tables'}

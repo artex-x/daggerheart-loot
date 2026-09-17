@@ -30,6 +30,10 @@
   --gold-soft: #f0d091;
   --hope: #e9b949;
   --fear: #8a72d6;
+  /* `--gold` as an `r g b` triple, for the handful of places that need it at
+     an opacity `--gold` itself cannot carry - moved here from `Badge.svelte`'s
+     own `.uniq`/`.num` variants (B5), not a new value invented for them. */
+  --gold-rgb: 216 171 94;
 
   /* One hue per kind, used by the badge only; the stat line stays plain
      secondary text. The five sit roughly evenly around the wheel with at least
@@ -44,6 +48,10 @@
 
   --danger: #e0685f;
 
+  /* The badge's own ground - moved here from `Badge.svelte` (B5), where it
+     was the base rule's `background` alone; every variant sits on it. */
+  --badge-bg: rgb(10 8 16 / 50%);
+
   --r: 14px;
   --r-sm: 9px;
   --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
@@ -53,27 +61,29 @@
     sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* One scale, so a component never invents a size. */
+  /* The one size actually drawn from here. The rest of the scale that used to
+     sit beside it had no `var()` reader anywhere in `app/src` and was deleted
+     rather than kept as an unused reservation. */
   --step-0: 15.5px;
-  --step--1: 13px;
-  --step--2: 11px;
-  --step-1: 19px;
-  --step-2: 24px;
 
-  /* The page heading, taken off the live app's `.page-h` rather than invented:
-     23px at weight 680 with a hair of negative tracking. `tests/app/typo.js`
-     checks the type scale on every run. */
   /* The page container, off `.wrap`: one width for the header and the content,
      centred, keeping clear of a display cutout. */
   --wrap: min(1180px, 100% - 32px);
 
+  /* The page heading, taken off the live app's `.page-h` rather than invented:
+     23px at weight 680 with a hair of negative tracking. `tests/app/typo.js`
+     measures the rendered sizes against its own scale list; a new step here
+     has to be added there too. */
   --h-page-size: 23px;
   --h-page-weight: 680;
   --h-page-spacing: -0.01em;
 
-  --gap: 12px;
   --gap-sm: 6px;
-  --gap-lg: 20px;
+
+  /* The colour every gold-filled control prints its own text in - a button,
+     a chip, the home pin, a toast action. Not `--bg`/`--surface`: darker than
+     either, chosen against `--gold` specifically. */
+  --ink-on-gold: #1a1206;
 }
 
 *,

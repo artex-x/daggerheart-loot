@@ -111,11 +111,6 @@
     });
   });
 
-  /** Says what the last action did - the toast, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   const help = $derived(helpFor('tables', app.lang));
 
   /* The filter is read from the address rather than mirrored - `app.route`
@@ -171,10 +166,10 @@
   }
 
   async function copyFilterLink(): Promise<void> {
-    const ok = await app.env.clipboard.writeText(
-      app.linkTo(tablesHash(table, { filter: filterState }))
+    await app.copied(
+      () => app.env.clipboard.writeText(app.linkTo(tablesHash(table, { filter: filterState }))),
+      t.filterLinkCopied
     );
-    say(ok ? t.filterLinkCopied : t.copyFailed, !ok);
   }
 
   const rows = $derived(
@@ -218,15 +213,17 @@
   }
 
   async function copyTableLink(): Promise<void> {
-    const ok = await app.env.clipboard.writeText(app.linkTo(tablesHash(table)));
-    say(ok ? t.tableLinkCopied : t.copyFailed, !ok);
+    await app.copied(
+      () => app.env.clipboard.writeText(app.linkTo(tablesHash(table))),
+      t.tableLinkCopied
+    );
   }
 
   async function copySectionLink(key: string): Promise<void> {
-    const ok = await app.env.clipboard.writeText(
-      app.linkTo(tablesHash(table, { anchor: key }))
+    await app.copied(
+      () => app.env.clipboard.writeText(app.linkTo(tablesHash(table, { anchor: key }))),
+      t.sectionLinkCopied
     );
-    say(ok ? t.sectionLinkCopied : t.copyFailed, !ok);
   }
 
   /* Which body shape this table draws, off `renderTables()`'s own branches:
@@ -454,7 +451,7 @@
   });
 </script>
 
-<PageHead {app} title={t.tables} sub={t.subTables} {help} {say} home={tablesHash(table)} />
+<PageHead {app} title={t.tables} sub={t.subTables} {help} home={tablesHash(table)} />
 
 <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus this
      screen's own margin-free nav row. Svelte scopes this component's rule to

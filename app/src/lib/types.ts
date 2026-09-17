@@ -1,6 +1,8 @@
 /* Domain types. Plain descriptions of what sits in data.js and what the address
    bar understands - with no assumption about who renders any of it. */
 
+import type { FrameId } from './frames.js';
+
 export type Lang = 'ru' | 'en';
 
 /** The three kinds a record can filter under - Core rules, the alternate
@@ -126,7 +128,7 @@ export interface Record_ {
    * meant, and never derive either from stats (`CLAUDE.md`). */
   tier?: VoaTier;
   recall?: number;
-  frame?: string;
+  frame?: FrameId;
   starting?: boolean;
   community?: string;
   community_ru?: string;

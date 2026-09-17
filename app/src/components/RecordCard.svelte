@@ -10,6 +10,7 @@
      Nothing here injects HTML. The description arrives parsed - see
      lib/desc.ts - so a label is an <i> element and a list is a real <ul>. */
   import Actions from './Actions.svelte';
+  import Badge from './Badge.svelte';
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -126,15 +127,15 @@
   <div class="card-body">
     <div class="card-meta">
       {#if it.roll}
-        <span class="badge num">{rollLabel ?? it.roll}</span>
+        <Badge cls="num">{rollLabel ?? it.roll}</Badge>
       {/if}
       {#if col}
-        <span class="badge {col}">{col === 'hope' ? t.hope : t.fear}</span>
+        <Badge cls={col}>{col === 'hope' ? t.hope : t.fear}</Badge>
       {/if}
       {#each badges as b, i (i)}
-        <span class="badge {b.cls}" title={b.title}>{b.text}</span>
+        <Badge cls={b.cls} title={b.title}>{b.text}</Badge>
       {/each}
-      <span class="badge src">{srcLabel(it, lang)}</span>
+      <Badge cls="src">{srcLabel(it, lang)}</Badge>
     </div>
 
     <h2 class="card-name">
@@ -356,71 +357,6 @@
     align-items: center;
   }
 
-  .badge {
-    font-size: 10.5px;
-    font-weight: 650;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    padding: 3px 7px;
-    border-radius: 6px;
-    background: rgb(10 8 16 / 50%);
-    border: 1px solid var(--line2);
-    color: var(--muted);
-  }
-
-  .badge.item {
-    color: var(--item);
-    border-color: #7a8ee073;
-  }
-
-  .badge.cons {
-    color: var(--cons);
-    border-color: #9ec96a73;
-  }
-
-  /* Gear names the kind of gear rather than "item"; the three colours are the
-     ones the equipment tables and tiles already use. */
-  .badge.eq-weapon {
-    color: var(--eq-weapon);
-    border-color: #d48e6a73;
-  }
-
-  .badge.eq-secondary {
-    color: var(--eq-secondary);
-    border-color: #cf7fa673;
-  }
-
-  .badge.eq-armor {
-    color: var(--eq-armor);
-    border-color: #5ec9c473;
-  }
-
-  /* Dashed, because it is a property of the thing rather than a category. */
-  .badge.uniq {
-    color: var(--gold-soft);
-    border-color: rgb(216 171 94 / 45%);
-    border-style: dashed;
-  }
-
-  .badge.tier {
-    color: var(--muted);
-    border-color: var(--line2);
-  }
-
-  /* Neutral on purpose: --muted carries a violet tint that put this badge in
-     the same family as the armour one. */
-  .badge.src {
-    color: #9a9aa6;
-  }
-
-  .badge.num {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0;
-    color: var(--gold-soft);
-    border-color: rgb(216 171 94 / 50%);
-  }
-
   /* off `.steps`, `.steps-l` and `.step` in style.css. The rungs are a fixed
      26px square whatever digit is in them, so a line of four reads as a row of
      equal steps rather than as text. */
@@ -464,17 +400,6 @@
     background: var(--gold);
     border-color: var(--gold);
     color: #191320;
-  }
-
-  /* The two duality columns, in the colours the dice are named for. */
-  .badge.hope {
-    color: var(--hope);
-    border-color: rgb(233 185 73 / 50%);
-  }
-
-  .badge.fear {
-    color: var(--fear);
-    border-color: rgb(138 114 214 / 55%);
   }
 
   .card-name {

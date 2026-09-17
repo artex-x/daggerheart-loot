@@ -13,7 +13,14 @@
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TRAIT, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
   import { isFrameRecord, printSrc } from '../lib/label.js';
-  import { cardArt, CARD_DIR, dmgParts, DIE_ART, glyphKey, PRINT_GLYPH } from '../lib/print.js';
+  import {
+    cardArt,
+    CARD_DIR,
+    dmgParts,
+    DICE_WITH_ART,
+    glyphKey,
+    PRINT_GLYPH
+  } from '../lib/print.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   interface Props {
@@ -188,7 +195,7 @@
 
 {#snippet die(e: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>)}
   {@const parts2 = dmgParts(e.dmg)}
-  {@const own = DIE_ART.has(parts2.die)}
+  {@const own = DICE_WITH_ART.has(parts2.die)}
   {@const mag = e.dt === 'mag'}
   <span class="pc-die" class:own class:mag data-die={parts2.die}
     >{#if own}<img

@@ -8,12 +8,15 @@
  * Pure module: no DOM, no data. */
 
 import type { Dict } from './dict.js';
+import { clamp } from './numField.js';
+import type { Rarity } from './money.js';
+
+/** Re-exported so every existing `from './roll.js'` import (`roll.test.ts`,
+ *  and any future caller of the Core clamp) keeps working unchanged. */
+export { clamp };
 
 /** A source of randomness. `Math.random` in the app, something fixed in tests. */
 export type Random = () => number;
-
-export const clamp = (v: number, lo: number, hi: number): number =>
-  Math.max(lo, Math.min(hi, v));
 
 /** One die of n faces, 1..n. */
 export function die(n: number, rnd: Random = Math.random): number {
@@ -57,9 +60,13 @@ export function rollDuality(rnd: Random = Math.random): Duality {
 
 export const isCrit = (d: Duality): boolean => d.hope === d.fear;
 
-export const RARITY_ORDER = ['common', 'uncommon', 'rare', 'very_rare', 'legendary'] as const;
-
-export type Rarity = (typeof RARITY_ORDER)[number];
+export const RARITY_ORDER: readonly Rarity[] = [
+  'common',
+  'uncommon',
+  'rare',
+  'very_rare',
+  'legendary'
+];
 
 /** One step up, and no further than the top - a crit on legendary stays there. */
 export function nextRarity(r: Rarity): Rarity {

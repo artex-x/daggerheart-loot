@@ -1,7 +1,7 @@
 /* The four campaign frames, and what each one is called.
  *
  * Unlike Vault of Ages or the communities, a frame has no roll table of its
- * own - `SECTIONS`/`TAB_LIST` never mention one - so there is no existing
+ * own - `SECTIONS` never mentions one - so there is no existing
  * naming function to reuse the way `sections.ts` is for the other two. The
  * order is a book-authored fact rather than something derived from the data:
  * `motherboard` holds a single row and would sort last by count, but it is
@@ -32,6 +32,6 @@ const FRAME_LABEL: Record<Lang, Record<FrameId, string>> = {
 };
 
 /** A frame's name, or the raw id where it names a frame nothing here knows. */
-export function frameName(id: string, lang: Lang): string {
+export function frameName(id: FrameId, lang: Lang): string {
   return (FRAME_LABEL[lang] as Record<string, string>)[id] ?? id;
 }

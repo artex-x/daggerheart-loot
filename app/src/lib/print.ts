@@ -34,8 +34,11 @@ export function glyphKey(it: Record_): GlyphKey {
 }
 
 /** The dice the layout has a shape for; any other die falls back to a plain
- *  hexagon clipped in CSS - off `DIE_ART` (app.js 3271). */
-export const DIE_ART = new Set(['d4', 'd6', 'd8', 'd10', 'd12', 'd20']);
+ *  hexagon clipped in CSS - off `DIE_ART` (app.js 3271). Named `DICE_WITH_ART`
+ *  here, not `DIE_ART`: `dice.ts` already exports a `DIE_ART` for a different
+ *  concept (the roll wheel's per-die SVG), and the two are unrelated maps
+ *  that happened to share a name. */
+export const DICE_WITH_ART = new Set(['d4', 'd6', 'd8', 'd10', 'd12', 'd20']);
 
 /**
  * A vector's file name, off `cardArt` (app.js 3282-3291).

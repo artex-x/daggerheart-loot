@@ -12,6 +12,7 @@
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
   import NumberField from './NumberField.svelte';
+  import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
@@ -42,11 +43,6 @@
   let n = $state(1);
   let open = $state<Record_ | null>(null);
 
-  /** Says what the last action did - the toast, off `app.say`. */
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   const pool = $derived(index ? poolFor(index, n, app.source, app.kinds) : []);
 
   const SOURCE_LABEL: Record<Source, keyof Dict> = { core: 'srcCore', hnf: 'srcHnf' };
@@ -64,8 +60,7 @@
 
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
-    const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    say(ok ? t.textCopied : t.copyFailed, !ok);
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.textCopied);
   }
 
   function setN(v: number): void {
@@ -79,18 +74,18 @@
   /** Refuses to turn the last one off, and says why rather than doing nothing. */
   function toggleSource(src: Source): void {
     if (isLastOn(app.source, SOURCES, src)) {
-      say(t.keepOneSource, true);
+      app.say(t.keepOneSource, { error: true });
       return;
     }
     app.source = { ...app.source, [src]: !app.source[src] };
   }
 </script>
 
-<PageHead {app} title={t.pageStd} sub={t.subStd} {help} {say} />
+<PageHead {app} title={t.pageStd} sub={t.subStd} {help} />
 
 <Panel>
   <Field label="{t.rollResult} (1–{CORE_MAX})">
-    <div class="numrow">
+    <NumRow>
       <NumberField
         value={n}
         min={1}
@@ -101,7 +96,7 @@
         onchange={setN}
       />
       <DiceBar dice={NDICE} {rarityName} rollWord={t.roll} onroll={roll} />
-    </div>
+    </NumRow>
   </Field>
 
   <Field label={t.source}>
@@ -168,10 +163,10 @@
       }}
     >
       {#snippet nameActions()}
-        <RecordActions {app} {index} {it} row="name" {say} />
+        <RecordActions {app} {index} {it} row="name" />
       {/snippet}
       {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" {say} />
+        <RecordActions {app} {index} {it} row="card" />
       {/snippet}
     </RecordCard>
   {/if}
@@ -192,15 +187,10 @@
 {/if}
 
 <style>
-  /* off `.numrow` and `.results` in style.css - `.panel` moved to
-     `Panel.svelte` (B10) */
-  .numrow {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-    flex-wrap: wrap;
-  }
-
+  /* off `.results` in style.css - `.numrow` moved to `NumRow.svelte`,
+     `.panel` to `Panel.svelte` (B10) */
+  /* Three lines, duplicated in `AltPanel.svelte`/`RollPanel.svelte` - too
+     small to be worth a component of its own (components.md, C7). */
   .results {
     margin-top: 26px;
   }

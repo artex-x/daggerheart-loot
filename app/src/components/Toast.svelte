@@ -86,7 +86,7 @@
     overflow: visible;
     transform: translateX(-50%);
     background: var(--gold);
-    color: #1a1206;
+    color: var(--ink-on-gold);
     font-weight: 650;
     font-size: 13.5px;
     padding: 10px 18px;

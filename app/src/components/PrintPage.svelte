@@ -60,10 +60,6 @@
     t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(dropped))
   );
 
-  const say = (msg: string, error?: boolean): void => {
-    app.say(msg, { error });
-  };
-
   function back(): void {
     if (app.env.router.canGoBack()) app.env.router.back();
     else app.go(sectionHash('lists'));
@@ -74,8 +70,10 @@
   }
 
   async function copyLink(): Promise<void> {
-    const ok = await app.env.clipboard.writeText(app.linkTo(printHash(ids)));
-    say(ok ? t.linkCopied : t.copyFailed, !ok);
+    await app.copied(
+      () => app.env.clipboard.writeText(app.linkTo(printHash(ids))),
+      t.linkCopied
+    );
   }
 </script>
 

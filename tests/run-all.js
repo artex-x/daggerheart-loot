@@ -42,9 +42,15 @@ const HERE = __dirname;
    `app/sweep`'s 1180 row is split into a `ru` and an `en` row: at 550.5s
    measured it was 25% of all browser work and 1.7x its narrower siblings -
    axe running both languages there, plus the RU-only focus walk, account
-   for the whole excess (`tests.md`, "T2"). The two halves below are ~275s
-   each, an even split of that one measurement rather than a fresh one -
-   re-measure and correct after this lands.
+   for the whole excess (`tests.md`, "T2"). The two halves below are kept at
+   an even ~275s split rather than the two rows' real measured weights
+   (371.9s ru, 172.7s en - issues/phase-8's B3 review, re-measured after this
+   comment was first written): the reviewer re-ran the packer with the
+   corrected numbers and got the same four bins, because each CI runner is
+   itself a 4-way pool, so wall clock is max(longest row, total/4) and the
+   bin sums this packer minimises never bind at this table's scale.
+   Correcting the split buys documentation accuracy, not a faster `browser`
+   matrix - not worth invalidating the shard proof this table already has.
 
    `app/golden`'s four rows keep their own weight and continue to mean "every
    fourth state" (`tests/app/golden.js`'s own `--shard=n/4`); they used to be
@@ -118,7 +124,19 @@ let queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && excl
    exhaustive by construction - every suite lands in exactly one bin - the
    same promise tests/app/golden.js's own --shard=n/of makes for its states,
    generalised here from one suite's states to the whole pool. ci.yml's
-   `browser` matrix is four calls of this (issues/phase-8/plan.md, "B3"). */
+   `browser` matrix is four calls of this (issues/phase-8/plan.md, "B3").
+
+   Four separate `node` processes, one per matrix job, each sort and pack
+   this same array independently and have to agree on the result without
+   talking to each other - which they do only because `Array.prototype.sort`
+   is a stable sort and this table currently has two exact ties (the
+   `app/sweep` 1180 rows at 275/275, `dataint`/`derived` at 0.3/0.3): a
+   stable sort keeps tied rows in their original SUITES order on every
+   process, so "lightest bin first" breaks the tie identically everywhere. An
+   unstable sort could let one process assign a tied suite to a different bin
+   than another, and the four `--shard` calls would silently stop being
+   disjoint and exhaustive. Load-bearing and otherwise invisible - nothing
+   else in this file depends on sort stability. */
 const shardArg = args.find(a => a.startsWith('--shard='));
 if (shardArg) {
   const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
@@ -156,7 +174,11 @@ const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
    is exactly the log somebody needed to read. */
 const fileOf = s => keyOf(s).replace(/[^\w.-]+/g, '-');
 if (!queue.length) {
-  console.log('таких наборов нет: ' + only.join(', '));
+  if (shardArg) {
+    console.log('shard ' + shardArg + ' пуст: наборов меньше, чем корзин');
+  } else {
+    console.log('таких наборов нет: ' + only.join(', '));
+  }
   process.exit(1);
 }
 

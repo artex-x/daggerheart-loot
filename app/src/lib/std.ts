@@ -9,10 +9,12 @@
 
 import { kindOf } from './data.js';
 import type { Index } from './data.js';
+import type { Rarity } from './money.js';
 import type { Kind, Record_ } from './types.js';
 
-/** How many d12 each rarity is rolled with, from the Core book. */
-const DICE: Record<string, readonly number[]> = {
+/** How many d12 each rarity is rolled with, from the Core book. `very_rare`
+ *  has no d12 count of its own - the Core roll only spans four bands. */
+const DICE: Partial<Record<Rarity, readonly number[]>> = {
   common: [1, 2],
   uncommon: [2, 3],
   rare: [3, 4],
@@ -34,7 +36,7 @@ export interface DiceChoice {
  */
 export const NDICE: DiceChoice[] = [1, 2, 3, 4, 5].map((n) => ({
   n,
-  rarities: Object.keys(DICE).filter((r) => DICE[r]?.includes(n))
+  rarities: (Object.keys(DICE) as Rarity[]).filter((r) => DICE[r]?.includes(n))
 }));
 
 /** The two books this section rolls over, in the order the chips show them. */

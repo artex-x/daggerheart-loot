@@ -36,8 +36,7 @@
     const items = ids.map((id) => index.byId.get(id)).filter((it): it is Record_ => !!it);
     if (!items.length) return;
     const { text, html } = shareSelection(items, index, app.lang);
-    const ok = await app.env.clipboard.writeRich({ html, plain: text });
-    app.say(ok ? t.selCopied : t.copyFailed, { error: !ok });
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.selCopied);
   }
 </script>
 
