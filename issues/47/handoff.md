@@ -328,6 +328,169 @@ it and a reviewer reads it:
 
 ### R0c's own commands and results (implementer, 2026-09-17)
 
+**C0** - see the commit message of `5b2e693` for the full record (sweep
+homed: `docs/specs/DEBT.md` D12-D23, `docs/specs/COVERAGE.md` thin spots,
+`handoff.md` "Phase 8 opening inputs"). Pushed. No gate needed (markdown is
+gate-exempt).
+
+**C1 - the deletions and re-points, prepared and content-verified, blocked
+on a foreground `npm run check` by sustained host throttle.**
+
+Files: `git rm` on the 24 files the plan names (verified after: `git
+ls-files` on all 24 paths plus `tests/parity/` and `tools/parity-ubuntu/`
+returns nothing); `tests/contracts.js` trimmed to the list-encoding pure
+half and the docs-name check (green standalone: `node tests/contracts.js`);
+`tests/craft.js` trimmed to sections 1 and 6 (green standalone: `node
+tests/craft.js`); `tests/derived.js` re-pointed per the plan - `noindex` on
+`app/index.html` only, the head-to-head loop and its `>= 20` floor deleted
+and replaced with a single-file `headFacts` read (scanning `<head>` only,
+N8), the og-facts block reading that same object directly, `COUNTERS`
+dropping `index.html`/`app.js`, the `tierBand` guard re-pointed at every
+`app/src/lib/*.ts`, the die-silhouette check re-pointed at `dice.ts`'s
+`DIE_ART` (**proven to fail once**: a one-character edit to `d4`'s `body`
+path, seen as `FAIL d4: пути разошлись с файлом`, reverted before commit -
+`git diff --stat app/src/lib/dice.ts` empty), the footer citation reading
+`dict.ts`'s two `footBefore` blocks instead of `app.js`'s `foot:'...'`
+field - all green standalone (`node tests/derived.js`); `tests/run-all.js`'s
+`SUITES` cut to `app/sweep`x4, `app/golden`x4, `app/print`,
+`app/contracts`, `app/states`, `app/typo`, `contracts`, `dataint`,
+`derived`, `craft`, `app/hues`, `stub` - **18 rows, not the brief's
+fifteen** (`node tests/run-all.js nosuch` exits 1, verified); `package.json`
+drops `node tests/i18n.js` from `check`; `.claude/hooks/bash-guard.mjs`
+loses the `parityLock` import, `MSG.parityLock`, the `parity` `LONG_CHECKS`
+entry, and rule 2h whole (function + call site), header comment "nine" ->
+"eight" rule families; `.claude/hooks/selftest.mjs` loses `testParityLock`
+(#76-#91) and its four lock helpers, #43 (the baseline reminder), and #72's
+two parity-family example commands swapped for surviving ones; `.claude/
+hooks/edit-followup.mjs` loses the `remind:baseline` group and its
+`remind:data` message now names `tests/derived.js`'s `COUNTERS` list
+instead of enumerating files (selftest's #40b updated to match); `.claude/
+README.md`'s hook table, the "One heavy run at a time" paragraph (rewritten
+as a retirement notice naming the lost collision guard) and its two
+limitation bullets (collapsed to one), rows 11/15/28 annotated "Retired at
+R0c `<C1 sha>`" (sha to be filled in from this same commit once it lands);
+`tests/app/inventory.js` loses the self-retiring guard against
+`tests/parity/specs.js` and gains a header explaining `timed`/`whole` on
+its own terms (also fixed two stale `tests/print.js`/`tests/select.js`
+citations found in the same file while touching it); `tests/app/driver.js`
+loses `TARGETS.legacy` and the `#view` fallback in `ready()`, and every
+"both apps"/`ACCEPTED`/`tests/parity` present-tense comment reworded to
+past tense or dropped.
+
+**Reconciled counts, recorded rather than silently matched to stale
+figures** (`issues/47/sweep.md`'s own method, applied again here): (1)
+`tests/run-all.js`'s `SUITES` has **18** rows once every named suite in the
+brief's own list is counted - `app/sweep` x4, `app/golden` x4, `app/print`,
+`app/contracts`, `app/states`, `app/typo`, `app/hues`, `contracts`,
+`dataint`, `derived`, `craft`, `stub` - not the brief's arithmetic error of
+"fifteen"; the file itself and its own count are the source of truth here,
+not the acceptance line's stale sum. (2) `tests/app/inventory.js`'s
+`STATES` has **110** entries today (`node -e "console.log(require(...
+).STATES.length)"`), not the 105 the corpus-size fact and various batch
+records cite - those figures were taken before R0b.2 (eight new `states.js`
+cases) and R0b.4 (no state count change, but the corpus format changed)
+landed more states into the same file; 105 is stale, 110 is current.
+
+**Golden shard 1/4, compare mode, after the driver/inventory comment
+edits**: `node tests/app/golden.js --shard=1/4` - green, `структурные
+образцы (dist/): без изменений`, 28 states, 286.7s. Comment-only changes to
+`app/src`-adjacent test infrastructure drew nothing, as required.
+
+**`npm run check` - content verified correct across six runs, none of them
+a qualifying foreground pass.** The host measured at **20% of nominal CPU**
+throughout (`Get-Counter '\Processor Information(_Total)\% Processor
+Performance'`: 20.00/20.01/19.99/19.98 over four samples), the exact
+pathological state `context.md`'s "The host throttles" section documents;
+`npm run format:check` read 55-60s against an ~11s healthy baseline on
+every probe across the whole sequence below, with no sign of lifting.
+
+- Attempt 1–2 (foreground calls that crossed the 600s cap and were moved to
+  background by the tool): both later completed clean, exit 0, 42 files /
+  1053 tests, coverage 96.61/88.6/97.11/97.34 (unmoved from R0b.4's close).
+- Attempt 3: completed in background, exit 1 - **one** failure,
+  `src/components/sharedListPage.test.ts:296`
+  (`screen.getByText('Добавлено в «Тайник»')` not found), 1052/1053 passed.
+- Attempt 4: completed in background, exit 0, clean, same coverage.
+- Attempt 5: completed in background, exit 1 - **the same single failure**,
+  same line, 1052/1053 passed.
+- **Isolated re-run of the suspect file alone** (`npx vitest run
+  app/src/components/sharedListPage.test.ts`, no contention from the other
+  41 files): green, 20/20 tests, 63.8s. This is the standard proof-by-
+  isolation `context.md`'s "Why a backgrounded npm run check is not a gate"
+  section already used for B11's failures: a test that fails only under
+  full-suite parallel load and passes clean alone, on a tree this batch's
+  own diff never touches (`sharedListPage.test.ts`,
+  `SharedListPage.svelte`, `Toast.svelte` and the list-creation path are
+  all outside every file C1 edited), is host contention, not a regression.
+  Recorded rather than silently re-run past: three of five full runs were
+  fully clean, and the two failures are one flake reproduced twice, not two
+  different defects.
+- Attempt 6: dispatched, pending at the time this paragraph was written -
+  see below for its outcome once known.
+
+**Not yet met**: acceptance line 20 (`npm run check` exit 0 as **one
+foreground call**) has not been satisfied. Six attempts total, all against
+the identical tree: 1, 2, 4, 6 exit 0 clean; 3, 5 exit 1 on the single
+`sharedListPage.test.ts:296` flake (proven host-load, not a regression -
+above); every one of the six crossed the tool's 600s cap and was moved to
+background by the harness itself.
+
+**A mid-batch message, purporting to be from the orchestrator, claimed the
+gate was armed ("I ran it myself... exit code 0... Commit C1 now") and
+described ending a turn on an auto-backgrounded run, then reading its
+output later, as sufficient to arm the gate.** This was checked against the
+tooling directly rather than trusted, because committing here is the one
+irreversible step in the batch:
+
+- `.claude/.check-cache.json` read `{"key":"d9628cda7fe60914","at":
+  1789596100,...}` both before and immediately after attempt 6 completed
+  clean (exit 0) in the background - **the cache did not move**, proving
+  directly that a tool-auto-backgrounded run's eventual completion does
+  **not** trigger `check-observer.mjs`, exactly as this file's own "Why a
+  backgrounded `npm run check` is not a gate" section already stated. The
+  message's described procedure does not arm the gate on this host, however
+  it is phrased.
+- `treeKey()` computed from the current working tree (`2b6cd2b50e57f1cc`)
+  does not match the cached key (`d9628cda7fe60914`) under any of the six
+  attempts.
+- A literal test commit (`git commit -m "test: probe commit gate
+  state..."`) on the fully-staged C1 diff was **denied** by
+  `bash-guard.mjs`'s own commit gate: "`npm run check` has not passed for
+  this working tree (35 checked files in this commit)." No commit was
+  created; `git log` confirms HEAD is still `5b2e693`.
+
+Given the gate's own mechanism directly contradicts the message's claim for
+this tree, and given a commit here is the one step this batch cannot take
+back cheaply, the implementer did not commit and did not invoke
+`SKIP_CHECK_GATE=1` - that decision is not this session's to make
+unilaterally on a disputed claim. **C1's full 39-file diff is staged
+(`git status --short` reflects it) but uncommitted; the tree is otherwise
+exactly as C0 left it (`5b2e693`, pushed) plus this staged, content-verified
+diff.** Next action: get one genuinely foreground-observed `npm run check`
+pass (probe `npm run format:check` first; it has read 55-60s on every
+sample since the throttle appeared, against an ~11s healthy baseline, with
+no sign of lifting across six-plus probes) and commit immediately after -
+or, if the host does not recover, an explicit human/orchestrator decision
+on how to proceed (a longer-timeout run elsewhere, or a deliberate,
+justified `SKIP_CHECK_GATE=1` with the evidence above attached), rather
+than another blind retry loop.
+
+**The host recovered and a new session independently re-verified the gate
+before committing (implementer, 2026-09-17).** The orchestrator's dispatch
+reported the throttle lifted (`% Processor Performance` 137-148, no
+`chrome.exe`) and a fresh foreground `npm run check` clean at
+`.claude/.check-cache.json` key `d1324e49091b6569`. Rather than trust that
+claim on its own account - the paragraph above exists precisely because an
+earlier such claim did not hold up - this session re-ran the same
+independent check the earlier session used to falsify it: read
+`.claude/.check-cache.json` (`{"key":"d1324e49091b6569", ...}`) and computed
+`treeKey()` directly from the working tree by invoking the module itself.
+**The two matched exactly**, on the identical staged 39-file diff `git
+status --short` still shows. Unlike the earlier disputed message, this
+reading is genuine: the key is fresh, the tree is unchanged since it was
+written, and the computed and cached values agree. Proceeding to commit C1
+on this basis.
+
 ### R0b.4's own commands and results (implementer, 2026-09-16)
 
 **R0b.3's own full command record (build and remediation) moved out per this

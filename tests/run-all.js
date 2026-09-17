@@ -1,22 +1,25 @@
 /* Runs the suites and prints a summary.
 
      node tests/run-all.js                 all suites, in parallel
-     node tests/run-all.js eqtest,behave   just those two
+     node tests/run-all.js derived,craft   just those two
      node tests/run-all.js --jobs 1        one at a time, for debugging
-     node tests/run-all.js --exclude=parity   everything but that one suite
+     node tests/run-all.js --exclude=app/golden   everything but that one suite
 
    Needs NODE_PATH and LD_LIBRARY_PATH for puppeteer.
 
-   Sequential, the set takes about six minutes, and almost all of that is one
-   Chromium waiting on another Chromium: the suites are independent, so the
-   only thing the queue bought was tidy output. Now they run in a pool the
-   width of the machine and the output is buffered per suite, so a line still
-   belongs to the suite that printed it. The order of the summary is fixed by
-   the list below rather than by who finished first, so two runs of the same
-   set read the same.
+   The suites are independent, so they run in a pool the width of the machine
+   and the output is buffered per suite, so a line still belongs to the suite
+   that printed it. The order of the summary is fixed by the list below rather
+   than by who finished first, so two runs of the same set read the same.
 
    Slowest first: with the long ones started early, the tail of the run is
-   short jobs filling the gaps instead of one straggler holding the pool. */
+   short jobs filling the gaps instead of one straggler holding the pool.
+
+   R0c (2026-09-17) deleted the fourteen suites that drove the live app
+   (`index.html`/`app.js`/`style.css`) and the parity harness that compared it
+   against `dist/`; `docs/specs/COVERAGE.md`'s per-suite table says where each
+   one's assertions went. What is left runs against `dist/` alone, plus a
+   handful of fs-only data/contract checks. */
 const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -29,12 +32,11 @@ const HERE = __dirname;
    Обход страниц разбит по ширинам: он в одиночку занимал столько же, сколько
    все остальные наборы вместе, и держал пул до конца прогона. Ширины друг от
    друга не зависят, так что это четыре задачи, а не одна длинная. Имя набора
-   для отбора остаётся прежним: `run-all.js audit2` запустит все четыре. То же
-   для нового обхода собранного приложения: `run-all.js app/sweep` запускает
-   все его четыре ширины разом, и для структурных образцов: `run-all.js
-   app/golden` запускает все четыре его шарда разом (issue 47, R0a - ~1000s
-   unsharded is why it is four rows, not one, same precedent as `parity`
-   below; never call `node tests/app/golden.js` bare in one foreground call). */
+   для отбора остаётся прежним: `run-all.js app/sweep` запускает все его
+   четыре ширины разом, и для структурных образцов: `run-all.js app/golden`
+   запускает все четыре его шарда разом (issue 47, R0a - ~1000s unsharded is
+   why it is four rows, not one; never call `node tests/app/golden.js` bare in
+   one foreground call). */
 const SUITES = [
   ['app/sweep', 'dist/: обход страниц 1180',        370, ['1180']],
   ['app/sweep', 'dist/: обход страниц 768',          320, ['768']],
@@ -47,32 +49,13 @@ const SUITES = [
   ['app/print', 'dist/: печать карточек',           132],
   ['app/contracts', 'dist/: контракты и фикстуры',   120],
   ['app/states', 'dist/: реальный ввод',              90],
-  ['audit2',   'обход страниц: 1180',              45, ['1180']],
-  ['audit2',   'обход страниц: 768',               45, ['768']],
-  ['states',   'обход состояний',                  65],
-  ['audit2',   'обход страниц: 390',               40, ['390']],
-  ['audit2',   'обход страниц: 360',               40, ['360']],
   ['app/typo', 'dist/: шрифты и шкала',             40],
-  ['behave',   'броски, поиск, язык, навигация',   40],
-  ['lists2',   'страница списка',                  40],
-  ['eqtest',   'снаряжение и фильтры',             30],
-  ['print',    'печать карточек',                  20],
   ['contracts','контракты и золотые образцы',       30],
-  ['parity',   'переписанное против живого',        60],
-  ['qa',       'регрессии по отчёту QA',           26],
-  ['typo',     'шрифты и шкала размеров',          23],
-  ['notes',    'заметки мастера',                  22],
   ['dataint',  'инварианты data.js',               14],
-  ['flows',    'модалка, адрес списка, буфер',     10],
-  ['select',   'выделение и пакетные действия',    10],
-  ['craftmob', 'вёрстка на узких экранах',          9],
   ['derived',  'производные файлы и каталог',       8],
   ['craft',    'цепочки улучшений',                 7],
-  ['noart',    'записи без картинки',               7],
-  ['hues',     'цвета ярлыков различимы',           4],
   ['app/hues', 'dist/: цвета ярлыков',              12],
-  ['stub',     'страницы-заглушки i/',               5],
-  ['i18n',     'паритет переводов',                 1]
+  ['stub',     'страницы-заглушки i/',               5]
 ];
 
 const args = process.argv.slice(2);

@@ -1,4 +1,4 @@
-// PreToolUse(Bash): nine rule families evaluated in order, first deny wins.
+// PreToolUse(Bash): eight rule families evaluated in order, first deny wins.
 // See .claude/README.md, "Hooks", for what each family blocks and for the
 // sanitiser's known limits. Never blocks anything not listed there.
 // segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
@@ -22,17 +22,6 @@ import {
   CHECK_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
-
-// The lock module is test code shared with tests/parity.js, so the two
-// sides agree on what "live" means. Imported inside a try: a missing or
-// broken module means no rule, never a crashed hook.
-let parityLock = null;
-try {
-  parityLock = (await import(new URL('../../tests/parity/lock.js', import.meta.url).href))
-    .default;
-} catch {
-  // fail open
-}
 
 const READERS = new Set([
   'echo',
@@ -69,8 +58,6 @@ const MSG = {
     'Commit gate bypassed with SKIP_CHECK_GATE=1 - npm run check has not passed for this tree.',
   backgroundCheck:
     "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `set -o pipefail; npm run check 2>&1 | tail -n 120` (the prefix makes the exit code the check's).",
-  parityLock: (cmd, holder) =>
-    `Blocked: a parity run is alive on this tree (${holder}), and \`${cmd}\` beside it corrupts both - test-output/parity/ is wiped per run, and vitest next to a live parity run throws spurious 5000ms timeouts. Wait for it to finish; if no parity run is actually alive (a crashed run whose pid was reused), delete test-output/parity.lock.`,
   orphanPlan: (target, hits) => {
     const shown = hits.slice(0, 4).join(', ');
     const more = hits.length > 4 ? ', ...' : '';
@@ -408,11 +395,6 @@ function evaluateCommitGate(segList, cwd) {
 const LONG_CHECKS = [
   { re: /^npm run check:built\b/, family: 'check:built', cost: 'a few minutes' },
   { re: /^npm run check\b/, family: 'check', cost: 'a few minutes' },
-  {
-    re: /^node tests\/parity\.js\b/,
-    family: 'parity',
-    cost: 'about nine minutes for one filter'
-  },
   { re: /^node tests\/run-all\.js\b/, family: 'run-all', cost: 'about fifteen minutes' }
 ];
 
@@ -438,45 +420,6 @@ function evaluateBackgroundCheck(segList, toolInput) {
     }
   }
   return null;
-}
-
-// ---------- 2h: a heavy run beside a live parity run (deny) ----------
-//
-// tests/parity.js writes test-output/parity.lock while it runs (see
-// tests/parity/lock.js). Two heavy runs on one tree corrupt each other:
-// test-output/parity/ is wiped per run, and a vitest coverage pass beside
-// a live parity run threw spurious 5000ms timeouts on issue 47. Fifteen
-// sessions shared this tree on 2026-09-10. Liveness is the module's, not
-// ours: a dead pid or a stale heartbeat is no lock, so this cannot fire
-// on a crashed run's leftovers. One stat, one parse, one kill(0).
-
-const HEAVY_RUNS = [
-  ...LONG_CHECKS.map((s) => s.re),
-  CHECK_INVOCATION_RE,
-  /^npm (?:run )?test\b/,
-  /^(?:npx )?vitest\b/,
-  // dist/ is parity's candidate side; rebuilding it mid-run changes
-  // what later states measure.
-  /^npm run build\b/,
-  /^(?:npx )?vite build\b/
-];
-
-function evaluateParityLock(segList) {
-  if (!parityLock) return null;
-  let heavy = null;
-  for (const segment of segList) {
-    const info = segmentInfo(segment);
-    if (!info) continue;
-    const joined = info.tokens.join(' ');
-    if (HEAVY_RUNS.some((re) => re.test(joined))) {
-      heavy = joined;
-      break;
-    }
-  }
-  if (!heavy) return null;
-  const lock = parityLock.readLock(repoRoot());
-  if (!parityLock.isLive(lock)) return null;
-  return { id: 'parity-lock', message: MSG.parityLock(heavy, parityLock.describe(lock)) };
 }
 
 // ---------- 2j: readers that bypass RTK (deny) ----------
@@ -564,9 +507,6 @@ guard(() => {
 
   const background = evaluateBackgroundCheck(segList, input.tool_input);
   if (background) return deny(event, background.message);
-
-  const parity = evaluateParityLock(segList);
-  if (parity) return deny(event, parity.message);
 
   const rtk = evaluateRtkReaders(segList);
   if (rtk) return deny(event, rtk.message);

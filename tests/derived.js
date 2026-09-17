@@ -74,14 +74,12 @@ console.log('не индексируется');
    в паре — обход разрешён, чтобы noindex вообще прочитали, а закрытая роботсом
    страница может попасть в выдачу голой ссылкой, так и не прочитав тег. */
 const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
-/* Обе входные страницы: корневая — пока её отдаёт Pages, app/index.html — то,
-   из чего собирается dist/index.html. Проверяется исходник, а не сборка:
-   `npm run check` ничего не собирает, и тест, читающий вчерашний dist/, хуже,
-   чем отсутствие теста. */
-['index.html', 'app/index.html'].forEach(function (file) {
-  ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, file), 'utf8')),
-     'на ' + file + ' нет noindex');
-});
+/* Проверяется исходник, а не сборка: `npm run check` ничего не собирает, и
+   тест, читающий вчерашний dist/, хуже, чем отсутствие теста. Раньше здесь
+   стояли обе входные страницы - корневая и app/index.html, - пока рядом жило
+   старое приложение (R0c удалил его). */
+ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')),
+   'на app/index.html нет noindex');
 ok(NOINDEX.test(page(ALL[0])), 'генератор заглушек перестал ставить noindex');
 const rob = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
 ok(/^User-agent: \*\s*\nAllow: \//m.test(rob),
@@ -91,20 +89,21 @@ ok(/GPTBot|CCBot/.test(rob) && /Disallow: \//.test(rob),
 ok(!fs.existsSync(path.join(ROOT, 'sitemap.xml')),
    'карта сайта вернулась, а она нужна ровно для индексации');
 
-console.log('две входные страницы не разошлись');
-/* Пока старое приложение и переписанное лежат рядом, у них две входные
-   страницы — index.html и app/index.html, — и голова у них обязана совпадать:
-   карточка для мессенджеров, иконка, noindex и safe-area берутся из того файла,
-   который опубликован, а правят обычно один. Список исключений пуст намеренно:
-   расхождение, которое нужно, вписывается сюда с причиной. Проверка уходит в
-   Phase 7 вместе с корневым index.html. */
+console.log('голова app/index.html читается');
+/* Раньше здесь сверялись две входные страницы - корневая и app/index.html, -
+   пока старое приложение жило рядом. R0c удалил index.html вместе с ним, так
+   что сверять больше не с чем; осталась одна входная страница, и её голова
+   просто должна разбираться и нести всё, что нужно карточке для мессенджеров.
+   `headFacts` читает только `<head>`, а не весь документ - тело может
+   упомянуть `<meta`/`<title>` в примере кода без риска попасть в разбор. */
 const HEAD_META = ['description', 'robots', 'color-scheme', 'viewport'];
 function headFacts(file) {
   const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const head = (/<head[^>]*>([\s\S]*?)<\/head>/i.exec(html) || ['', ''])[1];
   const out = {};
-  const title = /<title>([\s\S]*?)<\/title>/i.exec(html);
+  const title = /<title>([\s\S]*?)<\/title>/i.exec(head);
   if (title) out['<title>'] = title[1];
-  (html.match(/<meta\s[^>]*>/gi) || []).forEach(function (tag) {
+  (head.match(/<meta\s[^>]*>/gi) || []).forEach(function (tag) {
     const attr = {};
     const re = /([\w:-]+)\s*=\s*"([^"]*)"/g;
     let m;
@@ -115,26 +114,14 @@ function headFacts(file) {
   });
   return out;
 }
-const HEADS = [['index.html', headFacts('index.html')],
-               ['app/index.html', headFacts('app/index.html')]];
-const keys = {};
-HEADS.forEach(([, facts]) => Object.keys(facts).forEach(k => { keys[k] = true; }));
-ok(Object.keys(keys).length >= 20,
-   'из головы прочиталось всего ' + Object.keys(keys).length + ' полей — сломался разбор');
-Object.keys(keys).sort().forEach(function (k) {
-  const [a, b] = HEADS.map(pair => pair[1][k]);
-  ok(a !== undefined, 'index.html: пропало ' + k);
-  ok(b !== undefined, 'app/index.html: нет ' + k + ' — карточка ссылки соберётся без него');
-  if (a !== undefined && b !== undefined) {
-    ok(a === b, k + ' разошлось: index.html «' + a + '», app/index.html «' + b + '»');
-  }
-});
+const shareFacts = headFacts('app/index.html');
+ok(Object.keys(shareFacts).length >= 20,
+   'из головы app/index.html прочиталось всего ' + Object.keys(shareFacts).length +
+   ' полей — сломался разбор');
 /* Иконка — тоже часть головы, но это <link>, а не <meta>. */
 const ICON = /<link\s+rel="icon"\s+href="([^"]*)"/i;
-const icons = HEADS.map(([file]) =>
-  (ICON.exec(fs.readFileSync(path.join(ROOT, file), 'utf8')) || [])[1]);
-ok(icons[0] && icons[1], 'пропала иконка вкладки на одной из входных страниц');
-ok(icons[0] === icons[1], 'иконка вкладки разошлась между входными страницами');
+const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')) || [])[1];
+ok(!!icon, 'пропала иконка вкладки на app/index.html');
 
 console.log('раскладка не гуляет между короткой и длинной страницей');
 /* tokens.css:93. Reserves the scrollbar gutter whether or not the page needs
@@ -147,12 +134,12 @@ ok(
   'html больше не резервирует scrollbar-gutter: stable'
 );
 
-console.log('og-факты — абсолютные значения, а не только совпадение между копиями');
-/* The check above only proves index.html and app/index.html agree with each
-   other - a generator change moving both the same wrong way would still
-   pass. This pins what they agree ON, so it cannot. */
+console.log('og-факты — абсолютные значения');
+/* Раньше этот блок пинал только то, в чём сходились index.html и
+   app/index.html - смена генератора, сдвинувшая обе страницы в одну и ту же
+   неверную сторону, всё равно прошла бы. Теперь сверяется одна страница
+   против абсолютных значений напрямую. */
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
-const shareFacts = HEADS[0][1];
 ok(shareFacts['og:image'] === SITE + 'og/_share.jpg',
    'og:image не общая картинка сайта, а что-то другое: ' + shareFacts['og:image']);
 ok(shareFacts['og:image:width'] === '1200' && shareFacts['og:image:height'] === '630',
@@ -339,11 +326,16 @@ ok(VOA.every(x => x.ende.split('\n').length === x.rud.split('\n').length),
    'число строк описания разошлось между языками');
 
 /* Ранг когда-то подставляли источником, а потом догадкой по характеристикам.
-   Теперь он взят из книги, и в чипе не должно остаться ни того, ни другого. */
-const app = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
-ok(app.indexOf('tierBand') < 0, 'догадка о ранге по характеристикам вернулась в app.js');
-ok(app.indexOf("out.push(e.tier ? t().tier + ' ' + e.tier : t().srcWond)") < 0,
-   'в чипе ранга снова подставляется источник');
+   Теперь он взят из книги, и в модулях приложения не должно остаться ни того,
+   ни другого - CLAUDE.md's "never infer equipment tier from stats". */
+console.log('ранг не выводится из характеристик');
+const libDir = path.join(ROOT, 'app', 'src', 'lib');
+fs.readdirSync(libDir).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))
+  .forEach(function (f) {
+    const text = fs.readFileSync(path.join(libDir, f), 'utf8');
+    ok(text.indexOf('tierBand') < 0,
+       'app/src/lib/' + f + ': догадка о ранге по характеристикам (tierBand) вернулась');
+  });
 
 /* «Универсальное» - это второй набор характеристик, спрятанный в прозе
    свойства. Он разобран в `eq.alt` один раз и дальше читается как данные:
@@ -438,9 +430,9 @@ const COUNTERS = [
   [/(\d{3,})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g,    [N.all, N.wondrous], 'entries']
 ];
-/* app/index.html попало сюда вместе с портом головы: числа теперь выписаны и
-   там. index.html и app.js уйдут отсюда в Phase 7, когда уйдут сами файлы. */
-['index.html', 'app/index.html', 'README.md', 'README.ru.md', 'app.js',
+/* index.html и app.js were the live app's own copies of these numbers and
+   left the list at R0c along with the files themselves. */
+['app/index.html', 'README.md', 'README.ru.md',
  'llms.txt', 'robots.txt', 'app/src/lib/dict.ts', 'app/src/lib/i18n.ts',
  'app/src/lib/search.ts', 'tools/bundle-budget.mjs']
   .forEach(function (file) {
@@ -458,15 +450,18 @@ const COUNTERS = [
 
 /* Кости на кнопках рисуются теми же путями, что печатаются на карточке. Читать
    файл на лету нельзя - `fetch` из `file://` запрещён, - поэтому пути выписаны
-   в app.js, и вот тут они сверяются с самими файлами. Иначе правка вектора в
+   в dice.ts, и вот тут они сверяются с самими файлами. Иначе правка вектора в
    `card/` тихо разъедется с экраном. */
 console.log('кости на кнопках');
+const diceTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dice.ts'), 'utf8');
 [4, 6, 8, 10, 12, 20].forEach(function (d) {
   const svg = fs.readFileSync(path.join(ROOT, 'card', 'die-d' + d + '-bw.svg'), 'utf8');
   const want = (svg.match(/\sd="([^"]+)"/g) || []).map(x => x.slice(4, -1));
   const box = /viewBox="([^"]+)"/.exec(svg)[1];
-  const got = new RegExp("d" + d + ": \\['([^']+)',\\s*'([^']+)',\\s*'([^']+)'\\]").exec(app);
-  ok(got, 'в app.js нет силуэта d' + d);
+  const got = new RegExp(
+    d + ":\\s*\\{\\s*viewBox:\\s*'([^']+)',\\s*body:\\s*'([^']+)',\\s*faces:\\s*\\n?\\s*'([^']+)'"
+  ).exec(diceTs);
+  ok(got, 'в dice.ts нет силуэта d' + d);
   if (!got) return;
   ok(got[1] === box, 'd' + d + ': рамка разошлась с файлом: ' + got[1] + ' и ' + box);
   ok(got[2] === want[0] && got[3] === want[1], 'd' + d + ': пути разошлись с файлом');
@@ -491,11 +486,14 @@ const CITE = 'Daggerheart System Reference Document 2.0, © Critical Role, LLC.'
   ok(text.indexOf(CITE) >= 0, file + ': нет дословной ссылки на источник');
   ok(text.indexOf('Reference Document 1.0') < 0, file + ': ссылка всё ещё на SRD 1.0');
 });
-/* В подвале - на обоих языках: он и есть то, чем делятся */
-const feet = app.match(/\n\s*foot:'([^']*)'/g) || [];
+/* В подвале - на обоих языках: он и есть то, чем делятся. Подвал теперь
+   собран из трёх частей словаря (footBefore/footLink/footAfter), а не одной
+   строки с разметкой - вся дословная цитата целиком лежит в footBefore. */
+const dictTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dict.ts'), 'utf8');
+const feet = dictTs.match(/footBefore:\s*\n?\s*'([^']*)'/g) || [];
 ok(feet.length === 2, 'подвалов не два, а ' + feet.length);
 feet.forEach(function (f, i) {
-  ok(f.replace(/<[^>]+>/g, '').indexOf(CITE) >= 0,
+  ok(f.indexOf(CITE) >= 0,
      'в подвале ' + (i ? 'по-английски' : 'по-русски') + ' нет ссылки на источник');
 });
 /* Старая оговорка перечисляла Hope & Fear среди того, что под лицензию не

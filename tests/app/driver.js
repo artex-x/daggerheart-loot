@@ -1,30 +1,29 @@
-/* One page, pointed at either app.
+/* One page, driving the built app.
  *
- * The whole harness rests on this: a spec never knows which app it is driving.
- * It opens a route, finds controls by the name a person would read, and returns
- * what it saw. tests/parity.js then runs the same spec against both and
- * compares. Nothing is hardcoded as "expected" - the live app is the
- * expectation, which is the only definition of "ported correctly" that does not
- * depend on somebody remembering.
+ * The whole harness rests on this: a spec opens a route, finds controls by
+ * the name a person would read, and returns what it saw - never a CSS
+ * selector, so a spec reads the same whether the markup underneath it is
+ * hand-written HTML or a Svelte component's output.
  *
- * The two targets are separate files, so they never clash:
- *   legacy -> index.html at the repository root, the pre-cutover fallback -
- *             not what Pages serves since B13's flip
- *   next   -> dist/index.html, the built rewrite, what Pages serves now
+ * Until R0c (2026-09-17) this drove either of two targets - the live app at
+ * the repository root, or the built rewrite at `dist/index.html` - and a
+ * side-by-side comparison harness ran every spec against the pair, with the
+ * live app read as the expectation. That harness and the live app it
+ * compared against were both deleted at R0c; `tests/app/*.js` is this
+ * driver's only remaining reader, and it always means `next`.
  */
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..', '..');
 
 const TARGETS = {
-  legacy: 'file://' + path.join(ROOT, 'index.html'),
   next: 'file://' + path.join(ROOT, 'dist', 'index.html')
 };
 
-/** Waits until the app has drawn something, whichever app it is. */
+/** Waits until the app has drawn something. */
 async function ready(page) {
   await page.waitForFunction(() => {
-    const root = document.querySelector('#view') || document.querySelector('#app');
+    const root = document.querySelector('#app');
     return !!root && root.children.length > 0;
   });
 
@@ -77,12 +76,12 @@ async function ready(page) {
  * Waits for whatever a press started to finish moving.
  *
  * A fixed pause is the wrong instrument here: the modal opens with a 0.22s
- * `pop` animation in both apps (style.css:591, RecordModal.svelte:159 - B9
- * deleted the rewrite's blanket reduced-motion kill, so this now runs under
- * reduced motion too, on both sides), and a screenshot taken on a timer
- * catches either app mid-flight, with the number moving with how busy the
- * machine is. Asking the browser which animations are running answers
- * exactly the question. The cap is for anything that loops forever.
+ * `pop` animation (`RecordModal.svelte:159`, ported from the live app's
+ * `style.css:591` - B9 deleted the rewrite's blanket reduced-motion kill, so
+ * this now runs under reduced motion too, matching live), and a screenshot
+ * taken on a timer catches the app mid-flight, with the number moving with
+ * how busy the machine is. Asking the browser which animations are running
+ * answers exactly the question. The cap is for anything that loops forever.
  */
 async function settle(page) {
   await page.evaluate(async () => {
@@ -99,8 +98,8 @@ async function settle(page) {
 /**
  * The accessible name of an element, the way a screen reader would say it.
  *
- * Deliberately not a CSS selector: the two apps share no class names and never
- * will, so anything a spec grips has to be something a person can see.
+ * Deliberately not a CSS selector: a class name is an implementation detail,
+ * so anything a spec grips has to be something a person can see.
  */
 const NAME_FN = `(el) => (
   el.getAttribute('aria-label') ||
@@ -117,7 +116,7 @@ function makeDriver(page, target) {
    * `el.click()` inside `page.evaluate` never returns while one is open - so
    * without this, no state could ever press a destructive control. Every
    * dialog raised on this page is accepted, and its message kept so a spec
-   * can compare it as data (`deletedList`, `tests/parity/specs.js`).
+   * can compare it as data.
    */
   let dialog = null;
   page.on('dialog', (dlg) => {
@@ -339,8 +338,8 @@ function makeDriver(page, target) {
     },
 
     /**
-     * Reordering a row by dragging it, the way a pointer does: both apps
-     * render `.lrow` in list order, so this grips row `from`'s own handle and
+     * Reordering a row by dragging it, the way a pointer does: the page
+     * renders `.lrow` in list order, so this grips row `from`'s own handle and
      * drops it above or below row `to`'s midpoint - a name-based lookup would
      * have to read a row's own text, which is the description, not the grip.
      * Chrome constructs `DataTransfer` and `DragEvent`, and puppeteer's Chrome
@@ -510,10 +509,11 @@ function makeDriver(page, target) {
             color: body.color,
             family: body.fontFamily.split(',')[0].replace(/["']/g, '')
           },
-          /* The page heading is the one element both apps certainly have and
+          /* The page heading is the one element every state certainly has and
              certainly means the same thing. "The first paragraph" does not:
-             in one app it is a muted caption and in the other the description,
-             and comparing them reports a difference that is not one. */
+             one route's first paragraph is a muted caption and another's is
+             the record description, and comparing them reports a difference
+             that is not one. */
           heading: type(document.querySelector('h1, .page-h'))
         };
       });
@@ -523,29 +523,25 @@ function makeDriver(page, target) {
      * Computed type, and the measured run of text, for named controls.
      *
      * The one place in this driver that takes a CSS selector. Everywhere else
-     * grips a control by the name a person reads, because a spec must not know
-     * which app it is driving; this method measures one specific *ported*
-     * control, and the class names are themselves ported - every component in
-     * `app/src/components/` writes its CSS "off `.x` in style.css", and
-     * Svelte's scoping keeps the original class in the `class` attribute
-     * alongside its hash. Selectors stay structural or contract-level wherever
-     * one exists (`input[type=search]`, `[data-row]`) and use a ported class
-     * only where none does.
+     * grips a control by the name a person reads; this method instead measures
+     * one specific *ported* control, and the class names are themselves
+     * ported - every component in `app/src/components/` writes its CSS "off
+     * `.x` in style.css" (the live stylesheet, deleted at R0c but still
+     * readable from history), and Svelte's scoping keeps the original class in
+     * the `class` attribute alongside its hash. Selectors stay structural or
+     * contract-level wherever one exists (`input[type=search]`, `[data-row]`)
+     * and use a ported class only where none does.
      *
      * `probes` is a plain `{ name: selector }` map. A probe that resolves to
-     * nothing returns `null` rather than throwing: the live app certainly has
-     * these controls, so a class the rewrite renamed reports `null` against
-     * real numbers and fails loudly. The one silent case is a control missing
-     * from *both* apps, which means style.css changed - and style.css is
-     * frozen.
+     * nothing returns `null` rather than throwing: a renamed class reports
+     * `null` against real numbers and fails loudly, rather than silently
+     * skipping the check.
      *
      * This exists because a whole-page pixel percentage cannot see a
      * control-sized defect: a wrong font-size on one line of a 1100x900 screen
-     * scores about 0.09%, under JITTER. Two apps drawing the same string in the
-     * same face at the same size in the same browser produce the same advance,
-     * so rounding is one decimal and no more - a difference smaller than that
-     * with no visible cause belongs in ACCEPTED with the measured reason, not
-     * in a wider tolerance.
+     * scores well under one percent of the page. The same string in the same
+     * face at the same size in the same browser produces the same advance, so
+     * rounding is one decimal and no more.
      */
     async typeAt(probes) {
       /* Fonts are the one thing neither ready() nor settle() waits on for a

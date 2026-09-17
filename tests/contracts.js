@@ -9,11 +9,15 @@
    This is also where the thing nobody was checking lives: the filter group
    names. A group a table does not offer is ignored silently and the table stays
    whole, which is how `f_rg-melee` from llms.txt spent a year looking like a
-   working filter while selecting nothing. */
+   working filter while selecting nothing.
+
+   R0c (2026-09-17) trimmed this file to its fs-only half - the list-encoding
+   check and the docs-name check. The browser half (the link against a real
+   app, the address grammar, the stat line, the filter-group probe) moved to
+   `tests/app/contracts.js`, which reads the rewrite instead of the live app;
+   `docs/specs/COVERAGE.md`'s `contracts` row says where each assertion went. */
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer');
-const { ROOT, ready } = require('./lib.js');
 
 const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
 let fail = 0;
@@ -65,180 +69,13 @@ const N_REC = '\x1e', N_SEP = '\x1f';
     ok(!hidden.length, fx.id + ': a GM note survived into the player link');
   });
 
-  /* ---------- list fixtures: against the app ---------- */
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] });
-  const fresh = async (seed) => {
-    const ctx = await browser.createBrowserContext();
-    const page = await ctx.newPage();
-    page.on('pageerror', e => { fail++; console.log('  FAIL the page threw: ' + e.message); });
-    await page.setViewport({ width: 1280, height: 900 });
-    if (seed) await page.evaluateOnNewDocument(seed);
-    return { ctx, page };
-  };
-  const open = async (page, hash) => {
-    await page.goto(ROOT + hash, { waitUntil: 'domcontentloaded' });
-    await ready(page);
-    await new Promise(r => setTimeout(r, 160));
-  };
-  const text = page => page.evaluate(() => document.body.innerText);
-
-  console.log('the link the app writes');
-  for (const fx of lists) {
-    const { ctx, page } = await fresh(function (l) {
-      localStorage.setItem('dhloot.lists.v2', JSON.stringify([l]));
-    });
-    await page.evaluateOnNewDocument(function (l) {
-      localStorage.setItem('dhloot.lists.v2', JSON.stringify([l]));
-    }, fx.list);
-    await open(page, '#/lists/' + fx.list.id);
-    const inBar = (await page.evaluate(() => location.hash)).replace('#/l/', '');
-    ok(inBar === fx.player.payload,
-       fx.id + ': the address bar does not hold the link from the fixture');
-    await ctx.close();
-  }
-
-  console.log('the link the app reads');
-  for (const fx of lists) {
-    const notes = [fx.list.note, fx.list.hnote].concat(
-      Object.keys(fx.list.meta || {}).map(id => fx.list.meta[id].note),
-      Object.keys(fx.list.meta || {}).map(id => fx.list.meta[id].hnote)).filter(Boolean);
-    const forPlayers = [fx.list.note].concat(
-      Object.keys(fx.list.meta || {}).map(id => fx.list.meta[id].note)).filter(Boolean);
-    const gmOnly = notes.filter(n => forPlayers.indexOf(n) < 0);
-
-    const a = await fresh();
-    await open(a.page, '#/l/' + fx.player.payload);
-    const seenPlayer = await text(a.page);
-    ok(seenPlayer.indexOf(fx.list.name) >= 0, fx.id + ': the player link did not open');
-    forPlayers.forEach(n => ok(seenPlayer.indexOf(n) >= 0,
-      fx.id + ': a player note is missing from the player link'));
-    gmOnly.forEach(n => ok(seenPlayer.indexOf(n) < 0,
-      fx.id + ': a GM note is visible through the player link'));
-    await a.ctx.close();
-
-    const b = await fresh();
-    await open(b.page, '#/l/' + fx.gm.payload);
-    const seenGm = await text(b.page);
-    notes.forEach(n => ok(seenGm.indexOf(n) >= 0,
-      fx.id + ': a note is missing from the GM link'));
-    await b.ctx.close();
-  }
-
-  /* A truncated link must not open as a shorter list - that is what the
-     checksum is for. Cut the items line, not the note tail, or there is nothing
-     to cut. */
-  console.log('a truncated link');
-  const big = lists.filter(f => f.list.ids.length > 1)[0];
-  const cutRaw = big.gm.raw.slice(0, big.gm.raw.lastIndexOf(','));
-  const c = await fresh();
-  await open(c.page, '#/l/' + b64url(cutRaw));
-  const seenCut = await text(c.page);
-  /* Matching the app's own message, which is why this pattern is bilingual */
-  ok(/повреждена|damaged/i.test(seenCut),
-     'a truncated link opened as a list instead of a broken-link page');
-  await c.ctx.close();
-
-  /* ---------- addresses ---------- */
-  console.log('the address grammar');
-  const routes = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
-  ok(routes.length >= 20, 'fewer than twenty route fixtures: ' + routes.length);
-  for (const fx of routes) {
-    const { ctx, page } = await fresh();
-    await open(page, fx.hash);
-    const seen = await page.evaluate(() => {
-      const on = document.querySelector('#tabs a.on');
-      const srcBtns = [].slice.call(document.querySelectorAll('[data-act="src"]'));
-      return {
-        hash: location.hash,
-        tab: on ? on.getAttribute('href') : null,
-        rows: document.querySelectorAll('.rows .row[data-row]').length,
-        printCards: document.querySelectorAll('.pcard:not(.blank)').length,
-        picked: [].slice.call(document.querySelectorAll('.fpill')).map(e => e.dataset.val),
-        source: srcBtns.length
-          ? srcBtns.map(e => e.dataset.val + (e.classList.contains('on') ? ':on' : ':off'))
-          : undefined
-      };
-    });
-    const want = fx.resolves;
-    ok(seen.hash === want.hash, fx.hash + ': became ' + seen.hash + ', not ' + want.hash);
-    ok(seen.tab === want.tab, fx.hash + ': highlighted ' + seen.tab + ', not ' + want.tab);
-    ok(seen.rows === want.rows,
-       fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows);
-    ok(seen.printCards === want.printCards,
-       fx.hash + ': ' + seen.printCards + ' cards, the fixture says ' + want.printCards);
-    ok(JSON.stringify(seen.picked) === JSON.stringify(want.picked),
-       fx.hash + ': picked ' + JSON.stringify(seen.picked) +
-       ', the fixture says ' + JSON.stringify(want.picked));
-    ok(JSON.stringify(seen.source) === JSON.stringify(want.source),
-       fx.hash + ': sources ' + JSON.stringify(seen.source) +
-       ', the fixture says ' + JSON.stringify(want.source));
-    await ctx.close();
-  }
-
-  /* ---------- the stat line ---------- */
-  /* The same fixture app/src/lib/i18n.test.ts replays through the ported
-     module. Holding both to one file is what makes it evidence: if only the new
-     side checked it, the fixture would just be a record of what the new code
-     does. */
-  console.log('the stat line');
-  const lines = JSON.parse(
-    fs.readFileSync(path.join(FIX, 'statlines', 'equipment.json'), 'utf8'));
-  const ids = Object.keys(lines);
-  ok(ids.length >= 10, 'fewer than ten stat-line fixtures: ' + ids.length);
-  for (const lang of ['ru', 'en']) {
-    const { ctx, page } = await fresh(function (l) {
-      localStorage.setItem('dhloot.lang.v1', l);
-    });
-    await page.evaluateOnNewDocument(function (l) {
-      localStorage.setItem('dhloot.lang.v1', l);
-    }, lang);
-    for (const id of ids) {
-      await open(page, '#/i/' + id);
-      const parts = await page.evaluate(() => {
-        const box = document.querySelector('.eqstats');
-        return box ? [].slice.call(box.querySelectorAll('span')).map(s => s.textContent) : null;
-      });
-      ok(JSON.stringify(parts) === JSON.stringify(lines[id][lang]),
-         id + '/' + lang + ': stat line is ' + JSON.stringify(parts) +
-         ', the fixture says ' + JSON.stringify(lines[id][lang]));
-    }
-    await ctx.close();
-  }
-
   /* ---------- filter group names ---------- */
-  /* Every group named in llms.txt and in CONTRACTS.md has to select something.
-     An unknown group is not an error - it simply does nothing, and a typo in
-     the documentation looks like a working link. */
+  /* Every group named in llms.txt and in CONTRACTS.md has to select something
+     on the rewrite; `tests/app/contracts.js` runs the probe itself. What
+     stays here is fs-only: the documentation has to name the same groups. A
+     mistake here is invisible on screen: the link opens, the table is whole,
+     there is no filter. */
   console.log('filter group names');
-  const PROBE = [
-    ['eq_weapon', 'tier-2'], ['eq_weapon', 'src-core'], ['eq_weapon', 'cls-mag'],
-    ['eq_weapon', 'trait-strength'], ['eq_weapon', 'range-melee'],
-    ['eq_weapon', 'burden-2'], ['eq_weapon', 'line-uniq'],
-    ['eq_armor', 'tier-1'], ['voa', 'tier-A'], ['other_frames', 'frame-colossus'],
-    ['community', 'comm-Seaborne'],
-    /* `kind` exists only where there really is more than one kind: on core_item
-       the kind is the table, and the group is not in the panel at all */
-    ['wondrous', 'kind-consumable']
-  ];
-  const rowsAt = async (hash) => {
-    const { ctx, page } = await fresh();
-    await open(page, hash);
-    const n = await page.evaluate(() => document.querySelectorAll('.rows .row[data-row]').length);
-    await ctx.close();
-    return n;
-  };
-  const whole = {};
-  for (const [tid] of PROBE) if (!(tid in whole)) whole[tid] = await rowsAt('#/tables/' + tid);
-  for (const [tid, seg] of PROBE) {
-    const n = await rowsAt('#/tables/' + tid + '/f_' + seg);
-    ok(n > 0 && n < whole[tid],
-       tid + '/f_' + seg + ': the group selects nothing (' + n + ' of ' + whole[tid] +
-       ') - most likely its name is not spelled the way the code expects');
-  }
-
-  /* The documentation has to name the same groups. A mistake here is invisible
-     on screen: the link opens, the table is whole, there is no filter. */
   const docs = fs.readFileSync(path.join(__dirname, '..', 'llms.txt'), 'utf8') +
                fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8') +
                fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
@@ -253,7 +90,6 @@ const N_REC = '\x1e', N_SEP = '\x1f';
     ok(machine.indexOf(g) < 0, 'llms.txt still carries the non-existent group ' + g);
   });
 
-  await browser.close();
   console.log(fail ? '\n' + fail + ' FAILED' : '\ncontracts match the fixtures');
   process.exit(fail ? 1 : 0);
 })();

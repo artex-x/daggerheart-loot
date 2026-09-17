@@ -110,9 +110,6 @@ function setupScratch() {
   writeFile('i/cc1.html', '<html></html>\n');
   writeFile('dist/index.html', '<html></html>\n');
   writeFile('package-lock.json', '{}\n');
-  writeFile('index.html', '<html></html>\n');
-  writeFile('app.js', 'console.log(1);\n');
-  writeFile('style.css', 'body{}\n');
   writeFile('docs/specs/CONTRACTS.md', '# contracts\n');
   writeFile('docs/fixtures/lists/x.json', '{}\n');
   writeFile('tests/contracts.js', '// contracts test\n');
@@ -233,24 +230,6 @@ function bashPayload(command, extra = {}) {
     agent_type: 'implementer'
   };
 }
-
-const scratchLockPath = () => path.join(scratchRoot, 'test-output', 'parity.lock');
-function writeLock(contents) {
-  fs.mkdirSync(path.dirname(scratchLockPath()), { recursive: true });
-  fs.writeFileSync(
-    scratchLockPath(),
-    typeof contents === 'string' ? contents : JSON.stringify(contents)
-  );
-}
-function removeLock() {
-  fs.rmSync(scratchLockPath(), { force: true });
-}
-/** A pid that has certainly exited: a child that ran and returned. The
- * reuse window between its exit and the assertion is milliseconds. */
-function deadPid() {
-  return spawnSync(process.execPath, ['-e', '0']).pid;
-}
-const lockDeny = (result) => denyReason(result).includes('parity run is alive');
 
 function editPayload(filePath, extra = {}) {
   return {
@@ -577,8 +556,8 @@ function testBackgroundCheck() {
   for (const command of [
     'npm run check:built',
     'npm run check:fast',
-    'node tests/parity.js tables',
-    'node tests/run-all.js parity',
+    'node tests/run-all.js app/states',
+    'node tests/run-all.js contracts',
     'npx vitest run --coverage'
   ]) {
     const result = runHook(
@@ -682,221 +661,6 @@ function testRtkReaders() {
   }
 }
 
-// ---------- bash-guard.mjs: rule 2h, live parity lock (#76-#91) ----------
-
-async function testParityLock() {
-  const session = 's-lock';
-  const liveLock = () => ({
-    pid: process.pid,
-    startedAt: Date.now(),
-    at: Date.now(),
-    argv: ['modal 375']
-  });
-
-  try {
-    writeLock(liveLock());
-
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('npm run check', { session_id: session })
-      );
-      check('#76 lock: live lock denies npm run check', lockDeny(result), denyReason(result));
-      check('#76 lock: reason includes pid', denyReason(result).includes(String(process.pid)));
-      check('#76 lock: reason includes argv', denyReason(result).includes('modal 375'));
-      check(
-        '#76 lock: reason includes parity.lock',
-        denyReason(result).includes('parity.lock')
-      );
-    }
-
-    for (const command of [
-      'node tests/parity.js modal',
-      'node tests/run-all.js parity',
-      'npm test',
-      'npm run test',
-      'npx vitest run --coverage',
-      'vitest run',
-      'npm run check:built',
-      'npm run check:fast',
-      'npm run build',
-      'cd E:/dev/daggerheart-loot && npm run check 2>&1 | tail -n 120'
-    ]) {
-      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: session }));
-      check(
-        `#77 lock: live lock denies heavy family "${command}"`,
-        lockDeny(result),
-        denyReason(result)
-      );
-    }
-
-    for (const command of [
-      'git status',
-      'npm run lint',
-      'node tests/derived.js',
-      'echo npm test',
-      'cat test-output/parity.lock',
-      'grep -r vitest app/',
-      'npm run dev'
-    ]) {
-      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: session }));
-      check(
-        `#78 lock: live lock leaves "${command}" alone`,
-        !lockDeny(result),
-        denyReason(result)
-      );
-    }
-
-    writeLock({ pid: deadPid(), startedAt: Date.now(), at: Date.now(), argv: ['x'] });
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('npm run check', { session_id: session })
-      );
-      check('#79 lock: dead pid is ignored', !lockDeny(result), denyReason(result));
-    }
-
-    writeLock({
-      pid: process.pid,
-      startedAt: Date.now(),
-      at: Date.now() - 16 * 60 * 1000,
-      argv: ['x']
-    });
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('npm run check', { session_id: session })
-      );
-      check('#80 lock: stale heartbeat is ignored', !lockDeny(result), denyReason(result));
-    }
-
-    writeLock('not json');
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('node tests/parity.js x', { session_id: session })
-      );
-      check('#81 lock: malformed lock is ignored', !lockDeny(result), denyReason(result));
-    }
-
-    for (const contents of [{}, { pid: '12', at: Date.now() }, { pid: 0, at: Date.now() }]) {
-      writeLock(contents);
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('npm test', { session_id: session })
-      );
-      check(
-        `#82 lock: pid-less lock ${JSON.stringify(contents)} is ignored`,
-        !lockDeny(result),
-        denyReason(result)
-      );
-    }
-
-    removeLock();
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('npm test', { session_id: session })
-      );
-      check('#83 lock: no lock file', !lockDeny(result), denyReason(result));
-    }
-
-    writeLock(liveLock());
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('node tests/parity.js x', { session_id: 's-lock-wins' })
-      );
-      check('#84 lock: deny wins over the reminder, isDeny', isDeny(result));
-      check('#84 lock: deny wins over the reminder, no systemMessage', !systemMessage(result));
-    }
-
-    {
-      const result = runHook(
-        'bash-guard.mjs',
-        bashPayload('npm run check', { run_in_background: true, session_id: 's-lock-bg' })
-      );
-      check('#85 lock: backgrounded check under a live lock is still denied', isDeny(result));
-    }
-  } finally {
-    removeLock();
-  }
-
-  // Lock module, imported directly (#86-#91).
-  const lockMod = (await import(new URL('../../tests/parity/lock.js', import.meta.url).href))
-    .default;
-  removeLock();
-  try {
-    {
-      const result = lockMod.acquire(scratchRoot, ['modal']);
-      check('#86 lock module: acquire on a clean tree: ok', result.ok === true);
-      const parsed = lockMod.readLock(scratchRoot);
-      check('#86 lock module: file exists and parses', Boolean(parsed));
-      check('#86 lock module: pid matches', parsed && parsed.pid === process.pid);
-      check('#86 lock module: startedAt === at', parsed && parsed.startedAt === parsed.at);
-      check(
-        '#86 lock module: argv round-trips',
-        parsed && Array.isArray(parsed.argv) && parsed.argv[0] === 'modal'
-      );
-    }
-
-    {
-      writeLock({ pid: process.pid, startedAt: 1, at: Date.now(), argv: ['held'] });
-      const before = fs.readFileSync(scratchLockPath(), 'utf8');
-      const result = lockMod.acquire(scratchRoot, ['other']);
-      check('#87 lock module: acquire over a live lock refuses', result.ok === false);
-      check(
-        '#87 lock module: held pid matches the holder',
-        result.held && result.held.pid === process.pid
-      );
-      const after = fs.readFileSync(scratchLockPath(), 'utf8');
-      check('#87 lock module: file unchanged', before === after);
-    }
-
-    {
-      writeLock({ pid: deadPid(), startedAt: 1, at: Date.now(), argv: ['dead'] });
-      const result = lockMod.acquire(scratchRoot, ['fresh']);
-      check('#88 lock module: acquire over a dead-pid lock overwrites: ok', result.ok === true);
-      const parsed = lockMod.readLock(scratchRoot);
-      check('#88 lock module: file now carries our pid', parsed && parsed.pid === process.pid);
-    }
-
-    {
-      removeLock();
-      lockMod.acquire(scratchRoot, ['x'], 1000);
-      lockMod.touch(scratchRoot, 5000);
-      const parsed = lockMod.readLock(scratchRoot);
-      check('#89 lock module: touch advances at', parsed && parsed.at === 5000);
-      check('#89 lock module: touch keeps startedAt', parsed && parsed.startedAt === 1000);
-    }
-
-    {
-      removeLock();
-      lockMod.acquire(scratchRoot, ['x']);
-      lockMod.release(scratchRoot);
-      check('#90 lock module: release removes our own lock', !fs.existsSync(scratchLockPath()));
-
-      writeLock({ pid: deadPid(), startedAt: 1, at: Date.now(), argv: ['dead'] });
-      lockMod.release(scratchRoot);
-      check(
-        '#90 lock module: release leaves a foreign lock in place',
-        fs.existsSync(scratchLockPath())
-      );
-    }
-
-    {
-      removeLock();
-      fs.rmSync(path.join(scratchRoot, 'test-output'), { recursive: true, force: true });
-      const parsed = lockMod.readLock(scratchRoot);
-      check('#91 lock module: readLock with no test-output/: returns null', parsed === null);
-      const result = lockMod.acquire(scratchRoot, ['x']);
-      check('#91 lock module: acquire then succeeds', result.ok === true);
-    }
-  } finally {
-    removeLock();
-  }
-}
-
 // ---------- edit-guard.mjs (#31-39, #35a) ----------
 
 function testEditGuard() {
@@ -988,14 +752,13 @@ function testEditFollowup() {
       systemMessage(result).includes('node tools/build.js'),
       systemMessage(result)
     );
-    // #40b - the reminder's own content is checked, not only that it fires:
-    // CLAUDE.md's "Data and published artefacts" names seven files
-    // (index.html, app/index.html, both READMEs, app.js, llms.txt,
-    // robots.txt); the message used to list six, missing app/index.html
-    // (B14 nit N1), which nothing here would have caught before this case.
+    // #40b - the reminder's own content is checked, not only that it fires.
+    // R0c (2026-09-17) stopped enumerating files by name here (the list kept
+    // drifting from tests/derived.js's own COUNTERS, which is the file that
+    // actually enforces it) and points at that list instead.
     check(
-      '#40b data.js reminder names all seven files, app/index.html included',
-      systemMessage(result).includes('app/index.html'),
+      "#40b data.js reminder names tests/derived.js's COUNTERS list",
+      systemMessage(result).includes('COUNTERS'),
       systemMessage(result)
     );
   }
@@ -1029,20 +792,6 @@ function testEditFollowup() {
     check(
       '#42 contract reminder',
       systemMessage(result).includes('docs/fixtures/'),
-      systemMessage(result)
-    );
-  }
-  {
-    const result = runHook(
-      'edit-followup.mjs',
-      editPayload(path.join(scratchRoot, 'index.html'), {
-        session_id: session,
-        event: 'PostToolUse'
-      })
-    );
-    check(
-      '#43 baseline reminder',
-      systemMessage(result).includes('parity baseline'),
       systemMessage(result)
     );
   }
@@ -1941,7 +1690,6 @@ async function main() {
     testLongCheck();
     testBackgroundCheck();
     testRtkReaders();
-    await testParityLock();
     testEditGuard();
     testEditFollowup();
     await testCheckObserver();

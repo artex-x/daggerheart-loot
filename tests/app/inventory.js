@@ -1,21 +1,26 @@
-/* The durable copy of "everything a person can reach" - carried independently
- * of tests/parity/specs.js so it survives R0c's deletion of that file (issue
- * 47, "R0a planned: the evidence, the sweep, and the structural goldens").
+/* "Everything a person can reach" - the 105 states tests/app/golden.js
+ * captures a structural snapshot of on both languages. Originated (issue 47,
+ * "R0a planned: the evidence, the sweep, and the structural goldens") as an
+ * independent copy of tests/parity/specs.js's STATES array plus the
+ * module-level constants it read: the print routes, PACKED, the button-name
+ * dictionary NAME (used inside several `enter` closures), the fixture
+ * requires, and the storage seeds. R0c deleted specs.js and the parity
+ * harness around it; this file is now the only copy.
  *
- * STATES below is a verbatim copy of specs.js's STATES array, together with
- * exactly the module-level constants it reads: the print routes, PACKED, the
- * button-name dictionary NAME (used inside several `enter` closures), the
- * fixture requires, and the storage seeds. Not SPECS, not ACCEPTED, not
- * VISUAL_DEBT, not EQUIPMENT_ENTRY - those retire with the harness in R0c.
  * tests/app/golden.js is the only reader; tests/app/lib.js's `fresh()` and
  * `makeDriver` do the rest.
  *
- * While tests/parity/specs.js still exists, the guard at the bottom keeps
- * this copy honest against it, by id and route - it retires itself once that
- * file is gone.
+ * A state marked `timed: true` raises a toast that lives 1600-7000ms.
+ * golden.js arrives at it fresh per language instead of reusing one arrival
+ * for both (`captureState`): a 50-120ms snapshot ahead of the EN press would
+ * otherwise eat into the toast's own window on a state that needs one more
+ * press to reach English, and it polls the toast up before snapshotting
+ * (`waitForToast`) rather than guessing a fixed pause. `whole: true` is
+ * carried over from this file's parity-era shape (a full-page screenshot,
+ * as opposed to the viewport alone) but golden.js's accessibility-tree
+ * capture reads the same either way, so it currently marks nothing golden.js
+ * itself branches on.
  */
-const fs = require('fs');
-const path = require('path');
 
 /** Both notes on the list and both on one entry - the shared page's own
  *  noted state, and the payload `PACKED` below decompresses to. */
@@ -28,8 +33,8 @@ const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
 const LOOT = require('../../data.json');
 
 /* The print routes, built once and shared between the states below and the
- * specs that key off their ids by name - `tests/print.js`'s own long-text
- * set for LONG. */
+ * specs that key off their ids by name - `tests/app/print.js`'s own
+ * long-text set for LONG. */
 const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
 const LONG =
   '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
@@ -169,8 +174,7 @@ const LANGS = ['ru', 'en'];
 
 /* Storage seeds for the list states below. A state that needs a list to
    exist cannot be entered - every state opens a fresh page whose `prepare()`
-   clears storage - so it is seeded instead, the way tests/select.js and
-   tests/lists2.js already do on the live app. */
+   clears storage - so it is seeded instead. */
 const LISTS = [
   { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
   { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
@@ -276,7 +280,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Открывать этот раздел при запуске');
     },
-    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    /* a 1600ms toast; arrived at afresh per width - see this file's header */
     timed: true
   },
 
@@ -307,7 +311,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Скопировать название');
     },
-    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    /* a 1600ms toast; arrived at afresh per width - see this file's header */
     timed: true
   },
 
@@ -583,7 +587,7 @@ const STATES = [
       await d.click('Выбрано');
       await d.click('Скопировать');
     },
-    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    /* a 1600ms toast; arrived at afresh per width - see this file's header */
     timed: true
   },
   {
@@ -766,7 +770,7 @@ const STATES = [
       await d.type('Например: клад дракона', 'Тайник');
       await d.click('Создать');
     },
-    /* a 1600ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    /* a 1600ms toast; arrived at afresh per width - see this file's header */
     timed: true
   },
 
@@ -821,7 +825,7 @@ const STATES = [
     enter: async (d) => {
       await d.click(NAME.ru.removeItem);
     },
-    /* a 7000ms toast; arrived at afresh per width - docs/parity.md, 'Timed states' */
+    /* a 7000ms toast; arrived at afresh per width - this file's header */
     timed: true
   },
   {
@@ -872,7 +876,7 @@ const STATES = [
       await d.click(NAME.ru.prices);
       await d.click(NAME.ru.applyPrices);
     },
-    /* a 7000ms toast (it carries an undo); arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    /* a 7000ms toast (it carries an undo); arrived at afresh per width - see this file's header */
     timed: true
   },
   {
@@ -884,7 +888,7 @@ const STATES = [
       await d.click(NAME.ru.pickRow);
       await d.click(NAME.ru.delOne);
     },
-    /* a 7000ms toast; arrived at afresh per width - see docs/parity.md, 'Timed states' */
+    /* a 7000ms toast; arrived at afresh per width - see this file's header */
     timed: true
   },
   {
@@ -1052,27 +1056,5 @@ const STATES = [
     why: 'nothing to print: the heading, the note and the way to the lists'
   }
 ];
-
-/* Self-retiring guard: while tests/parity/specs.js still exists, its own
- * STATES must name exactly the same (id, route) pairs as this copy - a copy
- * that has drifted is worse than no copy. Ids and routes only: `enter`
- * closures are functions and cannot be compared; a wrong `enter` produces a
- * wrong golden, caught by golden.js's own determinism proof instead. */
-const SPECS_PATH = path.join(__dirname, '..', 'parity', 'specs.js');
-if (fs.existsSync(SPECS_PATH)) {
-  const theirs = require(SPECS_PATH).STATES.map((s) => s.id + ' :: ' + s.route);
-  const mine = STATES.map((s) => s.id + ' :: ' + s.route);
-  const theirSet = new Set(theirs);
-  const mineSet = new Set(mine);
-  const missing = theirs.filter((x) => !mineSet.has(x));
-  const extra = mine.filter((x) => !theirSet.has(x));
-  if (missing.length || extra.length) {
-    throw new Error(
-      'tests/app/inventory.js has drifted from tests/parity/specs.js - ' +
-      (missing.length ? 'missing: ' + missing.join(', ') + '. ' : '') +
-      (extra.length ? 'extra: ' + extra.join(', ') + '.' : '')
-    );
-  }
-}
 
 module.exports = { STATES, LANGS };

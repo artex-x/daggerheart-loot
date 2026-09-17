@@ -1,7 +1,7 @@
 // PostToolUse(Edit|MultiEdit|Write|NotebookEdit): record the write (so the
 // Stop hook can tell what this session actually touched), then remind at
-// most once per session per group about derived artefacts, contracts, and
-// the parity baseline. Never blocks. See .claude/README.md, "Hooks".
+// most once per session per group about derived artefacts and contracts.
+// Never blocks. See .claude/README.md, "Hooks".
 
 import { readInput, guard, speak, relPath, pathKey, recordWrite, once } from './lib.mjs';
 
@@ -17,7 +17,7 @@ const GROUPS = [
     id: 'remind:data',
     test: (p) => p === 'data.js',
     message:
-      'data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, index.html, app/index.html, README.md, README.ru.md, app.js, llms.txt and robots.txt change with it.'
+      "data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, every file tests/derived.js's COUNTERS list checks changes with it."
   },
   {
     id: 'remind:contract',
@@ -29,12 +29,6 @@ const GROUPS = [
       p === 'llms.txt',
     message: (p) =>
       `A public contract surface changed (${p}). CLAUDE.md requires docs/fixtures/, tests/contracts.js, docs/specs/CONTRACTS.md and llms.txt to move together; \`node tests/contracts.js\` checks it.`
-  },
-  {
-    id: 'remind:baseline',
-    test: (p) => p === 'index.html' || p === 'app.js' || p === 'style.css',
-    message: (p) =>
-      `${p} is the parity baseline the rewrite is measured against. Editing it moves the target. Confirm this is a data or count update, not a migration change.`
   }
 ];
 
