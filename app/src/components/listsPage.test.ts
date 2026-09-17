@@ -130,14 +130,14 @@ describe('a card per list', () => {
       env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
     });
 
-    /* Matched by a loose regex rather than the exact accessible name: jsdom's
-       accessible-name library inserts a space at the boundary between the
-       two block-level elements (the count and the empty paragraph) that real
-       Chrome's own computation does not - context.md, "A card's accessible
-       name is its text with no spaces", measured against the live app. The
-       `textContent` check below is the one that actually pins the no-space
-       requirement, reading the DOM text nodes directly rather than through
-       that computation. */
+    /* Matched by a loose regex rather than the exact accessible name: both
+       jsdom's accessible-name computation and real Chrome's insert a space
+       at the boundary between the two block-level elements (the count and
+       the empty paragraph) - `tests/app/snapshots/_lists_two_lists.txt:37,41`
+       shows Chrome computing `link "Клад дракона 7"` and `link "Лавка в
+       порту 0 Список пуст"`, with the spaces; the two agree here. The
+       `textContent` check below pins a different thing: the raw text-node
+       structure, concatenated with no separator, not the accessible name. */
     /* The card link renders the GM payload, not the players' one - a live-app
        bug (`listCardHTML` calls `listHash(l)` with no second argument;
        `listHash`'s `forPlayers` goes undefined, falsy) that this port

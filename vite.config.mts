@@ -80,9 +80,8 @@ function fileUrlBuild(): Plugin {
   };
 }
 
-/* The live site still sits in the repository root, so the new app has a root of
-   its own: `app/` is built into `dist/`, and until the cut-over (issue #47,
-   phase 7) neither gets in the other's way. */
+/* `app/` is the only application root; the build writes `dist/`, which
+   `ci.yml`'s `deploy` job publishes. */
 export default defineConfig({
   root: 'app',
   publicDir: false,

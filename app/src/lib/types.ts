@@ -120,6 +120,10 @@ export interface Record_ {
   /** Keys into `refs`: the Core cards a description points at. */
   refs?: string[];
   eq?: Equip;
+  /** Vault of Ages section only - not equipment tier, which lives on
+   * `eq.tier` and is required there. The two overlap on 1-4 by coincidence
+   * of range, not by meaning: never read this field where `eq.tier` is
+   * meant, and never derive either from stats (`CLAUDE.md`). */
   tier?: VoaTier;
   recall?: number;
   frame?: string;

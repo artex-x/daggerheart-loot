@@ -111,6 +111,8 @@
     <div class="panel ffilter">
       {#each rows as row (row.group)}
         <div class="field">
+          <!-- Whitespace below is content - see docs/specs/COVERAGE.md,
+               "Whitespace text nodes are content". -->
           <!-- prettier-ignore -->
           <span class="lbl"
             >{#if groupIsAny(picked, row.group)}{`${row.label} `}<i>{t.anyValue}</i

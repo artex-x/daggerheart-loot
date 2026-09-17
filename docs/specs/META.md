@@ -80,9 +80,12 @@ in `tests/derived.js`.
 
 ## 6. Interface language
 
-Interface text and test messages are Russian. English only in code comments and
-in the machine-facing files (`llms.txt`, `docs/`, `CLAUDE.md`) - models read
-those, and it is cheaper that way.
+Interface text is Russian and English (see `docs/specs/I18N.md`); everything
+else - tests, tools, comments, developer docs - is English (`CLAUDE.md`).
+`tests/` is being brought into line in phase 8: today its node/browser suites
+(`tests/run-all.js`, `tests/stub.js`, and the rest of `tests/*.js`) still
+print Russian messages and comments, which predates this rule, while
+`app/src/**/*.test.ts` is already English throughout.
 
 ## 7. Link previews are cached by Telegram until pushed
 

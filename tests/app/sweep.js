@@ -89,7 +89,7 @@ const STORAGE = {
   ])
 };
 
-/* Six addresses, RU only, at 1180 and 360 - a round trip a stop, so this
+/* Six addresses, RU only, at 1180 alone - a round trip a stop, so this
  * alone would cost minutes if it ran everywhere. `filterOpen` presses the
  * one control that needs a click before the walk starts. */
 const FOCUS_WALK = [

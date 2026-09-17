@@ -452,7 +452,7 @@ async function noteTextareaHeight() {
  *  `{#key shown.it}` (issue 47, "B14 planned") reproduces that. Node identity
  *  is the only instrument that can see a transient a settled screenshot never
  *  catches, and `OrGrid.svelte`'s own `{#key cell.it}` - three of the four
- *  call sites - is `OrGrid.test.ts`'s. Rolling the *same* record twice
+ *  call sites - is `orGrid.test.ts`'s. Rolling the *same* record twice
  *  legitimately keeps the node (the image is identical, so nothing visible
  *  differs), which is why this presses in a loop rather than once - capped
  *  well above what chance should ever need across 119 rows. */

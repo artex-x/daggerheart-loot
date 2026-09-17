@@ -28,7 +28,7 @@ function everything(L){
   return [].concat(...Object.values(L.items), L.eq);
 }
 
-/* Loot has no tier of its own — the alternate tables sort it by rarity, and
+/* Loot has no tier of its own - the alternate tables sort it by rarity, and
    that is the closest thing an agent can filter on. */
 function rarityIndex(L){
   const out = {};

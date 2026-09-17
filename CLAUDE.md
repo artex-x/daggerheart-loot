@@ -21,7 +21,9 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 
 ## Engineering posture and campsite
 
-- Prefer the smallest change that preserves behaviour and contracts.
+- Prefer the smallest change that fixes the defect. Public contracts default
+  to no change; behaviour is judged against `docs/specs/`, not against the
+  previous build.
 - Reuse existing modules, ports, patterns, tokens, and naming. Do not invent
   abstractions ahead of demonstrated need.
 - Add no module, export, component, or variant before something uses it.
@@ -33,8 +35,8 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 ## Task and session protocol
 
 One session at a time per working tree. A second session's `npm ci`, staged
-index, vitest coverage directory or parity run will corrupt the first's
-results, and the failure looks like a bug in whatever was running.
+index, vitest coverage directory or browser suite run will corrupt the
+first's results, and the failure looks like a bug in whatever was running.
 
 Task state lives under `issues/<id>/`: `context.md` (shared facts and settled
 decisions), `plan.md` (design, ordered batches, status), `handoff.md` (recovery
@@ -56,6 +58,8 @@ at a public-contract change, a different route and filter set, or a commit the
 harness cannot reach; never plan a batch whose check cannot finish one
 foreground call or whose review cannot be held in one pass. Costs and the
 test: `.claude/README.md`, "Batch size and the fixed cost of a run".
+A plan names the criterion behind every split and states its total gate
+cost; a split with no criterion is a merge.
 
 When the human says stop, handoff, or the session is ending: start no new work,
 leave code at a committed boundary (never a half-batch), and run `/handoff`.
@@ -93,8 +97,8 @@ in the same commit. Behaviour changes update their specs in the same commit.
 ## Data and published artefacts
 
 After changing `data.js`, run `node tools/build.js`; the hooks block writes to
-its generated outputs. When counts or source lists change, update every file
-`tests/derived.js`'s `COUNTERS` list names; keep the READMEs aligned, reuse
+its generated outputs. When counts or source lists change, update the nine
+files `tests/derived.js:451-453` names; keep the READMEs aligned, reuse
 identical image bytes, and never renumber a shipped record id.
 
 ## Quality gates

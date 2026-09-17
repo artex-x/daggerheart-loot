@@ -17,7 +17,7 @@ const GROUPS = [
     id: 'remind:data',
     test: (p) => p === 'data.js',
     message:
-      "data.js changed. Run `node tools/build.js` before committing or tests/derived.js will fail. If counts or source lists changed, every file tests/derived.js's COUNTERS list checks changes with it."
+      'data.js changed. Run `node tools/build.js` (or `npm run check`, which runs it first) so catalog.csv/data.json/i/ match before committing - npm run check regenerates them itself, so a stale commit can still pass it locally; a CI step after npm run check is what actually catches a stale commit. If counts or source lists changed, the nine files tests/derived.js:451-453 names change with it.'
   },
   {
     id: 'remind:contract',

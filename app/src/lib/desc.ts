@@ -106,7 +106,7 @@ export function descHtml(it: Record_, lang: Lang): string {
 }
 
 /** The placeholder a record with no art, or with art that failed, falls back to. */
-export const NO_ART = 'img/_none.webp';
+const NO_ART = 'img/_none.webp';
 
 /**
  * Where a record's picture lives.

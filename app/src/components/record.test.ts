@@ -392,6 +392,8 @@ describe('the path at the top of the page, and the tag on the badge', () => {
   it('completes the path with the community, the leaf the table is sectioned by', () => {
     const { container } = render(App, { env: at('cm1') });
     const sub = container.querySelector('p.page-sub');
+    // childNodes[0] is positional on purpose: it isolates the path's own
+    // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Сообщества · Великородное');
   });
 
@@ -403,12 +405,16 @@ describe('the path at the top of the page, and the tag on the badge', () => {
   it('carries the artifact word in the path line, not only on a badge', () => {
     const { container } = render(App, { env: at('voa_a1') });
     const sub = container.querySelector('p.page-sub');
+    // childNodes[0] is positional on purpose: it isolates the path's own
+    // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Артефакт');
   });
 
   it('carries the cursed-object word in the path line', () => {
     const { container } = render(App, { env: at('voa_c1') });
     const sub = container.querySelector('p.page-sub');
+    // childNodes[0] is positional on purpose: it isolates the path's own
+    // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Проклятый предмет');
   });
 

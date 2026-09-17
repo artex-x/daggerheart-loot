@@ -214,7 +214,7 @@ Everything is in this browser's `localStorage`.
 | `dhloot.lists.v2` | lists with their contents and notes |
 | `dhloot.lang.v1` | interface language |
 | `dhloot.home.v1` | starting section |
-| `dhloot.prefs.v1` | table view (list or grid) and the height of note fields |
+| `dhloot.prefs.v1` | table view (list or grid) |
 | `dhloot.warn.v1` | that the storage warning has been dismissed |
 
 The line is drawn where the interface draws it: **how** a page looks is
@@ -282,9 +282,12 @@ are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
 ### Derived files
 
 `data.json`, `catalog.csv` and `i/*.html` are built from `data.js`. After any
-change to the data, run `node tools/build.js`. Forgetting is not fatal:
-`tests/derived.js` rebuilds them into memory and compares against what is
-committed, so a mismatch fails a test. Artwork and previews are outside that
+change to the data, run `node tools/build.js`. `npm run check` runs that
+build itself, immediately before `tests/derived.js` compares the generator
+against its own output - so forgetting to run it by hand costs nothing
+inside that same check. What that check does not catch is a stale *commit*
+(data.js edited and committed without a rebuild): a CI step after
+`npm run check` is what catches that. Artwork and previews are outside that
 script - they are made from the source files by hand, and `tests/dataint.js`
 checks that both files exist for every record that has a picture.
 

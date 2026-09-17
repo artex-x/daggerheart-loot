@@ -1,11 +1,12 @@
 /*
+  The design these "plan.md section N" comments index below is
+  issues/tg-preview-refresh/plan.md, deleted at 1a06122; read it with
+  `git show 1a06122^:issues/tg-preview-refresh/plan.md`.
+
   Composes lib.mjs's pure buildManifest with the real repository tree:
   data.js -> derived.js's everything()/SITE, build-share-pages.js's page(),
   app/index.html (the deployed root's source), and og/<name> bytes read from
-  disk. This is the one
-  seam issue 47's cut-over touches (plan.md section 3.2, section 13): if the
-  stub generator moves into the Vite build, the two `require()`s below move
-  with it and nothing else here changes.
+  disk.
 */
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -16,11 +17,8 @@ import { buildManifest } from './lib.mjs';
 const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
-// Since issue 47's cut-over ci.yml deploys dist/index.html, built from
-// app/index.html; the legacy root index.html is not published. Fingerprinting
-// it would leave the root URL - the one every #/i/<id> share resolves to -
-// silently unrefreshed the first time app/index.html's og:description moves
-// alone (B6 review R5). The two files' og: tags are identical today.
+// ROOT_HTML is app/index.html because that is what the build publishes as
+// dist/index.html - the page every #/i/<id> share resolves to.
 const ROOT_HTML = join(ROOT, 'app', 'index.html');
 
 function readImageFrom(dir) {

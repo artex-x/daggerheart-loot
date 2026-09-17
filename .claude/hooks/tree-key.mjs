@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { repoRoot, stateDir } from './lib.mjs';
+import { repoRoot, stateDir, isExempt } from './lib.mjs';
 
 function checkIndexPath() {
   return path.join(stateDir(), '.check-index');
@@ -36,7 +36,17 @@ export function treeKey() {
     if (add.error || add.status !== 0) return null;
     const ls = spawnSync('git', ['ls-files', '-s'], { cwd: root, env, encoding: 'utf8' });
     if (ls.error || ls.status !== 0) return null;
-    return createHash('sha256').update(ls.stdout).digest('hex').slice(0, 16);
+    // Drop every isExempt() row before hashing: the commit gate in
+    // bash-guard.mjs only requires a passing check for covered paths, so a
+    // row this fingerprint would otherwise move on (a handoff edit, a plan
+    // edit) must not change the key - see isExempt()'s comment in lib.mjs.
+    const lines = ls.stdout.split('\n').filter(Boolean);
+    const covered = lines.filter((line) => {
+      const tab = line.indexOf('\t');
+      const p = tab === -1 ? line : line.slice(tab + 1);
+      return !isExempt(p);
+    });
+    return createHash('sha256').update(covered.join('\n')).digest('hex').slice(0, 16);
   } catch {
     return null;
   }

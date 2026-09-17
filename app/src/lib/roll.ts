@@ -77,7 +77,7 @@ export function pick(count: number, rnd: Random = Math.random): number {
 }
 
 /** Whether a range has a die of its own, which is what the label turns on. */
-export const REAL_DICE = [4, 6, 8, 10, 12, 20, 100] as const;
+const REAL_DICE = [4, 6, 8, 10, 12, 20, 100] as const;
 
 export function hasRealDie(count: number): boolean {
   return (REAL_DICE as readonly number[]).includes(count);

@@ -11,10 +11,12 @@ export default ts.config(
       'dist/**',
       'coverage/**',
       'node_modules/**',
-      /* Generated data and the standalone node scripts/tests that ignore it:
-         an older style, no lint config of their own to satisfy. `app.js`, the
-         live site's own entry, was the same kind of entry until R0c deleted
-         it (issue #47). */
+      /* Generated data, plus tests/** and tools/**: standalone node scripts
+         that sit outside every tsconfig, so the type-aware rules have no
+         project to resolve them against. `tests/app/` is not legacy code
+         (added during the migration, 2026) - it is simply unlinted for the
+         same structural reason as the rest of tests/** and tools/**, not
+         because it predates this config. */
       'data.js',
       'tests/**',
       'tools/**',
@@ -58,6 +60,14 @@ export default ts.config(
         svelteConfig
       }
     }
+    /* C9 (issues/phase-8): tried `@typescript-eslint/no-confusing-void-
+       expression`'s `ignoreVoidReturningFunctions` option here to clear the
+       three eslint-disable comments in ListPage.svelte/PrintCard.svelte that
+       suppress it for `{@render}` tags. It cleared none of the three and, on
+       PrintCard's file-wide disable, exposed thirteen other pre-existing
+       violations the disable had also been hiding - a wider effect than
+       intended for zero gain, so not kept; the three disables stay as they
+       were. */
   },
   {
     /* ---------- the layer boundary ----------

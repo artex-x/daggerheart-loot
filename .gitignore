@@ -26,10 +26,20 @@ export/
 # ...except those under docs/: those are the specs, and they are the source of truth
 !docs/**
 
-# Build output of the new app (issue #47). The live site is still in the root.
+# Build output of the app.
 dist/
 coverage/
 .svelte-kit/
+
+# A dispatched agent's isolated worktree is host infrastructure, not source.
+.claude/worktrees/
+
+# Untracked artwork scratch (refresh-artwork sessions write here). Both this
+# and the worktrees line above have to live in .gitignore, not only
+# .prettierignore: tree-key.mjs's commit-gate fingerprint runs `git add -A`,
+# which reads .gitignore only, so a .prettierignore-only entry stops Prettier
+# tripping but still leaves the path inside every fingerprint.
+work/
 
 # The share stubs: 1091 files regenerated from data.js by tools/build.js,
 # which the deploy job runs (npm run build) before it copies i/ into _site.

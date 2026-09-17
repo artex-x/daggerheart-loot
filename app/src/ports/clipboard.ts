@@ -111,7 +111,7 @@ export function browserClipboard(win: ClipboardWin = window): ClipboardPort {
   };
 }
 
-export interface FakeClipboard extends ClipboardPort {
+interface FakeClipboard extends ClipboardPort {
   /** What was last put on it, for a test to read back. */
   readonly last: { text?: string; rich?: RichText; image?: boolean };
 }

@@ -1,12 +1,6 @@
 # Generated data, not authored: node tools/build.js writes these, and
 # reformatting a machine-written file produces an unreadable diff for no
-# behaviour change. `app.js`, `style.css` and the root `index.html` (the
-# pre-rewrite live app) were the same kind of entry until R0c deleted them
-# (issue 47) - the bare `index.html` pattern below matched both that file and
-# app/index.html, so deleting the root file's own entries left app/index.html
-# newly unignored. It gets its own line instead: R0c makes no template or
-# markup change under app/ (comment re-points only), so this is not the batch
-# that decides its formatting.
+# behaviour change.
 data.js
 data.json
 catalog.csv
@@ -14,6 +8,14 @@ i/
 img/
 og/
 card/
+
+# Permanent, decided at phase 8 (this was left open at R0c, issue 47, as "not
+# the batch that decides its formatting" - it is decided now): hand-authored,
+# flat, no indentation, HTML5-style void elements with no trailing slash.
+# Prettier's HTML formatter would indent every line and add a self-closing
+# `/>` to every `<meta>`/`<link>` - a ~60-line diff for no behaviour change,
+# same reasoning as the generated files above even though this one is not
+# generated.
 app/index.html
 tests/
 tools/
@@ -35,6 +37,11 @@ docs/fixtures/
 # `prettier --check .` walks into one if it is there, reddening format:check
 # (hence npm run check) for a reason no diff in this tree explains - it
 # blocked R0c C3's commit gate once already (issues/47/handoff.md, "R0c C3").
+# Also in .gitignore, which is the superset: Prettier's own default
+# `--ignore-path` is [".gitignore", ".prettierignore"] together, but
+# tree-key.mjs's commit-gate fingerprint runs `git add -A`, which reads only
+# .gitignore, so this file alone would silence Prettier while leaving the
+# path inside every fingerprint.
 .claude/worktrees/
 
 # Markdown is wrapped by hand: in the READMEs and specs a line break carries

@@ -16,8 +16,10 @@ a training set.
 
 Three things trip agents up here, in order of how often:
 
-1. **The app renders on the client.** Fetching `index.html` gives you an empty
-   page. That is not a slow load you can wait out.
+1. **The app renders on the client.** Fetching `index.html` does not run it -
+   you get the raw document, not the rendered UI. It is not empty, though:
+   a `<noscript>` block carries direct links to `catalog.csv`, `data.json`
+   and this file, so a plain fetch already points you at the data below.
 2. **Everything after `#` is a fragment and never leaves the browser.** A link
    to a shop looks like meaningless base64 because the shop *is* the base64.
    No server ever saw it, so nothing you fetch can tell you what is inside —

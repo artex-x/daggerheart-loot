@@ -27,6 +27,9 @@ Six modes. Each keeps its own input in memory only.
   (`other_starting`) holds the non-rollable starting inventory as a plain
   list, and Frame items (`other_frames`) holds campaign-frame equipment
   sectioned by setting, with no roll number.
+- The consumable/item kind filter is one toggle shared by Core rules, the
+  alternate tables and search (`AppState.kinds`, memory only) - switching
+  consumables off on one switches them off everywhere, not per page.
 - A critical success in the alternate tables - the two dice showing the same
   face - hands over the whole rarity rather than a row: a link into each table
   that is switched on, at that rarity, plus a button that steps the rarity up
@@ -52,7 +55,7 @@ Six modes. Each keeps its own input in memory only.
 
 ## Tables and search
 
-- 15 tables (`TABLE_DEFS`), each with its own search box and a list/grid switch.
+- 15 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
 - Search covers all 1091 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped.
@@ -163,6 +166,9 @@ Six modes. Each keeps its own input in memory only.
   asterisks are deliberately not used.
 - Consumables get a "(consumable)" suffix outside the app, where the badge is
   not visible.
+- A compact card's art zooms slightly on hover, guarded by `@media
+  (hover:hover)` so no touch device triggers it on tap; a full-page record's
+  art never zooms.
 - Upgrade chains render both directions; the reverse is computed at load. That
   is `craft` - one thing made from another - and it is not the tier ladder
   below.

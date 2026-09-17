@@ -222,7 +222,7 @@ describe('which tab is lit', () => {
 
   it('lights nothing on a record, a list page or a print sheet', () => {
     /* The live `renderTabs` (app.js 3667-3673) compares against the raw route
-       string, and a list route - `l/…` or `lists/…` - is never that string,
+       string, and a list route - `l/...` or `lists/...` - is never that string,
        so no tab is lit there either, Lists included. */
     expect(new AppState(at('#/i/w12')).section).toBe(null);
     expect(new AppState(at('#/print/w1-w2')).section).toBe(null);

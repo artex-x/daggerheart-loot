@@ -124,6 +124,23 @@ export function pathKey(p) {
   return String(p).toLowerCase();
 }
 
+/** True for a repo-relative path `npm run check` does not read: everything
+ * under `issues/` and every `.md` file except the two READMEs. Shared by
+ * bash-guard.mjs's commit gate (which paths in *this* commit need a passing
+ * check) and tree-key.mjs's fingerprint (which paths the fingerprint hashes
+ * at all) - they have to agree, or a write to an exempt path (a handoff, a
+ * plan) changes the fingerprint without changing what the gate requires,
+ * disarming a check that already passed. The trap this does not close:
+ * tests/contracts.js (covered, not exempt) reads docs/specs/CONTRACTS.md and
+ * ROUTES.md (exempt as *.md) at runtime, so editing a spec alone never
+ * reruns the test that depends on its content - only editing contracts.js
+ * itself, or something else covered, does. */
+export function isExempt(p) {
+  if (p.startsWith('issues/')) return true;
+  if (p.endsWith('.md') && p !== 'README.md' && p !== 'README.ru.md') return true;
+  return false;
+}
+
 // ---------- shell sanitiser + segmenter ----------
 //
 // Shared by bash-guard.mjs (which rule family sees which segment) and

@@ -266,8 +266,8 @@ function testBashDenyCases() {
     ['#13 rm -rf app', 'rm -rf app', null],
     // Regression guards for the four reviewer blockers and the sanitiser
     // gaps found with them. Each of these was probed as ALLOWED before.
-    ['#13a rm -rf . (repo root)', 'rm -rf .', 'rm -rf'],
-    ['#13b rm -rf ./ (repo root)', 'rm -rf ./', 'rm -rf'],
+    ['#13a rm -rf . (repo root)', 'rm -rf .', 'rm -r'],
+    ['#13b rm -rf ./ (repo root)', 'rm -rf ./', 'rm -r'],
     ['#13c env wrapper', 'env git reset --hard', '--hard'],
     ['#13d quoted flag', 'git reset "--hard"', '--hard'],
     ['#13e command after a heredoc', 'cat <<EOF\nbody\nEOF\ngit reset --hard', '--hard'],
@@ -276,7 +276,13 @@ function testBashDenyCases() {
       'npm test\ngit push --force',
       'overwrites whatever the remote has'
     ],
-    ['#13g wrapper + quoted flag', 'command git clean "-fd"', 'deletes untracked files']
+    ['#13g wrapper + quoted flag', 'command git clean "-fd"', 'deletes untracked files'],
+    [
+      'TL5 git restore --staged --worktree',
+      'git restore --staged --worktree app/src/lib/x.ts',
+      null
+    ],
+    ['TL6 rm -r app (no -f)', 'rm -r app', 'rm -r']
   ];
   for (const [label, command, fragment] of cases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
@@ -319,7 +325,9 @@ function testBashSilentCases() {
     ],
     ['#25b message with a semicolon', 'git commit -m "chore: a; then b"'],
     ['#25c rm -rf outside the repo', 'rm -rf /tmp/elsewhere'],
-    ['#25d rm -rf node_modules', 'rm -rf node_modules']
+    ['#25d rm -rf node_modules', 'rm -rf node_modules'],
+    ['TL6c rm -r dist', 'rm -r dist'],
+    ['TL6d rm -r i', 'rm -r i']
   ];
   for (const [label, command] of cases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
@@ -369,6 +377,41 @@ function testOrphanPlan() {
       isSilent(result),
       result.stdout
     );
+  }
+
+  // TL3a - a citation qualified as `git show <sha>:path` resolves through
+  // history, not the working tree, so it does not keep the plan.md target
+  // alive on its own.
+  {
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, `// See \`git show 1234567:${target}\` for the old text.\n`);
+    const result = runHook('bash-guard.mjs', bashPayload(`rm ${target}`));
+    check(
+      'TL3a sha-qualified citation only: silent',
+      isSilent(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+
+  // TL3b - a sha-qualified line and a plain live citation together: only the
+  // live one counts, and it is the one named in the deny reason.
+  {
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(
+      citingFile,
+      `// See \`git show 1234567:${target}\` for history.\n// Also cited directly: ${target}\n`
+    );
+    const result = runHook('bash-guard.mjs', bashPayload(`rm ${target}`));
+    check('TL3b denies', isDeny(result), JSON.stringify(result.json));
+    check(
+      'TL3b names exactly the live citation, not the sha-qualified one',
+      denyReason(result).includes('is still cited by 1 tracked line') &&
+        denyReason(result).includes('tools/cites-plan.js:2') &&
+        !denyReason(result).includes('tools/cites-plan.js:1'),
+      denyReason(result)
+    );
+    fs.writeFileSync(citingFile, original);
   }
 }
 
@@ -753,12 +796,13 @@ function testEditFollowup() {
       systemMessage(result)
     );
     // #40b - the reminder's own content is checked, not only that it fires.
-    // R0c (2026-09-17) stopped enumerating files by name here (the list kept
-    // drifting from tests/derived.js's own COUNTERS, which is the file that
-    // actually enforces it) and points at that list instead.
+    // TL7/T4 (phase-8 B2): the reminder used to overclaim that a forgotten
+    // rebuild makes tests/derived.js fail - it cannot, since npm run check
+    // regenerates the files immediately before comparing them. The message
+    // now points at the nine files tests/derived.js:451-453 names instead.
     check(
-      "#40b data.js reminder names tests/derived.js's COUNTERS list",
-      systemMessage(result).includes('COUNTERS'),
+      '#40b data.js reminder names the nine derived files by line range',
+      systemMessage(result).includes('tests/derived.js:451-453'),
       systemMessage(result)
     );
   }
@@ -1756,6 +1800,26 @@ async function testCommitGateAsync() {
   {
     const result = runHook('bash-guard.mjs', bashPayload('git commit -m "docs: plan"'));
     check('#26 gate: exempt path silent', isSilent(result), result.stdout);
+  }
+
+  // #27b - TL2: appending to an exempt path (a handoff) after the cache is
+  // armed must not disarm it for a commit that only touches covered files -
+  // tree-key.mjs's fingerprint now drops isExempt() rows before hashing, so
+  // writing a handoff mid-batch can no longer redden an already-passing gate.
+  gitSh(['reset']);
+  clearCache();
+  {
+    const key2 = treeKey();
+    writeCache(key2);
+    appendFile('issues/65/handoff.md', '\nmore handoff\n');
+    gitSh(['add', 'app/src/lib/x.ts']);
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'));
+    check(
+      '#27b gate: appending to an exempt handoff does not disarm an armed cache',
+      isSilent(result),
+      result.stdout
+    );
+    gitSh(['reset']);
   }
 
   gitSh(['reset']);

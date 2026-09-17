@@ -759,11 +759,17 @@ describe('the equipment tables', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: '1' }));
     await userEvent.click(screen.getByRole('button', { name: 'Двуручное' }));
-    /* The pill's own textContent carries the dismiss glyph (`&times;`) after
-       the label - `title`, not text, is its accessible name. */
-    const pills = [...container.querySelectorAll('.fpill')].map((p) => p.textContent);
-    expect(pills).toContain('Ранг 1×');
-    expect(pills).toContain('Двуручное×');
+    /* This pins text-node structure, not an accessible name: `.fpill i` is
+       `display:flex`, so Chrome's real accessible-name computation inserts a
+       space at the block boundary ("Ранг 1 ×", tests/app/snapshots/
+       _tables_eq_weapon_filtered.txt:46) and reads `title` as the
+       description, not the name - the reverse of what a bare `textContent`
+       comparison would suggest. */
+    const pills = [...container.querySelectorAll('.fpill')].map((p) =>
+      [...p.childNodes].map((n) => n.textContent)
+    );
+    expect(pills).toContainEqual(['Ранг 1', '×']);
+    expect(pills).toContainEqual(['Двуручное', '×']);
   });
 
   it('a mag pick drops physical weapons', async () => {

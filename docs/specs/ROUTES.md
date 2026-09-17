@@ -5,7 +5,7 @@ grammar below is the whole router. Golden fixtures for these shapes are in
 `docs/fixtures/urls/routes.json`; `tests/contracts.js` replays them.
 
 The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
-`TABLES_RE` and `legacySource()` beside it.
+`TABLES_RE`, `legacySource()` and `TABLE_ALIASES` beside it.
 
 ## Sections
 
@@ -21,7 +21,7 @@ The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 | `#/lists` | Lists index |
 | `#/search` | Search |
 
-These nine are also the tab bar (`TAB_LIST`) and the nine a person may pin as
+These nine are also the tab bar (`SECTIONS`) and the nine a person may pin as
 their starting section - eight pin as their own hash; `#/tables` pins as
 whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
@@ -44,13 +44,17 @@ working and keeps its own text.
 
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
-Table names (`TABLE_DEFS`): `core_item`, `core_consumable`, `hnf_item`,
+Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
 `hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`.
 
-A name that is not in that list is ignored and the table already on screen is
-kept. Changing to a different table folds the filter panel and clears the
-filter.
+`frames` is an alias for `other_frames` (`TABLE_ALIASES`, `hash.ts:39`):
+`#/tables/frames` resolves the same as `#/tables/other_frames`, not to being
+ignored.
+
+A name that is neither in that list nor an alias is ignored and the table
+already on screen is kept. Changing to a different table folds the filter
+panel and clears the filter.
 
 A tail that does not start with `f_` is an anchor - a block to scroll to, such
 as `rare` on `alt_item` or `Seaborne` on `community`.

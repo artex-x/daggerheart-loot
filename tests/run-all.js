@@ -59,18 +59,47 @@ const SUITES = [
 ];
 
 const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(`Runs the suites and prints a summary.
+
+  node tests/run-all.js                        all suites, in parallel
+  node tests/run-all.js derived,craft          just those two
+  node tests/run-all.js --jobs 1               one at a time, for debugging
+  node tests/run-all.js --exclude=app/golden   everything but that one suite
+  node tests/run-all.js --help, -h             this message
+
+Suites: ${SUITES.map(s => s[0]).filter((v, i, a) => a.indexOf(v) === i).join(', ')}
+
+app/golden and app/sweep are unsharded/all-widths when named bare and each
+takes past the Bash tool's 600s foreground cap - see .claude/README.md,
+"Batch size and the fixed cost of a run". Run app/golden with
+node tests/app/golden.js --shard=n/4 and app/sweep with
+node tests/app/sweep.js <width>, one call each.`);
+  process.exit(0);
+}
 const jobsArg = args.indexOf('--jobs');
 const JOBS = jobsArg >= 0 ? Math.max(1, +args[jobsArg + 1] || 1)
                           : Math.max(1, Math.min(os.cpus().length, 8));
-/* `--exclude=parity` pulls a suite out of this run without touching the
-   include list - CI runs it as its own sharded job matrix instead (parity.js
-   `--shard`), so the pooled run here would otherwise gate every push on the
-   same 867s a second time, serialised behind everything else in the pool. */
+/* `--exclude=app/golden` pulls that suite out of this run without touching
+   the include list - CI's `check` job passes it, because `golden` runs as
+   its own sharded job matrix instead (`tests/app/golden.js --shard=n/4`, see
+   ci.yml), and the pooled run here would otherwise gate every push on the
+   same ~867s a second time, serialised behind everything else in the pool. */
 const excludeArg = args.find(a => a.startsWith('--exclude='));
 const exclude = excludeArg ? excludeArg.slice('--exclude='.length).split(',').filter(Boolean) : [];
 const only = args.filter((a, i) => a[0] !== '-' && !(jobsArg >= 0 && i === jobsArg + 1))
                  .join(',').split(',').filter(Boolean);
 const queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && exclude.indexOf(s[0]) < 0);
+/* derived/dataint/craft/stub all read i/*.html, which f53f44d untracked: a
+   cold clone that has not run `node tools/build.js` (or `npm run build`) has
+   no i/ directory at all, and each of those four suites used to fail with a
+   raw ENOENT stack and no hint. One preflight here, the entry point all four
+   go through, replaces four separate crashes with one actionable message. */
+const NEEDS_I = ['derived', 'dataint', 'craft', 'stub'];
+if (queue.some(s => NEEDS_I.indexOf(s[0]) >= 0) && !fs.existsSync(path.join(HERE, '..', 'i'))) {
+  console.log('i/ is missing - it is generated, not committed. Run `node tools/build.js` (or `npm run build`) first.');
+  process.exit(1);
+}
 /* Ключ для отчёта: у обхода страниц наборов четыре под одним именем */
 const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
 /* The key tells two runs of one suite apart with a colon, which is fine on

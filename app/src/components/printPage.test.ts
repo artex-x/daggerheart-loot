@@ -338,6 +338,8 @@ describe('the community card', () => {
     render(App, { env: at('#/print/cm1') });
     const card = document.querySelector('.pcard[data-pid="cm1"]');
     const spans = card?.querySelectorAll('.pc-bottom span');
+    // spans[1] is positional on purpose: it isolates the source line's own
+    // span from its sibling in `.pc-bottom`.
     expect(spans?.[1]?.textContent).toBe('Сообщества · Великородное');
   });
 });

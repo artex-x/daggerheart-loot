@@ -106,8 +106,8 @@ ones listed below; everything else is silent or a message.
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. | warn (informational) |
-| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, a bare `git push --force`, `git checkout`/`restore` discards, `git stash drop`/`clear`, `rm -rf` inside the repo, `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line elsewhere, blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and `grep -n` / `tail -c` (readers that bypass RTK; use `rtk grep`, `rtk read`, or the Grep/Read tools). Reminds once per session per command family before a long check. | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`. | **block** |
+| `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, a bare `git push --force`, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line elsewhere (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the tree, a backgrounded `npm run check`, and `grep -n` / `tail -c` (readers that bypass RTK; use `rtk grep`, `rtk read`, or the Grep/Read tools). Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call. | **block** (+ one allow-and-remind case) |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`, `tests/app/snapshots/**`. | **block** |
 | `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` and `set -o pipefail;`. | never (silent) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js` and public-contract fixtures. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
@@ -248,6 +248,11 @@ diff: eight paths and forty paths cost the same minutes.
    a check, a `check:built` and a `tests/app/` filter run - most of an hour
    on an idle host for a change a reviewer reads in five minutes. Three such
    batches pay three times what one would.
+   Phase 8's first plan (2026-09-17) split about a hundred findings into
+   twenty batches - eighteen `npm run check` runs, roughly 2.5 hours of gate
+   time before any test of the work - and was merged to eleven on the
+   owner's instruction (`issues/phase-8/plan.md`, "Where every finding
+   landed").
 2. *Too big.* A batch whose `npm run check` cannot finish inside one
    foreground call on the host as it is, or whose review cannot be held in
    one pass, forfeits everything when the host stalls: B5.3 (26 paths)
@@ -338,6 +343,14 @@ adversary:
 - The RTK-bypass deny (row 43) sees the program token only: `sh -c "grep -n
   ..."` is erased with its quotes like every other quoted command, and `rg -n`
   is not covered (not in the measured miss).
+- The orphan-`plan.md` citation exemption only recognises one family: a
+  citation immediately preceded by `<sha>:` or `HEAD:` (`git show <sha>:path`
+  form). Family 2 - a citation split across lines, or wrapped some other way
+  that still resolves through history - is not recognised and still denies.
+- `rm -r` without `-f` inside the repo denies the same as `rm -rf`; `dist`,
+  `coverage`, `test-output`, `node_modules` and `i` (build output, not
+  source) are exempt from both. There is no separate, gentler rule for the
+  non-forced form.
 - Not `bash-guard.mjs`, but worth recording beside it: `activeTask()`
   (`lib.mjs`, shared by `session-stop.mjs` and other hooks) picks the
   `issues/<id>/` directory with the newest file mtime, and on an exact tie

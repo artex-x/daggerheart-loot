@@ -187,8 +187,16 @@ Corrections to the reports, so no batch re-derives them:
   the version from when its context was built, not the version on disk. The
   orchestrator hit the identical trap earlier the same day. Re-read
   `CLAUDE.md` from disk before citing a line in it.
-- `CLAUDE.md`'s one-call `app/sweep,...` command exceeding the 600 s cap
-  stands as reported.
+- **Also retracted (planner, second pass): the one-call `app/sweep,...`
+  command.** On disk `CLAUDE.md:111` reads `node tests/run-all.js
+  app/print,app/contracts,app/states,app/typo,app/hues,stub` and `:112-114`
+  already say `app/sweep`/`app/golden` run per width/shard - the same stale
+  injected copy. Consequence for Q7: of the nine accepted edits, #3 (the
+  `docs/parity.md` row), #4 (the cost pointer), #5 (`eqtest,qa`), #6 (the
+  `app/sweep` command) and #8 (the "Migration and parity" section) were
+  already in the tree at `d6371e7`; only `:24`, `:36` and `:97` remain, and
+  they land in B2. The file is 167 lines and gains one (the batch-size
+  forcing function), so nothing shrinks.
 - **The live `dhloot.prefs.v1` held `{ view }` only** (`app.js:1088` at
   `23c00a6^`); the READMEs' "height of note fields" was never true.
 - **D8's `<h4 class="altcol">` is in `TablesPage.svelte:538`**, not

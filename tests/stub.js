@@ -3,7 +3,7 @@
  * walks `dist/`) nor the live app. `tests/app/lib.js` is reused only for its
  * browser/context plumbing - `fresh()`'s own driver is pointed at `dist/`
  * and goes unused here, since nothing in this file opens a route through it.
- * `craftmob.js:101-110`. */
+ * Ported from `craftmob.js:101-110` (deleted at R0c, `23c00a6`). */
 const path = require('path');
 const { fresh, reporter, closeBrowser } = require('./app/lib.js');
 

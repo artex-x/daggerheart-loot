@@ -77,6 +77,14 @@
    * what the next pass reads. Runs synchronously after the DOM this effect
    * reads - never awaits fonts or images, exactly as the live call inside
    * `render()` does not either.
+   *
+   * This loop is linear in card count, not quadratic, only because
+   * `container-type: size` on `.pcard` (below) implies `contain: layout
+   * style size`: every forced style-and-layout pass here re-lays this one
+   * 63x88mm card, not the whole sheet. Weakening that declaration (to
+   * `inline-size`, say, or dropping it while moving the `cqw` units
+   * elsewhere) turns the same unchanged loop quadratic in card count -
+   * unmeasured damage on a 180-card print sheet.
    */
   function fit(el: HTMLElement): void {
     const text = el.querySelector<HTMLElement>('.pc-text');
@@ -146,7 +154,9 @@
      between them, as the live markup has no gap, reads to this rule as a void
      expression inside another one. ListPage.svelte disables the same rule for
      the same reason, one line at a time; this file has too many sites for
-     that to stay readable. -->
+     that to stay readable. `ignoreVoidReturningFunctions` (eslint.config.mjs)
+     was tried instead and did not clear any of the three sites - it exposed
+     more pre-existing violations here than it fixed, so this stays. -->
 {#snippet band()}
   {#if tier}
     <span class="pc-tier"
@@ -233,13 +243,8 @@
   </div>
 {/snippet}
 
-<!-- The whole card is written with no whitespace between tags on purpose:
-     `.pc-tier`/`.pc-bottom`/`.pc-cells` etc. read as one text node with no
-     gap in the live markup, and the parity harness's control-name/text-advance
-     checks read exactly that. `prettier-ignore` covers the whole subtree
-     rather than each inner element, the same device TableRows.svelte uses -
-     Prettier puts a short tag back on its own line on every format otherwise,
-     which reintroduces the gap. -->
+<!-- Whitespace below is content, covering the whole card - see
+     docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
 <!-- prettier-ignore -->
 <article class="pcard {pkClass}" class:bw data-pid={it.id} bind:this={card}
   >{#if !bw}<div class="pc-art"

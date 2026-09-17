@@ -51,10 +51,3 @@ export function fakeImage(): ImagePort & { readonly asked: string[] } {
     }
   };
 }
-
-/** A browser that refuses, so the caller's own failure path can be checked. */
-export function brokenImage(): ImagePort {
-  return {
-    pngOf: () => Promise.reject(new Error('the picture did not load'))
-  };
-}

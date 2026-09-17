@@ -44,7 +44,7 @@ const MONEY_STEP: readonly Step[] = [
  * Russian needs one of three forms by the last digits; English needs two.
  * Anything that counts things in Russian needs this - do not write "3 монета".
  */
-export function moneyWord(step: Step, n: number, lang: Lang): string {
+function moneyWord(step: Step, n: number, lang: Lang): string {
   if (lang !== 'ru') return step.en[n === 1 ? 0 : 1];
   const a = n % 10;
   const b = n % 100;

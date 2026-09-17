@@ -67,6 +67,7 @@ Batch size preference (human):
 - If the whole task or remaining work can be implemented safely as one verifiable batch, plan it as one batch - do not split for its own sake
 - Split only for risk, reviewability, or independent verification
 - When you split, each batch should still be a meaningful vertical slice
+- Required outputs of a planning pass: for every split, the criterion it invokes (`CLAUDE.md`, "Task and session protocol", or a review that cannot be held in one pass), and the plan's total gate cost summed from `.claude/README.md`, "Batch size and the fixed cost of a run"
 
 Design decisions - ask sparingly:
 - Default: decide from repo, issue, screenshots, specs, and existing patterns; do not ask the human to approve routine choices

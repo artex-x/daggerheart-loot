@@ -1,4 +1,8 @@
 /*
+  The design these "plan.md section N" comments index below is
+  issues/tg-preview-refresh/plan.md, deleted at 1a06122; read it with
+  `git show 1a06122^:issues/tg-preview-refresh/plan.md`.
+
   The one live wire to Telegram: a five-method port (send, incoming, byIds,
   press, close) around teleproto. No unit test - the only proof a message or
   a press actually reached @WebpageBot is Telegram itself (docs/tg-preview.md,

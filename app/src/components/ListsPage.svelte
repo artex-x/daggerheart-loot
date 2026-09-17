@@ -135,15 +135,8 @@
       {#each lists as l (l.id)}
         {@const items = knownItems(l)}
         <div class="listcard">
-          <!-- The live link's accessible name has no space between the name,
-               the badge and the thumbs/empty paragraph - "Клад дракона7",
-               "Лавка в порту0Список пуст". `.listcard-top` and the thumbs/empty
-               element are display:block, so a stray whitespace text node here
-               is invisible on screen but still lands in textContent, which is
-               what the parity harness's control-name check reads. Prettier
-               reformats a short block tag back onto its own line on every
-               format, reintroducing the gap - the ignore has to cover the
-               whole link, the same fix TableRows.svelte already needed. -->
+          <!-- Whitespace below is content, covering the whole link - see
+               docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
           <!-- prettier-ignore -->
           <a class="listcard-main" href={sharedListHash(encodeList(l, false))}
             ><div class="listcard-top"><b>{l.name}</b><span class="badge num"

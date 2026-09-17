@@ -305,7 +305,7 @@ The live app was wrong; the rewrite copied it; parity was the reason.
 
 ### D8 - the alternate-tables page jumps from `<h1>` straight to `<h4>`
 
-- **Where**: `TableRows.svelte`'s `.altcol` column headers
+- **Where**: `TablesPage.svelte:539`'s `.altcol` column headers
   (`<h4 class="altcol hope">`/`<h4 class="altcol fear">`, one pair per
   rarity section on `#/tables/alt_item` and `#/tables/alt_consumable`) sit
   directly under the page's own `<h1>` with no `<h2>`/`<h3>` between them.
@@ -321,10 +321,10 @@ The live app was wrong; the rewrite copied it; parity was the reason.
   the column pair to `<h4>` under it, or promote the columns to `<h2>` and
   drop the empty levels between - either heals the sequence without
   inventing a heading nobody reads today.
-- **Why parity won**: B12 (2026-09-12) - the heading level is part of the
-  ported DOM structure `CLAUDE.md`'s "Migration and parity" asks for; only
-  Phase 7/8's structural review is positioned to change it without touching
-  a pixel the parity harness still measures.
+- **Why parity won**: B12 (2026-09-12) - the heading level was part of the
+  ported DOM structure the migration's parity rule asked for at the time
+  (since deleted with the parity harness at R0c); only Phase 7/8's structural
+  review is positioned to change it now.
 - **How to verify the fix**: `tests/app/sweep.js`'s axe pass finds no
   `heading-order` violation on `#/tables/alt_item`/`#/tables/alt_consumable`
   with no `allow` naming it.
@@ -388,8 +388,8 @@ The live app was wrong; the rewrite copied it; parity was the reason.
 Commissioned by the repository owner before R0c's deletions (`issues/47/
 context.md`, decision 11, 2026-09-16): one more deliberate pass over
 everything the migration deletes, read against `app/src/` for behaviour no
-surviving instrument would notice. Full record: `issues/47/sweep.md`, read at
-`7a33c22`. **None of these blocked the deletion** - the owner's ruling was
+surviving instrument would notice. Full record: `issues/47/sweep.md`, written
+while HEAD was `7a33c22`. **None of these blocked the deletion** - the owner's ruling was
 that a finding here is recorded, not fixed, in R0c; reviewing and addressing
 each is Phase 8 work. Unlike section 1, these are not known to be *deliberate*
 parity choices - they are accidental losses or additions the sweep caught
@@ -410,9 +410,9 @@ the same shape R0b.4's five divergences had.
   unselected buttons - the same attribute the rest of the app's chips use.
 - **Why it was recorded, not restored: owner ruling 2026-09-16.** No
   registered state, golden or unit test reads either attribute
-  (`docs/specs/COVERAGE.md`, "The harness" - `d.controls()` never reads
-  `aria-pressed`/`aria-current`), so nothing measured the money picker as a
-  special case before the sweep.
+  (`docs/specs/COVERAGE.md`, the `app/golden` row - `d.controls()` never
+  reads `aria-pressed`/`aria-current`), so nothing measured the money picker
+  as a special case before the sweep.
 - **How to verify the fix**: decide whether the money picker should read as a
   `radiogroup`-like "current" control (`aria-current`) or a togglable set
   (`aria-pressed`, what `Chip.svelte` already gives every other chip); a
@@ -486,58 +486,6 @@ the same shape R0b.4's five divergences had.
   restored, its failure branch gets its own `imgFailed`-equivalent toast,
   distinct from `copyFailed`.
 - **Recorded by**: the R0c sweep, 2026-09-17 (Part B).
-
-### D16 - the toast's live region exists only while a toast is showing
-
-- **Where**: `index.html:92` (`7a33c22`): `<div class="toast" id="toast"
-  role="status" aria-live="polite" hidden>` - `role` and `aria-live` are on
-  the element from first paint and `showToast` (`app.js:993-995`) only
-  rewrites them to `alert`/`assertive` for an error; they are never removed.
-  Rewrite: `app/src/components/Toast.svelte:61-62`
-  `role={app.toast ? (...) : undefined} aria-live={app.toast ? (...) :
-  undefined}` - both attributes disappear when `app.toast` is `null`, by
-  design (`Toast.svelte:13-16`: otherwise a component test's
-  `getByRole('status')` would match the idle toast).
-- **Live behaviour**: the live region is always present, so a screen reader
-  has already registered it before the first toast fires.
-- **What the rewrite does instead**: creates the live region at the same
-  moment the text arrives, which some assistive technology announces less
-  reliably than a region that pre-exists.
-- **Why it was recorded, not restored: owner ruling 2026-09-16.** Exactly the
-  R0b.4 shape: an axe run cannot report a live region as *missing* only while
-  idle, and the goldens photograph an empty toast either way, so nothing
-  short of reading the two sources side by side could catch it.
-- **How to verify the fix**: keep `role="status" aria-live="polite"` on
-  `Toast.svelte`'s wrapper unconditionally and switch only `aria-live` to
-  `assertive`/`role="alert"` for an error, then adjust the component tests
-  that relied on the idle element being absent from the accessibility tree.
-- **Recorded by**: the R0c sweep, 2026-09-17 (Part F).
-
-### D17 - the card image's hover zoom is unconditional on live, guarded and narrowed on the rewrite
-
-- **Where**: `style.css:321,326` (`7a33c22`): `.card-media:hover
-  img{transform:scale(1.05)}` and `.card.full .card-media:hover
-  img{transform:none}` - no `hover:hover` media guard, and every card
-  (`.compact` and `.full` alike) zooms on hover; `.full` cancels it
-  explicitly. Rewrite: `app/src/components/RecordCard.svelte:323-327` wraps
-  the zoom in `@media (hover:hover)` **and** narrows it to `.card.compact`
-  only.
-- **Live behaviour**: on a touchscreen with no real hover, a tapped `.full`
-  card still leaves its art visibly scaled (the touch counts as a
-  hover-and-hold); on any pointer, a `.full` card's zoom is explicitly
-  cancelled.
-- **What the rewrite does instead**: no touch device ever scales any card's
-  art (the `hover:hover` guard live lacks here, though it uses the guard
-  elsewhere for `.tile`), and a `.full` card never has zoom to cancel in the
-  first place because only `.compact` opts in.
-- **Why it was recorded, not restored: owner ruling 2026-09-16.** A resting-state
-  pixel diff cannot see a `:hover` rule at all, and no golden or parity state
-  hovers or long-presses a card image.
-- **How to verify the fix**: decide whether the guard and the `.full`
-  narrowing are wanted (they read as an improvement, not a bug) or should
-  match live exactly; either way, a `record.test.ts`/CSS assertion pins the
-  chosen behaviour and `FEATURES.md` states it.
-- **Recorded by**: the R0c sweep, 2026-09-17 (Part C).
 
 ### D18 - the keyboard focus ring reaches more elements, and at a different radius, than the live list
 
@@ -717,24 +665,3 @@ Not a defect; a design the rewrite argued against and lost to parity.
 Re-examined at Phase 8, and either kept (entry deleted, `FEATURES.md`/
 `STATE.md` say so) or changed.
 
-### D4 - one kind filter shared by Core rules, the alternate tables and search
-
-- **Where**: `app/src/state/app.svelte.ts`, `kinds`/`toggleKind`, memory
-  only, untouched by navigation. Live: `S.kind`, one object - the
-  kind chips flip it (`app.js:4162` `S.kind[val] = !S.kind[val]`) and
-  `kindAllows()` (2132), the alternate-table pickers (2286-2293) and
-  `renderSearch` (2841) all read it. Read at `bb61db0`.
-- **Live behaviour**: switching consumables off on Core rules switches
-  them off on the alternate tables and on search too.
-- **What the rewrite would do instead**: a kind filter per page, which
-  is what `docs/specs/STATE.md`'s own rule argues for ("what was asked
-  on a page belongs to the page") and what the rewrite shipped until B6.
-- **Why parity won**: B6 (2026-09-11) moved it to `AppState` as the live
-  shape - `plan.md`, "The kind filter: per panel first, then per app".
-  No parity state navigates between two roll modes, so neither shape
-  is measured; parity won as the default, not as a finding.
-- **How to verify the fix**: if per-page wins at Phase 8, `app.test.ts`
-  loses `kinds` and each page's test pins its own; `STATE.md`, "The
-  in-memory state object", says which. If the live shape is kept, delete
-  this entry and write the sharing down in `FEATURES.md`, "Rolling".
-- **Recorded by**: B9, 2026-09-11.

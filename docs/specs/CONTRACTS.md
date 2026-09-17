@@ -90,7 +90,10 @@ plain form, so everything downstream sees one format.
 ## 4. Machine-readable data
 
 - `data.json` - `{ items: {...}, eq: [...], refs: {...}, alt: {...} }`, the same
-  content as `data.js`. Field meanings are in `README.md`.
+  content as `data.js` with one difference: `data.js` stores an empty
+  description as `rud: ""`/`ende: ""`; `tools/build.js` strips an empty
+  string when it writes `data.json`, so the same record has no `rud`/`ende`
+  key there at all. Field meanings are in `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
 - `i/<id>.html` - a stub page per record with Open Graph markup.
 

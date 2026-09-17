@@ -1,7 +1,8 @@
-/* data.json и catalog.csv собираются из data.js и лежат рядом с
-   ним. Стоит поправить данные и забыть пересобрать — они разойдутся молча, и
-   ничего в них не будет выглядеть неправильным. Поэтому здесь они собираются
-   заново в память и сравниваются с тем, что закоммичено. */
+/* data.json и catalog.csv собираются из data.js и лежат рядом с ним.
+   Внутри `npm run check` они уже пересобраны командой `npm run data` прямо
+   перед этой проверкой, так что здесь сверяется генератор сам с собой, а не
+   закоммиченная копия. Пропущенный перед коммитом пересбор ловит отдельный
+   шаг в CI (`git diff --exit-code` после `npm run check`), не этот файл. */
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
@@ -23,7 +24,10 @@ console.log('производные файлы совпадают с data.js');
   });
 
 console.log('каталог читается');
-const rows = fs.readFileSync(path.join(ROOT, 'catalog.csv'), 'utf8').trim().split('\n');
+const catalogPath = path.join(ROOT, 'catalog.csv');
+const rows = fs.existsSync(catalogPath)
+  ? fs.readFileSync(catalogPath, 'utf8').trim().split('\n') : [];
+ok(rows.length > 0, 'catalog.csv: файла нет — запусти node tools/build.js');
 const ALL = D.everything(L);
 /* Описания содержат и запятые, и кавычки, и переводов строк в них быть не
    должно — иначе строк в файле окажется больше, чем записей. */

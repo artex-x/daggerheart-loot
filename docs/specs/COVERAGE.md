@@ -52,7 +52,7 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
 | `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one |
-| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte; counts spelled out in the nine files `COUNTERS` names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
+| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte against what `npm run data` (run immediately before, in the same `npm run check`) just wrote - proving the generator agrees with its own output, not that a commit ships the matching bytes; in CI, a `git diff --exit-code` step after `npm run check` is what makes that second comparison bite (B4); counts spelled out in the nine files `tests/derived.js:451-453` names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `golden` matrix |
 | `parity` | migration | **deleted at R0c** (`23c00a6`) | was: the rewrite against the live app, the same script on both, differences reported - see "The rewrite against the app it replaces" below |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 28 route shapes, the equipment stat line in both languages, filter group key names against the docs |
 | `i18n` | source | **deleted at R0c**; superseded by a compile-time check | before R0c: dictionary parity in both directions, and no key the code asks for that is missing (`tests/i18n.js`, parsed out of `app.js`). Now: `app/src/lib/dict.ts`'s `Dict` type makes the same parity a `tsc`/`svelte-check` error in both directions - part of `npm run check`, not a separate suite. The one thing lost: the informational dead-key report (`I18N.md`) |
@@ -137,9 +137,11 @@ more read for what a pixel diff and a static tree could never see - homed in
 To resurrect it from history: `git show 23c00a6^ -- index.html app.js
 style.css tests/lib.js tests/parity.js tests/parity docs/parity.md
 tools/probe.mjs tools/parity-ubuntu` plus the fourteen deleted browser suites
-and `tests/i18n.js`, re-point `derived.js`/`craft.js`/`contracts.js` at the
-root files, and restore `ci.yml`'s `parity` job from `git show
-b9d84ce^:.github/workflows/ci.yml`.
+(`tests/audit2.js`, `behave.js`, `craftmob.js`, `eqtest.js`, `flows.js`,
+`hues.js`, `lists2.js`, `noart.js`, `notes.js`, `print.js`, `qa.js`,
+`select.js`, `states.js`, `typo.js`) and `tests/i18n.js`, re-point
+`derived.js`/`craft.js`/`contracts.js` at the root files, and restore
+`ci.yml`'s `parity` job from `git show b9d84ce^:.github/workflows/ci.yml`.
 
 ## What is enforced, and by what
 
@@ -160,6 +162,29 @@ for real, over a rendered page (B12). `nested-interactive` is on by default
 and disabled only per call, via `expectNoA11yViolations(container, { allow })`,
 for the handful of states that render the storage notice's live-ported markup
 (`docs/specs/DEBT.md` D3) - every other component is still checked against it.
+
+### Whitespace text nodes are content
+
+`.prettierrc` never sets `htmlWhitespaceSensitivity`, so Prettier uses its
+default, `"css"`: whitespace around an element whose default CSS display is
+block (`div`, `p`, `h1`, `li`, ...) is treated as insignificant for paint and
+reflowed freely on every format, while inline elements and Svelte components
+are treated as sensitive. This app also reads `textContent` and accessible
+names, for which a whitespace text node between two block elements is very
+significant - the two models disagree, and Prettier's own formatting can
+silently change what a component renders. Where that risk is real, the whole
+subtree is protected with `prettier-ignore` and pinned with a test that reads
+`childNodes` directly rather than a joined string (`record.test.ts:271-279`
+is the pattern) - a joined-string assertion cannot tell a split text node
+from a joined one, and a split node measures a different advance than a
+joined one (`FilterBar.svelte:58-66`'s comment documents a real case: a
+one-space expression Svelte trims differently than the live app split one
+text node into two, measuring 0.1px wider in English). Setting
+`"htmlWhitespaceSensitivity": "strict"` in `.prettierrc` would remove the bug
+class entirely (every element becomes sensitive, so Prettier can never add or
+remove a whitespace text node), at the cost of reflowing every `.svelte` file
+into the hugging style - a project-wide formatting change, not a coverage
+fix, and not undertaken here.
 
 The bars differ because the obligations do. `src/lib` is pure and has no
 excuse: 95 lines, 95 functions, 85 branches, 90 statements. `src/ports` wraps
@@ -311,19 +336,17 @@ happens to do.
 
 Not blocking, recorded so they are not mistaken for coverage:
 
-- The short (`~`, deflate) link form is exercised by `lists2` and `notes`
-  through the share buttons, but has no golden fixture, because deflate output
-  is not guaranteed byte-stable across browser versions. The contract that is
-  pinned is the plain form plus "compressed is expanded to plain on open".
-- Print fitting is measured, not compared to a reference image. `print` and
-  `app/print` check geometry against the design's numbers and one pixel
-  property (the art edge); neither would catch a purely cosmetic regression
-  elsewhere on the card.
-- `states` walks click-only states but does not assert much about them beyond
-  "did not throw and rendered something".
-- Touch-only behaviour is checked statically in `craftmob`: headless Chrome
-  reports `hover: none` and will not emulate the `hover` media feature, so the
-  `@media (hover:hover)` branch cannot be rendered in a test.
+- The short (`~`, deflate) link form is exercised through
+  `tests/app/states.js` cases 13/17/22 and the share-button jsdom tests, but
+  has no golden fixture, because deflate output is not guaranteed byte-stable
+  across browser versions. The contract that is pinned is the plain form plus
+  "compressed is expanded to plain on open".
+- Print fitting is measured, not compared to a reference image. `app/print`
+  checks geometry against the design's numbers and one pixel property (the
+  art edge); it would not catch a purely cosmetic regression elsewhere on
+  the card.
+- `tests/app/states.js` walks click-only states but does not assert much
+  about them beyond "did not throw and rendered something".
 - The success paths of `clipboard`, `share` and `compress` cannot run in jsdom:
   there is no real clipboard, no share sheet and no `CompressionStream`. Their
   fallbacks - where the logic is - are covered in jsdom; `clipboard`'s and
@@ -374,8 +397,8 @@ Not blocking, recorded so they are not mistaken for coverage:
   narrower than a whole-document grep but real rather than a grep over
   `app.js` (R0b planned, "R0b.1 designed").
 
-**The R0c sweep's class-(b) findings** (`issues/47/sweep.md`, read at
-`7a33c22`) - a question a deleted instrument asked that nothing surviving
+**The R0c sweep's class-(b) findings** (`issues/47/sweep.md`, written while
+HEAD was `7a33c22`) - a question a deleted instrument asked that nothing surviving
 asks, with **no known divergence** between the two apps (unlike `DEBT.md`
 section 3, which is where a divergence *was* found). Full detail, row by row,
 is in `sweep.md`; grouped here so the list stays readable:
@@ -429,3 +452,21 @@ is in `sweep.md`; grouped here so the list stays readable:
 - `tests/i18n.js`'s dead-key report (a dictionary key with no `t().key`
   reader anywhere) has no surviving replacement; `svelte-check` does not
   flag an unused object property (sweep Part E(iii)).
+- `tools/**` is outside every coverage gate: the "Coverage `include` covers
+  everything that ships" row above is `app/src/**` only. `tools/build.js` and
+  `tools/build-share-pages.js` are byte-compared by `tests/derived.js`, and
+  `tools/smoke-file-url.mjs`/`tools/bundle-budget.mjs` run on every CI build,
+  but `tools/capture-share-fixture.mjs` is unmitigated - it produces
+  `docs/fixtures/share/records.json`, the evidence `share.test.ts:69`'s
+  golden is held to, so a drift in the generator and a drift in the fixture
+  agree with each other. No threshold is proposed here; a second coverage
+  runner for `tools/**` is not worth it for one script.
+- Axe runs with `color-contrast` RU-only at 360/390/768 (`sweep.js:356`,
+  both languages at 1180). Contrast and heading order are a function of
+  tokens and DOM order, not of which language occupies a node, so this is a
+  deliberate gap, not an oversight.
+- `NoData.svelte` (`FEATURES.md`, "data did not load") has no
+  `tests/app/inventory.js` entry: reaching it needs `data.js` blocked
+  entirely, which no address can express. It is unreachable by a structural
+  golden for that reason, not by omission; vitest's component tests are its
+  only coverage.

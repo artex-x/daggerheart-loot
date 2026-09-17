@@ -1,4 +1,8 @@
 /*
+  The design these "plan.md section N" comments index throughout this file is
+  issues/tg-preview-refresh/plan.md, deleted at 1a06122; read it with
+  `git show 1a06122^:issues/tg-preview-refresh/plan.md`.
+
   Pure logic for the Telegram link-preview refresher: no network, no
   filesystem, no clock, no process. Everything that touches the outside world
   arrives as an argument (readImage, client, verify, sleep, now, random,

@@ -157,16 +157,8 @@
           />
         </label>
         <!-- No aria-label, matching the row above: its name is its content. -->
-        <!-- The number and the name must butt against each other with no
-             whitespace between them, the way the live app's string
-             concatenation does - `.tile-img` and `.tile-b` are display:block,
-             so a stray space here is invisible on screen but still lands in
-             textContent, which is what the parity harness's control-name
-             check reads. The ignore below has to cover the whole button
-             rather than each inner div: Prettier reformats a short tag like
-             `<div class="tile-b">` back onto its own line on every format,
-             reintroducing the gap, unless the whole subtree is protected at
-             once. -->
+        <!-- Whitespace below is content, covering the whole button - see
+             docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
         <!-- prettier-ignore -->
         <button type="button" class="tile" onclick={() => { onopen(it); }}
           ><div class="tile-img"

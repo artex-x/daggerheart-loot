@@ -280,7 +280,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Открывать этот раздел при запуске');
     },
-    /* a 1600ms toast; arrived at afresh per width - see this file's header */
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
 
@@ -311,7 +311,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Скопировать название');
     },
-    /* a 1600ms toast; arrived at afresh per width - see this file's header */
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
 
@@ -587,7 +587,7 @@ const STATES = [
       await d.click('Выбрано');
       await d.click('Скопировать');
     },
-    /* a 1600ms toast; arrived at afresh per width - see this file's header */
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -770,7 +770,7 @@ const STATES = [
       await d.type('Например: клад дракона', 'Тайник');
       await d.click('Создать');
     },
-    /* a 1600ms toast; arrived at afresh per width - see this file's header */
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
 
@@ -825,7 +825,7 @@ const STATES = [
     enter: async (d) => {
       await d.click(NAME.ru.removeItem);
     },
-    /* a 7000ms toast; arrived at afresh per width - this file's header */
+    /* a 7000ms toast; arrived at afresh per language - this file's header */
     timed: true
   },
   {
@@ -876,7 +876,7 @@ const STATES = [
       await d.click(NAME.ru.prices);
       await d.click(NAME.ru.applyPrices);
     },
-    /* a 7000ms toast (it carries an undo); arrived at afresh per width - see this file's header */
+    /* a 7000ms toast (it carries an undo); arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -888,7 +888,7 @@ const STATES = [
       await d.click(NAME.ru.pickRow);
       await d.click(NAME.ru.delOne);
     },
-    /* a 7000ms toast; arrived at afresh per width - see this file's header */
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
