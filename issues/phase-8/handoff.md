@@ -1428,9 +1428,10 @@
   by this session, and `plan.md`'s own D5/O3 edit above was applied with a
   narrow `old_string`/`new_string` match specifically to avoid touching
   the new B12 section.
+- Push and CI: `git push origin main` (`ae69e4c..cedc8ac`, all three
+  commits - `370fec2`, `11066f0`, and this file's own docs commit
+  `cedc8ac`). Run `35271584579`: `gh run watch 35271584579 --exit-status`
+  - `check`, all four `browser` shards, `secrets` and `deploy` all green,
+    including the live "The published site answers correctly" step.
 - Session end partial progress (if any): none - B6 is a committed, pushed,
-  two-commit boundary (`370fec2`, `11066f0`), `npm run check`/
-  `check:built` green after each, all four golden shards clean, and CI has
-  not yet been checked by this session (see the report for the exact
-  `gh`/`git push` commands still owed before this can be called fully
-  verified the way B3-B5 were).
+  CI-verified two-commit boundary (`370fec2`, `11066f0`).
