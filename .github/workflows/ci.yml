@@ -170,15 +170,16 @@ jobs:
   #
   # The next run of this job republishes whatever the tree looks like after the
   # revert, so reverting the offending commit is the whole procedure. What this
-  # omits is the cost: push-to-live is ~12 minutes end to end (the `browser`
-  # matrix dominates it), of which this `deploy` job's own steps are ~40
-  # seconds. A cheaper path exists when the *previous* commit was known good
-  # and nothing about the source needs to change:
+  # omits is the cost: push-to-live is ~7-8 minutes end to end (the `browser`
+  # matrix dominates it - measured 7m21s on run 35241351714, 2026-09-17, on
+  # top of B3's sharding), of which this `deploy` job's own steps are ~30-40
+  # seconds (37s that run). A cheaper path exists when the *previous* commit
+  # was known good and nothing about the source needs to change:
   #
   #     gh run rerun <that earlier green run's id> --job <its deploy job id>
   #
-  # re-runs only the `deploy` job from that old run, at roughly the same ~40
-  # second cost, without waiting on `check`/`browser`/`audit`/`secrets` again.
+  # re-runs only the `deploy` job from that old run - verified on that same
+  # run (35241351714): 31s, no wait on `check`/`browser`/`audit`/`secrets`.
   # This is a rollback, never a retry: it republishes exactly the tree that
   # old run built, silently, with no new commit and no record in `git log` of
   # what is now live - reach for it only to undo a bad publish fast while a
