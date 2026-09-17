@@ -3,20 +3,21 @@
 
 ## Status
 - Task status: in_progress (B1 `e7c7b50`, B2 `44b1761`, B3 `3bc605d`, the
-  B2-review remediation batch, and now B4 `0a3d9fb`/`446e45b` all committed
-  and pushed; B5 next)
-- Last agent: implementer (2026-09-17, B4 - deploy and gate correctness,
-  plus the owner-approved `404.html`)
+  B2-review remediation batch, B4 `0a3d9fb`/`446e45b`, and now B5
+  `112bd07`/`571b041` all committed and pushed; B6 next)
+- Last agent: implementer (2026-09-17, B5 - single sources for lib,
+  generator and components, plus seven carried-over review nits)
 - NEEDS_HUMAN_CONFIRMATION: no - all eight questions and the two further
   decisions are settled (`context.md`, "Settled owner decisions"); the plan
   is written as decided.
 - Branch: `main`
-- Base / starting commit: `f53f44d`; HEAD after this batch: `446e45b`.
-- Review: required (trigger: worker deviation from plan - see B4's
-  "Deviations" below - and the deploy job's own guard/publish surface
-  changed, which is this task's generated-artefacts/asset-path trigger;
-  separately, `context.md`'s task-level policy mandates a reviewer on every
-  phase-8 batch regardless of the standard triggers).
+- Base / starting commit: `f53f44d`; HEAD after this batch: `571b041`.
+- Review: required (trigger: this task's own policy - `context.md`, "Review
+  and nit policy for this task" - mandates a reviewer on every phase-8 batch
+  regardless of the standard triggers; separately, this batch touches
+  generated share-page output (O5/O6) and the shared `tokens.css` custom-
+  property surface, this task's generated-artefacts and styling-surface
+  triggers).
 
 ## Completed
 
@@ -752,10 +753,272 @@
   terminal batch turns them into a pile, per this task's "nits are processed
   immediately" policy.
 
+### B5 - single sources: lib, generator and components (A1, A3, A4, A5, A7, A9, A11, O5, O6, H5, C1/A2, C5, H6, H7, C2, C7, C8, D7) plus seven carried-over nits
+- What shipped, by finding:
+  - **A1**: `label.ts` deleted its own `GROUPS`/`SUBS` copy of the table
+    taxonomy; `whereFrom` resolves the group label through
+    `dict(lang)[groupOf(table).label]` and the sub label through
+    `tables.ts`'s exported `SUB_LABEL`, both already used by
+    `TablesPage.svelte`'s own chips. Every literal was verified
+    byte-identical against the dict value before deleting it.
+  - **A3**: `listLink.ts` imports `MoneyMode`/`MONEY_MODES`/`MONEY_DEFAULT`
+    from `money.js` instead of a second declaration; re-exports the type so
+    `lists.ts`/`ListPage.svelte`/`state/lists.svelte.ts` keep importing it
+    from `listLink.js` unchanged.
+  - **A4**: `roll.ts` imports `Rarity` from `money.js` and types
+    `RARITY_ORDER` on it instead of deriving `Rarity` from its own array;
+    `alt.ts`'s `RARITIES` is now `= RARITY_ORDER` (imported), closing the
+    exact silent-failure path the finding named (an unextended `RARITY_ORDER`
+    no longer diverges from `BUMP`'s domain, because there is only one list).
+  - **A5**: `label.ts`'s private `EQ_TABLE` (`EquipKind -> TableId`) renamed
+    `EQ_TABLE_OF` - `filters.ts`'s exported `EQ_TABLE` (`TableId ->
+    EquipKind`) is a different map with the same name, untouched.
+  - **A7**: `std.ts`'s `DICE` is now `Partial<Record<Rarity, ...>>` (typed
+    import from `money.js`), closing the "a typo in a rarity key is not a
+    compile error" hole the finding named; `NDICE`'s `Object.keys(DICE)` cast
+    to `Rarity[]` for the lookup.
+  - **A9**: `Record_.frame` is `FrameId` (types.ts now type-imports it from
+    frames.ts; the two-way type-only import is erased, no runtime cycle) and
+    `frameName`'s parameter is `FrameId`. Two callers that hand it an
+    out-of-domain string keep a documented `as FrameId` cast:
+    `label.ts`'s `srcName` fallback (any key not one of the five books is
+    already assumed to be a frame id) and `frames.test.ts`'s own
+    "unknown frame" fallback test. The tightening made a real dead branch
+    provable: `srcLabel`'s `case 'frame': return it.frame ? ... : t.srcFrame`
+    was flagged `no-unnecessary-condition` by eslint, because `it.frame` is
+    checked and returned on earlier in the same function - simplified to
+    `return t.srcFrame;` with a comment; `npm run lint` clean.
+  - **A11**: `roll.ts` re-exports `clamp` from `numField.js` instead of its
+    own `Math.max`/`Math.min` copy (same values, `roll.test.ts` unchanged);
+    `print.ts`'s `DIE_ART` renamed `DICE_WITH_ART` (`dice.ts` already
+    exports an unrelated `DIE_ART`); `PrintCard.svelte`'s one call site
+    updated.
+  - **O5/O6/"830"**: `build-share-pages.js`'s description now falls back to
+    `''` before the newline-flatten (`rawDesc = it.rud || it.ende || ''`);
+    the visible paragraph is now one `<p>` per source line (a new
+    `descHtml()`) instead of the raw multi-line string glued into one `<p>`,
+    fixing the run-on rendering the finding named for `i/w6.html`'s "- "
+    list lines (verified by inspection after `npm run data`); the stale
+    "830" comment corrected to "1091"; `EQ_TYPE`/`EQ_TRAIT`/`EQ_RANGE`/
+    `EQ_DT`/`EQ_CLS`/`EQ_BURDEN` added to `module.exports`.
+  - **H5**: `i18n.test.ts` gained a `describe` that `createRequire`s
+    `tools/build-share-pages.js` and asserts each of its six `EQ_*` maps
+    equals the `ru` half of `i18n.ts`'s own `Pair`s, key for key - the guard
+    the file's own header comment said did not exist. All six matched
+    byte-identical on the first run.
+  - **A2/C1**: `AppState.copied(run, ok)` (awaits `run()`, toasts `ok` or
+    `t.copyFailed` with `error: !ok`) replaces all fourteen
+    `env.clipboard`-site handlers; the ten `const say = (msg, error) =>
+    app.say(msg, { error })` shims and the `say` prop on `PageHead`/
+    `RecordActions` are deleted - each caller now calls `app.say(...)`
+    directly for a plain toast, or `app.copied(...)` for a clipboard result.
+    `state/lists.test.ts:19`'s shim is a test double for `ListStore`'s
+    constructor injection, a different pattern; left alone per the dispatch.
+  - **C5/H6/H7**: `--ink-on-gold: #1a1206` in `tokens.css` replaces all
+    eight literal occurrences (`Button.svelte` x2, `Chip`, `DiceBar`,
+    `HelpButton`, `PageHead`, `Seg`, `Toast`); `--gap`, `--gap-lg`,
+    `--step--1`, `--step--2`, `--step-1`, `--step-2` deleted (verified zero
+    `var()` readers each); the page-heading comment moved to sit directly
+    above `--h-page-*` (it previously sat above `--wrap` instead, describing
+    declarations three lines below it) and its last sentence corrected to
+    what `tests/app/typo.js` actually measures (a hardcoded scale list, not
+    these tokens); the `:56` "one scale" comment rewritten to describe the
+    file now that only `--step-0` remains under it.
+  - **D7**: `Chip.svelte`'s `.chip small` and `ListPage.svelte`'s `.nlbl i`
+    each lost their `opacity: 0.72`/`0.75` decoration, leaving `--muted`/
+    `--muted2` at full strength (already AA per `tokens.css`'s own
+    contrast comment); `sweep.js`'s `color-contrast` allow for
+    `#/roll/alt`/`#/lists/a` deleted; `docs/specs/DEBT.md`'s D7 entry
+    deleted per its own "the batch that pays an entry off deletes it" rule
+    (a numbering gap, same convention as D9). Verified by `node
+    tests/app/sweep.js 768` reporting no `color-contrast` violation with the
+    allow gone.
+  - **C2**: `Badge.svelte` (`cls`, `title?`, `children: Snippet`, a one-line
+    `<span class="badge {cls}" {title}>{@render children()}</span>`) holds
+    the base rule plus eleven variants (the nine the plan named -
+    `item`/`cons`/`eq-weapon`/`eq-secondary`/`eq-armor`/`uniq`/`tier`/`src`/
+    `num` - plus `hope`/`fear`, RecordCard's own die-result badge, folded in
+    too once RecordCard's *entire* local `.badge` block was going to be
+    deleted anyway - leaving it behind would have meant a second, smaller
+    `.badge` base-rule copy surviving in that file, the exact defect being
+    fixed). Replaces all `.badge`-classed markup and CSS in `RecordCard.svelte`
+    (four spans), `RowMain.svelte` (two spans, inside its documented
+    whitespace-critical `.rm` run - converted tag-for-tag with identical
+    hugging, no whitespace added or removed) and `ListsPage.svelte` (one
+    span, inside a `<!-- prettier-ignore -->` block, same tag-for-tag
+    treatment). `--badge-bg`/`--gold-rgb` added to `tokens.css` while the
+    rules moved. `a11y.test.ts`'s `COVERED` guard gained a `Badge.svelte`
+    entry; `badge.test.ts` added (title present/absent, a rerender that
+    changes both `cls` and `title`) after `npm run test` flagged 50% branch
+    coverage on the file's one attribute-update path - structurally the
+    same ceiling `Button.svelte`/`DiceBar.svelte` already document, so
+    `vite.config.mts` gained a matching named exception at 50% branches
+    rather than lowering the general 75% floor.
+  - **C7**: `NumRow.svelte` (`children: Snippet`, `<div class="numrow">`)
+    replaces the five copies in `AltPanel`/`RollPanel`/`StdPanel`/
+    `ListPage`/`ListsPage` (`ListsPage` has two markup uses). The named
+    scoping trap: `ListsPage.svelte`'s `.numrow .grow` selector would have
+    matched nothing once `.numrow` belonged to a different component (Svelte
+    scopes CSS per component); changed to a bare `.grow` selector, which
+    still only matches `.grow` inside that file's own two `NumRow` children.
+    `.results { margin-top: 26px }` (three lines, duplicated in
+    `AltPanel`/`RollPanel`/`StdPanel`) left in place per the plan, each
+    given a one-line comment cross-referencing the other two rather than
+    extracted into a component.
+  - **C8**: `App.svelte`'s route chain restructured to an outer `{#if
+    app.route.kind === 'section'}`, `{@const cfg = ROLL_TABLE[app.route.section]}`,
+    `{#if cfg}` - `RollPanel` now reads `cfg.table`/`cfg.title` directly
+    instead of repeating the `ROLL_TABLE[app.route.section]` lookup three
+    times with unreachable `?? ''`/`?? 'pageWondrous'` fallbacks.
+  - **frames.ts nit** (routed here by B4's dispatch): the header comment's
+    `` `SECTIONS`/`TAB_LIST` `` corrected to `` `SECTIONS` `` alone -
+    `TAB_LIST` names nothing in this codebase (`app.test.ts:68`'s own
+    `TAB_LIST` mention cites the *live app's* `app.js` identifier
+    historically and was left alone; only the current-codebase claim was
+    wrong).
+  - **Seven carried-over nits** (B3/B4 review, re-derived by content per the
+    orchestrator's mid-task correction rather than by the stale line numbers
+    the dispatch first carried):
+    - `tests/run-all.js`'s weight-table comment corrected to record the
+      371.9s/172.7s re-measurement and B3's finding that re-weighting the
+      table would not change predicted wall clock, without touching the
+      `275`/`275` values themselves.
+    - `tests/run-all.js` gained one paragraph on why `Array.prototype.sort`'s
+      stability is load-bearing (this table has two exact ties: the
+      `app/sweep` 1180 rows and `dataint`/`derived`).
+    - `tests/run-all.js`'s empty-queue message now names the shard as the
+      cause when `--shard=` produced an empty bin, instead of always
+      printing "no such suites" with an empty name list.
+    - `.github/workflows/ci.yml`'s failure-artifact comment corrected: it
+      claimed the upload is "only ever `coverage/`", when the same path list
+      also carries `dist/`, which a failed Build/smoke/budget step (all
+      three run after `npm run check`, in the same `check` job) leaves
+      behind.
+    - `.github/workflows/ci.yml`'s "Publishing, gated on ... structural
+      goldens" comment corrected to name the `browser` job (B3 folded the
+      separate `golden` job into it; `needs:` already read `[check, audit,
+      secrets, browser]`).
+    - `.claude/hooks/bash-guard.mjs`'s long-check reminder no longer exempts
+      `node tests/run-all.js --shard=`: a run-all shard packs a whole
+      `browser`-matrix row (a local `--shard=4/4` measured 384s), unlike
+      `golden`/`sweep`'s own per-state/per-width shard args, which stay
+      exempt. `.claude/hooks/selftest.mjs` gained case #31 proving the
+      reminder now fires for `node tests/run-all.js --shard=1/4`; full
+      selftest still 330/330.
+    - `tests/app/sweep.js`'s completion message now names the actual
+      widths/languages a narrowed run covered instead of always claiming
+      "all widths and languages".
+  - **Campsite, in the same touched files**: `ci.yml`'s `check` job checkout
+    had `fetch-depth: 0 # gitleaks reads history, not just a snapshot` - the
+    comment was wrong (gitleaks runs only in the separate `secrets` job,
+    which already sets its own `fetch-depth: 0`); the stale comment deleted,
+    the setting itself left alone (no evidence `check` needs shallow vs. full
+    history either way, and changing the value is a behaviour question the
+    dispatch did not ask for).
+  - **Not taken, and said so rather than silently dropped**: B4's review
+    also named `ci.yml`'s DP2 stub-count check reading the repo-root
+    `catalog.csv` instead of `_site/catalog.csv` - the dispatch scoped this
+    to "only if you are already editing that region"; this batch's `ci.yml`
+    edits were the checkout step and the two comments above, a different
+    region, so it was left untouched.
+- Files changed: `.claude/hooks/{bash-guard,selftest}.mjs`,
+  `.github/workflows/ci.yml`, `app/src/App.svelte`,
+  `app/src/components/{AltPanel,Button,Chip,DiceBar,HelpButton,ListPage,
+  ListsPage,PageHead,PrintCard,PrintPage,RecordActions,RecordCard,
+  RecordModal,RecordPage,RollPanel,RowMain,SearchPage,Seg,SelBar,StdPanel,
+  TablesPage,Toast}.svelte`, `app/src/components/a11y.test.ts`,
+  `app/src/lib/{alt,frames,label,listLink,print,roll,std,types}.ts`,
+  `app/src/lib/{frames,i18n}.test.ts`, `app/src/state/app.svelte.ts`,
+  `app/src/styles/tokens.css`, `docs/specs/DEBT.md`, `tests/app/sweep.js`,
+  `tests/craft.js`, `tests/run-all.js`, `tools/build-share-pages.js`,
+  `vite.config.mts`. New: `app/src/components/{Badge,NumRow}.svelte`,
+  `app/src/components/badge.test.ts`.
+- Commit(s): `112bd07 refactor(phase-8): B5 - single sources for lib,
+  generator and components`, `571b041 fix(phase-8): B5 - craft.js's
+  stub-staleness probe survives a multi-line description` - both pushed.
+- Deviations and rationale:
+  - Badge.svelte carries eleven variants, not the nine the plan's step list
+    named - see the C2 entry above; the extra two (`hope`/`fear`) were
+    RecordCard's own die-result badge, not one of the three duplicated
+    copies the finding described, but leaving them un-migrated would have
+    required keeping a second, smaller `.badge` base-rule copy alive in
+    RecordCard specifically to serve them - reintroducing the defect this
+    step exists to remove. All four golden shards proved the swap moves no
+    rendered bytes.
+  - `vite.config.mts` gained a named coverage-threshold exception for
+    `Badge.svelte` (50% branches) - not in the plan's file list, but
+    `npm run test` fails without it once the file exists, for the same
+    structural reason `Button.svelte`/`DiceBar.svelte` already have one.
+  - Two of B4's review findings (the `ci.yml` checkout `fetch-depth`
+    comment, and DP2's `catalog.csv` path) were folded in or explicitly
+    declined per the orchestrator's own "campsite fix if you are in that
+    area, otherwise leave it and say so" instruction mid-task - see above.
+  - **CI caught a real regression the local gates did not**: the first push
+    (`112bd07`) failed CI's `browser (1)` job at the `craft` suite - "stubs
+    out of date: voa1_t1a, voa1_t1c, voa1_t1e, voa1_t1g, voa1_t1h". Cause:
+    `tests/craft.js`'s own staleness probe (separate from, and weaker than,
+    `tests/derived.js`'s exhaustive regenerate-and-diff, which stayed green
+    throughout) checked a raw 40-character prefix of each record's
+    description against the stub file; five Vault of Ages records open with
+    a "Стоимость Призыва: N" line under 40 characters, and O6's per-line
+    `<p>` rendering turned the `\n` after it into a paragraph break, so the
+    old raw-prefix probe no longer matched. `craft.js` was not in this
+    batch's own gate list (`derived,dataint,stub,app/typo,app/hues` -
+    `plan.md`, "B5", "Gates" - never named it), which is why this was not
+    caught before pushing. Fixed in `571b041`: the probe now takes only the
+    first line, capped at 40 characters. The same push's `browser (1)` job
+    also failed `app/states`' two-window storage-sync case ("страница B не
+    получила событие storage за 30с") - untouched by this batch's diff (no
+    storage/list-sync file changed) and did not recur on the next push,
+    consistent with `context.md`'s documented class of CI host-contention
+    flake; treated as such rather than investigated further, per that
+    section's own "prove by isolation" rule (the re-run *was* the isolation
+    proof - a different push, same code for that suite, clean the second
+    time).
+- Review: required (this task's own policy - `context.md`, "Review and nit
+  policy for this task" - mandates a reviewer on every phase-8 batch
+  regardless of the standard triggers; separately, this batch touches
+  generated share-page output (O5/O6) and a public-ish CSS custom-property
+  surface (`tokens.css`), which are this task's generated-artefacts and
+  styling-surface triggers).
+- Verification commands and results:
+  - `npm run typecheck`, `npm run lint`, `npm run format:check` - each run
+    standalone during development; one lint error surfaced by the A9
+    tightening (see above) and one format diff (3 files) were fixed before
+    the runs below.
+  - `set -o pipefail; npm run check 2>&1 | tail -n 120` (Bash timeout
+    600000, foreground) - green: `format:check`, `lint`, `typecheck`, `node
+    --check tools/check-site.mjs`, `npm run data` (1091 share pages
+    written), `node tests/derived.js`, `node .claude/hooks/selftest.mjs`
+    (330 passed, including the new #31), `node --test
+    tools/tg-preview/lib.test.mjs`, `node --test tools/artwork/lib.test.mjs`,
+    `node --test tools/check-site.test.mjs`, `node --test
+    tests/app/golden.test.mjs`, `npm run test` (43 files, 1068 tests,
+    coverage 96.64/88.99/97.22/97.33 - all thresholds green including
+    `Badge.svelte`'s new 50%-branch exception).
+  - `npm run check:built` - green (`build` including the regenerated share
+    pages, `smoke`, `budget` - 88.7 kB gzip within the 120 kB budget).
+  - `node tests/run-all.js derived,dataint,stub,app/typo,app/hues` - all
+    five green (89s pooled, 8 threads).
+  - `node tests/app/sweep.js 768` - clean, message reads "чисто на 768 (ru,
+    en)" (the new scoped-completion-message fix), no `color-contrast`
+    violation on `#/roll/alt` with the D7 allow removed.
+  - Four golden shards, one foreground call each: `--shard=1/4` (28 states,
+    116.3s), `--shard=2/4` (28 states, 129.5s), `--shard=3/4` (27 states,
+    108.4s), `--shard=4/4` (27 states, 108.7s) - all four "без изменений"
+    (no changes). This is the batch's own proof that none of the Badge/
+    NumRow/App.svelte/label.ts/tokens.css changes moved a rendered byte.
+- Push and CI: `git push origin main` twice (`39da6ae..112bd07`, then
+  `112bd07..571b041`). First run `35255169877`: `check`/`audit`/`secrets`
+  green, `browser (2)`/`browser (3)` green, `browser (1)` FAILED (`craft` and
+  `app/states`, see the deviation above); `deploy` correctly did not run
+  (gated on all four `browser` jobs). Second run `35256262165`, after the
+  `craft.js` fix: `check`, all four `browser` shards, `audit`, `secrets` and
+  `deploy` all green (`browser` jobs 5m35s-6m34s each); the live site's own
+  post-deploy check ("The published site answers correctly") passed.
+
 ## Blockers
-- None. B5 follows; it must not run beside another heavy CI push or another
-  golden-shard run in this working tree (four full golden shards is its own
-  proof, per its "Gates").
+- None. B6 follows.
 
 ## Deferred
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
@@ -769,58 +1032,50 @@
   not retry the same option without reading that note first.
 
 ## Next batch (implement-ready)
-- Name: B5 - single sources: lib, generator and components (A1, A3, A4, A5,
-  A7, A9, A11, O5, O6, H5, C1/A2, C5, H6, H7, C2, C7, C8, D7)
-- Objective: one definition each for the group/sub-label lookup, the
-  cross-module `Rarity`/`MoneyMode`/`clamp` imports, the share-page
-  generator's description flattening and `EQ_*` export, the `say`/clipboard
-  toast plumbing, the ink-on-gold/dead-token cleanup, and two new shared
-  components (`Badge.svelte`, `NumRow.svelte`) replacing three and five
-  inline copies respectively - proved by "identical DOM everywhere" across
-  all four golden shards.
-- Files: `plan.md`, "B5", "Files" (full list) -
-  `app/src/lib/{label,tables,listLink,money,roll,alt,std,frames,types,
-  numField,print}.ts` and tests, `tools/build-share-pages.js`,
-  `app/src/lib/i18n.test.ts`, `app/src/state/app.svelte.ts`,
-  `PageHead.svelte`, `RecordActions.svelte`, the ten page components,
-  `Badge.svelte` (new), `NumRow.svelte` (new), `RecordCard.svelte`,
-  `RowMain.svelte`, `ListsPage.svelte`, `AltPanel.svelte`, `RollPanel.svelte`,
-  `StdPanel.svelte`, `ListPage.svelte`, `Chip.svelte`, `tokens.css`,
-  `App.svelte`, `a11y.test.ts`, `tests/app/sweep.js:363`,
-  `docs/specs/DEBT.md` (D7 deleted). Also carries the nit routed here by
-  B4's own dispatch: `app/src/lib/frames.ts`'s stale `TAB_LIST` identifier.
-- Steps: `plan.md`, "B5", "Steps - lib and generator" (1-4) then "Steps -
-  components" (5-12), in that order - see the plan for the full text; brief
-  summary: A1 (delete `GROUPS`/`SUBS`, resolve through `dict(lang)`), A3/A4/
-  A5/A7/A9/A11 (cross-module type/const imports instead of duplicated ones),
-  O5/O6 (`build-share-pages.js` description flattening, 830->1091, export
-  `EQ_*`), H5 (a guard test that the generator's `EQ_*` match `i18n.ts`), A2/
-  C1 (`AppState.copied()` replaces the 14 `env.clipboard` call sites and the
-  ten `say` shims), C5/H6/H7 (`--ink-on-gold` token, delete six dead tokens),
-  D7 (delete the two `opacity` declarations and the `color-contrast` allow -
-  this task's D7 planner finding: the fix is the tokens, not a palette
-  change), C2 (`Badge.svelte`, whitespace-critical single-line template,
-  replaces three inline copies), C7 (`NumRow.svelte`, replaces five copies),
-  C8 (`App.svelte:49-56` `{#if}`/`{@const}` restructure).
-- Acceptance: `plan.md`, "B5", "Acceptance" - `label.test.ts`/`money.test.ts`/
-  `alt.test.ts`/`roll.test.ts` unchanged; `node tests/run-all.js
-  derived,dataint,stub` green with the O6 stub shape; `git grep -n
-  '#1a1206' -- app/src` returns only `tokens.css`; `git grep -c 'const say ='
-  -- app/src/components` is 0; all 14 clipboard sites read `app.copied(...)`;
-  all four golden shards green without `--update`; `node tests/app/sweep.js
-  768` shows no `color-contrast` violation on `#/roll/alt`/`#/lists/a` with
-  the allow removed; `app/typo` and `app/hues` green.
-- Gates: `npm run check`; `npm run check:built`; `node tests/run-all.js
-  derived,dataint,stub,app/typo,app/hues`; `node tests/app/sweep.js 768`; the
-  four golden shards, one foreground call each (`node tests/app/golden.js
-  --shard=n/4` for `n` in 1..4, or `--only=` subsets while iterating, full
-  shards before calling the batch done).
-- Risks / do-nots: touches ten page components and three tokens.css rule
-  groups in one batch - size it by the shared golden proof, not by file
-  count (`CLAUDE.md`, "Size a batch by its gates"). Do not fold in N2-N8
-  (below) unless they land in files this batch already opens for another
-  reason - `run-all.js`/`sweep.js`'s own nits do not overlap B5's file list,
-  so they likely still need their own small pass first or alongside.
+- Name: B6 - router, state and lists (P1, D19, D5/O3, P11, R7, S1, S2,
+  S3/D2, S6, R5, R4, DC1, R9, R10, R1, R2, S4, S5, S7, R3/P9, PF3, D23, D12,
+  A6, P5)
+- Objective: the shell/router/state layer and the lists feature, each its
+  own commit inside the batch - a skip link that actually skips, the
+  document title, the tab-bar underline geometry, a failed-route boundary,
+  R1/R2's storage-unreadable and cross-tab-external-change handling, R9/R10's
+  Q3/Q4-settled fallback and bad-link states, DC1's restored table-view
+  persistence (Q1), and the lists feature's own debounced URL sync, dropped
+  ids toast, note re-seed, delete-with-undo and the three-copies-of-one-
+  undo-pattern extraction (A6).
+- Files: `plan.md`, "B6", "Files" (full list) - `Shell.svelte`, `TabBar.svelte`,
+  `App.svelte`, `app/src/state/{app,lists}.svelte.ts`,
+  `app/src/lib/{hash,listLink}.ts`, `app/src/ports/{router,storage,types}.ts`,
+  `TablesPage.svelte` (Q1), `ListPage.svelte`, `ListsPage.svelte`,
+  `SharedListPage.svelte`, `AddToList.svelte`, `StorageNotice.svelte`,
+  `app/src/lib/dict.ts`, tests (`shell`, `app`, `hash`, `ports`, `lists`,
+  `listPage`, `listsPage`, `sharedListPage`), `docs/fixtures/urls/routes.json`,
+  `tests/contracts.js`, `tests/app/inventory.js` plus two seeded goldens,
+  `docs/specs/{ROUTES,STATE,FEATURES,DEBT}.md`.
+- Steps: `plan.md`, "B6", "Commit 1 - shell, router, state" (steps 1-12) then
+  "Commit 2 - lists and two tabs" (steps 13-22) - see the plan for the full
+  text and each step's own test; two commits inside the batch, shell/router/
+  state first (each green on its own `npm run check`), lists second, with the
+  `tests/app/` filters paid once at the end rather than per commit.
+- Acceptance: `plan.md`, "B6", "Acceptance" - every step's named test; `node
+  tests/app/golden.js --only=lists` and `--only=#/l/` green without
+  `--update` except the two new seeded states (R10's failed expansion, R1's
+  unreadable storage); `tests/contracts.js` replays the two new fixture rows;
+  `node tests/run-all.js app/states` green (history case, two-tab case); `git
+  grep -n zzzz -- app/src` returns only the `_l_zzzz` plain-payload path.
+- Gates: `npm run check` per commit; `npm run check:built`; `node
+  tests/app/golden.js --only=lists`; `node tests/app/golden.js --only=#/l/`;
+  `node tests/run-all.js app/states,contracts`.
+- Goldens: two new states seeded (R10's failed expansion, R1's unreadable
+  storage); nothing else moves.
+- Risks / do-nots: a different route and filter set from B5 (proofs are
+  `--only=lists`/`--only=#/l/`/`app/states`, none of which B5 ran) and from
+  B7 (which re-records) - reviewability is why it stays two commits inside
+  one batch rather than one. `app/states`' two-window storage-sync case
+  flaked once under CI host load this session (B5's push, unrelated to B5's
+  diff, did not recur) - if it flakes again while validating this batch,
+  re-run in isolation before treating it as a regression (`context.md`,
+  "Reasons already disproved").
 
 ## Notes
 - Mocks path: none (no new UI element).
@@ -840,5 +1095,9 @@
   from the remote (`git ls-remote --heads origin probe/dp4-stale-data` -
   empty). No other scratch artifacts; `dist/` from local builds is
   gitignored as usual.
-- Session end partial progress (if any): none - B4 is a committed, pushed,
-  and CI-verified boundary.
+- Cleanup performed / retained artifacts (B5): none beyond the normal
+  `npm run data`/`npm run build` outputs (`i/`, `dist/`), both already
+  gitignored or untracked as usual; no scratch files, no probe branches.
+- Session end partial progress (if any): none - B5 is a committed, pushed,
+  and CI-verified boundary (two commits, `112bd07` and the `craft.js` fix
+  `571b041`, both green on the second CI run).
