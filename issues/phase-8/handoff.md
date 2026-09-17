@@ -144,9 +144,12 @@
   updated for the TL6 message-text change), `tests/app/states.js` (one
   stale-name fix beside the H12 rename), `.claude/README.md`'s Hooks-table
   `rm`/`restore` row.
-- Commit(s): see below - filled in after `git log` (this file is exempt
-  from the commit-gate fingerprint per this batch's own TL2 fix, so editing
-  it now does not require re-running the check that already passed).
+- Commit(s): `44b1761 fix(phase-8): hooks livelock, ignore rules, truth
+  fixes, CLAUDE.md, batch-size rule (B2)` - pushed. (This line was added in
+  a second, doc-only commit after `git log` revealed the hash - proof by
+  use of this same batch's TL2 fix: editing `handoff.md` after `44b1761`
+  did not require re-running `npm run check`, and the commit gate stayed
+  silent.)
 - Deviations and rationale:
   - **C9 (eslint `ignoreVoidReturningFunctions`) did not work and was not
     kept.** Added the option, ran `npm run lint`: it cleared none of the

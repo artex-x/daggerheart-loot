@@ -1,11 +1,11 @@
 # Plan - TASK phase-8
 
 Status: revised 2026-09-17 (planner, second pass) after the owner's two
-revisions: B1 shipped at `e7c7b50`; B2 shipped (implementer, 2026-09-17,
-handoff.md "Completed"); B2-B20 merged to B2-B11 by gate; a forcing function
-for batch size folded into B2. All eight owner questions are settled
-(`context.md`, "Settled owner decisions"); every settled step below is
-written as decided, not as an option.
+revisions: B1 shipped at `e7c7b50`; B2 shipped at `44b1761` (implementer,
+2026-09-17, handoff.md "Completed"); B2-B20 merged to B2-B11 by gate; a
+forcing function for batch size folded into B2. All eight owner questions
+are settled (`context.md`, "Settled owner decisions"); every settled step
+below is written as decided, not as an option.
 
 ## Objective
 
