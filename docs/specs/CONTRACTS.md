@@ -90,10 +90,11 @@ plain form, so everything downstream sees one format.
 ## 4. Machine-readable data
 
 - `data.json` - `{ items: {...}, eq: [...], refs: {...}, alt: {...} }`, the same
-  content as `data.js` with one difference: `data.js` stores an empty
-  description as `rud: ""`/`ende: ""`; `tools/build.js` strips an empty
-  string when it writes `data.json`, so the same record has no `rud`/`ende`
-  key there at all. Field meanings are in `README.md`.
+  content as `data.js`: `tools/derived.js`'s `dataJson(L)` is
+  `JSON.stringify(L) + '\n'`, nothing stripped, and `tests/derived.js` holds
+  `data.json` to that output byte for byte inside `npm run check`. An empty
+  description is `rud: ""`/`ende: ""` in both files alike (112 such literals
+  in `data.json`, verified). Field meanings are in `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
 - `i/<id>.html` - a stub page per record with Open Graph markup.
 

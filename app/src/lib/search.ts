@@ -35,19 +35,46 @@ export function statLineFor(lang: Lang, t: Pick<Dict, 'tier' | 'eqTh' | 'eqScore
 }
 
 /**
- * Folds a string the way search compares it: case-insensitive, `ё`/`Ё` read as
- * `е`, and the typographic apostrophes some equipment names carry (U+2019,
- * and U+02BC for good measure) read as the plain `'` a keyboard types. Applied
- * to both the query and the catalogue, so `плетеная` finds "Плетёная" and
- * `soldier's` finds "Soldier's". Nothing else - no `й`/`и` merge, no
- * diacritic stripping; that would be fuzziness nobody asked for.
+ * Folds a Latin diacritic to its plain letter (NFD, then drop the combining
+ * mark) - `ä`/`ö` -> `a`/`o`, so a reader who cannot type an umlaut still
+ * finds `Ethereal Zweihänder` or `Möbius Orb`. Cyrillic is left untouched
+ * character by character rather than run through the same decomposition:
+ * NFD decomposes `й` (U+0439) into `и` (U+0438) plus a combining breve,
+ * which would silently merge `й` into `и` - the exact merge `foldQuery`
+ * deliberately does not make. Verified on this codebase's own alphabet
+ * before shipping (`search.test.ts`), not assumed.
  */
-export function foldQuery(s: string): string {
-  return s.toLowerCase().replace(/ё/g, 'е').replace(/[’ʼ]/g, "'");
+function foldLatinDiacritics(s: string): string {
+  return Array.from(s)
+    .map((ch) => {
+      const cp = ch.codePointAt(0) ?? 0;
+      if (cp >= 0x0400 && cp <= 0x04ff) return ch; // Cyrillic block - see above
+      return ch.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    })
+    .join('');
 }
 
-const has = (hay: string | undefined, needle: string): boolean =>
-  !!hay && foldQuery(hay).includes(needle);
+/**
+ * Folds a string the way search compares it: case-insensitive, `ё`/`Ё` read
+ * as `е`, the typographic apostrophes some equipment names carry (U+2019,
+ * and U+02BC for good measure) read as the plain `'` a keyboard types, Latin
+ * diacritics read as their plain letter (`foldLatinDiacritics`, above - the
+ * owner overrode this file's earlier "no diacritic stripping" stance once
+ * `Ethereal Zweihänder`/`Möbius Orb` were shown unreachable by ordinary
+ * typing), and the Unicode minus sign (U+2212, which 113 descriptions use)
+ * reads as the ASCII `-` a keyboard types, so `-1` finds them. Applied to
+ * both the query and the catalogue. Still no `й`/`и` merge - see
+ * `foldLatinDiacritics`'s comment.
+ */
+export function foldQuery(s: string): string {
+  return foldLatinDiacritics(s.toLowerCase())
+    .replace(/ё/g, 'е')
+    .replace(/[’ʼ]/g, "'")
+    .replace(/−/g, '-');
+}
+
+const has = (text: string | undefined, needle: string): boolean =>
+  !!text && foldQuery(text).includes(needle);
 
 /** A record's folded searchable text: one folded string per field it is built
  *  from, so checking it agrees exactly with checking the fields one at a time
@@ -59,8 +86,15 @@ type Hay = (it: Record_) => readonly string[];
  * Builds a per-record folded haystack, memoised by id.
  *
  * Folding is the expensive part - `performance.md` PF2 measured 2.74ms
- * refolding the catalogue on every keystroke against 0.33ms once this is
- * warm. `matches`'s fallback (`has`, below) folds live for a caller with no
+ * refolding the catalogue on every keystroke against 0.33ms warm. That
+ * 0.33ms is PF2's own proposed design: one lowercased string per record,
+ * built into `data.ts`'s `Index` at load time. This file builds a
+ * different design instead - an array of per-field folded strings, cached
+ * per id here rather than baked into the `Index` - for the field-boundary
+ * correctness reason `Hay`'s own comment records, so the two numbers are
+ * not directly comparable measurements of the same code; only the warm/cold
+ * shape (fold once, reuse, instead of refolding every keystroke) carries
+ * over. `matches`'s fallback (`has`, below) folds live for a caller with no
  * index to cache against; this is for the two pages that filter the whole
  * catalogue on every query and can afford to build it once per language.
  */
@@ -109,15 +143,17 @@ export function matches(
  * Records answering the query, in the order they were given.
  *
  * An empty query returns nothing rather than everything: the search page with
- * no query typed is an invitation, not a dump of the whole catalogue.
+ * no query typed is an invitation, not a dump of the whole catalogue. No
+ * caller has a `Hay` to offer here (both pages that build one call `matches`
+ * directly instead), so unlike `matches` this does not take one - `CLAUDE.md`:
+ * "Add no module, export, component, or variant before something uses it."
  */
 export function search(
   records: readonly Record_[],
   query: string,
-  statLine: StatLine = () => '',
-  hay?: Hay
+  statLine: StatLine = () => ''
 ): Record_[] {
   const q = foldQuery(query.trim());
   if (!q) return [];
-  return records.filter((it) => matches(it, q, statLine, hay));
+  return records.filter((it) => matches(it, q, statLine));
 }

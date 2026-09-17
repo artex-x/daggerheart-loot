@@ -185,6 +185,9 @@ implementer for a field-boundary false match - correct); `SearchPage` and
       contracts default to no change; behaviour is judged against
       `docs/specs/`, not against the previous build."
   12. `:97` -> "the nine files `tests/derived.js:448-450` names" (DC12).
+      **Corrected in the B2 review remediation (B-2):** that range moved
+      once already (B3) and is replaced everywhere by naming
+      `tests/derived.js`'s `COUNT_BEARING_FILES` array instead.
   13. After the `:52-58` paragraph, one line: "A plan names the criterion
       behind every split and states its total gate cost; a split with no
       criterion is a merge." File stays at 168/200.
@@ -824,8 +827,9 @@ Every id from the first plan's B2-B20, by new batch. Nothing fell out.
 | First plan | Findings | Now |
 |---|---|---|
 | B2 | TL1, TL2, TL3, TL4, TL5, TL6, TL7/DP8, TL8, H14, H4/DC11, CLAUDE.md:36 | B2 |
-| B3 | DC1 (docs half), DC2-DC9, DC12, DC13, H2, H3/DC10, H5 (comment), H8, H9, H10, H11 (comment), H12, H13, H15, T11, T12, T16, O4, C3 (option 2), C4/T9, C9, A8, PF7, D4, D16, D17, the `llms.txt` and `CONTRACTS.md` clauses, Q7's three surviving edits | B2 |
+| B3 | DC1 (docs half), DC2-DC8, DC12, DC13, H2, H3/DC10, H5 (comment), H8, H9, H10, H11 (comment), H12, H13, H15, T11, T12, T16, O4, C3 (option 2), C4/T9, C9, A8, PF7, D4, D16, D17, the `llms.txt` and `CONTRACTS.md` clauses, Q7's three surviving edits | B2 |
 | (new) | revision 2: the forcing function in `CLAUDE.md`, `plan.prompt.md`, `.claude/README.md` | B2 |
+| B3 | DC9 - dropped by B2 (the `Button.svelte`/`statLabels` sentence was left false); fixed in the B2 review remediation batch, not in B2 itself - B2's three blockers, B-3 | B2 remediation |
 | B4 | T1, T2, T3, T5, T8 | B3 |
 | B5 | DP1, DP2, DP3, DP4/T4, DP5, DP6, DP7, T6, T10/DP9, gitleaks pin | B4 |
 | (new) | R8 `404.html` (owner override) | B4 |

@@ -799,10 +799,12 @@ function testEditFollowup() {
     // TL7/T4 (phase-8 B2): the reminder used to overclaim that a forgotten
     // rebuild makes tests/derived.js fail - it cannot, since npm run check
     // regenerates the files immediately before comparing them. The message
-    // now points at the nine files tests/derived.js:451-453 names instead.
+    // now points at tests/derived.js's COUNT_BEARING_FILES array by name
+    // instead of a line range (phase-8 B2 remediation, B-2): a range that
+    // five files must track moved the moment another batch touched the file.
     check(
-      '#40b data.js reminder names the nine derived files by line range',
-      systemMessage(result).includes('tests/derived.js:451-453'),
+      '#40b data.js reminder names the derived files array by identifier',
+      systemMessage(result).includes("tests/derived.js's COUNT_BEARING_FILES array"),
       systemMessage(result)
     );
   }

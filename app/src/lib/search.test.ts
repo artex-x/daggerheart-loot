@@ -70,11 +70,18 @@ describe('a substring, not a guess', () => {
 
   it('does not offer near-misses', () => {
     /* A fuzzy library would be a dependency bought with results nobody wanted:
-       "лук" should not turn up "клык" */
+       "лук" should not turn up "клык". Both sides folded through foldQuery
+       (not a bare toLowerCase) and checked per field (not concatenated) -
+       concatenating fields is exactly the field-boundary false-match shape
+       this batch's own hayFor design was built to avoid (see Hay's comment
+       in search.ts). */
     const bow = find('Лук');
-    expect(bow.every((x) => (x.ru + x.rud + x.en + x.ende).toLowerCase().includes('лук'))).toBe(
-      true
-    );
+    const needle = foldQuery('лук');
+    expect(
+      bow.every((x) =>
+        [x.ru, x.rud, x.en, x.ende].some((f) => !!f && foldQuery(f).includes(needle))
+      )
+    ).toBe(true);
   });
 
   it('finds nothing for nonsense, without throwing', () => {
@@ -127,7 +134,7 @@ describe('without a stat line', () => {
   });
 });
 
-describe('folding: ё, apostrophes, case', () => {
+describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
   it('finds a yo-spelled name typed with a plain е', () => {
     /* "Плетёная Сеть" (ci8) - a reader who cannot type ё gets nothing today */
     expect(find('плетеная сеть').map((x) => x.id)).toContain('ci8');
@@ -138,12 +145,51 @@ describe('folding: ё, apostrophes, case', () => {
     expect(find("keeper's staff").map((x) => x.id)).toContain('q80');
   });
 
+  it('finds a name with a Latin diacritic typed in plain ASCII', () => {
+    /* N7, owner-approved: "Ethereal Zweihänder" (q238) and "Möbius Orb"
+       (q311) were unreachable by ordinary typing across all 1091 records. */
+    expect(find('Zweihander').map((x) => x.id)).toContain('q238');
+    expect(find('Mobius').map((x) => x.id)).toContain('q311');
+  });
+
+  it('finds a Unicode minus sign typed as an ASCII hyphen', () => {
+    /* U+2212 occurs 123 times across 113 descriptions; q4's rud has "−1". */
+    expect(find('-1').map((x) => x.id)).toContain('q4');
+  });
+
+  it('does not merge Cyrillic й into и', () => {
+    /* NFD decomposes й (U+0439) into и (U+0438) plus a combining breve -
+       exactly the merge foldLatinDiacritics's Cyrillic exception exists to
+       avoid. Verified directly rather than assumed: a query for one must
+       not fold to the same string as a query for the other. */
+    expect(foldQuery('й')).toBe('й');
+    expect(foldQuery('чай')).not.toBe(foldQuery('чаи'));
+  });
+
   it('agrees between the cached haystack and the live fallback', () => {
     /* The haystack path (hayFor) and the fallback path (no hay, folded live)
        have to return exactly the same hits, or the cache would be a second,
-       silently different search engine. */
+       silently different search engine. These six queries are exactly the
+       ones tests/app/inventory.js seeds into the search box across its
+       golden states (grep 'Поиск по названию или описанию…' there) - that
+       provenance is load-bearing, not arbitrary: it is what pins this test's
+       query list to the queries a real golden run actually exercises,
+       instead of a set invented here and never checked against one.
+       'плетеная сеть' and "keeper's staff" are included so the two defect
+       cases above (which call find(), i.e. the live-fallback path only) are
+       also proven to agree on the cached path the app itself runs through
+       SearchPage/TablesPage. */
     const hay = hayFor(statLine);
-    const queries = ['меч', 'двуручное', 'а', 'кольцо', 'вторичное', 'zzzqqqxx123'];
+    const queries = [
+      'меч',
+      'двуручное',
+      'а',
+      'кольцо',
+      'вторичное',
+      'zzzqqqxx123',
+      'плетеная сеть',
+      "keeper's staff"
+    ];
     for (const q of queries) {
       const folded = foldQuery(q);
       const withHay = index.searchable

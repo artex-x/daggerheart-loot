@@ -2,15 +2,15 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B1 `e7c7b50`, B2 `44b1761` committed; B3
-  committed this pass; B4 next)
-- Last agent: implementer (2026-09-17)
+- Task status: in_progress (B1 `e7c7b50`, B2 `44b1761`, B3 `3bc605d`, and the
+  B2-review remediation batch below all committed; B4 next)
+- Last agent: implementer (2026-09-17, B2-review remediation batch)
 - NEEDS_HUMAN_CONFIRMATION: no - all eight questions and the two further
   decisions are settled (`context.md`, "Settled owner decisions"); the plan
   is written as decided.
 - Branch: `main`
 - Base / starting commit: `f53f44d`; HEAD after this batch: see "Completed",
-  B3's commit(s) below.
+  the remediation batch's commit(s) below.
 
 ## Completed
 
@@ -19,9 +19,10 @@
   `ё`/`Ё` as `е`, U+2019/U+02BC as `'`) on both the query and the catalogue;
   `hayFor(statLine)` memoises a per-record array of folded fields by id (an
   array, not one joined string, so the cached and field-by-field fallback
-  paths agree on every query by construction); `matches()`/`search()` take
-  an optional `hay`; `SearchPage`/`TablesPage` fold once per language. One
-  `FEATURES.md` bullet.
+  paths agree on every query by construction); `matches()` takes an optional
+  `hay`; `SearchPage`/`TablesPage` fold once per language. One `FEATURES.md`
+  bullet. (`search()` originally also took an optional `hay` nothing passed -
+  removed in the B2 review remediation, N1 below.)
 - Files changed: `app/src/lib/search.ts`, `app/src/lib/search.test.ts`
   (three new tests), `app/src/components/SearchPage.svelte`,
   `app/src/components/TablesPage.svelte` (no template change in either),
@@ -33,6 +34,18 @@
   own fallback). Before/after on real data: `плетеная сеть` 0 -> 1 (`ci8`);
   `keeper's` 3 -> 4 (adds `q80`). The `ё` half is the owner's low
   priority; the apostrophe half breaks English search and is the same line.
+- Verification commands and results (N8 - missing when this section was
+  first written; added in the B2 review remediation): this commit's own
+  `npm run check` ran as the commit gate before `e7c7b50` landed, but its
+  output was never filed here - that gap is what N8 flags. Independent
+  confirmation exists regardless: B2's own full green `npm run check` at
+  `44b1761` (see below, "Verification commands and results") ran on a tree
+  that already contained `e7c7b50` - `npm run test` (1056 tests, including
+  every case in `search.test.ts`) and `node tests/run-all.js
+  contracts,derived` were both green on top of B1's `search.ts`/
+  `search.test.ts`, not merely at B1's own commit time. The B2 review
+  remediation batch (below) re-runs `npm run check` again over
+  `search.ts`/`search.test.ts` as further edited for N1-N7.
 
 ### B2 - hooks, ignore rules, truth fixes, `CLAUDE.md`, and the batch-size forcing function
 - What shipped, by the plan's 27 steps:
@@ -64,10 +77,16 @@
     `:36`, `:97` were real, the other six of Q7's nine were already in the
     tree. `:36` "parity run" -> "browser suite run"; `:24` rewritten to
     "Prefer the smallest change that fixes the defect..."; `:97`'s `COUNTERS`
-    mispointer corrected to name `tests/derived.js:451-453` (the actual nine-
-    file array; `COUNTERS` itself is the counter-regex array at `:439`, a
-    separate DC12 fix). One new line after the batch-size paragraph: "A plan
-    names the criterion behind every split...". `.claude/prompts/
+    mispointer corrected to name `tests/derived.js:451-453` (the actual
+    nine-file array at the time; `COUNTERS` itself is the counter-regex array
+    at `:439`, a separate DC12 fix). **Corrected in the B2 review
+    remediation (B-2):** a line range on that array is a five-file
+    maintenance trap - B3 (`3bc605d`) already moved it once. The array is
+    now named `COUNT_BEARING_FILES` in `tests/derived.js` and every citation
+    (here, `CLAUDE.md`, `COVERAGE.md`, `edit-followup.mjs`, `selftest.mjs`)
+    points at the identifier instead of a line number. One new line after
+    the batch-size paragraph: "A plan names the criterion behind every
+    split...". `.claude/prompts/
     plan.prompt.md` gained the required-outputs bullet. `.claude/README.md`
     gained the scar sentence after "Too small". `CLAUDE.md` is 171 lines by
     `wc -l` (not the plan's predicted 168 - see "Deviations").
@@ -170,15 +189,16 @@
     files is clean again. Recorded here because the failure mode is
     invisible without running Prettier - a reviewer reading the diff alone
     would not catch it.
-  - **`wc -l CLAUDE.md` is 171, not the plan's predicted 168.** The file's
-    committed form has no trailing newline (`git show HEAD:CLAUDE.md | wc -l`
-    = 167, one less than a straight line count, because `wc -l` counts
-    newlines and the last line has none); the `:24` rewrite needed three
-    lines to stay within this file's manual wrap width, not one, and the
-    forcing-function line adds a fourth. 171 is comfortably under
+  - **`wc -l CLAUDE.md` is 171, not the plan's predicted 168.** The file was
+    167 lines before this batch; the edits add 4 - the `:24` rewrite needed
+    three lines to stay within this file's manual wrap width, not one, and
+    the forcing-function line adds a fourth. 171 is comfortably under
     `CLAUDE.md`'s own 200-line cap, which is the binding rule; the specific
     "168 or less" acceptance line does not hold and is recorded as not met,
-    rather than forced by cutting content elsewhere.
+    rather than forced by cutting content elsewhere. (B2 review nit 1: an
+    earlier version of this note explained the gap with a "no trailing
+    newline" theory; that was wrong and is corrected here to the plain
+    arithmetic above.)
   - **DC7's fix applied to `DEBT.md:391` too, not only `COVERAGE.md:377`
     named in the plan.** Same false claim ("`issues/47/sweep.md`, read at
     `7a33c22`" - the sha does not resolve as a git ref for a file first
@@ -200,10 +220,13 @@
   - `set -o pipefail; npm run check 2>&1 | tail -n 150` (Bash timeout
     600000) - green: `format:check`, `lint`, `typecheck` (545 files, 0
     errors), `node --check tools/check-site.mjs`, `npm run data`,
-    `node tests/derived.js`, `node .claude/hooks/selftest.mjs` (329 passed,
-    0 failed - 324 prior + 5 new: TL2's `#27b`, TL3's `TL3a`/`TL3b`, TL5's
-    case, TL6's combined case; two existing fragments, `#13a`/`#13b`,
-    updated from "rm -rf" to "rm -r" to match the new message text),
+    `node tests/derived.js`, `node .claude/hooks/selftest.mjs` (329
+    assertions passed, 0 failed - 316 prior + 13 new, from 5 new named
+    cases: TL2's `#27b`, TL3's `TL3a`/`TL3b`, TL5's case, TL6's combined
+    case; two existing fragments, `#13a`/`#13b`, updated from "rm -rf" to
+    "rm -r" to match the new message text). (B2 review nit 2: an earlier
+    version of this line read "324 prior + 5 new", conflating case count
+    with assertion count; the cases add 13 assertions, not 5.)
     `node --test tools/tg-preview/lib.test.mjs` (110 passed),
     `node --test tools/artwork/lib.test.mjs` (26 passed), `npm run test`
     (42 test files, 1056 tests, coverage thresholds green). One
@@ -390,6 +413,162 @@
     the live proof that `tests/derived.js`'s renamed `browser` assertion
     holds against the real `ci.yml` - `deploy` would not have run otherwise
     (`deploy.needs` includes `check`).
+
+### B2-review remediation - B2's three blockers, B1/B2 nits, N7 (owner-approved), the reviewer guide fix
+- What shipped, one batch per the batch-size rule B2 itself shipped (these
+  items share one `npm run check` and touch disjoint files):
+  - **B-1 (blocker):** `docs/specs/CONTRACTS.md` section 4's false claim that
+    `tools/build.js` strips empty `rud`/`ende` before writing `data.json` is
+    deleted; replaced with the verified fact - `tools/derived.js`'s
+    `dataJson(L)` is `JSON.stringify(L) + '\n'`, nothing stripped,
+    `tests/derived.js` holds `data.json` to that output byte for byte inside
+    `npm run check`, and `data.json` carries 112 `"rud":""` literals.
+  - **B-2 (blocker):** the nine-file array in `tests/derived.js` (counts
+    `npm run check` verifies against README/dict/etc.) is now a named const,
+    `COUNT_BEARING_FILES`, instead of an anonymous array cited everywhere
+    else by a line range - the range had already moved once (B3 touched the
+    file) and every one of its five citations had gone stale or wrong at
+    least once. Every citation now names the identifier instead:
+    `CLAUDE.md`, `docs/specs/COVERAGE.md`'s `derived` row,
+    `.claude/hooks/edit-followup.mjs`'s reminder text,
+    `.claude/hooks/selftest.mjs`'s case `#40b` (assertion moved with the
+    message), and this file's and `plan.md`'s own B2 records (corrected in
+    place, historical narrative kept, wrong number struck through with why).
+  - **B-3 (blocker):** `docs/specs/COVERAGE.md`'s DC9 sentence claimed
+    `Button.svelte` and a `statLabels` helper both "existed with no caller"
+    and were "deleted". False for `Button.svelte`: it exists, has real
+    callers across 17 files, has its own `button.test.ts`, and
+    `vite.config.mts` carves out a named coverage threshold for it - it was
+    kept and later given callers, not deleted. `statLabels` was in fact
+    deleted (no hits anywhere in `app/src`). Sentence corrected to say so;
+    `plan.md`'s "Where every finding landed" table's `DC2-DC9` range split so
+    DC9 is shown landing here, not silently inside B2 where it did not
+    actually land - "Nothing fell out" now holds.
+  - **B2 nits 1-3:** the handoff's invented "no trailing newline" theory for
+    `CLAUDE.md`'s 171 lines replaced with the plain arithmetic (167 before,
+    +4 lines); the "329 passed = 324 + 5" line corrected to "316 prior + 13
+    new assertions from 5 new cases" (case count and assertion count were
+    conflated); `.claude/hooks/lib.mjs`'s `isExempt` comment now states
+    plainly that `tests/contracts.js` is not part of `npm run check` itself
+    (runs via `node tests/run-all.js contracts`), which is why editing a spec
+    alone never reruns the test that depends on it.
+  - **B3 review nit (routed here by the orchestrator, same `derived` row):**
+    `docs/specs/COVERAGE.md`'s `derived` row still said `deploy.needs`
+    includes the structural `golden` matrix; B3 (`3bc605d`) renamed that job
+    to `browser` and updated the row's own line 20 but missed this second
+    mention. `golden` -> `browser`, one word.
+  - **B1 nits N1-N6, N8** (verdict: approve; all in
+    `app/src/lib/search.ts`/`search.test.ts`/this file):
+    - N1: `search()` dropped the `hay?: Hay` parameter nothing ever passed
+      (`CLAUDE.md`: "Add no module, export, component, or variant before
+      something uses it"); `matches()` keeps it - it has two real callers
+      (`SearchPage.svelte`, `TablesPage.svelte`).
+    - N2: `'плетеная сеть'` and `"keeper's staff"` added to the
+      cached-vs-fallback agreement test's query array, so the two defect
+      cases (previously exercised only through `find()`, i.e. the live
+      fallback path) are also proven against the cached path the app
+      actually runs through `SearchPage`/`TablesPage`. A new comment records
+      that all six original queries are exactly what
+      `tests/app/inventory.js` seeds into the search box across its golden
+      states - previously unstated provenance.
+    - N3: the pre-existing `'лук'` "no near-misses" assertion re-implemented
+      a bare-`toLowerCase` comparison and concatenated all four fields before
+      searching - the exact field-boundary shape this batch's own `hayFor`
+      design was built to reject. Rewritten to fold both sides through
+      `foldQuery` and check each field separately with `.some()`.
+    - N4: the two near-indistinguishable literal characters in
+      `/[’ʼ]/g` replaced with explicit code points, `/[’ʼ]/g`.
+    - N5: `has(hay, needle)`'s parameter renamed to `text` - `hay: Hay`
+      twelve lines below is a different, record-level accessor, and reusing
+      the name for a field string invited confusion.
+    - N6: `hayFor`'s doc comment corrected - the cited 0.33ms is PF2's own
+      proposed design (one joined lowercased string built into `data.ts`'s
+      `Index`), not the array-of-folded-fields design this file actually
+      ships; the two are not directly comparable measurements of the same
+      code, only the warm/cold shape carries over.
+    - N8: B1's "Completed" entry (above) gained a "Verification commands and
+      results" line it was missing, stating that B2's own full green
+      `npm run check` at `44b1761` ran on a tree that already contained B1's
+      commit `e7c7b50`, so B1's `search.ts` changes have independent proof of
+      passing under the fuller suite beyond the commit-gate run at the time.
+  - **N7 (owner-approved, general answer):** `foldQuery` extended to fold
+    Latin diacritics and the Unicode minus sign. A new `foldLatinDiacritics`
+    helper NFD-decomposes and strips the combining mark **for every
+    character outside the Cyrillic block (U+0400-U+04FF)** - a plain NFD
+    over the whole string was tried first and rejected: it decomposes
+    Cyrillic `й` (U+0439) into `и` (U+0438) plus a combining breve, which
+    would merge `й` into `и`, exactly the merge `foldQuery`'s own doc comment
+    has always said it does not make. Verified directly in
+    `search.test.ts`: `foldQuery('й') === 'й'` and `foldQuery('чай') !==
+    foldQuery('чаи')`. U+2212 (Unicode minus, 123 occurrences across 113
+    descriptions) folds to ASCII `-`. `foldQuery`'s doc comment rewritten -
+    it used to reject diacritic folding as "fuzziness nobody asked for";
+    that stance is overridden by the owner now that `Ethereal Zweihänder`
+    (q238) and `Möbius Orb` (q311) were shown unreachable by ordinary
+    typing across all 1091 records. New tests: `Zweihander` -> q238,
+    `Mobius` -> q311, `-1` -> q4 (whose `rud` has "−1"). `docs/specs/
+    FEATURES.md`'s search bullet updated to match.
+  - **The reviewer guide fix:** `CLAUDE.md:163` no longer calls the reviewer
+    "(optional)" - it now points at `.claude/prompts/orchestrate.prompt.md`,
+    "When to run reviewer (do not skip these)". That file's "When to run
+    reviewer" section gained one line: each batch's handoff Completed
+    section must record `Review: required (trigger: <which>)` or `not
+    required (no trigger fired)`. `.claude/templates/handoff.template.md`'s
+    `## Completed` block gained the same field so new handoffs carry it by
+    default.
+- Files changed: `docs/specs/CONTRACTS.md`, `docs/specs/COVERAGE.md`,
+  `docs/specs/FEATURES.md`, `tests/derived.js`, `CLAUDE.md`,
+  `.claude/hooks/edit-followup.mjs`, `.claude/hooks/selftest.mjs`,
+  `.claude/hooks/lib.mjs`, `.claude/prompts/orchestrate.prompt.md`,
+  `.claude/templates/handoff.template.md`, `app/src/lib/search.ts`,
+  `app/src/lib/search.test.ts`, `issues/phase-8/plan.md`,
+  `issues/phase-8/handoff.md`, `issues/phase-8/context.md` (the orchestrator's
+  unstaged "Review and nit policy" section, present before this batch
+  started - committed with this batch per its own instruction, not reverted).
+- Commit(s): see `git log` after this section is written - recorded in a
+  short follow-up line per B2's own precedent (editing `handoff.md` after a
+  commit does not require re-running `npm run check`).
+- Review: not required (no trigger fired) - this batch is a documentation,
+  hook-comment and test-nit remediation; it does not change a public
+  contract, route, or list link (the `CONTRACTS.md`/`COVERAGE.md` edits
+  correct prose about the existing contract, not the contract itself), is
+  not new/changed UI, is not a data ingest or artwork refresh, and the
+  implementer reported no uncertainty or deviation from the dispatch.
+- Deviations and rationale: none from the dispatch's letter. One judgment
+  call within it: DC9's table row (`plan.md`, "Where every finding landed")
+  was split rather than left as `DC2-DC9` with a silent asterisk, because a
+  reader scanning that table for "did DC9 land" needs the answer in the
+  table itself, not in a cross-reference they have to already know to check.
+- Verification commands and results:
+  - `set -o pipefail; npm run check 2>&1 | tail -n 150` (Bash timeout
+    600000) - green: `format:check` (one `prettier --write` needed on
+    `.claude/hooks/edit-followup.mjs` after the `COUNT_BEARING_FILES`
+    message edit - quote-style only, re-ran clean), `lint`, `typecheck`,
+    `node --check tools/check-site.mjs`, `npm run data`,
+    `node tests/derived.js`, `node .claude/hooks/selftest.mjs` (all cases
+    including the corrected `#40b`), `node --test tools/tg-preview/lib.test.mjs`
+    (110 passed), `node --test tools/artwork/lib.test.mjs` (26 passed),
+    `npm run test` (42 test files, 1059 tests - three new in
+    `search.test.ts`: diacritic folding, minus-sign folding, the `й`/`и`
+    non-merge; coverage 96.63%/88.61%/97.13%/97.36%, thresholds green).
+  - `npm run build` - green (needed once before the golden runs below).
+  - `node tests/app/golden.js --only=search` - 9 states compared, "структурные
+    образцы (dist/): без изменений" (no change) - green **without**
+    `--update`.
+  - `node tests/app/golden.js --only=searched` - 3 states compared, "без
+    изменений" - green **without** `--update`.
+  - q238/q311 do not enter the six seeded queries' result sets, checked two
+    ways: (1) both golden runs above came back byte-identical, which already
+    proves the rendered states did not move; (2) a direct check against
+    `data.json` with both the old (pre-N7) and new `foldQuery` compared the
+    membership of `q238`/`q311` in each of the six queries' results - identical
+    before and after (`меч` and `а` already matched `q238`/`а` matched
+    `q311` too, both for reasons unrelated to diacritic/minus folding - `меч`
+    is a literal substring of q238's own Russian name "Двуручный Меч", and
+    `а` is a near-universal Cyrillic letter matching 1055 of 1091 records
+    regardless of this change); no new membership anywhere.
+  - Gates: `npm run check` (full); `node tests/app/golden.js --only=search`;
+    `node tests/app/golden.js --only=searched`.
 
 ## Blockers
 - None. B4 (deploy) follows; it must not run beside another heavy CI push in

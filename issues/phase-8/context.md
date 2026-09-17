@@ -290,3 +290,78 @@ Two notes that are part of the decisions, not commentary:
   overlay skip link, D18 global focus ring, H12's two test renames, D4 and
   D17 kept and documented, D16 deleted as a proven non-issue, D21 as
   session memory, D12 keeping `aria-pressed`.
+
+## Review and nit policy for this task (owner, 2026-09-17)
+
+**Every batch gets a reviewer**, run read-only against its **committed shas**
+while the next batch's implementer works. Reviews therefore cost no wall
+clock; only remediation serialises, and that resumes the reviewed batch's own
+implementer after the in-flight batch commits.
+
+**Nits are processed immediately, even when a review returns no blockers.**
+This is a deliberate deviation from `.claude/prompts/orchestrate.prompt.md`,
+"Nits: defer mid-plan and clear on the terminal batch". That rule's stated
+premise is "a later batch re-enters those paths, and one pass over the
+finished area beats a pass per batch". Phase 8's eleven batches were merged
+**by area** precisely so they do not overlap, so the premise does not hold
+here: a deferred nit would have nothing to ride and would reach the terminal
+batch as a pile. Owner's instruction, with that reasoning, 2026-09-17.
+
+Consequence for reviewers: list nits fully and precisely, because they will
+be acted on rather than filed. Mark genuine matters of taste as such.
+
+**Why this section exists.** B2 (`44b1761`) touched `docs/specs/CONTRACTS.md`
+and `llms.txt` across 57 files and recorded three deviations - two separate
+triggers in the orchestrate prompt's "When to run reviewer (do not skip
+these)" list - and the orchestrator skipped the review to keep the batch loop
+moving. It was caught by the owner asking, not by the process. A contributing
+cause is a real contradiction in the standing documents, **queued to be fixed
+once B3 and the B1/B2 reviews land**:
+
+- `CLAUDE.md:163` calls the reviewer **"(optional)"**.
+- `.claude/prompts/orchestrate.prompt.md` heads the same rule **"When to run
+  reviewer (do not skip these)"** and lists five triggers.
+
+The fix has the same shape as the batch-size forcing function B2 shipped,
+and for the same reason - a rule nothing asks you to demonstrate is a rule
+that erodes:
+
+1. Delete "(optional)" from `CLAUDE.md:163` and point at the triggers.
+2. Each batch's handoff record states `Review: required (trigger: <which>)`
+   or `not required (no trigger fired)`. Both are already derivable from what
+   the record contains - files changed and deviations reported - so this
+   forces the check to be shown, not performed anew.
+
+## B3 review findings that outlive the batch (2026-09-17)
+
+Verdict was **approve**; the partition was independently replicated offline
+for `m = 1..25` and the CI numbers re-downloaded from run `35232880507`.
+Two findings are recorded here because they change what a *later* pass
+should do, and would otherwise be re-derived at full cost.
+
+- **Do not spend a batch correcting the shard weight table expecting speed.**
+  The packer minimises bin sums, but each CI runner is itself a 4-way pool,
+  so sums are nearly irrelevant to wall clock: real wall is
+  `max(longest single row, total / 4)`, and `total / 4` is ~160 s against a
+  longest row of 312-372 s, so the sums never bind. The reviewer re-ran the
+  packer with the corrected 371.9/172.7 weights: **predicted wall clock
+  unchanged at 371.9 s** - only membership shuffles. Correcting the weights
+  buys documentation accuracy and a re-proof CI run, not time. The only lever
+  that moves 436 s further down is **splitting `sweep1180-ru` itself** - the
+  RU focus walk is what makes that half heavier than `en` (371.9 s vs
+  172.7 s), so hoisting it into its own row is the change with the payoff.
+- **The matrix/divisor coupling is the last silent-coverage hole** and is
+  routed into **B4** as an explicit acceptance line. `.github/workflows/
+  ci.yml`'s `shard: [1, 2, 3, 4]` and `--shard=<n>/4` must agree. Three ways
+  to break that are loud (a divisor above the matrix throws; a deleted
+  `browser:` job invalidates the workflow; a renamed job fails
+  `tests/derived.js`'s `needs:` assertion). **One is silent**: shortening the
+  matrix to `[1, 2, 3]` while leaving `/4` drops shard 4's three suites -
+  including `sweep1180-ru` and `golden4` - and CI stays green. `derived.js`
+  already parses `ci.yml` for the deploy block, so one assertion there that
+  the matrix list length equals the divisor and the list is `1..m` closes it.
+  B4 opens both files, so it costs nothing extra.
+- Cross-shard determinism rests on `Array.prototype.sort` being stable over
+  equal weights (currently two ties). Four separate node processes each
+  recompute the partition and agree only because of that. Load-bearing and
+  invisible; a comment is queued as a nit.

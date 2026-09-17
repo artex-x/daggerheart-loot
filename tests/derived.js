@@ -449,10 +449,10 @@ const COUNTERS = [
 ];
 /* index.html и app.js were the live app's own copies of these numbers and
    left the list at R0c along with the files themselves. */
-['app/index.html', 'README.md', 'README.ru.md',
+const COUNT_BEARING_FILES = ['app/index.html', 'README.md', 'README.ru.md',
  'llms.txt', 'robots.txt', 'app/src/lib/dict.ts', 'app/src/lib/i18n.ts',
- 'app/src/lib/search.ts', 'tools/bundle-budget.mjs']
-  .forEach(function (file) {
+ 'app/src/lib/search.ts', 'tools/bundle-budget.mjs'];
+COUNT_BEARING_FILES.forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   COUNTERS.forEach(function ([re, want, what]) {
     let m;

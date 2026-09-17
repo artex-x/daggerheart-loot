@@ -131,10 +131,11 @@ export function pathKey(p) {
  * at all) - they have to agree, or a write to an exempt path (a handoff, a
  * plan) changes the fingerprint without changing what the gate requires,
  * disarming a check that already passed. The trap this does not close:
- * tests/contracts.js (covered, not exempt) reads docs/specs/CONTRACTS.md and
- * ROUTES.md (exempt as *.md) at runtime, so editing a spec alone never
- * reruns the test that depends on its content - only editing contracts.js
- * itself, or something else covered, does. */
+ * tests/contracts.js reads docs/specs/CONTRACTS.md and ROUTES.md (exempt as
+ * *.md) at runtime, but tests/contracts.js is not part of `npm run check`
+ * itself (it runs via `node tests/run-all.js contracts`) - so editing a spec
+ * alone never reruns the test that depends on its content, and neither this
+ * gate nor `npm run check` would catch the two drifting silently. */
 export function isExempt(p) {
   if (p.startsWith('issues/')) return true;
   if (p.endsWith('.md') && p !== 'README.md' && p !== 'README.ru.md') return true;

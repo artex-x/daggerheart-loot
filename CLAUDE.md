@@ -97,9 +97,9 @@ in the same commit. Behaviour changes update their specs in the same commit.
 ## Data and published artefacts
 
 After changing `data.js`, run `node tools/build.js`; the hooks block writes to
-its generated outputs. When counts or source lists change, update the nine
-files `tests/derived.js:451-453` names; keep the READMEs aligned, reuse
-identical image bytes, and never renumber a shipped record id.
+its generated outputs. When counts or source lists change, update the files
+`tests/derived.js`'s `COUNT_BEARING_FILES` array names; keep the READMEs
+aligned, reuse identical image bytes, and never renumber a shipped record id.
 
 ## Quality gates
 
@@ -160,7 +160,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code)
 - **implementer** -> next batch only; routing: `.claude/README.md`, "Host-aware explicit routing policy"
-- **reviewer** (optional) -> high-risk batches; one remediation cycle; nits defer mid-plan and clear on the terminal batch
+- **reviewer** -> required when a trigger in `.claude/prompts/orchestrate.prompt.md`, "When to run reviewer (do not skip these)" fires; one remediation cycle; nits defer mid-plan and clear on the terminal batch
 - **add-source** -> rare end-to-end content ingest
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 - a single-file visual bug pinned to a width skips planner and review: `/small-fix` (`.claude/skills/small-fix/SKILL.md`)

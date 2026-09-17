@@ -245,7 +245,9 @@ Run reviewer after implement or add-source when ANY of:
 - large data ingest or new source mechanics
 - a large artwork refresh changed many catalog assets or required crop/pad/regeneration exceptions
 - worker reported uncertainty or deviation from plan
-Otherwise skip review.
+Otherwise skip review. Record the verdict in the batch's handoff Completed
+section: `Review: required (trigger: <which>)` or `not required (no trigger
+fired)` - both derivable from what the record already holds.
 
 ## Procedure (feature path)
 1. Ensure context.md exists/refreshed for TASK

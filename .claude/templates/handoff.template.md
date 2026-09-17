@@ -14,6 +14,7 @@
 - Files changed:
 - Commit(s):
 - Deviations and rationale:
+- Review: required (trigger: <which>) | not required (no trigger fired)
 
 ## Verification
 - Commands run (exact):
