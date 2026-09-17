@@ -20,6 +20,7 @@ import {
   segments,
   tokensOf,
   unwrap,
+  dropAssignments,
   CHECK_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
@@ -65,9 +66,9 @@ const MSG = {
     return `Blocked: ${target} is still cited by ${hits.length} tracked line(s): ${shown}${more}. Retiring a plan.md leaves those pointing at nothing. Closeout step 6: move the durable content to its permanent home (.claude/README.md for tooling rationale, docs/specs/ for behaviour), update every citation, and remove the file in that same commit. The way out for a citation that only needs the file's content as of a past commit, not the file itself: rewrite it as \`git show <sha>:${target}\` - that form resolves through history and does not count as a live citation here.`;
   },
   grepLineNumber:
-    'Blocked: this `grep -n` runs downstream of a pipe, a `$(...)`, or a chained command - a shape RTK cannot rewrite - so its output lands unfiltered in context. Restructure it into its own command, `rtk grep -n <pattern> <path>` (no pipe, no `$(...)`, no chaining). `git grep -n` is not affected.',
+    'Blocked: this `grep -n` is in a shape `rtk` 0.48.0 is measured (`rtk hook check "<command>"`) never to rewrite - a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time` - so its output lands unfiltered in context. Restructure it into its own command, `rtk grep -n <pattern> <path>` (a `&&`/`;`/`cd` prefix is fine and does not need restructuring - only a pipe or substitution does). `git grep -n` is not affected.',
   tailBytes:
-    'Blocked: this `tail -c` runs downstream of a pipe, a `$(...)`, or a chained command - a shape RTK cannot rewrite - so its output lands unfiltered in context. Restructure it into its own command, `rtk read <file>` (no pipe, no `$(...)`, no chaining). `tail -n` is not affected.'
+    'Blocked: `tail -c`/`--bytes` has no `rtk` 0.48.0 rewrite in any position - it lacks a byte-offset mode (`rtk read` only exposes `--tail-lines`) - so its output lands unfiltered in context. Restructure it into its own command, `rtk read <file> --tail-lines <n>` if line-based tailing works, or accept the unfiltered read otherwise. `tail -n` is not affected.'
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -471,34 +472,90 @@ function evaluateBackgroundCheck(segList, toolInput) {
 // ---------- 2j: readers that bypass RTK (deny) ----------
 //
 // `grep -n` and `tail -c` were 96.4K of the 179.7K tokens RTK missed over
-// thirty days (rtk discover, 2026-09-15): RTK's own hook rewrites only a
-// command it can match at the start of a line, and these arrive piped, in
-// `$(...)`, or after a `cd`. A bare, leading `grep -n`/`tail -c` is exactly
-// the shape RTK rewrites cleanly (live-probed both ways, `rtk-coverage`
-// B1: `rtk hook claude` turns `grep -n foo path` into `rtk grep -n foo
-// path`), so denying it earned nothing but a wasted round trip before the
-// model took the offered escape to the Grep tool - 103 such calls across
-// the sampled transcripts. This family now denies only the shapes RTK
-// genuinely cannot rewrite: inside a `$(...)` (or `` `...` ``) substitution
-// anywhere, or in any segment after the first at the top level (downstream
-// of a pipe, `&&`, `;`, a leading `cd`, ...). READERS hides both programs
-// from every other rule on purpose (`echo git reset --hard` must stay
-// silent), so this family tokenises the segment itself and tests the
-// program token only: `echo grep -n`, `git grep -n` (closeout step 6) and
-// `rtk grep -n` never match, at any position. See .claude/README.md,
-// "Hooks", row 43.
+// thirty days (rtk discover, 2026-09-15). The boundary below is measured
+// directly against the installed `rtk 0.48.0` with `rtk hook check
+// "<command>"` (a reproducible probe - see issues/rtk-coverage/context.md
+// for the full table), not inferred from RTK's own source or docs, because
+// the first version of this rule (adopted at `config-audit` B3, then
+// narrowed once already at `rtk-coverage` B1) got it wrong twice: RTK
+// rewrites `grep -n` far more often than "leading and unchained" suggests,
+// and denies it in one shape that positional reasoning alone would have
+// allowed.
+//
+// Measured for `grep -n` (long form `--line-number` matches identically):
+//   - a bare command, an env-var prefix (`A=1 grep -n f`), and on either
+//     side of `&&`/`;`/`&`/a leading `cd` - always rewritten. List
+//     operators never block it, in either direction: `cd d && grep -n x`,
+//     `true; grep -n x`, `grep -n x && echo ok`, `grep -n x &` are all
+//     rewritten.
+//   - inside a pipe (`|`, never `||`, which is a list operator, not a
+//     pipe): rewritten only when it is that pipe's own FINAL stage
+//     (`cat f | grep -n x` -> rewritten; `grep -n x | wc -l` and
+//     `a | grep -n x | b` -> not). "Anything in a pipeline is never
+//     rewritten" (an earlier draft of this comment) is false; only a
+//     non-final stage is out of reach.
+//   - wrapped by `xargs`, `nohup`, or `time` (not `env` or `command`,
+//     which are transparent to RTK) - never rewritten, at any position,
+//     pipe or not. This rule cannot tell those two groups of launchers
+//     apart itself (lib.mjs's `unwrap()` strips all five uniformly, per
+//     its own known-limitations note), so it treats every one of them as
+//     blocking - correct for three, a same-cost-as-before false deny for
+//     the other two, never a false allow.
+//   - inside `$(...)`/backtick, at any internal position, pipe or chain
+//     alike - never rewritten.
+//
+// Measured for `tail -c`/`--bytes`: never rewritten, in any position -
+// bare, chained, or as either end of a pipe. `rtk read` has no byte-offset
+// mode to rewrite it into (only `--tail-lines`, which is why `tail -n` is
+// rewritten and unaffected by this rule). So `tail` gets none of `grep`'s
+// pipe-final-stage or chain exemptions: once matched, it always denies.
+//
+// READERS (above) hides both programs from every other rule on purpose
+// (`echo git reset --hard` must stay silent), so this family tokenises
+// each stage itself and tests the program token only: `echo grep -n`,
+// `git grep -n` (closeout step 6) and `rtk grep -n` never match, at any
+// position. See .claude/README.md, "Hooks", row 43.
 
 const RTK_READERS = [
-  { program: 'grep', letter: 'n', long: '--line-number', message: MSG.grepLineNumber },
-  { program: 'tail', letter: 'c', long: '--bytes', message: MSG.tailBytes }
+  // pipeOnly: true means "rewritable in every shape except a non-final
+  // pipe stage or an unsupported wrapper" (grep). false means "never
+  // rewritable once matched, full stop" (tail).
+  {
+    program: 'grep',
+    letter: 'n',
+    long: '--line-number',
+    message: MSG.grepLineNumber,
+    pipeOnly: true
+  },
+  { program: 'tail', letter: 'c', long: '--bytes', message: MSG.tailBytes, pipeOnly: false }
 ];
 
 // Non-nested `$(...)` and `` `...` `` spans - the same shapes SPLIT_RE's
 // `$(` / `)` / backtick delimiters already treat as segment boundaries,
 // kept grouped here so their content can be tested regardless of where the
-// substitution sits in the outer command: content inside one is never the
-// leading segment of the whole line, so RTK cannot rewrite it either way.
+// substitution sits, or how it is internally structured (chained, piped):
+// measured, content inside one is never rewritten either way.
 const SUBSTITUTION_RE = /\$\(([^()]*)\)|`([^`]*)`/g;
+
+// A genuine data pipe (`|`) is the only thing that groups commands for the
+// pipe-final-stage rule above; `&&`, `||` (the logical operator, not a
+// pipe), `;`, `&` and a newline are list operators a shell resolves before
+// any data moves, and are measured to never block a rewrite on their own.
+const LIST_SPLIT_RE = /&&|\|\||;|&|\n/;
+
+function splitListItems(s) {
+  return s
+    .split(LIST_SPLIT_RE)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function splitPipeStages(item) {
+  return item
+    .split('|')
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
 
 function readerSpec(tokens) {
   for (const spec of RTK_READERS) {
@@ -510,9 +567,21 @@ function readerSpec(tokens) {
   return null;
 }
 
+// True when RTK is measured to rewrite this shape at all: not wrapped by
+// an unsupported launcher, and - for a reader whose exemption is
+// pipe-shaped (`grep`) - not sitting in a non-final pipe stage. `tail`
+// (`pipeOnly: false`) never reaches the pipe check: once matched, denied.
+function isRewritable(spec, { wrapped, inPipe, isFinalStage }) {
+  if (wrapped) return false;
+  if (!spec.pipeOnly) return false;
+  if (inPipe && !isFinalStage) return false;
+  return true;
+}
+
 function evaluateRtkReaders(sanitized) {
-  // Inside a substitution, position does not matter - test every segment
-  // of its content, not only the one that opens it.
+  // Substitutions deny unconditionally: test every segment of the inner
+  // content, not only the one that opens it, and ignore pipe position
+  // entirely - measured, none of it is ever rewritten.
   SUBSTITUTION_RE.lastIndex = 0;
   let m;
   while ((m = SUBSTITUTION_RE.exec(sanitized))) {
@@ -525,16 +594,26 @@ function evaluateRtkReaders(sanitized) {
     }
   }
 
-  // Outside any substitution, only a segment after the first one runs
-  // downstream of something RTK cannot see past. Substitutions are
-  // stripped first so a leading `$(...)` cannot masquerade as segment 0.
+  // Outside any substitution: split into list items on a genuine list
+  // operator, then each item into its own pipe stages, and judge each
+  // stage against the measured boundary above.
   const outer = sanitized.replace(SUBSTITUTION_RE, ' ');
-  const outerSegments = segments(outer);
-  for (let i = 1; i < outerSegments.length; i++) {
-    const tokens = unwrap(tokensOf(outerSegments[i]));
-    if (!tokens.length) continue;
-    const spec = readerSpec(tokens);
-    if (spec) return { id: `rtk-${spec.program}`, message: spec.message };
+  for (const listItem of splitListItems(outer)) {
+    const pipeStages = splitPipeStages(listItem);
+    for (let i = 0; i < pipeStages.length; i++) {
+      const rawTokens = tokensOf(pipeStages[i]);
+      if (!rawTokens.length) continue;
+      const tokens = unwrap(rawTokens);
+      if (!tokens.length) continue;
+      const spec = readerSpec(tokens);
+      if (!spec) continue;
+      const wrapped = dropAssignments(rawTokens)[0] !== tokens[0];
+      const inPipe = pipeStages.length > 1;
+      const isFinalStage = i === pipeStages.length - 1;
+      if (!isRewritable(spec, { wrapped, inPipe, isFinalStage })) {
+        return { id: `rtk-${spec.program}`, message: spec.message };
+      }
+    }
   }
   return null;
 }

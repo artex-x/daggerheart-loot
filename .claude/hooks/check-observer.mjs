@@ -60,29 +60,37 @@ const EXIT_CODE_FIELDS = [
  * below refuses to arm. Accepting the prefix cannot weaken the gate: a
  * forger who omits it is where the gate stood before.
  *
- * A leading `rtk ` is stripped the same way, for the same reason: RTK's
- * own PreToolUse hook rewrites a bare `npm run check` into `rtk npm run
- * check` before this hook (or any other) ever sees the command - verified
- * live by a probe that logged `cat package.json` arriving here as `rtk
- * read package.json`. `rtk npm ...` writes nothing of its own to stdout
- * beyond the child's own output, so it is exactly as inert as `cd ... &&`
- * and `set -o pipefail;` are, and `CHECK_INVOCATION_RE` already tolerates
- * it on the final segment regardless - stripping it here too keeps this
- * normalizer's shape symmetric with the other two accepted prefixes.
+ * A leading `rtk ` needs no stripping here at all - RTK's own PreToolUse
+ * hook rewrites a bare `npm run check` into `rtk npm run check` before
+ * this hook (or any other) ever sees the command (verified live by a
+ * probe that logged `cat package.json` arriving here as `rtk read
+ * package.json`), and `CHECK_INVOCATION_RE` (lib.mjs) already tolerates
+ * exactly one leading `rtk ` on its own, on whatever the final segment
+ * turns out to be. A first draft of this normalizer stripped `rtk ` here
+ * too, inside the same 3-iteration loop as `cd`/`pipefail` - that let
+ * `rtk rtk npm run check` arm this hook (the loop peels both copies) while
+ * `CHECK_INVOCATION_RE` used directly (bash-guard.mjs's gate and
+ * `LONG_CHECKS`, neither of which pre-strips) refuses that exact string,
+ * since its own optional group can only ever consume one `rtk `. Not a
+ * live vector - RTK never doubles its own prefix - but real: `rtk rtk npm
+ * run check` armed the observer while remaining invisible to the guard.
+ * Fixed by deleting the strip rather than reducing its iteration count:
+ * reducing it to one pass would have layered a second, independent
+ * `rtk `-tolerance on top of `CHECK_INVOCATION_RE`'s own, which still
+ * arms on the doubled string (verified: stripping one leaves one behind,
+ * and the regex's own optional group then consumes that leftover too).
  */
 function isCheckInvocation(rawCommand) {
   let s = sanitize(rawCommand).replace(/\d?>&\d/g, ' ');
-  // `cd <dir> &&`, `set -o pipefail;` and `rtk ` are habit, hygiene, and a
-  // rewrite RTK applies before this hook runs - none of them are output
-  // producers: none writes to stdout, so the check is still the only
+  // `cd <dir> &&` and `set -o pipefail;` are habit and hygiene, not output
+  // producers: neither writes to stdout, so the check is still the only
   // thing that can have produced what this hook reads. Exactly those
-  // tokens, at the start, in any order; `set -eo pipefail`, `set -x` or
+  // tokens, at the start, in either order; `set -eo pipefail`, `set -x` or
   // anything else between them and the check leaves a separator behind
   // and is refused by the test below.
   for (let i = 0; i < 3; i++) {
     s = s.replace(/^cd(\s+[^\s;&|]+)?\s*&&\s*/i, '');
     s = s.replace(/^set -o pipefail\s*(?:;|&&)\s*/, '');
-    s = s.replace(/^rtk\s+/, '');
   }
   if (/&&|\|\||;|&|\n|\$\(|`/.test(s)) return false;
   const first = segments(s)[0];

@@ -5,7 +5,7 @@
 // built once and reused, removed in a finally.
 //
 // See .claude/README.md, "Hooks", and issues/hooks-guardrails/plan.md
-// section 5, for the case list this file implements (numbered #1-#143
+// section 5, for the case list this file implements (numbered #1-#153
 // in the comments below).
 
 import { spawnSync } from 'node:child_process';
@@ -670,23 +670,41 @@ function testBackgroundCheck() {
   }
 }
 
-// ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125, narrowed
-// and extended at rtk-coverage B1: #135-#139) ----------
+// ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125,
+// narrowed at rtk-coverage B1: #135, #137, #139, corrected on remediation
+// against a direct `rtk hook check` probe of the installed `rtk 0.48.0`:
+// #116-#117 reverted to deny (tail is never rewritten, any position), #136
+// retired (a chain prefix never blocks grep's rewrite), #144-#153 added)
+// ----------
 //
-// Narrowed because RTK's own hook rewrites a bare, leading `grep -n`/
-// `tail -c` cleanly (live-probed both ways) - so only a shape it genuinely
-// cannot rewrite (piped, `$(...)`/backtick-substituted, or downstream of a
-// `cd`/`&&`/`;`) may still deny. #112-#114 and #116-#117 moved from
-// denyCases to allowedCases for exactly that reason; #115 and #118 stay
-// denied because they are not the leading segment.
+// The remediation round's own briefed boundary ("anything in a pipeline is
+// never rewritten") turned out to be wrong too, caught by actually running
+// `rtk hook check` on both a pipe's leading stage AND its final stage
+// rather than trusting the generalisation: `cat f | grep -n x` comes back
+// `cat f | rtk grep -n x` (rewritten - it is the pipe's final stage), while
+// `grep -n x f | wc -l` and `grep -rn x . | head -50` (leading stage) and
+// `a | grep -n x | b` (middle stage) do not rewrite at all. `tail -c` gets
+// none of that nuance - `cat f | tail -c 20` does not rewrite either, so
+// tail denies in every position once matched, pipe or not.
 
 function testRtkReaders() {
   const allowedCases = [
     ['#112 grep -n bare leading', 'grep -n foo app/src/lib/x.ts'],
     ['#113 grep -rn cluster bare leading', "grep -rn 'x' docs/"],
     ['#114 grep --line-number bare leading', 'grep --line-number x f'],
-    ['#116 tail -c bare leading', 'tail -c 200 f'],
-    ['#117 tail --bytes bare leading', 'tail --bytes=200 f']
+    // #144-#149 (remediation): a list operator (`&&`, `;`, an env-var
+    // prefix) never blocks RTK's rewrite of `grep -n`, on either side of
+    // it - measured via `rtk hook check` on each exact shape.
+    ['#144 grep -n env-assignment prefix', 'A=1 grep -n foo path.ts'],
+    ['#145 grep -n after cd &&', 'cd docs && grep -n x f'],
+    ['#146 grep -n after ;', 'true; grep -n x f'],
+    ['#147 grep -n after echo &&', 'echo ok && grep -n x f'],
+    ['#148 grep -n before &&', 'grep -n x f && echo ok'],
+    // #149 - the correction that overturned the remediation's own briefed
+    // table: `grep -n` as a pipe's FINAL stage rewrites cleanly. "anything
+    // in a pipeline is never rewritten" is true for every other stage, not
+    // this one.
+    ['#149 grep -n as a pipe final stage', 'cat f | grep -n x']
   ];
   for (const [label, command] of allowedCases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
@@ -695,13 +713,33 @@ function testRtkReaders() {
   }
 
   const denyCases = [
-    ['#115 grep -n piped', 'cat f | grep -n x', 'rtk grep'],
+    // #115 - repurposed on remediation: the old command here (`cat f |
+    // grep -n x`) is #149 now and must NOT deny. A pipe's leading, non-
+    // final stage is what genuinely never rewrites.
+    ['#115 grep -n as a pipe leading stage', 'grep -n x f | wc -l', 'rtk grep'],
     ['#118 xargs grep -n', 'find . -name "*.ts" | xargs grep -n x', 'rtk grep'],
+    // #116-#117 - reverted from allow back to deny on remediation: `tail
+    // -c`/`--bytes` has no rewrite RTK can produce in any position (it
+    // lacks a byte-offset mode), so there is no leading-position exemption
+    // to grant it the way there is for `grep -n`.
+    ['#116 tail -c bare leading', 'tail -c 200 f', 'rtk read'],
+    ['#117 tail --bytes bare leading', 'tail --bytes=200 f', 'rtk read'],
     ['#135 grep -n inside $(...)', 'echo $(grep -n x f)', 'rtk grep'],
-    ['#136 grep -n after cd &&', 'cd docs && grep -n x f', 'rtk grep'],
     ['#137 tail -c inside $(...)', 'echo $(tail -c 5 f)', 'rtk read'],
     ['#138 tail -c after cd &&', 'cd docs && tail -c 5 f', 'rtk read'],
-    ['#139 grep -n inside backtick substitution', 'echo `grep -n x f`', 'rtk grep']
+    ['#139 grep -n inside backtick substitution', 'echo `grep -n x f`', 'rtk grep'],
+    // #150-#151 (remediation, item 2): the leading command of a pipe was a
+    // real hole - silent under the previous narrowing, since it only
+    // checked segments after the first.
+    ['#150 grep -n as the leading command of a pipe', 'grep -rn x . | head -50', 'rtk grep'],
+    ['#151 tail -c piped', 'tail -c 5 f | wc -l', 'rtk read'],
+    // #152-#153 (remediation, bonus coverage for the corrected boundary):
+    // a middle pipe stage, and an unsupported wrapper (`nohup`, `xargs`,
+    // `time` - not `env`/`command`, which are transparent to RTK but
+    // treated the same here since `unwrap()` cannot tell the two groups
+    // apart on its own).
+    ['#152 grep -n in a pipe middle stage', 'a | grep -n x | b', 'rtk grep'],
+    ['#153 grep -n wrapped by nohup', 'nohup grep -n x f', 'rtk grep']
   ];
   for (const [label, command, fragment] of denyCases) {
     const result = runHook('bash-guard.mjs', bashPayload(command));
