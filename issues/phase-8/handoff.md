@@ -3,21 +3,26 @@
 
 ## Status
 - Task status: in_progress (B1 `e7c7b50`, B2 `44b1761`, B3 `3bc605d`, the
-  B2-review remediation batch, B4 `0a3d9fb`/`446e45b`, and now B5
-  `112bd07`/`571b041` all committed and pushed; B6 next)
-- Last agent: implementer (2026-09-17, B5 - single sources for lib,
-  generator and components, plus seven carried-over review nits)
-- NEEDS_HUMAN_CONFIRMATION: no - all eight questions and the two further
-  decisions are settled (`context.md`, "Settled owner decisions"); the plan
-  is written as decided.
+  B2-review remediation batch, B4 `0a3d9fb`/`446e45b`, B5
+  `112bd07`/`571b041`, and now B6 `370fec2`/`11066f0` all committed and
+  pushed; B7 next)
+- Last agent: implementer (2026-09-17, B6 - router, state and lists, two
+  commits; D5/O3 implemented, verified, then reverted out of commit 1 - see
+  "Completed" below)
+- NEEDS_HUMAN_CONFIRMATION: no for the batch itself - all eight questions and
+  the two further decisions are settled (`context.md`, "Settled owner
+  decisions"). **One open question for a human/orchestrator before D5/O3 is
+  attempted again**: see B6's "Completed" entry and `docs/specs/DEBT.md` D5 -
+  three options are laid out there, none chosen.
 - Branch: `main`
-- Base / starting commit: `f53f44d`; HEAD after this batch: `571b041`.
+- Base / starting commit: `f53f44d`; HEAD after this batch: `11066f0`.
 - Review: required (trigger: this task's own policy - `context.md`, "Review
   and nit policy for this task" - mandates a reviewer on every phase-8 batch
-  regardless of the standard triggers; separately, this batch touches
-  generated share-page output (O5/O6) and the shared `tokens.css` custom-
-  property surface, this task's generated-artefacts and styling-surface
-  triggers).
+  regardless of the standard triggers; separately, commit 2 touches the
+  `StoragePort` contract (`onExternalChange`'s signature widens to
+  `string | null`) and `ListStore`'s public shape (`remove()`'s return type,
+  the new `restoreList()`/`unreadable`), this task's port-contract and
+  public-shape triggers).
 
 ## Completed
 
@@ -1020,8 +1025,340 @@
   `35257445596`, also fully green including `deploy` - the code boundary
   this batch leaves is CI-verified twice over.
 
+### B6 - router, state and lists (P1, D19, P11, S2/R7, S1, S3/D2/R10, S6, R5, R9, R4-2, DC1, R1, R2, S4, S5, S7, R3/P9, R4-1/PF3, D23, D12, A6, P5)
+- What shipped, by finding, commit 1 (`370fec2`):
+  - **P1**: the skip link's `onclick` calls `preventDefault()` and moves
+    focus to `#main` directly, rather than letting the browser's own
+    fragment jump route `#main` through the SPA's hash parser (which reads
+    it as `unknown` and would have replaced it with the home section,
+    clearing the person's selection).
+  - **D19**: `.skip:focus` is now the live app's own gold-plate overlay
+    (`position` unset from `static`, `top/left/z-index/background/color/
+    font-weight/padding/border-radius`) instead of a grey inline chip that
+    pushed the header down while focused. `--ink-on-gold` (added in B5)
+    reused. `DEBT.md` D19 deleted; `FEATURES.md` "Chrome" gained a clause.
+  - **P11**: `TabBar` gained an effect that reads `nav.querySelector('a.on')`
+    and sets `nav.scrollLeft` from `offsetLeft`/`offsetWidth`/`clientWidth`
+    arithmetic (centring the lit tab, clamped at 0) rather than
+    `scrollIntoView`, which risked carrying an ancestor scroll along and
+    whose `block`/`inline` options answer "visible", not "centred". New
+    `tabBar.test.ts` (3 cases) drives it with hand-set geometry, since jsdom
+    has none, and asserts `scrollIntoView` is never called.
+  - **S2/R7**: `go()` now resolves its hash through the same `#fallback` the
+    router's own `onChange` handler already uses, closing the one path
+    (a hash this class itself builds) that bypassed it. `App.svelte` gained
+    a catch-all `{:else}` (the record route's own not-found block, reused)
+    and the smallest `<svelte:boundary>` around the page slot, with a
+    `failed` snippet naming the error and a reset button (`pageError`/
+    `reloadPage`, two new dict keys) - the general error-handling framework
+    (`window.onerror`, `unhandledrejection`) stays out of scope per
+    `resilience.md`'s own "Noted, out of scope"; this is only the local
+    patch for R7's specific gap. New `app/src/errorBoundary.test.ts` forces
+    a real throw (mocking `filters.ts`'s `groupsFor`, file-scoped via
+    `vi.mock` so no other test's `#/tables/...` route is affected) and
+    proves the boundary catches it and `reset` recovers.
+  - **S1**: `AppState` gained `#expectHash`; `go()` sets it before
+    `navigate()`, and the router's `onChange` handler skips processing when
+    the incoming hash matches it (clearing it either way) - closes the
+    double-count `start()` + `go()` together used to produce (unreachable by
+    any test before this batch, since none exercised both at once).
+  - **S3/D2/R10 (Q4 settled)**: `#expand()` now captures the packed payload
+    and a `stillHere()` check re-read at resolve time; both the success and
+    failure paths drop the result if the route has moved on. A failure (the
+    port cannot unpack, or hands back a still-packed marker) sets
+    `expandFailed = payload` instead of replacing the address with
+    `#/l/zzzz` - `ListPage.svelte` draws the bad-link page
+    (`route.packed && app.expandFailed === route.payload`) with the address
+    left exactly where it was. `DEBT.md` D2 deleted; `FEATURES.md` "Lists"
+    gained a clause. New golden `#/l/~AAAA` (valid base64url, invalid
+    deflate) via a new `driver.js` helper, `expandFailed()` (waits for any
+    `main h1`, since `expanded()`'s own wait - "hash stops starting with
+    `#/l/~`" - would spin forever here). `app.test.ts`'s two old
+    `#/l/zzzz` packed-failure tests rewritten for the new shape, plus a
+    third proving a stale failure does not leak into a later, different
+    route.
+  - **S6**: `stop()` now also calls `hideToast()`. `route`/`section` changed
+    from getters to `$derived` fields - both are read several times per
+    render and a getter re-parsed the hash on every one.
+  - **R5**: `hash.ts`'s plain shared-list regex narrowed from
+    `/^l\/[A-Za-z0-9_-]+$/` to `/^l\//` - a stray trailing character (a chat
+    client swallowing a full stop is the reachable case) no longer falls to
+    `unknown` and gets replaced home; it now reaches the shared-list page,
+    which draws its own bad-link state for a payload that will not decode.
+    `ROUTES.md` gained a clause; `routes.json` gained the first `#/l/` row
+    (`#/l/ABC.`) the fixture set has ever had.
+  - **R9 (Q3 settled)**: a *named* table that resolves to neither an alias
+    nor a `TableId` now returns `{ kind: 'unknown' }` instead of being
+    silently ignored (the table already on screen kept) - one rule for
+    every unreadable address, matching Q3. A bare `#/tables` (no name
+    segment) is unaffected. `readHome`/`#fallback` needed no changes - both
+    already treat `unknown` as home-bound. `routes.json` gained
+    `#/tables/nosuch`; two `hash.test.ts` cases rewritten (the old
+    "not swapped for a default" and "an unknown table takes no legacy
+    reading" tests asserted the now-superseded behaviour) plus a new one
+    proving a bare `#/tables/f_kind-item` is unaffected.
+  - **R4-2**: `router.ts`'s `replace()` wraps `history.replaceState` in
+    try/catch, falling back to assigning `location.hash` on a throw - covers
+    WebKit's 100-calls-per-30s limit (paired with R4-1/PF3's debounce in
+    commit 2, which is what actually approaches that limit). New
+    `ports.test.ts` case with a `replaceState` that throws.
+  - **DC1 (Q1 settled - restored)**: `AppState` gained `#tablesView`/
+    `tablesView`/`setTablesView`, read from `dhloot.prefs.v1` at
+    construction (bad or missing value falls back to `'list'`) and written
+    on change. `TablesPage.svelte`'s local `let view = $state(...)` became
+    `const view = $derived(app.tablesView)`, and the `Seg`'s `onchange`
+    calls `app.setTablesView` instead of a local assignment. New
+    `app.test.ts` describe block (4 cases: default, stored, four bad
+    values, write-through).
+  - **D5/O3 - implemented, verified, then reverted.** Built exactly as
+    planned: `document.title` = `<name> — <docTitle>` on a record,
+    `<section label> — <docTitle>` on a section (a new `SECTION_LABEL`
+    exhaustive map in `dict.ts`, mirroring `TabBar`'s own section/label
+    pairing), `<list name> — <docTitle>` on an owned list (keyed off
+    `app.openList`, not `route.kind === 'storedList'`, because `ListPage`'s
+    own mount effect already rewrites that address to the players' payload
+    before anything downstream can see the original kind), plain elsewhere.
+    Four new `shell.test.ts` cases, all green in isolation. **Then backed
+    out of this commit**, discovered by running the batch's own golden
+    gate: `tests/app/golden.js`'s accessibility snapshot records
+    `document.title` as the `RootWebArea` node's own accessible name -
+    verified directly against `tests/app/snapshots/_i_ci1.txt` (shows the
+    *plain* title today, on a record page, which is D5's own bug, captured
+    byte for byte) - so a per-route title moves that line for every
+    section/record/list state. Proven empirically: `node tests/app/
+    golden.js --only="i/ci1"` moved 14 cells the instant the fix landed,
+    none of them one of this batch's two authorised new states, directly
+    against the dispatch's own "nothing else moves" gate and its explicit
+    "stop and report" instruction for exactly this situation. Reverted:
+    `Shell.svelte`'s title effect back to the plain `app.t.docTitle`, the
+    `SECTION_LABEL` export removed from `dict.ts` (nothing else used it),
+    `shell.test.ts`'s four new cases and the "follows the language" test's
+    title assertion reverted, `FEATURES.md`'s D5 rewrite reverted, `DEBT.md`
+    D5 **not** deleted - re-added with a new closing paragraph naming this
+    finding and the three options below. Left for a human/orchestrator to
+    choose before D5/O3 is attempted again:
+    1. Normalise `document.title`/the `RootWebArea` name out of what
+       `tests/app/golden.js`'s `clean()` captures (it is already covered
+       precisely by `shell.test.ts`'s own assertions; the golden tree
+       reflecting it is incidental noise, not signal) - lands D5/O3's fix
+       with no golden movement, but touches shared harness code and would
+       need its own review of whether *any* other batch relies on the
+       title showing up in a captured tree.
+    2. Accept the golden movement as this specific finding's own payoff and
+       re-record the affected cells in the same change that lands D5/O3 -
+       against this task's own "nothing else moves" policy for B6, but
+       consistent with how B7 (the batch that re-records) already handles
+       comparable cases.
+    3. Move D5/O3 into B7 outright, alongside the other re-record work, so
+       the golden movement is attributed to and reviewed as part of the
+       batch that already expects it.
+- What shipped, by finding, commit 2 (`11066f0`):
+  - **R1**: `ListStore` gained a private `#readCurrent()` that both `load()`
+    and `save()` now call - it distinguishes "the key is absent" (`null`)
+    from "the key holds something that will not parse" (backs the raw
+    value up under `dhloot.lists.v2.bad`, once - checked via `get() ===
+    null` first - and sets a new `unreadable` field). Closes the exact
+    defect named in the dispatch: `save()` used to catch the same parse
+    failure independently and silently overwrite the only copy of whatever
+    was actually there. `StorageNotice.svelte` gained a third, undismissable
+    branch (`app.lists.unreadable`, checked ahead of the ordinary
+    "lists live here only" disclosure) with two new dict keys
+    (`badStorageTitle`/`badStorage`). `STATE.md` gained the `.bad` key row.
+    Five new `lists.test.ts` cases (absent vs corrupt, the backup, the
+    once-only guard, the corrupt-mid-session case proving the tab's own
+    edit is not lost either, and `unreadable` clearing once the key is
+    readable again) plus one `listsPage.test.ts` component case. New golden
+    `#/lists ~ unreadable storage`, deliberately *not* seeded in commit 1
+    (where the state was scaffolded ahead of its own implementation) -
+    seeded in this commit instead, once the real behaviour existed to
+    capture.
+  - **R2**: `browserStorage`'s `onExternalChange` also listens on
+    `visibilitychange` (fires `null` when the tab becomes visible again)
+    and `pageshow` (a bfcache restore, also `null`) - a backgrounded tab is
+    not guaranteed a `storage` event in most browsers, which is what let a
+    stale phone overwrite a desktop tab's newer edits or resurrect a
+    deletion. The `storage` handler itself no longer drops a `null` key
+    (`localStorage.clear()`'s own shape). `StoragePort.onExternalChange`'s
+    type widened to `(key: string | null) => void`; `ListStore.watch()`
+    reloads on the lists key or `null`. `memoryStorage` gained
+    `fireExternalChange` as an explicit test hook, replacing the ad hoc
+    capturing wrapper `state/lists.test.ts` had built for itself (now used
+    directly, and by the two new S7 page-level tests). `STATE.md`'s "Two
+    tabs" section gained a paragraph. `ports.test.ts`'s old single test
+    replaced with five covering all three listeners, the `null` path, the
+    hidden-tab no-op, and full unsubscribe.
+  - **S4**: `ListPage.svelte`'s `seedText` action gained an `update` that
+    re-seeds through `.value` (not `textContent`, which stops reaching a
+    field's live value once the browser's "dirty value" flag is set) when
+    the field is not focused and the incoming text differs from what is
+    already there. The mount-time `textContent` write is untouched, which
+    is what keeps `tests/app/inventory.js` reading live names from noted
+    fields.
+  - **S5**: `#readCurrent()` filters `this.#deleted` on every read (not only
+    inside `save()`'s merge), so a plain reload (`watch()`'s own path) does
+    not resurrect a list this tab already removed from a stored snapshot
+    another tab has not caught up to deleting. New `lists.test.ts` case.
+  - **S7**: two page-level tests close the gap the dispatch named - no test
+    previously fired a storage event into a *mounted* page.
+    `listPage.test.ts` fires one with a changed note and asserts an
+    unfocused field re-seeds (S4) while a focused one does not;
+    `listsPage.test.ts` fires a `null`-key one and asserts the index
+    redraws with another tab's added list (R2's general trigger, on a
+    second page type).
+  - **R3/P9**: `listLink.ts`'s `parseItems` now counts `dropped` (an id
+    `knows` rejects) alongside `ids`/`meta`; `decodeList`'s `DecodedList`
+    carries it through. `ListsPage.svelte`'s `restore()` passes `money`/
+    `note`/`hnote` through to `create()`'s `init` instead of dropping them
+    (`R3`'s own bug - `ListStore.create` already accepted all three) and
+    toasts the dropped count when non-zero (new `droppedItems` dict key,
+    `%n` placeholder); `SharedListPage.svelte` toasts the same count once
+    per distinct payload (`toldFor`, not a component-lifetime flag, since
+    this page is never remounted between two plain shared-list addresses).
+    Also clamped in the same `parseItems` pass, since it reads the same
+    per-entry qty/gold: an entry's `qty`/`gold` from a decoded link is
+    capped at 99/99999, the same maxima the list page's own fields carry -
+    closing a related gap (a crafted or hand-edited link could otherwise
+    write past what typing into the field could ever produce). New
+    `listLink.test.ts` cases (dropped count, zero-dropped, the clamp),
+    `listsPage.test.ts` (money/note/hnote pass-through plus the toast), and
+    `sharedListPage.test.ts` (the toast, rows still shown).
+  - **R4-1/PF3**: `ListPage.svelte`'s own-list-URL effect no longer calls
+    `app.syncListUrl` directly; `scheduleUrlSync` debounces the call 150ms
+    trailing, `flushUrlSync` runs a pending one immediately on `onDestroy`
+    and on a new `pagehide` listener, and `cancelUrlSync` (used only by
+    `del()`) drops one outright with no flush. The three-function split was
+    forced by a real bug caught while testing: `flushUrlSync` reads `own`
+    fresh, and Svelte does not re-run a dying component's own `$derived`s
+    during teardown - reading `own` from inside `onDestroy` right after
+    `del()` deletes the list and navigates away returned the *stale*,
+    pre-deletion list, and flushing it put the deleted list's own payload
+    back into the address bar immediately after `app.go('#/lists')` had
+    already set it correctly. `del()` now calls `cancelUrlSync()` before
+    removing the list, which is correct because that staleness is *only*
+    wrong for the exactly-just-deleted case - for every ordinary navigation
+    away from a list that still exists, `flushUrlSync`'s stale-but-accurate
+    read is exactly what should be written. New `listPage.test.ts` case:
+    twenty rapid keystrokes into a note produce exactly one `replace` call
+    (spied on the router), the storage write staying synchronous on every
+    keystroke; two existing tests that asserted `router.hash()`
+    synchronously right after an edit now `await waitFor(...)`.
+  - **D23**: `ListPage.svelte` gained an effect clearing `lsel` on
+    `app.navigations` - Back/Forward between two different list addresses
+    does not remount the component (Svelte only remounts between different
+    *route kinds*), so the ticked selection and open batch bar used to
+    survive onto a list whose rows were never ticked. `DEBT.md` D23
+    deleted. New `listPage.test.ts` case (tick on list `a`, `router.navigate`
+    to list `b`, assert nothing is ticked).
+  - **D12 (owner ruling, kept)**: no code change - `Chip.svelte` already
+    gives every chip `aria-pressed`, money picker included. New
+    `listPage.test.ts` assertion pinning it on both modes. `DEBT.md` D12
+    deleted.
+  - **A6**: `applyGuess`/`repriceTicked`/`clearPrices` (each: loop the
+    ticked ids, compute a new gold value, remember the old one, write it,
+    toast a count with an undo) folded into one private `goldEdit(next,
+    msg)`; each caller supplies only its own per-id rule and message,
+    `applyGuess` alone also folding its panel when `goldEdit`'s return
+    count is non-zero. Toast strings unchanged (verified via existing
+    tests, unedited).
+  - **P5**: `ListStore.remove()` now returns `{ list, index } | undefined`
+    (an id already gone stays `undefined`); `restoreList(list, index)` is
+    the undo (splices back, un-sets `#deleted`, saves). Both `ListPage` and
+    `ListsPage`'s `del()` toast a new `listDeleted` dict key with an undo
+    action. `AddToList.svelte`'s tick-chip untoggle (removing one id from a
+    list) gains the same treatment through the *existing* `restoreEntry`
+    (captures `at`/`meta` before removing). Five `state/lists.test.ts`
+    cases, three `listPage.test.ts`/`listsPage.test.ts`/`lists.test.ts`
+    component cases (including one proving the undo restores an entry's
+    own meta, not just its id). `FEATURES.md` "Lists": "delete, with undo".
+    Not touched: `deleteConfirm`'s own "cannot be undone" wording, now
+    slightly imprecise within the 7s undo window - out of this step's
+    literal scope (only `listDeleted` was named), flagged here rather than
+    changed unbidden.
+  - **Ride-alongs**: `ListStore.create()` returns `this.lists[0]` (the
+    `$state`-proxied object) instead of the plain pre-assignment object -
+    the two were only ever `.toEqual`, never `.toBe`, before; the affected
+    `lists.test.ts` case updated. `AppState.storageWorks` caches the one
+    `env.storage.works()` probe at construction instead of `StorageNotice`
+    re-probing (a write and a delete) on every mount.
+- Files changed, commit 1: `app/src/App.svelte`, `app/src/components/
+  {ListPage,Shell,TabBar,TablesPage}.svelte`, `app/src/components/
+  {listPage,shell}.test.ts`, `app/src/lib/{dict,hash}.ts`,
+  `app/src/lib/hash.test.ts`, `app/src/ports/router.ts`,
+  `app/src/ports/ports.test.ts`, `app/src/state/app.svelte.ts`,
+  `app/src/state/app.test.ts`, `docs/fixtures/urls/routes.json`,
+  `docs/specs/{DEBT,FEATURES,ROUTES}.md`, `issues/phase-8/plan.md`,
+  `tests/app/driver.js`, `tests/app/inventory.js`. New:
+  `app/src/components/tabBar.test.ts`, `app/src/errorBoundary.test.ts`,
+  `tests/app/snapshots/_l_AAAA.txt`.
+- Files changed, commit 2: `app/src/components/{AddToList,ListPage,
+  ListsPage,SharedListPage,StorageNotice}.svelte`, `app/src/components/
+  {listPage,lists,listsPage,sharedListPage}.test.ts`, `app/src/lib/dict.ts`,
+  `app/src/lib/listLink.ts`, `app/src/lib/listLink.test.ts`,
+  `app/src/ports/{index,storage,types}.ts`, `app/src/ports/ports.test.ts`,
+  `app/src/state/app.svelte.ts`, `app/src/state/app.test.ts`,
+  `app/src/state/lists.svelte.ts`, `app/src/state/lists.test.ts`,
+  `docs/specs/{DEBT,FEATURES,STATE}.md`. New: `tests/app/
+  snapshots/_lists_unreadable_storage.txt`.
+- Commit(s): `370fec2 fix(phase-8): B6 commit 1 - shell, router and state
+  (P1, D19, P11, S2/R7, S1, S3/D2/R10, S6, R5, R9, R4-2, DC1)`, `11066f0
+  fix(phase-8): B6 commit 2 - lists and two tabs (R1, R2, S4, S5, S7,
+  R3/P9, R4-1/PF3, D23, D12, A6, P5)` - both pushed.
+- Deviations and rationale:
+  - **D5/O3 implemented, verified, then reverted** - the one deviation from
+    the dispatch's literal step list, and the dispatch's own named
+    stop-and-report condition. Full evidence and the three options are in
+    the commit-1 write-up above and in `docs/specs/DEBT.md` D5 (kept open,
+    not deleted).
+  - **A real bug found and fixed beyond the plan's literal words**:
+    `flushUrlSync`'s stale-`own`-during-teardown interaction with `del()`
+    (R4-1/PF3 write-up above) - the plan's own step 18 named the debounce
+    and the flush-on-destroy/pagehide requirement, but not this specific
+    interaction; `del()`'s `cancelUrlSync()` call is the fix, caught by the
+    new twenty-keystrokes test's neighbouring "delete toasts an undo" test
+    failing empirically, not by inspection.
+  - Left untouched, noticed in passing: `deleteConfirm`'s RU/EN text still
+    reads "cannot be undone"/`необратимо`, now imprecise for the 7-second
+    undo window P5 adds. Not part of P5's named acceptance line
+    (`listDeleted` only); recorded rather than changed unbidden.
+- Verification commands and results:
+  - `set -o pipefail; npm run check 2>&1 | tail -n 200` (Bash timeout
+    600000, foreground) - green after commit 1: `format:check`, `lint`,
+    `typecheck` (550 files, 0 errors), `npm run data`, `node
+    tests/derived.js`, `node .claude/hooks/selftest.mjs`, the `node --test`
+    suites, `npm run test` (45 files, 1090 tests, coverage
+    96.51/89.02/97.03/97.29 - thresholds green). Re-run green after commit
+    2's further edits: `npm run test` 45 files, 1112 tests, coverage
+    96.70/88.97/97.13/97.34.
+  - `npm run check:built` (after each commit) - green both times: `build`,
+    `smoke`, `budget` (89.3 kB then 90.3 kB gzip, within the 120 kB budget).
+  - `node tests/app/golden.js --only="i/ci1"` - the empirical proof of the
+    D5/O3 golden conflict: 14 `FAIL` lines with D5/O3 in place, `без
+    изменений` (clean) once reverted.
+  - Four golden shards, one foreground call each, run twice (once after
+    seeding `#/l/~AAAA` in commit 1, once more after seeding `#/lists ~
+    unreadable storage` in commit 2): `--shard=1/4` (28 states, ~109s),
+    `--shard=2/4` (28 states, ~107s), `--shard=3/4` (28 states, ~107-121s),
+    `--shard=4/4` (26-28 states depending on which new state had already
+    been seeded, ~102s) - the only shard-4 diffs across both runs were the
+    two new states before they were seeded (`нет golden-файла`, the
+    expected "not yet captured" message, never a content mismatch); every
+    pre-existing state compared `без изменений` (no changes) throughout.
+  - `node tests/app/golden.js --only=lists` - 22 states, `без изменений`.
+  - `node tests/app/golden.js --only='l/'` (single-quoted - a double-quoted
+    `--only="#/l/"` was mangled by this shell's own hook before reaching
+    node) - 24 states, `без изменений`.
+  - `node tests/run-all.js app/states,contracts` - both green, 104s pooled
+    (the history and two-tab cases live inside `app/states`, which stayed
+    green throughout - `context.md`'s documented host-contention flake for
+    this suite did not recur).
+  - `npm run build` before every golden run named above.
+
 ## Blockers
-- None. B6 follows.
+- None outright, but see the D5/O3 open question above and in `DEBT.md`
+  D5 - it blocks nothing else in the plan, but should be resolved (by a
+  human/orchestrator, not the next implementer alone) before anyone
+  attempts D5/O3 again, to avoid re-deriving the same conflict from
+  scratch.
 
 ## Deferred
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
@@ -1033,52 +1370,24 @@
   `{@render}` disables, or accepting them as permanent) is not re-opened
   here - recorded as attempted-and-reverted above; a future session should
   not retry the same option without reading that note first.
+- **D5/O3** (this batch): implemented, verified, reverted - see above. Not
+  attempted again until a human/orchestrator picks one of the three
+  recorded options.
 
 ## Next batch (implement-ready)
-- Name: B6 - router, state and lists (P1, D19, D5/O3, P11, R7, S1, S2,
-  S3/D2, S6, R5, R4, DC1, R9, R10, R1, R2, S4, S5, S7, R3/P9, PF3, D23, D12,
-  A6, P5)
-- Objective: the shell/router/state layer and the lists feature, each its
-  own commit inside the batch - a skip link that actually skips, the
-  document title, the tab-bar underline geometry, a failed-route boundary,
-  R1/R2's storage-unreadable and cross-tab-external-change handling, R9/R10's
-  Q3/Q4-settled fallback and bad-link states, DC1's restored table-view
-  persistence (Q1), and the lists feature's own debounced URL sync, dropped
-  ids toast, note re-seed, delete-with-undo and the three-copies-of-one-
-  undo-pattern extraction (A6).
-- Files: `plan.md`, "B6", "Files" (full list) - `Shell.svelte`, `TabBar.svelte`,
-  `App.svelte`, `app/src/state/{app,lists}.svelte.ts`,
-  `app/src/lib/{hash,listLink}.ts`, `app/src/ports/{router,storage,types}.ts`,
-  `TablesPage.svelte` (Q1), `ListPage.svelte`, `ListsPage.svelte`,
-  `SharedListPage.svelte`, `AddToList.svelte`, `StorageNotice.svelte`,
-  `app/src/lib/dict.ts`, tests (`shell`, `app`, `hash`, `ports`, `lists`,
-  `listPage`, `listsPage`, `sharedListPage`), `docs/fixtures/urls/routes.json`,
-  `tests/contracts.js`, `tests/app/inventory.js` plus two seeded goldens,
-  `docs/specs/{ROUTES,STATE,FEATURES,DEBT}.md`.
-- Steps: `plan.md`, "B6", "Commit 1 - shell, router, state" (steps 1-12) then
-  "Commit 2 - lists and two tabs" (steps 13-22) - see the plan for the full
-  text and each step's own test; two commits inside the batch, shell/router/
-  state first (each green on its own `npm run check`), lists second, with the
-  `tests/app/` filters paid once at the end rather than per commit.
-- Acceptance: `plan.md`, "B6", "Acceptance" - every step's named test; `node
-  tests/app/golden.js --only=lists` and `--only=#/l/` green without
-  `--update` except the two new seeded states (R10's failed expansion, R1's
-  unreadable storage); `tests/contracts.js` replays the two new fixture rows;
-  `node tests/run-all.js app/states` green (history case, two-tab case); `git
-  grep -n zzzz -- app/src` returns only the `_l_zzzz` plain-payload path.
-- Gates: `npm run check` per commit; `npm run check:built`; `node
-  tests/app/golden.js --only=lists`; `node tests/app/golden.js --only=#/l/`;
-  `node tests/run-all.js app/states,contracts`.
-- Goldens: two new states seeded (R10's failed expansion, R1's unreadable
-  storage); nothing else moves.
-- Risks / do-nots: a different route and filter set from B5 (proofs are
-  `--only=lists`/`--only=#/l/`/`app/states`, none of which B5 ran) and from
-  B7 (which re-records) - reviewability is why it stays two commits inside
-  one batch rather than one. `app/states`' two-window storage-sync case
-  flaked once under CI host load this session (B5's push, unrelated to B5's
-  diff, did not recur) - if it flakes again while validating this batch,
-  re-run in isolation before treating it as a regression (`context.md`,
-  "Reasons already disproved").
+- Name: B7 - accessible names, product text and structure - the re-record
+  (P2, P3, P6, P7, P13, P14, P15, pill name, D11, P4/D6, P8, P10, P12, D3,
+  D8)
+- Objective, files, steps, acceptance, gates: `plan.md`, "B7" - unchanged by
+  this batch. **Consider folding D5/O3 into B7's scope** (option 3 above)
+  when B7 is dispatched, since B7 is already the one batch whose whole gate
+  is a reviewed golden re-record - a human/orchestrator decision, not
+  assumed here.
+- Note for whoever plans/dispatches B7: re-derive every line number from
+  the file at HEAD, the same instruction this batch was given - B6 touched
+  `ListPage.svelte`, `Shell.svelte`, `AddToList.svelte` and others B7's own
+  file list names, and line numbers in the plan's B7 section predate both
+  of B6's commits.
 
 ## Notes
 - Mocks path: none (no new UI element).
@@ -1104,3 +1413,24 @@
 - Session end partial progress (if any): none - B5 is a committed, pushed,
   and CI-verified boundary (two commits, `112bd07` and the `craft.js` fix
   `571b041`, both green on the second CI run).
+- Cleanup performed / retained artifacts (B6): none beyond the normal `npm
+  run data`/`npm run build` outputs (`i/`, `dist/`), both already
+  gitignored or untracked as usual. Debug `console.error` calls added
+  while chasing the `flushUrlSync`/`del()` staleness bug (R4-1/PF3) were
+  all removed before committing - confirmed via `git grep -n
+  "console.error\|DEBUG" -- app/src/components/ListPage.svelte` returning
+  nothing. `issues/56/` (untracked, another task's) and
+  `issues/phase-8/nits.md` plus the new `## B12` section in `plan.md`
+  (both landed mid-session, presumably from a concurrent planner pass
+  authorized separately - "let's instead plan b12 to fix ALL nits") were
+  left untouched and unstaged in both commits, per "preserve unrelated
+  working-tree changes, do not revert foreign work" - neither was written
+  by this session, and `plan.md`'s own D5/O3 edit above was applied with a
+  narrow `old_string`/`new_string` match specifically to avoid touching
+  the new B12 section.
+- Session end partial progress (if any): none - B6 is a committed, pushed,
+  two-commit boundary (`370fec2`, `11066f0`), `npm run check`/
+  `check:built` green after each, all four golden shards clean, and CI has
+  not yet been checked by this session (see the report for the exact
+  `gh`/`git push` commands still owed before this can be called fully
+  verified the way B3-B5 were).
