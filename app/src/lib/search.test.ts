@@ -7,7 +7,7 @@ import { buildIndex, type Loot } from './data.js';
 import { dict } from './dict.js';
 import { eqLine } from './i18n.js';
 import { isFrameRecord } from './label.js';
-import { matches, search, statLineFor } from './search.js';
+import { foldQuery, hayFor, matches, search, statLineFor } from './search.js';
 import type { Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -124,6 +124,36 @@ describe('without a stat line', () => {
     /* A query that reaches the stat line rather than short-circuiting on the
        name: with no stat line to consult there is nothing to match. */
     expect(search([gear], 'заведомо отсутствующее слово')).toEqual([]);
+  });
+});
+
+describe('folding: ё, apostrophes, case', () => {
+  it('finds a yo-spelled name typed with a plain е', () => {
+    /* "Плетёная Сеть" (ci8) - a reader who cannot type ё gets nothing today */
+    expect(find('плетеная сеть').map((x) => x.id)).toContain('ci8');
+  });
+
+  it('finds an apostrophe name typed with an ordinary keyboard apostrophe', () => {
+    /* "Keeper's Staff" (q80) is stored with U+2019; nobody's keyboard types that */
+    expect(find("keeper's staff").map((x) => x.id)).toContain('q80');
+  });
+
+  it('agrees between the cached haystack and the live fallback', () => {
+    /* The haystack path (hayFor) and the fallback path (no hay, folded live)
+       have to return exactly the same hits, or the cache would be a second,
+       silently different search engine. */
+    const hay = hayFor(statLine);
+    const queries = ['меч', 'двуручное', 'а', 'кольцо', 'вторичное', 'zzzqqqxx123'];
+    for (const q of queries) {
+      const folded = foldQuery(q);
+      const withHay = index.searchable
+        .filter((it) => matches(it, folded, statLine, hay))
+        .map((x) => x.id);
+      const withoutHay = index.searchable
+        .filter((it) => matches(it, folded, statLine))
+        .map((x) => x.id);
+      expect(withHay).toEqual(withoutHay);
+    }
   });
 });
 

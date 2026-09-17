@@ -15,7 +15,7 @@
   import SearchBox from './SearchBox.svelte';
   import TableRows from './TableRows.svelte';
   import { kindOf } from '../lib/data.js';
-  import { matches, statLineFor } from '../lib/search.js';
+  import { foldQuery, hayFor, matches, statLineFor } from '../lib/search.js';
   import { isLastOn } from '../lib/std.js';
   import { KINDS } from '../lib/types.js';
   import type { Dict } from '../lib/dict.js';
@@ -48,13 +48,14 @@
     app.say(msg, { error });
   };
 
-  const query = $derived(q.trim().toLowerCase());
+  const query = $derived(foldQuery(q.trim()));
   const statLine = $derived(statLineFor(app.lang, t));
+  const hay = $derived(hayFor(statLine));
   const found = $derived.by(() =>
     !index || !query
       ? []
       : index.searchable
-          .filter((it) => app.kinds[kindOf(it)] && matches(it, query, statLine))
+          .filter((it) => app.kinds[kindOf(it)] && matches(it, query, statLine, hay))
           .slice(0, 300)
   );
 

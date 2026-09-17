@@ -53,7 +53,7 @@
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
   import { tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
-  import { matches, statLineFor } from '../lib/search.js';
+  import { foldQuery, hayFor, matches, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
   import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -197,11 +197,12 @@
      the rule lives once. `statLineFor`'s own doc comment carries the reason:
      the type word is kept here, unlike the row's own display. */
   const statLine = $derived(statLineFor(app.lang, t));
+  const hay = $derived(hayFor(statLine));
 
   const filtered = $derived.by(() => {
-    const query = q.trim().toLowerCase();
+    const query = foldQuery(q.trim());
     if (!query) return facPassed;
-    return facPassed.filter((it) => matches(it, query, statLine));
+    return facPassed.filter((it) => matches(it, query, statLine, hay));
   });
 
   /** "Select all" always means all of one list - the whole table for the
@@ -333,7 +334,7 @@
 
   const altSections = $derived.by<AltSection[]>(() => {
     if (!altKind || !index) return [];
-    const query = q.trim().toLowerCase();
+    const query = foldQuery(q.trim());
     return RARITIES.map((r) => {
       const cols: AltCol[] = (['hope', 'fear'] as const)
         .map((col) => ({
@@ -341,7 +342,7 @@
           label: col === 'hope' ? t.hope : t.fear,
           entries: index
             .altColumn(altKind, r, col)
-            .filter((x) => !query || matches(x.it, query, statLine))
+            .filter((x) => !query || matches(x.it, query, statLine, hay))
         }))
         .filter((c) => c.entries.length > 0);
       return { key: r, label: rarityLabel(r, t), cols };

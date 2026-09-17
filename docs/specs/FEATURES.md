@@ -56,6 +56,9 @@ Six modes. Each keeps its own input in memory only.
 - Search covers all 1091 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped.
+- Search folds case, `ё`/`е` and typographic apostrophes (U+2019, U+02BC) on
+  both the query and the catalogue, so `плетеная` finds "Плетёная" and
+  `soldier's` finds "Soldier's"; still a substring match, not fuzzy.
 - Starting inventory is searchable, opens on direct record pages, and is
   browsable under Other's Starting items table (`other_starting`); it remains
   held in the non-rollable `starting` collection. Its source and class context
