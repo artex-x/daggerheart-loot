@@ -185,6 +185,35 @@ the whole transcript. Sibling sends are unmeasured and unused; a subagent's
 reply lands here, so two subagents cannot converse. Facts and evidence:
 `.claude/README.md`, "Resuming a worker".
 
+**Ask what the resume is buying.** A resume is worth its replay when the
+agent's *reasoning* is the thing you need - it holds why it chose a shape, or
+a half-applied edit only it can describe. It is not worth it when the fix is
+already fully specified outside the agent: a review that quotes the file, the
+line, the failing sequence and the minimal patch has already externalised
+everything the transcript held, and a fresh worker reads that report and the
+handoff for a fraction of the replay. The tell is whether you could hand the
+work to somebody who had never seen the batch. If yes, spawn.
+
+That cost rises with time. A batch that ended long ago, or behind several
+other batches, replays a transcript that is no longer warm, so "resume its own
+implementer for the review's blockers" can quietly become the most expensive
+option on the board. 2026-09-17: B6's review returned two blockers in the
+storage layer; resuming B6 meant waiting for B7's golden re-record to finish
+and then reloading a long-cold transcript, while the review itself already
+carried the traced sequence and the patch. A fresh worker was the cheaper and
+equally informed choice.
+
+**Blockers do not go to a nit batch.** If the plan has a batch that collects
+nits, it collects nits. A blocker demoted into it ships the defect for every
+batch in between and quietly redefines what that batch is for. Remediate a
+blocker on its own schedule, even when that means waiting for the tree.
+
+**Persist a review's findings when the review lands.** Reviewers return
+findings as messages, not files, so they live only in the orchestrator's
+context and die with the session. 2026-09-17: four reviews' worth of nits,
+risks and evidence were one context away from being lost. Write them to a
+register in `issues/<id>/` as they arrive - not when somebody actions them.
+
 ## Model selection (orchestrator only)
 Agents must not choose models or effort.
 Claude frontmatter remains the default on Claude hosts: planner and reviewer
