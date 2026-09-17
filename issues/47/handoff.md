@@ -1029,6 +1029,107 @@ the same host conditions:
   `isolate: false` trades away the jsdom isolation the component suite rests
   on.
 
+### R0c C3 - `ci.yml` alone: the parity job dropped, the deploy guard hardened (implementer, 2026-09-17)
+
+**One file, `.github/workflows/ci.yml`.** Verified before editing that two of
+the brief's lines were already closed by issue 56's R0b peer work
+(`99bbb7c`, `8dae1b9`): `deploy.needs` was already `[check, audit, secrets,
+golden]` and `parity` was already gated on `workflow_dispatch` rather than
+running on every push - neither needed a change. What R0c's C3 still owed:
+
+- **Acceptance 28.** Deleted the whole `parity:` job (not just its trigger -
+  the brief wants it gone, not merely dormant). Renamed the `check` job's
+  suite step from "The legacy suites against the live app, and the built app
+  in a browser" to "The built app's suites, in a real browser" and changed
+  its command from `node tests/run-all.js --exclude=parity,app/golden` to
+  `--exclude=app/golden` - confirmed first that `tests/run-all.js`'s `SUITES`
+  list (C1's own edit) carries no `parity` row any more, so the old
+  `exclude=parity` token was already inert.
+- **Acceptance 29.** Rewrote the deploy job's header comment block: it no
+  longer says the old app "stays in the repository ... and is the fallback"
+  (false since C1's `23c00a6`) or gives a bare `git revert <the commit that
+  changed this file>` as if the cut-over commit were still the one to name.
+  New text: what is published; a bad deploy of the rewrite is `git revert
+  <the commit that broke it>`; the old app is gone from the repository, not
+  merely off the published set, and is restorable only from history, as a
+  deliberate batch (re-adding the files, re-pointing the collect step,
+  reviving the suites), never a single command - cited exactly as `git show
+  23c00a6^ -- index.html app.js style.css`, the C1 sha the dispatch named.
+- **Acceptance 30.** Extended the "Nothing private slipped in" guard: added
+  `cmp -s dist/index.html _site/index.html` and `cmp -s dist/assets/app.js
+  _site/assets/app.js`; added by-name non-empty checks for `og/_share.jpg`,
+  `img/_none.webp`, `card/die-d12-bw.svg` and `i/w1.html` (alongside, not
+  instead of, the existing per-directory non-empty checks for `img og i
+  card`); replaced the old loose `grep -q 'src="app.js"'` with the exact
+  regex `tools/check-site.mjs` uses, `grep -qE 'src="\.?/?app\.js"'`; added
+  `[ "$(head -c 11 _site/data.js)" != "window.LOOT" ]` matching
+  `check-site.mjs`'s `data.body.startsWith('window.LOOT')`. Kept the
+  `app.js style.css` entries in the "must not be published" loop, with the
+  comment rewritten to explain why they are still checked even though
+  neither file exists in the repository any more, ending "a stray root file
+  like that must never reach `_site`" as the acceptance line asks verbatim.
+  Cross-checked every static assertion `tools/check-site.mjs` makes (this
+  file's "Verification", "R0c preflight", acceptance 9's list) against the
+  guard - every one now has a matching line.
+- Two stale in-file comments fixed as cheap, local, in-path corrections
+  while the file was open (`CLAUDE.md`, "fix cheap, local, safe bugs"): the
+  `golden` job's own comment still said "the same reason as parity above"
+  after `parity:` was deleted; the deploy collect-step comment still said
+  the repository holds "the sources, the specs and the old app", the last
+  of which is no longer true.
+- **Acceptance 31** - one file; `git diff --stat` after every edit showed
+  only `.github/workflows/ci.yml`.
+
+**A blocker, reported rather than worked around.** The first `npm run check`
+run after this diff failed at `format:check` on ten files, none of them
+touched by this batch: `.claude/worktrees/agent-aa938979da567fa64/...`. A
+planner had been dispatched (by the orchestrator) into what was meant to be
+an isolated git worktree outside this tree, but the host nested it under
+this tree's own `.claude/` directory instead, where `prettier --check .`
+(the first step of `npm run check`) walks into it; `.prettierignore` has no
+entry for `.claude/worktrees/`. `npx prettier --check
+.github/workflows/ci.yml` run in isolation confirmed this diff's own file
+was clean throughout. Per the dispatch's own stop condition ("stop and
+report ... if the gate goes red for a reason your own diff explains" - this
+was the opposite: a reason the diff did *not* explain) and `CLAUDE.md`'s
+"one session at a time per working tree" rule, this session did not touch
+the foreign worktree, did not add a `.prettierignore` entry (would have
+widened C3 past one file), and did not invoke `SKIP_CHECK_GATE` - it
+reported and stopped mid-turn. **Resolution (orchestrator, 2026-09-17):**
+the planner finished, its output was copied to `issues/untrack-stubs/`
+(markdown, already covered by `.prettierignore`'s `*.md` line, so it cannot
+retrip `format:check`), then `git worktree remove --force`, `rmdir
+.claude/worktrees` and the leftover branch deleted. `git status --short`
+after: exactly ` M .github/workflows/ci.yml`, `?? issues/56/`, `??
+issues/untrack-stubs/`, `?? work/` - this diff untouched, HEAD still
+`5d2ddf9`, confirmed before re-running anything.
+
+**The re-run, foreground, after the worktree was removed:**
+`set -o pipefail; npm run check 2>&1 | tail -n 120` - exit 0, 42 files /
+1053 tests, coverage 96.61/88.6/97.11/97.34 (unmoved from every prior
+reading in this batch). `.claude/.check-cache.json` read `{"key":
+"7db30075983624f2", ...}` immediately after, confirming the gate armed for
+the tree as it stood (`.github/workflows/ci.yml` staged, nothing else).
+Committed `b9d84ce` (message: the parity-job drop, the deploy-guard
+hardening, one file, the coverage figures); pushed (`5d2ddf9..b9d84ce main
+-> main`); `git status --short` after: only the three foreign untracked
+directories remain.
+
+**A nested agent worktree can redden `format:check`, and it will happen
+again** - worth a durable fix, not a one-off workaround: `.prettierignore`
+has no `.claude/worktrees/` entry, so a repo-root `prettier --check .`
+always walks into one if it lands there. Left for whoever next touches
+`.prettierignore` (see "Deferred") - not this batch's, since C3 was to stay
+one file.
+
+**The two stale-doc items an unrelated planner (`issues/untrack-stubs/`)
+found and flagged as issue 47's, triaged:** (1) the deploy header's
+description of the revert model - this was exactly what acceptance 29 above
+already rewrote; closed by this commit, no further action. (2)
+`docs/specs/COVERAGE.md` still describing twenty legacy suites and
+`index.html` - real and still open, out of scope for a `ci.yml`-only batch;
+carried to C4 (see "Deferred").
+
 ## Next batch
 
 - Name: **R0c - the divergence sweep, the deletions, CI's parity job, the
@@ -1759,6 +1860,25 @@ B11.1's nits were closed by B11.1 and B12.
     B4 on the reasoning that the live app has it, but no parity state reaches
     a row checkbox by keyboard and the driver has no key press. That
     instrument gap is recorded rather than invented around.
+
+- **`.prettierignore` has no `.claude/worktrees/` entry (found R0c C3,
+  implementer, 2026-09-17).** A nested agent worktree under this tree's own
+  `.claude/` directory reddens `npm run format:check` (hence `npm run
+  check`) because `prettier --check .` walks into it. It blocked C3's commit
+  gate once already (resolved by removing that specific worktree, not by
+  this fix). The durable fix is adding a `.claude/worktrees/` line to
+  `.prettierignore`, with a comment saying why (an agent worktree is host
+  infrastructure, not source, and can land inside this tree unpredictably).
+  Left for whoever next touches `.prettierignore` - out of scope for a
+  `ci.yml`-only C3.
+- **PLACED for R0c C4 - `docs/specs/COVERAGE.md` still describes twenty
+  legacy suites and `index.html` (found by a planner working
+  `issues/untrack-stubs/`, an unrelated task, 2026-09-17, surfaced to this
+  session because it is issue 47's, not theirs).** Not checked further by
+  this session - C3 was `ci.yml` alone - but acceptance 33 already covers
+  re-deriving `COVERAGE.md`'s counts and old-app table, so this is not a new
+  acceptance line, just a pointer for whoever runs C4 to verify against
+  before closing that acceptance.
 
 ## Notes
 
