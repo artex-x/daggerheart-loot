@@ -86,7 +86,13 @@ ok(fs.readdirSync(path.join(ROOT, 'i')).filter(f => f.endsWith('.html')).length 
    'i/: expected 1091 stubs');
 const stale = ALL.filter(x => {
   const p = path.join(ROOT, 'i', x.id + '.html');
-  return !fs.existsSync(p) || fs.readFileSync(p, 'utf8').indexOf(x.rud.slice(0, 40)) < 0;
+  /* Only the first line, not a raw 40-char slice: issues/phase-8, O6 made the
+     generator print one <p> per source line, so a multi-line description
+     (five Vault of Ages records open with a one-line "Стоимость Призыва: N"
+     header under 40 characters) no longer carries a raw "line one\nline two"
+     substring anywhere in the stub - the newline is now a paragraph break. */
+  const probe = x.rud.split('\n')[0].slice(0, 40);
+  return !fs.existsSync(p) || fs.readFileSync(p, 'utf8').indexOf(probe) < 0;
 });
 ok(stale.length === 0, 'stubs out of date: ' + stale.slice(0, 5).map(x => x.id).join(', '));
 
