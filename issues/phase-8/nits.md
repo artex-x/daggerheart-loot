@@ -110,28 +110,46 @@ B7, above).
 
 **Four blockers are NOT in this table and are NOT B12's** - they go to B7's
 own one remediation cycle, per `orchestrate.prompt.md`, "Blockers do not go
-to a nit batch". Recorded here only so the register shows they were seen:
+to a nit batch". Recorded here only so the register shows they were seen.
+All four, plus B7-R3 below (bundled into the same fix for the same reason a
+later reader would hit both), are **done `6b50945`** - B7's one remediation
+cycle is now spent; see `issues/phase-8/handoff.md`, "B7 remediation".
 
 - **BL-0** (found by CI, not by the review): `docs/fixtures/statlines/equipment.json`
   still holds frame record `f7`'s pre-D11 stat line, so `app/contracts` fails
   in a real browser (`f7/ru`, `f7/en`). `app/src/lib/i18n.test.ts:56` hides it
   by passing `noTier: isFrameRecord(record)`, which is why `npm run check`
   stayed green. CI run `35318680003` on `fa56576`, job `browser (3)`.
+  `done 6b50945`: `f7`'s fixture lines updated to the tier-first shape,
+  `noTier: isFrameRecord(record)` dropped from the test loop, the fixture's
+  header comment notes `f7` as a deliberate D11/Q6 divergence, not a stale
+  capture. `node tests/run-all.js app/contracts` reran green (252.1s)
+  against the fix.
 - **BL-1**: `docs/specs/COVERAGE.md:162-165` documents the
   `expectNoA11yViolations(container, { allow })` parameter this commit deleted.
+  `done 6b50945`: rewritten against the current `app/src/test/a11y.ts` -
+  nothing is disabled per call any more, `color-contrast` is the only rule
+  off, everywhere.
 - **BL-2**: `docs/specs/COVERAGE.md:64` asserts the opposite of what shipped -
   it still says `share.ts` passes `noTier: isFrameRecord(it)` and that the
   fixture was recaptured *losing* the tier word.
+  `done 6b50945`: rewritten as D11 paid off under Q6 - `share.ts` passes no
+  `noTier` argument any more and `f33` gained the tier word.
 - **BL-3**: the tier ladder on frame records (`RecordCard.svelte:177`, the
   guard dropped) is visible on **56 frame records** and covered by nothing -
   the only frame record in a golden and in `record.test.ts`'s fixture is `f1`,
   whose `eq.line` is empty.
+  `done 6b50945`: `record.test.ts`'s `frames` fixture gained `f2`/`f3`
+  sharing an `eq.line`; a new test opens `f2`'s page and asserts the ladder
+  renders with both rungs and the tier word on the stat chip, ending with
+  `expectNoA11yViolations`. No `inventory.js` state added, per the review's
+  own ruling.
 
 | id | where | what |
 |---|---|---|
 | B7-R1 | `app/src/components/Shell.svelte:105-109`, `SelBar.svelte:75-79` | P10's comment says the bar "is fixed to the bottom of the viewport"; it is `position: sticky`. The z-index half of the argument is right (a positioned `z-index: 45` box paints over the unpositioned footer whatever the DOM order), but a sticky box also has a **flow** position, and that moved from after `<footer>` to before it. Two consequences the recorded evidence cannot see: with a selection the footer is pushed down by the bar's height, and at **maximum scroll** the bar un-sticks *above* the footer instead of resting below it. Both the 1180x900 measurement and `states.js` case 16 measure the unscrolled page - the one position where the difference cannot appear. The plan's own acceptance line asked for the page-bottom overlap at 1180 and 375. Benign either way; the claim is unevidenced and the word "fixed" is what makes it read as proved. |
 | B7-R2 | `tests/app/states.js` (case 23, `addToListMenuStaysInModal`) | `ok(scrollTop === 0, ...)` can no longer fail: `RecordCard.svelte:270` changed `.card` to `overflow: clip`, which creates no scroll container, so `scrollTop` is 0 whatever the placement effect does - a stray `scrollIntoView` would scroll the nearest *scrollable* ancestor and this assertion would still pass. The D6 evidence it names (`.card.scrollTop` 109) is not what it measures any more. The real assertion is `inside(menu, card)`. Drop the scrollTop line or replace it with one pinning `:scope > .btn`. |
-| B7-R3 | `app/src/lib/i18n.ts:120,126,147` | After B7, `noTier` has **zero production callers** - only `i18n.test.ts:56,75-80` (the old-app parity fixture, which legitimately still needs it). Nothing says so at either site, so a later reader applying `CLAUDE.md`'s "add no variant before something uses it" deletes it and breaks the parity fixture for a reason that takes an hour to find. One clause closes it. Interacts with BL-0's fix. |
+| B7-R3 | `app/src/lib/i18n.ts:120,126,147` | After B7, `noTier` has **zero production callers** - only `i18n.test.ts:56,75-80` (the old-app parity fixture, which legitimately still needs it). Nothing says so at either site, so a later reader applying `CLAUDE.md`'s "add no variant before something uses it" deletes it and breaks the parity fixture for a reason that takes an hour to find. One clause closes it. Interacts with BL-0's fix. `done 6b50945`: bundled into BL-0's fix (same file, same reader trap) - a clause on `eqParts`'s doc comment names the zero-caller fact and the test that would break. |
 | B7-R4 | `app/src/components/ListPage.svelte:1267-1276`, `StorageNotice.svelte` | P12's 44x44 targets overlap editable neighbours: `.note-x::after` extends ~12px beyond a 20px button into the note `<textarea>`; `.warn-x::after` ~3px above the notice box. The `.homebtn` precedent it copies has no editable neighbour. A tap 12px from the cross clears the note instead of placing a caret. Unmeasured, low severity. |
 | B7-N3 | `tests/app/lib.js:124-135` | `axe(page, { allow })` is kept "for a future live-shared defect" with no caller - in the same commit whose `app/src/test/a11y.ts` comment argues that a parameter with no caller is a maintained shape for nothing. Pick one: delete it here too, or state why the browser suite differs. |
 | B7-N4 | `tests/app/inventory.js:94,142` and `:98,146` | `selected: 'Выбрано'/'Selected'` and `importPh: 'Ссылка на список'/'Paste a list link'` are dead keys - no reader. `pickRow` was deleted in this very batch for exactly that reason. `importPh` is also now wrong: after P6 that field's accessible name is `t.importList`. |

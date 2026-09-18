@@ -2,34 +2,33 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress - **B8 committed and pushed.** B1-B7 committed and
-  pushed as before (`e7c7b50`, `44b1761`, `3bc605d`, the B2-review
-  remediation batch, `0a3d9fb`/`446e45b`, `112bd07`/`571b041`,
-  `370fec2`/`11066f0`, `e80a793`/`dba6755`). B7's own review landed
-  separately (`8e43c92`, `docs(phase-8): append B7 review findings to the
-  nit register`) - four blockers (BL-0 from CI: `f7`'s stat line moved by
-  B7's own D11 fix but `docs/fixtures/statlines/equipment.json` was never
-  recaptured, hidden by `i18n.test.ts`'s `noTier`; BL-1..BL-3 from the
-  review itself) recorded in `issues/phase-8/nits.md`, explicitly kept out
-  of this batch's scope and routed to B7's own remediation cycle - **not
-  touched here**, per the orchestrator's own instruction mid-batch. B8
-  landed as one commit: `3c0fff8 feat(phase-8): B8 record actions, print,
-  motion and focus`, on top of `8e43c92`.
+- Task status: in_progress - **B7's one remediation cycle is spent and
+  pushed.** B1-B8 committed and pushed as before (`e7c7b50`, `44b1761`,
+  `3bc605d`, the B2-review remediation batch, `0a3d9fb`/`446e45b`,
+  `112bd07`/`571b041`, `370fec2`/`11066f0`, `e80a793`/`dba6755`, B7's own
+  review `8e43c92`, `3c0fff8`/`d946f8b`). This session fixed B7 review's
+  four blockers (BL-0..BL-3) - the only items that cycle authorised - as one
+  commit, `6b50945 fix(phase-8): B7 remediation - CI fixture, stale coverage
+  docs, ladder coverage`, on top of `d946f8b`. Nits were explicitly out of
+  scope for this pass and were not touched.
 - Gate basis for this land: `rtk npm run check` (one foreground call,
-  timeout 600000) ran twice against this tree - once before a viewport bug
-  found in `tests/app/print.js`'s own gate (see "Deviations" below), once
-  after the fix, immediately before the commit - and the second run is what
-  armed the gate: 45 test files, 1130/1130 tests, coverage 96.75 stmts /
-  89.05 branch / 97.15 funcs / 97.41 lines, every threshold green,
-  format/lint/svelte-check/derived/selftest/tools all green.
-- Last agent: implementer (2026-09-18, B8 - full implementation, commit,
-  push, handoff update).
+  timeout 600000, no pipe) - green: 45 test files, 1131/1131 tests, coverage
+  96.75 stmts / 89.05 branch / 97.15 funcs / 97.41 lines, every threshold
+  green, format/lint/svelte-check/derived/selftest/tools all green. Also
+  `node tests/run-all.js app/contracts` (the suite that caught BL-0 on CI) -
+  green, 252.1s: "все наборы прошли за 252с (в 8 потока)".
+- Last agent: implementer (2026-09-18, B7 remediation - full implementation,
+  commit, push, handoff update).
 - Branch: `main`
-- Base / starting commit for B8: `8e43c92` (the B7-review nits commit).
-  HEAD is now `3c0fff8`, pushed and confirmed equal to `origin/main`.
-- Review: required (trigger: this task's own standing policy - `context.md`,
-  "Review and nit policy for this task" - mandates a reviewer on every
-  phase-8 batch). Not yet run as of this record.
+- Base / starting commit for this remediation: `d946f8b` (HEAD at dispatch,
+  = `origin/main`, CI-red on `fa56576` for BL-0 only). HEAD is now
+  `6b50945`, pushed and confirmed equal to `origin/main`. CI can be expected
+  green on this push: `app/contracts` - the suite CI failed on - passed
+  locally against the fixed fixture, and nothing else in this remediation
+  touches CI-relevant files.
+- Review: not required for this remediation (no trigger fired - it is a
+  fixture/doc/test-coverage fix inside an already-reviewed batch's own
+  remediation cycle, not a new batch). B8's own review has not run yet.
 - Next batch: **B9** - language and format: `tests/` and `tools/`. See
   `plan.md`, "B9" and "Next batch (implement-ready)" below.
 
@@ -1956,19 +1955,126 @@ tree but not landed.
 - Review: required (trigger: this task's own standing policy - every
   phase-8 batch gets a reviewer, `context.md`).
 
+### B7 remediation - the review's four blockers (BL-0..BL-3), plus B7-R3
+- What this fixed, by blocker:
+  - **BL-0 (the CI break, highest priority):** `docs/fixtures/statlines/
+    equipment.json`'s `f7` entry still held the pre-D11 stat line (no tier
+    word); B7's own D11/Q6 fix ("print the tier on frame equipment") moved
+    what `dist/` actually renders for it, and the fixture was never
+    recaptured. `app/contracts` (a real-browser suite, not part of `npm run
+    check`) failed on CI run `35318680003` for exactly this - `f7/ru` and
+    `f7/en`, tier word missing from the fixture's expectation. `i18n.test.ts`
+    stayed green throughout because its own loop passed
+    `noTier: isFrameRecord(record)`, which recomputed the very compensation
+    the fixture needed instead of asserting the shipped behaviour. Fixed in
+    three parts, per the dispatch: (1) `f7`'s `ru`/`en` arrays gained the
+    tier word first (`"Ранг 1"`/`"Tier 1"`), matching CI's own printed
+    "actual" lines exactly - verified by diff that no other of the fixture's
+    nine other ids moved. (2) `noTier: isFrameRecord(record)` dropped from
+    `i18n.test.ts`'s fixture loop, so it now asserts the real, shipped stat
+    line instead of a line computed to match a stale fixture; the separate
+    `:75-80` "can omit a tier from a direct frame-record stat line" test
+    (which exercises `noTier` deliberately, via a literal `true`) was left
+    alone. (3) The fixture's own header comment gained a clause: one entry
+    (`f7`) is not a capture of the old app any more, it is a deliberate
+    post-migration divergence per D11/Q6, so a future reader does not "fix"
+    it back to match a fresh capture.
+  - **BL-0's own B7-R3 clause (bundled in, same file, same reason a reader
+    would delete `noTier` next):** after this fix, `noTier` has zero
+    production callers - confirmed by search: no caller in `app/src`, only
+    `i18n.test.ts` (the parity fixture, which legitimately still needs it)
+    and a stray mention in `search.test.ts`'s own prose. One clause added at
+    `app/src/lib/i18n.ts`'s `eqParts` doc comment, naming why it stays and
+    which test would break if it were deleted as an unused variant. Marked
+    `B7-R3 done 6b50945` in the register.
+  - **BL-1:** `docs/specs/COVERAGE.md`'s "Whitespace text nodes..." section
+    documented `expectNoA11yViolations(container, { allow })`, a parameter
+    B7 deleted along with every call site and `DEBT.md` D3. Verified against
+    the current `app/src/test/a11y.ts` (the `allow` parameter and the
+    per-call `nested-interactive` disable are both gone; `color-contrast` is
+    the only rule in `OFF`, unconditionally) before writing anything down -
+    the dispatch's suggested wording held. Rewritten: nothing is disabled
+    per call any more; `color-contrast` is the only rule off, everywhere;
+    `nested-interactive` used to be narrowed to an `allow` list for the
+    storage notice's old markup, that shape was fixed (the dismiss button
+    moved to a sibling of `<details>`), so the parameter had no caller left
+    and was deleted with it.
+  - **BL-2:** `docs/specs/COVERAGE.md`'s `flows` row still said
+    `share.ts`'s `eqLine(...)` call "now passes `noTier: isFrameRecord(it)`"
+    and that `docs/fixtures/share/records.json` was recaptured with `f33`
+    *losing* the tier word - the opposite of what B7 shipped. Verified
+    against `share.ts:85` (no `noTier` argument at all now) and the fixture
+    itself (`f33`'s `ru`/`en` full text both read "Броня · Ранг 1 · ..." /
+    "Armor · Tier 1 · ...", tier word present). Rewritten: divergence (2) is
+    D11 paid off under Q6 - the tier now prints on every stat line `eqLine`
+    builds, frame or not - keeping the pointer to `share.test.ts`'s golden
+    loop over all nine ids.
+  - **BL-3:** B7 dropped `RecordCard.svelte:177`'s
+    `!isFrameRecord(it)` guard, turning the four-rung tier ladder on for 56
+    real frame records with a non-empty `eq.line`, and nothing in
+    `record.test.ts`'s fixture or any golden exercised a frame record with
+    one - the only frame record either covers (`f1`) has `eq.line: ''`
+    (shaped after `f33`). Added two new frame records to the fixture, `f2`/
+    `f3`, sharing a synthetic `eq.line: 'cookknife'` (f1 itself left
+    untouched, so its own existing assertions - the page-sub path/tag test -
+    stay exactly as they were). One new test in the "tier ladder" describe
+    block opens `f2`'s own page and asserts: the ladder shows both rungs
+    (`'12'`, same `.steps` pattern the q1 ladder test already uses), the
+    record's own stat chip carries the tier word (`'Ранг 1'` - proving the
+    frame record's own stats print the tier now too, not only the ladder),
+    and the other rung's button has the expected accessible name. Ends with
+    `expectNoA11yViolations(container)`, per `CLAUDE.md`. No `inventory.js`
+    state was added - deliberately, per the review's own ruling, since it
+    would force a golden re-record for no gain.
+- Files changed: `docs/fixtures/statlines/equipment.json` (2 lines, `f7`
+  only - verified by diff), `app/src/lib/i18n.test.ts`, `app/src/lib/i18n.ts`,
+  `docs/specs/COVERAGE.md`, `app/src/components/record.test.ts`.
+- Commit: `6b50945 fix(phase-8): B7 remediation - CI fixture, stale coverage
+  docs, ladder coverage` - pushed.
+- Deviations and rationale: none from the dispatch's letter. `docs/specs/
+  CONTRACTS.md` and `llms.txt` were checked and confirmed not to pin
+  `docs/fixtures/statlines/equipment.json` (only `docs/fixtures/lists/*.json`
+  and `docs/fixtures/urls/routes.json` are contract fixtures in that sense),
+  so `CLAUDE.md`'s four-file public-contract rule was not triggered, per the
+  dispatch's own pre-check.
+- Verification commands and results:
+  - `rtk npm run check` (one foreground call, Bash timeout 600000, no pipe) -
+    green: `format:check`, `lint` (one `no-unnecessary-condition` fix needed
+    first - `steps?.textContent?.replace` had a redundant second `?.`,
+    corrected to match the existing ladder test's own style, then clean),
+    `typecheck`/`svelte-check` (550 files, 0 errors, 0 warnings), `npm run
+    data`, `node tests/derived.js`, `.claude/hooks/selftest.mjs` (373
+    passed), the `node --test` suites, `npm run test` (45 files, 1131/1131
+    tests, coverage 96.75/89.05/97.15/97.41 - thresholds green).
+  - `node tests/run-all.js app/contracts` (its own foreground call, ~250s
+    budgeted) - green: "ok  app/contractsdist/: contracts and fixtures
+    252.1s" / "все наборы прошли за 252с (в 8 потока)". This is the suite
+    that caught BL-0 on CI (`35318680003`, job `browser (3)`) and the only
+    local proof it is fixed.
+  - Gates: `npm run check` (full); `node tests/run-all.js app/contracts`.
+- Push: `git push origin main` (`d946f8b..6b50945`). CI not separately
+  watched this session (no `gh` step run) - `app/contracts` passing locally
+  against the exact fixture CI flagged is the load-bearing proof; nothing
+  else in the diff touches a CI-relevant file (workflow, deploy guard,
+  generated data). CI can be expected green on this push; confirm with `gh
+  run list --branch main --limit 1` before starting B9 if that confirmation
+  matters to the next session.
+
 ## Next batch (implement-ready)
-- **B8 is committed and pushed** (`3c0fff8`, on `main` at `origin/main`). B9
-  is next: language and format, `tests/` and `tools/` (H1, T7, H13, H16,
-  H15, T12, H11). Objective, files, the four-commit split, acceptance,
-  gates: `plan.md`, "B9". Re-derive every line number from the file at HEAD
-  before starting - B8 touched `tests/app/print.js` and `tests/app/states.js`,
-  both named in B9's own file list, and line numbers in the plan's B9
-  section predate B8.
-- B7's own review landed as `8e43c92` (`issues/phase-8/nits.md`); its four
-  blockers (BL-0..BL-3) are explicitly routed to B7's own remediation
-  cycle, not B8's or B9's. B8's own review has not run yet (see "Status",
-  "Review"); it is owed before or alongside B9 per this task's standing
-  review policy.
+- **B7's remediation is committed and pushed** (`6b50945`, on `main` at
+  `origin/main`) - its one remediation cycle is now spent; BL-0..BL-3 are
+  `done 6b50945` in `issues/phase-8/nits.md`, and B7-R3 rode along, also
+  `done 6b50945`. **B9 is next**: language and format, `tests/` and
+  `tools/` (H1, T7, H13, H16, H15, T12, H11). Objective, files, the
+  four-commit split, acceptance, gates: `plan.md`, "B9". Re-derive every
+  line number from the file at HEAD before starting - this remediation
+  touched `docs/specs/COVERAGE.md` and `app/src/components/record.test.ts`,
+  neither named in B9's own file list, but B9's other file-list line numbers
+  should still be re-derived from HEAD per this task's standing practice.
+- B8's own review has not run yet (see "Status", "Review"); it is owed
+  before or alongside B9 per this task's standing review policy. Do not fold
+  B8's review nits into B9 - route them through `issues/phase-8/nits.md` the
+  same way B7's were, per "Why this file exists" in that register.
 
 ## Notes
 - Mocks path: none (no new UI element).
@@ -2042,3 +2148,9 @@ tree but not landed.
   another task's) left untouched throughout.
 - Session end partial progress (if any): none - B8 is a committed, pushed,
   gate-verified single-commit boundary (`3c0fff8`).
+- Cleanup performed / retained artifacts (B7 remediation): none - no scratch
+  files or probe branches; normal `npm run data`/`npm run build` outputs
+  (`i/`, `dist/`) are gitignored/untracked as usual. `issues/56/` (untracked,
+  another task's) left untouched throughout, per the dispatch.
+- Session end partial progress (if any): none - B7's remediation is a
+  committed, pushed, gate-verified single-commit boundary (`6b50945`).
