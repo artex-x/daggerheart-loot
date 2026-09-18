@@ -436,6 +436,34 @@ Two notes that are part of the decisions, not commentary:
 
 ## Review and nit policy for this task (owner, 2026-09-17)
 
+**Amendment, owner, 2026-09-18: B12's four pieces (B12a-B12d) get no
+reviewer.** The rule above still governs B1-B11, every one of which was
+reviewed. It stops at B12 because B12 **is** the remediation stage for those
+eleven reviews: reviewing a piece whose entire scope is other reviews'
+findings opens a second-order review -> remediate loop with no natural floor.
+Owner's instruction and reasoning, 2026-09-18: "it's in our implement ->
+review -> remediate cycle, I would not have additional loop of review ->
+remediate batches."
+
+What this costs, recorded so the next session does not have to re-derive it:
+across B9-B11 four of the five real defects were caught by a reviewer, not by
+a gate, and every one of them was **inert verification** - a check that stayed
+green while measuring nothing (B9's dead `.claude/hooks/**` lint widening,
+B10's uncovered close-on-navigation change, B11's apostrophe test that could
+no longer fail). Gates are structurally blind to that class. What partly
+covers it for B12 is that the plan makes each routed finding prove itself in
+the **failing** direction (`plan.md`, B12a: delete `search.ts:71` and watch
+the case fail; fire both halves of the `dist/` guard deliberately) - those are
+acceptance lines, not review findings, so they survive this amendment. B12a
+discharged all eight such proofs.
+
+Consequence for the record: B12a-B12d's handoff entries read `Review: not run
+(owner's decision, 2026-09-18 - see context.md, "Review and nit policy")`,
+not `not required (no trigger fired)`. The triggers did fire; the review was
+declined. A future session reading four unexplained gaps against the rule
+above would otherwise be reading a process failure that did not happen.
+
+
 **Every batch gets a reviewer**, run read-only against its **committed shas**
 while the next batch's implementer works. Reviews therefore cost no wall
 clock; only remediation serialises, and that resumes the reviewed batch's own
