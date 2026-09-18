@@ -34,6 +34,15 @@ The owner's framing, verbatim, so it is not paraphrased away:
 > do not plan huge features such as consistent storage or significant UI/UX
 > redesign, it will be done in the scope of the different tickets
 
+## Current session (2026-09-18, orchestrator)
+
+HEAD is `d882707` = `origin/main`, two docs-only commits past B8.1's own
+review remediation (`6b841f5`). `main`'s `npm run check`, all four golden
+shards, and the full browser suite are green. Session GOAL: finish phase 8 -
+B9, B10, B11, B12 in order, then closeout and retirement of this task
+directory per `.claude/skills/handoff/SKILL.md`, "Retirement". See
+`issues/phase-8/handoff.md`, "Next batch", for B9's exact scope.
+
 ## GitHub issue (if any)
 
 - URL: none. Task id is the slug `phase-8`, assigned by the orchestrator
@@ -359,8 +368,6 @@ Cross-report identities: T4 = DP4; PF3 = R4; S4 + R2 share one trigger
 gap; C1 is A2's symptom; C6 is an extraction not a relocation; TL7 = DP8;
 T10 = DP9; DC10 = H3; DC11 = H4 = TL4's stale prose; H6, H7 inside C5; T9
 inside C4; T8 dissolves under T1; O3 = D5 generalised; TL8(c) = CLAUDE.md:36.
-
-Owner decisions pending: see `plan.md`, "Owner decisions" (Q1-Q8).
 
 ## Do not re-fetch unless
 
