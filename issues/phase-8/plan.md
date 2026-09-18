@@ -233,7 +233,7 @@ golden shards green without `--update` (112 states, none moved);
 `npm run check` and `npm run check:built` both green. Full detail:
 `git show 56dabbc`, or `issues/phase-8/handoff.md`.
 
-### B11 - equipment apostrophes (O2) - SHIPPED `<pending>`
+### B11 - equipment apostrophes (O2) - SHIPPED `78b13f0`
 
 Outcome: normalised U+2019 to the ASCII apostrophe in the `en`/`ende` fields
 of 28 `eq` records in `data.js` (30 field values, 34 characters - some

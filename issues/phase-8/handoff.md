@@ -282,8 +282,7 @@ pre-compaction text.
   does not. `nits.md` updated: B10-B1, B10-B2 and B10-N6 marked
   `done bfea223` and moved out of "Outstanding"; B10-N1..B10-N5 stay there
   for B12. No deviation.
-- **B11 - equipment apostrophes (O2)** - `<pending, see B11 sha-citation
-  follow-up>`. Normalised U+2019 to the ASCII apostrophe in the `en`/`ende`
+- **B11 - equipment apostrophes (O2)** - `78b13f0`. Normalised U+2019 to the ASCII apostrophe in the `en`/`ende`
   fields of `eq` records in `data.js`: 28 records, 30 field values, 34
   individual characters (some records share one upgrade-chain description
   text across several ids; two records, `q157` and `q350`, had both `en`
