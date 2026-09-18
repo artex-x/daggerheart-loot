@@ -2,116 +2,59 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress - **B8.1 is committed and pushed, and its own
-  follow-up fix (the `app/states` case 10 regression B8.1 found) is also
-  committed and pushed.** HEAD is `dc7ed71 fix(phase-8): await the
-  promise-valued clipboard entry in driver.js's write mock` (= `origin/main`,
-  confirmed by `git rev-parse HEAD origin/main` agreeing), on top of
-  `d267a0a fix(phase-8): B8.1 - wait for the address to settle before a
-  golden capture`. B1-B8 plus B8's own remediation are already on `main`
-  from before this batch (see the `Completed` section for full per-batch
-  history; not repeated here).
-- **The three timed owned-list golden failures are fixed, without a
-  re-record.** `driver.js` gained `addressSettled()` (polls `location.hash`
-  every 40ms, returns once unchanged for `URL_DEBOUNCE_MS + 100`ms, hard
-  cap 2000ms); `golden.js`'s `captureState` calls it immediately before
-  every capture, ordinary and `timed` alike. `settle()`'s and `prepare()`'s
-  doc comments are corrected to state what is true post-B8 rather than the
-  parity-era/pre-D1 reasoning they still carried; `prepare()`'s now states
-  what keeping the reduced-motion emulation costs, per decision 5.
-  `golden.test.mjs` gained a coupling test tying `URL_DEBOUNCE_MS` to
-  `ListPage.svelte`'s own `150` (read as text, the same shape
-  `tests/derived.js` uses for the `ci.yml` shard/divisor coupling) - proved
-  to actually bite by temporarily changing `ListPage.svelte`'s `150` to
-  `151`, watching the case fail with "the debounce moved - update
-  URL_DEBOUNCE_MS and re-run all four golden shards", then reverting via
-  `Edit` (destructive `git checkout`/`restore` were both refused by the
-  bash-guard hook, citing another task's in-flight untracked directory,
-  `issues/56/`, in this same tree - reverted the one line by hand instead;
-  `git diff --stat app/src` empty afterwards, confirmed). `COVERAGE.md`
-  gained the gate rule this batch exists to establish (a "no golden moved"
-  claim needs a `--shard` run or `--only` probes reaching every route kind,
-  not a hand-picked probe) and the capture-wait note. No `app/src/**` file
-  touched; no file under `tests/app/snapshots/` touched (both `git diff
-  --stat` empty, checked before commit).
-- **A new, unrelated regression was found by this batch's own gates, not
-  caused by it, and is now fixed** (see "B8.1 follow-up" under "Completed",
-  commit `dc7ed71` - `main` is fully green again as of that commit).
-  Left in place below for the root-cause record, since the diagnosis it
-  contains is what the fix was built from.
-  `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`
-  (this batch's A6 gate) failed at `app/states` case "10 (копия картинки)":
-  `SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement':
-  Tainted canvases may not be exported.`, thrown inside built `app.js`'s
-  `r.onload` and surfacing as an unhandled page error rather than the
-  intended `imgTainted` text-copy fallback. Reproduced identically running
-  `app/states` alone (not host contention). Root-caused, not fixed (out of
-  scope for B8.1 - this is `tests/app/driver.js`'s clipboard mock, not one
-  of this batch's authorised files, and the batch stands alone precisely
-  because it is scoped to the settle instrument):
-  `RecordActions.svelte`'s `copyImage()` restructuring (B8's own
-  remediation, `480c380`, BL-2) hands `pngOf()`'s still-pending promise to
-  `clipboard.writeImage` unawaited, relying on the real Clipboard API to
-  await each `ClipboardItem` MIME-type promise internally and reject
-  `write()` if one rejects - which is what lets `clipboard.ts`'s
-  `try/catch` turn a tainted canvas into `copied === false`.
-  `driver.js`'s `prepare()` mocks `navigator.clipboard.write` (around line
-  850) as `write: (i) => { window.__clip = i[0].map; return
-  Promise.resolve(); }` - it never awaits the promise-valued `image/png`
-  entry, so `copied` is always `true`, `copyImage()` returns early via the
-  `imgCopied` branch, and the real, still-rejecting `pngOf()` promise is
-  never awaited by anyone - the rejection becomes an unhandled promise
-  rejection in the page. Same class of bug as the `FakeClipboard.writeImage`
-  fix B8's remediation already made in `clipboard.ts` for the vitest
-  double; this is the browser-level double having the identical problem,
-  never caught because B8's remediation ran `npm run check` (vitest) plus
-  `app/print` and two `golden --only` probes, never `app/states`, against
-  the restructured `copyImage()`. Flagged via `spawn_task`
-  (`task_5cf6a382`, "Fix driver.js clipboard mock to await promise-valued
-  items") for its own batch rather than folded in here - **fixed in that
-  follow-up batch, `dc7ed71`; the spawned task chip was withdrawn as
-  stale.**
-- **Everything else this batch's gates touch is green**: `app/print`,
-  `app/contracts`, `app/typo`, `app/hues`, `stub` all `ok` in that same
-  run - the `driver.js` edit is proven to have moved nothing for them.
-- Last agent: implementer (2026-09-18, B8.1 follow-up - fixed the
-  `app/states` case 10 regression B8.1's own gates found, commit, push,
-  handoff update; did not start B9 or the owed handoff compaction, per
-  dispatch). Before it: implementer (2026-09-18, B8.1 - full implementation,
-  commit, push, handoff update, one new defect found and flagged for a
-  separate batch). Before that: planner (2026-09-18, designed B8.1 - `issues/phase-8/`
-  only, no production code, no commits).
-- Branch: `main`
-- Base / starting commit for this batch: `d76082c` (HEAD at dispatch, =
-  `origin/main` per the orchestrator). HEAD is now `d267a0a`, pushed and
-  confirmed equal to `origin/main`.
-- Review: required (trigger: worker reported deviation from plan -
-  `.claude/prompts/orchestrate.prompt.md`; the implementer's A6 gate found
-  and reported the separately-flagged unrelated `app/states` regression, a
-  deviation from the plan's literal "all green" gate list, and a review did
-  in fact run - see "Completed", "B8.1"'s review section for its findings).
+- Task status: in_progress - **B8.1, its follow-up fix, and B8.1's own
+  review remediation are all committed and pushed.** HEAD is `6b841f5
+  fix(phase-8): B8.1 review remediation - BL-1, NIT-1..4, register`
+  (= `origin/main`), on top of `dc7ed71` (the `app/states` case 10 fix) and
+  `d267a0a` (B8.1 itself). `main`'s golden suite and browser suite are both
+  fully green. B1-B8 plus B8's own remediation are already on `main` from
+  before this batch (see "Completed" for full per-batch history; not
+  repeated here).
+- **B8.1's review remediation (`6b841f5`)**: one blocker and four folded
+  nits, done in this commit - see "Completed", "B8.1 review remediation"
+  below for the full account, and `issues/phase-8/nits.md`, "From B8.1's
+  review" for what the review returned in full (R-1..R-6, verified
+  reasoning with no action; NIT-5..NIT-8, routed to B12). NIT-4's new
+  coupling-regex guard was proved to actually bite for all three refactor
+  cases the review named (a Prettier-style split call, the literal replaced
+  by a named constant, a spurious second `setTimeout` earlier in the
+  function) - each tried in the working tree, each failed loudly with a
+  distinct message, then reverted by hand (`git checkout`/`restore` are
+  still refused by the bash-guard hook while `issues/56/`, another task's
+  untracked directory, sits in this tree; `git diff --stat -- app/src` empty
+  afterward, confirmed).
 - **`main`'s golden suite is green.** All four `node tests/app/golden.js
-  --shard=n/4` runs compare clean without `--update` (see "Completed",
-  "B8.1" below for each shard's numbers) - the three-golden regression from
-  B8 (`3c0fff8`) no longer applies. **`main`'s browser suite as a whole is
-  now fully green too** - the `app/states` finding below was fixed at
-  `dc7ed71` (see "Completed", "B8.1 follow-up"); `node tests/run-all.js
-  app/print,app/contracts,app/states,app/typo,app/hues,stub` is clean at
-  HEAD.
+  --shard=n/4` runs compared clean without `--update` at `d267a0a` (see
+  "Completed", "B8.1" for each shard's numbers) - the three-golden
+  regression from B8 (`3c0fff8`) no longer applies. **`main`'s browser suite
+  as a whole is fully green too** - the `app/states` finding was fixed at
+  `dc7ed71`. This batch's own gate (`rtk npm run check`, full, foreground)
+  ran green at `6b841f5` after the review remediation landed.
+- Last agent: implementer (2026-09-18, B8.1 review remediation - BL-1,
+  NIT-1..4, NIT-9 fixed and committed; the rest of the review persisted to
+  `issues/phase-8/nits.md`; handoff updated; did not start B9 or the owed
+  handoff compaction, per dispatch). Before it: implementer (2026-09-18,
+  B8.1 follow-up - fixed the `app/states` case 10 regression B8.1's own
+  gates found). Before that: implementer (2026-09-18, B8.1 - full
+  implementation). Before that: planner (2026-09-18, designed B8.1 -
+  `issues/phase-8/` only, no production code, no commits).
+- Branch: `main`
+- Base / starting commit for this batch: `41ce6d7` (HEAD at dispatch, =
+  `origin/main` per the orchestrator). HEAD is now `6b841f5`, pushed and
+  confirmed equal to `origin/main`.
+- Review: this dispatch **was** B8.1's own review remediation (one
+  remediation cycle, now spent). No further review is pending for B8.1.
 - Next batch: **B9** - language and format (`tests/`/`tools/`), per
-  `plan.md`. Its own gate list contains a golden shard, which is why B8.1
-  had to land first; nothing in B9's stated scope (H1, T7, H13, H16, H15,
-  T12, H11) touches `RecordActions.svelte`/`clipboard.ts`/`driver.js`'s
-  clipboard mock, so the (now-fixed) `app/states` finding below never
-  blocked it either way - flagging for the orchestrator to confirm that
-  reasoning before dispatch,
-  since it is a new call, not one already settled in `plan.md`.
+  `plan.md`. B9 re-derives every line number and Cyrillic-line count from
+  HEAD (`6b841f5`) before starting, per this task's standing practice -
+  `tests/app/{driver,golden}.js`, `tests/app/golden.test.mjs` and
+  `docs/specs/COVERAGE.md` all moved again in this batch, on top of B8.1's
+  own earlier changes to the first three.
 - **Owed: handoff compaction.** Still owed, unchanged from before this
   batch - see `.claude/skills/handoff/SKILL.md`, "The budget". This batch
   added to the file rather than shrinking it (the compaction is its own
   `docs(phase-8): compact task state` commit, explicitly not this batch's
-  job per the prior session's own note, kept below). Do it before B9 is
-  dispatched if it has not happened by then.
+  job). Do it before B9 is dispatched if it has not happened by then.
 
 ## Completed
 
@@ -2387,31 +2330,30 @@ tree but not landed.
     estimate.
 
 ## Next batch (implement-ready)
-- **B8.1 is committed and pushed** (`d267a0a`, on `main` at `origin/main`) -
-  the three timed owned-list golden failures are fixed, all four shards
-  compare green without `--update`. See "Completed", "B8.1" above for the
-  full account, and "Status"/"Blockers" for the one unrelated regression
-  its own gates found (`app/states` case 10, not caused by this batch,
-  flagged separately as `task_5cf6a382`, not folded in here).
+- **B8.1, its follow-up fix, and its own review remediation are all
+  committed and pushed**: `d267a0a` (the golden-capture fix), `dc7ed71`
+  (the unrelated `app/states` case 10 regression B8.1's own gates found,
+  root-caused and fixed the same session - the flagged `task_5cf6a382` chip
+  was withdrawn as stale once this landed), `6b841f5` (BL-1, NIT-1..4,
+  NIT-9, the rest of the review persisted to `nits.md`). HEAD = `origin/main`
+  at `6b841f5`. See "Completed", "B8.1", "B8.1 follow-up" and "B8.1 review
+  remediation" for the full accounts.
 - **B9 is next**: language and format, `tests/` and `tools/` (H1, T7, H13,
   H16, H15, T12, H11). Objective, files, the four-commit split, acceptance,
-  gates: `plan.md`, "B9". B8.1 edited `tests/app/{driver,golden}.js`,
-  `tests/app/golden.test.mjs` and `docs/specs/COVERAGE.md`; `golden.js` and
-  `driver.js` are both in B9's own file list (Cyrillic-line counts), and
-  `COVERAGE.md` was already touched by B8's remediation too - **B9
-  re-derives every line number and Cyrillic-line count from HEAD (`d267a0a`)
-  before starting**, per this task's standing practice, not from the counts
-  recorded against an earlier commit.
-- **Before B9, or before any batch that touches `RecordActions.svelte`/
-  `clipboard.ts`/`driver.js`'s clipboard mock**: consider dispatching the
-  flagged `app/states` fix (`task_5cf6a382`) first, or at least confirm B9's
-  actual scope does not cross that code - B9's stated scope (H1, T7, H13,
-  H16, H15, T12, H11, language/format only) does not appear to, but this is
-  a new call this session made, not one `plan.md` already settled; flagging
-  for the orchestrator to confirm before dispatch.
-- Do not fold B8's remaining review nits into B9 - route them through
-  `issues/phase-8/nits.md` the same way B4-B7's were, per "Why this file
-  exists" in that register. B12 is where the whole outstanding table clears.
+  gates: `plan.md`, "B9". `tests/app/{driver,golden}.js`,
+  `tests/app/golden.test.mjs` and `docs/specs/COVERAGE.md` all moved again
+  in B8.1's review remediation, on top of B8.1's own earlier edits to the
+  first three - **B9 re-derives every line number and Cyrillic-line count
+  from HEAD (`6b841f5`) before starting**, per this task's standing
+  practice, not from any count recorded against an earlier commit.
+- Nothing is outstanding that blocks B9: the `app/states` regression is
+  fixed, B8.1's own review is closed (one remediation cycle, spent), and the
+  register (`issues/phase-8/nits.md`) holds everything else for B12 rather
+  than for B9 to absorb.
+- Do not fold B8's or B8.1's remaining review nits into B9 - route them
+  through `issues/phase-8/nits.md` the same way B4-B7's were, per "Why this
+  file exists" in that register. B12 is where the whole outstanding table
+  clears.
 
 ## Notes
 - Cleanup performed / retained artifacts (planner, B8.1 design): a one-off
@@ -2543,3 +2485,129 @@ tree but not landed.
   batch started.
 - Session end partial progress (if any): none - this fix is a committed,
   pushed, gate-verified single-commit boundary (`dc7ed71`).
+
+### B8.1 review remediation - BL-1, NIT-1..4, NIT-9, register
+- What shipped: B8.1's one review remediation cycle - the single blocker,
+  four folded nits, and one factual-record correction the review returned,
+  plus persistence of the rest of the review to the register.
+  - **BL-1**: `docs/specs/COVERAGE.md`'s "no golden moved" gate rule
+    (the "B8.1" paragraph) required only "at least one `--shard=n/4` run" -
+    unsound by this task's own evidence, since B8's three golden failures
+    fell one each in shards 2, 3 and 4 (`~ removed` in 2, `~ prices set` in
+    3, `~ batch deleted` in 4), so `--shard=1/4` alone would have come back
+    green and shipped the exact defect the rule exists to catch. Rewritten
+    to require all four shards (or `--only=` probes reaching every route
+    kind the change can touch), with the shard-2/3/4 counterexample cited
+    in the rule's own text.
+  - **NIT-1**: `tests/app/driver.js`'s `addressSettled()` doc comment
+    claimed an app that never writes the address "is quiet from the very
+    first read, so this returns at once" - false, since `lastChange`
+    initialises to `start` and the helper always pays one full quiet window
+    before returning regardless. Rewritten to say what is true: the
+    no-masking property holds because the wait is bounded (one quiet
+    window, ~250-290ms), not because it is skipped; a write landing later
+    than `quiet` is missed and whatever reads the hash next still fails red
+    on content, same as today.
+  - **NIT-2**: `driver.js`'s `settle()` doc comment said "so the wait above
+    resolves immediately", pointing at the `getAnimations()` race that sits
+    below the comment, inside the function body. Corrected to "the
+    animation wait below".
+  - **NIT-3**: `tests/app/golden.js`'s comment explaining the `timed`
+    branch's `addressSettled()` call sat above `const oneLang = ...` rather
+    than at the call site, reading as if the ordinary branch five lines up
+    were its antecedent. Moved to sit directly above the call inside
+    `oneLang`.
+  - **NIT-4**: `tests/app/golden.test.mjs`'s coupling regex,
+    `/function scheduleUrlSync[\s\S]*?\}, (\d+)\);/`, was unbounded past
+    `scheduleUrlSync`'s own function body - a literal-to-named-constant
+    refactor would walk past the function to the next `}, <digits>);`
+    anywhere later in the file (silently wrong), and a second `setTimeout`
+    earlier in the same function would take the first match (also silently
+    wrong); only the absence of any other such literal in `ListPage.svelte`
+    kept it from biting today. Bounded to the function body
+    (`/function scheduleUrlSync[\s\S]*?\n  \}/` - verified against the file
+    first: the function sits at 2-space indent, so its own closing brace is
+    the first `\n  }` after the opener) and guarded with an assertion that
+    the body contains exactly one `setTimeout`. **Proved to actually bite**:
+    each of the three refactor cases the review named (a Prettier-style
+    split call, the literal replaced by a named constant, a spurious second
+    `setTimeout` earlier in the function) was made in the working tree in
+    turn and each failed the test loudly with a distinct message -
+    "could not find scheduleUrlSync's own function body" for the split
+    call, the same message for the named-constant swap (the digit-only
+    regex no longer matches), and "scheduleUrlSync has more than one timer
+    - which one is the debounce?" (`2 !== 1`) for the extra timer - then
+    reverted by hand (`git checkout`/`restore` are still refused by the
+    bash-guard hook while `issues/56/`, another task's untracked directory,
+    sits in this tree; `diff` against a pre-edit backup copy and
+    `git status --porcelain -- app/src` both confirmed the revert was
+    byte-identical).
+  - **NIT-9**: `issues/phase-8/handoff.md`'s `Review:` field for B8.1 read
+    "not required (no trigger fired)" in both `## Status` and the `### B8.1`
+    Completed entry, while the same entries describe a worker-reported
+    deviation (the A6 gate's `app/states` finding) - a listed trigger in
+    `.claude/prompts/orchestrate.prompt.md`. A review did in fact happen
+    (this one); the record was wrong, not the policy. Both locations now
+    read `required (trigger: worker reported deviation from plan)`.
+  - **The rest of the review** (R-1..R-6, verified reasoning with no
+    action; NIT-5..NIT-8, taste/deferred-scope/format) persisted to
+    `issues/phase-8/nits.md`, "From B8.1's review", as `B8.1-R1`..`B8.1-R6`
+    and `B8.1-N1`..`B8.1-N4`, for B12. NIT-8 (the three inserted
+    `COVERAGE.md` paragraphs sitting between the `golden.test.mjs`
+    paragraph and a line whose antecedent is far above) was considered for
+    an in-place move to the `app/golden` table row or "Known thin spots"
+    while already in the file, per the dispatch's "if cheap and clearly
+    right, do it now" - not done: the `app/golden` row is one dense table
+    cell and "Known thin spots" is a bulleted list, so landing three prose
+    paragraphs in either is a format change beyond this nit's size, not a
+    cheap, clearly-right move. Recorded for B12 instead.
+- Files changed: `docs/specs/COVERAGE.md`, `tests/app/driver.js`,
+  `tests/app/golden.js`, `tests/app/golden.test.mjs`,
+  `issues/phase-8/nits.md`, `issues/phase-8/handoff.md` (the two `Review:`
+  corrections only, in this commit; the rest of this file's changes for
+  B8.1's review remediation are this doc-only follow-up commit).
+- Commit(s): `6b841f5 fix(phase-8): B8.1 review remediation - BL-1,
+  NIT-1..4, register` - pushed (`41ce6d7..6b841f5`).
+- Deviations and rationale: none from the dispatch's letter. NIT-8 (move
+  the `COVERAGE.md` block) was evaluated and explicitly not done, per its
+  own "if cheap and clearly right" condition, as recorded above rather than
+  silently skipped.
+- Verification commands and results:
+  - `node --test tests/app/golden.test.mjs` - green, 17/17, including the
+    new bound-and-count coupling case, before the refactor-case proof runs.
+  - Refactor-case proof (NIT-4), each a standalone `node --test
+    tests/app/golden.test.mjs` against a temporarily edited
+    `app/src/components/ListPage.svelte`, reverted between cases: split
+    call - FAILED, "could not find scheduleUrlSync's own function body";
+    named-constant literal - FAILED, same message (digit-only regex no
+    longer matches inside the body); extra earlier `setTimeout` - FAILED,
+    "scheduleUrlSync has more than one timer - which one is the debounce?"
+    (`2 !== 1`). Reverted after each case; final `diff` against the
+    pre-edit backup copy - identical.
+  - `rtk npm run check` (Bash timeout 600000, foreground, run twice as a
+    verification pair) - green both times: `format:check`, `lint`,
+    `typecheck` (svelte-check clean), `npm run data`, `node
+    tests/derived.js`, `.claude/hooks/selftest.mjs`, all `node --test`
+    suites including the updated `golden.test.mjs` and
+    `tools/check-site.test.mjs`, `npm run test` (45 files, 1131/1131 tests,
+    coverage 96.77/89.05/97.21/97.42 - thresholds green, unchanged, since no
+    `app/src/**` file moved).
+  - No golden shard re-run and no `app/states`/`app/print`/etc. browser
+    suite re-run - this batch touches no production file and no golden
+    capture path beyond doc comments and a test-file regex; the dispatch's
+    own gate list is `npm run check` alone ("nothing here touches
+    executable behaviour except `golden.test.mjs`, which `npm run check`
+    runs via `node --test`"), and the reviewer confirmed no golden should
+    move and no shard run is needed.
+  - `git diff --stat -uall` before commit - exactly the six files above;
+    `issues/56/` untouched.
+- Push: `git push origin main` (`41ce6d7..6b841f5`); `git rev-parse HEAD
+  origin/main` agree.
+- Cleanup performed / retained artifacts: a pre-edit backup copy of
+  `ListPage.svelte` was kept outside the repository (this session's temp
+  directory) only for the `diff`-based revert check above; nothing written
+  into the tree. Normal `npm run data`/`npm run build` outputs were not
+  regenerated this batch (no production file touched). `issues/56/`
+  (untracked, another task's) left untouched throughout.
+- Session end partial progress (if any): none - this remediation is a
+  committed, pushed, gate-verified single-commit boundary (`6b841f5`).
