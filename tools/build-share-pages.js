@@ -147,7 +147,6 @@ function page(it) {
   const craft = craftLines(it);
   const rawDesc = it.rud || it.ende || '';
   // the unfurl preview is one flat string, so the chain joins the description
-  // the messenger preview is one flat line - line breaks in it serve no purpose
   const from = provenance(it);
   const desc =
     (from ? from + '. ' : '') +

@@ -21,8 +21,8 @@ export default ts.config(
          (host infrastructure that can land nested here unpredictably -
          `.prettierignore`'s own comment explains the same hazard). The
          hooks are real node scripts and are linted below. */
-      '.claude/**',
-      '!.claude/hooks/**'
+      '.claude/*',
+      '!.claude/hooks'
     ]
   },
   js.configs.recommended,
@@ -171,11 +171,12 @@ export default ts.config(
          one from either. */
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       /* `{ 'index.html': _dropped, ...rest }` (check-site.test.mjs) is the
-         destructure-to-drop-a-key idiom, and a handful of `fresh()` results
-         destructure a `page` or `ctx` a given case turns out not to need -
-         both pre-existing and neither worth a file edit in a commit whose
-         only claimed effect is formatting. */
-      '@typescript-eslint/no-unused-vars': 'off',
+         destructure-to-drop-a-key idiom - the `^_` prefix this rule already
+         supports for exactly that case, not a blanket off. */
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }
+      ],
       /* tests/derived.js's ci.yml-indentation regexes (`/^  deploy:/`,
          `/^    needs:/`) use literal run-length spaces, not a `{n}`
          quantifier - pre-existing and unambiguous in context; not touched

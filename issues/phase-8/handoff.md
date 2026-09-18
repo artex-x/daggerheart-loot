@@ -2,28 +2,26 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `56dabbc refactor(phase-8): B10 -
-  extract RecordHost, the record-modal host (C6)`, one commit past `2d404c7`
-  (B9's docs commit). `npm run check`, `npm run check:built`, and all four
-  `node tests/app/golden.js --shard=n/4` runs are green on `56dabbc` - see
-  "Verification". B1-B10 are on `main` locally in full, including every
-  review remediation cycle - see "Completed". Pushed to `origin/main` - see
-  "Verification", "Push".
-- Last agent: implementer (2026-09-18, B10's single commit).
+- Task status: in_progress. HEAD is the B9 review remediation commit (two
+  blockers, six record corrections), one commit past `506a6ba` (B10's docs
+  commit) - see "Completed" for its sha. `rtk npm run check` and `node
+  tests/run-all.js app/states` are green on it - see "Verification". B1-B10
+  plus this remediation are on `main` locally in full. Pushed to
+  `origin/main` - see "Verification", "Push".
+- Last agent: implementer (2026-09-18, B9 review remediation, one commit).
 - Branch: `main`.
-- Base / starting commit: `2d404c7`.
+- Base / starting commit: `506a6ba`.
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
   cleared in B12, not folded into whichever batch is next. B10 has not been
-  reviewed yet. B9's review landed during this batch (a read-only reviewer
-  ran against B9's committed shas while B10 was implemented, per the
-  task's own "reviews cost no wall clock" policy) and wrote its findings
-  straight into `issues/phase-8/nits.md` - not this implementer's edit, left
-  untouched per the dispatch.
-- No open deviations. B10 shipped exactly as `plan.md` specified: no clean
-  extraction fell out of the six `RecordCard`/snippet blocks beyond
-  `RecordHost` itself, so none was attempted.
+  reviewed yet. B9's review remediation is this pass - see "Completed" and
+  `issues/phase-8/nits.md`, "From B9's review".
+- No open deviations. Every fix in this pass matched the dispatch exactly;
+  the record corrections routed to "Status"/"Notes" wording were checked
+  against the current file and found already superseded by B10's own
+  routine Status rewrite, so no separate edit was made there - see
+  "Completed".
 - Next batch: **B11** - equipment apostrophes (O2), per `plan.md`. Last
   batch before closeout (B12 clears the outstanding nits table).
 
@@ -209,7 +207,14 @@ pre-compaction text.
   for real pre-existing patterns a format-only commit could not fix
   without a hand edit (see the commit message for each rule and why); then
   `npx prettier --write tests tools` (plus `eslint.config.mjs` itself), no
-  hand edits to any test/tool file. Commit 5 (`5602ca9`, coordinator-
+  hand edits to any test/tool file. **Correction (B9 review remediation):
+  the ignore-pattern pair committed here (`'.claude/**'` +
+  `'!.claude/hooks/**'`) never actually un-ignored the hooks - `.claude/**`
+  prunes the directory before the negation can apply, so the nine hook
+  files stayed lint-dead until fixed in this pass's remediation, below.
+  `d660ce7`'s own commit message repeats the same overstatement and, being
+  history, cannot be corrected - this note is the correction of record.**
+  Commit 5 (`5602ca9`, coordinator-
   directed): `tools/build-share-pages.js`'s last 2 Cyrillic comment lines
   translated - the module-load guard, and a second, previously-missed
   redundant comment beside an already-English one explaining the same
@@ -227,21 +232,68 @@ pre-compaction text.
   extracted; all eight `let open = $state<Record_ | null>(null)` sites
   (`AltPanel`, `ListPage`, `RecordPage`, `RollPanel`, `SearchPage`,
   `SharedListPage`, `StdPanel`, `TablesPage`) replaced with it; no deviation.
+- **B9 review remediation** - (sha recorded in the follow-up docs commit,
+  below, to avoid a commit citing its own hash inside its own tree). Two
+  blockers: `eslint.config.mjs:24-25`'s
+  `'.claude/**'` + `'!.claude/hooks/**'` ignore pair never actually
+  un-ignored the hooks (`.claude/**` prunes the directory before the
+  negation applies), fixed to `'.claude/*'` + `'!.claude/hooks'` -
+  `npx eslint .claude` now lints exactly the nine hook files and nothing
+  else, `.claude/worktrees/` still pruned; and
+  `@typescript-eslint/no-unused-vars: 'off'` re-armed as `'error'` with
+  `{ argsIgnorePattern: '^_', varsIgnorePattern: '^_',
+  caughtErrorsIgnorePattern: '^_' }`, plus the one real finding it was
+  hiding outside the `^_`/destructure-drop idiom (`tests/app/states.js:154`'s
+  dead `page` destructure in `twoFramesPicked`) fixed by deleting it. Six
+  record corrections: `plan.md`'s and `handoff.md`'s B9 entries no longer
+  claim the hooks widening as already-done (`d660ce7`'s commit message
+  still does and, being history, was left with a correcting note instead);
+  the acceptance-grep table gained its missing `tests/app/typo.js` row (9
+  lines); the commit-4 verification bullet's "141 across 15 files"
+  restated as "259 findings across 34 files" with the full per-rule
+  breakdown; `tools/build-share-pages.js:150`'s comment duplicating line
+  149's fact deleted. The three remaining record corrections (stale
+  `d882707`/`5602ca9` wording in B9's own Status/Notes text) were checked
+  against the current file and found already superseded by B10's own
+  routine Status rewrite - verified, not re-done. `nits.md` updated:
+  B9-BL-1, B9-BL-2 and the six record corrections marked done (sha in the
+  follow-up docs commit) and moved out of "Outstanding". No deviation.
 
 ## Verification
 
-Latest batch (B10, `56dabbc`); earlier batches' exact commands/results are
-in git history per "Completed" above.
+Latest pass (B9 review remediation); earlier batches' exact
+commands/results are in git history per "Completed" above, and B10's own
+run is preserved below.
 
-- `npm run check` (format:check, lint, typecheck, `node --check
+- `npx eslint .claude/hooks/tree-key.mjs` (pre-fix, sanity check) - "File
+  ignored because of a matching ignore pattern", confirming B9-BL-1 before
+  changing it.
+- `npx eslint .claude` (post-fix) - exactly nine files linted
+  (`bash-guard`, `check-observer`, `edit-followup`, `edit-guard`, `lib`,
+  `selftest`, `session-start`, `session-stop`, `tree-key`), 0 errors / 0
+  warnings each; `.claude/worktrees/` not among them.
+- `npx eslint .` (whole repo, post both fixes) - clean, no output.
+- `rtk npm run check` (format:check, lint, typecheck, `node --check
   tools/check-site.mjs`, `npm run data`, `node tests/derived.js`, `node
   .claude/hooks/selftest.mjs`, `node --test tools/tg-preview/lib.test.mjs`,
   `node --test tools/artwork/lib.test.mjs`, `node --test
   tools/check-site.test.mjs`, `node --test tests/app/golden.test.mjs`
   17/17, `npm run test`) - green: 45 test files / 1131 tests passed;
   coverage 97.04% statements / 89.05% branches / 98.04% functions / 97.82%
-  lines, every `perFile` threshold met (`RecordHost.svelte` included, not
-  printed by the text reporter's own full-coverage-row omission - confirmed
+  lines, unchanged from B10's own run.
+- `node tests/run-all.js app/states` - green, 125.8s (the one-token
+  `page` deletion in `tests/app/states.js:154`). The rest of the browser
+  suites and the four golden shards are untouched by this pass - not
+  re-run, per the dispatch's own gate list.
+- Push: `git push origin main` - `git rev-parse HEAD origin/main` confirmed
+  to agree after the push.
+
+### B10's own verification (preserved, not re-run this pass)
+
+- `npm run check` - green: 45 test files / 1131 tests passed; coverage
+  97.04% statements / 89.05% branches / 98.04% functions / 97.82% lines,
+  every `perFile` threshold met (`RecordHost.svelte` included, not printed
+  by the text reporter's own full-coverage-row omission - confirmed
   present with real hit counts in `coverage-final.json` directly).
 - `npm run check:built` (`npm run build && npm run smoke && npm run
   budget`) - green: build 251 modules, `dist/assets/app.js` 313.40 kB
@@ -277,8 +329,14 @@ in git history per "Completed" above.
   `node tests/app/sweep.js 390` green; `node tests/app/golden.js
   --shard=2/4` - 28 states compared, no movement; `rtk npm run check`
   green.
-- Commit 4: `npx eslint .` clean (zero errors, down from 141 across 15
-  files before the config's rule turn-offs); `npx prettier --check .`
+- Commit 4: `npx eslint .` clean (zero errors, down from **259 findings
+  across 34 files** before the config's rule turn-offs and the `.claude/**`
+  ignore widening - not "141 across 15 files", which was only the
+  non-`no-console` subset (259 - 118) and undercounted the file span; full
+  breakdown: 118 `no-console` / 67 `explicit-module-boundary-types` / 60
+  `no-require-imports` / 5 `no-regex-spaces` / 3 `no-unused-vars` / 3
+  `preserve-caught-error` / 2 `no-extraneous-class` / 1 `no-useless-
+  assignment`); `npx prettier --check .`
   clean; `rtk npm run check` green (format:check, lint, typecheck, data,
   every `node --test` suite including `golden.test.mjs`, `npm run test`
   45 files / 1131 tests / coverage unchanged at 96.77/89.05/97.21/97.42).
@@ -321,6 +379,7 @@ re-deriving the classification:
 | `tests/app/print.js` | 23 lines (17,160-161,289-294,319,344,349,372,482,484,603,614,1097-1098,1148,1346,1521,1534,1537,1557) | Button grips, regexes asserting real book/product vocabulary printed on the card, list/seed names, and two comments quoting a product label/name with an English gloss. |
 | `tests/app/states.js` | 58 lines (50-51,55,63-65,73,77-80,101,106-108,137,156-158,183,231,259,265-266,268,292,327,335,340,355,364,375,402,423,448,455,467,472,484,487,491,499,525-526,541,552,560,635,650,663,685,758,789,815,849,906,911,942) | Button/control grips, list/seed names, seeded note/typed filler text (line-count math only, content is arbitrary), a toast-text match, search terms, and comments naming a specific item/list. |
 | `tests/app/sweep.js` | 47 lines (48-49,53-69,73-80,82,84-86,93-94,103,106,108,110-111,119,122,125-128,261,303,458) | The plan's "~53 selectors and page labels" - the `PAGES`/`FOCUS_WALK` route-label arrays, seed data, one button grip, one payload example, and the `/^таблица/` regex matching those same labels. |
+| `tests/app/typo.js` | 51,54,57,59,60,65,106,107,108 (9) | Seed list/note/shop names and the `LABELS` table (`Фильтры`/`Добавить в список`/`Заметка`), plus one English comment quoting `"Заметка"`. |
 | `tests/craft.js` | 47,67,98,110 (4) | Regexes asserting real product/book text (a source-book typo term, a stale-sentence phrase, a craft-line string) and one comment quoting a product label. |
 | `tests/dataint.js` | 74,262-269,279,314,318-332 (23) | The `HEADERS`/`HEADWORDS` arrays (real book table-header words), the `а-яё`/`А-ЯЁ` Cyrillic character-class regexes (structural, operate on Russian text by definition), and one comment quoting a real example title. |
 | `tests/derived.js` | 348,467,474,477,484,492,495,499,512,548,553,594-595,658,681,685-691,795 (22) | Regexes/literals asserting real product/book text (category words, tier labels, the Recall Cost label, the versatile-weapon marker, the step-word array, the README.ru.md-matching regex and the counter word fragments it pairs with) plus four comments quoting a specific product term for clarity. |
@@ -393,17 +452,20 @@ first-ever Prettier run on these files.
   re-records six named goldens - the one batch in this plan authorised to
   move a golden. Placed last on purpose so it never shares a diff with a
   code change.
-- Nothing outstanding blocks B11: B10 shipped with no deviation.
-- **Do not fold B8's, B8.1's, B9's, or B10's outstanding review nits into
-  B11** - route them through `issues/phase-8/nits.md`. B12 is where the
-  whole outstanding table clears. B10 has not been reviewed yet; when it
-  is, its nits go there too.
+- Nothing outstanding blocks B11: B10 shipped with no deviation, and B9's
+  review remediation (this pass) shipped both blockers and all six record
+  corrections with no deviation of its own.
+- **Do not fold B8's, B8.1's, or B9's outstanding review nits (the rows
+  still in `issues/phase-8/nits.md`, "Outstanding") into B11** - B12 is
+  where the whole outstanding table clears. B10 has not been reviewed yet;
+  when it is, its nits go there too.
 
 ## Blockers
 
-None. B10 shipped with no deviation. Every gate is green (`npm run check`,
-`npm run check:built`, all four golden shards, confirmed for real, not
-assumed) and the branch is pushed.
+None. B9's review remediation shipped both blockers and all six record
+corrections with no deviation. `rtk npm run check` and `node
+tests/run-all.js app/states` are green, confirmed for real, not assumed,
+and the branch is pushed.
 
 ## Deferred
 
@@ -430,10 +492,8 @@ assumed) and the branch is pushed.
   frontmatter edit from another session) and `issues/56/` (an untracked
   directory, another task's) have been present throughout this task's
   sessions and are preserved untouched and unstaged, per "preserve
-  unrelated working-tree changes, do not revert foreign work." A B9-review
-  session wrote directly into `issues/phase-8/nits.md` while B10 was
-  implemented (see "Status"); that write is also preserved untouched, not
-  this batch's own. Normal `npm run data`/`npm run build` outputs (`i/`,
-  `dist/`) are gitignored or untracked as usual and regenerate on demand.
+  unrelated working-tree changes, do not revert foreign work." Normal
+  `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
+  untracked as usual and regenerate on demand.
 - Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (`56dabbc`).
+  gate-verified boundary (sha in the follow-up docs commit).

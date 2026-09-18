@@ -349,6 +349,104 @@ recorded.
 | B8.1-N3 | `tests/app/contracts.js` (before its hash read, per B8.1-R5) | *(deferred-scope)* Add `await d.addressSettled()` before the owned-list hash read at `:37-38`, so the pass stops resting on `ready()`'s wait happening to already exceed 150ms. |
 | B8.1-N4 | `docs/specs/COVERAGE.md` | The three B8.1-inserted paragraphs (the coupling-assertion note, the gate rule, the capture-wait note) sit between the pre-existing `golden.test.mjs` paragraph and a line whose "those fixtures" antecedent is the fixture table far above (`:243-245`), not anything adjacent. `plan.md` step 7 pointed at the `app/golden` table row or "Known thin spots" as candidate homes; neither was used. Considered moving the block now (it is BL-1's own paragraph and this pass is already in the file) - not done: the `app/golden` row is one dense table cell and "Known thin spots" is a bulleted list, so landing prose paragraphs in either is a format change beyond a nit-sized edit, not a cheap, clearly-right move. Recorded for B12 instead. |
 
+### From B9's review (language and format: `tests/` and `tools/`)
+
+Verdict **fix-then-continue**. Two blockers (B9-BL-1, B9-BL-2) and the
+record corrections B9-N1/N2/N7/N8/N9 plus B9-N4 were sent to a remediation
+pass; everything else in this section is B12's. The reviewer ran no heavy
+gate by dispatch (B10's implementer held the tree), so every measurement
+below is from `git show`/`git archive` against committed shas and from
+`npx eslint` runs in a scratch directory outside the repository.
+
+**Both blockers and all six record corrections are done (sha in the follow-up docs commit)** - B9's
+remediation cycle is now spent; see `issues/phase-8/handoff.md`, "B9
+remediation".
+
+- **B9-BL-1**: `eslint.config.mjs:24-25`'s ignore-pattern pair
+  (`'.claude/**'` + `'!.claude/hooks/**'`) never actually un-ignored the
+  hooks - `.claude/**` prunes the directory itself before the negation can
+  apply, so the nine hook files stayed lint-dead and the commit's only
+  claimed coverage gain from that half was inert. Confirmed independently
+  before dispatch (`npx eslint .claude/hooks/tree-key.mjs` returned "File
+  ignored because of a matching ignore pattern") and three other
+  formulations tried and rejected, all still ignored.
+  done (sha in the follow-up docs commit): fixed to `'.claude/*'` + `'!.claude/hooks'` - `npx eslint
+  .claude` now lints exactly the nine hook files (`bash-guard`,
+  `check-observer`, `edit-followup`, `edit-guard`, `lib`, `selftest`,
+  `session-start`, `session-stop`, `tree-key`), zero errors/warnings, and
+  `.claude/worktrees/` stays pruned. The three records asserting the
+  widening as already-done (`plan.md`'s B9 entry, `handoff.md`'s B9
+  Completed entry) were corrected in place; `d660ce7`'s commit message
+  overstates and, being history, was left uncorrected with a note pointing
+  at the correction of record.
+- **B9-BL-2**: `eslint.config.mjs:178`'s
+  `@typescript-eslint/no-unused-vars: 'off'` stood as a blanket off for
+  three real findings (`tests/app/states.js:154`'s dead `page` destructure;
+  `tools/check-site.test.mjs:79,112`'s destructure-to-drop-a-key idiom) -
+  two of which are exactly what the rule's own `^_` options exist for and
+  the third a one-token deletion.
+  done (sha in the follow-up docs commit): rule re-armed as `'error'` with
+  `{ argsIgnorePattern: '^_', varsIgnorePattern: '^_',
+  caughtErrorsIgnorePattern: '^_' }`; `page` dropped from the
+  `twoFramesPicked` destructure in `tests/app/states.js:154` (unused for
+  the rest of the function - the case drives everything through `d`).
+  `npx eslint .` clean afterward.
+- **Record corrections, all done (sha in the follow-up docs commit)**: the acceptance-grep table's
+  missing `tests/app/typo.js` row (9 lines, all (b)) added to
+  `handoff.md`; the commit-4 verification bullet's wrong "141 across 15
+  files" restated as "259 findings across 34 files" with the full
+  per-rule breakdown; the stale `d882707`/`5602ca9` Status and Notes
+  wording from B9's own handoff text was checked against the current file
+  and found **already superseded** by B10's own routine Status rewrite (a
+  "replace, never append" section) - no separate edit was needed there,
+  verified rather than silently skipped; `tools/build-share-pages.js:150`'s
+  redundant comment (a duplicate of line 149's already-English fact)
+  deleted.
+
+| id | where | what |
+|---|---|---|
+| B9-R1 | (risk, recorded) | The pre-compaction plan's commit-4 step was "`npx prettier --write tests tools` **and the lint fixes**" (`git show c0ff1d0^:issues/phase-8/plan.md`). What shipped is eight rule turn-offs *instead of* the lint fixes - a third deviation, unrecorded alongside the two that were. Not hidden (each turn-off carries a rationale in the config), but the substitution is standing policy where the plan authorised only a `disableTypeChecked` block. |
+| B9-R2 | `eslint.config.mjs:184-191` | Four code-rule turn-offs suppress **11 real findings**, and the written rationales enumerate only 6 of the 11 sites. Measured: `no-regex-spaces` 5 (`tests/derived.js:798,819,821,841`; `tests/app/golden.test.mjs:231` - rationale names derived.js only); `preserve-caught-error` 3 (`tools/artwork/run.mjs:124`; `tools/tg-preview/run.mjs:47`; **`tests/app/driver.js:369`** - rationale names the first two); `@typescript-eslint/no-extraneous-class` 2 (`tools/capture-share-fixture.mjs:97`; **`tests/app/driver.js:859`** - rationale names the first); `no-useless-assignment` 1 (`tools/tg-preview/live.mjs:75` - correct). None is a live defect. Reviewer's per-rule recommendation: `no-regex-spaces` narrow or fix (` {2}` is byte-equivalent for the ci.yml indentation regexes); `preserve-caught-error` prefer three inline disables or `{ cause }` over a directory-wide off, because a *new* catch/rethrow in `tests/`/`tools/` will now pass silently; the other two are 3 lines total, prefer the fix. |
+| B9-R3 | (verified sound, no action) | The three structural turn-offs should stand unchanged: `no-console` (118 findings - every suite's reporting mechanism; the repo rule at `eslint.config.mjs:44` is a browser-bundle policy), `@typescript-eslint/no-require-imports` (60 - all in `.js` CommonJS suites), `@typescript-eslint/explicit-module-boundary-types` (67 - all in `tools/**/*.mjs`, untyped JS with no annotation to write). |
+| B9-N3 | `tests/ok.js:1` and `tests/contracts.js:23-28` | The new module's comment names four users - "derived, dataint, craft, contracts" - but `contracts.js` still carries its own identical inline copy (`let fail = 0; const ok = ...`). Either wire it to `./ok.js` (6 deleted lines; it already ends `process.exit(failed() ? 1 : 0)` in the same shape at `:116-117`) or drop `contracts` from the comment. Reviewer prefers the former - `CLAUDE.md`'s "remove both inline copies". |
+| B9-N5 | `eslint.config.mjs:184-191` | The per-rule rationale comments name a subset of the sites they cover (see B9-R2's table). A later reader greps the named file, finds it clean after a fix, and deletes a turn-off that is still load-bearing elsewhere. Enumerate every site per rule. |
+| B9-N6 | `eslint.config.mjs:145-152` | The block justifies itself by "lines this same commit's own acceptance line requires untouched (`git diff -w --stat` empty ...)" - the acceptance line this very batch records as **unmet and the wrong instrument**. A standing config should not rest on a retracted criterion. Re-word to the durable reason (pre-existing patterns, enumerated sites). |
+| B9-N10 | `issues/phase-8/context.md:165` | The deterministic-regression table's header reads ``| state | expected (`было`) | actual on CI (`стало`) |``. `golden.js` now prints `want:`/`got:`, so a session following that record greps for a word the tool no longer emits. One word per header cell. *(deferred-scope: task record, mid-plan)* |
+| B9-N11 | `eslint.config.mjs` | `@typescript-eslint/no-require-imports: 'off'` could be narrowed to a `files: ['**/*.js']` block - all 60 findings are in `.js`, so a future `.mjs` tool reaching for `require` would still be caught, at no cost today. *(taste)* |
+
+**Verified sound in B9's review, recorded so it is not re-derived:**
+
+- **The Prettier-reproduction proof is real, reproduced independently.**
+  `git archive 6b3f0eb tests tools` and `git archive d660ce7 tests tools`
+  into two scratch directories outside the repo, both formatted with the
+  repo's own Prettier and `.prettierrc`: `diff -rq` between the trees is
+  **empty**, 154 files each. Commit 4 is Prettier's output and nothing else.
+  The unmet `git diff -w --stat` acceptance line is correctly recorded as
+  unmet and is not re-raised.
+- **No product literal moved, proved mechanically.** Token-level comparison
+  of every `.js`/`.mjs` under `tests/` (minus `snapshots/`) and `tools/`,
+  `d882707` vs `2d404c7`, strings elided and comments stripped: the only
+  structural changes in the whole batch are the `ok.js` extraction in
+  `craft.js`/`dataint.js`/`derived.js` and two regex literals in
+  `golden.test.mjs` (the disclosed coupling update). Every other regex
+  literal is byte-identical, including `print.js`'s `/ОРУЖИЕ/i`, `/БРОНЯ/i`,
+  `/АРТЕФАКТ/i` family, `craft.js:47,67,98`, `dataint.js:279` and
+  `derived.js`'s `footBefore`/licence/step-word regexes. Selector, route, id
+  and storage-key literal multisets: zero removals, one addition (`./ok.js`).
+- **H16 is safe.** `tests/run-all.js:247` spawns each suite as its own
+  `process.execPath` child, so `tests/ok.js`'s module-level counter cannot be
+  shared across suites; all three consumers end `process.exit(failed() ? 1 : 0)`
+  and no stray `fail` reference survives.
+- **The acceptance grep re-derives exactly**: 14 files, 395 Cyrillic lines,
+  per-file counts matching the handoff's table once `typo.js` (9) is added.
+  All 24 remaining Cyrillic-bearing *comment* lines were classified by hand:
+  every one is an English sentence quoting a product term.
+- The plan's "every browser suite's green run before and after" was met by
+  the Gates list (nine pooled suites + `sweep.js 390` + `golden --shard=2/4`)
+  rather than literally. Exposure is limited to failure-path strings in the
+  unrun suites, and the reviewer's grep closes it: no Russian (a) message
+  remains anywhere in the tree. No action needed.
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |
@@ -371,3 +469,4 @@ recorded.
 - **B2 review** blockers B-1, B-2, B-3 and nits 1-3 - `c8cc38e`.
 - **B3 review** N1 (`COVERAGE.md`'s stale `golden` job name) - `c8cc38e`, routed mid-flight.
 - **B3 review** N2-N8 - B5 (`112bd07`), after B4 skipped them.
+- **B9 review** blockers BL-1, BL-2 and record corrections N1/N2/N4/N7/N8/N9  (sha in the follow-up docs commit).

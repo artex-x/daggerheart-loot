@@ -182,7 +182,13 @@ otherwise in the file (`Показатель Брони`, `Призрачный 
 `.claude/` ignored) with a `disableTypeChecked` + node-globals block and
 targeted rule turn-offs for real pre-existing patterns a format-only
 commit could not otherwise touch, then `npx prettier --write tests tools`,
-no hand edits. A fifth commit (`5602ca9`, coordinator-directed) translated
+no hand edits. **Correction (B9 review remediation): the
+ignore-pattern pair this commit shipped (`'.claude/**'` +
+`'!.claude/hooks/**'`) never actually un-ignored the hooks - `.claude/**`
+prunes the directory itself before the negation can apply, so
+`.claude/hooks/**` stayed lint-dead until fixed to `'.claude/*'` +
+`'!.claude/hooks'`. See `nits.md`, "Done", B9-BL-1.** A fifth commit
+(`5602ca9`, coordinator-directed) translated
 `tools/build-share-pages.js`'s last 2 Cyrillic comment lines - outside the
 plan's own Files list, added because commit 4 had already made the file a
 touched path via Prettier and the acceptance line covers the whole tree,

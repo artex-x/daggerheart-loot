@@ -151,7 +151,7 @@ async function addToListMenuStaysInModal() {
  *  defect 1: the live side legitimately reads 0 on arrival, so no parity
  *  state can hold this one. */
 async function twoFramesPicked() {
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables/other_frames');
   await d.press('Фильтры');
   await d.press('Пир зверей');
