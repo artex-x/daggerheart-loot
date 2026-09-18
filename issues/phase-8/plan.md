@@ -623,7 +623,7 @@ five-row table is authoritative, per `nits.md`'s note under its Deferred
 table). Full detail: `git show e52f5de`,
 or `issues/phase-8/handoff.md`.
 
-### B12b - production source (`app/src/**`), and the DEBT entries - SHIPPED `<pending, see B12b sha-citation follow-up>`
+### B12b - production source (`app/src/**`), and the DEBT entries - SHIPPED `607b252`
 
 Outcome: all 25 live rows landed as real edits (`B5-N5`, `B5-N6`, `B5-N8`,
 `B5-N9`, `B5-N13`, `B5-N10/11/12`, `B6-R3`, `B6-R4`, `B6-N3`, `B6-N5`,

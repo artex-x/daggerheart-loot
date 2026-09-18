@@ -2,8 +2,8 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `<pending, see B12b sha-citation
-  follow-up>`, **B12b** itself, one commit past B12a's own sha-citation
+- Task status: in_progress. HEAD is `607b252`, **B12b** itself, one commit
+  past B12a's own sha-citation
   follow-up (`4786ea9`), which was one commit past **B12a** (`e52f5de`).
   `rtk npm run check` is green on B12b (all suites, coverage thresholds
   met) - see "Verification". Not yet pushed - see "Next batch".
@@ -336,7 +336,7 @@ pre-compaction text.
   discrepancy recorded (`plan.md`'s B12a step 7 undercounts the Deferred
   table by one row - see "Status").
 - **B12b - production source (`app/src/**`), and the three new `DEBT.md`
-  entries** - `<pending, see B12b sha-citation follow-up>`. Review: not run
+  entries** - `607b252`. Review: not run
   (owner's decision, 2026-09-18 - see "Status"). Twenty-five rows landed as
   real edits, one closed with no change: `B5-N5` (`badge.test.ts`'s third
   case now ends `expectNoA11yViolations`), `B5-N6` (header count corrected
