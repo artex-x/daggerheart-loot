@@ -3,7 +3,7 @@
 # why: a roll on a table with no die of its own
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/dread]
+RootWebArea "Dread — Генератор лута — Daggerheart" [url=#/roll/dread]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -78,7 +78,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/dread]
+RootWebArea "Dread — Daggerheart Loot Generator" [url=#/roll/dread]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

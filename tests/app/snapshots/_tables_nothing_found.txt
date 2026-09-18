@@ -3,7 +3,7 @@
 # why: the empty state, which no route draws
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -77,7 +77,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

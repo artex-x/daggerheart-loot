@@ -3,8 +3,8 @@
 # why: the card opened over the roll
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
-  dialog "Закрыть" [modal=true]
+RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/roll/wondrous]
+  dialog "Смола Бездны" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
     StaticText "1"
@@ -53,8 +53,8 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
-  dialog "Close" [modal=true]
+RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
+  dialog "Abyssal Sap" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
     StaticText "1"

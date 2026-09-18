@@ -3,7 +3,7 @@
 # why: the filter panel, unfolded and empty
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/wondrous]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -48,13 +48,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous
     button "Снаряжение" [pressed=false]
     checkbox "Выбрать все (119)" [checked=false]
     StaticText "Выбрать все (119)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Смола Бездны" [checked=false]
     button "1 Смола Бездны Вы можете бросить флакон этой смолы в цель в пред..." [namelen=161 namehash=8eafeacd]
     ... checkbox x116 of 120 same-shape siblings elided
     ... button x116 of 120 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Шкура Йети" [checked=false]
     button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=282 namehash=c9dc228e]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Пески Ифанга" [checked=false]
     button "119 Пески Ифанга Когда этот чёрный порошок загорается или испыты..." [namelen=321 namehash=d381b644]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -191,28 +191,146 @@ Vault of Ages
 Wondrous
 Wondrous Loot
 daggerheart.com
+Алконитовый Кристалл
 Альт. таблицы
-Выбрано
+Арканная Набивка
+Арканный Скальпель
+Архивная Гниль
+Буря в Бутылке
+Варенье из Грохотягод
+Вино Бесед
+Вихревая Шляпка
+Времястекло
+Гарпун Левиафана
+Гравитационная Привязь
+Громовой Скарабей
+Гроссбух Первопроходца
+Грохотягода
+Древний Рунный Камень
+Душетканый Плащ
+Дыхательный Клубень
+Жезл Жизни
+Желчь Демонической Жабы
+Жуки-Влюблённые
+Зелье Открытых Путей
+Зелье Спирального Зрения
+Зелье Судного Дня
+Игольный Ключ
+Искажённая Линза
+Искатель Духов
+Ихор Вянущего Корня
 К содержимому
 Как это работает
+Камень Возврата
+Камень Сирены
+Кандальные Болас
+Капюшон Туманного Покрова
+Книга Беспамятства
+Когти Ифанга
+Красный Нос Надежды
+Кристаллы Иномирья
+Кровь Кайдзю
+Кувшинка-Пифия
+Ласты Лужелуточки
+Ледяные Рукавицы
+Лепестки Тенелилии
+Лепестки Цветка Троицы
+Лепесток Цветочной Вуали
+Лепесток Эхо-Орхидеи
+Лук Искателя
+Луковица Ядолилии
 ЛутDaggerheart
+Лучезарный Осколок
+Маска Подражателя
+Маяк Жизненной Силы
+Межпланарная Древесина
+Мел Заклинателя
+Мерцацвет
+Молот Инфернального Кузнеца
+Монета-Бум
+Настойка Укреплённых Мыслей
+Нектар Обетного Цветка
+Оберег Вянущего Корня
+Оберег Мореплавателя
 Обычные правила
+Опорная Паутина
+Осколок Сновидца
+Отвадитель Жуков
 Открывать этот раздел при запуске
+Охранный Оберег
+Паучье Жало
+Перо Памяти
+Перчатка Корнереза
+Пески Ифанга
+Песня в Бутылке
+Плащ Зимнего Волка
+Плащ-Завеса
+Побеги Призрачного Папоротника
+Погибель Лжецов
+Подвеска Волчьего Друга
 Поиск
+Полотенце Путешественника
+Порошок Героя
+Порошок Печалекорня
+Посох Шепчущего Архива
+Превосходный Алконитовый Кристалл
 Предметы
+Призматическая Вода
+Призракоуловитель
+Приманка Теневого Удильщика
 Прочее
+Пузырная Палочка
+Пыль Отражённой Тишины
+Расстроитель
 Расходники
+Робы Жалозащиты
+Рог Черепахи
+Сапоги Жуткого Плетения
+Сахар Генри
+Семя Цветка Троицы
 Сеткой
+Сигил Бога Войны
+Слизь Скользкости
+Смола Бездны
 Снаряжение
+Снежный Клинок
+Согревающие Пирожки
 Сообщества
 Списки
 Списком
 Ссылка на таблицу
+Стопорный Ключ
+Сумеречное Зелье
+Сумочка Кассира
+Сухожилие Тарраска
+Сыворотка Истинного Зрения
 Таблицы
+Тоник Вянущего Корня
+Тоник Споровой Мысли
+Трава Мученика
+Тростник Трясинного Стекла
+Тёмный Камень
+Удерживающий Крюк
+Усмиряющее Кадило
+Факел Души
 Фильтры
+Флакон Кристальных Вод
+Фолиант Древних Знаний
+Фонарь Теней
+Целебная Смола
+Чай Эфироцвета
+Чай из Призрачного Папоротника
+Челюсти Астрального Термита
+Чистый Кристалл
+Чёрная Нить
+Шкура Йети
+Щит Охотника на Жуков
+Эфирный Якорь
+Эфироцвет
+Яйцо Катартоида
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -257,13 +375,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous]
     button "Equipment" [pressed=false]
     checkbox "Select all (119)" [checked=false]
     StaticText "Select all (119)"
-    checkbox "Selected" [checked=false]
+    checkbox "Abyssal Sap" [checked=false]
     button "1 Abyssal Sap You can throw a vial of this sap at a target withi..." [namelen=145 namehash=72470812]
     ... checkbox x116 of 120 same-shape siblings elided
     ... button x116 of 120 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Yeti Coat" [checked=false]
     button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=239 namehash=3040652f]
-    checkbox "Selected" [checked=false]
+    checkbox "Yifang Sands" [checked=false]
     button "119 Yifang Sands When this black powder catches fire or experien..." [namelen=302 namehash=26357a70]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -390,32 +508,150 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous]
 98Toxilily BulbThis bulb can be broken into 1d4 cloves, each of ... [namelen=198 namehash=d370bfb9]
 99Trinity Flower PetalsBrew these petals into a tea that can be ... [namelen=206 namehash=34b9c065]
 9Archivist's RotFor the scene, you have advantage on all Instinc... [namelen=171 namehash=a749e6af]
+Abyssal Sap
+Aetherflower
+Aetherflower Tea
+Alconite Crystal
 Alt. tables
+Anchoring Hook
+Ancient Runestone
+Arcane Scalpel
+Arcane Stuffing
+Archivist's Rot
+Astral Termite Jaws
+Backsies Stone
+Big Bug Begone
+Blood of the Kaiju
+Blossomveil Petal
+Bogglass Reed
+Book of No History
+Boomberry
+Boomberry Jam
+Boomcoin
+Bottled Song
+Bubble Wand
+Bug Hunter's Aegis
+Calming Censer
+Cathartoid Egg
+Claws of Yifang
 Communities
 Consumables
 Core
+Croakroot Pad
+Crystals from Beyond
+Darkstone
+Demon Toad Bile
+Detuner
+Devil's Smithing Hammer
+Doomsday Potion
 Dread
 Dread GM Toolbox
+Dread-Weave Boots
+Dreamer's Shard
+Dust of Echoed Silence
 EN
+Ebony Thread
+Echo Orchid Petal
 Equipment
+Etheric Anchor
 Filters
+Flare Tuber
+Flickerbloom
+Gravitic Tether
 Grid
+Griefroot Powder
+Gyre Cap
+Henry's Sugar
+Hero's Powder
+Hitcher's Towel
 Hope & Fear
 How this works
+Ice Gloves
+Incantor's Chalk
 Items
+Jamming Spanner
+Lantern of Shadows
+Leviathan Harpoon
+Liar's Bane
+Life Force Beacon
+Life Wand
+Lightning Scarab
 Link to this table
 List
 Lists
+Lovebugs
+Manacle Bolas
+Martyr's Grass
+Mimicry Mask
+Mucin of Slipperiness
+Needle Key
+Nursewood Sap
 Open this section on start
 Other
+Pastries of Warmth
+Pathfinder's Ledger
+Phantom Fern Shoots
+Phantom Fern Tea
+Planar Wood
+Potion of Revealed Paths
+Potion of Spiraling Vision
+Prismatic Water
+Puddleduck's Fins
+Pure Crystal
+Quill of Memory
 RU
+Radiant Shard
+Red Nose of Hope
+Rootslicer Gauntlet
+Scaffold Web
 Search
-Selected
+Seaworthy Charm
+Seeker's Bow
+Shadowangler Lure
+Siren's Rock
 Skip to content
+Snowblade
+Soul Torch
+Soulweave Cloak
+Spider's Sting
+Spirit Seeker
+Sporemind Tonic
+Staff of the Whispering Archive
 Standard rules
+Stingshield Robes
+Storm in a Bottle
+Superior Alconite Crystal
 Tables
+Tarrasque Sinew
+Ticket Master's Pouch
+Timeglass
+Tincture of Fortified Thoughts
+Tome of Ancient Knowledge
+Tortoise Horn
+Toxilily Bulb
+Trinity Flower Petals
+Trinity Flower Seed
+True Vision Serum
+Twisted Lens
+Umbra Lily Petals
+Umbral Potion
 Vault of Ages
+Veilcloak
+Veilshroud Hood
+Vial of Crystal Waters
+Votive Bloom Nectar
+War God's Sigil
+Wardstone Charm
+Wine of Discourse
+Winter Wolf Cloak
+Witherroot Charm
+Witherroot Ichor
+Witherroot Tonic
+Wolffriend Pendant
 Wondrous
 Wondrous Loot
+Wraith Trap
+Yeti Coat
+Yifang Sands
 daggerheart.com
 ЛутDaggerheart

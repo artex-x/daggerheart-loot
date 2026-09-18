@@ -3,7 +3,7 @@
 # why: Core rules with Hope & Fear switched off
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/std]
+RootWebArea "Обычные правила — Генератор лута — Daggerheart" [url=#/roll/std]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -105,7 +105,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/std]
+RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

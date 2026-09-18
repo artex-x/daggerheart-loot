@@ -3,7 +3,7 @@
 # why: the bar, one row ticked
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -43,24 +43,24 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
     button "Сеткой" [pressed=false]
     checkbox "Выбрать все (60)" [checked=false]
     StaticText "Выбрать все (60)"
-    checkbox "Выбрано" [checked=true]
+    checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Пронзительная Свирель" [checked=false]
     ... button x57 of 61 same-shape siblings elided
     ... checkbox x56 of 60 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Кольцо Несокрушимой Решимости" [checked=false]
     button "59 Кольцо Несокрушимой Решимости Один раз за сессию, когда Масте..." [namelen=166 namehash=5d88a8d7]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Пояс Единства" [checked=false]
     button "60 Пояс Единства Один раз за сессию вы можете потратить 5 Надежд..." [namelen=144 namehash=5ce27726]
-  contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
   StaticText "Выбрано 1"
   button "Снять выделение" [description=Снять выделение]
   button "Добавить в список" [expanded=false]
   link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
   button "Скопировать"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
 10Подвешенный ЖезлЭтот плоский жезл исписан рунами. Когда вы акт... [namelen=223 namehash=d393152c]
@@ -134,18 +134,72 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
+Амулет Воздушного Клинка
+Амулет Скрытности
+Банка с Огнём
+Бездонная Сумка
+Ботинки Хождения по Воде
+Глиняный Спутник
+Двойная Фляга
 Добавить в список
+Заряжающий Колчан
+Исправляющий Дух
 К содержимому
 Как это работает
+Камень Доблести
+Камень Облика
+Кольцо Несокрушимой Решимости
+Кольцо Сопротивления
+Кольцо Тишины
+Компасы Связи
+Коробка Многих Вещей
+Кровавый Камень
+Кулон Светлячка
 ЛутDaggerheart
+Магическая Призма
+Медальон Хранения Надежд
+Мешочек Своенравного Песка
+Мистический Плащ
+Наручники
 Обычные правила
+Осколок Памяти
 Открывать этот раздел при запуске
+Парашют
+Первоклассный Спальный Мешок
+Перо Феникса
+Перчатки Геккона
+Плетёная Сеть
+Подвешенный Жезл
 Поиск
+Пояс Единства
 Предметы
+Пронзающие Стрелы
+Пронзительная Свирель
 Прочее
+Пустой Сундук
+Разговаривающие Сферы
 Расходники
+Реликвия Баланса
+Реликвия Быстрого Шага
+Реликвия Гармонии
+Реликвия Наставления
+Реликвия Очарования
+Реликвия Прозрения
+Реликвия Усиления
+Рецепт Малого Зелья Выносливости
+Рецепт Малого Зелья Лечения
+Рецепт Мифической Пыли
+Рецепт Флакона с Чёрным Дымом
+Самоцвет Великана
+Самоцвет Дерзости
+Самоцвет Мощи
+Самоцвет Проворства
+Самоцвет Рассудительности
+Самоцвет Точности
+Самоцвет Чутья
+Семя Портала
 Сеткой
+Скелетный Ключ
 Скопировать
 Снаряжение
 Снять выделение
@@ -155,9 +209,14 @@ daggerheart.com
 Списком
 Ссылка на таблицу
 Таблицы
+Успокаивающий Кулон
+Факел Алистера
+Футляр для Компаньона
+Хранитель Знаний
+Цепь Парагона
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -197,24 +256,24 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables]
     button "Grid" [pressed=false]
     checkbox "Select all (60)" [checked=false]
     StaticText "Select all (60)"
-    checkbox "Selected" [checked=true]
+    checkbox "Premium Bedroll" [checked=true]
     button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]
-    checkbox "Selected" [checked=false]
+    checkbox "Piper Whistle" [checked=false]
     ... button x57 of 61 same-shape siblings elided
     ... checkbox x56 of 60 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Ring of Unbreakable Resolve" [checked=false]
     button "59 Ring of Unbreakable Resolve Once per session, when the GM spe..." [namelen=148 namehash=201f0c67]
-    checkbox "Selected" [checked=false]
+    checkbox "Belt of Unity" [checked=false]
     button "60 Belt of Unity Once per session, you can spend 5 Hope to lead ..." [namelen=120 namehash=2cbc5f0e]
-  contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
   StaticText "Selected 1"
   button "Clear selection" [description=Clear selection]
   button "Add to list" [expanded=false]
   link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1]
   button "Copy"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
 
 ## en :: controls
 10Suspended RodThis flat rod is inscribed with runes. When you a... [namelen=232 namehash=4f5a3fd9]
@@ -278,34 +337,93 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables]
 8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=154 namehash=33eb11a6]
 9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=151 namehash=0841cf34]
 Add to list
+Airblade Charm
+Alistair's Torch
 Alt. tables
+Arcane Cloak
+Arcane Prism
+Attune Relic
+Bag of Ficklesand
+Belt of Unity
+Bloodstone
+Bolster Relic
+Box of Many Goods
+Calming Pendant
+Charging Quiver
+Charm Relic
+Clay Companion
 Clear selection
 Communities
+Companion Case
 Consumables
+Control Relic
 Copy
 Core
+Corrector Sprite
 Dread
 Dread GM Toolbox
+Dual Flask
 EN
+Elusive Amulet
+Empty Chest
+Enlighten Relic
 Equipment
+Fire Jar
+Flickerfly Pendant
+Gecko Gloves
+Gem of Alacrity
+Gem of Audacity
+Gem of Insight
+Gem of Might
+Gem of Precision
+Gem of Sagacity
+Glamour Stone
+Glider
+Greatstone
 Grid
+Homing Compasses
+Honing Relic
 Hope & Fear
+Hopekeeper Locket
 How this works
+Infinite Bag
 Items
+Lakestrider Boots
 Lay these out for printing: nine to an A4 sheet
 Link to this table
 List
 Lists
+Lorekeeper
+Manacles
+Minor Health Potion Recipe
+Minor Stamina Potion Recipe
+Mythic Dust Recipe
 Open this section on start
 Other
+Paragon's Chain
+Phoenix Feather
+Piercing Arrows
+Piper Whistle
+Portal Seed
+Premium Bedroll
 RU
+Ring of Resistance
+Ring of Silence
+Ring of Unbreakable Resolve
 Search
-Selected
+Shard of Memory
+Skeleton Key
 Skip to content
+Speaking Orbs
 Standard rules
+Stride Relic
+Suspended Rod
 Tables
+Valorstone
 Vault of Ages
+Vial of Darksmoke Recipe
 Wondrous
 Wondrous Loot
+Woven Net
 daggerheart.com
 ЛутDaggerheart

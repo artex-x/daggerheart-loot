@@ -3,8 +3,8 @@
 # why: the add-to-list menu inside the modal, and which side of the button it opens on
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
-  dialog "Закрыть" [modal=true]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
+  dialog "Кольцо Тишины" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
     StaticText "28"
@@ -16,11 +16,11 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "Лавка в порту" [pressed=false]
     button "Клад дракона" [pressed=false]
     button "+ Новый список" [pressed=false]
-    button "Добавить в список" [expanded=true]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci28]
 
 ## ru :: controls
@@ -96,22 +96,76 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
+Амулет Воздушного Клинка
+Амулет Скрытности
+Банка с Огнём
+Бездонная Сумка
+Ботинки Хождения по Воде
+Глиняный Спутник
+Двойная Фляга
 Добавить в список
 Закрыть
+Заряжающий Колчан
+Исправляющий Дух
 К содержимому
 Как это работает
+Камень Доблести
+Камень Облика
 Клад дракона
+Кольцо Несокрушимой Решимости
+Кольцо Сопротивления
+Кольцо Тишины
+Компасы Связи
+Коробка Многих Вещей
+Кровавый Камень
+Кулон Светлячка
 Лавка в порту
 ЛутDaggerheart
+Магическая Призма
+Медальон Хранения Надежд
+Мешочек Своенравного Песка
+Мистический Плащ
+Наручники
 Обычные правила
+Осколок Памяти
 Открывать этот раздел при запуске
 Отправить
+Парашют
+Первоклассный Спальный Мешок
+Перо Феникса
+Перчатки Геккона
+Плетёная Сеть
+Подвешенный Жезл
 Поиск
+Пояс Единства
 Предметы
+Пронзающие Стрелы
+Пронзительная Свирель
 Прочее
+Пустой Сундук
+Разговаривающие Сферы
 Расходники
+Реликвия Баланса
+Реликвия Быстрого Шага
+Реликвия Гармонии
+Реликвия Наставления
+Реликвия Очарования
+Реликвия Прозрения
+Реликвия Усиления
+Рецепт Малого Зелья Выносливости
+Рецепт Малого Зелья Лечения
+Рецепт Мифической Пыли
+Рецепт Флакона с Чёрным Дымом
+Самоцвет Великана
+Самоцвет Дерзости
+Самоцвет Мощи
+Самоцвет Проворства
+Самоцвет Рассудительности
+Самоцвет Точности
+Самоцвет Чутья
+Семя Портала
 Сеткой
+Скелетный Ключ
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
@@ -124,10 +178,15 @@ daggerheart.com
 Ссылка на таблицу
 Страница
 Таблицы
+Успокаивающий Кулон
+Факел Алистера
+Футляр для Компаньона
+Хранитель Знаний
+Цепь Парагона
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables]
-  dialog "Close" [modal=true]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
+  dialog "Ring of Silence" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
     StaticText "28"
@@ -205,39 +264,98 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables]
 8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=154 namehash=33eb11a6]
 9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=151 namehash=0841cf34]
 Add to list
+Airblade Charm
+Alistair's Torch
 Alt. tables
+Arcane Cloak
+Arcane Prism
+Attune Relic
+Bag of Ficklesand
+Belt of Unity
+Bloodstone
+Bolster Relic
+Box of Many Goods
+Calming Pendant
+Charging Quiver
+Charm Relic
+Clay Companion
 Close
 Communities
+Companion Case
 Consumables
+Control Relic
 Copy image
 Copy link
 Copy name
 Copy text
 Core
+Corrector Sprite
 Dread
 Dread GM Toolbox
+Dual Flask
 EN
+Elusive Amulet
+Empty Chest
+Enlighten Relic
 Equipment
+Fire Jar
+Flickerfly Pendant
+Gecko Gloves
+Gem of Alacrity
+Gem of Audacity
+Gem of Insight
+Gem of Might
+Gem of Precision
+Gem of Sagacity
+Glamour Stone
+Glider
+Greatstone
 Grid
+Homing Compasses
+Honing Relic
 Hope & Fear
+Hopekeeper Locket
 How this works
+Infinite Bag
 Items
+Lakestrider Boots
 Lay these out for printing: nine to an A4 sheet
 Link to this table
 List
 Lists
+Lorekeeper
+Manacles
+Minor Health Potion Recipe
+Minor Stamina Potion Recipe
+Mythic Dust Recipe
 Open this section on start
 Other
 Page
+Paragon's Chain
+Phoenix Feather
+Piercing Arrows
+Piper Whistle
+Portal Seed
+Premium Bedroll
 RU
+Ring of Resistance
+Ring of Silence
+Ring of Unbreakable Resolve
 Search
-Selected
+Shard of Memory
 Share
+Skeleton Key
 Skip to content
+Speaking Orbs
 Standard rules
+Stride Relic
+Suspended Rod
 Tables
+Valorstone
 Vault of Ages
+Vial of Darksmoke Recipe
 Wondrous
 Wondrous Loot
+Woven Net
 daggerheart.com
 ЛутDaggerheart

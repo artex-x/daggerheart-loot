@@ -3,7 +3,7 @@
 # why: a loot record
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/ci1]
+RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=#/i/ci1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -68,7 +68,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/ci1]
+RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

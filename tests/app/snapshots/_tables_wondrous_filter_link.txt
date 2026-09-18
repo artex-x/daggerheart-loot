@@ -3,7 +3,7 @@
 # why: arriving at a filter link, which opens the panel with that value picked
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous/f_kind-item]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/wondrous/f_kind-item]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -40,7 +40,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры (1)" [expanded=true]
-    button "Предметы ×" [description=Убрать из фильтра]
+    button "Предметы" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     StaticText "49 из 119"
@@ -50,12 +50,12 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous
     button "Снаряжение" [pressed=false]
     checkbox "Выбрать все (49)" [checked=false]
     StaticText "Выбрать все (49)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Эфироцвет" [checked=false]
     ... button x47 of 51 same-shape siblings elided
     ... checkbox x46 of 50 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Призракоуловитель" [checked=false]
     button "117 Призракоуловитель Эта шкатулка может вмещать до трёх духов н..." [namelen=295 namehash=2c109f50]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Шкура Йети" [checked=false]
     button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=282 namehash=c9dc228e]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -122,31 +122,79 @@ Vault of Ages
 Wondrous
 Wondrous Loot
 daggerheart.com
+Алконитовый Кристалл
 Альт. таблицы
-Выбрано
+Времястекло
+Гравитационная Привязь
+Громовой Скарабей
+Гроссбух Первопроходца
+Древний Рунный Камень
+Душетканый Плащ
+Жуки-Влюблённые
+Искажённая Линза
+Искатель Духов
 К содержимому
 Как это работает
+Камень Сирены
+Капюшон Туманного Покрова
+Красный Нос Надежды
+Кувшинка-Пифия
+Ласты Лужелуточки
+Ледяные Рукавицы
 ЛутDaggerheart
+Маска Подражателя
+Мел Заклинателя
+Мерцацвет
+Оберег Вянущего Корня
 Обычные правила
+Осколок Сновидца
+Отвадитель Жуков
 Открывать этот раздел при запуске
+Перо Памяти
+Перчатка Корнереза
+Плащ Зимнего Волка
+Плащ-Завеса
+Подвеска Волчьего Друга
 Поиск
+Полотенце Путешественника
+Превосходный Алконитовый Кристалл
 Предметы
+Призракоуловитель
 Прочее
+Пузырная Палочка
+Расстроитель
 Расходники
+Робы Жалозащиты
+Рог Черепахи
+Сапоги Жуткого Плетения
 Сбросить всё
 Сеткой
+Сигил Бога Войны
 Снаряжение
 Сообщества
 Списки
 Списком
 Ссылка на таблицу
 Ссылка на фильтры
+Стопорный Ключ
+Сумочка Кассира
+Сухожилие Тарраска
 Таблицы
+Тростник Трясинного Стекла
 Убрать из фильтра
+Удерживающий Крюк
+Усмиряющее Кадило
+Факел Души
 Фильтры (1)
+Фонарь Теней
+Чистый Кристалл
+Чёрная Нить
+Шкура Йети
+Эфирный Якорь
+Эфироцвет
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -183,7 +231,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters (1)" [expanded=true]
-    button "Items ×" [description=Remove from the filter]
+    button "Items" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
     StaticText "49 of 119"
@@ -193,12 +241,12 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
     button "Equipment" [pressed=false]
     checkbox "Select all (49)" [checked=false]
     StaticText "Select all (49)"
-    checkbox "Selected" [checked=false]
+    checkbox "Aetherflower" [checked=false]
     ... button x47 of 51 same-shape siblings elided
     ... checkbox x46 of 50 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Wraith Trap" [checked=false]
     button "117 Wraith Trap This box can hold up to three undead spirits. Yo..." [namelen=285 namehash=3a2cad99]
-    checkbox "Selected" [checked=false]
+    checkbox "Yeti Coat" [checked=false]
     button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=239 namehash=3040652f]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -255,35 +303,83 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
 93Ticket Master's PouchThe pouch can hold a handful of gold. Whe... [namelen=222 namehash=81b55cbb]
 94TimeglassOnce per session, you can look through this spyglass ... [namelen=209 namehash=d096f2d6]
 97Tortoise HornIf you use this bony fragment as a pommel for a w... [namelen=280 namehash=985e0ee0]
+Aetherflower
+Alconite Crystal
 Alt. tables
+Anchoring Hook
+Ancient Runestone
+Big Bug Begone
+Bogglass Reed
+Bubble Wand
+Calming Censer
 Communities
 Consumables
 Core
+Croakroot Pad
+Detuner
 Dread
 Dread GM Toolbox
+Dread-Weave Boots
+Dreamer's Shard
 EN
+Ebony Thread
 Equipment
+Etheric Anchor
 Filter link
 Filters (1)
+Flickerbloom
+Gravitic Tether
 Grid
+Hitcher's Towel
 Hope & Fear
 How this works
+Ice Gloves
+Incantor's Chalk
 Items
+Jamming Spanner
+Lantern of Shadows
+Lightning Scarab
 Link to this table
 List
 Lists
+Lovebugs
+Mimicry Mask
 Open this section on start
 Other
+Pathfinder's Ledger
+Puddleduck's Fins
+Pure Crystal
+Quill of Memory
 RU
+Red Nose of Hope
 Remove from the filter
 Reset all
+Rootslicer Gauntlet
 Search
-Selected
+Siren's Rock
 Skip to content
+Soul Torch
+Soulweave Cloak
+Spirit Seeker
 Standard rules
+Stingshield Robes
+Superior Alconite Crystal
 Tables
+Tarrasque Sinew
+Ticket Master's Pouch
+Timeglass
+Tortoise Horn
+Twisted Lens
 Vault of Ages
+Veilcloak
+Veilshroud Hood
+War God's Sigil
+Winter Wolf Cloak
+Witherroot Charm
+Wolffriend Pendant
 Wondrous
 Wondrous Loot
+Wraith Trap
+Yeti Coat
 daggerheart.com
 ЛутDaggerheart

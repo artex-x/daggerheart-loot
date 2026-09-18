@@ -3,7 +3,7 @@
 # why: result 2: the compact card badged 2, both hitnotes, "Сбросить"
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
+RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -28,8 +28,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0
     button "Ссылка себе"
     ... button x13 of 17 same-shape siblings elided
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее Скрыть" [expanded=false]
-      button "Скрыть" [description=Скрыть]
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
+    button "Скрыть" [description=Скрыть]
     StaticText "ОТОБРАЖЕНИЕ ЦЕН"
     button "Как в книге" [pressed=true]
     button "Монетами" [pressed=false]
@@ -47,7 +47,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     checkbox "ВЫБРАТЬ ВСЕ" [checked=false]
-    checkbox "Выбрать позицию" [checked=false]
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
@@ -72,14 +72,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
-    checkbox "Выбрать позицию" [checked=false]
+    checkbox "Наручники" [checked=false]
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Наручники Эта пара наручников с замком поставляется с ключом. ПР..." [namelen=74 namehash=9df2647c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
-    checkbox "Выбрать позицию" [checked=false]
+    checkbox "Мистический Плащ" [checked=false]
     spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
     button "Мистический Плащ Существо с Характеристикой Заклинателя, носящее..." [namelen=150 namehash=e6d5f2f2]
     StaticText "КОЛ-ВО"
@@ -102,28 +102,33 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
-Выбрать позицию
 Заметка
+Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
 К содержимому
 Как в книге
 Как это работает
 Лавка закрыта до утра
 ЛутDaggerheart
+Мистический Плащ
 Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
 Монетами
 На единицу больше
 На единицу меньше
 Название списка
+Наручники
 НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
 Обычные правила
 Отправить
 Очистить заметку
+Первоклассный Спальный Мешок
 Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
 Позиция в списке
 Поиск
 Проклят
+Пронзительная Свирель
 Пронзительная СвирельЭта свирель ручной работы имеет характерный... [namelen=165 namehash=9d32035b]
+Разговаривающие Сферы
 Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
 Результат броска
 Сбросить
@@ -143,10 +148,11 @@ daggerheart.com
 Таблицы
 Убрать из списка
 Удалить
+Факел Алистера
 Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
+RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -167,12 +173,12 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90L
   main ""
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items"
-    button "Players’ link"
+    button "Players' link"
     button "Your own link"
     ... button x13 of 17 same-shape siblings elided
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
-    DisclosureTriangle "Lists live in this browser only. more Dismiss" [expanded=false]
-      button "Dismiss" [description=Dismiss]
+    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
+    button "Dismiss" [description=Dismiss]
     StaticText "PRICE DISPLAY"
     button "As in the book" [pressed=true]
     button "In coins" [pressed=false]
@@ -190,7 +196,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90L
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     checkbox "SELECT ALL" [checked=false]
-    checkbox "Select entry" [checked=false]
+    checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
@@ -215,14 +221,14 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90L
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
-    checkbox "Select entry" [checked=false]
+    checkbox "Manacles" [checked=false]
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Manacles This pair of locking cuffs comes with a key. ITEM CORE"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
-    checkbox "Select entry" [checked=false]
+    checkbox "Arcane Cloak" [checked=false]
     spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=7]
     button "Arcane Cloak A creature with a Spellcast trait wearing this cloa..." [namelen=124 namehash=e33646cf]
     StaticText "QTY"
@@ -238,10 +244,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90L
 
 ## en :: controls
 7 bags 5 handfuls
+Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
+Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 As in the book
+Charging Quiver
 Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
 Clear
 Clear the note
@@ -259,23 +268,26 @@ In coins
 Lay these out for printing: nine to an A4 sheet
 List name
 Lists
+Manacles
 ManaclesThis pair of locking cuffs comes with a key.ItemCore
 Note
 One higher
 One lower
 Page
+Piper Whistle
 Piper WhistleThis handcrafted whistle has a distinctive sound. W... [namelen=153 namehash=f3fe23c1]
-Players’ link
+Players' link
 Position in the list
+Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
 RU
 Random 1–7
 Remove from the list
 Roll result
 Search
-Select entry
 Share
 Skip to content
+Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
 Tables

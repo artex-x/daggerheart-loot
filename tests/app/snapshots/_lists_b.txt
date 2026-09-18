@@ -3,7 +3,7 @@
 # why: the empty page: no print link, no money, the note folded, no roll panel, no bar, the hint
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+RootWebArea "Лавка в порту — Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -28,8 +28,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     button "Ссылка себе"
     button "Скопировать текст"
     button "Удалить"
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее Скрыть" [expanded=false]
-      button "Скрыть" [description=Скрыть]
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
+    button "Скрыть" [description=Скрыть]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=145 namehash=3bed4bc8]
   contentinfo ""
@@ -60,7 +60,7 @@ daggerheart.com
 Удалить
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -81,14 +81,14 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgt
   main ""
     textbox "List name" [value=Лавка в порту multiline=false readonly=false required=false]
     StaticText "0 items"
-    button "Players’ link"
+    button "Players' link"
     button "Your own link"
     button "Copy text"
     button "Delete"
-    DisclosureTriangle "Lists live in this browser only. more Dismiss" [expanded=false]
-      button "Dismiss" [description=Dismiss]
+    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
+    button "Dismiss" [description=Dismiss]
     DisclosureTriangle "NOTES" [expanded=false]
-    StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=bf7041e3]
+    StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=61cdcb8f]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -104,7 +104,7 @@ Dread
 EN
 List name
 Lists
-Players’ link
+Players' link
 RU
 Search
 Skip to content

@@ -3,7 +3,7 @@
 # why: 34 rows, no equipment badge left, the chip off
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/search]
+RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -24,7 +24,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжен..." [namelen=95 namehash=e544e3d9]
+    StaticText "Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, н..." [namelen=90 namehash=4b580bdf]
     searchbox "Поиск по названию или описанию…" [value=меч focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -32,14 +32,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/search]
     button "Снаряжение" [pressed=false]
     checkbox "Выбрать все (34)" [checked=false]
     StaticText "Выбрать все (34)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Камень Доблести" [checked=false]
     button "15 Камень Доблести Вы можете прикрепить этот камень к доспеху, к..." [namelen=294 namehash=3a18a57a]
     ... checkbox x31 of 35 same-shape siblings elided
     button "29 Успокаивающий Кулон Когда вы должны отметить последний Стресс..." [namelen=135 namehash=be066c33]
     ... button x30 of 34 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Стекло Разбитой Судьбы" [checked=false]
     button "2 Стекло Разбитой Судьбы Существо, заглянувшее в это зеркало, ви..." [namelen=726 namehash=74c3ad97]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Маска Фаибоса" [checked=false]
     button "5 Маска Фаибоса Как только вы надеваете эту маску, она срастаетс..." [namelen=662 namehash=b2488aad]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -87,22 +87,55 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
-Выбрано
+Амулет Вацитоса
+Бутыль с Духом
+Взгляд Ваэт
+Временной Фитиль
+Динамит
 ДинамитВы можете поджечь эту динамитную шашку и бросить её в пре... [namelen=355 namehash=25334e3b]
+Зелье Судного Дня
 К содержимому
+Камень Доблести
+Карманные Часы Странника Времени
+Колчан Фей
+Кольца Товарищества
+Кольцо Кровавой Матроны
+Ласты Лужелуточки
+Ледяное Масло
+Лист Исполинского Дерева
 ЛутDaggerheart
+Маленький Лесной Дух
+Маска Фаибоса
+Масло Зелёной Слизи
+Мистическая Смола
+Монета Палача
+Нектар Обетного Цветка
 Обычные правила
+Осколок Эмберита
 Открывать этот раздел при запуске
+Перчатки Расторопности
+Пиратская Карта Сокровищ
+Пифийская Вилка
 Поиск
+Предательский Кастет
 Предметы
+Проклятая Голова
 Расходники
+Ртутный Фамильяр
 Снаряжение
 Сообщества
 Списки
+Стекло Разбитой Судьбы
+Стенающая Костяная Флейта
+Сфера Безумия
 Таблицы
+Узы Души
+Успокаивающий Кулон
+Часы Хранителя Времени
+Шлем Белого Когтя
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/search]
+RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -131,14 +164,14 @@ RootWebArea "Daggerheart Loot Generator" [url=#/search]
     button "Equipment" [pressed=false]
     checkbox "Select all (34)" [checked=false]
     StaticText "Select all (34)"
-    checkbox "Selected" [checked=false]
+    checkbox "Valorstone" [checked=false]
     button "15 Valorstone You can attach this stone to armor that doesn't al..." [namelen=280 namehash=54949b9f]
     ... checkbox x31 of 35 same-shape siblings elided
     button "29 Calming Pendant When you would mark your last Stress, roll a ..." [namelen=120 namehash=0f6ccaaa]
     ... button x30 of 34 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Glass of Shattered Fate" [checked=false]
     button "2 Glass of Shattered Fate A creature peering into this mirror se..." [namelen=699 namehash=731d68b6]
-    checkbox "Selected" [checked=false]
+    checkbox "Phaibos Mask" [checked=false]
     button "5 Phaibos Mask Once you don this mask, it fuses to your flesh ma..." [namelen=657 namehash=cd28bafe]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -180,22 +213,55 @@ RootWebArea "Daggerheart Loot Generator" [url=#/search]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
 Alt. tables
+Anima Colligationem
+Arcane Resin
+Calming Pendant
+Charm of Vacitos
 Communities
 Consumables
+Cursed Head
+Doomsday Potion
 Dread
+Dynamite
 DynamiteYou can light this dynamite and toss it within Close ran... [namelen=350 namehash=3e0eb0f2]
 EN
+Emberite Shard
 Equipment
+Executioner's Coin
+Fey Quiver
+Frost Oil
+Gaze of Vaeth
+Glass of Shattered Fate
+Gloves of Alacrity
+Green Ooze Oil
 Items
+Keening Bone Flute
+Leaf of the Giant Tree
 Lists
+Little Forest Spirit
+Mercurial Familiar
 Open this section on start
+Phaibos Mask
+Pirate's Treasure Map
+Puddleduck's Fins
+Pythian Fork
 RU
+Ring of the Blood Matron
+Rings of Camaraderie
 Search
-Selected
 Skip to content
+Sphere of Insanity
+Sprite Bottle
 Standard rules
 Tables
+Temporal Taper
+Timekeeper's Watch
+Timewalker Pocketwatch
+Treacherous Knuckle-Duster
+Valorstone
 Vault of Ages
+Votive Bloom Nectar
+White Talon Helm
 Wondrous
 daggerheart.com
 ЛутDaggerheart

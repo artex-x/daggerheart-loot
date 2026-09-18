@@ -3,7 +3,7 @@
 # why: arriving at a section link scrolls to and flashes it
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/voa/tA]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/voa/tA]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -44,7 +44,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/voa/tA]
     ... StaticText x10 of 14 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (24)" [checked=false]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Благословенный Нож Шеф-Повара" [checked=false]
     button "1 Благословенный Нож Шеф-Повара Ранг 1 · Физическое · Искусность..." [namelen=348 namehash=6752c1d5]
     ... checkbox x110 of 114 same-shape siblings elided
     ... button x105 of 109 same-shape siblings elided
@@ -54,9 +54,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/voa/tA]
     StaticText "ПРОКЛЯТЫЕ ПРЕДМЕТЫ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "Выбрать все (5)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Горжет Синтры" [checked=false]
     button "4 Горжет Синтры Когда надет, ваш разум открыт демоническому суще..." [namelen=825 namehash=2049097e]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Маска Фаибоса" [checked=false]
     button "5 Маска Фаибоса Как только вы надеваете эту маску, она срастаетс..." [namelen=662 namehash=b2488aad]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -182,27 +182,134 @@ Vault of Ages
 Wondrous
 Wondrous Loot
 daggerheart.com
+Альт Сказочника
 Альт. таблицы
-Выбрано
+Амулет Вацитоса
+Бессмертное Сердце
+Благословенный Нож Шеф-Повара
+Бледное Стекло
+Брошь Нефритового Крыла
+Взгляд Ваэт
+Виски Ведьмовского Духа
+Воля Глашатая
+Временной Фитиль
+Всадник Волн
+Вуаль Земной Души
+Голодный Кулачный Клинок
+Горжет Синтры
+Гримуар Охотника на Монстров
+Дестабилизирующий Куб
+Диск Аннулирования
+Доспех Морозного Поцелуя
+Драконья Чешуя
+Железный Констебль
+Жестокий Камень
+Жилет Фазирования
+Зелье Каменной Кожи
+Знамя Храброго Сердца
+Идеальный Винтаж
+Инееметатель
 К содержимому
 Как это работает
+Камень Псиона
+Камея Немедленности
+Карманные Часы Странника Времени
+Клинок Браксуса
+Клинок Шамана
+Ключ Повелителя Черепов
+Книга Крови
+Колода Сумерек
+Кольцо Кровавой Матроны
+Кольцо Форм
+Корона Суда
+Кулаки Разорителя
+Латный Доспех Демоностража
+Лорнет Пыльных Всадников
 ЛутDaggerheart
+Маска Фаибоса
+Медаль Гарракса
+Мемуары Генерала Дурта
+Мистер Мякиш
+Митра Вота
+Монета Палача
+Монокль Памяти
+Мясницкий Тесак
+Наручи Мощи
+Наручи Разряда
+Настойка Прыгучести
+Нимойрас
+Ноктюрнный Замок
+Оберег Демона
 Обычные правила
+Одеяние Посланника
+Одеяния Повелителя Трупов
 Открывать этот раздел при запуске
+Ошейник Резака
+Панцирь Подземного Обитателя
+Пара Камней Связи
+Перо Корвуса
+Перчатки Скорби
+Печать Кавит
+Пифийская Вилка
+Плащ Защиты
+Повязка Красоты
 Поиск
+Последний Рубеж
+Посох Мохового Цветка
+Пояс Мастерства
+Пояс из Сухожилий
+Призыв Ульрата
+Проклятая Голова
 Прочее
+Пылающие Кулаки Сатурака
+Пылающий Безоар
+Рассекатель Завесы
+Ридикюль Арахнида
+Ритуальный Клинок Сехмет
+Ртутный Фамильяр
+Саквояж Мастерства
+Свисток Каменного Короля
+Седло Благословения Ветра
+Семя Чуда
+Серебряный Святой Символ
 Сеткой
 Скопировать ссылку на этот раздел
+Слёзы Джелл
 Снаряжение
 Сообщества
 Списки
 Списком
 Ссылка на таблицу
+Стекло Разбитой Судьбы
+Стенающая Костяная Флейта
+Сумка Зачарователя
+Сфера Безумия
+Сфера Обнаружения
+Сыворотка Хелгаста
 Таблицы
+Таинство Мудрецов
+Талисман Железной Крови
+Талисман Рахвека
+Темпрус
+Узы Души
+Уменьшенная Голова Увагеки
+Усиленные Серьги
+Фетиш Старухи
 Фильтры
+Харроклив
+Церебральный Шип
+Часы Хранителя Времени
+Чешуя Левиафана
+Чудесная Феррожидкость
+Шлем Белого Когтя
+Шлем Переноса
+Щит Отталкивания
+Эктоплазма
+Эфирный Перпетуатор
+Ящик Вельцмана
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/voa/tA]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -243,7 +350,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
     ... StaticText x10 of 14 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (24)" [checked=false]
-    checkbox "Selected" [checked=false]
+    checkbox "Blessed Chef's Knife" [checked=false]
     button "1 Blessed Chef's Knife Tier 1 · Physical · Finesse · Melee · d8+..." [namelen=312 namehash=e6980787]
     ... checkbox x110 of 114 same-shape siblings elided
     ... button x105 of 109 same-shape siblings elided
@@ -253,9 +360,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
     StaticText "CURSED OBJECTS"
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "Select all (5)"
-    checkbox "Selected" [checked=false]
+    checkbox "Synthra's Gorget" [checked=false]
     button "4 Synthra's Gorget When worn, your mind is open to the demonic b..." [namelen=777 namehash=b5040608]
-    checkbox "Selected" [checked=false]
+    checkbox "Phaibos Mask" [checked=false]
     button "5 Phaibos Mask Once you don this mask, it fuses to your flesh ma..." [namelen=657 namehash=cd28bafe]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -371,30 +478,137 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/voa/tA]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
 9Undying HeartRecall Cost: 2Spend 3 Hope to start the beating of... [namelen=284 namehash=fa126882]
 9Windblessed SaddleThis enchanted saddle will adjust its size to... [namelen=184 namehash=4455c13c]
+Aetheric Perpetuator
 Alt. tables
+Anima Colligationem
+Blade of Braxus
+Blazing Bezoar
+Blessed Chef's Knife
+Blindfold of Beauty
+Book of Blood
+Bracers of Power
+Braveheart Banner
+Cameo of Immediacy
+Cerebral Spike
+Charm of Vacitos
+Cloak of Protection
 Communities
 Copy a link to this section
 Core
+Corpse Lord's Raiments
+Corvus Quill
+Crone's Fetish
+Crown of Judgement
+Cruelstone
+Cursed Head
+Cutter's Collar
+Demon's Charm
+Demonguard Platemail
+Destabilizing Cube
+Dragonscale
 Dread
 Dread GM Toolbox
+Dustriders Lorgnette
 EN
+Ectoplasm
+Empowered Earrings
+Enchanter's Pack
+Envoy's Attire
 Equipment
+Executioner's Coin
 Filters
+Fists of the Ravager
+Frost-Kissed Armor
+Garrax's Medal
+Gaze of Vaeth
+Glass of Shattered Fate
+Gloves of Bereavement
 Grid
+Harrowcleave
+Helghast Serum
+Helm of Transference
+Herald's Will
 Hope & Fear
 How this works
+Hungry Fist Blade
+Invocation of Ulrat
+Iron Constable
+Ironblood Talisman
+Jadewing Brooch
+Jolt Bracers
+Keening Bone Flute
+Last Stand
+Leviathan Scale
 Link to this table
 List
 Lists
+Marvellous Ferrofluid
+Mastery Belt
+Meat Cleaver
+Memoirs of General Durth
+Mercurial Familiar
+Mitre of Voth
+Monocle of Memory
+Monster Hunter's Grimoire
+Mossblossom Staff
+Mr.Mushy
+Nimoiras
+Nocturne Padlock
+Nullification Disc
 Open this section on start
 Other
+Perfect Vintage
+Phaibos Mask
+Portmanteau of Proficiency
+Psion Stone
+Pythian Fork
 RU
+Reticule Arachnida
+Rimecaster
+Ring of Shapes
+Ring of the Blood Matron
+Ritual Blade of Sekhmet
+Sacrament of Sages
+Saturak's Flaming Fists
+Seal of Kavith
 Search
-Selected
+Seed of Wonder
+Shaman's Blade
+Shield of Repulsion
+Shrunken Head of Uvageki
+Silvered Holy Symbol
 Skip to content
+Skull Lord's Key
+Sphere of Detection
+Sphere of Insanity
 Standard rules
+Stoneskin Potion
+Synthra's Gorget
 Tables
+Taleswapper's Viola
+Talisman of Rahvek
+Tears of Jhell
+Temporal Taper
+Temprus
+Tendon Girdle
+Tetherstone Duo
+The Pale Glass
+Timekeeper's Watch
+Timewalker Pocketwatch
+Tincture of Leaping
+Twilight Deck
+Underdweller Carapace
+Undying Heart
 Vault of Ages
+Veil Cutter
+Veil of Earthen Soul
+Vest of Phasing
+Waverider
+Weltzman Box
+Whistle of the Stone King
+White Talon Helm
+Windblessed Saddle
+Witchspirit Whiskey
 Wondrous
 Wondrous Loot
 daggerheart.com

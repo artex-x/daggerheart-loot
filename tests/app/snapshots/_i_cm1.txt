@@ -3,7 +3,7 @@
 # why: a community record - the one table path whose leaf is the record's own community
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/cm1]
+RootWebArea "Королевская Брошь — Генератор лута — Daggerheart" [url=#/i/cm1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -68,7 +68,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/cm1]
+RootWebArea "Royal Brooch — Daggerheart Loot Generator" [url=#/i/cm1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

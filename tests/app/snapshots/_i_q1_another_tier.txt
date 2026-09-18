@@ -3,8 +3,8 @@
 # why: the card a rung of the tier ladder opens
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/q1]
-  dialog "Закрыть" [modal=true]
+RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/i/q1]
+  dialog "Улучшенный Палаш" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
@@ -54,8 +54,8 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/q1]
-  dialog "Close" [modal=true]
+RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
+  dialog "Improved Broadsword" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
     StaticText "PRIMARY WEAPON"

@@ -3,7 +3,7 @@
 # why: a query that narrows the table
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -43,11 +43,11 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables]
     button "Сеткой" [pressed=false]
     checkbox "Выбрать все (3)" [checked=false]
     StaticText "Выбрать все (3)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Кольцо Тишины" [checked=false]
     button "28 Кольцо Тишины Потратьте Надежду, чтобы активировать это кольц..." [namelen=128 namehash=874fe506]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Кольцо Сопротивления" [checked=false]
     button "32 Кольцо Сопротивления Один раз за продолжительный отдых вы мож..." [namelen=172 namehash=9b4bceb1]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Кольцо Несокрушимой Решимости" [checked=false]
     button "59 Кольцо Несокрушимой Решимости Один раз за сессию, когда Масте..." [namelen=166 namehash=5d88a8d7]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -69,9 +69,11 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
 К содержимому
 Как это работает
+Кольцо Несокрушимой Решимости
+Кольцо Сопротивления
+Кольцо Тишины
 ЛутDaggerheart
 Обычные правила
 Открывать этот раздел при запуске
@@ -88,7 +90,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -128,11 +130,11 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables]
     button "Grid" [pressed=false]
     checkbox "Select all (3)" [checked=false]
     StaticText "Select all (3)"
-    checkbox "Selected" [checked=false]
+    checkbox "Ring of Silence" [checked=false]
     button "28 Ring of Silence Spend a Hope to activate this ring. Your foot..." [namelen=112 namehash=67e1ab83]
-    checkbox "Selected" [checked=false]
+    checkbox "Ring of Resistance" [checked=false]
     button "32 Ring of Resistance Once per long rest, you can activate this ..." [namelen=137 namehash=965173d2]
-    checkbox "Selected" [checked=false]
+    checkbox "Ring of Unbreakable Resolve" [checked=false]
     button "59 Ring of Unbreakable Resolve Once per session, when the GM spe..." [namelen=148 namehash=201f0c67]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -161,8 +163,10 @@ Lists
 Open this section on start
 Other
 RU
+Ring of Resistance
+Ring of Silence
+Ring of Unbreakable Resolve
 Search
-Selected
 Skip to content
 Standard rules
 Tables

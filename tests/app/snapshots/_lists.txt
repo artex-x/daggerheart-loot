@@ -3,7 +3,7 @@
 # why: the folded notice, both fields, no lists yet
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/lists]
+RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -26,13 +26,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/lists]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее Скрыть" [expanded=false]
-      button "Скрыть" [description=Скрыть]
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
+    button "Скрыть" [description=Скрыть]
     StaticText "НОВЫЙ СПИСОК"
-    textbox "Например: клад дракона" [multiline=false readonly=false required=false]
+    textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
     StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Ссылка на список" [multiline=false readonly=false required=false]
+    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
     button "Восстановить"
     StaticText "Списков пока нет — создайте первый выше"
   contentinfo ""
@@ -49,9 +49,11 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Восстановить
+Восстановить из ссылки
 К содержимому
 Как это работает
 ЛутDaggerheart
+Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
@@ -62,7 +64,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/lists]
+RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -85,13 +87,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/lists]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    DisclosureTriangle "Lists live in this browser only. more Dismiss" [expanded=false]
-      button "Dismiss" [description=Dismiss]
+    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
+    button "Dismiss" [description=Dismiss]
     StaticText "NEW LIST"
-    textbox "For example: dragon hoard" [multiline=false readonly=false required=false]
+    textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
     StaticText "RESTORE FROM A LINK"
-    textbox "Paste a list link" [multiline=false readonly=false required=false]
+    textbox "Restore from a link" [multiline=false readonly=false required=false]
     button "Restore"
     StaticText "No lists yet — create one above"
   contentinfo ""
@@ -108,9 +110,11 @@ Dread
 EN
 How this works
 Lists
+New list
 Open this section on start
 RU
 Restore
+Restore from a link
 Search
 Skip to content
 Standard rules

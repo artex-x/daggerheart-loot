@@ -3,7 +3,7 @@
 # why: a frame-equipment record, catching the source-badge fix
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/f1]
+RootWebArea "Тесак — Генератор лута — Daggerheart" [url=#/i/f1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -23,11 +23,11 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/i/f1]
       link "Поиск" [url=#/search]
   main ""
     heading "Тесак" [level=1]
-    StaticText "Прочее · Сеттинги · Пир зверей "
+    StaticText "Прочее · Сеттинги · Пир зверей · Ранг 1 "
     link "показать в таблице" [url=#/tables/other_frames/f1]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x8 of 12 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     StaticText "Надёжное:"
@@ -68,7 +68,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/f1]
+RootWebArea "Cleaver — Daggerheart Loot Generator" [url=#/i/f1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -88,11 +88,11 @@ RootWebArea "Daggerheart Loot Generator" [url=#/i/f1]
       link "Search" [url=#/search]
   main ""
     heading "Cleaver" [level=1]
-    StaticText "Other · Frames · Beast Feast "
+    StaticText "Other · Frames · Beast Feast · Tier 1 "
     link "show in the table" [url=#/tables/other_frames/f1]
     button "Page"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x8 of 12 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     StaticText "Reliable:"

@@ -1,9 +1,9 @@
 # #/search ~ capped
 # route: #/search
-# why: the 300 cap: "Выбрать все (300)" over the first 300
+# why: the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it (P7)
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/search]
+RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -24,22 +24,23 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжен..." [namelen=95 namehash=e544e3d9]
+    StaticText "Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, н..." [namelen=90 namehash=4b580bdf]
     searchbox "Поиск по названию или описанию…" [value=а focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
+    StaticText "300 из 1091"
     checkbox "Выбрать все (300)" [checked=false]
     StaticText "Выбрать все (300)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
     button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
     ... checkbox x297 of 301 same-shape siblings elided
     button "2 Пронзительная Свирель Эта свирель ручной работы имеет характер..." [namelen=170 namehash=5812af9e]
     ... button x296 of 300 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Маска Подражателя" [checked=false]
     button "59 Маска Подражателя Пока вы носите эту маску, один раз за сцену..." [namelen=347 namehash=0a040c62]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Слизь Скользкости" [checked=false]
     button "60 Слизь Скользкости Вы можете нанести эту слизь на тело в качес..." [namelen=212 namehash=281bbba4]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -353,22 +354,321 @@ RU
 Vault of Ages
 Wondrous
 daggerheart.com
+Алконитовый Кристалл
 Альт. таблицы
-Выбрано
+Амулет Бессонного
+Амулет Воздушного Клинка
+Амулет Скрытности
+Арканная Набивка
+Арканный Скальпель
+Архивная Гниль
+Банка с Огнём
+Бездонная Сумка
+Безоар Виночерпия
+Большое Зелье Быстрого Шага
+Большое Зелье Выносливости
+Большое Зелье Гармонии
+Большое Зелье Лечения
+Большое Зелье Обаяния
+Большое Зелье Просветления
+Большое Зелье Сосредоточенности
+Большое Зелье Усиления
+Большой Мистический Осколок
+Ботинки Хождения по Воде
+Браслет Тихого Шага
+Браслеты Отбрасывания
+Брошь Двуликой Эгиды
+Бутыль Цисканского Тумана
+Бутыль с Духом
+Варево Берсерка
+Варенье из Грохотягод
+Венец Пожирателя Страха
+Венцы Душ-Близнецов
+Вихревая Шляпка
+Воровской Компас
+Гарпун Левиафана
+Глина Перевоплощения
+Глиняный Спутник
+Гравитационная Бомба
+Гравитационная Привязь
+Гриб Светящегося Мха
+Громовой Скарабей
+Грохотягода
+Двойная Фляга
+Доспешный Сшиватель
+Драконья Мантия
+Древний Рунный Камень
+Дыхательный Клубень
+Жаберная Мазь
+Жезл Жизни
+Железная Вуаль
+Желчь Демонической Жабы
+Жетон Подмены
+Жуки-Влюблённые
+Заводная Игрушка
+Заряжающий Колчан
+Звёздная Капля
+Зелье Бдительности
+Зелье Быстрого Шага
+Зелье Выносливости
+Зелье Гармонии
+Зелье Легкой Поступи
+Зелье Лечения
+Зелье Мохового Покрова
+Зелье Невидимости
+Зелье Очарования
+Зелье Просветления
+Зелье Сосредоточенности
+Зелье Стойкости
+Зелье Судного Дня
+Зелье Увеличения
+Зелье Уменьшения
+Зелье Усиления
+Зеркало Златоцвета
+Зеркальный Шар Эсхера
+Иглошаль
+Исправляющий Дух
 К содержимому
+Какофоническая Микстура
+Камень Возврата
+Камень Доблести
+Камень Знаний
+Камень Облика
+Кандальные Болас
+Карта Откровения
+Квинтэссенциальный Разделитель
+Кислотная Паста
+Книга Беспамятства
+Когти Ифанга
+Кол Запрета
+Колокол Некроплясуна
+Колокол Хранителя Могил
+Колокольчик Странника
+Кольца Дружбы
+Кольца Союза
+Кольца Товарищества
+Кольцо Возвращения
+Кольцо Несокрушимой Решимости
+Кольцо Ночного Ловчего
+Кольцо Сопротивления
+Кольцо Тишины
+Компасы Связи
+Коробка Многих Вещей
+Кристаллы Иномирья
+Кровавый Камень
+Кровь Йорги
+Кровь Кайдзю
+Кротовьи Рукавицы
+Круг Пустоты
+Крылокорень
+Крюк-Кошка
+Кувшинка-Пифия
+Кулон Железного Кинжала
+Кулон Искривления
+Кулон Светлячка
+Кулон Хранителя Времени
+Ледяные Рукавицы
+Лепесток Цветочной Вуали
+Лепесток Эхо-Орхидеи
+Листья Варика
+Лупа Зачарователя
 ЛутDaggerheart
+Магическая Призма
+Мазь Саламандры
+Мазь Стальной Кожи
+Малое Зелье Выносливости
+Малое Зелье Лечения
+Мандрагорский Факел
+Маска Отражённого «Я»
+Маска Подражателя
+Масло Алой Слизи
+Масло Зелёной Слизи
+Маяк Жизненной Силы
+Мгновенный Лагерь
+Медальон Хранения Надежд
+Медовуха Кошмаров
+Мел Заклинателя
+Мерцацвет
+Металлические Шарики
+Мешок Пушистиков
+Мешочек Своенравного Песка
+Мистический Плащ
+Мифическая Пыль
+Мнемоническое Зелье
+Молоко Якамеля
+Молот Инфернального Кузнеца
+Монета Затмения
+Монета Шулера
+Монета-Бум
+Мускус Огра
+Наручники
+Настой Демиурга
+Настойка Змеиной Кожи
+Нестабильный Мистический Осколок
+Оберегающая Свеча
+Обсидиановая Табличка Даггинэ
 Обычные правила
+Оправа Горнила
+Оракул Именующего
+Осколок Арктицита
+Осколок Памяти
+Осколок Сновидца
+Осколок Фульгурита
+Осколок Эмберита
+Ослепляющая Сфера
+Отвадитель Жуков
 Открывать этот раздел при запуске
+Ошейник Возвышения
+Ошибка Игрока
+Пакетик Космической Пыли
+Парашют
+Пастилка Лирохвоста
+Первоклассный Спальный Мешок
+Пергамент Копирования
+Перо Феникса
+Перо Чернокрыла
+Перчатки Геккона
+Перчатки Расторопности
+Перчатки из Кожи Гуля
+Песня в Бутылке
+Пир Ксурии
+Пламя Надежды
+Плетёная Сеть
+Поварские Гранулы
+Погибель Лжецов
+Подвешенный Жезл
 Поиск
+Полотенце Путешественника
+Помело Божка
+Порошок Встряски
+Порошок Героя
+Порошок Печалекорня
+Порошок Провидца Смерти
+Посох Обращения
+Пояс Единства
+Пояс Титана
 Предметы
+Проводящий Камень
+Проклятие Заклинателя
+Пронзающие Стрелы
+Пронзительная Свирель
+Прыгающий Корень
+Пузырная Палочка
+Пузырёк Глубинных Чернил
+Пустой Сундук
+Пуховая Кость
+Пыль Ночной Карги
+Пыль Отражённой Тишины
+Радужная Пыль
+Разговаривающие Сферы
+Рамы-Порталы
+Расстроитель
 Расходники
+Реликварий Незрячего Святого
+Реликвия Авгура
+Реликвия Баланса
+Реликвия Быстрого Шага
+Реликвия Гармонии
+Реликвия Единения
+Реликвия Наставления
+Реликвия Очарования
+Реликвия Прозрения
+Реликвия Усиления
+Рецепт Малого Зелья Выносливости
+Рецепт Малого Зелья Лечения
+Рецепт Мифической Пыли
+Рецепт Флакона с Чёрным Дымом
+Рог Полодрева
+Рюкзак Гэдимана
+Саван Проводника Душ
+Самовяжущаяся Верёвка
+Самоцвет Великана
+Самоцвет Дерзости
+Самоцвет Мощи
+Самоцвет Проворства
+Самоцвет Рассудительности
+Самоцвет Точности
+Самоцвет Чутья
+Самошьющая Нить
+Сапоги Жуткого Плетения
+Сапоги Мягкой Поступи
+Сахар Генри
+Связка Паучьих Лапок
+Седло Дикого Наездника
+Секретное Зелье Хомета
+Семя Вергласа
+Семя Крепкого Моста
+Семя Портала
+Семя Хваткого Терна
+Сеть Зимородка
+Силовой Диск
+Скелетный Ключ
+Складной Нож Силеи
+Складной Шест
+Склеивающий Мёд
+Сладкий Мох
+Слизь Скользкости
+Слюна Красношипа
+Слюна Химеры
+Слёзы Бессмертного Героя
+Смола Бездны
 Снаряжение
+Сок Солнечного Древа
+Соль Истребителя
 Сообщества
+Сосуд Западного Ветра
+Сосуд Потерянных Голосов
 Списки
+Стопорный Ключ
+Сфера Лунного Света
+Сфера Солнечного Света
+Табакерка Драконьей Пыли
 Таблицы
+Тоник Львиного Сердца
+Тоник Месмера
+Трава Мученика
+Тростник Трясинного Стекла
+Трубочное Зелье
+Тёмный Камень
+Убежище Вне Времени
+Удача Каменщика
+Удерживающий Крюк
+Улучшенный Мистический Осколок
+Улучшенный Яд Скрежетозуба
+Усмиряющее Кадило
+Успокаивающий Кулон
+Усыпляющий Сок
+Утяжелённые Кости
+Факел Алистера
+Флакон Мягкого Падения
+Флакон с Лунной Каплей
+Флакон с Чёрным Дымом
+Фляга Мидаса
+Фонарь Теней
+Формоидная Сыворотка
+Футляр для Компаньона
+Хранитель Знаний
+Цветок Сплетен
+Цепь Парагона
+Чай Драконьего Цветка
+Чай Смерти
+Чай Эфироцвета
+Чай из Петушиного Когтя
+Челюсти Астрального Термита
+Чёрная Нить
+Шипы
+Шлем Героя
+Шляпа Чародея
+Щит Охотника на Жуков
+Эльфийская Подзорная Труба
+Эфирный Якорь
+Эфироцвет
+Яд Каплезуба
+Яд Скрежетозуба
+Яйцо Катартоида
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/search]
+RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -395,16 +695,17 @@ RootWebArea "Daggerheart Loot Generator" [url=#/search]
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
+    StaticText "300 of 1055"
     checkbox "Select all (300)" [checked=false]
     StaticText "Select all (300)"
-    checkbox "Selected" [checked=false]
+    checkbox "Premium Bedroll" [checked=false]
     button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]
     ... checkbox x297 of 301 same-shape siblings elided
     button "2 Piper Whistle This handcrafted whistle has a distinctive sound..." [namelen=158 namehash=b530b48b]
     ... button x296 of 300 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Mimicry Mask" [checked=false]
     button "59 Mimicry Mask While wearing this mask, once per scene you can ..." [namelen=317 namehash=0ef87f54]
-    checkbox "Selected" [checked=false]
+    checkbox "Mucin of Slipperiness" [checked=false]
     button "60 Mucin of Slipperiness You can apply this slime to your body a..." [namelen=200 namehash=77dcd91d]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -712,22 +1013,321 @@ RootWebArea "Daggerheart Loot Generator" [url=#/search]
 9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=151 namehash=0841cf34]
 9Grindletooth VenomYou can apply this venom to a weapon that dea... [namelen=151 namehash=a47aaea5]
 9Packet of Space DustThis dust causes anything it covers to beco... [namelen=213 namehash=379f2520]
+Abyssal Sap
+Acidpaste
+Aetherflower
+Aetherflower Tea
+Airblade Charm
+Alconite Crystal
+Alistair's Torch
 Alt. tables
+Anchoring Hook
+Ancient Runestone
+Arcane Cloak
+Arcane Prism
+Arcane Scalpel
+Arcane Stuffing
+Archivist's Rot
+Arcticite Shard
+Armor Stitcher
+Astral Termite Jaws
+Attune Potion
+Attune Relic
+Augur's Relic
+Backsies Stone
+Bag of Ficklesand
+Ball Bearings
+Belt of Unity
+Berserker's Brew
+Big Bug Begone
+Blackwing Quill
+Blinding Orb
+Blood of the Kaiju
+Blood of the Yorgi
+Bloodstone
+Blossomveil Petal
+Bogglass Reed
+Bolster Potion
+Bolster Relic
+Bonding Honey
+Book of No History
+Boomberry
+Boomberry Jam
+Boomcoin
+Boots of Supple Mystique
+Bottled Song
+Box of Dragon Dust
+Box of Many Goods
+Bridge Seed
+Bubble Wand
+Bug Hunter's Aegis
+Bundle of Spiderlegs
+Cacophonous Concoction
+Calming Censer
+Calming Pendant
+Caltrops
+Cathartoid Egg
+Channelstone
+Charging Quiver
+Charm Potion
+Charm Relic
+Cheater's Coin
+Chimeric Saliva
+Circle of the Void
+Ciscan Fog Bottle
+Claws of Yifang
+Clay Companion
+Cockerel Claw Tea
+Collapsible Pole
+Collar of Ascendancy
+Communion Relic
 Communities
+Companion Case
 Consumables
+Control Potion
+Control Relic
+Corrector Sprite
+Croakroot Pad
+Crucible Frames
+Crystals from Beyond
+Cupbearer's Bezoar
+Dagginae's Obsidian Slate
+Darkstone
+Death Tea
+Deathseer's Powder
+Demiurge's Draught
+Demon Toad Bile
+Detuner
+Devil's Smithing Hammer
+Displacement Token
+Doomsday Potion
+Dragonbloom Tea
+Drakemantle
 Dread
+Dread-Weave Boots
+Dreamer's Shard
+Dripfang Poison
+Dual Flask
+Dust of Echoed Silence
 EN
+Ebony Thread
+Echo Orchid Petal
+Eclipse Coin
+Elusive Amulet
+Elven Spyglass
+Emberite Shard
+Empty Chest
+Enchanter's Loupe
+Enlighten Potion
+Enlighten Relic
 Equipment
+Escher's Mirrorball
+Etheric Anchor
+Feast of Xuria
+Featherbone
+Featherstep Potion
+Fire Jar
+Flare Tuber
+Flickerbloom
+Flickerfly Pendant
+Force Disc
+Formoid Serum
+Fulgurite Shard
+Furball Bag
+Gadiman's Backpack
+Gambler's Fallacy
+Gecko Gloves
+Gem of Alacrity
+Gem of Audacity
+Gem of Insight
+Gem of Might
+Gem of Precision
+Gem of Sagacity
+Ghoulskin Gloves
+Gill Salve
+Glamour Stone
+Glider
+Gloves of Alacrity
+Glowmoss Mushroom
+Godling's Pomelo
+Gossip Flower
+Gourmet Granules
+Grapnel
+Gravewarden's Bell
+Gravitic Tether
+Gravity Bomb
+Greatstone
+Green Ooze Oil
+Griefroot Powder
+Grindletooth Venom
+Growing Potion
+Gyre Cap
+Health Potion
+Henry's Sugar
+Hero's Helm
+Hero's Powder
+Hitcher's Towel
+Hollowbark Horn
+Homet's Secret Potion
+Homing Compasses
+Honing Relic
+Hopehold Flare
+Hopekeeper Locket
+Ice Gloves
+Improved Arcane Shard
+Improved Grindletooth Venom
+Incantor's Chalk
+Infinite Bag
+Insomniac's Periapt
+Instant Camp
+Invisibility Potion
+Iridian Dust
+Iron Dagger Pendant
+Iron Veil
 Items
+Jamming Spanner
+Jar of Lost Voices
+Jumping Root
+Kingfisher's Net
+Knockback Bracelets
+Knowledge Stone
+Lakestrider Boots
+Lantern of Shadows
+Leviathan Harpoon
+Liar's Bane
+Life Force Beacon
+Life Wand
+Lightning Scarab
+Lionheart Tonic
 Lists
+Loaded Dice
+Lorekeeper
+Lovebugs
+Lyrebird Lozenge
+Magic-User's Malison
+Major Arcane Shard
+Major Attune Potion
+Major Bolster Potion
+Major Charm Potion
+Major Control Potion
+Major Enlighten Potion
+Major Health Potion
+Major Stamina Potion
+Major Stride Potion
+Manacle Bolas
+Manacles
+Mandragorian Torch
+Map of Revelation
+Martyr's Grass
+Mask of the Echoed Self
+Mesmer's Tonic
+Midas Flask
+Mimicry Mask
+Minor Health Potion
+Minor Health Potion Recipe
+Minor Stamina Potion
+Minor Stamina Potion Recipe
+Mirror of Marigold
+Mnemonic Potion
+Molepaw Mittens
+Moonlight Orb
+Morphing Clay
+Mossmantle Potion
+Mucin of Slipperiness
+Mythic Dust
+Mythic Dust Recipe
+Namer's Oracle
+Necroprancer's Bell
+Night Hag's Dust
+Nighthawker's Ring
+Nightmare Mead
+Ogre Musk
 Open this section on start
+Packet of Space Dust
+Paragon's Chain
+Phial of Deep Ink
+Phobophage's Circlet
+Phoenix Feather
+Piercing Arrows
+Piper Whistle
+Pipeweed
+Portal Frames
+Portal Seed
+Potion of Stability
+Potion of Vigilance
+Premium Bedroll
+Psychopomp's Shroud
+Quillshawl
+Quintessential Severant
 RU
+Red Ooze Oil
+Redthorn Saliva
+Reliquary of the Sightless Saint
+Replication Parchment
+Returning Ring
+Ring of Resistance
+Ring of Silence
+Ring of Unbreakable Resolve
+Rings of Alliance
+Rings of Camaraderie
+Rings of Friendship
+Salamander Salve
 Search
-Selected
+Self-Sewing Thread
+Self-Tying Rope
+Shard of Memory
+Shrinking Potion
+Silee's Folding Knife
+Skeleton Key
 Skip to content
+Slayer's Salt
+Sleeping Sap
+Snakeskin Spirit
+Snap Powder
+Snapthorn Seed
+Sorcerer's Hat
+Soul-Twin Circlets
+Speaking Orbs
+Sprite Bottle
+Staff of Reversal
+Stake of Abjuration
+Stamina Potion
 Standard rules
+Stardrop
+Steelskin Salve
+Stonemason's Fortune
+Stride Potion
+Stride Relic
+Sun Tree Sap
+Sunlight Orb
+Suspended Rod
+Sweet Moss
 Tables
+Tears of the Undying Hero
+Temporal Sanctuary
+Thief's Compass
+Timekeeper's Pendant
+Titan's Girdle
+Traveler's Bell
+Two-Faced Aegis Brooch
+Unstable Arcane Shard
+Valorstone
+Varik Leaves
 Vault of Ages
+Verglasian Seed
+Vial of Darksmoke
+Vial of Darksmoke Recipe
+Vial of Featherfall
+Vial of Moondrip
+Warding Candle
+Warp Pendant
+Whisperstep Anklet
+Wildrider's Saddle
+Windup Toy
+Wingsprout
 Wondrous
+Woven Net
+Yakamel Milk
+Zephyr's Jar
 daggerheart.com
 ЛутDaggerheart

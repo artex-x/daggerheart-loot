@@ -3,7 +3,7 @@
 # why: a filter and a query together leaving nothing, with the empty state's own reset
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous/f_kind-item]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/wondrous/f_kind-item]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -40,7 +40,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/wondrous
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры (1)" [expanded=true]
-    button "Предметы ×" [description=Убрать из фильтра]
+    button "Предметы" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     StaticText "0 из 119"
@@ -89,7 +89,7 @@ daggerheart.com
 Фильтры (1)
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -126,7 +126,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters (1)" [expanded=true]
-    button "Items ×" [description=Remove from the filter]
+    button "Items" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
     StaticText "0 of 119"

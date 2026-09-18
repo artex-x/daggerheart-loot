@@ -3,7 +3,7 @@
 # why: a roll on a table with a real die
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
+RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/roll/wondrous]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -78,7 +78,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
+RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

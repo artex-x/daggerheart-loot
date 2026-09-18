@@ -3,7 +3,7 @@
 # why: the second table with a kind row, and the smallest
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/dread]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/dread]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -43,13 +43,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/dread]
     StaticText "29"
     checkbox "Выбрать все (29)" [checked=false]
     StaticText "Выбрать все (29)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Эфирная Винтовка" [checked=false]
     button "1 Эфирная Винтовка Ранг 3 · Магическое · Инстинкт · Очень далеко..." [namelen=307 namehash=14db50b3]
     ... checkbox x26 of 30 same-shape siblings elided
     ... button x26 of 30 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Тиара Разговора" [checked=false]
     button "28 Тиара Разговора Пока вы носите эту декоративную тиару, вы мож..." [namelen=304 namehash=c514fa47]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Склянка Святой Воды" [checked=false]
     button "29 Склянка Святой Воды Обжигает демонов, дьяволов и нежить. Чтоб..." [namelen=412 namehash=290cb8b2]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -97,25 +97,53 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
+Амулет Жизнестойкости
+Амулет Зари
+Банка Зелёной Слизи
+Брошюра по Истории Искусства
+Длинный Лук Фира
+Зеркало Фей
 К содержимому
 Как это работает
+Клинок Живущих
+Колчан Фей
+Ледяная Граната
+Ледяное Масло
+Лунный Шарф
 ЛутDaggerheart
+Масло Зелёной Слизи
+Мистическая Смола
+Молниевая Пушка Йитианцев
 Обычные правила
+Одеяния Дьявола
 Открывать этот раздел при запуске
 Поиск
+Посох Тайного Пламени
+Проклятая Брошюра
 Прочее
+Пурпурный Прицел
+Ручка Друзей
+Серебряный Ключ
 Сеткой
+Склянка Святой Воды
 Снаряжение
 Сообщества
 Списки
 Списком
 Ссылка на таблицу
+Стекло из Ленга
+Сыворотка Протокола Лазаря
 Таблицы
+Тиара Разговора
+Туманный Проектор Ми-Го
 Фильтры
+Цилиндр для Мозга Ми-Го
+Щит Солнца
+Эспайрская Шестерёнка
+Эфирная Винтовка
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/dread]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dread]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -155,13 +183,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/dread]
     StaticText "29"
     checkbox "Select all (29)" [checked=false]
     StaticText "Select all (29)"
-    checkbox "Selected" [checked=false]
+    checkbox "Aether Rifle" [checked=false]
     button "1 Aether Rifle Tier 3 · Magic · Instinct · Very Far · d8+8 mag ·..." [namelen=276 namehash=d997edc8]
     ... checkbox x26 of 30 same-shape siblings elided
     ... button x26 of 30 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Tiara of Talking" [checked=false]
     button "28 Tiara of Talking While wearing this decorative tiara, you can..." [namelen=289 namehash=56771242]
-    checkbox "Selected" [checked=false]
+    checkbox "Vial of Holy Water" [checked=false]
     button "29 Vial of Holy Water Burns demons, devils, and undead. To use i..." [namelen=362 namehash=f889b517]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -198,30 +226,58 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/dread]
 7Yithian Lightning GunTier 4 · Magic · Knowledge · Very Far · d1... [namelen=462 namehash=b2e77451]
 8Amulet of the DawnAfter a successful attack against an undead o... [namelen=189 namehash=3c392b5d]
 9Amulet of VitalityYou gain advantage on Strength Reaction rolls... [namelen=100 namehash=25fb5771]
+Aether Rifle
 Alt. tables
+Amulet of Vitality
+Amulet of the Dawn
+Arcane Resin
+Art History Booklet
+Blade of the Living
 Communities
 Core
+Cursed Booklet
+Devil's Vestments
 Dread
 Dread GM Toolbox
 EN
 Equipment
+Espairian Cog
+Fey Mirror
+Fey Quiver
 Filters
+Frost Grenade
+Frost Oil
+Glass from Leng
+Green Ooze Oil
 Grid
 Hope & Fear
 How this works
+Jar of Green Ooze Slime
+Lazarus Protocol Serum
 Link to this table
 List
 Lists
+Longbow of Fyr
+Mi-Go Brain Cylinder
+Mi-Go Mist Projector
+Moon Scarf
 Open this section on start
 Other
+Pen of Pals
+Purple Aim
 RU
 Search
-Selected
+Shield of the Sun
+Silver Key
 Skip to content
+Staff of the Secret Flame
 Standard rules
 Tables
+Tiara of Talking
 Vault of Ages
+Vial of Holy Water
 Wondrous
 Wondrous Loot
+Yithian Lightning Gun
 daggerheart.com
 ЛутDaggerheart

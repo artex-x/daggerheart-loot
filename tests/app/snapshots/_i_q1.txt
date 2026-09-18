@@ -3,7 +3,7 @@
 # why: an equipment record
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/q1]
+RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/i/q1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -74,7 +74,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/q1]
+RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

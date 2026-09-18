@@ -3,7 +3,7 @@
 # why: a second table: the chosen chip moves, and the sub-row changes
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/hnf_consumable]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/hnf_consumable]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -43,13 +43,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/hnf_cons
     button "Сеткой" [pressed=false]
     checkbox "Выбрать все (60)" [checked=false]
     StaticText "Выбрать все (60)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Оберегающая Свеча" [checked=false]
     button "1 Оберегающая Свеча Зажгите эту свечу, и в пределах Средней дист..." [namelen=228 namehash=a5002bd2]
     ... checkbox x57 of 61 same-shape siblings elided
     ... button x57 of 61 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    checkbox "Слёзы Бессмертного Героя" [checked=false]
     button "59 Слёзы Бессмертного Героя Выпив это зелье, вы недосягаемы для ..." [namelen=368 namehash=56d7b827]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Зелье Легкой Поступи" [checked=false]
     button "60 Зелье Легкой Поступи Выпейте это зелье, и у вас на лодыжках в..." [namelen=185 namehash=d87d55eb]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -128,26 +128,85 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
+Безоар Виночерпия
+Бутыль Цисканского Тумана
+Бутыль с Духом
+Варево Берсерка
+Гравитационная Бомба
+Гриб Светящегося Мха
+Драконья Мантия
+Жетон Подмены
+Зелье Бдительности
+Зелье Легкой Поступи
+Зелье Мохового Покрова
+Зелье Невидимости
 К содержимому
 Как это работает
+Какофоническая Микстура
+Квинтэссенциальный Разделитель
+Кол Запрета
+Колокол Некроплясуна
 ЛутDaggerheart
+Мазь Саламандры
+Мазь Стальной Кожи
+Маска Отражённого «Я»
+Масло Алой Слизи
+Масло Зелёной Слизи
+Мгновенный Лагерь
+Медовуха Кошмаров
+Мнемоническое Зелье
+Молоко Якамеля
+Настой Демиурга
+Настойка Змеиной Кожи
+Оберегающая Свеча
 Обычные правила
+Осколок Арктицита
+Осколок Фульгурита
+Осколок Эмберита
 Открывать этот раздел при запуске
+Ошибка Игрока
+Пакетик Космической Пыли
+Пастилка Лирохвоста
 Поиск
+Помело Божка
+Порошок Провидца Смерти
+Посох Обращения
 Предметы
+Проклятие Заклинателя
 Прочее
+Пузырёк Глубинных Чернил
+Пыль Ночной Карги
+Радужная Пыль
 Расходники
+Саван Проводника Душ
+Самошьющая Нить
+Связка Паучьих Лапок
+Семя Вергласа
+Семя Хваткого Терна
 Сеткой
+Слюна Химеры
+Слёзы Бессмертного Героя
 Снаряжение
+Соль Истребителя
 Сообщества
 Списки
 Списком
 Ссылка на таблицу
+Сфера Лунного Света
+Сфера Солнечного Света
 Таблицы
+Тоник Львиного Сердца
+Тоник Месмера
+Трубочное Зелье
+Удача Каменщика
+Флакон Мягкого Падения
+Фляга Мидаса
+Формоидная Сыворотка
+Цветок Сплетен
+Чай из Петушиного Когтя
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/hnf_consumable]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -187,13 +246,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/hnf_consumable]
     button "Grid" [pressed=false]
     checkbox "Select all (60)" [checked=false]
     StaticText "Select all (60)"
-    checkbox "Selected" [checked=false]
+    checkbox "Warding Candle" [checked=false]
     button "1 Warding Candle You can light this candle to fill an area withi..." [namelen=248 namehash=161dc44c]
     ... checkbox x57 of 61 same-shape siblings elided
     ... button x57 of 61 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    checkbox "Tears of the Undying Hero" [checked=false]
     button "59 Tears of the Undying Hero When you drink this potion, death c..." [namelen=353 namehash=06998b8a]
-    checkbox "Selected" [checked=false]
+    checkbox "Featherstep Potion" [checked=false]
     button "60 Featherstep Potion You can drink this potion to sprout small ..." [namelen=188 namehash=ffaa337c]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -262,30 +321,89 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/hnf_consumable]
 8Chimeric SalivaYou can apply this saliva to a weapon that deals... [namelen=158 namehash=833b7cd8]
 9Packet of Space DustThis dust causes anything it covers to beco... [namelen=213 namehash=379f2520]
 Alt. tables
+Arcticite Shard
+Berserker's Brew
+Bundle of Spiderlegs
+Cacophonous Concoction
+Chimeric Saliva
+Ciscan Fog Bottle
+Cockerel Claw Tea
 Communities
 Consumables
 Core
+Cupbearer's Bezoar
+Deathseer's Powder
+Demiurge's Draught
+Displacement Token
+Drakemantle
 Dread
 Dread GM Toolbox
 EN
+Emberite Shard
 Equipment
+Featherstep Potion
+Formoid Serum
+Fulgurite Shard
+Gambler's Fallacy
+Glowmoss Mushroom
+Godling's Pomelo
+Gossip Flower
+Gravity Bomb
+Green Ooze Oil
 Grid
 Hope & Fear
 How this works
+Instant Camp
+Invisibility Potion
+Iridian Dust
 Items
 Link to this table
+Lionheart Tonic
 List
 Lists
+Lyrebird Lozenge
+Magic-User's Malison
+Mask of the Echoed Self
+Mesmer's Tonic
+Midas Flask
+Mnemonic Potion
+Moonlight Orb
+Mossmantle Potion
+Necroprancer's Bell
+Night Hag's Dust
+Nightmare Mead
 Open this section on start
 Other
+Packet of Space Dust
+Phial of Deep Ink
+Pipeweed
+Potion of Vigilance
+Psychopomp's Shroud
+Quintessential Severant
 RU
+Red Ooze Oil
+Salamander Salve
 Search
-Selected
+Self-Sewing Thread
 Skip to content
+Slayer's Salt
+Snakeskin Spirit
+Snapthorn Seed
+Sprite Bottle
+Staff of Reversal
+Stake of Abjuration
 Standard rules
+Steelskin Salve
+Stonemason's Fortune
+Sunlight Orb
 Tables
+Tears of the Undying Hero
 Vault of Ages
+Verglasian Seed
+Vial of Featherfall
+Warding Candle
 Wondrous
 Wondrous Loot
+Yakamel Milk
 daggerheart.com
 ЛутDaggerheart

@@ -26,12 +26,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
     StaticText "Список от другого игрока · 2 позиции"
     button "Добавить в список" [expanded=false]
     StaticText "ДЛЯ ИГРОКОВ"
-    ... StaticText x5 of 9 same-shape siblings elided
-    checkbox "Выбрано" [checked=false]
+    ... StaticText x6 of 10 same-shape siblings elided
+    checkbox "Выбрать все (2)" [checked=false]
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
     button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
     StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
     StaticText "Подделка"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Зелье Быстрого Шага" [checked=false]
     button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=91 namehash=a16dcb39]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -48,11 +49,12 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
-Выбрано
 Добавить в список
+Зелье Быстрого Шага
 К содержимому
 ЛутDaggerheart
 Обычные правила
+Первоклассный Спальный Мешок
 Поиск
 Сообщества
 Списки
@@ -82,12 +84,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
     StaticText "A list from another player · 2 items"
     button "Add to list" [expanded=false]
     StaticText "FOR PLAYERS"
-    ... StaticText x5 of 9 same-shape siblings elided
-    checkbox "Selected" [checked=false]
+    ... StaticText x6 of 10 same-shape siblings elided
+    checkbox "Select all (2)" [checked=false]
+    checkbox "Premium Bedroll" [checked=false]
     button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]
     StaticText "GM ONLY"
     StaticText "Подделка"
-    checkbox "Selected" [checked=false]
+    checkbox "Stride Potion" [checked=false]
     button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=78 namehash=9dbe7ab2]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -103,11 +106,12 @@ Communities
 Dread
 EN
 Lists
+Premium Bedroll
 RU
 Search
-Selected
 Skip to content
 Standard rules
+Stride Potion
 Tables
 Vault of Ages
 Wondrous

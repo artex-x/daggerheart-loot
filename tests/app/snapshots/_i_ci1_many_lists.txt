@@ -3,7 +3,7 @@
 # why: the search box, once there are more lists than fit without one
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/ci1]
+RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=#/i/ci1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -34,11 +34,11 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/i/ci1]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     searchbox "Найти список" [value=порту focused=true]
     button "Лавка в порту" [pressed=false]
     button "+ Новый список" [pressed=false]
-    button "Добавить в список" [expanded=true]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -74,7 +74,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/ci1]
+RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

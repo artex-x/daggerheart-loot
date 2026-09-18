@@ -3,7 +3,7 @@
 # why: the three-row panel open, a pill, 0 из 90, the empty state with its own reset
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_armor/f_line-uniq]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_armor/f_line-uniq]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -43,7 +43,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/eq_armor
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры (1)" [expanded=true]
-    button "Уникальные ×" [description=Убрать из фильтра]
+    button "Уникальные" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     StaticText "0 из 90"
@@ -104,7 +104,7 @@ daggerheart.com
 Фильтры (1)
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_armor/f_line-uniq]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_line-uniq]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -144,7 +144,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/eq_armor/f_line-uniq]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters (1)" [expanded=true]
-    button "Unique ×" [description=Remove from the filter]
+    button "Unique" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
     StaticText "0 of 90"

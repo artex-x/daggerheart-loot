@@ -3,7 +3,7 @@
 # why: the alternate items table
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/alt_item]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/alt_item]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -41,28 +41,29 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/alt_item
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
-    StaticText "ОБЫЧНАЯ · РАНГ 1–2"
+    heading "ОБЫЧНАЯ · РАНГ 1–2" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    heading "НАДЕЖДА" [level=4]
-    checkbox "Выбрано" [checked=false]
+    heading "НАДЕЖДА" [level=3]
+    checkbox "Крюк-Кошка" [checked=false]
     button "1 Крюк-Кошка Вы получаете преимущество на Броски Действия, когда..." [namelen=122 namehash=51458941]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
     ... button x117 of 121 same-shape siblings elided
     ... checkbox x116 of 120 same-shape siblings elided
-    heading "СТРАХ" [level=4]
-    ... StaticText x2 of 6 same-shape siblings elided
+    heading "СТРАХ" [level=3]
+    heading "НЕОБЫЧНАЯ · РАНГ 1–2" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     ... heading x6 of 10 same-shape siblings elided
+    heading "РЕДКАЯ · РАНГ 2–3" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "ОЧЕНЬ РЕДКАЯ · РАНГ 3–4"
+    heading "ОЧЕНЬ РЕДКАЯ · РАНГ 3–4" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "ЛЕГЕНДАРНАЯ · РАНГ 3–4"
+    heading "ЛЕГЕНДАРНАЯ · РАНГ 3–4" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    heading "НАДЕЖДА" [level=4]
-    heading "СТРАХ" [level=4]
-    checkbox "Выбрано" [checked=false]
+    heading "НАДЕЖДА" [level=3]
+    heading "СТРАХ" [level=3]
+    checkbox "Кулон Искривления" [checked=false]
     button "11 Кулон Искривления Один раз до следующего отдыха отметьте Стре..." [namelen=149 namehash=71bbd259]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Рамы-Порталы" [checked=false]
     button "12 Рамы-Порталы Эти две небольшие богато украшенные рамы, красна..." [namelen=158 namehash=5b400280]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -201,27 +202,146 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
+Амулет Бессонного
+Амулет Воздушного Клинка
+Амулет Скрытности
+Банка с Огнём
+Бездонная Сумка
+Ботинки Хождения по Воде
+Браслет Тихого Шага
+Браслеты Отбрасывания
+Брошь Двуликой Эгиды
+Венец Пожирателя Страха
+Венцы Душ-Близнецов
+Воровской Компас
+Глиняный Спутник
+Двойная Фляга
+Железная Вуаль
+Заводная Игрушка
+Заряжающий Колчан
+Зеркальный Шар Эсхера
+Иглошаль
+Исправляющий Дух
 К содержимому
 Как это работает
+Камень Доблести
+Камень Облика
+Карта Откровения
+Колокол Хранителя Могил
+Колокольчик Странника
+Кольца Дружбы
+Кольца Союза
+Кольца Товарищества
+Кольцо Возвращения
+Кольцо Несокрушимой Решимости
+Кольцо Ночного Ловчего
+Кольцо Сопротивления
+Кольцо Тишины
+Компасы Связи
+Коробка Многих Вещей
+Кровавый Камень
+Кротовьи Рукавицы
+Крюк-Кошка
+Кулон Железного Кинжала
+Кулон Искривления
+Кулон Светлячка
+Кулон Хранителя Времени
+Лупа Зачарователя
 ЛутDaggerheart
+Магическая Призма
+Мандрагорский Факел
+Медальон Хранения Надежд
+Металлические Шарики
+Мешок Пушистиков
+Мешочек Своенравного Песка
+Мистический Плащ
+Монета Затмения
+Монета Шулера
+Наручники
+Обсидиановая Табличка Даггинэ
 Обычные правила
+Оправа Горнила
+Оракул Именующего
+Осколок Памяти
 Открывать этот раздел при запуске
+Ошейник Возвышения
+Парашют
+Первоклассный Спальный Мешок
+Перо Феникса
+Перо Чернокрыла
+Перчатки Геккона
+Перчатки Расторопности
+Перчатки из Кожи Гуля
+Плетёная Сеть
+Поварские Гранулы
+Подвешенный Жезл
 Поиск
+Пояс Единства
+Пояс Титана
 Предметы
+Пронзающие Стрелы
+Пронзительная Свирель
 Прочее
+Пустой Сундук
+Разговаривающие Сферы
+Рамы-Порталы
 Расходники
+Реликварий Незрячего Святого
+Реликвия Авгура
+Реликвия Баланса
+Реликвия Быстрого Шага
+Реликвия Гармонии
+Реликвия Единения
+Реликвия Наставления
+Реликвия Очарования
+Реликвия Прозрения
+Реликвия Усиления
+Рецепт Малого Зелья Выносливости
+Рецепт Малого Зелья Лечения
+Рецепт Мифической Пыли
+Рецепт Флакона с Чёрным Дымом
+Рог Полодрева
+Рюкзак Гэдимана
+Самовяжущаяся Верёвка
+Самоцвет Великана
+Самоцвет Дерзости
+Самоцвет Мощи
+Самоцвет Проворства
+Самоцвет Рассудительности
+Самоцвет Точности
+Самоцвет Чутья
+Сапоги Мягкой Поступи
+Седло Дикого Наездника
+Семя Портала
 Сеткой
+Сеть Зимородка
+Силовой Диск
+Скелетный Ключ
+Складной Нож Силеи
+Складной Шест
 Скопировать ссылку на этот раздел
 Снаряжение
 Сообщества
+Сосуд Западного Ветра
 Списки
 Списком
 Ссылка на таблицу
+Табакерка Драконьей Пыли
 Таблицы
+Убежище Вне Времени
+Успокаивающий Кулон
+Утяжелённые Кости
+Факел Алистера
+Футляр для Компаньона
+Хранитель Знаний
+Цепь Парагона
+Шипы
+Шлем Героя
+Шляпа Чародея
+Эльфийская Подзорная Труба
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_item]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_item]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -259,28 +379,29 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_item]
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    StaticText "COMMON · TIER 1–2"
+    heading "COMMON · TIER 1–2" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    heading "HOPE" [level=4]
-    checkbox "Selected" [checked=false]
+    heading "HOPE" [level=3]
+    checkbox "Grapnel" [checked=false]
     button "1 Grapnel You gain advantage on action rolls to climb sheer surf..." [namelen=86 namehash=195553eb]
-    checkbox "Selected" [checked=false]
+    checkbox "Premium Bedroll" [checked=false]
     ... button x117 of 121 same-shape siblings elided
     ... checkbox x116 of 120 same-shape siblings elided
-    heading "FEAR" [level=4]
-    ... StaticText x2 of 6 same-shape siblings elided
+    heading "FEAR" [level=3]
+    heading "UNCOMMON · TIER 1–2" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
     ... heading x6 of 10 same-shape siblings elided
+    heading "RARE · TIER 2–3" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "VERY RARE · TIER 3–4"
+    heading "VERY RARE · TIER 3–4" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "LEGENDARY · TIER 3–4"
+    heading "LEGENDARY · TIER 3–4" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    heading "HOPE" [level=4]
-    heading "FEAR" [level=4]
-    checkbox "Selected" [checked=false]
+    heading "HOPE" [level=3]
+    heading "FEAR" [level=3]
+    checkbox "Warp Pendant" [checked=false]
     button "11 Warp Pendant Once per rest, mark a Stress to teleport to a lo..." [namelen=108 namehash=2b65e563]
-    checkbox "Selected" [checked=false]
+    checkbox "Portal Frames" [checked=false]
     button "12 Portal Frames This pair of small ornate frames, one red and o..." [namelen=156 namehash=6a177aba]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -408,32 +529,151 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_item]
 9Shard of MemoryOnce per long rest, you can spend 2 Hope to reca... [namelen=139 namehash=486af058]
 9Suspended RodThis flat rod is inscribed with runes. When you ac... [namelen=231 namehash=a3ccf1b1]
 9Titan's GirdleOnce per scene, you can activate this girdle to g... [namelen=135 namehash=67ccce0b]
+Airblade Charm
+Alistair's Torch
 Alt. tables
+Arcane Cloak
+Arcane Prism
+Attune Relic
+Augur's Relic
+Bag of Ficklesand
+Ball Bearings
+Belt of Unity
+Blackwing Quill
+Bloodstone
+Bolster Relic
+Boots of Supple Mystique
+Box of Dragon Dust
+Box of Many Goods
+Calming Pendant
+Caltrops
+Charging Quiver
+Charm Relic
+Cheater's Coin
+Clay Companion
+Collapsible Pole
+Collar of Ascendancy
+Communion Relic
 Communities
+Companion Case
 Consumables
+Control Relic
 Copy a link to this section
 Core
+Corrector Sprite
+Crucible Frames
+Dagginae's Obsidian Slate
 Dread
 Dread GM Toolbox
+Dual Flask
 EN
+Eclipse Coin
+Elusive Amulet
+Elven Spyglass
+Empty Chest
+Enchanter's Loupe
+Enlighten Relic
 Equipment
+Escher's Mirrorball
+Fire Jar
+Flickerfly Pendant
+Force Disc
+Furball Bag
+Gadiman's Backpack
+Gecko Gloves
+Gem of Alacrity
+Gem of Audacity
+Gem of Insight
+Gem of Might
+Gem of Precision
+Gem of Sagacity
+Ghoulskin Gloves
+Glamour Stone
+Glider
+Gloves of Alacrity
+Gourmet Granules
+Grapnel
+Gravewarden's Bell
+Greatstone
 Grid
+Hero's Helm
+Hollowbark Horn
+Homing Compasses
+Honing Relic
 Hope & Fear
+Hopekeeper Locket
 How this works
+Infinite Bag
+Insomniac's Periapt
+Iron Dagger Pendant
+Iron Veil
 Items
+Kingfisher's Net
+Knockback Bracelets
+Lakestrider Boots
 Link to this table
 List
 Lists
+Loaded Dice
+Lorekeeper
+Manacles
+Mandragorian Torch
+Map of Revelation
+Minor Health Potion Recipe
+Minor Stamina Potion Recipe
+Molepaw Mittens
+Mythic Dust Recipe
+Namer's Oracle
+Nighthawker's Ring
 Open this section on start
 Other
+Paragon's Chain
+Phobophage's Circlet
+Phoenix Feather
+Piercing Arrows
+Piper Whistle
+Portal Frames
+Portal Seed
+Premium Bedroll
+Quillshawl
 RU
+Reliquary of the Sightless Saint
+Returning Ring
+Ring of Resistance
+Ring of Silence
+Ring of Unbreakable Resolve
+Rings of Alliance
+Rings of Camaraderie
+Rings of Friendship
 Search
-Selected
+Self-Tying Rope
+Shard of Memory
+Silee's Folding Knife
+Skeleton Key
 Skip to content
+Sorcerer's Hat
+Soul-Twin Circlets
+Speaking Orbs
 Standard rules
+Stride Relic
+Suspended Rod
 Tables
+Temporal Sanctuary
+Thief's Compass
+Timekeeper's Pendant
+Titan's Girdle
+Traveler's Bell
+Two-Faced Aegis Brooch
+Valorstone
 Vault of Ages
+Vial of Darksmoke Recipe
+Warp Pendant
+Whisperstep Anklet
+Wildrider's Saddle
+Windup Toy
 Wondrous
 Wondrous Loot
+Woven Net
+Zephyr's Jar
 daggerheart.com
 ЛутDaggerheart

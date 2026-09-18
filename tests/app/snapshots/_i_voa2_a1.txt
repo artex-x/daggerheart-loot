@@ -3,7 +3,7 @@
 # why: an artifact - the tier word belongs in the path line, and no state opened one
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/voa2_a1]
+RootWebArea "Узы Души — Генератор лута — Daggerheart" [url=#/i/voa2_a1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -68,7 +68,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/voa2_a1]
+RootWebArea "Anima Colligationem — Daggerheart Loot Generator" [url=#/i/voa2_a1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

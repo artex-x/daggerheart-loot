@@ -3,7 +3,7 @@
 # why: the alternate tables
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/alt]
+RootWebArea "Альт. таблицы — Генератор лута — Daggerheart" [url=#/roll/alt]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -121,7 +121,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/alt]
+RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

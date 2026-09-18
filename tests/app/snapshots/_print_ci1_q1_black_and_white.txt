@@ -23,7 +23,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1]
       link "Поиск" [url=#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=8291ade3]
+    StaticText "Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной..." [namelen=75 namehash=a9921681]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=false]

@@ -3,7 +3,7 @@
 # why: the alternate consumables table
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/alt_consumable]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/alt_consumable]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -41,28 +41,29 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/alt_cons
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
-    StaticText "ОБЫЧНАЯ · РАНГ 1–2"
+    heading "ОБЫЧНАЯ · РАНГ 1–2" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    heading "НАДЕЖДА" [level=4]
-    checkbox "Выбрано" [checked=false]
+    heading "НАДЕЖДА" [level=3]
+    checkbox "Зелье Быстрого Шага" [checked=false]
     button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=91 namehash=a16dcb39]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Зелье Усиления" [checked=false]
     ... button x117 of 121 same-shape siblings elided
     ... checkbox x116 of 120 same-shape siblings elided
-    heading "СТРАХ" [level=4]
-    ... StaticText x2 of 6 same-shape siblings elided
+    heading "СТРАХ" [level=3]
+    heading "НЕОБЫЧНАЯ · РАНГ 1–2" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     ... heading x6 of 10 same-shape siblings elided
+    heading "РЕДКАЯ · РАНГ 2–3" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "ОЧЕНЬ РЕДКАЯ · РАНГ 3–4"
+    heading "ОЧЕНЬ РЕДКАЯ · РАНГ 3–4" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "ЛЕГЕНДАРНАЯ · РАНГ 3–4"
+    heading "ЛЕГЕНДАРНАЯ · РАНГ 3–4" [level=2]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    heading "НАДЕЖДА" [level=4]
-    heading "СТРАХ" [level=4]
-    checkbox "Выбрано" [checked=false]
+    heading "НАДЕЖДА" [level=3]
+    heading "СТРАХ" [level=3]
+    checkbox "Слёзы Бессмертного Героя" [checked=false]
     button "11 Слёзы Бессмертного Героя Выпив это зелье, вы недосягаемы для ..." [namelen=368 namehash=675826a3]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Зеркало Златоцвета" [checked=false]
     button "12 Зеркало Златоцвета Когда вы получаете урон, вы можете потрати..." [namelen=148 namehash=f1d96a23]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -201,27 +202,146 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
-Выбрано
+Безоар Виночерпия
+Большое Зелье Быстрого Шага
+Большое Зелье Выносливости
+Большое Зелье Гармонии
+Большое Зелье Лечения
+Большое Зелье Обаяния
+Большое Зелье Просветления
+Большое Зелье Сосредоточенности
+Большое Зелье Усиления
+Большой Мистический Осколок
+Бутыль Цисканского Тумана
+Бутыль с Духом
+Варево Берсерка
+Глина Перевоплощения
+Гравитационная Бомба
+Гриб Светящегося Мха
+Доспешный Сшиватель
+Драконья Мантия
+Жаберная Мазь
+Жетон Подмены
+Звёздная Капля
+Зелье Бдительности
+Зелье Быстрого Шага
+Зелье Выносливости
+Зелье Гармонии
+Зелье Легкой Поступи
+Зелье Лечения
+Зелье Мохового Покрова
+Зелье Невидимости
+Зелье Очарования
+Зелье Просветления
+Зелье Сосредоточенности
+Зелье Стойкости
+Зелье Увеличения
+Зелье Уменьшения
+Зелье Усиления
+Зеркало Златоцвета
 К содержимому
 Как это работает
+Какофоническая Микстура
+Камень Знаний
+Квинтэссенциальный Разделитель
+Кислотная Паста
+Кол Запрета
+Колокол Некроплясуна
+Кровь Йорги
+Круг Пустоты
+Крылокорень
+Листья Варика
 ЛутDaggerheart
+Мазь Саламандры
+Мазь Стальной Кожи
+Малое Зелье Выносливости
+Малое Зелье Лечения
+Маска Отражённого «Я»
+Масло Алой Слизи
+Масло Зелёной Слизи
+Мгновенный Лагерь
+Медовуха Кошмаров
+Мифическая Пыль
+Мнемоническое Зелье
+Молоко Якамеля
+Мускус Огра
+Настой Демиурга
+Настойка Змеиной Кожи
+Нестабильный Мистический Осколок
+Оберегающая Свеча
 Обычные правила
+Осколок Арктицита
+Осколок Фульгурита
+Осколок Эмберита
+Ослепляющая Сфера
 Открывать этот раздел при запуске
+Ошибка Игрока
+Пакетик Космической Пыли
+Пастилка Лирохвоста
+Пергамент Копирования
+Пир Ксурии
+Пламя Надежды
 Поиск
+Помело Божка
+Порошок Встряски
+Порошок Провидца Смерти
+Посох Обращения
 Предметы
+Проводящий Камень
+Проклятие Заклинателя
 Прочее
+Прыгающий Корень
+Пузырёк Глубинных Чернил
+Пуховая Кость
+Пыль Ночной Карги
+Радужная Пыль
 Расходники
+Саван Проводника Душ
+Самошьющая Нить
+Связка Паучьих Лапок
+Секретное Зелье Хомета
+Семя Вергласа
+Семя Крепкого Моста
+Семя Хваткого Терна
 Сеткой
+Склеивающий Мёд
 Скопировать ссылку на этот раздел
+Сладкий Мох
+Слюна Красношипа
+Слюна Химеры
+Слёзы Бессмертного Героя
 Снаряжение
+Сок Солнечного Древа
+Соль Истребителя
 Сообщества
+Сосуд Потерянных Голосов
 Списки
 Списком
 Ссылка на таблицу
+Сфера Лунного Света
+Сфера Солнечного Света
 Таблицы
+Тоник Львиного Сердца
+Тоник Месмера
+Трубочное Зелье
+Удача Каменщика
+Улучшенный Мистический Осколок
+Улучшенный Яд Скрежетозуба
+Усыпляющий Сок
+Флакон Мягкого Падения
+Флакон с Лунной Каплей
+Флакон с Чёрным Дымом
+Фляга Мидаса
+Формоидная Сыворотка
+Цветок Сплетен
+Чай Драконьего Цветка
+Чай Смерти
+Чай из Петушиного Когтя
+Яд Каплезуба
+Яд Скрежетозуба
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_consumable]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -259,28 +379,29 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_consumable]
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    StaticText "COMMON · TIER 1–2"
+    heading "COMMON · TIER 1–2" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    heading "HOPE" [level=4]
-    checkbox "Selected" [checked=false]
+    heading "HOPE" [level=3]
+    checkbox "Stride Potion" [checked=false]
     button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=78 namehash=9dbe7ab2]
-    checkbox "Selected" [checked=false]
+    checkbox "Bolster Potion" [checked=false]
     ... button x117 of 121 same-shape siblings elided
     ... checkbox x116 of 120 same-shape siblings elided
-    heading "FEAR" [level=4]
-    ... StaticText x2 of 6 same-shape siblings elided
+    heading "FEAR" [level=3]
+    heading "UNCOMMON · TIER 1–2" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
     ... heading x6 of 10 same-shape siblings elided
+    heading "RARE · TIER 2–3" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "VERY RARE · TIER 3–4"
+    heading "VERY RARE · TIER 3–4" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "LEGENDARY · TIER 3–4"
+    heading "LEGENDARY · TIER 3–4" [level=2]
     button "Copy a link to this section" [description=Copy a link to this section]
-    heading "HOPE" [level=4]
-    heading "FEAR" [level=4]
-    checkbox "Selected" [checked=false]
+    heading "HOPE" [level=3]
+    heading "FEAR" [level=3]
+    checkbox "Tears of the Undying Hero" [checked=false]
     button "11 Tears of the Undying Hero When you drink this potion, death c..." [namelen=353 namehash=636d8eca]
-    checkbox "Selected" [checked=false]
+    checkbox "Mirror of Marigold" [checked=false]
     button "12 Mirror of Marigold When you take damage, you can spend a Hope..." [namelen=136 namehash=b2150af9]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -408,32 +529,151 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/alt_consumable]
 9Psychopomp's ShroudYou can place this shroud over the corpse of... [namelen=287 namehash=dac93088]
 9Sprite BottleWhen you mark your last Hit Point, this bottle sha... [namelen=195 namehash=387cf153]
 9Stake of AbjurationYou can hammer this stake into the ground an... [namelen=281 namehash=1ea2e560]
+Acidpaste
 Alt. tables
+Arcticite Shard
+Armor Stitcher
+Attune Potion
+Berserker's Brew
+Blinding Orb
+Blood of the Yorgi
+Bolster Potion
+Bonding Honey
+Bridge Seed
+Bundle of Spiderlegs
+Cacophonous Concoction
+Channelstone
+Charm Potion
+Chimeric Saliva
+Circle of the Void
+Ciscan Fog Bottle
+Cockerel Claw Tea
 Communities
 Consumables
+Control Potion
 Copy a link to this section
 Core
+Cupbearer's Bezoar
+Death Tea
+Deathseer's Powder
+Demiurge's Draught
+Displacement Token
+Dragonbloom Tea
+Drakemantle
 Dread
 Dread GM Toolbox
+Dripfang Poison
 EN
+Emberite Shard
+Enlighten Potion
 Equipment
+Feast of Xuria
+Featherbone
+Featherstep Potion
+Formoid Serum
+Fulgurite Shard
+Gambler's Fallacy
+Gill Salve
+Glowmoss Mushroom
+Godling's Pomelo
+Gossip Flower
+Gravity Bomb
+Green Ooze Oil
 Grid
+Grindletooth Venom
+Growing Potion
+Health Potion
+Homet's Secret Potion
 Hope & Fear
+Hopehold Flare
 How this works
+Improved Arcane Shard
+Improved Grindletooth Venom
+Instant Camp
+Invisibility Potion
+Iridian Dust
 Items
+Jar of Lost Voices
+Jumping Root
+Knowledge Stone
 Link to this table
+Lionheart Tonic
 List
 Lists
+Lyrebird Lozenge
+Magic-User's Malison
+Major Arcane Shard
+Major Attune Potion
+Major Bolster Potion
+Major Charm Potion
+Major Control Potion
+Major Enlighten Potion
+Major Health Potion
+Major Stamina Potion
+Major Stride Potion
+Mask of the Echoed Self
+Mesmer's Tonic
+Midas Flask
+Minor Health Potion
+Minor Stamina Potion
+Mirror of Marigold
+Mnemonic Potion
+Moonlight Orb
+Morphing Clay
+Mossmantle Potion
+Mythic Dust
+Necroprancer's Bell
+Night Hag's Dust
+Nightmare Mead
+Ogre Musk
 Open this section on start
 Other
+Packet of Space Dust
+Phial of Deep Ink
+Pipeweed
+Potion of Stability
+Potion of Vigilance
+Psychopomp's Shroud
+Quintessential Severant
 RU
+Red Ooze Oil
+Redthorn Saliva
+Replication Parchment
+Salamander Salve
 Search
-Selected
+Self-Sewing Thread
+Shrinking Potion
 Skip to content
+Slayer's Salt
+Sleeping Sap
+Snakeskin Spirit
+Snap Powder
+Snapthorn Seed
+Sprite Bottle
+Staff of Reversal
+Stake of Abjuration
+Stamina Potion
 Standard rules
+Stardrop
+Steelskin Salve
+Stonemason's Fortune
+Stride Potion
+Sun Tree Sap
+Sunlight Orb
+Sweet Moss
 Tables
+Tears of the Undying Hero
+Unstable Arcane Shard
+Varik Leaves
 Vault of Ages
+Verglasian Seed
+Vial of Darksmoke
+Vial of Featherfall
+Vial of Moondrip
+Warding Candle
+Wingsprout
 Wondrous
 Wondrous Loot
+Yakamel Milk
 daggerheart.com
 ЛутDaggerheart

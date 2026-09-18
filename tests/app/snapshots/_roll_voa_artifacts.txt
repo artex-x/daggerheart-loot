@@ -3,7 +3,7 @@
 # why: a division of the book that is not a tier
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/voa]
+RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url=#/roll/voa]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -91,7 +91,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/voa]
+RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

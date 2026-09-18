@@ -25,11 +25,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     heading "Лавка" [level=1]
     StaticText "Список от другого игрока · 3 позиции"
     button "Добавить в список" [expanded=false]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Выбрать все (3)" [checked=false]
+    StaticText "Выбрать все (3)"
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
     button "1 Первоклассный Спальный Мешок ×2 Во время отдыха вы автоматичес..." [namelen=96 namehash=57957f25]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Доспешный Сшиватель" [checked=false]
     button "21 Доспешный Сшиватель ×5 · 5 горстей Вы можете использовать это..." [namelen=173 namehash=33e9d882]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Туника из Паучьего Шелка" [checked=false]
     button "Туника из Паучьего Шелка 1 горсть Ранг 2 · Пороги 9/20 · Броня 4..." [namelen=179 namehash=3cf5fc1d]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -46,15 +48,17 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
-Выбрано
 Добавить в список
+Доспешный Сшиватель
 К содержимому
 ЛутDaggerheart
 Обычные правила
+Первоклассный Спальный Мешок
 Поиск
 Сообщества
 Списки
 Таблицы
+Туника из Паучьего Шелка
 Туника из Паучьего Шелка1 горстьРанг 2 · Пороги 9/20 · Броня 4Ка... [namelen=173 namehash=7617ed27]
 
 ## en :: tree
@@ -80,11 +84,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
     heading "Лавка" [level=1]
     StaticText "A list from another player · 3 items"
     button "Add to list" [expanded=false]
-    checkbox "Selected" [checked=false]
+    checkbox "Select all (3)" [checked=false]
+    StaticText "Select all (3)"
+    checkbox "Premium Bedroll" [checked=false]
     button "1 Premium Bedroll ×2 During downtime, you automatically clear a ..." [namelen=81 namehash=69caf8d4]
-    checkbox "Selected" [checked=false]
+    checkbox "Armor Stitcher" [checked=false]
     button "21 Armor Stitcher ×5 · 5 handfuls You can use this stitcher to s..." [namelen=136 namehash=7813561e]
-    checkbox "Selected" [checked=false]
+    checkbox "Spidersilk Tunic" [checked=false]
     button "Spidersilk Tunic 1 handful Tier 2 · Thresholds 9/20 · Armor 4 Wa..." [namelen=163 namehash=c645fc16]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -96,14 +102,16 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
 21Armor Stitcher×5 · 5 handfulsYou can use this stitcher to spen... [namelen=131 namehash=fb0e945f]
 Add to list
 Alt. tables
+Armor Stitcher
 Communities
 Dread
 EN
 Lists
+Premium Bedroll
 RU
 Search
-Selected
 Skip to content
+Spidersilk Tunic
 Spidersilk Tunic1 handfulTier 2 · Thresholds 9/20 · Armor 4Wall-... [namelen=157 namehash=d6f04d1b]
 Standard rules
 Tables

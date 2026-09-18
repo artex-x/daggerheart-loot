@@ -3,7 +3,7 @@
 # why: the inline form, both apps focusing the same input
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/ci1]
+RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=#/i/ci1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -34,13 +34,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/i/ci1]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "Лавка в порту" [pressed=false]
     button "Клад дракона" [pressed=false]
-    textbox "Например: клад дракона" [focused=true multiline=false readonly=false required=false]
+    textbox "Новый список" [focused=true multiline=false readonly=false required=false]
     button "Создать"
     button "Отмена"
-    button "Добавить в список" [expanded=true]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -60,6 +60,7 @@ daggerheart.com
 Клад дракона
 Лавка в порту
 ЛутDaggerheart
+Новый список
 Обычные правила
 Отмена
 Отправить
@@ -77,7 +78,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/i/ci1]
+RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

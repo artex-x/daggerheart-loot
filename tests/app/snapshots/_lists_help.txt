@@ -3,7 +3,7 @@
 # why: the four paragraphs, two of them with two bold runs each
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/lists]
+RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -28,12 +28,12 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/lists]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
     StaticText "Соберите список: отметьте нужное галочками в «Таблицах» или «Пои..." [namelen=240 namehash=d1f1be55]
     ... StaticText x12 of 16 same-shape siblings elided
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее Скрыть" [expanded=false]
-      button "Скрыть" [description=Скрыть]
-    textbox "Например: клад дракона" [multiline=false readonly=false required=false]
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
+    button "Скрыть" [description=Скрыть]
+    textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
     StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Ссылка на список" [multiline=false readonly=false required=false]
+    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
     button "Восстановить"
     StaticText "Списков пока нет — создайте первый выше"
   contentinfo ""
@@ -50,9 +50,11 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Восстановить
+Восстановить из ссылки
 К содержимому
 Как это работает
 ЛутDaggerheart
+Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
@@ -63,7 +65,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/lists]
+RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -88,12 +90,12 @@ RootWebArea "Daggerheart Loot Generator" [url=#/lists]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
     StaticText "Build a list: tick what you need in Tables or Search and press “..." [namelen=206 namehash=cfe32602]
     ... StaticText x12 of 16 same-shape siblings elided
-    DisclosureTriangle "Lists live in this browser only. more Dismiss" [expanded=false]
-      button "Dismiss" [description=Dismiss]
-    textbox "For example: dragon hoard" [multiline=false readonly=false required=false]
+    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
+    button "Dismiss" [description=Dismiss]
+    textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
     StaticText "RESTORE FROM A LINK"
-    textbox "Paste a list link" [multiline=false readonly=false required=false]
+    textbox "Restore from a link" [multiline=false readonly=false required=false]
     button "Restore"
     StaticText "No lists yet — create one above"
   contentinfo ""
@@ -110,9 +112,11 @@ Dread
 EN
 How this works
 Lists
+New list
 Open this section on start
 RU
 Restore
+Restore from a link
 Search
 Skip to content
 Standard rules

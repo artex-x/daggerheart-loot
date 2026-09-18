@@ -3,7 +3,7 @@
 # why: communities
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/community]
+RootWebArea "Сообщества — Генератор лута — Daggerheart" [url=#/roll/community]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -93,7 +93,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/community]
+RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

@@ -3,7 +3,7 @@
 # why: the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/search]
+RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -24,7 +24,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжен..." [namelen=95 namehash=e544e3d9]
+    StaticText "Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, н..." [namelen=90 namehash=4b580bdf]
     searchbox "Поиск по названию или описанию…" [focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -57,7 +57,7 @@ daggerheart.com
 Таблицы
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/search]
+RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

@@ -3,7 +3,7 @@
 # why: the roll stepped up twice
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/roll/wondrous]
+RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/roll/wondrous]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -80,7 +80,7 @@ daggerheart.com
 Чай Эфироцвета
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/roll/wondrous]
+RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

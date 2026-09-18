@@ -3,7 +3,7 @@
 # why: the filter panel on a sectioned table - the screen the human reported the search-box and любое defects from
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/tables/community]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/community]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -48,7 +48,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/communit
     button "Лесное" [pressed=false]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (10)" [checked=false]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Королевская Брошь" [checked=false]
     button "1 Королевская Брошь Пока вы открыто носите эту брошь во владения..." [namelen=228 namehash=dc147d0f]
     ... checkbox x95 of 99 same-shape siblings elided
     ... button x87 of 91 same-shape siblings elided
@@ -58,9 +58,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/tables/communit
     StaticText "ЛЕСНОЕ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "Выбрать все (10)"
-    checkbox "Выбрано" [checked=false]
+    checkbox "Сердце Лесного Бога" [checked=false]
     button "9 Сердце Лесного Бога Один раз за кампанию вы можете посадить эт..." [namelen=286 namehash=06bdafb1]
-    checkbox "Выбрано" [checked=false]
+    checkbox "Маленький Лесной Дух" [checked=false]
     button "10 Маленький Лесной Дух Игривый лесной дух следует за вами как б..." [namelen=282 namehash=61469f86]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
@@ -169,35 +169,124 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Альт. таблицы
+Амулет Скарабея
+Арбалет-Гарпун
+Банка Направляющего Света
+Биолюминесцентные Перчатки
+Браслет Воровского Перезвона
+Бутылка Ветра
 Великородное
-Выбрано
+Венец Живых Лоз
+Вечная Свеча
+Вечный Трут
+Военный Барабан Павшего Войска
+Возвратная Монета
+Гильдейский Амулет
 Горное
+Грибной Факел
 Догматичное
+Древесная Настойка
+Живые Марионетки
+Зачарованные Ножны
+Инструменты Навигатора
 К содержимому
 Как это работает
+Клык Пещерного Паука
+Кодекс Догматичных Установлений
+Козьи Сапоги
+Кольцо Диких Зверей
+Кольцо Маленького Исследователя
+Компас Воробья
+Кормовой Мешок Зверовода
+Королевская Брошь
+Котомка Странника
 Кочевое
+Крапленые Карты и Кости
 Криминальное
 Лесное
+Лист Исполинского Дерева
+Лунносеменной Фонарь
 ЛутDaggerheart
+Магитехническая Бабочка
+Магитехнический Экзоскелет
+Магические Сковывающие Кандалы
+Магнит Учёного
+Маленький Лесной Дух
+Мантия Алого Бархата
+Маска Глубин
+Маска Маскарада
+Маскировочный Плащ
 Морское
+Моток Паучьего Шёлка
 Научное
+Нежный Силок
+Оберег Удачного Рога
+Обученная Посыльная Птица
+Обученный Благородный Скакун
 Обычные правила
 Открывать этот раздел при запуске
+Переносная Астролябия
+Переносной Мост
+Переулочная Окарина
+Пиратская Карта Сокровищ
+Плащ Первобытного Хищника
+Плащ Переулков
+Подвеска Стеклянного Глаза
 Подземное
+Подзорная Труба Дальнозоркого
+Позолоченный Монокль
+Позолоченный Точильный Камень Дуэлянта
 Поиск
+Предательский Кастет
 Прочее
+Прутья Слепого Лозоходца
+Рог Благородства
+Рогатый Шлем
+Рыболовная Удочка
+Сапоги Первопроходца
+Сапоги Реакции
+Седло Укротителя
+Семя Фаункорня
+Сердце Лесного Бога
+Серьги Влюблённых
 Сеткой
+Скальные Крючья
+Складная Лодка
+Складной Воздушный Шар
+Складные Санки
 Скопировать ссылку на этот раздел
 Снаряжение
+Совиный Амулет Каравана
 Сообщества
 Списки
 Списком
 Ссылка на таблицу
+Стрелы и Болты с Метеоритными Наконечниками
+Сумка Грибника
+Сфера Пространственной Тюрьмы
+Табард Догматичного Сообщества
 Таблицы
+Теневой Амулет
+Теневой Мел
+Топор Лесного Стража
+Топор-Пила Лесоруба
+Тотем Горного Зверя
+Угрожающее Знамя
+Фальшивый Золотой Зуб
 Фильтры
+Флейта Зова Кракена
+Фолиант Тысячи Предметов
+Фонарь Глубин
+Хронометрические Часы
+Хрустальный Шар Буфонидуса
+Черепаший Панцирный Нагрудник
+Чернила Мудреца
+Шахматы Архивариуса
+Шепчущая Сковорода
+Эхо-Табличка
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/tables/community]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -242,7 +331,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/community]
     button "Wildborne" [pressed=false]
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (10)" [checked=false]
-    checkbox "Selected" [checked=false]
+    checkbox "Royal Brooch" [checked=false]
     button "1 Royal Brooch Wearing this brooch openly while within a Highbor..." [namelen=185 namehash=c3de321a]
     ... checkbox x95 of 99 same-shape siblings elided
     ... button x87 of 91 same-shape siblings elided
@@ -252,9 +341,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/community]
     StaticText "WILDBORNE"
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "Select all (10)"
-    checkbox "Selected" [checked=false]
+    checkbox "Heart of the Forest God" [checked=false]
     button "9 Heart of the Forest God Once per campaign, you may plant this ..." [namelen=254 namehash=ad9cda5d]
-    checkbox "Selected" [checked=false]
+    checkbox "Little Forest Spirit" [checked=false]
     button "10 Little Forest Spirit A playful forest spirit follows you as a..." [namelen=292 namehash=dd071f1f]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
@@ -352,38 +441,127 @@ RootWebArea "Daggerheart Loot Generator" [url=#/tables/community]
 9Mantle of the BackstreetsWhile wearing this mantle in an urban ... [namelen=239 namehash=01e0f932]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Totem of the Ridge BeastOnce per long rest, you may activate th... [namelen=237 namehash=f5f8099c]
+Alleyway Ocarina
 Alt. tables
+Arcane Restraining Manacles
+Archivist's Chess Set
+Beastkeeper's Feed Sack
+Bioluminescent Gloves
+Blind Dowser's Rods
+Bottle of Wind
+Bufonidus' Crystal Sphere
+Camouflage Mantle
+Caravan Owl Amulet
+Cave Spider Fang
+Chronometric Timepiece
+Climbing Pitons
+Codex of Orderborne Dicta
 Communities
 Copy a link to this section
 Core
+Crown of Living Vines
+Dimensional Prison Sphere
 Dread
 Dread GM Toolbox
+Duelist's Gilded Whetstone
 EN
+Echo Tablet
+Enchanted Weapon Sheath
 Equipment
+Everflame Kindling
+Everlasting Candle
+False Gold Tooth
+Far-Seer's Spyglass
+Faunroot Seed
+Felling Axe-Saw
 Filters
+Fishing Rod
+Foldable Sky-Balloon
+Foldaway Trail Sled
+Folding Boat
+Forestwarden's Axe
+Fungal Forager's Pouch
+Fungal Torch
+Gentle Snare
+Gilded Monocle
+Glass Eye Pendant
+Goatstep Boots
 Grid
+Guidelight Jar
+Guild Amulet
+Harpoon Crossbow
+Heart of the Forest God
 Highborne
 Hope & Fear
+Horn of Nobility
+Horned Helm
 How this works
+Kraken's Call Flute
+Lantern of the Depths
+Leaf of the Giant Tree
 Link to this table
 List
 Lists
+Little Forest Spirit
+Living Puppets
+Loaded Cards and Dice
 Loreborne
+Lover's Earrings
+Lucky Horn Charm
+Magitech Butterfly
+Magitech Exoskeleton
+Mantle of Crimson Velvet
+Mantle of the Backstreets
+Mantle of the First Predator
+Mask of the Deep
+Masquerade Mask
+Menacing Standard
+Meteoric-Tipped Arrows and Bolts
+Moonseed Lantern
+Navigator's Tools
 Open this section on start
 Orderborne
+Orderborne Tabard
 Other
+Pathfinder's Boots
+Pirate's Treasure Map
+Portable Astrolabe
+Portable Bridge
 RU
+Reaction Boots
+Returning Coin
 Ridgeborne
+Ring of Wild Beasts
+Ring of the Small Explorer
+Royal Brooch
+Sage's Ink
+Sap Liquor
+Scarab Amulet
+Scholar's Lodestone
 Seaborne
 Search
-Selected
+Shadow Amulet
+Shadowmark Chalk
 Skip to content
 Slyborne
+Sparrow's Compass
+Spider Silk Spool
 Standard rules
 Tables
+Thief's Chime Bracelet
+Tome of a Thousand Subjects
+Totem of the Ridge Beast
+Trained Messenger Bird
+Trained Noble Mount
+Treacherous Knuckle-Duster
+Turtle Shell Harness
 Underborne
 Vault of Ages
 Wanderborne
+War Drum of the Fallen Host
+Wayfarer's Pack
+Waytamer Saddle
+Whispering Skillet
 Wildborne
 Wondrous
 Wondrous Loot
