@@ -2,50 +2,36 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress - **B7 committed and pushed.** B1-B6 committed and
+- Task status: in_progress - **B8 committed and pushed.** B1-B7 committed and
   pushed as before (`e7c7b50`, `44b1761`, `3bc605d`, the B2-review
   remediation batch, `0a3d9fb`/`446e45b`, `112bd07`/`571b041`,
-  `370fec2`/`11066f0`). Three unrelated `fix(hooks)`/`docs` commits landed on
-  `main` after B7's recorded base (`421dddb`) and before this land -
-  `887adc7`, `76bc021`, `541d3e6` - none touching `app/src`, `tests/app` or
-  the specs, so B7 applied cleanly on top. B7 landed as two commits per the
-  plan's split:
-  - `e80a793` - code/docs: the 44 originally-staged files plus
-    `app/src/components/record.test.ts` (the Escape-key test) and
-    `issues/phase-8/nits.md` (B7-N2), 46 files, 771 insertions/518 deletions.
-  - `dba6755` - `--update`: the 107 re-recorded `tests/app/snapshots/*.txt`,
-    9995 insertions/2729 deletions (git counts 4 files as rewrites; the
-    handoff's own diff-stat below is `git diff`'s, not `git show --stat`'s).
-  Pushed: `git push origin main` reported `541d3e6..dba6755  main -> main`;
-  confirmed `git rev-parse origin/main` == `HEAD` == `dba6755`.
-- Gate basis for this land: the orchestrator ran `rtk npm run check` in one
-  foreground call against this exact tree (base `541d3e6`, both commits'
-  content already present in the working tree at that point) immediately
-  before dispatching this commit-and-push batch, and it passed clean: 45
-  test files, 1120/1120 tests, coverage 96.73 stmts / 88.96 branch / 97.14
-  funcs / 97.35 lines, every threshold green, format/lint/svelte-check/
-  derived/selftest/tools all green. `.claude/.check-cache.json` key
-  `5e03f52e2bd41fe5` (a content fingerprint with `issues/**` and
-  `docs/specs/**` exempted and HEAD excluded, so committing does not move
-  it). This is the first clean `npm run check` this exact tree ever
-  produced - the four prior attempts recorded below (three foreground,
-  under a prior implementer session) all failed on host contention or the
-  600s auto-background cap, never on a real regression; none of them armed
-  the gate.
-- Last agent: implementer (2026-09-18, B7 land - commit, push, handoff
-  update only; no re-implementation, no re-running the already-satisfied
-  gate).
+  `370fec2`/`11066f0`, `e80a793`/`dba6755`). B7's own review landed
+  separately (`8e43c92`, `docs(phase-8): append B7 review findings to the
+  nit register`) - four blockers (BL-0 from CI: `f7`'s stat line moved by
+  B7's own D11 fix but `docs/fixtures/statlines/equipment.json` was never
+  recaptured, hidden by `i18n.test.ts`'s `noTier`; BL-1..BL-3 from the
+  review itself) recorded in `issues/phase-8/nits.md`, explicitly kept out
+  of this batch's scope and routed to B7's own remediation cycle - **not
+  touched here**, per the orchestrator's own instruction mid-batch. B8
+  landed as one commit: `3c0fff8 feat(phase-8): B8 record actions, print,
+  motion and focus`, on top of `8e43c92`.
+- Gate basis for this land: `rtk npm run check` (one foreground call,
+  timeout 600000) ran twice against this tree - once before a viewport bug
+  found in `tests/app/print.js`'s own gate (see "Deviations" below), once
+  after the fix, immediately before the commit - and the second run is what
+  armed the gate: 45 test files, 1130/1130 tests, coverage 96.75 stmts /
+  89.05 branch / 97.15 funcs / 97.41 lines, every threshold green,
+  format/lint/svelte-check/derived/selftest/tools all green.
+- Last agent: implementer (2026-09-18, B8 - full implementation, commit,
+  push, handoff update).
 - Branch: `main`
-- Base / starting commit for B7: `421dddb` (post-B6 docs commit); landed on
-  top of `541d3e6`. HEAD is now `dba6755`, pushed.
-- Review: required once committed (trigger: this task's own standing policy
-  - `context.md`, "Review and nit policy for this task" - mandates a
-  reviewer on every phase-8 batch; separately, B7 is the batch that
-  deliberately re-records the majority of the 112 structural goldens, which
-  is its own reason a review has to inspect the diff before it is trusted).
-  Not yet run as of this record.
-- Next batch: **B8** - record actions, print, motion and focus. See "Next
-  batch (implement-ready)" below.
+- Base / starting commit for B8: `8e43c92` (the B7-review nits commit).
+  HEAD is now `3c0fff8`, pushed and confirmed equal to `origin/main`.
+- Review: required (trigger: this task's own standing policy - `context.md`,
+  "Review and nit policy for this task" - mandates a reviewer on every
+  phase-8 batch). Not yet run as of this record.
+- Next batch: **B9** - language and format: `tests/` and `tools/`. See
+  `plan.md`, "B9" and "Next batch (implement-ready)" below.
 
 ## Completed
 
@@ -1808,17 +1794,181 @@ tree but not landed.
   orchestrator decision, per the dispatch). See B7's entry under
   "Completed".
 
+### B8 - record actions, print, motion and focus (D10, D13, D14, D15, D22, P16, R6, D20, D21, D1, D18)
+
+- **What shipped, by the plan's ten steps:**
+  1. **D10**: `app/src/ports/image.ts`'s `browserImage().pngOf` now probes
+     `canvas.toDataURL('image/png')` in a `try/catch` right after
+     `drawImage` (a tainted canvas throws synchronously there) and wraps
+     `toBlob` in a 2000ms watchdog (this build's `toBlob` never calls back
+     on a tainted canvas, so it never throws on its own).
+     `RecordActions.svelte`'s `copyImage()` now calls `pngOf` directly
+     first; a rejection falls back to `writeRich` with the record's own
+     share text and a new `imgTainted` toast, instead of asking the
+     clipboard to write a picture that was never produced.
+  2. **D14/D15**: `ImagePort` gains `download(blob, filename): Promise<void>`
+     (`<a download>`, object URL revoked after 4s) and `fakeImage` gains a
+     matching double with `downloaded`/`failDownload`. Once `pngOf`
+     succeeds but `clipboard.writeImage` still returns `false` (refused or
+     unsupported), `copyImage()` falls back to `download()` - `imgSaved` on
+     success, `imgFailed` (distinct from `copyFailed`) if the download
+     itself throws.
+  3. **D22**: `RecordActions.svelte`'s `send()` now builds `text` from
+     `share()` (the same full share text `copyText()` uses) rather than the
+     bare name, and passes a `file` callback (a `File` built from `pngOf`)
+     only when `it.img && !app.artBroken(it.id)` - `SharePort` itself still
+     decides whether the environment can take it. `fakeShare` gained a
+     `last.file` (the callback itself, not just `hasFile`) so a test can
+     invoke it and read back the produced `File`.
+  4. **D13**: `dict.ts` gained `rollCopied`; `StdPanel.svelte`'s and
+     `AltPanel.svelte`'s `copyRoll()` toast it instead of `textCopied`.
+  5. **P16** (Q2, "look first, then shrink" - see "P16 measurement" below):
+     inspected before any code was written; nothing needed shrinking, so
+     `fit()` is untouched and `tests/app/print.js` gained a pinning
+     assertion instead (see "Files changed").
+  6. **R6**: `PrintCard.svelte` gained an `onartfail` prop and `onerror` on
+     both `.pc-back`/`.pc-img`; `PrintPage.svelte` passes
+     `(id) => app.markArtBroken(id)`.
+  7. **D20**: `RecordModal.svelte` gained `@media print { dialog {
+     display: none !important } }`; `Toast.svelte`'s existing print rule
+     gained `!important`. `tests/app/print.js` gained a dedicated block
+     (not folded into the existing `MEDIA_STATES` loop, since neither state
+     it needs - an open modal, an action toast - is drawn by a print route
+     itself) that opens `#/roll/wondrous`, opens the modal, and separately
+     seeds a one-item list and triggers the "removed" undo toast, checking
+     each is `display: none` under `d.media('print')`.
+  8. **D21**: `AppState` gained `printBW = $state(false)` (memory-only,
+     never written to storage, `kinds`' own shape); `PrintPage.svelte`
+     reads/writes `app.printBW` directly instead of a page-local `$state`.
+  9. **D1**: `tokens.css` gained the blanket
+     `@media (prefers-reduced-motion: reduce) { *, *::before, *::after {
+     animation-duration: 0.01ms !important; animation-iteration-count: 1
+     !important; transition-duration: 0s !important; scroll-behavior: auto
+     !important } }`. `RecordCard.svelte`'s and `TablesPage.svelte`'s own
+     two named `animation: none` rules were left in place (redundant now,
+     harmless, not part of this fix - `TablesPage.svelte` is outside this
+     batch's file list). `tests/app/states.js` gained case 24, which
+     explicitly emulates `prefers-reduced-motion: reduce` (belt-and-braces:
+     `driver.js`'s own `prepare()` already does this for every case),
+     hovers a button, crosses the 600px breakpoint, and asserts
+     `document.getAnimations().length === 0`.
+  10. **D18**: the five component-local 8px `:focus-visible` overrides
+      (`RowMain.svelte`, `Seg.svelte`, `ListPage.svelte`,
+      `StorageNotice.svelte`, `RecordCard.svelte`'s `.card-media` one, which
+      was actually a sixth, unlisted-in-live shape - `outline-offset: -2px`,
+      not `2px` - deleted the same way on the same owner instruction) are
+      gone; every control now falls through to `tokens.css`'s global
+      `:focus-visible` rule at `--r-sm` (9px).
+- **P16 measurement** (recorded before any code was written, per Q2):
+  built `dist/`, opened `#/print/cm26-f60-hi62-ci81` through
+  `tests/app/lib.js`'s `fresh()` at 1100x900, both languages, both layouts
+  (a scratch script, not committed - see "Deviations"). `.pc-name`'s
+  `getClientRects().length` for all four cards, both languages, both
+  layouts: **every one is 1.** (`cm26` ru: "Стрелы и Болты с Метеоритными
+  Наконечниками"; en: "Meteoric-Tipped Arrows and Bolts"; `f60`, `hi62`,
+  `ci81` all shorter.) Since none exceeded two lines, the branch taken is
+  "the assertion only" - no shrink step was added to `fit()`.
+  `tests/app/print.js` pins `cm26` at one line, both languages, both
+  layouts (four assertions in a `nameLines()` helper). No deviation from
+  Figma nodes `714-42387`/`3773-90792` was needed; `FEATURES.md`, "Print",
+  records the finding and the pinning assertion anyway, per the plan's
+  "either way" instruction.
+- Files changed: `app/src/components/{AltPanel,ListPage,PrintCard,PrintPage,
+  RecordActions,RecordCard,RecordModal,RowMain,Seg,StdPanel,StorageNotice,
+  Toast}.svelte`, `app/src/components/{alt,std,printPage,record}.test.ts`,
+  `app/src/lib/{dict,share}.ts`, `app/src/ports/{image,share,types}.ts`,
+  `app/src/state/app.svelte.ts`, `app/src/styles/tokens.css`,
+  `docs/specs/{DEBT,FEATURES}.md`, `tests/app/{print,states}.js`,
+  `vite.config.mts` (the `src/ports/image.ts` coverage-exclusion comment,
+  updated to say the rejection path is now exercised for real).
+- Commit(s): `3c0fff8 feat(phase-8): B8 record actions, print, motion and
+  focus` - pushed (`8e43c92..3c0fff8 main -> main`; confirmed
+  `git rev-parse HEAD` == `origin/main`).
+- Deviations and rationale:
+  - **A viewport bug in the P16 addition broke the existing `printMedia`
+    checks on the first `npm run check` + browser-suite pass, caught by
+    `node tests/run-all.js app/states,app/print` before commit.** The new
+    `nameLines()` helper (P16) set the shared `d`/`dEn` drivers to
+    1100x900/1100x950 for the measurement and did not restore them, so the
+    `MEDIA_STATES` loop right after it read `main`'s width against a
+    leftover 1100px viewport instead of the expected 1180 (`1085px` instead
+    of `1165px`, three failures). Fixed by restoring each driver to
+    1180x950 (not 1180x900 - `cardFit`'s own last line already leaves `d`
+    there, verified by reading it rather than guessing) in a `finally`
+    inside `nameLines()`. Re-ran `npm run check` (a second full pass, since
+    the tree changed after the first) and both browser gates; both clean.
+    Recorded because a reviewer reading only the diff's intent, not its
+    order of operations, could miss that the fix touches a driver two
+    unrelated blocks share.
+  - **The P16 measurement script is not committed.** It lived in the
+    session's scratchpad directory (outside the repository), not in
+    `tests/` or `tools/` - a one-off inspection per Q2, not a suite the
+    plan asked to add. The measured numbers and the command shape are
+    recorded above and in `FEATURES.md`, "Print", so the inspection is
+    reproducible without the script itself.
+  - **RecordCard.svelte's deleted override was not one of live's 18 named
+    selectors, and used a different offset sign (`-2px`, not `2px`).**
+    D18's own "Where" section lists it among the five deleted
+    (`RecordCard.svelte:337`), so it was deleted per the plan's letter, but
+    it is worth recording that this one was never part of the live parity
+    set at all - `.card-media` sits nowhere in the closed 18-selector list,
+    and its inward offset was presumably chosen to avoid the ring being
+    clipped by `.card`'s own overflow. No golden or test caught a visible
+    change either way (D18's own DEBT text: "no registered state reaches a
+    keyboard focus ring at all").
+  - **`exactOptionalPropertyTypes` needed two follow-up fixes beyond the
+    plan's letter**, both caught by `svelte-check` before commit:
+    `RecordActions.svelte`'s `send()` could not pass `file: undefined`
+    to `Shareable` (rebuilt to spread `{ file }` in only when present); the
+    new `fakeShare().last.file` field needed `(() => Promise<File>) |
+    undefined` instead of `file?: ...` for the same reason. Neither changes
+    behaviour, both are type-only.
+  - **A `prettier --write` was needed on `record.test.ts` and
+    `image.ts`** before `format:check` passed (wrapping only, from the new
+    tests/JSDoc); re-ran `npm run check` clean afterward (folded into the
+    "Gate basis" re-run above, not a third pass).
+- Verification commands and results:
+  - `set -o pipefail; npm run check 2>&1 | tail -n 150` (Bash timeout
+    600000, foreground; per this session's own shell, `rtk npm run check`
+    with no pipe) - green, twice as described in "Deviations": 45 test
+    files, 1130/1130 tests, coverage 96.75/89.05/97.15/97.41, thresholds
+    green, format/lint/svelte-check/derived/selftest/tools all green.
+  - `npm run check:built` - green: build 1.37s, `smoke` ("the built page
+    opens from a folder"), `budget` 91.4 kB gzip within 120 kB.
+  - `node tests/run-all.js app/states,app/print` - green after the
+    viewport fix: `app/print` 169.0s (24 P16 assertions + the two D20
+    checks + everything pre-existing), `app/states` 107.3s (24 cases,
+    including the new copy-image and reduced-motion ones).
+  - `node tests/app/sweep.js 1180` (Bash timeout 600000, foreground) -
+    "обход страниц (dist/): чисто на 1180 (ru, en)".
+  - `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only=#/i/ci1` - 7 states
+    compared, "структурные образцы (dist/): без изменений" - green
+    **without** `--update`. (`MSYS_NO_PATHCONV=1` needed on this Git-Bash
+    host: a bare `--only='#/i/ci1'` gets `/i/` path-converted to `I:/`
+    otherwise, matching this task's "Shell command style" note about this
+    host's quirks; the flag changes nothing about what golden.js itself
+    does.)
+  - `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only=print` - 9 states
+    compared, "без изменений" - green **without** `--update`.
+  - Gates: `npm run check` (full, twice); `npm run check:built`; `node
+    tests/run-all.js app/states,app/print`; `node tests/app/sweep.js 1180`;
+    both `golden.js --only=` probes.
+- Review: required (trigger: this task's own standing policy - every
+  phase-8 batch gets a reviewer, `context.md`).
+
 ## Next batch (implement-ready)
-- **B7 is committed and pushed** (`e80a793`, `dba6755`, both on `main` at
-  `origin/main`). B8 is next: record actions, print, motion and focus (D10,
-  D13, D14, D15, D22, P16, R6, D20, D21, D1, D18). Objective, files, steps,
-  acceptance, gates: `plan.md`, "B8". Re-derive every line number from the
-  file at HEAD before starting, the same instruction every batch this
-  session has been given - B7 touched `RecordCard.svelte`, `PrintCard.svelte`
-  and others B8's own file list may name, and line numbers in the plan's B8
-  section predate B7.
-- B7's own review has not run yet (see "Status", "Review"); it is owed
-  before or alongside B8 per this task's standing review policy.
+- **B8 is committed and pushed** (`3c0fff8`, on `main` at `origin/main`). B9
+  is next: language and format, `tests/` and `tools/` (H1, T7, H13, H16,
+  H15, T12, H11). Objective, files, the four-commit split, acceptance,
+  gates: `plan.md`, "B9". Re-derive every line number from the file at HEAD
+  before starting - B8 touched `tests/app/print.js` and `tests/app/states.js`,
+  both named in B9's own file list, and line numbers in the plan's B9
+  section predate B8.
+- B7's own review landed as `8e43c92` (`issues/phase-8/nits.md`); its four
+  blockers (BL-0..BL-3) are explicitly routed to B7's own remediation
+  cycle, not B8's or B9's. B8's own review has not run yet (see "Status",
+  "Review"); it is owed before or alongside B9 per this task's standing
+  review policy.
 
 ## Notes
 - Mocks path: none (no new UI element).
@@ -1883,3 +2033,12 @@ tree but not landed.
   then the two commits per the plan's split) and the full gate/deviation
   record so a different session could pick this up without re-deriving any
   of it.
+- Cleanup performed / retained artifacts (B8): the P16 measurement script
+  lived in the session's own scratchpad directory (outside the repository)
+  and was never written into the tree - nothing to clean up there. Normal
+  `npm run data`/`npm run build` outputs (`i/`, `dist/`) are
+  gitignored/untracked as usual, regenerated several times over the course
+  of the batch (the P16 build, the gate reruns). `issues/56/` (untracked,
+  another task's) left untouched throughout.
+- Session end partial progress (if any): none - B8 is a committed, pushed,
+  gate-verified single-commit boundary (`3c0fff8`).
