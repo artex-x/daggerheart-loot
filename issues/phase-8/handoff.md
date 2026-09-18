@@ -2,12 +2,15 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress - **B8.1 is committed and pushed.** `d267a0a
-  fix(phase-8): B8.1 - wait for the address to settle before a golden
-  capture` (HEAD, = `origin/main`, confirmed by `git rev-parse HEAD
-  origin/main` agreeing). B1-B8 plus B8's own remediation are already on
-  `main` from before this batch (see the `Completed` section for full
-  per-batch history; not repeated here).
+- Task status: in_progress - **B8.1 is committed and pushed, and its own
+  follow-up fix (the `app/states` case 10 regression B8.1 found) is also
+  committed and pushed.** HEAD is `dc7ed71 fix(phase-8): await the
+  promise-valued clipboard entry in driver.js's write mock` (= `origin/main`,
+  confirmed by `git rev-parse HEAD origin/main` agreeing), on top of
+  `d267a0a fix(phase-8): B8.1 - wait for the address to settle before a
+  golden capture`. B1-B8 plus B8's own remediation are already on `main`
+  from before this batch (see the `Completed` section for full per-batch
+  history; not repeated here).
 - **The three timed owned-list golden failures are fixed, without a
   re-record.** `driver.js` gained `addressSettled()` (polls `location.hash`
   every 40ms, returns once unchanged for `URL_DEBOUNCE_MS + 100`ms, hard
@@ -32,7 +35,10 @@
   touched; no file under `tests/app/snapshots/` touched (both `git diff
   --stat` empty, checked before commit).
 - **A new, unrelated regression was found by this batch's own gates, not
-  caused by it - `main` is not fully green even after B8.1.**
+  caused by it, and is now fixed** (see "B8.1 follow-up" under "Completed",
+  commit `dc7ed71` - `main` is fully green again as of that commit).
+  Left in place below for the root-cause record, since the diagnosis it
+  contains is what the fix was built from.
   `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`
   (this batch's A6 gate) failed at `app/states` case "10 (копия картинки)":
   `SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement':
@@ -62,13 +68,18 @@
   `app/print` and two `golden --only` probes, never `app/states`, against
   the restructured `copyImage()`. Flagged via `spawn_task`
   (`task_5cf6a382`, "Fix driver.js clipboard mock to await promise-valued
-  items") for its own batch rather than folded in here.
+  items") for its own batch rather than folded in here - **fixed in that
+  follow-up batch, `dc7ed71`; the spawned task chip was withdrawn as
+  stale.**
 - **Everything else this batch's gates touch is green**: `app/print`,
   `app/contracts`, `app/typo`, `app/hues`, `stub` all `ok` in that same
   run - the `driver.js` edit is proven to have moved nothing for them.
-- Last agent: implementer (2026-09-18, B8.1 - full implementation, commit,
-  push, handoff update, one new defect found and flagged for a separate
-  batch). Before it: planner (2026-09-18, designed B8.1 - `issues/phase-8/`
+- Last agent: implementer (2026-09-18, B8.1 follow-up - fixed the
+  `app/states` case 10 regression B8.1's own gates found, commit, push,
+  handoff update; did not start B9 or the owed handoff compaction, per
+  dispatch). Before it: implementer (2026-09-18, B8.1 - full implementation,
+  commit, push, handoff update, one new defect found and flagged for a
+  separate batch). Before that: planner (2026-09-18, designed B8.1 - `issues/phase-8/`
   only, no production code, no commits).
 - Branch: `main`
 - Base / starting commit for this batch: `d76082c` (HEAD at dispatch, =
@@ -82,14 +93,18 @@
 - **`main`'s golden suite is green.** All four `node tests/app/golden.js
   --shard=n/4` runs compare clean without `--update` (see "Completed",
   "B8.1" below for each shard's numbers) - the three-golden regression from
-  B8 (`3c0fff8`) no longer applies. `main`'s browser suite as a whole is
-  **not** fully green - see the `app/states` finding above.
+  B8 (`3c0fff8`) no longer applies. **`main`'s browser suite as a whole is
+  now fully green too** - the `app/states` finding below was fixed at
+  `dc7ed71` (see "Completed", "B8.1 follow-up"); `node tests/run-all.js
+  app/print,app/contracts,app/states,app/typo,app/hues,stub` is clean at
+  HEAD.
 - Next batch: **B9** - language and format (`tests/`/`tools/`), per
   `plan.md`. Its own gate list contains a golden shard, which is why B8.1
   had to land first; nothing in B9's stated scope (H1, T7, H13, H16, H15,
   T12, H11) touches `RecordActions.svelte`/`clipboard.ts`/`driver.js`'s
-  clipboard mock, so the `app/states` finding above does not block it -
-  flagging for the orchestrator to confirm that reasoning before dispatch,
+  clipboard mock, so the (now-fixed) `app/states` finding below never
+  blocked it either way - flagging for the orchestrator to confirm that
+  reasoning before dispatch,
   since it is a new call, not one already settled in `plan.md`.
 - **Owed: handoff compaction.** Still owed, unchanged from before this
   batch - see `.claude/skills/handoff/SKILL.md`, "The budget". This batch
@@ -2480,3 +2495,50 @@ tree but not landed.
   another task's) left untouched throughout, per the dispatch.
 - Session end partial progress (if any): none - B7's remediation is a
   committed, pushed, gate-verified single-commit boundary (`6b50945`).
+
+### B8.1 follow-up - the driver's clipboard `write` mock, `app/states` case 10
+- What shipped: `tests/app/driver.js`'s `prepare()` clipboard mock, `write`
+  (~line 850), resolved unconditionally without awaiting the promise-valued
+  `image/png` entry of the `ClipboardItem` it was handed - the real
+  `navigator.clipboard.write` awaits each MIME-type entry internally and
+  rejects if one does, which is what lets `clipboard.ts`'s `try/catch` turn
+  a rejected `pngOf()` (a tainted canvas) into `copied === false`. The mock
+  reported success regardless, so `RecordActions.svelte`'s `copyImage()`
+  took the `imgCopied` branch and the real, still-rejecting `pngOf()`
+  promise was never awaited by anyone - the rejection escaped as an
+  unhandled page error, failing `app/states` case "10 (копия картинки)"
+  deterministically. `write` is now `async`, awaits
+  `Promise.all(Object.values(i[0].map))` before setting `window.__clip`,
+  and lets a rejection propagate - the identical shape `480c380` already
+  used to fix the same bug in `clipboard.ts`'s own `fakeClipboard.writeImage`
+  for the vitest double. Every `window.__clip` reader (`driver.js:527,537,548`,
+  `states.js:360`) was checked first; none depend on the map's shape beyond
+  what `write` already stored, so nothing else needed to change.
+- Files changed: `tests/app/driver.js` only. No `app/src/**` file touched.
+- Commit(s): `dc7ed71 fix(phase-8): await the promise-valued clipboard entry
+  in driver.js's write mock` - pushed (`2fe7ae3..dc7ed71`).
+- Gate results: `node tests/run-all.js app/states` - green (103.5s then
+  116.8s on the second, pooled run). `npm run check` (full, foreground,
+  Bash timeout 600000) - green (format/lint/typecheck, `npm run data`,
+  `tests/derived.js`, `selftest.mjs` 373 passed, all `node --test` suites,
+  `vitest` 1131 tests, coverage thresholds green). `node tests/run-all.js
+  app/print,app/contracts,app/states,app/typo,app/hues,stub` (the pooled
+  subset that surfaced the defect) - all six green, nothing else in it
+  failing (`app/contracts` 267.4s, `app/print` 173.7s, `app/states` 116.8s,
+  `app/typo` 85.9s, `app/hues` 75.9s, `stub` 11.2s). No golden moved
+  (`git diff --stat -- tests/app/snapshots app/src` empty both before and
+  after the commit) - expected, since this touches no component and no
+  golden capture path.
+- The gate-gap this closes: `480c380` (B8's own remediation) introduced
+  this defect but its gates were `npm run check` (vitest only) plus
+  `app/print` and two `golden --only` probes - none of which runs
+  `app/states`, so the mock's browser-level twin of the bug it was fixing
+  in `clipboard.ts` went unnoticed. This is the same gate-gap B8.1 exists
+  to close (a "no golden/suite moved" claim needs the run that actually
+  reaches the affected route/suite, not a hand-picked probe), worth
+  restating here since it bit again one batch later.
+- Review: not required (no trigger fired) - a test-harness-only fix
+  touching no public contract, route, or UI, fully root-caused before this
+  batch started.
+- Session end partial progress (if any): none - this fix is a committed,
+  pushed, gate-verified single-commit boundary (`dc7ed71`).
