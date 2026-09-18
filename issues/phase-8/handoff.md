@@ -255,8 +255,7 @@ pre-compaction text.
   routine Status rewrite - verified, not re-done. `nits.md` updated:
   B9-BL-1, B9-BL-2 and the six record corrections marked `done 0686bb6`
   and moved out of "Outstanding". No deviation.
-- **B10 review remediation** - (sha recorded in the follow-up docs commit,
-  below, to avoid a commit citing its own hash inside its own tree). Two
+- **B10 review remediation** - `bfea223`. Two
   blockers: this handoff's own "B10's own verification" recorded
   `git grep -c "let open = \$state<Record_" -- app/src` as "no matches
   (acceptance line 1)" - the command does not reproduce that. It actually
@@ -280,16 +279,15 @@ pre-compaction text.
   app/src/components/RecordHost.svelte` empty afterward) (B10-B2). Plus
   B10-N6: one sentence added to `docs/specs/FEATURES.md` near line 229 -
   a real navigation closes the modal, a filter pick (`replace()`-shaped)
-  does not. `nits.md` updated: B10-B1, B10-B2 and B10-N6 marked done (sha
-  in the follow-up docs commit) and moved out of "Outstanding"; B10-N1..
-  B10-N5 stay there for B12. No deviation.
+  does not. `nits.md` updated: B10-B1, B10-B2 and B10-N6 marked
+  `done bfea223` and moved out of "Outstanding"; B10-N1..B10-N5 stay there
+  for B12. No deviation.
 
 ## Verification
 
-Latest pass (B10 review remediation, sha recorded in the follow-up docs
-commit - a commit cannot cite its own hash inside its own tree); earlier
-passes' exact commands/results are in git history per "Completed" above,
-and the B9-remediation and B10 runs are preserved below.
+Latest pass (B10 review remediation, `bfea223`); earlier passes' exact
+commands/results are in git history per "Completed" above, and the
+B9-remediation and B10 runs are preserved below.
 
 - `git grep -c "let open = \$state<Record_" -- app/src` (re-run for real,
   B10-B1) - `app/src/components/RecordHost.svelte:2`, not "no matches" as

@@ -454,7 +454,7 @@ sent to a remediation pass; B10-N1..B10-N5 below are B12's. The reviewer ran
 no heavy gate by dispatch (B9's remediation held the tree), so every finding
 is from the commits (`56dabbc`, `506a6ba`) plus cheap read-only greps.
 
-**Both blockers and B10-N6 are done (sha in the follow-up docs commit)** -
+**Both blockers and B10-N6 are done `bfea223`** -
 B10's one remediation cycle is now spent; see `issues/phase-8/handoff.md`,
 "B10 review remediation".
 
@@ -469,7 +469,7 @@ B10's one remediation cycle is now spent; see `issues/phase-8/handoff.md`,
   that anyone can falsify in one second, in a file whose own text invokes
   this task's standing rule against unverified verification claims. The
   exact failure mode this phase has now found three times.
-  done (sha in the follow-up docs commit): the false line replaced with the
+  done `bfea223`: the false line replaced with the
   command's true result (`app/src/components/RecordHost.svelte:2`) and its
   reading, in place.
 - **B10-B2**: the batch's one behaviour change ships with zero coverage.
@@ -482,7 +482,7 @@ B10's one remediation cycle is now spent; see `issues/phase-8/handoff.md`,
   `listPage.test.ts:846`) closes it via the close button or the backdrop.
   The effect's lines are covered because it runs once on mount, so
   `perFile` coverage cannot see this hole.
-  done (sha in the follow-up docs commit): one jsdom test added,
+  done `bfea223`: one jsdom test added,
   `app/src/components/record.test.ts` ("closes on a real navigation, but a
   filter pick or a list mutation would not (RecordHost, C6)") - opens the
   record modal on `#/i/q1`, drives a real `router.navigate()`-shaped
@@ -497,7 +497,7 @@ B10's one remediation cycle is now spent; see `issues/phase-8/handoff.md`,
   `STATE.md:89` lists `modal` under UI memory with no lifetime rule. No
   spec claim was false, but B10 is the commit that made the rule app-wide,
   and a test asserting undocumented app-wide behaviour is half the job.
-  done (sha in the follow-up docs commit): one sentence added near
+  done `bfea223`: one sentence added near
   `FEATURES.md:229` - a real navigation closes the modal, a filter pick
   (which rewrites the address with `replace()`) does not.
 
