@@ -745,6 +745,287 @@ implementer for a field-boundary false match - correct); `SearchPage` and
 - **Goldens**: none (toasts are transient; focus, motion and print media
   are not in the tree).
 
+### B8.1 - the harness lost its settle instrument (the three timed owned-list goldens)
+
+Opened 2026-09-18, after B8 shipped and its remediation cycle closed. `main`
+is red and stays red until this lands, so it precedes B9.
+
+- **Objective**: `node tests/app/golden.js` compares green on all four shards
+  without `--update`, with **no golden re-recorded**, and the harness gains an
+  instrument that makes the class of defect visible instead of silent.
+- **Stands alone because** (the criterion, per `CLAUDE.md`, "Task and session
+  protocol"): **a batch cannot prove "no golden moved" while goldens are
+  already moving.** B9's own gate list contains `node tests/app/golden.js
+  --shard=2/4`, which fails today; folded together, B9 could not tell its own
+  damage from the inherited red. It is also a different file and filter set
+  from B9 (harness + one spec, versus `tests/**`/`tools/**` language and
+  format) and a commit boundary a reviewer needs on its own: a timing fix read
+  next to a thousand-line Prettier reflow is unreviewable, which is B9's own
+  stated reason for its internal commit split.
+- **Not folded into B8**: B8 is committed, reviewed, and its one remediation
+  cycle is spent. **Not folded into B12**: B12 is last and `main` is red now.
+
+#### Root cause, measured (do not re-derive)
+
+`context.md`, "A deterministic B8 regression", carries the decoded evidence
+and the bisect. This batch adds the mechanism, measured on this host
+2026-09-18 with a scratch script against `dist/` at `480c380`, driving
+`#/lists/a ~ removed`'s own `enter`:
+
+| t (ms, from the click) | event |
+|---|---|
+| 0 | `Убрать из списка` clicked |
+| ~19 | click dispatch returns |
+| **~127** | **`driver.js`'s `settle()` returns** |
+| ~174 | `location.hash` actually changes |
+
+and `document.getAnimations()` immediately after the click returns exactly one
+entry, `svelte-…-toastIn`, with **`duration: 0.01`**.
+
+That is the whole defect, in one line: **`settle()` returns 47 ms before the
+app writes the address.** `settle()` (`driver.js:86-95`) waits for every
+running animation to finish (capped at 600 ms) and then sleeps 80 ms. Before
+B8, `Toast.svelte:96`'s `animation: toastIn 0.2s` was a real 200 ms wait under
+the driver's emulated `prefers-reduced-motion: reduce`, so `settle()` returned
+at ~300 ms - comfortably past `ListPage.svelte:142-145`'s 150 ms debounced
+`app.syncListUrl`. B8's D1 (`tokens.css`, the blanket `animation-duration:
+0.01ms !important` on `*` under `reduce`, owner-settled Q5) collapsed that
+200 ms to 0.01 ms. **`settle()` is now an 80 ms sleep with a ceremony in front
+of it**, for every suite that shares the driver - not only goldens.
+
+Why exactly three states fail, sharpened: `timed: true` is **correlated, not
+causal**. The real predicate is *"the `enter` step mutates the list"*, because
+that is what schedules the debounced write; it happens that every list
+mutation also raises a toast, which is why the two sets coincide today. The
+non-mutating owned-list states pass because `ready()` (`driver.js:24-60`)
+waits on images and `document.fonts`, which already exceeds 150 ms - which is
+why `_lists_a.txt` records the post-sync address and still compares clean.
+
+#### Decisions settled here (do not reopen)
+
+**1. Do NOT re-record these three goldens.** The recorded payloads
+(`6.9cfk~ci2…`, `7.r35z~ci1*1*100…`) are the correct post-interaction ones;
+the actuals are the untouched `seven` seed. `--update` on them would pin a
+transient pre-debounce address as expected and destroy the only evidence that
+the app syncs the address at all. This is the tempting wrong move for anyone
+picking this up cold. `.claude/hooks/edit-guard.mjs` refuses a hand edit, so
+`--update` is the only way to get it wrong: do not type it in this batch.
+
+**2. Do NOT flush the URL synchronously in production** (candidate 3,
+rejected). The 150 ms debounce is B6's deliberate choice - one
+`history.replaceState` per keystroke in a note, and WebKit throws past 100 in
+30 s - and R4-1/PF3 already cost a session to the `flushUrlSync`/`del()`
+staleness in this exact code. Shortening or removing it would weaken a real
+browser protection to satisfy a harness's timing. **Never change production
+timing to fix a test's timing.** No production file is touched by this batch.
+
+**3. Do NOT give the three states a per-state settle step in
+`inventory.js`** (candidate 2, rejected as the primary fix). It leaves the
+class open, it puts harness plumbing into a file whose `enter` closures are
+meant to read as what a person does, and it is three copies of one rule. With
+the capture-level wait below, `inventory.js` needs no change at all.
+
+**4. `timed: true` stays, and this is a three-state fix, not a seven-state
+one.** `timed` means two things - arrive fresh per language, and assert the
+toast is up before snapshotting - and both premises rest on toast
+*lifetimes*, which are JS timers (1600/7000 ms, `app.svelte.ts:349`) that D1
+does not touch. The other four timed states (`#/roll/wondrous ~ pinned`,
+`#/i/ci1 ~ toast`, `#/tables ~ selection copied`, `#/lists ~ created`) pass
+**correctly, not by luck**, and the check is mechanical rather than a
+judgement: the app's only timers longer than `settle()`'s 80 ms are
+`ListPage`'s 150 ms URL debounce, the toast's own lifetime, `TablesPage`'s
+1600 ms flash-*off*, and `image.ts`'s 2 s tainted-canvas watchdog. Of those
+only the debounce feeds the accessibility tree, and only on an owned-list
+route. What B8 invalidated is the *justification* written on `waitForToast`
+(`golden.js:359-364` still claims the toast's entrance "is not one of the two
+reduced-motion stays this app turns off" - under D1 it is), not the mechanism.
+
+**5. The driver KEEPS emulating `prefers-reduced-motion: reduce`
+(`driver.js:775`).** The reasoning goes into the code, because this is
+exactly the setting a later session flips without knowing why:
+  - Its written purpose ("takes timing out of the pixel comparison") died at
+    R0c with the parity harness, but a better one replaced it: **D1 is the
+    app's shipped behaviour for a visitor who asked for less motion**, and
+    under the emulation every browser suite exercises that branch. Drop the
+    emulation and D1's blanket rule is covered by `states.js` case 24 alone.
+  - Determinism and wall clock: without it every `settle()` waits a real
+    0.2-0.28 s. `sweep1180-ru` is CI's binding row at 371.9 s (B3 review
+    finding) and presses hundreds of controls; this would add minutes to the
+    row that sets CI's wall clock.
+  - `print.js:758` and `driver.js:666` still take screenshots, so the
+    "lands mid-fade" hazard is not entirely gone.
+  - **What it costs, stated so the ledger is visible**: it blinds
+    `settle()`'s animation wait. That cost is paid by step 4 below, not by
+    flipping the setting.
+
+**6. `settle()`'s animation wait is kept even though it is currently inert.**
+It is the correct instrument if the emulation is ever scoped down, and it
+still catches an animation the CSS rule cannot reach. Only its comment is
+wrong.
+
+#### Files
+
+- `tests/app/driver.js` - new `addressSettled()`; corrected `settle()` and
+  `prepare()` doc comments.
+- `tests/app/golden.js` - call it at both capture points; corrected
+  `waitForToast` doc comment.
+- `tests/app/golden.test.mjs` - the coupling assertion (step 5).
+- `docs/specs/COVERAGE.md` - the gate rule and the capture-wait note.
+- **Not** `app/src/**`, **not** `tests/app/inventory.js`, **not**
+  `tests/app/snapshots/**`, **not** `docs/specs/DEBT.md` (nothing defective is
+  kept on purpose here).
+
+#### Ordered steps
+
+1. **Reproduce first, before touching anything.** `npm run build`, then
+   `node tests/app/golden.js --only="#/lists/a"` (on Windows/git-bash prefix
+   `MSYS_NO_PATHCONV=1`, per B8's handoff). Expect: 11 states compared, 3
+   FAILED, ~25 s. Record the three ids in the handoff. If it comes back green,
+   **stop and report** - the premise of this batch has changed.
+2. `tests/app/driver.js`: add a module-level constant next to `TARGETS`:
+   ```js
+   /* ListPage.svelte's scheduleUrlSync debounces the address write this long.
+      tests/app/golden.test.mjs asserts the two still agree. */
+   const URL_DEBOUNCE_MS = 150;
+   ```
+3. `tests/app/driver.js`: add `addressSettled` to the object `makeDriver`
+   returns, next to `settle()`/`expanded()`:
+   - signature `async addressSettled({ quiet = URL_DEBOUNCE_MS + 100, cap = 2000 } = {})`;
+   - poll `page.evaluate(() => location.hash)` every 40 ms (the cadence
+     `waitForToast` already uses); track the last value and the time it last
+     differed, initialised to the first read;
+   - return as soon as the value has been unchanged for `quiet` ms;
+   - throw after `cap` ms of a hash that keeps changing, with a message naming
+     the last two values.
+   - **The two properties the doc comment must state, because they are why
+     this is an assertion and not a papered-over failure**: (a) it cannot
+     hang - the cap is absolute; (b) it cannot mask a failure to sync - an app
+     that never writes the address is quiet from the first read, so this
+     returns at once and the golden still fails on content, with the same
+     message as today. The only thing it waits for is a write that is *on its
+     way*.
+4. `tests/app/driver.js`: correct the two stale doc comments.
+   - `settle()` (`:75-95`): `:80`'s "B9 deleted the rewrite's blanket
+     reduced-motion kill, so this now runs under reduced motion too" is false
+     since B8 re-added it (Q5). Replace with what is true now: under
+     `prepare()`'s emulation plus `tokens.css`'s blanket kill,
+     `document.getAnimations()` returns only 0.01 ms animations, so `settle()`
+     returns after its 80 ms frame alone - **anything a press defers past that
+     (a debounce, a timer) needs its own assertion**, and `addressSettled()`
+     is the first. Cite the measured 127 ms/174 ms pair.
+   - `prepare()` (`:771-775`): replace the parity-era justification with
+     decision 5 above, in three or four lines, ending with what the emulation
+     costs. A later session must be able to re-decide with the ledger in front
+     of it rather than by guessing what the line was for.
+5. `tests/app/golden.js`:
+   - in `captureState`, call `await d.addressSettled()` immediately before
+     **each** `captureLang` - both the ordinary branch (before the `ru`
+     capture and again before the `en` capture) and the `timed` branch (after
+     `waitForToast`, before the capture). Not gated on `state.timed` and not
+     gated on the route: the harness cannot know which `enter` mutated a list,
+     and a state with nothing pending pays one quiet window and returns.
+   - ordering inside the timed branch is `waitForToast` **then**
+     `addressSettled` - the toast is what the state exists to capture, and the
+     address wait must stay inside the toast's window. Budget, to be written
+     into the comment: the added wait is ~250 ms normally and ~430 ms when a
+     sync lands mid-window, against the shortest toast at 1600 ms.
+   - correct `waitForToast`'s doc (`:359-364`) per decision 4: the claim about
+     "the two reduced-motion stays" is false since B8; under the blanket kill
+     the toast is up within a frame, which makes the poll cheaper, not wrong.
+     Keep the poll.
+6. `tests/app/golden.test.mjs`: one new case making the silent coupling loud -
+   read `app/src/components/ListPage.svelte` and `tests/app/driver.js` as
+   text, assert `ListPage` still schedules its sync at `150` and that
+   `URL_DEBOUNCE_MS` equals it. `tests/derived.js` parsing `ci.yml` is the
+   precedent; the B3 review's matrix/divisor finding is the argument. The
+   failure message says what to do ("the debounce moved - update
+   `URL_DEBOUNCE_MS` and re-run all four golden shards"). It runs inside
+   `npm run check` (`node --test tests/app/golden.test.mjs`) and costs no
+   browser.
+7. `docs/specs/COVERAGE.md`, the `app/golden` row (and/or "Known thin
+   spots") - two additions:
+   - **the gate rule**: a batch's claim that "no golden moved" is proved by at
+     least one `--shard=n/4` run, or by `--only=` probes that between them
+     reach every route kind the change can touch. A hand-picked `--only=`
+     proves only what it measured - B8's `#/i/ci1` and `print` probes were
+     both true and missed three states, because neither reaches an owned-list
+     route.
+   - **the capture wait**: goldens wait for the address to settle before
+     snapshotting, why, and the pointer to decision 5 so the reduced-motion
+     emulation is not flipped blind.
+
+#### Acceptance (each line has its own outcome; none may be left unanswered)
+
+- **A1** The reproduction of step 1 is recorded in the handoff (3 FAILED,
+  their ids, wall clock), **before** the fix.
+- **A2** `node tests/app/golden.js --only="#/lists/a"` - 11 states compared,
+  `структурные образцы (dist/): без изменений`, **without `--update`**.
+- **A3** All four shards green **without `--update`**:
+  `--shard=1/4`, `2/4`, `3/4`, `4/4`, one foreground call each.
+- **A4** Each shard's wall clock is recorded against the ~287 s baseline. If
+  any shard exceeds **372 s** (`sweep1180-ru`, the row that sets CI wall clock
+  per the B3 review finding), say so in the handoff and take the fallback
+  below - past that point this fix starts costing CI time.
+- **A5** `npm run check` green, including the new `golden.test.mjs` case. The
+  implementer proves the case actually bites once, by temporarily changing the
+  `150` in `ListPage.svelte`, watching it fail, reverting, and recording the
+  failure message in the handoff. (The revert is verified by
+  `git diff --stat app/src` being empty at commit time.)
+- **A6** `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`
+  green - `driver.js` is shared by five other suites and this proves the edit
+  moved nothing for them.
+- **A7** No file under `tests/app/snapshots/` is modified. `git diff --stat`
+  on that directory is empty in the commit.
+- **A8** No file under `app/src/` is modified.
+- **A9** The three corrected comments are in the diff (`settle()`,
+  `prepare()`, `waitForToast`), each stating what is true now rather than what
+  was true before B8, and `prepare()`'s carries decision 5's reasoning
+  including what the emulation costs.
+- **A10** `COVERAGE.md` carries the gate rule and the capture-wait note.
+
+#### Gates (each its own foreground call, Bash timeout 600000)
+
+0. `npm run build`
+1. `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/lists/a"` (~25 s -
+   run it before the shards; it is the cheap answer to "did it work")
+2. `rtk npm run check`
+3-6. `node tests/app/golden.js --shard=1/4` … `--shard=4/4`
+7. `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`
+
+Not run: `npm run check:built` (nothing the app draws changes, and no
+production file is touched) and `tests/app/sweep.js` (no suite behaviour
+changes for it - `settle()` itself is unchanged).
+
+**Total gate cost: ~32-37 min over 7 foreground calls** (check 6-11, four
+shards ~20, pooled subset ~5, probe ~0.5).
+
+#### Expected golden movement
+
+**None.** Every one of the 110 states compares green without `--update`. If
+any golden other than the three moves, **stop** - that is a second defect
+found by this fix, not a re-record to absorb.
+
+#### Risks, do-nots, fallback
+
+- Do not type `--update` anywhere in this batch (decision 1).
+- Do not touch `app/src/**` (decision 2). Do not add a test-only hook to
+  production to expose "a sync is pending" - that is the same rule wearing a
+  different hat.
+- Do not fold `addressSettled()` into `settle()`. `sweep1180-ru` presses
+  hundreds of controls at 371.9 s and is CI's binding row; +250 ms per press
+  would add minutes to it.
+- Do not remove `prefers-reduced-motion: reduce` from `prepare()` (decision 5)
+  and do not delete `settle()`'s animation wait (decision 6).
+- Do not absorb B4-1, B4-2, B6-N2 or B7-N13 from `nits.md` even though they
+  name these same files - the register is cleared by B12 by standing policy.
+  B12 re-derives their line numbers from HEAD after this batch.
+- **Fallback, named, taken only if A4 fails**: scope the wait by route in
+  `captureState` - call `addressSettled()` only when `state.route` starts
+  `#/lists/` or `#/l/`. Same helper, one predicate, roughly half the added
+  wall clock. It keeps the class closed for every debounce that exists today
+  (the address is debounced only on list routes) but a future debounce on
+  another route re-finds it, which is why it is the fallback and not the plan.
+
 ### B9 - language and format: `tests/` and `tools/` (H1, T7, H13, H16, H15, T12, H11)
 
 - **Merged from**: first-plan B15 + B16 + B17 + B18.
@@ -961,10 +1242,16 @@ a CI watch ~7 min after B3).
 | B6 | 2 | built, 2 `--only`, states, contracts | 25 min |
 | B7 | 2 | built, 4 shards `--update`, 1 shard verify, sweep 768, states | 45 min |
 | B8 | 1 | built, states+print, sweep 1180, 2 `--only` | 28 min |
+| B8.1 | 1 | build, 1 `--only` probe, 4 golden shards, pooled subset | 35 min |
 | B9 | 4 | pooled subset x2, sweep 390, 1 shard | 40 min |
 | B10 | 1 | 4 shards | 28 min |
 | B11 | 1 | build, fs suites, 2 `--only --update`, verify | 14 min |
-| **Total B2-B11** | **15** | | **~4.5 h** |
+| **Total B2-B11** | **16** | | **~5.1 h** |
+
+B8.1 was added 2026-09-18 after B8 shipped; its criterion is in its own
+section ("Stands alone because"). Its four golden shards are the largest
+single line in the table and are not negotiable down - a hand-picked `--only=`
+is what let the defect through in the first place.
 
 The first plan's B2-B20 shape: 18 `check` runs, 21 golden shard runs, five
 sweep widths - roughly 5.5-6 h before counting review passes. The merge

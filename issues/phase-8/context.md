@@ -219,6 +219,45 @@ in production is a design call, not an implementer's pick.
 Evidence kept: CI logs `test-output/app-golden---shard-{2,3,4}-4.log` from run
 `35324207396`'s failure artifacts.
 
+### The mechanism, measured 2026-09-18 (planner, scratch script, `480c380`)
+
+The section above names the cause correctly. This is the number behind it, so
+no later session re-measures it. Driving `#/lists/a ~ removed`'s own `enter`
+against `dist/` on this Windows host, timing from the click:
+
+| t (ms) | event |
+|---|---|
+| 0 | `Убрать из списка` clicked |
+| ~19 | the click dispatch returns |
+| **~127** | **`tests/app/driver.js`'s `settle()` returns** |
+| ~174 | `location.hash` actually changes |
+
+`document.getAnimations()` immediately after the click returns exactly one
+entry, `svelte-…-toastIn`, with **`duration: 0.01`**.
+
+So `settle()` returns **47 ms before** the app writes the address. `settle()`
+(`driver.js:86-95`) waits for every running animation, capped at 600 ms, then
+sleeps 80 ms. Before B8, `Toast.svelte:96`'s `animation: toastIn 0.2s` was a
+real 200 ms wait even under the driver's emulated reduce, so `settle()`
+returned at ~300 ms - past `ListPage.svelte:142-145`'s 150 ms debounce. D1
+collapsed that 200 ms to 0.01 ms.
+
+Two consequences worth keeping:
+
+- **`settle()` is now an 80 ms sleep with a ceremony in front of it**, for
+  every suite that shares the driver, not only goldens. Anything a press
+  defers past 80 ms now needs its own assertion.
+- **`timed: true` is correlated, not causal.** The real predicate is "the
+  `enter` step mutates the list"; every list mutation happens to raise a
+  toast, which is why the two sets coincide today. The non-mutating owned-list
+  states pass because `ready()` waits on images and `document.fonts`, which
+  already exceeds 150 ms - which is why `_lists_a.txt` records the post-sync
+  address and still compares clean.
+
+The fix is designed in `plan.md`, "B8.1"; the decisions taken there (keep the
+reduced-motion emulation, keep `timed`, keep the debounce, do not re-record)
+are recorded in that section and are not to be reopened without the owner.
+
 ## Constraints
 
 - **Scope fence, owner-set:** no large features. Specifically no consistent

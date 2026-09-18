@@ -36,8 +36,9 @@
   the leading `#/i/`/`#/print/` gets mangled by MSYS path conversion) both
   came back "без изменений" - no golden moved, confirming the review's own
   "no golden can have moved" claim for this remediation's changes too.
-- Last agent: implementer (2026-09-18, B8 remediation - full implementation,
-  commit, push, handoff update).
+- Last agent: planner (2026-09-18, designed B8.1 - `issues/phase-8/` only, no
+  production code, no commits). Before it: implementer (2026-09-18, B8
+  remediation - full implementation, commit, push, handoff update).
 - Branch: `main`
 - Base / starting commit for this remediation: `8de4698` (HEAD at dispatch,
   = `origin/main` per the orchestrator). HEAD is now `480c380`, pushed and
@@ -54,8 +55,24 @@
   an ancestor clips; goldens read structure; axe checks neither. A human eye
   or a screenshot confirming `.card-media`'s ring is drawn inside `.card` at
   both `.full` and `.compact` is still owed.
-- Next batch: **B9** - language and format: `tests/` and `tools/`. See
-  `plan.md`, "B9" and "Next batch (implement-ready)" below.
+- **`main` is red.** Three goldens fail deterministically since B8
+  (`3c0fff8`): `#/lists/a ~ removed`, `~ prices set`, `~ batch deleted`, `ru`
+  only, line 1. Evidence and bisect: `context.md`, "A deterministic B8
+  regression"; the measured mechanism: its "The mechanism, measured
+  2026-09-18" subsection.
+- Next batch: **B8.1** - the harness lost its settle instrument. It precedes
+  B9 because a batch cannot prove "no golden moved" while goldens are already
+  moving, and B9's own gate list contains a golden shard. See `plan.md`,
+  "B8.1" and "Next batch (implement-ready)" below.
+- **Owed: handoff compaction.** This file is over the 150 KB warn line
+  (153 KB before this session's edits) per
+  `.claude/skills/handoff/SKILL.md`, "The budget". Not folded in here: the
+  `Completed` section is ~1,740 lines of per-batch briefs (B1-B8 plus two
+  remediation cycles) and collapsing it to one outcome line per batch means
+  first moving every measurement it holds into `context.md` or its permanent
+  home - not a cheap edit, and not one to interleave with a red `main`. Do it
+  as its own `docs(phase-8): compact task state` commit once B8.1 is green,
+  before B9 is dispatched; estimated saving ~130-140 KB.
 
 ## Completed
 
@@ -1797,7 +1814,15 @@ tree but not landed.
   unfinished for B7.
 
 ## Blockers
-- None. D5/O3's own open question is resolved (implemented and landed in
+- **`main` is red**: three goldens fail deterministically since B8
+  (`3c0fff8`) - `#/lists/a ~ removed`, `~ prices set`, `~ batch deleted`, `ru`
+  only, line 1 (the packed list URL; the title is byte-identical, so D5/O3 is
+  not implicated). It is cleared by **B8.1**, designed and implement-ready in
+  `plan.md`; nothing else may be dispatched first, because every later batch's
+  gate list contains a golden run it could not read. Not a `NEEDS_HUMAN_
+  CONFIRMATION` blocker - B8.1 touches no production file and changes no
+  standing harness rule.
+- Resolved historically: D5/O3's own open question is resolved (implemented and landed in
   B7 - see that entry). The procedural blocker - B7 could not be committed
   without a clean `npm run check` for this exact tree - is cleared: the
   orchestrator obtained one and this session committed and pushed on top of
@@ -2206,18 +2231,52 @@ tree but not landed.
   touched - they stay `outstanding` under "Outstanding - B12's scope" in
   that register, per this task's "nits are processed immediately" policy
   not applying to blockers-and-riders-only remediation cycles.
-- **B9 is next**: language and format, `tests/` and `tools/` (H1, T7, H13,
+- **B8.1 is next, not B9**: the harness lost its settle instrument. Full
+  brief - objective, the measured root cause, six settled decisions, files,
+  seven ordered steps, ten acceptance lines, gates, fallback - is `plan.md`,
+  "B8.1 - the harness lost its settle instrument". Start there; it is written
+  to be executable cold.
+
+  The five things an implementer must not get wrong, repeated here because
+  each is a way this batch can be silently done backwards:
+  1. **Never type `--update`.** The three failing goldens are *right*; the
+     actuals are the untouched seed. Re-recording pins a transient
+     pre-debounce address as expected.
+  2. **Touch no file under `app/src/`.** The 150 ms debounce is B6's
+     deliberate choice (WebKit throws past 100 `replaceState` in 30 s) and
+     R4-1/PF3 already cost a session in that code. No test-only hook in
+     production either.
+  3. **Reproduce before fixing.** `npm run build`, then
+     `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/lists/a"` - expect
+     11 compared, 3 FAILED, ~25 s. Green means the premise changed: stop and
+     report.
+  4. **The gate is four golden shards, not a probe.** A hand-picked `--only=`
+     is exactly what let this through: B8's `#/i/ci1` and `print` probes were
+     both true and neither reaches an owned-list route.
+  5. **Keep `prefers-reduced-motion: reduce` in `driver.js`'s `prepare()`**,
+     and write decision 5's reasoning into its comment. A later session will
+     otherwise flip it blind.
+
+- **After B8.1, B9**: language and format, `tests/` and `tools/` (H1, T7, H13,
   H16, H15, T12, H11). Objective, files, the four-commit split, acceptance,
-  gates: `plan.md`, "B9". Re-derive every line number from the file at HEAD
-  before starting - this remediation touched `docs/specs/COVERAGE.md`,
-  `docs/specs/FEATURES.md` and `tests/app/print.js`; none are named in B9's
-  own file list, but B9's other file-list line numbers should still be
-  re-derived from HEAD per this task's standing practice.
-- Do not fold B8's remaining review nits into B9 - route them through
+  gates: `plan.md`, "B9". B8.1 edits `tests/app/{driver,golden}.js` and
+  `tests/app/golden.test.mjs`; `golden.js` is in B9's own file list (16
+  Cyrillic lines) and `driver.js` (3), so **B9 re-derives both counts and
+  every line number from HEAD after B8.1 lands**. The same applies to the
+  rest of B9's file list: B8's remediation touched `docs/specs/COVERAGE.md`,
+  `docs/specs/FEATURES.md` and `tests/app/print.js`, and B8.1 touches
+  `COVERAGE.md` again, so re-derive every line number from HEAD before
+  starting, per this task's standing practice.
+- Do not fold B8's remaining review nits into B8.1 or B9 - route them through
   `issues/phase-8/nits.md` the same way B4-B7's were, per "Why this file
   exists" in that register. B12 is where the whole outstanding table clears.
 
 ## Notes
+- Cleanup performed / retained artifacts (planner, B8.1 design): a one-off
+  timing script ran against `dist/` from the session scratchpad, outside the
+  repository - not committed, nothing left in the tree (`git status` shows
+  `issues/phase-8/` only). Its numbers are in `context.md`, "The mechanism,
+  measured 2026-09-18", so the inspection does not need the script again.
 - Mocks path: none (no new UI element).
 - Screenshot findings: none (no attachments).
 - Cleanup performed / retained artifacts (B2): `i/` was renamed to `i.bak`
