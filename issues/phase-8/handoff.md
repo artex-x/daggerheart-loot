@@ -2,11 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `607b252`, **B12b** itself, one commit
-  past B12a's own sha-citation
-  follow-up (`4786ea9`), which was one commit past **B12a** (`e52f5de`).
-  `rtk npm run check` is green on B12b (all suites, coverage thresholds
-  met) - see "Verification". Not yet pushed - see "Next batch".
+- Task status: in_progress. HEAD is `24297a8`, B12b's own sha-citation
+  follow-up, one commit past **B12b** itself (`607b252`), which was one
+  commit past B12a's own sha-citation follow-up (`4786ea9`), one commit
+  past **B12a** (`e52f5de`). `rtk npm run check` is green on B12b (all
+  suites, coverage thresholds met) - see "Verification"; nothing since has
+  touched a gated path (`issues/**` markdown is exempt). Pushed:
+  `git rev-parse HEAD origin/main` agreed after the push.
 - Last agent: implementer (2026-09-18, B12b: production source
   (`app/src/**`) and the three new `docs/specs/DEBT.md` entries).
 - Branch: `main`.
@@ -470,7 +472,10 @@ than raise it.
   unstaged, per "preserve unrelated working-tree changes" - `remediate` is
   new since this task's own preflight and is not this piece's to explain or
   remove.
-- Push: not yet done this pass - see "Next batch".
+- Push: `git push origin main` after the sha-citation follow-up
+  (`24297a8`), so both commits landed in one push per this task's own
+  convention; `git rev-parse HEAD origin/main` confirmed both equal
+  `24297a8` afterward.
 
 **A tree-contention note, not a defect in this piece's own changes**: a
 second, concurrent session was actively editing `.claude/hooks/bash-guard.mjs`,
@@ -927,6 +932,6 @@ defect, nothing to remediate here).
   rule exists exactly because a second session's edits can make the first
   session's gate results look like a bug in its own work, which is what
   happened here (see "Verification").
-- Session end partial progress: none - `main` is at a committed,
-  gate-verified boundary (B12b's own sha, see "Completed" and "Status");
-  not yet pushed - see "Next batch".
+- Session end partial progress: none - `main` is at a committed, pushed,
+  gate-verified boundary (B12b's own sha `607b252`, sha-citation follow-up
+  `24297a8`, see "Completed").
