@@ -83,8 +83,8 @@ async function ready(page) {
  * (`tokens.css`'s blanket reduced-motion kill, D1) it is nearly what this
  * has become in practice: under `prepare()`'s emulated
  * `prefers-reduced-motion: reduce` plus that blanket rule,
- * `document.getAnimations()` reports only 0.01ms animations, so the wait
- * above resolves immediately and `settle()` returns after its own 80ms frame
+ * `document.getAnimations()` reports only 0.01ms animations, so the animation
+ * wait below resolves immediately and `settle()` returns after its own 80ms frame
  * alone (measured: ~127ms from a click that finishes dispatching at ~19ms -
  * `issues/phase-8/context.md`, "The mechanism, measured 2026-09-18"). It is
  * kept anyway because it is still the correct instrument for an animation
@@ -395,11 +395,13 @@ function makeDriver(page, target) {
      * Two properties worth stating, because they are what makes this an
      * assertion rather than a papered-over failure:
      *  - it cannot hang - `cap` is an absolute ceiling, not a retry budget;
-     *  - it cannot mask a genuine failure to sync - an app that never writes
-     *    the address is quiet from the very first read, so this returns at
-     *    once and whatever reads the hash next still fails on content, same
-     *    as today. The only thing it waits for is a write that is already on
-     *    its way.
+     *  - it cannot mask a genuine failure to sync - it is bounded, not
+     *    skipped: it always pays one full quiet window (`quiet` ms, ~250ms
+     *    by default, up to ~290ms with the 40ms poll) before returning,
+     *    whether or not the address ever changes, so it never returns "at
+     *    once". What it waits for is only a write landing within `quiet` of
+     *    the call; a write that lands later is missed, and whatever reads
+     *    the hash next still fails red on content, same as today.
      */
     async addressSettled({ quiet = URL_DEBOUNCE_MS + 100, cap = 2000 } = {}) {
       const start = Date.now();

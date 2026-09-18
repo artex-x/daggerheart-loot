@@ -196,8 +196,26 @@ describe('URL_DEBOUNCE_MS - coupled to ListPage.svelte\'s own debounce (issues/p
       path.join(HERE, '..', '..', 'app', 'src', 'components', 'ListPage.svelte'),
       'utf8'
     );
-    const fnMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\}, (\d+)\);/);
-    assert.ok(fnMatch, 'could not find scheduleUrlSync\'s own setTimeout in ListPage.svelte');
+    /* Bounded to the function's own body (up to its closing brace at the
+     * 2-space indent the function itself sits at) rather than an unbounded
+     * [\s\S]*? that would walk past it: an unbounded match still matches
+     * something after a Prettier reflow splits the call across lines (fails
+     * loudly, fine), but if the `150` literal is ever replaced by a named
+     * constant it walks on to the next `}, <digits>);` anywhere later in the
+     * file - silently wrong - and a second setTimeout earlier in this same
+     * function would take the first match - also silently wrong. The
+     * setTimeout-count assertion below closes the second case; the bound
+     * closes the first. */
+    const bodyMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\n  \}/);
+    assert.ok(bodyMatch, 'could not find scheduleUrlSync\'s own function body in ListPage.svelte');
+    const body = bodyMatch[0];
+    assert.equal(
+      body.split('setTimeout').length - 1,
+      1,
+      'scheduleUrlSync has more than one timer - which one is the debounce?'
+    );
+    const fnMatch = body.match(/\}, (\d+)\);/);
+    assert.ok(fnMatch, 'could not find scheduleUrlSync\'s own setTimeout call inside its body');
     const debounceMs = Number(fnMatch[1]);
 
     const driverSrc = readFileSync(path.join(HERE, 'driver.js'), 'utf8');

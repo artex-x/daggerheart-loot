@@ -356,12 +356,15 @@ do - the debounce moved, so `URL_DEBOUNCE_MS` and every golden shard need
 re-running.
 
 **The gate rule for "no golden moved" (issues/phase-8, B8.1).** A batch's
-claim that a change moved no golden is proved by at least one
-`--shard=n/4` run, or by `--only=` probes that between them reach every route
-kind the change can touch - a hand-picked `--only=` proves only what it
-measured. B8 claimed no movement with `--only=#/i/ci1` and `--only=print`;
-both were true, and both missed three failing `#/lists/a` states, because
-neither reaches an owned-list route.
+claim that a change moved no golden is proved by all four `--shard=n/4` runs,
+or by `--only=` probes that between them reach every route kind the change can
+touch - one shard is not enough, and a hand-picked `--only=` proves only what
+it measured. B8's three failures fell one each in shards 2, 3 and 4
+(`~ removed` in shard 2, `~ prices set` in shard 3, `~ batch deleted` in shard
+4), so `--shard=1/4` alone would have come back green and shipped the exact
+defect this rule exists to catch. B8 in fact claimed no movement with
+`--only=#/i/ci1` and `--only=print`; both were true, and both missed all three
+failures, because neither reaches an owned-list route.
 
 **The capture wait.** `golden.js`'s `captureState` calls
 `driver.js`'s `d.addressSettled()` immediately before every snapshot - the

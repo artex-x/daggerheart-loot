@@ -265,6 +265,90 @@ after BL-1, confirming `.card-media`'s ring is drawn inside `.card` at both
 computed style, goldens read structure, axe checks neither - none of them sees
 an outline clipped by an ancestor.
 
+### From B8.1's review (the harness lost its settle instrument)
+
+Verdict **fix-then-continue**. The one blocker, four folded nits, and one
+factual-record correction below are **done in this commit** (B8.1's own
+remediation cycle); everything else in this section is B12's, per this
+task's "nits are processed immediately" policy not applying mid-plan the way
+`orchestrate.prompt.md`'s default does (`context.md`, "Review and nit policy
+for this task").
+
+- **BL-1**: `docs/specs/COVERAGE.md`'s gate rule required only "at least one
+  `--shard=n/4` run", which `--shard=1/4` alone would have satisfied even
+  though B8's three failures fell one each in shards 2, 3 and 4 - the rule as
+  written would have shipped the exact defect it exists to prevent.
+  Done: rewritten to require all four shards (or `--only=` probes reaching
+  every route kind the change can touch), with the shard-2/3/4 counterexample
+  cited in the rule's own text so it cannot be re-weakened unread.
+- **NIT-1**: `tests/app/driver.js`'s `addressSettled()` doc comment claimed an
+  app that never writes the address "is quiet from the very first read, so
+  this returns at once" - false; `lastChange` initialises to `start`, so the
+  helper always pays one full quiet window before returning, whether or not
+  the address ever changes. The no-masking property holds because the wait is
+  bounded, not because it is skipped.
+  Done: comment rewritten to say what is true - it returns after one quiet
+  window having waited for nothing when nothing was pending; it waits only
+  for a write landing within `quiet` of the call; a later write is missed and
+  the golden then fails red on content, same as today.
+- **NIT-2**: `tests/app/driver.js` (`settle()`'s doc comment) - "so the wait
+  above resolves immediately" pointed at the `getAnimations()` race, which
+  sits below the comment, inside the function body.
+  Done: "the animation wait below".
+- **NIT-3**: `tests/app/golden.js` - the comment explaining the `timed`
+  branch's `addressSettled()` call sat above `const oneLang = ...` rather
+  than at the call site, reading as if the ordinary branch five lines up were
+  its antecedent.
+  Done: moved to sit directly above the call, inside `oneLang`.
+- **NIT-4**: `tests/app/golden.test.mjs`'s coupling regex,
+  `/function scheduleUrlSync[\s\S]*?\}, (\d+)\);/`, was unbounded past
+  `scheduleUrlSync`'s own function body - a literal-to-named-constant refactor
+  would walk on to the next `}, <digits>);` anywhere later in the file
+  (silently wrong), and a second `setTimeout` earlier in the same function
+  would take the first match (also silently wrong); only the absence of any
+  other such literal in `ListPage.svelte` kept it from biting today.
+  Done: the match is now bounded to the function body
+  (`/function scheduleUrlSync[\s\S]*?\n  \}/`, verified against the file
+  before relying on it - the function is at 2-space indent, its closing brace
+  is the first `\n  }` after the opener), plus an assertion that the body
+  contains exactly one `setTimeout`. Proved to actually bite: each of the
+  three refactor cases (a Prettier-style split call, the literal replaced by
+  a named constant, a spurious second `setTimeout` earlier in the function)
+  was made in the working tree and each failed the test loudly with a
+  distinct message, then reverted by hand (`git diff --stat -- app/src`
+  empty afterward - `git checkout`/`restore` are refused by the bash-guard
+  hook while `issues/56/`, another task's untracked directory, sits in this
+  same tree).
+- **NIT-9** (`issues/phase-8/handoff.md`): `Review:` read "not required (no
+  trigger fired)" for B8.1 in both `## Status` and the `### B8.1` Completed
+  entry, while the same entries describe a worker-reported deviation (the A6
+  gate's `app/states` finding) - a listed trigger in `orchestrate.prompt.md`.
+  A review did in fact happen (this one); the record was wrong, not the
+  policy.
+  Done: both locations now read `required (trigger: worker reported
+  deviation from plan)`.
+
+The review also confirmed both of B8.1's central claims independently rather
+than taking them on trust: the fix and its gates are sound (all four golden
+shards compare clean, the coupling test bites, no `app/src/**` or
+`tests/app/snapshots/**` file touched), and the `app/states` case-10 failure
+A6 found is a real, pre-existing, unrelated regression rather than host
+contention - both matching what the implementer's own handoff already
+recorded.
+
+| id | where | what |
+|---|---|---|
+| B8.1-R1 | (verified reasoning, no action) | The "never returns at once" finding (NIT-1's root cause) - confirmed by reading `addressSettled`'s loop: `lastChange` starts at call time, so `now - lastChange >= quiet` cannot be true on the first iterations regardless of the address. |
+| B8.1-R2 | (verified reasoning, no action) | The `cap` throw is effectively unreachable in practice and, if it ever fires, is not the real truncation risk - a late write inside `cap` but outside the golden's own patience fails the comparison red on content, which is the intended, loud failure mode, not a silent one. |
+| B8.1-R3 | (verified reasoning, no action) | The ~208ms margin `addressSettled()`'s wait leaves before the shortest toast lifetime (1600ms) is adequate today but does not scale with a slower host; the 111-119s per-shard times recorded in this batch's own gate run are D1 removing animation waits (B8), not evidence of contention on the machine that ran B8.1's gates. |
+| B8.1-R4 | (verified reasoning, no action) | The timed states' toast margin shrank roughly 25% under this fix (capture now lands ~380-560ms into a 1600ms toast lifetime, versus before); documented in `golden.js`'s own comment, and the failure mode if it is ever too tight is loud (a missing toast), not silent. |
+| B8.1-R5 | (verified reasoning, no action) | Scoping `addressSettled()`'s call to goldens only, not to every suite sharing `driver.js`, is the right call - with one residual: `tests/app/contracts.js:37-38` reads an owned-list address immediately after `d.open()` and passes only because `ready()`'s own wait happens to already exceed 150ms, not because anything there asserts settlement. See B8.1-N... below (routed as NIT-7). |
+| B8.1-R6 | (verified reasoning, no action; closed by NIT-4) | The coupling assertion (`golden.test.mjs`) proves `URL_DEBOUNCE_MS` equals whatever number the regex extracts, not that the regex extracted the right one - it proves the comparison, not the extraction. NIT-4's bound and setTimeout-count assertion close the extraction half. |
+| B8.1-N1 | (taste) | Nothing guards the *call sites* of `addressSettled()`: deleting `await d.addressSettled()` from `golden.js` would reintroduce the original defect with no unit-level signal, only intermittent red golden shards on an owned-list route. |
+| B8.1-N2 | `tests/app/states.js:838` | *(deferred-scope)* Still justifies the reduced-motion emulation with the parity-era "timing out the pixel comparisons" reasoning this batch's own `prepare()`/`settle()` comment fixes retired. The fourth stale cross-reference of that family found across phase-8. |
+| B8.1-N3 | `tests/app/contracts.js` (before its hash read, per B8.1-R5) | *(deferred-scope)* Add `await d.addressSettled()` before the owned-list hash read at `:37-38`, so the pass stops resting on `ready()`'s wait happening to already exceed 150ms. |
+| B8.1-N4 | `docs/specs/COVERAGE.md` | The three B8.1-inserted paragraphs (the coupling-assertion note, the gate rule, the capture-wait note) sit between the pre-existing `golden.test.mjs` paragraph and a line whose "those fixtures" antecedent is the fixture table far above (`:243-245`), not anything adjacent. `plan.md` step 7 pointed at the `app/golden` table row or "Known thin spots" as candidate homes; neither was used. Considered moving the block now (it is BL-1's own paragraph and this pass is already in the file) - not done: the `app/golden` row is one dense table cell and "Known thin spots" is a bulleted list, so landing prose paragraphs in either is a format change beyond a nit-sized edit, not a cheap, clearly-right move. Recorded for B12 instead. |
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |

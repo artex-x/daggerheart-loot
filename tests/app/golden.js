@@ -424,14 +424,6 @@ if (require.main === module) {
       }
     }
 
-    /* `addressSettled()` runs unconditionally here too, not gated on the
-     * route: the harness cannot know in general which `enter` mutated a
-     * list, and a state with no pending sync pays one quiet window
-     * (URL_DEBOUNCE_MS + 100ms, ~250ms - or up to ~430ms if a sync lands
-     * mid-window) and returns, against the shortest toast lifetime of
-     * 1600ms. It comes after `waitForToast`, not before: the toast is what
-     * this state exists to capture, so the address wait has to stay inside
-     * the toast's own window rather than push the capture past it. */
     const oneLang = async (lang) => {
       const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
       try {
@@ -439,6 +431,15 @@ if (require.main === module) {
         if (state.enter) await state.enter(d);
         if (lang !== 'ru') await d.click('EN');
         await waitForToast(page, state.id, lang);
+        /* `addressSettled()` runs unconditionally here too (see the ordinary
+         * branch above), not gated on the route: the harness cannot know in
+         * general which `enter` mutated a list, and a state with no pending
+         * sync pays one quiet window (URL_DEBOUNCE_MS + 100ms, ~250ms - or up
+         * to ~430ms if a sync lands mid-window) and returns, against the
+         * shortest toast lifetime of 1600ms. It comes after `waitForToast`,
+         * not before: the toast is what this state exists to capture, so the
+         * address wait has to stay inside the toast's own window rather than
+         * push the capture past it. */
         await d.addressSettled();
         return await captureLang(page, d);
       } finally {

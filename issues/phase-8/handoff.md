@@ -85,11 +85,11 @@
 - Base / starting commit for this batch: `d76082c` (HEAD at dispatch, =
   `origin/main` per the orchestrator). HEAD is now `d267a0a`, pushed and
   confirmed equal to `origin/main`.
-- Review: not required for this batch (no trigger fired per
-  `.claude/prompts/orchestrate.prompt.md` - a test-harness timing fix
-  touching no public contract, route, or UI; the implementer reported no
-  uncertainty about the fix itself, only the separately-flagged unrelated
-  finding above).
+- Review: required (trigger: worker reported deviation from plan -
+  `.claude/prompts/orchestrate.prompt.md`; the implementer's A6 gate found
+  and reported the separately-flagged unrelated `app/states` regression, a
+  deviation from the plan's literal "all green" gate list, and a review did
+  in fact run - see "Completed", "B8.1"'s review section for its findings).
 - **`main`'s golden suite is green.** All four `node tests/app/golden.js
   --shard=n/4` runs compare clean without `--update` (see "Completed",
   "B8.1" below for each shard's numbers) - the three-golden regression from
@@ -2308,10 +2308,11 @@ tree but not landed.
 - Commit: `d267a0a fix(phase-8): B8.1 - wait for the address to settle
   before a golden capture` - pushed (`d76082c..d267a0a`); `git rev-parse
   HEAD origin/main` agree.
-- Review: not required (no trigger fired - a test-harness timing fix
-  touching no public contract, route, or UI control; see "Blockers"/
-  "Status" for the separate, unrelated `app/states` finding this batch's
-  own gates surfaced but did not cause).
+- Review: required (trigger: worker reported deviation from plan - the A6
+  gate's `app/states` failure, unrelated to and not caused by this batch,
+  was reported rather than silently absorbed; see "Blockers"/"Status" for
+  the finding and `issues/phase-8/nits.md`, "From B8.1's review" for what
+  the review returned).
 - Deviations and rationale: none from the plan's letter for the golden fix
   itself. One deviation from the literal gate order: A6's suite
   (`node tests/run-all.js app/print,app/contracts,app/states,app/typo,
