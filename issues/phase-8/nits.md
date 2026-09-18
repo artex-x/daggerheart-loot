@@ -49,26 +49,26 @@ live in their own review section below, not repeated here.
 
 | id | verdict |
 |---|---|
-| B4-R1 | done `<pending, see B12c sha-citation follow-up>`, this piece (`dirReader`'s jsdoc narrowed to the one Pages rule it actually emulates, with the three measured divergences named as why they don't matter to any check here) |
-| B4-R2 | done `<pending, see B12c sha-citation follow-up>`, this piece (`check-site.test.mjs`'s shape test now asserts the exact count, 21, and the exact sorted distinct path set, not `length > 10`) |
-| B4-R3 | done `<pending, see B12c sha-citation follow-up>`, this piece (`fetchReader`'s jsdoc reworded: states the true worst-case retry budget, ~19 minutes, and that it can still exceed `deploy`'s own 10-minute job timeout - reword, not a behaviour change) |
-| B4-R4 | done `<pending, see B12c sha-citation follow-up>`, this piece (`tests/derived.js` asserts `404.html` contains `SITE`'s own pathname) |
-| B4-1 | done `<pending, see B12c sha-citation follow-up>`, this piece (`golden.test.mjs` gained a `serializeTree` test pinning rule A's elision-summary line and rule B's `[namelen=... namehash=...]` suffix together; `KEEP_KEYS`/`sigOf`/`lineFor`/`controlLine` dropped from `golden.js`'s `module.exports` - each is used internally only, and a `git grep` outside `golden.js` for all four found nothing) |
-| B4-2 | done `<pending, see B12c sha-citation follow-up>`, this piece (`golden.test.mjs` gained a 12-child interleaved checkbox/button case for `elisionOf`, proving whole-list grouping where a run-detection algorithm would elide nothing at all) |
-| B4-3 | done `<pending, see B12c sha-citation follow-up>`, this piece (`ci.yml`'s guard step gained the `echo` before the `if` - the deploy log now actually carries the stub-count line; **the original acceptance line stays recorded as unmet at B4**, per the plan's own instruction - see `handoff.md`) |
-| B4-4 | done `<pending, see B12c sha-citation follow-up>`, this piece (`ci.yml`'s DP2 guard now reads `_site/catalog.csv`, not the repo-root copy, so a truncated collect-step copy is exercised) |
-| B4-5 | done `<pending, see B12c sha-citation follow-up>`, this piece (`tests/derived.js` gained two local assertions: `404.html` carries `noindex` and its `id="app-404"` marker) |
-| B4-6 | done `<pending, see B12c sha-citation follow-up>`, this piece (`.prettierignore`'s shared comment reworded to give `404.html` its own clause instead of inheriting `app/index.html`'s singular one) |
-| B4-7 | done `<pending, see B12c sha-citation follow-up>`, this piece (the bare `fetch-depth: 0` dropped from the `check` job's checkout - `git diff --exit-code` needs no history) |
+| B4-R1 | done `639f7eb`, this piece (`dirReader`'s jsdoc narrowed to the one Pages rule it actually emulates, with the three measured divergences named as why they don't matter to any check here) |
+| B4-R2 | done `639f7eb`, this piece (`check-site.test.mjs`'s shape test now asserts the exact count, 21, and the exact sorted distinct path set, not `length > 10`) |
+| B4-R3 | done `639f7eb`, this piece (`fetchReader`'s jsdoc reworded: states the true worst-case retry budget, ~19 minutes, and that it can still exceed `deploy`'s own 10-minute job timeout - reword, not a behaviour change) |
+| B4-R4 | done `639f7eb`, this piece (`tests/derived.js` asserts `404.html` contains `SITE`'s own pathname) |
+| B4-1 | done `639f7eb`, this piece (`golden.test.mjs` gained a `serializeTree` test pinning rule A's elision-summary line and rule B's `[namelen=... namehash=...]` suffix together; `KEEP_KEYS`/`sigOf`/`lineFor`/`controlLine` dropped from `golden.js`'s `module.exports` - each is used internally only, and a `git grep` outside `golden.js` for all four found nothing) |
+| B4-2 | done `639f7eb`, this piece (`golden.test.mjs` gained a 12-child interleaved checkbox/button case for `elisionOf`, proving whole-list grouping where a run-detection algorithm would elide nothing at all) |
+| B4-3 | done `639f7eb`, this piece (`ci.yml`'s guard step gained the `echo` before the `if` - the deploy log now actually carries the stub-count line; **the original acceptance line stays recorded as unmet at B4**, per the plan's own instruction - see `handoff.md`) |
+| B4-4 | done `639f7eb`, this piece (`ci.yml`'s DP2 guard now reads `_site/catalog.csv`, not the repo-root copy, so a truncated collect-step copy is exercised) |
+| B4-5 | done `639f7eb`, this piece (`tests/derived.js` gained two local assertions: `404.html` carries `noindex` and its `id="app-404"` marker) |
+| B4-6 | done `639f7eb`, this piece (`.prettierignore`'s shared comment reworded to give `404.html` its own clause instead of inheriting `app/index.html`'s singular one) |
+| B4-7 | done `639f7eb`, this piece (the bare `fetch-depth: 0` dropped from the `check` job's checkout - `git diff --exit-code` needs no history) |
 | B4-8 | closed (no change - `handoff.md` was compacted since B4; no batch's Completed entry carries a per-entry `Review:` field any longer, so "in `## Status` rather than its own entry" no longer maps onto the file's structure) |
 | B4-9 | done `e52f5de`, this piece (`docs/specs/META.md` section 7 reflowed) |
 | B4-10 | closed (no change - `plan.md`'s own decision, real branch-build justification) |
-| B5-R1 | done `<pending, see B12c sha-citation follow-up>`, this piece (`tests/craft.js` gained an assertion pinning O6's one-`<p>`-per-line rendering against record `w6`, a real multi-line record) |
+| B5-R1 | done `639f7eb`, this piece (`tests/craft.js` gained an assertion pinning O6's one-`<p>`-per-line rendering against record `w6`, a real multi-line record) |
 | B5-R2 | done `e52f5de`, this piece (`docs/specs/COVERAGE.md` gained the "no golden moved is narrower than it sounds" paragraph) |
 | B5-R3 | closed (no change - `plan.md`'s own decision, no instrument short of a CSS test this repo does not have) |
 | B5-N1 | done `e52f5de`, this piece (`.claude/README.md`'s cost table gained a `run-all.js --shard=n/m` row) |
 | B5-N2 | done `e52f5de`, this piece (`.claude/README.md`'s Hooks row states the asymmetry) |
-| B5-N3 | done `<pending, see B12c sha-citation follow-up>`, this piece (`vite.config.mts`'s threshold comment moved to sit above `Button.svelte`, reworded for three named exceptions rather than "the one exception") |
+| B5-N3 | done `639f7eb`, this piece (`vite.config.mts`'s threshold comment moved to sit above `Button.svelte`, reworded for three named exceptions rather than "the one exception") |
 | B5-N4 | done `e52f5de`, this piece (`docs/specs/COVERAGE.md` names all three carve-outs) |
 | B5-N5 | done `607b252`, this piece (`badge.test.ts`'s third case now ends `expectNoA11yViolations`) |
 | B5-N6 | done `607b252`, this piece (`badge.test.ts:1`'s header now says eleven variants) |
@@ -77,14 +77,14 @@ live in their own review section below, not repeated here.
 | B5-N9 | done `607b252`, this piece (`alt.test.ts` asserts every non-top rarity bumps) |
 | B5-N10/11/12 | done `607b252`, this piece - `RARITIES` (`app/src/lib/alt.ts:25`) confirmed to have real callers (`AltPanel.svelte`, `TablesPage.svelte`, `alt.test.ts`), so kept, not deleted; all three comments (`roll.ts:14`, `alt.ts:25`, `listLink.ts:14`) reworded to their true reasons |
 | B5-N13 | done `607b252`, this piece (`RecordModal.svelte` gained a comment on why toasting from inside the modal still works) |
-| B5-N14 | done `<pending, see B12c sha-citation follow-up>`, this piece (`tests/run-all.js`'s weight comment reworded to drop "the reviewer re-ran the packer"; `Badge.svelte`'s comment reworded to state the actual reason - an earlier deliberate decision to wait for a third real copy, not a missed second-use deadline) |
+| B5-N14 | done `639f7eb`, this piece (`tests/run-all.js`'s weight comment reworded to drop "the reviewer re-ran the packer"; `Badge.svelte`'s comment reworded to state the actual reason - an earlier deliberate decision to wait for a third real copy, not a missed second-use deadline) |
 | B5-N15 | already done `0f0c73b` - `tests/run-all.js`'s empty-shard message is already English ("shard ... is empty: fewer suites than bins"), fixed incidentally by B9's translation sweep |
 | B6-R1 | live - routed to Deferred, this piece (see "Deferred out of phase-8") |
 | B6-R3 | done `607b252`, this piece (`app.svelte.ts`'s `go()` only sets `#expectHash` when the hash actually changes - proved to bite: a new `app.test.ts` case failed 2 navigations instead of 3 with the guard reverted, passed restored) |
 | B6-R4 | done `607b252`, this piece (`ListPage.svelte` gained a `visibilitychange` flush beside `pagehide`, sharing `flushUrlSync`'s own no-double-flush guard - proved to bite: a new `listPage.test.ts` case failed with the listener reverted, passed restored) |
 | B6-R5 | live - routed to Deferred, this piece |
 | B6-N1 | live |
-| B6-N2 | done `<pending, see B12c sha-citation follow-up>`, this piece (`golden.test.mjs` gained a `slugOf` uniqueness assertion over the whole `STATES` inventory - 112/112 confirmed distinct) |
+| B6-N2 | done `639f7eb`, this piece (`golden.test.mjs` gained a `slugOf` uniqueness assertion over the whole `STATES` inventory - 112/112 confirmed distinct) |
 | B6-N3 | done `607b252`, this piece (`StorageNotice.svelte`'s comment now says it takes two writes, not one) |
 | B6-N4 | live - routed to Deferred, this piece |
 | B6-N5 | done `607b252`, this piece (`storage.ts`'s `onExternalChange` comment corrected - `watch()` does no merge for either shape) |
@@ -124,18 +124,18 @@ live in their own review section below, not repeated here.
 | B8.1-R4 | closed (no change - verified reasoning) |
 | B8.1-R5 | closed (no change - verified reasoning) |
 | B8.1-R6 | closed (no change - verified reasoning, and NIT-4 already closes the actionable half) |
-| B8.1-N1 | done `<pending, see B12c sha-citation follow-up>`, this piece (`golden.test.mjs` gained a source-text assertion counting `golden.js`'s three `await d.addressSettled()` call sites - a call-site guard, per this row's own *(taste)* framing: it proves the calls are still there, not that they are in the right place) |
+| B8.1-N1 | done `639f7eb`, this piece (`golden.test.mjs` gained a source-text assertion counting `golden.js`'s three `await d.addressSettled()` call sites - a call-site guard, per this row's own *(taste)* framing: it proves the calls are still there, not that they are in the right place) |
 | B8.1-N2 | live - not one of this plan's five named Deferred rows, stays Outstanding |
 | B8.1-N3 | live - same |
 | B8.1-N4 | closed (no change - the review's own conclusion stands: a location fix is a format change beyond nit-size, the same class as `B4-10`/`B5-R2`/`B5-R3`) |
 | B9-R1 | closed (no change - a documented risk, per the review's own framing ("risk, recorded")); no action was ever specified |
-| B9-R2 | done `<pending, see B12c sha-citation follow-up>`, this piece - one edit with B9-N5 (see below) |
+| B9-R2 | done `639f7eb`, this piece - one edit with B9-N5 (see below) |
 | B9-R3 | closed (no change - verified sound, the reviewer's own grading) |
-| B9-N3 | done `<pending, see B12c sha-citation follow-up>`, this piece (`tests/contracts.js` wired to `./ok.js`; its own inline fail counter deleted) |
-| B9-N5 | done `<pending, see B12c sha-citation follow-up>`, this piece - one edit with B9-R2: `no-regex-spaces` fixed at all 5 measured sites (`derived.js:798,819,821,841`, `golden.test.mjs:231`, literal double-space runs replaced with `{2}`/`{4}`); `preserve-caught-error` narrowed to three inline `eslint-disable-next-line` comments at its exact pre-existing sites (`tools/artwork/run.mjs`, `tools/tg-preview/run.mjs`, `tests/app/driver.js:369`), replacing the directory-wide off, so a *new* catch/rethrow is still caught; `@typescript-eslint/no-extraneous-class`'s two constructor-only classes (`tools/capture-share-fixture.mjs`, `tests/app/driver.js:859`) rewritten as plain constructor functions; `no-useless-assignment`'s one dead `let live = null` initialiser (`tools/tg-preview/live.mjs:75`) dropped. `npx eslint .` clean afterward. |
-| B9-N6 | done `<pending, see B12c sha-citation follow-up>`, this piece (`eslint.config.mjs`'s block comment reworded to the durable per-rule reasons instead of citing this batch's own retracted `git diff -w --stat` acceptance line) |
+| B9-N3 | done `639f7eb`, this piece (`tests/contracts.js` wired to `./ok.js`; its own inline fail counter deleted) |
+| B9-N5 | done `639f7eb`, this piece - one edit with B9-R2: `no-regex-spaces` fixed at all 5 measured sites (`derived.js:798,819,821,841`, `golden.test.mjs:231`, literal double-space runs replaced with `{2}`/`{4}`); `preserve-caught-error` narrowed to three inline `eslint-disable-next-line` comments at its exact pre-existing sites (`tools/artwork/run.mjs`, `tools/tg-preview/run.mjs`, `tests/app/driver.js:369`), replacing the directory-wide off, so a *new* catch/rethrow is still caught; `@typescript-eslint/no-extraneous-class`'s two constructor-only classes (`tools/capture-share-fixture.mjs`, `tests/app/driver.js:859`) rewritten as plain constructor functions; `no-useless-assignment`'s one dead `let live = null` initialiser (`tools/tg-preview/live.mjs:75`) dropped. `npx eslint .` clean afterward. |
+| B9-N6 | done `639f7eb`, this piece (`eslint.config.mjs`'s block comment reworded to the durable per-rule reasons instead of citing this batch's own retracted `git diff -w --stat` acceptance line) |
 | B9-N10 | done `e52f5de`, this piece (`context.md:165`'s header cells now read `want`/`got`) |
-| B9-N11 | done `<pending, see B12c sha-citation follow-up>`, this piece (`@typescript-eslint/no-require-imports`'s off narrowed to `files: ['tests/**/*.js', 'tools/**/*.js']` - all 60 measured sites are `.js`; a future `.mjs` tool reaching for `require` is still caught) |
+| B9-N11 | done `639f7eb`, this piece (`@typescript-eslint/no-require-imports`'s off narrowed to `files: ['tests/**/*.js', 'tools/**/*.js']` - all 60 measured sites are `.js`; a future `.mjs` tool reaching for `require` is still caught) |
 | B10-N1 | done `607b252`, this piece (`RecordHost.svelte`'s header comment gained the `app.hash`-rejection sentence back) |
 | B10-N2 | done `607b252`, this piece (`extra`'s return type narrowed - no `\| undefined` on the function's own return) |
 | B10-N3 | done `607b252`, this piece (`index: Index \| null`, dropped `\| undefined`) |
@@ -836,8 +836,8 @@ step 7 is recorded as a discrepancy, not silently resolved by dropping one.)*
   B12a) under a new heading. Two string changes (`B8-N2`'s `imgFailed`)
   checked against `tests/app/snapshots/` first - zero hits, stayed
   check-gated in this piece as the plan's own rule requires.
-- **B12c** - harness, tooling and CI - `<pending, see B12c sha-citation
-  follow-up>`. Review: not run (owner's decision, 2026-09-18 - see
+- **B12c** - harness, tooling and CI - `639f7eb`. Review: not run
+  (owner's decision, 2026-09-18 - see
   `context.md`, "Review and nit policy for this task"). All 23 rows landed
   as real edits, none moving rendered output (this piece's own criterion):
   `B4-R1`, `B4-R2`, `B4-R3`, `B4-R4`, `B4-1`, `B4-2`, `B4-3`, `B4-4`, `B4-5`,

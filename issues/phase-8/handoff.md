@@ -2,9 +2,9 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `<pending, see B12c sha-citation
-  follow-up>`, **B12c** itself, one commit past B12b's own sha-citation
-  follow-up (`24297a8`), which was one commit past **B12b** (`607b252`).
+- Task status: in_progress. HEAD is `639f7eb`, **B12c** itself, one
+  commit past B12b's own sha-citation follow-up (`24297a8`), which was one
+  commit past **B12b** (`607b252`).
   `rtk npm run check` is green on B12c (all suites, coverage thresholds
   unchanged) - see "Verification". Pushed and CI-watched: see
   "Verification" for the run id and what the deploy log shows for the
@@ -386,7 +386,7 @@ pre-compaction text.
   zero hits, so both stayed check-gated in this piece rather than moving to
   `B12d`. No deviation.
 - **B12c - harness, tooling and CI** -
-  `<pending, see B12c sha-citation follow-up>`. Review: not run (owner's
+  `639f7eb`. Review: not run (owner's
   decision, 2026-09-18 - see "Status"). All 21 live rows landed as real
   edits (`B4-R1`-`B4-R4`, `B4-1`-`B4-7`, `B5-R1`, `B5-N3`, `B5-N14`,
   `B6-N2`, `B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`, `B9-N11`); `B4-10`
@@ -451,7 +451,69 @@ remediation, B10 and B10-remediation runs are preserved below.
 
 ### B12c's own verification
 
-<!-- filled in after the push and the CI watch - see the sha-citation follow-up -->
+- `npx eslint .` (before wiring the check-gate) - clean, no output, after
+  all four rule turn-offs were replaced (`no-regex-spaces`/
+  `no-extraneous-class`/`no-useless-assignment` fixed at every measured
+  site; `preserve-caught-error` narrowed to three inline
+  `eslint-disable-next-line` comments). The first attempt at the three
+  inline disables put the directive on its own multi-line comment block,
+  five lines above the `throw new Error(` it was meant to cover -
+  `eslint-disable-next-line` only covers the *literal* next line, and a
+  multi-line `//` comment block is not the statement below it, so the
+  directive landed on a comment line (an "unused directive" warning) while
+  the real violation still fired three lines later. Fixed by moving the
+  directive comment to be the last line immediately before the `throw`,
+  with the explanation above it; re-run clean.
+- `npx prettier --check .` - 3 files flagged (`tests/app/golden.test.mjs`,
+  `tests/craft.js`, `tests/derived.js`), `npx prettier --write` on those
+  three, re-checked clean.
+- `node --test tests/app/golden.test.mjs` - 21/21 passed, including the
+  three new cases (`serializeTree`, the interleaved-signature `elisionOf`
+  case, `slugOf` uniqueness) and the `addressSettled()` call-site count.
+- `node --test tools/check-site.test.mjs` - 10/10 passed, including the
+  rewritten "checks() shape" case (exact count 21, exact sorted path set).
+- `node tools/build.js` then `npm run build` (dist/ was stale from before
+  this piece's edits) then `node tests/run-all.js
+  contracts,derived,dataint,craft,stub` - all five green (`stub` failed
+  once first, on B11-R1's own stale-`dist/` guard, correctly - `npm run
+  build` had not run yet after the data regeneration; green on the retry).
+- `rtk npm run check` (bare, foreground) - green, twice (the second run
+  after the `addressSettled()` call-site test was added, which touched a
+  covered path and had to re-arm the gate): format:check, lint, typecheck
+  (551 files, 0 errors/warnings), `node --check tools/check-site.mjs`,
+  `npm run data`, `node tests/derived.js` (including the two new 404.html
+  assertions and the SITE-pathname assertion), `node
+  .claude/hooks/selftest.mjs` (430/430), every `node --test` suite
+  (`tools/tg-preview/lib.test.mjs` 110/110, `tools/artwork/lib.test.mjs`
+  26/26, `tools/check-site.test.mjs` 10/10, `tests/app/golden.test.mjs`
+  21/21), `npm run test` - 45 test files / **1138** tests passed
+  (unchanged from B12b - this piece added no vitest tests), coverage
+  97.04% statements / 89.02% branches / 98.04% functions / 97.83% lines,
+  unchanged from B12b.
+- `git status --short` (final, before staging): exactly the 21 files
+  listed in "Completed" above modified; `.claude/agents/reviewer.md`
+  (unstaged, foreign), `issues/56/` (untracked, foreign) untouched and
+  unstaged, per "preserve unrelated working-tree changes" - staged
+  explicitly by path, not `git add -A`.
+- Push: `git push origin main` - `git rev-parse HEAD origin/main` both
+  `639f7eb` afterward.
+- **CI watch, the piece's own required instrument**: `gh run watch
+  35364353967 --exit-status` on push `97dc875..639f7eb` - **every job
+  green**: `secrets` (8s), `browser (1)` (5m44s), `browser (2)`, `browser
+  (3)` (5m34s), `browser (4)` (3m44s), `audit` (23s), `check` (2m6s),
+  `deploy` (53s). `gh run view 35364353967 --json conclusion,status` -
+  `{"conclusion":"success","status":"completed"}`.
+- **What the deploy log actually shows for the stub-count line** (the one
+  instrument that can see B4-3's `echo` and B4-4's `_site/catalog.csv`
+  read land, per this piece's own gate requirement): `gh run view
+  35364353967 --job 105664973141 --log`, step "Nothing private slipped in,
+  and nothing public left out", prints
+  `stub count: 1091, catalog.csv data rows: 1091` - a real number from a
+  real CI run, not the local replay B4's own record cited. **B4's original
+  acceptance line ("the deploy log shows the stub-count line") stays
+  recorded as unmet at B4** in this file's "Completed" entry for B4 (not
+  edited here) - this run proves the *new* instrument this piece added,
+  not a retroactive satisfaction of B4's own line.
 
 ### B12b's own verification
 
@@ -894,44 +956,68 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **Name**: B12c - harness, tooling and CI. The third of B12's four
-  consecutive pieces (`plan.md`, "B12c"). B12b shipped this pass; B12 is
-  the terminal batch and nothing is listed after `B12d`.
-- **Rows**: `B4-R1`, `B4-R2`, `B4-R3`, `B4-R4`, `B4-1`, `B4-2`, `B4-3`,
-  `B4-4`, `B4-5`, `B4-6`, `B4-7`, `B4-10`, `B5-R1`, `B5-N3`, `B5-N14`,
-  `B5-N15`, `B6-N2`, `B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`,
-  `B9-N11` - each its own acceptance line, per `plan.md`, "B12c".
-- **Notes the implementer needs** (`plan.md`, "B12c"): `B4-3` is the row
-  that must record an unmet line as unmet - add the `echo` before the `if`
-  so the deploy log actually carries the stub-count line, and record that
-  the original acceptance line ("the deploy log shows the stub-count line")
-  was **not met** at B4, not restated as met now. `B4-4` and `B4-7` are
-  settled by B12a's census (`nits.md`): `B4-4` live, `B4-7` half done (the
-  misplaced comment is gone, the bare `fetch-depth: 0` in `check` remains).
-  `B9-R2` and `B9-N5` are one edit: narrow or fix the four code-rule
-  turn-offs and enumerate every site per rule. `B5-N15` is likely already
-  closed by B9's wholesale translation of `tests/` - confirm on arrival
-  rather than re-deriving.
+- **Name**: B12d - the browser-gated rows and the three measurements this
+  phase owes. The fourth and **terminal** piece of B12 (`plan.md`,
+  "B12d"). B12c shipped this pass.
+- **Rows**: `B6-N1`, `B7-N1`, `B7-N2`, `B7-R1`, `B7-R2`, `B7-R4`, `B7-N4`,
+  `B7-N13`, `B7-N15`, `B8-R6`, `B8-N4`, `B8.1-N2`, `B8.1-N3`, `B11-N2`,
+  `B11-N3` - each its own acceptance line, per `plan.md`, "B12d".
+- **Coupled rows that must ship in one commit** (`plan.md`, "B12d"):
+  `B7-N1` (`help.ts:544`'s `Players' link` still carries a curly
+  apostrophe), `B11-N2` (`inventory.js:150-151`'s value and its false
+  "curly apostrophe" comment) and `B11-N3` (the coupling itself - B7/P14
+  already straightened `dict.ts:624` to ASCII, so `help.ts` disagrees with
+  the shipped app, and `inventory.js`'s driver-facing copy must move with
+  it or the driver's name lookup and the live label disagree in the
+  opposite direction). `help.ts` is `app/src` but rides here because this
+  is the piece that can prove the string moves no golden.
+- **The three measurements this phase owes, each its own acceptance line**
+  (`plan.md`, "B12d"):
+  1. `node tests/app/sweep.js 1180` with the English axe path exercised -
+     `sweep.js` only runs axe on Russian at 1180, so B7's `allow` removal
+     has never been proved against English.
+  2. The scroll-to-bottom measurement of `.selbarwrap` and `.foot` with a
+     selection, at 1180 **and** 375 (`B7-R1`) - both existing instruments
+     measure the unscrolled page, the one position where the sticky-vs-
+     fixed divergence cannot appear.
+  3. `B7-R4`'s 44x44 hit-target overlap: measure `.note-x::after` against
+     the note `<textarea>` and `.warn-x::after` against the notice box. If
+     it reproduces, a `DEBT.md` entry with the measurement - do not
+     redesign the target and do not shrink below 44px (P12's own
+     acceptance forbids both); route the redesign to the UI/UX ticket in
+     the same commit.
+- **One check nothing in this repository can perform, recorded as owed,
+  not silently closed**: confirming `.card-media`'s focus ring is drawn
+  inside `.card` at both `.full` and `.compact` needs a human eye or a
+  screenshot (`focusWalk` reads computed style, goldens read structure,
+  axe checks neither) - record it under Blockers as an owner/human action,
+  with the exact route and widths to look at.
 - **Criterion for this seam** (`plan.md`, "Shape: four consecutive
-  pieces"): a review that cannot be held in one pass - `B12b` (just
-  shipped) is production source judged against `FEATURES.md`/`STATE.md`/
-  `DEBT.md` and the architecture boundaries and can move rendered output;
-  `B12c` is judged against `COVERAGE.md` and the CI shape and cannot move
-  rendered output at all.
-- **Gates**: `rtk npm run check`; `node tests/run-all.js
-  contracts,derived,dataint,craft,stub`; **one CI watch after the push** -
-  the only instrument that can see `B4-3`'s echo and `B4-4`'s `_site` path,
-  since `deploy` runs on push to `main`.
-- After `B12d` and its review, this task closes out per
-  `.claude/skills/handoff/SKILL.md`, "Retirement".
+  pieces"): a different route and filter set - `B12d`'s gates
+  (`app/states`, `app/print`, `app/contracts`, `sweep.js 1180`, golden
+  probes, `check:built`) share nothing with `B12a`-`B12c`.
+- **Gates** (`plan.md`, "B12d"): `rtk npm run check`; `npm run
+  check:built`; `node tests/run-all.js app/states,app/print,app/contracts`;
+  `node tests/app/sweep.js 1180`; two `node tests/app/golden.js
+  --only=<sub>` probes for the string rows. **All four golden shards only
+  if a row re-records** - and a re-record in a nit batch is a stop-and-
+  report first (`COVERAGE.md`'s B8.1 gate rule requires all four shards,
+  not one, when a golden moves).
+- **Closeout**: after `B12d` and its review, `nits.md`'s "Outstanding"
+  table is empty and the task is retirable per
+  `.claude/skills/handoff/SKILL.md`, "Retirement". Nothing follows `B12d`.
+- **Standing rule this batch establishes** (`plan.md`, "B12"): a review's
+  nits are appended to `nits.md` when the review lands, not when somebody
+  gets to them.
 
 ## Blockers
 
-None. B12b shipped with no deviation in scope - see "Completed" and
-"Verification". `rtk npm run check` is green, confirmed for real, not
-assumed, after a transient tree-contention failure from a concurrent
-session cleared (see "Verification"'s own note on it - not this piece's
-defect, nothing to remediate here).
+None. B12c shipped with no deviation in scope - see "Completed" and
+"Verification". `rtk npm run check` is green, confirmed for real (twice,
+after the `addressSettled()` call-site test was added). CI is green on
+every job for the pushed commit, confirmed by `gh run watch --exit-status`
+and by reading the deploy log directly for the stub-count line - see
+"Verification".
 
 ## Deferred
 

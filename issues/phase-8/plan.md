@@ -643,7 +643,7 @@ first and found zero hits, so it stayed here rather than moving to `B12d`.
 `npm run check:built` not run (no `.svelte` template or CSS declaration
 landed). Full detail: `git show <sha>`, or `issues/phase-8/handoff.md`.
 
-### B12c - harness, tooling and CI - SHIPPED `<pending, see B12c sha-citation follow-up>`
+### B12c - harness, tooling and CI - SHIPPED `639f7eb`
 
 Outcome: all 21 live rows landed as real edits, none moving rendered output
 (`B4-R1`-`B4-R4`, `B4-1`-`B4-7`, `B5-R1`, `B5-N3`, `B5-N14`, `B6-N2`,
