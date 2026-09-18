@@ -557,6 +557,95 @@ B10's one remediation cycle is now spent; see `issues/phase-8/handoff.md`,
   first `STATES` entry (`:132-136`) and by "the record modal over a table"
   (`:198-201`).
 
+### From B11's review (equipment apostrophes)
+
+Verdict **fix-then-continue**, with nothing for B11's implementer to
+remediate: the data edit, the generated artefacts, the six goldens and the
+public-contract claim all replicated exactly, and this is the **first batch
+record this phase that carried no claim failing to reproduce**. The two
+blockers and R-1 below are new work, not fixes to what B11 wrote, and were
+dispatched to B12 as **named acceptance lines, not as nits** - see the note
+under "Outstanding" about blockers never being demoted into a nit batch.
+They are listed here for the record, already routed.
+
+| id | where | what |
+|---|---|---|
+| B11-BL-1 | `app/src/lib/search.test.ts:143-146` | *(routed to B12 as an acceptance line)* B11 removed the last live U+2019 from `data.js`, so the repository's **only** apostrophe test stopped biting: `q80`'s `en` is now ASCII, the query is ASCII, and `foldQuery`'s `.replace(/[’ʼ]/g, "'")` (`app/src/lib/search.ts:71`) is an identity transform on both sides. That line could be deleted today and the test would still pass; line coverage stays 100% because the `.replace` still executes, which is why `npm run check` stayed green. The folding must stay - iOS/macOS autocorrect turns a typed `'` into U+2019 on the **query** side - B11 simply inverted which side needs it. Fix: type the typographic form against the now-ASCII record and re-point the comment at the query side. Prove it bites by deleting `search.ts:71` and watching it fail. |
+| B11-BL-2 | `tests/dataint.js:52-72` | *(routed to B12 as an acceptance line)* B11 fixed a data defect and added no invariant, so the next equipment ingest re-introduces O2 silently - the source book uses typographic apostrophes. `dataint.js`'s text-hygiene loop already iterates `['en','ende','ru','rud']` per record with sibling rules of the same shape (`markdown markup in the text`, `broken character`, `double space`) and runs inside `npm run check` in 0.7 s. One assertion in that existing loop closes it: `ok(!/[’ʼ]/.test(v), x.id + '.' + k + ': typographic apostrophe')`. All four fields pass today (`data.js` holds zero U+2019 and zero U+02BC; the Russian text uses `«»`), so it can cover the whole loop; gating it to `en`/`ende` is also defensible to stay strictly inside Q8's decided scope. B12 states which it chose. |
+| B11-R1 | `tests/app/lib.js:20-23`, `docs/specs/COVERAGE.md:358-367` | *(routed to B12 as an acceptance line)* **The stale-`dist/` trap.** `tests/app/golden.js` compares captures against `dist/` (its header comment, `:5`) and `tests/app/lib.js:20-23` guards only that `dist/index.html` *exists*. `npm run check`'s `npm run data` regenerates `data.json`/`catalog.csv`/`i/` but never runs `vite build`, so `dist/` can lag the tree arbitrarily; a `--update` run against a lagging `dist/` re-records the **old** render and the following verification run prints `structural snapshots (dist/): unchanged`. Same failure class as B8.1's lost settle instrument - a green run that measures nothing. It hits `app/sweep`, `app/states`, `app/print`, `app/typo`, `app/hues` and `app/contracts` identically; they all drive `dist/` through the same `lib.js`, so the guard belongs there, once, not in seven suites. Reviewer's minimal fix, fail-closed, both halves: (1) byte-compare `data.js`, `data.json`, `catalog.csv` against their `dist/` copies (~1.3 MB, milliseconds); (2) compare `mtime` of `dist/assets/app.js` against the newest `mtime` under `app/src` plus `index.html` and the vite config (safe on CI - checkout sets source mtimes, the build follows). On mismatch print `dist/ is stale - run npm run build first` and `process.exit(1)`. Then one sentence in `COVERAGE.md`'s existing "gate rule for 'no golden moved' (issues/phase-8, B8.1)" paragraph. Explicitly **not** `.claude/README.md` - that file costs runs, not correctness, and a third copy of the rule is a third thing to drift. |
+| B11-N1 | `docs/specs/FEATURES.md:69-70` | The search-folding bullet illustrates the apostrophe fold with ``soldier's` finds "Soldier's"` - both spellings written ASCII in the spec, and after B11 the catalogue side is ASCII too, so the example demonstrates nothing (`Soldier's Pike` is one of the 28 records B11 normalised). The same vacuity as B11-BL-1, in the spec rather than the test. Re-point it at the query side and write the U+2019 in the spec so the example is legible as an example. |
+| B11-N2 | `tests/app/inventory.js:150-151` | `sharePlayers: 'Players’ link'` carries the comment "A curly apostrophe, the way the live app prints it - not a plain one." False since B7/P14: `app/src/lib/dict.ts:624` is `"Players' link"` (ASCII). No state consumes `sharePlayers` today (only the two definitions, ru `:102` and en `:151`), so nothing fails - it is a latent trap: the first English state that grips that button gets a "button missing" failure while the comment actively vouches for the wrong spelling. Straighten the value, delete or invert the comment. |
+| B11-N3 | `app/src/lib/help.ts:544` + `tests/app/inventory.js:151` | **A coupling constraint on the existing B7-N1**, not a new nit. B7-N1 asks that `help.ts:544`'s `{ b: 'Players’ link' }` be straightened; whoever does it must move `inventory.js:151` (B11-N2) in the same commit, or the driver's name lookup and the live label disagree in the other direction. Attach this to B7-N1 so B12 does not ship half of it. |
+| B11-N4 | `issues/phase-8/context.md:394` (Q8's row) | "Normalise the **381** equipment names' U+2019 to ASCII" reads as 381 names carrying one; 381 is the `eq` record count, and the true figures are 13 distinct names, 28 records, 30 field values, 34 characters - which `issues/phase-8/critique/open.md:53` already said ("the 13 English equipment names"). This is a verbatim owner-decision row: **do not rewrite it**. If B12 touches it at all, append the measured counts rather than edit the owner's sentence. *(taste; arguably leave alone)* |
+| B11-N5 | `issues/phase-8/handoff.md:285` | B11's "Completed" bullet wraps at ~110 columns against the file's own ~76. *(taste)* |
+
+**A premise correction that reached this task's own documents.** The plan's
+pre-ship B11 text said "the twenty carrying U+2019 from `dict.ts` are P14's
+(B7)", and the orchestrator repeated it in B11's dispatch. It was wrong twice
+over: pre-B11, exactly **six** of the 112 snapshot files carried U+2019 - the
+same six B11 re-recorded, now zero - and `app/src/lib/dict.ts` holds **zero**
+U+2019 (P14 straightened them; `dict.ts:624` is `"Players' link"`, ASCII).
+The "twenty" is the count of tracked *text files* containing U+2019 today,
+none of them a golden. The SHIPPED B11 text has already overwritten the
+claim, so nothing needs editing - recorded so it is not re-derived or
+re-believed.
+
+**Verified sound in B11's review, recorded so it is not re-derived:**
+
+- **Scope, checked leaf by leaf** by parsing both `data.js` revisions as JSON
+  and walking the trees including key order: exactly **30** leaf differences
+  in **28** distinct `eq` records (17 `ende`, 13 `en`). `items`, `alt` and
+  `refs` structurally and byte-identical; no `ru`/`rud` moved; no key added,
+  removed or reordered at any depth, so no id was renumbered. Affected ids:
+  `q29, q80, q84, q89, q90, q148, q152, q156, q157, q168, q192, q219, q235,
+  q236, q237, q249, q261, q265, q285, q289, q305, q335, q336, q339, q349,
+  q350, q356, q359`.
+- **Character class**: **34** changed code points, every one U+2019 ->
+  U+0027, zero exceptions. Whole-file census: U+2019 34 -> 0; U+0027 208 ->
+  242 (+34, exactly balancing); U+2018, U+02BC, U+00B4, U+2032, U+0060,
+  U+201C, U+201D all zero before and after; U+00AB unchanged at 22. No
+  straight-quote sweep rode along.
+- **Post-B11 every ASCII apostrophe in `eq` is in one of the 30 touched
+  fields** - before the batch `eq` was uniformly typographic and `items`
+  uniformly ASCII. The batch unified the catalogue exactly, not mostly, which
+  is what makes B11-BL-2's invariant clean to state.
+- **The generated artefacts came from the generator**: loading the committed
+  `data.js` and calling `tools/derived.js`'s `dataJson()`/`catalogCsv()`
+  directly produced output **byte-identical** to the committed `data.json`
+  and `catalog.csv`. `catalog.csv`'s 56-line stat is 28 deletions + 28
+  insertions, one per affected record, zero non-apostrophe character changes
+  - the CSV's one-record-per-line shape, nothing riding along.
+- **Exactly six goldens, and the right six.** Pre-B11 census of all 112
+  snapshots: those six were the only ones carrying U+2019 (3, 3, 11, 2, 14,
+  14 occurrences); post-B11, zero of 112. Every changed line is an apostrophe
+  flip and/or a `namehash` hex change; the `namehash` movement is `capName()`'s
+  SHA-1 over the whole uncapped name (`tests/app/golden.js:193-202`), so a
+  line whose visible prefix shows no apostrophe (`Bladed Fan`, `Crystal
+  Spear`, `Extended Polearm`, `Throwing Knives`) changed only because the
+  apostrophe sits in the elided interior - the correct, fail-closed behaviour
+  of rule B.
+- **The public-contract claim, verified and widened**: all nine files under
+  `docs/fixtures/` contain zero U+2019 **and** reference none of the 28
+  affected ids; `llms.txt`, `tests/contracts.js`, `docs/specs/CONTRACTS.md`,
+  `README.md` and `README.ru.md` mention none of the 13 apostrophe-bearing
+  names. A repo-wide search for each of the 13 names in both spellings,
+  outside `data.js`/`data.json`/`catalog.csv`/`snapshots/`, returns four
+  hits: `search.test.ts` (B11-BL-1), this task's own handoff, and two in
+  `critique/open.md` (the dated report that raised O2 - correctly historical).
+  The four-file rule did not fire. No record count changed, so
+  `tests/derived.js`'s `COUNT_BEARING_FILES` is not implicated.
+- **The shipped goldens were re-recorded against a correct `dist/`**, so the
+  trap fired once, was caught, and needs a guard rather than a re-record:
+  `dist/data.js`, `dist/data.json`, `dist/catalog.csv` and `dist/llms.txt`
+  are byte-identical to the committed files, and `dist/assets/app.js`'s mtime
+  (13:10:49Z) is newer than both the newest `app/src` mtime (12:47:44Z) and
+  `data.js` (12:58:02Z). Both probes re-run without `--update`: `--only=eq_`
+  8 states unchanged (72.1 s), `--only=search` 9 states unchanged (35.7 s).
+- **Q8's premise holds**: `search.ts:71` still folds `[’ʼ]` on both sides and
+  `tools/artwork/lib.mjs:16-17` still folds `[’ʼ′]` for artwork name
+  matching, so the `refresh-artwork` path is indifferent to the spelling in
+  either direction. B1 has not regressed; the batch stayed cosmetic.
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |

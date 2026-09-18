@@ -20,9 +20,18 @@
 - No open deviations. `docs/fixtures/share/records.json` and `llms.txt` were
   both checked for a U+2019 that would need a matching update and neither
   carries one, so no public-contract file changed - see "Completed".
-- Next batch: **B12** - clearing the nit register - per `plan.md`, "B12".
-  It is dispatched only once every other batch has been reviewed; B10 and
-  B11 both still need a review pass first.
+- Last planning pass: planner, 2026-09-18, at `78981b2` - designed B12 as
+  four consecutive pieces. No production code written; `plan.md`,
+  `handoff.md` and the orchestrator's pending `nits.md` edit only.
+- NEEDS_HUMAN_CONFIRMATION: no. Two things the owner may want to overrule,
+  both one-line reversals: the four-piece shape (merge by concatenating the
+  id lists) and the five rows this plan defers (`plan.md`, "Rows this plan
+  moves to Deferred").
+- Next batch: **B12a** - the census, the three routed findings, and the
+  record rows - per `plan.md`, "B12a". B12's precondition is met: every
+  batch including B11 has now been reviewed and the register is complete at
+  **103 live rows** (108 table rows, less 3 already in "Deferred out of
+  phase-8", less `B7-R3`/`B8-R1`/`B8-R2` which already carry `done`).
 
 ## Completed
 
@@ -585,22 +594,49 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **B12 - clear the nit register**, per `plan.md`, "B12". This is now the
-  last batch in the plan: B1-B11 (every content batch) have shipped. B12's
-  own precondition is that every other batch has been reviewed first - B10
-  and B11 both still need a review pass before B12 can be dispatched.
-  Objective: `issues/phase-8/nits.md` has no `outstanding` or `verify` rows
-  left; scope, files and acceptance lines are in `plan.md`, "B12".
-- Nothing outstanding blocks a B10/B11 review: B11 shipped with no
-  deviation, on top of B10 (and its own review remediation) shipping with
-  no deviation either.
-- **Do not fold any batch's outstanding review nits (the rows still in
-  `issues/phase-8/nits.md`, "Outstanding") into anything before B12** - B12
-  is where the whole outstanding table clears, per the owner's standing
-  instruction (`context.md`, "Review and nit policy").
-- After B10 and B11 are both reviewed and B12 clears the nit register, this
-  task closes out per `.claude/skills/handoff/SKILL.md`, "Retirement"
-  (`context.md`, "Current session").
+- **Name**: B12a - the census, the three routed findings, and the record
+  rows. The first of B12's four consecutive pieces (`plan.md`, "B12a").
+  B1-B11 have all shipped and all been reviewed; B12 is the terminal batch
+  and nothing is listed after `B12d`.
+- **Objective**: establish the verdict for all 103 live register rows once;
+  land the three findings B11's review routed here as named acceptance lines
+  (`B11-BL-1`, `B11-BL-2`, `B11-R1`); clear every row whose fix is a record
+  or spec correction.
+- **In scope**: the census sweep and its verdict block in `nits.md`;
+  `B11-R1` (the fail-closed stale-`dist/` guard in `tests/app/lib.js` plus
+  one `COVERAGE.md` sentence); `B11-BL-1` (re-point the apostrophe test at
+  the query side, **proved to bite**); `B11-BL-2` (one assertion in
+  `tests/dataint.js`'s text-hygiene loop, all four text fields); `B7-N3`
+  (same file as `B11-R1`); and the record/spec rows listed in `plan.md`,
+  "B12a".
+- **Out of scope**: any `app/src/**` file except `search.test.ts`;
+  `.github/`; any `tests/app/` suite source except `tests/app/lib.js`. Those
+  are `B12b`, `B12c` and `B12d`.
+- **Files expected**: `issues/phase-8/{nits,handoff,context,plan}.md`,
+  `.claude/README.md`, `docs/specs/{COVERAGE,FEATURES,META}.md`,
+  `tests/app/lib.js`, `tests/dataint.js`, `app/src/lib/search.test.ts`.
+- **Steps / acceptance / risks**: `plan.md`, "B12a", in full - seven steps,
+  seven acceptance lines, three proof obligations. The proof obligations are
+  the part that cannot be skipped: `B11-BL-1` is discharged by the **red**
+  run after deleting `app/src/lib/search.ts:71`, not by a green one, and
+  `B11-R1` is discharged by six recorded results (silent on a correct tree,
+  each half fired deliberately, each restored, and a final green).
+- **Verification commands**: `rtk npm run check` (one foreground call,
+  Bash timeout 600000); `node tests/run-all.js
+  contracts,derived,dataint,craft,stub`; `npm run build`; `node
+  tests/run-all.js app/typo` for the guard proofs.
+- **Do-nots**: do not put the staleness rule in `.claude/README.md`; do not
+  add an env-var bypass to the guard; do not include `*.test.ts` in the
+  mtime scan; do not edit `context.md:394`'s verbatim owner sentence (append
+  a note beneath the table instead); do not `git add -A` - `.claude/agents/
+  reviewer.md` and `issues/56/` are other sessions' and stay untouched.
+- **Do not fold any register row into a piece other than the one `plan.md`
+  routes it to**, and do not leave a routed row in "Outstanding" at a
+  piece's commit - it moves to `Done <sha>`, to `closed <sha> (no change -
+  reason)`, or to "Deferred out of phase-8" with a reason, in the same
+  commit.
+- After `B12d` and its review, this task closes out per
+  `.claude/skills/handoff/SKILL.md`, "Retirement".
 
 ## Blockers
 
@@ -611,6 +647,25 @@ not assumed, and the branch is pushed.
 
 ## Deferred
 
+- **Five register rows this planning pass moves out of B12's scope**, each
+  with a reason the owner can overrule in one line - full table in
+  `plan.md`, "Rows this plan moves to Deferred": `B6-R1` (the `.bad`
+  second-corruption backup - the consistent-storage ticket already owns
+  ".bad-key recovery beyond a notice"), `B6-R5` (telling a damaged link
+  apart from one whose items are all gone - a new user-visible outcome, so
+  a `dict.ts` pair, a spec sentence and possibly an `inventory.js` state
+  plus a seeded golden), `B8-N7` (smooth scroll under `reduce` - there is no
+  `matchMedia` anywhere in `app/src` today, so the boundary-respecting fix
+  needs a new port surface), `B6-N4` (product copy, the owner's voice) and
+  `B8-N6` (a policy edit to a rule the owner approved under Q5). The first
+  three are live defects and therefore get `docs/specs/DEBT.md` entries
+  (`D24`-`D26`) in `B12b`, so they survive this task directory's
+  retirement; the last two are taste and policy and get none.
+- **One check nothing in this repository can perform, still owed**:
+  confirming `.card-media`'s focus ring is drawn inside `.card` at both
+  `.full` and `.compact` needs a human eye or a screenshot (`focusWalk`
+  reads computed style, goldens read structure, axe checks neither).
+  `B12d` records it as an owner/human action with the route and widths.
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
   their own" (the consistent-storage-layer ticket, the UI/UX-redesign
   ticket, and several costed tasks of their own).

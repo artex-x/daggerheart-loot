@@ -1,11 +1,15 @@
 # Plan - TASK phase-8
 
-Status: revised 2026-09-17 (planner, second pass) after the owner's two
-revisions: B1 shipped at `e7c7b50`; B2 shipped at `44b1761` (implementer,
-2026-09-17, handoff.md "Completed"); B2-B20 merged to B2-B11 by gate; a
-forcing function for batch size folded into B2. All eight owner questions
-are settled (`context.md`, "Settled owner decisions"); every settled step
-below is written as decided, not as an option.
+Status: revised 2026-09-18 (planner, third pass) at HEAD `78981b2`. B1-B11
+and every remediation cycle have shipped; every batch has been reviewed and
+the nit register is complete. This pass designs **B12** - the only remaining
+batch - as four consecutive pieces (`B12a`-`B12d`), all inside phase-8, with
+the criterion for each seam named and the mechanism that makes the tail land
+written down. Earlier: revised 2026-09-17 (second pass) after the owner's two
+revisions - B1 shipped at `e7c7b50`, B2 at `44b1761`, B2-B20 merged to B2-B11
+by gate, a forcing function for batch size folded into B2. All eight owner
+questions are settled (`context.md`, "Settled owner decisions"); every
+settled step below is written as decided, not as an option.
 
 ## Objective
 
@@ -383,7 +387,12 @@ a CI watch ~7 min after B3).
 | B9 | 4 | pooled subset x2, sweep 390, 1 shard | 40 min |
 | B10 | 1 | 4 shards | 28 min |
 | B11 | 1 | build, fs suites, 2 `--only --update`, verify | 14 min |
+| B12a | 1 | fs suites, build, 2 guard proofs + 2 restore runs of `app/typo` | 18 min |
+| B12b | 1 | 0-2 `--only` probes; `check:built` only if a `.svelte`/CSS row lands | 15 min |
+| B12c | 1 | fs suites, one CI watch after the push | 18 min |
+| B12d | 1 | built, states, print, contracts, sweep 1180, 2 `--only`, 4 shards only if a row re-records | 45 min |
 | **Total B2-B11** | **16** | | **~5.1 h** |
+| **Total B12a-d** | **4** | | **~1.6 h** |
 
 B8.1 was added 2026-09-18 after B8 shipped; its criterion is in its own
 section ("Stands alone because"). Its four golden shards are the largest
@@ -416,27 +425,460 @@ ALL nits."
   reason; a row may only move out of it by the owner's decision, not by an
   implementer's convenience.
 - **Position**: last, after B11. It collects the nits from B5-B11's reviews
-  too, which do not exist yet - so B12 is dispatched only once every other
-  batch has been reviewed, and the register is complete.
-- **Files**: whatever the register names. At the time of writing that is
-  `tools/check-site.lib.mjs`, `tools/check-site.test.mjs`, `tests/app/golden.js`,
-  `tests/app/golden.test.mjs`, `tests/derived.js`, `.github/workflows/ci.yml`,
-  `.prettierignore`, `docs/specs/META.md`, `.claude/README.md`,
-  `app/src/lib/{search,frames}.ts`, `issues/phase-8/handoff.md`.
-- **Gates**: `npm run check`. Add `npm run check:built` and a targeted
-  `node tests/app/golden.js --only=<sub>` only if a row turns out to move
-  rendered output - none currently should, and a row that does is a
-  stop-and-report, because a nit that changes what a screen draws was
-  mis-classified as a nit.
-- **Acceptance**:
-  1. Every "Outstanding" row is `done <sha>` or has moved to "Deferred" with
-     a reason the owner has seen.
-  2. Every `verify` row names the commit that actually did it, or is done.
-  3. `B4-3` specifically: the previously-unmet acceptance line is recorded as
-     having been unmet, not quietly satisfied - the phase has twice found
-     records claiming verification that did not happen, and this is the fix
-     for one of them.
-  4. The register file ends the batch with an empty "Outstanding" table.
+  too - so B12 is dispatched only once every other batch has been reviewed,
+  and the register is complete. It now is: B11's review landed 2026-09-18 and
+  was the last one owed.
+
+### The census, 2026-09-18 (planner, read-only at `78981b2`)
+
+108 table rows exist in `nits.md`. Three (`B2-6`, `B3-N9`, `perf-PF4`) are in
+"Deferred out of phase-8" and are not B12's. Three inside the Outstanding
+tables already carry `done` (`B7-R3` `6b50945`; `B8-R1`, `B8-R2` `480c380`).
+**103 live rows** remain - 100 in the ten "Outstanding" sections plus the
+three in "Carried, needing confirmation". That is the number B12 clears. (A
+dispatch note of "105" counted the two already-deferred rows; the exact
+census above supersedes it, and B12a records it in the register.)
+
+Of the 103, thirteen need no edit at all and close on a decision rather than
+a diff: `B8.1-R1`..`B8.1-R6` and `B9-R3` are "verified reasoning, no action"
+by the reviewer's own grading; `B5-R2`, `B5-R3`, `B4-10`, `B5-N10/11/12` are
+closed by this plan below with the reason recorded.
+
+Eight verdicts were established here, so B12a does not re-derive them:
+
+| row | verdict at `78981b2` |
+|---|---|
+| `B4-4` | **live** - `ci.yml:316`'s `csv_rows` still reads the repo-root `catalog.csv`, not `_site/catalog.csv`. |
+| `B4-7` | **half done** - the misplaced `# gitleaks reads history` comment is already gone from `ci.yml:39`; the bare `fetch-depth: 0` in the `check` job remains, and dropping it is the only action left. |
+| `B2-4` | **moved** - `TAB_LIST` no longer exists in `app/src/lib/frames.ts`; the one surviving citation is a comment at `app/src/state/app.test.ts:68`. The row's target moves there. |
+| `B2-5` | **live** - `.claude/README.md:109` still reads "commits when `npm run check` has not passed for the tree". |
+| `B1-N9` | **live** - `app/src/lib/search.ts:125` is still `matches(it, q, statLine, hay?)`; the mismatch is still representable. |
+| `B7-N7` / `B8-N8` | **already done** - `issues/phase-8/handoff.md:303` carries a top-level `## Verification`. Both close in B12a with no edit. |
+| `B11-BL-1` | **live** - `app/src/lib/search.test.ts:143-146`'s comment still says `q80` "is stored with U+2019"; false since `78b13f0`. |
+| `B11-R1` | **live** - `tests/app/lib.js:20-23` guards existence only. All seven `tests/app/` suites `require('./lib.js')` (`contracts:9`, `hues:13`, `print:39`, `states:11`, `sweep:16`, `typo:23`, and `golden:349` inside `require.main`), so one guard reaches all seven - and `golden.test.mjs`, which imports golden's DOM-free half **without** `lib.js`, is unaffected, so `npm run check` cannot be broken by it. |
+
+**How B12a establishes the rest cheaply** (the answer to "a pass per row
+would cost more than the fixes"): one scripted sweep, not 103 reads. Every
+row already names a file and usually a line or an identifier, so the sweep is
+one discriminating `git grep` per row, run from a throwaway script in the
+session scratchpad (not committed), printing one verdict line per id. Where
+the question is *which commit did it*, `git log -S'<token>' --oneline --
+<path>` answers it in one call. Rows with no greppable discriminator are the
+thirteen decision-closed rows above. Budget: minutes, once, for all 103.
+
+### Shape: four consecutive pieces, all inside phase-8
+
+One batch cannot hold 103 rows spanning `tools/`, `.github/workflows/`,
+`docs/specs/`, `app/src/lib/`, `app/src/components/`, `tests/` and
+`.claude/`: `CLAUDE.md`, "Task and session protocol" forbids a batch "whose
+review cannot be held in one pass", and it equally forbids a split with no
+criterion. B12 is therefore **one terminal batch in four consecutive
+pieces**, `B12a` -> `B12d`, every one of them dispatched inside this phase,
+in order, with no piece left to a future task. This is not the move that
+failed twice: that move handed nits to a batch with **another** scope, which
+finished its scope and treated them as optional. Here the nits are the only
+scope of all four pieces, and "How the tail is guaranteed to land" below is
+the mechanism, not the intention.
+
+Merging *inside* each piece is deliberate: the 23 tooling rows in `B12c`
+share one `check` and one CI watch, so forty of them would cost what eight
+do. The splits are only at the three seams below, each named in
+`CLAUDE.md`'s own terms.
+
+| seam | criterion | why it is not a merge |
+|---|---|---|
+| `B12a` \| `B12b` | **a commit boundary the harness cannot reach** (`CLAUDE.md`'s third named criterion; `.claude/README.md`, "The test", bullet 3) | `B11-R1` *adds the reach*. Today a browser-suite run against a lagging `dist/` prints "unchanged" while measuring nothing, and a `--update` re-records the old render. Every browser proof `B12b`-`B12d` produce is worth nothing until that guard exists, so the piece that adds it lands first, on its own commit, and a later red bisects. |
+| `B12b` \| `B12c` | **a review that cannot be held in one pass** (`CLAUDE.md`, same section) | The two halves are 51 unrelated one-line rows across ~28 files in two different judgement frames. `B12b` is production source, judged against `FEATURES.md`/`STATE.md`/`DEBT.md` and the architecture boundaries, and can move rendered output. `B12c` is harness, tooling and CI, judged against `COVERAGE.md` and the CI shape, and cannot move rendered output at all. Splitting costs one `check`; not splitting asks one reviewer to re-derive 51 separate contexts, which is where this phase's recorded failure - a record claiming a verification that did not happen, found three times - recurs. |
+| `B12c` \| `B12d` | **a different route and filter set** (`CLAUDE.md`'s second named criterion) | `B12d`'s gates (`app/states`, `app/print`, `app/contracts`, `sweep.js 1180`, golden probes, `check:built`) are shared with nothing in `B12a`-`B12c`. Merging "saves a `check` and nothing else" (`.claude/README.md`, "The test") while adding a browser-harness frame to a code review pass. `B12d` also carries the three measurements this phase owes, which need the tree and a real browser. |
+
+A fourth benefit, from this task's own review policy (`context.md`, "Review
+and nit policy"): each piece's review runs read-only against its committed
+shas **while the next piece's implementer works**, so three of the four
+reviews cost no wall clock. A single 103-row batch has nothing to overlap
+with.
+
+### How the tail is guaranteed to land
+
+1. **Every live row is a named acceptance line in exactly one piece.** The
+   four id lists below place all 103. A row that appears in no list is a
+   planning defect, not an implementer's discretion.
+2. **The register is the ledger, updated in the same commit.** Each piece's
+   commit moves its rows out of "Outstanding" to `Done <sha>`, to `closed
+   <sha> (no change - <reason>)`, or to "Deferred out of phase-8" with a
+   reason. A commit that leaves a routed row in "Outstanding" does not close
+   its piece. `closed` is a fourth status value this batch introduces, and it
+   is authorised only for the rows this plan names.
+3. **Outstanding never grows and is never carried forward silently.** A row
+   that cannot land moves to Deferred with a visible reason in the same
+   commit and is reported in the handoff - never left where a later session
+   has to notice it.
+4. **Nothing is listed after `B12d`.** B12 is the **terminal** batch, so
+   `orchestrate.prompt.md`, "Nits: defer mid-plan, clear on the terminal
+   batch" applies: each piece's own review findings are cleared in that
+   piece's one remediation cycle, not appended to the register for a fifth
+   piece. Otherwise the register can never empty. A **blocker** found by a
+   B12 review is remediated on that piece's own cycle and is never demoted
+   into the next piece (`orchestrate.prompt.md`, "Blockers do not go to a nit
+   batch").
+5. **A deferral that is a live defect ships a `docs/specs/DEBT.md` entry in
+   the same commit**, so it survives `issues/phase-8/`'s retirement. A task
+   directory retires; a spec does not.
+6. **Retirement is gated on the register.** The task is not retired while
+   `nits.md` has an "Outstanding" row, and `handoff.md`'s "Next batch" names
+   the next unlanded piece at all times - so a session boundary **between**
+   pieces loses nothing and is not a deferral.
+
+### Rows this plan moves to Deferred, with the owner's overrule in one line
+
+Named here rather than discovered mid-batch. Each is not nit-sized under
+`CLAUDE.md`'s campsite rule (a nit that wants a redesign, a public-contract
+change, a new spec, or work outside the paths its batch touched is not a
+nit). The owner reverses any of them by saying so; the row then joins
+`B12b`'s or `B12d`'s acceptance list unchanged.
+
+| row | why it is not a nit | where it goes |
+|---|---|---|
+| `B6-R1` (`.bad` second corruption never backed up, first backup orphaned forever) | The fix needs a backup **keying scheme** (timestamped keys grow `localStorage` without bound; dropping `.bad` on a successful read discards the first loss) and a way for a user to reach the backup at all. `plan.md`'s own deferred list already routes "the `.bad`-key recovery beyond a notice" to the consistent-storage ticket; this is that row. | Deferred to the consistent-storage ticket + a `DEBT.md` entry (live data loss behind a notice that claims preservation). |
+| `B6-R5` (every id dropped -> `badShare` instead of `droppedItems`) | Telling "the link is damaged" apart from "every item in it is gone" is a new user-visible outcome: a `dict.ts` string pair in two languages, a `FEATURES.md`/`ROUTES.md` sentence, and - if it draws a different page - an `inventory.js` entry and a seeded golden in the same change (`CLAUDE.md`). That is a batch. | Deferred + a `DEBT.md` entry (the user is told the wrong thing). |
+| `B8-N7` (`scrollIntoView({behavior:'smooth'})` still animates under `reduce`) | The boundary-respecting fix needs a `matchMedia` read, and there is **no `matchMedia` anywhere in `app/src` today** (verified) - so it needs a new `app/src/ports/` surface with its type, its `index.ts` entry, its fake and its per-file coverage. The one-line alternative (drop `behavior: 'smooth'` for everyone) is a UX decision the owner did not make under Q5. | Deferred + a `DEBT.md` entry (a real reduced-motion defect, one line from a fix once a port exists). |
+| `B6-N4` (`dict.ts` `badStorage`: "under a separate key" is unactionable) | Removing or rewriting an informational clause is product **content**, and `context.md`'s language policy puts `dict.ts` in the product's own voice. The register grades it *(taste)*. B12 is not a product-text batch. | Deferred to the UI/UX ticket. No `DEBT.md` entry - not a defect. |
+| `B8-N6` (D1's rule zeroes durations but not delays) | The register grades it *(deferred-scope)* itself: the plan specified those four declarations and **the owner approved them under Q5**, so changing the rule is a policy edit to an owner decision, for a hazard with zero sites in the tree. | Deferred. No `DEBT.md` entry - not a defect. |
+
+The line this plan draws between "product copy is the owner's" and "an
+editorial pass is in scope": `B7-N15` (an English hyphen where its neighbour
+uses an em dash) **stays in scope**, because P14's editorial pass is already
+owner-approved and punctuation consistency is that pass's own rule; `B6-N4`
+is deferred, because it changes what the sentence tells the reader.
+
+`B7-R4` (the 44x44 hit targets overlapping editable neighbours) is **not**
+deferred but is bounded: `B12d` measures it; if the overlap reproduces, do
+**not** redesign the target and do not shrink below 44px - P12's own
+acceptance forbids both - record it in `DEBT.md` with the measurement and
+route the redesign to the UI/UX ticket in the same commit.
+
+### Decisions this plan takes so the implementer does not have to
+
+Recorded here because each is a fork the register leaves open.
+
+- **`B11-BL-2` covers all four text fields** (`en`, `ende`, `ru`, `rud`), not
+  just the two Q8 normalised. The invariant exists to stop the *next* ingest
+  re-introducing O2, and the source book uses typographic apostrophes in both
+  languages; all four pass today (`data.js` holds zero U+2019 and zero
+  U+02BC, the Russian text uses `«»`), so the wider rule costs nothing and
+  closes the whole class. The register asked B12 to state which it chose.
+- **`B8-R3` takes the documentation half, not a new string.** Measure the
+  real `toBlob` encode time on this host, then either raise the 2000 ms
+  watchdog with the measured number beside it or keep it with the number
+  recorded. Do **not** add a `dict.ts` key to tell a slow encode apart from a
+  tainted canvas - a new user-facing string is product text and B12 is not a
+  product-text batch. Naming the two `Error` causes apart *internally* (so
+  the log says which) is in scope and free.
+- **`B10-N4` takes the sentence, not the structural move.** Moving
+  `ListPage`'s `<RecordHost>` inside the `{:else}` branch changes what
+  mounts on `#/l/<payload>` and can move a golden; one sentence recording the
+  invariant cannot.
+- **`B5-N10/11/12`**: reword the three comments to their true reason; delete a
+  re-export only if `findReferences` shows it has no caller (`RARITIES` is
+  the one to check). `CLAUDE.md`'s "add no export before something uses it"
+  governs *adding*, not removing a live alias, so a re-export with callers
+  stays.
+- **`B1-N9`**: do the union third argument, after `findReferences` on
+  `matches`. If it forces more than six call-site edits or type gymnastics,
+  fall back to a doc clause and record why - the row is graded
+  *(taste-adjacent)* and a sprawling refactor is not what it asked for.
+- **`B4-10`, `B5-R2`, `B5-R3`** close with **no change**: `B4-10` is the
+  register's own "probably leave" with a real branch-build justification;
+  `B5-R2` is an understanding to record in `COVERAGE.md`'s prose, not a code
+  change; `B5-R3`'s `.grow` invariant has no instrument short of a CSS test
+  this repo does not have. Each records its reason in the register.
+- **A user-visible string is a golden question before it is an edit.** Any
+  row that changes a string a screen can draw (`B8-N2`, `B7-N15`, `B7-N1`,
+  `B11-N2`) runs `git grep -F '<old string>' -- tests/app/snapshots` first.
+  Zero hits -> the row is check-gated and stays in its piece. Any hit -> the
+  row moves to `B12d` and re-records in the same commit, with the moved
+  states named. A nit that changes what a screen draws was mis-classified,
+  and this is how that is caught before the diff, not after.
+
+### B12a - the census, the three routed findings, and the record rows
+
+**Objective.** Establish the verdict for all 103 rows once; land the three
+findings B11's review routed here as acceptance lines; clear every row whose
+fix is a record or spec correction.
+
+**In scope.** The census; `B11-R1`, `B11-BL-1`, `B11-BL-2` as named
+acceptance lines; the record and spec rows below; `B7-N3`, because
+`tests/app/lib.js` is already open for `B11-R1` (`CLAUDE.md`, campsite).
+
+**Out of scope.** Any `app/src/**` change other than `search.test.ts`
+(`B11-BL-1`); `.github/`; any browser-suite source file other than
+`tests/app/lib.js`.
+
+**Files expected.** `issues/phase-8/nits.md`, `issues/phase-8/handoff.md`,
+`issues/phase-8/context.md`, `issues/phase-8/plan.md`, `.claude/README.md`,
+`docs/specs/COVERAGE.md`, `docs/specs/FEATURES.md`, `docs/specs/META.md`,
+`tests/app/lib.js`, `tests/dataint.js`, `app/src/lib/search.test.ts`.
+
+**Three routed findings - full acceptance lines, not nits.** B11's review
+returned these as new work, and `orchestrate.prompt.md`, "Blockers do not go
+to a nit batch" forbids demoting them:
+
+1. **`B11-BL-1` - the apostrophe test bites again.** `search.test.ts:143-146`
+   asserts `find("keeper's staff")` finds `q80`, whose `en` is now ASCII on
+   both sides, so `search.ts:71`'s `.replace(/[’ʼ]/g, "'")` is an identity
+   transform and could be deleted with the suite still green. Re-point the
+   case at the **query** side: type the typographic form (U+2019) against the
+   now-ASCII record, and rewrite the comment to say that iOS/macOS
+   autocorrect produces U+2019 on the query, not that the record carries it.
+   **Proof obligation**: delete `app/src/lib/search.ts:71`, watch the case
+   fail, restore it, and record both results. A green run does not discharge
+   this line; the red one does.
+2. **`B11-BL-2` - an invariant, so the next ingest cannot re-introduce O2.**
+   One assertion inside `tests/dataint.js:52-72`'s existing text-hygiene
+   loop, over all four fields per the decision above:
+   `ok(!/[’ʼ]/.test(v), x.id + '.' + k + ': typographic apostrophe')`. It
+   runs inside `npm run check` in under a second. **Proof obligation**:
+   temporarily put a U+2019 back into one `eq` `en` value in a scratch copy
+   (never in the tree's `data.js` - the generated-output hooks and
+   `tools/build.js` make an in-tree edit expensive) or assert against a
+   fabricated record, watch the assertion fail, and record it.
+3. **`B11-R1` - the stale-`dist/` trap. Placement accepted as the reviewer
+   proposed it**, with the narrowings below. See "The `B11-R1` decision".
+
+**The `B11-R1` decision** (a durable tooling change every later session runs
+under, so the planner settles it, not the implementer):
+
+- **Accepted: `tests/app/lib.js`, not seven suites and not
+  `.claude/README.md`.** All seven `tests/app/` suites require `./lib.js`
+  before anything else (census table above), and that file already carries
+  the precedent - the `dist/index.html` existence guard at `:20-23`, same
+  shape, `console.log` plus `process.exit(1)`. One guard, seven suites,
+  nothing to drift. `COVERAGE.md` owns suite ownership and gate rules and
+  already holds the B8.1 "no golden moved" rule this guard makes enforceable,
+  so the one sentence belongs in that paragraph. Not `.claude/README.md`: it
+  costs runs, not correctness, and a third copy of a rule is a third thing to
+  drift.
+- **Narrowing 1 - the mtime half's source set.** Newest mtime under
+  `app/src/`, excluding every `*.test.ts` file and the whole `app/src/test/`
+  directory (they are not bundled, so they cannot make `dist/` stale, and
+  including them would demand a rebuild after every test edit), plus `app/index.html`,
+  `vite.config.mts` and `app/svelte.config.mjs`. Compared against
+  `dist/assets/app.js`. The exclusion and its reason are written in the code,
+  not inferred.
+- **Narrowing 2 - the byte half's file set.** `data.js`, `data.json`,
+  `catalog.csv` against their `dist/` copies, exactly as the reviewer named
+  them (~1.3 MB, milliseconds). **Verify each `dist/` copy exists before
+  depending on it**: the deploy collect step copies `data.json`/`catalog.csv`
+  from the repo root, not from `dist/`, so their presence in `dist/` comes
+  from vite's own static copying and must be checked, not assumed. A file
+  vite does not emit is dropped from the comparison with a comment saying so.
+  `llms.txt` is deliberately not included - the three above are what
+  `npm run data` regenerates and what the suites actually read.
+- **Narrowing 3 - the message names the half and the file**, then the fix:
+  `dist/ is stale (<which check>, <which file>) - run npm run build first`.
+  A guard whose message does not say which half fired costs a round trip.
+- **No escape hatch.** Fail-closed means fail-closed; an env-var bypass is a
+  guard that gets waved through, which `.claude/README.md` already records as
+  worse than no guard.
+- **CI is safe and it is recorded why**: `ci.yml:112-118`'s `browser` job
+  runs `npm ci` then `npm run build` then the suites, and checkout sets
+  source mtimes before the build, so the mtime half cannot fire falsely
+  there.
+- **`npm run check` cannot be broken by it**: `golden.test.mjs` imports
+  `golden.js`'s DOM-free half and never requires `lib.js`
+  (`golden.js:326,346,349`), so the `node --test` step inside `check` never
+  loads the guard.
+- **Proof obligation, both directions, both halves.** (a) On a correctly
+  built tree: `npm run build`, then `node tests/run-all.js app/typo` - the
+  guard is silent and the suite passes. (b) mtime half fires: `touch` one
+  bundled file under `app/src`, re-run `app/typo`, record the guard's exact
+  message and the non-zero exit; `npm run build`; re-run green. (c) byte half
+  fires: append one byte to `dist/data.js` from the shell (`dist/` is build
+  output - the Edit-tool guard blocks writes there, Bash does not), re-run
+  `app/typo`, record it; `npm run build`; re-run green. All six results go in
+  the handoff. A guard proved only in the silent direction is the same class
+  of nothing this row exists to close.
+
+**Record and spec rows in this piece** (each its own acceptance line; detail
+in `nits.md` under the id):
+
+`B4-8`, `B4-9`, `B5-R2`, `B5-N1`, `B5-N2`, `B5-N4`, `B5-N7`, `B7-N3`,
+`B7-N5`, `B7-N6`, `B7-N7`, `B7-N8`, `B7-N14`, `B8-R5`, `B8-N3`, `B8-N5`,
+`B8-N8`, `B8.1-R1`, `B8.1-R2`, `B8.1-R3`, `B8.1-R4`, `B8.1-R5`, `B8.1-R6`,
+`B8.1-N4`, `B9-R1`, `B9-R3`, `B9-N10`, `B11-N1`, `B11-N4`, `B11-N5`, `B2-5`.
+
+Three of those have a decided shape:
+
+- **`B7-N7` and `B8-N8` close with no edit** - `handoff.md:303` already has
+  `## Verification` (census above). Record the verdict; do not re-add it.
+- **`B8-R5` is discharged by evidence, not by a run.** B8's outstanding proof
+  was "the full browser matrix on the B8 commits". CI has since run the whole
+  matrix green on `main` at B9, B10 and B11 shas. Name the run and close the
+  row; do not re-run B8's gates.
+- **`B11-N4` is append-only.** `context.md:394` is a verbatim owner-decision
+  row and the register says not to rewrite it. Append the measured counts
+  (13 distinct names, 28 records, 30 field values, 34 characters) as a note
+  **under** the table; do not touch the owner's sentence. If the owner would
+  rather the row were left entirely alone, that is a one-line reversal.
+
+**Steps.**
+
+1. Run the census sweep (scratchpad script, not committed) and write a
+   `### Census, 2026-09-18, at <HEAD sha>` block into `nits.md` under
+   "Outstanding", one verdict line per id: `live` / `already done <sha>` /
+   `moved: <new site>` / `closed (no change - <reason>)`. Fold in the eight
+   verdicts this plan already established rather than re-deriving them. Move
+   every `already done` row straight to "## Done" in the same commit.
+2. Land `B11-R1` with its narrowings, plus the `COVERAGE.md` sentence in the
+   existing B8.1 gate-rule paragraph. Run its three proofs.
+3. Land `B11-BL-2`, with its proof.
+4. Land `B11-BL-1`, with its proof (delete `search.ts:71`, watch it fail,
+   restore).
+5. Land `B7-N3` (delete `axe`'s unused `allow` parameter from
+   `tests/app/lib.js`, after `git grep` shows no caller passes it).
+6. Land the record and spec rows, each moved to `Done <sha>` or `closed` in
+   `nits.md` in the same commit.
+7. Record the four Deferred rows in `nits.md`'s "Deferred out of phase-8"
+   table with their reasons (the `DEBT.md` entries themselves land in
+   `B12b`, which is the piece that opens `app/src`).
+
+**Acceptance.**
+
+1. `nits.md` carries a census verdict for every one of the 103 live rows.
+2. `B11-BL-1` is proved to bite: `search.ts:71` deleted -> the case fails;
+   restored -> green. Both recorded.
+3. `B11-BL-2` is proved to bite, and covers all four text fields.
+4. `B11-R1` is landed in `tests/app/lib.js` with both halves, and all six
+   proof results (silent, mtime-fires, mtime-restored, byte-fires,
+   byte-restored, and the final green) are recorded in the handoff.
+5. `COVERAGE.md`'s B8.1 gate-rule paragraph gains the one sentence; nothing
+   is added to `.claude/README.md` for this rule.
+6. Every id in the record-and-spec list above is `Done <sha>` or `closed
+   <sha> (no change - <reason>)` in `nits.md`.
+7. `git status` leaves `.claude/agents/reviewer.md` and `issues/56/`
+   untouched and unstaged.
+
+**Verification commands.**
+
+```text
+rtk npm run check                       # one foreground call, timeout 600000
+node tests/run-all.js contracts,derived,dataint,craft,stub
+npm run build
+node tests/run-all.js app/typo          # guard silent, suite green
+# then the two deliberate-stale runs and their two restores, per step 2
+```
+
+**Risks / do-nots.** Do not put the staleness rule in `.claude/README.md`.
+Do not add an env-var bypass. Do not include `**/*.test.ts` in the mtime
+scan. Do not edit `context.md:394`'s owner sentence. Do not `git add -A`.
+
+### B12b - production source (`app/src/**`), and the DEBT entries
+
+**Criterion**: see the `B12b`|`B12c` seam above.
+
+**Rows** (each its own acceptance line): `B5-R3`, `B5-N5`, `B5-N6`, `B5-N8`,
+`B5-N9`, `B5-N13`, `B5-N10/11/12`, `B6-R3`, `B6-R4`, `B6-N3`, `B6-N5`,
+`B7-N9`, `B7-N10`, `B7-N11`, `B7-N12`, `B8-R3`, `B8-R4`, `B8-N1`, `B8-N2`,
+`B10-N1`, `B10-N2`, `B10-N3`, `B10-N4`, `B10-N5`, `B1-N9`, `B2-4`.
+
+Plus one line that is not a register row: **three new `docs/specs/DEBT.md`
+entries** for the deferred live defects (`B6-R1`, `B6-R5`, `B8-N7`), written
+in the commit that makes the decision, as `DEBT.md`'s own preamble requires.
+`D1`-`D23` are all paid off and the file currently holds no entries, so the
+new ones take `D24`, `D25`, `D26` - never a reused id - under a new heading
+("Live defects found in phase-8's own reviews, deferred with a reason"),
+since the three existing headings are all migration-framed.
+
+**Gates**: `rtk npm run check`. `npm run check:built` **only** if a `.svelte`
+template or a CSS declaration lands (a comment or a type narrowing is
+neither). A `node tests/app/golden.js --only=<sub>` probe only if the
+string-vs-snapshot grep above finds a hit - in which case the row moves to
+`B12d` instead.
+
+**Risks / do-nots**: `B6-R4` adds a `visibilitychange` listener beside the
+existing `pagehide` one - it must not double-flush; `B8-R3` adds no
+`dict.ts` key; `B10-N4` adds a sentence, not a structural move; a row that
+turns out to move rendered output is a stop-and-report, not a quiet
+re-record.
+
+### B12c - harness, tooling and CI
+
+**Criterion**: see both seams above. These rows cannot move rendered output
+at all, and they share one `check` plus one CI watch.
+
+**Rows**: `B4-R1`, `B4-R2`, `B4-R3`, `B4-R4`, `B4-1`, `B4-2`, `B4-3`,
+`B4-4`, `B4-5`, `B4-6`, `B4-7`, `B4-10`, `B5-R1`, `B5-N3`, `B5-N14`,
+`B5-N15`, `B6-N2`, `B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`, `B9-N11`.
+
+Notes the implementer needs:
+
+- **`B4-3` is the row that must record an unmet line as unmet.** Add the
+  `echo` before the `if` so the deploy log actually carries the stub count,
+  and record in `handoff.md` that the original acceptance line ("the deploy
+  log shows the stub-count line") was **not met** at B4 - do not restate it
+  as met now that it is. This phase has three times found a record claiming
+  a verification that did not happen; this is the fix for one of them.
+- **`B4-4` and `B4-7` are settled by the census above**, not open questions.
+- **`B9-R2` and `B9-N5` are one edit**: narrow or fix the four code-rule
+  turn-offs and enumerate every site per rule. `no-regex-spaces` (5 sites)
+  and the two 3-line fixes prefer the fix; `preserve-caught-error` prefers
+  three inline disables over a directory-wide off.
+- **`B5-N15`** is likely already closed by B9's wholesale translation of
+  `tests/` - the census settles it before any edit.
+
+**Gates**: `rtk npm run check`; `node tests/run-all.js
+contracts,derived,dataint,craft,stub`; **one CI watch after the push**, which
+is the only instrument that can see `B4-3`'s echo and `B4-4`'s `_site` path -
+the `deploy` job runs on push to `main`.
+
+### B12d - the browser-gated rows and the three measurements this phase owes
+
+**Criterion**: a different route and filter set (seam table above).
+
+**Rows**: `B6-N1`, `B7-N1`, `B7-N2`, `B7-R1`, `B7-R2`, `B7-R4`, `B7-N4`,
+`B7-N13`, `B7-N15`, `B8-R6`, `B8-N4`, `B8.1-N2`, `B8.1-N3`, `B11-N2`,
+`B11-N3`.
+
+**Coupled rows that must ship in one commit**: `B7-N1` (`help.ts:544`'s
+`Players’ link`), `B11-N2` (`inventory.js:150-151`'s value and its false
+comment) and `B11-N3` (the coupling itself). Straightening one without the
+other leaves the driver's name lookup and the live label disagreeing in the
+opposite direction. `help.ts` is `app/src` but rides here, because this is
+the piece that can prove the string moves no golden.
+
+**The three measurements**, each its own acceptance line - they are owed from
+B7 and B8 and have never been run:
+
+1. `node tests/app/sweep.js 1180` with the English axe path exercised, which
+   the `allow` removal was never proved against (`sweep.js` runs axe on
+   Russian only at that width).
+2. The scroll-to-bottom measurement of `.selbarwrap` and `.foot` with a
+   selection at 1180 **and** 375 - the measurement P10's own acceptance line
+   asked for and `B7-R1` shows was never taken. Both existing instruments
+   measure the unscrolled page, which is the one position where the
+   difference cannot appear.
+3. `B7-R4`'s 44x44 overlap: measure `.note-x::after` against the note
+   `<textarea>` and `.warn-x::after` against the notice box. If the overlap
+   reproduces, `DEBT.md` entry with the measurement; do not redesign, do not
+   shrink below 44px.
+
+**One check nothing in this repository can perform** stays owed and is
+recorded as owed, not silently closed: confirming `.card-media`'s focus ring
+is drawn inside `.card` at both `.full` and `.compact` needs a human eye or a
+screenshot. `focusWalk` reads computed style, goldens read structure, axe
+checks neither. `B12d` records it under Blockers as an owner/human action,
+with the exact route and widths to look at.
+
+**Gates**: `rtk npm run check`; `npm run check:built`; `node
+tests/run-all.js app/states,app/print,app/contracts`; `node
+tests/app/sweep.js 1180`; two `node tests/app/golden.js --only=<sub>` probes
+for the string rows. **All four golden shards only if a row re-records** -
+and a re-record in a nit batch is a stop-and-report first
+(`COVERAGE.md`'s B8.1 gate rule requires all four shards, not one, when a
+golden moves).
+
+**Closeout.** After `B12d` and its review, `nits.md`'s "Outstanding" table is
+empty and the task is retirable per `.claude/skills/handoff/SKILL.md`,
+"Retirement". Nothing in this plan follows it.
 
 **Standing rule this batch establishes**: a review's nits are appended to
 `nits.md` when the review lands, not when somebody gets to them. The findings
