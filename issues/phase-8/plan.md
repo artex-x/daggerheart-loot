@@ -599,7 +599,7 @@ Recorded here because each is a fork the register leaves open.
   states named. A nit that changes what a screen draws was mis-classified,
   and this is how that is caught before the diff, not after.
 
-### B12a - the census, the three routed findings, and the record rows - SHIPPED `<pending, see B12a sha-citation follow-up>`
+### B12a - the census, the three routed findings, and the record rows - SHIPPED `e52f5de`
 
 Outcome: verdict recorded for all 103 live register rows in `nits.md`
 ("### Census, 2026-09-18, at e7ce2ad"), one found already done along the
@@ -620,7 +620,7 @@ entry in `B12b`. No deviation in scope; one discrepancy recorded (this
 section's own step 7 undercounts "Rows this plan moves to Deferred" by
 one row - both are this plan's own text, not a finding about the tree; the
 five-row table is authoritative, per `nits.md`'s note under its Deferred
-table). Full detail: `git show <pending, see B12a sha-citation follow-up>`,
+table). Full detail: `git show e52f5de`,
 or `issues/phase-8/handoff.md`.
 
 ### B12b - production source (`app/src/**`), and the DEBT entries

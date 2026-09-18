@@ -61,18 +61,18 @@ live in their own review section below, not repeated here.
 | B4-6 | live |
 | B4-7 | half done - the misplaced comment is gone from `ci.yml:39`; the bare `fetch-depth: 0` in `check` remains |
 | B4-8 | closed (no change - `handoff.md` was compacted since B4; no batch's Completed entry carries a per-entry `Review:` field any longer, so "in `## Status` rather than its own entry" no longer maps onto the file's structure) |
-| B4-9 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/META.md` section 7 reflowed) |
+| B4-9 | done `e52f5de`, this piece (`docs/specs/META.md` section 7 reflowed) |
 | B4-10 | closed (no change - `plan.md`'s own decision, real branch-build justification) |
 | B5-R1 | live |
-| B5-R2 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/COVERAGE.md` gained the "no golden moved is narrower than it sounds" paragraph) |
+| B5-R2 | done `e52f5de`, this piece (`docs/specs/COVERAGE.md` gained the "no golden moved is narrower than it sounds" paragraph) |
 | B5-R3 | closed (no change - `plan.md`'s own decision, no instrument short of a CSS test this repo does not have) |
-| B5-N1 | done `<pending, see B12a sha-citation follow-up>`, this piece (`.claude/README.md`'s cost table gained a `run-all.js --shard=n/m` row) |
-| B5-N2 | done `<pending, see B12a sha-citation follow-up>`, this piece (`.claude/README.md`'s Hooks row states the asymmetry) |
+| B5-N1 | done `e52f5de`, this piece (`.claude/README.md`'s cost table gained a `run-all.js --shard=n/m` row) |
+| B5-N2 | done `e52f5de`, this piece (`.claude/README.md`'s Hooks row states the asymmetry) |
 | B5-N3 | live |
-| B5-N4 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/COVERAGE.md` names all three carve-outs) |
+| B5-N4 | done `e52f5de`, this piece (`docs/specs/COVERAGE.md` names all three carve-outs) |
 | B5-N5 | live |
 | B5-N6 | live |
-| B5-N7 | done `<pending, see B12a sha-citation follow-up>`, this piece (`handoff.md`'s B5 entry gained the `SUB_LABEL` deviation) |
+| B5-N7 | done `e52f5de`, this piece (`handoff.md`'s B5 entry gained the `SUB_LABEL` deviation) |
 | B5-N8 | live |
 | B5-N9 | live |
 | B5-N10/11/12 | live - `RARITIES` (`app/src/lib/alt.ts:25`) has real callers (`AltPanel.svelte`, `TablesPage.svelte`, `alt.test.ts`), so it is not a dead re-export; only the reword is still owed |
@@ -93,7 +93,7 @@ live in their own review section below, not repeated here.
 | B7-R1 | live |
 | B7-R2 | live |
 | B7-R4 | live |
-| B7-N3 | done `<pending, see B12a sha-citation follow-up>`, this piece (`tests/app/lib.js`'s unused `allow` parameter deleted) |
+| B7-N3 | done `e52f5de`, this piece (`tests/app/lib.js`'s unused `allow` parameter deleted) |
 | B7-N4 | live |
 | B7-N5 | closed (no change - `handoff.md`'s "Not yet committed"/"one unstaged file" text this row names was already superseded by later compaction; not present in the current file) |
 | B7-N6 | closed (no change - same compaction; no batch's Completed entry carries a per-entry `Review:` field, identical resolution to B4-8) |
@@ -108,11 +108,11 @@ live in their own review section below, not repeated here.
 | B7-N15 | live |
 | B8-R3 | live |
 | B8-R4 | live |
-| B8-R5 | done `<pending, see B12a sha-citation follow-up>`, this piece (discharged by evidence - see "From B8's review", below) |
+| B8-R5 | done `e52f5de`, this piece (discharged by evidence - see "From B8's review", below) |
 | B8-R6 | live |
 | B8-N1 | live |
 | B8-N2 | live |
-| B8-N3 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/FEATURES.md`'s focus-ring radius claim corrected) |
+| B8-N3 | done `e52f5de`, this piece (`docs/specs/FEATURES.md`'s focus-ring radius claim corrected) |
 | B8-N4 | live |
 | B8-N5 | done, already `480c380` - the same edit as `B8-R2`, which that sha already shipped; this row simply duplicated it |
 | B8-N6 | live - routed to Deferred, this piece |
@@ -134,24 +134,24 @@ live in their own review section below, not repeated here.
 | B9-N3 | live |
 | B9-N5 | live |
 | B9-N6 | live |
-| B9-N10 | done `<pending, see B12a sha-citation follow-up>`, this piece (`context.md:165`'s header cells now read `want`/`got`) |
+| B9-N10 | done `e52f5de`, this piece (`context.md:165`'s header cells now read `want`/`got`) |
 | B9-N11 | live |
 | B10-N1 | live |
 | B10-N2 | live |
 | B10-N3 | live |
 | B10-N4 | live |
 | B10-N5 | live |
-| B11-BL-1 | done `<pending, see B12a sha-citation follow-up>`, this piece (see "From B11's review", below - proved to bite) |
-| B11-BL-2 | done `<pending, see B12a sha-citation follow-up>`, this piece (proved to bite) |
-| B11-R1 | done `<pending, see B12a sha-citation follow-up>`, this piece (both halves, six proofs) |
-| B11-N1 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/FEATURES.md`'s example re-pointed at the query side, with a real U+2019) |
+| B11-BL-1 | done `e52f5de`, this piece (see "From B11's review", below - proved to bite) |
+| B11-BL-2 | done `e52f5de`, this piece (proved to bite) |
+| B11-R1 | done `e52f5de`, this piece (both halves, six proofs) |
+| B11-N1 | done `e52f5de`, this piece (`docs/specs/FEATURES.md`'s example re-pointed at the query side, with a real U+2019) |
 | B11-N2 | live |
 | B11-N3 | live |
-| B11-N4 | done `<pending, see B12a sha-citation follow-up>`, this piece (append-only note under `context.md`'s Q8 row) |
-| B11-N5 | done `<pending, see B12a sha-citation follow-up>`, this piece (`handoff.md`'s B11 entry reflowed) |
+| B11-N4 | done `e52f5de`, this piece (append-only note under `context.md`'s Q8 row) |
+| B11-N5 | done `e52f5de`, this piece (`handoff.md`'s B11 entry reflowed) |
 | B1-N9 | live - `app/src/lib/search.ts:125` is still `matches(it, q, statLine, hay?)` |
 | B2-4 | moved - `TAB_LIST` no longer exists in `frames.ts`; the one surviving citation is `app/src/state/app.test.ts:68` |
-| B2-5 | done `<pending, see B12a sha-citation follow-up>`, this piece (`.claude/README.md:109`'s commit-gate description now says "covered paths", not "the tree") |
+| B2-5 | done `e52f5de`, this piece (`.claude/README.md:109`'s commit-gate description now says "covered paths", not "the tree") |
 
 ### From B4's review (deploy and gate correctness)
 
@@ -272,7 +272,7 @@ cycle is now spent; see `issues/phase-8/handoff.md`, "B7 remediation".
 | B7-R2 | `tests/app/states.js` (case 23, `addToListMenuStaysInModal`) | `ok(scrollTop === 0, ...)` can no longer fail: `RecordCard.svelte:270` changed `.card` to `overflow: clip`, which creates no scroll container, so `scrollTop` is 0 whatever the placement effect does - a stray `scrollIntoView` would scroll the nearest *scrollable* ancestor and this assertion would still pass. The D6 evidence it names (`.card.scrollTop` 109) is not what it measures any more. The real assertion is `inside(menu, card)`. Drop the scrollTop line or replace it with one pinning `:scope > .btn`. |
 | B7-R3 | `app/src/lib/i18n.ts:120,126,147` | After B7, `noTier` has **zero production callers** - only `i18n.test.ts:56,75-80` (the old-app parity fixture, which legitimately still needs it). Nothing says so at either site, so a later reader applying `CLAUDE.md`'s "add no variant before something uses it" deletes it and breaks the parity fixture for a reason that takes an hour to find. One clause closes it. Interacts with BL-0's fix. `done 6b50945`: bundled into BL-0's fix (same file, same reader trap) - a clause on `eqParts`'s doc comment names the zero-caller fact and the test that would break. |
 | B7-R4 | `app/src/components/ListPage.svelte:1267-1276`, `StorageNotice.svelte` | P12's 44x44 targets overlap editable neighbours: `.note-x::after` extends ~12px beyond a 20px button into the note `<textarea>`; `.warn-x::after` ~3px above the notice box. The `.homebtn` precedent it copies has no editable neighbour. A tap 12px from the cross clears the note instead of placing a caret. Unmeasured, low severity. |
-| B7-N3 | `tests/app/lib.js:124-135` | `axe(page, { allow })` is kept "for a future live-shared defect" with no caller - in the same commit whose `app/src/test/a11y.ts` comment argues that a parameter with no caller is a maintained shape for nothing. Pick one: delete it here too, or state why the browser suite differs. **done `<pending, see B12a sha-citation follow-up>`, this piece (B12a)** - deleted; `sweep.js:432`'s `axe(page)` was the only caller and passed nothing. |
+| B7-N3 | `tests/app/lib.js:124-135` | `axe(page, { allow })` is kept "for a future live-shared defect" with no caller - in the same commit whose `app/src/test/a11y.ts` comment argues that a parameter with no caller is a maintained shape for nothing. Pick one: delete it here too, or state why the browser suite differs. **done `e52f5de`, this piece (B12a)** - deleted; `sweep.js:432`'s `axe(page)` was the only caller and passed nothing. |
 | B7-N4 | `tests/app/inventory.js:94,142` and `:98,146` | `selected: 'Выбрано'/'Selected'` and `importPh: 'Ссылка на список'/'Paste a list link'` are dead keys - no reader. `pickRow` was deleted in this very batch for exactly that reason. `importPh` is also now wrong: after P6 that field's accessible name is `t.importList`. |
 | B7-N5 | `issues/phase-8/handoff.md` (`### B7`) | The entry still opens "**Not yet committed**", says files are "all currently in the working tree; most already `git add`ed", and calls the Escape test "the one unstaged file". All three are false as of `fa56576`, and the entry's own last bullet contradicts them. |
 | B7-N6 | `issues/phase-8/handoff.md` (`### B7`) | No `Review:` line inside the batch entry - it sits in `## Status`. Identical placement miss to `B4-8`, against the rule shipped in `c8cc38e`. |
@@ -369,7 +369,7 @@ remediation".
 | B8-R2 | `tests/app/print.js:1131-1155` | *(rides B8's remediation)* The committed `nameLines()` **is** the P16 measurement (same route, same 1100px, same `getClientRects().length`, both languages, both layouts), so the uncommitted scratchpad script costs nothing for `cm26`. But the route renders `cm26-f60-hi62-ci81` and the helper reads only `cm26`, so "the four longest names all render at one line" rests on a deleted script. Loop the four ids inside the existing `$eval` - two lines, zero extra page loads. `done 480c380`: looped `cm26`/`f60`/`hi62`/`ci81` inside the same `$eval`/`ok` pair. |
 | B8-R3 | `app/src/ports/image.ts:45-51`, `RecordActions.svelte` | The 2000 ms `toBlob` watchdog can fire on a slow-but-fine encode, and `copyImage` maps *any* `pngOf` rejection to `imgTainted` - so a contended machine encoding a large source gives the user a tainted-canvas story for a slow encode and silently loses the picture. 2000 ms is defensible for card art; the residual risk is the wording. The code already builds distinct `Error` messages and `copyImage` discards them - name the two causes apart, or raise the watchdog and document the measured encode time. |
 | B8-R4 | `app/src/ports/image.ts` (`browserImage().download`), `vite.config.mts` | New code exercised by nothing: no unit test imports `browserImage`, the file is coverage-excluded, and the browser path cannot reach it (`states.js` case 10 runs on a build that taints, so `writeImage` is never reached, let alone refused). The comment updated in the same commit now overstates the exclusion - "exercised for real by `states.js`'s copy-image case" is true of `pngOf`, not of `download`. The plan's step 1 offered "narrow the exclusion **or** add the rejection-path test"; the rejection path got real browser coverage, the download did not. A jsdom test on `download` with `URL.createObjectURL`/`revokeObjectURL` stubbed (asserting the `<a download>` name, the click, and the element's removal), and trim the comment's claim to `pngOf`. |
-| B8-R5 | (proof, not a file) | D1 and D18 are **global CSS** reaching every rendered page, but B8's local gates were `app/states`, `app/print`, `sweep 1180` and two golden probes. `app/hues`, `app/typo`, `app/contracts`, `stub`, the other sweep widths and the four golden shards have not run against this tree. Nothing in the review's reading suggests movement (goldens are structure-only; hues reads computed colours, which a 0s transition only stabilises). **CI is the outstanding proof** - check the full browser matrix on the B8 commits or the remediation. **done `<pending, see B12a sha-citation follow-up>`, this piece (B12a) - discharged by evidence, not by a re-run** (per `plan.md`'s own instruction not to re-run B8's gates): the `check` workflow (`.github/workflows/ci.yml`, which runs the full four-shard `browser` matrix as part of it) ran green on the state B8 landed at each of three later shas - run `35341735535` (`2d404c7`, the docs commit immediately after B9's own `5602ca9`), run `35344512741` (`56dabbc`, B10's own implementation commit), and run `35350599995` (`78981b2`, the docs commit immediately after B11's own `78b13f0`). All three succeeded; no golden re-record happened between B8 and any of them except B8.1's `addressSettled()` fix and B11's own six-golden update, both accounted for and green. |
+| B8-R5 | (proof, not a file) | D1 and D18 are **global CSS** reaching every rendered page, but B8's local gates were `app/states`, `app/print`, `sweep 1180` and two golden probes. `app/hues`, `app/typo`, `app/contracts`, `stub`, the other sweep widths and the four golden shards have not run against this tree. Nothing in the review's reading suggests movement (goldens are structure-only; hues reads computed colours, which a 0s transition only stabilises). **CI is the outstanding proof** - check the full browser matrix on the B8 commits or the remediation. **done `e52f5de`, this piece (B12a) - discharged by evidence, not by a re-run** (per `plan.md`'s own instruction not to re-run B8's gates): the `check` workflow (`.github/workflows/ci.yml`, which runs the full four-shard `browser` matrix as part of it) ran green on the state B8 landed at each of three later shas - run `35341735535` (`2d404c7`, the docs commit immediately after B9's own `5602ca9`), run `35344512741` (`56dabbc`, B10's own implementation commit), and run `35350599995` (`78981b2`, the docs commit immediately after B11's own `78b13f0`). All three succeeded; no golden re-record happened between B8 and any of them except B8.1's `addressSettled()` fix and B11's own six-golden update, both accounted for and green. |
 | B8-R6 | `tests/app/print.js` (the D20 block, ~line 1280) | `d.seed({'dhloot.lists.v2': ...})` is never cleared, and `driver.js`'s `seed` installs an `evaluateOnNewDocument` handler that survives every later `d.open()`. Harmless today (only the print-link block follows and it reads no lists), but the next person appending to this file inherits a seeded list without knowing - the same class as the viewport leak B8's own handoff documents. Also: the assertion depends on the action toast still being alive, and `say()` gives action toasts 7000 ms - two round trips inside 7 s is comfortable, but it is a real flake budget on a contended host. |
 | B8-N1 | `app/src/styles/tokens.css:172` | Cites "`docs/specs/DEBT.md`, D1's own history" for a rejected alternative, and the same commit deletes D1. The load-bearing half ("a longer non-zero duration was tried first and rejected for exactly the opposite reason") never says what the opposite reason *was*, so the dead pointer is the only route to it. State the reason inline in one clause, or cite `git show 8e43c92:docs/specs/DEBT.md`. |
 | B8-N2 | `app/src/lib/dict.ts:84,432` | `imgFailed` now fires only when `download()` throws (the blob already exists), but the wording is "Не удалось получить картинку" / "Could not load the image". The strings are live's own and live's use was broader, so they are inherited rather than invented - but wrong for the only case that can now raise them. "Не удалось сохранить картинку" / "Could not save the image". |
@@ -689,7 +689,7 @@ dispatched to B12 as **named acceptance lines, not as nits** - see the note
 under "Outstanding" about blockers never being demoted into a nit batch.
 They are listed here for the record, already routed.
 
-**All three, done `<pending, see B12a sha-citation follow-up>`, this piece (B12a)** - `search.test.ts:143-151` re-points
+**All three, done `e52f5de`, this piece (B12a)** - `search.test.ts:143-151` re-points
 the case at the query side and is proved to bite (deleted `search.ts:71`,
 watched the case fail with `AssertionError: expected [] to include 'q80'`,
 restored, `git diff --stat -- app/src/lib/search.ts` empty afterward);
@@ -815,8 +815,7 @@ step 7 is recorded as a discrepancy, not silently resolved by dropping one.)*
 - **B12a** - the census (all 103 rows), the three routed findings
   (`B11-BL-1`, `B11-BL-2`, `B11-R1`), `B7-N3`, and the record/spec rows
   (`B4-9`, `B5-R2`, `B5-N1`, `B5-N2`, `B5-N4`, `B5-N7`, `B8-R5`, `B8-N3`,
-  `B9-N10`, `B11-N1`, `B11-N4`, `B11-N5`, `B2-5`) - `<pending, see B12a
-  sha-citation follow-up>`. Closed with no change (decision or already
+  `B9-N10`, `B11-N1`, `B11-N4`, `B11-N5`, `B2-5`) - `e52f5de`. Closed with no change (decision or already
   done, no edit needed): `B4-8`, `B4-10`, `B5-R3`, `B7-N5`, `B7-N6`,
   `B7-N7`, `B7-N8`, `B7-N14`, `B8-N5` (already `480c380`), `B8-N8`,
   `B8.1-R1`-`B8.1-R6`, `B8.1-N4`, `B9-R1`, `B9-R3`. Moved to "Deferred out

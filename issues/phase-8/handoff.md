@@ -2,10 +2,10 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `<pending, see B12a sha-citation
-  follow-up>`, this pass's own commit, one commit past **B11 - equipment
-  apostrophes (O2)**'s docs pass (`78981b2`), which was two past B11 itself
-  (`78b13f0`). `rtk npm run check`, the fs suites, `npm run build` and the
+- Task status: in_progress. HEAD is `e52f5de`, this pass's own commit,
+  one commit past **B11 - equipment apostrophes (O2)**'s docs pass
+  (`78981b2`), which was two past B11 itself (`78b13f0`). `rtk npm run
+  check`, the fs suites, `npm run build` and the
   `app/typo` proof cycle are green on B12a - see "Verification"; the tree
   is otherwise unchanged since B11 (nothing between `78981b2` and this
   pass touched a gated path). B1-B11 plus every remediation pass are on
@@ -319,7 +319,7 @@ pre-compaction text.
   `_tables_eq_weapon_panel_open`); all four golden shards (112 states) green
   without `--update` confirm nothing else did. No deviation.
 - **B12a - the census, the three routed findings, and the record rows** -
-  `<pending, see B12a sha-citation follow-up>`. Census: verdict recorded for
+  `e52f5de`. Census: verdict recorded for
   all 103 live rows in `nits.md` (`### Census, 2026-09-18, at e7ce2ad`),
   folding in the eight verdicts the planning pass already established plus
   one found during the sweep (`B5-N15`, already done by B9's own
