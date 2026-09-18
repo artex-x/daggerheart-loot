@@ -3,15 +3,15 @@
 
 ## Status
 - Task status: in_progress, ready for closeout. HEAD is
-  `<pending, see B12d sha-citation follow-up>`, **B12d** itself - the
+  `bb20a0d`, **B12d** itself - the
   fourth and terminal piece of B12, one commit past B12c's own
   sha-citation follow-up (`18d4294`), which was one commit past **B12c**
   (`639f7eb`).
   `rtk npm run check` is green on B12d (all suites, coverage thresholds
   unchanged at 97.04/89.02/98.04/97.83) - see "Verification". `npm run
   check:built`, the three named browser suites, `sweep.js 1180` and two
-  golden probes all green too. Not yet pushed as of this text - see
-  "Verification" for the push confirmation once it lands.
+  golden probes all green too. Pushed: `git rev-parse HEAD origin/main`
+  both `bb20a0d`.
 - Last agent: implementer (2026-09-18, B12d: the browser-gated rows and
   the three measurements this phase owes).
 - Branch: `main`.
@@ -461,7 +461,7 @@ pre-compaction text.
   `npx eslint .` clean throughout. No row moved rendered output or changed
   a public contract. No deviation.
 - **B12d - the browser-gated rows and the three measurements this phase
-  owes** - `<pending, see B12d sha-citation follow-up>`. Review: not run
+  owes** - `bb20a0d`. Review: not run
   (owner's decision, 2026-09-18 - see `context.md`, "Review and nit policy
   for this task"). All 15 live rows landed as real edits (`B6-N1`, `B7-N1`,
   `B7-N2`, `B7-R1`, `B7-R2`, `B7-R4`, `B7-N4`, `B7-N13`, `B7-N15`, `B8-R6`,
@@ -624,9 +624,8 @@ that names the string literally.
   (untracked, foreign) and `remediate` (untracked, foreign, 0 bytes)
   untouched and unstaged, per "preserve unrelated working-tree changes" -
   staged explicitly by path, not `git add -A`.
-- Push: `git push origin main` - see "Notes" for confirmation once this
-  section's placeholder sha is replaced by the follow-up commit, per this
-  task's own two-commit convention (B9-B12c all followed it).
+- Push: `git push origin main` (`bb20a0d`) - `git rev-parse HEAD
+  origin/main` both `bb20a0d` afterward.
 
 ### B12c's own verification
 
@@ -1285,7 +1284,6 @@ golden probes are all green too - see "Verification".
   rule exists exactly because a second session's edits can make the first
   session's gate results look like a bug in its own work, which is what
   happened here (see "Verification").
-- Session end partial progress: none - `main` is at a committed,
-  gate-verified boundary (B12d's own sha, see "Completed" once the
-  sha-citation follow-up commit lands); push confirmation follows in that
-  same follow-up per this task's own two-commit convention.
+- Session end partial progress: none - `main` is at a committed, pushed,
+  gate-verified boundary (B12d's own sha `bb20a0d`, see "Completed"). B12
+  is now fully shipped; retirement is the orchestrator's next step.

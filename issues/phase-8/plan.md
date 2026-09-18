@@ -661,7 +661,7 @@ disables at its exact pre-existing sites rather than a directory-wide off.
 Full detail and the CI watch's result: `git show <sha>`, or
 `issues/phase-8/handoff.md`.
 
-### B12d - the browser-gated rows and the three measurements this phase owes - SHIPPED `<pending, see B12d sha-citation follow-up>`
+### B12d - the browser-gated rows and the three measurements this phase owes - SHIPPED `bb20a0d`
 
 Outcome: all 15 live rows landed as real edits, one commit for the coupled
 trio (`B7-N1`, `B11-N2`, `B11-N3` - `help.ts:544` and
