@@ -159,55 +159,55 @@ Outcome: copy-image now detects a tainted canvas and falls back to text, then to
 
 Root cause: B8's blanket reduced-motion CSS kill collapsed the toast's real ~200ms fade to 0.01ms, so `tests/app/driver.js`'s `settle()` (an animation wait plus an 80ms sleep) started returning ~47ms before `ListPage`'s 150ms debounced URL write landed - deterministically wrong on the three toast-timed golden states that also mutate an owned list (`#/lists/a ~ removed`/`~ prices set`/`~ batch deleted`, `ru` only). Full mechanism and the measured timing table: `issues/phase-8/context.md`, "A deterministic B8 regression" / "The mechanism, measured 2026-09-18" - not to be re-derived. Fix (`d267a0a`): a new `addressSettled()` wait in `driver.js`, called before every golden capture (both languages, and after `waitForToast`), plus a `golden.test.mjs` coupling test tying the wait's constant to `ListPage`'s real debounce (proved to actually bite by temporarily changing the debounce and watching the coupling test fail, then reverting). Settled decisions, **not to be reopened without the owner**: (1) do not re-record the three goldens - their recorded payloads are the correct post-interaction ones, the untouched seed is what is wrong; (2) do not flush the URL synchronously in production to satisfy a harness timing - the 150ms debounce is a deliberate WebKit-throttling guard; (3) do not give the three states a per-state settle step in `inventory.js` - the capture-level wait covers the whole class with no per-state plumbing; (4) `timed: true` stays - it is correlated with, not the cause of, the failure (the real predicate is "the `enter` step mutates the list"); (5) keep the driver's `prefers-reduced-motion: reduce` emulation - it now exercises D1's real shipped behaviour and determinism, and dropping it would cost CI's `sweep1180-ru` (371.9s, the critical-path row) real minutes; (6) keep `settle()`'s animation wait even though the blanket CSS kill currently makes it inert - it is the correct instrument if the emulation is ever scoped down. All four golden shards green without `--update`. Follow-up (`dc7ed71`) fixed an unrelated `app/states` case-10 regression that this batch's own A6 gate surfaced (untouched by this batch's diff): the driver's clipboard `write` mock resolved without awaiting a promise-valued `ClipboardItem` entry, unlike the real API, so a tainted-canvas rejection never propagated. Review remediation (`6b841f5`) tightened `COVERAGE.md`'s B8.1 gate rule to require all four shards, not one - a single-shard proof would have missed this exact bug, which fell one failure per shard across shards 2/3/4 - plus four doc-comment nits (NIT-1..4, one proved to actually bite three refactor shapes) and one record correction (NIT-9); the rest of the review (R-1..R-6, NIT-5..NIT-8) is persisted in `issues/phase-8/nits.md`, "From B8.1's review", for B12.
 
-### B9 - language and format: `tests/` and `tools/` (H1, T7, H13, H16, H15, T12, H11)
+### B9 - language and format: `tests/` and `tools/` (H1, T7, H13, H16, H15, T12, H11) - SHIPPED `0f0c73b`, `0baf86a`, `6b3f0eb`, `d660ce7`, `5602ca9`
 
-- **Merged from**: first-plan B15 + B16 + B17 + B18.
-- **Stands alone because**: a different route and filter set - it touches
-  only `tests/**` and `tools/**` and its proof is every browser suite green
-  once (messages change only on the failure path), which no other batch
-  runs in full. The one split the owner allowed here is kept **as commits,
-  not batches**: three translation commits (node suites and tools; the small
-  browser suites; `print.js` + `states.js`) and a final format commit -
-  because a reviewer cannot tell a Prettier reflow from a changed regex in
-  one diff, and `print.js`/`states.js` share lines between a Russian product
-  string that must stay and a Russian message that must go. `git diff -w
-  --stat` on the format commit must be empty.
-- **Files**: `tests/derived.js` (250 Cyrillic lines: ~110 messages, ~125
-  comments, ~15 product literals), `tests/dataint.js` (86), `tests/craft.js`
-  (11), `tests/stub.js` (2), `tests/run-all.js` (33), `tools/build.js` (1),
-  `tools/derived.js` (8 comments), `tests/ok.js` (new, H16),
-  `tests/app/golden.js` (16), `tests/app/lib.js` (1), `tests/app/driver.js`
-  (3), `tests/app/contracts.js` (14; 2 are product regexes),
-  `tests/app/hues.js` (17; 4 grips), `tests/app/typo.js` (15;
-  `LABELS`/`STORAGE` stay), `tests/app/sweep.js` (66; ~53 selectors and page
-  labels stay), `tests/app/inventory.js` (3 comments; the 138 label/seed
-  lines stay), `tests/app/print.js` (200; ~170 messages, ~29 product
-  strings), `tests/app/states.js` (142; ~76 / ~65), `.prettierignore`,
-  `eslint.config.mjs`.
-- **Rules**: translate (a) messages and (c) comments; leave (b) product
-  literals byte-for-byte (`craft.js`'s regexes, `derived.js`'s pinned
-  strings such as `footBefore`, `sweep.js`'s selectors). A comment is an
-  argument - translate the argument; if unclear, keep the Russian beside the
-  English. `keyOf`/`fileOf` key off `s[0]`, so display names are safe.
-  `print.js:1037`'s "stay Russian-only" means the UI language driven -
-  reword to "driven in Russian only". `check-site.mjs` is already English
-  (B4).
-- **Commits**: (1) node suites + tools + `ok.js` + H13 + H15; (2) the small
-  browser suites + `inventory.js` comments + T12; (3) `print.js` +
-  `states.js`; (4) H11 - `.prettierignore` drops `tests/` and `tools/`,
-  `eslint.config.mjs` gains a node-globals `disableTypeChecked` block for
-  `tests/**`, `tools/**`, `.claude/hooks/**`, then `npx prettier --write
-  tests tools` and the lint fixes.
-- **Acceptance**: `git grep -c -P '\p{Cyrillic}'` over `tests/` (excluding
-  `snapshots/`) and `tools/` returns only (b) lines; the four suites' and
-  every browser suite's green run before and after; commit 4's `git diff -w
-  --stat` is empty apart from the two config files.
-- **Gates**: `npm run check` per commit; after commit 3 and again after
-  commit 4: `node tests/run-all.js
-  app/print,app/contracts,app/states,app/typo,app/hues,stub,derived,dataint,craft`
-  (~290 s pooled); `node tests/app/sweep.js 390`; `node tests/app/golden.js
-  --shard=2/4`.
-- **Goldens**: none.
+Outcome: every (a) message and (c) comment in `tests/`/`tools/` (excluding
+`tests/app/snapshots/`) translated to English, (b) product literals kept
+byte-for-byte (page labels, list/item names, button grips, regexes
+matching book vocabulary, seed/typed test data) - full per-file
+acceptance-grep breakdown in `issues/phase-8/handoff.md`. H16's four-copy
+`ok`/fail-counter helper extracted to `tests/ok.js` for the three files it
+was free to touch alongside their (a) pass (`derived.js`, `dataint.js`,
+`craft.js` - `contracts.js` was already 0-Cyrillic and outside the Files
+list, so its own copy was left as is); H13 and H15 were found already
+resolved by an earlier batch, verified rather than re-done; T12's stale
+`sweep.js` comment likewise already fixed. `print.js`/`states.js`'s trap
+(a Russian product string and a Russian message sharing one line) was read
+per site, not swept; a handful of comments keep a Russian product name
+beside its English gloss rather than guessing a canonical translation not
+otherwise in the file (`Показатель Брони`, `Призрачный Клинок`, `Самоцвет
+Чутья`, `Кольцо Тишины`). H11 landed as designed: `.prettierignore` drops
+`tests/`/`tools/`, `eslint.config.mjs` un-ignores them plus
+`.claude/hooks/**` (keeping `.claude/worktrees/` and the rest of
+`.claude/` ignored) with a `disableTypeChecked` + node-globals block and
+targeted rule turn-offs for real pre-existing patterns a format-only
+commit could not otherwise touch, then `npx prettier --write tests tools`,
+no hand edits. A fifth commit (`5602ca9`, coordinator-directed) translated
+`tools/build-share-pages.js`'s last 2 Cyrillic comment lines - outside the
+plan's own Files list, added because commit 4 had already made the file a
+touched path via Prettier and the acceptance line covers the whole tree,
+not just the Files list; the coordinator resolved that internal
+inconsistency in the acceptance line's favour.
+
+Two deviations from the plan as originally written, both raised by the
+implementer and settled by the coordinator after independent verification,
+not forced or silently resolved: (1) the `tools/build-share-pages.js`
+gap above; (2) commit 4's "`git diff -w --stat` empty apart from the two
+config files" acceptance line stays recorded as **unmet** on the
+coordinator's explicit instruction - confirmed independently that these
+files were never Prettier-formatted before B9, so the untranslated commit
+3 tree reflows by hundreds of lines under this repo's own Prettier config
+regardless of language content, which `git diff -w` cannot collapse (it
+equates differing amounts of whitespace on aligned lines, not a different
+number of lines). In place of the unmeetable diff-size proxy, a mechanical
+substitute proof was required and delivered: `npx prettier --write` run
+against commit 3's tree in an isolated scratch checkout reproduces commit
+4's actual tree **byte-for-byte** (154 files, zero differences) - meaning
+commit 4 truly is Prettier's output alone, with no lint-fix edits to any
+file layered on top (every real per-file lint finding commit 4 surfaced
+was resolved by a rule turn-off in `eslint.config.mjs`, not a file edit).
+Full detail, including the per-file acceptance list and the reproduction
+method: `issues/phase-8/handoff.md`.
 
 ### B10 - the record-modal host (C6)
 

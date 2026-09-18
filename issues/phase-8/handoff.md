@@ -2,25 +2,48 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `d882707 docs(phase-8): record the orchestrator's session cleanup and retained evidence`
-  (= `origin/main`), two docs-only commits past B8.1's own review remediation
-  (`0e7450b`, `d882707`). `main`'s `npm run check`, all four golden shards,
-  and the full browser suite are all green as of `6b841f5`. B1-B8.1 are on
-  `main` in full, including every review remediation cycle - see "Completed".
-- Last agent: implementer (2026-09-18, this compaction -
-  `docs(phase-8): compact task state`, `.md`-only, no production code, no
-  `npm run check` per the dispatch).
+- Task status: in_progress. HEAD is `5602ca9 chore(phase-8): B9 - translate
+  the last Russian comment in tools/`, five commits past `d882707` (B9:
+  `0f0c73b`, `0baf86a`, `6b3f0eb`, `d660ce7`, `5602ca9`) plus this docs
+  commit. `main`'s `npm run check` is green as of `5602ca9`; the pooled
+  browser subset (`app/print,app/contracts,app/states,app/typo,app/hues,
+  stub,derived,dataint,craft`), `sweep.js 390` and `golden.js --shard=2/4`
+  are green as measured after commit 4 (`d660ce7`) - not re-run again for
+  `5602ca9`, a two-line comment change in a file no golden or browser suite
+  reads; see "Verification" for why that is sufficient rather than assumed.
+  B1-B9 are on `main` locally in full, including every review remediation
+  cycle - see "Completed". Pushed to `origin/main` - see "Verification",
+  "Push".
+- Last agent: implementer (2026-09-18, B9's four commits, then a
+  coordinator-directed reconciliation - a fifth translation commit plus
+  this docs rewrite. The reconciliation restructured history with
+  `git reset --soft` twice, no rebase: the original `465e869` (docs) and
+  `ce7e459` (translation) shas from the first pass no longer exist,
+  replaced by `5602ca9` (translation, same content) and this commit
+  (docs, comprehensive) in swapped order - translation first so the docs
+  commit can name its own sha).
 - Branch: `main`.
-- Base / starting commit: `d882707` (= `origin/main`).
+- Base / starting commit: `d882707`.
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next.
-- Next batch: **B9** - language and format (`tests/`/`tools/`), per
-  `plan.md`. B9 re-derives every line number and Cyrillic-line count from
-  HEAD (`d882707`) before starting - `tests/app/{driver,golden}.js`,
-  `tests/app/golden.test.mjs` and `docs/specs/COVERAGE.md` all moved in
-  B8.1 and its review remediation.
+  cleared in B12, not folded into whichever batch is next. B9 has not been
+  reviewed yet.
+- **Both deviations flagged after commit 4 are settled - by the
+  coordinator, verifying independently before deciding, not by the
+  implementer overriding the plan.** Full detail under "Completed" and
+  "Verification":
+  1. `tools/build-share-pages.js`'s 2 Cyrillic comment lines - translated
+     in `5602ca9`. The plan's Files list omitted this file and its own
+     acceptance line demanded `tools/` carry only (b) lines; the
+     coordinator resolved the inconsistency in favour of the acceptance
+     line (cheaper, smaller, literally verifiable) since commit 4 had
+     already made it a touched path via Prettier.
+  2. Commit 4's "`git diff -w --stat` empty" acceptance line - recorded as
+     **unmet**, per the coordinator's explicit instruction not to force it,
+     with a substitute mechanical proof (byte-for-byte reproduction, not
+     eyeballed) written into "Verification".
+- Next batch: **B10** - the record-modal host (C6), per `plan.md`.
 
 ## Completed
 
@@ -168,62 +191,205 @@ pre-compaction text.
   proved against three refactor shapes) and one record correction (NIT-9);
   the rest of the review (R-1..R-6, NIT-5..NIT-8) persisted to
   `issues/phase-8/nits.md`, "From B8.1's review", for B12.
+- **B9 - language and format, `tests/` and `tools/`** (H1, T7, H13, H16,
+  H15, T12, H11) - `0f0c73b`, `0baf86a`, `6b3f0eb`, `d660ce7`, `5602ca9`
+  (five commits: the plan's four-commit split, plus a coordinator-directed
+  fifth). Every (a) message and (c) comment in `tests/` and `tools/`
+  (excluding `tests/app/snapshots/`) translated to English; (b) product
+  literals (page labels, list/item names, button grips, book-vocabulary
+  regexes, seed/typed test data) kept byte-for-byte - see "Verification"
+  for the full per-file acceptance-grep breakdown. Commit 1: the four
+  fs-only node suites plus `tools/build.js`/`derived.js`; extracted the
+  four-copy `ok`/fail-counter helper to `tests/ok.js` (H16) for the three
+  files it was free to touch (`derived.js`, `dataint.js`, `craft.js` -
+  `tests/contracts.js` was already 0-Cyrillic and outside the Files list,
+  left alone). H13 (em dash in English prose) and H15 (`tests/stub.js`'s
+  dangling citation) were found already resolved by an earlier batch -
+  verified, not re-done. Commit 2: the seven small browser suites plus
+  `inventory.js`'s one real comment (the other two Cyrillic-bearing
+  comments there already read as English prose quoting a product term,
+  untouched); `golden.js`'s `compareGolden()` diff wording moved from
+  "было"/"стало" to "want"/"got", with `golden.test.mjs`'s two assertions
+  on that exact wording updated in the same commit. T12 (`sweep.js`'s
+  stale "at 1180 and 360" comment) was likewise already fixed by an
+  earlier batch. Commit 3: `print.js` and `states.js`, the two files
+  where a Russian product string and a Russian message share a line -
+  read per site; `print.js`'s SPEC object keys and `states.js`'s CASES
+  array descriptions are developer-facing test vocabulary that happened
+  to be Russian, not UI strings, so they were translated too. A few
+  comments keep a Russian product name beside its English gloss rather
+  than guessing a canonical translation not otherwise present in the file
+  (`Показатель Брони`, `Призрачный Клинок`, `Самоцвет Чутья`, `Кольцо
+  Тишины`). Commit 4 (H11): `.prettierignore` drops `tests/`/`tools/`;
+  `eslint.config.mjs` un-ignores them plus `.claude/hooks/**` (keeping the
+  rest of `.claude/`, including `.claude/worktrees/`, ignored) with a
+  `disableTypeChecked` + node-globals block and targeted rule turn-offs
+  for real pre-existing patterns a format-only commit could not fix
+  without a hand edit (see the commit message for each rule and why); then
+  `npx prettier --write tests tools` (plus `eslint.config.mjs` itself), no
+  hand edits to any test/tool file. Commit 5 (`5602ca9`, coordinator-
+  directed): `tools/build-share-pages.js`'s last 2 Cyrillic comment lines
+  translated - the module-load guard, and a second, previously-missed
+  redundant comment beside an already-English one explaining the same
+  newline-stripping fact; no other line in the file touched. Two
+  deviations recorded, not silently resolved - reviewed and settled by
+  the coordinator (see "Status"): (1) `tools/build-share-pages.js` was
+  outside the plan's Files list but is translated anyway, since commit 4
+  had already made it a touched path and the acceptance line covers the
+  whole tree; (2) commit 4's `git diff -w --stat` acceptance line stays
+  recorded as unmet - the coordinator independently confirmed the cause
+  (these files were never Prettier-formatted before B9) and asked for a
+  mechanical substitute proof instead of an eyeballed one; see
+  "Verification".
 
 ## Verification
 
-Latest batch only (B8.1 review remediation, `6b841f5`); earlier batches'
-exact commands/results are in git history per "Completed" above.
+Latest batch (B9, `0f0c73b`..`5602ca9`); earlier batches' exact
+commands/results are in git history per "Completed" above.
 
-- `node --test tests/app/golden.test.mjs` - green, 17/17, including the new
-  bound-and-count coupling case.
-- NIT-4 refactor-case proof: three temporary edits to `ListPage.svelte`
-  (a split call, the literal replaced by a named constant, a spurious
-  second `setTimeout`), each run standalone against
-  `node --test tests/app/golden.test.mjs` - each FAILED with a distinct,
-  correct message; each reverted by hand (`git checkout`/`restore` refused
-  by `bash-guard.mjs` while `issues/56/` sits in the tree) and confirmed
-  byte-identical by diff against a pre-edit backup copy.
-- `rtk npm run check` (Bash timeout 600000, foreground, no pipe) - green,
-  run twice: `format:check`, `lint`, `typecheck` (svelte-check clean),
-  `npm run data`, `node tests/derived.js`, `.claude/hooks/selftest.mjs`,
-  every `node --test` suite including the updated `golden.test.mjs` and
-  `tools/check-site.test.mjs`, `npm run test` (45 files, 1131/1131 tests,
-  coverage 96.77/89.05/97.21/97.42 - thresholds green, unchanged since no
-  `app/src/**` file moved).
-- No golden shard or browser-suite re-run - this batch touches no
-  production file and no golden capture path beyond doc comments and a
-  test-file regex; the dispatch's own gate list is `npm run check` alone,
-  and the reviewer confirmed no golden should move.
-- `git diff --stat -uall` before commit - exactly the six files this batch
-  touched; `issues/56/` untouched.
-- Gates: `npm run check` (full, x2).
-- Push: `git push origin main` (`41ce6d7..6b841f5`); `git rev-parse HEAD
-  origin/main` agree.
+- Commit 1: `node tests/derived.js`, `node tests/dataint.js`,
+  `node tests/craft.js`, `node tests/stub.js` run directly - all green;
+  `node tests/run-all.js derived,dataint,craft,stub` green (pooled);
+  `rtk npm run check` green.
+- Commit 2: `node --test tests/app/golden.test.mjs` green, 17/17 (including
+  the two updated `compareGolden` wording assertions);
+  `node tests/run-all.js app/typo,app/hues,app/contracts` green;
+  `node tests/app/sweep.js 390` green;
+  `node tests/app/golden.js --only="#/i/ci1"` green, no golden movement;
+  `rtk npm run check` green.
+- Commit 3: `node tests/run-all.js app/print,app/contracts,app/states,
+  app/typo,app/hues,stub,derived,dataint,craft` - all nine green;
+  `node tests/app/sweep.js 390` green; `node tests/app/golden.js
+  --shard=2/4` - 28 states compared, no movement; `rtk npm run check`
+  green.
+- Commit 4: `npx eslint .` clean (zero errors, down from 141 across 15
+  files before the config's rule turn-offs); `npx prettier --check .`
+  clean; `rtk npm run check` green (format:check, lint, typecheck, data,
+  every `node --test` suite including `golden.test.mjs`, `npm run test`
+  45 files / 1131 tests / coverage unchanged at 96.77/89.05/97.21/97.42).
+  **Re-run for real after the format commit** (not assumed carried over
+  from commit 3's pre-format state): `node tests/run-all.js app/print,
+  app/contracts,app/states,app/typo,app/hues,stub,derived,dataint,craft` -
+  all nine green; `node tests/app/sweep.js 390` green; `node
+  tests/app/golden.js --shard=2/4` - 28 states, no movement.
+- Commit 5 (`5602ca9`): `node -c tools/build-share-pages.js`,
+  `npx prettier --check tools/build-share-pages.js`,
+  `npx eslint tools/build-share-pages.js`, and
+  `node tools/build-share-pages.js` (regenerates all 1091 `i/*.html`
+  stubs) all clean. `rtk npm run check` green (full run, below). The
+  pooled browser subset / `sweep.js 390` / `golden.js --shard=2/4` were
+  **not** re-run for this commit - it touches one file this batch's own
+  gate list never runs a browser suite against (`build-share-pages.js` is
+  exercised by `tests/derived.js`'s stub-drift check, part of `npm run
+  check`'s `node tests/derived.js` step, and by `node
+  tools/build-share-pages.js` itself, both green above); the commit-4
+  green run stands for everything else, per the coordinator's instruction
+  not to imply a re-run that did not happen.
+
+### Acceptance grep (run after commit 5, the final state)
+
+`git grep -c -P '\p{Cyrillic}'`-equivalent (a small node script walking
+`git ls-files 'tests/*' 'tools/*'` excluding `tests/app/snapshots/`,
+testing `/\p{Script=Cyrillic}/u` per line) over the whole tree: **14
+files, 395 lines**, every one (b) - a product literal, or a comment/why-
+string quoting one in an otherwise-English sentence. Full per-file
+breakdown, so a reviewer can check any given line number without
+re-deriving the classification:
+
+| File | Lines (count) | What they are |
+|---|---|---|
+| `tests/app/contracts.js` | 94,108,111-113,118,120,124,129,132,140 (11) | A fabricated list's name, notes, item names and a price, asserted/embedded verbatim in the llms.txt-description round-trip test - the payload must match real product text to prove the encoding, not just the encoder. |
+| `tests/app/driver.js` | 249-250,689 (3) | Two comments quoting the literal accessible name/UI hint word a selector or assertion has to match exactly. |
+| `tests/app/golden.test.mjs` | 46-47,56,58-59,64-65,137,140,160-161 (11) | `'Печать'` (a real button label, "Print") used as realistic fixture data to test `clean()`'s joined/split-text-node logic - the specific string is representative product text, not a message about the test. |
+| `tests/app/hues.js` | 171-172 (2) | Two button grips (`'Сеткой'`, `'Палаш'`) - literal control names the driver presses. |
+| `tests/app/inventory.js` | 141 lines (78-123, 176-177, 188, 212, 214, 226-227, seed/LABELS/STORAGE, plus every `d.click`/`d.type`/`d.press`/`d.tick` argument and every `why:` field's quoted UI text throughout) | The plan's "138 label/seed lines" (accessible-name lookup table, list/seed data, search terms, button grips) plus 3 comments: 2 already read as English prose quoting a product/item name (`Самоцвет Чутья`, the `'Клад дракона'` example, `"меч"`), 1 keeps the Russian tier-step words beside their translated gloss. |
+| `tests/app/print.js` | 23 lines (17,160-161,289-294,319,344,349,372,482,484,603,614,1097-1098,1148,1346,1521,1534,1537,1557) | Button grips, regexes asserting real book/product vocabulary printed on the card, list/seed names, and two comments quoting a product label/name with an English gloss. |
+| `tests/app/states.js` | 58 lines (50-51,55,63-65,73,77-80,101,106-108,137,156-158,183,231,259,265-266,268,292,327,335,340,355,364,375,402,423,448,455,467,472,484,487,491,499,525-526,541,552,560,635,650,663,685,758,789,815,849,906,911,942) | Button/control grips, list/seed names, seeded note/typed filler text (line-count math only, content is arbitrary), a toast-text match, search terms, and comments naming a specific item/list. |
+| `tests/app/sweep.js` | 47 lines (48-49,53-69,73-80,82,84-86,93-94,103,106,108,110-111,119,122,125-128,261,303,458) | The plan's "~53 selectors and page labels" - the `PAGES`/`FOCUS_WALK` route-label arrays, seed data, one button grip, one payload example, and the `/^таблица/` regex matching those same labels. |
+| `tests/craft.js` | 47,67,98,110 (4) | Regexes asserting real product/book text (a source-book typo term, a stale-sentence phrase, a craft-line string) and one comment quoting a product label. |
+| `tests/dataint.js` | 74,262-269,279,314,318-332 (23) | The `HEADERS`/`HEADWORDS` arrays (real book table-header words), the `а-яё`/`А-ЯЁ` Cyrillic character-class regexes (structural, operate on Russian text by definition), and one comment quoting a real example title. |
+| `tests/derived.js` | 348,467,474,477,484,492,495,499,512,548,553,594-595,658,681,685-691,795 (22) | Regexes/literals asserting real product/book text (category words, tier labels, the Recall Cost label, the versatile-weapon marker, the step-word array, the README.ru.md-matching regex and the counter word fragments it pairs with) plus four comments quoting a specific product term for clarity. |
+| `tools/build-share-pages.js` | 33-71,76,78-79,96-97,105,107,129,131,169,174,207 (40, was 41 before commit 5's 2-line fix, net -1 since one comment line merged) | The `COMMUNITY_RU`/`FRAME_LABEL`/`EQ_TYPE`/`TRAIT`/`RANGE`/`EQ_DT`/`EQ_CLS`/`EQ_BURDEN` vocabulary tables and the label fragments built from them - hygiene.md's "published stub text", i.e. exactly what gets written into every `i/<id>.html`; plus the site's own published name/CTA in two `<meta>`/`<title>` strings. |
+| `tools/capture-share-fixture.mjs` | 45 (1) | A product label pair used as fixture data. |
+
+### Substitute proof for commit 4's unmet `git diff -w --stat` acceptance line
+
+Per the coordinator's instruction: a mechanical reproduction, not an
+eyeballed spot-check.
+
+1. `git archive 6b3f0eb` (commit 3's tree, pre-format) extracted into the
+   session scratchpad, outside the working tree.
+2. This repo's own installed Prettier run against it from the real repo
+   (so plugin resolution and `.prettierrc` are the real ones, not
+   defaults): `node_modules/.bin/prettier --config <repo>/.prettierrc
+   --write <scratch>/tests <scratch>/tools`. Same file list reformatted,
+   same set left `(unchanged)` (`tests/app/lib.js`, `tests/stub.js`,
+   `tools/artwork/package.json`, `tools/tg-preview/manifest.mjs`, etc.) as
+   the real commit 4 run.
+3. `git archive d660ce7 tests tools` (the actual commit 4 output)
+   extracted into a second scratch directory.
+4. `diff -rq` between the two directories, both directions (`tests/` and
+   `tools/` separately): **zero output** - no file listed as differing, no
+   file listed as present on only one side.
+5. File-set check: `find tests tools -type f | sort` in each directory -
+   **154 files in both, identical listing** (`diff` of the two listings is
+   empty).
+
+**Result: byte-for-byte identical.** Commit 4 is exactly commit 3's tree
+plus `npx prettier --write tests tools` and nothing else - there are no
+additional lint-fix edits layered into any test/tool file, because every
+one of commit 4's real, pre-existing lint findings (the `no-require-
+imports`, `explicit-module-boundary-types`, `no-regex-spaces`, `preserve-
+caught-error`, `no-extraneous-class`, `no-unused-vars`, `no-useless-
+assignment` findings enumerated in the `d660ce7` commit message) was
+resolved by a rule turn-off in `eslint.config.mjs`, not by editing a
+file. There is no enumerated list of "lint fixes distinct from Prettier's
+output" to write here, because there are none - this is a stronger result
+than the coordinator's own hypothesis (which expected some).
+
+The acceptance line stays recorded as **unmet**, not restated as met: `git
+diff -w --stat` genuinely is not empty for commit 4 (spot-checked earlier
+and reconfirmed by this reproduction - the non-empty diff is 100% Prettier
+reflow, corroborated two independent ways now), because these files were
+never Prettier-formatted before B9 and `git diff -w` cannot collapse a
+line that Prettier split across several back to "no change", regardless
+of language content. The byte-for-byte reproduction above is what actually
+proves the commit's real contract ("no hand edits, Prettier + config
+only"); the diff-size line was simply the wrong instrument for a
+first-ever Prettier run on these files.
+
+### Gates and push
+
+- `npm run check`: green x5 (once per B9 commit, including `5602ca9`).
+- `git diff -w --stat` for commit 4: confirmed still not empty; see above
+  for the substitute proof and why the line is recorded unmet rather than
+  forced.
+- Push: `git push origin main` - see the sha this handoff records as HEAD
+  above for what was pushed; `git rev-parse HEAD origin/main` confirmed to
+  agree after the push (recorded here, not assumed, per this task's
+  standing rule against unverified verification claims).
 
 ## Next batch (implement-ready)
 
-- **B9 - language and format, `tests/` and `tools/`** (H1, T7, H13, H16,
-  H15, T12, H11). Objective, files, the four-commit split, acceptance and
-  gates: `plan.md`, "B9".
-- **B9 re-derives every line number and Cyrillic-line count from HEAD
-  (`d882707`) before starting** - do not reuse any count recorded against
-  an earlier commit. `tests/app/{driver,golden}.js`, `tests/app/
-  golden.test.mjs` and `docs/specs/COVERAGE.md` all moved in B8.1 and its
-  own review remediation, on top of B8.1's earlier edits to the first
-  three.
-- Nothing outstanding blocks B9: `main` is fully green, B8.1's own review
-  is closed (one remediation cycle, spent).
-- **Do not fold B8's or B8.1's remaining review nits into B9** - route them
-  through `issues/phase-8/nits.md`, the same way B4-B8.1's were. B12 is
-  where the whole outstanding table clears.
+- **B10 - the record-modal host (C6)**. Design, acceptance and gates:
+  `plan.md`, "B10".
+- Nothing outstanding blocks B10: both of B9's deviations are settled (see
+  "Status"/"Completed"), and neither touches production code, a golden, or
+  a spec that B10's own gate (the four golden shards, unconfounded by any
+  other change) would be sensitive to.
+- **Do not fold B8's, B8.1's, or B9's outstanding review nits into B10** -
+  route them through `issues/phase-8/nits.md`. B12 is where the whole
+  outstanding table clears. B9 has not been reviewed yet; when it is, its
+  nits go there too.
 
 ## Blockers
 
-None currently. Both blockers this task has recorded are resolved:
-`main`'s three timed owned-list goldens (fixed in B8.1, `d267a0a`) and the
-driver's clipboard `write` mock (fixed in B8.1's follow-up, `dc7ed71`).
-`main`'s `npm run check`, all four golden shards, and the full browser
-suite are green as of `6b841f5`.
+None. B9's two deviations (commit 4's `git diff -w --stat` acceptance
+line, `tools/build-share-pages.js`'s Cyrillic comments) were both settled
+by the coordinator - see "Status" and "Completed". Every gate is green
+(`npm run check` x5, the pooled browser subset, `sweep.js 390`,
+`golden.js --shard=2/4`, all confirmed for real, not assumed) and the
+branch is pushed.
 
 ## Deferred
 
