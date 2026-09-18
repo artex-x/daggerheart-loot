@@ -3,7 +3,12 @@
  * docs/fixtures/statlines/equipment.json was captured from the old app, in both
  * languages, across every equipment kind and four sources. Tests written
  * alongside the code only prove it is self-consistent; this proves the port is
- * faithful, which is the whole point of Phase 2. */
+ * faithful, which is the whole point of Phase 2.
+ *
+ * One entry is not a capture any more: `f7` (a frame record) holds the tier
+ * word by deliberate post-migration divergence from the old app, per D11/Q6
+ * ("print the tier on frame equipment"). Do not "fix" it back to match a
+ * fresh capture. */
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -23,7 +28,6 @@ import {
   itemsWord,
   nameOf
 } from './i18n.js';
-import { isFrameRecord } from './label.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -52,9 +56,9 @@ describe('the stat line matches the app it came from', () => {
         const it_ = index.byId.get(id);
         expect(it_).toBeDefined();
         const record = it_ as Record_;
-        expect(
-          eqParts(record, lang, LABELS[lang], { noType: true, noTier: isFrameRecord(record) })
-        ).toEqual(FIXTURE[id]?.[lang]);
+        expect(eqParts(record, lang, LABELS[lang], { noType: true })).toEqual(
+          FIXTURE[id]?.[lang]
+        );
       });
     }
   }

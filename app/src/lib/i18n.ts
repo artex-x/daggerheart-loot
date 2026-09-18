@@ -112,6 +112,11 @@ export interface StatLabels {
  * table binds each piece to a location and the location has a tier. It is never
  * guessed from the stats: damage bands for adjacent tiers overlap, and the
  * guess that used to live here lied.
+ *
+ * `opts.noTier` has no production caller (D11/Q6 - the tier prints everywhere,
+ * including on frame equipment). It stays only for `i18n.test.ts`'s old-app
+ * parity fixture, which still needs to render a pre-D11 line for `f1`; do not
+ * delete it as an unused variant without checking that test first.
  */
 export function eqParts(
   it: Record_,

@@ -112,6 +112,51 @@ const LOOT: Loot = {
         ru: 'Стеганая Одежда',
         rud: 'Гибкое: +1 к Уклонению',
         eq: { t: 'armor', tier: 1, as: 3, th: [5, 11], line: '' }
+      },
+      /* f2/f3: a two-rung upgrade line on frame records, both sharing
+         `eq.line`. Dropping RecordCard's `!isFrameRecord(it)` guard turned the
+         tier ladder on for every frame record that has one (56 of them in the
+         real data) - f1 stands alone (`eq.line: ''`) and cannot prove that;
+         these two can. */
+      {
+        id: 'f2',
+        src: 'frame',
+        frame: 'beast_feast',
+        kind: 'equip',
+        en: 'Sharpened Cooking Knife',
+        ende: 'Reliable: +1 to attack rolls',
+        ru: 'Наточенный Кухонный Нож',
+        rud: 'Надёжное: +1 к Броскам Атаки',
+        eq: {
+          t: 'weapon',
+          tier: 1,
+          cls: 'phy',
+          tr: 'finesse',
+          rg: 'melee',
+          dmg: 'd8+1',
+          bu: 1,
+          line: 'cookknife'
+        }
+      },
+      {
+        id: 'f3',
+        src: 'frame',
+        frame: 'beast_feast',
+        kind: 'equip',
+        en: 'Masterwork Cooking Knife',
+        ende: 'Reliable: +2 to attack rolls',
+        ru: 'Кухонный Нож Мастера',
+        rud: 'Надёжное: +2 к Броскам Атаки',
+        eq: {
+          t: 'weapon',
+          tier: 2,
+          cls: 'phy',
+          tr: 'finesse',
+          rg: 'melee',
+          dmg: 'd8+3',
+          bu: 1,
+          line: 'cookknife'
+        }
       }
     ],
     /* Vault of Ages carries the tier word `app.js:3237` prints but the
@@ -666,6 +711,22 @@ describe('the tier ladder', () => {
     /* A line of one is not a ladder, and neither is a loot record. */
     render(App, { env: at('ci1') });
     expect(screen.queryByText('Ранг')).not.toBeInTheDocument();
+  });
+
+  it('draws the ladder on a frame record now that the guard is dropped, tier words and all (D11, paid off)', async () => {
+    /* Before D11 paid off, RecordCard suppressed the ladder for every frame
+       record (`!isFrameRecord(it)`, once at `RecordCard.svelte:177`). f1
+       stands alone (`eq.line: ''`) and cannot prove the guard's removal; f2
+       and f3 share one, so this is a frame record's own page showing both a
+       ladder and the tier word on its stat chip - the larger, user-visible
+       half of D11, which real frame records with a line (`f37`-`f44` and 54
+       others) now get too. */
+    const { container } = render(App, { env: at('f2') });
+    const steps = screen.getByText('Ранг').parentElement;
+    expect(steps?.textContent.replace('Ранг', '').trim()).toBe('12');
+    expect(screen.getByText('Ранг 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Кухонный Нож Мастера' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
   });
 
   it('folds a menu left open when the modal closes by its own button', async () => {
