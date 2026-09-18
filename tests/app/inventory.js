@@ -293,11 +293,12 @@ const STATES = [
      chain, the references and the footer were not. */
   { id: '#/i/ci1 ~ whole', route: '#/i/ci1', why: 'a record page end to end', whole: true },
 
-  /* A rung of the tier ladder. Улучшенный, Продвинутый and Легендарный are the
-     same weapon at four tiers and the ladder is how a person moves between
-     them; it opens the other rung over this page rather than navigating, so no
-     route draws it. It went unported for weeks behind a debt whose reason
-     named only the add-to-list row. */
+  /* A rung of the tier ladder. Improved (Улучшенный), Advanced (Продвинутый)
+     and Legendary (Легендарный) are the same weapon at four tiers, and the
+     ladder is how a person moves between them; it opens the other rung over
+     this page rather than navigating, so no route draws it. It went
+     unported for weeks behind a debt whose reason named only the
+     add-to-list row. */
   {
     id: '#/i/q1 ~ another tier',
     route: '#/i/q1',

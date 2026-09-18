@@ -220,7 +220,7 @@ async function focusWalk(page, where) {
       gold
     );
     await elHandle.dispose();
-    ok(at.visible, where + ': нет видимого focus-ring на ' + at.name);
+    ok(at.visible, where + ': no visible focus ring on ' + at.name);
   }
 }
 
@@ -251,7 +251,7 @@ async function focusWalk(page, where) {
         try {
           await d.open(asked);
         } catch (e) {
-          ok(false, where + ': страница не отрисовалась - ' + e.message);
+          ok(false, where + ': the page did not render - ' + e.message);
           continue;
         }
         await page.evaluate(() => window.scrollTo(0, 0));
@@ -302,13 +302,13 @@ async function focusWalk(page, where) {
            * 12px tap-height floor. */
           document.querySelectorAll('.craft, .rcraft, .dicebar, .numrow').forEach((el) => {
             const r = el.getBoundingClientRect();
-            if (r.right > w + 1) out.craftBad.push(el.className + ' вылезает за правый край (' + Math.round(r.right) + ')');
-            if (r.left < -1) out.craftBad.push(el.className + ' вылезает за левый край');
-            if (r.height > 0 && r.width < 60) out.craftBad.push(el.className + ' сжат до ' + Math.round(r.width) + 'px');
+            if (r.right > w + 1) out.craftBad.push(el.className + ' spills past the right edge (' + Math.round(r.right) + ')');
+            if (r.left < -1) out.craftBad.push(el.className + ' spills past the left edge');
+            if (r.height > 0 && r.width < 60) out.craftBad.push(el.className + ' squeezed to ' + Math.round(r.width) + 'px');
           });
           document.querySelectorAll('.craft a').forEach((a) => {
             const r = a.getBoundingClientRect();
-            if (r.height < 12) out.craftBad.push('ссылка крафта высотой всего ' + Math.round(r.height) + 'px');
+            if (r.height < 12) out.craftBad.push('craft link is only ' + Math.round(r.height) + 'px tall');
           });
 
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
@@ -324,18 +324,18 @@ async function focusWalk(page, where) {
         if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(asked))
           ok(
             landed === asked,
-            where + ': адрес поменялся сам — просили ' + asked + ', оказались на ' + landed
+            where + ': address changed on its own — asked for ' + asked + ', landed on ' + landed
           );
 
-        ok(!errs.length, where + ': ошибка в консоли — ' + errs.slice(0, 2).join(' | '));
+        ok(!errs.length, where + ': console error — ' + errs.slice(0, 2).join(' | '));
         errs.length = 0;
-        ok(rep2.overflow <= 0, where + ': горизонтальная прокрутка на ' + rep2.overflow + 'px');
-        ok(!rep2.undef, where + ': на странице напечатано undefined');
-        ok(!rep2.ids.length, where + ': повторяющийся id — ' + rep2.ids.join(', '));
-        ok(!rep2.noName.length, where + ': элемент без имени — ' + rep2.noName.slice(0, 3).join(', '));
-        ok(!rep2.clipped.length, where + ': текст обрезан — ' + rep2.clipped.slice(0, 3).join(' | '));
-        ok(!rep2.badLinks.length, where + ': ссылка в никуда — ' + rep2.badLinks.slice(0, 3).join(', '));
-        ok(!rep2.craftBad.length, where + ': крафт — ' + rep2.craftBad.slice(0, 3).join(' | '));
+        ok(rep2.overflow <= 0, where + ': horizontal scroll of ' + rep2.overflow + 'px');
+        ok(!rep2.undef, where + ': the page printed undefined');
+        ok(!rep2.ids.length, where + ': duplicate id — ' + rep2.ids.join(', '));
+        ok(!rep2.noName.length, where + ': unnamed element — ' + rep2.noName.slice(0, 3).join(', '));
+        ok(!rep2.clipped.length, where + ': text clipped — ' + rep2.clipped.slice(0, 3).join(' | '));
+        ok(!rep2.badLinks.length, where + ': link to nowhere — ' + rep2.badLinks.slice(0, 3).join(', '));
+        ok(!rep2.craftBad.length, where + ': craft — ' + rep2.craftBad.slice(0, 3).join(' | '));
 
         if (/^таблица/.test(label)) {
           const strip = await page.evaluate(() => {
@@ -343,13 +343,13 @@ async function focusWalk(page, where) {
             return c.length ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0)) : 0;
           });
           const cap = width < 500 ? 260 : width < 1000 ? 150 : 130;
-          ok(strip <= cap, where + ': полоса разделов ' + strip + 'px, потолок ' + cap);
+          ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
 
         const broken = await page.evaluate(() =>
           [...document.images].filter((i) => i.complete && !i.naturalWidth).map((i) => i.getAttribute('src'))
         );
-        ok(!broken.length, where + ': картинка не загрузилась — ' + broken.slice(0, 2).join(', '));
+        ok(!broken.length, where + ': picture failed to load — ' + broken.slice(0, 2).join(', '));
 
         /* axe, right here - the page is already open, so this is not an
          * extra navigation. Contrast and heading order are a function of
@@ -378,7 +378,7 @@ async function focusWalk(page, where) {
     if (width === 1180 && LANGS.includes('ru')) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang: 'ru', storage: STORAGE });
       for (const { hash, label, filterOpen } of FOCUS_WALK) {
-        const where = label + ' @' + width + ' ru, фокус';
+        const where = label + ' @' + width + ' ru, focus';
         await d.open(hash);
         if (filterOpen) await d.click('Фильтры');
         await focusWalk(page, where);
@@ -392,8 +392,8 @@ async function focusWalk(page, where) {
      a width plus a language) is not "all widths and languages", and the
      completion line used to claim that regardless. */
   const scope = ONLY.length || langArg
-    ? 'на ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
-    : 'на всех ширинах и языках';
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nобход страниц (dist/): чисто ' + scope);
+    ? 'at ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
+    : 'at every width and language';
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist/): clean ' + scope);
   process.exit(rep.failed ? 1 : 0);
 })();

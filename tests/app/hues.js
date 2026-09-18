@@ -92,20 +92,20 @@ const gap = (a, b) => {
       if (a.s < MIN_SAT || b.s < MIN_SAT) {
         ok(
           Math.abs(a.s - b.s) > 0.2 || Math.abs(a.l - b.l) > 0.12,
-          na + ' и ' + nb + ': оба блёклые и одной светлоты'
+          na + ' and ' + nb + ': both muted and the same lightness'
         );
         continue;
       }
       ok(
         gap(a.h, b.h) >= MIN_HUE,
-        na + ' и ' + nb + ' одного тона: ' + Math.round(gap(a.h, b.h)) + '° при минимуме ' + MIN_HUE
+        na + ' and ' + nb + ' are the same hue: ' + Math.round(gap(a.h, b.h)) + '° against a minimum of ' + MIN_HUE
       );
     }
   }
 
   /* The roll button is the same control everywhere: gold, with a die on it.
    * `:has()` is Chrome's, and this only ever runs in Chrome. */
-  console.log('кнопки броска одинаковы');
+  console.log('roll buttons match');
   const rollLook = async (hash) => {
     await d.open(hash);
     return page.$$eval('button.btn.primary:has(.dieicon)', (els) =>
@@ -116,26 +116,26 @@ const gap = (a, b) => {
     );
   };
   const std = await rollLook('#/roll/std');
-  ok(std.length >= 4, 'кнопок броска меньше четырёх: ' + std.length);
+  ok(std.length >= 4, 'fewer than four roll buttons: ' + std.length);
   ok(
     std.every((x) => x.die),
-    'не на каждой кнопке броска есть кость'
+    'not every roll button has a die'
   );
   ok(
     new Set(std.map((x) => x.look)).size === 1,
-    'кости броска выглядят по-разному: ' + [...new Set(std.map((x) => x.look))].join(' / ')
+    'roll dice look different: ' + [...new Set(std.map((x) => x.look))].join(' / ')
   );
   for (const h of ['#/roll/alt', '#/roll/wondrous', '#/roll/voa']) {
     const one = await rollLook(h);
-    ok(one.length === 1, h + ': кнопок броска не одна');
-    ok(!!one[0]?.die, h + ': на кнопке броска нет кости');
-    ok(one[0]?.look === std[0]?.look, h + ': кнопка броска выглядит иначе, чем на обычных таблицах');
+    ok(one.length === 1, h + ': not exactly one roll button');
+    ok(!!one[0]?.die, h + ': the roll button has no die');
+    ok(one[0]?.look === std[0]?.look, h + ': the roll button looks different than on the ordinary tables');
   }
 
   /* Equipment's stat line keeps one tone everywhere across the three
    * equipment tables - the kind is told by the badge, not by a second colour
    * on the numbers (`eqtest.js:207-218`). */
-  console.log('характеристики снаряжения одного тона');
+  console.log('equipment stats are one tone');
   const statColour = async (hash) => {
     await d.open(hash);
     return page.$$eval('.rows .row .rstats', (els) => [...new Set(els.map((x) => getComputedStyle(x).color))]);
@@ -145,13 +145,13 @@ const gap = (a, b) => {
   const csa = await statColour('#/tables/eq_armor');
   ok(
     new Set([].concat(csw, css, csa)).size === 1,
-    'характеристики снаряжения окрашены по-разному: ' + [csw, css, csa].join(' | ')
+    'equipment stats are coloured differently: ' + [csw, css, csa].join(' | ')
   );
 
   /* A selected tile has its own fill, read off the rendered page rather than
    * grepped out of style.css (craftmob.js:68-71) - the same claim, made
    * against the app R0c keeps. */
-  console.log('заливка выбранной плитки');
+  console.log('selected tile fill');
   await d.open('#/tables/eq_weapon');
   await d.press('Сеткой');
   await d.tick('Палаш');
@@ -163,14 +163,14 @@ const gap = (a, b) => {
     const el = document.querySelector('.tilewrap:not(.sel) .tile');
     return el ? getComputedStyle(el).backgroundColor : null;
   });
-  ok(!!selFill, 'выбранная плитка: .tilewrap.sel .tile не найден');
+  ok(!!selFill, 'selected tile: .tilewrap.sel .tile not found');
   ok(
     !!plainFill && selFill !== plainFill,
-    'выбранная плитка не отличается своей заливкой: ' + selFill + ' vs ' + plainFill
+    'the selected tile does not differ in its fill: ' + selFill + ' vs ' + plainFill
   );
 
   await ctx.close();
   await closeBrowser();
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nцвета ярлыков (dist/): все различимы по тону');
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nbadge colours (dist/): all distinguishable by hue');
   process.exit(rep.failed ? 1 : 0);
 })();

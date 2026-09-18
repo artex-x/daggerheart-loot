@@ -287,9 +287,9 @@ function compareGolden(id, wantText, gotText, ok) {
   if (wantHeader.join('\n') !== gotHeader.join('\n')) {
     ok(
       false,
-      `${id} :: header: расходится\n` +
-        `       было:  ${JSON.stringify(wantHeader)}\n` +
-        `       стало: ${JSON.stringify(gotHeader)}`
+      `${id} :: header: diverges\n` +
+        `       want: ${JSON.stringify(wantHeader)}\n` +
+        `       got:  ${JSON.stringify(gotHeader)}`
     );
   }
   const want = sectionsOf(wantText);
@@ -309,9 +309,9 @@ function compareGolden(id, wantText, gotText, ok) {
     const ctx = (arr) => arr.slice(Math.max(0, at - 2), at + 1);
     ok(
       false,
-      `${id} :: ${name}: расходится со строки ${at + 1}\n` +
-        `       было:  ${JSON.stringify(ctx(w))}\n` +
-        `       стало: ${JSON.stringify(ctx(g))}`
+      `${id} :: ${name}: diverges starting at line ${at + 1}\n` +
+        `       want: ${JSON.stringify(ctx(w))}\n` +
+        `       got:  ${JSON.stringify(ctx(g))}`
     );
   }
 }
@@ -373,7 +373,7 @@ if (require.main === module) {
       });
       if (up) return;
       if (Date.now() - start > 2000) {
-        throw new Error(`${id} @ ${lang}: тост так и не появился`);
+        throw new Error(`${id} @ ${lang}: the toast never appeared`);
       }
       await new Promise((r) => setTimeout(r, 40));
     }
@@ -462,7 +462,7 @@ if (require.main === module) {
       (s, i) => (!SHARD || i % SHARD.of === SHARD.n) && (!ONLY || s.id.includes(ONLY))
     );
     if (ONLY && !wanted.length) {
-      console.log(`--only=${ONLY} выбрал ничего`);
+      console.log(`--only=${ONLY} matched nothing`);
       process.exit(1);
     }
 
@@ -477,7 +477,7 @@ if (require.main === module) {
         text = await captureState(state);
       } catch (e) {
         captureMs += Date.now() - t0;
-        ok(false, `${state.id}: не удалось снять срез - ${e.message || e}`);
+        ok(false, `${state.id}: capture failed - ${e.message || e}`);
         continue;
       }
       captureMs += Date.now() - t0;
@@ -489,7 +489,7 @@ if (require.main === module) {
       }
 
       if (!fs.existsSync(file)) {
-        ok(false, `${state.id}: нет golden-файла (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`);
+        ok(false, `${state.id}: no golden file (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`);
         continue;
       }
       compareGolden(state.id, fs.readFileSync(file, 'utf8'), text, ok);
@@ -512,19 +512,19 @@ if (require.main === module) {
       const haveFiles = new Set(fs.readdirSync(DIR).filter((f) => f.endsWith('.txt')));
       const wantFiles = new Set(STATES.map((s) => slugOf(s.id) + '.txt'));
       for (const f of haveFiles) {
-        if (!wantFiles.has(f)) ok(false, `${f}: устаревший golden - такого состояния больше нет в inventory.js`);
+        if (!wantFiles.has(f)) ok(false, `${f}: stale golden - this state no longer exists in inventory.js`);
       }
     }
 
     await closeBrowser();
     const totalS = (Date.now() - runStart) / 1000;
-    console.log(`съёмка: ${(captureMs / 1000).toFixed(1)}s из ${totalS.toFixed(1)}s`);
+    console.log(`capture: ${(captureMs / 1000).toFixed(1)}s of ${totalS.toFixed(1)}s`);
     console.log(
-      `сравнено состояний: ${String(compared)}` +
-        (ONLY ? ` (не полный прогон - --only=${ONLY})` : '') +
-        (SHARD ? ` (шард ${String(SHARD.n + 1)}/${String(SHARD.of)})` : '')
+      `states compared: ${String(compared)}` +
+        (ONLY ? ` (not a full run - --only=${ONLY})` : '') +
+        (SHARD ? ` (shard ${String(SHARD.n + 1)}/${String(SHARD.of)})` : '')
     );
-    console.log(rep.failed ? `${rep.failed} FAILED` : 'структурные образцы (dist/): без изменений');
+    console.log(rep.failed ? `${rep.failed} FAILED` : 'structural snapshots (dist/): unchanged');
     process.exit(rep.failed ? 1 : 0);
   })();
 }

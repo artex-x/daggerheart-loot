@@ -724,7 +724,7 @@ function makeDriver(page, target) {
         prev = next;
       } while (count < 4);
       if (count > 2) {
-        console.log(`       снимок целиком: ${String(count)} попытки до устойчивого кадра`);
+        console.log(`       full-page shot: ${String(count)} tries to a settled frame`);
       }
       return next;
     },

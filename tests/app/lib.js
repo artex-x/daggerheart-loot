@@ -18,7 +18,7 @@ const DIST_HTML = path.join(__dirname, '..', '..', 'dist', 'index.html');
    rather than have all seven suites fail every address with a stack trace
    that is really just "the page never opened". */
 if (!fs.existsSync(DIST_HTML)) {
-  console.log('dist/index.html не собран - сначала npm run build');
+  console.log('dist/index.html is not built - run npm run build first');
   process.exit(1);
 }
 

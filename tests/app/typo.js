@@ -105,9 +105,9 @@ const { ok } = rep;
   const extra = [...expectedSet].filter((p) => !pageSet.has(p));
   if (missing.length || extra.length) {
     throw new Error(
-      'EXPECTED и PAGES разошлись - ' +
-        (missing.length ? 'нет в EXPECTED: ' + missing.join(', ') + '. ' : '') +
-        (extra.length ? 'лишнее в EXPECTED: ' + extra.join(', ') + '.' : '')
+      'EXPECTED and PAGES diverge - ' +
+        (missing.length ? 'missing from EXPECTED: ' + missing.join(', ') + '. ' : '') +
+        (extra.length ? 'extra in EXPECTED: ' + extra.join(', ') + '.' : '')
     );
   }
 }
@@ -147,7 +147,7 @@ async function softClick(d, name) {
 
       const where = hash + ' ' + lang;
       for (const grip of EXPECTED[hash]) {
-        ok(found[grip], where + ': ожидаемый элемент управления не найден — ' + grip);
+        ok(found[grip], where + ': expected control not found — ' + grip);
       }
 
       const bad = await page.evaluate(
@@ -174,15 +174,15 @@ async function softClick(d, name) {
         { UI, MONO, SCALE }
       );
 
-      ok(!bad.fam.length, where + ': чужой шрифт — ' + bad.fam.slice(0, 3).join(', '));
-      ok(!bad.size.length, where + ': размер вне шкалы — ' + bad.size.slice(0, 3).join(', '));
+      ok(!bad.fam.length, where + ': wrong font — ' + bad.fam.slice(0, 3).join(', '));
+      ok(!bad.size.length, where + ': size outside the scale — ' + bad.size.slice(0, 3).join(', '));
     }
     await ctx.close();
   }
 
   await closeBrowser();
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nтипографика (dist/): два шрифта и одна шкала на всех страницах'
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\ntypography (dist/): two fonts and one scale across every page'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

@@ -100,18 +100,18 @@ function stampOf(parts) {
     const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
     await d.open('#/l/' + payload);
     const text = await page.evaluate(() => document.body.innerText);
-    ok(/Лавка кузнеца/.test(text), 'собранная ссылка не открылась как список');
+    ok(/Лавка кузнеца/.test(text), 'the assembled link did not open as a list');
     ok(
       /Катана/.test(text) && /Стеганый Доспех/.test(text) && /Спальный Мешок/.test(text),
-      'в собранном списке не все позиции: ' + text.slice(0, 120)
+      'the assembled list is missing entries: ' + text.slice(0, 120)
     );
-    ok(/3 горсти/.test(text), 'цена из собранной ссылки не показана: ' + text.slice(0, 160));
-    ok(/×2|x2/.test(text), 'количество из собранной ссылки не показано');
+    ok(/3 горсти/.test(text), 'the price from the assembled link is not shown: ' + text.slice(0, 160));
+    ok(/×2|x2/.test(text), 'the quantity from the assembled link is not shown');
     ok(
       /Товар лежит навалом/.test(text) && /Кузнец сбывает краденое/.test(text),
-      'заметки из собранной ссылки не показаны'
+      'the notes from the assembled link are not shown'
     );
-    ok(/На клинке зазубрина/.test(text), 'заметка о позиции не показана');
+    ok(/На клинке зазубрина/.test(text), "an entry's note is not shown");
     await ctx.close();
 
     const brokenRaw = raw.replace(stampOf(parts), stampOf(parts.slice(0, 2)));
@@ -119,7 +119,7 @@ function stampOf(parts) {
     const { ctx: c2, page: p2, d: d2 } = await fresh({ width: 1280, height: 900 });
     await d2.open('#/l/' + broken);
     const seenBroken = await p2.evaluate(() => document.body.innerText);
-    ok(!/Катана/.test(seenBroken), 'ссылка с неверной контрольной суммой всё равно открылась');
+    ok(!/Катана/.test(seenBroken), 'a link with a wrong checksum opened anyway');
     await c2.close();
   }
 

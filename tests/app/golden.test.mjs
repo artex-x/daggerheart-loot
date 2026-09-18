@@ -170,7 +170,7 @@ describe('compareGolden', () => {
       if (!ok) failures.push(msg);
     });
     assert.equal(failures.length, 1);
-    assert.match(failures[0], /header: расходится/);
+    assert.match(failures[0], /header: diverges/);
   });
 
   it('reports the section and 1-based line number of the first difference', () => {
@@ -180,7 +180,7 @@ describe('compareGolden', () => {
       if (!ok) failures.push(msg);
     });
     assert.equal(failures.length, 1);
-    assert.match(failures[0], /ru :: tree: расходится со строки 2/);
+    assert.match(failures[0], /ru :: tree: diverges starting at line 2/);
   });
 });
 
