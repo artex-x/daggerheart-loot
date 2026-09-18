@@ -19,7 +19,7 @@
   import Panel from './Panel.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
-  import RecordModal from './RecordModal.svelte';
+  import RecordHost from './RecordHost.svelte';
   import { RARITIES, RARITY_TIERS, altPicks, altTables, bumpUp } from '../lib/alt.js';
   import type { AltPick } from '../lib/alt.js';
   import { helpFor } from '../lib/help.js';
@@ -48,8 +48,6 @@
      a person arrives at rather than something they start inside. */
   let rarity = $state<Rarity>('common');
   let roll = $state({ hope: 1, fear: 2 });
-
-  let open = $state<Record_ | null>(null);
 
   const picks = $derived(index ? altPicks(index, rarity, roll, app.kinds) : []);
   const crit = $derived(isCrit(roll));
@@ -95,171 +93,162 @@
 
 <PageHead {app} title={t.pageAlt} sub={t.subAlt} {help} />
 
-<Panel>
-  <Field label={t.rarity}>
-    <ChipRow>
-      {#each RARITIES as r (r)}
-        <Chip
-          label={t[rarityKey(r)]}
-          sub={tierCaption(r)}
-          on={r === rarity}
-          onclick={() => {
-            rarity = r;
-          }}
-        />
-      {/each}
-    </ChipRow>
-  </Field>
+<RecordHost {app} {index}>
+  {#snippet children(openRecord)}
+    <Panel>
+      <Field label={t.rarity}>
+        <ChipRow>
+          {#each RARITIES as r (r)}
+            <Chip
+              label={t[rarityKey(r)]}
+              sub={tierCaption(r)}
+              on={r === rarity}
+              onclick={() => {
+                rarity = r;
+              }}
+            />
+          {/each}
+        </ChipRow>
+      </Field>
 
-  <Field label={t.rollResult}>
-    <NumRow>
-      <!-- Each die is labelled, because which one found a card is half of what
+      <Field label={t.rollResult}>
+        <NumRow>
+          <!-- Each die is labelled, because which one found a card is half of what
            the card says. The label is above the field rather than beside it:
            two named fields side by side need the names to line up. -->
-      <div class="dieblock">
-        <span class="dielbl h">{t.hopeDie}</span>
-        <NumberField
-          value={roll.hope}
-          min={1}
-          max={12}
-          label={hopeNames.label}
-          stepDownLabel={hopeNames.down}
-          stepUpLabel={hopeNames.up}
-          tone="hope"
-          onchange={(n: number) => {
-            roll = { ...roll, hope: n };
-          }}
-        />
-      </div>
-      <div class="dieblock">
-        <span class="dielbl f">{t.fearDie}</span>
-        <NumberField
-          value={roll.fear}
-          min={1}
-          max={12}
-          label={fearNames.label}
-          stepDownLabel={fearNames.down}
-          stepUpLabel={fearNames.up}
-          tone="fear"
-          onchange={(n: number) => {
-            roll = { ...roll, fear: n };
-          }}
-        />
-      </div>
-      <!-- Bottom-aligned: the labels above the fields make this column taller
+          <div class="dieblock">
+            <span class="dielbl h">{t.hopeDie}</span>
+            <NumberField
+              value={roll.hope}
+              min={1}
+              max={12}
+              label={hopeNames.label}
+              stepDownLabel={hopeNames.down}
+              stepUpLabel={hopeNames.up}
+              tone="hope"
+              onchange={(n: number) => {
+                roll = { ...roll, hope: n };
+              }}
+            />
+          </div>
+          <div class="dieblock">
+            <span class="dielbl f">{t.fearDie}</span>
+            <NumberField
+              value={roll.fear}
+              min={1}
+              max={12}
+              label={fearNames.label}
+              stepDownLabel={fearNames.down}
+              stepUpLabel={fearNames.up}
+              tone="fear"
+              onchange={(n: number) => {
+                roll = { ...roll, fear: n };
+              }}
+            />
+          </div>
+          <!-- Bottom-aligned: the labels above the fields make this column taller
            than the button, and the button belongs on the fields' line. -->
-      <div class="rollcell">
-        <Button
-          variant="primary"
-          onclick={() => {
-            roll = rollDuality(app.env.random);
-          }}
-        >
-          <Die faces={12} />{t.rollDuality}
-        </Button>
-      </div>
-    </NumRow>
-  </Field>
-
-  <Field label={t.filter}>
-    <ChipRow>
-      {#each LOOT_KINDS as kind (kind)}
-        <Chip
-          label={t[KIND_LABEL[kind]]}
-          on={app.kinds[kind]}
-          title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
-          onclick={() => {
-            app.toggleKind(kind, LOOT_KINDS);
-          }}
-        />
-      {/each}
-    </ChipRow>
-  </Field>
-</Panel>
-
-{#if choice}
-  <div class="resbar">
-    <Button size="sm" label={t.copyRoll} onclick={() => void copyRoll(choice)}>
-      <Icon name="copy" />{t.copyRoll}
-    </Button>
-  </div>
-{/if}
-
-{#if index && picks.length}
-  <div class="results" role="status" aria-live="polite">
-    {#if crit}
-      <!-- Both tables, because the player may take any entry of this rarity
-           from either one. A single link into the items table used to be the
-           whole offer, and half the choice was off the screen. -->
-      <div class="crit">
-        <div class="crit-txt">
-          <b>{t.crit}</b>
-          <span>{t.critSub}</span>
-        </div>
-        <div class="crit-acts">
-          {#each altTables(app.kinds) as table (table.table)}
-            <Button size="sm" href={app.linkTo(tablesHash(table.table, { anchor: rarity }))}>
-              {t[table.label]}<Icon name="external" />
-            </Button>
-          {/each}
-          {#if bump}
-            {@const up = bump}
+          <div class="rollcell">
             <Button
-              size="sm"
+              variant="primary"
               onclick={() => {
-                rarity = up.to;
+                roll = rollDuality(app.env.random);
               }}
             >
-              {t[up.label]}
+              <Die faces={12} />{t.rollDuality}
             </Button>
-          {/if}
-        </div>
+          </div>
+        </NumRow>
+      </Field>
+
+      <Field label={t.filter}>
+        <ChipRow>
+          {#each LOOT_KINDS as kind (kind)}
+            <Chip
+              label={t[KIND_LABEL[kind]]}
+              on={app.kinds[kind]}
+              title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
+              onclick={() => {
+                app.toggleKind(kind, LOOT_KINDS);
+              }}
+            />
+          {/each}
+        </ChipRow>
+      </Field>
+    </Panel>
+
+    {#if choice}
+      <div class="resbar">
+        <Button size="sm" label={t.copyRoll} onclick={() => void copyRoll(choice)}>
+          <Icon name="copy" />{t.copyRoll}
+        </Button>
       </div>
     {/if}
-    <OrGrid or={t.or} items={picks} card={cardOf} />
-  </div>
-{/if}
 
-{#snippet cardOf(pick: AltPick)}
-  {#if index}
-    <RecordCard
-      variant="compact"
-      it={pick.it}
-      {index}
-      lang={app.lang}
-      col={pick.col}
-      rollLabel={pick.n}
-      artBroken={app.artBroken(pick.it.id)}
-      onartfail={(bad: string) => {
-        app.markArtBroken(bad);
-      }}
-      onopen={(r: Record_) => {
-        open = r;
-      }}
-    >
-      {#snippet nameActions()}
-        <RecordActions {app} {index} it={pick.it} row="name" />
-      {/snippet}
-      {#snippet actions()}
-        <RecordActions {app} {index} it={pick.it} row="card" />
-      {/snippet}
-    </RecordCard>
-  {/if}
-{/snippet}
+    {#if index && picks.length}
+      <div class="results" role="status" aria-live="polite">
+        {#if crit}
+          <!-- Both tables, because the player may take any entry of this rarity
+               from either one. A single link into the items table used to be the
+               whole offer, and half the choice was off the screen. -->
+          <div class="crit">
+            <div class="crit-txt">
+              <b>{t.crit}</b>
+              <span>{t.critSub}</span>
+            </div>
+            <div class="crit-acts">
+              {#each altTables(app.kinds) as table (table.table)}
+                <Button
+                  size="sm"
+                  href={app.linkTo(tablesHash(table.table, { anchor: rarity }))}
+                >
+                  {t[table.label]}<Icon name="external" />
+                </Button>
+              {/each}
+              {#if bump}
+                {@const up = bump}
+                <Button
+                  size="sm"
+                  onclick={() => {
+                    rarity = up.to;
+                  }}
+                >
+                  {t[up.label]}
+                </Button>
+              {/if}
+            </div>
+          </div>
+        {/if}
+        <OrGrid or={t.or} items={picks} card={cardOf} />
+      </div>
+    {/if}
 
-{#if open && index}
-  <RecordModal
-    {app}
-    {index}
-    it={open}
-    onclose={() => {
-      open = null;
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-  />
-{/if}
+    {#snippet cardOf(pick: AltPick)}
+      {#if index}
+        <RecordCard
+          variant="compact"
+          it={pick.it}
+          {index}
+          lang={app.lang}
+          col={pick.col}
+          rollLabel={pick.n}
+          artBroken={app.artBroken(pick.it.id)}
+          onartfail={(bad: string) => {
+            app.markArtBroken(bad);
+          }}
+          onopen={openRecord}
+        >
+          {#snippet nameActions()}
+            <RecordActions {app} {index} it={pick.it} row="name" />
+          {/snippet}
+          {#snippet actions()}
+            <RecordActions {app} {index} it={pick.it} row="card" />
+          {/snippet}
+        </RecordCard>
+      {/if}
+    {/snippet}
+  {/snippet}
+</RecordHost>
 
 <style>
   /* off `.dieblock`, `.dielbl`, `.crit` and `.results` in style.css -

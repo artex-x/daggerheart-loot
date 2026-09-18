@@ -10,7 +10,7 @@
   import Button from './Button.svelte';
   import HitNote from './HitNote.svelte';
   import PageTitle from './PageTitle.svelte';
-  import RecordModal from './RecordModal.svelte';
+  import RecordHost from './RecordHost.svelte';
   import TableRows from './TableRows.svelte';
   import type { Index } from '../lib/data.js';
   import { sectionHash } from '../lib/hash.js';
@@ -87,64 +87,50 @@
       app.say(t.droppedItems.replace('%n', String(s.dropped)));
     }
   });
-
-  let open = $state<Record_ | null>(null);
 </script>
 
-{#if !shared}
-  <PageTitle title={t.notFound} sub={t.badShare} />
-  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
-{:else}
-  <PageTitle title={shared.name || t.untitled} {sub} />
-  <Actions style="margin-bottom:18px">
-    <AddToList {app} key={N_SHARED} ids={shared.ids} primary />
-  </Actions>
-  {#if shared.note || shared.hnote}
-    <div class="notes">
-      <HitNote icon="eye" label={t.notePub} text={shared.note} />
-      <HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />
-    </div>
-  {/if}
-  <TableRows
-    {entries}
-    view="list"
-    {index}
-    lang={app.lang}
-    selected={(id: string) => app.sel.has(id)}
-    artBroken={(id: string) => app.artBroken(id)}
-    ontoggle={(id: string) => {
-      app.toggleSel(id);
-    }}
-    onartfail={(id: string) => {
-      app.markArtBroken(id);
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-    ontoggleall={(ids: string[]) => {
-      app.toggleAllIn(ids);
-    }}
-  >
-    {#snippet after(it: Record_)}
-      <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
-      <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
-    {/snippet}
-  </TableRows>
-{/if}
-
-{#if open}
-  <RecordModal
-    {app}
-    {index}
-    it={open}
-    onclose={() => {
-      open = null;
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-  />
-{/if}
+<RecordHost {app} {index}>
+  {#snippet children(openRecord)}
+    {#if !shared}
+      <PageTitle title={t.notFound} sub={t.badShare} />
+      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+    {:else}
+      <PageTitle title={shared.name || t.untitled} {sub} />
+      <Actions style="margin-bottom:18px">
+        <AddToList {app} key={N_SHARED} ids={shared.ids} primary />
+      </Actions>
+      {#if shared.note || shared.hnote}
+        <div class="notes">
+          <HitNote icon="eye" label={t.notePub} text={shared.note} />
+          <HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />
+        </div>
+      {/if}
+      <TableRows
+        {entries}
+        view="list"
+        {index}
+        lang={app.lang}
+        selected={(id: string) => app.sel.has(id)}
+        artBroken={(id: string) => app.artBroken(id)}
+        ontoggle={(id: string) => {
+          app.toggleSel(id);
+        }}
+        onartfail={(id: string) => {
+          app.markArtBroken(id);
+        }}
+        onopen={openRecord}
+        ontoggleall={(ids: string[]) => {
+          app.toggleAllIn(ids);
+        }}
+      >
+        {#snippet after(it: Record_)}
+          <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
+          <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
+        {/snippet}
+      </TableRows>
+    {/if}
+  {/snippet}
+</RecordHost>
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.card-acts` to

@@ -27,7 +27,7 @@
   import PageTitle from './PageTitle.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
-  import RecordModal from './RecordModal.svelte';
+  import RecordHost from './RecordHost.svelte';
   import RowMain from './RowMain.svelte';
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
@@ -213,7 +213,6 @@
   let guess = $state(false);
   let rp = $state(-20);
   const noteOpen = new SvelteMap<string, boolean>();
-  let open = $state<Record_ | null>(null);
   let rowsEl = $state<HTMLDivElement | undefined>(undefined);
   let dragFrom = $state(-1);
   let dragMark = $state<{ over: number; where: 'before' | 'after' } | null>(null);
@@ -682,355 +681,343 @@
   </div>
 {/snippet}
 
-{#if !index}
-  <NoData>{t.noData}</NoData>
-{:else if route.kind === 'storedList' && !own}
-  <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
-  <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
-{:else if !own}
-  {#if route.kind === 'sharedList' && route.packed}
-    {#if app.expandFailed === route.payload}
-      <!-- R10/D2 (Q4 settled): the expansion failed and the address is left
+<RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
+  {#snippet children(openRecord)}
+    {#if !index}
+      <NoData>{t.noData}</NoData>
+    {:else if route.kind === 'storedList' && !own}
+      <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
+      <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+    {:else if !own}
+      {#if route.kind === 'sharedList' && route.packed}
+        {#if app.expandFailed === route.payload}
+          <!-- R10/D2 (Q4 settled): the expansion failed and the address is left
            exactly as it was - the same bad-link page a plain payload that
            will not decode draws, without replacing what is on the bar. -->
-      <PageTitle title={t.notFound} sub={t.badShare} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
-    {:else}
-      <!-- A packed link still expanding: `AppState` is unpacking it and will
+          <PageTitle title={t.notFound} sub={t.badShare} />
+          <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+        {:else}
+          <!-- A packed link still expanding: `AppState` is unpacking it and will
            rewrite the address to the plain form, or draw the block above in
            its place if it cannot - the live app draws nothing until then
            either, app.js 4636. -->
-    {/if}
-  {:else if route.kind === 'sharedList'}
-    <SharedListPage {app} {index} payload={route.payload} />
-  {/if}
-{:else}
-  <!-- The live app's own shape: the heading carries no text of its own, only
-       the rename input - `renderOneList` writes no separate title. -->
-  {#snippet renameTitle()}
-    <input
-      type="text"
-      class="titleinput"
-      value={own.name}
-      aria-label={t.rename}
-      oninput={rename}
-    />
-  {/snippet}
-  <PageTitle
-    title={renameTitle}
-    sub={`${String(items.length)} ${itemsWord(items.length, app.lang)}`}
-  />
-  <Actions style="margin-bottom:16px">
-    <Button size="sm" onclick={() => void sharePlayers()}
-      ><Icon name="link" />{t.sharePlayers}</Button
-    >
-    <Button size="sm" onclick={() => void shareGm()}><Icon name="link" />{t.shareGm}</Button>
-    <Button size="sm" onclick={() => void copyList()}><Icon name="copy" />{t.copyText}</Button>
-    {#if items.length}
-      <Button size="sm" href={printHash(items.map((x) => x.id))} sameTab title={t.printHint}
-        ><Icon name="print" />{t.print}</Button
-      >
-    {/if}
-    <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
-  </Actions>
-
-  <StorageNotice {app} />
-
-  {#if priced}
-    <div class="money">
-      <span class="money-l">{t.moneyAs}</span>
-      {#each MONEY_MODES as m (m)}
-        <Chip
-          label={t[`money_${m}`]}
-          on={m === mode}
-          onclick={() => {
-            pickMoney(m);
-          }}
-        />
-      {/each}
-      <HelpButton lang={app.lang} size="sm" open={moneyHelp} onclick={toggleMoneyHelp} />
-      {#if moneyHelp}
-        <span class="money-br"></span>
-        <HelpBox help={moneyHelpFor(app.lang)} class="money-help" />
+        {/if}
+      {:else if route.kind === 'sharedList'}
+        <SharedListPage {app} {index} payload={route.payload} />
       {/if}
-    </div>
-  {/if}
+    {:else}
+      <!-- The live app's own shape: the heading carries no text of its own, only
+       the rename input - `renderOneList` writes no separate title. -->
+      {#snippet renameTitle()}
+        <input
+          type="text"
+          class="titleinput"
+          value={own.name}
+          aria-label={t.rename}
+          oninput={rename}
+        />
+      {/snippet}
+      <PageTitle
+        title={renameTitle}
+        sub={`${String(items.length)} ${itemsWord(items.length, app.lang)}`}
+      />
+      <Actions style="margin-bottom:16px">
+        <Button size="sm" onclick={() => void sharePlayers()}
+          ><Icon name="link" />{t.sharePlayers}</Button
+        >
+        <Button size="sm" onclick={() => void shareGm()}><Icon name="link" />{t.shareGm}</Button
+        >
+        <Button size="sm" onclick={() => void copyList()}
+          ><Icon name="copy" />{t.copyText}</Button
+        >
+        {#if items.length}
+          <Button size="sm" href={printHash(items.map((x) => x.id))} sameTab title={t.printHint}
+            ><Icon name="print" />{t.print}</Button
+          >
+        {/if}
+        <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
+      </Actions>
 
-  <details class="lnote" open={untrack(() => !!(own.note || own.hnote))}>
-    <summary><Icon name="note" /><span>{t.listNote}</span></summary>
-    <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-    {@render notePair(own, 'list')}
-  </details>
+      <StorageNotice {app} />
 
-  {#if items.length > 1}
-    <!-- `<details class="panel lroll">` is a `Panel.svelte` variant: a
+      {#if priced}
+        <div class="money">
+          <span class="money-l">{t.moneyAs}</span>
+          {#each MONEY_MODES as m (m)}
+            <Chip
+              label={t[`money_${m}`]}
+              on={m === mode}
+              onclick={() => {
+                pickMoney(m);
+              }}
+            />
+          {/each}
+          <HelpButton lang={app.lang} size="sm" open={moneyHelp} onclick={toggleMoneyHelp} />
+          {#if moneyHelp}
+            <span class="money-br"></span>
+            <HelpBox help={moneyHelpFor(app.lang)} class="money-help" />
+          {/if}
+        </div>
+      {/if}
+
+      <details class="lnote" open={untrack(() => !!(own.note || own.hnote))}>
+        <summary><Icon name="note" /><span>{t.listNote}</span></summary>
+        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+        {@render notePair(own, 'list')}
+      </details>
+
+      {#if items.length > 1}
+        <!-- `<details class="panel lroll">` is a `Panel.svelte` variant: a
          `<details>`, and `.lroll{padding:0}` plus its own `summary`/`[open]`
          rules are this component's own - kept inline (plan.md, "B10
          planned", decided 1). -->
-    <details class="panel lroll">
-      <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
-      <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
-        <NumRow>
-          <NumberField
-            value={roll}
-            min={1}
-            max={items.length}
-            empty
-            label={t.rollResult}
-            stepDownLabel={t.stepDown}
-            stepUpLabel={t.stepUp}
-            onchange={setRoll}
-          />
-          <Button variant="primary" onclick={rollNow}
-            ><Die faces={items.length} />{rollLabel}</Button
-          >
-          {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
-        </NumRow>
-        {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
-      </Field>
-      {#if hit}
-        {@const h = hit}
-        <OrGrid or={t.or} items={[h]}>
-          {#snippet card(it: Record_)}
-            <RecordCard
-              variant="compact"
-              {it}
-              {index}
-              lang={app.lang}
-              rollLabel={roll}
-              artBroken={app.artBroken(it.id)}
-              onartfail={(bad: string) => {
-                app.markArtBroken(bad);
-              }}
-              onopen={(r: Record_) => {
-                open = r;
-              }}
-            >
-              {#snippet nameActions()}
-                <RecordActions {app} {index} {it} row="name" />
-              {/snippet}
-              {#snippet actions()}
-                <RecordActions
-                  {app}
-                  {index}
-                  {it}
-                  row="card"
-                  extra={entryNoteBlock(metaOf(it.id), t)}
-                />
-              {/snippet}
-            </RecordCard>
-          {/snippet}
-        </OrGrid>
-        <HitNote icon="eye" label={t.notePub} text={metaOf(h.id).note} />
-        <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(h.id).hnote} />
-      {/if}
-    </details>
-  {/if}
-
-  {#if items.length}
-    <div class="batch" class:on={lsel.size > 0}>
-      <label class="batch-all"
-        ><input
-          type="checkbox"
-          checked={lsel.size > 0 && lsel.size === own.ids.length}
-          onchange={(e) => {
-            pickAll(e.currentTarget.checked);
-          }}
-        />{lsel.size ? `${t.pickedN} ${String(lsel.size)}` : t.pickAll}</label
-      >
-      {#if ticked.length}
-        <span class="batch-acts">
-          <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
-            >{t.batchMoney}</Button
-          >
-          <Button size="sm" variant="danger" onclick={batchDelete}
-            >{t.del} ({String(ticked.length)})</Button
-          >
-        </span>
-      {/if}
-      {#if ticked.length && guess}
-        <div class="guess">
-          {#if pricedCount}
-            <div class="money-act">
-              <span class="batch-lbl">{t.repricePct}</span>
+        <details class="panel lroll">
+          <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
+          <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
+            <NumRow>
               <NumberField
-                value={rp}
-                min={-90}
-                max={500}
+                value={roll}
+                min={1}
+                max={items.length}
                 empty
                 label={t.rollResult}
                 stepDownLabel={t.stepDown}
                 stepUpLabel={t.stepUp}
-                onchange={(n: number) => {
-                  rp = n;
-                }}
+                onchange={setRoll}
               />
-              <Button size="sm" onclick={repriceTicked}
-                >{rp < 0 ? t.repriceDown : t.repriceUp}</Button
+              <Button variant="primary" onclick={rollNow}
+                ><Die faces={items.length} />{rollLabel}</Button
               >
-              <span class="money-hint">{t.repriceHint}</span>
-            </div>
+              {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
+            </NumRow>
+            {#if !hit}<p class="rollhint">{t.rollHint}</p>{/if}
+          </Field>
+          {#if hit}
+            {@const h = hit}
+            <OrGrid or={t.or} items={[h]}>
+              {#snippet card(it: Record_)}
+                <RecordCard
+                  variant="compact"
+                  {it}
+                  {index}
+                  lang={app.lang}
+                  rollLabel={roll}
+                  artBroken={app.artBroken(it.id)}
+                  onartfail={(bad: string) => {
+                    app.markArtBroken(bad);
+                  }}
+                  onopen={openRecord}
+                >
+                  {#snippet nameActions()}
+                    <RecordActions {app} {index} {it} row="name" />
+                  {/snippet}
+                  {#snippet actions()}
+                    <RecordActions
+                      {app}
+                      {index}
+                      {it}
+                      row="card"
+                      extra={entryNoteBlock(metaOf(it.id), t)}
+                    />
+                  {/snippet}
+                </RecordCard>
+              {/snippet}
+            </OrGrid>
+            <HitNote icon="eye" label={t.notePub} text={metaOf(h.id).note} />
+            <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(h.id).hnote} />
           {/if}
-          <p class="guess-note">{t.guessWhy}</p>
-          <div class="guess-rows">
-            {#each ticked as id (id)}
-              {@const it = byId(id)}
-              {#if it}
-                {@const v = guessPrice(it, index.rarityOf)}
-                <div class="guess-row">
-                  <span>{nameOf(it, app.lang)}</span>
-                  <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
-                  <b>{v ? priceText(v, mode, app.lang) : '—'}</b>
-                </div>
-              {/if}
-            {/each}
-          </div>
-          <div class="money-act">
-            <Button size="sm" variant="primary" onclick={applyGuess}>{t.guessApply}</Button>
-            {#if pricedCount}
-              <Button size="sm" onclick={clearPrices}
-                >{t.batchNoPrice} ({String(pricedCount)})</Button
-              >
-            {/if}
-          </div>
-        </div>
+        </details>
       {/if}
-    </div>
-    <div class="rows lrows" bind:this={rowsEl}>
-      {#each items as it, i (it.id)}
-        {@const m = metaOf(it.id)}
-        {@const hasNote = !!(m.note || m.hnote)}
-        <div
-          class="row lrow"
-          class:has-note={hasNote}
-          class:dragging={dragFrom === i}
-          class:drop-before={dragMark?.over === i && dragMark.where === 'before'}
-          class:drop-after={dragMark?.over === i && dragMark.where === 'after'}
-          data-index={i}
-        >
-          <span
-            class="lrow-grip"
-            draggable="true"
-            data-drag="{own.id}:{it.id}"
-            title={t.dragHint}
-            aria-hidden="true"><Icon name="grip" /></span
-          >
-          <label class="lrow-pick"
+
+      {#if items.length}
+        <div class="batch" class:on={lsel.size > 0}>
+          <label class="batch-all"
             ><input
               type="checkbox"
-              checked={lsel.has(it.id)}
-              aria-label={nameOf(it, app.lang)}
+              checked={lsel.size > 0 && lsel.size === own.ids.length}
               onchange={(e) => {
-                pickRow(it.id, e.currentTarget.checked);
+                pickAll(e.currentTarget.checked);
               }}
-            /></label
+            />{lsel.size ? `${t.pickedN} ${String(lsel.size)}` : t.pickAll}</label
           >
-          <input
-            type="number"
-            class="lrow-n"
-            min="1"
-            max={own.ids.length}
-            inputmode="numeric"
-            value={i + 1}
-            aria-label={t.position}
-            onchange={(e) => {
-              setPos(it, i, e);
-            }}
-          />
-          <RowMain
-            {it}
-            {index}
-            lang={app.lang}
-            artBroken={(id: string) => app.artBroken(id)}
-            onartfail={(bad: string) => {
-              app.markArtBroken(bad);
-            }}
-            onopen={(r: Record_) => {
-              open = r;
-            }}
-          />
-          <div class="lrow-meta">
-            <label
-              ><span>{t.qty}</span><input
-                type="number"
-                min="1"
-                max="99"
-                inputmode="numeric"
-                data-qty
-                value={m.qty || ''}
-                placeholder="1"
-                oninput={(e) => {
-                  setQty(it.id, e);
-                }}
-              /></label
-            >
-            <label
-              ><span
-                >{t.gold}{#if goldText(m.gold ?? 0)}<span
-                    class="goldhint"
-                    data-goldhint={goldText(m.gold ?? 0)}
-                    title={goldText(m.gold ?? 0)}>?</span
-                  >{/if}</span
-              ><input
-                type="number"
-                min="0"
-                max="99999"
-                inputmode="numeric"
-                data-gold
-                value={m.gold || ''}
-                placeholder="—"
-                title={goldText(m.gold ?? 0) || undefined}
-                oninput={(e) => {
-                  setGold(it.id, e);
-                }}
-              /></label
-            >
-          </div>
-          <div class="lrow-acts">
-            <button
-              type="button"
-              class="lrow-note"
-              class:on={hasNote}
-              title={t.note}
-              aria-label={t.note}
-              onclick={(e) => {
-                toggleNote(it.id, e);
-              }}><Icon name="note" /></button
-            >
-            <button
-              type="button"
-              class="row-x"
-              title={t.removeItem}
-              aria-label={t.removeItem}
-              onclick={() => {
-                removeEntry(it, i);
-              }}>&times;</button
-            >
-          </div>
-          <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-          <div class="rnote" hidden={boxHidden(it.id, m)}>{@render notePair(m, it.id)}</div>
+          {#if ticked.length}
+            <span class="batch-acts">
+              <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
+                >{t.batchMoney}</Button
+              >
+              <Button size="sm" variant="danger" onclick={batchDelete}
+                >{t.del} ({String(ticked.length)})</Button
+              >
+            </span>
+          {/if}
+          {#if ticked.length && guess}
+            <div class="guess">
+              {#if pricedCount}
+                <div class="money-act">
+                  <span class="batch-lbl">{t.repricePct}</span>
+                  <NumberField
+                    value={rp}
+                    min={-90}
+                    max={500}
+                    empty
+                    label={t.rollResult}
+                    stepDownLabel={t.stepDown}
+                    stepUpLabel={t.stepUp}
+                    onchange={(n: number) => {
+                      rp = n;
+                    }}
+                  />
+                  <Button size="sm" onclick={repriceTicked}
+                    >{rp < 0 ? t.repriceDown : t.repriceUp}</Button
+                  >
+                  <span class="money-hint">{t.repriceHint}</span>
+                </div>
+              {/if}
+              <p class="guess-note">{t.guessWhy}</p>
+              <div class="guess-rows">
+                {#each ticked as id (id)}
+                  {@const it = byId(id)}
+                  {#if it}
+                    {@const v = guessPrice(it, index.rarityOf)}
+                    <div class="guess-row">
+                      <span>{nameOf(it, app.lang)}</span>
+                      <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
+                      <b>{v ? priceText(v, mode, app.lang) : '—'}</b>
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+              <div class="money-act">
+                <Button size="sm" variant="primary" onclick={applyGuess}>{t.guessApply}</Button>
+                {#if pricedCount}
+                  <Button size="sm" onclick={clearPrices}
+                    >{t.batchNoPrice} ({String(pricedCount)})</Button
+                  >
+                {/if}
+              </div>
+            </div>
+          {/if}
         </div>
-      {/each}
-    </div>
-  {:else}
-    <Empty>{t.listEmptyHint}</Empty>
-  {/if}
-{/if}
-
-{#if open && index}
-  <RecordModal
-    {app}
-    {index}
-    it={open}
-    extra={entryNoteBlock(metaOf(open.id), t)}
-    onclose={() => {
-      open = null;
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-  />
-{/if}
+        <div class="rows lrows" bind:this={rowsEl}>
+          {#each items as it, i (it.id)}
+            {@const m = metaOf(it.id)}
+            {@const hasNote = !!(m.note || m.hnote)}
+            <div
+              class="row lrow"
+              class:has-note={hasNote}
+              class:dragging={dragFrom === i}
+              class:drop-before={dragMark?.over === i && dragMark.where === 'before'}
+              class:drop-after={dragMark?.over === i && dragMark.where === 'after'}
+              data-index={i}
+            >
+              <span
+                class="lrow-grip"
+                draggable="true"
+                data-drag="{own.id}:{it.id}"
+                title={t.dragHint}
+                aria-hidden="true"><Icon name="grip" /></span
+              >
+              <label class="lrow-pick"
+                ><input
+                  type="checkbox"
+                  checked={lsel.has(it.id)}
+                  aria-label={nameOf(it, app.lang)}
+                  onchange={(e) => {
+                    pickRow(it.id, e.currentTarget.checked);
+                  }}
+                /></label
+              >
+              <input
+                type="number"
+                class="lrow-n"
+                min="1"
+                max={own.ids.length}
+                inputmode="numeric"
+                value={i + 1}
+                aria-label={t.position}
+                onchange={(e) => {
+                  setPos(it, i, e);
+                }}
+              />
+              <RowMain
+                {it}
+                {index}
+                lang={app.lang}
+                artBroken={(id: string) => app.artBroken(id)}
+                onartfail={(bad: string) => {
+                  app.markArtBroken(bad);
+                }}
+                onopen={openRecord}
+              />
+              <div class="lrow-meta">
+                <label
+                  ><span>{t.qty}</span><input
+                    type="number"
+                    min="1"
+                    max="99"
+                    inputmode="numeric"
+                    data-qty
+                    value={m.qty || ''}
+                    placeholder="1"
+                    oninput={(e) => {
+                      setQty(it.id, e);
+                    }}
+                  /></label
+                >
+                <label
+                  ><span
+                    >{t.gold}{#if goldText(m.gold ?? 0)}<span
+                        class="goldhint"
+                        data-goldhint={goldText(m.gold ?? 0)}
+                        title={goldText(m.gold ?? 0)}>?</span
+                      >{/if}</span
+                  ><input
+                    type="number"
+                    min="0"
+                    max="99999"
+                    inputmode="numeric"
+                    data-gold
+                    value={m.gold || ''}
+                    placeholder="—"
+                    title={goldText(m.gold ?? 0) || undefined}
+                    oninput={(e) => {
+                      setGold(it.id, e);
+                    }}
+                  /></label
+                >
+              </div>
+              <div class="lrow-acts">
+                <button
+                  type="button"
+                  class="lrow-note"
+                  class:on={hasNote}
+                  title={t.note}
+                  aria-label={t.note}
+                  onclick={(e) => {
+                    toggleNote(it.id, e);
+                  }}><Icon name="note" /></button
+                >
+                <button
+                  type="button"
+                  class="row-x"
+                  title={t.removeItem}
+                  aria-label={t.removeItem}
+                  onclick={() => {
+                    removeEntry(it, i);
+                  }}>&times;</button
+                >
+              </div>
+              <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+              <div class="rnote" hidden={boxHidden(it.id, m)}>{@render notePair(m, it.id)}</div>
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <Empty>{t.listEmptyHint}</Empty>
+      {/if}
+    {/if}
+  {/snippet}
+</RecordHost>
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to

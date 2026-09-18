@@ -18,7 +18,7 @@
   import Panel from './Panel.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
-  import RecordModal from './RecordModal.svelte';
+  import RecordHost from './RecordHost.svelte';
   import Button from './Button.svelte';
   import { helpFor } from '../lib/help.js';
   import { rarityKey } from '../lib/label.js';
@@ -41,7 +41,6 @@
   const index = $derived(app.index);
 
   let n = $state(1);
-  let open = $state<Record_ | null>(null);
 
   const pool = $derived(index ? poolFor(index, n, app.source, app.kinds) : []);
 
@@ -84,108 +83,96 @@
 
 <PageHead {app} title={t.pageStd} sub={t.subStd} {help} />
 
-<Panel>
-  <Field label="{t.rollResult} (1–{CORE_MAX})">
-    <NumRow>
-      <NumberField
-        value={n}
-        min={1}
-        max={CORE_MAX}
-        label={t.rollResult}
-        stepDownLabel={t.stepDown}
-        stepUpLabel={t.stepUp}
-        onchange={setN}
-      />
-      <DiceBar dice={NDICE} {rarityName} rollWord={t.roll} onroll={roll} />
-    </NumRow>
-  </Field>
+<RecordHost {app} {index}>
+  {#snippet children(openRecord)}
+    <Panel>
+      <Field label="{t.rollResult} (1–{CORE_MAX})">
+        <NumRow>
+          <NumberField
+            value={n}
+            min={1}
+            max={CORE_MAX}
+            label={t.rollResult}
+            stepDownLabel={t.stepDown}
+            stepUpLabel={t.stepUp}
+            onchange={setN}
+          />
+          <DiceBar dice={NDICE} {rarityName} rollWord={t.roll} onroll={roll} />
+        </NumRow>
+      </Field>
 
-  <Field label={t.source}>
-    <ChipRow>
-      {#each SOURCES as src (src)}
-        <Chip
-          label={t[SOURCE_LABEL[src]]}
-          on={app.source[src]}
-          value={src}
-          title={isLastOn(app.source, SOURCES, src) ? t.keepOneSource : undefined}
-          onclick={() => {
-            toggleSource(src);
+      <Field label={t.source}>
+        <ChipRow>
+          {#each SOURCES as src (src)}
+            <Chip
+              label={t[SOURCE_LABEL[src]]}
+              on={app.source[src]}
+              value={src}
+              title={isLastOn(app.source, SOURCES, src) ? t.keepOneSource : undefined}
+              onclick={() => {
+                toggleSource(src);
+              }}
+            />
+          {/each}
+        </ChipRow>
+      </Field>
+
+      <Field label={t.filter}>
+        <ChipRow>
+          {#each LOOT_KINDS as kind (kind)}
+            <Chip
+              label={t[KIND_LABEL[kind]]}
+              on={app.kinds[kind]}
+              title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
+              onclick={() => {
+                app.toggleKind(kind, LOOT_KINDS);
+              }}
+            />
+          {/each}
+        </ChipRow>
+      </Field>
+    </Panel>
+
+    {#if choice}
+      <!-- The whole roll as one message, with the OR spelled out: the GM pastes
+           the options together rather than sending them one at a time. -->
+      <div class="resbar">
+        <Button size="sm" label={t.copyRoll} onclick={() => void copyRoll(choice)}>
+          <Icon name="copy" />{t.copyRoll}
+        </Button>
+      </div>
+    {/if}
+
+    {#if index && pool.length}
+      <div class="results" role="status" aria-live="polite">
+        <OrGrid or={t.or} items={pool} card={cardOf} />
+      </div>
+    {/if}
+
+    {#snippet cardOf(it: Record_)}
+      {#if index}
+        <RecordCard
+          variant="compact"
+          {it}
+          {index}
+          lang={app.lang}
+          artBroken={app.artBroken(it.id)}
+          onartfail={(bad: string) => {
+            app.markArtBroken(bad);
           }}
-        />
-      {/each}
-    </ChipRow>
-  </Field>
-
-  <Field label={t.filter}>
-    <ChipRow>
-      {#each LOOT_KINDS as kind (kind)}
-        <Chip
-          label={t[KIND_LABEL[kind]]}
-          on={app.kinds[kind]}
-          title={isLastOn(app.kinds, LOOT_KINDS, kind) ? t.keepOneKind : undefined}
-          onclick={() => {
-            app.toggleKind(kind, LOOT_KINDS);
-          }}
-        />
-      {/each}
-    </ChipRow>
-  </Field>
-</Panel>
-
-{#if choice}
-  <!-- The whole roll as one message, with the OR spelled out: the GM pastes
-       the options together rather than sending them one at a time. -->
-  <div class="resbar">
-    <Button size="sm" label={t.copyRoll} onclick={() => void copyRoll(choice)}>
-      <Icon name="copy" />{t.copyRoll}
-    </Button>
-  </div>
-{/if}
-
-{#if index && pool.length}
-  <div class="results" role="status" aria-live="polite">
-    <OrGrid or={t.or} items={pool} card={cardOf} />
-  </div>
-{/if}
-
-{#snippet cardOf(it: Record_)}
-  {#if index}
-    <RecordCard
-      variant="compact"
-      {it}
-      {index}
-      lang={app.lang}
-      artBroken={app.artBroken(it.id)}
-      onartfail={(bad: string) => {
-        app.markArtBroken(bad);
-      }}
-      onopen={(r: Record_) => {
-        open = r;
-      }}
-    >
-      {#snippet nameActions()}
-        <RecordActions {app} {index} {it} row="name" />
-      {/snippet}
-      {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" />
-      {/snippet}
-    </RecordCard>
-  {/if}
-{/snippet}
-
-{#if open && index}
-  <RecordModal
-    {app}
-    {index}
-    it={open}
-    onclose={() => {
-      open = null;
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-  />
-{/if}
+          onopen={openRecord}
+        >
+          {#snippet nameActions()}
+            <RecordActions {app} {index} {it} row="name" />
+          {/snippet}
+          {#snippet actions()}
+            <RecordActions {app} {index} {it} row="card" />
+          {/snippet}
+        </RecordCard>
+      {/if}
+    {/snippet}
+  {/snippet}
+</RecordHost>
 
 <style>
   /* off `.results` in style.css - `.numrow` moved to `NumRow.svelte`,

@@ -27,7 +27,7 @@
   import Icon from './Icon.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
-  import RecordModal from './RecordModal.svelte';
+  import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
   import SectionHead from './SectionHead.svelte';
   import Seg from './Seg.svelte';
@@ -104,23 +104,6 @@
     { value: 'list', label: t.viewList },
     { value: 'grid', label: t.viewGrid }
   ] as const);
-
-  /* An open modal belongs to the page it was opened on, the same as the
-     selection - but the selection now lives on `app` (the bar that draws it
-     is in the frame, not here) and clears itself there on every real
-     navigation. This effect only has the modal left to close. `app.navigations`
-     counts a real move - `go()`, or the address changing under the app - and
-     not a filter pick, which rewrites the address with `replace()`. Route
-     strings cannot tell one table from another on their own - they all read
-     "tables" - which is why a hash-only move needs this signal rather than
-     `app.hash` itself. */
-  let open = $state<Record_ | null>(null);
-  $effect(() => {
-    void app.navigations;
-    untrack(() => {
-      open = null;
-    });
-  });
 
   const help = $derived(helpFor('tables', app.lang));
 
@@ -452,90 +435,140 @@
 
 <PageHead {app} title={t.tables} sub={t.subTables} {help} home={tablesHash(table)} />
 
-<!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus this
-     screen's own margin-free nav row. Svelte scopes this component's rule to
-     its own elements, so a `class` prop on `Panel` would have to be
-     `:global()` here - kept inline (plan.md, "B10 planned", decided 1). -->
-<div class="panel tablenav">
-  <ChipRow>
-    {#each TABLE_GROUPS as g (g.id)}
-      <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
-    {/each}
-  </ChipRow>
-  {#if group.subs.length > 1}
-    <ChipRow sub>
-      {#each group.subs as sub (sub)}
-        <Chip size="sm" label={t[subLabelOf(sub)]} on={sub === table} href={tablesHash(sub)} />
-      {/each}
-    </ChipRow>
-  {/if}
-</div>
-
-{#if !index}
-  <NoData>{t.noData}</NoData>
-{:else}
-  <div class="toolbar">
-    <div class="grow">
-      <SearchBox
-        value={q}
-        placeholder={t.searchPh}
-        oninput={(v: string) => {
-          q = v;
-        }}
-      />
+<RecordHost {app} {index}>
+  {#snippet children(openRecord)}
+    <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus
+         this screen's own margin-free nav row. Svelte scopes this
+         component's rule to its own elements, so a `class` prop on `Panel`
+         would have to be `:global()` here - kept inline (plan.md, "B10
+         planned", decided 1). -->
+    <div class="panel tablenav">
+      <ChipRow>
+        {#each TABLE_GROUPS as g (g.id)}
+          <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
+        {/each}
+      </ChipRow>
+      {#if group.subs.length > 1}
+        <ChipRow sub>
+          {#each group.subs as sub (sub)}
+            <Chip
+              size="sm"
+              label={t[subLabelOf(sub)]}
+              on={sub === table}
+              href={tablesHash(sub)}
+            />
+          {/each}
+        </ChipRow>
+      {/if}
     </div>
-    <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
-      <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
-    </Button>
-    <Seg
-      small
-      options={VIEWS}
-      value={view}
-      label={t.view}
-      onchange={(v: 'list' | 'grid') => {
-        app.setTablesView(v);
-      }}
-    />
-  </div>
 
-  <FilterBar
-    rows={facRows}
-    picked={filterState}
-    shown={filtered.length}
-    total={rows.length}
-    open={filterOpen}
-    {t}
-    ontoggle={() => {
-      filterOpen = !filterOpen;
-    }}
-    onpick={pickFacet}
-    onreset={resetFacets}
-    oncopylink={() => void copyFilterLink()}
-  />
-
-  {#if bodyKind === 'alt'}
-    {#if altSections.length === 0}
-      <Empty>{t.nothing}</Empty>
+    {#if !index}
+      <NoData>{t.noData}</NoData>
     {:else}
-      {#each altSections as s (s.key)}
-        <div
-          class="tsection"
-          class:flash={flashKey === s.key}
-          id={'sec-' + s.key}
-          style="margin-top:20px"
-        >
-          <SectionHead
-            label={s.label}
-            title={t.copySection}
-            heading={2}
-            oncopy={() => {
-              void copySectionLink(s.key);
+      <div class="toolbar">
+        <div class="grow">
+          <SearchBox
+            value={q}
+            placeholder={t.searchPh}
+            oninput={(v: string) => {
+              q = v;
             }}
           />
-          {#each s.cols as col (col.key)}
-            <h3 class="altcol {col.key}">{col.label}</h3>
+        </div>
+        <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
+          <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
+        </Button>
+        <Seg
+          small
+          options={VIEWS}
+          value={view}
+          label={t.view}
+          onchange={(v: 'list' | 'grid') => {
+            app.setTablesView(v);
+          }}
+        />
+      </div>
+
+      <FilterBar
+        rows={facRows}
+        picked={filterState}
+        shown={filtered.length}
+        total={rows.length}
+        open={filterOpen}
+        {t}
+        ontoggle={() => {
+          filterOpen = !filterOpen;
+        }}
+        onpick={pickFacet}
+        onreset={resetFacets}
+        oncopylink={() => void copyFilterLink()}
+      />
+
+      {#if bodyKind === 'alt'}
+        {#if altSections.length === 0}
+          <Empty>{t.nothing}</Empty>
+        {:else}
+          {#each altSections as s (s.key)}
+            <div
+              class="tsection"
+              class:flash={flashKey === s.key}
+              id={'sec-' + s.key}
+              style="margin-top:20px"
+            >
+              <SectionHead
+                label={s.label}
+                title={t.copySection}
+                heading={2}
+                oncopy={() => {
+                  void copySectionLink(s.key);
+                }}
+              />
+              {#each s.cols as col (col.key)}
+                <h3 class="altcol {col.key}">{col.label}</h3>
+                <TableRows
+                  entries={col.entries}
+                  {view}
+                  {index}
+                  lang={app.lang}
+                  flash={flashKey}
+                  selected={(id: string) => app.sel.has(id)}
+                  artBroken={(id: string) => app.artBroken(id)}
+                  ontoggle={(id: string) => {
+                    app.toggleSel(id);
+                  }}
+                  onartfail={(id: string) => {
+                    app.markArtBroken(id);
+                  }}
+                  onopen={openRecord}
+                />
+              {/each}
+            </div>
+          {/each}
+        {/if}
+      {:else if filtered.length === 0}
+        <Empty>
+          {t.nothing}
+          {#if chosenCount(filterState, facetGroups) > 0}
+            <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
+          {/if}
+        </Empty>
+      {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq'}
+        {#each activeSections as s (s.key)}
+          <div
+            class="tsection"
+            class:flash={flashKey === s.key}
+            id={'sec-' + s.key}
+            style="margin-top:22px"
+          >
+            <SectionHead
+              label={s.label}
+              title={t.copySection}
+              oncopy={() => {
+                void copySectionLink(s.key);
+              }}
+            />
             <TableRows
-              entries={col.entries}
+              entries={s.entries}
               {view}
               {index}
               lang={app.lang}
@@ -548,38 +581,16 @@
               onartfail={(id: string) => {
                 app.markArtBroken(id);
               }}
-              onopen={(it: Record_) => {
-                open = it;
+              onopen={openRecord}
+              ontoggleall={(ids: string[]) => {
+                app.toggleAllIn(ids);
               }}
             />
-          {/each}
-        </div>
-      {/each}
-    {/if}
-  {:else if filtered.length === 0}
-    <Empty>
-      {t.nothing}
-      {#if chosenCount(filterState, facetGroups) > 0}
-        <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
-      {/if}
-    </Empty>
-  {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq'}
-    {#each activeSections as s (s.key)}
-      <div
-        class="tsection"
-        class:flash={flashKey === s.key}
-        id={'sec-' + s.key}
-        style="margin-top:22px"
-      >
-        <SectionHead
-          label={s.label}
-          title={t.copySection}
-          oncopy={() => {
-            void copySectionLink(s.key);
-          }}
-        />
+          </div>
+        {/each}
+      {:else}
         <TableRows
-          entries={s.entries}
+          entries={filtered.map((it) => ({ it }))}
           {view}
           {index}
           lang={app.lang}
@@ -592,53 +603,15 @@
           onartfail={(id: string) => {
             app.markArtBroken(id);
           }}
-          onopen={(it: Record_) => {
-            open = it;
-          }}
+          onopen={openRecord}
           ontoggleall={(ids: string[]) => {
             app.toggleAllIn(ids);
           }}
         />
-      </div>
-    {/each}
-  {:else}
-    <TableRows
-      entries={filtered.map((it) => ({ it }))}
-      {view}
-      {index}
-      lang={app.lang}
-      flash={flashKey}
-      selected={(id: string) => app.sel.has(id)}
-      artBroken={(id: string) => app.artBroken(id)}
-      ontoggle={(id: string) => {
-        app.toggleSel(id);
-      }}
-      onartfail={(id: string) => {
-        app.markArtBroken(id);
-      }}
-      onopen={(it: Record_) => {
-        open = it;
-      }}
-      ontoggleall={(ids: string[]) => {
-        app.toggleAllIn(ids);
-      }}
-    />
-  {/if}
-{/if}
-
-{#if open && index}
-  <RecordModal
-    {app}
-    {index}
-    it={open}
-    onclose={() => {
-      open = null;
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-  />
-{/if}
+      {/if}
+    {/if}
+  {/snippet}
+</RecordHost>
 
 <style>
   /* off `.page-h`, `.itemtable` and friends were already covered; what

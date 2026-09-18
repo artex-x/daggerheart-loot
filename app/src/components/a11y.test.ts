@@ -376,6 +376,8 @@ const COVERED: Record<string, string> = {
   'Panel.svelte': 'every roll page state above, the lists index and search',
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
   'RecordCard.svelte': 'record.test.ts, and inside the modal above',
+  'RecordHost.svelte':
+    'the first state above (through RollPanel), and every page test that opens the modal (C6)',
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',

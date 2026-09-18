@@ -10,12 +10,11 @@
   import PageTitle from './PageTitle.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
-  import RecordModal from './RecordModal.svelte';
+  import RecordHost from './RecordHost.svelte';
   import { printHash, sectionHash, tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
-  import type { Record_ } from '../lib/types.js';
 
   interface Props {
     app: AppState;
@@ -27,11 +26,6 @@
   const t = $derived(app.t);
   const index = $derived(app.index);
   const it = $derived(index?.byId.get(id));
-
-  /* A record opened over this page: a rung of the tier ladder, or the picture,
-     both of which the live app answers with the modal rather than a
-     navigation. */
-  let open = $state<Record_ | null>(null);
 
   /* The line under the heading: where the record is from, and its number in the
      table it is printed in. The link goes to the row itself rather than to the
@@ -49,66 +43,57 @@
   });
 </script>
 
-{#if !index}
-  <NoData>{t.noData}</NoData>
-{:else if !it}
-  <!-- A link to a record that is no longer in the data: an old share, or an id
-       that was renumbered. Saying which is kinder than an empty page. -->
-  <PageTitle title={t.notFound} sub={t.notFoundSub} />
-  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
-{:else}
-  {#snippet sub()}
-    {where}
-    {#if table}
-      <a class="itemtable" href={tablesHash(table, { anchor: it.id })}
-        >{t.showInTable}<Icon name="external" /></a
-      >
+<!-- A record opened over this page: a rung of the tier ladder, or the
+     picture, both of which the live app answers with the modal rather than
+     a navigation - `RecordHost`'s own state (C6). -->
+<RecordHost {app} {index}>
+  {#snippet children(openRecord)}
+    {#if !index}
+      <NoData>{t.noData}</NoData>
+    {:else if !it}
+      <!-- A link to a record that is no longer in the data: an old share, or an id
+           that was renumbered. Saying which is kinder than an empty page. -->
+      <PageTitle title={t.notFound} sub={t.notFoundSub} />
+      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+    {:else}
+      {#snippet sub()}
+        {where}
+        {#if table}
+          <a class="itemtable" href={tablesHash(table, { anchor: it.id })}
+            >{t.showInTable}<Icon name="external" /></a
+          >
+        {/if}
+      {/snippet}
+      <PageTitle title={nameOf(it, app.lang)} {sub} />
+
+      <div class="itempage">
+        <RecordCard
+          {it}
+          {index}
+          lang={app.lang}
+          artBroken={app.artBroken(it.id)}
+          onartfail={(bad: string) => {
+            app.markArtBroken(bad);
+          }}
+          onopen={openRecord}
+        >
+          {#snippet nameActions()}
+            <RecordActions {app} {index} {it} row="name" />
+          {/snippet}
+          {#snippet actions()}
+            <RecordActions {app} {index} {it} row="card" />
+          {/snippet}
+          {#snippet pick()}
+            <AddToList {app} key={it.id} ids={[it.id]} primary />
+            <Button size="sm" href={printHash([it.id])} sameTab title={t.printHint}
+              ><Icon name="print" />{t.print}</Button
+            >
+          {/snippet}
+        </RecordCard>
+      </div>
     {/if}
   {/snippet}
-  <PageTitle title={nameOf(it, app.lang)} {sub} />
-
-  <div class="itempage">
-    <RecordCard
-      {it}
-      {index}
-      lang={app.lang}
-      artBroken={app.artBroken(it.id)}
-      onartfail={(bad: string) => {
-        app.markArtBroken(bad);
-      }}
-      onopen={(r: Record_) => {
-        open = r;
-      }}
-    >
-      {#snippet nameActions()}
-        <RecordActions {app} {index} {it} row="name" />
-      {/snippet}
-      {#snippet actions()}
-        <RecordActions {app} {index} {it} row="card" />
-      {/snippet}
-      {#snippet pick()}
-        <AddToList {app} key={it.id} ids={[it.id]} primary />
-        <Button size="sm" href={printHash([it.id])} sameTab title={t.printHint}
-          ><Icon name="print" />{t.print}</Button
-        >
-      {/snippet}
-    </RecordCard>
-  </div>
-{/if}
-
-{#if open && index}
-  <RecordModal
-    {app}
-    {index}
-    it={open}
-    onclose={() => {
-      open = null;
-    }}
-    onopen={(r: Record_) => {
-      open = r;
-    }}
-  />
-{/if}
+</RecordHost>
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
