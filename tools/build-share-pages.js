@@ -13,8 +13,9 @@ const ROOT = path.join(__dirname, '..');
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 const OUT = path.join(ROOT, 'i');
 
-/* data.js кладётся в window один раз: повторный require вернёт кэш и ничего не
-   выполнит, поэтому затирать window нельзя — тест грузит данные до нас. */
+/* data.js is placed onto window exactly once: a repeat require returns the
+   cache and runs nothing, so window must not be clobbered here - a test
+   loads the data before this file does. */
 if (!global.window) global.window = {};
 if (!global.window.LOOT) require(path.join(ROOT, 'data.js'));
 const DATA = global.window.LOOT.items;
@@ -146,7 +147,7 @@ function page(it) {
   const craft = craftLines(it);
   const rawDesc = it.rud || it.ende || '';
   // the unfurl preview is one flat string, so the chain joins the description
-  // предпросмотр в мессенджере - одна плоская строка, переносы в ней ни к чему
+  // the messenger preview is one flat line - line breaks in it serve no purpose
   const from = provenance(it);
   const desc =
     (from ? from + '. ' : '') +
