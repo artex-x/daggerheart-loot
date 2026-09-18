@@ -16,7 +16,8 @@ import golden from './golden.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
-const { collapse, normUrl, clean, elisionOf, capName, headerOf, sectionsOf, compareGolden } = golden;
+const { collapse, normUrl, clean, elisionOf, capName, headerOf, sectionsOf, compareGolden } =
+  golden;
 
 describe('collapse', () => {
   it('folds runs of whitespace to one space and treats undefined as empty', () => {
@@ -27,7 +28,10 @@ describe('collapse', () => {
 
 describe('normUrl', () => {
   it('cuts a file:// dist url down to its hash', () => {
-    assert.equal(normUrl('file:///C:/repo/dist/index.html#/tables/eq_weapon'), '#/tables/eq_weapon');
+    assert.equal(
+      normUrl('file:///C:/repo/dist/index.html#/tables/eq_weapon'),
+      '#/tables/eq_weapon'
+    );
   });
 
   it('leaves a real outbound link whole - no dist/index.html marker to cut at', () => {
@@ -36,7 +40,7 @@ describe('normUrl', () => {
 });
 
 describe('clean - joined vs split text nodes (CLAUDE.md, "port the live app\'s text-node structure")', () => {
-  it('drops a single StaticText child whose name equals its parent\'s (a joined text node)', () => {
+  it("drops a single StaticText child whose name equals its parent's (a joined text node)", () => {
     const node = {
       role: 'button',
       name: 'Печать',
@@ -61,8 +65,12 @@ describe('clean - joined vs split text nodes (CLAUDE.md, "port the live app\'s t
     assert.equal(out.children[1].name, 'ать');
   });
 
-  it('keeps a lone StaticText child whose name differs from its parent\'s', () => {
-    const node = { role: 'cell', name: 'Row', children: [{ role: 'StaticText', name: 'other', children: [] }] };
+  it("keeps a lone StaticText child whose name differs from its parent's", () => {
+    const node = {
+      role: 'cell',
+      name: 'Row',
+      children: [{ role: 'StaticText', name: 'other', children: [] }]
+    };
     const out = clean(node);
     assert.equal(out.children.length, 1);
   });
@@ -119,7 +127,7 @@ describe('capName - rule B, the 64-code-point boundary', () => {
   });
 });
 
-describe('headerOf / sectionsOf - round trip through render()\'s own format', () => {
+describe("headerOf / sectionsOf - round trip through render()'s own format", () => {
   const text = [
     '# some_state',
     '# route: #/tables/eq_weapon',
@@ -140,7 +148,11 @@ describe('headerOf / sectionsOf - round trip through render()\'s own format', ()
   ].join('\n');
 
   it('headerOf collects only the lines before the first "## " heading', () => {
-    assert.deepEqual(headerOf(text), ['# some_state', '# route: #/tables/eq_weapon', '# why: coverage']);
+    assert.deepEqual(headerOf(text), [
+      '# some_state',
+      '# route: #/tables/eq_weapon',
+      '# why: coverage'
+    ]);
   });
 
   it('sectionsOf splits the remainder by heading, trailing blanks trimmed', () => {
@@ -153,7 +165,17 @@ describe('headerOf / sectionsOf - round trip through render()\'s own format', ()
 });
 
 describe('compareGolden', () => {
-  const base = ['# id', '# route: #/x', '# why: y', '', '## ru :: tree', 'a', 'b', 'c', ''].join('\n');
+  const base = [
+    '# id',
+    '# route: #/x',
+    '# why: y',
+    '',
+    '## ru :: tree',
+    'a',
+    'b',
+    'c',
+    ''
+  ].join('\n');
 
   it('reports nothing for identical text', () => {
     const failures = [];
@@ -184,7 +206,7 @@ describe('compareGolden', () => {
   });
 });
 
-describe('URL_DEBOUNCE_MS - coupled to ListPage.svelte\'s own debounce (issues/phase-8, B8.1)', () => {
+describe("URL_DEBOUNCE_MS - coupled to ListPage.svelte's own debounce (issues/phase-8, B8.1)", () => {
   /* driver.js's addressSettled() waits `URL_DEBOUNCE_MS + 100ms` of address
    * quiet before a golden capture, so it stays a real wait rather than a
    * guess only while the two numbers agree. tests/derived.js parsing
@@ -207,7 +229,10 @@ describe('URL_DEBOUNCE_MS - coupled to ListPage.svelte\'s own debounce (issues/p
      * setTimeout-count assertion below closes the second case; the bound
      * closes the first. */
     const bodyMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\n  \}/);
-    assert.ok(bodyMatch, 'could not find scheduleUrlSync\'s own function body in ListPage.svelte');
+    assert.ok(
+      bodyMatch,
+      "could not find scheduleUrlSync's own function body in ListPage.svelte"
+    );
     const body = bodyMatch[0];
     assert.equal(
       body.split('setTimeout').length - 1,
@@ -215,7 +240,7 @@ describe('URL_DEBOUNCE_MS - coupled to ListPage.svelte\'s own debounce (issues/p
       'scheduleUrlSync has more than one timer - which one is the debounce?'
     );
     const fnMatch = body.match(/\}, (\d+)\);/);
-    assert.ok(fnMatch, 'could not find scheduleUrlSync\'s own setTimeout call inside its body');
+    assert.ok(fnMatch, "could not find scheduleUrlSync's own setTimeout call inside its body");
     const debounceMs = Number(fnMatch[1]);
 
     const driverSrc = readFileSync(path.join(HERE, 'driver.js'), 'utf8');

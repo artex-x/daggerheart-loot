@@ -20,61 +20,90 @@ if (!global.window.LOOT) require(path.join(ROOT, 'data.js'));
 const DATA = global.window.LOOT.items;
 const EQ = global.window.LOOT.eq || [];
 
-const esc = s => String(s == null ? '' : s)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const esc = (s) =>
+  String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const COMMUNITY_RU = {
-  Highborne: 'Великородное', Loreborne: 'Научное', Orderborne: 'Догматичное',
-  Ridgeborne: 'Горное', Seaborne: 'Морское', Slyborne: 'Криминальное',
-  Underborne: 'Подземное', Wanderborne: 'Кочевое', Wildborne: 'Лесное'
+  Highborne: 'Великородное',
+  Loreborne: 'Научное',
+  Orderborne: 'Догматичное',
+  Ridgeborne: 'Горное',
+  Seaborne: 'Морское',
+  Slyborne: 'Криминальное',
+  Underborne: 'Подземное',
+  Wanderborne: 'Кочевое',
+  Wildborne: 'Лесное'
 };
 const SRC_LABEL = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot' };
 const FRAME_LABEL = {
-  beast_feast: 'Пир зверей', colossus: 'Колоссы Сухоземья',
-  dark_heart: 'Тёмное сердце Андалурии', motherboard: 'Материнская Плата'
+  beast_feast: 'Пир зверей',
+  colossus: 'Колоссы Сухоземья',
+  dark_heart: 'Тёмное сердце Андалурии',
+  motherboard: 'Материнская Плата'
 };
 
 /* Kept in step with the app's own vocabulary (app/src/lib/{label,i18n}.ts's
    EQ_* tables; the live app's app.js carried the same names until R0c). */
-const EQ_TYPE   = { weapon:'Основное оружие', secondary:'Вторичное оружие', armor:'Броня' };
-const EQ_TRAIT  = { agility:'Проворность', strength:'Сила', finesse:'Искусность',
-                    instinct:'Инстинкт', presence:'Влияние', knowledge:'Знание' };
-const EQ_RANGE  = { melee:'Вплотную', veryclose:'Близко', close:'Средне',
-                    far:'Далеко', veryfar:'Очень далеко' };
-const EQ_DT     = { phy:'физ', mag:'маг', any:'физ/маг' };
-const EQ_CLS    = { phy:'Физическое', mag:'Магическое' };
-const EQ_BURDEN = { 1:'Одноручное', 2:'Двуручное' };
+const EQ_TYPE = { weapon: 'Основное оружие', secondary: 'Вторичное оружие', armor: 'Броня' };
+const EQ_TRAIT = {
+  agility: 'Проворность',
+  strength: 'Сила',
+  finesse: 'Искусность',
+  instinct: 'Инстинкт',
+  presence: 'Влияние',
+  knowledge: 'Знание'
+};
+const EQ_RANGE = {
+  melee: 'Вплотную',
+  veryclose: 'Близко',
+  close: 'Средне',
+  far: 'Далеко',
+  veryfar: 'Очень далеко'
+};
+const EQ_DT = { phy: 'физ', mag: 'маг', any: 'физ/маг' };
+const EQ_CLS = { phy: 'Физическое', mag: 'Магическое' };
+const EQ_BURDEN = { 1: 'Одноручное', 2: 'Двуручное' };
 
-function eqLine(it){
-  const e = it.eq, out = [EQ_TYPE[e.t]];
+function eqLine(it) {
+  const e = it.eq,
+    out = [EQ_TYPE[e.t]];
   if (!isFrame(it)) out.push(e.tier ? 'Ранг ' + e.tier : 'Wondrous');
   if (e.t === 'armor') {
     if (e.th) out.push('Пороги ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push('Броня ' + e.as);
   } else {
     if (e.t === 'weapon' && e.cls) out.push(EQ_CLS[e.cls]);
-    out.push(EQ_TRAIT[e.tr], EQ_RANGE[e.rg],
-             e.dmg + (e.dt ? ' ' + EQ_DT[e.dt] : ''), EQ_BURDEN[e.bu]);
+    out.push(
+      EQ_TRAIT[e.tr],
+      EQ_RANGE[e.rg],
+      e.dmg + (e.dt ? ' ' + EQ_DT[e.dt] : ''),
+      EQ_BURDEN[e.bu]
+    );
   }
   return out.filter(Boolean).join(' · ');
 }
 
-function isFrame(it){ return !!it.frame || it.src === 'frame'; }
-function provenance(it){
+function isFrame(it) {
+  return !!it.frame || it.src === 'frame';
+}
+function provenance(it) {
   if (isFrame(it)) return 'Прочее · Сеттинги · ' + (FRAME_LABEL[it.frame] || it.frame);
   if (it.starting) return 'Прочее · Стартовые';
   return '';
 }
 
-function subtitle(it){
+function subtitle(it) {
   const from = provenance(it);
   if (from) return from + (it.eq ? ' · ' + eqLine(it) : '');
   if (it.eq) return eqLine(it);
   const kind = it.kind === 'consumable' ? 'Расходник' : 'Предмет';
-  const src = it.src === 'community'
-    ? (COMMUNITY_RU[it.community] || 'Сообщества')
-    : SRC_LABEL[it.src];
+  const src =
+    it.src === 'community' ? COMMUNITY_RU[it.community] || 'Сообщества' : SRC_LABEL[it.src];
   /* Frames are browsable source records rather than a roll pool. The two
      consumables without stat blocks retain the historical preview ordinal. */
   const number = it.roll ?? (it.src === 'frame' ? DATA.frames.indexOf(it) + 1 : '');
@@ -85,13 +114,15 @@ function subtitle(it){
    forward, the "made from" direction is derived so the halves cannot drift. */
 const ALL = [].concat(...Object.values(DATA));
 const BY_ID = {};
-ALL.forEach(it => { BY_ID[it.id] = it; });
+ALL.forEach((it) => {
+  BY_ID[it.id] = it;
+});
 const CRAFTED_FROM = {};
-ALL.forEach(it => {
+ALL.forEach((it) => {
   if (it.craft && BY_ID[it.craft]) CRAFTED_FROM[it.craft] = it.id;
 });
 
-function craftLines(it){
+function craftLines(it) {
   const out = [];
   const into = BY_ID[it.craft];
   if (into) out.push('Улучшается до: ' + (into.ru || into.en));
@@ -103,18 +134,24 @@ function craftLines(it){
 // The visible paragraph keeps the line breaks the meta description above
 // flattens: a multi-line body (98 records use "- " list lines) renders as one
 // <p> per source line instead of a run-on paragraph once the newlines are gone.
-function descHtml(raw){
-  return raw.split('\n').map(line => `<p>${esc(line)}</p>`).join('\n');
+function descHtml(raw) {
+  return raw
+    .split('\n')
+    .map((line) => `<p>${esc(line)}</p>`)
+    .join('\n');
 }
 
-function page(it){
+function page(it) {
   const name = it.ru || it.en;
   const craft = craftLines(it);
   const rawDesc = it.rud || it.ende || '';
   // the unfurl preview is one flat string, so the chain joins the description
   // предпросмотр в мессенджере - одна плоская строка, переносы в ней ни к чему
   const from = provenance(it);
-  const desc = (from ? from + '. ' : '') + (it.eq ? eqLine(it) + '. ' : '') + rawDesc.replace(/\s*\n\s*/g, ' ') +
+  const desc =
+    (from ? from + '. ' : '') +
+    (it.eq ? eqLine(it) + '. ' : '') +
+    rawDesc.replace(/\s*\n\s*/g, ' ') +
     (craft.length ? ' ' + craft.join(' ') + '.' : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.
@@ -166,7 +203,7 @@ function page(it){
     <h1>${esc(name)}</h1>
     <p class="s">${esc(subtitle(it))}</p>
     ${descHtml(rawDesc)}
-${craft.map(c => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc(app)}">Открыть в генераторе лута</a>
+${craft.map((c) => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc(app)}">Открыть в генераторе лута</a>
   </div>
   <script>location.replace(${JSON.stringify(app)});</script>
 </body>

@@ -42,7 +42,9 @@ console.log('  ' + '-'.repeat(30));
 console.log('  ' + kb.toFixed(1).padStart(7) + ' kB  total (gzip, code only)');
 
 if (kb > BUDGET_KB) {
-  console.log(`\n  FAIL budget of ${String(BUDGET_KB)} kB exceeded by ${(kb - BUDGET_KB).toFixed(1)} kB`);
+  console.log(
+    `\n  FAIL budget of ${String(BUDGET_KB)} kB exceeded by ${(kb - BUDGET_KB).toFixed(1)} kB`
+  );
   process.exit(1);
 }
 console.log(`\nwithin the ${String(BUDGET_KB)} kB budget`);

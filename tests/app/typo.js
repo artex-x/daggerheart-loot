@@ -28,25 +28,44 @@ const MONO = 'ui-monospace';
 const SCALE = [23, 20, 19, 18, 17, 16, 15.5, 14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5, 9.5];
 
 const PAGES = [
-  '#/roll/std', '#/roll/alt', '#/roll/wondrous', '#/roll/community',
-  '#/tables/core_item', '#/tables/eq_weapon', '#/tables/alt_item', '#/tables/community',
-  '#/lists', '#/lists/a', '#/i/w1', '#/i/q1', '#/search'
+  '#/roll/std',
+  '#/roll/alt',
+  '#/roll/wondrous',
+  '#/roll/community',
+  '#/tables/core_item',
+  '#/tables/eq_weapon',
+  '#/tables/alt_item',
+  '#/tables/community',
+  '#/lists',
+  '#/lists/a',
+  '#/i/w1',
+  '#/i/q1',
+  '#/search'
 ];
 
 const STORAGE = {
   'dhloot.lists.v2': JSON.stringify(
     [
       {
-        id: 'a', name: 'Клад дракона', ids: ['ci1', 'cc1', 'q1', 'q313'], created: 1,
+        id: 'a',
+        name: 'Клад дракона',
+        ids: ['ci1', 'cc1', 'q1', 'q313'],
+        created: 1,
         /* Neither note's text is the word "Заметка"/"Note" itself - the
            list note is a real <textarea> whose content NAME_FN falls back
            to, and a literal match would collide with the per-row note
            toggle's own accessible name and send the "Заметка" grip below
            at the wrong control. */
-        note: 'Общая заметка про весь клад', meta: { ci1: { note: 'Под прилавком' } }
+        note: 'Общая заметка про весь клад',
+        meta: { ci1: { note: 'Под прилавком' } }
       }
     ].concat(
-      Array.from({ length: 11 }, (_, i) => ({ id: 'x' + String(i), name: 'Лавка №' + String(i + 1), ids: [], created: 10 + i }))
+      Array.from({ length: 11 }, (_, i) => ({
+        id: 'x' + String(i),
+        name: 'Лавка №' + String(i + 1),
+        ids: [],
+        created: 10 + i
+      }))
     )
   )
 };
@@ -164,7 +183,9 @@ async function softClick(d, name) {
             const fam = c.fontFamily.split(',')[0].replace(/["']/g, '');
             const name =
               e.tagName.toLowerCase() +
-              (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '');
+              (typeof e.className === 'string' && e.className
+                ? '.' + e.className.trim().split(/\s+/)[0]
+                : '');
             if (fam !== UI && fam !== MONO) out.fam.push(name + ' → ' + fam);
             if (SCALE.indexOf(Math.round(parseFloat(c.fontSize) * 10) / 10) < 0)
               out.size.push(name + ' → ' + c.fontSize);
@@ -175,14 +196,19 @@ async function softClick(d, name) {
       );
 
       ok(!bad.fam.length, where + ': wrong font — ' + bad.fam.slice(0, 3).join(', '));
-      ok(!bad.size.length, where + ': size outside the scale — ' + bad.size.slice(0, 3).join(', '));
+      ok(
+        !bad.size.length,
+        where + ': size outside the scale — ' + bad.size.slice(0, 3).join(', ')
+      );
     }
     await ctx.close();
   }
 
   await closeBrowser();
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\ntypography (dist/): two fonts and one scale across every page'
+    rep.failed
+      ? '\n' + rep.failed + ' FAILED'
+      : '\ntypography (dist/): two fonts and one scale across every page'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

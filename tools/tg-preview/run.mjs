@@ -45,7 +45,11 @@ function readState(path) {
     return JSON.parse(text);
   } catch (err) {
     throw new Error(
-      'state file is not valid JSON: ' + path + ' (' + err.message + ') - refusing to treat it as empty'
+      'state file is not valid JSON: ' +
+        path +
+        ' (' +
+        err.message +
+        ') - refusing to treat it as empty'
     );
   }
 }
@@ -79,7 +83,8 @@ function writeStateSync(path, state) {
   for (const key of Object.keys(state.urls || {}).sort()) sortedUrls[key] = state.urls[key];
 
   const prev = previousState(path);
-  const unchanged = prev && prev.site === state.site && prev.urls && sameUrls(prev.urls, sortedUrls);
+  const unchanged =
+    prev && prev.site === state.site && prev.urls && sameUrls(prev.urls, sortedUrls);
   const updatedAt = unchanged && prev.updatedAt ? prev.updatedAt : new Date().toISOString();
 
   const body = { version: 1, site: state.site, updatedAt, urls: sortedUrls };
@@ -93,7 +98,9 @@ async function makeClient() {
   if (missing.length) {
     // Named, never valued - a missing TG_SESSION must never tempt anyone
     // into printing what it should have been.
-    console.error('missing required env var' + (missing.length > 1 ? 's' : '') + ': ' + missing.join(', '));
+    console.error(
+      'missing required env var' + (missing.length > 1 ? 's' : '') + ': ' + missing.join(', ')
+    );
     process.exit(2);
   }
   const { createClient } = await import('./client.mjs');
@@ -207,7 +214,9 @@ async function main() {
       console.log('::error::' + result.stopped + ' - see docs/tg-preview.md, step I.6');
     }
     if (process.env.GITHUB_STEP_SUMMARY) {
-      writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n' + pressedLine + '\n', { flag: 'a' });
+      writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n' + pressedLine + '\n', {
+        flag: 'a'
+      });
     }
     if (result.pending.length > 0 && result.exitCode === 0) {
       console.log('::warning::' + result.pending.length + ' url(s) still pending a refresh');

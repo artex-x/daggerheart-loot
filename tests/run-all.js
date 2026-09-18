@@ -59,25 +59,25 @@ const HERE = __dirname;
    that wants to skip them) - under `--shard` they join the pool like any
    other row, which is the first time their granularity earns anything in CI. */
 const SUITES = [
-  ['app/sweep', 'dist/: page sweep 390',            326.6, ['390']],
-  ['app/sweep', 'dist/: page sweep 360',            325.0, ['360']],
-  ['app/sweep', 'dist/: page sweep 768',            318.8, ['768']],
-  ['app/sweep', 'dist/: page sweep 1180 ru',        275,   ['1180', 'ru']],
-  ['app/sweep', 'dist/: page sweep 1180 en',        275,   ['1180', 'en']],
+  ['app/sweep', 'dist/: page sweep 390', 326.6, ['390']],
+  ['app/sweep', 'dist/: page sweep 360', 325.0, ['360']],
+  ['app/sweep', 'dist/: page sweep 768', 318.8, ['768']],
+  ['app/sweep', 'dist/: page sweep 1180 ru', 275, ['1180', 'ru']],
+  ['app/sweep', 'dist/: page sweep 1180 en', 275, ['1180', 'en']],
   ['app/contracts', 'dist/: contracts and fixtures', 256.4],
-  ['app/print', 'dist/: card printing',             159.7],
-  ['app/golden', 'dist/: structural snapshots 1/4', 106,  ['--shard=1/4']],
-  ['app/states', 'dist/: real input',               102.7],
-  ['app/golden', 'dist/: structural snapshots 2/4', 102,  ['--shard=2/4']],
-  ['app/golden', 'dist/: structural snapshots 3/4',  98,  ['--shard=3/4']],
-  ['app/golden', 'dist/: structural snapshots 4/4',  94,  ['--shard=4/4']],
-  ['app/typo', 'dist/: fonts and scale',             78.1],
-  ['app/hues', 'dist/: label colours',               66.9],
-  ['stub',     'stub pages i/',                       1.6],
-  ['dataint',  'data.js invariants',                  0.3],
-  ['derived',  'derived files and catalog',           0.3],
-  ['craft',    'upgrade chains',                      0.1],
-  ['contracts','contracts and golden fixtures',       0]
+  ['app/print', 'dist/: card printing', 159.7],
+  ['app/golden', 'dist/: structural snapshots 1/4', 106, ['--shard=1/4']],
+  ['app/states', 'dist/: real input', 102.7],
+  ['app/golden', 'dist/: structural snapshots 2/4', 102, ['--shard=2/4']],
+  ['app/golden', 'dist/: structural snapshots 3/4', 98, ['--shard=3/4']],
+  ['app/golden', 'dist/: structural snapshots 4/4', 94, ['--shard=4/4']],
+  ['app/typo', 'dist/: fonts and scale', 78.1],
+  ['app/hues', 'dist/: label colours', 66.9],
+  ['stub', 'stub pages i/', 1.6],
+  ['dataint', 'data.js invariants', 0.3],
+  ['derived', 'derived files and catalog', 0.3],
+  ['craft', 'upgrade chains', 0.1],
+  ['contracts', 'contracts and golden fixtures', 0]
 ];
 
 const args = process.argv.slice(2);
@@ -91,7 +91,9 @@ if (args.includes('--help') || args.includes('-h')) {
   node tests/run-all.js --shard=2/4            one balanced quarter of the pool
   node tests/run-all.js --help, -h             this message
 
-Suites: ${SUITES.map(s => s[0]).filter((v, i, a) => a.indexOf(v) === i).join(', ')}
+Suites: ${SUITES.map((s) => s[0])
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .join(', ')}
 
 app/golden and app/sweep are unsharded/all-widths when named bare and each
 takes past the Bash tool's 600s foreground cap - see .claude/README.md,
@@ -106,18 +108,27 @@ its states. This is what ci.yml's browser matrix runs, four times.`);
   process.exit(0);
 }
 const jobsArg = args.indexOf('--jobs');
-const JOBS = jobsArg >= 0 ? Math.max(1, +args[jobsArg + 1] || 1)
-                          : Math.max(1, Math.min(os.cpus().length, 8));
+const JOBS =
+  jobsArg >= 0
+    ? Math.max(1, +args[jobsArg + 1] || 1)
+    : Math.max(1, Math.min(os.cpus().length, 8));
 /* `--exclude=<suite>` pulls a suite out of this run without touching the
    include list. CI no longer passes this for `app/golden` - its four rows
    sit in SUITES like every other suite now and ride the --shard pool below
    (see the weight comment above); the flag stays for a local run that wants
    to skip something slow on this host. */
-const excludeArg = args.find(a => a.startsWith('--exclude='));
-const exclude = excludeArg ? excludeArg.slice('--exclude='.length).split(',').filter(Boolean) : [];
-const only = args.filter((a, i) => a[0] !== '-' && !(jobsArg >= 0 && i === jobsArg + 1))
-                 .join(',').split(',').filter(Boolean);
-let queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && exclude.indexOf(s[0]) < 0);
+const excludeArg = args.find((a) => a.startsWith('--exclude='));
+const exclude = excludeArg
+  ? excludeArg.slice('--exclude='.length).split(',').filter(Boolean)
+  : [];
+const only = args
+  .filter((a, i) => a[0] !== '-' && !(jobsArg >= 0 && i === jobsArg + 1))
+  .join(',')
+  .split(',')
+  .filter(Boolean);
+let queue = SUITES.filter(
+  (s) => (!only.length || only.indexOf(s[0]) >= 0) && exclude.indexOf(s[0]) < 0
+);
 
 /* `--shard=n/m`: a longest-first greedy pack (LPT list scheduling) of `queue`
    over the weight column into `m` bins, keeping only bin `n`. Disjoint and
@@ -137,7 +148,7 @@ let queue = SUITES.filter(s => (!only.length || only.indexOf(s[0]) >= 0) && excl
    than another, and the four `--shard` calls would silently stop being
    disjoint and exhaustive. Load-bearing and otherwise invisible - nothing
    else in this file depends on sort stability. */
-const shardArg = args.find(a => a.startsWith('--shard='));
+const shardArg = args.find((a) => a.startsWith('--shard='));
 if (shardArg) {
   const m = /^--shard=(\d+)\/(\d+)$/.exec(shardArg);
   const n = m && Number(m[1]);
@@ -149,12 +160,13 @@ if (shardArg) {
   const byWeight = queue.slice().sort((a, b) => b[2] - a[2]);
   for (const suite of byWeight) {
     let lightest = 0;
-    for (let i = 1; i < bins.length; i++) if (bins[i].total < bins[lightest].total) lightest = i;
+    for (let i = 1; i < bins.length; i++)
+      if (bins[i].total < bins[lightest].total) lightest = i;
     bins[lightest].items.push(suite);
     bins[lightest].total += suite[2];
   }
   const mine = new Set(bins[n - 1].items);
-  queue = queue.filter(s => mine.has(s));
+  queue = queue.filter((s) => mine.has(s));
 }
 /* derived/dataint/craft/stub all read i/*.html, which f53f44d untracked: a
    cold clone that has not run `node tools/build.js` (or `npm run build`) has
@@ -162,17 +174,22 @@ if (shardArg) {
    raw ENOENT stack and no hint. One preflight here, the entry point all four
    go through, replaces four separate crashes with one actionable message. */
 const NEEDS_I = ['derived', 'dataint', 'craft', 'stub'];
-if (queue.some(s => NEEDS_I.indexOf(s[0]) >= 0) && !fs.existsSync(path.join(HERE, '..', 'i'))) {
-  console.log('i/ is missing - it is generated, not committed. Run `node tools/build.js` (or `npm run build`) first.');
+if (
+  queue.some((s) => NEEDS_I.indexOf(s[0]) >= 0) &&
+  !fs.existsSync(path.join(HERE, '..', 'i'))
+) {
+  console.log(
+    'i/ is missing - it is generated, not committed. Run `node tools/build.js` (or `npm run build`) first.'
+  );
   process.exit(1);
 }
 /* Report key: several rows share one suite name (app/sweep, app/golden) */
-const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
+const keyOf = (s) => s[0] + (s[3] ? ':' + s[3].join('-') : '');
 /* The key tells two runs of one suite apart with a colon, which is fine on
    screen and not fine in a file name: GitHub's artifact upload refuses a colon
    outright, because NTFS does, and one bad name fails the whole upload - which
    is exactly the log somebody needed to read. */
-const fileOf = s => keyOf(s).replace(/[^\w.-]+/g, '-');
+const fileOf = (s) => keyOf(s).replace(/[^\w.-]+/g, '-');
 if (!queue.length) {
   if (shardArg) {
     console.log('shard ' + shardArg + ' is empty: fewer suites than bins');
@@ -190,38 +207,52 @@ const OUT_DIR = path.join(HERE, '..', 'test-output');
 fs.rmSync(OUT_DIR, { recursive: true, force: true });
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const done = {};           // name -> { ok, secs, out }
-let next = 0, running = 0, bad = 0;
+const done = {}; // name -> { ok, secs, out }
+let next = 0,
+  running = 0,
+  bad = 0;
 const t0 = Date.now();
 
 /* Printed strictly in list order: a suite that finished ahead of its
    neighbour waits for it, otherwise two identical runs would print a
    different report and could not be compared. */
 let printed = 0;
-function flush(){
+function flush() {
   while (printed < queue.length && done[keyOf(queue[printed])]) {
     const [name, what] = queue[printed];
     const r = done[keyOf(queue[printed])];
-    console.log((r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(10) + what.padEnd(34) + r.secs + 's');
+    console.log(
+      (r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(10) + what.padEnd(34) + r.secs + 's'
+    );
     if (!r.ok) {
-      r.out.split('\n').filter(l => /FAIL|Error/.test(l)).slice(0, 12)
-           .forEach(l => console.log('        ' + l.trim()));
+      r.out
+        .split('\n')
+        .filter((l) => /FAIL|Error/.test(l))
+        .slice(0, 12)
+        .forEach((l) => console.log('        ' + l.trim()));
       console.log('        full output: test-output/' + fileOf(queue[printed]) + '.log');
     }
     printed++;
   }
 }
 
-function start(){
+function start() {
   while (running < JOBS && next < queue.length) {
-    const suite = queue[next++], name = suite[0], key = keyOf(suite);
+    const suite = queue[next++],
+      name = suite[0],
+      key = keyOf(suite);
     running++;
     const started = Date.now();
     let out = '';
-    const p = spawn(process.execPath, [path.join(HERE, name + '.js')].concat(suite[3] || []),
-                    { stdio: ['ignore', 'pipe', 'pipe'] });
-    p.stdout.on('data', d => { out += d; });
-    p.stderr.on('data', d => { out += d; });
+    const p = spawn(process.execPath, [path.join(HERE, name + '.js')].concat(suite[3] || []), {
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    p.stdout.on('data', (d) => {
+      out += d;
+    });
+    p.stderr.on('data', (d) => {
+      out += d;
+    });
     p.on('close', function (code) {
       if (code) bad++;
       fs.writeFileSync(path.join(OUT_DIR, fileOf(suite) + '.log'), out);
@@ -234,10 +265,15 @@ function start(){
   }
 }
 
-function finish(){
-  console.log('\n' + (bad ? bad + ' suites failed' : 'all suites passed') +
-              ' in ' + ((Date.now() - t0) / 1000).toFixed(0) + 's' +
-              (JOBS > 1 ? ' (' + JOBS + ' at a time)' : ''));
+function finish() {
+  console.log(
+    '\n' +
+      (bad ? bad + ' suites failed' : 'all suites passed') +
+      ' in ' +
+      ((Date.now() - t0) / 1000).toFixed(0) +
+      's' +
+      (JOBS > 1 ? ' (' + JOBS + ' at a time)' : '')
+  );
   process.exit(bad ? 1 : 0);
 }
 

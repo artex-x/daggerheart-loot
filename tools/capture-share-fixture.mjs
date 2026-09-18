@@ -131,7 +131,9 @@ async function clickByName(name) {
       (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || '')
         .replace(/\s+/g, ' ')
         .trim();
-    const el = [...document.querySelectorAll('button, a[href]')].find((e) => nameOf(e) === label);
+    const el = [...document.querySelectorAll('button, a[href]')].find(
+      (e) => nameOf(e) === label
+    );
     if (el) el.click();
     return !!el;
   }, name);

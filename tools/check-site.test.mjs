@@ -12,7 +12,13 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { checks, runChecks, dirReader, UNKNOWN_PATH, NOT_FOUND_MARKER } from './check-site.lib.mjs';
+import {
+  checks,
+  runChecks,
+  dirReader,
+  UNKNOWN_PATH,
+  NOT_FOUND_MARKER
+} from './check-site.lib.mjs';
 
 /** An in-memory site: `files` maps a request path (`''` for root) to
  *  `{ type, body }`. A miss falls back to `files['404.html']` with a 404
@@ -21,9 +27,14 @@ import { checks, runChecks, dirReader, UNKNOWN_PATH, NOT_FOUND_MARKER } from './
 function memoryReader(files) {
   return async (path) => {
     const key = path === '' ? 'index.html' : path;
-    if (key in files) return { status: 200, type: files[key].type || '', body: files[key].body };
+    if (key in files)
+      return { status: 200, type: files[key].type || '', body: files[key].body };
     if ('404.html' in files) {
-      return { status: 404, type: files['404.html'].type || 'text/html', body: files['404.html'].body };
+      return {
+        status: 404,
+        type: files['404.html'].type || 'text/html',
+        body: files['404.html'].body
+      };
     }
     return { status: 404, type: '', body: '' };
   };
@@ -74,7 +85,10 @@ describe('checks() against three broken sites', () => {
   });
 
   it('catches a tiny assets/app.js that is not a real build', async () => {
-    const broken = { ...GOOD, 'assets/app.js': { type: 'application/javascript', body: 'tiny' } };
+    const broken = {
+      ...GOOD,
+      'assets/app.js': { type: 'application/javascript', body: 'tiny' }
+    };
     const bad = await runChecks(memoryReader(broken));
     assert.ok(
       bad.some((m) => /assets\/app\.js is only 4 bytes - not a real build/.test(m)),
@@ -83,7 +97,10 @@ describe('checks() against three broken sites', () => {
   });
 
   it('catches a share stub with no og:image', async () => {
-    const broken = { ...GOOD, 'i/w1.html': { type: 'text/html', body: '<p>no preview here</p>' } };
+    const broken = {
+      ...GOOD,
+      'i/w1.html': { type: 'text/html', body: '<p>no preview here</p>' }
+    };
     const bad = await runChecks(memoryReader(broken));
     assert.ok(
       bad.some((m) => /i\/w1\.html has lost its preview image/.test(m)),

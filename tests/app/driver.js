@@ -96,10 +96,7 @@ async function ready(page) {
 async function settle(page) {
   await page.evaluate(async () => {
     const running = document.getAnimations().map((a) => a.finished.catch(() => undefined));
-    await Promise.race([
-      Promise.all(running),
-      new Promise((done) => setTimeout(done, 600))
-    ]);
+    await Promise.race([Promise.all(running), new Promise((done) => setTimeout(done, 600))]);
   });
   /* One frame for the paint that follows the last effect. */
   await new Promise((r) => setTimeout(r, 80));
@@ -181,7 +178,9 @@ function makeDriver(page, target) {
       return page.evaluate((nameSrc) => {
         const name = eval(nameSrc);
         const out = [];
-        for (const el of document.querySelectorAll('button, a[href], input, select, textarea')) {
+        for (const el of document.querySelectorAll(
+          'button, a[href], input, select, textarea'
+        )) {
           if (!el.offsetParent && el.tagName !== 'BODY') continue;
           const n = name(el);
           if (n) out.push(n);
@@ -255,9 +254,7 @@ function makeDriver(page, target) {
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
           const els = [
-            ...document.querySelectorAll(
-              'button, a[href], [role="button"], input, summary'
-            )
+            ...document.querySelectorAll('button, a[href], [role="button"], input, summary')
           ];
           const isBox = (e) => e.tagName === 'INPUT' && e.type === 'checkbox';
           const nonBox = els.filter((e) => !isBox(e));
@@ -275,7 +272,8 @@ function makeDriver(page, target) {
         nth,
         NAME_FN
       );
-      if (!ok) throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
+      if (!ok)
+        throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
       d.pressed.add(name);
       await settle(page);
       return true;
@@ -303,7 +301,8 @@ function makeDriver(page, target) {
         nth,
         NAME_FN
       );
-      if (!ok) throw new Error(`${target}: no checkbox named "${name}"${nth ? ` (nth ${nth})` : ''}`);
+      if (!ok)
+        throw new Error(`${target}: no checkbox named "${name}"${nth ? ` (nth ${nth})` : ''}`);
       d.pressed.add(name);
       await settle(page);
       return true;
@@ -341,9 +340,7 @@ function makeDriver(page, target) {
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
           const els = [
-            ...document.querySelectorAll(
-              'button, a[href], [role="button"], input, summary'
-            )
+            ...document.querySelectorAll('button, a[href], [role="button"], input, summary')
           ];
           /* Same three-tier ranking as `click()` - see its own comment. */
           const isBox = (e) => e.tagName === 'INPUT' && e.type === 'checkbox';
@@ -481,7 +478,13 @@ function makeDriver(page, target) {
             })
           );
           target.dispatchEvent(
-            new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt, clientX, clientY })
+            new DragEvent('drop', {
+              bubbles: true,
+              cancelable: true,
+              dataTransfer: dt,
+              clientX,
+              clientY
+            })
           );
           grip.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt }));
         },
@@ -498,9 +501,9 @@ function makeDriver(page, target) {
       return page.evaluate(
         (n, nameSrc) => {
           const nameOf = eval(nameSrc);
-          return [...document.querySelectorAll('button, a[href], input, select, textarea')].some(
-            (e) => (e.offsetParent || e.tagName === 'BODY') && nameOf(e) === n
-          );
+          return [
+            ...document.querySelectorAll('button, a[href], input, select, textarea')
+          ].some((e) => (e.offsetParent || e.tagName === 'BODY') && nameOf(e) === n);
         },
         name,
         NAME_FN
@@ -753,7 +756,12 @@ function makeDriver(page, target) {
             continue;
           }
           const r = el.getBoundingClientRect();
-          out[name] = { x: round1(r.x), y: round1(r.y), w: round1(r.width), h: round1(r.height) };
+          out[name] = {
+            x: round1(r.x),
+            y: round1(r.y),
+            w: round1(r.width),
+            h: round1(r.height)
+          };
         }
         out.docHeight = round1(document.documentElement.scrollHeight);
         return out;
@@ -804,7 +812,13 @@ function makeDriver(page, target) {
             const r = el.getBoundingClientRect();
             const style = {};
             for (const k of keys) style[k] = el.style.getPropertyValue(k);
-            return { x: round1(r.x), y: round1(r.y), w: round1(r.width), h: round1(r.height), style };
+            return {
+              x: round1(r.x),
+              y: round1(r.y),
+              w: round1(r.width),
+              h: round1(r.height),
+              style
+            };
           });
         },
         props

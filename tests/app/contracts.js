@@ -13,7 +13,11 @@ const rep = reporter();
 const { ok } = rep;
 
 const b64url = (s) =>
-  Buffer.from(s, 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  Buffer.from(s, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 function stampOf(parts) {
   const body = parts.join(',');
   let h = 2166136261;
@@ -26,17 +30,23 @@ function stampOf(parts) {
 
 (async () => {
   const listFiles = fs.readdirSync(path.join(FIX, 'lists')).filter((f) => f.endsWith('.json'));
-  const lists = listFiles.map((f) => JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8')));
+  const lists = listFiles.map((f) =>
+    JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8'))
+  );
 
   console.log('the link the app writes');
   for (const fx of lists) {
     const { ctx, page, d } = await fresh({
-      width: 1280, height: 900,
+      width: 1280,
+      height: 900,
       storage: { 'dhloot.lists.v2': JSON.stringify([fx.list]) }
     });
     await d.open('#/lists/' + fx.list.id);
     const inBar = (await page.evaluate(() => location.hash)).replace('#/l/', '');
-    ok(inBar === fx.player.payload, fx.id + ': the address bar does not hold the link from the fixture');
+    ok(
+      inBar === fx.player.payload,
+      fx.id + ': the address bar does not hold the link from the fixture'
+    );
     await ctx.close();
   }
 
@@ -68,7 +78,9 @@ function stampOf(parts) {
     const b = await fresh({ width: 1280, height: 900 });
     await b.d.open('#/l/' + fx.gm.payload);
     const seenGm = await b.page.evaluate(() => document.body.innerText);
-    notes.forEach((n) => ok(seenGm.indexOf(n) >= 0, fx.id + ': a note is missing from the GM link'));
+    notes.forEach((n) =>
+      ok(seenGm.indexOf(n) >= 0, fx.id + ': a note is missing from the GM link')
+    );
     await b.ctx.close();
   }
 
@@ -78,7 +90,10 @@ function stampOf(parts) {
   const c = await fresh({ width: 1280, height: 900 });
   await c.d.open('#/l/' + b64url(cutRaw));
   const seenCut = await c.page.evaluate(() => document.body.innerText);
-  ok(/повреждена|damaged/i.test(seenCut), 'a truncated link opened as a list instead of a broken-link page');
+  ok(
+    /повреждена|damaged/i.test(seenCut),
+    'a truncated link opened as a list instead of a broken-link page'
+  );
   await c.ctx.close();
 
   /* ---------- a link assembled purely from llms.txt's own description ----------
@@ -86,7 +101,7 @@ function stampOf(parts) {
    * an agent can build an address with no help from the app, and that promise
    * is only as good as this - a link built by a second implementation, not by
    * the app's own encoder, opening correctly. */
-  console.log('a link assembled from llms.txt\'s description');
+  console.log("a link assembled from llms.txt's description");
   {
     const parts = ['q26*1*30', 'q313*2', 'ci1'];
     const raw =
@@ -105,7 +120,10 @@ function stampOf(parts) {
       /Катана/.test(text) && /Стеганый Доспех/.test(text) && /Спальный Мешок/.test(text),
       'the assembled list is missing entries: ' + text.slice(0, 120)
     );
-    ok(/3 горсти/.test(text), 'the price from the assembled link is not shown: ' + text.slice(0, 160));
+    ok(
+      /3 горсти/.test(text),
+      'the price from the assembled link is not shown: ' + text.slice(0, 160)
+    );
     ok(/×2|x2/.test(text), 'the quantity from the assembled link is not shown');
     ok(
       /Товар лежит навалом/.test(text) && /Кузнец сбывает краденое/.test(text),
@@ -146,31 +164,47 @@ function stampOf(parts) {
         printCards: document.querySelectorAll('.pcard:not(.blank)').length,
         picked: [...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
         source: srcBtns.length
-          ? srcBtns.map((e) => e.dataset.val + (e.getAttribute('aria-pressed') === 'true' ? ':on' : ':off'))
+          ? srcBtns.map(
+              (e) =>
+                e.dataset.val + (e.getAttribute('aria-pressed') === 'true' ? ':on' : ':off')
+            )
           : undefined
       };
     });
     const want = fx.resolves;
     ok(seen.hash === want.hash, fx.hash + ': became ' + seen.hash + ', not ' + want.hash);
     ok(seen.tab === want.tab, fx.hash + ': highlighted ' + seen.tab + ', not ' + want.tab);
-    ok(seen.rows === want.rows, fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows);
+    ok(
+      seen.rows === want.rows,
+      fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows
+    );
     ok(
       seen.printCards === want.printCards,
       fx.hash + ': ' + seen.printCards + ' cards, the fixture says ' + want.printCards
     );
     ok(
       JSON.stringify(seen.picked) === JSON.stringify(want.picked),
-      fx.hash + ': picked ' + JSON.stringify(seen.picked) + ', the fixture says ' + JSON.stringify(want.picked)
+      fx.hash +
+        ': picked ' +
+        JSON.stringify(seen.picked) +
+        ', the fixture says ' +
+        JSON.stringify(want.picked)
     );
     ok(
       JSON.stringify(seen.source) === JSON.stringify(want.source),
-      fx.hash + ': sources ' + JSON.stringify(seen.source) + ', the fixture says ' + JSON.stringify(want.source)
+      fx.hash +
+        ': sources ' +
+        JSON.stringify(seen.source) +
+        ', the fixture says ' +
+        JSON.stringify(want.source)
     );
   }
   await rCtx.close();
 
   console.log('the stat line');
-  const lines = JSON.parse(fs.readFileSync(path.join(FIX, 'statlines', 'equipment.json'), 'utf8'));
+  const lines = JSON.parse(
+    fs.readFileSync(path.join(FIX, 'statlines', 'equipment.json'), 'utf8')
+  );
   const ids = Object.keys(lines);
   for (const lang of ['ru', 'en']) {
     const { ctx, page, d } = await fresh({ width: 1280, height: 900, lang });
@@ -182,7 +216,13 @@ function stampOf(parts) {
       });
       ok(
         JSON.stringify(parts) === JSON.stringify(lines[id][lang]),
-        id + '/' + lang + ': stat line is ' + JSON.stringify(parts) + ', the fixture says ' + JSON.stringify(lines[id][lang])
+        id +
+          '/' +
+          lang +
+          ': stat line is ' +
+          JSON.stringify(parts) +
+          ', the fixture says ' +
+          JSON.stringify(lines[id][lang])
       );
     }
     await ctx.close();
@@ -190,10 +230,16 @@ function stampOf(parts) {
 
   console.log('filter group names select something');
   const PROBE = [
-    ['eq_weapon', 'tier-2'], ['eq_weapon', 'src-core'], ['eq_weapon', 'cls-mag'],
-    ['eq_weapon', 'trait-strength'], ['eq_weapon', 'range-melee'],
-    ['eq_weapon', 'burden-2'], ['eq_weapon', 'line-uniq'],
-    ['eq_armor', 'tier-1'], ['voa', 'tier-A'], ['other_frames', 'frame-colossus'],
+    ['eq_weapon', 'tier-2'],
+    ['eq_weapon', 'src-core'],
+    ['eq_weapon', 'cls-mag'],
+    ['eq_weapon', 'trait-strength'],
+    ['eq_weapon', 'range-melee'],
+    ['eq_weapon', 'burden-2'],
+    ['eq_weapon', 'line-uniq'],
+    ['eq_armor', 'tier-1'],
+    ['voa', 'tier-A'],
+    ['other_frames', 'frame-colossus'],
     ['community', 'comm-Seaborne'],
     ['wondrous', 'kind-consumable']
   ];
@@ -217,6 +263,8 @@ function stampOf(parts) {
   await pCtx.close();
 
   await closeBrowser();
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\ncontracts (dist/): match the fixtures');
+  console.log(
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\ncontracts (dist/): match the fixtures'
+  );
   process.exit(rep.failed ? 1 : 0);
 })();

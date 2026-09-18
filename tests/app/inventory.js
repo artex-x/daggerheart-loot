@@ -36,8 +36,7 @@ const LOOT = require('../../data.json');
  * specs that key off their ids by name - `tests/app/print.js`'s own
  * long-text set for LONG. */
 const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
-const LONG =
-  '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
+const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
 const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + String(i + 1)).join('-');
 const TOO_MANY =
   '#/print/' +
@@ -236,7 +235,11 @@ const STATES = [
     why: 'the not-found record page: "Предмет не найден", the sub line, the "На главную" button'
   },
   { id: '#/roll/wondrous', route: '#/roll/wondrous', why: 'a roll on a table with a real die' },
-  { id: '#/roll/dread', route: '#/roll/dread', why: 'a roll on a table with no die of its own' },
+  {
+    id: '#/roll/dread',
+    route: '#/roll/dread',
+    why: 'a roll on a table with no die of its own'
+  },
 
   /* The card over the page it was opened from. Reached by pressing the picture
      on a result, which is the only way in, and drawn by neither route. */
@@ -495,14 +498,18 @@ const STATES = [
   {
     id: '#/tables/wondrous ~ nothing found',
     route: '#/tables/wondrous',
-    why: 'a filter and a query together leaving nothing, with the empty state\'s own reset',
+    why: "a filter and a query together leaving nothing, with the empty state's own reset",
     enter: async (d) => {
       await d.click('Фильтры');
       await d.click('Предметы');
       await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
     }
   },
-  { id: '#/tables/dread', route: '#/tables/dread', why: 'the second table with a kind row, and the smallest' },
+  {
+    id: '#/tables/dread',
+    route: '#/tables/dread',
+    why: 'the second table with a kind row, and the smallest'
+  },
   { id: '#/tables', route: '#/tables', why: 'the table index, which is core_item' },
   {
     id: '#/tables/hnf_consumable',
@@ -558,7 +565,7 @@ const STATES = [
     // divergence is never reached. With no lists seeded, Самоцвет Чутья
     // sits inside the 17px band at 1100 where the rewrite re-measures the
     // menu from its already-flipped side and sends it under the card's edge.
-    why: 'the new-list form inside the modal, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card\'s edge',
+    why: "the new-list form inside the modal, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge",
     enter: async (d) => {
       await d.click('Самоцвет Чутья');
       await d.click('Добавить в список');
@@ -660,8 +667,16 @@ const STATES = [
     }
   },
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
-  { id: '#/tables/other_starting', route: '#/tables/other_starting', why: 'the plain starting-items subtable' },
-  { id: '#/tables/other_frames', route: '#/tables/other_frames', why: 'the sectioned frame-items subtable' },
+  {
+    id: '#/tables/other_starting',
+    route: '#/tables/other_starting',
+    why: 'the plain starting-items subtable'
+  },
+  {
+    id: '#/tables/other_frames',
+    route: '#/tables/other_frames',
+    why: 'the sectioned frame-items subtable'
+  },
   {
     id: '#/tables/other_frames ~ two frames',
     route: '#/tables/other_frames',
@@ -677,8 +692,16 @@ const STATES = [
     route: '#/tables/other_frames/dark_heart',
     why: 'the campaign-frame section anchor'
   },
-  { id: '#/tables/frames', route: '#/tables/frames', why: 'legacy frame-items compatibility route' },
-  { id: '#/tables/community', route: '#/tables/community', why: 'a sectioned body: communities' },
+  {
+    id: '#/tables/frames',
+    route: '#/tables/frames',
+    why: 'legacy frame-items compatibility route'
+  },
+  {
+    id: '#/tables/community',
+    route: '#/tables/community',
+    why: 'a sectioned body: communities'
+  },
   {
     id: '#/tables/community ~ panel open',
     route: '#/tables/community',
@@ -713,7 +736,11 @@ const STATES = [
   /* `srcLabel`'s frame case returned the raw id rather than the frame's own
      name until this batch - `#/i/f1` is the first state to open a frame
      record at all, which is why nothing had caught it. */
-  { id: '#/i/f1', route: '#/i/f1', why: 'a frame-equipment record, catching the source-badge fix' },
+  {
+    id: '#/i/f1',
+    route: '#/i/f1',
+    why: 'a frame-equipment record, catching the source-badge fix'
+  },
 
   /* B2: a tag and a table path are two different things. Neither shape had a
      state before, which is why the human found both defects on the published
@@ -939,8 +966,7 @@ const STATES = [
   {
     id: '#/l/ ~ shared, noted',
     route: '#/l/' + NOTES_BOTH_KINDS.gm.payload,
-    why:
-      '"Тайник": both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails'
+    why: '"Тайник": both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails'
   },
   {
     id: '#/l/ ~ packed',

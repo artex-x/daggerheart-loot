@@ -30,7 +30,9 @@ const apiId = process.env.TG_API_ID;
 const apiHash = process.env.TG_API_HASH;
 const missing = ['TG_API_ID', 'TG_API_HASH'].filter((k) => !process.env[k]);
 if (missing.length) {
-  console.error('missing required env var(s): ' + missing.join(', ') + ' - see docs/tg-preview.md, step D.2');
+  console.error(
+    'missing required env var(s): ' + missing.join(', ') + ' - see docs/tg-preview.md, step D.2'
+  );
   process.exit(2);
 }
 
@@ -52,7 +54,7 @@ try {
       if (isCodeViaApp) {
         console.log(
           "Code delivered IN-APP - open the throwaway account's own Telegram " +
-            "service chat (from 777000). No SMS will arrive while that session exists."
+            'service chat (from 777000). No SMS will arrive while that session exists.'
         );
       } else {
         console.log(
@@ -68,7 +70,9 @@ try {
   });
 
   console.log('TG_SESSION=' + client.session.save());
-  console.warn('That line is the account itself - append it to .env, never paste it anywhere else.');
+  console.warn(
+    'That line is the account itself - append it to .env, never paste it anywhere else.'
+  );
 } finally {
   await client.disconnect();
   rl.close();

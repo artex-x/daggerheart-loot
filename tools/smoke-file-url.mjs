@@ -53,7 +53,10 @@ const seen = await page.evaluate(() => ({
 
 ok(seen.mounted, 'the app did not render from a folder');
 ok(seen.data, 'the data did not arrive: window.LOOT is empty');
-ok(seen.modules === 0, 'a script type="module" survived into the build - it will not load from a folder');
+ok(
+  seen.modules === 0,
+  'a script type="module" survived into the build - it will not load from a folder'
+);
 ok(
   seen.scripts.every((s) => s.startsWith('./') || s.startsWith('../')),
   'a script path is not relative: ' + seen.scripts.join(', ')

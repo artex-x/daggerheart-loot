@@ -4,7 +4,14 @@
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeName, indexRecords, planInstall, planIngest, affectedStubUrls, staleDelta } from './lib.mjs';
+import {
+  normalizeName,
+  indexRecords,
+  planInstall,
+  planIngest,
+  affectedStubUrls,
+  staleDelta
+} from './lib.mjs';
 
 const SITE = 'https://example.test/';
 
@@ -40,7 +47,10 @@ describe('normalizeName', () => {
 
 describe('indexRecords', () => {
   it('groups a name shared by two records into a two-element array', () => {
-    const records = [rec('a1', 'a1.webp', { en: 'Torch', ru: null }), rec('a2', 'a2.webp', { en: 'Torch', ru: null })];
+    const records = [
+      rec('a1', 'a1.webp', { en: 'Torch', ru: null }),
+      rec('a2', 'a2.webp', { en: 'Torch', ru: null })
+    ];
     const { byName } = indexRecords(records);
     assert.equal(byName['torch'].length, 2);
   });
@@ -63,7 +73,9 @@ describe('planInstall', () => {
   });
 
   it('one source matching a record whose asset is shared by four records yields one pair', () => {
-    const records = ['q24', 'q70', 'q138', 'q205'].map((id) => rec(id, 'q24.webp', { en: id === 'q24' ? 'Anchor' : id }));
+    const records = ['q24', 'q70', 'q138', 'q205'].map((id) =>
+      rec(id, 'q24.webp', { en: id === 'q24' ? 'Anchor' : id })
+    );
     const sources = [{ name: 'Anchor.png', sha256: 'h1', bytes: 10 }];
     const { pairs, counts } = planInstall({ sources, records, map: null });
     assert.equal(pairs.length, 1);
@@ -73,7 +85,10 @@ describe('planInstall', () => {
   });
 
   it('two sources resolving to one asset land in collisions', () => {
-    const records = [rec('a', 'shared.webp', { en: 'A' }), rec('b', 'shared.webp', { en: 'B' })];
+    const records = [
+      rec('a', 'shared.webp', { en: 'A' }),
+      rec('b', 'shared.webp', { en: 'B' })
+    ];
     const sources = [
       { name: 'A.png', sha256: 'h1', bytes: 1 },
       { name: 'B.png', sha256: 'h2', bytes: 2 }
@@ -100,7 +115,11 @@ describe('planInstall', () => {
   });
 
   it('reports an unmatched name and an ambiguous name, never guesses', () => {
-    const records = [rec('a', 'a.webp', { en: 'Alpha' }), rec('b', 'b.webp', { en: 'Shared Name' }), rec('c', 'c.webp', { en: 'Shared Name' })];
+    const records = [
+      rec('a', 'a.webp', { en: 'Alpha' }),
+      rec('b', 'b.webp', { en: 'Shared Name' }),
+      rec('c', 'c.webp', { en: 'Shared Name' })
+    ];
     const sources = [
       { name: 'Nobody Wants This.png', sha256: 'h1', bytes: 1 },
       { name: 'Shared Name.png', sha256: 'h2', bytes: 1 }
@@ -130,7 +149,7 @@ describe('planInstall', () => {
 });
 
 describe('affectedStubUrls', () => {
-  it('includes every sharedWith record\'s stub, sorted and deduplicated', () => {
+  it("includes every sharedWith record's stub, sorted and deduplicated", () => {
     const pairs = [
       { recordId: 'q24', sharedWith: ['q70', 'q138', 'q205'] },
       { recordId: 'a', sharedWith: [] }
@@ -148,19 +167,31 @@ describe('affectedStubUrls', () => {
 
 describe('planIngest', () => {
   it('the og/ trap: a new record sharing an existing, already-installed asset lands in shares, not creates, and mints no og/<new-id>.jpg', () => {
-    const records = [rec('anchor', 'shared.webp', { en: 'Anchor' }), rec('joiner', 'shared.webp', { en: 'Joiner' })];
+    const records = [
+      rec('anchor', 'shared.webp', { en: 'Anchor' }),
+      rec('joiner', 'shared.webp', { en: 'Joiner' })
+    ];
     const sources = [{ name: 'Joiner.png', sha256: 'h1', bytes: 1 }];
     const result = planIngest({ sources, records, missingAssets: [], map: null });
     assert.equal(result.creates.length, 0);
     assert.equal(result.shares.length, 1);
-    assert.deepEqual(result.shares[0], { recordId: 'joiner', asset: 'shared.webp', alsoClaimedBy: ['anchor'] });
+    assert.deepEqual(result.shares[0], {
+      recordId: 'joiner',
+      asset: 'shared.webp',
+      alsoClaimedBy: ['anchor']
+    });
     assert.equal(JSON.stringify(result).includes('og/joiner.jpg'), false);
   });
 
   it('two new records sharing one new asset with one source yields exactly one creates entry', () => {
     const records = [rec('a', 'new1.webp', { en: 'A' }), rec('b', 'new1.webp', { en: 'B' })];
     const sources = [{ name: 'A.png', sha256: 'h1', bytes: 1 }];
-    const { creates } = planIngest({ sources, records, missingAssets: ['new1.webp'], map: null });
+    const { creates } = planIngest({
+      sources,
+      records,
+      missingAssets: ['new1.webp'],
+      map: null
+    });
     assert.equal(creates.length, 1);
     assert.equal(creates[0].asset, 'new1.webp');
     assert.deepEqual(creates[0].recordIds.sort(), ['a', 'b']);
@@ -169,26 +200,45 @@ describe('planIngest', () => {
 
   it('a record with img: "" is unarted, not an error, and produces no creates entry', () => {
     const records = [rec('a', '', { en: 'A' })];
-    const { unarted, creates } = planIngest({ sources: [], records, missingAssets: [], map: null });
+    const { unarted, creates } = planIngest({
+      sources: [],
+      records,
+      missingAssets: [],
+      map: null
+    });
     assert.deepEqual(unarted, [{ recordId: 'a' }]);
     assert.equal(creates.length, 0);
   });
 
   it('a missing asset with no source is unsourced, naming the waiting record ids', () => {
     const records = [rec('a', 'missing1.webp', { en: 'A' })];
-    const { unsourced } = planIngest({ sources: [], records, missingAssets: ['missing1.webp'], map: null });
+    const { unsourced } = planIngest({
+      sources: [],
+      records,
+      missingAssets: ['missing1.webp'],
+      map: null
+    });
     assert.deepEqual(unsourced, [{ asset: 'missing1.webp', recordIds: ['a'] }]);
   });
 
   it('an unmatched source, an ambiguous source, and duplicate-bytes sources are reported the same as planInstall', () => {
-    const records = [rec('a', 'a.webp', { en: 'Alpha' }), rec('b', 'b.webp', { en: 'Shared' }), rec('c', 'c.webp', { en: 'Shared' })];
+    const records = [
+      rec('a', 'a.webp', { en: 'Alpha' }),
+      rec('b', 'b.webp', { en: 'Shared' }),
+      rec('c', 'c.webp', { en: 'Shared' })
+    ];
     const sources = [
       { name: 'Nobody Wants This.png', sha256: 'h1', bytes: 1 },
       { name: 'Shared.png', sha256: 'h2', bytes: 1 },
       { name: 'Dup1.png', sha256: 'dup', bytes: 1 },
       { name: 'Dup2.png', sha256: 'dup', bytes: 1 }
     ];
-    const { unmatched, ambiguous, duplicateSources } = planIngest({ sources, records, missingAssets: [], map: null });
+    const { unmatched, ambiguous, duplicateSources } = planIngest({
+      sources,
+      records,
+      missingAssets: [],
+      map: null
+    });
     assert.equal(unmatched.length, 1);
     assert.equal(unmatched[0].source, 'Nobody Wants This.png');
     assert.equal(ambiguous.length, 1);
@@ -218,7 +268,13 @@ describe('planIngest', () => {
       { name: 'Joiner.png', sha256: 'h2', bytes: 1 }
     ];
     const result = planIngest({ sources, records, missingAssets: ['new1.webp'], map: null });
-    assert.deepEqual(result.counts, { acceptedArtwork: 1, newAssets: 1, recordLinks: 2, shared: 1, unarted: 1 });
+    assert.deepEqual(result.counts, {
+      acceptedArtwork: 1,
+      newAssets: 1,
+      recordLinks: 2,
+      shared: 1,
+      unarted: 1
+    });
   });
 });
 
@@ -227,7 +283,11 @@ describe('staleDelta', () => {
 
   it('is ok when exactly the expected set went newly stale', () => {
     const expected = [url('a'), url('b')];
-    const result = staleDelta({ before: [url('z')], after: [url('z'), url('a'), url('b')], expected });
+    const result = staleDelta({
+      before: [url('z')],
+      after: [url('z'), url('a'), url('b')],
+      expected
+    });
     assert.equal(result.ok, true);
     assert.deepEqual(result.missing, []);
     assert.deepEqual(result.extra, []);

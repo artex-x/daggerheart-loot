@@ -28,7 +28,8 @@ function plain(m) {
   const webpage = media && media.className === 'MessageMediaWebPage' ? media.webpage : null;
   const url = (webpage && webpage.url) || null;
   const pending = !!(webpage && webpage.className === 'WebPagePending');
-  const photo = webpage && webpage.photo && webpage.photo.className === 'Photo' ? webpage.photo : null;
+  const photo =
+    webpage && webpage.photo && webpage.photo.className === 'Photo' ? webpage.photo : null;
   const photoId = photo ? String(photo.id) : null;
 
   const buttons = [];
@@ -55,9 +56,14 @@ export async function createClient({ apiId, apiHash, session, log }) {
   const { TelegramClient, sessions, Logger, Api } = await import('teleproto');
   if (Logger && typeof Logger.setLevel === 'function') Logger.setLevel('error');
 
-  const client = new TelegramClient(new sessions.StringSession(session), Number(apiId), apiHash, {
-    connectionRetries: 5
-  });
+  const client = new TelegramClient(
+    new sessions.StringSession(session),
+    Number(apiId),
+    apiHash,
+    {
+      connectionRetries: 5
+    }
+  );
 
   await client.connect();
 

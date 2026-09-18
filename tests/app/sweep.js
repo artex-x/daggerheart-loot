@@ -25,9 +25,20 @@ const rep = reporter();
 const { ok } = rep;
 
 const TABLES = [
-  'core_item', 'core_consumable', 'hnf_item', 'hnf_consumable', 'wondrous',
-  'dread', 'voa', 'frames', 'community', 'alt_item', 'alt_consumable',
-  'eq_weapon', 'eq_secondary', 'eq_armor'
+  'core_item',
+  'core_consumable',
+  'hnf_item',
+  'hnf_consumable',
+  'wondrous',
+  'dread',
+  'voa',
+  'frames',
+  'community',
+  'alt_item',
+  'alt_consumable',
+  'eq_weapon',
+  'eq_secondary',
+  'eq_armor'
 ];
 
 /* audit2's own 41 addresses, plus the routes only tests/app/states.js
@@ -88,8 +99,12 @@ const PRINT_ONLY_1180 = [
 const STORAGE = {
   'dhloot.lists.v2': JSON.stringify([
     {
-      id: 'a', name: 'Клад дракона', ids: ['ci1', 'cc1', 'w1', 'q1', 'q313', 'cm1'], created: 1,
-      note: 'Заметка про весь список', noteShow: true,
+      id: 'a',
+      name: 'Клад дракона',
+      ids: ['ci1', 'cc1', 'w1', 'q1', 'q313', 'cm1'],
+      created: 1,
+      note: 'Заметка про весь список',
+      noteShow: true,
       meta: { ci1: { qty: 2, gold: 30, note: 'Под прилавком', noteShow: true } }
     },
     { id: 'b', name: 'Вторая сумка', ids: ['ci1'], created: 3 },
@@ -102,7 +117,11 @@ const STORAGE = {
  * one control that needs a click before the walk starts. */
 const FOCUS_WALK = [
   { hash: '#/roll/std', label: 'бросок d12' },
-  { hash: '#/tables/eq_weapon', label: 'таблица с открытой панелью фильтров', filterOpen: true },
+  {
+    hash: '#/tables/eq_weapon',
+    label: 'таблица с открытой панелью фильтров',
+    filterOpen: true
+  },
   { hash: '#/lists', label: 'списки' },
   { hash: '#/lists/a', label: 'список' },
   { hash: '#/i/ci1', label: 'карточка' },
@@ -190,11 +209,15 @@ async function focusWalk(page, where) {
             outline: c.outlineStyle !== 'none' && parseFloat(c.outlineWidth) > 0,
             box: c.boxShadow !== 'none' && c.boxShadow !== '',
             border:
-              c.borderTopStyle !== 'none' && parseFloat(c.borderTopWidth) > 0 && c.borderTopColor === goldColor
+              c.borderTopStyle !== 'none' &&
+              parseFloat(c.borderTopWidth) > 0 &&
+              c.borderTopColor === goldColor
           };
         };
         const settle = async () => {
-          const running = document.getAnimations().map((a) => a.finished.catch(() => undefined));
+          const running = document
+            .getAnimations()
+            .map((a) => a.finished.catch(() => undefined));
           await Promise.race([Promise.all(running), new Promise((r) => setTimeout(r, 300))]);
         };
         const nodes = [];
@@ -209,10 +232,15 @@ async function focusWalk(page, where) {
            advances from here rather than restarting from the body. */
         el.focus();
         const name =
-          el.tagName + (typeof el.className === 'string' && el.className ? '.' + el.className.split(/\s+/)[0] : '');
+          el.tagName +
+          (typeof el.className === 'string' && el.className
+            ? '.' + el.className.split(/\s+/)[0]
+            : '');
         const visible = focused.some(
           (f, i) =>
-            (f.outline && !blurred[i].outline) || (f.box && !blurred[i].box) || (f.border && !blurred[i].border)
+            (f.outline && !blurred[i].outline) ||
+            (f.box && !blurred[i].box) ||
+            (f.border && !blurred[i].border)
         );
         return { name, visible };
       },
@@ -258,9 +286,16 @@ async function focusWalk(page, where) {
 
         const rep2 = await page.evaluate((w) => {
           const out = {
-            ids: [], noName: [], clipped: [], badLinks: [], undef: false, overflow: 0, craftBad: []
+            ids: [],
+            noName: [],
+            clipped: [],
+            badLinks: [],
+            undef: false,
+            overflow: 0,
+            craftBad: []
           };
-          out.overflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+          out.overflow =
+            document.documentElement.scrollWidth - document.documentElement.clientWidth;
           out.undef = /\bundefined\b/.test(document.body.innerText);
 
           const ids = {};
@@ -292,8 +327,13 @@ async function focusWalk(page, where) {
                 '.craft, .rcraft, .dicebar, .numrow'
             )
             .forEach((e) => {
-              if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflow !== 'visible')
-                out.clipped.push((e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 28));
+              if (
+                e.scrollWidth > e.clientWidth + 1 &&
+                getComputedStyle(e).overflow !== 'visible'
+              )
+                out.clipped.push(
+                  (e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 28)
+                );
             });
 
           /* craftmob.js:22-42's three extra reads on the craft block, ported
@@ -302,19 +342,26 @@ async function focusWalk(page, where) {
            * 12px tap-height floor. */
           document.querySelectorAll('.craft, .rcraft, .dicebar, .numrow').forEach((el) => {
             const r = el.getBoundingClientRect();
-            if (r.right > w + 1) out.craftBad.push(el.className + ' spills past the right edge (' + Math.round(r.right) + ')');
+            if (r.right > w + 1)
+              out.craftBad.push(
+                el.className + ' spills past the right edge (' + Math.round(r.right) + ')'
+              );
             if (r.left < -1) out.craftBad.push(el.className + ' spills past the left edge');
-            if (r.height > 0 && r.width < 60) out.craftBad.push(el.className + ' squeezed to ' + Math.round(r.width) + 'px');
+            if (r.height > 0 && r.width < 60)
+              out.craftBad.push(el.className + ' squeezed to ' + Math.round(r.width) + 'px');
           });
           document.querySelectorAll('.craft a').forEach((a) => {
             const r = a.getBoundingClientRect();
-            if (r.height < 12) out.craftBad.push('craft link is only ' + Math.round(r.height) + 'px tall');
+            if (r.height < 12)
+              out.craftBad.push('craft link is only ' + Math.round(r.height) + 'px tall');
           });
 
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|community)|tables|lists|search|print\/|i\/|l\/|lists\/)/.test(h);
+              /^(roll\/(std|alt|wondrous|dread|voa|community)|tables|lists|search|print\/|i\/|l\/|lists\/)/.test(
+                h
+              );
             if (!known) out.badLinks.push(h);
           });
           return out;
@@ -324,7 +371,11 @@ async function focusWalk(page, where) {
         if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(asked))
           ok(
             landed === asked,
-            where + ': address changed on its own — asked for ' + asked + ', landed on ' + landed
+            where +
+              ': address changed on its own — asked for ' +
+              asked +
+              ', landed on ' +
+              landed
           );
 
         ok(!errs.length, where + ': console error — ' + errs.slice(0, 2).join(' | '));
@@ -332,24 +383,40 @@ async function focusWalk(page, where) {
         ok(rep2.overflow <= 0, where + ': horizontal scroll of ' + rep2.overflow + 'px');
         ok(!rep2.undef, where + ': the page printed undefined');
         ok(!rep2.ids.length, where + ': duplicate id — ' + rep2.ids.join(', '));
-        ok(!rep2.noName.length, where + ': unnamed element — ' + rep2.noName.slice(0, 3).join(', '));
-        ok(!rep2.clipped.length, where + ': text clipped — ' + rep2.clipped.slice(0, 3).join(' | '));
-        ok(!rep2.badLinks.length, where + ': link to nowhere — ' + rep2.badLinks.slice(0, 3).join(', '));
+        ok(
+          !rep2.noName.length,
+          where + ': unnamed element — ' + rep2.noName.slice(0, 3).join(', ')
+        );
+        ok(
+          !rep2.clipped.length,
+          where + ': text clipped — ' + rep2.clipped.slice(0, 3).join(' | ')
+        );
+        ok(
+          !rep2.badLinks.length,
+          where + ': link to nowhere — ' + rep2.badLinks.slice(0, 3).join(', ')
+        );
         ok(!rep2.craftBad.length, where + ': craft — ' + rep2.craftBad.slice(0, 3).join(' | '));
 
         if (/^таблица/.test(label)) {
           const strip = await page.evaluate(() => {
             const c = document.querySelectorAll('.tablenav .chips');
-            return c.length ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0)) : 0;
+            return c.length
+              ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0))
+              : 0;
           });
           const cap = width < 500 ? 260 : width < 1000 ? 150 : 130;
           ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
 
         const broken = await page.evaluate(() =>
-          [...document.images].filter((i) => i.complete && !i.naturalWidth).map((i) => i.getAttribute('src'))
+          [...document.images]
+            .filter((i) => i.complete && !i.naturalWidth)
+            .map((i) => i.getAttribute('src'))
         );
-        ok(!broken.length, where + ': picture failed to load — ' + broken.slice(0, 2).join(', '));
+        ok(
+          !broken.length,
+          where + ': picture failed to load — ' + broken.slice(0, 2).join(', ')
+        );
 
         /* axe, right here - the page is already open, so this is not an
          * extra navigation. Contrast and heading order are a function of
@@ -364,7 +431,10 @@ async function focusWalk(page, where) {
         if (width === 1180 || lang === 'ru') {
           const violations = await axe(page);
           for (const v of violations) {
-            ok(false, where + ': axe ' + v.id + ' (' + String(v.impact) + ') x' + String(v.nodes.length));
+            ok(
+              false,
+              where + ': axe ' + v.id + ' (' + String(v.impact) + ') x' + String(v.nodes.length)
+            );
           }
         }
       }
@@ -376,7 +446,12 @@ async function focusWalk(page, where) {
      * not page loads, and a stray tabindex does not appear or vanish with
      * the viewport. */
     if (width === 1180 && LANGS.includes('ru')) {
-      const { ctx, page, d } = await fresh({ width, height: 900, lang: 'ru', storage: STORAGE });
+      const { ctx, page, d } = await fresh({
+        width,
+        height: 900,
+        lang: 'ru',
+        storage: STORAGE
+      });
       for (const { hash, label, filterOpen } of FOCUS_WALK) {
         const where = label + ' @' + width + ' ru, focus';
         await d.open(hash);
@@ -391,9 +466,12 @@ async function focusWalk(page, where) {
   /* Names only what this run actually covered: a narrowed call (a width, or
      a width plus a language) is not "all widths and languages", and the
      completion line used to claim that regardless. */
-  const scope = ONLY.length || langArg
-    ? 'at ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
-    : 'at every width and language';
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist/): clean ' + scope);
+  const scope =
+    ONLY.length || langArg
+      ? 'at ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
+      : 'at every width and language';
+  console.log(
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist/): clean ' + scope
+  );
   process.exit(rep.failed ? 1 : 0);
 })();

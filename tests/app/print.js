@@ -178,8 +178,14 @@ const { ok } = rep;
   ok(Math.abs(box.w / MM - 63) < 0.4, 'card width is not 63 mm: ' + (box.w / MM).toFixed(2));
   ok(Math.abs(box.h / MM - 88) < 0.4, 'card height is not 88 mm: ' + (box.h / MM).toFixed(2));
 
-  ok((await page.$$eval('.psheet', (e) => e.length)) === 1, 'nine cards did not lay out on one sheet');
-  ok((await page.$$eval('.pcard', (e) => e.length)) === 9, 'the sheet does not have nine slots');
+  ok(
+    (await page.$$eval('.psheet', (e) => e.length)) === 1,
+    'nine cards did not lay out on one sheet'
+  );
+  ok(
+    (await page.$$eval('.pcard', (e) => e.length)) === 9,
+    'the sheet does not have nine slots'
+  );
   /* The sheet is a whole A4: its margins live inside it, not on the page, or
      the third column drifts onto the next sheet. */
   const sheet = await page.$eval('.psheet', (e) => {
@@ -196,29 +202,44 @@ const { ok } = rep;
     const c = document.querySelectorAll('.pcard');
     return c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().right;
   });
-  ok(gap / MM > 1 && gap / MM < 4, 'gap between cards is not sized for the cut: ' + (gap / MM).toFixed(2) + ' mm');
+  ok(
+    gap / MM > 1 && gap / MM < 4,
+    'gap between cards is not sized for the cut: ' + (gap / MM).toFixed(2) + ' mm'
+  );
 
   /* A tenth card starts a second sheet, and blanks pad it to nine: a full
      grid cuts more evenly. */
   console.log('several sheets');
   await d.open('#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10');
-  ok((await page.$$eval('.psheet', (e) => e.length)) === 2, 'the tenth card did not start a second sheet');
-  ok((await page.$$eval('.pcard', (e) => e.length)) === 18, 'the second sheet is not padded to nine slots');
+  ok(
+    (await page.$$eval('.psheet', (e) => e.length)) === 2,
+    'the tenth card did not start a second sheet'
+  );
+  ok(
+    (await page.$$eval('.pcard', (e) => e.length)) === 18,
+    'the second sheet is not padded to nine slots'
+  );
   ok((await page.$$eval('.pcard.blank', (e) => e.length)) === 8, 'blank slots are not eight');
   /* A place is held, but no cut line is drawn over it: there is nothing to
      cut there, and an extra line is an extra reason to cut the wrong thing. */
   ok(
-    (await page.$eval('.pcard.blank', (e) => parseFloat(getComputedStyle(e).borderTopWidth))) === 0,
+    (await page.$eval('.pcard.blank', (e) =>
+      parseFloat(getComputedStyle(e).borderTopWidth)
+    )) === 0,
     'a cut line is drawn over a blank slot'
   );
   ok(
-    (await page.$eval('.pcard:not(.blank)', (e) => parseFloat(getComputedStyle(e).borderTopWidth))) > 0,
+    (await page.$eval('.pcard:not(.blank)', (e) =>
+      parseFloat(getComputedStyle(e).borderTopWidth)
+    )) > 0,
     "a card's cut line is missing"
   );
   ok(await page.$('.psheet[data-next]'), 'the second sheet is not marked as a page start');
   /* A third sheet at the twentieth card, and every sheet stays exactly A4. */
   await d.open('#/print/' + Array.from({ length: 20 }, (_, i) => 'ci' + (i + 1)).join('-'));
-  const heights = await page.$$eval('.psheet', (e) => e.map((x) => x.getBoundingClientRect().height));
+  const heights = await page.$$eval('.psheet', (e) =>
+    e.map((x) => x.getBoundingClientRect().height)
+  );
   ok(heights.length === 3, 'twenty cards did not lay out on three sheets: ' + heights.length);
   ok(
     heights.every((h) => Math.abs(h / MM - 297) < 0.6),
@@ -264,7 +285,10 @@ const { ok } = rep;
     };
   });
   ok(/^1/.test(parts.tier || ''), 'the ribbon has no tier: ' + parts.tier);
-  ok(/ОРУЖИЕ/i.test(parts.tags[0] || ''), "the first tag is not the item's kind: " + parts.tags);
+  ok(
+    /ОРУЖИЕ/i.test(parts.tags[0] || ''),
+    "the first tag is not the item's kind: " + parts.tags
+  );
   ok(/ФИЗИЧЕСК/i.test(parts.tags[1] || ''), 'the second tag is not the class: ' + parts.tags);
   ok(parts.name === 'Палаш', 'the name on the card is different: ' + parts.name);
   ok(/Надёжное/.test(parts.text), 'no property text');
@@ -279,13 +303,17 @@ const { ok } = rep;
     const f = document.querySelector('.pc-frame').getBoundingClientRect();
     return [...document.querySelectorAll('.pc-cells > *')].map((b) => {
       const r = b.getBoundingClientRect();
-      return { l: ((r.left - f.left) / f.width) * 100, r: ((r.right - f.left) / f.width) * 100 };
+      return {
+        l: ((r.left - f.left) / f.width) * 100,
+        r: ((r.right - f.left) / f.width) * 100
+      };
     });
   });
   ok(cells.length === 3, 'the stat strip does not have three cells: ' + cells.length);
   ok(
     Math.abs(cells[0].r - 30.8) < 1 && Math.abs(cells[1].r - 63.7) < 1,
-    "cells do not line up with the frame's dividers: " + cells.map((c) => c.r.toFixed(1)).join(', ')
+    "cells do not line up with the frame's dividers: " +
+      cells.map((c) => c.r.toFixed(1)).join(', ')
   );
   ok(
     /Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
@@ -296,11 +324,18 @@ const { ok } = rep;
   /* The grip mark comes from the design whole. Assembled from two pictures,
      it drew the right palm twice - a two-handed grip looked like two right
      palms. */
-  const burden = () => page.$eval('.pc-burden img', (e) => e.getAttribute('src').replace(/^.*\//, ''));
+  const burden = () =>
+    page.$eval('.pc-burden img', (e) => e.getAttribute('src').replace(/^.*\//, ''));
   await d.open('#/print/w51'); // two-handed grip
-  ok((await burden()) === 'burden-2.svg', 'the two-handed grip has the wrong mark: ' + (await burden()));
+  ok(
+    (await burden()) === 'burden-2.svg',
+    'the two-handed grip has the wrong mark: ' + (await burden())
+  );
   await d.open('#/print/w7'); // one-handed
-  ok((await burden()) === 'burden-1.svg', 'the one-handed grip has the wrong mark: ' + (await burden()));
+  ok(
+    (await burden()) === 'burden-1.svg',
+    'the one-handed grip has the wrong mark: ' + (await burden())
+  );
   ok(
     /Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
     'the caption is missing the book: ' + parts.bottom
@@ -317,8 +352,14 @@ const { ok } = rep;
 
   /* Damage with a bonus: "d6 +2" beside the die, not a digit over it. */
   await d.open('#/print/w7');
-  ok((await page.$eval('.pc-die', (e) => e.textContent.trim())) === 'd6', 'the damage bonus crept onto the die');
-  ok((await page.$eval('.pc-bonus', (e) => e.textContent.trim())) === '+2', 'the damage bonus is not shown separately');
+  ok(
+    (await page.$eval('.pc-die', (e) => e.textContent.trim())) === 'd6',
+    'the damage bonus crept onto the die'
+  );
+  ok(
+    (await page.$eval('.pc-bonus', (e) => e.textContent.trim())) === '+2',
+    'the damage bonus is not shown separately'
+  );
 
   /* "Versatile" is a second set of stats, and the book hides it in the
      property's prose. On the card it stands as a second strip, as the design
@@ -359,7 +400,10 @@ const { ok } = rep;
   for (const [id, die] of DICE) {
     await d.open('#/print/' + id);
     const src = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
-    ok(new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src), die + ' took the wrong shape: ' + src);
+    ok(
+      new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src),
+      die + ' took the wrong shape: ' + src
+    );
     ok(await page.$('.pc-die.own'), die + ' is drawn as the generic hexagon');
   }
 
@@ -395,7 +439,10 @@ const { ok } = rep;
         })
         .map((v) => v.textContent);
     });
-    ok(!lost.length, (isBw ? 'bw: ' : 'colour: ') + 'text is lost on the longest values: ' + lost.join(', '));
+    ok(
+      !lost.length,
+      (isBw ? 'bw: ' : 'colour: ') + 'text is lost on the longest values: ' + lost.join(', ')
+    );
   }
   await d.open('#/print/q1');
   await colour();
@@ -430,13 +477,19 @@ const { ok } = rep;
   await d.open('#/print/q313');
   ok(!(await page.$('.pc-burden')), 'armour grew burden-grip hands');
   const shield = await page.$eval('.pc-shield', (e) => e.textContent.trim());
-  ok(/^3/.test(shield), 'the shield is missing the Armor Score ("Показатель Брони"): ' + shield);
+  ok(
+    /^3/.test(shield),
+    'the shield is missing the Armor Score ("Показатель Брони"): ' + shield
+  );
   ok(/БРОНЯ/i.test(shield), 'the shield is missing the word: ' + shield);
   /* The mark comes from the design: in colour it is a dark shield in a gold
      halo with a white number, not an outline with a dark number - a
      different mark altogether. */
   const shieldFile = svgFile(await page.$eval('.pc-shield img', (e) => e.getAttribute('src')));
-  ok(/fill="#18171C"/.test(shieldFile), 'the shield in colour is an outline again, with no dark fill');
+  ok(
+    /fill="#18171C"/.test(shieldFile),
+    'the shield in colour is an outline again, with no dark fill'
+  );
   const asInk = await page.$eval('.pc-shield b', (e) => getComputedStyle(e).color);
   ok(/255, 255, 255/.test(asInk), 'the number on the dark shield is not white: ' + asInk);
   /* The number sits centred on the shield, the caption under it and not
@@ -471,17 +524,32 @@ const { ok } = rep;
       { timeout: 8000, polling: 'raf' }
     );
     const m = await mark();
-    ok(Math.abs(m.off) < 1.5, (isBw ? 'bw: ' : 'colour: ') + 'the number is offset from the shield centre by ' + m.off.toFixed(1));
-    ok(m.gap > 1.5, (isBw ? 'bw: ' : 'colour: ') + 'the caption is pressed against the shield: gap ' + m.gap.toFixed(1));
+    ok(
+      Math.abs(m.off) < 1.5,
+      (isBw ? 'bw: ' : 'colour: ') +
+        'the number is offset from the shield centre by ' +
+        m.off.toFixed(1)
+    );
+    ok(
+      m.gap > 1.5,
+      (isBw ? 'bw: ' : 'colour: ') +
+        'the caption is pressed against the shield: gap ' +
+        m.gap.toFixed(1)
+    );
   }
   await d.open('#/print/q313');
   await colour();
   await d.settle();
   const th = await page.$eval('.pc-thstrip', (e) => e.textContent);
   ok(/5/.test(th) && /11/.test(th), 'the scale has no thresholds: ' + th);
-  ok((await page.$$eval('.pc-th-box', (e) => e.length)) === 2, 'the scale does not have two thresholds');
+  ok(
+    (await page.$$eval('.pc-th-box', (e) => e.length)) === 2,
+    'the scale does not have two thresholds'
+  );
   /* Both threshold cells are the same size, however many digits sit in them. */
-  const thBox = await page.$$eval('.pc-th-box', (e) => e.map((x) => Math.round(x.getBoundingClientRect().width)));
+  const thBox = await page.$$eval('.pc-th-box', (e) =>
+    e.map((x) => Math.round(x.getBoundingClientRect().width))
+  );
   ok(thBox[0] === thBox[1], 'threshold cells are different widths: ' + thBox.join(' and '));
   /* And the diamonds over the captions: one, two or three of them, but always
      the same diamond. */
@@ -502,10 +570,18 @@ const { ok } = rep;
   const frame = await page.$eval('.pc-thstrip', (e) => {
     const c = getComputedStyle(e),
       r = e.getBoundingClientRect();
-    return { img: c.backgroundImage, rad: parseFloat(c.borderTopLeftRadius), h: r.height, w: r.width };
+    return {
+      img: c.backgroundImage,
+      rad: parseFloat(c.borderTopLeftRadius),
+      h: r.height,
+      w: r.width
+    };
   });
   ok(frame.img === 'none', "the threshold scale's frame is a picture again: " + frame.img);
-  ok(frame.rad <= frame.h / 2 + 0.5, "the frame's rounding is more than half its height: " + frame.rad + ' at ' + frame.h);
+  ok(
+    frame.rad <= frame.h / 2 + 0.5,
+    "the frame's rounding is more than half its height: " + frame.rad + ' at ' + frame.h
+  );
   /* The cells overhang the frame top and bottom - as the design has it. */
   const thH = await page.$eval('.pc-th-box', (e) => e.getBoundingClientRect().height);
   ok(thH > frame.h, 'threshold cells do not overhang the frame: ' + thH + ' and ' + frame.h);
@@ -513,14 +589,20 @@ const { ok } = rep;
 
   /* Loot has neither. */
   await d.open('#/print/ci1');
-  ok(!(await page.$('.pc-strip')) && !(await page.$('.pc-thstrip')), 'the item grew a stat strip');
+  ok(
+    !(await page.$('.pc-strip')) && !(await page.$('.pc-thstrip')),
+    'the item grew a stat strip'
+  );
   ok(!(await page.$('.pc-burden')), 'the item grew burden-grip hands');
 
   /* An artifact or a cursed item carries no rank, and the book's word for it
      sits on the tag instead of "item". */
   await d.open('#/print/voa2_a3');
   ok(!(await page.$('.pc-tier')), 'the artifact grew a tier ribbon');
-  ok(/АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)), 'the artifact is not named on the tag');
+  ok(
+    /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
+    'the artifact is not named on the tag'
+  );
 
   /* An upgrade chain and links to other cards do not go to print: the card
      goes to a player, and that is a conversation with the GM, and 63 mm is
@@ -528,7 +610,10 @@ const { ok } = rep;
   console.log('extras are not printed');
   await d.open('#/print/ci18');
   const crafted = await page.$eval('.pcard', (e) => e.textContent);
-  ok(!/Крафт|Craft|улучш/i.test(crafted), 'the upgrade chain leaked onto the card: ' + crafted.slice(0, 120));
+  ok(
+    !/Крафт|Craft|улучш/i.test(crafted),
+    'the upgrade chain leaked onto the card: ' + crafted.slice(0, 120)
+  );
 
   /* The card is deliberately light: a dark background eats ink, and on a
      black-and-white printer it turns text to mush. */
@@ -537,7 +622,11 @@ const { ok } = rep;
     name: getComputedStyle(e.querySelector('.pc-name')).color
   }));
   ok(/255, 255, 255/.test(paint.card), 'the card does not print white: ' + paint.card);
-  const lum = (paint.name.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
+  const lum =
+    (paint.name.match(/\d+/g) || [])
+      .slice(0, 3)
+      .map(Number)
+      .reduce((a, b) => a + b, 0) / 3;
   ok(lum < 90, 'the name on the card is too light to print: ' + paint.name);
 
   /* ---------- black-and-white sheet ----------
@@ -550,7 +639,10 @@ const { ok } = rep;
   await bw();
   await d.settle();
   ok(await page.$('.pcard.bw'), 'the button did not switch to the black-and-white sheet');
-  ok(!(await page.$('.pc-img')) && !(await page.$('.pc-art')), 'a picture remains in black-and-white');
+  ok(
+    !(await page.$('.pc-img')) && !(await page.$('.pc-art')),
+    'a picture remains in black-and-white'
+  );
   ok(
     (await page.$('.pc-head .pc-tier')) && (await page.$('.pc-head .pc-tags')),
     'in black-and-white the ribbon and tag did not gather into a row'
@@ -584,7 +676,10 @@ const { ok } = rep;
   ok(!noTier.tier, 'loot somehow grew a tier ribbon');
   ok(
     Math.abs(noTier.tag - noTier.name) < 2,
-    "with no ribbon, the kind tag is not at the text's left edge: " + noTier.tag.toFixed(0) + ' and ' + noTier.name.toFixed(0)
+    "with no ribbon, the kind tag is not at the text's left edge: " +
+      noTier.tag.toFixed(0) +
+      ' and ' +
+      noTier.name.toFixed(0)
   );
   /* A magic weapon's die shows a white number on a blue fill. In
      black-and-white the fill is white, and the number has to darken or it is
@@ -598,12 +693,19 @@ const { ok } = rep;
   const bwDie = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
   ok(/-bw\.svg$/.test(bwDie), 'black-and-white uses a colour die: ' + bwDie);
   const bwFile = svgFile(bwDie);
-  ok((bwFile.match(/<path/g) || []).length === 2, "the black-and-white die's facets are missing");
+  ok(
+    (bwFile.match(/<path/g) || []).length === 2,
+    "the black-and-white die's facets are missing"
+  );
   ok(/0 0 [\d.]+ [\d.]+/.test(bwFile), 'the black-and-white die has no frame');
   const halo = await page.$eval('.pc-die b', (e) => getComputedStyle(e).textShadow);
   ok(halo && halo !== 'none', 'the number on the die has no halo: ' + halo);
   const dieInk = await page.$eval('.pc-die b', (e) => getComputedStyle(e).color);
-  const dl = (dieInk.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
+  const dl =
+    (dieInk.match(/\d+/g) || [])
+      .slice(0, 3)
+      .map(Number)
+      .reduce((a, b) => a + b, 0) / 3;
   ok(dl < 90, 'in black-and-white the number on the die is white on white: ' + dieInk);
   /* The caption sits at the card's bottom edge. In black-and-white the block
      is pinned to the top, and it used to hang wherever the rule ended - a
@@ -612,7 +714,11 @@ const { ok } = rep;
   await bw();
   await d.settle();
   const feet = await page.$$eval('.pcard:not(.blank)', (e) =>
-    e.map((c) => c.getBoundingClientRect().bottom - c.querySelector('.pc-bottom').getBoundingClientRect().bottom)
+    e.map(
+      (c) =>
+        c.getBoundingClientRect().bottom -
+        c.querySelector('.pc-bottom').getBoundingClientRect().bottom
+    )
   );
   ok(
     feet.every((v) => v < 24),
@@ -629,7 +735,8 @@ const { ok } = rep;
   const bwBurden = await page.$eval('.pc-burden img', (e) => e.getAttribute('src'));
   ok(/-bw\.svg$/.test(bwBurden), 'black-and-white uses a colour grip mark: ' + bwBurden);
   const bwHand = svgFile(bwBurden);
-  const ink = (h) => parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
+  const ink = (h) =>
+    parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
   const fills = (bwHand.match(/fill="#[0-9a-fA-F]{6}"/g) || []).map((s) => s.slice(7, 14));
   ok(
     fills.length && fills.every((f) => ink(f) > 180),
@@ -639,11 +746,16 @@ const { ok } = rep;
   /* The die is the same size in both looks: the same card must not change its
      die size because it is printed without ink. */
   await d.open('#/print/q1');
-  const dieColour = await page.$eval('.pc-die', (e) => Math.round(e.getBoundingClientRect().width));
+  const dieColour = await page.$eval('.pc-die', (e) =>
+    Math.round(e.getBoundingClientRect().width)
+  );
   await bw();
   await d.settle();
   const dieBw = await page.$eval('.pc-die', (e) => Math.round(e.getBoundingClientRect().width));
-  ok(dieColour === dieBw, 'the die is a different size in colour vs black-and-white: ' + dieColour + ' and ' + dieBw);
+  ok(
+    dieColour === dieBw,
+    'the die is a different size in colour vs black-and-white: ' + dieColour + ' and ' + dieBw
+  );
 
   await colour();
   await d.settle();
@@ -653,7 +765,8 @@ const { ok } = rep;
      black-and-white the picture stays: it is its own there too, and the
      general "drop -mag in black-and-white" rule - which is about the dice -
      was standing in for it with the physical frame. */
-  const ribbonOf = () => page.$eval('.pc-ribbon', (e) => e.getAttribute('src').replace(/^.*\//, ''));
+  const ribbonOf = () =>
+    page.$eval('.pc-ribbon', (e) => e.getAttribute('src').replace(/^.*\//, ''));
   for (const isBw of [false, true]) {
     await d.open('#/print/q23');
     if (isBw) {
@@ -693,27 +806,46 @@ const { ok } = rep;
           i = c.querySelector('.pc-img').getBoundingClientRect();
         const box2 = c.querySelector('.pc-content');
         const line =
-          box2.getBoundingClientRect().top - cr.top + parseFloat(getComputedStyle(box2).paddingTop);
-        return { id: c.dataset.pid, top: ar.top - cr.top, wide: ar.width / cr.width, over: i.bottom - cr.top - line };
+          box2.getBoundingClientRect().top -
+          cr.top +
+          parseFloat(getComputedStyle(box2).paddingTop);
+        return {
+          id: c.dataset.pid,
+          top: ar.top - cr.top,
+          wide: ar.width / cr.width,
+          over: i.bottom - cr.top - line
+        };
       })
       .filter(Boolean)
   );
   ok(art.length > 2, "nothing to check the card's top against");
   art.forEach((a) => {
-    ok(Math.abs(a.top) < 2, a.id + ": the picture's field is not flush with the top edge: " + a.top.toFixed(1));
-    ok(a.wide > 0.98, a.id + ": the picture's field is not full width: " + (a.wide * 100).toFixed(0) + '%');
+    ok(
+      Math.abs(a.top) < 2,
+      a.id + ": the picture's field is not flush with the top edge: " + a.top.toFixed(1)
+    );
+    ok(
+      a.wide > 0.98,
+      a.id + ": the picture's field is not full width: " + (a.wide * 100).toFixed(0) + '%'
+    );
     /* The picture does not run under the text: the item itself is there, and
        its bottom cannot be cut. */
     ok(a.over < 2, a.id + ': the picture runs under the text by ' + a.over.toFixed(0) + ' px');
   });
   const capInk = await page.$eval('.pc-shield i', (e) => getComputedStyle(e).color);
-  ok(/255, 255, 255/.test(capInk), "the mark's caption over the picture is not light: " + capInk);
+  ok(
+    /255, 255, 255/.test(capInk),
+    "the mark's caption over the picture is not light: " + capInk
+  );
   /* And in black-and-white there is no picture, and it is dark again - over
      white. */
   await bw();
   await d.settle();
   const bwCap = await page.$eval('.pc-shield i', (e) => getComputedStyle(e).color);
-  ok(!/255, 255, 255/.test(bwCap), "in black-and-white the mark's caption is white on white: " + bwCap);
+  ok(
+    !/255, 255, 255/.test(bwCap),
+    "in black-and-white the mark's caption is white on white: " + bwCap
+  );
   await d.open('#/print/q1');
   await colour();
   await d.settle();
@@ -750,7 +882,13 @@ const { ok } = rep;
             ir = i.getBoundingClientRect();
           /* The upper half of the picture: below it the fade into the white
              margin begins. */
-          return { id: c.dataset.pid, left: ar.left, right: ar.right, top: ir.top + ir.height * 0.1, bot: ir.top + ir.height * 0.6 };
+          return {
+            id: c.dataset.pid,
+            left: ar.left,
+            right: ar.right,
+            top: ir.top + ir.height * 0.1,
+            bot: ir.top + ir.height * 0.6
+          };
         })
         .filter(Boolean)
     );
@@ -772,21 +910,25 @@ const { ok } = rep;
           }
         return sum / n;
       };
-      edges.push(band((k) => x0 + 1 + k), band((k) => x1 - 2 - k));
+      edges.push(
+        band((k) => x0 + 1 + k),
+        band((k) => x1 - 2 - k)
+      );
     });
     const lo = Math.min.apply(null, edges),
       hi = Math.max.apply(null, edges);
     ok(
       hi - lo > 8,
-      'the colour at the cut line is the same on every card (' + lo.toFixed(1) + '..' + hi.toFixed(1) + ') - meaning it comes from the fill, not the picture'
+      'the colour at the cut line is the same on every card (' +
+        lo.toFixed(1) +
+        '..' +
+        hi.toFixed(1) +
+        ') - meaning it comes from the fill, not the picture'
     );
     /* And light pictures read noticeably lighter than the near-black margin
        that used to stand in for them: the band is gone there, the picture
        reaches all the way to the cut. */
-    ok(
-      edges.filter((v) => v > 14).length >= 3,
-      'no light card has its picture reach the cut'
-    );
+    ok(edges.filter((v) => v > 14).length >= 3, 'no light card has its picture reach the cut');
     /* The backing is the same file as the picture itself: otherwise it has
        its own colour and the seam comes back, just somewhere else. */
     const same = await page.$$eval('.pcard:not(.blank)', (cards) =>
@@ -849,11 +991,15 @@ const { ok } = rep;
                   : what === 'width'
                     ? r.width * k
                     : r.height * k;
-          if (Math.abs(v - ideal) > 1.5) out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
+          if (Math.abs(v - ideal) > 1.5)
+            out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
         }
         return out;
       }, SPEC);
-      ok(!off.length, (isBw ? 'bw ' : 'colour ') + id + ' diverges from the design: ' + off.join('; '));
+      ok(
+        !off.length,
+        (isBw ? 'bw ' : 'colour ') + id + ' diverges from the design: ' + off.join('; ')
+      );
     }
   }
   await d.open('#/print/q1');
@@ -864,8 +1010,12 @@ const { ok } = rep;
      An artifact's description runs many times longer than a potion's, and
      the space is the same one. */
   console.log('long text shrinks');
-  await d.open('#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11');
-  const over = await page.$$eval('.pc-text', (e) => e.map((x) => x.scrollHeight - x.clientHeight));
+  await d.open(
+    '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11'
+  );
+  const over = await page.$$eval('.pc-text', (e) =>
+    e.map((x) => x.scrollHeight - x.clientHeight)
+  );
   ok(
     over.every((v) => v <= 1),
     'long text spilled off the card: ' + over.join(',')
@@ -882,7 +1032,10 @@ const { ok } = rep;
      So this first check only pins what is true on every host - the font step
      engages - and the rung invariant right below it is what still holds
      end-to-end wherever the ladder is actually reached. */
-  const shrunk = await page.$$eval('.pc-text', (e) => e.filter((x) => x.style.fontSize !== '').length);
+  const shrunk = await page.$$eval(
+    '.pc-text',
+    (e) => e.filter((x) => x.style.fontSize !== '').length
+  );
   ok(shrunk > 0, 'no long card shrank its text');
 
   /* The rung invariant, host-independent: the padding step only ever runs
@@ -928,7 +1081,10 @@ const { ok } = rep;
       })
       .filter((v) => v > 0 && v < 20)
   );
-  ok(!slivers.length, 'a sliver of picture remains above the name: ' + slivers.map((v) => v.toFixed(1)).join(', '));
+  ok(
+    !slivers.length,
+    'a sliver of picture remains above the name: ' + slivers.map((v) => v.toFixed(1)).join(', ')
+  );
 
   /* Print replaces the page it came from: with no "back" button there was
      nowhere to return to except browser history. */
@@ -940,7 +1096,10 @@ const { ok } = rep;
   await d.settle();
   ok(await d.has('Назад'), 'there is no way back from print');
   await d.click('Назад');
-  ok(/#\/tables\/core_item/.test(await d.hash()), 'the back button did not return to where it came from: ' + (await d.hash()));
+  ok(
+    /#\/tables\/core_item/.test(await d.hash()),
+    'the back button did not return to where it came from: ' + (await d.hash())
+  );
 
   /* ---------- entry points ----------
      Three places: the item card, a list, and the selection bar in a table. */
@@ -952,33 +1111,47 @@ const { ok } = rep;
   );
   /* And it stands beside "add to list": both take the item off the page - to
      a list or onto paper - while copying leaves it in the clipboard. */
-  ok(await page.$('.card.full .cardpick a[href^="#/print/"]'), 'the print button is not beside "add to list"');
-  ok(!(await page.$('.card.full .card-acts a[href^="#/print/"]')), 'the print button remained among the copy buttons');
+  ok(
+    await page.$('.card.full .cardpick a[href^="#/print/"]'),
+    'the print button is not beside "add to list"'
+  );
+  ok(
+    !(await page.$('.card.full .card-acts a[href^="#/print/"]')),
+    'the print button remained among the copy buttons'
+  );
 
   await d.open('#/tables/core_item');
   await page.click('.rows .row .selbox input');
   await d.settle();
-  const acts = await page.$$eval('.selbarwrap .selacts > *', (e) => e.map((x) => (x.className || '') + '|' + x.tagName));
+  const acts = await page.$$eval('.selbarwrap .selacts > *', (e) =>
+    e.map((x) => (x.className || '') + '|' + x.tagName)
+  );
   ok(
     /seldrop/.test(acts[0] || '') && /A$/.test(acts[1] || ''),
     'in the selection bar, print is not right after "add to list": ' + acts.join(' ')
   );
-  const sel = await page.$eval('.selbarwrap a[href^="#/print/"]', (e) => e.getAttribute('href'));
+  const sel = await page.$eval('.selbarwrap a[href^="#/print/"]', (e) =>
+    e.getAttribute('href')
+  );
   ok(/^#\/print\/\w+$/.test(sel), 'the selection bar does not print: ' + sel);
   /* Print is a link, and ordinary buttons stand beside it. The rule that
      strips the underline sat only on the card's own actions, and here it
      arrived underlined - one button in the row unlike the rest. */
   ok(
-    (await page.$eval('.selbarwrap a.btn', (e) => getComputedStyle(e).textDecorationLine)) === 'none',
+    (await page.$eval('.selbarwrap a.btn', (e) => getComputedStyle(e).textDecorationLine)) ===
+      'none',
     'the print button is underlined, and its neighbours are not'
   );
 
   await d.seed({
-    'dhloot.lists.v2': JSON.stringify([{ id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }])
+    'dhloot.lists.v2': JSON.stringify([
+      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }
+    ])
   });
   await d.open('#/lists/p');
   ok(
-    (await page.$eval('.card-acts a[href^="#/print/"]', (e) => e.getAttribute('href'))) === '#/print/ci1-q1',
+    (await page.$eval('.card-acts a[href^="#/print/"]', (e) => e.getAttribute('href'))) ===
+      '#/print/ci1-q1',
     'the list does not print itself'
   );
 
@@ -986,7 +1159,10 @@ const { ok } = rep;
      nothing to print. */
   await d.open('#/print/nosuchid');
   ok(!(await page.$('.psheet')), 'a made-up address assembled a sheet');
-  ok(/\S/.test(await page.$eval('.page-h', (e) => e.textContent)), 'the empty print page has no heading');
+  ok(
+    /\S/.test(await page.$eval('.page-h', (e) => e.textContent)),
+    'the empty print page has no heading'
+  );
 
   /* ---------- the sheet, in counts (R0b.3 C2, `sheetCounts`) ----------
      `renderPrint`'s own arithmetic, off six counts rather than pixels - the
@@ -1011,14 +1187,26 @@ const { ok } = rep;
     const printed = Math.min(s.n, 180);
     const sheets = Math.ceil(printed / 9);
     ok(counts.sheets === sheets, s.label + ': sheets are not ' + sheets + ': ' + counts.sheets);
-    ok(counts.cards === sheets * 9, s.label + ': slots are not ' + sheets * 9 + ': ' + counts.cards);
+    ok(
+      counts.cards === sheets * 9,
+      s.label + ': slots are not ' + sheets * 9 + ': ' + counts.cards
+    );
     ok(
       counts.blanks === sheets * 9 - printed,
       s.label + ': blank slots are not ' + (sheets * 9 - printed) + ': ' + counts.blanks
     );
-    ok(counts.breaks === sheets - 1, s.label + ': page breaks are not ' + (sheets - 1) + ': ' + counts.breaks);
-    ok(counts.bw === (s.bw ? sheets : 0), s.label + ': .psheet.bw count did not match: ' + counts.bw);
-    ok(counts.warn === (s.n > 180 ? 1 : 0), s.label + ': the truncation warning did not match: ' + counts.warn);
+    ok(
+      counts.breaks === sheets - 1,
+      s.label + ': page breaks are not ' + (sheets - 1) + ': ' + counts.breaks
+    );
+    ok(
+      counts.bw === (s.bw ? sheets : 0),
+      s.label + ': .psheet.bw count did not match: ' + counts.bw
+    );
+    ok(
+      counts.warn === (s.n > 180 ? 1 : 0),
+      s.label + ': the truncation warning did not match: ' + counts.warn
+    );
   }
 
   /* ---------- the fit, as the numbers it wrote (R0b.3 C2, `cardFit`) ----------
@@ -1051,18 +1239,27 @@ const { ok } = rep;
         const tag = s.label + ' @ ' + width.w + langTag + ': ';
 
         const text = await d2.eachAt('.pcard:not(.blank) .pc-text', ['font-size']);
-        ok(text.length === printed, tag + 'the count of cards with text did not match: ' + text.length);
+        ok(
+          text.length === printed,
+          tag + 'the count of cards with text did not match: ' + text.length
+        );
         text.forEach((t) => {
           if (!t.style['font-size']) return;
           const v = parseFloat(t.style['font-size']);
           /* The text ladder's own floor (PrintCard.svelte's second `while (tight()
              && pct > 2.6)`), not the strip box's 2.2 - the two ladders are
              separate and this one never goes lower. */
-          ok(v >= 2.6 && v <= 3.5, tag + 'text size is off the ladder: ' + t.style['font-size']);
+          ok(
+            v >= 2.6 && v <= 3.5,
+            tag + 'text size is off the ladder: ' + t.style['font-size']
+          );
         });
 
         const box2 = await d2.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']);
-        ok(box2.length === printed, tag + 'the count of cards with padding did not match: ' + box2.length);
+        ok(
+          box2.length === printed,
+          tag + 'the count of cards with padding did not match: ' + box2.length
+        );
         box2.forEach((b) => {
           if (!b.style['--pcpad']) return;
           const v = parseFloat(b.style['--pcpad']);
@@ -1089,12 +1286,18 @@ const { ok } = rep;
         strip.forEach((v) => {
           if (!v.style['font-size']) return;
           const n = parseFloat(v.style['font-size']);
-          ok(n >= 2.2 && n <= 3, tag + 'strip text size is off the ladder: ' + v.style['font-size']);
+          ok(
+            n >= 2.2 && n <= 3,
+            tag + 'strip text size is off the ladder: ' + v.style['font-size']
+          );
         });
 
         const head = await d2.eachAt('.pc-head', []);
         if (s.bw) {
-          ok(head.length === printed, tag + 'not every black-and-white card has its own pc-head: ' + head.length);
+          ok(
+            head.length === printed,
+            tag + 'not every black-and-white card has its own pc-head: ' + head.length
+          );
           ok(
             head.every((h) => h.w > 0 && h.h > 0),
             tag + 'pc-head is zero-sized'
@@ -1112,7 +1315,11 @@ const { ok } = rep;
   await cardFit(d, bw, colour, '');
 
   console.log('card fit, in numbers (en)');
-  const { ctx: ctxEn, page: pageEn, d: dEn } = await fresh({ width: 1180, height: 950, lang: 'en' });
+  const {
+    ctx: ctxEn,
+    page: pageEn,
+    d: dEn
+  } = await fresh({ width: 1180, height: 950, lang: 'en' });
   const bwEn = () => dEn.click('Black and white');
   const colourEn = () => dEn.click('Colour');
   const pageErrsEn = [];
@@ -1140,10 +1347,18 @@ const { ok } = rep;
           await d2.settle();
         }
         for (const pid of ['cm26', 'f60', 'hi62', 'ci81']) {
-          const lines = await page2.$eval(`.pcard[data-pid="${pid}"] .pc-name`, (e) => e.getClientRects().length);
+          const lines = await page2.$eval(
+            `.pcard[data-pid="${pid}"] .pc-name`,
+            (e) => e.getClientRects().length
+          );
           ok(
             lines <= 2,
-            'name ' + pid + langTag + (bwOn ? ' bw' : '') + ' exceeded the two-line cap: ' + lines
+            'name ' +
+              pid +
+              langTag +
+              (bwOn ? ' bw' : '') +
+              ' exceeded the two-line cap: ' +
+              lines
           );
         }
       }
@@ -1189,7 +1404,9 @@ const { ok } = rep;
            (`printPage.test.ts`, "nothing to print") - a route fact, not a
            print-media rule, so `nope` carries no `bar` key rather than
            reading its absence as "hidden". */
-        ...(s.route === '#/print/nope' ? {} : { bar: await d.computed('.printbar', ['display']) })
+        ...(s.route === '#/print/nope'
+          ? {}
+          : { bar: await d.computed('.printbar', ['display']) })
       };
       /* `val && ...`, not `!val || ...`: a `null` read (the selector matched
          nothing) must fail, not pass - proven once by pointing `header` at a
@@ -1203,7 +1420,10 @@ const { ok } = rep;
       }
 
       if (s.route === '#/print/nope') {
-        ok(!(await d.computed('.psheet', ['display'])), s.label + ': an empty print page grew a sheet anyway');
+        ok(
+          !(await d.computed('.psheet', ['display'])),
+          s.label + ': an empty print page grew a sheet anyway'
+        );
       } else {
         const body = await d.computed('body', ['background-color', 'color']);
         ok(
@@ -1219,23 +1439,39 @@ const { ok } = rep;
           'padding-left',
           'margin-left'
         ]);
-        ok(main['max-width'] === 'none', s.label + ': main still has a width limit: ' + main['max-width']);
+        ok(
+          main['max-width'] === 'none',
+          s.label + ': main still has a width limit: ' + main['max-width']
+        );
         /* `width: auto` (Shell.svelte's @media print, off style.css:1406's
            `.wrap,#view{width:auto}`) resolves to the full viewport minus the
            stable scrollbar gutter at this suite's fixed 1180 width - measured
            live, not guessed: 1180 - 15px. */
-        ok(main.width === '1165px', s.label + ": main's width is not the full sheet: " + main.width);
         ok(
-          main['padding-top'] === '0px' && main['padding-left'] === '0px' && main['margin-left'] === '0px',
+          main.width === '1165px',
+          s.label + ": main's width is not the full sheet: " + main.width
+        );
+        ok(
+          main['padding-top'] === '0px' &&
+            main['padding-left'] === '0px' &&
+            main['margin-left'] === '0px',
           s.label + ': main still has print padding: ' + JSON.stringify(main)
         );
 
-        const psheet = await d.computed('.psheet', ['margin-top', 'margin-left', 'box-shadow', 'break-inside']);
+        const psheet = await d.computed('.psheet', [
+          'margin-top',
+          'margin-left',
+          'box-shadow',
+          'break-inside'
+        ]);
         ok(
           psheet['margin-top'] === '0px' && psheet['margin-left'] === '0px',
           s.label + ': the sheet still has margins: ' + JSON.stringify(psheet)
         );
-        ok(psheet['box-shadow'] === 'none', s.label + ': the sheet still has a shadow: ' + psheet['box-shadow']);
+        ok(
+          psheet['box-shadow'] === 'none',
+          s.label + ': the sheet still has a shadow: ' + psheet['box-shadow']
+        );
         ok(
           psheet['break-inside'] === 'avoid',
           s.label + ': the sheet can break mid-page: ' + psheet['break-inside']
@@ -1243,7 +1479,10 @@ const { ok } = rep;
 
         const last = await d.computed('.psheet:last-child', ['height']);
         const lastPx = parseFloat(last.height);
-        ok(Math.abs(lastPx / MM - 297) < 0.6, s.label + ': the last sheet is not A4 under print: ' + (lastPx / MM).toFixed(1));
+        ok(
+          Math.abs(lastPx / MM - 297) < 0.6,
+          s.label + ': the last sheet is not A4 under print: ' + (lastPx / MM).toFixed(1)
+        );
 
         const card2 = await d.computed('.pcard', ['break-inside', 'print-color-adjust']);
         ok(
@@ -1252,7 +1491,9 @@ const { ok } = rep;
         );
         ok(
           card2['print-color-adjust'] === 'exact',
-          s.label + ": the card's print colours are not preserved: " + card2['print-color-adjust']
+          s.label +
+            ": the card's print colours are not preserved: " +
+            card2['print-color-adjust']
         );
       }
 
@@ -1260,7 +1501,9 @@ const { ok } = rep;
         const next = await d.computed('.psheet[data-next]', ['break-before']);
         ok(
           next['break-before'] === 'page',
-          s.label + ': the second sheet does not start a new print page: ' + next['break-before']
+          s.label +
+            ': the second sheet does not start a new print page: ' +
+            next['break-before']
         );
       }
     } finally {
@@ -1279,18 +1522,26 @@ const { ok } = rep;
   await d.media('print');
   try {
     const dialog = await d.computed('dialog', ['display']);
-    ok(dialog && dialog.display === 'none', 'D20: the open dialog did not hide under print: ' + JSON.stringify(dialog));
+    ok(
+      dialog && dialog.display === 'none',
+      'D20: the open dialog did not hide under print: ' + JSON.stringify(dialog)
+    );
   } finally {
     await d.media(undefined);
   }
 
-  await d.seed({ 'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }]) });
+  await d.seed({
+    'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
+  });
   await d.open('#/lists/a');
   await d.click('Убрать из списка');
   await d.media('print');
   try {
     const toast = await d.computed('.toast', ['display']);
-    ok(toast && toast.display === 'none', 'D20: the action toast did not hide under print: ' + JSON.stringify(toast));
+    ok(
+      toast && toast.display === 'none',
+      'D20: the action toast did not hide under print: ' + JSON.stringify(toast)
+    );
   } finally {
     await d.media(undefined);
   }
@@ -1322,6 +1573,8 @@ const { ok } = rep;
   await ctxEn.close();
   await ctx.close();
   await closeBrowser();
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist/): every check passed');
+  console.log(
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist/): every check passed'
+  );
   process.exit(rep.failed ? 1 : 0);
 })();

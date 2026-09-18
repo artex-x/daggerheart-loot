@@ -21,13 +21,22 @@ const path = require('path');
 
 const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
 let fail = 0;
-const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
+const ok = (c, m) => {
+  if (!c) {
+    fail++;
+    console.log('  FAIL ' + m);
+  }
+};
 
 /* A separate implementation of the encoding - that is the whole point */
-const b64url = s => Buffer.from(s, 'utf8').toString('base64')
-  .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64url = (s) =>
+  Buffer.from(s, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 /* FNV-1a, as in the app, but written again here */
-function stampOf(parts){
+function stampOf(parts) {
   const body = parts.join(',');
   let h = 2166136261;
   for (let i = 0; i < body.length; i++) {
@@ -37,35 +46,47 @@ function stampOf(parts){
   return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
 }
 
-const N_REC = '\x1e', N_SEP = '\x1f';
+const N_REC = '\x1e',
+  N_SEP = '\x1f';
 
 (async () => {
   /* ---------- list fixtures: the pure half ---------- */
   console.log('list encoding');
-  const listFiles = fs.readdirSync(path.join(FIX, 'lists')).filter(f => f.endsWith('.json'));
+  const listFiles = fs.readdirSync(path.join(FIX, 'lists')).filter((f) => f.endsWith('.json'));
   ok(listFiles.length >= 6, 'fewer than six list fixtures: ' + listFiles.length);
-  const lists = listFiles.map(f => JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8')));
+  const lists = listFiles.map((f) =>
+    JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8'))
+  );
 
   lists.forEach(function (fx) {
     ['player', 'gm'].forEach(function (who) {
       const side = fx[who];
-      ok(b64url(side.raw) === side.payload,
-         fx.id + '/' + who + ': payload is not base64url(utf8(raw))');
+      ok(
+        b64url(side.raw) === side.payload,
+        fx.id + '/' + who + ': payload is not base64url(utf8(raw))'
+      );
       /* The items line starts with the checksum, and it has to match the body */
       const itemsLine = side.raw.split('\n')[1] || '';
       const cut = itemsLine.indexOf('~');
       ok(cut > 0, fx.id + '/' + who + ': no checksum on the items line');
       const parts = itemsLine.slice(cut + 1).split(',');
-      ok(stampOf(parts) === itemsLine.slice(0, cut + 1),
-         fx.id + '/' + who + ': the checksum does not match the items');
-      ok(parts.length === fx.list.ids.length,
-         fx.id + '/' + who + ': the link holds a different number of entries than the list');
+      ok(
+        stampOf(parts) === itemsLine.slice(0, cut + 1),
+        fx.id + '/' + who + ': the checksum does not match the items'
+      );
+      ok(
+        parts.length === fx.list.ids.length,
+        fx.id + '/' + who + ': the link holds a different number of entries than the list'
+      );
     });
     /* The player link carries no unmarked note */
-    const hidden = fx.player.raw.split(N_REC).slice(1).filter(function (rec) {
-      const id = rec.slice(0, rec.indexOf(N_SEP));
-      return id.charAt(0) !== '+' && id !== '$';
-    });
+    const hidden = fx.player.raw
+      .split(N_REC)
+      .slice(1)
+      .filter(function (rec) {
+        const id = rec.slice(0, rec.indexOf(N_SEP));
+        return id.charAt(0) !== '+' && id !== '$';
+      });
     ok(!hidden.length, fx.id + ': a GM note survived into the player link');
   });
 
@@ -76,13 +97,15 @@ const N_REC = '\x1e', N_SEP = '\x1f';
      mistake here is invisible on screen: the link opens, the table is whole,
      there is no filter. */
   console.log('filter group names');
-  const docs = fs.readFileSync(path.join(__dirname, '..', 'llms.txt'), 'utf8') +
-               fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8') +
-               fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
-  ['tier', 'src', 'cls', 'trait', 'range', 'burden', 'line', 'kind', 'frame', 'comm']
-    .forEach(function (g) {
+  const docs =
+    fs.readFileSync(path.join(__dirname, '..', 'llms.txt'), 'utf8') +
+    fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8') +
+    fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
+  ['tier', 'src', 'cls', 'trait', 'range', 'burden', 'line', 'kind', 'frame', 'comm'].forEach(
+    function (g) {
       ok(new RegExp('`' + g + '`').test(docs), 'group `' + g + '` is documented nowhere');
-    });
+    }
+  );
   /* Absence is checked only in llms.txt: that is what an agent builds an address
      from, while the specs name these two on purpose - as what the groups are not. */
   const machine = fs.readFileSync(path.join(__dirname, '..', 'llms.txt'), 'utf8');

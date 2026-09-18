@@ -35,7 +35,12 @@ async function newListInputBox(page) {
 /** Whether box `a` lies entirely inside box `b` - `.modal-card`'s own
  *  bounds, for case 3. */
 function inside(a, b) {
-  return a.x >= b.x - 0.5 && a.y >= b.y - 0.5 && a.x + a.w <= b.x + b.w + 0.5 && a.y + a.h <= b.y + b.h + 0.5;
+  return (
+    a.x >= b.x - 0.5 &&
+    a.y >= b.y - 0.5 &&
+    a.x + a.w <= b.x + b.w + 0.5 &&
+    a.y + a.h <= b.y + b.h + 0.5
+  );
 }
 
 /** 1. New list from the card. */
@@ -105,7 +110,10 @@ async function addToListMenuStaysInModal() {
   const scrollTop = await page.evaluate(
     () => document.querySelector('.card')?.scrollTop ?? null
   );
-  ok(scrollTop === 0, '23 (menu in the modal): .card.scrollTop = ' + scrollTop + ', expected 0');
+  ok(
+    scrollTop === 0,
+    '23 (menu in the modal): .card.scrollTop = ' + scrollTop + ', expected 0'
+  );
 
   const box = (sel) =>
     page.evaluate((s) => {
@@ -120,7 +128,10 @@ async function addToListMenuStaysInModal() {
   const menu = await box('.dropmenu');
   ok(!!menu, '23 (menu in the modal): .dropmenu not found');
   if (menu && card) {
-    ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card (DEBT.md D6)');
+    ok(
+      inside(menu, card),
+      '23 (menu in the modal): the menu sits outside .modal-card (DEBT.md D6)'
+    );
   }
 
   await d.press('+ Новый список');
@@ -128,7 +139,10 @@ async function addToListMenuStaysInModal() {
   ok(!!input, '23 (menu in the modal): the new-list form did not open');
   ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
   if (input && card) {
-    ok(inside(input, card), '23 (menu in the modal): the input sits outside .modal-card (DEBT.md D6)');
+    ok(
+      inside(input, card),
+      '23 (menu in the modal): the input sits outside .modal-card (DEBT.md D6)'
+    );
   }
   await ctx.close();
 }
@@ -190,7 +204,10 @@ async function dialogSemantics() {
       return !dlg || !dlg.contains(document.activeElement);
     });
     escaped = out ? escaped + 1 : 0;
-    ok(escaped < 2, '6 (dialog): Tab moved focus outside the dialog and did not return it on the next step');
+    ok(
+      escaped < 2,
+      '6 (dialog): Tab moved focus outside the dialog and did not return it on the next step'
+    );
   }
 
   /* The page behind is inert: trying to focus something outside directly
@@ -201,14 +218,17 @@ async function dialogSemantics() {
     outside.focus();
     return document.activeElement !== outside;
   });
-  ok(blocked, '6 (dialog): the background is not inert - an element behind the dialog took focus');
+  ok(
+    blocked,
+    '6 (dialog): the background is not inert - an element behind the dialog took focus'
+  );
 
   await page.keyboard.press('Escape');
   const closed = await page.evaluate(() => !document.querySelector('dialog[open]'));
   ok(closed, '6 (dialog): Escape did not close the dialog');
   const returned = await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(
-      (b) => (b.textContent || '').includes('Кольцо Тишины')
+    const btn = [...document.querySelectorAll('button')].find((b) =>
+      (b.textContent || '').includes('Кольцо Тишины')
     );
     return !!btn && btn === document.activeElement;
   });
@@ -261,7 +281,10 @@ async function twoTabsShareStorage() {
     void e;
     storageDelivered = false;
   }
-  ok(storageDelivered, `7 (two windows): page B did not receive the storage event within ${STORAGE_WAIT_MS / 1000}s`);
+  ok(
+    storageDelivered,
+    `7 (two windows): page B did not receive the storage event within ${STORAGE_WAIT_MS / 1000}s`
+  );
 
   if (storageDelivered) {
     let repainted = true;
@@ -286,11 +309,27 @@ async function packedLink() {
    * "for three entries and no notes"), so the plain form wins there - a
    * bigger list with a long note is what actually reaches the packed branch
    * this case exists to exercise. */
-  const seedIds = ['ci1', 'cc1', 'q1', 'q313', 'w1', 'cm1', 'ci28', 'ci56', 'q239', 'cc2', 'w2', 'q26'];
+  const seedIds = [
+    'ci1',
+    'cc1',
+    'q1',
+    'q313',
+    'w1',
+    'cm1',
+    'ci28',
+    'ci56',
+    'q239',
+    'cc2',
+    'w2',
+    'q26'
+  ];
   const bigNote =
-    'Очень длинная заметка про весь список, чтобы сжатый вариант точно перевесил издержки заголовка deflate. '.repeat(4);
+    'Очень длинная заметка про весь список, чтобы сжатый вариант точно перевесил издержки заголовка deflate. '.repeat(
+      4
+    );
   const { ctx, page, d } = await fresh({
-    width: 1180, height: 900,
+    width: 1180,
+    height: 900,
     storage: {
       'dhloot.lists.v2': JSON.stringify([
         { id: 'a', name: 'Пакуемый клад', ids: seedIds, created: 1, note: bigNote }
@@ -312,10 +351,15 @@ async function packedLink() {
      * way on both apps. What proves the packed round trip is the count and
      * the long note, which are body text either way. */
     const seen = await page.evaluate(() => document.body.innerText);
-    ok(seen.includes('12 позиций'), '8 (packed link): not every entry unpacked - ' + seen.slice(0, 200));
+    ok(
+      seen.includes('12 позиций'),
+      '8 (packed link): not every entry unpacked - ' + seen.slice(0, 200)
+    );
     /* The note is a <textarea>'s value, not rendered text - innerText does
      * not carry it. */
-    const noteValue = await page.evaluate(() => document.querySelector('textarea')?.value || '');
+    const noteValue = await page.evaluate(
+      () => document.querySelector('textarea')?.value || ''
+    );
     ok(
       noteValue.includes('перевесил издержки заголовка'),
       '8 (packed link): the long note did not unpack - ' + noteValue.slice(0, 80)
@@ -369,9 +413,12 @@ async function copyImage() {
   } else {
     ok(
       typeof result.text === 'string' && result.text.length > 0,
-      '10 (copy image, D10): neither the picture nor the fallback text arrived - ' + JSON.stringify(result)
+      '10 (copy image, D10): neither the picture nor the fallback text arrived - ' +
+        JSON.stringify(result)
     );
-    const toast = await page.evaluate(() => document.querySelector('.toast')?.textContent || '');
+    const toast = await page.evaluate(
+      () => document.querySelector('.toast')?.textContent || ''
+    );
     ok(
       toast.includes('Не удалось скопировать картинку - скопирован текст'),
       '10 (copy image, D10): the toast about the unavailable picture is not shown - ' + toast
@@ -393,13 +440,21 @@ async function brokenArtPath() {
   };
   page.on('request', onReq);
   await d.open('#/i/w3');
-  const src = await page.evaluate(() => document.querySelector('.card-media img')?.getAttribute('src'));
+  const src = await page.evaluate(() =>
+    document.querySelector('.card-media img')?.getAttribute('src')
+  );
   ok(/_none\.webp$/.test(src || ''), '11 (no picture): instead of the placeholder — ' + src);
-  ok(await d.has('Скопировать текст'), '11 (no picture): the text button disappeared along with the picture');
+  ok(
+    await d.has('Скопировать текст'),
+    '11 (no picture): the text button disappeared along with the picture'
+  );
   /* R0b.4's divergence 3: the copy-image button must go with the picture,
    * not just switch to offering the placeholder (RecordActions.svelte:105,
    * restored to it.img && !app.artBroken(it.id) - app.js:1684's hasImage). */
-  ok(!(await d.has('Скопировать изображение')), '11 (no picture): the copy-image button should disappear along with the picture');
+  ok(
+    !(await d.has('Скопировать изображение')),
+    '11 (no picture): the copy-image button should disappear along with the picture'
+  );
   page.off('request', onReq);
   await ctx.close();
 }
@@ -411,7 +466,9 @@ async function focusSurvivesKeystroke() {
   await d.open('#/tables');
   await d.type('Поиск по названию или описанию…', 'к');
   const stillFocused = await page.evaluate(
-    (ph) => document.activeElement instanceof HTMLInputElement && document.activeElement.placeholder === ph,
+    (ph) =>
+      document.activeElement instanceof HTMLInputElement &&
+      document.activeElement.placeholder === ph,
     'Поиск по названию или описанию…'
   );
   ok(stillFocused, '12 (focus survives input): focus left the search box after the redraw');
@@ -422,7 +479,8 @@ async function focusSurvivesKeystroke() {
  *  measure at all (no layout). */
 async function noteTextareaHeight() {
   const { ctx, page, d } = await fresh({
-    width: 1180, height: 900,
+    width: 1180,
+    height: 900,
     storage: { 'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }]) }
   });
   await d.open('#/lists/a');
@@ -436,7 +494,10 @@ async function noteTextareaHeight() {
     return ta ? parseFloat(getComputedStyle(ta).height) : null;
   }, PH);
   ok(before !== null, '13 (note height): the textarea was not found');
-  await d.type(PH, 'Строка первая\nСтрока вторая\nСтрока третья\nСтрока четвёртая\nСтрока пятая');
+  await d.type(
+    PH,
+    'Строка первая\nСтрока вторая\nСтрока третья\nСтрока четвёртая\nСтрока пятая'
+  );
   const after = await page.evaluate((ph) => {
     const ta = document.querySelector(`textarea[placeholder="${ph}"]`);
     if (!ta) return null;
@@ -444,10 +505,16 @@ async function noteTextareaHeight() {
   }, PH);
   ok(!!after, '13 (note height): the textarea disappeared after typing');
   if (before !== null && after) {
-    ok(after.height > before, '13 (note height): the field did not grow - was ' + before + ', became ' + after.height);
+    ok(
+      after.height > before,
+      '13 (note height): the field did not grow - was ' + before + ', became ' + after.height
+    );
     ok(
       after.height >= after.scrollHeight - 1 || after.height >= 320,
-      '13 (note height): height ' + after.height + ' is less than its content ' + after.scrollHeight
+      '13 (note height): height ' +
+        after.height +
+        ' is less than its content ' +
+        after.scrollHeight
     );
   }
 
@@ -473,8 +540,14 @@ async function noteTextareaHeight() {
 
   await d.type(LIST_PH, Array.from({ length: 8 }, (_, i) => 'строка ' + i).join('\n'));
   lnoteLines = await boxLines();
-  ok(lnoteLines[0] >= 8, '13 (list notes): the public field did not grow to fit the text - ' + lnoteLines[0]);
-  ok(lnoteLines[1] === 3, '13 (list notes): the neighbouring field grew along with it - ' + lnoteLines[1]);
+  ok(
+    lnoteLines[0] >= 8,
+    '13 (list notes): the public field did not grow to fit the text - ' + lnoteLines[0]
+  );
+  ok(
+    lnoteLines[1] === 3,
+    '13 (list notes): the neighbouring field grew along with it - ' + lnoteLines[1]
+  );
 
   await d.type(LIST_PH, Array.from({ length: 80 }, (_, i) => 'строка ' + i).join('\n'));
   const tall = await page.$eval('.lnote .n-pub textarea', (t) => ({
@@ -486,7 +559,10 @@ async function noteTextareaHeight() {
 
   await d.type(LIST_PH, 'одна строка');
   lnoteLines = await boxLines();
-  ok(lnoteLines[0] === 3, '13 (list notes): the field did not return to three lines - ' + lnoteLines[0]);
+  ok(
+    lnoteLines[0] === 3,
+    '13 (list notes): the field did not return to three lines - ' + lnoteLines[0]
+  );
 
   const crossVisible = await page.evaluate(() =>
     [...document.querySelectorAll('.lnote .note-x')].map((x) => getComputedStyle(x).display)
@@ -517,7 +593,10 @@ async function rollReplacesCardImg() {
     if (img) img.setAttribute('data-mark', '1');
     return !!img;
   });
-  ok(marked, '14 (roll card): the original <img> was not found - was .results .card-media img renamed?');
+  ok(
+    marked,
+    '14 (roll card): the original <img> was not found - was .results .card-media img renamed?'
+  );
   const rollName = await page.evaluate(() => {
     const btn = document.querySelector('.numrow button.primary');
     return btn ? (btn.textContent || '').replace(/\s+/g, ' ').trim() : '';
@@ -573,7 +652,10 @@ async function selectionBarGeometry() {
     const w = document.querySelector('.selbarwrap');
     return w ? Math.abs(w.getBoundingClientRect().bottom - window.innerHeight) : null;
   });
-  ok(gap !== null && gap <= 2, '16 (selection bar): the bar is not pinned to the window bottom - ' + gap);
+  ok(
+    gap !== null && gap <= 2,
+    '16 (selection bar): the bar is not pinned to the window bottom - ' + gap
+  );
   await ctx.close();
 
   const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 360, height: 840 });
@@ -584,7 +666,8 @@ async function selectionBarGeometry() {
     document.querySelectorAll('.selbarwrap .btn').forEach((b) => {
       const r = b.getBoundingClientRect();
       if (b.scrollWidth > b.clientWidth + 1) out.push('label clipped: ' + b.textContent.trim());
-      if (r.left < -1 || r.right > w + 1) out.push('button off the edge of the screen: ' + b.textContent.trim());
+      if (r.left < -1 || r.right > w + 1)
+        out.push('button off the edge of the screen: ' + b.textContent.trim());
     });
     return out;
   }, 360);
@@ -596,7 +679,8 @@ async function selectionBarGeometry() {
 async function dragReorder() {
   const seedIds = ['ci1', 'ci2', 'ci3', 'ci4'];
   const { ctx, page, d } = await fresh({
-    width: 1180, height: 900,
+    width: 1180,
+    height: 900,
     storage: {
       'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: seedIds, created: 1 }])
     }
@@ -623,20 +707,29 @@ async function dragReorder() {
     const box = rows[2].getBoundingClientRect();
     rows[2].dispatchEvent(
       new DragEvent('dragover', {
-        bubbles: true, cancelable: true, dataTransfer: window.__dragDT, clientY: box.top + box.height - 2
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY: box.top + box.height - 2
       })
     );
   });
   await d.settle();
   const dragged = await page.evaluate(() => document.querySelectorAll('.lrow')[2].className);
-  ok(/drop-after/.test(dragged), '17 (drag reorder): the drop position is not highlighted - ' + dragged);
+  ok(
+    /drop-after/.test(dragged),
+    '17 (drag reorder): the drop position is not highlighted - ' + dragged
+  );
 
   await page.evaluate(() => {
     const rows = [...document.querySelectorAll('.lrow')];
     const box = rows[2].getBoundingClientRect();
     rows[2].dispatchEvent(
       new DragEvent('drop', {
-        bubbles: true, cancelable: true, dataTransfer: window.__dragDT, clientY: box.top + box.height - 2
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY: box.top + box.height - 2
       })
     );
   });
@@ -656,10 +749,17 @@ async function dragReorder() {
  *  `lists2.js:571-589`. */
 async function foldedDetailsSurviveRerender() {
   const { ctx, page, d } = await fresh({
-    width: 1180, height: 900,
+    width: 1180,
+    height: 900,
     storage: {
       'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Тайник', ids: ['ci1', 'ci2', 'ci3'], created: 1, meta: { ci1: { gold: 70 } } }
+        {
+          id: 'a',
+          name: 'Тайник',
+          ids: ['ci1', 'ci2', 'ci3'],
+          created: 1,
+          meta: { ci1: { gold: 70 } }
+        }
       ])
     }
   });
@@ -690,7 +790,8 @@ async function foldedDetailsSurviveRerender() {
   const open2 = await openState();
   ok(
     open2.note === false && open2.roll === false,
-    '18 (folded panels): switching price mode unfolded something folded - ' + JSON.stringify(open2)
+    '18 (folded panels): switching price mode unfolded something folded - ' +
+      JSON.stringify(open2)
   );
   await ctx.close();
 }
@@ -716,7 +817,10 @@ async function tileGeometryNoArt() {
   const widths = await page.$$eval('.tilewrap .tile', (e) => [
     ...new Set(e.map((x) => Math.round(x.getBoundingClientRect().width)))
   ]);
-  ok(widths.length === 1 && widths[0] > 100, '19 (tiles with no pictures): widths ' + widths.join(', '));
+  ok(
+    widths.length === 1 && widths[0] > 100,
+    '19 (tiles with no pictures): widths ' + widths.join(', ')
+  );
   const clash = await page.$$eval(
     '.tilewrap',
     (e) =>
@@ -728,7 +832,10 @@ async function tileGeometryNoArt() {
         return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
       }).length
   );
-  ok(clash === 0, '19 (tiles with no pictures): the checkbox overlaps the label on ' + clash + ' tiles');
+  ok(
+    clash === 0,
+    '19 (tiles with no pictures): the checkbox overlaps the label on ' + clash + ' tiles'
+  );
   page.off('request', onReq);
   await ctx.close();
 }
@@ -736,7 +843,8 @@ async function tileGeometryNoArt() {
 /** 20. The storage notice folded on a phone. `qa.js:359-368`. */
 async function storageNoticeAt320() {
   const { ctx, page, d } = await fresh({
-    width: 320, height: 700,
+    width: 320,
+    height: 700,
     storage: {
       'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: ['ci1'], created: 1 }])
     }
@@ -750,8 +858,14 @@ async function storageNoticeAt320() {
   });
   ok(!!warn, '20 (warning at 320): .warn not found');
   if (warn) {
-    ok(warn.h < 140, '20 (warning at 320): the folded warning takes up ' + Math.round(warn.h) + 'px');
-    ok(warn.xw > 0, '20 (warning at 320): the cross is not visible while the warning is folded');
+    ok(
+      warn.h < 140,
+      '20 (warning at 320): the folded warning takes up ' + Math.round(warn.h) + 'px'
+    );
+    ok(
+      warn.xw > 0,
+      '20 (warning at 320): the cross is not visible while the warning is folded'
+    );
   }
   await ctx.close();
 }
@@ -785,7 +899,8 @@ async function buttonFocusSurvivesRerender() {
  *  add-to-list button's own colour. `lists2.js:338-355, 144-156`. */
 async function moneyHelpAndPressedPicker() {
   const { ctx, page, d } = await fresh({
-    width: 1180, height: 900,
+    width: 1180,
+    height: 900,
     storage: {
       'dhloot.lists.v2': JSON.stringify([
         { id: 'a', name: 'Клад', ids: ['ci1'], created: 1, meta: { ci1: { gold: 70 } } }
@@ -802,14 +917,21 @@ async function moneyHelpAndPressedPicker() {
      * sits inside here. */
     const c = document.querySelector('main');
     if (!h || !c) return null;
-    return { box: h.classList.contains('helpbox'), w: h.getBoundingClientRect().width, cw: c.getBoundingClientRect().width };
+    return {
+      box: h.classList.contains('helpbox'),
+      w: h.getBoundingClientRect().width,
+      cw: c.getBoundingClientRect().width
+    };
   });
   ok(!!helpBox, '22 (help and list pick): .money-help did not open');
   if (helpBox) {
     ok(helpBox.box, '22 (help and list pick): the gold help is not the right frame');
     ok(
       Math.abs(helpBox.w - helpBox.cw) < 2,
-      '22 (help and list pick): the gold help is not the width of its container - ' + helpBox.w + ' of ' + helpBox.cw
+      '22 (help and list pick): the gold help is not the width of its container - ' +
+        helpBox.w +
+        ' of ' +
+        helpBox.cw
     );
   }
   await ctx.close();
@@ -825,7 +947,10 @@ async function moneyHelpAndPressedPicker() {
   ok(!!btn, '22 (help and list pick): the .cardpick .btn button was not found');
   if (btn) {
     ok(btn.on, '22 (help and list pick): the pressed button is not marked on');
-    ok(btn.color !== 'rgb(99, 194, 148)', '22 (help and list pick): the pressed button is teal again - ' + btn.color);
+    ok(
+      btn.color !== 'rgb(99, 194, 148)',
+      '22 (help and list pick): the pressed button is teal again - ' + btn.color
+    );
   }
   await ctx2.close();
 }
@@ -847,7 +972,10 @@ async function reducedMotionKillsEverything() {
   await d.viewport(560, 900);
   await new Promise((r) => setTimeout(r, 80));
   const running = await page.evaluate(() => document.getAnimations().length);
-  ok(running === 0, '24 (reduced motion, D1): animations are still running under reduce - ' + running);
+  ok(
+    running === 0,
+    '24 (reduced motion, D1): animations are still running under reduce - ' + running
+  );
   await ctx.close();
 }
 
@@ -893,6 +1021,10 @@ const CASES = [
   }
 
   await closeBrowser().catch(() => {});
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nreal-input states (dist/): all twenty-four passed');
+  console.log(
+    rep.failed
+      ? '\n' + rep.failed + ' FAILED'
+      : '\nreal-input states (dist/): all twenty-four passed'
+  );
   process.exit(rep.failed ? 1 : 0);
 })();

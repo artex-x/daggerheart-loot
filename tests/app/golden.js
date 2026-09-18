@@ -230,7 +230,10 @@ function serializeTree(n, depth, out) {
   n.children.forEach((child, i) => {
     if (summaryAt.has(i)) {
       const { role, total } = summaryAt.get(i);
-      out.push('  '.repeat(depth + 1) + `... ${role} x${String(total - 4)} of ${String(total)} same-shape siblings elided`);
+      out.push(
+        '  '.repeat(depth + 1) +
+          `... ${role} x${String(total - 4)} of ${String(total)} same-shape siblings elided`
+      );
     }
     if (!keep[i]) return;
     serializeTree(child, depth + 1, out);
@@ -409,7 +412,11 @@ if (require.main === module) {
    *  state that already has to press one control more to reach English. */
   const captureState = async (state) => {
     if (!state.timed) {
-      const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
+      const { ctx, page, d } = await fresh({
+        width: WIDTH,
+        height: HEIGHT,
+        storage: state.storage
+      });
       try {
         await d.open(state.route);
         if (state.enter) await state.enter(d);
@@ -425,7 +432,11 @@ if (require.main === module) {
     }
 
     const oneLang = async (lang) => {
-      const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
+      const { ctx, page, d } = await fresh({
+        width: WIDTH,
+        height: HEIGHT,
+        storage: state.storage
+      });
       try {
         await d.open(state.route);
         if (state.enter) await state.enter(d);
@@ -489,7 +500,10 @@ if (require.main === module) {
       }
 
       if (!fs.existsSync(file)) {
-        ok(false, `${state.id}: no golden file (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`);
+        ok(
+          false,
+          `${state.id}: no golden file (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`
+        );
         continue;
       }
       compareGolden(state.id, fs.readFileSync(file, 'utf8'), text, ok);
@@ -512,7 +526,8 @@ if (require.main === module) {
       const haveFiles = new Set(fs.readdirSync(DIR).filter((f) => f.endsWith('.txt')));
       const wantFiles = new Set(STATES.map((s) => slugOf(s.id) + '.txt'));
       for (const f of haveFiles) {
-        if (!wantFiles.has(f)) ok(false, `${f}: stale golden - this state no longer exists in inventory.js`);
+        if (!wantFiles.has(f))
+          ok(false, `${f}: stale golden - this state no longer exists in inventory.js`);
       }
     }
 
@@ -524,7 +539,9 @@ if (require.main === module) {
         (ONLY ? ` (not a full run - --only=${ONLY})` : '') +
         (SHARD ? ` (shard ${String(SHARD.n + 1)}/${String(SHARD.of)})` : '')
     );
-    console.log(rep.failed ? `${rep.failed} FAILED` : 'structural snapshots (dist/): unchanged');
+    console.log(
+      rep.failed ? `${rep.failed} FAILED` : 'structural snapshots (dist/): unchanged'
+    );
     process.exit(rep.failed ? 1 : 0);
   })();
 }

@@ -107,7 +107,8 @@ export function checks() {
     {
       path: UNKNOWN_PATH,
       test: (body, meta) => meta.status === 404,
-      message: (meta) => `an unknown path returned ${meta.status}, not 404 - the 404 fallback is not being served`
+      message: (meta) =>
+        `an unknown path returned ${meta.status}, not 404 - the 404 fallback is not being served`
     },
     {
       path: UNKNOWN_PATH,
@@ -170,7 +171,12 @@ export function dirReader(dir) {
     }
     const fallback = join(dir, '404.html');
     if (existsSync(fallback)) {
-      return { url: full, status: 404, type: typeOf('404.html'), body: readFileSync(fallback, 'utf8') };
+      return {
+        url: full,
+        status: 404,
+        type: typeOf('404.html'),
+        body: readFileSync(fallback, 'utf8')
+      };
     }
     return { url: full, status: 404, type: '', body: '' };
   };

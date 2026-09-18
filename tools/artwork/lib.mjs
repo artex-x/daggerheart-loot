@@ -145,7 +145,11 @@ function matchSources({ sources, index, assign }) {
 export function planInstall({ sources, records, map }) {
   const index = indexRecords(records);
   const assign = (map && map.assign) || {};
-  const { candidates, unmatched, ambiguous, duplicateSources } = matchSources({ sources, index, assign });
+  const { candidates, unmatched, ambiguous, duplicateSources } = matchSources({
+    sources,
+    index,
+    assign
+  });
 
   const byAsset = new Map();
   for (const c of candidates) {
@@ -267,7 +271,11 @@ export function planIngest({ sources, records, missingAssets, map }) {
   const index = indexRecords(records);
   const assign = (map && map.assign) || {};
   const missingSet = new Set(missingAssets);
-  const { candidates, unmatched, ambiguous, duplicateSources } = matchSources({ sources, index, assign });
+  const { candidates, unmatched, ambiguous, duplicateSources } = matchSources({
+    sources,
+    index,
+    assign
+  });
 
   const byAsset = new Map();
   for (const c of candidates) {

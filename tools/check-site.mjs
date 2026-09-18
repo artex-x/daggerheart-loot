@@ -28,7 +28,9 @@ const WAIT_MS = 10_000;
 
 function report(bad, where) {
   bad.forEach((m) => console.log('  FAIL ' + m));
-  console.log(bad.length ? '\n' + bad.length + ' FAILED: ' + where : 'site published correctly: ' + where);
+  console.log(
+    bad.length ? '\n' + bad.length + ' FAILED: ' + where : 'site published correctly: ' + where
+  );
   process.exit(bad.length ? 1 : 0);
 }
 
@@ -48,7 +50,9 @@ async function runUrl(base) {
     }
     if (!bad.length) break;
     if (i < TRIES) {
-      console.log('attempt ' + i + ' of ' + TRIES + ': ' + bad.length + ' check(s) failed, waiting');
+      console.log(
+        'attempt ' + i + ' of ' + TRIES + ': ' + bad.length + ' check(s) failed, waiting'
+      );
       await new Promise((r) => setTimeout(r, WAIT_MS));
     }
   }

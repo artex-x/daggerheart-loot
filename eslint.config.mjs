@@ -11,21 +11,18 @@ export default ts.config(
       'dist/**',
       'coverage/**',
       'node_modules/**',
-      /* Generated data, plus tests/** and tools/**: standalone node scripts
-         that sit outside every tsconfig, so the type-aware rules have no
-         project to resolve them against. `tests/app/` is not legacy code
-         (added during the migration, 2026) - it is simply unlinted for the
-         same structural reason as the rest of tests/** and tools/**, not
-         because it predates this config. */
+      /* Generated data, not authored - reformatting or linting a
+         machine-written file is noise for no behaviour change. */
       'data.js',
-      'tests/**',
-      'tools/**',
       'i/**',
-      /* Agent wiring, not app code: the .claude/hooks/ scripts run under
-         Claude Code rather than under the build, and sit outside every
-         tsconfig, so the type-aware rules have no project to resolve them
-         against. Same treatment as tools/. */
-      '.claude/**'
+      /* Everything under .claude/ except the hooks themselves: agent
+         wiring (settings, prompts, skills) that is not JS, plus
+         `.claude/worktrees/`, a dispatched agent's own isolated checkout
+         (host infrastructure that can land nested here unpredictably -
+         `.prettierignore`'s own comment explains the same hazard). The
+         hooks are real node scripts and are linted below. */
+      '.claude/**',
+      '!.claude/hooks/**'
     ]
   },
   js.configs.recommended,
@@ -135,6 +132,65 @@ export default ts.config(
     files: ['*.config.mjs', 'app/*.config.mjs'],
     extends: [ts.configs.disableTypeChecked],
     languageOptions: { globals: { ...globals.node } }
+  },
+  {
+    /* tests/** and tools/**: standalone node scripts that sit outside every
+       tsconfig, so the type-aware rules have no project to resolve them
+       against - same treatment as the root config files above.
+       `.claude/hooks/**` joins them for the same reason (issues/phase-8,
+       H11): these ran outside both lint and format on a rationale - "an
+       older style" - that only ever described the fourteen legacy suites
+       R0c deleted, not this code.
+
+       This is a format-and-lint-enablement batch, not a rewrite: every rule
+       turned off below either assumes TypeScript-authored code these plain
+       CommonJS/ESM scripts never had, or would otherwise demand touching
+       lines this same commit's own acceptance line requires untouched
+       (`git diff -w --stat` empty apart from this file and
+       .prettierignore) - real, pre-existing patterns recorded here rather
+       than silently rewritten in a commit whose only claimed effect is
+       formatting. */
+    files: [
+      'tests/**/*.js',
+      'tests/**/*.mjs',
+      'tools/**/*.js',
+      'tools/**/*.mjs',
+      '.claude/hooks/**/*.mjs'
+    ],
+    extends: [ts.configs.disableTypeChecked],
+    languageOptions: { globals: { ...globals.node } },
+    rules: {
+      /* Every suite's entire reporting mechanism is `console.log`, the same
+         way it is for any node CLI tool - not the browser-app policy this
+         rule exists to enforce. */
+      'no-console': 'off',
+      /* CommonJS is the correct, only form for the .js files here - not a
+         TypeScript-era holdover to migrate off. */
+      '@typescript-eslint/no-require-imports': 'off',
+      /* Untyped JS: there is no annotation to write, and no type to infer
+         one from either. */
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      /* `{ 'index.html': _dropped, ...rest }` (check-site.test.mjs) is the
+         destructure-to-drop-a-key idiom, and a handful of `fresh()` results
+         destructure a `page` or `ctx` a given case turns out not to need -
+         both pre-existing and neither worth a file edit in a commit whose
+         only claimed effect is formatting. */
+      '@typescript-eslint/no-unused-vars': 'off',
+      /* tests/derived.js's ci.yml-indentation regexes (`/^  deploy:/`,
+         `/^    needs:/`) use literal run-length spaces, not a `{n}`
+         quantifier - pre-existing and unambiguous in context; not touched
+         here. */
+      'no-regex-spaces': 'off',
+      /* tools/artwork/run.mjs and tools/tg-preview/run.mjs rethrow without
+         `{ cause }` - a real improvement, left for the batch that next
+         touches error handling in either file rather than this one. */
+      'preserve-caught-error': 'off',
+      /* tools/capture-share-fixture.mjs's constructor-only class and
+         tools/tg-preview/live.mjs's one dead `let` assignment are pre-
+         existing shapes, not new code this batch is answerable for. */
+      '@typescript-eslint/no-extraneous-class': 'off',
+      'no-useless-assignment': 'off'
+    }
   },
   {
     files: ['**/*.test.ts'],

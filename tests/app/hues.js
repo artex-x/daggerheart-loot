@@ -31,7 +31,11 @@ const rep = reporter();
 const { ok } = rep;
 
 const hsl = (rgb) => {
-  const [r, g, b] = rgb.match(/\d+/g).slice(0, 3).map(Number).map((v) => v / 255);
+  const [r, g, b] = rgb
+    .match(/\d+/g)
+    .slice(0, 3)
+    .map(Number)
+    .map((v) => v / 255);
   const mx = Math.max(r, g, b);
   const mn = Math.min(r, g, b);
   const d = mx - mn;
@@ -98,7 +102,13 @@ const gap = (a, b) => {
       }
       ok(
         gap(a.h, b.h) >= MIN_HUE,
-        na + ' and ' + nb + ' are the same hue: ' + Math.round(gap(a.h, b.h)) + '° against a minimum of ' + MIN_HUE
+        na +
+          ' and ' +
+          nb +
+          ' are the same hue: ' +
+          Math.round(gap(a.h, b.h)) +
+          '° against a minimum of ' +
+          MIN_HUE
       );
     }
   }
@@ -129,7 +139,10 @@ const gap = (a, b) => {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');
     ok(!!one[0]?.die, h + ': the roll button has no die');
-    ok(one[0]?.look === std[0]?.look, h + ': the roll button looks different than on the ordinary tables');
+    ok(
+      one[0]?.look === std[0]?.look,
+      h + ': the roll button looks different than on the ordinary tables'
+    );
   }
 
   /* Equipment's stat line keeps one tone everywhere across the three
@@ -138,7 +151,9 @@ const gap = (a, b) => {
   console.log('equipment stats are one tone');
   const statColour = async (hash) => {
     await d.open(hash);
-    return page.$$eval('.rows .row .rstats', (els) => [...new Set(els.map((x) => getComputedStyle(x).color))]);
+    return page.$$eval('.rows .row .rstats', (els) => [
+      ...new Set(els.map((x) => getComputedStyle(x).color))
+    ]);
   };
   const csw = await statColour('#/tables/eq_weapon');
   const css = await statColour('#/tables/eq_secondary');
@@ -171,6 +186,10 @@ const gap = (a, b) => {
 
   await ctx.close();
   await closeBrowser();
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nbadge colours (dist/): all distinguishable by hue');
+  console.log(
+    rep.failed
+      ? '\n' + rep.failed + ' FAILED'
+      : '\nbadge colours (dist/): all distinguishable by hue'
+  );
   process.exit(rep.failed ? 1 : 0);
 })();

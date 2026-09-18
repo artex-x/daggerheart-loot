@@ -73,9 +73,14 @@ describe('extractMeta', () => {
   });
 
   it('decodes the entities esc() produces, and returns empty strings for a missing tag', () => {
-    const html = '<meta property="og:title" content="Fish &amp; Chips &quot;A&quot; &lt;B&gt; &#39;C&#39;">';
+    const html =
+      '<meta property="og:title" content="Fish &amp; Chips &quot;A&quot; &lt;B&gt; &#39;C&#39;">';
     assert.equal(lib.extractMeta(html).title, 'Fish & Chips "A" <B> \'C\'');
-    assert.deepEqual(lib.extractMeta('<html></html>'), { title: '', description: '', image: '' });
+    assert.deepEqual(lib.extractMeta('<html></html>'), {
+      title: '',
+      description: '',
+      image: ''
+    });
   });
 });
 
@@ -162,7 +167,10 @@ describe('stale', () => {
   });
 
   it('incremental mode: only what disagrees with the state', () => {
-    const state = { site: 'https://x/', urls: { ...manifest.urls, 'https://x/i/a.html': 'OLD' } };
+    const state = {
+      site: 'https://x/',
+      urls: { ...manifest.urls, 'https://x/i/a.html': 'OLD' }
+    };
     assert.deepEqual(lib.stale(manifest, state, 'incremental'), ['https://x/i/a.html']);
   });
 
@@ -176,7 +184,10 @@ describe('stale', () => {
   });
 
   it('a record dropped from the manifest is simply not visited', () => {
-    const state = { site: 'https://x/', urls: { ...manifest.urls, 'https://x/i/gone.html': 'g1' } };
+    const state = {
+      site: 'https://x/',
+      urls: { ...manifest.urls, 'https://x/i/gone.html': 'g1' }
+    };
     assert.deepEqual(lib.stale(manifest, state, 'incremental'), []);
   });
 });
@@ -291,7 +302,10 @@ describe('decide', () => {
 
 describe('applyResult', () => {
   it('keeps a foreign entry the result did not touch, and takes ours for the rest', () => {
-    const state = { site: 'https://x/', urls: { 'https://x/i/keep.html': 'K', 'https://x/i/a.html': 'OLD' } };
+    const state = {
+      site: 'https://x/',
+      urls: { 'https://x/i/keep.html': 'K', 'https://x/i/a.html': 'OLD' }
+    };
     const result = { urls: { 'https://x/i/a.html': 'NEW', 'https://x/i/b.html': 'B' } };
     const next = lib.applyResult(state, result, 'https://x/');
     assert.equal(next.site, 'https://x/');
@@ -305,13 +319,23 @@ describe('applyResult', () => {
   it('discards a state recorded for a different site', () => {
     const state = { site: 'https://other/', urls: { 'https://x/i/a.html': 'OLD' } };
     const result = { urls: { 'https://x/i/b.html': 'B' } };
-    assert.deepEqual(lib.applyResult(state, result, 'https://x/').urls, { 'https://x/i/b.html': 'B' });
+    assert.deepEqual(lib.applyResult(state, result, 'https://x/').urls, {
+      'https://x/i/b.html': 'B'
+    });
   });
 
   it('a --stale-list payload carries no urls key, so applying it by mistake is a no-op', () => {
     const state = { site: 'https://x/', urls: { 'https://x/i/a.html': 'A' } };
-    const staleListPayload = { version: 1, site: 'https://x/', mode: 'incremental', stale: ['https://x/i/a.html'], notLive: [] };
-    assert.deepEqual(lib.applyResult(state, staleListPayload, 'https://x/').urls, { 'https://x/i/a.html': 'A' });
+    const staleListPayload = {
+      version: 1,
+      site: 'https://x/',
+      mode: 'incremental',
+      stale: ['https://x/i/a.html'],
+      notLive: []
+    };
+    assert.deepEqual(lib.applyResult(state, staleListPayload, 'https://x/').urls, {
+      'https://x/i/a.html': 'A'
+    });
   });
 });
 
@@ -327,11 +351,16 @@ describe('botThrottle', () => {
   });
 
   it('a throttle sentence with no seconds figure is still a throttle', () => {
-    assert.deepEqual(lib.botThrottle('Sorry, too many attempts. Please try again later.'), { seconds: null });
+    assert.deepEqual(lib.botThrottle('Sorry, too many attempts. Please try again later.'), {
+      seconds: null
+    });
   });
 
-  it('the bot\'s normal summary is not a throttle', () => {
-    assert.equal(lib.botThrottle('Link previews was updated successfully. Check them out!'), null);
+  it("the bot's normal summary is not a throttle", () => {
+    assert.equal(
+      lib.botThrottle('Link previews was updated successfully. Check them out!'),
+      null
+    );
   });
 
   it('an empty string and null are not throttles', () => {
@@ -354,16 +383,25 @@ describe('parseArgs', () => {
 
   it('parses every flag', () => {
     const o = lib.parseArgs([
-      '--mode', 'full',
+      '--mode',
+      'full',
       '--dry-run',
-      '--limit', '3',
-      '--press-limit', '7',
-      '--only', 'a, b,c',
-      '--max-wait', '30',
-      '--budget-minutes', '5',
-      '--state', 's.json',
-      '--result', 'r.json',
-      '--assets', 'dist',
+      '--limit',
+      '3',
+      '--press-limit',
+      '7',
+      '--only',
+      'a, b,c',
+      '--max-wait',
+      '30',
+      '--budget-minutes',
+      '5',
+      '--state',
+      's.json',
+      '--result',
+      'r.json',
+      '--assets',
+      'dist',
       '--no-verify'
     ]);
     assert.equal(o.mode, 'full');
@@ -400,9 +438,18 @@ describe('parseArgs', () => {
 
   it('throws on a non-numeric --limit/--press-limit/--max-wait/--budget-minutes rather than silently no-op-ing', () => {
     assert.throws(() => lib.parseArgs(['--limit', 'ten']), /--limit must be a number, got ten/);
-    assert.throws(() => lib.parseArgs(['--press-limit', 'ten']), /--press-limit must be a number, got ten/);
-    assert.throws(() => lib.parseArgs(['--max-wait', 'x']), /--max-wait must be a number, got x/);
-    assert.throws(() => lib.parseArgs(['--budget-minutes', 'x']), /--budget-minutes must be a number, got x/);
+    assert.throws(
+      () => lib.parseArgs(['--press-limit', 'ten']),
+      /--press-limit must be a number, got ten/
+    );
+    assert.throws(
+      () => lib.parseArgs(['--max-wait', 'x']),
+      /--max-wait must be a number, got x/
+    );
+    assert.throws(
+      () => lib.parseArgs(['--budget-minutes', 'x']),
+      /--budget-minutes must be a number, got x/
+    );
   });
 
   it('throws on a negative --limit', () => {
@@ -454,7 +501,11 @@ describe('matchButtons', () => {
   });
 
   it('the newest of duplicate button messages wins', () => {
-    const msgs = [buttonMsg(1, 'https://x/a'), buttonMsg(5, 'https://x/a'), buttonMsg(3, 'https://x/a')];
+    const msgs = [
+      buttonMsg(1, 'https://x/a'),
+      buttonMsg(5, 'https://x/a'),
+      buttonMsg(3, 'https://x/a')
+    ];
     const { matched } = lib.matchButtons(msgs, ['https://x/a']);
     assert.equal(matched['https://x/a'].id, 5);
   });
@@ -670,7 +721,10 @@ describe('runRefresh', () => {
     const result = await runRefresh({ mode: 'full', limit: 1 }, deps);
     assert.equal(fake.sent.length, 1);
     assert.equal(result.confirmed.length, 10);
-    assert.equal(result.confirmed.length + result.pending.length, Object.keys(manifest.urls).length);
+    assert.equal(
+      result.confirmed.length + result.pending.length,
+      Object.keys(manifest.urls).length
+    );
     assert.ok(result.pending.length > 0);
   });
 
@@ -731,7 +785,9 @@ describe('runRefresh', () => {
     const state = { site: manifest.site, urls: { ...manifest.urls } };
     const deps = baseDeps(manifest, { state, withStaleList: true });
     await runRefresh({ mode: 'incremental', dryRun: true }, deps);
-    assert.deepEqual(deps.staleLists, [{ version: 1, site: manifest.site, mode: 'incremental', stale: [], notLive: [] }]);
+    assert.deepEqual(deps.staleLists, [
+      { version: 1, site: manifest.site, mode: 'incremental', stale: [], notLive: [] }
+    ]);
   });
 
   it('a non-dry run never calls writeStaleList, even when the dep is supplied', async () => {
@@ -788,7 +844,10 @@ describe('runRefresh', () => {
   it('is fatal (exit 2) on a dead credential on a send, stopping the run', async () => {
     class AuthKeyUnregisteredError extends Error {}
     const manifest = fakeManifest(5);
-    const fake = fakeClient({ send: [{ throw: new AuthKeyUnregisteredError() }], incoming: [[]] });
+    const fake = fakeClient({
+      send: [{ throw: new AuthKeyUnregisteredError() }],
+      incoming: [[]]
+    });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
     assert.equal(result.exitCode, 2);
@@ -993,7 +1052,12 @@ describe('runRefresh', () => {
     const urls = Object.keys(manifest.urls);
     const fake = fakeClient({
       incoming: [urls.map((u, i) => buttonMsg(9001 + i, u, 'before'))],
-      press: [{ text: 'ok' }, { throw: new BotResponseTimeoutError() }, { text: 'ok' }, { text: 'ok' }],
+      press: [
+        { text: 'ok' },
+        { throw: new BotResponseTimeoutError() },
+        { text: 'ok' },
+        { text: 'ok' }
+      ],
       byIds: Array(lib.NET_RETRIES + 1).fill({ throw: new Error('ECONNRESET') })
     });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
@@ -1176,7 +1240,10 @@ describe('runRefresh', () => {
   it('--no-verify skips the live check entirely', async () => {
     const manifest = fakeManifest(3);
     const urls = Object.keys(manifest.urls);
-    const fake = fakeClient({ incoming: [[], repliesFor(urls, 1000)], press: urls.map(() => ({ text: 'ok' })) });
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: urls.map(() => ({ text: 'ok' }))
+    });
     let verifyCalled = false;
     const deps = baseDeps(manifest, {
       clientFactory: fake.client,
@@ -1193,7 +1260,10 @@ describe('runRefresh', () => {
   it('writes a --result entry alongside state after each batch', async () => {
     const manifest = fakeManifest(3);
     const urls = Object.keys(manifest.urls);
-    const fake = fakeClient({ incoming: [[], repliesFor(urls, 1000)], press: urls.map(() => ({ text: 'ok' })) });
+    const fake = fakeClient({
+      incoming: [[], repliesFor(urls, 1000)],
+      press: urls.map(() => ({ text: 'ok' }))
+    });
     const deps = baseDeps(manifest, { clientFactory: fake.client, withResult: true });
     await runRefresh({ mode: 'full' }, deps);
     assert.equal(deps.results.length, 1);
@@ -1216,7 +1286,10 @@ describe('runRefresh', () => {
     const fake = fakeClient({ incoming, press });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
-    assert.equal(result.confirmed.length + result.pending.length, Object.keys(manifest.urls).length);
+    assert.equal(
+      result.confirmed.length + result.pending.length,
+      Object.keys(manifest.urls).length
+    );
   });
 
   // Pass 4 - the bot's own attempt quota (plan.md section 3.4, 10a).
@@ -1226,7 +1299,11 @@ describe('runRefresh', () => {
     const urls = Object.keys(manifest.urls);
     const fake = fakeClient({
       incoming: [[], repliesFor(urls, 1000)],
-      press: [{ text: 'ok' }, { text: 'ok' }, { text: 'Sorry, too many attempts. Please try again in 3213 seconds.' }]
+      press: [
+        { text: 'ok' },
+        { text: 'ok' },
+        { text: 'Sorry, too many attempts. Please try again in 3213 seconds.' }
+      ]
     });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     const result = await runRefresh({ mode: 'full' }, deps);
@@ -1243,11 +1320,14 @@ describe('runRefresh', () => {
     assert.ok(deps.written.length > 0);
   });
 
-  it('a throttle in the bot\'s summary stops the run without pressing that batch, and does not burn the remaining button-wait rounds', async () => {
+  it("a throttle in the bot's summary stops the run without pressing that batch, and does not burn the remaining button-wait rounds", async () => {
     const manifest = fakeManifest(2); // 3 urls
     const urls = Object.keys(manifest.urls);
     const fake = fakeClient({
-      incoming: [[], [summaryMsg(1000, 'Sorry, too many attempts. Please try again in 500 seconds.')]],
+      incoming: [
+        [],
+        [summaryMsg(1000, 'Sorry, too many attempts. Please try again in 500 seconds.')]
+      ],
       press: []
     });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
@@ -1266,7 +1346,13 @@ describe('runRefresh', () => {
     const manifest = fakeManifest(2); // 3 urls
     const urls = Object.keys(manifest.urls);
     const fake = fakeClient({
-      incoming: [[buttonMsg(9001, urls[0], 'before'), buttonMsg(9002, urls[1], 'before'), buttonMsg(9003, urls[2], 'before')]],
+      incoming: [
+        [
+          buttonMsg(9001, urls[0], 'before'),
+          buttonMsg(9002, urls[1], 'before'),
+          buttonMsg(9003, urls[2], 'before')
+        ]
+      ],
       press: [{ text: 'ok' }, { text: 'ok' }]
     });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
@@ -1327,7 +1413,9 @@ describe('runRefresh', () => {
     const fake = fakeClient({ incoming: [[]], send: [], press: [] });
     const deps = baseDeps(manifest, { clientFactory: fake.client });
     await runRefresh({ mode: 'full', pressLimit: 2 }, deps);
-    assert.ok(deps.logs.some((l) => l.includes('--mode full') && l.includes('press budget of 2')));
+    assert.ok(
+      deps.logs.some((l) => l.includes('--mode full') && l.includes('press budget of 2'))
+    );
   });
 
   it('a dry run under --mode full logs the warning without loading the client', async () => {

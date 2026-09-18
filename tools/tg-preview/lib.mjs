@@ -240,7 +240,10 @@ export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
     if (typeof seconds === 'number' && seconds <= maxWaitS) {
       return { retry: true, waitMs: (seconds + 2) * 1000 };
     }
-    return { stop: true, reason: name + ': ' + seconds + 's exceeds the ' + maxWaitS + 's budget' };
+    return {
+      stop: true,
+      reason: name + ': ' + seconds + 's exceeds the ' + maxWaitS + 's budget'
+    };
   }
   if (name === 'PeerFloodError') {
     return { stop: true, reason: 'PeerFloodError: the account is limited for today' };
@@ -248,11 +251,17 @@ export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
   // Telegram delivered the callback query but the bot did not answer inside
   // its own window - neither a retry nor a stop; confirmation falls back to
   // the photo check (plan.md section 3.4).
-  if (name === 'BotResponseTimeoutError' || (err && err.errorMessage === 'BOT_RESPONSE_TIMEOUT')) {
+  if (
+    name === 'BotResponseTimeoutError' ||
+    (err && err.errorMessage === 'BOT_RESPONSE_TIMEOUT')
+  ) {
     return { unanswered: true };
   }
   if (FATAL_ERRORS.has(name)) {
-    return { fatal: true, reason: name + ': the account or session is unusable; a human must act' };
+    return {
+      fatal: true,
+      reason: name + ': the account or session is unusable; a human must act'
+    };
   }
   // Any other RPCError: teleproto's specific error subclasses all carry
   // `errorMessage`, which is what lets this branch match without importing
@@ -266,7 +275,11 @@ export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
   }
   return {
     stop: true,
-    reason: 'network error after ' + NET_RETRIES + ' retries: ' + ((err && err.message) || String(err))
+    reason:
+      'network error after ' +
+      NET_RETRIES +
+      ' retries: ' +
+      ((err && err.message) || String(err))
   };
 }
 
@@ -320,7 +333,12 @@ export function parseArgs(argv) {
     } else if (a in FLAGS) {
       const key = FLAGS[a];
       const value = argv[++i];
-      if (key === 'limit' || key === 'pressLimit' || key === 'maxWaitS' || key === 'budgetMinutes') {
+      if (
+        key === 'limit' ||
+        key === 'pressLimit' ||
+        key === 'maxWaitS' ||
+        key === 'budgetMinutes'
+      ) {
         // A NaN here would silently mean "send nothing" or "no budget",
         // both exit 0 - the same species of lie the state's evidence rule
         // exists to remove, so a bad number is a thrown error, not a no-op.
@@ -330,7 +348,10 @@ export function parseArgs(argv) {
         }
         opts[key] = n;
       } else if (key === 'only') {
-        opts[key] = value.split(',').map((s) => s.trim()).filter(Boolean);
+        opts[key] = value
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
       } else {
         opts[key] = value;
       }
@@ -410,7 +431,19 @@ export async function runRefresh(opts, deps) {
   // default): a literal test object that omits pressLimit still gets the
   // real budget rather than an unbounded one.
   const pressLimit = opts.pressLimit == null ? PRESS_LIMIT : opts.pressLimit;
-  const { manifest, state, client, verify, sleep, now, random, writeState, writeResult, writeStaleList, log } = deps;
+  const {
+    manifest,
+    state,
+    client,
+    verify,
+    sleep,
+    now,
+    random,
+    writeState,
+    writeResult,
+    writeStaleList,
+    log
+  } = deps;
 
   let todo = stale(manifest, state, mode);
   if (only && only.length) {
@@ -557,7 +590,10 @@ export async function runRefresh(opts, deps) {
         if (d.retry) {
           if (WAIT_ERRORS.has(err && err.constructor && err.constructor.name)) floodWaits++;
           if (deadline != null && now() + d.waitMs > deadline) {
-            return { stopped: 'flood wait of ' + Math.round(d.waitMs / 1000) + 's would exceed the budget' };
+            return {
+              stopped:
+                'flood wait of ' + Math.round(d.waitMs / 1000) + 's would exceed the budget'
+            };
           }
           n++;
           await sleep(d.waitMs);
@@ -614,7 +650,12 @@ export async function runRefresh(opts, deps) {
         code = r.exitCode || 0;
         break;
       }
-      pressedList.push({ url, id: entry.id, photoBefore: entry.photoId, answered: !!r.answered });
+      pressedList.push({
+        url,
+        id: entry.id,
+        photoBefore: entry.photoId,
+        answered: !!r.answered
+      });
       const pace = PRESS_PACE_MS[0] + random() * (PRESS_PACE_MS[1] - PRESS_PACE_MS[0]);
       await sleep(pace);
     }
@@ -647,7 +688,13 @@ export async function runRefresh(opts, deps) {
       // counter measures"): Telegram's own re-encode, or a webpage that had
       // no photo yet, mint a new id too.
       const delta =
-        after === undefined ? 'unseen' : after == null ? 'none' : after !== p.photoBefore ? 'newId' : 'sameId';
+        after === undefined
+          ? 'unseen'
+          : after == null
+            ? 'none'
+            : after !== p.photoBefore
+              ? 'newId'
+              : 'sameId';
       photo[delta]++;
       if (p.answered || delta === 'newId') confirmed.push(p.url);
     }
@@ -677,7 +724,8 @@ export async function runRefresh(opts, deps) {
     // `site` travels with the result so CI's `--apply` no longer rebuilds the
     // manifest from whatever tree `main` is at commit time - the record step
     // must not depend on that tree being buildable (B6 review, R1 item 7).
-    if (writeResult) await writeResult({ site: manifest.site, urls: pick(manifest.urls, confirmedSoFar) });
+    if (writeResult)
+      await writeResult({ site: manifest.site, urls: pick(manifest.urls, confirmedSoFar) });
   }
 
   const sent = [];

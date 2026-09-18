@@ -36,7 +36,11 @@ function log(msg) {
 }
 
 function usage() {
-  return 'usage: node tools/artwork/run.mjs <verb> [flags]\n  verbs: ' + VERBS.join(', ') + '\nsee docs/artwork.md';
+  return (
+    'usage: node tools/artwork/run.mjs <verb> [flags]\n  verbs: ' +
+    VERBS.join(', ') +
+    '\nsee docs/artwork.md'
+  );
 }
 
 function parseFlags(argv) {
@@ -130,7 +134,9 @@ async function loadSharp() {
 // the axes once rotation is applied.
 function orientedSize(meta) {
   const swapped = meta.orientation >= 5 && meta.orientation <= 8;
-  return swapped ? { width: meta.height, height: meta.width } : { width: meta.width, height: meta.height };
+  return swapped
+    ? { width: meta.height, height: meta.width }
+    : { width: meta.width, height: meta.height };
 }
 
 async function decodeAndCheck(sharpFn, buf, label) {
@@ -155,11 +161,21 @@ async function decodeAndCheck(sharpFn, buf, label) {
 // withMetadata() is called, which this never does). docs/artwork.md documents
 // this once; nowhere else in the repository restates it.
 async function encodePair(sharpFn, buf) {
-  const oriented = sharpFn(buf, { failOn: 'error' }).rotate().resize(DIMENSION, DIMENSION, { kernel: 'lanczos3', fit: 'fill' });
-  const webp = await oriented.clone().webp({ quality: WEBP_QUALITY, effort: 6, lossless: false }).toBuffer();
+  const oriented = sharpFn(buf, { failOn: 'error' })
+    .rotate()
+    .resize(DIMENSION, DIMENSION, { kernel: 'lanczos3', fit: 'fill' });
+  const webp = await oriented
+    .clone()
+    .webp({ quality: WEBP_QUALITY, effort: 6, lossless: false })
+    .toBuffer();
   const jpeg = await oriented
     .clone()
-    .jpeg({ quality: JPEG_QUALITY, progressive: true, chromaSubsampling: '4:2:0', mozjpeg: true })
+    .jpeg({
+      quality: JPEG_QUALITY,
+      progressive: true,
+      chromaSubsampling: '4:2:0',
+      mozjpeg: true
+    })
     .toBuffer();
   return { webp, jpeg };
 }
@@ -192,7 +208,8 @@ async function verbPlan(flags) {
   const { result } = await planFromUploads(flags);
   printPlan(result);
   writeReport(flags.report, result);
-  const blocked = result.ambiguous.length || result.collisions.length || result.duplicateSources.length;
+  const blocked =
+    result.ambiguous.length || result.collisions.length || result.duplicateSources.length;
   return blocked ? 1 : 0;
 }
 
@@ -219,9 +236,21 @@ async function installAndVerify(sharpFn, repo, entries, bytesByName) {
     const { webp, jpeg } = await encodePair(sharpFn, buf);
     const installedWebp = readFileSync(join(repo, e.webp));
     const installedJpeg = readFileSync(join(repo, e.jpeg));
-    if (!installedWebp.equals(webp)) throw new Error(e.label + ': WebP re-encode verification failed');
-    if (!installedJpeg.equals(jpeg)) throw new Error(e.label + ': JPEG re-encode verification failed');
-    log(e.label + '|' + e.source + '|' + e.asset + '|' + sha256(webp).slice(0, 16) + '|' + sha256(jpeg).slice(0, 16));
+    if (!installedWebp.equals(webp))
+      throw new Error(e.label + ': WebP re-encode verification failed');
+    if (!installedJpeg.equals(jpeg))
+      throw new Error(e.label + ': JPEG re-encode verification failed');
+    log(
+      e.label +
+        '|' +
+        e.source +
+        '|' +
+        e.asset +
+        '|' +
+        sha256(webp).slice(0, 16) +
+        '|' +
+        sha256(jpeg).slice(0, 16)
+    );
   }
 }
 
@@ -235,10 +264,15 @@ async function verbInstall(flags) {
   printPlan(result);
 
   const hardStops = [];
-  if (result.ambiguous.length) hardStops.push('ambiguous names: ' + result.ambiguous.map((a) => a.source).join(', '));
-  if (result.collisions.length) hardStops.push('collisions: ' + result.collisions.map((c) => c.asset).join(', '));
+  if (result.ambiguous.length)
+    hardStops.push('ambiguous names: ' + result.ambiguous.map((a) => a.source).join(', '));
+  if (result.collisions.length)
+    hardStops.push('collisions: ' + result.collisions.map((c) => c.asset).join(', '));
   if (result.duplicateSources.length) {
-    hardStops.push('duplicate source bytes: ' + result.duplicateSources.map((d) => d.sources.join('==')).join(', '));
+    hardStops.push(
+      'duplicate source bytes: ' +
+        result.duplicateSources.map((d) => d.sources.join('==')).join(', ')
+    );
   }
 
   const sharpFn = await loadSharp();
@@ -253,8 +287,10 @@ async function verbInstall(flags) {
     const jpegPath = join(repo, pair.jpeg);
     // `install` replaces; it never creates - the inverted precondition
     // belongs to `ingest`, below.
-    if (!existsSync(webpPath)) hardStops.push('install refuses: destination does not exist: ' + pair.webp);
-    if (!existsSync(jpegPath)) hardStops.push('install refuses: destination does not exist: ' + pair.jpeg);
+    if (!existsSync(webpPath))
+      hardStops.push('install refuses: destination does not exist: ' + pair.webp);
+    if (!existsSync(jpegPath))
+      hardStops.push('install refuses: destination does not exist: ' + pair.jpeg);
   }
 
   if (hardStops.length) {
@@ -270,7 +306,13 @@ async function verbInstall(flags) {
   await installAndVerify(
     sharpFn,
     repo,
-    result.pairs.map((p) => ({ source: p.source, asset: p.asset, webp: p.webp, jpeg: p.jpeg, label: p.recordId })),
+    result.pairs.map((p) => ({
+      source: p.source,
+      asset: p.asset,
+      webp: p.webp,
+      jpeg: p.jpeg,
+      label: p.recordId
+    })),
     bytesByName
   );
 
@@ -279,7 +321,17 @@ async function verbInstall(flags) {
 }
 
 function printIngest(result) {
-  const { counts, creates, shares, unarted, unsourced, unmatched, ambiguous, collisions, duplicateSources } = result;
+  const {
+    counts,
+    creates,
+    shares,
+    unarted,
+    unsourced,
+    unmatched,
+    ambiguous,
+    collisions,
+    duplicateSources
+  } = result;
   log(
     'accepted ' +
       counts.acceptedArtwork +
@@ -292,10 +344,23 @@ function printIngest(result) {
       ', unarted ' +
       counts.unarted
   );
-  for (const c of creates) log('creates: ' + c.asset + ' <- ' + c.source + ' (records: ' + c.recordIds.join(', ') + ')');
-  for (const s of shares) log('shares: ' + s.recordId + ' -> ' + s.asset + ' (also claimed by: ' + s.alsoClaimedBy.join(', ') + ')');
+  for (const c of creates)
+    log(
+      'creates: ' + c.asset + ' <- ' + c.source + ' (records: ' + c.recordIds.join(', ') + ')'
+    );
+  for (const s of shares)
+    log(
+      'shares: ' +
+        s.recordId +
+        ' -> ' +
+        s.asset +
+        ' (also claimed by: ' +
+        s.alsoClaimedBy.join(', ') +
+        ')'
+    );
   for (const u of unarted) log('unarted: ' + u.recordId);
-  for (const u of unsourced) log('unsourced: ' + u.asset + ' (waiting: ' + u.recordIds.join(', ') + ')');
+  for (const u of unsourced)
+    log('unsourced: ' + u.asset + ' (waiting: ' + u.recordIds.join(', ') + ')');
   for (const u of unmatched) log('unmatched: ' + u.source + ' (' + u.reason + ')');
   for (const a of ambiguous) log('ambiguous: ' + a.source + ' -> ' + a.recordIds.join(', '));
   for (const c of collisions) log('collision: ' + c.asset + ' <- ' + c.sources.join(', '));
@@ -322,10 +387,15 @@ async function verbIngest(flags) {
   printIngest(result);
 
   const hardStops = [];
-  if (result.ambiguous.length) hardStops.push('ambiguous names: ' + result.ambiguous.map((a) => a.source).join(', '));
-  if (result.collisions.length) hardStops.push('collisions: ' + result.collisions.map((c) => c.asset).join(', '));
+  if (result.ambiguous.length)
+    hardStops.push('ambiguous names: ' + result.ambiguous.map((a) => a.source).join(', '));
+  if (result.collisions.length)
+    hardStops.push('collisions: ' + result.collisions.map((c) => c.asset).join(', '));
   if (result.duplicateSources.length) {
-    hardStops.push('duplicate source bytes: ' + result.duplicateSources.map((d) => d.sources.join('==')).join(', '));
+    hardStops.push(
+      'duplicate source bytes: ' +
+        result.duplicateSources.map((d) => d.sources.join('==')).join(', ')
+    );
   }
 
   // `unsourced` and `unarted` are reported above and never stop the run: a
@@ -342,8 +412,10 @@ async function verbIngest(flags) {
     const jpegPath = join(repo, c.jpeg);
     // The inverted precondition: `ingest` creates, it never replaces. This is
     // `install`'s existence check with the sense flipped.
-    if (existsSync(webpPath)) hardStops.push('ingest refuses: destination already exists: ' + c.webp);
-    if (existsSync(jpegPath)) hardStops.push('ingest refuses: destination already exists: ' + c.jpeg);
+    if (existsSync(webpPath))
+      hardStops.push('ingest refuses: destination already exists: ' + c.webp);
+    if (existsSync(jpegPath))
+      hardStops.push('ingest refuses: destination already exists: ' + c.jpeg);
   }
 
   if (hardStops.length) {
@@ -359,7 +431,13 @@ async function verbIngest(flags) {
   await installAndVerify(
     sharpFn,
     repo,
-    result.creates.map((c) => ({ source: c.source, asset: c.asset, webp: c.webp, jpeg: c.jpeg, label: c.asset })),
+    result.creates.map((c) => ({
+      source: c.source,
+      asset: c.asset,
+      webp: c.webp,
+      jpeg: c.jpeg,
+      label: c.asset
+    })),
     bytesByName
   );
 
@@ -407,12 +485,18 @@ async function verbVerify(flags) {
 // installed rather than re-deriving it a third time. `--report` here is an
 // input, the same artifact `plan`/`install` produce as output.
 async function verbVerifyPreviews(flags) {
-  if (!flags.before || !flags.after) throw new Error('verify-previews needs --before <f> and --after <f>');
-  if (!flags.report) throw new Error('verify-previews needs --report <f>, the plan/install report to read pairs from');
+  if (!flags.before || !flags.after)
+    throw new Error('verify-previews needs --before <f> and --after <f>');
+  if (!flags.report)
+    throw new Error(
+      'verify-previews needs --report <f>, the plan/install report to read pairs from'
+    );
   const before = JSON.parse(readFileSync(flags.before, 'utf8'));
   const after = JSON.parse(readFileSync(flags.after, 'utf8'));
   if (before.site !== after.site) {
-    throw new Error('--before and --after are for different sites: ' + before.site + ' vs ' + after.site);
+    throw new Error(
+      '--before and --after are for different sites: ' + before.site + ' vs ' + after.site
+    );
   }
   const report = JSON.parse(readFileSync(flags.report, 'utf8'));
   const expected = affectedStubUrls(report.pairs || [], before.site);

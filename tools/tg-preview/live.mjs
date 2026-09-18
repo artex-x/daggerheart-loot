@@ -8,7 +8,14 @@
   refresh" is what actually checks its output.
 */
 import { createHash } from 'node:crypto';
-import { extractMeta, fingerprint, imageName, VERIFY_ROUNDS, VERIFY_ROUND_MS, VERIFY_CONCURRENCY } from './lib.mjs';
+import {
+  extractMeta,
+  fingerprint,
+  imageName,
+  VERIFY_ROUNDS,
+  VERIFY_ROUND_MS,
+  VERIFY_CONCURRENCY
+} from './lib.mjs';
 
 function sha256(data) {
   return createHash('sha256').update(data).digest('hex');
