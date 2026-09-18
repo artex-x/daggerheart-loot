@@ -2,21 +2,27 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is **B11 - equipment apostrophes (O2)**,
-  the last content batch, one commit past `6dee769` (the B10
-  sha-citation follow-up) - see "Completed" for its sha. `npm run check`,
-  `npm run check:built`, the fs suites, both `--only=` golden probes and all
-  four golden shards are green on it - see "Verification". B1-B11 plus every
-  remediation pass are on `main` locally in full. Pushed to `origin/main` -
-  see "Verification", "Push".
-- Last agent: implementer (2026-09-18, B11: one commit).
+- Task status: in_progress. HEAD is `bd1a3d7`, this planning pass's
+  docs-only commit, two commits past **B11 - equipment apostrophes (O2)**
+  (`78b13f0`), the last content batch. `npm run check`, `npm run
+  check:built`, the fs suites, both `--only=` golden probes and all four
+  golden shards are green on B11 - see "Verification"; nothing since has
+  touched a gated path (`issues/**` markdown is exempt, `.claude/README.md`
+  and `docs/specs/` are `.prettierignore`d). B1-B11 plus every remediation
+  pass are on `main` in full and pushed; `git rev-parse HEAD origin/main`
+  agreed after the push.
+- Last agent: planner (2026-09-18, B12 design: one docs commit `bd1a3d7`).
 - Branch: `main`.
-- Base / starting commit: `6dee769`.
+- Base / starting commit: `78981b2`.
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next. B11 has not been
-  reviewed yet.
+  cleared in B12, not folded into whichever batch is next. **Every batch
+  including B11 has now been reviewed**; the register is complete, which is
+  B12's precondition. B12 is the terminal batch, so each of its four pieces
+  clears its own review's findings in that piece's one remediation cycle -
+  nothing is appended to the register for a fifth piece (`plan.md`, "How the
+  tail is guaranteed to land").
 - No open deviations. `docs/fixtures/share/records.json` and `llms.txt` were
   both checked for a U+2019 that would need a matching update and neither
   carries one, so no public-contract file changed - see "Completed".
