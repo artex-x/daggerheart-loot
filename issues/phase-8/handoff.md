@@ -2,27 +2,50 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (B1 `e7c7b50`, B2 `44b1761`, B3 `3bc605d`, the
-  B2-review remediation batch, B4 `0a3d9fb`/`446e45b`, B5
-  `112bd07`/`571b041`, and now B6 `370fec2`/`11066f0` all committed and
-  pushed; B7 next)
-- Last agent: implementer (2026-09-17, B6 - router, state and lists, two
-  commits; D5/O3 implemented, verified, then reverted out of commit 1 - see
-  "Completed" below)
-- NEEDS_HUMAN_CONFIRMATION: no for the batch itself - all eight questions and
-  the two further decisions are settled (`context.md`, "Settled owner
-  decisions"). **One open question for a human/orchestrator before D5/O3 is
-  attempted again**: see B6's "Completed" entry and `docs/specs/DEBT.md` D5 -
-  three options are laid out there, none chosen.
+- Task status: in_progress - **B7 committed and pushed.** B1-B6 committed and
+  pushed as before (`e7c7b50`, `44b1761`, `3bc605d`, the B2-review
+  remediation batch, `0a3d9fb`/`446e45b`, `112bd07`/`571b041`,
+  `370fec2`/`11066f0`). Three unrelated `fix(hooks)`/`docs` commits landed on
+  `main` after B7's recorded base (`421dddb`) and before this land -
+  `887adc7`, `76bc021`, `541d3e6` - none touching `app/src`, `tests/app` or
+  the specs, so B7 applied cleanly on top. B7 landed as two commits per the
+  plan's split:
+  - `e80a793` - code/docs: the 44 originally-staged files plus
+    `app/src/components/record.test.ts` (the Escape-key test) and
+    `issues/phase-8/nits.md` (B7-N2), 46 files, 771 insertions/518 deletions.
+  - `dba6755` - `--update`: the 107 re-recorded `tests/app/snapshots/*.txt`,
+    9995 insertions/2729 deletions (git counts 4 files as rewrites; the
+    handoff's own diff-stat below is `git diff`'s, not `git show --stat`'s).
+  Pushed: `git push origin main` reported `541d3e6..dba6755  main -> main`;
+  confirmed `git rev-parse origin/main` == `HEAD` == `dba6755`.
+- Gate basis for this land: the orchestrator ran `rtk npm run check` in one
+  foreground call against this exact tree (base `541d3e6`, both commits'
+  content already present in the working tree at that point) immediately
+  before dispatching this commit-and-push batch, and it passed clean: 45
+  test files, 1120/1120 tests, coverage 96.73 stmts / 88.96 branch / 97.14
+  funcs / 97.35 lines, every threshold green, format/lint/svelte-check/
+  derived/selftest/tools all green. `.claude/.check-cache.json` key
+  `5e03f52e2bd41fe5` (a content fingerprint with `issues/**` and
+  `docs/specs/**` exempted and HEAD excluded, so committing does not move
+  it). This is the first clean `npm run check` this exact tree ever
+  produced - the four prior attempts recorded below (three foreground,
+  under a prior implementer session) all failed on host contention or the
+  600s auto-background cap, never on a real regression; none of them armed
+  the gate.
+- Last agent: implementer (2026-09-18, B7 land - commit, push, handoff
+  update only; no re-implementation, no re-running the already-satisfied
+  gate).
 - Branch: `main`
-- Base / starting commit: `f53f44d`; HEAD after this batch: `11066f0`.
-- Review: required (trigger: this task's own policy - `context.md`, "Review
-  and nit policy for this task" - mandates a reviewer on every phase-8 batch
-  regardless of the standard triggers; separately, commit 2 touches the
-  `StoragePort` contract (`onExternalChange`'s signature widens to
-  `string | null`) and `ListStore`'s public shape (`remove()`'s return type,
-  the new `restoreList()`/`unreadable`), this task's port-contract and
-  public-shape triggers).
+- Base / starting commit for B7: `421dddb` (post-B6 docs commit); landed on
+  top of `541d3e6`. HEAD is now `dba6755`, pushed.
+- Review: required once committed (trigger: this task's own standing policy
+  - `context.md`, "Review and nit policy for this task" - mandates a
+  reviewer on every phase-8 batch; separately, B7 is the batch that
+  deliberately re-records the majority of the 112 structural goldens, which
+  is its own reason a review has to inspect the diff before it is trusted).
+  Not yet run as of this record.
+- Next batch: **B8** - record actions, print, motion and focus. See "Next
+  batch (implement-ready)" below.
 
 ## Completed
 
@@ -1353,12 +1376,423 @@
     this suite did not recur).
   - `npm run build` before every golden run named above.
 
+### B7 - accessible names, product text and structure - the re-record (P2, P3, P6, P7, P4/D6, P8, P10, P12, D3, D8, D11, P13, P14, P15, pill, D5/O3)
+
+**Not yet committed - see "Status" above.** Everything below is the
+implementation and gate record for a batch that is complete in the working
+tree but not landed.
+
+- What shipped, by finding:
+  - **P2**: every row checkbox is named after its own record (`nameOf(it,
+    lang)`), not the generic "Выбрано" (`TableRows.svelte`, both the list
+    and grid branches) or "Выбрать позицию" (`ListPage.svelte`'s own row) -
+    the dead `pickRow` dict key removed from both languages once nothing
+    read it.
+  - **P3**: `RecordModal.svelte`'s `<dialog>` is named after the record
+    (`nameOf(it, app.lang)`) instead of duplicating the close button's own
+    "Закрыть".
+  - **P6**: the three inputs `Field` wraps without emitting a `<label>` -
+    `ListsPage.svelte`'s new-list and import fields, `AddToList.svelte`'s
+    new-list field - each gained an `aria-label` (`t.newList`/`t.importList`)
+    instead of relying on `placeholder` for a name.
+  - **Pill rule fix**: `FilterBar.svelte`'s pill cross (`<i>&times;</i>`)
+    gained `aria-hidden="true"`, so a pill's accessible name is the picked
+    value alone - the owner's own example, `"Двуручное×"`, is what this
+    removes.
+  - **P7**: `SearchPage.svelte` keeps the unsliced `matched` array alongside
+    the capped `found` one, and renders `"<found.length> из <matched.length>"`
+    above the rows once the 300 cap actually bites (`.scount`, styled off
+    `FilterBar.svelte`'s own `.fcount`) - nothing when it does not.
+  - **P4(a)**: `AddToList.svelte` gained a `<svelte:window onkeydown>`
+    listener (not one on `.seldrop` itself - a `<div>` with its own key
+    handler trips one eslint-plugin-svelte a11y rule or the other no matter
+    which role it is given, and `app.menuFor` is a single global value, so a
+    window-level listener is exactly as safe): Escape closes the menu,
+    clears `newListFor`, and refocuses the toggle
+    (`:scope > .btn`); `preventDefault()` (not `stopPropagation`, which only
+    matters between listeners on the same target) stops the record modal's
+    own native Escape-to-close from also firing on the same press.
+  - **P4(b)/D6**: `.dropmenu` moved after the toggle `<Button>` in the
+    markup; the placement effect now measures `:scope > .btn` (the toggle,
+    always a direct child of `.seldrop`, so descendant buttons inside an
+    open `.dropmenu` can never be matched by mistake) against the nearest
+    `.modal-card` ancestor, falling back to `window` outside a modal.
+    `RecordCard.svelte`'s `.card` changed from `overflow: hidden` to
+    `overflow: clip` (rounded corners still clip; a programmatic scroll can
+    no longer move the card's own content). New `tests/app/states.js` case
+    23 (`addToListMenuStaysInModal`, Кольцо Тишины/`ci28`/`#/tables` at
+    1100x900, no lists seeded - the exact case `DEBT.md` D6 measured):
+    `.card.scrollTop === 0`, the menu box lies inside `.modal-card`, and
+    after "+ Новый список" the input box does too and is focused. `DEBT.md`
+    D6 deleted; `FEATURES.md`'s "Lists" bullet on the add-to-list menu
+    rewritten.
+  - **P8**: `toggleAllIn` moved off `TablesPage`/`SearchPage` (which had
+    identical copies) onto `AppState` as a method; `SharedListPage.svelte`
+    passes it as `ontoggleall`, so a shared list gains its own "Выбрать все
+    (N)" the tables and search pages already had.
+  - **P10**: `<SelBar>` moved before `<footer>` in `Shell.svelte` - it is
+    `position: sticky` with `z-index: 45` against the footer's unpositioned
+    `auto` stacking, so this changes tab order only, not paint order (the
+    bar already painted over the footer regardless of DOM order). Verified
+    live against the built `dist/` at 1180x900 (ticked a row, read
+    `.selbarwrap`'s and `.foot`'s `getBoundingClientRect()`s - the sticky
+    bar pins flush to the viewport bottom exactly as before, the footer
+    stays in its own normal-flow position far below on this page's real
+    content height) and via `tests/app/states.js`'s pre-existing case 16
+    (`selectionBarGeometry`, 1000x900 bottom-gap and 360x840 no-spill),
+    which stayed green through the reorder.
+  - **P12**: `.note-x` (`ListPage.svelte`), `.warn-x` (`StorageNotice.svelte`)
+    and `.selx` (`SelBar.svelte`) each gained the same `::after` 44x44 hit
+    target `PageHead.svelte`'s `.homebtn` already had; `.note-x`/`.selx`
+    also gained `position: relative` to host it (`.warn-x` was already
+    `position: absolute`).
+  - **D3**: the storage notice's dismiss button moved out of `<summary>`.
+    **First attempt (wrong, caught before committing)**: a sibling of
+    `<summary>` but still inside `<details class="warn">` - this reads
+    correctly in the accessibility tree (no more nested-interactive
+    violation) but a real browser's closed-`<details>` rendering suppresses
+    *every* non-summary child at once, not per-child `display`, so the
+    button painted nothing and had no hit target while the notice was
+    folded - verified by building `dist/`, opening it in a real browser at
+    `#/lists`, and screenshotting the folded notice (the cross was simply
+    absent) - exactly the reason the live app put the cross inside
+    `<summary>` in the first place, per its own comment quoted in `DEBT.md`
+    D3. **Fix**: `<details>` now holds only the disclosure (`<summary>` +
+    `<p>`); a `<div class="warn">` wraps it and the button as siblings,
+    carrying the old background/border/position styling. `.warn[open]`
+    became `.warn details[open]` (the attribute lives on `<details>`, not
+    the wrapper). Re-verified live: the cross renders and is clickable
+    folded, unfolding still works, dismissing still works. Every
+    `{ allow: ['nested-interactive'] }` removed (`a11y.test.ts` three call
+    sites, `listPage.test.ts`/`listsPage.test.ts` three each) and the
+    now-dead `allow` parameter removed from `app/src/test/a11y.ts`'s
+    `expectNoA11yViolations` entirely; `tests/app/sweep.js`'s per-route
+    `allow` array (D3 + D8 branches) removed, `axe(page)` called plain.
+    `DEBT.md` D3 deleted; `FEATURES.md`'s storage-notice bullet gained a
+    clause.
+  - **D8**: `SectionHead.svelte` gained an optional `heading?: 2 | 3` prop
+    (`<svelte:element this={'h' + String(heading)}>` vs the existing plain
+    `<span>`, `margin: 0` covering both so the heading carries no extra
+    default spacing); `TablesPage.svelte`'s alt-table branch passes
+    `heading={2}` and its own `.altcol` column pair changed from `<h4>` to
+    `<h3>` - closes the `<h1>`-to-`<h4>` jump on `#/tables/alt_item`/
+    `#/tables/alt_consumable` with no other `SectionHead` caller affected
+    (none of the other sectioned bodies has a following heading to skip
+    past). Also, purely stylistic per the plan: `TablesPage.svelte`'s
+    `lastTable` write wrapped in `untrack`. `DEBT.md` D8 deleted;
+    `FEATURES.md`'s print-card heading-level bullet rewritten to stop
+    describing D8 as a separate open question.
+  - **D11 (Q6 settled)**: fetched `ru.daggerheart.su/frame` (title and
+    on-page term both "Сеттинги") and dropped every `isFrameRecord` guard
+    that suppressed a frame record's tier or switched its source line to a
+    full path: `RecordCard.svelte` (the stat chips and the tier-ladder
+    `{#if}`), `RowMain.svelte` (the row stat line), `TableRows.svelte`
+    (`tileTier`), `RecordPage.svelte` (the path line's tier bit),
+    `PrintCard.svelte` (the print card's own tier), `share.ts`/`search.ts`
+    (their `statLine` builders no longer pass `noTier`), and
+    `label.ts`'s `printSrc` (a frame record's print-card source line is now
+    its own tag, `srcLabel`, same as any other equipment, not the full
+    `whereFrom` path). `isFrameRecord` itself is kept - `whereFrom`'s own
+    path-building still needs it, and both `i18n.test.ts` and
+    `search.test.ts` use it as a fixture-lookup predicate - but its doc
+    comment rewritten since the "presented as setting material" premise
+    `DEBT.md` called unevidenced no longer describes any behaviour.
+    `record.test.ts` gained a new `frames` fixture entry (`f1`, shaped like
+    the real `f33`/`beast_feast`) and a test asserting the path line reads
+    `"Прочее · Сеттинги · Пир зверей · Ранг 1"`; `label.test.ts` gained a
+    `printSrc` case for the same fixture; `search.test.ts`'s D11 case
+    inverted (asserts the tier word is now kept, matching the file's own
+    `676629d` case exactly reversed). `docs/fixtures/share/records.json`
+    recaptured via `tools/capture-share-fixture.mjs` after `npm run build` -
+    diff is exactly `f33`'s two language blocks gaining `"Ранг 1 · "`,
+    nothing else. `DEBT.md` D11 deleted; `FEATURES.md`'s campaign-frame
+    equipment bullet rewritten.
+  - **P13**: `dict.ts`'s `srcFrame` (ru) changed from `'Фрейм'` to
+    `'Сеттинг'`, matching `frameF`/`subFrames` (already that word) -
+    verified against `ru.daggerheart.su/frame` (fetched live: page title and
+    on-page term are both "Сеттинги"). `label.test.ts`'s matching assertion
+    updated.
+  - **P14**: an editorial pass over `dict.ts` - English curly quotes (`'`/`"`)
+    straightened to ASCII in `listCreated`, `localOnly`, `playersLinkCopied`,
+    `sharePlayers`, `listEmptyHint`, `notePubHint`, `removedItem` (the two
+    apostrophes inside `localOnly`'s now-double-quoted phrases escaped with
+    `\'` so the single-quoted string literal still parses); a standalone
+    Russian hyphen changed to an em dash in `uniqueHint`, `printSub`,
+    `rollHint`, `guessWhy` (`repriceHint` was already correct, left alone).
+    `printPage.test.ts` and `searchPage.test.ts` updated for the changed
+    exact strings. **Not done**: `app/src/lib/help.ts:544`'s own curly
+    apostrophe in `"Players' link"` - out of P14's literal `dict.ts` scope,
+    flagged as nit B7-N1 in `issues/phase-8/nits.md` instead of fixed here.
+  - **P15**: `app/index.html`'s noscript block, "1091 записи" -> "1091
+    запись" (nominative singular agrees with a numeral ending in 1, except
+    11); `dict.ts`'s `subSearch`, "Поиск по всем 1091 позиции сразу" ->
+    "Поиск сразу по 1091 позиции" (dropping "всем" removes the clash
+    between "все" wanting dative plural and the numeral wanting singular,
+    rather than forcing either). `README.ru.md` carried the identical
+    "по всем 1091 записям" defect in its own Search paragraph - fixed
+    alongside dict.ts's, not named in the dispatch but the same defect in a
+    sibling product-text surface. `searchPage.test.ts` updated for the new
+    wording.
+  - **D5/O3, landed**: `Shell.svelte`'s title effect now reads `app.route`,
+    `app.openList` and `app.section` and titles the tab `<name> — <docTitle>`
+    for a record (`app.index?.byId.get(route.id)`, `nameOf`), an owned list
+    (`app.lists.get(app.openList)` - keyed off `openList`, not
+    `route.kind === 'storedList'`, because `ListPage`'s own mount effect
+    rewrites that address to the players' payload before this effect can see
+    the original kind) or a section (`dict.ts`'s new exhaustive
+    `SECTION_LABEL: Record<Section, keyof Dict>`, mirroring `TabBar`'s own
+    `TABS` pairing) - plain everywhere else. Four new `shell.test.ts` cases
+    (record title, plain on a not-found record, owned-list title via
+    `waitFor` since `openList` only sets after `ListPage`'s 150ms debounced
+    URL sync, plain on a print sheet as the "neither record nor section nor
+    list" case) plus the existing "follows the language" test's title
+    assertion updated (`#/roll/std` now reads "Standard rules — Daggerheart
+    Loot Generator"). `DEBT.md` D5 **deleted** (paid off - not left open);
+    `FEATURES.md`'s "Records" tab-title clause rewritten to describe the new
+    behaviour and cite D5/O3 as paid off instead of describing the plain
+    title as permanent.
+- **Two bugs found and fixed beyond the dispatch's literal step list**:
+  - **`tests/app/driver.js`'s `click()`/`press()` name lookup broke under
+    P2.** Both ranked matches "first exact match in DOM order, else first
+    substring match" - P2 giving a row's own checkbox the same name pressing
+    the row itself opens means the checkbox (always an exact match, e.g.
+    `aria-label="Кольцо Тишины"`) now pre-empts the row button (almost never
+    an exact match - it carries a roll number and usually a description or
+    stat line too, so it could previously only ever be found by the
+    `includes` fallback, which never runs once *any* exact match exists).
+    Caught empirically, not by inspection: `node tests/run-all.js app/states`
+    failed cases 3, 6 and the new 23 with `.modal-card не найден` after the
+    golden re-record, all three cases that press a record by name expecting
+    the modal to open. Fixed by ranking three tiers instead of two - exact
+    non-checkbox, substring non-checkbox, exact checkbox - in both
+    `click()` and `press()`, and adding a new `tick(name, nth)` that
+    searches checkboxes only, for a spec that means the box specifically.
+    Every affected call site updated to say which one it means:
+    `inventory.js` (10 sites: the list-page and tables-page row-tick states,
+    the search row-tick state, all converted `d.click(...)` -> `d.tick(...)`),
+    `states.js` (3 sites, same conversion), `hues.js` (1 site, the grid-tile
+    selected-fill case - ticking the box, not opening the tile). Re-verified:
+    `node tests/run-all.js app/states` (23/23) and `node tests/run-all.js
+    app/hues` (1/1) both green after the fix.
+  - **The D3 sibling-of-`<summary>`-but-inside-`<details>` shape hides the
+    button when folded** - full account above, under D3. **Caught by eye,
+    not by a gate**: building `dist/`, opening it in a real browser, and
+    reading a screenshot of the folded notice - the cross was simply absent
+    on screen even though `getComputedStyle` and `getBoundingClientRect()`
+    both reported a normal, positioned 26x26 box (a browser's `<details>`
+    rendering suppresses non-summary content in a way that does not show up
+    as `display: none` on the child, which is what makes this easy to miss
+    from source alone). No automated gate this session ran would have
+    caught it: jsdom (every vitest test, including all 123 `lists`/
+    `listsPage`/`listPage` tests) does not implement `<details>`'s native
+    closed-content suppression at all and passed against the *wrong*
+    structure the first time; `node tests/run-all.js app/states` and
+    `tests/app/sweep.js` do drive a real Chromium, but neither one's
+    existing states happen to assert the dismiss button's visibility or
+    hit-testability while the notice is folded. **This is a live coverage
+    gap, not a closed one**: nothing in the suite now guards against this
+    exact regression recurring, only this one manual check plus this
+    written record. Flagged as nit B7-N2 in `issues/phase-8/nits.md` for a
+    permanent `tests/app/states.js` case (open `#/lists`, read `.warn-x`'s
+    `getBoundingClientRect()` while `<details>` is closed, assert non-zero
+    width/height) rather than added here, since B7's own scope is the
+    re-record, not new coverage infrastructure.
+- **Coverage gap found and closed**: the v8 coverage report after the first
+  clean `npm run check` showed `AddToList.svelte` lines 224-227 (the whole
+  body of the new P4(a) `onKeydown`) uncovered - no test exercised Escape at
+  all. Added one to `record.test.ts`'s "the tier ladder" describe block:
+  opens the record modal, opens the add-to-list menu, presses Escape,
+  asserts the menu closed, the toggle's `aria-expanded` is back to `false`,
+  the toggle has focus, and the modal itself is still open (a second,
+  unclaimed Escape is what closes the modal - not exercised by this test,
+  since jsdom does not implement `<dialog>`'s native Escape-to-close either).
+  Verified in isolation: `npx vitest run src/components/record.test.ts -t
+  "Escape"` - 1 passed. **This edit is the one unstaged file** - see
+  "Status".
+- Files changed (all currently in the working tree; most already `git add`ed
+  - see "Status" for the one exception): `README.ru.md`, `app/index.html`,
+  `app/src/components/{AddToList,FilterBar,ListPage,ListsPage,PrintCard,
+  RecordCard,RecordModal,RecordPage,RowMain,SearchPage,SectionHead,SelBar,
+  SharedListPage,Shell,StorageNotice,TableRows,TablesPage}.svelte`,
+  `app/src/components/{a11y,listPage,listsPage,printPage,record,searchPage,
+  sharedListPage,shell,tables}.test.ts`, `app/src/lib/dict.ts`,
+  `app/src/lib/{label,search}.ts` + their `.test.ts`, `app/src/lib/share.ts`,
+  `app/src/state/app.svelte.ts`, `app/src/test/a11y.ts`,
+  `docs/fixtures/share/records.json`, `docs/specs/{DEBT,FEATURES}.md`,
+  `issues/phase-8/nits.md`, `tests/app/{driver,hues,inventory,lib,states,
+  sweep}.js`. Plus 107 of 110 `tests/app/snapshots/*.txt` (see the next
+  section for why each family moved) and this file.
+- **Why every moved golden cell moved - by category, not by file (up to 107
+  files, several categories apiece)**:
+  1. **D5/O3 title** - the `RootWebArea`'s own name gained `<name> —
+     <docTitle>` on essentially every state whose route is a record, a
+     section, or an owned list - i.e. most of the 107. Plain/print/
+     unknown-list states are the exception and did not move on this count.
+  2. **P2 checkbox names** - every state showing a table, search, or list
+     row: `checkbox "Выбрано"`/`"Выбрать позицию"` -> `checkbox "<record
+     name>"`, plus every visible record's name now appearing in the state's
+     `## controls` listing (previously collapsed to one `Выбрано` line) -
+     the large insert counts in `_tables*`, `_search*`, `_lists_a*`,
+     `_l_shared*`, `_tables_alt_*` are this.
+  3. **P4(b)/D6 menu-after-button** - `_i_ci1_list_menu`, `_i_ci1_new_list`,
+     `_i_ci1_many_lists`, `_tables_bar_menu`, `_tables_a_row_opened_
+     list_menu`, `_tables_a_row_opened_new_list`: `button "Добавить в
+     список"` now precedes the menu's own contents instead of following
+     them.
+  4. **P6 textbox names** - every `_lists*` state and `_i_ci1_new_list`:
+     `textbox "Например: клад дракона"`/`"Ссылка на список"` -> `textbox
+     "Новый список"`/`"Восстановить из ссылки"` (and the English pair).
+  5. **Pill rule fix** - `_tables_eq_weapon_filtered` and siblings with a
+     picked filter: a pill's name lost its trailing `×`.
+  6. **D11 frame tier** - `_i_f1` (the path line and stat-chip count) and
+     any state listing frame equipment with a tier (`_tables_frames`,
+     `_tables_other_frames*`): the tier word/chip is now present.
+  7. **D8 heading levels** - `_tables_alt_item`, `_tables_alt_consumable`:
+     the rarity `StaticText` became `heading level=2`; the Hope/Fear column
+     headings changed `level=4` -> `level=3`.
+  8. **D3 dismiss button position** - `_lists*` (folded) and
+     `_lists_notice_unfolded` (open): `button "Скрыть"`/`"Dismiss"` is now a
+     sibling of the `DisclosureTriangle`, not nested inside it.
+  9. **P8 shared-list select-all** - `_l_shared*`: gained `checkbox
+     "Выбрать все (N)"` and its `StaticText`.
+  10. **P10 SelBar-before-footer** - every state with a ticked selection
+      (`_tables_a_row_ticked`, `_tables_bar_menu`, `_tables_selection_
+      copied`, `_search_a_row_ticked`, `_lists_a_a_row_ticked`,
+      `_lists_a_batch_deleted`, and others): the selection bar's subtree now
+      precedes `contentinfo` instead of following it.
+  11. **P7 search-cap line** - `_search_capped`: gained `StaticText "300 из
+      1091"` above the checkboxes.
+  12. **P14/P15/P13 text edits** - `_search*` (the `subSearch` rewording),
+      any state whose visible text includes `uniqueHint`/`printSub`/
+      `rollHint` (a hyphen became an em dash), and any state showing a
+      frame record's source badge/label (`srcFrame` "Фрейм" -> "Сеттинг").
+  - **Every category above was spot-checked against its own predicted diff**
+    (at least one representative file per category, `git diff` read in
+    full) **and matched exactly** - no unexplained content in any diff this
+    session actually read. This was **not** an exhaustive line-by-line read
+    of all 107 files; the categories above account for the entire visible
+    diff shape (`git diff --stat`: 9239 insertions/1973 deletions, and the
+    insertion count is overwhelmingly category 2's per-record name listing,
+    consistent with the state fixture data). **If a review finds a cell that
+    does not fit one of these twelve categories, that is a real defect this
+    session did not catch, not an intentional-but-undocumented change.**
+  - **Correction**: the register is 112 states, not 110 - `tests/app/
+    inventory.js`'s `STATES.length` is 112 (B6 added two: `#/l/~AAAA` and
+    `#/lists ~ unreadable storage`; `plan.md`'s "110" predates both). 112
+    total minus 107 changed leaves **5** unchanged, named by comparing
+    `ls tests/app/snapshots/*.txt` against `git status --porcelain
+    tests/app/snapshots`:
+    - `_i_nope.txt` (`#/i/nope`) - the not-found record page.
+    - `_l_AAAA.txt` (`#/l/~AAAA`) - a packed link that cannot be unpacked.
+    - `_l_zzzz.txt` (`#/l/zzzz`) - the bad-link page for an unreadable
+      plain payload.
+    - `_lists_nope.txt` (`#/lists/nope`) - "Список не найден", address not
+      rewritten.
+    - `_print_nope.txt` (`#/print/nope`) - nothing to print.
+
+    All five keep the plain `RootWebArea` title (confirmed by reading each
+    file's first tree line: `"Генератор лута — Daggerheart"`, no name
+    prepended) - each is a "not found"/"nothing to show" state with no
+    record resolved, no section lit, no list opened, so D5/O3 has nothing
+    to name it with. None of the five has a table row, a list row, a
+    filter pill, an add-to-list menu, a storage-notice disclosure, or a
+    heading-level structure either, so none of the other eleven categories
+    touches them. This is a complete account, not a sampled one - all 112
+    files were classified as changed-with-a-reason or unchanged-with-a-
+    reason.
+- Gates run, and their results:
+  - `npm run check` (foreground, `set -o pipefail; npm run check 2>&1 |
+    tail -N`) - **passed clean at least twice** during the implementation
+    pass, most recently right after the D3 restructure fix, with the full
+    coverage table printed (96.65/88.87/97.14/97.23, all thresholds green,
+    1119/1119 tests). It has **not** passed clean since the last edit (the
+    new Escape test in `record.test.ts`, +1 test). Three attempts since:
+    one used `tail -30`, too short to capture the coverage table's own "All
+    files" line the commit-gate observer greps for - a tooling mistake, not
+    a check failure. Two full attempts after that (a `tail -200`/`tail -250`
+    each) both failed under what all the evidence says is host contention,
+    not a real regression:
+    - Attempt 1: `searchPage.test.ts`'s 300-cap test timed out at 30000ms;
+      `sharedListPage.test.ts` failed to find a toast. Total run time 566s
+      (normally ~100-130s for the full suite alone).
+    - Attempt 2 (after this agent had *already* launched a targeted
+      `record.test.ts -t Escape` run in the background, unaware a
+      concurrent run would contend): the identical two tests failed again.
+      Re-ran both files alone, nothing else running: **40/40 passed**,
+      isolating the failure as contention, not a defect (`context.md`'s own
+      "Reasons already disproved" names this exact pattern).
+    - Attempt 3 (this agent's, unaware the orchestrator had started its own
+      `npm run check` in parallel against the same tree): died with
+      `vitest-pool` "Failed to start forks worker" / "Timeout waiting for
+      worker to respond" - an infrastructure symptom of two heavy check runs
+      fighting over one tree (this task's own "one session at a time"
+      rule), not a test failure. 978s duration confirms severe contention.
+    - **Attempt 4** (after the orchestrator confirmed its own check result
+      was void - it had auto-backgrounded past 600s, which cannot arm the
+      gate regardless of what it reports, and had overlapped a vitest run
+      it could not detect - and confirmed no vitest/golden/sweep/run-all/npm
+      process was running on the tree): `set -o pipefail; npm run check
+      2>&1 | tail -n 120`, one foreground call, timeout 600000, exactly as
+      instructed. **Also crossed the 600s cap and auto-backgrounded.** Per
+      the orchestrator's own instruction 3 ("that is information, not a
+      retry cue... a slow run means something changed and I would rather
+      know than watch a retry loop"), this was **not retried**. The two
+      confirmed-clean runs earlier in this session both finished in the
+      normal range for this chain (well under 600s, coverage table printed,
+      1119/1119 or 1118/1118 tests) with nothing else running, so a plain
+      re-run now taking longer than that is itself the reportable fact, not
+      something to work around by trying again. **No `npm run check` result
+      exists for the current tree as of this record**, and no commit has
+      been made. The backgrounded attempt 4 process was left running rather
+      than killed; whatever it eventually reports should not be used to arm
+      the gate, per the same reasoning that applied to the orchestrator's
+      own void run.
+  - `npm run check:built` - green (build/smoke/budget, 90.9 kB gzip within
+    the 120 kB budget) after the StorageNotice fix, run in isolation.
+  - `node tests/run-all.js app/states` - green (23/23, ~114s) twice: once
+    right after the golden re-record with the wrong (nested-in-`<details>`)
+    D3 markup - which still passed, because jsdom does not model the real
+    bug - and once more after the D3 fix and the driver.js tick/click fix,
+    to prove cases 3/6/23 (which the driver bug had broken) recovered.
+  - `node tests/app/sweep.js 768` - clean (`обход страниц (dist/): чисто на
+    768`) twice, before and after the D3 fix.
+  - `node tests/run-all.js app/hues` - green (1/1) after the driver.js fix,
+    to prove the grid-tile tick case recovered too.
+  - Four golden shards, `--update`, one foreground call each (~105-118s
+    apiece) - run **twice**: once right after all production edits landed
+    (with the D3 bug still in the tree, since jsdom-based `npm run check`
+    had not caught it), and again after the D3 restructure fix, since that
+    changed the `.warn`/`<details>` DOM shape the goldens capture. The
+    second run is the one actually committed-from; its diff is what
+    "Why every moved golden cell moved" above describes. `структурные
+    образцы (dist/): без изменений` printed after every shard both times -
+    this message means "no orphaned/missing golden files", not "no content
+    diff"; the actual diff is what `git status`/`git diff` on
+    `tests/app/snapshots/` shows.
+  - One shard re-run **without** `--update` (the determinism probe,
+    `--shard=1/4`) - `без изменений`, and `git status`'s snapshot count was
+    unchanged before and after (still 107), confirming the just-recorded
+    output is stable.
+  - `npx vitest run` (the full suite, not `npm run check`, run standalone in
+    isolation) - **1119/1119 passed**, run twice: once before the D3 fix,
+    once after. Both clean. This was *before* the Escape-key test was
+    added; see the `npm run check` bullet above for what happened after.
+- **Done**: a clean `npm run check` was obtained (see "Status" for the run
+  that armed the gate) and the two commits landed and pushed - `e80a793`
+  (code/docs) and `dba6755` (the golden `--update`). Attempt 4 (above) also
+  crossed the 600s cap and was not retried, per the orchestrator's own
+  instruction that a slow run past two known-clean runs is information to
+  report, not a cue to loop; the clean run that eventually armed the gate
+  was a later, separate foreground call (see "Status"). Nothing further is
+  unfinished for B7.
+
 ## Blockers
-- None outright, but see the D5/O3 open question above and in `DEBT.md`
-  D5 - it blocks nothing else in the plan, but should be resolved (by a
-  human/orchestrator, not the next implementer alone) before anyone
-  attempts D5/O3 again, to avoid re-deriving the same conflict from
-  scratch.
+- None. D5/O3's own open question is resolved (implemented and landed in
+  B7 - see that entry). The procedural blocker - B7 could not be committed
+  without a clean `npm run check` for this exact tree - is cleared: the
+  orchestrator obtained one and this session committed and pushed on top of
+  it. See B7's "Status" and its own entry under "Completed" for the full
+  gate history.
 
 ## Deferred
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
@@ -1370,24 +1804,21 @@
   `{@render}` disables, or accepting them as permanent) is not re-opened
   here - recorded as attempted-and-reverted above; a future session should
   not retry the same option without reading that note first.
-- **D5/O3** (this batch): implemented, verified, reverted - see above. Not
-  attempted again until a human/orchestrator picks one of the three
-  recorded options.
+- **D5/O3**: no longer deferred - implemented and landed in B7 (folded in by
+  orchestrator decision, per the dispatch). See B7's entry under
+  "Completed".
 
 ## Next batch (implement-ready)
-- Name: B7 - accessible names, product text and structure - the re-record
-  (P2, P3, P6, P7, P13, P14, P15, pill name, D11, P4/D6, P8, P10, P12, D3,
-  D8)
-- Objective, files, steps, acceptance, gates: `plan.md`, "B7" - unchanged by
-  this batch. **Consider folding D5/O3 into B7's scope** (option 3 above)
-  when B7 is dispatched, since B7 is already the one batch whose whole gate
-  is a reviewed golden re-record - a human/orchestrator decision, not
-  assumed here.
-- Note for whoever plans/dispatches B7: re-derive every line number from
-  the file at HEAD, the same instruction this batch was given - B6 touched
-  `ListPage.svelte`, `Shell.svelte`, `AddToList.svelte` and others B7's own
-  file list names, and line numbers in the plan's B7 section predate both
-  of B6's commits.
+- **B7 is committed and pushed** (`e80a793`, `dba6755`, both on `main` at
+  `origin/main`). B8 is next: record actions, print, motion and focus (D10,
+  D13, D14, D15, D22, P16, R6, D20, D21, D1, D18). Objective, files, steps,
+  acceptance, gates: `plan.md`, "B8". Re-derive every line number from the
+  file at HEAD before starting, the same instruction every batch this
+  session has been given - B7 touched `RecordCard.svelte`, `PrintCard.svelte`
+  and others B8's own file list may name, and line numbers in the plan's B8
+  section predate B7.
+- B7's own review has not run yet (see "Status", "Review"); it is owed
+  before or alongside B8 per this task's standing review policy.
 
 ## Notes
 - Mocks path: none (no new UI element).
@@ -1435,3 +1866,20 @@
     including the live "The published site answers correctly" step.
 - Session end partial progress (if any): none - B6 is a committed, pushed,
   CI-verified two-commit boundary (`370fec2`, `11066f0`).
+- Cleanup performed / retained artifacts (B7): a temporary
+  `.claude/launch.json` (a `serve dist` config, used twice to inspect the
+  built app live in a browser - the P10 stacking-order check and the D3
+  dismiss-button-visibility check) was created and deleted again before
+  this note; confirmed gone from `git status`. No debug logging was added.
+  Normal `npm run data`/`npm run build` outputs (`i/`, `dist/`) are
+  gitignored/untracked as usual. `issues/56/` (untracked, another task's)
+  left untouched.
+- **Session end partial progress: yes - B7 is implemented, gate-verified
+  (mostly in isolation), and re-recorded, but not committed.** Stopped on
+  the orchestrator's explicit instruction because the orchestrator was
+  running `npm run check` against this same tree concurrently. See
+  "Status" and B7's own entry under "Completed" for the exact remaining
+  steps (one clean `npm run check`, `git add` the one unstaged test file,
+  then the two commits per the plan's split) and the full gate/deviation
+  record so a different session could pick this up without re-deriving any
+  of it.
