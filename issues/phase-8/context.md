@@ -128,6 +128,63 @@ stops the next session re-deriving them from the same evidence.
   historical measurements that already resolve only via `git show <sha>:...`.
   `plan.md` carries a Status line marking it historical.
 
+## A live CI flake, measured 2026-09-18: the three timed owned-list goldens
+
+**Not a product defect, not B7's title, and not caused by B7 or B8.** Written
+down with the decoded evidence so nobody re-derives it or re-opens the wrong
+suspect.
+
+CI run `35324207396` on `6b50945`: `browser (3)` green (B7's remediation fixed
+the `f7` fixture), but `browser (1)`, `(2)` and `(4)` each failed with exactly
+one golden, `ru` only, diverging at tree line 1:
+
+- `#/lists/a ~ removed` (shard 2), `~ prices set` (shard 3), `~ batch deleted`
+  (shard 4).
+
+Line 1 is the `RootWebArea`, which carries the document title **and** the
+packed list URL. The **title is byte-identical in all three**
+(`"Клад дракона — Генератор лута — Daggerheart"`), so D5/O3 is not implicated.
+The whole divergence is the URL payload. Decoded:
+
+| state | expected (`было`) | actual on CI (`стало`) |
+|---|---|---|
+| `~ removed` | `Клад дракона\n6.9cfk~ci2,ci3,ci4,ci5,ci6,ci7` | `Клад дракона\n7.trm3~ci1,...,ci7` |
+| `~ prices set` | `Клад дракона\n7.r35z~ci1*1*100,ci2,...,ci7` | `Клад дракона\n7.trm3~ci1,...,ci7` |
+| `~ batch deleted` | `Клад дракона\n6.9cfk~ci2,ci3,ci4,ci5,ci6,ci7` | `Клад дракона\n7.trm3~ci1,...,ci7` |
+
+**All three actuals are the same string**, and it is the untouched `seven`
+seed. So on CI the hash still carried the pre-interaction list when the
+snapshot was taken: the interaction ran, but `ListPage`'s **150 ms debounced
+URL sync** had not fired yet. `compareGolden` reports only the first
+divergence, so the rest of each tree is unverified by this evidence, not known
+to differ.
+
+Why exactly these three and no others: the failure needs both conditions at
+once, and only these three states have both.
+
+- `timed: true` (`tests/app/inventory.js`) - the capture is scheduled against a
+  7000 ms toast window rather than a settled page. Seven states carry it.
+- an **owned-list route**, which is where the URL is written on the debounce.
+  The other four timed states (`#/roll/wondrous ~ pinned`, `#/i/ci1 ~ toast`,
+  `#/tables ~ selection copied`, `#/lists ~ created`) are not; every other
+  `#/lists/a` state is not timed.
+
+This is a **harness determinism defect, pre-dating B7** - the debounced URL
+sync is B6-era and these goldens always carried the URL. It passed at
+`fa56576` on timing luck; one failure scattered per shard is the signature of
+a race, not of a content regression (a real one would fail every `_lists_a_*`
+state in every shard). Related: B6 already chased a `flushUrlSync`/`del()`
+staleness bug in this same area (R4-1/PF3).
+
+Do **not** re-record these goldens to match CI - the recorded payloads are the
+correct post-interaction ones. The fix belongs in how the state is captured or
+flushed, and the choice between waiting on hash stability in the driver, giving
+these three states an explicit settle step, and flushing the URL synchronously
+in production is a design call, not an implementer's pick.
+
+Evidence kept: CI logs `test-output/app-golden---shard-{2,3,4}-4.log` from run
+`35324207396`'s failure artifacts.
+
 ## Constraints
 
 - **Scope fence, owner-set:** no large features. Specifically no consistent
