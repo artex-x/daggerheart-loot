@@ -847,9 +847,18 @@ async function prepare(page) {
     };
     Object.defineProperty(navigator, 'clipboard', {
       value: {
-        write: (i) => {
-          window.__clip = i[0].map;
-          return Promise.resolve();
+        /* Mirrors `clipboard.ts`'s own `fakeClipboard.writeImage` contract
+           (480c380): the real `navigator.clipboard.write` awaits each
+           MIME-type entry of the `ClipboardItem` internally and rejects if
+           one does, which is what lets `clipboard.ts`'s `try/catch` turn a
+           rejected `pngOf()` (a tainted canvas) into `copied === false`.
+           Resolving here without awaiting reported success no matter what
+           the promise-valued entry did, so a rejection escaped as an
+           unhandled page error instead. */
+        write: async (i) => {
+          const m = i[0].map;
+          await Promise.all(Object.values(m));
+          window.__clip = m;
         },
         /* Some paths hand over a promise of a blob rather than a blob. */
         writeImage: (b) => {
