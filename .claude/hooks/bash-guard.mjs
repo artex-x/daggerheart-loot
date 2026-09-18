@@ -60,6 +60,10 @@ const MSG = {
     'Commit gate bypassed with SKIP_CHECK_GATE=1 - npm run check has not passed for this tree.',
   backgroundCheck:
     "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `rtk npm run check` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
+  blindCheckPipe:
+    "Blocked: piping the check hands the Bash tool the *last* stage's exit status, not the check's, so a failed run comes back indistinguishable from a passing one and you spend a second run learning what you already ran. Drop the pipe: `rtk npm run check`, Bash timeout 600000. `rtk` propagates the child's exit code directly and prints both stdout and stderr (measured: 21,382 characters, under the tool's output cap), and check-observer.mjs reports PASS or FAIL in one line of its own - there is nothing left to recover through a pipe.",
+  blindCheckRedirect:
+    'Blocked: redirecting the check to a file hides its stdout from check-observer.mjs, so the commit gate never arms and the next `git commit` is refused - and reading the file back costs a second call. Run it plainly: `rtk npm run check`, Bash timeout 600000. If a run ever does come back persisted as too large, grep the file the tool names rather than redirecting the run yourself.',
   orphanPlan: (target, hits) => {
     const shown = hits.slice(0, 4).join(', ');
     const more = hits.length > 4 ? ', ...' : '';
@@ -469,6 +473,63 @@ function evaluateBackgroundCheck(segList, toolInput) {
   return null;
 }
 
+// ---------- 2k: a check whose result the tool cannot report (deny) ----------
+//
+// Measured across this project's 65 session transcripts (2026-09-18): of
+// 71 real `npm run check` invocations, 61 were piped into `tail`/`grep`
+// and 9 were redirected to a file. Exactly one was the bare form. Both
+// shapes cost a second run, for different reasons:
+//
+//   - A pipe hands the Bash tool the last stage's exit status, not the
+//     check's. `tail` always exits 0, so a failed check is indistinguishable
+//     from a passing one and the worker re-runs it - or re-derives the
+//     status with `echo $?` on a later line, which reports that echo's own
+//     status, not the check's.
+//   - A file redirect keeps the status but hides the stdout, so
+//     check-observer.mjs cannot attribute the run and the gate never arms.
+//     The worker then spends one call reading the file back, and if it
+//     committed first, one more on the gate's refusal.
+//
+// The long-check reminder (2f) has told workers "no pipe needed" since
+// decision 45 accepted RTK's prefix; those 61 piped runs are what a
+// once-per-session reminder is worth against a habit the docs taught. The
+// old advice was not wrong when it was written - before the `rtk ` prefix
+// was accepted, `set -o pipefail; npm run check 2>&1 | tail -n 120` was
+// the only invocation that armed the gate at all - but the shape outlived
+// the reason for it.
+//
+// Blocking forbids nothing that works: `rtk npm run check` propagates the
+// child's exit code directly and prints both streams under the output cap,
+// and check-observer.mjs now states PASS or FAIL itself. `check:built` is
+// covered too - same family, same blindness - though only `check` feeds the
+// gate. This fires per pipe stage, not first-segment: the recorded shapes
+// put the check behind `cd ... &&` and after `set -o pipefail;` as often as
+// not.
+const BLIND_CHECK_RE = /^(?:rtk\s+)?npm run check(?::built)?(?![:\w-])/;
+
+function evaluateBlindCheck(sanitized) {
+  // `2>&1` is a stderr merge, not a stdout redirect - the retired canonical
+  // invocation carried one. It has to go before the split, not after:
+  // LIST_SPLIT_RE treats its bare `&` as a list operator, so a later strip
+  // would see `npm run check 2>` as a whole item and read the leftover `2>`
+  // as a file redirect. Same order as check-observer.mjs, for the same
+  // reason.
+  const outer = sanitized.replace(/\d?>&\d/g, ' ').replace(SUBSTITUTION_RE, ' ');
+  for (const listItem of splitListItems(outer)) {
+    const stages = splitPipeStages(listItem);
+    for (const stage of stages) {
+      const tokens = unwrap(tokensOf(stage));
+      if (!tokens.length) continue;
+      if (!BLIND_CHECK_RE.test(tokens.join(' '))) continue;
+      if (stages.length > 1) return { id: 'blind-check-pipe', message: MSG.blindCheckPipe };
+      if (tokens.some((t) => /^\d?>>?/.test(t))) {
+        return { id: 'blind-check-redirect', message: MSG.blindCheckRedirect };
+      }
+    }
+  }
+  return null;
+}
+
 // ---------- 2j: readers that bypass RTK (deny) ----------
 //
 // `grep -n` and `tail -c` were 96.4K of the 179.7K tokens RTK missed over
@@ -678,6 +739,9 @@ guard(() => {
 
   const background = evaluateBackgroundCheck(segList, input.tool_input);
   if (background) return deny(event, background.message);
+
+  const blindCheck = evaluateBlindCheck(sanitized);
+  if (blindCheck) return deny(event, blindCheck.message);
 
   const rtk = evaluateRtkReaders(sanitized);
   if (rtk) return deny(event, rtk.message);

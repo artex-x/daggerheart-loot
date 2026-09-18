@@ -1,7 +1,36 @@
-// PostToolUse(Bash): observes a real, successful `npm run check` and
-// records its tree key, so bash-guard.mjs's commit gate has something to
-// check against. Never blocks, never speaks - its only side effect is
-// writing .check-cache.json. See .claude/README.md, "Hooks".
+// PostToolUse(Bash): observes a real `npm run check`, records its tree key
+// when it passed - so bash-guard.mjs's commit gate has something to check
+// against - and states the verdict in one line either way. Never blocks.
+// See .claude/README.md, "Hooks".
+//
+// It speaks because the verdict was measurably not obvious. Across 65
+// session transcripts (2026-09-18), 61 of 71 check invocations were piped
+// into `tail`, which hands the Bash tool `tail`'s exit status rather than
+// the check's, so a failed run read as a passing one; workers then spent a
+// second run, or an `echo $?` that reported the echo's own status, learning
+// what they had already run. bash-guard.mjs rule 2k now denies that shape,
+// and this line removes the remaining inference: the hook already knows the
+// failure markers and whether the gate armed, so saying so costs one line
+// and saves a ~165s re-run. It states, never instructs - the arming
+// decision below is unchanged and just as strict.
+//
+// Two host facts, both probed live on this Windows desktop build
+// (2026-09-18), that decide how much this line can carry:
+//
+//   1. No exit-code field reaches the hook at all. A successful Bash call
+//      arrives as `{stdout, stderr, interrupted, isImage, noOutputExpected}`
+//      - `exit_code` is absent, whatever the docs list. So `firstExitCode`
+//      returns undefined here and the ` (exit n)` suffix stays empty; the
+//      pass/fail split rests on the stdout markers. The field list below is
+//      kept for hosts that do send one.
+//   2. On a failed Bash call this hook does not speak. The tool result
+//      comes back as a plain string (`"Exit code 1\n..."`) rather than the
+//      object above, and no verdict line appeared from a check deliberately
+//      failed at its prettier stage. That costs nothing: a failure already
+//      announces itself as `Exit code 1` on the result's first line. The
+//      FAIL branch below is for a host that does deliver it, and for the
+//      real case that reaches here - a run that exits 0 while printing
+//      failure markers.
 //
 // The exit-code field name was confirmed against the official Claude Code
 // hooks reference (docs.claude.com/en/docs/claude-code/hooks): `exit_code`.
@@ -11,6 +40,7 @@
 import {
   readInput,
   guard,
+  speak,
   sanitize,
   segments,
   tokensOf,
@@ -18,6 +48,8 @@ import {
   CHECK_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, writeCache } from './tree-key.mjs';
+
+const EVENT = 'PostToolUse';
 
 const FAILURE_MARKERS = [/npm error/i, /ELIFECYCLE/, /\bFAILED\b/, /Tests\s+\d+\s+failed/];
 
@@ -122,18 +154,36 @@ guard(() => {
   if (response.interrupted === true) return undefined;
 
   const exitCode = firstExitCode(response);
-  if (exitCode !== undefined && exitCode !== 0) return undefined;
-
   const stdout = typeof response.stdout === 'string' ? response.stdout : '';
   const stderr = typeof response.stderr === 'string' ? response.stderr : '';
   const combined = stdout + stderr;
+  // Only ever appended, so a host that reports no exit code at all says
+  // nothing about one rather than inventing a number.
+  const code = exitCode === undefined ? '' : ` (exit ${exitCode})`;
 
-  if (!stdout.includes('All files')) return undefined;
-  if (FAILURE_MARKERS.some((re) => re.test(combined))) return undefined;
+  if (
+    (exitCode !== undefined && exitCode !== 0) ||
+    FAILURE_MARKERS.some((re) => re.test(combined))
+  ) {
+    return speak(
+      EVENT,
+      `npm run check: FAIL${code}. The commit gate is not armed - fix the failure above and run \`rtk npm run check\` again.`
+    );
+  }
+
+  if (!stdout.includes('All files')) {
+    return speak(
+      EVENT,
+      `npm run check: no failure seen${code}, but its coverage table never reached this hook, so the run cannot be attributed and the commit gate is not armed. Run it plainly - \`rtk npm run check\`, no pipe and no redirect.`
+    );
+  }
 
   const key = treeKey();
   if (key === null) return undefined; // fail open: nothing to cache against
 
   writeCache(key);
-  return undefined;
+  return speak(
+    EVENT,
+    `npm run check: PASS${code}. Commit gate armed for this tree - it stays armed until a covered file changes.`
+  );
 });

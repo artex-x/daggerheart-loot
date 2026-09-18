@@ -23,6 +23,16 @@ Before reviewing:
 6. Inspect `git status` and `git diff` (and the handoff's base/starting commit when relevant)
 7. Read relevant `docs/specs/` for touched behaviour (CONTRACTS, FEATURES, ROUTES, I18N, COVERAGE as needed)
 8. Scope = batch described in handoff as completed, or orchestrator-specified scope
+9. Navigate with the most semantic tool that answers the question, not with grep by
+   reflex - see `.claude/README.md`, "Code navigation". LSP needs
+   `ToolSearch("select:LSP")` once before the first call, and both it and `ToolSearch`
+   have to be in this role's `tools:` allowlist (`.claude/agents/reviewer.md`); if they
+   are not, say so rather than working around it silently.
+   `findReferences` is the one that earns its keep here: a renamed symbol or a changed
+   signature with a missed call site is a finding, and it answers that exactly where a
+   grep sweep answers it approximately. Do not use `workspaceSymbol` - it returns
+   nothing on this host. `rtk grep` needs `-E` for alternation; without it a real match
+   reads as absent.
 
 If plan/handoff is missing, stop and say review cannot proceed.
 

@@ -670,6 +670,103 @@ function testBackgroundCheck() {
   }
 }
 
+// ---------- bash-guard.mjs: rule 2k, a check whose result the tool cannot
+// report (#154-#166) ----------
+//
+// The denied shapes are the two measured in the transcripts: a pipe (the
+// tool reports the last stage's status, so a failed check reads as a pass)
+// and a file redirect (the stdout never reaches check-observer.mjs, so the
+// gate cannot arm). The allowed list is what must keep working - the bare
+// canonical form, a `cd` prefix, other scripts, and a check named only
+// inside a quoted commit message.
+
+function testBlindCheck() {
+  const deniedCases = [
+    // The exact recorded shapes, including the one that survived RTK's
+    // prefix being accepted.
+    ['#154 pipe: recorded tail form', 'npm run check 2>&1 | tail -n 120'],
+    ['#155 pipe: pipefail prefix', 'set -o pipefail; npm run check 2>&1 | tail -n 120'],
+    ['#156 pipe: rtk-prefixed', 'rtk npm run check 2>&1 | tail -150'],
+    ['#157 pipe: after cd &&', 'cd E:/dev/x && npm run check 2>&1 | grep -E "Tests "'],
+    ['#158 pipe: check:built', 'npm run check:built | tail -5'],
+    ['#159 pipe: check is a later stage', 'true | npm run check'],
+    ['#160 redirect: to a log file', 'npm run check > /tmp/check.log 2>&1'],
+    ['#161 redirect: append', 'npm run check >> out.txt'],
+    ['#162 redirect: then echo $?', 'rtk npm run check > out.log 2>&1; echo EXIT=$?']
+  ];
+  for (const [label, command] of deniedCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-blind' }));
+    check(`${label}: exit 0`, result.status === 0);
+    check(`${label}: denies`, isDeny(result), JSON.stringify(result.json));
+    check(
+      `${label}: reason includes the canonical invocation`,
+      denyReason(result).includes('rtk npm run check'),
+      denyReason(result)
+    );
+    check(`${label}: reason includes 600000`, denyReason(result).includes('600000'));
+  }
+
+  // #163 - the deny wins over the long-check reminder, as rule 2g's does.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check | tail -n 5', { session_id: 's-blind-wins' })
+    );
+    check('#163 blind check: deny wins, isDeny', isDeny(result));
+    check('#163 blind check: deny wins, no systemMessage', !systemMessage(result));
+  }
+
+  // #164 - everything the rule must not touch. The canonical form is the
+  // point of the rule, so a false block here is worse than no rule at all.
+  const allowedCases = [
+    ['#164a bare', 'npm run check'],
+    ['#164b rtk-prefixed bare', 'rtk npm run check'],
+    ['#164c cd prefix', 'cd app && rtk npm run check'],
+    ['#164d check:built bare', 'npm run check:built'],
+    ['#164e a different script, piped', 'npm run test 2>&1 | tail -n 20'],
+    ['#164f run-all, piped', 'node tests/run-all.js contracts | tail -5'],
+    ['#164g check:fast, piped', 'npm run check:fast | tail -n 5']
+  ];
+  for (const [label, command] of allowedCases) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { session_id: `s-blind-ok-${label.slice(0, 6)}` })
+    );
+    check(`${label}: not denied`, !isDeny(result), JSON.stringify(result.json));
+  }
+
+  // #165 - a check named only inside a quoted commit message is text, not a
+  // command: sanitize() drops quoted content that is not a single inert
+  // word, so the rule never sees it.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('git commit -m "ban npm run check | tail in the guide"', {
+        session_id: 's-blind-quoted'
+      })
+    );
+    check('#165 blind check: quoted message is not a command', !isDeny(result));
+  }
+
+  // #166 - a backgrounded piped check still denies under rule 2g, which
+  // runs first and names the backgrounding rather than the pipe.
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check 2>&1 | tail -n 40', {
+        run_in_background: true,
+        session_id: 's-blind-bg'
+      })
+    );
+    check('#166 blind check: backgrounded still denies', isDeny(result));
+    check(
+      '#166 blind check: backgrounding is the reason given',
+      denyReason(result).includes('backgrounded'),
+      denyReason(result)
+    );
+  }
+}
+
 // ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125,
 // narrowed at rtk-coverage B1: #135, #137, #139, corrected on remediation
 // against a direct `rtk hook check` probe of the installed `rtk 0.48.0`:
@@ -753,13 +850,27 @@ function testRtkReaders() {
   }
 
   // #119 - the canonical check invocation is never this rule's business.
+  // #119 - `tail -n` as a pipe's final stage is rewritable, so 2j must let
+  // it through. This case used to carry the then-canonical check
+  // invocation, `set -o pipefail; npm run check 2>&1 | tail -n 120`; rule 2k
+  // now denies that shape outright, so the same 2j property is asserted
+  // against a command 2k does not cover, and the current canonical
+  // invocation is checked alongside it.
   {
     const result = runHook(
       'bash-guard.mjs',
-      bashPayload('set -o pipefail; npm run check 2>&1 | tail -n 120')
+      bashPayload('set -o pipefail; node tests/run-all.js contracts 2>&1 | tail -n 120')
     );
     check(
-      '#119 canonical check: not denied by 2j',
+      '#119 tail -n final stage: not denied by 2j',
+      !isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('rtk npm run check'));
+    check(
+      '#119b canonical check: not denied by 2j or 2k',
       !isDeny(result),
       JSON.stringify(result.json)
     );
@@ -1032,6 +1143,124 @@ async function testCheckObserver() {
     };
     runHook('check-observer.mjs', payload);
     check('#49 check:fast: no cache written', !fs.existsSync(cacheFilePath()));
+  }
+
+  // #167-#171 - the verdict line. The hook already knows the failure
+  // markers and whether it armed; stating so is what stops a worker
+  // spending a second ~165s run to learn it. Silence outside a real,
+  // foreground check invocation is part of the contract: the line must
+  // never appear against some other command's output.
+  //
+  // These payloads carry `exit_code` because the hook must handle a host
+  // that sends one. This host does not - probed 2026-09-18, a successful
+  // Bash call reaches a PostToolUse hook as `{stdout, stderr, interrupted,
+  // isImage, noOutputExpected}` with no exit code anywhere, and a failed
+  // one does not reach it at all. So #168's FAIL line is asserted here and
+  // is not expected to appear live; see check-observer.mjs's header.
+  clearCache();
+  {
+    const payload = {
+      session_id: 's-observer-says',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'rtk npm run check', run_in_background: false },
+      tool_response: passingResponse
+    };
+    const result = runHook('check-observer.mjs', payload);
+    check(
+      '#167 verdict: a pass says PASS with the exit code',
+      systemMessage(result).includes('PASS (exit 0)'),
+      systemMessage(result)
+    );
+    check(
+      '#167 verdict: a pass says the gate armed',
+      systemMessage(result).includes('armed'),
+      systemMessage(result)
+    );
+  }
+
+  clearCache();
+  {
+    const payload = {
+      session_id: 's-observer-says',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'rtk npm run check', run_in_background: false },
+      tool_response: {
+        exit_code: 1,
+        stdout: 'All files\n2 FAILED\n',
+        stderr: '',
+        interrupted: false
+      }
+    };
+    const result = runHook('check-observer.mjs', payload);
+    check(
+      '#168 verdict: a failure says FAIL with the exit code',
+      systemMessage(result).includes('FAIL (exit 1)'),
+      systemMessage(result)
+    );
+    check('#168 verdict: a failure still writes no cache', !fs.existsSync(cacheFilePath()));
+  }
+
+  clearCache();
+  {
+    const payload = {
+      session_id: 's-observer-says',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'rtk npm run check', run_in_background: false },
+      tool_response: {
+        exit_code: 0,
+        stdout: 'nothing useful\n',
+        stderr: '',
+        interrupted: false
+      }
+    };
+    const result = runHook('check-observer.mjs', payload);
+    check(
+      '#169 verdict: unattributable output says the gate is not armed',
+      systemMessage(result).includes('not armed'),
+      systemMessage(result)
+    );
+    check(
+      '#169 verdict: unattributable output writes no cache',
+      !fs.existsSync(cacheFilePath())
+    );
+  }
+
+  clearCache();
+  {
+    const payload = {
+      session_id: 's-observer-says',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'npm run test', run_in_background: false },
+      tool_response: passingResponse
+    };
+    const result = runHook('check-observer.mjs', payload);
+    check(
+      '#170 verdict: silent for a command that is not the check',
+      !systemMessage(result),
+      result.stdout
+    );
+  }
+
+  clearCache();
+  {
+    const payload = {
+      session_id: 's-observer-says',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'npm run check', run_in_background: true },
+      tool_response: passingResponse
+    };
+    const result = runHook('check-observer.mjs', payload);
+    check('#171 verdict: silent for a backgrounded run', !systemMessage(result), result.stdout);
   }
 
   // #49a-g - the observer must only trust stdout it can attribute to a real
@@ -1824,6 +2053,7 @@ async function main() {
     await testCommitGateAsync();
     testLongCheck();
     testBackgroundCheck();
+    testBlindCheck();
     testRtkReaders();
     testEditGuard();
     testEditFollowup();

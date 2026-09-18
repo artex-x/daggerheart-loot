@@ -109,9 +109,9 @@ ones listed below; everything else is silent or a message.
 | `PreToolUse` | `Bash` | `bash-guard.mjs` | Blocks `git reset --hard`, forced `git clean`, a bare `git push --force`, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of an `issues/<id>/plan.md` still cited by a tracked line elsewhere (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
-arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
+arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
 | `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html`, `dist/`, `package-lock.json`, `tests/app/snapshots/**`. | **block** |
-| `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&`, `set -o pipefail;`, and `rtk `. | never (silent) |
+| `PostToolUse` | `Bash` | `check-observer.mjs` | Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&`, `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js` and public-contract fixtures. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
@@ -167,10 +167,21 @@ rtk npm run check
 
 Each part is load-bearing:
 
-- **No pipe needed to learn whether it passed.** `rtk` propagates the
+- **No pipe needed to learn whether it passed** - and, since candidate 46,
+  no pipe allowed. `rtk` propagates the
   child process's own exit code directly (verified: a script exiting 3
   came back `exit=3`) and prints both stdout and stderr, so the tool's
-  own exit line already carries the check's status. This used to need
+  own exit line already carries the check's status. A pipe throws that
+  away: the tool reports the last stage's status, `tail` always exits 0,
+  and a failed check reads as a passing one. That is now a `PreToolUse`
+  deny (rule 2k), because 61 of 71 recorded invocations piped anyway.
+  Unpiped, the two outcomes are each unambiguous on their own line: a
+  failure opens with `Exit code 1`, and a pass ends with
+  `check-observer.mjs` saying `npm run check: PASS. Commit gate armed`.
+  (The observer says nothing on a failure here - a failed Bash call
+  returns a plain string rather than the usual object and the hook does
+  not speak; probed 2026-09-18 against a check failed at its prettier
+  stage. The `Exit code 1` line already carries it.) This used to need
   `set -o pipefail; npm run check 2>&1 | tail -n 120`, because RTK's
   hook rewrites only a command it can match at the start of a line and
   a piped `npm run check` is exactly the shape it cannot rewrite - so
@@ -205,7 +216,8 @@ Each part is load-bearing:
 
 `npm run check > out.txt 2>&1` then reading the file does **not**
 satisfy the gate, however genuinely the run passed - the hook never
-saw the output. Nor does a run started with
+saw the output, and reading the file back costs a second call. It is
+blocked at `PreToolUse` alongside the pipe (rule 2k). Nor does a run started with
 `run_in_background`: `check-observer.mjs` returns early on it by
 design, because there is no stdout to attribute yet. Backgrounding
 cost three worker runs on issue 47 and is now blocked at
@@ -225,6 +237,56 @@ runs - which is also why the commit gate exempts those paths
 opposite error too: `npx prettier --check <some>.md` prints "All
 matched files use Prettier code style!" while matching zero files, so
 a success message there is not evidence of anything.
+
+### Code navigation
+
+Measured across this project's 65 session transcripts (2026-09-18): the
+`Grep` tool 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all of
+them in the three sessions that installed it, and only `hover` and
+`documentSymbol` - and **`ast-grep` 1**, which was `ast-grep --version`.
+Nothing under `.claude/`, `CLAUDE.md` or `docs/` named either tool except
+`agents/reviewer.md`'s `tools:` list, which grants LSP without saying what
+it is for. An agent told to follow a prompt file exactly had no reason to
+reach for either. Hence this section, and the pointers in the prompts.
+
+Use the most semantic tool that answers the question:
+
+1. **LSP** for symbol questions on `.ts`, `.js` and `.svelte`. It is a
+   *deferred* tool: load it once per session with `ToolSearch("select:LSP")`
+   before the first call, or it is not callable.
+   - `findReferences` **before renaming a symbol or changing a signature**.
+     It answers in one call, exactly, what a grep sweep answers in several
+     and approximately - probed here, 11 references to `foldQuery` across
+     two files, instantly.
+   - `goToDefinition`, `goToImplementation`, `hover` for one symbol;
+     `incomingCalls` / `outgoingCalls` for a call chain.
+   - **Not `workspaceSymbol`.** It returns `No symbols found in workspace`
+     on this host whatever the query (probed 2026-09-18). Locate the file
+     with grep first, then ask LSP a positional question about it.
+   - **Not `documentSymbol` on a large file.** It returns every symbol in
+     the file and can cost more than reading the file.
+   - There is no diagnostics operation. Type errors come from the project's
+     own gate, `npm run check`.
+2. **ast-grep** for structural searches LSP cannot express. Invoke it as
+   `ast-grep`, never `sg` - the deprecated alias prints a banner into
+   context on every call. Know its failure mode before trusting it: a
+   pattern that does not match the tree exits 1 with **no output at all**,
+   which reads exactly like "this code does not exist". `function $N($$$A)
+   { $$$B }` matches nothing in `app/src/lib/search.ts`, not because there
+   are no functions but because those carry return type annotations.
+   Confirm a pattern against one file you know matches before concluding
+   anything from an empty result. Rule syntax: the `ast-grep` and
+   `ast-grep-outline` skills.
+3. **`rtk grep`** for plain text - comments, strings, config values,
+   documentation, filenames, exact strings. It needs `-E` for alternation:
+   `rtk grep "a|b"` matches nothing and exits 1, which reads as "absent"
+   and produced one wrong conclusion on 2026-09-18 before it was caught.
+   `git grep` takes alternation without a flag and is faster than a
+   recursive `rtk grep` over a tracked tree; a recursive `rtk grep` over
+   `.claude`/`docs` outlived a 120s Bash timeout in the same session.
+
+Do not use raw `grep -n`; `bash-guard.mjs` rule 2j blocks the shapes RTK
+cannot rewrite.
 
 ### Batch size and the fixed cost of a run
 
@@ -562,3 +624,5 @@ not changed.
 | 43 | Deny `grep -n` and `tail -c` (readers that bypass RTK) | `PreToolUse(Bash)` | **adopt** (`config-audit` B3) | Measured 2026-09-16: 198 sessions / 20,710 Bash commands over thirty days; ~281.4K tokens missed over 1,052 commands; `grep -n` 342 calls / ~117.6K and `tail -c` 159 / ~40.8K, together 158.4K of 281.4K = 56.3%, over half, in two commands. RTK's hook rewrites only at line start, so the miss is the piped, `$(...)` and `cd`-prefixed shapes prose has not moved. Matches the program token only, so `echo`, `git grep -n` and `rtk grep -n` are untouched; a line-start `grep -n` that RTK would have rewritten now costs one retry, the accepted price. Not `npm run check` and never `rtk npm run check`: the commit-gate trap (`issues/config-audit/context.md`; `check-observer.mjs` arms only on the bare invocation with the coverage table in stdout). Fallback if the retry proves noisy: exempt a single-segment, single-line shape - record here, do not delete the row. **Narrowed twice at `rtk-coverage` B1** (first cut, then corrected on remediation against a direct probe): a bare leading `grep -n foo path` denied that exact shape RTK rewrites cleanly, so denying it earned nothing but a wasted round trip before the model took the offered escape to the Grep tool (103 such calls across the sampled transcripts) - net effect strictly worse than no rule. The first cut's own replacement boundary ("piped, substituted, or chained") was itself wrong and is not what shipped - it treated every pipe stage and every chain position alike, which a direct probe of the installed `rtk 0.48.0` (`rtk hook check "<command>"`, reproducible) disproved on both counts. **Measured boundary, pinned to `rtk 0.48.0`** (full table: `issues/rtk-coverage/context.md`): `grep -n` rewrites on a bare command, an env-var prefix, and on either side of `&&`/`;`/`&`/a leading `cd` - a list operator never blocks it - and inside a pipe (`|`, never `||`) only as that pipe's own FINAL stage (`cat f | grep -n x` rewrites; `grep -n x | wc -l` and a pipe's middle stage do not); it never rewrites inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time` (not `env`/`command`, which are transparent, but `unwrap()` cannot tell the two groups apart so both are treated as blocking - a same-cost-as-before false deny for the transparent two, never a false allow). `tail -c`/`--bytes` gets none of `grep`'s exemptions - measured never rewritten in any position, pipe or chain, because `rtk read` has no byte-offset mode at all (only `--tail-lines`, which is why `tail -n` is unaffected by this rule) - so it denies unconditionally once matched. The deny messages point at restructuring into a standalone `rtk grep -n` / `rtk read`, not at the Grep/Read tool. |
 | 44 | Warn when a task document is past its size budget | `Stop` | **adopt** (`config-audit` B3) | Measured 2026-09-15: issue 47's `plan.md` 1,031 KB (57.7% shipped-batch briefs), `handoff.md` 523 KB (96% of Status superseded snapshots), `context.md` 227 KB, growing 350-1,400 lines per working day, read by every worker at dispatch. Warn, never block: a Stop hook that blocks session-end is worse than a large file. Scoped to the session that wrote into the directory, deduped per state. The procedure and the never-drop / always-drop lists live in `.claude/skills/handoff/SKILL.md`. Rejected: a `PreToolUse(Write)` size deny (blocks the closeout write that fixes it); a `SessionStart` notice (the writer is who needs it). |
 | 45 | Accept a leading `rtk ` in the commit gate's check-invocation regex, `check-observer.mjs`'s normalizer, and the two `LONG_CHECKS` regexes for `check`/`check:built`; retire the piped canonical form in favour of `rtk npm run check` | `PreToolUse(Bash)` (gate + reminder), `PostToolUse(Bash)` (observer) | **adopt** (`rtk-coverage` B1) | Live probe (this task): a `PostToolUse` hook receives RTK's already-rewritten command, not what the model typed - `cat package.json` logged as `rtk read package.json`. Since RTK silently rewrites a bare `npm run check` to `rtk npm run check`, and `CHECK_INVOCATION_RE` was anchored at `^npm`, the gate could never arm on a bare invocation; only the piped form (`set -o pipefail; npm run check 2>&1 | tail -n 120`, which RTK cannot rewrite) ever worked, in all 200 recorded check invocations sampled. A live latent bug, not a defect kept on purpose. Cannot weaken the gate: `rtk npm ...` propagates the child's exit code directly (verified: a script exiting 3 came back `exit=3`) and shows both stdout and stderr, so the non-zero test still refuses to arm on a real failure. **Fixed on remediation:** `check-observer.mjs`'s normalizer originally stripped a leading `rtk ` inside the same 3-iteration loop as `cd`/`pipefail`, so `rtk rtk npm run check` armed the observer while `CHECK_INVOCATION_RE` used directly (the gate, `LONG_CHECKS` - neither pre-strips) refused that exact string, since its own optional group can only ever consume one `rtk `. Not a live vector - RTK never doubles its own prefix - but a real mismatch between what arms the observer and what the guard recognises. Fixed by deleting the explicit strip rather than reducing it to one pass: one pass still leaves a second, independent `rtk `-tolerance layered on top of `CHECK_INVOCATION_RE`'s own, which still arms on the doubled string (verified directly: stripping one leaves one behind, and the regex's own optional group then consumes that leftover too). With no explicit strip at all, the observer's `first`-segment test and the guard's own regex agree by construction, because they are now the same test. |
+| 46 | Deny a `npm run check`/`check:built` inside a pipe or redirected to a file, and have `check-observer.mjs` state the verdict | `PreToolUse(Bash)` (rule 2k), `PostToolUse(Bash)` (observer) | **adopt** (owner decision, 2026-09-18) | Measured over this project's 65 session transcripts: of 71 real check invocations, **61 were piped** into `tail`/`grep`, 9 redirected to a file, and exactly **one** was the canonical `rtk npm run check` that candidate 45 established. A pipe hands the Bash tool the last stage's exit status - `tail` always exits 0 - so a failed check is indistinguishable from a passing one; the recorded recovery is a second ~165s run, or an `echo $?` on a later line that reports the echo's own status. A redirect keeps the status but hides the stdout the observer needs, so the gate never arms and the file has to be read back. Candidate 10's reminder has said "no pipe needed" since 45 and fires once per session; those 61 runs are what a reminder is worth against a habit the docs themselves taught for months. The deny forbids nothing that works, and the paired verdict line removes the remaining inference: the observer already knows the failure markers and whether it armed, so it says `PASS` / `FAIL` / passed-but-unattributable in one line, and speaks only for a real foreground check invocation. Arming is unchanged and just as strict - the line states, it does not gate. **Two host facts, probed live rather than assumed, bound what that line can carry**, both on this Windows desktop build: no exit-code field reaches a `PostToolUse` hook at all here (a successful Bash call arrives as `{stdout, stderr, interrupted, isImage, noOutputExpected}`, whatever the hooks reference lists), so the pass/fail split rests on the stdout markers and the ` (exit n)` suffix stays empty; and on a *failed* Bash call the hook does not speak at all - the result comes back as a plain string, `"Exit code 1\n..."`, rather than that object, verified with a check deliberately failed at its prettier stage. Neither weakens the fix: unpiped, a failure opens with `Exit code 1` on the result's first line and a pass ends with the observer's own. The FAIL branch is kept for a host that does deliver the call, and for the case that genuinely reaches here - a run that exits 0 while printing failure markers. Covers `check:built` too (same family, same blindness) though only `check` feeds the gate; `check:fast` is out of scope, as it is everywhere else. Boundary caught while implementing: the `2>&1` strip has to run **before** the list split, because `LIST_SPLIT_RE` treats that `&` as a list operator and a later strip reads the leftover `2>` as a file redirect - `check-observer.mjs` had the order right already. Selftest #154-#171; #119 retargeted, since it asserted the now-denied shape. |
+| 47 | Name LSP and ast-grep where agents actually read | `.claude/README.md`, the three code-facing worker prompts | **adopt** (owner decision, 2026-09-18) | Measured over the same 65 transcripts: `Grep` 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all in the three sessions that installed it, and only `hover`/`documentSymbol` - and **`ast-grep` 1**, that one being `--version`. `git grep` over `.claude`, `CLAUDE.md` and `docs/` found exactly one mention of either tool, `agents/reviewer.md`'s `tools:` list, which grants LSP without saying what it is for. The guidance existed only in the human's global `~/.claude/CLAUDE.md`, while every worker is told to follow a prompt file exactly - so the prompts, not a doc line, are the lever. Two live traps found while probing and written down rather than left to be rediscovered: `workspaceSymbol` returns `No symbols found in workspace` on this host for any query, so the operation the old guidance led with is the one that fails first; and an `ast-grep` pattern that does not match exits 1 with no output, which reads as "no such code" (`function $N($$$A) { $$$B }` finds nothing in `app/src/lib/search.ts` only because those functions carry return type annotations). `findReferences` works and is the reason to bother - 11 references to `foldQuery` across two files in one call. No hook: a nudge toward a tool is not a deterministic property, and candidate 43's history is what happens when a guard denies a shape that already worked. |
