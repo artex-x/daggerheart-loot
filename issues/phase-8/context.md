@@ -128,11 +128,18 @@ stops the next session re-deriving them from the same evidence.
   historical measurements that already resolve only via `git show <sha>:...`.
   `plan.md` carries a Status line marking it historical.
 
-## A live CI flake, measured 2026-09-18: the three timed owned-list goldens
+## A deterministic B8 regression, measured 2026-09-18: the three timed owned-list goldens
 
-**Not a product defect, not B7's title, and not caused by B7 or B8.** Written
-down with the decoded evidence so nobody re-derives it or re-opens the wrong
-suspect.
+**Not a product defect and not B7's title - but it IS caused by B8, and it is
+deterministic, not a flake.** Written down with the decoded evidence so nobody
+re-derives it or re-opens the wrong suspect.
+
+**This section was first written calling it a race that pre-dated B7. That was
+wrong on both counts**, and the correction is kept rather than overwritten
+because the wrong version was already pushed and the reasoning that produced it
+is the reasoning to avoid: one failure scattered per shard *looked* like a
+race, and one green run (`fa56576`) *looked* like luck. Two things settled it -
+a second consecutive CI run failing identically, and a local reproduction.
 
 CI run `35324207396` on `6b50945`: `browser (3)` green (B7's remediation fixed
 the `f7` fixture), but `browser (1)`, `(2)` and `(4)` each failed with exactly
@@ -169,12 +176,39 @@ once, and only these three states have both.
   `#/tables ~ selection copied`, `#/lists ~ created`) are not; every other
   `#/lists/a` state is not timed.
 
-This is a **harness determinism defect, pre-dating B7** - the debounced URL
-sync is B6-era and these goldens always carried the URL. It passed at
-`fa56576` on timing luck; one failure scattered per shard is the signature of
-a race, not of a content regression (a real one would fail every `_lists_a_*`
-state in every shard). Related: B6 already chased a `flushUrlSync`/`del()`
-staleness bug in this same area (R4-1/PF3).
+### The cause: B8's D1 meeting a driver setting that predates it
+
+`tests/app/driver.js:775`, inside `prepare(page)`, has **always** run every
+driver page - every golden capture included - under emulated
+`prefers-reduced-motion: reduce`. Its comment is parity-era ("both apps fade a
+card in over 0.28s... takes timing out of the pixel comparison"), so it long
+predates B8 and was deliberate.
+
+B8 then shipped D1, the **blanket** reduced-motion kill in `tokens.css:176`
+(`animation-duration: 0.01ms`, `transition-duration: 0s`, `scroll-behavior:
+auto`, all `!important`, on `*`). Under the driver's emulation that rule is
+live in every capture, where before B8 only the app's own specific reduce
+handling was. The toast-timed states therefore reach their snapshot earlier
+than they used to - earlier, now, than `ListPage`'s 150 ms debounced URL sync.
+
+Evidence it is deterministic and not host-dependent:
+
+- CI failed identically on two consecutive runs, `35324207396` (`6b50945`) and
+  `35325098367` (`c90f082`) - same three states, same payloads.
+- It **reproduces locally**: `node tests/app/golden.js --only="#/lists/a ~"`
+  on this Windows host, 11 states compared, the same 3 FAILED in 24.5s.
+- It bisects cleanly. `fa56576` was green across all four golden shards (112
+  states). The only code change between that and the first red run is B8
+  (`3c0fff8`); `8e43c92`, `d946f8b` and `c90f082` are docs-only and `6b50945`
+  touches a fixture, `i18n.ts` comments and tests.
+
+**Why B8's own gates missed it**: B8 claimed no golden movement and proved it
+with two `--only` probes, `#/i/ci1` and `print`. Neither reaches an owned-list
+route, and the three affected states are the only ones that are both
+`timed: true` and on one. The claim was true of everything it measured.
+
+Related: B6 already chased a `flushUrlSync`/`del()` staleness bug in this same
+area (R4-1/PF3).
 
 Do **not** re-record these goldens to match CI - the recorded payloads are the
 correct post-interaction ones. The fix belongs in how the state is captured or
