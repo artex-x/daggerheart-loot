@@ -12,8 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = require('path').join(__dirname, '..');
-let fail = 0;
-const ok = (cond, msg) => { if (!cond) { fail++; console.log('  FAIL ' + msg); } };
+const { ok, failed } = require('./ok.js');
 
 /* ---------- 1. data integrity, no DOM needed ---------- */
 global.window = {};
@@ -61,22 +60,25 @@ ok(leftover.length === 0, 'stale craft sentence in: ' + leftover.map(x => x.id).
 ok(ALL.length === 710, 'expected 710 records, got ' + ALL.length);
 ALL.forEach(x => {
   ok(!!(x.id && x.en && x.ru), x.id + ': empty field');
-  /* Снаряжению из кампейн-фрейма книга свойства не даёт вовсе - у части записей
-     в графе стоит прочерк, и пустое описание там законно. */
+  /* Equipment from a campaign frame carries no feature from the book at all -
+     some records show a dash in that column, and an empty description there
+     is legitimate. */
   ok(!!(x.ende && x.rud) || !!x.eq, x.id + ': empty description');
-  /* Картинку можно делить с другой записью: ступени линии улучшения рисуют
-     один и тот же предмет, и держать четыре копии одного файла незачем. */
-  ok(!x.img || /^[a-z0-9_]+\.webp$/.test(x.img), x.id + ': странное имя картинки ' + x.img);
+  /* A picture may be shared with another record: the steps of an upgrade
+     line draw the same item, and keeping four copies of one file serves
+     nobody. */
+  ok(!x.img || /^[a-z0-9_]+\.webp$/.test(x.img), x.id + ': odd picture name ' + x.img);
 });
 
 /* ---------- 6. share stubs ---------- */
 console.log('share stubs');
-/* В сообщение игрокам уходит только то, во что вещь улучшается. Обратное
-   направление - рецепт того, что у них уже на руках, и в копии оно лишнее. */
+/* Only what an item upgrades into goes into the player-facing message. The
+   reverse direction - the recipe for what they already hold - is not needed
+   in the copy. */
 {
   const potion = ALL.find(x => x.id === 'cc16');
   const recipe = ALL.find(x => x.id === 'ci24');
-  ok(!!potion && !!recipe, 'нет пары рецепт/зелье для проверки копирования');
+  ok(!!potion && !!recipe, 'missing the recipe/potion pair for the copy check');
 }
 
 const stub = fs.readFileSync(path.join(ROOT, 'i', 'w3.html'), 'utf8');
@@ -96,5 +98,5 @@ const stale = ALL.filter(x => {
 });
 ok(stale.length === 0, 'stubs out of date: ' + stale.slice(0, 5).map(x => x.id).join(', '));
 
-console.log(fail ? '\n' + fail + ' FAILED' : '\nall checks passed');
-process.exit(fail ? 1 : 0);
+console.log(failed() ? '\n' + failed() + ' FAILED' : '\nall checks passed');
+process.exit(failed() ? 1 : 0);

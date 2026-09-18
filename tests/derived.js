@@ -1,43 +1,43 @@
-/* data.json и catalog.csv собираются из data.js и лежат рядом с ним.
-   Внутри `npm run check` они уже пересобраны командой `npm run data` прямо
-   перед этой проверкой, так что здесь сверяется генератор сам с собой, а не
-   закоммиченная копия. Пропущенный перед коммитом пересбор ловит отдельный
-   шаг в CI (`git diff --exit-code` после `npm run check`), не этот файл. */
+/* data.json and catalog.csv are generated from data.js and live beside it.
+   Inside `npm run check` they are already rebuilt by `npm run data` right
+   before this check, so here the generator is compared against itself, not
+   against the committed copy. A rebuild skipped before commit is caught by a
+   separate CI step (`git diff --exit-code` after `npm run check`), not by
+   this file. */
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const D = require(path.join(ROOT, 'tools', 'derived.js'));
-let fail = 0;
-const ok = (c, m) => { if (!c) { fail++; console.log('  FAIL ' + m); } };
+const { ok, failed } = require('./ok.js');
 
 global.window = {};
 require(path.join(ROOT, 'data.js'));
 const L = global.window.LOOT;
 
-console.log('производные файлы совпадают с data.js');
+console.log('generated files match data.js');
 [['data.json', D.dataJson], ['catalog.csv', D.catalogCsv]]
   .forEach(function ([name, make]) {
     const disk = fs.existsSync(path.join(ROOT, name))
       ? fs.readFileSync(path.join(ROOT, name), 'utf8') : null;
-    ok(disk !== null, name + ': файла нет — запусти node tools/build.js');
-    if (disk !== null) ok(disk === make(L), name + ': устарел — запусти node tools/build.js');
+    ok(disk !== null, name + ': file is missing — run node tools/build.js');
+    if (disk !== null) ok(disk === make(L), name + ': stale — run node tools/build.js');
   });
 
-console.log('каталог читается');
+console.log('catalog reads clean');
 const catalogPath = path.join(ROOT, 'catalog.csv');
 const rows = fs.existsSync(catalogPath)
   ? fs.readFileSync(catalogPath, 'utf8').trim().split('\n') : [];
-ok(rows.length > 0, 'catalog.csv: файла нет — запусти node tools/build.js');
+ok(rows.length > 0, 'catalog.csv: file is missing — run node tools/build.js');
 const ALL = D.everything(L);
-/* Описания содержат и запятые, и кавычки, и переводов строк в них быть не
-   должно — иначе строк в файле окажется больше, чем записей. */
-ok(rows.length === ALL.length + 1, 'строк в catalog.csv не ' + (ALL.length + 1) + ', а ' + rows.length);
+/* Descriptions contain commas and quotes, and must never contain a newline -
+   otherwise the file would have more lines than records. */
+ok(rows.length === ALL.length + 1, 'catalog.csv should have ' + (ALL.length + 1) + ' lines, not ' + rows.length);
 const head = rows[0].split(',');
 ok(head[0] === 'id' && head.indexOf('tier') > 0 && head.indexOf('name_ru') > 0,
-   'шапка каталога не та: ' + rows[0].slice(0, 60));
+   'catalog header is wrong: ' + rows[0].slice(0, 60));
 
-/* Достаточно ли каталога, чтобы собрать лавку кузнеца: броня 1-2 ранга,
-   физическое основное оружие тех же рангов. Если да — агенту хватит его одного. */
+/* Is the catalog enough to stock a blacksmith: tier 1-2 armour, tier 1-2
+   physical primary weapons. If so, an agent needs only this one file. */
 const idx = {};
 head.forEach((h, i) => { idx[h] = i; });
 const parsed = rows.slice(1).map(function (line) {
@@ -53,53 +53,56 @@ const parsed = rows.slice(1).map(function (line) {
   out.push(cur);
   return out;
 });
-ok(parsed.every(r => r.length === head.length), 'в каталоге есть строка не той ширины');
+ok(parsed.every(r => r.length === head.length), 'the catalog has a row of the wrong width');
 const smith = parsed.filter(r => (r[idx.kind] === 'armor' || (r[idx.kind] === 'weapon' && r[idx.class] === 'physical'))
                                  && ['1', '2'].indexOf(r[idx.tier]) >= 0);
-ok(smith.length > 40, 'по каталогу не отобрать товар кузнеца: нашлось ' + smith.length);
+ok(smith.length > 40, "can't pick a blacksmith's stock from the catalog: found " + smith.length);
 ok(parsed.every(r => !r[idx.id] || /^https:\/\/artex-x\.github\.io\//.test(r[idx.url])),
-   'в каталоге битая ссылка на страницу записи');
+   'the catalog has a broken link to a record page');
 
-console.log('заглушки совпадают с генератором');
-/* craft.js сверяет заглушки по началу описания — этого хватает, пока меняются
-   данные. Но правка самого генератора (скажем, добавленный мета-тег) так не
-   видна: описание на месте, а устарели страницы все разом. Поэтому здесь все
-   953 рисуются заново и сравниваются целиком. */
+console.log('stubs match the generator');
+/* craft.js checks stubs against the start of the description - that is
+   enough while only the data changes. But an edit to the generator itself
+   (say, an added meta tag) does not show there: the description matches
+   while every page at once is stale. So here all 953 are re-rendered and
+   compared in full. */
 const { page } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
 const drift = ALL.filter(function (x) {
   const p = path.join(ROOT, 'i', x.id + '.html');
   return !fs.existsSync(p) || fs.readFileSync(p, 'utf8') !== page(x);
 });
-ok(drift.length === 0, 'заглушек устарело ' + drift.length + ', например ' +
-   drift.slice(0, 5).map(x => x.id).join(', ') + ' — запусти node tools/build.js');
+ok(drift.length === 0, 'stubs are stale: ' + drift.length + ', for example ' +
+   drift.slice(0, 5).map(x => x.id).join(', ') + ' — run node tools/build.js');
 
-console.log('не индексируется');
-/* Личный инструмент: страницы не должны попадать в выдачу. Работает это только
-   в паре — обход разрешён, чтобы noindex вообще прочитали, а закрытая роботсом
-   страница может попасть в выдачу голой ссылкой, так и не прочитав тег. */
+console.log('not indexed');
+/* A private tool: the pages must not show up in search results. This works
+   only as a pair - crawling must stay allowed so noindex is even read, since
+   a page blocked by robots can surface as a bare link in results without the
+   tag ever being read. */
 const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
-/* Проверяется исходник, а не сборка: `npm run check` ничего не собирает, и
-   тест, читающий вчерашний dist/, хуже, чем отсутствие теста. Раньше здесь
-   стояли обе входные страницы - корневая и app/index.html, - пока рядом жило
-   старое приложение (R0c удалил его). */
+/* This checks the source, not the build: `npm run check` builds nothing, and
+   a test that reads yesterday's dist/ is worse than no test. This used to
+   compare both input pages - the root and app/index.html - while the old app
+   lived alongside it (R0c deleted it). */
 ok(NOINDEX.test(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')),
-   'на app/index.html нет noindex');
-ok(NOINDEX.test(page(ALL[0])), 'генератор заглушек перестал ставить noindex');
+   'app/index.html has no noindex');
+ok(NOINDEX.test(page(ALL[0])), 'the stub generator stopped setting noindex');
 const rob = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
 ok(/^User-agent: \*\s*\nAllow: \//m.test(rob),
-   'robots.txt закрывает обход — тогда noindex никто не прочитает');
+   'robots.txt blocks crawling — then nobody reads noindex');
 ok(/GPTBot|CCBot/.test(rob) && /Disallow: \//.test(rob),
-   'robots.txt не отсекает сборщиков для обучения');
+   'robots.txt does not block AI training crawlers');
 ok(!fs.existsSync(path.join(ROOT, 'sitemap.xml')),
-   'карта сайта вернулась, а она нужна ровно для индексации');
+   'a sitemap came back, and it exists for exactly the indexing this rejects');
 
-console.log('голова app/index.html читается');
-/* Раньше здесь сверялись две входные страницы - корневая и app/index.html, -
-   пока старое приложение жило рядом. R0c удалил index.html вместе с ним, так
-   что сверять больше не с чем; осталась одна входная страница, и её голова
-   просто должна разбираться и нести всё, что нужно карточке для мессенджеров.
-   `headFacts` читает только `<head>`, а не весь документ - тело может
-   упомянуть `<meta`/`<title>` в примере кода без риска попасть в разбор. */
+console.log('app/index.html head reads clean');
+/* This used to compare two input pages - the root and app/index.html -
+   while the old app lived alongside it. R0c deleted index.html with it, so
+   there is nothing left to compare against; one input page remains, and its
+   head simply has to parse and carry everything a messenger preview card
+   needs. `headFacts` reads only `<head>`, not the whole document - the body
+   may mention `<meta`/`<title>` inside a code sample without risking being
+   parsed. */
 const HEAD_META = ['description', 'robots', 'color-scheme', 'viewport'];
 function headFacts(file) {
   const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
@@ -119,22 +122,23 @@ function headFacts(file) {
   return out;
 }
 const shareFacts = headFacts('app/index.html');
-/* Раньше здесь стоял голый порог `>= 20` - "сломался разбор". На живых данных
-   он читал ровно 20 (19 <meta> плюс <title>), то есть был не полом, а точным
-   числом без запаса: убери любой одиночный <meta> - сообщение соврёт, что
-   разбор сломался, хотя разбор был бы прав, просто поле исчезло. Вместо
-   порога - поимённая проверка того, что разбор обязан найти: каждый ключ из
-   HEAD_META и заголовок. У og: и twitter: своя проверка по значению ниже. */
+/* This used to be a bare `>= 20` threshold - "parsing broke". On live data
+   it read exactly 20 (19 <meta> plus <title>), so it was not a floor but an
+   exact count with no slack: drop any single <meta> and the message would
+   lie that parsing broke, when parsing was right and the field simply
+   vanished. Instead of a threshold - a named check for what parsing must
+   find: every key in HEAD_META, plus the title. og: and twitter: get their
+   own value checks below. */
 HEAD_META.forEach(function (key) {
-  ok(key in shareFacts, 'из головы app/index.html пропал ' + key);
+  ok(key in shareFacts, 'app/index.html head is missing ' + key);
 });
-ok('<title>' in shareFacts, 'из головы app/index.html пропал <title>');
-/* Иконка — тоже часть головы, но это <link>, а не <meta>. */
+ok('<title>' in shareFacts, 'app/index.html head is missing <title>');
+/* The icon is part of the head too, but it is a <link>, not a <meta>. */
 const ICON = /<link\s+rel="icon"\s+href="([^"]*)"/i;
 const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')) || [])[1];
-ok(!!icon, 'пропала иконка вкладки на app/index.html');
+ok(!!icon, 'the tab icon is missing on app/index.html');
 
-console.log('раскладка не гуляет между короткой и длинной страницей');
+console.log('layout does not shift between a short and a long page');
 /* tokens.css:93. Reserves the scrollbar gutter whether or not the page needs
    one, so a short route does not measure fifteen pixels wider than a long
    one - nothing else in tests/app/ reads this file as source text. */
@@ -142,23 +146,22 @@ ok(
   /scrollbar-gutter:\s*stable/.test(
     fs.readFileSync(path.join(ROOT, 'app', 'src', 'styles', 'tokens.css'), 'utf8')
   ),
-  'html больше не резервирует scrollbar-gutter: stable'
+  'html no longer reserves scrollbar-gutter: stable'
 );
 
-console.log('og-факты — абсолютные значения');
-/* Раньше этот блок пинал только то, в чём сходились index.html и
-   app/index.html - смена генератора, сдвинувшая обе страницы в одну и ту же
-   неверную сторону, всё равно прошла бы. Теперь сверяется одна страница
-   против абсолютных значений напрямую. */
+console.log('og facts are absolute values');
+/* This block used to pin only what index.html and app/index.html agreed on -
+   a generator change that shifted both pages the same wrong way would still
+   pass. Now one page is checked against absolute values directly. */
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 ok(shareFacts['og:image'] === SITE + 'og/_share.jpg',
-   'og:image не общая картинка сайта, а что-то другое: ' + shareFacts['og:image']);
+   "og:image is not the site's shared picture, but something else: " + shareFacts['og:image']);
 ok(shareFacts['og:image:width'] === '1200' && shareFacts['og:image:height'] === '630',
-   'og:image не 1200x630: ' + shareFacts['og:image:width'] + 'x' + shareFacts['og:image:height']);
-ok(fs.existsSync(path.join(ROOT, 'og', '_share.jpg')), 'общей og-картинки нет на диске');
+   'og:image is not 1200x630: ' + shareFacts['og:image:width'] + 'x' + shareFacts['og:image:height']);
+ok(fs.existsSync(path.join(ROOT, 'og', '_share.jpg')), 'the shared og picture is not on disk');
 ok(shareFacts['twitter:image'] === shareFacts['og:image'],
-   'twitter:image разошлась с og:image: ' + shareFacts['twitter:image']);
-ok(shareFacts['og:locale'] === 'ru_RU', 'og:locale не ru_RU: ' + shareFacts['og:locale']);
+   'twitter:image diverges from og:image: ' + shareFacts['twitter:image']);
+ok(shareFacts['og:locale'] === 'ru_RU', 'og:locale is not ru_RU: ' + shareFacts['og:locale']);
 
 /* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
    own "summary_large_image" - one record with art, one built with its art
@@ -171,12 +174,12 @@ delete artless.img;
 [ALL.find((x) => x.img), artless].forEach(function (x) {
   const html = page(x);
   const twCard = /<meta name="twitter:card" content="([^"]*)">/.exec(html);
-  ok(twCard && twCard[1] === 'summary', 'заглушка ' + x.id + ': twitter:card не summary');
+  ok(twCard && twCard[1] === 'summary', 'stub ' + x.id + ': twitter:card is not summary');
   const ogImg = /<meta property="og:image" content="([^"]*)">/.exec(html);
   const wantImg = SITE + 'og/' + (x.img ? x.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
   ok(
     ogImg && ogImg[1] === wantImg,
-    'заглушка ' + x.id + ': og:image не ' + wantImg + ', а ' + (ogImg && ogImg[1])
+    'stub ' + x.id + ': og:image is not ' + wantImg + ', but ' + (ogImg && ogImg[1])
   );
 });
 
@@ -185,167 +188,178 @@ const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
 ['catalog.csv', 'data.json', '#/l/', 'stamp', '10 handfuls = 1 bag',
  'Player note', 'GM note', 'Not indexed', 'Read `catalog.csv` first', 'Dread GM Toolbox', 'Never name an item from memory',
  'daggerheart.com/srd', 'deflate-raw',
- /* #13: раздел про источники — агенту нужно знать, чем они отличаются, а не
-    только что они бывают. #9: про длину ссылки вместо рецепта сжатия. */
+ /* #13: the sources section - an agent needs to know how they differ, not
+    just that they exist. #9: about link length rather than a compression
+    recipe. */
  'Campaign Frames', 'Do not invent a compression scheme'].forEach(s =>
-  ok(llms.indexOf(s) > 0, 'llms.txt не упоминает ' + s));
-/* Число записей названо и в описании сайта, и здесь — пусть расходится громко */
-ok(llms.indexOf(String(ALL.length)) > 0, 'в llms.txt не то число записей');
+  ok(llms.indexOf(s) > 0, 'llms.txt does not mention ' + s));
+/* The record count is named both in the site description and here - let a
+   divergence be loud */
+ok(llms.indexOf(String(ALL.length)) > 0, 'llms.txt has the wrong record count');
 
-/* Разобранный пример в llms.txt — это то, что агент скопирует и повторит.
-   Контрольная сумма в нём должна сходиться с тем, что даёт описанный тут же
-   алгоритм, а идентификаторы — существовать. */
+/* The worked example in llms.txt is what an agent will copy and repeat. Its
+   checksum has to match what the algorithm described right there produces,
+   and the ids have to exist. */
 const items = /\nitems\s+([a-z0-9*,]+)\n/.exec(llms);
 const st = /\nstamp\s+([0-9a-z]+\.[0-9a-z]{1,4})~/.exec(llms);
 const pay = /\npayload\s+([\s\S]*?)\n\s*```/.exec(llms);
-ok(!!items && !!st && !!pay, 'в llms.txt не нашёлся разобранный пример списка');
+ok(!!items && !!st && !!pay, 'llms.txt: the worked list example was not found');
 if (items && st && pay) {
   const body = items[1], parts = body.split(',');
   let h = 2166136261;
   for (let i = 0; i < body.length; i++) { h ^= body.charCodeAt(i); h = Math.imul(h, 16777619); }
   const want = parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4);
-  ok(want === st[1], 'контрольная сумма в примере не сходится: в тексте ' + st[1] + ', а надо ' + want);
+  ok(want === st[1], 'the example checksum does not match: the text has ' + st[1] + ', but it should be ' + want);
   const byId = {}; ALL.forEach(x => { byId[x.id] = x; });
-  parts.forEach(p => ok(!!byId[p.split('*')[0]], 'в примере несуществующий id: ' + p));
+  parts.forEach(p => ok(!!byId[p.split('*')[0]], 'the example has a nonexistent id: ' + p));
 
-  /* Эталонная строка обещает агенту: «получилось не то — значит, ошибся».
-     Обещание держится только пока она и правда собирается по описанию. */
+  /* The worked example promises the agent: "got something different - you
+     made a mistake". The promise holds only while it really is assembled
+     from the description. */
   const name = /\nname\s+(.+)/.exec(llms)[1].trim();
-  /* Заметки берём только из самого эталонного блока: примеры заметок есть и в
-     других местах файла, и они не имеют к нему отношения. */
+  /* Notes are taken only from the worked example block itself: note examples
+     exist elsewhere in the file too, and they are unrelated to this one. */
   const block = /\nnotes\s+([\s\S]*?)\n\s*\npayload/.exec(llms);
-  ok(!!block, 'в эталонном блоке не нашлись заметки');
+  ok(!!block, 'no notes were found in the worked example block');
   const notes = ((block ? block[1] : '').match(/\\x1e\+?[~a-z0-9]*\\x1f[^\n]+/g) || [])
     .map(s => s.replace(/\\x1e/g, '\x1e').replace(/\\x1f/g, '\x1f')).join('');
   const raw = name + '\n' + want + '~' + body + '\n' + notes;
   const mine = Buffer.from(raw, 'utf8').toString('base64')
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   const shown = pay[1].replace(/\s+/g, '');
-  ok(mine === shown, 'эталонный payload в llms.txt не собирается по описанию оттуда же');
+  ok(mine === shown, "the worked payload in llms.txt does not assemble from its own description");
 }
 
 console.log('Dread GM Toolbox');
-/* Раздел устроен как Wondrous: свой список, свой бросок, свои картинки. Ранги
-   у семи единиц снаряжения книга называет сама - выдумывать их нельзя. */
+/* This section is built like Wondrous: its own list, its own roll, its own
+   pictures. The book itself names the tiers for the seven equipment items -
+   they must not be invented. */
 const DR = L.items.dread;
-ok(DR.length === 29, 'в Dread не 29 позиций, а ' + DR.length);
-ok(DR.every((x, i) => x.roll === i + 1), 'номера Dread не идут подряд с единицы');
-ok(DR.every(x => x.src === 'dread' && x.img), 'у Dread не проставлен источник или картинка');
+ok(DR.length === 29, 'Dread does not have 29 entries, but ' + DR.length);
+ok(DR.every((x, i) => x.roll === i + 1), "Dread's numbers do not run consecutively from one");
+ok(DR.every(x => x.src === 'dread' && x.img), 'Dread is missing a source or a picture');
 const dreadEq = DR.filter(x => x.eq);
-ok(dreadEq.length === 7, 'снаряжения в Dread не 7, а ' + dreadEq.length);
-ok(dreadEq.every(x => x.eq.tier === 3 || x.eq.tier === 4), 'ранг снаряжения Dread не из книги');
+ok(dreadEq.length === 7, 'Dread does not have 7 equipment items, but ' + dreadEq.length);
+ok(dreadEq.every(x => x.eq.tier === 3 || x.eq.tier === 4), "Dread's equipment tier is not from the book");
 ok(DR.filter(x => x.kind === 'consumable').length === 7,
-   'расходников в Dread не 7, а ' + DR.filter(x => x.kind === 'consumable').length);
-/* Строка таблицы из книги уехала в eq и не должна остаться в описании */
+   'Dread does not have 7 consumables, but ' + DR.filter(x => x.kind === 'consumable').length);
+/* The book's table row moved into eq and must not remain in the description */
 ok(dreadEq.every(x => !/^Tier \d|^Магическое Оружие/.test(x.ende + x.rud)),
-   'в описании снаряжения Dread осталась строка таблицы');
+   "Dread's equipment description still has the table row");
 
-console.log('снаряжение целиком');
-/* Таблицы оружия и брони брали только `LOOT.eq` - две базовые книги, - и
-   четверть снаряжения в них не попадала вовсе: ни найти, ни отфильтровать.
-   Здесь проверяется само правило: сколько снаряжения в данных, столько и
-   должно раскладываться по трём таблицам. */
+console.log('equipment as a whole');
+/* The weapon and armour tables only drew from `LOOT.eq` - the two base
+   books - and a quarter of all equipment never appeared there at all:
+   findable by neither search nor filter. This checks the rule itself: as
+   much equipment as exists in the data, that much must sort into the three
+   tables. */
 const EVERY_EQ = ALL.filter(x => x.eq);
 const BY_T = {};
 EVERY_EQ.forEach(x => { BY_T[x.eq.t] = (BY_T[x.eq.t] || 0) + 1; });
 ok(Object.keys(BY_T).sort().join() === 'armor,secondary,weapon',
-   'у снаряжения завёлся новый вид: ' + Object.keys(BY_T).join());
+   'equipment grew a new kind: ' + Object.keys(BY_T).join());
 ok(EVERY_EQ.length === L.eq.length + 134,
-   'снаряжения вне двух базовых книг не 134, а ' + (EVERY_EQ.length - L.eq.length));
-/* Ранг обязателен у всего снаряжения. У Wondrous он выведен из книги: таблица
-   «Loot items by environment» привязывает вещь к локации, а у локации ранг
-   напечатан. Пока это правило держится, таблица снаряжения раскладывается по
-   четырём рангам без остатка и незачем возвращать раздел «без ранга». */
+   'equipment outside the two base books is not 134, but ' + (EVERY_EQ.length - L.eq.length));
+/* Every piece of equipment must carry a tier. Wondrous's is derived from the
+   book: the "Loot items by environment" table ties an item to a location,
+   and the location carries a printed tier. As long as this rule holds, the
+   equipment table sorts into four tiers with nothing left over, so there is
+   no need to bring back a "no tier" section. */
 const noTierEq = EVERY_EQ.filter(x => !x.eq.tier);
-ok(noTierEq.length === 0, 'снаряжение без ранга: ' +
+ok(noTierEq.length === 0, 'equipment with no tier: ' +
    noTierEq.map(x => x.id).join());
 ok(EVERY_EQ.every(x => [1, 2, 3, 4].indexOf(x.eq.tier) >= 0),
-   'ранг снаряжения вне диапазона с первого по четвёртый');
-/* Ранги Wondrous выведены вручную по таблице локаций - если запись поедет,
-   молча съедет и ранг, поэтому они прибиты здесь поимённо. */
+   'an equipment tier is outside the range one to four');
+/* Wondrous tiers are derived by hand from the location table - if an entry
+   moves, its tier silently drifts too, so they are pinned here by name. */
 const WOND_TIER = { w7: 3, w22: 2, w25: 4, w31: 3, w51: 2, w54: 3,
                     w57: 2, w79: 2, w82: 2, w85: 2, w88: 2 };
 const wondEq = EVERY_EQ.filter(x => x.src === 'wondrous');
 ok(wondEq.length === Object.keys(WOND_TIER).length,
-   'снаряжения в Wondrous стало ' + wondEq.length + ', а рангов прописано ' +
+   'Wondrous equipment count became ' + wondEq.length + ', but tiers are pinned for ' +
    Object.keys(WOND_TIER).length);
 wondEq.forEach(x => ok(x.eq.tier === WOND_TIER[x.id],
-   'ранг ' + x.id + ' разошёлся с локацией из книги: ' + x.eq.tier));
+   'tier ' + x.id + ' diverges from the book location: ' + x.eq.tier));
 
 console.log('Vault of Ages');
-/* Единственный набор, где ранг стоит и на добыче: книга разложена по рангам
-   целиком, а сверх четырёх идут артефакты и проклятые предметы. Ранг не
-   выведен из урона и не угадан - он напечатан заголовком раздела в книге и
-   продублирован в id, так что эти два источника обязаны сходиться. */
+/* The one set where tier is printed on the loot itself too: the book is laid
+   out by tier throughout, and past the fourth come artifacts and cursed
+   items. Tier is not derived from damage and not guessed - it is printed as
+   the section heading in the book and duplicated in the id, so these two
+   sources have to agree. */
 const VOA = L.items.voa;
-ok(VOA.length === 108, 'в Vault of Ages не 108 позиций, а ' + VOA.length);
-ok(VOA.every(x => x.src === 'voa' && x.img), 'у Vault of Ages не проставлен источник или картинка');
+ok(VOA.length === 108, 'Vault of Ages does not have 108 entries, but ' + VOA.length);
+ok(VOA.every(x => x.src === 'voa' && x.img), 'Vault of Ages is missing a source or a picture');
 const VOA_SIZE = { 1: 24, 2: 24, 3: 24, 4: 25, A: 6, C: 5 };
 Object.keys(VOA_SIZE).forEach(function (k) {
   const g = VOA.filter(x => String(x.tier) === k);
-  ok(g.length === VOA_SIZE[k], 'в разделе ' + k + ' не ' + VOA_SIZE[k] + ' позиций, а ' + g.length);
-  /* Бросок идёт внутри раздела, а не по всей книге: номера обязаны быть
-     сплошными от единицы, иначе кость будет указывать в пустоту */
-  ok(g.every((x, i) => x.roll === i + 1), 'номера раздела ' + k + ' не идут подряд с единицы');
+  ok(g.length === VOA_SIZE[k], 'section ' + k + ' does not have ' + VOA_SIZE[k] + ' entries, but ' + g.length);
+  /* The roll runs within a section, not across the whole book: the numbers
+     must be consecutive from one, or the die would point into nothing */
+  ok(g.every((x, i) => x.roll === i + 1), "section " + k + "'s numbers do not run consecutively from one");
 });
 ok(VOA.every(function (x) {
   const mid = x.id.split('_')[1];
   const want = mid[0] === 'a' ? 'A' : mid[0] === 'c' ? 'C' : +mid[1];
   return String(x.tier) === String(want);
-}), 'ранг Vault of Ages разошёлся с тем, что закодировано в id');
-/* Снаряжение книга подписывает сама, и вторичное оружие - это отдельный вид,
-   а не основное с пометкой */
+}), 'Vault of Ages tier diverges from what is encoded in the id');
+/* The book labels equipment itself, and secondary weapons are a distinct
+   kind - not a primary one with a tag */
 const voaEq = VOA.filter(x => x.eq);
-ok(voaEq.length === 24, 'снаряжения в Vault of Ages не 24, а ' + voaEq.length);
+ok(voaEq.length === 24, 'Vault of Ages does not have 24 equipment items, but ' + voaEq.length);
 ok(voaEq.filter(x => x.eq.t === 'secondary').length === 4,
-   'вторичного оружия не 4: ' + voaEq.filter(x => x.eq.t === 'secondary').length);
-ok(voaEq.every(x => x.eq.tier === x.tier), 'ранг снаряжения разошёлся с рангом записи');
-ok(voaEq.every(x => !x.eq.line), 'у Vault of Ages завелась лестница улучшений, которой в книге нет');
-/* Шапка карточки уехала в eq и в ярлыки - в описании ей делать нечего */
+   'secondary weapons are not 4: ' + voaEq.filter(x => x.eq.t === 'secondary').length);
+ok(voaEq.every(x => x.eq.tier === x.tier), "an equipment tier diverges from its record's tier");
+ok(voaEq.every(x => !x.eq.line), 'Vault of Ages grew an upgrade ladder the book does not have');
+/* The card's header moved into eq and into labels - it has no business in
+   the description */
 ok(VOA.every(x => !/^(Loot|Consumable|Cursed Object|Primary Weapon|Secondary Weapon|Armor)\.|^(Предмет|Расходник|Проклятый Объект|Основное оружие|Вспомогательное оружие|Броня)\./.test(x.ende + '|' + x.rud)),
-   'в описании Vault of Ages осталась строка категории');
+   'Vault of Ages description still has the category line');
 ok(VOA.every(x => !/Tier \d\.|Ранг \d\./.test(x.ende + x.rud)),
-   'в описании Vault of Ages остался ранг, который уже стоит ярлыком');
-/* Стоимость Призыва - правило этой книги, и она осталась в тексте ярлыком */
+   'Vault of Ages description still has a tier that already sits as a label');
+/* Recall Cost ("Стоимость Призыва") is this book's own rule, and it stays in
+   the text as a label */
 const rc = VOA.filter(x => x.recall != null);
-ok(rc.length === 83, 'Стоимость Призыва стоит не у 83 записей, а у ' + rc.length);
+ok(rc.length === 83, 'Recall Cost is not on 83 records, but on ' + rc.length);
 ok(rc.every(x => x.rud.indexOf('Стоимость Призыва: ' + x.recall + '\n') === 0 &&
                  x.ende.indexOf('Recall Cost: ' + x.recall + '\n') === 0),
-   'Стоимость Призыва не открывает описание отдельной строкой');
+   'Recall Cost does not open the description as its own line');
 
-/* Книга печатает именованные свойства отдельным абзацем, а варианты выбора -
-   маркированным списком. В одну строку они читаются как сплошная стена, и
-   «Кровавый Шип» посреди предложения перестаёт быть названием свойства. */
+/* The book prints named properties as their own paragraph, and choice
+   variants as a bulleted list. Read as one line they read as a solid wall,
+   and «Кровавый Шип» mid-sentence stops being a property name. */
 const voaLists = VOA.filter(x => x.rud.indexOf('\n- ') > 0);
-ok(voaLists.length === 5, 'списков в Vault of Ages не 5, а ' + voaLists.length);
-/* «Узы Души» печатают три свойства камня списком, и в один абзац они слипались */
-ok(voaLists.some(x => x.id === 'voa2_a1'), 'у «Уз Души» свойства камня не списком');
+ok(voaLists.length === 5, 'Vault of Ages does not have 5 lists, but ' + voaLists.length);
+/* «Узы Души» prints the stone's three properties as a list, and they used to
+   run together into one paragraph */
+ok(voaLists.some(x => x.id === 'voa2_a1'), '«Узы Души» properties are not a list');
 ok(voaLists.every(x => x.ende.split('\n- ').length === x.rud.split('\n- ').length),
-   'список разошёлся по числу пунктов между языками');
-/* Пункт списка идёт после вводной строки, а не первой строкой описания */
+   'the list item count diverges between languages');
+/* A list item follows an intro line, not the description's first line */
 ok(VOA.every(x => x.rud.indexOf('- ') !== 0 && x.ende.indexOf('- ') !== 0),
-   'описание начинается с пункта списка, без вводной строки');
+   'the description starts with a list item, with no intro line');
 const named = VOA.filter(function (x) {
   return x.rud.replace(/^Стоимость Призыва: \d+\n/, '').split('\n').some(function (line) {
     const i = line.replace(/^- /, '').indexOf(': ');
     return i > 0 && i < 46;
   });
 });
-ok(named.length >= 29, 'именованных свойств разнесено по строкам всего ' + named.length);
-/* Число строк в обоих языках одно: расхождение значит, что абзац потерялся */
+ok(named.length >= 29, 'named properties split across lines total only ' + named.length);
+/* The line count is the same in both languages: a divergence means a
+   paragraph was lost */
 ok(VOA.every(x => x.ende.split('\n').length === x.rud.split('\n').length),
-   'число строк описания разошлось между языками');
+   'the description line count diverges between languages');
 
-/* Ранг когда-то подставляли источником, а потом догадкой по характеристикам.
-   Теперь он взят из книги, и в модулях приложения не должно остаться ни того,
-   ни другого - CLAUDE.md's "never infer equipment tier from stats". */
-console.log('ранг не выводится из характеристик');
+/* Tier used to be filled in from source, then guessed from stats. Now it is
+   taken from the book, and no app module should have either kind left -
+   CLAUDE.md's "never infer equipment tier from stats". */
+console.log('tier is not derived from stats');
 const libDir = path.join(ROOT, 'app', 'src', 'lib');
 fs.readdirSync(libDir).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))
   .forEach(function (f) {
     const text = fs.readFileSync(path.join(libDir, f), 'utf8');
     ok(text.indexOf('tierBand') < 0,
-       'app/src/lib/' + f + ': догадка о ранге по характеристикам (tierBand) вернулась');
+       'app/src/lib/' + f + ': the stat-based tier guess (tierBand) came back');
   });
 /* `srcWond`-style guessing (deriving a tier by source when one is not stated)
    has no matching grep here: it cannot recur by construction, not just by
@@ -354,89 +368,92 @@ fs.readdirSync(libDir).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))
    left where a rewrite author could slip a guess back in without touching this
    one line, which every other equipment-line test already pins byte for byte. */
 
-/* «Универсальное» - это второй набор характеристик, спрятанный в прозе
-   свойства. Он разобран в `eq.alt` один раз и дальше читается как данные:
-   на печатной карте он стоит второй полосой, а не строчкой текста. Если
-   свойство появится у новой вещи, а разбор не обновят, счёт разойдётся. */
+/* "Универсальное" (Versatile) is a second set of stats hidden in a
+   property's prose. It is parsed into `eq.alt` once and read as data from
+   then on: on the printed card it sits as a second strip, not a line of
+   text. If the property shows up on a new item and the parser is not
+   updated, the count will diverge. */
 const VERSATILE = ALL.filter(x => x.eq && /Универсальное:/.test(x.rud || ''));
-ok(VERSATILE.length === 18, 'универсального оружия стало ' + VERSATILE.length + ', а не 18');
-ok(VERSATILE.every(x => x.eq.alt), 'у универсального оружия нет разобранного второго набора: ' +
+ok(VERSATILE.length === 18, 'versatile weapons became ' + VERSATILE.length + ', not 18');
+ok(VERSATILE.every(x => x.eq.alt), 'versatile weapon is missing a parsed second stat set: ' +
    VERSATILE.filter(x => !x.eq.alt).map(x => x.id).join());
 ok(ALL.filter(x => x.eq && x.eq.alt).length === VERSATILE.length,
-   'второй набор характеристик завёлся не только у универсального оружия');
+   'a second stat set showed up on more than just versatile weapons');
 VERSATILE.forEach(function (x) {
   const a = x.eq.alt;
   ok(a.tr && a.rg && /^d\d+([+-]\d+)?$/.test(a.dmg || ''),
-     'второй набор у ' + x.id + ' разобран неполно: ' + JSON.stringify(a));
-  /* Он именно второй: повторять первый ему незачем */
+     'the second stat set on ' + x.id + ' parsed incomplete: ' + JSON.stringify(a));
+  /* It is specifically the second set: it has no reason to repeat the first */
   ok(a.tr !== x.eq.tr || a.rg !== x.eq.rg || a.dmg !== x.eq.dmg,
-     'второй набор у ' + x.id + ' совпал с первым');
+     'the second stat set on ' + x.id + ' matches the first');
 });
 
-/* Форма вещи из Vault of Ages - «кинжал», «коса», «лёгкая» - в книге стоит
-   для антуража, а в приложении занимала место класса оружия: по ней нельзя
-   отфильтровать, и физическое с магическим у этих вещей не работало. Класс
-   теперь проставлен у всего оружия, а формы нет ни у чего. */
-ok(!ALL.some(x => x.eq && x.eq.sub), 'форма вещи вернулась в данные: ' +
+/* An item's shape from Vault of Ages - "dagger", "scythe", "light" - sits in
+   the book for flavour, but in the app it was taking the place of weapon
+   class: it could not be filtered by, and physical/magical did not work for
+   these items. Class is now set on every weapon, and shape is set on
+   nothing. */
+ok(!ALL.some(x => x.eq && x.eq.sub), "an item's shape came back into the data: " +
    ALL.filter(x => x.eq && x.eq.sub).map(x => x.id).join());
 const NO_CLS = ALL.filter(x => x.eq && x.eq.t !== 'armor' && !x.eq.cls);
-ok(!NO_CLS.length, 'оружие без класса: ' + NO_CLS.map(x => x.id).join());
-/* Там, где класс проставлен по типу урона - Vault of Ages, Dread, фреймы, -
-   они совпадают. Корник и Hope & Fear разводят их сами: Призрачный Клинок
-   магический, а урон у него физический, и это остаётся как есть. */
+ok(!NO_CLS.length, 'weapon with no class: ' + NO_CLS.map(x => x.id).join());
+/* Where class is set by damage type - Vault of Ages, Dread, frames - they
+   agree. The core book and Hope & Fear split them on their own: Призрачный
+   Клинок is magical, but its damage is physical, and that stays as is. */
 ALL.filter(x => x.eq && x.eq.t !== 'armor' &&
                 ['voa', 'dread', 'frame'].indexOf(x.src) >= 0).forEach(function (x) {
-  ok(x.eq.cls === x.eq.dt, 'класс и урон разошлись у ' + x.id + ': ' +
-     x.eq.cls + ' и ' + x.eq.dt);
+  ok(x.eq.cls === x.eq.dt, 'class and damage type diverge on ' + x.id + ': ' +
+     x.eq.cls + ' and ' + x.eq.dt);
 });
 
-console.log('снаряжение фреймов');
-/* Кампейн-фреймы дают своё снаряжение вместо стартового. Ранги здесь не
-   выдуманы: Beast Feast книга прямо называет набором первого ранга, у
-   остальных наборов расписаны все четыре. */
+console.log('frame equipment');
+/* Campaign frames give their own equipment instead of the starting kit.
+   Tiers here are not invented: the book calls Beast Feast a tier-one set
+   outright, and the other sets spell out all four tiers. */
 const FR = L.items.frames;
-ok(FR.length === 94, 'снаряжения фреймов не 94, а ' + FR.length);
-ok(FR.every(x => x.roll == null), 'у снаряжения фреймов появился номер броска');
-ok(FR.every(x => x.src === 'frame' && x.frame), 'у записи фрейма нет источника или названия кампании');
+ok(FR.length === 94, 'frame equipment is not 94, but ' + FR.length);
+ok(FR.every(x => x.roll == null), 'frame equipment grew a roll number');
+ok(FR.every(x => x.src === 'frame' && x.frame), 'a frame record is missing a source or a campaign name');
 const byFrame = {};
 FR.forEach(x => { byFrame[x.frame] = (byFrame[x.frame] || 0) + 1; });
 ok(byFrame.beast_feast === 36 && byFrame.dark_heart === 36 &&
    byFrame.colossus === 21 && byFrame.motherboard === 1,
-   'состав фреймов сбился: ' + JSON.stringify(byFrame));
-/* Beast Feast заменяет стартовый набор целиком - только первый ранг */
+   'the frame composition drifted: ' + JSON.stringify(byFrame));
+/* Beast Feast replaces the starting kit entirely - tier one only */
 ok(FR.filter(x => x.frame === 'beast_feast').every(x => x.eq && x.eq.tier === 1),
-   'в Beast Feast появился не первый ранг');
-/* Линии улучшения: у многоранговых наборов все четыре ступени и общая линия */
+   'Beast Feast has a tier other than the first');
+/* Upgrade lines: a multi-tier set has all four steps under one shared line */
 const lines = {};
 FR.forEach(x => { if (x.eq && x.eq.line) (lines[x.eq.line] = lines[x.eq.line] || []).push(x.eq.tier); });
-ok(Object.keys(lines).length === 14, 'линий улучшения не 14, а ' + Object.keys(lines).length);
+ok(Object.keys(lines).length === 14, 'upgrade lines are not 14, but ' + Object.keys(lines).length);
 Object.keys(lines).forEach(k => ok(lines[k].sort().join() === '1,2,3,4',
-  'в линии ' + k + ' не все ранги: ' + lines[k].join()));
-/* Слова ступеней те же, что в корнике, - иначе одна и та же вещь называется
-   по-разному в двух местах сайта */
+  'line ' + k + ' is missing a tier: ' + lines[k].join()));
+/* The step words are the same ones the core book uses - otherwise the same
+   item is named differently in two places on the site */
 ['Improved', 'Advanced', 'Legendary'].forEach(w =>
-  ok(FR.some(x => x.en.indexOf(w + ' ') === 0), 'нет ступени ' + w));
+  ok(FR.some(x => x.en.indexOf(w + ' ') === 0), 'missing the step word ' + w));
 ['Улучшенн', 'Продвинут', 'Легендарн'].forEach(w =>
-  ok(FR.some(x => x.ru.indexOf(w) === 0), 'нет русской ступени ' + w));
+  ok(FR.some(x => x.ru.indexOf(w) === 0), 'missing the Russian step word ' + w));
 
-console.log('счётчики в текстах');
-/* Число записей выписано словами в мета-описаниях, в README и в подсказке
-   поиска. Данные меняются редко, но каждый раз эти числа приходится править
-   руками в семи файлах — и промах ничем не виден: страница выглядит
-   исправной и врёт. Поэтому каждое число из трёх и более цифр рядом со «своим»
-   словом сверяется с тем, что на самом деле лежит в data.js. Три цифры было
-   мало: на 1061 записи проверка читала «061» и ругалась на верное число. */
+console.log('counters in the text');
+/* The record count is spelled out in words in the meta descriptions, in the
+   README, and in the search hint. The data changes rarely, but every time it
+   does these numbers have to be fixed by hand across seven files - and a
+   miss is invisible: the page looks fine and lies. So every number of three
+   or more digits next to its own word is checked against what data.js
+   actually holds. Three digits was not enough: at 1061 records the check
+   read "061" and complained about the correct number. */
 const N = {
   loot: [].concat(...Object.values(L.items)).length,
   eq: L.eq.length,
   all: ALL.length,
   wondrous: L.items.wondrous.length,
-  // в README описана папка, а в ней лежит ещё и заглушка _none.webp
+  // the README describes the folder, and it also holds the _none.webp stub
   art: fs.readdirSync(path.join(ROOT, 'img')).filter(f => f.endsWith('.webp')).length
 };
-/* Слово «позиции» честно занято двумя счётчиками сразу — всего по сайту и
-   таблицей Wondrous, — поэтому для него проверяется принадлежность, а не
-   равенство. Остальные слова однозначны. */
+/* The word "позиции" (entries) is honestly shared between two counters at
+   once - the whole site and the Wondrous table - so it is checked for
+   membership rather than equality. Every other word is unambiguous. */
 const COUNTERS = [
   [/(\d{3,})\s+предмет/g,    [N.loot],            'предметов и расходников'],
   [/(\d{3,})\s+единиц/g,     [N.eq],              'единиц снаряжения'],
@@ -447,7 +464,7 @@ const COUNTERS = [
   [/(\d{3,})\s+позици/g,     [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g,    [N.all, N.wondrous], 'entries']
 ];
-/* index.html и app.js were the live app's own copies of these numbers and
+/* index.html and app.js were the live app's own copies of these numbers and
    left the list at R0c along with the files themselves. */
 const COUNT_BEARING_FILES = ['app/index.html', 'README.md', 'README.ru.md',
  'llms.txt', 'robots.txt', 'app/src/lib/dict.ts', 'app/src/lib/i18n.ts',
@@ -459,17 +476,18 @@ COUNT_BEARING_FILES.forEach(function (file) {
     re.lastIndex = 0;
     while ((m = re.exec(text))) {
       ok(want.indexOf(+m[1]) >= 0,
-         file + ': «' + m[1] + ' ' + what + '» — на деле ' + want.join(' или '));
+         file + ': «' + m[1] + ' ' + what + '» — actually ' + want.join(' or '));
     }
   });
-  ok(text.indexOf(String(N.all)) >= 0, file + ': пропало упоминание общего числа записей');
+  ok(text.indexOf(String(N.all)) >= 0, file + ': the overall record count went unmentioned');
 });
 
-/* Кости на кнопках рисуются теми же путями, что печатаются на карточке. Читать
-   файл на лету нельзя - `fetch` из `file://` запрещён, - поэтому пути выписаны
-   в dice.ts, и вот тут они сверяются с самими файлами. Иначе правка вектора в
-   `card/` тихо разъедется с экраном. */
-console.log('кости на кнопках');
+/* Dice drawn on buttons use the same paths that print on the card. The file
+   cannot be read on the fly - `fetch` from `file://` is forbidden - so the
+   paths are written out in dice.ts, and this is where they are checked
+   against the actual files. Otherwise an edit to a vector in `card/` would
+   silently drift from the screen. */
+console.log('dice on the buttons');
 const diceTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dice.ts'), 'utf8');
 [4, 6, 8, 10, 12, 20].forEach(function (d) {
   const svg = fs.readFileSync(path.join(ROOT, 'card', 'die-d' + d + '-bw.svg'), 'utf8');
@@ -478,44 +496,46 @@ const diceTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dice.ts'), 
   const got = new RegExp(
     d + ":\\s*\\{\\s*viewBox:\\s*'([^']+)',\\s*body:\\s*'([^']+)',\\s*faces:\\s*\\n?\\s*'([^']+)'"
   ).exec(diceTs);
-  ok(got, 'в dice.ts нет силуэта d' + d);
+  ok(got, 'dice.ts has no silhouette for d' + d);
   if (!got) return;
-  ok(got[1] === box, 'd' + d + ': рамка разошлась с файлом: ' + got[1] + ' и ' + box);
-  ok(got[2] === want[0] && got[3] === want[1], 'd' + d + ': пути разошлись с файлом');
+  ok(got[1] === box, 'd' + d + ': the viewBox diverges from the file: ' + got[1] + ' and ' + box);
+  ok(got[2] === want[0] && got[3] === want[1], 'd' + d + ': the paths diverge from the file');
 });
 
-/* Ссылка на источник - не украшение, а условие лицензии (DPCGL 2.0, п. 4.1):
-   без неё право пользоваться текстами не возникает. Формула задана дословно, и
-   стоять она должна везде, где сайт «делится» материалом: в подвале обоих
-   языков, в README и в llms.txt. Раз уж номер SRD теперь входит в саму формулу,
-   версия проверяется вместе с ней - на 1.0 её оставили в трёх местах из
-   четырёх, и заметить это было нечем.
+/* The source citation is not decoration, it is a licence condition (DPCGL
+   2.0, clause 4.1): without it there is no right to use the text. The
+   wording is fixed verbatim, and it has to stand everywhere the site
+   "shares" material: in the footer in both languages, in the README, and in
+   llms.txt. Since the SRD number is now part of the formula itself, the
+   version is checked along with it - it was left at 1.0 in three places out
+   of four, and there was nothing to notice it.
 
-   Заодно проверяется, что Hope & Fear больше не числится вне лицензии: 25
-   августа 2026 года DPCGL 2.0 добавила его в список игр, и старая оговорка
-   стала неверной. */
-console.log('ссылка на источник');
+   This also checks that Hope & Fear is no longer listed as outside the
+   licence: on 25 August 2026 DPCGL 2.0 added it to the list of covered
+   games, and the old caveat became wrong. */
+console.log('source citation');
 const CITE = 'Daggerheart System Reference Document 2.0, © Critical Role, LLC.' +
              ' under the terms of the Darrington Press Community Gaming (DPCGL)' +
              ' License.';
 ['README.md', 'README.ru.md', 'llms.txt'].forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\s+/g, ' ');
-  ok(text.indexOf(CITE) >= 0, file + ': нет дословной ссылки на источник');
-  ok(text.indexOf('Reference Document 1.0') < 0, file + ': ссылка всё ещё на SRD 1.0');
+  ok(text.indexOf(CITE) >= 0, file + ': missing the verbatim source citation');
+  ok(text.indexOf('Reference Document 1.0') < 0, file + ': the citation still points at SRD 1.0');
 });
-/* В подвале - на обоих языках: он и есть то, чем делятся. Подвал теперь
-   собран из трёх частей словаря (footBefore/footLink/footAfter), а не одной
-   строки с разметкой - вся дословная цитата целиком лежит в footBefore. */
+/* In the footer - in both languages: it is exactly what gets shared. The
+   footer is now assembled from three dictionary parts (footBefore/footLink/
+   footAfter) rather than one string with markup - the whole verbatim
+   citation lives entirely in footBefore. */
 const dictTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dict.ts'), 'utf8');
 const feet = dictTs.match(/footBefore:\s*\n?\s*'([^']*)'/g) || [];
-ok(feet.length === 2, 'подвалов не два, а ' + feet.length);
+ok(feet.length === 2, 'footers are not two, but ' + feet.length);
 feet.forEach(function (f, i) {
   ok(f.indexOf(CITE) >= 0,
-     'в подвале ' + (i ? 'по-английски' : 'по-русски') + ' нет ссылки на источник');
+     'the ' + (i ? 'English' : 'Russian') + ' footer has no source citation');
 });
-/* Старая оговорка перечисляла Hope & Fear среди того, что под лицензию не
-   подпадает. Дополнения, которые там остались, проверяются заодно: их из списка
-   выкинуть тоже нельзя. */
+/* The old caveat listed Hope & Fear among what the licence does not cover.
+   The supplements that remain there are checked too: they must not be
+   dropped from the list either. */
 const OUTSIDE = ['Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages',
                  'Community Magic Items', 'Alternate Loot & Consumable Tables'];
 [['README.md', /^.*fall\s+outside that licence[\s\S]*?\n\n/m],
@@ -523,11 +543,11 @@ const OUTSIDE = ['Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages',
   const file = pair[0];
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\n  /g, ' ');
   const clause = (pair[1].exec(text) || [''])[0];
-  ok(clause, file + ': пропала оговорка о том, что под лицензию не подпадает');
+  ok(clause, file + ': the caveat about what falls outside the licence went missing');
   ok(clause.indexOf('Hope & Fear') < 0,
-     file + ': Hope & Fear всё ещё числится вне лицензии, хотя DPCGL 2.0 его включила');
+     file + ': Hope & Fear is still listed as outside the licence, though DPCGL 2.0 now includes it');
   OUTSIDE.forEach(function (name) {
-    ok(clause.indexOf(name) >= 0, file + ': ' + name + ' пропал из списка вне лицензии');
+    ok(clause.indexOf(name) >= 0, file + ': ' + name + ' fell out of the outside-licence list');
   });
 });
 
@@ -576,5 +596,5 @@ if (shardList && shardRun) {
      'browser matrix: shard list is ' + JSON.stringify(list) + ', expected exactly 1..' + divisor);
 }
 
-console.log(fail ? '\n' + fail + ' FAILED' : '\nпроизводные файлы: всё сходится');
-process.exit(fail ? 1 : 0);
+console.log(failed() ? '\n' + failed() + ' FAILED' : '\nderived files: everything matches');
+process.exit(failed() ? 1 : 0);

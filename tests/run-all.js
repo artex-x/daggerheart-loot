@@ -175,9 +175,9 @@ const keyOf = s => s[0] + (s[3] ? ':' + s[3].join('-') : '');
 const fileOf = s => keyOf(s).replace(/[^\w.-]+/g, '-');
 if (!queue.length) {
   if (shardArg) {
-    console.log('shard ' + shardArg + ' пуст: наборов меньше, чем корзин');
+    console.log('shard ' + shardArg + ' is empty: fewer suites than bins');
   } else {
-    console.log('таких наборов нет: ' + only.join(', '));
+    console.log('no such suites: ' + only.join(', '));
   }
   process.exit(1);
 }
@@ -194,8 +194,9 @@ const done = {};           // name -> { ok, secs, out }
 let next = 0, running = 0, bad = 0;
 const t0 = Date.now();
 
-/* Печатается строго в порядке списка: набор, который обогнал соседа, ждёт его,
-   иначе два одинаковых прогона дают разный отчёт и его нельзя сравнить. */
+/* Printed strictly in list order: a suite that finished ahead of its
+   neighbour waits for it, otherwise two identical runs would print a
+   different report and could not be compared. */
 let printed = 0;
 function flush(){
   while (printed < queue.length && done[keyOf(queue[printed])]) {
@@ -234,9 +235,9 @@ function start(){
 }
 
 function finish(){
-  console.log('\n' + (bad ? bad + ' наборов упало' : 'все наборы прошли') +
-              ' за ' + ((Date.now() - t0) / 1000).toFixed(0) + 'с' +
-              (JOBS > 1 ? ' (в ' + JOBS + ' потока)' : ''));
+  console.log('\n' + (bad ? bad + ' suites failed' : 'all suites passed') +
+              ' in ' + ((Date.now() - t0) / 1000).toFixed(0) + 's' +
+              (JOBS > 1 ? ' (' + JOBS + ' at a time)' : ''));
   process.exit(bad ? 1 : 0);
 }
 

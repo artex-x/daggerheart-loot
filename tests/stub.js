@@ -21,13 +21,13 @@ const STUB = 'file://' + path.join(__dirname, '..', 'i', 'w3.html');
       (w) => document.documentElement.scrollWidth > w + 1,
       width
     );
-    ok(!over, 'заглушка i/w3.html прокручивается вбок на ' + width + 'px');
+    ok(!over, 'stub i/w3.html scrolls sideways at ' + width + 'px');
     await ctx.close();
   }
 
   await closeBrowser();
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nстраницы-заглушки i/: не прокручиваются вбок'
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\ni/ share stubs: no sideways scroll'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

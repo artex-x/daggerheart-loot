@@ -27,7 +27,7 @@ const L = global.window.LOOT;
 [['data.json', D.dataJson(L)],
  ['catalog.csv', D.catalogCsv(L)]].forEach(function ([name, body]) {
   fs.writeFileSync(path.join(ROOT, name), body);
-  console.log(name + ' - ' + Math.round(Buffer.byteLength(body) / 1024) + ' КБ');
+  console.log(name + ' - ' + Math.round(Buffer.byteLength(body) / 1024) + ' KB');
 });
 
 execFileSync(process.execPath, [path.join(__dirname, 'build-share-pages.js')],

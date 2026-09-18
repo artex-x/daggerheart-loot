@@ -9,8 +9,9 @@
 */
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 
-/* Раскладка на человеческие имена: в csv и json источник читают вслух, а не
-   сверяют с кодом. Забытый ключ раньше утекал наружу как `dread`/`frame`. */
+/* Spelled out into human names: the csv and json are read aloud from the
+   source, not matched against the code. A forgotten key used to leak out
+   verbatim as `dread`/`frame`. */
 const SRC = {
   core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot',
   community: 'Community', dread: 'Dread GM Toolbox', frame: 'Campaign Frames',
@@ -47,9 +48,9 @@ const CSV_HEAD = ['id', 'kind', 'source', 'name_ru', 'name_en', 'tier', 'rarity'
                   'class', 'trait', 'range', 'damage', 'burden', 'armor_score',
                   'thresholds', 'crafts_into', 'community', 'url', 'text_ru', 'text_en'];
 
-/* Описание вещи с двумя свойствами хранится в двух строках. В таблице строка
-   файла обязана оставаться одной строкой на запись, иначе каталог перестанет
-   читаться построчно - переводы строк схлопываются в пробел. */
+/* An item's description with two properties is stored across two lines. In
+   the table, a file row must stay one line per record, or the catalog stops
+   reading line by line - newlines collapse into a space. */
 function cell(v){
   const s = (v == null ? '' : String(v)).replace(/\s*\n\s*/g, ' ');
   return /[",]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
@@ -66,9 +67,9 @@ function catalogCsv(L){
       e ? e.t : x.kind,
       SRC[x.src] || x.src,
       x.ru, x.en,
-      /* У Vault of Ages ранг стоит и на добыче, а не только на снаряжении:
-         книга разложена по рангам, а сверх четырёх идут A (артефакт) и
-         C (проклятый предмет). */
+      /* Vault of Ages prints a tier on loot too, not only on equipment: the
+         book is laid out by tier, and past the fourth come A (artifact) and
+         C (cursed object). */
       x.tier != null ? x.tier : (e ? e.tier : ''),
       rarity[x.id] || '',
       x.roll == null ? '' : x.roll,
