@@ -9,13 +9,15 @@ img/
 og/
 card/
 
-# Permanent, decided at phase 8 (this was left open at R0c, issue 47, as "not
-# the batch that decides its formatting" - it is decided now): hand-authored,
-# flat, no indentation, HTML5-style void elements with no trailing slash.
-# Prettier's HTML formatter would indent every line and add a self-closing
-# `/>` to every `<meta>`/`<link>` - a ~60-line diff for no behaviour change,
-# same reasoning as the generated files above even though this one is not
-# generated.
+# Permanent, decided at phase 8 (this was left open at R0c, issue 47, for
+# app/index.html, as "not the batch that decides its formatting" - it is
+# decided now; 404.html, added later in phase 8 (B4), follows the same
+# decision on the same reasoning, not a copy-pasted rationale): both are
+# hand-authored, flat, no indentation, HTML5-style void elements with no
+# trailing slash. Prettier's HTML formatter would indent every line and add
+# a self-closing `/>` to every `<meta>`/`<link>` - a ~60-line diff for no
+# behaviour change, same reasoning as the generated files above even though
+# neither of these two is generated.
 app/index.html
 404.html
 dist/

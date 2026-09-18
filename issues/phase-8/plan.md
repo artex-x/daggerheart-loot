@@ -643,35 +643,23 @@ first and found zero hits, so it stayed here rather than moving to `B12d`.
 `npm run check:built` not run (no `.svelte` template or CSS declaration
 landed). Full detail: `git show <sha>`, or `issues/phase-8/handoff.md`.
 
-### B12c - harness, tooling and CI
+### B12c - harness, tooling and CI - SHIPPED `<pending, see B12c sha-citation follow-up>`
 
-**Criterion**: see both seams above. These rows cannot move rendered output
-at all, and they share one `check` plus one CI watch.
-
-**Rows**: `B4-R1`, `B4-R2`, `B4-R3`, `B4-R4`, `B4-1`, `B4-2`, `B4-3`,
-`B4-4`, `B4-5`, `B4-6`, `B4-7`, `B4-10`, `B5-R1`, `B5-N3`, `B5-N14`,
-`B5-N15`, `B6-N2`, `B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`, `B9-N11`.
-
-Notes the implementer needs:
-
-- **`B4-3` is the row that must record an unmet line as unmet.** Add the
-  `echo` before the `if` so the deploy log actually carries the stub count,
-  and record in `handoff.md` that the original acceptance line ("the deploy
-  log shows the stub-count line") was **not met** at B4 - do not restate it
-  as met now that it is. This phase has three times found a record claiming
-  a verification that did not happen; this is the fix for one of them.
-- **`B4-4` and `B4-7` are settled by the census above**, not open questions.
-- **`B9-R2` and `B9-N5` are one edit**: narrow or fix the four code-rule
-  turn-offs and enumerate every site per rule. `no-regex-spaces` (5 sites)
-  and the two 3-line fixes prefer the fix; `preserve-caught-error` prefers
-  three inline disables over a directory-wide off.
-- **`B5-N15`** is likely already closed by B9's wholesale translation of
-  `tests/` - the census settles it before any edit.
-
-**Gates**: `rtk npm run check`; `node tests/run-all.js
-contracts,derived,dataint,craft,stub`; **one CI watch after the push**, which
-is the only instrument that can see `B4-3`'s echo and `B4-4`'s `_site` path -
-the `deploy` job runs on push to `main`.
+Outcome: all 21 live rows landed as real edits, none moving rendered output
+(`B4-R1`-`B4-R4`, `B4-1`-`B4-7`, `B5-R1`, `B5-N3`, `B5-N14`, `B6-N2`,
+`B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`, `B9-N11`); `B4-10` and
+`B5-N15` needed no edit - already closed/already-done by B12a's own census,
+confirmed on arrival, not open questions. `B4-3`'s `echo` lands here, and
+its original B4 acceptance line ("the deploy log shows the stub-count
+line") stays recorded as **unmet at B4** - the fix does not retroactively
+satisfy it. `B4-4` now reads `_site/catalog.csv`, exercising the collect
+step's own copy. `B9-R2`/`B9-N5` landed as one edit across
+`eslint.config.mjs`'s four code-rule turn-offs: three
+(`no-regex-spaces`, `no-extraneous-class`, `no-useless-assignment`) fixed
+at every measured site; `preserve-caught-error` narrowed to three inline
+disables at its exact pre-existing sites rather than a directory-wide off.
+Full detail and the CI watch's result: `git show <sha>`, or
+`issues/phase-8/handoff.md`.
 
 ### B12d - the browser-gated rows and the three measurements this phase owes
 

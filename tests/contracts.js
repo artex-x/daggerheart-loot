@@ -18,15 +18,9 @@
    `docs/specs/COVERAGE.md`'s `contracts` row says where each assertion went. */
 const fs = require('fs');
 const path = require('path');
+const { ok, failed } = require('./ok.js');
 
 const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
-let fail = 0;
-const ok = (c, m) => {
-  if (!c) {
-    fail++;
-    console.log('  FAIL ' + m);
-  }
-};
 
 /* A separate implementation of the encoding - that is the whole point */
 const b64url = (s) =>
@@ -113,6 +107,6 @@ const N_REC = '\x1e',
     ok(machine.indexOf(g) < 0, 'llms.txt still carries the non-existent group ' + g);
   });
 
-  console.log(fail ? '\n' + fail + ' FAILED' : '\ncontracts match the fixtures');
-  process.exit(fail ? 1 : 0);
+  console.log(failed() ? '\n' + failed() + ' FAILED' : '\ncontracts match the fixtures');
+  process.exit(failed() ? 1 : 0);
 })();

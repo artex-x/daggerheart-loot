@@ -5,8 +5,10 @@
      Extracted on its third use: `RecordCard.svelte` and `RowMain.svelte`
      carried the base rule plus eight variants byte-identical to the
      character, and `ListsPage.svelte` carried the base plus `.num` alone,
-     with a comment recording the decision not to extract - CLAUDE.md says
-     extract on the second use, so this is one use late rather than early. */
+     with a comment recording an earlier decision to keep it separate rather
+     than extract (issues/phase-8, B5) - not a missed second-use deadline,
+     but a deliberate wait for a third real copy to confirm the variants
+     actually lined up before sharing one component. */
   import type { Snippet } from 'svelte';
 
   interface Props {

@@ -121,6 +121,11 @@ async function loadSharp() {
     const mod = await import('sharp');
     return mod.default || mod;
   } catch (err) {
+    // The message already folds err in by hand; adding { cause: err } too is
+    // a real improvement, left for the batch that next touches error
+    // handling here rather than a directory-wide rule turn-off
+    // (issues/phase-8, B9-R2/B9-N5).
+    // eslint-disable-next-line preserve-caught-error
     throw new Error(
       'sharp is not installed for tools/artwork - run: cd tools/artwork && npm ci (' +
         (err && err.message ? err.message : err) +

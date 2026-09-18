@@ -44,6 +44,11 @@ function readState(path) {
   try {
     return JSON.parse(text);
   } catch (err) {
+    // The message already folds err in by hand; adding { cause: err } too is
+    // a real improvement, left for the batch that next touches error
+    // handling here rather than a directory-wide rule turn-off
+    // (issues/phase-8, B9-R2/B9-N5).
+    // eslint-disable-next-line preserve-caught-error
     throw new Error(
       'state file is not valid JSON: ' +
         path +

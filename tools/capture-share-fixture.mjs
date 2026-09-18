@@ -94,10 +94,12 @@ await page.evaluateOnNewDocument(() => {
   /* Watch the clipboard rather than the operating system's. */
   window.isSecureContext = true;
   window.__clip = null;
-  window.ClipboardItem = class {
-    constructor(m) {
-      this.map = m;
-    }
+  // A plain constructor function, not a `class`, so it is not an
+  // extraneous-class violation - it exists only to be `new`-able the way
+  // the real DOM ClipboardItem is, with no static members (issues/phase-8,
+  // B9-R2/B9-N5).
+  window.ClipboardItem = function (m) {
+    this.map = m;
   };
   Object.defineProperty(navigator, 'clipboard', {
     value: {

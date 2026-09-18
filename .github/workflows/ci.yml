@@ -35,8 +35,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -313,7 +311,8 @@ jobs:
           # against, with no extra source of truth to invent
           # (issues/phase-8, DP2).
           stub_count=$(ls -1 _site/i | wc -l)
-          csv_rows=$(($(wc -l < catalog.csv) - 1))
+          csv_rows=$(($(wc -l < _site/catalog.csv) - 1))
+          echo "stub count: $stub_count, catalog.csv data rows: $csv_rows"
           if [ "$stub_count" -ne "$csv_rows" ]; then
             echo "::error::_site/i has $stub_count stub pages but catalog.csv has $csv_rows data rows - a partial generation would otherwise slip past the non-empty check above"
             exit 1

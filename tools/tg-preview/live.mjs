@@ -72,7 +72,9 @@ export async function verify(urls, { site, fetch: fetchImpl, sleep, log }) {
     }
     const mismatched = [];
     await runPool(pending, VERIFY_CONCURRENCY, async (url) => {
-      let live = null;
+      // Declared, not initialised: the initial value was never read before
+      // either branch below overwrote it (issues/phase-8, B9-R2/B9-N5).
+      let live;
       try {
         live = await liveFingerprint(url);
       } catch {

@@ -142,14 +142,24 @@ export default ts.config(
        older style" - that only ever described the fourteen legacy suites
        R0c deleted, not this code.
 
-       This is a format-and-lint-enablement batch, not a rewrite: every rule
-       turned off below either assumes TypeScript-authored code these plain
-       CommonJS/ESM scripts never had, or would otherwise demand touching
-       lines this same commit's own acceptance line requires untouched
-       (`git diff -w --stat` empty apart from this file and
-       .prettierignore) - real, pre-existing patterns recorded here rather
-       than silently rewritten in a commit whose only claimed effect is
-       formatting. */
+       Every rule turned off below reflects a real, structural fact about
+       this code, not a diff-size budget (issues/phase-8, B9-N6 - the
+       original wording here cited this same commit's own "git diff -w
+       --stat empty" acceptance line, which B9 itself recorded as unmet and
+       as the wrong instrument): `no-console` is these suites' entire
+       reporting mechanism, the same way it is for any node CLI tool, not
+       the browser-app policy the rule exists to enforce; `no-require-
+       imports` (narrowed to `*.js` below, issues/phase-8, B9-N11) is
+       correct CommonJS in these files, not a TypeScript-era holdover to
+       migrate off; `explicit-module-boundary-types` has no annotation to
+       write over untyped JS, and no type to infer one from either. A rule
+       that instead caught a real, fixable pattern - `no-regex-spaces`,
+       `no-extraneous-class`, `no-useless-assignment` - was fixed at each of
+       its sites rather than turned off directory-wide (issues/phase-8,
+       B9-R2/B9-N5); `preserve-caught-error` likewise stays on here, with an
+       inline disable at each of its three pre-existing sites, so a *new*
+       catch/rethrow in `tests/`/`tools/` is still caught instead of passing
+       silently. */
     files: [
       'tests/**/*.js',
       'tests/**/*.mjs',
@@ -160,13 +170,7 @@ export default ts.config(
     extends: [ts.configs.disableTypeChecked],
     languageOptions: { globals: { ...globals.node } },
     rules: {
-      /* Every suite's entire reporting mechanism is `console.log`, the same
-         way it is for any node CLI tool - not the browser-app policy this
-         rule exists to enforce. */
       'no-console': 'off',
-      /* CommonJS is the correct, only form for the .js files here - not a
-         TypeScript-era holdover to migrate off. */
-      '@typescript-eslint/no-require-imports': 'off',
       /* Untyped JS: there is no annotation to write, and no type to infer
          one from either. */
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -176,21 +180,17 @@ export default ts.config(
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }
-      ],
-      /* tests/derived.js's ci.yml-indentation regexes (`/^  deploy:/`,
-         `/^    needs:/`) use literal run-length spaces, not a `{n}`
-         quantifier - pre-existing and unambiguous in context; not touched
-         here. */
-      'no-regex-spaces': 'off',
-      /* tools/artwork/run.mjs and tools/tg-preview/run.mjs rethrow without
-         `{ cause }` - a real improvement, left for the batch that next
-         touches error handling in either file rather than this one. */
-      'preserve-caught-error': 'off',
-      /* tools/capture-share-fixture.mjs's constructor-only class and
-         tools/tg-preview/live.mjs's one dead `let` assignment are pre-
-         existing shapes, not new code this batch is answerable for. */
-      '@typescript-eslint/no-extraneous-class': 'off',
-      'no-useless-assignment': 'off'
+      ]
+    }
+  },
+  {
+    /* Narrower than the block above: every `no-require-imports` finding is
+       in a `.js` CommonJS file (60 sites, measured), never a `.mjs` one, so
+       scoping the turn-off to `*.js` still catches a future `.mjs` tool that
+       reaches for `require` by mistake (issues/phase-8, B9-N11). */
+    files: ['tests/**/*.js', 'tools/**/*.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off'
     }
   },
   {

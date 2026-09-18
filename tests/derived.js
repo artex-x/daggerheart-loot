@@ -128,6 +128,14 @@ ok(
   'app/index.html has no noindex'
 );
 ok(NOINDEX.test(page(ALL[0])), 'the stub generator stopped setting noindex');
+/* 404.html is authored, not generated (tools/build.js never touches it), so
+   neither of the above two checks reaches it - a deleted noindex or a
+   deleted id="app-404" marker on this file stayed green through npm run
+   check and only reddened in the deploy guard's own 404-fallback checks
+   (issues/phase-8, B4-5). Two lines make it a local gate too. */
+const notFoundHtml = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
+ok(NOINDEX.test(notFoundHtml), '404.html has no noindex');
+ok(notFoundHtml.includes('id="app-404"'), '404.html has lost its id="app-404" marker');
 const rob = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
 ok(
   /^User-agent: \*\s*\nAllow: \//m.test(rob),
@@ -219,6 +227,19 @@ ok(
   'twitter:image diverges from og:image: ' + shareFacts['twitter:image']
 );
 ok(shareFacts['og:locale'] === 'ru_RU', 'og:locale is not ru_RU: ' + shareFacts['og:locale']);
+
+/* `/daggerheart-loot/` is hardcoded in 404.html's two way-home links too
+   (tools/derived.js and tools/build-share-pages.js already read SITE, and
+   llms.txt carries the same literal) - a repo rename or an apex CNAME would
+   break all of them with every other gate green. One assertion against the
+   pathname SITE already carries closes 404.html's own copy (issues/phase-8,
+   B4-R4). */
+ok(
+  fs.readFileSync(path.join(ROOT, '404.html'), 'utf8').includes(new URL(SITE).pathname),
+  '404.html no longer contains ' +
+    new URL(SITE).pathname +
+    ' - a repo rename or an apex CNAME would silently break its way-home links'
+);
 
 /* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
    own "summary_large_image" - one record with art, one built with its art
@@ -795,7 +816,7 @@ const OUTSIDE = [
   ['README.ru.md', /^.*под эту лицензию не подпадают[\s\S]*?\n\n/m]
 ].forEach(function (pair) {
   const file = pair[0];
-  const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\n  /g, ' ');
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\n {2}/g, ' ');
   const clause = (pair[1].exec(text) || [''])[0];
   ok(clause, file + ': the caveat about what falls outside the licence went missing');
   ok(
@@ -816,9 +837,11 @@ const OUTSIDE = [
    job, which this assertion named until then). */
 const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
 const deploy =
-  /^  deploy:\s*\r?\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(workflow);
+  /^ {2}deploy:\s*\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(
+    workflow
+  );
 ok(deploy, 'deploy.needs: deploy job is missing');
-const deployNeeds = deploy && /^    needs:\s*\[([^\]\r\n]*)\]\s*$/m.exec(deploy[1]);
+const deployNeeds = deploy && /^ {4}needs:\s*\[([^\]\r\n]*)\]\s*$/m.exec(deploy[1]);
 ok(deployNeeds, 'deploy.needs: inline needs list is missing or unparseable');
 if (deployNeeds) {
   const names = deployNeeds[1].split(',').map(function (name) {
@@ -838,7 +861,9 @@ if (deployNeeds) {
    is the assertion that catches that: the matrix list's length has to equal
    the divisor, and the list has to be exactly 1..m. */
 const browserJob =
-  /^  browser:\s*\r?\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(workflow);
+  /^ {2}browser:\s*\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(
+    workflow
+  );
 ok(browserJob, 'browser job: missing from ci.yml');
 const shardList = browserJob && /^\s*shard:\s*\[([^\]]*)\]\s*$/m.exec(browserJob[1]);
 ok(shardList, 'browser.strategy.matrix.shard: missing or unparseable');

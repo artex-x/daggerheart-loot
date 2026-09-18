@@ -2,15 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `24297a8`, B12b's own sha-citation
-  follow-up, one commit past **B12b** itself (`607b252`), which was one
-  commit past B12a's own sha-citation follow-up (`4786ea9`), one commit
-  past **B12a** (`e52f5de`). `rtk npm run check` is green on B12b (all
-  suites, coverage thresholds met) - see "Verification"; nothing since has
-  touched a gated path (`issues/**` markdown is exempt). Pushed:
-  `git rev-parse HEAD origin/main` agreed after the push.
-- Last agent: implementer (2026-09-18, B12b: production source
-  (`app/src/**`) and the three new `docs/specs/DEBT.md` entries).
+- Task status: in_progress. HEAD is `<pending, see B12c sha-citation
+  follow-up>`, **B12c** itself, one commit past B12b's own sha-citation
+  follow-up (`24297a8`), which was one commit past **B12b** (`607b252`).
+  `rtk npm run check` is green on B12c (all suites, coverage thresholds
+  unchanged) - see "Verification". Pushed and CI-watched: see
+  "Verification" for the run id and what the deploy log shows for the
+  stub-count line.
+- Last agent: implementer (2026-09-18, B12c: harness, tooling and CI).
 - Branch: `main`.
 - Base / starting commit: `e7ce2ad` (this task's planning pass, B12
   designed as four consecutive pieces).
@@ -19,14 +18,15 @@
   is itself the remediation stage for B1-B11's eleven reviews, and
   reviewing it would open a second-order review -> remediate loop with no
   natural floor. Not "not required (no trigger fired)" - a trigger did
-  fire (production source, `app/src/**`), the review was declined.
+  fire (CI workflow and tooling changes), the review was declined.
 - No open deviations. Same discrepancy carried from B12a, not re-resolved
   here (unchanged, `plan.md`'s B12a step 7 undercounts the Deferred table
   by one row - see `nits.md`'s note under its Deferred table).
 - Last planning pass: planner, 2026-09-18, at `78981b2` - designed B12 as
   four consecutive pieces.
 - NEEDS_HUMAN_CONFIRMATION: no.
-- Next batch: **B12c** - harness, tooling and CI - per `plan.md`, "B12c".
+- Next batch: **B12d** - the browser-gated rows and the three measurements
+  this phase owes - per `plan.md`, "B12d".
 
 ## Completed
 
@@ -385,12 +385,73 @@ pre-compaction text.
   `imgFailed`) were checked against `tests/app/snapshots/` first and found
   zero hits, so both stayed check-gated in this piece rather than moving to
   `B12d`. No deviation.
+- **B12c - harness, tooling and CI** -
+  `<pending, see B12c sha-citation follow-up>`. Review: not run (owner's
+  decision, 2026-09-18 - see "Status"). All 21 live rows landed as real
+  edits (`B4-R1`-`B4-R4`, `B4-1`-`B4-7`, `B5-R1`, `B5-N3`, `B5-N14`,
+  `B6-N2`, `B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`, `B9-N11`); `B4-10`
+  and `B5-N15` needed no edit - already closed/already-done by B12a's own
+  census, confirmed on arrival. **`B4-3`'s original B4 acceptance line
+  ("the deploy log shows the stub-count line") stays recorded as unmet at
+  B4** - GHA runs `bash -e`, not `-x`, so the step echoed its own source
+  with `$stub_count` unexpanded and printed nothing on success; the
+  `1091 = 1091` B4's record cited came from a local replay, never from CI.
+  This piece adds the missing `echo`, which is a new instrument, not a
+  retroactive proof that B4's line was ever met - see "Verification" for
+  what the deploy log now actually shows. `B4-4`'s guard now reads
+  `_site/catalog.csv` instead of the repo-root copy, so the collect step's
+  own copy is what gets exercised (previously a byte-truncated `_site`
+  copy could pass silently). `check-site.lib.mjs`'s `dirReader`/
+  `fetchReader` jsdoc comments were narrowed/reworded rather than the
+  retry behaviour changed (`B4-R1`, `B4-R3`); `check-site.test.mjs` now
+  asserts `checks()`'s exact count (21) and exact sorted path set
+  (`B4-R2`); `golden.js` dropped four unexported-and-unused symbols
+  (`KEEP_KEYS`, `sigOf`, `lineFor`, `controlLine`) and `golden.test.mjs`
+  gained three new node:test cases - a `serializeTree` test pinning rule
+  A's elision-summary line and rule B's `namelen`/`namehash` suffix
+  together (`B4-1`), a 12-child interleaved checkbox/button case proving
+  `elisionOf` groups across the whole list rather than by consecutive run
+  (`B4-2`), and a `slugOf` uniqueness assertion over the whole `STATES`
+  inventory (`B6-N2`) - plus a fourth, a source-text call-site count for
+  `golden.js`'s three `await d.addressSettled()` calls (`B8.1-N1`).
+  `tests/derived.js` gained two local 404.html gates (noindex, the
+  `id="app-404"` marker - `B4-5`) and an assertion that `404.html` still
+  contains `SITE`'s own pathname (`B4-R4`); `.prettierignore`'s shared
+  `app/index.html`/`404.html` comment now gives `404.html` its own clause
+  (`B4-6`); the `check` job's bare `fetch-depth: 0` was dropped -
+  `git diff --exit-code` needs no history (`B4-7`). `tests/craft.js` gained
+  an assertion pinning O6's one-`<p>`-per-source-line rendering against
+  record `w6` (`B5-R1`); `vite.config.mts`'s threshold comment moved to sit
+  above `Button.svelte` and now names three exceptions, not one (`B5-N3`);
+  `tests/run-all.js`'s weight comment dropped "the reviewer re-ran the
+  packer" and `Badge.svelte`'s comment now states the real reason
+  (an earlier deliberate wait for a third copy, not a missed deadline -
+  `B5-N14`). `tests/contracts.js` wired to `./ok.js`, deleting its own
+  inline fail counter (`B9-N3`). `B9-R2`/`B9-N5` landed as one edit across
+  `eslint.config.mjs`'s four code-rule turn-offs: `no-regex-spaces` fixed
+  at all 5 measured sites (`{2}`/`{4}` quantifiers replacing literal
+  double-space runs), `@typescript-eslint/no-extraneous-class`'s two
+  constructor-only classes rewritten as plain constructor functions,
+  `no-useless-assignment`'s one dead initialiser dropped, and
+  `preserve-caught-error` narrowed from a directory-wide off to three
+  inline `eslint-disable-next-line` comments at its exact pre-existing
+  sites - a *new* catch/rethrow in `tests/`/`tools/` is still caught now.
+  `eslint.config.mjs`'s block comment reworded to the durable per-rule
+  reasons instead of citing this batch's own retracted `git diff -w --stat`
+  acceptance line (`B9-N6`); `@typescript-eslint/no-require-imports`
+  narrowed to `files: ['tests/**/*.js', 'tools/**/*.js']` (`B9-N11`).
+  `npx eslint .` clean throughout. No row moved rendered output or changed
+  a public contract. No deviation.
 
 ## Verification
 
-Latest pass (B12b, sha in "Completed" above); earlier passes' exact
+Latest pass (B12c, sha in "Completed" above); earlier passes' exact
 commands/results are in git history per "Completed" above, and the B9-
 remediation, B10 and B10-remediation runs are preserved below.
+
+### B12c's own verification
+
+<!-- filled in after the push and the CI watch - see the sha-citation follow-up -->
 
 ### B12b's own verification
 

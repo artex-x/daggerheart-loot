@@ -13,11 +13,23 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import golden from './golden.js';
+import inventory from './inventory.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
-const { collapse, normUrl, clean, elisionOf, capName, headerOf, sectionsOf, compareGolden } =
-  golden;
+const {
+  collapse,
+  normUrl,
+  clean,
+  elisionOf,
+  capName,
+  serializeTree,
+  headerOf,
+  sectionsOf,
+  compareGolden,
+  slugOf
+} = golden;
+const { STATES } = inventory;
 
 describe('collapse', () => {
   it('folds runs of whitespace to one space and treats undefined as empty', () => {
@@ -94,6 +106,75 @@ describe('elisionOf - rule A, the 5/6 sibling boundary', () => {
     assert.equal(at, 2);
     assert.equal(info.role, 'row');
     assert.equal(info.total, 6);
+  });
+
+  it('groups by signature across the whole list, not by consecutive run - a table row alternates checkbox/button and neither ever runs 6 deep on its own (issues/phase-8, B4-2)', () => {
+    const cell = (role) => ({ role, name: '', attrs: [], children: [] });
+    // 6 checkboxes and 6 buttons, strictly alternating: every consecutive
+    // run has length 1, so a run-detection algorithm would elide nothing at
+    // all here - the exact regression rule A's own comment warns against.
+    const children = Array.from({ length: 12 }, (_, i) =>
+      cell(i % 2 === 0 ? 'checkbox' : 'button')
+    );
+    const { keep, summaryAt } = elisionOf(children);
+    assert.deepEqual(keep, [
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]);
+    assert.equal(summaryAt.size, 2);
+    assert.deepEqual(summaryAt.get(4), { role: 'checkbox', total: 6 });
+    assert.deepEqual(summaryAt.get(5), { role: 'button', total: 6 });
+  });
+});
+
+describe('serializeTree - rule A (elision) and rule B (name cap) applied together (issues/phase-8, B4-1)', () => {
+  it('caps a long name inline and elides a run of same-shape siblings, in one pass', () => {
+    const longName = 'a'.repeat(65);
+    const row = (name) => ({ role: 'row', name, attrs: [], children: [] });
+    const tree = {
+      role: 'table',
+      name: '',
+      attrs: [],
+      children: [row(longName), row(''), row(''), row(''), row(''), row('')]
+    };
+    const out = [];
+    serializeTree(tree, 0, out);
+
+    const cap = capName(longName);
+    assert.deepEqual(out, [
+      'table ""',
+      `  row "${cap.text}" [namelen=${String(cap.namelen)} namehash=${cap.namehash}]`,
+      '  row ""',
+      '  ... row x2 of 6 same-shape siblings elided',
+      '  row ""',
+      '  row ""'
+    ]);
+  });
+});
+
+describe('slugOf - unique per state id (tests/app/golden.js:53, issues/phase-8, B6-N2)', () => {
+  it('never lets two different state ids collapse onto the same golden filename', () => {
+    const seenBy = new Map();
+    for (const s of STATES) {
+      const slug = slugOf(s.id);
+      const prior = seenBy.get(slug);
+      assert.ok(
+        !prior || prior === s.id,
+        `state ids "${prior}" and "${s.id}" both slug to "${slug}" - they would silently ` +
+          'share one golden file and the stale-file sweep would not notice'
+      );
+      seenBy.set(slug, s.id);
+    }
   });
 });
 
@@ -206,6 +287,26 @@ describe('compareGolden', () => {
   });
 });
 
+describe('addressSettled() call sites - nothing guarded them before this (issues/phase-8, B8.1-N1)', () => {
+  it('is awaited before every capture, in both the ordinary branch (twice) and the timed branch (once)', () => {
+    /* Deleting any one of these three calls silently reintroduces B8.1's own
+     * defect - no unit-level signal at all, only an intermittent red golden
+     * shard on an owned-list route (issues/phase-8/context.md, "A
+     * deterministic B8 regression"). This does not prove the calls are in
+     * the *right place* - only that they are still there - but that is the
+     * gap B8.1-N1 named: before this, nothing guarded the call sites at
+     * all. */
+    const src = readFileSync(path.join(HERE, 'golden.js'), 'utf8');
+    const calls = src.match(/await d\.addressSettled\(\)/g) || [];
+    assert.equal(
+      calls.length,
+      3,
+      'expected three `await d.addressSettled()` call sites in golden.js (two in the ' +
+        'ordinary branch, one in the timed branch) - one was removed'
+    );
+  });
+});
+
 describe("URL_DEBOUNCE_MS - coupled to ListPage.svelte's own debounce (issues/phase-8, B8.1)", () => {
   /* driver.js's addressSettled() waits `URL_DEBOUNCE_MS + 100ms` of address
    * quiet before a golden capture, so it stays a real wait rather than a
@@ -228,7 +329,7 @@ describe("URL_DEBOUNCE_MS - coupled to ListPage.svelte's own debounce (issues/ph
      * function would take the first match - also silently wrong. The
      * setTimeout-count assertion below closes the second case; the bound
      * closes the first. */
-    const bodyMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\n  \}/);
+    const bodyMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\n {2}\}/);
     assert.ok(
       bodyMatch,
       "could not find scheduleUrlSync's own function body in ListPage.svelte"

@@ -122,5 +122,35 @@ ok(
       .join(', ')
 );
 
+/* O6 changed 98 of 1091 stub pages (every record whose rud carries a
+   newline) and nothing pinned the new shape - the staleness probe above
+   only proves a stub isn't stale, not what a fresh one actually renders.
+   Pin it directly: descHtml() in tools/build-share-pages.js renders one
+   <p> per source line, not one glued paragraph (issues/phase-8, B5-R1). */
+console.log('multi-line description rendering (O6)');
+const w6 = ALL.find((x) => x.id === 'w6');
+ok(
+  !!w6 && w6.rud.split('\n').length > 1,
+  'w6 is expected to carry a multi-line rud for this probe'
+);
+if (w6) {
+  const w6Lines = w6.rud.split('\n');
+  const w6Stub = fs.readFileSync(path.join(ROOT, 'i', 'w6.html'), 'utf8');
+  const w6Paragraphs = [...w6Stub.matchAll(/^\s*<p>(.*)<\/p>$/gm)].map((m) => m[1]);
+  ok(
+    w6Paragraphs.length === w6Lines.length,
+    'w6.html: expected one <p> per source line (' +
+      w6Lines.length +
+      '), got ' +
+      w6Paragraphs.length
+  );
+  w6Lines.forEach((line, i) => {
+    ok(
+      w6Paragraphs[i] === line,
+      'w6.html: paragraph ' + i + ' does not match its source line verbatim'
+    );
+  });
+}
+
 console.log(failed() ? '\n' + failed() + ' FAILED' : '\nall checks passed');
 process.exit(failed() ? 1 : 0);

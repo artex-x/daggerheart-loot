@@ -141,9 +141,17 @@ export async function runChecks(read, list = checks()) {
 
 /** The live-URL reader: plain `fetch`, no dependency, so it can run in a job
  *  that has not necessarily installed anything. `AbortSignal.timeout` gives
- *  every request a hard ceiling - without one, a stalled CDN socket hangs
- *  this step to the job's own timeout instead of retrying (issues/phase-8,
- *  DP1; the existing catch below already treats an abort as a retry). */
+ *  every request a hard ceiling so one stalled CDN socket cannot hang this
+ *  step indefinitely (issues/phase-8, DP1; the existing catch below already
+ *  treats an abort as a retry) - it bounds a single request, not the whole
+ *  retry loop below: `checks()`'s 12 distinct paths, `TRIES=6` and
+ *  `WAIT_MS=10_000` between attempts add up to a worst case of roughly
+ *  12 x 15s x 6 + 5 x 10s, about 19 minutes, if every request on every try
+ *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout
+ *  (issues/phase-8, B4-R3). That worst case needs every request to fail
+ *  identically on every attempt, unlike the few-seconds-of-stale-CDN read
+ *  this retry loop actually exists for; the job timeout is still what bounds
+ *  it in the end. */
 export function fetchReader(root, timeoutMs = 15_000) {
   return async (path) => {
     const url = root + path;
@@ -158,10 +166,17 @@ export function fetchReader(root, timeoutMs = 15_000) {
 }
 
 /** The local-`_site/`-build reader, used before a deploy exists at all
- *  (ci.yml's guard step). Emulates GitHub Pages' own missing-path rule
- *  exactly: a path that is not on disk is served as 404.html's content
- *  with a 404 status, which is what makes the 404-fallback checks above
- *  meaningful against a plain directory, not only against the live site. */
+ *  (ci.yml's guard step). Emulates only the one Pages rule this file's
+ *  checks depend on: a path that is not on disk is served as 404.html's
+ *  content with a 404 status - not GitHub Pages' missing-path behaviour in
+ *  general, which measurably diverges from this locally (an extensionless
+ *  path is 200 live but 404 here; a directory path throws `EISDIR`; a
+ *  case-insensitive filesystem 200s where Pages 404s). None of that matters
+ *  to `checks()` above: every path it asserts against is an exact file,
+ *  never one of those three shapes, so the one rule this reader does
+ *  emulate is the only one any check here relies on. This is what makes the
+ *  404-fallback checks above meaningful against a plain directory, not only
+ *  against the live site. */
 export function dirReader(dir) {
   return async (path) => {
     const rel = path === '' ? 'index.html' : path;

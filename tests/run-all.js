@@ -45,8 +45,8 @@ const HERE = __dirname;
    for the whole excess (`tests.md`, "T2"). The two halves below are kept at
    an even ~275s split rather than the two rows' real measured weights
    (371.9s ru, 172.7s en - issues/phase-8's B3 review, re-measured after this
-   comment was first written): the reviewer re-ran the packer with the
-   corrected numbers and got the same four bins, because each CI runner is
+   comment was first written): re-running the packer with the corrected
+   numbers still produces the same four bins, because each CI runner is
    itself a 4-way pool, so wall clock is max(longest row, total/4) and the
    bin sums this packer minimises never bind at this table's scale.
    Correcting the split buys documentation accuracy, not a faster `browser`

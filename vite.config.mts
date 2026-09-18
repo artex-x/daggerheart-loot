@@ -190,22 +190,21 @@ export default defineConfig({
           branches: 75,
           statements: 85
         },
-        /* The one exception, and it is a file rather than a rule. Svelte
-           compiles every attribute into an update path; Button is small enough
-           that its own tests - seven of them, including one that changes its
-           props under it - still cannot reach them all. Lowering this for every
-           component to suit one would hide a component nobody rendered, so the
-           exception is named here instead. */
+        /* Three components carry their own exception, a file rather than a
+           rule - each named here rather than lowering the bar for every
+           component to suit one (see CLAUDE.md). */
         /* Five buttons built from three props and nothing else: every branch
          Svelte generates for it is an attribute update path, and even a test
-         that switches the language cannot reach them all. Named rather than
-         lowering the bar for every component - see CLAUDE.md. */
+         that switches the language cannot reach them all. */
         'src/components/DiceBar.svelte': {
           lines: 85,
           functions: 80,
           branches: 55,
           statements: 85
         },
+        /* Svelte compiles every attribute into an update path; Button is
+           small enough that its own tests - seven of them, including one
+           that changes its props under it - still cannot reach them all. */
         'src/components/Button.svelte': {
           lines: 85,
           functions: 80,

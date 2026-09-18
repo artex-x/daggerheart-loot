@@ -325,17 +325,21 @@ function compareGolden(id, wantText, gotText, ok) {
  * these under `node --test` against plain strings - no dist/, no puppeteer.
  * `require('./lib.js')` (which checks dist/ exists and requires puppeteer)
  * is deliberately kept out of this module's top level so requiring golden.js
- * for its pure half never trips either. */
+ * for its pure half never trips either.
+ *
+ * `KEEP_KEYS`, `sigOf`, `lineFor` and `controlLine` stay unexported: each is
+ * used internally (by `clean`, `elisionOf`, `serializeTree` and the
+ * `require.main` capture path respectively) but nothing outside this file
+ * ever called the export directly (issues/phase-8, B4-1 - a `git grep`
+ * outside this file found none). `serializeTree` itself stays exported
+ * because `golden.test.mjs` now exercises it directly, pinning the two
+ * output shapes rule A and rule B produce together. */
 module.exports = {
-  KEEP_KEYS,
   collapse,
   normUrl,
   clean,
-  sigOf,
   elisionOf,
   capName,
-  lineFor,
-  controlLine,
   serializeTree,
   headerOf,
   sectionsOf,

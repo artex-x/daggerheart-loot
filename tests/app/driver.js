@@ -366,6 +366,11 @@ function makeDriver(page, target) {
         await el.click();
       } catch (e) {
         await handle.dispose();
+        // The message already folds e.message in by hand; adding
+        // { cause: e } too is a real improvement, left for the batch that
+        // next touches error handling here rather than a directory-wide
+        // rule turn-off (issues/phase-8, B9-R2/B9-N5).
+        // eslint-disable-next-line preserve-caught-error
         throw new Error(
           `${target}: "${name}"${nth ? ` (nth ${nth})` : ''} is not clickable - ${e.message}`
         );
@@ -856,10 +861,12 @@ async function prepare(page) {
   await page.evaluateOnNewDocument(() => {
     window.isSecureContext = true;
     window.__clip = null;
-    window.ClipboardItem = class {
-      constructor(m) {
-        this.map = m;
-      }
+    // A plain constructor function, not a `class`, so it is not an
+    // extraneous-class violation - it exists only to be `new`-able the way
+    // the real DOM ClipboardItem is, with no static members (issues/phase-8,
+    // B9-R2/B9-N5).
+    window.ClipboardItem = function (m) {
+      this.map = m;
     };
     Object.defineProperty(navigator, 'clipboard', {
       value: {

@@ -160,9 +160,28 @@ describe('dirReader - the GitHub Pages missing-path emulation, against a real di
 });
 
 describe('checks() shape', () => {
-  it('is a non-empty list of {path, test, message} descriptors', () => {
+  it('is the exact, named set of {path, test, message} descriptors - not just "more than a few" (issues/phase-8, B4-R2)', () => {
     const list = checks();
-    assert.ok(list.length > 10);
+    // `list.length > 10` could not have caught the exact failure T10/DP9
+    // exists to prevent - an assertion silently vanishing in a refactor -
+    // because a refactor that dropped several checks would still pass it.
+    // The exact count and the exact sorted distinct path set close that.
+    assert.equal(list.length, 21);
+    const paths = [...new Set(list.map((c) => c.path))].sort();
+    assert.deepEqual(paths, [
+      '',
+      'assets/app.js',
+      'card/die-d12-bw.svg',
+      'catalog.csv',
+      'data.js',
+      'data.json',
+      'i/w1.html',
+      'img/_none.webp',
+      'llms.txt',
+      'og/_share.jpg',
+      'robots.txt',
+      UNKNOWN_PATH
+    ]);
     for (const c of list) {
       assert.equal(typeof c.path, 'string');
       assert.equal(typeof c.test, 'function');
