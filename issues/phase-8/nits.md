@@ -176,6 +176,73 @@ tree) - they belong to whoever next has the tree:
   selection at 1180 and 375 (B7-R1) - the measurement P10's acceptance line
   actually asked for.
 
+### From B8's review (record actions, print, motion and focus)
+
+Verdict **fix-then-continue**. Appended when the review landed, per the
+standing rule above.
+
+The review **confirmed** B8's two central claims rather than taking them on
+trust, and both are worth keeping: no golden *can* have moved (`tests/app/golden.js`
+captures the accessibility tree plus the control inventory, no CSS - D1/D18/D20
+are CSS-only, R6 adds only handlers, D21's initial value is unchanged `false`,
+D13/D22 move no name, role or control; the two `--only=` probes were
+belt-and-braces, not the proof), and D1's blanket rule has no correctness blast
+radius (no `transitionend`/`animationend`/`getAnimations` consumer anywhere in
+`app/src`, no `allow-discrete`/`@starting-style`, every `@keyframes` ends in a
+visible state, and the non-reduced-motion path is untouched because the whole
+rule lives inside the media query). Print's product law is intact: `fit()` is
+byte-identical, nine cards per A4, colour and black-and-white still distinct.
+
+**Three blockers are NOT in this table and are NOT B12's** - they go to B8's
+own one remediation cycle, with `B8-R1` and `B8-R2` riding along because both
+touch `tests/app/print.js`, which that pass already opens. Recorded here only
+so the register shows they were seen:
+
+- **BL-1**: D18 deleted the one `:focus-visible` override that was not
+  redundant. `.card-media` (`RecordCard.svelte:345-347`) is a real `<button>`
+  flush against `.card`, and `.card` is `overflow: clip`. Its `outline-offset:
+  -2px` drew the ring **inside**; the global rule's `+2px` puts it outside the
+  button's border box and so outside `.card`'s padding box, clipped on three
+  sides. The plan's step 10 said "the five **8px** overrides" - this one was
+  not 8px. No instrument here can see it: `sweep.js`'s `focusWalk` reads
+  `getComputedStyle().outline`, which still reports a ring an ancestor clips.
+- **BL-2**: `RecordActions.svelte:72` now awaits `pngOf` **before** touching
+  the clipboard, defeating the gesture rule `ports/clipboard.ts:102-104`
+  documents ("the promise is handed to ClipboardItem rather than awaited
+  first: Safari drops the user gesture if anything is awaited in between") and
+  that the deleted live app followed deliberately. On WebKit the write loses
+  transient activation; B8's own new D14 path then silently downgrades the
+  copy to a download. Every gate runs Chromium and the fallback masks it, so
+  nothing would ever report it. The comment in `clipboard.ts` is now false for
+  its only caller, which is the worse half.
+- **BL-3**: `docs/specs/COVERAGE.md:67` (the `noart` row) still calls "share
+  attaches no file" an impossible case that "never passes a file". D22 makes
+  `send()` pass one, so the spec is false on both the fact and the reason a
+  case was dropped.
+
+| id | where | what |
+|---|---|---|
+| B8-R1 | `tests/app/print.js:1141` | *(rides B8's remediation)* Asserts `lines === 1`, but owner decision Q2 set the cap at **two** lines and the plan's own wording was "pinning `cm26` at two lines". As shipped it is a change-detector where a cap was asked for: a legitimately longer name, or a data edit lengthening this one within the design's tolerance, fails the browser suite though the layout is correct. `ok(lines <= 2, ...)` with a message naming the two-line cap. Keep the measured "all four at one line, 2026-09-18" fact where it is, in `FEATURES.md` "Print". |
+| B8-R2 | `tests/app/print.js:1131-1155` | *(rides B8's remediation)* The committed `nameLines()` **is** the P16 measurement (same route, same 1100px, same `getClientRects().length`, both languages, both layouts), so the uncommitted scratchpad script costs nothing for `cm26`. But the route renders `cm26-f60-hi62-ci81` and the helper reads only `cm26`, so "the four longest names all render at one line" rests on a deleted script. Loop the four ids inside the existing `$eval` - two lines, zero extra page loads. |
+| B8-R3 | `app/src/ports/image.ts:45-51`, `RecordActions.svelte` | The 2000 ms `toBlob` watchdog can fire on a slow-but-fine encode, and `copyImage` maps *any* `pngOf` rejection to `imgTainted` - so a contended machine encoding a large source gives the user a tainted-canvas story for a slow encode and silently loses the picture. 2000 ms is defensible for card art; the residual risk is the wording. The code already builds distinct `Error` messages and `copyImage` discards them - name the two causes apart, or raise the watchdog and document the measured encode time. |
+| B8-R4 | `app/src/ports/image.ts` (`browserImage().download`), `vite.config.mts` | New code exercised by nothing: no unit test imports `browserImage`, the file is coverage-excluded, and the browser path cannot reach it (`states.js` case 10 runs on a build that taints, so `writeImage` is never reached, let alone refused). The comment updated in the same commit now overstates the exclusion - "exercised for real by `states.js`'s copy-image case" is true of `pngOf`, not of `download`. The plan's step 1 offered "narrow the exclusion **or** add the rejection-path test"; the rejection path got real browser coverage, the download did not. A jsdom test on `download` with `URL.createObjectURL`/`revokeObjectURL` stubbed (asserting the `<a download>` name, the click, and the element's removal), and trim the comment's claim to `pngOf`. |
+| B8-R5 | (proof, not a file) | D1 and D18 are **global CSS** reaching every rendered page, but B8's local gates were `app/states`, `app/print`, `sweep 1180` and two golden probes. `app/hues`, `app/typo`, `app/contracts`, `stub`, the other sweep widths and the four golden shards have not run against this tree. Nothing in the review's reading suggests movement (goldens are structure-only; hues reads computed colours, which a 0s transition only stabilises). **CI is the outstanding proof** - check the full browser matrix on the B8 commits or the remediation. |
+| B8-R6 | `tests/app/print.js` (the D20 block, ~line 1280) | `d.seed({'dhloot.lists.v2': ...})` is never cleared, and `driver.js`'s `seed` installs an `evaluateOnNewDocument` handler that survives every later `d.open()`. Harmless today (only the print-link block follows and it reads no lists), but the next person appending to this file inherits a seeded list without knowing - the same class as the viewport leak B8's own handoff documents. Also: the assertion depends on the action toast still being alive, and `say()` gives action toasts 7000 ms - two round trips inside 7 s is comfortable, but it is a real flake budget on a contended host. |
+| B8-N1 | `app/src/styles/tokens.css:172` | Cites "`docs/specs/DEBT.md`, D1's own history" for a rejected alternative, and the same commit deletes D1. The load-bearing half ("a longer non-zero duration was tried first and rejected for exactly the opposite reason") never says what the opposite reason *was*, so the dead pointer is the only route to it. State the reason inline in one clause, or cite `git show 8e43c92:docs/specs/DEBT.md`. |
+| B8-N2 | `app/src/lib/dict.ts:84,432` | `imgFailed` now fires only when `download()` throws (the blob already exists), but the wording is "Не удалось получить картинку" / "Could not load the image". The strings are live's own and live's use was broader, so they are inherited rather than invented - but wrong for the only case that can now raise them. "Не удалось сохранить картинку" / "Could not save the image". |
+| B8-N3 | `docs/specs/FEATURES.md` (Chrome section) | "Every focusable control gets the same gold keyboard-focus ring, **at one radius (`--r-sm`)**" is not true as built: a component's own scoped `border-radius` outranks the unscoped global rule, so `.seg button` keeps 999px - correctly. Drop "at one radius", or say the radius follows the control's own. |
+| B8-N4 | `tests/app/states.js:346` | "which is what made this invisible before **B12**" cites a first-plan batch id; this work is B8. Stale, and that clause narrates the session rather than the code. The rest of the comment block earns its keep - the Chromium `toBlob` behaviour is a live trap. |
+| B8-N5 | `tests/app/print.js:1131-1155` | Same edit as `B8-R2`; listed there. |
+| B8-N6 | `app/src/styles/tokens.css` (D1's rule) | *(deferred-scope)* The rule zeroes `animation-duration`/`transition-duration` but not `animation-delay`/`transition-delay`, so a delayed animation still waits under `reduce`. Nothing in the tree uses a delay today, so this is cheap insurance, not a defect - and the plan specified these four declarations and the owner approved them, so changing it is a policy edit, not a fix. |
+| B8-N7 | `app/src/components/TablesPage.svelte:444` | *(deferred-scope)* `scrollIntoView({ behavior: 'smooth' })` overrides CSS `scroll-behavior` per spec, so D1's `scroll-behavior: auto !important` does not reach it: the one real smooth scroll in the app still animates under `prefers-reduced-motion: reduce`. `TablesPage` is outside B8's file list. One-line fix when someone next opens that file - pick the behaviour from a `matchMedia('(prefers-reduced-motion: reduce)')` read. |
+| B8-N8 | `issues/phase-8/handoff.md` | *(deferred-scope, duplicate of `B7-N7`)* No top-level `## Verification` section (`.claude/templates/handoff.template.md:19`); each batch entry carries its results inline instead. Pre-existing for the whole file, not introduced by B8. **Size**: 138,821 B against `session-stop.mjs`'s 150 KB warn threshold - B9's entry will trip it, so `/handoff` compaction is due. |
+
+**One check this review names that nothing in the repository can perform**:
+after BL-1, confirming `.card-media`'s ring is drawn inside `.card` at both
+`.full` and `.compact` needs a human eye or a screenshot. `focusWalk` reads
+computed style, goldens read structure, axe checks neither - none of them sees
+an outline clipped by an ancestor.
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |
