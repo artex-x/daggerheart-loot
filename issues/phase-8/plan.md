@@ -233,24 +233,21 @@ golden shards green without `--update` (112 states, none moved);
 `npm run check` and `npm run check:built` both green. Full detail:
 `git show 56dabbc`, or `issues/phase-8/handoff.md`.
 
-### B11 - equipment apostrophes (O2) - last, owner-settled yes (Q8)
+### B11 - equipment apostrophes (O2) - SHIPPED `<pending>`
 
-- **Merged from**: first-plan B20, unchanged.
-- **Stands alone because**: a commit the harness cannot reach in any other
-  batch's gate - it rewrites `data.js`, regenerates 381 stubs and moves six
-  goldens and possibly the share fixture; the owner placed it last so it
-  never shares a diff with a code change.
-- **Files**: `data.js` (`en`/`ende` of `eq` records, U+2019 -> `'`),
-  regenerated `data.json`, `catalog.csv`, `i/` (untracked),
-  `docs/fixtures/share/records.json` if any captured record carries one, six
-  goldens.
-- **Gates**: `node tools/build.js`; `npm run check`; `node
-  tests/run-all.js dataint,derived,craft,stub`; `node tests/app/golden.js
-  --only=search --update`, `--only=eq_ --update`, then both green.
-- **Goldens**: re-record six (`_search_searched`, `_search_a_row_ticked`,
-  `_tables_eq_armor`, `_tables_eq_secondary`, `_tables_eq_weapon`,
-  `_tables_eq_weapon_panel_open`); the twenty carrying U+2019 from `dict.ts`
-  are P14's (B7).
+Outcome: normalised U+2019 to the ASCII apostrophe in the `en`/`ende` fields
+of 28 `eq` records in `data.js` (30 field values, 34 characters - some
+records share one upgrade-chain description text, and two records had both
+fields change); no other field, and no `items`/`alt`/`refs` record, touched
+(verified by parsing old and new `data.js` and diffing every field).
+`docs/fixtures/share/records.json` and `llms.txt` were checked and carry no
+U+2019, so neither needed a matching update - no public-contract change.
+`node tools/build.js` regenerated `data.json`/`catalog.csv`/`i/` from the
+fixed source. Exactly the six predicted goldens moved
+(`_search_searched`, `_search_a_row_ticked`, `_tables_eq_armor`,
+`_tables_eq_secondary`, `_tables_eq_weapon`, `_tables_eq_weapon_panel_open`);
+all four golden shards (112 states) green without `--update` confirms
+nothing else did. No deviation.
 
 ## Where every finding landed
 

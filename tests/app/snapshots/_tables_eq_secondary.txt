@@ -414,7 +414,7 @@ Advanced Small DaggerTier 3 · Finesse · Melee · d8+4 phy · One-H... [namelen
 Advanced Small Revolver
 Advanced Small RevolverTier 3 · Finesse · Far · d6+6 phy · One-H... [namelen=178 namehash=33f5ed97]
 Advanced Throwing Knives
-Advanced Throwing KnivesTier 3 · Finesse · Melee · d8+4 phy · On... [namelen=262 namehash=6cc4000c]
+Advanced Throwing KnivesTier 3 · Finesse · Melee · d8+4 phy · On... [namelen=262 namehash=b7704dc1]
 Advanced Tower Shield
 Advanced Tower ShieldTier 3 · Strength · Melee · d6+4 phy · One-... [namelen=131 namehash=58638a65]
 Advanced Whip
@@ -500,7 +500,7 @@ Improved Small DaggerTier 2 · Finesse · Melee · d8+2 phy · One-H... [namelen
 Improved Small Revolver
 Improved Small RevolverTier 2 · Finesse · Far · d6+3 phy · One-H... [namelen=178 namehash=1d635881]
 Improved Throwing Knives
-Improved Throwing KnivesTier 2 · Finesse · Melee · d8+2 phy · On... [namelen=262 namehash=86ff750b]
+Improved Throwing KnivesTier 2 · Finesse · Melee · d8+2 phy · On... [namelen=262 namehash=997c001f]
 Improved Tower Shield
 Improved Tower ShieldTier 2 · Strength · Melee · d6+2 phy · One-... [namelen=131 namehash=75ac7608]
 Improved Whip
@@ -542,7 +542,7 @@ Legendary Small DaggerTier 4 · Finesse · Melee · d8+6 phy · One-... [namelen
 Legendary Small Revolver
 Legendary Small RevolverTier 4 · Finesse · Far · d6+9 phy · One-... [namelen=179 namehash=20245dcf]
 Legendary Throwing Knives
-Legendary Throwing KnivesTier 4 · Finesse · Melee · d8+6 phy · O... [namelen=263 namehash=48dcd0b8]
+Legendary Throwing KnivesTier 4 · Finesse · Melee · d8+6 phy · O... [namelen=263 namehash=97c6650d]
 Legendary Tower Shield
 Legendary Tower ShieldTier 4 · Strength · Melee · d6+6 phy · One... [namelen=132 namehash=f2206d16]
 Legendary Whip
@@ -562,7 +562,7 @@ Other
 Paring Knife
 Paring KnifeTier 1 · Finesse · Melee · d8 phy · One-HandedPaired... [namelen=156 namehash=06c6a17a]
 Parrying Dagger
-Parrying DaggerTier 2 · Finesse · Melee · d6+2 phy · One-HandedP... [namelen=329 namehash=35edd638]
+Parrying DaggerTier 2 · Finesse · Melee · d6+2 phy · One-HandedP... [namelen=329 namehash=acf5d476]
 Powered Gauntlet
 Powered GauntletTier 3 · Knowledge · Close · d6+4 phy · One-Hand... [namelen=181 namehash=1ade28b3]
 Primer Shard
@@ -599,9 +599,9 @@ Table Shield
 Table ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBarri... [namelen=133 namehash=df911534]
 Tables
 Throwing Knives
-Throwing KnivesTier 1 · Finesse · Melee · d8 phy · One-HandedSto... [namelen=251 namehash=fdbdd7ec]
-Tinker’s Hammer
-Tinker’s HammerTier 3 · Strength · Melee · d8+4 phy · One-Handed... [namelen=153 namehash=117e0431]
+Throwing KnivesTier 1 · Finesse · Melee · d8 phy · One-HandedSto... [namelen=251 namehash=1f7da9bf]
+Tinker's Hammer
+Tinker's HammerTier 3 · Strength · Melee · d8+4 phy · One-Handed... [namelen=153 namehash=90bbe65c]
 Tower Shield
 Tower ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBarri... [namelen=120 namehash=50b00261]
 Towline Hook

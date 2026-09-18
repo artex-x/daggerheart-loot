@@ -2,27 +2,27 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is the B10 review remediation commit (two
-  blockers - a false verification claim corrected, the batch's one
-  behaviour change given coverage - plus B10-N6's spec line), one commit
-  past `f441ffe` (the B9-remediation sha-citation follow-up) - see
-  "Completed" for its sha. `rtk npm run check` is green on it - see
-  "Verification". B1-B10 plus both remediation passes are on `main` locally
-  in full. Pushed to `origin/main` - see "Verification", "Push".
-- Last agent: implementer (2026-09-18, B10 review remediation: one commit).
+- Task status: in_progress. HEAD is **B11 - equipment apostrophes (O2)**,
+  the last content batch, one commit past `6dee769` (the B10
+  sha-citation follow-up) - see "Completed" for its sha. `npm run check`,
+  `npm run check:built`, the fs suites, both `--only=` golden probes and all
+  four golden shards are green on it - see "Verification". B1-B11 plus every
+  remediation pass are on `main` locally in full. Pushed to `origin/main` -
+  see "Verification", "Push".
+- Last agent: implementer (2026-09-18, B11: one commit).
 - Branch: `main`.
-- Base / starting commit: `f441ffe`.
+- Base / starting commit: `6dee769`.
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next. B10's review
-  landed with two blockers plus B10-N6 routed to this remediation pass and
-  B10-N1..B10-N5 routed to B12 - see "Completed" and `issues/phase-8/nits.md`,
-  "From B10's review".
-- No open deviations. Both fixes and the spec line matched the dispatch
-  exactly; the test was proved to bite (see "Completed").
-- Next batch: **B11** - equipment apostrophes (O2), per `plan.md`. Last
-  batch before closeout (B12 clears the outstanding nits table).
+  cleared in B12, not folded into whichever batch is next. B11 has not been
+  reviewed yet.
+- No open deviations. `docs/fixtures/share/records.json` and `llms.txt` were
+  both checked for a U+2019 that would need a matching update and neither
+  carries one, so no public-contract file changed - see "Completed".
+- Next batch: **B12** - clearing the nit register - per `plan.md`, "B12".
+  It is dispatched only once every other batch has been reviewed; B10 and
+  B11 both still need a review pass first.
 
 ## Completed
 
@@ -282,12 +282,95 @@ pre-compaction text.
   does not. `nits.md` updated: B10-B1, B10-B2 and B10-N6 marked
   `done bfea223` and moved out of "Outstanding"; B10-N1..B10-N5 stay there
   for B12. No deviation.
+- **B11 - equipment apostrophes (O2)** - `<pending, see B11 sha-citation
+  follow-up>`. Normalised U+2019 to the ASCII apostrophe in the `en`/`ende`
+  fields of `eq` records in `data.js`: 28 records, 30 field values, 34
+  individual characters (some records share one upgrade-chain description
+  text across several ids; two records, `q157` and `q350`, had both `en`
+  and `ende` change). Verified by parsing the old and new `data.js` and
+  diffing every field of every `eq` record: exactly those 30 fields moved,
+  `items`/`alt`/`refs` are byte-identical, no id renumbered. Checked
+  `docs/fixtures/share/records.json` and `llms.txt` for a U+2019 that would
+  need a matching public-contract update per `CLAUDE.md` - neither carries
+  one (a whole-object walk of the fixture, and a line scan of `llms.txt`),
+  so no public-contract file changed; the plan's own "possibly the share
+  fixture" clause did not fire. `node tools/build.js` regenerated
+  `data.json`/`catalog.csv`/`i/` from the fixed source. Exactly the six
+  predicted goldens moved (`_search_searched`, `_search_a_row_ticked`,
+  `_tables_eq_armor`, `_tables_eq_secondary`, `_tables_eq_weapon`,
+  `_tables_eq_weapon_panel_open`); all four golden shards (112 states) green
+  without `--update` confirm nothing else did. No deviation.
 
 ## Verification
 
-Latest pass (B10 review remediation, `bfea223`); earlier passes' exact
-commands/results are in git history per "Completed" above, and the
-B9-remediation and B10 runs are preserved below.
+Latest pass (B11, sha in "Completed" above); earlier passes' exact
+commands/results are in git history per "Completed" above, and the B9-
+remediation, B10 and B10-remediation runs are preserved below.
+
+### B11's own verification
+
+- `node -e '...'` (a scratch script, not committed): parsed old (`git show
+  6dee769:data.js`) and new `data.js` as JSON and diffed every field of
+  every `eq` record - exactly 30 fields differ, all `en`/`ende`, in 28
+  records; `items`/`alt`/`refs` byte-identical (`JSON.stringify` equal); no
+  id renumbered (same length, same id at each index).
+- Char-level count: old `data.js` held 34 U+2019 code points, all inside
+  `eq` `en`/`ende` field values (verified by walking the parsed tree and
+  independently by scanning raw-text positions); new `data.js` holds 0.
+- `docs/fixtures/share/records.json` - a whole-object walk for U+2019 in
+  every string field - no match. `llms.txt` - a full-file scan for U+2019 -
+  no match. Neither needed the `CONTRACTS.md`/`tests/contracts.js`/
+  `llms.txt` update the dispatch's contingency described.
+- `node tools/build.js` - `data.json` 646 KB, `catalog.csv` 575 KB, 1091
+  `i/*.html` stubs written; `git diff --stat -- catalog.csv data.json` - 28
+  rows changed in `catalog.csv` (one per affected record), `data.json`'s
+  one line changed - consistent with the 28-record scope.
+- `npm run build` (needed before a golden run reflects the new data - the
+  golden driver compares against `dist/`, and `npm run check`'s own
+  `npm run data` step does not run `vite build`) - green, `dist/data.js`
+  661.33 kB.
+- `rtk npm run check` - green: format:check, lint, typecheck,
+  `node --check tools/check-site.mjs`, `npm run data`, `node
+  tests/derived.js`, `node .claude/hooks/selftest.mjs`, `node --test
+  tools/tg-preview/lib.test.mjs`, `node --test tools/artwork/lib.test.mjs`,
+  `node --test tools/check-site.test.mjs`, `node --test
+  tests/app/golden.test.mjs` 17/17, `npm run test` - 45 test files / 1132
+  tests passed, coverage 97.04% statements / 89.05% branches / 98.04%
+  functions / 97.82% lines, unchanged from B10 review remediation's run.
+- `node tests/run-all.js dataint,derived,craft,stub` - all four green
+  (`stub` 3.8s, `dataint` 1.8s, `derived` 0.6s, `craft` 0.4s).
+- `node tests/app/golden.js --only=search --update` then `--only=eq_
+  --update` (after `npm run build` refreshed `dist/`) - captured 9 and 8
+  states respectively; `git status` afterward showed exactly the six
+  predicted files modified (`_search_searched`, `_search_a_row_ticked`,
+  `_tables_eq_armor`, `_tables_eq_secondary`, `_tables_eq_weapon`,
+  `_tables_eq_weapon_panel_open`) - spot-checked with `git diff`:
+  `_search_a_row_ticked.txt`/`_search_searched.txt` show "Monett's Cloak"
+  losing its U+2019 in the rendered name and "Bladefare Armor"'s
+  `namehash` changing (its `ende` text moved, inside the elided interior so
+  only the hash, not the visible text, differs there).
+- `node tests/app/golden.js --only=search` and `--only=eq_` (no
+  `--update`, re-run after the record) - both green, no further movement.
+- `npm run check:built` (`npm run build && npm run smoke && npm run
+  budget`) - green: build 251 modules, `dist/assets/app.js` 313.40 kB
+  (gzip 93.96 kB); smoke "the built page opens from a folder"; budget
+  91.3 kB within the 120 kB gzip budget.
+- `node tests/app/golden.js --shard=1/4` - 28 states, unchanged.
+- `node tests/app/golden.js --shard=2/4` - 28 states, unchanged.
+- `node tests/app/golden.js --shard=3/4` - 28 states, unchanged.
+- `node tests/app/golden.js --shard=4/4` - 28 states, unchanged.
+  112 states total across all four shards; combined with the two `--only=`
+  probes above, exactly six golden files carry a working-tree modification
+  (`git status --short tests/app/snapshots/`) - the six predicted, no more.
+- `git status --short` (final) - `data.js`, `data.json`, `catalog.csv` and
+  the six goldens modified; `i/` untracked as always;
+  `.claude/agents/reviewer.md` (unstaged, another session's) and
+  `issues/56/` (untracked, another task's) untouched, per "preserve
+  unrelated working-tree changes."
+- Push: `git push origin main` - `git rev-parse HEAD origin/main` confirmed
+  to agree after the push.
+
+### B10 review remediation's own verification (preserved, not re-run this pass)
 
 - `git grep -c "let open = \$state<Record_" -- app/src` (re-run for real,
   B10-B1) - `app/src/components/RecordHost.svelte:2`, not "no matches" as
@@ -503,27 +586,29 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **B11 - equipment apostrophes (O2)**, last, owner-settled yes (Q8).
-  Design, files, gates: `plan.md`, "B11". Rewrites `data.js` (`en`/`ende`
-  of `eq` records, U+2019 -> `'`), regenerates `data.json`, `catalog.csv`,
-  `i/` (untracked), possibly `docs/fixtures/share/records.json`, and
-  re-records six named goldens - the one batch in this plan authorised to
-  move a golden. Placed last on purpose so it never shares a diff with a
-  code change.
-- Nothing outstanding blocks B11: B10 shipped with no deviation, and B9's
-  review remediation (this pass) shipped both blockers and all six record
-  corrections with no deviation of its own.
-- **Do not fold B8's, B8.1's, or B9's outstanding review nits (the rows
-  still in `issues/phase-8/nits.md`, "Outstanding") into B11** - B12 is
-  where the whole outstanding table clears. B10 has not been reviewed yet;
-  when it is, its nits go there too.
+- **B12 - clear the nit register**, per `plan.md`, "B12". This is now the
+  last batch in the plan: B1-B11 (every content batch) have shipped. B12's
+  own precondition is that every other batch has been reviewed first - B10
+  and B11 both still need a review pass before B12 can be dispatched.
+  Objective: `issues/phase-8/nits.md` has no `outstanding` or `verify` rows
+  left; scope, files and acceptance lines are in `plan.md`, "B12".
+- Nothing outstanding blocks a B10/B11 review: B11 shipped with no
+  deviation, on top of B10 (and its own review remediation) shipping with
+  no deviation either.
+- **Do not fold any batch's outstanding review nits (the rows still in
+  `issues/phase-8/nits.md`, "Outstanding") into anything before B12** - B12
+  is where the whole outstanding table clears, per the owner's standing
+  instruction (`context.md`, "Review and nit policy").
+- After B10 and B11 are both reviewed and B12 clears the nit register, this
+  task closes out per `.claude/skills/handoff/SKILL.md`, "Retirement"
+  (`context.md`, "Current session").
 
 ## Blockers
 
-None. B9's review remediation shipped both blockers and all six record
-corrections with no deviation. `rtk npm run check` and `node
-tests/run-all.js app/states` are green, confirmed for real, not assumed,
-and the branch is pushed.
+None. B11 shipped with no deviation - see "Completed" and "Verification".
+`npm run check`, `npm run check:built`, the fs suites, both `--only=`
+golden probes and all four golden shards are green, confirmed for real,
+not assumed, and the branch is pushed.
 
 ## Deferred
 
@@ -554,4 +639,4 @@ and the branch is pushed.
   `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
   untracked as usual and regenerate on demand.
 - Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (`0686bb6`).
+  gate-verified boundary (B11's own sha, see "Completed").

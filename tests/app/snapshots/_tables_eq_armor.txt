@@ -379,7 +379,7 @@ Banded ArmorTier 1 · Thresholds 8/16 · Armor 4Bulky: −1 to Evasi... [namelen
 Bellamoi Fine Armor
 Bellamoi Fine ArmorTier 3 · Thresholds 11/27 · Armor 5Gilded: +1... [namelen=91 namehash=8d024e2a]
 Bladefare Armor
-Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=8d83ba06]
+Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=aeb5e429]
 Bloodstone Plate Armor
 Bloodstone Plate ArmorTier 3 · Thresholds 13/35 · Armor 6Bloodth... [namelen=178 namehash=05963aa5]
 Brigandine Armor
@@ -414,8 +414,8 @@ Elundrian Chain Armor
 Elundrian Chain ArmorTier 2 · Thresholds 9/21 · Armor 4Warded: Y... [namelen=176 namehash=0e312300]
 Emberwoven Armor
 Emberwoven ArmorTier 4 · Thresholds 13/36 · Armor 6Burning: When... [namelen=144 namehash=36cdcc39]
-Enchanter’s Robes
-Enchanter’s RobesTier 2 · Thresholds 9/20 · Armor 4Mnemonic: Onc... [namelen=175 namehash=c1ae5f28]
+Enchanter's Robes
+Enchanter's RobesTier 2 · Thresholds 9/20 · Armor 4Mnemonic: Onc... [namelen=175 namehash=de15935f]
 Envoy's Attire
 Equipment
 Filters
@@ -430,15 +430,15 @@ Gilded Sunplate
 Gilded SunplateTier 2 · Thresholds 12/26 · Armor 5Resplendent: O... [namelen=149 namehash=acab8609]
 Godbound Laminar
 Godbound LaminarTier 4 · Thresholds 13/36 · Armor 6Divine: When ... [namelen=122 namehash=585aded7]
-Granminster’s Finery
-Granminster’s FineryTier 3 · Thresholds 11/27 · Armor 2Magnifice... [namelen=146 namehash=9bc98ab9]
+Granminster's Finery
+Granminster's FineryTier 3 · Thresholds 11/27 · Armor 2Magnifice... [namelen=146 namehash=f86ce2e7]
 Grid
 Hallowed Heroplate
 Hallowed HeroplateTier 4 · Thresholds 13/35 · Armor 7Blessed: On... [namelen=263 namehash=7b8ecc89]
 Harrowbone Armor
 Harrowbone ArmorTier 2 · Thresholds 9/21 · Armor 4Resilient: Bef... [namelen=210 namehash=388e4dac]
-Hawkguard’s Mantle
-Hawkguard’s MantleTier 2 · Thresholds 9/20 · Armor 4Gliding: You... [namelen=151 namehash=d4ee7ddd]
+Hawkguard's Mantle
+Hawkguard's MantleTier 2 · Thresholds 9/20 · Armor 4Gliding: You... [namelen=151 namehash=365dbcbd]
 Hope & Fear
 How this works
 Improved Banded Armor
@@ -498,8 +498,8 @@ List
 Lists
 Mage Robes
 Mage RobesTier 1 · Thresholds 4/10 · Armor 2Enchanted: Gain a bo... [namelen=140 namehash=66dcf68d]
-Monett’s Cloak
-Monett’s CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can’... [namelen=126 namehash=bf49cbf1]
+Monett's Cloak
+Monett's CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can'... [namelen=126 namehash=f001f396]
 Open this section on start
 Other
 Quilted Clothing
@@ -524,8 +524,8 @@ Secondary
 Silverweave Armor
 Silverweave ArmorTier 1 · Thresholds 5/11 · Armor 3Warded: You r... [namelen=185 namehash=201fa16c]
 Skip to content
-Skywarden’s Lamellar
-Skywarden’s LamellarTier 3 · Thresholds 11/27 · Armor 5Vigilant:... [namelen=100 namehash=af02e01e]
+Skywarden's Lamellar
+Skywarden's LamellarTier 3 · Thresholds 11/27 · Armor 5Vigilant:... [namelen=100 namehash=02dfb59f]
 Spidersilk Tunic
 Spidersilk TunicTier 2 · Thresholds 9/20 · Armor 4Wall-Crawling:... [namelen=148 namehash=319e3625]
 Spiked Plate Armor
@@ -548,6 +548,6 @@ Weapons
 Wondrous
 Wondrous Loot
 Wyrdwood Splint Armor
-Wyrdwood Splint ArmorTier 2 · Thresholds 10/21 · Armor 5Quick-St... [namelen=173 namehash=c6b501c8]
+Wyrdwood Splint ArmorTier 2 · Thresholds 10/21 · Armor 5Quick-St... [namelen=173 namehash=ef97f30b]
 daggerheart.com
 ЛутDaggerheart

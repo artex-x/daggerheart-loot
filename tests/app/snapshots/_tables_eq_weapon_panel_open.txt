@@ -862,8 +862,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 8TemprusTier 4 · Physical · Strength · Melee · d8+9 phy · One-Ha... [namelen=360 namehash=e0a894a2]
 Aantari Bow
 Aantari BowTier 4 · Physical · Finesse · Far · d6+11 phy · Two-H... [namelen=121 namehash=6cf96e60]
-Adder’s Fang
-Adder’s FangTier 4 · Magic · Finesse · Melee · d8+9 mag · One-Ha... [namelen=207 namehash=3132e09d]
+Adder's Fang
+Adder's FangTier 4 · Magic · Finesse · Melee · d8+9 mag · One-Ha... [namelen=207 namehash=56cf9b25]
 Advanced Arcane Gauntlets
 Advanced Arcane GauntletsTier 3 · Magic · Strength · Melee · d10... [namelen=101 namehash=74d189b8]
 Advanced Arcane Rifle
@@ -943,7 +943,7 @@ Advanced ShotgunTier 3 · Physical · Strength · Very Close · d6+8... [namelen
 Advanced Spear
 Advanced SpearTier 3 · Physical · Finesse · Very Close · d8+9 ph... [namelen=96 namehash=82cd4216]
 Advanced Twisted Dagger
-Advanced Twisted DaggerTier 3 · Physical · Knowledge · Melee · d... [namelen=208 namehash=87e8421f]
+Advanced Twisted DaggerTier 3 · Physical · Knowledge · Melee · d... [namelen=208 namehash=96dd9c76]
 Advanced Wand
 Advanced WandTier 3 · Magic · Knowledge · Far · d6+7 mag · One-H... [namelen=87 namehash=8cd48da0]
 Advanced Warhammer
@@ -976,7 +976,7 @@ Black Powder SerpentineTier 4 · Physical · Strength · Far · d8+1... [namelen
 Blade of Braxus
 Blade of the Living
 Bladed Fan
-Bladed FanTier 2 · Physical · Presence · Melee · d8+3 phy · One-... [namelen=341 namehash=f3e0f29a]
+Bladed FanTier 2 · Physical · Presence · Melee · d8+3 phy · One-... [namelen=341 namehash=7be1e281]
 Bladed Star
 Bladed StarTier 3 · Physical · Knowledge · Close · d8+7 phy · On... [namelen=233 namehash=3ca2093c]
 Bladed Whip
@@ -1028,18 +1028,18 @@ Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy ·... [namele
 Crossbow
 CrossbowTier 1 · Physical · Finesse · Far · d6+1 phy · One-Hande... [namelen=83 namehash=1d41b2a7]
 Crystal Spear
-Crystal SpearTier 3 · Magic · Finesse · Very Close · d10+6 mag ·... [namelen=205 namehash=9a34dde4]
+Crystal SpearTier 3 · Magic · Finesse · Very Close · d10+6 mag ·... [namelen=205 namehash=ff1a2d2c]
 Curved Dagger
 Curved DaggerTier 4 · Physical · Finesse · Melee · d8+9 phy · On... [namelen=167 namehash=586ed364]
 Cutlass
 CutlassTier 1 · Physical · Presence · Melee · d8+1 phy · One-Han... [namelen=85 namehash=bcc8eab1]
-Cyrurgien’s Scalpel
-Cyrurgien’s ScalpelTier 2 · Physical · Knowledge · Melee · d8+3 ... [namelen=172 namehash=863cb547]
+Cyrurgien's Scalpel
+Cyrurgien's ScalpelTier 2 · Physical · Knowledge · Melee · d8+3 ... [namelen=172 namehash=eace5ced]
 Dagger
 DaggerTier 1 · Physical · Finesse · Melee · d8+1 phy · One-Hande... [namelen=83 namehash=7603a445]
 Dark Heart of Andaluria
-Demon’s Edge
-Demon’s EdgeTier 4 · Magic · Presence · Melee · d8+10 mag · One-... [namelen=212 namehash=53e73b62]
+Demon's Edge
+Demon's EdgeTier 4 · Magic · Presence · Melee · d8+10 mag · One-... [namelen=212 namehash=83994c07]
 Devil's Smithing Hammer
 Devouring Dagger
 Devouring DaggerTier 2 · Magic · Finesse · Melee · d8+4 mag · On... [namelen=157 namehash=760e1cd4]
@@ -1084,7 +1084,7 @@ Ethereal ZweihänderTier 4 · Magic · Instinct · Very Close · d10+... [namele
 Exploding Potions
 Exploding PotionsTier 1 · Magic · Finesse · Close · d8 mag · One... [namelen=102 namehash=065a07a5]
 Extended Polearm
-Extended PolearmTier 4 · Physical · Finesse · Very Close · d8+10... [namelen=179 namehash=2f778891]
+Extended PolearmTier 4 · Physical · Finesse · Very Close · d8+10... [namelen=179 namehash=400e5478]
 Far
 Filters
 Finehair Bow
@@ -1144,8 +1144,8 @@ Holy Shotgun
 Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag · T... [namelen=198 namehash=0e96bb1a]
 Hope & Fear
 How this works
-Ilmari’s Rifle
-Ilmari’s RifleTier 3 · Magic · Finesse · Very Far · d6+6 mag · O... [namelen=237 namehash=211b09ad]
+Ilmari's Rifle
+Ilmari's RifleTier 3 · Magic · Finesse · Very Far · d6+6 mag · O... [namelen=237 namehash=08b5899b]
 Impact Gauntlet
 Impact GauntletTier 4 · Physical · Strength · Melee · d10+11 phy... [namelen=196 namehash=cc1309e0]
 Improved Arcane Gauntlets
@@ -1227,7 +1227,7 @@ Improved ShotgunTier 2 · Physical · Strength · Very Close · d6+5... [namelen
 Improved Spear
 Improved SpearTier 2 · Physical · Finesse · Very Close · d8+6 ph... [namelen=96 namehash=0943bfd7]
 Improved Twisted Dagger
-Improved Twisted DaggerTier 2 · Physical · Knowledge · Melee · d... [namelen=208 namehash=78ece807]
+Improved Twisted DaggerTier 2 · Physical · Knowledge · Melee · d... [namelen=208 namehash=61c371bc]
 Improved Wand
 Improved WandTier 2 · Magic · Knowledge · Far · d6+4 mag · One-H... [namelen=87 namehash=776ee801]
 Improved Warhammer
@@ -1244,8 +1244,8 @@ Javelins
 JavelinsTier 2 · Physical · Agility · Very Close · d6+6 phy · On... [namelen=279 namehash=9fbcd934]
 Katana
 KatanaTier 1 · Physical · Agility · Melee · d10+3 phy · Two-Hand... [namelen=185 namehash=1fa5cb4f]
-Keeper’s Staff
-Keeper’s StaffTier 2 · Magic · Knowledge · Far · d6+4 mag · Two-... [namelen=122 namehash=07363939]
+Keeper's Staff
+Keeper's StaffTier 2 · Magic · Knowledge · Far · d6+4 mag · Two-... [namelen=122 namehash=0239212b]
 Knowledge
 Knuckle Blades
 Knuckle BladesTier 2 · Physical · Strength · Melee · d10+6 phy ·... [namelen=186 namehash=7926912d]
@@ -1333,7 +1333,7 @@ Legendary ShotgunTier 4 · Physical · Strength · Very Close · d6+... [namelen
 Legendary Spear
 Legendary SpearTier 4 · Physical · Finesse · Very Close · d8+12 ... [namelen=98 namehash=059cee39]
 Legendary Twisted Dagger
-Legendary Twisted DaggerTier 4 · Physical · Knowledge · Melee · ... [namelen=209 namehash=7246d43c]
+Legendary Twisted DaggerTier 4 · Physical · Knowledge · Melee · ... [namelen=209 namehash=2869af54]
 Legendary Wand
 Legendary WandTier 4 · Magic · Knowledge · Far · d6+10 mag · One... [namelen=89 namehash=38323855]
 Legendary Warhammer
@@ -1373,7 +1373,7 @@ Physical
 Pitchfork
 PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=101 namehash=17e33479]
 Platinum Estoc
-Platinum EstocTier 3 · Physical · Finesse · Melee · d8+7 phy · O... [namelen=203 namehash=6fb8c27e]
+Platinum EstocTier 3 · Physical · Finesse · Melee · d8+7 phy · O... [namelen=203 namehash=4a43f9a1]
 Presence
 Quarterstaff
 QuarterstaffTier 1 · Physical · Instinct · Melee · d10+3 phy · T... [namelen=91 namehash=b6a19e52]
@@ -1441,8 +1441,8 @@ SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · T... [namele
 Slingshot
 SlingshotTier 1 · Physical · Finesse · Far · d6+3 phy · Two-Hand... [namelen=97 namehash=e2ce210e]
 Snowblade
-Soldier’s Pike
-Soldier’s PikeTier 3 · Physical · Agility · Very Close · d10+5 p... [namelen=240 namehash=ae96d034]
+Soldier's Pike
+Soldier's PikeTier 3 · Physical · Agility · Very Close · d10+5 p... [namelen=240 namehash=1c73a4b8]
 Sparkling Staff
 Sparkling StaffTier 1 · Magic · Knowledge · Very Far · d6 mag · ... [namelen=199 namehash=54c1d540]
 Spear
@@ -1463,8 +1463,8 @@ Starmetal Blade
 Starmetal BladeTier 4 · Magic · Agility · Melee · d8+10 mag · On... [namelen=174 namehash=e0aac150]
 Steelforged Halberd
 Steelforged HalberdTier 2 · Physical · Strength · Very Close · d... [namelen=169 namehash=b902118d]
-Storm God’s Greataxe
-Storm God’s GreataxeTier 4 · Magic · Strength · Very Close · d10... [namelen=214 namehash=777ea8cb]
+Storm God's Greataxe
+Storm God's GreataxeTier 4 · Magic · Strength · Very Close · d10... [namelen=214 namehash=3d2c55f7]
 Strength
 Swinging Ropeblade
 Swinging RopebladeTier 4 · Physical · Presence · Close · d8+9 ph... [namelen=220 namehash=aee3693b]
@@ -1477,7 +1477,7 @@ Temprus
 Thistlebow
 ThistlebowTier 4 · Magic · Instinct · Far · d6+13 mag · Two-Hand... [namelen=118 namehash=752e0f9d]
 Twisted Dagger
-Twisted DaggerTier 1 · Physical · Knowledge · Melee · d8 phy · O... [namelen=197 namehash=10f7abb6]
+Twisted DaggerTier 1 · Physical · Knowledge · Melee · d8 phy · O... [namelen=197 namehash=52e3916a]
 Two-Handed
 Unique
 Upgradable

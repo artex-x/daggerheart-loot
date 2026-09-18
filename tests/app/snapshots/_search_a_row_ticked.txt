@@ -364,7 +364,7 @@ Blackblood Tendril
 Blackblood TendrilTier 4 · Instinct · Close · d6+8 mag · One-Han... [namelen=229 namehash=3c3b4bea]
 Blade of the Living
 Bladefare Armor
-Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=8d83ba06]
+Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=aeb5e429]
 Braveshield
 BraveshieldTier 4 · Agility · Melee · d4+6 phy · One-HandedShelt... [namelen=218 namehash=f5fbca6a]
 Bravesword
@@ -456,8 +456,8 @@ Little Forest Spirit
 Longsword
 LongswordTier 1 · Physical · Agility · Melee · d10+3 phy · Two-H... [namelen=87 namehash=178a0439]
 Mercurial Familiar
-Monett’s Cloak
-Monett’s CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can’... [namelen=126 namehash=bf49cbf1]
+Monett's Cloak
+Monett's CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can'... [namelen=126 namehash=f001f396]
 Open this section on start
 Phaibos Mask
 Pirate's Treasure Map
