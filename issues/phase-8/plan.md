@@ -209,22 +209,23 @@ was resolved by a rule turn-off in `eslint.config.mjs`, not a file edit).
 Full detail, including the per-file acceptance list and the reproduction
 method: `issues/phase-8/handoff.md`.
 
-### B10 - the record-modal host (C6)
+### B10 - the record-modal host (C6) - SHIPPED `56dabbc`
 
-- **Merged from**: first-plan B19, unchanged.
-- **Stands alone because**: reviewability - `architecture.md` and
-  `components.md` both say its golden impact must be measured before it is
-  believed; the four-shard run is its whole gate and must not be confounded
-  by any other change.
-- **Design**: `RecordHost.svelte` owns `open`, renders `<RecordModal>` and
-  exposes `openRecord` through its children snippet parameter; it also owns
-  the close-on-navigation effect `SearchPage`/`TablesPage` carry today;
-  `ListPage` passes `extra`. The six `RecordCard` + snippet blocks are left
-  alone unless a clean extraction falls out without a new prop.
-- **Acceptance**: `git grep -c "let open = \$state<Record_" -- app/src` is
-  0; all four golden shards green without `--update`; `COVERED` entry.
-- **Gates**: `npm run check`; the four golden shards.
-- **Goldens**: none expected; verified by the full run.
+Outcome: `RecordHost.svelte` extracted exactly as designed - it owns `open`,
+renders `<RecordModal>`, exposes `openRecord` through its `children`
+snippet parameter, and owns the close-on-navigation effect
+`SearchPage`/`TablesPage` carried before this batch, now generalised to
+every caller since the host owns `open` for all of them. All eight
+`let open = $state<Record_ | null>(null)` sites (`AltPanel`, `ListPage`,
+`RecordPage`, `RollPanel`, `SearchPage`, `SharedListPage`, `StdPanel`,
+`TablesPage`) replaced with it; `ListPage` passes `extra` as a function of
+the open record (`entryNoteBlock(metaOf(it.id), t)`), since which entry's
+note applies depends on which record the host has open. No deviation: the
+six `RecordCard` + snippet blocks were left alone - none extracted cleanly
+without a new prop. `a11y.test.ts` gained a `COVERED` entry. All four
+golden shards green without `--update` (112 states, none moved);
+`npm run check` and `npm run check:built` both green. Full detail:
+`git show 56dabbc`, or `issues/phase-8/handoff.md`.
 
 ### B11 - equipment apostrophes (O2) - last, owner-settled yes (Q8)
 

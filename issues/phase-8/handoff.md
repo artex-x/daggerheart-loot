@@ -2,48 +2,30 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `5602ca9 chore(phase-8): B9 - translate
-  the last Russian comment in tools/`, five commits past `d882707` (B9:
-  `0f0c73b`, `0baf86a`, `6b3f0eb`, `d660ce7`, `5602ca9`) plus this docs
-  commit. `main`'s `npm run check` is green as of `5602ca9`; the pooled
-  browser subset (`app/print,app/contracts,app/states,app/typo,app/hues,
-  stub,derived,dataint,craft`), `sweep.js 390` and `golden.js --shard=2/4`
-  are green as measured after commit 4 (`d660ce7`) - not re-run again for
-  `5602ca9`, a two-line comment change in a file no golden or browser suite
-  reads; see "Verification" for why that is sufficient rather than assumed.
-  B1-B9 are on `main` locally in full, including every review remediation
-  cycle - see "Completed". Pushed to `origin/main` - see "Verification",
-  "Push".
-- Last agent: implementer (2026-09-18, B9's four commits, then a
-  coordinator-directed reconciliation - a fifth translation commit plus
-  this docs rewrite. The reconciliation restructured history with
-  `git reset --soft` twice, no rebase: the original `465e869` (docs) and
-  `ce7e459` (translation) shas from the first pass no longer exist,
-  replaced by `5602ca9` (translation, same content) and this commit
-  (docs, comprehensive) in swapped order - translation first so the docs
-  commit can name its own sha).
+- Task status: in_progress. HEAD is `56dabbc refactor(phase-8): B10 -
+  extract RecordHost, the record-modal host (C6)`, one commit past `2d404c7`
+  (B9's docs commit). `npm run check`, `npm run check:built`, and all four
+  `node tests/app/golden.js --shard=n/4` runs are green on `56dabbc` - see
+  "Verification". B1-B10 are on `main` locally in full, including every
+  review remediation cycle - see "Completed". Pushed to `origin/main` - see
+  "Verification", "Push".
+- Last agent: implementer (2026-09-18, B10's single commit).
 - Branch: `main`.
-- Base / starting commit: `d882707`.
+- Base / starting commit: `2d404c7`.
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next. B9 has not been
-  reviewed yet.
-- **Both deviations flagged after commit 4 are settled - by the
-  coordinator, verifying independently before deciding, not by the
-  implementer overriding the plan.** Full detail under "Completed" and
-  "Verification":
-  1. `tools/build-share-pages.js`'s 2 Cyrillic comment lines - translated
-     in `5602ca9`. The plan's Files list omitted this file and its own
-     acceptance line demanded `tools/` carry only (b) lines; the
-     coordinator resolved the inconsistency in favour of the acceptance
-     line (cheaper, smaller, literally verifiable) since commit 4 had
-     already made it a touched path via Prettier.
-  2. Commit 4's "`git diff -w --stat` empty" acceptance line - recorded as
-     **unmet**, per the coordinator's explicit instruction not to force it,
-     with a substitute mechanical proof (byte-for-byte reproduction, not
-     eyeballed) written into "Verification".
-- Next batch: **B10** - the record-modal host (C6), per `plan.md`.
+  cleared in B12, not folded into whichever batch is next. B10 has not been
+  reviewed yet. B9's review landed during this batch (a read-only reviewer
+  ran against B9's committed shas while B10 was implemented, per the
+  task's own "reviews cost no wall clock" policy) and wrote its findings
+  straight into `issues/phase-8/nits.md` - not this implementer's edit, left
+  untouched per the dispatch.
+- No open deviations. B10 shipped exactly as `plan.md` specified: no clean
+  extraction fell out of the six `RecordCard`/snippet blocks beyond
+  `RecordHost` itself, so none was attempted.
+- Next batch: **B11** - equipment apostrophes (O2), per `plan.md`. Last
+  batch before closeout (B12 clears the outstanding nits table).
 
 ## Completed
 
@@ -241,11 +223,44 @@ pre-compaction text.
   (these files were never Prettier-formatted before B9) and asked for a
   mechanical substitute proof instead of an eyeballed one; see
   "Verification".
+- **B10 - the record-modal host (C6)** - `56dabbc`. `RecordHost.svelte`
+  extracted; all eight `let open = $state<Record_ | null>(null)` sites
+  (`AltPanel`, `ListPage`, `RecordPage`, `RollPanel`, `SearchPage`,
+  `SharedListPage`, `StdPanel`, `TablesPage`) replaced with it; no deviation.
 
 ## Verification
 
-Latest batch (B9, `0f0c73b`..`5602ca9`); earlier batches' exact
-commands/results are in git history per "Completed" above.
+Latest batch (B10, `56dabbc`); earlier batches' exact commands/results are
+in git history per "Completed" above.
+
+- `npm run check` (format:check, lint, typecheck, `node --check
+  tools/check-site.mjs`, `npm run data`, `node tests/derived.js`, `node
+  .claude/hooks/selftest.mjs`, `node --test tools/tg-preview/lib.test.mjs`,
+  `node --test tools/artwork/lib.test.mjs`, `node --test
+  tools/check-site.test.mjs`, `node --test tests/app/golden.test.mjs`
+  17/17, `npm run test`) - green: 45 test files / 1131 tests passed;
+  coverage 97.04% statements / 89.05% branches / 98.04% functions / 97.82%
+  lines, every `perFile` threshold met (`RecordHost.svelte` included, not
+  printed by the text reporter's own full-coverage-row omission - confirmed
+  present with real hit counts in `coverage-final.json` directly).
+- `npm run check:built` (`npm run build && npm run smoke && npm run
+  budget`) - green: build 251 modules, `dist/assets/app.js` 313.40 kB
+  (gzip 93.96 kB); smoke "the built page opens from a folder"; budget
+  91.3 kB within the 120 kB gzip budget.
+- `node tests/app/golden.js --shard=1/4` - 28 states compared, structural
+  snapshots (`dist/`) unchanged.
+- `node tests/app/golden.js --shard=2/4` - 28 states compared, unchanged.
+- `node tests/app/golden.js --shard=3/4` - 28 states compared, unchanged.
+- `node tests/app/golden.js --shard=4/4` - 28 states compared, unchanged.
+  112 states total across all four shards, none moved, no `--update` run.
+- `git grep -c "let open = \$state<Record_" -- app/src` - no matches
+  (acceptance line 1).
+- Push: `git push origin main` - `git rev-parse HEAD origin/main` confirmed
+  to agree after the push.
+
+### B9's own verification (preserved, not re-run this batch)
+
+`0f0c73b`..`5602ca9`; commands/results below are B9's, kept for reference.
 
 - Commit 1: `node tests/derived.js`, `node tests/dataint.js`,
   `node tests/craft.js`, `node tests/stub.js` run directly - all green;
@@ -371,25 +386,24 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **B10 - the record-modal host (C6)**. Design, acceptance and gates:
-  `plan.md`, "B10".
-- Nothing outstanding blocks B10: both of B9's deviations are settled (see
-  "Status"/"Completed"), and neither touches production code, a golden, or
-  a spec that B10's own gate (the four golden shards, unconfounded by any
-  other change) would be sensitive to.
-- **Do not fold B8's, B8.1's, or B9's outstanding review nits into B10** -
-  route them through `issues/phase-8/nits.md`. B12 is where the whole
-  outstanding table clears. B9 has not been reviewed yet; when it is, its
-  nits go there too.
+- **B11 - equipment apostrophes (O2)**, last, owner-settled yes (Q8).
+  Design, files, gates: `plan.md`, "B11". Rewrites `data.js` (`en`/`ende`
+  of `eq` records, U+2019 -> `'`), regenerates `data.json`, `catalog.csv`,
+  `i/` (untracked), possibly `docs/fixtures/share/records.json`, and
+  re-records six named goldens - the one batch in this plan authorised to
+  move a golden. Placed last on purpose so it never shares a diff with a
+  code change.
+- Nothing outstanding blocks B11: B10 shipped with no deviation.
+- **Do not fold B8's, B8.1's, B9's, or B10's outstanding review nits into
+  B11** - route them through `issues/phase-8/nits.md`. B12 is where the
+  whole outstanding table clears. B10 has not been reviewed yet; when it
+  is, its nits go there too.
 
 ## Blockers
 
-None. B9's two deviations (commit 4's `git diff -w --stat` acceptance
-line, `tools/build-share-pages.js`'s Cyrillic comments) were both settled
-by the coordinator - see "Status" and "Completed". Every gate is green
-(`npm run check` x5, the pooled browser subset, `sweep.js 390`,
-`golden.js --shard=2/4`, all confirmed for real, not assumed) and the
-branch is pushed.
+None. B10 shipped with no deviation. Every gate is green (`npm run check`,
+`npm run check:built`, all four golden shards, confirmed for real, not
+assumed) and the branch is pushed.
 
 ## Deferred
 
@@ -416,9 +430,10 @@ branch is pushed.
   frontmatter edit from another session) and `issues/56/` (an untracked
   directory, another task's) have been present throughout this task's
   sessions and are preserved untouched and unstaged, per "preserve
-  unrelated working-tree changes, do not revert foreign work." Normal
-  `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
-  untracked as usual and regenerate on demand.
+  unrelated working-tree changes, do not revert foreign work." A B9-review
+  session wrote directly into `issues/phase-8/nits.md` while B10 was
+  implemented (see "Status"); that write is also preserved untouched, not
+  this batch's own. Normal `npm run data`/`npm run build` outputs (`i/`,
+  `dist/`) are gitignored or untracked as usual and regenerate on demand.
 - Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (`d882707`), and this compaction is itself a
-  single `.md`-only, gate-exempt commit.
+  gate-verified boundary (`56dabbc`).
